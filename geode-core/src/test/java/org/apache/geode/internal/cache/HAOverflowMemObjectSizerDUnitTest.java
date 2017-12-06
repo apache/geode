@@ -51,7 +51,7 @@ import org.apache.geode.test.junit.categories.DistributedTest;
 /**
  * Tests the size of clientUpdateMessageImpl with the size calculated by
  * {@link org.apache.geode.internal.cache.lru.MemLRUCapacityController} for HA overFlow
- * 
+ *
  * @since GemFire 5.7
  */
 @Category(DistributedTest.class)
@@ -276,7 +276,7 @@ public class HAOverflowMemObjectSizerDUnitTest extends JUnit4DistributedTestCase
 
   /**
    * perform put on server region that will put entries on CMR region
-   * 
+   *
    * @param lowerLimit
    * @param higerlimit - lower and upper limit on put
    */

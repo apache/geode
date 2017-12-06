@@ -14,15 +14,16 @@
  */
 package org.apache.geode.internal.jndi;
 
-import javax.naming.NameParser;
-import javax.naming.Name;
-import javax.naming.NamingException;
-import javax.naming.CompoundName;
 import java.util.Properties;
+
+import javax.naming.CompoundName;
+import javax.naming.Name;
+import javax.naming.NameParser;
+import javax.naming.NamingException;
 
 /**
  * ContextImpl name parser.
- * 
+ *
  */
 class NameParserImpl implements NameParser {
 
@@ -42,7 +43,7 @@ class NameParserImpl implements NameParser {
    * <p>
    * Any characters '.' in the name <code>name</code> will be replaced with the separator character
    * specified above, before parsing.
-   * 
+   *
    * @param name name to parse
    * @throws NamingException if naming error occurrs
    */

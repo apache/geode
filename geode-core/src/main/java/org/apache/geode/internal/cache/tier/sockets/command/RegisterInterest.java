@@ -13,7 +13,7 @@
  * the License.
  */
 /**
- * 
+ *
  */
 package org.apache.geode.internal.cache.tier.sockets.command;
 
@@ -42,7 +42,7 @@ import org.apache.geode.security.ResourcePermission.Resource;
 
 public class RegisterInterest extends BaseCommand {
 
-  private final static RegisterInterest singleton = new RegisterInterest();
+  private static final RegisterInterest singleton = new RegisterInterest();
 
   public static Command getCommand() {
     return singleton;

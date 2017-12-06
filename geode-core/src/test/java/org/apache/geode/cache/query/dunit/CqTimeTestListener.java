@@ -48,14 +48,14 @@ public class CqTimeTestListener implements CqListener {
 
   protected volatile boolean eventClose = false;
 
-  final public Set destroys = Collections.synchronizedSet(new HashSet());
-  final public Set creates = Collections.synchronizedSet(new HashSet());
-  final public Set invalidates = Collections.synchronizedSet(new HashSet());
-  final public Set updates = Collections.synchronizedSet(new HashSet());
+  public final Set destroys = Collections.synchronizedSet(new HashSet());
+  public final Set creates = Collections.synchronizedSet(new HashSet());
+  public final Set invalidates = Collections.synchronizedSet(new HashSet());
+  public final Set updates = Collections.synchronizedSet(new HashSet());
 
-  static private final String WAIT_PROPERTY = "CQueryTestListener.maxWaitTime";
+  private static final String WAIT_PROPERTY = "CQueryTestListener.maxWaitTime";
 
-  static private final int WAIT_DEFAULT = (20 * 1000);
+  private static final int WAIT_DEFAULT = (20 * 1000);
 
   public static final long MAX_TIME = Integer.getInteger(WAIT_PROPERTY, WAIT_DEFAULT).intValue();;
 

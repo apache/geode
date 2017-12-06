@@ -54,9 +54,9 @@ import org.apache.geode.management.ManagementException;
 /**
  * Manager implementation which manages federated MBeans for the entire DistributedSystem and
  * controls the JMX server endpoints for JMX clients to connect, such as an RMI server.
- * 
+ *
  * The FederatingManager is only appropriate for a peer or server in a GemFire distributed system.
- * 
+ *
  * @since GemFire 7.0
  */
 public class FederatingManager extends Manager {
@@ -158,7 +158,7 @@ public class FederatingManager extends Manager {
   /**
    * This method will be invoked from MembershipListener which is registered when the member becomes
    * a Management node.
-   * 
+   *
    * This method will delegate task to another thread and exit, so that it wont block the membership
    * listener
    */
@@ -175,7 +175,7 @@ public class FederatingManager extends Manager {
   /**
    * This method will be invoked from MembershipListener which is registered when the member becomes
    * a Management node.
-   * 
+   *
    * This method will delegate task to another thread and exit, so that it wont block the membership
    * listener
    */
@@ -233,7 +233,7 @@ public class FederatingManager extends Manager {
   /**
    * This method will be invoked from MembershipListener which is registered when the member becomes
    * a Management node.
-   * 
+   *
    * this method will delegate task to another thread and exit, so that it wont block the membership
    * listener
    */
@@ -323,18 +323,18 @@ public class FederatingManager extends Manager {
 
   /**
    * Actual task of doing the GII
-   * 
+   *
    * It will perform the GII request which might originate from TransitionListener or Membership
    * Listener.
    *
    * Managing Node side resources are created per member which is visible to this node
-   * 
+   *
    * 1)Management Region : its a Replicated NO_ACK region 2)Notification Region : its a Replicated
    * Proxy NO_ACK region
-   * 
+   *
    * Listeners are added to the above two regions 1) ManagementCacheListener() 2)
    * NotificationCacheListener
-   * 
+   *
    * This task can be cancelled from the calling thread if a timeout happens. In that case we have
    * to handle the thread interrupt
    */
@@ -490,7 +490,7 @@ public class FederatingManager extends Manager {
 
   /**
    * This will return the last updated time of the proxyMBean
-   * 
+   *
    * @param objectName {@link javax.management.ObjectName} of the MBean
    * @return last updated time of the proxy
    */
@@ -503,7 +503,7 @@ public class FederatingManager extends Manager {
    * {@link org.apache.geode.distributed.DistributedMember} and interface class If the proxy
    * interface does not implement the given interface class a {@link java.lang.ClassCastException}.
    * will be thrown
-   * 
+   *
    * @param objectName {@link javax.management.ObjectName} of the MBean
    * @param interfaceClass interface class implemented by proxy
    * @return an instance of proxy exposing the given interface
@@ -514,7 +514,7 @@ public class FederatingManager extends Manager {
 
   /**
    * Find a set of proxies given a {@link org.apache.geode.distributed.DistributedMember}
-   * 
+   *
    * @param member {@link org.apache.geode.distributed.DistributedMember}
    * @return a set of {@link javax.management.ObjectName}
    */

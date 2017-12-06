@@ -15,9 +15,9 @@
 
 package org.apache.geode.internal.cache.locks;
 
-import org.apache.geode.DataSerializable;
-// import org.apache.geode.cache.Region;
 import java.util.Set;
+
+import org.apache.geode.DataSerializable;
 
 /** Specifies a set of keys to try-lock within the scope of a region */
 public interface TXRegionLockRequest extends DataSerializable {
@@ -34,4 +34,3 @@ public interface TXRegionLockRequest extends DataSerializable {
   /** add the set of keys to be locked */
   public void addEntryKeys(Set<Object> s);
 }
-

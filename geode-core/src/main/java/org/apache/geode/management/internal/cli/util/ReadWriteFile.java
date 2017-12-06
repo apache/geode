@@ -32,8 +32,8 @@ import org.apache.geode.internal.logging.log4j.LogLevel;
 import org.apache.geode.management.internal.cli.GfshParser;
 
 /**
- * 
- * 
+ *
+ *
  * @since GemFire 7.0
  */
 public class ReadWriteFile {

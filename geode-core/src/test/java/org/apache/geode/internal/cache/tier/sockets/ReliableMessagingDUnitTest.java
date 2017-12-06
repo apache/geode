@@ -21,7 +21,6 @@ import java.util.Iterator;
 import java.util.Map;
 import java.util.Properties;
 
-import org.apache.geode.test.junit.categories.ClientServerTest;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
@@ -53,6 +52,7 @@ import org.apache.geode.test.dunit.VM;
 import org.apache.geode.test.dunit.Wait;
 import org.apache.geode.test.dunit.WaitCriterion;
 import org.apache.geode.test.dunit.internal.JUnit4DistributedTestCase;
+import org.apache.geode.test.junit.categories.ClientServerTest;
 import org.apache.geode.test.junit.categories.DistributedTest;
 import org.apache.geode.test.junit.categories.FlakyTest;
 
@@ -124,7 +124,7 @@ public class ReliableMessagingDUnitTest extends JUnit4DistributedTestCase {
 
   /**
    * Wait for acknowledgment from client, verify creation time is correct
-   * 
+   *
    * @throws Exception
    */
   public static void waitForClientAck() throws Exception {
@@ -222,7 +222,7 @@ public class ReliableMessagingDUnitTest extends JUnit4DistributedTestCase {
     }
   }
 
-  static private void sleep(int ms) {
+  private static void sleep(int ms) {
     try {
       Thread.sleep(ms);
     } catch (InterruptedException e) {

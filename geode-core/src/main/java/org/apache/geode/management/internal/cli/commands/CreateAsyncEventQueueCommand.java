@@ -23,16 +23,15 @@ import java.util.concurrent.atomic.AtomicReference;
 import org.springframework.shell.core.annotation.CliCommand;
 import org.springframework.shell.core.annotation.CliOption;
 
-import org.apache.geode.SystemFailure;
-import org.apache.geode.cache.execute.ResultCollector;
+import org.apache.geode.cache.asyncqueue.internal.AsyncEventQueueFactoryImpl;
 import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.management.cli.ConverterHint;
 import org.apache.geode.management.cli.Result;
-import org.apache.geode.management.internal.cli.CliUtil;
 import org.apache.geode.management.internal.cli.functions.AsyncEventQueueFunctionArgs;
 import org.apache.geode.management.internal.cli.functions.CliFunctionResult;
 import org.apache.geode.management.internal.cli.functions.CreateAsyncEventQueueFunction;
 import org.apache.geode.management.internal.cli.i18n.CliStrings;
+import org.apache.geode.management.internal.cli.result.CommandResult;
 import org.apache.geode.management.internal.cli.result.ResultBuilder;
 import org.apache.geode.management.internal.cli.result.TabularResultData;
 import org.apache.geode.management.internal.configuration.domain.XmlEntity;
@@ -52,15 +51,15 @@ public class CreateAsyncEventQueueCommand implements GfshCommand {
           help = CliStrings.CREATE_ASYNC_EVENT_QUEUE__GROUP__HELP) String[] groups,
       @CliOption(key = CliStrings.CREATE_ASYNC_EVENT_QUEUE__PARALLEL,
           unspecifiedDefaultValue = "false", specifiedDefaultValue = "true",
-          help = CliStrings.CREATE_ASYNC_EVENT_QUEUE__PARALLEL__HELP) Boolean parallel,
+          help = CliStrings.CREATE_ASYNC_EVENT_QUEUE__PARALLEL__HELP) boolean parallel,
       @CliOption(key = CliStrings.CREATE_ASYNC_EVENT_QUEUE__ENABLEBATCHCONFLATION,
           unspecifiedDefaultValue = "false", specifiedDefaultValue = "true",
-          help = CliStrings.CREATE_ASYNC_EVENT_QUEUE__ENABLEBATCHCONFLATION__HELP) Boolean enableBatchConflation,
+          help = CliStrings.CREATE_ASYNC_EVENT_QUEUE__ENABLEBATCHCONFLATION__HELP) boolean enableBatchConflation,
       @CliOption(key = CliStrings.CREATE_ASYNC_EVENT_QUEUE__BATCH_SIZE,
           unspecifiedDefaultValue = "100",
           help = CliStrings.CREATE_ASYNC_EVENT_QUEUE__BATCH_SIZE__HELP) int batchSize,
       @CliOption(key = CliStrings.CREATE_ASYNC_EVENT_QUEUE__BATCHTIMEINTERVAL,
-          unspecifiedDefaultValue = "1000",
+          unspecifiedDefaultValue = AsyncEventQueueFactoryImpl.DEFAULT_BATCH_TIME_INTERVAL + "",
           help = CliStrings.CREATE_ASYNC_EVENT_QUEUE__BATCHTIMEINTERVAL__HELP) int batchTimeInterval,
       @CliOption(key = CliStrings.CREATE_ASYNC_EVENT_QUEUE__PERSISTENT,
           unspecifiedDefaultValue = "false", specifiedDefaultValue = "true",
@@ -69,16 +68,16 @@ public class CreateAsyncEventQueueCommand implements GfshCommand {
           help = CliStrings.CREATE_ASYNC_EVENT_QUEUE__DISK_STORE__HELP) String diskStore,
       @CliOption(key = CliStrings.CREATE_ASYNC_EVENT_QUEUE__DISKSYNCHRONOUS,
           unspecifiedDefaultValue = "true", specifiedDefaultValue = "true",
-          help = CliStrings.CREATE_ASYNC_EVENT_QUEUE__DISKSYNCHRONOUS__HELP) Boolean diskSynchronous,
+          help = CliStrings.CREATE_ASYNC_EVENT_QUEUE__DISKSYNCHRONOUS__HELP) boolean diskSynchronous,
       @CliOption(key = CliStrings.CREATE_ASYNC_EVENT_QUEUE__FORWARD_EXPIRATION_DESTROY,
-          unspecifiedDefaultValue = "false", specifiedDefaultValue = "false",
-          help = CliStrings.CREATE_ASYNC_EVENT_QUEUE__FORWARD_EXPIRATION_DESTROY__HELP) Boolean ignoreEvictionAndExpiration,
+          unspecifiedDefaultValue = "false", specifiedDefaultValue = "true",
+          help = CliStrings.CREATE_ASYNC_EVENT_QUEUE__FORWARD_EXPIRATION_DESTROY__HELP) boolean forwardExpirationDestroy,
       @CliOption(key = CliStrings.CREATE_ASYNC_EVENT_QUEUE__MAXIMUM_QUEUE_MEMORY,
           unspecifiedDefaultValue = "100",
           help = CliStrings.CREATE_ASYNC_EVENT_QUEUE__MAXIMUM_QUEUE_MEMORY__HELP) int maxQueueMemory,
       @CliOption(key = CliStrings.CREATE_ASYNC_EVENT_QUEUE__DISPATCHERTHREADS,
           unspecifiedDefaultValue = "1",
-          help = CliStrings.CREATE_ASYNC_EVENT_QUEUE__DISPATCHERTHREADS__HELP) Integer dispatcherThreads,
+          help = CliStrings.CREATE_ASYNC_EVENT_QUEUE__DISPATCHERTHREADS__HELP) int dispatcherThreads,
       @CliOption(key = CliStrings.CREATE_ASYNC_EVENT_QUEUE__ORDERPOLICY,
           unspecifiedDefaultValue = "KEY",
           help = CliStrings.CREATE_ASYNC_EVENT_QUEUE__ORDERPOLICY__HELP) String orderPolicy,
@@ -97,75 +96,55 @@ public class CreateAsyncEventQueueCommand implements GfshCommand {
     }
     Properties listenerProperties = new Properties();
 
-    try {
-      if (listenerParamsAndValues != null) {
-        for (String listenerParamsAndValue : listenerParamsAndValues) {
-          final int hashPosition = listenerParamsAndValue.indexOf('#');
-          if (hashPosition == -1) {
-            listenerProperties.put(listenerParamsAndValue, "");
-          } else {
-            listenerProperties.put(listenerParamsAndValue.substring(0, hashPosition),
-                listenerParamsAndValue.substring(hashPosition + 1));
-          }
+    if (listenerParamsAndValues != null) {
+      for (String listenerParamsAndValue : listenerParamsAndValues) {
+        final int hashPosition = listenerParamsAndValue.indexOf('#');
+        if (hashPosition == -1) {
+          listenerProperties.put(listenerParamsAndValue, "");
+        } else {
+          listenerProperties.put(listenerParamsAndValue.substring(0, hashPosition),
+              listenerParamsAndValue.substring(hashPosition + 1));
         }
       }
-
-      TabularResultData tabularData = ResultBuilder.createTabularResultData();
-      boolean accumulatedData = false;
-
-      Set<DistributedMember> targetMembers = CliUtil.findMembers(groups, null);
-
-      if (targetMembers.isEmpty()) {
-        return ResultBuilder.createUserErrorResult(CliStrings.NO_MEMBERS_FOUND_MESSAGE);
-      }
-
-      AsyncEventQueueFunctionArgs aeqArgs = new AsyncEventQueueFunctionArgs(id, parallel,
-          enableBatchConflation, batchSize, batchTimeInterval, persistent, diskStore,
-          diskSynchronous, maxQueueMemory, dispatcherThreads, orderPolicy, gatewayEventFilters,
-          gatewaySubstitutionListener, listener, listenerProperties, ignoreEvictionAndExpiration);
-
-      ResultCollector<?, ?> rc =
-          CliUtil.executeFunction(new CreateAsyncEventQueueFunction(), aeqArgs, targetMembers);
-
-      List<CliFunctionResult> results = CliFunctionResult.cleanResults((List<?>) rc.getResult());
-
-      AtomicReference<XmlEntity> xmlEntity = new AtomicReference<>();
-      for (CliFunctionResult result : results) {
-        if (result.getThrowable() != null) {
-          tabularData.accumulate("Member", result.getMemberIdOrName());
-          tabularData.accumulate("Result", "ERROR: " + result.getThrowable().getClass().getName()
-              + ": " + result.getThrowable().getMessage());
-          accumulatedData = true;
-          tabularData.setStatus(Result.Status.ERROR);
-        } else if (result.isSuccessful()) {
-          tabularData.accumulate("Member", result.getMemberIdOrName());
-          tabularData.accumulate("Result", result.getMessage());
-          accumulatedData = true;
-
-          if (xmlEntity.get() == null) {
-            xmlEntity.set(result.getXmlEntity());
-          }
-        }
-      }
-
-      if (!accumulatedData) {
-        return ResultBuilder.createInfoResult("Unable to create async event queue(s).");
-      }
-
-      Result result = ResultBuilder.buildResult(tabularData);
-      if (xmlEntity.get() != null) {
-        persistClusterConfiguration(result,
-            () -> getSharedConfiguration().addXmlEntity(xmlEntity.get(), groups));
-      }
-      return result;
-    } catch (VirtualMachineError e) {
-      SystemFailure.initiateFailure(e);
-      throw e;
-    } catch (Throwable th) {
-      SystemFailure.checkFailure();
-      return ResultBuilder.createGemFireErrorResult(
-          CliStrings.format(CliStrings.CREATE_ASYNC_EVENT_QUEUE__ERROR_WHILE_CREATING_REASON_0,
-              new Object[] {th.getMessage()}));
     }
+
+    Set<DistributedMember> targetMembers = getMembers(groups, null);
+
+    TabularResultData tabularData = ResultBuilder.createTabularResultData();
+    AsyncEventQueueFunctionArgs aeqArgs = new AsyncEventQueueFunctionArgs(id, parallel,
+        enableBatchConflation, batchSize, batchTimeInterval, persistent, diskStore, diskSynchronous,
+        maxQueueMemory, dispatcherThreads, orderPolicy, gatewayEventFilters,
+        gatewaySubstitutionListener, listener, listenerProperties, forwardExpirationDestroy);
+
+    CreateAsyncEventQueueFunction function = new CreateAsyncEventQueueFunction();
+    List<CliFunctionResult> results = executeAndGetFunctionResult(function, aeqArgs, targetMembers);
+
+    if (results.size() == 0) {
+      throw new RuntimeException("No results received.");
+    }
+
+    AtomicReference<XmlEntity> xmlEntity = new AtomicReference<>();
+    for (CliFunctionResult result : results) {
+      if (!result.isSuccessful()) {
+        tabularData.accumulate("Member", result.getMemberIdOrName());
+        tabularData.accumulate("Result", "ERROR: " + result.getErrorMessage());
+      } else {
+        tabularData.accumulate("Member", result.getMemberIdOrName());
+        tabularData.accumulate("Result", result.getMessage());
+
+        // if one member is successful in creating the AEQ and xmlEntity is not set yet,
+        // save the xmlEntity that is to be persisted
+        if (result.isSuccessful() && xmlEntity.get() == null) {
+          xmlEntity.set(result.getXmlEntity());
+        }
+      }
+    }
+    CommandResult commandResult = ResultBuilder.buildResult(tabularData);
+    if (xmlEntity.get() != null) {
+      persistClusterConfiguration(commandResult,
+          () -> getSharedConfiguration().addXmlEntity(xmlEntity.get(), groups));
+    }
+    return commandResult;
   }
+
 }

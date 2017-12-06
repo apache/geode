@@ -41,7 +41,7 @@ import org.apache.geode.internal.VersionedDataSerializable;
 /**
  * This class is used to hold the information about the servers and their Filters (CQs and Interest
  * List) that are satisfied by the cache update operation.
- * 
+ *
  * @since GemFire 6.5
  */
 public class FilterRoutingInfo implements VersionedDataSerializable {
@@ -67,7 +67,7 @@ public class FilterRoutingInfo implements VersionedDataSerializable {
 
   /**
    * Sets the local CQ filter information.
-   * 
+   *
    * @param cqInfo map of server side CQ Name to CQ event type.
    */
   public void setLocalCqInfo(HashMap cqInfo) {
@@ -80,7 +80,7 @@ public class FilterRoutingInfo implements VersionedDataSerializable {
 
   /**
    * Sets the local Interest information.
-   * 
+   *
    * @param clients interested clients with receiveValues=true.
    * @param clientsInv interested clients with receiveValues=false;
    */
@@ -103,7 +103,7 @@ public class FilterRoutingInfo implements VersionedDataSerializable {
 
   /**
    * Returns local Filter information.
-   * 
+   *
    * @return FilterInfo local filter info having CQs and interested client info.
    */
   public FilterInfo getLocalFilterInfo() {
@@ -112,7 +112,7 @@ public class FilterRoutingInfo implements VersionedDataSerializable {
 
   /**
    * Sets CQ routing information.
-   * 
+   *
    * @param member for which CQs are satisfied.
    * @param cqInfo map of server side CQ Name to CQ event type.
    */
@@ -127,7 +127,7 @@ public class FilterRoutingInfo implements VersionedDataSerializable {
 
   /**
    * Sets interested clients routing information
-   * 
+   *
    * @param member on which the client interests are satisfied
    * @param clients Set containing interested clients with receiveValues=true
    * @param clientsInv Set containing interested clients with receiveValues=false
@@ -154,7 +154,7 @@ public class FilterRoutingInfo implements VersionedDataSerializable {
 
   /**
    * Returns the members list that has filters satisfied.
-   * 
+   *
    * @return the members who have filter routing information
    */
   public Set<InternalDistributedMember> getMembers() {
@@ -163,7 +163,7 @@ public class FilterRoutingInfo implements VersionedDataSerializable {
 
   /**
    * Returns true if the local filter information is set.
-   * 
+   *
    * @return whether there is local routing information in this object
    */
   public boolean hasLocalFilterInfo() {
@@ -172,7 +172,7 @@ public class FilterRoutingInfo implements VersionedDataSerializable {
 
   /**
    * Returns true if there is any member with filters satisfied.
-   * 
+   *
    * @return true if we have any filter information in this object
    */
   public boolean hasMemberWithFilterInfo() {
@@ -181,7 +181,7 @@ public class FilterRoutingInfo implements VersionedDataSerializable {
 
   /**
    * Returns the Filter Information for the member.
-   * 
+   *
    * @param member the member whose filter information is desired
    * @return the filter information for the given member
    */
@@ -192,7 +192,7 @@ public class FilterRoutingInfo implements VersionedDataSerializable {
   /**
    * This adds the filter information from the given routing object to this object's tables. This is
    * used to merge routing information for putAll operations.
-   * 
+   *
    * @param eventRouting the routing information for a single putAll event
    */
   public void addFilterInfo(FilterRoutingInfo eventRouting) {

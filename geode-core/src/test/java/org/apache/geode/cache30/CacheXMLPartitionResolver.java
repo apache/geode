@@ -61,7 +61,7 @@ public class CacheXMLPartitionResolver implements PartitionResolver, Serializabl
 
   /*
    * (non-Javadoc)
-   * 
+   *
    * @see org.apache.geode.internal.cache.xmlcache.Declarable2#getConfig()
    */
   public Properties getConfig() {
@@ -70,7 +70,7 @@ public class CacheXMLPartitionResolver implements PartitionResolver, Serializabl
 
   /*
    * (non-Javadoc)
-   * 
+   *
    * @see org.apache.geode.cache.Declarable#init(java.util.Properties)
    */
   public void init(Properties props) {

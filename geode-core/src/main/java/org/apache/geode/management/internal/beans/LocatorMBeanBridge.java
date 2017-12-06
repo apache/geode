@@ -16,6 +16,7 @@ package org.apache.geode.management.internal.beans;
 
 import java.io.File;
 import java.io.IOException;
+import java.net.InetAddress;
 import java.util.List;
 
 import org.apache.logging.log4j.Logger;
@@ -44,7 +45,8 @@ public class LocatorMBeanBridge {
   }
 
   public String getBindAddress() {
-    return loc.getBindAddress().getCanonicalHostName();
+    InetAddress bindAddress = loc.getBindAddress();
+    return bindAddress != null ? bindAddress.getCanonicalHostName() : null;
   }
 
   public String getHostnameForClients() {

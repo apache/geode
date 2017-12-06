@@ -24,7 +24,6 @@ import javax.resource.spi.ConnectionRequestInfo;
 import javax.resource.spi.ManagedConnection;
 import javax.resource.spi.ManagedConnectionFactory;
 import javax.security.auth.Subject;
-// import javax.sql.PooledConnection;
 import javax.transaction.RollbackException;
 import javax.transaction.SystemException;
 import javax.transaction.Transaction;
@@ -44,7 +43,7 @@ import org.apache.geode.internal.logging.log4j.LocalizedMessage;
  * and non-transactional resource connection. Implements ConnectionManager interface. QoS
  * (Transaction, Security etc is taken into account while allocating a connection). Security related
  * features are remaining.
- * 
+ *
  */
 public class JCAConnectionManagerImpl implements ConnectionManager, ConnectionEventListener {
 
@@ -60,7 +59,7 @@ public class JCAConnectionManagerImpl implements ConnectionManager, ConnectionEv
 
   /*
    * Constructor.
-   * 
+   *
    */
   public JCAConnectionManagerImpl(ManagedConnectionFactory mcf,
       ConfiguredDataSourceProperties configs) {
@@ -79,9 +78,9 @@ public class JCAConnectionManagerImpl implements ConnectionManager, ConnectionEv
   /*
    * allocates a ManagedConnection from the ConnectionPool or creates a new
    * ManagedConnection. @param javax.resource.spi.ManagedConnectionFactory
-   * 
+   *
    * @param javax.resource.spi.ConnectionRequestInfo
-   * 
+   *
    * @throws ResourceException
    */
   public Object allocateConnection(ManagedConnectionFactory mcf, ConnectionRequestInfo reqInfo)
@@ -137,7 +136,7 @@ public class JCAConnectionManagerImpl implements ConnectionManager, ConnectionEv
 
   /**
    * CallBack for Connection Error.
-   * 
+   *
    * @param event ConnectionEvent
    */
   public void connectionErrorOccurred(ConnectionEvent event) {
@@ -169,7 +168,7 @@ public class JCAConnectionManagerImpl implements ConnectionManager, ConnectionEv
 
   /**
    * Callback for Connection Closed.
-   * 
+   *
    * @param event ConnectionEvent Object.
    */
   public void connectionClosed(ConnectionEvent event) {

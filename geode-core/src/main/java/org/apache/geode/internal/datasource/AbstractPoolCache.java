@@ -39,7 +39,7 @@ import org.apache.geode.internal.logging.LoggingThreadGroup;
  * connection pools. The class also implements the Serializable interface. The pool maintain a list
  * for keeping the available connections(not assigned to user) and the active connections(assigned
  * to user) This is a thread safe class.
- * 
+ *
  * Second Version .Modified the synchronization code & objects on which locks were being taken.
  * Changed the logic of retrieval of connection & returning of connection. The beahviour of cleaner
  * thread has been modified such that it waits on activeCache if it is empty. Prevention of
@@ -74,7 +74,7 @@ public abstract class AbstractPoolCache implements ConnectionPoolCache, Serializ
 
   /**
    * Constructor initializes the AbstractPoolCache properties.
-   * 
+   *
    * @param eventListner The event listner for the database connections.
    * @param configs The ConfiguredDataSourceProperties object containing the configuration for the
    *        pool.
@@ -120,11 +120,11 @@ public abstract class AbstractPoolCache implements ConnectionPoolCache, Serializ
 
   /**
    * Authenticates the username and password for the database connection.
-   * 
+   *
    * @param user The username for the database connection
    * @param pass The password for the database connection
    * @throws SQLException
-   * 
+   *
    *         public abstract void checkCredentials(String user, String pass)
    */
   /**
@@ -137,9 +137,9 @@ public abstract class AbstractPoolCache implements ConnectionPoolCache, Serializ
    * Returns the connection to the available pool Asif: When the connection is returned to the pool,
    * notify any one thread waiting on availableCache so that it can go into connection seeking
    * state.
-   * 
+   *
    * @param connectionObject PooledConnection object for return.
-   * 
+   *
    */
   public void returnPooledConnectionToPool(Object connectionObject) {
     boolean returnedHappened = false;
@@ -179,14 +179,14 @@ public abstract class AbstractPoolCache implements ConnectionPoolCache, Serializ
 
   /**
    * Expires connection in the available pool.
-   * 
+   *
    * @param connectionObject
    */
   abstract void destroyPooledConnection(Object connectionObject);
 
   /**
    * Returns number of connections currently in use.
-   * 
+   *
    * @return int Number of active connections
    */
   public int getActiveCacheSize() {
@@ -195,7 +195,7 @@ public abstract class AbstractPoolCache implements ConnectionPoolCache, Serializ
 
   /**
    * Returns number of connections available for use
-   * 
+   *
    * @return Size of available cache.
    */
   public int getAvailableCacheSize() {
@@ -210,7 +210,7 @@ public abstract class AbstractPoolCache implements ConnectionPoolCache, Serializ
    *        is no way client can return the object. But it is possible that the cleaner thread may
    *        have already picked it up ,so we still have to check whether it is contained in the map
    *        or not
-   * 
+   *
    */
   public void expirePooledConnection(Object connectionObject) {
     synchronized (connectionObject) {
@@ -229,7 +229,7 @@ public abstract class AbstractPoolCache implements ConnectionPoolCache, Serializ
    * empty and the total connections in the pool(available + active) are less then the Max limit, a
    * new connection is created and returned to the client. If the Max limit is reached the client
    * waits for the connection to be available.
-   * 
+   *
    * Asif: The client thread checks if the total number of active connections have exhausted the
    * limit. If yes it waits on the availableCache. When another thread returns the connection to the
    * pool, the waiting thread gets notified. If a thread experiences timeout while waiting , a
@@ -238,7 +238,7 @@ public abstract class AbstractPoolCache implements ConnectionPoolCache, Serializ
    * connection in available map may have expired. But if the checkOutConnection() returns null ,
    * this iteslf guarantees that atleast one connection expired so the current thread can safely
    * demand one new connection.
-   * 
+   *
    * @throws PoolException
    * @return Object connection object from the pool.
    */
@@ -296,7 +296,7 @@ public abstract class AbstractPoolCache implements ConnectionPoolCache, Serializ
 
   /**
    * Returns the max pool limit.
-   * 
+   *
    * @return int
    */
   public int getMaxLimit() {
@@ -306,7 +306,7 @@ public abstract class AbstractPoolCache implements ConnectionPoolCache, Serializ
   /**
    * Remove a connection from the pool. Modified by Asif : This function is called from a synch
    * block where the lock is taken on this.availableCache
-   * 
+   *
    * @param now Current time in milliseconds
    * @throws PoolException
    * @return Object Connection object from the pool.

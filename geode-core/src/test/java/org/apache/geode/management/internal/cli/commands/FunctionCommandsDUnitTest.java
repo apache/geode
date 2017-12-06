@@ -15,8 +15,18 @@
 
 package org.apache.geode.management.internal.cli.commands;
 
-import static org.assertj.core.api.Assertions.assertThat;
+import static org.apache.geode.internal.cache.functions.TestFunction.TEST_FUNCTION1;
+import static org.apache.geode.internal.cache.functions.TestFunction.TEST_FUNCTION_RETURN_ARGS;
 import static org.awaitility.Awaitility.await;
+
+import java.util.Properties;
+import java.util.concurrent.TimeUnit;
+
+import org.assertj.core.util.Strings;
+import org.junit.Before;
+import org.junit.Rule;
+import org.junit.Test;
+import org.junit.experimental.categories.Category;
 
 import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.Region;
@@ -27,21 +37,10 @@ import org.apache.geode.cache.execute.FunctionService;
 import org.apache.geode.internal.cache.functions.TestFunction;
 import org.apache.geode.management.DistributedSystemMXBean;
 import org.apache.geode.management.ManagementService;
-import org.apache.geode.management.cli.Result;
-import org.apache.geode.management.internal.cli.result.CommandResult;
 import org.apache.geode.test.dunit.rules.LocatorServerStartupRule;
 import org.apache.geode.test.dunit.rules.MemberVM;
 import org.apache.geode.test.junit.categories.DistributedTest;
-import org.apache.geode.test.junit.rules.GfshShellConnectionRule;
-import org.assertj.core.util.Strings;
-import org.json.JSONArray;
-import org.junit.Before;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.experimental.categories.Category;
-
-import java.util.Properties;
-import java.util.concurrent.TimeUnit;
+import org.apache.geode.test.junit.rules.GfshCommandRule;
 
 @Category(DistributedTest.class)
 public class FunctionCommandsDUnitTest {
@@ -55,7 +54,7 @@ public class FunctionCommandsDUnitTest {
   public LocatorServerStartupRule lsRule = new LocatorServerStartupRule();
 
   @Rule
-  public GfshShellConnectionRule gfsh = new GfshShellConnectionRule();
+  public GfshCommandRule gfsh = new GfshCommandRule();
 
   @Before
   public void before() throws Exception {
@@ -68,7 +67,7 @@ public class FunctionCommandsDUnitTest {
     server2 = lsRule.startServerVM(2, locator.getPort());
 
     server1.invoke(() -> {
-      Cache cache = LocatorServerStartupRule.serverStarter.getCache();
+      Cache cache = LocatorServerStartupRule.getCache();
 
       RegionFactory<Integer, Integer> dataRegionFactory =
           cache.createRegionFactory(RegionShortcut.PARTITION);
@@ -83,7 +82,7 @@ public class FunctionCommandsDUnitTest {
     });
 
     server2.invoke(() -> {
-      Cache cache = LocatorServerStartupRule.serverStarter.getCache();
+      Cache cache = LocatorServerStartupRule.getCache();
       RegionFactory<Integer, Integer> dataRegionFactory =
           cache.createRegionFactory(RegionShortcut.PARTITION);
       Region region = dataRegionFactory.create(REGION_ONE);
@@ -96,13 +95,11 @@ public class FunctionCommandsDUnitTest {
       }
     });
 
-    registerFunction(new TestFunction(true, TestFunction.TEST_FUNCTION1), locator, server1,
-        server2);
-    registerFunction(new TestFunction(true, TestFunction.TEST_FUNCTION_RETURN_ARGS), locator,
-        server1, server2);
+    registerFunction(new TestFunction(true, TEST_FUNCTION1), locator, server1, server2);
+    registerFunction(new TestFunction(true, TEST_FUNCTION_RETURN_ARGS), locator, server1, server2);
 
     locator.invoke(() -> {
-      Cache cache = LocatorServerStartupRule.locatorStarter.getLocator().getCache();
+      Cache cache = LocatorServerStartupRule.getCache();
       ManagementService managementService = ManagementService.getManagementService(cache);
       DistributedSystemMXBean dsMXBean = managementService.getDistributedSystemMXBean();
 
@@ -119,113 +116,110 @@ public class FunctionCommandsDUnitTest {
   }
 
   public void connectGfsh(MemberVM vm) throws Exception {
-    gfsh.connectAndVerify(vm.getJmxPort(), GfshShellConnectionRule.PortType.jmxManager);
+    gfsh.connectAndVerify(vm.getJmxPort(), GfshCommandRule.PortType.jmxManager);
   }
 
   @Test
   public void testExecuteFunctionOnRegion() throws Exception {
-    CommandResult result = gfsh.executeAndVerifyCommand(
-        "execute function --id=" + TestFunction.TEST_FUNCTION1 + " --region=/" + REGION_ONE);
-    assertThat(((JSONArray) result.getContent().get("Member ID/Name")).length()).isEqualTo(2);
+    gfsh.executeAndAssertThat(
+        "execute function --id=" + TEST_FUNCTION1 + " --region=/" + REGION_ONE).statusIsSuccess()
+        .tableHasColumnWithValuesContaining("Member ID/Name", server1.getName(), server2.getName());
   }
 
   @Test
   public void testExecuteUnknownFunction() throws Exception {
-    CommandResult result = gfsh.executeAndVerifyCommand("execute function --id=UNKNOWN_FUNCTION");
-    assertThat(result.getContent().toString())
-        .contains("UNKNOWN_FUNCTION is not registered on member");
+    gfsh.executeAndAssertThat("execute function --id=UNKNOWN_FUNCTION").statusIsSuccess()
+        .containsOutput("UNKNOWN_FUNCTION is not registered on member");
   }
 
   @Test
   public void testExecuteFunctionOnRegionWithCustomResultCollector() {
-    CommandResult result = gfsh
-        .executeAndVerifyCommand("execute function --id=" + TestFunction.TEST_FUNCTION_RETURN_ARGS
-            + " --region=" + REGION_ONE + " --arguments=arg1,arg2" + " --result-collector="
-            + ToUpperResultCollector.class.getName());
-    assertThat(result.getContent().toString()).contains("ARG1");
+    gfsh.executeAndAssertThat("execute function --id=" + TEST_FUNCTION_RETURN_ARGS + " --region="
+        + REGION_ONE + " --arguments=arg1,arg2" + " --result-collector="
+        + ToUpperResultCollector.class.getName()).statusIsSuccess().containsOutput("ARG1");
   }
 
   @Test
   public void testExecuteFunctionOnMember() {
-    CommandResult result = gfsh.executeAndVerifyCommand("execute function --id="
-        + TestFunction.TEST_FUNCTION1 + " --member=" + server1.getMember().getName());
-    assertThat(((JSONArray) result.getContent().get("Member ID/Name")).length()).isEqualTo(1);
+    gfsh.executeAndAssertThat(
+        "execute function --id=" + TEST_FUNCTION1 + " --member=" + server1.getMember().getName())
+        .statusIsSuccess().tableHasColumnWithValuesContaining("Member ID/Name", server1.getName());
   }
 
   @Test
   public void testExecuteFunctionOnInvalidMember() {
-    CommandResult result = gfsh.executeCommand(
-        "execute function --id=" + TestFunction.TEST_FUNCTION1 + " --member=INVALID_MEMBER");
-    assertThat(result.getStatus()).isEqualTo(Result.Status.ERROR);
+    gfsh.executeAndAssertThat(
+        "execute function --id=" + TEST_FUNCTION1 + " --member=INVALID_MEMBER").statusIsError();
   }
 
   @Test
   public void testExecuteFunctionOnAllMembers() {
-    CommandResult result =
-        gfsh.executeAndVerifyCommand("execute function --id=" + TestFunction.TEST_FUNCTION1);
-    assertThat(((JSONArray) result.getContent().get("Member ID/Name")).length()).isEqualTo(2);
+    gfsh.executeAndAssertThat("execute function --id=" + TEST_FUNCTION1).statusIsSuccess()
+        .tableHasColumnWithValuesContaining("Member ID/Name", server1.getName(), server2.getName());
   }
 
   @Test
   public void testExecuteFunctionOnMultipleMembers() {
-    CommandResult result =
-        gfsh.executeAndVerifyCommand("execute function --id=" + TestFunction.TEST_FUNCTION1
-            + " --member=" + Strings.join(server1.getName(), server2.getName()).with(","));
-    assertThat(((JSONArray) result.getContent().get("Member ID/Name")).length()).isEqualTo(2);
+    gfsh.executeAndAssertThat("execute function --id=" + TEST_FUNCTION1 + " --member="
+        + Strings.join(server1.getName(), server2.getName()).with(",")).statusIsSuccess()
+        .tableHasColumnWithValuesContaining("Member ID/Name", server1.getName(), server2.getName());
   }
 
   @Test
   public void testExecuteFunctionOnMultipleMembersWithArgsAndResultCollector() {
-    CommandResult result = gfsh.executeAndVerifyCommand(
-        "execute function --id=" + TestFunction.TEST_FUNCTION_RETURN_ARGS + " --arguments=arg1,arg2"
-            + " --result-collector=" + ToUpperResultCollector.class.getName());
-    assertThat(((JSONArray) result.getContent().get("Member ID/Name")).length()).isEqualTo(2);
-    assertThat(((JSONArray) result.getContent().get("Function Execution Result")).getString(0))
-        .contains("ARG1");
-    assertThat(((JSONArray) result.getContent().get("Function Execution Result")).getString(1))
-        .contains("ARG1");
+    gfsh.executeAndAssertThat(
+        "execute function --id=" + TEST_FUNCTION_RETURN_ARGS + " --arguments=arg1,arg2"
+            + " --result-collector=" + ToUpperResultCollector.class.getName())
+        .statusIsSuccess()
+        .tableHasColumnWithValuesContaining("Member ID/Name", server1.getName(), server2.getName())
+        .tableHasColumnWithValuesContaining("Function Execution Result", "ARG1", "ARG1");
   }
 
   @Test
   public void testExecuteFunctionOnGroup() {
-    CommandResult result = gfsh.executeAndVerifyCommand(
-        "execute function --id=" + TestFunction.TEST_FUNCTION1 + " --groups=group-1");
-    assertThat(((JSONArray) result.getContent().get("Member ID/Name")).length()).isEqualTo(1);
+    gfsh.executeAndAssertThat("execute function --id=" + TEST_FUNCTION1 + " --groups=group-1")
+        .statusIsSuccess().tableHasColumnWithValuesContaining("Member ID/Name", server1.getName());
   }
 
   @Test
   public void testDestroyFunctionOnMember() {
-    gfsh.executeAndVerifyCommand(
-        "destroy function --id=" + TestFunction.TEST_FUNCTION1 + " --member=" + server1.getName());
-    CommandResult result = gfsh.executeAndVerifyCommand("list functions");
-    assertThat(((JSONArray) result.getContent().get("Function")).length()).isEqualTo(3);
-    gfsh.executeAndVerifyCommand(
-        "destroy function --id=" + TestFunction.TEST_FUNCTION1 + " --member=" + server2.getName());
-    result = gfsh.executeAndVerifyCommand("list functions");
-    assertThat(((JSONArray) result.getContent().get("Function")).length()).isEqualTo(2);
+    gfsh.executeAndAssertThat(
+        "destroy function --id=" + TEST_FUNCTION1 + " --member=" + server1.getName())
+        .statusIsSuccess();
+
+    gfsh.executeAndAssertThat("list functions").statusIsSuccess()
+        .tableHasColumnWithExactValuesInAnyOrder("Function", TEST_FUNCTION_RETURN_ARGS,
+            TEST_FUNCTION1, TEST_FUNCTION_RETURN_ARGS);
+    gfsh.executeAndAssertThat(
+        "destroy function --id=" + TEST_FUNCTION1 + " --member=" + server2.getName())
+        .statusIsSuccess();
+    gfsh.executeAndAssertThat("list functions").statusIsSuccess()
+        .tableHasColumnWithExactValuesInAnyOrder("Function", TEST_FUNCTION_RETURN_ARGS,
+            TEST_FUNCTION_RETURN_ARGS);
   }
 
   @Test
   public void testDestroyFunctionOnGroup() {
-    gfsh.executeAndVerifyCommand(
-        "destroy function --id=" + TestFunction.TEST_FUNCTION1 + " --groups=group-1");
-    CommandResult result = gfsh.executeAndVerifyCommand("list functions");
-    assertThat(((JSONArray) result.getContent().get("Function")).length()).isEqualTo(3);
+    gfsh.executeAndAssertThat("destroy function --id=" + TEST_FUNCTION1 + " --groups=group-1")
+        .statusIsSuccess();
+    gfsh.executeAndAssertThat("list functions").statusIsSuccess()
+        .tableHasColumnWithExactValuesInAnyOrder("Function", TEST_FUNCTION_RETURN_ARGS,
+            TEST_FUNCTION1, TEST_FUNCTION_RETURN_ARGS);
   }
 
   @Test
   public void testListFunctions() {
-    CommandResult result = gfsh.executeAndVerifyCommand("list functions");
-    assertThat(((JSONArray) result.getContent().get("Function")).length()).isEqualTo(4);
+    gfsh.executeAndAssertThat("list functions").statusIsSuccess()
+        .tableHasColumnWithExactValuesInAnyOrder("Function", TEST_FUNCTION1, TEST_FUNCTION1,
+            TEST_FUNCTION_RETURN_ARGS, TEST_FUNCTION_RETURN_ARGS);
 
-    result = gfsh.executeAndVerifyCommand("list functions --matches=Test.*");
-    assertThat(((JSONArray) result.getContent().get("Function")).length()).isEqualTo(2);
+    gfsh.executeAndAssertThat("list functions --matches=Test.*").statusIsSuccess()
+        .tableHasColumnWithExactValuesInAnyOrder("Function", TEST_FUNCTION1, TEST_FUNCTION1);
 
-    result = gfsh.executeAndVerifyCommand("list functions --matches=Test.* --groups=group-1");
-    assertThat(((JSONArray) result.getContent().get("Function")).length()).isEqualTo(1);
+    gfsh.executeAndAssertThat("list functions --matches=Test.* --groups=group-1").statusIsSuccess()
+        .tableHasColumnWithExactValuesInAnyOrder("Function", TEST_FUNCTION1);
 
-    result = gfsh
-        .executeAndVerifyCommand("list functions --matches=Test.* --members=" + server1.getName());
-    assertThat(((JSONArray) result.getContent().get("Function")).length()).isEqualTo(1);
+    gfsh.executeAndAssertThat("list functions --matches=Test.* --members=" + server1.getName())
+        .statusIsSuccess().tableHasColumnWithExactValuesInAnyOrder("Function", TEST_FUNCTION1);
   }
 }

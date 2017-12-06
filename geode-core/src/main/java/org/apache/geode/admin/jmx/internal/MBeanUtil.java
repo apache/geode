@@ -90,7 +90,7 @@ public class MBeanUtil {
       new HashMap<NotificationListener, Map<RefreshNotificationType, Integer>>();
 
   /** key=ObjectName, value=ManagedResource */
-  private final static Map<ObjectName, ManagedResource> managedResources =
+  private static final Map<ObjectName, ManagedResource> managedResources =
       new HashMap<ObjectName, ManagedResource>();
 
   static {
@@ -103,7 +103,7 @@ public class MBeanUtil {
 
   /**
    * Initializes Mbean Server, Registry, Refresh Timer & registers Server Notification Listener.
-   * 
+   *
    * @return reference to the mbeanServer
    */
   static MBeanServer start() {
@@ -572,7 +572,7 @@ public class MBeanUtil {
 
   /**
    * Returns true if a MBean with given ObjectName is registered.
-   * 
+   *
    * @param objectName ObjectName to use for checking if MBean is registered
    * @return true if MBeanServer is not null & MBean with given ObjectName is registered with the
    *         MBeanServer
@@ -732,7 +732,7 @@ public class MBeanUtil {
   /**
    * Logs the stack trace for the given Throwable if logger is initialized else prints the stack
    * trace using System.out.
-   * 
+   *
    * @param level severity level to log at
    * @param throwable Throwable to log stack trace for
    */
@@ -743,7 +743,7 @@ public class MBeanUtil {
   /**
    * Logs the stack trace for the given Throwable if logger is initialized else prints the stack
    * trace using System.out.
-   * 
+   *
    * @param level severity level to log at
    * @param throwable Throwable to log stack trace for
    * @param message user friendly error message to show
@@ -754,7 +754,7 @@ public class MBeanUtil {
 
   /**
    * Raises RuntimeAdminException with given 'message' if given 'condition' is false.
-   * 
+   *
    * @param condition condition to evaluate
    * @param message failure message
    */
@@ -764,4 +764,3 @@ public class MBeanUtil {
     }
   }
 }
-

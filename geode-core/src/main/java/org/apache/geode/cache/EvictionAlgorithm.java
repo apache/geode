@@ -18,7 +18,7 @@ import javax.print.attribute.EnumSyntax;
 
 /**
  * The algorithm used to determine when to perform an {@link org.apache.geode.cache.EvictionAction}
- * 
+ *
  * @since GemFire 5.0
  * @see org.apache.geode.cache.EvictionAction
  * @see org.apache.geode.internal.cache.EvictionAttributesImpl
@@ -51,7 +51,7 @@ public final class EvictionAlgorithm extends EnumSyntax {
   /**
    * An algorithm that considers the number of Entries in the Region before invoking its
    * {@link EvictionAction}
-   * 
+   *
    * @deprecated
    */
   public static final EvictionAlgorithm LIFO_ENTRY = new EvictionAlgorithm(4);
@@ -59,7 +59,7 @@ public final class EvictionAlgorithm extends EnumSyntax {
   /**
    * An algorithm that considers the amount of bytes consumed by the Region before invoking its
    * {@link EvictionAction}
-   * 
+   *
    * @deprecated
    */
   public static final EvictionAlgorithm LIFO_MEMORY = new EvictionAlgorithm(5);
@@ -87,7 +87,7 @@ public final class EvictionAlgorithm extends EnumSyntax {
   /**
    * Returns the eviction action the corresponds to the given parameter. Returns <code>null</code>
    * if no action corresponds.
-   * 
+   *
    * @since GemFire 6.5
    */
   public static EvictionAlgorithm parseValue(int v) {

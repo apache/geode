@@ -14,25 +14,23 @@
  */
 package org.apache.geode.internal.cache.wan.serial;
 
-import org.junit.experimental.categories.Category;
-import org.junit.Test;
-
-import static org.junit.Assert.*;
-
-import org.apache.geode.test.junit.categories.DistributedTest;
-import org.apache.geode.test.junit.categories.FlakyTest;
-
-import static org.apache.geode.test.dunit.Wait.*;
 import static org.apache.geode.test.dunit.IgnoredException.*;
+import static org.apache.geode.test.dunit.Wait.*;
+import static org.junit.Assert.*;
 
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
+import org.awaitility.Awaitility;
+import org.junit.Test;
+import org.junit.experimental.categories.Category;
+
 import org.apache.geode.cache.wan.GatewaySender.OrderPolicy;
 import org.apache.geode.internal.cache.wan.WANTestBase;
 import org.apache.geode.test.dunit.AsyncInvocation;
-import org.awaitility.Awaitility;
+import org.apache.geode.test.junit.categories.DistributedTest;
+import org.apache.geode.test.junit.categories.FlakyTest;
 
 @Category(DistributedTest.class)
 public class SerialWANStatsDUnitTest extends WANTestBase {
@@ -299,7 +297,7 @@ public class SerialWANStatsDUnitTest extends WANTestBase {
   }
 
   /**
-   * 
+   *
    * Not Disabled - see ticket #52118
    *
    * NOTE: The test failure is avoided by having a larger number of puts operation so that
@@ -308,14 +306,14 @@ public class SerialWANStatsDUnitTest extends WANTestBase {
    *
    * In future if this failure reappears, the put operations must be increase or a better fix must
    * be found.
-   * 
+   *
    * 1 region and sender configured on local site and 1 region and a receiver configured on remote
    * site. Puts to the local region are in progress. Remote region is destroyed in the middle.
    *
    * Better fix : slowed down the receiver after every create event, So a huge number of puts is not
    * required.
    *
-   * 
+   *
    * @throws Exception
    */
   @Test

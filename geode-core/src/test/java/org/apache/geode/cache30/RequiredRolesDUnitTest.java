@@ -427,7 +427,7 @@ public class RequiredRolesDUnitTest extends ReliabilityTestCase {
     }
   }
 
-  private transient final ThreadGroup group = new ThreadGroup("RequiredRolesDUnitTest Threads") {
+  private final transient ThreadGroup group = new ThreadGroup("RequiredRolesDUnitTest Threads") {
     public void uncaughtException(Thread t, Throwable e) {
       if (e instanceof VirtualMachineError) {
         SystemFailure.setFailure((VirtualMachineError) e); // don't throw
@@ -438,4 +438,3 @@ public class RequiredRolesDUnitTest extends ReliabilityTestCase {
     }
   };
 }
-

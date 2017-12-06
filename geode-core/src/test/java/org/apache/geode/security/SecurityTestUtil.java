@@ -18,6 +18,7 @@ package org.apache.geode.security;
 import static org.apache.geode.distributed.ConfigurationProperties.LOCATORS;
 import static org.apache.geode.distributed.ConfigurationProperties.MCAST_PORT;
 import static org.apache.geode.distributed.ConfigurationProperties.SECURITY_CLIENT_AUTH_INIT;
+import static org.apache.geode.distributed.ConfigurationProperties.SERIALIZABLE_OBJECT_FILTER;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import java.util.Properties;
@@ -28,6 +29,7 @@ import org.apache.geode.cache.Region;
 import org.apache.geode.cache.client.ClientCache;
 import org.apache.geode.cache.client.ClientCacheFactory;
 import org.apache.geode.cache.client.ClientRegionShortcut;
+import org.apache.geode.internal.Version;
 import org.apache.geode.security.templates.UserPasswordAuthInit;
 
 public class SecurityTestUtil {
@@ -39,6 +41,9 @@ public class SecurityTestUtil {
     props.setProperty(SECURITY_CLIENT_AUTH_INIT, UserPasswordAuthInit.class.getName());
     props.setProperty(LOCATORS, "");
     props.setProperty(MCAST_PORT, "0");
+    if (Version.CURRENT.ordinal() >= 75) {
+      props.setProperty(SERIALIZABLE_OBJECT_FILTER, "org.apache.geode.security.query.data.*");
+    }
     ClientCache cache = new ClientCacheFactory(props).setPoolSubscriptionEnabled(true)
         .addPoolServer("localhost", serverPort).create();
     return cache;

@@ -19,8 +19,6 @@ import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Set;
 
-import org.apache.geode.internal.cache.persistence.BackupInspector;
-
 /**
  * This class manages the state of the backup of an individual disk store. It holds the list of
  * oplogs that still need to be backed up, along with the lists of oplog files that should be
@@ -40,7 +38,7 @@ public class DiskStoreBackup {
 
   /**
    * Add the oplog to the list of deferred deletes.
-   * 
+   *
    * @return true if the delete has been deferred. False if this oplog should be deleted
    *         immediately.
    */
@@ -55,7 +53,7 @@ public class DiskStoreBackup {
 
   /**
    * Add the oplog to the list of deferred deletes.
-   * 
+   *
    * @return true if the delete has been deferred. False if this oplog should be deleted
    *         immediately.
    */

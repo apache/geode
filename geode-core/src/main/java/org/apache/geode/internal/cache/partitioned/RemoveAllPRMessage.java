@@ -173,7 +173,7 @@ public class RemoveAllPRMessage extends PartitionMessageWithDirectReply {
 
   /**
    * Sends a PartitionedRegion RemoveAllPRMessage to the recipient
-   * 
+   *
    * @param recipient the member to which the message is sent
    * @param r the PartitionedRegion for which the op was performed
    * @return the processor used to await acknowledgement that the op was sent, or null to indicate
@@ -350,7 +350,7 @@ public class RemoveAllPRMessage extends PartitionMessageWithDirectReply {
    * sendMsgByBucket() when processing a msg targeted to local Jvm. PartitionedRegion Note: It is
    * very important that this message does NOT cause any deadlocks as the sender will wait
    * indefinitely for the acknowledgment
-   * 
+   *
    * @param r partitioned region
    * @param eventSender the endpoint server who received request from client
    * @param cacheWrite if true invoke cacheWriter before desrtoy
@@ -705,7 +705,7 @@ public class RemoveAllPRMessage extends PartitionMessageWithDirectReply {
 
     /**
      * Processes this message. This method is invoked by the receiver of the message.
-     * 
+     *
      * @param dm the distribution manager that is processing the message.
      */
     @Override
@@ -762,7 +762,7 @@ public class RemoveAllPRMessage extends PartitionMessageWithDirectReply {
 
   /**
    * A processor to capture the value returned by {@link RemoveAllPRMessage}
-   * 
+   *
    * @since GemFire 8.1
    */
   public static class RemoveAllResponse extends PartitionResponse {

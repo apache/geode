@@ -28,6 +28,9 @@ import java.util.Iterator;
 import java.util.Properties;
 import java.util.Set;
 
+import org.junit.Test;
+import org.junit.experimental.categories.Category;
+
 import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.CacheException;
 import org.apache.geode.cache.InterestResultPolicy;
@@ -54,20 +57,18 @@ import org.apache.geode.test.dunit.internal.JUnit4DistributedTestCase;
 import org.apache.geode.test.junit.categories.ClientSubscriptionTest;
 import org.apache.geode.test.junit.categories.DistributedTest;
 import org.apache.geode.test.junit.categories.FlakyTest;
-import org.junit.Test;
-import org.junit.experimental.categories.Category;
 
 /**
  * We have 2 servers and One client which registers some keys with durable interest and some without
  * it. We maintain queues on only One server as redundancy level is one. Following 2 tests have the
  * two TestCase scenarios
- * 
+ *
  * There are two Tests First Test does the follows : // Step 1: Starting the servers // Step 2:
  * Bring Up the Client // Step 3: Client registers Interests // Step 4: Update Values on the Server
  * for Keys // Step 5: Verify Updates on the Client // Step 6: Close Cache of the DurableClient //
  * Step 7: Update the Values // Step 8: Re-start the Client // Step 9: Verify Updates on the Client
  * // Step 10 : Stop all VMs
- * 
+ *
  * For Test 2 the steps are as follows // Step 1: Starting the servers // Step 2: Bring Up the
  * Client // Step 3: Client registers Interests // Step 4: Update Values on the Server for Keys //
  * Step 5: Verify Updates on the Client // Step 6: Close Cache of the DurableClient // Step 7:

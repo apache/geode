@@ -19,7 +19,7 @@ import org.apache.geode.cache.wan.GatewayQueueEvent;
 
 /**
  * Represents <code>Cache</code> events delivered to <code>AsyncEventListener</code>.
- * 
+ *
  * @since GemFire 7.0
  */
 public interface AsyncEvent<K, V> extends GatewayQueueEvent<K, V> {

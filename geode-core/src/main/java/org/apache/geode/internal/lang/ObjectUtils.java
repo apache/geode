@@ -22,7 +22,7 @@ import java.lang.reflect.Method;
  * The ObjectUtils class is an abstract utility class for working with and invoking methods on
  * Objects.
  * <p/>
- * 
+ *
  * @see java.lang.Object
  * @since GemFire 6.8
  */
@@ -36,7 +36,7 @@ public abstract class ObjectUtils {
    * returned, otherwise the first non-null array element is returned. If the array is not null and
    * all the array elements are null, then null is still returned.
    * <p/>
-   * 
+   *
    * @param <T> a type parameter specifying the array element type.
    * @param values the array of values being iterated for the first non-null value.
    * @return the first non-null value from the array of values, otherwise return null if either the
@@ -58,7 +58,7 @@ public abstract class ObjectUtils {
    * Determines whether 2 Objects are equal in value. The Objects are equal if and only if neither
    * are null and are equal according to the equals method of the Object's class type.
    * <p/>
-   * 
+   *
    * @param obj1 the first Object in the equality comparison.
    * @param obj2 the second Object in the equality comparison.
    * @return a boolean value indicating whether the 2 Objects are equal in value.
@@ -73,7 +73,7 @@ public abstract class ObjectUtils {
    * are null, then they are considered equal, or neither must be null and the Objects must be equal
    * in value as determined by their equals method.
    * <p/>
-   * 
+   *
    * @param obj1 the first Object in the equality comparison.
    * @param obj2 the second Object in the equality comparison.
    * @return a boolean value indicating whether the 2 Objects are equal in value. If both Object
@@ -89,7 +89,7 @@ public abstract class ObjectUtils {
    * then this method returns 0 and will be consistent with the equalsIgnoreNull equality
    * comparison.
    * <p/>
-   * 
+   *
    * @param obj the Object who's hash value will be computed.
    * @return an integer signifying the hash value of the Object or 0 if the Object reference is
    *         null.
@@ -102,7 +102,7 @@ public abstract class ObjectUtils {
   /**
    * Null-safe implementation of the Object.toString method.
    * </p>
-   * 
+   *
    * @param obj the Object on which to call toString.
    * @return the String representation of the specified Object or null if the Object reference is
    *         null.
@@ -115,7 +115,7 @@ public abstract class ObjectUtils {
   /**
    * Gets the Class types of all arguments in the Object array.
    * <p/>
-   * 
+   *
    * @param args the Object array of arguments to determine the Class types for.
    * @return a Class array containing the Class types of each argument in the arguments Object
    *         array.
@@ -138,7 +138,7 @@ public abstract class ObjectUtils {
   /**
    * Invokes a method by name on the specified Object using Java Reflection.
    * <p/>
-   * 
+   *
    * @param obj the Object in which to invoke the method on.
    * @param methodName a String value indication the name of the method to invoke.
    * @param <T> a generic type parameter for the method return value.
@@ -152,7 +152,7 @@ public abstract class ObjectUtils {
   /**
    * Invokes a method by name on the specified Object using Java Reflection.
    * <p/>
-   * 
+   *
    * @param obj the Object in which to invoke the method on.
    * @param methodName a String value indication the name of the method to invoke.
    * @param arguments the Object arguments to the method based on its parameters.
@@ -168,7 +168,7 @@ public abstract class ObjectUtils {
   /**
    * Invokes a method by name on the specified Object using Java Reflection.
    * <p/>
-   * 
+   *
    * @param obj the Object in which to invoke the method on.
    * @param methodName a String value indication the name of the method to invoke.
    * @param parameterTypes the Class types of parameters indicating the exact method to invoke

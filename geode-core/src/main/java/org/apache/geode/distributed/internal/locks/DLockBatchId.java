@@ -25,4 +25,3 @@ public interface DLockBatchId extends DataSerializable {
   /** Gets the lock grantor id that granted this lock */
   public LockGrantorId getLockGrantorId();
 }
-

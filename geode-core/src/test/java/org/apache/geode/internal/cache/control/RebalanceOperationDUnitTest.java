@@ -452,7 +452,7 @@ public class RebalanceOperationDUnitTest extends JUnit4CacheTestCase {
   /**
    * Test that we correctly use the redundancy-zone property to determine where to place redundant
    * copies of a buckets.
-   * 
+   *
    * @param simulate
    */
   public void enforceZone(final boolean simulate) {
@@ -1661,7 +1661,7 @@ public class RebalanceOperationDUnitTest extends JUnit4CacheTestCase {
 
   /**
    * Check to make sure that we balance buckets between two hosts with no redundancy.
-   * 
+   *
    * @param simulate
    */
   public void moveBucketsNoRedundancy(final boolean simulate) {
@@ -1792,7 +1792,7 @@ public class RebalanceOperationDUnitTest extends JUnit4CacheTestCase {
 
   /**
    * Check to make sure that we balance buckets between two hosts with no redundancy.
-   * 
+   *
    * @param simulate
    */
   public void filterRegions(final boolean simulate) {
@@ -2386,7 +2386,7 @@ public class RebalanceOperationDUnitTest extends JUnit4CacheTestCase {
   /**
    * Test to make sure that we move buckets to balance between three hosts with a redundancy of 1
    * and two colocated regions. Makes sure that the buckets stay colocated when we move them.
-   * 
+   *
    * @param simulate
    */
   public void moveBucketsColocatedRegions(final boolean simulate) {
@@ -2509,7 +2509,7 @@ public class RebalanceOperationDUnitTest extends JUnit4CacheTestCase {
 
   /**
    * Test to make sure that moving primaries waits for a put
-   * 
+   *
    * @throws Exception
    */
   @Test
@@ -2523,7 +2523,7 @@ public class RebalanceOperationDUnitTest extends JUnit4CacheTestCase {
 
   /**
    * Test to make sure that moving primaries waits for a put
-   * 
+   *
    * @throws Exception
    */
   @Test
@@ -2537,7 +2537,7 @@ public class RebalanceOperationDUnitTest extends JUnit4CacheTestCase {
 
   /**
    * Test to make sure that moving primaries waits for a put
-   * 
+   *
    * @throws Exception
    */
   @Test
@@ -2551,7 +2551,7 @@ public class RebalanceOperationDUnitTest extends JUnit4CacheTestCase {
 
   /**
    * Test to make sure that moving primaries waits for a put
-   * 
+   *
    * @throws Exception
    */
   @Test
@@ -2567,7 +2567,7 @@ public class RebalanceOperationDUnitTest extends JUnit4CacheTestCase {
 
   /**
    * Test to ensure that we wait for in progress write operations before moving a primary.
-   * 
+   *
    * @throws Exception
    */
   public void runTestWaitForOperation(final Operation op) throws Exception {
@@ -2854,7 +2854,7 @@ public class RebalanceOperationDUnitTest extends JUnit4CacheTestCase {
 
     /*
      * Simulates a rebalance if simulation flag is set. Otherwise, performs a rebalance.
-     * 
+     *
      * A rebalance will replace offline buckets, so this should restore redundancy
      */
     rebalanceVM.invoke(new SerializableRunnable("simulateRebalance") {
@@ -2999,7 +2999,7 @@ public class RebalanceOperationDUnitTest extends JUnit4CacheTestCase {
 
   /**
    * Check to make sure that we balance buckets between two hosts with no redundancy.
-   * 
+   *
    * @param simulate
    */
   public void balanceBucketsByCount(final boolean simulate) {
@@ -3123,7 +3123,7 @@ public class RebalanceOperationDUnitTest extends JUnit4CacheTestCase {
 
   /**
    * Test to ensure that we wait for in progress write operations before moving a primary.
-   * 
+   *
    * @throws CancellationException
    */
   public void moveBucketsWithUnrecoveredValuesRedundancy(final boolean simulate) {

@@ -15,7 +15,6 @@
 
 package org.apache.geode.cache.query;
 
-// import java.util.*;
 import org.apache.geode.cache.*;
 
 /**
@@ -38,7 +37,7 @@ import org.apache.geode.cache.*;
  * <p>
  * The optional projectAttributes specifies a tranformation that is done on the values and is used
  * for pre-computing a corresponding projection as defined in a query.
- * 
+ *
  * @see QueryService#createIndex(String, IndexType, String, String)
  * @see IndexType
  *
@@ -53,21 +52,21 @@ public interface Index {
 
   /**
    * Get the index type
-   * 
+   *
    * @return the type of index
    */
   public IndexType getType();
 
   /**
    * The Region this index is on
-   * 
+   *
    * @return the Region for this index
    */
   public Region<?, ?> getRegion();
 
   /**
    * Get statistics information for this index.
-   * 
+   *
    * @throws UnsupportedOperationException for indexes created on Maps. Example: Index on Maps with
    *         expression p['key']. <br>
    *         On Map type indexes the stats are created at individual key level that can be viewed in
@@ -105,14 +104,14 @@ public interface Index {
 
   /**
    * Get the original projectionAttributes for this expression.
-   * 
+   *
    * @return the projectionAttributes, or "*" if there were none specified at index creation.
    */
   public String getProjectionAttributes();
 
   /**
    * Get the canonicalized projectionAttributes for this expression.
-   * 
+   *
    * @return the projectionAttributes, or "*" if there were none specified at index creation.
    */
   public String getCanonicalizedProjectionAttributes();

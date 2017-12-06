@@ -63,10 +63,11 @@ public abstract class ContainerInstall {
   private final String MODULE_PATH;
   private final String WAR_FILE_PATH;
 
+  public static final String TMP_DIR = System.getProperty("java.io.tmpdir", "/tmp");
   public static final String GEODE_BUILD_HOME = System.getenv("GEODE_HOME");
-  public static final String DEFAULT_INSTALL_DIR = "/tmp/cargo_containers/";
+  public static final String DEFAULT_INSTALL_DIR = TMP_DIR + "/cargo_containers/";
   protected static final String DEFAULT_MODULE_LOCATION = GEODE_BUILD_HOME + "/tools/Modules/";
-  public static final String DEFAULT_MODULE_EXTRACTION_DIR = "/tmp/cargo_modules/";
+  public static final String DEFAULT_MODULE_EXTRACTION_DIR = TMP_DIR + "/cargo_modules/";
 
   /**
    * Represents the type of connection used in this installation
@@ -122,7 +123,7 @@ public abstract class ContainerInstall {
    * installations.
    *
    * Subclasses provide installation of specific containers.
-   * 
+   *
    * @param connType Enum representing the connection type of this installation (either client
    *        server or peer to peer)
    * @param moduleName The module name of the installation being setup (i.e. tomcat, appserver,
@@ -137,7 +138,8 @@ public abstract class ContainerInstall {
     logger.info("Installing container from URL " + downloadURL);
 
     // Optional step to install the container from a URL pointing to its distribution
-    Installer installer = new ZipURLInstaller(new URL(downloadURL), "/tmp/downloads", installDir);
+    Installer installer =
+        new ZipURLInstaller(new URL(downloadURL), TMP_DIR + "/downloads", installDir);
     installer.install();
 
     // Set install home
@@ -269,7 +271,7 @@ public abstract class ContainerInstall {
 
   /**
    * Generates a {@link ServerContainer} from the given {@link ContainerInstall}
-   * 
+   *
    * @param containerDescriptors Additional descriptors used to identify a container
    */
   public abstract ServerContainer generateContainer(File containerConfigHome,
@@ -311,7 +313,7 @@ public abstract class ContainerInstall {
 
   /**
    * Finds and extracts the geode module associated with the specified module.
-   * 
+   *
    * @param moduleName The module name (i.e. tomcat, appserver, etc.) of the module that should be
    *        extract. Used as a search parameter to find the module archive.
    * @return The path to the non-archive (extracted) version of the module files
@@ -370,7 +372,7 @@ public abstract class ContainerInstall {
 
   /**
    * Edits the specified property within the given property file
-   * 
+   *
    * @param filePath path to the property file
    * @param propertyName property name to edit
    * @param propertyValue new property value
@@ -427,7 +429,7 @@ public abstract class ContainerInstall {
    * {@link #rewriteNodeAttributes(Node, HashMap)},
    * {@link #nodeHasExactAttributes(Node, HashMap, boolean)} to edit the required parts of the XML
    * file.
-   * 
+   *
    * @param XMLPath The path to the xml file to edit
    * @param tagId The id of tag to edit. If null, then this method will add a new xml element,
    *        unless writeOnSimilarAttributeNames is set to true.
@@ -509,7 +511,7 @@ public abstract class ContainerInstall {
 
   /**
    * Finds the node in the given document with the given name and attribute
-   * 
+   *
    * @param doc XML document to search for the node
    * @param nodeName The name of the node to search for
    * @param name The name of the attribute that the node should contain
@@ -539,7 +541,7 @@ public abstract class ContainerInstall {
 
   /**
    * Replaces the node's attributes with the attributes in the given hashmap
-   * 
+   *
    * @param node XML node that should be edited
    * @param attributes HashMap of strings representing the attributes of a node (key = value)
    * @return The given node with ONLY the given attributes
@@ -563,7 +565,7 @@ public abstract class ContainerInstall {
   /**
    * Checks to see whether the given XML node has the exact attributes given in the attributes
    * hashmap
-   * 
+   *
    * @param checkSimilarValues If true, will also check to make sure that the given node's
    *        attributes also have the exact same values as the ones given in the attributes HashMap.
    * @return True if the node has only the attributes the are given by the HashMap (no more and no

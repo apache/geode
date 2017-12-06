@@ -50,7 +50,7 @@ import org.apache.geode.security.NotAuthorizedException;
  * The HttpRequester class is a Adapter/facade for the Spring RestTemplate class for abstracting
  * HTTP requests and operations.
  * <p/>
- * 
+ *
  * @see org.springframework.http.client.SimpleClientHttpRequestFactory
  * @see org.springframework.web.client.RestTemplate
  * @since GemFire 8.0
@@ -118,7 +118,7 @@ public class HttpRequester {
   /**
    * Gets an instance of the Spring RestTemplate to perform the HTTP operations.
    * <p/>
-   * 
+   *
    * @return an instance of the Spring RestTemplate for performing HTTP operations.
    * @see org.springframework.web.client.RestTemplate
    */
@@ -181,7 +181,7 @@ public class HttpRequester {
 
   /**
    * build the url using the path and query params
-   * 
+   *
    * @param path : the part after the baseUrl
    * @param queryParams this needs to be an even number of strings in the form of paramName,
    *        paramValue....

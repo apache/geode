@@ -31,7 +31,7 @@ import org.apache.geode.internal.logging.log4j.LogMarker;
  * <p>
  * The StatisticsManager may be implemented by LocalStatisticsFactory and does not require a GemFire
  * connection.
- * 
+ *
  */
 public class SimpleStatSampler extends HostStatSampler {
 

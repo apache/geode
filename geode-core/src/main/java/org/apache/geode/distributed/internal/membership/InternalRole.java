@@ -14,21 +14,21 @@
  */
 package org.apache.geode.distributed.internal.membership;
 
+import java.util.*;
+
+import org.apache.commons.lang.StringUtils;
+
 import org.apache.geode.distributed.Role;
 import org.apache.geode.distributed.internal.DM;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.internal.i18n.LocalizedStrings;
-
-import java.util.*;
-
-import org.apache.commons.lang.StringUtils;
 
 /**
  * <p>
  * Members of the distributed system can fill one or more user defined roles. A role is metadata
  * that describes how the member relates to other members or what purpose it fills.
  * </p>
- * 
+ *
  * <p>
  * This class should not be Serializable or DataSerializable. It has a private constructor and it
  * maintains a static canonical map of instances. Any serializable object which has instances of
@@ -65,7 +65,7 @@ public class InternalRole implements Role {
 
   /**
    * implements the java.lang.Comparable interface
-   * 
+   *
    * @see java.lang.Comparable
    * @param o the Object to be compared
    * @return a negative integer, zero, or a positive integer as this object is less than, equal to,
@@ -160,7 +160,7 @@ public class InternalRole implements Role {
 
   /**
    * Returns a string representation of the object.
-   * 
+   *
    * @return a string representation of the object
    */
   @Override
@@ -169,5 +169,3 @@ public class InternalRole implements Role {
   }
 
 }
-
-

@@ -14,23 +14,22 @@
  */
 package org.apache.geode.cache30;
 
-import org.junit.experimental.categories.Category;
-
-import org.apache.geode.test.junit.categories.DistributedTest;
+import static org.apache.geode.distributed.ConfigurationProperties.*;
 
 import java.util.Properties;
+
+import org.junit.experimental.categories.Category;
 
 import org.apache.geode.cache.AttributesFactory;
 import org.apache.geode.cache.RegionAttributes;
 import org.apache.geode.internal.cache.OffHeapTestUtil;
 import org.apache.geode.test.dunit.Invoke;
 import org.apache.geode.test.dunit.SerializableRunnable;
-
-import static org.apache.geode.distributed.ConfigurationProperties.*;
+import org.apache.geode.test.junit.categories.DistributedTest;
 
 /**
  * Tests Global Region with ConcurrencyChecksEnabled and OffHeap memory.
- * 
+ *
  * @since Geode 1.0
  */
 @Category(DistributedTest.class)

@@ -25,7 +25,7 @@ public class NameResolutionException extends QueryException {
 
   /**
    * Constructs a NameResolutionException
-   * 
+   *
    * @param msg the error message
    */
   public NameResolutionException(String msg) {
@@ -34,7 +34,7 @@ public class NameResolutionException extends QueryException {
 
   /**
    * Constructs a NameResolutionException
-   * 
+   *
    * @param msg the error message
    * @param cause a Throwable that is a cause of this exception
    */

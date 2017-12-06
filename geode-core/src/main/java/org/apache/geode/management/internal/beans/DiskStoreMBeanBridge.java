@@ -29,8 +29,8 @@ import org.apache.geode.management.internal.beans.stats.StatsRate;
 
 /**
  * Bridge class to act as an interface between JMX layer and GemFire DiskStores
- * 
- * 
+ *
+ *
  */
 public class DiskStoreMBeanBridge {
 

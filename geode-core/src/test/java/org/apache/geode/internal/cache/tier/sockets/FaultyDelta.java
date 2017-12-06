@@ -29,7 +29,7 @@ import org.apache.geode.internal.cache.GemFireCacheImpl;
 /**
  * Faulty delta implementation, raising ArrayIndexOutOfBound exception as fromDelta reads incorrect
  * sequence then wrote by toDelta
- * 
+ *
  * @since GemFire 6.1
  */
 public class FaultyDelta implements Delta, DataSerializable {

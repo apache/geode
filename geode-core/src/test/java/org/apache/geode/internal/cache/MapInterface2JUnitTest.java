@@ -15,7 +15,7 @@
 /*
  * Created on Aug 23, 2005
  *
- * 
+ *
  */
 package org.apache.geode.internal.cache;
 
@@ -43,8 +43,8 @@ import org.apache.geode.test.dunit.ThreadUtils;
 import org.apache.geode.test.junit.categories.IntegrationTest;
 
 /**
- * 
- *  
+ *
+ *
  */
 @Category(IntegrationTest.class)
 public class MapInterface2JUnitTest {

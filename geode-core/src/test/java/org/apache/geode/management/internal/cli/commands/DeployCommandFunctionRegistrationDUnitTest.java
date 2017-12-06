@@ -34,10 +34,10 @@ import org.apache.geode.distributed.DistributedSystem;
 import org.apache.geode.internal.ClassPathLoader;
 import org.apache.geode.internal.cache.GemFireCacheImpl;
 import org.apache.geode.test.compiler.JarBuilder;
-import org.apache.geode.test.junit.rules.GfshShellConnectionRule;
 import org.apache.geode.test.dunit.rules.LocatorServerStartupRule;
 import org.apache.geode.test.dunit.rules.MemberVM;
 import org.apache.geode.test.junit.categories.DistributedTest;
+import org.apache.geode.test.junit.rules.GfshCommandRule;
 import org.apache.geode.test.junit.rules.serializable.SerializableTemporaryFolder;
 
 @Category(DistributedTest.class)
@@ -52,7 +52,7 @@ public class DeployCommandFunctionRegistrationDUnitTest implements Serializable 
   public LocatorServerStartupRule lsRule = new LocatorServerStartupRule();
 
   @Rule
-  public transient GfshShellConnectionRule gfshConnector = new GfshShellConnectionRule();
+  public transient GfshCommandRule gfshConnector = new GfshCommandRule();
 
   @Before
   public void setup() throws Exception {
@@ -71,7 +71,8 @@ public class DeployCommandFunctionRegistrationDUnitTest implements Serializable 
     File outputJar = new File(temporaryFolder.getRoot(), "output.jar");
     jarBuilder.buildJar(outputJar, source);
 
-    gfshConnector.executeAndVerifyCommand("deploy --jar=" + outputJar.getCanonicalPath());
+    gfshConnector.executeAndAssertThat("deploy --jar=" + outputJar.getCanonicalPath())
+        .statusIsSuccess();
     server.invoke(() -> assertThatCanLoad(
         "org.apache.geode.management.internal.deployment.ImplementsFunction"));
     server.invoke(() -> assertThatFunctionHasVersion(
@@ -88,7 +89,8 @@ public class DeployCommandFunctionRegistrationDUnitTest implements Serializable 
     File outputJar = new File(temporaryFolder.getRoot(), "output.jar");
     jarBuilder.buildJar(outputJar, source);
 
-    gfshConnector.executeAndVerifyCommand("deploy --jar=" + outputJar.getCanonicalPath());
+    gfshConnector.executeAndAssertThat("deploy --jar=" + outputJar.getCanonicalPath())
+        .statusIsSuccess();
     server.invoke(() -> assertThatCanLoad(
         "org.apache.geode.management.internal.deployment.ExtendsFunctionAdapter"));
     server.invoke(() -> assertThatFunctionHasVersion(

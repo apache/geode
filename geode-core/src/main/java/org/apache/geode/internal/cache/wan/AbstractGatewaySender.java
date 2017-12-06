@@ -493,9 +493,9 @@ public abstract class AbstractGatewaySender implements GatewaySender, Distributi
     return this.isForInternalUse;
   }
 
-  abstract public void start();
+  public abstract void start();
 
-  abstract public void stop();
+  public abstract void stop();
 
   /**
    * Destroys the GatewaySender. Before destroying the sender, caller needs to to ensure that the
@@ -504,7 +504,7 @@ public abstract class AbstractGatewaySender implements GatewaySender, Distributi
    * following steps: 1. Take the lifeCycleLock. 2. If the sender is attached to any application
    * region, throw an exception. 3. Close the GatewaySenderAdvisor. 4. Remove the sender from the
    * cache. 5. Destroy the region underlying the GatewaySender.
-   * 
+   *
    * In case of ParallelGatewaySender, the destroy operation does distributed destroy of the QPR. In
    * case of SerialGatewaySender, the queue region is destroyed locally.
    */
@@ -819,7 +819,7 @@ public abstract class AbstractGatewaySender implements GatewaySender, Distributi
 
   /**
    * Check if this event can be distributed by senders.
-   * 
+   *
    * @param event
    * @param stats
    * @return boolean True if the event is allowed.
@@ -1009,7 +1009,7 @@ public abstract class AbstractGatewaySender implements GatewaySender, Distributi
    * During sender is getting started, if there are any cache operation on queue then that event
    * will be stored in temp queue. Once sender is started, these event from tmp queue will be added
    * to sender queue.
-   * 
+   *
    * Apart from sender's start() method, this method also gets called from
    * ParallelGatewaySenderQueue.addPartitionedRegionForRegion(). This is done to support the
    * postCreateRegion scenario i.e. the sender is already running and region is created later. The
@@ -1053,7 +1053,7 @@ public abstract class AbstractGatewaySender implements GatewaySender, Distributi
   /**
    * Removes the EntryEventImpl, whose tailKey matches with the provided tailKey, from
    * tmpQueueEvents.
-   * 
+   *
    * @param tailKey
    */
   public boolean removeFromTempQueueEvents(Object tailKey) {
@@ -1221,7 +1221,7 @@ public abstract class AbstractGatewaySender implements GatewaySender, Distributi
   /**
    * @param clonedEvent
    */
-  abstract protected void setModifiedEventId(EntryEventImpl clonedEvent);
+  protected abstract void setModifiedEventId(EntryEventImpl clonedEvent);
 
   public static class DefaultGatewayEventFilter
       implements org.apache.geode.internal.cache.GatewayEventFilter {
@@ -1302,7 +1302,7 @@ public abstract class AbstractGatewaySender implements GatewaySender, Distributi
     /**
      * Timeout events received from secondary after 5 minutes
      */
-    static private final int EVENT_TIMEOUT =
+    private static final int EVENT_TIMEOUT =
         Integer.getInteger("Gateway.EVENT_TIMEOUT", 5 * 60 * 1000).intValue();
     public final long timeout;
     public final GatewaySenderEventImpl event;

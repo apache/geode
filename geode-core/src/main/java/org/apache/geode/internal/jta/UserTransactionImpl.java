@@ -20,14 +20,15 @@ package org.apache.geode.internal.jta;
  * hard-coded to <code> TransactionManagerImpl
  * </code>.
  * </p>
- * 
- * 
+ *
+ *
  * @since GemFire 4.0
- * 
+ *
  * @deprecated as of Geode 1.2.0 user should use a third party JTA transaction manager to manage JTA
  *             transactions.
  */
 import java.io.Serializable;
+
 import javax.transaction.*;
 
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
@@ -61,12 +62,12 @@ public class UserTransactionImpl implements UserTransaction, Serializable {
 
   /**
    * defaultTimeOut in seconds;
-   * 
+   *
    */
   // private int defaultTimeOut = 600;
   /**
    * Calls begin() of the transaction manager owning this user transaction
-   * 
+   *
    * @see javax.transaction.UserTransaction#begin()
    */
   public synchronized void begin() throws NotSupportedException, SystemException {
@@ -82,7 +83,7 @@ public class UserTransactionImpl implements UserTransaction, Serializable {
 
   /**
    * Calls commit() of the transaction manager owning this user transaction
-   * 
+   *
    * @see javax.transaction.UserTransaction#commit()
    */
   public void commit() throws RollbackException, HeuristicMixedException,
@@ -92,7 +93,7 @@ public class UserTransactionImpl implements UserTransaction, Serializable {
 
   /**
    * Calls rollback() of the transaction manager owning this user transaction
-   * 
+   *
    * @see javax.transaction.UserTransaction#rollback()
    */
   public void rollback() throws IllegalStateException, SecurityException, SystemException {
@@ -101,7 +102,7 @@ public class UserTransactionImpl implements UserTransaction, Serializable {
 
   /**
    * Calls setRollbackOnly() of the transaction manager owning this user transaction
-   * 
+   *
    * @see javax.transaction.UserTransaction#setRollbackOnly()
    */
   public void setRollbackOnly() throws IllegalStateException, SystemException {
@@ -110,7 +111,7 @@ public class UserTransactionImpl implements UserTransaction, Serializable {
 
   /**
    * Calls getStatus() of the transaction manager owning this user transaction
-   * 
+   *
    * @see javax.transaction.UserTransaction#getStatus()
    */
   public int getStatus() throws SystemException {
@@ -119,7 +120,7 @@ public class UserTransactionImpl implements UserTransaction, Serializable {
 
   /**
    * Checks if transaction has begun. If yes, then call the tm.setTransactionTimeOut else stores and
-   * 
+   *
    * @see javax.transaction.UserTransaction#setTransactionTimeout
    */
   public void setTransactionTimeout(int timeOut) throws SystemException {

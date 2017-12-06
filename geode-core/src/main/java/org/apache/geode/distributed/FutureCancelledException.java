@@ -15,11 +15,12 @@
 package org.apache.geode.distributed;
 
 import java.util.concurrent.Future;
+
 import org.apache.geode.CancelException;
 
 /**
  * Thrown when a {@link Future} has been cancelled.
- * 
+ *
  * @since GemFire 6.0
  */
 

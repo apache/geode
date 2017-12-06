@@ -14,19 +14,16 @@
  */
 package org.apache.geode.internal.cache;
 
-import org.junit.experimental.categories.Category;
-import org.junit.Test;
-
 import static org.junit.Assert.*;
 
-import org.apache.geode.test.dunit.cache.internal.JUnit4CacheTestCase;
-import org.apache.geode.test.dunit.internal.JUnit4DistributedTestCase;
-import org.apache.geode.test.junit.categories.DistributedTest;
-
+import java.util.*;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
-import java.util.*;
+
+import org.junit.Test;
+import org.junit.experimental.categories.Category;
+
 import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.Region;
 import org.apache.geode.cache30.*;
@@ -36,16 +33,19 @@ import org.apache.geode.test.dunit.Host;
 import org.apache.geode.test.dunit.LogWriterUtils;
 import org.apache.geode.test.dunit.ThreadUtils;
 import org.apache.geode.test.dunit.VM;
+import org.apache.geode.test.dunit.cache.internal.JUnit4CacheTestCase;
+import org.apache.geode.test.dunit.internal.JUnit4DistributedTestCase;
+import org.apache.geode.test.junit.categories.DistributedTest;
 
 /**
- * 
+ *
  * This class tests PRID generation in multiple partiton regions on 4 VMs
  */
 @Category(DistributedTest.class)
 public class PartitionedRegionPRIDDUnitTest extends PartitionedRegionDUnitTestCase {
 
   /** Maximum number of regions * */
-  public final static int MAX_REGIONS = 1;
+  public static final int MAX_REGIONS = 1;
 
   /** redundancy used for the creation of the partition region */
   // int redundancy = 0;
@@ -63,7 +63,7 @@ public class PartitionedRegionPRIDDUnitTest extends PartitionedRegionDUnitTestCa
   /**
    * This test performs following operations 1. creates 25 partition regions on 3 nodes. 2. creates
    * more 25 partition regions on 4 nodes 3. tests PRID generation
-   * 
+   *
    */
   @Test
   public void testPRIDGenerationInMultiplePartitionRegion() throws Exception {
@@ -132,7 +132,7 @@ public class PartitionedRegionPRIDDUnitTest extends PartitionedRegionDUnitTestCa
    * This function perfoms following checks on PRID creation 1. PRID generated should be between 0
    * to number of partition regions in distributed system 2. PRID should be unique for the partition
    * regions
-   * 
+   *
    * @param startIndexForRegion
    * @param endIndexForRegion
    * @return

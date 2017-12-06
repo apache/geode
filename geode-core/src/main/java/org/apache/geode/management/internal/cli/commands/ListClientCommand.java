@@ -29,7 +29,6 @@ import org.apache.geode.management.CacheServerMXBean;
 import org.apache.geode.management.ManagementService;
 import org.apache.geode.management.cli.CliMetaData;
 import org.apache.geode.management.cli.Result;
-import org.apache.geode.management.internal.cli.CliUtil;
 import org.apache.geode.management.internal.cli.LogWrapper;
 import org.apache.geode.management.internal.cli.i18n.CliStrings;
 import org.apache.geode.management.internal.cli.result.CompositeResultData;
@@ -43,83 +42,75 @@ public class ListClientCommand implements GfshCommand {
   @CliMetaData(relatedTopic = {CliStrings.TOPIC_CLIENT})
   @ResourceOperation(resource = ResourcePermission.Resource.CLUSTER,
       operation = ResourcePermission.Operation.READ)
-  public Result listClient() {
+  public Result listClient() throws Exception {
     Result result;
+    CompositeResultData compositeResultData = ResultBuilder.createCompositeResultData();
+    CompositeResultData.SectionResultData section = compositeResultData.addSection("section1");
 
-    try {
-      CompositeResultData compositeResultData = ResultBuilder.createCompositeResultData();
-      CompositeResultData.SectionResultData section = compositeResultData.addSection("section1");
+    TabularResultData resultTable = section.addTable("TableForClientList");
+    String headerText = "ClientList";
+    resultTable = resultTable.setHeader(headerText);
 
-      TabularResultData resultTable = section.addTable("TableForClientList");
-      String headerText = "ClientList";
-      resultTable = resultTable.setHeader(headerText);
+    InternalCache cache = getCache();
+    ManagementService service = ManagementService.getExistingManagementService(cache);
+    ObjectName[] cacheServers = service.getDistributedSystemMXBean().listCacheServerObjectNames();
 
-      InternalCache cache = getCache();
-      ManagementService service = ManagementService.getExistingManagementService(cache);
-      ObjectName[] cacheServers = service.getDistributedSystemMXBean().listCacheServerObjectNames();
-
-      if (cacheServers.length == 0) {
-        return ResultBuilder.createGemFireErrorResult(
-            CliStrings.format(CliStrings.LIST_CLIENT_COULD_NOT_RETRIEVE_SERVER_LIST));
-      }
-
-      Map<String, List<String>> clientServerMap = new HashMap<>();
-
-      for (ObjectName objName : cacheServers) {
-        CacheServerMXBean serverMbean = service.getMBeanInstance(objName, CacheServerMXBean.class);
-        String[] listOfClient = serverMbean.getClientIds();
-
-        if (listOfClient == null || listOfClient.length == 0) {
-          continue;
-        }
-
-
-        for (String clientName : listOfClient) {
-          String serverDetails = "member=" + objName.getKeyProperty("member") + ",port="
-              + objName.getKeyProperty("port");
-          if (clientServerMap.containsKey(clientName)) {
-            List<String> listServers = clientServerMap.get(clientName);
-            listServers.add(serverDetails);
-          } else {
-            List<String> listServer = new ArrayList<>();
-            listServer.add(serverDetails);
-            clientServerMap.put(clientName, listServer);
-          }
-        }
-      }
-
-      if (clientServerMap.size() == 0) {
-        return ResultBuilder.createGemFireErrorResult(
-            CliStrings.format(CliStrings.LIST_COULD_NOT_RETRIEVE_CLIENT_LIST));
-      }
-
-      String memberSeparator = ";  ";
-
-      for (Map.Entry<String, List<String>> pairs : clientServerMap.entrySet()) {
-        String client = pairs.getKey();
-        List<String> servers = pairs.getValue();
-        StringBuilder serverListForClient = new StringBuilder();
-        int serversSize = servers.size();
-        int i = 0;
-        for (String server : servers) {
-          serverListForClient.append(server);
-          if (i < serversSize - 1) {
-            serverListForClient.append(memberSeparator);
-          }
-          i++;
-        }
-        resultTable.accumulate(CliStrings.LIST_CLIENT_COLUMN_Clients, client);
-        resultTable.accumulate(CliStrings.LIST_CLIENT_COLUMN_SERVERS,
-            serverListForClient.toString());
-      }
-      result = ResultBuilder.buildResult(compositeResultData);
-
-    } catch (Exception e) {
-      LogWrapper.getInstance()
-          .warning("Error in list clients. stack trace" + CliUtil.stackTraceAsString(e));
-      result = ResultBuilder.createGemFireErrorResult(CliStrings
-          .format(CliStrings.LIST_CLIENT_COULD_NOT_RETRIEVE_CLIENT_LIST_0, e.getMessage()));
+    if (cacheServers.length == 0) {
+      return ResultBuilder.createGemFireErrorResult(
+          CliStrings.format(CliStrings.LIST_CLIENT_COULD_NOT_RETRIEVE_SERVER_LIST));
     }
+
+    Map<String, List<String>> clientServerMap = new HashMap<>();
+
+    for (ObjectName objName : cacheServers) {
+      CacheServerMXBean serverMbean = service.getMBeanInstance(objName, CacheServerMXBean.class);
+      String[] listOfClient = serverMbean.getClientIds();
+
+      if (listOfClient == null || listOfClient.length == 0) {
+        continue;
+      }
+
+
+      for (String clientName : listOfClient) {
+        String serverDetails = "member=" + objName.getKeyProperty("member") + ",port="
+            + objName.getKeyProperty("port");
+        if (clientServerMap.containsKey(clientName)) {
+          List<String> listServers = clientServerMap.get(clientName);
+          listServers.add(serverDetails);
+        } else {
+          List<String> listServer = new ArrayList<>();
+          listServer.add(serverDetails);
+          clientServerMap.put(clientName, listServer);
+        }
+      }
+    }
+
+    if (clientServerMap.size() == 0) {
+      return ResultBuilder.createGemFireErrorResult(
+          CliStrings.format(CliStrings.LIST_COULD_NOT_RETRIEVE_CLIENT_LIST));
+    }
+
+    String memberSeparator = ";  ";
+
+    for (Map.Entry<String, List<String>> pairs : clientServerMap.entrySet()) {
+      String client = pairs.getKey();
+      List<String> servers = pairs.getValue();
+      StringBuilder serverListForClient = new StringBuilder();
+      int serversSize = servers.size();
+      int i = 0;
+      for (String server : servers) {
+        serverListForClient.append(server);
+        if (i < serversSize - 1) {
+          serverListForClient.append(memberSeparator);
+        }
+        i++;
+      }
+      resultTable.accumulate(CliStrings.LIST_CLIENT_COLUMN_Clients, client);
+      resultTable.accumulate(CliStrings.LIST_CLIENT_COLUMN_SERVERS, serverListForClient.toString());
+    }
+    result = ResultBuilder.buildResult(compositeResultData);
+
+
 
     LogWrapper.getInstance().info("list client result " + result);
 

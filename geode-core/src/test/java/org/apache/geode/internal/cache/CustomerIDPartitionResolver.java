@@ -13,17 +13,17 @@
  * the License.
  */
 /**
- * 
+ *
  */
 package org.apache.geode.internal.cache;
+
+import java.io.Serializable;
 
 import org.apache.geode.cache.EntryOperation;
 import org.apache.geode.cache.PartitionResolver;
 import org.apache.geode.internal.cache.execute.data.CustId;
 import org.apache.geode.internal.cache.execute.data.OrderId;
 import org.apache.geode.internal.cache.execute.data.ShipmentId;
-
-import java.io.Serializable;
 
 public class CustomerIDPartitionResolver implements PartitionResolver {
 
@@ -77,5 +77,3 @@ public class CustomerIDPartitionResolver implements PartitionResolver {
   }
 
 }
-
-

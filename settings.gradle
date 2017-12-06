@@ -31,6 +31,7 @@ include 'geode-old-client-support'
 include 'geode-wan'
 include 'geode-cq'
 include 'geode-benchmarks'
+include 'geode-client-protocol'
 include 'extensions/geode-modules'
 include 'extensions/geode-modules-tomcat7'
 include 'extensions/geode-modules-tomcat8'
@@ -40,6 +41,7 @@ include 'extensions/geode-modules-assembly'
 include 'geode-protobuf'
 include 'extensions/session-testing-war'
 include 'geode-concurrency-test'
+
 
 if (GradleVersion.current() < GradleVersion.version(minimumGradleVersion)) {
   throw new GradleException('Running with unsupported Gradle Version. Use Gradle Wrapper or with Gradle version >= ' + minimumGradleVersion)

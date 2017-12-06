@@ -14,13 +14,6 @@
  */
 package org.apache.geode.internal.cache.wan.parallel;
 
-import org.apache.geode.distributed.DistributedMember;
-import org.apache.geode.distributed.internal.*;
-import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
-import org.apache.geode.internal.cache.*;
-import org.apache.geode.internal.cache.wan.AbstractGatewaySender;
-import org.apache.geode.internal.cache.wan.WaitUntilGatewaySenderFlushedCoordinator;
-
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashSet;
@@ -29,9 +22,16 @@ import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.*;
 
+import org.apache.geode.distributed.DistributedMember;
+import org.apache.geode.distributed.internal.*;
+import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
+import org.apache.geode.internal.cache.*;
+import org.apache.geode.internal.cache.wan.AbstractGatewaySender;
+import org.apache.geode.internal.cache.wan.WaitUntilGatewaySenderFlushedCoordinator;
+
 public class WaitUntilParallelGatewaySenderFlushedCoordinator
     extends WaitUntilGatewaySenderFlushedCoordinator {
-  final static private int CALLABLES_CHUNK_SIZE = 10;
+  private static final int CALLABLES_CHUNK_SIZE = 10;
 
   public WaitUntilParallelGatewaySenderFlushedCoordinator(AbstractGatewaySender sender,
       long timeout, TimeUnit unit, boolean initiator) {

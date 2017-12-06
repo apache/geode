@@ -32,22 +32,22 @@ package org.apache.geode.pdx;
  * each time they are called.
  * <p>
  * If you can modify your domain class then use {@link PdxSerializable} instead.
- * 
+ *
  * <p>
  * Simple example:
- * 
+ *
  * <PRE>
  * public class User {
- *   final public String name;
- *   final public int userId;
- * 
+ *   public final String name;
+ *   public final int userId;
+ *
  *   public User(String name, int userId) {
  *     this.name = name;
  *     this.userId = userId;
  *   }
  * }
- * 
- * 
+ *
+ *
  * public class MyPdxSerializer implements PdxSerializer {
  *   public boolean toData(Object o, PdxWriter out) {
  *     if (o instanceof User) {
@@ -59,7 +59,7 @@ package org.apache.geode.pdx;
  *       return false;
  *     }
  *   }
- * 
+ *
  *   public Object fromData(Class<?> clazz, PdxReader in) {
  *     if (User.class.isAssignableFrom(clazz)) {
  *       return new User(in.readString("name"), in.readInt("userId"));
@@ -69,7 +69,7 @@ package org.apache.geode.pdx;
  *   }
  * }
  * </PRE>
- * 
+ *
  * @since GemFire 6.6
  */
 public interface PdxSerializer {
@@ -77,7 +77,7 @@ public interface PdxSerializer {
    * This method is given an object to serialize as a PDX using the given writer. If it chooses to
    * do the serialization then it must return <code>true</code>; otherwise it must return
    * <code>false</code> in which case it will be serialized using standard serialization.
-   * 
+   *
    * @param o the object to consider serializing as a PDX
    * @param out the {@link PdxWriter} to use to serialize the object
    * @return <code>true</code> if the method serialized the object; otherwise <code>false</code>
@@ -87,7 +87,7 @@ public interface PdxSerializer {
   /**
    * This method is given an class that should be instantiated and deserialized using the given
    * reader.
-   * 
+   *
    * @param clazz the Class of the object that should be deserialized
    * @param in the reader to use to obtain the field data
    * @return the deserialized object. <code>null</code> indicates that this PdxSerializer does not

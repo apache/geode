@@ -22,7 +22,7 @@ import org.apache.geode.cache.Region;
 
 /**
  * Composite data type used to distribute metrics for the JVM running a GemFire member.
- * 
+ *
  * @since GemFire 7.0
  *
  */

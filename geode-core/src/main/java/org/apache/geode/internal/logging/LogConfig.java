@@ -50,7 +50,7 @@ public interface LogConfig {
    * <p>
    * The default value is:
    * {@link org.apache.geode.distributed.internal.DistributionConfig#DEFAULT_NAME}.
-   * 
+   *
    * @return the system's name.
    */
   String getName();

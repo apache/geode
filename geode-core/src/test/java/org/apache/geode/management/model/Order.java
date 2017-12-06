@@ -62,7 +62,7 @@ public class Order implements Serializable {
   }
 
   /**
-   * 
+   *
    */
   public Order() {
     this.items = new ArrayList<Item>();

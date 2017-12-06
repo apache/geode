@@ -21,7 +21,7 @@ import org.apache.geode.cache.PartitionResolver;
  * This partition resolver requires every key of the partitioned region to be an instance of String
  * and to contain at least one "|" delimiter. The prefix, the substring of the key that precedes the
  * first delimiter, is returned by getRoutingObject.
- * 
+ *
  * @since Geode 1.2.0
  */
 public class StringPrefixPartitionResolver implements PartitionResolver<String, Object> {
@@ -39,7 +39,7 @@ public class StringPrefixPartitionResolver implements PartitionResolver<String, 
 
   /**
    * Returns the prefix of the String key that precedes the first "|" in the key.
-   * 
+   *
    * @throws ClassCastException if the key is not an instance of String
    * @throws IllegalArgumentException if the key does not contain at least one "|".
    */

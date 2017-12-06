@@ -18,17 +18,17 @@ import static org.apache.geode.distributed.ConfigurationProperties.*;
 
 import java.util.Properties;
 
-import org.apache.geode.test.junit.categories.ClientSubscriptionTest;
 import org.junit.experimental.categories.Category;
 
 import org.apache.geode.internal.cache.OffHeapTestUtil;
 import org.apache.geode.test.dunit.Invoke;
 import org.apache.geode.test.dunit.SerializableRunnable;
+import org.apache.geode.test.junit.categories.ClientSubscriptionTest;
 import org.apache.geode.test.junit.categories.DistributedTest;
 
 /**
  * Runs force invalidate eviction tests with off-heap regions.
- * 
+ *
  * @since Geode 1.0
  */
 @Category({DistributedTest.class, ClientSubscriptionTest.class})

@@ -14,8 +14,9 @@
  */
 package org.apache.geode.internal.cache;
 
-import org.apache.geode.distributed.internal.ReplyException;
 import java.util.*;
+
+import org.apache.geode.distributed.internal.ReplyException;
 
 /**
  * Contains exceptions generated when attempting to process a commit operation.
@@ -64,4 +65,3 @@ public class CommitReplyException extends ReplyException {
     return super.toString() + " with exceptions: " + this.exceptions;
   }
 }
-

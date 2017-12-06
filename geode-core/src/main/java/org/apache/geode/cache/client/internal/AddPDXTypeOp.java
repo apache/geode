@@ -20,14 +20,14 @@ import org.apache.geode.pdx.internal.PdxType;
 
 /**
  * Add a PdxType to a server.
- * 
+ *
  * @since GemFire 6.6
  */
 public class AddPDXTypeOp {
   /**
    * Register a bunch of instantiators on a server using connections from the given pool to
    * communicate with the server.
-   * 
+   *
    * @param pool the pool to use to communicate with the server.
    */
   public static void execute(ExecutablePool pool, int id, PdxType type) {

@@ -324,7 +324,7 @@ public class INOperatorJUnitTest {
   /**
    * Tests optimization of compiled in where we no longer evaluate on every iteration The set is
    * saved off into the query context and reused Each query should have it's own query context
-   * 
+   *
    * @throws Exception
    */
   @Test
@@ -368,7 +368,7 @@ public class INOperatorJUnitTest {
   /**
    * Tests optimization of compiled in where we no longer evaluate on every iteration The set is
    * saved off into the query context and reused Each query should have it's own query context
-   * 
+   *
    * @throws Exception
    */
   @Test

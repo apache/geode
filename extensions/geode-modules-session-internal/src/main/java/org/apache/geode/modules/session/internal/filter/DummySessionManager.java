@@ -15,14 +15,14 @@
 
 package org.apache.geode.modules.session.internal.filter;
 
-import org.apache.geode.modules.session.internal.filter.attributes.AbstractSessionAttributes;
-
 import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
 
 import javax.servlet.ServletContext;
 import javax.servlet.http.HttpSession;
+
+import org.apache.geode.modules.session.internal.filter.attributes.AbstractSessionAttributes;
 
 /**
  * Class which fakes an in-memory basic session manager for testing purposes.

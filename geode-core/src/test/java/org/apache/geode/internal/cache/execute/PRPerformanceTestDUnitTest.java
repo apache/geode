@@ -14,19 +14,7 @@
  */
 package org.apache.geode.internal.cache.execute;
 
-import org.junit.experimental.categories.Category;
-import org.junit.Test;
-
 import static org.junit.Assert.*;
-
-import org.apache.geode.test.dunit.cache.internal.JUnit4CacheTestCase;
-import org.apache.geode.test.dunit.internal.JUnit4DistributedTestCase;
-import org.apache.geode.test.junit.categories.DistributedTest;
-
-/**
- * This is a dunit test for PartitionedRegion creation and Region API's for put and get
- * functionality in case of Custom Partitioning.
- */
 
 import java.io.DataInput;
 import java.io.DataOutput;
@@ -40,6 +28,9 @@ import java.util.Iterator;
 import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
+
+import org.junit.Test;
+import org.junit.experimental.categories.Category;
 
 import org.apache.geode.DataSerializable;
 import org.apache.geode.cache.AttributesFactory;
@@ -64,6 +55,9 @@ import org.apache.geode.test.dunit.Host;
 import org.apache.geode.test.dunit.LogWriterUtils;
 import org.apache.geode.test.dunit.SerializableRunnable;
 import org.apache.geode.test.dunit.VM;
+import org.apache.geode.test.dunit.cache.internal.JUnit4CacheTestCase;
+import org.apache.geode.test.dunit.internal.JUnit4DistributedTestCase;
+import org.apache.geode.test.junit.categories.DistributedTest;
 
 @Category(DistributedTest.class)
 public class PRPerformanceTestDUnitTest extends PartitionedRegionDUnitTestCase {
@@ -147,7 +141,7 @@ public class PRPerformanceTestDUnitTest extends PartitionedRegionDUnitTestCase {
 
   /**
    * Search the entires PartitionedRegion for the key, to validate that indeed it doesn't exist
-   * 
+   *
    * @returns true if it does exist
    * @param par
    * @param key
@@ -390,7 +384,7 @@ class SerializablePerfMonth implements DataSerializable {
     /*
      * if(this.month<4) return 1; else if(this.month >= 4 && this.month < 8) return 2; else return
      * 3;
-     * 
+     *
      */
     return this.month;
   }

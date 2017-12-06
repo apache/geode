@@ -98,8 +98,8 @@ import org.apache.geode.pdx.internal.PeerTypeRegistration;
  * Takes care of RegionAttributes, AttributesMutator, and some no-brainer method implementations.
  */
 @SuppressWarnings("deprecation")
-public abstract class AbstractRegion implements Region, RegionAttributes, AttributesMutator,
-    CacheStatistics, DataSerializableFixedID, RegionEntryContext, Extensible<Region<?, ?>> {
+public abstract class AbstractRegion implements InternalRegion, AttributesMutator, CacheStatistics,
+    DataSerializableFixedID, Extensible<Region<?, ?>> {
 
   private static final Logger logger = LogService.getLogger();
 
@@ -195,7 +195,7 @@ public abstract class AbstractRegion implements Region, RegionAttributes, Attrib
 
   /**
    * True if this region uses off-heap memory; otherwise false (default)
-   * 
+   *
    * @since Geode 1.0
    */
   protected boolean offHeap;
@@ -275,7 +275,7 @@ public abstract class AbstractRegion implements Region, RegionAttributes, Attrib
 
   /**
    * Unit test constructor. DO NOT USE!
-   * 
+   *
    * @since GemFire 8.1
    * @deprecated For unit testing only. Use
    *             {@link #AbstractRegion(InternalCache, RegionAttributes, String, InternalRegionArguments)}
@@ -384,7 +384,7 @@ public abstract class AbstractRegion implements Region, RegionAttributes, Attrib
    * SingleWriteSingleReadRegionQueue.SingleReadWriteMetaRegion to return false as the event
    * propagation from those regions do not need EventID objects. This method is made abstract to
    * directly use it in clear operations. (clear and localclear)
-   * 
+   *
    * @return boolean indicating whether to generate eventID or not
    */
   abstract boolean generateEventID();
@@ -428,8 +428,6 @@ public abstract class AbstractRegion implements Region, RegionAttributes, Attrib
 
   abstract Map basicGetAll(Collection keys, Object callback);
 
-  public abstract RegionEntry basicGetEntry(Object key);
-
   protected StringBuilder getStringBuilder() {
     StringBuilder buf = new StringBuilder();
     buf.append(getClass().getName());
@@ -459,7 +457,7 @@ public abstract class AbstractRegion implements Region, RegionAttributes, Attrib
   /**
    * Return a cache loader if this region has one. Note if region's loader is used to implement
    * bridge then null is returned.
-   * 
+   *
    * @since GemFire 5.7
    */
   CacheLoader basicGetLoader() {
@@ -469,7 +467,7 @@ public abstract class AbstractRegion implements Region, RegionAttributes, Attrib
   /**
    * Return a cache writer if this region has one. Note if region's writer is used to implement
    * bridge then null is returned.
-   * 
+   *
    * @since GemFire 5.7
    */
   public CacheWriter basicGetWriter() {
@@ -808,6 +806,7 @@ public abstract class AbstractRegion implements Region, RegionAttributes, Attrib
   /**
    * Get IndexManger for region
    */
+  @Override
   public IndexManager getIndexManager() {
     return this.indexManager;
   }
@@ -824,7 +823,7 @@ public abstract class AbstractRegion implements Region, RegionAttributes, Attrib
 
   /**
    * Use ONLY imSync for IndexManager get and set.
-   * 
+   *
    * @return {@link IndexManager} lock.
    */
   public Object getIMSync() {
@@ -845,7 +844,8 @@ public abstract class AbstractRegion implements Region, RegionAttributes, Attrib
   // block
   // in case the value of the entry is "REMOVED" token. This prevents dead lock
   // caused by the Bug # 33336
-  boolean isIndexCreationThread() {
+  @Override
+  public boolean isIndexCreationThread() {
     Boolean value = isIndexCreator.get();
     return value != null ? value : false;
   }
@@ -869,8 +869,14 @@ public abstract class AbstractRegion implements Region, RegionAttributes, Attrib
 
   @Override
   public void addAsyncEventQueueId(String asyncEventQueueId) {
+    addAsyncEventQueueId(asyncEventQueueId, false);
+  }
+
+  public void addAsyncEventQueueId(String asyncEventQueueId, boolean isInternal) {
     getAsyncEventQueueIds().add(asyncEventQueueId);
-    getVisibleAsyncEventQueueIds().add(asyncEventQueueId);
+    if (!isInternal) {
+      getVisibleAsyncEventQueueIds().add(asyncEventQueueId);
+    }
     setAllGatewaySenderIds();
   }
 
@@ -935,7 +941,7 @@ public abstract class AbstractRegion implements Region, RegionAttributes, Attrib
   /**
    * We wrap RegionMembershipListeners in a container when adding them at runtime, so that we can
    * properly initialize their membership set prior to delivering events to them.
-   * 
+   *
    * @param listener a cache listener to be added to the region
    */
   private CacheListener wrapRegionMembershipListener(CacheListener listener) {
@@ -1473,7 +1479,8 @@ public abstract class AbstractRegion implements Region, RegionAttributes, Attrib
    *
    * @since GemFire 5.0
    */
-  protected boolean isProxy() {
+  @Override
+  public boolean isProxy() {
     return getDataPolicy().isEmpty();
   }
 
@@ -1515,7 +1522,8 @@ public abstract class AbstractRegion implements Region, RegionAttributes, Attrib
   /**
    * Returns true if this region could expire an entry
    */
-  boolean isEntryExpiryPossible() {
+  @Override
+  public boolean isEntryExpiryPossible() {
     return this.entryExpiryPossible;
   }
 
@@ -1650,7 +1658,7 @@ public abstract class AbstractRegion implements Region, RegionAttributes, Attrib
   /**
    * Returns the pool this region is using or null if it does not have one or the pool does not
    * exist.
-   * 
+   *
    * @since GemFire 5.7
    */
   private PoolImpl getPool() {
@@ -1760,6 +1768,7 @@ public abstract class AbstractRegion implements Region, RegionAttributes, Attrib
     return this.cache;
   }
 
+  @Override
   public DM getDistributionManager() {
     return getSystem().getDistributionManager();
   }
@@ -1830,5 +1839,9 @@ public abstract class AbstractRegion implements Region, RegionAttributes, Attrib
   @Override
   public boolean getOffHeap() {
     return this.offHeap;
+  }
+
+  public boolean isConcurrencyChecksEnabled() {
+    return this.concurrencyChecksEnabled;
   }
 }

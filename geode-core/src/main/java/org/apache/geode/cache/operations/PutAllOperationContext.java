@@ -15,14 +15,14 @@
 
 package org.apache.geode.cache.operations;
 
-import org.apache.geode.cache.operations.internal.UpdateOnlyMap;
-
 import java.util.Map;
+
+import org.apache.geode.cache.operations.internal.UpdateOnlyMap;
 
 /**
  * Encapsulates a {@link org.apache.geode.cache.operations.OperationContext.OperationCode#PUTALL}
  * operation for both the pre-operation and post-operation cases.
- * 
+ *
  * @since GemFire 5.7
  * @deprecated since Geode1.0, use {@link org.apache.geode.security.ResourcePermission} instead
  */
@@ -38,7 +38,7 @@ public class PutAllOperationContext extends OperationContext {
 
   /**
    * Constructor for the operation.
-   * 
+   *
    */
   public PutAllOperationContext(Map map) {
     this.map = new UpdateOnlyMap(map);
@@ -46,7 +46,7 @@ public class PutAllOperationContext extends OperationContext {
 
   /**
    * Return the operation associated with the <code>OperationContext</code> object.
-   * 
+   *
    * @return <code>OperationCode.PUTALL</code>.
    */
   @Override
@@ -82,7 +82,7 @@ public class PutAllOperationContext extends OperationContext {
 
   /**
    * Set the authorized map.
-   * 
+   *
    * @throws IllegalArgumentException if the given map is null or if its keys are not the same as
    *         the original keys.
    * @deprecated use getMap() instead and modify the values in the map it returns
@@ -113,7 +113,7 @@ public class PutAllOperationContext extends OperationContext {
 
   /**
    * Get the callback argument object for this operation.
-   * 
+   *
    * @return the callback argument object for this operation.
    * @since GemFire 8.1
    */
@@ -123,7 +123,7 @@ public class PutAllOperationContext extends OperationContext {
 
   /**
    * Set the callback argument object for this operation.
-   * 
+   *
    * @param callbackArg the callback argument object for this operation.
    * @since GemFire 8.1
    */

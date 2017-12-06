@@ -21,7 +21,7 @@ import org.apache.geode.distributed.internal.ServerLocation;
 
 /**
  * Used to send operations from a client to a server.
- * 
+ *
  * @since GemFire 5.7
  */
 public class ServerProxy {
@@ -29,7 +29,7 @@ public class ServerProxy {
 
   /**
    * Creates a server proxy for the given pool.
-   * 
+   *
    * @param pool the pool that this proxy will use to communicate with servers
    */
   public ServerProxy(InternalPool pool) {
@@ -52,7 +52,7 @@ public class ServerProxy {
 
   /**
    * Ping the specified server to see if it is still alive
-   * 
+   *
    * @param server the server to do the execution on
    */
   public void ping(ServerLocation server) {
@@ -61,7 +61,7 @@ public class ServerProxy {
 
   /**
    * Does a query on a server
-   * 
+   *
    * @param queryPredicate A query language boolean query predicate
    * @return A <code>SelectResults</code> containing the values that match the
    *         <code>queryPredicate</code>.

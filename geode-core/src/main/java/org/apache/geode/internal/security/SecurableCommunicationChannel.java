@@ -14,9 +14,8 @@
  */
 package org.apache.geode.internal.security;
 
-import org.apache.geode.security.SecurableCommunicationChannels;
-
 import org.apache.geode.GemFireConfigException;
+import org.apache.geode.security.SecurableCommunicationChannels;
 
 public enum SecurableCommunicationChannel {
   ALL(SecurableCommunicationChannels.ALL),

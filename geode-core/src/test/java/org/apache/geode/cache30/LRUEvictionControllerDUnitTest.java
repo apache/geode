@@ -14,17 +14,13 @@
  */
 package org.apache.geode.cache30;
 
-import org.junit.experimental.categories.Category;
-import org.junit.Test;
-
 import static org.junit.Assert.*;
-
-import org.apache.geode.test.dunit.cache.internal.JUnit4CacheTestCase;
-import org.apache.geode.test.dunit.internal.JUnit4DistributedTestCase;
-import org.apache.geode.test.junit.categories.DistributedTest;
 
 import java.io.File;
 import java.util.Properties;
+
+import org.junit.Test;
+import org.junit.experimental.categories.Category;
 
 import org.apache.geode.SystemFailure;
 import org.apache.geode.cache.AttributesFactory;
@@ -55,6 +51,9 @@ import org.apache.geode.internal.cache.lru.LRUStatistics;
 import org.apache.geode.test.dunit.Host;
 import org.apache.geode.test.dunit.LogWriterUtils;
 import org.apache.geode.test.dunit.VM;
+import org.apache.geode.test.dunit.cache.internal.JUnit4CacheTestCase;
+import org.apache.geode.test.dunit.internal.JUnit4DistributedTestCase;
+import org.apache.geode.test.junit.categories.DistributedTest;
 
 /**
  * Tests the basic functionality of the lru eviction controller and its statistics.
@@ -346,7 +345,7 @@ public class LRUEvictionControllerDUnitTest extends JUnit4CacheTestCase {
   /**
    * Create two regions, one a "feed" that performs transactions which are replicated to a region
    * with an Entry LRU set to one Asserts that the LRU rules are observed
-   * 
+   *
    * @throws Exception
    */
   @Test

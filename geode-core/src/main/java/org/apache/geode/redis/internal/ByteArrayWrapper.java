@@ -26,7 +26,7 @@ import org.apache.geode.DataSerializer;
  * This class is a wrapper for the any Regions that need to store a byte[]. The only data this an
  * instance will store is a byte[] for the data but it is also serializable and comparable so it is
  * able to be used in querying
- * 
+ *
  *
  */
 public class ByteArrayWrapper implements DataSerializable, Comparable<ByteArrayWrapper> {
@@ -54,7 +54,7 @@ public class ByteArrayWrapper implements DataSerializable, Comparable<ByteArrayW
 
   /**
    * Default constructor constructs a ValueWrapper and initialize the {@link #value}
-   * 
+   *
    * @param value
    */
   public ByteArrayWrapper(byte[] value) {
@@ -92,7 +92,7 @@ public class ByteArrayWrapper implements DataSerializable, Comparable<ByteArrayW
 
   /**
    * Getter for the length of the {@link #value} array
-   * 
+   *
    * @return The length of the value array
    */
   public int length() {
@@ -137,7 +137,7 @@ public class ByteArrayWrapper implements DataSerializable, Comparable<ByteArrayW
   /**
    * Private helper method to compare two byte arrays, A.compareTo(B). The comparison is basically
    * numerical, for each byte index, the byte representing the greater value will be the greater
-   * 
+   *
    * @param A byte[]
    * @param B byte[]
    * @return 1 if A > B, -1 if B > A, 0 if A == B

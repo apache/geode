@@ -60,4 +60,3 @@ public class CopyException extends GemFireException {
     super(cause);
   }
 }
-

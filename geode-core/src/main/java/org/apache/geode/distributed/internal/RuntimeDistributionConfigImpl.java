@@ -15,20 +15,20 @@
 
 package org.apache.geode.distributed.internal;
 
-import org.apache.geode.GemFireIOException;
-import org.apache.geode.internal.ConfigSource;
-import org.apache.geode.internal.logging.log4j.LogWriterAppenders;
+import static org.apache.geode.distributed.ConfigurationProperties.*;
 
 import java.io.File;
 import java.util.Arrays;
 import java.util.List;
 
-import static org.apache.geode.distributed.ConfigurationProperties.*;
+import org.apache.geode.GemFireIOException;
+import org.apache.geode.internal.ConfigSource;
+import org.apache.geode.internal.logging.log4j.LogWriterAppenders;
 
 /**
  * Provides an implementation of <code>DistributionConfig</code> that is used at runtime by a
  * {@link InternalDistributedSystem}. It allows for dynamic reconfig of the app the owns it.
- * 
+ *
  * The attribute settor methods in this class all assume that they are being called at runtime. If
  * they are called from some other ConfigSource then those calls should come through
  * setAttributeObject and it will set the attSourceMap to the correct source after these methods
@@ -40,7 +40,7 @@ import static org.apache.geode.distributed.ConfigurationProperties.*;
 public class RuntimeDistributionConfigImpl extends DistributionConfigImpl {
 
   private static final long serialVersionUID = -805637520096606113L;
-  transient private final InternalDistributedSystem ds;
+  private final transient InternalDistributedSystem ds;
 
   ////////////////////// Constructors //////////////////////
 

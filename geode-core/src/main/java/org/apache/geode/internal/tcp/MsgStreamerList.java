@@ -27,7 +27,7 @@ import org.apache.geode.internal.logging.LogService;
 /**
  * Encapsulates a set of {@link MsgStreamer}s and {@link VersionedMsgStreamer}s requiring possibly
  * different serializations for different versions of product.
- * 
+ *
  * @since GemFire 7.1
  */
 public class MsgStreamerList implements BaseMsgStreamer {

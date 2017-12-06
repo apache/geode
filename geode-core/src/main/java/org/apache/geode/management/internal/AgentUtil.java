@@ -15,17 +15,18 @@
 
 package org.apache.geode.management.internal;
 
-import org.apache.commons.lang.StringUtils;
-import org.apache.geode.distributed.internal.DistributionConfig;
-import org.apache.geode.internal.logging.LogService;
-import org.apache.logging.log4j.Logger;
-
 import java.io.File;
 import java.net.URL;
 
+import org.apache.commons.lang.StringUtils;
+import org.apache.logging.log4j.Logger;
+
+import org.apache.geode.distributed.internal.DistributionConfig;
+import org.apache.geode.internal.logging.LogService;
+
 /**
  * Hosts common utility methods needed by the management package
- * 
+ *
  * @since Geode 1.0.0.0
  *
  */

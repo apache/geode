@@ -31,7 +31,7 @@ public class GMSUtil {
 
   /**
    * parse locators & check that the resulting address is compatible with the given address
-   * 
+   *
    * @param locatorsString a DistributionConfig "locators" string
    * @param bindAddress optional address to check for loopback compatibility
    * @return addresses of locators
@@ -53,7 +53,7 @@ public class GMSUtil {
 
   /**
    * parse locators & check that the resulting address is compatible with the given address
-   * 
+   *
    * @param locatorsString a DistributionConfig "locators" string
    * @param bindAddress optional address to check for loopback compatibility
    * @return addresses of locators

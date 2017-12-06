@@ -72,4 +72,3 @@ public class GetValueForKey implements Function {
     return false;
   }
 }
-

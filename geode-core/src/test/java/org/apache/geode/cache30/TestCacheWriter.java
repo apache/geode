@@ -14,7 +14,6 @@
  */
 package org.apache.geode.cache30;
 
-// import org.apache.geode.internal.LocalLogWriter;
 import org.apache.geode.cache.*;
 
 /**

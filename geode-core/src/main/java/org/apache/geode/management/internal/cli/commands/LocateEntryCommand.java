@@ -16,13 +16,11 @@
 package org.apache.geode.management.internal.cli.commands;
 
 import static org.apache.geode.management.internal.cli.commands.DataCommandsUtils.callFunctionForRegion;
-import static org.apache.geode.management.internal.cli.commands.DataCommandsUtils.getRegionAssociatedMembers;
 import static org.apache.geode.management.internal.cli.commands.DataCommandsUtils.makePresentationResult;
 
 import java.util.Set;
 
 import org.apache.commons.collections.CollectionUtils;
-import org.apache.commons.lang.StringUtils;
 import org.springframework.shell.core.annotation.CliCommand;
 import org.springframework.shell.core.annotation.CliOption;
 
@@ -51,25 +49,15 @@ public class LocateEntryCommand implements GfshCommand {
       @CliOption(key = {CliStrings.LOCATE_ENTRY__VALUEKLASS},
           help = CliStrings.LOCATE_ENTRY__VALUEKLASS__HELP) String valueClass,
       @CliOption(key = {CliStrings.LOCATE_ENTRY__RECURSIVE},
-          help = CliStrings.LOCATE_ENTRY__RECURSIVE__HELP,
+          help = CliStrings.LOCATE_ENTRY__RECURSIVE__HELP, specifiedDefaultValue = "true",
           unspecifiedDefaultValue = "false") boolean recursive) {
 
     getSecurityService().authorize(Resource.DATA, Operation.READ, regionPath, key);
 
     DataCommandResult dataResult;
 
-    if (StringUtils.isEmpty(regionPath)) {
-      return makePresentationResult(DataCommandResult.createLocateEntryResult(key, null, null,
-          CliStrings.LOCATE_ENTRY__MSG__REGIONNAME_EMPTY, false));
-    }
-
-    if (StringUtils.isEmpty(key)) {
-      return makePresentationResult(DataCommandResult.createLocateEntryResult(key, null, null,
-          CliStrings.LOCATE_ENTRY__MSG__KEY_EMPTY, false));
-    }
-
     DataCommandFunction locateEntry = new DataCommandFunction();
-    Set<DistributedMember> memberList = getRegionAssociatedMembers(regionPath, getCache(), true);
+    Set<DistributedMember> memberList = findMembersForRegion(getCache(), regionPath);
     if (CollectionUtils.isNotEmpty(memberList)) {
       DataCommandRequest request = new DataCommandRequest();
       request.setCommand(CliStrings.LOCATE_ENTRY);

@@ -32,10 +32,10 @@ import org.apache.geode.internal.cache.LocalDataSet;
  * {@link FunctionService#onRegion(Region)}, the FunctionContext can be type casted to
  * RegionFunctionContext. Methods provided to retrieve the Region and filter passed to the function
  * execution
- * 
- * 
+ *
+ *
  * @since GemFire 6.0
- * 
+ *
  * @see FunctionContextImpl
  */
 public class RegionFunctionContextImpl extends FunctionContextImpl
@@ -74,9 +74,9 @@ public class RegionFunctionContextImpl extends FunctionContextImpl
 
   /**
    * Returns the Region on which function is executed
-   * 
+   *
    * @see FunctionService#onRegion(Region)
-   * 
+   *
    * @return Returns the Region on which function is executed
    */
   public <K, V> Region<K, V> getDataSet() {
@@ -86,9 +86,9 @@ public class RegionFunctionContextImpl extends FunctionContextImpl
   /**
    * Returns subset of keys provided by the invoking thread (aka routing objects) which may exist in
    * the local data set.
-   * 
+   *
    * @see Execution#withFilter(Set)
-   * 
+   *
    * @return the objects should be local to this context
    */
   public Set<?> getFilter() {

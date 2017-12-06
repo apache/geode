@@ -220,9 +220,9 @@ public class ParallelGatewaySenderQueue implements RegionQueue {
     }
   }
 
-  final protected int index;
+  protected final int index;
 
-  final protected int nDispatcher;
+  protected final int nDispatcher;
 
   private MetaRegionFactory metaRegionFactory;
 

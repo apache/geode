@@ -39,10 +39,10 @@ import org.apache.geode.util.test.TestUtil;
 
 /**
  * This test is for testing Disk attributes set via xml.
- * 
+ *
  * A cache and region are created using an xml. The regions are then verified to make sure that all
  * the attributes have been correctly set
- * 
+ *
  * @since GemFire 5.1
  */
 @Category(IntegrationTest.class)

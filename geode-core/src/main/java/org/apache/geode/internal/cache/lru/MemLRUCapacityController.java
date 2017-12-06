@@ -27,12 +27,12 @@ import org.apache.geode.cache.Region;
 import org.apache.geode.cache.RegionAttributes;
 import org.apache.geode.cache.util.ObjectSizer;
 import org.apache.geode.internal.ClassPathLoader;
-import org.apache.geode.internal.statistics.StatisticsTypeFactoryImpl;
 import org.apache.geode.internal.cache.AbstractLRURegionMap.CDValueWrapper;
 import org.apache.geode.internal.cache.CachedDeserializableFactory;
 import org.apache.geode.internal.cache.Token;
 import org.apache.geode.internal.cache.persistence.DiskRegionView;
 import org.apache.geode.internal.i18n.LocalizedStrings;
+import org.apache.geode.internal.statistics.StatisticsTypeFactoryImpl;
 
 
 /**
@@ -150,7 +150,7 @@ public class MemLRUCapacityController extends LRUAlgorithm implements Declarable
 
   /**
    * Create an instance of the capacity controller the given settings.
-   * 
+   *
    * @param megabytes the amount of memory allowed in this region specified in megabytes.<br>
    *        <p>
    *        For a region with {@link org.apache.geode.cache.DataPolicy#PARTITION}, it is overridden
@@ -167,7 +167,7 @@ public class MemLRUCapacityController extends LRUAlgorithm implements Declarable
 
   /**
    * Create an instance of the capacity controller the given settings.
-   * 
+   *
    * @param megabytes the amount of memory allowed in this region specified in megabytes.<br>
    *        <p>
    *        For a region with {@link org.apache.geode.cache.DataPolicy#PARTITION}, it is overridden
@@ -185,7 +185,7 @@ public class MemLRUCapacityController extends LRUAlgorithm implements Declarable
 
   /**
    * Create an instance of the capacity controller the given settings.
-   * 
+   *
    * @param megabytes the amount of memory allowed in this region specified in megabytes.<br>
    *        <p>
    *        For a region with {@link org.apache.geode.cache.DataPolicy#PARTITION}, it is overridden
@@ -483,9 +483,9 @@ public class MemLRUCapacityController extends LRUAlgorithm implements Declarable
 
   /*
    * (non-Javadoc)
-   * 
+   *
    * @see java.lang.Object#hashCode()
-   * 
+   *
    * Note that we just need to make sure that equal objects return equal hashcodes; nothing really
    * elaborate is done here.
    */
@@ -507,4 +507,3 @@ public class MemLRUCapacityController extends LRUAlgorithm implements Declarable
         + " megabytes and and eviction action " + this.getEvictionAction();
   }
 }
-

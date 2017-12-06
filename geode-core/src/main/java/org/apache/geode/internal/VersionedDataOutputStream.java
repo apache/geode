@@ -20,7 +20,7 @@ import java.io.OutputStream;
 
 /**
  * An extension of {@link DataOutputStream} that implements {@link VersionedDataStream}.
- * 
+ *
  * @since GemFire 7.1
  */
 public class VersionedDataOutputStream extends DataOutputStream implements VersionedDataStream {
@@ -29,7 +29,7 @@ public class VersionedDataOutputStream extends DataOutputStream implements Versi
 
   /**
    * Creates a VersionedDataOutputStream that wraps the specified underlying OutputStream.
-   * 
+   *
    * @param out the underlying output stream
    * @param version the product version that serialized object on the given {@link OutputStream}
    */

@@ -118,7 +118,7 @@ public class CommandInitializer {
 
   /**
    * Register a new command with the system.
-   * 
+   *
    * @param messageType - An ordinal for this message. This must be something defined in MessageType
    *        that has not already been allocated to a different command.
    * @param versionToNewCommand The command to register, for different versions. The key is the
@@ -349,6 +349,11 @@ public class CommandInitializer {
       Map<Integer, Command> commands = new HashMap<Integer, Command>();
       commands.putAll(ALL_COMMANDS.get(Version.GEODE_120));
       ALL_COMMANDS.put(Version.GEODE_130, commands);
+    }
+    {
+      Map<Integer, Command> commands = new HashMap<Integer, Command>();
+      commands.putAll(ALL_COMMANDS.get(Version.GEODE_130));
+      ALL_COMMANDS.put(Version.GEODE_140, commands);
     }
 
   }

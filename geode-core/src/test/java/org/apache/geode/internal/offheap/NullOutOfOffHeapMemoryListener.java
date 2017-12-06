@@ -18,7 +18,7 @@ import org.apache.geode.OutOfOffHeapMemoryException;
 
 /**
  * Null implementation of NullOutOfOffHeapMemoryListener for testing.
- * 
+ *
  */
 public class NullOutOfOffHeapMemoryListener implements OutOfOffHeapMemoryListener {
   private boolean isClosed;

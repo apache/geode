@@ -21,8 +21,8 @@ import org.apache.geode.management.internal.beans.stats.StatsKey;
 
 /**
  * Concrete implementation of AsyncEventQueueMXBean
- * 
- * 
+ *
+ *
  */
 public class AsyncEventQueueMBean extends NotificationBroadcasterSupport
     implements AsyncEventQueueMXBean {

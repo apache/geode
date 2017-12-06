@@ -14,7 +14,7 @@
  */
 /*
  * @test
- * 
+ *
  * @synopsis Exercise multithreaded maps, byt default ConcurrentHashMap Multithreaded hash table
  * test. Each thread does a random walk though elements of "key" array. On each iteration, it checks
  * if table includes key. If absent, with probablility pinsert it inserts it, and if present, with
@@ -215,4 +215,3 @@ public class CountedMapLoopsJUnitTest extends JSR166TestCase { // TODO: reformat
     }
   }
 }
-

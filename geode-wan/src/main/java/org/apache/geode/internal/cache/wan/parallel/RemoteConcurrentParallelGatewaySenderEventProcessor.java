@@ -19,8 +19,8 @@ import java.util.Set;
 
 import org.apache.geode.cache.Region;
 import org.apache.geode.internal.cache.wan.AbstractGatewaySender;
-import org.apache.geode.internal.cache.wan.GatewaySenderStats;
 import org.apache.geode.internal.cache.wan.GatewaySenderEventRemoteDispatcher;
+import org.apache.geode.internal.cache.wan.GatewaySenderStats;
 import org.apache.geode.internal.cache.wan.parallel.ParallelGatewaySenderEventProcessor;
 
 /**

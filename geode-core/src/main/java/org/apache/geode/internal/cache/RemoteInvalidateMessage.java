@@ -14,6 +14,9 @@
  */
 package org.apache.geode.internal.cache;
 
+import static org.apache.geode.internal.cache.DistributedCacheOperation.VALUE_IS_BYTES;
+import static org.apache.geode.internal.cache.DistributedCacheOperation.VALUE_IS_SERIALIZED_OBJECT;
+
 import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
@@ -50,9 +53,6 @@ import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.internal.logging.log4j.LocalizedMessage;
 import org.apache.geode.internal.logging.log4j.LogMarker;
 import org.apache.geode.internal.offheap.annotations.Released;
-
-import static org.apache.geode.internal.cache.DistributedCacheOperation.VALUE_IS_BYTES;
-import static org.apache.geode.internal.cache.DistributedCacheOperation.VALUE_IS_SERIALIZED_OBJECT;
 
 public class RemoteInvalidateMessage extends RemoteDestroyMessage {
 
@@ -131,7 +131,7 @@ public class RemoteInvalidateMessage extends RemoteDestroyMessage {
   /**
    * Sends a transactional RemoteInvalidateMessage
    * {@link org.apache.geode.cache.Region#invalidate(Object)}message to the recipient
-   * 
+   *
    * @param recipient the recipient of the message
    * @param r the ReplicateRegion for which the invalidate was performed
    * @param event the event causing this message
@@ -162,7 +162,7 @@ public class RemoteInvalidateMessage extends RemoteDestroyMessage {
    * This method is called upon receipt and make the desired changes to the PartitionedRegion Note:
    * It is very important that this message does NOT cause any deadlocks as the sender will wait
    * indefinitely for the acknowledgement
-   * 
+   *
    * @throws EntryExistsException
    */
   @Override
@@ -290,7 +290,7 @@ public class RemoteInvalidateMessage extends RemoteDestroyMessage {
 
     /**
      * Processes this message. This method is invoked by the receiver of the message.
-     * 
+     *
      * @param dm the distribution manager that is processing the message.
      */
     @Override
@@ -370,7 +370,7 @@ public class RemoteInvalidateMessage extends RemoteDestroyMessage {
   }
   /**
    * A processor to capture the value returned by {@link RemoteInvalidateMessage}
-   * 
+   *
    * @since GemFire 6.5
    */
   public static class InvalidateResponse extends RemoteOperationResponse {

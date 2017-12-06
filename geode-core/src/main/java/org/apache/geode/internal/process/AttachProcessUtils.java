@@ -23,7 +23,7 @@ import org.apache.geode.internal.process.ProcessUtils.InternalProcessUtils;
 
 /**
  * Implementation of the {@link ProcessUtils} SPI that uses the JDK Attach API.
- * 
+ *
  * @since GemFire 8.0
  */
 class AttachProcessUtils implements InternalProcessUtils {

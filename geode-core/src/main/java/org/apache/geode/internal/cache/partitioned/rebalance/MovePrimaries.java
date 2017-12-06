@@ -43,7 +43,7 @@ public class MovePrimaries extends RebalanceDirectorAdapter {
 
   /**
    * Move a single primary from one member to another
-   * 
+   *
    * @return if we are able to move a primary.
    */
   private boolean movePrimaries() {

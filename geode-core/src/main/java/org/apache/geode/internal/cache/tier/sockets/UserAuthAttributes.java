@@ -67,7 +67,7 @@ public class UserAuthAttributes {
   /*
    * protected void setAuthorizeRequest(AuthorizeRequest authzRequest) { this.authzRequest =
    * authzRequest; }
-   * 
+   *
    * protected void setPostAuthorizeRequest(AuthorizeRequestPP postAuthzRequest) {
    * this.postAuthzRequest = postAuthzRequest; }
    */

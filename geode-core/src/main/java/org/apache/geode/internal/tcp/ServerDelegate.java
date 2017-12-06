@@ -26,11 +26,11 @@ import org.apache.geode.i18n.LogWriterI18n;
  * {@link org.apache.geode.distributed.internal.DistributionMessage} objects received from other
  * conduits.
  * </p>
- * 
+ *
  * @see org.apache.geode.distributed.internal.direct.DirectChannel
- * 
+ *
  * @since GemFire 2.0
- * 
+ *
  */
 public interface ServerDelegate {
 

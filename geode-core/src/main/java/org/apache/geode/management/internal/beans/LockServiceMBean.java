@@ -22,8 +22,8 @@ import org.apache.geode.management.LockServiceMXBean;
 
 /**
  * Management API to manage a Lock Service MBean
- * 
- * 
+ *
+ *
  */
 public class LockServiceMBean extends NotificationBroadcasterSupport implements LockServiceMXBean {
 

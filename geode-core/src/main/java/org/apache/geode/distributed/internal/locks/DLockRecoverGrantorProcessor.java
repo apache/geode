@@ -49,7 +49,7 @@ import org.apache.geode.internal.logging.log4j.LogMarker;
 public class DLockRecoverGrantorProcessor extends ReplyProcessor21 {
   private static final Logger logger = LogService.getLogger();
 
-  protected final static DefaultMessageProcessor nullServiceProcessor =
+  protected static final DefaultMessageProcessor nullServiceProcessor =
       new DefaultMessageProcessor();
 
   private DM dm;
@@ -242,7 +242,7 @@ public class DLockRecoverGrantorProcessor extends ReplyProcessor21 {
     /**
      * For unit testing we need to push the message through scheduleAction so that message observers
      * are invoked
-     * 
+     *
      * @param dm the distribution manager
      */
     protected void scheduleMessage(DM dm) {
@@ -460,4 +460,3 @@ public class DLockRecoverGrantorProcessor extends ReplyProcessor21 {
     }
   }
 }
-

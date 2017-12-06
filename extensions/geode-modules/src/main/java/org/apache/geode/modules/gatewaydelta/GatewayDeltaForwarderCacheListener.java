@@ -14,6 +14,8 @@
  */
 package org.apache.geode.modules.gatewaydelta;
 
+import java.util.Properties;
+
 import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.CacheFactory;
 import org.apache.geode.cache.DataPolicy;
@@ -28,8 +30,6 @@ import org.apache.geode.cache.SubscriptionAttributes;
 import org.apache.geode.cache.util.CacheListenerAdapter;
 import org.apache.geode.internal.cache.EntryEventImpl;
 import org.apache.geode.internal.cache.LocalRegion;
-
-import java.util.Properties;
 
 public class GatewayDeltaForwarderCacheListener extends CacheListenerAdapter<String, GatewayDelta>
     implements Declarable {

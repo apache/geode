@@ -25,7 +25,7 @@ import org.springframework.stereotype.Component;
 
 /**
  * Class PulseServiceFactory
- * 
+ *
  * @since GemFire version 7.5
  */
 @Component

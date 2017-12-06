@@ -15,11 +15,11 @@
 
 package org.apache.geode.internal;
 
-import org.apache.geode.*;
-import org.apache.geode.internal.i18n.LocalizedStrings;
-
 import java.io.*;
 import java.net.InetAddress;
+
+import org.apache.geode.*;
+import org.apache.geode.internal.i18n.LocalizedStrings;
 
 /**
  * Represents the information about the manager that is stored in its SystemAdmin manager VM's main
@@ -93,7 +93,7 @@ public class ManagerInfo implements DataSerializable {
 
   /**
    * Saves the manager information to the info file in the given <code>directory</code>.
-   * 
+   *
    * @param pid the process id of the manager VM.
    * @param status the status of the manager
    * @param directory the manager's directory.
@@ -160,7 +160,7 @@ public class ManagerInfo implements DataSerializable {
 
   /**
    * Gets the status code for the given <code>statusName</code>.
-   * 
+   *
    * @throws IllegalArgumentException if an unknown status name is given.
    */
   public static int statusNameToCode(String statusName) {
@@ -372,7 +372,7 @@ public class ManagerInfo implements DataSerializable {
 
   /**
    * Constructs a manager info instance given the process id of the manager VM.
-   * 
+   *
    * @param port TODO
    * @param bindAddress TODO
    */
@@ -420,4 +420,3 @@ public class ManagerInfo implements DataSerializable {
     }
   }
 }
-

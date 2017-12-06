@@ -1142,7 +1142,7 @@ public class HashIndex extends AbstractIndex {
      * the additional projection attribute. If the boolean isFirstItrOnEntry is tru e& additional
      * projection attribute is null, then teh 0th iterator itself will evaluate to Region.Entry
      * Object.
-     * 
+     *
      * The 2nd element of Object Array contains the Struct object ( tuple) created. If the boolean
      * isFirstItrOnEntry is false, then the first attribute of the Struct object is obtained by
      * evaluating the additional projection attribute.

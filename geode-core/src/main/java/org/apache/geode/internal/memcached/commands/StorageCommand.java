@@ -41,7 +41,7 @@ import org.apache.geode.memcached.GemFireMemcachedServer.Protocol;
  * <code>
  * &lt;data block&gt;\r\n
  * </code>
- * 
+ *
  */
 
 public abstract class StorageCommand extends AbstractCommand {
@@ -146,7 +146,7 @@ public abstract class StorageCommand extends AbstractCommand {
    * starting from current time. In the latter case, this number of seconds may not exceed
    * 60*60*24*30 (number of seconds in 30 days); if the number sent by a client is larger than that,
    * the server will consider it to be real Unix time value rather than an offset from current time.
-   * 
+   *
    * @param key
    * @param p_expTime
    * @param cache
@@ -178,7 +178,7 @@ public abstract class StorageCommand extends AbstractCommand {
 
   /**
    * reschedules expiration for a key only if one was previously scheduled
-   * 
+   *
    * @param key
    * @param newExpTime
    * @return true if successfully rescheduled, false otherwise

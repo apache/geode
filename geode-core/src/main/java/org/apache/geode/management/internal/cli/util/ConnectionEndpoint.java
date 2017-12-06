@@ -13,12 +13,12 @@
  * the License.
  */
 /**
- * 
+ *
  */
 package org.apache.geode.management.internal.cli.util;
 
 /**
- *  
+ *
  *
  */
 public class ConnectionEndpoint {

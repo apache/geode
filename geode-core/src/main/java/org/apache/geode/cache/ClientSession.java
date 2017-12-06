@@ -20,11 +20,11 @@ package org.apache.geode.cache;
  * <code>ClientSessions</code> can be used from the cache server to perform interest registrations
  * and unregistrations on behalf of clients. <code>ClientSessions</code> are only available on the
  * cache server.
- * 
+ *
  * <p>
  * The ClientSession is often used in conjunction with a callback <code>EntryEvent</code> as shown
  * below.
- * 
+ *
  * <pre>
  * String durableClientId = ...; // Some part of the event's key or value would contain this id
  * Cache cache = CacheFactory.getAnyInstance();
@@ -32,7 +32,7 @@ package org.apache.geode.cache;
  * ClientSession clientSession = cacheServer.getClientSession(durableClientId);
  * clientSession.registerInterest(event.getRegion().getFullPath(), event.getKey(), InterestResultPolicy.KEYS_VALUES, true);
  * </pre>
- * 
+ *
  * @since GemFire 6.0
  * @see org.apache.geode.cache.server.CacheServer#getClientSession(String) getClientSession
  * @see org.apache.geode.cache.server.CacheServer#getClientSession(org.apache.geode.distributed.DistributedMember)
@@ -43,7 +43,7 @@ public interface ClientSession {
 
   /**
    * Registers interest in a particular region and key
-   * 
+   *
    * @param regionName The name of the region in which to register interest
    * @param keyOfInterest The key on which to register interest
    * @param policy The {@link org.apache.geode.cache.InterestResultPolicy}. Note: For the special
@@ -82,7 +82,7 @@ public interface ClientSession {
 
   /**
    * Registers interest in a particular region and regular expression
-   * 
+   *
    * @param regionName The name of the region in which to register interest
    * @param regex The regular expression to on which to register interest
    * @param isDurable Whether the interest is durable
@@ -96,7 +96,7 @@ public interface ClientSession {
 
   /**
    * Unregisters interest in a particular region and key
-   * 
+   *
    * @param regionName The name of the region in which to unregister interest
    * @param keyOfInterest The key on which to unregister interest
    * @param isDurable Whether the interest is durable
@@ -106,7 +106,7 @@ public interface ClientSession {
 
   /**
    * Unregisters interest in a particular region and key
-   * 
+   *
    * @param regionName The name of the region in which to unregister interest
    * @param keyOfInterest The key on which to unregister interest
    * @param isDurable Whether the interest is durable
@@ -120,7 +120,7 @@ public interface ClientSession {
 
   /**
    * Unregisters interest in a particular region and regular expression
-   * 
+   *
    * @param regionName The name of the region in which to unregister interest
    * @param regex The regular expression on which to unregister interest
    * @param isDurable Whether the interest is durable
@@ -130,7 +130,7 @@ public interface ClientSession {
 
   /**
    * Unregisters interest in a particular region and regular expression
-   * 
+   *
    * @param regionName The name of the region in which to unregister interest
    * @param regex The regular expression on which to unregister interest
    * @param isDurable Whether the interest is durable

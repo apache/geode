@@ -59,7 +59,7 @@ import org.apache.geode.security.ResourcePermission.Resource;
  */
 public class Put65 extends BaseCommand {
 
-  private final static Put65 singleton = new Put65();
+  private static final Put65 singleton = new Put65();
 
   public static Command getCommand() {
     return singleton;

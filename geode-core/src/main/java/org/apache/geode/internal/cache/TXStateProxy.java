@@ -25,7 +25,7 @@ import org.apache.geode.internal.cache.tx.TransactionalOperation.ServerRegionOpe
 /**
  * This interface extends {@link TXStateInterface} providing for a proxy for the real transaction on
  * a remote data store node.
- * 
+ *
  */
 public interface TXStateProxy extends TXStateInterface {
 
@@ -56,7 +56,7 @@ public interface TXStateProxy extends TXStateInterface {
   /**
    * establishes the synchronization thread used for client/server beforeCompletion/afterCompletion
    * processing
-   * 
+   *
    * @param sync
    */
   public void setSynchronizationRunnable(TXSynchronizationRunnable sync);
@@ -64,14 +64,12 @@ public interface TXStateProxy extends TXStateInterface {
   public TXSynchronizationRunnable getSynchronizationRunnable();
 
   /**
-   * Called by {@link TXManagerImpl#internalSuspend()} to perform additional tasks required to
-   * suspend a transaction
+   * Perform additional tasks required by the proxy to suspend a transaction
    */
   public void suspend();
 
   /**
-   * Called by {@link TXManagerImpl#internalResume(TXStateProxy)} to perform additional tasks
-   * required to resume a transaction
+   * Perform additional tasks required by the proxy to resume a transaction
    */
   public void resume();
 
@@ -90,7 +88,7 @@ public interface TXStateProxy extends TXStateInterface {
    * During client transaction failover, it is possible to get two Commit (rollback) requests for a
    * single transaction. It becomes necessary to set the progress flag when the second request
    * arrives. When the requeset is processed, progress flag must be reset. see bug 43350
-   * 
+   *
    * @param progress
    */
   public void setInProgress(boolean progress);

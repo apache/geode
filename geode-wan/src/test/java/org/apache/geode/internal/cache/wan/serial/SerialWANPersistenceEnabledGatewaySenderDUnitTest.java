@@ -14,22 +14,21 @@
  */
 package org.apache.geode.internal.cache.wan.serial;
 
-import org.junit.experimental.categories.Category;
-import org.junit.Test;
-
 import static org.junit.Assert.*;
 
-import org.apache.geode.test.dunit.cache.internal.JUnit4CacheTestCase;
-import org.apache.geode.test.dunit.internal.JUnit4DistributedTestCase;
-import org.apache.geode.test.junit.categories.DistributedTest;
+import org.junit.Test;
+import org.junit.experimental.categories.Category;
 
 import org.apache.geode.internal.cache.wan.WANTestBase;
 import org.apache.geode.test.dunit.AsyncInvocation;
 import org.apache.geode.test.dunit.LogWriterUtils;
 import org.apache.geode.test.dunit.Wait;
+import org.apache.geode.test.dunit.cache.internal.JUnit4CacheTestCase;
+import org.apache.geode.test.dunit.internal.JUnit4DistributedTestCase;
+import org.apache.geode.test.junit.categories.DistributedTest;
 
 /**
- * 
+ *
  */
 @Category(DistributedTest.class)
 public class SerialWANPersistenceEnabledGatewaySenderDUnitTest extends WANTestBase {
@@ -124,7 +123,7 @@ public class SerialWANPersistenceEnabledGatewaySenderDUnitTest extends WANTestBa
   /**
    * Enable persistence for region as well as GatewaySender and see if remote site receives all the
    * events.
-   * 
+   *
    */
   @Test
   public void testPersistentReplicatedRegionWithGatewaySenderPersistenceEnabled() {
@@ -255,7 +254,7 @@ public class SerialWANPersistenceEnabledGatewaySenderDUnitTest extends WANTestBa
   /**
    * Enable persistence for Region and persistence for GatewaySender. Kill the vm with regions and
    * bring that up again. Check if the remote site receives all the event. again?
-   * 
+   *
    */
   @Test
   public void testPersistentReplicatedRegionWithGatewaySenderPersistenceEnabled_Restart() {
@@ -341,7 +340,7 @@ public class SerialWANPersistenceEnabledGatewaySenderDUnitTest extends WANTestBa
   /**
    * Enable persistence for Region. No persistence for GatewaySender. Kill the vm with regions and
    * bring that up again. Check if the remote site receives all the event. again?
-   * 
+   *
    */
   @Test
   public void testPersistentReplicatedRegionWithGatewaySender_Restart() {

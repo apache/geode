@@ -22,7 +22,7 @@ import java.lang.reflect.Method;
  * Provides a main which delegates to another main for testing after waiting for one input. The
  * purpose is to prevent race condition in which a process may send output before the reader has
  * started listening for that output.
- * 
+ *
  */
 public class MainLauncher {
   public static void main(String... args) throws Exception {

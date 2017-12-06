@@ -21,7 +21,7 @@ import java.util.Map;
  * <code>Invoke</code> provides static utility methods that allow a <code>DistributedTest</code> to
  * invoke a <code>SerializableRunnable</code> or <code>SerializableCallable</code> in a remote test
  * <code>VM</code>.
- * 
+ *
  * These methods can be used directly: <code>Invoke.invokeInEveryVM(...)</code>, however, they are
  * intended to be referenced through static import:
  *
@@ -156,7 +156,7 @@ public class Invoke {
    * Invokes a <code>SerializableRunnable</code> in every VM that DUnit knows about. If
    * <code>run()</code> throws an assertion failure, its execution is repeated, until no assertion
    * failure occurs or <code>repeatTimeoutMs</code> milliseconds have passed.
-   * 
+   *
    * @deprecated Please use {@link org.awaitility.Awaitility} with
    *             {@link #invokeInEveryVM(SerializableCallableIF)} instead.
    */

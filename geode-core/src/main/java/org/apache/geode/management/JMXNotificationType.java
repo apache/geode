@@ -19,9 +19,9 @@ import org.apache.geode.distributed.internal.DistributionConfig;
 /**
  * Enumerated type for JMX notification types emitted by GemFire management system. This types can
  * be matched with javax.management.Notification.getType() for filtering required notifications.
- * 
+ *
  * For detail usage see GemFire quick start.
- * 
+ *
  * @since GemFire 8.0
  */
 public interface JMXNotificationType {

@@ -15,6 +15,12 @@
 
 package org.apache.geode.internal.cache;
 
+import static java.util.concurrent.TimeUnit.*;
+import static org.awaitility.Awaitility.*;
+
+import org.junit.Test;
+import org.junit.experimental.categories.Category;
+
 import org.apache.geode.cache.Region;
 import org.apache.geode.cache.client.*;
 import org.apache.geode.cache.client.internal.LocatorTestBase;
@@ -29,11 +35,6 @@ import org.apache.geode.test.dunit.Host;
 import org.apache.geode.test.dunit.NetworkUtils;
 import org.apache.geode.test.dunit.VM;
 import org.apache.geode.test.junit.categories.DistributedTest;
-import org.junit.Test;
-import org.junit.experimental.categories.Category;
-
-import static org.awaitility.Awaitility.*;
-import static java.util.concurrent.TimeUnit.*;
 
 @Category(DistributedTest.class)
 public class FireAndForgetFunctionOnAllServersDUnitTest extends LocatorTestBase {

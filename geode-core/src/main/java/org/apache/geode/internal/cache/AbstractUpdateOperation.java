@@ -101,7 +101,7 @@ public abstract class AbstractUpdateOperation extends DistributedCacheOperation 
   /**
    * Does a remote update (could be create or put). This code was factored into a static for
    * QueuedOperation.
-   * 
+   *
    * @param rgn the region to do the update on
    * @param ev the event describing the operation
    * @param lastMod the modification timestamp for this op
@@ -227,7 +227,7 @@ public abstract class AbstractUpdateOperation extends DistributedCacheOperation 
     }
   }
 
-  public static abstract class AbstractUpdateMessage extends CacheOperationMessage {
+  public abstract static class AbstractUpdateMessage extends CacheOperationMessage {
     protected long lastModified;
 
     @Override

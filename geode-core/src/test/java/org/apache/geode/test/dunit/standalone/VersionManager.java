@@ -14,8 +14,6 @@
  */
 package org.apache.geode.test.dunit.standalone;
 
-import org.apache.geode.test.dunit.Host;
-
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URL;
@@ -28,12 +26,14 @@ import java.util.Optional;
 import java.util.Properties;
 import java.util.function.BiConsumer;
 
+import org.apache.geode.test.dunit.Host;
+
 /**
  * VersionManager loads the class-paths for all of the releases of Geode configured for
  * backward-compatibility testing in the geode-core build.gradle file.
  * <p>
  * Tests may use these versions in launching VMs to run older clients or servers.
- * 
+ *
  * @see Host#getVM(String, int)
  */
 public class VersionManager {

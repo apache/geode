@@ -34,10 +34,10 @@ import org.apache.geode.management.internal.cli.i18n.CliStrings;
 import org.apache.geode.management.internal.cli.result.CommandResult;
 import org.apache.geode.management.internal.cli.util.CommandStringBuilder;
 import org.apache.geode.test.dunit.AsyncInvocation;
-import org.apache.geode.test.junit.rules.GfshShellConnectionRule;
 import org.apache.geode.test.dunit.rules.LocatorServerStartupRule;
 import org.apache.geode.test.dunit.rules.MemberVM;
 import org.apache.geode.test.junit.categories.DistributedTest;
+import org.apache.geode.test.junit.rules.GfshCommandRule;
 
 @Category(DistributedTest.class)
 public class ShowMissingDiskStoresDUnitTest {
@@ -55,7 +55,7 @@ public class ShowMissingDiskStoresDUnitTest {
   public LocatorServerStartupRule lsRule = new LocatorServerStartupRule();
 
   @Rule
-  public GfshShellConnectionRule gfshConnector = new GfshShellConnectionRule();
+  public GfshCommandRule gfshConnector = new GfshCommandRule();
 
   @Before
   public void before() throws Exception {
@@ -78,7 +78,7 @@ public class ShowMissingDiskStoresDUnitTest {
     csb = new CommandStringBuilder(CliStrings.CREATE_DISK_STORE)
         .addOption(CliStrings.CREATE_DISK_STORE__NAME, "diskStore")
         .addOption(CliStrings.CREATE_DISK_STORE__DIRECTORY_AND_SIZE, "diskStoreDir");
-    gfshConnector.executeAndVerifyCommand(csb.getCommandString());
+    gfshConnector.executeAndAssertThat(csb.getCommandString()).statusIsSuccess();
 
     Awaitility.await().until(() -> {
       return new File(server1.getWorkingDir(), "diskStoreDir").exists()
@@ -90,7 +90,7 @@ public class ShowMissingDiskStoresDUnitTest {
         .addOption(CliStrings.CREATE_REGION__DISKSTORE, "diskStore")
         .addOption(CliStrings.CREATE_REGION__REGIONSHORTCUT,
             RegionShortcut.REPLICATE_PERSISTENT.toString());
-    gfshConnector.executeAndVerifyCommand(csb.getCommandString());
+    gfshConnector.executeAndAssertThat(csb.getCommandString()).statusIsSuccess();
 
     // Add data to the region
     putUsingGfsh(gfshConnector, testRegionName, 1, "A");
@@ -126,7 +126,7 @@ public class ShowMissingDiskStoresDUnitTest {
     return restart;
   }
 
-  private void checkAsyncResults(AsyncInvocation ai, GfshShellConnectionRule gfsh, int secsToWait)
+  private void checkAsyncResults(AsyncInvocation ai, GfshCommandRule gfsh, int secsToWait)
       throws Exception {
     try {
       Awaitility.await().atLeast(secsToWait, TimeUnit.SECONDS).until(() -> ai.isDone());
@@ -142,11 +142,11 @@ public class ShowMissingDiskStoresDUnitTest {
     System.out.println(result);
   }
 
-  private void putUsingGfsh(GfshShellConnectionRule gfsh, String regionName, int key, String val)
+  private void putUsingGfsh(GfshCommandRule gfsh, String regionName, int key, String val)
       throws Exception {
     CommandStringBuilder csb = new CommandStringBuilder(CliStrings.PUT)
         .addOption(CliStrings.PUT__KEY, Integer.toString(key)).addOption(CliStrings.PUT__VALUE, val)
         .addOption(CliStrings.PUT__REGIONNAME, regionName);
-    gfsh.executeAndVerifyCommand(csb.getCommandString());
+    gfsh.executeAndAssertThat(csb.getCommandString()).statusIsSuccess();
   }
 }

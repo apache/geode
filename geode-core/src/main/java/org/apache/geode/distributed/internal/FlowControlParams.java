@@ -26,7 +26,7 @@ package org.apache.geode.distributed.internal;
  * <p>
  * The byteAllowance and rechargeBlockMs settings are used in hashcode calculations, and should not
  * be changed if the hashcode of a FlowControlParams needs to remain invariant.
- * 
+ *
  * @since GemFire 5.0
  */
 
@@ -107,5 +107,3 @@ public class FlowControlParams implements java.io.Serializable {
 
 
 }
-
-

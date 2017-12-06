@@ -74,9 +74,9 @@ public enum CacheXmlVersion {
    * The version of the DTD or Schema. Prior to 8.1 this value was of the format "8_0". With 8.1 and
    * later the value is of the format "8.1". Values should match constants in {@link CacheXml} like
    * {@link CacheXml#VERSION_8_1}.
-   * 
+   *
    * @return the version
-   * 
+   *
    * @since GemFire 8.1
    */
   public String getVersion() {
@@ -96,7 +96,7 @@ public enum CacheXmlVersion {
 
   /**
    * The namespace.
-   * 
+   *
    * @return the namespace if schema exists, otherwise null.
    */
   public String getNamespace() {
@@ -105,7 +105,7 @@ public enum CacheXmlVersion {
 
   /**
    * The DTD public id.
-   * 
+   *
    * @return the publicId if DTD exists, otherwise null.
    * @since GemFire 8.1
    */
@@ -115,7 +115,7 @@ public enum CacheXmlVersion {
 
   /**
    * The DTD system id.
-   * 
+   *
    * @return the systemId if DTD exists, otherwise null.
    * @since GemFire 8.1
    */
@@ -127,7 +127,7 @@ public enum CacheXmlVersion {
    * Get {@link CacheXmlVersion} for given <code>version</code> string. Use constants from
    * {@link CacheXml} for example:
    * <code>CacheXmlVersion.valueForVersion(CacheXml.GEMFIRE_8_1);</code>
-   * 
+   *
    * @param version string to lookup.
    * @return {@link CacheXmlVersion} if exists.
    * @throws IllegalArgumentException if version does not exist.

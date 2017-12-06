@@ -1599,7 +1599,7 @@ public class StatArchiveWriterReaderIntegrationTest {
    * [KEEP] alternative method for getting an expected golden file: Class clazz = getClass();
    * assertNotNull(clazz); URL url =
    * clazz.getResource("StatArchiveWriterReaderIntegrationTest.gfs.expected"); assertNotNull(url);
-   * 
+   *
    * File expected; try { expected = new File(url.toURI()); } catch(URISyntaxException e) { expected
    * = new File(url.getPath()); } assertTrue(expected.exists());
    */

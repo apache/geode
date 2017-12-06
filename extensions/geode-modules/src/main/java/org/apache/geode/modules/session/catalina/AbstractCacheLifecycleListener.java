@@ -15,10 +15,11 @@
 package org.apache.geode.modules.session.catalina;
 
 
-import org.apache.geode.modules.session.bootstrap.AbstractCache;
-import org.apache.geode.modules.session.bootstrap.LifecycleTypeAdapter;
 import org.apache.catalina.LifecycleEvent;
 import org.apache.catalina.LifecycleListener;
+
+import org.apache.geode.modules.session.bootstrap.AbstractCache;
+import org.apache.geode.modules.session.bootstrap.LifecycleTypeAdapter;
 
 
 public abstract class AbstractCacheLifecycleListener implements LifecycleListener {

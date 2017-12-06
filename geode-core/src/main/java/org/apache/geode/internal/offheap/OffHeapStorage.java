@@ -14,6 +14,8 @@
  */
 package org.apache.geode.internal.offheap;
 
+import java.lang.reflect.Method;
+
 import org.apache.geode.*;
 import org.apache.geode.cache.CacheException;
 import org.apache.geode.distributed.DistributedSystem;
@@ -22,14 +24,12 @@ import org.apache.geode.distributed.internal.DistributionStats;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.distributed.internal.InternalLocator;
 import org.apache.geode.internal.ClassPathLoader;
-import org.apache.geode.internal.statistics.StatisticsTypeFactoryImpl;
 import org.apache.geode.internal.i18n.LocalizedStrings;
-
-import java.lang.reflect.Method;
+import org.apache.geode.internal.statistics.StatisticsTypeFactoryImpl;
 
 /**
  * Enables off-heap storage by creating a MemoryAllocator.
- * 
+ *
  * @since Geode 1.0
  */
 public class OffHeapStorage implements OffHeapMemoryStats {
@@ -179,7 +179,7 @@ public class OffHeapStorage implements OffHeapMemoryStats {
 
   /**
    * Constructs a MemoryAllocator for off-heap storage.
-   * 
+   *
    * @return MemoryAllocator for off-heap storage
    */
   public static MemoryAllocator createOffHeapStorage(StatisticsFactory sf, long offHeapMemorySize,

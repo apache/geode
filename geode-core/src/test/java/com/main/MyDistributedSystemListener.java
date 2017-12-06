@@ -28,11 +28,11 @@ import org.apache.geode.internal.cache.wan.DistributedSystemListener;
  * This is an implementation of DistributedSystemListener. When a addedDistributedSystem is called a
  * Region is created on both sites and GatewaySender and GatewayReciever is started on site 1 and
  * site 2 respectively.
- * 
+ *
  * When a removedDistributedSystem is called, GatewaySender and GatewayReceiver is stopped on site1
  * and site2 respectively.
- * 
- * 
+ *
+ *
  */
 public class MyDistributedSystemListener implements DistributedSystemListener {
 

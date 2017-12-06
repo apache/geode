@@ -34,7 +34,7 @@ import org.apache.geode.internal.logging.log4j.LogMarker;
 /**
  * A message sent requesting that an evaluation of buckets be made to determine if one or more needs
  * to be backed-up in order to satisfy the redundantCopies setting
- * 
+ *
  * @since GemFire 5.0
  */
 public class BucketBackupMessage extends PartitionMessage {
@@ -57,7 +57,7 @@ public class BucketBackupMessage extends PartitionMessage {
 
   /**
    * Sends a BucketBackupMessage requesting that another VM backup an existing bucket
-   * 
+   *
    * @param recipients the member that the contains keys/value message is sent to
    * @param r the PartitionedRegion that contains the bucket
    */

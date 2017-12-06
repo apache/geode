@@ -21,9 +21,9 @@ import org.apache.geode.internal.i18n.LocalizedStrings;
 /**
  * TXEntryUserAttrState is the entity that tracks transactional changes to an entry user attribute.
  *
- * 
+ *
  * @since GemFire 4.0
- * 
+ *
  */
 public class TXEntryUserAttrState {
   private final Object originalValue;

@@ -65,14 +65,14 @@ public interface DistributionLocatorConfig extends ManagedEntityConfig {
 
   /**
    * Sets the properties used to configure the locator's DistributedSystem.
-   * 
+   *
    * @since GemFire 5.0
    */
   public void setDistributedSystemProperties(Properties props);
 
   /**
    * Retrieves the properties used to configure the locator's DistributedSystem.
-   * 
+   *
    * @since GemFire 5.0
    */
   public Properties getDistributedSystemProperties();

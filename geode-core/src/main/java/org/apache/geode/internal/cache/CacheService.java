@@ -19,14 +19,14 @@ import org.apache.geode.management.internal.beans.CacheServiceMBeanBase;
 
 /**
  * Interface for a service that is linked to a cache.
- * 
+ *
  * These services are loaded during cache initialization using the java ServiceLoader and can be
  * retrieved from the cache by calling Cache.getService(YourInterface.class)
  */
 public interface CacheService {
   /**
    * Initialize the service with a cache.
-   * 
+   *
    * Services are initialized in random order, fairly early on in cache initialization. In
    * particular, the cache.xml has not yet been parsed.
    */
@@ -39,7 +39,7 @@ public interface CacheService {
 
   /**
    * Returns the MBean associated with this server
-   * 
+   *
    * @return the MBean associated with this server
    */
   public CacheServiceMBeanBase getMBean();

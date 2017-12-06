@@ -23,13 +23,6 @@ import static org.apache.geode.distributed.ConfigurationProperties.MCAST_PORT;
 import static org.apache.geode.distributed.ConfigurationProperties.MEMBERSHIP_PORT_RANGE;
 import static org.apache.geode.distributed.ConfigurationProperties.TCP_PORT;
 
-import org.apache.commons.lang.StringUtils;
-import org.apache.geode.distributed.internal.DistributionConfig;
-import org.apache.geode.internal.Assert;
-import org.apache.geode.internal.admin.SSLConfig;
-import org.apache.geode.internal.admin.TransportConfig;
-import org.apache.geode.internal.i18n.LocalizedStrings;
-
 import java.net.UnknownHostException;
 import java.util.Collection;
 import java.util.Collections;
@@ -38,6 +31,14 @@ import java.util.Iterator;
 import java.util.Properties;
 import java.util.Set;
 import java.util.StringTokenizer;
+
+import org.apache.commons.lang.StringUtils;
+
+import org.apache.geode.distributed.internal.DistributionConfig;
+import org.apache.geode.internal.Assert;
+import org.apache.geode.internal.admin.SSLConfig;
+import org.apache.geode.internal.admin.TransportConfig;
+import org.apache.geode.internal.i18n.LocalizedStrings;
 
 /**
  * Tranport config for RemoteGfManagerAgent.
@@ -65,7 +66,7 @@ public class RemoteTransportConfig implements TransportConfig {
    * Creates a new <code>RemoteTransportConfig</code> from the configuration information in a
    * <code>DistributionConfig</code>. We assume that <code>config</code> already been checked for
    * errors.
-   * 
+   *
    * @since GemFire 3.0
    */
   public RemoteTransportConfig(DistributionConfig config, int vmKind) {
@@ -245,7 +246,7 @@ public class RemoteTransportConfig implements TransportConfig {
   /**
    * Returns a <code>Properties</code> based on this config that is appropriate to use with
    * {@link org.apache.geode.distributed.DistributedSystem#connect}.
-   * 
+   *
    * @since GemFire 4.0
    */
   Properties toDSProperties() {

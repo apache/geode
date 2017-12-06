@@ -36,8 +36,8 @@ import org.apache.geode.internal.offheap.annotations.Retained;
 
 /**
  * Handles distribution messaging for invalidating an entry in a region.
- * 
- * 
+ *
+ *
  */
 public class InvalidateOperation extends DistributedCacheOperation {
   private static final Logger logger = LogService.getLogger();
@@ -196,5 +196,3 @@ public class InvalidateOperation extends DistributedCacheOperation {
 
   }
 }
-
-

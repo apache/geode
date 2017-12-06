@@ -16,9 +16,13 @@
 
 package org.apache.geode.internal.admin.remote;
 
+import java.io.*;
+
+import org.apache.logging.log4j.Logger;
+
 import org.apache.geode.DataSerializer;
+import org.apache.geode.distributed.internal.DM;
 import org.apache.geode.distributed.internal.DistributionConfig;
-import org.apache.geode.distributed.internal.DistributionManager;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
 import org.apache.geode.internal.i18n.LocalizedStrings;
@@ -26,12 +30,7 @@ import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.internal.logging.log4j.LocalizedMessage;
 import org.apache.geode.internal.logging.log4j.LogWriterAppender;
 import org.apache.geode.internal.logging.log4j.LogWriterAppenders;
-import org.apache.logging.log4j.Logger;
 
-import java.io.*;
-
-// import org.apache.geode.distributed.DistributedSystem;
-// import java.util.*;
 
 public class TailLogResponse extends AdminResponse {
   private static final Logger logger = LogService.getLogger();
@@ -39,8 +38,7 @@ public class TailLogResponse extends AdminResponse {
   private String tail;
   private String childTail;
 
-  public static TailLogResponse create(DistributionManager dm,
-      InternalDistributedMember recipient) {
+  public static TailLogResponse create(DM dm, InternalDistributedMember recipient) {
     TailLogResponse m = new TailLogResponse();
     m.setRecipient(recipient);
     try {

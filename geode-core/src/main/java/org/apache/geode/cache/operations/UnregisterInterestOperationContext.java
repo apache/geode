@@ -20,7 +20,7 @@ package org.apache.geode.cache.operations;
  * Encapsulates a
  * {@link org.apache.geode.cache.operations.OperationContext.OperationCode#UNREGISTER_INTEREST}
  * region operation for the pre-operation case.
- * 
+ *
  * @since GemFire 5.5
  * @deprecated since Geode1.0, use {@link org.apache.geode.security.ResourcePermission} instead
  */
@@ -28,7 +28,7 @@ public class UnregisterInterestOperationContext extends InterestOperationContext
 
   /**
    * Constructor for the unregister interest operation.
-   * 
+   *
    * @param key the key or list of keys being unregistered
    * @param interestType the <code>InterestType</code> of the unregister request
    */
@@ -38,7 +38,7 @@ public class UnregisterInterestOperationContext extends InterestOperationContext
 
   /**
    * Return the operation associated with the <code>OperationContext</code> object.
-   * 
+   *
    * @return <code>OperationCode.UNREGISTER_INTEREST</code>.
    */
   @Override

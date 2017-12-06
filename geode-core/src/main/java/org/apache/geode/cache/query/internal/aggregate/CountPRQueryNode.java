@@ -18,7 +18,7 @@ import org.apache.geode.cache.query.Aggregator;
 
 /**
  * Computes the count of the rows on the PR query node
- * 
+ *
  *
  */
 public class CountPRQueryNode implements Aggregator {

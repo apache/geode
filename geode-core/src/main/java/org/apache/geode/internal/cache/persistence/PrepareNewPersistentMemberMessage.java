@@ -91,7 +91,7 @@ public class PrepareNewPersistentMemberMessage extends HighPriorityDistributionM
       // get the region from the path, but do NOT wait on initialization,
       // otherwise we could have a distributed deadlock
 
-      Cache cache = CacheFactory.getInstance(dm.getSystem());
+      Cache cache = dm.getExistingCache();
       Region region = cache.getRegion(this.regionPath);
       PersistenceAdvisor persistenceAdvisor = null;
       if (region instanceof DistributedRegion) {

@@ -16,7 +16,7 @@ package org.apache.geode.annotations.experimentalpackage;
 
 /**
  * Used by <tt>ExperimentalJUnitTest</tt>. This is a class in an <tt>Experimental</tt> package.
- * 
+ *
  * @see org.apache.geode.annotations.ExperimentalJUnitTest
  */
 public class ClassInExperimentalPackage {

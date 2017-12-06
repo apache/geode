@@ -15,7 +15,6 @@
 package org.apache.geode.management.internal.configuration;
 
 import static org.apache.geode.distributed.ConfigurationProperties.GROUPS;
-import static org.apache.geode.distributed.ConfigurationProperties.LOCATORS;
 import static org.apache.geode.distributed.ConfigurationProperties.LOG_LEVEL;
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -24,9 +23,9 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
-import org.apache.geode.test.junit.rules.GfshShellConnectionRule;
 import org.apache.geode.test.dunit.rules.MemberVM;
 import org.apache.geode.test.junit.categories.DistributedTest;
+import org.apache.geode.test.junit.rules.GfshCommandRule;
 
 @Category(DistributedTest.class)
 public class ClusterConfigDeployJarDUnitTest extends ClusterConfigTestBase {
@@ -36,7 +35,7 @@ public class ClusterConfigDeployJarDUnitTest extends ClusterConfigTestBase {
   private String group2Jar;
 
   @Rule
-  public GfshShellConnectionRule gfshConnector = new GfshShellConnectionRule();
+  public GfshCommandRule gfshConnector = new GfshCommandRule();
 
   @Before
   public void before() throws Exception {
@@ -54,7 +53,7 @@ public class ClusterConfigDeployJarDUnitTest extends ClusterConfigTestBase {
     gfshConnector.connect(locator);
     assertThat(gfshConnector.isConnected()).isTrue();
 
-    gfshConnector.executeAndVerifyCommand("deploy --jar=" + clusterJarPath);
+    gfshConnector.executeAndAssertThat("deploy --jar=" + clusterJarPath).statusIsSuccess();
     ConfigGroup cluster = new ConfigGroup("cluster").jars("cluster.jar");
     ClusterConfig expectedClusterConfig = new ClusterConfig(cluster);
 
@@ -68,19 +67,13 @@ public class ClusterConfigDeployJarDUnitTest extends ClusterConfigTestBase {
   @Test
   public void testDeployToMultipleLocators() throws Exception {
     MemberVM locator = lsRule.startLocatorVM(0, locatorProps);
-    locatorProps.setProperty(LOCATORS, "localhost[" + locator.getPort() + "]");
-    MemberVM locator2 = lsRule.startLocatorVM(1, locatorProps);
-    locatorProps.setProperty(LOCATORS,
-        "localhost[" + locator.getPort() + "],localhost[" + locator2.getPort() + "]");
-    MemberVM locator3 = lsRule.startLocatorVM(2, locatorProps);
-
-    // has to start a server in order to run deploy command
-    lsRule.startServerVM(3, serverProps, locator.getPort());
+    MemberVM locator2 = lsRule.startLocatorVM(1, locator.getPort());
+    MemberVM locator3 = lsRule.startLocatorVM(2, locator.getPort(), locator2.getPort());
 
     gfshConnector.connect(locator);
     assertThat(gfshConnector.isConnected()).isTrue();
 
-    gfshConnector.executeAndVerifyCommand("deploy --jar=" + clusterJar);
+    gfshConnector.executeAndAssertThat("deploy --jar=" + clusterJar).statusIsSuccess();
 
     ConfigGroup cluster = new ConfigGroup("cluster").jars("cluster.jar");
     ClusterConfig expectedClusterConfig = new ClusterConfig(cluster);
@@ -106,7 +99,7 @@ public class ClusterConfigDeployJarDUnitTest extends ClusterConfigTestBase {
     gfshConnector.connect(locator);
     assertThat(gfshConnector.isConnected()).isTrue();
 
-    gfshConnector.executeAndVerifyCommand("deploy --jar=" + clusterJar);
+    gfshConnector.executeAndAssertThat("deploy --jar=" + clusterJar).statusIsSuccess();
 
     ConfigGroup cluster = new ConfigGroup("cluster").jars("cluster.jar");
     ClusterConfig expectedClusterConfig = new ClusterConfig(cluster);
@@ -115,7 +108,8 @@ public class ClusterConfigDeployJarDUnitTest extends ClusterConfigTestBase {
     expectedClusterConfig.verify(server2);
     expectedClusterConfig.verify(server3);
 
-    gfshConnector.executeAndVerifyCommand("deploy --jar=" + group1Jar + " --group=group1");
+    gfshConnector.executeAndAssertThat("deploy --jar=" + group1Jar + " --group=group1")
+        .statusIsSuccess();
 
     ConfigGroup group1 = new ConfigGroup("group1").jars("group1.jar");
     ClusterConfig expectedGroup1Config = new ClusterConfig(cluster, group1);
@@ -124,7 +118,8 @@ public class ClusterConfigDeployJarDUnitTest extends ClusterConfigTestBase {
     expectedGroup1Config.verify(server2);
     expectedGroup1Config.verify(server3);
 
-    gfshConnector.executeAndVerifyCommand("deploy --jar=" + group2Jar + " --group=group2");
+    gfshConnector.executeAndAssertThat("deploy --jar=" + group2Jar + " --group=group2")
+        .statusIsSuccess();
 
     ConfigGroup group2 = new ConfigGroup("group2").jars("group2.jar");
     ClusterConfig expectedGroup1and2Config = new ClusterConfig(cluster, group1, group2);
@@ -158,7 +153,7 @@ public class ClusterConfigDeployJarDUnitTest extends ClusterConfigTestBase {
     gfshConnector.connect(locator);
     assertThat(gfshConnector.isConnected()).isTrue();
 
-    gfshConnector.executeAndVerifyCommand("deploy --jar=" + clusterJar);
+    gfshConnector.executeAndAssertThat("deploy --jar=" + clusterJar).statusIsSuccess();
 
     // deploy cluster.jar to the cluster
     cluster.addJar("cluster.jar");
@@ -168,7 +163,8 @@ public class ClusterConfigDeployJarDUnitTest extends ClusterConfigTestBase {
     expectedClusterConfig.verify(server3);
 
     // deploy group1.jar to both group1 and group2
-    gfshConnector.executeAndVerifyCommand("deploy --jar=" + group1Jar + " --group=group1,group2");
+    gfshConnector.executeAndAssertThat("deploy --jar=" + group1Jar + " --group=group1,group2")
+        .statusIsSuccess();
 
     group1.addJar("group1.jar");
     group2.addJar("group1.jar");
@@ -178,7 +174,7 @@ public class ClusterConfigDeployJarDUnitTest extends ClusterConfigTestBase {
     server3Config.verify(server3);
 
     // test undeploy cluster
-    gfshConnector.executeAndVerifyCommand("undeploy --jar=cluster.jar");
+    gfshConnector.executeAndAssertThat("undeploy --jar=cluster.jar").statusIsSuccess();
 
     cluster = cluster.removeJar("cluster.jar");
     server3Config.verify(locator);
@@ -186,7 +182,8 @@ public class ClusterConfigDeployJarDUnitTest extends ClusterConfigTestBase {
     server2Config.verify(server2);
     server3Config.verify(server3);
 
-    gfshConnector.executeAndVerifyCommand("undeploy --jar=group1.jar --group=group1");
+    gfshConnector.executeAndAssertThat("undeploy --jar=group1.jar --group=group1")
+        .statusIsSuccess();
 
     group1 = group1.removeJar("group1.jar");
     /*
@@ -227,7 +224,7 @@ public class ClusterConfigDeployJarDUnitTest extends ClusterConfigTestBase {
     gfshConnector.connect(locator);
     assertThat(gfshConnector.isConnected()).isTrue();
 
-    gfshConnector.executeAndVerifyCommand("deploy --jar=" + clusterJar);
+    gfshConnector.executeAndAssertThat("deploy --jar=" + clusterJar).statusIsSuccess();
 
     // deploy cluster.jar to the cluster
     cluster.addJar("cluster.jar");
@@ -237,7 +234,8 @@ public class ClusterConfigDeployJarDUnitTest extends ClusterConfigTestBase {
     expectedClusterConfig.verify(server3);
 
     // deploy group1.jar to both group1 and group2
-    gfshConnector.executeAndVerifyCommand("deploy --jar=" + group1Jar + " --group=group1,group2");
+    gfshConnector.executeAndAssertThat("deploy --jar=" + group1Jar + " --group=group1,group2")
+        .statusIsSuccess();
 
     group1.addJar("group1.jar");
     group2.addJar("group1.jar");
@@ -249,7 +247,7 @@ public class ClusterConfigDeployJarDUnitTest extends ClusterConfigTestBase {
     server3.getVM().bounce();
 
     // test undeploy cluster
-    gfshConnector.executeAndVerifyCommand("undeploy --jar=cluster.jar");
+    gfshConnector.executeAndAssertThat("undeploy --jar=cluster.jar").statusIsSuccess();
     server3 = lsRule.startServerVM(3, serverProps, locator.getPort());
 
     cluster = cluster.removeJar("cluster.jar");
@@ -258,7 +256,8 @@ public class ClusterConfigDeployJarDUnitTest extends ClusterConfigTestBase {
     server2Config.verify(server2);
     server3Config.verify(server3);
 
-    gfshConnector.executeAndVerifyCommand("undeploy --jar=group1.jar --group=group1");
+    gfshConnector.executeAndAssertThat("undeploy --jar=group1.jar --group=group1")
+        .statusIsSuccess();
 
     group1 = group1.removeJar("group1.jar");
     /*

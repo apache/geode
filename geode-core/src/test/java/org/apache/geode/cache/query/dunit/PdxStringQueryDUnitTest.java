@@ -80,8 +80,8 @@ public class PdxStringQueryDUnitTest extends JUnit4CacheTestCase {
   final String regName = "/" + rootRegionName + "/" + regionName;
   private static int bridgeServerPort;
 
-  private final static int orderByQueryIndex = 11;
-  private final static int[] groupByQueryIndex = new int[] {7, 8, 9, 10};
+  private static final int orderByQueryIndex = 11;
+  private static final int[] groupByQueryIndex = new int[] {7, 8, 9, 10};
 
   private final String[] queryString = new String[] {
       "SELECT pos.secId FROM " + regName + " p, p.positions.values pos WHERE pos.secId LIKE '%L'", // 0
@@ -1926,7 +1926,7 @@ public class PdxStringQueryDUnitTest extends JUnit4CacheTestCase {
   /**
    * Test to verify if duplicate results are not being accumulated when PdxString is used in PR
    * query
-   * 
+   *
    * @throws CacheException
    */
   @Test

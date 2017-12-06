@@ -46,8 +46,8 @@ import org.apache.geode.test.junit.categories.FlakyTest;
  * Tests for WAN artifacts like Sender and Receiver. The purpose of this test is not to check WAN
  * functionality , but to verify ManagementServices running properly and reflecting WAN behaviour
  * and data properly
- * 
- * 
+ *
+ *
  */
 @Category(DistributedTest.class)
 public class WANManagementDUnitTest extends ManagementTestBase {
@@ -316,7 +316,7 @@ public class WANManagementDUnitTest extends ManagementTestBase {
 
   /**
    * Checks Proxy GatewaySender
-   * 
+   *
    * @param vm reference to VM
    */
   @SuppressWarnings("serial")
@@ -355,7 +355,7 @@ public class WANManagementDUnitTest extends ManagementTestBase {
 
   /**
    * Checks Proxy GatewayReceiver
-   * 
+   *
    * @param vm reference to VM
    */
   @SuppressWarnings("serial")
@@ -386,7 +386,7 @@ public class WANManagementDUnitTest extends ManagementTestBase {
 
   /**
    * stops a gateway sender
-   * 
+   *
    * @param vm reference to VM
    */
   @SuppressWarnings("serial")
@@ -406,7 +406,7 @@ public class WANManagementDUnitTest extends ManagementTestBase {
 
   /**
    * start a gateway sender
-   * 
+   *
    * @param vm reference to VM
    */
   @SuppressWarnings("serial")
@@ -427,7 +427,7 @@ public class WANManagementDUnitTest extends ManagementTestBase {
 
   /**
    * Checks whether a GatewayReceiverMBean is created or not
-   * 
+   *
    * @param vm reference to VM
    */
   @SuppressWarnings("serial")
@@ -445,7 +445,7 @@ public class WANManagementDUnitTest extends ManagementTestBase {
 
   /**
    * Checks whether a GatewayReceiverMBean is created or not
-   * 
+   *
    * @param vm reference to VM
    */
   @SuppressWarnings("serial")
@@ -473,7 +473,7 @@ public class WANManagementDUnitTest extends ManagementTestBase {
 
   /**
    * Checks whether a Async Queue MBean is created or not
-   * 
+   *
    * @param vm reference to VM
    */
   @SuppressWarnings("serial")
@@ -496,7 +496,7 @@ public class WANManagementDUnitTest extends ManagementTestBase {
 
   /**
    * Checks Proxy Async Queue
-   * 
+   *
    * @param vm reference to VM
    */
   @SuppressWarnings("serial")

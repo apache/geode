@@ -29,7 +29,7 @@ import org.apache.geode.pdx.internal.TypeRegistry;
 
 public class GetPDXIdForType extends BaseCommand {
 
-  private final static GetPDXIdForType singleton = new GetPDXIdForType();
+  private static final GetPDXIdForType singleton = new GetPDXIdForType();
 
   public static Command getCommand() {
     return singleton;

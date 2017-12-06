@@ -33,9 +33,9 @@ import org.junit.experimental.categories.Category;
 
 import org.apache.geode.management.DistributedSystemMXBean;
 import org.apache.geode.management.internal.ManagementConstants;
-import org.apache.geode.test.junit.rules.GfshShellConnectionRule;
-import org.apache.geode.test.junit.rules.LocatorStarterRule;
 import org.apache.geode.test.junit.categories.IntegrationTest;
+import org.apache.geode.test.junit.rules.GfshCommandRule;
+import org.apache.geode.test.junit.rules.LocatorStarterRule;
 
 @Category(IntegrationTest.class)
 public class HttpOperationInvokerMBeanOperationTest {
@@ -46,11 +46,11 @@ public class HttpOperationInvokerMBeanOperationTest {
   private HttpOperationInvoker invoker;
 
   @Rule
-  public GfshShellConnectionRule gfsh = new GfshShellConnectionRule();
+  public GfshCommandRule gfsh = new GfshCommandRule();
 
   @Before
   public void before() throws Exception {
-    gfsh.connectAndVerify(locator.getHttpPort(), GfshShellConnectionRule.PortType.http);
+    gfsh.connectAndVerify(locator.getHttpPort(), GfshCommandRule.PortType.http);
     invoker = (HttpOperationInvoker) gfsh.getGfsh().getOperationInvoker();
   }
 

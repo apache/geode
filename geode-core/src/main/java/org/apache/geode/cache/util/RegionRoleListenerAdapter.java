@@ -21,7 +21,7 @@ import org.apache.geode.cache.RoleEvent;
  * Utility class that implements all methods in <code>RegionRoleListener</code> with empty
  * implementations. Applications can subclass this class and only override the methods for the
  * events of interest.
- * 
+ *
  * @deprecated this feature is scheduled to be removed
  */
 public abstract class RegionRoleListenerAdapter<K, V> extends RegionMembershipListenerAdapter<K, V>
@@ -32,4 +32,3 @@ public abstract class RegionRoleListenerAdapter<K, V> extends RegionMembershipLi
   public void afterRoleLoss(RoleEvent<K, V> event) {}
 
 }
-

@@ -13,7 +13,7 @@
  * the License.
  */
 /**
- * 
+ *
  */
 package org.apache.geode;
 
@@ -44,7 +44,7 @@ public class TestDataSerializer extends DataSerializer {
 
   /*
    * (non-Javadoc)
-   * 
+   *
    * @see org.apache.geode.DataSerializer#getSupportedClasses()
    */
   @Override
@@ -55,7 +55,7 @@ public class TestDataSerializer extends DataSerializer {
 
   /*
    * (non-Javadoc)
-   * 
+   *
    * @see org.apache.geode.DataSerializer#toData(java.lang.Object, java.io.DataOutput)
    */
   @Override
@@ -67,7 +67,7 @@ public class TestDataSerializer extends DataSerializer {
 
   /*
    * (non-Javadoc)
-   * 
+   *
    * @see org.apache.geode.DataSerializer#fromData(java.io.DataInput)
    */
   @Override
@@ -77,7 +77,7 @@ public class TestDataSerializer extends DataSerializer {
 
   /*
    * (non-Javadoc)
-   * 
+   *
    * @see org.apache.geode.DataSerializer#getId()
    */
   @Override
@@ -125,4 +125,3 @@ class TestSupportedClass3 {
     return this.field;
   }
 }
-

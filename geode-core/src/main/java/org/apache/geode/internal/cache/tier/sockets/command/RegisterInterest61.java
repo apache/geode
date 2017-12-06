@@ -46,7 +46,7 @@ import org.apache.geode.security.ResourcePermission.Resource;
  */
 public class RegisterInterest61 extends BaseCommand {
 
-  private final static RegisterInterest61 singleton = new RegisterInterest61();
+  private static final RegisterInterest61 singleton = new RegisterInterest61();
 
   /**
    * A debug flag used for testing vMotion during CQ registration

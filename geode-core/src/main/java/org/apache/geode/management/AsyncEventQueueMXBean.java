@@ -21,9 +21,9 @@ import org.apache.geode.security.ResourcePermission.Resource;
 
 /**
  * MBean that provides access to an {@link AsyncEventQueue}.
- * 
+ *
  * @since GemFire 7.0
- * 
+ *
  */
 @ResourceOperation(resource = Resource.CLUSTER, operation = Operation.READ)
 public interface AsyncEventQueueMXBean {
@@ -55,14 +55,14 @@ public interface AsyncEventQueueMXBean {
 
   /**
    * Returns whether batch conflation for the AsyncEventQueue is enabled
-   * 
+   *
    * @return True if batch conflation is enabled, false otherwise.
    */
   public boolean isBatchConflationEnabled();
 
   /**
    * Returns whether the AsyncEventQueue is configured to be persistent or non-persistent.
-   * 
+   *
    * @return True if the queue is persistent, false otherwise.
    */
   public boolean isPersistent();
@@ -71,7 +71,7 @@ public interface AsyncEventQueueMXBean {
    * Returns whether the queue is primary or secondary. Events get delivered only by the primary
    * queue. If the primary queue goes down then the secondary queue first becomes primary and then
    * starts delivering the events.
-   * 
+   *
    * @return True if this is the primary queue, false otherwise.
    */
   public boolean isPrimary();
@@ -90,14 +90,14 @@ public interface AsyncEventQueueMXBean {
 
   /**
    * Returns whether the isDiskSynchronous property is set for this AsyncEventQueue.
-   * 
+   *
    * @return True if the property is set, false otherwise.
    */
   public boolean isDiskSynchronous();
 
   /**
    * Returns whether the isParallel property is set for this AsyncEventQueue.
-   * 
+   *
    * @return True if the property is set, false otherwise.
    */
   public boolean isParallel();
@@ -109,7 +109,7 @@ public interface AsyncEventQueueMXBean {
 
   /**
    * Returns the Size of the event queue
-   * 
+   *
    * @return integer
    */
   public int getEventQueueSize();

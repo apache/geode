@@ -16,8 +16,8 @@ package org.apache.geode.internal.cache;
 
 /**
  * Test only hand back object passed to
- * 
- * 
+ *
+ *
  */
 public class TestHeapThresholdObserver {
 

@@ -21,18 +21,18 @@ import org.apache.geode.GemFireException;
 /**
  * Thrown when a paritioned region is configured for disk persistence, and part of the data is
  * stored on members that are known to be offline.
- * 
+ *
  * With a partitioned region, the keyspace is segmented into buckets which are assigned to
  * individual members. If all members that are storing data for a particular bucket are offline, any
  * attempt to access or update data in that bucket will throw this exception.
- * 
+ *
  * If you see this exception, that means that you need to restart the members that host the missing
  * data.
- * 
+ *
  * If you receive this exception when attempting an operation that modifies the region (such as a
  * put), it is possible that the change was actually persisted to disk before the member went
  * offline.
- * 
+ *
  * @since GemFire 6.5
  *
  */

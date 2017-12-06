@@ -14,13 +14,13 @@
  */
 package org.apache.geode.test.junit.rules;
 
-import org.junit.rules.TestRule;
-import org.junit.runner.Description;
-import org.junit.runners.model.Statement;
-
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
+
+import org.junit.rules.TestRule;
+import org.junit.runner.Description;
+import org.junit.runners.model.Statement;
 
 /**
  * The {@code RuleList} rule enables ordering of TestRules.

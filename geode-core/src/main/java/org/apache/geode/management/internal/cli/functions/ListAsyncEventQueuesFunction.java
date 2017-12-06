@@ -36,7 +36,7 @@ import org.apache.geode.management.internal.cli.domain.AsyncEventQueueDetails;
  * An implementation of GemFire Function interface used to determine all the async event queues that
  * exist for the entire cache, distributed across the GemFire distributed system.
  * </p>
- * 
+ *
  * @since GemFire 8.0
  */
 public class ListAsyncEventQueuesFunction extends FunctionAdapter implements InternalEntity {

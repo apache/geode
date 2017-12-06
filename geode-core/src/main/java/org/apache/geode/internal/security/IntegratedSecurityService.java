@@ -61,7 +61,7 @@ public class IntegratedSecurityService implements SecurityService {
 
   /**
    * this creates a security service using a SecurityManager
-   * 
+   *
    * @param provider this provides shiro security manager
    * @param postProcessor this can be null
    */

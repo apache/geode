@@ -27,17 +27,17 @@ import org.apache.geode.internal.i18n.LocalizedStrings;
  * partitioned {@link Region}. The setter methods follow the self-return idiom so that they can be
  * "chained" together with the {@link #create} method to create {@link PartitionAttributes}. For
  * example:<br>
- * 
+ *
  * <pre>
  * PartitionAttributes pa =
  *     new PartitionAttributesFactory().setRedundantCopies(1).setLocalMaxMemory(1240).create();
- * 
+ *
  * final Region myRegion = new RegionFactory().setPartitionAttributes(pa)
  *     .setKeyConstraint(String.class).setValueConstraint(ArrayList.class).create("myRegion");
  * </pre>
- * 
+ *
  * </p>
- * 
+ *
  * <p>
  * {@link PartitionAttributes} can also be defined in a declarative fashion using a
  * <a href="package-summary.html#declarative">cache.xml</a> file. Here is an example of how to
@@ -47,7 +47,7 @@ import org.apache.geode.internal.i18n.LocalizedStrings;
  * {@link org.apache.geode.cache.CacheLoader} implementation, and sets
  * {@link #setGlobalProperties(Properties) global properties} as well as
  * {@link #setLocalMaxMemory(int) local max memory to use}.
- * 
+ *
  * <pre>
  *    &lt;root-region name=&quot;pRoot&quot;&gt;
  *      &lt;region-attributes scope=&quot;distributed-ack&quot; &gt;
@@ -56,7 +56,7 @@ import org.apache.geode.internal.i18n.LocalizedStrings;
  *    &lt;/root-region&gt;
  * </pre>
  * </p>
- * 
+ *
  * @see org.apache.geode.cache.PartitionAttributes
  * @see org.apache.geode.cache.AttributesFactory#setPartitionAttributes(PartitionAttributes)
  * @since GemFire 5.0
@@ -95,7 +95,7 @@ public class PartitionAttributesFactory<K, V> {
 
   /**
    * The default maximum amount of memory to be used by this region in this process, in megabytes.
-   * 
+   *
    * @deprecated Use {@link PartitionAttributesImpl#getLocalMaxMemoryDefault()} instead.
    */
   @Deprecated
@@ -142,7 +142,7 @@ public class PartitionAttributesFactory<K, V> {
    * Creates a new instance of PartitionAttributesFactory ready to create a
    * {@link PartitionAttributes} with the same settings as those in the specified
    * {@link PartitionAttributes}
-   * 
+   *
    * @param pa the <code>PartitionAttributes</code> used to initialize this
    *        PartitionAttributesFactory
    */
@@ -160,9 +160,9 @@ public class PartitionAttributesFactory<K, V> {
    * <p>
    * <em>This setting must be the same in all processes using the Region.</em> Default number of
    * redundant copies is 0.
-   * 
+   *
    * @param redundantCopies the number of redundant bucket copies, limited to values 0, 1, 2 and 3.
-   * 
+   *
    * @return this
    */
   public PartitionAttributesFactory<K, V> setRedundantCopies(int redundantCopies) {
@@ -173,7 +173,7 @@ public class PartitionAttributesFactory<K, V> {
   /**
    * Sets the cache writer for the next <code>PartitionAttributes</code> created. <i>Currently
    * unsupported for the early access release.</i>
-   * 
+   *
    * @param cacheWriter the cache writer or null if no cache writer
    * @return this public PartitionAttributesFactory<K,V> setCacheWriter(CacheWriter cacheWriter) {
    *         this.partitionAttributes.setCacheWriter(cacheWriter); return this; }
@@ -246,7 +246,7 @@ public class PartitionAttributesFactory<K, V> {
    * Sets the delay in milliseconds that existing members will wait before satisfying redundancy
    * after another member crashes. Default value is set to -1 which indicates that redundancy will
    * not be recovered after a failure.
-   * 
+   *
    * @since GemFire 6.0
    */
   public PartitionAttributesFactory<K, V> setRecoveryDelay(long recoveryDelay) {
@@ -258,7 +258,7 @@ public class PartitionAttributesFactory<K, V> {
    * Sets the delay in milliseconds that new members will wait before satisfying redundancy. -1
    * indicates that adding new members will not trigger redundancy recovery. The default (set to 0)
    * is to recover redundancy immediately when a new member is added.
-   * 
+   *
    * @since GemFire 6.0
    */
   public PartitionAttributesFactory<K, V> setStartupRecoveryDelay(long startupRecoveryDelay) {
@@ -268,7 +268,7 @@ public class PartitionAttributesFactory<K, V> {
 
   /**
    * adds a PartitionListener for the partitioned region.
-   * 
+   *
    * @param listener
    * @return PartitionAttributeFactory
    * @since GemFire 6.5
@@ -289,11 +289,11 @@ public class PartitionAttributesFactory<K, V> {
    * Sets the <code>Properties</code> for the local instance the partitioned Region. Local
    * properties define how the local instance of the partitioned region and any storage it may
    * provide, behaves. There are currently no non-deprecated local properties.
-   * 
+   *
    * @deprecated use {@link #setLocalMaxMemory(int)} in GemFire 5.1 and later releases
    * @param localProps
    * @return PartitionAttributeFactory.
-   * 
+   *
    */
   @Deprecated
   public PartitionAttributesFactory<K, V> setLocalProperties(Properties localProps) {
@@ -310,12 +310,12 @@ public class PartitionAttributesFactory<K, V> {
    * Global properties define how the entire partitioned Region behaves.
    * <p>
    * Note that global settings must be the same in all processes using the Region.
-   * 
+   *
    * @deprecated use {@link #setTotalMaxMemory(long)} and {@link #setTotalNumBuckets(int)} in
    *             GemFire 5.1 and later releases
    * @param globalProps
    * @return PartitionAttributeFactory.
-   * 
+   *
    * @see #GLOBAL_MAX_MEMORY_PROPERTY
    */
   @Deprecated
@@ -326,7 +326,7 @@ public class PartitionAttributesFactory<K, V> {
 
   /**
    * FixedPartitionAttributes defined for this partitioned region is added to PR attributes.
-   * 
+   *
    * @since GemFire 6.6
    */
   public PartitionAttributesFactory<K, V> addFixedPartitionAttributes(
@@ -342,7 +342,7 @@ public class PartitionAttributesFactory<K, V> {
   /**
    * Sets the idleTimeout expiration attributes for region entries for the next
    * <code>PartitionAttributes</code> created.
-   * 
+   *
    * @param idleTimeout the idleTimeout ExpirationAttributes for entries in this region
    * @throws IllegalArgumentException if idleTimeout is null
    * @return PartitionAttributeFactory
@@ -357,7 +357,7 @@ public class PartitionAttributesFactory<K, V> {
   /**
    * Sets the timeToLive expiration attributes for region entries for the next
    * <code>PartitionAttributes</code> created.
-   * 
+   *
    * @param timeToLive the timeToLive ExpirationAttributes for entries in this region
    * @throws IllegalArgumentException if timeToLive is null
    */
@@ -371,7 +371,7 @@ public class PartitionAttributesFactory<K, V> {
   /**
    * Enables/Disables local Caching for this node for region entries for the next
    * <code>PartitionAttributes</code> created. Default is true.
-   * 
+   *
    * @param isLocalCache
    * @return PartitionAttributesFactory
    */
@@ -386,7 +386,7 @@ public class PartitionAttributesFactory<K, V> {
   // FACTORY METHOD
   /**
    * Creates a <code>PartitionAttributes</code> with the current settings.
-   * 
+   *
    * @return the newly created <code>PartitionAttributes</code>
    * @throws IllegalStateException if the current settings violate the
    *         <a href="#compatibility">compatibility rules </a>

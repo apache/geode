@@ -26,8 +26,8 @@ import org.apache.geode.internal.logging.LogService;
 /**
  * This listener is added to the cache when a node becomes Managing node. It then starts to listen
  * on various membership events to take steps accordingly
- * 
- * 
+ *
+ *
  */
 
 public class ManagementMembershipListener implements MembershipListener {

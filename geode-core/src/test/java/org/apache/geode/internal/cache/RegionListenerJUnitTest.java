@@ -14,16 +14,17 @@
  */
 package org.apache.geode.internal.cache;
 
-import org.apache.geode.cache.*;
-import org.apache.geode.test.junit.categories.IntegrationTest;
-import org.junit.Test;
-import org.junit.experimental.categories.Category;
-
-import java.util.concurrent.atomic.AtomicBoolean;
-
 import static org.apache.geode.distributed.ConfigurationProperties.MCAST_PORT;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
+
+import java.util.concurrent.atomic.AtomicBoolean;
+
+import org.junit.Test;
+import org.junit.experimental.categories.Category;
+
+import org.apache.geode.cache.*;
+import org.apache.geode.test.junit.categories.IntegrationTest;
 
 @Category(IntegrationTest.class)
 public class RegionListenerJUnitTest {
@@ -31,6 +32,7 @@ public class RegionListenerJUnitTest {
   @Test
   public void test() {
     final AtomicBoolean afterCreateInvoked = new AtomicBoolean();
+    final AtomicBoolean beforeDestroyedInvoked = new AtomicBoolean();
     RegionListener listener = new RegionListener() {
 
       @Override
@@ -45,6 +47,11 @@ public class RegionListenerJUnitTest {
       public void afterCreate(Region region) {
         afterCreateInvoked.set(true);
       }
+
+      @Override
+      public void beforeDestroyed(Region region) {
+        beforeDestroyedInvoked.set(true);
+      }
     };
 
     GemFireCacheImpl cache = (GemFireCacheImpl) new CacheFactory().set(MCAST_PORT, "0").create();
@@ -52,6 +59,8 @@ public class RegionListenerJUnitTest {
     Region region = cache.createRegionFactory(RegionShortcut.REPLICATE).create("region");
     assertEquals(DataPolicy.EMPTY, region.getAttributes().getDataPolicy());
     assertTrue(afterCreateInvoked.get());
+    region.destroyRegion();
+    assertTrue(beforeDestroyedInvoked.get());
   }
 
 }

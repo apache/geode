@@ -15,10 +15,10 @@
 
 package org.apache.geode.internal.cache.locks;
 
+import java.util.*;
+
 import org.apache.geode.cache.CommitConflictException;
 import org.apache.geode.distributed.internal.locks.*;
-
-import java.util.*;
 
 /**
  * Provides transaction locking service for coordinating transactions.
@@ -102,7 +102,7 @@ public abstract class TXLockService {
    * Updates the set of participants for a given tx lock reference.
    *
    * @param txLockId the tx lock reference as generated from the call to <code>txLock</code>
-   * 
+   *
    * @param updatedParticipants the set of new participants generated from the advisor for each
    *        <code>Region</code> in the transaction.
    *
@@ -151,4 +151,3 @@ public abstract class TXLockService {
   abstract void basicDestroy();
 
 }
-

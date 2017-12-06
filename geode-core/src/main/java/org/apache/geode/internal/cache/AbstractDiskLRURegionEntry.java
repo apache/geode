@@ -16,6 +16,7 @@
 package org.apache.geode.internal.cache;
 
 
+import org.apache.geode.internal.cache.entries.AbstractOplogDiskRegionEntry;
 import org.apache.geode.internal.cache.lru.LRUEntry;
 
 /**

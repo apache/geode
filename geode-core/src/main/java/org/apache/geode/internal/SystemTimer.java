@@ -36,7 +36,7 @@ import org.apache.geode.internal.logging.log4j.LocalizedMessage;
 /**
  * Instances of this class are like {@link Timer}, but are associated with a "swarm", which can be
  * cancelled as a group with {@link #cancelSwarm(Object)}.
- * 
+ *
  * @see Timer
  * @see TimerTask
  *
@@ -46,7 +46,7 @@ import org.apache.geode.internal.logging.log4j.LocalizedMessage;
 public class SystemTimer {
   private static final Logger logger = LogService.getLogger();
 
-  final static private boolean isIBM =
+  private static final boolean isIBM =
       "IBM Corporation".equals(System.getProperty("java.vm.vendor"));
 
   /**
@@ -58,7 +58,7 @@ public class SystemTimer {
   /**
    * the underlying {@link Timer}
    */
-  final private Timer timer;
+  private final Timer timer;
 
   /**
    * True if this timer has been cancelled
@@ -68,7 +68,7 @@ public class SystemTimer {
   /**
    * the swarm to which this timer belongs
    */
-  final private Object /* T */ swarm;
+  private final Object /* T */ swarm;
 
   @Override
   public String toString() {
@@ -82,19 +82,19 @@ public class SystemTimer {
 
   /**
    * List of all of the swarms in the system
-   * 
+   *
    * @guarded.By self
    */
   // <T, HashMap<Object, ArrayList<WeakReference<SystemTimer>>>>
-  static private final HashMap allSwarms = new HashMap();
+  private static final HashMap allSwarms = new HashMap();
 
   /**
    * Add the given timer is in the given swarm. Used only by constructors.
-   * 
+   *
    * @param swarm swarm to add the timer to
    * @param t timer to add
    */
-  static private void addToSwarm(Object /* T */ swarm, SystemTimer t) {
+  private static void addToSwarm(Object /* T */ swarm, SystemTimer t) {
     final boolean isDebugEnabled = logger.isTraceEnabled();
     // Get or add list of timers for this swarm...
     ArrayList /* ArrayList<WeakReference<SystemTimer>> */ swarmSet;
@@ -121,24 +121,24 @@ public class SystemTimer {
 
   /**
    * time that the last sweep was done
-   * 
+   *
    * @see #sweepAllSwarms
    */
   private static long lastSweepAllTime = 0;
 
   /**
    * Interval, in milliseconds, to sweep all swarms, measured from when the last sweep finished
-   * 
+   *
    * @see #sweepAllSwarms
    */
   private static final long SWEEP_ALL_INTERVAL = 2 * 60 * 1000; // 2 minutes
 
   /**
    * Manually garbage collect {@link #allSwarms}, if it hasn't happened in a while.
-   * 
+   *
    * @see #lastSweepAllTime
    */
-  static private void sweepAllSwarms() {
+  private static void sweepAllSwarms() {
     if (System.currentTimeMillis() < lastSweepAllTime + SWEEP_ALL_INTERVAL) {
       // Too soon.
       return;
@@ -182,12 +182,12 @@ public class SystemTimer {
 
   /**
    * Remove given timer from the swarm.
-   * 
+   *
    * @param t timer to remove
-   * 
+   *
    * @see #cancel()
    */
-  static private void removeFromSwarm(SystemTimer t) {
+  private static void removeFromSwarm(SystemTimer t) {
     final boolean isDebugEnabled = logger.isTraceEnabled();
     synchronized (allSwarms) {
       // Get timer's swarm
@@ -242,7 +242,7 @@ public class SystemTimer {
 
   /**
    * Cancel all outstanding timers
-   * 
+   *
    * @param swarm the swarm to cancel
    */
   public static void cancelSwarm(Object /* T */ swarm) {
@@ -420,7 +420,7 @@ public class SystemTimer {
 
   /**
    * Cover class to track behavior of scheduled tasks
-   * 
+   *
    * @see TimerTask
    */
   public abstract static class SystemTimerTask extends TimerTask {

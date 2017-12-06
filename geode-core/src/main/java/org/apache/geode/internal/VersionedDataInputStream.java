@@ -22,7 +22,7 @@ import java.io.InputStream;
 /**
  * An extension to {@link DataInputStream} that implements {@link VersionedDataStream} for a stream
  * coming from a different product version.
- * 
+ *
  * @since GemFire 7.1
  */
 public class VersionedDataInputStream extends DataInputStream implements VersionedDataStream {
@@ -31,7 +31,7 @@ public class VersionedDataInputStream extends DataInputStream implements Version
 
   /**
    * Creates a VersionedDataInputStream that uses the specified underlying InputStream.
-   * 
+   *
    * @param in the specified input stream
    * @param version the product version that serialized object on the given input stream
    */

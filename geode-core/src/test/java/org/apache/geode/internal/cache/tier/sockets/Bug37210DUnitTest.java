@@ -21,7 +21,6 @@ import java.util.Iterator;
 import java.util.Map;
 import java.util.Properties;
 
-import org.apache.geode.test.junit.categories.ClientServerTest;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
@@ -45,6 +44,7 @@ import org.apache.geode.test.dunit.LogWriterUtils;
 import org.apache.geode.test.dunit.NetworkUtils;
 import org.apache.geode.test.dunit.VM;
 import org.apache.geode.test.dunit.internal.JUnit4DistributedTestCase;
+import org.apache.geode.test.junit.categories.ClientServerTest;
 import org.apache.geode.test.junit.categories.DistributedTest;
 
 /**
@@ -71,7 +71,7 @@ public class Bug37210DUnitTest extends JUnit4DistributedTestCase {
 
   /**
    * Creates the cache server and sets the port
-   * 
+   *
    * @throws Exception - thrown if any problem occurs in initializing the test
    */
   @Override
@@ -86,7 +86,7 @@ public class Bug37210DUnitTest extends JUnit4DistributedTestCase {
 
   /**
    * Create the cache
-   * 
+   *
    * @param props - properties for DS
    * @return the cache instance
    * @throws Exception - thrown if any problem occurs in cache creation
@@ -105,7 +105,7 @@ public class Bug37210DUnitTest extends JUnit4DistributedTestCase {
 
   /**
    * close the cache instances in server and client during tearDown
-   * 
+   *
    * @throws Exception thrown if any problem occurs in closing cache
    */
   @Override
@@ -125,7 +125,7 @@ public class Bug37210DUnitTest extends JUnit4DistributedTestCase {
    * 4)Explicity close the CacheClientProxy on the server. <br>
    * 5)Verify that HARegionQueue stats are closed and entry for the haregion is removed from
    * dispatchedMessagesMap.
-   * 
+   *
    * @throws Exception - thrown if any problem occurs in test execution
    */
   @Test
@@ -148,7 +148,7 @@ public class Bug37210DUnitTest extends JUnit4DistributedTestCase {
 
   /**
    * Creates and starts the cache-server
-   * 
+   *
    * @return - the port on which cache-server is running
    * @throws Exception - thrown if any problem occurs in cache/server creation
    */
@@ -176,9 +176,9 @@ public class Bug37210DUnitTest extends JUnit4DistributedTestCase {
 
   /**
    * Initializes the cache client
-   * 
+   *
    * @param port - port for the primary cache-server
-   * 
+   *
    * @throws Exception-thrown if any problem occurs in initializing the client
    */
   public static void createClientCache(String host, Integer port) throws Exception {
@@ -206,7 +206,7 @@ public class Bug37210DUnitTest extends JUnit4DistributedTestCase {
   /**
    * Close the CacheClientProxy of the client on the server and verify that ha-stats are closed and
    * the entry for the region is removed from dispatchedMessagesMap.
-   * 
+   *
    */
   public static void closeCacheClientProxyAndVerifyStats() {
     assertEquals("More than one BridgeServers found ", 1, cache.getCacheServers().size());
@@ -236,7 +236,7 @@ public class Bug37210DUnitTest extends JUnit4DistributedTestCase {
 
   /**
    * Do some PUT operations
-   * 
+   *
    * @throws Exception - thrown if any exception occurs in doing PUTs
    */
   public static void doEntryOperations() throws Exception {
@@ -249,7 +249,7 @@ public class Bug37210DUnitTest extends JUnit4DistributedTestCase {
 
   /**
    * Close the cache
-   * 
+   *
    */
   public static void closeCache() {
     if (cache != null && !cache.isClosed()) {

@@ -28,7 +28,7 @@ import org.apache.geode.pdx.internal.TypeRegistry;
 
 /**
  * Captures the pdx types and enums to be exported.
- * 
+ *
  */
 public class ExportedRegistry {
   /** the types */

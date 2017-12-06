@@ -100,7 +100,7 @@ public class LonerTypeRegistration implements TypeRegistration {
   /**
    * Check to see if the current member is a loner and we can't tell if the user wants a peer or a
    * client type registry.
-   * 
+   *
    * @return true if this member is a loner and we can't determine what type of registry they want.
    */
   public static boolean isIndeterminateLoner(InternalCache cache) {

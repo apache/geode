@@ -24,8 +24,8 @@ import org.apache.geode.management.RegionAttributesData;
 /**
  * System-wide aggregate of a named Region. Provides high-level view of a Region for all members
  * hosting and/or using it.
- * 
- * 
+ *
+ *
  */
 public class DistributedRegionMBean implements DistributedRegionMXBean {
 

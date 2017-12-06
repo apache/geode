@@ -34,6 +34,7 @@ import org.junit.experimental.categories.Category;
 import org.apache.geode.cache.*;
 import org.apache.geode.cache.query.data.Portfolio;
 import org.apache.geode.cache.query.data.Position;
+import org.apache.geode.cache.query.data.TestData.MyValue;
 import org.apache.geode.cache.query.internal.DefaultQuery;
 import org.apache.geode.cache.query.internal.QueryObserverAdapter;
 import org.apache.geode.cache.query.internal.QueryObserverHolder;
@@ -41,7 +42,6 @@ import org.apache.geode.cache.query.internal.QueryUtils;
 import org.apache.geode.internal.cache.LocalDataSet;
 import org.apache.geode.internal.cache.PartitionedRegion;
 import org.apache.geode.test.junit.categories.IntegrationTest;
-import org.apache.geode.cache.query.data.TestData.MyValue;
 
 /**
  * Tests reported bugs

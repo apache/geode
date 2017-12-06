@@ -44,7 +44,7 @@ import org.apache.geode.security.ResourcePermission.Resource;
 
 public class Put extends BaseCommand {
 
-  private final static Put singleton = new Put();
+  private static final Put singleton = new Put();
 
   public static Command getCommand() {
     return singleton;

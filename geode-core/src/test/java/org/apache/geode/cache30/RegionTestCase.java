@@ -251,7 +251,7 @@ public abstract class RegionTestCase extends JUnit4CacheTestCase {
 
   /**
    * Indicate whether subregions are supported
-   * 
+   *
    * @return
    */
   protected boolean supportsSubregions() {
@@ -260,7 +260,7 @@ public abstract class RegionTestCase extends JUnit4CacheTestCase {
 
   /**
    * Indicate whether localDestroy and localInvalidate are supported
-   * 
+   *
    * @return true if they are supported
    */
   protected boolean supportsLocalDestroyAndLocalInvalidate() {
@@ -418,7 +418,7 @@ public abstract class RegionTestCase extends JUnit4CacheTestCase {
     assertEquals(subregion, subregions.iterator().next());
   }
 
-  static public boolean entryIsLocal(Region.Entry re) {
+  public static boolean entryIsLocal(Region.Entry re) {
     if (re instanceof EntrySnapshot) {
       return ((EntrySnapshot) re).wasInitiallyLocal();
     } else {
@@ -857,15 +857,15 @@ public abstract class RegionTestCase extends JUnit4CacheTestCase {
     /*
      * Not with ConcurrentHashMaps { Iterator iter = region.entries(false).iterator(); iter.next();
      * region.destroy("B");
-     * 
+     *
      * try { iter.next(); fail("Should have thrown a ConcurrentModificationException");
-     * 
+     *
      * } catch (ConcurrentModificationException ex) { // pass... } }
-     * 
+     *
      * { Iterator iter = region.entries(false).iterator(); iter.next(); region.put("D", "d");
-     * 
+     *
      * try { iter.next(); fail("Should have thrown a ConcurrentModificationException");
-     * 
+     *
      * } catch (ConcurrentModificationException ex) { // pass... } }
      */
     {
@@ -1131,15 +1131,15 @@ public abstract class RegionTestCase extends JUnit4CacheTestCase {
     /*
      * not with ConcurrentHashMap { Iterator iter = region.keys().iterator(); iter.next();
      * region.destroy("B");
-     * 
+     *
      * try { iter.next(); fail("Should have thrown a ConcurrentModificationException");
-     * 
+     *
      * } catch (ConcurrentModificationException ex) { // pass... } }
-     * 
+     *
      * { Iterator iter = region.keys().iterator(); iter.next(); region.put("D", "d");
-     * 
+     *
      * try { iter.next(); fail("Should have thrown a ConcurrentModificationException");
-     * 
+     *
      * } catch (ConcurrentModificationException ex) { // pass... } }
      */
   }
@@ -1728,16 +1728,16 @@ public abstract class RegionTestCase extends JUnit4CacheTestCase {
     /*
      * not with ConcurrentHashMaps { Iterator iter = region.subregions(false).iterator(); Region sub
      * = (Region) iter.next(); sub.destroyRegion();
-     * 
+     *
      * try { iter.next(); fail("Should have thrown a ConcurrentModificationException");
-     * 
+     *
      * } catch (ConcurrentModificationException ex) { // pass... } }
-     * 
+     *
      * { Iterator iter = region.subregions(false).iterator(); iter.next();
      * region.createSubregion("D", region.getAttributes());
-     * 
+     *
      * try { iter.next(); fail("Should have thrown a ConcurrentModificationException");
-     * 
+     *
      * } catch (ConcurrentModificationException ex) { // pass... } }
      */
   }
@@ -1777,20 +1777,20 @@ public abstract class RegionTestCase extends JUnit4CacheTestCase {
     /*
      * not with ConcurrentHashMaps { Iterator iter = region.subregions(true).iterator();
      * iter.next();
-     * 
+     *
      * // Destroy in the subregion should effect parent region's // iterator B.destroyRegion();
-     * 
+     *
      * try { iter.next(); fail("Should have thrown a ConcurrentModificationException");
-     * 
+     *
      * } catch (ConcurrentModificationException ex) { // pass... } }
-     * 
+     *
      * { Iterator iter = region.subregions(true).iterator(); iter.next();
-     * 
+     *
      * // Modifying the subregion should effect parent region's // iterator A.createSubregion("G",
      * getRAs(region.getAttributes()));
-     * 
+     *
      * try { iter.next(); fail("Should have thrown a ConcurrentModificationException");
-     * 
+     *
      * } catch (ConcurrentModificationException ex) { // pass... } }
      */
   }
@@ -1857,11 +1857,11 @@ public abstract class RegionTestCase extends JUnit4CacheTestCase {
 
   // Helper functions
   ////////////////////////////
-  static private final String WAIT_PROPERTY = "UpdatePropagationDUnitTest.maxWaitTime";
-  static private final int WAIT_DEFAULT = 60000;
+  private static final String WAIT_PROPERTY = "UpdatePropagationDUnitTest.maxWaitTime";
+  private static final int WAIT_DEFAULT = 60000;
 
 
-  static private final int SLOP = 1000; // milliseconds
+  private static final int SLOP = 1000; // milliseconds
 
   private Object fetchEntryValue(Region.Entry re) {
     if (re.isLocal()) {
@@ -1880,7 +1880,7 @@ public abstract class RegionTestCase extends JUnit4CacheTestCase {
   /**
    * Since <em>tilt</em> is the earliest time we expect, one must check the current time
    * <em>before</em> invoking the operation intended to keep the entry alive.
-   * 
+   *
    * @param entry entry we want to be invalidated
    * @param p_tilt earliest time we expect to see the invalidate
    */
@@ -1891,7 +1891,7 @@ public abstract class RegionTestCase extends JUnit4CacheTestCase {
   /**
    * Since <em>tilt</em> is the earliest time we expect, one must check the current time
    * <em>before</em> invoking the operation intended to keep the entry alive.
-   * 
+   *
    * @param entry entry we want to be invalidated
    * @param p_tilt earliest time we expect to see the invalidate
    * @param pauseMs the number of milliseconds to pause before checking again
@@ -1961,7 +1961,7 @@ public abstract class RegionTestCase extends JUnit4CacheTestCase {
   /**
    * Since <em>tilt</em> is the earliest time we expect, one must check the current time
    * <em>before</em> invoking the operation intended to keep the entry alive.
-   * 
+   *
    * @param entry entry we want to be invalidated
    * @param p_tilt earliest time we expect to see the invalidate
    */
@@ -1972,7 +1972,7 @@ public abstract class RegionTestCase extends JUnit4CacheTestCase {
   /**
    * Since <em>tilt</em> is the earliest time we expect, one must check the current time
    * <em>before</em> invoking the operation intended to keep the entry alive.
-   * 
+   *
    * @param entry entry we want to be invalidated
    * @param p_tilt earliest time we expect to see the invalidate
    * @param pauseMs the number of milliseconds to pause before checking again
@@ -2015,7 +2015,7 @@ public abstract class RegionTestCase extends JUnit4CacheTestCase {
   /**
    * Since <em>tilt</em> is the earliest time we expect, one must check the current time
    * <em>before</em> invoking the operation intended to keep the region alive.
-   * 
+   *
    * @param region region we want to be destroyed
    * @param p_tilt earliest time we expect to see the destroy
    */
@@ -2792,7 +2792,7 @@ public abstract class RegionTestCase extends JUnit4CacheTestCase {
 
     /*
      * (non-Javadoc)
-     * 
+     *
      * @see org.apache.geode.cache.CustomExpiry#getExpiry(org.apache.geode.cache.Region.Entry)
      */
     public ExpirationAttributes getExpiry(Entry entry) {
@@ -2807,14 +2807,14 @@ public abstract class RegionTestCase extends JUnit4CacheTestCase {
 
     /*
      * (non-Javadoc)
-     * 
+     *
      * @see org.apache.geode.cache.Declarable#init(java.util.Properties)
      */
     public void init(Properties props) {}
 
     /*
      * (non-Javadoc)
-     * 
+     *
      * @see org.apache.geode.cache.CacheCallback#close()
      */
     public void close() {}
@@ -3264,7 +3264,7 @@ public abstract class RegionTestCase extends JUnit4CacheTestCase {
 
     /**
      * Object --> CountExpiry
-     * 
+     *
      * @guarded.By CountExpiry.class
      */
     static final HashMap invokeCounts = new HashMap();
@@ -3279,7 +3279,7 @@ public abstract class RegionTestCase extends JUnit4CacheTestCase {
 
     /*
      * (non-Javadoc)
-     * 
+     *
      * @see org.apache.geode.cache.CustomExpiry#getExpiry(org.apache.geode.cache.Region.Entry)
      */
     public ExpirationAttributes getExpiry(Entry entry) {
@@ -3300,14 +3300,14 @@ public abstract class RegionTestCase extends JUnit4CacheTestCase {
 
     /*
      * (non-Javadoc)
-     * 
+     *
      * @see org.apache.geode.cache.Declarable#init(java.util.Properties)
      */
     public void init(Properties props) {}
 
     /*
      * (non-Javadoc)
-     * 
+     *
      * @see org.apache.geode.cache.CacheCallback#close()
      */
     public void close() {}
@@ -3569,7 +3569,7 @@ public abstract class RegionTestCase extends JUnit4CacheTestCase {
 
   /**
    * Verify that accessing an entry resets its idle time
-   * 
+   *
    * @throws Exception
    */
   @Test
@@ -3956,7 +3956,7 @@ public abstract class RegionTestCase extends JUnit4CacheTestCase {
    * Tests basic creation and loading of a snapshot from perspective of single VM
    */
   public static Region preSnapshotRegion = null;
-  private final static int MAX_KEYS = 10;
+  private static final int MAX_KEYS = 10;
 
   @Test
   public void testSnapshot() throws IOException, CacheException, ClassNotFoundException {

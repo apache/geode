@@ -38,9 +38,6 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.atomic.AtomicInteger;
 
-import org.apache.geode.cache.partition.PartitionRegionHelper;
-import org.apache.geode.internal.cache.control.InternalResourceManager;
-import org.apache.geode.internal.cache.control.InternalResourceManager.ResourceObserver;
 import org.junit.experimental.categories.Category;
 
 import org.apache.geode.DataSerializable;
@@ -74,6 +71,7 @@ import org.apache.geode.cache.control.RebalanceFactory;
 import org.apache.geode.cache.control.RebalanceOperation;
 import org.apache.geode.cache.control.RebalanceResults;
 import org.apache.geode.cache.control.ResourceManager;
+import org.apache.geode.cache.partition.PartitionRegionHelper;
 import org.apache.geode.cache.persistence.PartitionOfflineException;
 import org.apache.geode.cache.util.CacheListenerAdapter;
 import org.apache.geode.cache.wan.GatewayEventFilter;
@@ -90,6 +88,8 @@ import org.apache.geode.internal.cache.ForceReattemptException;
 import org.apache.geode.internal.cache.GemFireCacheImpl;
 import org.apache.geode.internal.cache.PartitionedRegion;
 import org.apache.geode.internal.cache.RegionQueue;
+import org.apache.geode.internal.cache.control.InternalResourceManager;
+import org.apache.geode.internal.cache.control.InternalResourceManager.ResourceObserver;
 import org.apache.geode.internal.cache.lru.Sizeable;
 import org.apache.geode.test.dunit.Assert;
 import org.apache.geode.test.dunit.Host;
@@ -507,7 +507,7 @@ public class AsyncEventQueueTestBase extends JUnit4DistributedTestCase {
    * This method verifies the queue size of a ParallelGatewaySender. For ParallelGatewaySender
    * conflation happens in a separate thread, hence test code needs to wait for some time for
    * expected result
-   * 
+   *
    * @param asyncQueueId Async Queue ID
    * @param numQueueEntries expected number of Queue entries
    * @throws Exception

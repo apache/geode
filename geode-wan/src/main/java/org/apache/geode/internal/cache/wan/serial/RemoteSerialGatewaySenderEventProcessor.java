@@ -16,10 +16,10 @@ package org.apache.geode.internal.cache.wan.serial;
 
 import org.apache.logging.log4j.Logger;
 
-import org.apache.geode.internal.cache.wan.GatewaySenderEventRemoteDispatcher;
-import org.apache.geode.internal.cache.wan.GatewaySenderEventCallbackDispatcher;
 import org.apache.geode.cache.wan.GatewaySender;
 import org.apache.geode.internal.cache.wan.AbstractGatewaySender;
+import org.apache.geode.internal.cache.wan.GatewaySenderEventCallbackDispatcher;
+import org.apache.geode.internal.cache.wan.GatewaySenderEventRemoteDispatcher;
 import org.apache.geode.internal.logging.LogService;
 
 public class RemoteSerialGatewaySenderEventProcessor extends SerialGatewaySenderEventProcessor {

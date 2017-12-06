@@ -26,8 +26,8 @@ import org.json.JSONObject;
 
 /**
  * Wrapper over JSONObject.
- * 
- * 
+ *
+ *
  * @since GemFire 7.0
  */
 public class GfJsonObject {
@@ -73,7 +73,7 @@ public class GfJsonObject {
   }
 
   /**
-   * 
+   *
    * @param source A string beginning with { (left brace) and ending with } (right brace).
    * @throws GfJsonException - If there is a syntax error in the source string or a duplicated key.
    */
@@ -86,7 +86,7 @@ public class GfJsonObject {
   }
 
   /**
-   * 
+   *
    * @param key
    * @param value
    * @return this GfJsonObject
@@ -122,7 +122,7 @@ public class GfJsonObject {
   }
 
   /**
-   * 
+   *
    * @param key
    * @param value
    * @return this GfJsonObject
@@ -167,6 +167,11 @@ public class GfJsonObject {
     if (opt instanceof GfJsonObject) {
       return (GfJsonObject) opt;
     }
+
+    if (opt == null) {
+      return null;
+    }
+
     return new GfJsonObject(opt);
   }
 
@@ -175,7 +180,7 @@ public class GfJsonObject {
   }
 
   /**
-   * 
+   *
    * @param key
    * @return this GfJsonObject
    * @throws GfJsonException If there is a syntax error while preparing GfJsonArray.
@@ -189,7 +194,7 @@ public class GfJsonObject {
   }
 
   /**
-   * 
+   *
    * @return A GfJsonArray containing the key strings, or null if the internal JSONObject is empty.
    * @throws GfJsonException If there is a syntax error while preparing GfJsonArray.
    */
@@ -204,7 +209,7 @@ public class GfJsonObject {
   }
 
   /**
-   * 
+   *
    * @param key
    * @param value
    * @return this GfJsonObject object
@@ -234,7 +239,7 @@ public class GfJsonObject {
   }
 
   /**
-   * 
+   *
    * @param key
    * @param value
    * @return this GfJsonObject
@@ -250,7 +255,7 @@ public class GfJsonObject {
   }
 
   /**
-   * 
+   *
    * @param key
    * @param value
    * @return this GfJsonObject
@@ -300,6 +305,9 @@ public class GfJsonObject {
     return jsonObject.keys();
   }
 
+  /**
+   * @return the column size of this GfJsonObject
+   */
   public int size() {
     return jsonObject.length();
   }
@@ -313,7 +321,7 @@ public class GfJsonObject {
   }
 
   /**
-   * 
+   *
    * @param indentFactor
    * @return this GfJsonObject
    * @throws GfJsonException If the object contains an invalid number.

@@ -14,14 +14,8 @@
  */
 package org.apache.geode.internal.logging.log4j;
 
-import org.apache.geode.LogWriter;
-import org.apache.geode.distributed.internal.DistributionConfig;
-import org.apache.geode.i18n.LogWriterI18n;
-import org.apache.geode.i18n.StringId;
-import org.apache.geode.internal.logging.GemFireHandler;
-import org.apache.geode.internal.logging.InternalLogWriter;
-import org.apache.geode.internal.logging.LogService;
-import org.apache.geode.internal.logging.log4j.message.GemFireParameterizedMessageFactory;
+import java.util.logging.Handler;
+
 import org.apache.logging.log4j.Level;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -30,12 +24,19 @@ import org.apache.logging.log4j.message.Message;
 import org.apache.logging.log4j.spi.AbstractLogger;
 import org.apache.logging.log4j.spi.ExtendedLoggerWrapper;
 
-import java.util.logging.Handler;
+import org.apache.geode.LogWriter;
+import org.apache.geode.distributed.internal.DistributionConfig;
+import org.apache.geode.i18n.LogWriterI18n;
+import org.apache.geode.i18n.StringId;
+import org.apache.geode.internal.logging.GemFireHandler;
+import org.apache.geode.internal.logging.InternalLogWriter;
+import org.apache.geode.internal.logging.LogService;
+import org.apache.geode.internal.logging.log4j.message.GemFireParameterizedMessageFactory;
 
 /**
  * Implements GemFireLogger with custom levels while also bridging LogWriter and LogWriterI18n to
  * Log4J.
- * 
+ *
  */
 @SuppressWarnings("unused")
 public class LogWriterLogger extends FastLogger implements InternalLogWriter, GemFireLogger {
@@ -62,7 +63,7 @@ public class LogWriterLogger extends FastLogger implements InternalLogWriter, Ge
 
   /**
    * Returns a custom Logger with the specified name and null connectionName.
-   * 
+   *
    * @param name The this.logger name. If null the name of the calling class will be used.
    * @param isSecure True if creating a Logger for security logging.
    * @return The custom Logger.
@@ -73,7 +74,7 @@ public class LogWriterLogger extends FastLogger implements InternalLogWriter, Ge
 
   /**
    * Returns a custom Logger with the specified name.
-   * 
+   *
    * @param name The this.logger name. If null the name of the calling class will be used.
    * @param connectionName The member name (also known as connection name)
    * @param isSecure True if creating a Logger for security logging.
@@ -110,7 +111,7 @@ public class LogWriterLogger extends FastLogger implements InternalLogWriter, Ge
 
   /**
    * Logs a message with the specific Marker at the {@code Level.TRACE} level.
-   * 
+   *
    * @param marker the marker data specific to this log statement
    * @param msg the message string to be logged
    */
@@ -120,7 +121,7 @@ public class LogWriterLogger extends FastLogger implements InternalLogWriter, Ge
 
   /**
    * Logs a message with the specific Marker at the {@code Level.TRACE} level.
-   * 
+   *
    * @param marker the marker data specific to this log statement
    * @param msg the message string to be logged
    * @param t A Throwable or null.
@@ -131,7 +132,7 @@ public class LogWriterLogger extends FastLogger implements InternalLogWriter, Ge
 
   /**
    * Logs a message object with the {@code Level.TRACE} level.
-   * 
+   *
    * @param marker the marker data specific to this log statement
    * @param message the message object to log.
    */
@@ -142,7 +143,7 @@ public class LogWriterLogger extends FastLogger implements InternalLogWriter, Ge
   /**
    * Logs a message at the {@code Level.TRACE} level including the stack trace of the
    * {@link Throwable} {@code t} passed as parameter.
-   * 
+   *
    * @param marker the marker data specific to this log statement
    * @param message the message to log.
    * @param t the exception to log, including its stack trace.
@@ -153,7 +154,7 @@ public class LogWriterLogger extends FastLogger implements InternalLogWriter, Ge
 
   /**
    * Logs a message object with the {@code Level.TRACE} level.
-   * 
+   *
    * @param marker the marker data specific to this log statement
    * @param message the message object to log.
    */
@@ -163,7 +164,7 @@ public class LogWriterLogger extends FastLogger implements InternalLogWriter, Ge
 
   /**
    * Logs a message with parameters at the {@code Level.TRACE} level.
-   * 
+   *
    * @param marker the marker data specific to this log statement
    * @param message the message to log; the format depends on the message factory.
    * @param params parameters to the message.
@@ -176,7 +177,7 @@ public class LogWriterLogger extends FastLogger implements InternalLogWriter, Ge
   /**
    * Logs a message at the {@code Level.TRACE} level including the stack trace of the
    * {@link Throwable} {@code t} passed as parameter.
-   * 
+   *
    * @param marker the marker data specific to this log statement
    * @param message the message to log.
    * @param t the exception to log, including its stack trace.
@@ -187,7 +188,7 @@ public class LogWriterLogger extends FastLogger implements InternalLogWriter, Ge
 
   /**
    * Logs the specified Message at the {@code Level.TRACE} level.
-   * 
+   *
    * @param msg the message string to be logged
    */
   public void finest(final Message msg) {
@@ -196,7 +197,7 @@ public class LogWriterLogger extends FastLogger implements InternalLogWriter, Ge
 
   /**
    * Logs the specified Message at the {@code Level.TRACE} level.
-   * 
+   *
    * @param msg the message string to be logged
    * @param t A Throwable or null.
    */
@@ -206,7 +207,7 @@ public class LogWriterLogger extends FastLogger implements InternalLogWriter, Ge
 
   /**
    * Logs a message object with the {@code Level.TRACE} level.
-   * 
+   *
    * @param message the message object to log.
    */
   public void finest(final Object message) {
@@ -216,7 +217,7 @@ public class LogWriterLogger extends FastLogger implements InternalLogWriter, Ge
   /**
    * Logs a message at the {@code Level.TRACE} level including the stack trace of the
    * {@link Throwable} {@code t} passed as parameter.
-   * 
+   *
    * @param message the message to log.
    * @param t the exception to log, including its stack trace.
    */
@@ -226,7 +227,7 @@ public class LogWriterLogger extends FastLogger implements InternalLogWriter, Ge
 
   /**
    * Logs a message object with the {@code Level.TRACE} level.
-   * 
+   *
    * @param message the message object to log.
    */
   @Override
@@ -236,7 +237,7 @@ public class LogWriterLogger extends FastLogger implements InternalLogWriter, Ge
 
   /**
    * Logs a message with parameters at the {@code Level.TRACE} level.
-   * 
+   *
    * @param message the message to log; the format depends on the message factory.
    * @param params parameters to the message.
    * @see #getMessageFactory()
@@ -248,7 +249,7 @@ public class LogWriterLogger extends FastLogger implements InternalLogWriter, Ge
   /**
    * Logs a message at the {@code Level.TRACE} level including the stack trace of the
    * {@link Throwable} {@code t} passed as parameter.
-   * 
+   *
    * @param message the message to log.
    * @param t the exception to log, including its stack trace.
    */
@@ -259,7 +260,7 @@ public class LogWriterLogger extends FastLogger implements InternalLogWriter, Ge
 
   /**
    * Logs a message with the specific Marker at the {@code Level.TRACE} level.
-   * 
+   *
    * @param marker the marker data specific to this log statement
    * @param msg the message string to be logged
    */
@@ -269,7 +270,7 @@ public class LogWriterLogger extends FastLogger implements InternalLogWriter, Ge
 
   /**
    * Logs a message with the specific Marker at the {@code Level.TRACE} level.
-   * 
+   *
    * @param marker the marker data specific to this log statement
    * @param msg the message string to be logged
    * @param t A Throwable or null.
@@ -280,7 +281,7 @@ public class LogWriterLogger extends FastLogger implements InternalLogWriter, Ge
 
   /**
    * Logs a message object with the {@code Level.TRACE} level.
-   * 
+   *
    * @param marker the marker data specific to this log statement
    * @param message the message object to log.
    */
@@ -291,7 +292,7 @@ public class LogWriterLogger extends FastLogger implements InternalLogWriter, Ge
   /**
    * Logs a message at the {@code Level.TRACE} level including the stack trace of the
    * {@link Throwable} {@code t} passed as parameter.
-   * 
+   *
    * @param marker the marker data specific to this log statement
    * @param message the message to log.
    * @param t the exception to log, including its stack trace.
@@ -302,7 +303,7 @@ public class LogWriterLogger extends FastLogger implements InternalLogWriter, Ge
 
   /**
    * Logs a message object with the {@code Level.TRACE} level.
-   * 
+   *
    * @param marker the marker data specific to this log statement
    * @param message the message object to log.
    */
@@ -312,7 +313,7 @@ public class LogWriterLogger extends FastLogger implements InternalLogWriter, Ge
 
   /**
    * Logs a message with parameters at the {@code Level.TRACE} level.
-   * 
+   *
    * @param marker the marker data specific to this log statement
    * @param message the message to log; the format depends on the message factory.
    * @param params parameters to the message.
@@ -325,7 +326,7 @@ public class LogWriterLogger extends FastLogger implements InternalLogWriter, Ge
   /**
    * Logs a message at the {@code Level.TRACE} level including the stack trace of the
    * {@link Throwable} {@code t} passed as parameter.
-   * 
+   *
    * @param marker the marker data specific to this log statement
    * @param message the message to log.
    * @param t the exception to log, including its stack trace.
@@ -336,7 +337,7 @@ public class LogWriterLogger extends FastLogger implements InternalLogWriter, Ge
 
   /**
    * Logs the specified Message at the {@code Level.TRACE} level.
-   * 
+   *
    * @param msg the message string to be logged
    */
   public void finer(final Message msg) {
@@ -345,7 +346,7 @@ public class LogWriterLogger extends FastLogger implements InternalLogWriter, Ge
 
   /**
    * Logs the specified Message at the {@code Level.TRACE} level.
-   * 
+   *
    * @param msg the message string to be logged
    * @param t A Throwable or null.
    */
@@ -355,7 +356,7 @@ public class LogWriterLogger extends FastLogger implements InternalLogWriter, Ge
 
   /**
    * Logs a message object with the {@code Level.TRACE} level.
-   * 
+   *
    * @param message the message object to log.
    */
   public void finer(final Object message) {
@@ -365,7 +366,7 @@ public class LogWriterLogger extends FastLogger implements InternalLogWriter, Ge
   /**
    * Logs a message at the {@code Level.TRACE} level including the stack trace of the
    * {@link Throwable} {@code t} passed as parameter.
-   * 
+   *
    * @param message the message to log.
    * @param t the exception to log, including its stack trace.
    */
@@ -375,7 +376,7 @@ public class LogWriterLogger extends FastLogger implements InternalLogWriter, Ge
 
   /**
    * Logs a message object with the {@code Level.TRACE} level.
-   * 
+   *
    * @param message the message object to log.
    */
   @Override
@@ -385,7 +386,7 @@ public class LogWriterLogger extends FastLogger implements InternalLogWriter, Ge
 
   /**
    * Logs a message with parameters at the {@code Level.TRACE} level.
-   * 
+   *
    * @param message the message to log; the format depends on the message factory.
    * @param params parameters to the message.
    * @see #getMessageFactory()
@@ -397,7 +398,7 @@ public class LogWriterLogger extends FastLogger implements InternalLogWriter, Ge
   /**
    * Logs a message at the {@code Level.TRACE} level including the stack trace of the
    * {@link Throwable} {@code t} passed as parameter.
-   * 
+   *
    * @param message the message to log.
    * @param t the exception to log, including its stack trace.
    */
@@ -408,7 +409,7 @@ public class LogWriterLogger extends FastLogger implements InternalLogWriter, Ge
 
   /**
    * Logs a message with the specific Marker at the {@code Level.DEBUG} level.
-   * 
+   *
    * @param marker the marker data specific to this log statement
    * @param msg the message string to be logged
    */
@@ -418,7 +419,7 @@ public class LogWriterLogger extends FastLogger implements InternalLogWriter, Ge
 
   /**
    * Logs a message with the specific Marker at the {@code Level.DEBUG} level.
-   * 
+   *
    * @param marker the marker data specific to this log statement
    * @param msg the message string to be logged
    * @param t A Throwable or null.
@@ -429,7 +430,7 @@ public class LogWriterLogger extends FastLogger implements InternalLogWriter, Ge
 
   /**
    * Logs a message object with the {@code Level.DEBUG} level.
-   * 
+   *
    * @param marker the marker data specific to this log statement
    * @param message the message object to log.
    */
@@ -440,7 +441,7 @@ public class LogWriterLogger extends FastLogger implements InternalLogWriter, Ge
   /**
    * Logs a message at the {@code Level.DEBUG} level including the stack trace of the
    * {@link Throwable} {@code t} passed as parameter.
-   * 
+   *
    * @param marker the marker data specific to this log statement
    * @param message the message to log.
    * @param t the exception to log, including its stack trace.
@@ -451,7 +452,7 @@ public class LogWriterLogger extends FastLogger implements InternalLogWriter, Ge
 
   /**
    * Logs a message object with the {@code Level.DEBUG} level.
-   * 
+   *
    * @param marker the marker data specific to this log statement
    * @param message the message object to log.
    */
@@ -461,7 +462,7 @@ public class LogWriterLogger extends FastLogger implements InternalLogWriter, Ge
 
   /**
    * Logs a message with parameters at the {@code Level.DEBUG} level.
-   * 
+   *
    * @param marker the marker data specific to this log statement
    * @param message the message to log; the format depends on the message factory.
    * @param params parameters to the message.
@@ -474,7 +475,7 @@ public class LogWriterLogger extends FastLogger implements InternalLogWriter, Ge
   /**
    * Logs a message at the {@code Level.DEBUG} level including the stack trace of the
    * {@link Throwable} {@code t} passed as parameter.
-   * 
+   *
    * @param marker the marker data specific to this log statement
    * @param message the message to log.
    * @param t the exception to log, including its stack trace.
@@ -485,7 +486,7 @@ public class LogWriterLogger extends FastLogger implements InternalLogWriter, Ge
 
   /**
    * Logs the specified Message at the {@code Level.DEBUG} level.
-   * 
+   *
    * @param msg the message string to be logged
    */
   public void fine(final Message msg) {
@@ -494,7 +495,7 @@ public class LogWriterLogger extends FastLogger implements InternalLogWriter, Ge
 
   /**
    * Logs the specified Message at the {@code Level.DEBUG} level.
-   * 
+   *
    * @param msg the message string to be logged
    * @param t A Throwable or null.
    */
@@ -504,7 +505,7 @@ public class LogWriterLogger extends FastLogger implements InternalLogWriter, Ge
 
   /**
    * Logs a message object with the {@code Level.DEBUG} level.
-   * 
+   *
    * @param message the message object to log.
    */
   public void fine(final Object message) {
@@ -514,7 +515,7 @@ public class LogWriterLogger extends FastLogger implements InternalLogWriter, Ge
   /**
    * Logs a message at the {@code Level.DEBUG} level including the stack trace of the
    * {@link Throwable} {@code t} passed as parameter.
-   * 
+   *
    * @param message the message to log.
    * @param t the exception to log, including its stack trace.
    */
@@ -524,7 +525,7 @@ public class LogWriterLogger extends FastLogger implements InternalLogWriter, Ge
 
   /**
    * Logs a message object with the {@code Level.DEBUG} level.
-   * 
+   *
    * @param message the message object to log.
    */
   @Override
@@ -534,7 +535,7 @@ public class LogWriterLogger extends FastLogger implements InternalLogWriter, Ge
 
   /**
    * Logs a message with parameters at the {@code Level.DEBUG} level.
-   * 
+   *
    * @param message the message to log; the format depends on the message factory.
    * @param params parameters to the message.
    * @see #getMessageFactory()
@@ -546,7 +547,7 @@ public class LogWriterLogger extends FastLogger implements InternalLogWriter, Ge
   /**
    * Logs a message at the {@code Level.DEBUG} level including the stack trace of the
    * {@link Throwable} {@code t} passed as parameter.
-   * 
+   *
    * @param message the message to log.
    * @param t the exception to log, including its stack trace.
    */
@@ -557,7 +558,7 @@ public class LogWriterLogger extends FastLogger implements InternalLogWriter, Ge
 
   /**
    * Logs a message with the specific Marker at the {@code Level.INFO} level.
-   * 
+   *
    * @param marker the marker data specific to this log statement
    * @param msg the message string to be logged
    */
@@ -567,7 +568,7 @@ public class LogWriterLogger extends FastLogger implements InternalLogWriter, Ge
 
   /**
    * Logs a message with the specific Marker at the {@code Level.INFO} level.
-   * 
+   *
    * @param marker the marker data specific to this log statement
    * @param msg the message string to be logged
    * @param t A Throwable or null.
@@ -578,7 +579,7 @@ public class LogWriterLogger extends FastLogger implements InternalLogWriter, Ge
 
   /**
    * Logs a message object with the {@code Level.INFO} level.
-   * 
+   *
    * @param marker the marker data specific to this log statement
    * @param message the message object to log.
    */
@@ -589,7 +590,7 @@ public class LogWriterLogger extends FastLogger implements InternalLogWriter, Ge
   /**
    * Logs a message at the {@code Level.INFO} level including the stack trace of the
    * {@link Throwable} {@code t} passed as parameter.
-   * 
+   *
    * @param marker the marker data specific to this log statement
    * @param message the message to log.
    * @param t the exception to log, including its stack trace.
@@ -600,7 +601,7 @@ public class LogWriterLogger extends FastLogger implements InternalLogWriter, Ge
 
   /**
    * Logs a message object with the {@code Level.INFO} level.
-   * 
+   *
    * @param marker the marker data specific to this log statement
    * @param message the message object to log.
    */
@@ -610,7 +611,7 @@ public class LogWriterLogger extends FastLogger implements InternalLogWriter, Ge
 
   /**
    * Logs a message with parameters at the {@code Level.INFO} level.
-   * 
+   *
    * @param marker the marker data specific to this log statement
    * @param message the message to log; the format depends on the message factory.
    * @param params parameters to the message.
@@ -623,7 +624,7 @@ public class LogWriterLogger extends FastLogger implements InternalLogWriter, Ge
   /**
    * Logs a message at the {@code Level.INFO} level including the stack trace of the
    * {@link Throwable} {@code t} passed as parameter.
-   * 
+   *
    * @param marker the marker data specific to this log statement
    * @param message the message to log.
    * @param t the exception to log, including its stack trace.
@@ -634,7 +635,7 @@ public class LogWriterLogger extends FastLogger implements InternalLogWriter, Ge
 
   /**
    * Logs the specified Message at the {@code Level.INFO} level.
-   * 
+   *
    * @param msg the message string to be logged
    */
   public void config(final Message msg) {
@@ -643,7 +644,7 @@ public class LogWriterLogger extends FastLogger implements InternalLogWriter, Ge
 
   /**
    * Logs the specified Message at the {@code Level.INFO} level.
-   * 
+   *
    * @param msg the message string to be logged
    * @param t A Throwable or null.
    */
@@ -653,7 +654,7 @@ public class LogWriterLogger extends FastLogger implements InternalLogWriter, Ge
 
   /**
    * Logs a message object with the {@code Level.INFO} level.
-   * 
+   *
    * @param message the message object to log.
    */
   public void config(final Object message) {
@@ -663,7 +664,7 @@ public class LogWriterLogger extends FastLogger implements InternalLogWriter, Ge
   /**
    * Logs a message at the {@code Level.INFO} level including the stack trace of the
    * {@link Throwable} {@code t} passed as parameter.
-   * 
+   *
    * @param message the message to log.
    * @param t the exception to log, including its stack trace.
    */
@@ -673,7 +674,7 @@ public class LogWriterLogger extends FastLogger implements InternalLogWriter, Ge
 
   /**
    * Logs a message object with the {@code Level.INFO} level.
-   * 
+   *
    * @param message the message object to log.
    */
   @Override
@@ -683,7 +684,7 @@ public class LogWriterLogger extends FastLogger implements InternalLogWriter, Ge
 
   /**
    * Logs a message with parameters at the {@code Level.INFO} level.
-   * 
+   *
    * @param message the message to log; the format depends on the message factory.
    * @param params parameters to the message.
    * @see #getMessageFactory()
@@ -695,7 +696,7 @@ public class LogWriterLogger extends FastLogger implements InternalLogWriter, Ge
   /**
    * Logs a message at the {@code Level.INFO} level including the stack trace of the
    * {@link Throwable} {@code t} passed as parameter.
-   * 
+   *
    * @param message the message to log.
    * @param t the exception to log, including its stack trace.
    */
@@ -706,7 +707,7 @@ public class LogWriterLogger extends FastLogger implements InternalLogWriter, Ge
 
   /**
    * Logs a message with the specific Marker at the {@code Level.INFO} level.
-   * 
+   *
    * @param marker the marker data specific to this log statement
    * @param msg the message string to be logged
    */
@@ -717,7 +718,7 @@ public class LogWriterLogger extends FastLogger implements InternalLogWriter, Ge
 
   /**
    * Logs a message with the specific Marker at the {@code Level.INFO} level.
-   * 
+   *
    * @param marker the marker data specific to this log statement
    * @param msg the message string to be logged
    * @param t A Throwable or null.
@@ -729,7 +730,7 @@ public class LogWriterLogger extends FastLogger implements InternalLogWriter, Ge
 
   /**
    * Logs a message object with the {@code Level.INFO} level.
-   * 
+   *
    * @param marker the marker data specific to this log statement
    * @param message the message object to log.
    */
@@ -741,7 +742,7 @@ public class LogWriterLogger extends FastLogger implements InternalLogWriter, Ge
   /**
    * Logs a message at the {@code Level.INFO} level including the stack trace of the
    * {@link Throwable} {@code t} passed as parameter.
-   * 
+   *
    * @param marker the marker data specific to this log statement
    * @param message the message to log.
    * @param t the exception to log, including its stack trace.
@@ -753,7 +754,7 @@ public class LogWriterLogger extends FastLogger implements InternalLogWriter, Ge
 
   /**
    * Logs a message object with the {@code Level.INFO} level.
-   * 
+   *
    * @param marker the marker data specific to this log statement
    * @param message the message object to log.
    */
@@ -764,7 +765,7 @@ public class LogWriterLogger extends FastLogger implements InternalLogWriter, Ge
 
   /**
    * Logs a message with parameters at the {@code Level.INFO} level.
-   * 
+   *
    * @param marker the marker data specific to this log statement
    * @param message the message to log; the format depends on the message factory.
    * @param params parameters to the message.
@@ -778,7 +779,7 @@ public class LogWriterLogger extends FastLogger implements InternalLogWriter, Ge
   /**
    * Logs a message at the {@code Level.INFO} level including the stack trace of the
    * {@link Throwable} {@code t} passed as parameter.
-   * 
+   *
    * @param marker the marker data specific to this log statement
    * @param message the message to log.
    * @param t the exception to log, including its stack trace.
@@ -790,7 +791,7 @@ public class LogWriterLogger extends FastLogger implements InternalLogWriter, Ge
 
   /**
    * Logs the specified Message at the {@code Level.INFO} level.
-   * 
+   *
    * @param msg the message string to be logged
    */
   @Override
@@ -800,7 +801,7 @@ public class LogWriterLogger extends FastLogger implements InternalLogWriter, Ge
 
   /**
    * Logs the specified Message at the {@code Level.INFO} level.
-   * 
+   *
    * @param msg the message string to be logged
    * @param t A Throwable or null.
    */
@@ -811,7 +812,7 @@ public class LogWriterLogger extends FastLogger implements InternalLogWriter, Ge
 
   /**
    * Logs a message object with the {@code Level.INFO} level.
-   * 
+   *
    * @param message the message object to log.
    */
   @Override
@@ -822,7 +823,7 @@ public class LogWriterLogger extends FastLogger implements InternalLogWriter, Ge
   /**
    * Logs a message at the {@code Level.INFO} level including the stack trace of the
    * {@link Throwable} {@code t} passed as parameter.
-   * 
+   *
    * @param message the message to log.
    * @param t the exception to log, including its stack trace.
    */
@@ -833,7 +834,7 @@ public class LogWriterLogger extends FastLogger implements InternalLogWriter, Ge
 
   /**
    * Logs a message object with the {@code Level.INFO} level.
-   * 
+   *
    * @param message the message object to log.
    */
   @Override
@@ -843,7 +844,7 @@ public class LogWriterLogger extends FastLogger implements InternalLogWriter, Ge
 
   /**
    * Logs a message with parameters at the {@code Level.INFO} level.
-   * 
+   *
    * @param message the message to log; the format depends on the message factory.
    * @param params parameters to the message.
    * @see #getMessageFactory()
@@ -856,7 +857,7 @@ public class LogWriterLogger extends FastLogger implements InternalLogWriter, Ge
   /**
    * Logs a message at the {@code Level.INFO} level including the stack trace of the
    * {@link Throwable} {@code t} passed as parameter.
-   * 
+   *
    * @param message the message to log.
    * @param t the exception to log, including its stack trace.
    */
@@ -867,7 +868,7 @@ public class LogWriterLogger extends FastLogger implements InternalLogWriter, Ge
 
   /**
    * Logs a message with the specific Marker at the {@code Level.WARN} level.
-   * 
+   *
    * @param marker the marker data specific to this log statement
    * @param msg the message string to be logged
    */
@@ -877,7 +878,7 @@ public class LogWriterLogger extends FastLogger implements InternalLogWriter, Ge
 
   /**
    * Logs a message with the specific Marker at the {@code Level.WARN} level.
-   * 
+   *
    * @param marker the marker data specific to this log statement
    * @param msg the message string to be logged
    * @param t A Throwable or null.
@@ -888,7 +889,7 @@ public class LogWriterLogger extends FastLogger implements InternalLogWriter, Ge
 
   /**
    * Logs a message object with the {@code Level.WARN} level.
-   * 
+   *
    * @param marker the marker data specific to this log statement
    * @param message the message object to log.
    */
@@ -899,7 +900,7 @@ public class LogWriterLogger extends FastLogger implements InternalLogWriter, Ge
   /**
    * Logs a message at the {@code Level.WARN} level including the stack trace of the
    * {@link Throwable} {@code t} passed as parameter.
-   * 
+   *
    * @param marker the marker data specific to this log statement
    * @param message the message to log.
    * @param t the exception to log, including its stack trace.
@@ -910,7 +911,7 @@ public class LogWriterLogger extends FastLogger implements InternalLogWriter, Ge
 
   /**
    * Logs a message object with the {@code Level.WARN} level.
-   * 
+   *
    * @param marker the marker data specific to this log statement
    * @param message the message object to log.
    */
@@ -920,7 +921,7 @@ public class LogWriterLogger extends FastLogger implements InternalLogWriter, Ge
 
   /**
    * Logs a message with parameters at the {@code Level.WARN} level.
-   * 
+   *
    * @param marker the marker data specific to this log statement
    * @param message the message to log; the format depends on the message factory.
    * @param params parameters to the message.
@@ -933,7 +934,7 @@ public class LogWriterLogger extends FastLogger implements InternalLogWriter, Ge
   /**
    * Logs a message at the {@code Level.WARN} level including the stack trace of the
    * {@link Throwable} {@code t} passed as parameter.
-   * 
+   *
    * @param marker the marker data specific to this log statement
    * @param message the message to log.
    * @param t the exception to log, including its stack trace.
@@ -944,7 +945,7 @@ public class LogWriterLogger extends FastLogger implements InternalLogWriter, Ge
 
   /**
    * Logs the specified Message at the {@code Level.WARN} level.
-   * 
+   *
    * @param msg the message string to be logged
    */
   public void warning(final Message msg) {
@@ -953,7 +954,7 @@ public class LogWriterLogger extends FastLogger implements InternalLogWriter, Ge
 
   /**
    * Logs the specified Message at the {@code Level.WARN} level.
-   * 
+   *
    * @param msg the message string to be logged
    * @param t A Throwable or null.
    */
@@ -963,7 +964,7 @@ public class LogWriterLogger extends FastLogger implements InternalLogWriter, Ge
 
   /**
    * Logs a message object with the {@code Level.WARN} level.
-   * 
+   *
    * @param message the message object to log.
    */
   public void warning(final Object message) {
@@ -973,7 +974,7 @@ public class LogWriterLogger extends FastLogger implements InternalLogWriter, Ge
   /**
    * Logs a message at the {@code Level.WARN} level including the stack trace of the
    * {@link Throwable} {@code t} passed as parameter.
-   * 
+   *
    * @param message the message to log.
    * @param t the exception to log, including its stack trace.
    */
@@ -983,7 +984,7 @@ public class LogWriterLogger extends FastLogger implements InternalLogWriter, Ge
 
   /**
    * Logs a message object with the {@code Level.WARN} level.
-   * 
+   *
    * @param message the message object to log.
    */
   @Override
@@ -993,7 +994,7 @@ public class LogWriterLogger extends FastLogger implements InternalLogWriter, Ge
 
   /**
    * Logs a message with parameters at the {@code Level.WARN} level.
-   * 
+   *
    * @param message the message to log; the format depends on the message factory.
    * @param params parameters to the message.
    * @see #getMessageFactory()
@@ -1005,7 +1006,7 @@ public class LogWriterLogger extends FastLogger implements InternalLogWriter, Ge
   /**
    * Logs a message at the {@code Level.WARN} level including the stack trace of the
    * {@link Throwable} {@code t} passed as parameter.
-   * 
+   *
    * @param message the message to log.
    * @param t the exception to log, including its stack trace.
    */
@@ -1016,7 +1017,7 @@ public class LogWriterLogger extends FastLogger implements InternalLogWriter, Ge
 
   /**
    * Logs a message with the specific Marker at the {@code Level.WARN} level.
-   * 
+   *
    * @param marker the marker data specific to this log statement
    * @param msg the message string to be logged
    */
@@ -1027,7 +1028,7 @@ public class LogWriterLogger extends FastLogger implements InternalLogWriter, Ge
 
   /**
    * Logs a message with the specific Marker at the {@code Level.ERROR} level.
-   * 
+   *
    * @param marker the marker data specific to this log statement
    * @param msg the message string to be logged
    * @param t A Throwable or null.
@@ -1039,7 +1040,7 @@ public class LogWriterLogger extends FastLogger implements InternalLogWriter, Ge
 
   /**
    * Logs a message object with the {@code Level.ERROR} level.
-   * 
+   *
    * @param marker the marker data specific to this log statement
    * @param message the message object to log.
    */
@@ -1051,7 +1052,7 @@ public class LogWriterLogger extends FastLogger implements InternalLogWriter, Ge
   /**
    * Logs a message at the {@code Level.ERROR} level including the stack trace of the
    * {@link Throwable} {@code t} passed as parameter.
-   * 
+   *
    * @param marker the marker data specific to this log statement
    * @param message the message to log.
    * @param t the exception to log, including its stack trace.
@@ -1063,7 +1064,7 @@ public class LogWriterLogger extends FastLogger implements InternalLogWriter, Ge
 
   /**
    * Logs a message object with the {@code Level.ERROR} level.
-   * 
+   *
    * @param marker the marker data specific to this log statement
    * @param message the message object to log.
    */
@@ -1074,7 +1075,7 @@ public class LogWriterLogger extends FastLogger implements InternalLogWriter, Ge
 
   /**
    * Logs a message with parameters at the {@code Level.ERROR} level.
-   * 
+   *
    * @param marker the marker data specific to this log statement
    * @param message the message to log; the format depends on the message factory.
    * @param params parameters to the message.
@@ -1088,7 +1089,7 @@ public class LogWriterLogger extends FastLogger implements InternalLogWriter, Ge
   /**
    * Logs a message at the {@code Level.ERROR} level including the stack trace of the
    * {@link Throwable} {@code t} passed as parameter.
-   * 
+   *
    * @param marker the marker data specific to this log statement
    * @param message the message to log.
    * @param t the exception to log, including its stack trace.
@@ -1100,7 +1101,7 @@ public class LogWriterLogger extends FastLogger implements InternalLogWriter, Ge
 
   /**
    * Logs the specified Message at the {@code Level.ERROR} level.
-   * 
+   *
    * @param msg the message string to be logged
    */
   @Override
@@ -1110,7 +1111,7 @@ public class LogWriterLogger extends FastLogger implements InternalLogWriter, Ge
 
   /**
    * Logs the specified Message at the {@code Level.ERROR} level.
-   * 
+   *
    * @param msg the message string to be logged
    * @param t A Throwable or null.
    */
@@ -1121,7 +1122,7 @@ public class LogWriterLogger extends FastLogger implements InternalLogWriter, Ge
 
   /**
    * Logs a message object with the {@code Level.ERROR} level.
-   * 
+   *
    * @param message the message object to log.
    */
   @Override
@@ -1132,7 +1133,7 @@ public class LogWriterLogger extends FastLogger implements InternalLogWriter, Ge
   /**
    * Logs a message at the {@code Level.ERROR} level including the stack trace of the
    * {@link Throwable} {@code t} passed as parameter.
-   * 
+   *
    * @param message the message to log.
    * @param t the exception to log, including its stack trace.
    */
@@ -1143,7 +1144,7 @@ public class LogWriterLogger extends FastLogger implements InternalLogWriter, Ge
 
   /**
    * Logs a message object with the {@code Level.ERROR} level.
-   * 
+   *
    * @param message the message object to log.
    */
   @Override
@@ -1153,7 +1154,7 @@ public class LogWriterLogger extends FastLogger implements InternalLogWriter, Ge
 
   /**
    * Logs a message with parameters at the {@code Level.ERROR} level.
-   * 
+   *
    * @param message the message to log; the format depends on the message factory.
    * @param params parameters to the message.
    * @see #getMessageFactory()
@@ -1166,7 +1167,7 @@ public class LogWriterLogger extends FastLogger implements InternalLogWriter, Ge
   /**
    * Logs a message at the {@code Level.ERROR} level including the stack trace of the
    * {@link Throwable} {@code t} passed as parameter.
-   * 
+   *
    * @param message the message to log.
    * @param t the exception to log, including its stack trace.
    */
@@ -1177,7 +1178,7 @@ public class LogWriterLogger extends FastLogger implements InternalLogWriter, Ge
 
   /**
    * Logs a message with the specific Marker at the {@code Level.FATAL} level.
-   * 
+   *
    * @param marker the marker data specific to this log statement
    * @param msg the message string to be logged
    */
@@ -1187,7 +1188,7 @@ public class LogWriterLogger extends FastLogger implements InternalLogWriter, Ge
 
   /**
    * Logs a message with the specific Marker at the {@code Level.FATAL} level.
-   * 
+   *
    * @param marker the marker data specific to this log statement
    * @param msg the message string to be logged
    * @param t A Throwable or null.
@@ -1198,7 +1199,7 @@ public class LogWriterLogger extends FastLogger implements InternalLogWriter, Ge
 
   /**
    * Logs a message object with the {@code Level.FATAL} level.
-   * 
+   *
    * @param marker the marker data specific to this log statement
    * @param message the message object to log.
    */
@@ -1209,7 +1210,7 @@ public class LogWriterLogger extends FastLogger implements InternalLogWriter, Ge
   /**
    * Logs a message at the {@code Level.FATAL} level including the stack trace of the
    * {@link Throwable} {@code t} passed as parameter.
-   * 
+   *
    * @param marker the marker data specific to this log statement
    * @param message the message to log.
    * @param t the exception to log, including its stack trace.
@@ -1220,7 +1221,7 @@ public class LogWriterLogger extends FastLogger implements InternalLogWriter, Ge
 
   /**
    * Logs a message object with the {@code Level.FATAL} level.
-   * 
+   *
    * @param marker the marker data specific to this log statement
    * @param message the message object to log.
    */
@@ -1230,7 +1231,7 @@ public class LogWriterLogger extends FastLogger implements InternalLogWriter, Ge
 
   /**
    * Logs a message with parameters at the {@code Level.FATAL} level.
-   * 
+   *
    * @param marker the marker data specific to this log statement
    * @param message the message to log; the format depends on the message factory.
    * @param params parameters to the message.
@@ -1243,7 +1244,7 @@ public class LogWriterLogger extends FastLogger implements InternalLogWriter, Ge
   /**
    * Logs a message at the {@code Level.FATAL} level including the stack trace of the
    * {@link Throwable} {@code t} passed as parameter.
-   * 
+   *
    * @param marker the marker data specific to this log statement
    * @param message the message to log.
    * @param t the exception to log, including its stack trace.
@@ -1254,7 +1255,7 @@ public class LogWriterLogger extends FastLogger implements InternalLogWriter, Ge
 
   /**
    * Logs the specified Message at the {@code Level.FATAL} level.
-   * 
+   *
    * @param msg the message string to be logged
    */
   public void severe(final Message msg) {
@@ -1263,7 +1264,7 @@ public class LogWriterLogger extends FastLogger implements InternalLogWriter, Ge
 
   /**
    * Logs the specified Message at the {@code Level.FATAL} level.
-   * 
+   *
    * @param msg the message string to be logged
    * @param t A Throwable or null.
    */
@@ -1273,7 +1274,7 @@ public class LogWriterLogger extends FastLogger implements InternalLogWriter, Ge
 
   /**
    * Logs a message object with the {@code Level.FATAL} level.
-   * 
+   *
    * @param message the message object to log.
    */
   public void severe(final Object message) {
@@ -1283,7 +1284,7 @@ public class LogWriterLogger extends FastLogger implements InternalLogWriter, Ge
   /**
    * Logs a message at the {@code Level.FATAL} level including the stack trace of the
    * {@link Throwable} {@code t} passed as parameter.
-   * 
+   *
    * @param message the message to log.
    * @param t the exception to log, including its stack trace.
    */
@@ -1293,7 +1294,7 @@ public class LogWriterLogger extends FastLogger implements InternalLogWriter, Ge
 
   /**
    * Logs a message object with the {@code Level.FATAL} level.
-   * 
+   *
    * @param message the message object to log.
    */
   @Override
@@ -1303,7 +1304,7 @@ public class LogWriterLogger extends FastLogger implements InternalLogWriter, Ge
 
   /**
    * Logs a message with parameters at the {@code Level.FATAL} level.
-   * 
+   *
    * @param message the message to log; the format depends on the message factory.
    * @param params parameters to the message.
    * @see #getMessageFactory()
@@ -1315,7 +1316,7 @@ public class LogWriterLogger extends FastLogger implements InternalLogWriter, Ge
   /**
    * Logs a message at the {@code Level.FATAL} level including the stack trace of the
    * {@link Throwable} {@code t} passed as parameter.
-   * 
+   *
    * @param message the message to log.
    * @param t the exception to log, including its stack
    *        trace.LogService.getLogWriterLogger().enter()

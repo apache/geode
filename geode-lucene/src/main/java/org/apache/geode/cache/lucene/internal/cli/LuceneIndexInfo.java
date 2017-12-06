@@ -19,16 +19,18 @@ public class LuceneIndexInfo extends LuceneFunctionSerializable {
 
   private final String[] searchableFieldNames;
   private final String[] fieldAnalyzers;
+  private final String serializer;
 
   public LuceneIndexInfo(final String indexName, final String regionPath,
-      final String[] searchableFieldNames, String[] fieldAnalyzers) {
+      final String[] searchableFieldNames, String[] fieldAnalyzers, String serializer) {
     super(indexName, regionPath);
     this.searchableFieldNames = searchableFieldNames;
     this.fieldAnalyzers = fieldAnalyzers;
+    this.serializer = serializer;
   }
 
   public LuceneIndexInfo(final String indexName, final String regionPath) {
-    this(indexName, regionPath, null, null);
+    this(indexName, regionPath, null, null, null);
   }
 
   public String[] getSearchableFieldNames() {
@@ -37,5 +39,9 @@ public class LuceneIndexInfo extends LuceneFunctionSerializable {
 
   public String[] getFieldAnalyzers() {
     return fieldAnalyzers;
+  }
+
+  public String getSerializer() {
+    return serializer;
   }
 }

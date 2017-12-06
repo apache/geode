@@ -14,9 +14,9 @@
  */
 package org.apache.geode.cache30;
 
+import org.apache.geode.LogWriter;
 import org.apache.geode.cache.*;
 import org.apache.geode.distributed.DistributedSystem;
-import org.apache.geode.LogWriter;
 import org.apache.geode.internal.logging.LogWriterImpl;
 import org.apache.geode.internal.logging.LoggingThreadGroup;
 

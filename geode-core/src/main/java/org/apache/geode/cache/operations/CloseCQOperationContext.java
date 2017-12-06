@@ -20,7 +20,7 @@ import java.util.Set;
 /**
  * Encapsulates a {@link org.apache.geode.cache.operations.OperationContext.OperationCode#CLOSE_CQ}
  * operation for the pre-operation case.
- * 
+ *
  * @since GemFire 5.5
  * @deprecated since Geode1.0, use {@link org.apache.geode.security.ResourcePermission} instead
  */
@@ -28,7 +28,7 @@ public class CloseCQOperationContext extends ExecuteCQOperationContext {
 
   /**
    * Constructor for the CLOSE_CQ operation.
-   * 
+   *
    * @param cqName the name of the continuous query being closed
    * @param queryString the query string for this operation
    * @param regionNames names of regions that are part of the query string
@@ -39,7 +39,7 @@ public class CloseCQOperationContext extends ExecuteCQOperationContext {
 
   /**
    * Return the operation associated with the <code>OperationContext</code> object.
-   * 
+   *
    * @return <code>OperationCode.CLOSE_CQ</code>.
    */
   @Override

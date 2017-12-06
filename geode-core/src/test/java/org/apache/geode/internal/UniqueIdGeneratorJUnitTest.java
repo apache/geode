@@ -23,7 +23,7 @@ import org.apache.geode.test.junit.categories.UnitTest;
 
 /**
  * Tests UniqueIdGenerator.
- * 
+ *
  * @since GemFire 5.0.2 (cbb5x_PerfScale)
  */
 @Category(UnitTest.class)

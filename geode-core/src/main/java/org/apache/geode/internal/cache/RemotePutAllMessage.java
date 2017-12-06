@@ -106,7 +106,7 @@ public class RemotePutAllMessage extends RemoteOperationMessageWithDirectReply {
   /*
    * this is similar to send() but it selects an initialized replicate that is used to proxy the
    * message
-   * 
+   *
    */
   public static boolean distribute(EntryEventImpl event, PutAllEntryData[] data, int dataCount) {
     boolean successful = false;
@@ -192,14 +192,14 @@ public class RemotePutAllMessage extends RemoteOperationMessageWithDirectReply {
 
   /*
    * Sends a LocalRegion RemotePutAllMessage to the recipient
-   * 
+   *
    * @param recipient the member to which the put message is sent
-   * 
+   *
    * @param r the LocalRegion for which the put was performed
-   * 
+   *
    * @return the processor used to await acknowledgement that the update was sent, or null to
    * indicate that no acknowledgement will be sent
-   * 
+   *
    * @throws ForceReattemptException if the peer is no longer available
    */
   public static PutAllResponse send(DistributedMember recipient, EntryEventImpl event,
@@ -338,7 +338,7 @@ public class RemotePutAllMessage extends RemoteOperationMessageWithDirectReply {
    * sendMsgByBucket() when processing a msg targeted to local Jvm. LocalRegion Note: It is very
    * important that this message does NOT cause any deadlocks as the sender will wait indefinitely
    * for the acknowledgment
-   * 
+   *
    * @param r partitioned region eventSender the endpoint server who received request from client
    *        lastModified timestamp for last modification
    * @return If succeeds, return true, otherwise, throw exception
@@ -466,7 +466,7 @@ public class RemotePutAllMessage extends RemoteOperationMessageWithDirectReply {
 
     /**
      * Processes this message. This method is invoked by the receiver of the message.
-     * 
+     *
      * @param dm the distribution manager that is processing the message.
      */
     @Override

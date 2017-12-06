@@ -14,24 +14,25 @@
  */
 package org.apache.geode.internal.jta;
 
-import org.apache.geode.cache.*;
-import org.apache.geode.distributed.internal.InternalDistributedSystem;
-import org.apache.geode.internal.logging.LogService;
-import org.apache.geode.test.junit.categories.IntegrationTest;
+import static org.apache.geode.distributed.ConfigurationProperties.MCAST_PORT;
+import static org.junit.Assert.*;
+
+import javax.transaction.Transaction;
+import javax.transaction.TransactionManager;
+
 import org.apache.logging.log4j.Logger;
 import org.junit.After;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
-import javax.transaction.Transaction;
-import javax.transaction.TransactionManager;
-
-import static org.apache.geode.distributed.ConfigurationProperties.MCAST_PORT;
-import static org.junit.Assert.*;
+import org.apache.geode.cache.*;
+import org.apache.geode.distributed.internal.InternalDistributedSystem;
+import org.apache.geode.internal.logging.LogService;
+import org.apache.geode.test.junit.categories.IntegrationTest;
 
 /**
  * Moved some non-DUnit tests over from org/apache/geode/internal/jta/dunit/JTADUnitTest
- * 
+ *
  */
 @Category(IntegrationTest.class)
 public class JtaIntegrationJUnitTest {

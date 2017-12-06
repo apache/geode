@@ -21,7 +21,6 @@ package org.apache.geode.cache.query.functional;
 
 import static org.junit.Assert.fail;
 
-// import org.apache.geode.cache.query.data.Portfolio;
 import java.util.Collection;
 
 import org.junit.After;

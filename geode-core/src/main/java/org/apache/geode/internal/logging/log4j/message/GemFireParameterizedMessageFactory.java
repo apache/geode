@@ -44,7 +44,7 @@ public class GemFireParameterizedMessageFactory extends AbstractMessageFactory {
 
   /**
    * Creates {@link ParameterizedMessage} instances.
-   * 
+   *
    * @param message The message pattern.
    * @param params The message parameters.
    * @return The Message.

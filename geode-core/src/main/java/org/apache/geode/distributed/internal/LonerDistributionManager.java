@@ -14,8 +14,16 @@
  */
 package org.apache.geode.distributed.internal;
 
+import java.io.Serializable;
+import java.net.InetAddress;
+import java.net.UnknownHostException;
+import java.util.*;
+import java.util.concurrent.*;
+
 import org.apache.geode.CancelCriterion;
 import org.apache.geode.InternalGemFireError;
+import org.apache.geode.admin.GemFireHealthConfig;
+import org.apache.geode.cache.CacheClosedException;
 import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.distributed.DurableClientAttributes;
 import org.apache.geode.distributed.Role;
@@ -24,17 +32,11 @@ import org.apache.geode.distributed.internal.membership.InternalDistributedMembe
 import org.apache.geode.distributed.internal.membership.MemberAttributes;
 import org.apache.geode.distributed.internal.membership.MembershipManager;
 import org.apache.geode.i18n.LogWriterI18n;
-import org.apache.geode.internal.net.SocketCreator;
 import org.apache.geode.internal.Version;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.i18n.LocalizedStrings;
 import org.apache.geode.internal.logging.InternalLogWriter;
-
-import java.io.Serializable;
-import java.net.InetAddress;
-import java.net.UnknownHostException;
-import java.util.*;
-import java.util.concurrent.*;
+import org.apache.geode.internal.net.SocketCreator;
 
 /**
  * A <code>LonerDistributionManager</code> is a dm that never communicates with anyone else.
@@ -89,11 +91,11 @@ public class LonerDistributionManager implements DM {
    * org.apache.geode.internal.OSProcess.getId(), DistributionManager.LONER_DM_TYPE,
    * MemberAttributes.parseRoles(system.getConfig().getRoles())); id = new
    * InternalDistributedMember(host, 65535); // noise value for port number
-   * 
+   *
    * } catch (UnknownHostException ex) { throw new InternalError(LocalizedStrings.
    * LonerDistributionManager_CANNOT_RESOLVE_LOCAL_HOST_NAME_TO_AN_IP_ADDRESS.toLocalizedString());
    * }
-   * 
+   *
    * }
    */
 
@@ -101,7 +103,7 @@ public class LonerDistributionManager implements DM {
   private final List<InternalDistributedMember> viewMembers;
   private ConcurrentMap<InternalDistributedMember, InternalDistributedMember> canonicalIds =
       new ConcurrentHashMap();
-  static private final DummyDMStats stats = new DummyDMStats();
+  private static final DummyDMStats stats = new DummyDMStats();
   private final ExecutorService executor = Executors.newCachedThreadPool();
 
   @Override
@@ -1208,7 +1210,7 @@ public class LonerDistributionManager implements DM {
    * update the loner port with an integer that may be more unique than the default port (zero).
    * This updates the ID in place and establishes new default settings for the manufacture of new
    * IDs.
-   * 
+   *
    * @param newPort the new port to use
    */
   public void updateLonerPort(int newPort) {
@@ -1249,7 +1251,7 @@ public class LonerDistributionManager implements DM {
   }
 
   private final Stopper stopper = new Stopper();
-  private InternalCache cache;
+  private volatile InternalCache cache;
 
   public CancelCriterion getCancelCriterion() {
     return stopper;
@@ -1257,7 +1259,7 @@ public class LonerDistributionManager implements DM {
 
   /*
    * (non-Javadoc)
-   * 
+   *
    * @see org.apache.geode.distributed.internal.DM#getMembershipManager()
    */
   public MembershipManager getMembershipManager() {
@@ -1267,7 +1269,7 @@ public class LonerDistributionManager implements DM {
 
   /*
    * (non-Javadoc)
-   * 
+   *
    * @see org.apache.geode.distributed.internal.DM#getRootCause()
    */
   public Throwable getRootCause() {
@@ -1276,16 +1278,16 @@ public class LonerDistributionManager implements DM {
 
   /*
    * (non-Javadoc)
-   * 
+   *
    * @see org.apache.geode.distributed.internal.DM#setRootCause(java.lang.Throwable)
    */
   public void setRootCause(Throwable t) {}
 
   /*
    * (non-Javadoc)
-   * 
+   *
    * @see org.apache.geode.distributed.internal.DM#getMembersOnThisHost()
-   * 
+   *
    * @since GemFire 5.9
    */
   public Set<InternalDistributedMember> getMembersInThisZone() {
@@ -1379,12 +1381,45 @@ public class LonerDistributionManager implements DM {
   }
 
   @Override
+  public void setCache(InternalCache instance) {
+    this.cache = instance;
+  }
+
+  @Override
   public InternalCache getCache() {
     return this.cache;
   }
 
   @Override
-  public void setCache(InternalCache instance) {
-    this.cache = instance;
+  public InternalCache getExistingCache() {
+    InternalCache result = this.cache;
+    if (result == null) {
+      throw new CacheClosedException(
+          LocalizedStrings.CacheFactory_A_CACHE_HAS_NOT_YET_BEEN_CREATED.toLocalizedString());
+    }
+    result.getCancelCriterion().checkCancelInProgress(null);
+    if (result.isClosed()) {
+      throw result.getCacheClosedException(
+          LocalizedStrings.CacheFactory_THE_CACHE_HAS_BEEN_CLOSED.toLocalizedString(), null);
+    }
+    return result;
+  }
+
+  @Override
+  public HealthMonitor getHealthMonitor(InternalDistributedMember owner) {
+    throw new UnsupportedOperationException(
+        "getHealthMonitor is not supported by " + getClass().getSimpleName());
+  }
+
+  @Override
+  public void removeHealthMonitor(InternalDistributedMember owner, int theId) {
+    throw new UnsupportedOperationException(
+        "removeHealthMonitor is not supported by " + getClass().getSimpleName());
+  }
+
+  @Override
+  public void createHealthMonitor(InternalDistributedMember owner, GemFireHealthConfig cfg) {
+    throw new UnsupportedOperationException(
+        "createHealthMonitor is not supported by " + getClass().getSimpleName());
   }
 }

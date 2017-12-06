@@ -23,8 +23,8 @@ import org.apache.geode.internal.statistics.StatisticsTypeFactoryImpl;
 
 /**
  * This class tracks GemFire statistics related to a {@link HARegionQueue}.
- * 
- * 
+ *
+ *
  */
 public class HARegionQueueStats {
   /** The <code>StatisticsType</code> of the statistics */
@@ -162,7 +162,7 @@ public class HARegionQueueStats {
 
   /**
    * Constructor.
-   * 
+   *
    * @param factory The <code>StatisticsFactory</code> which creates the <code>Statistics</code>
    *        instance
    * @param name The name of the <code>Statistics</code>
@@ -182,7 +182,7 @@ public class HARegionQueueStats {
 
   /**
    * Returns the current value of the "eventsQueued" stat.
-   * 
+   *
    * @return the current value of the "eventsQueued" stat
    */
   public long getEventsEnqued() {
@@ -198,7 +198,7 @@ public class HARegionQueueStats {
 
   /**
    * Returns the current value of the "eventsConflated" stat.
-   * 
+   *
    * @return the current value of the "eventsConflated" stat
    */
   public long getEventsConflated() {
@@ -214,7 +214,7 @@ public class HARegionQueueStats {
 
   /**
    * Returns the current value of the "markerEventsConflated" stat.
-   * 
+   *
    * @return the current value of the "markerEventsConflated" stat
    */
   public long getMarkerEventsConflated() {
@@ -230,7 +230,7 @@ public class HARegionQueueStats {
 
   /**
    * Returns the current value of the "eventsRemoved" stat.
-   * 
+   *
    * @return the current value of the "eventsRemoved" stat
    */
   public long getEventsRemoved() {
@@ -246,7 +246,7 @@ public class HARegionQueueStats {
 
   /**
    * Returns the current value of the "eventsTaken" stat.
-   * 
+   *
    * @return the current value of the "eventsTaken" stat
    */
   public long getEventsTaken() {
@@ -262,7 +262,7 @@ public class HARegionQueueStats {
 
   /**
    * Returns the current value of the "eventsExpired" stat.
-   * 
+   *
    * @return the current value of the "eventsExpired" stat
    */
   public long getEventsExpired() {
@@ -278,7 +278,7 @@ public class HARegionQueueStats {
 
   /**
    * Returns the current value of the "eventsRemovedByQrm" stat.
-   * 
+   *
    * @return the current value of the "eventsRemovedByQrm" stat
    */
   public long getEventsRemovedByQrm() {
@@ -294,7 +294,7 @@ public class HARegionQueueStats {
 
   /**
    * Returns the current value of the "threadIdentifiers" stat.
-   * 
+   *
    * @return the current value of the "threadIdentifiers" stat
    */
   public int getThreadIdentiferCount() {
@@ -317,7 +317,7 @@ public class HARegionQueueStats {
 
   /**
    * Returns the current value of the "eventsDispatched" stat.
-   * 
+   *
    * @return the current value of the "eventsDispatched" stat
    */
   public long getEventsDispatched() {
@@ -333,7 +333,7 @@ public class HARegionQueueStats {
 
   /**
    * Returns the current value of the "numVoidRemovals" stat.
-   * 
+   *
    * @return the current value of the "numVoidRemovals" stat
    */
   public long getNumVoidRemovals() {
@@ -349,7 +349,7 @@ public class HARegionQueueStats {
 
   /**
    * Returns the current value of the "numSequenceViolated" stat.
-   * 
+   *
    * @return the current value of the "numSequenceViolated" stat
    */
   public long getNumSequenceViolated() {
@@ -365,7 +365,7 @@ public class HARegionQueueStats {
 
   /**
    * Returns true if the stats instance has been closed.
-   * 
+   *
    * @return true if the stats instance has been closed.
    */
   public boolean isClosed() {

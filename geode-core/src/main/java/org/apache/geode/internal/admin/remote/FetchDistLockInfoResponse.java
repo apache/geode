@@ -16,15 +16,15 @@
 
 package org.apache.geode.internal.admin.remote;
 
-import org.apache.geode.*;
-// import org.apache.geode.internal.*;
-import org.apache.geode.internal.admin.*;
-import org.apache.geode.internal.i18n.LocalizedStrings;
-import org.apache.geode.distributed.internal.*;
-import org.apache.geode.distributed.internal.locks.*;
 import java.io.*;
 import java.util.*;
+
+import org.apache.geode.*;
+import org.apache.geode.distributed.internal.*;
+import org.apache.geode.distributed.internal.locks.*;
 import org.apache.geode.distributed.internal.membership.*;
+import org.apache.geode.internal.admin.*;
+import org.apache.geode.internal.i18n.LocalizedStrings;
 
 public class FetchDistLockInfoResponse extends AdminResponse {
   // instance variables
@@ -35,8 +35,7 @@ public class FetchDistLockInfoResponse extends AdminResponse {
    * recipient. The message will contains a copy of the local manager's distributed lock service
    * information.
    */
-  public static FetchDistLockInfoResponse create(DistributionManager dm,
-      InternalDistributedMember recipient) {
+  public static FetchDistLockInfoResponse create(DM dm, InternalDistributedMember recipient) {
     FetchDistLockInfoResponse m = new FetchDistLockInfoResponse();
     InternalDistributedMember id = dm.getDistributionManagerId();
     Set entries = DLockService.snapshotAllServices().entrySet();

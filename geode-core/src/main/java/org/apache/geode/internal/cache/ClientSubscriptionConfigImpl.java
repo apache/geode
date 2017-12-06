@@ -13,7 +13,7 @@
  * the License.
  */
 /**
- * 
+ *
  */
 package org.apache.geode.internal.cache;
 
@@ -21,7 +21,7 @@ import org.apache.geode.cache.server.ClientSubscriptionConfig;
 import org.apache.geode.internal.i18n.LocalizedStrings;
 
 /**
- * 
+ *
  * Configuration parameters for client subscription
  */
 public class ClientSubscriptionConfigImpl implements ClientSubscriptionConfig {
@@ -56,7 +56,7 @@ public class ClientSubscriptionConfigImpl implements ClientSubscriptionConfig {
   /**
    * Returns the capacity of the client client queue. will be in MB for eviction-policy mem else
    * number of entries
-   * 
+   *
    * @see #DEFAULT_CAPACITY
    * @since GemFire 5.7
    */
@@ -67,7 +67,7 @@ public class ClientSubscriptionConfigImpl implements ClientSubscriptionConfig {
   /**
    * Sets the capacity of the client client queue. will be in MB for eviction-policy mem else number
    * of entries
-   * 
+   *
    * @see #DEFAULT_CAPACITY
    * @since GemFire 5.7
    */
@@ -78,7 +78,7 @@ public class ClientSubscriptionConfigImpl implements ClientSubscriptionConfig {
   /**
    * Returns the eviction policy that is executed when capacity of the client client queue is
    * reached.
-   * 
+   *
    * @see #DEFAULT_EVICTION_POLICY
    * @since GemFire 5.7
    */
@@ -88,7 +88,7 @@ public class ClientSubscriptionConfigImpl implements ClientSubscriptionConfig {
 
   /**
    * Sets the eviction policy that is executed when capacity of the client client queue is reached.
-   * 
+   *
    * @see #DEFAULT_EVICTION_POLICY
    * @since GemFire 5.7
    */
@@ -98,7 +98,7 @@ public class ClientSubscriptionConfigImpl implements ClientSubscriptionConfig {
 
   /**
    * Sets the overflow directory for a client client queue
-   * 
+   *
    * @param overflowDirectory the overflow directory for a client queue's overflowed entries
    * @since GemFire 5.7
    * @deprecated as of prPersistSprint2
@@ -116,7 +116,7 @@ public class ClientSubscriptionConfigImpl implements ClientSubscriptionConfig {
 
   /**
    * Answers the overflow directory for a client queue's overflowed client queue entries.
-   * 
+   *
    * @return the overflow directory for a client queue's overflowed entries
    * @since GemFire 5.7
    * @deprecated as of prPersistSprint2
@@ -144,7 +144,7 @@ public class ClientSubscriptionConfigImpl implements ClientSubscriptionConfig {
 
   /**
    * get the diskStoreName for overflow
-   * 
+   *
    * @since GemFire prPersistSprint2
    */
   public String getDiskStoreName() {
@@ -153,7 +153,7 @@ public class ClientSubscriptionConfigImpl implements ClientSubscriptionConfig {
 
   /**
    * Sets the disk store name for overflow
-   * 
+   *
    * @param diskStoreName
    * @since GemFire prPersistSprint2
    */

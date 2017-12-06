@@ -16,22 +16,16 @@
 
 package org.apache.geode.internal.admin.remote;
 
-// import org.apache.geode.*;
+import java.io.*;
+import java.util.*;
+import java.util.concurrent.locks.Lock;
+
 import org.apache.geode.admin.RuntimeAdminException;
 import org.apache.geode.cache.*;
 import org.apache.geode.cache.query.SelectResults;
 import org.apache.geode.cache.snapshot.RegionSnapshotService;
 import org.apache.geode.internal.cache.snapshot.RegionSnapshotServiceImpl;
 import org.apache.geode.internal.i18n.LocalizedStrings;
-// import org.apache.geode.internal.*;
-// import org.apache.geode.internal.admin.*;
-// import org.apache.geode.distributed.internal.*;
-// import org.apache.geode.util.*;
-
-import java.io.*;
-// import java.net.*;
-import java.util.*;
-import java.util.concurrent.locks.Lock;
 
 /**
  * Represents a snapshot of a {@link Region}.
@@ -555,7 +549,7 @@ public class AdminRegion implements Region {
 
   /*
    * (non-Javadoc)
-   * 
+   *
    * @see java.util.concurrent.ConcurrentMap#putIfAbsent(java.lang.Object, java.lang.Object)
    */
   public Object putIfAbsent(Object key, Object value) {
@@ -564,7 +558,7 @@ public class AdminRegion implements Region {
 
   /*
    * (non-Javadoc)
-   * 
+   *
    * @see java.util.concurrent.ConcurrentMap#remove(java.lang.Object, java.lang.Object)
    */
   public boolean remove(Object key, Object value) {
@@ -573,7 +567,7 @@ public class AdminRegion implements Region {
 
   /*
    * (non-Javadoc)
-   * 
+   *
    * @see java.util.concurrent.ConcurrentMap#replace(java.lang.Object, java.lang.Object)
    */
   public Object replace(Object key, Object value) {
@@ -582,7 +576,7 @@ public class AdminRegion implements Region {
 
   /*
    * (non-Javadoc)
-   * 
+   *
    * @see java.util.concurrent.ConcurrentMap#replace(java.lang.Object, java.lang.Object,
    * java.lang.Object)
    */

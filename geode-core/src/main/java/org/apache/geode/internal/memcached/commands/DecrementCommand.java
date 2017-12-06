@@ -30,14 +30,14 @@ import org.apache.geode.memcached.GemFireMemcachedServer.Protocol;
 
 /**
  * decr <key> <value> [noreply]\r\n
- * 
+ *
  * value is the amount by which the client wants to increase/decrease the item. It is a decimal
  * representation of a 64-bit unsigned integer.
- * 
+ *
  * The data for the item is treated as decimal representation of a 64-bit unsigned integer. Also,
  * the item must already exist for incr/decr to work; these commands won't pretend that a
  * non-existent key exists with value 0; instead, they will fail.
- * 
+ *
  *
  */
 public class DecrementCommand extends AbstractCommand {

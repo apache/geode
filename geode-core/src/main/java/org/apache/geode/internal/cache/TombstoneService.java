@@ -65,7 +65,7 @@ public class TombstoneService {
    * This is the period over which the destroy operation may conflict with another operation. After
    * this timeout elapses the tombstone is put into a GC set for removal. Removal is typically
    * triggered by the size of the GC set, but could be influenced by resource managers.
-   * 
+   *
    * The default is 600,000 milliseconds (10 minutes).
    */
   public static long REPLICATE_TOMBSTONE_TIMEOUT =
@@ -144,7 +144,7 @@ public class TombstoneService {
   /**
    * Tombstones are markers placed in destroyed entries in order to keep the entry around for a
    * while so that it's available for concurrent modification detection.
-   * 
+   *
    * @param r the region holding the entry
    * @param entry the region entry that holds the tombstone
    * @param destroyedVersion the version that was destroyed
@@ -200,7 +200,7 @@ public class TombstoneService {
   /**
    * remove tombstones from the given region that have region-versions <= those in the given removal
    * map
-   * 
+   *
    * @return a collection of keys removed (only if the region is a bucket - empty otherwise)
    */
   @SuppressWarnings("rawtypes")
@@ -270,7 +270,7 @@ public class TombstoneService {
    * separate version vectors for each bucket. In the client this causes the version vector to make
    * no sense, so we have to send it a collection of the keys removed on the server and then we
    * brute-force remove any of them that are tombstones on the client
-   * 
+   *
    * @param r the region affected
    * @param tombstoneKeys the keys removed on the server
    */
@@ -305,7 +305,7 @@ public class TombstoneService {
 
   /**
    * For test purposes only, force the expiration of a number of tombstones for replicated regions.
-   * 
+   *
    * @return true if the expiration occurred
    */
   public boolean forceBatchExpirationForTests(int count) throws InterruptedException {
@@ -728,7 +728,7 @@ public class TombstoneService {
     }
   }
 
-  private static abstract class TombstoneSweeper implements Runnable {
+  private abstract static class TombstoneSweeper implements Runnable {
     /**
      * the expiration time for tombstones in this sweeper
      */
@@ -805,7 +805,7 @@ public class TombstoneService {
     /**
      * For each unexpired tombstone this sweeper knows about call the predicate. If the predicate
      * returns true then remove the tombstone from any storage and update the memory estimate.
-     * 
+     *
      * @return true if predicate ever returned true
      */
     private boolean removeUnexpiredIf(Predicate<Tombstone> predicate) {
@@ -831,7 +831,7 @@ public class TombstoneService {
     /**
      * For all tombstone this sweeper knows about call the predicate. If the predicate returns true
      * then remove the tombstone from any storage and update the memory estimate.
-     * 
+     *
      * @return true if predicate ever returned true
      */
     private boolean removeIf(Predicate<Tombstone> predicate) {
@@ -1021,7 +1021,7 @@ public class TombstoneService {
      * returns true then remove the tombstone from any storage and update the memory estimate.
      * <p>
      * Some sweepers batch up the expired tombstones to gc them later.
-     * 
+     *
      * @return true if predicate ever returned true
      */
     protected abstract boolean removeExpiredIf(Predicate<Tombstone> predicate);

@@ -37,7 +37,7 @@ import org.apache.geode.internal.logging.log4j.LocalizedMessage;
  * Provides the ways to send emails to all the registered email id It also provides the way to
  * add/remove email ids. Can be used to send email in case of any alerts raised / warning / failure
  * in gemfire.
- * 
+ *
  * @since GemFire 5.1
  */
 public class MailManager {
@@ -75,7 +75,7 @@ public class MailManager {
 
   /**
    * Send Emails to all the registered email id
-   * 
+   *
    * @param emailData Instance of EmailData
    */
   // Why a separate method & class EmailData needed???
@@ -173,7 +173,7 @@ public class MailManager {
   }
 
   /**
-   * 
+   *
    * @return Properties consisting mailHost and mailFrom property
    */
   private Properties getMailHostConfiguration() {
@@ -190,7 +190,7 @@ public class MailManager {
   }
 
   /**
-   * 
+   *
    * @param host mail host server name
    */
   public void setMailHost(String host) {
@@ -198,7 +198,7 @@ public class MailManager {
   }
 
   /**
-   * 
+   *
    * @return mail host server name
    */
   public String getMailHost() {
@@ -206,7 +206,7 @@ public class MailManager {
   }
 
   /**
-   * 
+   *
    * @param fromAddress mailFrom email id
    */
   public void setMailFromAddress(String fromAddress) {
@@ -214,7 +214,7 @@ public class MailManager {
   }
 
   /**
-   * 
+   *
    * @return mailFrom email id
    */
   public String getMailFromAddress() {
@@ -298,18 +298,18 @@ public class MailManager {
 
   protected String mailFrom;
 
-  public final static String PROPERTY_MAIL_HOST = "mail.host";
+  public static final String PROPERTY_MAIL_HOST = "mail.host";
 
-  public final static String PROPERTY_MAIL_FROM = "mail.from";
+  public static final String PROPERTY_MAIL_FROM = "mail.from";
 
-  public final static String PROPERTY_MAIL_TO_LIST = "mail.toList";
+  public static final String PROPERTY_MAIL_TO_LIST = "mail.toList";
 
   /**
    * Incorporating subject and message of email
-   * 
-   * 
+   *
+   *
    */
-  static private class EmailData {
+  private static class EmailData {
     String subject;
 
     String message;

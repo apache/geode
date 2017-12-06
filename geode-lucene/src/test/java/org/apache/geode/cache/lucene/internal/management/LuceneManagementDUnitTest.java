@@ -14,6 +14,24 @@
  */
 package org.apache.geode.cache.lucene.internal.management;
 
+import static org.apache.geode.cache.lucene.test.LuceneTestUtilities.INDEX_NAME;
+import static org.junit.Assert.*;
+
+import java.io.DataInput;
+import java.io.DataOutput;
+import java.io.IOException;
+import java.io.Serializable;
+import java.util.Properties;
+import java.util.Set;
+import java.util.concurrent.TimeUnit;
+
+import javax.management.ObjectName;
+
+import org.awaitility.Awaitility;
+import org.junit.Test;
+import org.junit.experimental.categories.Category;
+
+import org.apache.geode.DataSerializable;
 import org.apache.geode.cache.Region;
 import org.apache.geode.cache.lucene.LuceneQuery;
 import org.apache.geode.cache.lucene.LuceneQueryException;
@@ -21,6 +39,7 @@ import org.apache.geode.cache.lucene.LuceneService;
 import org.apache.geode.cache.lucene.LuceneServiceProvider;
 import org.apache.geode.cache.lucene.management.LuceneIndexMetrics;
 import org.apache.geode.cache.lucene.management.LuceneServiceMXBean;
+import org.apache.geode.distributed.ConfigurationProperties;
 import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.internal.cache.GemFireCacheImpl;
 import org.apache.geode.management.ManagementTestBase;
@@ -29,18 +48,6 @@ import org.apache.geode.management.internal.MBeanJMXAdapter;
 import org.apache.geode.management.internal.SystemManagementService;
 import org.apache.geode.test.dunit.VM;
 import org.apache.geode.test.junit.categories.DistributedTest;
-import org.awaitility.Awaitility;
-import org.junit.Test;
-import org.junit.experimental.categories.Category;
-
-import javax.management.ObjectName;
-
-import java.io.Serializable;
-import java.util.Set;
-import java.util.concurrent.TimeUnit;
-
-import static org.apache.geode.cache.lucene.test.LuceneTestUtilities.INDEX_NAME;
-import static org.junit.Assert.*;
 
 @Category(DistributedTest.class)
 public class LuceneManagementDUnitTest extends ManagementTestBase {
@@ -255,7 +262,7 @@ public class LuceneManagementDUnitTest extends ManagementTestBase {
     assertEquals(expectedHits, totalHits);
   }
 
-  protected static class TestObject implements Serializable {
+  protected static class TestObject implements DataSerializable {
     private static final long serialVersionUID = 1L;
     private String field0;
 
@@ -263,9 +270,21 @@ public class LuceneManagementDUnitTest extends ManagementTestBase {
       this.field0 = value;
     }
 
+    public TestObject() {}
+
     public String toString() {
       return new StringBuilder().append(getClass().getSimpleName()).append("[").append("field0=")
           .append(this.field0).append("]").toString();
+    }
+
+    @Override
+    public void toData(DataOutput out) throws IOException {
+      out.writeUTF(field0);
+    }
+
+    @Override
+    public void fromData(DataInput in) throws IOException, ClassNotFoundException {
+      field0 = in.readUTF();
     }
   }
 }

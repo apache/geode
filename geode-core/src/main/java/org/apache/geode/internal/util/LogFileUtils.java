@@ -13,21 +13,21 @@
  * the License.
  */
 /**
- * 
+ *
  */
 package org.apache.geode.internal.util;
 
 import java.io.File;
-import java.io.RandomAccessFile;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.io.RandomAccessFile;
 
 /**
  * Utility class for copying log files
- * 
+ *
  * @since GemFire 6.5
  */
 public class LogFileUtils {
@@ -41,7 +41,7 @@ public class LogFileUtils {
 
   /**
    * Copy a file preserving the date.
-   * 
+   *
    * @param srcFile the validated source file, must not be <code>null</code>
    * @param destFile the validated destination file, must not be <code>null</code>
    * @throws IOException if an error occurs
@@ -72,7 +72,7 @@ public class LogFileUtils {
 
   /**
    * Copy bytes from an <code>InputStream</code> to an <code>OutputStream</code>.
-   * 
+   *
    * @param input the <code>InputStream</code> to read from
    * @param output the <code>OutputStream</code> to write to
    * @return the number of bytes copied
@@ -96,7 +96,7 @@ public class LogFileUtils {
 
   /**
    * Close an <code>InputStream</code> ignoring exceptions.
-   * 
+   *
    * @param input the InputStream to close, may be null or already closed
    */
   public static void close(InputStream input) {
@@ -111,7 +111,7 @@ public class LogFileUtils {
 
   /**
    * Close an <code>OutputStream</code> ignoring exceptions.
-   * 
+   *
    * @param output the OutputStream to close, may be null or already closed
    */
   public static void close(OutputStream output) {
@@ -127,7 +127,7 @@ public class LogFileUtils {
 
   /**
    * Delete a file ignoring exceptions.
-   * 
+   *
    * @param file to delete, can be <code>null</code>
    */
   public static boolean delete(File file) {

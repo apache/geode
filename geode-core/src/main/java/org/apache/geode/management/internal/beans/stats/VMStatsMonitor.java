@@ -24,8 +24,8 @@ import org.apache.geode.management.internal.MBeanJMXAdapter;
 
 /**
  * This class acts as a monitor and listen for VM stats update on behalf of MemberMBean.
- * 
- * 
+ *
+ *
  */
 public class VMStatsMonitor extends MBeanStatsMonitor {
 
@@ -74,11 +74,11 @@ public class VMStatsMonitor extends MBeanStatsMonitor {
   /**
    * Right now it only refreshes CPU usage in terms of percentage. This method can be used for any
    * other computation based on Stats in future.
-   * 
+   *
    * Returns the time (as a percentage) that this member's process time with respect to Statistics
    * sample time interval. If process time between two sample time t1 & t2 is p1 and p2 cpuUsage =
    * ((p2-p1) * 100) / ((t2-t1)
-   * 
+   *
    */
   private void refreshStats() {
 

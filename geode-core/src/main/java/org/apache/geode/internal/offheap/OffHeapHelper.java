@@ -21,7 +21,7 @@ import org.apache.geode.internal.offheap.annotations.Unretained;
 
 /**
  * Utility class that provides static method to do some common tasks for off-heap references.
- * 
+ *
  * @since Geode 1.0
  */
 public class OffHeapHelper {
@@ -42,7 +42,7 @@ public class OffHeapHelper {
 
   /**
    * Just like {@link #copyIfNeeded(Object)} except that if off-heap is copied it is also released.
-   * 
+   *
    * @param v If this value is off-heap then the caller must have already retained it.
    * @return the heap copy to use in place of v
    */
@@ -71,7 +71,7 @@ public class OffHeapHelper {
    * serialized off-heap object it will be copied to the heap as a CachedDeserializable. If you
    * prefer to have the serialized object also deserialized and copied to the heap use
    * {@link #getHeapForm(Object)}.
-   * 
+   *
    * @param v possible OFF_HEAP_REFERENCE
    * @return v or a heap copy of v
    */
@@ -103,7 +103,7 @@ public class OffHeapHelper {
 
   /**
    * Just like {@link #release(Object)} but also disable debug tracking of the release.
-   * 
+   *
    * @return true if release was done
    */
   public static boolean releaseWithNoTracking(@Released Object o) {
@@ -124,7 +124,7 @@ public class OffHeapHelper {
 
   /**
    * Just like {@link #release(Object)} but also set the owner for debug tracking of the release.
-   * 
+   *
    * @return true if release was done
    */
   public static boolean releaseAndTrackOwner(@Released final Object o, final Object owner) {

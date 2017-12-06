@@ -18,7 +18,7 @@ package org.apache.geode.cache;
 /**
  * <code>DynamicRegionListener</code> is an interface that can be implemented to handle dynamic
  * region-related events.
- * 
+ *
  * The methods on a <code>DynamicRegionListener</code> are invoked synchronously. If the listener
  * method takes a long time to execute then it will cause the operation that caused it to be invoked
  * to take a long time.

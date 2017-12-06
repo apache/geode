@@ -19,7 +19,7 @@ import org.apache.geode.cache.PartitionAttributesFactory;
 import org.apache.geode.cache.Region;
 
 /**
- * 
+ *
  * A callback for partitioned regions, invoked when a partition region is created or any bucket is
  * created/deleted or any bucket in a partitioned region becomes primary.<br>
  * <br>
@@ -34,19 +34,19 @@ import org.apache.geode.cache.Region;
  *   private String regionName;
  *
  *   public MyPartitionListener() {}
- * 
+ *
  *   public void afterPrimary(int bucketId) {
  *     System.out.println("bucket:" + bucketId + " has become primary on " + this.regionName);
  *   }
- * 
+ *
  *   public void afterRegionCreate(Region&lt;?, ?&gt; region) {
  *     this.regionName = region.getName();
  *   }
  * }
  * </pre>
- * 
+ *
  * A sample declaration of the MyPartitionListener in cache.xml as follows :<br>
- * 
+ *
  * <pre>
  * &lt;partition-attributes redundant-copies=&quot;1&quot;&gt;
  *     &lt;partition-listener&gt;
@@ -54,17 +54,17 @@ import org.apache.geode.cache.Region;
  *     &lt;/partition-listener&gt;
  * &lt;/partition-attributes&gt;
  * </pre>
- * 
+ *
  * @see PartitionAttributesFactory#addPartitionListener(PartitionListener)
- * 
+ *
  * @since GemFire 6.5
- * 
+ *
  */
 public interface PartitionListener {
 
   /**
    * Callback invoked when any bucket in a partitioned region becomes primary
-   * 
+   *
    * @param bucketId id of the bucket which became primary
    * @since GemFire 6.5
    */
@@ -76,13 +76,13 @@ public interface PartitionListener {
    * @param bucketId id of the bucket which stopped being primary
    * @since Geode 1.1
    */
-  default public void afterSecondary(int bucketId) {
+  public default void afterSecondary(int bucketId) {
 
   }
 
   /**
    * Callback invoked when a partition region is created
-   * 
+   *
    * @param region handle of the region which is created
    * @since GemFire 6.5
    */
@@ -91,7 +91,7 @@ public interface PartitionListener {
   /**
    * Callback invoked after a bucket has been removed from a member (e.g. during rebalancing). This
    * API is useful for maintaining external data structures by bucket id or key.
-   * 
+   *
    * @param bucketId id of the bucket removed
    * @param keys keys in the bucket removed
    * @since GemFire 6.6.1
@@ -103,7 +103,7 @@ public interface PartitionListener {
    * API is useful for maintaining external data structures by bucket id or key. Note that this API
    * is invoked after the initial image has been completed so creates and destroys may occur in the
    * keys. It is best to use this API during periods of no cache activity.
-   * 
+   *
    * @param bucketId id of the bucket created
    * @param keys keys in the bucket created
    * @since GemFire 6.6.1

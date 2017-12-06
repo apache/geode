@@ -69,4 +69,3 @@ public interface ConfigurationParameter {
    */
   public void setValue(Object value) throws UnmodifiableConfigurationException;
 }
-

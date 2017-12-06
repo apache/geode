@@ -53,7 +53,7 @@ import org.apache.geode.internal.cache.LocalRegion;
 import org.apache.geode.test.junit.categories.IntegrationTest;
 
 /**
- * 
+ *
  */
 @Category(IntegrationTest.class)
 public class IndexUseJUnitTest {

@@ -16,21 +16,15 @@ package org.apache.geode.internal.admin.remote;
 
 import java.util.Collection;
 
-import org.apache.geode.CancelCriterion;
 import org.apache.geode.distributed.internal.DM;
 import org.apache.geode.distributed.internal.DistributionMessage;
-import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.distributed.internal.ReplyException;
-import org.apache.geode.distributed.internal.ReplyMessage;
 import org.apache.geode.distributed.internal.ReplyProcessor21;
-import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
-
 
 /**
  * TODO prpersist. This code really needs to be merged with the AdminReplyProcessor. However, we're
  * getting close to the release and I don't want to mess with all of the admin code right now. We
  * need this class to handle failures from admin messages that expect replies from multiple members.
- *
  */
 public class AdminMultipleReplyProcessor extends ReplyProcessor21 {
 
@@ -38,47 +32,16 @@ public class AdminMultipleReplyProcessor extends ReplyProcessor21 {
     super(dm, initMembers);
   }
 
-  public AdminMultipleReplyProcessor(DM dm, InternalDistributedMember member) {
-    super(dm, member);
-  }
-
-  public AdminMultipleReplyProcessor(DM dm, InternalDistributedSystem system,
-      Collection initMembers, CancelCriterion cancelCriterion, boolean register) {
-    super(dm, system, initMembers, cancelCriterion, register);
-  }
-
-  public AdminMultipleReplyProcessor(InternalDistributedSystem system, Collection initMembers,
-      CancelCriterion cancelCriterion) {
-    super(system, initMembers, cancelCriterion);
-  }
-
-  public AdminMultipleReplyProcessor(InternalDistributedSystem system, Collection initMembers) {
-    super(system, initMembers);
-  }
-
-  public AdminMultipleReplyProcessor(InternalDistributedSystem system,
-      InternalDistributedMember member, CancelCriterion cancelCriterion) {
-    super(system, member, cancelCriterion);
-  }
-
-  public AdminMultipleReplyProcessor(InternalDistributedSystem system,
-      InternalDistributedMember member) {
-    super(system, member);
-  }
-
   @Override
-  protected void process(DistributionMessage msg, boolean warn) {
-    if (msg instanceof AdminFailureResponse) {
-      Exception ex = ((AdminFailureResponse) msg).getCause();
+  protected void process(DistributionMessage message, boolean warn) {
+    if (message instanceof AdminFailureResponse) {
+      Exception ex = ((AdminFailureResponse) message).getCause();
       if (ex != null) {
-        ReplyException rex = new ReplyException(ex);
-        rex.setSenderIfNull(msg.getSender());
-        processException(msg, rex);
+        ReplyException replyException = new ReplyException(ex);
+        replyException.setSenderIfNull(message.getSender());
+        processException(message, replyException);
       }
     }
-    super.process(msg, warn);
+    super.process(message, warn);
   }
-
-
-
 }

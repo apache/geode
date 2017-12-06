@@ -25,11 +25,11 @@ import org.xml.sax.ext.EntityResolver2;
 /**
  * Resolves entities for XSDs or DTDs with SYSTEM IDs rooted at http://geode.apache.org/schema from
  * the classpath at /META-INF/schemas/geode.apache.org/.
- * 
+ *
  * Loaded by {@link ServiceLoader} on {@link EntityResolver2} class. See file
  * <code>META-INF/services/org.xml.sax.ext.EntityResolver2</code>
- * 
- * 
+ *
+ *
  * @since GemFire 8.1
  */
 public class GeodeEntityResolver extends DefaultEntityResolver2 {

@@ -45,6 +45,7 @@ import org.apache.geode.cache.client.ClientRegionShortcut;
 import org.apache.geode.cache.client.ServerOperationException;
 import org.apache.geode.cache.lucene.test.TestObject;
 import org.apache.geode.cache.server.CacheServer;
+import org.apache.geode.distributed.ConfigurationProperties;
 import org.apache.geode.security.NotAuthorizedException;
 import org.apache.geode.security.SimpleTestSecurityManager;
 import org.apache.geode.security.templates.UserPasswordAuthInit;
@@ -72,6 +73,8 @@ public class LuceneClientSecurityDUnitTest extends LuceneQueriesAccessorBase {
 
   private int startCacheServer() throws IOException {
     Properties props = new Properties();
+    props.put(ConfigurationProperties.SERIALIZABLE_OBJECT_FILTER,
+        "org.apache.geode.cache.lucene.test.TestObject");
     props.setProperty(SECURITY_MANAGER, SimpleTestSecurityManager.class.getName());
     final Cache cache = getCache(props);
     final CacheServer server = cache.addCacheServer();
@@ -88,6 +91,8 @@ public class LuceneClientSecurityDUnitTest extends LuceneQueriesAccessorBase {
 
   private void startClient(String userName, int serverPort) {
     Properties props = new Properties();
+    props.put(ConfigurationProperties.SERIALIZABLE_OBJECT_FILTER,
+        "org.apache.geode.cache.lucene.test.TestObject");
     props.setProperty("security-username", userName);
     props.setProperty("security-password", userName);
     props.setProperty(SECURITY_CLIENT_AUTH_INIT, UserPasswordAuthInit.class.getName());

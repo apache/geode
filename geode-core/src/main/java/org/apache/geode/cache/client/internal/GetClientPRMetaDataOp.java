@@ -31,8 +31,8 @@ import org.apache.geode.internal.logging.LogService;
 /**
  * Retrieves {@link ClientPartitionAdvisor} for the specified PartitionedRegion from one of the
  * servers
- * 
- * 
+ *
+ *
  * @since GemFire 6.5
  */
 public class GetClientPRMetaDataOp {

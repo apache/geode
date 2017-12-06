@@ -18,14 +18,15 @@ package org.apache.geode.management.internal.cli.converters;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-import org.apache.geode.test.junit.categories.UnitTest;
+import java.util.ArrayList;
+import java.util.List;
+
 import org.apache.logging.log4j.Level;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 import org.springframework.shell.core.Completion;
 
-import java.util.ArrayList;
-import java.util.List;
+import org.apache.geode.test.junit.categories.UnitTest;
 
 @Category(UnitTest.class)
 public class LogLevelConverterTest {

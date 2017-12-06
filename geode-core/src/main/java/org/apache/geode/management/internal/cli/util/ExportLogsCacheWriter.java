@@ -16,17 +16,18 @@
 
 package org.apache.geode.management.internal.cli.util;
 
-import org.apache.commons.io.IOUtils;
-import org.apache.geode.cache.CacheWriterException;
-import org.apache.geode.cache.EntryEvent;
-import org.apache.geode.cache.util.CacheWriterAdapter;
-
 import java.io.BufferedOutputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.Serializable;
 import java.nio.file.Files;
 import java.nio.file.Path;
+
+import org.apache.commons.io.IOUtils;
+
+import org.apache.geode.cache.CacheWriterException;
+import org.apache.geode.cache.EntryEvent;
+import org.apache.geode.cache.util.CacheWriterAdapter;
 
 public class ExportLogsCacheWriter extends CacheWriterAdapter implements Serializable {
   private Path currentFile;

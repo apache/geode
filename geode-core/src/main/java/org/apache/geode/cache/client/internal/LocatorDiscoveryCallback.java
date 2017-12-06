@@ -18,21 +18,21 @@ import java.util.List;
 
 /**
  * A callback to receive notifications about locator discovery. Currently only used internally.
- * 
+ *
  * @since GemFire 5.7
  */
 public interface LocatorDiscoveryCallback {
 
   /**
    * Called to indicate that new locators have been discovered
-   * 
+   *
    * @param locators a list of InetSocketAddresses of new locators that have been discovered.
    */
   void locatorsDiscovered(List locators);
 
   /**
    * Called to indicated that locators have been removed from the list of available locators.
-   * 
+   *
    * @param locators a list of InetSocketAddresses of locators that have been removed
    */
   void locatorsRemoved(List locators);

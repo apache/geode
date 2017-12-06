@@ -16,18 +16,15 @@
 
 package org.apache.geode.internal.admin.remote;
 
-// import org.apache.geode.*;
-import org.apache.geode.admin.GemFireHealthConfig;
-// import org.apache.geode.internal.*;
-// import org.apache.geode.internal.admin.*;
-import org.apache.geode.distributed.internal.*;
 import java.io.*;
-// import java.util.*;
+
+import org.apache.geode.admin.GemFireHealthConfig;
+import org.apache.geode.distributed.internal.*;
 import org.apache.geode.distributed.internal.membership.*;
 
 /**
  * The response to adding a health listener.
- * 
+ *
  * @since GemFire 3.5
  */
 public class AddHealthListenerResponse extends AdminResponse {
@@ -38,8 +35,8 @@ public class AddHealthListenerResponse extends AdminResponse {
    * Returns a <code>AddHealthListenerResponse</code> that will be returned to the specified
    * recipient.
    */
-  public static AddHealthListenerResponse create(DistributionManager dm,
-      InternalDistributedMember recipient, GemFireHealthConfig cfg) {
+  public static AddHealthListenerResponse create(DM dm, InternalDistributedMember recipient,
+      GemFireHealthConfig cfg) {
     AddHealthListenerResponse m = new AddHealthListenerResponse();
     m.setRecipient(recipient);
     dm.createHealthMonitor(recipient, cfg);

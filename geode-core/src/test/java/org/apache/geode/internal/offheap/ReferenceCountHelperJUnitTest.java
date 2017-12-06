@@ -16,6 +16,7 @@
 package org.apache.geode.internal.offheap;
 
 import static org.junit.Assert.*;
+import static org.mockito.Mockito.*;
 
 import java.util.Collections;
 import java.util.List;
@@ -24,24 +25,21 @@ import java.util.concurrent.atomic.AtomicInteger;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 import org.junit.runner.RunWith;
-
-import org.apache.geode.test.junit.categories.UnitTest;
-
 import org.mockito.Mockito;
-import static org.mockito.Mockito.*;
-
 import org.powermock.api.mockito.PowerMockito;
 import org.powermock.core.classloader.annotations.PowerMockIgnore;
 import org.powermock.core.classloader.annotations.PrepareForTest;
 import org.powermock.modules.junit4.*;
 
+import org.apache.geode.test.junit.categories.UnitTest;
+
 /*
  * This test simply verifies the static class delegates properly to the impl
- * 
+ *
  * PowerMock used in this test to inject mocked impl into static class The PowerMockRule bootstraps
  * PowerMock without the need for the @RunWith(PowerMockRunner.class) annotation, which was
  * interfering with jacoco
- * 
+ *
  */
 @Category(UnitTest.class)
 @RunWith(PowerMockRunner.class)

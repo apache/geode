@@ -28,13 +28,13 @@ import org.apache.geode.internal.i18n.LocalizedStrings;
 import org.apache.geode.internal.logging.LogService;
 
 /**
- * 
+ *
  * Retrieves {@link ClientPartitionAdvisor} related information for the specified PartitionedRegion
  * from one of the servers
- * 
- * 
+ *
+ *
  * @since GemFire 6.5
- * 
+ *
  */
 public class GetClientPartitionAttributesOp {
 

@@ -45,7 +45,7 @@ public class Part {
 
   /**
    * Used to represent and empty byte array for bug 36279
-   * 
+   *
    * @since GemFire 5.1
    */
   private static final byte EMPTY_BYTEARRAY_CODE = 2;
@@ -287,7 +287,7 @@ public class Part {
    * Write the contents of this part to the specified output stream. This is only called for parts
    * that will not fit into the commBuffer so they need to be written directly to the stream. A
    * stream is used because the client is configured for old IO (instead of nio).
-   * 
+   *
    * @param buf the buffer to use if any data needs to be copied to one
    */
   public void writeTo(OutputStream out, ByteBuffer buf) throws IOException {
@@ -416,7 +416,7 @@ public class Part {
     }
   }
 
-  static private String typeCodeToString(byte c) {
+  private static String typeCodeToString(byte c) {
     switch (c) {
       case BYTE_CODE:
         return "BYTE_CODE";

@@ -23,7 +23,7 @@ import org.apache.geode.internal.offheap.annotations.Unretained;
  * class is used exclusively by the Oplog Compactor for rolling the entries. The reason for this
  * class is to reuse the underlying byte array for rolling multiple entries there by reducing the
  * garbage.
- * 
+ *
  * @since GemFire 5.5
  */
 public class BytesAndBitsForCompactor {
@@ -73,7 +73,7 @@ public class BytesAndBitsForCompactor {
   }
 
   /**
-   * 
+   *
    * @param data byte array storing the data
    * @param userBits byte with appropriate bits set
    * @param validLength The number of bytes representing the data , starting from 0 as offset

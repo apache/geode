@@ -44,7 +44,7 @@ import org.apache.geode.internal.i18n.LocalizedStrings;
  * The final step is to produce a {@link Region} by calling {@link #create(String)}.
  * <p>
  * Example: Create a replicate region with a CacheListener
- * 
+ *
  * <PRE>
  * Cache c = new CacheFactory().create();
  * // Create replicate region.
@@ -53,7 +53,7 @@ import org.apache.geode.internal.i18n.LocalizedStrings;
  * </PRE>
  * <p>
  * Example: Create a partition region that has redundancy
- * 
+ *
  * <PRE>
  * Cache c = new CacheFactory().create();
  * // Create replicate region.
@@ -69,7 +69,7 @@ public class RegionFactory<K, V> {
 
   /**
    * For internal use only.
-   * 
+   *
    * @since GemFire 6.5
    */
   protected RegionFactory(InternalCache cache) {
@@ -79,7 +79,7 @@ public class RegionFactory<K, V> {
 
   /**
    * For internal use only.
-   * 
+   *
    * @since GemFire 6.5
    */
   protected RegionFactory(InternalCache cache, RegionShortcut pra) {
@@ -93,7 +93,7 @@ public class RegionFactory<K, V> {
 
   /**
    * For internal use only.
-   * 
+   *
    * @since GemFire 6.5
    */
   protected RegionFactory(InternalCache cache, RegionAttributes ra) {
@@ -103,7 +103,7 @@ public class RegionFactory<K, V> {
 
   /**
    * For internal use only.
-   * 
+   *
    * @since GemFire 6.5
    */
   protected RegionFactory(InternalCache cache, String regionAttributesId) {
@@ -258,7 +258,7 @@ public class RegionFactory<K, V> {
 
   /**
    * Adds a cache listener to the end of the list of cache listeners on this factory.
-   * 
+   *
    * @param aListener the cache listener to add
    * @return a reference to this RegionFactory object
    * @throws IllegalArgumentException if {@code aListener} is null
@@ -272,7 +272,7 @@ public class RegionFactory<K, V> {
   /**
    * Removes all cache listeners and then adds each listener in the specified array. for the next
    * {@code RegionAttributes} created.
-   * 
+   *
    * @param newListeners a possibly null or empty array of listeners to add to this factory.
    * @return a reference to this RegionFactory object
    * @throws IllegalArgumentException if the {@code newListeners} array has a null element
@@ -311,7 +311,7 @@ public class RegionFactory<K, V> {
 
   /**
    * Sets the custom idleTimeout for the next {@code RegionAttributes} created.
-   * 
+   *
    * @param custom the custom method
    * @return the receiver
    * @see AttributesFactory#setCustomEntryIdleTimeout(CustomExpiry)
@@ -337,7 +337,7 @@ public class RegionFactory<K, V> {
 
   /**
    * Sets the custom timeToLive expiration method for the next {@code RegionAttributes} created.
-   * 
+   *
    * @param custom the custom method
    * @return the receiver
    * @see AttributesFactory#setCustomEntryTimeToLive(CustomExpiry)
@@ -438,7 +438,7 @@ public class RegionFactory<K, V> {
    * <p>
    * The named connection pool must exist on the cache at the time these attributes are used to
    * create a region. See {@link PoolManager#createFactory} for how to create a connection pool.
-   * 
+   *
    * @param poolName the name of the connection pool to use; if {@code null} or {@code ""} then the
    *        connection pool attribute is disabled for regions using these attributes.
    * @return a reference to this RegionFactory object
@@ -452,7 +452,7 @@ public class RegionFactory<K, V> {
 
   /**
    * Sets whether or not this region should be considered a publisher.
-   * 
+   *
    * @since GemFire 5.0
    * @deprecated as of 6.5
    */
@@ -463,7 +463,7 @@ public class RegionFactory<K, V> {
 
   /**
    * Sets whether or not conflation is enabled for sending messages to async peers.
-   * 
+   *
    * @param value true to enable async conflation
    * @return a reference to this RegionFactory object
    * @see AttributesFactory#setEnableAsyncConflation(boolean)
@@ -476,7 +476,7 @@ public class RegionFactory<K, V> {
   /**
    * Sets whether or not conflation is enabled for sending messages from a cache server to its
    * clients.
-   * 
+   *
    * @param value true to enable subscription conflation
    * @return a reference to this RegionFactory object
    * @see AttributesFactory#setEnableSubscriptionConflation(boolean)
@@ -592,11 +592,11 @@ public class RegionFactory<K, V> {
 
   /**
    * Sets the DiskStore name attribute. This causes the region to belong to the DiskStore.
-   * 
+   *
    * @param name the name of the diskstore
    * @return a reference to this RegionFactory object
    * @since GemFire 6.5
-   * 
+   *
    * @see AttributesFactory#setDiskStoreName
    */
   public RegionFactory<K, V> setDiskStoreName(String name) {
@@ -606,7 +606,7 @@ public class RegionFactory<K, V> {
 
   /**
    * Sets whether or not the writing to the disk is synchronous.
-   * 
+   *
    * @param isSynchronous boolean if true indicates synchronous writes
    * @return a reference to this RegionFactory object
    * @since GemFire 6.5
@@ -634,11 +634,11 @@ public class RegionFactory<K, V> {
   /**
    * Sets the directories to which the region's data are written and also set their sizes in
    * megabytes
-   * 
+   *
    * @return a reference to this RegionFactory object
    * @throws IllegalArgumentException if length of the size array does not match to the length of
    *         the dir array
-   * 
+   *
    * @since GemFire 5.1
    * @see AttributesFactory#setDiskDirsAndSizes
    * @deprecated as of 6.5 use {@link DiskStoreFactory#setDiskDirsAndSizes} instead
@@ -701,7 +701,7 @@ public class RegionFactory<K, V> {
 
   /**
    * Sets whether operations on this region should be controlled by JTA transactions or not
-   * 
+   *
    * @since GemFire 5.0
    */
   public RegionFactory<K, V> setIgnoreJTA(boolean flag) {
@@ -724,7 +724,7 @@ public class RegionFactory<K, V> {
   /**
    * Sets the kind of interest this region has in events occuring in other caches that define the
    * region by the same name.
-   * 
+   *
    * @param sa the attributes decribing the interest
    * @return a reference to this RegionFactory object
    * @see AttributesFactory#setSubscriptionAttributes(SubscriptionAttributes)
@@ -782,7 +782,7 @@ public class RegionFactory<K, V> {
 
   /**
    * Sets cloning on region Note: off-heap regions always behave as if cloning is enabled.
-   * 
+   *
    * @return a reference to this RegionFactory object
    * @since GemFire 6.1
    * @see AttributesFactory#setCloningEnabled
@@ -794,7 +794,7 @@ public class RegionFactory<K, V> {
 
   /**
    * Adds a gatewaySenderId to the RegionAttributes
-   * 
+   *
    * @return a reference to this RegionFactory object
    * @since GemFire 7.0
    * @see AttributesFactory#addGatewaySenderId(String)
@@ -806,7 +806,7 @@ public class RegionFactory<K, V> {
 
   /**
    * Adds a asyncEventQueueId to the RegionAttributes
-   * 
+   *
    * @param asyncEventQueueId id of AsyncEventQueue
    * @return a reference to this RegionFactory instance
    * @since GemFire 7.0
@@ -818,7 +818,7 @@ public class RegionFactory<K, V> {
 
   /**
    * Set the compressor to be used by this region for compressing region entry values.
-   * 
+   *
    * @param compressor a compressor
    * @return a reference to this RegionFactory instance
    * @since GemFire 8.0
@@ -830,7 +830,7 @@ public class RegionFactory<K, V> {
 
   /**
    * Enables this region's usage of off-heap memory if true.
-   * 
+   *
    * @param offHeap boolean flag to enable off-heap memory
    * @since Geode 1.0
    */

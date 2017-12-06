@@ -23,16 +23,16 @@ import org.apache.logging.log4j.Logger;
 
 import org.apache.geode.CancelException;
 import org.apache.geode.cache.asyncqueue.AsyncEventListener;
+import org.apache.geode.i18n.StringId;
 import org.apache.geode.internal.i18n.LocalizedStrings;
 import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.internal.logging.log4j.LocalizedMessage;
-import org.apache.geode.i18n.StringId;
 
 /**
  * Class <code>SerialGatewayEventCallbackDispatcher</code> dispatches batches of
  * <code>GatewayEvent</code>s to <code>AsyncEventListener</code> callback implementers. This
  * dispatcher is used in the write-behind case.
- * 
+ *
  * @since GemFire 7.0
  */
 public class GatewaySenderEventCallbackDispatcher implements GatewaySenderEventDispatcher {
@@ -63,7 +63,7 @@ public class GatewaySenderEventCallbackDispatcher implements GatewaySenderEventD
 
   /**
    * Dispatches a batch of messages to all registered <code>AsyncEventListener</code>s.
-   * 
+   *
    * @param events The <code>List</code> of events to send
    * @param removeFromQueueOnException Unused.
    * @return whether the batch of messages was successfully processed
@@ -99,7 +99,7 @@ public class GatewaySenderEventCallbackDispatcher implements GatewaySenderEventD
 
   /**
    * Registers a <code>AsyncEventListener</code>.
-   * 
+   *
    * @param listener A AsyncEventListener to be registered
    */
   public void registerAsyncEventListener(AsyncEventListener listener) {
@@ -115,7 +115,7 @@ public class GatewaySenderEventCallbackDispatcher implements GatewaySenderEventD
 
   /**
    * Removes registration of a previously registered <code>AsyncEventListener</code>.
-   * 
+   *
    * @param listener A AsyncEventListener to be unregistered
    */
   public void unregisterGatewayEventListener(AsyncEventListener listener) {
@@ -138,9 +138,9 @@ public class GatewaySenderEventCallbackDispatcher implements GatewaySenderEventD
 
   /**
    * Sends a batch of messages to the registered <code>AsyncEventListener</code>s.
-   * 
+   *
    * @param events The <code>List</code> of events to send
-   * 
+   *
    * @throws GatewaySenderException
    */
   protected boolean dispatchBatch(List events) throws GatewaySenderException {

@@ -434,7 +434,7 @@ public enum Command {
 
   /**
    * Returns a command processor to process the given {@link #Command}
-   * 
+   *
    * @return a command processor
    */
   public abstract CommandProcessor getCommandProcessor();
@@ -520,7 +520,7 @@ public enum Command {
     }
   }
 
-  static public String byteToHex(byte b) {
+  public static String byteToHex(byte b) {
     // Returns hex String representation of byte b
     char hexDigit[] =
         {'0', '1', '2', '3', '4', '5', '6', '7', '8', '9', 'a', 'b', 'c', 'd', 'e', 'f'};
