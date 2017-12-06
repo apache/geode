@@ -18,3 +18,4 @@
 org.apache.geode.connectors.jdbc.internal.cli.CreateConnectionCommand
 org.apache.geode.connectors.jdbc.internal.cli.DestroyConnectionCommand
 org.apache.geode.connectors.jdbc.internal.cli.ListConnectionCommand
+org.apache.geode.connectors.jdbc.internal.cli.DescribeConnectionCommand
