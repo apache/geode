@@ -79,12 +79,6 @@ public class AbstractEvictionListTest {
     assertThat(evictionList.size()).isZero();
   }
 
-  @Test(expected = IllegalStateException.class)
-  public void sizeCannotBeNegative() throws Exception {
-    TestEvictionList evictionList = new TestEvictionList(stats, bucketRegion);
-    evictionList.decrementSize();
-  }
-
   @Test
   public void getStatisticsReturnsRightObject() throws Exception {
     TestEvictionList evictionList = new TestEvictionList(stats, bucketRegion);

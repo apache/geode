@@ -61,10 +61,9 @@ abstract class AbstractEvictionList implements EvictionList {
   }
 
   void decrementSize() {
-    int newSize = size.decrementAndGet();
-    if (newSize < 0) {
-      throw new IllegalStateException("Eviction list size cannot be negative");
-    }
+    // Size could go negative if there is a concurrent clear and
+    // cache updates are in progress.
+    size.decrementAndGet();
   }
 
   @Override
