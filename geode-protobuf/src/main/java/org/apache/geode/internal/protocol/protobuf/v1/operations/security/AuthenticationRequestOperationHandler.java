@@ -30,7 +30,6 @@ import org.apache.geode.internal.protocol.protobuf.v1.BasicTypes;
 import org.apache.geode.internal.protocol.protobuf.v1.ClientProtocol;
 import org.apache.geode.internal.protocol.protobuf.v1.ConnectionAPI;
 import org.apache.geode.internal.protocol.protobuf.v1.utilities.ProtobufResponseUtilities;
-import org.apache.geode.internal.protocol.security.exception.IncompatibleAuthenticationMechanismsException;
 import org.apache.geode.internal.protocol.serialization.SerializationService;
 import org.apache.geode.internal.protocol.state.ConnectionAuthenticatingStateProcessor;
 import org.apache.geode.internal.protocol.state.exception.ConnectionStateException;
@@ -59,10 +58,6 @@ public class AuthenticationRequestOperationHandler implements
       messageExecutionContext.setConnectionStateProcessor(stateProcessor.authenticate(properties));
       return Success
           .of(ConnectionAPI.AuthenticationResponse.newBuilder().setAuthenticated(true).build());
-    } catch (IncompatibleAuthenticationMechanismsException e) {
-      return Failure.of(ClientProtocol.ErrorResponse.newBuilder().setError(
-          buildAndLogError(ProtocolErrorCode.UNSUPPORTED_AUTHENTICATION_MODE, e.getMessage(), e))
-          .build());
     } catch (AuthenticationFailedException e) {
       return Success
           .of(ConnectionAPI.AuthenticationResponse.newBuilder().setAuthenticated(false).build());

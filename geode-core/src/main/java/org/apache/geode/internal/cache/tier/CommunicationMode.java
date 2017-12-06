@@ -131,6 +131,13 @@ public enum CommunicationMode {
     return 100 <= mode && mode <= 110;
   }
 
+  /**
+   * check if the given communication mode is valid for locators
+   */
+  public static boolean isValidLocatorMode(int mode) {
+    return mode == 110;
+  }
+
   public static CommunicationMode fromModeNumber(byte modeNumber) {
     switch (modeNumber) {
       case 100:
