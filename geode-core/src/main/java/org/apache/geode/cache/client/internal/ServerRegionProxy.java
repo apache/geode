@@ -54,7 +54,7 @@ import org.apache.geode.internal.logging.log4j.LocalizedMessage;
 
 /**
  * Used to send region operations from a client to a server
- * 
+ *
  * @since GemFire 5.7
  */
 @SuppressWarnings("deprecation")
@@ -67,7 +67,7 @@ public class ServerRegionProxy extends ServerProxy implements ServerRegionDataAc
 
   /**
    * Creates a server region proxy for the given region.
-   * 
+   *
    * @param r the region
    * @throws IllegalStateException if the region does not have a pool
    */
@@ -104,7 +104,7 @@ public class ServerRegionProxy extends ServerProxy implements ServerRegionDataAc
 
   /*
    * (non-Javadoc)
-   * 
+   *
    * @see org.apache.geode.cache.client.internal.ServerRegionDataAccess#get(java.lang.Object,
    * java.lang.Object)
    */
@@ -124,7 +124,7 @@ public class ServerRegionProxy extends ServerProxy implements ServerRegionDataAc
    * Do not call this method if the value is Delta instance. Exclicitly passing
    * <code>Operation.CREATE</code> to the <code>PutOp.execute()</code> method as the caller of this
    * method does not put Delta instances as value.
-   * 
+   *
    * @param key
    * @param value
    * @param event
@@ -164,7 +164,7 @@ public class ServerRegionProxy extends ServerProxy implements ServerRegionDataAc
 
   /**
    * Does a region put on the server using the given connection.
-   * 
+   *
    * @param con the connection to use to send to the server
    * @param key the entry key to do the put on
    * @param value the entry value to put
@@ -180,7 +180,7 @@ public class ServerRegionProxy extends ServerProxy implements ServerRegionDataAc
 
   /*
    * (non-Javadoc)
-   * 
+   *
    * @see org.apache.geode.cache.client.internal.ServerRegionDataAccess#destroy(java.lang.Object,
    * java.lang.Object, org.apache.geode.cache.Operation, org.apache.geode.internal.cache.EventID,
    * java.lang.Object)
@@ -206,7 +206,7 @@ public class ServerRegionProxy extends ServerProxy implements ServerRegionDataAc
 
   /**
    * Does a region entry destroy on the server using the given connection.
-   * 
+   *
    * @param con the connection to use to send to the server
    * @param key the entry key to do the destroy on
    * @param expectedOldValue the value that the entry must have to perform the operation, or null
@@ -222,7 +222,7 @@ public class ServerRegionProxy extends ServerProxy implements ServerRegionDataAc
 
   /**
    * Does a region destroy on the server
-   * 
+   *
    * @param eventId the event id for this destroy
    * @param callbackArg an optional callback arg to pass to any cache callbacks
    */
@@ -232,7 +232,7 @@ public class ServerRegionProxy extends ServerProxy implements ServerRegionDataAc
 
   /**
    * Does a region destroy on the server using the given connection.
-   * 
+   *
    * @param con the connection to use to send to the server
    * @param eventId the event id for this destroy
    * @param callbackArg an optional callback arg to pass to any cache callbacks
@@ -252,7 +252,7 @@ public class ServerRegionProxy extends ServerProxy implements ServerRegionDataAc
 
   /*
    * (non-Javadoc)
-   * 
+   *
    * @see
    * org.apache.geode.cache.client.internal.ServerRegionDataAccess#clear(org.apache.geode.internal.
    * cache.EventID, java.lang.Object)
@@ -263,7 +263,7 @@ public class ServerRegionProxy extends ServerProxy implements ServerRegionDataAc
 
   /**
    * Does a region clear on the server using the given connection.
-   * 
+   *
    * @param con the connection to use to send to the server
    * @param eventId the event id for this clear
    * @param callbackArg an optional callback arg to pass to any cache callbacks
@@ -274,7 +274,7 @@ public class ServerRegionProxy extends ServerProxy implements ServerRegionDataAc
 
   /*
    * (non-Javadoc)
-   * 
+   *
    * @see
    * org.apache.geode.cache.client.internal.ServerRegionDataAccess#containsKey(java.lang.Object)
    */
@@ -285,7 +285,7 @@ public class ServerRegionProxy extends ServerProxy implements ServerRegionDataAc
 
   /*
    * (non-Javadoc)
-   * 
+   *
    * @see
    * org.apache.geode.cache.client.internal.ServerRegionDataAccess#containsKey(java.lang.Object)
    */
@@ -296,7 +296,7 @@ public class ServerRegionProxy extends ServerProxy implements ServerRegionDataAc
 
   /*
    * (non-Javadoc)
-   * 
+   *
    * @see
    * org.apache.geode.cache.client.internal.ServerRegionDataAccess#containsKey(java.lang.Object)
    */
@@ -307,7 +307,7 @@ public class ServerRegionProxy extends ServerProxy implements ServerRegionDataAc
 
   /*
    * (non-Javadoc)
-   * 
+   *
    * @see org.apache.geode.cache.client.internal.ServerRegionDataAccess#keySet()
    */
   public Set keySet() {
@@ -317,7 +317,7 @@ public class ServerRegionProxy extends ServerProxy implements ServerRegionDataAc
 
   /**
    * Does a region registerInterest on a server
-   * 
+   *
    * @param key describes what we are interested in
    * @param interestType the {@link InterestType} for this registration
    * @param policy the interest result policy for this registration
@@ -332,7 +332,7 @@ public class ServerRegionProxy extends ServerProxy implements ServerRegionDataAc
 
   /**
    * Does a region registerInterest on a server
-   * 
+   *
    * @param key describes what we are interested in
    * @param interestType the {@link InterestType} for this registration
    * @param policy the interest result policy for this registration
@@ -427,7 +427,7 @@ public class ServerRegionProxy extends ServerProxy implements ServerRegionDataAc
    * Does a region registerInterest on a server described by the given server location
    * <p>
    * Note that this call by-passes the RegisterInterestTracker.
-   * 
+   *
    * @param sl the server to do the register interest on.
    * @param key describes what we are interested in
    * @param interestType the {@link InterestType} for this registration
@@ -445,7 +445,7 @@ public class ServerRegionProxy extends ServerProxy implements ServerRegionDataAc
    * Does a region registerInterest on a server described by the given server location
    * <p>
    * Note that this call by-passes the RegisterInterestTracker.
-   * 
+   *
    * @param sl the server to do the register interest on.
    * @param key describes what we are interested in
    * @param interestType the {@link InterestType} for this registration
@@ -471,7 +471,7 @@ public class ServerRegionProxy extends ServerProxy implements ServerRegionDataAc
    * Does a region registerInterest on a server described by the given connection
    * <p>
    * Note that this call by-passes the RegisterInterestTracker.
-   * 
+   *
    * @param conn the connection to do the register interest on.
    * @param key describes what we are interested in
    * @param interestType the {@link InterestType} for this registration
@@ -489,7 +489,7 @@ public class ServerRegionProxy extends ServerProxy implements ServerRegionDataAc
    * Does a region registerInterest on a server described by the given connection
    * <p>
    * Note that this call by-passes the RegisterInterestTracker.
-   * 
+   *
    * @param conn the connection to do the register interest on.
    * @param key describes what we are interested in
    * @param interestType the {@link InterestType} for this registration
@@ -515,7 +515,7 @@ public class ServerRegionProxy extends ServerProxy implements ServerRegionDataAc
 
   /**
    * Does a region registerInterestList on a server
-   * 
+   *
    * @param keys list of keys we are interested in
    * @param policy the interest result policy for this registration
    * @param isDurable true if this registration is durable
@@ -549,7 +549,7 @@ public class ServerRegionProxy extends ServerProxy implements ServerRegionDataAc
 
   /**
    * Does a region unregisterInterest on a server
-   * 
+   *
    * @param key describes what we are no longer interested in
    * @param interestType the {@link InterestType} for this unregister
    * @param isClosing true if this unregister is done by a close
@@ -574,7 +574,7 @@ public class ServerRegionProxy extends ServerProxy implements ServerRegionDataAc
 
   /**
    * Does a region unregisterInterestList on a server
-   * 
+   *
    * @param keys list of keys we are interested in
    * @param isClosing true if this unregister is done by a close
    * @param keepAlive true if this unregister should not undo a durable registration
@@ -793,7 +793,7 @@ public class ServerRegionProxy extends ServerProxy implements ServerRegionDataAc
 
   /**
    * Transaction synchronization notification to the servers
-   * 
+   *
    * @see org.apache.geode.internal.cache.tx.ClientTXStateStub#beforeCompletion()
    */
   public void beforeCompletion(int txId) {
@@ -803,7 +803,7 @@ public class ServerRegionProxy extends ServerProxy implements ServerRegionDataAc
 
   /**
    * Transaction synchronization notification to the servers
-   * 
+   *
    * @param status
    * @return the server's TXCommitMessage
    * @see org.apache.geode.internal.cache.tx.ClientTXStateStub#afterCompletion(int)

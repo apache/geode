@@ -15,8 +15,8 @@
 
 package org.apache.geode.distributed;
 
-import org.apache.geode.distributed.internal.locks.*;
 import org.apache.geode.distributed.internal.*;
+import org.apache.geode.distributed.internal.locks.*;
 
 /**
  * <p>
@@ -36,12 +36,12 @@ public abstract class DistributedLockService {
    * This DistributedLockService will continue to manage locks until <code>{@link #destroy}</code>
    * is called, or <code>ds</code> is disconnected, at which point any locks that were held by this
    * instance are released.
-   * 
+   *
    * @param serviceName the name of the DistributedLockService to create.
    *
    * @param ds the <code>DistributedSystem</code> for the new service instance to use for
    *        distributed lock messaging.
-   * 
+   *
    * @throws IllegalArgumentException if serviceName is an illegal name or this process has already
    *         created a DistributedLockService with the given <code>serviceName</code>.
    *
@@ -58,7 +58,7 @@ public abstract class DistributedLockService {
   /**
    * Look up and return the DistributedLockService with the given name, if it has been created in
    * this VM. If it has not been created, return null.
-   * 
+   *
    * @param serviceName the name of the DistributedLockService to look up
    *
    * @return the DistributedLockService with the given name, or null if it hasn't been created in
@@ -73,10 +73,10 @@ public abstract class DistributedLockService {
    * Any locks currently held in this DistributedLockService by this process are released. Attempts
    * to access a destroyed lock service will result in a {@link LockServiceDestroyedException} being
    * thrown.
-   * 
+   *
    * @param serviceName the name of the instance to destroy, previously supplied in the
    *        <code>create(String, DistributedSystem)</code> invocation.
-   * 
+   *
    * @throws IllegalArgumentException if this process hasn't created a DistributedLockService with
    *         the given <code>serviceName</code> and <code>dm</code>.
    */
@@ -99,7 +99,7 @@ public abstract class DistributedLockService {
    * <code>unlock(Object name)</code> is invoked, or until <code>leaseTimeMillis</code> milliseconds
    * have passed since the lock was granted - whichever comes first.
    * </p>
-   * 
+   *
    * <p>
    * Locks are reentrant. If a thread invokes this method n times on the same instance, specifying
    * the same <code>name</code>, without an intervening release or lease expiration expiration on
@@ -108,16 +108,16 @@ public abstract class DistributedLockService {
    * already acquired, the lease time will be set to the maximum of the remaining least time from
    * the previous invocation, or <code>leaseTimeMillis</code>
    * </p>
-   * 
+   *
    * @param name the name of the lock to acquire in this service. This object must conform to the
    *        general contract of <code>equals(Object)</code> and <code>hashCode()</code> as described
    *        in {@link java.lang.Object#hashCode()}.
-   * 
+   *
    * @param waitTimeMillis the number of milliseconds to try to acquire the lock before giving up
    *        and returning false. A value of -1 causes this method to block until the lock is
    *        acquired. A value of 0 causes this method to return false without waiting for the lock
    *        if the lock is held by another member or thread.
-   * 
+   *
    * @param leaseTimeMillis the number of milliseconds to hold the lock after granting it, before
    *        automatically releasing it if it hasn't already been released by invoking
    *        {@link #unlock(Object)}. If <code>leaseTimeMillis</code> is -1, hold the lock until
@@ -140,7 +140,7 @@ public abstract class DistributedLockService {
    * <code>unlock(Object name)</code> is invoked, or until <code>leaseTimeMillis</code> milliseconds
    * have passed since the lock was granted - whichever comes first.
    * </p>
-   * 
+   *
    * <p>
    * Locks are reentrant. If a thread invokes this method n times on the same instance, specifying
    * the same <code>name</code>, without an intervening release or lease expiration expiration on
@@ -149,27 +149,27 @@ public abstract class DistributedLockService {
    * already acquired, the lease time will be set to the maximum of the remaining least time from
    * the previous invocation, or <code>leaseTimeMillis</code>
    * </p>
-   * 
+   *
    * @param name the name of the lock to acquire in this service. This object must conform to the
    *        general contract of <code>equals(Object)</code> and <code>hashCode()</code> as described
    *        in {@link java.lang.Object#hashCode()}.
-   * 
+   *
    * @param waitTimeMillis the number of milliseconds to try to acquire the lock before giving up
    *        and returning false. A value of -1 causes this method to block until the lock is
    *        acquired.
-   * 
+   *
    * @param leaseTimeMillis the number of milliseconds to hold the lock after granting it, before
    *        automatically releasing it if it hasn't already been released by invoking
    *        {@link #unlock(Object)}. If <code>leaseTimeMillis</code> is -1, hold the lock until
    *        explicitly unlocked.
-   * 
+   *
    * @return true if the lock was acquired, false if the timeout <code>waitTimeMillis</code> passed
    *         without acquiring the lock.
-   * 
+   *
    * @throws InterruptedException if the thread is interrupted before or during this method.
    *
    * @throws LockServiceDestroyedException if this lock service has been destroyed
-   * 
+   *
    * @deprecated as of GemFire 5.1, use {@link #lock(Object, long, long)} with waitTimeMillis
    *             instead
    */
@@ -179,9 +179,9 @@ public abstract class DistributedLockService {
 
   /**
    * Release the lock previously granted for the given <code>name</code>.
-   * 
+   *
    * @param name the object to unlock in this service.
-   * 
+   *
    * @throws LockNotHeldException if the current thread is not the owner of this lock
    *
    * @throws LeaseExpiredException if the current thread was the owner of this lock, but it's lease
@@ -223,7 +223,7 @@ public abstract class DistributedLockService {
    * @throws InterruptedException if the current thread is interrupted.
    *
    * @throws LockServiceDestroyedException if the service has been destroyed
-   * 
+   *
    * @deprecated as of GemFire 5.1, use {@link #suspendLocking(long)} with waitTimeMillis instead
    */
   @Deprecated

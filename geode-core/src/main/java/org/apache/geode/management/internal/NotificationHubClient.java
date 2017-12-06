@@ -24,8 +24,8 @@ import org.apache.geode.internal.logging.LogService;
 
 /**
  * This class actually distribute the notification with the help of the actual broadcaster proxy.
- * 
- * 
+ *
+ *
  */
 
 public class NotificationHubClient {
@@ -43,9 +43,9 @@ public class NotificationHubClient {
 
   /**
    * send the notification to actual client on the Managing node VM
-   * 
+   *
    * it does not throw any exception. it will capture all exception and log a warning
-   * 
+   *
    * @param event
    */
   public void sendNotification(EntryEvent<NotificationKey, Notification> event) {

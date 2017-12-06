@@ -65,7 +65,6 @@ import org.apache.geode.SystemFailure;
 import org.apache.geode.UncreatedSystemException;
 import org.apache.geode.UnstartedSystemException;
 import org.apache.geode.admin.AdminException;
-import org.apache.geode.admin.BackupStatus;
 import org.apache.geode.admin.internal.AdminDistributedSystemImpl;
 import org.apache.geode.cache.persistence.PersistentID;
 import org.apache.geode.distributed.DistributedMember;
@@ -77,6 +76,7 @@ import org.apache.geode.distributed.internal.membership.InternalDistributedMembe
 import org.apache.geode.distributed.internal.tcpserver.TcpClient;
 import org.apache.geode.internal.admin.remote.TailLogResponse;
 import org.apache.geode.internal.cache.DiskStoreImpl;
+import org.apache.geode.internal.cache.backup.BackupUtil;
 import org.apache.geode.internal.i18n.LocalizedStrings;
 import org.apache.geode.internal.logging.DateFormatter;
 import org.apache.geode.internal.logging.MergeLogFiles;
@@ -87,6 +87,7 @@ import org.apache.geode.internal.statistics.StatArchiveReader.StatValue;
 import org.apache.geode.internal.util.JavaCommandBuilder;
 import org.apache.geode.internal.util.PluckStacks;
 import org.apache.geode.internal.util.PluckStacks.ThreadStack;
+import org.apache.geode.management.BackupStatus;
 
 /**
  * Provides static methods for various system administation tasks.
@@ -343,7 +344,7 @@ public class SystemAdmin {
 
   /**
    * Gets the status of a locator.
-   * 
+   *
    * @param directory the locator's directory
    * @return the status string. Will be one of the following: "running", "killed", "stopped",
    *         "stopping", or "starting".
@@ -358,7 +359,7 @@ public class SystemAdmin {
 
   /**
    * Gets information on the locator.
-   * 
+   *
    * @param directory the locator's directory
    * @return information string.
    * @throws UncreatedSystemException if the locator <code>directory</code> does not exist or is not
@@ -555,7 +556,7 @@ public class SystemAdmin {
   /**
    * this is a test hook to allow us to drive SystemAdmin functions without invoking main(), which
    * can call System.exit().
-   * 
+   *
    * @param props
    */
   public static void setDistributedSystemProperties(Properties props) {
@@ -618,9 +619,9 @@ public class SystemAdmin {
     InternalDistributedSystem ads = getAdminCnx();
 
     // Baseline directory should be null if it was not provided on the command line
-    BackupStatus status = AdminDistributedSystemImpl.backupAllMembers(ads.getDistributionManager(),
-        new File(targetDir),
-        (SystemAdmin.baselineDir == null ? null : new File(SystemAdmin.baselineDir)));
+    BackupStatus status =
+        BackupUtil.backupAllMembers(ads.getDistributionManager(), new File(targetDir),
+            (SystemAdmin.baselineDir == null ? null : new File(SystemAdmin.baselineDir)));
 
     boolean incomplete = !status.getOfflineDiskStores().isEmpty();
 
@@ -862,7 +863,7 @@ public class SystemAdmin {
 
   /**
    * Returns the contents located at the end of the file as a string.
-   * 
+   *
    * @throws IOException if the file can not be opened or read
    */
   public String tailFile(File file, boolean problemsOnly) throws IOException {
@@ -1150,7 +1151,7 @@ public class SystemAdmin {
 
   /**
    * List the statistics of a running system.
-   * 
+   *
    * @param directory the system directory of the system to list.
    * @param archiveNames the archive file(s) to read.
    * @param details if true the statistic descriptions will also be listed.
@@ -1331,7 +1332,7 @@ public class SystemAdmin {
     DSFIDFactory.registerTypes();
   }
 
-  private final static String[] helpTopics =
+  private static final String[] helpTopics =
       new String[] {"all", "overview", "commands", "options", "usage", "configuration"};
 
   protected void printHelpTopic(String topic, PrintWriter pw) {
@@ -1419,7 +1420,7 @@ public class SystemAdmin {
     ExitCode.FATAL.doSystemExit();
   }
 
-  private final static String[] validCommands = new String[] {"version", "stats", START_LOCATOR,
+  private static final String[] validCommands = new String[] {"version", "stats", START_LOCATOR,
       "stop-locator", "status-locator", "info-locator", "tail-locator-log", "merge-logs",
       "revoke-missing-disk-store", "list-missing-disk-stores", "validate-disk-store",
       "upgrade-disk-store", "compact-disk-store", "compact-all-disk-stores", "modify-disk-store",
@@ -1430,10 +1431,10 @@ public class SystemAdmin {
     return validCommands.clone();
   }
 
-  private final static String[] aliasCommands = new String[] {"locator-start", "locator-stop",
+  private static final String[] aliasCommands = new String[] {"locator-start", "locator-stop",
       "locator-status", "locator-info", "locator-tail-log", "logs-merge", "shutdown-all",
       "shutdownall", "compact", "modify", "validate"};
-  private final static String[] validOptions =
+  private static final String[] validOptions =
       new String[] {"-address=", "-archive=", "-concurrencyLevel=", "-debug", "-remove", "-details",
           "-dir=", "-endtime=", "-h", "-help", "-initialCapacity=", "-loadFactor=", "-lru=",
           "-lruAction=", "-lruLimit=", "-maxOplogSize=", "-properties=", "-monitor", "-nofilter",

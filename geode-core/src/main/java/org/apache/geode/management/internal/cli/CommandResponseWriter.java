@@ -24,8 +24,8 @@ import java.io.StringWriter;
  * ThreadLocal copy of this writer which will be accessible through
  * {@link org.apache.geode.management.internal.cli.remote.CommandExecutionContext#WRITER_WRAPPER}.
  * NOTE: Not thread safe
- * 
- * 
+ *
+ *
  * @since GemFire 7.0
  */
 public class CommandResponseWriter {

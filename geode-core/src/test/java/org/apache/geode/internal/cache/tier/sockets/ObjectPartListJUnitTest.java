@@ -19,12 +19,12 @@ import static org.junit.Assert.*;
 import java.io.IOException;
 import java.util.List;
 
-import org.apache.geode.test.junit.categories.ClientServerTest;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
 import org.apache.geode.CopyHelper;
 import org.apache.geode.internal.util.BlobHelper;
+import org.apache.geode.test.junit.categories.ClientServerTest;
 import org.apache.geode.test.junit.categories.UnitTest;
 
 @Category({UnitTest.class, ClientServerTest.class})

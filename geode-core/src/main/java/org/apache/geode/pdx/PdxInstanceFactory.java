@@ -25,14 +25,14 @@ import org.apache.geode.cache.RegionService;
  * only create a single instance. To create multiple instances create multiple factories or use
  * {@link PdxInstance#createWriter()} to create subsequent instances. Using
  * {@link PdxInstance#createWriter()} is usually faster.
- * 
+ *
  * @since GemFire 6.6.2
  */
 public interface PdxInstanceFactory {
   /**
    * Create a {@link PdxInstance}. The instance will contain any data written to this factory using
    * the write methods.
-   * 
+   *
    * @return the created instance
    * @throws IllegalStateException if called more than once
    */
@@ -43,7 +43,7 @@ public interface PdxInstanceFactory {
    * {@code char}.
    * <p>
    * Java char is mapped to .NET System.Char.
-   * 
+   *
    * @param fieldName the name of the field to write
    * @param value the value of the field to write
    * @return this PdxInstanceFactory
@@ -57,7 +57,7 @@ public interface PdxInstanceFactory {
    * {@code boolean}.
    * <p>
    * Java boolean is mapped to .NET System.Boolean.
-   * 
+   *
    * @param fieldName the name of the field to write
    * @param value the value of the field to write
    * @return this PdxInstanceFactory
@@ -71,7 +71,7 @@ public interface PdxInstanceFactory {
    * {@code byte}.
    * <p>
    * Java byte is mapped to .NET System.SByte.
-   * 
+   *
    * @param fieldName the name of the field to write
    * @param value the value of the field to write
    * @return this PdxInstanceFactory
@@ -85,7 +85,7 @@ public interface PdxInstanceFactory {
    * {@code short}.
    * <p>
    * Java short is mapped to .NET System.Int16.
-   * 
+   *
    * @param fieldName the name of the field to write
    * @param value the value of the field to write
    * @return this PdxInstanceFactory
@@ -99,7 +99,7 @@ public interface PdxInstanceFactory {
    * {@code int}.
    * <p>
    * Java int is mapped to .NET System.Int32.
-   * 
+   *
    * @param fieldName the name of the field to write
    * @param value the value of the field to write
    * @return this PdxInstanceFactory
@@ -113,7 +113,7 @@ public interface PdxInstanceFactory {
    * {@code long}.
    * <p>
    * Java long is mapped to .NET System.Int64.
-   * 
+   *
    * @param fieldName the name of the field to write
    * @param value the value of the field to write
    * @return this PdxInstanceFactory
@@ -127,7 +127,7 @@ public interface PdxInstanceFactory {
    * {@code float}.
    * <p>
    * Java float is mapped to .NET System.Float.
-   * 
+   *
    * @param fieldName the name of the field to write
    * @param value the value of the field to write
    * @return this PdxInstanceFactory
@@ -141,7 +141,7 @@ public interface PdxInstanceFactory {
    * {@code double}.
    * <p>
    * Java double is mapped to .NET System.Double.
-   * 
+   *
    * @param fieldName the name of the field to write
    * @param value the value of the field to write
    * @return this PdxInstanceFactory
@@ -155,7 +155,7 @@ public interface PdxInstanceFactory {
    * {@code Date}.
    * <p>
    * Java Date is mapped to .NET System.DateTime.
-   * 
+   *
    * @param fieldName the name of the field to write
    * @param value the value of the field to write
    * @return this PdxInstanceFactory
@@ -169,7 +169,7 @@ public interface PdxInstanceFactory {
    * {@code String}.
    * <p>
    * Java String is mapped to .NET System.String.
-   * 
+   *
    * @param fieldName the name of the field to write
    * @param value the value of the field to write
    * @return this PdxInstanceFactory
@@ -189,7 +189,7 @@ public interface PdxInstanceFactory {
    * Note that some Java objects serialized with this method may not be compatible with non-java
    * languages. To ensure that only portable objects are serialized use
    * {@link #writeObject(String, Object, boolean)}.
-   * 
+   *
    * @param fieldName the name of the field to write
    * @param value the value of the field to write
    * @return this PdxInstanceFactory
@@ -242,7 +242,7 @@ public interface PdxInstanceFactory {
    * <li>java.util.HashSet: CacheableHashSet
    * <li>java.util.LinkedHashSet: CacheableLinkedHashSet
    * </ul>
-   * 
+   *
    * @param fieldName the name of the field to write
    * @param value the value of the field to write
    * @param checkPortability if true then an exception is thrown if a non-portable object is
@@ -261,7 +261,7 @@ public interface PdxInstanceFactory {
    * {@code boolean[]}.
    * <p>
    * Java boolean[] is mapped to .NET System.Boolean[].
-   * 
+   *
    * @param fieldName the name of the field to write
    * @param value the value of the field to write
    * @return this PdxInstanceFactory
@@ -275,7 +275,7 @@ public interface PdxInstanceFactory {
    * {@code char[]}.
    * <p>
    * Java char[] is mapped to .NET System.Char[].
-   * 
+   *
    * @param fieldName the name of the field to write
    * @param value the value of the field to write
    * @return this PdxInstanceFactory
@@ -289,7 +289,7 @@ public interface PdxInstanceFactory {
    * {@code byte[]}.
    * <p>
    * Java byte[] is mapped to .NET System.Byte[].
-   * 
+   *
    * @param fieldName the name of the field to write
    * @param value the value of the field to write
    * @return this PdxInstanceFactory
@@ -303,7 +303,7 @@ public interface PdxInstanceFactory {
    * {@code short[]}.
    * <p>
    * Java short[] is mapped to .NET System.Int16[].
-   * 
+   *
    * @param fieldName the name of the field to write
    * @param value the value of the field to write
    * @return this PdxInstanceFactory
@@ -317,7 +317,7 @@ public interface PdxInstanceFactory {
    * {@code int[]}.
    * <p>
    * Java int[] is mapped to .NET System.Int32[].
-   * 
+   *
    * @param fieldName the name of the field to write
    * @param value the value of the field to write
    * @return this PdxInstanceFactory
@@ -331,7 +331,7 @@ public interface PdxInstanceFactory {
    * {@code long[]}.
    * <p>
    * Java long[] is mapped to .NET System.Int64[].
-   * 
+   *
    * @param fieldName the name of the field to write
    * @param value the value of the field to write
    * @return this PdxInstanceFactory
@@ -345,7 +345,7 @@ public interface PdxInstanceFactory {
    * {@code float[]}.
    * <p>
    * Java float[] is mapped to .NET System.Float[].
-   * 
+   *
    * @param fieldName the name of the field to write
    * @param value the value of the field to write
    * @return this PdxInstanceFactory
@@ -359,7 +359,7 @@ public interface PdxInstanceFactory {
    * {@code double[]}.
    * <p>
    * Java double[] is mapped to .NET System.Double[].
-   * 
+   *
    * @param fieldName the name of the field to write
    * @param value the value of the field to write
    * @return this PdxInstanceFactory
@@ -373,7 +373,7 @@ public interface PdxInstanceFactory {
    * {@code String[]}.
    * <p>
    * Java String[] is mapped to .NET System.String[].
-   * 
+   *
    * @param fieldName the name of the field to write
    * @param value the value of the field to write
    * @return this PdxInstanceFactory
@@ -391,7 +391,7 @@ public interface PdxInstanceFactory {
    * writeObject}. Note that this call may serialize elements that are not compatible with non-java
    * languages. To ensure that only portable objects are serialized use
    * {@link #writeObjectArray(String, Object[], boolean)}.
-   * 
+   *
    * @param fieldName the name of the field to write
    * @param value the value of the field to write
    * @return this PdxInstanceFactory
@@ -409,7 +409,7 @@ public interface PdxInstanceFactory {
    * writeObject}. Note that this call may serialize elements that are not compatible with non-java
    * languages. To ensure that only portable objects are serialized use
    * {@code writeObjectArray(String, Object[], boolean)}.
-   * 
+   *
    * @param fieldName the name of the field to write
    * @param value the value of the field to write
    * @param checkPortability if true then an exception is thrown if a non-portable object is
@@ -429,7 +429,7 @@ public interface PdxInstanceFactory {
    * {@code byte[][]}.
    * <p>
    * Java byte[][] is mapped to .NET System.Byte[][].
-   * 
+   *
    * @param fieldName the name of the field to write
    * @param value the value of the field to write
    * @return this PdxInstanceFactory
@@ -472,7 +472,7 @@ public interface PdxInstanceFactory {
    * </ul>
    * Note that the object form of primitives, for example Integer.class and Long.class, map to
    * {@link #writeObject(String, Object) writeObject}.
-   * 
+   *
    * @param fieldName the name of the field to write
    * @param fieldValue the value of the field to write; this parameter's class must extend the
    *        {@code fieldType}
@@ -517,7 +517,7 @@ public interface PdxInstanceFactory {
    * </ul>
    * Note that the object form of primitives, for example Integer.class and Long.class, map to
    * {@link #writeObject(String, Object, boolean) writeObject}.
-   * 
+   *
    * @param fieldName the name of the field to write
    * @param fieldValue the value of the field to write; this parameter's class must extend the
    *        {@code fieldType}
@@ -538,16 +538,16 @@ public interface PdxInstanceFactory {
    * Indicate that the named field should be included in hashCode and equals checks of this object
    * on a server that is accessing {@link PdxInstance} or when a client executes a query on a
    * server.
-   * 
+   *
    * The fields that are marked as identity fields are used to generate the hashCode and equals
    * methods of {@link PdxInstance}. Because of this, the identity fields should themselves either
    * be primitives, or implement hashCode and equals.
-   * 
+   *
    * If no fields are set as identity fields, then all fields will be used in hashCode and equals
    * checks.
-   * 
+   *
    * The identity fields should make marked after they are written using a write* method.
-   * 
+   *
    * @param fieldName the name of the field to mark as an identity field.
    * @return this PdxInstanceFactory
    * @throws PdxFieldDoesNotExistException if the named field has not already been written.

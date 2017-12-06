@@ -48,7 +48,7 @@ import org.apache.geode.test.junit.categories.IntegrationTest;
 
 /**
  *
- * 
+ *
  */
 @Category(IntegrationTest.class)
 public class QueryObserverCallbackJUnitTest {
@@ -409,7 +409,7 @@ public class QueryObserverCallbackJUnitTest {
 
     /*
      * (non-Javadoc)
-     * 
+     *
      * @see
      * org.apache.geode.cache.query.internal.QueryObserver#beforeIndexLookup(org.apache.geode.cache.
      * query.Index, int, java.lang.Object, int, java.lang.Object, java.util.Set)

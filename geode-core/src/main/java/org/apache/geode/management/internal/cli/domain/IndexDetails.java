@@ -29,7 +29,7 @@ import org.apache.geode.internal.lang.ObjectUtils;
 /**
  * The IndexDetails class encapsulates information for an Index on a Region in the GemFire Cache.
  * </p>
- * 
+ *
  * @see org.apache.geode.cache.query.Index
  * @see org.apache.geode.cache.query.IndexStatistics
  * @see org.apache.geode.cache.query.IndexType

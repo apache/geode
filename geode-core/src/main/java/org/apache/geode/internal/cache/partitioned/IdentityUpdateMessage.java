@@ -127,7 +127,7 @@ public class IdentityUpdateMessage extends DistributionMessage implements Messag
 
   /**
    * A processor that ignores exceptions, silently removing those nodes that reply with problems
-   * 
+   *
    * @since GemFire 5.0
    */
   public static class IdentityUpdateResponse extends ReplyProcessor21 {

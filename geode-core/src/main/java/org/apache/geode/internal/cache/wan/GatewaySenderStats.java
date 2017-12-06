@@ -20,8 +20,8 @@ import org.apache.geode.StatisticsFactory;
 import org.apache.geode.StatisticsType;
 import org.apache.geode.StatisticsTypeFactory;
 import org.apache.geode.distributed.internal.DistributionStats;
-import org.apache.geode.internal.statistics.StatisticsTypeFactoryImpl;
 import org.apache.geode.internal.cache.CachePerfStats;
+import org.apache.geode.internal.statistics.StatisticsTypeFactoryImpl;
 
 public class GatewaySenderStats {
 
@@ -299,7 +299,7 @@ public class GatewaySenderStats {
 
   /**
    * Returns the current value of the "eventsReceived" stat.
-   * 
+   *
    * @return the current value of the "eventsReceived" stat
    */
   public int getEventsReceived() {
@@ -315,7 +315,7 @@ public class GatewaySenderStats {
 
   /**
    * Returns the current value of the "eventsQueued" stat.
-   * 
+   *
    * @return the current value of the "eventsQueued" stat
    */
   public int getEventsQueued() {
@@ -324,7 +324,7 @@ public class GatewaySenderStats {
 
   /**
    * Returns the current value of the "eventsNotQueuedConflated" stat.
-   * 
+   *
    * @return the current value of the "eventsNotQueuedConflated" stat
    */
   public int getEventsNotQueuedConflated() {
@@ -333,7 +333,7 @@ public class GatewaySenderStats {
 
   /**
    * Returns the current value of the "eventsConflatedFromBatches" stat.
-   * 
+   *
    * @return the current value of the "eventsConflatedFromBatches" stat
    */
   public int getEventsConflatedFromBatches() {
@@ -342,7 +342,7 @@ public class GatewaySenderStats {
 
   /**
    * Returns the current value of the "eventQueueSize" stat.
-   * 
+   *
    * @return the current value of the "eventQueueSize" stat
    */
   public int getEventQueueSize() {
@@ -351,7 +351,7 @@ public class GatewaySenderStats {
 
   /**
    * Returns the current value of the "tempQueueSize" stat.
-   * 
+   *
    * @return the current value of the "tempQueueSize" stat.
    */
   public int getTempEventQueueSize() {
@@ -371,7 +371,7 @@ public class GatewaySenderStats {
 
   /**
    * Returns the current value of the "eventsDistributed" stat.
-   * 
+   *
    * @return the current value of the "eventsDistributed" stat
    */
   public int getEventsDistributed() {
@@ -380,7 +380,7 @@ public class GatewaySenderStats {
 
   /**
    * Returns the current value of the "eventsExceedingAlertThreshold" stat.
-   * 
+   *
    * @return the current value of the "eventsExceedingAlertThreshold" stat
    */
   public int getEventsExceedingAlertThreshold() {
@@ -396,7 +396,7 @@ public class GatewaySenderStats {
 
   /**
    * Returns the current value of the "batchDistributionTime" stat.
-   * 
+   *
    * @return the current value of the "batchDistributionTime" stat
    */
   public long getBatchDistributionTime() {
@@ -405,7 +405,7 @@ public class GatewaySenderStats {
 
   /**
    * Returns the current value of the batchesDistributed" stat.
-   * 
+   *
    * @return the current value of the batchesDistributed" stat
    */
   public int getBatchesDistributed() {
@@ -414,7 +414,7 @@ public class GatewaySenderStats {
 
   /**
    * Returns the current value of the batchesRedistributed" stat.
-   * 
+   *
    * @return the current value of the batchesRedistributed" stat
    */
   public int getBatchesRedistributed() {
@@ -423,7 +423,7 @@ public class GatewaySenderStats {
 
   /**
    * Returns the current value of the batchesResized" stat.
-   * 
+   *
    * @return the current value of the batchesResized" stat
    */
   public int getBatchesResized() {
@@ -446,7 +446,7 @@ public class GatewaySenderStats {
 
   /**
    * Sets the "eventQueueSize" stat.
-   * 
+   *
    * @param size The size of the queue
    */
   public void setQueueSize(int size) {
@@ -455,7 +455,7 @@ public class GatewaySenderStats {
 
   /**
    * Sets the "tempQueueSize" stat.
-   * 
+   *
    * @param size The size of the temp queue
    */
   public void setTempQueueSize(int size) {
@@ -479,7 +479,7 @@ public class GatewaySenderStats {
 
   /**
    * Increments the "eventQueueSize" stat by given delta.
-   * 
+   *
    * @param delta an integer by which queue size to be increased
    */
   public void incQueueSize(int delta) {
@@ -488,7 +488,7 @@ public class GatewaySenderStats {
 
   /**
    * Increments the "tempQueueSize" stat by given delta.
-   * 
+   *
    * @param delta an integer by which temp queue size to be increased
    */
   public void incTempQueueSize(int delta) {
@@ -511,7 +511,7 @@ public class GatewaySenderStats {
 
   /**
    * Decrements the "eventQueueSize" stat by given delta.
-   * 
+   *
    * @param delta an integer by which queue size to be increased
    */
   public void decQueueSize(int delta) {
@@ -520,7 +520,7 @@ public class GatewaySenderStats {
 
   /**
    * Decrements the "tempQueueSize" stat by given delta.
-   * 
+   *
    * @param delta an integer by which temp queue size to be increased
    */
   public void decTempQueueSize(int delta) {
@@ -544,7 +544,7 @@ public class GatewaySenderStats {
 
   /**
    * Returns the current value of the "unprocessedTokensAddedByPrimary" stat.
-   * 
+   *
    * @return the current value of the "unprocessedTokensAddedByPrimary" stat
    */
   public int getUnprocessedTokensAddedByPrimary() {
@@ -553,7 +553,7 @@ public class GatewaySenderStats {
 
   /**
    * Returns the current value of the "unprocessedEventsAddedBySecondary" stat.
-   * 
+   *
    * @return the current value of the "unprocessedEventsAddedBySecondary" stat
    */
   public int getUnprocessedEventsAddedBySecondary() {
@@ -562,7 +562,7 @@ public class GatewaySenderStats {
 
   /**
    * Returns the current value of the "unprocessedEventsRemovedByPrimary" stat.
-   * 
+   *
    * @return the current value of the "unprocessedEventsRemovedByPrimary" stat
    */
   public int getUnprocessedEventsRemovedByPrimary() {
@@ -571,7 +571,7 @@ public class GatewaySenderStats {
 
   /**
    * Returns the current value of the "unprocessedTokensRemovedBySecondary" stat.
-   * 
+   *
    * @return the current value of the "unprocessedTokensRemovedBySecondary" stat
    */
   public int getUnprocessedTokensRemovedBySecondary() {
@@ -580,7 +580,7 @@ public class GatewaySenderStats {
 
   /**
    * Returns the current value of the "unprocessedEventMapSize" stat.
-   * 
+   *
    * @return the current value of the "unprocessedEventMapSize" stat
    */
   public int getUnprocessedEventMapSize() {
@@ -696,8 +696,15 @@ public class GatewaySenderStats {
   }
 
   /**
+   * Gets the value of the "conflationIndexesMapSize" stat
+   */
+  public int getConflationIndexesMapSize() {
+    return this.stats.getInt(conflationIndexesMapSizeId);
+  }
+
+  /**
    * Returns the current time (ns).
-   * 
+   *
    * @return the current time (ns)
    */
   public long startTime() {
@@ -706,7 +713,7 @@ public class GatewaySenderStats {
 
   /**
    * Increments the "eventsDistributed" and "batchDistributionTime" stats.
-   * 
+   *
    * @param start The start of the batch (which is decremented from the current time to determine
    *        the batch processing time).
    * @param numberOfEvents The number of events to add to the events distributed stat
@@ -727,7 +734,7 @@ public class GatewaySenderStats {
 
   /**
    * Increments the "eventsQueued" and "eventQueueTime" stats.
-   * 
+   *
    * @param start The start of the put (which is decremented from the current time to determine the
    *        queue processing time).
    */

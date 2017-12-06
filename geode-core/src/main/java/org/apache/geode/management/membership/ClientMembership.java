@@ -29,7 +29,7 @@ public final class ClientMembership {
   /**
    * Registers a {@link ClientMembershipListener} for notification of connection changes for
    * CacheServer and clients.
-   * 
+   *
    * @param listener a ClientMembershipListener to be registered
    */
   public static void registerClientMembershipListener(ClientMembershipListener listener) {
@@ -38,7 +38,7 @@ public final class ClientMembership {
 
   /**
    * Removes registration of a previously registered {@link ClientMembershipListener}.
-   * 
+   *
    * @param listener a ClientMembershipListener to be unregistered
    */
   public static void unregisterClientMembershipListener(ClientMembershipListener listener) {
@@ -48,7 +48,7 @@ public final class ClientMembership {
   /**
    * Returns an array of all the currently registered <code>ClientMembershipListener</code>s.
    * Modifications to the returned array will not affect the registration of these listeners.
-   * 
+   *
    * @return the registered <code>ClientMembershipListener</code>s; an empty array if no listeners
    */
   public static ClientMembershipListener[] getClientMembershipListeners() {

@@ -15,12 +15,9 @@
 
 package org.apache.geode.internal.admin;
 
-// import org.apache.geode.internal.admin.remote.*;
-// import org.apache.geode.cache.*;
-// import org.apache.geode.GemFireCacheException;
-import org.apache.geode.internal.i18n.LocalizedStrings;
-
 import java.util.*;
+
+import org.apache.geode.internal.i18n.LocalizedStrings;
 
 /**
  * A <code>CacheCollector</code> is {@linkplain GfManagerAgent#setCacheCollector registered} on a

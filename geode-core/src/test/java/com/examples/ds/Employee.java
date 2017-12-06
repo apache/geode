@@ -14,10 +14,11 @@
  */
 package com.examples.ds;
 
-import org.apache.geode.DataSerializable;
-import org.apache.geode.DataSerializer;
 import java.io.*;
 import java.util.Date;
+
+import org.apache.geode.DataSerializable;
+import org.apache.geode.DataSerializer;
 
 public class Employee implements DataSerializable {
   private int id;

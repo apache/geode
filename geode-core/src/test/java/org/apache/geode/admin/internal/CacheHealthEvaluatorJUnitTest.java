@@ -16,17 +16,17 @@ package org.apache.geode.admin.internal;
 
 import static org.junit.Assert.*;
 
-import org.apache.geode.admin.*;
-import org.apache.geode.cache.*;
-import org.apache.geode.internal.cache.*;
-import org.apache.geode.test.junit.categories.IntegrationTest;
-
 import java.util.*;
 
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 import org.junit.rules.TestName;
+
+import org.apache.geode.admin.*;
+import org.apache.geode.cache.*;
+import org.apache.geode.internal.cache.*;
+import org.apache.geode.test.junit.categories.IntegrationTest;
 
 /**
  * Contains simple tests for the {@link CacheHealthEvaluator}

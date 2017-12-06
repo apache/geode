@@ -21,7 +21,7 @@ import org.apache.geode.cache.Region;
 
 /**
  * Composite data type used to distribute attributes for a {@link Region}.
- * 
+ *
  * @since GemFire 7.0
  */
 public class RegionAttributesData {
@@ -58,7 +58,7 @@ public class RegionAttributesData {
   private boolean offHeap;
 
   /**
-   * 
+   *
    * This constructor is to be used by internal JMX framework only. User should not try to create an
    * instance of this class.
    */
@@ -189,7 +189,7 @@ public class RegionAttributesData {
 
   /**
    * Returns whether JTA transactions are being ignored.
-   * 
+   *
    * @return True if JTA transactions are being ignored, false otherwise.
    */
   public boolean isIgnoreJTA() {
@@ -227,7 +227,7 @@ public class RegionAttributesData {
   /**
    * Returns whether this member is configured to become the lock granter when the Region is
    * created. It does not indicate whether this member is currently the lock granter for the Region.
-   * 
+   *
    * @return True if this member is configured to start the Region as the lock granter, false
    *         otherwise. Always returns false if the scope of the Region is not
    *         <code>Scope.GLOBAL</code>
@@ -238,7 +238,7 @@ public class RegionAttributesData {
 
   /**
    * Returns whether multicast communication is enabled for the Region.
-   * 
+   *
    * @return True if multicast communication is enabled, false otherwise.
    */
   public boolean isMulticastEnabled() {
@@ -254,7 +254,7 @@ public class RegionAttributesData {
 
   /**
    * Returns whether query service index maintenance will be done synchronously.
-   * 
+   *
    * @return True if query service index maintenance will be done synchronously or false if it will
    *         be done asynchronously.
    */
@@ -264,7 +264,7 @@ public class RegionAttributesData {
 
   /**
    * Returns whether statistic collection is enabled for the Region and its entries.
-   * 
+   *
    * @return True if statistic collection is enabled, false otherwise.
    */
   public boolean isStatisticsEnabled() {
@@ -293,7 +293,7 @@ public class RegionAttributesData {
 
   /**
    * Returns the name of the Pool that this Region will use to communicate with servers, if any.
-   * 
+   *
    * @return The name of the Pool used to communicate with servers or null if the host member
    *         communicates with peers.
    */
@@ -326,7 +326,7 @@ public class RegionAttributesData {
 
   /**
    * Returns whether disk writes are synchronous.
-   * 
+   *
    * @return True if disk writes are synchronous, false otherwise.
    */
   public boolean isDiskSynchronous() {
@@ -342,7 +342,7 @@ public class RegionAttributesData {
 
   /**
    * Returns the compressor class name used by the region.
-   * 
+   *
    * @return null if no compression is used.
    */
   public String getCompressorClassName() {
@@ -351,7 +351,7 @@ public class RegionAttributesData {
 
   /**
    * Returns true if the region uses off-heap memory.
-   * 
+   *
    * @return false if the region does not use off-heap memory.
    */
   public boolean getOffHeap() {
@@ -385,4 +385,3 @@ public class RegionAttributesData {
 
 
 }
-

@@ -64,10 +64,10 @@ public class CacheServerTestUtil extends JUnit4DistributedTestCase {
 
   private static PoolImpl pool = null;
 
-  protected final static int TYPE_CREATE = 0;
-  protected final static int TYPE_UPDATE = 1;
-  protected final static int TYPE_INVALIDATE = 2;
-  protected final static int TYPE_DESTROY = 3;
+  protected static final int TYPE_CREATE = 0;
+  protected static final int TYPE_UPDATE = 1;
+  protected static final int TYPE_INVALIDATE = 2;
+  protected static final int TYPE_DESTROY = 3;
 
   public static void createCacheClient(Pool poolAttr, String regionName) throws Exception {
     createCacheClient(poolAttr, regionName, getClientProperties(), Boolean.FALSE);
@@ -489,7 +489,7 @@ public class CacheServerTestUtil extends JUnit4DistributedTestCase {
 
   /**
    * Enables the shuffling of endpoints for a client
-   * 
+   *
    * @since GemFire 5.7
    */
   public static void enableShufflingOfEndpoints() {

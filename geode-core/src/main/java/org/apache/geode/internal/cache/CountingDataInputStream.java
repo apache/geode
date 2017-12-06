@@ -18,8 +18,8 @@ import java.io.*;
 
 /**
  * A data input stream that counts the bytes it plans on reading.
- * 
- * 
+ *
+ *
  * @since GemFire prPersistSprint2
  */
 

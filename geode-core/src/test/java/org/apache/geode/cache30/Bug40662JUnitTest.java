@@ -14,24 +14,25 @@
  */
 package org.apache.geode.cache30;
 
-import org.apache.geode.cache.*;
-import org.apache.geode.distributed.DistributedSystem;
-import org.apache.geode.test.junit.categories.IntegrationTest;
+import static org.apache.geode.distributed.ConfigurationProperties.*;
+import static org.junit.Assert.assertEquals;
+
+import java.util.Properties;
+
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Ignore;
 import org.junit.experimental.categories.Category;
 
-import java.util.Properties;
-
-import static org.apache.geode.distributed.ConfigurationProperties.*;
-import static org.junit.Assert.assertEquals;
+import org.apache.geode.cache.*;
+import org.apache.geode.distributed.DistributedSystem;
+import org.apache.geode.test.junit.categories.IntegrationTest;
 
 /**
  * Test for Bug no. 40662. To verify the default action being set in eviction attributes by
  * CacheXmlParser when cache.xml has eviction attributes with no eviction action specified. which
  * was being set to EvictionAction.NONE
- * 
+ *
  * @since GemFire 6.6
  */
 @Category(IntegrationTest.class)

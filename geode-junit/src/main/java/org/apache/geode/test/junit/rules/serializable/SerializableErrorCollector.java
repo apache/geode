@@ -14,9 +14,9 @@
  */
 package org.apache.geode.test.junit.rules.serializable;
 
-import org.junit.rules.ErrorCollector;
-
 import java.io.Serializable;
+
+import org.junit.rules.ErrorCollector;
 
 public class SerializableErrorCollector extends ErrorCollector implements Serializable {
 }

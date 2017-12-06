@@ -360,7 +360,7 @@ public class MemberFunctionStreamingMessage extends DistributionMessage
 
   /**
    * check to see if the distributed system is closing
-   * 
+   *
    * @return true if the distributed system is closing
    */
   private boolean checkDSClosing(DistributionManager dm) {

@@ -21,8 +21,8 @@ import org.apache.geode.InternalGemFireError;
 import org.apache.geode.cache.client.ServerOperationException;
 import org.apache.geode.cache.client.internal.AbstractOp;
 import org.apache.geode.cache.client.internal.ConnectionStats;
-import org.apache.geode.cache.client.internal.ExecutablePool;
 import org.apache.geode.cache.client.internal.CreateCQOp.CreateCQOpImpl;
+import org.apache.geode.cache.client.internal.ExecutablePool;
 import org.apache.geode.internal.Version;
 import org.apache.geode.internal.cache.tier.MessageType;
 import org.apache.geode.internal.cache.tier.sockets.ChunkedMessage;
@@ -31,14 +31,14 @@ import org.apache.geode.internal.cache.tier.sockets.Part;
 
 /**
  * Retrieves all durable cqs for a client from a server
- * 
+ *
  * @since GemFire 7.0
  */
 public class GetDurableCQsOp {
   /**
    * Retrieves all durable continuous queries on the server using connections from the given pool to
    * communicate with the server.
-   * 
+   *
    * @param pool the pool to use to communicate with the server.
    */
   public static List<String> execute(ExecutablePool pool) {

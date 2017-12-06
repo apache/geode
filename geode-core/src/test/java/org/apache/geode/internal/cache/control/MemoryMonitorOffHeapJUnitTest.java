@@ -14,6 +14,17 @@
  */
 package org.apache.geode.internal.cache.control;
 
+import static org.apache.geode.distributed.ConfigurationProperties.*;
+import static org.junit.Assert.*;
+
+import java.util.Properties;
+
+import org.apache.logging.log4j.Logger;
+import org.junit.After;
+import org.junit.Before;
+import org.junit.Test;
+import org.junit.experimental.categories.Category;
+
 import org.apache.geode.cache.*;
 import org.apache.geode.distributed.DistributedSystem;
 import org.apache.geode.internal.cache.EvictionAttributesImpl;
@@ -22,16 +33,6 @@ import org.apache.geode.internal.cache.control.InternalResourceManager.ResourceT
 import org.apache.geode.internal.i18n.LocalizedStrings;
 import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.test.junit.categories.IntegrationTest;
-import org.apache.logging.log4j.Logger;
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.experimental.categories.Category;
-
-import java.util.Properties;
-
-import static org.apache.geode.distributed.ConfigurationProperties.*;
-import static org.junit.Assert.*;
 
 /**
  */
@@ -65,17 +66,17 @@ public class MemoryMonitorOffHeapJUnitTest {
     }
   }
 
-  final static String expectedEx = LocalizedStrings.MemoryMonitor_MEMBER_ABOVE_CRITICAL_THRESHOLD
+  static final String expectedEx = LocalizedStrings.MemoryMonitor_MEMBER_ABOVE_CRITICAL_THRESHOLD
       .getRawText().replaceAll("\\{[0-9]+\\}", ".*?");
   public static final String addExpectedAbove =
       "<ExpectedException action=add>" + expectedEx + "</ExpectedException>";
   public static final String removeExpectedAbove =
       "<ExpectedException action=remove>" + expectedEx + "</ExpectedException>";
-  final static String expectedBelow = LocalizedStrings.MemoryMonitor_MEMBER_BELOW_CRITICAL_THRESHOLD
+  static final String expectedBelow = LocalizedStrings.MemoryMonitor_MEMBER_BELOW_CRITICAL_THRESHOLD
       .getRawText().replaceAll("\\{[0-9]+\\}", ".*?");
-  public final static String addExpectedBelow =
+  public static final String addExpectedBelow =
       "<ExpectedException action=add>" + expectedBelow + "</ExpectedException>";
-  public final static String removeExpectedBelow =
+  public static final String removeExpectedBelow =
       "<ExpectedException action=remove>" + expectedBelow + "</ExpectedException>";
 
   @Test
@@ -336,4 +337,3 @@ public class MemoryMonitorOffHeapJUnitTest {
     assertEquals(0f, monitor.getCriticalThreshold(), 0.01);
   }
 }
-

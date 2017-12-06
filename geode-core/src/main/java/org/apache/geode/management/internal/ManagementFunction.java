@@ -34,11 +34,11 @@ import org.apache.geode.internal.logging.LogService;
 
 /**
  * A generic function to act as a conduit between Managing Node and Managed nodes.
- * 
+ *
  * The direction of request flow is from Managing Node to Managing Node.
- * 
+ *
  * The following methods are executed at Managed node on behalf of the proxy.
- * 
+ *
  * 1) All setter methods 2) All operations 3) addNotificationListener 4) removeNotificationListener
  * 5) getNotificationInfo
  */
@@ -60,7 +60,7 @@ public class ManagementFunction extends FunctionAdapter implements InternalEntit
 
   /**
    * Public constructor
-   * 
+   *
    * @param notifHub
    */
   public ManagementFunction(NotificationHub notifHub) {
@@ -69,7 +69,7 @@ public class ManagementFunction extends FunctionAdapter implements InternalEntit
 
   /**
    * Actual function execution. It delegates task at managed node according to the request received.
-   * 
+   *
    * If any exception is encountered it will set the result to UNDEFINED
    */
   public void execute(FunctionContext fc) {

@@ -23,7 +23,7 @@ import org.apache.geode.test.process.ProcessWrapper;
 /**
  * Abstract test case for tests verifying that test output with a log message of
  * warning/error/severe will cause expected failures.
- * 
+ *
  */
 public abstract class FailWithProblemInOutputTestCase extends FailOutputTestCase {
 

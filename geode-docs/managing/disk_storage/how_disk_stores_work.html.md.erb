@@ -37,13 +37,14 @@ This figure shows a member with disk stores D through R defined. The member has 
 
 ## <a id="how_disk_stores_work__section_433EEEA1560D40DD9842200181EB1D0A" class="no-quick-link"></a>What <%=vars.product_name%> Writes to the Disk Store
 
-This list describes the items that <%=vars.product_name%> comprise the disk store:
+<%=vars.product_name%> writes the following to the disk store:
 
--   The members that host the store, and information on their status, such as which members are online and which members are offline and time stamps.
--   A disk store identifier.
--   Which regions are in the disk store, specified by region name.
--   Colocated regions that the regions in the disk store are dependent upon.
--   A set of files that specify all keys for the regions, as well as all operations on the regions. Given both keys and operations, a region can be recreated when a member is restarted.
+-   Persisted and overflowed data as specified when the disk store was created and configured
+-   The members that host the store and information on their status, such as which members are online and which members are offline and time stamps
+-   A disk store identifier
+-   Which regions are in the disk store, specified by region name and including selected attributes
+-   Names of colocated regions on which the regions in the disk store depend
+-   A record of all operations on the regions
 
 <%=vars.product_name%> does not write indexes to disk.
 
@@ -52,9 +53,9 @@ This list describes the items that <%=vars.product_name%> comprise the disk stor
 The files for a disk store are used by <%=vars.product_name%> as a group. Treat them as a single entity. If you copy them, copy them all together. Do not change the file names.
 
 Disk store access and management differs according to whether the member is online or offline.
-
 While a member is running, its disk stores are online. When the member exits and is not running, its disk stores are offline.
 
 -   Online, a disk store is owned and managed by its member process. To run operations on an online disk store, use API calls in the member process, or use the `gfsh` command-line interface.
--   Offline, the disk store is just a collection of files in the host file system. The files are accessible based on file system permissions. You can copy the files for backup or to move the member’s disk store location. You can also run some maintenance operations, such as file compaction and validation, by using the `gfsh` command-line interface. When offline, the disk store's information is unavailable to the distributed system. For partitioned regions, region data is split between multiple members, and therefore the start up of a member is dependent on and must wait for all members to be online. An attempt to access an entry that is stored on disk by an offline member results in a `PartitionOfflineException`.
+-   Offline, the disk store is just a collection of files in the host file system. The files are accessible based on file system permissions. You can copy the files for backup or to move the member’s disk store location. You can also run some maintenance operations, such as file compaction and validation, by using the `gfsh` command-line interface. When offline, the disk store's information is unavailable to the distributed system. 
+For partitioned regions, region data is split between multiple members, and therefore the start up of a member is dependent onall members, and must wait for all members to be online. An attempt to access an entry that is stored on disk by an offline member results in a `PartitionOfflineException`.
 

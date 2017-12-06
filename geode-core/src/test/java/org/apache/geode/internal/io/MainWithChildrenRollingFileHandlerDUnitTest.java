@@ -17,17 +17,17 @@ package org.apache.geode.internal.io;
 
 import static org.apache.geode.distributed.ConfigurationProperties.LOG_FILE;
 
-import org.apache.geode.cache.client.ClientCache;
-import org.apache.geode.cache.client.ClientCacheFactory;
-import org.apache.geode.test.junit.rules.Locator;
-import org.apache.geode.test.dunit.rules.LocatorServerStartupRule;
-import org.apache.geode.test.dunit.rules.MemberVM;
-import org.apache.geode.test.junit.categories.DistributedTest;
+import java.net.InetAddress;
+
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
-import java.net.InetAddress;
+import org.apache.geode.cache.client.ClientCache;
+import org.apache.geode.cache.client.ClientCacheFactory;
+import org.apache.geode.test.dunit.rules.LocatorServerStartupRule;
+import org.apache.geode.test.dunit.rules.MemberVM;
+import org.apache.geode.test.junit.categories.DistributedTest;
 
 @Category(DistributedTest.class)
 public class MainWithChildrenRollingFileHandlerDUnitTest {
@@ -37,7 +37,7 @@ public class MainWithChildrenRollingFileHandlerDUnitTest {
 
   @Test
   public void testGeode2874_nameWithoutExtensionDoesNotThrowOnMemberRestart() throws Exception {
-    MemberVM<Locator> locatorVM = locatorServerStartupRule.startLocatorVM(0);
+    MemberVM locatorVM = locatorServerStartupRule.startLocatorVM(0);
 
     ClientCacheFactory clientCacheFactory = new ClientCacheFactory();
     clientCacheFactory.addPoolLocator(InetAddress.getLocalHost().toString(), locatorVM.getPort());

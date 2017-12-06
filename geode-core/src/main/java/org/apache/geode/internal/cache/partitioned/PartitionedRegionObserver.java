@@ -19,8 +19,8 @@ import org.apache.geode.internal.cache.PartitionedRegion;
 /**
  * This interface is used by testing/debugging code to be notified of different events. See the
  * documentation for class PartitionedRegionObserverHolder for details.
- * 
- * 
+ *
+ *
  */
 
 public interface PartitionedRegionObserver {

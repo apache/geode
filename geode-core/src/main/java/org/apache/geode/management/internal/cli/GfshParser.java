@@ -282,7 +282,7 @@ public class GfshParser extends SimpleParser {
   /**
    * @param buffer use the buffer to find the completion candidates
    *
-   *        Note the cursor maynot be the size the buffer
+   *        Note the cursor may not be the size the buffer
    */
   private List<Completion> getCandidates(String buffer) {
     List<Completion> candidates = new ArrayList<>();

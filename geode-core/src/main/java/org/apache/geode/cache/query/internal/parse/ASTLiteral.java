@@ -16,9 +16,11 @@
 
 package org.apache.geode.cache.query.internal.parse;
 
-import antlr.*;
-import java.util.*;
 import java.sql.*;
+import java.util.*;
+
+import antlr.*;
+
 import org.apache.geode.cache.query.*;
 import org.apache.geode.cache.query.internal.QCompiler;
 import org.apache.geode.internal.i18n.LocalizedStrings;

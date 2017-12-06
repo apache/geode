@@ -19,10 +19,10 @@ import org.apache.geode.GemFireException;
 /**
  * Thrown when a replicated region is configured for persistence on some members but none of those
  * members are currently online.
- * 
+ *
  * If you see this exception you should restart members that are configured for hosting persistent
  * replicates.
- * 
+ *
  * @since GemFire 7.0
  */
 public class PersistentReplicatesOfflineException extends GemFireException {

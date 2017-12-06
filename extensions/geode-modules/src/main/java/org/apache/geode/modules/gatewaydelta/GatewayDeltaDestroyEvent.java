@@ -14,16 +14,16 @@
  */
 package org.apache.geode.modules.gatewaydelta;
 
+import java.io.DataInput;
+import java.io.DataOutput;
+import java.io.IOException;
+
 import org.apache.geode.DataSerializable;
 import org.apache.geode.Instantiator;
 import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.EntryNotFoundException;
 import org.apache.geode.cache.Region;
 import org.apache.geode.modules.session.catalina.DeltaSessionInterface;
-
-import java.io.DataInput;
-import java.io.DataOutput;
-import java.io.IOException;
 
 @SuppressWarnings("serial")
 public class GatewayDeltaDestroyEvent extends AbstractGatewayDeltaEvent {
@@ -63,4 +63,3 @@ public class GatewayDeltaDestroyEvent extends AbstractGatewayDeltaEvent {
         .append(this.regionName).append("; key=").append(this.key).append("]").toString();
   }
 }
-

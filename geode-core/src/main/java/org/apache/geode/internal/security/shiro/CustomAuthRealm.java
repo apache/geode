@@ -14,8 +14,9 @@
  */
 package org.apache.geode.internal.security.shiro;
 
-import org.apache.geode.security.ResourcePermission;
-import org.apache.geode.security.SecurityManager;
+import java.io.Serializable;
+import java.util.Properties;
+
 import org.apache.shiro.authc.AuthenticationException;
 import org.apache.shiro.authc.AuthenticationInfo;
 import org.apache.shiro.authc.AuthenticationToken;
@@ -25,8 +26,8 @@ import org.apache.shiro.authz.Permission;
 import org.apache.shiro.realm.AuthorizingRealm;
 import org.apache.shiro.subject.PrincipalCollection;
 
-import java.io.Serializable;
-import java.util.Properties;
+import org.apache.geode.security.ResourcePermission;
+import org.apache.geode.security.SecurityManager;
 
 public class CustomAuthRealm extends AuthorizingRealm {
 

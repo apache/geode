@@ -49,7 +49,7 @@ import org.apache.geode.internal.logging.LogService;
 /**
  * A wrapper class over an actual QueryService instance. This is used when the
  * multiuser-authentication attribute is set to true.
- * 
+ *
  * @see ProxyCache
  * @since GemFire 6.5
  */

@@ -17,19 +17,20 @@
 
 package org.apache.geode.tools.pulse.internal.controllers;
 
+import java.io.IOException;
+import java.util.Collection;
+import java.util.Iterator;
+import java.util.List;
+
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import org.apache.commons.lang.StringEscapeUtils;
 import org.apache.commons.lang.StringUtils;
-import org.apache.geode.tools.pulse.internal.data.Cluster;
-import org.apache.geode.tools.pulse.internal.data.PulseConstants;
-import org.apache.geode.tools.pulse.internal.data.PulseVersion;
-import org.apache.geode.tools.pulse.internal.data.Repository;
-import org.apache.geode.tools.pulse.internal.service.PulseService;
-import org.apache.geode.tools.pulse.internal.service.PulseServiceFactory;
-import org.apache.geode.tools.pulse.internal.service.SystemAlertsService;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -37,18 +38,19 @@ import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 
-import java.io.IOException;
-import java.util.Collection;
-import java.util.Iterator;
-import java.util.List;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
+import org.apache.geode.tools.pulse.internal.data.Cluster;
+import org.apache.geode.tools.pulse.internal.data.PulseConstants;
+import org.apache.geode.tools.pulse.internal.data.PulseVersion;
+import org.apache.geode.tools.pulse.internal.data.Repository;
+import org.apache.geode.tools.pulse.internal.service.PulseService;
+import org.apache.geode.tools.pulse.internal.service.PulseServiceFactory;
+import org.apache.geode.tools.pulse.internal.service.SystemAlertsService;
 
 /**
  * Class PulseController
- * 
+ *
  * This class contains the implementations for all http Ajax requests needs to be served in Pulse.
- * 
+ *
  * @since GemFire version 7.5
  */
 @Controller
@@ -133,7 +135,7 @@ public class PulseController {
 
   /**
    * Method isUserLoggedIn Check whether user is logged in or not.
-   * 
+   *
    * @param request
    * @return boolean
    */
@@ -262,7 +264,7 @@ public class PulseController {
 
   /**
    * This method creates json for list of cluster regions
-   * 
+   *
    * @param cluster
    * @return ArrayNode JSON array
    */

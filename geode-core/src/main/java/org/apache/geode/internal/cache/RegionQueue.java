@@ -15,14 +15,14 @@
 
 package org.apache.geode.internal.cache;
 
-import org.apache.geode.cache.*;
-
 import java.util.List;
+
+import org.apache.geode.cache.*;
 
 /**
  * Interface <code>RegionQueue</code> is an interface for queue implementations backed by regions.
- * 
- * 
+ *
+ *
  * @since GemFire 4.2
  */
 public interface RegionQueue {
@@ -34,9 +34,9 @@ public interface RegionQueue {
 
   /**
    * Puts an object onto the tail of the queue
-   * 
+   *
    * @param object The object to put onto the queue
-   * 
+   *
    * @throws InterruptedException
    * @throws CacheException
    * @return boolean whether object was successfully put onto the queue
@@ -51,9 +51,9 @@ public interface RegionQueue {
   /**
    * Takes the first object from the head of the queue. This method returns null if there are no
    * objects on the queue.
-   * 
+   *
    * @return The object taken
-   * 
+   *
    * @throws CacheException
    * @throws InterruptedException
    */
@@ -62,11 +62,11 @@ public interface RegionQueue {
   /**
    * Takes up to batchSize number of objects from the head of the queue. As soon as it gets a null
    * response from a take, it stops taking.
-   * 
+   *
    * @param batchSize The number of objects to take from the queue
-   * 
+   *
    * @return the <code>List</code> of objects taken from the queue
-   * 
+   *
    * @throws CacheException
    * @throws InterruptedException
    */
@@ -75,7 +75,7 @@ public interface RegionQueue {
   /**
    * Removes a single object from the head of the queue without returning it. This method assumes
    * that the queue contains at least one object.
-   * 
+   *
    * @throws InterruptedException
    * @throws CacheException
    */
@@ -84,7 +84,7 @@ public interface RegionQueue {
   /**
    * Peeks the first object from the head of the queue without removing it. This method returns null
    * if there are no objects on the queue.
-   * 
+   *
    * @return The object peeked
    * @throws InterruptedException
    * @throws CacheException
@@ -94,9 +94,9 @@ public interface RegionQueue {
   /**
    * Peeks up to batchSize number of objects from the head of the queue without removing them. As
    * soon as it gets a null response from a peek, it stops peeking.
-   * 
+   *
    * @param batchSize The number of objects to peek from the queue
-   * 
+   *
    * @return The list of objects peeked
    * @throws InterruptedException
    * @throws CacheException
@@ -108,27 +108,27 @@ public interface RegionQueue {
    * have elapsed (whichever comes first). If it has peeked batchSize number of elements from the
    * queue before timeToWait milliseconds have elapsed, it stops peeking. If timeToWait milliseconds
    * elapse before batchSize number of elements has been peeked, it stops.
-   * 
+   *
    * @param batchSize The number of objects to peek from the queue
    * @param timeToWait The number of milliseconds to attempt to peek
-   * 
+   *
    * @return The list of objects peeked
    * @throws InterruptedException
    * @throws CacheException
-   * 
+   *
    */
   public List peek(int batchSize, int timeToWait) throws InterruptedException, CacheException;
 
   /**
    * Returns the size of the queue
-   * 
+   *
    * @return the size of the queue
    */
   public int size();
 
   /**
    * Add a <code>CacheListener</code> to the queue
-   * 
+   *
    * @param listener The <code>CacheListener</code> to add
    */
   public void addCacheListener(CacheListener listener);

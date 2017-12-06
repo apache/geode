@@ -16,11 +16,11 @@ package org.apache.geode.security;
 
 import static org.assertj.core.api.Assertions.*;
 
-import org.apache.geode.pdx.SimpleClass;
-import org.apache.geode.pdx.internal.PdxInstanceImpl;
-
 import java.util.Arrays;
 import java.util.Properties;
+
+import org.apache.geode.pdx.SimpleClass;
+import org.apache.geode.pdx.internal.PdxInstanceImpl;
 
 public class PDXPostProcessor implements PostProcessor {
 

@@ -21,7 +21,7 @@ package org.apache.geode.cache.operations;
  * operations this class encapsulates are
  * {@link org.apache.geode.cache.operations.OperationContext.OperationCode#DESTROY} and
  * {@link org.apache.geode.cache.operations.OperationContext.OperationCode#CONTAINS_KEY}.
- * 
+ *
  * @since GemFire 5.5
  * @deprecated since Geode1.0, use {@link org.apache.geode.security.ResourcePermission} instead
  */
@@ -38,7 +38,7 @@ public abstract class KeyOperationContext extends OperationContext {
 
   /**
    * Constructor for the operation.
-   * 
+   *
    * @param key the key for this operation
    */
   public KeyOperationContext(Object key) {
@@ -49,7 +49,7 @@ public abstract class KeyOperationContext extends OperationContext {
 
   /**
    * Constructor for the operation.
-   * 
+   *
    * @param key the key for this operation
    * @param postOperation true to set the post-operation flag
    */
@@ -61,7 +61,7 @@ public abstract class KeyOperationContext extends OperationContext {
 
   /**
    * Return the operation associated with the <code>OperationContext</code> object.
-   * 
+   *
    * @return The <code>OperationCode</code> of this operation. This is one of
    *         {@link org.apache.geode.cache.operations.OperationContext.OperationCode#DESTROY} or
    *         {@link org.apache.geode.cache.operations.OperationContext.OperationCode#CONTAINS_KEY}
@@ -90,7 +90,7 @@ public abstract class KeyOperationContext extends OperationContext {
 
   /**
    * Get the key object for this operation.
-   * 
+   *
    * @return the key object for this operation.
    */
   public Object getKey() {
@@ -99,7 +99,7 @@ public abstract class KeyOperationContext extends OperationContext {
 
   /**
    * Get the callback argument object for this operation.
-   * 
+   *
    * @return the callback argument object for this operation.
    */
   public Object getCallbackArg() {
@@ -108,7 +108,7 @@ public abstract class KeyOperationContext extends OperationContext {
 
   /**
    * Set the callback argument object for this operation.
-   * 
+   *
    * @param callbackArg the callback argument object for this operation.
    */
   public void setCallbackArg(Object callbackArg) {

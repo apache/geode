@@ -30,7 +30,7 @@ import org.apache.geode.test.junit.categories.UnitTest;
  * The SystemUtilsJUnitTest class is a test suite of test cases for testing the contract and
  * functionality of the SystemUtils class.
  * <p/>
- * 
+ *
  * @see org.apache.geode.internal.lang.SystemUtils
  * @see org.junit.Assert
  * @see org.junit.Test

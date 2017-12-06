@@ -19,20 +19,20 @@ package org.apache.geode.cache.query.internal;
  * subsystem when various events take place. There can be only one such observer at a time. If no
  * observer is needed, this member variable should point to an object with 'do-nothing' methods,
  * such as QueryObserverAdapter.
- * 
+ *
  * Code which wishes to observe events during a query should do so using the following technique:
- * 
+ *
  * class MyQueryObserver extends QueryObserverAdapter { // ... override methods of interest ... }
- * 
+ *
  * QueryObserver old = QueryObserverHolder.setInstance(new MyQueryObserver()); try { //... call
  * query methods here ... } finally { // reset to the original QueryObserver.
  * QueryObserverHolder.setInstance(old); }
- * 
+ *
  * The query code will call methods on this static member using the following technique:
- * 
+ *
  * QueryObserver observer = QueryObserverHolder.getInstance(); try {
  * observer.startMethod(arguments); doSomething(); } finally { observer.stopMethod(arguments); }
- * 
+ *
  * @version $Revision: 1.1 $
  */
 public class QueryObserverHolder {

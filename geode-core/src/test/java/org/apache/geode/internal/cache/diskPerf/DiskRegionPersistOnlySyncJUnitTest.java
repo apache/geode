@@ -156,7 +156,7 @@ public class DiskRegionPersistOnlySyncJUnitTest extends DiskRegionTestingBase {
      * OP_COUNT can be increased/decrease as per the requirement. If required to be set as higher
      * value such as 1000000 one needs to set the VM heap size accordingly. (For example:Default
      * setting in build.xml is <jvmarg value="-Xmx256M"/>
-     * 
+     *
      */
     OP_COUNT = 1000;
     UNIQUE_KEYS = Boolean.getBoolean("DRP.UNIQUE_KEYS");
@@ -203,4 +203,3 @@ public class DiskRegionPersistOnlySyncJUnitTest extends DiskRegionTestingBase {
   }
 
 }
-

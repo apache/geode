@@ -16,10 +16,11 @@ package org.apache.geode.management.internal.cli.commands.lifecycle;
 
 import static org.junit.Assert.assertEquals;
 
-import org.apache.geode.management.internal.cli.i18n.CliStrings;
-import org.apache.geode.test.junit.categories.UnitTest;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
+
+import org.apache.geode.management.internal.cli.i18n.CliStrings;
+import org.apache.geode.test.junit.categories.UnitTest;
 
 @Category(UnitTest.class)
 public class StartJConsoleCommandTest {

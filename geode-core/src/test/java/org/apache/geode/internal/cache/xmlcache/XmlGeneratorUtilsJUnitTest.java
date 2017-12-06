@@ -18,6 +18,7 @@ import static javax.xml.XMLConstants.*;
 import static org.junit.Assert.*;
 
 import java.util.concurrent.atomic.AtomicReference;
+
 import javax.xml.XMLConstants;
 
 import org.junit.Test;
@@ -32,7 +33,7 @@ import org.apache.geode.test.junit.categories.UnitTest;
 
 /**
  * Unit Tests for {@link XmlGeneratorUtils}.
- * 
+ *
  * @since GemFire 8.1
  */
 @Category(UnitTest.class)

@@ -15,6 +15,8 @@
 package org.apache.geode.internal.cache.ha;
 
 import static java.util.concurrent.TimeUnit.*;
+import static org.apache.geode.distributed.ConfigurationProperties.LOCATORS;
+import static org.apache.geode.distributed.ConfigurationProperties.MCAST_PORT;
 import static org.awaitility.Awaitility.*;
 import static org.junit.Assert.*;
 
@@ -22,7 +24,6 @@ import java.util.Iterator;
 import java.util.Map;
 import java.util.Properties;
 
-import org.apache.geode.test.junit.categories.ClientSubscriptionTest;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
@@ -55,10 +56,8 @@ import org.apache.geode.test.dunit.LogWriterUtils;
 import org.apache.geode.test.dunit.NetworkUtils;
 import org.apache.geode.test.dunit.VM;
 import org.apache.geode.test.dunit.internal.JUnit4DistributedTestCase;
+import org.apache.geode.test.junit.categories.ClientSubscriptionTest;
 import org.apache.geode.test.junit.categories.DistributedTest;
-
-import static org.apache.geode.distributed.ConfigurationProperties.LOCATORS;
-import static org.apache.geode.distributed.ConfigurationProperties.MCAST_PORT;
 
 /**
  * This test verifies that eventId, while being sent across the network ( client to server, server
@@ -174,7 +173,7 @@ public class EventIdOptimizationDUnitTest extends JUnit4DistributedTestCase {
 
   /**
    * Creates the cache
-   * 
+   *
    * @param props - distributed system props
    * @throws Exception - thrown in any problem occurs in creating cache
    */
@@ -209,7 +208,7 @@ public class EventIdOptimizationDUnitTest extends JUnit4DistributedTestCase {
 
   /**
    * Creates the client cache1, connected to server1
-   * 
+   *
    * @param port - bridgeserver port
    * @throws Exception - thrown if any problem occurs in setting up the client
    */
@@ -230,7 +229,7 @@ public class EventIdOptimizationDUnitTest extends JUnit4DistributedTestCase {
 
   /**
    * Creates the client cache2, connected to server3
-   * 
+   *
    * @param port - bridgeserver port
    * @throws Exception - thrown if any problem occurs in setting up the client
    */
@@ -281,7 +280,7 @@ public class EventIdOptimizationDUnitTest extends JUnit4DistributedTestCase {
   /**
    * Generates events having specific values of threadId and sequenceId, via put operation through
    * connection object
-   * 
+   *
    * @throws Exception - thrown if any problem occurs in put operation
    */
   public static void generateEventsByPutOperation() throws Exception {
@@ -298,7 +297,7 @@ public class EventIdOptimizationDUnitTest extends JUnit4DistributedTestCase {
   /**
    * Generates events having specific values of threadId and sequenceId, via destroyEntry operation
    * through connection object
-   * 
+   *
    * @throws Exception - thrown if any problem occurs in destroyEntry operation
    */
   public static void generateEventsByDestroyEntryOperation() throws Exception {
@@ -320,7 +319,7 @@ public class EventIdOptimizationDUnitTest extends JUnit4DistributedTestCase {
   /**
    * Generates events having specific values of threadId and sequenceId, via destroyRegionOperation
    * through connection object
-   * 
+   *
    * @throws Exception - thrown if any problem occurs in destroyRegionOperation
    */
   public static void generateEventsByDestroyRegionOperation() throws Exception {
@@ -340,7 +339,7 @@ public class EventIdOptimizationDUnitTest extends JUnit4DistributedTestCase {
   /**
    * Generates events having specific values of threadId and sequenceId, via clearRegionOperation
    * through connection object
-   * 
+   *
    * @throws Exception - thrown if any problem occurs in clearRegionOperation
    */
   public static void generateEventsByClearRegionOperation() throws Exception {
@@ -357,7 +356,7 @@ public class EventIdOptimizationDUnitTest extends JUnit4DistributedTestCase {
   /**
    * Generates events having specific values of threadId and sequenceId from client1 via put
    * operation and verifies that the values received on client2 match with those sent from client1.
-   * 
+   *
    * @throws Exception - thrown if any exception occurs in test
    */
   @Test
@@ -371,7 +370,7 @@ public class EventIdOptimizationDUnitTest extends JUnit4DistributedTestCase {
    * Generates events having specific values of threadId and sequenceId from client1 via
    * destroyEntry operation and verifies that the values received on client2 match with those sent
    * from client1.
-   * 
+   *
    * @throws Exception - thrown if any exception occurs in test
    */
   @Test
@@ -384,7 +383,7 @@ public class EventIdOptimizationDUnitTest extends JUnit4DistributedTestCase {
    * Generates events having specific values of threadId and sequenceId from client1 via
    * destroyRegion operation and verifies that the values received on client2 match with those sent
    * from client1.
-   * 
+   *
    * @throws Exception - thrown if any exception occurs in test
    */
   @Test
@@ -396,7 +395,7 @@ public class EventIdOptimizationDUnitTest extends JUnit4DistributedTestCase {
   /**
    * Generates events having specific values of threadId and sequenceId from client1 via clearRegion
    * operation and verifies that the values received on client2 match with those sent from client1.
-   * 
+   *
    * @throws Exception - thrown if any exception occurs in test
    */
   @Test
@@ -446,7 +445,7 @@ public class EventIdOptimizationDUnitTest extends JUnit4DistributedTestCase {
 
   /**
    * Closes the cache
-   * 
+   *
    */
   public static void closeCache() {
     if (cache != null && !cache.isClosed()) {
@@ -470,7 +469,7 @@ public class EventIdOptimizationDUnitTest extends JUnit4DistributedTestCase {
 
   /**
    * Function to assert that the ThreadIdtoSequence id Map is not Null and has only one entry.
-   * 
+   *
    * @return - eventID object from the ThreadIdToSequenceIdMap
    */
   public static Object assertThreadIdToSequenceIdMapHasEntryId() {
@@ -504,7 +503,7 @@ public class EventIdOptimizationDUnitTest extends JUnit4DistributedTestCase {
    * Validates that the eventId of the event received in callback is contained in the eventId array
    * originally used by client1 to generate the events and notifies client2 to proceed for
    * validation once the LAST_KEY is received
-   * 
+   *
    * @param key - the key of the event for EntryEvent / token indicating type of region operation
    *        for RegionEvent
    */

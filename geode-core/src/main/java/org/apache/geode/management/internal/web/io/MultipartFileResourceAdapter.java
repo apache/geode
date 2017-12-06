@@ -25,7 +25,7 @@ import org.springframework.web.multipart.MultipartFile;
  * into an instance of the Resource interface in the context where a Resource object is required
  * instead.
  * <p/>
- * 
+ *
  * @see org.springframework.core.io.AbstractResource
  * @see org.springframework.core.io.Resource
  * @see org.springframework.web.multipart.MultipartFile

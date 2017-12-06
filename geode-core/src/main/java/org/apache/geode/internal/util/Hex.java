@@ -16,7 +16,7 @@ package org.apache.geode.internal.util;
 
 /**
  * Provides hexadecimal conversion and display utilities.
- * 
+ *
  */
 public class Hex {
   /** hex chars */
@@ -25,7 +25,7 @@ public class Hex {
 
   /**
    * Converts the byte array to a hex string.
-   * 
+   *
    * @param buf the buffer to convert
    * @return the hex string
    */
@@ -35,7 +35,7 @@ public class Hex {
 
   /**
    * Converts the byte array subset to a hex string.
-   * 
+   *
    * @param buf the buffer to convert
    * @param offset the offset
    * @param length the length

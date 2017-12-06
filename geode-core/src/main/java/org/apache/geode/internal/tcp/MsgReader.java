@@ -14,14 +14,14 @@
  */
 package org.apache.geode.internal.tcp;
 
+import java.io.IOException;
+import java.nio.ByteBuffer;
+
 import org.apache.geode.distributed.internal.DMStats;
 import org.apache.geode.distributed.internal.DistributionMessage;
 import org.apache.geode.distributed.internal.ReplyProcessor21;
 import org.apache.geode.internal.InternalDataSerializer;
 import org.apache.geode.internal.Version;
-
-import java.io.IOException;
-import java.nio.ByteBuffer;
 
 /**
  * This class is currently used for reading direct ack responses It should probably be used for all
@@ -60,7 +60,7 @@ public abstract class MsgReader {
 
   /**
    * Block until you can read a message. Returns null if the message was a message chunk.
-   * 
+   *
    * @return the message, or null if we only received a chunk of the message
    * @throws ClassNotFoundException
    * @throws IOException

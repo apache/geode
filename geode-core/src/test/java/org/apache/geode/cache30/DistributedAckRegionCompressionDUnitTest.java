@@ -24,7 +24,7 @@ import org.apache.geode.test.junit.categories.DistributedTest;
 
 /**
  * Tests Distributed Ack Region with compression.
- * 
+ *
  * @since GemFire 8.0
  */
 @Category(DistributedTest.class)

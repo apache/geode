@@ -15,19 +15,20 @@
 
 package org.apache.geode.internal.cache.wan;
 
-import it.unimi.dsi.fastutil.ints.IntOpenHashSet;
-import org.apache.geode.DataSerializer;
-import org.apache.geode.cache.wan.GatewaySender;
-import org.apache.geode.internal.DataSerializableFixedID;
-import org.apache.geode.internal.Version;
-import org.apache.geode.internal.cache.WrappedCallbackArgument;
-
 import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+
+import it.unimi.dsi.fastutil.ints.IntOpenHashSet;
+
+import org.apache.geode.DataSerializer;
+import org.apache.geode.cache.wan.GatewaySender;
+import org.apache.geode.internal.DataSerializableFixedID;
+import org.apache.geode.internal.Version;
+import org.apache.geode.internal.cache.WrappedCallbackArgument;
 
 /**
  * Class <code>GatewayEventCallbackArgument</code> is a wrapper on a callback arg plus the id of the
@@ -38,7 +39,7 @@ import java.util.Set;
  * the event sent to CacheListener, CacheWriter and CacheLoader.
  * <p>
  * This class used to be in package <code>org.apache.geode.util</code>.
- * 
+ *
  * @since GemFire 7.0
  */
 public class GatewaySenderEventCallbackArgument extends WrappedCallbackArgument
@@ -67,7 +68,7 @@ public class GatewaySenderEventCallbackArgument extends WrappedCallbackArgument
 
   /**
    * Constructor.
-   * 
+   *
    * @param geca The original callback argument set by the caller or null if there was not callback
    *        arg
    */
@@ -82,7 +83,7 @@ public class GatewaySenderEventCallbackArgument extends WrappedCallbackArgument
 
   /**
    * Constructor.
-   * 
+   *
    * @param originalCallbackArg The original callback argument set by the caller or null if there
    *        was not callback arg
    * @param originatingDSId The id of the originating <code>GatewayReceiver</code> making the
@@ -99,7 +100,7 @@ public class GatewaySenderEventCallbackArgument extends WrappedCallbackArgument
 
   /**
    * Returns the id of the originating <code>GatewayReceiver</code> making the request.
-   * 
+   *
    * @return the id of the originating <code>GatewayReceiver</code> making the request
    */
   public int getOriginatingDSId() {
@@ -108,7 +109,7 @@ public class GatewaySenderEventCallbackArgument extends WrappedCallbackArgument
 
   /**
    * Sets the originating <code>SenderId</code> id
-   * 
+   *
    * @param originatingDSId The originating <code>SenderId</code> id
    */
   public void setOriginatingDSId(int originatingDSId) {
@@ -117,7 +118,7 @@ public class GatewaySenderEventCallbackArgument extends WrappedCallbackArgument
 
   /**
    * Returns the list of <code>Gateway</code> s to which the event has been sent.
-   * 
+   *
    * @return the list of <code>Gateway</code> s to which the event has been sent
    */
   public IntOpenHashSet getRecipientDSIds() {
@@ -126,7 +127,7 @@ public class GatewaySenderEventCallbackArgument extends WrappedCallbackArgument
 
   /**
    * Initialize the original set of recipient <code>Gateway</code>s.
-   * 
+   *
    * @param originalGatewaysReceivers The original recipient <code>Gateway</code>s.
    */
   public void initializeReceipientDSIds(List<Integer> originalGatewaysReceivers) {

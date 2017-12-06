@@ -74,7 +74,7 @@ import org.apache.geode.security.GemFireSecurityException;
 /**
  * Manages Client Queues. Responsible for creating callback connections and satisfying redundancy
  * requirements.
- * 
+ *
  * @since GemFire 5.7
  */
 public class QueueManagerImpl implements QueueManager {
@@ -628,7 +628,7 @@ public class QueueManagerImpl implements QueueManager {
 
   /**
    * Make sure that we have enough backup servers.
-   * 
+   *
    * Add any servers we fail to connect to to the excluded servers list.
    */
   protected boolean recoverRedundancy(Set excludedServers, boolean recoverInterest) {
@@ -786,7 +786,7 @@ public class QueueManagerImpl implements QueueManager {
 
   /**
    * Create a new primary server from a non-redundant server.
-   * 
+   *
    * Add any failed servers to the excludedServers set.
    */
   private QueueConnectionImpl createNewPrimary(Set excludedServers) {
@@ -858,7 +858,7 @@ public class QueueManagerImpl implements QueueManager {
 
   /**
    * Find a new primary, adding any failed servers we encounter to the excluded servers list
-   * 
+   *
    * First we try to make a backup server the primary, but if run out of backup servers we will try
    * to find a new server.
    */
@@ -1266,8 +1266,8 @@ public class QueueManagerImpl implements QueueManager {
   /**
    * A comparator which sorts queue elements in the order of primary first redundant with smallest
    * queue size ... redundant with largest queue size
-   * 
-   * 
+   *
+   *
    */
   protected static class QSizeComparator implements java.util.Comparator {
     public int compare(Object o1, Object o2) {
@@ -1292,10 +1292,10 @@ public class QueueManagerImpl implements QueueManager {
   /**
    * A data structure for holding the current set of connections the queueConnections reference
    * should be maintained by making a copy of this data structure for each change.
-   * 
+   *
    * Note the the order of the backups is significant. The first backup in the list is the first
    * server that will be become primary after the primary fails, etc.
-   * 
+   *
    * The order of backups in this list is the reverse of the order or endpoints from the old
    * ConnectionProxyImpl .
    */
@@ -1380,7 +1380,7 @@ public class QueueManagerImpl implements QueueManager {
 
     /**
      * Return the cache client updater from the previously failed primary
-     * 
+     *
      * @return the previous updater or null if there is no previous updater
      */
     public ClientUpdater getFailedUpdater() {
@@ -1427,11 +1427,11 @@ public class QueueManagerImpl implements QueueManager {
   /**
    * Asynchronous task which tries to restablish a primary connection and satisfy redundant
    * requirements.
-   * 
+   *
    * This task should only be running in a single thread at a time. This task is the only way that
    * new queue servers will be added, and the only way that a backup server can transistion to a
    * primary server.
-   * 
+   *
    */
   protected class RedundancySatisfierTask extends PoolTask {
     private boolean isCancelled;

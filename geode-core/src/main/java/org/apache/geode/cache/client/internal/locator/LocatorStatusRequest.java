@@ -20,7 +20,7 @@ import org.apache.geode.internal.DataSerializableFixedID;
 /**
  * The LocatorStatusRequest class...
  * </p>
- * 
+ *
  * @see org.apache.geode.cache.client.internal.locator.ServerLocationRequest
  * @see org.apache.geode.internal.DataSerializableFixedID
  * @since GemFire 7.0

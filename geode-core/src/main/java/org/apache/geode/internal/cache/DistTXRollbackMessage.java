@@ -50,7 +50,7 @@ import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.internal.logging.log4j.LogMarker;
 
 /**
- * 
+ *
  */
 public class DistTXRollbackMessage extends TXMessage {
 
@@ -159,7 +159,7 @@ public class DistTXRollbackMessage extends TXMessage {
      * Return the value from the get operation, serialize it bytes as late as possible to avoid
      * making un-neccesary byte[] copies. De-serialize those same bytes as late as possible to avoid
      * using precious threads (aka P2P readers).
-     * 
+     *
      * @param recipient the origin VM that performed the get
      * @param processorId the processor on which the origin thread is waiting
      * @param val the raw value that will eventually be serialized
@@ -175,7 +175,7 @@ public class DistTXRollbackMessage extends TXMessage {
 
     /**
      * Processes this message. This method is invoked by the receiver of the message.
-     * 
+     *
      * @param dm the distribution manager that is processing the message.
      */
     @Override
@@ -278,9 +278,9 @@ public class DistTXRollbackMessage extends TXMessage {
   /**
    * Reply processor which collects all CommitReplyExceptions for Dist Tx and emits a detailed
    * failure exception if problems occur
-   * 
+   *
    * @see TXCommitMessage.CommitReplyProcessor
-   * 
+   *
    *      [DISTTX] TODO see if need ReliableReplyProcessor21? departed members?
    */
   public static class DistTxRollbackReplyProcessor extends ReplyProcessor21 {
@@ -367,7 +367,7 @@ public class DistTXRollbackMessage extends TXMessage {
 
   /**
    * An Exception that collects many remote CommitExceptions
-   * 
+   *
    * @see TXCommitMessage.CommitExceptionCollectingException
    */
   public static class DistTxRollbackExceptionCollectingException extends ReplyException {

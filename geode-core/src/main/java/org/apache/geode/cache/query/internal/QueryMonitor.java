@@ -33,12 +33,12 @@ import org.apache.geode.internal.logging.log4j.LocalizedMessage;
  * QueryMonitor class, monitors the query execution time. Instantiated based on the system property
  * MAX_QUERY_EXECUTION_TIME. At most there will be one query monitor-thread that cancels the long
  * running queries.
- * 
+ *
  * The queries to be monitored is added into the ordered queue, ordered based on its start/arrival
  * time. The first one in the Queue is the older query that will be canceled first.
- * 
+ *
  * The QueryMonitor cancels a query-execution thread if its taking more than the max time.
- * 
+ *
  * @since GemFire 6.0
  */
 public class QueryMonitor implements Runnable {
@@ -64,9 +64,9 @@ public class QueryMonitor implements Runnable {
   private ConcurrentMap queryMonitorTasks = null;
 
   // Variables for cancelling queries due to low memory
-  private volatile static Boolean LOW_MEMORY = Boolean.FALSE;
+  private static volatile Boolean LOW_MEMORY = Boolean.FALSE;
 
-  private volatile static long LOW_MEMORY_USED_BYTES = 0;
+  private static volatile long LOW_MEMORY_USED_BYTES = 0;
 
   public QueryMonitor(long maxQueryExecutionTime) {
     this.maxQueryExecutionTime = maxQueryExecutionTime;
@@ -74,7 +74,7 @@ public class QueryMonitor implements Runnable {
 
   /**
    * Add query to be monitored.
-   * 
+   *
    * @param queryThread Thread executing the query.
    * @param query Query.
    */
@@ -162,7 +162,7 @@ public class QueryMonitor implements Runnable {
    * This method is called to check if the query execution is canceled. The QueryMonitor cancels the
    * query execution if it takes more than the max query execution time set or in low memory
    * situations where critical heap percentage has been set on the resource manager
-   * 
+   *
    * The max query execution time is set using the system property
    * gemfire.Cache.MAX_QUERY_EXECUTION_TIME
    */

@@ -31,7 +31,7 @@ import org.apache.geode.memcached.GemFireMemcachedServer.Protocol;
 /**
  * Reads the first line from the request and interprets the {@link Command} from the memcached
  * client
- * 
+ *
  *
  */
 public class RequestReader {
@@ -215,7 +215,7 @@ public class RequestReader {
 
   /**
    * Returns an initialized byteBuffer for sending the reply
-   * 
+   *
    * @param size size of ByteBuffer
    * @return the initialized response buffer
    */

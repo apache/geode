@@ -16,6 +16,10 @@ package org.apache.geode.test.dunit;
 
 import static org.apache.geode.distributed.ConfigurationProperties.*;
 
+import java.util.Properties;
+
+import org.apache.logging.log4j.Logger;
+
 import org.apache.geode.LogWriter;
 import org.apache.geode.distributed.internal.DistributionConfig;
 import org.apache.geode.distributed.internal.DistributionConfigImpl;
@@ -24,14 +28,11 @@ import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.internal.logging.LogWriterFactory;
 import org.apache.geode.internal.logging.ManagerLogWriter;
 import org.apache.geode.internal.logging.log4j.LogWriterLogger;
-import org.apache.logging.log4j.Logger;
-
-import java.util.Properties;
 
 /**
  * <code>LogWriterUtils</code> provides static utility methods to access a <code>LogWriter</code>
  * within a test.
- * 
+ *
  * These methods can be used directly: <code>LogWriterUtils.getLogWriter(...)</code>, however, they
  * are intended to be referenced through static import:
  *
@@ -42,7 +43,7 @@ import java.util.Properties;
  * </pre>
  *
  * Extracted from DistributedTestCase.
- * 
+ *
  * @deprecated Please use a <code>Logger</code> from {@link LogService#getLogger()} instead.
  */
 @Deprecated
@@ -55,7 +56,7 @@ public class LogWriterUtils {
 
   /**
    * Returns a <code>LogWriter</code> for logging information
-   * 
+   *
    * @deprecated Please use a <code>Logger</code> from {@link LogService#getLogger()} instead.
    */
   public static InternalLogWriter getLogWriter() {
@@ -67,7 +68,7 @@ public class LogWriterUtils {
    * connect to DistributedSystem, thus providing early access to the LogWriter before connecting.
    * This call does not connect to the DistributedSystem. It simply creates and returns the
    * LogWriter that will eventually be used by the DistributedSystem that connects using config.
-   * 
+   *
    * @param properties the DistributedSystem config properties to add LogWriter to
    * @return early access to the DistributedSystem LogWriter
    * @deprecated Please use a <code>Logger</code> from {@link LogService#getLogger()} instead.
@@ -92,7 +93,7 @@ public class LogWriterUtils {
   /**
    * This finds the log level configured for the test run. It should be used when creating a new
    * distributed system if you want to specify a log level.
-   * 
+   *
    * @return the dunit log-level setting
    */
   public static String getDUnitLogLevel() {

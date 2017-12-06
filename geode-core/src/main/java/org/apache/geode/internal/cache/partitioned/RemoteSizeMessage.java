@@ -42,7 +42,7 @@ import org.apache.geode.internal.logging.log4j.LogMarker;
 
 /**
  * This message is used to determine the number of Entries in a Region, or its size.
- * 
+ *
  * @since GemFire 5.0
  */
 public class RemoteSizeMessage extends RemoteOperationMessage {
@@ -67,7 +67,7 @@ public class RemoteSizeMessage extends RemoteOperationMessage {
   /**
    * The message sent to a set of {@link InternalDistributedMember}s to caculate the number of
    * Entries in each of their buckets
-   * 
+   *
    * @param recipients members to receive the message
    * @param regionPath the path to the region
    * @param processor the reply processor used to wait on the response
@@ -89,7 +89,7 @@ public class RemoteSizeMessage extends RemoteOperationMessage {
 
   /**
    * Sends a PartitionedRegion message for {@link java.util.Map#size()}ignoring any errors on send
-   * 
+   *
    * @param recipients the set of members that the size message is sent to
    * @param r the Region that contains the bucket
    * @return the processor used to read the returned size
@@ -101,7 +101,7 @@ public class RemoteSizeMessage extends RemoteOperationMessage {
   /**
    * sends a message to the given recipients asking for the size of either their primary bucket
    * entries or the values sets of their primary buckets
-   * 
+   *
    * @param recipients recipients of the message
    * @param r the local PartitionedRegion instance
    * @param queryType either TYPE_ENTRIES or TYPE_VALUES
@@ -212,7 +212,7 @@ public class RemoteSizeMessage extends RemoteOperationMessage {
 
     /**
      * Processes this message. This method is invoked by the receiver of the message.
-     * 
+     *
      * @param dm the distribution manager that is processing the message.
      */
     @Override
@@ -271,7 +271,7 @@ public class RemoteSizeMessage extends RemoteOperationMessage {
   /**
    * A processor to capture the value returned by
    * {@link org.apache.geode.internal.cache.partitioned.GetMessage.GetReplyMessage}
-   * 
+   *
    * @since GemFire 5.0
    */
   public static class SizeResponse extends ReplyProcessor21 {

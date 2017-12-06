@@ -14,20 +14,20 @@
  */
 package org.apache.geode.cache.wan;
 
-import org.apache.geode.distributed.internal.DistributionConfig;
-
 import java.util.List;
 
+import org.apache.geode.distributed.internal.DistributionConfig;
+
 /**
- * 
- * 
+ *
+ *
  * @since GemFire 7.0
  */
 public interface GatewaySender {
 
   /**
    * The default value (false) for manually starting a <code>GatewaySender</code>.
-   * 
+   *
    * @deprecated - Manual start of senders is deprecated and will be removed in a later release.
    */
   @Deprecated
@@ -60,7 +60,7 @@ public interface GatewaySender {
   /**
    * Size of the oplog file used for the persistent queue in bytes
    */
-  static public final int QUEUE_OPLOG_SIZE =
+  public static final int QUEUE_OPLOG_SIZE =
       Integer.getInteger(DistributionConfig.GEMFIRE_PREFIX + "cache.gatewaySender.queueOpLogSize",
           1024 * 1024 * 100).intValue();
 
@@ -154,7 +154,7 @@ public interface GatewaySender {
 
   /**
    * The order policy. This enum is applicable only when concurrency-level is > 1.
-   * 
+   *
    * @since GemFire 6.5.1
    */
   public enum OrderPolicy {
@@ -185,11 +185,11 @@ public interface GatewaySender {
    * the GatewaySender is parallel, the GatewaySender will be stopped on individual node where this
    * API is called. If the GatewaySender is not parallel, then the GatewaySender will stop on this
    * VM and the secondary GatewaySender will become primary and start dispatching events.
-   * 
+   *
    * The GatewaySender will wait for GatewaySender.MAXIMUM_SHUTDOWN_WAIT_TIME seconds before
    * stopping itself. If the system property is set to -1 then it will wait until all the events are
    * dispatched from the queue.
-   * 
+   *
    * @see GatewaySender#isParallel()
    */
   public void stop();
@@ -202,11 +202,11 @@ public interface GatewaySender {
    * dispatch events. In case the GatewaySender is not parallel, and the running GatewaySender on
    * which this API is invoked is not primary then PRIMARY GatewaySender will still continue
    * dispatching events.
-   * 
+   *
    * The batch of events that are in the process of being dispatched are dispatched irrespective of
    * the state of pause operation. We can expect maximum of one batch of events being received at
    * the GatewayReceiver even after the GatewaySenders were paused.
-   * 
+   *
    * @see GatewaySender#isParallel()
    * @see GatewaySender#getBatchSize()
    * @see GatewaySender#resume()
@@ -230,41 +230,41 @@ public interface GatewaySender {
 
   /**
    * Returns whether or not this GatewaySender is paused.
-   * 
+   *
    */
   public boolean isPaused();
 
   /**
    * Adds the provided <code>GatewayEventFilter</code> to this GatewaySender.
-   * 
+   *
    * @param filter
    */
   public void addGatewayEventFilter(GatewayEventFilter filter);
 
   /**
    * Removes the provided <code>GatewayEventFilter</code> from this GatewaySender.
-   * 
+   *
    * @param filter
    */
   public void removeGatewayEventFilter(GatewayEventFilter filter);
 
   /**
    * Returns this <code>GatewaySender's</code> <code>GatewayEventSubstitutionFilter</code>.
-   * 
+   *
    * @return this <code>GatewaySender's</code> <code>GatewayEventSubstitutionFilter</code>
    */
   public GatewayEventSubstitutionFilter getGatewayEventSubstitutionFilter();
 
   /**
    * Returns the id of this GatewaySender.
-   * 
+   *
    * @return the id of this GatewaySender.
    */
   public String getId();
 
   /**
    * Returns the id of the remote <code>GatewayReceiver</code>'s DistributedSystem.
-   * 
+   *
    * @return the id of the remote <code>GatewayReceiver</code>'s DistributedSystem.
    */
   public int getRemoteDSId();
@@ -272,7 +272,7 @@ public interface GatewaySender {
   /**
    * Returns the configured buffer size of the socket connection between this GatewaySender and its
    * receiving <code>GatewayReceiver</code>. The default is 32768 bytes.
-   * 
+   *
    * @return the configured buffer size of the socket connection between this GatewaySender and its
    *         receiving <code>GatewayReceiver</code>
    */
@@ -282,7 +282,7 @@ public interface GatewaySender {
    * Returns the amount of time in milliseconds that a socket read between a sending GatewaySender
    * and its receiving <code>GatewayReceiver</code> will block. The default value is 0 which is
    * interpreted as infinite timeout.
-   * 
+   *
    * @return the amount of time in milliseconds that a socket read between a sending GatewaySender
    *         and its receiving <code>GatewayReceiver</code> will block
    */
@@ -290,21 +290,21 @@ public interface GatewaySender {
 
   /**
    * Gets the disk store name for overflow or persistence.
-   * 
+   *
    * @return disk store name
    */
   public String getDiskStoreName();
 
   /**
    * Returns the maximum amount of memory (in MB) for a GatewaySender's queue. The default is 100.
-   * 
+   *
    * @return maximum amount of memory (in MB) for a GatewaySender's queue
    */
   public int getMaximumQueueMemory();
 
   /**
    * Returns the batch size for this GatewaySender. Default batchSize is 100.
-   * 
+   *
    * @return the batch size for this GatewaySender.
    */
   public int getBatchSize();
@@ -312,7 +312,7 @@ public interface GatewaySender {
   /**
    * Returns the batch time interval for this GatewaySender. Default value of batchTimeInterval is
    * 1000.
-   * 
+   *
    * @return the batch time interval for this GatewaySender
    */
   public int getBatchTimeInterval();
@@ -320,7 +320,7 @@ public interface GatewaySender {
   /**
    * Answers whether to enable batch conflation for a GatewaySender 's queue. The default value is
    * false.
-   * 
+   *
    * @return whether to enable batch conflation for batches sent from a GatewaySender to its
    *         corresponding <code>GatewayReceiver</code>.
    */
@@ -329,7 +329,7 @@ public interface GatewaySender {
   /**
    * Returns true if persistence is enabled for this GatewaySender, otherwise returns false. Default
    * is false if not set explicitly.
-   * 
+   *
    * @return true if persistence is enabled for this GatewaySender
    */
   public boolean isPersistenceEnabled();
@@ -337,22 +337,22 @@ public interface GatewaySender {
   /**
    * Returns the alert threshold in milliseconds for entries in a GatewaySender's queue. Default
    * value is 0.
-   * 
+   *
    * @return the alert threshold for entries in a GatewaySender's queue
-   * 
+   *
    */
   public int getAlertThreshold();
 
   /**
    * Returns the list of <code>GatewayEventFilter</code> added to this GatewaySender.
-   * 
+   *
    * @return the list of <code>GatewayEventFilter</code> added to this GatewaySender.
    */
   public List<GatewayEventFilter> getGatewayEventFilters();
 
   /**
    * Returns the list of <code>GatewayTransportFilter</code> added to this GatewaySender.
-   * 
+   *
    * @return the list of <code>GatewayTransportFilter</code> added to this GatewaySender.
    */
 
@@ -360,16 +360,16 @@ public interface GatewaySender {
 
   /**
    * Returns isDiskSynchronous boolean property for this GatewaySender. Default value is true.
-   * 
+   *
    * @return isDiskSynchronous boolean property for this GatewaySender
-   * 
+   *
    */
   public boolean isDiskSynchronous();
 
   /**
    * Returns the manual start boolean property for this GatewaySender. Default is false i.e. the
    * GatewaySender will automatically start once created.
-   * 
+   *
    * @return the manual start boolean property for this GatewaySender
    *
    * @deprecated - Manual start of senders is deprecated and will be removed in a later release.
@@ -379,9 +379,9 @@ public interface GatewaySender {
 
   /**
    * Returns isParallel boolean property for this GatewaySender.
-   * 
+   *
    * @return isParallel boolean property for this GatewaySender
-   * 
+   *
    */
   public boolean isParallel();
 
@@ -389,7 +389,7 @@ public interface GatewaySender {
   /**
    * Returns the number of dispatcher threads working for this <code>GatewaySender</code>. Default
    * number of dispatcher threads is 5.
-   * 
+   *
    * @return the number of dispatcher threads working for this <code>GatewaySender</code>
    */
   public int getDispatcherThreads();
@@ -397,7 +397,7 @@ public interface GatewaySender {
   /**
    * Returns the order policy followed while dispatching the events to remote ds. Order policy is
    * set only when dispatcher threads are > 1. Default value of order policy is KEY.
-   * 
+   *
    * @return the order policy followed while dispatching the events to remote ds.
    */
 
@@ -411,7 +411,7 @@ public interface GatewaySender {
    * <p>
    * In case of ParallelGatewaySender, the destroy operation does distributed destroy of the Queue
    * Region. In case of SerialGatewaySender, the Queue Region is destroyed locally.
-   * 
+   *
    * @since Geode 1.1
    *
    */

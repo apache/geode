@@ -18,7 +18,7 @@ package org.apache.geode.distributed.internal.unsafe;
 /**
  * The RegisterSignalHandlerSupport class is an ugly hack!
  * </p>
- * 
+ *
  * @since GemFire 7.0
  */
 public abstract class RegisterSignalHandlerSupport {

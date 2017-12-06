@@ -335,7 +335,7 @@ public class RestInterfaceIntegrationTest {
     /*
      * Object result = runQueryUsingApi(getPeopleRegion().getRegionService(),
      * String.format("SELECT * FROM %1$s", getPeopleRegion().getFullPath()));
-     * 
+     *
      * System.out.printf("(OQL Query using API) Person is (%1$s)%n", result);
      */
 

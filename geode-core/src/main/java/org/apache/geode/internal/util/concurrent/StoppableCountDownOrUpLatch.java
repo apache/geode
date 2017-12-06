@@ -23,7 +23,7 @@ import org.apache.geode.internal.i18n.LocalizedStrings;
  * Extends the CountDownLatch with the ability to also countUp.
  * <p>
  * Based on the original Doug Lea backport implementation of CountDownLatch.
- * 
+ *
  * @see java.util.concurrent.CountDownLatch
  */
 public class StoppableCountDownOrUpLatch {
@@ -209,4 +209,3 @@ public class StoppableCountDownOrUpLatch {
     return getCount();
   }
 }
-

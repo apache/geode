@@ -19,10 +19,10 @@ import org.apache.geode.cache.RegionAttributes;
 
 /**
  * Callback on a cache that receives notifications about region creates.
- * 
+ *
  * If there are multiple listeners added to a cache they are invoked in a random order. See
  * {@link GemFireCacheImpl#addRegionListener(RegionListener)}
- * 
+ *
  * If any of these callbacks throw an exception, that exception will get thrown out to the user
  * creating the region and the region creation will fail.
  */
@@ -35,11 +35,28 @@ public interface RegionListener {
    * modifications. InternalRegionArguments *may* be modified, but only if you are sure the caller
    * is not going to reuse the InternalRegionArguments for something else.
    */
-  public RegionAttributes beforeCreate(Region parent, String regionName, RegionAttributes attrs,
-      InternalRegionArguments internalRegionArgs);
+  default RegionAttributes beforeCreate(Region parent, String regionName, RegionAttributes attrs,
+      InternalRegionArguments internalRegionArgs) {
+    return attrs;
+  };
 
   /**
    * Invoked after a region is created.
    */
-  public void afterCreate(Region region);
+  default void afterCreate(Region region) {};
+
+  /**
+   * Invoked before a region is destroyed. This callback is currently only invoked in the initiator
+   * of destroyRegion.
+   *
+   * @param region The region being destroyed
+   */
+  default void beforeDestroyed(Region region) {};
+
+  /**
+   * Invoked when a region has failed initialization.
+   *
+   * @param region The region that has failed initialization
+   */
+  default void cleanupFailedInitialization(Region region) {};
 }

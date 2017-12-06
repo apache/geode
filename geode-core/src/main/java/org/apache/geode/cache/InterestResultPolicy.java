@@ -16,9 +16,10 @@
 
 package org.apache.geode.cache;
 
-import org.apache.geode.internal.cache.tier.sockets.InterestResultPolicyImpl;
 import java.io.ObjectStreamException;
 import java.io.Serializable;
+
+import org.apache.geode.internal.cache.tier.sockets.InterestResultPolicyImpl;
 
 /**
  * Class <code>InterestResultPolicy</code> is an enumerated type for a register interest result. The
@@ -74,7 +75,7 @@ public class InterestResultPolicy implements Serializable {
 
   /**
    * Returns the ordinal value.
-   * 
+   *
    * @since GemFire 5.0
    */
   public byte getOrdinal() {
@@ -83,7 +84,7 @@ public class InterestResultPolicy implements Serializable {
 
   /**
    * Returns true if this <code>InterestResultPolicy</code> is {@link #NONE}.
-   * 
+   *
    * @return true if this <code>InterestResultPolicy</code> is {@link #NONE}.
    */
   public boolean isNone() {
@@ -92,7 +93,7 @@ public class InterestResultPolicy implements Serializable {
 
   /**
    * Returns true if this <code>InterestResultPolicy</code> is {@link #KEYS}.
-   * 
+   *
    * @return true if this <code>InterestResultPolicy</code> is {@link #KEYS}.
    */
   public boolean isKeys() {
@@ -101,7 +102,7 @@ public class InterestResultPolicy implements Serializable {
 
   /**
    * Returns true if this <code>InterestResultPolicy</code> is {@link #KEYS_VALUES}.
-   * 
+   *
    * @return true if this <code>InterestResultPolicy</code> is {@link #KEYS_VALUES}.
    */
   public boolean isKeysValues() {
@@ -110,7 +111,7 @@ public class InterestResultPolicy implements Serializable {
 
   /**
    * Returns true if this <code>InterestResultPolicy</code> is the default.
-   * 
+   *
    * @return true if this <code>InterestResultPolicy</code> is the default.
    */
   public boolean isDefault() {
@@ -119,7 +120,7 @@ public class InterestResultPolicy implements Serializable {
 
   /**
    * Returns a string representation for this <code>InterestResultPolicy</code>.
-   * 
+   *
    * @return the name of this data policy.
    */
   @Override // GemStoneAddition

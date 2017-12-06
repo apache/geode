@@ -24,10 +24,10 @@ import org.apache.geode.internal.logging.LogService;
 
 /**
  * This listener is attached to the Monitoring Region to receive any addition or deletion of MBEans
- * 
+ *
  * It updates the last refreshed time of proxy once it gets the update request from the Managed Node
- * 
- * 
+ *
+ *
  */
 public class ManagementCacheListener extends CacheListenerAdapter<String, Object> {
 

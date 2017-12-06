@@ -22,14 +22,14 @@ import java.util.Set;
 
 import org.apache.geode.cache.Region;
 import org.apache.geode.redis.internal.ByteArrayWrapper;
-import org.apache.geode.redis.internal.Command;
 import org.apache.geode.redis.internal.Coder;
+import org.apache.geode.redis.internal.Command;
 import org.apache.geode.redis.internal.ExecutionHandlerContext;
 import org.apache.geode.redis.internal.RedisConstants.ArityDef;
 
 public class SRandMemberExecutor extends SetExecutor {
 
-  private final static String ERROR_NOT_NUMERIC = "The count provided must be numeric";
+  private static final String ERROR_NOT_NUMERIC = "The count provided must be numeric";
 
   @Override
   public void executeCommand(Command command, ExecutionHandlerContext context) {

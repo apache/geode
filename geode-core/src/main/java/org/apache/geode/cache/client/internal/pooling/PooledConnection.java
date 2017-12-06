@@ -33,7 +33,7 @@ import org.apache.geode.internal.cache.tier.sockets.ServerQueueStatus;
 /**
  * A connection managed by the connection manager. Keeps track of the current state of the
  * connection.
- * 
+ *
  * @since GemFire 5.7
  *
  */
@@ -128,7 +128,7 @@ class PooledConnection implements Connection {
 
   /**
    * Set the destroy bit if it is not already set.
-   * 
+   *
    * @return true if we were able to set to bit; false if someone else already did
    */
   public boolean setShouldDestroy() {
@@ -249,8 +249,8 @@ class PooledConnection implements Connection {
    * If we were able to idle timeout this connection then return -1. If this connection has already
    * been destroyed return 0. Otherwise return the amount of idle time he has remaining. If he is
    * active we can't time him out now and a hint is returned as when we should check him next.
-   * 
-   * 
+   *
+   *
    */
   public long doIdleTimeout(long now, long timeoutNanos) {
     if (shouldDestroy())

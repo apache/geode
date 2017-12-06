@@ -21,6 +21,7 @@ import java.util.List;
 import javax.transaction.Status;
 
 import org.apache.logging.log4j.Logger;
+
 import org.apache.geode.GemFireException;
 import org.apache.geode.cache.CommitConflictException;
 import org.apache.geode.cache.TransactionDataNodeHasDepartedException;
@@ -83,7 +84,7 @@ public class ClientTXStateStub extends TXStateStub {
 
   /**
    * test hook
-   * 
+   *
    * @param t a ThreadLocal to hold lists of TransactionalOperations
    */
   public static void setTransactionalOperationContainer(
@@ -117,7 +118,7 @@ public class ClientTXStateStub extends TXStateStub {
 
   /**
    * Lock the keys in a local transaction manager
-   * 
+   *
    * @throws CommitConflictException if the key is already locked by some other transaction
    */
   private void obtainLocalLocks() {

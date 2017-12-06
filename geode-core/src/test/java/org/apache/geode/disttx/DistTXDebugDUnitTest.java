@@ -22,6 +22,9 @@ import java.io.IOException;
 import java.io.Serializable;
 import java.util.HashMap;
 
+import org.junit.Test;
+import org.junit.experimental.categories.Category;
+
 import org.apache.geode.DataSerializable;
 import org.apache.geode.DataSerializer;
 import org.apache.geode.cache.AttributesFactory;
@@ -45,9 +48,6 @@ import org.apache.geode.test.dunit.SerializableRunnable;
 import org.apache.geode.test.dunit.VM;
 import org.apache.geode.test.dunit.cache.internal.JUnit4CacheTestCase;
 import org.apache.geode.test.junit.categories.DistributedTest;
-
-import org.junit.Test;
-import org.junit.experimental.categories.Category;
 
 /**
  * TODO: reenable this test and fix it when work on Dist TX resumes -- it fails with no members to
@@ -710,7 +710,7 @@ public class DistTXDebugDUnitTest extends JUnit4CacheTestCase {
 
   /**
    * @param dataNodeAsCoordinator TODO
-   * 
+   *
    */
   private void performRR_removeAllTest(boolean dataNodeAsCoordinator) {
     createCacheInAllVms();

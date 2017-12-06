@@ -77,7 +77,7 @@ public class VMRegionVersionVector extends RegionVersionVector<InternalDistribut
 
   /*
    * (non-Javadoc)
-   * 
+   *
    * @see
    * org.apache.geode.internal.cache.versions.RegionVersionVector#memberDeparted(org.apache.geode.
    * distributed.internal.membership.InternalDistributedMember, boolean)

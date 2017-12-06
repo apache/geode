@@ -97,19 +97,19 @@ public class CqQueryDUnitTest extends JUnit4CacheTestCase {
 
   public final String[] regions = new String[] {"regionA", "regionB"};
 
-  private final static int CREATE = 0;
-  private final static int UPDATE = 1;
-  private final static int DESTROY = 2;
-  private final static int INVALIDATE = 3;
-  private final static int CLOSE = 4;
-  private final static int REGION_CLEAR = 5;
-  private final static int REGION_INVALIDATE = 6;
+  private static final int CREATE = 0;
+  private static final int UPDATE = 1;
+  private static final int DESTROY = 2;
+  private static final int INVALIDATE = 3;
+  private static final int CLOSE = 4;
+  private static final int REGION_CLEAR = 5;
+  private static final int REGION_INVALIDATE = 6;
 
-  static public final String KEY = "key-";
+  public static final String KEY = "key-";
 
-  static private final String WAIT_PROPERTY = "CqQueryTest.maxWaitTime";
+  private static final String WAIT_PROPERTY = "CqQueryTest.maxWaitTime";
 
-  static private final int WAIT_DEFAULT = (20 * 1000);
+  private static final int WAIT_DEFAULT = (20 * 1000);
 
   public static final long MAX_TIME = Integer.getInteger(WAIT_PROPERTY, WAIT_DEFAULT).intValue();
 
@@ -758,7 +758,7 @@ public class CqQueryDUnitTest extends JUnit4CacheTestCase {
 
   /**
    * Execute/register CQ as running.
-   * 
+   *
    * @param initialResults true if initialResults are requested
    * @param expectedResultsSize if >= 0, validate results against this size
    * @param expectedErr if not null, an error we expect
@@ -1645,7 +1645,7 @@ public class CqQueryDUnitTest extends JUnit4CacheTestCase {
 
   /**
    * Test for InterestList and CQ registered from same clients.
-   * 
+   *
    * @throws Exception
    */
   @Test
@@ -1805,7 +1805,7 @@ public class CqQueryDUnitTest extends JUnit4CacheTestCase {
 
   /**
    * Test for CQ register and UnRegister.
-   * 
+   *
    * @throws Exception
    */
   @Test
@@ -1879,7 +1879,7 @@ public class CqQueryDUnitTest extends JUnit4CacheTestCase {
 
   /**
    * Test for CQ Attributes Mutator functions
-   * 
+   *
    * @throws Exception
    */
   @Test
@@ -1952,7 +1952,7 @@ public class CqQueryDUnitTest extends JUnit4CacheTestCase {
 
   /**
    * Test for CQ register and UnRegister.
-   * 
+   *
    * @throws Exception
    */
   @Test
@@ -2367,19 +2367,19 @@ public class CqQueryDUnitTest extends JUnit4CacheTestCase {
 
     /*
      * compare values... Disabled since we don't currently maintain results on the client
-     * 
+     *
      * validateCQ(client, "testCQResultSet_1", 2, noTest, noTest, noTest); Portfolio[] values = new
      * Portfolio[] {new Portfolio(2), new Portfolio(4)}; Hashtable t = new Hashtable(); String[]
      * keys = new String[] {"key-2", "key-4"}; t.put(keys[0], values[0]); t.put(keys[1], values[1]);
-     * 
+     *
      * compareValues(client, "testCQResultSet_1", t);
-     * 
+     *
      * deleteValues(server, regions[1], 3); t.remove("key-4"); pause(2 * 1000);
-     * 
+     *
      * try { compareValues(client, "testCQResultSet_1", t);
      * fail("Should have thrown Exception. The value should not be present in cq results region"); }
      * catch (Exception ex) { // @todo check for specific exception type }
-     * 
+     *
      */
 
     // Close.
@@ -2547,7 +2547,7 @@ public class CqQueryDUnitTest extends JUnit4CacheTestCase {
 
   /**
    * Test for stopping and restarting CQs.
-   * 
+   *
    * @throws Exception
    */
   @Test
@@ -2667,7 +2667,7 @@ public class CqQueryDUnitTest extends JUnit4CacheTestCase {
 
   /**
    * Test for Complex queries.
-   * 
+   *
    * @throws Exception
    */
   @Test
@@ -2710,7 +2710,7 @@ public class CqQueryDUnitTest extends JUnit4CacheTestCase {
 
   /**
    * Test for CQ Fail over.
-   * 
+   *
    * @throws Exception
    */
   @Test
@@ -2798,7 +2798,7 @@ public class CqQueryDUnitTest extends JUnit4CacheTestCase {
 
   /**
    * Test for CQ Fail over/HA with redundancy level set.
-   * 
+   *
    * @throws Exception
    */
   @Test
@@ -2897,7 +2897,7 @@ public class CqQueryDUnitTest extends JUnit4CacheTestCase {
   /**
    * Test without CQs. This was added after an exception encountered with CQService, when there was
    * no CQService intiated.
-   * 
+   *
    * @throws Exception
    */
   @Test
@@ -3069,7 +3069,7 @@ public class CqQueryDUnitTest extends JUnit4CacheTestCase {
 
   /**
    * Tests execution of queries with NULL in where clause like where ID = NULL etc.
-   * 
+   *
    * @throws Exception
    */
   @Test
@@ -3117,7 +3117,7 @@ public class CqQueryDUnitTest extends JUnit4CacheTestCase {
 
   /**
    * Tests execution of queries with NULL in where clause like where ID = NULL etc.
-   * 
+   *
    * @throws Exception
    */
   @Test
@@ -3218,7 +3218,7 @@ public class CqQueryDUnitTest extends JUnit4CacheTestCase {
   }
 
   /**
-   * 
+   *
    */
   @Test
   public void testCQWhereCondOnShort() throws Exception {
@@ -3251,7 +3251,7 @@ public class CqQueryDUnitTest extends JUnit4CacheTestCase {
   }
 
   /**
-   * 
+   *
    */
   @Test
   public void testCQEquals() throws Exception {
@@ -3306,7 +3306,7 @@ public class CqQueryDUnitTest extends JUnit4CacheTestCase {
   }
 
   /**
-   * 
+   *
    */
   @Test
   public void testCQEqualsWithIndex() throws Exception {

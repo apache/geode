@@ -40,7 +40,7 @@ public class DistributionChannel {
 
   /**
    * Constructor DistributionChannel for JGroups.
-   * 
+   *
    * @param channel jgroups channel
    */
   public DistributionChannel(MembershipManager channel) {

@@ -15,10 +15,11 @@
 
 package org.apache.geode.modules.session.functions;
 
-import org.apache.geode.modules.session.SessionCountingListener;
-
 import java.util.function.Function;
+
 import javax.servlet.http.HttpServletRequest;
+
+import org.apache.geode.modules.session.SessionCountingListener;
 
 public class GetSessionCount implements Function<HttpServletRequest, String> {
   @Override

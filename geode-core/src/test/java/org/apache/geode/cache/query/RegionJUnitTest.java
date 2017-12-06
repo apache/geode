@@ -20,30 +20,29 @@ import static org.junit.Assert.fail;
 
 import java.util.Iterator;
 
-import org.apache.geode.cache.RegionShortcut;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
+import org.junit.rules.ExpectedException;
 
 import org.apache.geode.cache.AttributesFactory;
 import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.Region;
 import org.apache.geode.cache.RegionAttributes;
+import org.apache.geode.cache.RegionShortcut;
 import org.apache.geode.cache.query.data.Portfolio;
 import org.apache.geode.internal.cache.EntrySnapshot;
 import org.apache.geode.internal.cache.LocalRegion;
-// for internal access test
 import org.apache.geode.internal.cache.RegionEntry;
 import org.apache.geode.test.junit.categories.IntegrationTest;
-import org.junit.rules.ExpectedException;
 
 /**
  * RegionJUnitTest.java
  *
  * Created on January 31, 2005, 3:54 PM
- * 
+ *
  */
 @Category(IntegrationTest.class)
 public class RegionJUnitTest {

@@ -19,7 +19,7 @@ import org.apache.geode.compression.Compressor;
 
 /**
  * Provides important contextual information that allows a {@link RegionEntry} to manage its state.
- * 
+ *
  * @since GemFire 8.0
  */
 public interface RegionEntryContext extends HasCachePerfStats {
@@ -28,7 +28,7 @@ public interface RegionEntryContext extends HasCachePerfStats {
 
   /**
    * Returns the compressor to be used by this region entry when storing the entry value.
-   * 
+   *
    * @return null if no compressor is assigned or available for the entry.
    */
   public Compressor getCompressor();

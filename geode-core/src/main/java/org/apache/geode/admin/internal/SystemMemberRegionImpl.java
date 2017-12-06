@@ -14,14 +14,12 @@
  */
 package org.apache.geode.admin.internal;
 
-import org.apache.geode.admin.*;
-import org.apache.geode.cache.*;
-// import org.apache.geode.internal.Assert;
-// import org.apache.geode.internal.admin.*;
-import org.apache.geode.internal.admin.remote.*;
-
 import java.io.File;
 import java.util.*;
+
+import org.apache.geode.admin.*;
+import org.apache.geode.cache.*;
+import org.apache.geode.internal.admin.remote.*;
 
 /**
  * View of a region in a GemFire system member's cache.
@@ -210,7 +208,7 @@ public class SystemMemberRegionImpl implements SystemMemberRegion {
    * If there are more than 1 CacheListeners defined, this method will return the description of the
    * 1st CacheListener in the list returned by the getCacheListeners method. If there is only one
    * CacheListener defined this method will return it's description
-   * 
+   *
    * @return String the region's <code>CacheListener</code> description
    * @deprecated as of 6.0, use {@link #getCacheListeners} instead
    */
@@ -228,7 +226,7 @@ public class SystemMemberRegionImpl implements SystemMemberRegion {
    * This method will return an empty array if there are no CacheListeners defined on the region. If
    * there are one or more than 1 CacheListeners defined, this method will return an array which has
    * the description of all the CacheListeners
-   * 
+   *
    * @return String[] the region's <code>CacheListeners</code> descriptions as a String array
    * @since GemFire 6.0
    */
@@ -333,7 +331,7 @@ public class SystemMemberRegionImpl implements SystemMemberRegion {
 
   /**
    * Returns a string representation of the object.
-   * 
+   *
    * @return a string representation of the object
    */
   @Override
@@ -368,4 +366,3 @@ public class SystemMemberRegionImpl implements SystemMemberRegion {
   }
 
 }
-

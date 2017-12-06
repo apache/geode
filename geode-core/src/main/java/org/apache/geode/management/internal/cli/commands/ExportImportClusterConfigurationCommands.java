@@ -24,7 +24,6 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Collection;
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
 
 import org.apache.commons.io.FileUtils;
@@ -97,7 +96,7 @@ public class ExportImportClusterConfigurationCommands implements GfshCommand {
 
     Result result;
     try {
-      for (Configuration config : sc.getEntireConfiguration().values()) {
+      for (Configuration config : sc.getConfigurationRegion().values()) {
         sc.writeConfigToFile(config);
       }
       ZipUtils.zipDirectory(sc.getSharedConfigurationDirPath(), zipFile.getCanonicalPath());
@@ -163,7 +162,7 @@ public class ExportImportClusterConfigurationCommands implements GfshCommand {
       ClusterConfigurationService sc = locator.getSharedConfiguration();
 
       // backup the old config
-      for (Configuration config : sc.getEntireConfiguration().values()) {
+      for (Configuration config : sc.getConfigurationRegion().values()) {
         sc.writeConfigToFile(config);
       }
       sc.renameExistingSharedConfigDirectory();
@@ -207,14 +206,14 @@ public class ExportImportClusterConfigurationCommands implements GfshCommand {
   }
 
   private Set<String> getRegionNamesOnServer(DistributedMember server) {
-    ResultCollector rc = CliUtil.executeFunction(new GetRegionNamesFunction(), null, server);
+    ResultCollector rc = executeFunction(new GetRegionNamesFunction(), null, server);
     List<Set<String>> results = (List<Set<String>>) rc.getResult();
 
     return results.get(0);
   }
 
   private CliFunctionResult reCreateCache(DistributedMember server) {
-    ResultCollector rc = CliUtil.executeFunction(new RecreateCacheFunction(), null, server);
+    ResultCollector rc = executeFunction(new RecreateCacheFunction(), null, server);
     List<CliFunctionResult> results = (List<CliFunctionResult>) rc.getResult();
 
     return results.get(0);
@@ -229,8 +228,7 @@ public class ExportImportClusterConfigurationCommands implements GfshCommand {
 
     @Override
     public Result preExecution(GfshParseResult parseResult) {
-      Map<String, String> paramValueMap = parseResult.getParamValueStrings();
-      String zip = paramValueMap.get(CliStrings.EXPORT_SHARED_CONFIG__FILE);
+      String zip = parseResult.getParamValueAsString(CliStrings.EXPORT_SHARED_CONFIG__FILE);
 
       if (!zip.endsWith(".zip")) {
         return ResultBuilder
@@ -259,9 +257,7 @@ public class ExportImportClusterConfigurationCommands implements GfshCommand {
   public static class ImportInterceptor extends AbstractCliAroundInterceptor {
 
     public Result preExecution(GfshParseResult parseResult) {
-      Map<String, String> paramValueMap = parseResult.getParamValueStrings();
-
-      String zip = paramValueMap.get(CliStrings.IMPORT_SHARED_CONFIG__ZIP);
+      String zip = parseResult.getParamValueAsString(CliStrings.IMPORT_SHARED_CONFIG__ZIP);
 
       zip = StringUtils.trim(zip);
 

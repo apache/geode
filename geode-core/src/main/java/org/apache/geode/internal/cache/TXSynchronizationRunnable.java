@@ -15,6 +15,7 @@
 package org.apache.geode.internal.cache;
 
 import org.apache.logging.log4j.Logger;
+
 import org.apache.geode.internal.cache.tier.sockets.CommBufferPool;
 import org.apache.geode.internal.logging.LogService;
 
@@ -23,7 +24,7 @@ import org.apache.geode.internal.logging.LogService;
  * cache. The thread should be instantiated with a Runnable that invokes beforeCompletion behavior.
  * Then you must invoke runSecondRunnable() with another Runnable that invokes afterCompletion
  * behavior.
- * 
+ *
  * @since GemFire 6.6
  */
 public class TXSynchronizationRunnable implements Runnable {

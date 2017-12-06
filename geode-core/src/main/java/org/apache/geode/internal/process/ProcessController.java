@@ -19,7 +19,7 @@ import java.util.concurrent.TimeoutException;
 
 /**
  * Defines the operations for controlling a running process.
- * 
+ *
  * @since GemFire 8.0
  */
 public interface ProcessController {
@@ -45,7 +45,7 @@ public interface ProcessController {
    * Checks if {@link #status} and {@link #stop} are supported if only the PID is provided. Only the
    * {@link MBeanProcessController} supports the use of specifying a PID because it uses the Attach
    * API.
-   * 
+   *
    * @throws org.apache.geode.lang.AttachAPINotFoundException if the Attach API is not found
    */
   void checkPidSupport();

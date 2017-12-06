@@ -34,7 +34,7 @@ import org.apache.geode.test.junit.categories.UnitTest;
 /**
  * The JettyHelperJUnitTest class is a test suite of test cases testing the contract and
  * functionality of the JettyHelper class. Does not start Jetty.
- * 
+ *
  * @see org.apache.geode.management.internal.JettyHelper
  * @see org.jmock.Mockery
  * @see org.junit.Assert

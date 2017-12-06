@@ -169,7 +169,7 @@ public class TXCommitMessage extends PooledDistributionMessage
 
   /**
    * Create and return an eventId given its offset.
-   * 
+   *
    * @since GemFire 5.7
    */
   protected EventID getEventId(int eventOffset) {
@@ -598,14 +598,13 @@ public class TXCommitMessage extends PooledDistributionMessage
     if (logger.isDebugEnabled()) {
       logger.debug("begin processing TXCommitMessage for {}", this.txIdent);
     }
-    // do this before CacheFactory.getInstance for bug 33471
     final int oldLevel =
         LocalRegion.setThreadInitLevelRequirement(LocalRegion.BEFORE_INITIAL_IMAGE);
     boolean forceListener = false; // this gets flipped if we need to fire tx listener
     // it needs to default to false because we don't want to fire listeners on pr replicates
     try {
       TXRmtEvent txEvent = null;
-      final Cache cache = CacheFactory.getInstance(dm.getSystem());
+      final Cache cache = dm.getExistingCache();
       if (cache == null) {
         addProcessingException(new CacheClosedException());
         // return ... this cache is closed so we can't do anything.
@@ -781,12 +780,12 @@ public class TXCommitMessage extends PooledDistributionMessage
    *
    * private boolean shouldSend701Message() { if (this.clientVersion == null &&
    * this.getDM().getMembersWithOlderVersion("7.0.1").isEmpty()) { return true; } return false; }
-   * 
+   *
    * public boolean shouldReadShadowKey() { return this.shouldReadShadowKey; }
-   * 
+   *
    * public void setShouldReadShadowKey(boolean shouldReadShadowKey) { this.shouldReadShadowKey =
    * shouldReadShadowKey; }
-   * 
+   *
    * public boolean shouldWriteShadowKey() { return this.shouldWriteShadowKey; }
    */
 
@@ -836,7 +835,7 @@ public class TXCommitMessage extends PooledDistributionMessage
   /**
    * Return true if a distributed ack message is required. On the client side of a transaction, this
    * returns false, while returning true elsewhere.
-   * 
+   *
    * @return requires ack message or not
    */
   private boolean isAckRequired() {
@@ -846,7 +845,7 @@ public class TXCommitMessage extends PooledDistributionMessage
 
   /**
    * Indicate whether an ack is required. Defaults to true.
-   * 
+   *
    * @param a true if we require an ack. false if not. false on clients.
    */
   public void setAckRequired(boolean a) {
@@ -945,7 +944,7 @@ public class TXCommitMessage extends PooledDistributionMessage
    * Combines a set of small TXCommitMessages that belong to one transaction into a txCommitMessage
    * that represents an entire transaction. At commit time the txCommitMessage sent to each node can
    * be a subset of the transaction, this method will combine those subsets into a complete message.
-   * 
+   *
    * @return the complete txCommitMessage
    */
   public static TXCommitMessage combine(Set<TXCommitMessage> msgSet) {
@@ -1129,7 +1128,7 @@ public class TXCommitMessage extends PooledDistributionMessage
 
     /**
      * Called to setup a region commit so its entryOps can be processed
-     * 
+     *
      * @return true if region should be processed; false if it can be ignored
      * @throws CacheClosedException if the cache has been closed
      */
@@ -1209,7 +1208,7 @@ public class TXCommitMessage extends PooledDistributionMessage
 
     /**
      * Returns the eventId to use for the give farside entry op.
-     * 
+     *
      * @since GemFire 5.7
      */
     private EventID getEventId(FarSideEntryOp entryOp) {
@@ -1300,8 +1299,7 @@ public class TXCommitMessage extends PooledDistributionMessage
         PartitionedRegion pr = (PartitionedRegion) r;
         BucketRegion br = pr.getBucketRegion(entryOp.key);
         Set bucketOwners = br.getBucketOwners();
-        InternalDistributedMember thisMember =
-            GemFireCacheImpl.getExisting().getDistributionManager().getId();
+        InternalDistributedMember thisMember = this.r.getDistributionManager().getId();
         if (bucketOwners.contains(thisMember)) {
           return;
         }
@@ -1475,7 +1473,7 @@ public class TXCommitMessage extends PooledDistributionMessage
 
     /**
      * Holds data that describes a tx entry op on the far side.
-     * 
+     *
      * @since GemFire 5.0
      */
     public class FarSideEntryOp implements Comparable {
@@ -1499,7 +1497,7 @@ public class TXCommitMessage extends PooledDistributionMessage
       /**
        * Creates and returns a new instance of a tx entry op on the far side. The "toData" that this
        * should match is {@link TXEntryState#toFarSideData}.
-       * 
+       *
        * @param in the data input that is used to read the data for this entry op
        * @param largeModCount true if the mod count is a int instead of a byte.
        * @param readShadowKey true if a long shadowKey should be read
@@ -1772,7 +1770,7 @@ public class TXCommitMessage extends PooledDistributionMessage
    * the origin of the CommitProcess messages departed from the distributed system. The sender of
    * this message is attempting to query other potential fellow FarSiders (aka recipients) who may
    * have received the CommitProcess message.
-   * 
+   *
    * Since the occurance of this message will be rare (hopefully), it was decided to be general
    * about the the tracker key - opting not to have specific messages for each type like
    * CommitProcessFor<Lock/TX>Id - and take the performance penalty of an extra call to
@@ -2051,7 +2049,7 @@ public class TXCommitMessage extends PooledDistributionMessage
    * been applied to committed state. This was added as the solution to bug 32999 and the recovery
    * when the TXLock Lessor (the sending VM) crashes/departs before or while sending the
    * TXCommitMessage.
-   * 
+   *
    * @see TXState#commit()
    * @see org.apache.geode.internal.cache.locks.TXLockBatch#getBatchId()
    */
@@ -2064,7 +2062,7 @@ public class TXCommitMessage extends PooledDistributionMessage
   /**
    * Reply processor which collects all CommitReplyExceptions and emits a detailed failure exception
    * if problems occur
-   * 
+   *
    * @since GemFire 5.7
    */
   private class CommitReplyProcessor extends ReliableReplyProcessor21 {
@@ -2131,7 +2129,7 @@ public class TXCommitMessage extends PooledDistributionMessage
 
   /**
    * An Exception that collects many remote CommitExceptions
-   * 
+   *
    * @since GemFire 5.7
    */
   public static class CommitExceptionCollectingException extends ReplyException {
@@ -2302,7 +2300,7 @@ public class TXCommitMessage extends PooledDistributionMessage
 
   /**
    * Disable firing of TX Listeners. Currently on used on clients.
-   * 
+   *
    * @param b disable the listeners
    */
   public void setDisableListeners(boolean b) {

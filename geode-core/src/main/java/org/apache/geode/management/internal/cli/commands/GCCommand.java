@@ -57,11 +57,7 @@ public class GCCommand implements GfshCommand {
     resultTable.setHeader(headerText);
     Set<DistributedMember> dsMembers = new HashSet<>();
     if (memberId != null && memberId.length() > 0) {
-      DistributedMember member = CliUtil.getDistributedMemberByNameOrId(memberId);
-      if (member == null) {
-        return ResultBuilder
-            .createGemFireErrorResult(memberId + CliStrings.GC__MSG__MEMBER_NOT_FOUND);
-      }
+      DistributedMember member = getMember(memberId);
       dsMembers.add(member);
       result = executeAndBuildResult(resultTable, dsMembers);
     } else if (groups != null && groups.length > 0) {
@@ -82,42 +78,38 @@ public class GCCommand implements GfshCommand {
 
   private Result executeAndBuildResult(TabularResultData resultTable,
       Set<DistributedMember> dsMembers) {
-    try {
-      List<?> resultList;
-      Function garbageCollectionFunction = new GarbageCollectionFunction();
-      resultList =
-          (List<?>) CliUtil.executeFunction(garbageCollectionFunction, null, dsMembers).getResult();
 
-      for (Object object : resultList) {
-        if (object instanceof Exception) {
-          LogWrapper.getInstance().fine("Exception in GC " + ((Throwable) object).getMessage(),
-              ((Throwable) object));
-          continue;
-        } else if (object instanceof Throwable) {
-          LogWrapper.getInstance().fine("Exception in GC " + ((Throwable) object).getMessage(),
-              ((Throwable) object));
-          continue;
-        }
+    List<?> resultList;
+    Function garbageCollectionFunction = new GarbageCollectionFunction();
+    resultList =
+        (List<?>) CliUtil.executeFunction(garbageCollectionFunction, null, dsMembers).getResult();
 
-        if (object != null) {
-          if (object instanceof String) {
-            // unexpected exception string - cache may be closed or something
-            return ResultBuilder.createUserErrorResult((String) object);
-          } else {
-            Map<String, String> resultMap = (Map<String, String>) object;
-            toTabularResultData(resultTable, resultMap.get("MemberId"),
-                resultMap.get("HeapSizeBeforeGC"), resultMap.get("HeapSizeAfterGC"),
-                resultMap.get("TimeSpentInGC"));
-          }
-        } else {
-          LogWrapper.getInstance().fine("ResultMap was null ");
-        }
+    for (Object object : resultList) {
+      if (object instanceof Exception) {
+        LogWrapper.getInstance().fine("Exception in GC " + ((Throwable) object).getMessage(),
+            ((Throwable) object));
+        continue;
+      } else if (object instanceof Throwable) {
+        LogWrapper.getInstance().fine("Exception in GC " + ((Throwable) object).getMessage(),
+            ((Throwable) object));
+        continue;
       }
-    } catch (Exception e) {
-      String stack = CliUtil.stackTraceAsString(e);
-      LogWrapper.getInstance().info("GC exception is " + stack);
-      return ResultBuilder.createGemFireErrorResult(e.getMessage() + ": " + stack);
+
+      if (object != null) {
+        if (object instanceof String) {
+          // unexpected exception string - cache may be closed or something
+          return ResultBuilder.createUserErrorResult((String) object);
+        } else {
+          Map<String, String> resultMap = (Map<String, String>) object;
+          toTabularResultData(resultTable, resultMap.get("MemberId"),
+              resultMap.get("HeapSizeBeforeGC"), resultMap.get("HeapSizeAfterGC"),
+              resultMap.get("TimeSpentInGC"));
+        }
+      } else {
+        LogWrapper.getInstance().fine("ResultMap was null ");
+      }
     }
+
     return ResultBuilder.buildResult(resultTable);
   }
 

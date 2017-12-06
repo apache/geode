@@ -14,15 +14,16 @@
  */
 package org.apache.geode.modules.session.catalina;
 
+import java.io.IOException;
+
+import javax.servlet.ServletException;
+
 import org.apache.catalina.Manager;
 import org.apache.catalina.connector.Request;
 import org.apache.catalina.connector.Response;
 import org.apache.catalina.valves.ValveBase;
 import org.apache.juli.logging.Log;
 import org.apache.juli.logging.LogFactory;
-
-import javax.servlet.ServletException;
-import java.io.IOException;
 
 public class CommitSessionValve extends ValveBase {
 

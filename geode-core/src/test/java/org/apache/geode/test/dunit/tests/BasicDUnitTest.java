@@ -14,9 +14,9 @@
  */
 package org.apache.geode.test.dunit.tests;
 
-import static org.apache.geode.test.dunit.Invoke.*;
 import static com.googlecode.catchexception.CatchException.*;
 import static com.googlecode.catchexception.throwable.CatchThrowable.*;
+import static org.apache.geode.test.dunit.Invoke.*;
 import static org.hamcrest.Matchers.*;
 import static org.junit.Assert.*;
 

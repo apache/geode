@@ -43,7 +43,7 @@ import org.apache.geode.security.ResourcePermission.Resource;
 
 public class Request extends BaseCommand {
 
-  private final static Request singleton = new Request();
+  private static final Request singleton = new Request();
 
   public static Command getCommand() {
     return singleton;

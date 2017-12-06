@@ -21,7 +21,7 @@ import java.util.concurrent.TimeUnit;
  * waitFor the process to terminate.
  * </p>
  * Extracted from ProcessWrapper.
- * 
+ *
  */
 public class ProcessOutputReader {
 

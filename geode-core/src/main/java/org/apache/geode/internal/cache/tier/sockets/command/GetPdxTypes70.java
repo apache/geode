@@ -28,7 +28,7 @@ import org.apache.geode.pdx.internal.PdxType;
 
 public class GetPdxTypes70 extends BaseCommand {
 
-  private final static GetPdxTypes70 singleton = new GetPdxTypes70();
+  private static final GetPdxTypes70 singleton = new GetPdxTypes70();
 
   public static Command getCommand() {
     return singleton;

@@ -20,9 +20,9 @@ import org.apache.geode.internal.cache.xmlcache.CacheXml;
 /**
  * Provides marker for extensibility and access to {@link ExtensionPoint}. Objects should implement
  * this interface to support modular config and extensions.
- * 
+ *
  * Used in {@link CacheXml} to read and write cache xml configurations.
- * 
+ *
  *
  * @since GemFire 8.1
  */
@@ -30,7 +30,7 @@ public interface Extensible<T> {
 
   /**
    * Get {@link ExtensionPoint} for this object.
-   * 
+   *
    * @return {@link ExtensionPoint} for this object.
    * @since GemFire 8.1
    */

@@ -14,11 +14,12 @@
  */
 package org.apache.geode.management.internal;
 
-import org.apache.geode.distributed.internal.DistributionConfig;
-import org.apache.geode.management.internal.beans.QueryDataFunction;
+import java.util.concurrent.TimeUnit;
 
 import javax.management.ObjectName;
-import java.util.concurrent.TimeUnit;
+
+import org.apache.geode.distributed.internal.DistributionConfig;
+import org.apache.geode.management.internal.beans.QueryDataFunction;
 
 
 /**

@@ -20,14 +20,14 @@ import java.io.IOException;
 
 import org.apache.geode.cache.CacheClosedException;
 import org.apache.geode.cache.CacheFactory;
-import org.apache.geode.distributed.internal.DistributionManager;
+import org.apache.geode.distributed.internal.DM;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
 import org.apache.geode.internal.cache.CacheServerImpl;
 import org.apache.geode.internal.cache.InternalCache;
 
 /**
  * A message that is sent in response to a {@link DurableClientInfoRequest}.
- * 
+ *
  * @since GemFire 5.6
  */
 public class DurableClientInfoResponse extends AdminResponse {
@@ -40,8 +40,8 @@ public class DurableClientInfoResponse extends AdminResponse {
   /**
    * Returns a {@code DurableClientInfoResponse} that will be returned to the specified recipient.
    */
-  public static DurableClientInfoResponse create(DistributionManager dm,
-      InternalDistributedMember recipient, DurableClientInfoRequest request) {
+  public static DurableClientInfoResponse create(DM dm, InternalDistributedMember recipient,
+      DurableClientInfoRequest request) {
     DurableClientInfoResponse m = new DurableClientInfoResponse();
     m.setRecipient(recipient);
     try {

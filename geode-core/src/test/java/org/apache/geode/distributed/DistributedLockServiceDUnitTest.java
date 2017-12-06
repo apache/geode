@@ -25,7 +25,6 @@ import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicBoolean;
 
-import org.apache.geode.test.junit.categories.DLockTest;
 import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
@@ -56,6 +55,7 @@ import org.apache.geode.test.dunit.VM;
 import org.apache.geode.test.dunit.Wait;
 import org.apache.geode.test.dunit.WaitCriterion;
 import org.apache.geode.test.dunit.internal.JUnit4DistributedTestCase;
+import org.apache.geode.test.junit.categories.DLockTest;
 import org.apache.geode.test.junit.categories.DistributedTest;
 
 /**
@@ -393,7 +393,7 @@ public class DistributedLockServiceDUnitTest extends JUnit4DistributedTestCase {
 
   /**
    * Accessed by reflection. DO NOT REMOVE
-   * 
+   *
    * @param i
    * @return
    */
@@ -421,7 +421,7 @@ public class DistributedLockServiceDUnitTest extends JUnit4DistributedTestCase {
 
   /**
    * Accessed via reflection. DO NOT REMOVE
-   * 
+   *
    * @param serviceName
    * @return
    */
@@ -436,7 +436,7 @@ public class DistributedLockServiceDUnitTest extends JUnit4DistributedTestCase {
 
   /**
    * Accessed via reflection. DO NOT REMOVE.
-   * 
+   *
    * @param serviceName
    * @return
    */
@@ -450,7 +450,7 @@ public class DistributedLockServiceDUnitTest extends JUnit4DistributedTestCase {
 
   /**
    * Accessed via reflection. DO NOT REMOVE.
-   * 
+   *
    * @param serviceName
    */
   protected static void becomeLockGrantor(String serviceName) {
@@ -2349,7 +2349,7 @@ public class DistributedLockServiceDUnitTest extends JUnit4DistributedTestCase {
 
   /**
    * Accessed via reflection. DO NOT REMOVE
-   * 
+   *
    * @param serviceName
    * @param name
    * @return
@@ -3212,4 +3212,3 @@ public class DistributedLockServiceDUnitTest extends JUnit4DistributedTestCase {
   }
 
 }
-

@@ -42,7 +42,38 @@ import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
+import java.io.File;
+import java.io.IOException;
+import java.io.Serializable;
+import java.net.InetAddress;
+import java.net.InetSocketAddress;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
+import java.util.Properties;
+import java.util.Set;
+import java.util.StringTokenizer;
+import java.util.concurrent.Callable;
+import java.util.concurrent.ConcurrentSkipListSet;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
+import java.util.concurrent.ThreadFactory;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicInteger;
+import java.util.stream.Collectors;
+
 import org.apache.commons.io.FileUtils;
+import org.awaitility.Awaitility;
+import org.junit.experimental.categories.Category;
+
 import org.apache.geode.cache.AttributesFactory;
 import org.apache.geode.cache.AttributesMutator;
 import org.apache.geode.cache.Cache;
@@ -126,36 +157,6 @@ import org.apache.geode.test.dunit.WaitCriterion;
 import org.apache.geode.test.dunit.internal.JUnit4DistributedTestCase;
 import org.apache.geode.test.junit.categories.DistributedTest;
 import org.apache.geode.util.test.TestUtil;
-import org.awaitility.Awaitility;
-import org.junit.experimental.categories.Category;
-
-import java.io.File;
-import java.io.IOException;
-import java.io.Serializable;
-import java.net.InetAddress;
-import java.net.InetSocketAddress;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
-import java.util.Properties;
-import java.util.Set;
-import java.util.StringTokenizer;
-import java.util.concurrent.Callable;
-import java.util.concurrent.ConcurrentSkipListSet;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.concurrent.Future;
-import java.util.concurrent.ThreadFactory;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.atomic.AtomicInteger;
-import java.util.stream.Collectors;
 
 @Category(DistributedTest.class)
 public class WANTestBase extends JUnit4DistributedTestCase {
@@ -1162,15 +1163,8 @@ public class WANTestBase extends JUnit4DistributedTestCase {
   }
 
   public static List<Integer> getSenderStats(String senderId, final int expectedQueueSize) {
-    Set<GatewaySender> senders = cache.getGatewaySenders();
-    AbstractGatewaySender sender = null;
-    for (GatewaySender s : senders) {
-      if (s.getId().equals(senderId)) {
-        sender = (AbstractGatewaySender) s;
-        break;
-      }
-    }
-    final GatewaySenderStats statistics = sender.getStatistics();
+    AbstractGatewaySender sender = (AbstractGatewaySender) cache.getGatewaySender(senderId);
+    GatewaySenderStats statistics = sender.getStatistics();
     if (expectedQueueSize != -1) {
       final RegionQueue regionQueue;
       regionQueue = sender.getQueues().toArray(new RegionQueue[1])[0];
@@ -1189,21 +1183,13 @@ public class WANTestBase extends JUnit4DistributedTestCase {
     stats.add(statistics.getEventsFiltered());
     stats.add(statistics.getEventsNotQueuedConflated());
     stats.add(statistics.getEventsConflatedFromBatches());
+    stats.add(statistics.getConflationIndexesMapSize());
     return stats;
   }
 
   public static void checkQueueStats(String senderId, final int queueSize, final int eventsReceived,
       final int eventsQueued, final int eventsDistributed) {
-    Set<GatewaySender> senders = cache.getGatewaySenders();
-    GatewaySender sender = null;
-    for (GatewaySender s : senders) {
-      if (s.getId().equals(senderId)) {
-        sender = s;
-        break;
-      }
-    }
-
-    final GatewaySenderStats statistics = ((AbstractGatewaySender) sender).getStatistics();
+    GatewaySenderStats statistics = getGatewaySenderStats(senderId);
     assertEquals(queueSize, statistics.getEventQueueSize());
     assertEquals(eventsReceived, statistics.getEventsReceived());
     assertEquals(eventsQueued, statistics.getEventsQueued());
@@ -1262,42 +1248,17 @@ public class WANTestBase extends JUnit4DistributedTestCase {
   }
 
   public static void checkEventFilteredStats(String senderId, final int eventsFiltered) {
-    Set<GatewaySender> senders = cache.getGatewaySenders();
-    GatewaySender sender = null;
-    for (GatewaySender s : senders) {
-      if (s.getId().equals(senderId)) {
-        sender = s;
-        break;
-      }
-    }
-    final GatewaySenderStats statistics = ((AbstractGatewaySender) sender).getStatistics();
+    GatewaySenderStats statistics = getGatewaySenderStats(senderId);
     assertEquals(eventsFiltered, statistics.getEventsFiltered());
   }
 
   public static void checkConflatedStats(String senderId, final int eventsConflated) {
-    Set<GatewaySender> senders = cache.getGatewaySenders();
-    GatewaySender sender = null;
-    for (GatewaySender s : senders) {
-      if (s.getId().equals(senderId)) {
-        sender = s;
-        break;
-      }
-    }
-    final GatewaySenderStats statistics = ((AbstractGatewaySender) sender).getStatistics();
+    GatewaySenderStats statistics = getGatewaySenderStats(senderId);
     assertEquals(eventsConflated, statistics.getEventsNotQueuedConflated());
   }
 
   public static void checkStats_Failover(String senderId, final int eventsReceived) {
-    Set<GatewaySender> senders = cache.getGatewaySenders();
-    GatewaySender sender = null;
-    for (GatewaySender s : senders) {
-      if (s.getId().equals(senderId)) {
-        sender = s;
-        break;
-      }
-    }
-    final GatewaySenderStats statistics = ((AbstractGatewaySender) sender).getStatistics();
-
+    GatewaySenderStats statistics = getGatewaySenderStats(senderId);
     assertEquals(eventsReceived, statistics.getEventsReceived());
     assertEquals(eventsReceived,
         (statistics.getEventsQueued() + statistics.getUnprocessedTokensAddedByPrimary()
@@ -1305,48 +1266,29 @@ public class WANTestBase extends JUnit4DistributedTestCase {
   }
 
   public static void checkBatchStats(String senderId, final int batches) {
-    Set<GatewaySender> senders = cache.getGatewaySenders();
-    GatewaySender sender = null;
-    for (GatewaySender s : senders) {
-      if (s.getId().equals(senderId)) {
-        sender = s;
-        break;
-      }
-    }
-    final GatewaySenderStats statistics = ((AbstractGatewaySender) sender).getStatistics();
+    GatewaySenderStats statistics = getGatewaySenderStats(senderId);
     assert (statistics.getBatchesDistributed() >= batches);
     assertEquals(0, statistics.getBatchesRedistributed());
   }
 
   public static void checkBatchStats(String senderId, final boolean batchesDistributed,
       final boolean batchesRedistributed) {
-    Set<GatewaySender> senders = cache.getGatewaySenders();
-    GatewaySender sender = null;
-    for (GatewaySender s : senders) {
-      if (s.getId().equals(senderId)) {
-        sender = s;
-        break;
-      }
-    }
-    final GatewaySenderStats statistics = ((AbstractGatewaySender) sender).getStatistics();
+    GatewaySenderStats statistics = getGatewaySenderStats(senderId);
     assertEquals(batchesDistributed, (statistics.getBatchesDistributed() > 0));
     assertEquals(batchesRedistributed, (statistics.getBatchesRedistributed() > 0));
   }
 
   public static void checkUnProcessedStats(String senderId, int events) {
-    Set<GatewaySender> senders = cache.getGatewaySenders();
-    GatewaySender sender = null;
-    for (GatewaySender s : senders) {
-      if (s.getId().equals(senderId)) {
-        sender = s;
-        break;
-      }
-    }
-    final GatewaySenderStats statistics = ((AbstractGatewaySender) sender).getStatistics();
+    GatewaySenderStats statistics = getGatewaySenderStats(senderId);
     assertEquals(events, (statistics.getUnprocessedEventsAddedBySecondary()
         + statistics.getUnprocessedTokensRemovedBySecondary()));
     assertEquals(events, (statistics.getUnprocessedEventsRemovedByPrimary()
         + statistics.getUnprocessedTokensAddedByPrimary()));
+  }
+
+  public static GatewaySenderStats getGatewaySenderStats(String senderId) {
+    GatewaySender sender = cache.getGatewaySender(senderId);
+    return ((AbstractGatewaySender) sender).getStatistics();
   }
 
   public static void waitForSenderRunningState(String senderId) {
@@ -2601,18 +2543,12 @@ public class WANTestBase extends JUnit4DistributedTestCase {
   }
 
   public static void checkQueueSize(String senderId, int numQueueEntries) {
-    Awaitility.await().atMost(10, TimeUnit.SECONDS)
+    Awaitility.await().atMost(30, TimeUnit.SECONDS)
         .until(() -> testQueueSize(senderId, numQueueEntries));
   }
 
   public static void testQueueSize(String senderId, int numQueueEntries) {
-    GatewaySender sender = null;
-    for (GatewaySender s : cache.getGatewaySenders()) {
-      if (s.getId().equals(senderId)) {
-        sender = s;
-        break;
-      }
-    }
+    GatewaySender sender = cache.getGatewaySender(senderId);
     if (sender.isParallel()) {
       int totalSize = 0;
       Set<RegionQueue> queues = ((AbstractGatewaySender) sender).getQueues();
@@ -2633,7 +2569,7 @@ public class WANTestBase extends JUnit4DistributedTestCase {
 
   /**
    * To be used only for ParallelGatewaySender.
-   * 
+   *
    * @param senderId Id of the ParallelGatewaySender
    * @param numQueueEntries Expected number of ParallelGatewaySenderQueue entries
    */
@@ -2663,7 +2599,7 @@ public class WANTestBase extends JUnit4DistributedTestCase {
 
   /**
    * To be used only for ParallelGatewaySender.
-   * 
+   *
    * @param senderId Id of the ParallelGatewaySender
    */
   public static int getPRQLocalSize(String senderId) {
@@ -3386,7 +3322,7 @@ public class WANTestBase extends JUnit4DistributedTestCase {
 
   /**
    * Test methods for sender operations
-   * 
+   *
    * @param senderId
    */
   public static void verifySenderPausedState(String senderId) {
@@ -3738,7 +3674,7 @@ public class WANTestBase extends JUnit4DistributedTestCase {
       Locator.getLocator().stop();
     }
     closeCache();
-    CacheTestCase.cleanDiskDirs();
+    JUnit4DistributedTestCase.cleanDiskDirs();
   }
 
   public static void closeCache() {

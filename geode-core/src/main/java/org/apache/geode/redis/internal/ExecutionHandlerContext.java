@@ -14,6 +14,11 @@
  */
 package org.apache.geode.redis.internal;
 
+import java.io.IOException;
+import java.util.Queue;
+import java.util.concurrent.ConcurrentLinkedQueue;
+import java.util.concurrent.atomic.AtomicBoolean;
+
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.ByteBufAllocator;
 import io.netty.channel.Channel;
@@ -21,11 +26,6 @@ import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelInboundHandlerAdapter;
 import io.netty.handler.codec.DecoderException;
 import io.netty.util.concurrent.EventExecutor;
-
-import java.io.IOException;
-import java.util.Queue;
-import java.util.concurrent.ConcurrentLinkedQueue;
-import java.util.concurrent.atomic.AtomicBoolean;
 
 import org.apache.geode.LogWriter;
 import org.apache.geode.cache.Cache;
@@ -37,8 +37,8 @@ import org.apache.geode.cache.TransactionId;
 import org.apache.geode.cache.UnsupportedOperationInTransactionException;
 import org.apache.geode.cache.query.QueryInvocationTargetException;
 import org.apache.geode.cache.query.RegionNotFoundException;
-import org.apache.geode.redis.internal.executor.transactions.TransactionExecutor;
 import org.apache.geode.redis.GeodeRedisServer;
+import org.apache.geode.redis.internal.executor.transactions.TransactionExecutor;
 
 /**
  * This class extends {@link ChannelInboundHandlerAdapter} from Netty and it is the last part of the
@@ -49,7 +49,7 @@ import org.apache.geode.redis.GeodeRedisServer;
  * Besides being part of Netty's pipeline, this class also serves as a context to the execution of a
  * command. It abstracts transactions, provides access to the {@link RegionProvider} and anything
  * else an executing {@link Command} may need.
- * 
+ *
  *
  */
 public class ExecutionHandlerContext extends ChannelInboundHandlerAdapter {
@@ -83,7 +83,7 @@ public class ExecutionHandlerContext extends ChannelInboundHandlerAdapter {
 
   /**
    * Default constructor for execution contexts.
-   * 
+   *
    * @param ch Channel used by this context, should be one to one
    * @param cache The Geode cache instance of this vm
    * @param regionProvider The region provider of this context
@@ -223,7 +223,7 @@ public class ExecutionHandlerContext extends ChannelInboundHandlerAdapter {
   /**
    * Private helper method to execute a command without a transaction, done for special exception
    * handling neatness
-   * 
+   *
    * @param exec Executor to use
    * @param command Command to execute
    * @throws Exception Throws exception if exception is from within execution and not to be handled
@@ -268,7 +268,7 @@ public class ExecutionHandlerContext extends ChannelInboundHandlerAdapter {
 
   /**
    * Get the current transacationId
-   * 
+   *
    * @return The current transactionId, null if one doesn't exist
    */
   public TransactionId getTransactionID() {
@@ -277,7 +277,7 @@ public class ExecutionHandlerContext extends ChannelInboundHandlerAdapter {
 
   /**
    * Check if client has transaction
-   * 
+   *
    * @return True if client has transaction, false otherwise
    */
   public boolean hasTransaction() {
@@ -286,7 +286,7 @@ public class ExecutionHandlerContext extends ChannelInboundHandlerAdapter {
 
   /**
    * Setter method for transaction
-   * 
+   *
    * @param id TransactionId of current transaction for client
    */
   public void setTransactionID(TransactionId id) {
@@ -310,7 +310,7 @@ public class ExecutionHandlerContext extends ChannelInboundHandlerAdapter {
 
   /**
    * Getter for transaction command queue
-   * 
+   *
    * @return Command queue
    */
   public Queue<Command> getTransactionQueue() {
@@ -322,7 +322,7 @@ public class ExecutionHandlerContext extends ChannelInboundHandlerAdapter {
   /**
    * {@link ByteBuf} allocator for this context. All executors must use this pooled allocator as
    * opposed to having unpooled buffers for maximum performance
-   * 
+   *
    * @return allocator instance
    */
   public ByteBufAllocator getByteBufAllocator() {
@@ -331,7 +331,7 @@ public class ExecutionHandlerContext extends ChannelInboundHandlerAdapter {
 
   /**
    * Gets the provider of Regions
-   * 
+   *
    * @return Provider
    */
   public RegionProvider getRegionProvider() {
@@ -340,7 +340,7 @@ public class ExecutionHandlerContext extends ChannelInboundHandlerAdapter {
 
   /**
    * Getter for manager to allow pausing and resuming transactions
-   * 
+   *
    * @return Instance
    */
   public CacheTransactionManager getCacheTransactionManager() {
@@ -349,7 +349,7 @@ public class ExecutionHandlerContext extends ChannelInboundHandlerAdapter {
 
   /**
    * Getter for logger
-   * 
+   *
    * @return instance
    */
   public LogWriter getLogger() {
@@ -358,7 +358,7 @@ public class ExecutionHandlerContext extends ChannelInboundHandlerAdapter {
 
   /**
    * Get the channel for this context
-   * 
+   *
    * @return instance
    *
    *         public Channel getChannel() { return this.channel; }
@@ -367,7 +367,7 @@ public class ExecutionHandlerContext extends ChannelInboundHandlerAdapter {
   /**
    * Get the authentication password, this will be same server wide. It is exposed here as opposed
    * to {@link GeodeRedisServer}.
-   * 
+   *
    * @return password
    */
   public byte[] getAuthPwd() {
@@ -376,7 +376,7 @@ public class ExecutionHandlerContext extends ChannelInboundHandlerAdapter {
 
   /**
    * Checker if user has authenticated themselves
-   * 
+   *
    * @return True if no authentication required or authentication complete, false otherwise
    */
   public boolean isAuthenticated() {

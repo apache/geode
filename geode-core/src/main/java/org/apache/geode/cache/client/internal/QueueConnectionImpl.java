@@ -33,7 +33,7 @@ import org.apache.geode.internal.logging.LogService;
 
 /**
  * A wrapper that holds a client to server connection and a server to client connection.
- * 
+ *
  * The clientToServerConnection should not be used outside of this class.
  *
  */
@@ -179,7 +179,7 @@ public class QueueConnectionImpl implements Connection {
 
   /**
    * Indicate that we have, or are about to send the client create message on this connection.
-   * 
+   *
    * @return true if we have not yet sent client ready.
    */
   public boolean sendClientReady() {

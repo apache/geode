@@ -33,7 +33,7 @@ public abstract class TestCacheCallback implements CacheCallback {
   /** Was a callback event method invoked? */
   volatile boolean invoked = false;
 
-  volatile protected Throwable callbackError = null;
+  protected volatile Throwable callbackError = null;
 
   /**
    * Returns whether or not one of this <code>CacheListener</code> methods was invoked. Before

@@ -14,10 +14,14 @@
  */
 package org.apache.geode.internal.cache;
 
+import java.io.DataInput;
+import java.io.DataOutput;
+import java.io.IOException;
 import java.util.ArrayList;
 
 import org.apache.logging.log4j.Logger;
 
+import org.apache.geode.DataSerializable;
 import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.CacheFactory;
 import org.apache.geode.cache.CacheTransactionManager;
@@ -32,26 +36,28 @@ import org.apache.geode.internal.logging.LogService;
  * This function is used by {@link CommitFunction} to commit existing transaction. A
  * {@link TransactionId} corresponding to the transaction to be committed must be provided as an
  * argument while invoking this function.<br />
- * 
+ *
  * When executed this function commits a transaction if it exists locally.<br />
- * 
+ *
  * This function returns a single Boolean as result, whose value is <code>Boolean.TRUE</code> if the
  * transaction committed successfully otherwise the return value is <code>Boolean.FALSE</code><br />
- * 
+ *
  * This function is <b>not</b> registered on the cache servers by default, and it is the user's
  * responsibility to register this function. see {@link FunctionService#registerFunction(Function)}
- * 
+ *
  * @see CommitFunction
  * @since GemFire 6.6.1
  *
  */
-public class NestedTransactionFunction implements Function {
+public class NestedTransactionFunction implements Function, DataSerializable {
   private static final Logger logger = LogService.getLogger();
 
   public static final int COMMIT = 1;
   public static final int ROLLBACK = 2;
 
   private static final long serialVersionUID = 1400965724856341543L;
+
+  public NestedTransactionFunction() {}
 
   public boolean hasResult() {
     return true;
@@ -110,4 +116,13 @@ public class NestedTransactionFunction implements Function {
     return false;
   }
 
+  @Override
+  public void toData(DataOutput out) throws IOException {
+
+  }
+
+  @Override
+  public void fromData(DataInput in) throws IOException, ClassNotFoundException {
+
+  }
 }

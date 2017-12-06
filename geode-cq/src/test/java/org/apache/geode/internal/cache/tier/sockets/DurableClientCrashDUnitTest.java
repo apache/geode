@@ -16,11 +16,12 @@ package org.apache.geode.internal.cache.tier.sockets;
 
 import static org.junit.Assert.assertNotNull;
 
+import org.junit.experimental.categories.Category;
+
 import org.apache.geode.cache.CacheException;
 import org.apache.geode.cache30.CacheSerializableRunnable;
 import org.apache.geode.test.junit.categories.ClientSubscriptionTest;
 import org.apache.geode.test.junit.categories.DistributedTest;
-import org.junit.experimental.categories.Category;
 
 /**
  * Class <code>DurableClientCrashDUnitTest</code> tests durable client functionality when clients

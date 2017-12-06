@@ -14,6 +14,14 @@
  */
 package org.apache.geode.security.generator;
 
+import static org.apache.geode.distributed.ConfigurationProperties.*;
+
+import java.security.Principal;
+import java.util.Properties;
+import java.util.Random;
+
+import org.apache.logging.log4j.Logger;
+
 import org.apache.geode.distributed.internal.DistributionConfig;
 import org.apache.geode.internal.cache.tier.sockets.HandShake;
 import org.apache.geode.internal.logging.LogService;
@@ -21,13 +29,6 @@ import org.apache.geode.security.templates.LdapUserAuthenticator;
 import org.apache.geode.security.templates.UserPasswordAuthInit;
 import org.apache.geode.test.dunit.Assert;
 import org.apache.geode.util.test.TestUtil;
-import org.apache.logging.log4j.Logger;
-
-import java.security.Principal;
-import java.util.Properties;
-import java.util.Random;
-
-import static org.apache.geode.distributed.ConfigurationProperties.*;
 
 public class LdapUserCredentialGenerator extends CredentialGenerator {
 

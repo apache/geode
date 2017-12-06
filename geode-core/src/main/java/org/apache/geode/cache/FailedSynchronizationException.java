@@ -36,7 +36,7 @@ public class FailedSynchronizationException extends CacheRuntimeException {
   /**
    * Constructs an instance of <code>FailedSynchronizationException</code> with the specified detail
    * message.
-   * 
+   *
    * @param msg the detail message
    */
   public FailedSynchronizationException(String msg) {
@@ -46,7 +46,7 @@ public class FailedSynchronizationException extends CacheRuntimeException {
   /**
    * Constructs an instance of <code>FailedSynchronizationException</code> with the specified detail
    * message and cause.
-   * 
+   *
    * @param msg the detail message
    * @param cause the causal Throwable
    */

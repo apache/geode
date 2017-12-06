@@ -28,20 +28,20 @@ import org.apache.geode.internal.cache.versions.VersionTag;
  * This class is used for sorting tombstones by region version number. Because two tombstones with
  * different members are not comparable, the iterator on this class tries to return the tombstones
  * in the order of the timestamps of the tombstones.
- * 
+ *
  * The class maintains a map, per member, of the tombstones sorted by the version tag.
- * 
+ *
  * When removing entries, we pick from the sorted map that has the lowest timestamp.
- * 
+ *
  * This map is not threadsafe.
- * 
+ *
  *
  */
 public class OrderedTombstoneMap<T> {
 
   /**
    * A map of member id-> sort map of version tag-> region entry
-   * 
+   *
    */
   private Map<VersionSource, TreeMap<VersionTag, T>> tombstoneMap = new HashMap();
 

@@ -27,7 +27,7 @@ import org.apache.geode.internal.i18n.LocalizedStrings;
  * Instances of this class are thread safe.
  *
  * @since GemFire 5.0.2
- * 
+ *
  */
 public class UniqueIdGenerator {
   /*
@@ -35,9 +35,9 @@ public class UniqueIdGenerator {
    * bits, requiring 6 address bits. The choice of unit is determined purely by performance
    * concerns.
    */
-  private final static int ADDRESS_BITS_PER_UNIT = 6;
-  private final static int BITS_PER_UNIT = 1 << ADDRESS_BITS_PER_UNIT;
-  private final static int BIT_INDEX_MASK = BITS_PER_UNIT - 1;
+  private static final int ADDRESS_BITS_PER_UNIT = 6;
+  private static final int BITS_PER_UNIT = 1 << ADDRESS_BITS_PER_UNIT;
+  private static final int BIT_INDEX_MASK = BITS_PER_UNIT - 1;
 
   /**
    * The units in this BitSet. The ith bit is stored in units[i/64] at bit position i % 64 (where
@@ -94,7 +94,7 @@ public class UniqueIdGenerator {
   /*
    * trailingZeroTable[i] is the number of trailing zero bits in the binary representation of i.
    */
-  private final static byte trailingZeroTable[] = {-25, 0, 1, 0, 2, 0, 1, 0, 3, 0, 1, 0, 2, 0, 1, 0,
+  private static final byte trailingZeroTable[] = {-25, 0, 1, 0, 2, 0, 1, 0, 3, 0, 1, 0, 2, 0, 1, 0,
       4, 0, 1, 0, 2, 0, 1, 0, 3, 0, 1, 0, 2, 0, 1, 0, 5, 0, 1, 0, 2, 0, 1, 0, 3, 0, 1, 0, 2, 0, 1,
       0, 4, 0, 1, 0, 2, 0, 1, 0, 3, 0, 1, 0, 2, 0, 1, 0, 6, 0, 1, 0, 2, 0, 1, 0, 3, 0, 1, 0, 2, 0,
       1, 0, 4, 0, 1, 0, 2, 0, 1, 0, 3, 0, 1, 0, 2, 0, 1, 0, 5, 0, 1, 0, 2, 0, 1, 0, 3, 0, 1, 0, 2,
@@ -150,7 +150,7 @@ public class UniqueIdGenerator {
   /**
    * Returns the index of the first bit that is set to <code>false</code> that occurs on or after
    * the specified starting index.
-   * 
+   *
    * @param fromIndex the index to start checking from (inclusive).
    * @return the index of the next clear bit.
    */
@@ -202,7 +202,7 @@ public class UniqueIdGenerator {
 
   /**
    * Obtain an id form the pool of available ids and return it.
-   * 
+   *
    * @throws IllegalStateException if all ids have been obtained
    */
   public int obtain() {

@@ -15,7 +15,6 @@
 package org.apache.persistence.logging;
 
 import java.io.*;
-// import java.text.*;
 import java.util.*;
 
 /**

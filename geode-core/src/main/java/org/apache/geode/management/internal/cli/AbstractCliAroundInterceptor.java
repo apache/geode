@@ -18,8 +18,8 @@ import org.apache.geode.management.internal.cli.shell.Gfsh;
 
 /**
  * Semi-complete implementation of {@link CliAroundInterceptor} for convenience for implementors.
- * 
- * 
+ *
+ *
  * @since GemFire 7.0
  */
 public abstract class AbstractCliAroundInterceptor implements CliAroundInterceptor {

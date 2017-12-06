@@ -20,14 +20,14 @@ import org.apache.geode.internal.cache.RegionEntry;
 import org.apache.geode.internal.cache.persistence.query.CloseableIterator;
 
 /**
- * 
+ *
  * @since GemFire 8.0
  */
 public interface IndexStore {
 
   /**
    * Add a mapping to the index store
-   * 
+   *
    * @param indexKey
    * @param re
    */
@@ -36,7 +36,7 @@ public interface IndexStore {
   /**
    * Remove a mapping from the index store If entry at indexKey is not found, we must crawl the
    * index to be sure the region entry does not exist
-   * 
+   *
    * @param indexKey
    * @param re
    */
@@ -44,7 +44,7 @@ public interface IndexStore {
 
   /**
    * Update a mapping in the index store. This method adds a new mapping and removes the old mapping
-   * 
+   *
    * @param indexKey
    * @param oldKey
    * @param re
@@ -123,7 +123,7 @@ public interface IndexStore {
     Object getDeserializedRegionKey();
 
     /**
-     * 
+     *
      * @return true if the RegionEntry is under update
      * @see RegionEntry#isUpdateInProgress() isUpdateInProgress
      */

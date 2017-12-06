@@ -18,7 +18,7 @@ import org.apache.geode.GemFireException;
 
 /**
  * This exception is thrown when two nodes are defined with same primary partitions
- * 
+ *
  * @since GemFire 6.6
  */
 public class DuplicatePrimaryPartitionException extends GemFireException {

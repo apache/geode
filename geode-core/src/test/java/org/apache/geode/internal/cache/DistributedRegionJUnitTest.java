@@ -24,6 +24,7 @@ import java.util.concurrent.ConcurrentMap;
 
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
+
 import org.apache.geode.cache.Operation;
 import org.apache.geode.cache.RegionAttributes;
 import org.apache.geode.distributed.DistributedMember;
@@ -151,4 +152,3 @@ public class DistributedRegionJUnitTest extends AbstractDistributedRegionJUnitTe
   }
 
 }
-

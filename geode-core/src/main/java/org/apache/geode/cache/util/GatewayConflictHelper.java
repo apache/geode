@@ -17,7 +17,7 @@ package org.apache.geode.cache.util;
 /**
  * GatewayConflictHelper is used by an GatewayConflictResolver to decide what to do with an event
  * received from another distributed system that is going to overwrite the current cache state.
- * 
+ *
  * @since GemFire 7.0
  */
 public interface GatewayConflictHelper {
@@ -27,5 +27,3 @@ public interface GatewayConflictHelper {
   /** modify the value stored in the cache */
   public void changeEventValue(Object value);
 }
-
-

@@ -16,6 +16,7 @@
 package org.apache.geode.cache.query.internal;
 
 import java.io.*;
+
 import org.apache.geode.cache.query.QueryService;
 import org.apache.geode.internal.DataSerializableFixedID;
 import org.apache.geode.internal.Version;
@@ -25,9 +26,9 @@ import org.apache.geode.internal.Version;
  * access an attribute that has an explicit value of null, then it is not undefined. For example, if
  * a query accesses the attribute address.city and address is null, then the result is undefined. If
  * the query accesses address, then the result is not undefined, it is null.
- * 
+ *
  * @version $Revision: 1.1 $
- * 
+ *
  */
 
 public class Undefined implements DataSerializableFixedID, Comparable, Serializable {

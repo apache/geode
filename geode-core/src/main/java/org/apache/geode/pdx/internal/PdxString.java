@@ -19,6 +19,7 @@ import java.io.DataOutput;
 import java.io.DataOutputStream;
 import java.io.IOException;
 import java.nio.ByteBuffer;
+
 import org.apache.geode.DataSerializer;
 import org.apache.geode.internal.DSCODE;
 import org.apache.geode.internal.Sendable;
@@ -27,7 +28,7 @@ import org.apache.geode.internal.tcp.ByteBufferInputStream;
 /**
  * A class that references the String offset in PdxInstance Used as Index keys for PdxInstances and
  * query evaluation for PdxInstances
- * 
+ *
  * @since GemFire 7.0
  */
 public class PdxString implements Comparable<PdxString>, Sendable {

@@ -15,6 +15,7 @@
 package org.apache.geode.distributed.internal;
 
 import java.util.Set;
+
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
 import org.apache.geode.i18n.LogWriterI18n;
 

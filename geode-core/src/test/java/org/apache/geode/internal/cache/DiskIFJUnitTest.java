@@ -14,6 +14,8 @@
  */
 package org.apache.geode.internal.cache;
 
+import static org.junit.Assert.*;
+
 import java.io.File;
 import java.util.Collections;
 import java.util.HashSet;
@@ -23,8 +25,6 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
-
-import static org.junit.Assert.*;
 
 import org.apache.geode.cache.DiskStore;
 import org.apache.geode.cache.RegionShortcut;

@@ -14,6 +14,8 @@
  */
 package org.apache.geode.internal.cache.tx;
 
+import java.util.Set;
+
 import org.apache.geode.cache.EntryExistsException;
 import org.apache.geode.cache.EntryNotFoundException;
 import org.apache.geode.cache.Operation;
@@ -28,8 +30,6 @@ import org.apache.geode.internal.cache.KeyInfo;
 import org.apache.geode.internal.cache.LocalRegion;
 import org.apache.geode.internal.cache.tier.sockets.ClientProxyMembershipID;
 import org.apache.geode.internal.cache.tier.sockets.VersionedObjectList;
-
-import java.util.Set;
 
 public class ClientTXRegionStub implements TXRegionStub {
 

@@ -19,8 +19,8 @@ import static org.junit.Assert.*;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
-import org.apache.geode.test.process.ProcessWrapper;
 import org.apache.geode.test.junit.categories.IntegrationTest;
+import org.apache.geode.test.process.ProcessWrapper;
 
 /**
  * Verifies that test output missing an expected line (at the end of the golden file) will fail with

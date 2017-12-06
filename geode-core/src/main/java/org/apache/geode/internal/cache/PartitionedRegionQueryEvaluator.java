@@ -14,6 +14,13 @@
  */
 package org.apache.geode.internal.cache;
 
+import java.util.*;
+import java.util.concurrent.*;
+
+import it.unimi.dsi.fastutil.ints.IntOpenHashSet;
+import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap;
+import org.apache.logging.log4j.Logger;
+
 import org.apache.geode.CopyHelper;
 import org.apache.geode.SystemFailure;
 import org.apache.geode.cache.query.*;
@@ -33,17 +40,11 @@ import org.apache.geode.internal.cache.partitioned.RegionAdvisor;
 import org.apache.geode.internal.cache.partitioned.StreamingPartitionOperation;
 import org.apache.geode.internal.i18n.LocalizedStrings;
 import org.apache.geode.internal.logging.LogService;
-import it.unimi.dsi.fastutil.ints.IntOpenHashSet;
-import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap;
-import org.apache.logging.log4j.Logger;
-
-import java.util.*;
-import java.util.concurrent.*;
 
 /**
  * This class sends the query on various <code>PartitionedRegion</code> data store nodes and
  * collects the results back, does the union of all the results.
- * 
+ *
  * revamped with streaming of results retry logic
  */
 public class PartitionedRegionQueryEvaluator extends StreamingPartitionOperation {
@@ -51,7 +52,7 @@ public class PartitionedRegionQueryEvaluator extends StreamingPartitionOperation
 
   /**
    * An ArrayList which might be unconsumable.
-   * 
+   *
    * @since GemFire 6.6.2
    */
   public static class MemberResultsList extends ArrayList {
@@ -68,7 +69,7 @@ public class PartitionedRegionQueryEvaluator extends StreamingPartitionOperation
 
   /**
    * Simple testing interface
-   * 
+   *
    * @since GemFire 6.0
    */
   public interface TestHook {
@@ -97,7 +98,7 @@ public class PartitionedRegionQueryEvaluator extends StreamingPartitionOperation
 
   /**
    * Construct a PartitionedRegionQueryEvaluator
-   * 
+   *
    * @param sys the distributed system
    * @param pr the partitioned region
    * @param query the query
@@ -248,7 +249,7 @@ public class PartitionedRegionQueryEvaluator extends StreamingPartitionOperation
 
   /**
    * Returns normally if succeeded to get data, otherwise throws an exception
-   * 
+   *
    * @param th a test hook
    * @return true if parts of the query need to be retried, otherwise false
    */
@@ -727,7 +728,7 @@ public class PartitionedRegionQueryEvaluator extends StreamingPartitionOperation
 
   /**
    * Adds all counts from all member buckets to cumulative results.
-   * 
+   *
    * @param limit
    */
   private void addTotalCountForMemberToResults(int limit) {
@@ -886,7 +887,7 @@ public class PartitionedRegionQueryEvaluator extends StreamingPartitionOperation
 
   /**
    * Executes query on local data store.
-   * 
+   *
    * @throws QueryException, InterruptedException
    * @return true if the local query needs to be retried, otherwise false
    */
@@ -993,7 +994,7 @@ public class PartitionedRegionQueryEvaluator extends StreamingPartitionOperation
    * This class is used to accumulate information about indexes used in multipleThreads and results
    * gained from buckets. In future this can be used for adding for more information to final query
    * running info from pool threads.
-   * 
+   *
    * @since GemFire 6.6
    */
   public static class PRQueryResultCollector {

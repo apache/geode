@@ -124,7 +124,7 @@ public class TXRemoteCommitMessage extends TXMessage {
   /**
    * This message is used for the reply to a remote commit operation: a commit from a stub to the tx
    * host. This is the reply to a {@link TXRemoteCommitMessage}.
-   * 
+   *
    * @since GemFire 6.5
    */
   public static class TXRemoteCommitReplyMessage extends ReplyMessage {
@@ -162,7 +162,7 @@ public class TXRemoteCommitMessage extends TXMessage {
      * Return the value from the get operation, serialize it bytes as late as possible to avoid
      * making un-neccesary byte[] copies. De-serialize those same bytes as late as possible to avoid
      * using precious threads (aka P2P readers).
-     * 
+     *
      * @param recipient the origin VM that performed the get
      * @param processorId the processor on which the origin thread is waiting
      * @param val the raw value that will eventually be serialized
@@ -178,7 +178,7 @@ public class TXRemoteCommitMessage extends TXMessage {
 
     /**
      * Processes this message. This method is invoked by the receiver of the message.
-     * 
+     *
      * @param dm the distribution manager that is processing the message.
      */
     @Override
@@ -233,7 +233,7 @@ public class TXRemoteCommitMessage extends TXMessage {
   /**
    * A processor to capture the value returned by
    * {@link org.apache.geode.internal.cache.TXRemoteCommitMessage.TXRemoteCommitReplyMessage}
-   * 
+   *
    * @since GemFire 6.6
    */
   public static class RemoteCommitResponse extends RemoteOperationResponse {

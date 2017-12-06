@@ -95,7 +95,7 @@ public class DistTXCommitMessage extends TXMessage {
         if (txStateProxy != null) {
           /*
            * [DISTTX] TODO See how other exceptions are caught and send on wire, than throwing?
-           * 
+           *
            * This can be spared since it will be programming bug
            */
           if (!txStateProxy.isDistTx() || txStateProxy.isCreatedOnDistTxCoordinator()) {
@@ -169,7 +169,7 @@ public class DistTXCommitMessage extends TXMessage {
   /**
    * This message is used for the reply to a Dist Tx Phase Two commit operation: a commit from a
    * stub to the tx host. This is the reply to a {@link DistTXCommitMessage}.
-   * 
+   *
    */
   public static class DistTXCommitReplyMessage extends ReplyMessage {
     private transient TXCommitMessage commitMessage;
@@ -198,7 +198,7 @@ public class DistTXCommitMessage extends TXMessage {
      * Return the value from the get operation, serialize it bytes as late as possible to avoid
      * making un-neccesary byte[] copies. De-serialize those same bytes as late as possible to avoid
      * using precious threads (aka P2P readers).
-     * 
+     *
      * @param recipient the origin VM that performed the get
      * @param processorId the processor on which the origin thread is waiting
      * @param val the raw value that will eventually be serialized
@@ -214,7 +214,7 @@ public class DistTXCommitMessage extends TXMessage {
 
     /**
      * Processes this message. This method is invoked by the receiver of the message.
-     * 
+     *
      * @param dm the distribution manager that is processing the message.
      */
     @Override
@@ -269,9 +269,9 @@ public class DistTXCommitMessage extends TXMessage {
   /**
    * Reply processor which collects all CommitReplyExceptions for Dist Tx and emits a detailed
    * failure exception if problems occur
-   * 
+   *
    * @see TXCommitMessage.CommitReplyProcessor
-   * 
+   *
    *      [DISTTX] TODO see if need ReliableReplyProcessor21? departed members?
    */
   public static class DistTxCommitReplyProcessor extends ReplyProcessor21 {
@@ -358,7 +358,7 @@ public class DistTXCommitMessage extends TXMessage {
 
   /**
    * An Exception that collects many remote CommitExceptions
-   * 
+   *
    * @see TXCommitMessage.CommitExceptionCollectingException
    */
   public static class DistTxCommitExceptionCollectingException extends ReplyException {

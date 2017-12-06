@@ -45,7 +45,7 @@ You can export a zip file that contains all artifacts of a cluster configuration
 
 ## Individual Configuration Files and Cluster Configuration Files
 
-<%=vars.product_name%> applies the cluster-wide configuration files first and then group-level configurations next. If a member has its own configuration files defined (cache.xml and gemfire.properties files), those configurations are applied last. Whenever possible, use the member group-level configuration files in the cluster-configuration service to apply non-cluster-wide configurations on individual members.
+<%=vars.product_name%> applies the cluster-wide configuration files first and then group-level configurations next. If a member has its own configuration files defined (cache.xml and gemfire.properties files), those configurations are applied last. Whenever possible, use the member group-level configuration files in the cluster configuration service to apply non-cluster-wide configurations on individual members.
 
 ## Troubleshooting Tips
 
@@ -55,7 +55,7 @@ You can export a zip file that contains all artifacts of a cluster configuration
     Cluster configuration service is up and running.
     ```
 
-    If you do not see this message, there may be a problem with the cluster configuration service. Use the `status cluster-configuration-service` command to check the status of the cluster configuration.
+    If you do not see this message, there may be a problem with the cluster configuration service. Use the `status cluster-config-service` command to check the status of the cluster configuration.
 
     -   If the command returns RUNNING, the cluster configuration is running normally.
     -   If the command returns WAITING, run the `status locator` command. The output of this command returns the cause of the WAITING status.

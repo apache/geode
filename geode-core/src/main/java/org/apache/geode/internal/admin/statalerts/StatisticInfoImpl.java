@@ -14,8 +14,8 @@
  */
 package org.apache.geode.internal.admin.statalerts;
 
-import java.io.DataOutput;
 import java.io.DataInput;
+import java.io.DataOutput;
 import java.io.IOException;
 
 import org.apache.commons.lang.StringUtils;
@@ -27,10 +27,10 @@ import org.apache.geode.StatisticsType;
 import org.apache.geode.admin.Statistic;
 
 /**
- * 
+ *
  * Implemetation of {@link StatisticInfo}, provides all the information {@link Statistic}
- * 
- * 
+ *
+ *
  */
 public class StatisticInfoImpl implements StatisticInfo {
   private static final long serialVersionUID = -1525964578728218894L;

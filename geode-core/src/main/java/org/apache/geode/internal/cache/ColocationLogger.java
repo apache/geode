@@ -85,7 +85,7 @@ public class ColocationLogger implements Runnable {
   /**
    * Writes a log entry every SLEEP_PERIOD when there are missing colocated child regions for this
    * region.
-   * 
+   *
    * @throws InterruptedException
    */
   private void run2() throws InterruptedException {
@@ -157,7 +157,7 @@ public class ColocationLogger implements Runnable {
 
   /**
    * Write the a logger warning for a PR that has colocated child regions that are missing.
-   * 
+   *
    * @param region the parent region that has missing child regions
    */
   private void logMissingRegions(PartitionedRegion region) {
@@ -182,13 +182,13 @@ public class ColocationLogger implements Runnable {
   /*
    * Test hook to allow unit test tests to run faster by tweak the interval between log messages
    */
-  public synchronized static int testhookSetLogInterval(int sleepMillis) {
+  public static synchronized int testhookSetLogInterval(int sleepMillis) {
     int currentSleep = LOG_INTERVAL;
     LOG_INTERVAL = sleepMillis;
     return currentSleep;
   }
 
-  public synchronized static void testhookResetLogInterval() {
+  public static synchronized void testhookResetLogInterval() {
     LOG_INTERVAL = DEFAULT_LOG_INTERVAL;
   }
 }

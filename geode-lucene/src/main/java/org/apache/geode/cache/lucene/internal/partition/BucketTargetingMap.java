@@ -14,13 +14,13 @@
  */
 package org.apache.geode.cache.lucene.internal.partition;
 
+import java.util.AbstractMap;
+import java.util.Set;
+
 import org.apache.geode.cache.EntryExistsException;
 import org.apache.geode.cache.EntryNotFoundException;
 import org.apache.geode.cache.Region;
 import org.apache.geode.internal.cache.BucketRegion;
-
-import java.util.AbstractMap;
-import java.util.Set;
 
 public class BucketTargetingMap<K, V> extends AbstractMap<K, V> {
 

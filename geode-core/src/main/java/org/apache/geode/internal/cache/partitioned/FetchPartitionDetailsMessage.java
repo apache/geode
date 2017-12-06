@@ -64,7 +64,7 @@ public class FetchPartitionDetailsMessage extends PartitionMessage {
   /**
    * Sends a message to fetch {@link org.apache.geode.cache.partition.PartitionMemberInfo
    * PartitionMemberDetails} for the specified <code>PartitionedRegion</code>.
-   * 
+   *
    * @param recipients the members to fetch PartitionMemberDetails from
    * @param region the PartitionedRegion to fetch member details for
    * @param fetchOfflineMembers
@@ -186,7 +186,7 @@ public class FetchPartitionDetailsMessage extends PartitionMessage {
 
     /**
      * Send an ack
-     * 
+     *
      * @param offlineDetails
      */
     public static void send(InternalDistributedMember recipient, int processorId,
@@ -299,7 +299,7 @@ public class FetchPartitionDetailsMessage extends PartitionMessage {
   /**
    * A processor to capture the value returned by
    * {@link org.apache.geode.internal.cache.partitioned.FetchPartitionDetailsMessage.FetchPartitionDetailsReplyMessage}
-   * 
+   *
    */
   public static class FetchPartitionDetailsResponse extends PartitionResponse {
 

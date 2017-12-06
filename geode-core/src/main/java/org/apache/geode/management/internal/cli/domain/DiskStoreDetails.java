@@ -15,11 +15,6 @@
 
 package org.apache.geode.management.internal.cli.domain;
 
-import org.apache.commons.lang.StringUtils;
-import org.apache.geode.cache.DiskStoreFactory;
-import org.apache.geode.internal.lang.MutableIdentifiable;
-import org.apache.geode.internal.lang.ObjectUtils;
-
 import java.io.Serializable;
 import java.util.Collection;
 import java.util.Collections;
@@ -28,12 +23,18 @@ import java.util.Set;
 import java.util.TreeSet;
 import java.util.UUID;
 
+import org.apache.commons.lang.StringUtils;
+
+import org.apache.geode.cache.DiskStoreFactory;
+import org.apache.geode.internal.lang.MutableIdentifiable;
+import org.apache.geode.internal.lang.ObjectUtils;
+
 /**
  * The DiskStoreDetails class captures information about a particular disk store for a GemFire
  * distributed system member. Each disk store for a member should be captured in separate instance
  * of this class.
  * </p>
- * 
+ *
  * @see org.apache.geode.cache.DiskStore
  * @see org.apache.geode.cache.DiskStoreFactory
  * @see org.apache.geode.lang.Identifiable

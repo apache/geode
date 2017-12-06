@@ -16,6 +16,14 @@ package org.apache.geode.internal.cache.ha;
 
 import static org.junit.Assert.assertEquals;
 
+import java.io.IOException;
+import java.util.concurrent.TimeUnit;
+import java.util.stream.IntStream;
+
+import org.awaitility.Awaitility;
+import org.junit.Test;
+import org.junit.experimental.categories.Category;
+
 import org.apache.geode.cache.Region;
 import org.apache.geode.cache.RegionShortcut;
 import org.apache.geode.cache.client.ClientCache;
@@ -30,13 +38,6 @@ import org.apache.geode.test.dunit.Host;
 import org.apache.geode.test.dunit.VM;
 import org.apache.geode.test.dunit.cache.internal.JUnit4CacheTestCase;
 import org.apache.geode.test.junit.categories.DistributedTest;
-import org.awaitility.Awaitility;
-import org.junit.Test;
-import org.junit.experimental.categories.Category;
-
-import java.io.IOException;
-import java.util.concurrent.TimeUnit;
-import java.util.stream.IntStream;
 
 @Category(DistributedTest.class)
 public class PreferSerializedHARegionQueueTest extends JUnit4CacheTestCase {

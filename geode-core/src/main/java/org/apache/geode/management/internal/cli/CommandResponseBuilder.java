@@ -21,7 +21,7 @@ import org.apache.geode.management.internal.cli.remote.CommandExecutionContext;
 import org.apache.geode.management.internal.cli.result.CommandResult;
 
 /**
- * 
+ *
  * @since GemFire 7.0
  */
 public class CommandResponseBuilder {

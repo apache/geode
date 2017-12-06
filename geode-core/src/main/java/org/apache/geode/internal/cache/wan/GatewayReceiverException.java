@@ -19,7 +19,7 @@ import org.apache.geode.cache.OperationAbortedException;
 
 /**
  * Exception observed during GatewayReceiver operations.
- * 
+ *
  * @since GemFire 8.1
  */
 public class GatewayReceiverException extends OperationAbortedException {
@@ -33,7 +33,7 @@ public class GatewayReceiverException extends OperationAbortedException {
   /**
    * Constructor. Creates an instance of <code>GatewayReceiverException</code> with the specified
    * detail message.
-   * 
+   *
    * @param msg the detail message
    */
   public GatewayReceiverException(String msg) {
@@ -43,7 +43,7 @@ public class GatewayReceiverException extends OperationAbortedException {
   /**
    * Constructor. Creates an instance of <code>GatewayReceiverException</code> with the specified
    * detail message and cause.
-   * 
+   *
    * @param msg the detail message
    * @param cause the causal Throwable
    */
@@ -54,7 +54,7 @@ public class GatewayReceiverException extends OperationAbortedException {
   /**
    * Constructor. Creates an instance of <code>GatewayReceiverException</code> with the specified
    * cause.
-   * 
+   *
    * @param cause the causal Throwable
    */
   public GatewayReceiverException(Throwable cause) {

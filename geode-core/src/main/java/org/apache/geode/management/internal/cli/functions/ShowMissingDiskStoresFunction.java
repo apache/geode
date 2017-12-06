@@ -23,7 +23,6 @@ import org.apache.geode.cache.execute.FunctionAdapter;
 import org.apache.geode.cache.execute.FunctionContext;
 import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.internal.InternalEntity;
-import org.apache.geode.internal.cache.GemFireCacheImpl;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.cache.PartitionedRegion;
 import org.apache.geode.internal.cache.partitioned.ColocatedRegionDetails;
@@ -65,23 +64,23 @@ public class ShowMissingDiskStoresFunction extends FunctionAdapter implements In
           }
         }
       }
-
-      if (memberMissingIDs.isEmpty() && missingColocatedRegions.isEmpty()) {
-        context.getResultSender().lastResult(null);
-      } else {
-        if (!memberMissingIDs.isEmpty()) {
-          if (missingColocatedRegions.isEmpty()) {
-            context.getResultSender().lastResult(memberMissingIDs);
-          } else {
-            context.getResultSender().sendResult(memberMissingIDs);
-          }
-        }
-        if (!missingColocatedRegions.isEmpty()) {
-          context.getResultSender().lastResult(missingColocatedRegions);
-        }
-      }
     } catch (Exception e) {
       context.getResultSender().sendException(e);
+    }
+
+    if (memberMissingIDs.isEmpty() && missingColocatedRegions.isEmpty()) {
+      context.getResultSender().lastResult(null);
+    } else {
+      if (!memberMissingIDs.isEmpty()) {
+        if (missingColocatedRegions.isEmpty()) {
+          context.getResultSender().lastResult(memberMissingIDs);
+        } else {
+          context.getResultSender().sendResult(memberMissingIDs);
+        }
+      }
+      if (!missingColocatedRegions.isEmpty()) {
+        context.getResultSender().lastResult(missingColocatedRegions);
+      }
     }
   }
 

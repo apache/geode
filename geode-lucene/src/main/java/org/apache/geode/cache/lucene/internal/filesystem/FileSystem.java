@@ -15,14 +15,15 @@
 
 package org.apache.geode.cache.lucene.internal.filesystem;
 
-import org.apache.geode.internal.logging.LogService;
-import org.apache.logging.log4j.Logger;
-
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.Collection;
 import java.util.Map;
 import java.util.stream.Collectors;
+
+import org.apache.logging.log4j.Logger;
+
+import org.apache.geode.internal.logging.LogService;
 
 /**
  * A Filesystem like interface that stores file data in geode regions.

@@ -27,9 +27,9 @@ import org.apache.geode.internal.memcached.ValueWrapper;
  * general format of the command is: <code>
  * &lt;command name&gt; &lt;key&gt; &lt;flags&gt; &lt;exptime&gt; &lt;bytes&gt; [noreply]\r\n
  * </code><br/>
- * 
+ *
  * "set" means "store this data".
- * 
+ *
  *
  */
 public class SetCommand extends StorageCommand {

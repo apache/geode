@@ -23,23 +23,23 @@ import org.apache.geode.security.ResourcePermission.Resource;
 
 /**
  * MBean that provides access to information and management functionality for a {@link Manager}.
- * 
+ *
  * @since GemFire 7.0
- * 
+ *
  */
 @ResourceOperation(resource = Resource.CLUSTER, operation = Operation.READ)
 public interface ManagerMXBean {
 
   /**
    * Returns whether the manager service is running on this member.
-   * 
+   *
    * @return True of the manager service is running, false otherwise.
    */
   public boolean isRunning();
 
   /**
    * Starts the manager service.
-   * 
+   *
    * @return True if the manager service was successfully started, false otherwise.
    */
   @ResourceOperation(resource = Resource.CLUSTER, operation = Operation.MANAGE)
@@ -47,7 +47,7 @@ public interface ManagerMXBean {
 
   /**
    * Stops the manager service.
-   * 
+   *
    * @return True if the manager service was successfully stopped, false otherwise.
    */
   @ResourceOperation(resource = Resource.CLUSTER, operation = Operation.MANAGE)
@@ -60,7 +60,7 @@ public interface ManagerMXBean {
 
   /**
    * Sets the URL for the Pulse application.
-   * 
+   *
    * @param pulseURL The URL for the Pulse application.
    */
   @ResourceOperation(resource = Resource.CLUSTER, operation = Operation.WRITE)
@@ -75,7 +75,7 @@ public interface ManagerMXBean {
 
   /**
    * Sets the status message.
-   * 
+   *
    * @param message The status message.
    */
   @ResourceOperation(resource = Resource.CLUSTER, operation = Operation.WRITE)

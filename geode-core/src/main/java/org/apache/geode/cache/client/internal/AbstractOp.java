@@ -37,7 +37,7 @@ import org.apache.geode.internal.logging.log4j.LogMarker;
 
 /**
  * Represents an operation that can be performed in a client by sending a message to a server.
- * 
+ *
  * @since GemFire 5.7
  */
 public abstract class AbstractOp implements Op {
@@ -75,7 +75,7 @@ public abstract class AbstractOp implements Op {
 
   /**
    * Attempts to send this operation's message out on the given connection
-   * 
+   *
    * @param cnx the connection to use when sending
    * @throws Exception if the send fails
    */
@@ -104,7 +104,7 @@ public abstract class AbstractOp implements Op {
   /**
    * New implementations of AbstractOp should override this method if the implementation should be
    * excluded from client authentication. e.g. PingOp#sendMessage(Connection cnx)
-   * 
+   *
    * @see AbstractOp#needsUserId()
    * @see AbstractOp#processSecureBytes(Connection, Message)
    * @see ServerConnection#updateAndGetSecurityPart()
@@ -186,7 +186,7 @@ public abstract class AbstractOp implements Op {
   /**
    * Attempts to read a response to this operation by reading it from the given connection, and
    * returning it.
-   * 
+   *
    * @param cnx the connection to read the response from
    * @return the result of the operation or <code>null</code> if the operation has no result.
    * @throws Exception if the execute failed
@@ -230,7 +230,7 @@ public abstract class AbstractOp implements Op {
 
   /**
    * Processes the given response message returning the result, if any, of the processing.
-   * 
+   *
    * @return the result of processing the response; null if no result
    * @throws Exception if response could not be processed or we received a response with a server
    *         exception.
@@ -244,7 +244,7 @@ public abstract class AbstractOp implements Op {
 
   /**
    * Process a response that contains an ack.
-   * 
+   *
    * @param msg the message containing the response
    * @param opName text describing this op
    * @throws Exception if response could not be processed or we received a response with a server
@@ -277,7 +277,7 @@ public abstract class AbstractOp implements Op {
 
   /**
    * Process a response that contains a single Object result.
-   * 
+   *
    * @param msg the message containing the response
    * @param opName text describing this op
    * @return the result of the response
@@ -318,7 +318,7 @@ public abstract class AbstractOp implements Op {
   public interface ChunkHandler {
     /**
      * This method will be called once for every incoming chunk
-     * 
+     *
      * @param msg the current chunk to handle
      */
     public void handle(ChunkedMessage msg) throws Exception;
@@ -326,7 +326,7 @@ public abstract class AbstractOp implements Op {
 
   /**
    * Process a chunked response that contains a single Object result.
-   * 
+   *
    * @param msg the message containing the response
    * @param opName text describing this op
    * @param callback used to handle each chunks data
@@ -372,7 +372,7 @@ public abstract class AbstractOp implements Op {
 
   /*
    * (non-Javadoc)
-   * 
+   *
    * @see org.apache.geode.cache.client.internal.Op#attempt(org.apache.geode.cache.client.internal.
    * Connection)
    */
@@ -419,7 +419,7 @@ public abstract class AbstractOp implements Op {
   /**
    * Subclasses for AbstractOp should override this method to return false in this message should
    * not participate in any existing transaction
-   * 
+   *
    * @return true if the message should participate in transaction
    */
   protected boolean participateInTransaction() {

@@ -16,11 +16,6 @@ package org.apache.geode.internal;
 
 import static java.util.stream.Collectors.joining;
 
-import org.apache.geode.distributed.internal.DistributionConfig;
-import org.apache.geode.internal.logging.LogService;
-import org.apache.geode.internal.util.CollectionUtils;
-import org.apache.logging.log4j.Logger;
-
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
@@ -32,6 +27,12 @@ import java.util.Collections;
 import java.util.Enumeration;
 import java.util.LinkedHashSet;
 import java.util.List;
+
+import org.apache.logging.log4j.Logger;
+
+import org.apache.geode.distributed.internal.DistributionConfig;
+import org.apache.geode.internal.logging.LogService;
+import org.apache.geode.internal.util.CollectionUtils;
 
 /**
  * The delegating <tt>ClassLoader</tt> used by GemFire to load classes and other resources. This
@@ -207,7 +208,7 @@ public class ClassPathLoader {
    * Finds the resource with the given name. This method will first search the class loader of the
    * context class for the resource. That failing, this method will invoke
    * {@link #getResource(String)} to find the resource.
-   * 
+   *
    * @param contextClass The class whose class loader will first be searched
    * @param name The resource name
    * @return A <tt>URL</tt> object for reading the resource, or <tt>null</tt> if the resource could
@@ -245,7 +246,7 @@ public class ClassPathLoader {
    * Returns an input stream for reading the specified resource.
    * <p>
    * The search order is described in the documentation for {@link #getResource(Class, String)}.
-   * 
+   *
    * @param contextClass The class whose class loader will first be searched
    * @param name The resource name
    * @return An input stream for reading the resource, or <tt>null</tt> if the resource could not be
@@ -264,7 +265,7 @@ public class ClassPathLoader {
   /**
    * Finds all the resources with the given name. This method will first search the class loader of
    * the context class for the resource before searching all other {@link ClassLoader}s.
-   * 
+   *
    * @param contextClass The class whose class loader will first be searched
    * @param name The resource name
    * @return An enumeration of {@link java.net.URL <tt>URL</tt>} objects for the resource. If no
@@ -314,7 +315,7 @@ public class ClassPathLoader {
 
   /**
    * Wrap this {@link ClassPathLoader} with a {@link ClassLoader} facade.
-   * 
+   *
    * @return {@link ClassLoader} facade.
    * @since GemFire 8.1
    */
@@ -360,7 +361,7 @@ public class ClassPathLoader {
 
   /**
    * Helper method equivalent to <code>ClassPathLoader.getLatest().asClassLoader();</code>.
-   * 
+   *
    * @return {@link ClassLoader} for current {@link ClassPathLoader}.
    * @since GemFire 8.1
    */

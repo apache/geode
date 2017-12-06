@@ -51,7 +51,6 @@ import org.apache.geode.internal.cache.InternalCache;
  * use {@code LocatorServerStartupRule}.
  */
 public class ServerStarterRule extends MemberStarterRule<ServerStarterRule> implements Server {
-
   private transient InternalCache cache;
   private transient CacheServer server;
   private int embeddedLocatorPort = -1;

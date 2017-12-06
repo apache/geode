@@ -15,11 +15,11 @@
 
 package org.apache.geode.internal.admin.remote;
 
+import java.io.*;
+
 import org.apache.geode.*;
 import org.apache.geode.internal.admin.*;
 import org.apache.geode.internal.statistics.StatisticDescriptorImpl;
-// import java.util.*;
-import java.io.*;
 
 public class RemoteStat implements Stat, DataSerializable {
   private static final long serialVersionUID = 8263951659282343027L;

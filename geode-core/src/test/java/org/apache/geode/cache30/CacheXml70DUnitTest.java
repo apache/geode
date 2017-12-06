@@ -20,9 +20,6 @@ import java.util.List;
 import java.util.Properties;
 import java.util.Set;
 
-import org.apache.geode.cache.util.GatewayConflictHelper;
-import org.apache.geode.cache.util.GatewayConflictResolver;
-import org.apache.geode.cache.util.TimestampedEntryEvent;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
@@ -36,6 +33,9 @@ import org.apache.geode.cache.asyncqueue.AsyncEventListener;
 import org.apache.geode.cache.asyncqueue.AsyncEventQueue;
 import org.apache.geode.cache.asyncqueue.AsyncEventQueueFactory;
 import org.apache.geode.cache.asyncqueue.internal.AsyncEventQueueImpl;
+import org.apache.geode.cache.util.GatewayConflictHelper;
+import org.apache.geode.cache.util.GatewayConflictResolver;
+import org.apache.geode.cache.util.TimestampedEntryEvent;
 import org.apache.geode.cache.wan.GatewaySender.OrderPolicy;
 import org.apache.geode.internal.cache.xmlcache.AsyncEventQueueCreation;
 import org.apache.geode.internal.cache.xmlcache.CacheCreation;

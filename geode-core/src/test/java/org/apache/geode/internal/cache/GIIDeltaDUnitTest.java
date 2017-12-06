@@ -13,17 +13,19 @@
  * the License.
  */
 /**
- * 
+ *
  */
 package org.apache.geode.internal.cache;
 
-import org.junit.experimental.categories.Category;
-import org.junit.Test;
-
 import static org.junit.Assert.*;
 
-import org.apache.geode.test.dunit.cache.internal.JUnit4CacheTestCase;
-import org.apache.geode.test.junit.categories.DistributedTest;
+import java.io.ByteArrayInputStream;
+import java.io.DataInputStream;
+import java.io.IOException;
+import java.util.concurrent.CountDownLatch;
+
+import org.junit.Test;
+import org.junit.experimental.categories.Category;
 
 import org.apache.geode.DataSerializer;
 import org.apache.geode.GemFireIOException;
@@ -42,16 +44,14 @@ import org.apache.geode.internal.cache.InitialImageOperation.GIITestHookType;
 import org.apache.geode.internal.cache.InitialImageOperation.RequestImageMessage;
 import org.apache.geode.internal.cache.LocalRegion.NonTXEntry;
 import org.apache.geode.internal.cache.UpdateOperation.UpdateMessage;
+import org.apache.geode.internal.cache.entries.DiskEntry;
 import org.apache.geode.internal.cache.persistence.DiskStoreID;
 import org.apache.geode.internal.cache.versions.RegionVersionVector;
 import org.apache.geode.internal.cache.versions.VersionTag;
 import org.apache.geode.test.dunit.*;
+import org.apache.geode.test.dunit.cache.internal.JUnit4CacheTestCase;
+import org.apache.geode.test.junit.categories.DistributedTest;
 import org.apache.geode.test.junit.categories.FlakyTest;
-
-import java.io.ByteArrayInputStream;
-import java.io.DataInputStream;
-import java.io.IOException;
-import java.util.concurrent.CountDownLatch;
 
 @Category(DistributedTest.class)
 public class GIIDeltaDUnitTest extends JUnit4CacheTestCase {
@@ -540,7 +540,7 @@ public class GIIDeltaDUnitTest extends JUnit4CacheTestCase {
   /**
    * vm0 and vm1 are peers, each holds a DR. Let provider to have higher RVVGC than requester's RVV
    * It should trigger fullGII
-   * 
+   *
    * This test also verify tombstoneGC happened in middle of GII, but BEFORE GII thread got GIILock.
    * i.e. before GII, P's RVVGC=P0,R0, upon received RequestImageMessage, it becomes P4,R0 it should
    * cause the fullGII.
@@ -1266,9 +1266,9 @@ public class GIIDeltaDUnitTest extends JUnit4CacheTestCase {
    * GII, P's RVV is P7,R6(3-6), RVVGC is P0,R0; R's RVV is P3,R6, RVVGC is P0,R0 vm1 becomes
    * offline then restarts. Use testHook to pause the GII, then do tombstone GC at P only. The
    * deltaGII should send correct tombstonedelta to R, revoke unfinished opeation R4,R5
-   * 
+   *
    * There's member T doing GII from P at the same time.
-   * 
+   *
    * In this test, GII thread will get the GIILock before tombstone GC, so tombstone GC should wait
    * for all GIIs to finish
    */
@@ -1920,7 +1920,7 @@ public class GIIDeltaDUnitTest extends JUnit4CacheTestCase {
   /**
    * Test the case where a member has an untrusted RVV and still initializes from the local data.
    * See bug 48066
-   * 
+   *
    * @throws Throwable
    */
   @Test
@@ -1996,7 +1996,7 @@ public class GIIDeltaDUnitTest extends JUnit4CacheTestCase {
   /**
    * Test case to make sure that if a tombstone GC occurs during a full GII, we still have the
    * correct RVV on the GII recipient at the end.
-   * 
+   *
    * @throws Throwable
    */
   @Category(FlakyTest.class) // GEODE-1137: orphaned AsyncInvocations, time sensitive, GC,

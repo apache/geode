@@ -20,7 +20,7 @@ package org.apache.geode.cache;
 /**
  * Exception thrown by implementors of {@link TransactionWriter#beforeCommit} to signal that the
  * current transaction should be aborted.
- * 
+ *
  * @see TransactionWriter#beforeCommit
  * @since GemFire 6.5
  *
@@ -28,7 +28,7 @@ package org.apache.geode.cache;
 public class TransactionWriterException extends Exception {
 
   /**
-   * 
+   *
    */
   private static final long serialVersionUID = -5557392877576634835L;
 

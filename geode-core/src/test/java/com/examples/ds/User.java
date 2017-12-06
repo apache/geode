@@ -14,9 +14,10 @@
  */
 package com.examples.ds;
 
+import java.io.*;
+
 import org.apache.geode.DataSerializable;
 import org.apache.geode.Instantiator;
-import java.io.*;
 
 public class User implements DataSerializable {
   private String name;

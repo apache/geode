@@ -30,8 +30,8 @@ import org.apache.geode.cache.Scope;
 /***
  * Data class which contains description of a region and provides the aggregated view of the region
  * Used by describe region command
- * 
- * 
+ *
+ *
  */
 public class RegionDescription implements Serializable {
 
@@ -69,9 +69,9 @@ public class RegionDescription implements Serializable {
 
   /**
    * Adds the RegionDescription per member to the aggregated view
-   * 
+   *
    * @param regionDescPerMember
-   * 
+   *
    */
   public boolean add(RegionDescriptionPerMember regionDescPerMember) {
     boolean isAdded = false;
@@ -209,7 +209,7 @@ public class RegionDescription implements Serializable {
 
   /***
    * Get
-   * 
+   *
    * @return Map containing attribute name and its associated value
    */
   public Map<String, String> getCndRegionAttributes() {
@@ -218,7 +218,7 @@ public class RegionDescription implements Serializable {
 
   /***
    * Gets the common non-default Eviction Attributes
-   * 
+   *
    * @return Map containing attribute name and its associated value
    */
   public Map<String, String> getCndEvictionAttributes() {
@@ -227,7 +227,7 @@ public class RegionDescription implements Serializable {
 
   /***
    * Gets the common non-default PartitionAttributes
-   * 
+   *
    * @return Map containing attribute name and its associated value
    */
   public Map<String, String> getCndPartitionAttributes() {

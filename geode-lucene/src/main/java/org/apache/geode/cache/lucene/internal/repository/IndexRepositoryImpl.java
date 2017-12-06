@@ -4,9 +4,9 @@
  * copyright ownership. The ASF licenses this file to you under the Apache License, Version 2.0 (the
  * "License"); you may not use this file except in compliance with the License. You may obtain a
  * copy of the License at
- * 
+ *
  * http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software distributed under the License
  * is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
  * or implied. See the License for the specific language governing permissions and limitations under
@@ -15,25 +15,29 @@
 
 package org.apache.geode.cache.lucene.internal.repository;
 
-import org.apache.geode.cache.Region;
-import org.apache.geode.cache.lucene.internal.LuceneIndexStats;
-import org.apache.geode.cache.lucene.internal.repository.serializer.LuceneSerializer;
-import org.apache.geode.cache.lucene.internal.repository.serializer.SerializerUtil;
-import org.apache.geode.distributed.DistributedLockService;
-import org.apache.geode.distributed.internal.DistributionConfig;
-import org.apache.geode.internal.cache.BucketRegion;
-import org.apache.geode.internal.cache.DistributedRegion;
-import org.apache.geode.internal.logging.LogService;
+import java.io.IOException;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.function.IntSupplier;
+
 import org.apache.logging.log4j.Logger;
 import org.apache.lucene.document.Document;
 import org.apache.lucene.index.IndexWriter;
 import org.apache.lucene.index.Term;
 import org.apache.lucene.search.*;
 import org.apache.lucene.store.AlreadyClosedException;
-import org.apache.geode.distributed.LockNotHeldException;
 
-import java.io.IOException;
-import java.util.function.IntSupplier;
+import org.apache.geode.cache.Region;
+import org.apache.geode.cache.lucene.LuceneIndex;
+import org.apache.geode.cache.lucene.LuceneSerializer;
+import org.apache.geode.cache.lucene.internal.LuceneIndexStats;
+import org.apache.geode.cache.lucene.internal.repository.serializer.SerializerUtil;
+import org.apache.geode.distributed.DistributedLockService;
+import org.apache.geode.distributed.LockNotHeldException;
+import org.apache.geode.distributed.internal.DistributionConfig;
+import org.apache.geode.internal.cache.BucketRegion;
+import org.apache.geode.internal.cache.DistributedRegion;
+import org.apache.geode.internal.logging.LogService;
 
 /**
  * A repository that writes to a single lucene index writer
@@ -53,39 +57,47 @@ public class IndexRepositoryImpl implements IndexRepository {
   private DocumentCountSupplier documentCountSupplier;
   private final DistributedLockService lockService;
   private String lockName;
+  private LuceneIndex index;
 
   private static final Logger logger = LogService.getLogger();
 
-  // For test purposes
-  IndexRepositoryImpl(Region<?, ?> region, IndexWriter writer, LuceneSerializer serializer,
-      LuceneIndexStats stats, Region<?, ?> userRegion) throws IOException {
-    this(region, writer, serializer, stats, userRegion,
-        ((DistributedRegion) region).getLockService(), "NoLockFile");
-  }
-
   public IndexRepositoryImpl(Region<?, ?> region, IndexWriter writer, LuceneSerializer serializer,
       LuceneIndexStats stats, Region<?, ?> userRegion, DistributedLockService lockService,
-      String lockName) throws IOException {
+      String lockName, LuceneIndex index) throws IOException {
     this.region = region;
     this.userRegion = userRegion;
     this.writer = writer;
-    searcherManager = new SearcherManager(writer, APPLY_ALL_DELETES, true, null);
+    searcherManager = createSearchManager();
     this.serializer = serializer;
     this.stats = stats;
     documentCountSupplier = new DocumentCountSupplier();
     stats.addDocumentsSupplier(documentCountSupplier);
     this.lockService = lockService;
     this.lockName = lockName;
+    this.index = index;
+  }
+
+  protected SearcherManager createSearchManager() throws IOException {
+    return new SearcherManager(writer, APPLY_ALL_DELETES, true, null);
   }
 
   @Override
   public void create(Object key, Object value) throws IOException {
     long start = stats.startUpdate();
+    Collection<Document> docs = Collections.emptyList();
+    boolean exceptionHappened = false;
     try {
-      Document doc = new Document();
-      SerializerUtil.addKey(key, doc);
-      serializer.toDocument(value, doc);
-      writer.addDocument(doc);
+      try {
+        docs = serializer.toDocuments(index, value);
+      } catch (Exception e) {
+        exceptionHappened = true;
+        stats.incFailedEntries();
+        logger.info("Failed to add index for " + value + " due to " + e.getMessage());
+      }
+      if (!exceptionHappened) {
+        docs.forEach(doc -> SerializerUtil.addKey(key, doc));
+        writer.addDocuments(docs);
+      }
     } finally {
       stats.endUpdate(start);
     }
@@ -94,11 +106,21 @@ public class IndexRepositoryImpl implements IndexRepository {
   @Override
   public void update(Object key, Object value) throws IOException {
     long start = stats.startUpdate();
+    Collection<Document> docs = Collections.emptyList();
+    boolean exceptionHappened = false;
     try {
-      Document doc = new Document();
-      SerializerUtil.addKey(key, doc);
-      serializer.toDocument(value, doc);
-      writer.updateDocument(SerializerUtil.getKeyTerm(doc), doc);
+      try {
+        docs = serializer.toDocuments(index, value);
+      } catch (Exception e) {
+        exceptionHappened = true;
+        stats.incFailedEntries();
+        logger.info("Failed to update index for " + value + " due to " + e.getMessage());
+      }
+      if (!exceptionHappened) {
+        docs.forEach(doc -> SerializerUtil.addKey(key, doc));
+        Term keyTerm = SerializerUtil.toKeyTerm(key);
+        writer.updateDocuments(keyTerm, docs);
+      }
     } finally {
       stats.endUpdate(start);
     }

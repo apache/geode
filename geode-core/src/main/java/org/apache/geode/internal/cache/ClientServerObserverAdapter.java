@@ -20,7 +20,7 @@ import org.apache.geode.internal.cache.tier.sockets.Message;
 /**
  * This class provides 'do-nothing' implementations of all of the methods of interface
  * ClientServerObserver. See the documentation for class ClientServerObserverHolder for details.
- * 
+ *
  * @since GemFire 5.1
  */
 public class ClientServerObserverAdapter implements ClientServerObserver {
@@ -55,7 +55,7 @@ public class ClientServerObserverAdapter implements ClientServerObserver {
 
   /**
    * Invoked before sending an instantiator message to server
-   * 
+   *
    * @param eventId
    */
   public void beforeSendingToServer(EventID eventId) {
@@ -64,7 +64,7 @@ public class ClientServerObserverAdapter implements ClientServerObserver {
 
   /**
    * Invoked after sending an instantiator message to server
-   * 
+   *
    * @param eventId
    */
   public void afterReceivingFromServer(EventID eventId) {

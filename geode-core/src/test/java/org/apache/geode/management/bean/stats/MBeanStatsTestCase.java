@@ -15,22 +15,22 @@
 package org.apache.geode.management.bean.stats;
 
 import static org.apache.geode.distributed.ConfigurationProperties.*;
+import static org.apache.geode.distributed.ConfigurationProperties.MCAST_PORT;
+import static org.junit.Assert.assertNotNull;
+
+import java.util.Properties;
+
+import org.junit.After;
+import org.junit.Before;
 
 import org.apache.geode.cache.CacheFactory;
 import org.apache.geode.distributed.DistributedSystem;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.internal.NanoTimer;
-import org.junit.After;
-import org.junit.Before;
-
-import java.util.Properties;
-
-import static org.apache.geode.distributed.ConfigurationProperties.MCAST_PORT;
-import static org.junit.Assert.assertNotNull;
 
 /**
  * Base test case for the management.bean.stats tests.
- * 
+ *
  * @since GemFire 7.0
  */
 public abstract class MBeanStatsTestCase {

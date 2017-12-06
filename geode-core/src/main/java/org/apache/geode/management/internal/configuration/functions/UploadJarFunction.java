@@ -15,6 +15,10 @@
  */
 package org.apache.geode.management.internal.configuration.functions;
 
+import java.util.List;
+
+import org.apache.logging.log4j.Logger;
+
 import org.apache.geode.cache.execute.Function;
 import org.apache.geode.cache.execute.FunctionContext;
 import org.apache.geode.distributed.Locator;
@@ -22,36 +26,32 @@ import org.apache.geode.distributed.internal.ClusterConfigurationService;
 import org.apache.geode.distributed.internal.InternalLocator;
 import org.apache.geode.internal.InternalEntity;
 import org.apache.geode.internal.logging.LogService;
-import org.apache.logging.log4j.Logger;
 
-public class UploadJarFunction implements Function, InternalEntity {
+public class UploadJarFunction implements Function<Object[]>, InternalEntity {
   private static final Logger logger = LogService.getLogger();
 
   private static final long serialVersionUID = 1L;
 
   @Override
-  public void execute(FunctionContext context) {
+  public void execute(FunctionContext<Object[]> context) {
     InternalLocator locator = (InternalLocator) Locator.getLocator();
-    Object[] args = (Object[]) context.getArguments();
+    Object[] args = context.getArguments();
     String group = (String) args[0];
     String jarName = (String) args[1];
 
+    byte[] jarBytes = null;
     if (locator != null && group != null && jarName != null) {
       ClusterConfigurationService sharedConfig = locator.getSharedConfiguration();
       if (sharedConfig != null) {
         try {
-          byte[] jarBytes = sharedConfig.getJarBytesFromThisLocator(group, jarName);
+          jarBytes = sharedConfig.getJarBytesFromThisLocator(group, jarName);
           context.getResultSender().lastResult(jarBytes);
-
         } catch (Exception e) {
           logger.error(e);
-          context.getResultSender().sendException(e);
+          throw new IllegalStateException(e.getMessage());
         }
       }
     }
-
-    // TODO: Why does this not throw an IllegalStateException?
-    context.getResultSender().lastResult(null);
   }
 
   @Override

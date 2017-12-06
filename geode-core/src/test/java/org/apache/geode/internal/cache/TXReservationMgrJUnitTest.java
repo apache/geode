@@ -14,20 +14,21 @@
  */
 package org.apache.geode.internal.cache;
 
-import org.apache.geode.cache.*;
-import org.apache.geode.distributed.DistributedSystem;
-import org.apache.geode.test.dunit.ThreadUtils;
-import org.apache.geode.test.junit.categories.IntegrationTest;
+import static org.apache.geode.distributed.ConfigurationProperties.LOCATORS;
+import static org.apache.geode.distributed.ConfigurationProperties.MCAST_PORT;
+
+import java.util.Collections;
+import java.util.Properties;
+
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
-import java.util.Collections;
-import java.util.Properties;
-
-import static org.apache.geode.distributed.ConfigurationProperties.LOCATORS;
-import static org.apache.geode.distributed.ConfigurationProperties.MCAST_PORT;
+import org.apache.geode.cache.*;
+import org.apache.geode.distributed.DistributedSystem;
+import org.apache.geode.test.dunit.ThreadUtils;
+import org.apache.geode.test.junit.categories.IntegrationTest;
 
 @Category(IntegrationTest.class)
 public class TXReservationMgrJUnitTest {
@@ -58,8 +59,8 @@ public class TXReservationMgrJUnitTest {
     this.ds.disconnect();
   }
 
-  private final static int THREAD_COUNT = Integer.getInteger("junit.THREAD_COUNT", 30).intValue();
-  private final static int KEY_COUNT = Integer.getInteger("junit.KEY_COUNT", 50).intValue();
+  private static final int THREAD_COUNT = Integer.getInteger("junit.THREAD_COUNT", 30).intValue();
+  private static final int KEY_COUNT = Integer.getInteger("junit.KEY_COUNT", 50).intValue();
 
   protected void doThreadBody(final TXReservationMgr mgr) {
     final String tName = Thread.currentThread().getName();

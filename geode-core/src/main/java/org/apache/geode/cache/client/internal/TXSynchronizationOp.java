@@ -27,7 +27,7 @@ import org.apache.geode.internal.cache.tier.sockets.Part;
 
 /**
  * TXSynchronizationOp sends JTA beforeCompletion and afterCompletion messages to the server pool.
- * 
+ *
  *
  */
 public class TXSynchronizationOp {
@@ -98,7 +98,7 @@ public class TXSynchronizationOp {
 
     /*
      * (non-Javadoc)
-     * 
+     *
      * @see
      * org.apache.geode.cache.client.internal.AbstractOp#processResponse(org.apache.geode.internal.
      * cache.tier.sockets.Message)
@@ -123,7 +123,7 @@ public class TXSynchronizationOp {
 
     /*
      * (non-Javadoc)
-     * 
+     *
      * @see org.apache.geode.cache.client.internal.AbstractOp#isErrorResponse(int)
      */
     @Override

@@ -29,8 +29,6 @@ import java.net.SocketTimeoutException;
 import java.security.Principal;
 import java.util.Properties;
 
-import org.apache.geode.internal.cache.tier.CommunicationMode;
-import org.apache.geode.internal.security.SecurityService;
 import org.apache.logging.log4j.Logger;
 import org.apache.shiro.subject.Subject;
 
@@ -45,12 +43,14 @@ import org.apache.geode.internal.HeapDataOutputStream;
 import org.apache.geode.internal.Version;
 import org.apache.geode.internal.VersionedDataStream;
 import org.apache.geode.internal.cache.tier.Acceptor;
+import org.apache.geode.internal.cache.tier.CommunicationMode;
 import org.apache.geode.internal.i18n.LocalizedStrings;
 import org.apache.geode.internal.logging.InternalLogWriter;
 import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.internal.logging.log4j.LocalizedMessage;
 import org.apache.geode.internal.security.AuthorizeRequest;
 import org.apache.geode.internal.security.AuthorizeRequestPP;
+import org.apache.geode.internal.security.SecurityService;
 import org.apache.geode.security.AuthenticationFailedException;
 import org.apache.geode.security.AuthenticationRequiredException;
 
@@ -72,7 +72,7 @@ public class ServerHandShakeProcessor {
 
   /**
    * Test hook for server version support
-   * 
+   *
    * @since GemFire 5.7
    */
   public static void setSeverVersionForTesting(short ver) {
@@ -136,7 +136,7 @@ public class ServerHandShakeProcessor {
 
   /**
    * Refuse a received handshake.
-   * 
+   *
    * @param out the Stream to the waiting greeter.
    * @param message providing details about the refusal reception, mainly for client logging.
    * @throws IOException
@@ -147,7 +147,7 @@ public class ServerHandShakeProcessor {
 
   /**
    * Refuse a received handshake.
-   * 
+   *
    * @param out the Stream to the waiting greeter.
    * @param message providing details about the refusal reception, mainly for client logging.
    * @param exception providing details about exception occurred.

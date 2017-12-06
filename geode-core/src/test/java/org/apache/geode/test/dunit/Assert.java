@@ -30,7 +30,7 @@ import org.assertj.core.api.Assertions;
  * </pre>
  *
  * Extracted from DistributedTestCase.
- * 
+ *
  * @see java.lang.AssertionError
  *
  * @deprecated Please use AssertJ {@link Assertions} instead.

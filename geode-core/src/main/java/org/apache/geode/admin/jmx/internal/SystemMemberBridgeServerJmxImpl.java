@@ -14,14 +14,14 @@
  */
 package org.apache.geode.admin.jmx.internal;
 
+import javax.management.ObjectName;
+import javax.management.modelmbean.ModelMBean;
+
 import org.apache.geode.admin.AdminException;
 import org.apache.geode.admin.internal.SystemMemberBridgeServerImpl;
 import org.apache.geode.admin.internal.SystemMemberCacheImpl;
 import org.apache.geode.internal.admin.AdminBridgeServer;
 import org.apache.geode.internal.admin.GemFireVM;
-
-import javax.management.ObjectName;
-import javax.management.modelmbean.ModelMBean;
 
 /**
  * MBean representation of a {@link org.apache.geode.admin.SystemMemberBridgeServer}.
@@ -95,7 +95,7 @@ public class SystemMemberBridgeServerJmxImpl extends SystemMemberBridgeServerImp
   /**
    * Checks equality of the given object with <code>this</code> based on the type (Class) and the
    * MBean Name returned by <code>getMBeanName()</code> methods.
-   * 
+   *
    * @param obj object to check equality with
    * @return true if the given object is if the same type and its MBean Name is same as
    *         <code>this</code> object's MBean Name, false otherwise
@@ -113,7 +113,7 @@ public class SystemMemberBridgeServerJmxImpl extends SystemMemberBridgeServerImp
 
   /**
    * Returns hash code for <code>this</code> object which is based on the MBean Name generated.
-   * 
+   *
    * @return hash code for <code>this</code> object
    */
   @Override

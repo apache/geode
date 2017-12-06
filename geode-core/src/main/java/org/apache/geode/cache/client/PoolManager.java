@@ -18,8 +18,8 @@ package org.apache.geode.cache.client;
 import java.util.Map;
 
 import org.apache.geode.cache.Region;
+import org.apache.geode.distributed.DistributedSystem;
 import org.apache.geode.internal.cache.PoolManagerImpl;
-import org.apache.geode.distributed.DistributedSystem; // for javadocs
 
 /**
  * Manages creation and access to {@link Pool connection pools} for clients.
@@ -42,7 +42,7 @@ public final class PoolManager {
   /**
    * Creates a new {@link PoolFactory pool factory}, which is used to configure and create new
    * {@link Pool}s.
-   * 
+   *
    * @return the new pool factory
    */
   public static PoolFactory createFactory() {
@@ -52,7 +52,7 @@ public final class PoolManager {
   /**
    * Find by name an existing connection pool returning the existing pool or <code>null</code> if it
    * does not exist.
-   * 
+   *
    * @param name the name of the connection pool
    * @return the existing connection pool or <code>null</code> if it does not exist.
    */
@@ -66,7 +66,7 @@ public final class PoolManager {
    * <p>
    * The map contains the pools that this manager knows of at the time of this call. The map is free
    * to be changed without affecting this manager.
-   * 
+   *
    * @return a Map that is a snapshot of all the pools currently known to this manager.
    */
   public static Map<String, Pool> getAll() {
@@ -75,7 +75,7 @@ public final class PoolManager {
 
   /**
    * Unconditionally destroys all created pools that are in this manager.
-   * 
+   *
    * @param keepAlive whether the server should keep the durable client's subscriptions alive for
    *        the <code>durable-client-timeout</code>.
    * @see DistributedSystem#connect for a description of <code>durable-client-timeout</code>.
@@ -86,7 +86,7 @@ public final class PoolManager {
 
   /**
    * Find the pool used by the given region.
-   * 
+   *
    * @param region The region that is using the pool.
    * @return the pool used by that region or <code>null</code> if the region does not have a pool.
    */

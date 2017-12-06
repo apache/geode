@@ -31,7 +31,7 @@ import org.apache.geode.internal.security.SecurityService;
  */
 public class RollbackCommand extends BaseCommand {
 
-  private final static RollbackCommand singleton = new RollbackCommand();
+  private static final RollbackCommand singleton = new RollbackCommand();
 
   public static Command getCommand() {
     return singleton;

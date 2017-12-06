@@ -14,6 +14,17 @@
  */
 package org.apache.geode.distributed.internal;
 
+import java.io.DataInput;
+import java.io.DataOutput;
+import java.io.IOException;
+import java.net.InetAddress;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.Set;
+
+import org.apache.commons.lang.StringUtils;
+import org.apache.logging.log4j.Logger;
+
 import org.apache.geode.DataSerializer;
 import org.apache.geode.Instantiator;
 import org.apache.geode.SystemConnectException;
@@ -23,17 +34,6 @@ import org.apache.geode.internal.InternalInstantiator.InstantiatorAttributesHold
 import org.apache.geode.internal.i18n.LocalizedStrings;
 import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.internal.net.SocketCreator;
-
-import org.apache.commons.lang.StringUtils;
-import org.apache.logging.log4j.Logger;
-
-import java.io.DataInput;
-import java.io.DataOutput;
-import java.io.IOException;
-import java.net.InetAddress;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.Set;
 
 /**
  * A message that is sent to all other distribution manager when a distribution manager starts up.
@@ -59,7 +59,7 @@ public class StartupMessage extends HighPriorityDistributionMessage implements A
   /**
    * Determine all of the addresses that this host represents. An empty list will be regarded as an
    * error by all who see it.
-   * 
+   *
    * @return list of addresses for this host
    * @since GemFire 5.7
    */
@@ -85,7 +85,7 @@ public class StartupMessage extends HighPriorityDistributionMessage implements A
 
   /**
    * Creates new instance for StartupOperation.
-   * 
+   *
    * @param hostedLocators
    * @param isSharedConfigurationEnabled true if cluster configuration is enabled
    */
@@ -105,7 +105,7 @@ public class StartupMessage extends HighPriorityDistributionMessage implements A
 
   /**
    * Sets the mcastEnabled flag for this message
-   * 
+   *
    * @since GemFire 5.0
    */
   void setMcastEnabled(boolean flag) {
@@ -144,7 +144,7 @@ public class StartupMessage extends HighPriorityDistributionMessage implements A
 
   /**
    * Sets the tcpDisabled flag for this message
-   * 
+   *
    * @since GemFire 5.0
    */
   void setTcpDisabled(boolean flag) {

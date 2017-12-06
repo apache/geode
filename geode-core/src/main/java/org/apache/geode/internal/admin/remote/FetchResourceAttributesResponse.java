@@ -12,22 +12,26 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
-
-
 package org.apache.geode.internal.admin.remote;
 
-import org.apache.geode.distributed.internal.*;
-import org.apache.geode.*;
-import java.io.*;
-import org.apache.geode.distributed.internal.membership.*;
+import java.io.DataInput;
+import java.io.DataOutput;
+import java.io.IOException;
+
+import org.apache.geode.DataSerializer;
+import org.apache.geode.StatisticDescriptor;
+import org.apache.geode.Statistics;
+import org.apache.geode.StatisticsType;
+import org.apache.geode.distributed.internal.DM;
+import org.apache.geode.distributed.internal.InternalDistributedSystem;
+import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
 
 public class FetchResourceAttributesResponse extends AdminResponse {
 
-  // instance variables
   private RemoteStat[] stats;
 
-  public static FetchResourceAttributesResponse create(DistributionManager dm,
-      InternalDistributedMember recipient, long rsrcUniqueId) {
+  public static FetchResourceAttributesResponse create(DM dm, InternalDistributedMember recipient,
+      long rsrcUniqueId) {
     FetchResourceAttributesResponse m = new FetchResourceAttributesResponse();
     m.setRecipient(recipient);
     Statistics s = null;
@@ -52,9 +56,11 @@ public class FetchResourceAttributesResponse extends AdminResponse {
   }
 
   /**
-   * Constructor required by <code>DataSerializable</code>
+   * Constructor required by {@code DataSerializable}
    */
-  public FetchResourceAttributesResponse() {}
+  public FetchResourceAttributesResponse() {
+    // nothing
+  }
 
   public int getDSFID() {
     return FETCH_RESOURCE_ATTRIBUTES_RESPONSE;
@@ -74,6 +80,6 @@ public class FetchResourceAttributesResponse extends AdminResponse {
 
   @Override
   public String toString() {
-    return "FetchResourceAttributesResponse from " + this.getRecipient();
+    return "FetchResourceAttributesResponse from " + getRecipient();
   }
 }

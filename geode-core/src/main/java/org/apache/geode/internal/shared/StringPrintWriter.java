@@ -23,13 +23,13 @@ import java.security.PrivilegedAction;
 /**
  * A {@link PrintWriter} that collects its output in a string builder, which can then be used to
  * construct a string. This completely avoids any locking etc.
- * 
+ *
  */
 public class StringPrintWriter extends PrintWriter {
 
   private final StringBuilder sb;
 
-  private final static Writer dummyLock = new StringWriter();
+  private static final Writer dummyLock = new StringWriter();
 
   private final String lineSep;
 
@@ -42,7 +42,7 @@ public class StringPrintWriter extends PrintWriter {
 
   /**
    * Create a new string writer using the specified string-builder.
-   * 
+   *
    * @param sb the {@link StringBuilder} to use as the internal buffer
    */
   public StringPrintWriter(StringBuilder sb) {
@@ -51,7 +51,7 @@ public class StringPrintWriter extends PrintWriter {
 
   /**
    * Create a new string writer using the specified string-builder and line separator.
-   * 
+   *
    * @param sb the {@link StringBuilder} to use as the internal buffer
    * @param lineSep the line separator to use, or null to use the default from system
    *        "line.separator" property

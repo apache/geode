@@ -23,9 +23,9 @@ import java.util.concurrent.ConcurrentMap;
  * ultimately thrown away.
  * <p>
  * Now also has a bunch of callbacks including for replace/remove etc.
- * 
+ *
  * @since GemFire 7.0
- * 
+ *
  * @param <K> the type of key of the map
  * @param <V> the type of value of the map
  * @param <C> the type of context parameter passed to the creation/removal methods
@@ -47,11 +47,11 @@ public interface MapCallback<K, V, C, P> {
   /**
    * Create a new instance of the value object given the key and provided parameters for
    * construction. Invoked by the <code>create</code> method in custom map impls.
-   * 
+   *
    * @param key the key for which the value is being created
    * @param context any context in which this method has been invoked
    * @param createParams parameters, if any, required for construction of a new value object
-   * 
+   *
    * @return the new value to be inserted in the map
    */
   public V newValue(K key, C context, P createParams, MapResult result);
@@ -59,12 +59,12 @@ public interface MapCallback<K, V, C, P> {
   /**
    * Invoked when an existing value in map is read by the <code>create</code> method in custom map
    * impls.
-   * 
+   *
    * @param key the key for which the value is being created
    * @param oldValue the value read by create that will be returned
    * @param context any context in which this method has been invoked
    * @param params parameters, if any, required for construction of value
-   * 
+   *
    * @return updated value to be put in the map, if non-null; if null then retry the map operation
    *         internally
    */
@@ -72,7 +72,7 @@ public interface MapCallback<K, V, C, P> {
 
   /**
    * Invoked after put is successful with the result of {@link #updateValue}.
-   * 
+   *
    * @param key the key provided to the put() operation
    * @param mapKey the existing key in the map
    * @param newValue the new value to be replaced
@@ -87,7 +87,7 @@ public interface MapCallback<K, V, C, P> {
 
   /**
    * Invoked when an existing value in map is read by read ops.
-   * 
+   *
    * @param oldValue the value read by create that will be returned
    */
   public void oldValueRead(V oldValue);
@@ -95,11 +95,11 @@ public interface MapCallback<K, V, C, P> {
   /**
    * Check if the existing value should be removed by the custom <code>remove</code> methods that
    * take MapCallback as argument.
-   * 
+   *
    * If this method returns null, then proceed with remove as usual, if this method returns
    * {@link #ABORT_REMOVE_TOKEN} then don't do the remove, and if this method returns any other
    * object then replace the map value instead of removing.
-   * 
+   *
    * @param key the key of the entry to be removed from the map
    * @param value the value to be removed
    * @param existingValue the current value in the map
@@ -112,7 +112,7 @@ public interface MapCallback<K, V, C, P> {
    * Invoked after removal of an entry. Some implementations (CustomEntryConcurrentHashMap) will
    * invoke this for both successful or failed removal (in latter case existingValue will be null)
    * while others invoke this only for successful remove.
-   * 
+   *
    * @param key the key of the entry removed from the map; some implementations
    *        (ConcurrentSkipListMap) will return the actual key in the map while others will provide
    *        the passed key
@@ -126,14 +126,14 @@ public interface MapCallback<K, V, C, P> {
   /**
    * Invoked when an existing value in map is read by the <code>replace</code> method in custom map
    * impls, and is to be replaced by a new value.
-   * 
+   *
    * @param key the key for which the value is being replaced
    * @param oldValue the old value passed to replace method
    * @param existingValue the current value in the map
    * @param newValue the new value passed to replace method
    * @param context any context in which this method has been invoked
    * @param params parameters, if any, required for construction of a value
-   * 
+   *
    * @return updated value to be actually put in the map, if non-null; if null then retry the map
    *         operation internally
    */
@@ -142,7 +142,7 @@ public interface MapCallback<K, V, C, P> {
   /**
    * Invoked after the node is found and just before the replace. The replace may still either
    * succeed or fail.
-   * 
+   *
    * @param mapKey the existing key in the map
    * @param newValue the new value to be replaced
    * @param context any context argument passed to replace
@@ -152,7 +152,7 @@ public interface MapCallback<K, V, C, P> {
 
   /**
    * Invoked after replace is successful and passing it the result of {@link #beforeReplace}.
-   * 
+   *
    * @param mapKey the existing key in the map
    * @param newValue the new value to be replaced
    * @param beforeResult the result of {@link #beforeReplace}
@@ -163,7 +163,7 @@ public interface MapCallback<K, V, C, P> {
 
   /**
    * Invoked after replace fails and passing it the result of {@link #beforeReplace}.
-   * 
+   *
    * @param mapKey the existing key in the map
    * @param newValue the new value to be replaced
    * @param beforeResult the result of {@link #beforeReplace}
@@ -176,7 +176,7 @@ public interface MapCallback<K, V, C, P> {
    * Invoked after replace or delete fails at the end, passing it the intermediate values that were
    * returned by {@link #replaceValue}, {@link #updateValue} or {@link #removeValue} so it can
    * revert any side-affects of those methods.
-   * 
+   *
    * @param key the key for which the operation failed
    * @param oldValue the expected oldValue passed for a replace or remove operation
    * @param updatedValue the new replacement value for the map that failed (possibly changed by
@@ -185,7 +185,7 @@ public interface MapCallback<K, V, C, P> {
    *        delete or insert operation
    * @param context any context argument passed to the original method
    * @param params any callback parameters passed to the original method
-   * 
+   *
    * @return value to be returned as result of operation ignoring failure (or null for failure)
    */
   public V onOperationFailed(K key, Object oldValue, V updatedValue, V newValue, C context,

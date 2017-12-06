@@ -127,14 +127,14 @@ public interface MemberHealthConfig {
    * <p>
    * A high retransmission ratio may indicate poor network conditions requiring reduced flow-control
    * settings, a udp-fragment-size setting that is too high.
-   * 
+   *
    * @see #DEFAULT_MAX_RETRANSMISSION_RATIO
    */
   public double getMaxRetransmissionRatio();
 
   /**
    * Sets the maximum ratio of multicast retransmissions / total multicast messages.
-   * 
+   *
    * @see #getMaxRetransmissionRatio
    */
   public void setMaxRetransmissionRatio(double ratio);

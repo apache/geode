@@ -19,7 +19,7 @@ import java.util.Set;
 
 /**
  * Factory for defining and starting a {@link RebalanceOperation}.
- * 
+ *
  * @since GemFire 6.0
  */
 public interface RebalanceFactory {
@@ -27,7 +27,7 @@ public interface RebalanceFactory {
   /**
    * Specify which regions to include in the rebalance operation. The default, <code>null<code>,
    * means all regions should be rebalanced. Includes take precedence over excludes.
-   * 
+   *
    * @param regions A set containing the names of regions to include.
    * @since GemFire 6.5
    */
@@ -36,7 +36,7 @@ public interface RebalanceFactory {
   /**
    * Exclude specific regions from the rebalancing operation. The default, <code>null<code>, means
    * don't exclude any regions.
-   * 
+   *
    * @param regions A set containing the names of regions to exclude.
    * @since GemFire 6.5
    */

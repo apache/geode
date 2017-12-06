@@ -56,7 +56,7 @@ public class BaseControllerAdvice extends AbstractBaseController {
    * Handles both ResourceNotFoundExceptions and specifically, RegionNotFoundExceptions, occurring
    * when a resource or a Region (a.k.a. resource) does not exist in GemFire.
    * <p/>
-   * 
+   *
    * @param e the RuntimeException thrown when the accessed/requested resource does not exist in
    *        GemFire.
    * @return the String message from the RuntimeException.
@@ -72,7 +72,7 @@ public class BaseControllerAdvice extends AbstractBaseController {
    * Handles MalformedJsonFoundException, occurring when REST service encounters incorrect or
    * malformed JSON document
    * <p/>
-   * 
+   *
    * @param e the RuntimeException thrown when malformed JSON is encounterd.
    * @return the String message from the RuntimeException.
    */
@@ -87,7 +87,7 @@ public class BaseControllerAdvice extends AbstractBaseController {
    * Handles any GemfireRestException thrown by a REST API web service endpoint, HTTP request
    * handler method.
    * <p/>
-   * 
+   *
    * @param ge the GemfireRestException thrown when it found problem processing REST request.
    * @return the String message from the RuntimeException.
    */
@@ -102,7 +102,7 @@ public class BaseControllerAdvice extends AbstractBaseController {
    * Handles any DataTypeNotSupportedException thrown by a REST API web service endpoint, HTTP
    * request handler method.
    * <p/>
-   * 
+   *
    * @param tns the DataTypeNotSupportedException thrown if problem occurs in cache values to JSON
    *        conversion.
    * @return the String message from the RuntimeException.
@@ -118,7 +118,7 @@ public class BaseControllerAdvice extends AbstractBaseController {
    * Handles HttpRequestMethodNotSupportedException thrown by a REST API web service when request is
    * received with unsupported HTTP method.
    * <p/>
-   * 
+   *
    * @param e the HttpRequestMethodNotSupportedException thrown when REST request is received with
    *        NOT support methods.
    * @return the String message from the RuntimeException.
@@ -134,7 +134,7 @@ public class BaseControllerAdvice extends AbstractBaseController {
    * Handles an AccessDenied Exception thrown by a REST API web service endpoint, HTTP request
    * handler method.
    * <p/>
-   * 
+   *
    * @param cause the Exception causing the error.
    * @return a ResponseEntity with an appropriate HTTP status code (403 - Forbidden)
    */
@@ -148,7 +148,7 @@ public class BaseControllerAdvice extends AbstractBaseController {
   /**
    * Handles an NotAuthorized Exception thrown by a GeodeSecurityUtil.
    * <p/>
-   * 
+   *
    * @param cause the Exception causing the error.
    * @return a ResponseEntity with an appropriate HTTP status code (403 - Forbidden)
    */
@@ -162,7 +162,7 @@ public class BaseControllerAdvice extends AbstractBaseController {
   /**
    * Handles any Exception thrown by a REST API web service endpoint, HTTP request handler method.
    * <p/>
-   * 
+   *
    * @param cause the Exception causing the error.
    * @return a ResponseEntity with an appropriate HTTP status code (500 - Internal Server Error) and
    *         HTTP response body containing the stack trace of the Exception.

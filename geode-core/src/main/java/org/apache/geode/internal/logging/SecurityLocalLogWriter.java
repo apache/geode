@@ -22,17 +22,17 @@ import org.apache.geode.i18n.StringId;
 /**
  * Implementation of {@link org.apache.geode.LogWriter} that will write security related logs to a
  * local stream.
- * 
+ *
  * @since GemFire 5.5
  */
 public class SecurityLocalLogWriter extends PureLogWriter {
 
   /**
    * Creates a writer that logs to given <code>{@link PrintStream}</code>.
-   * 
+   *
    * @param level only messages greater than or equal to this value will be logged.
    * @param logWriter is the stream that message will be printed to.
-   * 
+   *
    * @throws IllegalArgumentException if level is not in legal range
    */
   public SecurityLocalLogWriter(int level, PrintStream logWriter) {
@@ -42,11 +42,11 @@ public class SecurityLocalLogWriter extends PureLogWriter {
   /**
    * Creates a writer that logs to given <code>{@link PrintStream}</code> and having the given
    * <code>connectionName</code>.
-   * 
+   *
    * @param level only messages greater than or equal to this value will be logged.
    * @param logWriter is the stream that message will be printed to.
    * @param connectionName Name of connection associated with this log writer
-   * 
+   *
    * @throws IllegalArgumentException if level is not in legal range
    */
   public SecurityLocalLogWriter(int level, PrintStream logWriter, String connectionName) {

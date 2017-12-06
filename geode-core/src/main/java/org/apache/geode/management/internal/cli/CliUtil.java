@@ -31,13 +31,11 @@ import java.net.URLDecoder;
 import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collection;
+import java.util.Collections;
 import java.util.HashSet;
-import java.util.Iterator;
 import java.util.List;
-import java.util.Map;
-import java.util.Map.Entry;
 import java.util.Set;
+import java.util.stream.Collectors;
 import java.util.zip.DataFormatException;
 import java.util.zip.Deflater;
 import java.util.zip.Inflater;
@@ -58,11 +56,14 @@ import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.cache.execute.AbstractExecution;
 import org.apache.geode.internal.cache.tier.sockets.CacheClientProxy;
 import org.apache.geode.internal.util.IOUtils;
-import org.apache.geode.management.DistributedSystemMXBean;
+import org.apache.geode.management.DistributedRegionMXBean;
 import org.apache.geode.management.ManagementService;
 import org.apache.geode.management.cli.Result;
-import org.apache.geode.management.internal.cli.functions.MembersForRegionFunction;
+import org.apache.geode.management.internal.MBeanJMXAdapter;
+import org.apache.geode.management.internal.SystemManagementService;
+import org.apache.geode.management.internal.cli.exceptions.UserErrorException;
 import org.apache.geode.management.internal.cli.i18n.CliStrings;
+import org.apache.geode.management.internal.cli.result.ResultBuilder;
 import org.apache.geode.management.internal.cli.shell.Gfsh;
 
 /**
@@ -289,7 +290,7 @@ public class CliUtil {
     }
 
     if ((members.length > 0) && (groups.length > 0)) {
-      throw new IllegalArgumentException(CliStrings.PROVIDE_EITHER_MEMBER_OR_GROUP_MESSAGE);
+      throw new UserErrorException(CliStrings.PROVIDE_EITHER_MEMBER_OR_GROUP_MESSAGE);
     }
 
     if (members.length == 0 && groups.length == 0) {
@@ -301,7 +302,7 @@ public class CliUtil {
     for (String memberNameOrId : members) {
       for (DistributedMember member : membersToConsider) {
         if (memberNameOrId.equalsIgnoreCase(member.getId())
-            || memberNameOrId.equals(member.getName())) {
+            || memberNameOrId.equalsIgnoreCase(member.getName())) {
           matchingMembers.add(member);
         }
       }
@@ -325,7 +326,7 @@ public class CliUtil {
       Set<DistributedMember> memberSet = CliUtil.getAllMembers(cache);
       for (DistributedMember member : memberSet) {
         if (memberNameOrId.equalsIgnoreCase(member.getId())
-            || memberNameOrId.equals(member.getName())) {
+            || memberNameOrId.equalsIgnoreCase(member.getName())) {
           memberFound = member;
           break;
         }
@@ -384,6 +385,40 @@ public class CliUtil {
     }
 
     return instance;
+  }
+
+  public static Result getFunctionResult(ResultCollector<?, ?> rc, String commandName) {
+    Result result;
+    List<Object> results = (List<Object>) rc.getResult();
+    if (results != null) {
+      Object resultObj = results.get(0);
+      if (resultObj instanceof String) {
+        result = ResultBuilder.createInfoResult((String) resultObj);
+      } else if (resultObj instanceof Exception) {
+        result = ResultBuilder.createGemFireErrorResult(((Exception) resultObj).getMessage());
+      } else {
+        result = ResultBuilder.createGemFireErrorResult(
+            CliStrings.format(CliStrings.COMMAND_FAILURE_MESSAGE, commandName));
+      }
+    } else {
+      result = ResultBuilder.createGemFireErrorResult(
+          CliStrings.format(CliStrings.COMMAND_FAILURE_MESSAGE, commandName));
+    }
+    return result;
+  }
+
+  public static Set<DistributedMember> getMembersWithAsyncEventQueue(InternalCache cache,
+      String queueId) {
+    Set<DistributedMember> members = findMembers(null, null);
+    return members.stream().filter(m -> getAsyncEventQueueIds(cache, m).contains(queueId))
+        .collect(Collectors.toSet());
+  }
+
+  public static Set<String> getAsyncEventQueueIds(InternalCache cache, DistributedMember member) {
+    SystemManagementService managementService =
+        (SystemManagementService) ManagementService.getExistingManagementService(cache);
+    return managementService.getAsyncEventQueueMBeanNames(member).stream()
+        .map(x -> x.getKeyProperty("queue")).collect(Collectors.toSet());
   }
 
   static class CustomFileFilter implements FileFilter {
@@ -476,7 +511,7 @@ public class CliUtil {
 
   /**
    * Returns a set of all the members of the distributed system excluding locators.
-   * 
+   *
    * @param cache
    */
   @SuppressWarnings("unchecked")
@@ -487,13 +522,12 @@ public class CliUtil {
 
   /**
    * Returns a set of all the members of the distributed system including locators.
-   * 
+   *
    * @param cache
    */
   @SuppressWarnings("unchecked")
   public static Set<DistributedMember> getAllMembers(InternalCache cache) {
-    return new HashSet<DistributedMember>(
-        cache.getInternalDistributedSystem().getDistributionManager().getDistributionManagerIds());
+    return getAllMembers(cache.getInternalDistributedSystem());
   }
 
   @SuppressWarnings("unchecked")
@@ -502,22 +536,9 @@ public class CliUtil {
         internalDS.getDistributionManager().getDistributionManagerIds());
   }
 
-  /**
-   * Returns a set of all the members of the distributed system for the given groups.
-   */
-  public static Set<DistributedMember> getDistributedMembersByGroup(InternalCache cache,
-      String[] groups) {
-    Set<DistributedMember> groupMembers = new HashSet<>();
-    for (String group : groups) {
-      groupMembers.addAll(
-          cache.getInternalDistributedSystem().getDistributionManager().getGroupMembers(group));
-    }
-    return groupMembers;
-  }
-
   /***
    * Executes a function with arguments on a set of members , ignores the departed members.
-   * 
+   *
    * @param function Function to be executed.
    * @param args Arguments passed to the function, pass null if you wish to pass no arguments to the
    *        function.
@@ -539,29 +560,6 @@ public class CliUtil {
     return execution.execute(function);
   }
 
-  /***
-   * Executes a function with arguments on a member , ignores the departed member.
-   * 
-   * @param function Function to be executed
-   * @param args Arguments passed to the function, pass null if you wish to pass no arguments to the
-   *        function.
-   * @param targetMember Member on which the function is to be executed.
-   * @return ResultCollector
-   */
-  public static ResultCollector<?, ?> executeFunction(final Function function, Object args,
-      final DistributedMember targetMember) {
-    Execution execution;
-
-    if (args != null) {
-      execution = FunctionService.onMember(targetMember).setArguments(args);
-    } else {
-      execution = FunctionService.onMember(targetMember);
-    }
-
-    ((AbstractExecution) execution).setIgnoreDepartedMembers(true);
-    return execution.execute(function);
-  }
-
   /**
    * Returns a Set of DistributedMember for members that have the specified <code>region</code>.
    * <code>returnAll</code> indicates whether to return all members or only the first member we
@@ -569,37 +567,67 @@ public class CliUtil {
    *
    * @param region region path for which members that have this region are required
    * @param cache cache instance to use to find members
+   * @param returnAll if true, returns all matching members, else returns only first one found.
    * @return a Set of DistributedMember for members that have the specified <code>region</code>.
    */
   public static Set<DistributedMember> getRegionAssociatedMembers(String region,
-      final InternalCache cache) {
+      final InternalCache cache, boolean returnAll) {
     if (region == null || region.isEmpty()) {
-      return null;
+      return Collections.emptySet();
     }
 
     if (!region.startsWith(Region.SEPARATOR)) {
       region = Region.SEPARATOR + region;
     }
 
-    ManagementService managementService = ManagementService.getExistingManagementService(cache);
-    DistributedSystemMXBean distributedSystemMXBean =
-        managementService.getDistributedSystemMXBean();
-    Set<DistributedMember> matchedMembers = new HashSet<>();
+    DistributedRegionMXBean regionMXBean =
+        ManagementService.getManagementService(cache).getDistributedRegionMXBean(region);
 
+    if (regionMXBean == null) {
+      return Collections.emptySet();
+    }
+
+    String[] regionAssociatedMemberNames = regionMXBean.getMembers();
+    Set<DistributedMember> matchedMembers = new HashSet<>();
     Set<DistributedMember> allClusterMembers = new HashSet<>();
     allClusterMembers.addAll(cache.getMembers());
     allClusterMembers.add(cache.getDistributedSystem().getDistributedMember());
 
     for (DistributedMember member : allClusterMembers) {
-      try {
-        if (distributedSystemMXBean.fetchRegionObjectName(CliUtil.getMemberNameOrId(member),
-            region) != null) {
+      for (String regionAssociatedMemberName : regionAssociatedMemberNames) {
+        String name = MBeanJMXAdapter.getMemberNameOrId(member);
+        if (name.equals(regionAssociatedMemberName)) {
           matchedMembers.add(member);
+          if (!returnAll) {
+            return matchedMembers;
+          }
         }
-      } catch (Exception ignored) {
       }
     }
     return matchedMembers;
+  }
+
+  /**
+   * this finds the member that hosts all the regions passed in.
+   *
+   * @param regions
+   * @param cache
+   * @param returnAll if true, returns all matching members, otherwise, returns only one.
+   */
+  public static Set<DistributedMember> getQueryRegionsAssociatedMembers(Set<String> regions,
+      final InternalCache cache, boolean returnAll) {
+    Set<DistributedMember> results = regions.stream()
+        .map(region -> getRegionAssociatedMembers(region, cache, true)).reduce((s1, s2) -> {
+          s1.retainAll(s2);
+          return s1;
+        }).get();
+
+    if (returnAll || results.size() <= 1) {
+      return results;
+    }
+
+    // returns a set of only one item
+    return Collections.singleton(results.iterator().next());
   }
 
   public static String getMemberNameOrId(DistributedMember distributedMember) {
@@ -611,41 +639,11 @@ public class CliUtil {
     return nameOrId;
   }
 
-  public static String collectionToString(Collection<?> col, int newlineAfter) {
-    if (col != null) {
-      StringBuilder builder = new StringBuilder();
-      int lastNewlineAt = 0;
-
-      for (Iterator<?> it = col.iterator(); it.hasNext();) {
-        Object object = it.next();
-        builder.append(String.valueOf(object));
-        if (it.hasNext()) {
-          builder.append(", ");
-        }
-        if (newlineAfter > 0 && (builder.length() - lastNewlineAt) / newlineAfter >= 1) {
-          builder.append(GfshParser.LINE_SEPARATOR);
-        }
-      }
-      return builder.toString();
-    } else {
-      return "" + null;
-    }
-  }
-
   public static <T> String arrayToString(T[] array) {
-    if (array != null) {
-      StringBuilder builder = new StringBuilder();
-      for (int i = 0; i < array.length; i++) {
-        Object object = array[i];
-        builder.append(String.valueOf(object));
-        if (i < array.length - 1) {
-          builder.append(", ");
-        }
-      }
-      return builder.toString();
-    } else {
-      return "" + null;
+    if (array == null) {
+      return "null";
     }
+    return Arrays.stream(array).map(String::valueOf).collect(Collectors.joining(", "));
   }
 
   public static String decodeWithDefaultCharSet(String urlToDecode) {
@@ -705,54 +703,6 @@ public class CliUtil {
     buffer.append("[").append(p.getProxyID()).append(":port=").append(p.getRemotePort())
         .append(":primary=").append(p.isPrimary()).append("]");
     return buffer.toString();
-  }
-
-  public static Set<DistributedMember> getMembersForeRegionViaFunction(InternalCache cache,
-      String regionPath, boolean returnAll) {
-    try {
-      Set<DistributedMember> regionMembers = new HashSet<>();
-      MembersForRegionFunction membersForRegionFunction = new MembersForRegionFunction();
-      FunctionService.registerFunction(membersForRegionFunction);
-      Set<DistributedMember> targetMembers = CliUtil.getAllMembers(cache);
-      List<?> resultList = (List<?>) CliUtil
-          .executeFunction(membersForRegionFunction, regionPath, targetMembers).getResult();
-
-      for (Object object : resultList) {
-        try {
-          if (object instanceof Exception) {
-            LogWrapper.getInstance().warning(
-                "Exception in getMembersForeRegionViaFunction " + ((Throwable) object).getMessage(),
-                ((Throwable) object));
-            continue;
-          } else if (object instanceof Throwable) {
-            LogWrapper.getInstance().warning(
-                "Exception in getMembersForeRegionViaFunction " + ((Throwable) object).getMessage(),
-                ((Throwable) object));
-            continue;
-          }
-          if (object != null) {
-            Map<String, String> memberDetails = (Map<String, String>) object;
-            for (Entry<String, String> entry : memberDetails.entrySet()) {
-              Set<DistributedMember> dsMems = CliUtil.getAllMembers(cache);
-              for (DistributedMember mem : dsMems) {
-                if (mem.getId().equals(entry.getKey())) {
-                  regionMembers.add(mem);
-                  if (!returnAll) {
-                    return regionMembers;
-                  }
-                }
-              }
-            }
-          }
-        } catch (Exception ex) {
-          LogWrapper.getInstance().warning("getMembersForeRegionViaFunction exception " + ex);
-        }
-      }
-      return regionMembers;
-    } catch (Exception e) {
-      LogWrapper.getInstance().warning("getMembersForeRegionViaFunction exception " + e);
-      return null;
-    }
   }
 
 }

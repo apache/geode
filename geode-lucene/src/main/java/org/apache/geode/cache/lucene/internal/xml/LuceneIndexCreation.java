@@ -4,9 +4,9 @@
  * copyright ownership. The ASF licenses this file to you under the Apache License, Version 2.0 (the
  * "License"); you may not use this file except in compliance with the License. You may obtain a
  * copy of the License at
- * 
+ *
  * http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software distributed under the License
  * is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
  * or implied. See the License for the specific language governing permissions and limitations under
@@ -15,11 +15,12 @@
 
 package org.apache.geode.cache.lucene.internal.xml;
 
-import java.util.*;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.LinkedHashSet;
+import java.util.Map;
+import java.util.Set;
 
-import org.apache.geode.cache.lucene.LuceneIndexExistsException;
-import org.apache.geode.internal.i18n.LocalizedStrings;
-import org.apache.geode.internal.logging.LogService;
 import org.apache.logging.log4j.Logger;
 import org.apache.lucene.analysis.Analyzer;
 import org.apache.lucene.analysis.miscellaneous.PerFieldAnalyzerWrapper;
@@ -28,11 +29,15 @@ import org.apache.lucene.analysis.standard.StandardAnalyzer;
 import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.Region;
 import org.apache.geode.cache.lucene.LuceneIndex;
+import org.apache.geode.cache.lucene.LuceneIndexExistsException;
+import org.apache.geode.cache.lucene.LuceneSerializer;
 import org.apache.geode.cache.lucene.LuceneServiceProvider;
 import org.apache.geode.cache.lucene.internal.LuceneServiceImpl;
 import org.apache.geode.internal.cache.extension.Extensible;
 import org.apache.geode.internal.cache.extension.Extension;
 import org.apache.geode.internal.cache.xmlcache.XmlGenerator;
+import org.apache.geode.internal.i18n.LocalizedStrings;
+import org.apache.geode.internal.logging.LogService;
 
 public class LuceneIndexCreation implements LuceneIndex, Extension<Region<?, ?>> {
   private Region region;
@@ -41,6 +46,7 @@ public class LuceneIndexCreation implements LuceneIndex, Extension<Region<?, ?>>
   private Map<String, Analyzer> fieldAnalyzers;
 
   private static Logger logger = LogService.getLogger();
+  private LuceneSerializer luceneSerializer;
 
 
   public void setRegion(Region region) {
@@ -77,6 +83,15 @@ public class LuceneIndexCreation implements LuceneIndex, Extension<Region<?, ?>>
   }
 
   @Override
+  public LuceneSerializer getLuceneSerializer() {
+    return this.luceneSerializer;
+  }
+
+  public void setLuceneSerializer(LuceneSerializer luceneSerializer) {
+    this.luceneSerializer = luceneSerializer;
+  }
+
+  @Override
   public XmlGenerator<Region<?, ?>> getXmlGenerator() {
     return new LuceneIndexXmlGenerator(this);
   }
@@ -88,7 +103,7 @@ public class LuceneIndexCreation implements LuceneIndex, Extension<Region<?, ?>>
         : new PerFieldAnalyzerWrapper(new StandardAnalyzer(), this.fieldAnalyzers);
     try {
       service.createIndex(getName(), getRegionPath(), analyzer, this.fieldAnalyzers,
-          getFieldNames());
+          getLuceneSerializer(), false, getFieldNames());
     } catch (LuceneIndexExistsException e) {
       logger
           .info(LocalizedStrings.LuceneIndexCreation_IGNORING_DUPLICATE_INDEX_CREATION_0_ON_REGION_1

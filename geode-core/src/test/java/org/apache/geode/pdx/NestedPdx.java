@@ -106,4 +106,3 @@ public class NestedPdx implements PdxSerializable {
         + ", myString2=" + myString2 + ", myFloat=" + myFloat + "]";
   }
 }
-

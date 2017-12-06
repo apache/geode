@@ -21,7 +21,7 @@ import java.util.concurrent.TimeoutException;
 
 /**
  * Operation for rebalancing resources used by the {@link org.apache.geode.cache.Cache}.
- * 
+ *
  * @since GemFire 6.0
  */
 public interface RebalanceOperation {

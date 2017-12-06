@@ -39,7 +39,7 @@ import org.apache.geode.pdx.PdxInstance;
  * A limited functionality JSON parser. Its a DSF based JSON parser. It does not create Object maps
  * and serialize them like JSONObject. It just traverses an Object graph in depth first search
  * manner and appends key values to a String writer. Hence we prevent creating a lot of garbage.
- * 
+ *
  * Although it has limited functionality,still a simple use of add() method should suffice for most
  * of the simple JSON use cases.
  */
@@ -149,13 +149,13 @@ public class TypedJson {
 
   /**
    * User can build on this object by adding Objects against a key.
-   * 
+   *
    * TypedJson result = new TypedJson(); result.add(KEY,object); If users add more objects against
    * the same key the newly added object will be appended to the existing key forming an array of
    * objects.
-   * 
+   *
    * If the KEY is a new one then it will be a key map value.
-   * 
+   *
    * @param key Key against which an object will be added
    * @param value Object to be added
    * @return TypedJson object
@@ -716,7 +716,7 @@ public class TypedJson {
 
   /**
    * Produce a string from a Number.
-   * 
+   *
    * @param number A Number
    * @return A String.
    */

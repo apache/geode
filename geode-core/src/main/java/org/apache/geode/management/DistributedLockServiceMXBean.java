@@ -25,9 +25,9 @@ import org.apache.geode.security.ResourcePermission.Resource;
  * MBean that provides access to information for a named instance of {@link DistributedLockService}.
  * Since any number of DistributedLockService objects can be created by a member there may be 0 or
  * more instances of this MBean available.
- * 
+ *
  * @since GemFire 7.0
- * 
+ *
  */
 @ResourceOperation(resource = Resource.CLUSTER, operation = Operation.READ)
 public interface DistributedLockServiceMXBean {

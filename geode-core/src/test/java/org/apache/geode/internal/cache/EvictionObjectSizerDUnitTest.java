@@ -14,19 +14,15 @@
  */
 package org.apache.geode.internal.cache;
 
-import org.junit.experimental.categories.Category;
-import org.junit.Test;
-
 import static org.junit.Assert.*;
-
-import org.apache.geode.test.dunit.cache.internal.JUnit4CacheTestCase;
-import org.apache.geode.test.dunit.internal.JUnit4DistributedTestCase;
-import org.apache.geode.test.junit.categories.DistributedTest;
 
 import java.io.File;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.Properties;
+
+import org.junit.Test;
+import org.junit.experimental.categories.Category;
 
 import org.apache.geode.cache.AttributesFactory;
 import org.apache.geode.cache.Cache;
@@ -37,15 +33,17 @@ import org.apache.geode.cache.EvictionAttributes;
 import org.apache.geode.cache.PartitionAttributesFactory;
 import org.apache.geode.cache.Region;
 import org.apache.geode.cache.util.ObjectSizer;
-import org.apache.geode.cache30.CacheTestCase;
 import org.apache.geode.distributed.DistributedSystem;
 import org.apache.geode.internal.OSProcess;
 import org.apache.geode.internal.SharedLibrary;
+import org.apache.geode.internal.cache.entries.AbstractLRURegionEntry;
 import org.apache.geode.internal.cache.lru.HeapLRUCapacityController;
 import org.apache.geode.internal.cache.lru.Sizeable;
 import org.apache.geode.internal.size.ReflectionSingleObjectSizer;
 import org.apache.geode.test.dunit.Assert;
 import org.apache.geode.test.dunit.LogWriterUtils;
+import org.apache.geode.test.dunit.cache.internal.JUnit4CacheTestCase;
+import org.apache.geode.test.junit.categories.DistributedTest;
 
 @Category(DistributedTest.class)
 public class EvictionObjectSizerDUnitTest extends JUnit4CacheTestCase {
@@ -95,7 +93,7 @@ public class EvictionObjectSizerDUnitTest extends JUnit4CacheTestCase {
 
   /**
    * With object sizer for standard objects.Key -Integer Value ByteArray
-   * 
+   *
    */
   @Test
   public void testObjectSizerForHeapLRU_StandardObjects() {

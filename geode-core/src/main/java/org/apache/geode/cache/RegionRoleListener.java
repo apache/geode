@@ -21,8 +21,8 @@ package org.apache.geode.cache;
  * <p>
  * Instead of implementing this interface it is recommended that you extend the
  * {@link org.apache.geode.cache.util.RegionRoleListenerAdapter} class.
- * 
- * 
+ *
+ *
  * @see AttributesFactory#setCacheListener
  * @see RegionAttributes#getCacheListener
  * @see AttributesMutator#addCacheListener
@@ -45,4 +45,3 @@ public interface RegionRoleListener<K, V> extends CacheListener<K, V> {
   public void afterRoleLoss(RoleEvent<K, V> event);
 
 }
-

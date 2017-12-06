@@ -57,6 +57,7 @@ dependencies {
   }
 
   testCompile project(':geode-junit')
+  testCompile files(project(':geode-core').sourceSets.test.output)
 
   provided 'javax.servlet:javax.servlet-api:' + project.'javax.servlet-api.version'
   provided project(':geode-core')

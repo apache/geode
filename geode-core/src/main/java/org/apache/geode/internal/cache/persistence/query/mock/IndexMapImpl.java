@@ -17,19 +17,18 @@ package org.apache.geode.internal.cache.persistence.query.mock;
 import java.util.Iterator;
 import java.util.concurrent.ConcurrentSkipListMap;
 
+import org.apache.geode.cache.query.internal.types.ExtendedNumericComparator;
 import org.apache.geode.internal.cache.CachedDeserializable;
 import org.apache.geode.internal.cache.EntryEventImpl;
 import org.apache.geode.internal.cache.PreferBytesCachedDeserializable;
 import org.apache.geode.internal.cache.persistence.query.CloseableIterator;
 import org.apache.geode.internal.cache.persistence.query.IndexMap;
 
-import org.apache.geode.cache.query.internal.types.ExtendedNumericComparator;
-
 
 /**
  * A dummy implementation of an IndexMap. Keeps all of the entries in memory, but in serialized
  * form.
- * 
+ *
  *
  */
 public class IndexMapImpl implements IndexMap {

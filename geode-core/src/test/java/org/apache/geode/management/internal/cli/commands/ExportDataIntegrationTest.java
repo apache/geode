@@ -18,7 +18,6 @@ package org.apache.geode.management.internal.cli.commands;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
 
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -35,9 +34,9 @@ import org.apache.geode.cache.Region;
 import org.apache.geode.cache.RegionShortcut;
 import org.apache.geode.management.internal.cli.i18n.CliStrings;
 import org.apache.geode.management.internal.cli.util.CommandStringBuilder;
-import org.apache.geode.test.junit.rules.GfshShellConnectionRule;
-import org.apache.geode.test.junit.rules.ServerStarterRule;
 import org.apache.geode.test.junit.categories.IntegrationTest;
+import org.apache.geode.test.junit.rules.GfshCommandRule;
+import org.apache.geode.test.junit.rules.ServerStarterRule;
 
 @Category(IntegrationTest.class)
 public class ExportDataIntegrationTest {
@@ -51,7 +50,7 @@ public class ExportDataIntegrationTest {
       .withRegion(RegionShortcut.PARTITION, TEST_REGION_NAME).withEmbeddedLocator();
 
   @Rule
-  public GfshShellConnectionRule gfsh = new GfshShellConnectionRule();
+  public GfshCommandRule gfsh = new GfshCommandRule();
 
   @Rule
   public TemporaryFolder tempDir = new TemporaryFolder();
@@ -62,8 +61,7 @@ public class ExportDataIntegrationTest {
 
   @Before
   public void setup() throws Exception {
-    gfsh.connectAndVerify(server.getEmbeddedLocatorPort(),
-        GfshShellConnectionRule.PortType.locator);
+    gfsh.connectAndVerify(server.getEmbeddedLocatorPort(), GfshCommandRule.PortType.locator);
     region = server.getCache().getRegion(TEST_REGION_NAME);
     loadRegion("value");
     Path basePath = tempDir.getRoot().toPath();
@@ -75,7 +73,7 @@ public class ExportDataIntegrationTest {
   public void testExport() throws Exception {
     String exportCommand = buildBaseExportCommand()
         .addOption(CliStrings.EXPORT_DATA__FILE, snapshotFile.toString()).getCommandString();
-    gfsh.executeAndVerifyCommand(exportCommand);
+    gfsh.executeAndAssertThat(exportCommand).statusIsSuccess();
     assertThat(gfsh.getGfshOutput()).contains("Data successfully exported ");
   }
 
@@ -84,7 +82,7 @@ public class ExportDataIntegrationTest {
     String exportCommand =
         buildBaseExportCommand().addOption(CliStrings.EXPORT_DATA__DIR, snapshotDir.toString())
             .addOption(CliStrings.EXPORT_DATA__PARALLEL, "true").getCommandString();
-    gfsh.executeAndVerifyCommand(exportCommand);
+    gfsh.executeAndAssertThat(exportCommand).statusIsSuccess();
     assertThat(gfsh.getGfshOutput()).contains("Data successfully exported ");
   }
 
@@ -95,8 +93,8 @@ public class ExportDataIntegrationTest {
         .addOption(CliStrings.MEMBER, invalidMemberName)
         .addOption(CliStrings.EXPORT_DATA__REGION, TEST_REGION_NAME)
         .addOption(CliStrings.EXPORT_DATA__FILE, snapshotFile.toString()).getCommandString();
-    gfsh.executeCommand(invalidMemberCommand);
-    assertThat(gfsh.getGfshOutput()).contains("Member " + invalidMemberName + " not found");
+    gfsh.executeAndAssertThat(invalidMemberCommand)
+        .containsOutput("Member " + invalidMemberName + " could not be found");
   }
 
   @Test
@@ -125,15 +123,6 @@ public class ExportDataIntegrationTest {
         .addOption(CliStrings.MEMBER, server.getName())
         .addOption(CliStrings.EXPORT_DATA__FILE, snapshotFile.toString()).getCommandString();
     gfsh.executeCommand(missingRegionCommand);
-    assertThat(gfsh.getGfshOutput()).contains("You should specify option");
-  }
-
-  @Test
-  public void testMissingMember() throws Exception {
-    String missingMemberCommand = new CommandStringBuilder(CliStrings.EXPORT_DATA)
-        .addOption(CliStrings.EXPORT_DATA__REGION, TEST_REGION_NAME)
-        .addOption(CliStrings.EXPORT_DATA__FILE, snapshotFile.toString()).getCommandString();
-    gfsh.executeCommand(missingMemberCommand);
     assertThat(gfsh.getGfshOutput()).contains("You should specify option");
   }
 

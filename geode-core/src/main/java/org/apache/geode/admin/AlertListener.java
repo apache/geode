@@ -16,7 +16,7 @@ package org.apache.geode.admin;
 
 /**
  * A listener whose callback methods are invoked when an {@link Alert} is received.
- * 
+ *
  * @deprecated as of 7.0 use the <code><a href=
  *             "{@docRoot}/org/apache/geode/management/package-summary.html">management</a></code>
  *             package instead

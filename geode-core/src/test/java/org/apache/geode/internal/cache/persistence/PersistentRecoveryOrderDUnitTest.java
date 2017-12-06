@@ -155,7 +155,7 @@ public class PersistentRecoveryOrderDUnitTest extends PersistentReplicatedTestBa
 
   /**
    * Tests to make sure that we stop waiting for a member that we revoke.
-   * 
+   *
    * @throws Exception
    */
   @Test
@@ -291,7 +291,7 @@ public class PersistentRecoveryOrderDUnitTest extends PersistentReplicatedTestBa
   /**
    * Tests to make sure that we can revoke a member before initialization, and that member will stay
    * revoked
-   * 
+   *
    * @throws Exception
    */
   @Test
@@ -387,7 +387,7 @@ public class PersistentRecoveryOrderDUnitTest extends PersistentReplicatedTestBa
 
   /**
    * Test which members show up in the list of members we're waiting on.
-   * 
+   *
    * @throws Exception
    */
   @Test
@@ -526,7 +526,7 @@ public class PersistentRecoveryOrderDUnitTest extends PersistentReplicatedTestBa
 
   /**
    * Use Case AB are alive A crashes. B crashes. B starts up. It should not wait for A.
-   * 
+   *
    * @throws Exception
    */
   @Test
@@ -558,7 +558,7 @@ public class PersistentRecoveryOrderDUnitTest extends PersistentReplicatedTestBa
   /**
    * Tests that if two members crash simultaneously, they negotiate which member should initialize
    * with what is on disk and which member should copy data from that member.
-   * 
+   *
    * @throws Exception
    */
   @Test
@@ -1213,7 +1213,7 @@ public class PersistentRecoveryOrderDUnitTest extends PersistentReplicatedTestBa
           }
 
           @Override
-          public void beforeSendMessage(DistributionManager dm, DistributionMessage msg) {}
+          public void beforeSendMessage(DistributionManager dm, DistributionMessage message) {}
         });
       }
     });
@@ -1428,7 +1428,7 @@ public class PersistentRecoveryOrderDUnitTest extends PersistentReplicatedTestBa
 
   /**
    * Tests to make sure that we stop waiting for a member that we revoke.
-   * 
+   *
    * @throws Exception
    */
   @Test
@@ -1673,7 +1673,7 @@ public class PersistentRecoveryOrderDUnitTest extends PersistentReplicatedTestBa
   /**
    * Tests to make sure that after we get a conflicting persistent data exception, we can still
    * recover.
-   * 
+   *
    * This is bug XX.
    */
   @Test

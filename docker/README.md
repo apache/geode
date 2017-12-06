@@ -9,7 +9,8 @@ docker build .
 If you're updating the image for a release, tag the build with the version:
 
 ```
-docker build -t apachegeode/geode:1.0.0-incubating .
+docker build -t apachegeode/geode:{version} .
+docker build -t apachegeode/geode:latest .
 ```
 
 Once it's tagged, push to DockerHub:

@@ -21,7 +21,7 @@ import org.apache.geode.GemFireException;
  * The JConsoleNotFoundException class is a RuntimeException class that indicates that the JDK
  * JConsole tool could not be located in the file system.
  * </p>
- * 
+ *
  * @see org.apache.geode.GemFireException
  * @since GemFire 7.0
  */

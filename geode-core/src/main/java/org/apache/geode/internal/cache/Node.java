@@ -17,11 +17,11 @@ package org.apache.geode.internal.cache;
 
 import java.io.*;
 
+import org.apache.geode.DataSerializer;
+import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
 import org.apache.geode.internal.ExternalizableDSFID;
 import org.apache.geode.internal.InternalDataSerializer;
 import org.apache.geode.internal.Version;
-import org.apache.geode.DataSerializer;
-import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
 
 /**
  * Stores information about a PartitionedRegion singleton instance running inside a virtual machine.
@@ -36,7 +36,7 @@ import org.apache.geode.distributed.internal.membership.InternalDistributedMembe
  * Node maintains a field for maxMemory (fixed) to enable other Nodes to determine whether the Node
  * should be the target of a canRebalance request. If the Node's maxMemory is 0, then the Node is
  * advertising that it never should receive a request to rebalance.
- * 
+ *
  */
 public class Node extends ExternalizableDSFID {
   private InternalDistributedMember memberId;

@@ -17,8 +17,8 @@ package org.apache.geode.management.internal.security;
 import org.apache.geode.internal.security.SecurityService;
 import org.apache.geode.security.GemFireSecurityException;
 import org.apache.geode.security.ResourcePermission;
-import org.apache.geode.security.ResourcePermission.Resource;
 import org.apache.geode.security.ResourcePermission.Operation;
+import org.apache.geode.security.ResourcePermission.Resource;
 
 /**
  * AccessControlMBean Implementation. This retrieves JMXPrincipal from AccessController and performs

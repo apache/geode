@@ -14,21 +14,7 @@
  */
 package org.apache.geode.cache.snapshot;
 
-import org.apache.geode.cache.AttributesMutator;
-import org.apache.geode.cache.DiskStoreFactory;
-import org.apache.geode.cache.asyncqueue.AsyncEvent;
-import org.apache.geode.cache.asyncqueue.AsyncEventListener;
-import org.apache.geode.cache.asyncqueue.AsyncEventQueue;
-import org.apache.geode.cache.asyncqueue.AsyncEventQueueFactory;
-
-import org.awaitility.Awaitility;
-import org.junit.experimental.categories.Category;
-import org.junit.Test;
-
 import static org.junit.Assert.*;
-
-import org.apache.geode.test.dunit.cache.internal.JUnit4CacheTestCase;
-import org.apache.geode.test.junit.categories.DistributedTest;
 
 import java.io.File;
 import java.util.ArrayList;
@@ -36,23 +22,37 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Properties;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import com.examples.snapshot.MyObject;
 import com.examples.snapshot.MyPdxSerializer;
+import org.awaitility.Awaitility;
+import org.junit.Test;
+import org.junit.experimental.categories.Category;
+
+import org.apache.geode.cache.AttributesMutator;
 import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.CacheFactory;
 import org.apache.geode.cache.DiskStore;
+import org.apache.geode.cache.DiskStoreFactory;
 import org.apache.geode.cache.EntryEvent;
 import org.apache.geode.cache.Region;
+import org.apache.geode.cache.asyncqueue.AsyncEvent;
+import org.apache.geode.cache.asyncqueue.AsyncEventListener;
+import org.apache.geode.cache.asyncqueue.AsyncEventQueue;
+import org.apache.geode.cache.asyncqueue.AsyncEventQueueFactory;
 import org.apache.geode.cache.snapshot.RegionGenerator.RegionType;
 import org.apache.geode.cache.snapshot.RegionGenerator.SerializationType;
 import org.apache.geode.cache.snapshot.SnapshotOptions.SnapshotFormat;
 import org.apache.geode.cache.util.CacheListenerAdapter;
 import org.apache.geode.cache.util.CacheWriterAdapter;
+import org.apache.geode.distributed.ConfigurationProperties;
 import org.apache.geode.test.dunit.Host;
 import org.apache.geode.test.dunit.SerializableCallable;
+import org.apache.geode.test.dunit.cache.internal.JUnit4CacheTestCase;
+import org.apache.geode.test.junit.categories.DistributedTest;
 
 @Category(DistributedTest.class)
 public class SnapshotDUnitTest extends JUnit4CacheTestCase {
@@ -61,6 +61,15 @@ public class SnapshotDUnitTest extends JUnit4CacheTestCase {
 
   public SnapshotDUnitTest() {
     super();
+  }
+
+  @Override
+  public Properties getDistributedSystemProperties() {
+    Properties properties = super.getDistributedSystemProperties();
+    properties.put(ConfigurationProperties.SERIALIZABLE_OBJECT_FILTER,
+        SerializationType.class.getName() + ";" + MyObject.class.getName() + ";"
+            + SnapshotProblem.class.getName());
+    return properties;
   }
 
   @Test
@@ -242,14 +251,16 @@ public class SnapshotDUnitTest extends JUnit4CacheTestCase {
     }
   }
 
+  public static class SnapshotProblem<K, V> implements SnapshotFilter<K, V> {
+    @Override
+    public boolean accept(Entry<K, V> entry) {
+      throw new RuntimeException();
+    }
+  };
+
   @Test
   public void testCacheExportFilterException() throws Exception {
-    SnapshotFilter<Object, Object> oops = new SnapshotFilter<Object, Object>() {
-      @Override
-      public boolean accept(Entry<Object, Object> entry) {
-        throw new RuntimeException();
-      }
-    };
+    SnapshotFilter<Object, Object> oops = new SnapshotProblem();
 
     CacheSnapshotService css = getCache().getSnapshotService();
     SnapshotOptions<Object, Object> options = css.createOptions().setFilter(oops);

@@ -35,7 +35,7 @@ import org.apache.geode.internal.security.SecurityService;
 
 public class Query extends BaseCommandQuery {
 
-  private final static Query singleton = new Query();
+  private static final Query singleton = new Query();
 
   public static Command getCommand() {
     return singleton;

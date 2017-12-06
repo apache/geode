@@ -23,8 +23,8 @@ import org.apache.geode.internal.i18n.LocalizedStrings;
 /**
  * Implementing class for <code>Conflatable</code> interface. Objects of this class will be add to
  * the queue
- * 
- * 
+ *
+ *
  */
 public class CqConflatable implements Conflatable, Serializable {
   private static final long serialVersionUID = -7215022132135862557L;
@@ -50,7 +50,7 @@ public class CqConflatable implements Conflatable, Serializable {
 
   /**
    * Constructor
-   * 
+   *
    * @param key - The key for this entry
    * @param value - The value for this entry
    * @param eventId - eventID object for this entry
@@ -68,7 +68,7 @@ public class CqConflatable implements Conflatable, Serializable {
 
   /**
    * Returns whether the object should be conflated
-   * 
+   *
    * @return whether the object should be conflated
    */
   public boolean shouldBeConflated() {
@@ -77,7 +77,7 @@ public class CqConflatable implements Conflatable, Serializable {
 
   /**
    * Returns the name of the region for this <code>Conflatable</code>
-   * 
+   *
    * @return the name of the region for this <code>Conflatable</code>
    */
   public String getRegionToConflate() {
@@ -86,7 +86,7 @@ public class CqConflatable implements Conflatable, Serializable {
 
   /**
    * Returns the key for this <code>Conflatable</code>
-   * 
+   *
    * @return the key for this <code>Conflatable</code>
    */
   public Object getKeyToConflate() {
@@ -95,7 +95,7 @@ public class CqConflatable implements Conflatable, Serializable {
 
   /**
    * Returns the value for this <code>Conflatable</code>
-   * 
+   *
    * @return the value for this <code>Conflatable</code>
    */
   public Object getValueToConflate() {
@@ -104,7 +104,7 @@ public class CqConflatable implements Conflatable, Serializable {
 
   /**
    * Sets the latest value for this <code>Conflatable</code>
-   * 
+   *
    * @param value The latest value
    */
   public void setLatestValue(Object value) {
@@ -114,7 +114,7 @@ public class CqConflatable implements Conflatable, Serializable {
 
   /**
    * Return this event's identifier
-   * 
+   *
    * @return this event's identifier
    */
   public EventID getEventId() {

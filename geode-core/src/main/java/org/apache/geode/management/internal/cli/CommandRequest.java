@@ -24,7 +24,7 @@ import org.apache.geode.management.cli.CliMetaData;
  * The CommandRequest class encapsulates information pertaining to the command the user entered in
  * Gfsh.
  * <p/>
- * 
+ *
  * @see org.apache.geode.management.internal.cli.GfshParseResult
  * @since GemFire 8.0
  */
@@ -87,10 +87,5 @@ public class CommandRequest {
 
   public String getUserInput() {
     return getParseResult().getUserInput();
-  }
-
-  @TestingOnly
-  public Map<String, String> getParameters() {
-    return getParseResult().getParamValueStrings();
   }
 }

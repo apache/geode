@@ -33,7 +33,6 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.TimeUnit;
 
 import org.awaitility.Awaitility;
-import org.apache.geode.test.junit.categories.ClientServerTest;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
@@ -79,6 +78,7 @@ import org.apache.geode.test.dunit.VM;
 import org.apache.geode.test.dunit.Wait;
 import org.apache.geode.test.dunit.WaitCriterion;
 import org.apache.geode.test.dunit.cache.internal.JUnit4CacheTestCase;
+import org.apache.geode.test.junit.categories.ClientServerTest;
 import org.apache.geode.test.junit.categories.DistributedTest;
 import org.apache.geode.test.junit.categories.FlakyTest;
 
@@ -1749,7 +1749,9 @@ public class PartitionedRegionSingleHopDUnitTest extends JUnit4CacheTestCase {
     replicatedRegion.putAll(map);
   }
 
-  static class MyFunctionAdapter extends FunctionAdapter {
+  static class MyFunctionAdapter extends FunctionAdapter implements DataSerializable {
+    public MyFunctionAdapter() {}
+
     @Override
     public String getId() {
       return "fid";
@@ -1781,6 +1783,14 @@ public class PartitionedRegionSingleHopDUnitTest extends JUnit4CacheTestCase {
     @Override
     public boolean optimizeForWrite() {
       return true;
+    }
+
+    @Override
+    public void toData(DataOutput out) throws IOException {}
+
+    @Override
+    public void fromData(DataInput in) throws IOException, ClassNotFoundException {
+
     }
   }
 

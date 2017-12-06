@@ -14,6 +14,8 @@
  */
 package org.apache.geode.internal.cache.tier.sockets.command;
 
+import java.io.IOException;
+
 import org.apache.geode.cache.execute.Function;
 import org.apache.geode.cache.execute.FunctionService;
 import org.apache.geode.internal.cache.tier.Command;
@@ -24,11 +26,9 @@ import org.apache.geode.internal.cache.tier.sockets.ServerConnection;
 import org.apache.geode.internal.i18n.LocalizedStrings;
 import org.apache.geode.internal.security.SecurityService;
 
-import java.io.IOException;
-
 public class GetFunctionAttribute extends BaseCommand {
 
-  private final static GetFunctionAttribute singleton = new GetFunctionAttribute();
+  private static final GetFunctionAttribute singleton = new GetFunctionAttribute();
 
   public static Command getCommand() {
     return singleton;

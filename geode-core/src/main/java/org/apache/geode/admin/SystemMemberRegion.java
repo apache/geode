@@ -14,8 +14,9 @@
  */
 package org.apache.geode.admin;
 
-import org.apache.geode.cache.*;
 import java.io.File;
+
+import org.apache.geode.cache.*;
 
 /**
  * Administrative interface that represent's the {@link SystemMember}'s view of one of its cache's
@@ -82,7 +83,7 @@ public interface SystemMemberRegion {
    * Returns a description of the CacheListener in this region's attributes. If there is more than 1
    * CacheListener defined for a region this method will return the description of the 1st
    * CacheListener returned from {@link #getCacheListeners}
-   * 
+   *
    * @deprecated as of 6.0 use getCacheListeners() instead
    */
   @Deprecated
@@ -92,7 +93,7 @@ public interface SystemMemberRegion {
    * This method will return an empty array if there are no CacheListeners defined on the region. If
    * there are one or more than 1 CacheListeners defined, this method will return an array which has
    * the names of all the CacheListeners
-   * 
+   *
    * @return String[] the region's <code>CacheListeners</code> as a String array
    * @since GemFire 6.0
    */
@@ -130,7 +131,7 @@ public interface SystemMemberRegion {
 
   /**
    * string describing the CustomExpiry for entry-time-to-live
-   * 
+   *
    * @return the CustomExpiry for entry-time-to-live
    */
   public String getCustomEntryTimeToLive();
@@ -157,14 +158,14 @@ public interface SystemMemberRegion {
 
   /**
    * string describing the CustomExpiry for entry-idle-timeout
-   * 
+   *
    * @return the CustomExpiry for entry-idle-timeout
    */
   public String getCustomEntryIdleTimeout();
 
   /**
    * Returns the MirrorType in this region's attributes.
-   * 
+   *
    * @deprecated as of 5.0, you should use getDataPolicy instead
    */
   @Deprecated
@@ -176,7 +177,7 @@ public interface SystemMemberRegion {
   public DataPolicy getDataPolicy();
 
   /**
-   * 
+   *
    * /** Returns the Scope in this region's attributes.
    */
   public Scope getScope();
@@ -260,7 +261,7 @@ public interface SystemMemberRegion {
 
   /**
    * Returns whether or not acks are sent after an update is processed.
-   * 
+   *
    * @return False if acks are sent after updates are processed; true if acks are sent before
    *         updates are processed.
    *
@@ -291,24 +292,23 @@ public interface SystemMemberRegion {
   /**
    * Returns the <code>MembershipAttributes</code> that configure required roles for reliable access
    * to the region.
-   * 
+   *
    * @deprecated this API is scheduled to be removed
    */
   public MembershipAttributes getMembershipAttributes();
 
   /**
    * Returns the <code>SubscriptionAttributes</code> for the region.
-   * 
+   *
    * @since GemFire 5.0
    */
   public SubscriptionAttributes getSubscriptionAttributes();
 
   /**
    * Returns the <code>PartitionAttributes</code> for the region.
-   * 
+   *
    * @since GemFire 5.7
    */
   public PartitionAttributes getPartitionAttributes();
 
 }
-

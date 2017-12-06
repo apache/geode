@@ -16,18 +16,19 @@ package org.apache.geode.internal.util.concurrent;
 
 import static org.junit.Assert.fail;
 
-import org.apache.geode.CancelCriterion;
-import org.apache.geode.distributed.DistributedSystemDisconnectedException;
-import org.apache.geode.test.junit.categories.UnitTest;
-import org.junit.Test;
-import org.junit.experimental.categories.Category;
-
 import java.util.concurrent.CancellationException;
 import java.util.concurrent.TimeUnit;
 
+import org.junit.Test;
+import org.junit.experimental.categories.Category;
+
+import org.apache.geode.CancelCriterion;
+import org.apache.geode.distributed.DistributedSystemDisconnectedException;
+import org.apache.geode.test.junit.categories.UnitTest;
+
 /**
  * Unit tests for {@link FutureResult}.
- * 
+ *
  */
 @Category(UnitTest.class)
 public class FutureResultJUnitTest {

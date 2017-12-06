@@ -167,7 +167,7 @@ public interface GemFireHealth {
     //////////////////// Instance Fields ////////////////////
 
     /** The string for this health */
-    private String healthString;
+    private String healthString = OKAY_STRING;
 
     ///////////////////// Constructors //////////////////////
 
@@ -184,6 +184,9 @@ public interface GemFireHealth {
      * Returns the appropriate canonical instance of <code>Health</code>.
      */
     public Object readResolve() {
+      if (this.healthString == null) {
+        return null;
+      }
       if (this.healthString.equals(GOOD_STRING)) {
         return GemFireHealth.GOOD_HEALTH;
 
