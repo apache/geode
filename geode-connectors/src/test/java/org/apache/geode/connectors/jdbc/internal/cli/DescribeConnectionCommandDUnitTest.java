@@ -96,8 +96,8 @@ public class DescribeConnectionCommandDUnitTest implements Serializable {
 
     String[] params = new String[] {"key1:value1", "key2:value2"};
     service.createConnectionConfig(
-        new ConnectionConfigBuilder().withName(CONNECTION_NAME).withUrl("myUrl").withUser("username")
-            .withPassword("secret").withParameters(params).build());
+        new ConnectionConfigBuilder().withName(CONNECTION_NAME).withUrl("myUrl")
+            .withUser("username").withPassword("secret").withParameters(params).build());
 
     assertThat(service.getConnectionConfig(CONNECTION_NAME)).isNotNull();
   }
