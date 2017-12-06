@@ -39,12 +39,8 @@ public class DescribeRegionIntegrationTest {
       .withProperty("groups", GROUP_NAME).withJMXManager().withAutoStart();
 
   @Rule
-  public GfshCommandRule gfsh = new GfshCommandRule(server::getJmxPort, PortType.jmxManager);
-
-  @Before
-  public void before() {
-    gfsh.setTimeout(2);
-  }
+  public GfshCommandRule gfsh =
+      new GfshCommandRule(server::getJmxPort, PortType.jmxManager).withTimeout(2);
 
   @Test
   public void commandFailsWhenNotConnected() throws Exception {
