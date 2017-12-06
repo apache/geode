@@ -67,6 +67,7 @@ public class ListMembersCommandDUnitTest {
     assertThat(output).contains("server-1");
     assertThat(output).contains("server-2");
     assertThat(output).contains("server-3");
+    assertThat(output).contains("coordinator");
   }
 
   @Test
