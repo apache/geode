@@ -17,7 +17,7 @@ package org.apache.geode.internal.cache.wan.wancommand;
 import static org.apache.geode.distributed.ConfigurationProperties.DISTRIBUTED_SYSTEM_ID;
 import static org.apache.geode.distributed.ConfigurationProperties.REMOTE_LOCATORS;
 import static org.apache.geode.internal.cache.wan.wancommand.WANCommandUtils.verifySenderAttributes;
-import static org.apache.geode.internal.cache.wan.wancommand.WANCommandUtils.verifySenderNotExist;
+import static org.apache.geode.internal.cache.wan.wancommand.WANCommandUtils.verifySenderDoesNotExist;
 import static org.apache.geode.internal.cache.wan.wancommand.WANCommandUtils.verifySenderState;
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -108,7 +108,7 @@ public class CreateDestroyGatewaySenderCommandDUnitTest {
         "GatewaySender \"ln\" destroyed on \"server-4\"",
         "GatewaySender \"ln\" destroyed on \"server-5\"");
 
-    MemberVM.invokeInEveryMember(() -> verifySenderNotExist("ln", false), server1, server2,
+    MemberVM.invokeInEveryMember(() -> verifySenderDoesNotExist("ln", false), server1, server2,
         server3);
   }
 
@@ -151,7 +151,7 @@ public class CreateDestroyGatewaySenderCommandDUnitTest {
         "GatewaySender \"ln\" destroyed on \"server-4\"",
         "GatewaySender \"ln\" destroyed on \"server-5\"");
 
-    MemberVM.invokeInEveryMember(() -> verifySenderNotExist("ln", false), server1, server2,
+    MemberVM.invokeInEveryMember(() -> verifySenderDoesNotExist("ln", false), server1, server2,
         server3);
   }
 
@@ -201,7 +201,7 @@ public class CreateDestroyGatewaySenderCommandDUnitTest {
         "GatewaySender \"ln\" destroyed on \"server-4\"",
         "GatewaySender \"ln\" destroyed on \"server-5\"");
 
-    MemberVM.invokeInEveryMember(() -> verifySenderNotExist("ln", false), server1, server2,
+    MemberVM.invokeInEveryMember(() -> verifySenderDoesNotExist("ln", false), server1, server2,
         server3);
   }
 
@@ -249,7 +249,7 @@ public class CreateDestroyGatewaySenderCommandDUnitTest {
         "GatewaySender \"ln\" destroyed on \"server-4\"",
         "GatewaySender \"ln\" destroyed on \"server-5\"");
 
-    MemberVM.invokeInEveryMember(() -> verifySenderNotExist("ln", false), server1, server2,
+    MemberVM.invokeInEveryMember(() -> verifySenderDoesNotExist("ln", false), server1, server2,
         server3);
   }
 
@@ -266,13 +266,13 @@ public class CreateDestroyGatewaySenderCommandDUnitTest {
       verifySenderState("ln", true, false);
     });
 
-    MemberVM.invokeInEveryMember(() -> verifySenderNotExist("ln", false), server2, server3);
+    MemberVM.invokeInEveryMember(() -> verifySenderDoesNotExist("ln", false), server2, server3);
 
     gfsh.executeAndAssertThat(DESTROY + " --member=" + server1.getName()).statusIsSuccess()
         .tableHasColumnWithExactValuesInAnyOrder("Status",
             "GatewaySender \"ln\" destroyed on \"server-3\"");
 
-    MemberVM.invokeInEveryMember(() -> verifySenderNotExist("ln", false), server1);
+    MemberVM.invokeInEveryMember(() -> verifySenderDoesNotExist("ln", false), server1);
   }
 
   /**
@@ -288,13 +288,13 @@ public class CreateDestroyGatewaySenderCommandDUnitTest {
       verifySenderState("ln", true, false);
     });
 
-    MemberVM.invokeInEveryMember(() -> verifySenderNotExist("ln", false), server2, server3);
+    MemberVM.invokeInEveryMember(() -> verifySenderDoesNotExist("ln", false), server2, server3);
 
     gfsh.executeAndAssertThat(DESTROY + " --group=senderGroup1").statusIsSuccess()
         .tableHasColumnWithExactValuesInAnyOrder("Status",
             "GatewaySender \"ln\" destroyed on \"server-3\"");
 
-    MemberVM.invokeInEveryMember(() -> verifySenderNotExist("ln", false), server1);
+    MemberVM.invokeInEveryMember(() -> verifySenderDoesNotExist("ln", false), server1);
   }
 
   /**
@@ -302,8 +302,6 @@ public class CreateDestroyGatewaySenderCommandDUnitTest {
    */
   @Test
   public void testCreateDestroyParallelGatewaySender() throws Exception {
-    int socketReadTimeout = GatewaySender.MINIMUM_SOCKET_READ_TIMEOUT + 1000;
-
     gfsh.executeAndAssertThat(CREATE + " --parallel").statusIsSuccess()
         .tableHasColumnWithExactValuesInAnyOrder("Status",
             "GatewaySender \"ln\" created on \"server-3\"",
@@ -316,7 +314,7 @@ public class CreateDestroyGatewaySenderCommandDUnitTest {
         "GatewaySender \"ln\" destroyed on \"server-4\"",
         "GatewaySender \"ln\" destroyed on \"server-5\"");
 
-    MemberVM.invokeInEveryMember(() -> verifySenderNotExist("ln", false), server1, server2,
+    MemberVM.invokeInEveryMember(() -> verifySenderDoesNotExist("ln", false), server1, server2,
         server3);
   }
 }

@@ -27,7 +27,6 @@ import org.apache.geode.management.cli.CliMetaData;
 import org.apache.geode.management.cli.ConverterHint;
 import org.apache.geode.management.cli.Result;
 import org.apache.geode.management.internal.cli.AbstractCliAroundInterceptor;
-import org.apache.geode.management.internal.cli.CliUtil;
 import org.apache.geode.management.internal.cli.GfshParseResult;
 import org.apache.geode.management.internal.cli.functions.CliFunctionResult;
 import org.apache.geode.management.internal.cli.functions.GatewayReceiverCreateFunction;
@@ -83,12 +82,7 @@ public class CreateGatewayReceiverCommand implements GfshCommand {
         new GatewayReceiverFunctionArgs(manualStart, startPort, endPort, bindAddress,
             socketBufferSize, maximumTimeBetweenPings, gatewayTransportFilters, hostnameForSenders);
 
-    Set<DistributedMember> membersToCreateGatewayReceiverOn =
-        CliUtil.findMembers(onGroups, onMember);
-
-    if (membersToCreateGatewayReceiverOn.isEmpty()) {
-      return ResultBuilder.createUserErrorResult(CliStrings.NO_MEMBERS_FOUND_MESSAGE);
-    }
+    Set<DistributedMember> membersToCreateGatewayReceiverOn = getMembers(onGroups, onMember);
 
     List<CliFunctionResult> gatewayReceiverCreateResults =
         executeAndGetFunctionResult(GatewayReceiverCreateFunction.INSTANCE,

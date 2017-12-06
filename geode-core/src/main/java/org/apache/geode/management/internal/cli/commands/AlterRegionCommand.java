@@ -110,7 +110,7 @@ public class AlterRegionCommand implements GfshCommand {
         if (!RegionCommandsUtils.isClassNameValid(cacheListener)) {
           throw new IllegalArgumentException(CliStrings.format(
               CliStrings.ALTER_REGION__MSG__SPECIFY_VALID_CLASSNAME_FOR_CACHELISTENER_0_IS_INVALID,
-              new Object[] {cacheListener}));
+              cacheListener));
         }
       }
     }
@@ -118,19 +118,19 @@ public class AlterRegionCommand implements GfshCommand {
     if (cacheLoader != null && !RegionCommandsUtils.isClassNameValid(cacheLoader)) {
       throw new IllegalArgumentException(CliStrings.format(
           CliStrings.ALTER_REGION__MSG__SPECIFY_VALID_CLASSNAME_FOR_CACHELOADER_0_IS_INVALID,
-          new Object[] {cacheLoader}));
+          cacheLoader));
     }
 
     if (cacheWriter != null && !RegionCommandsUtils.isClassNameValid(cacheWriter)) {
       throw new IllegalArgumentException(CliStrings.format(
           CliStrings.ALTER_REGION__MSG__SPECIFY_VALID_CLASSNAME_FOR_CACHEWRITER_0_IS_INVALID,
-          new Object[] {cacheWriter}));
+          cacheWriter));
     }
 
     if (evictionMax != null && evictionMax < 0) {
       throw new IllegalArgumentException(CliStrings.format(
           CliStrings.ALTER_REGION__MSG__SPECIFY_POSITIVE_INT_FOR_EVICTIONMAX_0_IS_NOT_VALID,
-          new Object[] {evictionMax}));
+          evictionMax));
     }
 
     Set<DistributedMember> targetMembers = findMembers(groups, null);

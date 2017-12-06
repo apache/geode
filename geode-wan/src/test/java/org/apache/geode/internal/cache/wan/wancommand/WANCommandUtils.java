@@ -203,7 +203,7 @@ public class WANCommandUtils implements Serializable {
     }
   }
 
-  public static void verifySenderNotExist(String senderId, boolean isParallel) {
+  public static void verifySenderDoesNotExist(String senderId, boolean isParallel) {
     Cache cache = LocatorServerStartupRule.getCache();
     Set<GatewaySender> senders = cache.getGatewaySenders();
     Set<String> senderIds = senders.stream().map(AbstractGatewaySender.class::cast)

@@ -15,10 +15,6 @@
 
 package org.apache.geode.management.internal.cli.commands;
 
-import static org.apache.geode.management.internal.cli.i18n.CliStrings.CREATE_GATEWAYSENDER__DISPATCHERTHREADS;
-import static org.apache.geode.management.internal.cli.i18n.CliStrings.CREATE_GATEWAYSENDER__ORDERPOLICY;
-import static org.apache.geode.management.internal.cli.i18n.CliStrings.CREATE_GATEWAYSENDER__PARALLEL;
-
 import java.util.List;
 import java.util.Set;
 
@@ -62,7 +58,7 @@ public class CreateGatewaySenderCommand implements GfshCommand {
       @CliOption(key = CliStrings.CREATE_GATEWAYSENDER__REMOTEDISTRIBUTEDSYSTEMID, mandatory = true,
           help = CliStrings.CREATE_GATEWAYSENDER__REMOTEDISTRIBUTEDSYSTEMID__HELP) Integer remoteDistributedSystemId,
 
-      @CliOption(key = CREATE_GATEWAYSENDER__PARALLEL, specifiedDefaultValue = "true",
+      @CliOption(key = CliStrings.CREATE_GATEWAYSENDER__PARALLEL, specifiedDefaultValue = "true",
           unspecifiedDefaultValue = "false",
           help = CliStrings.CREATE_GATEWAYSENDER__PARALLEL__HELP) boolean parallel,
 
@@ -99,10 +95,10 @@ public class CreateGatewaySenderCommand implements GfshCommand {
       @CliOption(key = CliStrings.CREATE_GATEWAYSENDER__ALERTTHRESHOLD,
           help = CliStrings.CREATE_GATEWAYSENDER__ALERTTHRESHOLD__HELP) Integer alertThreshold,
 
-      @CliOption(key = CREATE_GATEWAYSENDER__DISPATCHERTHREADS,
+      @CliOption(key = CliStrings.CREATE_GATEWAYSENDER__DISPATCHERTHREADS,
           help = CliStrings.CREATE_GATEWAYSENDER__DISPATCHERTHREADS__HELP) Integer dispatcherThreads,
 
-      @CliOption(key = CREATE_GATEWAYSENDER__ORDERPOLICY,
+      @CliOption(key = CliStrings.CREATE_GATEWAYSENDER__ORDERPOLICY,
           help = CliStrings.CREATE_GATEWAYSENDER__ORDERPOLICY__HELP) OrderPolicy orderPolicy,
 
       @CliOption(key = CliStrings.CREATE_GATEWAYSENDER__GATEWAYEVENTFILTER,
@@ -141,10 +137,11 @@ public class CreateGatewaySenderCommand implements GfshCommand {
     @Override
     public Result preExecution(GfshParseResult parseResult) {
       Integer dispatcherThreads =
-          (Integer) parseResult.getParamValue(CREATE_GATEWAYSENDER__DISPATCHERTHREADS);
+          (Integer) parseResult.getParamValue(CliStrings.CREATE_GATEWAYSENDER__DISPATCHERTHREADS);
       OrderPolicy orderPolicy =
-          (OrderPolicy) parseResult.getParamValue(CREATE_GATEWAYSENDER__ORDERPOLICY);
-      Boolean parallel = (Boolean) parseResult.getParamValue(CREATE_GATEWAYSENDER__PARALLEL);
+          (OrderPolicy) parseResult.getParamValue(CliStrings.CREATE_GATEWAYSENDER__ORDERPOLICY);
+      Boolean parallel =
+          (Boolean) parseResult.getParamValue(CliStrings.CREATE_GATEWAYSENDER__PARALLEL);
       if (dispatcherThreads != null && dispatcherThreads > 1 && orderPolicy == null) {
         return ResultBuilder.createUserErrorResult(
             "Must specify --order-policy when --dispatcher-threads is larger than 1.");
