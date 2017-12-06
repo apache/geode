@@ -99,7 +99,7 @@ public class DestroyConnectionFunctionTest {
   }
 
   @Test
-  public void destroyConnectionConfigReturnsTrueIfConnectionDoesNotExist() throws Exception {
+  public void destroyConnectionConfigReturnsFalseIfConnectionDoesNotExist() throws Exception {
     assertThat(function.destroyConnectionConfig(service, connectionName)).isFalse();
   }
 

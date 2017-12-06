@@ -85,9 +85,8 @@ public class ListConnectionCommandDUnitTest implements Serializable {
 
     commandResultAssert.statusIsSuccess();
     commandResultAssert.tableHasRowCount(LIST_OF_CONNECTIONS, 3);
-    commandResultAssert.tableHasColumnOnlyWithValues(LIST_OF_CONNECTIONS,
-        connectionName + "-1", connectionName + "-2",
-        connectionName + "-3");
+    commandResultAssert.tableHasColumnOnlyWithValues(LIST_OF_CONNECTIONS, connectionName + "-1",
+        connectionName + "-2", connectionName + "-3");
   }
 
   @Test
@@ -114,8 +113,7 @@ public class ListConnectionCommandDUnitTest implements Serializable {
     InternalJdbcConnectorService service = cache.getService(InternalJdbcConnectorService.class);
     for (int i = 1; i <= N; i++) {
       String name = connectionName + "-" + i;
-      service.createConnectionConfig(
-          new ConnectionConfigBuilder().withName(name).build());
+      service.createConnectionConfig(new ConnectionConfigBuilder().withName(name).build());
       assertThat(service.getConnectionConfig(name)).isNotNull();
     }
   }

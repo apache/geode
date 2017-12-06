@@ -73,7 +73,10 @@ public class ListConnectionCommandIntegrationTest {
 
     assertThat(result.getStatus()).isSameAs(Result.Status.OK);
     CommandResult commandResult = (CommandResult) result;
-    assertThat(commandResult.getTableContent().toString()).contains(NO_CONNECTIONS_FOUND);
+    String tableContent = commandResult.getTableContent().toString();
+    assertThat(tableContent).contains(NO_CONNECTIONS_FOUND);
+    assertThat(tableContent).doesNotContain(connectionConfig1.getName())
+        .doesNotContain(connectionConfig2.getName()).doesNotContain(connectionConfig3.getName());
   }
 
   @Test
@@ -84,18 +87,9 @@ public class ListConnectionCommandIntegrationTest {
 
     assertThat(result.getStatus()).isSameAs(Result.Status.OK);
     CommandResult commandResult = (CommandResult) result;
-    assertThat(commandResult.getTableContent().toString()).contains(LIST_OF_CONNECTIONS);
-  }
-
-  @Test
-  public void displaysOneConnectionByName() throws Exception {
-    service.createConnectionConfig(connectionConfig1);
-
-    Result result = command.listConnection();
-
-    assertThat(result.getStatus()).isSameAs(Result.Status.OK);
-    CommandResult commandResult = (CommandResult) result;
-    assertThat(commandResult.getTableContent().toString()).contains(connectionConfig1.getName());
+    String tableContent = commandResult.getTableContent().toString();
+    assertThat(tableContent).contains(LIST_OF_CONNECTIONS);
+    assertThat(tableContent).contains(connectionConfig1.getName());
   }
 
   @Test
@@ -110,16 +104,5 @@ public class ListConnectionCommandIntegrationTest {
     CommandResult commandResult = (CommandResult) result;
     assertThat(commandResult.getTableContent().toString()).contains(connectionConfig1.getName())
         .contains(connectionConfig2.getName()).contains(connectionConfig3.getName());
-  }
-
-  @Test
-  public void displaysEmptyListWhenZeroConnectionsExist() throws Exception {
-    Result result = command.listConnection();
-
-    assertThat(result.getStatus()).isSameAs(Result.Status.OK);
-    CommandResult commandResult = (CommandResult) result;
-    assertThat(commandResult.getTableContent().toString())
-        .doesNotContain(connectionConfig1.getName()).doesNotContain(connectionConfig2.getName())
-        .doesNotContain(connectionConfig3.getName());
   }
 }
