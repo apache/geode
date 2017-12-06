@@ -34,6 +34,7 @@ import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.CacheFactory;
 import org.apache.geode.cache.Region;
 import org.apache.geode.cache.RegionFactory;
+import org.apache.geode.connectors.jdbc.internal.ConnectionConfigExistsException;
 import org.apache.geode.connectors.jdbc.internal.SqlHandler;
 import org.apache.geode.connectors.jdbc.internal.TestConfigService;
 import org.apache.geode.connectors.jdbc.internal.TestableConnectionManager;
@@ -230,7 +231,8 @@ public class JdbcAsyncWriterIntegrationTest {
     assertThat(resultSet.getObject("age")).isEqualTo(employee.getAge());
   }
 
-  private Region<String, PdxInstance> createRegionWithJDBCAsyncWriter(String regionName) {
+  private Region<String, PdxInstance> createRegionWithJDBCAsyncWriter(String regionName)
+      throws ConnectionConfigExistsException {
     jdbcWriter = new JdbcAsyncWriter(createSqlHandler());
     cache.createAsyncEventQueueFactory().setBatchSize(1).setBatchTimeInterval(1)
         .create("jdbcAsyncQueue", jdbcWriter);
@@ -247,7 +249,7 @@ public class JdbcAsyncWriterIntegrationTest {
     assertThat(size).isEqualTo(expected);
   }
 
-  private SqlHandler createSqlHandler() {
+  private SqlHandler createSqlHandler() throws ConnectionConfigExistsException {
     return new SqlHandler(new TestableConnectionManager(TestConfigService.getTestConfigService()));
   }
 

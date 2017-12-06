@@ -16,30 +16,26 @@ package org.apache.geode.connectors.jdbc.internal.cli;
 
 import org.apache.geode.cache.execute.Function;
 import org.apache.geode.cache.execute.FunctionContext;
-import org.apache.geode.cache.execute.ResultSender;
+import org.apache.geode.connectors.jdbc.internal.ConnectionConfiguration;
 import org.apache.geode.connectors.jdbc.internal.InternalJdbcConnectorService;
-import org.apache.geode.connectors.jdbc.internal.xml.ElementType;
-import org.apache.geode.connectors.jdbc.internal.xml.JdbcConnectorServiceXmlGenerator;
-import org.apache.geode.connectors.jdbc.internal.xml.JdbcConnectorServiceXmlParser;
 import org.apache.geode.internal.InternalEntity;
-import org.apache.geode.internal.cache.InternalCache;
-import org.apache.geode.internal.cache.xmlcache.CacheXml;
-import org.apache.geode.management.internal.cli.CliUtil;
 import org.apache.geode.management.internal.cli.functions.CliFunctionResult;
-import org.apache.geode.management.internal.cli.i18n.CliStrings;
 import org.apache.geode.management.internal.configuration.domain.XmlEntity;
 
 public class DestroyConnectionFunction implements Function<String>, InternalEntity {
 
   private static final String ID = DestroyConnectionFunction.class.getName();
 
-  private final transient ExceptionHandler exceptionHandler;
+  private final FunctionContextArgumentProvider argumentProvider;
+  private final ExceptionHandler exceptionHandler;
 
   public DestroyConnectionFunction() {
-    this(new ExceptionHandler());
+    this(new FunctionContextArgumentProvider(), new ExceptionHandler());
   }
 
-  private DestroyConnectionFunction(ExceptionHandler exceptionHandler) {
+  private DestroyConnectionFunction(FunctionContextArgumentProvider jdbcCommandFunctionContext,
+      ExceptionHandler exceptionHandler) {
+    this.argumentProvider = jdbcCommandFunctionContext;
     this.exceptionHandler = exceptionHandler;
   }
 
@@ -55,37 +51,59 @@ public class DestroyConnectionFunction implements Function<String>, InternalEnti
 
   @Override
   public void execute(FunctionContext<String> context) {
-    ResultSender<Object> resultSender = context.getResultSender();
-
-    InternalCache cache = (InternalCache) context.getCache();
-    String memberNameOrId =
-        CliUtil.getMemberNameOrId(cache.getDistributedSystem().getDistributedMember());
-
-    String connectionName = context.getArguments();
-
     try {
-      InternalJdbcConnectorService service = cache.getService(InternalJdbcConnectorService.class);
+      // input
+      InternalJdbcConnectorService service = argumentProvider.getJdbcConnectorService(context);
+      String connectionName = context.getArguments();
 
-      if (service.getConnectionConfig(connectionName) == null) {
-        resultSender.lastResult(new CliFunctionResult(memberNameOrId, false,
-            CliStrings.format("Connection named \"{0}\" not found", connectionName)));
+      // action
+      boolean success = destroyConnectionConfig(service, connectionName);
 
-      } else {
-        service.destroyConnectionConfig(connectionName);
-
-        XmlEntity xmlEntity = new XmlEntity(CacheXml.CACHE, JdbcConnectorServiceXmlGenerator.PREFIX,
-            JdbcConnectorServiceXmlParser.NAMESPACE, ElementType.CONNECTION_SERVICE.getTypeName());
-
-        resultSender.lastResult(new CliFunctionResult(memberNameOrId, xmlEntity,
-            "Destroyed JDBC connection " + connectionName + " on " + memberNameOrId));
-      }
+      // output
+      String member = argumentProvider.getMember(context);
+      CliFunctionResult result = createResult(success, context, member, connectionName);
+      context.getResultSender().lastResult(result);
 
     } catch (Exception e) {
-      String exceptionMsg = e.getMessage();
-      if (exceptionMsg == null) {
-        exceptionMsg = CliUtil.stackTraceAsString(e);
-      }
-      resultSender.lastResult(exceptionHandler.handleException(memberNameOrId, exceptionMsg, e));
+      exceptionHandler.handleException(context, e);
     }
+  }
+
+  /**
+   * Destroys the named connection configuration
+   *
+   * @return true if the connection was found and destroyed
+   */
+  boolean destroyConnectionConfig(InternalJdbcConnectorService service, String connectionName) {
+    ConnectionConfiguration connectionConfig = service.getConnectionConfig(connectionName);
+    if (connectionConfig != null) {
+      service.destroyConnectionConfig(connectionName);
+      return true;
+    }
+    return false;
+  }
+
+  private CliFunctionResult createResult(boolean success, FunctionContext<?> context, String member,
+      String connectionName) {
+    CliFunctionResult result;
+    if (success) {
+      XmlEntity xmlEntity = argumentProvider.createXmlEntity(context);
+      result = createSuccessResult(member, connectionName, xmlEntity);
+
+    } else {
+      result = createNotFoundResult(member, connectionName);
+    }
+    return result;
+  }
+
+  private CliFunctionResult createSuccessResult(String member, String connectionName,
+      XmlEntity xmlEntity) {
+    String message = "Destroyed JDBC connection \"" + connectionName + "\" on " + member;
+    return new CliFunctionResult(member, xmlEntity, message);
+  }
+
+  private CliFunctionResult createNotFoundResult(String member, String connectionName) {
+    String message = "Connection named \"" + connectionName + "\" not found";
+    return new CliFunctionResult(member, false, message);
   }
 }

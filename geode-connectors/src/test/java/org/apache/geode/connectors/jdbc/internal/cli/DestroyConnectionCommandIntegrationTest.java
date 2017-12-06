@@ -33,23 +33,23 @@ import org.apache.geode.test.junit.categories.IntegrationTest;
 @Category(IntegrationTest.class)
 public class DestroyConnectionCommandIntegrationTest {
 
-  private String name;
+  private String connectionName;
   private InternalCache cache;
   private ConnectionConfiguration connectionConfig;
 
-  private DestroyConnectionCommand destroyConnectionCommand;
+  private DestroyConnectionCommand command;
 
   @Before
   public void setup() throws Exception {
-    name = "name";
+    connectionName = "connectionName";
 
     String[] params = new String[] {"param1:value1", "param2:value2"};
-    connectionConfig = new ConnectionConfigBuilder().withName(name).withUrl("url").withUser("user")
-        .withPassword("password").withParameters(params).build();
+    connectionConfig = new ConnectionConfigBuilder().withName(connectionName).withUrl("url")
+        .withUser("user").withPassword("password").withParameters(params).build();
 
     cache = (InternalCache) new CacheFactory().set(ENABLE_CLUSTER_CONFIGURATION, "true").create();
 
-    destroyConnectionCommand = new DestroyConnectionCommand();
+    command = new DestroyConnectionCommand();
   }
 
   @After
@@ -61,22 +61,22 @@ public class DestroyConnectionCommandIntegrationTest {
   public void destroysNamedConnection() throws Exception {
     InternalJdbcConnectorService service = cache.getService(InternalJdbcConnectorService.class);
     service.createConnectionConfig(connectionConfig);
-    assertThat(service.getConnectionConfig(name)).isSameAs(connectionConfig);
+    assertThat(service.getConnectionConfig(connectionName)).isSameAs(connectionConfig);
 
-    Result result = destroyConnectionCommand.destroyConnection(name);
+    Result result = command.destroyConnection(connectionName);
     assertThat(result.getStatus()).isSameAs(Result.Status.OK);
 
-    assertThat(service.getConnectionConfig(name)).isNull();
+    assertThat(service.getConnectionConfig(connectionName)).isNull();
   }
 
   @Test
   public void returnsErrorIfNamedConnectionNotFound() throws Exception {
     InternalJdbcConnectorService service = cache.getService(InternalJdbcConnectorService.class);
-    assertThat(service.getConnectionConfig(name)).isNull();
+    assertThat(service.getConnectionConfig(connectionName)).isNull();
 
-    Result result = destroyConnectionCommand.destroyConnection(name);
+    Result result = command.destroyConnection(connectionName);
     assertThat(result.getStatus()).isSameAs(Result.Status.ERROR);
 
-    assertThat(service.getConnectionConfig(name)).isNull();
+    assertThat(service.getConnectionConfig(connectionName)).isNull();
   }
 }

@@ -14,23 +14,51 @@
  */
 package org.apache.geode.connectors.jdbc.internal.cli;
 
+import java.io.Serializable;
+
 import org.apache.logging.log4j.Logger;
 
+import org.apache.geode.cache.Cache;
+import org.apache.geode.cache.execute.FunctionContext;
+import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
+import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.logging.LogService;
+import org.apache.geode.management.internal.cli.CliUtil;
 import org.apache.geode.management.internal.cli.functions.CliFunctionResult;
 
-class ExceptionHandler {
+/**
+ * Handles exceptions by returning an error result to GFSH
+ */
+class ExceptionHandler implements Serializable {
   private static final Logger logger = LogService.getLogger();
 
-  CliFunctionResult handleException(final String memberNameOrId, final String exceptionMsg,
-      final Exception e) {
-    if (e != null && logger.isDebugEnabled()) {
-      logger.debug(e.getMessage(), e);
-    }
-    if (exceptionMsg != null) {
-      return new CliFunctionResult(memberNameOrId, false, exceptionMsg);
-    }
+  void handleException(final FunctionContext<?> context, final Exception exception) {
+    String message = getExceptionMessage(exception);
+    String member = getMember(context.getCache());
+    context.getResultSender().lastResult(handleException(member, message, exception));
+  }
 
-    return new CliFunctionResult(memberNameOrId);
+  private CliFunctionResult handleException(final String memberNameOrId, final String exceptionMsg,
+      final Exception exception) {
+    if (exception != null && logger.isDebugEnabled()) {
+      logger.debug(exception.getMessage(), exception);
+    }
+    // if (exceptionMsg != null) {
+    return new CliFunctionResult(memberNameOrId, false, exceptionMsg);
+    // }
+    //
+    // return new CliFunctionResult(memberNameOrId);
+  }
+
+  private String getMember(final Cache cache) {
+    return CliUtil.getMemberNameOrId(cache.getDistributedSystem().getDistributedMember());
+  }
+
+  private String getExceptionMessage(final Exception exception) {
+    String message = exception.getMessage();
+    if (message == null) {
+      message = CliUtil.stackTraceAsString(exception);
+    }
+    return message;
   }
 }

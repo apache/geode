@@ -14,7 +14,9 @@
  */
 package org.apache.geode.connectors.jdbc.internal;
 
+import java.util.HashSet;
 import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
 import org.apache.geode.cache.Cache;
@@ -33,17 +35,8 @@ public class JdbcConnectorService implements InternalJdbcConnectorService {
   private boolean registered;
 
   @Override
-  public ConnectionConfiguration getConnectionConfig(String connectionName) {
-    return connectionsByName.get(connectionName);
-  }
-
-  @Override
-  public RegionMapping getMappingForRegion(String regionName) {
-    return mappingsByRegion.get(regionName);
-  }
-
-  @Override
-  public void createConnectionConfig(ConnectionConfiguration config) {
+  public void createConnectionConfig(ConnectionConfiguration config)
+      throws ConnectionConfigExistsException {
     registerAsExtension();
     ConnectionConfiguration existing = connectionsByName.putIfAbsent(config.getName(), config);
     if (existing != null) {
@@ -59,9 +52,26 @@ public class JdbcConnectorService implements InternalJdbcConnectorService {
   }
 
   @Override
+  public ConnectionConfiguration getConnectionConfig(String connectionName) {
+    return connectionsByName.get(connectionName);
+  }
+
+  @Override
+  public Set<ConnectionConfiguration> getConnectionConfigs() {
+    Set<ConnectionConfiguration> connectionConfigs = new HashSet<>();
+    connectionConfigs.addAll(connectionsByName.values());
+    return connectionConfigs;
+  }
+
+  @Override
   public void addOrUpdateRegionMapping(RegionMapping mapping) {
     registerAsExtension();
     mappingsByRegion.put(mapping.getRegionName(), mapping);
+  }
+
+  @Override
+  public RegionMapping getMappingForRegion(String regionName) {
+    return mappingsByRegion.get(regionName);
   }
 
   @Override

@@ -22,11 +22,12 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import java.io.Serializable;
+import java.util.HashSet;
+import java.util.Set;
 
 import org.apache.commons.lang.SerializationUtils;
 import org.junit.Before;
 import org.junit.Test;
-import org.junit.experimental.categories.Category;
 import org.mockito.ArgumentCaptor;
 
 import org.apache.geode.cache.execute.FunctionContext;
@@ -38,38 +39,45 @@ import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.distributed.DistributedSystem;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.management.internal.cli.functions.CliFunctionResult;
-import org.apache.geode.test.junit.categories.UnitTest;
 
-@Category(UnitTest.class)
-public class DestroyConnectionFunctionTest {
+public class ListConnectionFunctionTest {
 
-  private static final String connectionName = "connectionName";
-
-  private DestroyConnectionFunction function;
-  private FunctionContext<String> context;
+  private InternalCache cache;
+  private FunctionContext<Void> context;
   private ResultSender<Object> resultSender;
-  private ConnectionConfiguration configuration;
   private InternalJdbcConnectorService service;
+
+  private ConnectionConfiguration connectionConfig1;
+  private ConnectionConfiguration connectionConfig2;
+  private ConnectionConfiguration connectionConfig3;
+
+  private Set<ConnectionConfiguration> expected;
+
+  private ListConnectionFunction function;
 
   @Before
   public void setUp() throws Exception {
-    InternalCache cache = mock(InternalCache.class);
+    cache = mock(InternalCache.class);
     context = mock(FunctionContext.class);
     DistributedMember member = mock(DistributedMember.class);
     resultSender = mock(ResultSender.class);
     service = mock(InternalJdbcConnectorService.class);
     DistributedSystem system = mock(DistributedSystem.class);
 
+    connectionConfig1 = mock(ConnectionConfiguration.class);
+    connectionConfig2 = mock(ConnectionConfiguration.class);
+    connectionConfig3 = mock(ConnectionConfiguration.class);
+
+    expected = new HashSet<>();
+
     when(context.getResultSender()).thenReturn(resultSender);
     when(context.getCache()).thenReturn(cache);
     when(cache.getDistributedSystem()).thenReturn(system);
     when(system.getDistributedMember()).thenReturn(member);
-    when(context.getArguments()).thenReturn(connectionName);
     when(cache.getService(eq(InternalJdbcConnectorService.class))).thenReturn(service);
+    when(service.getConnectionConfigs()).thenReturn(expected);
 
-    configuration = new ConnectionConfigBuilder().build();
-
-    function = new DestroyConnectionFunction();
+    function = new ListConnectionFunction();
   }
 
   @Test
@@ -88,37 +96,71 @@ public class DestroyConnectionFunctionTest {
 
     Object copy = SerializationUtils.clone(original);
 
-    assertThat(copy).isNotSameAs(original).isInstanceOf(DestroyConnectionFunction.class);
+    assertThat(copy).isNotSameAs(original).isInstanceOf(ListConnectionFunction.class);
   }
 
   @Test
-  public void destroyConnectionConfigReturnsTrueIfConnectionDestroyed() throws Exception {
-    when(service.getConnectionConfig(eq(connectionName))).thenReturn(configuration);
+  public void getConnectionConfigsReturnsMultiple() throws Exception {
+    expected.add(connectionConfig1);
+    expected.add(connectionConfig2);
+    expected.add(connectionConfig3);
 
-    assertThat(function.destroyConnectionConfig(service, connectionName)).isTrue();
+    ConnectionConfiguration[] actual = function.getConnectionConfigAsArray(service);
+
+    assertThat(actual).containsExactlyInAnyOrder(connectionConfig1, connectionConfig2,
+        connectionConfig3);
   }
 
   @Test
-  public void destroyConnectionConfigReturnsFalseIfConnectionDoesNotExist() throws Exception {
-    assertThat(function.destroyConnectionConfig(service, connectionName)).isFalse();
+  public void getConnectionConfigsReturnsEmpty() throws Exception {
+    ConnectionConfiguration[] actual = function.getConnectionConfigAsArray(service);
+
+    assertThat(actual).isEmpty();
   }
 
   @Test
-  public void executeDestroysIfConnectionConfigFound() throws Exception {
-    when(service.getConnectionConfig(eq(connectionName))).thenReturn(configuration);
+  public void executeReturnsResultWithAllConfigs() throws Exception {
+    expected.add(connectionConfig1);
+    expected.add(connectionConfig2);
+    expected.add(connectionConfig3);
 
     function.execute(context);
 
-    verify(service, times(1)).destroyConnectionConfig(eq(connectionName));
+    ArgumentCaptor<Object[]> argument = ArgumentCaptor.forClass(Object[].class);
+    verify(resultSender, times(1)).lastResult(argument.capture());
+    assertThat(argument.getValue()).containsExactlyInAnyOrder(connectionConfig1, connectionConfig2,
+        connectionConfig3);
   }
 
   @Test
-  public void executeReportsErrorIfConnectionConfigNotFound() throws Exception {
+  public void executeReturnsEmptyResultForNoConfigs() throws Exception {
+    function.execute(context);
+
+    ArgumentCaptor<Object[]> argument = ArgumentCaptor.forClass(Object[].class);
+    verify(resultSender, times(1)).lastResult(argument.capture());
+    assertThat(argument.getValue()).isEmpty();
+  }
+
+  @Test
+  public void executeReturnsResultForExceptionWithoutMessage() throws Exception {
+    when(service.getConnectionConfigs()).thenThrow(new NullPointerException());
+
     function.execute(context);
 
     ArgumentCaptor<CliFunctionResult> argument = ArgumentCaptor.forClass(CliFunctionResult.class);
     verify(resultSender, times(1)).lastResult(argument.capture());
-    assertThat(argument.getValue().getErrorMessage())
-        .contains("Connection named \"" + connectionName + "\" not found");
+    assertThat(argument.getValue().getMessage()).contains(NullPointerException.class.getName());
+  }
+
+  @Test
+  public void executeReturnsResultForExceptionWithMessage() throws Exception {
+    when(service.getConnectionConfigs()).thenThrow(new IllegalArgumentException("some message"));
+
+    function.execute(context);
+
+    ArgumentCaptor<CliFunctionResult> argument = ArgumentCaptor.forClass(CliFunctionResult.class);
+    verify(resultSender, times(1)).lastResult(argument.capture());
+    assertThat(argument.getValue().getMessage()).contains("some message")
+        .doesNotContain(IllegalArgumentException.class.getName());
   }
 }

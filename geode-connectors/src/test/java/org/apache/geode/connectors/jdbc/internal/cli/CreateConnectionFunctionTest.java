@@ -15,6 +15,7 @@
 package org.apache.geode.connectors.jdbc.internal.cli;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.mock;
@@ -45,29 +46,32 @@ import org.apache.geode.test.junit.categories.UnitTest;
 @Category(UnitTest.class)
 public class CreateConnectionFunctionTest {
 
-  private ConnectionConfiguration configuration;
+  private static final String CONNECTION_NAME = "theConnection";
+
+  private ConnectionConfiguration connectionConfig;
   private FunctionContext<ConnectionConfiguration> context;
-  private InternalJdbcConnectorService service;
+  private DistributedMember distributedMember;
   private ResultSender<Object> resultSender;
+  private InternalJdbcConnectorService service;
 
   private CreateConnectionFunction function;
 
   @Before
-  public void setUp() {
+  public void setUp() throws Exception {
     context = mock(FunctionContext.class);
     resultSender = mock(ResultSender.class);
     InternalCache cache = mock(InternalCache.class);
     DistributedSystem system = mock(DistributedSystem.class);
-    DistributedMember member = mock(DistributedMember.class);
+    distributedMember = mock(DistributedMember.class);
     service = mock(InternalJdbcConnectorService.class);
 
-    configuration = new ConnectionConfigBuilder().build();
+    connectionConfig = new ConnectionConfigBuilder().withName(CONNECTION_NAME).build();
 
     when(context.getResultSender()).thenReturn(resultSender);
     when(context.getCache()).thenReturn(cache);
     when(cache.getDistributedSystem()).thenReturn(system);
-    when(system.getDistributedMember()).thenReturn(member);
-    when(context.getArguments()).thenReturn(configuration);
+    when(system.getDistributedMember()).thenReturn(distributedMember);
+    when(context.getArguments()).thenReturn(connectionConfig);
     when(cache.getService(eq(InternalJdbcConnectorService.class))).thenReturn(service);
 
     function = new CreateConnectionFunction();
@@ -84,16 +88,43 @@ public class CreateConnectionFunctionTest {
   }
 
   @Test
-  public void executeCreatesConnectionIfConfigNotFound() throws Exception {
-    function.execute(context);
+  public void serializes() throws Exception {
+    Serializable original = function;
 
-    verify(service, times(1)).createConnectionConfig(configuration);
+    Object copy = SerializationUtils.clone(original);
+
+    assertThat(copy).isNotSameAs(original).isInstanceOf(CreateConnectionFunction.class);
   }
 
   @Test
-  public void executeReportsErrorIfConnectionConfigFound() throws Exception {
+  public void createConnectionConfigReturnsConnectionName() throws Exception {
+    function.createConnectionConfig(service, connectionConfig);
+
+    verify(service, times(1)).createConnectionConfig(connectionConfig);
+  }
+
+  @Test
+  public void createConnectionConfigThrowsIfConnectionExists() throws Exception {
     doThrow(ConnectionConfigExistsException.class).when(service)
-        .createConnectionConfig(eq(configuration));
+        .createConnectionConfig(eq(connectionConfig));
+
+    assertThatThrownBy(() -> function.createConnectionConfig(service, connectionConfig))
+        .isInstanceOf(ConnectionConfigExistsException.class);
+
+    verify(service, times(1)).createConnectionConfig(connectionConfig);
+  }
+
+  @Test
+  public void executeCreatesConnection() throws Exception {
+    function.execute(context);
+
+    verify(service, times(1)).createConnectionConfig(connectionConfig);
+  }
+
+  @Test
+  public void executeReportsErrorIfConnectionConfigExists() throws Exception {
+    doThrow(ConnectionConfigExistsException.class).when(service)
+        .createConnectionConfig(eq(connectionConfig));
 
     function.execute(context);
 
@@ -101,14 +132,5 @@ public class CreateConnectionFunctionTest {
     verify(resultSender, times(1)).lastResult(argument.capture());
     assertThat(argument.getValue().getErrorMessage())
         .contains(ConnectionConfigExistsException.class.getName());
-  }
-
-  @Test
-  public void serializes() throws Exception {
-    Serializable original = function;
-
-    Object copy = SerializationUtils.clone(original);
-
-    assertThat(copy).isNotSameAs(original).isInstanceOf(CreateConnectionFunction.class);
   }
 }

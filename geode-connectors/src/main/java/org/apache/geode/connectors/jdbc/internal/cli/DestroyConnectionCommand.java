@@ -22,6 +22,7 @@ import org.springframework.shell.core.annotation.CliCommand;
 import org.springframework.shell.core.annotation.CliOption;
 
 import org.apache.geode.cache.execute.ResultCollector;
+import org.apache.geode.connectors.jdbc.internal.ConnectionConfiguration;
 import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.management.cli.CliMetaData;
 import org.apache.geode.management.cli.Result;
@@ -45,44 +46,67 @@ public class DestroyConnectionCommand implements GfshCommand {
   private static final String ERROR_PREFIX = "ERROR: ";
 
   @CliCommand(value = DESTROY_CONNECTION, help = DESTROY_CONNECTION__HELP)
-  @CliMetaData(relatedTopic = CliStrings.TOPIC_GEODE_REGION)
+  @CliMetaData(relatedTopic = CliStrings.DEFAULT_TOPIC_GEODE)
   @ResourceOperation(resource = ResourcePermission.Resource.CLUSTER,
       operation = ResourcePermission.Operation.MANAGE)
   public Result destroyConnection(@CliOption(key = DESTROY_CONNECTION__NAME, mandatory = true,
       help = DESTROY_CONNECTION__NAME__HELP) String name) {
 
-    Set<DistributedMember> membersToDestroyConnectionOn = getMembers(null, null);
+    // input
+    Set<DistributedMember> targetMembers = getMembers(null, null);
 
-    ResultCollector<?, ?> resultCollector =
-        executeFunction(new DestroyConnectionFunction(), name, membersToDestroyConnectionOn);
+    // action
+    ResultCollector<CliFunctionResult, List<CliFunctionResult>> resultCollector =
+        execute(new DestroyConnectionFunction(), name, targetMembers);
 
-    Object resultCollectorResult = resultCollector.getResult();
-
-    List<CliFunctionResult> connectionDestroyResults =
-        (List<CliFunctionResult>) resultCollectorResult;
-
-    AtomicReference<XmlEntity> xmlEntity = new AtomicReference<>();
+    // output
     TabularResultData tabularResultData = ResultBuilder.createTabularResultData();
-    for (CliFunctionResult connectionDestroyResult : connectionDestroyResults) {
-      boolean success = connectionDestroyResult.isSuccessful();
-      tabularResultData.accumulate("Member", connectionDestroyResult.getMemberIdOrName());
-      tabularResultData.accumulate("Status",
-          (success ? "" : ERROR_PREFIX) + connectionDestroyResult.getMessage());
+    XmlEntity xmlEntity = fillTabularResultData(resultCollector, tabularResultData);
+    Result result = ResultBuilder.buildResult(tabularResultData);
+    updateClusterConfiguration(result, xmlEntity);
+    return result;
+  }
 
-      if (success) {
-        xmlEntity.set(connectionDestroyResult.getXmlEntity());
+  ResultCollector<CliFunctionResult, List<CliFunctionResult>> execute(
+      DestroyConnectionFunction function, String connectionName,
+      Set<DistributedMember> targetMembers) {
+    return (ResultCollector<CliFunctionResult, List<CliFunctionResult>>) executeFunction(function,
+        connectionName, targetMembers);
+  }
+
+  private XmlEntity fillTabularResultData(
+      ResultCollector<CliFunctionResult, List<CliFunctionResult>> resultCollector,
+      TabularResultData tabularResultData) {
+    XmlEntity xmlEntity = null;
+
+    for (CliFunctionResult oneResult : resultCollector.getResult()) {
+      if (oneResult.isSuccessful()) {
+        xmlEntity = addSuccessToResults(tabularResultData, oneResult);
       } else {
-        tabularResultData.setStatus(Result.Status.ERROR);
+        addErrorToResults(tabularResultData, oneResult);
       }
     }
 
-    Result result = ResultBuilder.buildResult(tabularResultData);
+    return xmlEntity;
+  }
 
-    if (xmlEntity.get() != null) {
+  private XmlEntity addSuccessToResults(TabularResultData tabularResultData,
+      CliFunctionResult oneResult) {
+    tabularResultData.accumulate("Member", oneResult.getMemberIdOrName());
+    tabularResultData.accumulate("Status", oneResult.getMessage());
+    return oneResult.getXmlEntity();
+  }
+
+  private void addErrorToResults(TabularResultData tabularResultData, CliFunctionResult oneResult) {
+    tabularResultData.accumulate("Member", oneResult.getMemberIdOrName());
+    tabularResultData.accumulate("Status", ERROR_PREFIX + oneResult.getMessage());
+    tabularResultData.setStatus(Result.Status.ERROR);
+  }
+
+  private void updateClusterConfiguration(final Result result, final XmlEntity xmlEntity) {
+    if (xmlEntity != null) {
       persistClusterConfiguration(result,
-          () -> getSharedConfiguration().addXmlEntity(xmlEntity.get(), null));
+          () -> getSharedConfiguration().addXmlEntity(xmlEntity, null));
     }
-
-    return result;
   }
 }

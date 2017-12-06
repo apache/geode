@@ -75,7 +75,7 @@ public class CreateConnectionCommandDUnitTest {
     locator.invoke(() -> {
       String xml = InternalLocator.getLocator().getSharedConfiguration().getConfiguration("cluster")
           .getCacheXmlContent();
-      assertThat(xml).contains("jdbc:connector-service");
+      assertThat(xml).isNotNull().contains("jdbc:connector-service");
     });
 
     server.invoke(() -> {

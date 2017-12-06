@@ -32,7 +32,7 @@ public class TestConfigService {
   private static final String CONNECTION_URL = "jdbc:derby:memory:" + DB_NAME + ";create=true";
   private static final String CONNECTION_CONFIG_NAME = "testConnectionConfig";
 
-  public static JdbcConnectorService getTestConfigService() {
+  public static JdbcConnectorService getTestConfigService() throws ConnectionConfigExistsException {
     InternalCache cache = mock(InternalCache.class);
     when(cache.getExtensionPoint()).thenReturn(mock(ExtensionPoint.class));
 
