@@ -16,6 +16,7 @@ package org.apache.geode.management;
 
 import java.beans.ConstructorProperties;
 import java.util.Arrays;
+import java.util.Set;
 
 import org.apache.geode.cache.Region;
 
@@ -56,6 +57,8 @@ public class RegionAttributesData {
   private boolean diskSynchronous;
   private String compressorClassName;
   private boolean offHeap;
+  private Set<String> eventQueueIds;
+  private Set<String> gatewaySenderIds;
 
   /**
    *
@@ -69,7 +72,7 @@ public class RegionAttributesData {
       "concurrencyLevel", "indexMaintenanceSynchronous", "statisticsEnabled",
       "subscriptionConflationEnabled", "asyncConflationEnabled", "poolName", "cloningEnabled",
       "diskStoreName", "interestPolicy", "diskSynchronous", "cacheListeners", "compressorClassName",
-      "offHeap"})
+      "offHeap", "eventQueueIds", "gatewaySenderIds"})
 
 
   public RegionAttributesData(String cacheLoaderClassName, String cacheWriterClassName,
@@ -81,9 +84,8 @@ public class RegionAttributesData {
       boolean statisticsEnabled, boolean subscriptionConflationEnabled,
       boolean asyncConflationEnabled, String poolName, boolean cloningEnabled, String diskStoreName,
       String interestPolicy, boolean diskSynchronous, String[] cacheListeners,
-      String compressorClassName, boolean offHeap) {
-
-
+      String compressorClassName, boolean offHeap, Set<String> eventQueueIds,
+      Set<String> gatewaySenderIds) {
 
     this.cacheLoaderClassName = cacheLoaderClassName;
     this.cacheWriterClassName = cacheWriterClassName;
@@ -115,6 +117,8 @@ public class RegionAttributesData {
     this.cacheListeners = cacheListeners;
     this.compressorClassName = compressorClassName;
     this.offHeap = offHeap;
+    this.eventQueueIds = eventQueueIds;
+    this.gatewaySenderIds = gatewaySenderIds;
   }
 
   /**
@@ -359,6 +363,24 @@ public class RegionAttributesData {
   }
 
   /**
+   * Returns the set of async event queue IDs.
+   *
+   * @return a set of ids.
+   */
+  public Set<String> getEventQueueIds() {
+    return eventQueueIds;
+  }
+
+  /**
+   * Returns the set of gateway sender IDs.
+   *
+   * @return a set of ids.
+   */
+  public Set<String> getGatewaySenderIds() {
+    return gatewaySenderIds;
+  }
+
+  /**
    * String representation of RegionAttributesData
    */
   @Override
@@ -379,7 +401,7 @@ public class RegionAttributesData {
         + regionIdleTimeout + ", regionTimeToLive=" + regionTimeToLive + ", scope=" + scope
         + ", statisticsEnabled=" + statisticsEnabled + ", subscriptionConflationEnabled="
         + subscriptionConflationEnabled + ", valueConstraintClassName=" + valueConstraintClassName
-        + "]";
+        + ", eventQueueIds=" + eventQueueIds + ", gatewaySenderIds=" + gatewaySenderIds + "]";
   }
 
 
