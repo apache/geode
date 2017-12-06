@@ -62,6 +62,7 @@ dependencies {
   archives project(':geode-lucene')
   archives project(':geode-old-client-support')
   archives project(':geode-protobuf')
+  archives project(':geode-protobuf-messages')
   archives project(':geode-web')
   archives project(':geode-web-api')
   archives project(':geode-wan')
@@ -371,6 +372,9 @@ distributions {
         from project(":geode-protobuf").configurations.runtime
         from project(":geode-protobuf").configurations.archives.allArtifacts.files
 
+        from project(":geode-protobuf-messages").configurations.runtime
+        from project(":geode-protobuf-messages").configurations.archives.allArtifacts.files
+
         from project(":geode-client-protocol").configurations.runtime
         from project(":geode-client-protocol").configurations.archives.allArtifacts.files
 
@@ -401,7 +405,7 @@ distributions {
       }
 
       into('tools/ClientProtocol') {
-        from {project(":geode-protobuf").zip.outputs.files}
+        from {project(":geode-protobuf-messages").zip.outputs.files}
       }
 
       into ('javadoc') {
