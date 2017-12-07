@@ -36,8 +36,8 @@ import org.apache.geode.internal.Version;
 import org.apache.geode.internal.cache.AbstractRegionMap.ARMLockTestHook;
 import org.apache.geode.internal.cache.InitialImageOperation.Entry;
 import org.apache.geode.internal.cache.entries.DiskEntry;
-import org.apache.geode.internal.cache.lru.LRUEntry;
-import org.apache.geode.internal.cache.lru.NewLRUClockHand;
+import org.apache.geode.internal.cache.eviction.EvictableEntry;
+import org.apache.geode.internal.cache.eviction.EvictionList;
 import org.apache.geode.internal.cache.persistence.DiskRegionView;
 import org.apache.geode.internal.cache.tier.sockets.ClientProxyMembershipID;
 import org.apache.geode.internal.cache.versions.RegionVersionVector;
@@ -394,7 +394,7 @@ class ProxyRegionMap implements RegionMap {
   }
 
   @Override
-  public boolean lruLimitExceeded(DiskRegionView drv) {
+  public boolean lruLimitExceeded(DiskRegionView diskRegionView) {
     return false;
   }
 
@@ -484,7 +484,7 @@ class ProxyRegionMap implements RegionMap {
     }
 
     @Override
-    public void setRecentlyUsed() {
+    public void setRecentlyUsed(RegionEntryContext context) {
       // do nothing; called by LocalRegion.updateStatsForPut
     }
 
@@ -805,20 +805,17 @@ class ProxyRegionMap implements RegionMap {
     }
 
     @Override
-    public void setInUseByTransaction(boolean inUseByTransaction) {
+    public void incRefCount() {
       // nothing
     }
 
     @Override
-    public void incRefCount() {}
-
-    @Override
-    public void decRefCount(NewLRUClockHand lruList, InternalRegion region) {
+    public void decRefCount(EvictionList lruList, InternalRegion region) {
       // nothing
     }
 
     @Override
-    public void resetRefCount(NewLRUClockHand lruList) {
+    public void resetRefCount(EvictionList lruList) {
       // nothing
     }
 
@@ -830,12 +827,7 @@ class ProxyRegionMap implements RegionMap {
   }
 
   @Override
-  public void lruUpdateCallback(int n) {
-    // do nothing
-  }
-
-  @Override
-  public void lruEntryFaultIn(LRUEntry entry) {
+  public void lruEntryFaultIn(EvictableEntry entry) {
     // do nothing.
 
   }
@@ -882,10 +874,22 @@ class ProxyRegionMap implements RegionMap {
   }
 
   @Override
-  public void close() {}
+  public void close() {
+    // nothing
+  }
 
   @Override
   public ARMLockTestHook getARMLockTestHook() {
     return null;
+  }
+
+  @Override
+  public long getEvictions() {
+    return 0;
+  }
+
+  @Override
+  public void incRecentlyUsed() {
+    // nothing
   }
 }

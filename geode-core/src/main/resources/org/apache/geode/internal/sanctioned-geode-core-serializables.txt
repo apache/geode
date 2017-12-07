@@ -304,10 +304,6 @@ org/apache/geode/internal/cache/execute/NoResult,true,-4901369422864228848
 org/apache/geode/internal/cache/execute/util/FindRestEnabledServersFunction,true,7851518767859544678
 org/apache/geode/internal/cache/ha/ThreadIdentifier$Bits,false,position:int,width:int
 org/apache/geode/internal/cache/ha/ThreadIdentifier$WanType,false
-org/apache/geode/internal/cache/lru/HeapLRUCapacityController,true,4970685814429530675,perEntryOverhead:int,sizer:org/apache/geode/cache/util/ObjectSizer
-org/apache/geode/internal/cache/lru/LRUAlgorithm,false,bucketRegion:org/apache/geode/internal/cache/BucketRegion,evictionAction:org/apache/geode/cache/EvictionAction
-org/apache/geode/internal/cache/lru/LRUCapacityController,true,-4383074909189355938,maximumEntries:int
-org/apache/geode/internal/cache/lru/MemLRUCapacityController,true,6364183985590572514,isOffHeap:boolean,limit:long,perEntryOverHead:int,sizer:org/apache/geode/cache/util/ObjectSizer
 org/apache/geode/internal/cache/partitioned/DumpB2NRegion$PrimaryInfo,true,6334695270795306178,hostToken:java/lang/String,isHosting:boolean,isPrimary:boolean
 org/apache/geode/internal/cache/partitioned/PRLocallyDestroyedException,true,-1291911181409686840
 org/apache/geode/internal/cache/partitioned/PartitionMemberInfoImpl,true,8245020687604034289,bucketCount:int,configuredMaxMemory:long,distributedMember:org/apache/geode/distributed/DistributedMember,primaryCount:int,size:long

@@ -63,8 +63,7 @@ import org.apache.geode.internal.cache.TXManagerImpl;
 import org.apache.geode.internal.cache.TimestampedEntryEventImpl;
 import org.apache.geode.internal.cache.Token;
 import org.apache.geode.internal.cache.TombstoneService;
-import org.apache.geode.internal.cache.lru.LRUClockNode;
-import org.apache.geode.internal.cache.lru.NewLRUClockHand;
+import org.apache.geode.internal.cache.eviction.EvictionList;
 import org.apache.geode.internal.cache.persistence.DiskRecoveryStore;
 import org.apache.geode.internal.cache.persistence.DiskStoreID;
 import org.apache.geode.internal.cache.versions.ConcurrentCacheModificationException;
@@ -232,7 +231,7 @@ public abstract class AbstractRegionEntry implements RegionEntry, HashEntry<Obje
   }
 
   @Override
-  public void setRecentlyUsed() {
+  public void setRecentlyUsed(RegionEntryContext context) {
     // do nothing by default; only needed for LRU
   }
 
@@ -278,7 +277,7 @@ public abstract class AbstractRegionEntry implements RegionEntry, HashEntry<Obje
         // unschedule the old tombstone
         region.unscheduleTombstone(this);
       }
-      setRecentlyUsed();
+      setRecentlyUsed(region);
       boolean newEntry = getValueAsToken() == Token.REMOVED_PHASE1;
       basicMakeTombstone(region);
       region.scheduleTombstone(this, version);
@@ -463,7 +462,7 @@ public abstract class AbstractRegionEntry implements RegionEntry, HashEntry<Obje
     } else {
       result = OffHeapHelper.copyAndReleaseIfNeeded(result);
       ReferenceCountHelper.setReferenceCountOwner(null);
-      setRecentlyUsed();
+      setRecentlyUsed(context);
       return result;
     }
   }
@@ -476,7 +475,7 @@ public abstract class AbstractRegionEntry implements RegionEntry, HashEntry<Obje
     if (Token.isRemoved(result)) {
       return null;
     } else {
-      setRecentlyUsed();
+      setRecentlyUsed(context);
       return result;
     }
   }
@@ -503,7 +502,7 @@ public abstract class AbstractRegionEntry implements RegionEntry, HashEntry<Obje
     _setValue(value);
     releaseOffHeapRefIfRegionBeingClosedOrDestroyed(context, value);
     if (recentlyUsed) {
-      setRecentlyUsed();
+      setRecentlyUsed(context);
     }
   }
 
@@ -1453,12 +1452,11 @@ public abstract class AbstractRegionEntry implements RegionEntry, HashEntry<Obje
   }
 
   @Override
-  public boolean isInUseByTransaction() {
+  public synchronized boolean isInUseByTransaction() {
     return areAnyBitsSet(IN_USE_BY_TX);
   }
 
-  @Override
-  public void setInUseByTransaction(final boolean v) {
+  private void setInUseByTransaction(final boolean v) {
     if (v) {
       setBits(IN_USE_BY_TX);
     } else {
@@ -1473,14 +1471,11 @@ public abstract class AbstractRegionEntry implements RegionEntry, HashEntry<Obje
   }
 
   @Override
-  public synchronized void decRefCount(NewLRUClockHand lruList, InternalRegion region) {
+  public synchronized void decRefCount(EvictionList evictionList, InternalRegion region) {
     if (TXManagerImpl.decRefCount(this)) {
       if (isInUseByTransaction()) {
         setInUseByTransaction(false);
-        if (lruList != null) {
-          // No more transactions, place in lru list
-          lruList.appendEntry((LRUClockNode) this);
-        }
+        appendToEvictionList(evictionList);
         if (region != null && region.isEntryExpiryPossible()) {
           region.addExpiryTaskIfAbsent(this);
         }
@@ -1489,13 +1484,15 @@ public abstract class AbstractRegionEntry implements RegionEntry, HashEntry<Obje
   }
 
   @Override
-  public synchronized void resetRefCount(NewLRUClockHand lruList) {
+  public synchronized void resetRefCount(EvictionList evictionList) {
     if (isInUseByTransaction()) {
       setInUseByTransaction(false);
-      if (lruList != null) {
-        lruList.appendEntry((LRUClockNode) this);
-      }
+      appendToEvictionList(evictionList);
     }
+  }
+
+  protected void appendToEvictionList(EvictionList evictionList) {
+    // nothing
   }
 
   void _setValue(Object val) {

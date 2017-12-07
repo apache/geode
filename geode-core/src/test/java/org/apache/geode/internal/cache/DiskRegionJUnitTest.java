@@ -44,8 +44,8 @@ import org.apache.geode.cache.Scope;
 import org.apache.geode.cache.server.CacheServer;
 import org.apache.geode.cache.util.CacheListenerAdapter;
 import org.apache.geode.internal.cache.entries.DiskEntry;
-import org.apache.geode.internal.cache.lru.LRUStatistics;
-import org.apache.geode.internal.cache.lru.NewLRUClockHand;
+import org.apache.geode.internal.cache.eviction.EvictionList;
+import org.apache.geode.internal.cache.eviction.EvictionStatistics;
 import org.apache.geode.internal.cache.persistence.UninterruptibleFileChannel;
 import org.apache.geode.test.dunit.ThreadUtils;
 import org.apache.geode.test.dunit.Wait;
@@ -183,8 +183,7 @@ public class DiskRegionJUnitTest extends DiskRegionTestingBase {
     assertNotNull(dr);
 
     DiskRegionStats diskStats = dr.getStats();
-    LRUStatistics lruStats =
-        ((LocalRegion) region).getEvictionController().getLRUHelper().getStats();
+    EvictionStatistics lruStats = ((LocalRegion) region).getEvictionController().getStatistics();
     assertNotNull(diskStats);
     assertNotNull(lruStats);
 
@@ -1551,11 +1550,10 @@ public class DiskRegionJUnitTest extends DiskRegionTestingBase {
     }
 
     assertFalse(this.failureCause, this.exceptionOccurred);
-    NewLRUClockHand lruList = ((VMLRURegionMap) ((LocalRegion) region).entries)._getLruList();
+    EvictionList lruList = ((VMLRURegionMap) ((LocalRegion) region).entries).getEvictionList();
     assertEquals(region.size(), 0);
-    lruList.audit();
     assertNull("The LRU List should have been empty instead it contained a cleared entry",
-        lruList.getLRUEntry());
+        lruList.getEvictableEntry());
   }
 
   /**

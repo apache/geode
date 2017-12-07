@@ -52,7 +52,7 @@ public final class EvictionAlgorithm extends EnumSyntax {
    * An algorithm that considers the number of Entries in the Region before invoking its
    * {@link EvictionAction}
    *
-   * @deprecated
+   * @deprecated For internal use only.
    */
   public static final EvictionAlgorithm LIFO_ENTRY = new EvictionAlgorithm(4);
 
@@ -60,7 +60,7 @@ public final class EvictionAlgorithm extends EnumSyntax {
    * An algorithm that considers the amount of bytes consumed by the Region before invoking its
    * {@link EvictionAction}
    *
-   * @deprecated
+   * @deprecated For internal use only.
    */
   public static final EvictionAlgorithm LIFO_MEMORY = new EvictionAlgorithm(5);
 
@@ -133,7 +133,7 @@ public final class EvictionAlgorithm extends EnumSyntax {
   }
 
   /**
-   * @deprecated
+   * @deprecated For internal use only.
    */
   public boolean isLIFO() {
     return this == LIFO_ENTRY || this == LIFO_MEMORY;

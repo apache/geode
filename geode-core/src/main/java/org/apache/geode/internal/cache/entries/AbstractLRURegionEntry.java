@@ -12,30 +12,28 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
-
 package org.apache.geode.internal.cache.entries;
 
-
 import org.apache.geode.internal.cache.RegionEntryContext;
-import org.apache.geode.internal.cache.entries.AbstractRegionEntry;
-import org.apache.geode.internal.cache.lru.LRUEntry;
+import org.apache.geode.internal.cache.eviction.EvictableEntry;
+import org.apache.geode.internal.cache.eviction.EvictionList;
 
 /**
  * Abstract implementation class of RegionEntry interface. This adds LRU support behaviour
  *
  * @since GemFire 3.5.1
- *
- *
  */
-public abstract class AbstractLRURegionEntry extends AbstractRegionEntry implements LRUEntry {
+public abstract class AbstractLRURegionEntry extends AbstractRegionEntry implements EvictableEntry {
   protected AbstractLRURegionEntry(RegionEntryContext context, Object value) {
     super(context, value);
   }
 
-  /////////////////////////////////////////////////////////////////////
-  ////////////////////////// instance methods /////////////////////////
-  /////////////////////////////////////////////////////////////////////
-
   // Do not add any instance fields to this class.
   // Instead add them to the LRU section of LeafRegionEntry.cpp.
+
+  protected void appendToEvictionList(EvictionList evictionList) {
+    if (evictionList != null) {
+      evictionList.appendEntry(this);
+    }
+  }
 }

@@ -1,3 +1,5 @@
+
+
 /*
  * Licensed to the Apache Software Foundation (ASF) under one or more contributor license
  * agreements. See the NOTICE file distributed with this work for additional information regarding
@@ -67,7 +69,7 @@ public class VMThinRegionEntryOffHeapStringKey1 extends VMThinRegionEntryOffHeap
    */
   private static final AtomicLongFieldUpdater<VMThinRegionEntryOffHeapStringKey1> OFF_HEAP_ADDRESS_UPDATER =
       AtomicLongFieldUpdater.newUpdater(VMThinRegionEntryOffHeapStringKey1.class, "offHeapAddress");
-  // ----------------------------------------- key code -------------------------------------------
+  // --------------------------------------- key fields -------------------------------------------
   // DO NOT modify this class. It was generated from LeafRegionEntry.cpp
   private final long bits1;
 

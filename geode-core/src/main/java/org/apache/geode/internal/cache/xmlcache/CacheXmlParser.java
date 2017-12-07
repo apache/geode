@@ -112,8 +112,7 @@ import org.apache.geode.internal.cache.FixedPartitionAttributesImpl;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.cache.PartitionAttributesImpl;
 import org.apache.geode.internal.cache.PartitionedRegionHelper;
-import org.apache.geode.internal.cache.lru.LRUCapacityController;
-import org.apache.geode.internal.cache.lru.MemLRUCapacityController;
+import org.apache.geode.internal.cache.eviction.CountLRUEviction;
 import org.apache.geode.internal.datasource.ConfigProperty;
 import org.apache.geode.internal.i18n.LocalizedStrings;
 import org.apache.geode.internal.jndi.JNDIInvoker;
@@ -2110,7 +2109,7 @@ public class CacheXmlParser extends CacheXml implements ContentHandler {
    */
   private void startLRUEntryCount(Attributes atts) {
     final String maximum = atts.getValue(MAXIMUM);
-    int max = LRUCapacityController.DEFAULT_MAXIMUM_ENTRIES;
+    int max = CountLRUEviction.DEFAULT_MAXIMUM_ENTRIES;
     if (maximum != null) {
       max = parseInt(maximum);
     }
@@ -2137,7 +2136,7 @@ public class CacheXmlParser extends CacheXml implements ContentHandler {
       action = EvictionAction.parseAction(lruAction);
     }
     String maximum = atts.getValue(MAXIMUM);
-    int max = MemLRUCapacityController.DEFAULT_MAXIMUM_MEGABYTES;
+    int max = EvictionAttributes.DEFAULT_MEMORY_MAXIMUM;
     if (maximum != null) {
       max = parseInt(maximum);
     }

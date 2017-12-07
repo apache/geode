@@ -1305,7 +1305,7 @@ public class LocalizedStrings {
   public static final StringId NewLRUClockHand_SKIPPING_RECENTLY_USED_ENTRY =
       new StringId(1817, "skipping recently used entry {0}");
   public static final StringId NewLRUClockHand_UNLINKENTRY_CALLED =
-      new StringId(1818, "unlinkEntry called for {0}");
+      new StringId(1818, "destroyEntry called for {0}");
 
   public static final StringId Oplog_FAILED_READING_FILE_DURING_RECOVERY_FROM_0 =
       new StringId(1820, "Failed to read file during recovery from \"{0}\"");

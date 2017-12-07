@@ -23,8 +23,8 @@ import org.apache.geode.distributed.internal.DistributionConfig;
 import org.apache.geode.internal.DSCODE;
 import org.apache.geode.internal.HeapDataOutputStream;
 import org.apache.geode.internal.NullDataOutputStream;
-import org.apache.geode.internal.cache.lru.Sizeable;
 import org.apache.geode.internal.i18n.LocalizedStrings;
+import org.apache.geode.internal.size.Sizeable;
 import org.apache.geode.pdx.PdxInstance;
 
 /**

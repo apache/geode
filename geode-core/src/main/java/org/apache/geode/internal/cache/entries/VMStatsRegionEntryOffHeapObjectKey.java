@@ -1,3 +1,5 @@
+
+
 /*
  * Licensed to the Apache Software Foundation (ASF) under one or more contributor license
  * agreements. See the NOTICE file distributed with this work for additional information regarding
@@ -77,7 +79,7 @@ public class VMStatsRegionEntryOffHeapObjectKey extends VMStatsRegionEntryOffHea
       AtomicIntegerFieldUpdater.newUpdater(VMStatsRegionEntryOffHeapObjectKey.class, "hitCount");
   private static final AtomicIntegerFieldUpdater<VMStatsRegionEntryOffHeapObjectKey> MISS_COUNT_UPDATER =
       AtomicIntegerFieldUpdater.newUpdater(VMStatsRegionEntryOffHeapObjectKey.class, "missCount");
-  // ----------------------------------------- key code -------------------------------------------
+  // --------------------------------------- key fields -------------------------------------------
   // DO NOT modify this class. It was generated from LeafRegionEntry.cpp
   private final Object key;
 
