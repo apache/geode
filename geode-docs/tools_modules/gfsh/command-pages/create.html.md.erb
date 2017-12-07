@@ -671,9 +671,9 @@ Occurred on following members
 
 ## <a id="create_lucene_index" class="no-quick-link"></a>create lucene index
 
-Create a Lucene index.
+Create a Lucene index. For details on Lucene index creation, see [Apache Lucene Integration](../../../tools_modules/lucene_integration.html).
 
-See also [describe lucene index](describe.html#describe_lucene_index), [destroy lucene index](destroy.html#destroy_lucene_index), [list lucene indexes](list.html#list_lucene_indexes) and [search lucene](search.html#search_lucene).
+For additional Lucene-related gfsh commands, see [describe lucene index](describe.html#describe_lucene_index), [destroy lucene index](destroy.html#destroy_lucene_index), [list lucene indexes](list.html#list_lucene_indexes) and [search lucene](search.html#search_lucene).
 
 **Availability:** Online. You must be connected in <span class="keyword parmname">gfsh</span> to a JMX Manager member to use this command.
 
@@ -689,10 +689,10 @@ create lucene index --name=value --region=value --field=value(,value)*
 | Name                                               | Description                                                                            | Default |
 |----------------------------------------------------|----------------------------------------------------------------------------------------|---------|
 | <span class="keyword parmname">\\-\\-name</span>       | *Required.* Name of the index to create.                                               |         |
-| <span class="keyword parmname">\\-\\-region</span>     | *Required.* Name/Path of the region which corresponds to the "from" clause in a query. |         |
-| <span class="keyword parmname">\\-\\-field</span>      | *Required.* Field of the region values that are referenced by the index. To treat the entire value as a single field, specify `__REGION_VALUE_FIELD`. |         |
-| <span class="keyword parmname">&#8209;&#8209;analyzer</span>   | Analyzer to extract terms from text. Use `DEFAULT` to specify the default analyzer.                                  |         |
-| <span class="keyword parmname">&#8209;&#8209;serializer</span>   | Fully qualified name of the class that implements the `LuceneSerializer` interface to be used with this index.     |         |
+| <span class="keyword parmname">\\-\\-region</span>     | *Required.* Name/Path of the region on which to define the index. |         |
+| <span class="keyword parmname">\\-\\-field</span>      | *Required.* Field(s) of the region values that are referenced by the index, specified as a comma-separated list. To treat the entire value as a single field, specify `__REGION_VALUE_FIELD`. |         |
+| <span class="keyword parmname">&#8209;&#8209;analyzer</span>   | Analyzer(s) to extract terms from text, specified as a comma-separated list. If not specified, the default analyzer is used for all fields. If specified, the number of analyzers must exactly match the number of fields specified. When listing analyzers, use the keyword `DEFAULT` for any field that will use the default analyzer.                                  | Lucene `StandardAnalyzer`        |
+| <span class="keyword parmname">&#8209;&#8209;serializer</span>   | Fully qualified classname of the serializer to be used with this index. The serializer must implement the `LuceneSerializer` interface. You can use the built-in `org.apache.geode.cache.lucene.FlatFormatSerializer` to index and search collections and nested fields. If not specified, the simple default serializer is used, which indexes and searches only the top level fields of the region objects.   | simple serializer        |
 | <span class="keyword parmname">\\-\\-group</span>      | The index will be created on all the members in the specified member groups.                     |         |
 
 
