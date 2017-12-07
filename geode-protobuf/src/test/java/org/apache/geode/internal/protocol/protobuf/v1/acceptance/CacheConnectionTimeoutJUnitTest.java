@@ -154,8 +154,6 @@ public class CacheConnectionTimeoutJUnitTest {
   public void testResponsiveClientsStaysConnected() throws Exception {
     ProtobufProtocolSerializer protobufProtocolSerializer = new ProtobufProtocolSerializer();
 
-    MessageUtil.performAndVerifyHandshake(socket);
-
     ClientProtocol.Message putMessage =
         MessageUtil.makePutRequestMessage(serializationService, TEST_KEY, TEST_VALUE, TEST_REGION);
 
