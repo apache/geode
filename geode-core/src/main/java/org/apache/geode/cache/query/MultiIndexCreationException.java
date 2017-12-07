@@ -30,9 +30,9 @@ import org.apache.geode.cache.query.internal.DefaultQueryService;
  * <li>{@link IndexInvalidException}</li>
  * <li>{@link UnsupportedOperationException}</li>
  * </ul>
- * 
+ *
  * @since GemFire 8.1
- * 
+ *
  */
 public class MultiIndexCreationException extends Exception {
   private static final long serialVersionUID = 6312081720315894780L;
@@ -43,7 +43,7 @@ public class MultiIndexCreationException extends Exception {
 
   /**
    * Creates an {@link MultiIndexCreationException}
-   * 
+   *
    */
   public MultiIndexCreationException(HashMap<String, Exception> exceptionMap) {
     super();
@@ -52,7 +52,7 @@ public class MultiIndexCreationException extends Exception {
 
   /**
    * Returns a map of index names and Exceptions
-   * 
+   *
    * @return a map of index names and Exceptions
    */
   public Map<String, Exception> getExceptionsMap() {
@@ -61,7 +61,7 @@ public class MultiIndexCreationException extends Exception {
 
   /**
    * Returns a set of names for the indexes that failed to create
-   * 
+   *
    * @return set of failed index names
    */
   public Set<String> getFailedIndexNames() {

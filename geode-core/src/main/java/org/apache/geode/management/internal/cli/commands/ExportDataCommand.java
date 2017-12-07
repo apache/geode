@@ -16,7 +16,6 @@
 package org.apache.geode.management.internal.cli.commands;
 
 import java.io.File;
-import java.util.List;
 import java.util.Optional;
 
 import org.springframework.shell.core.annotation.CliCommand;
@@ -57,11 +56,7 @@ public class ExportDataCommand implements GfshCommand {
           help = CliStrings.EXPORT_DATA__PARALLEL_HELP) boolean parallel) {
 
     getSecurityService().authorize(Resource.DATA, Operation.READ, regionName);
-    final DistributedMember targetMember = CliUtil.getDistributedMemberByNameOrId(memberNameOrId);
-    if (targetMember == null) {
-      return ResultBuilder.createUserErrorResult(
-          CliStrings.format(CliStrings.EXPORT_DATA__MEMBER__NOT__FOUND, memberNameOrId));
-    }
+    final DistributedMember targetMember = getMember(memberNameOrId);
 
     Optional<Result> validationResult = validatePath(filePath, dirPath, parallel);
     if (validationResult.isPresent()) {
@@ -73,8 +68,8 @@ public class ExportDataCommand implements GfshCommand {
       String path = dirPath != null ? defaultFileName(dirPath, regionName) : filePath;
       final String args[] = {regionName, path, Boolean.toString(parallel)};
 
-      ResultCollector<?, ?> rc = CliUtil.executeFunction(exportDataFunction, args, targetMember);
-      result = DataCommandUtil.getFunctionResult(rc, CliStrings.EXPORT_DATA);
+      ResultCollector<?, ?> rc = executeFunction(exportDataFunction, args, targetMember);
+      result = CliUtil.getFunctionResult(rc, CliStrings.EXPORT_DATA);
     } catch (CacheClosedException e) {
       result = ResultBuilder.createGemFireErrorResult(e.getMessage());
     } catch (FunctionInvocationTargetException e) {

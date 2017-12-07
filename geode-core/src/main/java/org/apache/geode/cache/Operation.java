@@ -17,8 +17,9 @@
 package org.apache.geode.cache;
 
 import java.io.*;
-import org.apache.geode.internal.cache.OpType;
+
 import org.apache.geode.cache.execute.FunctionService;
+import org.apache.geode.internal.cache.OpType;
 
 /**
  * Enumerated type for an event operation. This class describes the operation that generated the
@@ -75,7 +76,7 @@ public final class Operation implements java.io.Serializable {
 
   /**
    * An entry creation.
-   * 
+   *
    * @see Region#create(Object, Object)
    */
   public static final Operation CREATE = new Operation("CREATE", false, // isLocal
@@ -84,7 +85,7 @@ public final class Operation implements java.io.Serializable {
 
   /**
    * An entry creation caused by a putAll invocation
-   * 
+   *
    * @see Region#putAll
    */
   public static final Operation PUTALL_CREATE = new Operation("PUTALL_CREATE", false, // isLocal
@@ -93,7 +94,7 @@ public final class Operation implements java.io.Serializable {
 
   /**
    * A 'value for key' operation.
-   * 
+   *
    * @see Region#get(Object)
    */
   public static final Operation GET = new Operation("GET", false, // isLocal
@@ -102,7 +103,7 @@ public final class Operation implements java.io.Serializable {
 
   /**
    * A 'entry for key' operation.
-   * 
+   *
    * @see Region#getEntry(Object)
    */
   public static final Operation GET_ENTRY = new Operation("GET_ENTRY", false, // isLocal
@@ -111,7 +112,7 @@ public final class Operation implements java.io.Serializable {
 
   /**
    * A 'check for existence of key' operation.
-   * 
+   *
    * @see Region#containsKey(Object)
    */
   public static final Operation CONTAINS_KEY = new Operation("CONTAINS_KEY", false, // isLocal
@@ -119,7 +120,7 @@ public final class Operation implements java.io.Serializable {
       OP_TYPE_CONTAINS_KEY, OP_DETAILS_NONE);
   /**
    * A 'check for existence of value' operation.
-   * 
+   *
    * @see Region#containsValueForKey(Object)
    */
   public static final Operation CONTAINS_VALUE = new Operation("CONTAINS_VALUE", false, // isLocal
@@ -128,7 +129,7 @@ public final class Operation implements java.io.Serializable {
 
   /**
    * A 'check for existence of value for given key' operation.
-   * 
+   *
    * @see Region#containsValueForKey(Object)
    */
   public static final Operation CONTAINS_VALUE_FOR_KEY =
@@ -138,7 +139,7 @@ public final class Operation implements java.io.Serializable {
 
   /**
    * A 'function execution' operation.
-   * 
+   *
    * @see FunctionService
    */
   public static final Operation FUNCTION_EXECUTION = new Operation("FUNCTION_EXECUTION", false, // isLocal
@@ -147,7 +148,7 @@ public final class Operation implements java.io.Serializable {
 
   /**
    * An entry creation caused by a netsearch
-   * 
+   *
    * @see Region#get(Object)
    */
   public static final Operation SEARCH_CREATE = new Operation("SEARCH_CREATE", false, // isLocal
@@ -156,7 +157,7 @@ public final class Operation implements java.io.Serializable {
 
   /**
    * An entry creation caused by a local loader
-   * 
+   *
    * @see Region#get(Object)
    * @see CacheLoader
    */
@@ -165,7 +166,7 @@ public final class Operation implements java.io.Serializable {
       OP_TYPE_CREATE, OP_DETAILS_LOCAL_LOAD);
   /**
    * An entry creation caused by a net loader
-   * 
+   *
    * @see Region#get(Object)
    * @see CacheLoader
    */
@@ -175,7 +176,7 @@ public final class Operation implements java.io.Serializable {
 
   /**
    * An entry update.
-   * 
+   *
    * @see Region#put(Object, Object)
    */
   public static final Operation UPDATE = new Operation("UPDATE", false, // isLocal
@@ -184,7 +185,7 @@ public final class Operation implements java.io.Serializable {
 
   /**
    * An entry update caused by a putAll invocation.
-   * 
+   *
    * @see Region#putAll
    */
   public static final Operation PUTALL_UPDATE = new Operation("PUTALL_UPDATE", false, // isLocal
@@ -193,7 +194,7 @@ public final class Operation implements java.io.Serializable {
 
   /**
    * An entry update caused by a net search.
-   * 
+   *
    * @see Region#get(Object)
    */
   public static final Operation SEARCH_UPDATE = new Operation("SEARCH_UPDATE", false, // isLocal
@@ -202,7 +203,7 @@ public final class Operation implements java.io.Serializable {
 
   /**
    * An entry update caused by a local load.
-   * 
+   *
    * @see Region#get(Object)
    * @see CacheLoader
    */
@@ -212,7 +213,7 @@ public final class Operation implements java.io.Serializable {
 
   /**
    * An entry update caused by a net load.
-   * 
+   *
    * @see Region#get(Object)
    * @see CacheLoader
    */
@@ -222,7 +223,7 @@ public final class Operation implements java.io.Serializable {
 
   /**
    * An entry distributed invalidate.
-   * 
+   *
    * @see Region#invalidate(Object)
    */
   public static final Operation INVALIDATE = new Operation("INVALIDATE", false, // isLocal
@@ -231,7 +232,7 @@ public final class Operation implements java.io.Serializable {
 
   /**
    * An entry local invalidate.
-   * 
+   *
    * @see Region#localInvalidate(Object)
    */
   public static final Operation LOCAL_INVALIDATE = new Operation("LOCAL_INVALIDATE", true, // isLocal
@@ -240,7 +241,7 @@ public final class Operation implements java.io.Serializable {
 
   /**
    * An entry distributed destroy.
-   * 
+   *
    * @see Region#destroy(Object)
    */
   public static final Operation DESTROY = new Operation("DESTROY", false, // isLocal
@@ -248,7 +249,7 @@ public final class Operation implements java.io.Serializable {
       OP_TYPE_DESTROY, OP_DETAILS_NONE);
   /**
    * An entry local destroy.
-   * 
+   *
    * @see Region#localDestroy(Object)
    */
   public static final Operation LOCAL_DESTROY = new Operation("LOCAL_DESTROY", true, // isLocal
@@ -257,7 +258,7 @@ public final class Operation implements java.io.Serializable {
 
   /**
    * An entry local destroy caused by an eviction.
-   * 
+   *
    * @see Region#localDestroy(Object)
    */
   public static final Operation EVICT_DESTROY = new Operation("EVICT_DESTROY", true, // isLocal
@@ -267,7 +268,7 @@ public final class Operation implements java.io.Serializable {
 
   /**
    * A region load snapshot.
-   * 
+   *
    * @see Region#loadSnapshot
    */
   public static final Operation REGION_LOAD_SNAPSHOT = new Operation("REGION_LOAD_SNAPSHOT", false, // isLocal
@@ -276,7 +277,7 @@ public final class Operation implements java.io.Serializable {
 
   /**
    * A region local destroy.
-   * 
+   *
    * @see Region#localDestroyRegion()
    */
   public static final Operation REGION_LOCAL_DESTROY = new Operation("REGION_LOCAL_DESTROY", true, // isLocal
@@ -285,7 +286,7 @@ public final class Operation implements java.io.Serializable {
 
   /**
    * A region create.
-   * 
+   *
    * @see Region#createSubregion
    * @see Cache#createRegion
    */
@@ -295,7 +296,7 @@ public final class Operation implements java.io.Serializable {
 
   /**
    * A region close
-   * 
+   *
    * @see Region#close
    */
   public static final Operation REGION_CLOSE = new Operation("REGION_CLOSE", true, // isLocal
@@ -305,7 +306,7 @@ public final class Operation implements java.io.Serializable {
 
   /**
    * A region distributed destroy.
-   * 
+   *
    * @see Region#destroyRegion()
    */
   public static final Operation REGION_DESTROY = new Operation("REGION_DESTROY", false, // isLocal
@@ -314,7 +315,7 @@ public final class Operation implements java.io.Serializable {
 
   /**
    * An entry distributed destroy triggered by expiration
-   * 
+   *
    * @see RegionAttributes#getEntryTimeToLive
    * @see RegionAttributes#getEntryIdleTimeout
    * @see ExpirationAction#DESTROY
@@ -324,7 +325,7 @@ public final class Operation implements java.io.Serializable {
       OP_TYPE_DESTROY, OP_DETAILS_EXPIRE);
   /**
    * An entry local destroy triggered by expiration
-   * 
+   *
    * @see RegionAttributes#getEntryTimeToLive
    * @see RegionAttributes#getEntryIdleTimeout
    * @see ExpirationAction#LOCAL_DESTROY
@@ -334,7 +335,7 @@ public final class Operation implements java.io.Serializable {
       OP_TYPE_DESTROY, OP_DETAILS_EXPIRE);
   /**
    * An entry distributed invalidate triggered by expiration
-   * 
+   *
    * @see RegionAttributes#getEntryTimeToLive
    * @see RegionAttributes#getEntryIdleTimeout
    * @see ExpirationAction#INVALIDATE
@@ -345,7 +346,7 @@ public final class Operation implements java.io.Serializable {
 
   /**
    * An entry local invalidate triggered by expiration
-   * 
+   *
    * @see RegionAttributes#getEntryTimeToLive
    * @see RegionAttributes#getEntryIdleTimeout
    * @see ExpirationAction#LOCAL_INVALIDATE
@@ -357,7 +358,7 @@ public final class Operation implements java.io.Serializable {
 
   /**
    * A region distributed destroy triggered by expiration
-   * 
+   *
    * @see RegionAttributes#getRegionTimeToLive
    * @see RegionAttributes#getRegionIdleTimeout
    * @see ExpirationAction#DESTROY
@@ -368,7 +369,7 @@ public final class Operation implements java.io.Serializable {
           OP_TYPE_DESTROY, OP_DETAILS_EXPIRE);
   /**
    * A region local destroy triggered by expiration
-   * 
+   *
    * @see RegionAttributes#getRegionTimeToLive
    * @see RegionAttributes#getRegionIdleTimeout
    * @see ExpirationAction#LOCAL_DESTROY
@@ -379,7 +380,7 @@ public final class Operation implements java.io.Serializable {
           OP_TYPE_DESTROY, OP_DETAILS_EXPIRE);
   /**
    * A region distributed invalidate triggered by expiration
-   * 
+   *
    * @see RegionAttributes#getRegionTimeToLive
    * @see RegionAttributes#getRegionIdleTimeout
    * @see ExpirationAction#INVALIDATE
@@ -390,7 +391,7 @@ public final class Operation implements java.io.Serializable {
           OP_TYPE_INVALIDATE, OP_DETAILS_EXPIRE);
   /**
    * A region local invalidate triggered by expiration
-   * 
+   *
    * @see RegionAttributes#getRegionTimeToLive
    * @see RegionAttributes#getRegionIdleTimeout
    * @see ExpirationAction#LOCAL_INVALIDATE
@@ -401,7 +402,7 @@ public final class Operation implements java.io.Serializable {
           OP_TYPE_INVALIDATE, OP_DETAILS_EXPIRE);
   /**
    * A region local invalidate.
-   * 
+   *
    * @see Region#localInvalidateRegion()
    */
   public static final Operation REGION_LOCAL_INVALIDATE =
@@ -411,7 +412,7 @@ public final class Operation implements java.io.Serializable {
 
   /**
    * A region distributed invalidate.
-   * 
+   *
    * @see Region#invalidateRegion()
    */
   public static final Operation REGION_INVALIDATE = new Operation("REGION_INVALIDATE", false, // isLocal
@@ -420,7 +421,7 @@ public final class Operation implements java.io.Serializable {
 
   /**
    * A region clear.
-   * 
+   *
    * @see Region#clear
    */
   public static final Operation REGION_CLEAR = new Operation("REGION_CLEAR", false, // isLocal
@@ -428,7 +429,7 @@ public final class Operation implements java.io.Serializable {
       OP_TYPE_CLEAR, OP_DETAILS_NONE);
   /**
    * A region local clear.
-   * 
+   *
    * @see Region#localClear
    */
   public static final Operation REGION_LOCAL_CLEAR = new Operation("REGION_LOCAL_CLEAR", true, // isLocal
@@ -437,7 +438,7 @@ public final class Operation implements java.io.Serializable {
 
   /**
    * A cache create. Note that this is marked as a region operation.
-   * 
+   *
    * @see CacheFactory#create
    */
   public static final Operation CACHE_CREATE = new Operation("CACHE_CREATE", true, // isLocal
@@ -446,7 +447,7 @@ public final class Operation implements java.io.Serializable {
 
   /**
    * A cache close. Note that this is marked as a region operation.
-   * 
+   *
    * @see Cache#close()
    */
   public static final Operation CACHE_CLOSE = new Operation("CACHE_CLOSE", true, // isLocal
@@ -467,7 +468,7 @@ public final class Operation implements java.io.Serializable {
 
   /**
    * A region destroy triggered by {@link ResumptionAction#REINITIALIZE}.
-   * 
+   *
    * @see ResumptionAction#REINITIALIZE
    */
   public static final Operation REGION_REINITIALIZE = new Operation("REGION_REINITIALIZE", true, // isLocal
@@ -476,7 +477,7 @@ public final class Operation implements java.io.Serializable {
 
   /**
    * A cache close triggered by {@link LossAction#RECONNECT}.
-   * 
+   *
    * @see LossAction#RECONNECT
    */
   public static final Operation CACHE_RECONNECT = new Operation("CACHE_RECONNECT", true, // isLocal
@@ -485,7 +486,7 @@ public final class Operation implements java.io.Serializable {
 
   /**
    * An atomic entry creation operation
-   * 
+   *
    * @see java.util.concurrent.ConcurrentMap#putIfAbsent(Object, Object)
    * @since GemFire 6.5
    */
@@ -495,7 +496,7 @@ public final class Operation implements java.io.Serializable {
 
   /**
    * An atomic update operation
-   * 
+   *
    * @see java.util.concurrent.ConcurrentMap#replace(Object, Object, Object)
    * @since GemFire 6.5
    */
@@ -505,7 +506,7 @@ public final class Operation implements java.io.Serializable {
 
   /**
    * An atomic destroy destroy operation
-   * 
+   *
    * @see java.util.concurrent.ConcurrentMap#remove(Object, Object)
    * @since GemFire 6.5
    */
@@ -524,7 +525,7 @@ public final class Operation implements java.io.Serializable {
 
   /**
    * An entry distributed destroy caused by a removeAll.
-   * 
+   *
    * @see Region#removeAll(java.util.Collection)
    * @since GemFire 8.1
    */
@@ -689,7 +690,7 @@ public final class Operation implements java.io.Serializable {
 
   /**
    * Returns true if this operation was initiated by a removeAll.
-   * 
+   *
    * @see Region#removeAll(java.util.Collection)
    * @since GemFire 8.1
    */
@@ -741,7 +742,7 @@ public final class Operation implements java.io.Serializable {
 
   /**
    * Answer true if this operation resulted from expiration.
-   * 
+   *
    * @return true if this operation resulted from expiration
    *
    */
@@ -751,7 +752,7 @@ public final class Operation implements java.io.Serializable {
 
   /**
    * Answer true if this operation resulted from eviction
-   * 
+   *
    * @return true if this operatino resulted from eviction
    */
   public boolean isEviction() {
@@ -766,7 +767,7 @@ public final class Operation implements java.io.Serializable {
    * the same VM as where the data is hosted. If true is returned, and
    * {@link CacheEvent#isOriginRemote} is true, it means the data is not hosted locally, but the
    * loader was run local to the data.
-   * 
+   *
    * @return true if this operation included a local loader execution
    */
   public boolean isLocalLoad() {
@@ -777,7 +778,7 @@ public final class Operation implements java.io.Serializable {
    * Returns true if this operation included a loader running that was remote from the cache that
    * requested it, i.e., a netLoad. Note that the cache that requested the netLoad may not be this
    * cache.
-   * 
+   *
    * @return true if this operation included a netLoad
    */
   public boolean isNetLoad() {
@@ -786,7 +787,7 @@ public final class Operation implements java.io.Serializable {
 
   /**
    * Returns true if this operation included running a loader.
-   * 
+   *
    * @return true if isLocalLoad or isNetLoad
    */
   public boolean isLoad() {
@@ -806,7 +807,7 @@ public final class Operation implements java.io.Serializable {
 
   /**
    * Returns true if this operation was a {@link #isNetSearch net search} or a {@link #isLoad load}.
-   * 
+   *
    * @return true if this operation include a netSearch or any type of load.
    */
   public boolean isSearchOrLoad() {
@@ -817,7 +818,7 @@ public final class Operation implements java.io.Serializable {
   /**
    * Returns true if this operation is a ConcurrentMap operation that guarantees the old value to be
    * returned no matter what expense may be incurred in doing so.
-   * 
+   *
    * @return true if this operation has this guarantee
    * @since GemFire 6.5
    */
@@ -873,7 +874,7 @@ public final class Operation implements java.io.Serializable {
 
   /**
    * Returns a string representation for this operation.
-   * 
+   *
    * @return the name of this operation.
    */
   @Override

@@ -21,8 +21,8 @@ import org.apache.geode.management.internal.cli.json.GfJsonException;
 import org.apache.geode.management.internal.cli.json.GfJsonObject;
 
 /**
- * 
- * 
+ *
+ *
  * @since GemFire 7.0
  */
 public class CompositeResultData extends AbstractResultData {
@@ -44,7 +44,7 @@ public class CompositeResultData extends AbstractResultData {
   }
 
   /**
-   * 
+   *
    * @param headerText
    * @return this CompositeResultData
    * @throws ResultDataException If the value is non-finite number or if the key is null.
@@ -54,7 +54,7 @@ public class CompositeResultData extends AbstractResultData {
   }
 
   /**
-   * 
+   *
    * @param footerText
    * @return this CompositeResultData
    * @throws ResultDataException If the value is non-finite number or if the key is null.
@@ -128,7 +128,7 @@ public class CompositeResultData extends AbstractResultData {
   }
 
   /**
-   * 
+   *
    * @since GemFire 7.0
    */
   public static class SectionResultData {

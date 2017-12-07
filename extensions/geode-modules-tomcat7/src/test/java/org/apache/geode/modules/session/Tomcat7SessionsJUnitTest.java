@@ -16,9 +16,6 @@ package org.apache.geode.modules.session;
 
 import static org.junit.Assert.assertEquals;
 
-import org.apache.geode.modules.session.catalina.Tomcat7DeltaSessionManager;
-import org.apache.geode.test.junit.categories.IntegrationTest;
-
 import com.meterware.httpunit.GetMethodWebRequest;
 import com.meterware.httpunit.WebConversation;
 import com.meterware.httpunit.WebRequest;
@@ -26,6 +23,9 @@ import com.meterware.httpunit.WebResponse;
 import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
+
+import org.apache.geode.modules.session.catalina.Tomcat7DeltaSessionManager;
+import org.apache.geode.test.junit.categories.IntegrationTest;
 
 @Category(IntegrationTest.class)
 public class Tomcat7SessionsJUnitTest extends TestSessionsBase {

@@ -40,7 +40,7 @@ public class ProxyInfo {
 
   /**
    * public constructor
-   * 
+   *
    * @param proxyInstance
    * @param objectName
    */
@@ -53,7 +53,7 @@ public class ProxyInfo {
 
   /**
    * get the proxy instance
-   * 
+   *
    * @return proxyInstance
    */
   public Object getProxyInstance() {
@@ -63,7 +63,7 @@ public class ProxyInfo {
 
   /**
    * get MBean name
-   * 
+   *
    * @return ObjectName
    */
   public ObjectName getObjectName() {

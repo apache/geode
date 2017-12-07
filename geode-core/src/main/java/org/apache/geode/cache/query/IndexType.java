@@ -17,7 +17,7 @@ package org.apache.geode.cache.query;
 
 /**
  * @deprecated As of 6.6.1. Check {@link QueryService} for changes.
- * 
+ *
  *             Enumerated type for types of {@linkplain Index indexes}
  *
  * @since GemFire 4.0

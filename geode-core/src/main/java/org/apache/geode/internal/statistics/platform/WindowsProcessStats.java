@@ -28,23 +28,23 @@ import org.apache.geode.internal.statistics.platform.ProcessStats;
  * using a GemFire system.
  */
 public class WindowsProcessStats {
-  private final static int handlesINT = 0;
-  private final static int priorityBaseINT = 1;
-  private final static int threadsINT = 2;
+  private static final int handlesINT = 0;
+  private static final int priorityBaseINT = 1;
+  private static final int threadsINT = 2;
 
-  private final static int activeTimeLONG = 0;
-  private final static int pageFaultsLONG = 1;
-  private final static int pageFileSizeLONG = 2;
-  private final static int pageFileSizePeakLONG = 3;
-  private final static int privateSizeLONG = 4;
-  private final static int systemTimeLONG = 5;
-  private final static int userTimeLONG = 6;
-  private final static int virtualSizeLONG = 7;
-  private final static int virtualSizePeakLONG = 8;
-  private final static int workingSetSizeLONG = 9;
-  private final static int workingSetSizePeakLONG = 10;
+  private static final int activeTimeLONG = 0;
+  private static final int pageFaultsLONG = 1;
+  private static final int pageFileSizeLONG = 2;
+  private static final int pageFileSizePeakLONG = 3;
+  private static final int privateSizeLONG = 4;
+  private static final int systemTimeLONG = 5;
+  private static final int userTimeLONG = 6;
+  private static final int virtualSizeLONG = 7;
+  private static final int virtualSizePeakLONG = 8;
+  private static final int workingSetSizeLONG = 9;
+  private static final int workingSetSizePeakLONG = 10;
 
-  private final static StatisticsType myType;
+  private static final StatisticsType myType;
 
   private static void checkOffset(String name, int offset) {
     int id = myType.nameToId(name);
@@ -129,7 +129,7 @@ public class WindowsProcessStats {
 
   /**
    * Returns a <code>ProcessStats</code> that wraps Windows process <code>Statistics</code>.
-   * 
+   *
    * @since GemFire 3.5
    */
   public static ProcessStats createProcessStats(final Statistics stats) { // TODO: was

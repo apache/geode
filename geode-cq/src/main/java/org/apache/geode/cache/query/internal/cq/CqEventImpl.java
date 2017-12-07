@@ -78,7 +78,7 @@ public class CqEventImpl implements CqEvent {
 
   /**
    * Get the key relating to the event.
-   * 
+   *
    * @return Object key.
    */
   public Object getKey() {
@@ -149,4 +149,3 @@ public class CqEventImpl implements CqEvent {
     return buffer.toString();
   }
 }
-

@@ -18,13 +18,14 @@ import static org.assertj.core.api.Assertions.*;
 import static org.mockito.Matchers.*;
 import static org.mockito.Mockito.*;
 
-import org.apache.geode.distributed.internal.DistributionMessage;
-import org.apache.geode.test.junit.categories.UnitTest;
+import java.nio.ByteBuffer;
+import java.nio.channels.SocketChannel;
+
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
-import java.nio.ByteBuffer;
-import java.nio.channels.SocketChannel;
+import org.apache.geode.distributed.internal.DistributionMessage;
+import org.apache.geode.test.junit.categories.UnitTest;
 
 @Category(UnitTest.class)
 public class ConnectionTest {

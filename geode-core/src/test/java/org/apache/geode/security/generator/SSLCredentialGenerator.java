@@ -14,16 +14,17 @@
  */
 package org.apache.geode.security.generator;
 
-import org.apache.geode.internal.logging.LogService;
-import org.apache.geode.security.AuthenticationFailedException;
-import org.apache.logging.log4j.Logger;
+import static org.apache.geode.distributed.ConfigurationProperties.*;
 
 import java.io.File;
 import java.io.IOException;
 import java.security.Principal;
 import java.util.Properties;
 
-import static org.apache.geode.distributed.ConfigurationProperties.*;
+import org.apache.logging.log4j.Logger;
+
+import org.apache.geode.internal.logging.LogService;
+import org.apache.geode.security.AuthenticationFailedException;
 
 public class SSLCredentialGenerator extends CredentialGenerator {
 

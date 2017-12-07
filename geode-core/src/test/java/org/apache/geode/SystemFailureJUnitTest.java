@@ -18,13 +18,13 @@ import static org.junit.Assert.*;
 
 import java.util.concurrent.TimeUnit;
 
+import org.awaitility.Awaitility;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
 import org.apache.geode.test.junit.categories.UnitTest;
-import org.awaitility.Awaitility;
 
 @Category(UnitTest.class)
 public class SystemFailureJUnitTest {

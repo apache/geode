@@ -29,7 +29,7 @@ import com.sun.jmx.remote.security.MBeanServerFileAccessController;
  * read-write access. But in GemFire some of the attributes are implemented as operations in order
  * to reduce federation cost due to large payloads of those attribute. These attributes are exposed
  * as operations but require readOnly access. This class filter those methods for read access.
- * 
+ *
  */
 
 

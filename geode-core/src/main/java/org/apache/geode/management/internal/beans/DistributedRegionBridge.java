@@ -42,8 +42,8 @@ import org.apache.geode.management.internal.beans.stats.RegionClusterStatsMonito
 /**
  * Bridge to collect data from all the proxies from a named region. MBeanAggregator will create this
  * bridge and inject it into a DistributedRegionMBean
- * 
- * 
+ *
+ *
  */
 public class DistributedRegionBridge {
 
@@ -89,7 +89,7 @@ public class DistributedRegionBridge {
 
   /**
    * Public constructor.
-   * 
+   *
    * @param objectName Name of the MBean
    * @param proxy reference to the actual proxy
    */
@@ -103,7 +103,7 @@ public class DistributedRegionBridge {
 
   /**
    * Adds a proxy to the Proxy set
-   * 
+   *
    * @param objectName name of the MBean
    * @param proxy reference to the actual proxy
    */
@@ -116,7 +116,7 @@ public class DistributedRegionBridge {
 
   /**
    * Removes proxy from the proxy set
-   * 
+   *
    * @param objectName name of the MBean
    * @param proxy reference to the actual proxy
    * @return true if this DistributedRegion's proxy set is empty
@@ -137,7 +137,7 @@ public class DistributedRegionBridge {
   }
 
   /**
-   * 
+   *
    * @return Eviction Attributes of the Region
    */
   public EvictionAttributesData getEvictionAttributes() {
@@ -162,7 +162,7 @@ public class DistributedRegionBridge {
   }
 
   /**
-   * 
+   *
    * @return fixed partition attributes of a partition region if its fixed partitioned
    */
   public FixedPartitionAttributesData[] getFixedPartitionAttributesData() {
@@ -186,7 +186,7 @@ public class DistributedRegionBridge {
   }
 
   /**
-   * 
+   *
    * @return number of members where this region is present
    */
   public int getMemberCount() {
@@ -212,7 +212,7 @@ public class DistributedRegionBridge {
   }
 
   /**
-   * 
+   *
    * @return membership attributes
    */
   public MembershipAttributesData getMembershipAttributes() {
@@ -236,7 +236,7 @@ public class DistributedRegionBridge {
   }
 
   /**
-   * 
+   *
    * @return name of the Region
    */
   public String getName() {
@@ -244,7 +244,7 @@ public class DistributedRegionBridge {
   }
 
   /**
-   * 
+   *
    * @return parent region name
    */
   public String getParentRegion() {
@@ -255,7 +255,7 @@ public class DistributedRegionBridge {
    * Lists the sub regions of the GemFire {@link Region} represented by this
    * {@link DistributedRegionMXBean}. If <code>recursive</code> is <code>true</code>, will return
    * sub-regions by traversing recursively.
-   * 
+   *
    * @param recursive if <code>true</code>, recursively traverses to find sub regions.
    * @return String array of sub region paths
    */
@@ -279,7 +279,7 @@ public class DistributedRegionBridge {
   }
 
   /**
-   * 
+   *
    * @return partitioned attributes
    */
   public PartitionAttributesData getPartitionAttributes() {
@@ -305,7 +305,7 @@ public class DistributedRegionBridge {
 
   /**
    * Region attributes
-   * 
+   *
    * @return region attributes
    */
   public RegionAttributesData getRegionAttributes() {
@@ -329,7 +329,7 @@ public class DistributedRegionBridge {
   }
 
   /**
-   * 
+   *
    * @return type of the region
    */
   public String getRegionType() {
@@ -337,7 +337,7 @@ public class DistributedRegionBridge {
   }
 
   /**
-   * 
+   *
    * @return full path of the region
    */
   public String getFullPath() {
@@ -345,7 +345,7 @@ public class DistributedRegionBridge {
   }
 
   /**
-   * 
+   *
    * @return Avg Latency of cache listener call
    */
   public long getCacheListenerCallsAvgLatency() {
@@ -354,7 +354,7 @@ public class DistributedRegionBridge {
   }
 
   /**
-   * 
+   *
    * @return Avg Latency of cache writer call
    */
   public long getCacheWriterCallsAvgLatency() {
@@ -362,7 +362,7 @@ public class DistributedRegionBridge {
   }
 
   /**
-   * 
+   *
    * @return creates per second for the Regions
    */
   public float getCreatesRate() {
@@ -371,7 +371,7 @@ public class DistributedRegionBridge {
 
 
   /**
-   * 
+   *
    * @return destroy per second for the Regions
    */
   public float getDestroyRate() {
@@ -379,7 +379,7 @@ public class DistributedRegionBridge {
   }
 
   /**
-   * 
+   *
    * @return disk reads rate across disks belonging to Region
    */
   public float getDiskReadsRate() {
@@ -387,7 +387,7 @@ public class DistributedRegionBridge {
   }
 
   /**
-   * 
+   *
    * @return disk writes rate across region
    */
   public float getDiskWritesRate() {
@@ -396,7 +396,7 @@ public class DistributedRegionBridge {
 
 
   /**
-   * 
+   *
    * @return gets per second for the Regions
    */
   public float getGetsRate() {
@@ -404,7 +404,7 @@ public class DistributedRegionBridge {
   }
 
   /**
-   * 
+   *
    * @return total hit count
    */
   public long getHitCount() {
@@ -415,7 +415,7 @@ public class DistributedRegionBridge {
   }
 
   /**
-   * 
+   *
    * @return hit to miss ratio
    */
   public float getHitRatio() {
@@ -426,7 +426,7 @@ public class DistributedRegionBridge {
   }
 
   /**
-   * 
+   *
    * @return returns the last time the region was accessed
    */
   public long getLastAccessedTime() {
@@ -438,7 +438,7 @@ public class DistributedRegionBridge {
   }
 
   /**
-   * 
+   *
    * @return last update time of the region
    */
   public long getLastModifiedTime() {
@@ -449,7 +449,7 @@ public class DistributedRegionBridge {
   }
 
   /**
-   * 
+   *
    * @return entries destroyed rate in the region through both destroy cache operations and
    *         eviction.
    */
@@ -458,7 +458,7 @@ public class DistributedRegionBridge {
   }
 
   /**
-   * 
+   *
    * @return entry evictions rate triggered by LRU.
    */
   public float getLruEvictionRate() {
@@ -466,7 +466,7 @@ public class DistributedRegionBridge {
   }
 
   /**
-   * 
+   *
    * @return number of times cache missed on the local region
    */
   public long getMissCount() {
@@ -477,7 +477,7 @@ public class DistributedRegionBridge {
   }
 
   /**
-   * 
+   *
    * @return putAll per second for the Regions
    */
   public float getPutAllRate() {
@@ -485,7 +485,7 @@ public class DistributedRegionBridge {
   }
 
   /**
-   * 
+   *
    * @return Partition Region local put rate
    */
   public float getPutLocalRate() {
@@ -493,7 +493,7 @@ public class DistributedRegionBridge {
   }
 
   /**
-   * 
+   *
    * @return Average Latency for remote put
    */
   public long getPutRemoteAvgLatency() {
@@ -501,7 +501,7 @@ public class DistributedRegionBridge {
   }
 
   /**
-   * 
+   *
    * @return Latency for last remote put
    */
   public long getPutRemoteLatency() {
@@ -509,7 +509,7 @@ public class DistributedRegionBridge {
   }
 
   /**
-   * 
+   *
    * @return Partition Region remote put rate
    */
   public float getPutRemoteRate() {
@@ -517,7 +517,7 @@ public class DistributedRegionBridge {
   }
 
   /**
-   * 
+   *
    * @return puts per second for the Regions
    */
   public float getPutsRate() {
@@ -526,7 +526,7 @@ public class DistributedRegionBridge {
 
 
   /**
-   * 
+   *
    * @return number of entries
    */
   public long getSystemRegionEntryCount() {
@@ -539,7 +539,7 @@ public class DistributedRegionBridge {
 
 
   /**
-   * 
+   *
    * @return The current number of backups in progress on this disk store
    */
   public long getTotalDiskWritesProgress() {
@@ -547,7 +547,7 @@ public class DistributedRegionBridge {
   }
 
   /**
-   * 
+   *
    * @return consolidated count of bytes on each disk of the region
    */
   public long getTotalBytesOnDisk() {
@@ -555,7 +555,7 @@ public class DistributedRegionBridge {
   }
 
   /**
-   * 
+   *
    * @return The current number of entries whose value resides in the VM. The value may also have
    *         been written to disk.
    */
@@ -564,7 +564,7 @@ public class DistributedRegionBridge {
   }
 
   /**
-   * 
+   *
    * @return The current number of entries whose value is on disk and is not in memory. This is true
    *         of overflowed entries. It is also true of recovered entries that have not yet been
    *         faulted in.

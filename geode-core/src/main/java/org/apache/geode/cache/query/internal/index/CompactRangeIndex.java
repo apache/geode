@@ -66,7 +66,7 @@ import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.cache.LocalRegion;
 import org.apache.geode.internal.cache.RegionEntry;
 import org.apache.geode.internal.cache.RegionEntryContext;
-import org.apache.geode.internal.cache.VMThinRegionEntryHeap;
+import org.apache.geode.internal.cache.entries.VMThinRegionEntryHeap;
 import org.apache.geode.internal.cache.persistence.query.CloseableIterator;
 import org.apache.geode.internal.i18n.LocalizedStrings;
 import org.apache.geode.internal.logging.LogService;
@@ -77,11 +77,11 @@ import org.apache.geode.pdx.internal.PdxString;
  * at the expense of doing extra work at index maintenance. It is selected as the index
  * implementation when the indexed expression is a path expression and the from clause has only one
  * iterator. This implies there is only one value in the index for each region entry.
- * 
+ *
  * This index does not support the storage of projection attributes.
- * 
+ *
  * Currently this implementation only supports an index on a region path.
- * 
+ *
  * @since GemFire 6.0
  */
 public class CompactRangeIndex extends AbstractIndex {
@@ -114,7 +114,7 @@ public class CompactRangeIndex extends AbstractIndex {
 
   /**
    * Get the index type
-   * 
+   *
    * @return the type of index
    */
   public IndexType getType() {
@@ -181,14 +181,16 @@ public class CompactRangeIndex extends AbstractIndex {
     long start = updateIndexUseStats();
     ((AbstractIndex) indx).updateIndexUseStats();
     List data = new ArrayList();
-    CloseableIterator<IndexStoreEntry> outer = null;
+    Iterator<IndexStoreEntry> outer = null;
     Iterator inner = null;
     try {
       // We will iterate over each of the index Map to obtain the keys
-      outer = indexStore.iterator(null);
+      outer = ((MemoryIndexStore) indexStore).getKeysIterator();
 
       if (indx instanceof CompactRangeIndex) {
-        inner = ((CompactRangeIndex) indx).getIndexStorage().iterator(null);
+        IndexStore indexStore = ((CompactRangeIndex) indx).getIndexStorage();
+        inner = ((MemoryIndexStore) indexStore).getKeysIterator();
+
       } else {
         inner = ((RangeIndex) indx).getValueToEntriesMap().entrySet().iterator();
       }
@@ -252,10 +254,8 @@ public class CompactRangeIndex extends AbstractIndex {
     } finally {
       ((AbstractIndex) indx).updateIndexUseEndStats(start);
       updateIndexUseEndStats(start);
-      if (outer != null) {
-        outer.close();
-      }
-      if (inner != null && indx instanceof CompactRangeIndex) {
+      if (inner != null && indx instanceof CompactRangeIndex
+          && inner instanceof CloseableIterator) {
         ((CloseableIterator<IndexStoreEntry>) inner).close();
       }
     }
@@ -266,9 +266,9 @@ public class CompactRangeIndex extends AbstractIndex {
    * used. Like, if condition is "p.ID = e.ID", {@link IndexInfo} will contain Left as p.ID, Right
    * as e.ID and operator as TOK_EQ. This method will evaluate p.ID OR e.ID based on if it is inner
    * or outer RegionEntry, and verify the p.ID = e.ID.
-   * 
+   *
    * This method is called only for Memory indexstore
-   * 
+   *
    * @return true if entry value and index value are consistent.
    */
   protected boolean verifyInnerAndOuterEntryValues(IndexStoreEntry entry, ExecutionContext context,
@@ -682,9 +682,9 @@ public class CompactRangeIndex extends AbstractIndex {
   }
 
   /*
-   * 
+   *
    * @param lowerBoundKey the index key to match on
-   * 
+   *
    * @param lowerBoundOperator the operator to use to determine a match
    */
   private void addToResultsFromEntries(Object lowerBoundKey, int lowerBoundOperator,
@@ -698,15 +698,15 @@ public class CompactRangeIndex extends AbstractIndex {
   }
 
   /*
-   * 
+   *
    * @param lowerBoundKey the index key to match on for a lower bound on a ranged query, otherwise
    * the key to match on
-   * 
+   *
    * @param upperBoundKey the index key to match on for an upper bound on a ranged query, otherwise
    * null
-   * 
+   *
    * @param lowerBoundOperator the operator to use to determine a match against the lower bound
-   * 
+   *
    * @param upperBoundOperator the operator to use to determine a match against the upper bound
    */
   private void addToResultsFromEntries(Object lowerBoundKey, Object upperBoundKey,
@@ -855,10 +855,10 @@ public class CompactRangeIndex extends AbstractIndex {
    * This evaluates the left and right side of a where condition for which this Index was used.
    * Like, if condition is "ID > 1", {@link IndexInfo} will contain Left as ID, Right as '1' and
    * operator as TOK_GT. This method will evaluate ID from region entry value and verify the ID > 1.
-   * 
+   *
    * Note: IndexInfo is created for each query separately based on the condition being evaluated
    * using the Index.
-   * 
+   *
    * @return true if RegionEntry value satisfies the where condition (contained in IndexInfo).
    */
   protected boolean evaluateEntry(IndexInfo indexInfo, ExecutionContext context, Object keyVal)
@@ -1437,7 +1437,7 @@ public class CompactRangeIndex extends AbstractIndex {
      * the additional projection attribute. If the boolean isFirstItrOnEntry is tru e& additional
      * projection attribute is null, then teh 0th iterator itself will evaluate to Region.Entry
      * Object.
-     * 
+     *
      * The 2nd element of Object Array contains the Struct object ( tuple) created. If the boolean
      * isFirstItrOnEntry is false, then the first attribute of the Struct object is obtained by
      * evaluating the additional projection attribute.
@@ -1648,5 +1648,3 @@ public class CompactRangeIndex extends AbstractIndex {
     }
   }
 }
-
-

@@ -26,10 +26,10 @@ import org.apache.geode.distributed.DistributedMember;
  * Indicates a low memory condition either on the local or a remote {@link Cache}. The
  * {@link ResourceManager} monitors local tenured memory consumption and determines when operations
  * are rejected.
- * 
+ *
  * @see ResourceManager#setCriticalHeapPercentage(float)
  * @see Region#put(Object, Object)
- * 
+ *
  * @since GemFire 6.0
  */
 public class LowMemoryException extends ResourceException {
@@ -46,7 +46,7 @@ public class LowMemoryException extends ResourceException {
 
   /**
    * Constructs an instance of <code>LowMemoryException</code> with the specified detail message.
-   * 
+   *
    * @param msg the detail message
    * @param criticalMembers the member(s) which are/were in a critical state
    */
@@ -57,7 +57,7 @@ public class LowMemoryException extends ResourceException {
 
   /**
    * Get a read-only set of members in a critical state at the time this exception was constructed.
-   * 
+   *
    * @return the critical members
    */
   public Set<DistributedMember> getCriticalMembers() {

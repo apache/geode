@@ -40,7 +40,7 @@ import com.sun.tools.attach.VirtualMachine;
 
 /**
  * Controls a {@link ControllableProcess} using the Attach API to manipulate MBeans.
- * 
+ *
  * @since GemFire 8.0
  */
 class MBeanProcessController implements ProcessController {
@@ -60,9 +60,9 @@ class MBeanProcessController implements ProcessController {
 
   /**
    * Constructs an instance for controlling a local process.
-   * 
+   *
    * @param pid process id identifying the process to attach to
-   * 
+   *
    * @throws IllegalArgumentException if pid is not a positive integer
    */
   MBeanProcessController(final MBeanControllerParameters arguments, final int pid) {
@@ -99,7 +99,7 @@ class MBeanProcessController implements ProcessController {
 
   /**
    * Connects to the process and tells it to shut down.
-   * 
+   *
    * @param namePattern the name pattern of the MBean to use for stopping
    * @param pidAttribute the name of the MBean attribute with the process id to compare against
    * @param stopMethod the name of the MBean operation to invoke
@@ -119,13 +119,13 @@ class MBeanProcessController implements ProcessController {
 
   /**
    * Connects to the process and acquires its status.
-   * 
+   *
    * @param namePattern the name pattern of the MBean to use for stopping
    * @param pidAttribute the name of the MBean attribute with the process id to compare against
    * @param statusMethod the name of the MBean operation to invoke
    * @param attributes the names of the MBean attributes to compare with expected values
    * @param values the expected values of the specified MBean attributes
-   * 
+   *
    * @return string describing the status of the process
    *
    * @throws ConnectionFailedException if there was a failure to connect to the local JMX connector
@@ -142,7 +142,7 @@ class MBeanProcessController implements ProcessController {
 
   /**
    * Connects to the process and use its MBean to stop it.
-   * 
+   *
    * @param namePattern the name pattern of the MBean to use for stopping
    * @param pidAttribute the name of the MBean attribute with the process id to compare against
    * @param methodName the name of the MBean operation to invoke
@@ -185,7 +185,7 @@ class MBeanProcessController implements ProcessController {
 
   /**
    * Connects to the JMX agent in the local process.
-   * 
+   *
    * @throws ConnectionFailedException if there was a failure to connect to the local JMX connector
    *         in the process
    * @throws IOException if the JDK management agent cannot be found and loaded
@@ -219,9 +219,9 @@ class MBeanProcessController implements ProcessController {
    * Uses the Attach API to connect to the local process and ensures that it has loaded the JMX
    * management agent. The JMXServiceURL identifying the local connector address for the JMX agent
    * in the process is returned.
-   * 
+   *
    * @return the address of the JMX API connector server for connecting to the local process
-   * 
+   *
    * @throws AttachNotSupportedException if unable to use the Attach API to connect to the process
    * @throws IOException if the JDK management agent cannot be found and loaded
    */
@@ -277,7 +277,7 @@ class MBeanProcessController implements ProcessController {
 
   /**
    * Builds the QueryExp used to identify the target MBean.
-   * 
+   *
    * @param pidAttribute the name of the MBean attribute with the process id to compare against
    * @param attributes the names of additional MBean attributes to compare with expected values
    * @param values the expected values of the specified MBean attributes
@@ -301,7 +301,7 @@ class MBeanProcessController implements ProcessController {
    * Builds an optional QueryExp to aid in matching the correct MBean using additional attributes
    * with the specified values. Returns null if no attributes and values were specified during
    * construction.
-   * 
+   *
    * @param attributes the names of additional MBean attributes to compare with expected values
    * @param values the expected values of the specified MBean attributes
    *
@@ -338,12 +338,12 @@ class MBeanProcessController implements ProcessController {
 
   /**
    * Invokes an operation on the specified MBean.
-   * 
+   *
    * @param objectName identifies the MBean
    * @param method the name of the operation method invoke
-   * 
+   *
    * @return the result of invoking the operation on the MBean specified or null
-   * 
+   *
    * @throws InstanceNotFoundException if the specified MBean is not registered in the MBean server
    * @throws IOException if a communication problem occurred when talking to the MBean server
    * @throws MBeanException if the MBean operation throws an exception

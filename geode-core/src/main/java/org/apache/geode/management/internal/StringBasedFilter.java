@@ -24,7 +24,7 @@ import org.apache.geode.management.ManagementException;
 
 /**
  * This is a string pattern based Filter with some limitations.
- * 
+ *
  *
  */
 
@@ -36,7 +36,7 @@ public class StringBasedFilter {
   private List<Pattern> inclusionPatternList;
 
   /**
-   * 
+   *
    */
   public StringBasedFilter(FilterParam params) {
     this.params = params;
@@ -49,7 +49,7 @@ public class StringBasedFilter {
   }
 
   /**
-   * 
+   *
    */
 
   public boolean isExcluded(String tokenToMatch) {

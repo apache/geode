@@ -20,7 +20,7 @@ package org.apache.geode.cache.operations;
  * Encapsulates a
  * {@link org.apache.geode.cache.operations.OperationContext.OperationCode#REGION_DESTROY} operation
  * for both the pre-operation and post-operation cases.
- * 
+ *
  * @since GemFire 5.5
  * @deprecated since Geode1.0, use {@link org.apache.geode.security.ResourcePermission} instead
  */
@@ -28,7 +28,7 @@ public class RegionDestroyOperationContext extends RegionOperationContext {
 
   /**
    * Constructor for the region destroy operation.
-   * 
+   *
    * @param postOperation true to set the post-operation flag
    */
   public RegionDestroyOperationContext(boolean postOperation) {
@@ -37,7 +37,7 @@ public class RegionDestroyOperationContext extends RegionOperationContext {
 
   /**
    * Return the operation associated with the <code>OperationContext</code> object.
-   * 
+   *
    * @return <code>OperationCode.REGION_DESTROY</code>.
    */
   @Override

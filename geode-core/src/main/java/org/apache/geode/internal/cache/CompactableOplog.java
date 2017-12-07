@@ -20,8 +20,8 @@ import org.apache.geode.internal.cache.persistence.DiskRegionView;
 
 /**
  * Contract that must be implemented by oplogs so that they can be compacted.
- * 
- * 
+ *
+ *
  * @since GemFire 6.5
  */
 

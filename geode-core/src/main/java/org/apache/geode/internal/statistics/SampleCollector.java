@@ -25,8 +25,6 @@ import java.util.List;
 import java.util.Map;
 
 import edu.umd.cs.findbugs.annotations.SuppressWarnings;
-
-import org.apache.geode.internal.io.RollingFileHandler;
 import org.apache.logging.log4j.Logger;
 
 import org.apache.geode.GemFireException;
@@ -34,6 +32,7 @@ import org.apache.geode.StatisticDescriptor;
 import org.apache.geode.Statistics;
 import org.apache.geode.StatisticsType;
 import org.apache.geode.internal.i18n.LocalizedStrings;
+import org.apache.geode.internal.io.RollingFileHandler;
 import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.internal.logging.log4j.LocalizedMessage;
 import org.apache.geode.internal.logging.log4j.LogMarker;
@@ -48,7 +47,7 @@ import org.apache.geode.internal.logging.log4j.LogMarker;
  * to statistics.
  * <p/>
  * Extracted from StatArchiveWriter.
- * 
+ *
  * @since GemFire 7.0
  */
 public class SampleCollector {
@@ -96,7 +95,7 @@ public class SampleCollector {
 
   /**
    * Constructs a new instance.
-   * 
+   *
    * @param sampler the stat sampler using this collector
    */
   public SampleCollector(StatisticsSampler sampler) {
@@ -110,9 +109,9 @@ public class SampleCollector {
 
   /**
    * Returns the {@link StatMonitorHandler}. If one does not currently exist it will be created.
-   * 
+   *
    * @return the StatMonitorHandler for adding monitors
-   * 
+   *
    * @throws IllegalStateException if no SampleCollector has been created and initialized yet
    */
   static StatMonitorHandler getStatMonitorHandler() {
@@ -136,7 +135,7 @@ public class SampleCollector {
   /**
    * Initializes this collector by creating a {@link StatArchiveHandler} and registering it as a
    * handler.
-   * 
+   *
    * @param config defines the configuration for the StatArchiveHandler
    * @param nanosTimeStamp the nanos time stamp to initialize stat archiver with
    * @param rollingFileHandler provides file rolling behavior
@@ -167,7 +166,7 @@ public class SampleCollector {
 
   /**
    * Adds a {@link SampleHandler} to this collector.
-   * 
+   *
    * @param handler the SampleHandler to add
    */
   public void addSampleHandler(SampleHandler handler) {
@@ -176,7 +175,7 @@ public class SampleCollector {
 
   /**
    * Removes a {@link SampleHandler} from this collector.
-   * 
+   *
    * @param handler the SampleHandler to remove
    */
   public void removeSampleHandler(SampleHandler handler) {
@@ -198,7 +197,7 @@ public class SampleCollector {
    * each sample. The delta in nanos can be determined by comparing any nano timeStamp to the first
    * nano timeStamp written to the archive file. Adding this delta to the recorded initial time in
    * milliseconds provides the actual (non-arbitrary) time for each sample.
-   * 
+   *
    * @param nanosTimeStamp an arbitrary time stamp in nanoseconds for this sample
    */
   public void sample(long nanosTimeStamp) {

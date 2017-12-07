@@ -279,7 +279,7 @@ public class DurableClientCommandsDUnitTest extends CliCommandTestBase {
 
   /**
    * Close the cq from the client-side
-   * 
+   *
    * @param cqName , Name of the cq which is to be close.
    */
   private void closeCq(final String cqName) {

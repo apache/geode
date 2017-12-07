@@ -21,16 +21,13 @@
  */
 package org.apache.geode.tools.pulse.tests.ui;
 
+import static org.apache.geode.tools.pulse.tests.ui.PulseTestUtils.*;
 import static org.junit.Assert.*;
 
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.List;
 
-import org.apache.geode.tools.pulse.tests.DataBrowserResultLoader;
-import org.apache.geode.tools.pulse.tests.rules.ScreenshotOnFailureRule;
-import org.apache.geode.tools.pulse.tests.rules.ServerRule;
-import org.apache.geode.tools.pulse.tests.rules.WebDriverRule;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.ClassRule;
@@ -43,9 +40,12 @@ import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
 
 import org.apache.geode.test.junit.categories.UITest;
+import org.apache.geode.tools.pulse.tests.DataBrowserResultLoader;
 import org.apache.geode.tools.pulse.tests.PulseTestData;
 import org.apache.geode.tools.pulse.tests.PulseTestLocators;
-import static org.apache.geode.tools.pulse.tests.ui.PulseTestUtils.*;
+import org.apache.geode.tools.pulse.tests.rules.ScreenshotOnFailureRule;
+import org.apache.geode.tools.pulse.tests.rules.ServerRule;
+import org.apache.geode.tools.pulse.tests.rules.WebDriverRule;
 
 @Category(UITest.class)
 public class PulseAutomatedTest extends PulseBase {

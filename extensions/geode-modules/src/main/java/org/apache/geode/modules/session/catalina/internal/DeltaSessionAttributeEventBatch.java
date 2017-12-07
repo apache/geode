@@ -14,18 +14,18 @@
  */
 package org.apache.geode.modules.session.catalina.internal;
 
+import java.io.DataInput;
+import java.io.DataOutput;
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
+
 import org.apache.geode.DataSerializer;
 import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.Region;
 import org.apache.geode.modules.gatewaydelta.AbstractGatewayDeltaEvent;
 import org.apache.geode.modules.session.catalina.DeltaSession;
 import org.apache.geode.modules.session.catalina.DeltaSessionInterface;
-
-import java.io.DataInput;
-import java.io.DataOutput;
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.List;
 
 @SuppressWarnings("serial")
 public class DeltaSessionAttributeEventBatch extends AbstractGatewayDeltaEvent {
@@ -78,4 +78,3 @@ public class DeltaSessionAttributeEventBatch extends AbstractGatewayDeltaEvent {
         .append(this.eventQueue.size()).append("]").toString();
   }
 }
-

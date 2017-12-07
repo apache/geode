@@ -19,7 +19,7 @@ import org.apache.geode.GemFireException;
 /**
  * This exception is thrown when for the given fixed partition, datastore (local-max-memory > 0) is
  * not available.
- * 
+ *
  * @since GemFire 6.6
  */
 

@@ -14,11 +14,11 @@
  */
 package org.apache.geode.internal.cache;
 
+import static org.apache.geode.distributed.ConfigurationProperties.LOCATORS;
+
 import org.apache.geode.*;
 import org.apache.geode.distributed.internal.DistributionStats;
 import org.apache.geode.internal.statistics.StatisticsTypeFactoryImpl;
-
-import static org.apache.geode.distributed.ConfigurationProperties.LOCATORS;
 
 /**
  * GemFire statistics about a Pool
@@ -56,20 +56,20 @@ public class PoolStats {
   private static final int _CONNECTION_WAIT_IN_PROGRESS;
   private static final int _CONNECTION_WAITS;
   private static final int _CONNECTION_WAIT_TIME;
-  private final static int connectionsId;
-  // private final static int conCountId;
-  private final static int poolConnectionsId;
-  private final static int connectsId;
-  private final static int disconnectsId;
-  private final static int clientOpInProgressId;
-  private final static int clientOpSendInProgressId;
-  private final static int clientOpSendId;
-  private final static int clientOpSendFailedId;
-  private final static int clientOpSendDurationId;
-  private final static int clientOpId;
-  private final static int clientOpTimedOutId;
-  private final static int clientOpFailedId;
-  private final static int clientOpDurationId;
+  private static final int connectionsId;
+  // private static final int conCountId;
+  private static final int poolConnectionsId;
+  private static final int connectsId;
+  private static final int disconnectsId;
+  private static final int clientOpInProgressId;
+  private static final int clientOpSendInProgressId;
+  private static final int clientOpSendId;
+  private static final int clientOpSendFailedId;
+  private static final int clientOpSendDurationId;
+  private static final int clientOpId;
+  private static final int clientOpTimedOutId;
+  private static final int clientOpFailedId;
+  private static final int clientOpDurationId;
 
   static {
     String statName = "PoolStats";

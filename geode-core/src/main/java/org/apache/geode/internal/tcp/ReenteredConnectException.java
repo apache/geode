@@ -19,7 +19,7 @@ import org.apache.geode.GemFireException;
 /**
  * An exception indicating that the same thread that is in the middle of trying to connect has tried
  * to obtain a connection to the same member further down the call stack.
- * 
+ *
  * This condition has been observered when using an AlertListener, because we try to transmit
  * messages logged during a connection to the very member we're trying to connect to.
  *

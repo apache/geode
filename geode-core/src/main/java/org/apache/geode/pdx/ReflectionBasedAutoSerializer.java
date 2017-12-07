@@ -14,14 +14,14 @@
  */
 package org.apache.geode.pdx;
 
-import org.apache.geode.cache.Declarable;
-import org.apache.geode.cache.RegionService;
-import org.apache.geode.pdx.internal.AutoSerializableManager;
-
 import java.lang.reflect.Field;
 import java.util.Collections;
 import java.util.List;
 import java.util.Properties;
+
+import org.apache.geode.cache.Declarable;
+import org.apache.geode.cache.RegionService;
+import org.apache.geode.pdx.internal.AutoSerializableManager;
 
 /**
  * This class uses Java reflection in conjunction with {@link org.apache.geode.pdx.PdxSerializer
@@ -31,7 +31,7 @@ import java.util.Properties;
  * This implementation will serialize all relevant fields
  * <p>
  * For example:
- * 
+ *
  * <pre>
  * Cache c = new CacheFactory().set(&quot;cache-xml-file&quot;, cacheXmlFileName)
  *     .setPdxSerializer(new ReflectionBasedAutoSerializer("com.foo.DomainObject")).create();
@@ -41,7 +41,7 @@ import java.util.Properties;
  * <code>PdxSerializable</code> to be serialized.
  * <p>
  * The equivalent <code>cache.xml</code> entries might be as follows:
- * 
+ *
  * <pre>
  * &lt;pdx&gt;
  *   &lt;pdx-serializer&gt;
@@ -54,10 +54,10 @@ import java.util.Properties;
  *   &lt;/pdx-serializer&gt;
  * &lt;/pdx&gt;
  * </pre>
- * 
+ *
  * See {@link ReflectionBasedAutoSerializer#reconfigure(String...) reconfigure} for additional
  * details on the format of the parameter string.
- * 
+ *
  * @since GemFire 6.6
  */
 public class ReflectionBasedAutoSerializer implements PdxSerializer, Declarable {
@@ -78,18 +78,18 @@ public class ReflectionBasedAutoSerializer implements PdxSerializer, Declarable 
    * Portability of serialization will not be checked.
    * <p>
    * Each string in the list represents a definition in the following form:
-   * 
+   *
    * <pre>
    *   &lt;class pattern&gt;#identity=&lt;identity field pattern&gt;#exclude=&lt;exclude field pattern&gt;
    * </pre>
-   * 
+   *
    * The hash (#) characters are separators and are not part of the parameter name. An example would
    * be:
-   * 
+   *
    * <pre>
    *   com.company.DomainObject.*#identity=id.*#exclude=creationDate
    * </pre>
-   * 
+   *
    * This would select all classes with a class name beginning with
    * <code>com.company.DomainObject</code> and would select as PDX identity fields any fields
    * beginning with <code>id</code> and would not serialize the field called
@@ -97,16 +97,16 @@ public class ReflectionBasedAutoSerializer implements PdxSerializer, Declarable 
    * <p>
    * There is no association between the the <i>identity</i> and <i>exclude</i> options, so the
    * above example could also be expressed as:
-   * 
+   *
    * <pre>
    *   com.company.DomainObject.*#identity=id.*
    *   com.company.DomainObject.*#exclude=creationDate
    * </pre>
-   * 
+   *
    * Note that <u>all</u> defined patterns are used when determining whether a field should be
    * considered as an identity field or should be excluded. Thus the order of the patterns is not
    * relevant.
-   * 
+   *
    * @param classes the patterns which are matched against domain class names to determine whether
    *        they should be serialized
    * @deprecated as of 6.6.2 use ReflectionBasedAutoSerializer(String...) instead.
@@ -127,18 +127,18 @@ public class ReflectionBasedAutoSerializer implements PdxSerializer, Declarable 
    * Portability of serialization will not be checked.
    * <p>
    * Each string in the list represents a definition in the following form:
-   * 
+   *
    * <pre>
    *   &lt;class pattern&gt;#identity=&lt;identity field pattern&gt;#exclude=&lt;exclude field pattern&gt;
    * </pre>
-   * 
+   *
    * The hash (#) characters are separators and are not part of the parameter name. An example would
    * be:
-   * 
+   *
    * <pre>
    *   com.company.DomainObject.*#identity=id.*#exclude=creationDate
    * </pre>
-   * 
+   *
    * This would select all classes with a class name beginning with
    * <code>com.company.DomainObject</code> and would select as PDX identity fields any fields
    * beginning with <code>id</code> and would not serialize the field called
@@ -146,16 +146,16 @@ public class ReflectionBasedAutoSerializer implements PdxSerializer, Declarable 
    * <p>
    * There is no association between the the <i>identity</i> and <i>exclude</i> options, so the
    * above example could also be expressed as:
-   * 
+   *
    * <pre>
    *   com.company.DomainObject.*#identity=id.*
    *   com.company.DomainObject.*#exclude=creationDate
    * </pre>
-   * 
+   *
    * Note that <u>all</u> defined patterns are used when determining whether a field should be
    * considered as an identity field or should be excluded. Thus the order of the patterns is not
    * relevant.
-   * 
+   *
    * @param patterns the patterns which are matched against domain class names to determine whether
    *        they should be serialized
    * @since GemFire 6.6.2
@@ -168,18 +168,18 @@ public class ReflectionBasedAutoSerializer implements PdxSerializer, Declarable 
    * Constructor which takes a list of class name patterns which are to be auto-serialized.
    * <p>
    * Each string in the list represents a definition in the following form:
-   * 
+   *
    * <pre>
    *   &lt;class pattern&gt;#identity=&lt;identity field pattern&gt;#exclude=&lt;exclude field pattern&gt;
    * </pre>
-   * 
+   *
    * The hash (#) characters are separators and are not part of the parameter name. An example would
    * be:
-   * 
+   *
    * <pre>
    *   com.company.DomainObject.*#identity=id.*#exclude=creationDate
    * </pre>
-   * 
+   *
    * This would select all classes with a class name beginning with
    * <code>com.company.DomainObject</code> and would select as PDX identity fields any fields
    * beginning with <code>id</code> and would not serialize the field called
@@ -187,16 +187,16 @@ public class ReflectionBasedAutoSerializer implements PdxSerializer, Declarable 
    * <p>
    * There is no association between the the <i>identity</i> and <i>exclude</i> options, so the
    * above example could also be expressed as:
-   * 
+   *
    * <pre>
    *   com.company.DomainObject.*#identity=id.*
    *   com.company.DomainObject.*#exclude=creationDate
    * </pre>
-   * 
+   *
    * Note that <u>all</u> defined patterns are used when determining whether a field should be
    * considered as an identity field or should be excluded. Thus the order of the patterns is not
    * relevant.
-   * 
+   *
    * @param checkPortability if <code>true</code> then an serialization done by this serializer will
    *        throw an exception if the object it not portable to non-java languages.
    * @param patterns the patterns which are matched against domain class names to determine whether
@@ -215,18 +215,18 @@ public class ReflectionBasedAutoSerializer implements PdxSerializer, Declarable 
    * define any fields to exclude from serialization.
    * <p>
    * Each string in the list represents a definition in the following form:
-   * 
+   *
    * <pre>
    *   &lt;class pattern&gt;#identity=&lt;identity field pattern&gt;#exclude=&lt;exclude field pattern&gt;
    * </pre>
-   * 
+   *
    * The hash (#) characters are separators and are not part of the parameter name. An example would
    * be:
-   * 
+   *
    * <pre>
    *   com.company.DomainObject.*#identity=id.*#exclude=creationDate
    * </pre>
-   * 
+   *
    * This would select all classes with a class name beginning with
    * <code>com.company.DomainObject</code> and would select as PDX identity fields any fields
    * beginning with <code>id</code> and would not serialize the field called
@@ -234,16 +234,16 @@ public class ReflectionBasedAutoSerializer implements PdxSerializer, Declarable 
    * <p>
    * There is no association between the the <i>identity</i> and <i>exclude</i> options, so the
    * above example could also be expressed as:
-   * 
+   *
    * <pre>
    *   com.company.DomainObject.*#identity=id.*
    *   com.company.DomainObject.*#exclude=creationDate
    * </pre>
-   * 
+   *
    * Note that <u>all</u> defined patterns are used when determining whether a field should be
    * considered as an identity field or should be excluded. Thus the order of the patterns is not
    * relevant.
-   * 
+   *
    * @param patterns the list of definitions to apply
    * @deprecated as of 6.6.2 use {@link #reconfigure(String...)} instead.
    */
@@ -256,18 +256,18 @@ public class ReflectionBasedAutoSerializer implements PdxSerializer, Declarable 
    * will not check for portable serialization.
    * <p>
    * Each string in the list represents a definition in the following form:
-   * 
+   *
    * <pre>
    *   &lt;class pattern&gt;#identity=&lt;identity field pattern&gt;#exclude=&lt;exclude field pattern&gt;
    * </pre>
-   * 
+   *
    * The hash (#) characters are separators and are not part of the parameter name. An example would
    * be:
-   * 
+   *
    * <pre>
    *   com.company.DomainObject.*#identity=id.*#exclude=creationDate
    * </pre>
-   * 
+   *
    * This would select all classes with a class name beginning with
    * <code>com.company.DomainObject</code> and would select as PDX identity fields any fields
    * beginning with <code>id</code> and would not serialize the field called
@@ -275,16 +275,16 @@ public class ReflectionBasedAutoSerializer implements PdxSerializer, Declarable 
    * <p>
    * There is no association between the the <i>identity</i> and <i>exclude</i> options, so the
    * above example could also be expressed as:
-   * 
+   *
    * <pre>
    *   com.company.DomainObject.*#identity=id.*
    *   com.company.DomainObject.*#exclude=creationDate
    * </pre>
-   * 
+   *
    * Note that <u>all</u> defined patterns are used when determining whether a field should be
    * considered as an identity field or should be excluded. Thus the order of the patterns is not
    * relevant.
-   * 
+   *
    * @param patterns the definitions to apply
    * @since GemFire 6.6.2
    */
@@ -296,18 +296,18 @@ public class ReflectionBasedAutoSerializer implements PdxSerializer, Declarable 
    * Method to reconfigure this serializer. Any previous configuration is cleared.
    * <p>
    * Each string in the list represents a definition in the following form:
-   * 
+   *
    * <pre>
    *   &lt;class pattern&gt;#identity=&lt;identity field pattern&gt;#exclude=&lt;exclude field pattern&gt;
    * </pre>
-   * 
+   *
    * The hash (#) characters are separators and are not part of the parameter name. An example would
    * be:
-   * 
+   *
    * <pre>
    *   com.company.DomainObject.*#identity=id.*#exclude=creationDate
    * </pre>
-   * 
+   *
    * This would select all classes with a class name beginning with
    * <code>com.company.DomainObject</code> and would select as PDX identity fields any fields
    * beginning with <code>id</code> and would not serialize the field called
@@ -315,16 +315,16 @@ public class ReflectionBasedAutoSerializer implements PdxSerializer, Declarable 
    * <p>
    * There is no association between the the <i>identity</i> and <i>exclude</i> options, so the
    * above example could also be expressed as:
-   * 
+   *
    * <pre>
    *   com.company.DomainObject.*#identity=id.*
    *   com.company.DomainObject.*#exclude=creationDate
    * </pre>
-   * 
+   *
    * Note that <u>all</u> defined patterns are used when determining whether a field should be
    * considered as an identity field or should be excluded. Thus the order of the patterns is not
    * relevant.
-   * 
+   *
    * @param patterns the definitions to apply
    * @param checkPortability if <code>true</code> then an serialization done by this serializer will
    *        throw an exception if the object it not portable to non-java languages.
@@ -336,7 +336,7 @@ public class ReflectionBasedAutoSerializer implements PdxSerializer, Declarable 
 
   /**
    * Method implemented from <code>PdxSerializer</code> which performs object serialization.
-   * 
+   *
    * @param obj the object to serialize
    * @param writer the <code>PdxWriter</code> to use when serializing this object
    * @return <code>true</code> if the object was serialized, <code>false</code> otherwise
@@ -347,7 +347,7 @@ public class ReflectionBasedAutoSerializer implements PdxSerializer, Declarable 
 
   /**
    * Method implemented from <code>PdxSerializer</code> which performs object de-serialization.
-   * 
+   *
    * @param clazz the class of the object to re-create
    * @param reader the <code>PdxReader</code> to use when creating this object
    * @return the deserialized object if this serializer handles the given class, null otherwise.
@@ -367,7 +367,7 @@ public class ReflectionBasedAutoSerializer implements PdxSerializer, Declarable 
    * specifics.</li>
    * <li><b>check-portability</b> - if true then an exception will be thrown if an attempt to
    * serialize data that is not portable to .NET is made.
-   * 
+   *
    * @param props properties used to configure the auto serializer
    */
   public void init(Properties props) {
@@ -379,7 +379,7 @@ public class ReflectionBasedAutoSerializer implements PdxSerializer, Declarable 
    * on how this <code>ReflectionBasedAutoSerializer</code> was configured, the returned property
    * value will have the correct semantics but may differ from the the original configuration
    * string.
-   * 
+   *
    * @return a <code>Properties</code> object
    */
   public Properties getConfig() {
@@ -405,7 +405,7 @@ public class ReflectionBasedAutoSerializer implements PdxSerializer, Declarable 
    * <p>
    * This method is only called the first time it sees a new class. The result will be remembered
    * and used the next time the same class is seen.
-   * 
+   *
    * @param clazz the class that is being considered for auto serialization.
    * @return true if instances of the class should be auto serialized; false if not.
    * @since GemFire 6.6.2
@@ -428,7 +428,7 @@ public class ReflectionBasedAutoSerializer implements PdxSerializer, Declarable 
    * <p>
    * This method is only called the first time it sees a new class. The result will be remembered
    * and used the next time the same class is seen.
-   * 
+   *
    * @param f the field being considered for serialization
    * @param clazz the original class being serialized that owns this field. Note that this field may
    *        have been inherited from a super class by this class. If you want to find the class that
@@ -451,7 +451,7 @@ public class ReflectionBasedAutoSerializer implements PdxSerializer, Declarable 
    * <p>
    * This method is only called the first time it sees a new class. The result will be remembered
    * and used the next time the same class is seen.
-   * 
+   *
    * @param f the field whose name is returned.
    * @param clazz the original class being serialized that owns this field. Note that this field may
    *        have been inherited from a super class by this class. If you want to find the class that
@@ -474,7 +474,7 @@ public class ReflectionBasedAutoSerializer implements PdxSerializer, Declarable 
    * <p>
    * This method is only called the first time it sees a new class. The result will be remembered
    * and used the next time the same class is seen.
-   * 
+   *
    * @param f the field to test to see if it is an identity field.
    * @param clazz the original class being serialized that owns this field. Note that this field may
    *        have been inherited from a super class by this class. If you want to find the class that
@@ -495,7 +495,7 @@ public class ReflectionBasedAutoSerializer implements PdxSerializer, Declarable 
    * <p>
    * This method is only called the first time it sees a new class. The result will be remembered
    * and used the next time the same class is seen.
-   * 
+   *
    * @param f the field whose pdx field type needs to be determined
    * @param clazz the original class being serialized that owns this field. Note that this field may
    *        have been inherited from a super class by this class. If you want to find the class that
@@ -516,7 +516,7 @@ public class ReflectionBasedAutoSerializer implements PdxSerializer, Declarable 
    * <p>
    * This method is only called the first time it sees a new class. The result will be remembered
    * and used the next time the same class is seen.
-   * 
+   *
    * @param f the field in question
    * @param clazz the original class being serialized that owns this field. Note that this field may
    *        have been inherited from a super class by this class. If you want to find the class that
@@ -533,7 +533,7 @@ public class ReflectionBasedAutoSerializer implements PdxSerializer, Declarable 
    * Controls what field value is written during auto serialization. Override this method to
    * customize the data that will be written during auto serialization. This method will only be
    * called if {@link #transformFieldValue} returned true.
-   * 
+   *
    * @param f the field in question
    * @param clazz the original class being serialized that owns this field. Note that this field may
    *        have been inherited from a super class by this class. If you want to find the class that
@@ -551,7 +551,7 @@ public class ReflectionBasedAutoSerializer implements PdxSerializer, Declarable 
    * Controls what field value is read during auto deserialization. Override this method to
    * customize the data that will be read during auto deserialization. This method will only be
    * called if {@link #transformFieldValue} returned true.
-   * 
+   *
    * @param f the field in question
    * @param clazz the original class being serialized that owns this field. Note that this field may
    *        have been inherited from a super class by this class. If you want to find the class that
@@ -567,7 +567,7 @@ public class ReflectionBasedAutoSerializer implements PdxSerializer, Declarable 
 
   /**
    * Returns the cache that this serializer is installed on. Returns null if it is not installed.
-   * 
+   *
    * @since GemFire 6.6.2
    */
   public RegionService getRegionService() {
@@ -576,7 +576,7 @@ public class ReflectionBasedAutoSerializer implements PdxSerializer, Declarable 
 
   /**
    * For internal use only.
-   * 
+   *
    * @since GemFire 8.2
    */
   public Object getManager() {

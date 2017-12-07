@@ -14,12 +14,12 @@
  */
 package org.apache.geode.admin.jmx.internal;
 
+import javax.management.ObjectName;
+import javax.management.modelmbean.ModelMBean;
+
 import org.apache.geode.admin.internal.SystemMemberCacheImpl;
 import org.apache.geode.cache.Region;
 import org.apache.geode.internal.admin.GemFireVM;
-
-import javax.management.ObjectName;
-import javax.management.modelmbean.ModelMBean;
 
 /**
  * MBean representation of {@link org.apache.geode.admin.SystemMemberRegion}.
@@ -99,7 +99,7 @@ public class SystemMemberRegionJmxImpl
   /**
    * Checks equality of the given object with <code>this</code> based on the type (Class) and the
    * MBean Name returned by <code>getMBeanName()</code> methods.
-   * 
+   *
    * @param obj object to check equality with
    * @return true if the given object is if the same type and its MBean Name is same as
    *         <code>this</code> object's MBean Name, false otherwise
@@ -117,7 +117,7 @@ public class SystemMemberRegionJmxImpl
 
   /**
    * Returns hash code for <code>this</code> object which is based on the MBean Name generated.
-   * 
+   *
    * @return hash code for <code>this</code> object
    */
   @Override
@@ -125,4 +125,3 @@ public class SystemMemberRegionJmxImpl
     return this.getMBeanName().hashCode();
   }
 }
-

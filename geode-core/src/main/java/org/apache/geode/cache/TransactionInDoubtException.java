@@ -17,7 +17,7 @@ package org.apache.geode.cache;
 /**
  * This Exception is thrown in presence of node failures, when GemFire cannot know with certainty
  * about the outcome of the transaction.
- * 
+ *
  * @since GemFire 6.5
  */
 public class TransactionInDoubtException extends TransactionException {

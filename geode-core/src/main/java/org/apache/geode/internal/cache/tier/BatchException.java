@@ -38,7 +38,7 @@ public class BatchException extends GemFireCheckedException {
   /**
    * Constructor. Creates an instance of <code>RegionQueueException</code> with the specified detail
    * message.
-   * 
+   *
    * @param msg the detail message
    * @param index the index in the batch list where the exception occurred
    */
@@ -49,7 +49,7 @@ public class BatchException extends GemFireCheckedException {
 
   /**
    * Constructor. Creates an instance of <code>RegionQueueException</code> with the specified cause.
-   * 
+   *
    * @param cause the causal Throwable
    * @param index the index in the batch list where the exception occurred
    */
@@ -60,7 +60,7 @@ public class BatchException extends GemFireCheckedException {
 
   /**
    * Answers the index in the batch where the exception occurred
-   * 
+   *
    * @return the index in the batch where the exception occurred
    */
   public int getIndex() {

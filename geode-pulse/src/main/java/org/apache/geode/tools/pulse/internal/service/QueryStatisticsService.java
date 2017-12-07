@@ -32,9 +32,9 @@ import org.apache.geode.tools.pulse.internal.data.Repository;
 
 /**
  * Class QueryStatisticsService
- * 
+ *
  * This class returns top N queries based on pagination and filtering criteria if any
- * 
+ *
  * @since GemFire version 7.5
  */
 @Component

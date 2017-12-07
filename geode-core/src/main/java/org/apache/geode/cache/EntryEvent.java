@@ -14,7 +14,6 @@
  */
 package org.apache.geode.cache;
 
-// import java.io.*;
 
 /**
  * Contains information about an event affecting an entry, including its identity and the the
@@ -39,7 +38,7 @@ public interface EntryEvent<K, V> extends CacheEvent<K, V> {
 
   /**
    * Returns the key.
-   * 
+   *
    * @return the key
    */
   public K getKey();
@@ -65,7 +64,7 @@ public interface EntryEvent<K, V> extends CacheEvent<K, V> {
    * @return the serialized form of the value in the cache before this event
    * @throws IllegalStateException if off-heap and called after the method that was passed this
    *         EntryEvent returns.
-   * 
+   *
    * @since GemFire 5.5
    */
   public SerializedCacheValue<V> getSerializedOldValue();
@@ -85,14 +84,14 @@ public interface EntryEvent<K, V> extends CacheEvent<K, V> {
    * @return the serialized form of the value in the cache after this event
    * @throws IllegalStateException if off-heap and called after the method that was passed this
    *         EntryEvent returns.
-   * 
+   *
    * @since GemFire 5.5
    */
   public SerializedCacheValue<V> getSerializedNewValue();
 
   /**
    * Gets the TransactionId for this EntryEvent.
-   * 
+   *
    * @return the ID of the transaction that performed the operation that generated this event; null
    *         if no transaction involved.
    * @since GemFire 4.0
@@ -101,7 +100,7 @@ public interface EntryEvent<K, V> extends CacheEvent<K, V> {
 
   /**
    * Returns true if this event originated on a client.
-   * 
+   *
    * @since GemFire 5.7
    * @return true if this event originated on a client.
    */
@@ -111,7 +110,7 @@ public interface EntryEvent<K, V> extends CacheEvent<K, V> {
    * Returns <code>true</code> if the old value is "available". Not available means that an old
    * value existed but it could not be obtained or it was deemed too expensive to obtain. Note that
    * {@link #getOldValue} will return <code>null</code> when this method returns <code>false</code>.
-   * 
+   *
    * @since GemFire 6.0
    */
   public boolean isOldValueAvailable();

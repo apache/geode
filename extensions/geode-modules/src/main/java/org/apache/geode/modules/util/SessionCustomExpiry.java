@@ -14,15 +14,16 @@
  */
 package org.apache.geode.modules.util;
 
+import java.io.Serializable;
+import java.util.Properties;
+
+import javax.servlet.http.HttpSession;
+
 import org.apache.geode.cache.CustomExpiry;
 import org.apache.geode.cache.Declarable;
 import org.apache.geode.cache.ExpirationAction;
 import org.apache.geode.cache.ExpirationAttributes;
 import org.apache.geode.cache.Region;
-
-import javax.servlet.http.HttpSession;
-import java.io.Serializable;
-import java.util.Properties;
 
 @SuppressWarnings("serial")
 public class SessionCustomExpiry

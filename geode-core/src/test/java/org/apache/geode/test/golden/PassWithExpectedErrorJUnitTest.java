@@ -23,7 +23,7 @@ import org.apache.geode.test.junit.categories.IntegrationTest;
 /**
  * Verifies that an example test should always pass even if the output contains a error that is
  * expected.
- * 
+ *
  */
 @Category(IntegrationTest.class)
 public class PassWithExpectedErrorJUnitTest extends PassWithExpectedProblemTestCase {

@@ -17,6 +17,9 @@ package org.apache.geode.cache.management;
 import static org.apache.geode.distributed.ConfigurationProperties.*;
 import static org.apache.geode.test.dunit.Assert.*;
 
+import java.io.DataInput;
+import java.io.DataOutput;
+import java.io.IOException;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -34,6 +37,7 @@ import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
+import org.apache.geode.DataSerializable;
 import org.apache.geode.cache.AttributesFactory;
 import org.apache.geode.cache.AttributesMutator;
 import org.apache.geode.cache.Cache;
@@ -65,9 +69,6 @@ import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
 import org.apache.geode.internal.AvailablePortHelper;
-import org.apache.geode.internal.statistics.GemFireStatSampler;
-import org.apache.geode.internal.statistics.LocalStatListener;
-import org.apache.geode.internal.statistics.StatisticsImpl;
 import org.apache.geode.internal.cache.DistributedRegion;
 import org.apache.geode.internal.cache.GemFireCacheImpl;
 import org.apache.geode.internal.cache.PartitionedRegion;
@@ -81,6 +82,9 @@ import org.apache.geode.internal.cache.control.ResourceAdvisor;
 import org.apache.geode.internal.cache.control.ResourceListener;
 import org.apache.geode.internal.cache.control.TestMemoryThresholdListener;
 import org.apache.geode.internal.i18n.LocalizedStrings;
+import org.apache.geode.internal.statistics.GemFireStatSampler;
+import org.apache.geode.internal.statistics.LocalStatListener;
+import org.apache.geode.internal.statistics.StatisticsImpl;
 import org.apache.geode.test.dunit.Assert;
 import org.apache.geode.test.dunit.AsyncInvocation;
 import org.apache.geode.test.dunit.DistributedTestUtils;
@@ -99,16 +103,18 @@ import org.apache.geode.test.junit.categories.FlakyTest;
 
 /**
  * Tests the Heap Memory thresholds of {@link ResourceManager}
- * 
+ *
  * @since GemFire 6.0
  */
 @Category(DistributedTest.class)
 public class MemoryThresholdsDUnitTest extends ClientServerTestCase {
 
-  public static class Range implements Serializable {
-    public final static Range DEFAULT = new Range(0, 20);
-    public final int start;
-    public final int end;
+  public static class Range implements DataSerializable {
+    public static final Range DEFAULT = new Range(0, 20);
+    public int start;
+    public int end;
+
+    public Range() {}
 
     public Range(int s, int e) {
       this.start = s;
@@ -122,6 +128,18 @@ public class MemoryThresholdsDUnitTest extends ClientServerTestCase {
 
     public int width() {
       return end - start;
+    }
+
+    @Override
+    public void toData(DataOutput out) throws IOException {
+      out.writeInt(start);
+      out.writeInt(end);
+    }
+
+    @Override
+    public void fromData(DataInput in) throws IOException, ClassNotFoundException {
+      start = in.readInt();
+      end = in.readInt();
     }
   }
 
@@ -215,7 +233,7 @@ public class MemoryThresholdsDUnitTest extends ClientServerTestCase {
 
   /**
    * test that puts in a server are rejected when a remote VM crosses critical threshold
-   * 
+   *
    * @throws Exception
    */
   private void doDistributedRegionRemotePutRejection(boolean localDestroy, boolean cacheClose)
@@ -319,7 +337,7 @@ public class MemoryThresholdsDUnitTest extends ClientServerTestCase {
 
   /**
    * test that puts in a client are rejected when a remote VM crosses critical threshold
-   * 
+   *
    * @throws Exception
    */
   @Test
@@ -363,7 +381,7 @@ public class MemoryThresholdsDUnitTest extends ClientServerTestCase {
   /**
    * test that disabling threshold does not cause remote event and remote DISABLED events are
    * delivered
-   * 
+   *
    * @throws Exception
    */
   @Test
@@ -417,7 +435,7 @@ public class MemoryThresholdsDUnitTest extends ClientServerTestCase {
 
   /**
    * Make sure appropriate events are delivered when moving between states.
-   * 
+   *
    * @throws Exception
    */
   @Category(FlakyTest.class) // GEODE-427: random ports, time sensitive, waitForCriterions
@@ -1269,7 +1287,7 @@ public class MemoryThresholdsDUnitTest extends ClientServerTestCase {
 
   /**
    * Starts up a CacheServer.
-   * 
+   *
    * @return a {@link ServerPorts} containing the CacheServer ports.
    */
   private ServerPorts startCacheServer(VM server, final float evictionThreshold,
@@ -1485,7 +1503,7 @@ public class MemoryThresholdsDUnitTest extends ClientServerTestCase {
   /**
    * Verifies that the test listener value on the given vm is what is expected Note that for remote
    * events useWaitCriterion must be true
-   * 
+   *
    * @param vm the vm where verification should take place
    * @param state
    * @param value the expected value
@@ -1654,7 +1672,7 @@ public class MemoryThresholdsDUnitTest extends ClientServerTestCase {
     }
   };
 
-  private class RejectFunction extends FunctionAdapter {
+  static class RejectFunction extends FunctionAdapter implements DataSerializable {
     private boolean optimizeForWrite = true;
     private String id = "RejectFunction";
 
@@ -1698,6 +1716,16 @@ public class MemoryThresholdsDUnitTest extends ClientServerTestCase {
 
     public boolean isHA() {
       return false;
+    }
+
+    @Override
+    public void toData(DataOutput out) throws IOException {
+      out.writeBoolean(optimizeForWrite);
+    }
+
+    @Override
+    public void fromData(DataInput in) throws IOException, ClassNotFoundException {
+      optimizeForWrite = in.readBoolean();
     }
   }
 
@@ -1776,7 +1804,7 @@ public class MemoryThresholdsDUnitTest extends ClientServerTestCase {
   /**
    * Test that LocalRegion cache Loads are not stored in the Region if the VM is in a critical
    * state, then test that they are allowed once the VM is no longer critical
-   * 
+   *
    * @throws Exception
    */
   @Test
@@ -1902,7 +1930,7 @@ public class MemoryThresholdsDUnitTest extends ClientServerTestCase {
    * Test that DistributedRegion cacheLoade and netLoad are passed through to the calling thread if
    * the local VM is in a critical state. Once the VM has moved to a safe state then test that they
    * are allowed.
-   * 
+   *
    * @throws Exception
    */
   @Test
@@ -2115,7 +2143,7 @@ public class MemoryThresholdsDUnitTest extends ClientServerTestCase {
   /**
    * Test that a Partitioned Region loader invocation is rejected if the VM with the bucket is in a
    * critical state.
-   * 
+   *
    * @throws Exception
    */
   @Test

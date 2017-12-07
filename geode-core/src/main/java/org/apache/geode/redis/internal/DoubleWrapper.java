@@ -23,7 +23,7 @@ import org.apache.geode.DataSerializer;
 
 /**
  * This is a wrapper class for doubles, similar to {@link ByteArrayWrapper}
- * 
+ *
  *
  */
 public class DoubleWrapper implements DataSerializable, Comparable<Object> {

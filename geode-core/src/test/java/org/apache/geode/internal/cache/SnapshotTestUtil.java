@@ -14,13 +14,16 @@
  */
 package org.apache.geode.internal.cache;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
+
 import java.io.File;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Map.Entry;
 
-import static org.junit.Assert.*;
 import com.examples.snapshot.MyObject;
+
 import org.apache.geode.cache.snapshot.SnapshotIterator;
 import org.apache.geode.cache.snapshot.SnapshotReader;
 
@@ -30,16 +33,13 @@ public class SnapshotTestUtil {
       String regionName) throws Exception {
     final Map<K, V> testData = new HashMap<K, V>(expected);
     String snapshot = "snapshot-" + diskStoreName + "-" + regionName + ".gfd";
-    SnapshotIterator<Integer, MyObject> iter = SnapshotReader.read(new File(dir, snapshot));
-    try {
+    try (SnapshotIterator<Integer, MyObject> iter = SnapshotReader.read(new File(dir, snapshot))) {
       while (iter.hasNext()) {
         Entry<Integer, MyObject> entry = iter.next();
         Object expectedVal = testData.remove(entry.getKey());
         assertEquals(expectedVal, entry.getValue());
       }
       assertTrue(testData.isEmpty());
-    } finally {
-      iter.close();
     }
   }
 }

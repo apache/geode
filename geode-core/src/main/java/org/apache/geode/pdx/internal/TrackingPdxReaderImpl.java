@@ -26,7 +26,7 @@ import org.apache.geode.pdx.internal.AutoSerializableManager.PdxFieldWrapper;
 /**
  * Used to track what fields are actually read by the user's code. We want to know what fields are
  * not read so that we can preserve them.
- * 
+ *
  * @since GemFire 6.6
  */
 public class TrackingPdxReaderImpl implements InternalPdxReader {
@@ -170,7 +170,7 @@ public class TrackingPdxReaderImpl implements InternalPdxReader {
 
   /**
    * Returns the indexes of the fields not read during deserialization.
-   * 
+   *
    * @return the indexes of the unread fields
    */
   private int[] generateUnreadDataFieldIndexes() {

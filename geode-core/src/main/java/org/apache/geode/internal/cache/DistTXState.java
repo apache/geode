@@ -38,16 +38,16 @@ import org.apache.geode.internal.cache.TXEntryState.DistTxThinEntryState;
 import org.apache.geode.internal.cache.partitioned.PutAllPRMessage;
 import org.apache.geode.internal.cache.partitioned.RemoveAllPRMessage;
 import org.apache.geode.internal.cache.tier.sockets.VersionedObjectList;
-import org.apache.geode.internal.cache.tx.DistTxKeyInfo;
 import org.apache.geode.internal.cache.tx.DistTxEntryEvent;
+import org.apache.geode.internal.cache.tx.DistTxKeyInfo;
 import org.apache.geode.internal.cache.versions.RegionVersionVector;
 import org.apache.geode.internal.i18n.LocalizedStrings;
 import org.apache.geode.internal.offheap.annotations.Released;
 
 /**
  * TxState on a data node VM
- * 
- * 
+ *
+ *
  */
 public class DistTXState extends TXState {
 
@@ -150,9 +150,9 @@ public class DistTXState extends TXState {
 
   /*
    * (non-Javadoc)
-   * 
+   *
    * @see org.apache.geode.internal.cache.TXStateInterface#commit()
-   * 
+   *
    * Take Locks Does conflict check on primary ([DISTTX] TODO on primary only) Invoke TxWriter
    */
   @Override
@@ -160,7 +160,7 @@ public class DistTXState extends TXState {
       throws CommitConflictException, UnsupportedOperationInTransactionException {
     if (logger.isDebugEnabled()) {
       logger.debug("DistTXState.precommit transaction {} is closed {} ", getTransactionId(),
-          this.closed, new Throwable());
+          this.closed/* , new Throwable() */);
     }
 
     if (this.closed) {
@@ -241,16 +241,16 @@ public class DistTXState extends TXState {
 
   /*
    * (non-Javadoc)
-   * 
+   *
    * @see org.apache.geode.internal.cache.TXStateInterface#commit()
-   * 
+   *
    * Apply changes release locks
    */
   @Override
   public void commit() throws CommitConflictException {
     if (logger.isDebugEnabled()) {
       logger.debug("DistTXState.commit transaction {} is closed {} ", getTransactionId(),
-          this.closed, new Throwable());
+          this.closed/* , new Throwable() */);
     }
 
     if (this.closed) {
@@ -313,7 +313,7 @@ public class DistTXState extends TXState {
 
   /**
    * this builds a new DistTXAdjunctCommitMessage and returns it
-   * 
+   *
    * @return the new message
    */
   protected TXCommitMessage buildMessageForAdjunctReceivers() {
@@ -355,10 +355,10 @@ public class DistTXState extends TXState {
       }
       /*
        * Handle Put Operations meant for secondary.
-       * 
+       *
        * @see org.apache.geode.internal.cache.partitioned.PutMessage.
        * operateOnPartitionedRegion(DistributionManager, PartitionedRegion, long)
-       * 
+       *
        * [DISTTX] TODO need to handle other operations
        */
       for (DistTxEntryEvent dtop : secondaryTransactionalOperations) {
@@ -418,11 +418,11 @@ public class DistTXState extends TXState {
 
   /**
    * Apply the individual tx op on secondary
-   * 
+   *
    * Calls local function such as putEntry instead of putEntryOnRemote as for this
    * {@link DistTXStateOnCoordinator} as events will always be local. In parent {@link DistTXState}
    * class will call remote version of functions
-   * 
+   *
    */
   protected boolean applyIndividualOp(DistTxEntryEvent dtop) throws DataLocationException {
     boolean result = true;
@@ -471,7 +471,7 @@ public class DistTXState extends TXState {
 
   /**
    * For Dist Tx
-   * 
+   *
    * @param updatingTxState if updating TxState during Commit Phase
    */
   private void setUpdatingTxStateDuringPreCommit(boolean updatingTxState)
@@ -479,9 +479,7 @@ public class DistTXState extends TXState {
     this.updatingTxStateDuringPreCommit = updatingTxState;
     if (logger.isDebugEnabled()) {
       logger.debug("DistTXState setUpdatingTxStateDuringPreCommit incoming {} final {} ",
-          updatingTxState, this.updatingTxStateDuringPreCommit, new Throwable()); // [DISTTX] TODO:
-                                                                                  // Remove
-                                                                                  // throwable
+          updatingTxState, this.updatingTxStateDuringPreCommit);
     }
   }
 
@@ -515,10 +513,10 @@ public class DistTXState extends TXState {
    * [DISTTX] Note: This has been overridden here to associate DistKeyInfo with event to disable
    * primary check(see DistKeyInfo.setCheckPrimary(false)) when this gets called on secondary of a
    * PR
-   * 
+   *
    * For TX this needs to be a PR passed in as region
-   * 
-   * 
+   *
+   *
    * @see org.apache.geode.internal.cache.InternalDataView#postPutAll(org.apache
    * .gemfire.internal.cache.DistributedPutAllOperation, java.util.Map,
    * org.apache.geode.internal.cache.LocalRegion)
@@ -626,7 +624,7 @@ public class DistTXState extends TXState {
              * is set to null in @see TXManagerImpl.commit() and thus when basicDestroy will be
              * called will be called as in i.e. @see LocalRegion.basicDestroy, they will not found a
              * TxState with call for getDataView()
-             * 
+             *
              * [DISTTX] TODO verify if this is correct to call destroyExistingEntry directly?
              */
             try {

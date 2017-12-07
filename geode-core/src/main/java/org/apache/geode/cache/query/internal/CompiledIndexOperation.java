@@ -14,17 +14,16 @@
  */
 package org.apache.geode.cache.query.internal;
 
+import java.lang.reflect.Array;
 import java.util.*;
 
-import org.apache.geode.cache.query.*;
 import org.apache.geode.cache.*;
+import org.apache.geode.cache.query.*;
 import org.apache.geode.internal.i18n.LocalizedStrings;
-
-import java.lang.reflect.Array;
 
 /**
  * Class Description
- * 
+ *
  * @version $Revision: 1.1 $
  */
 public class CompiledIndexOperation extends AbstractCompiledValue implements MapIndexable {

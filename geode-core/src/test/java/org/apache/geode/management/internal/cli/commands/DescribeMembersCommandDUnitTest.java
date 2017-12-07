@@ -15,7 +15,6 @@
 package org.apache.geode.management.internal.cli.commands;
 
 import static org.apache.geode.management.internal.cli.i18n.CliStrings.DESCRIBE_MEMBER;
-import static org.assertj.core.api.Assertions.assertThat;
 
 import org.junit.BeforeClass;
 import org.junit.ClassRule;
@@ -23,10 +22,10 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
-import org.apache.geode.test.junit.rules.GfshShellConnectionRule;
 import org.apache.geode.test.dunit.rules.LocatorServerStartupRule;
 import org.apache.geode.test.dunit.rules.MemberVM;
 import org.apache.geode.test.junit.categories.DistributedTest;
+import org.apache.geode.test.junit.rules.GfshCommandRule;
 
 @Category(DistributedTest.class)
 public class DescribeMembersCommandDUnitTest {
@@ -35,7 +34,7 @@ public class DescribeMembersCommandDUnitTest {
   private static MemberVM locator;
 
   @Rule
-  public GfshShellConnectionRule gfsh = new GfshShellConnectionRule();
+  public GfshCommandRule gfsh = new GfshCommandRule();
 
   @BeforeClass
   public static void setup() throws Exception {
@@ -46,36 +45,27 @@ public class DescribeMembersCommandDUnitTest {
   @Test
   public void describeInvalidMember() throws Exception {
     gfsh.connectAndVerify(locator);
-    gfsh.executeAndVerifyCommand(DESCRIBE_MEMBER + " --name=foo");
-    String output = gfsh.getGfshOutput();
-
-    assertThat(output).contains("Member \"foo\" not found");
+    gfsh.executeAndAssertThat(DESCRIBE_MEMBER + " --name=foo").statusIsError()
+        .containsOutput("Member foo could not be found");
   }
 
   @Test
   public void describeMembersWhenNotConnected() throws Exception {
-    String result = gfsh.execute(DESCRIBE_MEMBER);
-    assertThat(result)
-        .contains("Command 'describe member' was found but is not currently available");
+    gfsh.executeAndAssertThat(DESCRIBE_MEMBER).statusIsError()
+        .containsOutput("Command 'describe member' was found but is not currently available");
   }
 
   @Test
   public void describeLocator() throws Exception {
     gfsh.connectAndVerify(locator);
-    gfsh.executeAndVerifyCommand(DESCRIBE_MEMBER + " --name=locator-0");
-    String output = gfsh.getGfshOutput();
-
-    assertThat(output).contains("locator-0");
-    assertThat(output).doesNotContain("server-1");
+    gfsh.executeAndAssertThat(DESCRIBE_MEMBER + " --name=locator-0").statusIsSuccess()
+        .containsOutput("locator-0").doesNotContainOutput("server-1");
   }
 
   @Test
   public void describeServer() throws Exception {
     gfsh.connectAndVerify(locator);
-    gfsh.executeAndVerifyCommand(DESCRIBE_MEMBER + " --name=server-1");
-    String output = gfsh.getGfshOutput();
-
-    assertThat(output).doesNotContain("locator-0");
-    assertThat(output).contains("server-1");
+    gfsh.executeAndAssertThat(DESCRIBE_MEMBER + " --name=server-1").statusIsSuccess()
+        .doesNotContainOutput("locator-0").containsOutput("server-1");
   }
 }

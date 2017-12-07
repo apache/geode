@@ -21,10 +21,10 @@ import java.util.ResourceBundle;
 
 /**
  * Class PulseVersion
- * 
+ *
  * This class is for holding Pulse Applications Version's details (like version details, build
  * details, source details, etc) from properties file
- * 
+ *
  * @since GemFire version Helios
  */
 

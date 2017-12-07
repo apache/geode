@@ -40,7 +40,7 @@ public interface CacheStatistics {
    * Entry and subregion creation will update the modification time on a region, but
    * <code>destroy</code>, <code>destroyRegion</code>, <code>invalidate</code>, and
    * <code>invalidateRegion</code> do not update the modification time.
-   * 
+   *
    * @return the last modification time of the region or the entry; returns 0 if entry is invalid or
    *         modification time is uninitialized.
    * @see Region#put(Object, Object)
@@ -97,7 +97,7 @@ public interface CacheStatistics {
    * <code>Region.get</code>, then zero is returned.
    * <p>
    * The hit ratio is equivalent to:
-   * 
+   *
    * <pre>
    * long hitCount = getHitCount();
    * long total = hitCount + getMissCount();
@@ -112,7 +112,7 @@ public interface CacheStatistics {
 
   /**
    * Reset the missCount and hitCount to zero for this entry.
-   * 
+   *
    * @throws StatisticsDisabledException if statistics are not available
    */
   public void resetCounts() throws StatisticsDisabledException;

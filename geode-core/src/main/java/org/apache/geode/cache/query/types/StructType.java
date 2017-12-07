@@ -26,14 +26,14 @@ public interface StructType extends ObjectType {
 
   /**
    * The the types of the fields for this struct
-   * 
+   *
    * @return the array of Class for the fields
    */
   ObjectType[] getFieldTypes();
 
   /**
    * Get the names of the fields for this struct
-   * 
+   *
    * @return the array of field names
    */
   String[] getFieldNames();

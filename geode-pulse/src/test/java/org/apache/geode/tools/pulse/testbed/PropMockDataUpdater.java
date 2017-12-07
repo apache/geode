@@ -16,8 +16,22 @@
  */
 package org.apache.geode.tools.pulse.testbed;
 
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Map.Entry;
+import java.util.Random;
+import java.util.ResourceBundle;
+
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+
 import org.apache.geode.tools.pulse.internal.data.Cluster;
 import org.apache.geode.tools.pulse.internal.data.Cluster.Alert;
 import org.apache.geode.tools.pulse.internal.data.Cluster.Client;
@@ -31,19 +45,6 @@ import org.apache.geode.tools.pulse.internal.data.Repository;
 import org.apache.geode.tools.pulse.testbed.GemFireDistributedSystem.Locator;
 import org.apache.geode.tools.pulse.testbed.GemFireDistributedSystem.Peer;
 import org.apache.geode.tools.pulse.testbed.GemFireDistributedSystem.Server;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
-
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Map.Entry;
-import java.util.Random;
-import java.util.ResourceBundle;
 
 public class PropMockDataUpdater implements IClusterUpdater {
   private static final int MAX_HOSTS = 40;
@@ -391,16 +392,16 @@ public class PropMockDataUpdater implements IClusterUpdater {
   /*
    * private String getHostName(long rndSeed) { Random rnd = new Random(rndSeed); String hName =
    * null;
-   * 
+   *
    * int index = Math.abs(rnd.nextInt(MAX_HOSTS));
-   * 
+   *
    * ArrayList<String> hostNames = cluster.getHostNames();
-   * 
+   *
    * if (hostNames.size() <= index) { hName = "host" + hostNames.size(); hostNames.add(hName); }
    * else { hName = hostNames.get(index); }
-   * 
+   *
    * Map<String, ArrayList<Member>> physicalToMember = cluster.getPhysicalToMember();
-   * 
+   *
    * ArrayList<Member> memberArrList = physicalToMember.get(hName); if (memberArrList != null) { if
    * (memberArrList.size() > 4){ hName = getHostName(rndSeed + rnd.nextLong()); } } return hName; }
    */

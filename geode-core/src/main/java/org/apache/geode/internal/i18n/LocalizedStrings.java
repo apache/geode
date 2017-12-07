@@ -32,7 +32,7 @@ import org.apache.geode.i18n.StringId;
  * }
  * }
  * </code>
- * 
+ *
  * @since GemFire 6.0
  */
 public class LocalizedStrings {
@@ -7126,8 +7126,6 @@ public class LocalizedStrings {
   public static final StringId Launcher_Status_ONLINE = new StringId(5255, "online");
   public static final StringId Launcher_Status_STARTING = new StringId(5256, "starting");
   public static final StringId Launcher_Status_STOPPED = new StringId(5257, "stopped");
-  public static final StringId Launcher_Command_FAILED_TO_GET_SHARED_CONFIGURATION =
-      new StringId(5258, "Unable to retrieve cluster configuration from the locator.");
 
   public static final StringId LocatorLauncher_Builder_INVALID_HOSTNAME_FOR_CLIENTS_ERROR_MESSAGE =
       new StringId(5260,
@@ -7613,6 +7611,9 @@ public class LocalizedStrings {
   public static final StringId LuceneService_CANNOT_CREATE_INDEX_0_ON_REGION_1_WITH_ANALYZER_2_ON_FIELD_3_BECAUSE_ANOTHER_MEMBER_DEFINES_THE_SAME_INDEX_WITH_ANALYZER_4_ON_THAT_FIELD =
       new StringId(6631,
           "Cannot create Lucene index {0} on region {1} with analyzer {2} on field {3} because another member defines the same index with analyzer {4} on that field.");
+  public static final StringId LuceneService_CANNOT_CREATE_INDEX_0_ON_REGION_1_WITH_SERIALIZER_2_BECAUSE_ANOTHER_MEMBER_DEFINES_THE_SAME_INDEX_WITH_DIFFERENT_SERIALIZER_3 =
+      new StringId(6632,
+          "Cannot create Lucene index {0} on region {1} with serializer {2} because another member defines the same index with different serializer {3}.");
 
   public static final StringId AbstractDistributionConfig_CLUSTER_SSL_ALIAS_0 = new StringId(6633,
       "SSL communication uses the this alias when determining the key to use from the keystore for SSL. Defaults to \"{0}\".");

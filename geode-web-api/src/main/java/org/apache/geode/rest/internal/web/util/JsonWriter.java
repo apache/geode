@@ -15,19 +15,6 @@
 
 package org.apache.geode.rest.internal.web.util;
 
-import com.fasterxml.jackson.core.JsonGenerationException;
-import com.fasterxml.jackson.core.JsonGenerator;
-import org.apache.geode.cache.Region;
-import org.apache.geode.cache.query.Struct;
-import org.apache.geode.cache.query.internal.StructImpl;
-import org.apache.geode.pdx.PdxInstance;
-import org.apache.geode.pdx.internal.EnumInfo;
-import org.apache.geode.pdx.internal.EnumInfo.PdxInstanceEnumInfo;
-import org.springframework.hateoas.Link;
-import org.springframework.http.HttpHeaders;
-import org.springframework.http.MediaType;
-import org.springframework.util.CollectionUtils;
-
 import java.io.IOException;
 import java.math.BigDecimal;
 import java.math.BigInteger;
@@ -38,6 +25,20 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+
+import com.fasterxml.jackson.core.JsonGenerationException;
+import com.fasterxml.jackson.core.JsonGenerator;
+import org.springframework.hateoas.Link;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.MediaType;
+import org.springframework.util.CollectionUtils;
+
+import org.apache.geode.cache.Region;
+import org.apache.geode.cache.query.Struct;
+import org.apache.geode.cache.query.internal.StructImpl;
+import org.apache.geode.pdx.PdxInstance;
+import org.apache.geode.pdx.internal.EnumInfo;
+import org.apache.geode.pdx.internal.EnumInfo.PdxInstanceEnumInfo;
 
 /**
  * The JsonWriter class is an utility to write various java types as a JSON string.

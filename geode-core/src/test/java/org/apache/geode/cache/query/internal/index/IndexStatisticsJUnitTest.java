@@ -13,7 +13,7 @@
  * the License.
  */
 /**
- * 
+ *
  */
 package org.apache.geode.cache.query.internal.index;
 
@@ -86,7 +86,7 @@ public class IndexStatisticsJUnitTest {
    */
   /**
    * Test RenageIndex IndexStatistics for keys, values, updates and uses.
-   * 
+   *
    * @throws Exception
    */
   @Test
@@ -209,7 +209,7 @@ public class IndexStatisticsJUnitTest {
 
   /**
    * Test CompactRenageIndex IndexStatistics for keys, values, updates and uses.
-   * 
+   *
    * @throws Exception
    */
   @Test
@@ -332,7 +332,7 @@ public class IndexStatisticsJUnitTest {
 
   /**
    * Test CompactMapRenageIndex IndexStatistics for keys, values, updates and uses.
-   * 
+   *
    * @throws Exception
    */
   @Test
@@ -408,7 +408,7 @@ public class IndexStatisticsJUnitTest {
 
   /**
    * Test MapRenageIndex IndexStatistics for keys, values, updates and uses.
-   * 
+   *
    * @throws Exception
    */
   @Test
@@ -486,7 +486,7 @@ public class IndexStatisticsJUnitTest {
 
   /**
    * Test RenageIndex IndexStatistics for keys, values, updates and uses.
-   * 
+   *
    * @throws Exception
    */
   @Test
@@ -563,7 +563,7 @@ public class IndexStatisticsJUnitTest {
 
   /**
    * Test CompactRenageIndex IndexStatistics for keys, values, updates and uses.
-   * 
+   *
    * @throws Exception
    */
   @Test
@@ -639,7 +639,7 @@ public class IndexStatisticsJUnitTest {
 
   /**
    * Test MapRenageIndex IndexStatistics for keys, values, updates and uses.
-   * 
+   *
    * @throws Exception
    */
   @Test
@@ -868,4 +868,3 @@ public class IndexStatisticsJUnitTest {
     }
   }
 }
-

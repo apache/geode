@@ -14,9 +14,9 @@
  */
 package org.apache.persistence.admin;
 
-import java.util.*;
 import java.io.PrintWriter;
 import java.text.*;
+import java.util.*;
 
 /**
  * Provides single point for all log messages to written to. Currently this class only supports
@@ -63,7 +63,7 @@ public class Logger {
     timeFormatter = sdf;
   }
 
-  static private void formatText(PrintWriter writer, String target, int maxLength,
+  private static void formatText(PrintWriter writer, String target, int maxLength,
       int initialLength) {
     BreakIterator boundary = BreakIterator.getLineInstance();
     boundary.setText(target);
@@ -118,20 +118,20 @@ public class Logger {
 
   /**
    * Gets a String representation of the current time.
-   * 
+   *
    * @return a String representation of the current time.
    */
-  static public String getTimeStamp() {
+  public static String getTimeStamp() {
     return formatDate(new Date());
   }
 
   /**
    * Convert a Date to a timestamp String.
-   * 
+   *
    * @param d a Date to format as a timestamp String.
    * @return a String representation of the current time.
    */
-  static public String formatDate(Date d) {
+  public static String formatDate(Date d) {
     if (timeFormatter == null) {
       try {
         // very simple format that shows millisecond resolution
@@ -161,61 +161,61 @@ public class Logger {
 
   /**
    * Logs a message to the static log destination.
-   * 
+   *
    * @param msg the actual message to log
    */
-  static public void put(String msg) {
+  public static void put(String msg) {
     put(msg, (Throwable) null);
   }
 
   /**
    * Logs a message to the specified log destination.
-   * 
+   *
    * @param log the <code>PrintWriter</code> that the message will be written to.
    * @param msg the actual message to log
    */
-  static public void put(PrintWriter log, String msg) {
+  public static void put(PrintWriter log, String msg) {
     put(log, msg, (Throwable) null);
   }
 
   /**
    * Logs an exception to the static log destination.
-   * 
+   *
    * @param exception the actual Exception to log
    */
-  static public void put(Throwable exception) {
+  public static void put(Throwable exception) {
     put((String) null, exception);
   }
 
   /**
    * Logs an exception to the specified log destination.
-   * 
+   *
    * @param log the <code>PrintWriter</code> that the message will be written to.
    * @param exception the actual Exception to log
    */
-  static public void put(PrintWriter log, Throwable exception) {
+  public static void put(PrintWriter log, Throwable exception) {
     put(log, (String) null, exception);
   }
 
   /**
    * Logs a message and an exception to the static log destination.
-   * 
+   *
    * @param msg the actual message to log
    * @param exception the actual Exception to log
    */
-  static public void put(String msg, Throwable exception) {
+  public static void put(String msg, Throwable exception) {
     put(logWriter, msg, exception);
   }
 
   /**
    * Logs a message and an exception to the specified log destination.
-   * 
+   *
    * @param log the <code>PrintWriter</code> that the message will be written to. If null then the
    *        default stdout writer is used.
    * @param msg the actual message to log
    * @param exception the actual Exception to log
    */
-  static public void put(PrintWriter log, String msg, Throwable exception) {
+  public static void put(PrintWriter log, String msg, Throwable exception) {
     java.io.StringWriter sw = new java.io.StringWriter();
     String header;
     PrintWriter pw = new PrintWriter(sw);

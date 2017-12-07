@@ -34,14 +34,14 @@ import org.apache.geode.internal.logging.LogService;
  * Class identifying a Thread uniquely across the distributed system. It is composed of two fields
  * 1) A byte array uniquely identifying the distributed system 2) A long value unqiuely identifying
  * the thread in the distributed system
- * 
+ *
  * The application thread while operating on the Region gets an EventID object ( contained in
  * EntryEventImpl) This EventID object contains a ThreadLocal field which uniquely identifies the
  * thread by storing the Object of this class.
- * 
+ *
  * @see EventID
- * 
- * 
+ *
+ *
  */
 
 public class ThreadIdentifier implements DataSerializable {
@@ -66,7 +66,7 @@ public class ThreadIdentifier implements DataSerializable {
 
     /**
      * Generates a new thread id for usage in a parallel wan context.
-     * 
+     *
      * @param threadId the original thread id
      * @param offset the thread offset
      * @param gatewayIndex the index of the gateway
@@ -80,7 +80,7 @@ public class ThreadIdentifier implements DataSerializable {
 
     /**
      * Returns true if the supplied value is a wan thread identifier.
-     * 
+     *
      * @param tid the thread
      * @return true if the thread id is one of the wan types
      */
@@ -113,7 +113,7 @@ public class ThreadIdentifier implements DataSerializable {
 
     /**
      * Returns the field bitmask.
-     * 
+     *
      * @return the mask
      */
     public long mask() {
@@ -122,7 +122,7 @@ public class ThreadIdentifier implements DataSerializable {
 
     /**
      * Returns the value shifted into the field position.
-     * 
+     *
      * @param val the value to shift
      * @return the shifted value
      */
@@ -134,7 +134,7 @@ public class ThreadIdentifier implements DataSerializable {
 
     /**
      * Extracts the field bits from the value.
-     * 
+     *
      * @param val the value
      * @return the field
      */
@@ -258,7 +258,7 @@ public class ThreadIdentifier implements DataSerializable {
 
   /**
    * Checks if the input thread id is a WAN_TYPE thread id
-   * 
+   *
    * @param tid
    * @return whether the input thread id is a WAN_TYPE thread id
    */
@@ -268,7 +268,7 @@ public class ThreadIdentifier implements DataSerializable {
 
   /**
    * create a fake id for an operation on the given bucket
-   * 
+   *
    * @return the fake id
    */
   public static long createFakeThreadIDForBulkOp(int bucketNumber, long originatingThreadId) {
@@ -277,7 +277,7 @@ public class ThreadIdentifier implements DataSerializable {
 
   /**
    * create a fake id for an operation on the given bucket
-   * 
+   *
    * @return the fake id
    */
   public static long createFakeThreadIDForParallelGSPrimaryBucket(int bucketId,
@@ -287,7 +287,7 @@ public class ThreadIdentifier implements DataSerializable {
 
   /**
    * create a fake id for an operation on the given bucket
-   * 
+   *
    * @return the fake id
    */
   public static long createFakeThreadIDForParallelGSSecondaryBucket(int bucketId,
@@ -297,7 +297,7 @@ public class ThreadIdentifier implements DataSerializable {
 
   /**
    * create a fake id for an operation on the given bucket
-   * 
+   *
    * @return the fake id
    */
   public static long createFakeThreadIDForParallelGateway(int index, long originatingThreadId,
@@ -307,7 +307,7 @@ public class ThreadIdentifier implements DataSerializable {
 
   /**
    * checks to see if the membership id of this identifier is the same as in the argument
-   * 
+   *
    * @param other
    * @return whether the two IDs are from the same member
    */

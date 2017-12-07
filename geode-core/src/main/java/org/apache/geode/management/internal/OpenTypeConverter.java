@@ -65,15 +65,15 @@ import org.apache.geode.management.ManagementException;
 
 /**
  * It takes care of converting a Java type to an open types
- * 
+ *
  * A Java type is an instance of java.lang.reflect.Type representing all types in Java.
- * 
+ *
  * Each Type is associated with an OpenTypeConverter. The OpenTypeConverter defines an OpenType
  * corresponding to the Type, plus a Java class corresponding to the OpenType. For example:
- * 
- * 
+ *
+ *
  * Java Type : Integer Open Class :Integer Open Type :SimpleType.INTEGER
- * 
+ *
  * Apart from simple types, arrays, and collections, Java types are converted through introspection
  * into CompositeType
  */
@@ -95,7 +95,7 @@ public abstract class OpenTypeConverter {
 
   private static final ConverterMap converterMap = new ConverterMap();
 
-  private final static Map<Type, Type> inProgress = OpenTypeUtil.newIdentityHashMap();
+  private static final Map<Type, Type> inProgress = OpenTypeUtil.newIdentityHashMap();
 
   /**
    * Following List simply serves to keep a reference to predefined OpenConverters so they don't get
@@ -111,7 +111,7 @@ public abstract class OpenTypeConverter {
 
   /**
    * Convert an instance of openClass into an instance of targetType.
-   * 
+   *
    * @return the java type object
    */
   public Object fromOpenValue(Object value) throws InvalidObjectException {
@@ -133,7 +133,7 @@ public abstract class OpenTypeConverter {
 
   /**
    * Convert an instance of targetType into an instance of openClass.
-   * 
+   *
    * @return open class object
    */
   Object toOpenValue(Object value) throws OpenDataException {
@@ -346,12 +346,12 @@ public abstract class OpenTypeConverter {
 
   /**
    * Supported types are List<E>, Set<E>, SortedSet<E>, Map<K,V>, SortedMap<K,V>.
-   * 
+   *
    * Subclasses of the above types wont be supported as deserialize info wont be there.
-   * 
+   *
    * Queue<E> won't be supported as Queue is more of a functional data structure rather than a data
    * holder
-   * 
+   *
    * @return the open type converter for a given type
    */
   private static OpenTypeConverter makeParameterizedConverter(ParameterizedType objType)
@@ -434,7 +434,7 @@ public abstract class OpenTypeConverter {
    * Converts from a CompositeData to an instance of the targetClass Various subclasses override its
    * functionality.
    */
-  protected static abstract class CompositeBuilder {
+  protected abstract static class CompositeBuilder {
     CompositeBuilder(Class targetClass, String[] itemNames) {
       this.targetClass = targetClass;
       this.itemNames = itemNames;
@@ -451,14 +451,14 @@ public abstract class OpenTypeConverter {
     /**
      * If the subclass should be appropriate but there is a problem, then the method throws
      * InvalidObjectException.
-     * 
+     *
      * @return If the subclass is appropriate for targetClass, then the method returns null. If the
      *         subclass is not appropriate, then the method returns an explanation of why not.
      */
     abstract String applicable(Method[] getters) throws InvalidObjectException;
 
     /**
-     * 
+     *
      * @return possible cause if target class is not applicable
      */
     Throwable possibleCause() {

@@ -13,7 +13,7 @@
  * the License.
  */
 /**
- * 
+ *
  */
 package org.apache.geode.distributed.internal;
 
@@ -83,7 +83,7 @@ public class WaitForViewInstallation extends HighPriorityDistributionMessage
 
   /*
    * (non-Javadoc)
-   * 
+   *
    * @see org.apache.geode.internal.DataSerializableFixedID#getDSFID()
    */
   public int getDSFID() {
@@ -106,7 +106,7 @@ public class WaitForViewInstallation extends HighPriorityDistributionMessage
 
   /*
    * (non-Javadoc)
-   * 
+   *
    * @see
    * org.apache.geode.distributed.internal.DistributionMessage#process(org.apache.geode.distributed.
    * internal.DistributionManager)

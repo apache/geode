@@ -14,9 +14,6 @@
  */
 package org.apache.geode.redis.internal;
 
-import io.netty.buffer.ByteBuf;
-import io.netty.buffer.ByteBufAllocator;
-
 import java.io.UnsupportedEncodingException;
 import java.text.DecimalFormat;
 import java.util.Collection;
@@ -25,12 +22,15 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 
+import io.netty.buffer.ByteBuf;
+import io.netty.buffer.ByteBufAllocator;
+
 import org.apache.geode.cache.EntryDestroyedException;
 import org.apache.geode.cache.query.Struct;
 
 /**
  * This is a safe encoder and decoder for all redis matching needs
- * 
+ *
  *
  */
 public class Coder {
@@ -488,7 +488,7 @@ public class Coder {
   /**
    * A conversion where the byte array actually represents a string, so it is converted as a string
    * not as a literal double
-   * 
+   *
    * @param bytes Array holding double
    * @return Parsed value
    * @throws NumberFormatException if bytes to string does not yield a convertible double
@@ -499,7 +499,7 @@ public class Coder {
 
   /**
    * Redis specific manner to parse floats
-   * 
+   *
    * @param d String holding double
    * @return Value of string
    * @throws NumberFormatException if the double cannot be parsed

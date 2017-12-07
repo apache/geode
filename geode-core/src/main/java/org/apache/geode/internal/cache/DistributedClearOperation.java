@@ -32,8 +32,8 @@ import org.apache.geode.internal.cache.versions.RegionVersionVector;
 import org.apache.geode.internal.cache.versions.VersionTag;
 
 /**
- * 
- * 
+ *
+ *
  */
 public class DistributedClearOperation extends DistributedCacheOperation {
   public static enum OperationType {
@@ -74,7 +74,7 @@ public class DistributedClearOperation extends DistributedCacheOperation {
   /**
    * obtain locks on version generation in other members have them do a state-flush back to this
    * member
-   * 
+   *
    * @param recipients
    */
   public static void lockAndFlushToOthers(RegionEventImpl regionEvent,
@@ -112,7 +112,7 @@ public class DistributedClearOperation extends DistributedCacheOperation {
 
   /**
    * Creates new instance of DistributedClearOperation
-   * 
+   *
    * @param recipients
    */
   private DistributedClearOperation(OperationType op, RegionEventImpl event,

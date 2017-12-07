@@ -26,10 +26,10 @@ import org.apache.geode.internal.cache.PartitionedRegion;
 /**
  * Used for partitioned region messages which support direct ack responses. Direct ack should be
  * used for message with a response from a single member, or responses which are small.
- * 
+ *
  * Messages that extend this class *must* reply using the ReplySender returned by
  * {@link DistributionMessage#getReplySender(org.apache.geode.distributed.internal.DM)}
- * 
+ *
  * Additionally, if the ReplyProcessor used for this message extends PartitionResponse, it should
  * pass false for the register parameter of the PartitionResponse.
  *

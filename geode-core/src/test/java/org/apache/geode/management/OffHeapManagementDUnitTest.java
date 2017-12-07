@@ -848,7 +848,7 @@ public class OffHeapManagementDUnitTest extends CacheTestCase {
 
   /**
    * Waits to receive MBean notifications.
-   * 
+   *
    * @param vm a virtual machine.
    * @param wait how long to wait for in millis.
    */

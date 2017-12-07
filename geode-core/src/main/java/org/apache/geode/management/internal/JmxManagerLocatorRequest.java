@@ -33,7 +33,7 @@ import org.apache.geode.internal.security.SecurableCommunicationChannel;
 /**
  * Sent to a locator to request it to find (and possibly start) a jmx manager for us. It returns a
  * JmxManagerLocatorResponse.
- * 
+ *
  * @since GemFire 7.0
  *
  */
@@ -57,7 +57,7 @@ public class JmxManagerLocatorRequest implements DataSerializableFixedID {
   /**
    * Send a request to the specified locator asking it to find (and start if needed) a jmx manager.
    * A jmx manager will only be started
-   * 
+   *
    * @param locatorHost the name of the host the locator is on
    * @param locatorPort the port the locator is listening on
    * @param msTimeout how long in milliseconds to wait for a response from the locator

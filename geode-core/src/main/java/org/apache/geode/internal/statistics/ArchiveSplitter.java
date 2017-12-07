@@ -44,7 +44,7 @@ public class ArchiveSplitter implements StatArchiveFormat {
   private DataInputStream dataIn;
   private DataOutputStream dataOut;
   private OutputStream output;
-  private final static int BUFFER_SIZE = 1024 * 1024;
+  private static final int BUFFER_SIZE = 1024 * 1024;
   private long splitDuration; // in millis
   private byte[][] resourceTypes = new byte[256][];
   private byte[][] resourceInstanceTypeCodes = new byte[256][];

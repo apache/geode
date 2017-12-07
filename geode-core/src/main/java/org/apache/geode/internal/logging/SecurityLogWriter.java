@@ -22,10 +22,10 @@ import org.apache.geode.i18n.StringId;
  * level part of log-line for easy recognition and filtering if required. Intended usage is in all
  * places where security related logging (authentication, authorization success and failure of
  * clients and peers) as well as for security callbacks.
- * 
+ *
  * This class wraps an existing {@link InternalLogWriter} instance to add the security prefix
  * feature mentioned above.
- * 
+ *
  * @since GemFire 5.5
  */
 public class SecurityLogWriter extends LogWriterImpl implements InternalLogWriter {

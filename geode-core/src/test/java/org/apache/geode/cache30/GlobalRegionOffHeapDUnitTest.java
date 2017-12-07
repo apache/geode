@@ -31,7 +31,7 @@ import org.apache.geode.test.junit.categories.DistributedTest;
 
 /**
  * Tests Global Region with OffHeap memory.
- * 
+ *
  * @since Geode 1.0
  */
 @Category(DistributedTest.class)

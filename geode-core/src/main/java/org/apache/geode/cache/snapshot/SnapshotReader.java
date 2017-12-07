@@ -24,7 +24,7 @@ import org.apache.geode.pdx.PdxSerializer;
 
 /**
  * Provides utilities for reading cache data.
- * 
+ *
  * @since GemFire 7.0
  */
 public class SnapshotReader {
@@ -35,13 +35,13 @@ public class SnapshotReader {
    * <p>
    * Prior to invoking <code>read</code> all necessary serializers (either {@link DataSerializer} or
    * {@link PdxSerializer}) and any {@link Instantiator} should have been registered.
-   * 
+   *
    * @param <K> the key type
    * @param <V> the value type
-   * 
+   *
    * @param snapshot the snapshot file
    * @return the snapshot iterator
-   * 
+   *
    * @throws IOException error reading the snapshot file
    * @throws ClassNotFoundException unable deserialize entry
    */
@@ -50,4 +50,3 @@ public class SnapshotReader {
     return GFSnapshot.read(snapshot);
   }
 }
-

@@ -14,8 +14,8 @@
  */
 package org.apache.geode.internal;
 
-import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 
 import java.io.PrintWriter;
 import java.io.StringWriter;
@@ -23,7 +23,6 @@ import java.io.StringWriter;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
-import org.apache.geode.internal.GemFireVersion.VersionDescription;
 import org.apache.geode.internal.i18n.LocalizedStrings;
 import org.apache.geode.test.junit.categories.UnitTest;
 
@@ -39,15 +38,15 @@ public class GemFireVersionJUnitTest {
     final String versionOutput = GemFireVersion.asString();
     System.out.println(versionOutput);
 
-    assertTrue(versionOutput.contains(GemFireVersion.VersionDescription.PRODUCT_NAME));
-    assertTrue(versionOutput.contains(GemFireVersion.VersionDescription.GEMFIRE_VERSION));
-    assertTrue(versionOutput.contains(GemFireVersion.VersionDescription.SOURCE_DATE));
-    assertTrue(versionOutput.contains(GemFireVersion.VersionDescription.SOURCE_REVISION));
-    assertTrue(versionOutput.contains(GemFireVersion.VersionDescription.SOURCE_REPOSITORY));
-    assertTrue(versionOutput.contains(GemFireVersion.VersionDescription.BUILD_DATE));
-    assertTrue(versionOutput.contains(GemFireVersion.VersionDescription.BUILD_ID));
-    assertTrue(versionOutput.contains(GemFireVersion.VersionDescription.BUILD_PLATFORM));
-    assertTrue(versionOutput.contains(GemFireVersion.VersionDescription.BUILD_JAVA_VERSION));
+    assertTrue(versionOutput.contains(VersionDescription.PRODUCT_NAME));
+    assertTrue(versionOutput.contains(VersionDescription.PRODUCT_VERSION));
+    assertTrue(versionOutput.contains(VersionDescription.SOURCE_DATE));
+    assertTrue(versionOutput.contains(VersionDescription.SOURCE_REVISION));
+    assertTrue(versionOutput.contains(VersionDescription.SOURCE_REPOSITORY));
+    assertTrue(versionOutput.contains(VersionDescription.BUILD_DATE));
+    assertTrue(versionOutput.contains(VersionDescription.BUILD_ID));
+    assertTrue(versionOutput.contains(VersionDescription.BUILD_PLATFORM));
+    assertTrue(versionOutput.contains(VersionDescription.BUILD_JAVA_VERSION));
   }
 
   @Test
@@ -73,6 +72,6 @@ public class GemFireVersionJUnitTest {
     String err =
         LocalizedStrings.GemFireVersion_COULD_NOT_FIND_RESOURCE_COM_GEMSTONE_GEMFIRE_INTERNAL_0
             .toLocalizedString(noFile);
-    assertEquals(err, noVersion.getProperty(VersionDescription.GEMFIRE_VERSION));
+    assertEquals(err, noVersion.getProperty(VersionDescription.PRODUCT_VERSION));
   }
 }

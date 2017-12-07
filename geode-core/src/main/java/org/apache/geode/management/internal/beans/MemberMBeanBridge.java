@@ -63,7 +63,6 @@ import org.apache.geode.distributed.internal.locks.DLockStats;
 import org.apache.geode.internal.Assert;
 import org.apache.geode.internal.GemFireVersion;
 import org.apache.geode.internal.PureJavaMode;
-import org.apache.geode.internal.cache.BackupManager;
 import org.apache.geode.internal.cache.CachePerfStats;
 import org.apache.geode.internal.cache.DirectoryHolder;
 import org.apache.geode.internal.cache.DiskDirectoryStats;
@@ -74,6 +73,7 @@ import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.cache.LocalRegion;
 import org.apache.geode.internal.cache.PartitionedRegion;
 import org.apache.geode.internal.cache.PartitionedRegionStats;
+import org.apache.geode.internal.cache.backup.BackupManager;
 import org.apache.geode.internal.cache.control.ResourceManagerStats;
 import org.apache.geode.internal.cache.execute.FunctionServiceStats;
 import org.apache.geode.internal.cache.lru.LRUStatistics;
@@ -759,7 +759,7 @@ public class MemberMBeanBridge {
    * All OS metrics are not present in java.lang.management.OperatingSystemMXBean It has to be cast
    * to com.sun.management.OperatingSystemMXBean. To avoid the cast using dynamic call so that Java
    * platform will take care of the details in a native manner;
-   * 
+   *
    * @return Some basic OS metrics at the particular instance
    */
   public OSMetrics fetchOSMetrics() {
@@ -851,7 +851,7 @@ public class MemberMBeanBridge {
 
   /**
    * Creates a Manager
-   * 
+   *
    * @return successful or not
    */
   public boolean createManager() {
@@ -863,7 +863,7 @@ public class MemberMBeanBridge {
 
   /**
    * An instruction to members with cache that they should compact their disk stores.
-   * 
+   *
    * @return a list of compacted Disk stores
    */
   public String[] compactAllDiskStores() {
@@ -882,7 +882,7 @@ public class MemberMBeanBridge {
 
   /**
    * List all the disk Stores at member level
-   * 
+   *
    * @param includeRegionOwned indicates whether to show the disk belonging to any particular region
    * @return list all the disk Stores name at cache level
    */
@@ -994,7 +994,7 @@ public class MemberMBeanBridge {
 
   /**
    * backs up all the disk to the targeted directory
-   * 
+   *
    * @param targetDirPath path of the directory where back up is to be taken
    * @return array of DiskBackup results which might get aggregated at Managing node Check the
    *         validity of this mbean call. When does it make sense to backup a single member of a
@@ -1297,7 +1297,7 @@ public class MemberMBeanBridge {
   /**
    * Returns true if the manager has been created. Note it does not need to be running so this
    * method can return true when isManager returns false.
-   * 
+   *
    * @return true if the manager has been created.
    */
   public boolean isManagerCreated() {
@@ -1562,7 +1562,7 @@ public class MemberMBeanBridge {
   /**
    * Processes the given command string using the given environment information if it's non-empty.
    * Result returned is in a JSON format.
-   * 
+   *
    * @param commandString command string to be processed
    * @param env environment information to be used for processing the command
    * @return result of the processing the given command string.

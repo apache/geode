@@ -14,20 +14,15 @@
  */
 package org.apache.geode.cache.query.dunit;
 
-import org.apache.geode.test.junit.categories.ClientSubscriptionTest;
-import org.junit.experimental.categories.Category;
-import org.junit.Test;
-
 import static org.junit.Assert.*;
-
-import org.apache.geode.test.dunit.cache.internal.JUnit4CacheTestCase;
-import org.apache.geode.test.dunit.internal.JUnit4DistributedTestCase;
-import org.apache.geode.test.junit.categories.DistributedTest;
 
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
+
+import org.junit.Test;
+import org.junit.experimental.categories.Category;
 
 import org.apache.geode.cache.AttributesFactory;
 import org.apache.geode.cache.Cache;
@@ -47,6 +42,9 @@ import org.apache.geode.cache.query.data.Portfolio;
 import org.apache.geode.cache.query.internal.QueryObserverAdapter;
 import org.apache.geode.cache.query.internal.QueryObserverHolder;
 import org.apache.geode.cache.server.CacheServer;
+import org.apache.geode.cache30.CacheSerializableRunnable;
+import org.apache.geode.cache30.CacheTestCase;
+import org.apache.geode.cache30.CertifiableTestCacheListener;
 import org.apache.geode.cache30.ClientServerTestCase;
 import org.apache.geode.test.dunit.Assert;
 import org.apache.geode.test.dunit.Host;
@@ -55,15 +53,16 @@ import org.apache.geode.test.dunit.NetworkUtils;
 import org.apache.geode.test.dunit.SerializableRunnable;
 import org.apache.geode.test.dunit.VM;
 import org.apache.geode.test.dunit.Wait;
-import org.apache.geode.cache30.CacheSerializableRunnable;
-import org.apache.geode.cache30.CacheTestCase;
-import org.apache.geode.cache30.CertifiableTestCacheListener;
+import org.apache.geode.test.dunit.cache.internal.JUnit4CacheTestCase;
+import org.apache.geode.test.dunit.internal.JUnit4DistributedTestCase;
+import org.apache.geode.test.junit.categories.ClientSubscriptionTest;
+import org.apache.geode.test.junit.categories.DistributedTest;
 
 /**
  * This class tests register interest behavior on client at startup given that client has already
  * created a Index on region on which it registers interest. Then client run a query on region in
  * local cache (Not on server) using the Index.
- * 
+ *
  *
  */
 @Category({DistributedTest.class, ClientSubscriptionTest.class})
@@ -81,8 +80,8 @@ public class QueryIndexUpdateRIDUnitTest extends JUnit4CacheTestCase {
                                                                                   // append where
                                                                                   // cond.
 
-  static public final String KEY = "key-";
-  static public final String REGULAR_EXPRESSION = ".*1+?.*";
+  public static final String KEY = "key-";
+  public static final String REGULAR_EXPRESSION = ".*1+?.*";
 
   private static final String ROOT = "root";
 
@@ -141,7 +140,7 @@ public class QueryIndexUpdateRIDUnitTest extends JUnit4CacheTestCase {
   /**
    * Tests overlap keys between client region and server region to verify the server region values
    * are synched with client region on register interest.
-   * 
+   *
    * @throws Exception
    */
   @Test
@@ -283,7 +282,7 @@ public class QueryIndexUpdateRIDUnitTest extends JUnit4CacheTestCase {
   /**
    * This test tests the RegionClearedException Path in AbsractRegionMap while doing
    * initialImagePut() during registerInterest on client.
-   * 
+   *
    * @throws Exception
    */
   @Test
@@ -626,7 +625,7 @@ public class QueryIndexUpdateRIDUnitTest extends JUnit4CacheTestCase {
 
   /**
    * Creates Init Values. start specifies the start index from which key no would start.
-   * 
+   *
    * @param vm
    * @param regionName
    * @param size
@@ -706,7 +705,7 @@ public class QueryIndexUpdateRIDUnitTest extends JUnit4CacheTestCase {
   /**
    * Validates a query result with client region values if region is not null, otherwise verifies
    * the size only.
-   * 
+   *
    * @param vm
    * @param query
    * @param resultSize

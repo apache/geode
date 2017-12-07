@@ -23,7 +23,7 @@ import org.apache.geode.internal.VersionedDataStream;
 /**
  * An extension to {@link ByteBufferInputStream} that implements {@link VersionedDataStream} for a
  * stream coming from a different product version.
- * 
+ *
  * @since GemFire 7.1
  */
 public class VersionedByteBufferInputStream extends ByteBufferInputStream
@@ -33,7 +33,7 @@ public class VersionedByteBufferInputStream extends ByteBufferInputStream
 
   /**
    * Create a ByteBuffer input stream whose contents are null at given product {@link Version}.
-   * 
+   *
    * @param version the product version for which this stream was created
    */
   public VersionedByteBufferInputStream(Version version) {
@@ -44,7 +44,7 @@ public class VersionedByteBufferInputStream extends ByteBufferInputStream
   /**
    * Create a ByteBuffer input stream whose contents are the given {@link ByteBuffer} at given
    * product {@link Version}.
-   * 
+   *
    * @param buffer the byte buffer to read
    * @param version the product version for which this stream was created
    */

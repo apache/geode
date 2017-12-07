@@ -78,7 +78,7 @@ public class PRDataStoreMemoryJUnitTest {
     Integer val1 = new Integer(16);
     regionAck1.put(new Integer(1), val1);
     Object storedVal =
-        regionAck1.getBucketRegion(new Integer(1)).getRegionEntry(new Integer(1))._getValue();
+        regionAck1.getBucketRegion(new Integer(1)).getRegionEntry(new Integer(1)).getValue();
     final int size1 = CachedDeserializableFactory.calcMemSize(storedVal);
     int size = size1;
     assertEquals(size, regionAck1.getDataStore().currentAllocatedMemory());
@@ -86,7 +86,7 @@ public class PRDataStoreMemoryJUnitTest {
     byte[] val2 = new byte[1000];
     regionAck1.put(new Integer(2), val2);
     storedVal =
-        regionAck1.getBucketRegion(new Integer(2)).getRegionEntry(new Integer(2))._getValue();
+        regionAck1.getBucketRegion(new Integer(2)).getRegionEntry(new Integer(2)).getValue();
     final int size2 = CachedDeserializableFactory.calcMemSize(storedVal);
     size += size2;
     assertEquals(size, regionAck1.getDataStore().currentAllocatedMemory());
@@ -94,7 +94,7 @@ public class PRDataStoreMemoryJUnitTest {
     String val3 = "0123456789";
     regionAck1.put(new Integer(3), val3);
     storedVal =
-        regionAck1.getBucketRegion(new Integer(3)).getRegionEntry(new Integer(3))._getValue();
+        regionAck1.getBucketRegion(new Integer(3)).getRegionEntry(new Integer(3)).getValue();
     final int size3 = CachedDeserializableFactory.calcMemSize(storedVal);
     size += size3;
     assertEquals(size, regionAck1.getDataStore().currentAllocatedMemory());

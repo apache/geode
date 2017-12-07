@@ -27,7 +27,7 @@ import org.apache.geode.security.GemFireSecurityException;
 
 public class RemoveUserAuth extends BaseCommand {
 
-  private final static RemoveUserAuth singleton = new RemoveUserAuth();
+  private static final RemoveUserAuth singleton = new RemoveUserAuth();
 
   public static Command getCommand() {
     return singleton;

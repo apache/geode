@@ -28,12 +28,12 @@ import org.apache.geode.internal.ExitCode;
 
 /**
  * This is a stand alone locator with a distributed-system-id = -1
- * 
+ *
  * This locator is started so that the locator information regarding the site 1 is removed from site
  * 2's locator and at the same time MyDistributedSystemListener's removeDistributedSystem is invoked
  * on site 2's locator which will stop the GatewayReceiver
- * 
- * 
+ *
+ *
  */
 public class WANBootStrapping_Site1_Remove {
 

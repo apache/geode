@@ -88,7 +88,7 @@ public class SystemMemberCacheJmxImpl extends org.apache.geode.admin.internal.Sy
   /**
    * Override createSystemMemberRegion by instantiating SystemMemberRegionJmxImpl. This instance is
    * also added to the managedResources collection.
-   * 
+   *
    * @param r reference to Region instance for which this JMX resource is to be created
    * @return SystemMemberRegionJmxImpl - JMX Implementation of SystemMemberRegion
    * @throws AdminException if constructing SystemMemberRegionJmxImpl instance fails
@@ -120,7 +120,7 @@ public class SystemMemberCacheJmxImpl extends org.apache.geode.admin.internal.Sy
   /**
    * Creates a SystemMemberBridgeServerJmxImpl instance. This instance is also added to the
    * managedResources collection.
-   * 
+   *
    * @param bridge reference to AdminBridgeServer for which this JMX resource is to be created
    * @return SystemMemberBridgeServerJmxImpl - JMX Implementation of SystemMemberBridgeServerImpl
    * @throws AdminException if constructing SystemMemberBridgeServerJmxImpl instance fails
@@ -355,7 +355,7 @@ public class SystemMemberCacheJmxImpl extends org.apache.geode.admin.internal.Sy
   /**
    * Un-registers all the statistics & cache managed resource created for this member. After
    * un-registering the resource MBean instances, clears this.memberResources collection.
-   * 
+   *
    * Creates ConfigurationParameterJmxImpl, StatisticResourceJmxImpl and SystemMemberCacheJmxImpl.
    * But cleans up only StatisticResourceJmxImpl and SystemMemberCacheJmxImpl which are of type
    * ManagedResource.
@@ -385,7 +385,7 @@ public class SystemMemberCacheJmxImpl extends org.apache.geode.admin.internal.Sy
   /**
    * Cleans up managed resources created for the region that was (created and) destroyed in a cache
    * represented by this Managed Resource.
-   * 
+   *
    * @param regionPath path of the region that got destroyed
    * @return a managed resource related to this region path
    */
@@ -416,7 +416,7 @@ public class SystemMemberCacheJmxImpl extends org.apache.geode.admin.internal.Sy
   /**
    * Checks equality of the given object with <code>this</code> based on the type (Class) and the
    * MBean Name returned by <code>getMBeanName()</code> methods.
-   * 
+   *
    * @param obj object to check equality with
    * @return true if the given object is if the same type and its MBean Name is same as
    *         <code>this</code> object's MBean Name, false otherwise
@@ -434,7 +434,7 @@ public class SystemMemberCacheJmxImpl extends org.apache.geode.admin.internal.Sy
 
   /**
    * Returns hash code for <code>this</code> object which is based on the MBean Name generated.
-   * 
+   *
    * @return hash code for <code>this</code> object
    */
   @Override
@@ -442,4 +442,3 @@ public class SystemMemberCacheJmxImpl extends org.apache.geode.admin.internal.Sy
     return this.getMBeanName().hashCode();
   }
 }
-

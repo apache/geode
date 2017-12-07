@@ -23,6 +23,7 @@ import java.util.Set;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import org.apache.logging.log4j.Logger;
+
 import org.apache.geode.CancelCriterion;
 import org.apache.geode.InternalGemFireError;
 import org.apache.geode.cache.DiskAccessException;
@@ -54,7 +55,7 @@ import org.apache.geode.internal.logging.LogService;
 /**
  * Empty shell for {@link BucketRegion} which exists only to maintain metadata in the form of a
  * {@link BucketAdvisor}
- * 
+ *
  * @since GemFire 5.1
  */
 public class ProxyBucketRegion implements Bucket {
@@ -80,7 +81,7 @@ public class ProxyBucketRegion implements Bucket {
 
   /**
    * Constructs a new ProxyBucketRegion which has a BucketAdvisor.
-   * 
+   *
    * @param bid the bucket id
    * @param partitionedRegion the PartitionedRegion that owns this bucket
    * @param internalRegionArgs the internal args which includes RegionAdvisor
@@ -225,7 +226,7 @@ public class ProxyBucketRegion implements Bucket {
   /**
    * Notify this proxy of the real bucket as its target. Future calls to this instance will then
    * proxy them back to the real bucket.
-   * 
+   *
    * @param br the real bucket which will be the target for this proxy
    */
   public void setBucketRegion(BucketRegion br) {
@@ -278,7 +279,7 @@ public class ProxyBucketRegion implements Bucket {
 
   /**
    * Get the redundancy of the this bucket, taking into account the local bucket, if any.
-   * 
+   *
    * @return number of redundant copies for a given bucket, or -1 if there are no instances of the
    *         bucket.
    */
@@ -293,7 +294,7 @@ public class ProxyBucketRegion implements Bucket {
   /**
    * Returns the real BucketRegion if one has been created. This call will return the bucket even if
    * it is still being initialized. Returns null if the bucket has not been created locally.
-   * 
+   *
    * @return the real bucket if currently created or null
    */
   public BucketRegion getCreatedBucketRegion() {
@@ -304,7 +305,7 @@ public class ProxyBucketRegion implements Bucket {
    * Returns the real BucketRegion that is currently being locally hosted. Returns null if the real
    * bucket is null or if it is still being initialized. After the bucket is intialized isHosting
    * will be flagged true and future calls to this method will return the bucket.
-   * 
+   *
    * @return the real bucket if currently hosted or null
    */
   public BucketRegion getHostedBucketRegion() {
@@ -349,7 +350,7 @@ public class ProxyBucketRegion implements Bucket {
 
   /**
    * Returns the total number of datastores hosting an instance of this bucket.
-   * 
+   *
    * @return the total number of datastores hosting an instance of this bucket
    */
   public int getBucketOwnersCount() {

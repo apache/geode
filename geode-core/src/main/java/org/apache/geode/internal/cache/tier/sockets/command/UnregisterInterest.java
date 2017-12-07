@@ -35,7 +35,7 @@ import org.apache.geode.security.ResourcePermission.Resource;
 
 public class UnregisterInterest extends BaseCommand {
 
-  private final static UnregisterInterest singleton = new UnregisterInterest();
+  private static final UnregisterInterest singleton = new UnregisterInterest();
 
   public static Command getCommand() {
     return singleton;

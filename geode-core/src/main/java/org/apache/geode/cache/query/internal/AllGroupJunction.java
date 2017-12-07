@@ -18,6 +18,7 @@
 package org.apache.geode.cache.query.internal;
 
 import java.util.*;
+
 import org.apache.geode.cache.query.FunctionDomainException;
 import org.apache.geode.cache.query.NameResolutionException;
 import org.apache.geode.cache.query.QueryInvocationTargetException;
@@ -36,7 +37,7 @@ import org.apache.geode.cache.query.types.StructType;
  * actual creation will occur iff there exists more than one GroupJunction or more than one
  * CompositeGroupJunction or a combination of one or more GroupJunctions & one or more
  * CompositeGroupJunctions
- * 
+ *
  */
 public class AllGroupJunction extends AbstractCompiledValue implements Filter, OQLLexerTokenTypes {
 
@@ -88,7 +89,7 @@ public class AllGroupJunction extends AbstractCompiledValue implements Filter, O
    * well as evaluating any iter evaluatable conditions. The evaluated result of an AllGroupJunction
    * will always be of the query from clause level which can be ORed or ANDd with filter evaluatable
    * subtree CompiledJunction
-   * 
+   *
    * @param context ExecutionContext object
    * @return SelectResults
    * @throws FunctionDomainException
@@ -182,7 +183,7 @@ public class AllGroupJunction extends AbstractCompiledValue implements Filter, O
    * expanded results so obtained are then merged (union) to get the ORed results.The evaluated
    * result of an AllGroupJunction will always be of the query from clause iterator level (top
    * level) which can be ORed or ANDd with filter evaluable subtree CompiledJunction.
-   * 
+   *
    * @param context ExecutionContext object
    * @return SelectResults object
    * @throws FunctionDomainException

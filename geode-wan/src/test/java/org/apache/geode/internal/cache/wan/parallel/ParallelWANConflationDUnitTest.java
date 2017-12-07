@@ -14,25 +14,24 @@
  */
 package org.apache.geode.internal.cache.wan.parallel;
 
-import org.junit.experimental.categories.Category;
-import org.junit.Test;
-
 import static org.junit.Assert.*;
-
-import org.apache.geode.test.dunit.cache.internal.JUnit4CacheTestCase;
-import org.apache.geode.test.dunit.internal.JUnit4DistributedTestCase;
-import org.apache.geode.test.junit.categories.DistributedTest;
 
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Random;
 
+import org.junit.Test;
+import org.junit.experimental.categories.Category;
+
 import org.apache.geode.internal.cache.wan.WANTestBase;
 import org.apache.geode.test.dunit.IgnoredException;
+import org.apache.geode.test.dunit.cache.internal.JUnit4CacheTestCase;
+import org.apache.geode.test.dunit.internal.JUnit4DistributedTestCase;
+import org.apache.geode.test.junit.categories.DistributedTest;
 
 /**
- * 
+ *
  */
 @Category(DistributedTest.class)
 public class ParallelWANConflationDUnitTest extends WANTestBase {
@@ -80,7 +79,7 @@ public class ParallelWANConflationDUnitTest extends WANTestBase {
    * This test is disabled as it is not guaranteed to pass it everytime. This test is related to the
    * conflation in batch. yet did find any way to ascertain that the vents in the batch will always
    * be conflated.
-   * 
+   *
    * @throws Exception
    */
   @Test

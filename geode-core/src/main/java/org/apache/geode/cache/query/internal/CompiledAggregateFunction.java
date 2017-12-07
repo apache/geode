@@ -19,6 +19,7 @@ import org.apache.geode.cache.query.FunctionDomainException;
 import org.apache.geode.cache.query.NameResolutionException;
 import org.apache.geode.cache.query.QueryInvocationTargetException;
 import org.apache.geode.cache.query.TypeMismatchException;
+import org.apache.geode.cache.query.internal.aggregate.Avg;
 import org.apache.geode.cache.query.internal.aggregate.AvgBucketNode;
 import org.apache.geode.cache.query.internal.aggregate.AvgDistinct;
 import org.apache.geode.cache.query.internal.aggregate.AvgDistinctPRQueryNode;
@@ -26,19 +27,18 @@ import org.apache.geode.cache.query.internal.aggregate.AvgPRQueryNode;
 import org.apache.geode.cache.query.internal.aggregate.Count;
 import org.apache.geode.cache.query.internal.aggregate.CountDistinct;
 import org.apache.geode.cache.query.internal.aggregate.CountDistinctPRQueryNode;
-import org.apache.geode.cache.query.internal.aggregate.SumDistinctPRQueryNode;
 import org.apache.geode.cache.query.internal.aggregate.CountPRQueryNode;
 import org.apache.geode.cache.query.internal.aggregate.DistinctAggregator;
 import org.apache.geode.cache.query.internal.aggregate.MaxMin;
-import org.apache.geode.cache.query.internal.aggregate.Avg;
 import org.apache.geode.cache.query.internal.aggregate.Sum;
 import org.apache.geode.cache.query.internal.aggregate.SumDistinct;
+import org.apache.geode.cache.query.internal.aggregate.SumDistinctPRQueryNode;
 import org.apache.geode.cache.query.internal.parse.OQLLexerTokenTypes;
 import org.apache.geode.cache.query.internal.types.ObjectTypeImpl;
 import org.apache.geode.cache.query.types.ObjectType;
 
 /**
- * 
+ *
  *
  */
 public class CompiledAggregateFunction extends AbstractCompiledValue {

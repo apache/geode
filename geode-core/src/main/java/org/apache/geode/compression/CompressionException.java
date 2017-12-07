@@ -19,7 +19,7 @@ import org.apache.geode.GemFireException;
 
 /**
  * Wraps specific compression errors for {@link Compressor compressors}.
- * 
+ *
  */
 public class CompressionException extends GemFireException {
 

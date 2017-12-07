@@ -14,13 +14,13 @@
  */
 package org.apache.geode.internal.cache;
 
-import org.apache.geode.cache.*;
-import org.apache.geode.distributed.DistributedSystem;
-import org.apache.geode.internal.cache.lru.EnableLRU;
-import org.apache.geode.internal.cache.lru.LRUClockNode;
-import org.apache.geode.internal.cache.lru.LRUStatistics;
-import org.apache.geode.internal.cache.lru.NewLRUClockHand;
-import org.apache.geode.test.junit.categories.IntegrationTest;
+import static org.apache.geode.distributed.ConfigurationProperties.*;
+import static org.junit.Assert.*;
+
+import java.io.File;
+import java.util.Arrays;
+import java.util.Properties;
+
 import org.junit.After;
 import org.junit.Before;
 import org.junit.FixMethodOrder;
@@ -28,17 +28,18 @@ import org.junit.Test;
 import org.junit.experimental.categories.Category;
 import org.junit.runners.MethodSorters;
 
-import java.io.File;
-import java.util.Arrays;
-import java.util.Properties;
-
-import static org.apache.geode.distributed.ConfigurationProperties.*;
-import static org.junit.Assert.*;
+import org.apache.geode.cache.*;
+import org.apache.geode.distributed.DistributedSystem;
+import org.apache.geode.internal.cache.lru.EnableLRU;
+import org.apache.geode.internal.cache.lru.LRUClockNode;
+import org.apache.geode.internal.cache.lru.LRUStatistics;
+import org.apache.geode.internal.cache.lru.NewLRUClockHand;
+import org.apache.geode.test.junit.categories.IntegrationTest;
 
 /**
  * This is a test verifies region is LIFO enabled by MEMORY verifies correct stats updating and
  * faultin is not evicting another entry - not strict LIFO
- * 
+ *
  * @since GemFire 5.7
  */
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
@@ -84,7 +85,7 @@ public class LIFOEvictionAlgoMemoryEnabledRegionJUnitTest {
 
   /**
    * Method for intializing the VM and create region with LIFO attached
-   * 
+   *
    * @throws Exception
    */
   private static void initializeVM() throws Exception {
@@ -407,4 +408,3 @@ class TestLRUNode implements LRUClockNode {
     return evicted;
   }
 }
-

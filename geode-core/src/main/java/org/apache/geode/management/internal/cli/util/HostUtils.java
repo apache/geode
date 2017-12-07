@@ -14,12 +14,12 @@
  */
 package org.apache.geode.management.internal.cli.util;
 
+import java.net.UnknownHostException;
+
 import org.apache.geode.cache.server.CacheServer;
 import org.apache.geode.internal.DistributionLocator;
 import org.apache.geode.internal.lang.StringUtils;
 import org.apache.geode.internal.net.SocketCreator;
-
-import java.net.UnknownHostException;
 
 public class HostUtils {
   private static final String LOCALHOST = "localhost";

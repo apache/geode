@@ -22,12 +22,12 @@ import java.io.*;
  * sees a byte array arrive.
  *
  * @since GemFire 5.0.2
- * 
+ *
  */
 public interface ObjToByteArraySerializer extends DataOutput {
   /**
    * Serialize the given object v as a byte array
-   * 
+   *
    * @throws IOException if something goes wrong during serialization
    */
   public void writeAsSerializedByteArray(Object v) throws IOException;

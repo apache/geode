@@ -42,7 +42,7 @@ import org.apache.geode.management.internal.configuration.domain.XmlEntity;
 
 /**
  * Function used by the 'alter region' gfsh command to alter a region on each member.
- * 
+ *
  * @since GemFire 8.0
  */
 public class RegionAlterFunction extends FunctionAdapter implements InternalEntity {
@@ -288,10 +288,10 @@ public class RegionAlterFunction extends FunctionAdapter implements InternalEnti
   /**
    * Converts the expiration attributes passed as arguments from the command to the function into a
    * type suitable for applying to a Region.
-   * 
+   *
    * @param newExpirationAttrs Attributes supplied by the command
    * @param oldExpirationAttributes Attributes currently applied to the Region.
-   * 
+   *
    * @return A new pair of expiration attributes taken from the command if it was given or the
    *         current value from the Region if it was not.
    */

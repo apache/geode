@@ -26,11 +26,11 @@ import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 
-import org.apache.geode.annotations.Experimental;
 import org.apache.logging.log4j.Logger;
 import org.springframework.scheduling.support.CronSequenceGenerator;
 
 import org.apache.geode.GemFireConfigException;
+import org.apache.geode.annotations.Experimental;
 import org.apache.geode.cache.CacheClosedException;
 import org.apache.geode.cache.Declarable;
 import org.apache.geode.cache.GemFireCache;
@@ -51,16 +51,16 @@ import org.apache.geode.internal.logging.LogService;
  * most cases, the decision to re-balance is based on the size of the member and a few other
  * statistics. {@link AutoBalancer} monitors these statistics and if necessary, triggers a
  * re-balancing request. Auto-Balancing is expected to prevent failures and data loss.
- * 
+ *
  * <P>
  * This implementation is based on {@code ConfigInitialization} implementation. By default
  * auto-balancing is disabled. A user needs to configure {@link AutoBalancer} during cache
  * initialization {@link GemFireCache#getInitializer()}
- * 
+ *
  * <P>
  * In a cluster only one member owns auto-balancing responsibility. This is achieved by grabbing a
  * distributed lock. In case of a failure a new member will grab the lock and manage auto balancing.
- * 
+ *
  * <P>
  * {@link AutoBalancer} can be controlled using the following configurations
  * <OL>
@@ -81,7 +81,7 @@ public class AutoBalancer implements Declarable {
    * <LI>Month
    * <LI>Day-of-Week
    * <LI>Year (optional field)
-   * 
+   *
    * <P>
    * For. e.g. {@code 0 0 * * * ?} for auditing the system every hour
    */

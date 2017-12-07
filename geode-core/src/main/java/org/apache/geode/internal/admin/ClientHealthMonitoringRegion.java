@@ -46,7 +46,7 @@ public class ClientHealthMonitoringRegion {
   /**
    * This is an accessor method used to get the reference of this region. If this region is not yet
    * initialized, then it attempts to create it.
-   * 
+   *
    * @param cache the Cache we are currently using
    * @return ClientHealthMonitoringRegion reference.
    */
@@ -93,7 +93,7 @@ public class ClientHealthMonitoringRegion {
   /**
    * This method prepares a CacheListener, responsible for the cleanup of reference of admin region,
    * upon the cache closure.
-   * 
+   *
    * @return CacheListener.
    */
   private static CacheListener prepareCacheListener() {

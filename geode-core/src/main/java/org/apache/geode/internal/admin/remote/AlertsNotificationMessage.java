@@ -28,7 +28,7 @@ import org.apache.geode.internal.admin.StatAlert;
 /**
  * Distribution message to be sent to alert aggregator {@link StatAlertsAggregator} It wraps alert
  * objects{@link StatAlert}
- * 
+ *
  * @since GemFire 5.7
  */
 public class AlertsNotificationMessage extends PooledDistributionMessage {
@@ -79,7 +79,7 @@ public class AlertsNotificationMessage extends PooledDistributionMessage {
   }
 
   /**
-   * 
+   *
    * @param alerts List of alerts raised by member vm
    */
   public void setAlerts(StatAlert[] alerts) {

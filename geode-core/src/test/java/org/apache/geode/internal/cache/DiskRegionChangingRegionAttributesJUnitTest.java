@@ -25,7 +25,7 @@ import org.apache.geode.test.junit.categories.IntegrationTest;
 /**
  * This test will test that there are no unexpected behaviours if the the region attributes are
  * changed after starting it again.
- * 
+ *
  * The behaviour should be predictable
  */
 @Category(IntegrationTest.class)

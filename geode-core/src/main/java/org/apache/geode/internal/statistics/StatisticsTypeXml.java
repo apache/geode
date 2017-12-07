@@ -14,19 +14,18 @@
  */
 package org.apache.geode.internal.statistics;
 
+import java.io.*;
+import java.util.*;
+
+import javax.xml.parsers.*;
+
+import org.w3c.dom.*;
+import org.xml.sax.*;
+
 import org.apache.geode.*;
 import org.apache.geode.internal.Assert;
 import org.apache.geode.internal.ClassPathLoader;
 import org.apache.geode.internal.i18n.LocalizedStrings;
-
-import java.io.*;
-import java.util.*;
-import javax.xml.parsers.*;
-// import javax.xml.transform.*;
-// import javax.xml.transform.dom.*;
-// import javax.xml.transform.stream.*;
-import org.w3c.dom.*;
-import org.xml.sax.*;
 
 // @todo davidw Use a SAX parser instead of DOM
 /**
@@ -183,9 +182,9 @@ public class StatisticsTypeXml implements EntityResolver, ErrorHandler {
     return statFactory.createType(typeName, description, descriptors);
   }
 
-  private final static int INT_STORAGE = 0;
-  private final static int LONG_STORAGE = 1;
-  private final static int DOUBLE_STORAGE = 2;
+  private static final int INT_STORAGE = 0;
+  private static final int LONG_STORAGE = 1;
+  private static final int DOUBLE_STORAGE = 2;
 
   /**
    * <!ELEMENT stat (description?, unit?)> <!ATTLIST stat name CDATA #REQUIRED counter (true |

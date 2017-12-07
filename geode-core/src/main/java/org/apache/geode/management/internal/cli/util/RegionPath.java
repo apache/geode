@@ -23,7 +23,7 @@ import org.apache.geode.management.ManagementService;
 
 /**
  * Class to handle Region path.
- * 
+ *
  * @since GemFire 7.0
  */
 public class RegionPath {

@@ -14,6 +14,12 @@
  */
 package org.apache.geode.internal.cache.wan.wancommand;
 
+import static org.apache.geode.distributed.ConfigurationProperties.DISTRIBUTED_SYSTEM_ID;
+import static org.apache.geode.distributed.ConfigurationProperties.GROUPS;
+import static org.apache.geode.distributed.ConfigurationProperties.REMOTE_LOCATORS;
+import static org.apache.geode.internal.cache.wan.wancommand.WANCommandUtils.createSender;
+import static org.apache.geode.internal.cache.wan.wancommand.WANCommandUtils.getMemberIdCallable;
+import static org.apache.geode.internal.cache.wan.wancommand.WANCommandUtils.verifySenderState;
 import static org.apache.geode.test.dunit.Assert.assertEquals;
 import static org.apache.geode.test.dunit.Assert.assertFalse;
 import static org.apache.geode.test.dunit.Assert.assertTrue;
@@ -22,7 +28,10 @@ import static org.apache.geode.test.dunit.LogWriterUtils.getLogWriter;
 import static org.apache.geode.test.dunit.Wait.pause;
 
 import java.util.List;
+import java.util.Properties;
 
+import org.junit.Before;
+import org.junit.Rule;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
@@ -32,54 +41,81 @@ import org.apache.geode.management.internal.cli.i18n.CliStrings;
 import org.apache.geode.management.internal.cli.result.CommandResult;
 import org.apache.geode.management.internal.cli.result.TabularResultData;
 import org.apache.geode.test.dunit.IgnoredException;
+import org.apache.geode.test.dunit.rules.LocatorServerStartupRule;
+import org.apache.geode.test.dunit.rules.MemberVM;
 import org.apache.geode.test.junit.categories.DistributedTest;
+import org.apache.geode.test.junit.rules.GfshCommandRule;
 
 @Category(DistributedTest.class)
-public class StartGatewaySenderCommandDUnitTest extends WANCommandTestBase {
+public class StartGatewaySenderCommandDUnitTest {
+
+  @Rule
+  public LocatorServerStartupRule locatorServerStartupRule = new LocatorServerStartupRule();
+
+  @Rule
+  public GfshCommandRule gfsh = new GfshCommandRule();
+
+  private MemberVM locatorSite1;
+  private MemberVM locatorSite2;
+  private MemberVM server1;
+  private MemberVM server2;
+  private MemberVM server3;
+  private MemberVM server4;
+  private MemberVM server5;
+
+  @Before
+  public void before() throws Exception {
+    Properties props = new Properties();
+    props.setProperty(DISTRIBUTED_SYSTEM_ID, "" + 1);
+    locatorSite1 = locatorServerStartupRule.startLocatorVM(1, props);
+
+    props.setProperty(DISTRIBUTED_SYSTEM_ID, "" + 2);
+    props.setProperty(REMOTE_LOCATORS, "localhost[" + locatorSite1.getPort() + "]");
+    locatorSite2 = locatorServerStartupRule.startLocatorVM(2, props);
+
+    // Connect Gfsh to locator.
+    gfsh.connectAndVerify(locatorSite1);
+  }
+
   /**
    * Test wan commands for error in input 1> start gateway-sender command needs only one of member
    * or group.
    */
   @Test
-  public void testStartGatewaySender_ErrorConditions() {
-    Integer dsIdPort = vm1.invoke(() -> createFirstLocatorWithDSId(1));
-    propsSetUp(dsIdPort);
+  public void testStartGatewaySender_ErrorConditions() throws Exception {
 
-    vm2.invoke(() -> createFirstRemoteLocator(2, dsIdPort));
-    vm3.invoke(() -> createCache(dsIdPort));
-    vm3.invoke(() -> createSender("ln", 2, false, 100, 400, false, false, null, true));
+    Integer locator1Port = locatorSite1.getPort();
 
-    final DistributedMember vm1Member = vm3.invoke(this::getMember);
+    // setup servers in Site #1
+    server1 = locatorServerStartupRule.startServerVM(3, locator1Port);
+
+    server1.invoke(() -> createSender("ln", 2, false, 100, 400, false, false, null, true));
+
+    final DistributedMember vm1Member = (DistributedMember) server1.invoke(getMemberIdCallable());
     String command = CliStrings.START_GATEWAYSENDER + " --" + CliStrings.START_GATEWAYSENDER__ID
         + "=ln --" + CliStrings.MEMBER + "=" + vm1Member.getId() + " --" + CliStrings.GROUP
         + "=SenserGroup1";
-    CommandResult cmdResult = executeCommandWithIgnoredExceptions(command);
-
-    if (cmdResult != null) {
-      String strCmdResult = commandResultToString(cmdResult);
-      getLogWriter().info("testStartGatewaySender stringResult : " + strCmdResult + ">>>>");
-      assertEquals(Result.Status.ERROR, cmdResult.getStatus());
-      assertTrue(strCmdResult.contains(CliStrings.PROVIDE_EITHER_MEMBER_OR_GROUP_MESSAGE));
-    } else {
-      fail("testStartGatewaySender failed as did not get CommandResult");
-    }
+    gfsh.executeAndAssertThat(command).statusIsError()
+        .containsOutput(CliStrings.PROVIDE_EITHER_MEMBER_OR_GROUP_MESSAGE);
   }
 
   @Test
-  public void testStartGatewaySender() {
-    Integer dsIdPort = vm1.invoke(() -> createFirstLocatorWithDSId(1));
-    propsSetUp(dsIdPort);
+  public void testStartGatewaySender() throws Exception {
 
-    vm2.invoke(() -> createFirstRemoteLocator(2, dsIdPort));
-    vm3.invoke(() -> createCache(dsIdPort));
-    vm3.invoke(() -> createSender("ln", 2, false, 100, 400, false, false, null, true));
-    vm4.invoke(() -> createCache(dsIdPort));
-    vm4.invoke(() -> createSender("ln", 2, false, 100, 400, false, false, null, true));
-    vm5.invoke(() -> createCache(dsIdPort));
-    vm5.invoke(() -> createSender("ln", 2, false, 100, 400, false, false, null, true));
-    vm3.invoke(() -> verifySenderState("ln", false, false));
-    vm4.invoke(() -> verifySenderState("ln", false, false));
-    vm5.invoke(() -> verifySenderState("ln", false, false));
+    Integer locator1Port = locatorSite1.getPort();
+
+    // setup servers in Site #1
+    server1 = locatorServerStartupRule.startServerVM(3, locator1Port);
+    server2 = locatorServerStartupRule.startServerVM(4, locator1Port);
+    server3 = locatorServerStartupRule.startServerVM(5, locator1Port);
+
+    server1.invoke(() -> createSender("ln", 2, false, 100, 400, false, false, null, true));
+    server2.invoke(() -> createSender("ln", 2, false, 100, 400, false, false, null, true));
+    server3.invoke(() -> createSender("ln", 2, false, 100, 400, false, false, null, true));
+
+    server1.invoke(() -> verifySenderState("ln", false, false));
+    server2.invoke(() -> verifySenderState("ln", false, false));
+    server3.invoke(() -> verifySenderState("ln", false, false));
 
     pause(10000);
     String command =
@@ -87,70 +123,72 @@ public class StartGatewaySenderCommandDUnitTest extends WANCommandTestBase {
     CommandResult cmdResult = executeCommandWithIgnoredExceptions(command);
 
     if (cmdResult != null) {
-      String strCmdResult = commandResultToString(cmdResult);
+      String strCmdResult = cmdResult.toString();
       getLogWriter().info("testStartGatewaySender stringResult : " + strCmdResult + ">>>>");
       assertEquals(Result.Status.OK, cmdResult.getStatus());
       TabularResultData resultData = (TabularResultData) cmdResult.getResultData();
       List<String> status = resultData.retrieveAllValues("Result");
-      assertEquals(5, status.size());
-      assertTrue(status.contains("Error"));
+      assertEquals(3, status.size());
       assertTrue(status.contains("OK"));
     } else {
       fail("testStartGatewaySender failed as did not get CommandResult");
     }
-    vm3.invoke(() -> verifySenderState("ln", true, false));
-    vm4.invoke(() -> verifySenderState("ln", true, false));
-    vm5.invoke(() -> verifySenderState("ln", true, false));
+    server1.invoke(() -> verifySenderState("ln", true, false));
+    server2.invoke(() -> verifySenderState("ln", true, false));
+    server3.invoke(() -> verifySenderState("ln", true, false));
   }
 
   /**
    * test to validate that the start gateway sender starts the gateway sender on a member
    */
   @Test
-  public void testStartGatewaySender_onMember() {
-    Integer dsIdPort = vm1.invoke(() -> createFirstLocatorWithDSId(1));
-    propsSetUp(dsIdPort);
+  public void testStartGatewaySender_onMember() throws Exception {
 
-    vm2.invoke(() -> createFirstRemoteLocator(2, dsIdPort));
-    vm3.invoke(() -> createCache(dsIdPort));
-    vm3.invoke(() -> createSender("ln", 2, false, 100, 400, false, false, null, true));
-    vm3.invoke(() -> verifySenderState("ln", false, false));
+    Integer locator1Port = locatorSite1.getPort();
 
-    final DistributedMember vm1Member = vm3.invoke(this::getMember);
+    // setup servers in Site #1
+    server1 = locatorServerStartupRule.startServerVM(3, locator1Port);
+
+    server1.invoke(() -> createSender("ln", 2, false, 100, 400, false, false, null, true));
+    server1.invoke(() -> verifySenderState("ln", false, false));
+
+    final DistributedMember vm1Member = (DistributedMember) server1.invoke(getMemberIdCallable());
     pause(10000);
     String command = CliStrings.START_GATEWAYSENDER + " --" + CliStrings.START_GATEWAYSENDER__ID
         + "=ln --" + CliStrings.MEMBER + "=" + vm1Member.getId();
     CommandResult cmdResult = executeCommandWithIgnoredExceptions(command);
 
     if (cmdResult != null) {
-      String strCmdResult = commandResultToString(cmdResult);
+      String strCmdResult = cmdResult.toString();
       getLogWriter().info("testStartGatewaySender stringResult : " + strCmdResult + ">>>>");
       assertEquals(Result.Status.OK, cmdResult.getStatus());
       assertTrue(strCmdResult.contains("is started on member"));
     } else {
       fail("testStartGatewaySender failed as did not get CommandResult");
     }
-    vm3.invoke(() -> verifySenderState("ln", true, false));
+    server1.invoke(() -> verifySenderState("ln", true, false));
   }
 
   /**
    * test to validate that the start gateway sender starts the gateway sender on a group of members
    */
   @Test
-  public void testStartGatewaySender_Group() {
-    Integer dsIdPort = vm1.invoke(() -> createFirstLocatorWithDSId(1));
-    propsSetUp(dsIdPort);
+  public void testStartGatewaySender_Group() throws Exception {
 
-    vm2.invoke(() -> createFirstRemoteLocator(2, dsIdPort));
-    vm3.invoke(() -> createCacheWithGroups(dsIdPort, "SenderGroup1"));
-    vm3.invoke(() -> createSender("ln", 2, false, 100, 400, false, false, null, true));
-    vm4.invoke(() -> createCacheWithGroups(dsIdPort, "SenderGroup1"));
-    vm4.invoke(() -> createSender("ln", 2, false, 100, 400, false, false, null, true));
-    vm5.invoke(() -> createCacheWithGroups(dsIdPort, "SenderGroup1"));
-    vm5.invoke(() -> createSender("ln", 2, false, 100, 400, false, false, null, true));
-    vm3.invoke(() -> verifySenderState("ln", false, false));
-    vm4.invoke(() -> verifySenderState("ln", false, false));
-    vm5.invoke(() -> verifySenderState("ln", false, false));
+    Integer locator1Port = locatorSite1.getPort();
+
+    // setup servers in Site #1
+    server1 = startServerWithGroups(3, "SenderGroup1", locator1Port);
+    server2 = startServerWithGroups(4, "SenderGroup1", locator1Port);
+    server3 = startServerWithGroups(5, "SenderGroup1", locator1Port);
+
+    server1.invoke(() -> createSender("ln", 2, false, 100, 400, false, false, null, true));
+    server2.invoke(() -> createSender("ln", 2, false, 100, 400, false, false, null, true));
+    server3.invoke(() -> createSender("ln", 2, false, 100, 400, false, false, null, true));
+
+    server1.invoke(() -> verifySenderState("ln", false, false));
+    server2.invoke(() -> verifySenderState("ln", false, false));
+    server3.invoke(() -> verifySenderState("ln", false, false));
 
     pause(10000);
     String command = CliStrings.START_GATEWAYSENDER + " --" + CliStrings.START_GATEWAYSENDER__ID
@@ -158,7 +196,7 @@ public class StartGatewaySenderCommandDUnitTest extends WANCommandTestBase {
     CommandResult cmdResult = executeCommandWithIgnoredExceptions(command);
 
     if (cmdResult != null) {
-      String strCmdResult = commandResultToString(cmdResult);
+      String strCmdResult = cmdResult.toString();
       getLogWriter().info("testStartGatewaySender_Group stringResult : " + strCmdResult + ">>>>");
       assertEquals(Result.Status.OK, cmdResult.getStatus());
       TabularResultData resultData = (TabularResultData) cmdResult.getResultData();
@@ -169,9 +207,9 @@ public class StartGatewaySenderCommandDUnitTest extends WANCommandTestBase {
     } else {
       fail("testStartGatewaySender failed as did not get CommandResult");
     }
-    vm3.invoke(() -> verifySenderState("ln", true, false));
-    vm4.invoke(() -> verifySenderState("ln", true, false));
-    vm5.invoke(() -> verifySenderState("ln", true, false));
+    server1.invoke(() -> verifySenderState("ln", true, false));
+    server2.invoke(() -> verifySenderState("ln", true, false));
+    server3.invoke(() -> verifySenderState("ln", true, false));
   }
 
   /**
@@ -179,26 +217,28 @@ public class StartGatewaySenderCommandDUnitTest extends WANCommandTestBase {
    * to multiple groups
    */
   @Test
-  public void testStartGatewaySender_MultipleGroup() {
-    Integer dsIdPort = vm1.invoke(() -> createFirstLocatorWithDSId(1));
-    propsSetUp(dsIdPort);
+  public void testStartGatewaySender_MultipleGroup() throws Exception {
 
-    vm2.invoke(() -> createFirstRemoteLocator(2, dsIdPort));
-    vm3.invoke(() -> createCacheWithGroups(dsIdPort, "SenderGroup1"));
-    vm3.invoke(() -> createSender("ln", 2, false, 100, 400, false, false, null, true));
-    vm4.invoke(() -> createCacheWithGroups(dsIdPort, "SenderGroup1"));
-    vm4.invoke(() -> createSender("ln", 2, false, 100, 400, false, false, null, true));
-    vm5.invoke(() -> createCacheWithGroups(dsIdPort, "SenderGroup1, SenderGroup2"));
-    vm5.invoke(() -> createSender("ln", 2, false, 100, 400, false, false, null, true));
-    vm6.invoke(() -> createCacheWithGroups(dsIdPort, "SenderGroup1, SenderGroup2"));
-    vm6.invoke(() -> createSender("ln", 2, false, 100, 400, false, false, null, true));
-    vm7.invoke(() -> createCacheWithGroups(dsIdPort, "SenderGroup3"));
-    vm7.invoke(() -> createSender("ln", 2, false, 100, 400, false, false, null, true));
-    vm3.invoke(() -> verifySenderState("ln", false, false));
-    vm4.invoke(() -> verifySenderState("ln", false, false));
-    vm5.invoke(() -> verifySenderState("ln", false, false));
-    vm6.invoke(() -> verifySenderState("ln", false, false));
-    vm7.invoke(() -> verifySenderState("ln", false, false));
+    Integer locator1Port = locatorSite1.getPort();
+
+    // setup servers in Site #1
+    server1 = startServerWithGroups(3, "SenderGroup1", locator1Port);
+    server2 = startServerWithGroups(4, "SenderGroup1", locator1Port);
+    server3 = startServerWithGroups(5, "SenderGroup1, SenderGroup2", locator1Port);
+    server4 = startServerWithGroups(6, "SenderGroup1, SenderGroup2", locator1Port);
+    server5 = startServerWithGroups(7, "SenderGroup3", locator1Port);
+
+    server1.invoke(() -> createSender("ln", 2, false, 100, 400, false, false, null, true));
+    server2.invoke(() -> createSender("ln", 2, false, 100, 400, false, false, null, true));
+    server3.invoke(() -> createSender("ln", 2, false, 100, 400, false, false, null, true));
+    server4.invoke(() -> createSender("ln", 2, false, 100, 400, false, false, null, true));
+    server5.invoke(() -> createSender("ln", 2, false, 100, 400, false, false, null, true));
+
+    server1.invoke(() -> verifySenderState("ln", false, false));
+    server2.invoke(() -> verifySenderState("ln", false, false));
+    server3.invoke(() -> verifySenderState("ln", false, false));
+    server4.invoke(() -> verifySenderState("ln", false, false));
+    server5.invoke(() -> verifySenderState("ln", false, false));
 
     pause(10000);
     String command = CliStrings.START_GATEWAYSENDER + " --" + CliStrings.START_GATEWAYSENDER__ID
@@ -206,7 +246,7 @@ public class StartGatewaySenderCommandDUnitTest extends WANCommandTestBase {
     CommandResult cmdResult = executeCommandWithIgnoredExceptions(command);
 
     if (cmdResult != null) {
-      String strCmdResult = commandResultToString(cmdResult);
+      String strCmdResult = cmdResult.toString();
       getLogWriter().info("testStartGatewaySender_Group stringResult : " + strCmdResult + ">>>>");
       assertEquals(Result.Status.OK, cmdResult.getStatus());
       TabularResultData resultData = (TabularResultData) cmdResult.getResultData();
@@ -217,29 +257,31 @@ public class StartGatewaySenderCommandDUnitTest extends WANCommandTestBase {
     } else {
       fail("testStartGatewaySender failed as did not get CommandResult");
     }
-    vm3.invoke(() -> verifySenderState("ln", true, false));
-    vm4.invoke(() -> verifySenderState("ln", true, false));
-    vm5.invoke(() -> verifySenderState("ln", true, false));
-    vm6.invoke(() -> verifySenderState("ln", true, false));
-    vm7.invoke(() -> verifySenderState("ln", false, false));
+    server1.invoke(() -> verifySenderState("ln", true, false));
+    server2.invoke(() -> verifySenderState("ln", true, false));
+    server3.invoke(() -> verifySenderState("ln", true, false));
+    server4.invoke(() -> verifySenderState("ln", true, false));
+    server5.invoke(() -> verifySenderState("ln", false, false));
   }
 
   /**
    * Test to validate the test scenario when one of the member ion group does not have the sender.
    */
   @Test
-  public void testStartGatewaySender_Group_MissingSenderFromGroup() {
-    Integer dsIdPort = vm1.invoke(() -> createFirstLocatorWithDSId(1));
-    propsSetUp(dsIdPort);
+  public void testStartGatewaySender_Group_MissingSenderFromGroup() throws Exception {
 
-    vm2.invoke(() -> createFirstRemoteLocator(2, dsIdPort));
-    vm3.invoke(() -> createCacheWithGroups(dsIdPort, "SenderGroup1"));
-    vm3.invoke(() -> createSender("ln", 2, false, 100, 400, false, false, null, true));
-    vm4.invoke(() -> createCacheWithGroups(dsIdPort, "SenderGroup1"));
-    vm5.invoke(() -> createCacheWithGroups(dsIdPort, "SenderGroup1"));
-    vm5.invoke(() -> createSender("ln", 2, false, 100, 400, false, false, null, true));
-    vm3.invoke(() -> verifySenderState("ln", false, false));
-    vm5.invoke(() -> verifySenderState("ln", false, false));
+    Integer locator1Port = locatorSite1.getPort();
+
+    // setup servers in Site #1
+    server1 = startServerWithGroups(3, "SenderGroup1", locator1Port);
+    server2 = startServerWithGroups(4, "SenderGroup1", locator1Port);
+    server3 = startServerWithGroups(5, "SenderGroup1", locator1Port);
+
+    server1.invoke(() -> createSender("ln", 2, false, 100, 400, false, false, null, true));
+    server3.invoke(() -> createSender("ln", 2, false, 100, 400, false, false, null, true));
+
+    server1.invoke(() -> verifySenderState("ln", false, false));
+    server3.invoke(() -> verifySenderState("ln", false, false));
 
     pause(10000);
     String command = CliStrings.START_GATEWAYSENDER + " --" + CliStrings.START_GATEWAYSENDER__ID
@@ -247,7 +289,7 @@ public class StartGatewaySenderCommandDUnitTest extends WANCommandTestBase {
     CommandResult cmdResult = executeCommandWithIgnoredExceptions(command);
 
     if (cmdResult != null) {
-      String strCmdResult = commandResultToString(cmdResult);
+      String strCmdResult = cmdResult.toString();
       assertTrue(strCmdResult.contains("Error"));
       assertTrue(strCmdResult.contains("is not available"));
       getLogWriter().info("testStartGatewaySender_Group stringResult : " + strCmdResult + ">>>>");
@@ -260,16 +302,22 @@ public class StartGatewaySenderCommandDUnitTest extends WANCommandTestBase {
     } else {
       fail("testStartGatewaySender failed as did not get CommandResult");
     }
-    vm3.invoke(() -> verifySenderState("ln", true, false));
-    vm5.invoke(() -> verifySenderState("ln", true, false));
+    server1.invoke(() -> verifySenderState("ln", true, false));
+    server3.invoke(() -> verifySenderState("ln", true, false));
   }
 
   private CommandResult executeCommandWithIgnoredExceptions(String command) {
     final IgnoredException exln = IgnoredException.addIgnoredException("Could not connect");
     try {
-      return executeCommand(command);
+      return gfsh.executeCommand(command);
     } finally {
       exln.remove();
     }
+  }
+
+  private MemberVM startServerWithGroups(int index, String groups, int locPort) throws Exception {
+    Properties props = new Properties();
+    props.setProperty(GROUPS, groups);
+    return locatorServerStartupRule.startServerVM(index, props, locPort);
   }
 }

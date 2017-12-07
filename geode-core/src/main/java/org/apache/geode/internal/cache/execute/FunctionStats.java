@@ -203,7 +203,7 @@ public class FunctionStats {
   private final Statistics _stats;
 
   /** This is an instance of the FunctionStats when the statsDisabled = true; */
-  private final static FunctionStats dummy = createDummy();
+  private static final FunctionStats dummy = createDummy();
 
   // ///////////////////// Constructors ///////////////////////
 
@@ -218,7 +218,7 @@ public class FunctionStats {
 
   /**
    * Constructor.
-   * 
+   *
    * @param factory The <code>StatisticsFactory</code> which creates the <code>Statistics</code>
    *        instance
    * @param name The name of the <code>Statistics</code>
@@ -237,7 +237,7 @@ public class FunctionStats {
 
   /**
    * Returns the current value of the "Total number of completed function.execute() calls" stat.
-   * 
+   *
    * @return the current value of the "function Executions completed" stat
    */
   public int getFunctionExecutionsCompleted() {
@@ -254,7 +254,7 @@ public class FunctionStats {
 
   /**
    * Returns the current value of the "Total time consumed for all completed invocations" stat.
-   * 
+   *
    * @return the current value of the "functionExecutionCompleteProcessingTime" stat
    */
   public long getFunctionExecutionCompleteProcessingTime() {
@@ -263,7 +263,7 @@ public class FunctionStats {
 
   /**
    * Returns the current value of the "number of currently running invocations" stat.
-   * 
+   *
    * @return the current value of the "functionExecutionsRunning" stat
    */
   public int getFunctionExecutionsRunning() {
@@ -280,7 +280,7 @@ public class FunctionStats {
 
   /**
    * Returns the current value of the "Total number of results sent to the ResultCollector" stat.
-   * 
+   *
    * @return the current value of the "resultsReturned" stat
    */
   public int getResultsSentToResultCollector() {
@@ -298,7 +298,7 @@ public class FunctionStats {
   /**
    * Returns the current value of the "Total number of results received and passed to
    * ResultCollector" stat.
-   * 
+   *
    * @return the current value of the "resultsReturned" stat
    */
   public int getResultsReceived() {
@@ -315,7 +315,7 @@ public class FunctionStats {
 
   /**
    * Returns the current value of the "Total number of FunctionService...execute() calls" stat.
-   * 
+   *
    * @return the current value of the "functionExecutionsCall" stat
    */
   public int getFunctionExecutionCalls() {
@@ -333,7 +333,7 @@ public class FunctionStats {
   /**
    * Returns the current value of the "Total time consumed for all completed execute() calls where
    * hasResult() returns true" stat.
-   * 
+   *
    * @return the current value of the "functionExecutionHasResultCompleteProcessingTime" stat
    */
   public int getFunctionExecutionHasResultCompleteProcessingTime() {
@@ -343,7 +343,7 @@ public class FunctionStats {
   /**
    * Returns the current value of the "A gauge indicating the number of currently active execute()
    * calls for functions where hasResult() returns true" stat.
-   * 
+   *
    * @return the current value of the "functionExecutionHasResultRunning" stat
    */
   public int getFunctionExecutionHasResultRunning() {
@@ -361,7 +361,7 @@ public class FunctionStats {
   /**
    * Returns the current value of the "Total number of Exceptions Occurred while executing function"
    * stat.
-   * 
+   *
    * @return the current value of the "functionExecutionHasResultRunning" stat
    */
   public int getFunctionExecutionExceptions() {
@@ -378,7 +378,7 @@ public class FunctionStats {
 
   /**
    * Returns the current time (ns).
-   * 
+   *
    * @return the current time (ns)
    */
   public long startTime() {
@@ -406,7 +406,7 @@ public class FunctionStats {
   /**
    * Increments the "functionExecutionsCompleted" and "functionExecutionCompleteProcessingTime"
    * stats.
-   * 
+   *
    * @param start The start of the functionExecution (which is decremented from the current time to
    *        determine the function Execution processing time).
    * @param haveResult haveResult=true then update the _functionExecutionHasResultRunningId and
@@ -438,7 +438,7 @@ public class FunctionStats {
   /**
    * Increments the "_functionExecutionException" and decrements "_functionExecutionsRunningId" and
    * decrement "_functionExecutionHasResultRunningId"
-   * 
+   *
    * @param haveResult
    */
   public void endFunctionExecutionWithException(boolean haveResult) {
@@ -457,7 +457,7 @@ public class FunctionStats {
 
   /**
    * Returns the Function Stats for the given function
-   * 
+   *
    * @param functionID represents the function for which we are returning the function Stats
    * @param ds represents the Distributed System
    * @return object of the FunctionStats
@@ -483,4 +483,3 @@ public class FunctionStats {
     return Boolean.getBoolean(DistributionConfig.GEMFIRE_PREFIX + "statsDisabled");
   }
 }
-

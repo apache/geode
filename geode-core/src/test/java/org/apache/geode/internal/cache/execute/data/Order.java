@@ -13,17 +13,17 @@
  * the License.
  */
 /**
- * 
+ *
  */
 package org.apache.geode.internal.cache.execute.data;
-
-import org.apache.geode.DataSerializable;
-import org.apache.geode.DataSerializer;
-import org.apache.geode.internal.cache.execute.PRColocationDUnitTest;
 
 import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
+
+import org.apache.geode.DataSerializable;
+import org.apache.geode.DataSerializer;
+import org.apache.geode.internal.cache.execute.PRColocationDUnitTest;
 
 public class Order implements DataSerializable {
   String orderName;

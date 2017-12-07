@@ -135,7 +135,11 @@ public class UpdateVersionDUnitTest extends JUnit4DistributedTestCase {
 
           int entryVersion = stamp.getEntryVersion() - 1;
           int dsid = stamp.getDistributedSystemId();
-          long time = System.currentTimeMillis();
+
+          // Increment the time by 1 in case the time is the same as the previous event.
+          // The entry's version timestamp can be incremented by 1 in certain circumstances.
+          // See AbstractRegionEntry.generateVersionTag.
+          long time = System.currentTimeMillis() + 1;
 
           versionTag.setEntryVersion(entryVersion);
           versionTag.setDistributedSystemId(dsid);
@@ -266,7 +270,11 @@ public class UpdateVersionDUnitTest extends JUnit4DistributedTestCase {
 
           int entryVersion = stamp.getEntryVersion() - 1;
           int dsid = stamp.getDistributedSystemId();
-          long time = System.currentTimeMillis();
+
+          // Increment the time by 1 in case the time is the same as the previous event.
+          // The entry's version timestamp can be incremented by 1 in certain circumstances.
+          // See AbstractRegionEntry.generateVersionTag.
+          long time = System.currentTimeMillis() + 1;
 
           versionTag.setEntryVersion(entryVersion);
           versionTag.setDistributedSystemId(dsid);
@@ -386,7 +394,11 @@ public class UpdateVersionDUnitTest extends JUnit4DistributedTestCase {
 
       int entryVersion = stamp.getEntryVersion() - 1;
       int dsid = stamp.getDistributedSystemId();
-      long time = System.currentTimeMillis();
+
+      // Increment the time by 1 in case the time is the same as the previous event.
+      // The entry's version timestamp can be incremented by 1 in certain circumstances.
+      // See AbstractRegionEntry.generateVersionTag.
+      long time = System.currentTimeMillis() + 1;
 
       versionTag.setEntryVersion(entryVersion);
       versionTag.setDistributedSystemId(dsid);
@@ -519,7 +531,11 @@ public class UpdateVersionDUnitTest extends JUnit4DistributedTestCase {
 
       int entryVersion = stamp.getEntryVersion() - 1;
       int dsid = stamp.getDistributedSystemId();
-      long time = System.currentTimeMillis();
+
+      // Increment the time by 1 in case the time is the same as the previous event.
+      // The entry's version timestamp can be incremented by 1 in certain circumstances.
+      // See AbstractRegionEntry.generateVersionTag.
+      long time = System.currentTimeMillis() + 1;
 
       versionTag.setEntryVersion(entryVersion);
       versionTag.setDistributedSystemId(dsid);

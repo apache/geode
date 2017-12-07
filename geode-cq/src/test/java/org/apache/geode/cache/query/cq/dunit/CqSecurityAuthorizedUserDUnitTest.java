@@ -17,12 +17,9 @@ package org.apache.geode.cache.query.cq.dunit;
 import static org.apache.geode.internal.Assert.assertTrue;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.fail;
-import static org.junit.Assume.assumeTrue;
 
-import java.util.List;
 import java.util.concurrent.TimeUnit;
 
-import junitparams.Parameters;
 import org.awaitility.Awaitility;
 import org.junit.Before;
 import org.junit.Test;

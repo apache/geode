@@ -15,6 +15,7 @@
 package org.apache.geode.modules.session;
 
 import java.util.concurrent.atomic.AtomicInteger;
+
 import javax.servlet.http.HttpSessionEvent;
 import javax.servlet.http.HttpSessionListener;
 

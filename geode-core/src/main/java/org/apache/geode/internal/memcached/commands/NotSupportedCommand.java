@@ -22,7 +22,7 @@ import org.apache.geode.internal.memcached.ResponseStatus;
 import org.apache.geode.memcached.GemFireMemcachedServer.Protocol;
 
 /**
- * 
+ *
  */
 public class NotSupportedCommand extends AbstractCommand {
 

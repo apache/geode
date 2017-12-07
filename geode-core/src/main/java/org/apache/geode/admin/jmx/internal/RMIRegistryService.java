@@ -28,7 +28,7 @@ import java.rmi.server.UnicastRemoteObject;
 
 /**
  * This MBean is an implementation of {@link RMIRegistryServiceMBean}.
- * 
+ *
  */
 public class RMIRegistryService implements RMIRegistryServiceMBean {
   /* RMI Registry host */
@@ -52,7 +52,7 @@ public class RMIRegistryService implements RMIRegistryServiceMBean {
 
   /**
    * Constructor to configure RMI Registry to start using given RMI Registry port.
-   * 
+   *
    * @param port to run RMI Registry on
    */
   public RMIRegistryService(int port) {
@@ -62,10 +62,10 @@ public class RMIRegistryService implements RMIRegistryServiceMBean {
   /**
    * Constructor to configure RMI Registry to start using given RMI Registry port & host bind
    * address.
-   * 
+   *
    * @param host to bind RMI Registry to
    * @param port to run RMI Registry on
-   * 
+   *
    * @throws UnknownHostException if IP Address can not be resolved for the given host string while
    *         creating the RMIServerSocketFactory
    */
@@ -88,7 +88,7 @@ public class RMIRegistryService implements RMIRegistryServiceMBean {
 
   /**
    * Sets the host on which rmiregistry listens for incoming connections
-   * 
+   *
    * @param host the host on which rmiregistry listens for incoming connections
    */
   protected void setHost(String host) {
@@ -100,7 +100,7 @@ public class RMIRegistryService implements RMIRegistryServiceMBean {
 
   /**
    * Returns the port on which rmiregistry listens for incoming connections
-   * 
+   *
    * @return the port on which rmiregistry listens for incoming connections
    */
   public int getPort() {
@@ -109,7 +109,7 @@ public class RMIRegistryService implements RMIRegistryServiceMBean {
 
   /**
    * Sets the port on which rmiregistry listens for incoming connections
-   * 
+   *
    * @param port the port on which rmiregistry listens for incoming connections
    */
   protected void setPort(int port) {
@@ -121,7 +121,7 @@ public class RMIRegistryService implements RMIRegistryServiceMBean {
 
   /**
    * Starts this MBean: rmiregistry can now accept incoming calls
-   * 
+   *
    * @see #stop
    * @see #isRunning
    */
@@ -140,7 +140,7 @@ public class RMIRegistryService implements RMIRegistryServiceMBean {
 
   /**
    * Returns whether this MBean has been started and not yet stopped.
-   * 
+   *
    * @return whether this MBean has been started and not yet stopped.
    * @see #start
    */
@@ -150,7 +150,7 @@ public class RMIRegistryService implements RMIRegistryServiceMBean {
 
   /**
    * Stops this MBean: rmiregistry cannot accept anymore incoming calls
-   * 
+   *
    * @see #start
    */
   public synchronized void stop() throws NoSuchObjectException {
@@ -161,7 +161,7 @@ public class RMIRegistryService implements RMIRegistryServiceMBean {
 
   /**
    * Returns an array of the names bound in the rmiregistry
-   * 
+   *
    * @return an array of the names bound in the rmiregistry
    * @see java.rmi.registry.Registry#list()
    */
@@ -174,7 +174,7 @@ public class RMIRegistryService implements RMIRegistryServiceMBean {
 
   /**
    * Removes the binding for the specified <code>name</code> in the rmiregistry
-   * 
+   *
    * @see java.rmi.registry.Registry#unbind(String)
    */
   public void unbind(String name) throws RemoteException, NotBoundException {
@@ -188,7 +188,7 @@ public class RMIRegistryService implements RMIRegistryServiceMBean {
 
 /**
  * Custom implementation of the {@link RMIServerSocketFactory}
- * 
+ *
  */
 class RMIServerSocketFactoryImpl implements RMIServerSocketFactory {
   /* IP address to use for creating ServerSocket */
@@ -197,9 +197,9 @@ class RMIServerSocketFactoryImpl implements RMIServerSocketFactory {
   /**
    * Constructs a RMIServerSocketFactory. The given rmiBindAddress is used to bind the ServerSockets
    * created from this factory.
-   * 
+   *
    * @param rmiBindAddress String representation of the address to bind the ServerSockets to
-   * 
+   *
    * @throws UnknownHostException if IP Address can not be resolved for the given host string
    */
   /* default */ RMIServerSocketFactoryImpl(String rmiBindAddress) throws UnknownHostException {
@@ -208,7 +208,7 @@ class RMIServerSocketFactoryImpl implements RMIServerSocketFactory {
 
   /**
    * Create a server socket on the specified port (port 0 indicates an anonymous port).
-   * 
+   *
    * @param port the port number
    * @return the server socket on the specified port
    * @exception IOException if an I/O error occurs during server socket creation
@@ -218,4 +218,3 @@ class RMIServerSocketFactoryImpl implements RMIServerSocketFactory {
         bindAddress);
   }
 }
-

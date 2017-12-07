@@ -6,10 +6,10 @@
  */
 package org.apache.geode.management.internal.cli.shell.jline;
 
-import org.springframework.shell.support.util.OsUtils;
-
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
+
+import org.springframework.shell.support.util.OsUtils;
 
 /**
  * A buffer that can contain ANSI text.
@@ -133,7 +133,7 @@ public class ANSIBuffer {
 
     /**
      * Sets the screen mode. The mode will be one of the following values:
-     * 
+     *
      * <pre>
      * mode     description
      * ----------------------------------------
@@ -279,7 +279,7 @@ public class ANSIBuffer {
      * quotes) and numeric values. For example, to set F1 to the String "Hello F1", followed by a
      * CRLF sequence, one can use: ANSI.setkey ("0;59", "\"Hello F1\";13;10"). Heres's the table of
      * key values:
-     * 
+     *
      * <pre>
      * Key Code SHIFT+code CTRL+code ALT+code
      * --------------------------------------------------------------- F1 0;59 0;84 0;94 0;104 F2

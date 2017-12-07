@@ -16,6 +16,9 @@ package org.apache.geode.session.tests;
 
 import java.io.IOException;
 import java.net.URISyntaxException;
+import java.util.function.Function;
+
+import javax.servlet.http.HttpServletRequest;
 
 import org.apache.http.Header;
 import org.apache.http.StatusLine;
@@ -33,10 +36,6 @@ import org.apache.http.util.EntityUtils;
 
 import org.apache.geode.modules.session.CommandServlet;
 import org.apache.geode.modules.session.QueryCommand;
-import java.io.IOException;
-import java.net.URISyntaxException;
-import java.util.function.Function;
-import javax.servlet.http.HttpServletRequest;
 
 /**
  * A simple http client that talks to a server running the session-testing-war.
@@ -71,7 +70,7 @@ public class Client {
 
   /**
    * Change the server that the client is targeting.
-   * 
+   *
    * @param port the port that the server is listening on
    */
   public void setPort(int port) {
@@ -132,7 +131,7 @@ public class Client {
 
   /**
    * Remove the session attribute on the server
-   * 
+   *
    * @param key - the session attribute to remove
    */
   public Response remove(String key) throws IOException, URISyntaxException {
@@ -141,7 +140,7 @@ public class Client {
 
   /**
    * Remove the session attribute on the server
-   * 
+   *
    * @param key - the session attribute to remove
    * @param storeRespCookie - whether or not to store the session cookie of this request
    */
@@ -206,7 +205,7 @@ public class Client {
 
   /**
    * Sends a request to the server and returns a custom response object with the result
-   * 
+   *
    * @param storeRespCookie if true, retain the value of a "Set-Cookie" header returned in the
    *        response.
    */

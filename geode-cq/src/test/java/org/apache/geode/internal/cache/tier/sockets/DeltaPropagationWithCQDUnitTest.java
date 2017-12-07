@@ -20,6 +20,12 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.fail;
 
+import java.util.List;
+import java.util.Properties;
+
+import org.junit.Test;
+import org.junit.experimental.categories.Category;
+
 import org.apache.geode.DeltaTestImpl;
 import org.apache.geode.cache.AttributesFactory;
 import org.apache.geode.cache.Cache;
@@ -53,11 +59,6 @@ import org.apache.geode.test.dunit.internal.JUnit4DistributedTestCase;
 import org.apache.geode.test.junit.categories.ClientSubscriptionTest;
 import org.apache.geode.test.junit.categories.DistributedTest;
 import org.apache.geode.test.junit.categories.SerializationTest;
-import org.junit.Test;
-import org.junit.experimental.categories.Category;
-
-import java.util.List;
-import java.util.Properties;
 
 @Category({DistributedTest.class, ClientSubscriptionTest.class, SerializationTest.class})
 public class DeltaPropagationWithCQDUnitTest extends JUnit4DistributedTestCase {
@@ -352,4 +353,3 @@ public class DeltaPropagationWithCQDUnitTest extends JUnit4DistributedTestCase {
     }
   }
 }
-

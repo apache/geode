@@ -22,7 +22,7 @@ package com.gemstone.gemfire;
  * Since these exceptions are unchecked, this class really <em>ought</em> to be called
  * <code>GemFireRuntimeException</code>; however, the current name is retained for compatibility's
  * sake.
- * 
+ *
  * @see org.apache.geode.GemFireCheckedException
  * @see org.apache.geode.cache.CacheRuntimeException
  * @deprecated use org.apache.geode exceptions, not com.gemstone.gemfire exceptions

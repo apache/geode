@@ -27,7 +27,7 @@ import org.apache.geode.distributed.internal.DistributionConfig;
 /**
  * Manages which implementation of {@link ProcessController} will be used and constructs the
  * instance.
- * 
+ *
  * @since GemFire 8.0
  */
 public class ProcessControllerFactory {

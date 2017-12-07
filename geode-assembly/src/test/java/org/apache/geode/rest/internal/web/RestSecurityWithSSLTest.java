@@ -34,11 +34,11 @@ import org.junit.experimental.categories.Category;
 
 import org.apache.geode.internal.security.SecurableCommunicationChannel;
 import org.apache.geode.security.SimpleTestSecurityManager;
-import org.apache.geode.test.junit.rules.ServerStarterRule;
 import org.apache.geode.test.junit.categories.IntegrationTest;
 import org.apache.geode.test.junit.categories.RestAPITest;
 import org.apache.geode.test.junit.categories.SecurityTest;
 import org.apache.geode.test.junit.rules.RequiresGeodeHome;
+import org.apache.geode.test.junit.rules.ServerStarterRule;
 
 @Category({IntegrationTest.class, SecurityTest.class, RestAPITest.class})
 public class RestSecurityWithSSLTest {

@@ -21,7 +21,6 @@ import java.io.File;
 import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 import java.util.List;
-import java.util.regex.Pattern;
 
 import com.google.common.io.Files;
 import org.apache.commons.io.FileUtils;
@@ -38,12 +37,10 @@ import org.junit.runners.Parameterized;
 import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.Region;
 import org.apache.geode.cache.RegionShortcut;
-import org.apache.geode.management.cli.Result;
-import org.apache.geode.management.internal.cli.result.CommandResult;
 import org.apache.geode.management.internal.cli.shell.Gfsh;
-import org.apache.geode.test.junit.rules.GfshShellConnectionRule;
-import org.apache.geode.test.junit.rules.ServerStarterRule;
 import org.apache.geode.test.junit.categories.IntegrationTest;
+import org.apache.geode.test.junit.rules.GfshCommandRule;
+import org.apache.geode.test.junit.rules.ServerStarterRule;
 
 @Category(IntegrationTest.class)
 @RunWith(Parameterized.class)
@@ -56,13 +53,15 @@ public class QueryCommandTest {
   @Parameterized.Parameter
   public boolean useHttp;
 
+  private final String DEFAULT_FETCH_SIZE = String.valueOf(Gfsh.DEFAULT_APP_FETCH_SIZE);
+
   @ClassRule
   public static ServerStarterRule server =
       new ServerStarterRule().withJMXManager().withRegion(RegionShortcut.REPLICATE, "simpleRegion")
           .withRegion(RegionShortcut.REPLICATE, "complexRegion");
 
   @Rule
-  public GfshShellConnectionRule gfsh = new GfshShellConnectionRule();
+  public GfshCommandRule gfsh = new GfshCommandRule();
 
   @Rule
   public TemporaryFolder temporaryFolder = new TemporaryFolder();
@@ -84,26 +83,23 @@ public class QueryCommandTest {
   @Before
   public void connect() throws Exception {
     if (useHttp) {
-      gfsh.connectAndVerify(server.getHttpPort(), GfshShellConnectionRule.PortType.http);
+      gfsh.connectAndVerify(server.getHttpPort(), GfshCommandRule.PortType.http);
     } else {
-      gfsh.connectAndVerify(server.getJmxPort(), GfshShellConnectionRule.PortType.jmxManager);
+      gfsh.connectAndVerify(server.getJmxPort(), GfshCommandRule.PortType.jmxManager);
     }
   }
 
   @Test
   public void doesShowLimitIfLimitNotInQuery() throws Exception {
-    String output = gfsh.execute("query --query='select * from /simpleRegion'");
-    assertThat(output).contains("Rows   : " + Gfsh.DEFAULT_APP_FETCH_SIZE);
-    assertThat(output).contains("Limit  : " + Gfsh.DEFAULT_APP_FETCH_SIZE);
-    assertThatOutputHasResult(output);
+    gfsh.executeAndAssertThat("query --query='select * from /simpleRegion'")
+        .containsKeyValuePair("Rows", DEFAULT_FETCH_SIZE)
+        .containsKeyValuePair("Limit", DEFAULT_FETCH_SIZE).hasResult();
   }
 
   @Test
   public void doesNotShowLimitIfLimitInQuery() throws Exception {
-    String output = gfsh.execute("query --query='select * from /simpleRegion limit 50'");
-    assertThat(output).contains("Rows   : 50");
-    assertThat(output).doesNotContain("Limit");
-    assertThatOutputHasResult(output);
+    gfsh.executeAndAssertThat("query --query='select * from /simpleRegion limit 50'")
+        .containsKeyValuePair("Rows", "50").doesNotContainOutput("Limit").hasResult();
   }
 
   @Test
@@ -111,12 +107,11 @@ public class QueryCommandTest {
     File outputFile = temporaryFolder.newFile("queryOutput.txt");
     FileUtils.deleteQuietly(outputFile);
 
-    String output =
-        gfsh.execute("query --query='invalid query' --file=" + outputFile.getAbsolutePath());
-    assertThat(outputFile).doesNotExist();
+    gfsh.executeAndAssertThat(
+        "query --query='invalid query' --file=" + outputFile.getAbsolutePath()).hasNoResult()
+        .doesNotContainOutput("Query results output to");
 
-    assertThatOutputHasNoResult(output);
-    assertThat(output).doesNotContain("Query results output to");
+    assertThat(outputFile).doesNotExist();
   }
 
   @Test
@@ -124,12 +119,11 @@ public class QueryCommandTest {
     File outputFile = temporaryFolder.newFile("queryOutput.txt");
     FileUtils.deleteQuietly(outputFile);
 
-    String output = gfsh.execute(
-        "query --query='select * from /nonExistentRegion' --file=" + outputFile.getAbsolutePath());
-    assertThat(outputFile).doesNotExist();
+    gfsh.executeAndAssertThat(
+        "query --query='select * from /nonExistentRegion' --file=" + outputFile.getAbsolutePath())
+        .hasNoResult().doesNotContainOutput("Query results output to");
 
-    assertThatOutputHasNoResult(output);
-    assertThat(output).doesNotContain("Query results output to");
+    assertThat(outputFile).doesNotExist();
   }
 
   @Test
@@ -137,13 +131,10 @@ public class QueryCommandTest {
     File outputFile = temporaryFolder.newFile("queryOutput.txt");
     FileUtils.deleteQuietly(outputFile);
 
-    String output = gfsh.execute(
-        "query --query='select * from /simpleRegion' --file=" + outputFile.getAbsolutePath());
-
-    assertThat(output).contains("Rows");
-    assertThat(output).contains("Limit");
-    assertThat(output).contains("Query results output to");
-    assertThatOutputHasResult(output);
+    gfsh.executeAndAssertThat(
+        "query --query='select * from /simpleRegion' --file=" + outputFile.getAbsolutePath())
+        .hasResult().containsOutput("Rows").containsOutput("Limit")
+        .containsOutput("Query results output to");
   }
 
   @Test
@@ -151,12 +142,9 @@ public class QueryCommandTest {
     File outputFile = temporaryFolder.newFile("queryOutput.txt");
     assertThat(outputFile).exists();
 
-    CommandResult result = gfsh.executeCommand(
-        "query --query='select * from /simpleRegion' --file=" + outputFile.getAbsolutePath());
-
-    assertThat(result.getStatus()).isEqualTo(Result.Status.ERROR);
-    assertThat(result.getContent().getString("message"))
-        .contains("The specified output file already exists.");
+    gfsh.executeAndAssertThat(
+        "query --query='select * from /simpleRegion' --file=" + outputFile.getAbsolutePath())
+        .statusIsError().containsOutput("The specified output file already exists.");
   }
 
   @Test
@@ -164,10 +152,11 @@ public class QueryCommandTest {
     File outputFile = temporaryFolder.newFile("queryOutput.txt");
     FileUtils.deleteQuietly(outputFile);
 
-    CommandResult result = gfsh.executeAndVerifyCommand(
-        "query --query='select * from /simpleRegion' --file=" + outputFile.getAbsolutePath());
+    gfsh.executeAndAssertThat(
+        "query --query='select * from /simpleRegion' --file=" + outputFile.getAbsolutePath())
+        .statusIsSuccess().containsOutput(outputFile.getAbsolutePath());
+
     assertThat(outputFile).exists();
-    assertThat(result.getContent().toString()).contains(outputFile.getAbsolutePath());
 
     List<String> lines = Files.readLines(outputFile, StandardCharsets.UTF_8);
 
@@ -181,12 +170,12 @@ public class QueryCommandTest {
     File outputFile = temporaryFolder.newFile("queryOutput.txt");
     FileUtils.deleteQuietly(outputFile);
 
-    CommandResult result = gfsh.executeAndVerifyCommand(
+    gfsh.executeAndAssertThat(
         "query --query='select c.name, c.address from /complexRegion c' --file="
-            + outputFile.getAbsolutePath());
-    assertThat(outputFile).exists();
-    assertThat(result.getContent().toString()).contains(outputFile.getAbsolutePath());
+            + outputFile.getAbsolutePath())
+        .statusIsSuccess().containsOutput(outputFile.getAbsolutePath());
 
+    assertThat(outputFile).exists();
     List<String> lines = Files.readLines(outputFile, StandardCharsets.UTF_8);
 
     assertThat(lines.get(0)).containsPattern("name\\s+\\|\\s+address");
@@ -210,41 +199,22 @@ public class QueryCommandTest {
 
   @Test
   public void queryWithInvalidRegionNameGivesDescriptiveErrorMessage() throws Exception {
-    String output = gfsh.execute("query --query='select * from /nonExistentRegion'");
-    assertThatOutputHasNoResult(output);
-    assertThatOutputHasMessage(output,
-        "Cannot find regions <[/nonExistentRegion]> in any of the members");
+    gfsh.executeAndAssertThat("query --query='select * from /nonExistentRegion'")
+        .containsKeyValuePair("Result", "false")
+        .containsOutput("Cannot find regions <[/nonExistentRegion]> in any of the members");
   }
 
   @Test
   public void invalidQueryGivesDescriptiveErrorMessage() throws Exception {
-    String output = gfsh.execute("query --query='this is not a valid query'");
-
-    assertThatOutputHasNoResult(output);
-    assertThatOutputHasMessage(output, "Query is invalid due for error : <Syntax error in query:");
+    gfsh.executeAndAssertThat("query --query='this is not a valid query'")
+        .containsKeyValuePair("Result", "false")
+        .containsOutput("Query is invalid due for error : <Syntax error in query:");
   }
 
   @Test
   public void queryGivesDescriptiveErrorMessageIfNoQueryIsSpecified() throws Exception {
-    String output = gfsh.execute("query");
-
-    assertThat(output)
-        .contains("You should specify option (--query, --file, --interactive) for this command");
-  }
-
-  private void assertThatOutputHasResult(String output) {
-    String resultPattern = "Result\\s+:\\s+" + "true";
-    assertThat(output).containsPattern(resultPattern);
-  }
-
-  private void assertThatOutputHasNoResult(String output) {
-    String resultPattern = "Result\\s+:\\s+" + "false";
-    assertThat(output).containsPattern(resultPattern);
-  }
-
-  private void assertThatOutputHasMessage(String output, String message) {
-    String patternToMatch = "Message\\s+:\\s+" + Pattern.quote(message);
-    assertThat(output).containsPattern(patternToMatch);
+    gfsh.executeAndAssertThat("query").containsOutput(
+        "You should specify option (--query, --file, --interactive) for this command");
   }
 
   private String[] splitOnLineBreaks(String multilineString) {

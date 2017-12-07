@@ -34,7 +34,6 @@ import org.apache.geode.management.cli.CliMetaData;
 import org.apache.geode.management.cli.ConverterHint;
 import org.apache.geode.management.cli.Result;
 import org.apache.geode.management.internal.cli.CliAroundInterceptor;
-import org.apache.geode.management.internal.cli.CliUtil;
 import org.apache.geode.management.internal.cli.GfshParseResult;
 import org.apache.geode.management.internal.cli.functions.UserFunctionExecution;
 import org.apache.geode.management.internal.cli.i18n.CliStrings;
@@ -75,9 +74,9 @@ public class ExecuteFunctionCommand implements GfshCommand {
     Set<DistributedMember> dsMembers;
     if (onRegion == null) {
       // find the members based on the groups or members
-      dsMembers = CliUtil.findMembers(onGroups, onMembers);
+      dsMembers = findMembers(onGroups, onMembers);
     } else {
-      dsMembers = CliUtil.getRegionAssociatedMembers(onRegion, getCache());
+      dsMembers = findMembersForRegion(getCache(), onRegion);
     }
 
     if (dsMembers.size() == 0) {
@@ -94,10 +93,10 @@ public class ExecuteFunctionCommand implements GfshCommand {
   public static class ExecuteFunctionCommandInterceptor implements CliAroundInterceptor {
     @Override
     public Result preExecution(GfshParseResult parseResult) {
-      String onRegion = parseResult.getParamValue(CliStrings.EXECUTE_FUNCTION__ONREGION);
-      String onMember = parseResult.getParamValue(CliStrings.MEMBER);
-      String onGroup = parseResult.getParamValue(CliStrings.GROUP);
-      String filter = parseResult.getParamValue(CliStrings.EXECUTE_FUNCTION__FILTER);
+      String onRegion = parseResult.getParamValueAsString(CliStrings.EXECUTE_FUNCTION__ONREGION);
+      String onMember = parseResult.getParamValueAsString(CliStrings.MEMBER);
+      String onGroup = parseResult.getParamValueAsString(CliStrings.GROUP);
+      String filter = parseResult.getParamValueAsString(CliStrings.EXECUTE_FUNCTION__FILTER);
 
       boolean moreThanOne =
           Stream.of(onRegion, onMember, onGroup).filter(Objects::nonNull).count() > 1;

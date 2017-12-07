@@ -14,11 +14,18 @@
  */
 package org.apache.geode.cache.query.transaction;
 
+import java.io.DataInput;
+import java.io.DataOutput;
+import java.io.IOException;
 import java.io.Serializable;
 
-public class Person implements Serializable {
+import org.apache.geode.DataSerializable;
+
+public class Person implements DataSerializable {
   private String name;
   private int age;
+
+  public Person() {}
 
   public Person(String name, int age) {
     this.name = name;
@@ -53,5 +60,17 @@ public class Person implements Serializable {
       throw new RuntimeException("sup dawg");
     }
     return true;
+  }
+
+  @Override
+  public void toData(DataOutput out) throws IOException {
+    out.writeUTF(name);
+    out.writeInt(age);
+  }
+
+  @Override
+  public void fromData(DataInput in) throws IOException, ClassNotFoundException {
+    name = in.readUTF();
+    age = in.readInt();
   }
 }

@@ -14,10 +14,10 @@
  */
 package org.apache.geode.internal;
 
-import org.apache.geode.internal.i18n.LocalizedStrings;
-
 import java.lang.Math;
 import java.lang.ref.*;
+
+import org.apache.geode.internal.i18n.LocalizedStrings;
 
 /**
  * An <code>ObjIdMap</code> maps GemFire object ids to an <code>Object</code>. This is an

@@ -14,8 +14,6 @@
  */
 package org.apache.geode.cache.query.internal;
 
-import it.unimi.dsi.fastutil.Hash;
-
 import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
@@ -23,6 +21,8 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.Iterator;
 import java.util.Set;
+
+import it.unimi.dsi.fastutil.Hash;
 
 import org.apache.geode.cache.query.Struct;
 import org.apache.geode.cache.query.internal.types.CollectionTypeImpl;
@@ -36,9 +36,9 @@ import org.apache.geode.internal.i18n.LocalizedStrings;
 /**
  * A Bag constrained to contain Structs of all the same type. To conserve on objects, we store the
  * StructType once and reuse it to generate Struct instances on demand.
- * 
+ *
  * The values in this set are stored as Object[] and get wrapped in Structs as necessary.
- * 
+ *
  * @since GemFire 5.1
  */
 public class StructBag extends ResultsBag implements StructFields {
@@ -111,7 +111,7 @@ public class StructBag extends ResultsBag implements StructFields {
 
   /**
    * Creates a new instance of StructBag
-   * 
+   *
    * @param stats the CachePerfStats to track hash collisions. Should be null unless this is used as
    *        a query execution-time result set.
    */
@@ -413,7 +413,7 @@ public class StructBag extends ResultsBag implements StructFields {
 
   /**
    * Getter for property modifiable.
-   * 
+   *
    * @return Value of property modifiable.
    */
   @Override
@@ -423,7 +423,7 @@ public class StructBag extends ResultsBag implements StructFields {
 
   /**
    * Setter for property modifiable.
-   * 
+   *
    * @param modifiable New value of property modifiable.
    */
   public void setModifiable(boolean modifiable) {

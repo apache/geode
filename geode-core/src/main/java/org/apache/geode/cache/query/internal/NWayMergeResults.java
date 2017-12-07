@@ -14,19 +14,6 @@
  */
 package org.apache.geode.cache.query.internal;
 
-import org.apache.geode.DataSerializer;
-import org.apache.geode.cache.query.SelectResults;
-import org.apache.geode.cache.query.Struct;
-import org.apache.geode.cache.query.internal.types.CollectionTypeImpl;
-import org.apache.geode.cache.query.internal.types.StructTypeImpl;
-import org.apache.geode.cache.query.internal.utils.LimitIterator;
-import org.apache.geode.cache.query.types.CollectionType;
-import org.apache.geode.cache.query.types.ObjectType;
-import org.apache.geode.internal.DataSerializableFixedID;
-import org.apache.geode.internal.HeapDataOutputStream;
-import org.apache.geode.internal.HeapDataOutputStream.LongUpdater;
-import org.apache.geode.internal.Version;
-
 import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
@@ -40,10 +27,23 @@ import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.Set;
 
+import org.apache.geode.DataSerializer;
+import org.apache.geode.cache.query.SelectResults;
+import org.apache.geode.cache.query.Struct;
+import org.apache.geode.cache.query.internal.types.CollectionTypeImpl;
+import org.apache.geode.cache.query.internal.types.StructTypeImpl;
+import org.apache.geode.cache.query.internal.utils.LimitIterator;
+import org.apache.geode.cache.query.types.CollectionType;
+import org.apache.geode.cache.query.types.ObjectType;
+import org.apache.geode.internal.DataSerializableFixedID;
+import org.apache.geode.internal.HeapDataOutputStream;
+import org.apache.geode.internal.HeapDataOutputStream.LongUpdater;
+import org.apache.geode.internal.Version;
+
 /**
  * The n - way merge results returns a sorted results on the cumulative sorted results for
  * partitioned region based query
- * 
+ *
  *
  */
 public class NWayMergeResults<E> implements SelectResults<E>, Ordered, DataSerializableFixedID {

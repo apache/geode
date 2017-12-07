@@ -14,15 +14,7 @@
  */
 package org.apache.geode.internal.cache;
 
-import org.junit.experimental.categories.Category;
-import org.junit.Test;
-
 import static org.junit.Assert.*;
-
-import org.apache.geode.test.dunit.cache.internal.JUnit4CacheTestCase;
-import org.apache.geode.test.dunit.internal.JUnit4DistributedTestCase;
-import org.apache.geode.test.junit.categories.DistributedTest;
-import org.awaitility.Awaitility;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -30,6 +22,10 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
+
+import org.awaitility.Awaitility;
+import org.junit.Test;
+import org.junit.experimental.categories.Category;
 
 import org.apache.geode.cache.AttributesFactory;
 import org.apache.geode.cache.AttributesMutator;
@@ -51,6 +47,9 @@ import org.apache.geode.distributed.internal.membership.InternalDistributedMembe
 import org.apache.geode.test.dunit.Host;
 import org.apache.geode.test.dunit.Invoke;
 import org.apache.geode.test.dunit.VM;
+import org.apache.geode.test.dunit.cache.internal.JUnit4CacheTestCase;
+import org.apache.geode.test.dunit.internal.JUnit4DistributedTestCase;
+import org.apache.geode.test.junit.categories.DistributedTest;
 
 /**
  * Tests the use of CacheDistributionAdvisor in createSubRegion
@@ -103,6 +102,7 @@ public class CacheAdvisorDUnitTest extends JUnit4CacheTestCase {
       vms[i].invoke(
           new CacheSerializableRunnable("CacheAdvisorDUnitTest.testGenericAdvice;createRegion") {
             public void run2() throws CacheException {
+              final RegionAttributes attrs = new AttributesFactory().create();
               createRegion(rgnName, attrs);
             }
           });
@@ -233,17 +233,18 @@ public class CacheAdvisorDUnitTest extends JUnit4CacheTestCase {
    * @param op needs to be one of the following: CACHE_CLOSE REGION_CLOSE REGION_LOCAL_DESTROY
    */
   private void basicTestClose(Operation op) throws Exception {
-    final RegionAttributes attrs = new AttributesFactory().create();
     final String rgnName = getUniqueName();
     for (int i = 0; i < vms.length; i++) {
       vms[i].invoke(
           new CacheSerializableRunnable("CacheAdvisorDUnitTest.basicTestClose; createRegion") {
             public void run2() throws CacheException {
+              final RegionAttributes attrs = new AttributesFactory().create();
               createRegion(rgnName, attrs);
             }
           });
     }
 
+    final RegionAttributes attrs = new AttributesFactory().create();
     DistributedRegion rgn = (DistributedRegion) createRegion(rgnName, attrs);
     Set expected = new HashSet(Arrays.asList(ids));
     assertEquals(expected, rgn.getDistributionAdvisor().adviseGeneric());
@@ -283,7 +284,7 @@ public class CacheAdvisorDUnitTest extends JUnit4CacheTestCase {
 
   /**
    * coverage for bug 34255
-   * 
+   *
    * @since GemFire 5.0
    */
   @Test
@@ -293,7 +294,7 @@ public class CacheAdvisorDUnitTest extends JUnit4CacheTestCase {
 
   /**
    * coverage for bug 34255
-   * 
+   *
    * @since GemFire 5.0
    */
   @Test

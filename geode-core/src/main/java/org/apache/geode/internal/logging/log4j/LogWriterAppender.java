@@ -14,10 +14,12 @@
  */
 package org.apache.geode.internal.logging.log4j;
 
-import org.apache.geode.internal.logging.LogConfig;
-import org.apache.geode.internal.logging.LogService;
-import org.apache.geode.internal.logging.ManagerLogWriter;
-import org.apache.geode.internal.logging.PureLogWriter;
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
+
 import org.apache.logging.log4j.Level;
 import org.apache.logging.log4j.core.LogEvent;
 import org.apache.logging.log4j.core.LoggerContext;
@@ -25,15 +27,14 @@ import org.apache.logging.log4j.core.appender.AbstractAppender;
 import org.apache.logging.log4j.core.config.LoggerConfig;
 import org.apache.logging.log4j.core.layout.PatternLayout;
 
-import java.beans.PropertyChangeEvent;
-import java.beans.PropertyChangeListener;
-import java.io.File;
-import java.io.FileOutputStream;
-import java.io.IOException;
+import org.apache.geode.internal.logging.LogConfig;
+import org.apache.geode.internal.logging.LogService;
+import org.apache.geode.internal.logging.ManagerLogWriter;
+import org.apache.geode.internal.logging.PureLogWriter;
 
 /**
  * A Log4j Appender which will copy all output to a LogWriter.
- * 
+ *
  */
 public class LogWriterAppender extends AbstractAppender implements PropertyChangeListener {
   private static final org.apache.logging.log4j.Logger logger = LogService.getLogger();
@@ -67,7 +68,7 @@ public class LogWriterAppender extends AbstractAppender implements PropertyChang
 
   /**
    * Used by LogWriterAppenders and tests to create a new instance.
-   * 
+   *
    * @return The new instance.
    */
   static LogWriterAppender create(final AppenderContext[] contexts, final String name,

@@ -35,11 +35,12 @@ import org.apache.geode.cache.EntryNotFoundException;
 import org.apache.geode.cache.Region;
 import org.apache.geode.cache.Scope;
 import org.apache.geode.internal.Assert;
+import org.apache.geode.internal.cache.entries.DiskEntry;
 import org.apache.geode.test.junit.categories.IntegrationTest;
 
 /**
  * Disk region recovery tests
- * 
+ *
  * @since GemFire 5.1
  */
 @Category(IntegrationTest.class)
@@ -661,7 +662,7 @@ public class DiskRegRecoveryJUnitTest extends DiskRegionTestingBase {
     region.put("3", value);
     File oplogFile = null;
     try {
-      oplogFile = ((LocalRegion) region).getDiskRegion().testHook_getChild().getOplogFile();
+      oplogFile = ((LocalRegion) region).getDiskRegion().testHook_getChild().getOplogFileForTest();
     } catch (Exception e) {
       logWriter.error(
           "Exception in synching data present in the buffers of RandomAccessFile of Oplog, to the disk",
@@ -1414,4 +1415,3 @@ public class DiskRegRecoveryJUnitTest extends DiskRegionTestingBase {
   }
 
 }
-

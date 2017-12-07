@@ -51,6 +51,7 @@ import org.apache.geode.distributed.internal.DistributionConfig;
 import org.apache.geode.distributed.internal.DistributionMessageObserver;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.distributed.internal.tcpserver.TcpClient;
+import org.apache.geode.internal.Version;
 import org.apache.geode.internal.admin.ClientStatsManager;
 import org.apache.geode.internal.cache.CacheServerLauncher;
 import org.apache.geode.internal.cache.DiskStoreObserver;
@@ -102,7 +103,7 @@ public abstract class JUnit4DistributedTestCase implements DistributedTestFixtur
   }
 
   /**
-   * This constructor should only be used by {@link JUnit3DistributedTestCase}.
+   * This constructor should only be used internally, not by tests.
    */
   protected JUnit4DistributedTestCase(final DistributedTestFixture distributedTestFixture) {
     if (distributedTestFixture == null) {
@@ -176,6 +177,10 @@ public abstract class JUnit4DistributedTestCase implements DistributedTestFixtur
         p.put(LOG_FILE, oldLogFile.replace("system.log", testName + ".log"));
         String oldStatFile = p.getProperty(STATISTIC_ARCHIVE_FILE);
         p.put(STATISTIC_ARCHIVE_FILE, oldStatFile.replace("statArchive.gfs", testName + ".gfs"));
+      }
+      if (Version.CURRENT_ORDINAL < 75) {
+        p.remove("validate-serializable-objects");
+        p.remove("serializable-object-filter");
       }
       system = (InternalDistributedSystem) DistributedSystem.connect(p);
       lastSystemProperties = p;

@@ -31,7 +31,7 @@ public class IndexNameConflictException extends QueryException {
 
   /**
    * Constructs instance of IndexNameConflictException with error message
-   * 
+   *
    * @param msg the error message
    */
   public IndexNameConflictException(String msg) {
@@ -40,7 +40,7 @@ public class IndexNameConflictException extends QueryException {
 
   /**
    * Constructs instance of IndexNameConflictException with error message and cause
-   * 
+   *
    * @param msg the error message
    * @param cause a Throwable that is a cause of this exception
    */

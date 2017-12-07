@@ -16,6 +16,14 @@ package org.apache.geode.test.junit.rules;
 
 import static org.mockito.Mockito.spy;
 
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Set;
+
+import org.junit.rules.ExternalResource;
+import org.springframework.shell.core.Completion;
+import org.springframework.shell.core.Converter;
+
 import org.apache.geode.internal.ClassPathLoader;
 import org.apache.geode.management.cli.CliMetaData;
 import org.apache.geode.management.cli.Result;
@@ -23,32 +31,31 @@ import org.apache.geode.management.internal.cli.CliAroundInterceptor;
 import org.apache.geode.management.internal.cli.CommandManager;
 import org.apache.geode.management.internal.cli.GfshParseResult;
 import org.apache.geode.management.internal.cli.GfshParser;
+import org.apache.geode.management.internal.cli.remote.CommandExecutor;
 import org.apache.geode.management.internal.cli.result.CommandResult;
 import org.apache.geode.management.internal.cli.result.ResultBuilder;
-import org.junit.rules.ExternalResource;
-import org.springframework.shell.core.Completion;
-import org.springframework.shell.core.Converter;
-import org.springframework.util.ReflectionUtils;
-
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Set;
+import org.apache.geode.test.junit.assertions.CommandResultAssert;
 
 public class GfshParserRule extends ExternalResource {
 
   private GfshParser parser;
   private CommandManager commandManager;
+  private CommandExecutor commandExecutor;
 
   @Override
   public void before() {
     commandManager = new CommandManager();
     parser = new GfshParser(commandManager);
+    commandExecutor = new CommandExecutor();
   }
 
   public GfshParseResult parse(String command) {
     return parser.parse(command);
   }
 
+  /**
+   * @deprecated use executeAndAssertThat instead
+   */
   public <T> CommandResult executeCommandWithInstance(T instance, String command) {
     GfshParseResult parseResult = parse(command);
 
@@ -76,8 +83,14 @@ public class GfshParserRule extends ExternalResource {
       }
     }
 
-    return (CommandResult) ReflectionUtils.invokeMethod(parseResult.getMethod(), instance,
-        parseResult.getArguments());
+    return (CommandResult) commandExecutor.execute(instance, parseResult);
+  }
+
+  public <T> CommandResultAssert executeAndAssertThat(T instance, String command) {
+    CommandResult result = executeCommandWithInstance(instance, command);
+    System.out.println("Command Result:");
+    System.out.println(ResultBuilder.resultAsString(result));
+    return new CommandResultAssert(result);
   }
 
   public CommandCandidate complete(String command) {

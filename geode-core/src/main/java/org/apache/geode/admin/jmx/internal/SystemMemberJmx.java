@@ -14,6 +14,14 @@
  */
 package org.apache.geode.admin.jmx.internal;
 
+import java.util.concurrent.atomic.AtomicInteger;
+
+import javax.management.*;
+import javax.naming.OperationNotSupportedException;
+
+import org.apache.commons.modeler.ManagedBean;
+import org.apache.logging.log4j.Logger;
+
 import org.apache.geode.SystemFailure;
 import org.apache.geode.admin.*;
 import org.apache.geode.cache.Operation;
@@ -22,12 +30,6 @@ import org.apache.geode.internal.admin.ClientMembershipMessage;
 import org.apache.geode.internal.i18n.LocalizedStrings;
 import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.internal.logging.log4j.LocalizedMessage;
-import org.apache.commons.modeler.ManagedBean;
-import org.apache.logging.log4j.Logger;
-
-import javax.management.*;
-import javax.naming.OperationNotSupportedException;
-import java.util.concurrent.atomic.AtomicInteger;
 
 /**
  * Defines methods that all <code>SystemMember</code> MBeans should implement.
@@ -142,7 +144,7 @@ public interface SystemMemberJmx extends SystemMember, NotificationListener {
   /**
    * Implementation should handle creation of cache by extracting the details from the given event
    * object.
-   * 
+   *
    * @param event event object corresponding to the creation of the cache
    */
   public void handleCacheCreate(SystemMemberCacheEvent event);
@@ -150,7 +152,7 @@ public interface SystemMemberJmx extends SystemMember, NotificationListener {
   /**
    * Implementation should handle closure of cache by extracting the details from the given event
    * object.
-   * 
+   *
    * @param event event object corresponding to the closure of the cache
    */
   public void handleCacheClose(SystemMemberCacheEvent event);
@@ -158,7 +160,7 @@ public interface SystemMemberJmx extends SystemMember, NotificationListener {
   /**
    * Implementation should handle creation of region by extracting the details from the given event
    * object.
-   * 
+   *
    * @param event event object corresponding to the creation of a region
    */
   public void handleRegionCreate(SystemMemberRegionEvent event);
@@ -166,14 +168,14 @@ public interface SystemMemberJmx extends SystemMember, NotificationListener {
   /**
    * Implementation should handle loss of region by extracting the details from the given event
    * object.
-   * 
+   *
    * @param event event object corresponding to the loss of a region
    */
   public void handleRegionLoss(SystemMemberRegionEvent event);
 
   /**
    * Implementation should handle client membership changes.
-   * 
+   *
    * @param clientId id of the client for whom membership change happened
    * @param eventType membership change type; one of {@link ClientMembershipMessage#JOINED},
    *        {@link ClientMembershipMessage#LEFT}, {@link ClientMembershipMessage#CRASHED}
@@ -390,7 +392,7 @@ public interface SystemMemberJmx extends SystemMember, NotificationListener {
 
     /**
      * Returns the next notification sequence number.
-     * 
+     *
      * @return the notificationSequenceNumber
      */
     /* default */static int getNextNotificationSequenceNumber() {
@@ -399,7 +401,7 @@ public interface SystemMemberJmx extends SystemMember, NotificationListener {
 
     /**
      * Returns the cache event details extracted from the given SystemMemberCacheEvent
-     * 
+     *
      * @param event SystemMemberCacheEvent instance
      * @return the cache event details extracted from the given SystemMemberCacheEvent
      */
@@ -412,7 +414,7 @@ public interface SystemMemberJmx extends SystemMember, NotificationListener {
 
     /**
      * Returns the region event details extracted from the given SystemMemberRegionEvent
-     * 
+     *
      * @param event SystemMemberRegionEvent instance
      * @return the cache event details extracted from the given SystemMemberRegionEvent
      */
@@ -426,9 +428,9 @@ public interface SystemMemberJmx extends SystemMember, NotificationListener {
 
     /**
      * Sends the given notification.
-     * 
+     *
      * @param notif notification to send
-     * 
+     *
      * @throws NullPointerException if resource or ModelMBean for resource is null
      */
     /* default */static void sendNotification(ManagedResource resource, Notification notif) {

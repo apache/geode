@@ -29,7 +29,7 @@ import org.apache.geode.memcached.GemFireMemcachedServer.Protocol;
 
 /**
  * The command "delete" allows for explicit deletion of items: delete <key> [noreply]\r\n
- * 
+ *
  *
  */
 public class DeleteCommand extends AbstractCommand {

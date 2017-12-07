@@ -45,7 +45,7 @@ import org.apache.geode.internal.i18n.LocalizedStrings;
 /**
  * Implementation of SelectResults that allows duplicates . The keys store the elements of the
  * collection and the the values store the number of occurrences as an int.
- * 
+ *
  * @see ResultsBag
  * @see StructBag
  * @see SortedResultsBag
@@ -344,7 +344,7 @@ public abstract class Bag<E> extends AbstractCollection<E> implements CqResults<
   }
 
   /**
-   * 
+   *
    * @param out
    * @throws IOException
    */
@@ -353,7 +353,7 @@ public abstract class Bag<E> extends AbstractCollection<E> implements CqResults<
   }
 
   /**
-   * 
+   *
    * @param in
    * @throws IOException
    */
@@ -528,7 +528,7 @@ public abstract class Bag<E> extends AbstractCollection<E> implements CqResults<
    * package visibility so ResultsCollectionWrapper can reference it. This SetView is serialized as
    * a special case by a ResultsCollectionWrapper. Keith: Refactored to add consideration for LIMIT,
    * April 1, 2009
-   * 
+   *
    * @see ResultsCollectionWrapper#toData
    */
   class SetView extends AbstractSet {
@@ -667,7 +667,7 @@ public abstract class Bag<E> extends AbstractCollection<E> implements CqResults<
    *
    */
   protected class LimitBagIterator extends Bag.BagIterator {
-    final private int localLimit;
+    private final int localLimit;
 
     private int currPos = 0;
 

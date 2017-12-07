@@ -23,9 +23,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Stack;
 
-import org.apache.geode.cache.query.internal.parse.OQLLexer;
-import org.apache.geode.cache.query.internal.parse.OQLLexerTokenTypes;
-import org.apache.geode.cache.query.internal.parse.OQLParser;
 import org.apache.logging.log4j.Logger;
 
 import org.apache.geode.cache.query.FunctionDomainException;
@@ -34,6 +31,9 @@ import org.apache.geode.cache.query.QueryInvalidException;
 import org.apache.geode.cache.query.QueryInvocationTargetException;
 import org.apache.geode.cache.query.TypeMismatchException;
 import org.apache.geode.cache.query.internal.parse.GemFireAST;
+import org.apache.geode.cache.query.internal.parse.OQLLexer;
+import org.apache.geode.cache.query.internal.parse.OQLLexerTokenTypes;
+import org.apache.geode.cache.query.internal.parse.OQLParser;
 import org.apache.geode.cache.query.internal.types.CollectionTypeImpl;
 import org.apache.geode.cache.query.internal.types.MapTypeImpl;
 import org.apache.geode.cache.query.internal.types.ObjectTypeImpl;
@@ -56,7 +56,7 @@ public class QCompiler implements OQLLexerTokenTypes {
 
   private Stack stack = new Stack();
   private Map imports = new HashMap();
-  final private boolean isForIndexCompilation;
+  private final boolean isForIndexCompilation;
   private boolean traceOn;
 
   public QCompiler() {
@@ -139,7 +139,7 @@ public class QCompiler implements OQLLexerTokenTypes {
 
   /**
    * Yogesh: compiles order by clause and push into the stack
-   * 
+   *
    * @param numOfChildren
    */
   public void compileOrederByClause(int numOfChildren) {
@@ -162,7 +162,7 @@ public class QCompiler implements OQLLexerTokenTypes {
 
   /**
    * Yogesh: compiles sort criteria present in order by clause and push into the stack
-   * 
+   *
    * @param sortCriterion
    */
   public void compileSortCriteria(String sortCriterion) {
@@ -452,7 +452,7 @@ public class QCompiler implements OQLLexerTokenTypes {
    * or otherwise. It also works on the last character to see if the sargable like predicate results
    * in a CompiledJunction or a Comparison. Currently we are supporting only the '%' terminated
    * "like" predicate.
-   * 
+   *
    * @param var The CompiledValue representing the variable
    * @param patternOrBindParam The CompiledLiteral reprsenting the pattern of the like predicate
    * @return CompiledValue representing the "like" predicate
@@ -683,5 +683,3 @@ public class QCompiler implements OQLLexerTokenTypes {
   }
 
 }
-
-

@@ -128,7 +128,7 @@ public class JSONObject {
 
   /**
    * Creates a new {@code JSONObject} by copying all name/value mappings from the given map.
-   * 
+   *
    * @param copyFrom a map whose keys are of type {@link String} and whose values are of supported
    *        types.
    * @throws NullPointerException if any of the map's keys are null.
@@ -152,7 +152,7 @@ public class JSONObject {
 
   /**
    * Creates a new {@code JSONObject} with name/value mappings from the next object in the tokener.
-   * 
+   *
    * @param readFrom a tokener whose nextValue() method will yield a {@code JSONObject}.
    * @throws JSONException if the parse fails or doesn't yield a {@code JSONObject}.
    */
@@ -171,7 +171,7 @@ public class JSONObject {
 
   /**
    * Creates a new {@code JSONObject} with name/value mappings from the JSON string.
-   * 
+   *
    * @param json a JSON-encoded string containing an object.
    * @throws JSONException if the parse fails or doesn't yield a {@code JSONObject}.
    */
@@ -182,7 +182,7 @@ public class JSONObject {
   /**
    * Creates a new {@code JSONObject} by copying mappings for the listed names from the given
    * object. Names that aren't present in {@code copyFrom} will be skipped.
-   * 
+   *
    * @param copyFrom The source object.
    * @param names The names of the fields to copy.
    * @throws JSONException On internal errors. Shouldn't happen.
@@ -199,7 +199,7 @@ public class JSONObject {
 
   /**
    * Creates a json object from a bean
-   * 
+   *
    * @param bean the bean to create the json object from
    * @throws JSONException If there is an exception while reading the bean
    */
@@ -266,7 +266,7 @@ public class JSONObject {
 
   /**
    * Returns the number of name/value mappings in this object.
-   * 
+   *
    * @return the length of this.
    */
   public int length() {
@@ -276,7 +276,7 @@ public class JSONObject {
   /**
    * Maps {@code name} to {@code value}, clobbering any existing name/value mapping with the same
    * name.
-   * 
+   *
    * @param name The name of the value to insert.
    * @param value The value to insert.
    * @return this object.
@@ -290,7 +290,7 @@ public class JSONObject {
   /**
    * Maps {@code name} to {@code value}, clobbering any existing name/value mapping with the same
    * name.
-   * 
+   *
    * @param name The name for the new value.
    * @param value a finite value. May not be {@link Double#isNaN() NaNs} or
    *        {@link Double#isInfinite() infinities}.
@@ -305,7 +305,7 @@ public class JSONObject {
   /**
    * Maps {@code name} to {@code value}, clobbering any existing name/value mapping with the same
    * name.
-   * 
+   *
    * @param name The name for the new value.
    * @param value The new value.
    * @return this object.
@@ -319,7 +319,7 @@ public class JSONObject {
   /**
    * Maps {@code name} to {@code value}, clobbering any existing name/value mapping with the same
    * name.
-   * 
+   *
    * @param name The name of the new value.
    * @param value The new value to insert.
    * @return this object.
@@ -333,7 +333,7 @@ public class JSONObject {
   /**
    * Maps {@code name} to {@code value}, clobbering any existing name/value mapping with the same
    * name. If the value is {@code null}, any existing mapping for {@code name} is removed.
-   * 
+   *
    * @param name The name of the new value.
    * @param value a {@link JSONObject}, {@link JSONArray}, String, Boolean, Integer, Long, Double,
    *        {@link #NULL}, or {@code null}. May not be {@link Double#isNaN() NaNs} or
@@ -357,7 +357,7 @@ public class JSONObject {
   /**
    * Equivalent to {@code put(name, value)} when both parameters are non-null; does nothing
    * otherwise.
-   * 
+   *
    * @param name The name of the value to insert.
    * @param value The value to insert.
    * @return this object.
@@ -381,7 +381,7 @@ public class JSONObject {
    * for {@code name} will <b>always</b> be a {@link JSONArray}. Using {@code accumulate} will
    * result in either a {@link JSONArray} or a mapping whose type is the type of {@code value}
    * depending on the number of calls to it.
-   * 
+   *
    * @param name The name of the field to change.
    * @param value a {@link JSONObject}, {@link JSONArray}, String, Boolean, Integer, Long, Double,
    *        {@link #NULL} or null. May not be {@link Double#isNaN() NaNs} or
@@ -413,7 +413,7 @@ public class JSONObject {
    * Appends values to the array mapped to {@code name}. A new {@link JSONArray} mapping for
    * {@code name} will be inserted if no mapping exists. If the existing mapping for {@code name} is
    * not a {@link JSONArray}, a {@link JSONException} will be thrown.
-   * 
+   *
    * @param name The name of the array to which the value should be appended.
    * @param value The value to append.
    * @return this object.
@@ -448,7 +448,7 @@ public class JSONObject {
 
   /**
    * Removes the named mapping if it exists; does nothing otherwise.
-   * 
+   *
    * @param name The name of the mapping to remove.
    * @return the value previously mapped by {@code name}, or null if there was no such mapping.
    */
@@ -459,7 +459,7 @@ public class JSONObject {
   /**
    * Returns true if this object has no mapping for {@code name} or if it has a mapping whose value
    * is {@link #NULL}.
-   * 
+   *
    * @param name The name of the value to check on.
    * @return true if the field doesn't exist or is null.
    */
@@ -470,7 +470,7 @@ public class JSONObject {
 
   /**
    * Returns true if this object has a mapping for {@code name}. The mapping may be {@link #NULL}.
-   * 
+   *
    * @param name The name of the value to check on.
    * @return true if this object has a field named {@code name}
    */
@@ -480,7 +480,7 @@ public class JSONObject {
 
   /**
    * Returns the value mapped by {@code name}, or throws if no such mapping exists.
-   * 
+   *
    * @param name The name of the value to get.
    * @return The value.
    * @throws JSONException if no such mapping exists.
@@ -495,7 +495,7 @@ public class JSONObject {
 
   /**
    * Returns the value mapped by {@code name}, or null if no such mapping exists.
-   * 
+   *
    * @param name The name of the value to get.
    * @return The value.
    */
@@ -506,7 +506,7 @@ public class JSONObject {
   /**
    * Returns the value mapped by {@code name} if it exists and is a boolean or can be coerced to a
    * boolean, or throws otherwise.
-   * 
+   *
    * @param name The name of the field we want.
    * @return The selected value if it exists.
    * @throws JSONException if the mapping doesn't exist or cannot be coerced to a boolean.
@@ -523,7 +523,7 @@ public class JSONObject {
   /**
    * Returns the value mapped by {@code name} if it exists and is a boolean or can be coerced to a
    * boolean, or false otherwise.
-   * 
+   *
    * @param name The name of the field we want.
    * @return The selected value if it exists.
    */
@@ -534,7 +534,7 @@ public class JSONObject {
   /**
    * Returns the value mapped by {@code name} if it exists and is a boolean or can be coerced to a
    * boolean, or {@code fallback} otherwise.
-   * 
+   *
    * @param name The name of the field we want.
    * @param fallback The value to return if the field isn't there.
    * @return The selected value or the fallback.
@@ -548,7 +548,7 @@ public class JSONObject {
   /**
    * Returns the value mapped by {@code name} if it exists and is a double or can be coerced to a
    * double, or throws otherwise.
-   * 
+   *
    * @param name The name of the field we want.
    * @return The selected value if it exists.
    * @throws JSONException if the mapping doesn't exist or cannot be coerced to a double.
@@ -565,7 +565,7 @@ public class JSONObject {
   /**
    * Returns the value mapped by {@code name} if it exists and is a double or can be coerced to a
    * double, or {@code NaN} otherwise.
-   * 
+   *
    * @param name The name of the field we want.
    * @return The selected value if it exists.
    */
@@ -576,7 +576,7 @@ public class JSONObject {
   /**
    * Returns the value mapped by {@code name} if it exists and is a double or can be coerced to a
    * double, or {@code fallback} otherwise.
-   * 
+   *
    * @param name The name of the field we want.
    * @param fallback The value to return if the field isn't there.
    * @return The selected value or the fallback.
@@ -590,7 +590,7 @@ public class JSONObject {
   /**
    * Returns the value mapped by {@code name} if it exists and is an int or can be coerced to an
    * int, or throws otherwise.
-   * 
+   *
    * @param name The name of the field we want.
    * @return The selected value if it exists.
    * @throws JSONException if the mapping doesn't exist or cannot be coerced to an int.
@@ -607,7 +607,7 @@ public class JSONObject {
   /**
    * Returns the value mapped by {@code name} if it exists and is an int or can be coerced to an
    * int, or 0 otherwise.
-   * 
+   *
    * @param name The name of the field we want.
    * @return The selected value if it exists.
    */
@@ -618,7 +618,7 @@ public class JSONObject {
   /**
    * Returns the value mapped by {@code name} if it exists and is an int or can be coerced to an
    * int, or {@code fallback} otherwise.
-   * 
+   *
    * @param name The name of the field we want.
    * @param fallback The value to return if the field isn't there.
    * @return The selected value or the fallback.
@@ -634,7 +634,7 @@ public class JSONObject {
    * long, or throws otherwise. Note that JSON represents numbers as doubles,
    *
    * so this is <a href="#lossy">lossy</a>; use strings to transfer numbers via JSON without loss.
-   * 
+   *
    * @param name The name of the field that we want.
    * @return The value of the field.
    * @throws JSONException if the mapping doesn't exist or cannot be coerced to a long.
@@ -652,7 +652,7 @@ public class JSONObject {
    * Returns the value mapped by {@code name} if it exists and is a long or can be coerced to a
    * long, or 0 otherwise. Note that JSON represents numbers as doubles, so this is
    * <a href="#lossy">lossy</a>; use strings to transfer numbers via JSON.
-   * 
+   *
    * @param name The name of the field we want.
    * @return The selected value.
    */
@@ -664,7 +664,7 @@ public class JSONObject {
    * Returns the value mapped by {@code name} if it exists and is a long or can be coerced to a
    * long, or {@code fallback} otherwise. Note that JSON represents numbers as doubles, so this is
    * <a href="#lossy">lossy</a>; use strings to transfer numbers via JSON.
-   * 
+   *
    * @param name The name of the field we want.
    * @param fallback The value to return if the field isn't there.
    * @return The selected value or the fallback.
@@ -678,7 +678,7 @@ public class JSONObject {
   /**
    * Returns the value mapped by {@code name} if it exists, coercing it if necessary, or throws if
    * no such mapping exists.
-   * 
+   *
    * @param name The name of the field we want.
    * @return The value of the field.
    * @throws JSONException if no such mapping exists.
@@ -695,7 +695,7 @@ public class JSONObject {
   /**
    * Returns the value mapped by {@code name} if it exists, coercing it if necessary, or the empty
    * string if no such mapping exists.
-   * 
+   *
    * @param name The name of the field we want.
    * @return The value of the field.
    */
@@ -706,7 +706,7 @@ public class JSONObject {
   /**
    * Returns the value mapped by {@code name} if it exists, coercing it if necessary, or
    * {@code fallback} if no such mapping exists.
-   * 
+   *
    * @param name The name of the field that we want.
    * @param fallback The value to return if the field doesn't exist.
    * @return The value of the field or fallback.
@@ -720,7 +720,7 @@ public class JSONObject {
   /**
    * Returns the value mapped by {@code name} if it exists and is a {@code
    * JSONArray}, or throws otherwise.
-   * 
+   *
    * @param name The field we want to get.
    * @return The value of the field (if it is a JSONArray.
    * @throws JSONException if the mapping doesn't exist or is not a {@code JSONArray}.
@@ -737,7 +737,7 @@ public class JSONObject {
   /**
    * Returns the value mapped by {@code name} if it exists and is a {@code
    * JSONArray}, or null otherwise.
-   * 
+   *
    * @param name The name of the field we want.
    * @return The value of the specified field (assuming it is a JSNOArray
    */
@@ -749,7 +749,7 @@ public class JSONObject {
   /**
    * Returns the value mapped by {@code name} if it exists and is a {@code
    * JSONObject}, or throws otherwise.
-   * 
+   *
    * @param name The name of the field that we want.
    * @return a specified field value (if it is a JSONObject)
    * @throws JSONException if the mapping doesn't exist or is not a {@code JSONObject}.
@@ -766,7 +766,7 @@ public class JSONObject {
   /**
    * Returns the value mapped by {@code name} if it exists and is a {@code
    * JSONObject}, or null otherwise.
-   * 
+   *
    * @param name The name of the value we want.
    * @return The specified value.
    */
@@ -778,7 +778,7 @@ public class JSONObject {
   /**
    * Returns an array with the values corresponding to {@code names}. The array contains null for
    * names that aren't mapped. This method returns null if {@code names} is either null or empty.
-   * 
+   *
    * @param names The names of the fields that we want the values for.
    * @return The selected values.
    * @throws JSONException On internal errors. Shouldn't happen.
@@ -804,7 +804,7 @@ public class JSONObject {
    * {@link Iterator#remove() remove}, which will remove the corresponding mapping from this object.
    * If this object is modified after the iterator is returned, the iterator's behavior is
    * undefined. The order of the keys is undefined.
-   * 
+   *
    * @return an iterator over the keys.
    */
   public Iterator<String> keys() {
@@ -817,7 +817,7 @@ public class JSONObject {
    * object and set iterator behaviour is undefined if this object is modified after it is returned.
    *
    * See {@link #keys()}.
-   * 
+   *
    * @return The names in this object.
    */
   public Set<String> keySet() {
@@ -827,7 +827,7 @@ public class JSONObject {
   /**
    * Returns an array containing the string names in this object. This method returns null if this
    * object contains no mappings.
-   * 
+   *
    * @return the names.
    */
   public JSONArray names() {
@@ -837,7 +837,7 @@ public class JSONObject {
 
   /**
    * Encodes this object as a compact JSON string, such as:
-   * 
+   *
    * <pre>
    * {"query":"Pizza","locations":[94043,90210]}
    * </pre>
@@ -855,7 +855,7 @@ public class JSONObject {
 
   /**
    * Encodes this object as a human readable JSON string for debugging, such as:
-   * 
+   *
    * <pre>
    * {
    *     "query": "Pizza",
@@ -865,7 +865,7 @@ public class JSONObject {
    *     ]
    * }
    * </pre>
-   * 
+   *
    * @param indentSpaces the number of spaces to indent for each level of nesting.
    * @return The string containing the pretty form of this.
    * @throws JSONException On internal errors. Shouldn't happen.
@@ -886,7 +886,7 @@ public class JSONObject {
 
   /**
    * Encodes the number as a JSON string.
-   * 
+   *
    * @param number a finite value. May not be {@link Double#isNaN() NaNs} or
    *        {@link Double#isInfinite() infinities}.
    * @return The encoded number in string form.
@@ -916,7 +916,7 @@ public class JSONObject {
   /**
    * Encodes {@code data} as a JSON string. This applies quotes and any necessary character
    * escaping.
-   * 
+   *
    * @param data the string to encode. Null will be interpreted as an empty string.
    * @return the quoted string.
    */
@@ -947,7 +947,7 @@ public class JSONObject {
    * a {@code java} package, returns the result of {@code toString}. If the object is some other
    * kind of object then it is assumed to be a bean and is converted to a JSONObject. If wrapping
    * fails, returns null.
-   * 
+   *
    * @param o The object to wrap.
    * @return The wrapped (if necessary) form of the object {$code o}
    */

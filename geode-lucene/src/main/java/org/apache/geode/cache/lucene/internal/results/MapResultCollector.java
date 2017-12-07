@@ -14,14 +14,14 @@
  */
 package org.apache.geode.cache.lucene.internal.results;
 
-import org.apache.geode.cache.execute.FunctionException;
-import org.apache.geode.cache.execute.ResultCollector;
-import org.apache.geode.distributed.DistributedMember;
-
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
+
+import org.apache.geode.cache.execute.FunctionException;
+import org.apache.geode.cache.execute.ResultCollector;
+import org.apache.geode.distributed.DistributedMember;
 
 public class MapResultCollector implements ResultCollector<List<PageEntry>, Map<Object, Object>> {
   private final Map<Object, Object> results = new HashMap<>();

@@ -21,8 +21,8 @@ import org.apache.geode.management.internal.ManagementConstants;
 
 /**
  * This is a utility class to calculate various type of Metrics out of raw stats
- * 
- * 
+ *
+ *
  */
 public class MetricsCalculator {
 

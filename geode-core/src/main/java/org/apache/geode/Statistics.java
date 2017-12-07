@@ -14,7 +14,6 @@
  */
 package org.apache.geode;
 
-// import org.apache.geode.distributed.DistributedSystem;
 
 import java.util.function.DoubleSupplier;
 import java.util.function.IntSupplier;
@@ -118,7 +117,7 @@ public interface Statistics {
 
   /**
    * Sets the value of a statistic with the given <code>id</code> whose type is <code>int</code>.
-   * 
+   *
    * @param id a statistic id obtained with {@link #nameToId} or {@link StatisticsType#nameToId}.
    *
    * @throws ArrayIndexOutOfBoundsException If the id is invalid.
@@ -143,7 +142,7 @@ public interface Statistics {
 
   /**
    * Sets the value of a statistic with the given <code>id</code> whose type is <code>long</code>.
-   * 
+   *
    * @param id a statistic id obtained with {@link #nameToId} or {@link StatisticsType#nameToId}.
    *
    * @throws ArrayIndexOutOfBoundsException If the id is invalid.
@@ -168,7 +167,7 @@ public interface Statistics {
 
   /**
    * Sets the value of a statistic with the given <code>id</code> whose type is <code>double</code>.
-   * 
+   *
    * @param id a statistic id obtained with {@link #nameToId} or {@link StatisticsType#nameToId}.
    *
    * @throws ArrayIndexOutOfBoundsException If the id is invalid.
@@ -394,7 +393,7 @@ public interface Statistics {
    * the statistic-sampling-rate.
    * <p>
    * Get methods are not guaranteed to recompute a new value, they may return the last sampled value
-   * 
+   *
    * @param id a statistic id obtained with {@link #nameToId} or {@link StatisticsType#nameToId}.
    * @param supplier a callback that will return the value of the stat. This replaces any previously
    *        registered supplier. If the passed in supplier is null, it will remove any existing
@@ -419,7 +418,7 @@ public interface Statistics {
    * the statistic-sampling-rate.
    * <p>
    * Get methods are not guaranteed to recompute a new value, they may return the last sampled value
-   * 
+   *
    * @param name the name of the statistic to update
    * @param supplier a callback that will return the value of the stat. This replaces any previously
    *        registered supplier. If the passed in supplier is null, it will remove any existing
@@ -446,7 +445,7 @@ public interface Statistics {
    * the statistic-sampling-rate.
    * <p>
    * Get methods are not guaranteed to recompute a new value, they may return the last sampled value
-   * 
+   *
    * @param descriptor the descriptor of the statistic to update
    * @param supplier a callback that will return the value of the stat. This replaces any previously
    *        registered supplier. If the passed in supplier is null, it will remove any existing
@@ -472,7 +471,7 @@ public interface Statistics {
    * the statistic-sampling-rate.
    * <p>
    * Get methods are not guaranteed to recompute a new value, they may return the last sampled value
-   * 
+   *
    * @param id a statistic id obtained with {@link #nameToId} or {@link StatisticsType#nameToId}.
    * @param supplier a callback that will return the value of the stat. This replaces any previously
    *        registered supplier. If the passed in supplier is null, it will remove any existing
@@ -497,7 +496,7 @@ public interface Statistics {
    * the statistic-sampling-rate.
    * <p>
    * Get methods are not guaranteed to recompute a new value, they may return the last sampled value
-   * 
+   *
    * @param name the name of the statistic to update
    * @param supplier a callback that will return the value of the stat. This replaces any previously
    *        registered supplier. If the passed in supplier is null, it will remove any existing
@@ -523,7 +522,7 @@ public interface Statistics {
    * the statistic-sampling-rate.
    * <p>
    * Get methods are not guaranteed to recompute a new value, they may return the last sampled value
-   * 
+   *
    * @param descriptor the descriptor of the statistic to update
    * @param supplier a callback that will return the value of the stat. This replaces any previously
    *        registered supplier. If the passed in supplier is null, it will remove any existing
@@ -549,7 +548,7 @@ public interface Statistics {
    * the statistic-sampling-rate.
    * <p>
    * Get methods are not guaranteed to recompute a new value, they may return the last sampled value
-   * 
+   *
    * @param id a statistic id obtained with {@link #nameToId} or {@link StatisticsType#nameToId}.
    * @param supplier a callback that will return the value of the stat. This replaces any previously
    *        registered supplier. If the passed in supplier is null, it will remove any existing
@@ -574,7 +573,7 @@ public interface Statistics {
    * the statistic-sampling-rate.
    * <p>
    * Get methods are not guaranteed to recompute a new value, they may return the last sampled value
-   * 
+   *
    * @param name the name of the statistic to update
    * @param supplier a callback that will return the value of the stat. This replaces any previously
    *        registered supplier. If the passed in supplier is null, it will remove any existing
@@ -601,7 +600,7 @@ public interface Statistics {
    * the statistic-sampling-rate.
    * <p>
    * Get methods are not guaranteed to recompute a new value, they may return the last sampled value
-   * 
+   *
    * @param descriptor the descriptor of the statistic to update
    * @param supplier a callback that will return the value of the stat. This replaces any previously
    *        registered supplier. If the passed in supplier is null, it will remove any existing

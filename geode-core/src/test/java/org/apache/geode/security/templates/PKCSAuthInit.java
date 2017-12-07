@@ -33,11 +33,11 @@ import org.apache.geode.security.AuthenticationFailedException;
 /**
  * An {@link AuthInitialize} implementation that obtains the digital signature for use with PKCS
  * scheme on server from the given set of properties.
- * 
+ *
  * To use this class the {@code security-client-auth-init} property should be set to the fully
  * qualified name the static {@code create} function viz.
  * {@code org.apache.geode.security.templates.PKCSAuthInit.create}
- * 
+ *
  * @since GemFire 5.5
  */
 public class PKCSAuthInit implements AuthInitialize {

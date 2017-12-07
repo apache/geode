@@ -178,7 +178,7 @@ public class ReplyMessage extends HighPriorityDistributionMessage {
    * Processes this message. This method is invoked by the receiver of the message if the message is
    * not direct ack. If the message is a direct ack, the process(dm, ReplyProcessor) method is
    * invoked instead.
-   * 
+   *
    * @param dm the distribution manager that is processing the message.
    */
   @Override

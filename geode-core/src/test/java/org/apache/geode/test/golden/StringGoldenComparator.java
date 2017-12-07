@@ -16,7 +16,7 @@ package org.apache.geode.test.golden;
 
 /**
  * Compares test output to golden text file using string equality
- * 
+ *
  */
 public class StringGoldenComparator extends GoldenComparator {
 

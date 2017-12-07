@@ -96,7 +96,7 @@ public class DistributedMulticastRegionDUnitTest extends JUnit4CacheTestCase {
      * SerializableRunnable validateMulticastBeforeRegionOps = new
      * CacheSerializableRunnable("validateMulticast before region ops") { public void run2() throws
      * CacheException { validateMulticastOpsBeforeRegionOps(); } };
-     * 
+     *
      * vm0.invoke(validateMulticastBeforeRegionOps); vm1.invoke(validateMulticastBeforeRegionOps);
      */
 

@@ -22,7 +22,6 @@ import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.util.Properties;
 
-import org.apache.geode.test.junit.categories.MembershipTest;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
@@ -41,6 +40,7 @@ import org.apache.geode.test.dunit.Host;
 import org.apache.geode.test.dunit.VM;
 import org.apache.geode.test.dunit.internal.JUnit4DistributedTestCase;
 import org.apache.geode.test.junit.categories.DistributedTest;
+import org.apache.geode.test.junit.categories.MembershipTest;
 import org.apache.geode.util.test.TestUtil;
 
 /**
@@ -247,7 +247,8 @@ public class SSLNoClientAuthDUnitTest extends JUnit4DistributedTestCase {
     params[5] = DEFAULT_STORE;
     // getLogWriter().info("Starting client with server endpoint " + hostName + ":" + port);
     try {
-      clientVM.invoke(SSLNoClientAuthDUnitTest.class, "setUpClientVMTask", params);
+      clientVM.invoke(() -> SSLNoClientAuthDUnitTest.setUpClientVMTask(hostName, port,
+          cacheClientSslenabled, cacheClientSslRequireAuth, DEFAULT_STORE, DEFAULT_STORE));
       clientVM.invoke(() -> SSLNoClientAuthDUnitTest.doClientRegionTestTask());
       serverVM.invoke(() -> SSLNoClientAuthDUnitTest.doServerRegionTestTask());
     } catch (Exception rmiException) {

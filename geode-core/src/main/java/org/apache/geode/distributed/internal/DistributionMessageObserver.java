@@ -14,11 +14,8 @@
  */
 package org.apache.geode.distributed.internal;
 
-
 /**
  * This class is a test hook to intercept DistributionMessages in the VM receiving the message.
- * 
- *
  */
 public abstract class DistributionMessageObserver {
 
@@ -26,8 +23,7 @@ public abstract class DistributionMessageObserver {
 
   /**
    * Set the instance of the observer. Setting to null will clear the observer.
-   * 
-   * @param instance
+   *
    * @return the old observer, or null if there was no old observer.
    */
   public static DistributionMessageObserver setInstance(DistributionMessageObserver instance) {
@@ -42,31 +38,31 @@ public abstract class DistributionMessageObserver {
 
   /**
    * Called before a the process method of the DistributionMessage is called
-   * 
+   *
    * @param dm the distribution manager that received the message
    * @param message The message itself
    */
   public void beforeProcessMessage(DistributionManager dm, DistributionMessage message) {
-
+    // override as needed
   }
 
   /**
    * Called after the process method of the DistributionMessage is called
-   * 
+   *
    * @param dm the distribution manager that received the message
    * @param message The message itself
    */
   public void afterProcessMessage(DistributionManager dm, DistributionMessage message) {
-
+    // override as needed
   }
 
   /**
    * Called just before a message is distributed.
-   * 
-   * @param dm the distribution manager that's sending the messsage
-   * @param msg the message itself
+   *
+   * @param dm the distribution manager that's sending the message
+   * @param message the message itself
    */
-  public void beforeSendMessage(DistributionManager dm, DistributionMessage msg) {
-
+  public void beforeSendMessage(DistributionManager dm, DistributionMessage message) {
+    // override as needed
   }
 }

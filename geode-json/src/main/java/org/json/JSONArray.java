@@ -664,7 +664,7 @@ public class JSONArray {
    * separator}. This array's string values are quoted and have their special characters escaped.
    * For example, the array containing the strings '12" pizza', 'taco' and 'soda' joined on '+'
    * returns this:
-   * 
+   *
    * <pre>
    * "12\" pizza" + "taco" + "soda"
    * </pre>
@@ -688,7 +688,7 @@ public class JSONArray {
 
   /**
    * Encodes this array as a compact JSON string, such as:
-   * 
+   *
    * <pre>
    * [94043,90210]
    * </pre>
@@ -708,7 +708,7 @@ public class JSONArray {
 
   /**
    * Encodes this array as a human readable JSON string for debugging, such as:
-   * 
+   *
    * <pre>
    * [
    *     94043,

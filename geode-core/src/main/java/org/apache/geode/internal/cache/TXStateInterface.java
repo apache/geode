@@ -25,16 +25,16 @@ import javax.transaction.Synchronization;
 
 import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.CommitConflictException;
+import org.apache.geode.cache.Region.Entry;
 import org.apache.geode.cache.TransactionId;
 import org.apache.geode.cache.UnsupportedOperationInTransactionException;
-import org.apache.geode.cache.Region.Entry;
 import org.apache.geode.cache.client.internal.ServerRegionDataAccess;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
 import org.apache.geode.internal.cache.tx.TransactionalOperation.ServerRegionOperation;
 
 /**
  * An entity that tracks transactions must implement this interface.
- * 
+ *
  */
 public interface TXStateInterface extends Synchronization, InternalDataView {
 
@@ -42,14 +42,14 @@ public interface TXStateInterface extends Synchronization, InternalDataView {
 
   /**
    * Used by transaction operations that are doing a read operation on the specified region.
-   * 
+   *
    * @return the TXRegionState for the given LocalRegion or null if no state exists
    */
   public TXRegionState readRegion(LocalRegion r);
 
   /**
    * Used by transaction operations that are doing a write operation on the specified region.
-   * 
+   *
    * @return the TXRegionState for the given LocalRegion
    */
   public TXRegionState writeRegion(LocalRegion r);
@@ -67,7 +67,7 @@ public interface TXStateInterface extends Synchronization, InternalDataView {
   /**
    * Determines if a transaction is in progress. Transactions are in progress until they commit or
    * rollback.
-   * 
+   *
    * @return true if this transaction has completed.
    */
   public boolean isInProgress();
@@ -80,7 +80,7 @@ public interface TXStateInterface extends Synchronization, InternalDataView {
 
   /**
    * Return true if mod counts for this transaction can not be represented by a byte
-   * 
+   *
    * @since GemFire 5.0
    */
   public boolean needsLargeModCount();
@@ -149,7 +149,7 @@ public interface TXStateInterface extends Synchronization, InternalDataView {
   public void rmRegion(LocalRegion r);
 
   /**
-   * 
+   *
    * @param state
    * @return true if transaction is in progress and the given state has the same identity as this
    *         instance
@@ -157,7 +157,7 @@ public interface TXStateInterface extends Synchronization, InternalDataView {
   public boolean isInProgressAndSameAs(TXStateInterface state);
 
   /**
-   * 
+   *
    * @return true if callbacks should be fired for this TXState
    */
   public boolean isFireCallbacks();
@@ -165,7 +165,7 @@ public interface TXStateInterface extends Synchronization, InternalDataView {
   /**
    * On the remote node, the tx can potentially be accessed by multiple threads, specially with
    * function execution. This lock should be used to synchronize access to the tx state.
-   * 
+   *
    * @return the lock to be used
    */
   public ReentrantLock getLock();
@@ -218,7 +218,7 @@ public interface TXStateInterface extends Synchronization, InternalDataView {
 
   /*
    * Is class meant for Coordinator for Distributed Transaction
-   * 
+   *
    * Will be true for DistTXCoordinatorInterface
    */
   public boolean isCreatedOnDistTxCoordinator();

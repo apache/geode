@@ -15,17 +15,18 @@
 
 package org.apache.geode.internal.cache.locks;
 
-import org.apache.geode.DataSerializer;
-import org.apache.geode.internal.InternalDataSerializer;
-import org.apache.geode.distributed.internal.MessageWithReply;
-import org.apache.geode.distributed.internal.ReplyMessage;
-import org.apache.geode.distributed.internal.PooledDistributionMessage;
-import org.apache.geode.distributed.internal.DistributionManager;
-import org.apache.geode.distributed.internal.locks.DLockService;
-import org.apache.geode.distributed.internal.locks.DLockGrantor;
-import org.apache.geode.distributed.internal.locks.LockGrantorDestroyedException;
 import java.io.*;
 import java.util.Set;
+
+import org.apache.geode.DataSerializer;
+import org.apache.geode.distributed.internal.DistributionManager;
+import org.apache.geode.distributed.internal.MessageWithReply;
+import org.apache.geode.distributed.internal.PooledDistributionMessage;
+import org.apache.geode.distributed.internal.ReplyMessage;
+import org.apache.geode.distributed.internal.locks.DLockGrantor;
+import org.apache.geode.distributed.internal.locks.DLockService;
+import org.apache.geode.distributed.internal.locks.LockGrantorDestroyedException;
+import org.apache.geode.internal.InternalDataSerializer;
 
 /**
  * A message to update the Grantor with the latest TXLock participants This class was added as part
@@ -33,7 +34,7 @@ import java.util.Set;
  * given TXLockId. This update is needed in the event that a recovery is needed when the TXLock
  * Lessor (the origin VM of the transaction) crashes/departs before or while sending the
  * TXCommitMessage but after making the reservation for the transaction.
- * 
+ *
  * @see org.apache.geode.internal.cache.TXCommitMessage#send(TXLockId)
  * @see org.apache.geode.internal.cache.TXCommitMessage#updateLockMembers
  * @see org.apache.geode.distributed.internal.locks.DLockGrantor#getLockBatch(Object)
@@ -43,7 +44,7 @@ import java.util.Set;
  * @see TXLessorDepartureHandler
  * @see TXOriginatorRecoveryProcessor
  * @see org.apache.geode.internal.cache.TXFarSideCMTracker
- * 
+ *
  * @since GemFire 4.1.1
  */
 public class TXLockUpdateParticipantsMessage extends PooledDistributionMessage

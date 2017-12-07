@@ -14,19 +14,15 @@
  */
 package org.apache.geode.internal.cache;
 
-import org.junit.experimental.categories.Category;
-import org.junit.Test;
-
 import static org.junit.Assert.*;
-
-import org.apache.geode.test.dunit.cache.internal.JUnit4CacheTestCase;
-import org.apache.geode.test.dunit.internal.JUnit4DistributedTestCase;
-import org.apache.geode.test.junit.categories.DistributedTest;
 
 import java.util.Iterator;
 import java.util.NoSuchElementException;
 import java.util.Properties;
 import java.util.Set;
+
+import org.junit.Test;
+import org.junit.experimental.categories.Category;
 
 import org.apache.geode.cache.AttributesFactory;
 import org.apache.geode.cache.Cache;
@@ -45,12 +41,14 @@ import org.apache.geode.cache.RegionFactory;
 import org.apache.geode.cache30.CacheSerializableRunnable;
 import org.apache.geode.cache30.TestCacheLoader;
 import org.apache.geode.distributed.internal.ReplyException;
-
 import org.apache.geode.internal.cache.PartitionedRegion;
 import org.apache.geode.test.dunit.Host;
 import org.apache.geode.test.dunit.LogWriterUtils;
 import org.apache.geode.test.dunit.SerializableRunnable;
 import org.apache.geode.test.dunit.VM;
+import org.apache.geode.test.dunit.cache.internal.JUnit4CacheTestCase;
+import org.apache.geode.test.dunit.internal.JUnit4DistributedTestCase;
+import org.apache.geode.test.junit.categories.DistributedTest;
 
 /**
  * This is a dunit test for PartitionedRegion creation and Region API's functionality. This test is
@@ -180,7 +178,7 @@ public class PartitionedRegionAPIDUnitTest extends PartitionedRegionDUnitTestCas
 
   /**
    * Search the entires PartitionedRegion for the key, to validate that indeed it doesn't exist
-   * 
+   *
    * @returns true if it does exist
    * @param par
    * @param key
@@ -205,7 +203,7 @@ public class PartitionedRegionAPIDUnitTest extends PartitionedRegionDUnitTestCas
 
   /**
    * Test the Region operations after the PartitionedRegion has been destroyed
-   * 
+   *
    * @param prName
    */
   public void partitionedRegionTestAfterDestroyRegion(final String prName) {
@@ -916,7 +914,7 @@ public class PartitionedRegionAPIDUnitTest extends PartitionedRegionDUnitTestCas
 
     /*
      * validate the data in PartionedRegion at different VM's
-     * 
+     *
      */
     CacheSerializableRunnable validateRegionAPIs =
         new CacheSerializableRunnable("validateInserts") {
@@ -1219,7 +1217,7 @@ public class PartitionedRegionAPIDUnitTest extends PartitionedRegionDUnitTestCas
   /**
    * Test the PartitionedRegion operations when the Scope is set to
    * {@link AttributesFactory#setEarlyAck(boolean)}
-   * 
+   *
    * @throws Exception
    */
   @Test
@@ -1279,7 +1277,7 @@ public class PartitionedRegionAPIDUnitTest extends PartitionedRegionDUnitTestCas
 
   /**
    * Verify that localMaxMemory is set correctly when using attributes
-   * 
+   *
    * @throws Exception
    */
   @Test

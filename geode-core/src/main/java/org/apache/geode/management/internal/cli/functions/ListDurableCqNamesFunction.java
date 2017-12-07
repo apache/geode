@@ -34,7 +34,7 @@ import org.apache.geode.management.internal.cli.i18n.CliStrings;
  * The ListDurableCqs class is a GemFire function used to collect all the durable client names on
  * the server
  * </p>
- * 
+ *
  * @see org.apache.geode.cache.Cache
  * @see org.apache.geode.cache.execute.Function
  * @see org.apache.geode.cache.execute.FunctionAdapter

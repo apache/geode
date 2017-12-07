@@ -43,7 +43,7 @@ public class SSLConfigurationFactory {
 
   private SSLConfigurationFactory() {}
 
-  private synchronized static SSLConfigurationFactory getInstance() {
+  private static synchronized SSLConfigurationFactory getInstance() {
     if (instance == null) {
       instance = new SSLConfigurationFactory();
     }
@@ -197,7 +197,7 @@ public class SSLConfigurationFactory {
 
   /**
    * Configure a sslConfig for the cluster using the legacy configuration
-   * 
+   *
    * @return A sslConfig object describing the ssl config for the server component
    * @deprecated as of Geode 1.0
    */
@@ -218,7 +218,7 @@ public class SSLConfigurationFactory {
 
   /**
    * Configure a sslConfig for the server using the legacy configuration
-   * 
+   *
    * @return A sslConfig object describing the ssl config for the server component
    * @deprecated as of Geode 1.0
    */
@@ -239,7 +239,7 @@ public class SSLConfigurationFactory {
 
   /**
    * Configure a sslConfig for the jmx using the legacy configuration
-   * 
+   *
    * @return A sslConfig object describing the ssl config for the jmx component
    * @deprecated as of Geode 1.0
    */
@@ -260,7 +260,7 @@ public class SSLConfigurationFactory {
 
   /**
    * Configure a sslConfig for the gateway using the legacy configuration
-   * 
+   *
    * @return A sslConfig object describing the ssl config for the gateway component
    * @deprecated as of Geode 1.0
    */
@@ -280,7 +280,7 @@ public class SSLConfigurationFactory {
 
   /**
    * Configure a sslConfig for the http service using the legacy configuration
-   * 
+   *
    * @return A sslConfig object describing the ssl config for the http service component
    * @deprecated as of Geode 1.0
    */

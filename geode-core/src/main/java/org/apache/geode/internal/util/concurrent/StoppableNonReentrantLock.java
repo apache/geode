@@ -19,12 +19,12 @@ import org.apache.geode.internal.i18n.LocalizedStrings;
 
 /**
  * This is a type of {@link StoppableReentrantLock} that does not allow recursion
- * 
+ *
  */
 public class StoppableNonReentrantLock extends StoppableReentrantLock {
   /**
    * Creates an instance.
-   * 
+   *
    * @param stopper the cancellation object
    */
   public StoppableNonReentrantLock(CancelCriterion stopper) {

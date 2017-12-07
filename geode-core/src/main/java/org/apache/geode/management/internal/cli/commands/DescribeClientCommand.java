@@ -50,7 +50,7 @@ public class DescribeClientCommand implements GfshCommand {
   @ResourceOperation(resource = ResourcePermission.Resource.CLUSTER,
       operation = ResourcePermission.Operation.READ)
   public Result describeClient(@CliOption(key = CliStrings.DESCRIBE_CLIENT__ID, mandatory = true,
-      help = CliStrings.DESCRIBE_CLIENT__ID__HELP) String clientId) {
+      help = CliStrings.DESCRIBE_CLIENT__ID__HELP) String clientId) throws Exception {
     Result result;
 
     if (clientId.startsWith("\"")) {
@@ -65,111 +65,97 @@ public class DescribeClientCommand implements GfshCommand {
       clientId = clientId.substring(0, clientId.length() - 2);
     }
 
-    try {
-      CompositeResultData compositeResultData = ResultBuilder.createCompositeResultData();
-      CompositeResultData.SectionResultData sectionResult =
-          compositeResultData.addSection("InfoSection");
-      InternalCache cache = getCache();
+    CompositeResultData compositeResultData = ResultBuilder.createCompositeResultData();
+    CompositeResultData.SectionResultData sectionResult =
+        compositeResultData.addSection("InfoSection");
+    InternalCache cache = getCache();
 
-      ManagementService service = ManagementService.getExistingManagementService(cache);
-      ObjectName[] cacheServers = service.getDistributedSystemMXBean().listCacheServerObjectNames();
-      if (cacheServers.length == 0) {
-        return ResultBuilder.createGemFireErrorResult(
-            CliStrings.format(CliStrings.DESCRIBE_CLIENT_COULD_NOT_RETRIEVE_SERVER_LIST));
-      }
-
-      ClientHealthStatus clientHealthStatus = null;
-
-      for (ObjectName objName : cacheServers) {
-        CacheServerMXBean serverMbean = service.getMBeanInstance(objName, CacheServerMXBean.class);
-        List<String> listOfClient =
-            new ArrayList<>(Arrays.asList((String[]) serverMbean.getClientIds()));
-        if (listOfClient.contains(clientId)) {
-          if (clientHealthStatus == null) {
-            try {
-              clientHealthStatus = serverMbean.showClientStats(clientId);
-              if (clientHealthStatus == null) {
-                return ResultBuilder.createGemFireErrorResult(CliStrings.format(
-                    CliStrings.DESCRIBE_CLIENT_COULD_NOT_RETRIEVE_STATS_FOR_CLIENT_0, clientId));
-              }
-            } catch (Exception eee) {
-              return ResultBuilder.createGemFireErrorResult(CliStrings.format(
-                  CliStrings.DESCRIBE_CLIENT_COULD_NOT_RETRIEVE_STATS_FOR_CLIENT_0_REASON_1,
-                  clientId, eee.getMessage()));
-            }
-          }
-        }
-      }
-
-      if (clientHealthStatus == null) {
-        return ResultBuilder.createGemFireErrorResult(
-            CliStrings.format(CliStrings.DESCRIBE_CLIENT__CLIENT__ID__NOT__FOUND__0, clientId));
-      }
-
-      Set<DistributedMember> dsMembers = CliUtil.getAllMembers(cache);
-      String isDurable = null;
-      List<String> primaryServers = new ArrayList<>();
-      List<String> secondaryServers = new ArrayList<>();
-
-      if (dsMembers.size() > 0) {
-        ContinuousQueryFunction continuousQueryFunction = new ContinuousQueryFunction();
-        FunctionService.registerFunction(continuousQueryFunction);
-        List<?> resultList = (List<?>) CliUtil
-            .executeFunction(continuousQueryFunction, clientId, dsMembers).getResult();
-        for (Object aResultList : resultList) {
-          try {
-            Object object = aResultList;
-            if (object instanceof Throwable) {
-              LogWrapper.getInstance().warning(
-                  "Exception in Describe Client " + ((Throwable) object).getMessage(),
-                  ((Throwable) object));
-              continue;
-            }
-
-            if (object != null) {
-              ContinuousQueryFunction.ClientInfo objectResult =
-                  (ContinuousQueryFunction.ClientInfo) object;
-              isDurable = objectResult.isDurable;
-
-              if (objectResult.primaryServer != null && objectResult.primaryServer.length() > 0) {
-                if (primaryServers.size() == 0) {
-                  primaryServers.add(objectResult.primaryServer);
-                } else {
-                  primaryServers.add(" ,");
-                  primaryServers.add(objectResult.primaryServer);
-                }
-              }
-
-              if (objectResult.secondaryServer != null
-                  && objectResult.secondaryServer.length() > 0) {
-                if (secondaryServers.size() == 0) {
-                  secondaryServers.add(objectResult.secondaryServer);
-                } else {
-                  secondaryServers.add(" ,");
-                  secondaryServers.add(objectResult.secondaryServer);
-                }
-              }
-            }
-          } catch (Exception e) {
-            LogWrapper.getInstance().info(CliStrings.DESCRIBE_CLIENT_ERROR_FETCHING_STATS_0 + " :: "
-                + CliUtil.stackTraceAsString(e));
-            return ResultBuilder.createGemFireErrorResult(CliStrings
-                .format(CliStrings.DESCRIBE_CLIENT_ERROR_FETCHING_STATS_0, e.getMessage()));
-          }
-        }
-
-        buildTableResult(sectionResult, clientHealthStatus, isDurable, primaryServers,
-            secondaryServers);
-        result = ResultBuilder.buildResult(compositeResultData);
-      } else {
-        return ResultBuilder.createGemFireErrorResult(CliStrings.DESCRIBE_CLIENT_NO_MEMBERS);
-      }
-    } catch (Exception e) {
-      LogWrapper.getInstance()
-          .info("Error in describe clients. stack trace" + CliUtil.stackTraceAsString(e));
-      result = ResultBuilder.createGemFireErrorResult(CliStrings
-          .format(CliStrings.DESCRIBE_CLIENT_COULD_NOT_RETRIEVE_CLIENT_0, e.getMessage()));
+    ManagementService service = ManagementService.getExistingManagementService(cache);
+    ObjectName[] cacheServers = service.getDistributedSystemMXBean().listCacheServerObjectNames();
+    if (cacheServers.length == 0) {
+      return ResultBuilder.createGemFireErrorResult(
+          CliStrings.format(CliStrings.DESCRIBE_CLIENT_COULD_NOT_RETRIEVE_SERVER_LIST));
     }
+
+    ClientHealthStatus clientHealthStatus = null;
+
+    for (ObjectName objName : cacheServers) {
+      CacheServerMXBean serverMbean = service.getMBeanInstance(objName, CacheServerMXBean.class);
+      List<String> listOfClient =
+          new ArrayList<>(Arrays.asList((String[]) serverMbean.getClientIds()));
+      if (listOfClient.contains(clientId)) {
+        if (clientHealthStatus == null) {
+          try {
+            clientHealthStatus = serverMbean.showClientStats(clientId);
+            if (clientHealthStatus == null) {
+              return ResultBuilder.createGemFireErrorResult(CliStrings.format(
+                  CliStrings.DESCRIBE_CLIENT_COULD_NOT_RETRIEVE_STATS_FOR_CLIENT_0, clientId));
+            }
+          } catch (Exception eee) {
+            return ResultBuilder.createGemFireErrorResult(CliStrings.format(
+                CliStrings.DESCRIBE_CLIENT_COULD_NOT_RETRIEVE_STATS_FOR_CLIENT_0_REASON_1, clientId,
+                eee.getMessage()));
+          }
+        }
+      }
+    }
+
+    if (clientHealthStatus == null) {
+      return ResultBuilder.createGemFireErrorResult(
+          CliStrings.format(CliStrings.DESCRIBE_CLIENT__CLIENT__ID__NOT__FOUND__0, clientId));
+    }
+
+    Set<DistributedMember> dsMembers = CliUtil.getAllMembers(cache);
+    String isDurable = null;
+    List<String> primaryServers = new ArrayList<>();
+    List<String> secondaryServers = new ArrayList<>();
+
+    if (dsMembers.size() > 0) {
+      ContinuousQueryFunction continuousQueryFunction = new ContinuousQueryFunction();
+      FunctionService.registerFunction(continuousQueryFunction);
+      List<?> resultList = (List<?>) CliUtil
+          .executeFunction(continuousQueryFunction, clientId, dsMembers).getResult();
+      for (Object aResultList : resultList) {
+        Object object = aResultList;
+        if (object instanceof Throwable) {
+          LogWrapper.getInstance().warning(
+              "Exception in Describe Client " + ((Throwable) object).getMessage(),
+              ((Throwable) object));
+          continue;
+        }
+
+        if (object != null) {
+          ContinuousQueryFunction.ClientInfo objectResult =
+              (ContinuousQueryFunction.ClientInfo) object;
+          isDurable = objectResult.isDurable;
+
+          if (objectResult.primaryServer != null && objectResult.primaryServer.length() > 0) {
+            if (primaryServers.size() == 0) {
+              primaryServers.add(objectResult.primaryServer);
+            } else {
+              primaryServers.add(" ,");
+              primaryServers.add(objectResult.primaryServer);
+            }
+          }
+
+          if (objectResult.secondaryServer != null && objectResult.secondaryServer.length() > 0) {
+            if (secondaryServers.size() == 0) {
+              secondaryServers.add(objectResult.secondaryServer);
+            } else {
+              secondaryServers.add(" ,");
+              secondaryServers.add(objectResult.secondaryServer);
+            }
+          }
+        }
+      }
+
+      buildTableResult(sectionResult, clientHealthStatus, isDurable, primaryServers,
+          secondaryServers);
+      result = ResultBuilder.buildResult(compositeResultData);
+    } else {
+      return ResultBuilder.createGemFireErrorResult(CliStrings.DESCRIBE_CLIENT_NO_MEMBERS);
+    }
+
     LogWrapper.getInstance().info("describe client result " + result);
     return result;
   }

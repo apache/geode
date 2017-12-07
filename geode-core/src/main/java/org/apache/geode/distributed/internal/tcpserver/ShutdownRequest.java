@@ -23,7 +23,7 @@ import org.apache.geode.DataSerializable;
 
 /**
  * A request to the TCP server to shutdown
- * 
+ *
  * @since GemFire 5.7
  */
 public class ShutdownRequest implements DataSerializable {

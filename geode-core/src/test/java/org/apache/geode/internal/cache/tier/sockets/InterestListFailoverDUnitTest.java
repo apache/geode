@@ -18,7 +18,6 @@ import static org.junit.Assert.*;
 
 import java.util.Iterator;
 
-import org.apache.geode.test.junit.categories.ClientSubscriptionTest;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
@@ -36,6 +35,7 @@ import org.apache.geode.test.dunit.VM;
 import org.apache.geode.test.dunit.Wait;
 import org.apache.geode.test.dunit.WaitCriterion;
 import org.apache.geode.test.dunit.internal.JUnit4DistributedTestCase;
+import org.apache.geode.test.junit.categories.ClientSubscriptionTest;
 import org.apache.geode.test.junit.categories.DistributedTest;
 
 /**
@@ -292,5 +292,3 @@ public class InterestListFailoverDUnitTest extends JUnit4DistributedTestCase {
   }
 
 }
-
-

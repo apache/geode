@@ -21,7 +21,7 @@ package org.apache.geode.management.cli;
  * <li>parsing errors from unknown parameters
  * <li>errors from invalid values for parameters
  * </ul>
- * 
+ *
  * @since GemFire 7.0
  */
 public class CommandProcessingException extends RuntimeException {
@@ -77,7 +77,7 @@ public class CommandProcessingException extends RuntimeException {
 
   /**
    * Constructs a new <code>CommandProcessingException</code>
-   * 
+   *
    * @param message The error detail message.
    * @param errorType One of the error types defined in <code>CommandProcessingException</code>
    * @param errorData Additional information about the error.

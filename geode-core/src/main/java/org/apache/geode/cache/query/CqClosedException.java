@@ -19,7 +19,7 @@ import org.apache.geode.cache.CacheRuntimeException;
 
 /**
  * Thrown if the CqQuery on which the operation performed is closed.
- * 
+ *
  * @since GemFire 5.5
  */
 
@@ -29,7 +29,7 @@ public class CqClosedException extends CacheRuntimeException {
 
   /**
    * Constructor used by concrete subclasses
-   * 
+   *
    * @param msg the error message
    * @param cause a Throwable cause of this exception
    */
@@ -39,7 +39,7 @@ public class CqClosedException extends CacheRuntimeException {
 
   /**
    * Constructor used by concrete subclasses
-   * 
+   *
    * @param msg the error message
    */
   public CqClosedException(String msg) {
@@ -48,7 +48,7 @@ public class CqClosedException extends CacheRuntimeException {
 
   /**
    * Constructor used by concrete subclasses
-   * 
+   *
    * @param cause a Throwable cause of this exception
    */
   public CqClosedException(Throwable cause) {

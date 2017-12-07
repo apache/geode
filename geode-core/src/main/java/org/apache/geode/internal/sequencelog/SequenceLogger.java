@@ -26,18 +26,18 @@ public interface SequenceLogger {
    *
    * There can be many independent sequence diagrams that are logged. Each sequence diagram is
    * identified by a graphName and a graphType.
-   * 
+   *
    * Each log statement creates a transition in the diagram
-   * 
+   *
    * <pre>
    * Source         Dest
    *   |             |
    *   |-(edgeName)->| (now in state "state")
    * </pre>
-   * 
+   *
    * The graphName can a Pattern, at which point it will be considered a transition for all
    * graphNames that match the pattern at that time to the given state.
-   * 
+   *
    * @param type the type of graph this is.
    * @param graphName The name of the graph we're recording. For example, an individual key, like
    *        "Object_123"

@@ -14,11 +14,12 @@
  */
 package org.apache.geode.sequence;
 
-import javax.swing.*;
 import java.awt.*;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.Date;
+
+import javax.swing.*;
 
 /**
  * Created by IntelliJ IDEA. User: dsmith Date: Oct 29, 2010 Time: 5:24:54 PM To change this

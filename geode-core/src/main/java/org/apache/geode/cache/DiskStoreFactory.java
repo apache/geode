@@ -14,9 +14,9 @@
  */
 package org.apache.geode.cache;
 
-import org.apache.geode.distributed.internal.DistributionConfig;
-
 import java.io.File;
+
+import org.apache.geode.distributed.internal.DistributionConfig;
 
 /**
  * Factory for creating instances of {@link DiskStore}. To get an instance of this factory call
@@ -25,7 +25,7 @@ import java.io.File;
  * <P>
  * To use this factory configure it with the <code>set</code> methods and then call {@link #create}
  * to produce a disk store instance.
- * 
+ *
  * @since GemFire 6.5
  */
 public interface DiskStoreFactory {
@@ -133,7 +133,7 @@ public interface DiskStoreFactory {
   /**
    * Set to <code>true</code> to cause the disk files to be automatically compacted. Set to
    * <code>false</code> if no compaction is needed or manual compaction will be used.
-   * 
+   *
    * @param isAutoCompact if true then use auto compaction
    * @return a reference to <code>this</code>
    */
@@ -145,7 +145,7 @@ public interface DiskStoreFactory {
    * amount of live data in an oplog becomes less than this percentage then when a compaction is
    * done this garbage will be cleaned up freeing up disk space. Garbage is created by entry
    * destroys, entry updates, and region destroys.
-   * 
+   *
    * @param compactionThreshold percentage of remaining live data in the oplog at which an oplog is
    *        compactable
    * @return a reference to <code>this</code>
@@ -164,7 +164,7 @@ public interface DiskStoreFactory {
   /**
    * Sets the maximum size in megabytes a single oplog (operation log) is allowed to be. When an
    * oplog is created this amount of file space will be immediately reserved.
-   * 
+   *
    * @param maxOplogSize maximum size in megabytes for one single oplog file.
    * @return a reference to <code>this</code>
    */
@@ -176,7 +176,7 @@ public interface DiskStoreFactory {
    * <p>
    * For how to configure a region to be asynchronous see:
    * {@link AttributesFactory#setDiskSynchronous}.
-   * 
+   *
    * @param timeInterval number of milliseconds that can elapse before async data is flushed to
    *        disk.
    * @return a reference to <code>this</code>
@@ -185,7 +185,7 @@ public interface DiskStoreFactory {
 
   /**
    * Sets the write buffer size in bytes.
-   * 
+   *
    * @param writeBufferSize write buffer size in bytes.
    * @return a reference to <code>this</code>
    */
@@ -198,7 +198,7 @@ public interface DiskStoreFactory {
    * <p>
    * For how to configure a region to be asynchronous see:
    * {@link AttributesFactory#setDiskSynchronous}.
-   * 
+   *
    * @param queueSize number of operations that can be asynchronously queued. If 0, the queue will
    *        be unlimited.
    * @return a reference to <code>this</code>
@@ -209,7 +209,7 @@ public interface DiskStoreFactory {
    * Sets the directories to which this disk store's data is written. If multiple directories are
    * used, GemFire will attempt to distribute the data evenly amongst them. The size of each
    * directory will be set to the default of {@link #DEFAULT_DISK_DIR_SIZE}.
-   * 
+   *
    * @param diskDirs directories to put the oplog files.
    * @return a reference to <code>this</code>
    */
@@ -218,11 +218,11 @@ public interface DiskStoreFactory {
   /**
    * Sets the directories to which this disk store's data is written and also set the sizes in
    * megabytes of each directory.
-   * 
+   *
    * @param diskDirs directories to put the oplog files.
    * @param diskDirSizes sizes of disk directories in megabytes
    * @return a reference to <code>this</code>
-   * 
+   *
    * @throws IllegalArgumentException if length of the size array does not match to the length of
    *         the dir array
    */
@@ -230,7 +230,7 @@ public interface DiskStoreFactory {
 
   /**
    * Sets the warning threshold for disk usage as a percentage of the total disk volume.
-   * 
+   *
    * @param warningPercent warning percent of disk usage
    * @return a reference to <code>this</code>
    * @since GemFire 8.0
@@ -239,7 +239,7 @@ public interface DiskStoreFactory {
 
   /**
    * Sets the critical threshold for disk usage as a percentage of the total disk volume.
-   * 
+   *
    * @param criticalPercent critical percent of disk usage
    * @return a reference to <code>this</code>
    * @since GemFire 8.0
@@ -249,7 +249,7 @@ public interface DiskStoreFactory {
   /**
    * Create a new disk store or find an existing one. In either case the returned disk store's
    * configuration will be the same as this factory's configuration.
-   * 
+   *
    * @param name the name of the DiskStore
    * @return the newly created DiskStore.
    * @throws IllegalStateException if a disk store with the given name already exists and its

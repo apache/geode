@@ -51,7 +51,7 @@ import org.apache.geode.internal.logging.log4j.LogMarker;
  * A message used for debugging purposes. For example if a test fails it can call
  * {@link org.apache.geode.internal.cache.PartitionedRegion#sendDumpB2NRegionForBucket(int)} which
  * sends this message to all VMs that have that PartitionedRegion defined.
- * 
+ *
  * @see org.apache.geode.internal.cache.PartitionedRegion#sendDumpB2NRegionForBucket(int)
  */
 public class DumpB2NRegion extends PartitionMessage {
@@ -310,7 +310,7 @@ public class DumpB2NRegion extends PartitionMessage {
 
   /*
    * (non-Javadoc)
-   * 
+   *
    * @see org.apache.geode.internal.cache.partitioned.PartitionMessage#appendFields(java.lang.
    * StringBuffer)
    */
@@ -323,7 +323,7 @@ public class DumpB2NRegion extends PartitionMessage {
 
   /*
    * (non-Javadoc)
-   * 
+   *
    * @see java.lang.Object#clone()
    */
   @Override

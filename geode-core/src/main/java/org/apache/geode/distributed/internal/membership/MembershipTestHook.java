@@ -13,13 +13,13 @@
  * the License.
  */
 /**
- * 
+ *
  */
 package org.apache.geode.distributed.internal.membership;
 
 /**
  * Test hook for hydra test development
- * 
+ *
  *
  */
 public interface MembershipTestHook {

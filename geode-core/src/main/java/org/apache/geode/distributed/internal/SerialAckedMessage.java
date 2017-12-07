@@ -32,7 +32,7 @@ import org.apache.geode.internal.logging.LogService;
 /**
  * A message that is sent to a given collection of managers and then awaits replies. It is used by
  * some tests to flush the serial communication channels after no-ack tests.
- * 
+ *
  */
 public class SerialAckedMessage extends SerialDistributionMessage implements MessageWithReply {
   private static final Logger logger = LogService.getLogger();
@@ -42,7 +42,7 @@ public class SerialAckedMessage extends SerialDistributionMessage implements Mes
   private int processorId;
 
   transient DistributionManager originDm;
-  transient private ReplyProcessor21 rp;
+  private transient ReplyProcessor21 rp;
 
   public SerialAckedMessage() {
     super();
@@ -55,7 +55,7 @@ public class SerialAckedMessage extends SerialDistributionMessage implements Mes
 
   /**
    * send the message and wait for replies
-   * 
+   *
    * @param recipients the destination manager ids
    * @param multicast whether to use multicast or unicast
    * @throws InterruptedException if the operation is interrupted (as by shutdown)

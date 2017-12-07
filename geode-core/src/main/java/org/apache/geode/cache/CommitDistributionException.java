@@ -72,4 +72,3 @@ public class CommitDistributionException extends TransactionException {
   }
 
 }
-

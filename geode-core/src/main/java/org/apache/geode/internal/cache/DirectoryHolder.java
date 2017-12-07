@@ -22,9 +22,9 @@ import org.apache.geode.StatisticsFactory;
 /**
  * A holder for a disk Directory. Used for maintaining the available space and updating disk
  * statistics
- * 
+ *
  * @since GemFire 5.1
- * 
+ *
  */
 public class DirectoryHolder {
 
@@ -91,7 +91,7 @@ public class DirectoryHolder {
     return dir;
   }
 
-  int getArrayIndex() {
+  public int getArrayIndex() {
     return this.index;
   }
 

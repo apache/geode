@@ -13,7 +13,7 @@
  * the License.
  */
 /**
- * 
+ *
  */
 package org.apache.geode.pdx;
 
@@ -22,7 +22,7 @@ import org.apache.geode.SerializationException;
 /**
  * Thrown if a problem occurred during serialization or deserialization of a PDX. In most cases
  * consult the cause for a description of the problem.
- * 
+ *
  * @since GemFire 6.6
  */
 public class PdxSerializationException extends SerializationException {
@@ -31,7 +31,7 @@ public class PdxSerializationException extends SerializationException {
 
   /**
    * Create the exception with the given message.
-   * 
+   *
    * @param message the message of the new exception
    */
   public PdxSerializationException(String message) {
@@ -40,7 +40,7 @@ public class PdxSerializationException extends SerializationException {
 
   /**
    * Create the exception with the given message and cause.
-   * 
+   *
    * @param message the message of the new exception
    * @param cause the cause of the new exception
    */

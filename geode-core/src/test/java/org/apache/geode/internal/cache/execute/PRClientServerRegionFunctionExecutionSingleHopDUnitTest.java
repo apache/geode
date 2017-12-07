@@ -14,15 +14,7 @@
  */
 package org.apache.geode.internal.cache.execute;
 
-import org.apache.geode.test.junit.categories.ClientServerTest;
-import org.junit.experimental.categories.Category;
-import org.junit.Test;
-
 import static org.junit.Assert.*;
-
-import org.apache.geode.test.dunit.cache.internal.JUnit4CacheTestCase;
-import org.apache.geode.test.dunit.internal.JUnit4DistributedTestCase;
-import org.apache.geode.test.junit.categories.DistributedTest;
 
 import java.io.EOFException;
 import java.io.IOException;
@@ -38,6 +30,9 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+
+import org.junit.Test;
+import org.junit.experimental.categories.Category;
 
 import org.apache.geode.cache.CacheClosedException;
 import org.apache.geode.cache.Region;
@@ -62,6 +57,10 @@ import org.apache.geode.test.dunit.LogWriterUtils;
 import org.apache.geode.test.dunit.ThreadUtils;
 import org.apache.geode.test.dunit.Wait;
 import org.apache.geode.test.dunit.WaitCriterion;
+import org.apache.geode.test.dunit.cache.internal.JUnit4CacheTestCase;
+import org.apache.geode.test.dunit.internal.JUnit4DistributedTestCase;
+import org.apache.geode.test.junit.categories.ClientServerTest;
+import org.apache.geode.test.junit.categories.DistributedTest;
 
 @Category({DistributedTest.class, ClientServerTest.class})
 public class PRClientServerRegionFunctionExecutionSingleHopDUnitTest
@@ -1198,4 +1197,3 @@ public class PRClientServerRegionFunctionExecutionSingleHopDUnitTest
     }
   }
 }
-

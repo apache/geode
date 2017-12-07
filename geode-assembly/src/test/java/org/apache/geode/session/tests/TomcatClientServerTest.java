@@ -24,8 +24,8 @@ import org.junit.rules.TemporaryFolder;
 import org.apache.geode.management.internal.cli.i18n.CliStrings;
 import org.apache.geode.management.internal.cli.util.CommandStringBuilder;
 import org.apache.geode.test.dunit.DUnitEnv;
-import org.apache.geode.test.junit.rules.GfshShellConnectionRule;
 import org.apache.geode.test.dunit.rules.LocatorServerStartupRule;
+import org.apache.geode.test.junit.rules.GfshCommandRule;
 
 /**
  * Setup class for Tomcat Client Server tests
@@ -39,7 +39,7 @@ public abstract class TomcatClientServerTest extends CargoTestBase {
   public transient TemporaryFolder temporaryFolder = new TemporaryFolder();
 
   @Rule
-  public transient GfshShellConnectionRule gfsh = new GfshShellConnectionRule();
+  public transient GfshCommandRule gfsh = new GfshCommandRule();
 
   @Rule
   public transient LocatorServerStartupRule locatorStartup = new LocatorServerStartupRule();
@@ -66,9 +66,10 @@ public abstract class TomcatClientServerTest extends CargoTestBase {
     command.addOption(CliStrings.START_SERVER__CLASSPATH,
         binDirJars + File.pathSeparator + libDirJars);
     command.addOption(CliStrings.START_SERVER__LOCATORS, DUnitEnv.get().getLocatorString());
+    command.addOption(CliStrings.START_SERVER__J, "-Dgemfire.member-timeout=60000");
 
     // Start server
-    gfsh.executeAndVerifyCommand(command.toString());
+    gfsh.executeAndAssertThat(command.toString()).statusIsSuccess();
   }
 
   /**
@@ -78,6 +79,6 @@ public abstract class TomcatClientServerTest extends CargoTestBase {
   public void stopServer() throws Exception {
     CommandStringBuilder command = new CommandStringBuilder(CliStrings.STOP_SERVER);
     command.addOption(CliStrings.STOP_SERVER__DIR, serverName);
-    gfsh.executeAndVerifyCommand(command.toString());
+    gfsh.executeAndAssertThat(command.toString()).statusIsSuccess();
   }
 }

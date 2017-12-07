@@ -14,12 +14,12 @@
  */
 package org.apache.geode.internal.util;
 
-import org.apache.geode.distributed.internal.DistributionConfig;
-
 import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Properties;
+
+import org.apache.geode.distributed.internal.DistributionConfig;
 
 /**
  * A utility class for building up arguments used in spawning another VM
@@ -28,7 +28,7 @@ public class JavaCommandBuilder {
 
   /**
    * Builds a command line containing all basic arguments required by java
-   * 
+   *
    * @return cmdVec - The caller can then add additional arguments
    */
   public static List<String> buildCommand(final String className, final String additionalClasspath,
@@ -88,7 +88,7 @@ public class JavaCommandBuilder {
 
   /**
    * Determine if the -server argument should be omitted for this vm
-   * 
+   *
    * @param javaBinDir - the path to the bin directory of java
    * @return true if the VM is known not to support the -server arg
    */

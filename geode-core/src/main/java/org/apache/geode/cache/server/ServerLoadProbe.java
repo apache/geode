@@ -20,7 +20,7 @@ import org.apache.geode.cache.CacheCallback;
 /**
  * A load probe is installed in a cache server to measure the load on the cache server for balancing
  * load between multiple cache servers.
- * 
+ *
  * <p>
  * The getLoad method will be called once per poll interval see
  * {@link CacheServer#setLoadPollInterval(long)} The {@link ServerLoad} object returned by the
@@ -43,14 +43,14 @@ import org.apache.geode.cache.CacheCallback;
  * this callback can be called several times. If the same callback object is installed on multiple
  * cache servers, open and close will be called once for each cache server.
  * </p>
- * 
+ *
  * @since GemFire 5.7
- * 
+ *
  */
 public interface ServerLoadProbe extends CacheCallback {
   /**
    * Get the load on this server. This method will be called once every pool interval.
-   * 
+   *
    * @return The current load on this server.
    */
   ServerLoad getLoad(ServerMetrics metrics);

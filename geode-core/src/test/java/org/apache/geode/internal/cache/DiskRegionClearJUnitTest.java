@@ -41,7 +41,7 @@ import org.apache.geode.test.junit.categories.IntegrationTest;
 
 /**
  * Test methods to ensure that disk Clear is apparently atomic to region clear.
- * 
+ *
  * Data on disk should reflect data in memory. A put while clear is going on should wait for clear
  * and if it is successfully recorded in memory than it should be recorded on disk. Else if not
  * successfully recorded in memory than should not be recorded on disk

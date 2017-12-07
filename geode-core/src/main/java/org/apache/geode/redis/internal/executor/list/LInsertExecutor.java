@@ -14,8 +14,8 @@
  */
 package org.apache.geode.redis.internal.executor.list;
 
-import org.apache.geode.redis.internal.Command;
 import org.apache.geode.redis.internal.Coder;
+import org.apache.geode.redis.internal.Command;
 import org.apache.geode.redis.internal.ExecutionHandlerContext;
 
 public class LInsertExecutor extends ListExecutor {

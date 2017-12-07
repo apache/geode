@@ -20,26 +20,27 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
-import org.apache.geode.cache.Cache;
-import org.apache.geode.cache.Region;
-import org.apache.geode.test.dunit.SerializableRunnableIF;
-import org.apache.geode.test.junit.categories.DistributedTest;
+import java.util.Collection;
+import java.util.concurrent.TimeUnit;
+import java.util.stream.IntStream;
+
+import junitparams.JUnitParamsRunner;
+import junitparams.Parameters;
 import org.awaitility.Awaitility;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 import org.junit.runner.RunWith;
 
-import java.util.Collection;
-import java.util.concurrent.TimeUnit;
-import java.util.stream.IntStream;
-import junitparams.JUnitParamsRunner;
-import junitparams.Parameters;
+import org.apache.geode.cache.Cache;
+import org.apache.geode.cache.Region;
+import org.apache.geode.test.dunit.SerializableRunnableIF;
+import org.apache.geode.test.junit.categories.DistributedTest;
 
 @Category(DistributedTest.class)
 @RunWith(JUnitParamsRunner.class)
 public class ExpirationDUnitTest extends LuceneQueriesAccessorBase {
 
-  protected final static int EXTRA_WAIT_TIME_SEC = 15;
+  protected static final int EXTRA_WAIT_TIME_SEC = 15;
 
   protected RegionTestableType[] getPartitionRegionsWithExpirationSet() {
     return new RegionTestableType[] {RegionTestableType.PARTITION_WITH_EXPIRATION_DESTROY,

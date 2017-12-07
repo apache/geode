@@ -34,6 +34,7 @@ import java.util.concurrent.SynchronousQueue;
 import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
+
 import javax.net.ssl.SSLException;
 
 import org.apache.logging.log4j.Logger;
@@ -66,7 +67,7 @@ import org.apache.geode.internal.security.SecurableCommunicationChannel;
  * TCPConduit manages a server socket and a collection of connections to other systems. Connections
  * are identified by DistributedMember IDs. These types of messages are currently supported:
  * </p>
- * 
+ *
  * <pre>
  * <p>
  * DistributionMessage - message is delivered to the server's
@@ -79,7 +80,7 @@ import org.apache.geode.internal.security.SecurableCommunicationChannel;
  * <p>
  * If the ServerDelegate is null, DistributionMessages are ignored by the TCPConduit.
  * </p>
- * 
+ *
  * @since GemFire 2.0
  */
 
@@ -102,7 +103,7 @@ public class TCPConduit implements Runnable {
    */
   static boolean useSSL;
 
-  // public final static boolean USE_SYNC_WRITES = Boolean.getBoolean("p2p.useSyncWrites");
+  // public static final boolean USE_SYNC_WRITES = Boolean.getBoolean("p2p.useSyncWrites");
 
   /**
    * Force use of Sockets rather than SocketChannels (NIO). Note from Bruce: due to a bug in the
@@ -193,7 +194,7 @@ public class TCPConduit implements Runnable {
 
   /**
    * Config from the delegate
-   * 
+   *
    * @since GemFire 4.2.1
    */
   DistributionConfig config;
@@ -236,7 +237,7 @@ public class TCPConduit implements Runnable {
    * This constructor forces the conduit to ignore the following system properties and look for them
    * only in the <i>props</i> argument:
    * </p>
-   * 
+   *
    * <pre>
    * p2p.tcpBufferSize
    * p2p.idleConnectionTimeout
@@ -350,9 +351,9 @@ public class TCPConduit implements Runnable {
    */
   private volatile Exception shutdownCause;
 
-  private final static int HANDSHAKE_POOL_SIZE =
+  private static final int HANDSHAKE_POOL_SIZE =
       Integer.getInteger("p2p.HANDSHAKE_POOL_SIZE", 10).intValue();
-  private final static long HANDSHAKE_POOL_KEEP_ALIVE_TIME =
+  private static final long HANDSHAKE_POOL_KEEP_ALIVE_TIME =
       Long.getLong("p2p.HANDSHAKE_POOL_KEEP_ALIVE_TIME", 60).longValue();
 
   /**
@@ -515,7 +516,7 @@ public class TCPConduit implements Runnable {
 
   /**
    * Ensure that the ConnectionTable class gets loaded.
-   * 
+   *
    * @see SystemFailure#loadEmergencyClasses()
    */
   public static void loadEmergencyClasses() {
@@ -524,7 +525,7 @@ public class TCPConduit implements Runnable {
 
   /**
    * Close the ServerSocketChannel, ServerSocket, and the ConnectionTable.
-   * 
+   *
    * @see SystemFailure#emergencyClose()
    */
   public void emergencyClose() {
@@ -620,7 +621,7 @@ public class TCPConduit implements Runnable {
 
   /**
    * Returns whether or not this conduit is stopped
-   * 
+   *
    * @since GemFire 3.0
    */
   public boolean isStopped() {
@@ -836,7 +837,7 @@ public class TCPConduit implements Runnable {
 
   /**
    * records the current outgoing message count on all thread-owned ordered connections
-   * 
+   *
    * @since GemFire 5.1
    */
   public void getThreadOwnedOrderedConnectionState(DistributedMember member, Map result) {
@@ -846,7 +847,7 @@ public class TCPConduit implements Runnable {
   /**
    * wait for the incoming connections identified by the keys in the argument to receive and
    * dispatch the number of messages associated with the key
-   * 
+   *
    * @since GemFire 5.1
    */
   public void waitForThreadOwnedOrderedConnectionState(DistributedMember member, Map channelState)
@@ -858,7 +859,7 @@ public class TCPConduit implements Runnable {
 
   /**
    * connections send messageReceived when a message object has been read.
-   * 
+   *
    * @param bytesRead number of bytes read off of network to get this message
    */
   protected void messageReceived(Connection receiver, DistributionMessage message, int bytesRead) {
@@ -904,7 +905,7 @@ public class TCPConduit implements Runnable {
    * Return a connection to the given member. This method must continue to attempt to create a
    * connection to the given member as long as that member is in the membership view and the system
    * is not shutting down.
-   * 
+   *
    * @param memberAddress the IDS associated with the remoteId
    * @param preserveOrder whether this is an ordered or unordered connection
    * @param retry false if this is the first attempt
@@ -1180,7 +1181,7 @@ public class TCPConduit implements Runnable {
 
     /*
      * (non-Javadoc)
-     * 
+     *
      * @see org.apache.geode.CancelCriterion#cancelInProgress()
      */
     @Override
@@ -1197,7 +1198,7 @@ public class TCPConduit implements Runnable {
 
     /*
      * (non-Javadoc)
-     * 
+     *
      * @see org.apache.geode.CancelCriterion#generateCancelledException(java.lang.Throwable)
      */
     @Override
@@ -1230,7 +1231,7 @@ public class TCPConduit implements Runnable {
 
   /**
    * if the conduit is disconnected due to an abnormal condition, this will describe the reason
-   * 
+   *
    * @return exception that caused disconnect
    */
   public Exception getShutdownCause() {
@@ -1268,4 +1269,3 @@ public class TCPConduit implements Runnable {
   }
 
 }
-

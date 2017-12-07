@@ -19,7 +19,14 @@ import static org.apache.geode.distributed.ConfigurationProperties.MCAST_PORT;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertSame;
 
+import java.io.File;
+import java.util.Collection;
+import java.util.Properties;
+
 import org.apache.commons.io.FileUtils;
+import org.junit.Test;
+import org.junit.experimental.categories.Category;
+
 import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.CacheFactory;
 import org.apache.geode.cache.DiskStoreFactory;
@@ -41,12 +48,6 @@ import org.apache.geode.pdx.internal.PdxType;
 import org.apache.geode.pdx.internal.PdxUnreadData;
 import org.apache.geode.pdx.internal.TypeRegistry;
 import org.apache.geode.test.junit.categories.IntegrationTest;
-import org.junit.Test;
-import org.junit.experimental.categories.Category;
-
-import java.io.File;
-import java.util.Collection;
-import java.util.Properties;
 
 @Category(IntegrationTest.class)
 public class PdxDeleteFieldJUnitTest {

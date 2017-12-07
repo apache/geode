@@ -17,7 +17,7 @@ package org.apache.geode.internal.cache.execute;
 import org.apache.geode.cache.execute.ResultSender;
 
 /**
- * 
+ *
  *
  */
 public interface InternalResultSender extends ResultSender<Object> {

@@ -46,7 +46,7 @@ import org.apache.geode.internal.logging.log4j.LocalizedMessage;
 
 /**
  * Abstract implementation of InternalExecution interface.
- * 
+ *
  * @since GemFire 5.8LA
  *
  */
@@ -97,7 +97,7 @@ public abstract class AbstractExecution implements InternalExecution {
 
   protected ProxyCache proxyCache;
 
-  private final static ConcurrentHashMap<String, byte[]> idToFunctionAttributes =
+  private static final ConcurrentHashMap<String, byte[]> idToFunctionAttributes =
       new ConcurrentHashMap<String, byte[]>();
 
   public static final byte NO_HA_NO_HASRESULT_NO_OPTIMIZEFORWRITE = 0;
@@ -430,7 +430,7 @@ public abstract class AbstractExecution implements InternalExecution {
   /**
    * validates whether a function should execute in presence of transaction and HeapCritical
    * members. If the function is the first operation in a transaction, bootstraps the function.
-   * 
+   *
    * @param function the function
    * @param targetMembers the set of members the function will be executed on
    * @throws TransactionException if more than one nodes are targeted within a transaction
@@ -450,7 +450,7 @@ public abstract class AbstractExecution implements InternalExecution {
   /**
    * Returns the function attributes defined by the functionId, returns null if no function is found
    * for the specified functionId
-   * 
+   *
    * @param functionId
    * @return byte[]
    * @throws FunctionException if functionID passed is null

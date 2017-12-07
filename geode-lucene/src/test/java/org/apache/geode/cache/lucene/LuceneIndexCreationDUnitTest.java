@@ -14,32 +14,59 @@
  */
 package org.apache.geode.cache.lucene;
 
-import org.apache.geode.cache.lucene.test.LuceneTestUtilities;
-import org.apache.geode.test.dunit.SerializableRunnableIF;
-import org.apache.geode.test.junit.categories.DistributedTest;
-import org.apache.geode.util.test.TestUtil;
+import static junitparams.JUnitParamsRunner.$;
+import static org.apache.geode.cache.lucene.test.LuceneTestUtilities.CANNOT_CREATE_LUCENE_INDEX_DIFFERENT_ANALYZERS;
+import static org.apache.geode.cache.lucene.test.LuceneTestUtilities.CANNOT_CREATE_LUCENE_INDEX_DIFFERENT_ANALYZERS_2;
+import static org.apache.geode.cache.lucene.test.LuceneTestUtilities.CANNOT_CREATE_LUCENE_INDEX_DIFFERENT_FIELDS;
+import static org.apache.geode.cache.lucene.test.LuceneTestUtilities.CANNOT_CREATE_LUCENE_INDEX_DIFFERENT_FIELDS_2;
+import static org.apache.geode.cache.lucene.test.LuceneTestUtilities.CANNOT_CREATE_LUCENE_INDEX_DIFFERENT_INDEXES_1;
+import static org.apache.geode.cache.lucene.test.LuceneTestUtilities.CANNOT_CREATE_LUCENE_INDEX_DIFFERENT_INDEXES_2;
+import static org.apache.geode.cache.lucene.test.LuceneTestUtilities.CANNOT_CREATE_LUCENE_INDEX_DIFFERENT_INDEXES_3;
+import static org.apache.geode.cache.lucene.test.LuceneTestUtilities.CANNOT_CREATE_LUCENE_INDEX_DIFFERENT_NAMES;
+import static org.apache.geode.cache.lucene.test.LuceneTestUtilities.CANNOT_CREATE_LUCENE_INDEX_DIFFERENT_SERIALIZER;
+import static org.apache.geode.cache.lucene.test.LuceneTestUtilities.INDEX_NAME;
+import static org.apache.geode.cache.lucene.test.LuceneTestUtilities.REGION_NAME;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.fail;
+
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.concurrent.TimeUnit;
+
 import junitparams.JUnitParamsRunner;
 import junitparams.Parameters;
 import org.apache.lucene.analysis.Analyzer;
 import org.apache.lucene.analysis.core.KeywordAnalyzer;
 import org.apache.lucene.analysis.standard.StandardAnalyzer;
+import org.hamcrest.Matchers;
+import org.junit.Rule;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
+import org.junit.rules.ExpectedException;
 import org.junit.runner.RunWith;
 
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.Map;
-
-import static org.apache.geode.cache.lucene.test.LuceneTestUtilities.*;
-import static junitparams.JUnitParamsRunner.$;
-import static org.junit.Assert.*;
+import org.apache.geode.cache.Cache;
+import org.apache.geode.cache.Region;
+import org.apache.geode.cache.lucene.internal.LuceneIndexFactoryImpl;
+import org.apache.geode.cache.lucene.internal.repository.serializer.HeterogeneousLuceneSerializer;
+import org.apache.geode.cache.lucene.test.LuceneTestUtilities;
+import org.apache.geode.cache.lucene.test.TestObject;
+import org.apache.geode.internal.i18n.LocalizedStrings;
+import org.apache.geode.test.dunit.SerializableRunnableIF;
+import org.apache.geode.test.junit.categories.DistributedTest;
+import org.apache.geode.util.test.TestUtil;
 
 @Category(DistributedTest.class)
 @RunWith(JUnitParamsRunner.class)
 public class LuceneIndexCreationDUnitTest extends LuceneDUnitTest {
+
+  @Rule
+  public transient ExpectedException expectedException = ExpectedException.none();
 
   private Object[] parametersForMultipleIndexCreates() {
     Integer[] numIndexes = {1, 2, 10};
@@ -246,6 +273,67 @@ public class LuceneIndexCreationDUnitTest extends LuceneDUnitTest {
     dataStore2.invoke(() -> initDataStore(createIndex, regionType));
   }
 
+  @Test
+  @Parameters({"PARTITION", "PARTITION_REDUNDANT"})
+  public void creatingIndexAfterRegionAndStartingUpSecondMemberSucceeds(
+      RegionTestableType regionType) {
+    dataStore1.invoke(() -> {
+      regionType.createDataStore(getCache(), REGION_NAME);
+      createIndexAfterRegion("field1");
+    });
+
+    dataStore2.invoke(() -> {
+      createIndexAfterRegion("field1");
+      regionType.createDataStore(getCache(), REGION_NAME);
+    });
+    dataStore1.invoke(() -> {
+      putEntryAndQuery();
+    });
+  }
+
+  @Test()
+  @Parameters({"PARTITION", "PARTITION_REDUNDANT"})
+  public void creatingIndexAfterRegionAndStartingUpSecondMemberWithoutIndexFails(
+      RegionTestableType regionType) {
+    dataStore1.invoke(() -> {
+      regionType.createDataStore(getCache(), REGION_NAME);
+      createIndexAfterRegion("field1");
+    });
+
+    expectedException.expectCause(Matchers.instanceOf(IllegalStateException.class));
+    dataStore2.invoke(() -> {
+      regionType.createDataStore(getCache(), REGION_NAME);
+      createIndexAfterRegion("field1");
+    });
+
+    dataStore1.invoke(() -> {
+      putEntryAndQuery();
+    });
+  }
+
+  @Test
+  @Parameters({"PARTITION", "PARTITION_REDUNDANT"})
+  public void creatingIndexAfterRegionInTwoMembersSucceed(RegionTestableType regionType) {
+    dataStore1.invoke(() -> {
+      regionType.createDataStore(getCache(), REGION_NAME);
+    });
+
+    dataStore2.invoke(() -> {
+      regionType.createDataStore(getCache(), REGION_NAME);
+    });
+
+    dataStore1.invoke(() -> {
+      createIndexAfterRegion("field1");
+    });
+
+    dataStore2.invoke(() -> {
+      createIndexAfterRegion("field1");
+    });
+
+    dataStore1.invoke(() -> {
+      putEntryAndQuery();
+    });
+  }
 
   @Test
   @Parameters(method = "getXmlAndExceptionMessages")
@@ -324,6 +412,54 @@ public class LuceneIndexCreationDUnitTest extends LuceneDUnitTest {
     dataStore2.invoke(() -> initDataStore(createIndex2, regionType));
   }
 
+  @Parameters("PARTITION")
+  public void verifyDifferentSerializerShouldFail(RegionTestableType regionType) {
+    SerializableRunnableIF createIndex1 = getIndexWithDefaultSerializer();
+    dataStore1.invoke(() -> initDataStore(createIndex1, regionType));
+
+    SerializableRunnableIF createIndex2 = getIndexWithDummySerializer();
+    dataStore2.invoke(() -> initDataStore(createIndex2, regionType,
+        CANNOT_CREATE_LUCENE_INDEX_DIFFERENT_SERIALIZER));
+  }
+
+  @Test
+  @Parameters("PARTITION")
+  public void verifyDifferentSerializerShouldFail2(RegionTestableType regionType) {
+    SerializableRunnableIF createIndex1 = getHeterogeneousLuceneSerializerCreationProfile();
+    dataStore1.invoke(() -> initDataStore(createIndex1, regionType));
+
+    SerializableRunnableIF createIndex2 = getIndexWithDummySerializer();
+    dataStore2.invoke(() -> initDataStore(createIndex2, regionType,
+        CANNOT_CREATE_LUCENE_INDEX_DIFFERENT_SERIALIZER));
+  }
+
+  @Test
+  public void verifyAsyncEventQueueIsCleanedUpIfRegionCreationFails() {
+    SerializableRunnableIF createIndex = get2FieldsIndexes();
+
+    // Create a Cache in dataStore1 with a PR defining 10 buckets
+    dataStore1.invoke(() -> initDataStore(createIndex, RegionTestableType.PARTITION));
+
+    // Attempt to create a Cache in dataStore2 with a PR defining 20 buckets. This will fail.
+    String exceptionMessage =
+        LocalizedStrings.PartitionedRegion_THE_TOTAL_NUMBER_OF_BUCKETS_FOUND_IN_PARTITIONATTRIBUTES_0_IS_INCOMPATIBLE_WITH_THE_TOTAL_NUMBER_OF_BUCKETS_USED_BY_OTHER_DISTRIBUTED_MEMBERS_SET_THE_NUMBER_OF_BUCKETS_TO_1
+            .toLocalizedString(new Object[] {NUM_BUCKETS * 2, NUM_BUCKETS});
+    dataStore2.invoke(() -> initDataStore(createIndex,
+        RegionTestableType.PARTITION_WITH_DOUBLE_BUCKETS, exceptionMessage));
+
+    // Verify dataStore1 has two AsyncEventQueues
+    dataStore1.invoke(() -> verifyAsyncEventQueues(2));
+
+    // Verify dataStore2 has no AsyncEventQueues
+    dataStore2.invoke(() -> verifyAsyncEventQueues(0));
+
+    // Create a Cache in dataStore2 with a PR defining 10 buckets. This will succeed.
+    dataStore2.invoke(() -> initDataStore(RegionTestableType.PARTITION));
+
+    // Verify dataStore2 has two AsyncEventQueues
+    dataStore2.invoke(() -> verifyAsyncEventQueues(2));
+  }
+
   protected String getXmlFileForTest(String testName) {
     return TestUtil.getResourcePath(getClass(),
         getClassSimpleName() + "." + testName + ".cache.xml");
@@ -338,7 +474,7 @@ public class LuceneIndexCreationDUnitTest extends LuceneDUnitTest {
     createIndex.run();
     try {
       regionType.createDataStore(getCache(), REGION_NAME);
-      fail("Should not have been able to create index");
+      fail("Should not have been able to create region");
     } catch (IllegalStateException e) {
       assertEquals(message, e.getMessage());
     }
@@ -393,14 +529,14 @@ public class LuceneIndexCreationDUnitTest extends LuceneDUnitTest {
   protected void verifyIndexList(final int expectedSize) {
     LuceneService luceneService = LuceneServiceProvider.get(getCache());
     Collection<LuceneIndex> indexList = luceneService.getAllIndexes();
-    assertEquals(indexList.size(), expectedSize);
+    assertEquals(expectedSize, indexList.size());
   }
 
   protected void verifyIndexes(final int numberOfIndexes) {
     LuceneService luceneService = LuceneServiceProvider.get(getCache());
     for (int count = 1; count <= numberOfIndexes; count++) {
-      assertEquals(luceneService.getIndex(INDEX_NAME + "_" + count, REGION_NAME).getName(),
-          INDEX_NAME + "_" + count);
+      assertEquals(INDEX_NAME + "_" + count,
+          luceneService.getIndex(INDEX_NAME + "_" + count, REGION_NAME).getName());
     }
   }
 
@@ -462,4 +598,56 @@ public class LuceneIndexCreationDUnitTest extends LuceneDUnitTest {
       luceneService.createIndexFactory().setFields(analyzers).create(INDEX_NAME, REGION_NAME);
     };
   }
+
+  protected SerializableRunnableIF getIndexWithDummySerializer() {
+    return () -> {
+      LuceneService luceneService = LuceneServiceProvider.get(getCache());
+      luceneService.createIndexFactory().setFields(new String[] {"field1", "field2"})
+          .setLuceneSerializer(new DummyLuceneSerializer()).create(INDEX_NAME, REGION_NAME);
+    };
+  }
+
+  protected SerializableRunnableIF getIndexWithDefaultSerializer() {
+    return () -> {
+      LuceneService luceneService = LuceneServiceProvider.get(getCache());
+      luceneService.createIndexFactory().setFields(new String[] {"field1", "field2"})
+          .create(INDEX_NAME, REGION_NAME);
+    };
+  }
+
+  protected SerializableRunnableIF getHeterogeneousLuceneSerializerCreationProfile() {
+    return () -> {
+      LuceneService luceneService = LuceneServiceProvider.get(getCache());
+      luceneService.createIndexFactory().setFields(new String[] {"field1", "field2"})
+          .setLuceneSerializer(new HeterogeneousLuceneSerializer()).create(INDEX_NAME, REGION_NAME);
+    };
+  }
+
+  protected void initDataStore(RegionTestableType regionTestType) throws Exception {
+    regionTestType.createDataStore(getCache(), REGION_NAME);
+  }
+
+  protected void verifyAsyncEventQueues(final int expectedSize) {
+    assertEquals(expectedSize, getCache().getAsyncEventQueues(false).size());
+  }
+
+  private void createIndexAfterRegion(String... fields) {
+    LuceneService luceneService = LuceneServiceProvider.get(getCache());
+    LuceneIndexFactoryImpl indexFactory =
+        (LuceneIndexFactoryImpl) luceneService.createIndexFactory();
+    indexFactory.setFields(fields).create(INDEX_NAME, REGION_NAME, true);
+  }
+
+  private void putEntryAndQuery() throws InterruptedException, LuceneQueryException {
+    Cache cache = getCache();
+    Region region = cache.getRegion(REGION_NAME);
+    region.put("key1", new TestObject("field1Value", "field2Value"));
+    LuceneService luceneService = LuceneServiceProvider.get(cache);
+    luceneService.waitUntilFlushed(INDEX_NAME, REGION_NAME, 1, TimeUnit.MINUTES);
+    LuceneQuery<Object, Object> query = luceneService.createLuceneQueryFactory().create(INDEX_NAME,
+        REGION_NAME, "field1:field1Value", "field1");
+    assertEquals(Collections.singletonList("key1"), query.findKeys());
+  }
+
+
 }

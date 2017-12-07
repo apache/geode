@@ -17,7 +17,7 @@ package org.apache.geode;
 /**
  * A <code>ToDataException</code> is thrown during serialization if {@link DataSerializable#toData}
  * throws an exception or if {@link DataSerializer#toData} is called and returns false.
- * 
+ *
  * @since GemFire 6.5
  */
 public class ToDataException extends SerializationException {

@@ -48,7 +48,7 @@ public class AdminWaiters {
 
   /**
    * Sends <code>msg</code> using <code>dm</code> and waits for the response.
-   * 
+   *
    * @return the response.
    * @throws RuntimeAdminException if this method is interrupted, times out, cancelled
    *         ({@link #cancelWaiters}), or failed with an exception on the server side.

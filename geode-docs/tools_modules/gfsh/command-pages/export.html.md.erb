@@ -58,34 +58,35 @@ See [Overview of the Cluster Configuration Service](../../../configuring/cluster
 **Syntax:**
 
 ``` pre
-export cluster-configuration --zip-file-name=value [--dir=value]
+export cluster-configuration --zip-file-name=value
 ```
 
 **Export Cluster-Configuration Parameters:**
 
 | Name                                                  | Description                                                                          | Default Value     |
 |-------------------------------------------------------|--------------------------------------------------------------------------------------|-------------------|
-| <span class="keyword parmname">\\-\\-zip-file-name</span> | *Required.* File name of the zip file to contain the exported cluster configuration. |                   |
-| <span class="keyword parmname">\\-\\-dir</span>           | Directory where the cluster configuration zip files is saved.                        | Locator directory |
+| <span class="keyword parmname">\\-\\-zip-file-name</span> | *Required.* Filename of the zip file to contain the exported cluster configuration. May also include an absolute or relative path. |                   |
 
 **Example Commands:**
 
 ``` pre
-gfsh>export cluster-configuration --zip-file-name=/home/username/gemfire/myClusterConfig.zip
+gfsh>export cluster-configuration --zip-file-name=/group/shared-configs/devClusterConfig.zip
+gfsh>export cluster-configuration --zip-file-name=my-configs/myClusterConfig.zip
+gfsh>export cluster-configuration --zip-file-name=myClusterConfig.zip
 ```
 
 **Sample Output:**
 
 ``` pre
 gfsh>export cluster-configuration --zip-file-name=mySharedConfig.zip
-Downloading cluster configuration : /home/username/gemfire/myClusterConfig.zip
+Downloading cluster configuration : /home/username/gemfire/mySharedConfig.zip
 ```
 
 ## <a id="topic_C7C69306F93743459E65D46537F4A1EE" class="no-quick-link"></a>export config
 
 Export configuration properties for a member or members.
 
-If you do not specify any parameters, all member configuration will be exported.
+If you do not specify any parameters, all member configurations will be exported.
 
 **Availability:** Online. You must be connected in `gfsh` to a JMX Manager member to use this command.
 

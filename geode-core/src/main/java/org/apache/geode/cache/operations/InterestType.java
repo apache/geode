@@ -17,7 +17,7 @@ package org.apache.geode.cache.operations;
 
 /**
  * Enumeration for various interest types supported by GemFire.
- * 
+ *
  * @since GemFire 5.5
  */
 public final class InterestType {
@@ -128,7 +128,7 @@ public final class InterestType {
 
   /**
    * Returns the ordinal for this interest type.
-   * 
+   *
    * @return the ordinal of this interest type.
    */
   public byte toOrdinal() {
@@ -137,7 +137,7 @@ public final class InterestType {
 
   /**
    * Returns a string representation for this interest type.
-   * 
+   *
    * @return the name of this interest type.
    */
   @Override // GemStoneAddition

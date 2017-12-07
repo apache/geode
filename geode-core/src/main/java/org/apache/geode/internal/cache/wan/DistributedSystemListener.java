@@ -17,7 +17,7 @@ package org.apache.geode.internal.cache.wan;
 /**
  * This interface is for Jayesh's use case for WAN BootStrapping and will not be part of the product
  * release.
- * 
+ *
  *
  */
 public interface DistributedSystemListener {

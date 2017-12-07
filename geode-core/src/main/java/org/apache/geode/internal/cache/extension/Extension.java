@@ -21,7 +21,7 @@ import org.apache.geode.internal.cache.xmlcache.XmlGenerator;
 
 /**
  * Interface used for objects wishing to extend and {@link Extensible} object.
- * 
+ *
  *
  * @since GemFire 8.1
  */
@@ -29,7 +29,7 @@ public interface Extension<T> {
 
   /**
    * Get {@link XmlGenerator} capable of serializing this object's configuration.
-   * 
+   *
    * @return {@link XmlGenerator} for this object's configuration.
    * @since GemFire 8.1
    */

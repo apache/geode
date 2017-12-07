@@ -22,13 +22,13 @@ import org.apache.geode.cache.query.internal.cq.ClientCQ;
 
 /**
  * Used to send CQ operations from a client to a server
- * 
+ *
  * @since GemFire 5.7
  */
 public class ServerCQProxyImpl extends ServerProxy {
   /**
    * Creates a server CQ proxy for the given pool name.
-   * 
+   *
    * @param pool the pool that this proxy will use to communicate with servers
    */
   public ServerCQProxyImpl(InternalPool pool) {
@@ -37,7 +37,7 @@ public class ServerCQProxyImpl extends ServerProxy {
 
   /**
    * Creates a server CQ proxy given using the same pool as that of the given server proxy.
-   * 
+   *
    * @param sp server proxy whose pool we are to use
    */
   public ServerCQProxyImpl(ServerProxy sp) {
@@ -46,7 +46,7 @@ public class ServerCQProxyImpl extends ServerProxy {
 
   /**
    * Create a continuous query on the given pool
-   * 
+   *
    * @param cq the CQ to create on the server
    */
   public Object create(ClientCQ cq) {
@@ -59,7 +59,7 @@ public class ServerCQProxyImpl extends ServerProxy {
 
   /**
    * Create a continuous query on the given server
-   * 
+   *
    * @param conn the connection to use
    * @param cqName name of the CQ to create
    * @param queryStr string OQL statement to be executed
@@ -76,7 +76,7 @@ public class ServerCQProxyImpl extends ServerProxy {
 
   /**
    * Create a continuous query on the given server and return the initial query results.
-   * 
+   *
    * @param cq the CQ to create on the server
    */
   public SelectResults createWithIR(ClientCQ cq) {
@@ -89,7 +89,7 @@ public class ServerCQProxyImpl extends ServerProxy {
 
   /**
    * Does a CQ stop on all relevant servers
-   * 
+   *
    * @param cq the CQ to stop on the server
    */
   public void stop(ClientCQ cq) {
@@ -99,7 +99,7 @@ public class ServerCQProxyImpl extends ServerProxy {
 
   /**
    * Does a CQ close on all relevant servers
-   * 
+   *
    * @param cq the CQ to close on the server
    */
   public void close(ClientCQ cq) {

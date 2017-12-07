@@ -53,7 +53,7 @@ import org.apache.geode.internal.logging.log4j.LogMarker;
  * <P>
  * This class also implements Externalizable so that it can be serialized as part of a
  * PutAllPartialResultException.
- * 
+ *
  * @since GemFire 7.0
  */
 
@@ -70,7 +70,7 @@ public class VersionedObjectList extends ObjectPartList implements Externalizabl
 
   /**
    * add a new entry to the list
-   * 
+   *
    * @param key the entry's key
    * @param versionTag the version tag for the entry, or null if there is no version information
    *        available
@@ -115,7 +115,7 @@ public class VersionedObjectList extends ObjectPartList implements Externalizabl
 
   /**
    * add a versioned "map" entry to the list
-   * 
+   *
    * @param key
    * @param value
    * @param versionTag
@@ -156,7 +156,7 @@ public class VersionedObjectList extends ObjectPartList implements Externalizabl
    * replace null membership IDs in version tags with the given member ID. VersionTags received from
    * a server may have null IDs because they were operations performed by that server. We transmit
    * them as nulls to cut costs, but have to do the swap on the receiving end (in the client)
-   * 
+   *
    * @param sender
    */
   public void replaceNullIDs(DistributedMember sender) {
@@ -175,7 +175,7 @@ public class VersionedObjectList extends ObjectPartList implements Externalizabl
   /**
    * Add a part for a destroyed or missing entry. If the version tag is not null this represents a
    * tombstone.
-   * 
+   *
    * @param key
    * @param value
    * @param version
@@ -230,7 +230,7 @@ public class VersionedObjectList extends ObjectPartList implements Externalizabl
   /**
    * Add a version, assuming that the key list has already been established and we are now filling
    * in version information.
-   * 
+   *
    * @param tag the version tag to add
    */
   public void addVersion(VersionTag tag) {
@@ -239,7 +239,7 @@ public class VersionedObjectList extends ObjectPartList implements Externalizabl
 
   /**
    * save the current key/tag pairs in the given map
-   * 
+   *
    * @param vault
    */
   public void saveVersions(Map<Object, VersionTag> vault) {
@@ -255,7 +255,7 @@ public class VersionedObjectList extends ObjectPartList implements Externalizabl
   }
 
   /**
-   * 
+   *
    * @return whether the source region had concurrency checks enabled
    */
   public boolean regionIsVersioned() {
@@ -642,7 +642,7 @@ public class VersionedObjectList extends ObjectPartList implements Externalizabl
 
     /*
      * (non-Javadoc)
-     * 
+     *
      * @see java.util.Map.Entry#getValue()
      */
     public Object getValue() {
@@ -655,7 +655,7 @@ public class VersionedObjectList extends ObjectPartList implements Externalizabl
 
     /*
      * (non-Javadoc)
-     * 
+     *
      * @see java.util.Map.Entry#setValue(java.lang.Object)
      */
     public Object setValue(Object value) {
@@ -681,7 +681,7 @@ public class VersionedObjectList extends ObjectPartList implements Externalizabl
 
     /*
      * (non-Javadoc)
-     * 
+     *
      * @see java.util.Iterator#hasNext()
      */
     public boolean hasNext() {
@@ -690,7 +690,7 @@ public class VersionedObjectList extends ObjectPartList implements Externalizabl
 
     /*
      * (non-Javadoc)
-     * 
+     *
      * @see java.util.Iterator#next()
      */
     public Entry next() {
@@ -699,7 +699,7 @@ public class VersionedObjectList extends ObjectPartList implements Externalizabl
 
     /*
      * (non-Javadoc)
-     * 
+     *
      * @see java.util.Iterator#remove()
      */
     public void remove() {
@@ -712,7 +712,7 @@ public class VersionedObjectList extends ObjectPartList implements Externalizabl
    * Chunker is used to send a VersionedObjectList to a client in pieces. It works by pretending to
    * be a VersionedObjectList during serialization and writing only a portion of the list in each
    * invocation of toData().
-   * 
+   *
    *
    */
   public static class Chunker implements DataSerializableFixedID {

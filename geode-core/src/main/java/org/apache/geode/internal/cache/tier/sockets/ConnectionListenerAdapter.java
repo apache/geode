@@ -18,7 +18,7 @@ import org.apache.geode.internal.cache.tier.CommunicationMode;
 
 /**
  * A ConnectionListener that does nothing.
- * 
+ *
  * @since GemFire 5.7
  *
  */

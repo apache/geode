@@ -26,7 +26,7 @@ import org.apache.geode.cache.query.types.StructType;
 
 /**
  * Predefined function for identity of the UNDEFINED literal
- * 
+ *
  * @version $Revision: 1.2 $
  */
 public class CompiledUndefined extends AbstractCompiledValue implements Negatable, Indexable {
@@ -63,7 +63,7 @@ public class CompiledUndefined extends AbstractCompiledValue implements Negatabl
    * passed will be null except if a GroupJunction has only one filter evaluatable condition & rest
    * are iter operands. In such cases , the iter operands will be evaluated while expanding/cutting
    * down the index resultset
-   * 
+   *
    * @return SelectResults
    */
   @Override
@@ -128,7 +128,7 @@ public class CompiledUndefined extends AbstractCompiledValue implements Negatabl
    * is no index available. Asif :The boolean true implies that CompiledComparsion when existing on
    * its own always requires a Complete expansion to top level iterators. This flag can get toggled
    * to false only from inside a GroupJunction
-   * 
+   *
    * <p>
    * param intermediateResults if this parameter is provided, and we have to iterate, then iterate
    * over this result set instead of the entire base collection.

@@ -20,6 +20,8 @@ import java.util.Arrays;
 import java.util.Iterator;
 import java.util.List;
 
+import org.apache.logging.log4j.Logger;
+
 import org.apache.geode.SystemFailure;
 import org.apache.geode.cache.CacheCallback;
 import org.apache.geode.cache.query.CqAttributes;
@@ -28,8 +30,6 @@ import org.apache.geode.cache.query.CqListener;
 import org.apache.geode.internal.i18n.LocalizedStrings;
 import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.internal.logging.log4j.LocalizedMessage;
-
-import org.apache.logging.log4j.Logger;
 
 public class CqAttributesImpl implements CqAttributes, CqAttributesMutator, Cloneable {
   private static final Logger logger = LogService.getLogger();
@@ -45,7 +45,7 @@ public class CqAttributesImpl implements CqAttributes, CqAttributesMutator, Clon
 
   /**
    * Returns the CqListeners set with the CQ
-   * 
+   *
    * @return CqListener[]
    */
   public CqListener[] getCqListeners() {
@@ -65,7 +65,7 @@ public class CqAttributesImpl implements CqAttributes, CqAttributesMutator, Clon
 
   /**
    * Returns the CqListener set with the CQ
-   * 
+   *
    * @return CqListener
    */
   public CqListener getCqListener() {
@@ -98,7 +98,7 @@ public class CqAttributesImpl implements CqAttributes, CqAttributesMutator, Clon
 
   /**
    * Adds a Cqlistener to the end of the list of Cqlisteners on this CqQuery.
-   * 
+   *
    * @param cql the user defined cq listener to add to the CqQuery.
    * @throws IllegalArgumentException if <code>aListener</code> is null
    */
@@ -125,7 +125,7 @@ public class CqAttributesImpl implements CqAttributes, CqAttributesMutator, Clon
   /**
    * Removes all Cqlisteners, calling on each of them, and then adds each listener in the specified
    * array.
-   * 
+   *
    * @param addedListeners a possibly null or empty array of listeners to add to this CqQuery.
    * @throws IllegalArgumentException if the <code>newListeners</code> array has a null element
    */
@@ -187,7 +187,7 @@ public class CqAttributesImpl implements CqAttributes, CqAttributesMutator, Clon
    * Removes a Cqlistener from the list of Cqlisteners on this CqQuery. Does nothing if the
    * specified listener has not been added. If the specified listener has been added then
    * {@link CacheCallback#close()} will be called on it; otherwise does nothing.
-   * 
+   *
    * @param cql the Cqlistener to remove from the CqQuery.
    * @throws IllegalArgumentException if <code>cl</code> is null
    */

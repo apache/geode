@@ -15,6 +15,12 @@
 
 package org.apache.geode.admin.internal;
 
+import java.net.InetAddress;
+import java.net.UnknownHostException;
+import java.util.*;
+
+import org.apache.logging.log4j.Logger;
+
 import org.apache.geode.admin.AdminDistributedSystem;
 import org.apache.geode.admin.DistributionLocator;
 import org.apache.geode.admin.DistributionLocatorConfig;
@@ -26,11 +32,6 @@ import org.apache.geode.internal.admin.remote.DistributionLocatorId;
 import org.apache.geode.internal.i18n.LocalizedStrings;
 import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.internal.logging.log4j.LocalizedMessage;
-import org.apache.logging.log4j.Logger;
-
-import java.net.InetAddress;
-import java.net.UnknownHostException;
-import java.util.*;
 
 /**
  * Default administrative implementation of a DistributionLocator.
@@ -326,4 +327,3 @@ public class DistributionLocatorImpl implements DistributionLocator, InternalMan
   }
 
 }
-

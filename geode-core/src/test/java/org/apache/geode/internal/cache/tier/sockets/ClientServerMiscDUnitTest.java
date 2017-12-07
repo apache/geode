@@ -146,8 +146,8 @@ public class ClientServerMiscDUnitTest extends JUnit4CacheTestCase {
   @Override
   public final void postSetUp() throws Exception {
     host = Host.getHost(0);
-    server1 = host.getVM(2);
-    server2 = host.getVM(3);
+    server1 = host.getVM(VersionManager.CURRENT_VERSION, 2);
+    server2 = host.getVM(VersionManager.CURRENT_VERSION, 3);
   }
 
   int initServerCache(boolean notifyBySub) {
@@ -677,16 +677,16 @@ public class ClientServerMiscDUnitTest extends JUnit4CacheTestCase {
   }
 
   /**
-   * 
+   *
    * bug 35380: Cycling a DistributedSystem with an initialized pool causes interest registration
    * NPE
-   * 
+   *
    * Test Scenario:
-   * 
+   *
    * Create a DistributedSystem (DS1). Create a pool, initialize (creates a proxy with DS1 memberid)
    * Disconnect DS1. Create a DistributedSystem (DS2). Create a Region with pool, it attempts to
    * register interest using DS2 memberid, gets NPE.
-   * 
+   *
    * @throws Exception
    */
   @Test
@@ -1409,7 +1409,7 @@ public class ClientServerMiscDUnitTest extends JUnit4CacheTestCase {
     }
     if (isHA) {
       // add another server for HA scenario
-      initServerCache(true, host.getVM(1), true);
+      initServerCache(true, host.getVM(VersionManager.CURRENT_VERSION, 1), true);
     }
     String rName = "/" + REGION_NAME1;
     String prName = "/" + PR_REGION_NAME;

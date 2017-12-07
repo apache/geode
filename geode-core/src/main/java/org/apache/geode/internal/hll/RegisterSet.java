@@ -16,8 +16,8 @@ package org.apache.geode.internal.hll;
 
 public class RegisterSet {
 
-  public final static int LOG2_BITS_PER_WORD = 6;
-  public final static int REGISTER_SIZE = 5;
+  public static final int LOG2_BITS_PER_WORD = 6;
+  public static final int REGISTER_SIZE = 5;
 
   public final int count;
   public final int size;

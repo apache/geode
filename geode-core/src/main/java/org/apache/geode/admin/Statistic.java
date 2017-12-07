@@ -61,4 +61,3 @@ public interface Statistic extends java.io.Serializable {
    */
   public String getDescription();
 }
-

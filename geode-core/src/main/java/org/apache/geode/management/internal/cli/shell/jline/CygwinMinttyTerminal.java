@@ -25,9 +25,9 @@ import jline.UnixTerminal;
  * This is re-write of UnixTerminal with stty process spawn removed. There is no process named stty
  * in windows (non-cygwin process) so that part is commented, also since erase is already applied
  * within gfsh script when running under cygwin backspaceDeleteSwitched is hard-coded as true
- * 
+ *
  * To know exact changed please see UnixTerminal code.
- * 
+ *
  *
  */
 public class CygwinMinttyTerminal extends UnixTerminal {

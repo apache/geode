@@ -23,7 +23,6 @@ import java.util.ListIterator;
 import java.util.Map;
 import java.util.Set;
 
-import org.apache.geode.cache.query.internal.types.ObjectTypeImpl;
 import org.apache.logging.log4j.Logger;
 
 import org.apache.geode.cache.query.AmbiguousNameException;
@@ -42,6 +41,7 @@ import org.apache.geode.cache.query.internal.index.IndexProtocol;
 import org.apache.geode.cache.query.internal.index.IndexUtils;
 import org.apache.geode.cache.query.internal.index.PartitionedIndex;
 import org.apache.geode.cache.query.internal.parse.OQLLexerTokenTypes;
+import org.apache.geode.cache.query.internal.types.ObjectTypeImpl;
 import org.apache.geode.cache.query.internal.types.StructTypeImpl;
 import org.apache.geode.cache.query.types.CollectionType;
 import org.apache.geode.cache.query.types.ObjectType;
@@ -127,7 +127,7 @@ public class QueryUtils {
 
   /**
    * Returns an appropriate, empty {@code SelectResults}
-   * 
+   *
    * @param objectType The {@code ObjectType} of the query results
    * @return an appropriate, empty {@code SelectResults}
    */
@@ -146,7 +146,7 @@ public class QueryUtils {
    * Returns an appropriate, empty {@code SelectResults}
    *
    * TODO: statsOrNull is always null
-   * 
+   *
    * @param collectionType The {@code CollectionType} of the query results
    * @return an appropriate, empty {@code SelectResults}
    */
@@ -289,7 +289,7 @@ public class QueryUtils {
    * dependent on given independent RuntimeIterators. The order of dependent iterators in the List
    * is based on the order of independent Iterators present in the array . For each group the first
    * iterator is its independent iterator
-   * 
+   *
    * @param indpndntItrs array of independent RuntimeIterators
    */
   static List getDependentItrChainForIndpndntItrs(RuntimeIterator[] indpndntItrs,
@@ -307,7 +307,7 @@ public class QueryUtils {
    * fields in the final result is governed by the order of RuntimeIterators present in the
    * finalList. If any condition needs to be evaluated during cartesian , it can be passed as
    * operand
-   * 
+   *
    * @param results Array of SelectResults object which are to be cartesianed
    * @param itrsForResultFields A two dimensional array of RuntimeIterator. Each row of this two
    *        dimensional RuntimeIterator array , maps to a SelectResults object in the results array.
@@ -319,14 +319,14 @@ public class QueryUtils {
    *        the number of RuntimeIterators in each row should be equal to the number of fields in
    *        the SelectResults object . The SelectResults object itself may be a ResultBag object or
    *        a StructBag object.
-   * 
+   *
    * @param expansionList List containing RunimeIterators to which the final Results should be
    *        expanded to.
    * @param finalList List containing RuntimeIterators which define the number of fields to be
    *        present in the resultant SelectResults and their relative positions. The Runtime
    *        Iterators present in the List should be either available in the expansion List or should
    *        be present in each row of the two dimensional RuntimeIterator array.
-   * 
+   *
    * @param context ExecutionContext object
    * @param operand The CompiledValue which needs to be iter evaluated during cartesian. Only those
    *        tuples will be selected in the final Result for which oerand evaluates to true.
@@ -760,7 +760,7 @@ public class QueryUtils {
    * can be null. If it is null, then for a CompiledOperation , if supposed to get resolved
    * implicitly, will have its receiver as null. This is because in normal cases , a CompiledID
    * marks the termination, but in case of CompiledOperation this is not the case
-   * 
+   *
    * @param expr CompiledValue object
    * @return CompiledValue
    */
@@ -801,10 +801,10 @@ public class QueryUtils {
   /**
    * This function creates a StructType using Internal IDs of the iterators as the field names for
    * the StructType. It should be invoked iff the iterators size is greater than 1
-   * 
+   *
    * @param runTimeIterators List of RuntimeIterator objects
    * @return StructType object
-   * 
+   *
    */
   static StructType createStructTypeForRuntimeIterators(List runTimeIterators) {
     int len = runTimeIterators.size();
@@ -829,7 +829,7 @@ public class QueryUtils {
    * CompiledValue passed is dependent upon. This does not return the RuntimeIterators on which it
    * may be dependent but are not part of the current scope. If no such RuntimeIterator exists it
    * returns empty set.
-   * 
+   *
    * @param compiledValue CompiledValue Object
    * @param context ExecutionContextobject
    * @return Set containing the ultimate independent RuntimeIterators of current scope
@@ -850,7 +850,7 @@ public class QueryUtils {
   /**
    * Returns the pair of RangeIndexes available for a composite condition ( equi join across the
    * region). It will either return two indexes or will return null. *
-   * 
+   *
    * @param lhs One of the operands of the equi-join condition
    * @param rhs The other operand of the equi-join condition
    * @param context ExecutionContext object
@@ -895,7 +895,7 @@ public class QueryUtils {
 
   /**
    * Gets an Index available for the condition
-   * 
+   *
    * @param cv Condition on which index needs to be obtained
    * @param context ExecutionContext object
    * @param operator int argument identifying the type of operator
@@ -959,7 +959,7 @@ public class QueryUtils {
    * fields of SelectResults( StructBag) , with the Iterators of the query from clause ( if complete
    * expansion flag is true) or the chain of iterators identified by the indpendent iterator for the
    * group.
-   * 
+   *
    * @param indexResults The raw index results which may be a ResultBag object or an StructBag
    *        object
    * @param indexInfo IndexInfo object containing data such as match level & the mapping of the
@@ -1056,7 +1056,7 @@ public class QueryUtils {
    * array will be used to get the final position of iterators in the resultant StructBag
    *
    * TODO: break this method up
-   * 
+   *
    * @param intermediateResults SelectResults object containing the intermediate resultset obtained
    *        by evaluation of previous filter evaluatable composite conditions of the
    *        CompositeGroupJunction
@@ -1382,7 +1382,7 @@ public class QueryUtils {
    * condition. In the later case the boolean completeExpansion flag is always true. While in the
    * former case it may be true or false. If it is false, the array of independent iterators passed
    * is not null.
-   * 
+   *
    * @param data A List object whose elements are two dimensional object array. Each element of the
    *        List represent a value which satisfies the equi-join condition. Since there may be more
    *        than one tuples on either side of the equality condition which meet the criteria for a

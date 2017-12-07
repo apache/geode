@@ -18,20 +18,20 @@ package org.apache.geode.rest.internal.web;
 import static org.hamcrest.CoreMatchers.is;
 import static org.junit.Assert.assertThat;
 
-import org.apache.geode.internal.i18n.LocalizedStrings;
-import org.apache.geode.security.SimpleTestSecurityManager;
-import org.apache.geode.test.junit.rules.ServerStarterRule;
-import org.apache.geode.test.junit.categories.IntegrationTest;
-import org.apache.geode.test.junit.categories.RestAPITest;
-import org.apache.geode.test.junit.categories.SecurityTest;
-import org.apache.geode.test.junit.rules.RequiresGeodeHome;
-
 import org.apache.http.HttpResponse;
 import org.json.JSONObject;
 import org.junit.ClassRule;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
+
+import org.apache.geode.internal.i18n.LocalizedStrings;
+import org.apache.geode.security.SimpleTestSecurityManager;
+import org.apache.geode.test.junit.categories.IntegrationTest;
+import org.apache.geode.test.junit.categories.RestAPITest;
+import org.apache.geode.test.junit.categories.SecurityTest;
+import org.apache.geode.test.junit.rules.RequiresGeodeHome;
+import org.apache.geode.test.junit.rules.ServerStarterRule;
 
 @Category({IntegrationTest.class, SecurityTest.class, RestAPITest.class})
 public class SwaggerVerificationIntegrationTest {

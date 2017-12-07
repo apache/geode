@@ -20,7 +20,7 @@ import org.apache.geode.cache.DynamicRegionFactory;
 /**
  * This class provides non-published methods that allow the cache to initialize and close the
  * factory.
- * 
+ *
  * @since GemFire 4.3
  */
 public class DynamicRegionFactoryImpl extends DynamicRegionFactory {

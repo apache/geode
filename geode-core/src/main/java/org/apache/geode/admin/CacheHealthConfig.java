@@ -35,7 +35,7 @@ package org.apache.geode.admin;
  *
  * <LI>The number of entries in the Cache {@link #getMaxEventQueueSize event delivery queue} is too
  * large.</LI>
- * 
+ *
  * <LI>If one of the regions is configured with {@link org.apache.geode.cache.LossAction#FULL_ACCESS
  * FULL_ACCESS} on role loss.</LI>
  *
@@ -43,17 +43,17 @@ package org.apache.geode.admin;
  *
  * If any of the following criteria is true, then a cache member is considered to be in
  * {@link GemFireHealth#POOR_HEALTH POOR_HEALTH}.
- * 
+ *
  * <UL>
- * 
+ *
  * <LI>If one of the regions is configured with {@link org.apache.geode.cache.LossAction#NO_ACCESS
  * NO_ACCESS} on role loss.</LI>
- * 
+ *
  * <LI>If one of the regions is configured with
  * {@link org.apache.geode.cache.LossAction#LIMITED_ACCESS LIMITED_ACCESS} on role loss.</LI>
- * 
+ *
  * </UL>
- * 
+ *
  * <UL>
  *
  * </UL>

@@ -26,10 +26,10 @@ import org.apache.geode.management.RegionMXBean;
 /**
  * Concrete implementation of RegionMXBean which exposes various configuration and runtime
  * statistics about the region instance.
- * 
+ *
  * It extends NotificationBroadcasterSupport for any future implementation of notification.
- * 
- * 
+ *
+ *
  */
 public class RegionMBean<K, V> extends NotificationBroadcasterSupport implements RegionMXBean {
 

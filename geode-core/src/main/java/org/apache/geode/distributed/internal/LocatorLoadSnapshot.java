@@ -39,9 +39,9 @@ import org.apache.geode.internal.cache.tier.sockets.ClientProxyMembershipID;
 
 /**
  * A data structure used to hold load information for a locator
- * 
+ *
  * @since GemFire 5.7
- * 
+ *
  */
 public class LocatorLoadSnapshot {
   private final Map/* <ServerLocation, String[]> */ serverGroupMap = new HashMap();
@@ -172,7 +172,7 @@ public class LocatorLoadSnapshot {
 
   /**
    * Pick the least loaded server in the given group
-   * 
+   *
    * @param group the group, or null or "" if the client has no server group.
    * @param excludedServers a list of servers to exclude as choices
    * @return the least loaded server, or null if there are no servers that aren't excluded.
@@ -234,7 +234,7 @@ public class LocatorLoadSnapshot {
 
   /**
    * Pick the least loaded server in the given group if currentServer is the most loaded server. n
-   * 
+   *
    * @param group the group, or null or "" if the client has no server group.
    * @param excludedServers a list of servers to exclude as choices
    * @return currentServer if it is not the most loaded, null if there are no servers that aren't
@@ -275,7 +275,7 @@ public class LocatorLoadSnapshot {
 
   /**
    * Pick the least loaded servers in the given group.
-   * 
+   *
    * @param group the group, or null or "" if the client has no server group.
    * @param excludedServers a list of servers to exclude as choices
    * @param count how many distinct servers to pick.
@@ -288,7 +288,7 @@ public class LocatorLoadSnapshot {
 
   /**
    * Pick the least loaded servers in the given group.
-   * 
+   *
    * @param id the id of the client creating the queue
    * @param group the group, or null or "" if the client has no server group.
    * @param excludedServers a list of servers to exclude as choices
@@ -493,7 +493,7 @@ public class LocatorLoadSnapshot {
 
   /**
    * Remove the task from the estimate map at the given key.
-   * 
+   *
    * @return true it task was removed; false if it was not the task mapped to key
    */
   protected boolean removeIfPresentEstimate(EstimateMapKey key, LoadEstimateTask task) {

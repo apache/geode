@@ -51,5 +51,3 @@ public class UG_Student extends Student {
     _satScore = satScore;
   }
 }
-
-

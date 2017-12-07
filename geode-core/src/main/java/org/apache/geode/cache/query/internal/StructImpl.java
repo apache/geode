@@ -34,7 +34,7 @@ import org.apache.geode.pdx.internal.PdxString;
 
 /**
  * Implementation of Struct
- * 
+ *
  * @since GemFire 4.0
  */
 public class StructImpl implements Struct, DataSerializableFixedID, Serializable {

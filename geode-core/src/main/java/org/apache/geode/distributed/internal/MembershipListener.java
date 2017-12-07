@@ -49,7 +49,7 @@ public interface MembershipListener {
   /**
    * This method is invoked after the group membership service has suspected that a member is no
    * longer alive, but has not yet been removed from the membership view
-   * 
+   *
    * @param id the suspected member
    * @param whoSuspected the member that initiated suspect processing
    * @param reason the reason the member was suspected
@@ -60,7 +60,7 @@ public interface MembershipListener {
   /**
    * This is notification that more than 50% of member weight has been lost in a single view change.
    * Notification is performed before the view has been installed.
-   * 
+   *
    * @param failures members that have been lost
    * @param remaining members that remain
    */

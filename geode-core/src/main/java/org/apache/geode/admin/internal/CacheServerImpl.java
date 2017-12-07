@@ -14,13 +14,13 @@
  */
 package org.apache.geode.admin.internal;
 
+import static org.apache.geode.distributed.ConfigurationProperties.*;
+
 import org.apache.geode.admin.*;
 import org.apache.geode.distributed.internal.DM;
 import org.apache.geode.distributed.internal.DistributionManager;
 import org.apache.geode.internal.admin.GemFireVM;
 import org.apache.geode.internal.admin.remote.RemoteApplicationVM;
-
-import static org.apache.geode.distributed.ConfigurationProperties.*;
 
 /**
  * Implements the administrative interface to a cache server.
@@ -172,10 +172,10 @@ public class CacheServerImpl extends ManagedSystemMemberImpl implements CacheVm,
 
   /**
    * Find whether this server is primary for given client (durableClientId)
-   * 
+   *
    * @param durableClientId - durable-id of the client
    * @return true if the server is primary for given client
-   * 
+   *
    * @since GemFire 5.6
    */
   public boolean isPrimaryForDurableClient(String durableClientId) {

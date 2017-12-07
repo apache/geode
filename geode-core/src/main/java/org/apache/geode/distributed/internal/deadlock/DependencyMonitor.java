@@ -22,7 +22,7 @@ import java.util.Set;
  * classes that monitor a particular type of dependency. Classes implementing this interface should
  * register themselves with the dependency monitor using the
  * {@link DependencyMonitorManager#addMonitor(DependencyMonitor)} method.
- * 
+ *
  */
 public interface DependencyMonitor {
   /**

@@ -23,12 +23,12 @@ import org.apache.geode.memcached.GemFireMemcachedServer.Protocol;
 
 /**
  * This command is currently no-op
- * 
+ *
  * "verbosity" is a command with a numeric argument. It always succeeds, and the server sends
  * "OK\r\n" in response (unless "noreply" is given as the last parameter). Its effect is to set the
  * verbosity level of the logging output.
- * 
- * 
+ *
+ *
  *
  */
 public class VerbosityCommand extends AbstractCommand {

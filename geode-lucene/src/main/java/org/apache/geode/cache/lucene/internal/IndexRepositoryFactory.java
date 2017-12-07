@@ -17,20 +17,20 @@ package org.apache.geode.cache.lucene.internal;
 import java.io.IOException;
 import java.util.Map;
 
+import org.apache.logging.log4j.Logger;
+import org.apache.lucene.index.IndexWriter;
+import org.apache.lucene.index.IndexWriterConfig;
+
+import org.apache.geode.cache.lucene.LuceneSerializer;
 import org.apache.geode.cache.lucene.internal.directory.RegionDirectory;
 import org.apache.geode.cache.lucene.internal.partition.BucketTargetingMap;
 import org.apache.geode.cache.lucene.internal.repository.IndexRepository;
 import org.apache.geode.cache.lucene.internal.repository.IndexRepositoryImpl;
-import org.apache.geode.cache.lucene.internal.repository.serializer.LuceneSerializer;
 import org.apache.geode.distributed.DistributedLockService;
 import org.apache.geode.internal.cache.BucketRegion;
 import org.apache.geode.internal.cache.PartitionedRegion;
 import org.apache.geode.internal.cache.PartitionedRegionHelper;
 import org.apache.geode.internal.logging.LogService;
-import org.apache.logging.log4j.Logger;
-
-import org.apache.lucene.index.IndexWriter;
-import org.apache.lucene.index.IndexWriterConfig;
 
 public class IndexRepositoryFactory {
 
@@ -83,7 +83,7 @@ public class IndexRepositoryFactory {
       IndexWriterConfig config = new IndexWriterConfig(indexForPR.getAnalyzer());
       IndexWriter writer = new IndexWriter(dir, config);
       repo = new IndexRepositoryImpl(fileAndChunkBucket, writer, serializer,
-          indexForPR.getIndexStats(), dataBucket, lockService, lockName);
+          indexForPR.getIndexStats(), dataBucket, lockService, lockName, indexForPR);
       success = true;
       return repo;
     } catch (IOException e) {

@@ -4,9 +4,9 @@
  * copyright ownership. The ASF licenses this file to you under the Apache License, Version 2.0 (the
  * "License"); you may not use this file except in compliance with the License. You may obtain a
  * copy of the License at
- * 
+ *
  * http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software distributed under the License
  * is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
  * or implied. See the License for the specific language governing permissions and limitations under
@@ -15,16 +15,6 @@
 
 package org.apache.geode.cache.lucene.internal.directory;
 
-import org.apache.geode.cache.lucene.internal.filesystem.File;
-import org.apache.geode.cache.lucene.internal.filesystem.FileSystem;
-import org.apache.geode.cache.lucene.internal.filesystem.FileSystemStats;
-import org.apache.lucene.store.BaseDirectory;
-import org.apache.lucene.store.IOContext;
-import org.apache.lucene.store.IndexInput;
-import org.apache.lucene.store.IndexOutput;
-import org.apache.lucene.store.OutputStreamIndexOutput;
-import org.apache.lucene.store.SingleInstanceLockFactory;
-
 import java.io.IOException;
 import java.io.OutputStream;
 import java.util.Arrays;
@@ -32,9 +22,20 @@ import java.util.Collection;
 import java.util.Map;
 import java.util.UUID;
 
+import org.apache.lucene.store.BaseDirectory;
+import org.apache.lucene.store.IOContext;
+import org.apache.lucene.store.IndexInput;
+import org.apache.lucene.store.IndexOutput;
+import org.apache.lucene.store.OutputStreamIndexOutput;
+import org.apache.lucene.store.SingleInstanceLockFactory;
+
+import org.apache.geode.cache.lucene.internal.filesystem.File;
+import org.apache.geode.cache.lucene.internal.filesystem.FileSystem;
+import org.apache.geode.cache.lucene.internal.filesystem.FileSystemStats;
+
 /**
  * An implementation of Directory that stores data in geode regions.
- * 
+ *
  * Directory is an interface to file/RAM storage for lucene. This class uses the {@link FileSystem}
  * class to store the data in the provided geode regions.
  */

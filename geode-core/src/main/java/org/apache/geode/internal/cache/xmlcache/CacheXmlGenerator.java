@@ -145,7 +145,7 @@ public class CacheXmlGenerator extends CacheXml implements XMLReader {
   private ContentHandler handler;
 
   /** The Cache that we're generating XML for */
-  final private Cache cache;
+  private final Cache cache;
 
   /**
    * Will the generated XML file reference an XML schema instead of the DTD?
@@ -847,7 +847,7 @@ public class CacheXmlGenerator extends CacheXml implements XMLReader {
 
   /**
    * Generates the <code>serializer-registration</code> element.
-   * 
+   *
    * @throws SAXException
    */
   private void generateSerializerRegistration() throws SAXException {
@@ -902,9 +902,9 @@ public class CacheXmlGenerator extends CacheXml implements XMLReader {
 
   /**
    * Generates XML for the client-subscription tag
-   * 
+   *
    * @param bridge instance of <code>CacheServer</code>
-   * 
+   *
    * @since GemFire 5.7
    */
   private void generateClientHaQueue(CacheServer bridge) throws SAXException {
@@ -1536,6 +1536,9 @@ public class CacheXmlGenerator extends CacheXml implements XMLReader {
     for (GatewayReceiver receiver : receiverList) {
       AttributesImpl atts = new AttributesImpl();
       try {
+        // hostnameForSenders
+        if (generateDefaults() || receiver.getHostnameForSenders() != null)
+          atts.addAttribute("", "", HOSTNAME_FOR_SENDERS, "", receiver.getHostnameForSenders());
         // start port
         if (generateDefaults() || receiver.getStartPort() != GatewayReceiver.DEFAULT_START_PORT)
           atts.addAttribute("", "", START_PORT, "", String.valueOf(receiver.getStartPort()));

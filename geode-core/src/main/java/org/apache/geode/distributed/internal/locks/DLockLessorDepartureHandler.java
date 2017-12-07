@@ -29,4 +29,3 @@ public interface DLockLessorDepartureHandler {
   public void handleDepartureOf(InternalDistributedMember owner, DLockGrantor grantor);
 
 }
-

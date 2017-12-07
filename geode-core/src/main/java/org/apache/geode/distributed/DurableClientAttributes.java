@@ -43,7 +43,7 @@ public class DurableClientAttributes {
 
   /**
    * Constructor.
-   * 
+   *
    * @param id The id of the durable client.
    * @param timeout The timeout period of the durable client.
    */
@@ -61,7 +61,7 @@ public class DurableClientAttributes {
 
   /**
    * Returns the durable client's id.
-   * 
+   *
    * @return the durable client's id
    */
   public String getId() {
@@ -81,7 +81,7 @@ public class DurableClientAttributes {
 
   /**
    * Returns the durable client's timeout.
-   * 
+   *
    * @return the durable client's timeout
    */
   public int getTimeout() {
