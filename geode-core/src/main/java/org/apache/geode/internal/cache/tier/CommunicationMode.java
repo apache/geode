@@ -23,6 +23,19 @@ package org.apache.geode.internal.cache.tier;
  */
 public enum CommunicationMode {
   /**
+   * The first byte of any locator connection will be the high order byte of its gossip version,
+   * which will always be 0. Communication modes should not collide with this value.
+   */
+  ReservedForGossip((byte) 0, "Locator gossip version"),
+  /**
+   * For the new client-server protocol.
+   *
+   * Protobuf handshake messages are specially constructed so that this value will match the first
+   * byte sent, allowing clients to start protobuf connections with a handshake instead of
+   * communication mode bytes.
+   */
+  ProtobufClientServerProtocol((byte) 10, "Protobuf client"),
+  /**
    * Byte meaning that the Socket is being used for 'client to server' communication.
    */
   ClientToServer((byte) 100, "client"),
@@ -56,11 +69,7 @@ public enum CommunicationMode {
    * Byte meaning that the Socket is being used for 'client to server' messages related to a client
    * queue (register interest, create cq, etc.).
    */
-  ClientToServerForQueue((byte) 107, "clientToServerForQueue"),
-  /**
-   * For the new client-server protocol, which ignores the usual handshake mechanism.
-   */
-  ProtobufClientServerProtocol((byte) 110, "Protobuf client");
+  ClientToServerForQueue((byte) 107, "clientToServerForQueue");
 
   /**
    * is this a client-initiated operations connection?
@@ -128,11 +137,13 @@ public enum CommunicationMode {
    * check the given mode to see if it is assigned to one of the enumeration's instances
    */
   public static boolean isValidMode(int mode) {
-    return 100 <= mode && mode <= 110;
+    return (100 <= mode && mode <= 107) || mode == 10;
   }
 
   public static CommunicationMode fromModeNumber(byte modeNumber) {
     switch (modeNumber) {
+      case 10:
+        return ProtobufClientServerProtocol;
       case 100:
         return ClientToServer;
       case 101:
@@ -149,8 +160,6 @@ public enum CommunicationMode {
         return UnsuccessfulServerToClient;
       case 107:
         return ClientToServerForQueue;
-      case 110:
-        return ProtobufClientServerProtocol;
       default:
         throw new IllegalArgumentException("unknown communications mode: " + modeNumber);
     }

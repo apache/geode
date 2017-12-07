@@ -107,23 +107,13 @@ public class AuthorizationIntegrationTest {
     Awaitility.await().atMost(5, TimeUnit.SECONDS).until(socket::isConnected);
     outputStream = socket.getOutputStream();
     inputStream = socket.getInputStream();
-    outputStream.write(CommunicationMode.ProtobufClientServerProtocol.getModeNumber());
-    outputStream.write(ConnectionAPI.MajorVersions.CURRENT_MAJOR_VERSION_VALUE);
 
     serializationService = new ProtobufSerializationService();
     protobufProtocolSerializer = new ProtobufProtocolSerializer();
 
     when(mockSecurityManager.authorize(same(securityPrincipal), any())).thenReturn(false);
 
-    ClientProtocol.Message.newBuilder()
-        .setRequest(ClientProtocol.Request.newBuilder()
-            .setHandshakeRequest(ConnectionAPI.HandshakeRequest.newBuilder()
-                .setMajorVersion(ConnectionAPI.MajorVersions.CURRENT_MAJOR_VERSION_VALUE)
-                .setMinorVersion(ConnectionAPI.MinorVersions.CURRENT_MINOR_VERSION_VALUE)))
-        .build().writeDelimitedTo(outputStream);
-    ClientProtocol.Message handshakeResponse =
-        ClientProtocol.Message.parseDelimitedFrom(inputStream);;
-    assertTrue(handshakeResponse.getResponse().getHandshakeResponse().getHandshakePassed());
+    MessageUtil.performAndVerifyHandshake(socket);
 
     ClientProtocol.Message authenticationRequest = ClientProtocol.Message.newBuilder()
         .setRequest(ClientProtocol.Request.newBuilder()

@@ -41,6 +41,7 @@ import org.apache.geode.internal.protocol.protobuf.statistics.ProtobufClientStat
 import org.apache.geode.internal.protocol.protobuf.v1.ClientProtocol;
 import org.apache.geode.internal.protocol.protobuf.v1.ConnectionAPI;
 import org.apache.geode.internal.protocol.protobuf.v1.LocatorAPI;
+import org.apache.geode.internal.protocol.protobuf.v1.MessageUtil;
 import org.apache.geode.internal.protocol.protobuf.v1.serializer.ProtobufProtocolSerializer;
 import org.apache.geode.internal.protocol.protobuf.v1.utilities.ProtobufRequestUtilities;
 import org.apache.geode.internal.protocol.protobuf.v1.utilities.ProtobufUtilities;
@@ -72,11 +73,7 @@ public class LocatorConnectionDUnitTest extends JUnit4CacheTestCase {
     Host host = Host.getHost(0);
     int locatorPort = DistributedTestUtils.getDUnitLocatorPort();
     Socket socket = new Socket(host.getHostName(), locatorPort);
-    DataOutputStream dataOutputStream = new DataOutputStream(socket.getOutputStream());
-    dataOutputStream.writeInt(0);
-    // Using the constant from AcceptorImpl to ensure that magic byte is the same
-    dataOutputStream.writeByte(ProtobufClientServerProtocol.getModeNumber());
-    dataOutputStream.writeByte(ConnectionAPI.MajorVersions.CURRENT_MAJOR_VERSION_VALUE);
+    MessageUtil.sendHandshake(socket);
     return socket;
   }
 

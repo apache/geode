@@ -61,6 +61,11 @@ public class ProtobufStreamProcessor implements ClientProtocolMessageHandler {
   private void processOneMessage(InputStream inputStream, OutputStream outputStream,
       MessageExecutionContext executionContext)
       throws InvalidProtocolMessageException, IOException {
+    if (executionContext.getConnectionStateProcessor().handleMessageIndependently(inputStream,
+        outputStream, executionContext)) {
+      return;
+    }
+
     ClientProtocol.Message message = protobufProtocolSerializer.deserialize(inputStream);
     if (message == null) {
       String errorMessage = "Tried to deserialize protobuf message at EOF";

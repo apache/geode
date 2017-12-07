@@ -15,6 +15,7 @@
 
 package org.apache.geode.internal.protocol.protobuf.v1.acceptance;
 
+import static org.apache.geode.internal.protocol.protobuf.v1.MessageUtil.performAndVerifyHandshake;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNull;
@@ -53,7 +54,6 @@ import org.apache.geode.internal.cache.tier.sockets.AcceptorImpl;
 import org.apache.geode.internal.net.SocketCreatorFactory;
 import org.apache.geode.internal.protocol.exception.InvalidProtocolMessageException;
 import org.apache.geode.internal.protocol.protobuf.v1.ClientProtocol;
-import org.apache.geode.internal.protocol.protobuf.v1.ConnectionAPI;
 import org.apache.geode.internal.protocol.protobuf.v1.MessageUtil;
 import org.apache.geode.internal.protocol.protobuf.v1.ProtobufSerializationService;
 import org.apache.geode.internal.protocol.protobuf.v1.serializer.ProtobufProtocolSerializer;
@@ -102,9 +102,6 @@ public class CacheMaxConnectionJUnitTest {
 
     socket = new Socket("localhost", cacheServerPort);
     Awaitility.await().atMost(5, TimeUnit.SECONDS).until(socket::isConnected);
-    OutputStream outputStream = socket.getOutputStream();
-    outputStream.write(CommunicationMode.ProtobufClientServerProtocol.getModeNumber());
-    outputStream.write(ConnectionAPI.MajorVersions.CURRENT_MAJOR_VERSION_VALUE);
 
     serializationService = new ProtobufSerializationService();
     protobufProtocolSerializer = new ProtobufProtocolSerializer();
@@ -189,18 +186,8 @@ public class CacheMaxConnectionJUnitTest {
 
           Awaitility.await().atMost(5, TimeUnit.SECONDS).until(socket::isConnected);
           OutputStream outputStream = socket.getOutputStream();
-          outputStream.write(CommunicationMode.ProtobufClientServerProtocol.getModeNumber());
-          outputStream.write(ConnectionAPI.MajorVersions.CURRENT_MAJOR_VERSION_VALUE);
 
-          ClientProtocol.Message.newBuilder()
-              .setRequest(ClientProtocol.Request.newBuilder()
-                  .setHandshakeRequest(ConnectionAPI.HandshakeRequest.newBuilder()
-                      .setMajorVersion(ConnectionAPI.MajorVersions.CURRENT_MAJOR_VERSION_VALUE)
-                      .setMinorVersion(ConnectionAPI.MinorVersions.CURRENT_MINOR_VERSION_VALUE)))
-              .build().writeDelimitedTo(outputStream);
-          ClientProtocol.Message handshakeResponse =
-              ClientProtocol.Message.parseDelimitedFrom(socket.getInputStream());
-          assertTrue(handshakeResponse.getResponse().getHandshakeResponse().getHandshakePassed());
+          performAndVerifyHandshake(socket);
 
           ClientProtocol.Message putMessage = MessageUtil
               .makePutRequestMessage(serializationService, TEST_KEY, TEST_VALUE, TEST_REGION);

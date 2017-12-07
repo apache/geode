@@ -106,8 +106,7 @@ public class CacheConnectionTimeoutJUnitTest {
 
     Awaitility.await().atMost(5, TimeUnit.SECONDS).until(socket::isConnected);
     outputStream = socket.getOutputStream();
-    outputStream.write(CommunicationMode.ProtobufClientServerProtocol.getModeNumber());
-    outputStream.write(ConnectionAPI.MajorVersions.CURRENT_MAJOR_VERSION_VALUE);
+    MessageUtil.performAndVerifyHandshake(socket);
 
     serializationService = new ProtobufSerializationService();
 
@@ -155,13 +154,7 @@ public class CacheConnectionTimeoutJUnitTest {
   public void testResponsiveClientsStaysConnected() throws Exception {
     ProtobufProtocolSerializer protobufProtocolSerializer = new ProtobufProtocolSerializer();
 
-    ClientProtocol.Message.newBuilder()
-        .setRequest(ClientProtocol.Request.newBuilder()
-            .setHandshakeRequest(ConnectionAPI.HandshakeRequest.newBuilder()
-                .setMajorVersion(ConnectionAPI.MajorVersions.CURRENT_MAJOR_VERSION_VALUE)
-                .setMinorVersion(ConnectionAPI.MinorVersions.CURRENT_MINOR_VERSION_VALUE)))
-        .build().writeDelimitedTo(outputStream);
-    protobufProtocolSerializer.deserialize(socket.getInputStream());
+    MessageUtil.performAndVerifyHandshake(socket);
 
     ClientProtocol.Message putMessage =
         MessageUtil.makePutRequestMessage(serializationService, TEST_KEY, TEST_VALUE, TEST_REGION);
