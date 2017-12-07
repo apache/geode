@@ -692,15 +692,20 @@ public class ReplyProcessor21 implements MembershipListener {
               if (!latch.await(suspectProcessingErrorAlertTimeout)) {
                 long now = System.currentTimeMillis();
                 long totalTimeElapsed = now - this.initTime;
-                logger.fatal("Still waiting for suspect processing to complete after an additional "
-                    + suspectProcessingErrorAlertTimeout + " milliseconds. Total of "
-                    + totalTimeElapsed + "milliseconds elapsed (init time:" + this.initTime
-                    + ", now: " + now + ")\nMembers: " + Arrays.toString(getMembers()));
-              }
 
-              // for consistency, we must now wait indefinitely for a membership view
-              // that ejects the removed members
-              latch.await();
+                String waitingOnMembers;
+                synchronized (members) {
+                  waitingOnMembers = Arrays.toString(members);
+                }
+                logger.fatal("An additional " + suspectProcessingErrorAlertTimeout
+                    + " milliseconds have elapsed while waiting for replies. Total of "
+                    + totalTimeElapsed + " milliseconds elapsed (init time:" + this.initTime
+                    + ", now: " + now + ") Waiting for members: " + waitingOnMembers);
+
+                // for consistency, we must now wait indefinitely for a membership view
+                // that ejects the removed members
+                latch.await();
+              }
             }
           } else {
             latch.await();
