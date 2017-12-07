@@ -25,7 +25,7 @@ The Apache Lucene integration:
 
 - Enables users to create Lucene indexes on data stored in <%=vars.product_name%>
 - Provides high availability of indexes using <%=vars.product_name%>'s HA capabilities to store the indexes in memory
-- For persistent regions, optionally stores indexes on disk
+- For persistent regions, Lucene indexes are also persisted to disk
 - Updates the indexes asynchronously to minimize impacting write latency
 - Provides scalability by partitioning index data
 - Colocates indexes with data
@@ -62,7 +62,7 @@ You must specify at least one field to be indexed.
 
 If the object value for the entries in the region comprises a single field to be indexed and
 searched (for example, each key has a value that is simply a string), then use `__REGION_VALUE_FIELD`
-to specify the field to be indexed.  `__REGION_VALUE_FIELD` supports entry values of of all
+to specify the field to be indexed.  `__REGION_VALUE_FIELD` supports entry values of all
 primitive types, including `String`, `Long`, `Integer`, `Float`, and `Double`.
 
 Each field has a corresponding analyzer to extract terms from text. When no analyzer is specified, the `org.apache.lucene.analysis.standard.StandardAnalyzer` is used.
@@ -160,7 +160,6 @@ gfsh>search lucene --name=indexName --region=/orders --queryString="John*"
 
 ``` pre
 LuceneQuery<String, Person> query = luceneService.createLuceneQueryFactory()
-  .setLimit(10)
   .create(indexName, regionName, "name:John AND zipcode:97006", defaultField);
 
 Collection<Person> results = query.findValues();
