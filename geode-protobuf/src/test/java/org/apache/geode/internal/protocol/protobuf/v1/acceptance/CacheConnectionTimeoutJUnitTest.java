@@ -102,8 +102,7 @@ public class CacheConnectionTimeoutJUnitTest {
 
     Awaitility.await().atMost(5, TimeUnit.SECONDS).until(socket::isConnected);
     outputStream = socket.getOutputStream();
-    outputStream.write(CommunicationMode.ProtobufClientServerProtocol.getModeNumber());
-    outputStream.write(ConnectionAPI.MajorVersions.CURRENT_MAJOR_VERSION_VALUE);
+    MessageUtil.performAndVerifyHandshake(socket);
 
     serializationService = new ProtobufSerializationService();
 

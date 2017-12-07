@@ -14,36 +14,40 @@
  */
 package org.apache.geode.internal.protocol.protobuf.v1.state;
 
+import java.io.ByteArrayInputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
+import java.io.PushbackInputStream;
+
+import org.apache.geode.internal.cache.tier.CommunicationMode;
 import org.apache.geode.internal.protocol.MessageExecutionContext;
 import org.apache.geode.internal.protocol.OperationContext;
 import org.apache.geode.internal.protocol.ProtocolErrorCode;
-import org.apache.geode.internal.protocol.protobuf.v1.operations.HandshakeRequestOperationHandler;
-import org.apache.geode.internal.protocol.state.ConnectionHandshakingStateProcessor;
+import org.apache.geode.internal.protocol.protobuf.v1.operations.HandshakeHandler;
 import org.apache.geode.internal.protocol.state.ConnectionStateProcessor;
 import org.apache.geode.internal.protocol.state.LegacySecurityConnectionStateProcessor;
 import org.apache.geode.internal.protocol.state.NoSecurityConnectionStateProcessor;
 import org.apache.geode.internal.protocol.state.exception.ConnectionStateException;
 import org.apache.geode.internal.security.SecurityService;
 
-public class ProtobufConnectionHandshakeStateProcessor
-    implements ConnectionHandshakingStateProcessor {
+public class ProtobufConnectionHandshakeStateProcessor implements ConnectionStateProcessor {
   private final SecurityService securityService;
+  private final HandshakeHandler handshakeHandler;
 
   public ProtobufConnectionHandshakeStateProcessor(SecurityService securityService) {
     this.securityService = securityService;
+    this.handshakeHandler = new HandshakeHandler();
   }
 
   @Override
   public void validateOperation(MessageExecutionContext messageContext,
       OperationContext operationContext) throws ConnectionStateException {
-    if (!(operationContext.getOperationHandler() instanceof HandshakeRequestOperationHandler)) {
-      throw new ConnectionStateException(ProtocolErrorCode.HANDSHAKE_REQUIRED,
-          "Protobuf handshake must be completed before any other operation.");
-    }
+    throw new ConnectionStateException(ProtocolErrorCode.GENERIC_FAILURE,
+        "Connection processing should never be asked to validate an operation");
   }
 
-  @Override
-  public ConnectionStateProcessor handshakeSucceeded() {
+  private ConnectionStateProcessor nextConnectionState() {
     if (securityService.isIntegratedSecurity()) {
       return new ConnectionShiroAuthenticatingStateProcessor(securityService);
     } else if (securityService.isPeerSecurityRequired()
@@ -53,5 +57,20 @@ public class ProtobufConnectionHandshakeStateProcessor
       // Noop authenticator...no security
       return new NoSecurityConnectionStateProcessor();
     }
+  }
+
+  @Override
+  public boolean handleMessageIndependently(InputStream inputStream, OutputStream outputStream,
+      MessageExecutionContext executionContext) throws IOException {
+    // inputStream will have had the first byte stripped off to determine communication mode, add
+    // that byte back before processing message
+    PushbackInputStream messageStream = new PushbackInputStream(inputStream);
+    messageStream.unread(CommunicationMode.ProtobufClientServerProtocol.getModeNumber());
+
+    if (handshakeHandler.handleHandshake(messageStream, outputStream,
+        executionContext.getStatistics())) {
+      executionContext.setConnectionStateProcessor(nextConnectionState());
+    }
+    return true;
   }
 }

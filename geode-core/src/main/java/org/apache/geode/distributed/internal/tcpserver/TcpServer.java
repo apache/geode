@@ -44,6 +44,7 @@ import org.apache.geode.CancelException;
 import org.apache.geode.DataSerializer;
 import org.apache.geode.SystemFailure;
 import org.apache.geode.cache.IncompatibleVersionException;
+import org.apache.geode.cache.UnsupportedVersionException;
 import org.apache.geode.distributed.internal.ClusterConfigurationService;
 import org.apache.geode.distributed.internal.DistributionConfig;
 import org.apache.geode.distributed.internal.DistributionConfigImpl;
@@ -364,7 +365,6 @@ public class TcpServer {
     executor.execute(() -> {
       long startTime = DistributionStats.getStatTime();
       DataInputStream input = null;
-      Object request, response;
       try {
 
         socket.setSoTimeout(READ_TIMEOUT);
@@ -379,89 +379,13 @@ public class TcpServer {
               + (socket.getInetAddress().getHostAddress() + ":" + socket.getPort()), e);
           return;
         }
-        int gossipVersion = readGossipVersion(socket, input);
-
-        short versionOrdinal;
-        if (gossipVersion == NON_GOSSIP_REQUEST_VERSION) {
-          if (input.readUnsignedByte() == PROTOBUF_CLIENT_SERVER_PROTOCOL
-              && Boolean.getBoolean("geode.feature-protobuf-protocol")) {
-            try {
-              int protocolVersion = input.readUnsignedByte();
-              ClientProtocolService clientProtocolService =
-                  clientProtocolServiceLoader.lookupService(protocolVersion);
-              clientProtocolService.initializeStatistics("LocatorStats",
-                  internalLocator.getDistributedSystem());
-              try (ClientProtocolProcessor pipeline =
-                  clientProtocolService.createProcessorForLocator(internalLocator)) {
-                pipeline.processMessage(input, socket.getOutputStream());
-              } catch (IncompatibleVersionException e) {
-                // should not happen on the locator as there is no handshake.
-                log.error("Unexpected exception in client message processing", e);
-              }
-            } catch (ServiceLoadingFailureException e) {
-              log.error("There was an error looking up the client protocol service", e);
-              socket.close();
-              throw new IOException("There was an error looking up the client protocol service", e);
-            } catch (ServiceVersionNotFoundException e) {
-              log.error("Unable to find service matching the client protocol version byte", e);
-              socket.close();
-              throw new IOException(
-                  "Unable to find service matching the client protocol version byte", e);
-            }
-          } else {
-            rejectUnknownProtocolConnection(socket, gossipVersion);
-          }
-        } else if (gossipVersion <= getCurrentGossipVersion()
-            && GOSSIP_TO_GEMFIRE_VERSION_MAP.containsKey(gossipVersion)) {
-          // Create a versioned stream to remember sender's GemFire version
-          versionOrdinal = (short) GOSSIP_TO_GEMFIRE_VERSION_MAP.get(gossipVersion);
-
-          if (Version.GFE_71.compareTo(versionOrdinal) <= 0) {
-            // Recent versions of TcpClient will send the version ordinal
-            versionOrdinal = input.readShort();
-          }
-
-          if (log.isDebugEnabled() && versionOrdinal != Version.CURRENT_ORDINAL) {
-            log.debug("Locator reading request from " + socket.getInetAddress() + " with version "
-                + Version.fromOrdinal(versionOrdinal, false));
-          }
-          input = new VersionedDataInputStream(input, Version.fromOrdinal(versionOrdinal, false));
-          request = DataSerializer.readObject(input);
-          if (log.isDebugEnabled()) {
-            log.debug("Locator received request " + request + " from " + socket.getInetAddress());
-          }
-          if (request instanceof ShutdownRequest) {
-            shuttingDown = true;
-            // Don't call shutdown from within the worker thread, see java bug #6576792.
-            // Closing the socket will cause our acceptor thread to shutdown the executor
-            this.serverSocketPortAtClose = srv_sock.getLocalPort();
-            srv_sock.close();
-            response = new ShutdownResponse();
-          } else if (request instanceof InfoRequest) {
-            response = handleInfoRequest(request);
-          } else if (request instanceof VersionRequest) {
-            response = handleVersionRequest(request);
-          } else {
-            response = handler.processRequest(request);
-          }
-
-          handler.endRequest(request, startTime);
-
-          startTime = DistributionStats.getStatTime();
-          if (response != null) {
-            DataOutputStream output = new DataOutputStream(socket.getOutputStream());
-            if (versionOrdinal != Version.CURRENT_ORDINAL) {
-              output =
-                  new VersionedDataOutputStream(output, Version.fromOrdinal(versionOrdinal, false));
-            }
-            DataSerializer.writeObject(response, output);
-            output.flush();
-          }
-
-          handler.endResponse(request, startTime);
+        // read the first byte & check for an improperly configured client pool trying
+        // to contact a cache server
+        int firstByte = input.readUnsignedByte();
+        if (firstByte != CommunicationMode.ReservedForGossip.getModeNumber()) {
+          handleNonGossipConnection(socket, input, firstByte);
         } else {
-          // Close the socket. We can not accept requests from a newer version
-          rejectUnknownProtocolConnection(socket, gossipVersion);
+          processOneConnection(socket, startTime, input);
         }
       } catch (EOFException ignore) {
         // client went away - ignore
@@ -516,32 +440,108 @@ public class TcpServer {
     });
   }
 
-  private void rejectUnknownProtocolConnection(Socket socket, int gossipVersion)
-      throws IOException {
-    try {
-      socket.getOutputStream().write("unknown protocol version".getBytes());
-      socket.getOutputStream().flush();
-    } catch (IOException e) {
-      log.debug("exception in sending reply to process using unknown protocol " + gossipVersion, e);
+  private void processOneConnection(Socket socket, long startTime, DataInputStream input)
+      throws IOException, UnsupportedVersionException, ClassNotFoundException {
+    // At this point we've read the leading byte of the gossip version and found it to be 0,
+    // continue reading the next three bytes
+    int gossipVersion = 0;
+    for (int i = 0; i < 3; i++) {
+      gossipVersion = (gossipVersion << 8) + (0xff & input.readUnsignedByte());
     }
-    socket.close();
+
+    Object request;
+    Object response;
+    short versionOrdinal;
+    if (gossipVersion <= getCurrentGossipVersion()
+        && GOSSIP_TO_GEMFIRE_VERSION_MAP.containsKey(gossipVersion)) {
+      // Create a versioned stream to remember sender's GemFire version
+      versionOrdinal = (short) GOSSIP_TO_GEMFIRE_VERSION_MAP.get(gossipVersion);
+
+      if (Version.GFE_71.compareTo(versionOrdinal) <= 0) {
+        // Recent versions of TcpClient will send the version ordinal
+        versionOrdinal = input.readShort();
+      }
+
+      if (log.isDebugEnabled() && versionOrdinal != Version.CURRENT_ORDINAL) {
+        log.debug("Locator reading request from " + socket.getInetAddress() + " with version "
+            + Version.fromOrdinal(versionOrdinal, false));
+      }
+      input = new VersionedDataInputStream(input, Version.fromOrdinal(versionOrdinal, false));
+      request = DataSerializer.readObject(input);
+      if (log.isDebugEnabled()) {
+        log.debug("Locator received request " + request + " from " + socket.getInetAddress());
+      }
+      if (request instanceof ShutdownRequest) {
+        shuttingDown = true;
+        // Don't call shutdown from within the worker thread, see java bug #6576792.
+        // Closing the socket will cause our acceptor thread to shutdown the executor
+        this.serverSocketPortAtClose = srv_sock.getLocalPort();
+        srv_sock.close();
+        response = new ShutdownResponse();
+      } else if (request instanceof InfoRequest) {
+        response = handleInfoRequest(request);
+      } else if (request instanceof VersionRequest) {
+        response = handleVersionRequest(request);
+      } else {
+        response = handler.processRequest(request);
+      }
+
+      handler.endRequest(request, startTime);
+
+      startTime = DistributionStats.getStatTime();
+      if (response != null) {
+        DataOutputStream output = new DataOutputStream(socket.getOutputStream());
+        if (versionOrdinal != Version.CURRENT_ORDINAL) {
+          output =
+              new VersionedDataOutputStream(output, Version.fromOrdinal(versionOrdinal, false));
+        }
+        DataSerializer.writeObject(response, output);
+        output.flush();
+      }
+
+      handler.endResponse(request, startTime);
+    } else {
+      // Close the socket. We can not accept requests from a newer version
+      try {
+        socket.getOutputStream().write("unknown protocol version".getBytes());
+        socket.getOutputStream().flush();
+      } catch (IOException e) {
+        log.debug("exception in sending reply to process using unknown protocol " + gossipVersion,
+            e);
+      }
+      socket.close();
+    }
   }
 
-  private int readGossipVersion(Socket sock, DataInputStream input) throws Exception {
-    // read the first byte & check for an improperly configured client pool trying
-    // to contact a cache server
-    int firstByte = input.readUnsignedByte();
-    if (CommunicationMode.isValidMode(firstByte)) {
-      sock.getOutputStream().write(HandShake.REPLY_SERVER_IS_LOCATOR);
+  private void handleNonGossipConnection(Socket socket, DataInputStream input,
+      int communicationMode) throws Exception {
+    if (communicationMode != CommunicationMode.ProtobufClientServerProtocol.getModeNumber()
+        || !Boolean.getBoolean("geode.feature-protobuf-protocol")) {
+      socket.getOutputStream().write(HandShake.REPLY_SERVER_IS_LOCATOR);
       throw new Exception("Improperly configured client detected - use addPoolLocator to "
           + "configure its locators instead of addPoolServer.");
     }
 
-    int gossipVersion = firstByte;
-    for (int i = 0; i < 3; i++) {
-      gossipVersion = (gossipVersion << 8) + (0xff & input.readUnsignedByte());
+    try {
+      ClientProtocolService clientProtocolService = clientProtocolServiceLoader.lookupService();
+      clientProtocolService.initializeStatistics("LocatorStats",
+          internalLocator.getDistributedSystem());
+      try (ClientProtocolProcessor pipeline =
+          clientProtocolService.createProcessorForLocator(internalLocator)) {
+        pipeline.processMessage(input, socket.getOutputStream());
+      } catch (IncompatibleVersionException e) {
+        // should not happen on the locator as there is no handshake.
+        log.error("Unexpected exception in client message processing", e);
+      }
+    } catch (ServiceLoadingFailureException e) {
+      log.error("There was an error looking up the client protocol service", e);
+      socket.close();
+      throw new IOException("There was an error looking up the client protocol service", e);
+    } catch (ServiceVersionNotFoundException e) {
+      log.error("Unable to find service matching the client protocol version byte", e);
+      socket.close();
+      throw new IOException("Unable to find service matching the client protocol version byte", e);
     }
-    return gossipVersion;
   }
 
   protected Object handleInfoRequest(Object request) {

@@ -87,19 +87,10 @@ public class AuthenticationIntegrationTest {
     Awaitility.await().atMost(5, TimeUnit.SECONDS).until(socket::isConnected);
     outputStream = socket.getOutputStream();
     inputStream = socket.getInputStream();
-    outputStream.write(CommunicationMode.ProtobufClientServerProtocol.getModeNumber());
-    outputStream.write(ConnectionAPI.MajorVersions.CURRENT_MAJOR_VERSION_VALUE);
 
     protobufProtocolSerializer = new ProtobufProtocolSerializer();
 
-    ClientProtocol.Message.newBuilder()
-        .setRequest(ClientProtocol.Request.newBuilder()
-            .setHandshakeRequest(ConnectionAPI.HandshakeRequest.newBuilder()
-                .setMajorVersion(ConnectionAPI.MajorVersions.CURRENT_MAJOR_VERSION_VALUE)
-                .setMinorVersion(ConnectionAPI.MinorVersions.CURRENT_MINOR_VERSION_VALUE)))
-        .build().writeDelimitedTo(outputStream);
-    ClientProtocol.Message handshakeResponse = protobufProtocolSerializer.deserialize(inputStream);
-    assertTrue(handshakeResponse.getResponse().getHandshakeResponse().getHandshakePassed());
+    MessageUtil.performAndVerifyHandshake(socket);
   }
 
   private static class SimpleSecurityManager implements SecurityManager {

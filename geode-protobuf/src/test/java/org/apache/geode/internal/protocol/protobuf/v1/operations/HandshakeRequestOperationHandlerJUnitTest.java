@@ -4,9 +4,15 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 import static org.mockito.Mockito.mock;
 
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+
 import org.apache.shiro.subject.Subject;
+import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
@@ -16,14 +22,18 @@ import org.apache.geode.internal.exception.InvalidExecutionContextException;
 import org.apache.geode.internal.protocol.MessageExecutionContext;
 import org.apache.geode.internal.protocol.ProtocolErrorCode;
 import org.apache.geode.internal.protocol.Result;
+import org.apache.geode.internal.protocol.protobuf.Handshake;
 import org.apache.geode.internal.protocol.protobuf.v1.ClientProtocol;
 import org.apache.geode.internal.protocol.protobuf.v1.ConnectionAPI;
+import org.apache.geode.internal.protocol.protobuf.v1.MessageUtil;
 import org.apache.geode.internal.protocol.protobuf.v1.ProtobufSerializationService;
 import org.apache.geode.internal.protocol.protobuf.v1.state.ConnectionShiroAuthenticatingStateProcessor;
 import org.apache.geode.internal.protocol.protobuf.v1.state.ProtobufConnectionHandshakeStateProcessor;
+import org.apache.geode.internal.protocol.protobuf.v1.utilities.ProtobufUtilities;
 import org.apache.geode.internal.protocol.serialization.SerializationService;
 import org.apache.geode.internal.protocol.state.ConnectionShiroAuthorizingStateProcessor;
 import org.apache.geode.internal.protocol.state.NoSecurityConnectionStateProcessor;
+import org.apache.geode.internal.protocol.statistics.ProtocolClientStatistics;
 import org.apache.geode.internal.security.SecurityService;
 import org.apache.geode.test.junit.categories.UnitTest;
 
@@ -47,8 +57,7 @@ public class HandshakeRequestOperationHandlerJUnitTest {
   private static final int INVALID_MAJOR_VERSION = 67;
   private static final int INVALID_MINOR_VERSION = 92347;
 
-  private HandshakeRequestOperationHandler handshakeHandler =
-      new HandshakeRequestOperationHandler();
+  private HandshakeHandler handshakeHandler = new HandshakeHandler();
   private SerializationService serializationService = new ProtobufSerializationService();
   private ProtobufConnectionHandshakeStateProcessor handshakeStateProcessor;
 
@@ -60,116 +69,80 @@ public class HandshakeRequestOperationHandlerJUnitTest {
 
   @Test
   public void testCurrentVersionHandshakeSucceeds() throws Exception {
-    ConnectionAPI.HandshakeRequest handshakeRequest =
-        generateHandshakeRequest(ConnectionAPI.MajorVersions.CURRENT_MAJOR_VERSION_VALUE,
-            ConnectionAPI.MinorVersions.CURRENT_MINOR_VERSION_VALUE);
-    MessageExecutionContext messageExecutionContext =
-        new MessageExecutionContext(mock(InternalCache.class), null, handshakeStateProcessor);
-    Result<ConnectionAPI.HandshakeResponse, ClientProtocol.ErrorResponse> result =
-        handshakeHandler.process(serializationService, handshakeRequest, messageExecutionContext);
-    ConnectionAPI.HandshakeResponse handshakeResponse = result.getMessage();
+    Handshake.NewConnectionHandshake handshakeRequest =
+        generateHandshakeRequest(Handshake.MajorVersions.CURRENT_MAJOR_VERSION_VALUE,
+            Handshake.MinorVersions.CURRENT_MINOR_VERSION_VALUE);
+
+    ByteArrayInputStream inputStream =
+        MessageUtil.writeMessageDelimitedToInputStream(handshakeRequest);
+
+    ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
+    assertTrue(handshakeHandler.handleHandshake(inputStream, outputStream,
+        mock(ProtocolClientStatistics.class)));
+
+    Handshake.HandshakeAcknowledgement handshakeResponse = Handshake.HandshakeAcknowledgement
+        .parseDelimitedFrom(new ByteArrayInputStream(outputStream.toByteArray()));
     assertTrue(handshakeResponse.getHandshakePassed());
-    assertEquals(ConnectionAPI.MajorVersions.CURRENT_MAJOR_VERSION_VALUE,
+    assertEquals(Handshake.MajorVersions.CURRENT_MAJOR_VERSION_VALUE,
         handshakeResponse.getServerMajorVersion());
-    assertEquals(ConnectionAPI.MinorVersions.CURRENT_MINOR_VERSION_VALUE,
+    assertEquals(Handshake.MinorVersions.CURRENT_MINOR_VERSION_VALUE,
         handshakeResponse.getServerMinorVersion());
   }
 
   @Test
   public void testInvalidMajorVersionFails() throws Exception {
-    assertNotEquals(INVALID_MAJOR_VERSION, ConnectionAPI.MajorVersions.CURRENT_MAJOR_VERSION_VALUE);
+    assertNotEquals(INVALID_MAJOR_VERSION, Handshake.MajorVersions.CURRENT_MAJOR_VERSION_VALUE);
 
-    ConnectionAPI.HandshakeRequest handshakeRequest = generateHandshakeRequest(
-        INVALID_MAJOR_VERSION, ConnectionAPI.MinorVersions.CURRENT_MINOR_VERSION_VALUE);
-    MessageExecutionContext messageExecutionContext =
-        new MessageExecutionContext(mock(InternalCache.class), null, handshakeStateProcessor);
+    Handshake.NewConnectionHandshake handshakeRequest = generateHandshakeRequest(
+        INVALID_MAJOR_VERSION, Handshake.MinorVersions.CURRENT_MINOR_VERSION_VALUE);
 
-    verifyHandshakeFails(handshakeRequest, messageExecutionContext);
+    verifyHandshakeFails(handshakeRequest);
 
     // Also validate the protobuf INVALID_MAJOR_VERSION_VALUE constant fails
-    handshakeRequest =
-        generateHandshakeRequest(ConnectionAPI.MajorVersions.INVALID_MAJOR_VERSION_VALUE,
-            ConnectionAPI.MinorVersions.CURRENT_MINOR_VERSION_VALUE);
-    verifyHandshakeFails(handshakeRequest, messageExecutionContext);
+    handshakeRequest = generateHandshakeRequest(Handshake.MajorVersions.INVALID_MAJOR_VERSION_VALUE,
+        Handshake.MinorVersions.CURRENT_MINOR_VERSION_VALUE);
+    verifyHandshakeFails(handshakeRequest);
   }
 
-  private void verifyHandshakeFails(ConnectionAPI.HandshakeRequest handshakeRequest,
-      MessageExecutionContext messageExecutionContext) throws InvalidExecutionContextException {
-    Result<ConnectionAPI.HandshakeResponse, ClientProtocol.ErrorResponse> result =
-        handshakeHandler.process(serializationService, handshakeRequest, messageExecutionContext);
-    ConnectionAPI.HandshakeResponse handshakeResponse = result.getMessage();
+  private void verifyHandshakeFails(Handshake.NewConnectionHandshake handshakeRequest)
+      throws Exception {
+    ByteArrayInputStream inputStream =
+        MessageUtil.writeMessageDelimitedToInputStream(handshakeRequest);
+
+    ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
+
+    try {
+      handshakeHandler.handleHandshake(inputStream, outputStream,
+          mock(ProtocolClientStatistics.class));
+      fail("Invalid handshake should throw IOException");
+    } catch (IOException e) {
+      // expected if handshake verification fails
+    }
+
+    Handshake.HandshakeAcknowledgement handshakeResponse = Handshake.HandshakeAcknowledgement
+        .parseDelimitedFrom(new ByteArrayInputStream(outputStream.toByteArray()));
+
     assertFalse(handshakeResponse.getHandshakePassed());
   }
 
   @Test
   public void testInvalidMinorVersionFails() throws Exception {
-    assertNotEquals(INVALID_MINOR_VERSION, ConnectionAPI.MinorVersions.CURRENT_MINOR_VERSION_VALUE);
+    assertNotEquals(INVALID_MINOR_VERSION, Handshake.MinorVersions.CURRENT_MINOR_VERSION_VALUE);
 
-    ConnectionAPI.HandshakeRequest handshakeRequest = generateHandshakeRequest(
-        ConnectionAPI.MajorVersions.CURRENT_MAJOR_VERSION_VALUE, INVALID_MINOR_VERSION);
-    MessageExecutionContext messageExecutionContext =
-        new MessageExecutionContext(mock(InternalCache.class), null, handshakeStateProcessor);
+    Handshake.NewConnectionHandshake handshakeRequest = generateHandshakeRequest(
+        Handshake.MajorVersions.CURRENT_MAJOR_VERSION_VALUE, INVALID_MINOR_VERSION);
 
-    verifyHandshakeFails(handshakeRequest, messageExecutionContext);
+    verifyHandshakeFails(handshakeRequest);
 
     // Also validate the protobuf INVALID_MINOR_VERSION_VALUE constant fails
-    handshakeRequest =
-        generateHandshakeRequest(ConnectionAPI.MajorVersions.CURRENT_MAJOR_VERSION_VALUE,
-            ConnectionAPI.MinorVersions.INVALID_MINOR_VERSION_VALUE);
-    verifyHandshakeFails(handshakeRequest, messageExecutionContext);
+    handshakeRequest = generateHandshakeRequest(Handshake.MajorVersions.CURRENT_MAJOR_VERSION_VALUE,
+        Handshake.MinorVersions.INVALID_MINOR_VERSION_VALUE);
+    verifyHandshakeFails(handshakeRequest);
   }
 
-  @Test
-  public void testNoSecurityStateFailsHandshake() throws Exception {
-    ConnectionAPI.HandshakeRequest handshakeRequest =
-        generateHandshakeRequest(ConnectionAPI.MajorVersions.CURRENT_MAJOR_VERSION_VALUE,
-            ConnectionAPI.MinorVersions.CURRENT_MINOR_VERSION_VALUE);
-    MessageExecutionContext messageExecutionContext = new MessageExecutionContext(
-        mock(InternalCache.class), null, new NoSecurityConnectionStateProcessor());
-
-    Result<ConnectionAPI.HandshakeResponse, ClientProtocol.ErrorResponse> result =
-        handshakeHandler.process(serializationService, handshakeRequest, messageExecutionContext);
-    ClientProtocol.ErrorResponse errorMessage = result.getErrorMessage();
-    assertEquals(ProtocolErrorCode.UNSUPPORTED_OPERATION.codeValue,
-        errorMessage.getError().getErrorCode());
-  }
-
-  @Test
-  public void testAuthenticatingStateFailsHandshake() throws Exception {
-    ConnectionAPI.HandshakeRequest handshakeRequest =
-        generateHandshakeRequest(ConnectionAPI.MajorVersions.CURRENT_MAJOR_VERSION_VALUE,
-            ConnectionAPI.MinorVersions.CURRENT_MINOR_VERSION_VALUE);
-    MessageExecutionContext messageExecutionContext =
-        new MessageExecutionContext(mock(InternalCache.class), null,
-            new ConnectionShiroAuthenticatingStateProcessor(mock(SecurityService.class)));
-
-    Result<ConnectionAPI.HandshakeResponse, ClientProtocol.ErrorResponse> result =
-        handshakeHandler.process(serializationService, handshakeRequest, messageExecutionContext);
-    ClientProtocol.ErrorResponse errorMessage = result.getErrorMessage();
-    assertEquals(ProtocolErrorCode.UNSUPPORTED_OPERATION.codeValue,
-        errorMessage.getError().getErrorCode());
-  }
-
-  @Test
-  public void testAuthorizingStateFailsHandshake() throws Exception {
-    ConnectionAPI.HandshakeRequest handshakeRequest =
-        generateHandshakeRequest(ConnectionAPI.MajorVersions.CURRENT_MAJOR_VERSION_VALUE,
-            ConnectionAPI.MinorVersions.CURRENT_MINOR_VERSION_VALUE);
-    MessageExecutionContext messageExecutionContext =
-        new MessageExecutionContext(mock(InternalCache.class), null,
-            new ConnectionShiroAuthorizingStateProcessor(mock(SecurityService.class),
-                mock(Subject.class)));
-
-    Result<ConnectionAPI.HandshakeResponse, ClientProtocol.ErrorResponse> result =
-        handshakeHandler.process(serializationService, handshakeRequest, messageExecutionContext);
-    ClientProtocol.ErrorResponse errorMessage = result.getErrorMessage();
-    assertEquals(ProtocolErrorCode.UNSUPPORTED_OPERATION.codeValue,
-        errorMessage.getError().getErrorCode());
-  }
-
-  private ConnectionAPI.HandshakeRequest generateHandshakeRequest(int majorVersion,
+  private Handshake.NewConnectionHandshake generateHandshakeRequest(int majorVersion,
       int minorVersion) {
-    return ConnectionAPI.HandshakeRequest.newBuilder().setMajorVersion(majorVersion)
+    return Handshake.NewConnectionHandshake.newBuilder().setMajorVersion(majorVersion)
         .setMinorVersion(minorVersion).build();
   }
 }

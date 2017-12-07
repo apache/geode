@@ -22,9 +22,6 @@
 syntax = "proto3";
 package org.apache.geode.internal.protocol.protobuf.v1;
 
-import "google/protobuf/any.proto";
-import "google/protobuf/empty.proto";
-
 message Entry {
     EncodedValue key = 1;
     EncodedValue value = 2;

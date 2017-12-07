@@ -39,7 +39,7 @@ public class ClientProtocolServiceLoader {
     return resultList;
   }
 
-  public ClientProtocolService lookupService(int protocolVersion) {
+  public ClientProtocolService lookupService() {
     if (clientProtocolServices.isEmpty()) {
       throw new ServiceLoadingFailureException(
           "There is no ClientProtocolService implementation found in JVM");
@@ -50,10 +50,6 @@ public class ClientProtocolServiceLoader {
           "There is more than one ClientProtocolService implementation found in JVM; aborting");
     }
     ClientProtocolService clientProtocolService = clientProtocolServices.get(0);
-    if (clientProtocolService.getServiceProtocolVersion() != protocolVersion) {
-      throw new ServiceVersionNotFoundException(
-          "The ClientProtocolService doesn't match the requested version.");
-    }
     return clientProtocolService;
   }
 }

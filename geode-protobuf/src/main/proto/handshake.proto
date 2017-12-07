@@ -14,12 +14,24 @@
  */
 
 syntax = "proto3";
-package org.apache.geode.internal.protocol.protobuf.v1;
+package org.apache.geode.internal.protocol.protobuf;
 
-message AuthenticationRequest {
-    map<string,string> credentials = 1;
+enum MajorVersions {
+    INVALID_MAJOR_VERSION = 0;  // Protobuf requires 0 based enum
+    CURRENT_MAJOR_VERSION = 1;  // Initial message structure and handshake protocol
+}
+enum MinorVersions {
+    INVALID_MINOR_VERSION = 0;  // Protobuf requires 0 based enum
+    CURRENT_MINOR_VERSION = 1;  // Protobuf implementation at initial release
 }
 
-message AuthenticationResponse {
-    bool authenticated = 1;
+message NewConnectionHandshake {
+    fixed32 majorVersion = 1;
+    fixed32 minorVersion = 2;
+}
+
+message HandshakeAcknowledgement {
+    int32 serverMajorVersion = 1;
+    int32 serverMinorVersion = 2;
+    bool handshakePassed = 3;
 }
