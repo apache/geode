@@ -53,6 +53,7 @@ import org.apache.geode.cache.Region;
 import org.apache.geode.cache.RegionAttributes;
 import org.apache.geode.cache.RegionDestroyedException;
 import org.apache.geode.cache.asyncqueue.internal.AsyncEventQueueImpl;
+import org.apache.geode.cache.partition.PartitionRegionHelper;
 import org.apache.geode.distributed.internal.DM;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
@@ -68,12 +69,14 @@ import org.apache.geode.internal.cache.EntryEventImpl;
 import org.apache.geode.internal.cache.ForceReattemptException;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.cache.InternalRegionArguments;
+import org.apache.geode.internal.cache.LocalDataSet;
 import org.apache.geode.internal.cache.LocalRegion;
 import org.apache.geode.internal.cache.PartitionedRegion;
-import org.apache.geode.internal.cache.PartitionedRegionDataStore;
 import org.apache.geode.internal.cache.PartitionedRegionHelper;
 import org.apache.geode.internal.cache.PrimaryBucketException;
+import org.apache.geode.internal.cache.ProxyBucketRegion;
 import org.apache.geode.internal.cache.RegionQueue;
+import org.apache.geode.internal.cache.partitioned.Bucket;
 import org.apache.geode.internal.cache.wan.AbstractGatewaySender;
 import org.apache.geode.internal.cache.wan.AsyncEventQueueConfigurationException;
 import org.apache.geode.internal.cache.wan.GatewaySenderConfigurationException;
@@ -1779,6 +1782,45 @@ public class ParallelGatewaySenderQueue implements RegionQueue {
       ParallelGatewaySenderQueueMetaRegion meta =
           new ParallelGatewaySenderQueueMetaRegion(prQName, ra, null, cache, sender);
       return meta;
+    }
+  }
+
+  public void clearQueue() {
+
+    this.sender.pause();// it wil take internal read-write-lock
+    try {
+      for (PartitionedRegion prQ : this.userRegionNameToshadowPRMap.values()) {
+        clearPartitionedRegion((PartitionedRegion) prQ);
+      }
+    } finally {
+      if (this.sender.isPaused())
+        this.sender.resume();
+    }
+  }
+
+  // clear the partition region
+  private void clearPartitionedRegion(PartitionedRegion partitionedRegion) {
+    LocalDataSet lds = (LocalDataSet) PartitionRegionHelper.getLocalPrimaryData(partitionedRegion);
+    Set<Integer> set = lds.getBucketSet(); // this returns bucket ids in the function context
+    for (Integer bucketId : set) {
+      Bucket bucket = partitionedRegion.getRegionAdvisor().getBucket(bucketId);
+      if ((bucket instanceof ProxyBucketRegion == false) && bucket instanceof BucketRegion) {
+        BucketRegion bucketRegion = (BucketRegion) bucket;
+        clearBucketRegion(bucketRegion);
+      }
+    }
+  }
+
+  private void clearBucketRegion(BucketRegion bucketRegion) {
+    Set keySet = bucketRegion.keySet();
+    for (Iterator iterator = keySet.iterator(); iterator.hasNext();) {
+      Object key = iterator.next();
+      try {
+        ((BucketRegionQueue) bucketRegion).destroyKey(key);
+      } catch (ForceReattemptException e) {
+        // TODO Auto-generated catch block
+        e.printStackTrace();
+      }
     }
   }
 }

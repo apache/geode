@@ -26,13 +26,10 @@ import org.apache.geode.cache.CacheListener;
 import org.apache.geode.cache.Region;
 import org.apache.geode.internal.cache.Conflatable;
 import org.apache.geode.internal.cache.DistributedRegion;
-import org.apache.geode.internal.cache.ForceReattemptException;
 import org.apache.geode.internal.cache.PartitionedRegion;
 import org.apache.geode.internal.cache.RegionQueue;
 import org.apache.geode.internal.cache.wan.AbstractGatewaySender;
 import org.apache.geode.internal.cache.wan.GatewaySenderEventImpl;
-import org.apache.geode.internal.cache.wan.parallel.ParallelGatewaySenderEventProcessor;
-import org.apache.geode.internal.cache.wan.parallel.ParallelGatewaySenderQueue;
 import org.apache.geode.internal.size.SingleObjectSizer;
 
 /**
@@ -224,5 +221,12 @@ public class ConcurrentParallelGatewaySenderQueue implements RegionQueue {
   public long getNumEntriesOverflowOnDiskTestOnly() {
     return ((ParallelGatewaySenderQueue) (processors[0].getQueue()))
         .getNumEntriesOverflowOnDiskTestOnly();
+  }
+
+  public void clearQueue() {
+    for (int i = 0; i < processors.length; i++) {
+
+      ((ParallelGatewaySenderQueue) this.processors[i].getQueue()).clearQueue();
+    }
   }
 }
