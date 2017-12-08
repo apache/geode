@@ -16,7 +16,6 @@ package org.apache.geode.connectors.jdbc.internal;
 
 import java.io.Serializable;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.Map;
 import java.util.Properties;
 

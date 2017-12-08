@@ -40,7 +40,7 @@ import org.apache.geode.security.ResourcePermission;
 public class DescribeConnectionCommand implements GfshCommand {
 
   static final String DESCRIBE_CONNECTION = "describe jdbc-connection";
-  static final String DESCRIBE_CONNECTION__HELP = "Describe/Remove the specified jdbc connection.";
+  static final String DESCRIBE_CONNECTION__HELP = "Describe the specified jdbc connection.";
   static final String DESCRIBE_CONNECTION__NAME = "name";
   static final String DESCRIBE_CONNECTION__NAME__HELP =
       "Name of the jdbc connection to be described.";

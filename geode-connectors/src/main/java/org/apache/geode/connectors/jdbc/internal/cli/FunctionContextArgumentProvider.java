@@ -23,11 +23,7 @@ import java.io.Serializable;
 
 import org.apache.geode.cache.execute.FunctionContext;
 import org.apache.geode.connectors.jdbc.internal.InternalJdbcConnectorService;
-import org.apache.geode.connectors.jdbc.internal.xml.ElementType;
-import org.apache.geode.connectors.jdbc.internal.xml.JdbcConnectorServiceXmlGenerator;
-import org.apache.geode.connectors.jdbc.internal.xml.JdbcConnectorServiceXmlParser;
 import org.apache.geode.internal.cache.InternalCache;
-import org.apache.geode.internal.cache.xmlcache.CacheXml;
 import org.apache.geode.management.internal.cli.CliUtil;
 import org.apache.geode.management.internal.configuration.domain.XmlEntity;
 

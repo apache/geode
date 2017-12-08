@@ -20,8 +20,6 @@ import org.apache.logging.log4j.Logger;
 
 import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.execute.FunctionContext;
-import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
-import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.management.internal.cli.CliUtil;
 import org.apache.geode.management.internal.cli.functions.CliFunctionResult;
@@ -43,11 +41,7 @@ class ExceptionHandler implements Serializable {
     if (exception != null && logger.isDebugEnabled()) {
       logger.debug(exception.getMessage(), exception);
     }
-    // if (exceptionMsg != null) {
     return new CliFunctionResult(memberNameOrId, false, exceptionMsg);
-    // }
-    //
-    // return new CliFunctionResult(memberNameOrId);
   }
 
   private String getMember(final Cache cache) {

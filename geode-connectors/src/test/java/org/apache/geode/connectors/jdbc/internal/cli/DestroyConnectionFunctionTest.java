@@ -52,7 +52,7 @@ public class DestroyConnectionFunctionTest {
   private InternalJdbcConnectorService service;
 
   @Before
-  public void setUp() throws Exception {
+  public void setUp() {
     InternalCache cache = mock(InternalCache.class);
     context = mock(FunctionContext.class);
     DistributedMember member = mock(DistributedMember.class);
@@ -73,17 +73,17 @@ public class DestroyConnectionFunctionTest {
   }
 
   @Test
-  public void isHAReturnsFalse() throws Exception {
+  public void isHAReturnsFalse() {
     assertThat(function.isHA()).isFalse();
   }
 
   @Test
-  public void getIdReturnsNameOfClass() throws Exception {
+  public void getIdReturnsNameOfClass() {
     assertThat(function.getId()).isEqualTo(function.getClass().getName());
   }
 
   @Test
-  public void serializes() throws Exception {
+  public void serializes() {
     Serializable original = function;
 
     Object copy = SerializationUtils.clone(original);
@@ -92,19 +92,19 @@ public class DestroyConnectionFunctionTest {
   }
 
   @Test
-  public void destroyConnectionConfigReturnsTrueIfConnectionDestroyed() throws Exception {
+  public void destroyConnectionConfigReturnsTrueIfConnectionDestroyed() {
     when(service.getConnectionConfig(eq(connectionName))).thenReturn(configuration);
 
     assertThat(function.destroyConnectionConfig(service, connectionName)).isTrue();
   }
 
   @Test
-  public void destroyConnectionConfigReturnsFalseIfConnectionDoesNotExist() throws Exception {
+  public void destroyConnectionConfigReturnsFalseIfConnectionDoesNotExist() {
     assertThat(function.destroyConnectionConfig(service, connectionName)).isFalse();
   }
 
   @Test
-  public void executeDestroysIfConnectionConfigFound() throws Exception {
+  public void executeDestroysIfConnectionConfigFound() {
     when(service.getConnectionConfig(eq(connectionName))).thenReturn(configuration);
 
     function.execute(context);
@@ -113,7 +113,7 @@ public class DestroyConnectionFunctionTest {
   }
 
   @Test
-  public void executeReportsErrorIfConnectionConfigNotFound() throws Exception {
+  public void executeReportsErrorIfConnectionConfigNotFound() {
     function.execute(context);
 
     ArgumentCaptor<CliFunctionResult> argument = ArgumentCaptor.forClass(CliFunctionResult.class);

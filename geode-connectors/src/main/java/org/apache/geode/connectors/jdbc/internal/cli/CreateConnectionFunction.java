@@ -14,70 +14,28 @@
  */
 package org.apache.geode.connectors.jdbc.internal.cli;
 
-import static org.apache.geode.connectors.jdbc.internal.cli.FunctionContextArgumentProvider.getMemberFromContext;
-
-import org.apache.geode.cache.execute.Function;
 import org.apache.geode.cache.execute.FunctionContext;
-import org.apache.geode.cache.execute.ResultSender;
 import org.apache.geode.connectors.jdbc.internal.ConnectionConfigExistsException;
 import org.apache.geode.connectors.jdbc.internal.ConnectionConfiguration;
 import org.apache.geode.connectors.jdbc.internal.InternalJdbcConnectorService;
-import org.apache.geode.connectors.jdbc.internal.xml.ElementType;
-import org.apache.geode.connectors.jdbc.internal.xml.JdbcConnectorServiceXmlGenerator;
-import org.apache.geode.connectors.jdbc.internal.xml.JdbcConnectorServiceXmlParser;
-import org.apache.geode.internal.InternalEntity;
-import org.apache.geode.internal.cache.InternalCache;
-import org.apache.geode.internal.cache.xmlcache.CacheXml;
-import org.apache.geode.management.internal.cli.CliUtil;
 import org.apache.geode.management.internal.cli.functions.CliFunctionResult;
 import org.apache.geode.management.internal.configuration.domain.XmlEntity;
 
-public class CreateConnectionFunction implements Function<ConnectionConfiguration>, InternalEntity {
+public class CreateConnectionFunction
+    extends JdbcCliFunction<ConnectionConfiguration, CliFunctionResult> {
 
-  private static final String ID = CreateConnectionFunction.class.getName();
-
-  private final FunctionContextArgumentProvider argumentProvider;
-  private final ExceptionHandler exceptionHandler;
-
-  public CreateConnectionFunction() {
-    this(new FunctionContextArgumentProvider(), new ExceptionHandler());
-  }
-
-  private CreateConnectionFunction(FunctionContextArgumentProvider argumentProvider,
-      ExceptionHandler exceptionHandler) {
-    this.argumentProvider = argumentProvider;
-    this.exceptionHandler = exceptionHandler;
+  CreateConnectionFunction() {
+    super(new FunctionContextArgumentProvider(), new ExceptionHandler());
   }
 
   @Override
-  public boolean isHA() {
-    return false;
-  }
-
-  @Override
-  public String getId() {
-    return ID;
-  }
-
-  @Override
-  public void execute(FunctionContext<ConnectionConfiguration> context) {
-    try {
-      // input
-      ConnectionConfiguration connectionConfig = context.getArguments();
-      InternalJdbcConnectorService service = argumentProvider.getJdbcConnectorService(context);
-
-      // action
-      createConnectionConfig(service, connectionConfig);
-
-      // output
-      String member = argumentProvider.getMember(context);
-      XmlEntity xmlEntity = argumentProvider.createXmlEntity(context);
-      CliFunctionResult result = createSuccessResult(connectionConfig.getName(), member, xmlEntity);
-      context.getResultSender().lastResult(result);
-
-    } catch (Exception e) {
-      exceptionHandler.handleException(context, e);
-    }
+  CliFunctionResult getFunctionResult(InternalJdbcConnectorService service,
+      FunctionContext<ConnectionConfiguration> context) throws Exception {
+    ConnectionConfiguration connectionConfig = context.getArguments();
+    createConnectionConfig(service, connectionConfig);
+    String member = getMember(context);
+    XmlEntity xmlEntity = createXmlEntity(context);
+    return createSuccessResult(connectionConfig.getName(), member, xmlEntity);
   }
 
   /**

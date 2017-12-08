@@ -32,7 +32,6 @@ import org.mockito.ArgumentCaptor;
 
 import org.apache.geode.cache.execute.FunctionContext;
 import org.apache.geode.cache.execute.ResultSender;
-import org.apache.geode.connectors.jdbc.internal.ConnectionConfigBuilder;
 import org.apache.geode.connectors.jdbc.internal.ConnectionConfiguration;
 import org.apache.geode.connectors.jdbc.internal.InternalJdbcConnectorService;
 import org.apache.geode.distributed.DistributedMember;
@@ -42,7 +41,6 @@ import org.apache.geode.management.internal.cli.functions.CliFunctionResult;
 
 public class ListConnectionFunctionTest {
 
-  private InternalCache cache;
   private FunctionContext<Void> context;
   private ResultSender<Object> resultSender;
   private InternalJdbcConnectorService service;
@@ -56,8 +54,8 @@ public class ListConnectionFunctionTest {
   private ListConnectionFunction function;
 
   @Before
-  public void setUp() throws Exception {
-    cache = mock(InternalCache.class);
+  public void setUp() {
+    InternalCache cache = mock(InternalCache.class);
     context = mock(FunctionContext.class);
     DistributedMember member = mock(DistributedMember.class);
     resultSender = mock(ResultSender.class);
@@ -81,17 +79,17 @@ public class ListConnectionFunctionTest {
   }
 
   @Test
-  public void isHAReturnsFalse() throws Exception {
+  public void isHAReturnsFalse() {
     assertThat(function.isHA()).isFalse();
   }
 
   @Test
-  public void getIdReturnsNameOfClass() throws Exception {
+  public void getIdReturnsNameOfClass() {
     assertThat(function.getId()).isEqualTo(function.getClass().getName());
   }
 
   @Test
-  public void serializes() throws Exception {
+  public void serializes() {
     Serializable original = function;
 
     Object copy = SerializationUtils.clone(original);
@@ -100,7 +98,7 @@ public class ListConnectionFunctionTest {
   }
 
   @Test
-  public void getConnectionConfigsReturnsMultiple() throws Exception {
+  public void getConnectionConfigsReturnsMultiple() {
     expected.add(connectionConfig1);
     expected.add(connectionConfig2);
     expected.add(connectionConfig3);
@@ -112,14 +110,14 @@ public class ListConnectionFunctionTest {
   }
 
   @Test
-  public void getConnectionConfigsReturnsEmpty() throws Exception {
+  public void getConnectionConfigsReturnsEmpty() {
     ConnectionConfiguration[] actual = function.getConnectionConfigAsArray(service);
 
     assertThat(actual).isEmpty();
   }
 
   @Test
-  public void executeReturnsResultWithAllConfigs() throws Exception {
+  public void executeReturnsResultWithAllConfigs() {
     expected.add(connectionConfig1);
     expected.add(connectionConfig2);
     expected.add(connectionConfig3);
@@ -133,7 +131,7 @@ public class ListConnectionFunctionTest {
   }
 
   @Test
-  public void executeReturnsEmptyResultForNoConfigs() throws Exception {
+  public void executeReturnsEmptyResultForNoConfigs() {
     function.execute(context);
 
     ArgumentCaptor<Object[]> argument = ArgumentCaptor.forClass(Object[].class);
@@ -142,7 +140,7 @@ public class ListConnectionFunctionTest {
   }
 
   @Test
-  public void executeReturnsResultForExceptionWithoutMessage() throws Exception {
+  public void executeReturnsResultForExceptionWithoutMessage() {
     when(service.getConnectionConfigs()).thenThrow(new NullPointerException());
 
     function.execute(context);
@@ -153,7 +151,7 @@ public class ListConnectionFunctionTest {
   }
 
   @Test
-  public void executeReturnsResultForExceptionWithMessage() throws Exception {
+  public void executeReturnsResultForExceptionWithMessage() {
     when(service.getConnectionConfigs()).thenThrow(new IllegalArgumentException("some message"));
 
     function.execute(context);

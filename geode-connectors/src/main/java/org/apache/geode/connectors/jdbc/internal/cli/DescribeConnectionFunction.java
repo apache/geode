@@ -14,53 +14,19 @@
  */
 package org.apache.geode.connectors.jdbc.internal.cli;
 
-import org.apache.geode.cache.execute.Function;
 import org.apache.geode.cache.execute.FunctionContext;
 import org.apache.geode.connectors.jdbc.internal.ConnectionConfiguration;
 import org.apache.geode.connectors.jdbc.internal.InternalJdbcConnectorService;
-import org.apache.geode.internal.InternalEntity;
 
-public class DescribeConnectionFunction implements Function<String>, InternalEntity {
-
-  private static final String ID = DescribeConnectionFunction.class.getName();
-
-  private final FunctionContextArgumentProvider argumentProvider;
-  private final ExceptionHandler exceptionHandler;
+public class DescribeConnectionFunction extends JdbcCliFunction<String, ConnectionConfiguration> {
 
   DescribeConnectionFunction() {
-    this(new FunctionContextArgumentProvider(), new ExceptionHandler());
-  }
-
-  private DescribeConnectionFunction(FunctionContextArgumentProvider jdbcCommandFunctionContext,
-      ExceptionHandler exceptionHandler) {
-    this.argumentProvider = jdbcCommandFunctionContext;
-    this.exceptionHandler = exceptionHandler;
+    super(new FunctionContextArgumentProvider(), new ExceptionHandler());
   }
 
   @Override
-  public boolean isHA() {
-    return false;
-  }
-
-  @Override
-  public String getId() {
-    return ID;
-  }
-
-  @Override
-  public void execute(FunctionContext<String> context) {
-    try {
-      // input
-      InternalJdbcConnectorService service = argumentProvider.getJdbcConnectorService(context);
-      String connectionName = context.getArguments();
-
-      // action
-      ConnectionConfiguration config = service.getConnectionConfig(connectionName);
-
-      // output
-      context.getResultSender().lastResult(config);
-    } catch (Exception e) {
-      exceptionHandler.handleException(context, e);
-    }
+  ConnectionConfiguration getFunctionResult(InternalJdbcConnectorService service,
+      FunctionContext<String> context) {
+    return service.getConnectionConfig(context.getArguments());
   }
 }

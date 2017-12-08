@@ -16,76 +16,47 @@ package org.apache.geode.connectors.jdbc.internal.cli;
 
 import java.util.Map;
 
-import org.apache.geode.cache.execute.Function;
 import org.apache.geode.cache.execute.FunctionContext;
 import org.apache.geode.connectors.jdbc.internal.ConnectionConfigNotFoundException;
 import org.apache.geode.connectors.jdbc.internal.ConnectionConfiguration;
 import org.apache.geode.connectors.jdbc.internal.InternalJdbcConnectorService;
-import org.apache.geode.internal.InternalEntity;
 import org.apache.geode.management.internal.cli.functions.CliFunctionResult;
 import org.apache.geode.management.internal.configuration.domain.XmlEntity;
 
-public class AlterConnectionFunction implements Function<ConnectionConfiguration>, InternalEntity {
-
-  private static final String ID = AlterConnectionFunction.class.getName();
-
-  private final FunctionContextArgumentProvider argumentProvider;
-  private final ExceptionHandler exceptionHandler;
+public class AlterConnectionFunction
+    extends JdbcCliFunction<ConnectionConfiguration, CliFunctionResult> {
 
   AlterConnectionFunction() {
-    this(new FunctionContextArgumentProvider(), new ExceptionHandler());
-  }
-
-  private AlterConnectionFunction(FunctionContextArgumentProvider argumentProvider,
-      ExceptionHandler exceptionHandler) {
-    this.argumentProvider = argumentProvider;
-    this.exceptionHandler = exceptionHandler;
+    super(new FunctionContextArgumentProvider(), new ExceptionHandler());
   }
 
   @Override
-  public boolean isHA() {
-    return false;
-  }
-
-  @Override
-  public String getId() {
-    return ID;
-  }
-
-  @Override
-  public void execute(FunctionContext<ConnectionConfiguration> context) {
-    try {
-      // input
-      ConnectionConfiguration connectionConfig = context.getArguments();
-      InternalJdbcConnectorService service = argumentProvider.getJdbcConnectorService(context);
-      ConnectionConfiguration existingConfig =
-          service.getConnectionConfig(connectionConfig.getName());
-      if (existingConfig == null) {
-        throw new ConnectionConfigNotFoundException(
-            "ConnectionConfiguration " + connectionConfig.getName() + " was not found");
-      }
-
-      // action
-      ConnectionConfiguration alteredConfig =
-          alterConnectionConfig(connectionConfig, existingConfig);
-      service.replaceConnectionConfig(alteredConfig);
-
-      // output
-      String member = argumentProvider.getMember(context);
-      XmlEntity xmlEntity = argumentProvider.createXmlEntity(context);
-      CliFunctionResult result = createSuccessResult(connectionConfig.getName(), member, xmlEntity);
-      context.getResultSender().lastResult(result);
-
-    } catch (Exception e) {
-      exceptionHandler.handleException(context, e);
+  CliFunctionResult getFunctionResult(InternalJdbcConnectorService service,
+      FunctionContext<ConnectionConfiguration> context) throws Exception {
+    ConnectionConfiguration connectionConfig = context.getArguments();
+    ConnectionConfiguration existingConfig =
+        service.getConnectionConfig(connectionConfig.getName());
+    if (existingConfig == null) {
+      throw new ConnectionConfigNotFoundException(
+          "ConnectionConfiguration " + connectionConfig.getName() + " was not found");
     }
+
+    // action
+    ConnectionConfiguration alteredConfig = alterConnectionConfig(connectionConfig, existingConfig);
+    service.replaceConnectionConfig(alteredConfig);
+
+    // output
+    String member = getMember(context);
+    XmlEntity xmlEntity = createXmlEntity(context);
+    CliFunctionResult result = createSuccessResult(connectionConfig.getName(), member, xmlEntity);
+    return result;
   }
 
   /**
    * Creates the named connection configuration
    */
   ConnectionConfiguration alterConnectionConfig(ConnectionConfiguration connectionConfig,
-      ConnectionConfiguration existingConfig) throws ConnectionConfigNotFoundException {
+      ConnectionConfiguration existingConfig) {
     String url = getValue(connectionConfig.getUrl(), existingConfig.getUrl());
     String user = getValue(connectionConfig.getUser(), existingConfig.getUser());
     String password = getValue(connectionConfig.getPassword(), existingConfig.getPassword());

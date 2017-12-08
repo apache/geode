@@ -14,30 +14,38 @@
  */
 package org.apache.geode.connectors.jdbc.internal.cli;
 
-import java.util.Set;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.Mockito.mock;
+
+import org.junit.Before;
+import org.junit.Test;
 
 import org.apache.geode.cache.execute.FunctionContext;
-import org.apache.geode.connectors.jdbc.internal.ConnectionConfiguration;
 import org.apache.geode.connectors.jdbc.internal.InternalJdbcConnectorService;
 
-public class ListConnectionFunction extends JdbcCliFunction<Void, ConnectionConfiguration[]> {
+public class JdbcCliFunctionTest {
 
-  ListConnectionFunction() {
-    super(new FunctionContextArgumentProvider(), new ExceptionHandler());
+  private JdbcCliFunction<Void, Void> function;
+
+  @Before
+  public void setup() {
+    FunctionContextArgumentProvider argumentProvider = mock(FunctionContextArgumentProvider.class);
+    ExceptionHandler exceptionHandler = mock(ExceptionHandler.class);
+    function = new JdbcCliFunction<Void, Void>(argumentProvider, exceptionHandler) {
+      @Override
+      Void getFunctionResult(InternalJdbcConnectorService service, FunctionContext<Void> context) {
+        return null;
+      }
+    };
   }
 
-  @Override
-  ConnectionConfiguration[] getFunctionResult(InternalJdbcConnectorService service,
-      FunctionContext<Void> context) {
-    return getConnectionConfigAsArray(service);
+  @Test
+  public void isHAReturnsFalse() {
+    assertThat(function.isHA()).isFalse();
   }
 
-  ConnectionConfiguration[] getConnectionConfigAsArray(InternalJdbcConnectorService service) {
-    Set<ConnectionConfiguration> connectionConfigs = getConnectionConfigs(service);
-    return connectionConfigs.toArray(new ConnectionConfiguration[connectionConfigs.size()]);
-  }
-
-  private Set<ConnectionConfiguration> getConnectionConfigs(InternalJdbcConnectorService service) {
-    return service.getConnectionConfigs();
+  @Test
+  public void getIdReturnsNameOfClass() {
+    assertThat(function.getId()).isEqualTo(function.getClass().getName());
   }
 }

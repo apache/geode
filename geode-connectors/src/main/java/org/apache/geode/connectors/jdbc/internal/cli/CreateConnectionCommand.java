@@ -42,7 +42,7 @@ public class CreateConnectionCommand implements GfshCommand {
 
   static final String CREATE_CONNECTION = "create jdbc-connection";
   static final String CREATE_CONNECTION__HELP =
-      "Create a connection for communicating with a database through JDBC.";
+      "Create a connection for communicating with a database through jdbc.";
   static final String CREATE_CONNECTION__NAME = "name";
   static final String CREATE_CONNECTION__NAME__HELP = "Name of the connection to be created.";
   static final String CREATE_CONNECTION__URL = "url";

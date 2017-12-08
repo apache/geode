@@ -14,59 +14,27 @@
  */
 package org.apache.geode.connectors.jdbc.internal.cli;
 
-import org.apache.geode.cache.execute.Function;
 import org.apache.geode.cache.execute.FunctionContext;
 import org.apache.geode.connectors.jdbc.internal.ConnectionConfiguration;
 import org.apache.geode.connectors.jdbc.internal.InternalJdbcConnectorService;
-import org.apache.geode.internal.InternalEntity;
 import org.apache.geode.management.internal.cli.functions.CliFunctionResult;
 import org.apache.geode.management.internal.configuration.domain.XmlEntity;
 
-public class DestroyConnectionFunction implements Function<String>, InternalEntity {
+public class DestroyConnectionFunction extends JdbcCliFunction<String, CliFunctionResult> {
 
-  private static final String ID = DestroyConnectionFunction.class.getName();
-
-  private final FunctionContextArgumentProvider argumentProvider;
-  private final ExceptionHandler exceptionHandler;
-
-  public DestroyConnectionFunction() {
-    this(new FunctionContextArgumentProvider(), new ExceptionHandler());
-  }
-
-  private DestroyConnectionFunction(FunctionContextArgumentProvider jdbcCommandFunctionContext,
-      ExceptionHandler exceptionHandler) {
-    this.argumentProvider = jdbcCommandFunctionContext;
-    this.exceptionHandler = exceptionHandler;
+  DestroyConnectionFunction() {
+    super(new FunctionContextArgumentProvider(), new ExceptionHandler());
   }
 
   @Override
-  public boolean isHA() {
-    return false;
-  }
+  CliFunctionResult getFunctionResult(InternalJdbcConnectorService service,
+      FunctionContext<String> context) {
+    String connectionName = context.getArguments();
+    boolean success = destroyConnectionConfig(service, connectionName);
 
-  @Override
-  public String getId() {
-    return ID;
-  }
-
-  @Override
-  public void execute(FunctionContext<String> context) {
-    try {
-      // input
-      InternalJdbcConnectorService service = argumentProvider.getJdbcConnectorService(context);
-      String connectionName = context.getArguments();
-
-      // action
-      boolean success = destroyConnectionConfig(service, connectionName);
-
-      // output
-      String member = argumentProvider.getMember(context);
-      CliFunctionResult result = createResult(success, context, member, connectionName);
-      context.getResultSender().lastResult(result);
-
-    } catch (Exception e) {
-      exceptionHandler.handleException(context, e);
-    }
+    // output
+    String member = getMember(context);
+    return createResult(success, context, member, connectionName);
   }
 
   /**
@@ -83,11 +51,11 @@ public class DestroyConnectionFunction implements Function<String>, InternalEnti
     return false;
   }
 
-  private CliFunctionResult createResult(boolean success, FunctionContext<?> context, String member,
-      String connectionName) {
+  private CliFunctionResult createResult(boolean success, FunctionContext<String> context,
+      String member, String connectionName) {
     CliFunctionResult result;
     if (success) {
-      XmlEntity xmlEntity = argumentProvider.createXmlEntity(context);
+      XmlEntity xmlEntity = createXmlEntity(context);
       result = createSuccessResult(member, connectionName, xmlEntity);
 
     } else {
