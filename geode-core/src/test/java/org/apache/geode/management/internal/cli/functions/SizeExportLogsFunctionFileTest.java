@@ -19,11 +19,13 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.when;
 
-import org.apache.geode.cache.execute.FunctionContext;
-import org.apache.geode.management.internal.cli.functions.ExportLogsFunction.Args;
+import java.io.File;
+import java.io.IOException;
+import java.io.PrintWriter;
+import java.util.ArrayList;
+import java.util.List;
+
 import org.apache.commons.io.FileUtils;
-import org.apache.geode.distributed.DistributedMember;
-import org.apache.geode.test.junit.categories.IntegrationTest;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Rule;
@@ -32,11 +34,10 @@ import org.junit.experimental.categories.Category;
 import org.junit.rules.TemporaryFolder;
 import org.junit.rules.TestName;
 
-import java.io.File;
-import java.io.IOException;
-import java.io.PrintWriter;
-import java.util.ArrayList;
-import java.util.List;
+import org.apache.geode.cache.execute.FunctionContext;
+import org.apache.geode.distributed.DistributedMember;
+import org.apache.geode.management.internal.cli.functions.ExportLogsFunction.Args;
+import org.apache.geode.test.junit.categories.IntegrationTest;
 
 @Category(IntegrationTest.class)
 public class SizeExportLogsFunctionFileTest {

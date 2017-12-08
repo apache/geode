@@ -27,17 +27,17 @@ import org.apache.geode.test.junit.categories.UnitTest;
 
 /**
  * Test case for Trac <a href="https://svn.gemstone.com/trac/gemfire/ticket/52289">#52289</a>.
- * 
+ *
  * Asserts fixes for bug JDK-8076152 in JDK 1.8.0u20 to 1.8.0.u45.
  * http://bugs.java.com/bugdatabase/view_bug.do?bug_id=8076152
- * 
+ *
  * The JVM crashes when hotspot compiling a method that uses an array consisting of objects of a
  * base class when different child classes is used as actual instance objects AND when the array is
  * constant (declared final). The crash occurs during process of the aaload byte code.
- * 
+ *
  * This test and its corrections can be removed after the release of JDK 1.8.0u60 if we choose to
  * not support 1.8.0u20 - 1.8.0u45 inclusive.
- * 
+ *
  * @since GemFire 8.2
  */
 @Category(UnitTest.class)
@@ -48,7 +48,7 @@ public class FinalStaticArrayShouldNotCauseSegFaultTest {
     // Iterate enough to cause JIT to compile
     // javax.print.attribute.EnumSyntax::readResolve
     for (int i = 0; i < 100_000; i++) {
-      // Must execute two or more subclasses with final static arrays of
+      // Must execute two or more subclasses with static final arrays of
       // different types.
       doEvictionAlgorithm();
       doEvictionAction();

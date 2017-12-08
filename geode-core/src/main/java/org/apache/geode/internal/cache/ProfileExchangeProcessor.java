@@ -24,8 +24,8 @@ import org.apache.geode.internal.cache.CacheDistributionAdvisor.InitialImageAdvi
  * are currently two implementations, one for persistent regions and one of non persistent regions.
  * The persistent region implementation will wait for members to come online that may have a later
  * copies of the region.
- * 
- * 
+ *
+ *
  */
 public interface ProfileExchangeProcessor {
   /** Exchange profiles with other members to initialize the region */

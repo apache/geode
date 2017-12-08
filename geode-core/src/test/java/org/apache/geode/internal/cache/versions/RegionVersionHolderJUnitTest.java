@@ -1565,7 +1565,7 @@ public class RegionVersionHolderJUnitTest {
 
   /**
    * Construct a region version holder that matches the seen revisions passed in the bit set.
-   * 
+   *
    */
   private RegionVersionHolder buildHolder(BitSet bs) {
 
@@ -1673,10 +1673,10 @@ public class RegionVersionHolderJUnitTest {
 
   /**
    * Test the dominates relation between RegionVersionHolders.
-   * 
+   *
    * This test currently fails in the last case with two different holders with the same exception
    * list expressed differently. Hence it is disabled.
-   * 
+   *
    * See bug 47106
    */
   @Test
@@ -1853,7 +1853,7 @@ public class RegionVersionHolderJUnitTest {
   /**
    * Return true if bs1 dominates bs2 - meaning that at least all of the bits set in bs2 are set in
    * bs1.
-   * 
+   *
    * @param bs1
    * @param bs2
    * @return

@@ -15,12 +15,14 @@
 
 package org.apache.geode.management.internal.cli.help;
 
+import static org.apache.geode.management.internal.cli.GfshParser.LINE_SEPARATOR;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
-import static org.apache.geode.management.internal.cli.GfshParser.LINE_SEPARATOR;
-import org.apache.geode.test.junit.categories.UnitTest;
+import java.lang.annotation.Annotation;
+import java.lang.reflect.Method;
+
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
@@ -29,8 +31,7 @@ import org.springframework.shell.core.annotation.CliAvailabilityIndicator;
 import org.springframework.shell.core.annotation.CliCommand;
 import org.springframework.shell.core.annotation.CliOption;
 
-import java.lang.annotation.Annotation;
-import java.lang.reflect.Method;
+import org.apache.geode.test.junit.categories.UnitTest;
 
 @Category(UnitTest.class)
 public class HelperUnitTest {

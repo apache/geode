@@ -14,8 +14,8 @@
  */
 /*
  * Created on Oct 13, 2005
- * 
- * 
+ *
+ *
  */
 package org.apache.geode.cache.query.internal;
 
@@ -27,7 +27,6 @@ import java.util.List;
 import java.util.SortedMap;
 import java.util.TreeMap;
 
-import org.apache.geode.cache.query.internal.parse.OQLLexerTokenTypes;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Ignore;
@@ -35,11 +34,12 @@ import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
 import org.apache.geode.cache.query.CacheUtils;
+import org.apache.geode.cache.query.internal.parse.OQLLexerTokenTypes;
 import org.apache.geode.test.junit.categories.IntegrationTest;
 
 /**
- * 
- * 
+ *
+ *
  */
 @Category(IntegrationTest.class)
 public class QCompilerJUnitTest {

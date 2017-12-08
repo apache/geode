@@ -28,7 +28,7 @@ import org.apache.geode.internal.logging.LogService;
  * remove <code>IgnoredException</code>s. Each <code>IgnoredException</code> allows you to specify a
  * suspect string that will be ignored by the <code>GrepLogs</code> utility which is run after each
  * <code>DistributedTest</code> test method.
- * 
+ *
  * These methods can be used directly: <code>IgnoredException.addIgnoredException(...)</code>,
  * however, they are intended to be referenced through static import:
  *
@@ -43,15 +43,15 @@ import org.apache.geode.internal.logging.LogService;
  * <code>IgnoredException</code> immediately after. Note that
  * <code>DistributedTestCase.tearDown()</code> will automatically remove all current
  * <code>IgnoredException</code>s by invoking <code>removeAllIgnoredExceptions</code>.
- * 
+ *
  * A suspect string is typically an Exception class and/or message string.
  *
  * The <code>GrepLogs</code> utility is part of Hydra which is not included in Apache Geode. The
  * Hydra class which consumes logs and reports suspect strings is
  * <code>batterytest.greplogs.GrepLogs</code>.
- * 
+ *
  * Extracted from DistributedTestCase.
- * 
+ *
  * @since GemFire 5.7bugfix
  */
 @SuppressWarnings("serial")
@@ -139,7 +139,7 @@ public class IgnoredException implements Serializable {
    * Log in all VMs, in both the test logger and the GemFire logger the ignored exception string to
    * prevent grep logs from complaining. The suspect string is used by the GrepLogs utility and so
    * can contain regular expression characters.
-   * 
+   *
    * @since GemFire 5.7bugfix
    * @param suspectString the exception string to expect
    * @param vm the VM on which to log the expected exception or null for all VMs
@@ -189,10 +189,10 @@ public class IgnoredException implements Serializable {
    * Log in all VMs, in both the test logger and the GemFire logger the ignored exception string to
    * prevent grep logs from complaining. The suspect string is used by the GrepLogs utility and so
    * can contain regular expression characters.
-   * 
+   *
    * If you do not remove the ignored exception, it will be removed at the end of your test case
    * automatically.
-   * 
+   *
    * @since GemFire 5.7bugfix
    * @param suspectString the exception string to expect
    * @return an IgnoredException instance for removal

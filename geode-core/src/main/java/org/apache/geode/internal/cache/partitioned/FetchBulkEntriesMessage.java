@@ -60,7 +60,7 @@ import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.internal.logging.log4j.LogMarker;
 
 /**
- * 
+ *
  * @since GemFire 8.0
  */
 public class FetchBulkEntriesMessage extends PartitionMessage {
@@ -100,7 +100,7 @@ public class FetchBulkEntriesMessage extends PartitionMessage {
 
   /**
    * Sends a PartitionedRegion message to fetch all the entries for a bucketId
-   * 
+   *
    * @param recipient the member that the fetch keys message is sent to
    * @param r the PartitionedRegion that contains the bucket
    * @param bucketIds the identity of the buckets that contain the entries to be returned
@@ -400,7 +400,7 @@ public class FetchBulkEntriesMessage extends PartitionMessage {
 
     /**
      * Processes this message. This method is invoked by the receiver of the message.
-     * 
+     *
      * @param dm the distribution manager that is processing the message.
      */
     @Override
@@ -470,7 +470,7 @@ public class FetchBulkEntriesMessage extends PartitionMessage {
   /**
    * A processor to capture the value returned by
    * {@link org.apache.geode.internal.cache.partitioned.FetchBulkEntriesMessage}
-   * 
+   *
    * @since GemFire 8.0
    */
   public static class FetchBulkEntriesResponse extends ReplyProcessor21 {

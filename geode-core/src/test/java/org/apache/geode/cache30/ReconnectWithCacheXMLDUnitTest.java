@@ -18,6 +18,13 @@ import static org.apache.geode.internal.Assert.assertTrue;
 import static org.awaitility.Awaitility.await;
 import static org.junit.Assert.assertEquals;
 
+import java.util.Properties;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicBoolean;
+
+import org.junit.Test;
+import org.junit.experimental.categories.Category;
+
 import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.server.CacheServer;
 import org.apache.geode.distributed.ConfigurationProperties;
@@ -33,12 +40,6 @@ import org.apache.geode.test.junit.categories.ClientServerTest;
 import org.apache.geode.test.junit.categories.DistributedTest;
 import org.apache.geode.test.junit.categories.MembershipTest;
 import org.apache.geode.util.test.TestUtil;
-import org.junit.Test;
-import org.junit.experimental.categories.Category;
-
-import java.util.Properties;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.atomic.AtomicBoolean;
 
 /**
  * This test exercises auto-reconnect functionality when there is a cache-server that was started by

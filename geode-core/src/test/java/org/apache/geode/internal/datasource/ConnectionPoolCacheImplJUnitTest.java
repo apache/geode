@@ -14,30 +14,32 @@
  */
 /*
  * ConnectionPoolCacheImplJUnitTest.java JUnit based test
- * 
+ *
  * Created on March 3, 2005, 5:26 PM
  */
 package org.apache.geode.internal.datasource;
+
+import static org.apache.geode.distributed.ConfigurationProperties.*;
+import static org.junit.Assert.fail;
+
+import java.sql.Connection;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Properties;
+
+import javax.naming.Context;
+import javax.sql.PooledConnection;
+
+import org.junit.After;
+import org.junit.Before;
+import org.junit.Test;
+import org.junit.experimental.categories.Category;
 
 import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.CacheFactory;
 import org.apache.geode.distributed.DistributedSystem;
 import org.apache.geode.test.junit.categories.IntegrationTest;
 import org.apache.geode.util.test.TestUtil;
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.experimental.categories.Category;
-
-import javax.naming.Context;
-import javax.sql.PooledConnection;
-import java.sql.Connection;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Properties;
-
-import static org.apache.geode.distributed.ConfigurationProperties.*;
-import static org.junit.Assert.fail;
 
 /*
  * this is a Multithreaded test for datasource connection pool.

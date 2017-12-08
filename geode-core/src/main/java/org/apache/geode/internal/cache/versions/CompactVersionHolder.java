@@ -17,10 +17,10 @@ package org.apache.geode.internal.cache.versions;
 
 /**
  * A in memory representation of a VersionTag that is more compact than the VersionTag.
- * 
+ *
  * The version tag class has accumulated some temporary flags that make in undesirable to retain a
  * reference for long periods of type.
- * 
+ *
  * This class is used store version tags that are pending writing to a krf.
  *
  */

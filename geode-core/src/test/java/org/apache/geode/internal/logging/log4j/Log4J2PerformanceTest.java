@@ -16,11 +16,14 @@ package org.apache.geode.internal.logging.log4j;
 
 import static org.junit.Assert.assertTrue;
 
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.PrintWriter;
+import java.net.URL;
+
 import org.apache.commons.io.FileUtils;
-import org.apache.geode.distributed.internal.DistributionConfig;
-import org.apache.geode.internal.logging.LoggingPerformanceTestCase;
-import org.apache.geode.internal.util.IOUtils;
-import org.apache.geode.test.junit.categories.PerformanceTest;
 import org.apache.logging.log4j.Level;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -29,12 +32,10 @@ import org.junit.After;
 import org.junit.Ignore;
 import org.junit.experimental.categories.Category;
 
-import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.PrintWriter;
-import java.net.URL;
+import org.apache.geode.distributed.internal.DistributionConfig;
+import org.apache.geode.internal.logging.LoggingPerformanceTestCase;
+import org.apache.geode.internal.util.IOUtils;
+import org.apache.geode.test.junit.categories.PerformanceTest;
 
 @Category(PerformanceTest.class)
 @Ignore("Tests have no assertions")

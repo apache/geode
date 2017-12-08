@@ -20,7 +20,7 @@ import java.util.Set;
 /**
  * This is the fundamental representation of a member in a GemFire distributed system. A process
  * becomes a member by calling {@link DistributedSystem#connect}.
- * 
+ *
  * @since GemFire 5.0
  */
 public interface DistributedMember extends Comparable<DistributedMember> {
@@ -28,7 +28,7 @@ public interface DistributedMember extends Comparable<DistributedMember> {
   /**
    * Returns this member's name. The member name is set using the "name" gemfire property. Returns
    * "" if the member does not have a name.
-   * 
+   *
    * @since GemFire 7.0
    */
   public String getName();
@@ -41,7 +41,7 @@ public interface DistributedMember extends Comparable<DistributedMember> {
   /**
    * Returns the Roles that this member performs in the system. Note that the result will contain
    * both groups and roles.
-   * 
+   *
    * @deprecated Roles is scheduled to be removed
    */
   public Set<Role> getRoles();
@@ -50,7 +50,7 @@ public interface DistributedMember extends Comparable<DistributedMember> {
    * Returns the groups this member belongs to. A member defines the groups it is in using the
    * "groups" gemfire property. Note that the deprecated "roles" gemfire property are also treated
    * as groups so this result will contain both groups and roles.
-   * 
+   *
    * @return a list of groups that this member belongs to.
    */
   public List<String> getGroups();
@@ -72,5 +72,3 @@ public interface DistributedMember extends Comparable<DistributedMember> {
   public DurableClientAttributes getDurableClientAttributes();
 
 }
-
-

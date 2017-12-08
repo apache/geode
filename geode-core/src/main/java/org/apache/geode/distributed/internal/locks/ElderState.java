@@ -104,7 +104,7 @@ public class ElderState {
   /**
    * Atomically determine who is the current grantor of the given service. If no current grantor
    * exists then the caller is made the grantor.
-   * 
+   *
    * @param serviceName the name of the lock service we want the grantor of
    * @param requestor the id of the member who is making this request
    * @return the current grantor of <code>serviceName</code> and recoveryNeeded will be true if
@@ -149,7 +149,7 @@ public class ElderState {
 
   /**
    * Atomically determine who is the current grantor of the given service.
-   * 
+   *
    * @param serviceName the name of the lock service we want the grantor of
    * @return the current grantor of <code>serviceName</code> and recoveryNeeded will be true if
    *         requestor has become the grantor and needs to recover lock info.
@@ -176,7 +176,7 @@ public class ElderState {
 
   /**
    * Atomically sets the current grantor of the given service to <code>newGrantor</code>.
-   * 
+   *
    * @param serviceName the name of the lock service we want the grantor of
    * @param newGrantor the id of the member who is making this request
    * @param oldTurk if non-null then only do the become if the current grantor is the oldTurk
@@ -307,7 +307,7 @@ public class ElderState {
    * Atomically clears the current grantor of the given service if the current grantor is
    * <code>oldGrantor</code>. The next grantor for this service will not need to recover unless
    * <code>locksHeld</code> is true.
-   * 
+   *
    * @param locksHeld true if old grantor had held locks
    */
   public void clearGrantor(long grantorVersion, String serviceName, int dlsSerialNumber,

@@ -17,6 +17,7 @@ package org.apache.geode.internal.jndi;
 import static org.junit.Assert.*;
 
 import java.util.Hashtable;
+
 import javax.naming.Binding;
 import javax.naming.Context;
 import javax.naming.ContextNotEmptyException;
@@ -68,7 +69,7 @@ public class ContextJUnitTest {
 
   /**
    * Removes all entries from the specified context, including subcontexts.
-   * 
+   *
    * @param context context to clear
    */
   private void clearContext(Context context) throws NamingException {

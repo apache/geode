@@ -14,6 +14,22 @@
  */
 package org.apache.geode.cache.lucene.internal.cli.functions;
 
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.Assert.assertEquals;
+import static org.mockito.Mockito.any;
+import static org.mockito.Mockito.doThrow;
+import static org.mockito.Mockito.eq;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.spy;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
+
+import org.junit.Before;
+import org.junit.Test;
+import org.junit.experimental.categories.Category;
+import org.mockito.ArgumentCaptor;
+
 import org.apache.geode.cache.execute.FunctionContext;
 import org.apache.geode.cache.execute.ResultSender;
 import org.apache.geode.cache.lucene.internal.InternalLuceneService;
@@ -21,15 +37,9 @@ import org.apache.geode.cache.lucene.internal.LuceneServiceImpl;
 import org.apache.geode.cache.lucene.internal.cli.LuceneDestroyIndexInfo;
 import org.apache.geode.internal.cache.GemFireCacheImpl;
 import org.apache.geode.management.internal.cli.functions.CliFunctionResult;
+import org.apache.geode.management.internal.configuration.domain.XmlEntity;
 import org.apache.geode.test.fake.Fakes;
 import org.apache.geode.test.junit.categories.UnitTest;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.experimental.categories.Category;
-import org.mockito.ArgumentCaptor;
-
-import static org.junit.Assert.assertEquals;
-import static org.mockito.Mockito.*;
 
 @Category(UnitTest.class)
 public class LuceneDestroyIndexFunctionJUnitTest {
@@ -167,6 +177,15 @@ public class LuceneDestroyIndexFunctionJUnitTest {
     doThrow(new IllegalStateException()).when(this.service).destroyDefinedIndexes(eq(regionPath));
     function.execute(this.context);
     verifyFunctionResult(false);
+  }
+
+  @Test
+  public void getXmlEntity() throws Exception {
+    LuceneDestroyIndexFunction function = new LuceneDestroyIndexFunction();
+    XmlEntity entity1 = function.getXmlEntity("index", "/region");
+    XmlEntity entity2 = function.getXmlEntity("index", "region");
+    assertThat(entity1).isEqualTo(entity2);
+    assertThat(entity1.getSearchString()).isEqualTo(entity2.getSearchString());
   }
 
   private void verifyFunctionResult(boolean result) {

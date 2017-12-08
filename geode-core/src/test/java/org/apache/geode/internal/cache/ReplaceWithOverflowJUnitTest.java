@@ -14,6 +14,8 @@
  */
 package org.apache.geode.internal.cache;
 
+import static org.junit.Assert.assertEquals;
+
 import java.util.Properties;
 
 import org.junit.After;
@@ -22,7 +24,6 @@ import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
-import static org.junit.Assert.assertEquals;
 
 import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.CacheFactory;

@@ -78,4 +78,9 @@ public interface LuceneIndex {
    */
   public Map<String, Analyzer> getFieldAnalyzers();
 
+  /**
+   * Return the {@link LuceneSerializer} associated with this index
+   */
+  public LuceneSerializer getLuceneSerializer();
+
 }

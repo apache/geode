@@ -22,7 +22,7 @@ import java.util.StringTokenizer;
 /**
  * The SystemUtils class is an abstract utility class for working with, invoking methods and
  * accessing properties of the Java System class.
- * 
+ *
  * @see java.lang.System
  * @since GemFire 6.8
  */
@@ -57,7 +57,7 @@ public class SystemUtils {
    * version as the suffix like so "-zing_NN.NN.N.N". So on azul we instead use the
    * "java.specification.version" sys prop and only compare the major and minor version numbers. All
    * the stuff after the second "." in expectedVersion is ignored.
-   * 
+   *
    * @param expectedVersion an string value specifying the minimum expected version of the Java
    *        Runtime.
    * @return a boolean value indicating if the Java Runtime meets the expected version requirement.
@@ -92,7 +92,7 @@ public class SystemUtils {
 
   /**
    * Utility method to determine whether the Java application process is executing on the Apple JVM.
-   * 
+   *
    * @return a boolean value indicating whether the Java application process is executing and
    *         running on the Apple JVM.
    * @see #isJvmVendor(String)
@@ -133,7 +133,7 @@ public class SystemUtils {
   /**
    * Utility method to determine whether the Java application process is executing on the Java
    * HotSpot VM. Client or Server VM does not matter.
-   * 
+   *
    * @return a boolean value indicating whether the Java application process is executing on the
    *         Java HotSpot VM.
    * @see #isJVM(String)
@@ -144,7 +144,7 @@ public class SystemUtils {
 
   /**
    * Utility method to determine whether the Java application process is executing on the IBM J9 VM.
-   * 
+   *
    * @return a boolean value indicating whether the Java application process is executing on the IBM
    *         J9 VM.
    * @see #isJVM(String)
@@ -156,7 +156,7 @@ public class SystemUtils {
   /**
    * Utility method to determine whether the Java application process is executing on the Oracle
    * JRockit VM. Client or Server VM does not matter.
-   * 
+   *
    * @return a boolean value indicating whether the Java application process is executing on the
    *         Oracle JRockit VM.
    * @see #isJVM(String)
@@ -176,7 +176,7 @@ public class SystemUtils {
   /**
    * Utility method that determines whether the Java application process is executing in a Linux
    * operating system environment.
-   * 
+   *
    * @return a boolean value indicating whether the Java application process is executing in Linux.
    * @see #isOS(String)
    */
@@ -187,7 +187,7 @@ public class SystemUtils {
   /**
    * Utility method that determines whether the Java application process is executing in a Apple Mac
    * OSX operating system environment.
-   * 
+   *
    * @return a boolean value indicating whether the Java application process is executing in Mac
    *         OSX.
    * @see #isOS(String)
@@ -199,7 +199,7 @@ public class SystemUtils {
   /**
    * Utility method that determines whether the Java application process is executing in a Microsoft
    * Windows-based operating system environment.
-   * 
+   *
    * @return a boolean value indicating whether the Java application process is executing in
    *         Windows.
    * @see #isOS(String)
@@ -224,7 +224,7 @@ public class SystemUtils {
    * Returns true if the specified location is in the JVM classpath. This may ignore additions to
    * the classpath that are not reflected by the value in
    * {@code System.getProperty("java.class.path")}.
-   * 
+   *
    * @param location the directory or jar name to test for
    * @return true if location is in the JVM classpath
    */
@@ -236,7 +236,7 @@ public class SystemUtils {
    * Returns true if the specified location is in the JVM classpath. This may ignore additions to
    * the classpath that are not reflected by the value in
    * {@code System.getProperty("java.class.path")}.
-   * 
+   *
    * @param location the directory or jar URL to test for
    * @return true if location is in the JVM classpath
    */

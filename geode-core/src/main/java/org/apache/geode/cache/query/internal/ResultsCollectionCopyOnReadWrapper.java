@@ -35,12 +35,12 @@ import org.apache.geode.cache.query.types.ObjectType;
  * iterator.next(). This wrapper will only be used for queries executed locally PartitionedRegion
  * queries that are executed on the local node will already have been copied and will be treated as
  * remote queries, so will not use this class
- * 
+ *
  * The downside is that we may actually make two copies of the data if the cached data is actually a
  * serialized byte array. toSet, toList, toArray and toArray(Object[] a) will create new structures
  * that will iterate through the results using a SelectResultsCopyOnReadIterator. The new structures
  * will then have a copy of the values.
- * 
+ *
  * @since GemFire 8.0
  */
 public class ResultsCollectionCopyOnReadWrapper implements SelectResults {

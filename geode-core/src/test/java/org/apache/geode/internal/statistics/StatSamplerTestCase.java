@@ -32,7 +32,7 @@ import org.apache.geode.internal.util.StopWatch;
 
 /**
  * Integration TestCase for StatSampler.
- * 
+ *
  * @since GemFire 7.0
  */
 public abstract class StatSamplerTestCase {

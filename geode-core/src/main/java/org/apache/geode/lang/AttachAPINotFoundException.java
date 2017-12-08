@@ -19,7 +19,7 @@ package org.apache.geode.lang;
  * The AttachAPINotFoundException class is a RuntimeException indicating that the JDK tools.jar has
  * not been properly set on the user's classpath
  * <p/>
- * 
+ *
  * @see java.lang.RuntimeException
  * @since GemFire 7.0
  */
@@ -36,7 +36,7 @@ public class AttachAPINotFoundException extends RuntimeException {
    * Constructs an instance of the AttachAPINotFoundException class with a description of the
    * problem.
    * <p/>
-   * 
+   *
    * @param message a String describing the nature of the Exception and why it was thrown.
    */
   public AttachAPINotFoundException(final String message) {
@@ -47,7 +47,7 @@ public class AttachAPINotFoundException extends RuntimeException {
    * Constructs an instance of the AttachAPINotFoundException class with a reference to the
    * underlying Exception causing this Exception to be thrown.
    * <p/>
-   * 
+   *
    * @param cause a Throwable indicating the reason this Exception was thrown.
    */
   public AttachAPINotFoundException(final Throwable cause) {
@@ -59,7 +59,7 @@ public class AttachAPINotFoundException extends RuntimeException {
    * underlying Exception causing this Exception to be thrown in addition to a description of the
    * problem.
    * <p/>
-   * 
+   *
    * @param message a String describing the nature of the Exception and why it was thrown.
    * @param cause a Throwable indicating the reason this Exception was thrown.
    */

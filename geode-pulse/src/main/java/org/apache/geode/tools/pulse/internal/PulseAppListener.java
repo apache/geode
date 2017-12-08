@@ -17,12 +17,6 @@
 
 package org.apache.geode.tools.pulse.internal;
 
-import org.apache.geode.tools.pulse.internal.controllers.PulseController;
-import org.apache.geode.tools.pulse.internal.data.PulseConstants;
-import org.apache.geode.tools.pulse.internal.data.Repository;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
-
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.Iterator;
@@ -30,8 +24,16 @@ import java.util.Map.Entry;
 import java.util.Properties;
 import java.util.ResourceBundle;
 import java.util.Set;
+
 import javax.servlet.ServletContextEvent;
 import javax.servlet.ServletContextListener;
+
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+
+import org.apache.geode.tools.pulse.internal.controllers.PulseController;
+import org.apache.geode.tools.pulse.internal.data.PulseConstants;
+import org.apache.geode.tools.pulse.internal.data.Repository;
 
 /**
  * This class is used for checking the application running mode i.e. Embedded or not

@@ -16,12 +16,12 @@ package org.apache.geode.internal.datasource;
 
 /**
  * JavaBean for datasource and poold properties.
- * 
+ *
  * This class now contains only those paramaters which are needed by the Gemfire DataSource
  * configuration. This maps to those paramaters which are specified as attributes of
  * <jndi-binding>tag. Those parameters which are specified as attributes of <property>tag are not
  * stored.
- * 
+ *
  */
 import java.io.*;
 
@@ -133,7 +133,7 @@ public class ConfiguredDataSourceProperties implements Serializable {
 
   /**
    * Returns the class name for managed connection factory.
-   * 
+   *
    * @return String
    */
   public String getMCFClass() {
@@ -142,7 +142,7 @@ public class ConfiguredDataSourceProperties implements Serializable {
 
   /**
    * Returns the transaction type.
-   * 
+   *
    * @return "XATransaction"|"NoTransaction"|"LocalTransaction"
    */
   public String getTranType() {
@@ -151,7 +151,7 @@ public class ConfiguredDataSourceProperties implements Serializable {
 
   /**
    * Sets the login time
-   * 
+   *
    * @param loginTime
    */
   public void setLoginTimeOut(int loginTime) {
@@ -161,7 +161,7 @@ public class ConfiguredDataSourceProperties implements Serializable {
 
   /**
    * Sets the database user name .
-   * 
+   *
    * @param usr
    */
   public void setUser(String usr) {
@@ -170,7 +170,7 @@ public class ConfiguredDataSourceProperties implements Serializable {
 
   /**
    * Sets the database user password .
-   * 
+   *
    * @param passwd
    */
   public void setPassword(String passwd) {
@@ -179,7 +179,7 @@ public class ConfiguredDataSourceProperties implements Serializable {
 
   /**
    * Sets the database driver name.
-   * 
+   *
    * @param confDriver
    */
   public void setJDBCDriver(String confDriver) {
@@ -188,7 +188,7 @@ public class ConfiguredDataSourceProperties implements Serializable {
 
   /**
    * Sets the initiale pool size.
-   * 
+   *
    * @param inpoolSize
    */
   public void setInitialPoolSize(int inpoolSize) {
@@ -198,7 +198,7 @@ public class ConfiguredDataSourceProperties implements Serializable {
 
   /**
    * Sets the maximum pool size
-   * 
+   *
    * @param mxpoolSize
    */
   public void setMaxPoolSize(int mxpoolSize) {
@@ -208,12 +208,12 @@ public class ConfiguredDataSourceProperties implements Serializable {
 
   /**
    * Sets the max idle time
-   * 
+   *
    * @param mxIdleTime
    */
   /**
    * * Sets the db URL.
-   * 
+   *
    * @param urlStr
    */
   public void setURL(String urlStr) {
@@ -222,7 +222,7 @@ public class ConfiguredDataSourceProperties implements Serializable {
 
   /**
    * Sets the connection expiration time
-   * 
+   *
    * @param time
    */
   public void setConnectionExpirationTime(int time) {
@@ -232,7 +232,7 @@ public class ConfiguredDataSourceProperties implements Serializable {
 
   /**
    * Sets the connection time out.
-   * 
+   *
    * @param time
    */
   public void setConnectionTimeOut(int time) {
@@ -242,7 +242,7 @@ public class ConfiguredDataSourceProperties implements Serializable {
 
   /**
    * Sets the ConnectionPoolDataSource class name
-   * 
+   *
    * @param classname
    */
   public void setConnectionPoolDSClass(String classname) {
@@ -251,7 +251,7 @@ public class ConfiguredDataSourceProperties implements Serializable {
 
   /**
    * Sets the XADatasource class name
-   * 
+   *
    * @param classname
    */
   public void setXADSClass(String classname) {
@@ -260,7 +260,7 @@ public class ConfiguredDataSourceProperties implements Serializable {
 
   /**
    * Sets the log writer.
-   * 
+   *
    * @param pw
    */
   public void setPrintWriter(PrintWriter pw) {
@@ -269,7 +269,7 @@ public class ConfiguredDataSourceProperties implements Serializable {
 
   /**
    * Sets the MCFClass class name.
-   * 
+   *
    * @param classname
    */
   public void setMCFClass(String classname) {
@@ -279,7 +279,7 @@ public class ConfiguredDataSourceProperties implements Serializable {
   /**
    * Sets the Transaction support type for Managed Connections. It can be one of "XATransaction" |
    * "NoTransaction" |"LocalTransaction"
-   * 
+   *
    * @param type transaction type.
    */
   public void setTransactionType(String type) {

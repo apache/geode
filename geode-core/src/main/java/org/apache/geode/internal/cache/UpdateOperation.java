@@ -15,6 +15,8 @@
 
 package org.apache.geode.internal.cache;
 
+import static org.apache.geode.internal.offheap.annotations.OffHeapIdentifier.ENTRY_EVENT_NEW_VALUE;
+
 import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
@@ -47,7 +49,6 @@ import org.apache.geode.internal.offheap.annotations.Retained;
 import org.apache.geode.internal.offheap.annotations.Unretained;
 import org.apache.geode.internal.util.BlobHelper;
 import org.apache.geode.internal.util.Breadcrumbs;
-import static org.apache.geode.internal.offheap.annotations.OffHeapIdentifier.ENTRY_EVENT_NEW_VALUE;
 
 /**
  * Handles distribution messaging for updating an entry in a region.

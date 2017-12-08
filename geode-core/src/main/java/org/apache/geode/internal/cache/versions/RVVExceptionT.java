@@ -26,8 +26,8 @@ import org.apache.geode.internal.cache.versions.RVVException.ReceivedVersionsIte
 /**
  * This subclass of RVVException is the original class that uses TreeSets to hold received versions.
  * It is now only used if the exception represents a large gap.
- * 
- * 
+ *
+ *
  *
  */
 public class RVVExceptionT extends RVVException {

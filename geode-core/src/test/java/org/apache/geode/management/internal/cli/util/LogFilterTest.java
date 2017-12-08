@@ -23,11 +23,6 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
-import org.apache.geode.test.junit.categories.UnitTest;
-import org.apache.logging.log4j.Level;
-import org.junit.Test;
-import org.junit.experimental.categories.Category;
-
 import java.io.File;
 import java.nio.file.FileSystem;
 import java.nio.file.Path;
@@ -35,6 +30,12 @@ import java.nio.file.attribute.BasicFileAttributes;
 import java.nio.file.attribute.FileTime;
 import java.nio.file.spi.FileSystemProvider;
 import java.time.LocalDateTime;
+
+import org.apache.logging.log4j.Level;
+import org.junit.Test;
+import org.junit.experimental.categories.Category;
+
+import org.apache.geode.test.junit.categories.UnitTest;
 
 @Category(UnitTest.class)
 public class LogFilterTest {

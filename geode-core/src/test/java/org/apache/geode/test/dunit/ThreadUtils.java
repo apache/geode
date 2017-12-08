@@ -25,7 +25,7 @@ import org.apache.geode.internal.logging.LogService;
 /**
  * <code>ThreadUtils</code> provides static utility methods to perform thread related actions such
  * as dumping thread stacks.
- * 
+ *
  * These methods can be used directly: <code>ThreadUtils.dumpAllStacks()</code>, however, they are
  * intended to be referenced through static import:
  *
@@ -45,7 +45,7 @@ public class ThreadUtils {
 
   /**
    * Print stack dumps for all vms.
-   * 
+   *
    * @since GemFire 5.0
    */
   public static void dumpAllStacks() {
@@ -63,7 +63,7 @@ public class ThreadUtils {
 
   /**
    * Print a stack dump for this vm.
-   * 
+   *
    * @since GemFire 5.0
    */
   public static void dumpStack() {
@@ -72,7 +72,7 @@ public class ThreadUtils {
 
   /**
    * Print stack dumps for all vms on the given host.
-   * 
+   *
    * @since GemFire 5.0
    */
   public static void dumpStack(final Host host) {
@@ -83,7 +83,7 @@ public class ThreadUtils {
 
   /**
    * Print a stack dump for the given vm.
-   * 
+   *
    * @since GemFire 5.0
    */
   public static void dumpStack(final VM vm) {
@@ -112,7 +112,7 @@ public class ThreadUtils {
 
   /**
    * Wait for a thread to join.
-   * 
+   *
    * @param thread thread to wait on
    * @param timeoutMilliseconds maximum time to wait
    * @throws AssertionError if the thread does not terminate

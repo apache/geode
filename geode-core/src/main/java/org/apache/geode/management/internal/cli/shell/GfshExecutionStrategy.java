@@ -42,7 +42,7 @@ import org.apache.geode.security.NotAuthorizedException;
 
 /**
  * Defines the {@link ExecutionStrategy} for commands that are executed in GemFire Shell (gfsh).
- * 
+ *
  * @since GemFire 7.0
  */
 public class GfshExecutionStrategy implements ExecutionStrategy {
@@ -60,7 +60,7 @@ public class GfshExecutionStrategy implements ExecutionStrategy {
    * {@link GfshParseResult} for GemFire defined commands. If the command Method is decorated with
    * {@link CliMetaData#shellOnly()} set to <code>false</code>, {@link OperationInvoker} is used to
    * send the command for processing on a remote GemFire node.
-   * 
+   *
    * @param parseResult that should be executed (never presented as null)
    * @return an object which will be rendered by the {@link Shell} implementation (may return null)
    * @throws RuntimeException which is handled by the {@link Shell} implementation
@@ -91,7 +91,7 @@ public class GfshExecutionStrategy implements ExecutionStrategy {
 
   /**
    * Whether the command is available only at the shell or on GemFire member too.
-   * 
+   *
    * @param method the method to check the associated annotation
    * @return true if CliMetaData is added to the method & CliMetaData.shellOnly is set to true,
    *         false otherwise

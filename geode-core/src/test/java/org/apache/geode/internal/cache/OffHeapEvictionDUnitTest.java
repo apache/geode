@@ -19,7 +19,6 @@ import static org.junit.Assert.*;
 
 import java.util.Properties;
 
-import org.apache.geode.test.junit.categories.FlakyTest;
 import org.junit.experimental.categories.Category;
 
 import org.apache.geode.cache.CacheException;
@@ -36,6 +35,7 @@ import org.apache.geode.test.dunit.VM;
 import org.apache.geode.test.dunit.Wait;
 import org.apache.geode.test.dunit.WaitCriterion;
 import org.apache.geode.test.junit.categories.DistributedTest;
+import org.apache.geode.test.junit.categories.FlakyTest;
 
 /**
  * Performs eviction dunit tests for off-heap memory.

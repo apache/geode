@@ -500,7 +500,7 @@ public class DiskInitFileParser {
 
   /**
    * Reads a class name from the given input stream, as written by writeClass, and loads the class.
-   * 
+   *
    * @return null if class can not be loaded; otherwise loaded Class
    */
   private static Class<?> readClass(DataInput di) throws IOException {
@@ -518,7 +518,7 @@ public class DiskInitFileParser {
 
   /**
    * Reads a class name from the given input stream.
-   * 
+   *
    * @return class name
    */
   private static String readClassName(DataInput di) throws IOException {

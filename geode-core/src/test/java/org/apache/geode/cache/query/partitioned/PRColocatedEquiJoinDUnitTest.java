@@ -13,27 +13,25 @@
  * the License.
  */
 /**
- * 
+ *
  */
 package org.apache.geode.cache.query.partitioned;
 
-import org.apache.geode.test.junit.categories.FlakyTest;
-import org.junit.experimental.categories.Category;
-import org.junit.Test;
-
+import static org.apache.geode.cache.query.Utils.*;
 import static org.junit.Assert.*;
 
-import org.apache.geode.test.dunit.cache.internal.JUnit4CacheTestCase;
-import org.apache.geode.test.dunit.internal.JUnit4DistributedTestCase;
-import org.apache.geode.test.junit.categories.DistributedTest;
-
-import static org.apache.geode.cache.query.Utils.*;
-
+import java.io.DataInput;
+import java.io.DataOutput;
+import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Properties;
 
+import org.junit.Test;
+import org.junit.experimental.categories.Category;
 import parReg.query.unittest.NewPortfolio;
 import util.TestException;
 
+import org.apache.geode.DataSerializable;
 import org.apache.geode.cache.AttributesFactory;
 import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.CacheClosedException;
@@ -58,6 +56,7 @@ import org.apache.geode.cache.query.SelectResults;
 import org.apache.geode.cache.query.data.Portfolio;
 import org.apache.geode.cache.query.partitioned.PRQueryDUnitHelper.TestQueryFunction;
 import org.apache.geode.cache30.CacheSerializableRunnable;
+import org.apache.geode.distributed.ConfigurationProperties;
 import org.apache.geode.distributed.internal.ReplyException;
 import org.apache.geode.internal.cache.ForceReattemptException;
 import org.apache.geode.internal.cache.PartitionedRegion;
@@ -68,6 +67,10 @@ import org.apache.geode.test.dunit.IgnoredException;
 import org.apache.geode.test.dunit.LogWriterUtils;
 import org.apache.geode.test.dunit.VM;
 import org.apache.geode.test.dunit.Wait;
+import org.apache.geode.test.dunit.cache.internal.JUnit4CacheTestCase;
+import org.apache.geode.test.dunit.internal.JUnit4DistributedTestCase;
+import org.apache.geode.test.junit.categories.DistributedTest;
+import org.apache.geode.test.junit.categories.FlakyTest;
 
 /**
  *
@@ -93,9 +96,6 @@ public class PRColocatedEquiJoinDUnitTest extends PartitionedRegionDUnitTestCase
 
   final int redundancy = 1;
 
-  /**
-   * @param name
-   */
   public PRColocatedEquiJoinDUnitTest() {
     super();
   }
@@ -106,11 +106,19 @@ public class PRColocatedEquiJoinDUnitTest extends PartitionedRegionDUnitTestCase
     }
   }
 
+
+  @Override
+  public Properties getDistributedSystemProperties() {
+    Properties properties = super.getDistributedSystemProperties();
+    properties.put(ConfigurationProperties.SERIALIZABLE_OBJECT_FILTER, "parReg.query.unittest.**");
+    return properties;
+  }
+
   /**
    * A very basic dunit test that <br>
    * 1. Creates two PR Data Stores with redundantCopies = 1. 2. Populates the region with test data.
    * 3. Fires a LOCAL query on one data store VM and verifies the result.
-   * 
+   *
    * @throws Exception
    */
   @Test
@@ -278,49 +286,6 @@ public class PRColocatedEquiJoinDUnitTest extends PartitionedRegionDUnitTestCase
       @Override
       public void run2() throws CacheException {
 
-        // Helper classes and function
-        class TestQueryFunction extends FunctionAdapter {
-
-          @Override
-          public boolean hasResult() {
-            return true;
-          }
-
-          @Override
-          public boolean isHA() {
-            return false;
-          }
-
-          private final String id;
-
-          public TestQueryFunction(String id) {
-            super();
-            this.id = id;
-          }
-
-          @Override
-          public void execute(FunctionContext context) {
-            Cache cache = CacheFactory.getAnyInstance();
-            QueryService queryService = cache.getQueryService();
-            ArrayList allQueryResults = new ArrayList();
-            String qstr = (String) context.getArguments();
-            try {
-              Query query = queryService.newQuery(qstr);
-              context.getResultSender().sendResult(
-                  (ArrayList) ((SelectResults) query.execute((RegionFunctionContext) context))
-                      .asList());
-              context.getResultSender().lastResult(null);
-            } catch (Exception e) {
-              e.printStackTrace();
-              throw new FunctionException(e);
-            }
-          }
-
-          @Override
-          public String getId() {
-            return this.id;
-          }
-        }
         Cache cache = getCache();
         // Querying the PR region
 
@@ -367,11 +332,12 @@ public class PRColocatedEquiJoinDUnitTest extends PartitionedRegionDUnitTestCase
         .info("PRQBasicQueryDUnitTest#testPRBasicQuerying: Querying PR's Test ENDED");
   }
 
+
   /**
    * A very basic dunit test that <br>
    * 1. Creates two PR Data Stores with redundantCopies = 1. 2. Populates the region with test data.
    * 3. Fires a LOCAL query on one data store VM and verifies the result.
-   * 
+   *
    * @throws Exception
    */
   @Test
@@ -455,7 +421,7 @@ public class PRColocatedEquiJoinDUnitTest extends PartitionedRegionDUnitTestCase
    * A very basic dunit test that <br>
    * 1. Creates two PR Data Stores with redundantCopies = 1. 2. Populates the region with test data.
    * 3. Fires a LOCAL query on one data store VM and verifies the result.
-   * 
+   *
    * @throws Exception
    */
   @Test
@@ -535,7 +501,7 @@ public class PRColocatedEquiJoinDUnitTest extends PartitionedRegionDUnitTestCase
    * A very basic dunit test that <br>
    * 1. Creates two PR Data Stores with redundantCopies = 1. 2. Populates the region with test data.
    * 3. Fires a LOCAL query on one data store VM and verifies the result.
-   * 
+   *
    * @throws Exception
    */
   @Test
@@ -610,7 +576,7 @@ public class PRColocatedEquiJoinDUnitTest extends PartitionedRegionDUnitTestCase
    * A very basic dunit test that <br>
    * 1. Creates two PR Data Stores with redundantCopies = 1. 2. Populates the region with test data.
    * 3. Fires a LOCAL query on one data store VM and verifies the result.
-   * 
+   *
    * @throws Exception
    */
   @Test
@@ -695,7 +661,7 @@ public class PRColocatedEquiJoinDUnitTest extends PartitionedRegionDUnitTestCase
    * A very basic dunit test that <br>
    * 1. Creates two PR Data Stores with redundantCopies = 1. 2. Populates the region with test data.
    * 3. Fires a LOCAL query on one data store VM and verifies the result.
-   * 
+   *
    * @throws Exception
    */
   @Test
@@ -775,7 +741,7 @@ public class PRColocatedEquiJoinDUnitTest extends PartitionedRegionDUnitTestCase
    * A very basic dunit test that <br>
    * 1. Creates two PR Data Stores with redundantCopies = 1. 2. Populates the region with test data.
    * 3. Fires a LOCAL query on one data store VM and verifies the result.
-   * 
+   *
    * @throws Exception
    */
   @Test
@@ -850,7 +816,7 @@ public class PRColocatedEquiJoinDUnitTest extends PartitionedRegionDUnitTestCase
    * A very basic dunit test that <br>
    * 1. Creates two PR Data Stores with redundantCopies = 1. 2. Populates the region with test data.
    * 3. Fires a LOCAL query on one data store VM and verifies the result.
-   * 
+   *
    * @throws Exception
    */
   @Test
@@ -931,7 +897,7 @@ public class PRColocatedEquiJoinDUnitTest extends PartitionedRegionDUnitTestCase
    * A very basic dunit test that <br>
    * 1. Creates two PR Data Stores with redundantCopies = 1. 2. Populates the region with test data.
    * 3. Fires a LOCAL query on one data store VM and verifies the result.
-   * 
+   *
    * @throws Exception
    */
   @Test
@@ -1010,7 +976,7 @@ public class PRColocatedEquiJoinDUnitTest extends PartitionedRegionDUnitTestCase
    * A very basic dunit test that <br>
    * 1. Creates two PR Data Stores with redundantCopies = 1. 2. Populates the region with test data.
    * 3. Fires a LOCAL query on one data store VM and verifies the result.
-   * 
+   *
    * @throws Exception
    */
   @Test
@@ -1485,7 +1451,7 @@ public class PRColocatedEquiJoinDUnitTest extends PartitionedRegionDUnitTestCase
    * A very basic dunit test that <br>
    * 1. Creates two PR Data Stores with redundantCopies = 1. 2. Populates the region with test data.
    * 3. Fires a LOCAL query on one data store VM and verifies the result.
-   * 
+   *
    * @throws Exception
    */
   @Test
@@ -1539,48 +1505,6 @@ public class PRColocatedEquiJoinDUnitTest extends PartitionedRegionDUnitTestCase
       public void run2() throws CacheException {
 
         // Helper classes and function
-        class TestQueryFunction extends FunctionAdapter {
-
-          @Override
-          public boolean hasResult() {
-            return true;
-          }
-
-          @Override
-          public boolean isHA() {
-            return false;
-          }
-
-          private final String id;
-
-          public TestQueryFunction(String id) {
-            super();
-            this.id = id;
-          }
-
-          @Override
-          public void execute(FunctionContext context) {
-            Cache cache = CacheFactory.getAnyInstance();
-            QueryService queryService = cache.getQueryService();
-            ArrayList allQueryResults = new ArrayList();
-            String qstr = (String) context.getArguments();
-            try {
-              Query query = queryService.newQuery(qstr);
-              context.getResultSender().sendResult(
-                  (ArrayList) ((SelectResults) query.execute((RegionFunctionContext) context))
-                      .asList());
-              context.getResultSender().lastResult(null);
-            } catch (Exception e) {
-              e.printStackTrace();
-              throw new FunctionException(e);
-            }
-          }
-
-          @Override
-          public String getId() {
-            return this.id;
-          }
-        }
         Cache cache = getCache();
         // Querying the PR region
 
@@ -1626,4 +1550,60 @@ public class PRColocatedEquiJoinDUnitTest extends PartitionedRegionDUnitTestCase
     LogWriterUtils.getLogWriter()
         .info("PRQBasicQueryDUnitTest#testPRBasicQuerying: Querying PR's Test ENDED");
   }
+
+  // Helper classes and function
+  public static class TestQueryFunction extends FunctionAdapter implements DataSerializable {
+
+    public TestQueryFunction() {}
+
+    @Override
+    public boolean hasResult() {
+      return true;
+    }
+
+    @Override
+    public boolean isHA() {
+      return false;
+    }
+
+    private String id;
+
+    public TestQueryFunction(String id) {
+      super();
+      this.id = id;
+    }
+
+    @Override
+    public void execute(FunctionContext context) {
+      Cache cache = CacheFactory.getAnyInstance();
+      QueryService queryService = cache.getQueryService();
+      ArrayList allQueryResults = new ArrayList();
+      String qstr = (String) context.getArguments();
+      try {
+        Query query = queryService.newQuery(qstr);
+        context.getResultSender().sendResult(
+            (ArrayList) ((SelectResults) query.execute((RegionFunctionContext) context)).asList());
+        context.getResultSender().lastResult(null);
+      } catch (Exception e) {
+        e.printStackTrace();
+        throw new FunctionException(e);
+      }
+    }
+
+    @Override
+    public String getId() {
+      return this.id;
+    }
+
+    @Override
+    public void toData(DataOutput out) throws IOException {
+      out.writeUTF(id);
+    }
+
+    @Override
+    public void fromData(DataInput in) throws IOException, ClassNotFoundException {
+      id = in.readUTF();
+    }
+  }
+
 }

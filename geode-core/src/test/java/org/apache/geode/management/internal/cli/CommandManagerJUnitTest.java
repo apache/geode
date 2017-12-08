@@ -113,7 +113,7 @@ public class CommandManagerJUnitTest {
 
   /**
    * Tests {@link CommandManager#loadPluginCommands()}.
-   * 
+   *
    * @since GemFire 8.1
    */
   @Test

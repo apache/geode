@@ -14,6 +14,10 @@
  */
 package org.apache.geode.internal.cache;
 
+import java.util.concurrent.atomic.AtomicInteger;
+
+import org.apache.logging.log4j.Logger;
+
 import org.apache.geode.cache.EntryNotFoundException;
 import org.apache.geode.distributed.internal.DistributionConfig;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
@@ -21,9 +25,6 @@ import org.apache.geode.internal.SystemTimer;
 import org.apache.geode.internal.i18n.LocalizedStrings;
 import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.internal.logging.log4j.LocalizedMessage;
-import org.apache.logging.log4j.Logger;
-
-import java.util.concurrent.atomic.AtomicInteger;
 
 /**
  * ExpirationScheduler uses a single instance of java.util.Timer (and therefore a single thread) per

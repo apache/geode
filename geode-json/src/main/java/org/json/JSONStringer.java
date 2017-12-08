@@ -23,7 +23,7 @@ import java.util.List;
 /**
  * Implements {@link JSONObject#toString} and {@link JSONArray#toString}. Most application
  * developers should use those methods directly and disregard this API. For example:
- * 
+ *
  * <pre>
  * JSONObject object = ...
  * String json = object.toString();

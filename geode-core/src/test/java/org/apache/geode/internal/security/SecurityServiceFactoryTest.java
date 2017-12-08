@@ -23,12 +23,8 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
-import org.apache.geode.internal.cache.CacheConfig;
-import org.apache.geode.security.PostProcessor;
-import org.apache.geode.security.SimpleTestSecurityManager;
-import org.apache.geode.security.TestPostProcessor;
-import org.apache.geode.test.junit.categories.SecurityTest;
-import org.apache.geode.test.junit.categories.UnitTest;
+import java.util.Properties;
+
 import org.apache.shiro.SecurityUtils;
 import org.apache.shiro.mgt.SecurityManager;
 import org.junit.After;
@@ -36,7 +32,12 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
-import java.util.Properties;
+import org.apache.geode.internal.cache.CacheConfig;
+import org.apache.geode.security.PostProcessor;
+import org.apache.geode.security.SimpleTestSecurityManager;
+import org.apache.geode.security.TestPostProcessor;
+import org.apache.geode.test.junit.categories.SecurityTest;
+import org.apache.geode.test.junit.categories.UnitTest;
 
 @Category({UnitTest.class, SecurityTest.class})
 public class SecurityServiceFactoryTest {

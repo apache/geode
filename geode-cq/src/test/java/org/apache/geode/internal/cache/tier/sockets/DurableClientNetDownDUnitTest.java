@@ -14,14 +14,15 @@
  */
 package org.apache.geode.internal.cache.tier.sockets;
 
+import org.junit.experimental.categories.Category;
+
 import org.apache.geode.test.junit.categories.ClientSubscriptionTest;
 import org.apache.geode.test.junit.categories.DistributedTest;
-import org.junit.experimental.categories.Category;
 
 /**
  * Class <code>DurableClientCrashDUnitTest</code> tests durable client functionality when clients
  * are disconnected from servers.
- * 
+ *
  * @since GemFire 5.2
  */
 @Category({DistributedTest.class, ClientSubscriptionTest.class})

@@ -46,7 +46,7 @@ public class NewPortfolio implements Serializable {
 
   /**
    * Constructor to randomly populate the portfolio.
-   * 
+   *
    * @param name
    * @param id
    */
@@ -140,7 +140,7 @@ public class NewPortfolio implements Serializable {
 
   /**
    * To provide random values to populate a position.
-   * 
+   *
    * @return
    */
   protected Properties getProps() {
@@ -242,5 +242,3 @@ public class NewPortfolio implements Serializable {
   }
 
 }
-
-

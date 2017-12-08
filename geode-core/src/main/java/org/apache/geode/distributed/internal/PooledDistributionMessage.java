@@ -28,4 +28,3 @@ public abstract class PooledDistributionMessage extends DistributionMessage {
   }
 
 }
-

@@ -18,7 +18,7 @@ import org.apache.geode.CancelException;
 
 /**
  * Thrown when a GemFire transaction manager has been terminated.
- * 
+ *
  * @since GemFire 6.0
  */
 

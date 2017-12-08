@@ -20,8 +20,8 @@ import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.util.Date;
 
-import org.apache.geode.internal.i18n.LocalizedStrings;
 import org.apache.geode.i18n.StringId;
+import org.apache.geode.internal.i18n.LocalizedStrings;
 
 /**
  * Implementation of {@link org.apache.geode.i18n.LogWriterI18n} that will write to a local stream
@@ -38,7 +38,7 @@ public class PureLogWriter extends LogWriterImpl {
   // Constructors
   /**
    * Creates a writer that logs to <code>System.out</code>.
-   * 
+   *
    * @param level only messages greater than or equal to this value will be logged.
    * @throws IllegalArgumentException if level is not in legal range
    */
@@ -48,7 +48,7 @@ public class PureLogWriter extends LogWriterImpl {
 
   /**
    * Creates a writer that logs to <code>logWriter</code>.
-   * 
+   *
    * @param level only messages greater than or equal to this value will be logged.
    * @param logWriter is the stream that message will be printed to.
    * @throws IllegalArgumentException if level is not in legal range
@@ -59,7 +59,7 @@ public class PureLogWriter extends LogWriterImpl {
 
   /**
    * Creates a writer that logs to <code>logWriter</code>.
-   * 
+   *
    * @param level only messages greater than or equal to this value will be logged.
    * @param logWriter is the stream that message will be printed to.
    * @throws IllegalArgumentException if level is not in legal range
@@ -70,7 +70,7 @@ public class PureLogWriter extends LogWriterImpl {
 
   /**
    * Creates a writer that logs to <code>logWriter</code>.
-   * 
+   *
    * @param level only messages greater than or equal to this value will be logged.
    * @param logWriter is the stream that message will be printed to.
    * @param connectionName The name of the connection associated with this log writer
@@ -94,7 +94,7 @@ public class PureLogWriter extends LogWriterImpl {
 
   /**
    * Sets the writer's level.
-   * 
+   *
    * @throws IllegalArgumentException if level is not in legal range
    */
   public void setLevel(int newLevel) {
@@ -123,7 +123,7 @@ public class PureLogWriter extends LogWriterImpl {
 
   /**
    * Logs a message and an exception to the specified log destination.
-   * 
+   *
    * @param msgLevel a string representation of the level
    * @param msg the actual message to log
    * @param ex the actual Exception to log
@@ -148,7 +148,7 @@ public class PureLogWriter extends LogWriterImpl {
 
   /**
    * Logs a message and an exception to the specified log destination.
-   * 
+   *
    * @param msgLevel a string representation of the level
    * @param msgId the actual message to log
    * @param ex the actual Exception to log
@@ -236,7 +236,7 @@ public class PureLogWriter extends LogWriterImpl {
 
   /**
    * Sets the target that this logger will sends its output to.
-   * 
+   *
    * @return the previous target.
    */
   public PrintWriter setTarget(PrintWriter logWriter) {

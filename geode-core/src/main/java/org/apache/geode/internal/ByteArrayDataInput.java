@@ -27,7 +27,7 @@ import org.apache.geode.internal.VersionedDataStream;
 /**
  * A reusable {@link DataInput} implementation that wraps a given byte array. It also implements
  * {@link VersionedDataStream} for a stream coming from a different product version.
- * 
+ *
  * @since GemFire 7.1
  */
 public class ByteArrayDataInput extends InputStream implements DataInput, VersionedDataStream {
@@ -46,7 +46,7 @@ public class ByteArrayDataInput extends InputStream implements DataInput, Versio
 
   /**
    * Initialize this byte array stream with given byte array and version.
-   * 
+   *
    * @param bytes the content of this stream. Note that this byte array will be read by this class
    *        (a copy is not made) so it should not be changed externally.
    * @param version the product version that serialized the object on given bytes

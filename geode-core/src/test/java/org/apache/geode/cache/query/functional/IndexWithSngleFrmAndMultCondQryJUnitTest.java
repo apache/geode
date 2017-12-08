@@ -770,7 +770,7 @@ public class IndexWithSngleFrmAndMultCondQryJUnitTest {
    * BugTest for Bug # 38032 Test index usage on PR region & Local region if the where clause
    * contains three conditions but only one condition is indexed & the total number of from clause
    * iterators is 1.
-   * 
+   *
    */
   @Test
   public void testIndexUsageIfOneFieldIndexedAndMoreThanOneUnindexed_Bug38032() throws Exception {

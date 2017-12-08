@@ -15,9 +15,7 @@
 package org.apache.geode.test.process;
 
 import static org.apache.geode.distributed.ConfigurationProperties.*;
-
-import org.apache.geode.internal.logging.LogService;
-import org.apache.logging.log4j.Logger;
+import static org.junit.Assert.fail;
 
 import java.io.File;
 import java.io.PrintStream;
@@ -29,7 +27,9 @@ import java.util.concurrent.TimeoutException;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.regex.Pattern;
 
-import static org.junit.Assert.fail;
+import org.apache.logging.log4j.Logger;
+
+import org.apache.geode.internal.logging.LogService;
 
 /**
  * Wraps spawned {@link java.lang.Process} to capture output and provide interaction with the

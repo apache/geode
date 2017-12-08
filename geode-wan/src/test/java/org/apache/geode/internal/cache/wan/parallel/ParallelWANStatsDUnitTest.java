@@ -14,30 +14,24 @@
  */
 package org.apache.geode.internal.cache.wan.parallel;
 
-import org.awaitility.Awaitility;
-import org.junit.Ignore;
-import org.junit.experimental.categories.Category;
-import org.junit.Test;
-
-import static org.junit.Assert.*;
-
-import org.apache.geode.test.dunit.cache.internal.JUnit4CacheTestCase;
-import org.apache.geode.test.dunit.internal.JUnit4DistributedTestCase;
-import org.apache.geode.test.junit.categories.DistributedTest;
-
-import static org.apache.geode.test.dunit.Wait.*;
 import static org.apache.geode.test.dunit.IgnoredException.*;
+import static org.junit.Assert.*;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
+import org.awaitility.Awaitility;
+import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
+import org.apache.geode.cache.Region;
 import org.apache.geode.internal.cache.wan.WANTestBase;
 import org.apache.geode.test.dunit.AsyncInvocation;
 import org.apache.geode.test.dunit.VM;
+import org.apache.geode.test.junit.categories.DistributedTest;
 import org.apache.geode.test.junit.categories.FlakyTest;
 
 @Category(DistributedTest.class)
@@ -300,7 +294,7 @@ public class ParallelWANStatsDUnitTest extends WANTestBase {
   /**
    * 1 region and sender configured on local site and 1 region and a receiver configured on remote
    * site. Puts to the local region are in progress. Remote region is destroyed in the middle.
-   * 
+   *
    * @throws Exception
    */
   @Test
@@ -424,6 +418,10 @@ public class ParallelWANStatsDUnitTest extends WANTestBase {
     createReceiverPR(vm2, 1);
 
     Map keyValues = putKeyValues();
+
+    // Verify the conflation indexes map is empty
+    verifyConflationIndexesSize("ln", 0, vm4, vm5, vm6, vm7);
+
     final Map updateKeyValues = new HashMap();
     for (int i = 0; i < 50; i++) {
       updateKeyValues.put(i, i + "_updated");
@@ -431,11 +429,17 @@ public class ParallelWANStatsDUnitTest extends WANTestBase {
 
     vm4.invoke(() -> WANTestBase.putGivenKeyValue(testName, updateKeyValues));
 
+    // Verify the conflation indexes map equals the number of updates
+    verifyConflationIndexesSize("ln", 50, vm4, vm5, vm6, vm7);
+
     vm4.invoke(() -> WANTestBase.checkQueueSize("ln",
         keyValues.size() + updateKeyValues.size() /* creates aren't conflated */ ));
 
     // Do the puts again. Since these are updates, the previous updates will be conflated.
     vm4.invoke(() -> WANTestBase.putGivenKeyValue(testName, updateKeyValues));
+
+    // Verify the conflation indexes map still equals the number of updates
+    verifyConflationIndexesSize("ln", 50, vm4, vm5, vm6, vm7);
 
     vm4.invoke(() -> WANTestBase.checkQueueSize("ln",
         keyValues.size() + updateKeyValues.size() /* creates aren't conflated */ ));
@@ -458,28 +462,63 @@ public class ParallelWANStatsDUnitTest extends WANTestBase {
 
     vm4.invoke(() -> WANTestBase.checkQueueSize("ln", 0));
 
-    ArrayList<Integer> v4List =
-        (ArrayList<Integer>) vm4.invoke(() -> WANTestBase.getSenderStats("ln", 0));
-    ArrayList<Integer> v5List =
-        (ArrayList<Integer>) vm5.invoke(() -> WANTestBase.getSenderStats("ln", 0));
-    ArrayList<Integer> v6List =
-        (ArrayList<Integer>) vm6.invoke(() -> WANTestBase.getSenderStats("ln", 0));
-    ArrayList<Integer> v7List =
-        (ArrayList<Integer>) vm7.invoke(() -> WANTestBase.getSenderStats("ln", 0));
+    List<Integer> v4List = vm4.invoke(() -> WANTestBase.getSenderStats("ln", 0));
+    List<Integer> v5List = vm5.invoke(() -> WANTestBase.getSenderStats("ln", 0));
+    List<Integer> v6List = vm6.invoke(() -> WANTestBase.getSenderStats("ln", 0));
+    List<Integer> v7List = vm7.invoke(() -> WANTestBase.getSenderStats("ln", 0));
 
-    assertEquals(0, v4List.get(0) + v5List.get(0) + v6List.get(0) + v7List.get(0)); // queue size
-    assertEquals(200, v4List.get(1) + v5List.get(1) + v6List.get(1) + v7List.get(1)); // eventsReceived
-    assertEquals(200, v4List.get(2) + v5List.get(2) + v6List.get(2) + v7List.get(2)); // events
-                                                                                      // queued
-    assertEquals(150, v4List.get(3) + v5List.get(3) + v6List.get(3) + v7List.get(3)); // events
-                                                                                      // distributed
-    assertTrue(v4List.get(4) + v5List.get(4) + v6List.get(4) + v7List.get(4) >= 10); // batches
-                                                                                     // distributed
-    assertEquals(0, v4List.get(5) + v5List.get(5) + v6List.get(5) + v7List.get(5)); // batches
-                                                                                    // redistributed
-    assertEquals(50, v4List.get(7) + v5List.get(7) + v6List.get(7) + v7List.get(7)); // events
-                                                                                     // conflated
+    // Verify final stats
+    // 0 -> eventQueueSize
+    // 1 -> eventsReceived
+    // 2 -> eventsQueued
+    // 3 -> eventsDistributed
+    // 4 -> batchesDistributed
+    // 5 -> batchesRedistributed
+    // 7 -> eventsNotQueuedConflated
+    // 9 -> conflationIndexesMapSize
+    assertEquals(0, v4List.get(0) + v5List.get(0) + v6List.get(0) + v7List.get(0));
+    assertEquals(200, v4List.get(1) + v5List.get(1) + v6List.get(1) + v7List.get(1));
+    assertEquals(200, v4List.get(2) + v5List.get(2) + v6List.get(2) + v7List.get(2));
+    assertEquals(150, v4List.get(3) + v5List.get(3) + v6List.get(3) + v7List.get(3));
+    assertTrue(v4List.get(4) + v5List.get(4) + v6List.get(4) + v7List.get(4) >= 10);
+    assertEquals(0, v4List.get(5) + v5List.get(5) + v6List.get(5) + v7List.get(5));
+    assertEquals(50, v4List.get(7) + v5List.get(7) + v6List.get(7) + v7List.get(7));
+    assertEquals(0, v4List.get(9) + v5List.get(9) + v6List.get(9) + v7List.get(9));
+  }
 
+  @Test
+  public void testConflationWithSameEntryPuts() throws Exception {
+    // Start locators
+    Integer lnPort = vm0.invoke(() -> createFirstLocatorWithDSId(1));
+    Integer nyPort = vm2.invoke(() -> createFirstRemoteLocator(2, lnPort));
+
+    // Configure sending site member
+    String senderId = "ny";
+    String regionName = this.testName + "_PR";
+    vm1.invoke(() -> createCache(lnPort));
+    vm1.invoke(() -> createSender(senderId, 2, true, 100, 10, true, true, null, false));
+    vm1.invoke(() -> createPartitionedRegion(regionName, senderId, 0, 10, isOffHeap()));
+
+    // Do puts of the same key
+    int numIterations = 100;
+    vm1.invoke(() -> putSameEntry(regionName, numIterations));
+
+    // Wait for appropriate queue size
+    vm1.invoke(() -> checkQueueSize(senderId, 2));
+
+    // Verify the conflation indexes size stat
+    verifyConflationIndexesSize(senderId, 1, vm1);
+
+    // Configure receiving site member
+    vm3.invoke(() -> createCache(nyPort));
+    vm3.invoke(() -> createReceiver());
+    vm3.invoke(() -> createPartitionedRegion(regionName, null, 0, 10, isOffHeap()));
+
+    // Wait for queue to drain
+    vm1.invoke(() -> checkQueueSize(senderId, 0));
+
+    // Verify the conflation indexes size stat
+    verifyConflationIndexesSize(senderId, 0, vm1);
   }
 
   protected Map putKeyValues() {
@@ -539,5 +578,22 @@ public class ParallelWANStatsDUnitTest extends WANTestBase {
     vm5.invoke(() -> WANTestBase.createSender("ln", 2, true, 100, 10, false, false, null, true));
     vm6.invoke(() -> WANTestBase.createSender("ln", 2, true, 100, 10, false, false, null, true));
     vm7.invoke(() -> WANTestBase.createSender("ln", 2, true, 100, 10, false, false, null, true));
+  }
+
+  private void verifyConflationIndexesSize(String senderId, int expectedSize, VM... vms) {
+    int actualSize = 0;
+    for (VM vm : vms) {
+      List<Integer> stats = vm.invoke(() -> WANTestBase.getSenderStats(senderId, -1));
+      actualSize += stats.get(9);
+    }
+    assertEquals(expectedSize, actualSize);
+  }
+
+  private void putSameEntry(String regionName, int numIterations) {
+    // This does one create and numInterations-1 updates
+    Region region = cache.getRegion(regionName);
+    for (int i = 0; i < numIterations; i++) {
+      region.put(0, i);
+    }
   }
 }

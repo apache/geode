@@ -14,25 +14,26 @@
  */
 package org.apache.geode.cache.query.internal;
 
-import java.util.*;
 import java.io.*;
 import java.lang.reflect.Array;
 import java.lang.reflect.Modifier;
-import org.apache.geode.cache.query.*;
-import org.apache.geode.cache.query.types.*;
-import org.apache.geode.cache.query.internal.types.*;
-import org.apache.geode.internal.cache.EntriesSet;
-import org.apache.geode.internal.i18n.LocalizedStrings;
+import java.util.*;
+
 import org.apache.geode.*;
+import org.apache.geode.cache.query.*;
+import org.apache.geode.cache.query.internal.types.*;
+import org.apache.geode.cache.query.types.*;
 import org.apache.geode.internal.DataSerializableFixedID;
 import org.apache.geode.internal.InternalDataSerializer;
 import org.apache.geode.internal.Version;
+import org.apache.geode.internal.cache.EntriesSet;
+import org.apache.geode.internal.i18n.LocalizedStrings;
 
 /**
  * Implementation of SelectResults that wraps an existing java.util.Collection and optionally adds a
  * specified element type. Considered ordered if the base collection is a List; duplicates allowed
  * unless base collection is a Set. Defaults to modifiable unless set otherwise.
- * 
+ *
  * @since GemFire 4.0
  */
 public class ResultsCollectionWrapper implements SelectResults, DataSerializableFixedID {
@@ -460,7 +461,7 @@ public class ResultsCollectionWrapper implements SelectResults, DataSerializable
 
   /**
    * Getter for property modifiable.
-   * 
+   *
    * @return Value of property modifiable.
    */
   public boolean isModifiable() {
@@ -469,7 +470,7 @@ public class ResultsCollectionWrapper implements SelectResults, DataSerializable
 
   /**
    * Setter for property modifiable.
-   * 
+   *
    * @param modifiable New value of property modifiable.
    */
   public void setModifiable(boolean modifiable) {
@@ -558,7 +559,7 @@ public class ResultsCollectionWrapper implements SelectResults, DataSerializable
   }
 
   /**
-   * 
+   *
    *
    */
   class LimitIterator implements Iterator {

@@ -14,6 +14,9 @@
  */
 package org.apache.geode.internal.cache.execute;
 
+import org.junit.Before;
+import org.junit.experimental.categories.Category;
+
 import org.apache.geode.cache.Region;
 import org.apache.geode.cache.RegionShortcut;
 import org.apache.geode.cache.execute.Execution;
@@ -21,9 +24,6 @@ import org.apache.geode.cache.execute.FunctionService;
 import org.apache.geode.test.dunit.Host;
 import org.apache.geode.test.dunit.VM;
 import org.apache.geode.test.junit.categories.DistributedTest;
-
-import org.junit.Before;
-import org.junit.experimental.categories.Category;
 
 /**
  * Test of the behavior of a custom ResultCollector when handling exceptions

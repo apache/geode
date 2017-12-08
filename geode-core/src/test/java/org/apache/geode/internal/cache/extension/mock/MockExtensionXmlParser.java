@@ -28,7 +28,7 @@ import org.apache.geode.internal.cache.xmlcache.XmlParser;
 
 /**
  * Mock Extension {@link XmlParser}.
- * 
+ *
  *
  * @since GemFire 8.1
  */

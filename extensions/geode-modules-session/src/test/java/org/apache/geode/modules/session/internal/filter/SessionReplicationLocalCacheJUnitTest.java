@@ -15,13 +15,14 @@
 
 package org.apache.geode.modules.session.internal.filter;
 
-import org.apache.geode.distributed.internal.DistributionConfig;
-import org.apache.geode.modules.session.filter.SessionCachingFilter;
-import org.apache.geode.test.junit.categories.IntegrationTest;
 import com.mockrunner.mock.web.MockFilterConfig;
 import com.mockrunner.mock.web.WebMockObjectFactory;
 import org.junit.Before;
 import org.junit.experimental.categories.Category;
+
+import org.apache.geode.distributed.internal.DistributionConfig;
+import org.apache.geode.modules.session.filter.SessionCachingFilter;
+import org.apache.geode.test.junit.categories.IntegrationTest;
 
 /**
  * This runs all tests with a local cache enabled

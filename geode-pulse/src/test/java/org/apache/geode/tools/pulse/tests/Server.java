@@ -16,15 +16,6 @@ package org.apache.geode.tools.pulse.tests;
 
 import static org.apache.geode.distributed.ConfigurationProperties.SECURITY_MANAGER;
 
-import org.apache.geode.internal.security.SecurityService;
-import org.apache.geode.internal.security.SecurityServiceFactory;
-import org.apache.geode.internal.security.shiro.JMXShiroAuthenticator;
-import org.apache.geode.management.internal.security.AccessControlMBean;
-import org.apache.geode.management.internal.security.MBeanServerWrapper;
-import org.apache.geode.management.internal.security.ResourceConstants;
-import org.apache.geode.security.TestSecurityManager;
-import org.apache.geode.tools.pulse.internal.data.PulseConstants;
-
 import java.io.IOException;
 import java.lang.management.ManagementFactory;
 import java.net.Inet4Address;
@@ -35,6 +26,7 @@ import java.rmi.registry.LocateRegistry;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Properties;
+
 import javax.management.InstanceAlreadyExistsException;
 import javax.management.MBeanRegistrationException;
 import javax.management.MBeanServer;
@@ -44,6 +36,15 @@ import javax.management.ObjectName;
 import javax.management.remote.JMXConnectorServer;
 import javax.management.remote.JMXConnectorServerFactory;
 import javax.management.remote.JMXServiceURL;
+
+import org.apache.geode.internal.security.SecurityService;
+import org.apache.geode.internal.security.SecurityServiceFactory;
+import org.apache.geode.internal.security.shiro.JMXShiroAuthenticator;
+import org.apache.geode.management.internal.security.AccessControlMBean;
+import org.apache.geode.management.internal.security.MBeanServerWrapper;
+import org.apache.geode.management.internal.security.ResourceConstants;
+import org.apache.geode.security.TestSecurityManager;
+import org.apache.geode.tools.pulse.internal.data.PulseConstants;
 
 public class Server {
 

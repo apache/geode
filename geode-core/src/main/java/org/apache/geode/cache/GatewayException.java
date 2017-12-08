@@ -32,7 +32,7 @@ public class GatewayException extends OperationAbortedException {
   /**
    * Constructor. Creates an instance of <code>GatewayException</code> with the specified detail
    * message.
-   * 
+   *
    * @param msg the detail message
    */
   public GatewayException(String msg) {
@@ -42,7 +42,7 @@ public class GatewayException extends OperationAbortedException {
   /**
    * Constructor. Creates an instance of <code>GatewayException</code> with the specified detail
    * message and cause.
-   * 
+   *
    * @param msg the detail message
    * @param cause the causal Throwable
    */
@@ -52,7 +52,7 @@ public class GatewayException extends OperationAbortedException {
 
   /**
    * Constructor. Creates an instance of <code>GatewayException</code> with the specified cause.
-   * 
+   *
    * @param cause the causal Throwable
    */
   public GatewayException(Throwable cause) {

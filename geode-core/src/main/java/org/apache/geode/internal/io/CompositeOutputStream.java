@@ -23,7 +23,7 @@ import java.util.Set;
 
 /**
  * Delegates all operations to a collection of OutputStreams.
- * 
+ *
  * @since GemFire 7.0
  */
 public class CompositeOutputStream extends OutputStream implements Iterable<OutputStream> {
@@ -34,7 +34,7 @@ public class CompositeOutputStream extends OutputStream implements Iterable<Outp
 
   /**
    * Constructs a new instance of CompositeOutputStream with zero or more OutputStreams.
-   * 
+   *
    * @param out zero or more OutputStreams to add to the new instance of CompositeOutputStream
    */
   public CompositeOutputStream(OutputStream... out) {

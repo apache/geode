@@ -15,14 +15,14 @@
 
 package org.apache.geode.cache.operations;
 
-import org.apache.geode.cache.Region;
-
 import java.util.Set;
+
+import org.apache.geode.cache.Region;
 
 /**
  * Encapsulates a {@link org.apache.geode.cache.operations.OperationContext.OperationCode#KEY_SET}
  * operation for both the pre-operation and post-operation cases.
- * 
+ *
  * @since GemFire 5.5
  * @deprecated since Geode1.0, use {@link org.apache.geode.security.ResourcePermission} instead
  */
@@ -36,7 +36,7 @@ public class KeySetOperationContext extends OperationContext {
 
   /**
    * Constructor for the operation.
-   * 
+   *
    * @param postOperation true to set the post-operation flag
    */
   public KeySetOperationContext(boolean postOperation) {
@@ -45,7 +45,7 @@ public class KeySetOperationContext extends OperationContext {
 
   /**
    * Return the operation associated with the <code>OperationContext</code> object.
-   * 
+   *
    * @return <code>OperationCode.KEY_SET</code>.
    */
   @Override
@@ -70,7 +70,7 @@ public class KeySetOperationContext extends OperationContext {
 
   /**
    * Get the set of keys returned as a result of {@link Region#keySet} operation.
-   * 
+   *
    * @return the set of keys
    */
   public Set getKeySet() {
@@ -79,7 +79,7 @@ public class KeySetOperationContext extends OperationContext {
 
   /**
    * Set the keys to be returned as the result of {@link Region#keySet} operation.
-   * 
+   *
    * @param keySet the set of keys to be returned for this operation.
    */
   public void setKeySet(Set keySet) {

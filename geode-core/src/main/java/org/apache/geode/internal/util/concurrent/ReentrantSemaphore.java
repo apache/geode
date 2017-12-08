@@ -23,13 +23,13 @@ import java.util.concurrent.TimeUnit;
  * acquire a real permit the first time it calls acquire. After that, the thread can call acquire
  * repeatedly, and it won't affect the semaphore count until the thread calls release the same
  * number of times as acquire.
- * 
+ *
  * This semaphore currently only supports a thread acquiring and releasing a single permit at a
  * time.
- * 
+ *
  * If a thread does not hold the semaphore, but still decrements it, then it will increase the
  * permits of the semaphore, just like a regular semaphore.
- * 
+ *
  * This semaphore is useful for allowing only a limited number of threads to enter a block of code,
  * while allowing a single thread to try to enter that block several times in it's call stack.
  *

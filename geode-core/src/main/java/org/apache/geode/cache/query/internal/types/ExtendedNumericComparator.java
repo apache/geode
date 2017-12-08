@@ -22,7 +22,7 @@ import org.apache.geode.cache.query.internal.Undefined;
 
 /**
  * A general comparator that will let us compare different numeric types for equality
- * 
+ *
  */
 
 public class ExtendedNumericComparator extends NumericComparator implements Comparator {

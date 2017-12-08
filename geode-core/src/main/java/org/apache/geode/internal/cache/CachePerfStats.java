@@ -16,9 +16,9 @@
 package org.apache.geode.internal.cache;
 
 import org.apache.geode.*;
-import org.apache.geode.internal.*;
 import org.apache.geode.distributed.internal.PoolStatHelper;
 import org.apache.geode.distributed.internal.QueueStatHelper;
+import org.apache.geode.internal.*;
 import org.apache.geode.internal.statistics.StatisticsTypeFactoryImpl;
 
 /**
@@ -71,11 +71,11 @@ public class CachePerfStats {
   protected static final int eventQueueThrottleCountId;
   protected static final int eventThreadsId;
   protected static final int missesId;
-  protected final static int queryExecutionsId;
-  protected final static int queryExecutionTimeId;
-  protected final static int queryResultsHashCollisionsId;
-  protected final static int queryResultsHashCollisionProbeTimeId;
-  protected final static int partitionedRegionQueryRetriesId;
+  protected static final int queryExecutionsId;
+  protected static final int queryExecutionTimeId;
+  protected static final int queryResultsHashCollisionsId;
+  protected static final int queryResultsHashCollisionProbeTimeId;
+  protected static final int partitionedRegionQueryRetriesId;
 
   protected static final int txSuccessLifeTimeId;
   protected static final int txFailedLifeTimeId;
@@ -655,7 +655,7 @@ public class CachePerfStats {
 
   /**
    * Returns the current NanoTime or, if clock stats are disabled, zero.
-   * 
+   *
    * @since GemFire 5.0
    */
   public static long getStatTime() {
@@ -1369,7 +1369,7 @@ public class CachePerfStats {
 
   /**
    * Returns the Statistics instance that stores the cache perf stats.
-   * 
+   *
    * @since GemFire 3.5
    */
   public Statistics getStats() {
@@ -1403,7 +1403,7 @@ public class CachePerfStats {
   /**
    * Returns a helper object so that the event pool can record its stats to the proper cache perf
    * stats.
-   * 
+   *
    * @since GemFire 3.5
    */
   public PoolStatHelper getEventPoolHelper() {

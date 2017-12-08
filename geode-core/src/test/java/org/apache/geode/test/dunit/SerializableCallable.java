@@ -39,7 +39,7 @@ import java.util.concurrent.Callable;
  *   assertIndexDetailsEquals(value, vm1.invoke(putMethod));
  *  }
  * </PRE>
- * 
+ *
  */
 public abstract class SerializableCallable<T> implements SerializableCallableIF<T> {
 

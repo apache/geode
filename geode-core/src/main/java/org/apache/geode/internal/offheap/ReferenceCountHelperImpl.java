@@ -34,8 +34,8 @@ class ReferenceCountHelperImpl {
   private ConcurrentMap<Long, List<RefCountChangeInfo>> freedStacktraces;
   private ThreadLocal<Object> refCountOwner;
   private ThreadLocal<AtomicInteger> refCountReenterCount;
-  final static private Object SKIP_REF_COUNT_TRACKING = new Object();
-  final static private List<RefCountChangeInfo> LOCKED = Collections.emptyList();
+  private static final Object SKIP_REF_COUNT_TRACKING = new Object();
+  private static final List<RefCountChangeInfo> LOCKED = Collections.emptyList();
 
   ReferenceCountHelperImpl(boolean trackRefCounts, boolean trackFreedRefCounts) {
     this.trackRefCounts = trackRefCounts;

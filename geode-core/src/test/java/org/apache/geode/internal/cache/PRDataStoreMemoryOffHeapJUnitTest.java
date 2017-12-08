@@ -14,17 +14,18 @@
  */
 package org.apache.geode.internal.cache;
 
-import org.apache.geode.cache.RegionFactory;
-import org.apache.geode.test.junit.categories.IntegrationTest;
-import org.junit.experimental.categories.Category;
+import static org.apache.geode.distributed.ConfigurationProperties.*;
 
 import java.util.Properties;
 
-import static org.apache.geode.distributed.ConfigurationProperties.*;
+import org.junit.experimental.categories.Category;
+
+import org.apache.geode.cache.RegionFactory;
+import org.apache.geode.test.junit.categories.IntegrationTest;
 
 /**
  * Tests PartitionedRegion DataStore currentAllocatedMemory operation.
- * 
+ *
  * @since Geode 1.0
  */
 @Category(IntegrationTest.class)

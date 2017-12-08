@@ -14,26 +14,25 @@
  */
 /*
  * Created on Feb 20, 2006
- * 
+ *
  * TODO To change the template for this generated file go to Window - Preferences - Java - Code
  * Style - Code Templates
  */
 package org.apache.geode.internal.cache;
 
+import static org.junit.Assert.*;
+
 import java.util.Collection;
 
-import org.junit.After;
-import org.junit.Before;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
-import static org.junit.Assert.*;
-
+import org.apache.geode.internal.cache.entries.DiskEntry;
 import org.apache.geode.test.junit.categories.IntegrationTest;
 
 /**
  * This test does a check that conflation in the buffer happen correctly
- * 
+ *
  * Conflation cases tested include:
  * <ul>
  * <li>create, modify

@@ -30,9 +30,9 @@ import org.apache.geode.internal.admin.remote.DistributionLocatorId;
 
 /**
  * List of remote locators as a response
- * 
- * 
- * 
+ *
+ *
+ *
  */
 public class RemoteLocatorJoinResponse implements DataSerializableFixedID {
 

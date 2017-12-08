@@ -33,10 +33,10 @@ import org.junit.runner.RunWith;
 import org.apache.geode.distributed.internal.DistributionConfig;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.internal.cache.InternalCache;
-import org.apache.geode.test.junit.rules.GfshShellConnectionRule;
 import org.apache.geode.test.dunit.rules.LocatorServerStartupRule;
 import org.apache.geode.test.dunit.rules.MemberVM;
 import org.apache.geode.test.junit.categories.DistributedTest;
+import org.apache.geode.test.junit.rules.GfshCommandRule;
 
 @Category(DistributedTest.class)
 @RunWith(JUnitParamsRunner.class)
@@ -46,7 +46,7 @@ public class DescribeConfigCommandDUnitTest {
       new LocatorServerStartupRule().withTempWorkingDir().withLogFile();
 
   @Rule
-  public GfshShellConnectionRule gfsh = new GfshShellConnectionRule();
+  public GfshCommandRule gfsh = new GfshCommandRule();
 
   @Rule
   public TemporaryFolder temporaryFolder = new TemporaryFolder();
@@ -61,19 +61,19 @@ public class DescribeConfigCommandDUnitTest {
     MemberVM server0 = startupRule.startServerAsJmxManager(0, localProps);
 
     if (connectOverHttp) {
-      gfsh.connectAndVerify(server0.getHttpPort(), GfshShellConnectionRule.PortType.http);
+      gfsh.connectAndVerify(server0.getHttpPort(), GfshCommandRule.PortType.http);
     } else {
-      gfsh.connectAndVerify(server0.getJmxPort(), GfshShellConnectionRule.PortType.jmxManager);
+      gfsh.connectAndVerify(server0.getJmxPort(), GfshCommandRule.PortType.jmxManager);
     }
 
     server0.invoke(() -> {
-      InternalCache cache = LocatorServerStartupRule.serverStarter.getCache();
+      InternalCache cache = LocatorServerStartupRule.getCache();
       InternalDistributedSystem system = cache.getInternalDistributedSystem();
       DistributionConfig config = system.getConfig();
       config.setArchiveFileSizeLimit(1000);
     });
 
-    gfsh.executeAndVerifyCommand("describe config --member=" + server0.getName());
+    gfsh.executeAndAssertThat("describe config --member=" + server0.getName()).statusIsSuccess();
     String result = gfsh.getGfshOutput();
 
     assertThat(result).containsPattern("enable-time-statistics\\s+: true");
@@ -83,9 +83,8 @@ public class DescribeConfigCommandDUnitTest {
     assertThat(result).containsPattern("is-server\\s+: true");
     assertThat(result).doesNotContain("copy-on-read");
 
-    gfsh.executeAndVerifyCommand(
-        "describe config --member=" + server0.getName() + " --hide-defaults=false");
-    result = gfsh.getGfshOutput();
-    assertThat(result).contains("copy-on-read");
+    gfsh.executeAndAssertThat(
+        "describe config --member=" + server0.getName() + " --hide-defaults=false")
+        .statusIsSuccess().containsOutput("copy-on-read");
   }
 }

@@ -23,7 +23,7 @@ import org.apache.commons.lang.SystemUtils;
 
 /**
  * Reads the output stream of a Process.
- * 
+ *
  * @since GemFire 7.0
  */
 public abstract class ProcessStreamReader implements Runnable {

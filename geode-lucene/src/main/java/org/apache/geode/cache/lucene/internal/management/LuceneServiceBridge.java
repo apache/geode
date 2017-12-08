@@ -14,17 +14,17 @@
  */
 package org.apache.geode.cache.lucene.internal.management;
 
-import org.apache.geode.cache.Region;
-import org.apache.geode.cache.lucene.LuceneIndex;
-import org.apache.geode.cache.lucene.LuceneService;
-import org.apache.geode.cache.lucene.internal.LuceneIndexImpl;
-import org.apache.geode.cache.lucene.management.LuceneIndexMetrics;
-
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
+
+import org.apache.geode.cache.Region;
+import org.apache.geode.cache.lucene.LuceneIndex;
+import org.apache.geode.cache.lucene.LuceneService;
+import org.apache.geode.cache.lucene.internal.LuceneIndexImpl;
+import org.apache.geode.cache.lucene.management.LuceneIndexMetrics;
 
 public class LuceneServiceBridge {
 

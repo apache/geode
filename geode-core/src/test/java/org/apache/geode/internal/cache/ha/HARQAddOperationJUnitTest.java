@@ -23,9 +23,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
-import org.apache.geode.internal.cache.InternalCache;
-import org.apache.geode.internal.cache.ha.HARegionQueue.MapWrapper;
-import org.apache.geode.test.junit.categories.ClientSubscriptionTest;
 import org.apache.logging.log4j.Logger;
 import org.awaitility.Awaitility;
 import org.junit.After;
@@ -46,8 +43,11 @@ import org.apache.geode.cache.Scope;
 import org.apache.geode.cache.util.CacheListenerAdapter;
 import org.apache.geode.internal.cache.Conflatable;
 import org.apache.geode.internal.cache.EventID;
+import org.apache.geode.internal.cache.InternalCache;
+import org.apache.geode.internal.cache.ha.HARegionQueue.MapWrapper;
 import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.test.dunit.ThreadUtils;
+import org.apache.geode.test.junit.categories.ClientSubscriptionTest;
 import org.apache.geode.test.junit.categories.IntegrationTest;
 
 /**
@@ -66,13 +66,13 @@ public class HARQAddOperationJUnitTest {
   /** The <code>RegionQueue</code> instance */
   private HARegionQueue rq = null;
 
-  protected final static String KEY1 = "Key-1";
+  protected static final String KEY1 = "Key-1";
 
-  protected final static String KEY2 = "Key-2";
+  protected static final String KEY2 = "Key-2";
 
-  protected final static String VALUE1 = "Value-1";
+  protected static final String VALUE1 = "Value-1";
 
-  protected final static String VALUE2 = "Value-2";
+  protected static final String VALUE2 = "Value-2";
 
   protected boolean testFailed = false;
 
@@ -80,7 +80,7 @@ public class HARQAddOperationJUnitTest {
 
   protected int barrierCount = 0;
 
-  volatile static int expiryCount = 0;
+  static volatile int expiryCount = 0;
 
   @Before
   public void setUp() throws Exception {

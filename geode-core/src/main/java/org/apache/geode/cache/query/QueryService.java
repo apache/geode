@@ -15,23 +15,24 @@
 package org.apache.geode.cache.query;
 
 import java.util.*;
+
 import org.apache.geode.cache.*;
 import org.apache.geode.cache.query.internal.Undefined;
 
 /**
  * Interface for the query service, which is used for instantiating queries, creating and destroying
  * indexes, creating CQs and operating on CQs.
- * 
+ *
  * Creating an index on an employee's age using QueryService in region "employeeRegion",
  * QueryService queryService = cache.getQueryService(); queryService.createIndex ("SampleIndex",
  * //IndexName "e.age" //indexExpression "/employeeRegion e", //regionPath );
- * 
+ *
  * The CQs work on the server regions, the client can use the CQ methods supported in this class to
  * create/operate CQs on the server. The CQ obtains the Server connection from the corresponding
  * local region on the client. The implementation of this interface is obtained from the Cache using
  * {@link Cache#getQueryService}.
  *
- * 
+ *
  * @since GemFire 4.0
  */
 public interface QueryService {
@@ -41,7 +42,7 @@ public interface QueryService {
 
   /**
    * Constructs a new <code>Query</code> object.
-   * 
+   *
    * @param queryString the String that is the query program
    * @return The new <code>Query</code> object.
    * @throws QueryInvalidException if the syntax of the queryString is invalid.
@@ -54,17 +55,17 @@ public interface QueryService {
    * not supported with asynchronous index maintenance. Hash index is also not supported with a from
    * clause with multiple iterators. Queries on numeric types must match the indexed value. For
    * Example: For a float field the query should be specified as floatField = 1.0f
-   * 
+   *
    * @param indexName the name of this index.
    * @param indexedExpression refers to the field of the region values that are referenced by the
    *        regionPath.
    * @param regionPath that resolves to region values or nested collections of region values which
    *        will correspond to the FROM clause in a query. Check following examples. The regionPath
    *        is restricted to only one expression
-   * 
+   *
    *        Example: Query1: "Select * from /portfolio p where p.mktValue = 25.00" For index on
    *        mktValue field: indexExpression: "p.mktValue" regionPath: "/portfolio p"
-   * 
+   *
    * @return the newly created Index
    * @throws QueryInvalidException if the argument query language strings have invalid syntax
    * @throws IndexInvalidException if the arguments do not correctly specify an index
@@ -74,7 +75,7 @@ public interface QueryService {
    * @throws RegionNotFoundException if the region referred to in the fromClause doesn't exist
    * @throws UnsupportedOperationException If Index is being created on a region which does not
    *         support indexes.
-   * 
+   *
    */
   public Index createHashIndex(String indexName, String indexedExpression, String regionPath)
       throws IndexInvalidException, IndexNameConflictException, IndexExistsException,
@@ -84,17 +85,17 @@ public interface QueryService {
    * Defines a key index that can be used when executing queries. The key index expression indicates
    * query engine to use region key as index for query evaluation. They are used to make use of the
    * implicit hash index supported with GemFire regions.
-   * 
+   *
    * @param indexName the name of this index.
    * @param indexedExpression refers to the keys of the region that is referenced by the regionPath.
    *        For example, an index with indexedExpression "ID" might be used for a query with a WHERE
    *        clause of "ID > 10", In this case the ID value is evaluated using region keys.
    * @param regionPath that resolves to the region which will correspond to the FROM clause in a
    *        query. The regionPath must include exactly one region.
-   * 
+   *
    *        Example: Query1: "Select * from /portfolio p where p.ID = 10" indexExpression: "p.ID"
    *        regionPath: "/portfolio p"
-   * 
+   *
    * @throws RegionNotFoundException if the region referred to in the fromClause doesn't exist
    */
   public void defineKeyIndex(String indexName, String indexedExpression, String regionPath)
@@ -106,19 +107,19 @@ public interface QueryService {
    * clause with multiple iterators. Queries on numeric types must match the indexed value. For
    * Example: For a float field the query should be specified as floatField = 1.0f To create all the
    * defined indexes call {@link #createDefinedIndexes()}
-   * 
+   *
    * @param indexName the name of this index.
    * @param indexedExpression refers to the field of the region values that are referenced by the
    *        regionPath.
    * @param regionPath that resolves to region values or nested collections of region values which
    *        will correspond to the FROM clause in a query. Check following examples. The regionPath
    *        is restricted to only one expression
-   * 
+   *
    *        Example: Query1: "Select * from /portfolio p where p.mktValue = 25.00" For index on
    *        mktValue field: indexExpression: "p.mktValue" regionPath: "/portfolio p"
-   * 
+   *
    * @throws RegionNotFoundException if the region referred to in the fromClause doesn't exist
-   * 
+   *
    */
   public void defineHashIndex(String indexName, String indexedExpression, String regionPath)
       throws RegionNotFoundException;
@@ -140,10 +141,10 @@ public interface QueryService {
    * @param imports string containing imports (in the query language syntax, each import statement
    *        separated by a semicolon), provides packages and classes used in variable typing in the
    *        Indexed and FROM expressions. The use is the same as for the FROM clause in querying.
-   * 
+   *
    *        Example: Query1: "Select * from /portfolio p where p.mktValue = 25.00" For index on
    *        mktValue field: indexExpression: "p.mktValue" regionPath: "/portfolio p"
-   * 
+   *
    * @throws RegionNotFoundException if the region referred to in the fromClause doesn't exist
    */
   public void defineHashIndex(String indexName, String indexedExpression, String regionPath,
@@ -160,15 +161,15 @@ public interface QueryService {
    *        will correspond to the FROM clause in a query. Check following examples. The regionPath
    *        must include exactly one region, but may include multiple expressions as required to
    *        drill down into nested region contents.
-   * 
+   *
    *        Example: Query1: "Select * from /portfolio p where p.mktValue > 25.00" For index on
    *        mktValue field: indexExpression: "p.mktValue" regionPath: "/portfolio p"
-   * 
+   *
    *        Query2: "Select * from /portfolio p, p.positions.values pos where pos.secId ='VMWARE'"
    *        For index on secId field: indexExpression: "pos.secId" regionPath: "/portfolio p,
    *        p.positions.values pos"
    * @throws RegionNotFoundException if the region referred to in the fromClause doesn't exist
-   * 
+   *
    */
   public void defineIndex(String indexName, String indexedExpression, String regionPath)
       throws RegionNotFoundException;
@@ -176,7 +177,7 @@ public interface QueryService {
   /**
    * Defines an index that can be used when executing queries. To create all the defined indexes
    * call {@link #createDefinedIndexes()}
-   * 
+   *
    * @param indexName the name of this index.
    * @param indexedExpression refers to the field of the region values that are referenced by the
    *        regionPath.
@@ -187,10 +188,10 @@ public interface QueryService {
    * @param imports string containing imports (in the query language syntax, each import statement
    *        separated by a semicolon), provides packages and classes used in variable typing in the
    *        Indexed and FROM expressions. The use is the same as for the FROM clause in querying.
-   * 
+   *
    *        Example: Query1: "Select * from /portfolio p where p.mktValue > 25.00" For index on
    *        mktValue field: indexExpression: "p.mktValue" regionPath: "/portfolio p"
-   * 
+   *
    *        Query2: "Select * from /portfolio p, p.positions.values pos where pos.secId ='VMWARE'"
    *        For index on secId field: indexExpression: "pos.secId" regionPath: "/portfolio p,
    *        p.positions.values pos TYPE Position" imports: "package.Position"
@@ -218,10 +219,10 @@ public interface QueryService {
    * @param imports string containing imports (in the query language syntax, each import statement
    *        separated by a semicolon), provides packages and classes used in variable typing in the
    *        Indexed and FROM expressions. The use is the same as for the FROM clause in querying.
-   * 
+   *
    *        Example: Query1: "Select * from /portfolio p where p.mktValue = 25.00" For index on
    *        mktValue field: indexExpression: "p.mktValue" regionPath: "/portfolio p"
-   * 
+   *
    * @return the newly created Index
    * @throws QueryInvalidException if the argument query language strings have invalid syntax
    * @throws IndexInvalidException if the arguments do not correctly specify an index
@@ -237,12 +238,12 @@ public interface QueryService {
       IndexExistsException, RegionNotFoundException, UnsupportedOperationException;
 
   /**
-   * 
+   *
    * @deprecated As of 6.6.2, use {@link #createIndex(String, String, String)} and
    *             {@link #createKeyIndex(String, String, String)} instead.
-   * 
+   *
    *             Create an index that can be used when executing queries.
-   * 
+   *
    * @param indexName the name of this index, used for statistics collection and to identify this
    *        index for later access
    * @param indexType the type of index. The indexType must be either IndexType.FUNCTIONAL or
@@ -271,7 +272,7 @@ public interface QueryService {
    * @throws RegionNotFoundException if the region referred to in the fromClause doesn't exist
    * @throws UnsupportedOperationException If Index is being created on a region which overflows to
    *         disk
-   * 
+   *
    */
   @Deprecated
   public Index createIndex(String indexName, IndexType indexType, String indexedExpression,
@@ -281,9 +282,9 @@ public interface QueryService {
   /**
    * @deprecated As of 6.6.2, use {@link #createIndex(String, String, String, String)} and
    *             {@link #createKeyIndex(String, String, String)} instead.
-   * 
+   *
    *             Create an index that can be used when executing queries.
-   * 
+   *
    * @param indexName the name of this index, used for statistics collection and to identify this
    *        index for later access
    * @param indexType the type of index. The indexType must be either IndexType.FUNCTIONAL or
@@ -323,7 +324,7 @@ public interface QueryService {
 
   /**
    * Create an index that can be used when executing queries.
-   * 
+   *
    * @param indexName the name of this index.
    * @param indexedExpression refers to the field of the region values that are referenced by the
    *        regionPath.
@@ -331,10 +332,10 @@ public interface QueryService {
    *        will correspond to the FROM clause in a query. Check following examples. The regionPath
    *        must include exactly one region, but may include multiple expressions as required to
    *        drill down into nested region contents.
-   * 
+   *
    *        Example: Query1: "Select * from /portfolio p where p.mktValue > 25.00" For index on
    *        mktValue field: indexExpression: "p.mktValue" regionPath: "/portfolio p"
-   * 
+   *
    *        Query2: "Select * from /portfolio p, p.positions.values pos where pos.secId ='VMWARE'"
    *        For index on secId field: indexExpression: "pos.secId" regionPath: "/portfolio p,
    *        p.positions.values pos"
@@ -347,7 +348,7 @@ public interface QueryService {
    * @throws RegionNotFoundException if the region referred to in the fromClause doesn't exist
    * @throws UnsupportedOperationException If Index is being created on a region which does not
    *         support indexes.
-   * 
+   *
    */
   public Index createIndex(String indexName, String indexedExpression, String regionPath)
       throws IndexInvalidException, IndexNameConflictException, IndexExistsException,
@@ -355,7 +356,7 @@ public interface QueryService {
 
   /**
    * Create an index that can be used when executing queries.
-   * 
+   *
    * @param indexName the name of this index.
    * @param indexedExpression refers to the field of the region values that are referenced by the
    *        regionPath.
@@ -366,10 +367,10 @@ public interface QueryService {
    * @param imports string containing imports (in the query language syntax, each import statement
    *        separated by a semicolon), provides packages and classes used in variable typing in the
    *        Indexed and FROM expressions. The use is the same as for the FROM clause in querying.
-   * 
+   *
    *        Example: Query1: "Select * from /portfolio p where p.mktValue > 25.00" For index on
    *        mktValue field: indexExpression: "p.mktValue" regionPath: "/portfolio p"
-   * 
+   *
    *        Query2: "Select * from /portfolio p, p.positions.values pos where pos.secId ='VMWARE'"
    *        For index on secId field: indexExpression: "pos.secId" regionPath: "/portfolio p,
    *        p.positions.values pos TYPE Position" imports: "package.Position"
@@ -391,17 +392,17 @@ public interface QueryService {
    * Create a key index that can be used when executing queries. The key index expression indicates
    * query engine to use region key as index for query evaluation. They are used to make use of the
    * implicit hash index supported with GemFire regions.
-   * 
+   *
    * @param indexName the name of this index.
    * @param indexedExpression refers to the keys of the region that is referenced by the regionPath.
    *        For example, an index with indexedExpression "ID" might be used for a query with a WHERE
    *        clause of "ID > 10", In this case the ID value is evaluated using region keys.
    * @param regionPath that resolves to the region which will correspond to the FROM clause in a
    *        query. The regionPath must include exactly one region.
-   * 
+   *
    *        Example: Query1: "Select * from /portfolio p where p.ID = 10" indexExpression: "p.ID"
    *        regionPath: "/portfolio p"
-   * 
+   *
    * @return the newly created Index
    * @throws QueryInvalidException if the argument query language strings have invalid syntax
    * @throws IndexInvalidException if the arguments do not correctly specify an index
@@ -419,7 +420,7 @@ public interface QueryService {
 
   /**
    * Creates all the indexes that were defined using {@link #defineIndex(String, String, String)}
-   * 
+   *
    * @throws MultiIndexCreationException which consists a map of failed indexNames and the
    *         Exceptions.
    */
@@ -432,7 +433,7 @@ public interface QueryService {
 
   /**
    * Get the Index from the specified Region with the specified name.
-   * 
+   *
    * @param region the Region for the requested index
    * @return the index of the region with this name, or null if there isn't one
    */
@@ -440,26 +441,26 @@ public interface QueryService {
 
   /**
    * Get a collection of all the indexes in the Cache.
-   * 
+   *
    * @return the collection of all indexes in this Cache
    */
   public Collection<Index> getIndexes();
 
   /**
    * Get a collection of all the indexes on the specified Region
-   * 
+   *
    * @param region the region for the requested indexes
    * @return the collection of indexes on the specified region
    */
   public Collection<Index> getIndexes(Region<?, ?> region);
 
   /**
-   * 
+   *
    * @deprecated As of 6.6.2, use {@link #getIndexes(Region)} only.
-   * 
+   *
    *             Get a collection of all the indexes on the specified Region of the specified index
    *             type.
-   * 
+   *
    * @param region the region for the requested indexes
    * @param indexType the type of indexes to get. Currently must be Indexable.FUNCTIONAL
    * @return the collection of indexes for the specified region and type
@@ -469,7 +470,7 @@ public interface QueryService {
 
   /**
    * Remove the specified index.
-   * 
+   *
    * @param index the Index to remove
    */
   public void removeIndex(Index index);
@@ -481,7 +482,7 @@ public interface QueryService {
 
   /**
    * Remove all the indexes on the specified Region
-   * 
+   *
    * @param region the Region to remove all indexes from
    */
   public void removeIndexes(Region<?, ?> region);
@@ -492,7 +493,7 @@ public interface QueryService {
   /**
    * Constructs a new continuous query, represented by an instance of CqQuery. The CqQuery is not
    * executed until the execute method is invoked on the CqQuery.
-   * 
+   *
    * @since GemFire 5.5
    * @param queryString the OQL query
    * @param cqAttr the CqAttributes
@@ -584,7 +585,7 @@ public interface QueryService {
    * Unregister all Continuous Queries. All artifacts and resources associated with the CQs are
    * released. Any attempt to access closed CqQuery objects will result in the CqClosedException
    * being thrown to the caller.
-   * 
+   *
    * @since GemFire 5.5
    */
   public void closeCqs();
@@ -600,7 +601,7 @@ public interface QueryService {
   /**
    * Retrieves all the registered Continuous Queries for a given region. This is a collection of
    * CqQuery objects.
-   * 
+   *
    * @since GemFire 5.5
    * @return CqQuery[] list of registered CQs on the specified region, null if there are no CQs.
    * @exception CqException if the region does not exist.
@@ -609,7 +610,7 @@ public interface QueryService {
 
   /**
    * Retrieves the Continuous Query specified by the name.
-   * 
+   *
    * @since GemFire 5.5
    * @param cqName - String, name of the CQ
    * @return CqQuery object, null if no CqQuery object is found.
@@ -619,9 +620,9 @@ public interface QueryService {
   /**
    * Starts execution of all the registered continuous queries for this client. This is
    * complementary to stopCqs.
-   * 
+   *
    * @see QueryService#stopCqs()
-   * 
+   *
    * @since GemFire 5.5
    * @throws CqException if failure to execute CQ.
    */
@@ -630,9 +631,9 @@ public interface QueryService {
   /**
    * Stops execution of all the continuous queries for this client to become inactive. This is
    * useful when client needs to control the incoming CQ messages during bulk region operations.
-   * 
+   *
    * @see QueryService#executeCqs()
-   * 
+   *
    * @since GemFire 5.5
    * @throws CqException if failure to execute CQ.
    */
@@ -641,9 +642,9 @@ public interface QueryService {
   /**
    * Starts execution of all the continuous queries registered on the specified region for this
    * client. This is complementary method to stopCQs().
-   * 
+   *
    * @see QueryService#stopCqs()
-   * 
+   *
    * @since GemFire 5.5
    * @throws CqException if failure to stop CQs.
    */
@@ -653,9 +654,9 @@ public interface QueryService {
    * Stops execution of all the continuous queries registered on the specified region for this
    * client. This is useful when client needs to control the incoming CQ messages during bulk region
    * operations.
-   * 
+   *
    * @see QueryService#executeCqs()
-   * 
+   *
    * @since GemFire 5.5
    * @throws CqException if failure to execute CQs.
    */
@@ -675,12 +676,12 @@ public interface QueryService {
    * CQs is collected: Number of CQs created (cumulative) Number of CQs active currently Number of
    * CQs stopped or suspended currently Number of CQs closed (cumulative) Number of CQs active on a
    * specified region currently
-   * 
+   *
    * @see CqServiceStatistics
-   * 
+   *
    * @since GemFire 5.5
    * @return CqServiceStatistics
-   * 
+   *
    */
   public CqServiceStatistics getCqStatistics();
 

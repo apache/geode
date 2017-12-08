@@ -72,7 +72,7 @@ import org.apache.geode.test.junit.categories.FlakyTest;
 
 /**
  * Tests org.apache.geode.cache.control.ResourceManager.
- * 
+ *
  * TODO: javadoc this test properly and cleanup the helper methods to be more flexible and
  * understandable
  */

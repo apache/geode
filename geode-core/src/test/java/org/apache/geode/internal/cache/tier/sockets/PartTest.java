@@ -18,12 +18,13 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 
-import org.apache.geode.test.junit.categories.UnitTest;
+import java.io.OutputStream;
+import java.nio.ByteBuffer;
+
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
-import java.io.OutputStream;
-import java.nio.ByteBuffer;
+import org.apache.geode.test.junit.categories.UnitTest;
 
 @Category(UnitTest.class)
 public class PartTest {

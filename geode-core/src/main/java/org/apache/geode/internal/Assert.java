@@ -47,7 +47,7 @@ import org.apache.geode.internal.i18n.LocalizedStrings;
 public class Assert {
   /**
    * Assert that a boolean value is true.
-   * 
+   *
    * @param b the boolean value to check
    * @throws InternalGemFireError if false
    */
@@ -157,11 +157,11 @@ public class Assert {
   /**
    * This is a workaround for X bug 38288. JRockit can throw a NullPointerException from
    * Thread.holdsLock, so we catch the NullPointerException if it happens.
-   * 
+   *
    * This method returns true, unless it throws an exception. This is so we can disable these tests
    * for performance reasons with a java assertion, eg
    * <code>assert Assert.assertHoldLock(lock, true);</code>
-   * 
+   *
    * @param lock The lock to test
    * @param shouldBeHeld true if this thread should hold this lock.
    * @return true, unless the method throws an exception.

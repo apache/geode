@@ -14,6 +14,9 @@
  */
 package org.apache.geode.cache.query.dunit;
 
+import org.junit.Test;
+import org.junit.experimental.categories.Category;
+
 import org.apache.geode.cache.Region;
 import org.apache.geode.cache.RegionShortcut;
 import org.apache.geode.cache.client.ClientCache;
@@ -34,8 +37,6 @@ import org.apache.geode.test.dunit.SerializableCallable;
 import org.apache.geode.test.dunit.ThreadUtils;
 import org.apache.geode.test.dunit.VM;
 import org.apache.geode.test.junit.categories.DistributedTest;
-import org.junit.Test;
-import org.junit.experimental.categories.Category;
 
 @Category(DistributedTest.class)
 public class PdxLocalQueryVersionedClassDUnitTest extends PDXQueryTestBase {
@@ -45,7 +46,7 @@ public class PdxLocalQueryVersionedClassDUnitTest extends PDXQueryTestBase {
   /**
    * Testing the isRemote flag which could be inconsistent when bind queries are being executed in
    * multiple threads. Bug #49662 is caused because of this inconsistent behavior.
-   * 
+   *
    * @throws Exception
    */
   @Test

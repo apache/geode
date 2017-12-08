@@ -39,14 +39,14 @@ import org.apache.geode.cache.partition.PartitionListener;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.internal.InternalDataSerializer;
 import org.apache.geode.internal.i18n.LocalizedStrings;
-import org.apache.geode.internal.offheap.OffHeapStorage;
 import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.internal.logging.log4j.LocalizedMessage;
+import org.apache.geode.internal.offheap.OffHeapStorage;
 
 /**
  * Internal implementation of PartitionAttributes. New attributes existing only in this class and
  * not in {@link PartitionAttributes} are for internal use only.
- * 
+ *
  * @since GemFire 5.5
  */
 public class PartitionAttributesImpl implements PartitionAttributes, Cloneable, DataSerializable {
@@ -180,7 +180,7 @@ public class PartitionAttributesImpl implements PartitionAttributes, Cloneable, 
 
   /**
    * Constructs an instance of {@code PartitionAttributes} with default settings.
-   * 
+   *
    * @see PartitionAttributesFactory
    */
   public PartitionAttributesImpl() {
@@ -238,7 +238,7 @@ public class PartitionAttributesImpl implements PartitionAttributes, Cloneable, 
    * Returns localMaxMemory that must not be a temporary placeholder for offHeapLocalMaxMemory if
    * off-heap. This must return the true final value of localMaxMemory which requires the
    * DistributedSystem to be created if off-heap. See bug #52003.
-   * 
+   *
    * @throws IllegalStateException if off-heap and the actual value is not yet known (because the
    *         DistributedSystem has not yet been created)
    * @see #getLocalMaxMemoryForValidation()
@@ -273,7 +273,7 @@ public class PartitionAttributesImpl implements PartitionAttributes, Cloneable, 
    * DistributedSystem is created). Returned value may be the temporary placeholder representing
    * offHeapLocalMaxMemory which cannot be calculated until the DistributedSystem is created. See
    * bug #52003.
-   * 
+   *
    * @see #OFF_HEAP_LOCAL_MAX_MEMORY_PLACEHOLDER
    * @see #getLocalMaxMemory()
    */
@@ -488,7 +488,7 @@ public class PartitionAttributesImpl implements PartitionAttributes, Cloneable, 
 
   /**
    * Set local properties
-   * 
+   *
    * @deprecated use {@link #setLocalMaxMemory(int)} in GemFire 5.1 and later releases
    * @param localProps those properties for the local VM
    */
@@ -503,7 +503,7 @@ public class PartitionAttributesImpl implements PartitionAttributes, Cloneable, 
 
   /**
    * Set global properties
-   * 
+   *
    * @deprecated use {@link #setTotalMaxMemory(long)} and {@link #setTotalNumBuckets(int)} in
    *             GemFire 5.1 and later releases
    * @param globalProps those properties for the entire Partitioned Region
@@ -553,7 +553,7 @@ public class PartitionAttributesImpl implements PartitionAttributes, Cloneable, 
    * </ul>
    * NOTE: validation that depends on more than one attribute can not be done in this method. That
    * validation needs to be done in validateWhenAllAttributesAreSet
-   * 
+   *
    * @throws IllegalStateException if the attributes are not consistent with each other.
    */
   public void validateAttributes() {
@@ -642,13 +642,13 @@ public class PartitionAttributesImpl implements PartitionAttributes, Cloneable, 
    * This method used to be called when the RegionAttributes were created. But this was too early
    * since the region we are colocated with might not exist (yet). So it is now called when the PR
    * using these attributes is created. See bug 47197.
-   * 
+   *
    * 1. region passed in setColocatedWith should exist.<br>
    * 2. region passed should be of a PartitionedRegion <br>
    * 3. Custom partitioned should be enabled for colocated regions <br>
    * 4. totalNumBuckets should be same for colocated regions<br>
    * 5. redundancy of colocated regions should be same<br>
-   * 
+   *
    * @since GemFire 5.8Beta
    */
   void validateColocation() {
@@ -687,7 +687,7 @@ public class PartitionAttributesImpl implements PartitionAttributes, Cloneable, 
    * Added for bug 45749. The attributes in pa are merged into this. Only attributes explicitly set
    * in pa will be merged into this. Any attribute set in pa will take precedence over an attribute
    * in this.
-   * 
+   *
    * @param pa the attributes to merge into this.
    * @since GemFire 7.0
    */
@@ -748,7 +748,7 @@ public class PartitionAttributesImpl implements PartitionAttributes, Cloneable, 
    * is available. This method must be called before any instances of PartitionAttributesImpl are
    * created. Specify the value the same way the off-heap memory property is specified. So, "100m" =
    * 100 megabytes, etc.
-   * 
+   *
    * @param newTestAvailableOffHeapMemory The new test value for available off-heap memory.
    */
   public static void setTestAvailableOffHeapMemory(final String newTestAvailableOffHeapMemory) {

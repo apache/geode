@@ -14,9 +14,17 @@
  */
 package org.apache.geode.cache.lucene.internal;
 
-import org.apache.geode.CopyHelper;
-import org.apache.geode.cache.lucene.test.LuceneTestUtilities;
-import org.apache.geode.test.junit.categories.UnitTest;
+import static junitparams.JUnitParamsRunner.$;
+import static org.apache.geode.cache.lucene.test.LuceneTestUtilities.*;
+import static org.junit.Assert.assertArrayEquals;
+import static org.junit.Assert.assertEquals;
+
+import java.io.ByteArrayInputStream;
+import java.io.DataInputStream;
+import java.io.IOException;
+import java.util.HashMap;
+import java.util.Map;
+
 import junitparams.JUnitParamsRunner;
 import junitparams.Parameters;
 import org.apache.lucene.analysis.Analyzer;
@@ -27,13 +35,14 @@ import org.junit.Test;
 import org.junit.experimental.categories.Category;
 import org.junit.runner.RunWith;
 
-import java.util.HashMap;
-import java.util.Map;
-
-import static org.apache.geode.cache.lucene.test.LuceneTestUtilities.*;
-import static junitparams.JUnitParamsRunner.$;
-import static org.junit.Assert.assertArrayEquals;
-import static org.junit.Assert.assertEquals;
+import org.apache.geode.CopyHelper;
+import org.apache.geode.DataSerializer;
+import org.apache.geode.cache.lucene.DummyLuceneSerializer;
+import org.apache.geode.cache.lucene.internal.repository.serializer.HeterogeneousLuceneSerializer;
+import org.apache.geode.cache.lucene.test.LuceneTestUtilities;
+import org.apache.geode.internal.HeapDataOutputStream;
+import org.apache.geode.internal.Version;
+import org.apache.geode.test.junit.categories.UnitTest;
 
 @Category(UnitTest.class)
 @RunWith(JUnitParamsRunner.class)
@@ -54,7 +63,41 @@ public class LuceneIndexCreationProfileJUnitTest {
     return $(new Object[] {getOneFieldLuceneIndexCreationProfile()},
         new Object[] {getTwoFieldLuceneIndexCreationProfile()},
         new Object[] {getTwoAnalyzersLuceneIndexCreationProfile()},
+        new Object[] {getDummySerializerCreationProfile()},
         new Object[] {getNullField1AnalyzerLuceneIndexCreationProfile()});
+  }
+
+  @Test
+  @Parameters(method = "getProfileWithSerializer")
+  public void toDataFromDataShouldContainSerializer(LuceneIndexCreationProfile profile,
+      String expectedSerializerCLassName) throws IOException, ClassNotFoundException {
+    HeapDataOutputStream hdos = new HeapDataOutputStream(Version.CURRENT);
+    DataSerializer.writeObject(profile, hdos);
+    byte[] outputArray = hdos.toByteArray();
+    ByteArrayInputStream bais = new ByteArrayInputStream(outputArray);
+    LuceneIndexCreationProfile profile2 = DataSerializer.readObject(new DataInputStream(bais));
+    assertEquals(expectedSerializerCLassName, profile2.getSerializerClass());
+  }
+
+  private Object[] getProfileWithSerializer() {
+    return $(new Object[] {getDefaultSerializerCreationProfile(), "HeterogeneousLuceneSerializer"},
+        new Object[] {getDummySerializerCreationProfile(), "DummyLuceneSerializer"}, new Object[] {
+            getHeterogeneousLuceneSerializerCreationProfile(), "HeterogeneousLuceneSerializer"});
+  }
+
+  private LuceneIndexCreationProfile getDefaultSerializerCreationProfile() {
+    return new LuceneIndexCreationProfile(INDEX_NAME, REGION_NAME, new String[] {"field1"},
+        new StandardAnalyzer(), null, null);
+  }
+
+  private LuceneIndexCreationProfile getDummySerializerCreationProfile() {
+    return new LuceneIndexCreationProfile(INDEX_NAME, REGION_NAME, new String[] {"field1"},
+        new StandardAnalyzer(), null, new DummyLuceneSerializer());
+  }
+
+  private LuceneIndexCreationProfile getHeterogeneousLuceneSerializerCreationProfile() {
+    return new LuceneIndexCreationProfile(INDEX_NAME, REGION_NAME, new String[] {"field1"},
+        new StandardAnalyzer(), null, new HeterogeneousLuceneSerializer());
   }
 
   @Test
@@ -68,6 +111,8 @@ public class LuceneIndexCreationProfileJUnitTest {
     return $(
         new Object[] {getOneFieldLuceneIndexCreationProfile(),
             getTwoFieldLuceneIndexCreationProfile(), CANNOT_CREATE_LUCENE_INDEX_DIFFERENT_FIELDS},
+        new Object[] {getTwoFieldLuceneIndexCreationProfile(),
+            getReverseFieldsLuceneIndexCreationProfile(), null},
         new Object[] {getTwoAnalyzersLuceneIndexCreationProfile(),
             getOneAnalyzerLuceneIndexCreationProfile(new KeywordAnalyzer()),
             CANNOT_CREATE_LUCENE_INDEX_DIFFERENT_ANALYZERS},
@@ -80,6 +125,10 @@ public class LuceneIndexCreationProfileJUnitTest {
         new Object[] {getNullField2AnalyzerLuceneIndexCreationProfile(),
             getNullField1AnalyzerLuceneIndexCreationProfile(),
             CANNOT_CREATE_LUCENE_INDEX_DIFFERENT_ANALYZERS_1},
+        new Object[] {getDefaultSerializerCreationProfile(), getDummySerializerCreationProfile(),
+            CANNOT_CREATE_LUCENE_INDEX_DIFFERENT_SERIALIZER},
+        new Object[] {getDefaultSerializerCreationProfile(),
+            getHeterogeneousLuceneSerializerCreationProfile(), null},
         new Object[] {getNullField1AnalyzerLuceneIndexCreationProfile(),
             getNullField2AnalyzerLuceneIndexCreationProfile(),
             LuceneTestUtilities.CANNOT_CREATE_LUCENE_INDEX_DIFFERENT_ANALYZERS_2});
@@ -87,12 +136,17 @@ public class LuceneIndexCreationProfileJUnitTest {
 
   private LuceneIndexCreationProfile getOneFieldLuceneIndexCreationProfile() {
     return new LuceneIndexCreationProfile(INDEX_NAME, REGION_NAME, new String[] {"field1"},
-        new StandardAnalyzer(), null);
+        new StandardAnalyzer(), null, null);
   }
 
   private LuceneIndexCreationProfile getTwoFieldLuceneIndexCreationProfile() {
     return new LuceneIndexCreationProfile(INDEX_NAME, REGION_NAME,
-        new String[] {"field1", "field2"}, new StandardAnalyzer(), null);
+        new String[] {"field1", "field2"}, new StandardAnalyzer(), null, null);
+  }
+
+  private LuceneIndexCreationProfile getReverseFieldsLuceneIndexCreationProfile() {
+    return new LuceneIndexCreationProfile(INDEX_NAME, REGION_NAME,
+        new String[] {"field2", "field1"}, new StandardAnalyzer(), null, null);
   }
 
   private LuceneIndexCreationProfile getOneAnalyzerLuceneIndexCreationProfile(Analyzer analyzer) {
@@ -100,7 +154,7 @@ public class LuceneIndexCreationProfileJUnitTest {
     fieldAnalyzers.put("field1", analyzer);
     return new LuceneIndexCreationProfile(INDEX_NAME, REGION_NAME,
         new String[] {"field1", "field2"}, getPerFieldAnalyzerWrapper(fieldAnalyzers),
-        fieldAnalyzers);
+        fieldAnalyzers, null);
   }
 
   private LuceneIndexCreationProfile getTwoAnalyzersLuceneIndexCreationProfile() {
@@ -109,7 +163,7 @@ public class LuceneIndexCreationProfileJUnitTest {
     fieldAnalyzers.put("field2", new KeywordAnalyzer());
     return new LuceneIndexCreationProfile(INDEX_NAME, REGION_NAME,
         new String[] {"field1", "field2"}, getPerFieldAnalyzerWrapper(fieldAnalyzers),
-        fieldAnalyzers);
+        fieldAnalyzers, null);
   }
 
   private LuceneIndexCreationProfile getNullField1AnalyzerLuceneIndexCreationProfile() {
@@ -118,7 +172,7 @@ public class LuceneIndexCreationProfileJUnitTest {
     fieldAnalyzers.put("field2", new KeywordAnalyzer());
     return new LuceneIndexCreationProfile(INDEX_NAME, REGION_NAME,
         new String[] {"field1", "field2"}, getPerFieldAnalyzerWrapper(fieldAnalyzers),
-        fieldAnalyzers);
+        fieldAnalyzers, null);
   }
 
   private LuceneIndexCreationProfile getNullField2AnalyzerLuceneIndexCreationProfile() {
@@ -127,7 +181,7 @@ public class LuceneIndexCreationProfileJUnitTest {
     fieldAnalyzers.put("field2", null);
     return new LuceneIndexCreationProfile(INDEX_NAME, REGION_NAME,
         new String[] {"field1", "field2"}, getPerFieldAnalyzerWrapper(fieldAnalyzers),
-        fieldAnalyzers);
+        fieldAnalyzers, null);
   }
 
   private Analyzer getPerFieldAnalyzerWrapper(Map<String, Analyzer> fieldAnalyzers) {

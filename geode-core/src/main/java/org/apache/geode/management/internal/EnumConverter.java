@@ -20,8 +20,8 @@ import javax.management.openmbean.SimpleType;
 
 /**
  * Open type converter for Enums.
- * 
- * 
+ *
+ *
  */
 public class EnumConverter<T extends Enum<T>> extends OpenTypeConverter {
 

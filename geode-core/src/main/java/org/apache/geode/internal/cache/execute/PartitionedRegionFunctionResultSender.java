@@ -37,7 +37,7 @@ import org.apache.geode.internal.logging.log4j.LocalizedMessage;
  * PRFunctionExecutionStreamer to send results to the calling node. The results will be received in
  * the ResultReciever. ResultSender will be instantiated in executeOnDatastore and set in
  * FunctionContext.
- * 
+ *
  */
 
 public class PartitionedRegionFunctionResultSender implements InternalResultSender {
@@ -76,7 +76,7 @@ public class PartitionedRegionFunctionResultSender implements InternalResultSend
 
   /**
    * Have to combine next two constructor in one and make a new class which will send Results back.
-   * 
+   *
    * @param msg
    * @param dm
    * @param pr
@@ -96,7 +96,7 @@ public class PartitionedRegionFunctionResultSender implements InternalResultSend
 
   /**
    * Have to combine next two constructor in one and make a new class which will send Results back.
-   * 
+   *
    * @param dm
    * @param partitionedRegion
    * @param time

@@ -38,7 +38,7 @@ import org.apache.geode.internal.logging.LogService;
 /**
  * This class processes the message to be delivered to admin node. [This needs to be redesigned and
  * reimplemented... see 32887]
- * 
+ *
  * @since GemFire 5.0
  */
 public class SystemMemberCacheEventProcessor {

@@ -23,7 +23,7 @@ import org.apache.geode.cache.Region;
 
 /**
  * Composite data type used to distribute the eviction attributes for a {@link Region}.
- * 
+ *
  * @since GemFire 7.0
  */
 
@@ -45,7 +45,7 @@ public class EvictionAttributesData {
   private String action;
 
   /**
-   * 
+   *
    * This constructor is to be used by internal JMX framework only. User should not try to create an
    * instance of this class.
    */
@@ -70,7 +70,7 @@ public class EvictionAttributesData {
    * one of the creation methods e.g. {@link EvictionAttributes#createLRUEntryAttributes()}
    *
    * For algorithm LRU HEAP null will be returned
-   * 
+   *
    * @return maximum value used by the {@link EvictionAlgorithm} which determines when the
    *         {@link EvictionAction} is performed.
    */

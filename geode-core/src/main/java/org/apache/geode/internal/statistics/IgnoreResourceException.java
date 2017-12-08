@@ -21,7 +21,7 @@ import org.apache.geode.GemFireCheckedException;
  * statistics sampler.
  * <p/>
  * Extracted from {@link StatArchiveWriter}.
- * 
+ *
  * @since GemFire 7.0
  */
 public class IgnoreResourceException extends GemFireCheckedException {

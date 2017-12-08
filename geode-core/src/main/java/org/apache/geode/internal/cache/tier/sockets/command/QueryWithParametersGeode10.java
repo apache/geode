@@ -13,7 +13,7 @@
  * the License.
  */
 /**
- * 
+ *
  */
 package org.apache.geode.internal.cache.tier.sockets.command;
 
@@ -23,7 +23,7 @@ import org.apache.geode.internal.cache.tier.Command;
 
 public class QueryWithParametersGeode10 extends Query651 {
 
-  private final static QueryWithParametersGeode10 singleton = new QueryWithParametersGeode10();
+  private static final QueryWithParametersGeode10 singleton = new QueryWithParametersGeode10();
 
   public static Command getCommand() {
     return singleton;

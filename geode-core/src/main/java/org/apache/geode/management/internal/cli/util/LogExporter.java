@@ -18,11 +18,6 @@ package org.apache.geode.management.internal.cli.util;
 
 import static java.util.stream.Collectors.toList;
 
-import org.apache.commons.io.FileUtils;
-import org.apache.geode.internal.logging.LogService;
-import org.apache.geode.management.internal.configuration.utils.ZipUtils;
-import org.apache.logging.log4j.Logger;
-
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.File;
@@ -35,6 +30,12 @@ import java.util.Collections;
 import java.util.List;
 import java.util.function.Predicate;
 import java.util.stream.Stream;
+
+import org.apache.commons.io.FileUtils;
+import org.apache.logging.log4j.Logger;
+
+import org.apache.geode.internal.logging.LogService;
+import org.apache.geode.management.internal.configuration.utils.ZipUtils;
 
 /**
  * this LogExporter only finds the .log and .gfs files under in the same directory of the base files

@@ -24,18 +24,18 @@ import org.apache.geode.DataSerializable;
 /**
  * A data object containing the load information for a cache server. This object is returned from
  * {@link ServerLoadProbe#getLoad(ServerMetrics)} and indicates how heavily loaded the server is.
- * 
+ *
  * The values returned by {@link #getConnectionLoad()} and {@link #getSubscriptionConnectionLoad()}
  * can be any number greater than 0. A larger load value means that the server has more load.
- * 
+ *
  * The values returned by getLoadPerConnection() and getLoadPerSubscriptionConnection are used to
  * estimate the effect of new connections before the connects are actually made to this server. The
- * load is estimated as <code> 
+ * load is estimated as <code>
  * load + loadPerConnection*numAdditionalConnections.
  * </code>
- * 
+ *
  * @since GemFire 5.7
- * 
+ *
  */
 public final class ServerLoad implements DataSerializable {
   private static final long serialVersionUID = -4498005291184650907L;
@@ -60,7 +60,7 @@ public final class ServerLoad implements DataSerializable {
 
   /**
    * Get the load on the server due to client to server connections.
-   * 
+   *
    * @return a float greater than or equals to 0
    */
   public float getConnectionLoad() {
@@ -71,7 +71,7 @@ public final class ServerLoad implements DataSerializable {
    * Get an estimate of the how much load each new connection will add to this server. The locator
    * uses this information to estimate the load on the server before it receives a new load
    * snapshot.
-   * 
+   *
    * @return a float greater than or equals to 0
    */
   public float getLoadPerConnection() {
@@ -80,7 +80,7 @@ public final class ServerLoad implements DataSerializable {
 
   /**
    * Get the load on the server due to subscription connections.
-   * 
+   *
    * @return a float greater than or equals to 0
    */
   public float getSubscriptionConnectionLoad() {
@@ -91,7 +91,7 @@ public final class ServerLoad implements DataSerializable {
    * Get an estimate of the how much load each new subscriber will add to this server. The locator
    * uses this information to estimate the load on the server before it receives a new load
    * snapshot.
-   * 
+   *
    * @return a float greater than or equals to 0
    */
   public float getLoadPerSubscriptionConnection() {

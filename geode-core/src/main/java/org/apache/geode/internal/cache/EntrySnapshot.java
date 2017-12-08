@@ -31,7 +31,7 @@ import org.apache.geode.internal.i18n.LocalizedStrings;
 
 /**
  * A Region.Entry implementation for remote entries and all PR entries
- * 
+ *
  * @since GemFire 5.1
  */
 public class EntrySnapshot implements Region.Entry, DataSerializable {
@@ -52,7 +52,7 @@ public class EntrySnapshot implements Region.Entry, DataSerializable {
 
   /**
    * creates a new Entry that wraps the given RegionEntry object for the given storage Region
-   * 
+   *
    * @param allowTombstones TODO
    */
   public EntrySnapshot(RegionEntry regionEntry, LocalRegion dataRegion, LocalRegion region,
@@ -77,7 +77,7 @@ public class EntrySnapshot implements Region.Entry, DataSerializable {
   /**
    * Used by unit tests. Only available on PR. If, at the time this entry was created, it was
    * initialized from a local data store then this method returns true.
-   * 
+   *
    * @since GemFire 6.0
    */
   public boolean wasInitiallyLocal() {
@@ -132,7 +132,7 @@ public class EntrySnapshot implements Region.Entry, DataSerializable {
 
   /**
    * Makes a copy, if copy-on-get is enabled, of the specified object.
-   * 
+   *
    * @since GemFire 4.0
    */
   private Object conditionalCopy(Object o) {
@@ -206,7 +206,7 @@ public class EntrySnapshot implements Region.Entry, DataSerializable {
 
   /*
    * (non-Javadoc)
-   * 
+   *
    * @see org.apache.geode.cache.Region.Entry#isLocal()
    */
   public boolean isLocal() {
@@ -228,7 +228,7 @@ public class EntrySnapshot implements Region.Entry, DataSerializable {
   /**
    * get the underlying RegionEntry object, which will not be fully functional if isLocal() returns
    * false
-   * 
+   *
    * @return the underlying RegionEntry for this Entry
    */
   public RegionEntry getRegionEntry() {

@@ -15,21 +15,21 @@
 
 package org.apache.geode.distributed.internal.locks;
 
-import org.apache.geode.internal.DataSerializableFixedID;
-import org.apache.geode.internal.Version;
-import org.apache.geode.DataSerializer;
-import org.apache.geode.distributed.DistributedMember;
-import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
-
 import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
+
+import org.apache.geode.DataSerializer;
+import org.apache.geode.distributed.DistributedMember;
+import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
+import org.apache.geode.internal.DataSerializableFixedID;
+import org.apache.geode.internal.Version;
 
 /**
  * Represents a held lock in a member for use when initializing a new grantor. All currently held
  * locks are represented as DLockRemoteTokens and provided in response to a
  * DLockRecoverGrantorMessage.
- * 
+ *
  */
 public class DLockRemoteToken implements DataSerializableFixedID {
 
@@ -58,7 +58,7 @@ public class DLockRemoteToken implements DataSerializableFixedID {
   /**
    * Creates a new immutable instance of DLockRemoteToken representing the current lease tracked by
    * DLockToken. Synchronizes on the provided DLockToken to read data from it.
-   * 
+   *
    * @param token the lock token to gather lease information from
    * @return new immutable instance of DLockRemoteToken
    */
@@ -71,7 +71,7 @@ public class DLockRemoteToken implements DataSerializableFixedID {
 
   /**
    * Creates a new immutable instance of DLockRemoteToken from the provided DataInput.
-   * 
+   *
    * @param in the input stream to gather state from
    * @return new immutable instance of DLockRemoteToken
    * @throws IOException if DataSerializer failed to read object from input stream
@@ -104,7 +104,7 @@ public class DLockRemoteToken implements DataSerializableFixedID {
 
   /**
    * Instantiates an immutable DLockRemoteToken.
-   * 
+   *
    * @param name the name of the lock
    * @param lesseeThread the remotable thread identity of the lease holder
    * @param leaseId used to identify the distinct lease used by the lease holder
@@ -120,7 +120,7 @@ public class DLockRemoteToken implements DataSerializableFixedID {
 
   /**
    * Returns the identifying name of this lock.
-   * 
+   *
    * @return the identifying name of this lock
    */
   public Object getName() {
@@ -130,7 +130,7 @@ public class DLockRemoteToken implements DataSerializableFixedID {
   /**
    * Returns the serializable identity of the thread currently leasing this lock or null if no
    * thread currently holds this lock.
-   * 
+   *
    * @return identity of the thread holding the current lease or null if none
    */
   public RemoteThread getLesseeThread() {
@@ -139,7 +139,7 @@ public class DLockRemoteToken implements DataSerializableFixedID {
 
   /**
    * Returns the member currently leasing this lock or null if no member curently holds this lock.
-   * 
+   *
    * @return member currently leasing this lock or null
    */
   public DistributedMember getLessee() {
@@ -153,7 +153,7 @@ public class DLockRemoteToken implements DataSerializableFixedID {
   /**
    * Returns the lease id currently used to hold a lease on this lock or -1 if no thread currently
    * holds this lock.
-   * 
+   *
    * @return the id of the current lease on this lock or -1 if none
    */
   public int getLeaseId() {
@@ -162,7 +162,7 @@ public class DLockRemoteToken implements DataSerializableFixedID {
 
   /**
    * Returns the absolute time at which the current lease will expire or -1 if there is no lease.
-   * 
+   *
    * @return the absolute time at which the current lease will expire or -1
    */
   public long getLeaseExpireTime() {

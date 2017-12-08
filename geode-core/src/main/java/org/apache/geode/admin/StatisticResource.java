@@ -79,4 +79,3 @@ public interface StatisticResource {
   public void refresh() throws org.apache.geode.admin.AdminException;
 
 }
-

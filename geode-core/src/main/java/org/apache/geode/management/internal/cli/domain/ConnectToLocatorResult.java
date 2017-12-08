@@ -17,14 +17,14 @@ package org.apache.geode.management.internal.cli.domain;
 import org.apache.geode.management.internal.cli.util.ConnectionEndpoint;
 
 /**
- * 
- * 
+ *
+ *
  * @since GemFire 7.0
  */
 public class ConnectToLocatorResult {
   private ConnectionEndpoint memberEndpoint = null;
   private String resultMessage;
-  final private boolean isJmxManagerSslEnabled;
+  private final boolean isJmxManagerSslEnabled;
 
   public ConnectToLocatorResult(ConnectionEndpoint memberEndpoint, String resultMessage,
       boolean isJmxManagerSslEnabled) {

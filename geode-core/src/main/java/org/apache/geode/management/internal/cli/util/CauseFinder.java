@@ -22,7 +22,7 @@ package org.apache.geode.management.internal.cli.util;
  * <li>retrieve a nested cause at a specific index/depth
  * <li>find a cause by specific type
  * </ul>
- * 
+ *
  * @since GemFire 7.0
  */
 public class CauseFinder {
@@ -35,9 +35,9 @@ public class CauseFinder {
    * NOTE: It looks for the "nested" causes & doesn't try to match the <code>causeClass</code> of
    * the <code>parent</code>.
    * <p />
-   * 
+   *
    * Returns -1 if a cause with the given Throwable type is not found.
-   * 
+   *
    * @param parent parent Throwable instance
    * @param causeClass type of the nested Throwable cause
    * @param isSubtypeOk whether any matching sub-type is required or exact match is required
@@ -56,9 +56,9 @@ public class CauseFinder {
    * NOTE: It looks for the "nested" causes & doesn't try to match the <code>causeClass</code> of
    * the <code>parent</code>.
    * <p />
-   * 
+   *
    * Returns -1 if a cause with the given Throwable type is not found.
-   * 
+   *
    * @param parent parent Throwable instance
    * @param causeClass type of the nested Throwable cause
    * @param cindex variable to store current index/depth of the cause
@@ -87,7 +87,7 @@ public class CauseFinder {
   /**
    * Returns whether the given <code>cause</code> is assignable or has same type as that of
    * <code>causeClass</code> depending on <code>isSubtypeOk</code> value.
-   * 
+   *
    * @param cause parent Throwable instance
    * @param causeClass type of the nested Throwable cause
    * @param isSubtypeOk whether any matching sub-type is required or exact match is required
@@ -103,7 +103,7 @@ public class CauseFinder {
   /**
    * Returns nested 'root' cause of the given parent Throwable. Will return the same Throwable if it
    * has no 'cause'.
-   * 
+   *
    * @param parent Throwable whose root cause is to be found
    * @return nested root cause.
    * @throws IllegalArgumentException when parent is <code>null</code>
@@ -117,7 +117,7 @@ public class CauseFinder {
    * has no 'cause'. If <code>depth</code> is 0, does a <code>null</code> check on the given
    * <code>parent Throwable</code> & if <code>parent</code> is <code>null</code>, throws
    * {@link IllegalArgumentException}.
-   * 
+   *
    * @param parent Throwable whose root cause is to be found
    * @param depth recurse depth indicator
    * @return nested root cause.
@@ -142,7 +142,7 @@ public class CauseFinder {
   /**
    * Returns cause at the specified depth/index starting from the 'top most' Throwable
    * <code>parent</code> in the stack. Returns <code>null</code> if it can't find it.
-   * 
+   *
    * @param parent Throwable to use to find the cause at given index/depth
    * @param requiredIndex index/depth of nesting the cause
    * @return cause at the specified index starting from the 'top most' Throwable in the stack.
@@ -169,7 +169,7 @@ public class CauseFinder {
   /**
    * Returns the first occurrence of nested cause of <code>parent</code> which matches the specified
    * <code>causeType</code> or its sub-type depending on <code>isSubtypeOk</code> value.
-   * 
+   *
    * @param parent Throwable to use to find the cause of given type
    * @param causeType type of the nested Throwable cause
    * @param isSubtypeOk whether any matching sub-type is required or exact match is required
@@ -186,4 +186,3 @@ public class CauseFinder {
     return cause;
   }
 }
-

@@ -22,9 +22,8 @@ import org.apache.geode.StatisticsFactory;
 import org.apache.geode.StatisticsType;
 import org.apache.geode.StatisticsTypeFactory;
 import org.apache.geode.internal.NanoTimer;
-import org.apache.geode.internal.statistics.StatisticsTypeFactoryImpl;
 import org.apache.geode.internal.logging.LogService;
-// import java.io.*;
+import org.apache.geode.internal.statistics.StatisticsTypeFactoryImpl;
 import org.apache.geode.internal.tcp.Buffers;
 import org.apache.geode.internal.util.Breadcrumbs;
 
@@ -42,130 +41,130 @@ public class DistributionStats implements DMStats {
 
   ////////////////// Statistic "Id" Fields //////////////////
 
-  private final static StatisticsType type;
-  private final static int sentMessagesId;
-  private final static int sentCommitMessagesId;
-  private final static int commitWaitsId;
-  private final static int sentMessagesTimeId;
-  private final static int sentMessagesMaxTimeId;
-  private final static int broadcastMessagesId;
-  private final static int broadcastMessagesTimeId;
-  private final static int receivedMessagesId;
-  private final static int receivedBytesId;
-  private final static int sentBytesId;
-  private final static int processedMessagesId;
-  private final static int processedMessagesTimeId;
-  private final static int messageProcessingScheduleTimeId;
-  private final static int messageChannelTimeId;
-  private final static int udpDispatchRequestTimeId;
-  private final static int replyMessageTimeId;
-  private final static int distributeMessageTimeId;
-  private final static int nodesId;
-  private final static int overflowQueueSizeId;
-  private final static int processingThreadsId;
-  private final static int serialThreadsId;
-  private final static int waitingThreadsId;
-  private final static int highPriorityThreadsId;
-  private final static int partitionedRegionThreadsId;
-  private final static int functionExecutionThreadsId;
-  private final static int partitionedRegionThreadJobsId;
-  private final static int functionExecutionThreadJobsId;
-  private final static int waitingQueueSizeId;
-  private final static int overflowQueueThrottleTimeId;
-  private final static int overflowQueueThrottleCountId;
-  private final static int highPriorityQueueSizeId;
-  private final static int highPriorityQueueThrottleTimeId;
-  private final static int highPriorityQueueThrottleCountId;
-  private final static int partitionedRegionQueueSizeId;
-  private final static int partitionedRegionQueueThrottleTimeId;
-  private final static int partitionedRegionQueueThrottleCountId;
-  private final static int functionExecutionQueueSizeId;
-  private final static int functionExecutionQueueThrottleCountId;
-  private final static int functionExecutionQueueThrottleTimeId;
-  private final static int serialQueueSizeId;
-  private final static int serialQueueBytesId;
-  private final static int serialPooledThreadId;
-  private final static int serialQueueThrottleTimeId;
-  private final static int serialQueueThrottleCountId;
-  private final static int replyWaitsInProgressId;
-  private final static int replyWaitsCompletedId;
-  private final static int replyWaitTimeId;
-  private final static int replyTimeoutsId;
-  private final static int replyWaitMaxTimeId;
-  private final static int receiverConnectionsId;
-  private final static int failedAcceptsId;
-  private final static int failedConnectsId;
-  private final static int reconnectAttemptsId;
-  private final static int lostConnectionLeaseId;
-  private final static int sharedOrderedSenderConnectionsId;
-  private final static int sharedUnorderedSenderConnectionsId;
-  private final static int threadOrderedSenderConnectionsId;
-  private final static int threadUnorderedSenderConnectionsId;
+  private static final StatisticsType type;
+  private static final int sentMessagesId;
+  private static final int sentCommitMessagesId;
+  private static final int commitWaitsId;
+  private static final int sentMessagesTimeId;
+  private static final int sentMessagesMaxTimeId;
+  private static final int broadcastMessagesId;
+  private static final int broadcastMessagesTimeId;
+  private static final int receivedMessagesId;
+  private static final int receivedBytesId;
+  private static final int sentBytesId;
+  private static final int processedMessagesId;
+  private static final int processedMessagesTimeId;
+  private static final int messageProcessingScheduleTimeId;
+  private static final int messageChannelTimeId;
+  private static final int udpDispatchRequestTimeId;
+  private static final int replyMessageTimeId;
+  private static final int distributeMessageTimeId;
+  private static final int nodesId;
+  private static final int overflowQueueSizeId;
+  private static final int processingThreadsId;
+  private static final int serialThreadsId;
+  private static final int waitingThreadsId;
+  private static final int highPriorityThreadsId;
+  private static final int partitionedRegionThreadsId;
+  private static final int functionExecutionThreadsId;
+  private static final int partitionedRegionThreadJobsId;
+  private static final int functionExecutionThreadJobsId;
+  private static final int waitingQueueSizeId;
+  private static final int overflowQueueThrottleTimeId;
+  private static final int overflowQueueThrottleCountId;
+  private static final int highPriorityQueueSizeId;
+  private static final int highPriorityQueueThrottleTimeId;
+  private static final int highPriorityQueueThrottleCountId;
+  private static final int partitionedRegionQueueSizeId;
+  private static final int partitionedRegionQueueThrottleTimeId;
+  private static final int partitionedRegionQueueThrottleCountId;
+  private static final int functionExecutionQueueSizeId;
+  private static final int functionExecutionQueueThrottleCountId;
+  private static final int functionExecutionQueueThrottleTimeId;
+  private static final int serialQueueSizeId;
+  private static final int serialQueueBytesId;
+  private static final int serialPooledThreadId;
+  private static final int serialQueueThrottleTimeId;
+  private static final int serialQueueThrottleCountId;
+  private static final int replyWaitsInProgressId;
+  private static final int replyWaitsCompletedId;
+  private static final int replyWaitTimeId;
+  private static final int replyTimeoutsId;
+  private static final int replyWaitMaxTimeId;
+  private static final int receiverConnectionsId;
+  private static final int failedAcceptsId;
+  private static final int failedConnectsId;
+  private static final int reconnectAttemptsId;
+  private static final int lostConnectionLeaseId;
+  private static final int sharedOrderedSenderConnectionsId;
+  private static final int sharedUnorderedSenderConnectionsId;
+  private static final int threadOrderedSenderConnectionsId;
+  private static final int threadUnorderedSenderConnectionsId;
 
-  private final static int syncSocketWritesInProgressId;
-  private final static int syncSocketWriteTimeId;
-  private final static int syncSocketWritesId;
-  private final static int syncSocketWriteBytesId;
+  private static final int syncSocketWritesInProgressId;
+  private static final int syncSocketWriteTimeId;
+  private static final int syncSocketWritesId;
+  private static final int syncSocketWriteBytesId;
 
-  private final static int ucastReadsId;
-  private final static int ucastReadBytesId;
-  private final static int ucastWritesId;
-  private final static int ucastWriteBytesId;
-  private final static int ucastRetransmitsId;
+  private static final int ucastReadsId;
+  private static final int ucastReadBytesId;
+  private static final int ucastWritesId;
+  private static final int ucastWriteBytesId;
+  private static final int ucastRetransmitsId;
 
-  private final static int mcastReadsId;
-  private final static int mcastReadBytesId;
-  private final static int mcastWritesId;
-  private final static int mcastWriteBytesId;
-  private final static int mcastRetransmitsId;
-  private final static int mcastRetransmitRequestsId;
+  private static final int mcastReadsId;
+  private static final int mcastReadBytesId;
+  private static final int mcastWritesId;
+  private static final int mcastWriteBytesId;
+  private static final int mcastRetransmitsId;
+  private static final int mcastRetransmitRequestsId;
 
-  private final static int serializationTimeId;
-  private final static int serializationsId;
-  private final static int serializedBytesId;
+  private static final int serializationTimeId;
+  private static final int serializationsId;
+  private static final int serializedBytesId;
 
-  private final static int pdxSerializationsId;
-  private final static int pdxSerializedBytesId;
+  private static final int pdxSerializationsId;
+  private static final int pdxSerializedBytesId;
 
-  private final static int deserializationTimeId;
-  private final static int deserializationsId;
-  private final static int deserializedBytesId;
-  private final static int pdxDeserializationsId;
-  private final static int pdxDeserializedBytesId;
-  private final static int pdxInstanceDeserializationsId;
-  private final static int pdxInstanceDeserializationTimeId;
-  private final static int pdxInstanceCreationsId;
+  private static final int deserializationTimeId;
+  private static final int deserializationsId;
+  private static final int deserializedBytesId;
+  private static final int pdxDeserializationsId;
+  private static final int pdxDeserializedBytesId;
+  private static final int pdxInstanceDeserializationsId;
+  private static final int pdxInstanceDeserializationTimeId;
+  private static final int pdxInstanceCreationsId;
 
-  private final static int msgSerializationTimeId;
-  private final static int msgDeserializationTimeId;
+  private static final int msgSerializationTimeId;
+  private static final int msgDeserializationTimeId;
 
-  private final static int udpMsgEncryptionTimeId;
-  private final static int udpMsgDecryptionTimeId;
+  private static final int udpMsgEncryptionTimeId;
+  private static final int udpMsgDecryptionTimeId;
 
-  private final static int batchSendTimeId;
-  private final static int batchCopyTimeId;
-  private final static int batchWaitTimeId;
-  private final static int batchFlushTimeId;
+  private static final int batchSendTimeId;
+  private static final int batchCopyTimeId;
+  private static final int batchWaitTimeId;
+  private static final int batchFlushTimeId;
 
-  private final static int threadOwnedReceiversId;
-  private final static int threadOwnedReceiversId2;
+  private static final int threadOwnedReceiversId;
+  private static final int threadOwnedReceiversId2;
 
-  private final static int asyncSocketWritesInProgressId;
-  private final static int asyncSocketWritesId;
-  private final static int asyncSocketWriteRetriesId;
-  private final static int asyncSocketWriteTimeId;
-  private final static int asyncSocketWriteBytesId;
+  private static final int asyncSocketWritesInProgressId;
+  private static final int asyncSocketWritesId;
+  private static final int asyncSocketWriteRetriesId;
+  private static final int asyncSocketWriteTimeId;
+  private static final int asyncSocketWriteBytesId;
 
-  private final static int socketLocksInProgressId;
-  private final static int socketLocksId;
-  private final static int socketLockTimeId;
+  private static final int socketLocksInProgressId;
+  private static final int socketLocksId;
+  private static final int socketLockTimeId;
 
-  private final static int bufferAcquiresInProgressId;
-  private final static int bufferAcquiresId;
-  private final static int bufferAcquireTimeId;
+  private static final int bufferAcquiresInProgressId;
+  private static final int bufferAcquiresId;
+  private static final int bufferAcquireTimeId;
 
-  private final static int asyncQueueAddTimeId;
-  private final static int asyncQueueRemoveTimeId;
+  private static final int asyncQueueAddTimeId;
+  private static final int asyncQueueRemoveTimeId;
 
   private static final int asyncQueuesId;
   private static final int asyncQueueFlushesInProgressId;
@@ -204,37 +203,37 @@ public class DistributionStats implements DMStats {
 
   private static final int replyHandoffTimeId;
 
-  private final static int viewThreadsId;
-  private final static int serialThreadJobsId;
-  private final static int viewProcessorThreadJobsId;
-  private final static int serialPooledThreadJobsId;
-  private final static int pooledMessageThreadJobsId;
-  private final static int highPriorityThreadJobsId;
-  private final static int waitingPoolThreadJobsId;
+  private static final int viewThreadsId;
+  private static final int serialThreadJobsId;
+  private static final int viewProcessorThreadJobsId;
+  private static final int serialPooledThreadJobsId;
+  private static final int pooledMessageThreadJobsId;
+  private static final int highPriorityThreadJobsId;
+  private static final int waitingPoolThreadJobsId;
 
-  private final static int eldersId;
-  private final static int initialImageMessagesInFlightId;
-  private final static int initialImageRequestsInProgressId;
+  private static final int eldersId;
+  private static final int initialImageMessagesInFlightId;
+  private static final int initialImageRequestsInProgressId;
 
   // For GMSHealthMonitor
-  private final static int heartbeatRequestsSentId;
-  private final static int heartbeatRequestsReceivedId;
-  private final static int heartbeatsSentId;
-  private final static int heartbeatsReceivedId;
-  private final static int suspectsSentId;
-  private final static int suspectsReceivedId;
-  private final static int finalCheckRequestsSentId;
-  private final static int finalCheckRequestsReceivedId;
-  private final static int finalCheckResponsesSentId;
-  private final static int finalCheckResponsesReceivedId;
-  private final static int tcpFinalCheckRequestsSentId;
-  private final static int tcpFinalCheckRequestsReceivedId;
-  private final static int tcpFinalCheckResponsesSentId;
-  private final static int tcpFinalCheckResponsesReceivedId;
-  private final static int udpFinalCheckRequestsSentId;
-  private final static int udpFinalCheckRequestsReceivedId;
-  private final static int udpFinalCheckResponsesSentId;
-  private final static int udpFinalCheckResponsesReceivedId;
+  private static final int heartbeatRequestsSentId;
+  private static final int heartbeatRequestsReceivedId;
+  private static final int heartbeatsSentId;
+  private static final int heartbeatsReceivedId;
+  private static final int suspectsSentId;
+  private static final int suspectsReceivedId;
+  private static final int finalCheckRequestsSentId;
+  private static final int finalCheckRequestsReceivedId;
+  private static final int finalCheckResponsesSentId;
+  private static final int finalCheckResponsesReceivedId;
+  private static final int tcpFinalCheckRequestsSentId;
+  private static final int tcpFinalCheckRequestsReceivedId;
+  private static final int tcpFinalCheckResponsesSentId;
+  private static final int tcpFinalCheckResponsesReceivedId;
+  private static final int udpFinalCheckRequestsSentId;
+  private static final int udpFinalCheckRequestsReceivedId;
+  private static final int udpFinalCheckResponsesSentId;
+  private static final int udpFinalCheckResponsesReceivedId;
 
   static {
     String statName = "DistributionStats";
@@ -965,7 +964,7 @@ public class DistributionStats implements DMStats {
 
   /**
    * Returns the current NanoTime or, if clock stats are disabled, zero.
-   * 
+   *
    * @since GemFire 5.0
    */
   public static long getStatTime() {
@@ -1777,7 +1776,7 @@ public class DistributionStats implements DMStats {
   /**
    * Returns a helper object so that the overflow queue can record its stats to the proper
    * distribution stats.
-   * 
+   *
    * @since GemFire 3.5
    */
   public ThrottledQueueStatHelper getOverflowQueueHelper() {
@@ -1807,7 +1806,7 @@ public class DistributionStats implements DMStats {
   /**
    * Returns a helper object so that the waiting queue can record its stats to the proper
    * distribution stats.
-   * 
+   *
    * @since GemFire 3.5
    */
   public QueueStatHelper getWaitingQueueHelper() {
@@ -1829,7 +1828,7 @@ public class DistributionStats implements DMStats {
   /**
    * Returns a helper object so that the high priority queue can record its stats to the proper
    * distribution stats.
-   * 
+   *
    * @since GemFire 3.5
    */
   public ThrottledQueueStatHelper getHighPriorityQueueHelper() {
@@ -1859,7 +1858,7 @@ public class DistributionStats implements DMStats {
   /**
    * Returns a helper object so that the partitioned region queue can record its stats to the proper
    * distribution stats.
-   * 
+   *
    * @since GemFire 5.0
    */
   public ThrottledQueueStatHelper getPartitionedRegionQueueHelper() {
@@ -1889,7 +1888,7 @@ public class DistributionStats implements DMStats {
   /**
    * Returns a helper object so that the partitioned region pool can record its stats to the proper
    * distribution stats.
-   * 
+   *
    * @since GemFire 5.0.2
    */
   public PoolStatHelper getPartitionedRegionPoolHelper() {
@@ -1907,7 +1906,7 @@ public class DistributionStats implements DMStats {
   /**
    * Returns a helper object so that the function execution queue can record its stats to the proper
    * distribution stats.
-   * 
+   *
    * @since GemFire 6.0
    */
   public ThrottledQueueStatHelper getFunctionExecutionQueueHelper() {
@@ -1937,7 +1936,7 @@ public class DistributionStats implements DMStats {
   /**
    * Returns a helper object so that the function execution pool can record its stats to the proper
    * distribution stats.
-   * 
+   *
    * @since GemFire 6.0
    */
   public PoolStatHelper getFunctionExecutionPoolHelper() {
@@ -1955,7 +1954,7 @@ public class DistributionStats implements DMStats {
   /**
    * Returns a helper object so that the serial queue can record its stats to the proper
    * distribution stats.
-   * 
+   *
    * @since GemFire 3.5
    */
   public ThrottledMemQueueStatHelper getSerialQueueHelper() {
@@ -1993,7 +1992,7 @@ public class DistributionStats implements DMStats {
   /**
    * Returns a helper object so that the normal pool can record its stats to the proper distribution
    * stats.
-   * 
+   *
    * @since GemFire 3.5
    */
   public PoolStatHelper getNormalPoolHelper() {
@@ -2011,7 +2010,7 @@ public class DistributionStats implements DMStats {
   /**
    * Returns a helper object so that the waiting pool can record its stats to the proper
    * distribution stats.
-   * 
+   *
    * @since GemFire 3.5
    */
   public PoolStatHelper getWaitingPoolHelper() {
@@ -2029,7 +2028,7 @@ public class DistributionStats implements DMStats {
   /**
    * Returns a helper object so that the highPriority pool can record its stats to the proper
    * distribution stats.
-   * 
+   *
    * @since GemFire 3.5
    */
   public PoolStatHelper getHighPriorityPoolHelper() {

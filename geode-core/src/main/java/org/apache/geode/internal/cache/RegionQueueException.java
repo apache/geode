@@ -36,7 +36,7 @@ public class RegionQueueException extends CacheException {
   /**
    * Constructor. Creates an instance of <code>RegionQueueException</code> with the specified detail
    * message.
-   * 
+   *
    * @param msg the detail message
    */
   public RegionQueueException(String msg) {

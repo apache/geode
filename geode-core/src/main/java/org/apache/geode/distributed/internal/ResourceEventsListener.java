@@ -16,14 +16,14 @@ package org.apache.geode.distributed.internal;
 
 /**
  * Internal interface to be implemented to catch various resource events
- * 
- * 
+ *
+ *
  */
 public interface ResourceEventsListener {
 
   /**
    * Handles various GFE resource life-cycle methods vis-a-vis Management and Monitoring
-   * 
+   *
    * @param event Resource events for which invocation has happened
    * @param resource the GFE resource type
    */

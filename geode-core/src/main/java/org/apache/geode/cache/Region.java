@@ -67,16 +67,16 @@ import org.apache.geode.cache.snapshot.RegionSnapshotService;
  * in turn has parent region <i>1st_level_region</i>; and region <i>1st_level_region</i> is a child
  * of the root region. Then,the user can get the region <i>3rd_level_region</i> from the root region
  * by issuing:
- * 
+ *
  * <pre>
  *  <code>
  *  region3 = root.getSubregion("1st_level_region/2nd_level_region/3rd_level_region");
  *  </code>
  * </pre>
- * 
+ *
  * or the user can get the region <i>3rd_level_region</i> from region <i>1st_level_region</i> by
  * issuing
- * 
+ *
  * <pre>
  *  <code>
  *  region3 = region1.getSubregion("2nd_level_region/3rd_level_region");
@@ -132,7 +132,7 @@ import org.apache.geode.cache.snapshot.RegionSnapshotService;
  * CacheListener called on the client. Any local state on the client will be updated to be
  * consistent with the state change made on the server.
  * <p>
- * 
+ *
  * @see RegionAttributes
  * @see AttributesFactory
  * @see AttributesMutator
@@ -235,7 +235,7 @@ public interface Region<K, V> extends ConcurrentMap<K, V> {
    * <code>Scope.LOCAL</code>.
    * <p>
    * Does not update any <code>CacheStatistics</code>.
-   * 
+   *
    * @param aCallbackArgument a user-defined parameter to pass to callback events triggered by this
    *        method. Can be null. Should be serializable.
    * @throws org.apache.geode.distributed.LeaseExpiredException if lease expired on distributed lock
@@ -269,7 +269,7 @@ public interface Region<K, V> extends ConcurrentMap<K, V> {
    * In order to remove all the entries and the region, destroyRegion should be used.
    *
    * Does not update any <code>CacheStatistics</code>.
-   * 
+   *
    * @param aCallbackArgument a user-defined parameter to pass to callback events triggered by this
    *        method. Can be null.
    * @throws IllegalStateException if the region is distributed and
@@ -343,7 +343,7 @@ public interface Region<K, V> extends ConcurrentMap<K, V> {
    * object will get {@link RegionDestroyedException} exception.
    * <p>
    * Does not update any <code>CacheStatistics</code>.
-   * 
+   *
    * @param aCallbackArgument a user-defined parameter to pass to callback events triggered by this
    *        call. Can be null.
    * @see CacheListener#afterRegionDestroy
@@ -365,7 +365,7 @@ public interface Region<K, V> extends ConcurrentMap<K, V> {
 
   /**
    * Obtains the snapshot service to allow the cache data to be imported or exported.
-   * 
+   *
    * @return the snapshot service for the region
    */
   public RegionSnapshotService<K, V> getSnapshotService();
@@ -381,7 +381,7 @@ public interface Region<K, V> extends ConcurrentMap<K, V> {
    * @throws IOException if encountered while writing the file
    * @throws UnsupportedOperationException If the region is a partitioned region
    * @see #loadSnapshot
-   * 
+   *
    * @deprecated as of 7.0 use {@link #getSnapshotService()}
    */
   public void saveSnapshot(OutputStream outputStream) throws IOException;
@@ -429,7 +429,7 @@ public interface Region<K, V> extends ConcurrentMap<K, V> {
    * @throws UnsupportedOperationException If the region is a partitioned region
    *
    * @see RegionReinitializedException
-   * 
+   *
    * @deprecated as of 7.0 use {@link #getSnapshotService()}
    */
   public void loadSnapshot(InputStream inputStream)
@@ -991,7 +991,7 @@ public interface Region<K, V> extends ConcurrentMap<K, V> {
    *
    * <p>
    * Null values are not included in the result collection.
-   * 
+   *
    * @return a Collection of all the objects cached in this region
    */
   public Collection<V> values();
@@ -1022,7 +1022,7 @@ public interface Region<K, V> extends ConcurrentMap<K, V> {
    * Returns the <code>Cache</code> associated with this region.
    * <p>
    * Does not throw a <code>CacheClosedException</code> if the Cache is closed.
-   * 
+   *
    * @return the Cache
    * @deprecated as of 6.5 use {@link #getRegionService()} instead.
    */
@@ -1033,7 +1033,7 @@ public interface Region<K, V> extends ConcurrentMap<K, V> {
    * Returns the <code>cache</code> associated with this region.
    * <p>
    * Does not throw a <code>CacheClosedException</code> if the cache is closed.
-   * 
+   *
    * @return the cache
    * @since GemFire 6.5
    */
@@ -1050,7 +1050,7 @@ public interface Region<K, V> extends ConcurrentMap<K, V> {
   /**
    * Sets the application-defined object associated with this region. GemFire does not use this
    * object for any purpose.
-   * 
+   *
    * @param value the application-defined object
    */
   public void setUserAttribute(Object value);
@@ -1060,7 +1060,7 @@ public interface Region<K, V> extends ConcurrentMap<K, V> {
    *
    * <p>
    * Does not throw a <code>RegionDestroyedException</code> if this region has been destroyed.
-   * 
+   *
    * @return true if this region has been destroyed
    */
   public boolean isDestroyed();
@@ -1068,7 +1068,7 @@ public interface Region<K, V> extends ConcurrentMap<K, V> {
   /**
    * Returns whether there is a valid (non-null) value present for the specified key. This method is
    * equivalent to:
-   * 
+   *
    * <pre>
    * Entry e = getEntry(key);
    * return e != null && e.getValue() != null;
@@ -1124,7 +1124,7 @@ public interface Region<K, V> extends ConcurrentMap<K, V> {
    * global scope. For example, if an application needs to get two values out of a region with
    * global scope and guarantee that the first value is not modified before the second value is
    * retrieved, it can use this lock in the following manner:
-   * 
+   *
    * <pre>
    * Lock entry1Lock = myRegion.getDistributedLock(key1);
    * Lock entry2Lock = myRegion.getDistributedLock(key2);
@@ -1147,7 +1147,7 @@ public interface Region<K, V> extends ConcurrentMap<K, V> {
    * When a region has global scope, the following operations automatically acquire a distributed
    * lock on an entry: <code>create</code>, <code>put</code>, <code>destroy</code>,
    * <code>invalidate</code>, and <code>get</code> that causes a loader to be invoked.
-   * 
+   *
    * @return a <code>Lock</code> used for acquiring a distributed lock on an entry
    * @throws IllegalStateException if the scope of this region is not global
    * @throws NullPointerException if key is null
@@ -1294,7 +1294,7 @@ public interface Region<K, V> extends ConcurrentMap<K, V> {
    * Removes all entries from this region. Clear will be distributed to other caches if the scope is
    * not <code>Scope.LOCAL</code>.
    * <p>
-   * 
+   *
    * @since GemFire 5.0
    * @see java.util.Map#clear()
    * @see CacheListener#afterRegionClear
@@ -1339,7 +1339,7 @@ public interface Region<K, V> extends ConcurrentMap<K, V> {
 
   /**
    * Returns true if this region contains no entries.
-   * 
+   *
    * @since GemFire 5.0
    * @see java.util.Map#isEmpty()
    * @return true if this region contains no entries.
@@ -1351,7 +1351,7 @@ public interface Region<K, V> extends ConcurrentMap<K, V> {
    * equivalent to that of calling {@link #put(Object, Object)} on this region once for each entry
    * in the specified map. This operation will be distributed to other caches if the scope is not
    * <code>Scope.LOCAL</code>.
-   * 
+   *
    * @param map the key/value pairs to put in this region.
    * @since GemFire 5.0
    * @see java.util.Map#putAll(Map map)
@@ -1364,7 +1364,7 @@ public interface Region<K, V> extends ConcurrentMap<K, V> {
    * equivalent to that of calling {@link #put(Object, Object, Object)} on this region once for each
    * entry in the specified map. This operation will be distributed to other caches if the scope is
    * not <code>Scope.LOCAL</code>.
-   * 
+   *
    * @param map the key/value pairs to put in this region.
    * @param aCallbackArgument a user-defined parameter to pass to callback events triggered by this
    *        method. May be null. Must be serializable if this operation is distributed.
@@ -1380,7 +1380,7 @@ public interface Region<K, V> extends ConcurrentMap<K, V> {
    * specified collection. If an entry does not exist that key is skipped; EntryNotFoundException is
    * not thrown. This operation will be distributed to other caches if the scope is not
    * <code>Scope.LOCAL</code>.
-   * 
+   *
    * @param keys the keys to remove from this region.
    * @since GemFire 8.1
    * @see Region#destroy(Object)
@@ -1393,7 +1393,7 @@ public interface Region<K, V> extends ConcurrentMap<K, V> {
    * in the specified collection. If an entry does not exist that key is skipped;
    * EntryNotFoundException is not thrown. This operation will be distributed to other caches if the
    * scope is not <code>Scope.LOCAL</code>.
-   * 
+   *
    * @param keys the keys to remove from this region.
    * @param aCallbackArgument a user-defined parameter to pass to callback events triggered by this
    *        method. May be null. Must be serializable if this operation is distributed.
@@ -1409,7 +1409,7 @@ public interface Region<K, V> extends ConcurrentMap<K, V> {
    * Note that the keys collection should extend K since a load may be done and the key in that case
    * will be stored in the region. The keys parameter was not changed to extend K for backwards
    * compatibility.
-   * 
+   *
    * @param keys A Collection of keys
    * @return A Map of values for the input keys
    *
@@ -1420,7 +1420,7 @@ public interface Region<K, V> extends ConcurrentMap<K, V> {
   /**
    * Gets and returns values for all the keys in the input Collection. If a given key does not exist
    * in the region then that key's value in the returned map will be <code>null</code>.
-   * 
+   *
    * @param <T> the type of the keys passed to getAll
    * @param keys A Collection of keys
    * @param aCallbackArgument an argument passed into the CacheLoader if a loader is used. This same
@@ -1471,13 +1471,13 @@ public interface Region<K, V> extends ConcurrentMap<K, V> {
 
   /**
    * Returns the number of entries present in this region.
-   * 
+   *
    * For {@link DataPolicy#PARTITION}, this is a distributed operation that returns the number of
    * entries present in entire region.
-   * 
+   *
    * For all other types of regions, it returns the number of entries present locally, and it is not
    * a distributed operation.
-   * 
+   *
    * @since GemFire 5.0
    * @see java.util.Map#size()
    * @return the number of entries present in this region
@@ -1500,7 +1500,7 @@ public interface Region<K, V> extends ConcurrentMap<K, V> {
   /**
    * Returns the hash code value for this region. The hash code of a region is based on identity and
    * uses {@link Object#hashCode}.
-   * 
+   *
    * @return the hash code value for this region.
    * @see Object#hashCode()
    */
@@ -1528,14 +1528,14 @@ public interface Region<K, V> extends ConcurrentMap<K, V> {
    *        ".*" as the argument. This means that all keys any type are pushed to the client and
    *        inserted into the local cache.</i>
    *        </p>
-   * 
+   *
    *        <p>
    *        If you locally-destroy a key and your region has concurrency-checks-enabled turned off
    *        you will not receive invalidation events from your interest subscription for that key.
    *        When concurrency-checks-enabled is turned on GemFire will accept invalidation and
    *        deliver these events to your client cache.
    *        </p>
-   * 
+   *
    * @see InterestResultPolicy
    *
    * @since GemFire 4.2
@@ -1553,7 +1553,7 @@ public interface Region<K, V> extends ConcurrentMap<K, V> {
    * currently supported only on clients in a client server topology. This key is first locally
    * cleared from the client and current value for this key is inserted into the local cache before
    * this call returns. (if requested).
-   * 
+   *
    * <p>
    * If you locally-destroy a key and your region has concurrency-checks-enabled turned off you will
    * not receive invalidation events from your interest subscription for that key. When
@@ -1610,7 +1610,7 @@ public interface Region<K, V> extends ConcurrentMap<K, V> {
    * <p>
    * The regular expression string is compiled using the {@link java.util.regex.Pattern} class.
    * </p>
-   * 
+   *
    * <p>
    * If you locally-destroy a key and your region has concurrency-checks-enabled turned off you will
    * not receive invalidation events from your interest subscription for that key. When
@@ -1783,7 +1783,7 @@ public interface Region<K, V> extends ConcurrentMap<K, V> {
    *        </p>
    *
    * @param isDurable true if the register interest is durable
-   * 
+   *
    * @param receiveValues defaults to true. set to false to receive create or update events as
    *        invalidates similar to notify-by-subscription false.
    *
@@ -2117,14 +2117,14 @@ public interface Region<K, V> extends ConcurrentMap<K, V> {
   /**
    * If the specified key is not already associated with a value, associate it with the given value.
    * This is equivalent to
-   * 
+   *
    * <pre>
    * if (!map.containsKey(key))
    *   return map.put(key, value);
    * else
    *   return map.get(key);
    * </pre>
-   * 
+   *
    * except that the action is performed atomically.
    *
    * <p>
@@ -2137,7 +2137,7 @@ public interface Region<K, V> extends ConcurrentMap<K, V> {
    * <p>
    * Region allows the value parameter to be null, which will create an invalid entry.
    * </p>
-   * 
+   *
    * @param key key with which the specified value is to be associated
    * @param value value to be associated with the specified key
    * @return the previous value associated with the specified key, or <tt>null</tt> if there was no
@@ -2165,7 +2165,7 @@ public interface Region<K, V> extends ConcurrentMap<K, V> {
 
   /**
    * Removes the entry for a key only if currently mapped to a given value. This is equivalent to
-   * 
+   *
    * <pre>
    * if (map.containsKey(key) &amp;&amp; map.get(key).equals(value)) {
    *   map.remove(key);
@@ -2173,7 +2173,7 @@ public interface Region<K, V> extends ConcurrentMap<K, V> {
    * } else
    *   return false;
    * </pre>
-   * 
+   *
    * except that the action is performed atomically.
    * <p>
    * As of 8.5, if value is an Array then Arrays.equals or Arrays.deepEquals is used instead of
@@ -2188,7 +2188,7 @@ public interface Region<K, V> extends ConcurrentMap<K, V> {
    * <p>
    * Region allows the value parameter to be null, which will match an invalid entry.
    * </p>
-   * 
+   *
    * @param key key with which the specified value is associated
    * @param value value expected to be associated with the specified key
    * @return <tt>true</tt> if the value was removed
@@ -2211,7 +2211,7 @@ public interface Region<K, V> extends ConcurrentMap<K, V> {
 
   /**
    * Replaces the entry for a key only if currently mapped to a given value. This is equivalent to
-   * 
+   *
    * <pre>
    * if (map.containsKey(key) &amp;&amp; map.get(key).equals(oldValue)) {
    *   map.put(key, newValue);
@@ -2219,7 +2219,7 @@ public interface Region<K, V> extends ConcurrentMap<K, V> {
    * } else
    *   return false;
    * </pre>
-   * 
+   *
    * except that the action is performed atomically.
    * <p>
    * As of 8.5, if value is an Array then Arrays.equals or Arrays.deepEquals is used instead of
@@ -2234,7 +2234,7 @@ public interface Region<K, V> extends ConcurrentMap<K, V> {
    * <p>
    * Region allows the oldValue parameter to be null, which will match an invalid entry.
    * </p>
-   * 
+   *
    * @param key key with which the specified value is associated
    * @param oldValue value expected to be associated with the specified key
    * @param newValue value to be associated with the specified key
@@ -2259,14 +2259,14 @@ public interface Region<K, V> extends ConcurrentMap<K, V> {
 
   /**
    * Replaces the entry for a key only if currently mapped to some value. This is equivalent to
-   * 
+   *
    * <pre>
    * if (map.containsKey(key)) {
    *   return map.put(key, value);
    * } else
    *   return null;
    * </pre>
-   * 
+   *
    * except that the action is performed atomically.
    * <p>
    * ConcurrentMap operations are supported on partitioned and replicated regions and in client
@@ -2378,7 +2378,7 @@ public interface Region<K, V> extends ConcurrentMap<K, V> {
 
     /**
      * Sets the value of this entry. It has similar to calling a put on the key of this Entry
-     * 
+     *
      * @param value Object the value to be set
      * @return the previous value object stored locally for this entry. If the entry did not exist
      *         then <code>null</code> is returned. If the entry was "invalid" then <code>null</code>

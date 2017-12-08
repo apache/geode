@@ -29,7 +29,6 @@ import java.util.concurrent.CountDownLatch;
 import org.apache.logging.log4j.Logger;
 
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
-import org.apache.geode.internal.net.SocketCreator;
 import org.apache.geode.internal.cache.BucketPersistenceAdvisor;
 import org.apache.geode.internal.cache.ColocationHelper;
 import org.apache.geode.internal.cache.DiskStoreImpl;
@@ -40,6 +39,7 @@ import org.apache.geode.internal.cache.persistence.PersistentMemberID;
 import org.apache.geode.internal.cache.persistence.PersistentStateListener;
 import org.apache.geode.internal.i18n.LocalizedStrings;
 import org.apache.geode.internal.logging.LogService;
+import org.apache.geode.internal.net.SocketCreator;
 import org.apache.geode.internal.process.StartupStatus;
 import org.apache.geode.internal.util.TransformUtils;
 
@@ -47,7 +47,7 @@ import org.apache.geode.internal.util.TransformUtils;
  * Consolidates logging during the recovery of ProxyRegionBuckets that are not hosted by this
  * member. This logger is meant to run in its own thread and utilizes the PRHARedundancyProvider's
  * count down latch in order to determine when it is finished.
- * 
+ *
  */
 public class RedundancyLogger extends RecoveryRunnable implements PersistentStateListener {
 
@@ -73,7 +73,7 @@ public class RedundancyLogger extends RecoveryRunnable implements PersistentStat
 
   /**
    * Creates a new RedundancyLogger.
-   * 
+   *
    * @param prhaRedundancyProvider
    */
   public RedundancyLogger(PRHARedundancyProvider prhaRedundancyProvider) {
@@ -281,7 +281,7 @@ public class RedundancyLogger extends RecoveryRunnable implements PersistentStat
 
     /**
      * Returns a unique Set of persistent members that all the ProxyBucketRegions are waiting for.
-     * 
+     *
      * @param offlineOnly true if only the members which are not currently try running should be
      *        returned, false to return all members that this member is waiting for, including
      *        members which are running but not fully initialized.
@@ -398,4 +398,3 @@ public class RedundancyLogger extends RecoveryRunnable implements PersistentStat
     }
   }
 }
-

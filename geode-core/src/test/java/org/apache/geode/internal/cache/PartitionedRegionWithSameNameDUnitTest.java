@@ -14,24 +14,20 @@
  */
 /*
  * Created on Mar 24, 2006
- * 
+ *
  * TODO To change the template for this generated file go to Window - Preferences - Java - Code
  * Style - Code Templates
  */
 package org.apache.geode.internal.cache;
 
-import org.junit.experimental.categories.Category;
-import org.junit.Test;
-
 import static org.junit.Assert.*;
-
-import org.apache.geode.test.dunit.cache.internal.JUnit4CacheTestCase;
-import org.apache.geode.test.dunit.internal.JUnit4DistributedTestCase;
-import org.apache.geode.test.junit.categories.DistributedTest;
 
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
+
+import org.junit.Test;
+import org.junit.experimental.categories.Category;
 
 import org.apache.geode.cache.AttributesFactory;
 import org.apache.geode.cache.Cache;
@@ -49,6 +45,9 @@ import org.apache.geode.test.dunit.Host;
 import org.apache.geode.test.dunit.LogWriterUtils;
 import org.apache.geode.test.dunit.SerializableRunnable;
 import org.apache.geode.test.dunit.VM;
+import org.apache.geode.test.dunit.cache.internal.JUnit4CacheTestCase;
+import org.apache.geode.test.dunit.internal.JUnit4DistributedTestCase;
+import org.apache.geode.test.junit.categories.DistributedTest;
 
 /**
  * This test is to verify creation of partition region and distributed region with same name.
@@ -73,9 +72,9 @@ public class PartitionedRegionWithSameNameDUnitTest extends PartitionedRegionDUn
   /**
    * Used to decide whether to create subregion as distributed region or partitioned region
    */
-  static protected final int DISTRIBUTED_REGION = 0;
+  protected static final int DISTRIBUTED_REGION = 0;
 
-  static protected final int PARTITIONED_REGION = 1;
+  protected static final int PARTITIONED_REGION = 1;
 
   public PartitionedRegionWithSameNameDUnitTest() {
     super();
@@ -758,9 +757,9 @@ public class PartitionedRegionWithSameNameDUnitTest extends PartitionedRegionDUn
   /**
    * This function creates multiple partition regions in a VM. The name of the Partition Region will
    * be PRPrefix+index (index starts from startIndexForRegion and ends to endIndexForRegion)
-   * 
+   *
    * @param PRPrefix : Used in the name of the Partition Region
-   * 
+   *
    *        These indices Represents range of the Partition Region
    * @param startIndexForRegion :
    * @param endIndexForRegion

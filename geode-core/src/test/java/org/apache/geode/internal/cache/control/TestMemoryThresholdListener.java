@@ -112,7 +112,7 @@ public class TestMemoryThresholdListener implements ResourceListener<MemoryEvent
 
   /*
    * (non-Javadoc)
-   * 
+   *
    * @see org.apache.geode.cache.control.ResourceListener#onEvent(java.lang.Object)
    */
   @Override
@@ -169,7 +169,7 @@ public class TestMemoryThresholdListener implements ResourceListener<MemoryEvent
 
   /**
    * Convert a percentage as a double to an integer e.g. 0.09 => 9 also legal is 0.095 => 9
-   * 
+   *
    * @param percentHeap a percentage value expressed as a double e.g. 9.5% => 0.095
    * @return the calculated percent as an integer >= 0 and <= 100
    */

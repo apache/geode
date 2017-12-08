@@ -14,6 +14,16 @@
  */
 package org.apache.geode.internal.cache.tier.sockets;
 
+import static org.apache.geode.distributed.ConfigurationProperties.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+
+import java.util.Properties;
+
+import org.junit.After;
+import org.junit.Test;
+import org.junit.experimental.categories.Category;
+
 import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.CacheFactory;
 import org.apache.geode.cache.Region;
@@ -23,19 +33,10 @@ import org.apache.geode.distributed.DistributedSystem;
 import org.apache.geode.test.junit.categories.ClientSubscriptionTest;
 import org.apache.geode.test.junit.categories.IntegrationTest;
 import org.apache.geode.util.test.TestUtil;
-import org.junit.After;
-import org.junit.Test;
-import org.junit.experimental.categories.Category;
-
-import java.util.Properties;
-
-import static org.apache.geode.distributed.ConfigurationProperties.*;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
 
 /**
  * Tests the proper intialization of redundancyLevel property.
- * 
+ *
  */
 @Category({IntegrationTest.class, ClientSubscriptionTest.class})
 public class RedundancyLevelJUnitTest {
@@ -80,8 +81,8 @@ public class RedundancyLevelJUnitTest {
    * file.(Please note that the purpose of this test is to just verify that the value is initialized
    * correctly from cache-xml and so only client is started and the connection-exceptions due to no
    * live servers, which appear as warnings, are ignored.)
-   * 
-   * 
+   *
+   *
    */
   @Test
   public void testRedundancyLevelSetThroughXML() {

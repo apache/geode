@@ -21,15 +21,16 @@ import java.io.DataInputStream;
 import java.io.IOException;
 import java.nio.ByteBuffer;
 
-import org.apache.geode.test.junit.categories.ClientServerTest;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
+
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
 import org.apache.geode.internal.HeapDataOutputStream;
 import org.apache.geode.internal.Version;
 import org.apache.geode.internal.VersionedDataInputStream;
 import org.apache.geode.internal.VersionedDataOutputStream;
 import org.apache.geode.internal.cache.EventID;
+import org.apache.geode.test.junit.categories.ClientServerTest;
 import org.apache.geode.test.junit.categories.UnitTest;
 
 /**
@@ -204,7 +205,7 @@ public class EventIdOptimizationJUnitTest {
    * expected, then reads the values for eventId and sequenceId from this byte-array using
    * <code>EventID#readEventIdPartsFromOptmizedByteArray</code> api and verifies that they are
    * decoded properly.
-   * 
+   *
    * @param threadId the long value of threadId
    * @param sequenceId the long value of sequenceId
    * @param expectedArrayLength expected length of the optimized byte-array

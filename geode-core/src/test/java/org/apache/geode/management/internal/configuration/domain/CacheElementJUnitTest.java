@@ -21,6 +21,7 @@ import java.io.InputStreamReader;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.Map.Entry;
+
 import javax.xml.XMLConstants;
 
 import org.junit.Test;
@@ -58,7 +59,7 @@ public class CacheElementJUnitTest {
   /**
    * Asserts that Cache type is defined as a embedded ComplexType under an Element named "cache" for
    * version 8.1.
-   * 
+   *
    * @since GemFire 8.1
    */
   @Test
@@ -76,7 +77,7 @@ public class CacheElementJUnitTest {
    * latest version. If this assertion fails it likely means that cache type is defined as a named
    * ComplexType or reference. Update code in CacheElement.buildElementMapCacheType to account for
    * this.
-   * 
+   *
    * @since GemFire 8.1
    */
   @Test
@@ -93,7 +94,7 @@ public class CacheElementJUnitTest {
    * As of 8.1 the cache type requires that certain elements be listed in sequence. This test
    * verifies that {@link CacheElement#buildElementMap(Document)} produces a mapping in the correct
    * order. If we change to use choice for all elements then we can abandon this mapping.
-   * 
+   *
    * @since GemFire 8.1
    */
   @Test

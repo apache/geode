@@ -39,12 +39,12 @@ import org.apache.geode.internal.cache.lru.MemLRUCapacityController;
  * {@link org.apache.geode.cache.EvictionAction}. The algorithms used to determine when to perform
  * the <code>EvictionAction</code> are enumerated in the
  * {@link org.apache.geode.cache.EvictionAlgorithm} class.
- * 
+ *
  * @see org.apache.geode.cache.EvictionAlgorithm
  * @see org.apache.geode.cache.AttributesFactory
  * @see org.apache.geode.cache.RegionAttributes
  * @see org.apache.geode.cache.AttributesMutator
- * 
+ *
  * @since GemFire 5.0
  */
 public class EvictionAttributesImpl extends EvictionAttributes
@@ -94,7 +94,7 @@ public class EvictionAttributesImpl extends EvictionAttributes
 
   /*
    * (non-Javadoc)
-   * 
+   *
    * @see org.apache.geode.cache.EvictionAttributes#getObjectSizer()
    */
   @Override
@@ -104,7 +104,7 @@ public class EvictionAttributesImpl extends EvictionAttributes
 
   /*
    * (non-Javadoc)
-   * 
+   *
    * @see org.apache.geode.cache.EvictionAttributes#getAlgorithm()
    */
   @Override
@@ -130,7 +130,7 @@ public class EvictionAttributesImpl extends EvictionAttributes
 
   /*
    * (non-Javadoc)
-   * 
+   *
    * @see org.apache.geode.cache.EvictionAttributes#getMaximum()
    */
   @Override
@@ -144,7 +144,7 @@ public class EvictionAttributesImpl extends EvictionAttributes
   /**
    * Sets the {@link EvictionAction} on the {@link EvictionAttributesImpl} that the given
    * {@link EvictionAlgorithm} uses to perform the eviction.
-   * 
+   *
    * @param action the {@link EvictionAction} used by the {@link EvictionAction}
    * @return the instance of {@link EvictionAttributesMutator} on which this method was called
    */
@@ -159,7 +159,7 @@ public class EvictionAttributesImpl extends EvictionAttributes
 
   /*
    * (non-Javadoc)
-   * 
+   *
    * @see org.apache.geode.cache.EvictionAttributes#getAction()
    */
   @Override
@@ -169,9 +169,9 @@ public class EvictionAttributesImpl extends EvictionAttributes
 
   /**
    * Build the appropriate eviction controller using the attributes provided.
-   * 
+   *
    * @return the super of the eviction controller or null if no {@link EvictionAction} is set.
-   * 
+   *
    * @see EvictionAttributes
    */
   public LRUAlgorithm createEvictionController(Region region, boolean isOffHeap) {
@@ -215,7 +215,7 @@ public class EvictionAttributesImpl extends EvictionAttributes
 
   /**
    * Returns true if this object uses a LIFO algorithm
-   * 
+   *
    * @since GemFire 5.7
    */
   public boolean isLIFO() {

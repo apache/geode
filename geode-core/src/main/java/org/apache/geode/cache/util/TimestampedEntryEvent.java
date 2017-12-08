@@ -19,7 +19,7 @@ package org.apache.geode.cache.util;
  * GatewayConflictResolver plugins. It holds the low 4 bytes of the millisecond clock value from the
  * point of origin of the event and the distributed system ID of the system that caused the change.
  * It also has this information for the previous change to the entry.
- * 
+ *
  * @since GemFire 7.0
  */
 public interface TimestampedEntryEvent extends org.apache.geode.cache.EntryEvent {

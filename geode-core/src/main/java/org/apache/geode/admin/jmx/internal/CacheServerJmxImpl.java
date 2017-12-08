@@ -146,7 +146,7 @@ public class CacheServerJmxImpl extends CacheServerImpl
    * Un-registers all the statistics & cache managed resource created for this member. After
    * un-registering the resource MBean instances, clears managedStatisticsResourcesMap collection &
    * sets managedSystemMemberCache to null.
-   * 
+   *
    * Creates ConfigurationParameterJmxImpl, StatisticResourceJmxImpl and SystemMemberCacheJmxImpl.
    * But cleans up only StatisticResourceJmxImpl and SystemMemberCacheJmxImpl which are of type
    * ManagedResource.
@@ -274,7 +274,7 @@ public class CacheServerJmxImpl extends CacheServerImpl
    * Attempt to set refreshInterval on CacheServerJmx MBean would result in an
    * OperationNotSupportedException Auto-refresh is enabled on demand when a call to refreshConfig
    * is made
-   * 
+   *
    * @param refreshInterval the new refresh interval in seconds
    * @deprecated since 6.0 use DistributedSystemConfig.refreshInterval instead
    */
@@ -301,7 +301,7 @@ public class CacheServerJmxImpl extends CacheServerImpl
 
   /**
    * Initializes Cache & Statistics managed resources.
-   * 
+   *
    * @throws AdminException if initialization of managed resources fails
    */
   // private void initializeManagedResources() throws AdminException {
@@ -368,7 +368,7 @@ public class CacheServerJmxImpl extends CacheServerImpl
    * Handles notification to refresh. Reacts by refreshing the values of this GemFireManager's
    * ConfigurationParamaters. Any other notification is ignored. Given notification is handled only
    * if there is any JMX client connected to the system.
-   * 
+   *
    * @param notification the JMX notification being received
    * @param hb handback object is unused
    */
@@ -399,7 +399,7 @@ public class CacheServerJmxImpl extends CacheServerImpl
   /**
    * Override createStatisticResource by instantiating StatisticResourceJmxImpl if it was not
    * created earlier otherwise returns the same instance.
-   * 
+   *
    * @param stat StatResource reference for which this JMX resource is to be created
    * @return StatisticResourceJmxImpl - JMX Implementation of StatisticResource
    * @throws AdminException if constructing StatisticResourceJmxImpl instance fails
@@ -428,7 +428,7 @@ public class CacheServerJmxImpl extends CacheServerImpl
   /**
    * Override createSystemMemberCache by instantiating SystemMemberCacheJmxImpl if it was not
    * created earlier.
-   * 
+   *
    * @param vm GemFireVM reference for which this JMX resource is to be created
    * @return SystemMemberCacheJmxImpl - JMX Implementation of SystemMemberCache
    * @throws AdminException if constructing SystemMemberCacheJmxImpl instance fails
@@ -461,7 +461,7 @@ public class CacheServerJmxImpl extends CacheServerImpl
   /**
    * Cleans up Managed Resources created for the client that was connected to the server represented
    * by this class.
-   * 
+   *
    * @param clientId id of the client to be removed
    * @return List of ManagedResources associated with the client of given client id
    */
@@ -492,7 +492,7 @@ public class CacheServerJmxImpl extends CacheServerImpl
 
   /**
    * Implementation handles client membership changes.
-   * 
+   *
    * @param clientId id of the client for whom membership change happened
    * @param eventType membership change type; one of {@link ClientMembershipMessage#JOINED},
    *        {@link ClientMembershipMessage#LEFT}, {@link ClientMembershipMessage#CRASHED}
@@ -525,7 +525,7 @@ public class CacheServerJmxImpl extends CacheServerImpl
    * Implementation handles creation of cache by extracting the details from the given event object
    * and sending the {@link SystemMemberJmx#NOTIF_CACHE_CREATED} notification to the connected JMX
    * Clients.
-   * 
+   *
    * @param event event object corresponding to the creation of the cache
    */
   public void handleCacheCreate(SystemMemberCacheEvent event) {
@@ -537,7 +537,7 @@ public class CacheServerJmxImpl extends CacheServerImpl
    * Implementation handles closure of cache by extracting the details from the given event object
    * and sending the {@link SystemMemberJmx#NOTIF_CACHE_CLOSED} notification to the connected JMX
    * Clients.
-   * 
+   *
    * @param event event object corresponding to the closure of the cache
    */
   public void handleCacheClose(SystemMemberCacheEvent event) {
@@ -549,7 +549,7 @@ public class CacheServerJmxImpl extends CacheServerImpl
    * Implementation handles creation of region by extracting the details from the given event object
    * and sending the {@link SystemMemberJmx#NOTIF_REGION_CREATED} notification to the connected JMX
    * Clients. Region Path is set as User Data in Notification.
-   * 
+   *
    * @param event event object corresponding to the creation of a region
    */
   public void handleRegionCreate(SystemMemberRegionEvent event) {
@@ -566,7 +566,7 @@ public class CacheServerJmxImpl extends CacheServerImpl
    * object and sending the {@link SystemMemberJmx#NOTIF_REGION_LOST} notification to the connected
    * JMX Clients. Region Path is set as User Data in Notification. Additionally, it also clears the
    * ManagedResources created for the region that is lost.
-   * 
+   *
    * @param event event object corresponding to the loss of a region
    */
   public void handleRegionLoss(SystemMemberRegionEvent event) {

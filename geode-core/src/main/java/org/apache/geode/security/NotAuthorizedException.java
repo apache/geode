@@ -17,11 +17,12 @@ package org.apache.geode.security;
 import java.io.IOException;
 import java.io.ObjectOutputStream;
 import java.security.Principal;
+
 import javax.naming.NamingException;
 
 /**
  * Thrown when a client/peer is unauthorized to perform a requested operation.
- * 
+ *
  * @since GemFire 5.5
  */
 public class NotAuthorizedException extends GemFireSecurityException {

@@ -40,7 +40,7 @@ public class InternalStatisticsDisabledException extends GemFireCheckedException
   /**
    * Constructs an instance of <code>StatisticsDisabledException</code> with the specified detail
    * message.
-   * 
+   *
    * @param msg the detail message
    */
   public InternalStatisticsDisabledException(String msg) {
@@ -50,7 +50,7 @@ public class InternalStatisticsDisabledException extends GemFireCheckedException
   /**
    * Constructs an instance of <code>StatisticsDisabledException</code> with the specified detail
    * message and cause.
-   * 
+   *
    * @param msg the detail message
    * @param cause the causal Throwable
    */
@@ -60,7 +60,7 @@ public class InternalStatisticsDisabledException extends GemFireCheckedException
 
   /**
    * Constructs an instance of <code>StatisticsDisabledException</code> with the specified cause.
-   * 
+   *
    * @param cause the causal Throwable
    */
   public InternalStatisticsDisabledException(Throwable cause) {

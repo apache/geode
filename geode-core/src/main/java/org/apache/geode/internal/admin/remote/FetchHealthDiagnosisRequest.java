@@ -16,15 +16,16 @@
 
 package org.apache.geode.internal.admin.remote;
 
-import org.apache.geode.distributed.internal.*;
-import org.apache.geode.internal.i18n.LocalizedStrings;
+import java.io.*;
+
 import org.apache.geode.*;
 import org.apache.geode.admin.GemFireHealth;
-import java.io.*;
+import org.apache.geode.distributed.internal.*;
+import org.apache.geode.internal.i18n.LocalizedStrings;
 
 /**
  * A message that is sent to a particular distribution manager to fetch its health diagnosis
- * 
+ *
  * @since GemFire 3.5
  */
 public class FetchHealthDiagnosisRequest extends AdminRequest {
@@ -50,7 +51,7 @@ public class FetchHealthDiagnosisRequest extends AdminRequest {
    * Must return a proper response to this request.
    */
   @Override
-  protected AdminResponse createResponse(DistributionManager dm) {
+  protected AdminResponse createResponse(DM dm) {
     return FetchHealthDiagnosisResponse.create(dm, this.getSender(), this.id, this.healthCode);
   }
 

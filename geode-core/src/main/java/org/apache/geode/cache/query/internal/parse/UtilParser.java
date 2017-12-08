@@ -20,10 +20,11 @@
 
 package org.apache.geode.cache.query.internal.parse;
 
+import java.io.*;
+
 import antlr.*;
 import antlr.collections.*;
 import antlr.debug.misc.ASTFrame;
-import java.io.*;
 
 /**
  *

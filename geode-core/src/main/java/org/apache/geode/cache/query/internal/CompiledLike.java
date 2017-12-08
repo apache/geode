@@ -120,7 +120,7 @@ public class CompiledLike extends CompiledComparison {
 
   /**
    * Expands the CompiledLike operands based on sargability into multiple CompiledComparisons
-   * 
+   *
    * @return The generated CompiledComparisons
    */
   CompiledComparison[] getExpandedOperandsWithIndexInfoSetIfAny(ExecutionContext context)
@@ -194,7 +194,7 @@ public class CompiledLike extends CompiledComparison {
   /**
    * Breaks down the like predicate (if sargable) into 2 or 3 CompiledComparisons based on the
    * presence of wildcard
-   * 
+   *
    * @return The generated CompiledComparisons
    */
   CompiledComparison[] getRangeIfSargable(ExecutionContext context, CompiledValue var,
@@ -364,7 +364,7 @@ public class CompiledLike extends CompiledComparison {
   /**
    * Checks if index can be used for Strings with wildcards. Two wild cards are supported % and _.
    * The wildcard could be at any index position of the string.
-   * 
+   *
    * @return position of wildcard if sargable otherwise -1
    */
   int checkIfSargableAndRemoveEscapeChars(ExecutionContext context, StringBuffer buffer) {

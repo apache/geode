@@ -29,8 +29,8 @@ import org.apache.geode.internal.logging.LogService;
 /**
  * Cache listener on local monitoring region to get Manager's local MBean updates. This acts as an
  * aggregator interface for Manager. Its used only on Manager's side.
- * 
- * 
+ *
+ *
  */
 public class MonitoringRegionCacheListener extends CacheListenerAdapter<String, Object> {
 

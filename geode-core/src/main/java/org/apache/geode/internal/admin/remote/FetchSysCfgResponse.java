@@ -16,12 +16,12 @@
 
 package org.apache.geode.internal.admin.remote;
 
-import org.apache.geode.distributed.internal.*;
-import org.apache.geode.*;
-import org.apache.geode.internal.*;
 import java.io.*;
-// import java.util.*;
+
+import org.apache.geode.*;
+import org.apache.geode.distributed.internal.*;
 import org.apache.geode.distributed.internal.membership.*;
+import org.apache.geode.internal.*;
 
 /**
  * A message that is sent to a particular distribution manager to get its current {@link Config}.
@@ -34,8 +34,7 @@ public class FetchSysCfgResponse extends AdminResponse {
    * Returns a <code>FetchSysCfgResponse</code> that will be returned to the specified recipient.
    * The message will contains a copy of the local manager's config.
    */
-  public static FetchSysCfgResponse create(DistributionManager dm,
-      InternalDistributedMember recipient) {
+  public static FetchSysCfgResponse create(DM dm, InternalDistributedMember recipient) {
     FetchSysCfgResponse m = new FetchSysCfgResponse();
     m.setRecipient(recipient);
     Config conf = dm.getSystem().getConfig();

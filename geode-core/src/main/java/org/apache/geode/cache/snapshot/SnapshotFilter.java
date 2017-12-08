@@ -19,23 +19,22 @@ import java.util.Map.Entry;
 
 /**
  * Filters region entries for inclusion into a snapshot.
- * 
+ *
  * @param <K> the key type
  * @param <V> the value type
- * 
+ *
  * @see CacheSnapshotService
  * @see RegionSnapshotService
- * 
+ *
  * @since GemFire 7.0
  */
 public interface SnapshotFilter<K, V> extends Serializable {
   /**
    * Returns true if the entry passes the filter criteria; false otherwise. Invoking
    * <code>Entry.getValue</code> may incur additional overhead to deserialize the entry value.
-   * 
+   *
    * @param entry the cache entry to evaluate
    * @return true if the entry is accepted by the filter
    */
   boolean accept(Entry<K, V> entry);
 }
-

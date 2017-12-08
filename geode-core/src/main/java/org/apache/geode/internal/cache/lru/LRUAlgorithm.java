@@ -14,6 +14,10 @@
  */
 package org.apache.geode.internal.cache.lru;
 
+import java.io.IOException;
+import java.io.Serializable;
+import java.util.Properties;
+
 import org.apache.geode.InternalGemFireException;
 import org.apache.geode.StatisticsFactory;
 import org.apache.geode.cache.CacheCallback;
@@ -22,10 +26,6 @@ import org.apache.geode.cache.Region;
 import org.apache.geode.internal.cache.BucketRegion;
 import org.apache.geode.internal.cache.PlaceHolderDiskRegion;
 import org.apache.geode.internal.i18n.LocalizedStrings;
-
-import java.io.IOException;
-import java.io.Serializable;
-import java.util.Properties;
 
 /**
  * Eviction controllers that extend this class evict the least recently used (LRU) entry in the
@@ -170,7 +170,7 @@ public abstract class LRUAlgorithm implements CacheCallback, Serializable, Clone
   /**
    * This method is an artifact when eviction controllers used to called capacity controllers and
    * were configured in the cache.xml file as <code>Declarable</code>
-   * 
+   *
    * @since GemFire 4.1.1
    */
   public abstract Properties getProperties();
@@ -245,7 +245,7 @@ public abstract class LRUAlgorithm implements CacheCallback, Serializable, Clone
   protected abstract class AbstractEnableLRU implements EnableLRU {
 
     /** The region whose capacity is controller by this eviction controller */
-    private volatile transient String regionName;
+    private transient volatile String regionName;
 
     public long limit() {
       if (stats == null) {

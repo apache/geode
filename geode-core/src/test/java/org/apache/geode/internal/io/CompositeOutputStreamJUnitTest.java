@@ -33,7 +33,7 @@ import org.apache.geode.test.junit.categories.UnitTest;
 
 /**
  * Unit tests for CompositeOutputStream.
- * 
+ *
  * @since GemFire 7.0
  */
 @Category(UnitTest.class)

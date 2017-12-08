@@ -30,7 +30,7 @@ import org.apache.geode.test.junit.categories.IntegrationTest;
 
 /**
  * Implementing RegionMXBean to ensure test coverage
- * 
+ *
  */
 @Category(IntegrationTest.class)
 public class RegionStatsJUnitTest extends MBeanStatsTestCase {

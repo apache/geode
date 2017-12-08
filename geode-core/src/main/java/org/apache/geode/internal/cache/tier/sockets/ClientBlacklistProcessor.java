@@ -14,6 +14,13 @@
  */
 package org.apache.geode.internal.cache.tier.sockets;
 
+import java.io.DataInput;
+import java.io.DataOutput;
+import java.io.IOException;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Set;
+
 import org.apache.geode.DataSerializer;
 import org.apache.geode.cache.Cache;
 import org.apache.geode.distributed.internal.DM;
@@ -27,17 +34,10 @@ import org.apache.geode.distributed.internal.ReplyProcessor21;
 import org.apache.geode.internal.cache.CacheServerImpl;
 import org.apache.geode.internal.cache.GemFireCacheImpl;
 
-import java.io.DataInput;
-import java.io.DataOutput;
-import java.io.IOException;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Set;
-
 /**
  * A processor for sending client black list message to all nodes from primary. This adds client to
  * the blacklist and destroy it's queue if available on node.
- * 
+ *
  * @since GemFire 6.0
  *
  */
@@ -165,4 +165,3 @@ public class ClientBlacklistProcessor extends ReplyProcessor21 {
   }
 
 }
-

@@ -14,29 +14,28 @@
  */
 package org.apache.geode.internal.cache.partitioned.fixed;
 
-import org.junit.experimental.categories.Category;
-import org.junit.Test;
-
 import static org.junit.Assert.*;
-
-import org.apache.geode.test.dunit.cache.internal.JUnit4CacheTestCase;
-import org.apache.geode.test.dunit.internal.JUnit4DistributedTestCase;
-import org.apache.geode.test.junit.categories.DistributedTest;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Properties;
 
+import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
 import org.apache.geode.cache.DuplicatePrimaryPartitionException;
 import org.apache.geode.cache.EntryNotFoundException;
 import org.apache.geode.cache.FixedPartitionAttributes;
 import org.apache.geode.cache.partition.PartitionNotAvailableException;
+import org.apache.geode.distributed.ConfigurationProperties;
 import org.apache.geode.test.dunit.Assert;
 import org.apache.geode.test.dunit.AsyncInvocation;
+import org.apache.geode.test.dunit.Host;
 import org.apache.geode.test.dunit.IgnoredException;
 import org.apache.geode.test.dunit.Wait;
-import org.apache.geode.test.dunit.Host;
+import org.apache.geode.test.dunit.cache.internal.JUnit4CacheTestCase;
+import org.apache.geode.test.dunit.internal.JUnit4DistributedTestCase;
+import org.apache.geode.test.junit.categories.DistributedTest;
 import org.apache.geode.test.junit.categories.FlakyTest;
 
 /**
@@ -84,7 +83,7 @@ public class FixedPartitioningDUnitTest extends FixedPartitioningTestBase {
   /**
    * This tests validate that same partition name cannot be added more than once as primary as well
    * as secondary on same member.
-   * 
+   *
    */
 
   @Test
@@ -665,6 +664,16 @@ public class FixedPartitioningDUnitTest extends FixedPartitioningTestBase {
     }
   }
 
+  @Override
+  public Properties getDistributedSystemProperties() {
+    Properties result = super.getDistributedSystemProperties();
+    result.put(ConfigurationProperties.SERIALIZABLE_OBJECT_FILTER,
+        "org.apache.geode.internal.cache.partitioned.fixed.MyDate3");
+    return result;
+
+  }
+
+
   /**
    * This tests validate that datastore member tries the put with callback on itself as well as
    * other datastores as per primary FixedPartitionAttributes defined on datastores. here CallBack
@@ -1026,7 +1035,7 @@ public class FixedPartitioningDUnitTest extends FixedPartitioningTestBase {
    * When the primary partition joins the system then this new member should create the primary
    * buckets for this partition on itself. And Secondary partitions who were holding primary buckets
    * status should now act as secondary buckets.
-   * 
+   *
    */
 
   @Test
@@ -1089,18 +1098,18 @@ public class FixedPartitioningDUnitTest extends FixedPartitioningTestBase {
    * Member2 = Q2(9,10,11) Q3(3,4,5), Q4(6,7,8) Member3 = Q3(3,4,5) Q1(0,1,2), Q2(9,10,11) Member4 =
    * Q4(6,7,8) Q1(0,1,2), Q2(9,10,11) Put happens for all buckets Member 4 goes down, then either
    * member1 or member2 holds primary for member4
-   * 
+   *
    * Primary Secondary Member1 = Q1(0,1,2) Q3(3,4,5), Q4(6,7,8) Member2 = Q2(9,10,11), Q4(6,7,8)
    * Q3(3,4,5) Member3 = Q3(3,4,5) Q1(0,1,2), Q2(9,10,11)
-   * 
+   *
    * Put happens considering Member2 is holding primary for Q4.
-   * 
+   *
    * Member4 comes again, then Memeber4 should do the GII from member2 for buckets 6,7,8 and should
    * acqiure primary status Member1 = Q1(0,1,2) Q3(3,4,5), Q4(6,7,8) Member2 = Q2(9,10,11)
    * Q3(3,4,5), Q4(6,7,8) Member3 = Q3(3,4,5) Q1(0,1,2), Q2(9,10,11) Member4 = Q4(6,7,8) Q1(0,1,2),
    * Q2(9,10,11)
-   * 
-   * 
+   *
+   *
    */
   @Test
   public void testPut_ValidateDataOnMember_PrimarySecondary_Accessor_CacheClosed() {
@@ -1193,12 +1202,12 @@ public class FixedPartitioningDUnitTest extends FixedPartitioningTestBase {
    * Datastore = 4 Datastores Primary Secondary Member1 = Q1(0,1,2) Q2(3,4,5) Member2 = Q2(3,4,5)
    * Q3(6,7,8) Member3 = Q3(6,7,8) Q4(9,10,11) Member4 = Q4(9,10,11) Q1(0,1,2) Put happens for all
    * buckets Member 4 goes down, then either member1 or member2 holds primary for member4
-   * 
+   *
    * Primary Secondary Member1 = Q1(0,1,2) Q2(3,4,5) Member2 = Q2(3,4,5) Q3(6,7,8) Member3 =
    * Q3(6,7,8), Q4(9,10,11)
-   * 
+   *
    * Put happens considering Member3 is holding primary for Q4.
-   * 
+   *
    * Member4 comes again, then Memeber4 should do the GII from member2 for buckets 6,7,8 and should
    * acqiure primary status Datastores Primary Secondary Member1 = Q1(0,1,2) Q2(3,4,5) Member2 =
    * Q2(3,4,5) Q3(6,7,8) Member3 = Q3(6,7,8) Q4(9,10,11) Member4 = Q4(9,10,11) Q1(0,1,2)
@@ -1393,19 +1402,19 @@ public class FixedPartitioningDUnitTest extends FixedPartitioningTestBase {
    * Datastore = 4 Datastores Primary Secondary Member1 = Q1(0,1,2) Q2(3,4,5),Q3(6,7,8),Q4(9,10,11)
    * Member2 = Q3(6,7,8) Q1(0,1,2), Q2(3,4,5),Q4(9,10,11) Member3 = Q2(3,4,5),Q4(9,10,11) Q1(0,1,2),
    * Q3(6,7,8)
-   * 
+   *
    * Put happens for all buckets
-   * 
+   *
    * Member 3 goes down, then either member1 or member2 holds primary for member4
-   * 
+   *
    * Primary Secondary Member1 = Q1(0,1,2),Q2(3,4,5) Q3(6,7,8), Q4(9,10,11) Member2 =
    * Q3(6,7,8),Q4(9,10,11) Q1(0,1,2), Q2(3,4,5)
-   * 
+   *
    * Member 3 comes again then it should be same as it was before member 3 went down
-   * 
+   *
    * Member1 = Q1(0,1,2) Q2(3,4,5),Q3(6,7,8),Q4(9,10,11) Member2 = Q3(6,7,8) Q1(0,1,2),
    * Q2(3,4,5),Q4(9,10,11) Member3 = Q2(3,4,5),Q4(9,10,11) Q1(0,1,2), Q3(6,7,8)
-   * 
+   *
    */
 
   @Test

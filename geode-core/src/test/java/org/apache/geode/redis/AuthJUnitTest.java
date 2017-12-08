@@ -14,14 +14,12 @@
  */
 package org.apache.geode.redis;
 
-import org.apache.geode.cache.CacheFactory;
-import org.apache.geode.cache.GemFireCache;
-import org.apache.geode.distributed.ConfigurationProperties;
-import org.apache.geode.distributed.internal.InternalDistributedSystem;
-import org.apache.geode.internal.AvailablePortHelper;
-import org.apache.geode.test.junit.categories.IntegrationTest;
+import static org.apache.geode.distributed.ConfigurationProperties.*;
+import static org.junit.Assert.*;
 
-import org.apache.geode.redis.GeodeRedisServer;
+import java.io.IOException;
+import java.util.Random;
+
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -29,11 +27,13 @@ import org.junit.experimental.categories.Category;
 import redis.clients.jedis.Jedis;
 import redis.clients.jedis.exceptions.JedisDataException;
 
-import java.io.IOException;
-import java.util.Random;
-
-import static org.apache.geode.distributed.ConfigurationProperties.*;
-import static org.junit.Assert.*;
+import org.apache.geode.cache.CacheFactory;
+import org.apache.geode.cache.GemFireCache;
+import org.apache.geode.distributed.ConfigurationProperties;
+import org.apache.geode.distributed.internal.InternalDistributedSystem;
+import org.apache.geode.internal.AvailablePortHelper;
+import org.apache.geode.redis.GeodeRedisServer;
+import org.apache.geode.test.junit.categories.IntegrationTest;
 
 @Category(IntegrationTest.class)
 public class AuthJUnitTest {

@@ -18,7 +18,7 @@ import java.util.Set;
 
 /**
  * Computes the count of the distinct rows on the PR query node.
- * 
+ *
  *
  */
 public class CountDistinctPRQueryNode extends DistinctAggregator {

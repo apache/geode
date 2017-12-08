@@ -20,12 +20,12 @@ import org.apache.geode.cache.DiskAccessException;
 /**
  * Thrown when a member with persistence is recovering, and it discovers that the data it has on
  * disk was never part of the same distributed system as the members that are currently online.
- * 
+ *
  * This exception can occur when two members both have persistent files for the same region, but
  * they were online at different times, so the contents of their persistent files are completely
  * different. In that case, gemfire throws this exception rather than discarding one of the sets of
  * persistent files.
- * 
+ *
  * @since GemFire 6.5
  */
 public class ConflictingPersistentDataException extends DiskAccessException {

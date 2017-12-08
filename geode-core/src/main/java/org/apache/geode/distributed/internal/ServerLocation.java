@@ -27,7 +27,7 @@ import org.apache.geode.internal.net.SocketCreator;
 /**
  * Represents the location of a bridge server. This class is preferable to InetSocketAddress because
  * it doesn't do any name resolution.
- * 
+ *
  *
  */
 public class ServerLocation implements DataSerializable, Comparable {

@@ -23,7 +23,6 @@ import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicInteger;
 
-import org.apache.geode.internal.util.BlobHelper;
 import org.apache.logging.log4j.Logger;
 
 import org.apache.geode.GemFireIOException;
@@ -47,6 +46,10 @@ import org.apache.geode.distributed.internal.membership.InternalDistributedMembe
 import org.apache.geode.internal.Assert;
 import org.apache.geode.internal.cache.DiskInitFile.DiskRegionFlag;
 import org.apache.geode.internal.cache.FilterRoutingInfo.FilterInfo;
+import org.apache.geode.internal.cache.entries.AbstractOplogDiskRegionEntry;
+import org.apache.geode.internal.cache.entries.AbstractRegionEntry;
+import org.apache.geode.internal.cache.entries.DiskEntry;
+import org.apache.geode.internal.cache.entries.OffHeapRegionEntry;
 import org.apache.geode.internal.cache.ha.HAContainerWrapper;
 import org.apache.geode.internal.cache.ha.HARegionQueue;
 import org.apache.geode.internal.cache.lru.LRUEntry;
@@ -76,6 +79,7 @@ import org.apache.geode.internal.offheap.annotations.Released;
 import org.apache.geode.internal.offheap.annotations.Retained;
 import org.apache.geode.internal.offheap.annotations.Unretained;
 import org.apache.geode.internal.sequencelog.EntryLogger;
+import org.apache.geode.internal.util.BlobHelper;
 import org.apache.geode.internal.util.concurrent.CustomEntryConcurrentHashMap;
 
 /**
@@ -90,10 +94,10 @@ public abstract class AbstractRegionMap implements RegionMap {
   protected CustomEntryConcurrentHashMap<Object, Object> map;
 
   /**
-   * This test hook is used to force the conditions for defect 48182. This hook is used by
-   * Bug48182JUnitTest.
+   * This test hook is used to force the conditions during entry destroy. This hook is used by
+   * DestroyEntryWithConcurrentOperationJUnitTest.
    */
-  static Runnable testHookRunnableFor48182 = null;
+  static Runnable testHookRunnableForConcurrentOperation = null;
 
   private RegionEntryFactory entryFactory;
 
@@ -146,6 +150,7 @@ public abstract class AbstractRegionMap implements RegionMap {
     }
   }
 
+  @Override
   public void changeOwner(LocalRegion r) {
     if (r == _getOwnerObject()) {
       return;
@@ -158,6 +163,7 @@ public abstract class AbstractRegionMap implements RegionMap {
     this.entryFactory = f;
   }
 
+  @Override
   public RegionEntryFactory getEntryFactory() {
     return this.entryFactory;
   }
@@ -166,6 +172,7 @@ public abstract class AbstractRegionMap implements RegionMap {
     this.attr = a;
   }
 
+  @Override
   public Attributes getAttributes() {
     return this.attr;
   }
@@ -182,6 +189,7 @@ public abstract class AbstractRegionMap implements RegionMap {
     return this.owner;
   }
 
+  @Override
   public void setOwner(Object r) {
     this.owner = r;
   }
@@ -194,6 +202,7 @@ public abstract class AbstractRegionMap implements RegionMap {
     this.map = m;
   }
 
+  @Override
   public int size() {
     return _getMap().size();
   }
@@ -204,14 +213,17 @@ public abstract class AbstractRegionMap implements RegionMap {
     return _getMap().size();
   }
 
+  @Override
   public boolean isEmpty() {
     return _getMap().isEmpty();
   }
 
+  @Override
   public Set keySet() {
     return _getMap().keySet();
   }
 
+  @Override
   @SuppressWarnings({"unchecked", "rawtypes"})
   public Collection<RegionEntry> regionEntries() {
     return (Collection) _getMap().values();
@@ -223,6 +235,7 @@ public abstract class AbstractRegionMap implements RegionMap {
     return (Collection) _getMap().values();
   }
 
+  @Override
   public boolean containsKey(Object key) {
     RegionEntry re = getEntry(key);
     if (re == null) {
@@ -234,6 +247,7 @@ public abstract class AbstractRegionMap implements RegionMap {
     return true;
   }
 
+  @Override
   public RegionEntry getEntry(Object key) {
     RegionEntry re = (RegionEntry) _getMap().get(key);
     return re;
@@ -250,12 +264,13 @@ public abstract class AbstractRegionMap implements RegionMap {
   }
 
 
+  @Override
   public RegionEntry putEntryIfAbsent(Object key, RegionEntry re) {
     RegionEntry oldRe = (RegionEntry) _getMap().putIfAbsent(key, re);
     if (oldRe == null && (re instanceof OffHeapRegionEntry) && _isOwnerALocalRegion()
         && _getOwner().isThisRegionBeingClosedOrDestroyed()) {
       // prevent orphan during concurrent destroy (#48068)
-      Object v = re._getValue();
+      Object v = re.getValue();
       if (v != Token.REMOVED_PHASE1 && v != Token.REMOVED_PHASE2 && v instanceof StoredObject
           && ((StoredObject) v).hasRefCount()) {
         if (_getMap().remove(key, re)) {
@@ -273,6 +288,7 @@ public abstract class AbstractRegionMap implements RegionMap {
   }
 
 
+  @Override
   public void removeEntry(Object key, RegionEntry re, boolean updateStat) {
     if (re.isTombstone() && _getMap().get(key) == re) {
       logger.fatal(
@@ -288,8 +304,9 @@ public abstract class AbstractRegionMap implements RegionMap {
     }
   }
 
+  @Override
   public void removeEntry(Object key, RegionEntry re, boolean updateStat, EntryEventImpl event,
-      final LocalRegion owner) {
+      final InternalRegion owner) {
     boolean success = false;
     if (re.isTombstone() && _getMap().get(key) == re) {
       logger.fatal(
@@ -329,11 +346,8 @@ public abstract class AbstractRegionMap implements RegionMap {
     _getMap().clear();
   }
 
+  @Override
   public void close() {
-    /*
-     * for (SuspectEntryList l: this.suspectEntries.values()) { for (EntryEventImpl e: l) {
-     * e.release(); } }
-     */
     clear(null);
   }
 
@@ -341,6 +355,7 @@ public abstract class AbstractRegionMap implements RegionMap {
    * Clear the region and, if an RVV is given, return a collection of the version sources in all
    * remaining tags
    */
+  @Override
   public Set<VersionSource> clear(RegionVersionVector rvv) {
     Set<VersionSource> result = new HashSet<VersionSource>();
 
@@ -404,7 +419,7 @@ public abstract class AbstractRegionMap implements RegionMap {
               // note: it.remove() did not reliably remove the entry so we use remove(K,V) here
               if (_getMap().remove(re.getKey(), re)) {
                 if (OffHeapRegionEntryHelper.doesClearNeedToCheckForOffHeap()) {
-                  GatewaySenderEventImpl.release(re._getValue()); // OFFHEAP _getValue ok
+                  GatewaySenderEventImpl.release(re.getValue()); // OFFHEAP _getValue ok
                 }
                 // If this is an overflow only region, we need to free the entry on
                 // disk at this point.
@@ -441,6 +456,7 @@ public abstract class AbstractRegionMap implements RegionMap {
     return result;
   }
 
+  @Override
   public void lruUpdateCallback() {
     // By default do nothing; LRU maps needs to override this method
   }
@@ -449,19 +465,23 @@ public abstract class AbstractRegionMap implements RegionMap {
     // By default do nothing; LRU maps needs to override this method
   }
 
+  @Override
   public void lruUpdateCallback(int i) {
     // By default do nothing; LRU maps needs to override this method
   }
 
+  @Override
   public boolean disableLruUpdateCallback() {
     // By default do nothing; LRU maps needs to override this method
     return false;
   }
 
+  @Override
   public void enableLruUpdateCallback() {
     // By default do nothing; LRU maps needs to override this method
   }
 
+  @Override
   public void resetThreadLocals() {
     // By default do nothing; LRU maps needs to override this method
   }
@@ -501,10 +521,12 @@ public abstract class AbstractRegionMap implements RegionMap {
     return false;
   }
 
+  @Override
   public void lruCloseStats() {
     // do nothing by default
   }
 
+  @Override
   public void lruEntryFaultIn(LRUEntry entry) {
     // do nothing by default
   }
@@ -512,7 +534,7 @@ public abstract class AbstractRegionMap implements RegionMap {
   /**
    * Process an incoming version tag for concurrent operation detection. This must be done before
    * modifying the region entry.
-   * 
+   *
    * @param re the entry that is to be modified
    * @param event the modification to the entry
    * @throws InvalidDeltaException if the event contains a delta that cannot be applied
@@ -545,6 +567,7 @@ public abstract class AbstractRegionMap implements RegionMap {
         owner.getMyId(), sender, checkConflicts);
   }
 
+  @Override
   public void copyRecoveredEntries(RegionMap rm) {
     // We need to sort the tombstones before scheduling them,
     // so that they will be in the correct order.
@@ -562,7 +585,7 @@ public abstract class AbstractRegionMap implements RegionMap {
         @Retained
         @Released
         Object value = oldRe
-            ._getValueRetain((RegionEntryContext) ((AbstractRegionMap) rm)._getOwnerObject(), true);
+            .getValueRetain((RegionEntryContext) ((AbstractRegionMap) rm)._getOwnerObject(), true);
 
         try {
           if (value == Token.NOT_AVAILABLE) {
@@ -641,6 +664,7 @@ public abstract class AbstractRegionMap implements RegionMap {
     _getMap().put(newRe.getKey(), newRe);
   }
 
+  @Override
   @Retained // Region entry may contain an off-heap value
   public RegionEntry initRecoveredEntry(Object key, DiskEntry.RecoveredEntry value) {
     boolean needsCallback = false;
@@ -698,6 +722,7 @@ public abstract class AbstractRegionMap implements RegionMap {
     return newRe;
   }
 
+  @Override
   public RegionEntry updateRecoveredEntry(Object key, DiskEntry.RecoveredEntry value) {
     boolean needsCallback = false;
     RegionEntry re = getEntry(key);
@@ -757,6 +782,7 @@ public abstract class AbstractRegionMap implements RegionMap {
     return re;
   }
 
+  @Override
   public boolean initialImagePut(final Object key, final long lastModified, Object newValue,
       final boolean wasRecovered, boolean deferLRUCallback, VersionTag entryVersion,
       InternalDistributedMember sender, boolean isSynchronizing) {
@@ -1032,6 +1058,7 @@ public abstract class AbstractRegionMap implements RegionMap {
     return true;
   }
 
+  @Override
   public boolean destroy(EntryEventImpl event, boolean inTokenMode, boolean duringRI,
       boolean cacheWrite, boolean isEviction, Object expectedOldValue, boolean removeRecoveredEntry)
       throws CacheWriterException, EntryNotFoundException, TimeoutException {
@@ -1066,8 +1093,8 @@ public abstract class AbstractRegionMap implements RegionMap {
         /*
          * Execute the test hook runnable inline (not threaded) if it is not null.
          */
-        if (null != testHookRunnableFor48182) {
-          testHookRunnableFor48182.run();
+        if (null != testHookRunnableForConcurrentOperation) {
+          testHookRunnableForConcurrentOperation.run();
         }
 
         try {
@@ -1384,6 +1411,7 @@ public abstract class AbstractRegionMap implements RegionMap {
             }
             try {
               synchronized (re) {
+                owner.checkReadiness();
                 // if the entry is a tombstone and the event is from a peer or a client
                 // then we allow the operation to be performed so that we can update the
                 // version stamp. Otherwise we would retain an old version stamp and may allow
@@ -1485,6 +1513,7 @@ public abstract class AbstractRegionMap implements RegionMap {
                         duringRI, true);
                     doPart3 = true;
                   } finally {
+                    owner.checkReadiness();
                     if (re.isRemoved() && !re.isTombstone()) {
                       if (!removed) {
                         removeEntry(event.getKey(), re, true, event, owner);
@@ -1577,6 +1606,7 @@ public abstract class AbstractRegionMap implements RegionMap {
     return tag;
   }
 
+  @Override
   public void txApplyDestroy(Object key, TransactionId txId, TXRmtEvent txEvent,
       boolean inTokenMode, boolean inRI, Operation op, EventID eventId, Object aCallbackArgument,
       List<EntryEventImpl> pendingCallbacks, FilterRoutingInfo filterRoutingInfo,
@@ -1880,6 +1910,7 @@ public abstract class AbstractRegionMap implements RegionMap {
     }
   }
 
+  @Override
   public boolean invalidate(EntryEventImpl event, boolean invokeCallbacks, boolean forceNewEntry,
       boolean forceCallbacks) throws EntryNotFoundException {
     final boolean isDebugEnabled = logger.isDebugEnabled();
@@ -2307,7 +2338,7 @@ public abstract class AbstractRegionMap implements RegionMap {
 
   /*
    * (non-Javadoc)
-   * 
+   *
    * @see
    * org.apache.geode.internal.cache.RegionMap#updateEntryVersion(org.apache.geode.internal.cache.
    * EntryEventImpl)
@@ -2366,6 +2397,7 @@ public abstract class AbstractRegionMap implements RegionMap {
     }
   }
 
+  @Override
   public void txApplyInvalidate(Object key, Object newValue, boolean didDestroy, TransactionId txId,
       TXRmtEvent txEvent, boolean localOp, EventID eventId, Object aCallbackArgument,
       List<EntryEventImpl> pendingCallbacks, FilterRoutingInfo filterRoutingInfo,
@@ -2623,6 +2655,7 @@ public abstract class AbstractRegionMap implements RegionMap {
    * This code needs to be evaluated. It was added quickly to help PR persistence not to consume as
    * much memory.
    */
+  @Override
   public void evictValue(Object key) {
     final LocalRegion owner = _getOwner();
     RegionEntry re = getEntry(key);
@@ -2673,6 +2706,7 @@ public abstract class AbstractRegionMap implements RegionMap {
   /*
    * returns null if the operation fails
    */
+  @Override
   public RegionEntry basicPut(EntryEventImpl event, final long lastModified, final boolean ifNew,
       final boolean ifOld, Object expectedOldValue, // only non-null if ifOld
       boolean requireOldValue, final boolean overwriteDestroyed)
@@ -2935,7 +2969,7 @@ public abstract class AbstractRegionMap implements RegionMap {
         Object oldValueInVMOrDisk = re.getValueOffHeapOrDiskWithoutFaultIn(event.getLocalRegion());
         ReferenceCountHelper.unskipRefCountTracking();
         try {
-          event.setOldValue(oldValueInVMOrDisk, needToSetOldValue);
+          event.setOldValue(oldValueInVMOrDisk, true);
         } finally {
           OffHeapHelper.releaseWithNoTracking(oldValueInVMOrDisk);
         }
@@ -2945,13 +2979,15 @@ public abstract class AbstractRegionMap implements RegionMap {
 
         @Retained
         @Released
-        Object oldValueInVM = re._getValueRetain(event.getLocalRegion(), true); // OFFHEAP: re
-                                                                                // synced so can use
-                                                                                // its ref.
-
+        Object oldValueInVM = re.getValueRetain(event.getLocalRegion(), true); // OFFHEAP: re
+                                                                               // synced so can use
+                                                                               // its ref.
+        if (oldValueInVM == null) {
+          oldValueInVM = Token.NOT_AVAILABLE;
+        }
         ReferenceCountHelper.unskipRefCountTracking();
         try {
-          event.setOldValue(oldValueInVM, needToSetOldValue);
+          event.setOldValue(oldValueInVM);
         } finally {
           OffHeapHelper.releaseWithNoTracking(oldValueInVM);
         }
@@ -2960,8 +2996,8 @@ public abstract class AbstractRegionMap implements RegionMap {
       // if the old value is in memory then if it is a GatewaySenderEventImpl then
       // we want to set the old value.
       @Unretained
-      Object ov = re._getValue(); // OFFHEAP _getValue is ok since re is synced and we only use it
-                                  // if its a GatewaySenderEventImpl.
+      Object ov = re.getValue(); // OFFHEAP _getValue is ok since re is synced and we only use it
+                                 // if its a GatewaySenderEventImpl.
       // Since GatewaySenderEventImpl is never stored in an off-heap region nor a compressed region
       // we don't need to worry about ov being compressed.
       if (ov instanceof GatewaySenderEventImpl) {
@@ -3100,6 +3136,7 @@ public abstract class AbstractRegionMap implements RegionMap {
     return retVal;
   }
 
+  @Override
   public void txApplyPut(Operation p_putOp, Object key, Object nv, boolean didDestroy,
       TransactionId txId, TXRmtEvent txEvent, EventID eventId, Object aCallbackArgument,
       List<EntryEventImpl> pendingCallbacks, FilterRoutingInfo filterRoutingInfo,
@@ -3488,8 +3525,7 @@ public abstract class AbstractRegionMap implements RegionMap {
   /**
    * Removing the existing indexed value requires the current value in the cache, that is the one
    * prior to applying the operation.
-   * 
-   * @param op
+   *
    * @param entry the RegionEntry that contains the value prior to applying the op
    */
   private void txRemoveOldIndexEntry(Operation op, RegionEntry entry) {
@@ -3635,6 +3671,7 @@ public abstract class AbstractRegionMap implements RegionMap {
     }
   }
 
+  @Override
   public void writeSyncIfPresent(Object key, Runnable runner) {
     RegionEntry re = getEntry(key);
     if (re != null) {
@@ -3659,6 +3696,7 @@ public abstract class AbstractRegionMap implements RegionMap {
     }
   }
 
+  @Override
   public void removeIfDestroyed(Object key) {
     LocalRegion owner = _getOwner();
     // boolean makeTombstones = owner.concurrencyChecksEnabled;
@@ -3750,13 +3788,14 @@ public abstract class AbstractRegionMap implements RegionMap {
 
   /**
    * for testing race conditions between threads trying to apply ops to the same entry
-   * 
+   *
    * @param entry the entry to attempt to add to the system
    */
   protected RegionEntry putEntryIfAbsentForTest(RegionEntry entry) {
     return (RegionEntry) putEntryIfAbsent(entry.getKey(), entry);
   }
 
+  @Override
   public boolean isTombstoneNotNeeded(RegionEntry re, int destroyedVersion) {
     // no need for synchronization - stale values are okay here
     // TODO this looks like a problem for regionEntry pooling
@@ -3789,6 +3828,7 @@ public abstract class AbstractRegionMap implements RegionMap {
   }
 
   /** removes a tombstone that has expired locally */
+  @Override
   public boolean removeTombstone(RegionEntry re, VersionHolder version, boolean isEviction,
       boolean isScheduledTombstone) {
     boolean result = false;
@@ -3903,6 +3943,7 @@ public abstract class AbstractRegionMap implements RegionMap {
 
   private ARMLockTestHook armLockTestHook;
 
+  @Override
   public ARMLockTestHook getARMLockTestHook() {
     return armLockTestHook;
   }
@@ -3912,4 +3953,3 @@ public abstract class AbstractRegionMap implements RegionMap {
   }
 
 }
-

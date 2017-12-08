@@ -15,9 +15,15 @@
 
 package org.apache.geode.internal.cache;
 
+import java.io.*;
+import java.util.*;
+import java.util.concurrent.TimeoutException;
+import java.util.concurrent.atomic.AtomicInteger;
+
+import org.apache.logging.log4j.Logger;
+
 import org.apache.geode.*;
 import org.apache.geode.cache.DiskAccessException;
-import org.apache.geode.cache.Operation;
 import org.apache.geode.cache.RegionDestroyedException;
 import org.apache.geode.cache.query.internal.CqStateImpl;
 import org.apache.geode.cache.query.internal.DefaultQueryService;
@@ -29,6 +35,7 @@ import org.apache.geode.distributed.internal.*;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
 import org.apache.geode.internal.*;
 import org.apache.geode.internal.cache.InitialImageFlowControl.FlowControlPermitMessage;
+import org.apache.geode.internal.cache.entries.DiskEntry;
 import org.apache.geode.internal.cache.ha.HAContainerWrapper;
 import org.apache.geode.internal.cache.persistence.DiskStoreID;
 import org.apache.geode.internal.cache.persistence.PersistenceAdvisor;
@@ -44,20 +51,13 @@ import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.internal.logging.LoggingThreadGroup;
 import org.apache.geode.internal.logging.log4j.LocalizedMessage;
 import org.apache.geode.internal.logging.log4j.LogMarker;
-import org.apache.geode.internal.offheap.annotations.Released;
 import org.apache.geode.internal.sequencelog.EntryLogger;
 import org.apache.geode.internal.sequencelog.RegionLogger;
 import org.apache.geode.internal.util.ObjectIntProcedure;
-import org.apache.logging.log4j.Logger;
-
-import java.io.*;
-import java.util.*;
-import java.util.concurrent.TimeoutException;
-import java.util.concurrent.atomic.AtomicInteger;
 
 /**
  * Handles requests for an initial image from a cache peer
- * 
+ *
  */
 public class InitialImageOperation {
   private static final Logger logger = LogService.getLogger();
@@ -148,7 +148,7 @@ public class InitialImageOperation {
   }
 
   /** a flag for inhibiting the use of StateFlushOperation before gii */
-  private final static ThreadLocal inhibitStateFlush = new ThreadLocal() {
+  private static final ThreadLocal inhibitStateFlush = new ThreadLocal() {
     @Override
     protected Object initialValue() {
       return Boolean.valueOf(false);
@@ -193,7 +193,7 @@ public class InitialImageOperation {
 
   /**
    * Fetch an initial image from a single recipient
-   * 
+   *
    * @param recipientSet list of candidates to fetch from
    * @param targetReinitialized true if candidate should wait until initialized before responding
    * @param advice
@@ -717,7 +717,7 @@ public class InitialImageOperation {
 
   /**
    * transfer interest/cq registrations from the image provider to this VM
-   * 
+   *
    * @param recipient
    * @return whether the operation succeeded in transferring anything
    */
@@ -752,7 +752,7 @@ public class InitialImageOperation {
 
   /**
    * Called from separate thread when reply is processed.
-   * 
+   *
    * @param entries entries to add to the region
    * @return false if should abort (region was destroyed or cache was closed)
    */
@@ -1009,7 +1009,7 @@ public class InitialImageOperation {
 
   /**
    * Compare the received RVV with local RVV and return a set of keys for unfinished operations.
-   * 
+   *
    * @param remoteRVV RVV from provider
    * @param localRVV RVV recovered from disk
    * @return set for keys of unfinished operations.
@@ -1228,7 +1228,7 @@ public class InitialImageOperation {
 
     /*
      * (non-Javadoc)
-     * 
+     *
      * @see
      * org.apache.geode.distributed.internal.ReplyProcessor21#process(org.apache.geode.distributed.
      * internal.DistributionMessage)
@@ -1839,7 +1839,7 @@ public class InitialImageOperation {
      * chunk and an int indicating whether it is the last chunk (positive means last chunk, zero
      * otherwise). The return value of proc indicates whether to continue to the next chunk (true)
      * or abort (false).
-     * 
+     *
      * @param versionVector requester's region version vector
      * @param unfinishedKeys keys of unfinished operation (persistent region only)
      * @param flowControl
@@ -2354,7 +2354,7 @@ public class InitialImageOperation {
 
   /**
    * RVVReplyMessage transmits the GII provider's RVV to requester
-   * 
+   *
    */
   public static class RVVReplyMessage extends ReplyMessage {
 
@@ -2417,7 +2417,7 @@ public class InitialImageOperation {
 
     /*
      * (non-Javadoc)
-     * 
+     *
      * @see org.apache.geode.internal.DataSerializableFixedID#getDSFID()
      */
     @Override
@@ -2892,7 +2892,7 @@ public class InitialImageOperation {
      * <p>
      * Defaults to invalid, not serialized, not local invalid. The "invalid" flag is not used. When
      * invalid, localInvalid is false and the values is null.
-     * 
+     *
      * @see EntryBits
      */
     private byte entryBits = 0;
@@ -2906,7 +2906,7 @@ public class InitialImageOperation {
     private VersionTag versionTag;
 
     /** Given local milliseconds, store as cache milliseconds */
-    void setLastModified(DM dm, long localMillis) {
+    public void setLastModified(DM dm, long localMillis) {
       this.lastModified = localMillis;
     }
 
@@ -2919,7 +2919,7 @@ public class InitialImageOperation {
       return EntryBits.isSerialized(this.entryBits);
     }
 
-    void setSerialized(boolean isSerialized) {
+    public void setSerialized(boolean isSerialized) {
       this.entryBits = EntryBits.setSerialized(this.entryBits, isSerialized);
     }
 
@@ -2927,7 +2927,7 @@ public class InitialImageOperation {
       return (this.value == null) && !EntryBits.isLocalInvalid(this.entryBits);
     }
 
-    void setInvalid() {
+    public void setInvalid() {
       this.entryBits = EntryBits.setLocalInvalid(this.entryBits, false);
       this.value = null;
     }
@@ -2936,12 +2936,12 @@ public class InitialImageOperation {
       return EntryBits.isLocalInvalid(this.entryBits);
     }
 
-    void setLocalInvalid() {
+    public void setLocalInvalid() {
       this.entryBits = EntryBits.setLocalInvalid(this.entryBits, true);
       this.value = null;
     }
 
-    void setTombstone() {
+    public void setTombstone() {
       this.entryBits = EntryBits.setTombstone(this.entryBits, true);
     }
 
@@ -3019,6 +3019,14 @@ public class InitialImageOperation {
     public Version[] getSerializationVersions() {
       return null;
     }
+
+    public Object getValue() {
+      return value;
+    }
+
+    public void setValue(Object value) {
+      this.value = value;
+    }
   }
 
   /**
@@ -3035,7 +3043,7 @@ public class InitialImageOperation {
 
     /**
      * InitialImageOperation.Entry list
-     * 
+     *
      */
     // List<Entry> entries;
 
@@ -3125,7 +3133,7 @@ public class InitialImageOperation {
     }
 
     /**
-     * 
+     *
      * @return whether the source region had concurrency checks enabled
      */
     public boolean isRegionVersioned() {
@@ -3137,7 +3145,7 @@ public class InitialImageOperation {
      * from a server may have null IDs because they were operations performed by that server. We
      * transmit them as nulls to cut costs, but have to do the swap on the receiving end (in the
      * client)
-     * 
+     *
      * @param sender
      */
     public void replaceNullIDs(DistributedMember sender) {
@@ -3307,7 +3315,7 @@ public class InitialImageOperation {
   /**
    * EventStateMessage transmits the cache's memberId:threadId sequence# information so that a cache
    * receiving an initial image will know what events that image represents.
-   * 
+   *
    */
   public static class RegionStateMessage extends ReplyMessage {
 
@@ -3359,7 +3367,7 @@ public class InitialImageOperation {
       dop.writeBoolean(isHARegion);
       if (eventState != null) {
         dop.writeBoolean(true);
-        EventStateHelper.toData(dop, eventState, isHARegion);
+        EventStateHelper.dataSerialize(dop, eventState, isHARegion);
       } else {
         dop.writeBoolean(false);
       }
@@ -3392,7 +3400,7 @@ public class InitialImageOperation {
       isHARegion = dip.readBoolean();
       boolean has = dip.readBoolean();
       if (has) {
-        eventState = EventStateHelper.fromData(dip, isHARegion);
+        eventState = EventStateHelper.deDataSerialize(dip, isHARegion);
       }
       has = dip.readBoolean();
       if (has) {
@@ -3403,7 +3411,7 @@ public class InitialImageOperation {
 
     /*
      * (non-Javadoc)
-     * 
+     *
      * @see org.apache.geode.internal.DataSerializableFixedID#getDSFID()
      */
     @Override
@@ -3624,7 +3632,7 @@ public class InitialImageOperation {
 
     /**
      * Registers the filters associated with this client on current cache region.
-     * 
+     *
      * @param region
      */
     public void registerFilters(LocalRegion region) {
@@ -3961,7 +3969,7 @@ public class InitialImageOperation {
 
     /*
      * (non-Javadoc)
-     * 
+     *
      * @see org.apache.geode.internal.DataSerializableFixedID#getDSFID()
      */
     @Override
@@ -3970,10 +3978,10 @@ public class InitialImageOperation {
     }
   }
 
-  public static abstract class GIITestHook implements Runnable, Serializable {
-    final private GIITestHookType type;
-    final private String region_name;
-    volatile public boolean isRunning;
+  public abstract static class GIITestHook implements Runnable, Serializable {
+    private final GIITestHookType type;
+    private final String region_name;
+    public volatile boolean isRunning;
 
     public GIITestHook(GIITestHookType type, String region_name) {
       this.type = type;
@@ -4285,4 +4293,3 @@ public class InitialImageOperation {
     internalAfterSavedRVVEnd = null;
   }
 }
-

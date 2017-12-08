@@ -55,7 +55,7 @@ public class ParallelSnapshotFileMapper implements SnapshotFileMapper {
    * Combines the ip address and port of a distributed member to create a unique identifier for the
    * member. As this string will be used in file names, the periods (ipv4) and colons (ipv6) are
    * stripped out.
-   * 
+   *
    * @param member the member to create a unique id for
    * @return a String based on the ip address and host of the member
    */

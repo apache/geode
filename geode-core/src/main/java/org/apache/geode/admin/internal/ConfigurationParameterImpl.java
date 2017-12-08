@@ -15,15 +15,14 @@
 
 package org.apache.geode.admin.internal;
 
-import org.apache.geode.admin.ConfigurationParameter;
-import org.apache.geode.admin.UnmodifiableConfigurationException;
-import org.apache.geode.internal.i18n.LocalizedStrings;
-
 import java.io.File;
-// import java.net.InetAddress;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+
+import org.apache.geode.admin.ConfigurationParameter;
+import org.apache.geode.admin.UnmodifiableConfigurationException;
+import org.apache.geode.internal.i18n.LocalizedStrings;
 
 /**
  * A single configuration parameter of a system member.
@@ -255,21 +254,9 @@ public class ConfigurationParameterImpl implements org.apache.geode.admin.Config
    */
   protected void setInternalState(String description, Object value, Class type,
       boolean userModifiable) {
-    if (description == null || description.length() == 0) {
-      throw new IllegalArgumentException(
-          LocalizedStrings.ConfigurationParameterImpl_CONFIGURATIONPARAMETER_DESCRIPTION_MUST_BE_SPECIFIED
-              .toLocalizedString());
-    }
     this.description = description;
     this.type = type;
     this.userModifiable = userModifiable;
-
-    if (value == null) {
-      throw new IllegalArgumentException(
-          LocalizedStrings.ConfigurationParameterImpl_UNABLE_TO_SET_0_TO_NULL_VALUE
-              .toLocalizedString(getName()));
-    }
-
     this.value = value;
   }
 
@@ -279,4 +266,3 @@ public class ConfigurationParameterImpl implements org.apache.geode.admin.Config
   }
 
 }
-

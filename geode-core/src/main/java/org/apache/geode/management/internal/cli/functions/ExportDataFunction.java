@@ -30,13 +30,13 @@ import org.apache.geode.management.internal.cli.i18n.CliStrings;
 /***
  * Function which carries out the export of a region to a file on a member. Uses the
  * RegionSnapshotService to export the data
- * 
+ *
  *
  */
 public class ExportDataFunction extends FunctionAdapter implements InternalEntity {
 
   /**
-   * 
+   *
    */
   private static final long serialVersionUID = 1L;
 

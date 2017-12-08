@@ -20,6 +20,13 @@ import static org.awaitility.Awaitility.await;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
+import java.util.Properties;
+import java.util.concurrent.TimeUnit;
+
+import org.junit.After;
+import org.junit.Before;
+import org.junit.Test;
+
 import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.CacheFactory;
 import org.apache.geode.cache.ExpirationAction;
@@ -28,12 +35,6 @@ import org.apache.geode.cache.RegionShortcut;
 import org.apache.geode.cache.Scope;
 import org.apache.geode.distributed.DistributedLockService;
 import org.apache.geode.internal.cache.DistributedRegion;
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Test;
-
-import java.util.Properties;
-import java.util.concurrent.TimeUnit;
 
 public class DLockServiceCharacterizationTests {
   private Cache cache;

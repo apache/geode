@@ -30,7 +30,7 @@ public class ServerRefusedConnectionException extends OperationAbortedException 
   /**
    * Constructs an instance of <code>ServerRefusedConnectionException</code> with the specified
    * detail message.
-   * 
+   *
    * @param server the server that rejected the connection
    * @param msg the detail message
    */

@@ -17,27 +17,29 @@
 
 package org.apache.geode.tools.pulse.internal.service;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.node.ArrayNode;
-import com.fasterxml.jackson.databind.node.ObjectNode;
-import org.apache.geode.tools.pulse.internal.data.Cluster;
-import org.apache.geode.tools.pulse.internal.data.PulseConstants;
-import org.apache.geode.tools.pulse.internal.data.Repository;
-import org.springframework.context.annotation.Scope;
-import org.springframework.stereotype.Component;
-import org.springframework.stereotype.Service;
-
 import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+
 import javax.servlet.http.HttpServletRequest;
+
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.node.ArrayNode;
+import com.fasterxml.jackson.databind.node.ObjectNode;
+import org.springframework.context.annotation.Scope;
+import org.springframework.stereotype.Component;
+import org.springframework.stereotype.Service;
+
+import org.apache.geode.tools.pulse.internal.data.Cluster;
+import org.apache.geode.tools.pulse.internal.data.PulseConstants;
+import org.apache.geode.tools.pulse.internal.data.Repository;
 
 /**
  * Class ClusterMembersRGraphService
- * 
+ *
  * This class contains implementations of getting List of Cluster members and their details
- * 
+ *
  * @since GemFire version 7.5
  */
 @Component
@@ -104,7 +106,7 @@ public class ClusterMembersRGraphService implements PulseService {
    * function used for getting all members details in format of JSON Object array defined under a
    * cluster. This function create json based on the relation of physical host and members related
    * to it.
-   * 
+   *
    * @param cluster
    * @param host
    * @param port
@@ -260,7 +262,7 @@ public class ClusterMembersRGraphService implements PulseService {
 
   /**
    * used for getting member node type based on member's current state
-   * 
+   *
    * @param member Member
    * @param memberState i.e Severe, Error, Warning or Normal
    * @return
@@ -291,7 +293,7 @@ public class ClusterMembersRGraphService implements PulseService {
   /**
    * function used for getting list of all the alerts and save the member names in respective error,
    * warning and severe alert lists
-   * 
+   *
    * @param cluster
    */
   private void updateAlertLists(Cluster cluster) {

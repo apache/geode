@@ -14,14 +14,10 @@
  */
 package org.apache.geode.internal.cache;
 
-import org.junit.experimental.categories.Category;
-import org.junit.Test;
-
 import static org.junit.Assert.*;
 
-import org.apache.geode.test.dunit.cache.internal.JUnit4CacheTestCase;
-import org.apache.geode.test.dunit.internal.JUnit4DistributedTestCase;
-import org.apache.geode.test.junit.categories.DistributedTest;
+import org.junit.Test;
+import org.junit.experimental.categories.Category;
 
 import org.apache.geode.cache.AttributesFactory;
 import org.apache.geode.cache.Cache;
@@ -33,12 +29,15 @@ import org.apache.geode.cache.RegionAttributes;
 import org.apache.geode.cache30.CacheSerializableRunnable;
 import org.apache.geode.test.dunit.Host;
 import org.apache.geode.test.dunit.VM;
+import org.apache.geode.test.dunit.cache.internal.JUnit4CacheTestCase;
+import org.apache.geode.test.dunit.internal.JUnit4DistributedTestCase;
+import org.apache.geode.test.junit.categories.DistributedTest;
 
 /**
  * This dunit test verifies that PartitionedRegion destroyRegion, localDestroyRegion and close call
  * works properly when PartitionedRegion is in ParentRegion/ChildRegion/PartitionedRegion hierarchy.
- * 
- * 
+ *
+ *
  */
 @Category(DistributedTest.class)
 public class PartitionedRegionAsSubRegionDUnitTest extends PartitionedRegionDUnitTestCase {
@@ -200,7 +199,7 @@ public class PartitionedRegionAsSubRegionDUnitTest extends PartitionedRegionDUni
   /**
    * This method test the destroyRegion call on a Child region in
    * ParentRegion/ChildRegion/PartitionedRegion hierarchy which has PartitionedRegion as sub region.
-   * 
+   *
    * @throws Exception
    */
   @Test
@@ -231,7 +230,7 @@ public class PartitionedRegionAsSubRegionDUnitTest extends PartitionedRegionDUni
   /**
    * This method test the localDestroyRegion call on a Child region in
    * ParentRegion/ChildRegion/PartitionedRegion hierarchy which has PartitionedRegion as sub region.
-   * 
+   *
    * @throws Exception
    */
   @Test
@@ -259,7 +258,7 @@ public class PartitionedRegionAsSubRegionDUnitTest extends PartitionedRegionDUni
   /**
    * This method test the close call on a Child region in ParentRegion/ChildRegion/PartitionedRegion
    * hierarchy which has PartitionedRegion as sub region.
-   * 
+   *
    * @throws Exception
    */
   @Test
@@ -287,10 +286,10 @@ public class PartitionedRegionAsSubRegionDUnitTest extends PartitionedRegionDUni
   /**
    * This private methods sets the passed attributes and returns RegionAttribute object, which is
    * used in create region
-   * 
+   *
    * @param redundancy
    * @param localMaxMem
-   * 
+   *
    * @return
    */
   protected RegionAttributes createRegionAttributesForPR(int redundancy, int localMaxMem) {
@@ -305,7 +304,7 @@ public class PartitionedRegionAsSubRegionDUnitTest extends PartitionedRegionDUni
   /**
    * This method creates RegionAttributes for the Parent and Child region of the
    * ParentRegion/ChildRegion/PartitionedRegion hierarchy
-   * 
+   *
    * @return
    */
   protected RegionAttributes createRegionAttributesForDACKRegions() {

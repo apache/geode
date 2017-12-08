@@ -351,7 +351,7 @@ public class PeerTypeRegistration implements TypeRegistration {
 
   /**
    * Test hook that returns the most recently allocated type id
-   * 
+   *
    * @return the most recently allocated type id
    */
   public int getLastAllocatedTypeId() {
@@ -361,7 +361,7 @@ public class PeerTypeRegistration implements TypeRegistration {
 
   /**
    * Test hook that returns the most recently allocated enum id
-   * 
+   *
    * @return the most recently allocated enum id
    */
   public int getLastAllocatedEnumId() {
@@ -618,6 +618,7 @@ public class PeerTypeRegistration implements TypeRegistration {
   private TXStateProxy suspendTX() {
     InternalCache cache = (InternalCache) getIdToType().getRegionService();
     TXManagerImpl txManager = (TXManagerImpl) cache.getCacheTransactionManager();
+    // A new transaction will be started to register pdx.
     return txManager.internalSuspend();
   }
 

@@ -14,11 +14,12 @@
  */
 package org.apache.geode.internal.cache;
 
+import java.io.Serializable;
+import java.util.*;
+
 import org.apache.geode.CancelException;
 import org.apache.geode.GemFireException;
 import org.apache.geode.internal.cache.tier.sockets.VersionedObjectList;
-import java.io.Serializable;
-import java.util.*;
 
 /**
  * This exception is thrown if some sub-ops failed during a bulk operation. Current bulk ops are

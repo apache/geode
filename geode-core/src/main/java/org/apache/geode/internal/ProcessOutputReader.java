@@ -33,7 +33,7 @@ public class ProcessOutputReader {
 
   /**
    * Creates a process output reader for the given process.
-   * 
+   *
    * @param p the process whose output should be read.
    */
   public ProcessOutputReader(final Process p) {

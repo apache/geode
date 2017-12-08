@@ -27,7 +27,7 @@ public class InternalFunctionInvocationTargetException extends FunctionInvocatio
 
   /**
    * Construct an instance of InternalFunctionInvocationTargetException
-   * 
+   *
    * @param cause a Throwable cause of this exception
    */
   public InternalFunctionInvocationTargetException(Throwable cause) {
@@ -36,7 +36,7 @@ public class InternalFunctionInvocationTargetException extends FunctionInvocatio
 
   /**
    * Construct an instance of InternalFunctionInvocationTargetException
-   * 
+   *
    * @param msg the error message
    */
   public InternalFunctionInvocationTargetException(String msg) {
@@ -45,7 +45,7 @@ public class InternalFunctionInvocationTargetException extends FunctionInvocatio
 
   /**
    * Construct an instance of InternalFunctionInvocationTargetException
-   * 
+   *
    * @param msg the error message
    * @param failedNode the failed node member
    */
@@ -56,7 +56,7 @@ public class InternalFunctionInvocationTargetException extends FunctionInvocatio
 
   /**
    * Construct an instance of InternalFunctionInvocationTargetException
-   * 
+   *
    * @param msg the error message
    * @param failedNodeSet set of the failed node member id
    */
@@ -67,7 +67,7 @@ public class InternalFunctionInvocationTargetException extends FunctionInvocatio
 
   /**
    * Construct an instance of InternalFunctionInvocationTargetException
-   * 
+   *
    * @param msg the error message
    * @param cause a Throwable cause of this exception
    */

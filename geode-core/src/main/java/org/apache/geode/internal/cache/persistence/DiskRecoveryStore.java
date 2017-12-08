@@ -16,13 +16,11 @@ package org.apache.geode.internal.cache.persistence;
 
 import org.apache.geode.cache.DiskAccessException;
 import org.apache.geode.cache.EvictionAttributes;
-import org.apache.geode.internal.cache.DiskEntry;
 import org.apache.geode.internal.cache.DiskStoreImpl;
 import org.apache.geode.internal.cache.LocalRegion;
 import org.apache.geode.internal.cache.RegionEntry;
 import org.apache.geode.internal.cache.RegionMap;
-import org.apache.geode.internal.cache.DiskEntry.RecoveredEntry;
-import org.apache.geode.internal.cache.LocalRegion.RegionEntryCallback;
+import org.apache.geode.internal.cache.entries.DiskEntry;
 import org.apache.geode.internal.cache.versions.RegionVersionHolder;
 import org.apache.geode.internal.cache.versions.VersionSource;
 import org.apache.geode.internal.cache.versions.VersionTag;
@@ -30,7 +28,6 @@ import org.apache.geode.internal.cache.versions.VersionTag;
 /**
  * Used by the disk code to store recovered data into the cache. The primary implementor of this
  * interface is LocalRegion.
- *
  *
  * @since GemFire prPersistSprint3
  */

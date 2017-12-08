@@ -203,5 +203,3 @@ public class Bug37241DUnitTest extends JUnit4DistributedTestCase {
     server2.invoke(() -> Bug37241DUnitTest.closeCache());
   }
 }
-
-

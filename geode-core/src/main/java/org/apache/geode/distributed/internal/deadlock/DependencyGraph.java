@@ -30,12 +30,12 @@ import org.apache.geode.internal.util.PluckStacks;
 
 /**
  * This class holds a graph of dependencies between objects
- * 
+ *
  * It detects cycles in the graph by using the Depth First Search algorithm. Calling findCycle will
  * return the first cycle that is discovered in the graph.
- * 
- * 
- * 
+ *
+ *
+ *
  */
 public class DependencyGraph implements Serializable {
   private static final long serialVersionUID = -6794339771271587648L;
@@ -79,7 +79,7 @@ public class DependencyGraph implements Serializable {
 
   /**
    * Find a cycle in the graph, if one exists.
-   * 
+   *
    * This method works by starting at any vertex and doing a depth first search. If it ever
    * encounters a vertex that is currently in the middle of the search (as opposed to a vertex whose
    * dependencies have been completely analyzed), then it returns the chain that starts from our
@@ -108,7 +108,7 @@ public class DependencyGraph implements Serializable {
    * Otherwise all subgraphs are traversed to find the one that has the most depth. This usually
    * indicates the thread that is blocking the most other threads.
    * <p>
-   * 
+   *
    * The findDependenciesWith method can then be used to find all top-level threads that are blocked
    * by the culprit.
    */
@@ -199,7 +199,7 @@ public class DependencyGraph implements Serializable {
 
   /**
    * Visit a vertex for the purposes of finding a cycle in the graph.
-   * 
+   *
    * @param start the node
    * @param unvisited the set of vertices that have not yet been visited
    * @param finished the set of vertices that have been completely analyzed
@@ -251,7 +251,7 @@ public class DependencyGraph implements Serializable {
 
   /**
    * Get the subgraph that the starting object has dependencies on.
-   * 
+   *
    * This does not include any objects that have dependencies on the starting object.
    */
   public DependencyGraph getSubGraph(Object start) {

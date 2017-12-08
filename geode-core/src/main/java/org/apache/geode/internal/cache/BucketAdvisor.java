@@ -21,6 +21,7 @@ import java.io.ObjectInputStream;
 import java.io.Serializable;
 import java.util.AbstractSet;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -124,10 +125,10 @@ public class BucketAdvisor extends CacheDistributionAdvisor {
 
   /**
    * A random number generator
-   * 
+   *
    * @see #getPreferredNode()
    */
-  static private final Random myRand = new Random();
+  private static final Random myRand = new Random();
 
   /**
    * A read/write lock to prevent making this bucket not primary while a write is in progress on the
@@ -161,7 +162,7 @@ public class BucketAdvisor extends CacheDistributionAdvisor {
 
   /**
    * Constructs a new BucketAdvisor for the Bucket owned by RegionAdvisor.
-   * 
+   *
    * @param bucket the bucket to provide metadata and advice for
    * @param regionAdvisor advisor for the PartitionedRegion
    */
@@ -220,7 +221,7 @@ public class BucketAdvisor extends CacheDistributionAdvisor {
   /**
    * Returns the lock that prevents the primary from moving while active writes are in progress.
    * This should be locked before checking if the local bucket is primary.
-   * 
+   *
    * @return the lock for in-progress write operations
    */
   public Lock getActiveWriteLock() {
@@ -230,7 +231,7 @@ public class BucketAdvisor extends CacheDistributionAdvisor {
   /**
    * Returns the lock that prevents the parent's primary from moving while active writes are in
    * progress. This should be locked before checking if the local bucket is primary.
-   * 
+   *
    * @return the lock for in-progress write operations
    */
   Lock getParentActiveWriteLock() {
@@ -242,7 +243,7 @@ public class BucketAdvisor extends CacheDistributionAdvisor {
 
   /**
    * Try to lock the primary bucket to make sure no operation is on-going at current bucket.
-   * 
+   *
    */
   public void tryLockIfPrimary() {
     if (isPrimary()) {
@@ -257,7 +258,7 @@ public class BucketAdvisor extends CacheDistributionAdvisor {
   /**
    * Makes this <code>BucketAdvisor</code> give up being a primary and become a secondary. Does
    * nothing if not currently the primary.
-   * 
+   *
    * @return true if this advisor has been deposed as primary
    */
   public boolean deposePrimary() {
@@ -298,7 +299,7 @@ public class BucketAdvisor extends CacheDistributionAdvisor {
    * profile update.
    * <p>
    * Caller must synchronize on this BucketAdvisor.
-   * 
+   *
    * @return true if children were all deposed as primaries
    * @guarded.By this
    */
@@ -350,7 +351,7 @@ public class BucketAdvisor extends CacheDistributionAdvisor {
   /**
    * Return (and possibly choose) a thread-sticky member from whose data store this bucket's values
    * should be read
-   * 
+   *
    * @return member to use for reads, null if none available
    */
   public InternalDistributedMember getPreferredNode() {
@@ -377,7 +378,7 @@ public class BucketAdvisor extends CacheDistributionAdvisor {
 
   /**
    * Returns the thread-safe queue of primary volunteering tasks for the parent Partitioned Region.
-   * 
+   *
    * @return the queue of primary volunteering tasks
    */
   Queue getVolunteeringQueue() {
@@ -387,7 +388,7 @@ public class BucketAdvisor extends CacheDistributionAdvisor {
   /**
    * Returns the semaphore which controls the number of threads allowed to consume from the
    * {@link #getVolunteeringQueue volunteering queue}.
-   * 
+   *
    * @return the semaphore which controls the number of volunteering threads
    */
   Semaphore getVolunteeringSemaphore() {
@@ -396,7 +397,7 @@ public class BucketAdvisor extends CacheDistributionAdvisor {
 
   /**
    * Returns the PartitionedRegionStats.
-   * 
+   *
    * @return the PartitionedRegionStats
    */
   PartitionedRegionStats getPartitionedRegionStats() {
@@ -484,10 +485,10 @@ public class BucketAdvisor extends CacheDistributionAdvisor {
   /**
    * Called by the RegionAdvisor.profileRemoved, this method tests to see if the missing member is
    * the primary elector for this bucket.
-   * 
+   *
    * We can't call this method from BucketAdvisor.profileRemoved, because the primaryElector may not
    * actually host the bucket.
-   * 
+   *
    * @param profile
    */
   public void checkForLostPrimaryElector(Profile profile) {
@@ -512,11 +513,11 @@ public class BucketAdvisor extends CacheDistributionAdvisor {
   /**
    * Only allows profiles that actually hosting this bucket. If the profile is primary, then
    * primaryMember will be set to that member but only if we are not already the primary.
-   * 
+   *
    * @param profile the profile to add (must be a BucketProfile)
    * @param forceProfile true will force profile to be added even if member is not in distributed
    *        view
-   * 
+   *
    * @see #adviseProfileUpdate()
    */
   @Override
@@ -658,7 +659,7 @@ public class BucketAdvisor extends CacheDistributionAdvisor {
     @SuppressWarnings("unchecked")
     private void readObject(ObjectInputStream stream) throws IOException, ClassNotFoundException {
       stream.defaultReadObject();
-      backingSet = m.keySet();
+      backingSet = m == null ? Collections.<E>emptySet() : m.keySet();
     }
   }
 
@@ -679,7 +680,7 @@ public class BucketAdvisor extends CacheDistributionAdvisor {
 
   /**
    * Only for local profile.
-   * 
+   *
    * @param p
    */
   public synchronized void updateServerBucketProfile(BucketProfile p) {
@@ -708,7 +709,7 @@ public class BucketAdvisor extends CacheDistributionAdvisor {
   /**
    * Removes the profile for the specified member. If that profile is marked as primary, this will
    * call {@link #notPrimary(InternalDistributedMember)}.
-   * 
+   *
    * @param memberId the member to remove the profile for
    * @param serialNum specific serial number to remove
    * @return true if a matching profile for the member was found
@@ -777,7 +778,7 @@ public class BucketAdvisor extends CacheDistributionAdvisor {
   /**
    * This method was split out from getPrimary() due to bug #40639 and is only intended to be called
    * from within that method.
-   * 
+   *
    * @see #getPrimary()
    * @return the existing primary (if it is still in the view) otherwise null
    */
@@ -804,7 +805,7 @@ public class BucketAdvisor extends CacheDistributionAdvisor {
   /**
    * This method was split out from getPrimary() due to bug #40639 and is only intended to be called
    * from within that method.
-   * 
+   *
    * @see #getPrimary()
    * @return the new primary
    */
@@ -823,7 +824,7 @@ public class BucketAdvisor extends CacheDistributionAdvisor {
   /**
    * Marks member as not primary. Initiates volunteerForPrimary if this member is hosting a real
    * bucket. This method does nothing if the member parameter is the current member.
-   * 
+   *
    * @param member the member who is not primary
    */
   public void notPrimary(InternalDistributedMember member) {
@@ -837,7 +838,7 @@ public class BucketAdvisor extends CacheDistributionAdvisor {
   /**
    * Marks member as not primary. Initiates volunteerForPrimary if this member is hosting a real
    * bucket.
-   * 
+   *
    * @param member the member who is not primary
    */
   public void removePrimary(InternalDistributedMember member) {
@@ -912,7 +913,7 @@ public class BucketAdvisor extends CacheDistributionAdvisor {
 
   /**
    * Returns the ProxyBucketRegion which owns this advisor.
-   * 
+   *
    * @return the ProxyBucketRegion which owns this advisor
    */
   public ProxyBucketRegion getProxyBucketRegion() {
@@ -942,7 +943,7 @@ public class BucketAdvisor extends CacheDistributionAdvisor {
 
   /**
    * Returns true if this advisor has been closed.
-   * 
+   *
    * @return true if this advisor has been closed
    */
   protected boolean isClosed() {
@@ -953,7 +954,7 @@ public class BucketAdvisor extends CacheDistributionAdvisor {
 
   /**
    * Returns true if this member is currently marked as primary.
-   * 
+   *
    * @return true if this member is currently marked as primary
    */
   public boolean isPrimary() {
@@ -964,7 +965,7 @@ public class BucketAdvisor extends CacheDistributionAdvisor {
 
   /**
    * Returns true if this member is currently volunteering for primary.
-   * 
+   *
    * @return true if this member is currently volunteering for primary
    */
   protected boolean isVolunteering() {
@@ -975,7 +976,7 @@ public class BucketAdvisor extends CacheDistributionAdvisor {
 
   /**
    * Returns true if this member is currently attempting to become primary.
-   * 
+   *
    * @return true if this member is currently attempting to become primary
    */
   protected boolean isBecomingPrimary() {
@@ -987,7 +988,7 @@ public class BucketAdvisor extends CacheDistributionAdvisor {
 
   /**
    * Returns true if this member is currently hosting real bucket.
-   * 
+   *
    * @return true if this member is currently hosting real bucket
    */
   public boolean isHosting() {
@@ -1022,7 +1023,7 @@ public class BucketAdvisor extends CacheDistributionAdvisor {
 
   /**
    * Makes this <code>BucketAdvisor</code> become the primary if it is already a secondary.
-   * 
+   *
    * @param isRebalance true if directed to become primary by rebalancing
    * @return true if this advisor succeeds in becoming the primary
    */
@@ -1129,7 +1130,7 @@ public class BucketAdvisor extends CacheDistributionAdvisor {
   /**
    * Check the primary member shortcut. Does not query the advisor. Should only be used when the
    * advisor should not be consulted directly.
-   * 
+   *
    * @return the member or null if no primary exists
    */
   public InternalDistributedMember basicGetPrimaryMember() {
@@ -1138,7 +1139,7 @@ public class BucketAdvisor extends CacheDistributionAdvisor {
 
   /**
    * Invoked when the primary lock has been acquired by this VM.
-   * 
+   *
    * @return true if successfully changed state to IS_PRIMARY
    */
   protected boolean acquiredPrimaryLock() {
@@ -1235,7 +1236,7 @@ public class BucketAdvisor extends CacheDistributionAdvisor {
    * Lazily gets the lock for acquiring primary lock. Caller must handle null. If DLS, Cache, or
    * DistributedSystem are shutting down then null will be returned. If DLS does not yet exist and
    * createDLS is false then null will be returned.
-   * 
+   *
    * @param createDLS true will create DLS if it does not exist
    * @return distributed lock indicating primary member or null
    */
@@ -1373,7 +1374,7 @@ public class BucketAdvisor extends CacheDistributionAdvisor {
 
   /**
    * Wait briefly for a primary member to be identified.
-   * 
+   *
    * @param timeout time in milliseconds to wait for a primary
    * @return the primary bucket host
    */
@@ -1448,11 +1449,11 @@ public class BucketAdvisor extends CacheDistributionAdvisor {
   /**
    * How long to wait, in millisecs, for redundant buckets to exist
    */
-  private final static long BUCKET_REDUNDANCY_WAIT = 15000L; // 15 seconds
+  private static final long BUCKET_REDUNDANCY_WAIT = 15000L; // 15 seconds
 
   /**
    * Wait the desired redundancy to be met.
-   * 
+   *
    * @param minRedundancy the amount of desired redundancy.
    * @return true if desired redundancy is detected
    */
@@ -1486,7 +1487,7 @@ public class BucketAdvisor extends CacheDistributionAdvisor {
     }
   }
 
-  private final static long BUCKET_STORAGE_WAIT =
+  private static final long BUCKET_STORAGE_WAIT =
       Long.getLong(DistributionConfig.GEMFIRE_PREFIX + "BUCKET_STORAGE_WAIT", 15000).longValue(); // 15
                                                                                                   // seconds
 
@@ -1548,7 +1549,7 @@ public class BucketAdvisor extends CacheDistributionAdvisor {
 
   /**
    * Invoked when real bucket is created for hosting in this VM.
-   * 
+   *
    * @param value true to begin hosting; false to end hosting
    */
   protected void setHosting(boolean value) {
@@ -1685,7 +1686,7 @@ public class BucketAdvisor extends CacheDistributionAdvisor {
 
   /**
    * Sets primaryMember and notifies all. Caller must be synced on this.
-   * 
+   *
    * @param id the member to use as primary for this bucket
    */
   void setPrimaryMember(InternalDistributedMember id) {
@@ -1739,7 +1740,7 @@ public class BucketAdvisor extends CacheDistributionAdvisor {
    * <p>
    * The user of this BucketAdvisor should simply assume that the first profile is primary until the
    * dust settles, leaving only one primary profile.
-   * 
+   *
    * @return zero or greater array of primary members
    */
   private InternalDistributedMember[] findPrimaryMembers() {
@@ -1761,7 +1762,7 @@ public class BucketAdvisor extends CacheDistributionAdvisor {
   /**
    * Searches through profiles to find first profile that is flagged as primary and sets
    * {@link #primaryMember} to it. Caller must synchronize on this BucketAdvisor.
-   * 
+   *
    * @return true if a primary member was found and used
    * @see #findAndSetPrimaryMember()
    */
@@ -1782,7 +1783,7 @@ public class BucketAdvisor extends CacheDistributionAdvisor {
   /**
    * Returns the current redundancy of the this bucket, including the locally hosted bucket if it
    * exists.
-   * 
+   *
    * @return current number of hosts of this bucket ; -1 if there are no hosts
    */
   public int getBucketRedundancy() {
@@ -1806,7 +1807,7 @@ public class BucketAdvisor extends CacheDistributionAdvisor {
 
   /**
    * Get the number of members that are hosting the bucket, and have finished initialization.
-   * 
+   *
    * This method is currently only used to check the bucket redundancy just before creating the
    * bucket. If it is used more frequently, it might be better to cache this count.
    */
@@ -1870,7 +1871,7 @@ public class BucketAdvisor extends CacheDistributionAdvisor {
 
   /**
    * Returns string representation of the primary state value.
-   * 
+   *
    * @param value the primary state to return string for
    * @return string representation of primaryState
    */
@@ -1900,7 +1901,7 @@ public class BucketAdvisor extends CacheDistributionAdvisor {
   /**
    * Requests change to the requested primary state. Controls all state changes pertaining to
    * primary state. Caller must be synchronized on this.
-   * 
+   *
    * @param requestedState primaryState to change to
    * @return true if the requestedState change was completed
    * @throws IllegalStateException if an illegal state change was attempted
@@ -2218,7 +2219,7 @@ public class BucketAdvisor extends CacheDistributionAdvisor {
   /**
    * returns the set of all the members in the system which require both DistributedCacheOperation
    * messages and notification-only partition messages
-   * 
+   *
    * @return a set of recipients requiring both cache-op and notification messages
    * @since GemFire 5.7
    */
@@ -2430,7 +2431,7 @@ public class BucketAdvisor extends CacheDistributionAdvisor {
   /**
    * Handles the actual volunteering to become primary bucket. Ensures that only one thread is ever
    * volunteering at one time.
-   * 
+   *
    */
   class VolunteeringDelegate {
     /**
@@ -2444,7 +2445,7 @@ public class BucketAdvisor extends CacheDistributionAdvisor {
     /**
      * Returns true if this delegate is aggressively trying to become the primary even if another
      * member is already the primary.
-     * 
+     *
      * @return true if this aggressively trying to become the primary
      */
     boolean isAggressive() {
@@ -2483,7 +2484,7 @@ public class BucketAdvisor extends CacheDistributionAdvisor {
     /**
      * Reserves this delegate for the current thread to call becomePrimary. Necessary because caller
      * of doVolunteerForPrimary must not be synchronized on BucketAdvisor.
-     * 
+     *
      * @return true if successfully reserved for becomePrimary
      */
     boolean reserveForBecomePrimary() {
@@ -2622,7 +2623,7 @@ public class BucketAdvisor extends CacheDistributionAdvisor {
     /**
      * Called from catch blocks in {@link #doVolunteerForPrimary()}. Handles the exception properly
      * based on advisor settings and shutdown condition.
-     * 
+     *
      * @param e the RuntimeException that was caught while volunteering
      * @param loggit true if message should be logged if shutdown condition is not met
      */
@@ -2722,9 +2723,9 @@ public class BucketAdvisor extends CacheDistributionAdvisor {
      * {@link BucketAdvisor#getVolunteeringQueue()}. A number of threads equal to
      * {@link RegionAdvisor#VOLUNTEERING_THREAD_COUNT} are permitted to consume from the queue by
      * acquiring permits from {@link BucketAdvisor#getVolunteeringSemaphore()}.
-     * 
+     *
      * @param volunteeringTask the task to queue and then execute in waiting thread pool
-     * 
+     *
      * @throws InterruptedException
      */
     private void execute(Runnable volunteeringTask) throws InterruptedException {
@@ -2755,7 +2756,7 @@ public class BucketAdvisor extends CacheDistributionAdvisor {
     /**
      * Returns the runnable used to consume the volunteering queue. The executing thread(s) will
      * consume from the queue until it is empty.
-     * 
+     *
      * @return runnable for consuming the volunteering queue
      */
     private Runnable consumeQueue() {

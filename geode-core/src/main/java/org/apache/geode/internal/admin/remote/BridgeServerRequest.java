@@ -14,12 +14,12 @@
  */
 package org.apache.geode.internal.admin.remote;
 
+import java.io.*;
+
 import org.apache.geode.DataSerializer;
-import org.apache.geode.distributed.internal.DistributionManager;
+import org.apache.geode.distributed.internal.DM;
 import org.apache.geode.internal.admin.CacheInfo;
 import org.apache.geode.internal.i18n.LocalizedStrings;
-
-import java.io.*;
 
 /**
  * A message that is sent to a VM that hosts a cache to perform an administrative operation on one
@@ -132,7 +132,7 @@ public class BridgeServerRequest extends AdminRequest {
    * Creates a <Code>BridgeServerResponse</code> to this request
    */
   @Override
-  protected AdminResponse createResponse(DistributionManager dm) {
+  protected AdminResponse createResponse(DM dm) {
     return BridgeServerResponse.create(dm, this);
   }
 

@@ -15,7 +15,7 @@
 /*
  * Created on Sep 13, 2005
  *
- * 
+ *
  */
 package org.apache.geode.internal.cache;
 
@@ -51,7 +51,7 @@ public class MapClearGIIDUnitTest extends JUnit4CacheTestCase {
 
   protected static boolean wasGIIInProgressDuringClear = false;
 
-  volatile static Region region;
+  static volatile Region region;
 
   public static boolean checkImageStateFlag() throws Exception {
     Region rgn = new MapClearGIIDUnitTest().getCache().getRegion("/map");
@@ -211,4 +211,3 @@ public class MapClearGIIDUnitTest extends JUnit4CacheTestCase {
     }
   }
 }// end of test class
-

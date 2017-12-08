@@ -21,7 +21,7 @@ import org.apache.geode.distributed.DistributedMember;
 /**
  * Implements PartitionMemberInfo. Serializable form is used to allow JMX MBeans to use this as a
  * remotable return type.
- * 
+ *
  */
 public class PartitionMemberInfoImpl implements InternalPartitionDetails, Serializable {
 
@@ -96,7 +96,7 @@ public class PartitionMemberInfoImpl implements InternalPartitionDetails, Serial
   /**
    * Returns the backed array of bucket bytes. Index is the BID and the value is either 0 or
    * positive. Please do not change the values! Internal use only.
-   * 
+   *
    * @return the backed array of bucket bytes
    */
   public long[] getBucketSizes() {

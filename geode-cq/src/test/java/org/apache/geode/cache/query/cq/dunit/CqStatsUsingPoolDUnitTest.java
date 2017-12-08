@@ -242,11 +242,11 @@ public class CqStatsUsingPoolDUnitTest extends JUnit4CacheTestCase {
     });
   }
 
-  private final static int PAUSE = 8 * 1000; // 5 * 1000
+  private static final int PAUSE = 8 * 1000; // 5 * 1000
 
   /**
    * Test for CQ and CQ Service Statistics
-   * 
+   *
    * @throws Exception
    */
   @Test
@@ -335,7 +335,7 @@ public class CqStatsUsingPoolDUnitTest extends JUnit4CacheTestCase {
 
   /**
    * Test for CQ Service Statistics
-   * 
+   *
    * @throws Exception
    */
   @Test

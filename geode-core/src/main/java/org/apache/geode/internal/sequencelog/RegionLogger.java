@@ -21,7 +21,7 @@ import org.apache.geode.internal.cache.persistence.PersistentMemberID;
 
 /**
  * A Wrapper around the graph logger that logs region level events.
- * 
+ *
  */
 public class RegionLogger {
 
@@ -30,7 +30,7 @@ public class RegionLogger {
   /**
    * Log the creation of a region. This should only be called if the region was not recovered from
    * disk or GII'd from another member.
-   * 
+   *
    * @param regionName
    * @param source
    */

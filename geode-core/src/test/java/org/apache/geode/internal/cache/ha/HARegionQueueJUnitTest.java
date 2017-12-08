@@ -619,17 +619,17 @@ public class HARegionQueueJUnitTest {
    * This test tests remove operation is causing the insertion of sequence ID for existing
    * ThreadIdentifier object and concurrently the QRM thread is iterating over the Map to form the
    * Data Set for dispatch. There should not be any Data Loss
-   * 
+   *
    * In this test, first we add x number of events for unique thread id for the same region then we
    * start two concurrent threads. One which does add to dispatched events map with sequence id's
    * greater than x but the same ThreadIds as previous. The second thread does createMessageList
    * (which removes from the dispatched events map) and stores the list
-   * 
+   *
    * After the two threads have operated, createMessageList is called again and the data is stored
    * in another list.
-   * 
+   *
    * The data in the list is populated on a map against the threadId.
-   * 
+   *
    * It is then verified to see that all the sequence should be greater than x
    */
   @Test
@@ -724,12 +724,12 @@ public class HARegionQueueJUnitTest {
    * start two concurrent threads. One which does add to dispatched events map with sequence id's
    * greater than x and the second one which does createMessageList (which removes from the
    * dispatched events map) and stores the list
-   * 
+   *
    * After the two threads have operated, createMessageList is called again and the data is stored
    * in another list.
-   * 
+   *
    * The data in the list is populated on a map against the threadId.
-   * 
+   *
    * It is then verified to see that the map size should be 2x
    */
   @Test
@@ -817,15 +817,15 @@ public class HARegionQueueJUnitTest {
    *
    * In this test, first we add x number of events for unique thread id for the 2 regions then we
    * start two concurrent threads. One which does add to dispatched events map to 3 new regions
-   * 
+   *
    * the second thread does createMessageList (which removes from the dispatched events map) and
    * stores the list
-   * 
+   *
    * After the two threads have operated, createMessageList is called again and the data is stored
    * in another list.
-   * 
+   *
    * The data in the list is populated on a map against the threadId.
-   * 
+   *
    * It is then verified to see that a total of x entries are present in the map
    */
   @Test
@@ -926,19 +926,19 @@ public class HARegionQueueJUnitTest {
    * ThreadIdentifier Object ( that is the HA Regio name exists but ThreadIdentifier object is
    * appearing 1st time) and concurrently the QRM thread is iterating over the Map to form the Data
    * Set for dispatch. There should not be any DataLoss
-   * 
+   *
    * In this test, first we add x number of events for unique thread id for the multiples regions
    * then we start two concurrent threads. One which does add to dispatched events map with sequence
    * id's greater than x and new ThreadIdentifiers
-   * 
+   *
    * the second thread does createMessageList (which removes from the dispatched events map) and
    * stores the list
-   * 
+   *
    * After the two threads have operated, createMessageList is called again and the data is stored
    * in another list.
-   * 
+   *
    * The data in the list is populated on a map against the threadId.
-   * 
+   *
    * It is then verified to see that the map size should be 2x * number of regions
    */
   @Test

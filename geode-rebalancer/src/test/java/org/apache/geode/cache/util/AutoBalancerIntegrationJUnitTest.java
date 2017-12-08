@@ -14,20 +14,11 @@
  */
 package org.apache.geode.cache.util;
 
-import org.apache.geode.GemFireConfigException;
-import org.apache.geode.cache.CacheFactory;
-import org.apache.geode.cache.util.AutoBalancer.CacheOperationFacade;
-import org.apache.geode.cache.util.AutoBalancer.GeodeCacheFacade;
-import org.apache.geode.distributed.DistributedLockService;
-import org.apache.geode.distributed.internal.InternalDistributedSystem;
-import org.apache.geode.distributed.internal.locks.DLockService;
-import org.apache.geode.internal.statistics.HostStatSampler;
-import org.apache.geode.internal.cache.GemFireCacheImpl;
-import org.apache.geode.test.junit.categories.IntegrationTest;
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.experimental.categories.Category;
+import static java.util.concurrent.TimeUnit.SECONDS;
+import static org.apache.geode.distributed.ConfigurationProperties.MCAST_PORT;
+import static org.awaitility.Awaitility.await;
+import static org.hamcrest.Matchers.equalTo;
+import static org.junit.Assert.*;
 
 import java.io.ByteArrayInputStream;
 import java.util.concurrent.Callable;
@@ -35,11 +26,21 @@ import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 
-import static org.apache.geode.distributed.ConfigurationProperties.MCAST_PORT;
-import static org.awaitility.Awaitility.await;
-import static java.util.concurrent.TimeUnit.SECONDS;
-import static org.hamcrest.Matchers.equalTo;
-import static org.junit.Assert.*;
+import org.junit.After;
+import org.junit.Before;
+import org.junit.Test;
+import org.junit.experimental.categories.Category;
+
+import org.apache.geode.GemFireConfigException;
+import org.apache.geode.cache.CacheFactory;
+import org.apache.geode.cache.util.AutoBalancer.CacheOperationFacade;
+import org.apache.geode.cache.util.AutoBalancer.GeodeCacheFacade;
+import org.apache.geode.distributed.DistributedLockService;
+import org.apache.geode.distributed.internal.InternalDistributedSystem;
+import org.apache.geode.distributed.internal.locks.DLockService;
+import org.apache.geode.internal.cache.GemFireCacheImpl;
+import org.apache.geode.internal.statistics.HostStatSampler;
+import org.apache.geode.test.junit.categories.IntegrationTest;
 
 /**
  * IntegrationTests for AutoBalancer that include usage of Cache, StatSampler and

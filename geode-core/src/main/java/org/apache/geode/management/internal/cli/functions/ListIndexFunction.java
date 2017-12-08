@@ -19,7 +19,6 @@ import java.util.HashSet;
 import java.util.Set;
 
 import org.apache.geode.cache.Cache;
-import org.apache.geode.cache.CacheFactory;
 import org.apache.geode.cache.execute.FunctionAdapter;
 import org.apache.geode.cache.execute.FunctionContext;
 import org.apache.geode.cache.query.Index;
@@ -31,7 +30,7 @@ import org.apache.geode.management.internal.cli.domain.IndexDetails;
  * The ListIndexFunction class is a GemFire function used to collect all the index information on
  * all Regions across the entire GemFire Cache (distributed system).
  * </p>
- * 
+ *
  * @see org.apache.geode.cache.Cache
  * @see org.apache.geode.cache.execute.Function
  * @see org.apache.geode.cache.execute.FunctionAdapter
@@ -43,10 +42,6 @@ import org.apache.geode.management.internal.cli.domain.IndexDetails;
 @SuppressWarnings("unused")
 public class ListIndexFunction extends FunctionAdapter implements InternalEntity {
 
-  protected Cache getCache() {
-    return CacheFactory.getAnyInstance();
-  }
-
   public String getId() {
     return ListIndexFunction.class.getName();
   }
@@ -55,7 +50,7 @@ public class ListIndexFunction extends FunctionAdapter implements InternalEntity
     try {
       final Set<IndexDetails> indexDetailsSet = new HashSet<IndexDetails>();
 
-      final Cache cache = getCache();
+      final Cache cache = context.getCache();
       final DistributedMember member = cache.getDistributedSystem().getDistributedMember();
 
       for (final Index index : cache.getQueryService().getIndexes()) {

@@ -61,7 +61,7 @@ public class PartitionedRegionQueryEvaluatorIntegrationTest {
 
   /**
    * Test for the helper method getNodeToBucketMap.
-   * 
+   *
    */
   @Test
   public void testGetNodeToBucketMap() {
@@ -118,7 +118,7 @@ public class PartitionedRegionQueryEvaluatorIntegrationTest {
 
   /**
    * This function populates bucket2Node region of the partition region
-   * 
+   *
    * @param pr
    */
   public void populateBucket2Node(PartitionedRegion pr, List nodes, int numOfBuckets) {
@@ -160,7 +160,7 @@ public class PartitionedRegionQueryEvaluatorIntegrationTest {
 
   /**
    * This function decides number of the nodes in the list of bucket2Node region
-   * 
+   *
    * @param i
    * @return
    */
@@ -204,7 +204,7 @@ public class PartitionedRegionQueryEvaluatorIntegrationTest {
 
   /**
    * This functions number of new nodes specified by nCount.
-   * 
+   *
    * @param nCount
    * @return
    */
@@ -240,7 +240,7 @@ public class PartitionedRegionQueryEvaluatorIntegrationTest {
 
   /**
    * this function creates new node.
-   * 
+   *
    * @return
    */
   public Node createNode(int i) {

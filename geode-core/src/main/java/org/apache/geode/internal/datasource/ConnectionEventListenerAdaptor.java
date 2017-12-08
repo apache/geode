@@ -15,7 +15,7 @@
 package org.apache.geode.internal.datasource;
 
 /**
- * 
+ *
  * To change the template for this generated type comment go to Window - Preferences - Java - Code
  * Generation - Code and Comments
  */
@@ -50,7 +50,7 @@ public class ConnectionEventListenerAdaptor
   /**
    * Implementation of call back function from ConnectionEventListener interface. This callback will
    * be invoked on connection close event.
-   * 
+   *
    * @param event Connection event object
    */
   public void connectionClosed(javax.sql.ConnectionEvent event) {}
@@ -58,7 +58,7 @@ public class ConnectionEventListenerAdaptor
   /**
    * Implementation of call back function from ConnectionEventListener interface. This callback will
    * be invoked on connection error event.
-   * 
+   *
    * @param event Connection event object
    */
   public void connectionErrorOccurred(javax.sql.ConnectionEvent event) {}

@@ -30,10 +30,10 @@ import org.apache.geode.cache.client.PoolManager;
 import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.distributed.DistributedSystem;
 import org.apache.geode.distributed.internal.ServerLocation;
-import org.apache.geode.internal.statistics.DummyStatisticsFactory;
 import org.apache.geode.internal.cache.PoolStats;
 import org.apache.geode.internal.cache.tier.InternalClientMembership;
 import org.apache.geode.internal.logging.LogService;
+import org.apache.geode.internal.statistics.DummyStatisticsFactory;
 
 /**
  *
@@ -61,7 +61,7 @@ public class EndpointManagerImpl implements EndpointManager {
 
   /*
    * (non-Javadoc)
-   * 
+   *
    * @see org.apache.geode.cache.client.internal.EndpointManager#referenceEndpoint(org.apache.geode.
    * distributed.internal.ServerLocation)
    */
@@ -100,7 +100,7 @@ public class EndpointManagerImpl implements EndpointManager {
 
   /*
    * (non-Javadoc)
-   * 
+   *
    * @see
    * org.apache.geode.cache.client.internal.EndpointManager#serverCrashed(org.apache.geode.cache.
    * client.internal.Endpoint)
@@ -175,7 +175,7 @@ public class EndpointManagerImpl implements EndpointManager {
 
   /*
    * (non-Javadoc)
-   * 
+   *
    * @see org.apache.geode.cache.client.internal.EndpointManager#getEndpointMap()
    */
   public Map<ServerLocation, Endpoint> getEndpointMap() {
@@ -184,7 +184,7 @@ public class EndpointManagerImpl implements EndpointManager {
 
   /*
    * (non-Javadoc)
-   * 
+   *
    * @see org.apache.geode.cache.client.internal.EndpointManager#close()
    */
   public synchronized void close() {
@@ -200,7 +200,7 @@ public class EndpointManagerImpl implements EndpointManager {
 
   /*
    * (non-Javadoc)
-   * 
+   *
    * @see org.apache.geode.cache.client.internal.EndpointManager#addListener(org.apache.geode.cache.
    * client.internal.EndpointManagerImpl.EndpointListener)
    */
@@ -210,7 +210,7 @@ public class EndpointManagerImpl implements EndpointManager {
 
   /*
    * (non-Javadoc)
-   * 
+   *
    * @see
    * org.apache.geode.cache.client.internal.EndpointManager#removeListener(org.apache.geode.cache.
    * client.internal.EndpointManagerImpl.EndpointListener)

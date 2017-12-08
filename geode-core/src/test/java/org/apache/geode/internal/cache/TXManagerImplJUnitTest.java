@@ -14,12 +14,17 @@
  */
 package org.apache.geode.internal.cache;
 
+import static org.apache.geode.distributed.ConfigurationProperties.LOCATORS;
+import static org.apache.geode.distributed.ConfigurationProperties.MCAST_PORT;
+import static org.junit.Assert.*;
 import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.spy;
 
-import org.apache.geode.cache.*;
-import org.apache.geode.distributed.internal.DistributionConfig;
-import org.apache.geode.test.junit.categories.IntegrationTest;
+import java.util.Properties;
+import java.util.Queue;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.TimeUnit;
+
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Rule;
@@ -29,14 +34,9 @@ import org.junit.rules.TestName;
 import org.mockito.invocation.InvocationOnMock;
 import org.mockito.stubbing.Answer;
 
-import java.util.Properties;
-import java.util.Queue;
-import java.util.concurrent.CountDownLatch;
-import java.util.concurrent.TimeUnit;
-
-import static org.apache.geode.distributed.ConfigurationProperties.LOCATORS;
-import static org.apache.geode.distributed.ConfigurationProperties.MCAST_PORT;
-import static org.junit.Assert.*;
+import org.apache.geode.cache.*;
+import org.apache.geode.distributed.internal.DistributionConfig;
+import org.apache.geode.test.junit.categories.IntegrationTest;
 
 /**
  * junit test for suspend and resume methods
@@ -70,7 +70,7 @@ public class TXManagerImplJUnitTest {
 
   /**
    * two threads suspend and resume a single transaction, while making changes.
-   * 
+   *
    * @throws Exception
    */
   @Test
@@ -254,7 +254,7 @@ public class TXManagerImplJUnitTest {
 
   /**
    * test that timeout of Long.MAX_VALUE does not return immediately
-   * 
+   *
    * @throws Exception
    */
   @Test

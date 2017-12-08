@@ -20,7 +20,7 @@ import org.apache.geode.cache.RegionShortcut;
 
 /**
  * {@code RegionFactoryImpl} extends RegionFactory adding {@link RegionShortcut} support.
- * 
+ *
  * @since GemFire 6.5
  */
 public class RegionFactoryImpl<K, V> extends RegionFactory<K, V> {

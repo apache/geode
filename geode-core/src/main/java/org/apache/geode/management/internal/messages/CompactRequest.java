@@ -95,7 +95,7 @@ public class CompactRequest extends AdminRequest {
   }
 
   @Override
-  protected AdminResponse createResponse(DistributionManager dm) {
+  protected AdminResponse createResponse(DM dm) {
     PersistentID compactedDiskStore = compactDiskStore(this.diskStoreName);
 
     return new CompactResponse(this.getSender(), compactedDiskStore);
@@ -159,14 +159,14 @@ public class CompactRequest extends AdminRequest {
     }
 
     @Override
-    protected void process(DistributionMessage msg, boolean warn) {
-      if (msg instanceof CompactResponse) {
-        final PersistentID persistentId = ((CompactResponse) msg).getPersistentId();
+    protected void process(DistributionMessage message, boolean warn) {
+      if (message instanceof CompactResponse) {
+        final PersistentID persistentId = ((CompactResponse) message).getPersistentId();
         if (persistentId != null) {
-          results.put(msg.getSender(), persistentId);
+          results.put(message.getSender(), persistentId);
         }
       }
-      super.process(msg, warn);
+      super.process(message, warn);
     }
   }
 }

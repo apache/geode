@@ -193,7 +193,7 @@ public class ReplicateCacheListenerInvocationTest implements Serializable {
   /**
    * Overridden within tests to increment shared counters.
    */
-  static abstract class BaseCacheListener extends CacheListenerAdapter<String, Integer>
+  abstract static class BaseCacheListener extends CacheListenerAdapter<String, Integer>
       implements Serializable {
 
     @Override

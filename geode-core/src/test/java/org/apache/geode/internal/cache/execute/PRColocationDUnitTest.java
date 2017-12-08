@@ -30,6 +30,7 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Properties;
 import java.util.Set;
 
 import org.junit.Test;
@@ -53,6 +54,7 @@ import org.apache.geode.cache.execute.FunctionService;
 import org.apache.geode.cache.execute.RegionFunctionContext;
 import org.apache.geode.cache.execute.ResultCollector;
 import org.apache.geode.cache30.CacheSerializableRunnable;
+import org.apache.geode.distributed.ConfigurationProperties;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
 import org.apache.geode.internal.cache.ColocationHelper;
 import org.apache.geode.internal.cache.PartitionedRegion;
@@ -80,7 +82,7 @@ import org.apache.geode.test.junit.categories.DistributedTest;
 
 /**
  * This is the test for the custom and colocated partitioning of PartitionedRegion
- * 
+ *
  */
 @SuppressWarnings("synthetic-access")
 @Category(DistributedTest.class)
@@ -100,11 +102,11 @@ public class PRColocationDUnitTest extends JUnit4CacheTestCase {
 
   protected static int defaultStringSize = 0;
 
-  final static String CustomerPartitionedRegionName = "CustomerPartitionedRegion";
+  static final String CustomerPartitionedRegionName = "CustomerPartitionedRegion";
 
-  final static String OrderPartitionedRegionName = "OrderPartitionedRegion";
+  static final String OrderPartitionedRegionName = "OrderPartitionedRegion";
 
-  final static String ShipmentPartitionedRegionName = "ShipmentPartitionedRegion";
+  static final String ShipmentPartitionedRegionName = "ShipmentPartitionedRegion";
 
   String regionName = null;
 
@@ -1275,7 +1277,7 @@ public class PRColocationDUnitTest extends JUnit4CacheTestCase {
    * Member 1: PR2 colocatedWith PR1 <br>
    * Member 2: PR2 is not colocated <br>
    * Should throw IllegalStateException
-   * 
+   *
    * @throws Throwable
    */
   @Test
@@ -1424,7 +1426,7 @@ public class PRColocationDUnitTest extends JUnit4CacheTestCase {
 
   /**
    * Confirm that the redundancy must be the same for colocated partitioned regions
-   * 
+   *
    * @throws Exception
    */
   @Test
@@ -1459,7 +1461,7 @@ public class PRColocationDUnitTest extends JUnit4CacheTestCase {
   /**
    * Tests to make sure that a VM will not make copies of any buckets for a region until all of the
    * colocated regions are created.
-   * 
+   *
    * @throws Throwable
    */
   @Test
@@ -1608,6 +1610,17 @@ public class PRColocationDUnitTest extends JUnit4CacheTestCase {
     accessor.invoke(() -> PRColocationDUnitTest.putData_KeyBasedPartitionResolver());
 
     accessor.invoke(() -> PRColocationDUnitTest.executeFunction());
+  }
+
+  @Override
+  public Properties getDistributedSystemProperties() {
+    Properties result = super.getDistributedSystemProperties();
+    result.put(ConfigurationProperties.SERIALIZABLE_OBJECT_FILTER,
+        "org.apache.geode.internal.cache.execute.**" + ";org.apache.geode.test.dunit.**"
+            + ";org.apache.geode.test.junit.**"
+            + ";org.apache.geode.internal.cache.execute.data.CustId"
+            + ";org.apache.geode.internal.cache.execute.data.Customer");
+    return result;
   }
 
   @Test
@@ -1762,10 +1775,10 @@ public class PRColocationDUnitTest extends JUnit4CacheTestCase {
 
   /**
    * Test for hang condition observed with the PRHARedundancyProvider.createMissingBuckets code.
-   * 
+   *
    * A parent region is populated with buckets. Then the child region is created simultaneously on
    * several nodes.
-   * 
+   *
    * @throws Throwable
    */
   @Test

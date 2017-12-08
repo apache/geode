@@ -14,22 +14,23 @@
  */
 package org.apache.geode.internal.cache;
 
+import static org.apache.geode.distributed.ConfigurationProperties.MCAST_PORT;
+import static org.junit.Assert.assertEquals;
+
+import java.util.Collection;
+import java.util.Iterator;
+import java.util.Properties;
+
+import org.junit.After;
+import org.junit.Test;
+import org.junit.experimental.categories.Category;
+
 import org.apache.geode.cache.AttributesFactory;
 import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.CacheFactory;
 import org.apache.geode.cache.Region;
 import org.apache.geode.distributed.DistributedSystem;
 import org.apache.geode.test.junit.categories.IntegrationTest;
-import org.junit.After;
-import org.junit.Test;
-import org.junit.experimental.categories.Category;
-
-import java.util.Collection;
-import java.util.Iterator;
-import java.util.Properties;
-
-import static org.apache.geode.distributed.ConfigurationProperties.MCAST_PORT;
-import static org.junit.Assert.assertEquals;
 
 /**
  * Confirm that bug 34583 is fixed. Cause of bug is recursion is entries iterator that causes stack

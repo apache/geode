@@ -38,9 +38,9 @@ import org.apache.geode.internal.i18n.LocalizedStrings;
  * MsgDestreamer supports destreaming a streamed message from a tcp Connection that arrives in
  * chunks. This allows us to receive a message without needing to read it completely into a buffer
  * before we can start deserializing it.
- * 
+ *
  * @since GemFire 5.0.2
- * 
+ *
  */
 
 public class MsgDestreamer {
@@ -130,7 +130,7 @@ public class MsgDestreamer {
 
   /**
    * Adds a chunk for this guy to deserialize
-   * 
+   *
    * @param bb contains the bytes of the chunk
    * @param length the number of bytes in bb that are this chunk
    */
@@ -145,7 +145,7 @@ public class MsgDestreamer {
 
   /**
    * Adds a chunk for this guy to deserialize
-   * 
+   *
    * @param b a byte array contains the bytes of the chunk
    */
   public void addChunk(byte[] b) throws IOException {
@@ -167,7 +167,7 @@ public class MsgDestreamer {
 
   /**
    * Waits for the deserialization to complete and returns the deserialized message.
-   * 
+   *
    * @throws IOException A problem occurred while deserializing the message.
    * @throws ClassNotFoundException The class of an object read from <code>in</code> could not be
    *         found
@@ -310,7 +310,7 @@ public class MsgDestreamer {
 
       /*
        * (non-Javadoc)
-       * 
+       *
        * @see org.apache.geode.CancelCriterion#cancelInProgress()
        */
       @Override
@@ -327,7 +327,7 @@ public class MsgDestreamer {
 
       /*
        * (non-Javadoc)
-       * 
+       *
        * @see org.apache.geode.CancelCriterion#generateCancelledException(java.lang.Throwable)
        */
       @Override

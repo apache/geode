@@ -45,7 +45,7 @@ public class ColocatedRegionDetails implements DataSerializable {
 
   /**
    * Returns the canonical name of the host machine
-   * 
+   *
    * @return parent
    */
   public String getHost() {
@@ -54,7 +54,7 @@ public class ColocatedRegionDetails implements DataSerializable {
 
   /**
    * Returns the name of the {@link DistributedMember}
-   * 
+   *
    * @return parent
    */
   public String getMember() {
@@ -63,7 +63,7 @@ public class ColocatedRegionDetails implements DataSerializable {
 
   /**
    * Returns the name of the parent region of a colocated pair
-   * 
+   *
    * @return parent
    */
   public String getParent() {
@@ -72,7 +72,7 @@ public class ColocatedRegionDetails implements DataSerializable {
 
   /**
    * Returns the name of the child region of a colocated pair
-   * 
+   *
    * @return child
    */
   public String getChild() {

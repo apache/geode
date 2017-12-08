@@ -14,11 +14,11 @@
  */
 package org.apache.geode.cache.util;
 
-import org.apache.geode.cache.CacheEvent;
-
 import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
+
+import org.apache.geode.cache.CacheEvent;
 
 /**
  * Utilty class for getting Transaction events for create, invalidate, put, destroy operations.
@@ -27,7 +27,7 @@ public class TxEventTestUtil {
 
   /**
    * Retrieves the cache events with operation create
-   * 
+   *
    * @return list of cache events
    */
   public static List getCreateEvents(List<CacheEvent<?, ?>> events) {
@@ -42,7 +42,7 @@ public class TxEventTestUtil {
 
   /**
    * Retrieves the cache events with operation update
-   * 
+   *
    * @return list of cache events
    */
   public static List getPutEvents(List<CacheEvent<?, ?>> events) {
@@ -57,7 +57,7 @@ public class TxEventTestUtil {
 
   /**
    * Retrieves the cache events with operation invalidate
-   * 
+   *
    * @return list of cache events
    */
   public static List getInvalidateEvents(List<CacheEvent<?, ?>> events) {
@@ -72,7 +72,7 @@ public class TxEventTestUtil {
 
   /**
    * Retrieves the cache events with operation destroy
-   * 
+   *
    * @return list of cache events
    */
   public static List getDestroyEvents(List<CacheEvent<?, ?>> events) {

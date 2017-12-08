@@ -201,4 +201,3 @@ public class ManagedResourceType implements java.io.Serializable {
   }
 
 }
-

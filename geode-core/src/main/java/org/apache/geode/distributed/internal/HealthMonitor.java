@@ -19,7 +19,7 @@ import org.apache.geode.admin.GemFireHealth;
 
 /**
  * Represents a thread that monitor the health of the vm it lives in.
- * 
+ *
  * @since GemFire 3.5
  */
 public interface HealthMonitor {

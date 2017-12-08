@@ -46,7 +46,7 @@ import org.apache.geode.internal.i18n.LocalizedStrings;
 
 /**
  * This class implements a Partitioned index over a group of partitioned region buckets.
- * 
+ *
  * @since GemFire 5.1
  */
 
@@ -60,7 +60,7 @@ public class PartitionedIndex extends AbstractIndex {
 
   /**
    * Type on index represented by this partitioned index.
-   * 
+   *
    * @see IndexType#FUNCTIONAL
    * @see IndexType#PRIMARY_KEY
    * @see IndexType#HASH
@@ -104,7 +104,7 @@ public class PartitionedIndex extends AbstractIndex {
 
   /**
    * Adds an index on a bucket to the list of already indexed buckets in the partitioned region.
-   * 
+   *
    * @param index bucket index to be added to the list.
    */
   public void addToBucketIndexes(Region r, Index index) {
@@ -132,7 +132,7 @@ public class PartitionedIndex extends AbstractIndex {
 
   /**
    * Returns the number of locally indexed buckets.
-   * 
+   *
    * @return int number of buckets.
    */
   public int getNumberOfIndexedBuckets() {
@@ -147,7 +147,7 @@ public class PartitionedIndex extends AbstractIndex {
 
   /**
    * Gets a collection of all the bucket indexes created so far.
-   * 
+   *
    * @return bucketIndexes collection of all the bucket indexes.
    */
   public List getBucketIndexes() {
@@ -199,7 +199,7 @@ public class PartitionedIndex extends AbstractIndex {
 
   /**
    * Returns the type of index this partitioned index represents.
-   * 
+   *
    * @return indexType type of partitioned index.
    */
   public IndexType getType() {
@@ -209,7 +209,7 @@ public class PartitionedIndex extends AbstractIndex {
   /**
    * Returns the index for the bucket.
    */
-  static public AbstractIndex getBucketIndex(PartitionedRegion pr, String indexName, Integer bId)
+  public static AbstractIndex getBucketIndex(PartitionedRegion pr, String indexName, Integer bId)
       throws QueryInvocationTargetException {
     try {
       pr.checkReadiness();
@@ -283,7 +283,7 @@ public class PartitionedIndex extends AbstractIndex {
 
   /**
    * Set the number of remotely indexed buckets when this partitioned index was created.
-   * 
+   *
    * @param remoteBucketsIndexed int representing number of remote buckets.
    */
   public void setRemoteBucketesIndexed(int remoteBucketsIndexed) {
@@ -292,7 +292,7 @@ public class PartitionedIndex extends AbstractIndex {
 
   /**
    * Returns the number of remotely indexed buckets by this partitioned index.
-   * 
+   *
    * @return int number of remote indexed buckets.
    */
   public int getNumRemoteBucketsIndexed() {
@@ -301,7 +301,7 @@ public class PartitionedIndex extends AbstractIndex {
 
   /**
    * The Region this index is on.
-   * 
+   *
    * @return the Region for this index
    */
   @Override
@@ -391,7 +391,7 @@ public class PartitionedIndex extends AbstractIndex {
 
   /**
    * String representing the state.
-   * 
+   *
    * @return string representing all the relevant information.
    */
   public String toString() {
@@ -409,7 +409,7 @@ public class PartitionedIndex extends AbstractIndex {
 
   /**
    * This will create extra {@link IndexStatistics} statistics for MapType PartitionedIndex.
-   * 
+   *
    * @param indexName
    * @return new PartitionedIndexStatistics
    */
@@ -419,7 +419,7 @@ public class PartitionedIndex extends AbstractIndex {
 
   /**
    * Internal class for partitioned index statistics. Statistics are not supported right now.
-   * 
+   *
    */
   class PartitionedIndexStatistics extends InternalIndexStatistics {
     private IndexStats vsdStats;

@@ -14,7 +14,6 @@
  */
 package org.apache.geode.admin;
 
-// import java.io.*;
 
 /**
  * Type-safe definition for system members.
@@ -39,7 +38,7 @@ public class SystemMemberType implements java.io.Serializable {
 
   /**
    * GemFire Cache Server connected to the distributed system
-   * 
+   *
    * @deprecated as of 5.7 use {@link #CACHE_VM} instead.
    */
   @Deprecated
@@ -87,7 +86,7 @@ public class SystemMemberType implements java.io.Serializable {
 
   /**
    * Return whether this is <code>CACHE_SERVER</code>.
-   * 
+   *
    * @deprecated as of 5.7 use {@link #isCacheVm} instead.
    */
   @Deprecated
@@ -147,4 +146,3 @@ public class SystemMemberType implements java.io.Serializable {
   }
 
 }
-

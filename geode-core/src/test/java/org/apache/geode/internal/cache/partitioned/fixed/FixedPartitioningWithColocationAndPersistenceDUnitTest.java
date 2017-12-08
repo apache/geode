@@ -14,23 +14,22 @@
  */
 package org.apache.geode.internal.cache.partitioned.fixed;
 
-import org.junit.experimental.categories.Category;
-import org.junit.Test;
-
 import static org.junit.Assert.*;
-
-import org.apache.geode.test.dunit.cache.internal.JUnit4CacheTestCase;
-import org.apache.geode.test.dunit.internal.JUnit4DistributedTestCase;
-import org.apache.geode.test.junit.categories.DistributedTest;
 
 import java.util.ArrayList;
 import java.util.List;
+
+import org.junit.Test;
+import org.junit.experimental.categories.Category;
 
 import org.apache.geode.cache.FixedPartitionAttributes;
 import org.apache.geode.test.dunit.Assert;
 import org.apache.geode.test.dunit.AsyncInvocation;
 import org.apache.geode.test.dunit.Host;
 import org.apache.geode.test.dunit.Wait;
+import org.apache.geode.test.dunit.cache.internal.JUnit4CacheTestCase;
+import org.apache.geode.test.dunit.internal.JUnit4DistributedTestCase;
+import org.apache.geode.test.junit.categories.DistributedTest;
 
 @Category(DistributedTest.class)
 public class FixedPartitioningWithColocationAndPersistenceDUnitTest
@@ -54,7 +53,7 @@ public class FixedPartitioningWithColocationAndPersistenceDUnitTest
   /**
    * This tests validates that in colocation of FPRs child region cannot specify
    * FixedPartitionAttributes
-   * 
+   *
    */
 
   @Test
@@ -86,15 +85,15 @@ public class FixedPartitioningWithColocationAndPersistenceDUnitTest
   /**
    * This tests validates that in Customer-Order-shipment colocation, Order and shipment have the
    * FixedPartitionAttributes of the parent region Customer.
-   * 
+   *
    * Put happens for all 3 regions. Colocation of the data is achieved by using a partition-resolver
    * {@link CustomerFixedPartitionResolver#getRoutingObject(org.apache.geode.cache.EntryOperation)}
    * Also the Fixed Partitioning is achieved using same partition-resolver
    * {@link CustomerFixedPartitionResolver#getPartitionName(org.apache.geode.cache.EntryOperation, java.util.Set)}
-   * 
+   *
    * Validation are done for the same number of the buckets Validation are done for the same buckets
    * on particular member for all 3 regions.
-   * 
+   *
    */
 
   @Test
@@ -646,7 +645,7 @@ public class FixedPartitioningWithColocationAndPersistenceDUnitTest
 
   /**
    * Tests validate the behavior of FPR with persistence when all members goes down and comes up.
-   * 
+   *
    */
   @Test
   public void testFPR_Persistence() {
@@ -821,7 +820,7 @@ public class FixedPartitioningWithColocationAndPersistenceDUnitTest
   /**
    * Tests validate the behavior of FPR with persistence and with colocation when all members goes
    * down and comes up.
-   * 
+   *
    */
 
   @Test

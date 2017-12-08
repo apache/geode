@@ -17,16 +17,14 @@ package org.apache.geode.management.internal.cli;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertEquals;
 
-import java.util.Map;
-
 import org.junit.ClassRule;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 import org.springframework.shell.event.ParseResult;
 
 import org.apache.geode.management.internal.cli.i18n.CliStrings;
-import org.apache.geode.test.junit.rules.GfshParserRule;
 import org.apache.geode.test.junit.categories.IntegrationTest;
+import org.apache.geode.test.junit.rules.GfshParserRule;
 
 @Category(IntegrationTest.class)
 public class GfshParserParsingTest {
@@ -35,19 +33,15 @@ public class GfshParserParsingTest {
   private String buffer;
 
 
-  private Map<String, String> parseParams(String input, String commandMethod) {
+  private GfshParseResult parseParams(String input, String commandMethod) {
     ParseResult parseResult = parser.parse(input);
 
     GfshParseResult gfshParseResult = (GfshParseResult) parseResult;
-    Map<String, String> params = gfshParseResult.getParamValueStrings();
-    for (String param : params.keySet()) {
-      System.out.println(param + "=" + params.get(param));
-    }
 
     assertThat(gfshParseResult.getMethod().getName()).isEqualTo(commandMethod);
     assertThat(gfshParseResult.getUserInput()).isEqualTo(input.trim());
 
-    return params;
+    return gfshParseResult;
   }
 
   @Test
@@ -152,96 +146,100 @@ public class GfshParserParsingTest {
   public void testParseOptionStartsWithHyphenWithoutQuotes() throws Exception {
     String input =
         "rebalance --exclude-region=/GemfireDataCommandsDUnitTestRegion2 --simulate=true --time-out=-1";
-    Map<String, String> params = parseParams(input, "rebalance");
-    assertThat(params.get("exclude-region")).isEqualTo("/GemfireDataCommandsDUnitTestRegion2");
-    assertThat(params.get("simulate")).isEqualTo("true");
-    assertThat(params.get("time-out")).isEqualTo("-1");
+    GfshParseResult result = parseParams(input, "rebalance");
+    assertThat(result.getParamValueAsString("exclude-region"))
+        .isEqualTo("/GemfireDataCommandsDUnitTestRegion2");
+    assertThat(result.getParamValueAsString("simulate")).isEqualTo("true");
+    assertThat(result.getParamValueAsString("time-out")).isEqualTo("-1");
   }
 
   @Test
   public void testParseOptionStartsWithHyphenWithQuotes() throws Exception {
     String input =
         "rebalance --exclude-region=/GemfireDataCommandsDUnitTestRegion2 --simulate=true --time-out=\"-1\"";
-    Map<String, String> params = parseParams(input, "rebalance");
+    GfshParseResult result = parseParams(input, "rebalance");
 
-    assertThat(params.get("exclude-region")).isEqualTo("/GemfireDataCommandsDUnitTestRegion2");
-    assertThat(params.get("simulate")).isEqualTo("true");
-    assertThat(params.get("time-out")).isEqualTo("-1");
+    assertThat(result.getParamValueAsString("exclude-region"))
+        .isEqualTo("/GemfireDataCommandsDUnitTestRegion2");
+    assertThat(result.getParamValueAsString("simulate")).isEqualTo("true");
+    assertThat(result.getParamValueAsString("time-out")).isEqualTo("-1");
   }
 
   @Test
   public void testParseOptionContainingHyphen() throws Exception {
     String input = "rebalance --exclude-region=/The-Region --simulate=true";
-    Map<String, String> params = parseParams(input, "rebalance");
+    GfshParseResult result = parseParams(input, "rebalance");
 
-    assertThat(params.get("exclude-region")).isEqualTo("/The-Region");
-    assertThat(params.get("simulate")).isEqualTo("true");
+    assertThat(result.getParamValueAsString("exclude-region")).isEqualTo("/The-Region");
+    assertThat(result.getParamValueAsString("simulate")).isEqualTo("true");
   }
 
   @Test
   public void testParseOptionContainingUnderscore() throws Exception {
     String input = "rebalance --exclude-region=/The_region --simulate=true";
-    Map<String, String> params = parseParams(input, "rebalance");
+    GfshParseResult result = parseParams(input, "rebalance");
 
-    assertThat(params.get("exclude-region")).isEqualTo("/The_region");
-    assertThat(params.get("simulate")).isEqualTo("true");
+    assertThat(result.getParamValueAsString("exclude-region")).isEqualTo("/The_region");
+    assertThat(result.getParamValueAsString("simulate")).isEqualTo("true");
   }
 
   @Test
   public void testParseOneJOptionWithQuotes() throws Exception {
     String input = "start locator  --J=\"-Dgemfire.http-service-port=8080\" --name=loc1";
-    Map<String, String> params = parseParams(input, "startLocator");
+    GfshParseResult result = parseParams(input, "startLocator");
 
-    assertThat(params.get("name")).isEqualTo("loc1");
-    assertThat(params.get("J")).isEqualTo("-Dgemfire.http-service-port=8080");
+    assertThat(result.getParamValueAsString("name")).isEqualTo("loc1");
+    assertThat(result.getParamValueAsString("J")).isEqualTo("-Dgemfire.http-service-port=8080");
   }
 
   @Test
   public void testParseOneJOptionWithSpaceInQuotes() throws Exception {
     String input = "start locator  --J=\"-Dgemfire.http-service-port= 8080\" --name=loc1";
-    Map<String, String> params = parseParams(input, "startLocator");
+    GfshParseResult result = parseParams(input, "startLocator");
 
-    assertThat(params.get("name")).isEqualTo("loc1");
-    assertThat(params.get("J")).isEqualTo("-Dgemfire.http-service-port= 8080");
+    assertThat(result.getParamValueAsString("name")).isEqualTo("loc1");
+    assertThat(result.getParamValueAsString("J")).isEqualTo("-Dgemfire.http-service-port= 8080");
   }
 
   @Test
   public void testParseOneJOption() throws Exception {
     String input = "start locator --J=-Dgemfire.http-service-port=8080 --name=loc1";
-    Map<String, String> params = parseParams(input, "startLocator");
+    GfshParseResult result = parseParams(input, "startLocator");
 
-    assertThat(params.get("name")).isEqualTo("loc1");
-    assertThat(params.get("J")).isEqualTo("-Dgemfire.http-service-port=8080");
+    assertThat(result.getParamValueAsString("name")).isEqualTo("loc1");
+    assertThat(result.getParamValueAsString("J")).isEqualTo("-Dgemfire.http-service-port=8080");
   }
 
   @Test
   public void testParseTwoJOptions() throws Exception {
     String input =
         "start locator --J=-Dgemfire.http-service-port=8080 --name=loc1 --J=-Ddummythinghere";
-    Map<String, String> params = parseParams(input, "startLocator");
+    GfshParseResult result = parseParams(input, "startLocator");
 
-    assertThat(params.get("name")).isEqualTo("loc1");
-    assertThat(params.get("J")).isEqualTo("-Dgemfire.http-service-port=8080,-Ddummythinghere");
+    assertThat(result.getParamValueAsString("name")).isEqualTo("loc1");
+    assertThat(result.getParamValueAsString("J"))
+        .isEqualTo("-Dgemfire.http-service-port=8080,-Ddummythinghere");
   }
 
   @Test
   public void testParseTwoJOptionsOneWithQuotesOneWithout() throws Exception {
     String input =
         "start locator --J=\"-Dgemfire.http-service-port=8080\" --name=loc1 --J=-Ddummythinghere";
-    Map<String, String> params = parseParams(input, "startLocator");
+    GfshParseResult result = parseParams(input, "startLocator");
 
-    assertThat(params.get("name")).isEqualTo("loc1");
-    assertThat(params.get("J")).isEqualTo("-Dgemfire.http-service-port=8080,-Ddummythinghere");
+    assertThat(result.getParamValueAsString("name")).isEqualTo("loc1");
+    assertThat(result.getParamValueAsString("J"))
+        .isEqualTo("-Dgemfire.http-service-port=8080,-Ddummythinghere");
   }
 
   @Test
   public void testParseOneJOptionWithQuotesAndLotsOfSpaces() throws Exception {
     String input =
         "start locator       --J=\"-Dgemfire.http-service-port=8080\"      --name=loc1         ";
-    Map<String, String> params = parseParams(input, "startLocator");
+    GfshParseResult result = parseParams(input, "startLocator");
 
-    assertThat(params.get("name")).isEqualTo("loc1");
-    assertThat(params.get("J")).isEqualTo("-Dgemfire.http-service-port=8080");
+    assertThat(result.getParamValueAsString("name")).isEqualTo("loc1");
+    assertThat(result.getParamValueAsString("J")).isEqualTo("-Dgemfire.http-service-port=8080");
   }
 
   @Test
@@ -268,28 +266,28 @@ public class GfshParserParsingTest {
     String command =
         "describe offline-disk-store --name=testDiskStore --disk-dirs=R:\\regrResults\\test";
     GfshParseResult result = parser.parse(command);
-    assertThat(result.getParamValue("disk-dirs")).isEqualTo("R:\\regrResults\\test");
+    assertThat(result.getParamValueAsString("disk-dirs")).isEqualTo("R:\\regrResults\\test");
   }
 
   @Test
   public void testCommandWithBackSlashTwo() throws Exception {
     String command = "start locator --name=\\test";
     GfshParseResult result = parser.parse(command);
-    assertThat(result.getParamValue("name")).isEqualTo("\\test");
+    assertThat(result.getParamValueAsString("name")).isEqualTo("\\test");
   }
 
   @Test
   public void testCommandWithBackSlashThree() throws Exception {
     String command = "start locator --name=\\myName";
     GfshParseResult result = parser.parse(command);
-    assertThat(result.getParamValue("name")).isEqualTo("\\myName");
+    assertThat(result.getParamValueAsString("name")).isEqualTo("\\myName");
   }
 
   @Test
   public void testCommandWithBackSlashFour() throws Exception {
     String command = "start locator --name=\\u0005Name";
     GfshParseResult result = parser.parse(command);
-    assertThat(result.getParamValue("name")).isEqualTo("\\u0005Name");
+    assertThat(result.getParamValueAsString("name")).isEqualTo("\\u0005Name");
   }
 
   @Test
@@ -297,16 +295,16 @@ public class GfshParserParsingTest {
     String command =
         "alter region --name=/Person --cache-writer='' --cache-listener='' --cache-loader=''";
     GfshParseResult result = parser.parse(command);
-    assertThat(result.getParamValue("cache-writer")).isNotNull().isEmpty();
-    assertThat(result.getParamValue("cache-listener")).isNotNull().isEmpty();
-    assertThat(result.getParamValue("cache-loader")).isNotNull().isEmpty();
+    assertThat(result.getParamValueAsString("cache-writer")).isNotNull().isEmpty();
+    assertThat(result.getParamValueAsString("cache-listener")).isNotNull().isEmpty();
+    assertThat(result.getParamValueAsString("cache-loader")).isNotNull().isEmpty();
   }
 
   @Test
   public void testValueOfJsonWithoutOuterQuoteAndSpace() throws Exception {
     String command = "put --key=('name':'id') --value=456 --region=/test";
     GfshParseResult result = parser.parse(command);
-    assertThat(result.getParamValue("key")).isEqualTo("('name':'id')");
+    assertThat(result.getParamValueAsString("key")).isEqualTo("('name':'id')");
   }
 
   @Test
@@ -321,37 +319,52 @@ public class GfshParserParsingTest {
   public void testValueOfJsonWithSpaceAndOuterQuotes() throws Exception {
     String command = "put --key=\"('name' : 'id')\" --value=456 --region=/test";
     GfshParseResult result = parser.parse(command);
-    assertThat(result.getParamValue("key")).isEqualTo("('name' : 'id')");
+    assertThat(result.getParamValueAsString("key")).isEqualTo("('name' : 'id')");
   }
 
   @Test
   public void optionValueWillNotBeTrimmedIfInQuotes() throws Exception {
     String command = "start locator --name=' test '";
     GfshParseResult result = parser.parse(command);
-    assertThat(result.getParamValue("name")).isEqualTo(" test ");
+    assertThat(result.getParamValueAsString("name")).isEqualTo(" test ");
   }
 
   @Test
   public void optionValueWithExtraSpaceInBetween() throws Exception {
     String command = "start locator --name= test    --bind-address=123";
     GfshParseResult result = parser.parse(command);
-    assertThat(result.getParamValue("name")).isEqualTo("test");
-    assertThat(result.getParamValue("bind-address")).isEqualTo("123");
+    assertThat(result.getParamValueAsString("name")).isEqualTo("test");
+    assertThat(result.getParamValueAsString("bind-address")).isEqualTo("123");
   }
 
   @Test
   public void optionValueWithEmptyString() throws Exception {
     String command = "start locator --name= --bind-address=123";
     GfshParseResult result = parser.parse(command);
-    assertThat(result.getParamValue("name")).isNull();
-    assertThat(result.getParamValue("bind-address")).isEqualTo("123");
+    assertThat(result.getParamValueAsString("name")).isNull();
+    assertThat(result.getParamValueAsString("bind-address")).isEqualTo("123");
   }
 
   @Test
   public void optionValueWithQuotedEmptyString() throws Exception {
     String command = "start locator --name='' --bind-address=123";
     GfshParseResult result = parser.parse(command);
-    assertThat(result.getParamValue("name")).isNull();
-    assertThat(result.getParamValue("bind-address")).isEqualTo("123");
+    assertThat(result.getParamValueAsString("name")).isNull();
+    assertThat(result.getParamValueAsString("bind-address")).isEqualTo("123");
+  }
+
+  @Test
+  public void testMultiLineCommand() throws Exception {
+    String command = "start server " + GfshParser.LINE_SEPARATOR + "--name=test";
+    GfshParseResult result = parser.parse(command);
+    assertThat(result.getParamValueAsString("name")).isEqualTo("test");
+    assertThat(result.getCommandName()).isEqualTo("start server");
+  }
+
+  @Test
+  public void testShutdownWithOptionCommand() throws Exception {
+    String command = "shutdown --include-locators";
+    GfshParseResult result = parser.parse(command);
+    assertThat(result.getParamValue("include-locators")).isEqualTo(true);
   }
 }

@@ -14,20 +14,21 @@
  */
 package org.apache.geode.internal.cache.diskPerf;
 
-import org.apache.geode.cache.*;
-import org.apache.geode.distributed.DistributedSystem;
-import org.apache.geode.internal.cache.DiskStoreFactoryImpl;
-import org.apache.geode.test.dunit.ThreadUtils;
-import org.apache.geode.test.junit.categories.IntegrationTest;
+import static org.apache.geode.distributed.ConfigurationProperties.*;
+
+import java.io.File;
+import java.util.Properties;
+
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 import org.junit.rules.TestName;
 
-import java.io.File;
-import java.util.Properties;
-
-import static org.apache.geode.distributed.ConfigurationProperties.*;
+import org.apache.geode.cache.*;
+import org.apache.geode.distributed.DistributedSystem;
+import org.apache.geode.internal.cache.DiskStoreFactoryImpl;
+import org.apache.geode.test.dunit.ThreadUtils;
+import org.apache.geode.test.junit.categories.IntegrationTest;
 
 @Category(IntegrationTest.class)
 public class MultiThreadedOplogPerJUnitPerformanceTest {
@@ -77,7 +78,7 @@ public class MultiThreadedOplogPerJUnitPerformanceTest {
 
   /**
    * cleans all the directory of all the files present in them
-   * 
+   *
    */
   protected static void deleteFiles() {
     for (int i = 0; i < 4; i++) {
@@ -177,11 +178,11 @@ public class MultiThreadedOplogPerJUnitPerformanceTest {
           region.put(new Integer((i + 1) + num), bytes);
           /*
            * DiskRegion dr =((LocalRegion)region).getDiskRegion();
-           * 
+           *
            * DiskEntry entry = (DiskEntry)(((LocalRegion)region).basicGetEntry(new
            * Integer((i+1)+num))); try{ byte[] val = (byte[])dr.getNoBuffer(entry.getDiskId());
            * }catch(Exception e) {
-           * 
+           *
            * System.out.print("EROR. "+ " Count ="+i ); e.printStackTrace(); }
            */
 

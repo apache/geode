@@ -344,7 +344,7 @@ public class CreateRegionProcessor implements ProfileExchangeProcessor {
         // get the region from the path, but do NOT wait on initialization,
         // otherwise we could have a distributed deadlock
 
-        InternalCache cache = (InternalCache) CacheFactory.getInstance(dm.getSystem());
+        InternalCache cache = dm.getExistingCache();
 
         // Fix for bug 42051 - Discover any regions that are in the process
         // of being destroyed
@@ -440,7 +440,7 @@ public class CreateRegionProcessor implements ProfileExchangeProcessor {
 
     /**
      * Attempts to process this message with the specified <code>CacheDistributionAdvisee</code>.
-     * 
+     *
      * @param cda the CacheDistributionAdvisee to apply this profile to
      * @param isRealRegion true if CacheDistributionAdvisee is a real region
      */
@@ -805,7 +805,7 @@ public class CreateRegionProcessor implements ProfileExchangeProcessor {
         }
       }
       if (in.readBoolean()) {
-        this.eventState = EventStateHelper.fromData(in, false);
+        this.eventState = EventStateHelper.deDataSerialize(in, false);
       }
       if (in.readBoolean()) {
         this.destroyedId = new PersistentMemberID();
@@ -838,7 +838,7 @@ public class CreateRegionProcessor implements ProfileExchangeProcessor {
         // The isHARegion flag is false here because
         // we currently only include the event state in the profile
         // for bucket regions.
-        EventStateHelper.toData(out, (Map) eventState, false);
+        EventStateHelper.dataSerialize(out, (Map) eventState, false);
       } else {
         out.writeBoolean(false);
       }

@@ -22,7 +22,7 @@
 # Then use 'git diff' to validate the changes you made to the
 # generated java files before committing them.
 
-SRCDIR=geode-core/src/main/java/org/apache/geode/internal/cache
+SRCDIR=geode-core/src/main/java/org/apache/geode/internal/cache/entries
 SRCFILE=$SRCDIR/LeafRegionEntry.cpp
 
 for VERTYPE in VM Versioned

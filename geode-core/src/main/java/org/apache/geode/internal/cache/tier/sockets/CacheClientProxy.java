@@ -518,7 +518,7 @@ public class CacheClientProxy implements ClientSession {
 
   /**
    * Mark the receiver as needing removal
-   * 
+   *
    * @return true if it was already marked for removal
    */
   protected boolean startRemoval() {
@@ -532,7 +532,7 @@ public class CacheClientProxy implements ClientSession {
 
   /**
    * Wait until the receiver's removal has completed before returning.
-   * 
+   *
    * @return true if the proxy was initially marked for removal
    */
   protected boolean waitRemoval() {
@@ -601,7 +601,7 @@ public class CacheClientProxy implements ClientSession {
 
   /**
    * Returns this proxy's <code>CacheClientNotifier</code>.
-   * 
+   *
    * @return this proxy's <code>CacheClientNotifier</code>
    */
   protected CacheClientNotifier getCacheClientNotifier() {
@@ -1150,7 +1150,8 @@ public class CacheClientProxy implements ClientSession {
     if (Version.GFE_701.compareTo(this.clientVersion) > 0
         && message.getKeyOfInterest() instanceof List) {
       for (Iterator i = ((List) message.getKeyOfInterest()).iterator(); i.hasNext();) {
-        this._messageDispatcher.enqueueMessage(new ClientInterestMessageImpl(message, i.next()));
+        this._messageDispatcher.enqueueMessage(
+            new ClientInterestMessageImpl(getCache().getDistributedSystem(), message, i.next()));
       }
     } else {
       this._messageDispatcher.enqueueMessage(message);
@@ -1537,7 +1538,7 @@ public class CacheClientProxy implements ClientSession {
 
   /**
    * Delivers the message to the client representing this client proxy.
-   * 
+   *
    * @param conflatable
    */
   protected void deliverMessage(Conflatable conflatable) {
@@ -1821,14 +1822,14 @@ public class CacheClientProxy implements ClientSession {
   }
 
   // private static int nextId = 0;
-  // static protected int getNextId() {
+  // protected static int getNextId() {
   // synchronized (CacheClientProxy.class) {
   // return ++nextId;
   // }
   // }
   /*
    * Return this client's HA region queue
-   * 
+   *
    * @returns - HARegionQueue of the client
    */
   public HARegionQueue getHARegionQueue() {
@@ -1841,7 +1842,7 @@ public class CacheClientProxy implements ClientSession {
 
   /**
    * Reinitialize a durable <code>CacheClientProxy</code> with a new client.
-   * 
+   *
    * @param socket The socket between the server and the client
    * @param ip whether this proxy represents the primary
    */
@@ -1957,7 +1958,7 @@ public class CacheClientProxy implements ClientSession {
    * Class <code>ClientInterestList</code> provides a convenient interface for manipulating client
    * interest information.
    */
-  static protected class ClientInterestList {
+  protected static class ClientInterestList {
 
     final CacheClientProxy ccp;
 
@@ -1966,12 +1967,12 @@ public class CacheClientProxy implements ClientSession {
     /**
      * An object used for synchronizing the interest lists
      */
-    final private Object interestListLock = new Object();
+    private final Object interestListLock = new Object();
 
     /**
      * Regions that this client is interested in
      */
-    final protected Set<String> regions = new HashSet<String>();
+    protected final Set<String> regions = new HashSet<String>();
 
     /**
      * Constructor.
@@ -2404,7 +2405,7 @@ public class CacheClientProxy implements ClientSession {
     /**
      * Returns the size of the queue calculated through stats This includes events that have
      * dispatched but have yet been removed
-     * 
+     *
      * @return the size of the queue
      */
     protected int getQueueSizeStat() {
@@ -2994,7 +2995,7 @@ public class CacheClientProxy implements ClientSession {
    *
    * @since GemFire 6.1
    */
-  public Map getRegionsWithEmptyDataPolicy() {
+  public Map<String, Integer> getRegionsWithEmptyDataPolicy() {
     return regionsWithEmptyDataPolicy;
   }
 
@@ -3009,7 +3010,7 @@ public class CacheClientProxy implements ClientSession {
 
   /**
    * Returns the number of seconds that have elapsed since the Client proxy created.
-   * 
+   *
    * @since GemFire 7.0
    */
   public long getUpTime() {

@@ -14,18 +14,8 @@
  */
 package org.apache.geode.memcached;
 
-import org.apache.geode.distributed.internal.DistributionConfig;
-import org.apache.geode.internal.AvailablePort;
-import org.apache.geode.memcached.GemFireMemcachedServer.Protocol;
-import org.apache.geode.test.junit.categories.FlakyTest;
-import org.apache.geode.test.junit.categories.IntegrationTest;
-import net.spy.memcached.CASResponse;
-import net.spy.memcached.CASValue;
-import net.spy.memcached.MemcachedClient;
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.experimental.categories.Category;
+import static org.apache.geode.distributed.ConfigurationProperties.MCAST_PORT;
+import static org.junit.Assert.*;
 
 import java.io.IOException;
 import java.net.InetAddress;
@@ -37,8 +27,19 @@ import java.util.concurrent.Future;
 import java.util.logging.Logger;
 import java.util.logging.StreamHandler;
 
-import static org.apache.geode.distributed.ConfigurationProperties.MCAST_PORT;
-import static org.junit.Assert.*;
+import net.spy.memcached.CASResponse;
+import net.spy.memcached.CASValue;
+import net.spy.memcached.MemcachedClient;
+import org.junit.After;
+import org.junit.Before;
+import org.junit.Test;
+import org.junit.experimental.categories.Category;
+
+import org.apache.geode.distributed.internal.DistributionConfig;
+import org.apache.geode.internal.AvailablePort;
+import org.apache.geode.memcached.GemFireMemcachedServer.Protocol;
+import org.apache.geode.test.junit.categories.FlakyTest;
+import org.apache.geode.test.junit.categories.IntegrationTest;
 
 @Category(IntegrationTest.class)
 public class GemcachedDevelopmentJUnitTest {

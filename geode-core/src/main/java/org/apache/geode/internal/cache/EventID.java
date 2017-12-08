@@ -27,7 +27,6 @@ import java.nio.ByteBuffer;
 import java.util.Arrays;
 import java.util.concurrent.atomic.AtomicLong;
 
-import org.apache.geode.internal.InternalDataSerializer;
 import org.apache.logging.log4j.Logger;
 
 import org.apache.geode.DataSerializer;
@@ -38,6 +37,7 @@ import org.apache.geode.distributed.internal.DistributionConfig;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
 import org.apache.geode.internal.DataSerializableFixedID;
 import org.apache.geode.internal.HeapDataOutputStream;
+import org.apache.geode.internal.InternalDataSerializer;
 import org.apache.geode.internal.Version;
 import org.apache.geode.internal.VersionedDataInputStream;
 import org.apache.geode.internal.cache.ha.HARegionQueue;
@@ -99,7 +99,7 @@ public class EventID implements DataSerializableFixedID, Serializable, Externali
   /**
    * the distributed system associated with the static client_side_event_identity
    */
-  private volatile static DistributedSystem system = null;
+  private static volatile DistributedSystem system = null;
 
   /**
    * the membership id of the distributed system in this client (if running in a client) that is
@@ -110,7 +110,7 @@ public class EventID implements DataSerializableFixedID, Serializable, Externali
   /**
    * this form of client ID is used in event identifiers to reduce the size of the ID
    */
-  private volatile static byte[] client_side_event_identity = null;
+  private static volatile byte[] client_side_event_identity = null;
 
   /**
    * An array containing the helper class objects which are used to create optimized byte array for
@@ -142,7 +142,7 @@ public class EventID implements DataSerializableFixedID, Serializable, Externali
 
   /**
    * constructor for creating an event ID originating in the local cache
-   * 
+   *
    * @param sys the local distributed system
    */
   public EventID(DistributedSystem sys) {
@@ -159,7 +159,7 @@ public class EventID implements DataSerializableFixedID, Serializable, Externali
 
   /**
    * Convert a ClientProxyMembershipID distribted member ID array into one usable by EventIDs
-   * 
+   *
    * @param client the client's ID
    * @return a byte array that may be used in EventID formation
    */
@@ -177,7 +177,7 @@ public class EventID implements DataSerializableFixedID, Serializable, Externali
 
   /**
    * Returns the thread id used by the calling thread for its event ids
-   * 
+   *
    * @since GemFire 5.7
    */
   public static long getThreadId() {
@@ -188,7 +188,7 @@ public class EventID implements DataSerializableFixedID, Serializable, Externali
   /**
    * Returns the next reservable sequence id used by the calling thread for its event ids. Note that
    * the returned id is not yet reserved by the calling thread.
-   * 
+   *
    * @since GemFire 5.7
    */
   public static long getSequenceId() {
@@ -198,7 +198,7 @@ public class EventID implements DataSerializableFixedID, Serializable, Externali
 
   /**
    * Reserves and returns a sequence id for the calling thread to be used for an event id.
-   * 
+   *
    * @since GemFire 5.7
    */
   public static long reserveSequenceId() {
@@ -227,7 +227,7 @@ public class EventID implements DataSerializableFixedID, Serializable, Externali
    * seq. ids. This is used by the QRM thread and by ServerConnection threads that have cached their
    * client ID byte arrays. It is also used by many unit test methods to create fake event
    * identifiers.
-   * 
+   *
    * @param memId - membership id for this entry - must be created by EventID.getMembershipID()
    * @param threadId - thread id for this entry
    * @param seqId - sequence id for this entry
@@ -264,7 +264,7 @@ public class EventID implements DataSerializableFixedID, Serializable, Externali
 
   /**
    * Default constructor used for deserialization of EventID object
-   * 
+   *
    */
   public EventID() {}
 
@@ -288,7 +288,7 @@ public class EventID implements DataSerializableFixedID, Serializable, Externali
    * starting in v6.5 this method returns a somewhat crippled Identifier. It is missing any durable
    * attributes and roles information but contains all other info about the member. This fixes bug
    * #39361.
-   * 
+   *
    * @return the member that initiated this event
    */
   public InternalDistributedMember getDistributedMember() {
@@ -327,7 +327,7 @@ public class EventID implements DataSerializableFixedID, Serializable, Externali
   /**
    * Returns a byte[] whose contents are calculated by calling
    * {@link #getOptimizedByteArrayForEventID}
-   * 
+   *
    * @since GemFire 5.7
    */
   public byte[] calcBytes() {
@@ -422,7 +422,7 @@ public class EventID implements DataSerializableFixedID, Serializable, Externali
   /**
    * check to see if membership ID byte arrays are equal
    */
-  static public boolean equalMembershipIds(byte[] m1, byte[] m2) {
+  public static boolean equalMembershipIds(byte[] m1, byte[] m2) {
     int sizeDifference = Math.abs(m1.length - m2.length);
     if (sizeDifference != 0 && sizeDifference != NULL_90_MEMBER_DATA_LENGTH) {
       return false;
@@ -444,7 +444,7 @@ public class EventID implements DataSerializableFixedID, Serializable, Externali
   /**
    * GEODE-3072 - v1.0.0 memberIDs in EventIDs may have trailing bytes that should be ignored
    */
-  static private boolean nullUUIDCheck(byte[] memberID, int position) {
+  private static boolean nullUUIDCheck(byte[] memberID, int position) {
     if (position < 0) {
       return false;
     }
@@ -462,7 +462,7 @@ public class EventID implements DataSerializableFixedID, Serializable, Externali
   /**
    * form the hashcode for the memberID byte array
    */
-  static public int hashCodeMemberId(byte[] memberID) {
+  public static int hashCodeMemberId(byte[] memberID) {
     if (memberID.length < (NULL_90_MEMBER_DATA_LENGTH + MINIMIM_ID_LENGTH)
         || !nullUUIDCheck(memberID, memberID.length - NULL_90_MEMBER_DATA_LENGTH)) {
       return Arrays.hashCode(memberID);
@@ -574,7 +574,7 @@ public class EventID implements DataSerializableFixedID, Serializable, Externali
   /**
    * Returns the number of bytes needed to store the given value. This calculation is needed to
    * create the optimized byte-array for an eventId, which will be sent across the network
-   * 
+   *
    * @param id - the long value ( threadId or sequenceId in this context)
    * @return - the number of byte taken by this value
    */
@@ -602,7 +602,7 @@ public class EventID implements DataSerializableFixedID, Serializable, Externali
    * This function returns the optimal byte-array for the eventId.
    * <p>
    * This is public for unit testing purposes only
-   * 
+   *
    * @param threadId - the long value of threadId
    * @param sequenceId - the long value of sequenceId
    * @return - the optimized byte-array representing the eventId
@@ -627,7 +627,7 @@ public class EventID implements DataSerializableFixedID, Serializable, Externali
    * Reads the optimized byte-array representation of an eventId and returns the long value of
    * threadId or sequenceId ( the first invocation of this method on bytebuffer returns the threadId
    * and the second returns the sequenceId.
-   * 
+   *
    * @param buffer - the byte-buffer wrapping the optimized byte-array for the eventId
    * @return - long value of threadId or sequenceId
    */
@@ -641,14 +641,14 @@ public class EventID implements DataSerializableFixedID, Serializable, Externali
   /**
    * Abstract helper class used to create optimized byte-array for the eventid, which will be sent
    * across the network.
-   * 
+   *
    */
-  protected static abstract class AbstractEventIDByteArrayFiller {
+  protected abstract static class AbstractEventIDByteArrayFiller {
     /**
      * This method adds to the byte-buffer, the token indicating the type of the passed 'id'
      * (threadId or sequenceId) and the optimal byte array representing the id depending on the
      * value of the 'id'.
-     * 
+     *
      * @param buffer - the byte buffer wrapping the byte array for the event id
      * @param id - the long value of threadId or sequenceId
      */
@@ -656,7 +656,7 @@ public class EventID implements DataSerializableFixedID, Serializable, Externali
 
     /**
      * Reads the given buffer and returns the value as long.
-     * 
+     *
      * @param buffer - the byte-buffer containing the eventId parts which needs to be read
      * @return - the long value of id (threadId or sequenceId).
      */
@@ -667,12 +667,12 @@ public class EventID implements DataSerializableFixedID, Serializable, Externali
     /**
      * The token to indicate that given id ( threadId or sequenceId) is of type <code>Byte</code>
      */
-    static private final byte EVENTID_BYTE = 0;
+    private static final byte EVENTID_BYTE = 0;
 
     /**
      * Writes the given 'id' to the given buffer as 'byte' preceeded by a token indicating that it
      * is written as 'byte' type.
-     * 
+     *
      * @param buffer - the buffer in which id is to be written
      * @param id - the threadId or sequenceId to be written
      */
@@ -684,10 +684,10 @@ public class EventID implements DataSerializableFixedID, Serializable, Externali
 
     /**
      * Reads the byte value of id from the buffer and returns it as long.
-     * 
+     *
      * @param buffer - the buffer from which 'id'(threadId or sequenceId) is to be read
      * @return - the value of the id as long
-     * 
+     *
      */
     @Override
     public long read(ByteBuffer buffer) {
@@ -701,12 +701,12 @@ public class EventID implements DataSerializableFixedID, Serializable, Externali
     /**
      * The token to indicate that given id ( threadId or sequenceId) is of type <code>Short</code>
      */
-    static private final byte EVENTID_SHORT = 1;
+    private static final byte EVENTID_SHORT = 1;
 
     /**
      * Writes the given 'id' to the given buffer as 'short' preceeded by a token indicating that it
      * is written as 'short' type.
-     * 
+     *
      * @param buffer - the buffer in which id is to be written
      * @param id - the threadId or sequenceId to be written
      */
@@ -718,10 +718,10 @@ public class EventID implements DataSerializableFixedID, Serializable, Externali
 
     /**
      * Reads the short value of id from the buffer and returns it as long.
-     * 
+     *
      * @param buffer - the buffer from which 'id'(threadId or sequenceId) is to be read
      * @return - the value of the id as long
-     * 
+     *
      */
     @Override
     public long read(ByteBuffer buffer) {
@@ -734,12 +734,12 @@ public class EventID implements DataSerializableFixedID, Serializable, Externali
     /**
      * The token to indicate that given id ( threadId or sequenceId) is of type <code>Integer</code>
      */
-    static private final byte EVENTID_INT = 2;
+    private static final byte EVENTID_INT = 2;
 
     /**
      * Writes the given 'id' to the given buffer as 'int' preceeded by a token indicating that it is
      * written as 'int' type.
-     * 
+     *
      * @param buffer - the buffer in which id is to be written
      * @param id - the threadId or sequenceId to be written
      */
@@ -751,10 +751,10 @@ public class EventID implements DataSerializableFixedID, Serializable, Externali
 
     /**
      * Reads the int value of id from the buffer and returns it as long.
-     * 
+     *
      * @param buffer - the buffer from which 'id'(threadId or sequenceId) is to be read
      * @return - the value of the id as long
-     * 
+     *
      */
     @Override
     public long read(ByteBuffer buffer) {
@@ -767,12 +767,12 @@ public class EventID implements DataSerializableFixedID, Serializable, Externali
     /**
      * The token to indicate that given id ( threadId or sequenceId) is of type <code>Long</code>
      */
-    static private final byte EVENTID_LONG = 3;
+    private static final byte EVENTID_LONG = 3;
 
     /**
      * Writes the given 'id' to the given buffer as 'long' preceeded by a token indicating that it
      * is written as 'long' type.
-     * 
+     *
      * @param buffer - the buffer in which id is to be written
      * @param id - the threadId or sequenceId to be written
      */
@@ -784,10 +784,10 @@ public class EventID implements DataSerializableFixedID, Serializable, Externali
 
     /**
      * Reads the long value of id from the buffer and returns it.
-     * 
+     *
      * @param buffer - the buffer from which 'id'(threadId or sequenceId) is to be read
      * @return - the value of the id as long
-     * 
+     *
      */
     @Override
     public long read(ByteBuffer buffer) {

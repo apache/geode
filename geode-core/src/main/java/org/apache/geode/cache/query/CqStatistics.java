@@ -18,35 +18,35 @@ package org.apache.geode.cache.query;
 /**
  * This class provides methods to get statistical information about a registered Continuous Query
  * (CQ) represented by the CqQuery object.
- * 
+ *
  * @since GemFire 5.5
  */
 public interface CqStatistics {
 
   /**
    * Get number of Insert events qualified by this CQ.
-   * 
+   *
    * @return long number of inserts.
    */
   public long numInserts();
 
   /**
    * Get number of Delete events qualified by this CQ.
-   * 
+   *
    * @return long number of deletes.
    */
   public long numDeletes();
 
   /**
    * Get number of Update events qualified by this CQ.
-   * 
+   *
    * @return long number of updates.
    */
   public long numUpdates();
 
   /**
    * Get total of all the events qualified by this CQ.
-   * 
+   *
    * @return long total number of events.
    */
   public long numEvents();

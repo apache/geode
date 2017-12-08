@@ -19,7 +19,7 @@ import org.apache.geode.GemFireCheckedException;
 /**
  * This exception is meant to represent the class of exceptions that occur when our assumption about
  * where the data lives is incorrect.
- * 
+ *
  * @see ForceReattemptException
  * @see PrimaryBucketException
  */

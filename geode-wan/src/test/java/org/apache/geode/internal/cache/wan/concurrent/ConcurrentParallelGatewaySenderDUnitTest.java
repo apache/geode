@@ -51,7 +51,7 @@ public class ConcurrentParallelGatewaySenderDUnitTest extends WANTestBase {
   /**
    * Normal happy scenario test case. checks that all the dispatchers have successfully dispatched
    * something individually.
-   * 
+   *
    * @throws Exception
    */
   @Test
@@ -134,7 +134,7 @@ public class ConcurrentParallelGatewaySenderDUnitTest extends WANTestBase {
 
   /**
    * Normal happy scenario test case.
-   * 
+   *
    * @throws Exception
    */
   @Test
@@ -193,7 +193,7 @@ public class ConcurrentParallelGatewaySenderDUnitTest extends WANTestBase {
 
   /**
    * Normal happy scenario test case when bucket division tests boundary cases.
-   * 
+   *
    * @throws Exception
    */
   @Test
@@ -251,7 +251,7 @@ public class ConcurrentParallelGatewaySenderDUnitTest extends WANTestBase {
 
   /**
    * Initially the GatewayReceiver is not up but later it comes up. We verify that
-   * 
+   *
    * @throws Exception
    */
   @Test
@@ -375,7 +375,7 @@ public class ConcurrentParallelGatewaySenderDUnitTest extends WANTestBase {
    * Local and remote sites are up and running. Local site cache is closed and the site is built
    * again. Puts are done to local site. Expected: Remote site should receive all the events put
    * after the local site was built back.
-   * 
+   *
    * @throws Exception
    */
   @Test
@@ -482,7 +482,7 @@ public class ConcurrentParallelGatewaySenderDUnitTest extends WANTestBase {
 
   /**
    * Colocated regions using ConcurrentParallelGatewaySender. Normal scenario
-   * 
+   *
    * @throws Exception
    */
   @Test
@@ -534,7 +534,7 @@ public class ConcurrentParallelGatewaySenderDUnitTest extends WANTestBase {
 
   /**
    * Colocated regions using ConcurrentParallelGatewaySender. Normal scenario
-   * 
+   *
    * @throws Exception
    */
   @Test

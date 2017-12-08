@@ -14,32 +14,33 @@
  */
 package org.apache.geode.internal.statistics;
 
+import java.io.File;
+import java.net.UnknownHostException;
+import java.util.List;
+import java.util.concurrent.TimeUnit;
+
+import org.apache.logging.log4j.Logger;
+
 import org.apache.geode.CancelCriterion;
 import org.apache.geode.CancelException;
 import org.apache.geode.Statistics;
 import org.apache.geode.SystemFailure;
 import org.apache.geode.distributed.internal.DistributionConfig;
 import org.apache.geode.internal.NanoTimer;
-import org.apache.geode.internal.io.MainWithChildrenRollingFileHandler;
-import org.apache.geode.internal.net.SocketCreator;
 import org.apache.geode.internal.i18n.LocalizedStrings;
+import org.apache.geode.internal.io.MainWithChildrenRollingFileHandler;
 import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.internal.logging.LoggingThreadGroup;
 import org.apache.geode.internal.logging.log4j.LocalizedMessage;
 import org.apache.geode.internal.logging.log4j.LogMarker;
+import org.apache.geode.internal.net.SocketCreator;
 import org.apache.geode.internal.statistics.platform.OsStatisticsFactory;
 import org.apache.geode.internal.util.concurrent.StoppableCountDownLatch;
-import org.apache.logging.log4j.Logger;
-
-import java.io.File;
-import java.net.UnknownHostException;
-import java.util.List;
-import java.util.concurrent.TimeUnit;
 
 /**
  * HostStatSampler implements a thread which will monitor, sample, and archive statistics. It only
  * has the common functionality that any sampler needs.
- * 
+ *
  */
 public abstract class HostStatSampler
     implements Runnable, StatisticsSampler, StatArchiveHandlerConfig {
@@ -271,7 +272,7 @@ public abstract class HostStatSampler
 
   /**
    * Starts the main thread for this service.
-   * 
+   *
    * @throws IllegalStateException if an instance of the {@link #statThread} is still running from a
    *         previous DistributedSystem.
    */
@@ -532,7 +533,7 @@ public abstract class HostStatSampler
 
   /**
    * Collect samples of any operating system statistics
-   * 
+   *
    * @param prepareOnly set to true if you only want to call prepareForSample
    */
   private void sampleSpecialStats(boolean prepareOnly) {
@@ -556,7 +557,7 @@ public abstract class HostStatSampler
   /**
    * Check the elapsed sleep time upon wakeup, and log a warning if it is longer than the delay
    * threshold.
-   * 
+   *
    * @param elapsedSleepTime duration of sleep in nanoseconds
    */
   private void checkElapsedSleepTime(long elapsedSleepTime) {

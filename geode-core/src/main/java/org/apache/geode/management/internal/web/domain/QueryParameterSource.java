@@ -15,6 +15,7 @@
 package org.apache.geode.management.internal.web.domain;
 
 import java.io.Serializable;
+
 import javax.management.ObjectName;
 import javax.management.QueryExp;
 
@@ -22,7 +23,7 @@ import javax.management.QueryExp;
  * The QueryParameterSource class encapsulates details in order to perform a query on an JMX MBean
  * server.
  * <p/>
- * 
+ *
  * @see java.io.Serializable
  * @see javax.management.ObjectName
  * @see javax.management.QueryExp

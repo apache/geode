@@ -33,14 +33,14 @@ import org.apache.geode.internal.cache.tier.sockets.VersionedObjectList;
 
 /**
  * Does a region registerInterest on a server
- * 
+ *
  * @since GemFire 5.7
  */
 public class RegisterInterestOp {
   /**
    * Does a region registerInterest on a server using connections from the given pool to communicate
    * with the server.
-   * 
+   *
    * @param pool the pool to use to communicate with the server.
    * @param region the name of the region to do the registerInterest on
    * @param key describes what we are interested in
@@ -61,7 +61,7 @@ public class RegisterInterestOp {
   /**
    * Does a region registerInterest on a server using connections from the given pool to communicate
    * with the given server location.
-   * 
+   *
    * @param sl the server to do the register interest on.
    * @param pool the pool to use to communicate with the server.
    * @param region the name of the region to do the registerInterest on
@@ -84,7 +84,7 @@ public class RegisterInterestOp {
   /**
    * Does a region registerInterest on a server using connections from the given pool to communicate
    * with the given server location.
-   * 
+   *
    * @param conn the connection to do the register interest on.
    * @param pool the pool to use to communicate with the server.
    * @param region the name of the region to do the registerInterest on
@@ -139,7 +139,7 @@ public class RegisterInterestOp {
 
     /**
      * This constructor is used by our subclass CreateCQWithIROpImpl
-     * 
+     *
      * @throws org.apache.geode.SerializationException if serialization fails
      */
     protected RegisterInterestOpImpl(String region, int msgType, int numParts) {

@@ -14,6 +14,19 @@
  */
 package org.apache.geode.internal.cache;
 
+import static org.apache.geode.distributed.ConfigurationProperties.MCAST_PORT;
+import static org.junit.Assert.*;
+
+import java.io.IOException;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.Properties;
+
+import org.junit.After;
+import org.junit.Before;
+import org.junit.Test;
+import org.junit.experimental.categories.Category;
+
 import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.CacheException;
 import org.apache.geode.cache.CacheFactory;
@@ -23,23 +36,11 @@ import org.apache.geode.internal.AvailablePort;
 import org.apache.geode.internal.cache.ha.HAContainerWrapper;
 import org.apache.geode.internal.cache.ha.HARegionQueue;
 import org.apache.geode.test.junit.categories.IntegrationTest;
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.experimental.categories.Category;
-
-import java.io.IOException;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.Properties;
-
-import static org.apache.geode.distributed.ConfigurationProperties.MCAST_PORT;
-import static org.junit.Assert.*;
 
 /**
  * Test to verify that each bridge sever creates its own client_messages_region at its start and
  * destroys it when it stops.
- * 
+ *
  * @since GemFire 5.7
  */
 @Category(IntegrationTest.class)
@@ -55,7 +56,7 @@ public class ClientMessagesRegionCreationAndDestroyJUnitTest {
 
   /**
    * Create the cache in setup.
-   * 
+   *
    * @throws Exception - thrown if any exception occurs in setUp
    */
   @Before
@@ -65,7 +66,7 @@ public class ClientMessagesRegionCreationAndDestroyJUnitTest {
 
   /**
    * Create and attach bridge server to cache
-   * 
+   *
    * @throws IOException
    */
 
@@ -146,7 +147,7 @@ public class ClientMessagesRegionCreationAndDestroyJUnitTest {
 
   /**
    * Close the cache in tear down *
-   * 
+   *
    * @throws Exception - thrown if any exception occurs in tearDown
    */
   @After
@@ -158,7 +159,7 @@ public class ClientMessagesRegionCreationAndDestroyJUnitTest {
 
   /**
    * Creates the cache instance for the test
-   * 
+   *
    * @return the cache instance
    * @throws CacheException - thrown if any exception occurs in cache creation
    */

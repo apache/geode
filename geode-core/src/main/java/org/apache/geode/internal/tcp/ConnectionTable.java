@@ -48,20 +48,20 @@ import org.apache.geode.distributed.internal.membership.InternalDistributedMembe
 import org.apache.geode.distributed.internal.membership.MembershipManager;
 import org.apache.geode.distributed.internal.membership.gms.mgr.GMSMembershipManager;
 import org.apache.geode.internal.Assert;
-import org.apache.geode.internal.net.SocketCloser;
 import org.apache.geode.internal.SystemTimer;
 import org.apache.geode.internal.i18n.LocalizedStrings;
 import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.internal.logging.LoggingThreadGroup;
 import org.apache.geode.internal.logging.log4j.AlertAppender;
 import org.apache.geode.internal.logging.log4j.LocalizedMessage;
+import org.apache.geode.internal.net.SocketCloser;
 
 /**
  * <p>
  * ConnectionTable holds all of the Connection objects in a conduit. Connections represent a pipe
  * between two endpoints represented by generic DistributedMembers.
  * </p>
- * 
+ *
  * @since GemFire 2.1
  */
 public class ConnectionTable {
@@ -90,14 +90,14 @@ public class ConnectionTable {
 
   /**
    * List of thread-owned ordered connection maps, for cleanup
-   * 
+   *
    * Accesses to the maps in this list need to be synchronized on their instance.
    */
   private final List threadConnMaps;
 
   /**
    * Timer to kill idle threads
-   * 
+   *
    * guarded.By this
    */
   private SystemTimer idleConnTimer;
@@ -118,7 +118,7 @@ public class ConnectionTable {
   /**
    * Used for all accepted connections. These connections are read only; we never send messages,
    * except for acks; only receive.
-   * 
+   *
    * Consists of a list of Connection
    */
   private final List receivers = new ArrayList();
@@ -141,14 +141,14 @@ public class ConnectionTable {
    * Number of seconds to wait before timing out an unused p2p reader thread. Default is 120 (2
    * minutes).
    */
-  private final static long READER_POOL_KEEP_ALIVE_TIME =
+  private static final long READER_POOL_KEEP_ALIVE_TIME =
       Long.getLong("p2p.READER_POOL_KEEP_ALIVE_TIME", 120).longValue();
 
   private final SocketCloser socketCloser;
 
   /**
    * The most recent instance to be created
-   * 
+   *
    * TODO this assumes no more than one instance is created at a time?
    */
   private static final AtomicReference lastInstance = new AtomicReference();
@@ -313,7 +313,7 @@ public class ConnectionTable {
 
   /**
    * Process a newly created PendingConnection
-   * 
+   *
    * @param id DistributedMember on which the connection is created
    * @param sharedResource whether the connection is used by multiple threads
    * @param preserveOrder whether to preserve order
@@ -405,7 +405,7 @@ public class ConnectionTable {
 
   /**
    * unordered or conserve-sockets=true note that unordered connections are currently always shared
-   * 
+   *
    * @param id the DistributedMember on which we are creating a connection
    * @param scheduleTimeout whether unordered connection should time out
    * @param preserveOrder whether to preserve order
@@ -475,7 +475,7 @@ public class ConnectionTable {
 
   /**
    * Must be looking for an ordered connection that this thread owns
-   * 
+   *
    * @param id stub on which to create the connection
    * @param startTime the ms clock start time for the operation
    * @param ackTimeout the ms ack-wait-threshold, or zero
@@ -609,7 +609,7 @@ public class ConnectionTable {
 
   /**
    * Get a new connection
-   * 
+   *
    * @param id the DistributedMember on which to create the connection
    * @param preserveOrder whether order should be preserved
    * @param startTime the ms clock start time
@@ -766,7 +766,7 @@ public class ConnectionTable {
   /**
    * Close all receiving threads. This is used during shutdown and is also used by a test hook that
    * makes us deaf to incoming messages.
-   * 
+   *
    * @param beingSick a test hook to simulate a sick process
    */
   protected void closeReceivers(boolean beingSick) {
@@ -1003,7 +1003,7 @@ public class ConnectionTable {
 
   /**
    * Just ensure that this class gets loaded.
-   * 
+   *
    * @see SystemFailure#loadEmergencyClasses()
    */
   public static void loadEmergencyClasses() {
@@ -1013,7 +1013,7 @@ public class ConnectionTable {
   /**
    * Clears lastInstance. Does not yet close underlying sockets, but probably not strictly
    * necessary.
-   * 
+   *
    * @see SystemFailure#emergencyClose()
    */
   public static void emergencyClose() {
@@ -1054,7 +1054,7 @@ public class ConnectionTable {
   /**
    * records the current outgoing message count on all thread-owned ordered connections. This does
    * not synchronize or stop new connections from being formed or new messages from being sent
-   * 
+   *
    * @since GemFire 5.1
    */
   protected void getThreadOwnedOrderedConnectionState(DistributedMember member, Map result) {
@@ -1189,7 +1189,7 @@ public class ConnectionTable {
 
     /**
      * Synchronously set the connection and notify waiters that we are ready.
-     * 
+     *
      * @param c the new connection
      */
     public synchronized void notifyWaiters(Connection c) {
@@ -1207,7 +1207,7 @@ public class ConnectionTable {
 
     /**
      * Wait for a connection
-     * 
+     *
      * @param mgr the membership manager that can instigate suspect processing if necessary
      * @param startTime the ms clock start time for the operation
      * @param ackTimeout the ms ack-wait-threshold, or zero

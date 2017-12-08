@@ -18,7 +18,7 @@ import org.apache.geode.CancelException;
 
 /**
  * Thrown when a GemFire distributed system has been terminated.
- * 
+ *
  * @since GemFire 6.0
  */
 

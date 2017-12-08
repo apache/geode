@@ -26,7 +26,7 @@ import org.apache.geode.cache.Scope;
 public class RegionDescriptionPerMember implements Serializable {
 
   /**
-   * 
+   *
    */
   private static final long serialVersionUID = 1L;
 

@@ -23,9 +23,9 @@ import org.apache.geode.security.ResourcePermission.Target;
 /**
  * MBean that provides access to information and management functionality for a
  * {@link GatewayReceiver}.
- * 
+ *
  * @since GemFire 7.0
- * 
+ *
  */
 @ResourceOperation(resource = Resource.CLUSTER, operation = Operation.READ)
 public interface GatewayReceiverMXBean {
@@ -52,7 +52,7 @@ public interface GatewayReceiverMXBean {
 
   /**
    * Returns whether the receiver is in running state.
-   * 
+   *
    * @return True if the receiver is in a running state, false otherwise.
    */
   boolean isRunning();

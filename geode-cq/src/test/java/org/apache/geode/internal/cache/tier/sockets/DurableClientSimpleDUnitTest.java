@@ -27,6 +27,11 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
+import org.awaitility.Awaitility;
+import org.junit.Ignore;
+import org.junit.Test;
+import org.junit.experimental.categories.Category;
+
 import org.apache.geode.cache.CacheException;
 import org.apache.geode.cache.ClientSession;
 import org.apache.geode.cache.InterestResultPolicy;
@@ -65,11 +70,6 @@ import org.apache.geode.test.dunit.WaitCriterion;
 import org.apache.geode.test.junit.categories.ClientSubscriptionTest;
 import org.apache.geode.test.junit.categories.DistributedTest;
 import org.apache.geode.test.junit.categories.FlakyTest;
-import org.junit.Ignore;
-import org.junit.Test;
-import org.junit.experimental.categories.Category;
-
-import org.awaitility.Awaitility;
 
 @Category({DistributedTest.class, ClientSubscriptionTest.class})
 public class DurableClientSimpleDUnitTest extends DurableClientTestCase {
@@ -2501,7 +2501,7 @@ public class DurableClientSimpleDUnitTest extends DurableClientTestCase {
   /**
    * Test functionality to close the cq and drain all events from the ha queue from the server This
    * draining should not affect events that still have register interest
-   * 
+   *
    * @throws Exception
    */
   @Test

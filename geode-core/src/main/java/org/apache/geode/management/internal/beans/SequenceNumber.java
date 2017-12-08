@@ -18,8 +18,8 @@ import java.util.concurrent.atomic.AtomicLong;
 
 /**
  * Class to give a consistent sequence number to notifications
- * 
- * 
+ *
+ *
  */
 public class SequenceNumber {
 

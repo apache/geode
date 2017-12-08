@@ -32,7 +32,7 @@ public class CacheXmlVersionJUnitTest {
    * Previous strings based version just check ordinal comparison of strings. It failed test for
    * "8_0".compareTo("8.1") < 0. It also would have failed for "9.0".compareTo("10.0") < 0. Testing
    * that ENUM based solution is ordinal correct for comparisons.
-   * 
+   *
    * @since GemFire 8.1
    */
   @Test
@@ -57,7 +57,7 @@ public class CacheXmlVersionJUnitTest {
   /**
    * Test that {@link CacheXmlVersion#valueForVersion(String)} matches the same
    * {@link CacheXmlVersion} via {@link CacheXmlVersion#getVersion()}.
-   * 
+   *
    * @since GemFire 8.1
    */
   @Test

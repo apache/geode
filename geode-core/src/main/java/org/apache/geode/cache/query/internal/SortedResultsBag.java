@@ -31,7 +31,7 @@ import org.apache.geode.internal.cache.CachePerfStats;
  * sorted, than the underlying Map is a LinkedHashMap , else a TreeMap is created. For index results
  * expecting duplicates, the constructor used is the one which creates LinkedHashMap This class is
  * used to store ordered data of Structs too, obtained from index lookup
- * 
+ *
  *
  * @param <E>
  */
@@ -43,7 +43,7 @@ public class SortedResultsBag<E> extends Bag implements Ordered {
 
   /**
    * Constructor for unordered input
-   * 
+   *
    * @param comparator
    * @param nullAtStart Indicates that the first order by coumn is asc , so that tuple with null
    *        order by column value need to be emitted at start, else if desc, then emit at last
@@ -57,7 +57,7 @@ public class SortedResultsBag<E> extends Bag implements Ordered {
 
   /**
    * Constructor for unordered input
-   * 
+   *
    * @param comparator
    * @param elementType
    * @param nullAtStart Indicates that the first order by coumn is asc , so that tuple with null
@@ -73,7 +73,7 @@ public class SortedResultsBag<E> extends Bag implements Ordered {
 
   /**
    * Constructor for unordered input
-   * 
+   *
    * @param comparator
    * @param elementType
    * @param stats
@@ -90,7 +90,7 @@ public class SortedResultsBag<E> extends Bag implements Ordered {
 
   /**
    * Constructor for unordered input
-   * 
+   *
    * @param comparator
    * @param stats
    * @param nullAtStart Indicates that the first order by coumn is asc , so that tuple with null
@@ -105,7 +105,7 @@ public class SortedResultsBag<E> extends Bag implements Ordered {
 
   /**
    * Constructor for ordered input. Creates underlying Map as LinkedHashMap
-   * 
+   *
    * @param stats
    * @param nullAtStart Indicates that the first order by coumn is asc , so that tuple with null
    *        order by column value need to be emitted at start, else if desc, then emit at last
@@ -119,7 +119,7 @@ public class SortedResultsBag<E> extends Bag implements Ordered {
 
   /**
    * Constructor for ordered input. Creates underlying Map as LinkedHashMap
-   * 
+   *
    * @param nullAtStart Indicates that the first order by coumn is asc , so that tuple with null
    *        order by column value need to be emitted at start, else if desc, then emit at last
    */
@@ -132,7 +132,7 @@ public class SortedResultsBag<E> extends Bag implements Ordered {
 
   /**
    * Constructor for ordered input. Creates underlying Map as LinkedHashMap
-   * 
+   *
    * @param elementType
    * @param nullAtStart Indicates that the first order by coumn is asc , so that tuple with null
    *        order by column value need to be emitted at start, else if desc, then emit at last

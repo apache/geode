@@ -15,8 +15,8 @@
 package org.apache.geode.cache.client.internal;
 
 import java.util.Map;
-
 import java.util.concurrent.ScheduledExecutorService;
+
 import org.apache.geode.CancelCriterion;
 import org.apache.geode.cache.client.Pool;
 import org.apache.geode.internal.cache.PoolStats;
@@ -24,7 +24,7 @@ import org.apache.geode.internal.cache.PoolStats;
 /**
  * The contract between a connection source and a connection pool. Provides methods for the
  * connection source to access the cache and update the list of endpoints on the connection pool.
- * 
+ *
  * @since GemFire 5.7
  *
  */

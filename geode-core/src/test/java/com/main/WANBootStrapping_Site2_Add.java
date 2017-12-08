@@ -30,26 +30,26 @@ import org.apache.geode.internal.ExitCode;
 
 /**
  * This is a member representing site 2 who wants to receive data from site 1
- * 
+ *
  * On this member a locator with distributed-system-id = 2 is created. On this member a cache is
  * created.
- * 
+ *
  * A Region and a GatewayReceiver is created on this member through
  * MyDistributedSustemListener#addedDistributedSystemConnection
- * 
+ *
  * (When this locator gets the locator information from the site 1, MyDistributedSustemListener's
  * addedDistributedSystemConnection will be invoked who will create a region and a GatewayReceiver.)
- * 
+ *
  * This member expects region size to be 100. (this site received this data from site1)
- * 
+ *
  * This member also check for the receiver's running status.
- * 
+ *
  * A GatewayReceiver will be stopped through MyDistributedSustemListener#removedDistributedSystem
  * (When a remote locator with distributed-system-id = -1 connects to this site,
  * MyDistributedSustemListener's removedDistributedSystem will be invoked who will stop a
  * GatewayReceiver.)
- * 
- * 
+ *
+ *
  */
 
 public class WANBootStrapping_Site2_Add {

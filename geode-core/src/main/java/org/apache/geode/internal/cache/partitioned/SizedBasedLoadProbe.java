@@ -14,6 +14,10 @@
  */
 package org.apache.geode.internal.cache.partitioned;
 
+import java.io.DataInput;
+import java.io.DataOutput;
+import java.io.IOException;
+
 import org.apache.geode.distributed.internal.DistributionConfig;
 import org.apache.geode.internal.DataSerializableFixedID;
 import org.apache.geode.internal.Version;
@@ -21,13 +25,9 @@ import org.apache.geode.internal.cache.BucketAdvisor;
 import org.apache.geode.internal.cache.PartitionedRegion;
 import org.apache.geode.internal.cache.PartitionedRegionDataStore;
 
-import java.io.DataInput;
-import java.io.DataOutput;
-import java.io.IOException;
-
 /**
  * A load probe which calculates the load of a pr using the size of the buckets in bytes.
- * 
+ *
  * @since GemFire 6.0
  */
 public class SizedBasedLoadProbe implements LoadProbe, DataSerializableFixedID {

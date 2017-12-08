@@ -28,7 +28,7 @@ import org.apache.geode.pdx.internal.TypeRegistry;
 
 public class GetPDXIdForEnum extends BaseCommand {
 
-  private final static GetPDXIdForEnum singleton = new GetPDXIdForEnum();
+  private static final GetPDXIdForEnum singleton = new GetPDXIdForEnum();
 
   public static Command getCommand() {
     return singleton;

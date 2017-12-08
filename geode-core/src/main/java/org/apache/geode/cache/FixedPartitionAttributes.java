@@ -19,28 +19,28 @@ import org.apache.geode.internal.cache.FixedPartitionAttributesImpl;
 /**
  * Composite date type used to distribute the attributes for a fixed partition.
  * </p>
- * 
+ *
  * {@link org.apache.geode.cache.PartitionAttributes#getFixedPartitionAttributes()} returns all
  * fixed partitions in Partitioned Region attributes.
  * </p>
  * {@link org.apache.geode.cache.PartitionAttributesFactory#addFixedPartitionAttributes(FixedPartitionAttributes)}
  * configures <code>FixedPartitionAttributes</Code> in <code>PartitionedRegionAttributes</code>
  * </p>
- * 
+ *
  * @see org.apache.geode.cache.PartitionAttributes
  * @see org.apache.geode.cache.PartitionAttributesFactory
- * 
+ *
  * @since GemFire 6.6
  */
 public abstract class FixedPartitionAttributes {
 
-  private final static boolean DEFAULT_PRIMARY_STATUS = false;
+  private static final boolean DEFAULT_PRIMARY_STATUS = false;
 
-  private final static int DEFAULT_NUM_BUCKETS = 1;
+  private static final int DEFAULT_NUM_BUCKETS = 1;
 
   /**
    * Creates an instance of <code>FixedPartitionAttributes</code>.
-   * 
+   *
    * @param name Name of the fixed partition.
    */
   public static FixedPartitionAttributes createFixedPartition(String name) {
@@ -50,7 +50,7 @@ public abstract class FixedPartitionAttributes {
 
   /**
    * Creates an instance of <code>FixedPartitionAttributes</code>.
-   * 
+   *
    * @param name Name of the fixed partition.
    * @param isPrimary True if this member is the primary for the partition.
    */
@@ -61,7 +61,7 @@ public abstract class FixedPartitionAttributes {
 
   /**
    * Creates an instance of <code>FixedPartitionAttributes</code>.
-   * 
+   *
    * @param name Name of the fixed partition.
    * @param isPrimary True if this member is the primary for the partition.
    * @param numBuckets Number of buckets allowed for the partition.
@@ -74,7 +74,7 @@ public abstract class FixedPartitionAttributes {
 
   /**
    * Creates an instance of <code>FixedPartitionAttributes</code>.
-   * 
+   *
    * @param name Name of the fixed partition.
    * @param numBuckets Number of buckets allowed for the partition.
    */
@@ -90,7 +90,7 @@ public abstract class FixedPartitionAttributes {
 
   /**
    * Returns whether this member is the primary for the partition.
-   * 
+   *
    * @return True if this member is the primary, false otherwise.
    */
   public abstract boolean isPrimary();

@@ -14,18 +14,14 @@
  */
 package org.apache.geode.cache.query.partitioned;
 
-import org.junit.experimental.categories.Category;
-import org.junit.Test;
-
+import static org.apache.geode.cache.query.Utils.*;
 import static org.junit.Assert.*;
 
-import org.apache.geode.test.dunit.cache.internal.JUnit4CacheTestCase;
-import org.apache.geode.test.dunit.internal.JUnit4DistributedTestCase;
-import org.apache.geode.test.junit.categories.DistributedTest;
-
-import static org.apache.geode.cache.query.Utils.*;
-
 import java.util.Collection;
+import java.util.Properties;
+
+import org.junit.Test;
+import org.junit.experimental.categories.Category;
 
 import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.CacheException;
@@ -34,6 +30,7 @@ import org.apache.geode.cache.query.IndexNameConflictException;
 import org.apache.geode.cache.query.data.Portfolio;
 import org.apache.geode.cache.query.data.PortfolioData;
 import org.apache.geode.cache30.CacheSerializableRunnable;
+import org.apache.geode.distributed.ConfigurationProperties;
 import org.apache.geode.internal.cache.GemFireCacheImpl;
 import org.apache.geode.internal.cache.PartitionedRegionDUnitTestCase;
 import org.apache.geode.test.dunit.Assert;
@@ -44,6 +41,9 @@ import org.apache.geode.test.dunit.LogWriterUtils;
 import org.apache.geode.test.dunit.SerializableRunnable;
 import org.apache.geode.test.dunit.ThreadUtils;
 import org.apache.geode.test.dunit.VM;
+import org.apache.geode.test.dunit.cache.internal.JUnit4CacheTestCase;
+import org.apache.geode.test.dunit.internal.JUnit4DistributedTestCase;
+import org.apache.geode.test.junit.categories.DistributedTest;
 
 @Category(DistributedTest.class)
 public class PRBasicIndexCreationDUnitTest extends PartitionedRegionDUnitTestCase {
@@ -78,9 +78,18 @@ public class PRBasicIndexCreationDUnitTest extends PartitionedRegionDUnitTestCas
 
   final int redundancy = 0;
 
+
+  @Override
+  public Properties getDistributedSystemProperties() {
+    Properties properties = super.getDistributedSystemProperties();
+    properties.put(ConfigurationProperties.SERIALIZABLE_OBJECT_FILTER,
+        "org.apache.geode.cache.query.data.*");
+    return properties;
+  }
+
   /**
    * Tests basic index creation on a partitioned system.
-   * 
+   *
    * @throws Exception if an exception is generated
    */
   @Test
@@ -125,7 +134,7 @@ public class PRBasicIndexCreationDUnitTest extends PartitionedRegionDUnitTestCas
 
   /**
    * Tests creation of multiple index creation on a partitioned region system.
-   * 
+   *
    * @throws Exception if any excpetion are generated
    */
   @Test
@@ -288,7 +297,7 @@ public class PRBasicIndexCreationDUnitTest extends PartitionedRegionDUnitTestCas
   /**
    * Test creation of mutilple index on partitioned regions and then adding a new node to the system
    * and checking it has created all the indexes already in the sytem.
-   * 
+   *
    */
   @Test
   public void testCreatePartitionedRegionThroughXMLAndAPI() {
@@ -437,7 +446,7 @@ public class PRBasicIndexCreationDUnitTest extends PartitionedRegionDUnitTestCas
 
   /**
    * Test index usage with query on a partitioned region with bucket indexes.
-   * 
+   *
    * @throws Throwable
    */
   @Test

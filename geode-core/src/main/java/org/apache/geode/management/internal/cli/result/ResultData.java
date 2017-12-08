@@ -18,8 +18,8 @@ import org.apache.geode.management.cli.Result.Status;
 import org.apache.geode.management.internal.cli.json.GfJsonObject;
 
 /**
- * 
- * 
+ *
+ *
  * @since GemFire 7.0
  */
 public interface ResultData {

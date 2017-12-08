@@ -16,18 +16,16 @@
 
 package org.apache.geode.internal.admin.remote;
 
+import java.io.*;
+
 import org.apache.geode.*;
 import org.apache.geode.admin.GemFireHealthConfig;
 import org.apache.geode.distributed.internal.*;
 import org.apache.geode.internal.i18n.LocalizedStrings;
-// import org.apache.geode.internal.*;
-// import org.apache.geode.internal.admin.*;
-import java.io.*;
-// import java.util.*;
 
 /**
  * A message that is sent to a particular distribution manager to add a health listener.
- * 
+ *
  * @since GemFire 3.5
  */
 public class AddHealthListenerRequest extends AdminRequest {
@@ -59,7 +57,7 @@ public class AddHealthListenerRequest extends AdminRequest {
    * Must return a proper response to this request.
    */
   @Override
-  protected AdminResponse createResponse(DistributionManager dm) {
+  protected AdminResponse createResponse(DM dm) {
     return AddHealthListenerResponse.create(dm, this.getSender(), this.cfg);
   }
 

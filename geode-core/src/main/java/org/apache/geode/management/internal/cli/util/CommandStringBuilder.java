@@ -24,7 +24,7 @@ import org.apache.geode.management.internal.cli.GfshParser;
 
 /**
  * - Helper class to build command strings, used in the Dunits for testing gfsh commands
- * 
+ *
  * @since GemFire 7.0
  */
 public class CommandStringBuilder {

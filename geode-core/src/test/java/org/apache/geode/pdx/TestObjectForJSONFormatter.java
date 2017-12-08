@@ -1016,5 +1016,3 @@ public class TestObjectForJSONFormatter implements PdxSerializable {
 
 
 }
-
-

@@ -14,9 +14,9 @@
  */
 package org.apache.geode.redis.internal.executor.transactions;
 
-import io.netty.buffer.ByteBuf;
-
 import java.util.Queue;
+
+import io.netty.buffer.ByteBuf;
 
 import org.apache.geode.cache.CacheTransactionManager;
 import org.apache.geode.cache.CommitConflictException;

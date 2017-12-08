@@ -18,22 +18,24 @@ package org.apache.geode.internal.jta;
  * <p>
  * GlobalTransaction is the JTA concept of a Global Transaction.
  * </p>
- * 
- * 
+ *
+ *
  * @since GemFire 4.0
- * 
+ *
  * @deprecated as of Geode 1.2.0 user should use a third party JTA transaction manager to manage JTA
  *             transactions.
  */
-import org.apache.geode.i18n.LogWriterI18n;
-import org.apache.geode.internal.i18n.LocalizedStrings;
 import java.util.*;
-import javax.transaction.xa.*;
+
 import javax.transaction.*;
+import javax.transaction.xa.*;
+
 import org.apache.geode.SystemFailure;
 import org.apache.geode.distributed.DistributedSystemDisconnectedException;
 import org.apache.geode.distributed.internal.DM;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
+import org.apache.geode.i18n.LogWriterI18n;
+import org.apache.geode.internal.i18n.LocalizedStrings;
 
 @Deprecated
 public class GlobalTransaction {
@@ -101,7 +103,7 @@ public class GlobalTransaction {
    * Add a transaction to the list of transactions participating in this global Transaction The list
    * of transactions is being maintained so that we can remove the local transaction to global
    * transaction entries from the map being maintained by the Transaction Manager
-   * 
+   *
    * @param txn Transaction instance which is participating in this Global Transaction
    */
   public void addTransaction(Transaction txn) throws SystemException {
@@ -121,11 +123,11 @@ public class GlobalTransaction {
    * Delists the XAResources associated with the Global Transaction and Completes the Global
    * transaction associated with the current thread. If any exception is encountered, rollback is
    * called on the current transaction.
-   * 
+   *
    * Concurrency: Some paths invoke this method after taking a lock on "this" while other paths
    * invoke this method without taking a lock on "this". Since both types of path do act on the
    * resourceMap collection, it is being protected by a lock on resourceMap too.
-   * 
+   *
    * @throws RollbackException - Thrown to indicate that the transaction has been rolled back rather
    *         than committed.
    * @throws HeuristicMixedException - Thrown to indicate that a heuristic decision was made and
@@ -138,7 +140,7 @@ public class GlobalTransaction {
    *         transaction.
    * @throws SystemException - Thrown if the transaction manager encounters an unexpected error
    *         condition.
-   * 
+   *
    * @see javax.transaction.TransactionManager#commit()
    */
   // Asif : Changed the return type to int indicating the nature of Exception
@@ -226,18 +228,18 @@ public class GlobalTransaction {
   /**
    * Delists the XAResources associated with the Global Transaction and Roll back the transaction
    * associated with the current thread.
-   * 
+   *
    * Concurrency: Some paths invoke this method after taking a lock on "this" while other paths
    * invoke this method without taking a lock on "this". Since both types of path do act on the
    * resourceMap collection, it is being protected by a lock on resourceMap too.
-   * 
+   *
    * @throws java.lang.SecurityException - Thrown to indicate that the thread is not allowed to roll
    *         back the transaction.
    * @throws java.lang.IllegalStateException - Thrown if the current thread is not associated with a
    *         transaction.
    * @throws SystemException - Thrown if the transaction manager encounters an unexpected error
    *         condition.
-   * 
+   *
    * @see javax.transaction.TransactionManager#rollback()
    */
   public void rollback() throws IllegalStateException, SystemException {
@@ -315,12 +317,12 @@ public class GlobalTransaction {
    * being supported. enlistResource checks if there is no XAResource, then enlists the current
    * XAResource. For subsequent XAResources, it checks if is the same Resource Manager. If it is,
    * then the XAResources are addded, else an exception is thrown
-   * 
+   *
    * Concurrency: The order of acquiring lock will be lock on "this" followed by lock on
    * resourceMap. It is possible that in some functions of this class both the locks are not needed
    * , but if the two are acquired then the realitive order will always be"this" followed by
    * resourceMap.
-   * 
+   *
    * @param xaRes XAResource to be enlisted
    * @return true, if resource was enlisted successfully, otherwise false.
    * @throws SystemException - Thrown if the transaction manager encounters an unexpected error
@@ -329,7 +331,7 @@ public class GlobalTransaction {
    *         prepared state or the transaction is inactive.
    * @throws RollbackException - Thrown to indicate that the transaction has been marked for
    *         rollback only.
-   * 
+   *
    * @see javax.transaction.Transaction#enlistResource(javax.transaction.xa.XAResource)
    */
   public boolean enlistResource(XAResource xaRes)
@@ -409,17 +411,17 @@ public class GlobalTransaction {
 
   /**
    * Disassociate the XAResource specified from this transaction.
-   * 
+   *
    * In the current implementation this call will never be made by the application server. The
    * delisting is happening at the time of commit/rollback
-   * 
+   *
    * @param xaRes XAResource to be delisted
    * @param flag One of the values of TMSUCCESS, TMSUSPEND, or TMFAIL.
    * @return true, if resource was delisted successfully, otherwise false.
    * @throws SystemException Thrown if the transaction manager encounters an unexpected error
    *         condition.
    * @throws IllegalStateException Thrown if the transaction in the target object is not active.
-   * 
+   *
    * @see javax.transaction.Transaction#delistResource(javax.transaction.xa.XAResource, int)
    */
   public boolean delistResource(XAResource xaRes, int flag)
@@ -447,7 +449,7 @@ public class GlobalTransaction {
 
   /**
    * Set the transaction state of the Global Transaction
-   * 
+   *
    * @param new_status Status (int)
    */
   public void setStatus(int new_status) {
@@ -526,7 +528,7 @@ public class GlobalTransaction {
 
   /**
    * String for current distributed system
-   * 
+   *
    * @see #IdsForId
    * @guarded.By {@link #DmidMutex}
    */
@@ -534,7 +536,7 @@ public class GlobalTransaction {
 
   /**
    * Distributed system for given string
-   * 
+   *
    * @see #DMid
    * @guarded.By {@link #DmidMutex}
    */
@@ -542,7 +544,7 @@ public class GlobalTransaction {
 
   /**
    * Mutex controls update of {@link #DMid}
-   * 
+   *
    * @see #DMid
    * @see #IdsForId
    */
@@ -550,7 +552,7 @@ public class GlobalTransaction {
 
   /**
    * Read current {@link #DMid} and return it
-   * 
+   *
    * @return current DMid
    */
   private static String getId() {
@@ -571,7 +573,7 @@ public class GlobalTransaction {
 
   /**
    * Returns a byte array which uses a static synchronized counter to ensure uniqueness
-   * 
+   *
    */
   private static byte[] generateGTid() {
     // Asif: The counter should be attached to the string inside Synch block
@@ -613,7 +615,7 @@ public class GlobalTransaction {
   /**
    * Set the transaction TimeOut of the Global Transaction Asif : It returns the new expiry time for
    * the GTX.
-   * 
+   *
    * @param seconds
    * @throws SystemException
    */

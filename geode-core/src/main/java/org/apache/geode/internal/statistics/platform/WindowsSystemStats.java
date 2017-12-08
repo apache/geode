@@ -25,51 +25,51 @@ import org.apache.geode.internal.statistics.StatisticsTypeFactoryImpl;
  * running on.
  */
 public class WindowsSystemStats {
-  private final static int committedMemoryInUseINT = 0;
-  private final static int eventsINT = 1;
-  private final static int interruptsINT = 2;
-  private final static int mutexesINT = 3;
-  private final static int processesINT = 4;
-  private final static int processorQueueLengthINT = 5;
-  private final static int registryQuotaInUseINT = 6;
-  private final static int sharedMemorySectionsINT = 7;
-  private final static int semaphoresINT = 8;
-  private final static int threadsINT = 9;
-  private final static int dgramsReceivedINT = 10;
-  private final static int dgramsNoPortINT = 11;
-  private final static int dgramsReceivedErrorsINT = 12;
-  private final static int dgramsSentINT = 13;
-  private final static int loopbackPacketsINT = 14;
-  private final static int loopbackBytesINT = 15;
-  private final static int netPacketsReceivedINT = 16;
-  private final static int netBytesReceivedINT = 17;
-  private final static int netPacketsSentINT = 18;
-  private final static int netBytesSentINT = 19;
+  private static final int committedMemoryInUseINT = 0;
+  private static final int eventsINT = 1;
+  private static final int interruptsINT = 2;
+  private static final int mutexesINT = 3;
+  private static final int processesINT = 4;
+  private static final int processorQueueLengthINT = 5;
+  private static final int registryQuotaInUseINT = 6;
+  private static final int sharedMemorySectionsINT = 7;
+  private static final int semaphoresINT = 8;
+  private static final int threadsINT = 9;
+  private static final int dgramsReceivedINT = 10;
+  private static final int dgramsNoPortINT = 11;
+  private static final int dgramsReceivedErrorsINT = 12;
+  private static final int dgramsSentINT = 13;
+  private static final int loopbackPacketsINT = 14;
+  private static final int loopbackBytesINT = 15;
+  private static final int netPacketsReceivedINT = 16;
+  private static final int netBytesReceivedINT = 17;
+  private static final int netPacketsSentINT = 18;
+  private static final int netBytesSentINT = 19;
 
 
-  private final static int availableMemoryLONG = 0;
-  private final static int cacheFaultsLONG = 1;
-  private final static int cacheSizeLONG = 2;
-  private final static int cacheSizePeakLONG = 3;
-  private final static int committedMemoryLONG = 4;
-  private final static int committedMemoryLimitLONG = 5;
-  private final static int contextSwitchesLONG = 6;
-  private final static int demandZeroFaultsLONG = 7;
-  private final static int pageFaultsLONG = 8;
-  private final static int pageReadsLONG = 9;
-  private final static int pagesLONG = 10;
-  private final static int pageWritesLONG = 11;
-  private final static int pagesInputLONG = 12;
-  private final static int pagesOutputLONG = 13;
-  private final static int systemCallsLONG = 14;
+  private static final int availableMemoryLONG = 0;
+  private static final int cacheFaultsLONG = 1;
+  private static final int cacheSizeLONG = 2;
+  private static final int cacheSizePeakLONG = 3;
+  private static final int committedMemoryLONG = 4;
+  private static final int committedMemoryLimitLONG = 5;
+  private static final int contextSwitchesLONG = 6;
+  private static final int demandZeroFaultsLONG = 7;
+  private static final int pageFaultsLONG = 8;
+  private static final int pageReadsLONG = 9;
+  private static final int pagesLONG = 10;
+  private static final int pageWritesLONG = 11;
+  private static final int pagesInputLONG = 12;
+  private static final int pagesOutputLONG = 13;
+  private static final int systemCallsLONG = 14;
 
-  private final static int cpuActiveDOUBLE = 0;
-  private final static int cpuIdleDOUBLE = 1;
-  private final static int cpuInterruptDOUBLE = 2;
-  private final static int cpuSystemDOUBLE = 3;
-  private final static int cpuUserDOUBLE = 4;
+  private static final int cpuActiveDOUBLE = 0;
+  private static final int cpuIdleDOUBLE = 1;
+  private static final int cpuInterruptDOUBLE = 2;
+  private static final int cpuSystemDOUBLE = 3;
+  private static final int cpuUserDOUBLE = 4;
 
-  private final static StatisticsType myType;
+  private static final StatisticsType myType;
 
   private static void checkOffset(String name, int offset) {
     int id = myType.nameToId(name);
