@@ -23,32 +23,34 @@ import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
 import org.apache.geode.cache.CacheFactory;
-import org.apache.geode.connectors.jdbc.internal.ConnectionConfiguration;
 import org.apache.geode.connectors.jdbc.internal.InternalJdbcConnectorService;
+import org.apache.geode.connectors.jdbc.internal.RegionMapping;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.management.cli.Result;
 import org.apache.geode.test.junit.categories.IntegrationTest;
 
 @Category(IntegrationTest.class)
-public class AlterConnectionCommandIntegrationTest {
+public class AlterRegionMappingCommandIntegrationTest {
 
   private InternalCache cache;
-  private AlterConnectionCommand alterConnectionCommand;
+  private AlterRegionMappingCommand alterRegionMappingCommand;
 
-  private String name;
+  private String regionName;
 
   @Before
   public void setup() {
-    name = "name";
-    String url = "url";
-    String user = "user";
-    String password = "password";
-    String[] params = new String[] {"param1:value1", "param2:value2"};
+    regionName = "regionName";
+    String connectionName = "connection";
+    String tableName = "testTable";
+    String pdxClass = "myPdxClass";
+    Boolean keyInValue = true;
+    String[] fieldMappings = new String[] {"field1:column1", "field2:column2"};
 
     cache = (InternalCache) new CacheFactory().set(ENABLE_CLUSTER_CONFIGURATION, "true").create();
-    (new CreateConnectionCommand()).createConnection(name, url, user, password, params);
+    new CreateRegionMappingCommand().createMapping(regionName, connectionName, tableName, pdxClass,
+        keyInValue, fieldMappings);
 
-    alterConnectionCommand = new AlterConnectionCommand();
+    alterRegionMappingCommand = new AlterRegionMappingCommand();
   }
 
   @After
@@ -57,23 +59,23 @@ public class AlterConnectionCommandIntegrationTest {
   }
 
   @Test
-  public void altersConnectionConfigurationInService() {
-    String[] newParams = new String[] {"key1:value1", "key2:value2"};
-    Result result =
-        alterConnectionCommand.alterConnection(name, "newUrl", "newUser", "newPassword", newParams);
+  public void altersRegionMappingInService() {
+    String[] newMappings = new String[] {"field3:column3", "field4:column4"};
+    Result result = alterRegionMappingCommand.alterMapping(regionName, "newConnection", "newTable",
+        "newPdxClass", false, newMappings);
 
     assertThat(result.getStatus()).isSameAs(Result.Status.OK);
 
     InternalJdbcConnectorService service = cache.getService(InternalJdbcConnectorService.class);
-    ConnectionConfiguration connectionConfig = service.getConnectionConfig(name);
+    RegionMapping regionMapping = service.getMappingForRegion(regionName);
 
-    assertThat(connectionConfig).isNotNull();
-    assertThat(connectionConfig.getName()).isEqualTo(name);
-    assertThat(connectionConfig.getUrl()).isEqualTo("newUrl");
-    assertThat(connectionConfig.getUser()).isEqualTo("newUser");
-    assertThat(connectionConfig.getPassword()).isEqualTo("newPassword");
-    assertThat(connectionConfig.getConnectionProperties()).containsEntry("key1", "value1")
-        .containsEntry("key2", "value2");
+    assertThat(regionMapping).isNotNull();
+    assertThat(regionMapping.getConnectionConfigName()).isEqualTo("newConnection");
+    assertThat(regionMapping.getTableName()).isEqualTo("newTable");
+    assertThat(regionMapping.getPdxClassName()).isEqualTo("newPdxClass");
+    assertThat(regionMapping.isPrimaryKeyInValue()).isFalse();
+    assertThat(regionMapping.getFieldToColumnMap()).containsEntry("field3", "column3")
+        .containsEntry("field4", "column4");
   }
 
 }

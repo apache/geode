@@ -24,8 +24,8 @@ public class RegionMappingBuilder {
   private String pdxClassName;
   private String tableName;
   private String connectionConfigName;
-  private boolean primaryKeyInValue;
-  private final Map<String, String> fieldToColumnMap = new HashMap<>();
+  private Boolean primaryKeyInValue;
+  private Map<String, String> fieldToColumnMap = new HashMap<>();
 
   public RegionMappingBuilder withRegionName(String regionName) {
     this.regionName = regionName;
@@ -53,7 +53,7 @@ public class RegionMappingBuilder {
     return this;
   }
 
-  public RegionMappingBuilder withPrimaryKeyInValue(boolean primaryKeyInValue) {
+  public RegionMappingBuilder withPrimaryKeyInValue(Boolean primaryKeyInValue) {
     this.primaryKeyInValue = primaryKeyInValue;
     return this;
   }
@@ -64,10 +64,14 @@ public class RegionMappingBuilder {
   }
 
   public RegionMappingBuilder withFieldToColumnMappings(String[] mappings) {
-    for (String mapping : mappings) {
-      String[] keyValuePair = mapping.split(MAPPINGS_DELIMITER);
-      if (keyValuePair.length == 2) {
-        fieldToColumnMap.put(keyValuePair[0], keyValuePair[1]);
+    if (mappings == null) {
+      fieldToColumnMap = null;
+    } else {
+      for (String mapping : mappings) {
+        String[] keyValuePair = mapping.split(MAPPINGS_DELIMITER);
+        if (keyValuePair.length == 2) {
+          fieldToColumnMap.put(keyValuePair[0], keyValuePair[1]);
+        }
       }
     }
     return this;

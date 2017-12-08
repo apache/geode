@@ -87,6 +87,19 @@ public class JdbcConnectorService implements InternalJdbcConnectorService {
   }
 
   @Override
+  public void replaceRegionMapping(RegionMapping alteredMapping)
+      throws RegionMappingNotFoundException {
+    registerAsExtension();
+    RegionMapping existingMapping = mappingsByRegion.get(alteredMapping.getRegionName());
+    if (existingMapping == null) {
+      throw new RegionMappingNotFoundException(
+          "RegionMapping for region " + existingMapping.getRegionName() + " was not found");
+    }
+
+    mappingsByRegion.put(existingMapping.getRegionName(), alteredMapping);
+  }
+
+  @Override
   public RegionMapping getMappingForRegion(String regionName) {
     return mappingsByRegion.get(regionName);
   }

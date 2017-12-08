@@ -36,5 +36,7 @@ public interface InternalJdbcConnectorService extends Extension<Cache>, CacheSer
 
   void createRegionMapping(RegionMapping mapping) throws RegionMappingExistsException;
 
+  void replaceRegionMapping(RegionMapping mapping) throws RegionMappingNotFoundException;
+
   RegionMapping getMappingForRegion(String regionName);
 }

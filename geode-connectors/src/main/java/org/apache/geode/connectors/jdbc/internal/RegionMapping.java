@@ -23,18 +23,19 @@ public class RegionMapping implements Serializable {
   private final String pdxClassName;
   private final String tableName;
   private final String connectionConfigName;
-  private final boolean primaryKeyInValue;
+  private final Boolean primaryKeyInValue;
   private final Map<String, String> fieldToColumnMap;
 
   public RegionMapping(String regionName, String pdxClassName, String tableName,
-      String connectionConfigName, boolean primaryKeyInValue,
+      String connectionConfigName, Boolean primaryKeyInValue,
       Map<String, String> fieldToColumnMap) {
     this.regionName = regionName;
     this.pdxClassName = pdxClassName;
     this.tableName = tableName;
     this.connectionConfigName = connectionConfigName;
     this.primaryKeyInValue = primaryKeyInValue;
-    this.fieldToColumnMap = fieldToColumnMap;
+    this.fieldToColumnMap =
+        fieldToColumnMap == null ? null : Collections.unmodifiableMap(fieldToColumnMap);
   }
 
   public String getConnectionConfigName() {
@@ -53,7 +54,7 @@ public class RegionMapping implements Serializable {
     return tableName;
   }
 
-  public boolean isPrimaryKeyInValue() {
+  public Boolean isPrimaryKeyInValue() {
     return primaryKeyInValue;
   }
 
@@ -63,7 +64,7 @@ public class RegionMapping implements Serializable {
   }
 
   public Map<String, String> getFieldToColumnMap() {
-    return Collections.unmodifiableMap(fieldToColumnMap);
+    return fieldToColumnMap;
   }
 
   @Override

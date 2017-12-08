@@ -34,7 +34,7 @@ public class RegionMappingBuilderTest {
     assertThat(regionMapping.getTableName()).isNull();
     assertThat(regionMapping.getPdxClassName()).isNull();
     assertThat(regionMapping.getConnectionConfigName()).isNull();
-    assertThat(regionMapping.isPrimaryKeyInValue()).isFalse();
+    assertThat(regionMapping.isPrimaryKeyInValue()).isNull();
   }
 
   @Test

@@ -19,10 +19,13 @@ import static org.mockito.Mockito.mock;
 
 import org.junit.Before;
 import org.junit.Test;
+import org.junit.experimental.categories.Category;
 
 import org.apache.geode.cache.execute.FunctionContext;
 import org.apache.geode.connectors.jdbc.internal.InternalJdbcConnectorService;
+import org.apache.geode.test.junit.categories.UnitTest;
 
+@Category(UnitTest.class)
 public class JdbcCliFunctionTest {
 
   private JdbcCliFunction<Void, Void> function;

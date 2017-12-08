@@ -32,6 +32,7 @@ import java.util.Map;
 import org.apache.commons.lang.SerializationUtils;
 import org.junit.Before;
 import org.junit.Test;
+import org.junit.experimental.categories.Category;
 import org.mockito.ArgumentCaptor;
 
 import org.apache.geode.cache.execute.FunctionContext;
@@ -44,7 +45,9 @@ import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.distributed.DistributedSystem;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.management.internal.cli.functions.CliFunctionResult;
+import org.apache.geode.test.junit.categories.UnitTest;
 
+@Category(UnitTest.class)
 public class AlterConnectionFunctionTest {
 
   private static final String CONNECTION_NAME = "theConnection";
@@ -59,7 +62,7 @@ public class AlterConnectionFunctionTest {
   private AlterConnectionFunction function;
 
   @Before
-  public void setUp() throws Exception {
+  public void setUp() {
     context = mock(FunctionContext.class);
     resultSender = mock(ResultSender.class);
     InternalCache cache = mock(InternalCache.class);
@@ -86,17 +89,17 @@ public class AlterConnectionFunctionTest {
   }
 
   @Test
-  public void isHAReturnsFalse() throws Exception {
+  public void isHAReturnsFalse() {
     assertThat(function.isHA()).isFalse();
   }
 
   @Test
-  public void getIdReturnsNameOfClass() throws Exception {
+  public void getIdReturnsNameOfClass() {
     assertThat(function.getId()).isEqualTo(function.getClass().getName());
   }
 
   @Test
-  public void serializes() throws Exception {
+  public void serializes() {
     Serializable original = function;
 
     Object copy = SerializationUtils.clone(original);
@@ -105,7 +108,7 @@ public class AlterConnectionFunctionTest {
   }
 
   @Test
-  public void alterConnectionConfigThrowsConnectionNotFound() throws Exception {
+  public void alterConnectionConfigThrowsConnectionNotFound() {
     AlterConnectionFunction alterFunction = mock(AlterConnectionFunction.class);
     doThrow(ConnectionConfigNotFoundException.class).when(alterFunction)
         .alterConnectionConfig(any(), any());
@@ -135,7 +138,7 @@ public class AlterConnectionFunctionTest {
   }
 
   @Test
-  public void alterConnectionConfigUrl() throws Exception {
+  public void alterConnectionConfigUrl() {
     ConnectionConfiguration newConfigValues =
         new ConnectionConfiguration(CONNECTION_NAME, "newUrl", null, null, null);
 
@@ -151,7 +154,7 @@ public class AlterConnectionFunctionTest {
   }
 
   @Test
-  public void alterConnectionConfigUser() throws Exception {
+  public void alterConnectionConfigUser() {
     ConnectionConfiguration newConfigValues =
         new ConnectionConfiguration(CONNECTION_NAME, null, "newUser", null, null);
 
@@ -167,7 +170,7 @@ public class AlterConnectionFunctionTest {
   }
 
   @Test
-  public void alterConnectionConfigPassword() throws Exception {
+  public void alterConnectionConfigPassword() {
     ConnectionConfiguration newConfigValues =
         new ConnectionConfiguration(CONNECTION_NAME, null, null, "newPassword", null);
 
@@ -183,7 +186,7 @@ public class AlterConnectionFunctionTest {
   }
 
   @Test
-  public void alterConnectionConfigParameters() throws Exception {
+  public void alterConnectionConfigParameters() {
     Map<String, String> newParameters = new HashMap<>();
     newParameters.put("key1", "anotherValue1");
     newParameters.put("key8", "value8");
@@ -202,7 +205,7 @@ public class AlterConnectionFunctionTest {
   }
 
   @Test
-  public void alterConnectionConfigWithNothingToAlter() throws Exception {
+  public void alterConnectionConfigWithNothingToAlter() {
     ConnectionConfiguration newConfigValues =
         new ConnectionConfiguration(CONNECTION_NAME, null, null, null, null);
 

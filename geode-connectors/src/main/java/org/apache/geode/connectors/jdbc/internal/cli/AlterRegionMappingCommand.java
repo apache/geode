@@ -35,50 +35,48 @@ import org.apache.geode.management.internal.configuration.domain.XmlEntity;
 import org.apache.geode.management.internal.security.ResourceOperation;
 import org.apache.geode.security.ResourcePermission;
 
-public class CreateRegionMappingCommand implements GfshCommand {
+public class AlterRegionMappingCommand implements GfshCommand {
+  static final String ALTER_MAPPING = "alter jdbc-mapping";
+  static final String ALTER_MAPPING__HELP = "Alter properties for an existing jdbc mapping.";
 
-  static final String CREATE_MAPPING = "create jdbc-mapping";
-  static final String CREATE_MAPPING__HELP =
-      "Create a mapping for a region for use with a JDBC database connection.";
-  static final String CREATE_MAPPING__REGION_NAME = "region";
-  static final String CREATE_MAPPING__REGION_NAME__HELP =
-      "Name of the region the mapping is being created for.";
-  static final String CREATE_MAPPING__PDX_CLASS_NAME = "pdx-class-name";
-  static final String CREATE_MAPPING__PDX_CLASS_NAME__HELP =
-      "Name of pdx class for which values with be written to the database.";
-  static final String CREATE_MAPPING__TABLE_NAME = "table";
-  static final String CREATE_MAPPING__TABLE_NAME__HELP =
-      "Name of database table for values to be written to.";
-  static final String CREATE_MAPPING__CONNECTION_NAME = "connection";
-  static final String CREATE_MAPPING__CONNECTION_NAME__HELP = "Name of JDBC connection to use.";
-  static final String CREATE_MAPPING__PRIMARY_KEY_IN_VALUE = "primary-key-in-value";
-  static final String CREATE_MAPPING__PRIMARY_KEY_IN_VALUE__HELP =
+  static final String ALTER_MAPPING__REGION_NAME = "region";
+  static final String ALTER_MAPPING__REGION_NAME__HELP =
+      "Name of the region the mapping to be altered.";
+  static final String ALTER_MAPPING__PDX_CLASS_NAME = "pdx-class-name";
+  static final String ALTER_MAPPING__PDX_CLASS_NAME__HELP =
+      "Name of new pdx class for which values with be written to the database.";
+  static final String ALTER_MAPPING__TABLE_NAME = "table";
+  static final String ALTER_MAPPING__TABLE_NAME__HELP =
+      "Name of new database table for values to be written to.";
+  static final String ALTER_MAPPING__CONNECTION_NAME = "connection";
+  static final String ALTER_MAPPING__CONNECTION_NAME__HELP = "Name of new JDBC connection to use.";
+  static final String ALTER_MAPPING__PRIMARY_KEY_IN_VALUE = "primary-key-in-value";
+  static final String ALTER_MAPPING__PRIMARY_KEY_IN_VALUE__HELP =
       "If false, the entry value does not contain the data used for the database table's primary key, instead the entry key will be used for the primary key column value.";
-  static final String CREATE_MAPPING__FIELD_MAPPING = "field-mapping";
-  static final String CREATE_MAPPING__FIELD_MAPPING__HELP =
-      "Key value pairs of entry value fields to database columns.";
+  static final String ALTER_MAPPING__FIELD_MAPPING = "field-mapping";
+  static final String ALTER_MAPPING__FIELD_MAPPING__HELP =
+      "New key value pairs of entry value fields to database columns.";
 
   private static final String ERROR_PREFIX = "ERROR: ";
 
-  @CliCommand(value = CREATE_MAPPING, help = CREATE_MAPPING__HELP)
+  @CliCommand(value = ALTER_MAPPING, help = ALTER_MAPPING__HELP)
   @CliMetaData(relatedTopic = CliStrings.DEFAULT_TOPIC_GEODE)
   @ResourceOperation(resource = ResourcePermission.Resource.CLUSTER,
       operation = ResourcePermission.Operation.MANAGE)
-  public Result createMapping(
-      @CliOption(key = CREATE_MAPPING__REGION_NAME, mandatory = true,
-          help = CREATE_MAPPING__REGION_NAME__HELP) String regionName,
-      @CliOption(key = CREATE_MAPPING__CONNECTION_NAME, mandatory = true,
-          help = CREATE_MAPPING__CONNECTION_NAME__HELP) String connectionName,
-      @CliOption(key = CREATE_MAPPING__TABLE_NAME,
-          help = CREATE_MAPPING__TABLE_NAME__HELP) String table,
-      @CliOption(key = CREATE_MAPPING__PDX_CLASS_NAME,
-          help = CREATE_MAPPING__PDX_CLASS_NAME__HELP) String pdxClassName,
-      @CliOption(key = CREATE_MAPPING__PRIMARY_KEY_IN_VALUE,
-          help = CREATE_MAPPING__PRIMARY_KEY_IN_VALUE__HELP, unspecifiedDefaultValue = "true",
-          specifiedDefaultValue = "true") boolean keyInValue,
-      @CliOption(key = CREATE_MAPPING__FIELD_MAPPING,
-          help = CREATE_MAPPING__FIELD_MAPPING__HELP) String[] fieldMappings) {
-
+  public Result alterMapping(
+      @CliOption(key = ALTER_MAPPING__REGION_NAME, mandatory = true,
+          help = ALTER_MAPPING__REGION_NAME__HELP) String regionName,
+      @CliOption(key = ALTER_MAPPING__CONNECTION_NAME,
+          help = ALTER_MAPPING__CONNECTION_NAME__HELP) String connectionName,
+      @CliOption(key = ALTER_MAPPING__TABLE_NAME, help = ALTER_MAPPING__TABLE_NAME__HELP,
+          specifiedDefaultValue = "") String table,
+      @CliOption(key = ALTER_MAPPING__PDX_CLASS_NAME, help = ALTER_MAPPING__PDX_CLASS_NAME__HELP,
+          specifiedDefaultValue = "") String pdxClassName,
+      @CliOption(key = ALTER_MAPPING__PRIMARY_KEY_IN_VALUE,
+          help = ALTER_MAPPING__PRIMARY_KEY_IN_VALUE__HELP,
+          specifiedDefaultValue = "true") Boolean keyInValue,
+      @CliOption(key = ALTER_MAPPING__FIELD_MAPPING, help = ALTER_MAPPING__FIELD_MAPPING__HELP,
+          specifiedDefaultValue = "") String[] fieldMappings) {
     // input
     Set<DistributedMember> targetMembers = getMembers(null, null);
     RegionMapping mapping =
@@ -86,7 +84,7 @@ public class CreateRegionMappingCommand implements GfshCommand {
 
     // action
     ResultCollector<CliFunctionResult, List<CliFunctionResult>> resultCollector =
-        execute(new CreateRegionMappingFunction(), mapping, targetMembers);
+        execute(new AlterRegionMappingFunction(), mapping, targetMembers);
 
     // output
     TabularResultData tabularResultData = ResultBuilder.createTabularResultData();
@@ -96,20 +94,20 @@ public class CreateRegionMappingCommand implements GfshCommand {
     return result;
   }
 
-  RegionMapping getArguments(String regionName, String connectionName, String table,
-      String pdxClassName, boolean keyInValue, String[] fieldMappings) {
+  ResultCollector<CliFunctionResult, List<CliFunctionResult>> execute(
+      AlterRegionMappingFunction function, RegionMapping mapping,
+      Set<DistributedMember> targetMembers) {
+    return (ResultCollector<CliFunctionResult, List<CliFunctionResult>>) executeFunction(function,
+        mapping, targetMembers);
+  }
+
+  private RegionMapping getArguments(String regionName, String connectionName, String table,
+      String pdxClassName, Boolean keyInValue, String[] fieldMappings) {
     RegionMappingBuilder builder = new RegionMappingBuilder().withRegionName(regionName)
         .withConnectionConfigName(connectionName).withTableName(table)
         .withPdxClassName(pdxClassName).withPrimaryKeyInValue(keyInValue)
         .withFieldToColumnMappings(fieldMappings);
     return builder.build();
-  }
-
-  ResultCollector<CliFunctionResult, List<CliFunctionResult>> execute(
-      CreateRegionMappingFunction function, RegionMapping regionMapping,
-      Set<DistributedMember> targetMembers) {
-    return (ResultCollector<CliFunctionResult, List<CliFunctionResult>>) executeFunction(function,
-        regionMapping, targetMembers);
   }
 
   private XmlEntity fillTabularResultData(
