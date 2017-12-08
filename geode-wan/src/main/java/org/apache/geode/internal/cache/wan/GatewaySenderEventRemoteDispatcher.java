@@ -749,8 +749,8 @@ public class GatewaySenderEventRemoteDispatcher implements GatewaySenderEventDis
       // we need to destroy connection irrespective of we are listening on it or
       // not. No need to take lock as the reader thread may be blocked and we might not
       // get chance to destroy unless that returns.
-      if (connection != null) {
-        Connection conn = connection;
+      Connection conn = connection;
+      if (conn != null) {
         shutDownAckReaderConnection();
         if (!conn.isDestroyed()) {
           conn.destroy();
