@@ -36,6 +36,8 @@ import org.apache.geode.connectors.jdbc.internal.ConnectionConfiguration;
 import org.apache.geode.connectors.jdbc.internal.InternalJdbcConnectorService;
 import org.apache.geode.connectors.jdbc.internal.JdbcConnectorService;
 import org.apache.geode.connectors.jdbc.internal.RegionMapping;
+import org.apache.geode.connectors.jdbc.internal.RegionMappingBuilder;
+import org.apache.geode.connectors.jdbc.internal.RegionMappingExistsException;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.cache.xmlcache.CacheXmlGenerator;
 import org.apache.geode.test.junit.categories.IntegrationTest;
@@ -81,7 +83,8 @@ public class JdbcConnectorServiceXmlIntegrationTest {
         .isEqualTo(regionMapping2);
   }
 
-  private void configureService() throws ConnectionConfigExistsException {
+  private void configureService()
+      throws ConnectionConfigExistsException, RegionMappingExistsException {
     InternalJdbcConnectorService service = cache.getService(InternalJdbcConnectorService.class);
     config1 = new ConnectionConfigBuilder().withName("connection1").withUrl("url1")
         .withUser("username1").withPassword("secret1")
@@ -105,8 +108,8 @@ public class JdbcConnectorServiceXmlIntegrationTest {
     regionMappingBuilder1.withFieldToColumnMapping("fieldName4", "columnMapping4");
     regionMapping2 = regionMappingBuilder2.build();
 
-    service.addOrUpdateRegionMapping(regionMapping1);
-    service.addOrUpdateRegionMapping(regionMapping2);
+    service.createRegionMapping(regionMapping1);
+    service.createRegionMapping(regionMapping2);
   }
 
   private File generateXml() throws IOException {

@@ -14,10 +14,11 @@
  */
 package org.apache.geode.connectors.jdbc.internal;
 
+import java.io.Serializable;
 import java.util.Collections;
 import java.util.Map;
 
-public class RegionMapping {
+public class RegionMapping implements Serializable {
   private final String regionName;
   private final String pdxClassName;
   private final String tableName;

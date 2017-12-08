@@ -130,8 +130,8 @@ public class JdbcServiceConfigurationTest {
 
     configuration.onCreate(cache, cache);
 
-    verify(service, times(1)).addOrUpdateRegionMapping(mapping1);
-    verify(service, times(1)).addOrUpdateRegionMapping(mapping2);
+    verify(service, times(1)).createRegionMapping(mapping1);
+    verify(service, times(1)).createRegionMapping(mapping2);
   }
 
 }

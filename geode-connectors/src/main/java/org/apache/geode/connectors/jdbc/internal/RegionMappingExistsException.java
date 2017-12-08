@@ -14,27 +14,17 @@
  */
 package org.apache.geode.connectors.jdbc.internal;
 
-import java.util.Set;
+public class RegionMappingExistsException extends Exception {
 
-import org.apache.geode.cache.Cache;
-import org.apache.geode.internal.cache.CacheService;
-import org.apache.geode.internal.cache.extension.Extension;
+  public RegionMappingExistsException() {
+    super();
+  }
 
-public interface InternalJdbcConnectorService extends Extension<Cache>, CacheService {
+  public RegionMappingExistsException(String message) {
+    super(message);
+  }
 
-  void createConnectionConfig(ConnectionConfiguration config)
-      throws ConnectionConfigExistsException;
-
-  void replaceConnectionConfig(ConnectionConfiguration config)
-      throws ConnectionConfigNotFoundException;
-
-  void destroyConnectionConfig(String connectionName);
-
-  ConnectionConfiguration getConnectionConfig(String connectionName);
-
-  Set<ConnectionConfiguration> getConnectionConfigs();
-
-  void createRegionMapping(RegionMapping mapping) throws RegionMappingExistsException;
-
-  RegionMapping getMappingForRegion(String regionName);
+  public RegionMappingExistsException(String message, Throwable cause) {
+    super(message, cause);
+  }
 }

@@ -32,14 +32,15 @@ public class TestConfigService {
   private static final String CONNECTION_URL = "jdbc:derby:memory:" + DB_NAME + ";create=true";
   private static final String CONNECTION_CONFIG_NAME = "testConnectionConfig";
 
-  public static JdbcConnectorService getTestConfigService() throws ConnectionConfigExistsException {
+  public static JdbcConnectorService getTestConfigService()
+      throws ConnectionConfigExistsException, RegionMappingExistsException {
     InternalCache cache = mock(InternalCache.class);
     when(cache.getExtensionPoint()).thenReturn(mock(ExtensionPoint.class));
 
     JdbcConnectorService service = new JdbcConnectorService();
     service.init(cache);
     service.createConnectionConfig(createConnectionConfig());
-    service.addOrUpdateRegionMapping(createRegionMapping());
+    service.createRegionMapping(createRegionMapping());
     return service;
   }
 

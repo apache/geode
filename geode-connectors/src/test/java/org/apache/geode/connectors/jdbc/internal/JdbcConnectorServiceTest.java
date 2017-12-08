@@ -91,7 +91,7 @@ public class JdbcConnectorServiceTest {
 
   @Test
   public void returnsCorrectMapping() throws Exception {
-    service.addOrUpdateRegionMapping(mapping);
+    service.createRegionMapping(mapping);
 
     assertThat(service.getMappingForRegion(TEST_REGION_NAME)).isSameAs(mapping);
   }
@@ -99,7 +99,7 @@ public class JdbcConnectorServiceTest {
   @Test
   public void doesNotReturnMappingForDifferentRegion() throws Exception {
     when(mapping.getRegionName()).thenReturn("theOtherMapping");
-    service.addOrUpdateRegionMapping(mapping);
+    service.createRegionMapping(mapping);
 
     assertThat(service.getMappingForRegion(TEST_REGION_NAME)).isNull();
   }

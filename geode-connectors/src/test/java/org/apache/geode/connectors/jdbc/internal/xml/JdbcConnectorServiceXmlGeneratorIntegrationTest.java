@@ -56,6 +56,7 @@ import org.apache.geode.connectors.jdbc.internal.ConnectionConfigBuilder;
 import org.apache.geode.connectors.jdbc.internal.ConnectionConfiguration;
 import org.apache.geode.connectors.jdbc.internal.InternalJdbcConnectorService;
 import org.apache.geode.connectors.jdbc.internal.RegionMapping;
+import org.apache.geode.connectors.jdbc.internal.RegionMappingBuilder;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.cache.xmlcache.CacheXmlGenerator;
 import org.apache.geode.test.junit.categories.IntegrationTest;
@@ -132,7 +133,7 @@ public class JdbcConnectorServiceXmlGeneratorIntegrationTest {
     regionMappingBuilder.withFieldToColumnMapping("fieldName1", "columnMapping1");
     regionMappingBuilder.withFieldToColumnMapping("fieldName2", "columnMapping2");
     RegionMapping regionMapping = regionMappingBuilder.build();
-    service.addOrUpdateRegionMapping(regionMapping);
+    service.createRegionMapping(regionMapping);
 
     generateXml();
 
@@ -179,7 +180,7 @@ public class JdbcConnectorServiceXmlGeneratorIntegrationTest {
         .withPdxClassName("class").withTableName("table").withConnectionConfigName("connection")
         .withPrimaryKeyInValue(true).withFieldToColumnMapping("field1", "columnMapping1")
         .withFieldToColumnMapping("field2", "columnMapping2").build();
-    service.addOrUpdateRegionMapping(mapping);
+    service.createRegionMapping(mapping);
     generateXml();
     cache.close();
 
@@ -200,7 +201,7 @@ public class JdbcConnectorServiceXmlGeneratorIntegrationTest {
         .withPdxClassName("class").withTableName("table").withConnectionConfigName("connection")
         .withPrimaryKeyInValue(true).withFieldToColumnMapping("field1", "columnMapping1")
         .withFieldToColumnMapping("field2", "columnMapping2").build();
-    service.addOrUpdateRegionMapping(mapping);
+    service.createRegionMapping(mapping);
     generateXml();
     cache.close();
 

@@ -22,6 +22,7 @@ import org.apache.geode.cache.CacheXmlException;
 import org.apache.geode.connectors.jdbc.internal.ConnectionConfigBuilder;
 import org.apache.geode.connectors.jdbc.internal.ConnectionConfiguration;
 import org.apache.geode.connectors.jdbc.internal.RegionMapping;
+import org.apache.geode.connectors.jdbc.internal.RegionMappingBuilder;
 import org.apache.geode.internal.cache.xmlcache.CacheCreation;
 
 public enum ElementType {

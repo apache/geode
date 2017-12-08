@@ -20,6 +20,7 @@ import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
 import org.apache.geode.connectors.jdbc.internal.RegionMapping;
+import org.apache.geode.connectors.jdbc.internal.RegionMappingBuilder;
 import org.apache.geode.test.junit.categories.UnitTest;
 
 @Category(UnitTest.class)
@@ -49,5 +50,15 @@ public class RegionMappingBuilderTest {
     assertThat(regionMapping.getConnectionConfigName()).isEqualTo("configName");
     assertThat(regionMapping.isPrimaryKeyInValue()).isTrue();
     assertThat(regionMapping.getColumnNameForField("fieldName")).isEqualTo("columnName");
+  }
+
+  @Test
+  public void createsFieldMappingsFromArray() {
+    String[] fieldMappings = new String[] {"field1:column1", "field2:column2"};
+    RegionMapping regionMapping =
+        new RegionMappingBuilder().withFieldToColumnMappings(fieldMappings).build();
+
+    assertThat(regionMapping.getColumnNameForField("field1")).isEqualTo("column1");
+    assertThat(regionMapping.getColumnNameForField("field2")).isEqualTo("column2");
   }
 }

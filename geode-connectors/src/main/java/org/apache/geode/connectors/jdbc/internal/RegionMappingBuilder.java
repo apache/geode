@@ -12,15 +12,14 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
-package org.apache.geode.connectors.jdbc.internal.xml;
+package org.apache.geode.connectors.jdbc.internal;
 
 import java.util.HashMap;
 import java.util.Map;
 
-import org.apache.geode.connectors.jdbc.internal.RegionMapping;
+public class RegionMappingBuilder {
 
-class RegionMappingBuilder {
-
+  private static final String MAPPINGS_DELIMITER = ":";
   private String regionName;
   private String pdxClassName;
   private String tableName;
@@ -28,43 +27,53 @@ class RegionMappingBuilder {
   private boolean primaryKeyInValue;
   private final Map<String, String> fieldToColumnMap = new HashMap<>();
 
-  RegionMappingBuilder withRegionName(String regionName) {
+  public RegionMappingBuilder withRegionName(String regionName) {
     this.regionName = regionName;
     return this;
   }
 
-  RegionMappingBuilder withPdxClassName(String pdxClassName) {
+  public RegionMappingBuilder withPdxClassName(String pdxClassName) {
     this.pdxClassName = pdxClassName;
     return this;
   }
 
-  RegionMappingBuilder withTableName(String tableName) {
+  public RegionMappingBuilder withTableName(String tableName) {
     this.tableName = tableName;
     return this;
   }
 
-  RegionMappingBuilder withConnectionConfigName(String connectionConfigName) {
+  public RegionMappingBuilder withConnectionConfigName(String connectionConfigName) {
     this.connectionConfigName = connectionConfigName;
     return this;
   }
 
   // TODO: delete withPrimaryKeyInValue(String)
-  RegionMappingBuilder withPrimaryKeyInValue(String primaryKeyInValue) {
+  public RegionMappingBuilder withPrimaryKeyInValue(String primaryKeyInValue) {
     this.primaryKeyInValue = Boolean.parseBoolean(primaryKeyInValue);
     return this;
   }
 
-  RegionMappingBuilder withPrimaryKeyInValue(boolean primaryKeyInValue) {
+  public RegionMappingBuilder withPrimaryKeyInValue(boolean primaryKeyInValue) {
     this.primaryKeyInValue = primaryKeyInValue;
     return this;
   }
 
-  RegionMappingBuilder withFieldToColumnMapping(String fieldName, String columnMapping) {
+  public RegionMappingBuilder withFieldToColumnMapping(String fieldName, String columnMapping) {
     this.fieldToColumnMap.put(fieldName, columnMapping);
     return this;
   }
 
-  RegionMapping build() {
+  public RegionMappingBuilder withFieldToColumnMappings(String[] mappings) {
+    for (String mapping : mappings) {
+      String[] keyValuePair = mapping.split(MAPPINGS_DELIMITER);
+      if (keyValuePair.length == 2) {
+        fieldToColumnMap.put(keyValuePair[0], keyValuePair[1]);
+      }
+    }
+    return this;
+  }
+
+  public RegionMapping build() {
     return new RegionMapping(regionName, pdxClassName, tableName, connectionConfigName,
         primaryKeyInValue, fieldToColumnMap);
   }
