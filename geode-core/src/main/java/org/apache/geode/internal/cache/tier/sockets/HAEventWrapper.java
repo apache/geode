@@ -31,12 +31,12 @@ import org.apache.geode.internal.Version;
 import org.apache.geode.internal.cache.Conflatable;
 import org.apache.geode.internal.cache.EnumListenerEvent;
 import org.apache.geode.internal.cache.EventID;
-import org.apache.geode.internal.cache.lru.Sizeable;
 import org.apache.geode.internal.cache.tier.sockets.ClientUpdateMessageImpl.ClientCqConcurrentMap;
 import org.apache.geode.internal.cache.tier.sockets.ClientUpdateMessageImpl.CqNameToOp;
 import org.apache.geode.internal.cache.tier.sockets.ClientUpdateMessageImpl.CqNameToOpHashMap;
 import org.apache.geode.internal.cache.tier.sockets.ClientUpdateMessageImpl.CqNameToOpSingleEntry;
 import org.apache.geode.internal.logging.LogService;
+import org.apache.geode.internal.size.Sizeable;
 
 /**
  * This new class acts as a wrapper for the existing <code>ClientUpdateMessageImpl</code>. Now, the

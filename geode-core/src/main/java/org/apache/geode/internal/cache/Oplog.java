@@ -85,8 +85,8 @@ import org.apache.geode.internal.cache.backup.BackupManager;
 import org.apache.geode.internal.cache.entries.DiskEntry;
 import org.apache.geode.internal.cache.entries.DiskEntry.Helper.Flushable;
 import org.apache.geode.internal.cache.entries.DiskEntry.Helper.ValueWrapper;
-import org.apache.geode.internal.cache.lru.EnableLRU;
-import org.apache.geode.internal.cache.lru.NewLRUClockHand;
+import org.apache.geode.internal.cache.eviction.EvictionController;
+import org.apache.geode.internal.cache.eviction.EvictionList;
 import org.apache.geode.internal.cache.persistence.BytesAndBits;
 import org.apache.geode.internal.cache.persistence.DiskRecoveryStore;
 import org.apache.geode.internal.cache.persistence.DiskRegionView;
@@ -7074,7 +7074,7 @@ public class Oplog implements CompactableOplog, Flushable {
     }
 
     @Override
-    public int updateAsyncEntrySize(EnableLRU capacityController) {
+    public int updateAsyncEntrySize(EvictionController capacityController) {
       throw new IllegalStateException();
     }
 
@@ -7150,7 +7150,7 @@ public class Oplog implements CompactableOplog, Flushable {
     }
 
     @Override
-    public void setRecentlyUsed() {
+    public void setRecentlyUsed(RegionEntryContext context) {
       // nothing
     }
 
@@ -7363,22 +7363,17 @@ public class Oplog implements CompactableOplog, Flushable {
     }
 
     @Override
-    public void setInUseByTransaction(boolean inUseByTransaction) {
-      // nothing
-    }
-
-    @Override
     public void incRefCount() {
       // nothing
     }
 
     @Override
-    public void decRefCount(NewLRUClockHand lruList, InternalRegion region) {
+    public void decRefCount(EvictionList lruList, InternalRegion region) {
       // nothing
     }
 
     @Override
-    public void resetRefCount(NewLRUClockHand lruList) {
+    public void resetRefCount(EvictionList lruList) {
       // nothing
     }
 

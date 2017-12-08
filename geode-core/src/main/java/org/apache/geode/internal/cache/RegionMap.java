@@ -27,7 +27,7 @@ import org.apache.geode.cache.TransactionId;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
 import org.apache.geode.internal.cache.AbstractRegionMap.ARMLockTestHook;
 import org.apache.geode.internal.cache.entries.DiskEntry;
-import org.apache.geode.internal.cache.lru.LRUMapCallbacks;
+import org.apache.geode.internal.cache.eviction.EvictableMap;
 import org.apache.geode.internal.cache.tier.sockets.ClientProxyMembershipID;
 import org.apache.geode.internal.cache.versions.RegionVersionVector;
 import org.apache.geode.internal.cache.versions.VersionHolder;
@@ -40,7 +40,7 @@ import org.apache.geode.internal.cache.versions.VersionTag;
  *
  * @since GemFire 3.5.1
  */
-public interface RegionMap extends LRUMapCallbacks {
+public interface RegionMap extends EvictableMap {
 
   /**
    * Parameter object used to facilitate construction of an EntriesMap. Modification of fields after
@@ -353,4 +353,8 @@ public interface RegionMap extends LRUMapCallbacks {
   default void unlockRegionForAtomicTX(LocalRegion r) {}
 
   ARMLockTestHook getARMLockTestHook();
+
+  long getEvictions();
+
+  void incRecentlyUsed();
 }

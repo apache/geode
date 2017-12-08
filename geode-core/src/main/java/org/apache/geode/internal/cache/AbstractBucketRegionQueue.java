@@ -23,7 +23,7 @@ import org.apache.logging.log4j.Logger;
 
 import org.apache.geode.cache.*;
 import org.apache.geode.distributed.internal.DistributionConfig;
-import org.apache.geode.internal.cache.lru.LRUStatistics;
+import org.apache.geode.internal.cache.eviction.EvictionStatistics;
 import org.apache.geode.internal.cache.versions.RegionVersionVector;
 import org.apache.geode.internal.cache.versions.VersionSource;
 import org.apache.geode.internal.cache.wan.AbstractGatewaySender;
@@ -49,7 +49,7 @@ public abstract class AbstractBucketRegionQueue extends BucketRegion {
   private final long throttleTime =
       Long.getLong(DistributionConfig.GEMFIRE_PREFIX + "GATEWAY_QUEUE_THROTTLE_TIME_MS", 100);
 
-  private final LRUStatistics stats;
+  private final EvictionStatistics stats;
 
   private final ReentrantReadWriteLock initializationLock = new ReentrantReadWriteLock();
 

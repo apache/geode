@@ -1,3 +1,5 @@
+
+
 /*
  * Licensed to the Apache Software Foundation (ASF) under one or more contributor license
  * agreements. See the NOTICE file distributed with this work for additional information regarding
@@ -53,7 +55,7 @@ public class VMStatsRegionEntryHeapStringKey2 extends VMStatsRegionEntryHeap {
       AtomicIntegerFieldUpdater.newUpdater(VMStatsRegionEntryHeapStringKey2.class, "hitCount");
   private static final AtomicIntegerFieldUpdater<VMStatsRegionEntryHeapStringKey2> MISS_COUNT_UPDATER =
       AtomicIntegerFieldUpdater.newUpdater(VMStatsRegionEntryHeapStringKey2.class, "missCount");
-  // ----------------------------------------- key code -------------------------------------------
+  // --------------------------------------- key fields -------------------------------------------
   // DO NOT modify this class. It was generated from LeafRegionEntry.cpp
   /**
    * strlen is encoded in lowest 6 bits (max strlen is 63)<br>

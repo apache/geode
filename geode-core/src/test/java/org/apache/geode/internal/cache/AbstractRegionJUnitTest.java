@@ -639,6 +639,18 @@ public class AbstractRegionJUnitTest {
     }
 
     @Override
+    public long getEvictions() {
+      throw new UnsupportedOperationException();
+    }
+
+    @Override
+    public Region createSubregion(String subregionName, RegionAttributes attrs,
+        InternalRegionArguments internalRegionArgs)
+        throws RegionExistsException, TimeoutException, IOException, ClassNotFoundException {
+      throw new UnsupportedOperationException();
+    }
+
+    @Override
     protected boolean isCurrentlyLockGrantor() {
       throw new UnsupportedOperationException();
     }

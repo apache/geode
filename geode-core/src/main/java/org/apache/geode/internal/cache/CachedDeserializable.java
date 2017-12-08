@@ -20,8 +20,7 @@ import java.io.IOException;
 
 import org.apache.geode.DataSerializer;
 import org.apache.geode.cache.Region;
-import org.apache.geode.internal.DataSerializableFixedID;
-import org.apache.geode.internal.cache.lru.Sizeable;
+import org.apache.geode.internal.size.Sizeable;
 import org.apache.geode.internal.util.BlobHelper;
 
 /**
