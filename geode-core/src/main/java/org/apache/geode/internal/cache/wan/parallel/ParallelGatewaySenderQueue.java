@@ -1787,14 +1787,17 @@ public class ParallelGatewaySenderQueue implements RegionQueue {
 
   public void clearQueue() {
 
-    this.sender.pause();// it wil take internal read-write-lock
+    
+    this.sender.getLifeCycleLock().writeLock().lock(); //no one will held this lock , only current
+    this.sender.pause(); //internal it will take write lock- so only one thread will held the lock
     try {
       for (PartitionedRegion prQ : this.userRegionNameToshadowPRMap.values()) {
         clearPartitionedRegion((PartitionedRegion) prQ);
       }
     } finally {
-      if (this.sender.isPaused())
-        this.sender.resume();
+    	if (this.sender.isPaused())
+    	   this.sender.resume(); //internal it will take write lock- so only one thread will held the lock
+    	this.sender.getLifeCycleLock().writeLock().unlock(); //no one will held this lock , only current
     }
   }
 
@@ -1806,7 +1809,9 @@ public class ParallelGatewaySenderQueue implements RegionQueue {
       Bucket bucket = partitionedRegion.getRegionAdvisor().getBucket(bucketId);
       if ((bucket instanceof ProxyBucketRegion == false) && bucket instanceof BucketRegion) {
         BucketRegion bucketRegion = (BucketRegion) bucket;
-        clearBucketRegion(bucketRegion);
+        ((BucketRegionQueue) bucketRegion).getInitializationLock().readLock().lock();
+         clearBucketRegion(bucketRegion);
+        ((BucketRegionQueue) bucketRegion).getInitializationLock().readLock().unlock();
       }
     }
   }
