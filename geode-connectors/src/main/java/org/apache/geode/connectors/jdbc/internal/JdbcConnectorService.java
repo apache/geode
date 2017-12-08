@@ -105,6 +105,12 @@ public class JdbcConnectorService implements InternalJdbcConnectorService {
   }
 
   @Override
+  public void destroyRegionMapping(String regionName) {
+    registerAsExtension();
+    mappingsByRegion.remove(regionName);
+  }
+
+  @Override
   public void init(Cache cache) {
     this.cache = (InternalCache) cache;
   }

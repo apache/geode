@@ -27,5 +27,4 @@ public class RegionMappingNotFoundException extends Exception {
   public RegionMappingNotFoundException(String message, Throwable cause) {
     super(message, cause);
   }
-
 }

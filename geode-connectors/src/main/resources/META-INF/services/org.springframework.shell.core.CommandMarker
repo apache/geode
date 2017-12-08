@@ -22,3 +22,4 @@ org.apache.geode.connectors.jdbc.internal.cli.DescribeConnectionCommand
 org.apache.geode.connectors.jdbc.internal.cli.AlterConnectionCommand
 org.apache.geode.connectors.jdbc.internal.cli.CreateRegionMappingCommand
 org.apache.geode.connectors.jdbc.internal.cli.AlterRegionMappingCommand
+org.apache.geode.connectors.jdbc.internal.cli.DestroyRegionMappingCommand
