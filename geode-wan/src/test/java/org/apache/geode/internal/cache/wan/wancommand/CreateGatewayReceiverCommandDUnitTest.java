@@ -84,30 +84,6 @@ public class CreateGatewayReceiverCommandDUnitTest {
   }
 
   /**
-   * GatewayReceiver with given attributes. Error scenario where startPort is greater than endPort.
-   */
-  @Test
-  public void testCreateGatewayReceiverErrorOnInvalidPortRange() throws Exception {
-    Integer locator1Port = locatorSite1.getPort();
-    server1 = locatorServerStartupRule.startServerVM(3, locator1Port);
-    server2 = locatorServerStartupRule.startServerVM(4, locator1Port);
-    server3 = locatorServerStartupRule.startServerVM(5, locator1Port);
-
-    String command =
-        CliStrings.CREATE_GATEWAYRECEIVER + " --" + CliStrings.CREATE_GATEWAYRECEIVER__BINDADDRESS
-            + "=localhost" + " --" + CliStrings.CREATE_GATEWAYRECEIVER__STARTPORT + "=11000" + " --"
-            + CliStrings.CREATE_GATEWAYRECEIVER__ENDPORT + "=10000" + " --"
-            + CliStrings.CREATE_GATEWAYRECEIVER__MAXTIMEBETWEENPINGS + "=100000" + " --"
-            + CliStrings.CREATE_GATEWAYRECEIVER__SOCKETBUFFERSIZE + "=512000";
-    gfsh.executeAndAssertThat(command).statusIsSuccess()
-        .tableHasColumnWithExactValuesInAnyOrder("Member", "server-3", "server-4", "server-5")
-        .tableHasColumnWithExactValuesInAnyOrder("Status",
-            "ERROR: Please specify either start port a value which is less than end port.",
-            "ERROR: Please specify either start port a value which is less than end port.",
-            "ERROR: Please specify either start port a value which is less than end port.");
-  }
-
-  /**
    * GatewayReceiver with given attributes. Error scenario where the user tries to create more than
    * one receiver per member.
    */
@@ -138,12 +114,12 @@ public class CreateGatewayReceiverCommandDUnitTest {
     }, server1, server2, server3);
 
     // This should fail as there's already a gateway receiver created on the member.
-    gfsh.executeAndAssertThat(command).statusIsSuccess()
+    gfsh.executeAndAssertThat(command).statusIsError()
         .tableHasColumnWithExactValuesInAnyOrder("Member", "server-3", "server-4", "server-5")
         .tableHasColumnWithExactValuesInAnyOrder("Status",
-            "ERROR: A Gateway Receiver already exists on this member.",
-            "ERROR: A Gateway Receiver already exists on this member.",
-            "ERROR: A Gateway Receiver already exists on this member.");
+            "ERROR: java.lang.IllegalStateException: A Gateway Receiver already exists on this member.",
+            "ERROR: java.lang.IllegalStateException: A Gateway Receiver already exists on this member.",
+            "ERROR: java.lang.IllegalStateException: A Gateway Receiver already exists on this member.");
   }
 
   /**

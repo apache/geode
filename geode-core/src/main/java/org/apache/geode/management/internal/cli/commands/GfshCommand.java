@@ -16,6 +16,7 @@ package org.apache.geode.management.internal.cli.commands;
 
 import java.util.Collections;
 import java.util.List;
+import java.util.Objects;
 import java.util.Set;
 
 import org.springframework.shell.core.CommandMarker;
@@ -37,6 +38,7 @@ import org.apache.geode.management.internal.cli.exceptions.EntityNotFoundExcepti
 import org.apache.geode.management.internal.cli.functions.CliFunctionResult;
 import org.apache.geode.management.internal.cli.i18n.CliStrings;
 import org.apache.geode.management.internal.cli.shell.Gfsh;
+import org.apache.geode.management.internal.configuration.domain.XmlEntity;
 
 /**
  * Encapsulates common functionality for implementing command classes for the Geode shell (gfsh).
@@ -68,6 +70,11 @@ public interface GfshCommand extends CommandMarker {
       runnable.run();
       result.setCommandPersisted(true);
     }
+  }
+
+  default XmlEntity findXmlEntity(List<CliFunctionResult> functionResults) {
+    return functionResults.stream().filter(CliFunctionResult::isSuccessful)
+        .map(CliFunctionResult::getXmlEntity).filter(Objects::nonNull).findFirst().orElse(null);
   }
 
   default boolean isDebugging() {

@@ -22,7 +22,6 @@ import org.apache.logging.log4j.Logger;
 import org.springframework.shell.core.annotation.CliCommand;
 import org.springframework.shell.core.annotation.CliOption;
 
-import org.apache.geode.cache.execute.ResultCollector;
 import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.management.cli.CliMetaData;
@@ -32,8 +31,8 @@ import org.apache.geode.management.internal.cli.functions.CliFunctionResult;
 import org.apache.geode.management.internal.cli.functions.GatewaySenderDestroyFunction;
 import org.apache.geode.management.internal.cli.functions.GatewaySenderDestroyFunctionArgs;
 import org.apache.geode.management.internal.cli.i18n.CliStrings;
+import org.apache.geode.management.internal.cli.result.CommandResult;
 import org.apache.geode.management.internal.cli.result.ResultBuilder;
-import org.apache.geode.management.internal.cli.result.TabularResultData;
 import org.apache.geode.management.internal.security.ResourceOperation;
 import org.apache.geode.security.ResourcePermission;
 
@@ -63,25 +62,11 @@ public class DestroyGatewaySenderCommand implements GfshCommand {
 
     Set<DistributedMember> members = getMembers(onGroups, onMember);
 
-    ResultCollector<?, ?> resultCollector = executeFunction(GatewaySenderDestroyFunction.INSTANCE,
-        gatewaySenderDestroyFunctionArgs, members);
+    List<CliFunctionResult> functionResults = executeAndGetFunctionResult(
+        GatewaySenderDestroyFunction.INSTANCE, gatewaySenderDestroyFunctionArgs, members);
 
-    List<CliFunctionResult> functionResults = (List<CliFunctionResult>) resultCollector.getResult();
+    CommandResult result = ResultBuilder.buildResult(functionResults);
 
-    TabularResultData tabularResultData = ResultBuilder.createTabularResultData();
-    boolean errorOccurred = false;
-    for (CliFunctionResult functionResult : functionResults) {
-      tabularResultData.accumulate("Member", functionResult.getMemberIdOrName());
-      if (functionResult.isSuccessful()) {
-        tabularResultData.accumulate("Status", functionResult.getMessage());
-      } else {
-        // if result has exception, it will be logged by the server before throwing it.
-        // so we don't need to log it here anymore.
-        tabularResultData.accumulate("Status", "ERROR: " + functionResult.getErrorMessage());
-        errorOccurred = true;
-      }
-    }
-    tabularResultData.setStatus(errorOccurred ? Result.Status.ERROR : Result.Status.OK);
-    return ResultBuilder.buildResult(tabularResultData);
+    return result;
   }
 }

@@ -36,6 +36,7 @@ import org.mockito.ArgumentCaptor;
 import org.apache.geode.cache.execute.ResultCollector;
 import org.apache.geode.cache.query.IndexType;
 import org.apache.geode.distributed.DistributedMember;
+import org.apache.geode.management.internal.cli.domain.IndexInfo;
 import org.apache.geode.management.internal.cli.result.CommandResult;
 import org.apache.geode.test.junit.categories.UnitTest;
 import org.apache.geode.test.junit.rules.GfshParserRule;
@@ -54,7 +55,8 @@ public class CreateIndexCommandTest {
     command = spy(CreateIndexCommand.class);
     rc = mock(ResultCollector.class);
     when(rc.getResult()).thenReturn(Collections.emptyList());
-    doReturn(rc).when(command).createIndexOnMember(any(), any(), any(), any(), any());
+    doReturn(Collections.emptyList()).when(command).executeAndGetFunctionResult(any(), any(),
+        any());
   }
 
   @Test
@@ -120,14 +122,14 @@ public class CreateIndexCommandTest {
     DistributedMember member = mock(DistributedMember.class);
     doReturn(Collections.singleton(member)).when(command).findMembers(any(), any());
 
-    ArgumentCaptor<IndexType> indexTypeCaptor = ArgumentCaptor.forClass(IndexType.class);
-    result = gfshParser.executeCommandWithInstance(command,
+    ArgumentCaptor<IndexInfo> indexTypeCaptor = ArgumentCaptor.forClass(IndexInfo.class);
+    gfshParser.executeAndAssertThat(command,
         "create index --name=abc --expression=abc --region=abc");
 
-    verify(command).createIndexOnMember(eq("abc"), eq("abc"), eq("/abc"), indexTypeCaptor.capture(),
+    verify(command).executeAndGetFunctionResult(any(), indexTypeCaptor.capture(),
         eq(Collections.singleton(member)));
 
-    assertThat(indexTypeCaptor.getValue()).isEqualTo(IndexType.FUNCTIONAL);
+    assertThat(indexTypeCaptor.getValue().getIndexType()).isEqualTo(IndexType.FUNCTIONAL);
   }
 
 
