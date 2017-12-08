@@ -21,7 +21,6 @@
 syntax = "proto3";
 package org.apache.geode.internal.protocol.protobuf.v1;
 
-import "google/protobuf/any.proto";
 import "v1/region_API.proto";
 import "v1/locator_API.proto";
 import "v1/basicTypes.proto";
@@ -47,7 +46,6 @@ message Request {
         GetRegionRequest getRegionRequest = 42;
 
         AuthenticationRequest authenticationRequest = 100;
-        HandshakeRequest handshakeRequest = 101;
     }
 }
 
@@ -64,7 +62,6 @@ message Response {
         GetRegionResponse getRegionResponse = 42;
 
         AuthenticationResponse authenticationResponse = 100;
-        HandshakeResponse handshakeResponse = 101;
 
         ErrorResponse errorResponse = 1000;
     }

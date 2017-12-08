@@ -27,7 +27,6 @@ import org.apache.geode.internal.protocol.protobuf.v1.operations.GetAvailableSer
 import org.apache.geode.internal.protocol.protobuf.v1.operations.GetRegionNamesRequestOperationHandler;
 import org.apache.geode.internal.protocol.protobuf.v1.operations.GetRegionRequestOperationHandler;
 import org.apache.geode.internal.protocol.protobuf.v1.operations.GetRequestOperationHandler;
-import org.apache.geode.internal.protocol.protobuf.v1.operations.HandshakeRequestOperationHandler;
 import org.apache.geode.internal.protocol.protobuf.v1.operations.PutAllRequestOperationHandler;
 import org.apache.geode.internal.protocol.protobuf.v1.operations.PutRequestOperationHandler;
 import org.apache.geode.internal.protocol.protobuf.v1.operations.RemoveRequestOperationHandler;
@@ -109,13 +108,6 @@ public class ProtobufOperationContextRegistry {
             new GetAvailableServersOperationHandler(),
             opsResp -> ClientProtocol.Response.newBuilder().setGetAvailableServersResponse(opsResp),
             new ResourcePermission(ResourcePermission.Resource.CLUSTER,
-                ResourcePermission.Operation.READ)));
-
-    operationContexts.put(RequestAPICase.HANDSHAKEREQUEST,
-        new ProtobufOperationContext<>(ClientProtocol.Request::getHandshakeRequest,
-            new HandshakeRequestOperationHandler(),
-            opsResp -> ClientProtocol.Response.newBuilder().setHandshakeResponse(opsResp),
-            new ResourcePermission(ResourcePermission.Resource.DATA,
                 ResourcePermission.Operation.READ)));
   }
 }

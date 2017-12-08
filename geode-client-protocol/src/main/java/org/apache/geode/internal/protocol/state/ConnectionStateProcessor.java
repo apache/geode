@@ -14,6 +14,10 @@
  */
 package org.apache.geode.internal.protocol.state;
 
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
+
 import org.apache.geode.internal.protocol.MessageExecutionContext;
 import org.apache.geode.internal.protocol.OperationContext;
 import org.apache.geode.internal.protocol.ProtocolErrorCode;
@@ -48,15 +52,14 @@ public interface ConnectionStateProcessor {
   }
 
   /**
-   * This indicates whether this specific state processor is able to handle handshake requests.
+   * Allow the state processor to take over the entire processing of a given message.
    *
-   * @return specialized ConnectionHandshakingStateProcessor interface implementation which can move
-   *         to a new state
-   * @throws ConnectionStateException if unable to handle handshakes in this state.
+   * @return - True if the message has been handled by the state processor, false to continue normal
+   *         processing.
    */
-  default ConnectionHandshakingStateProcessor allowHandshake() throws ConnectionStateException {
-    throw new ConnectionStateException(ProtocolErrorCode.UNSUPPORTED_OPERATION,
-        "Requested operation not allowed at this time");
+  default boolean handleMessageIndependently(InputStream inputStream, OutputStream outputStream,
+      MessageExecutionContext executionContext) throws IOException {
+    return false;
   }
 
   /**
