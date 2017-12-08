@@ -90,18 +90,4 @@ public class RegionMBeanAttributesTest {
     eventQueueIds = bean.listRegionAttributes().getEventQueueIds();
     assertThat(eventQueueIds).containsExactly("");
   }
-
-  @Test
-  public void regionMBeanContainsGatewaySenderId() throws Exception {
-    gfsh.executeAndAssertThat("create gateway-sender --id=SENDER1 --remote-distributed-system-id=1")
-        .statusIsSuccess();
-
-    server.waitTilGatewaySendersAreReady(1);
-
-    bean = mBeanRule.getProxyMBean(RegionMXBean.class);
-
-    assertThat(bean).isNotNull();
-    Set<String> gatewaySenderIds = bean.listRegionAttributes().getGatewaySenderIds();
-    assertThat(gatewaySenderIds).containsExactly("");
-  }
 }
