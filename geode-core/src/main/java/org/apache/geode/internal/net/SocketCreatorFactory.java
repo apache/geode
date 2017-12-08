@@ -52,14 +52,14 @@ public class SocketCreatorFactory {
     return distributionConfig;
   }
 
-  private synchronized static SocketCreatorFactory getInstance(boolean closing) {
+  private static synchronized SocketCreatorFactory getInstance(boolean closing) {
     if (instance == null && !closing) {
       instance = new SocketCreatorFactory();
     }
     return instance;
   }
 
-  private synchronized static SocketCreatorFactory getInstance() {
+  private static synchronized SocketCreatorFactory getInstance() {
     return getInstance(false);
   }
 
@@ -126,7 +126,7 @@ public class SocketCreatorFactory {
 
   /**
    * This a legacy SocketCreator initializer.
-   * 
+   *
    * @param useSSL
    * @param needClientAuth
    * @param protocols

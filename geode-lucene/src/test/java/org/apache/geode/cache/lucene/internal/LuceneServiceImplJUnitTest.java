@@ -15,20 +15,26 @@
 package org.apache.geode.cache.lucene.internal;
 
 import static org.junit.Assert.*;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.mock;
 
 import java.lang.reflect.Field;
 import java.util.Collections;
 import java.util.concurrent.TimeUnit;
 
-import org.apache.geode.cache.Region;
-import org.apache.geode.internal.cache.GemFireCacheImpl;
-import org.apache.geode.test.junit.categories.UnitTest;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 import org.junit.rules.ExpectedException;
+import org.mockito.Mockito;
+
+import org.apache.geode.cache.Region;
+import org.apache.geode.cache.lucene.LuceneIndexFactory;
+import org.apache.geode.cache.lucene.LuceneSerializer;
+import org.apache.geode.internal.cache.GemFireCacheImpl;
+import org.apache.geode.test.junit.categories.UnitTest;
 
 @Category(UnitTest.class)
 public class LuceneServiceImplJUnitTest {
@@ -50,6 +56,18 @@ public class LuceneServiceImplJUnitTest {
   }
 
   @Test
+  public void shouldPassSerializer() {
+    service = Mockito.spy(service);
+    LuceneIndexFactory factory = service.createIndexFactory();
+    LuceneSerializer serializer = mock(LuceneSerializer.class);
+    factory.setLuceneSerializer(serializer);
+    factory.setFields("field1", "field2");
+    factory.create("index", "region");
+    Mockito.verify(service).createIndex(eq("index"), eq("region"), any(), eq(serializer),
+        eq(false));
+  }
+
+  @Test
   public void shouldThrowIllegalArgumentExceptionIfFieldsAreMissing() {
     thrown.expect(IllegalArgumentException.class);
     service.createIndexFactory().create("index", "region");
@@ -58,7 +76,7 @@ public class LuceneServiceImplJUnitTest {
   @Test
   public void shouldThrowIllegalArgumentExceptionIfFieldsMapIsMissing() {
     thrown.expect(IllegalArgumentException.class);
-    service.createIndex("index", "region", Collections.emptyMap());
+    service.createIndex("index", "region", Collections.emptyMap(), null, false);
   }
 
   @Test

@@ -100,19 +100,19 @@ public class CqQueryUsingPoolDUnitTest extends JUnit4CacheTestCase {
 
   public final String[] regions = new String[] {"regionA", "regionB"};
 
-  private final static int CREATE = 0;
-  private final static int UPDATE = 1;
-  private final static int DESTROY = 2;
-  private final static int INVALIDATE = 3;
-  private final static int CLOSE = 4;
-  private final static int REGION_CLEAR = 5;
-  private final static int REGION_INVALIDATE = 6;
+  private static final int CREATE = 0;
+  private static final int UPDATE = 1;
+  private static final int DESTROY = 2;
+  private static final int INVALIDATE = 3;
+  private static final int CLOSE = 4;
+  private static final int REGION_CLEAR = 5;
+  private static final int REGION_INVALIDATE = 6;
 
-  static public final String KEY = "key-";
+  public static final String KEY = "key-";
 
-  static private final String WAIT_PROPERTY = "CqQueryTest.maxWaitTime";
+  private static final String WAIT_PROPERTY = "CqQueryTest.maxWaitTime";
 
-  static private final int WAIT_DEFAULT = (20 * 1000);
+  private static final int WAIT_DEFAULT = (20 * 1000);
 
   public static final long MAX_TIME = Integer.getInteger(WAIT_PROPERTY, WAIT_DEFAULT).intValue();
 
@@ -230,7 +230,7 @@ public class CqQueryUsingPoolDUnitTest extends JUnit4CacheTestCase {
 
   /**
    * Create a bridge server with partitioned region.
-   * 
+   *
    * @param server VM where to create the bridge server.
    * @param port bridge server port.
    * @param isAccessor if true the under lying partitioned region will not host data on this vm.
@@ -632,7 +632,7 @@ public class CqQueryUsingPoolDUnitTest extends JUnit4CacheTestCase {
 
   /**
    * Execute/register CQ as running.
-   * 
+   *
    * @param initialResults true if initialResults are requested
    * @param expectedResultsSize if >= 0, validate results against this size
    * @param expectedErr if not null, an error we expect

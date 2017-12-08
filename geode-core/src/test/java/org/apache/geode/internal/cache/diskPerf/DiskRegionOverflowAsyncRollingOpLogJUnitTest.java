@@ -27,7 +27,7 @@ import org.apache.geode.internal.cache.DiskRegionHelperFactory;
 import org.apache.geode.internal.cache.DiskRegionProperties;
 import org.apache.geode.internal.cache.DiskRegionTestingBase;
 import org.apache.geode.internal.cache.LocalRegion;
-import org.apache.geode.internal.cache.lru.LRUStatistics;
+import org.apache.geode.internal.cache.eviction.EvictionStatistics;
 import org.apache.geode.test.dunit.Wait;
 import org.apache.geode.test.dunit.WaitCriterion;
 import org.apache.geode.test.junit.categories.IntegrationTest;
@@ -114,7 +114,7 @@ public class DiskRegionOverflowAsyncRollingOpLogJUnitTest extends DiskRegionTest
 
   private void populateSecond10kto20kwrites() {
     afterHavingCompacted = false;
-    DiskRegionTestingBase.setCacheObserverCallBack();
+    setCacheObserverCallBack();
     CacheObserverHolder.setInstance(new CacheObserverAdapter() {
       public void afterHavingCompacted() {
         afterHavingCompacted = true;
@@ -185,17 +185,17 @@ public class DiskRegionOverflowAsyncRollingOpLogJUnitTest extends DiskRegionTest
     log.info(statsGet2);
     if (debug)
       System.out.println("Perf Stats of get which is fauting in from Second OpLog  :" + statsGet2);
-    DiskRegionTestingBase.unSetCacheObserverCallBack();
+    unSetCacheObserverCallBack();
   }
 
   /**
    * getLRUStats
-   * 
+   *
    * @param region1
    * @return
    */
-  protected LRUStatistics getLRUStats(Region region1) {
-    return ((LocalRegion) region1).getEvictionController().getLRUHelper().getStats();
+  protected EvictionStatistics getLRUStats(Region region1) {
+    return ((LocalRegion) region1).getEvictionController().getStatistics();
 
   }
 

@@ -14,8 +14,8 @@
  */
 package org.apache.geode.internal.admin.statalerts;
 
-import java.io.DataOutput;
 import java.io.DataInput;
+import java.io.DataOutput;
 import java.io.IOException;
 
 import org.apache.geode.DataSerializer;
@@ -26,11 +26,11 @@ import org.apache.geode.internal.admin.StatAlertDefinition;
 
 /**
  * Base class for all the decorators
- * 
+ *
  * @see FunctionDecoratorImpl
  * @see GaugeThresholdDecoratorImpl
  * @see NumberThresholdDecoratorImpl
- * 
+ *
  */
 public abstract class BaseDecoratorImpl implements StatAlertDefinition {
 
@@ -58,7 +58,7 @@ public abstract class BaseDecoratorImpl implements StatAlertDefinition {
 
   /**
    * This method returns the name of this stat alert definition.
-   * 
+   *
    * @return Name of the StatAlertDefinition
    */
   public String getName() {
@@ -67,7 +67,7 @@ public abstract class BaseDecoratorImpl implements StatAlertDefinition {
 
   /**
    * This method sets the name of this stat alert definition.
-   * 
+   *
    * @param name name to be set for this StatAlertDefinition.
    */
   public void setName(String name) {

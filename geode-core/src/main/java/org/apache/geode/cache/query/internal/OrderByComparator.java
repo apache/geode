@@ -45,7 +45,7 @@ public class OrderByComparator implements Comparator {
   /**
    * This method evaluates sort criteria and returns an ArrayList of Object[] arrays of the
    * evaluated criteria.
-   * 
+   *
    * @param value the criteria to be evaluated.
    * @return an Object array of Object arrays of the evaluated criteria.
    */
@@ -92,7 +92,7 @@ public class OrderByComparator implements Comparator {
   /**
    * Compares its two arguments for order. Returns a negative integer, zero, or a positive integer
    * as the first argument is less than, equal to, or greater than the second.
-   * 
+   *
    * @param obj1 the first object to be compared.
    * @param obj2 the second object to be compared.
    * @return a negative integer, zero, or a positive integer as the first argument is less than,

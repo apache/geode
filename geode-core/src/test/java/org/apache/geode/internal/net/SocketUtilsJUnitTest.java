@@ -35,7 +35,7 @@ import org.apache.geode.test.junit.categories.UnitTest;
  * The SocketUtilsJUnitTest class is a test suite of test cases testing the contract and
  * functionality of the SocketUtils utility class.
  * <p/>
- * 
+ *
  * @see org.apache.geode.internal.net.SocketUtils
  * @see org.jmock.Expectations
  * @see org.jmock.Mockery

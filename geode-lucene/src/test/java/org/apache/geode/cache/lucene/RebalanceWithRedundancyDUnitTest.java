@@ -21,6 +21,14 @@ import static org.junit.Assert.*;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.IntStream;
 
+import junitparams.JUnitParamsRunner;
+import junitparams.Parameters;
+import org.awaitility.Awaitility;
+import org.junit.After;
+import org.junit.Test;
+import org.junit.experimental.categories.Category;
+import org.junit.runner.RunWith;
+
 import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.CacheClosedException;
 import org.apache.geode.cache.Region;
@@ -34,16 +42,6 @@ import org.apache.geode.internal.cache.InitialImageOperation.GIITestHookType;
 import org.apache.geode.internal.cache.PartitionedRegion;
 import org.apache.geode.test.dunit.SerializableRunnableIF;
 import org.apache.geode.test.junit.categories.DistributedTest;
-
-import org.awaitility.Awaitility;
-
-import org.junit.After;
-import org.junit.Test;
-import org.junit.experimental.categories.Category;
-import org.junit.runner.RunWith;
-
-import junitparams.JUnitParamsRunner;
-import junitparams.Parameters;
 
 @Category(DistributedTest.class)
 @RunWith(JUnitParamsRunner.class)

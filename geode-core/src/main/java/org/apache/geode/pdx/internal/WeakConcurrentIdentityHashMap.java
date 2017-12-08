@@ -41,11 +41,11 @@ import java.util.concurrent.ConcurrentHashMap;
  * The approach is to wrap each key in a WeakReference and use the wrapped value as a key in an
  * ordinary HashMap. The WeakReference has to be a subclass IdentityWeakReference (IWR) where two
  * IWRs are equal if they refer to the same object. This enables us to find the entry again.
- * 
+ *
  * <p>
  * Note: this code came from the jdk from the package: com.sun.jmx.mbeanserver. I modified it to use
  * a ConcurrentMap.
- * 
+ *
  * @since GemFire 6.6
  */
 class WeakConcurrentIdentityHashMap<K, V> {
@@ -130,4 +130,3 @@ class WeakConcurrentIdentityHashMap<K, V> {
   private final Map<WeakReference<K>, V> map = new ConcurrentHashMap<WeakReference<K>, V>();
   private final ReferenceQueue<K> refQueue = new ReferenceQueue<K>();
 }
-

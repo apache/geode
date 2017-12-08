@@ -85,7 +85,7 @@ public class QueryAccessController extends AbstractBaseController {
 
   /**
    * list all parametrized Queries created in a Gemfire data node
-   * 
+   *
    * @return result as a JSON document.
    */
   @RequestMapping(method = RequestMethod.GET, produces = {MediaType.APPLICATION_JSON_UTF8_VALUE})
@@ -112,7 +112,7 @@ public class QueryAccessController extends AbstractBaseController {
 
   /**
    * Create a named, parametrized Query
-   * 
+   *
    * @param queryId uniquely identify the query
    * @param oqlInUrl OQL query string specified in a request URL
    * @param oqlInBody OQL query string specified in a request body
@@ -154,7 +154,7 @@ public class QueryAccessController extends AbstractBaseController {
 
   /**
    * Run an adhoc Query specified in a query string
-   * 
+   *
    * @param oql OQL query string to be executed
    * @return query result as a JSON document
    */
@@ -211,7 +211,7 @@ public class QueryAccessController extends AbstractBaseController {
 
   /**
    * Run named parametrized Query with ID
-   * 
+   *
    * @param queryId id of the OQL string
    * @param arguments query bind params required while executing query
    * @return query result as a JSON document
@@ -295,7 +295,7 @@ public class QueryAccessController extends AbstractBaseController {
 
   /**
    * Update named, parametrized Query
-   * 
+   *
    * @param queryId uniquely identify the query
    * @param oqlInUrl OQL query string specified in a request URL
    * @param oqlInBody OQL query string specified in a request body
@@ -328,7 +328,7 @@ public class QueryAccessController extends AbstractBaseController {
 
   /**
    * Delete named, parametrized Query
-   * 
+   *
    * @param queryId uniquely identify the query to be deleted
    */
   @RequestMapping(method = RequestMethod.DELETE, value = "/{query}")

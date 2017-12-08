@@ -20,11 +20,11 @@ import org.apache.geode.*;
  * Statistics related to a Java VM. Currently they all come from {@link java.lang.Runtime}.
  */
 public class VMStats implements VMStatsContract {
-  private final static StatisticsType vmType;
-  private final static int cpusId;
-  private final static int freeMemoryId;
-  private final static int totalMemoryId;
-  private final static int maxMemoryId;
+  private static final StatisticsType vmType;
+  private static final int cpusId;
+  private static final int freeMemoryId;
+  private static final int totalMemoryId;
+  private static final int maxMemoryId;
   static {
     StatisticsTypeFactory f = StatisticsTypeFactoryImpl.singleton();
     vmType = f.createType("VMStats", "Stats available on any java virtual machine.",
@@ -68,7 +68,7 @@ public class VMStats implements VMStatsContract {
 
   /*
    * (non-Javadoc)
-   * 
+   *
    * @see org.apache.geode.internal.statistics.VMStatsContract#getFdsOpen()
    */
   public long getFdsOpen() {
@@ -77,7 +77,7 @@ public class VMStats implements VMStatsContract {
 
   /*
    * (non-Javadoc)
-   * 
+   *
    * @see org.apache.geode.internal.statistics.VMStatsContract#getFdLimit()
    */
   public long getFdLimit() {

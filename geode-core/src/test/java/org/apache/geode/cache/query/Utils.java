@@ -23,11 +23,11 @@ package org.apache.geode.cache.query;
 import java.util.Collection;
 import java.util.Iterator;
 
+import parReg.query.unittest.NewPortfolio;
+
 import org.apache.geode.cache.query.data.Portfolio;
 import org.apache.geode.cache.query.data.PortfolioData;
 import org.apache.geode.cache.query.data.Position;
-
-import parReg.query.unittest.NewPortfolio;
 
 /**
  *

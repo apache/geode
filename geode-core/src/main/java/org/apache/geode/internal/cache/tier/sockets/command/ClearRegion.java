@@ -41,7 +41,7 @@ import org.apache.geode.security.ResourcePermission.Resource;
 
 public class ClearRegion extends BaseCommand {
 
-  private final static ClearRegion singleton = new ClearRegion();
+  private static final ClearRegion singleton = new ClearRegion();
 
   private ClearRegion() {}
 

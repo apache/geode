@@ -20,7 +20,7 @@ package org.apache.geode.cache.operations;
  * Encapsulates a {@link org.apache.geode.cache.operations.OperationContext.OperationCode#GET}
  * region operation having the key object for the pre-operation case and both key, value objects for
  * the post-operation case.
- * 
+ *
  * @since GemFire 5.5
  * @deprecated since Geode1.0, use {@link org.apache.geode.security.ResourcePermission} instead
  */
@@ -28,7 +28,7 @@ public class GetOperationContext extends KeyValueOperationContext {
 
   /**
    * Constructor for the operation.
-   * 
+   *
    * @param key the key for this operation
    * @param postOperation true if the context is for the post-operation case
    */
@@ -38,7 +38,7 @@ public class GetOperationContext extends KeyValueOperationContext {
 
   /**
    * Return the operation associated with the <code>OperationContext</code> object.
-   * 
+   *
    * @return <code>OperationCode.GET</code>.
    */
   @Override
@@ -56,7 +56,7 @@ public class GetOperationContext extends KeyValueOperationContext {
 
   /**
    * Get the value of this get operation.
-   * 
+   *
    * @return the result of get operation; null when the result is a serialized value in which case
    *         user should invoke {@link #getSerializedValue()} or {@link #getDeserializedValue()}.
    */
@@ -70,7 +70,7 @@ public class GetOperationContext extends KeyValueOperationContext {
 
   /**
    * Set the result value of the object for this operation.
-   * 
+   *
    * @param value the result of this operation; can be a serialized byte array or a deserialized
    *        object
    * @param isObject true when the value is an object (either serialized or deserialized); false

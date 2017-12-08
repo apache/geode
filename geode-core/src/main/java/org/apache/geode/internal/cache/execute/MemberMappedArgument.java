@@ -23,17 +23,17 @@ import java.util.Map;
  * distributed, the* target member is looked up in this map by the function service. If the target
  * member id has a value in the map, then that value is used as an argument for that distribution.
  * If that member id is not found, then the default value is used as an argument instead.
- * 
+ *
  * For the SQL Fabric, its use would be as follows: The defaultArgument is set to be the query
  * string. The keys of the map are set to be all known member ids that have already prepared this
  * statement, and the values are all null (to be interpreted as no argument).
- * 
+ *
  * This way, when the function is distributed to a member that is not in the map, it will include
  * the query string as an argument. When it is sent to a member that is in the map, will not include
  * the query string as an argument.
- * 
+ *
  * @since GemFire 6.0
- * 
+ *
  */
 public class MemberMappedArgument implements Serializable {
 

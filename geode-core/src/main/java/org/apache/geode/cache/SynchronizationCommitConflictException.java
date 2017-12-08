@@ -28,7 +28,7 @@ public class SynchronizationCommitConflictException extends CacheRuntimeExceptio
   /**
    * Constructs an instance of <code>SynchronizationCommitConflictException</code> with the
    * specified detail message.
-   * 
+   *
    * @param msg the detail message
    */
   public SynchronizationCommitConflictException(String msg) {
@@ -38,7 +38,7 @@ public class SynchronizationCommitConflictException extends CacheRuntimeExceptio
   /**
    * Constructs an instance of <code>SynchronizationCommitConflictException</code> with the
    * specified detail message and cause.
-   * 
+   *
    * @param msg the detail message
    * @param cause the causal Throwable
    */

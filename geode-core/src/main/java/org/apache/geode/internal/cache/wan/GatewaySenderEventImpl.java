@@ -24,14 +24,11 @@ import org.apache.geode.DataSerializer;
 import org.apache.geode.InternalGemFireError;
 import org.apache.geode.cache.CacheEvent;
 import org.apache.geode.cache.CacheFactory;
-import org.apache.geode.cache.EntryEvent;
 import org.apache.geode.cache.Operation;
 import org.apache.geode.cache.Region;
-import org.apache.geode.cache.SerializedCacheValue;
 import org.apache.geode.cache.asyncqueue.AsyncEvent;
 import org.apache.geode.cache.util.ObjectSizer;
 import org.apache.geode.cache.wan.EventSequenceID;
-import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.internal.DataSerializableFixedID;
 import org.apache.geode.internal.InternalDataSerializer;
 import org.apache.geode.internal.Version;
@@ -45,8 +42,6 @@ import org.apache.geode.internal.cache.EventID;
 import org.apache.geode.internal.cache.LocalRegion;
 import org.apache.geode.internal.cache.Token;
 import org.apache.geode.internal.cache.WrappedCallbackArgument;
-import org.apache.geode.internal.cache.lru.Sizeable;
-import org.apache.geode.internal.cache.tier.sockets.CacheServerHelper;
 import org.apache.geode.internal.i18n.LocalizedStrings;
 import org.apache.geode.internal.offheap.OffHeapHelper;
 import org.apache.geode.internal.offheap.ReferenceCountHelper;
@@ -56,14 +51,15 @@ import org.apache.geode.internal.offheap.annotations.OffHeapIdentifier;
 import org.apache.geode.internal.offheap.annotations.Released;
 import org.apache.geode.internal.offheap.annotations.Retained;
 import org.apache.geode.internal.offheap.annotations.Unretained;
+import org.apache.geode.internal.size.Sizeable;
 
 /**
  * Class <code>GatewaySenderEventImpl</code> represents an event sent between
  * <code>GatewaySender</code>
- * 
- * 
+ *
+ *
  * @since GemFire 7.0
- * 
+ *
  */
 public class GatewaySenderEventImpl
     implements AsyncEvent, DataSerializableFixedID, Conflatable, Sizeable, Releasable {
@@ -89,7 +85,7 @@ public class GatewaySenderEventImpl
 
   /**
    * The number of parts for the <code>Message</code>
-   * 
+   *
    * @see org.apache.geode.internal.cache.tier.sockets.Message
    */
   protected int numberOfParts;
@@ -223,18 +219,18 @@ public class GatewaySenderEventImpl
 
   /**
    * Constructor. No-arg constructor for data serialization.
-   * 
+   *
    * @see DataSerializer
    */
   public GatewaySenderEventImpl() {}
 
   /**
    * Constructor. Creates an initialized <code>GatewayEventImpl</code>
-   * 
+   *
    * @param operation The operation for this event (e.g. AFTER_CREATE)
    * @param event The <code>CacheEvent</code> on which this <code>GatewayEventImpl</code> is based
    * @param substituteValue The value to be enqueued instead of the value in the event.
-   * 
+   *
    * @throws IOException
    */
   @Retained
@@ -252,12 +248,12 @@ public class GatewaySenderEventImpl
 
   /**
    * Constructor.
-   * 
+   *
    * @param operation The operation for this event (e.g. AFTER_CREATE)
    * @param ce The <code>CacheEvent</code> on which this <code>GatewayEventImpl</code> is based
    * @param substituteValue The value to be enqueued instead of the value in the event.
    * @param initialize Whether to initialize this instance
-   * 
+   *
    * @throws IOException
    */
   @Retained
@@ -348,7 +344,7 @@ public class GatewaySenderEventImpl
 
   /**
    * Returns this event's action
-   * 
+   *
    * @return this event's action
    */
   public int getAction() {
@@ -357,7 +353,7 @@ public class GatewaySenderEventImpl
 
   /**
    * Returns this event's operation
-   * 
+   *
    * @return this event's operation
    */
   public Operation getOperation() {
@@ -430,7 +426,7 @@ public class GatewaySenderEventImpl
 
   /**
    * Return this event's region name
-   * 
+   *
    * @return this event's region name
    */
   public String getRegionPath() {
@@ -443,7 +439,7 @@ public class GatewaySenderEventImpl
 
   /**
    * Returns this event's key
-   * 
+   *
    * @return this event's key
    */
   public Object getKey() {
@@ -456,7 +452,7 @@ public class GatewaySenderEventImpl
 
   /**
    * Returns whether this event's value is a serialized object
-   * 
+   *
    * @return whether this event's value is a serialized object
    */
   public byte getValueIsObject() {
@@ -465,7 +461,7 @@ public class GatewaySenderEventImpl
 
   /**
    * Return this event's callback argument
-   * 
+   *
    * @return this event's callback argument
    */
   public Object getCallbackArgument() {
@@ -483,7 +479,7 @@ public class GatewaySenderEventImpl
 
   /**
    * Return this event's number of parts
-   * 
+   *
    * @return this event's number of parts
    */
   public int getNumberOfParts() {
@@ -494,9 +490,9 @@ public class GatewaySenderEventImpl
    * Return the value as a byte[] array, if it is plain byte array, otherwise return a cache
    * deserializable or plain object, depending on if the currently held form of the object is
    * serialized or not.
-   * 
+   *
    * If the object is held off heap, this will copy it to the heap return the heap copy.
-   * 
+   *
    * //OFFHEAP TODO: Optimize callers by returning a reference to the off heap value
    */
   public Object getValue() {
@@ -554,7 +550,7 @@ public class GatewaySenderEventImpl
 
   /**
    * Return this event's deserialized value
-   * 
+   *
    * @return this event's deserialized value
    */
   public Object getDeserializedValue() {
@@ -800,7 +796,7 @@ public class GatewaySenderEventImpl
    * message's operation is AFTER_UPDATE and its region has enabled are conflation. Otherwise, this
    * method will answer false. Messages whose operation is AFTER_CREATE, AFTER_DESTROY,
    * AFTER_INVALIDATE or AFTER_REGION_DESTROY are not conflated.
-   * 
+   *
    * @return Whether to conflate this message
    */
   public boolean shouldBeConflated() {
@@ -837,7 +833,7 @@ public class GatewaySenderEventImpl
 
   /**
    * Returns whether this <code>GatewayEvent</code> represents an update.
-   * 
+   *
    * @return whether this <code>GatewayEvent</code> represents an update
    */
   protected boolean isUpdate() {
@@ -854,7 +850,7 @@ public class GatewaySenderEventImpl
 
   /**
    * Returns whether this <code>GatewayEvent</code> represents a create.
-   * 
+   *
    * @return whether this <code>GatewayEvent</code> represents a create
    */
   protected boolean isCreate() {
@@ -865,7 +861,7 @@ public class GatewaySenderEventImpl
 
   /**
    * Returns whether this <code>GatewayEvent</code> represents a destroy.
-   * 
+   *
    * @return whether this <code>GatewayEvent</code> represents a destroy
    */
   protected boolean isDestroy() {
@@ -978,7 +974,7 @@ public class GatewaySenderEventImpl
 
   /**
    * Initialize this event's action and number of parts
-   * 
+   *
    * @param operation The operation from which to initialize this event's action and number of parts
    */
   protected void initializeAction(EnumListenerEvent operation) {
@@ -1047,7 +1043,7 @@ public class GatewaySenderEventImpl
 
   /**
    * Return the EventSequenceID of the Event
-   * 
+   *
    * @return EventSequenceID
    */
   public EventSequenceID getEventSequenceID() {

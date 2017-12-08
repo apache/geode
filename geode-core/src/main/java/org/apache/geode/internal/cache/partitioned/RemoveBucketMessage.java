@@ -41,7 +41,7 @@ import org.apache.geode.internal.logging.log4j.LogMarker;
 
 /**
  * Removes the hosted bucket from the recipient's PartitionedRegionDataStore.
- * 
+ *
  * Usage: RemoveBucketResponse response = RemoveBucketMessage.send( InternalDistributedMember,
  * PartitionedRegion, int bucketId); if (response != null && response.waitForResponse()) { // bucket
  * was removed }
@@ -66,7 +66,7 @@ public class RemoveBucketMessage extends PartitionMessage {
 
   /**
    * Sends a message to remove the bucket.
-   * 
+   *
    * @param recipient the member to remove the bucket from
    * @param region the PartitionedRegion of the bucket
    * @param bucketId the bucket to remove

@@ -14,10 +14,11 @@
  */
 package com.examples.ds;
 
-import org.apache.geode.cache.*;
-import org.apache.geode.distributed.DistributedSystem;
 import java.util.Date;
 import java.util.Properties;
+
+import org.apache.geode.cache.*;
+import org.apache.geode.distributed.DistributedSystem;
 
 /**
  * Places various objects that use {@link org.apache.geode.DataSerializer}s and

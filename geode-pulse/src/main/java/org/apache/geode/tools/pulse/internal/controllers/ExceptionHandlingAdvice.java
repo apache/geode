@@ -31,8 +31,8 @@ import org.springframework.web.bind.annotation.ResponseStatus;
 
 /**
  * For handling IO exception in our controllers
- * 
- * 
+ *
+ *
  */
 @ControllerAdvice
 public class ExceptionHandlingAdvice {

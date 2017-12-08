@@ -48,16 +48,16 @@ public class OffHeapStoredObject extends AbstractStoredObject
    * The useCount, chunkSize, dataSizeDelta, isSerialized, and isCompressed are all stored in
    * addressable memory in a HEADER. This saves heap memory by using off heap.
    */
-  public final static int HEADER_SIZE = 4 + 4;
+  public static final int HEADER_SIZE = 4 + 4;
   /**
    * We need to smallest chunk to at least have enough room for a hdr and for an off heap ref (which
    * is a long).
    */
-  public final static int MIN_CHUNK_SIZE = HEADER_SIZE + 8;
+  public static final int MIN_CHUNK_SIZE = HEADER_SIZE + 8;
   /**
    * int field. The number of bytes in this chunk.
    */
-  private final static int CHUNK_SIZE_OFFSET = 0;
+  private static final int CHUNK_SIZE_OFFSET = 0;
   /**
    * Volatile int field The upper two bits are used for the isSerialized and isCompressed flags. The
    * next three bits are unused. The lower 3 bits of the most significant byte contains a magic
@@ -67,21 +67,21 @@ public class OffHeapStoredObject extends AbstractStoredObject
    * changes, we have dataSize be a delta whose max value would be HUGE_MULTIPLE-1. The lower two
    * bytes contains the use count.
    */
-  final static int REF_COUNT_OFFSET = 4;
+  static final int REF_COUNT_OFFSET = 4;
   /**
    * The upper two bits are used for the isSerialized and isCompressed flags.
    */
-  final static int IS_SERIALIZED_BIT = 0x80000000;
-  final static int IS_COMPRESSED_BIT = 0x40000000;
+  static final int IS_SERIALIZED_BIT = 0x80000000;
+  static final int IS_COMPRESSED_BIT = 0x40000000;
   // UNUSED 0x38000000
-  final static int MAGIC_MASK = 0x07000000;
-  final static int MAGIC_NUMBER = 0x05000000;
-  final static int DATA_SIZE_DELTA_MASK = 0x00ff0000;
-  final static int DATA_SIZE_SHIFT = 16;
-  final static int REF_COUNT_MASK = 0x0000ffff;
-  final static int MAX_REF_COUNT = 0xFFFF;
-  final static long FILL_PATTERN = 0x3c3c3c3c3c3c3c3cL;
-  final static byte FILL_BYTE = 0x3c;
+  static final int MAGIC_MASK = 0x07000000;
+  static final int MAGIC_NUMBER = 0x05000000;
+  static final int DATA_SIZE_DELTA_MASK = 0x00ff0000;
+  static final int DATA_SIZE_SHIFT = 16;
+  static final int REF_COUNT_MASK = 0x0000ffff;
+  static final int MAX_REF_COUNT = 0xFFFF;
+  static final long FILL_PATTERN = 0x3c3c3c3c3c3c3c3cL;
+  static final byte FILL_BYTE = 0x3c;
 
   protected OffHeapStoredObject(long memoryAddress, int chunkSize) {
     MemoryAllocatorImpl.validateAddressAndSize(memoryAddress, chunkSize);
@@ -316,7 +316,7 @@ public class OffHeapStoredObject extends AbstractStoredObject
 
   /**
    * Returns an address that can be used with AddressableMemoryManager to access this object's data.
-   * 
+   *
    * @param offset the offset from this chunk's first byte of the byte the returned address should
    *        point to. Must be >= 0.
    * @param size the number of bytes that will be read using the returned address. Assertion will
@@ -423,7 +423,7 @@ public class OffHeapStoredObject extends AbstractStoredObject
 
   /**
    * This method should only be called on uncompressed objects
-   * 
+   *
    * @return byte array of the StoredObject value.
    */
   protected byte[] getRawBytes() {
@@ -511,7 +511,7 @@ public class OffHeapStoredObject extends AbstractStoredObject
 
   /**
    * Fills the chunk with a repeated byte fill pattern.
-   * 
+   *
    * @param baseAddress the starting address for a {@link OffHeapStoredObject}.
    */
   public static void fill(long baseAddress) {
@@ -524,7 +524,7 @@ public class OffHeapStoredObject extends AbstractStoredObject
   /**
    * Validates that the fill pattern for this chunk has not been disturbed. This method assumes the
    * TINY_MULTIPLE is 8 bytes.
-   * 
+   *
    * @throws IllegalStateException when the pattern has been violated.
    */
   public void validateFill() {

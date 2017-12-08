@@ -14,15 +14,16 @@
  */
 package org.apache.geode.cache;
 
+import static org.junit.runners.MethodSorters.*;
+
+import org.junit.FixMethodOrder;
+import org.junit.experimental.categories.Category;
+
 import org.apache.geode.cache30.ClientServerTestCase;
 import org.apache.geode.test.dunit.Invoke;
 import org.apache.geode.test.dunit.SerializableRunnable;
 import org.apache.geode.test.junit.categories.ClientServerTest;
 import org.apache.geode.test.junit.categories.DistributedTest;
-
-import static org.junit.runners.MethodSorters.*;
-import org.junit.FixMethodOrder;
-import org.junit.experimental.categories.Category;
 
 @FixMethodOrder(NAME_ASCENDING)
 @Category({DistributedTest.class, ClientServerTest.class})

@@ -44,7 +44,7 @@ import org.apache.geode.security.ResourcePermission.Resource;
  */
 public class RegisterInterestList61 extends BaseCommand {
 
-  private final static RegisterInterestList61 singleton = new RegisterInterestList61();
+  private static final RegisterInterestList61 singleton = new RegisterInterestList61();
 
   public static Command getCommand() {
     return singleton;
@@ -144,7 +144,7 @@ public class RegisterInterestList61 extends BaseCommand {
 
     /*
      * AcceptorImpl acceptor = servConn.getAcceptor();
-     * 
+     *
      * // Check if the Server is running in NotifyBySubscription=true mode. if
      * (!acceptor.getCacheClientNotifier().getNotifyBySubscription()) { // This should have been
      * taken care at the client. String err = LocalizedStrings.

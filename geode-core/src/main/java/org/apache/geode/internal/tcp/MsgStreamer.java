@@ -14,18 +14,6 @@
  */
 package org.apache.geode.internal.tcp;
 
-import org.apache.geode.DataSerializer;
-import org.apache.geode.distributed.internal.DMStats;
-import org.apache.geode.distributed.internal.DistributionConfig;
-import org.apache.geode.distributed.internal.DistributionMessage;
-import org.apache.geode.internal.*;
-import org.apache.geode.internal.i18n.LocalizedStrings;
-import org.apache.geode.internal.logging.LogService;
-import it.unimi.dsi.fastutil.objects.Object2ObjectMap;
-import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap;
-import it.unimi.dsi.fastutil.objects.ObjectIterator;
-import org.apache.logging.log4j.Logger;
-
 import java.io.IOException;
 import java.io.OutputStream;
 import java.io.UTFDataFormatException;
@@ -34,13 +22,26 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 
+import it.unimi.dsi.fastutil.objects.Object2ObjectMap;
+import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap;
+import it.unimi.dsi.fastutil.objects.ObjectIterator;
+import org.apache.logging.log4j.Logger;
+
+import org.apache.geode.DataSerializer;
+import org.apache.geode.distributed.internal.DMStats;
+import org.apache.geode.distributed.internal.DistributionConfig;
+import org.apache.geode.distributed.internal.DistributionMessage;
+import org.apache.geode.internal.*;
+import org.apache.geode.internal.i18n.LocalizedStrings;
+import org.apache.geode.internal.logging.LogService;
+
 /**
  * <p>
  * MsgStreamer supports streaming a message to a tcp Connection in chunks. This allows us to send a
  * message without needing to perserialize it completely in memory thus saving buffer memory.
- * 
+ *
  * @since GemFire 5.0.2
- * 
+ *
  */
 
 public class MsgStreamer extends OutputStream
@@ -79,7 +80,7 @@ public class MsgStreamer extends OutputStream
    * Set to true after last byte of message has been written to this stream.
    */
   private boolean doneWritingMsg = false;
-  final private DMStats stats;
+  private final DMStats stats;
 
   private short msgId;
   private long serStartTime;
@@ -113,7 +114,7 @@ public class MsgStreamer extends OutputStream
 
   /**
    * Create a msg streamer that will send the given msg to the given cons.
-   * 
+   *
    * Note: This is no longer supposed to be called directly rather the {@link #create} method should
    * now be used.
    */
@@ -202,7 +203,7 @@ public class MsgStreamer extends OutputStream
 
   /**
    * set connections to be "in use" and schedule alert tasks
-   * 
+   *
    * @param startTime
    * @param ackTimeout
    * @param ackSDTimeout
@@ -478,7 +479,7 @@ public class MsgStreamer extends OutputStream
    * Writes two bytes to the output stream to represent the value of the argument. The byte values
    * to be written, in the order shown, are:
    * <p>
-   * 
+   *
    * <pre>
    * <code>
    * (byte)(0xff &amp; (v &gt;&gt; 8))
@@ -507,7 +508,7 @@ public class MsgStreamer extends OutputStream
    * Writes a <code>char</code> value, wich is comprised of two bytes, to the output stream. The
    * byte values to be written, in the order shown, are:
    * <p>
-   * 
+   *
    * <pre>
    * <code>
    * (byte)(0xff &amp; (v &gt;&gt; 8))
@@ -536,7 +537,7 @@ public class MsgStreamer extends OutputStream
    * Writes an <code>int</code> value, which is comprised of four bytes, to the output stream. The
    * byte values to be written, in the order shown, are:
    * <p>
-   * 
+   *
    * <pre>
    * <code>
    * (byte)(0xff &amp; (v &gt;&gt; 24))
@@ -566,7 +567,7 @@ public class MsgStreamer extends OutputStream
    * Writes a <code>long</code> value, which is comprised of eight bytes, to the output stream. The
    * byte values to be written, in the order shown, are:
    * <p>
-   * 
+   *
    * <pre>
    * <code>
    * (byte)(0xff &amp; (v &gt;&gt; 56))
@@ -724,7 +725,7 @@ public class MsgStreamer extends OutputStream
    * If a character <code>c</code> is in the range <code>&#92;u0001</code> through
    * <code>&#92;u007f</code>, it is represented by one byte:
    * <p>
-   * 
+   *
    * <pre>
    * (byte) c
    * </pre>
@@ -733,7 +734,7 @@ public class MsgStreamer extends OutputStream
    * <code>&#92;u0080</code> through <code>&#92;u07ff</code>, then it is represented by two bytes,
    * to be written in the order shown:
    * <p>
-   * 
+   *
    * <pre>
    * <code>
    * (byte)(0xc0 | (0x1f &amp; (c &gt;&gt; 6)))
@@ -744,7 +745,7 @@ public class MsgStreamer extends OutputStream
    * If a character <code>c</code> is in the range <code>&#92;u0800</code> through
    * <code>uffff</code>, then it is represented by three bytes, to be written in the order shown:
    * <p>
-   * 
+   *
    * <pre>
    * <code>
    * (byte)(0xe0 | (0x0f &amp; (c &gt;&gt; 12)))

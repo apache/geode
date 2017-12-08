@@ -21,7 +21,7 @@ import org.apache.geode.internal.cache.PartitionedRegion;
 
 /**
  * Composite date type used to distribute attributes for a {@link PartitionedRegion}.
- * 
+ *
  * @since GemFire 7.0
  */
 public class PartitionAttributesData {

@@ -13,7 +13,7 @@
  * the License.
  */
 /**
- * 
+ *
  */
 package org.apache.geode.internal.cache.partitioned;
 
@@ -72,7 +72,7 @@ public class RemoteFetchKeysMessage extends RemoteOperationMessage {
 
   /*
    * (non-Javadoc)
-   * 
+   *
    * @see org.apache.geode.internal.cache.RemoteOperationMessage#operateOnRegion(org.apache.geode.
    * distributed.internal.DistributionManager, org.apache.geode.internal.cache.LocalRegion, long)
    */
@@ -95,7 +95,7 @@ public class RemoteFetchKeysMessage extends RemoteOperationMessage {
 
   /*
    * (non-Javadoc)
-   * 
+   *
    * @see org.apache.geode.internal.DataSerializableFixedID#getDSFID()
    */
   public int getDSFID() {
@@ -118,7 +118,7 @@ public class RemoteFetchKeysMessage extends RemoteOperationMessage {
 
   /*
    * (non-Javadoc)
-   * 
+   *
    * @see org.apache.geode.internal.cache.RemoteOperationMessage#toData(java.io.DataOutput)
    */
   @Override
@@ -128,7 +128,7 @@ public class RemoteFetchKeysMessage extends RemoteOperationMessage {
 
   /*
    * (non-Javadoc)
-   * 
+   *
    * @see org.apache.geode.internal.cache.RemoteOperationMessage#fromData(java.io.DataInput)
    */
   @Override
@@ -170,7 +170,7 @@ public class RemoteFetchKeysMessage extends RemoteOperationMessage {
 
     /**
      * Send an ack
-     * 
+     *
      * @throws ForceReattemptException if the peer is no longer available
      */
     public static void send(final InternalDistributedMember recipient, final int processorId,
@@ -292,7 +292,7 @@ public class RemoteFetchKeysMessage extends RemoteOperationMessage {
 
     /**
      * Processes this message. This method is invoked by the receiver of the message.
-     * 
+     *
      * @param dm the distribution manager that is processing the message.
      */
     @Override

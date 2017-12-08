@@ -38,9 +38,9 @@ import org.apache.geode.cache.execute.ResultCollector;
 import org.apache.geode.test.dunit.Host;
 import org.apache.geode.test.dunit.VM;
 import org.apache.geode.test.dunit.internal.JUnit4DistributedTestCase;
-import org.apache.geode.test.junit.rules.ServerStarterRule;
 import org.apache.geode.test.junit.categories.DistributedTest;
 import org.apache.geode.test.junit.categories.SecurityTest;
+import org.apache.geode.test.junit.rules.ServerStarterRule;
 
 @Category({DistributedTest.class, SecurityTest.class})
 public class ClientExecuteRegionFunctionAuthDUnitTest extends JUnit4DistributedTestCase {
@@ -84,5 +84,3 @@ public class ClientExecuteRegionFunctionAuthDUnitTest extends JUnit4DistributedT
     });
   }
 }
-
-

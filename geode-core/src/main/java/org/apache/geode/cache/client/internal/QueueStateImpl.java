@@ -48,7 +48,7 @@ public class QueueStateImpl implements QueueState {
 
   /**
    * This will store the ThreadId to latest received sequence Id
-   * 
+   *
    * Keys are instances of {@link ThreadIdentifier} Values are instances of
    * {@link SequenceIdAndExpirationObject}
    */
@@ -220,15 +220,15 @@ public class QueueStateImpl implements QueueState {
   }
 
   /**
-   * 
+   *
    * Thread which will iterate over threadIdToSequenceId map
-   * 
+   *
    * 1)It will send an ack primary server for all threadIds for which it has not send an ack. 2)It
    * will expire the entries which have exceeded the specified expiry time and for which ack has
    * been alerady sent.
-   * 
+   *
    * @since GemFire 5.1
-   * 
+   *
    */
 
   private class ThreadIdToSequenceIdExpiryTask extends PoolTask {
@@ -250,7 +250,7 @@ public class QueueStateImpl implements QueueState {
 
     /**
      * constructs the Thread and initializes the expiry time
-     * 
+     *
      */
     public ThreadIdToSequenceIdExpiryTask() {
       expiryTime = QueueStateImpl.this.qManager.getPool().getSubscriptionMessageTrackingTimeout();
@@ -368,9 +368,9 @@ public class QueueStateImpl implements QueueState {
   /**
    * A class to store sequenceId and the creation time of the object to be used for expiring the
    * entry
-   * 
+   *
    * @since GemFire 5.1
-   * 
+   *
    */
   public static class SequenceIdAndExpirationObject {
     /** The sequence Id of the entry * */
@@ -411,7 +411,7 @@ public class QueueStateImpl implements QueueState {
     }
 
     /**
-     * 
+     *
      * @return Returns the ackSend
      */
     public boolean getAckSend() {
@@ -420,7 +420,7 @@ public class QueueStateImpl implements QueueState {
 
     /**
      * Sets the ackSend
-     * 
+     *
      * @param ackSend
      */
     public void setAckSend(boolean ackSend) {

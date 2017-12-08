@@ -36,14 +36,14 @@ public interface InterestRegistrationEvent {
 
   /**
    * Returns the region to which this interest belongs.
-   * 
+   *
    * @return the region to which this interest belongs
    */
   public Region<?, ?> getRegion();
 
   /**
    * Returns a <code>Set</code> of keys of interest.
-   * 
+   *
    * @return a <code>Set</code> of keys of interest
    */
   public Set<?> getKeysOfInterest();
@@ -78,7 +78,7 @@ public interface InterestRegistrationEvent {
 
   /**
    * Returns the {@link ClientSession} that initiated this event
-   * 
+   *
    * @return the {@link ClientSession} that initiated this event
    */
   public ClientSession getClientSession();

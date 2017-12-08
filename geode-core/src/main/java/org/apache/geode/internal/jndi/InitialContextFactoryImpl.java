@@ -16,18 +16,19 @@ package org.apache.geode.internal.jndi;
 
 import java.util.HashMap;
 import java.util.Hashtable;
-import java.util.Map;
 import java.util.Iterator;
+import java.util.Map;
+
+import javax.naming.Context;
 import javax.naming.NamingException;
 import javax.naming.spi.InitialContextFactory;
-import javax.naming.Context;
 
 /**
  * Factory class to creates ContextImpl. Provides implementation for InitialContextFactory.
- * 
+ *
  * Optionally, this also facilitates the backup of original system property which can be restored
  * later.
- * 
+ *
  */
 public class InitialContextFactoryImpl implements InitialContextFactory {
 
@@ -40,7 +41,7 @@ public class InitialContextFactoryImpl implements InitialContextFactory {
    * will be used as starting point for all naming operations. ContextImpl is then used by
    * javax.naming.InitialContext object. InitialContextFactoryImpl caches the context once it's
    * created.
-   * 
+   *
    * @param environment Hashtable, contains the Context property to set to get the instance of this
    *        context.
    * @return ContextImpl object.
@@ -59,7 +60,7 @@ public class InitialContextFactoryImpl implements InitialContextFactory {
    * called from from setup. These properties can be set directly directly too or through
    * application resource file (jndi.properties).
    * java.naming.factory.initial=org.apache.geode.internal.jndi.InitialContextFactoryImpl
-   * 
+   *
    * @throws NamingException
    */
   public void setAsInitial() throws NamingException {

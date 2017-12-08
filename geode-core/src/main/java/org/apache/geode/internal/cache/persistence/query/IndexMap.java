@@ -18,20 +18,20 @@ import org.apache.geode.internal.cache.CachedDeserializable;
 
 /**
  * The contract for a sorted map that maps the pair (index key, regionKey) to an optional value.
- * 
+ *
  * All read API take INDEX keys, and return REGION keys. So for example keyIterator takes a range of
  * index keys and returns the associated region keys.
- * 
+ *
  * The index key is allowed to be an object, or a CachedDeserializable.
- * 
+ *
  * This class is threadsafe. Iterators will reflect all entries added to the map up until the time
  * that the iterator was obtained. After that they may or may not reflect modifications to the map
  * while the iteration is in progress. They will guarantee that entries will be returned in the
  * correct order.
- * 
+ *
  * TODO - is the user required to filter out NULL index keys, or should we provide separate NULL
  * iterators.
- * 
+ *
  * TODO - Do we need getKey, getValue,
  *
  * @since GemFire cedar
@@ -41,7 +41,7 @@ public interface IndexMap {
   /**
    * Add an entry to the map. If the same indexKey, regionKey pair exists in the map is it replaced
    * with the new value.
-   * 
+   *
    * @param indexKey the index key for the entry. The index key may be NULL.
    * @param regionKey the region key for the entry. The region key cannot be NULL.
    * @param value a value for the entry, or NULL for no value
@@ -50,10 +50,10 @@ public interface IndexMap {
 
   /**
    * Remove an entry from the map.
-   * 
+   *
    * @param indexKey the index key to remove
    * @param regionKey the region key to remove
-   * 
+   *
    *        This method has no effect if the indexKey, regionKey does not exist in the map.
    */
   void remove(Object indexKey, Object regionKey);
@@ -151,7 +151,7 @@ public interface IndexMap {
 
   /**
    * A single entry in an index
-   * 
+   *
    * @since GemFire cedar
    */
   interface IndexEntry {

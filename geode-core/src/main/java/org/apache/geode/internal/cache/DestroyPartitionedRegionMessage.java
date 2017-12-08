@@ -46,15 +46,15 @@ import org.apache.geode.internal.logging.log4j.LogMarker;
  * 2) To inform the other nodes that {@link org.apache.geode.internal.cache.PartitionedRegion} is
  * closed/locally destroyed or cache is closed on a node<br>
  * This results in updating of the RegionAdvisor of the remote nodes.
- * 
+ *
  * Sending this message should flush all previous {@link org.apache.geode.cache.Region} operations,
  * which means this operation should not over-ride
  * {@link org.apache.geode.internal.cache.partitioned.PartitionMessage#getProcessorId()}. It is
  * critical guarantee delivery of events sent prior to this message.
- * 
+ *
  * A standard {@link ReplyMessage} is used to send the reply, however any exception that it carries
  * is ignored, preventing interuption after sending this message.
- * 
+ *
  * @since GemFire 5.0
  */
 public class DestroyPartitionedRegionMessage extends PartitionMessage {
@@ -77,7 +77,7 @@ public class DestroyPartitionedRegionMessage extends PartitionMessage {
   public DestroyPartitionedRegionMessage() {}
 
   /**
-   * 
+   *
    * @param recipients the set of members on which the partitioned region should be destoryed
    * @param region the partitioned region
    * @param processor the processor that the reply will use to notify of the reply.
@@ -94,7 +94,7 @@ public class DestroyPartitionedRegionMessage extends PartitionMessage {
   }
 
   /**
-   * 
+   *
    * @param recipients set of members who have the PartitionedRegion defined.
    * @param r the PartitionedRegion to destroy on each member
    * @return the response on which to wait for the confirmation
@@ -214,10 +214,10 @@ public class DestroyPartitionedRegionMessage extends PartitionMessage {
   /**
    * The response on which to wait for all the replies. This response ignores any exceptions
    * received from the "far side"
-   * 
+   *
    * @since GemFire 5.0
    */
-  static public class DestroyPartitionedRegionResponse extends ReplyProcessor21 {
+  public static class DestroyPartitionedRegionResponse extends ReplyProcessor21 {
     public DestroyPartitionedRegionResponse(InternalDistributedSystem system, Set initMembers) {
       super(system, initMembers);
     }

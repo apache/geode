@@ -29,8 +29,8 @@ import org.apache.geode.memcached.GemFireMemcachedServer.Protocol;
  * One instance of ConnectionHandle is created for each client that connects to
  * {@link GemFireMemcachedServer} and is responsible for reading requests and sending responses to
  * this client.
- * 
- * 
+ *
+ *
  *
  */
 public class ConnectionHandler implements Runnable {

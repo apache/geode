@@ -15,6 +15,11 @@
 
 package org.apache.geode.internal.cache.tier.sockets.command;
 
+import java.io.IOException;
+import java.util.concurrent.Executor;
+
+import javax.transaction.Status;
+
 import org.apache.geode.cache.client.internal.TXSynchronizationOp.CompletionType;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.distributed.internal.ReplyException;
@@ -32,14 +37,9 @@ import org.apache.geode.internal.cache.tier.sockets.Part;
 import org.apache.geode.internal.cache.tier.sockets.ServerConnection;
 import org.apache.geode.internal.security.SecurityService;
 
-import java.io.IOException;
-import java.util.concurrent.Executor;
-
-import javax.transaction.Status;
-
 public class TXSynchronizationCommand extends BaseCommand {
 
-  private final static TXSynchronizationCommand singleton = new TXSynchronizationCommand();
+  private static final TXSynchronizationCommand singleton = new TXSynchronizationCommand();
 
   public static Command getCommand() {
     return singleton;
@@ -47,7 +47,7 @@ public class TXSynchronizationCommand extends BaseCommand {
 
   /*
    * (non-Javadoc)
-   * 
+   *
    * @see
    * org.apache.geode.internal.cache.tier.sockets.BaseCommand#shouldMasqueradeForTx(org.apache.geode
    * .internal.cache.tier.sockets.Message,
@@ -62,7 +62,7 @@ public class TXSynchronizationCommand extends BaseCommand {
 
   /*
    * (non-Javadoc)
-   * 
+   *
    * @see
    * org.apache.geode.internal.cache.tier.sockets.BaseCommand#cmdExecute(org.apache.geode.internal.
    * cache.tier.sockets.Message, org.apache.geode.internal.cache.tier.sockets.ServerConnection,

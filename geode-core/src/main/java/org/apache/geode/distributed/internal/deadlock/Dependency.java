@@ -19,11 +19,11 @@ import java.io.Serializable;
 /**
  * Holds a dependency between one object and another. This class is used as an edge in the @link
  * {@link DependencyGraph}.
- * 
+ *
  * An example of a dependency is a Thread that is blocking on a lock, or a lock that is held by a
  * thread.
- * 
- * 
+ *
+ *
  */
 public class Dependency<A, B> implements Serializable {
 
@@ -82,4 +82,3 @@ public class Dependency<A, B> implements Serializable {
   }
 
 }
-

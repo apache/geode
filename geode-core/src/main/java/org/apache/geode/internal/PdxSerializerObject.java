@@ -18,11 +18,11 @@ package org.apache.geode.internal;
  * Marker interface for object used in PdxSerializer Tests that are in the org.apache package. If an
  * object implements this interface, it will be passed to a PdxSerializer even if it is in the
  * org.apache package.
- * 
+ *
  * This is necessary because we exclude all other objects from the org.apache package. See
  * {@link InternalDataSerializer#writePdx(java.io.DataOutput, org.apache.geode.internal.cache.InternalCache, Object, org.apache.geode.pdx.PdxSerializer)}
- * 
- * 
+ *
+ *
  */
 public interface PdxSerializerObject {
 

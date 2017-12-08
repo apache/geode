@@ -20,7 +20,6 @@ import static org.junit.Assert.*;
 import java.util.Iterator;
 import java.util.Properties;
 
-import org.apache.geode.test.junit.categories.ClientSubscriptionTest;
 import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
@@ -43,6 +42,7 @@ import org.apache.geode.test.dunit.NetworkUtils;
 import org.apache.geode.test.dunit.VM;
 import org.apache.geode.test.dunit.Wait;
 import org.apache.geode.test.dunit.internal.JUnit4DistributedTestCase;
+import org.apache.geode.test.junit.categories.ClientSubscriptionTest;
 import org.apache.geode.test.junit.categories.DistributedTest;
 
 /**
@@ -107,7 +107,7 @@ public class StatsBugDUnitTest extends JUnit4DistributedTestCase {
 
   /**
    * Create the cache
-   * 
+   *
    * @param props - properties for DS
    * @return the cache instance
    * @throws Exception - thrown if any problem occurs in cache creation
@@ -172,7 +172,7 @@ public class StatsBugDUnitTest extends JUnit4DistributedTestCase {
 
   /**
    * Creates and starts the cache-server
-   * 
+   *
    * @return - the port on which cache-server is running
    * @throws Exception - thrown if any problem occurs in cache/server creation
    */
@@ -199,7 +199,7 @@ public class StatsBugDUnitTest extends JUnit4DistributedTestCase {
 
   /**
    * Initializes the cache client
-   * 
+   *
    * @param port1 - port for the primary cache-server
    * @param port2 for the secondary cache-server
    * @throws Exception-thrown if any problem occurs in initializing the client
@@ -219,7 +219,7 @@ public class StatsBugDUnitTest extends JUnit4DistributedTestCase {
 
   /**
    * Initializes the cache client
-   * 
+   *
    * @param port1 - port for the primary cache-server
    * @param port2 for the secondary cache-server
    * @throws Exception-thrown if any problem occurs in initializing the client
@@ -241,7 +241,7 @@ public class StatsBugDUnitTest extends JUnit4DistributedTestCase {
   /**
    * Verify that the invalidates stats at the client accounts for the operations done by both,
    * primary and secondary.
-   * 
+   *
    */
   public static void verifyNumInvalidates() {
     long invalidatesRecordedByStats = pool.getInvalidateCount();
@@ -260,7 +260,7 @@ public class StatsBugDUnitTest extends JUnit4DistributedTestCase {
 
   /**
    * Stops the cache server
-   * 
+   *
    */
   public static void stopServer() {
     try {
@@ -287,7 +287,7 @@ public class StatsBugDUnitTest extends JUnit4DistributedTestCase {
 
   /**
    * Do PUT operations
-   * 
+   *
    * @param keyPrefix - string prefix for the keys for all the entries do be done
    * @throws Exception - thrown if any exception occurs in doing PUTs
    */
@@ -300,7 +300,7 @@ public class StatsBugDUnitTest extends JUnit4DistributedTestCase {
 
   /**
    * Prepopulate the client with the entries that will be done by cache-servers
-   * 
+   *
    * @throws Exception
    */
   public static void prepopulateClient() throws Exception {
@@ -310,7 +310,7 @@ public class StatsBugDUnitTest extends JUnit4DistributedTestCase {
 
   /**
    * Close the cache
-   * 
+   *
    */
   public static void closeCache() {
     if (cache != null && !cache.isClosed()) {

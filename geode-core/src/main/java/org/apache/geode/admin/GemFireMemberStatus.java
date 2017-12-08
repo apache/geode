@@ -50,7 +50,7 @@ import org.apache.geode.internal.net.SocketCreator;
 /**
  * Class <code>GemFireMemberStatus</code> provides the status of a specific GemFire member VM. This
  * VM can be a peer, a client, a server and/or a gateway.
- * 
+ *
  * @deprecated as of 7.0 use the <code><a href=
  *             "{@docRoot}/org/apache/geode/management/package-summary.html">management</a></code>
  *             package instead
@@ -110,7 +110,7 @@ public class GemFireMemberStatus implements Serializable {
 
   protected long upTime = -1;
 
-  protected transient final Cache cache;
+  protected final transient Cache cache;
 
   public GemFireMemberStatus() {
     this(null);
@@ -135,7 +135,7 @@ public class GemFireMemberStatus implements Serializable {
 
   /**
    * Returns whether this member is a client to a cache server
-   * 
+   *
    * @return whether this member is a client to a cache server
    */
   public boolean getIsClient() {
@@ -144,7 +144,7 @@ public class GemFireMemberStatus implements Serializable {
 
   /**
    * Sets whether this member is a client to a cache server
-   * 
+   *
    * @param isClient Boolean defining whether this member is a client to a cache server
    */
   protected void setIsClient(boolean isClient) {
@@ -153,7 +153,7 @@ public class GemFireMemberStatus implements Serializable {
 
   /**
    * Returns whether this member is a cache server
-   * 
+   *
    * @return whether this member is a cache server
    */
   public boolean getIsServer() {
@@ -162,7 +162,7 @@ public class GemFireMemberStatus implements Serializable {
 
   /**
    * Sets whether this member is a cache server
-   * 
+   *
    * @param isServer Boolean defining whether this member is a cache server
    */
   protected void setIsServer(boolean isServer) {
@@ -179,7 +179,7 @@ public class GemFireMemberStatus implements Serializable {
 
   /**
    * Returns whether this member is a hub for WAN gateways
-   * 
+   *
    * @return whether this member is a hub for WAN gateways
    */
   public boolean getIsGatewayHub() {
@@ -188,7 +188,7 @@ public class GemFireMemberStatus implements Serializable {
 
   /**
    * Sets whether this member is a cache server
-   * 
+   *
    * @param isGatewayHub Boolean defining whether this member is a hub for WAN gateways
    */
   protected void setIsGatewayHub(boolean isGatewayHub) {
@@ -213,7 +213,7 @@ public class GemFireMemberStatus implements Serializable {
 
   /**
    * For internal use only
-   * 
+   *
    * @return status of the gateway hub
    */
   public Object/* GatewayHubStatus */ getGatewayHubStatus() {
@@ -307,7 +307,7 @@ public class GemFireMemberStatus implements Serializable {
 
   /**
    * For internal use only
-   * 
+   *
    * @param clientID client for health
    * @return the client's health
    */
@@ -333,7 +333,7 @@ public class GemFireMemberStatus implements Serializable {
 
   /**
    * For internal use only
-   * 
+   *
    * @param fullRegionPath region path
    * @return status for the region
    */
@@ -553,7 +553,7 @@ public class GemFireMemberStatus implements Serializable {
 
   /**
    * returning Map of client queue size against client Id
-   * 
+   *
    * param clientMap is a Map of client queue size against ClientProxyMembershipID
    */
   private Map getClientIDMap(Map ClientProxyMembershipIDMap) {
@@ -678,4 +678,3 @@ public class GemFireMemberStatus implements Serializable {
     }
   }
 }
-

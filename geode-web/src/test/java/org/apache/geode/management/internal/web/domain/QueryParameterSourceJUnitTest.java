@@ -23,17 +23,17 @@ import javax.management.ObjectName;
 import javax.management.Query;
 import javax.management.QueryExp;
 
-import org.apache.geode.internal.util.IOUtils;
-import org.apache.geode.test.junit.categories.UnitTest;
-
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
+
+import org.apache.geode.internal.util.IOUtils;
+import org.apache.geode.test.junit.categories.UnitTest;
 
 /**
  * The QueryParameterSourceJUnitTest class is a test suite of test cases testing the contract and
  * functionality of the QueryParameterSource class.
  * <p/>
- * 
+ *
  * @see org.apache.geode.management.internal.web.domain.QueryParameterSource
  * @see org.junit.Assert
  * @see org.junit.Test

@@ -24,8 +24,8 @@ import org.apache.geode.management.ServerLoadData;
 /**
  * Represents the GemFire CacheServer . Provides data and notifications about server,
  * subscriptions,durable queues and indices
- * 
- * 
+ *
+ *
  */
 public class CacheServerMBean extends NotificationBroadcasterSupport implements CacheServerMXBean {
 

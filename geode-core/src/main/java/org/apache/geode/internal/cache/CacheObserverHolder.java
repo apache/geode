@@ -15,7 +15,7 @@
 /*
  * Created on Sep 12, 2005
  *
- * 
+ *
  */
 package org.apache.geode.internal.cache;
 
@@ -24,23 +24,23 @@ package org.apache.geode.internal.cache;
  * Distributed/Local Region when events like clear take place. There can be only one such observer
  * at a time. If no observer is needed, this member variable should point to an object with
  * 'do-nothing' methods, such as CacheObserverAdapter.
- * 
+ *
  * Code which wishes to observe events during Region clear should do so using the following
  * technique:
- * 
+ *
  * class MyCacheObserver extends CacheObserverAdapter { // ... override methods of interest ... }
- * 
+ *
  * CacheObserver old = CacheObserverHolder.setInstance(new MyCacheObserver());
  * org.apache.geode.internal.cache.LocalRegion.ISSUE_CALLBACKS_TO_CACHE_OBSERVER=true;
- * 
+ *
  * try { Call region methods here } finally { // reset to the original CacheObserver.
  * CacheObserverHolder.setInstance(old); }
- * 
+ *
  * The Region code will call methods on this static member using the following technique:
- * 
+ *
  * CacheObserver observer = CacheObserverHolder.getInstance(); try {
  * observer.startMethod(arguments); doSomething(); } finally { observer.stopMethod(arguments); }
- * 
+ *
  */
 public class CacheObserverHolder {
 

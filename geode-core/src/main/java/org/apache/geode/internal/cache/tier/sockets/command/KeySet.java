@@ -44,7 +44,7 @@ import org.apache.geode.security.ResourcePermission.Resource;
 
 public class KeySet extends BaseCommand {
 
-  private final static KeySet singleton = new KeySet();
+  private static final KeySet singleton = new KeySet();
 
   public static Command getCommand() {
     return singleton;

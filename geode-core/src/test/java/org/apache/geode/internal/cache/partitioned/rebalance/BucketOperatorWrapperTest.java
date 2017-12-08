@@ -23,9 +23,9 @@ import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.spy;
 
 import java.net.InetAddress;
 import java.net.UnknownHostException;
@@ -61,8 +61,8 @@ public class BucketOperatorWrapperTest {
   private int bucketId = 1;
   private InternalDistributedMember sourceMember, targetMember;
 
-  private final static String PR_LEADER_REGION_NAME = "leadregion1";
-  private final static String PR_COLOCATED_REGION_NAME = "coloregion1";
+  private static final String PR_LEADER_REGION_NAME = "leadregion1";
+  private static final String PR_COLOCATED_REGION_NAME = "coloregion1";
 
   @Before
   public void setUp() throws UnknownHostException {

@@ -14,19 +14,18 @@
  */
 package org.apache.geode.internal.cache.persistence;
 
+import it.unimi.dsi.fastutil.ints.Int2ObjectOpenHashMap;
+import it.unimi.dsi.fastutil.objects.Object2IntOpenHashMap;
 import org.apache.logging.log4j.Logger;
 
 import org.apache.geode.internal.logging.LogService;
 
-import it.unimi.dsi.fastutil.ints.Int2ObjectOpenHashMap;
-import it.unimi.dsi.fastutil.objects.Object2IntOpenHashMap;
-
 /**
  * This class manages in memory copy of the canonical ids held in the disk init file. It's used by
  * the init file to assign numbers to new ids and retrieve existing ids.
- * 
+ *
  * This class is not thread safe, so it should be synchronized externally.
- * 
+ *
  *
  */
 public class CanonicalIdHolder {
@@ -72,7 +71,7 @@ public class CanonicalIdHolder {
 
   /**
    * Create an id of the given object.
-   * 
+   *
    * @param object
    * @return the id generated for this object.
    */
@@ -86,7 +85,7 @@ public class CanonicalIdHolder {
 
   /**
    * Get all of the objects that are mapped.
-   * 
+   *
    * @return a map of id to object for all objects held by this canonical id holder.
    */
   public Int2ObjectOpenHashMap getAllMappings() {

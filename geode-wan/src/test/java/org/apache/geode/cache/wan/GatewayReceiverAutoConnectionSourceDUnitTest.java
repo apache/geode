@@ -14,6 +14,13 @@
  */
 package org.apache.geode.cache.wan;
 
+import static org.junit.Assert.*;
+
+import java.util.List;
+
+import org.junit.Test;
+import org.junit.experimental.categories.Category;
+
 import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.Region;
 import org.apache.geode.cache.client.PoolManager;
@@ -27,12 +34,6 @@ import org.apache.geode.test.dunit.NetworkUtils;
 import org.apache.geode.test.dunit.SerializableRunnable;
 import org.apache.geode.test.dunit.VM;
 import org.apache.geode.test.junit.categories.DistributedTest;
-import org.junit.Test;
-import org.junit.experimental.categories.Category;
-
-import java.util.List;
-
-import static org.junit.Assert.*;
 
 @Category({DistributedTest.class})
 public class GatewayReceiverAutoConnectionSourceDUnitTest extends LocatorTestBase {

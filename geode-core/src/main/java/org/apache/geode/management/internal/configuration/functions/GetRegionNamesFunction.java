@@ -16,14 +16,14 @@ package org.apache.geode.management.internal.configuration.functions;
 
 import static java.util.stream.Collectors.toSet;
 
+import java.util.Set;
+
 import org.apache.geode.cache.execute.Function;
 import org.apache.geode.cache.execute.FunctionContext;
 import org.apache.geode.internal.InternalEntity;
 import org.apache.geode.internal.cache.GemFireCacheImpl;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.cache.LocalRegion;
-
-import java.util.Set;
 
 public class GetRegionNamesFunction implements Function, InternalEntity {
   @Override

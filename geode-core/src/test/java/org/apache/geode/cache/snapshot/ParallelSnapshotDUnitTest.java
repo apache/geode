@@ -17,28 +17,28 @@ package org.apache.geode.cache.snapshot;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
-import org.junit.Before;
-import org.junit.Rule;
-import org.junit.experimental.categories.Category;
-import org.junit.Test;
-
-import org.apache.geode.test.dunit.cache.internal.JUnit4CacheTestCase;
-import org.apache.geode.test.junit.categories.DistributedTest;
-
 import java.io.File;
 import java.io.IOException;
 import java.util.Arrays;
+import java.util.Properties;
 
 import com.examples.snapshot.MyPdxSerializer;
+import org.junit.Before;
+import org.junit.Rule;
+import org.junit.Test;
+import org.junit.experimental.categories.Category;
 
 import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.CacheFactory;
 import org.apache.geode.cache.Region;
 import org.apache.geode.cache.snapshot.RegionGenerator.RegionType;
 import org.apache.geode.cache.snapshot.SnapshotOptions.SnapshotFormat;
+import org.apache.geode.distributed.ConfigurationProperties;
 import org.apache.geode.internal.cache.snapshot.SnapshotOptionsImpl;
 import org.apache.geode.test.dunit.Host;
 import org.apache.geode.test.dunit.SerializableCallable;
+import org.apache.geode.test.dunit.cache.internal.JUnit4CacheTestCase;
+import org.apache.geode.test.junit.categories.DistributedTest;
 import org.apache.geode.test.junit.rules.serializable.SerializableTemporaryFolder;
 
 @Category(DistributedTest.class)
@@ -56,6 +56,15 @@ public class ParallelSnapshotDUnitTest extends JUnit4CacheTestCase {
   public void setup() throws IOException {
     directory = temporaryFolder.newFolder();
   }
+
+  @Override
+  public Properties getDistributedSystemProperties() {
+    Properties properties = super.getDistributedSystemProperties();
+    properties.put(ConfigurationProperties.SERIALIZABLE_OBJECT_FILTER,
+        TestSnapshotFileMapper.class.getName());
+    return properties;
+  }
+
 
   @Test
   public void testExportImport() throws Exception {
@@ -93,7 +102,7 @@ public class ParallelSnapshotDUnitTest extends JUnit4CacheTestCase {
   /**
    * This test ensures that parallel import succeeds even when each node does not have a file to
    * import (import cluster larger than export one)
-   * 
+   *
    * @throws Exception
    */
   @Test

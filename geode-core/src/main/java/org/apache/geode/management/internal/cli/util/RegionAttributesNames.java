@@ -43,6 +43,8 @@ public class RegionAttributesNames {
   public static final String POOL_NAME = "pool-name";
   public static final String COMPRESSOR = "compressor";
   public static final String OFF_HEAP = "off-heap";
+  public static final String ASYNC_EVENT_QUEUE_ID = "async-event-queue-id";
+  public static final String GATEWAY_SENDER_ID = "gateway-sender-id";
 
   // Partition attributes
   public static final String LOCAL_MAX_MEMORY = "local-max-memory";

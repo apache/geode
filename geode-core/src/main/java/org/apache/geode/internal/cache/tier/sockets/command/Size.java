@@ -36,7 +36,7 @@ import org.apache.geode.security.ResourcePermission.Resource;
 
 public class Size extends BaseCommand {
 
-  private final static Size singleton = new Size();
+  private static final Size singleton = new Size();
 
   private Size() {}
 

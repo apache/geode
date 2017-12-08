@@ -25,7 +25,7 @@ import org.apache.geode.i18n.LogWriterI18n;
 /**
  * Abstract for {@link XmlParser} that throws {@link UnsupportedOperationException} on unused
  * methods. Also keeps references for {@link #logWriter} and {@link #stack}
- * 
+ *
  *
  * @since GemFire 8.1
  */

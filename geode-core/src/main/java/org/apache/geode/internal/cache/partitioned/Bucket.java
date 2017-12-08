@@ -18,14 +18,14 @@ import java.util.Set;
 
 import org.apache.geode.internal.cache.BucketAdvisor;
 import org.apache.geode.internal.cache.CacheDistributionAdvisee;
-import org.apache.geode.internal.cache.DiskRegion;
-import org.apache.geode.internal.cache.persistence.PersistenceAdvisor;
+import org.apache.geode.internal.cache.HasDiskRegion;
 import org.apache.geode.internal.cache.PartitionedRegion;
+import org.apache.geode.internal.cache.persistence.PersistenceAdvisor;
 
 /**
  * Represents a storage or meta-data container for a <code>PartitionedRegion</code>.
  */
-public interface Bucket extends CacheDistributionAdvisee {
+public interface Bucket extends CacheDistributionAdvisee, HasDiskRegion {
 
   /**
    * Returns the distribution and metadata <code>BucketAdvisor</code> for this bucket.
@@ -51,22 +51,20 @@ public interface Bucket extends CacheDistributionAdvisee {
 
   /**
    * Returns the bucket id used to uniquely identify the bucket in its partitioned region
-   * 
+   *
    * @return the unique identity of the bucket
    */
   public int getId();
 
   /**
    * Report members that are currently hosting the bucket
-   * 
+   *
    * @return set of members
    * @since GemFire 5.9
    */
   public Set/* InternalDistributedMembers */ getBucketOwners();
 
   public PersistenceAdvisor getPersistenceAdvisor();
-
-  public DiskRegion getDiskRegion();
 
   /**
    * Returns the parent {@link PartitionedRegion} of this bucket.

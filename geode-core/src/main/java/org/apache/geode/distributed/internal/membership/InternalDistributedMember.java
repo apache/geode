@@ -14,6 +14,12 @@
  */
 package org.apache.geode.distributed.internal.membership;
 
+import java.io.*;
+import java.net.Inet4Address;
+import java.net.InetAddress;
+import java.net.UnknownHostException;
+import java.util.*;
+
 import org.apache.geode.DataSerializer;
 import org.apache.geode.GemFireConfigException;
 import org.apache.geode.InternalGemFireError;
@@ -30,18 +36,12 @@ import org.apache.geode.internal.cache.versions.VersionSource;
 import org.apache.geode.internal.i18n.LocalizedStrings;
 import org.apache.geode.internal.net.SocketCreator;
 
-import java.io.*;
-import java.net.Inet4Address;
-import java.net.InetAddress;
-import java.net.UnknownHostException;
-import java.util.*;
-
 /**
  * This is the fundamental representation of a member of a GemFire distributed system.
  */
 public class InternalDistributedMember implements DistributedMember, Externalizable,
     DataSerializableFixedID, ProfileId, VersionSource<DistributedMember> {
-  private final static long serialVersionUID = -2785249969777296507L;
+  private static final long serialVersionUID = -2785249969777296507L;
 
   // whether to show NetMember components in toString()
   private final boolean SHOW_NETMEMBER =
@@ -146,7 +146,7 @@ public class InternalDistributedMember implements DistributedMember, Externaliza
    * <p>
    * This is not the preferred way of creating an instance since the NetMember may not have all
    * required information (e.g., a JGroups address without direct-port and other information).
-   * 
+   *
    * @param m
    */
   public InternalDistributedMember(NetMember m) {
@@ -170,7 +170,7 @@ public class InternalDistributedMember implements DistributedMember, Externaliza
    * Replace the current NetMember with the given member. This can be used to fill out an
    * InternalDistributedMember that was created from a partial NetMember created by
    * readEssentialData.
-   * 
+   *
    * @param m the replacement NetMember
    */
   public void setNetMember(NetMember m) {
@@ -194,7 +194,7 @@ public class InternalDistributedMember implements DistributedMember, Externaliza
    * <b> THIS METHOD IS FOR TESTING ONLY. DO NOT USE IT TO CREATE IDs FOR USE IN THE PRODUCT. IT
    * DOES NOT PROPERLY INITIALIZE ATTRIBUTES NEEDED FOR P2P FUNCTIONALITY. </b>
    *
-   * 
+   *
    * @param i the hostname, must be for the current host
    * @param p the membership listening port
    * @throws UnknownHostException if the given hostname cannot be resolved
@@ -206,7 +206,7 @@ public class InternalDistributedMember implements DistributedMember, Externaliza
   /**
    * Creates a new InternalDistributedMember for use in notifying membership listeners. The version
    * information in the ID is set to Version.CURRENT.
-   * 
+   *
    * @param location the coordinates of the server
    */
 
@@ -232,7 +232,7 @@ public class InternalDistributedMember implements DistributedMember, Externaliza
    * <b> THIS METHOD IS FOR TESTING ONLY. DO NOT USE IT TO CREATE IDs FOR USE IN THE PRODUCT. IT
    * DOES NOT PROPERLY INITIALIZE ATTRIBUTES NEEDED FOR P2P FUNCTIONALITY. </b>
    *
-   * 
+   *
    * @param i the hostname, must be for the current host
    * @param p the membership listening port
    * @param version the version of this member
@@ -275,7 +275,7 @@ public class InternalDistributedMember implements DistributedMember, Externaliza
    * @param vmKind the dmType
    * @param groups the server groups / roles
    * @param attr durable client attributes, if any
-   * 
+   *
    * @throws UnknownHostException if the given hostname cannot be resolved
    */
   public InternalDistributedMember(String host, int p, String n, String u, int vmKind,
@@ -302,7 +302,7 @@ public class InternalDistributedMember implements DistributedMember, Externaliza
    * <b> THIS METHOD IS FOR TESTING ONLY. DO NOT USE IT TO CREATE IDs FOR USE IN THE PRODUCT. IT
    * DOES NOT PROPERLY INITIALIZE ATTRIBUTES NEEDED FOR P2P FUNCTIONALITY. </b>
    *
-   * 
+   *
    * @param i the hostname, must be for the current host
    * @param p the membership listening port
    */
@@ -314,10 +314,10 @@ public class InternalDistributedMember implements DistributedMember, Externaliza
   /**
    * Create a InternalDistributedMember as defined by the given address.
    * <p>
-   * 
+   *
    * <b> THIS METHOD IS FOR TESTING ONLY. DO NOT USE IT TO CREATE IDs FOR USE IN THE PRODUCT. IT
    * DOES NOT PROPERLY INITIALIZE ATTRIBUTES NEEDED FOR P2P FUNCTIONALITY. </b>
-   * 
+   *
    * @param addr address of the server
    * @param p the listening port of the server
    * @param isCurrentHost true if the given host refers to the current host (bridge and gateway use
@@ -345,7 +345,7 @@ public class InternalDistributedMember implements DistributedMember, Externaliza
 
   /**
    * Return the underlying port (membership port)
-   * 
+   *
    * @return the underlying membership port
    */
   public int getPort() {
@@ -456,7 +456,7 @@ public class InternalDistributedMember implements DistributedMember, Externaliza
   /**
    * Returns the name of this member's distributed system connection or null if no name was
    * specified.
-   * 
+   *
    * @see org.apache.geode.distributed.DistributedSystem#getName
    */
   public String getName() {
@@ -611,7 +611,7 @@ public class InternalDistributedMember implements DistributedMember, Externaliza
   /**
    * An InternalDistributedMember created for a test or via readEssentialData will be a Partial ID,
    * possibly not having ancillary info like "name".
-   * 
+   *
    * @return true if this is a partial ID
    */
   public boolean isPartial() {
@@ -1191,7 +1191,7 @@ public class InternalDistributedMember implements DistributedMember, Externaliza
    * sb.append(addr.getHostAddress()); } else { appendShortName(addr.getHostName(), sb); } if
    * (this.vmPid != 0) { sb.append("("); sb.append(this.vmPid); sb.append(")"); } sb.append(":");
    * sb.append(this.ipAddr.getPort()); return sb.toString(); } }
-   * 
+   *
    * // Helper method for getId()... copied from IpAddress. private void appendShortName(String
    * hostname, StringBuffer sb) { if (hostname == null) return; int index = hostname.indexOf('.');
    * if(index > 0 && !Character.isDigit(hostname.charAt(0))) { sb.append(hostname.substring(0,

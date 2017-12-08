@@ -15,12 +15,13 @@
 
 package org.apache.geode.internal.util;
 
-import org.apache.commons.lang.StringUtils;
-import org.apache.geode.internal.offheap.annotations.Unretained;
-
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+
+import org.apache.commons.lang.StringUtils;
+
+import org.apache.geode.internal.offheap.annotations.Unretained;
 
 /**
  *
@@ -35,7 +36,7 @@ public abstract class ArrayUtils {
    * Gets the element at index in the array in a bound-safe manner. If index is not a valid index in
    * the given array, then the default value is returned.
    * <p/>
-   * 
+   *
    * @param <T> the class type of the elements in the array.
    * @param array the array from which the element at index is retrieved.
    * @param index the index into the array to retrieve the element.
@@ -55,7 +56,7 @@ public abstract class ArrayUtils {
    * Gets the first element from the given array or null if the array reference is null or the array
    * length is 0.
    * <p/>
-   * 
+   *
    * @param <T> the Class type of the elements in the array.
    * @param array the array of elements from which to retrieve the first element.
    * @return the first element from the array or null if either the array reference is null or the
@@ -68,7 +69,7 @@ public abstract class ArrayUtils {
   /**
    * Converts the specified Object array into a String representation.
    * <p/>
-   * 
+   *
    * @param array the Object array of elements to convert to a String.
    * @return a String representation of the Object array.
    * @see java.lang.StringBuilder
@@ -308,7 +309,7 @@ public abstract class ArrayUtils {
   /**
    * Converts the primitive int array into an Integer wrapper object array.
    * </p>
-   * 
+   *
    * @param array the primitive int array to convert into an Integer wrapper object array.
    * @return an Integer array containing the values from the elements in the primitive int array.
    */
@@ -326,7 +327,7 @@ public abstract class ArrayUtils {
 
   /**
    * Converts a double byte array into a double Byte array.
-   * 
+   *
    * @param array the double byte array to convert into double Byte array
    * @return a double array of Byte objects containing values from the double byte array
    */
@@ -346,7 +347,7 @@ public abstract class ArrayUtils {
 
   /**
    * Converts a double Byte array into a double byte array.
-   * 
+   *
    * @param byteArray the double Byte array to convert into a double byte array
    * @return a double byte array containing byte values from the double Byte array
    */
@@ -371,7 +372,7 @@ public abstract class ArrayUtils {
    *
    * <p>
    * Example usage:
-   * 
+   *
    * <pre>
    * List&lt;String&gt; stooges = Arrays.asList("Larry", "Moe", "Curly");
    * stooges.remove("Curly");

@@ -18,6 +18,8 @@ import java.util.HashSet;
 import java.util.Set;
 import java.util.concurrent.ScheduledExecutorService;
 
+import org.apache.logging.log4j.Logger;
+
 import org.apache.geode.CancelCriterion;
 import org.apache.geode.CancelException;
 import org.apache.geode.GemFireConfigException;
@@ -38,13 +40,12 @@ import org.apache.geode.internal.net.SocketCreator;
 import org.apache.geode.internal.net.SocketCreatorFactory;
 import org.apache.geode.internal.security.SecurableCommunicationChannel;
 import org.apache.geode.security.GemFireSecurityException;
-import org.apache.logging.log4j.Logger;
 
 /**
  * Creates connections, using a connection source to determine which server to connect to.
- * 
+ *
  * @since GemFire 5.7
- * 
+ *
  */
 public class ConnectionFactoryImpl implements ConnectionFactory {
 
@@ -69,7 +70,7 @@ public class ConnectionFactoryImpl implements ConnectionFactory {
 
   /**
    * Test hook for client version support
-   * 
+   *
    * @since GemFire 5.7
    */
 
@@ -334,5 +335,3 @@ public class ConnectionFactoryImpl implements ConnectionFactory {
     return updater;
   }
 }
-
-

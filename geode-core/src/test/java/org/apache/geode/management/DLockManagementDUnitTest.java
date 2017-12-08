@@ -302,4 +302,3 @@ public class DLockManagementDUnitTest implements Serializable {
     return Awaitility.await().atMost(MAX_WAIT_MILLIS, MILLISECONDS);
   }
 }
-

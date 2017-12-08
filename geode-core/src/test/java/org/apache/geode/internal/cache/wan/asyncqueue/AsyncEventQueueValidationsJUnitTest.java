@@ -17,16 +17,16 @@
  */
 package org.apache.geode.internal.cache.wan.asyncqueue;
 
-import static org.apache.geode.distributed.ConfigurationProperties.*;
 import static junitparams.JUnitParamsRunner.*;
+import static org.apache.geode.distributed.ConfigurationProperties.*;
 import static org.junit.Assert.*;
 
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 
-import org.awaitility.Awaitility;
 import junitparams.JUnitParamsRunner;
 import junitparams.Parameters;
+import org.awaitility.Awaitility;
 import org.junit.After;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;

@@ -14,15 +14,16 @@
  */
 package org.apache.geode.modules.session.catalina.callback;
 
+import java.util.Properties;
+
+import javax.servlet.http.HttpSession;
+
 import org.apache.geode.cache.CacheWriterException;
 import org.apache.geode.cache.Declarable;
 import org.apache.geode.cache.EntryEvent;
 import org.apache.geode.cache.EntryNotFoundException;
 import org.apache.geode.cache.Region;
 import org.apache.geode.cache.util.CacheWriterAdapter;
-
-import javax.servlet.http.HttpSession;
-import java.util.Properties;
 
 public class LocalSessionCacheWriter extends CacheWriterAdapter<String, HttpSession>
     implements Declarable {

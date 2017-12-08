@@ -14,10 +14,10 @@
  */
 package org.apache.geode.management.internal;
 
+import java.io.File;
+import java.util.concurrent.CountDownLatch;
+
 import org.apache.commons.lang.StringUtils;
-import org.apache.geode.GemFireConfigException;
-import org.apache.geode.internal.admin.SSLConfig;
-import org.apache.geode.internal.logging.LogService;
 import org.apache.logging.log4j.Logger;
 import org.eclipse.jetty.http.HttpVersion;
 import org.eclipse.jetty.server.Connector;
@@ -31,8 +31,9 @@ import org.eclipse.jetty.server.handler.HandlerCollection;
 import org.eclipse.jetty.util.ssl.SslContextFactory;
 import org.eclipse.jetty.webapp.WebAppContext;
 
-import java.io.File;
-import java.util.concurrent.CountDownLatch;
+import org.apache.geode.GemFireConfigException;
+import org.apache.geode.internal.admin.SSLConfig;
+import org.apache.geode.internal.logging.LogService;
 
 /**
  * @since GemFire 8.1

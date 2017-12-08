@@ -29,14 +29,14 @@ import org.apache.geode.internal.i18n.LocalizedStrings;
 /**
  * Move buckets from one node to another, up to a certain percentage of the source node. Each call
  * to nextStep attempts to move a single bucket.
- * 
+ *
  * This uses a first fit decreasing strategy to choose which buckets to move. It sorts the buckets
  * by size, and then moves the largest bucket that is below the load we are trying to move.
- * 
+ *
  * An improvement would be find the bucket that can be moved with the least cost for the most load
  * change, but because the load probe currently use the same value for load and cost, there's no
  * need to complicate things now.
- * 
+ *
  *
  */
 public class PercentageMoveDirector extends RebalanceDirectorAdapter {

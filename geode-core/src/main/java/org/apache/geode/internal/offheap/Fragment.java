@@ -21,7 +21,7 @@ import java.util.concurrent.atomic.AtomicIntegerFieldUpdater;
  * always from the front so the free memory is always at the end. The freeIdx keeps track of the
  * first byte of free memory in the fragment. The base memory address and the total size of a
  * fragment never change. During defragmentation fragments go away and are recreated.
- * 
+ *
  *
  */
 public class Fragment implements MemoryBlock {

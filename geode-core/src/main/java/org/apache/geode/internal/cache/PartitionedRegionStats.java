@@ -31,118 +31,118 @@ import org.apache.geode.internal.statistics.StatisticsTypeFactoryImpl;
  * Represents a statistics type that can be archived to vsd. Loading of this class automatically
  * triggers statistics archival.
  * <p>
- * 
+ *
  * A singleton instance can be requested with the initSingleton(...) and getSingleton() methods.
  * <p>
- * 
+ *
  * Individual instances can be created with the constructor.
  * <p>
- * 
+ *
  * To manipulate the statistic values, use (inc|dec|set|get)&lt;fieldName&gt; methods.
- * 
+ *
  * @since GemFire 5.0
  */
 public class PartitionedRegionStats {
 
   private static final StatisticsType type;
 
-  private final static int dataStoreEntryCountId;
-  private final static int dataStoreBytesInUseId;
-  private final static int bucketCountId;
+  private static final int dataStoreEntryCountId;
+  private static final int dataStoreBytesInUseId;
+  private static final int bucketCountId;
 
-  private final static int putsCompletedId;
-  private final static int putOpsRetriedId;
-  private final static int putRetriesId;
+  private static final int putsCompletedId;
+  private static final int putOpsRetriedId;
+  private static final int putRetriesId;
 
-  private final static int createsCompletedId;
-  private final static int createOpsRetriedId;
-  private final static int createRetriesId;
+  private static final int createsCompletedId;
+  private static final int createOpsRetriedId;
+  private static final int createRetriesId;
 
-  private final static int preferredReadLocalId;
-  private final static int preferredReadRemoteId;
+  private static final int preferredReadLocalId;
+  private static final int preferredReadRemoteId;
 
-  private final static int getsCompletedId;
-  private final static int getOpsRetriedId;
-  private final static int getRetriesId;
+  private static final int getsCompletedId;
+  private static final int getOpsRetriedId;
+  private static final int getRetriesId;
 
-  private final static int destroysCompletedId;
-  private final static int destroyOpsRetriedId;
-  private final static int destroyRetriesId;
+  private static final int destroysCompletedId;
+  private static final int destroyOpsRetriedId;
+  private static final int destroyRetriesId;
 
-  private final static int invalidatesCompletedId;
-  private final static int invalidateOpsRetriedId;
-  private final static int invalidateRetriesId;
+  private static final int invalidatesCompletedId;
+  private static final int invalidateOpsRetriedId;
+  private static final int invalidateRetriesId;
 
-  private final static int containsKeyCompletedId;
-  private final static int containsKeyOpsRetriedId;
-  private final static int containsKeyRetriesId;
+  private static final int containsKeyCompletedId;
+  private static final int containsKeyOpsRetriedId;
+  private static final int containsKeyRetriesId;
 
-  private final static int containsValueForKeyCompletedId;
+  private static final int containsValueForKeyCompletedId;
 
-  private final static int partitionMessagesSentId;
-  private final static int partitionMessagesReceivedId;
-  private final static int partitionMessagesProcessedId;
+  private static final int partitionMessagesSentId;
+  private static final int partitionMessagesReceivedId;
+  private static final int partitionMessagesProcessedId;
 
-  private final static int putTimeId;
-  private final static int createTimeId;
-  private final static int getTimeId;
-  private final static int destroyTimeId;
-  private final static int invalidateTimeId;
-  private final static int containsKeyTimeId;
-  private final static int containsValueForKeyTimeId;
-  private final static int partitionMessagesProcessingTimeId;
+  private static final int putTimeId;
+  private static final int createTimeId;
+  private static final int getTimeId;
+  private static final int destroyTimeId;
+  private static final int invalidateTimeId;
+  private static final int containsKeyTimeId;
+  private static final int containsValueForKeyTimeId;
+  private static final int partitionMessagesProcessingTimeId;
 
-  private final static String PUTALLS_COMPLETED = "putAllsCompleted";
-  private final static String PUTALL_MSGS_RETRIED = "putAllMsgsRetried";
-  private final static String PUTALL_RETRIES = "putAllRetries";
-  private final static String PUTALL_TIME = "putAllTime";
+  private static final String PUTALLS_COMPLETED = "putAllsCompleted";
+  private static final String PUTALL_MSGS_RETRIED = "putAllMsgsRetried";
+  private static final String PUTALL_RETRIES = "putAllRetries";
+  private static final String PUTALL_TIME = "putAllTime";
 
-  private final static int fieldId_PUTALLS_COMPLETED;
-  private final static int fieldId_PUTALL_MSGS_RETRIED;
-  private final static int fieldId_PUTALL_RETRIES;
-  private final static int fieldId_PUTALL_TIME;
+  private static final int fieldId_PUTALLS_COMPLETED;
+  private static final int fieldId_PUTALL_MSGS_RETRIED;
+  private static final int fieldId_PUTALL_RETRIES;
+  private static final int fieldId_PUTALL_TIME;
 
-  private final static String REMOVE_ALLS_COMPLETED = "removeAllsCompleted";
-  private final static String REMOVE_ALL_MSGS_RETRIED = "removeAllMsgsRetried";
-  private final static String REMOVE_ALL_RETRIES = "removeAllRetries";
-  private final static String REMOVE_ALL_TIME = "removeAllTime";
+  private static final String REMOVE_ALLS_COMPLETED = "removeAllsCompleted";
+  private static final String REMOVE_ALL_MSGS_RETRIED = "removeAllMsgsRetried";
+  private static final String REMOVE_ALL_RETRIES = "removeAllRetries";
+  private static final String REMOVE_ALL_TIME = "removeAllTime";
 
-  private final static int fieldId_REMOVE_ALLS_COMPLETED;
-  private final static int fieldId_REMOVE_ALL_MSGS_RETRIED;
-  private final static int fieldId_REMOVE_ALL_RETRIES;
-  private final static int fieldId_REMOVE_ALL_TIME;
+  private static final int fieldId_REMOVE_ALLS_COMPLETED;
+  private static final int fieldId_REMOVE_ALL_MSGS_RETRIED;
+  private static final int fieldId_REMOVE_ALL_RETRIES;
+  private static final int fieldId_REMOVE_ALL_TIME;
 
-  private final static int volunteeringInProgressId; // count of volunteering in progress
-  private final static int volunteeringBecamePrimaryId; // ended as primary
-  private final static int volunteeringBecamePrimaryTimeId; // time spent that ended as primary
-  private final static int volunteeringOtherPrimaryId; // ended as not primary
-  private final static int volunteeringOtherPrimaryTimeId; // time spent that ended as not primary
-  private final static int volunteeringClosedId; // ended as closed
-  private final static int volunteeringClosedTimeId; // time spent that ended as closed
+  private static final int volunteeringInProgressId; // count of volunteering in progress
+  private static final int volunteeringBecamePrimaryId; // ended as primary
+  private static final int volunteeringBecamePrimaryTimeId; // time spent that ended as primary
+  private static final int volunteeringOtherPrimaryId; // ended as not primary
+  private static final int volunteeringOtherPrimaryTimeId; // time spent that ended as not primary
+  private static final int volunteeringClosedId; // ended as closed
+  private static final int volunteeringClosedTimeId; // time spent that ended as closed
 
-  private final static int applyReplicationCompletedId;
-  private final static int applyReplicationInProgressId;
-  private final static int applyReplicationTimeId;
-  private final static int sendReplicationCompletedId;
-  private final static int sendReplicationInProgressId;
-  private final static int sendReplicationTimeId;
-  private final static int putRemoteCompletedId;
-  private final static int putRemoteInProgressId;
-  private final static int putRemoteTimeId;
-  private final static int putLocalCompletedId;
-  private final static int putLocalInProgressId;
-  private final static int putLocalTimeId;
+  private static final int applyReplicationCompletedId;
+  private static final int applyReplicationInProgressId;
+  private static final int applyReplicationTimeId;
+  private static final int sendReplicationCompletedId;
+  private static final int sendReplicationInProgressId;
+  private static final int sendReplicationTimeId;
+  private static final int putRemoteCompletedId;
+  private static final int putRemoteInProgressId;
+  private static final int putRemoteTimeId;
+  private static final int putLocalCompletedId;
+  private static final int putLocalInProgressId;
+  private static final int putLocalTimeId;
 
-  private final static int totalNumBucketsId; // total number of buckets
-  private final static int primaryBucketCountId; // number of hosted primary buckets
-  private final static int volunteeringThreadsId; // number of threads actively volunteering
-  private final static int lowRedundancyBucketCountId; // number of buckets currently without full
+  private static final int totalNumBucketsId; // total number of buckets
+  private static final int primaryBucketCountId; // number of hosted primary buckets
+  private static final int volunteeringThreadsId; // number of threads actively volunteering
+  private static final int lowRedundancyBucketCountId; // number of buckets currently without full
                                                        // redundancy
-  private final static int noCopiesBucketCountId; // number of buckets currently without any
+  private static final int noCopiesBucketCountId; // number of buckets currently without any
                                                   // redundancy
 
-  private final static int configuredRedundantCopiesId;
-  private final static int actualRedundantCopiesId;
+  private static final int configuredRedundantCopiesId;
+  private static final int actualRedundantCopiesId;
 
   private static final int getEntriesCompletedId;
   private static final int getEntryTimeId;
@@ -577,7 +577,7 @@ public class PartitionedRegionStats {
 
   /**
    * This method sets the end time for putAll and updates the counters
-   * 
+   *
    * @param start
    */
   public void endPutAll(long start) {
@@ -614,7 +614,7 @@ public class PartitionedRegionStats {
 
   /**
    * This method sets the end time for putAll and updates the counters
-   * 
+   *
    * @param start
    * @param numInc
    */
@@ -955,7 +955,7 @@ public class PartitionedRegionStats {
 
   /**
    * Statistic to track the {@link Region#getEntry(Object)} call
-   * 
+   *
    * @param startTime the time the getEntry operation started
    */
   public void endGetEntry(long startTime) {
@@ -964,7 +964,7 @@ public class PartitionedRegionStats {
 
   /**
    * This method sets the end time for update and updates the counters
-   * 
+   *
    * @param start
    * @param numInc
    */

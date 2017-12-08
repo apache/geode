@@ -16,10 +16,10 @@ package org.apache.geode.cache.query.internal.types;
 
 import static org.junit.Assert.*;
 
-import org.apache.geode.cache.query.internal.parse.OQLLexerTokenTypes;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
+import org.apache.geode.cache.query.internal.parse.OQLLexerTokenTypes;
 import org.apache.geode.pdx.internal.PdxString;
 import org.apache.geode.test.junit.categories.UnitTest;
 

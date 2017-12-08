@@ -14,18 +14,19 @@
  */
 package org.apache.geode.admin.internal;
 
-import org.apache.geode.distributed.DistributedSystem;
-import org.apache.geode.internal.AvailablePortHelper;
-import org.apache.geode.test.junit.categories.IntegrationTest;
+import static org.apache.geode.distributed.ConfigurationProperties.BIND_ADDRESS;
+import static org.apache.geode.distributed.ConfigurationProperties.START_LOCATOR;
+import static org.junit.Assert.assertEquals;
+
+import java.util.Properties;
+
 import org.junit.After;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
-import java.util.Properties;
-
-import static org.apache.geode.distributed.ConfigurationProperties.BIND_ADDRESS;
-import static org.apache.geode.distributed.ConfigurationProperties.START_LOCATOR;
-import static org.junit.Assert.assertEquals;
+import org.apache.geode.distributed.DistributedSystem;
+import org.apache.geode.internal.AvailablePortHelper;
+import org.apache.geode.test.junit.categories.IntegrationTest;
 
 /**
  * Tests {@link org.apache.geode.admin.internal.AdminDistributedSystemImpl}.
@@ -37,8 +38,8 @@ import static org.junit.Assert.assertEquals;
 @Category(IntegrationTest.class)
 public class BindDistributedSystemJUnitTest {
 
-  private final static int RETRY_ATTEMPTS = 3;
-  private final static int RETRY_SLEEP = 100;
+  private static final int RETRY_ATTEMPTS = 3;
+  private static final int RETRY_SLEEP = 100;
 
   private DistributedSystem system;
 
@@ -81,4 +82,3 @@ public class BindDistributedSystemJUnitTest {
 
 
 }
-

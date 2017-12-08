@@ -14,40 +14,11 @@
  */
 package org.apache.geode.cache.client.internal;
 
-import org.apache.geode.CancelCriterion;
-import org.apache.geode.cache.*;
-import org.apache.geode.cache.client.NoAvailableLocatorsException;
-import org.apache.geode.cache.client.SubscriptionNotEnabledException;
-import org.apache.geode.cache.client.internal.locator.ClientConnectionRequest;
-import org.apache.geode.cache.client.internal.locator.ClientConnectionResponse;
-import org.apache.geode.cache.client.internal.locator.LocatorListResponse;
-import org.apache.geode.cache.query.QueryService;
-import org.apache.geode.distributed.DistributedSystem;
-import org.apache.geode.distributed.internal.InternalDistributedSystem;
-import org.apache.geode.distributed.internal.PoolStatHelper;
-import org.apache.geode.distributed.internal.ServerLocation;
-import org.apache.geode.distributed.internal.membership.gms.membership.HostAddress;
-import org.apache.geode.distributed.internal.ClusterConfigurationService;
-import org.apache.geode.distributed.internal.DistributionConfig;
-import org.apache.geode.distributed.internal.tcpserver.TcpClient;
-import org.apache.geode.distributed.internal.tcpserver.TcpHandler;
-import org.apache.geode.distributed.internal.tcpserver.TcpServer;
-import org.apache.geode.internal.AvailablePortHelper;
-import org.apache.geode.internal.cache.PoolStats;
-import org.apache.geode.internal.cache.tier.InternalClientMembership;
-import org.apache.geode.internal.cache.tier.sockets.TcpServerFactory;
-import org.apache.geode.management.membership.ClientMembershipEvent;
-import org.apache.geode.management.membership.ClientMembershipListener;
-import org.apache.geode.test.junit.categories.ClientServerTest;
-import org.apache.geode.test.junit.categories.IntegrationTest;
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.contrib.java.lang.system.RestoreSystemProperties;
-import org.junit.experimental.categories.Category;
-
-import junit.framework.Assert;
+import static org.apache.geode.distributed.ConfigurationProperties.LOCATORS;
+import static org.apache.geode.distributed.ConfigurationProperties.MCAST_PORT;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.fail;
 
 import java.io.IOException;
 import java.net.ConnectException;
@@ -65,14 +36,42 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 
-import static org.apache.geode.distributed.ConfigurationProperties.LOCATORS;
-import static org.apache.geode.distributed.ConfigurationProperties.MCAST_PORT;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.fail;
-
+import junit.framework.Assert;
 import org.awaitility.Awaitility;
 import org.awaitility.Duration;
+import org.junit.After;
+import org.junit.Before;
+import org.junit.Rule;
+import org.junit.Test;
+import org.junit.contrib.java.lang.system.RestoreSystemProperties;
+import org.junit.experimental.categories.Category;
+
+import org.apache.geode.CancelCriterion;
+import org.apache.geode.cache.*;
+import org.apache.geode.cache.client.NoAvailableLocatorsException;
+import org.apache.geode.cache.client.SubscriptionNotEnabledException;
+import org.apache.geode.cache.client.internal.locator.ClientConnectionRequest;
+import org.apache.geode.cache.client.internal.locator.ClientConnectionResponse;
+import org.apache.geode.cache.client.internal.locator.LocatorListResponse;
+import org.apache.geode.cache.query.QueryService;
+import org.apache.geode.distributed.DistributedSystem;
+import org.apache.geode.distributed.internal.ClusterConfigurationService;
+import org.apache.geode.distributed.internal.DistributionConfig;
+import org.apache.geode.distributed.internal.InternalDistributedSystem;
+import org.apache.geode.distributed.internal.PoolStatHelper;
+import org.apache.geode.distributed.internal.ServerLocation;
+import org.apache.geode.distributed.internal.membership.gms.membership.HostAddress;
+import org.apache.geode.distributed.internal.tcpserver.TcpClient;
+import org.apache.geode.distributed.internal.tcpserver.TcpHandler;
+import org.apache.geode.distributed.internal.tcpserver.TcpServer;
+import org.apache.geode.internal.AvailablePortHelper;
+import org.apache.geode.internal.cache.PoolStats;
+import org.apache.geode.internal.cache.tier.InternalClientMembership;
+import org.apache.geode.internal.cache.tier.sockets.TcpServerFactory;
+import org.apache.geode.management.membership.ClientMembershipEvent;
+import org.apache.geode.management.membership.ClientMembershipListener;
+import org.apache.geode.test.junit.categories.ClientServerTest;
+import org.apache.geode.test.junit.categories.IntegrationTest;
 
 /**
  *
@@ -157,7 +156,7 @@ public class AutoConnectionSourceImplJUnitTest {
    * This test validates the AutoConnectionSourceImpl.updateLocatorInLocatorList method. That method
    * takes InetSocketAddres of locator which unable to connect to locator. And update that
    * InetSocketAddres with hostaddress of locator in locatorlist.
-   * 
+   *
    * In this test we validate this using identityHashCode.
    */
   @Test
@@ -297,7 +296,7 @@ public class AutoConnectionSourceImplJUnitTest {
 
   /**
    * This tests that discovery works even after one of two locators was shut down
-   * 
+   *
    * @throws Exception
    */
   @Test

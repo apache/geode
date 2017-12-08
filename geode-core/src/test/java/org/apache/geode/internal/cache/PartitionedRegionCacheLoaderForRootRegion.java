@@ -20,8 +20,8 @@ import java.util.Properties;
 
 import org.apache.geode.cache.CacheLoader;
 import org.apache.geode.cache.CacheLoaderException;
-import org.apache.geode.cache.LoaderHelper;
 import org.apache.geode.cache.Declarable;
+import org.apache.geode.cache.LoaderHelper;
 
 /**
  * This class is CacheLoader for partition region

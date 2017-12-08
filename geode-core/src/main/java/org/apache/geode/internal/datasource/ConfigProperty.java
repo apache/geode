@@ -17,7 +17,7 @@ package org.apache.geode.internal.datasource;
 /**
  * This class represents the config property for vendor specific data. This has a name, value and
  * type.
- * 
+ *
  */
 public class ConfigProperty {
 

@@ -14,17 +14,17 @@
  */
 package org.apache.geode.distributed.internal;
 
-import org.apache.geode.*;
-import org.apache.geode.internal.statistics.StatisticsTypeFactoryImpl;
+import static org.apache.geode.distributed.ConfigurationProperties.LOCATORS;
 
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicLong;
 
-import static org.apache.geode.distributed.ConfigurationProperties.LOCATORS;
+import org.apache.geode.*;
+import org.apache.geode.internal.statistics.StatisticsTypeFactoryImpl;
 
 /**
  * This class maintains statistics for the locator
- * 
+ *
  * @since GemFire 5.7
  */
 public class LocatorStats {
@@ -53,10 +53,10 @@ public class LocatorStats {
   private static final int _REQUESTS_TO_LOCATOR;
   private static final int _RESPONSES_FROM_LOCATOR;
   private static final int _ENDPOINTS_KNOWN;
-  private final static int _REQUESTS_IN_PROGRESS;
-  private final static int _REQUEST_TIME;
-  private final static int _RESPONSE_TIME;
-  private final static int _SERVER_LOAD_UPDATES;
+  private static final int _REQUESTS_IN_PROGRESS;
+  private static final int _REQUEST_TIME;
+  private static final int _RESPONSE_TIME;
+  private static final int _SERVER_LOAD_UPDATES;
 
 
   private Statistics _stats = null;

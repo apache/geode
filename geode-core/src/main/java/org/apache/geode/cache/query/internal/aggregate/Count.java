@@ -19,7 +19,7 @@ import org.apache.geode.cache.query.QueryService;
 
 /**
  * Computes the count of the non distinct rows for replicated & PR based queries.
- * 
+ *
  *
  */
 public class Count implements Aggregator {

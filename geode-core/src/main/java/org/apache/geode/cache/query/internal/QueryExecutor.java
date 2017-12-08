@@ -23,7 +23,7 @@ import org.apache.geode.cache.query.TypeMismatchException;
 
 /**
  * An interface allowing different Region implementations to support querying.
- * 
+ *
  * @since GemFire 5.5
  */
 public interface QueryExecutor {

@@ -14,8 +14,8 @@
  */
 package org.apache.geode.internal.admin.statalerts;
 
-import java.io.DataOutput;
 import java.io.DataInput;
+import java.io.DataOutput;
 import java.io.IOException;
 
 import org.apache.geode.StatisticDescriptor;
@@ -24,14 +24,14 @@ import org.apache.geode.internal.admin.StatAlertsManager;
 
 /**
  * Implementation {@link StatisticInfo} This does not contains associated statistics object
- * 
+ *
  * This has been created client(E.g GFMon2.0), where we actually don't need statistic object. So,
  * Instance of this will be light weight object So that we can reduce the overhead of data transfer
  * across network and serialization/dserialization
- * 
+ *
  * on server side , {@link StatAlertsManager} create instance of {@link StatisticInfoImpl} class
  * with help of this class instance
- * 
+ *
  */
 public class DummyStatisticInfoImpl implements StatisticInfo {
   private static final long serialVersionUID = -5456779525795868187L;

@@ -15,10 +15,11 @@
 package org.apache.geode.cache.query.internal.parse;
 
 import antlr.*;
+
 import org.apache.geode.cache.query.internal.QCompiler;
 
 /**
- * 
+ *
  *
  */
 public class ASTOrderBy extends GemFireAST {
@@ -38,4 +39,3 @@ public class ASTOrderBy extends GemFireAST {
   }
 
 }
-

@@ -22,12 +22,12 @@ import org.apache.geode.cache.OperationAbortedException;
  * {@link org.apache.geode.cache.Cache#readyForEvents} method, but failed.
  * <p>
  * This exception was moved from the <code>util</code> package in 5.7.
- * 
+ *
  *
  * @since GemFire 5.7
  * @deprecated as of 6.5 this exception is no longer thrown by GemFire so any code that catches it
  *             should be removed.
- * 
+ *
  */
 public class ClientNotReadyException extends OperationAbortedException {
   private static final long serialVersionUID = -315765802919271588L;
@@ -35,7 +35,7 @@ public class ClientNotReadyException extends OperationAbortedException {
   /**
    * Constructs an instance of <code>ClientNotReadyException</code> with the specified detail
    * message.
-   * 
+   *
    * @param msg the detail message
    */
   public ClientNotReadyException(String msg) {
@@ -45,7 +45,7 @@ public class ClientNotReadyException extends OperationAbortedException {
   /**
    * Constructs an instance of <code>ClientNotReadyException</code> with the specified detail
    * message and cause.
-   * 
+   *
    * @param msg the detail message
    * @param cause the causal Throwable
    */

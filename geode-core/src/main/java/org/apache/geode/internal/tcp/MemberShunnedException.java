@@ -29,7 +29,7 @@ public class MemberShunnedException extends GemFireException {
 
   /**
    * constructor
-   * 
+   *
    * @param member the member that was shunned
    */
   public MemberShunnedException(DistributedMember member) {

@@ -175,7 +175,7 @@ public abstract class DistributionMessage implements DataSerializableFixedID, Cl
   /**
    * If true then this message most be sent on an ordered channel. If false then it can be
    * unordered.
-   * 
+   *
    * @since GemFire 5.5
    */
   public boolean orderedDelivery() {
@@ -210,7 +210,7 @@ public abstract class DistributionMessage implements DataSerializableFixedID, Cl
 
   /**
    * Causes this message to be send using multicast if v is true.
-   * 
+   *
    * @since GemFire 5.0
    */
   public void setMulticast(boolean v) {
@@ -219,7 +219,7 @@ public abstract class DistributionMessage implements DataSerializableFixedID, Cl
 
   /**
    * Return true if this message should be sent using multicast.
-   * 
+   *
    * @since GemFire 5.0
    */
   public boolean getMulticast() {
@@ -335,7 +335,7 @@ public abstract class DistributionMessage implements DataSerializableFixedID, Cl
 
   /**
    * Processes this message. This method is invoked by the receiver of the message.
-   * 
+   *
    * @param dm the distribution manager that is processing the message.
    */
   protected abstract void process(DistributionManager dm);
@@ -591,7 +591,7 @@ public abstract class DistributionMessage implements DataSerializableFixedID, Cl
 
   /**
    * Sets the timestamp of this message to the current time (in nanos).
-   * 
+   *
    * @return the number of elapsed nanos since this message's last timestamp
    */
   public long resetTimestamp() {
@@ -622,7 +622,7 @@ public abstract class DistributionMessage implements DataSerializableFixedID, Cl
   }
 
   /**
-   * 
+   *
    * @return null if message is not conflatable. Otherwise return a key that can be used to identify
    *         the entry to conflate.
    * @since GemFire 4.2.2
@@ -643,7 +643,7 @@ public abstract class DistributionMessage implements DataSerializableFixedID, Cl
    * Severe alert processing enables suspect processing at the ack-wait-threshold and issuing of a
    * severe alert at the end of the ack-severe-alert-threshold. Some messages should not support
    * this type of processing (e.g., GII, or DLockRequests)
-   * 
+   *
    * @return whether severe-alert processing may be performed on behalf of this message
    */
   public boolean isSevereAlertCompatible() {
@@ -652,7 +652,7 @@ public abstract class DistributionMessage implements DataSerializableFixedID, Cl
 
   /**
    * Returns true if the message is for internal-use such as a meta-data region.
-   * 
+   *
    * @return true if the message is for internal-use such as a meta-data region
    * @since GemFire 7.0
    */

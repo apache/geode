@@ -60,7 +60,7 @@ public class HostAddress {
    * If component has retry logic then use this method to get the InetSocketAddress address
    * AutoConnectionSourceImpl for client has retry logic; This way client will not make DNS query
    * each time
-   * 
+   *
    * @return InetSocketAddress
    */
   public InetSocketAddress getSocketInetAddressNoLookup() {

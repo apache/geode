@@ -31,7 +31,7 @@ import org.apache.geode.pdx.internal.TypeRegistry;
 public class AddPdxEnum extends BaseCommand {
   private static final Logger logger = LogService.getLogger();
 
-  private final static AddPdxEnum singleton = new AddPdxEnum();
+  private static final AddPdxEnum singleton = new AddPdxEnum();
 
   public static Command getCommand() {
     return singleton;

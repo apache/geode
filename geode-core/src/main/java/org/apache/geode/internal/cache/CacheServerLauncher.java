@@ -480,7 +480,7 @@ public class CacheServerLauncher {
    * VM will be placed in a special {@linkplain #startLogFileName log file}.
    *
    * See #getStartOptions
-   * 
+   *
    * @see OSProcess#bgexec(String[], File, File, boolean, Map)
    */
   public void start(final String[] args) throws Exception {
@@ -1193,7 +1193,7 @@ public class CacheServerLauncher {
   /**
    * Reads {@link DistributedSystem#PROPERTY_FILE} and determines if the
    * {@link ConfigurationProperties#LOG_FILE} property is set to stdout
-   * 
+   *
    * @return true if the logging would go to stdout
    */
   private static boolean isLoggingToStdOut() {
@@ -1281,7 +1281,7 @@ public class CacheServerLauncher {
 
   /**
    * A List implementation that disallows null values.
-   * 
+   *
    * @param <E> the Class type for the List elements.
    */
   protected static class ListWrapper<E> extends AbstractList<E> {

@@ -82,5 +82,3 @@ class NumericComparator implements Comparator {
     return i1 == i2 ? 0 : (i1 < i2 ? -1 : 1);
   }
 }
-
-

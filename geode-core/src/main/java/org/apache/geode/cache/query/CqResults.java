@@ -20,29 +20,29 @@ package org.apache.geode.cache.query;
  * {@linkplain org.apache.geode.cache.query.CqQuery#executeWithInitialResults()} The result will
  * contain the instances of {@link Struct} having key and value of the region entry that satisfy the
  * CQ query condition.
- * 
+ *
  * <pre>
  * ClientCache cache = ...
  * QueryService queryService = PoolManager.find("client").getQueryService();
  * CqAttributesFactory cqAf = new CqAttributesFactory();
  * CqAttributes cqa = cqAf.create();
- * 
+ *
  * String cqQueryStr = "SELECT * FROM /root/employees " +
  *   "WHERE salary > 50000";
- *   
- * CqQuery cq = queryService.newCq("MyCq", cqQueryStr, cqa); 
- * CqResults results = cq.executeWithInitialResults();     
- * 
+ *
+ * CqQuery cq = queryService.newCq("MyCq", cqQueryStr, cqa);
+ * CqResults results = cq.executeWithInitialResults();
+ *
  * for (Object o : results.asList()) {
  *   Struct s = (Struct)o;
  *   System.out.println("key : " + s.get("key") + " value : " + s.get("value"));
  * }
  *
  * </pre>
- * 
+ *
  * @see org.apache.geode.cache.query.Query#execute()
  * @see org.apache.geode.cache.query.CqQuery#executeWithInitialResults()
- * 
+ *
  * @since GemFire 6.5
  */
 public interface CqResults<E> extends SelectResults<E> {

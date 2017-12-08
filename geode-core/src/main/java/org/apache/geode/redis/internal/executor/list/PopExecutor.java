@@ -17,7 +17,6 @@ package org.apache.geode.redis.internal.executor.list;
 import java.util.List;
 
 import org.apache.geode.cache.Region;
-
 import org.apache.geode.redis.internal.ByteArrayWrapper;
 import org.apache.geode.redis.internal.Coder;
 import org.apache.geode.redis.internal.Command;
@@ -54,10 +53,10 @@ public abstract class PopExecutor extends ListExecutor implements Extendable {
     ByteArrayWrapper valueWrapper = null;
 
     /**
-     * 
+     *
      * First attempt to hop over an index by moving the index down one in the meta data region. The
      * desired index to remove is held within the field index
-     * 
+     *
      */
 
     boolean indexChanged = false;
@@ -70,11 +69,11 @@ public abstract class PopExecutor extends ListExecutor implements Extendable {
     } while (!indexChanged);
 
     /**
-     * 
+     *
      * Now attempt to remove the value of the index. We must do a get to ensure a returned value and
      * then call remove with the value to ensure no one else has removed it first. Otherwise, try
      * other indexes
-     * 
+     *
      */
 
     boolean removed = false;
@@ -85,34 +84,34 @@ public abstract class PopExecutor extends ListExecutor implements Extendable {
         removed = keyRegion.remove(index, valueWrapper);
 
       /**
-       * 
+       *
        * If remove has passed, our job is done and we can break and stop looking for a value
-       * 
+       *
        */
 
       if (removed)
         break;
 
       /**
-       * 
+       *
        * If the index has not been removed, we need to look at other indexes. Two cases exist:
-       * 
+       *
        * ************************** FIRST MISS *********************************** Push occurring at
        * the same time, further index update first | This is location of miss | | | | V V [-4] [X]
        * [-2] [-1] [0] [1] [2] <-- Direction of index update If this is the first miss, the index is
        * re obtained from the meta region and that index is trying. However, if the index in the
        * meta data region is not further out, that index is not used and moves on to the second case
        * **************************************************************************
-       * 
+       *
        * ************************* SUBSEQUENT MISSES ****************************** Push occurring
        * at the same time, further index update first | This is location of miss | | | | V V [-4]
        * [X] [-2] [-1] [0] [1] [2] Direction of index update --> If this is not the first miss then
        * we move down to the other end of the list which means the next not empty index will be
        * attempted to be removed
        * **************************************************************************
-       * 
+       *
        * If it is the case that the list is empty, it will exit this loop
-       * 
+       *
        */
 
       index += incr;

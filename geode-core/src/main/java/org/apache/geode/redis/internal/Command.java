@@ -14,15 +14,15 @@
  */
 package org.apache.geode.redis.internal;
 
-import io.netty.buffer.ByteBuf;
-
 import java.nio.channels.SocketChannel;
 import java.util.List;
+
+import io.netty.buffer.ByteBuf;
 
 /**
  * The command class is used in holding a received Redis command. Each sent command resides in an
  * instance of this class. This class is designed to be used strictly by getter and setter methods.
- * 
+ *
  *
  */
 public class Command {
@@ -36,7 +36,7 @@ public class Command {
   /**
    * Constructor for {@link Command}. Must initialize Command with a {@link SocketChannel} and a
    * {@link List} of command elements
-   * 
+   *
    * @param commandElems List of elements in command
    */
   public Command(List<byte[]> commandElems) {
@@ -61,7 +61,7 @@ public class Command {
 
   /**
    * Used to get the command element list
-   * 
+   *
    * @return List of command elements in form of {@link List}
    */
   public List<byte[]> getProcessedCommand() {
@@ -70,7 +70,7 @@ public class Command {
 
   /**
    * Getter method for the command type
-   * 
+   *
    * @return The command type
    */
   public RedisCommandType getCommandType() {
@@ -79,7 +79,7 @@ public class Command {
 
   /**
    * Getter method to get the response to be sent
-   * 
+   *
    * @return The response
    */
   public ByteBuf getResponse() {
@@ -88,7 +88,7 @@ public class Command {
 
   /**
    * Setter method to set the response to be sent
-   * 
+   *
    * @param response The response to be sent
    */
   public void setResponse(ByteBuf response) {
@@ -108,7 +108,7 @@ public class Command {
   /**
    * Convenience method to get a String representation of the key in a Redis command, always at the
    * second position in the sent command array
-   * 
+   *
    * @return Returns the second element in the parsed command list, which is always the key for
    *         commands indicating a key
    */

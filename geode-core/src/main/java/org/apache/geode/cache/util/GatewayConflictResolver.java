@@ -23,7 +23,7 @@ package org.apache.geode.cache.util;
  * different distributed system (with a different distributed-system-id) than an event that is
  * attempting to modify the entry. It is not invoked if the event has the same distributed system ID
  * as the event that last changed the entry.
- * 
+ *
  * @since GemFire 7.0
  */
 public interface GatewayConflictResolver {
@@ -42,7 +42,7 @@ public interface GatewayConflictResolver {
    * of the conflict in order to maintain consistency. They must do so regardless of the order of
    * the events.
    * </p>
-   * 
+   *
    * @param event the event that is in conflict with the current cache state
    * @param helper an object to be used in modifying the course of action for this event
    */

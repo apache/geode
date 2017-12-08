@@ -94,7 +94,7 @@ public class CompressionCacheConfigDUnitTest extends JUnit4CacheTestCase {
 
   /**
    * Asserts that a region is compressed using a given compressor.
-   * 
+   *
    * @param vm a peer.
    * @param compressor a compressor.
    * @param regionName a compressed region.
@@ -113,7 +113,7 @@ public class CompressionCacheConfigDUnitTest extends JUnit4CacheTestCase {
 
   /**
    * Creates a new Cache for a given VM using a cache.xml.
-   * 
+   *
    * @param vm a peer.
    * @param cacheXml a declaritive xml file.
    * @return true if the cache was created, false otherwise.
@@ -144,7 +144,7 @@ public class CompressionCacheConfigDUnitTest extends JUnit4CacheTestCase {
 
   /**
    * Creates a temporary cache.xml on the file system.
-   * 
+   *
    * @param contents cache.xml contents.
    * @return A File representing the created file.
    * @throws IOException something bad happened.
@@ -160,7 +160,7 @@ public class CompressionCacheConfigDUnitTest extends JUnit4CacheTestCase {
 
   /**
    * Returns the VM for a given identifier.
-   * 
+   *
    * @param vm a virtual machine identifier.
    */
   private VM getVM(int vm) {
@@ -169,7 +169,7 @@ public class CompressionCacheConfigDUnitTest extends JUnit4CacheTestCase {
 
   /**
    * Removes created regions from a VM.
-   * 
+   *
    * @param vm the virtual machine to cleanup.
    */
   private void cleanup(final VM vm) {
@@ -184,4 +184,3 @@ public class CompressionCacheConfigDUnitTest extends JUnit4CacheTestCase {
     });
   }
 }
-

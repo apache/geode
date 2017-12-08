@@ -160,7 +160,7 @@ public class CompiledIteratorDef extends AbstractCompiledValue {
 
   /**
    * Evaluate just the collectionExpr
-   * 
+   *
    * @param stopAtIter the RuntimeIterator associated with this iterator defn -- don't use this or
    *        any subsequent runtime iterators to evaluate.
    */

@@ -15,32 +15,33 @@
 package org.apache.geode.cache.client.internal;
 
 import java.util.Arrays;
-import org.apache.geode.internal.Version;
-import org.apache.geode.internal.cache.tier.MessageType;
-import org.apache.geode.internal.cache.tier.sockets.Message;
-import org.apache.geode.internal.cache.tier.sockets.ChunkedMessage;
-import org.apache.geode.internal.cache.tier.sockets.ObjectPartList;
-import org.apache.geode.internal.cache.tier.sockets.Part;
+
+import org.apache.geode.SerializationException;
+import org.apache.geode.cache.client.ServerOperationException;
 import org.apache.geode.cache.query.SelectResults;
-import org.apache.geode.cache.query.types.CollectionType;
-import org.apache.geode.cache.query.types.ObjectType;
 import org.apache.geode.cache.query.internal.QueryUtils;
 import org.apache.geode.cache.query.internal.StructImpl;
 import org.apache.geode.cache.query.internal.types.StructTypeImpl;
 import org.apache.geode.cache.query.internal.types.TypeUtils;
-import org.apache.geode.SerializationException;
-import org.apache.geode.cache.client.ServerOperationException;
+import org.apache.geode.cache.query.types.CollectionType;
+import org.apache.geode.cache.query.types.ObjectType;
+import org.apache.geode.internal.Version;
+import org.apache.geode.internal.cache.tier.MessageType;
+import org.apache.geode.internal.cache.tier.sockets.ChunkedMessage;
+import org.apache.geode.internal.cache.tier.sockets.Message;
+import org.apache.geode.internal.cache.tier.sockets.ObjectPartList;
+import org.apache.geode.internal.cache.tier.sockets.Part;
 
 /**
  * Does a region query on a server
- * 
+ *
  * @since GemFire 5.7
  */
 public class QueryOp {
   /**
    * Does a region query on a server using connections from the given pool to communicate with the
    * server.
-   * 
+   *
    * @param pool the pool to use to communicate with the server.
    * @param queryPredicate A query language boolean query predicate
    * @return A <code>SelectResults</code> containing the values that match the
@@ -88,7 +89,7 @@ public class QueryOp {
 
     /**
      * This constructor is used by our subclass CreateCQWithIROpImpl
-     * 
+     *
      * @throws org.apache.geode.SerializationException if serialization fails
      */
     protected QueryOpImpl(int msgType, int numParts) {

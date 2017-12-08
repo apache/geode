@@ -14,15 +14,15 @@
  */
 package org.apache.geode.admin.internal;
 
+import java.net.InetAddress;
+import java.net.UnknownHostException;
+import java.util.*;
+
 import org.apache.geode.CancelException;
 import org.apache.geode.admin.*;
 import org.apache.geode.internal.Assert;
 import org.apache.geode.internal.admin.*;
 import org.apache.geode.internal.i18n.LocalizedStrings;
-
-import java.net.InetAddress;
-import java.net.UnknownHostException;
-import java.util.*;
 
 /**
  * Provides the implementation of the <code>GemFireHealth</code> administration API. This class is
@@ -294,9 +294,9 @@ public class GemFireHealthImpl implements GemFireHealth, JoinLeaveListener, Heal
 
   /**
    * Returns the GemFireHealthConfig object for the given host name.
-   * 
+   *
    * @param hostName host name for which the GemFire Health Config is needed
-   * 
+   *
    * @throws IllegalArgumentException if host with given name could not be found
    */
   public synchronized GemFireHealthConfig getGemFireHealthConfig(String hostName) {
@@ -324,10 +324,10 @@ public class GemFireHealthImpl implements GemFireHealth, JoinLeaveListener, Heal
 
   /**
    * Sets the GemFireHealthConfig object for the given host name.
-   * 
+   *
    * @param hostName host name for which the GemFire Health Config is needed
    * @param config GemFireHealthConfig object to set
-   * 
+   *
    * @throws IllegalArgumentException if (1) given host name & the host name in the given config do
    *         not match OR (2) host with given name could not be found OR (3) there are no GemFire
    *         components running on the given host

@@ -14,9 +14,9 @@
  */
 package org.apache.geode.internal.offheap;
 
+import static org.hamcrest.CoreMatchers.*;
 import static org.junit.Assert.*;
 import static org.mockito.Mockito.mock;
-import static org.hamcrest.CoreMatchers.*;
 
 import java.nio.ByteBuffer;
 

@@ -25,10 +25,10 @@ import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.server.CacheServer;
 import org.apache.geode.cache.wan.GatewayReceiver;
 import org.apache.geode.cache.wan.GatewayTransportFilter;
-import org.apache.geode.internal.net.SocketCreator;
 import org.apache.geode.internal.i18n.LocalizedStrings;
 import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.internal.logging.log4j.LocalizedMessage;
+import org.apache.geode.internal.net.SocketCreator;
 
 public class GatewayReceiverCreation implements GatewayReceiver {
   private static final Logger logger = LogService.getLogger();
@@ -147,7 +147,7 @@ public class GatewayReceiverCreation implements GatewayReceiver {
 
   /*
    * (non-Javadoc)
-   * 
+   *
    * @see org.apache.geode.cache.wan.GatewayReceiver#getStartPort()
    */
   public int getStartPort() {
@@ -156,7 +156,7 @@ public class GatewayReceiverCreation implements GatewayReceiver {
 
   /*
    * (non-Javadoc)
-   * 
+   *
    * @see org.apache.geode.cache.wan.GatewayReceiver#getEndPort()
    */
   public int getEndPort() {

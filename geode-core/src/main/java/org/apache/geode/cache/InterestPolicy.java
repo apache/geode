@@ -109,7 +109,7 @@ public class InterestPolicy implements java.io.Serializable {
 
   /**
    * Return true if this policy is {@link #ALL}.
-   * 
+   *
    * @return true if this policy is {@link #ALL}.
    */
   public boolean isAll() {
@@ -118,7 +118,7 @@ public class InterestPolicy implements java.io.Serializable {
 
   /**
    * Return true if this policy is {@link #CACHE_CONTENT}.
-   * 
+   *
    * @return true if this policy is {@link #CACHE_CONTENT}.
    */
   public boolean isCacheContent() {
@@ -127,7 +127,7 @@ public class InterestPolicy implements java.io.Serializable {
 
   /**
    * Return true if this policy is the default.
-   * 
+   *
    * @return true if this policy is the default.
    */
   public boolean isDefault() {
@@ -136,7 +136,7 @@ public class InterestPolicy implements java.io.Serializable {
 
   /**
    * Returns a string representation for this interest policy.
-   * 
+   *
    * @return the name of this interest policy.
    */
   @Override

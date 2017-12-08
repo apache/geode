@@ -15,12 +15,12 @@
 
 package org.apache.geode.internal.cache.tier.sockets;
 
+import java.io.*;
+
 import org.apache.geode.DataSerializer;
 import org.apache.geode.internal.Version;
 import org.apache.geode.internal.cache.EventID;
 import org.apache.geode.internal.cache.tier.MessageType;
-
-import java.io.*;
 
 /**
  * Class <code>ClientMarkerMessageImpl</code> is a marker message that is placed in the

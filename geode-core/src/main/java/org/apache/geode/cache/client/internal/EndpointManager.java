@@ -37,14 +37,14 @@ public interface EndpointManager {
   /**
    * Indicate that a particular server has crashed. All of the listeners will be notified that the
    * server has crashed.
-   * 
+   *
    * @param endpoint
    */
   void serverCrashed(Endpoint endpoint);
 
   /**
    * Get the map of all endpoints currently in use.
-   * 
+   *
    * @return a map for ServerLocation->Endpoint
    */
   Map<ServerLocation, Endpoint> getEndpointMap();
@@ -63,7 +63,7 @@ public interface EndpointManager {
 
   /**
    * Get the stats for all of the servers we ever connected too.
-   * 
+   *
    * @return a map of ServerLocation-> ConnectionStats
    */
   public Map getAllStats();

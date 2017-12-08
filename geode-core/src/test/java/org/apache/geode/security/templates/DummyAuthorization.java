@@ -29,7 +29,7 @@ import org.apache.geode.security.NotAuthorizedException;
 /**
  * A dummy implementation of the {@code AccessControl} interface that allows authorization depending
  * on the format of the {@code Principal} string.
- * 
+ *
  * @since GemFire 5.5
  */
 public class DummyAuthorization implements AccessControl {

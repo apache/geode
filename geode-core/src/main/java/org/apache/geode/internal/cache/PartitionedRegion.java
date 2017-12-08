@@ -166,6 +166,8 @@ import org.apache.geode.internal.cache.control.InternalResourceManager;
 import org.apache.geode.internal.cache.control.InternalResourceManager.ResourceType;
 import org.apache.geode.internal.cache.control.MemoryEvent;
 import org.apache.geode.internal.cache.control.MemoryThresholds;
+import org.apache.geode.internal.cache.eviction.EvictionStatistics;
+import org.apache.geode.internal.cache.eviction.HeapEvictor;
 import org.apache.geode.internal.cache.execute.AbstractExecution;
 import org.apache.geode.internal.cache.execute.FunctionExecutionNodePruner;
 import org.apache.geode.internal.cache.execute.FunctionRemoteContext;
@@ -177,9 +179,6 @@ import org.apache.geode.internal.cache.execute.PartitionedRegionFunctionResultWa
 import org.apache.geode.internal.cache.execute.RegionFunctionContextImpl;
 import org.apache.geode.internal.cache.execute.ServerToClientFunctionResultSender;
 import org.apache.geode.internal.cache.ha.ThreadIdentifier;
-import org.apache.geode.internal.cache.lru.HeapEvictor;
-import org.apache.geode.internal.cache.lru.LRUStatistics;
-import org.apache.geode.internal.cache.lru.Sizeable;
 import org.apache.geode.internal.cache.partitioned.ContainsKeyValueMessage;
 import org.apache.geode.internal.cache.partitioned.ContainsKeyValueMessage.ContainsKeyValueResponse;
 import org.apache.geode.internal.cache.partitioned.DestroyMessage;
@@ -249,6 +248,7 @@ import org.apache.geode.internal.logging.log4j.LogMarker;
 import org.apache.geode.internal.offheap.annotations.Released;
 import org.apache.geode.internal.offheap.annotations.Unretained;
 import org.apache.geode.internal.sequencelog.RegionLogger;
+import org.apache.geode.internal.size.Sizeable;
 import org.apache.geode.internal.util.TransformUtils;
 import org.apache.geode.internal.util.concurrent.StoppableCountDownLatch;
 
@@ -317,7 +317,7 @@ public class PartitionedRegion extends LocalRegion
   private volatile Region<String, PartitionRegionConfig> prRoot;
 
   /**
-   * 
+   *
    * PartitionedRegionDataStore class takes care of data storage for the PR. This will contain the
    * bucket Regions to store data entries for PR*
    */
@@ -357,13 +357,13 @@ public class PartitionedRegion extends LocalRegion
   /**
    * Ratio of currently allocated memory to maxMemory that triggers rebalance activity.
    */
-  final static float rebalanceThreshold = 0.75f;
+  static final float rebalanceThreshold = 0.75f;
 
   /** The maximum memory allocated for this node in Mb */
   final int localMaxMemory;
 
   /** The maximum milliseconds for retrying operations */
-  final private int retryTimeout;
+  private final int retryTimeout;
 
   /**
    * The statistics for this PR
@@ -396,7 +396,7 @@ public class PartitionedRegion extends LocalRegion
 
   /**
    * Flag to indicate whether region is closed
-   * 
+   *
    */
   public volatile boolean isClosed = false;
 
@@ -408,7 +408,7 @@ public class PartitionedRegion extends LocalRegion
   /**
    * the thread locally destroying this pr. not volatile, so always check isLocallyDestroyed before
    * checking locallyDestroyingThread
-   * 
+   *
    * Concurrency: {@link #isLocallyDestroyed} is volatile
    */
   Thread locallyDestroyingThread;
@@ -510,11 +510,11 @@ public class PartitionedRegion extends LocalRegion
   }
 
   /**
-   * Returns the LRUStatistics for this PR. This is needed to find the single instance of
-   * LRUStatistics created early for a PR when it is recovered from disk. This fixes bug 41938
+   * Returns the EvictionStatistics for this PR. This is needed to find the single instance of
+   * EvictionStatistics created early for a PR when it is recovered from disk. This fixes bug 41938
    */
-  public LRUStatistics getPRLRUStatsDuringInitialization() {
-    LRUStatistics result = null;
+  public EvictionStatistics getPRLRUStatsDuringInitialization() {
+    EvictionStatistics result = null;
     if (getDiskStore() != null) {
       result = getDiskStore().getPRLRUStats(this);
     }
@@ -537,7 +537,7 @@ public class PartitionedRegion extends LocalRegion
 
   /**
    * Return canonical representation for a bucket (for logging)
-   * 
+   *
    * @param bucketId the bucket
    * @return a String representing this PR and the bucket
    */
@@ -577,13 +577,13 @@ public class PartitionedRegion extends LocalRegion
 
   public static class PRIdMap extends HashMap {
     private static final long serialVersionUID = 3667357372967498179L;
-    public final static String DESTROYED = "Partitioned Region Destroyed";
+    public static final String DESTROYED = "Partitioned Region Destroyed";
 
-    final static String LOCALLY_DESTROYED = "Partitioned Region Is Locally Destroyed";
+    static final String LOCALLY_DESTROYED = "Partitioned Region Is Locally Destroyed";
 
-    final static String FAILED_REGISTRATION = "Partitioned Region's Registration Failed";
+    static final String FAILED_REGISTRATION = "Partitioned Region's Registration Failed";
 
-    public final static String NO_PATH_FOUND = "NoPathFound";
+    public static final String NO_PATH_FOUND = "NoPathFound";
 
     private volatile boolean cleared = true;
 
@@ -964,7 +964,7 @@ public class PartitionedRegion extends LocalRegion
   /**
    * Initializes the PartitionedRegion meta data, adding this Node and starting the service on this
    * node (if not already started). Made this synchronized for bug 41982
-   * 
+   *
    * @return true if initialize was done; false if not because it was destroyed
    */
   private synchronized boolean initPRInternals(InternalRegionArguments internalRegionArgs) {
@@ -1218,7 +1218,11 @@ public class PartitionedRegion extends LocalRegion
   }
 
   public void addAsyncEventQueueId(String asyncEventQueueId) {
-    super.addAsyncEventQueueId(asyncEventQueueId);
+    addAsyncEventQueueId(asyncEventQueueId, false);
+  }
+
+  public void addAsyncEventQueueId(String asyncEventQueueId, boolean isInternal) {
+    super.addAsyncEventQueueId(asyncEventQueueId, isInternal);
     new UpdateAttributesProcessor(this).distribute();
     ((PartitionedRegion) this).distributeUpdatedProfileOnSenderCreation();
     GatewaySender sender = getCache()
@@ -1275,7 +1279,7 @@ public class PartitionedRegion extends LocalRegion
 
   /**
    * This method initializes the partitionedRegionDataStore for this PR.
-   * 
+   *
    * @param ra Region attributes
    */
   private void initializeDataStore(RegionAttributes ra) {
@@ -1291,10 +1295,10 @@ public class PartitionedRegion extends LocalRegion
   /**
    * Register this PartitionedRegion by: 1) Create a PartitionRegionConfig and 2) Bind it into the
    * allPartitionedRegion system wide Region.
-   * 
+   *
    * @param storesData which indicates whether the instance in this cache stores data, effecting the
    *        Nodes PRType
-   * 
+   *
    * @see Node#setPRType(int)
    */
   private void registerPartitionedRegion(boolean storesData) {
@@ -1680,7 +1684,7 @@ public class PartitionedRegion extends LocalRegion
 
   /**
    * Checks if a key is contained remotely.
-   * 
+   *
    * @param targetNode the node where bucket region for the key exists.
    * @param bucketId the bucket id for the key.
    * @param key the key, whose value needs to be checks
@@ -1805,9 +1809,9 @@ public class PartitionedRegion extends LocalRegion
   /**
    * Executes a query on this PartitionedRegion. The restrictions have already been checked. The
    * query is a SELECT expression, and the only region it refers to is this region.
-   * 
+   *
    * @see DefaultQuery#execute()
-   * 
+   *
    * @since GemFire 5.1
    */
   public Object executeQuery(DefaultQuery query, Object[] parameters, Set buckets)
@@ -1824,7 +1828,7 @@ public class PartitionedRegion extends LocalRegion
 
   /**
    * If ForceReattemptException is thrown then the caller must loop and call us again.
-   * 
+   *
    * @throws ForceReattemptException if one of the buckets moved out from under us
    */
   private Object doExecuteQuery(DefaultQuery query, Object[] parameters, Set buckets)
@@ -2142,7 +2146,7 @@ public class PartitionedRegion extends LocalRegion
 
   /**
    * Create PutAllPRMsgs for each bucket, and send them.
-   * 
+   *
    * @param putAllOp DistributedPutAllOperation object.
    * @param successfulPuts not used in PartitionedRegion.
    */
@@ -2708,7 +2712,7 @@ public class PartitionedRegion extends LocalRegion
   /**
    * Performs the {@link Operation#UPDATE put} operation in the bucket on the remote VM and invokes
    * "put" callbacks
-   * 
+   *
    * @param targetNode the VM in whose {@link PartitionedRegionDataStore} contains the bucket
    * @param bucketId the identity of the bucket
    * @param event the event that contains the key and value
@@ -2720,7 +2724,7 @@ public class PartitionedRegion extends LocalRegion
    * @see LocalRegion#virtualPut(EntryEventImpl, boolean, boolean, Object, boolean, long, boolean)
    * @return false if ifNew is true and there is an existing key, or ifOld is true and there is no
    *         existing entry; otherwise return true.
-   * 
+   *
    */
   private boolean putInBucket(final InternalDistributedMember targetNode, final Integer bucketId,
       final EntryEventImpl event, final boolean ifNew, boolean ifOld, Object expectedOldValue,
@@ -2932,7 +2936,7 @@ public class PartitionedRegion extends LocalRegion
   /**
    * Find an existing live Node that owns the bucket, or create the bucket and return one of its
    * owners.
-   * 
+   *
    * @param retryTime the RetryTimeKeeper to track retry times
    * @param event the event used to get the entry size in the event a new bucket should be created
    * @param bucketId the identity of the bucket should it be created
@@ -2958,7 +2962,7 @@ public class PartitionedRegion extends LocalRegion
 
   /**
    * Get the serialized size of an {@code EntryEventImpl}
-   * 
+   *
    * @param eei the entry from whcih to fetch the size
    * @return the size of the serialized entry
    */
@@ -2993,7 +2997,7 @@ public class PartitionedRegion extends LocalRegion
 
   /**
    * Fetch the primary Node returning if the redundancy for the Node is satisfied
-   * 
+   *
    * @param bucketId the identity of the bucket
    * @param snoozer a RetryTimeKeeper to track how long we may wait until the bucket is ready
    * @return the primary member's id or null if there is no storage
@@ -3046,7 +3050,7 @@ public class PartitionedRegion extends LocalRegion
 
   /**
    * wait until there is a primary or there is no storage
-   * 
+   *
    * @param bucketId the id of the target bucket
    * @param readOrWrite a string used in log messages
    * @return the primary member's id or null if there is no storage
@@ -3133,9 +3137,9 @@ public class PartitionedRegion extends LocalRegion
   /**
    * Gets the Node for reading a specific bucketId. This method gives priority to local node to
    * speed up operation and avoid remote calls.
-   * 
+   *
    * @param bucketId identifier for bucket
-   * 
+   *
    * @return the primary member's id or null if there is no storage
    */
   public InternalDistributedMember getNodeForBucketRead(int bucketId) {
@@ -3152,7 +3156,7 @@ public class PartitionedRegion extends LocalRegion
 
   /**
    * Gets the Node for reading or performing a load from a specific bucketId.
-   * 
+   *
    * @return the member from which to read or load
    * @since GemFire 5.7
    */
@@ -3172,7 +3176,7 @@ public class PartitionedRegion extends LocalRegion
 
   /**
    * Puts the key/value pair into the remote target that is managing the key's bucket.
-   * 
+   *
    * @param recipient the member to receive the message
    * @param event the event prompting this action
    * @param ifNew the mysterious ifNew parameter
@@ -3220,7 +3224,7 @@ public class PartitionedRegion extends LocalRegion
 
   /**
    * Create a bucket for the provided bucket identifier in an atomic fashion.
-   * 
+   *
    * @param bucketId the bucket identifier for the bucket that needs creation
    * @param snoozer tracking object used to determine length of time t for bucket creation
    * @return a selected Node on which to perform bucket operations
@@ -3318,7 +3322,7 @@ public class PartitionedRegion extends LocalRegion
    * Execute the provided named function in all locations that contain the given keys. So function
    * can be executed on just one fabric node, executed in parallel on a subset of nodes in parallel
    * across all the nodes.
-   * 
+   *
    * @since GemFire 6.0
    */
   public ResultCollector executeFunction(final Function function,
@@ -3519,7 +3523,7 @@ public class PartitionedRegion extends LocalRegion
 
   /**
    * Single key execution on single node
-   * 
+   *
    * @since GemFire 6.0
    */
   private ResultCollector executeOnSingleNode(final Function function,
@@ -3767,7 +3771,7 @@ public class PartitionedRegion extends LocalRegion
 
   /**
    * Executes function on all bucket nodes
-   * 
+   *
    * @return ResultCollector
    * @since GemFire 6.0
    */
@@ -4090,7 +4094,7 @@ public class PartitionedRegion extends LocalRegion
 
   /**
    * Test Method: Get the DistributedMember identifier for the vm containing a key
-   * 
+   *
    * @param key the key to look for
    * @return The ID of the DistributedMember holding the key, or null if there is no current mapping
    *         for the key
@@ -4102,7 +4106,7 @@ public class PartitionedRegion extends LocalRegion
 
   /**
    * Test Method: Investigate the local cache to determine if it contains a the key
-   * 
+   *
    * @param key The key
    * @return true if the key exists
    * @see LocalRegion#containsKey(Object)
@@ -4113,7 +4117,7 @@ public class PartitionedRegion extends LocalRegion
 
   /**
    * Test Method: Fetch a value from the local cache
-   * 
+   *
    * @param key The kye
    * @return the value associated with that key
    * @see LocalRegion#get(Object, Object, boolean, EntryEventImpl)
@@ -4129,7 +4133,7 @@ public class PartitionedRegion extends LocalRegion
 
   /**
    * Test Method: Fetch the local cache's key set
-   * 
+   *
    * @return A set of keys
    * @see LocalRegion#keys()
    */
@@ -4140,7 +4144,7 @@ public class PartitionedRegion extends LocalRegion
   /**
    * Test Method: Get a random set of keys from a randomly selected bucket using the provided
    * {@code Random} number generator.
-   * 
+   *
    * @return A set of keys from a randomly chosen bucket or {@link Collections#EMPTY_SET}
    */
   public Set getSomeKeys(Random rnd) throws IOException, ClassNotFoundException {
@@ -4198,10 +4202,10 @@ public class PartitionedRegion extends LocalRegion
 
   /**
    * Test Method: Get all entries for all copies of a bucket
-   * 
+   *
    * This method will not work correctly if membership in the distributed system changes while the
    * result is being calculated.
-   * 
+   *
    * @return a List of HashMaps, each map being a copy of the entries in a bucket
    */
   public List<BucketDump> getAllBucketEntries(final int bucketId) throws ForceReattemptException {
@@ -4282,7 +4286,7 @@ public class PartitionedRegion extends LocalRegion
 
   /**
    * Fetch the keys for the given bucket identifier, if the bucket is local or remote.
-   * 
+   *
    * @return A set of keys from bucketNum or {@link Collections#EMPTY_SET}if no keys can be found.
    */
   public Set getBucketKeys(int bucketNum) {
@@ -4292,7 +4296,7 @@ public class PartitionedRegion extends LocalRegion
   /**
    * Fetch the keys for the given bucket identifier, if the bucket is local or remote. This version
    * of the method allows you to retrieve Tombstone entries as well as undestroyed entries.
-   * 
+   *
    * @param allowTombstones whether to include destroyed entries in the result
    * @return A set of keys from bucketNum or {@link Collections#EMPTY_SET}if no keys can be found.
    */
@@ -4733,7 +4737,7 @@ public class PartitionedRegion extends LocalRegion
    * Test Method: Get all {@link InternalDistributedMember}s known by this instance of the
    * PartitionedRegion. Note: A member is recognized as such when it partiticpates as a "data
    * store".
-   * 
+   *
    * @return a {@code HashSet} of {@link InternalDistributedMember}s or an empty {@code HashSet}
    */
   public Set<InternalDistributedMember> getAllNodes() {
@@ -4762,7 +4766,7 @@ public class PartitionedRegion extends LocalRegion
 
   /**
    * Gets the remote object with the given key.
-   * 
+   *
    * @param targetNode the Node hosting the key
    * @param bucketId the id of the bucket the key hashed into
    * @param key the key
@@ -4820,17 +4824,22 @@ public class PartitionedRegion extends LocalRegion
 
   /**
    * This method returns Partitioned Region data store associated with this Partitioned Region
-   * 
+   *
    * @return PartitionedRegionDataStore
    */
   public PartitionedRegionDataStore getDataStore() {
     return this.dataStore;
   }
 
+  @Override
+  public boolean canStoreDataLocally() {
+    return getDataStore() != null;
+  }
+
   /**
    * Grab the PartitionedRegionID Lock, this MUST be done in a try block since it may throw an
    * exception
-   * 
+   *
    * @return true if the lock was acquired
    */
   private static boolean grabPRIDLock(final DistributedLockService lockService) {
@@ -4961,10 +4970,8 @@ public class PartitionedRegion extends LocalRegion
 
     fillInProfile((PartitionProfile) profile);
 
-    if (cacheServiceProfiles != null) {
-      for (CacheServiceProfile csp : cacheServiceProfiles.values()) {
-        profile.addCacheServiceProfile(csp);
-      }
+    for (CacheServiceProfile csp : getCacheServiceProfiles().values()) {
+      profile.addCacheServiceProfile(csp);
     }
 
     profile.isOffHeap = getOffHeap();
@@ -5022,7 +5029,7 @@ public class PartitionedRegion extends LocalRegion
 
   /**
    * This method returns PartitionedRegion associated with a PartitionedRegion ID from prIdToPR map.
-   * 
+   *
    * @param prid Partitioned Region ID
    * @return PartitionedRegion
    */
@@ -5036,7 +5043,7 @@ public class PartitionedRegion extends LocalRegion
 
   /**
    * Verify that the given prId is correct for the given region name in this vm
-   * 
+   *
    * @param sender the member requesting validation
    * @param prId the ID being used for the pr by the sender
    * @param regionId the regionIdentifier used for prId by the sender
@@ -5100,7 +5107,7 @@ public class PartitionedRegion extends LocalRegion
 
   /**
    * This method returns prId
-   * 
+   *
    * @return partitionedRegionId
    */
   public int getPRId() {
@@ -5109,7 +5116,7 @@ public class PartitionedRegion extends LocalRegion
 
   /**
    * Updates local cache with a new value.
-   * 
+   *
    * @param key the key
    * @param value the value
    * @param newVersion the new version of the key
@@ -5120,7 +5127,7 @@ public class PartitionedRegion extends LocalRegion
 
   /**
    * This method returns total number of buckets for this PR
-   * 
+   *
    * @return totalNumberOfBuckets
    */
   public int getTotalNumberOfBuckets() {
@@ -5401,7 +5408,7 @@ public class PartitionedRegion extends LocalRegion
 
   /**
    * Destroy the entry on the remote node.
-   * 
+   *
    * @param recipient the member id of the receiver of the message
    * @param bucketId the idenity of the bucket
    * @param event the event prompting this request
@@ -5440,7 +5447,7 @@ public class PartitionedRegion extends LocalRegion
 
   /**
    * This is getter method for local max memory.
-   * 
+   *
    * @return local max memory for this PartitionedRegion
    */
   public int getLocalMaxMemory() {
@@ -5449,7 +5456,7 @@ public class PartitionedRegion extends LocalRegion
 
   /**
    * This is getter method for redundancy.
-   * 
+   *
    * @return redundancy for this PartitionedRegion
    */
   public int getRedundantCopies() {
@@ -5554,7 +5561,7 @@ public class PartitionedRegion extends LocalRegion
 
   /**
    * Called after the cache close has closed all regions. This clean up static pr resources.
-   * 
+   *
    * @since GemFire 5.0
    */
   static void afterRegionsClosedByCacheClose(InternalCache cache) {
@@ -5778,7 +5785,7 @@ public class PartitionedRegion extends LocalRegion
 
   /**
    * invalidates the remote object with the given key.
-   * 
+   *
    * @param recipient the member id of the recipient of the operation
    * @param bucketId the id of the bucket the key hashed into
    * @throws EntryNotFoundException if the entry does not exist in this region
@@ -5813,7 +5820,7 @@ public class PartitionedRegion extends LocalRegion
   /**
    * Calculate the number of times we attempt to commumnicate with a data store. Beware that this
    * method is called very frequently so it absolutely must perform well.
-   * 
+   *
    * @return the number of times to attempt to communicate with a data store
    */
   private int calcRetry() {
@@ -5822,7 +5829,7 @@ public class PartitionedRegion extends LocalRegion
 
   /**
    * Creates the key/value pair into the remote target that is managing the key's bucket.
-   * 
+   *
    * @param recipient member id of the recipient of the operation
    * @param bucketId the id of the bucket that the key hashed to
    * @param event the event prompting this request
@@ -5877,15 +5884,18 @@ public class PartitionedRegion extends LocalRegion
   /**
    * This method returns set of all the entries of this PartitionedRegion(locally or remotely).
    * Currently, it throws UnsupportedOperationException
-   * 
+   *
    * @param recursive boolean flag to indicate whether subregions should be considered or not.
    * @return set of all the entries of this PartitionedRegion
-   * 
+   *
    *         OVERRIDES
    */
   @Override
   public Set entrySet(boolean recursive) {
     checkReadiness();
+    if (!restoreSetOperationTransactionBehavior) {
+      discoverJTA();
+    }
     return Collections.unmodifiableSet(new PREntriesSet());
   }
 
@@ -5896,7 +5906,7 @@ public class PartitionedRegion extends LocalRegion
   /**
    * Set view of entries. This currently extends the keySet iterator and performs individual
    * getEntry() operations using the keys
-   * 
+   *
    * @since GemFire 5.1
    */
   protected class PREntriesSet extends KeysSet {
@@ -5941,14 +5951,17 @@ public class PartitionedRegion extends LocalRegion
 
   /**
    * This method returns set of all the keys of this PartitionedRegion(locally or remotely).
-   * 
+   *
    * @return set of all the keys of this PartitionedRegion
-   * 
+   *
    *         OVERRIDES
    */
   @Override
   public Set keys() {
     checkReadiness();
+    if (!restoreSetOperationTransactionBehavior) {
+      discoverJTA();
+    }
     return Collections.unmodifiableSet(new KeysSet());
   }
 
@@ -5983,7 +5996,7 @@ public class PartitionedRegion extends LocalRegion
       volatile Iterator currentBucketI = null;
       int currentBucketId = -1;
       volatile Object currentKey = null;
-      final protected Set<Integer> bucketSet;
+      protected final Set<Integer> bucketSet;
       boolean allowTombstones;
 
       public KeysSetIterator(Set<Integer> bucketSet, boolean allowTombstones) {
@@ -6129,19 +6142,22 @@ public class PartitionedRegion extends LocalRegion
   /**
    * This method returns collection of all the values of this PartitionedRegion(locally or
    * remotely).
-   * 
+   *
    * @return collection of all the values of this PartitionedRegion
    */
   @Override
   public Collection values() {
     checkReadiness();
+    if (!restoreSetOperationTransactionBehavior) {
+      discoverJTA();
+    }
     return Collections.unmodifiableSet(new ValuesSet());
   }
 
   /**
    * Set view of values. This currently extends the keySet iterator and performs individual get()
    * operations using the keys
-   * 
+   *
    * @since GemFire 5.1
    */
   protected class ValuesSet extends KeysSet {
@@ -6398,7 +6414,7 @@ public class PartitionedRegion extends LocalRegion
 
   /**
    * Checks if a key is contained remotely.
-   * 
+   *
    * @param targetNode the node where bucket region for the key exists.
    * @param bucketId the bucket id for the key.
    * @param key the key, whose value needs to be checks
@@ -6417,14 +6433,14 @@ public class PartitionedRegion extends LocalRegion
   /**
    * Returns whether there is a valid (non-null) value present for the specified key, locally or
    * remotely. This method is equivalent to:
-   * 
+   *
    * <pre>
    * Entry e = getEntry(key);
    * return e != null &amp;&amp; e.getValue() != null;
    * </pre>
-   * 
+   *
    * This method does not consult localCache, even if enabled.
-   * 
+   *
    * @param key the key to check for a valid value
    * @return true if there is an entry in this region for the specified key and it has a valid value
    *         OVERRIDES
@@ -6463,7 +6479,7 @@ public class PartitionedRegion extends LocalRegion
 
   /**
    * Checks if this instance contains a value for the key remotely.
-   * 
+   *
    * @param targetNode the node where bucket region for the key exists.
    * @param bucketId the bucket id for the key.
    * @param key the key, whose value needs to be checks
@@ -6484,7 +6500,7 @@ public class PartitionedRegion extends LocalRegion
 
   /**
    * Get the VSD statistics type
-   * 
+   *
    * @return the statistics instance specific to this Partitioned Region
    */
   public PartitionedRegionStats getPrStats() {
@@ -6571,7 +6587,7 @@ public class PartitionedRegion extends LocalRegion
    * node. It returns size of all the buckets "primarily" hosted on that node. Here "primarily"
    * means that for a given bucketID that node comes first in the node list. This selective counting
    * ensures that redundant bucket size is added only once.
-   * 
+   *
    * @return the size of all the buckets hosted on the target node.
    */
   private Map<Integer, SizeEntry> getSizeRemotely(Set targetNodes, boolean estimate) {
@@ -6600,7 +6616,7 @@ public class PartitionedRegion extends LocalRegion
   /**
    * A simple container class that holds the lock name and the service that created the lock,
    * typically used for locking buckets, but not restricted to that usage.
-   * 
+   *
    * @since GemFire 5.0
    */
   static class BucketLock {
@@ -6636,7 +6652,7 @@ public class PartitionedRegion extends LocalRegion
 
     /**
      * Attempts to lock the given name (provided during construction) uninterruptibly
-     * 
+     *
      * @return true if the lock was acquired, otherwise false.
      */
     public boolean tryLock() {
@@ -6815,7 +6831,7 @@ public class PartitionedRegion extends LocalRegion
 
     /**
      * Ask the grantor who has the lock
-     * 
+     *
      * @return the ID of the member holding the lock
      */
     public DistributedMember queryLock() {
@@ -6984,7 +7000,7 @@ public class PartitionedRegion extends LocalRegion
    * destroys the bucket regions. <br>
    * sends destroyPartitionedRegionMessage to other VMs so that they update their RegionAdvisor <br>
    * Sends BackupBucketMessage to other nodes
-   * 
+   *
    * @param event the region event
    */
   private void closePartitionedRegion(RegionEventImpl event) {
@@ -7061,7 +7077,7 @@ public class PartitionedRegion extends LocalRegion
   @Override
   public void destroyRegion(Object aCallbackArgument)
       throws CacheWriterException, TimeoutException {
-    invokeBeforeRegionDestroyInServices();
+    this.cache.invokeBeforeDestroyed(this);
     checkForColocatedChildren();
     getDataView().checkSupportsRegionDestroy();
     checkForLimitedOrNoAccess();
@@ -7268,9 +7284,9 @@ public class PartitionedRegion extends LocalRegion
    * Sends destroyRegionMessage to other nodes <br>
    * Removes it from allPartitionedRegions <br>
    * Destroys bucket2node region
-   * 
+   *
    * @param event the RegionEvent that triggered this operation
-   * 
+   *
    * @see #destroyPartitionedRegionLocally(boolean)
    * @see #destroyPartitionedRegionGlobally(RegionEventImpl)
    * @see #destroyCleanUp(RegionEventImpl, int[])
@@ -7343,7 +7359,7 @@ public class PartitionedRegion extends LocalRegion
   /**
    * This method destroys the PartitionedRegion globally. It sends destroyRegion message to other
    * nodes and handles cleaning up of the data stores and meta-data.
-   * 
+   *
    * @param event the RegionEvent which triggered this global destroy operation
    * @return true if the region was found globally.
    */
@@ -7387,9 +7403,9 @@ public class PartitionedRegion extends LocalRegion
    * Sends DestroyRegionMessage to other nodes <br>
    * Removes this PartitionedRegion from allPartitionedRegions <br>
    * Destroys bucket2node region <br>
-   * 
+   *
    * @param event the RegionEvent that triggered the region clean up
-   * 
+   *
    * @see DestroyPartitionedRegionMessage
    */
   private void destroyCleanUp(RegionEventImpl event, int serials[]) {
@@ -7424,7 +7440,7 @@ public class PartitionedRegion extends LocalRegion
    * message is also sent in close/localDestroyRegion operation. When it is sent in Cache
    * close/Region close/localDestroyRegion operations, it results in updating of RegionAdvisor on
    * recipient nodes.
-   * 
+   *
    * @param event the destruction event
    * @param serials the bucket serials hosted locally
    * @see Region#destroyRegion()
@@ -7482,9 +7498,9 @@ public class PartitionedRegion extends LocalRegion
    * destroyPartitionedRegion Method and removes the entry from prIdMap and cleans the data store
    * buckets. It first checks whether this PartitionedRegion is already locally destroyed. If it is,
    * this call returns, else if process with the removal from prIdMap and dataStore cleanup.
-   * 
+   *
    * @return wether local destroy happened
-   * 
+   *
    * @see #destroyPartitionedRegion(RegionEventImpl)
    */
   boolean destroyPartitionedRegionLocally(boolean removeFromDisk) {
@@ -7521,7 +7537,7 @@ public class PartitionedRegion extends LocalRegion
   /**
    * This method is invoked from recursiveDestroyRegion method of LocalRegion. This method checks
    * the region type and invokes the relevant method.
-   * 
+   *
    * @param destroyDiskRegion - true if the contents on disk should be destroyed
    * @param event the RegionEvent
    */
@@ -7661,7 +7677,7 @@ public class PartitionedRegion extends LocalRegion
    * destroyPartitionedRegionLocally call as a pure precautionary measure. If it is not null, we
    * check if this call is intended for this region only and there is no new PartitionedRegion
    * creation with the same name. This check fixes, bug # 34621.
-   * 
+   *
    * @return true, if it is eligible for the region destroy
    */
   private boolean checkIfAlreadyDestroyedOrOldReference() {
@@ -7685,7 +7701,7 @@ public class PartitionedRegion extends LocalRegion
   }
 
   @Override
-  void dispatchListenerEvent(EnumListenerEvent op, InternalCacheEvent event) {
+  public void dispatchListenerEvent(EnumListenerEvent op, InternalCacheEvent event) {
     // don't dispatch the event if the interest policy forbids it
     if (hasListener()) {
       if (event.getOperation().isEntry()) {
@@ -7776,11 +7792,11 @@ public class PartitionedRegion extends LocalRegion
    * Invoke the CacheWriter before the detroy operation occurs. Each BucketRegion delegates to the
    * CacheWriter on the PartitionedRegion meaning that CacheWriters on a BucketRegion should only be
    * used for internal purposes.
-   * 
+   *
    * @see BucketRegion#cacheWriteBeforeDestroy(EntryEventImpl, Object)
    */
   @Override
-  boolean cacheWriteBeforeDestroy(EntryEventImpl event, Object expectedOldValue)
+  public boolean cacheWriteBeforeDestroy(EntryEventImpl event, Object expectedOldValue)
       throws CacheWriterException, EntryNotFoundException, TimeoutException {
     // return if notifications are inhibited
     if (event.inhibitAllNotifications()) {
@@ -7819,7 +7835,7 @@ public class PartitionedRegion extends LocalRegion
    * Send a message to all PartitionedRegion participants, telling each member of the
    * PartitionedRegion with a datastore to dump the contents of the buckets to the system.log and
    * validate that the meta-data for buckets agrees with the data store's perspective
-   * 
+   *
    * @param distribute true will distributed a DumpBucketsMessage to PR nodes
    * @see #validateAllBuckets()
    */
@@ -7847,7 +7863,7 @@ public class PartitionedRegion extends LocalRegion
    * Send a message to all PartitionedRegion participants, telling each member of the
    * PartitionedRegion with a datastore to validate that the meta-data for buckets agrees with the
    * data store's perspective
-   * 
+   *
    * @see #dumpAllBuckets(boolean)
    */
   public void validateAllBuckets() throws ReplyException {
@@ -8031,7 +8047,7 @@ public class PartitionedRegion extends LocalRegion
 
   /**
    * finds all the keys matching the given regular expression (or all keys if regex is ".*")
-   * 
+   *
    * @param regex the regular expression
    * @param allowTombstones whether to include destroyed entries
    * @param collector object that will receive the keys as they arrive
@@ -8043,7 +8059,7 @@ public class PartitionedRegion extends LocalRegion
 
   /**
    * finds all the keys in the given list that are present in the region
-   * 
+   *
    * @param keyList the key list
    * @param allowTombstones whether to return destroyed entries
    * @param collector object that will receive the keys as they arrive
@@ -8055,7 +8071,7 @@ public class PartitionedRegion extends LocalRegion
 
   /**
    * finds all the keys matching the given interest type and passes them to the given collector
-   * 
+   *
    * @param allowTombstones whether to return destroyed entries
    */
   private void _getKeysWithInterest(int interestType, Object interestArg, boolean allowTombstones,
@@ -8131,7 +8147,7 @@ public class PartitionedRegion extends LocalRegion
   /**
    * SetCollector is implemented by classes that want to receive chunked results from queries like
    * getKeysWithRegEx. The implementor creates a method, receiveSet, that consumes the chunks.
-   * 
+   *
    * @since GemFire 5.1
    */
   public interface SetCollector {
@@ -8140,7 +8156,7 @@ public class PartitionedRegion extends LocalRegion
 
   /**
    * Returns the index flag
-   * 
+   *
    * @return true if the partitioned region is indexed else false
    */
   public boolean isIndexed() {
@@ -8149,7 +8165,7 @@ public class PartitionedRegion extends LocalRegion
 
   /**
    * Returns the map containing all the indexes on this partitioned region.
-   * 
+   *
    * @return Map of all the indexes created.
    */
   public Map getIndex() {
@@ -8166,7 +8182,7 @@ public class PartitionedRegion extends LocalRegion
 
   /**
    * Returns the a PartitionedIndex on this partitioned region.
-   * 
+   *
    * @return Index
    */
   public PartitionedIndex getIndex(String indexName) {
@@ -8184,7 +8200,7 @@ public class PartitionedRegion extends LocalRegion
 
   /**
    * Gets a collecion of all the indexes created on this pr.
-   * 
+   *
    * @return collection of all the indexes
    */
   public Collection getIndexes() {
@@ -8207,14 +8223,14 @@ public class PartitionedRegion extends LocalRegion
 
   /**
    * Creates the actual index on this partitioned regions.
-   * 
+   *
    * @param remotelyOriginated true if the index is created because of a remote index creation call
    * @param indexType the type of index created.
    * @param indexName the name for the index to be created
    * @param indexedExpression expression for index creation.
    * @param fromClause the from clause for index creation
    * @param imports class to be imported for fromClause.
-   * 
+   *
    * @return Index an index created on this region.
    * @throws ForceReattemptException indicating the operation failed to create a remote index
    * @throws IndexCreationException if the index is not created properly
@@ -8554,7 +8570,7 @@ public class PartitionedRegion extends LocalRegion
 
   /**
    * Explicitly sends an index creation message to a newly added node to the system on prs.
-   * 
+   *
    * @param idM id on the newly added node.
    */
   public void sendIndexCreationMsg(InternalDistributedMember idM) {
@@ -8690,9 +8706,9 @@ public class PartitionedRegion extends LocalRegion
 
   /**
    * Removes a particular index on this partitioned regions instance.
-   * 
+   *
    * @param ind Index to be removed.
-   * 
+   *
    */
   public int removeIndex(Index ind, boolean remotelyOriginated)
       throws CacheException, ForceReattemptException {
@@ -8787,7 +8803,7 @@ public class PartitionedRegion extends LocalRegion
 
   /**
    * Gets and removes index by name.
-   * 
+   *
    * @param indexName name of the index to be removed.
    */
   public int removeIndex(String indexName) throws CacheException, ForceReattemptException {
@@ -8847,7 +8863,7 @@ public class PartitionedRegion extends LocalRegion
 
   /**
    * Test Method: Fetch the given bucket's meta-data from each member hosting buckets
-   * 
+   *
    * @param bucketId the identity of the bucket
    * @return list of arrays, each array element containing a {@link DistributedMember} and a
    *         {@link Boolean} the boolean denotes if the member is hosting the bucket and believes it
@@ -8893,7 +8909,7 @@ public class PartitionedRegion extends LocalRegion
   /**
    * Return the primary for the local bucket. Returns null if no primary can be found within
    * {@link DistributionConfig#getMemberTimeout}.
-   * 
+   *
    * @return the primary bucket member
    */
   public InternalDistributedMember getBucketPrimary(int bucketId) {
@@ -8920,7 +8936,7 @@ public class PartitionedRegion extends LocalRegion
   /**
    * get the total retry interval, in milliseconds, for operations concerning this partitioned
    * region
-   * 
+   *
    * @return millisecond retry timeout interval
    */
   public int getRetryTimeout() {
@@ -8942,7 +8958,7 @@ public class PartitionedRegion extends LocalRegion
   /**
    * Used to get membership events from our advisor to implement RegionMembershipListener
    * invocations. This is copied almost in whole from DistributedRegion
-   * 
+   *
    * @since GemFire 5.7
    */
   protected class AdvisorListener implements MembershipListener {
@@ -9092,7 +9108,7 @@ public class PartitionedRegion extends LocalRegion
 
   /**
    * Changes the timeToLive expiration attributes for the partitioned region as a whole
-   * 
+   *
    * @param timeToLive the expiration attributes for the region timeToLive
    * @return the previous value of region timeToLive
    * @throws IllegalArgumentException if timeToLive is null or if the ExpirationAction is
@@ -9116,7 +9132,7 @@ public class PartitionedRegion extends LocalRegion
   /**
    * Changes the idleTimeout expiration attributes for the region as a whole. Resets the
    * {@link CacheStatistics#getLastAccessedTime} for the region.
-   * 
+   *
    * @param idleTimeout the ExpirationAttributes for this region idleTimeout
    * @return the previous value of region idleTimeout
    * @throws IllegalArgumentException if idleTimeout is null or if the ExpirationAction is
@@ -9139,7 +9155,7 @@ public class PartitionedRegion extends LocalRegion
 
   /**
    * Changes the timeToLive expiration attributes for values in this region.
-   * 
+   *
    * @param timeToLive the timeToLive expiration attributes for entries
    * @return the previous value of entry timeToLive
    * @throws IllegalArgumentException if timeToLive is null or if the ExpirationAction is
@@ -9174,7 +9190,7 @@ public class PartitionedRegion extends LocalRegion
 
   /**
    * Changes the custom timeToLive for values in this region
-   * 
+   *
    * @param custom the new CustomExpiry
    * @return the old CustomExpiry
    */
@@ -9189,7 +9205,7 @@ public class PartitionedRegion extends LocalRegion
 
   /**
    * Changes the idleTimeout expiration attributes for values in the region.
-   * 
+   *
    * @param idleTimeout the idleTimeout expiration attributes for entries
    * @return the previous value of entry idleTimeout
    * @throws IllegalArgumentException if idleTimeout is null or if the ExpirationAction is
@@ -9216,7 +9232,7 @@ public class PartitionedRegion extends LocalRegion
 
   /**
    * Changes the CustomExpiry for idleTimeout for values in the region
-   * 
+   *
    * @param custom the new CustomExpiry
    * @return the old CustomExpiry
    */
@@ -9656,16 +9672,16 @@ public class PartitionedRegion extends LocalRegion
    * For the very first member, FPR's first partition has starting bucket id as 0 and other
    * partitions have starting bucket id as the sum of previous partition's starting bucket id and
    * previous partition's num-buckets.
-   * 
+   *
    * For other members, all partitions defined previously with assigned starting bucket ids are
    * fetched from the metadata PartitionRegionConfig. Now for each partition defined for this
    * member, if this partition is already available in the list of the previously defined partitions
    * then starting bucket id is directly assigned from the same previously defined partition.
-   * 
+   *
    * And if the partition on this member is not available in the previously defined partitions then
    * new starting bucket id is calculated as the sum of the largest starting bucket id from
    * previously defined partitions and corresponding num-buckets of the partition.
-   * 
+   *
    * This data of the partitions (FixedPartitionAttributes with starting bucket id for the Fixed
    * Partitioned Region) is stored in metadata for each member.
    */
@@ -9710,7 +9726,7 @@ public class PartitionedRegion extends LocalRegion
 
   /**
    * Returns the local BucketRegion given the key. Returns null if no BucketRegion exists.
-   * 
+   *
    * @since GemFire 6.1.2.9
    */
   public BucketRegion getBucketRegion(Object key) {
@@ -9734,7 +9750,7 @@ public class PartitionedRegion extends LocalRegion
   /**
    * Test hook to return the per entry overhead for a bucket region. Returns -1 if no buckets exist
    * in this vm.
-   * 
+   *
    * @since GemFire 6.1.2.9
    */
   public int getPerEntryLRUOverhead() {
@@ -9900,7 +9916,7 @@ public class PartitionedRegion extends LocalRegion
 
   /**
    * Updates the entry version timestamp of the remote object with the given key.
-   * 
+   *
    * @param recipient the member id of the recipient of the operation
    * @param bucketId the id of the bucket the key hashed into
    * @throws EntryNotFoundException if the entry does not exist in this region
@@ -9997,4 +10013,3 @@ public class PartitionedRegion extends LocalRegion
     return logger;
   }
 }
-

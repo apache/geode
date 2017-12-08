@@ -28,7 +28,7 @@ import org.apache.geode.pdx.internal.TypeRegistry;
 
 public class GetPDXEnumById extends BaseCommand {
 
-  private final static GetPDXEnumById singleton = new GetPDXEnumById();
+  private static final GetPDXEnumById singleton = new GetPDXEnumById();
 
   public static Command getCommand() {
     return singleton;

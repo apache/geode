@@ -19,8 +19,8 @@ import javax.management.ObjectName;
 /**
  * This class is used as a key for Notification region Only using ObjectName as key will overwrite
  * entries if put rate for notification is high.
- * 
- * 
+ *
+ *
  */
 public class NotificationKey implements java.io.Serializable {
 

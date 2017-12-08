@@ -44,7 +44,7 @@ import org.apache.geode.security.NotAuthorizedException;
  * check for authorization (pre-processing) that may modify the arguments to the operations. The
  * data being passed for the operation is encapsulated in a {@link OperationContext} object that can
  * be modified by the pre-processing authorization callbacks.
- * 
+ *
  * @since GemFire 5.5
  */
 public class AuthorizeRequest {
@@ -177,7 +177,7 @@ public class AuthorizeRequest {
        * value = mapEntry.getValue(); boolean isObject = true; if (value instanceof byte[]) {
        * isObject = false; } byte[] serializedValue =
        * ((CachedDeserializable)value).getSerializedValue();
-       * 
+       *
        * PutOperationContext putContext = new PutOperationContext(currkey, serializedValue,
        * isObject, PutOperationContext.UNKNOWN, false); putContext.setCallbackArg(null); if
        * (!this.authzCallback.authorizeOperation(regionName, putContext)) { String errStr =

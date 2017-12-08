@@ -27,7 +27,7 @@ import java.io.IOException;
 /**
  * File wrapper that adds support for reading process id (pid) from a pid file written to disk by
  * GemFire processes.
- * 
+ *
  * @since GemFire 8.2
  */
 public class PidFile {
@@ -36,9 +36,9 @@ public class PidFile {
 
   /**
    * Constructs a PidFile for reading pid stored in a file.
-   * 
+   *
    * @param file the file containing the pid of the process
-   * 
+   *
    * @throws IllegalArgumentException if the specified file is null or does not exist
    */
   public PidFile(final File file) {
@@ -50,10 +50,10 @@ public class PidFile {
 
   /**
    * Constructs a PidFile for reading pid stored in a file.
-   * 
+   *
    * @param directory directory containing a file of name pidFileName
    * @param filename name of the file containing the pid of the process to stop
-   * 
+   *
    * @throws FileNotFoundException if the specified filename is not found within the directory
    * @throws IllegalArgumentException if directory is null, does not exist or is not a directory
    */
@@ -74,9 +74,9 @@ public class PidFile {
 
   /**
    * Reads in the pid from the specified file.
-   * 
+   *
    * @return the process id (pid) contained within the pidFile
-   * 
+   *
    * @throws IllegalArgumentException if the pid in the pidFile is not a positive integer
    * @throws IOException if unable to read from the specified file
    */

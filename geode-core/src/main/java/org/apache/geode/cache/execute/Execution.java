@@ -31,7 +31,7 @@ import org.apache.geode.cache.LowMemoryException;
  * @param <AGG> The type of the aggregated result returned by the ResultCollector
  *
  * @since GemFire 6.0
- * 
+ *
  * @see FunctionService
  * @see Function
  */
@@ -43,7 +43,7 @@ public interface Execution<IN, OUT, AGG> {
    * <p>
    * Applicable only for regions with {@link DataPolicy#PARTITION} DataPolicy. If the filter is
    * null, it will execute on all data of the region.
-   * 
+   *
    * @param filter Set defining the data filter to be used for executing the function
    * @return an Execution with the filter
    * @throws IllegalArgumentException if filter passed is null.
@@ -56,12 +56,12 @@ public interface Execution<IN, OUT, AGG> {
   /**
    * Specifies the user data passed to the function when it is executed. The function can retrieve
    * these arguments using {@link FunctionContext#getArguments()}
-   * 
+   *
    * @param args user data passed to the function execution
    * @return an Execution with args
    * @throws IllegalArgumentException if the input parameter is null
    * @since Geode 1.2
-   * 
+   *
    */
   public Execution<IN, OUT, AGG> setArguments(IN args);
 
@@ -82,7 +82,7 @@ public interface Execution<IN, OUT, AGG> {
    * Specifies the {@link ResultCollector} that will receive the results after the function has been
    * executed. Collector will receive results as they are sent from the
    * {@link Function#execute(FunctionContext)} using {@link ResultSender}.
-   * 
+   *
    * @return an Execution with a collector
    * @throws IllegalArgumentException if {@link ResultCollector} is null
    * @see ResultCollector
@@ -101,7 +101,7 @@ public interface Execution<IN, OUT, AGG> {
    * @return ResultCollector to retrieve the results received. This is different object than the
    *         ResultCollector provided in {@link Execution#withCollector(ResultCollector)}. User has
    *         to use this reference to retrieve results.
-   * 
+   *
    * @since GemFire 6.0
    */
   public ResultCollector<OUT, AGG> execute(String functionId) throws FunctionException;
@@ -111,14 +111,14 @@ public interface Execution<IN, OUT, AGG> {
    * <p>
    * {@link Function#execute(FunctionContext)} is called on the de-serialized instance on the
    * executing member.
-   * 
+   *
    * @param function instance to execute
    * @throws LowMemoryException if the {@link Function#optimizeForWrite()} returns true and there is
    *         a low memory condition
    * @return ResultCollector to retrieve the results received. This is different object than the
    *         ResultCollector provided in {@link Execution#withCollector(ResultCollector)}. User has
    *         to use this reference to retrieve results.
-   * 
+   *
    * @since GemFire 6.0
    */
   public ResultCollector<OUT, AGG> execute(Function function) throws FunctionException;

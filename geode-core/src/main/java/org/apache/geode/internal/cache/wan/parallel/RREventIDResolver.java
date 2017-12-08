@@ -25,11 +25,11 @@ import org.apache.geode.internal.cache.EventID;
  * different from the bucket id calculated using EventID's hashcode. To not to break the contract of
  * key and its bucket id, we are providing an internal resolver which will return a correct bucketId
  * when EventID will be used as the key in RR with PArallelGatewaySender
- * 
+ *
  * We are assuming here, before calling getRoutingObejct in this Resolver, key of EntryOperation
  * i.e. EventID as already been processed by ParallelGatewaySenderImpl#setModifiedEvent where we are
  * calculating bucketId from original event's key and storing it in EventID.
- * 
+ *
  */
 public class RREventIDResolver implements PartitionResolver {
 

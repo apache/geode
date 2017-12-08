@@ -215,7 +215,7 @@ public abstract class VersionTag<T extends VersionSource>
 
   /**
    * Set canonical ID objects into this version tag using the DM's cache of IDs
-   * 
+   *
    * @param distributionManager
    */
   public void setCanonicalIDs(DM distributionManager) {}
@@ -270,7 +270,7 @@ public abstract class VersionTag<T extends VersionSource>
 
   /**
    * set or clear the flag that this tag was blessed by a conflict resolver
-   * 
+   *
    * @param flag
    * @return this tag
    */

@@ -39,7 +39,7 @@ import org.apache.geode.test.junit.categories.UnitTest;
 /**
  * Test class for testing the contract and functionality of the IOUtils class.
  * <p/>
- * 
+ *
  * @see org.apache.geode.internal.util.IOUtils
  * @see org.jmock.Expectations
  * @see org.jmock.Mockery
@@ -70,7 +70,7 @@ public class IOUtilsJUnitTest {
   /**
    * Gets a fully-qualified path anchored at root.
    * <p/>
-   * 
+   *
    * @param pathElements a String array containing the elements of the path.
    * @return a fully-qualified pathname as a String value.
    */

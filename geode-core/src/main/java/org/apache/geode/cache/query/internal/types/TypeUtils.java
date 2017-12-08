@@ -62,7 +62,7 @@ public class TypeUtils implements OQLLexerTokenTypes {
 
   /**
    * Verify that type-cast will work, or else throw an informative exception.
-   * 
+   *
    * @return the castTarget
    * @throws InternalGemFireError if cast will fail
    */
@@ -85,35 +85,35 @@ public class TypeUtils implements OQLLexerTokenTypes {
   /*
    * public static Object convert(Object obj, Class toType) throws TypeMismatchException { // if obj
    * is null, just leave it alone if (obj == null) return null;
-   * 
-   * 
+   *
+   *
    * if (toType.isInstance(obj)) return obj;
-   * 
+   *
    * if (Float.class.isAssignableFrom(toType) && obj instanceof Double) return new
    * Float(((Double)obj).floatValue());
-   * 
+   *
    * if (Double.class.isAssignableFrom(toType) && obj instanceof Float) return
    * Double.valueOf(((Float)obj).doubleValue());
-   * 
+   *
    * if (Long.class.isAssignableFrom(toType) && obj instanceof Byte || obj instanceof Short || obj
    * instanceof Integer) return Long.valueOf(((Number)obj).longValue());
-   * 
+   *
    * if (Integer.class.isAssignableFrom(toType) && obj instanceof Byte || obj instanceof Short ||
    * obj instanceof Long) { int newInt = ((Number)obj).intValue(); if (!(obj instanceof Long) ||
    * (long)newInt == ((Long)obj).longValue()) return Integer.valueOf(newInt); }
-   * 
+   *
    * if (Short.class.isAssignableFrom(toType) && obj instanceof Byte || obj instanceof Integer ||
    * obj instanceof Long) { short newShort = ((Number)obj).shortValue(); if (obj instanceof Byte ||
    * (obj instanceof Long && (long)newShort == ((Long)obj).longValue()) || (obj instanceof Integer
    * && (int)newShort == ((Integer)obj).intValue())) return new Short(newShort); }
-   * 
+   *
    * throw new
    * TypeMismatchException(LocalizedStrings.TypeUtils_UNABLE_TO_CONVERT_0_TO_1.toLocalizedString(new
    * Object[] {obj, toType})); }
    */
   /**
    * Compares two objects using the operator
-   * 
+   *
    * @param obj1
    * @param obj2
    * @param compOp
@@ -280,7 +280,7 @@ public class TypeUtils implements OQLLexerTokenTypes {
   // plus Strings, and temporals
   /**
    * Return the type of the keys for a given path type.
-   * 
+   *
    * @param pathType the Class of the last attribute in the path
    * @return the Class of the index keys
    * @throws TypeMismatchException if indexes are not allowed on this type
@@ -459,4 +459,3 @@ public class TypeUtils implements OQLLexerTokenTypes {
   }
 
 }
-

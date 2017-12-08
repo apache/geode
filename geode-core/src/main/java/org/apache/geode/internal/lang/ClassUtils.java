@@ -19,7 +19,7 @@ package org.apache.geode.internal.lang;
  * The ClassUtils class is an abstract utility class for working with and invoking methods on Class
  * objects.
  * <p/>
- * 
+ *
  * @see java.lang.Class
  * @see java.lang.Object
  * @since GemFire 7.0
@@ -33,7 +33,7 @@ public abstract class ClassUtils {
    * then this method handles the ClassNotFoundException and throws the specified RuntimeException
    * instead.
    * </p>
-   * 
+   *
    * @param className a String indicating the fully qualified name of the class to load.
    * @param e the RuntimeException to throw in place of the ClassNotFoundException if the class
    *        could not be found and loaded.
@@ -54,7 +54,7 @@ public abstract class ClassUtils {
   /**
    * Gets the Class type for the specified Object, or returns null if the Object reference is null.
    * <p/>
-   * 
+   *
    * @param obj the Object who's class type is determined.
    * @return the Class type of the Object parameter, or null if the Object reference is null.
    * @see java.lang.Object#getClass()
@@ -66,7 +66,7 @@ public abstract class ClassUtils {
   /**
    * Gets the name of the Object's Class type or null if the Object reference is null.
    * <p/>
-   * 
+   *
    * @param obj the Object's who's class name is returned or null if the Object reference is null.
    * @return a String value specifying the name of the Object's class type.
    * @see #getClass(Object)
@@ -80,7 +80,7 @@ public abstract class ClassUtils {
   /**
    * Determine whether the specified class is on the classpath. <
    * <p/>
-   * 
+   *
    * @param className a String value specifying the fully-qualified name of the class.
    * @return a boolean value indicating whether the specified class is on the classpath.
    * @see #forName(String, RuntimeException)
@@ -101,7 +101,7 @@ public abstract class ClassUtils {
    * assignment-compatible with the given Class type. Note, this method is null-safe for both Class
    * and Object value references.
    * <p/>
-   * 
+   *
    * @param type the Class type used in an instanceof determination with the given Object.
    * @param obj the Object being determined for assignment-compatibility with the specified Class
    *        type.
@@ -118,7 +118,7 @@ public abstract class ClassUtils {
    * Object is considered not an instance of the Class types if the condition holds for all Class
    * types.
    * <p/>
-   * 
+   *
    * @param obj the Object who's Class type is in question.
    * @param types an array of Class types that the Object is being tested as an instance of.
    * @return a boolean value of true if the Object is not an instance of any of the specified Class

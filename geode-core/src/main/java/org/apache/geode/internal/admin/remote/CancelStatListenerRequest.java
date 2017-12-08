@@ -16,12 +16,10 @@
 
 package org.apache.geode.internal.admin.remote;
 
+import java.io.*;
+
 import org.apache.geode.distributed.internal.*;
 import org.apache.geode.internal.i18n.LocalizedStrings;
-// import org.apache.geode.*;
-// import org.apache.geode.internal.*;
-import java.io.*;
-// import java.util.*;
 
 /**
  * A message that is sent to a particular distribution manager to get rid of a previously added
@@ -49,7 +47,7 @@ public class CancelStatListenerRequest extends AdminRequest {
    * Must return a proper response to this request.
    */
   @Override
-  protected AdminResponse createResponse(DistributionManager dm) {
+  protected AdminResponse createResponse(DM dm) {
     return CancelStatListenerResponse.create(dm, this.getSender(), this.listenerId);
   }
 

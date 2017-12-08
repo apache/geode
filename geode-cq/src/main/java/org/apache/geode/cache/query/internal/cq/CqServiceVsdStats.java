@@ -25,16 +25,16 @@ import org.apache.geode.cache.query.CqException;
 import org.apache.geode.cache.query.CqQuery;
 import org.apache.geode.cache.query.internal.DefaultQueryService;
 import org.apache.geode.internal.NanoTimer;
-import org.apache.geode.internal.cache.InternalCache;
-import org.apache.geode.internal.statistics.StatisticsTypeFactoryImpl;
 import org.apache.geode.internal.cache.FilterProfile;
+import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.logging.LogService;
+import org.apache.geode.internal.statistics.StatisticsTypeFactoryImpl;
 
 /**
  * This class tracks GemFire statistics related to CqService. Specifically the following statistics
  * are tracked: Number of CQs created Number of active CQs Number of CQs suspended or stopped Number
  * of CQs closed Number of CQs on a client
- * 
+ *
  * @since GemFire 5.5
  */
 public class CqServiceVsdStats {
@@ -146,7 +146,7 @@ public class CqServiceVsdStats {
 
   /**
    * Constructor.
-   * 
+   *
    * @param factory The <code>StatisticsFactory</code> which creates the <code>Statistics</code>
    *        instance
    */
@@ -163,7 +163,7 @@ public class CqServiceVsdStats {
 
   /**
    * Returns the current value of the "numCqsCreated" stat.
-   * 
+   *
    * @return the current value of the "numCqsCreated" stat
    */
   long getNumCqsCreated() {
@@ -179,7 +179,7 @@ public class CqServiceVsdStats {
 
   /**
    * Returns the current value of the "numCqsActive" stat.
-   * 
+   *
    * @return the current value of the "numCqsActive" stat
    */
   long getNumCqsActive() {
@@ -202,7 +202,7 @@ public class CqServiceVsdStats {
 
   /**
    * Returns the current value of the "numCqsStopped" stat.
-   * 
+   *
    * @return the current value of the "numCqsStopped" stat
    */
   long getNumCqsStopped() {
@@ -225,7 +225,7 @@ public class CqServiceVsdStats {
 
   /**
    * Returns the current value of the "numCqsClosed" stat.
-   * 
+   *
    * @return the current value of the "numCqsClosed" stat
    */
   long getNumCqsClosed() {
@@ -241,7 +241,7 @@ public class CqServiceVsdStats {
 
   /**
    * Returns the current value of the "numCqsOnClient" stat.
-   * 
+   *
    * @return the current value of the "numCqsOnClient" stat
    */
   long getNumCqsOnClient() {
@@ -264,7 +264,7 @@ public class CqServiceVsdStats {
 
   /**
    * Returns the current value of the "numClientsWithCqs" stat.
-   * 
+   *
    * @return the current value of the "numClientsWithCqs" stat
    */
   public long getNumClientsWithCqs() {
@@ -295,7 +295,7 @@ public class CqServiceVsdStats {
 
   /**
    * End CQ Query Execution Time.
-   * 
+   *
    * @param start long time value.
    */
   void endCqQueryExecution(long start) {
@@ -307,7 +307,7 @@ public class CqServiceVsdStats {
 
   /**
    * Returns the total time spent executing the CQ Queries.
-   * 
+   *
    * @return long time spent.
    */
   public long getCqQueryExecutionTime() {

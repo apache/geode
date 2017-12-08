@@ -65,7 +65,7 @@ public interface LoaderHelper<K, V> {
   /**
    * Return the argument object for the load method that was passed in from application code. This
    * object is passed in as <i>aLoaderArgument</i> in {@link Region#get(Object, Object) get}.
-   * 
+   *
    * @return the argument or null if one was not supplied
    */
   public Object getArgument();

@@ -44,7 +44,7 @@ import org.apache.geode.security.ResourcePermission.Resource;
 
 public class Destroy extends BaseCommand {
 
-  private final static Destroy singleton = new Destroy();
+  private static final Destroy singleton = new Destroy();
 
   public static Command getCommand() {
     return singleton;

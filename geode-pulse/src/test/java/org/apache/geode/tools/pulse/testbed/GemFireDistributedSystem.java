@@ -16,21 +16,21 @@
  */
 package org.apache.geode.tools.pulse.testbed;
 
+import static org.apache.geode.distributed.ConfigurationProperties.LOCATORS;
+
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 
-import static org.apache.geode.distributed.ConfigurationProperties.LOCATORS;
-
 
 /**
- * 
+ *
  * TODO 0. SystemAlerts 1. Operations like member-up/down/crash, region create/destroy [7.5 scope]
  * 2. Read events like member-up/down/crash, region create/destroy [7.5 scope] 3. PropFile Writing
  * 4. Link to other remote systems, topology - multi-cluster [7.5]
- * 
+ *
  *
  */
 public class GemFireDistributedSystem {

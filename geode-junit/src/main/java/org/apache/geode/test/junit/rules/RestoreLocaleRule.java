@@ -24,7 +24,7 @@ import org.junit.rules.ExternalResource;
  * or fails).
  * <p>
  * Let's assume the locale {@code US}. Now run the test
- * 
+ *
  * <pre>
  *   public void YourTest {
  *     &#064;Rule
@@ -37,7 +37,7 @@ import org.junit.rules.ExternalResource;
  *     }
  *   }
  * </pre>
- * 
+ *
  * After running the test, the locale will set to {@code US} again.
  */
 public class RestoreLocaleRule extends ExternalResource {
@@ -51,7 +51,7 @@ public class RestoreLocaleRule extends ExternalResource {
    * the test is set to the specified locale. Specify {@code consumer} if you need to modify the
    * Locale associated with it. {@code consumer} will be run using the original {@code Locale} after
    * the test.
-   * 
+   *
    * @param initLocale Initial locale at test run
    * @param consumer Changing Locale associated with
    */
@@ -63,7 +63,7 @@ public class RestoreLocaleRule extends ExternalResource {
   /**
    * Creates a {@code RestoreLocale} rule that restores locale. The initial locale at the time of
    * the test is set to the specified locale.
-   * 
+   *
    * @param initLocale Initial locale at test run
    */
   public RestoreLocaleRule(Locale initLocale) {
@@ -74,7 +74,7 @@ public class RestoreLocaleRule extends ExternalResource {
    * Creates a {@code RestoreLocale} rule that restores locale. Specify {@code consumer} if you need
    * to modify the Locale associated with it. {@code consumer} will be run using the original
    * {@code Locale} after the test.
-   * 
+   *
    * @param consumer Changing Locale associated with
    */
   public RestoreLocaleRule(Consumer<Locale> consumer) {

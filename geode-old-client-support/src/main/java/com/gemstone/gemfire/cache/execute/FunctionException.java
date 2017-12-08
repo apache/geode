@@ -18,11 +18,12 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 
-import com.gemstone.gemfire.GemFireException;
-import org.apache.geode.internal.Assert;
 import org.apache.geode.cache.execute.Function;
 import org.apache.geode.cache.execute.FunctionContext;
 import org.apache.geode.cache.execute.FunctionService;
+import org.apache.geode.internal.Assert;
+
+import com.gemstone.gemfire.GemFireException;
 
 /**
  * Thrown to indicate an error or exceptional condition during the execution of
@@ -50,14 +51,14 @@ public class FunctionException extends GemFireException {
 
   /**
    * Creates new function exception with given error message.
-   * 
+   *
    * @since GemFire 6.5
    */
   public FunctionException() {}
 
   /**
    * Creates new function exception with given error message.
-   * 
+   *
    * @param msg
    * @since GemFire 6.0
    */
@@ -67,7 +68,7 @@ public class FunctionException extends GemFireException {
 
   /**
    * Creates new function exception with given error message and optional nested exception.
-   * 
+   *
    * @param msg
    * @param cause
    * @since GemFire 6.0
@@ -78,7 +79,7 @@ public class FunctionException extends GemFireException {
 
   /**
    * Creates new function exception given throwable as a cause and source of error message.
-   * 
+   *
    * @param cause
    * @since GemFire 6.0
    */
@@ -88,7 +89,7 @@ public class FunctionException extends GemFireException {
 
   /**
    * Adds exceptions thrown from different nodes to a ds
-   * 
+   *
    * @param cause
    * @since GemFire 6.5
    */
@@ -99,7 +100,7 @@ public class FunctionException extends GemFireException {
 
   /**
    * Returns the list of exceptions thrown from different nodes
-   * 
+   *
    * @since GemFire 6.5
    */
   public List<Throwable> getExceptions() {
@@ -111,7 +112,7 @@ public class FunctionException extends GemFireException {
 
   /**
    * Adds the list of exceptions provided
-   * 
+   *
    * @since GemFire 6.5
    */
   public void addExceptions(Collection<? extends Throwable> ex) {

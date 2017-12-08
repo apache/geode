@@ -17,6 +17,14 @@ package org.apache.geode.security;
 import static org.apache.geode.security.SecurityTestUtils.closeCache;
 import static org.apache.geode.security.SecurityTestUtils.getLocatorPort;
 
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Properties;
+import java.util.Random;
+
+import org.junit.Test;
+import org.junit.experimental.categories.Category;
+
 import org.apache.geode.DataSerializable;
 import org.apache.geode.Instantiator;
 import org.apache.geode.cache.operations.OperationContext.OperationCode;
@@ -32,26 +40,19 @@ import org.apache.geode.security.templates.UserPasswordAuthInit;
 import org.apache.geode.test.junit.categories.DistributedTest;
 import org.apache.geode.test.junit.categories.FlakyTest;
 import org.apache.geode.test.junit.categories.SecurityTest;
-import org.junit.Test;
-import org.junit.experimental.categories.Category;
-
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Properties;
-import java.util.Random;
 
 /**
  * Tests for authorization callback that modify objects and callbacks from client to server.
- * 
+ *
  * The scheme of these tests is thus: A user name terminating in integer 'i' can get values
  * terminating with 'i', '2*i', '3*i' and so on. So 'gemfire1' can get 'value1', 'value2', ...;
  * 'gemfire2' can get 'value2', 'value4', ... and so on. On the server side this is done by adding
  * the index 'i' to the object in the pre-processing phase, and checked by comparing against the
  * user name index during the post-processing phase.
- * 
+ *
  * This enables testing of object and callback modification both in pre-processing and
  * post-processing phases.
- * 
+ *
  * @since GemFire 5.5
  */
 @Category({DistributedTest.class, SecurityTest.class})

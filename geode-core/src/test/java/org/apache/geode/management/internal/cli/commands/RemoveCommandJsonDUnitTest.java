@@ -14,7 +14,6 @@
  */
 package org.apache.geode.management.internal.cli.commands;
 
-import static org.apache.geode.management.internal.cli.commands.DataCommandsUtils.getRegionAssociatedMembers;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import java.io.Serializable;
@@ -34,13 +33,14 @@ import org.apache.geode.cache.Region;
 import org.apache.geode.cache.RegionShortcut;
 import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.internal.cache.InternalCache;
+import org.apache.geode.management.internal.cli.CliUtil;
 import org.apache.geode.management.internal.cli.dto.Key1;
 import org.apache.geode.management.internal.cli.dto.Value2;
 import org.apache.geode.test.dunit.SerializableCallableIF;
 import org.apache.geode.test.dunit.rules.LocatorServerStartupRule;
 import org.apache.geode.test.dunit.rules.MemberVM;
 import org.apache.geode.test.junit.categories.DistributedTest;
-import org.apache.geode.test.junit.rules.GfshShellConnectionRule;
+import org.apache.geode.test.junit.rules.GfshCommandRule;
 
 @Category(DistributedTest.class)
 public class RemoveCommandJsonDUnitTest implements Serializable {
@@ -50,7 +50,7 @@ public class RemoveCommandJsonDUnitTest implements Serializable {
   public LocatorServerStartupRule locatorServerStartupRule = new LocatorServerStartupRule();
 
   @Rule
-  public transient GfshShellConnectionRule gfsh = new GfshShellConnectionRule();
+  public transient GfshCommandRule gfsh = new GfshCommandRule();
 
   private transient MemberVM locator;
   private transient MemberVM server1;
@@ -98,7 +98,7 @@ public class RemoveCommandJsonDUnitTest implements Serializable {
     String keyJson = "('id':'key1','name':'name1')";
 
     String command = removeCommand(keyJson);
-    gfsh.executeAndVerifyCommand(command);
+    gfsh.executeAndAssertThat(command).statusIsSuccess();
 
     server1.invoke(() -> verifyKeyIsRemoved(1));
     server2.invoke(() -> verifyKeyIsRemoved(1));
@@ -112,7 +112,7 @@ public class RemoveCommandJsonDUnitTest implements Serializable {
     String keyJson = "('id':'key1')";
 
     String command = removeCommand(keyJson);
-    gfsh.executeAndVerifyCommand(command);
+    gfsh.executeAndAssertThat(command).statusIsSuccess();
 
     server1.invoke(() -> verifyKeyIsRemoved(1));
     server2.invoke(() -> verifyKeyIsRemoved(1));
@@ -126,7 +126,7 @@ public class RemoveCommandJsonDUnitTest implements Serializable {
     String keyJson = "('foo':'bar')";
 
     String command = removeCommand(keyJson);
-    gfsh.executeAndVerifyCommand(command);
+    gfsh.executeAndAssertThat(command).statusIsSuccess();
 
     server1.invoke(() -> verifyKeyIsPresent(1));
     server2.invoke(() -> verifyKeyIsPresent(1));
@@ -149,7 +149,7 @@ public class RemoveCommandJsonDUnitTest implements Serializable {
   }
 
   private boolean regionMBeansAreInitialized() {
-    Set<DistributedMember> members = getRegionAssociatedMembers(JSON_REGION_NAME,
+    Set<DistributedMember> members = CliUtil.getRegionAssociatedMembers(JSON_REGION_NAME,
         (InternalCache) CacheFactory.getAnyInstance(), false);
 
     return CollectionUtils.isNotEmpty(members);

@@ -13,13 +13,13 @@
  * the License.
  */
 /**
- * 
+ *
  */
 package org.apache.geode.internal.cache;
 
 /**
  * A version of ForceReattemptException that should be used when the target bucket can't be found.
- * 
+ *
  *
  */
 public class BucketNotFoundException extends ForceReattemptException {

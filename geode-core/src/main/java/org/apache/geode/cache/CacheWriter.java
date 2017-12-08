@@ -67,7 +67,7 @@ public interface CacheWriter<K, V> extends CacheCallback {
    * {@link CacheEvent#getOperation() Operation}'s {@link Operation#isLoad()} method. The entry
    * being created may already exist in the local cache where this <code>CacheWriter</code> is
    * installed, but it does not yet exist in the cache where the operation was initiated.
-   * 
+   *
    * @param event an EntryEvent that provides information about the operation in progress
    * @throws CacheWriterException if thrown will abort the operation in progress, and the exception
    *         will be propagated back to caller that initiated the operation
@@ -114,10 +114,10 @@ public interface CacheWriter<K, V> extends CacheCallback {
   /**
    * Called before a region is cleared. The <code>CacheWriter</code> will not additionally be called
    * for each entry that is cleared in the region as a result of a region clear.
-   * 
+   *
    * <p>
    * WARNING: This method should not clear/destroy any regions
-   * 
+   *
    *
    * @param event a RegionEvent that provides information about the operation
    *

@@ -70,7 +70,7 @@ public class ContainsKeyValueMessage extends PartitionMessageWithDirectReply {
    * {@link org.apache.geode.cache.Region#containsKey(Object)}or
    * {@link org.apache.geode.cache.Region#containsValueForKey(Object)} depending on the
    * <code>valueCheck</code> argument
-   * 
+   *
    * @param recipient the member that the contains keys/value message is sent to
    * @param r the PartitionedRegion that contains the bucket
    * @param key the key to be queried
@@ -196,7 +196,7 @@ public class ContainsKeyValueMessage extends PartitionMessageWithDirectReply {
 
     /**
      * Processes this message. This method is invoked by the receiver of the message.
-     * 
+     *
      * @param dm the distribution manager that is processing the message.
      */
     @Override
@@ -250,7 +250,7 @@ public class ContainsKeyValueMessage extends PartitionMessageWithDirectReply {
   /**
    * A processor to capture the value returned by
    * {@link org.apache.geode.internal.cache.partitioned.ContainsKeyValueMessage.ContainsKeyValueReplyMessage}
-   * 
+   *
    * @since GemFire 5.0
    */
   public static class ContainsKeyValueResponse extends PartitionResponse {

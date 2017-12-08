@@ -16,7 +16,7 @@ package org.apache.geode.management.internal.cli.shell;
 
 /**
  * RuntimeException to wrap JMX Connection Error/Exception.
- * 
+ *
  * @since GemFire 7.0
  */
 public class JMXConnectionException extends RuntimeException {

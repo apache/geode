@@ -17,6 +17,15 @@ package org.apache.geode.internal.cache;
 import static org.apache.geode.internal.offheap.annotations.OffHeapIdentifier.ENTRY_EVENT_NEW_VALUE;
 import static org.apache.geode.internal.offheap.annotations.OffHeapIdentifier.ENTRY_EVENT_OLD_VALUE;
 
+import java.io.ByteArrayInputStream;
+import java.io.DataInput;
+import java.io.DataInputStream;
+import java.io.DataOutput;
+import java.io.IOException;
+import java.util.function.Function;
+
+import org.apache.logging.log4j.Logger;
+
 import org.apache.geode.CopyHelper;
 import org.apache.geode.DataSerializer;
 import org.apache.geode.DeltaSerializationException;
@@ -51,7 +60,7 @@ import org.apache.geode.internal.InternalDataSerializer;
 import org.apache.geode.internal.Sendable;
 import org.apache.geode.internal.Version;
 import org.apache.geode.internal.cache.FilterRoutingInfo.FilterInfo;
-import org.apache.geode.internal.cache.lru.Sizeable;
+import org.apache.geode.internal.cache.entries.OffHeapRegionEntry;
 import org.apache.geode.internal.cache.partitioned.PartitionMessage;
 import org.apache.geode.internal.cache.partitioned.PutMessage;
 import org.apache.geode.internal.cache.tier.sockets.CacheServerHelper;
@@ -72,17 +81,10 @@ import org.apache.geode.internal.offheap.StoredObject;
 import org.apache.geode.internal.offheap.annotations.Released;
 import org.apache.geode.internal.offheap.annotations.Retained;
 import org.apache.geode.internal.offheap.annotations.Unretained;
+import org.apache.geode.internal.size.Sizeable;
 import org.apache.geode.internal.util.ArrayUtils;
 import org.apache.geode.internal.util.BlobHelper;
 import org.apache.geode.pdx.internal.PeerTypeRegistration;
-import org.apache.logging.log4j.Logger;
-
-import java.io.ByteArrayInputStream;
-import java.io.DataInput;
-import java.io.DataInputStream;
-import java.io.DataOutput;
-import java.io.IOException;
-import java.util.function.Function;
 
 /**
  * Implementation of an entry event
@@ -180,7 +182,7 @@ public class EntryEventImpl
 
   private transient boolean isPendingSecondaryExpireDestroy = false;
 
-  public final static Object SUSPECT_TOKEN = new Object();
+  public static final Object SUSPECT_TOKEN = new Object();
 
   public EntryEventImpl() {
     // do nothing
@@ -358,9 +360,9 @@ public class EntryEventImpl
   /**
    * Creates and returns an EntryEventImpl. Generates and assigns a bucket id to the EntryEventImpl
    * if the region parameter is a PartitionedRegion.
-   * 
+   *
    * Called by BridgeEntryEventImpl to use existing EventID
-   * 
+   *
    * {@link EntryEventImpl#EntryEventImpl(LocalRegion, Operation, Object, Object, Object, boolean, DistributedMember, boolean, EventID)}
    */
   @Retained
@@ -375,7 +377,7 @@ public class EntryEventImpl
   /**
    * Creates and returns an EntryEventImpl. Generates and assigns a bucket id to the EntryEventImpl
    * if the region parameter is a PartitionedRegion.
-   * 
+   *
    * {@link EntryEventImpl#EntryEventImpl(LocalRegion, Operation, Object, boolean, DistributedMember, boolean, boolean)}
    */
   @Retained
@@ -389,10 +391,10 @@ public class EntryEventImpl
   /**
    * Creates and returns an EntryEventImpl. Generates and assigns a bucket id to the EntryEventImpl
    * if the region parameter is a PartitionedRegion.
-   * 
+   *
    * This creator does not specify the oldValue as this will be filled in later as part of an
    * operation on the region, or lets it default to null.
-   * 
+   *
    * {@link EntryEventImpl#EntryEventImpl(LocalRegion, Operation, Object, Object, Object, boolean, DistributedMember, boolean, boolean)}
    */
   @Retained
@@ -667,7 +669,7 @@ public class EntryEventImpl
 
   /**
    * Return the event id, if any
-   * 
+   *
    * @return null if no event id has been set
    */
   public EventID getEventId() {
@@ -726,14 +728,9 @@ public class EntryEventImpl
         return null;
       }
       @Unretained
-      Object ov = basicGetOldValue();
-      if (ov == null) {
-        return null;
-      } else if (ov == Token.NOT_AVAILABLE) {
-        return AbstractRegion.handleNotAvailable(ov);
-      }
-      boolean doCopyOnRead = getRegion().isCopyOnRead();
+      Object ov = handleNotAvailableOldValue();
       if (ov != null) {
+        boolean doCopyOnRead = getRegion().isCopyOnRead();
         if (ov instanceof CachedDeserializable) {
           return callWithOffHeapLock((CachedDeserializable) ov, oldValueCD -> {
             if (doCopyOnRead) {
@@ -757,6 +754,44 @@ public class EntryEventImpl
       iae.initCause(i);
       throw iae;
     }
+  }
+
+  /**
+   * returns the old value after handling one this is NOT_AVAILABLE. If the old value is
+   * NOT_AVAILABLE then it may try to read it from disk. If it can't read an unavailable old value
+   * from disk then it will return null instead of NOT_AVAILABLE.
+   */
+  @Unretained(ENTRY_EVENT_OLD_VALUE)
+  private Object handleNotAvailableOldValue() {
+    @Unretained
+    Object result = basicGetOldValue();
+    if (result != Token.NOT_AVAILABLE) {
+      return result;
+    }
+    if (getReadOldValueFromDisk()) {
+      try {
+        result = this.region.getValueInVMOrDiskWithoutFaultIn(getKey());
+      } catch (EntryNotFoundException ex) {
+        result = null;
+      }
+    }
+    result = AbstractRegion.handleNotAvailable(result);
+    return result;
+  }
+
+  /**
+   * If true then when getOldValue is called if the NOT_AVAILABLE is found then an attempt will be
+   * made to read the old value from disk without faulting it in. Should only be set to true when
+   * product is calling a method on a CacheWriter.
+   */
+  private boolean readOldValueFromDisk;
+
+  public boolean getReadOldValueFromDisk() {
+    return this.readOldValueFromDisk;
+  }
+
+  public void setReadOldValueFromDisk(boolean v) {
+    this.readOldValueFromDisk = v;
   }
 
   /**
@@ -852,15 +887,16 @@ public class EntryEventImpl
   /**
    * Note if v might be an off-heap reference that you did not retain for this EntryEventImpl then
    * call retainsAndSetOldValue instead of this method.
-   * 
+   *
    * @param v the caller should have already retained this off-heap reference.
    */
   @Released(ENTRY_EVENT_OLD_VALUE)
-  private void basicSetOldValue(@Unretained(ENTRY_EVENT_OLD_VALUE) Object v) {
+  void basicSetOldValue(@Unretained(ENTRY_EVENT_OLD_VALUE) Object v) {
     @Released
     final Object curOldValue = this.oldValue;
-    if (v == curOldValue)
+    if (v == curOldValue) {
       return;
+    }
     if (this.offHeapOk && mayHaveOffHeapReferences()) {
       if (ReferenceCountHelper.trackReferenceCounts()) {
         OffHeapHelper.releaseAndTrackOwner(curOldValue, new OldValueOwner());
@@ -874,9 +910,9 @@ public class EntryEventImpl
 
   @Released(ENTRY_EVENT_OLD_VALUE)
   private void retainAndSetOldValue(@Retained(ENTRY_EVENT_OLD_VALUE) Object v) {
-    if (v == this.oldValue)
+    if (v == this.oldValue) {
       return;
-
+    }
     if (isOffHeapReference(v)) {
       StoredObject so = (StoredObject) v;
       if (ReferenceCountHelper.trackReferenceCounts()) {
@@ -898,7 +934,7 @@ public class EntryEventImpl
   }
 
   @Unretained(ENTRY_EVENT_OLD_VALUE)
-  private Object basicGetOldValue() {
+  Object basicGetOldValue() {
     @Unretained(ENTRY_EVENT_OLD_VALUE)
     Object result = this.oldValue;
     if (!this.offHeapOk && isOffHeapReference(result)) {
@@ -946,7 +982,7 @@ public class EntryEventImpl
 
   /**
    * Added this function to expose isCopyOnRead function to the child classes of EntryEventImpl
-   * 
+   *
    */
   protected boolean isRegionCopyOnRead() {
     return getRegion().isCopyOnRead();
@@ -991,7 +1027,7 @@ public class EntryEventImpl
 
   /**
    * Invoke the given function with a lock if the given value is offheap.
-   * 
+   *
    * @return the value returned from invoking the function
    */
   private <T, R> R callWithOffHeapLock(T value, Function<T, R> function) {
@@ -1085,7 +1121,7 @@ public class EntryEventImpl
   /**
    * Returns the value of the EntryEventImpl field. This is for internal use only. Customers should
    * always call {@link #getCallbackArgument}
-   * 
+   *
    * @since GemFire 5.5
    */
   public Object getRawCallbackArgument() {
@@ -1139,7 +1175,7 @@ public class EntryEventImpl
 
   /**
    * Implement this interface if you want to call {@link #exportNewValue}.
-   * 
+   *
    *
    */
   public interface NewValueImporter {
@@ -1152,14 +1188,14 @@ public class EntryEventImpl
      * Only return true if the importer can use the value before the event that exported it is
      * released. If false is returned then off-heap values will be copied to the heap for the
      * importer.
-     * 
+     *
      * @return true if the importer can deal with the value being an unretained OFF_HEAP_REFERENCE.
      */
     boolean isUnretainedNewReferenceOk();
 
     /**
      * Import a new value that is currently in object form.
-     * 
+     *
      * @param nv the new value to import; unretained if isUnretainedNewReferenceOk returns true
      * @param isSerialized true if the imported new value represents data that needs to be
      *        serialized; false if the imported new value is a simple sequence of bytes.
@@ -1168,7 +1204,7 @@ public class EntryEventImpl
 
     /**
      * Import a new value that is currently in byte array form.
-     * 
+     *
      * @param nv the new value to import
      * @param isSerialized true if the imported new value represents data that needs to be
      *        serialized; false if the imported new value is a simple sequence of bytes.
@@ -1225,7 +1261,7 @@ public class EntryEventImpl
 
   /**
    * Implement this interface if you want to call {@link #exportOldValue}.
-   * 
+   *
    *
    */
   public interface OldValueImporter {
@@ -1237,7 +1273,7 @@ public class EntryEventImpl
     /**
      * Only return true if the importer can use the value before the event that exported it is
      * released.
-     * 
+     *
      * @return true if the importer can deal with the value being an unretained OFF_HEAP_REFERENCE.
      */
     boolean isUnretainedOldReferenceOk();
@@ -1251,7 +1287,7 @@ public class EntryEventImpl
 
     /**
      * Import an old value that is currently in object form.
-     * 
+     *
      * @param ov the old value to import; unretained if isUnretainedOldReferenceOk returns true
      * @param isSerialized true if the imported old value represents data that needs to be
      *        serialized; false if the imported old value is a simple sequence of bytes.
@@ -1260,7 +1296,7 @@ public class EntryEventImpl
 
     /**
      * Import an old value that is currently in byte array form.
-     * 
+     *
      * @param ov the old value to import
      * @param isSerialized true if the imported old value represents data that needs to be
      *        serialized; false if the imported old value is a simple sequence of bytes.
@@ -1320,7 +1356,7 @@ public class EntryEventImpl
 
   /**
    * If the new value is stored off-heap return a retained OFF_HEAP_REFERENCE (caller must release).
-   * 
+   *
    * @return a retained OFF_HEAP_REFERENCE if the new value is off-heap; otherwise returns null
    */
   @Retained(ENTRY_EVENT_NEW_VALUE)
@@ -1330,7 +1366,7 @@ public class EntryEventImpl
 
   /**
    * If the old value is stored off-heap return a retained OFF_HEAP_REFERENCE (caller must release).
-   * 
+   *
    * @return a retained OFF_HEAP_REFERENCE if the old value is off-heap; otherwise returns null
    */
   @Retained(ENTRY_EVENT_OLD_VALUE)
@@ -1382,7 +1418,7 @@ public class EntryEventImpl
 
   /**
    * Forces this entry's new value to be in serialized form.
-   * 
+   *
    * @since GemFire 5.0.2
    */
   public void makeSerializedNewValue() {
@@ -1476,6 +1512,9 @@ public class EntryEventImpl
   private static final boolean EVENT_OLD_VALUE =
       !Boolean.getBoolean(DistributionConfig.GEMFIRE_PREFIX + "disable-event-old-value");
 
+  protected boolean areOldValuesEnabled() {
+    return EVENT_OLD_VALUE;
+  }
 
   void putExistingEntry(final LocalRegion owner, RegionEntry entry) throws RegionClearedException {
     putExistingEntry(owner, entry, false, null);
@@ -1484,7 +1523,7 @@ public class EntryEventImpl
   /**
    * Put a newValue into the given, write synced, existing, region entry. Sets oldValue in event if
    * hasn't been set yet.
-   * 
+   *
    * @param oldValueForDelta Used by Delta Propagation feature
    */
   void putExistingEntry(final LocalRegion owner, final RegionEntry reentry, boolean requireOldValue,
@@ -1493,17 +1532,18 @@ public class EntryEventImpl
     // only set oldValue if it hasn't already been set to something
     if (this.oldValue == null) {
       if (!reentry.isInvalidOrRemoved()) {
-        if (requireOldValue || EVENT_OLD_VALUE || this.region instanceof HARegion // fix for bug
-                                                                                  // 37909
+        if (requireOldValue || areOldValuesEnabled() || this.region instanceof HARegion // fix for
+                                                                                        // bug
+        // 37909
         ) {
           @Retained
           Object ov;
           if (ReferenceCountHelper.trackReferenceCounts()) {
             ReferenceCountHelper.setReferenceCountOwner(new OldValueOwner());
-            ov = reentry._getValueRetain(owner, true);
+            ov = reentry.getValueRetain(owner, true);
             ReferenceCountHelper.setReferenceCountOwner(null);
           } else {
-            ov = reentry._getValueRetain(owner, true);
+            ov = reentry.getValueRetain(owner, true);
           }
           if (ov == null)
             ov = Token.NOT_AVAILABLE;
@@ -1762,7 +1802,7 @@ public class EntryEventImpl
     if (Token.isInvalidOrRemoved(oldVal)) {
       oldVal = null;
     } else {
-      if (mustBeAvailable || oldVal == null || EVENT_OLD_VALUE) {
+      if (mustBeAvailable || oldVal == null || areOldValuesEnabled()) {
         // set oldValue to oldVal
       } else {
         oldVal = Token.NOT_AVAILABLE;
@@ -1795,24 +1835,26 @@ public class EntryEventImpl
     tx.setCallbackArgument(getCallbackArgument());
   }
 
-  /** @return false if entry doesn't exist */
-  public boolean setOldValueFromRegion() {
+  public void setOldValueFromRegion() {
     try {
       RegionEntry re = this.region.getRegionEntry(getKey());
-      if (re == null)
-        return false;
+      if (re == null) {
+        return;
+      }
       ReferenceCountHelper.skipRefCountTracking();
-      Object v = re._getValueRetain(this.region, true);
+      Object v = re.getValueRetain(this.region, true);
+      if (v == null) {
+        v = Token.NOT_AVAILABLE;
+      }
       ReferenceCountHelper.unskipRefCountTracking();
       try {
-        return setOldValue(v);
+        setOldValue(v);
       } finally {
         if (mayHaveOffHeapReferences()) {
           OffHeapHelper.releaseWithNoTracking(v);
         }
       }
     } catch (EntryNotFoundException ignore) {
-      return false;
     }
   }
 
@@ -1825,39 +1867,37 @@ public class EntryEventImpl
     basicSetOldValue(Token.DESTROYED);
   }
 
-  /**
-   * @return false if value 'v' indicates that entry does not exist
-   */
-  public boolean setOldValue(Object v) {
-    return setOldValue(v, false);
+  public void setOldValue(Object v) {
+    setOldValue(v, false);
   }
 
 
   /**
-   * @param force true if the old value should be forcibly set, used for HARegions, methods like
-   *        putIfAbsent, etc., where the old value must be available.
-   * @return false if value 'v' indicates that entry does not exist
+   * @param force true if the old value should be forcibly set, methods like putIfAbsent, etc.,
+   *        where the old value must be available.
    */
-  public boolean setOldValue(Object v, boolean force) {
-    if (v == null || Token.isRemoved(v)) {
-      return false;
-    } else {
-      if (Token.isInvalid(v)) {
+  public void setOldValue(Object v, boolean force) {
+    if (v != null) {
+      if (Token.isInvalidOrRemoved(v)) {
         v = null;
-      } else {
-        if (force || (this.region instanceof HARegion) // fix for bug 37909
-        ) {
-          // set oldValue to "v".
-        } else if (EVENT_OLD_VALUE) {
-          // TODO Rusty add compression support here
-          // set oldValue to "v".
-        } else {
-          v = Token.NOT_AVAILABLE;
-        }
+      } else if (shouldOldValueBeUnavailable(v, force)) {
+        v = Token.NOT_AVAILABLE;
       }
-      retainAndSetOldValue(v);
-      return true;
     }
+    retainAndSetOldValue(v);
+  }
+
+  private boolean shouldOldValueBeUnavailable(Object v, boolean force) {
+    if (force) {
+      return false;
+    }
+    if (areOldValuesEnabled()) {
+      return false;
+    }
+    if (this.region instanceof HARegion) {
+      return false;
+    }
+    return true;
   }
 
   /**
@@ -1980,7 +2020,7 @@ public class EntryEventImpl
    * Serialize an object into a <code>byte[]</code> . If the byte array provided by the wrapper is
    * sufficient to hold the data, it is used otherwise a new byte array gets created & its reference
    * is stored in the wrapper. The User Bit is also appropriately set as Serialized
-   * 
+   *
    * @param wrapper Object of type BytesAndBitsForCompactor which is used to fetch the serialized
    *        data. The byte array of the wrapper is used if possible else a the new byte array
    *        containing the data is set in the wrapper.
@@ -2141,6 +2181,7 @@ public class EntryEventImpl
           DataSerializer.writeObjectAsByteArray(cd.getValue(), out);
         }
       } else {
+        ov = AbstractRegion.handleNotAvailable(ov);
         DataSerializer.writeObject(ov, out);
       }
     }
@@ -2149,7 +2190,7 @@ public class EntryEventImpl
     DataSerializer.writeLong(tailKey, out);
   }
 
-  private static abstract class EventFlags {
+  private abstract static class EventFlags {
     private static final short FLAG_ORIGIN_REMOTE = 0x01;
     // localInvalid: true if a null new value should be treated as a local
     // invalid.
@@ -2288,10 +2329,10 @@ public class EntryEventImpl
 
   /**
    * dispatch listener events for this event
-   * 
+   *
    * @param notifyGateways pass the event on to WAN queues
    */
-  void invokeCallbacks(LocalRegion rgn, boolean skipListeners, boolean notifyGateways) {
+  public void invokeCallbacks(InternalRegion rgn, boolean skipListeners, boolean notifyGateways) {
     if (!callbacksInvoked()) {
       callbacksInvoked(true);
       if (this.op.isUpdate()) {
@@ -2322,7 +2363,7 @@ public class EntryEventImpl
   /**
    * Used to store next region version generated for a change on this entry by phase-1 commit on the
    * primary.
-   * 
+   *
    * Not to be used in fromData and toData
    */
   protected transient long nextRegionVersion = -1L;
@@ -2337,7 +2378,7 @@ public class EntryEventImpl
 
   /**
    * Return true if this event came from a server by the client doing a get.
-   * 
+   *
    * @since GemFire 5.7
    */
   public boolean isFromServer() {
@@ -2348,7 +2389,7 @@ public class EntryEventImpl
    * Sets the fromServer flag to v. This must be set to true if an event comes from a server while
    * the affected region entry is not locked. Among other things it causes version conflict checks
    * to be performed to protect against overwriting a newer version of the entry.
-   * 
+   *
    * @since GemFire 5.7
    */
   public void setFromServer(boolean v) {
@@ -2358,7 +2399,7 @@ public class EntryEventImpl
   /**
    * If true, the region associated with this event had already applied the operation it
    * encapsulates when an attempt was made to apply the event.
-   * 
+   *
    * @return the possibleDuplicate
    */
   public boolean isPossibleDuplicate() {
@@ -2368,7 +2409,7 @@ public class EntryEventImpl
   /**
    * If the operation encapsulated by this event has already been seen by the region to which it
    * pertains, this flag should be set to true.
-   * 
+   *
    * @param possibleDuplicate the possibleDuplicate to set
    */
   public void setPossibleDuplicate(boolean possibleDuplicate) {
@@ -2417,7 +2458,7 @@ public class EntryEventImpl
   /**
    * This method returns the delta bytes used in Delta Propagation feature. <B>For internal delta,
    * see getRawNewValue().</B>
-   * 
+   *
    * @return delta bytes
    */
   public byte[] getDeltaBytes() {
@@ -2502,7 +2543,7 @@ public class EntryEventImpl
   /**
    * this method joins together version tag timestamps and the "lastModified" timestamps generated
    * and stored in entries. If a change does not already carry a lastModified timestamp
-   * 
+   *
    * @return the timestamp to store in the entry
    */
   public long getEventTime(long suggestedTime) {
@@ -2682,7 +2723,7 @@ public class EntryEventImpl
 
   /**
    * Returns whether this event is on the PDX type region.
-   * 
+   *
    * @return whether this event is on the PDX type region
    */
   public boolean isOnPdxTypeRegion() {

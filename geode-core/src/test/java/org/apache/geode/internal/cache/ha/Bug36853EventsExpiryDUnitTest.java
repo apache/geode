@@ -19,7 +19,6 @@ import static org.junit.Assert.*;
 
 import java.util.Properties;
 
-import org.apache.geode.test.junit.categories.ClientSubscriptionTest;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
@@ -44,6 +43,7 @@ import org.apache.geode.test.dunit.LogWriterUtils;
 import org.apache.geode.test.dunit.NetworkUtils;
 import org.apache.geode.test.dunit.VM;
 import org.apache.geode.test.dunit.cache.internal.JUnit4CacheTestCase;
+import org.apache.geode.test.junit.categories.ClientSubscriptionTest;
 import org.apache.geode.test.junit.categories.DistributedTest;
 
 /**
@@ -51,7 +51,7 @@ import org.apache.geode.test.junit.categories.DistributedTest;
  * picks up that is not in the primary. But it is also possible that it would cause data that is in
  * the primary queue to be expired. And this can cause a data loss. This issue is mostly related to
  * Expiry mechanism and not HA, but it affects HA functionality).
- * 
+ *
  * This test has a cache-client connected to one cache-server. The expiry-time of events in the
  * queue for the client at the server is set low and dispatcher is set for delayed start. This will
  * make some of the events in the queue expire before dispatcher can start picking them up for
@@ -108,7 +108,7 @@ public class Bug36853EventsExpiryDUnitTest extends JUnit4CacheTestCase {
 
   /**
    * Creates the cache
-   * 
+   *
    * @param props - distributed system props
    * @throws Exception - thrown in any problem occurs in creating cache
    */
@@ -185,7 +185,7 @@ public class Bug36853EventsExpiryDUnitTest extends JUnit4CacheTestCase {
    * added, before waiting, to expire before the dispatcher to pick them up and then do a put on a
    * LAST_KEY couple of times so that atleast one of these is dispatched to client and when client
    * recieves this in the listener, the test is notified to proceed for validation.
-   * 
+   *
    * @throws Exception - thrown if any problem occurs in put operation
    */
   private static void generateEvents() throws Exception {
@@ -208,7 +208,7 @@ public class Bug36853EventsExpiryDUnitTest extends JUnit4CacheTestCase {
    * corresponding to the LAST_KEY in the listener, the test is notified to proceed for validation.
    * Then, it is validated that all the events that were added prior to the LAST_KEY are dispatched
    * to the client. Due to the bug#36853, those events will expire and validation will fail.
-   * 
+   *
    * @throws Exception - thrown if any exception occurs in test
    */
   @Test
@@ -244,7 +244,7 @@ public class Bug36853EventsExpiryDUnitTest extends JUnit4CacheTestCase {
 
   /**
    * Closes the cache
-   * 
+   *
    */
   private static void unSetExpiryTimeAndCloseCache() {
     System.clearProperty(HARegionQueue.REGION_ENTRY_EXPIRY_TIME);
@@ -253,7 +253,7 @@ public class Bug36853EventsExpiryDUnitTest extends JUnit4CacheTestCase {
 
   /**
    * Closes the caches on clients and servers
-   * 
+   *
    * @throws Exception - thrown if any problem occurs in closing client and server caches.
    */
   @Override

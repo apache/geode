@@ -24,6 +24,8 @@ import org.apache.geode.cache.CacheListener;
 import org.apache.geode.cache.CacheLoader;
 import org.apache.geode.cache.CacheWriter;
 import org.apache.geode.cache.DataPolicy;
+import org.apache.geode.cache.Declarable;
+import org.apache.geode.cache.EvictionAttributes;
 import org.apache.geode.cache.PartitionAttributes;
 import org.apache.geode.cache.PartitionAttributesFactory;
 import org.apache.geode.cache.PartitionResolver;
@@ -35,6 +37,7 @@ import org.apache.geode.cache.RegionShortcut;
 import org.apache.geode.cache.execute.Function;
 import org.apache.geode.cache.execute.FunctionContext;
 import org.apache.geode.cache.execute.ResultSender;
+import org.apache.geode.cache.util.ObjectSizer;
 import org.apache.geode.compression.Compressor;
 import org.apache.geode.internal.ClassPathLoader;
 import org.apache.geode.internal.InternalEntity;
@@ -43,7 +46,6 @@ import org.apache.geode.internal.i18n.LocalizedStrings;
 import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.management.internal.cli.CliUtil;
 import org.apache.geode.management.internal.cli.commands.RegionCommandsUtils;
-import org.apache.geode.management.internal.cli.exceptions.CreateSubregionException;
 import org.apache.geode.management.internal.cli.i18n.CliStrings;
 import org.apache.geode.management.internal.cli.util.RegionPath;
 import org.apache.geode.management.internal.configuration.domain.XmlEntity;
@@ -72,8 +74,7 @@ public class RegionCreateFunction implements Function, InternalEntity {
     ResultSender<Object> resultSender = context.getResultSender();
 
     Cache cache = context.getCache();
-    String memberNameOrId =
-        CliUtil.getMemberNameOrId(cache.getDistributedSystem().getDistributedMember());
+    String memberNameOrId = context.getMemberName();
 
     RegionFunctionArgs regionCreateArgs = (RegionFunctionArgs) context.getArguments();
 
@@ -104,7 +105,7 @@ public class RegionCreateFunction implements Function, InternalEntity {
                 new Object[] {String.valueOf(RegionCommandsUtils.PERSISTENT_OVERFLOW_SHORTCUTS)});
       }
       resultSender.lastResult(handleException(memberNameOrId, exceptionMsg, null/* do not log */));
-    } catch (IllegalArgumentException | CreateSubregionException e) {
+    } catch (IllegalArgumentException e) {
       resultSender.lastResult(handleException(memberNameOrId, e.getMessage(), e));
     } catch (RegionExistsException e) {
       String exceptionMsg =
@@ -135,73 +136,21 @@ public class RegionCreateFunction implements Function, InternalEntity {
   public static <K, V> Region<?, ?> createRegion(Cache cache, RegionFunctionArgs regionCreateArgs) {
     Region<K, V> createdRegion = null;
 
-    final String regionPath = regionCreateArgs.getRegionPath();
     final RegionShortcut regionShortcut = regionCreateArgs.getRegionShortcut();
-    final String useAttributesFrom = regionCreateArgs.getUseAttributesFrom();
 
-    // If a region path indicates a sub-region, check whether the parent region exists
-    RegionPath regionPathData = new RegionPath(regionPath);
-    String parentRegionPath = regionPathData.getParent();
-    Region<?, ?> parentRegion = null;
-    if (parentRegionPath != null && !Region.SEPARATOR.equals(parentRegionPath)) {
-      parentRegion = cache.getRegion(parentRegionPath);
-      if (parentRegion == null) {
-        throw new IllegalArgumentException(
-            CliStrings.format(CliStrings.CREATE_REGION__MSG__PARENT_REGION_FOR_0_DOES_NOT_EXIST,
-                new Object[] {regionPath}));
-      }
-
-      if (parentRegion.getAttributes().getPartitionAttributes() != null) {
-        // For a PR, sub-regions are not supported.
-        throw new CreateSubregionException(
-            CliStrings.format(CliStrings.CREATE_REGION__MSG__0_IS_A_PR_CANNOT_HAVE_SUBREGIONS,
-                parentRegion.getFullPath()));
-      }
-    }
-
-    // One of Region Shortcut OR Use Attributes From has to be given
-    if (regionShortcut == null && useAttributesFrom == null) {
-      throw new IllegalArgumentException(
-          CliStrings.CREATE_REGION__MSG__ONE_OF_REGIONSHORTCUT_AND_USEATTRIBUTESFROM_IS_REQUIRED);
-    }
-
+    // create the region factory using the arguments
     boolean isPartitioned = false;
     RegionFactory<K, V> factory = null;
     RegionAttributes<K, V> regionAttributes = null;
     if (regionShortcut != null) {
       regionAttributes = cache.getRegionAttributes(regionShortcut.toString());
-      if (logger.isDebugEnabled()) {
-        logger.debug("Using shortcut {} for {} region attributes : {}", regionShortcut, regionPath,
-            regionAttributes);
-      }
-
-      if (regionAttributes == null) {
-        if (logger.isDebugEnabled()) {
-          logger.debug("Shortcut {} doesn't have attributes in {}", regionShortcut,
-              cache.listRegionAttributes());
-        }
-        throw new IllegalStateException(CliStrings.format(
-            CliStrings.CREATE_REGION__MSG__COULD_NOT_LOAD_REGION_ATTRIBUTES_FOR_SHORTCUT_0,
-            regionShortcut));
-      }
+      regionCreateArgs.setRegionAttributes(regionAttributes);
     } else {
-      if (logger.isDebugEnabled()) {
-        logger.debug("Using Manager's region attributes for {}", regionPath);
-      }
       regionAttributes = regionCreateArgs.getRegionAttributes();
-      if (logger.isDebugEnabled()) {
-        logger.debug("Using Attributes : {}", regionAttributes);
-      }
     }
+
     isPartitioned = regionAttributes.getPartitionAttributes() != null;
-
     factory = cache.createRegionFactory(regionAttributes);
-
-    if (!isPartitioned && regionCreateArgs.hasPartitionAttributes()) {
-      throw new IllegalArgumentException(CliStrings.format(
-          CliStrings.CREATE_REGION__MSG__OPTION_0_CAN_BE_USED_ONLY_FOR_PARTITIONEDREGION,
-          regionCreateArgs.getPartitionArgs().getUserSpecifiedPartitionAttributes()));
-    }
 
     if (isPartitioned) {
       PartitionAttributes<K, V> partitionAttributes =
@@ -244,12 +193,22 @@ public class RegionCreateFunction implements Function, InternalEntity {
     final RegionFunctionArgs.ExpirationAttrs regionExpirationIdleTime =
         regionCreateArgs.getRegionExpirationIdleTime();
     if (regionExpirationIdleTime != null) {
-      factory.setEntryIdleTimeout(regionExpirationIdleTime.convertToExpirationAttributes());
+      factory.setRegionIdleTimeout(regionExpirationIdleTime.convertToExpirationAttributes());
     }
     final RegionFunctionArgs.ExpirationAttrs regionExpirationTTL =
         regionCreateArgs.getRegionExpirationTTL();
     if (regionExpirationTTL != null) {
-      factory.setEntryTimeToLive(regionExpirationTTL.convertToExpirationAttributes());
+      factory.setRegionTimeToLive(regionExpirationTTL.convertToExpirationAttributes());
+    }
+
+    EvictionAttributes evictionAttributes = regionCreateArgs.getEvictionAttributes();
+    if (evictionAttributes != null) {
+      ObjectSizer sizer = evictionAttributes.getObjectSizer();
+      if (sizer != null && !(sizer instanceof Declarable)) {
+        throw new IllegalArgumentException(
+            CliStrings.CREATE_REGION__MSG__OBJECT_SIZER_MUST_BE_OBJECTSIZER_AND_DECLARABLE);
+      }
+      factory.setEvictionAttributes(evictionAttributes);
     }
 
     // Associate a Disk Store
@@ -257,24 +216,24 @@ public class RegionCreateFunction implements Function, InternalEntity {
     if (diskStore != null && !diskStore.isEmpty()) {
       factory.setDiskStoreName(diskStore);
     }
-    if (regionCreateArgs.isSetDiskSynchronous()) {
+
+    if (regionCreateArgs.isDiskSynchronous() != null) {
       factory.setDiskSynchronous(regionCreateArgs.isDiskSynchronous());
     }
 
-    if (regionCreateArgs.isSetOffHeap()) {
+    if (regionCreateArgs.isOffHeap() != null) {
       factory.setOffHeap(regionCreateArgs.isOffHeap());
     }
 
-    // Set stats enabled
-    if (regionCreateArgs.isSetStatisticsEnabled()) {
+    if (regionCreateArgs.isStatisticsEnabled() != null) {
       factory.setStatisticsEnabled(regionCreateArgs.isStatisticsEnabled());
     }
 
-    // Set conflation
-    if (regionCreateArgs.isSetEnableAsyncConflation()) {
+    if (regionCreateArgs.isEnableAsyncConflation() != null) {
       factory.setEnableAsyncConflation(regionCreateArgs.isEnableAsyncConflation());
     }
-    if (regionCreateArgs.isSetEnableSubscriptionConflation()) {
+
+    if (regionCreateArgs.isEnableSubscriptionConflation() != null) {
       factory.setEnableSubscriptionConflation(regionCreateArgs.isEnableSubscriptionConflation());
     }
 
@@ -294,21 +253,19 @@ public class RegionCreateFunction implements Function, InternalEntity {
       }
     }
 
-    // concurrency check enabled & concurrency level
-    if (regionCreateArgs.isSetConcurrencyChecksEnabled()) {
+    if (regionCreateArgs.isConcurrencyChecksEnabled() != null) {
       factory.setConcurrencyChecksEnabled(regionCreateArgs.isConcurrencyChecksEnabled());
     }
-    if (regionCreateArgs.isSetConcurrencyLevel()) {
+
+    if (regionCreateArgs.getConcurrencyLevel() != null) {
       factory.setConcurrencyLevel(regionCreateArgs.getConcurrencyLevel());
     }
 
-    // cloning enabled for delta
-    if (regionCreateArgs.isSetCloningEnabled()) {
+    if (regionCreateArgs.isCloningEnabled() != null) {
       factory.setCloningEnabled(regionCreateArgs.isCloningEnabled());
     }
 
-    // multicast enabled for replication
-    if (regionCreateArgs.isSetMcastEnabled()) {
+    if (regionCreateArgs.isMcastEnabled() != null) {
       factory.setMulticastEnabled(regionCreateArgs.isMcastEnabled());
     }
 
@@ -324,7 +281,7 @@ public class RegionCreateFunction implements Function, InternalEntity {
     }
 
     // Compression provider
-    if (regionCreateArgs.isSetCompressor()) {
+    if (regionCreateArgs.getCompressor() != null) {
       Class<Compressor> compressorKlass =
           CliUtil.forName(regionCreateArgs.getCompressor(), CliStrings.CREATE_REGION__COMPRESSOR);
       factory.setCompressor(
@@ -347,9 +304,13 @@ public class RegionCreateFunction implements Function, InternalEntity {
           CliUtil.newInstance(cacheWriterKlass, CliStrings.CREATE_REGION__CACHEWRITER));
     }
 
+    // If a region path indicates a sub-region,
+    final String regionPath = regionCreateArgs.getRegionPath();
+    RegionPath regionPathData = new RegionPath(regionPath);
     String regionName = regionPathData.getName();
-
-    if (parentRegion != null) {
+    String parentRegionPath = regionPathData.getParent();
+    if (parentRegionPath != null && !Region.SEPARATOR.equals(parentRegionPath)) {
+      Region<?, ?> parentRegion = cache.getRegion(parentRegionPath);
       createdRegion = factory.createSubregion(parentRegion, regionName);
     } else {
       createdRegion = factory.create(regionName);
@@ -386,28 +347,29 @@ public class RegionCreateFunction implements Function, InternalEntity {
       }
       prAttrFactory.setColocatedWith(colocatedWith);
     }
-    if (partitionArgs.isSetPRLocalMaxMemory()) {
+    if (partitionArgs.getPrLocalMaxMemory() != null) {
       prAttrFactory.setLocalMaxMemory(partitionArgs.getPrLocalMaxMemory());
     }
-    if (partitionArgs.isSetPRTotalMaxMemory()) {
+    if (partitionArgs.getPrTotalMaxMemory() != null) {
       prAttrFactory.setTotalMaxMemory(partitionArgs.getPrTotalMaxMemory());
     }
-    if (partitionArgs.isSetPRTotalNumBuckets()) {
+    if (partitionArgs.getPrTotalNumBuckets() != null) {
       prAttrFactory.setTotalNumBuckets(partitionArgs.getPrTotalNumBuckets());
     }
-    if (partitionArgs.isSetPRRedundantCopies()) {
+    if (partitionArgs.getPrRedundantCopies() != null) {
       prAttrFactory.setRedundantCopies(partitionArgs.getPrRedundantCopies());
     }
-    if (partitionArgs.isSetPRRecoveryDelay()) {
+    if (partitionArgs.getPrRecoveryDelay() != null) {
       prAttrFactory.setRecoveryDelay(partitionArgs.getPrRecoveryDelay());
     }
-    if (partitionArgs.isSetPRStartupRecoveryDelay()) {
+    if (partitionArgs.getPrStartupRecoveryDelay() != null) {
       prAttrFactory.setStartupRecoveryDelay(partitionArgs.getPrStartupRecoveryDelay());
     }
 
-    if (regionCreateArgs.isPartitionResolverSet()) {
-      Class<PartitionResolver> partitionResolverClass = forName(
-          regionCreateArgs.getPartitionResolver(), CliStrings.CREATE_REGION__PARTITION_RESOLVER);
+    if (regionCreateArgs.getPartitionArgs().getPartitionResolver() != null) {
+      Class<PartitionResolver> partitionResolverClass =
+          forName(regionCreateArgs.getPartitionArgs().getPartitionResolver(),
+              CliStrings.CREATE_REGION__PARTITION_RESOLVER);
       prAttrFactory
           .setPartitionResolver((PartitionResolver<K, V>) newInstance(partitionResolverClass,
               CliStrings.CREATE_REGION__PARTITION_RESOLVER));

@@ -14,22 +14,22 @@
  */
 package org.apache.geode.cache.client.internal;
 
-import org.apache.geode.internal.cache.tier.MessageType;
-import org.apache.geode.internal.cache.tier.sockets.Message;
-
 import java.util.Iterator;
 import java.util.List;
 
+import org.apache.geode.internal.cache.tier.MessageType;
+import org.apache.geode.internal.cache.tier.sockets.Message;
+
 /**
  * Does a region unregisterInterestList on a server
- * 
+ *
  * @since GemFire 5.7
  */
 public class UnregisterInterestListOp {
   /**
    * Does a region unregisterInterestList on a server using connections from the given pool to
    * communicate with the server.
-   * 
+   *
    * @param pool the pool to use to communicate with the server.
    * @param region the name of the region to do the unregisterInterestList on
    * @param keys list of keys we are interested in

@@ -23,8 +23,8 @@ import org.apache.geode.internal.cache.LocalRegion;
 /**
  * Holds a view of the persistent members for a region. This view may be backed by disk, or it may
  * be only in memory on non-persistent replicas.
- * 
- * 
+ *
+ *
  */
 public interface PersistentMemberView {
 
@@ -73,7 +73,7 @@ public interface PersistentMemberView {
   /**
    * Indicate that the member no longer persists the region and can be removed. This is only called
    * after this member is online.
-   * 
+   *
    * @param persistentID
    */
   public void memberRemoved(PersistentMemberID persistentID);
@@ -100,13 +100,13 @@ public interface PersistentMemberView {
 
   /**
    * This method is called to finish either setAboutToDestroy or setAboutToPartialDestroy.
-   * 
+   *
    * It can be called either during a normal region destroy or during a partial region destroy.
    * AFTER distribution has completed or during initialization IF the region was previously crashed
    * while it was "about to destroy." This method is expected to purge any data on disk, as well as
    * any membership view information and persistent ID for this region.
-   * 
-   * 
+   *
+   *
    * This method should NOT prevent this disk region from being initialized later.
    */
   public abstract void endDestroy(LocalRegion region);

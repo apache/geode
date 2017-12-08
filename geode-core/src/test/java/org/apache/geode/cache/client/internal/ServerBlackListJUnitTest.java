@@ -21,7 +21,6 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.atomic.AtomicInteger;
 
-import org.apache.geode.test.junit.categories.ClientServerTest;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -31,6 +30,7 @@ import org.apache.geode.cache.client.internal.ServerBlackList.BlackListListenerA
 import org.apache.geode.cache.client.internal.ServerBlackList.FailureTracker;
 import org.apache.geode.distributed.internal.ServerLocation;
 import org.apache.geode.internal.util.StopWatch;
+import org.apache.geode.test.junit.categories.ClientServerTest;
 import org.apache.geode.test.junit.categories.UnitTest;
 
 @Category({UnitTest.class, ClientServerTest.class})

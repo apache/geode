@@ -14,12 +14,12 @@
  */
 package org.apache.geode.admin.internal;
 
+import static org.apache.geode.distributed.ConfigurationProperties.LOCATORS;
+
 import org.apache.geode.admin.AdminException;
 import org.apache.geode.admin.ConfigurationParameter;
 import org.apache.geode.admin.ManagedEntityConfig;
 import org.apache.geode.internal.admin.GemFireVM;
-
-import static org.apache.geode.distributed.ConfigurationProperties.LOCATORS;
 
 /**
  * A <code>SystemMember</code> that is also managed (or manageable) by the admin API.

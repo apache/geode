@@ -14,15 +14,15 @@
  */
 package org.apache.geode.modules.util;
 
-import org.apache.geode.cache.GemFireCache;
-import org.apache.geode.cache.control.ResourceManager;
-
 import java.lang.management.ManagementFactory;
 import java.lang.management.RuntimeMXBean;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+
+import org.apache.geode.cache.GemFireCache;
+import org.apache.geode.cache.control.ResourceManager;
 
 public class ResourceManagerValidator {
 

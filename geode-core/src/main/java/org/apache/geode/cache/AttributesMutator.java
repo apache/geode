@@ -35,7 +35,7 @@ public interface AttributesMutator<K, V> {
 
   /**
    * Returns the Region whose attributes this mutator affects.
-   * 
+   *
    * @return the Region this mutator affects
    */
   public Region<K, V> getRegion();
@@ -78,7 +78,7 @@ public interface AttributesMutator<K, V> {
 
   /**
    * Changes the custom timeToLive for values in this region
-   * 
+   *
    * @param custom the new CustomExpiry
    * @return the old CustomExpiry
    */
@@ -100,7 +100,7 @@ public interface AttributesMutator<K, V> {
 
   /**
    * Changes the CustomExpiry for idleTimeout for values in the region
-   * 
+   *
    * @param custom the new CustomExpiry
    * @return the old CustomExpiry
    */
@@ -108,7 +108,7 @@ public interface AttributesMutator<K, V> {
 
   /**
    * Adds a cache listener to the end of the list of cache listeners on this region.
-   * 
+   *
    * @param aListener the user defined cache listener to add to the region.
    * @throws IllegalArgumentException if <code>aListener</code> is null
    * @since GemFire 5.0
@@ -119,7 +119,7 @@ public interface AttributesMutator<K, V> {
    * Removes a cache listener from the list of cache listeners on this region. Does nothing if the
    * specified listener has not been added. If the specified listener has been added then
    * {@link CacheCallback#close} will be called on it; otherwise does nothing.
-   * 
+   *
    * @param aListener the cache listener to remove from the region.
    * @throws IllegalArgumentException if <code>aListener</code> is null
    * @since GemFire 5.0
@@ -129,7 +129,7 @@ public interface AttributesMutator<K, V> {
   /**
    * Removes all cache listeners, calling {@link CacheCallback#close} on each of them, and then adds
    * each listener in the specified array.
-   * 
+   *
    * @param newListeners a possibly null or empty array of listeners to add to this region.
    * @throws IllegalArgumentException if the <code>newListeners</code> array has a null element
    * @since GemFire 5.0
@@ -138,7 +138,7 @@ public interface AttributesMutator<K, V> {
 
   /**
    * Changes the cache writer for the region.
-   * 
+   *
    * @param cacheWriter the cache writer
    * @return the previous CacheWriter
    */
@@ -146,11 +146,11 @@ public interface AttributesMutator<K, V> {
 
   /**
    * Changes the cache loader for the region.
-   * 
+   *
    * Changing the cache loader for partitioned regions is not recommended due to the fact that it
    * can result in an inconsistent cache loader configuration. This feature may be removed in future
    * releases.
-   * 
+   *
    * @param cacheLoader the cache loader
    * @return the previous CacheLoader
    */
@@ -159,14 +159,14 @@ public interface AttributesMutator<K, V> {
 
   /**
    * Allows changing the eviction controller attributes for the region.
-   * 
+   *
    * @return the {@link EvictionAttributesMutator} used to change the EvictionAttributes
    */
   public EvictionAttributesMutator getEvictionAttributesMutator();
 
   /**
    * Sets cloning on region Note: off-heap regions always behave as if cloning is enabled.
-   * 
+   *
    * @param cloningEnable
    * @since GemFire 6.1
    */
@@ -184,28 +184,28 @@ public interface AttributesMutator<K, V> {
   /**
    * Adds GatewaySenderId to the list of GatewaySenderIds of the region. If the GatewaySenderId is
    * not present on this VM then it will try to send it to other VM's
-   * 
+   *
    * @param gatewaySenderId
    */
   public void addGatewaySenderId(String gatewaySenderId);
 
   /**
    * Removes GatewaySenderId from the list of GatewaySenderIds of the region.
-   * 
+   *
    * @param gatewaySenderId
    */
   public void removeGatewaySenderId(String gatewaySenderId);
 
   /**
    * Adds AsyncEventQueueId to the list of AsyncEventQueueId of the region.
-   * 
+   *
    * @param asyncEventQueueId
    */
   public void addAsyncEventQueueId(String asyncEventQueueId);
 
   /**
    * Removes AsyncEventQueueId from the list of AsyncEventQueuesId of the region.
-   * 
+   *
    * @param asyncEventQueueId
    */
   public void removeAsyncEventQueueId(String asyncEventQueueId);

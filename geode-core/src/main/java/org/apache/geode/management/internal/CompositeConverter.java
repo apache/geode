@@ -26,8 +26,8 @@ import javax.management.openmbean.OpenDataException;
 
 /**
  * Open type converter for Composite type
- * 
- * 
+ *
+ *
  */
 
 public class CompositeConverter extends OpenTypeConverter {

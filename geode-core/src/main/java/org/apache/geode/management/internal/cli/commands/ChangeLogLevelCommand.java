@@ -15,7 +15,6 @@
 
 package org.apache.geode.management.internal.cli.commands;
 
-import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -152,9 +151,8 @@ public class ChangeLogLevelCommand implements GfshCommand {
   public static class ChangeLogLevelCommandInterceptor extends AbstractCliAroundInterceptor {
     @Override
     public Result preExecution(GfshParseResult parseResult) {
-      Map<String, String> arguments = parseResult.getParamValueStrings();
       // validate log level
-      String logLevel = arguments.get("loglevel");
+      String logLevel = parseResult.getParamValueAsString("loglevel");
       if (StringUtils.isBlank(logLevel) || LogLevel.getLevel(logLevel) == null) {
         return ResultBuilder.createUserErrorResult("Invalid log level: " + logLevel);
       }

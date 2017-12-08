@@ -69,7 +69,7 @@ public class DeposeGrantorProcessor extends ReplyProcessor21 {
     }
   }
 
-  static protected void doOldGrantorWork(final String serviceName,
+  protected static void doOldGrantorWork(final String serviceName,
       final InternalDistributedMember elder, final InternalDistributedMember youngTurk,
       final long newGrantorVersion, final int newGrantorSerialNumber, final DM dm,
       final DeposeGrantorMessage msg) {
@@ -180,4 +180,3 @@ public class DeposeGrantorProcessor extends ReplyProcessor21 {
     }
   }
 }
-

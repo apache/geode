@@ -27,7 +27,7 @@ public class RegionDestroyedException extends CacheRuntimeException {
 
   /**
    * Constructs a <code>RegionDestroyedException</code> with a message.
-   * 
+   *
    * @param msg the String message
    */
   public RegionDestroyedException(String msg, String regionFullPath) {
@@ -37,7 +37,7 @@ public class RegionDestroyedException extends CacheRuntimeException {
 
   /**
    * Constructs a <code>RegionDestroyedException</code> with a message and a cause.
-   * 
+   *
    * @param s the String message
    * @param ex the Throwable cause
    */

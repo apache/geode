@@ -16,13 +16,11 @@
 package org.apache.geode.management.internal.cli.commands;
 
 import static org.apache.geode.management.internal.cli.commands.DataCommandsUtils.callFunctionForRegion;
-import static org.apache.geode.management.internal.cli.commands.DataCommandsUtils.getRegionAssociatedMembers;
 import static org.apache.geode.management.internal.cli.commands.DataCommandsUtils.makePresentationResult;
 
 import java.util.Set;
 
 import org.apache.commons.collections.CollectionUtils;
-import org.apache.commons.lang.StringUtils;
 import org.apache.shiro.subject.Subject;
 import org.springframework.shell.core.annotation.CliCommand;
 import org.springframework.shell.core.annotation.CliOption;
@@ -61,21 +59,11 @@ public class GetCommand implements GfshCommand {
     cache.getSecurityService().authorize(Resource.DATA, Operation.READ, regionPath, key);
     DataCommandResult dataResult;
 
-    if (StringUtils.isEmpty(regionPath)) {
-      return makePresentationResult(DataCommandResult.createGetResult(key, null, null,
-          CliStrings.GET__MSG__REGIONNAME_EMPTY, false));
-    }
-
-    if (StringUtils.isEmpty(key)) {
-      return makePresentationResult(DataCommandResult.createGetResult(key, null, null,
-          CliStrings.GET__MSG__KEY_EMPTY, false));
-    }
-
     @SuppressWarnings("rawtypes")
     Region region = cache.getRegion(regionPath);
     DataCommandFunction getfn = new DataCommandFunction();
     if (region == null) {
-      Set<DistributedMember> memberList = getRegionAssociatedMembers(regionPath, getCache(), false);
+      Set<DistributedMember> memberList = findAnyMembersForRegion(getCache(), regionPath);
       if (CollectionUtils.isNotEmpty(memberList)) {
         DataCommandRequest request = new DataCommandRequest();
         request.setCommand(CliStrings.GET);
@@ -95,8 +83,7 @@ public class GetCommand implements GfshCommand {
             false);
       }
     } else {
-      dataResult = getfn.get(null, key, keyClass, valueClass, regionPath, loadOnCacheMiss,
-          cache.getSecurityService());
+      dataResult = getfn.get(null, key, keyClass, valueClass, regionPath, loadOnCacheMiss, cache);
     }
     dataResult.setKeyClass(keyClass);
     if (valueClass != null) {

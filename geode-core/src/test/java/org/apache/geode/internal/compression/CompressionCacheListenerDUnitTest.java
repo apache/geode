@@ -14,18 +14,14 @@
  */
 package org.apache.geode.internal.compression;
 
-import org.junit.experimental.categories.Category;
-import org.junit.Test;
-
 import static org.junit.Assert.*;
-
-import org.apache.geode.test.dunit.cache.internal.JUnit4CacheTestCase;
-import org.apache.geode.test.dunit.internal.JUnit4DistributedTestCase;
-import org.apache.geode.test.junit.categories.DistributedTest;
 
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.TimeUnit;
+
+import org.junit.Test;
+import org.junit.experimental.categories.Category;
 
 import org.apache.geode.cache.CacheListener;
 import org.apache.geode.cache.CacheWriter;
@@ -42,11 +38,14 @@ import org.apache.geode.test.dunit.Host;
 import org.apache.geode.test.dunit.SerializableCallable;
 import org.apache.geode.test.dunit.SerializableRunnable;
 import org.apache.geode.test.dunit.VM;
+import org.apache.geode.test.dunit.cache.internal.JUnit4CacheTestCase;
+import org.apache.geode.test.dunit.internal.JUnit4DistributedTestCase;
+import org.apache.geode.test.junit.categories.DistributedTest;
 
 /**
  * Asserts that values received in EntryEvents for CacheWriters and CacheListeners are not
  * compressed.
- * 
+ *
  */
 @Category(DistributedTest.class)
 public class CompressionCacheListenerDUnitTest extends JUnit4CacheTestCase {
@@ -166,7 +165,7 @@ public class CompressionCacheListenerDUnitTest extends JUnit4CacheTestCase {
 
   /**
    * Creates a new CompressionCacheListenerDUnitTest.
-   * 
+   *
    * @param name a test name.
    */
   public CompressionCacheListenerDUnitTest() {
@@ -193,7 +192,7 @@ public class CompressionCacheListenerDUnitTest extends JUnit4CacheTestCase {
 
   /**
    * Returns the VM for a given identifier.
-   * 
+   *
    * @param vm a virtual machine identifier.
    */
   protected VM getVM(int vm) {
@@ -202,7 +201,7 @@ public class CompressionCacheListenerDUnitTest extends JUnit4CacheTestCase {
 
   /**
    * Removes created regions from a VM.
-   * 
+   *
    * @param vm the virtual machine to cleanup.
    */
   private void cleanup(final VM vm) {
@@ -224,7 +223,7 @@ public class CompressionCacheListenerDUnitTest extends JUnit4CacheTestCase {
 
   /**
    * Tests that received values in EntryEvents are not compressed for the following methods:
-   * 
+   *
    * <ul>
    * <li>{@link CacheWriter#beforeCreate(EntryEvent)}</li>
    * <li>{@link CacheListener#afterCreate(EntryEvent)}</li>
@@ -234,7 +233,7 @@ public class CompressionCacheListenerDUnitTest extends JUnit4CacheTestCase {
    * <li>{@link CacheWriter#beforeDestroy(EntryEvent)}</li>
    * <li>{@link CacheListener#afterDestroy(EntryEvent)}</li>
    * </ul>
-   * 
+   *
    * @param vm a virtual machine to perform the test on.
    */
   private void testCacheListenerAndWriterWithVM(final VM vm) {
@@ -311,7 +310,7 @@ public class CompressionCacheListenerDUnitTest extends JUnit4CacheTestCase {
 
   /**
    * Creates a region and assigns a compressor.
-   * 
+   *
    * @param vm a virtual machine to create the region on.
    * @param name a region name.
    * @param compressor a compressor.
@@ -334,7 +333,7 @@ public class CompressionCacheListenerDUnitTest extends JUnit4CacheTestCase {
 
   /**
    * Creates a region and assigns a compressor.
-   * 
+   *
    * @param name a region name.
    * @param compressor a compressor.
    */

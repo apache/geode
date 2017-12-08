@@ -14,19 +14,19 @@
  */
 package org.apache.geode.sequence;
 
-import org.apache.geode.internal.sequencelog.model.GraphID;
-import org.apache.geode.internal.sequencelog.model.GraphSet;
-
-import javax.swing.*;
-import javax.swing.event.DocumentEvent;
-import javax.swing.event.DocumentListener;
-
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.util.*;
 import java.util.List;
 import java.util.regex.Pattern;
+
+import javax.swing.*;
+import javax.swing.event.DocumentEvent;
+import javax.swing.event.DocumentListener;
+
+import org.apache.geode.internal.sequencelog.model.GraphID;
+import org.apache.geode.internal.sequencelog.model.GraphSet;
 
 /**
  * Created by IntelliJ IDEA. User: dsmith Date: Dec 9, 2010 Time: 3:34:38 PM To change this template

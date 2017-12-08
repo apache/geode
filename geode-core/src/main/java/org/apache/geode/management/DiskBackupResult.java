@@ -18,7 +18,7 @@ import java.beans.ConstructorProperties;
 
 /**
  * Composite data type used to distribute the results of a disk backup operation.
- * 
+ *
  * @since GemFire 7.0
  */
 public class DiskBackupResult {
@@ -54,7 +54,7 @@ public class DiskBackupResult {
 
   /**
    * Returns whether the backup was successful.
-   * 
+   *
    * @return True if the backup was successful, false otherwise.
    */
   public boolean isOffilne() {

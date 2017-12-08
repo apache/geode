@@ -15,47 +15,47 @@
 
 package org.apache.geode.internal.cache.tier.sockets;
 
-import org.apache.geode.internal.Version;
-import org.apache.geode.internal.cache.tier.MessageType;
-import org.apache.geode.internal.i18n.LocalizedStrings;
-import org.apache.geode.internal.logging.LogService;
-
 import java.io.EOFException;
 import java.io.IOException;
 import java.nio.ByteBuffer;
 
 import org.apache.logging.log4j.Logger;
 
+import org.apache.geode.internal.Version;
+import org.apache.geode.internal.cache.tier.MessageType;
+import org.apache.geode.internal.i18n.LocalizedStrings;
+import org.apache.geode.internal.logging.LogService;
+
 /**
  * Class <code>ChunkedMessage</code> is used to send messages from a server to a client divided into
  * chunks.
- * 
+ *
  * This class encapsulates the wire protocol. It provides accessors to encode and decode a message
  * and serialize it out to the wire.
- * 
+ *
  * <PRE>
- * 
+ *
  * messageType - int - 4 bytes type of message, types enumerated below
- * 
+ *
  * numberOfParts - int - 4 bytes number of elements (LEN-BYTE* pairs) contained
  * in the payload. Message can be a multi-part message
- * 
+ *
  * transId - int - 4 bytes filled in by the requestor, copied back into the
  * response len1 part1 . . . lenn partn
- * 
+ *
  * </PRE>
- * 
+ *
  * We read the fixed length 15 bytes into a byte[] and populate a bytebuffer We read the fixed
  * length header tokens from the header parse the header and use information contained in there to
  * read the payload.
- * 
+ *
  * <P>
- * 
+ *
  * See also <a href="package-summary.html#messages">package description </a>.
- * 
+ *
  * @see org.apache.geode.internal.cache.tier.MessageType
- * 
- * 
+ *
+ *
  * @since GemFire 4.2
  */
 public class ChunkedMessage extends Message {
@@ -105,7 +105,7 @@ public class ChunkedMessage extends Message {
 
   /**
    * Creates a new message with the given number of parts
-   * 
+   *
    * @param numberOfParts The number of parts to create
    */
   public ChunkedMessage(int numberOfParts, Version version) {
@@ -114,7 +114,7 @@ public class ChunkedMessage extends Message {
 
   /**
    * Returns the header length.
-   * 
+   *
    * @return the header length
    */
   @Override
@@ -124,7 +124,7 @@ public class ChunkedMessage extends Message {
 
   /**
    * Sets whether this is the last chunk.
-   * 
+   *
    * @param lastChunk Whether this is the last chunk
    */
   public void setLastChunk(boolean lastChunk) {
@@ -168,7 +168,7 @@ public class ChunkedMessage extends Message {
 
   /**
    * Answers whether this is the last chunk.
-   * 
+   *
    * @return whether this is the last chunk
    */
   public boolean isLastChunk() {
@@ -181,7 +181,7 @@ public class ChunkedMessage extends Message {
 
   /**
    * Returns the chunk length.
-   * 
+   *
    * @return the chunk length
    */
   public int getChunkLength() {

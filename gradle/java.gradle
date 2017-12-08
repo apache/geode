@@ -21,9 +21,15 @@ allprojects {
   targetCompatibility = 1.8
   compileJava.options.encoding = 'UTF-8'
 }
+
 subprojects {
   apply plugin: 'java'
 
+  String javaVersion = System.properties['java.version']
+  if (javaVersion.startsWith("1.8.0") && javaVersion.split("_")[1].toInteger() < 121) {
+    throw new GradleException("Java version 1.8.0_121 or later required, but was " + javaVersion)
+  }
+    
   // apply compiler options
   gradle.taskGraph.whenReady({ graph ->
     tasks.withType(JavaCompile).each { javac ->

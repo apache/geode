@@ -14,28 +14,28 @@
  */
 package org.apache.geode.cache.client.internal;
 
-import org.apache.geode.InternalGemFireError;
-import org.apache.geode.internal.Version;
-import org.apache.geode.internal.cache.tier.MessageType;
-import org.apache.geode.internal.cache.tier.sockets.Message;
-import org.apache.geode.internal.cache.tier.sockets.ChunkedMessage;
-import org.apache.geode.internal.cache.tier.sockets.Part;
-import org.apache.geode.cache.client.ServerOperationException;
-
+import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
-import java.util.HashSet;
+
+import org.apache.geode.InternalGemFireError;
+import org.apache.geode.cache.client.ServerOperationException;
+import org.apache.geode.internal.Version;
+import org.apache.geode.internal.cache.tier.MessageType;
+import org.apache.geode.internal.cache.tier.sockets.ChunkedMessage;
+import org.apache.geode.internal.cache.tier.sockets.Message;
+import org.apache.geode.internal.cache.tier.sockets.Part;
 
 /**
  * Does a region keySet on a server
- * 
+ *
  * @since GemFire 5.7
  */
 public class KeySetOp {
   /**
    * Does a region entry keySet on a server using connections from the given pool to communicate
    * with the server.
-   * 
+   *
    * @param pool the pool to use to communicate with the server.
    * @param region the name of the region to do the entry keySet on
    */

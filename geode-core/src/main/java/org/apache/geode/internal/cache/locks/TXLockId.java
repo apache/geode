@@ -33,4 +33,3 @@ public interface TXLockId extends DLockBatchId {
   /** Gets the lock grantor id that granted this lock */
   public LockGrantorId getLockGrantorId();
 }
-

@@ -13,21 +13,21 @@
  * the License.
  */
 /**
- * 
+ *
  */
 package org.apache.geode.internal.cache.tier.sockets.command;
 
+import java.io.IOException;
+
+import org.apache.geode.distributed.internal.DistributionStats;
 import org.apache.geode.internal.cache.tier.Command;
 import org.apache.geode.internal.cache.tier.sockets.*;
-import org.apache.geode.distributed.internal.DistributionStats;
 import org.apache.geode.internal.security.SecurityService;
-
-import java.io.IOException;
 
 
 public class ClientReady extends BaseCommand {
 
-  private final static ClientReady singleton = new ClientReady();
+  private static final ClientReady singleton = new ClientReady();
 
   public static Command getCommand() {
     return singleton;

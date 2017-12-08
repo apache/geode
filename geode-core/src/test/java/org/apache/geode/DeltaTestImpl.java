@@ -13,7 +13,7 @@
  * the License.
  */
 /**
- * 
+ *
  */
 package org.apache.geode;
 
@@ -27,7 +27,7 @@ import org.apache.geode.internal.cache.PartitionedRegionLocalMaxMemoryDUnitTest.
 
 /**
  * Sample test class which implements Delta.
- * 
+ *
  * @since GemFire 6.1
  */
 public class DeltaTestImpl implements DataSerializable, Delta {
@@ -249,7 +249,7 @@ public class DeltaTestImpl implements DataSerializable, Delta {
 
   /*
    * (non-Javadoc)
-   * 
+   *
    * @see org.apache.geode.Delta#fromDelta(java.io.DataInput)
    */
   public void fromDelta(DataInput in) throws IOException {
@@ -310,7 +310,7 @@ public class DeltaTestImpl implements DataSerializable, Delta {
 
   /*
    * (non-Javadoc)
-   * 
+   *
    * @see org.apache.geode.Delta#hasDelta()
    */
   public boolean hasDelta() {
@@ -319,7 +319,7 @@ public class DeltaTestImpl implements DataSerializable, Delta {
 
   /*
    * (non-Javadoc)
-   * 
+   *
    * @see org.apache.geode.Delta#toDelta(java.io.DataOutput)
    */
   public void toDelta(DataOutput out) throws IOException {

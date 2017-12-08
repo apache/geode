@@ -14,10 +14,11 @@
  */
 package org.apache.geode.cache.lucene.internal;
 
-import org.apache.geode.cache.lucene.LuceneIndex;
+import java.util.Map;
+
 import org.apache.lucene.analysis.Analyzer;
 
-import java.util.Map;
+import org.apache.geode.cache.lucene.LuceneIndex;
 
 public class IndexListenerAdapter implements IndexListener {
   @Override

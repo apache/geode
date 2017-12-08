@@ -88,7 +88,7 @@ public class GatewaySenderCreateFunction extends FunctionAdapter implements Inte
 
   /**
    * Creates the GatewaySender with given configuration.
-   * 
+   *
    * @param cache
    * @param gatewaySenderCreateArgs
    * @return GatewaySender

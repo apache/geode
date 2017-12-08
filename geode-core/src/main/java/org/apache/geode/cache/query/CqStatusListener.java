@@ -19,7 +19,7 @@ package org.apache.geode.cache.query;
 /**
  * Extension of CqListener. Adds two new methods to CqListener, one that is called when the cq is
  * connected and one that is called when the cq is disconnected
- * 
+ *
  *
  * @since GemFire 7.0
  */

@@ -18,7 +18,7 @@ package org.apache.geode.cache.query;
 /**
  * This interface gives information on the state of a CqQuery. It is provided by the getState method
  * of the CqQuery instance.
- * 
+ *
  * @since GemFire 5.5
  */
 

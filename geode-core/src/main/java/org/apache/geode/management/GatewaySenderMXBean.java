@@ -74,14 +74,14 @@ public interface GatewaySenderMXBean {
 
   /**
    * Returns whether batch conflation for the GatewaySender's queue is enabled
-   * 
+   *
    * @return True if batch conflation is enabled, false otherwise.
    */
   boolean isBatchConflationEnabled();
 
   /**
    * Returns whether the GatewaySender is configured to be persistent or non-persistent.
-   * 
+   *
    * @return True if the sender is persistent, false otherwise.
    */
 
@@ -105,21 +105,21 @@ public interface GatewaySenderMXBean {
 
   /**
    * Returns whether the GatewaySender is configured for manual start.
-   * 
+   *
    * @return True if the GatewaySender is configured for manual start, false otherwise.
    */
   boolean isManualStart();
 
   /**
    * Returns whether or not this GatewaySender is running.
-   * 
+   *
    * @return True if the GatewaySender is running, false otherwise.
    */
   boolean isRunning();
 
   /**
    * Returns whether or not this GatewaySender is paused.
-   * 
+   *
    * @return True of the GatewaySender is paused, false otherwise.
    */
   boolean isPaused();
@@ -164,7 +164,7 @@ public interface GatewaySenderMXBean {
   /**
    * Starts this GatewaySender. Once the GatewaySender is running its configuration cannot be
    * changed.
-   * 
+   *
    */
   @ResourceOperation(resource = Resource.CLUSTER, operation = Operation.MANAGE,
       target = Target.GATEWAY)
@@ -200,7 +200,7 @@ public interface GatewaySenderMXBean {
 
   /**
    * Returns whether this GatewaySender is primary or secondary.
-   * 
+   *
    * @return True if this is the primary, false otherwise.
    */
   boolean isPrimary();
@@ -219,14 +219,14 @@ public interface GatewaySenderMXBean {
 
   /**
    * Returns whether the isDiskSynchronous property is set for this GatewaySender.
-   * 
+   *
    * @return True if the property is set, false otherwise.
    */
   boolean isDiskSynchronous();
 
   /**
    * Returns whether the isParallel property is set for this GatewaySender.
-   * 
+   *
    * @return True if the property is set, false otherwise.
    */
   boolean isParallel();

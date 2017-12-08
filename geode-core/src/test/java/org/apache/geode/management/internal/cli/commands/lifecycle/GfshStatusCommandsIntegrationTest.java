@@ -26,20 +26,20 @@ import org.junit.rules.TemporaryFolder;
 import org.junit.rules.TestName;
 
 import org.apache.geode.management.internal.cli.result.CommandResult;
-import org.apache.geode.test.junit.rules.GfshShellConnectionRule;
-import org.apache.geode.test.junit.rules.LocatorStarterRule;
 import org.apache.geode.test.junit.categories.IntegrationTest;
+import org.apache.geode.test.junit.rules.GfshCommandRule;
+import org.apache.geode.test.junit.rules.LocatorStarterRule;
 
 @Category(IntegrationTest.class)
 public class GfshStatusCommandsIntegrationTest {
-  final private static String LOCATOR_NAME = "locator1";
+  private static final String LOCATOR_NAME = "locator1";
 
   @Rule
   public LocatorStarterRule locator =
       new LocatorStarterRule().withJMXManager().withName(LOCATOR_NAME).withAutoStart();
 
   @Rule
-  public GfshShellConnectionRule gfsh = new GfshShellConnectionRule();
+  public GfshCommandRule gfsh = new GfshCommandRule();
 
   @Rule
   public TemporaryFolder temporaryFolder = new TemporaryFolder();

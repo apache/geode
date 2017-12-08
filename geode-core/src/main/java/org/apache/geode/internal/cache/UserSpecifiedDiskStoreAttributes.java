@@ -17,6 +17,7 @@ package org.apache.geode.internal.cache;
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
+
 import org.apache.geode.internal.Assert;
 
 /**
@@ -24,7 +25,7 @@ import org.apache.geode.internal.Assert;
  * values. It may be used when collecting attributes from an XML parser or from attribute changes
  * made using the {@link org.apache.geode.cache.DiskStoreFactory}. Its initial usage was to validate
  * when a user set a value which should not be set (for DiskStore).
- * 
+ *
  * @since GemFire prPersistSprint2
  *
  */

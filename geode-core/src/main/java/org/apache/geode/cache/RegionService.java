@@ -19,8 +19,8 @@ import java.util.Properties;
 import java.util.Set;
 
 import org.apache.geode.CancelCriterion;
-import org.apache.geode.cache.client.ClientCacheFactory;
 import org.apache.geode.cache.client.ClientCache;
+import org.apache.geode.cache.client.ClientCacheFactory;
 import org.apache.geode.cache.query.QueryService;
 import org.apache.geode.pdx.PdxInstance;
 import org.apache.geode.pdx.PdxInstanceFactory;
@@ -46,7 +46,7 @@ import org.apache.geode.pdx.PdxInstanceFactory;
 public interface RegionService extends AutoCloseable {
   /**
    * the cancellation criterion for this service
-   * 
+   *
    * @return the service's cancellation object
    */
   public CancelCriterion getCancelCriterion();
@@ -90,7 +90,7 @@ public interface RegionService extends AutoCloseable {
 
   /**
    * Returns a factory that can create a {@link PdxInstance}.
-   * 
+   *
    * @param className the fully qualified class name that the PdxInstance will become when it is
    *        fully deserialized.
    * @return the factory
@@ -100,7 +100,7 @@ public interface RegionService extends AutoCloseable {
 
   /**
    * Creates and returns a PdxInstance that represents an enum value.
-   * 
+   *
    * @param className the name of the enum class
    * @param enumName the name of the enum constant
    * @param enumOrdinal the ordinal value of the enum constant
@@ -122,7 +122,7 @@ public interface RegionService extends AutoCloseable {
    * each region in the service. After this service is closed, any further method calls on this
    * service or any region object obtained from the service will throw {@link CacheClosedException},
    * unless otherwise noted.
-   * 
+   *
    * @throws CacheClosedException if the service is already closed.
    */
   public void close();

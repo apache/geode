@@ -96,7 +96,7 @@ public class ExecutionContext {
   /**
    * Param specialIteratorVar name of special variable to use to denote the current iteration
    * element. Used to implement the "this" var in the query shortcut methods
-   * 
+   *
    * @see org.apache.geode.cache.Region#query
    */
   public ExecutionContext(Object[] bindArguments, InternalCache cache) {
@@ -111,7 +111,7 @@ public class ExecutionContext {
   /**
    * Add RuntimeIterator as a dependency of a CompiledValue. ASSUMPTION: unsynchronized, assumed to
    * be single-threaded.
-   * 
+   *
    * @return the dependency set as a shortcut
    */
   Set addDependency(CompiledValue cv, RuntimeIterator itr) {
@@ -178,7 +178,7 @@ public class ExecutionContext {
   /**
    * Returns all dependencies in from this context which are reused during index update by new
    * ExecutionContext for concurrent updates on indexes.
-   * 
+   *
    * @return All {@link AbstractCompiledValue} dependencies.
    */
   public Map getDependencyGraph() {
@@ -267,7 +267,7 @@ public class ExecutionContext {
    * <p>
    * TODO: If we are storing a single Iterator instead of Set , in the itrDefToIndpndtRuntimeItrMap
    * , we need to take care of this function.
-   * 
+   *
    * @param rIter Independent RuntimeIterator on which dependent iterators of current scope need to
    *        identified
    * @return List containing the independent Runtime Iterator & its dependent iterators
@@ -306,7 +306,7 @@ public class ExecutionContext {
   /**
    * returns implicit iterator receiver of operation with numArgs args, or null if cannot be
    * resolved.
-   * 
+   *
    * SPECIAL CASE: If we are unable to resolve the name on any iterator, but there is only one
    * iterator that we don't have type information for it (for now OBJECT_TYPE, this has to change),
    * then return that one iterator under the assumption that the operation name must belong to it.
@@ -447,7 +447,7 @@ public class ExecutionContext {
    * RuntimeIterators to which the current CompilediteratorDef is dependent upon. Also it sets the
    * index_internal_id for the RuntimeIterator, which is used for calculating the canonicalized
    * iterator definitions for identifying the available index.
-   * 
+   *
    * @param itrDef CompiledIteratorDef object representing iterator in the query from clause
    */
   public void addToIndependentRuntimeItrMap(CompiledIteratorDef itrDef)
@@ -519,7 +519,7 @@ public class ExecutionContext {
    * returns null. It is the caller's responsibility to ensure that the passed Iterator is the
    * ultimate Independent Runtime Iterator or else the method may return null if the RunTimeIterator
    * is genuinely dependent on a Region iterator
-   * 
+   *
    * @return String containing region path
    */
   String getRegionPathForIndependentRuntimeIterator(RuntimeIterator riter) {

@@ -14,11 +14,6 @@
  */
 package org.apache.geode.internal.net;
 
-import org.apache.geode.SystemFailure;
-import org.apache.geode.internal.logging.LogService;
-import org.apache.geode.internal.logging.LoggingThreadGroup;
-import org.apache.logging.log4j.Logger;
-
 import java.io.IOException;
 import java.net.Socket;
 import java.util.concurrent.ConcurrentHashMap;
@@ -31,6 +26,12 @@ import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
+
+import org.apache.logging.log4j.Logger;
+
+import org.apache.geode.SystemFailure;
+import org.apache.geode.internal.logging.LogService;
+import org.apache.geode.internal.logging.LoggingThreadGroup;
 
 /**
  * This class allows sockets to be closed without blocking. In some cases we have seen a call of
@@ -183,7 +184,7 @@ public class SocketCloser {
    * 33665). Depending on how the SocketCloser is configured (see ASYNC_CLOSE_WAIT_MILLISECONDS)
    * this method may block for a certain amount of time. If it is called after the SocketCloser is
    * closed then a normal synchronous close is done.
-   * 
+   *
    * @param socket the socket to close
    * @param address identifies who the socket is connected to
    * @param extra an optional Runnable with stuff to execute in the async thread
@@ -245,7 +246,7 @@ public class SocketCloser {
 
   /**
    * Closes the specified socket
-   * 
+   *
    * @param sock the socket to close
    */
 

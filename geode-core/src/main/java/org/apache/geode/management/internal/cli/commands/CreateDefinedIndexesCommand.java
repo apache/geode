@@ -15,12 +15,12 @@
 
 package org.apache.geode.management.internal.cli.commands;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.TreeSet;
-import java.util.concurrent.atomic.AtomicReference;
 
 import org.springframework.shell.core.annotation.CliCommand;
 import org.springframework.shell.core.annotation.CliOption;
@@ -30,7 +30,6 @@ import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.management.cli.CliMetaData;
 import org.apache.geode.management.cli.ConverterHint;
 import org.apache.geode.management.cli.Result;
-import org.apache.geode.management.internal.cli.CliUtil;
 import org.apache.geode.management.internal.cli.functions.CliFunctionResult;
 import org.apache.geode.management.internal.cli.functions.CreateDefinedIndexesFunction;
 import org.apache.geode.management.internal.cli.i18n.CliStrings;
@@ -61,7 +60,7 @@ public class CreateDefinedIndexesCommand implements GfshCommand {
           help = CliStrings.CREATE_DEFINED_INDEXES__GROUP__HELP) final String[] group) {
 
     Result result;
-    AtomicReference<XmlEntity> xmlEntity = new AtomicReference<>();
+    List<XmlEntity> xmlEntities = new ArrayList<>();
 
     if (IndexDefinition.indexDefinitions.isEmpty()) {
       final InfoResultData infoResult = ResultBuilder.createInfoResultData();
@@ -70,13 +69,13 @@ public class CreateDefinedIndexesCommand implements GfshCommand {
     }
 
     try {
-      final Set<DistributedMember> targetMembers = CliUtil.findMembers(group, memberNameOrID);
+      final Set<DistributedMember> targetMembers = findMembers(group, memberNameOrID);
 
       if (targetMembers.isEmpty()) {
         return ResultBuilder.createUserErrorResult(CliStrings.NO_MEMBERS_FOUND_MESSAGE);
       }
 
-      final ResultCollector<?, ?> rc = CliUtil.executeFunction(createDefinedIndexesFunction,
+      final ResultCollector<?, ?> rc = executeFunction(createDefinedIndexesFunction,
           IndexDefinition.indexDefinitions, targetMembers);
 
       final List<Object> funcResults = (List<Object>) rc.getResult();
@@ -90,8 +89,11 @@ public class CreateDefinedIndexesCommand implements GfshCommand {
           if (cliFunctionResult.isSuccessful()) {
             successfulMembers.add(cliFunctionResult.getMemberIdOrName());
 
-            if (xmlEntity.get() == null) {
-              xmlEntity.set(cliFunctionResult.getXmlEntity());
+            // Only add the XmlEntity if it wasn't previously added from the result of another
+            // successful member.
+            XmlEntity resultEntity = cliFunctionResult.getXmlEntity();
+            if ((null != resultEntity) && (!xmlEntities.contains(resultEntity))) {
+              xmlEntities.add(cliFunctionResult.getXmlEntity());
             }
           } else {
             final String exceptionMessage = cliFunctionResult.getMessage();
@@ -100,12 +102,18 @@ public class CreateDefinedIndexesCommand implements GfshCommand {
             if (failedMembers == null) {
               failedMembers = new TreeSet<>();
             }
+
             failedMembers.add(cliFunctionResult.getMemberIdOrName());
             indexOpFailMap.put(exceptionMessage, failedMembers);
           }
         }
       }
 
+      // TODO: GEODE-3916.
+      // The index creation might succeed in some members and fail in others, the current logic only
+      // reports to the user the members on which the operation was successful, giving no details
+      // about the failures. We should report the exact details of what failed/succeeded, and
+      // where/why.
       if (!successfulMembers.isEmpty()) {
         final InfoResultData infoResult = ResultBuilder.createInfoResultData();
         infoResult.addLine(CliStrings.CREATE_DEFINED_INDEXES__SUCCESS__MSG);
@@ -143,10 +151,11 @@ public class CreateDefinedIndexesCommand implements GfshCommand {
       result = ResultBuilder.createGemFireErrorResult(e.getMessage());
     }
 
-    if (xmlEntity.get() != null) {
+    for (XmlEntity xmlEntity : xmlEntities) {
       persistClusterConfiguration(result,
-          () -> getSharedConfiguration().addXmlEntity(xmlEntity.get(), group));
+          () -> getSharedConfiguration().addXmlEntity(xmlEntity, group));
     }
+
     return result;
   }
 }

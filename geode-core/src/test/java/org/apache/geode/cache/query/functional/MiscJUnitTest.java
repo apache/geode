@@ -30,7 +30,6 @@ import org.junit.Before;
 import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
-
 import parReg.query.unittest.NewPortfolio;
 
 import org.apache.geode.cache.AttributesFactory;

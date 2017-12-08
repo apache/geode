@@ -30,7 +30,7 @@ import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.internal.logging.log4j.LocalizedMessage;
 
 /**
- * 
+ *
  *
  */
 public class MemberFunctionResultSender implements InternalResultSender {
@@ -58,7 +58,7 @@ public class MemberFunctionResultSender implements InternalResultSender {
 
   /**
    * Have to combine next two construcotr in one and make a new class which will send Results back.
-   * 
+   *
    * @param msg
    * @param dm
    */
@@ -71,7 +71,7 @@ public class MemberFunctionResultSender implements InternalResultSender {
 
   /**
    * Have to combine next two construcotr in one and make a new class which will send Results back.
-   * 
+   *
    * @param dm
    * @param rc
    */

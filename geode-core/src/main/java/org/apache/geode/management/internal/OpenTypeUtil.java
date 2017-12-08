@@ -30,8 +30,8 @@ import java.util.TreeMap;
 
 /**
  * Various uitlity methods for open type conversion
- * 
- * 
+ *
+ *
  */
 
 public class OpenTypeUtil {
@@ -88,7 +88,7 @@ public class OpenTypeUtil {
 
   /**
    * Utility method to take a string and convert it to normal Java variable name capitalization.
-   * 
+   *
    * @param name The string to be made in camel case.
    * @return The camel case version of the string.
    */

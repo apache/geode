@@ -41,7 +41,7 @@ import org.apache.geode.internal.sequencelog.Transition;
 public class GemfireLogConverter {
 
   /**
-   * 
+   *
    */
   private static final Pattern DATE_PATTERN =
       Pattern.compile("(\\d\\d\\d\\d)/(\\d\\d)/(\\d\\d) (\\d\\d):(\\d\\d):(\\d\\d).(\\d\\d\\d)");
@@ -280,7 +280,7 @@ public class GemfireLogConverter {
 
   }
 
-  private static abstract class Test {
+  private abstract static class Test {
     private Pattern pattern;
 
     public Test(String pattern) {

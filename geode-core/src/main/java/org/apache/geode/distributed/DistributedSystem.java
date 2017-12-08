@@ -16,6 +16,18 @@ package org.apache.geode.distributed;
 
 import static org.apache.geode.distributed.ConfigurationProperties.CONSERVE_SOCKETS;
 
+import java.io.File;
+import java.net.InetAddress;
+import java.net.MalformedURLException;
+import java.net.URL;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Properties;
+import java.util.Set;
+import java.util.concurrent.TimeUnit;
+
 import org.apache.geode.CancelCriterion;
 import org.apache.geode.LogWriter;
 import org.apache.geode.StatisticsFactory;
@@ -31,18 +43,6 @@ import org.apache.geode.internal.ClassPathLoader;
 import org.apache.geode.internal.i18n.LocalizedStrings;
 import org.apache.geode.internal.tcp.ConnectionTable;
 import org.apache.geode.internal.util.IOUtils;
-
-import java.io.File;
-import java.net.InetAddress;
-import java.net.MalformedURLException;
-import java.net.URL;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Properties;
-import java.util.Set;
-import java.util.concurrent.TimeUnit;
 
 /**
  * A "connection" to a GemFire distributed system. A <code>DistributedSystem</code> is created by
@@ -86,7 +86,7 @@ public abstract class DistributedSystem implements StatisticsFactory {
   protected static volatile List existingSystems = Collections.EMPTY_LIST;
   /**
    * This lock must be changed to add or remove a system. It is notified when a system is removed.
-   * 
+   *
    * @see #existingSystems
    */
   protected static final Object existingSystemsLock = new Object();
@@ -243,7 +243,7 @@ public abstract class DistributedSystem implements StatisticsFactory {
   /**
    * Sets the calling thread's socket policy. This value will override that default set by the
    * <code>conserve-sockets</code> configuration property.
-   * 
+   *
    * @param conserveSockets If <code>true</code> then calling thread will share socket connections
    *        with other threads. If <code>false</code> then calling thread will have its own sockets.
    * @since GemFire 4.1
@@ -260,7 +260,7 @@ public abstract class DistributedSystem implements StatisticsFactory {
 
   /**
    * Frees up any socket resources owned by the calling thread.
-   * 
+   *
    * @since GemFire 4.1
    */
   public static void releaseThreadsSockets() {
@@ -313,7 +313,7 @@ public abstract class DistributedSystem implements StatisticsFactory {
 
   /**
    * see {@link org.apache.geode.admin.AdminDistributedSystemFactory}
-   * 
+   *
    * @since GemFire 5.7
    */
   protected static void setEnableAdministrationOnly(boolean adminOnly) {
@@ -373,7 +373,7 @@ public abstract class DistributedSystem implements StatisticsFactory {
   /**
    * Returns the <code>LogWriter</code> used for logging security related information. See
    * <A href="#logFile">logFile</A>.
-   * 
+   *
    * @throws IllegalStateException This VM has {@linkplain #disconnect() disconnected} from the
    *         distributed system.
    * @since GemFire 5.5
@@ -382,21 +382,21 @@ public abstract class DistributedSystem implements StatisticsFactory {
 
   /**
    * Returns the configuration properties.
-   * 
+   *
    * @return the configuration Properties
    */
   public abstract Properties getProperties();
 
   /**
    * Returns the security specific configuration properties.
-   * 
+   *
    * @return the configuration Properties
    * @since GemFire 5.5
    */
   public abstract Properties getSecurityProperties();
 
   /**
-   * 
+   *
    * @return the cancel criterion for this system
    */
   public abstract CancelCriterion getCancelCriterion();
@@ -411,7 +411,7 @@ public abstract class DistributedSystem implements StatisticsFactory {
    *
    * Attempts to access a distributed system after a VM has disconnected from it will result in an
    * {@link IllegalStateException} being thrown.
-   * 
+   *
    * @deprecated as of 6.5 use {@link Cache#close} or {@link ClientCache#close} instead.
    */
   public abstract void disconnect();
@@ -447,7 +447,7 @@ public abstract class DistributedSystem implements StatisticsFactory {
   /**
    * Returns the {@link DistributedMember} that identifies this connection to the distributed
    * system.
-   * 
+   *
    * @return the member that represents this distributed system connection.
    * @since GemFire 5.0
    */
@@ -455,7 +455,7 @@ public abstract class DistributedSystem implements StatisticsFactory {
 
   /**
    * Returns a set of all the other members in this distributed system.
-   * 
+   *
    * @return returns a set of all the other members in this distributed system.
    * @since GemFire 7.0
    */
@@ -464,7 +464,7 @@ public abstract class DistributedSystem implements StatisticsFactory {
   /**
    * Returns a set of all the members in the given group. Members join a group be setting the
    * "groups" gemfire property.
-   * 
+   *
    * @return returns a set of all the member in a group.
    * @since GemFire 7.0
    */
@@ -473,20 +473,20 @@ public abstract class DistributedSystem implements StatisticsFactory {
 
   /**
    * Find the set of distributed members running on a given address
-   * 
+   *
    * @return a set of all DistributedMembers that have any interfaces that match the given IP
    *         address. May be empty if there are no members.
-   * 
+   *
    * @since GemFire 7.1
    */
   public abstract Set<DistributedMember> findDistributedMembers(InetAddress address);
 
   /**
    * Find the distributed member with the given name
-   * 
+   *
    * @return the distributed member that has the given name, or null if no member is currently
    *         running with the given name.
-   * 
+   *
    * @since GemFire 7.1
    */
   public abstract DistributedMember findDistributedMember(String name);
@@ -512,7 +512,7 @@ public abstract class DistributedSystem implements StatisticsFactory {
    * <code>PROPERTIES_FILE_PROPERTY</code> is set then its value will be used instead of the
    * default. If this value is a relative file system path then the above search is done. If it is
    * an absolute file system path then that file must exist; no search for it is done.
-   * 
+   *
    * @see #PROPERTIES_FILE_DEFAULT
    * @see #getPropertiesFile()
    * @since Geode 1.0
@@ -523,7 +523,7 @@ public abstract class DistributedSystem implements StatisticsFactory {
    * The default value of <code>PROPERTIES_FILE_PROPERTY</code> is
    * <code>"gemfire.properties"</code>. The location of the file will be resolved during connect as
    * described for {@link #PROPERTIES_FILE_PROPERTY}.
-   * 
+   *
    * @see #PROPERTIES_FILE_PROPERTY
    * @see #getPropertiesFile()
    * @since Geode 1.0
@@ -534,7 +534,7 @@ public abstract class DistributedSystem implements StatisticsFactory {
   /**
    * Returns the current value of {@link #PROPERTIES_FILE_PROPERTY} system property if set or the
    * default value {@link #PROPERTIES_FILE_DEFAULT}.
-   * 
+   *
    * @see #PROPERTIES_FILE_PROPERTY
    * @see #PROPERTIES_FILE_DEFAULT
    * @since Geode 1.0
@@ -558,7 +558,7 @@ public abstract class DistributedSystem implements StatisticsFactory {
    * "gemfirePropertyFile" system property is set then its value is the value of PROPERTY_FILE. If
    * this value is a relative file system path then the above search is done. If it is an absolute
    * file system path then that file must exist; no search for it is done.
-   * 
+   *
    * @see #getPropertiesFile()
    * @since GemFire 5.0
    * @deprecated As of 9.0, please use {@link #getPropertiesFile()} instead.
@@ -581,7 +581,7 @@ public abstract class DistributedSystem implements StatisticsFactory {
    * <code>SECURITY_PROPERTIES_FILE_PROPERTY</code> is set then its value will be used instead of
    * the default. If this value is a relative file system path then the above search is done. If it
    * is an absolute file system path then that file must exist; no search for it is done.
-   * 
+   *
    * @see #SECURITY_PROPERTIES_FILE_DEFAULT
    * @see #getSecurityPropertiesFile()
    * @since Geode 1.0
@@ -592,7 +592,7 @@ public abstract class DistributedSystem implements StatisticsFactory {
    * The default value of <code>SECURITY_PROPERTIES_FILE_PROPERTY</code> is
    * <code>"gfsecurity.properties"</code>. The location of the file will be resolved during connect
    * as described for {@link #SECURITY_PROPERTIES_FILE_PROPERTY}.
-   * 
+   *
    * @see #SECURITY_PROPERTIES_FILE_PROPERTY
    * @see #getSecurityPropertiesFile()
    * @since Geode 1.0
@@ -602,7 +602,7 @@ public abstract class DistributedSystem implements StatisticsFactory {
   /**
    * Returns the current value of {@link #SECURITY_PROPERTIES_FILE_PROPERTY} system property if set
    * or the default value {@link #SECURITY_PROPERTIES_FILE_DEFAULT}.
-   * 
+   *
    * @see #SECURITY_PROPERTIES_FILE_PROPERTY
    * @see #SECURITY_PROPERTIES_FILE_DEFAULT
    * @since Geode 1.0
@@ -627,7 +627,7 @@ public abstract class DistributedSystem implements StatisticsFactory {
    * SECURITY_PROPERTY_FILE. If this value is a relative file system path then the above search is
    * done. If it is an absolute file system path then that file must exist; no search for it is
    * done.
-   * 
+   *
    * @see #getSecurityPropertiesFile()
    * @since GemFire 6.6.2
    * @deprecated As of 9.0, please use {@link #getSecurityPropertiesFile()} instead.
@@ -640,7 +640,7 @@ public abstract class DistributedSystem implements StatisticsFactory {
    * <p>
    * See {@link #PROPERTIES_FILE_PROPERTY} for information on the name of the properties file and
    * what locations it will be looked for in.
-   * 
+   *
    * @return a <code>URL</code> that names the GemFire property file. Null is returned if no
    *         property file was found.
    * @see #PROPERTIES_FILE_PROPERTY
@@ -658,7 +658,7 @@ public abstract class DistributedSystem implements StatisticsFactory {
    * <p>
    * See {@link #PROPERTIES_FILE_PROPERTY} for information on the name of the property file and what
    * locations it will be looked for in.
-   * 
+   *
    * @return a <code>URL</code> that names the GemFire property file. Null is returned if no
    *         property file was found.
    * @see #getPropertiesFileURL()
@@ -675,7 +675,7 @@ public abstract class DistributedSystem implements StatisticsFactory {
    * <p>
    * See {@link #SECURITY_PROPERTIES_FILE_PROPERTY} for information on the name of the properties
    * file and what locations it will be looked for in.
-   * 
+   *
    * @return a <code>URL</code> that names the GemFire security properties file. Null is returned if
    *         no properties file was found.
    * @see #SECURITY_PROPERTIES_FILE_PROPERTY
@@ -717,32 +717,32 @@ public abstract class DistributedSystem implements StatisticsFactory {
    * This will also return true if the DistributedSystem has finished reconnecting. When reconnect
    * has completed you can use {@link DistributedSystem#getReconnectedSystem} to retrieve the new
    * distributed system.
-   * 
+   *
    * @return true if the DistributedSystem is attempting to reconnect or has finished reconnecting
    */
-  abstract public boolean isReconnecting();
+  public abstract boolean isReconnecting();
 
   /**
    * Wait for the DistributedSystem to finish reconnecting to the system and recreate the cache.
-   * 
+   *
    * @param time amount of time to wait, or -1 to wait forever
    * @param units
    * @return true if the system was reconnected
    * @throws InterruptedException if the thread is interrupted while waiting
    */
-  abstract public boolean waitUntilReconnected(long time, TimeUnit units)
+  public abstract boolean waitUntilReconnected(long time, TimeUnit units)
       throws InterruptedException;
 
   /**
    * Force the DistributedSystem to stop reconnecting. If the DistributedSystem is currently
    * connected this will disconnect it and close the cache.
-   * 
+   *
    */
-  abstract public void stopReconnecting();
+  public abstract void stopReconnecting();
 
   /**
    * Returns the new DistributedSystem if there was an auto-reconnect
    */
-  abstract public DistributedSystem getReconnectedSystem();
+  public abstract DistributedSystem getReconnectedSystem();
 
 }

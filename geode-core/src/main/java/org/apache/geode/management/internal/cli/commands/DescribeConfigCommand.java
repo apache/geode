@@ -29,7 +29,6 @@ import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.management.cli.CliMetaData;
 import org.apache.geode.management.cli.ConverterHint;
 import org.apache.geode.management.cli.Result;
-import org.apache.geode.management.internal.cli.CliUtil;
 import org.apache.geode.management.internal.cli.domain.MemberConfigurationInfo;
 import org.apache.geode.management.internal.cli.functions.GetMemberConfigInformationFunction;
 import org.apache.geode.management.internal.cli.i18n.CliStrings;
@@ -60,58 +59,51 @@ public class DescribeConfigCommand implements GfshCommand {
       DistributedMember targetMember = null;
 
       if (memberNameOrId != null && !memberNameOrId.isEmpty()) {
-        targetMember = CliUtil.getDistributedMemberByNameOrId(memberNameOrId);
+        targetMember = getMember(memberNameOrId);
       }
-      if (targetMember != null) {
-        ResultCollector<?, ?> rc =
-            CliUtil.executeFunction(getMemberConfigFunction, hideDefaults, targetMember);
-        ArrayList<?> output = (ArrayList<?>) rc.getResult();
-        Object obj = output.get(0);
 
-        if (obj != null && obj instanceof MemberConfigurationInfo) {
-          MemberConfigurationInfo memberConfigInfo = (MemberConfigurationInfo) obj;
+      ResultCollector<?, ?> rc =
+          executeFunction(getMemberConfigFunction, hideDefaults, targetMember);
+      ArrayList<?> output = (ArrayList<?>) rc.getResult();
+      Object obj = output.get(0);
 
-          CompositeResultData crd = ResultBuilder.createCompositeResultData();
-          crd.setHeader(
-              CliStrings.format(CliStrings.DESCRIBE_CONFIG__HEADER__TEXT, memberNameOrId));
+      if (obj != null && obj instanceof MemberConfigurationInfo) {
+        MemberConfigurationInfo memberConfigInfo = (MemberConfigurationInfo) obj;
 
-          List<String> jvmArgsList = memberConfigInfo.getJvmInputArguments();
-          TabularResultData jvmInputArgs = crd.addSection().addSection().addTable();
+        CompositeResultData crd = ResultBuilder.createCompositeResultData();
+        crd.setHeader(CliStrings.format(CliStrings.DESCRIBE_CONFIG__HEADER__TEXT, memberNameOrId));
 
-          for (String jvmArg : jvmArgsList) {
-            jvmInputArgs.accumulate("JVM command line arguments", jvmArg);
-          }
+        List<String> jvmArgsList = memberConfigInfo.getJvmInputArguments();
+        TabularResultData jvmInputArgs = crd.addSection().addSection().addTable();
 
-          addSection(crd, memberConfigInfo.getGfePropsSetUsingApi(),
-              "GemFire properties defined using the API");
-          addSection(crd, memberConfigInfo.getGfePropsRuntime(),
-              "GemFire properties defined at the runtime");
-          addSection(crd, memberConfigInfo.getGfePropsSetFromFile(),
-              "GemFire properties defined with the property file");
-          addSection(crd, memberConfigInfo.getGfePropsSetWithDefaults(),
-              "GemFire properties using default values");
-          addSection(crd, memberConfigInfo.getCacheAttributes(), "Cache attributes");
-
-          List<Map<String, String>> cacheServerAttributesList =
-              memberConfigInfo.getCacheServerAttributes();
-
-          if (cacheServerAttributesList != null && !cacheServerAttributesList.isEmpty()) {
-            CompositeResultData.SectionResultData cacheServerSection = crd.addSection();
-            cacheServerSection.setHeader("Cache-server attributes");
-
-            for (Map<String, String> cacheServerAttributes : cacheServerAttributesList) {
-              addSubSection(cacheServerSection, cacheServerAttributes);
-            }
-          }
-          result = ResultBuilder.buildResult(crd);
+        for (String jvmArg : jvmArgsList) {
+          jvmInputArgs.accumulate("JVM command line arguments", jvmArg);
         }
 
-      } else {
-        ErrorResultData erd = ResultBuilder.createErrorResultData();
-        erd.addLine(CliStrings.format(CliStrings.DESCRIBE_CONFIG__MEMBER__NOT__FOUND,
-            new Object[] {memberNameOrId}));
-        result = ResultBuilder.buildResult(erd);
+        addSection(crd, memberConfigInfo.getGfePropsSetUsingApi(),
+            "GemFire properties defined using the API");
+        addSection(crd, memberConfigInfo.getGfePropsRuntime(),
+            "GemFire properties defined at the runtime");
+        addSection(crd, memberConfigInfo.getGfePropsSetFromFile(),
+            "GemFire properties defined with the property file");
+        addSection(crd, memberConfigInfo.getGfePropsSetWithDefaults(),
+            "GemFire properties using default values");
+        addSection(crd, memberConfigInfo.getCacheAttributes(), "Cache attributes");
+
+        List<Map<String, String>> cacheServerAttributesList =
+            memberConfigInfo.getCacheServerAttributes();
+
+        if (cacheServerAttributesList != null && !cacheServerAttributesList.isEmpty()) {
+          CompositeResultData.SectionResultData cacheServerSection = crd.addSection();
+          cacheServerSection.setHeader("Cache-server attributes");
+
+          for (Map<String, String> cacheServerAttributes : cacheServerAttributesList) {
+            addSubSection(cacheServerSection, cacheServerAttributes);
+          }
+        }
+        result = ResultBuilder.buildResult(crd);
       }
+
     } catch (FunctionInvocationTargetException e) {
       result = ResultBuilder.createGemFireErrorResult(CliStrings
           .format(CliStrings.COULD_NOT_EXECUTE_COMMAND_TRY_AGAIN, CliStrings.DESCRIBE_CONFIG));

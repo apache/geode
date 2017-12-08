@@ -14,9 +14,10 @@
  */
 package org.apache.geode.cache30;
 
+import java.util.*;
+
 import org.apache.geode.SystemFailure;
 import org.apache.geode.cache.*;
-import java.util.*;
 
 /**
  * A <code>CacheListener</code> used in testing. Its callback methods are implemented to thrown
@@ -50,7 +51,7 @@ public abstract class TestCacheListener extends TestCacheCallback implements Cac
 
   /**
    * Enables collection of event history.
-   * 
+   *
    * @since GemFire 5.0
    */
   public void enableEventHistory() {
@@ -61,7 +62,7 @@ public abstract class TestCacheListener extends TestCacheCallback implements Cac
 
   /**
    * Disables collection of events.
-   * 
+   *
    * @since GemFire 5.0
    */
   public void disableEventHistory() {
@@ -71,7 +72,7 @@ public abstract class TestCacheListener extends TestCacheCallback implements Cac
   /**
    * Returns a copy of the list of events collected in this listener's history. Also clears the
    * current history.
-   * 
+   *
    * @since GemFire 5.0
    */
   public List getEventHistory() {

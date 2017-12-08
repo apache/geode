@@ -382,7 +382,7 @@ public class ConsoleDistributionManagerDUnitTest extends JUnit4CacheTestCase
   // }
   /**
    * Accessed via reflection. DO NOT REMOVE
-   * 
+   *
    * @return
    */
   protected static long remoteGetConId() {
@@ -395,7 +395,7 @@ public class ConsoleDistributionManagerDUnitTest extends JUnit4CacheTestCase
 
   /**
    * Accessed via reflection. DO NOT REMOVE
-   * 
+   *
    * @param lockName
    * @return
    */
@@ -435,7 +435,7 @@ public class ConsoleDistributionManagerDUnitTest extends JUnit4CacheTestCase
 
   /**
    * INVOKED VIA REFLECTION
-   * 
+   *
    * @return
    */
   protected static InternalDistributedMember remoteGetJavaGroupsIdForVM() {

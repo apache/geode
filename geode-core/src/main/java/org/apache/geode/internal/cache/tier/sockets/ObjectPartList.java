@@ -15,15 +15,6 @@
 
 package org.apache.geode.internal.cache.tier.sockets;
 
-import org.apache.geode.internal.DataSerializableFixedID;
-import org.apache.geode.internal.Version;
-import org.apache.geode.internal.cache.versions.VersionTag;
-import org.apache.geode.internal.logging.LogService;
-import org.apache.geode.internal.logging.log4j.LogMarker;
-import org.apache.geode.internal.offheap.OffHeapHelper;
-import org.apache.geode.internal.offheap.Releasable;
-import org.apache.geode.DataSerializer;
-
 import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
@@ -33,11 +24,20 @@ import java.util.List;
 
 import org.apache.logging.log4j.Logger;
 
+import org.apache.geode.DataSerializer;
+import org.apache.geode.internal.DataSerializableFixedID;
+import org.apache.geode.internal.Version;
+import org.apache.geode.internal.cache.versions.VersionTag;
+import org.apache.geode.internal.logging.LogService;
+import org.apache.geode.internal.logging.log4j.LogMarker;
+import org.apache.geode.internal.offheap.OffHeapHelper;
+import org.apache.geode.internal.offheap.Releasable;
+
 /**
  * Encapsulates list containing objects, serialized objects, raw byte arrays, or exceptions. It can
  * optionally also hold the list of associated keys. Assumes that keys are either provided for all
  * entries or for none.
- * 
+ *
  * @since GemFire 5.7
  */
 public class ObjectPartList implements DataSerializableFixedID, Releasable {

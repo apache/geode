@@ -20,7 +20,7 @@ package org.apache.geode;
  * <p>
  * This class ought to be called <em>GemFireException</em>, but that name is reserved for an older
  * class that extends {@link java.lang.RuntimeException}.
- * 
+ *
  * @see org.apache.geode.GemFireException
  * @since GemFire 5.1
  */

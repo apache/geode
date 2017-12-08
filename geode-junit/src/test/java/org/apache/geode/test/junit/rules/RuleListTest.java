@@ -16,8 +16,8 @@ package org.apache.geode.test.junit.rules;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-import org.apache.geode.test.junit.runners.TestRunner;
-import org.apache.geode.test.junit.categories.UnitTest;
+import java.util.concurrent.atomic.AtomicInteger;
+
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Rule;
@@ -26,7 +26,8 @@ import org.junit.experimental.categories.Category;
 import org.junit.rules.ExternalResource;
 import org.junit.runner.Result;
 
-import java.util.concurrent.atomic.AtomicInteger;
+import org.apache.geode.test.junit.categories.UnitTest;
+import org.apache.geode.test.junit.runners.TestRunner;
 
 /**
  * Unit tests for {@link RuleList}.

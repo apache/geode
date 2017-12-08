@@ -25,7 +25,7 @@ import org.apache.geode.internal.logging.log4j.LogMarker;
 /**
  * Creates ManagedEntityController for administration (starting, stopping, etc.) of GemFire
  * {@link ManagedEntity}s.
- * 
+ *
  */
 public class ManagedEntityControllerFactory {
 

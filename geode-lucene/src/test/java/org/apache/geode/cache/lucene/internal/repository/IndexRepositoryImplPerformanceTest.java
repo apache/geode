@@ -4,9 +4,9 @@
  * copyright ownership. The ASF licenses this file to you under the Apache License, Version 2.0 (the
  * "License"); you may not use this file except in compliance with the License. You may obtain a
  * copy of the License at
- * 
+ *
  * http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software distributed under the License
  * is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
  * or implied. See the License for the specific language governing permissions and limitations under
@@ -66,6 +66,7 @@ import org.apache.geode.cache.lucene.internal.directory.RegionDirectory;
 import org.apache.geode.cache.lucene.internal.distributed.TopEntriesCollector;
 import org.apache.geode.cache.lucene.internal.filesystem.FileSystemStats;
 import org.apache.geode.cache.lucene.internal.repository.serializer.HeterogeneousLuceneSerializer;
+import org.apache.geode.internal.cache.DistributedRegion;
 import org.apache.geode.test.junit.categories.PerformanceTest;
 
 
@@ -119,8 +120,9 @@ public class IndexRepositoryImplPerformanceTest {
         IndexWriterConfig config = new IndexWriterConfig(analyzer);
         writer = new IndexWriter(dir, config);
         String[] indexedFields = new String[] {"text"};
-        HeterogeneousLuceneSerializer mapper = new HeterogeneousLuceneSerializer(indexedFields);
-        repo = new IndexRepositoryImpl(fileAndChunkRegion, writer, mapper, stats, null);
+        HeterogeneousLuceneSerializer mapper = new HeterogeneousLuceneSerializer();
+        repo = new IndexRepositoryImpl(fileAndChunkRegion, writer, mapper, stats, null,
+            ((DistributedRegion) fileAndChunkRegion).getLockService(), "NoLockFile", null);
       }
 
       @Override
@@ -145,7 +147,7 @@ public class IndexRepositoryImplPerformanceTest {
 
   /**
    * Test our full lucene index implementation
-   * 
+   *
    * @throws Exception
    */
   @Test

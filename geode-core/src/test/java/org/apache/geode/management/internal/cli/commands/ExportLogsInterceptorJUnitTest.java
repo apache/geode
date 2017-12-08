@@ -18,63 +18,61 @@ package org.apache.geode.management.internal.cli.commands;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.when;
 
-import org.apache.geode.management.cli.Result;
-import org.apache.geode.management.internal.cli.GfshParseResult;
-import org.apache.geode.test.junit.categories.UnitTest;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 import org.mockito.Mockito;
 
-import java.util.HashMap;
-import java.util.Map;
+import org.apache.geode.management.cli.Result;
+import org.apache.geode.management.internal.cli.GfshParseResult;
+import org.apache.geode.test.junit.categories.UnitTest;
 
 @Category(UnitTest.class)
 public class ExportLogsInterceptorJUnitTest {
   private ExportLogsInterceptor interceptor;
   private GfshParseResult parseResult;
-  private Map<String, String> arguments;
   private Result result;
 
   @Before
   public void before() {
     interceptor = new ExportLogsInterceptor();
     parseResult = Mockito.mock(GfshParseResult.class);
-    arguments = new HashMap<>();
-    arguments.put("log-level", "info");
-    when(parseResult.getParamValueStrings()).thenReturn(arguments);
+    when(parseResult.getParamValueAsString("log-level")).thenReturn("info");
+    when(parseResult.getParamValue("logs-only")).thenReturn(true);
+    when(parseResult.getParamValue("stats-only")).thenReturn(false);
   }
 
   @Test
   public void testGroupAndMember() {
-    arguments.put("group", "group");
-    arguments.put("member", "member");
+    when(parseResult.getParamValueAsString("group")).thenReturn("group");
+    when(parseResult.getParamValueAsString("member")).thenReturn("group");
     result = interceptor.preExecution(parseResult);
     assertThat(result.nextLine()).contains("Can't specify both group and member");
   }
 
+
   @Test
   public void testStartEnd() {
-    arguments.put("start-time", "2000/01/01");
-    arguments.put("end-time", "2000/01/02");
+    when(parseResult.getParamValueAsString("start-time")).thenReturn("2000/01/01");
+    when(parseResult.getParamValueAsString("end-time")).thenReturn("2000/01/02");
     result = interceptor.preExecution(parseResult);
     assertThat(result.nextLine()).isEmpty();
 
-    arguments.put("start-time", "2000/01/02");
-    arguments.put("end-time", "2000/01/01");
+    when(parseResult.getParamValueAsString("start-time")).thenReturn("2000/01/02");
+    when(parseResult.getParamValueAsString("end-time")).thenReturn("2000/01/01");
     result = interceptor.preExecution(parseResult);
     assertThat(result.nextLine()).contains("start-time has to be earlier than end-time");
   }
 
   @Test
   public void testInclideStats() {
-    arguments.put("logs-only", "true");
-    arguments.put("stats-only", "false");
+    when(parseResult.getParamValue("logs-only")).thenReturn(true);
+    when(parseResult.getParamValue("stats-only")).thenReturn(false);
     result = interceptor.preExecution(parseResult);
     assertThat(result.nextLine()).isEmpty();
 
-    arguments.put("logs-only", "true");
-    arguments.put("stats-only", "true");
+    when(parseResult.getParamValue("logs-only")).thenReturn(true);
+    when(parseResult.getParamValue("stats-only")).thenReturn(true);
     result = interceptor.preExecution(parseResult);
     assertThat(result.nextLine()).contains("logs-only and stats-only can't both be true");
 

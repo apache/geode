@@ -16,12 +16,11 @@
 
 package org.apache.geode.internal.admin.remote;
 
+import java.io.*;
+
+import org.apache.geode.*;
 import org.apache.geode.distributed.internal.*;
 import org.apache.geode.internal.i18n.LocalizedStrings;
-import org.apache.geode.*;
-// import org.apache.geode.internal.*;
-import java.io.*;
-// import java.util.*;
 
 /**
  * A message that is sent to a particular app vm to request the value, stats, and attributes of a
@@ -57,9 +56,11 @@ public class ObjectDetailsRequest extends RegionAdminRequest implements Cancella
 
   /**
    * Must return a proper response to this request.
+   *
+   * @param dm
    */
   @Override
-  protected AdminResponse createResponse(DistributionManager dm) {
+  protected AdminResponse createResponse(DM dm) {
     CancellationRegistry.getInstance().registerMessage(this);
     resp = ObjectDetailsResponse.create(dm, this.getSender());
     if (cancelled) {

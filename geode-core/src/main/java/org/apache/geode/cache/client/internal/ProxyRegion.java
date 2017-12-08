@@ -25,7 +25,6 @@ import java.util.concurrent.locks.Lock;
 
 import org.apache.geode.cache.AttributesMutator;
 import org.apache.geode.cache.Cache;
-import org.apache.geode.cache.RegionService;
 import org.apache.geode.cache.CacheClosedException;
 import org.apache.geode.cache.CacheLoaderException;
 import org.apache.geode.cache.CacheStatistics;
@@ -36,6 +35,7 @@ import org.apache.geode.cache.InterestResultPolicy;
 import org.apache.geode.cache.Region;
 import org.apache.geode.cache.RegionAttributes;
 import org.apache.geode.cache.RegionExistsException;
+import org.apache.geode.cache.RegionService;
 import org.apache.geode.cache.StatisticsDisabledException;
 import org.apache.geode.cache.TimeoutException;
 import org.apache.geode.cache.query.FunctionDomainException;
@@ -49,7 +49,7 @@ import org.apache.geode.internal.cache.snapshot.RegionSnapshotServiceImpl;
 /**
  * A wrapper class over an actual Region instance. This is used when the multiuser-authentication
  * attribute is set to true.
- * 
+ *
  * @see ProxyCache
  * @since GemFire 6.5
  */
@@ -623,7 +623,7 @@ public class ProxyRegion implements Region {
 
   /*
    * (non-Javadoc)
-   * 
+   *
    * @see java.util.concurrent.ConcurrentMap#putIfAbsent(java.lang.Object, java.lang.Object)
    */
   public Object putIfAbsent(Object key, Object value) {
@@ -637,7 +637,7 @@ public class ProxyRegion implements Region {
 
   /*
    * (non-Javadoc)
-   * 
+   *
    * @see java.util.concurrent.ConcurrentMap#remove(java.lang.Object, java.lang.Object)
    */
   public boolean remove(Object key, Object value) {
@@ -651,7 +651,7 @@ public class ProxyRegion implements Region {
 
   /*
    * (non-Javadoc)
-   * 
+   *
    * @see java.util.concurrent.ConcurrentMap#replace(java.lang.Object, java.lang.Object)
    */
   public Object replace(Object key, Object value) {
@@ -665,7 +665,7 @@ public class ProxyRegion implements Region {
 
   /*
    * (non-Javadoc)
-   * 
+   *
    * @see java.util.concurrent.ConcurrentMap#replace(java.lang.Object, java.lang.Object,
    * java.lang.Object)
    */

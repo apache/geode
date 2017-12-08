@@ -14,8 +14,11 @@
  */
 package org.apache.geode.internal.cache.execute;
 
-import static org.junit.Assert.assertEquals;
 import static org.assertj.core.api.Assertions.*;
+import static org.junit.Assert.assertEquals;
+
+import org.junit.Test;
+import org.junit.experimental.categories.Category;
 
 import org.apache.geode.cache.PartitionAttributes;
 import org.apache.geode.cache.PartitionAttributesFactory;
@@ -28,8 +31,6 @@ import org.apache.geode.test.dunit.Host;
 import org.apache.geode.test.dunit.VM;
 import org.apache.geode.test.dunit.cache.internal.JUnit4CacheTestCase;
 import org.apache.geode.test.junit.categories.DistributedTest;
-import org.junit.Test;
-import org.junit.experimental.categories.Category;
 
 @Category(DistributedTest.class)
 public class PRTransaction2DUnitTest extends JUnit4CacheTestCase {

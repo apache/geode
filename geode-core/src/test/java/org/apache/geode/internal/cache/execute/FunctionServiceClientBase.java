@@ -15,10 +15,15 @@
 package org.apache.geode.internal.cache.execute;
 
 import java.util.Arrays;
+import java.util.Properties;
+
+import org.junit.Assume;
+import org.junit.Ignore;
 
 import org.apache.geode.cache.client.ClientCache;
 import org.apache.geode.cache.client.ClientCacheFactory;
 import org.apache.geode.cache.server.CacheServer;
+import org.apache.geode.distributed.ConfigurationProperties;
 import org.apache.geode.test.dunit.Host;
 import org.apache.geode.test.dunit.VM;
 
@@ -44,6 +49,14 @@ public abstract class FunctionServiceClientBase extends FunctionServiceBase {
     return getClientCache(clientCacheFactory);
   }
 
+  @Override
+  public Properties getDistributedSystemProperties() {
+    Properties result = super.getDistributedSystemProperties();
+    result.put(ConfigurationProperties.SERIALIZABLE_OBJECT_FILTER,
+        "org.apache.geode.internal.cache.execute.**;org.apache.geode.test.dunit.**;org.apache.geode.test.junit.rules.**");
+    return result;
+  }
+
   protected Integer createServer(final VM vm) {
     return vm.invoke(() -> {
       CacheServer server = getCache().addCacheServer();
@@ -55,5 +68,12 @@ public abstract class FunctionServiceClientBase extends FunctionServiceBase {
 
   public void configureClient(ClientCacheFactory cacheFactory) {
     // do nothing
+  }
+
+  @Override
+  public void resultCollectorHonorsFunctionTimeout() throws InterruptedException {
+    Assume.assumeTrue("GEODE-3817 - Client side function execution does not honor the timeout",
+        false);
+    super.resultCollectorHonorsFunctionTimeout();
   }
 }

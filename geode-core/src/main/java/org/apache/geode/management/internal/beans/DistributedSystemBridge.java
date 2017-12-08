@@ -14,9 +14,36 @@
  */
 package org.apache.geode.management.internal.beans;
 
+import java.io.File;
+import java.text.SimpleDateFormat;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.SortedSet;
+import java.util.TreeSet;
+import java.util.UUID;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.stream.Collectors;
+
+import javax.management.InstanceNotFoundException;
+import javax.management.ListenerNotFoundException;
+import javax.management.MBeanServer;
+import javax.management.Notification;
+import javax.management.NotificationBroadcasterSupport;
+import javax.management.NotificationListener;
+import javax.management.ObjectName;
+
 import org.apache.commons.lang.StringUtils;
-import org.apache.geode.admin.internal.BackupDataStoreHelper;
-import org.apache.geode.admin.internal.BackupDataStoreResult;
+import org.apache.logging.log4j.Logger;
+
 import org.apache.geode.cache.persistence.PersistentID;
 import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.distributed.internal.DM;
@@ -29,6 +56,8 @@ import org.apache.geode.internal.admin.remote.RevokePersistentIDRequest;
 import org.apache.geode.internal.admin.remote.ShutdownAllRequest;
 import org.apache.geode.internal.cache.GemFireCacheImpl;
 import org.apache.geode.internal.cache.InternalCache;
+import org.apache.geode.internal.cache.backup.BackupDataStoreHelper;
+import org.apache.geode.internal.cache.backup.BackupDataStoreResult;
 import org.apache.geode.internal.cache.persistence.PersistentMemberPattern;
 import org.apache.geode.internal.i18n.LocalizedStrings;
 import org.apache.geode.internal.logging.LogService;
@@ -52,6 +81,7 @@ import org.apache.geode.management.NetworkMetrics;
 import org.apache.geode.management.OSMetrics;
 import org.apache.geode.management.PersistentMemberDetails;
 import org.apache.geode.management.RegionMXBean;
+import org.apache.geode.management.internal.DiskBackupStatusImpl;
 import org.apache.geode.management.internal.FederationComponent;
 import org.apache.geode.management.internal.MBeanJMXAdapter;
 import org.apache.geode.management.internal.ManagementConstants;
@@ -62,32 +92,6 @@ import org.apache.geode.management.internal.beans.stats.GatewaySenderClusterStat
 import org.apache.geode.management.internal.beans.stats.MemberClusterStatsMonitor;
 import org.apache.geode.management.internal.beans.stats.ServerClusterStatsMonitor;
 import org.apache.geode.management.internal.cli.json.TypedJson;
-import org.apache.logging.log4j.Logger;
-
-import java.io.File;
-import java.text.SimpleDateFormat;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.SortedSet;
-import java.util.TreeSet;
-import java.util.UUID;
-import java.util.concurrent.ConcurrentHashMap;
-import javax.management.InstanceNotFoundException;
-import javax.management.ListenerNotFoundException;
-import javax.management.MBeanServer;
-import javax.management.Notification;
-import javax.management.NotificationBroadcasterSupport;
-import javax.management.NotificationListener;
-import javax.management.ObjectName;
 
 /**
  * This is the gateway to distributed system as a whole. Aggregated metrics and stats are shown
@@ -497,26 +501,15 @@ public class DistributedSystemBridge {
         }
 
         DM dm = cache.getDistributionManager();
-        Set<PersistentID> missingMembers = MissingPersistentIDsRequest.send(dm);
         Set recipients = dm.getOtherDistributionManagerIds();
 
         BackupDataStoreResult result =
             BackupDataStoreHelper.backupAllMembers(dm, recipients, targetDir, baselineDir);
 
-        Iterator<DistributedMember> it = result.getSuccessfulMembers().keySet().iterator();
 
-        Map<String, String[]> backedUpDiskStores = new HashMap<>();
-        while (it.hasNext()) {
-          DistributedMember member = it.next();
-          Set<PersistentID> setOfDisk = result.getSuccessfulMembers().get(member);
-          String[] setOfDiskStr = new String[setOfDisk.size()];
-          int j = 0;
-          for (PersistentID id : setOfDisk) {
-            setOfDiskStr[j] = id.getDirectory();
-            j++;
-          }
-          backedUpDiskStores.put(member.getId(), setOfDiskStr);
-        }
+        DiskBackupStatusImpl diskBackupStatus = new DiskBackupStatusImpl();
+        Map<DistributedMember, Set<PersistentID>> successfulMembers = result.getSuccessfulMembers();
+        diskBackupStatus.generateBackedUpDiskStores(successfulMembers);
 
         // It's possible that when calling getMissingPersistentMembers, some
         // members
@@ -525,27 +518,13 @@ public class DistributedSystemBridge {
         // regions at the members are ready. Logically, since the members in
         // successfulMembers
         // should override the previous missingMembers
-        for (Set<PersistentID> onlineMembersIds : result.getSuccessfulMembers().values()) {
-          missingMembers.removeAll(onlineMembersIds);
-        }
+        Set<PersistentID> successfulIds = result.getSuccessfulMembers().values().stream()
+            .flatMap(Set::stream).collect(Collectors.toSet());
+        Set<PersistentID> missingIds =
+            result.getExistingDataStores().values().stream().flatMap(Set::stream)
+                .filter((v) -> !successfulIds.contains(v)).collect(Collectors.toSet());
 
-        result.getExistingDataStores().keySet().removeAll(result.getSuccessfulMembers().keySet());
-        String[] setOfMissingDiskStr = null;
-
-        if (result.getExistingDataStores().size() > 0) {
-          setOfMissingDiskStr = new String[result.getExistingDataStores().size()];
-          int j = 0;
-          for (Set<PersistentID> lostMembersIds : result.getExistingDataStores().values()) {
-            for (PersistentID id : lostMembersIds) {
-              setOfMissingDiskStr[j] = id.getDirectory();
-              j++;
-            }
-          }
-        }
-
-        DiskBackupStatus diskBackupStatus = new DiskBackupStatus();
-        diskBackupStatus.setBackedUpDiskStores(backedUpDiskStores);
-        diskBackupStatus.setOfflineDiskStores(setOfMissingDiskStr);
+        diskBackupStatus.generateOfflineDiskStores(missingIds);
         return diskBackupStatus;
       } finally {
         BackupDataStoreHelper.releaseLock(dm);

@@ -14,12 +14,6 @@
  */
 package org.apache.geode.cache;
 
-import org.apache.geode.DataSerializable;
-import org.apache.geode.DataSerializer;
-import org.apache.geode.distributed.Role;
-import org.apache.geode.distributed.internal.membership.InternalRole;
-import org.apache.geode.internal.i18n.LocalizedStrings;
-
 import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.Externalizable;
@@ -31,10 +25,16 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Set;
 
+import org.apache.geode.DataSerializable;
+import org.apache.geode.DataSerializer;
+import org.apache.geode.distributed.Role;
+import org.apache.geode.distributed.internal.membership.InternalRole;
+import org.apache.geode.internal.i18n.LocalizedStrings;
+
 /**
  * Configuration attributes for defining reliability requirements and behavior for a
  * <code>Region</code>.
- * 
+ *
  * <p>
  * <code>MembershipAttributes</code> provides options for configuring a <code>Region</code> to
  * require one or more membership roles to be present in the system for reliable access to the
@@ -45,16 +45,16 @@ import java.util.Set;
  * <p>
  * The {@link LossAction} defines the behavior when one or more required roles are missing.
  * </p>
- * 
+ *
  * <p>
  * The {@link ResumptionAction} specifies the action to be taken when reliability resumes.
  * </p>
- * 
+ *
  * <p>
  * <code>MembershipAttributes</code> have no effect unless one or more required roles are specified.
  * These attributes are immutable after the <code>Region</code> has been created.
  * </p>
- * 
+ *
  * @deprecated this feature is scheduled to be removed
  */
 public class MembershipAttributes implements DataSerializable, Externalizable {
@@ -210,7 +210,7 @@ public class MembershipAttributes implements DataSerializable, Externalizable {
 
   /**
    * Returns a string representation of the object.
-   * 
+   *
    * @return a string representation of the object
    */
   @Override
@@ -263,4 +263,3 @@ public class MembershipAttributes implements DataSerializable, Externalizable {
     fromData(in);
   }
 }
-

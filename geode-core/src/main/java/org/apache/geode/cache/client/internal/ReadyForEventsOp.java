@@ -19,14 +19,14 @@ import org.apache.geode.internal.cache.tier.sockets.Message;
 
 /**
  * Tells the server we are ready to receive server-to-client events from durable subscriptions.
- * 
+ *
  * @since GemFire 5.7
  */
 public class ReadyForEventsOp {
   /**
    * Tells the primary server we are ready to receive server-to-client events from durable
    * subscriptions.
-   * 
+   *
    * @param pool the pool to use to communicate with the server.
    * @param primary
    */

@@ -27,6 +27,10 @@ import java.util.Set;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Consumer;
 
+import org.apache.lucene.document.FloatPoint;
+import org.apache.lucene.document.IntPoint;
+import org.apache.lucene.search.Query;
+
 import org.apache.geode.cache.AttributesFactory;
 import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.EntryOperation;
@@ -41,18 +45,15 @@ import org.apache.geode.cache.lucene.LuceneIndexFactory;
 import org.apache.geode.cache.lucene.LuceneQuery;
 import org.apache.geode.cache.lucene.LuceneQueryException;
 import org.apache.geode.cache.lucene.LuceneQueryProvider;
-import org.apache.geode.cache.lucene.PageableLuceneQueryResults;
 import org.apache.geode.cache.lucene.LuceneService;
 import org.apache.geode.cache.lucene.LuceneServiceProvider;
+import org.apache.geode.cache.lucene.PageableLuceneQueryResults;
 import org.apache.geode.cache.lucene.internal.LuceneIndexForPartitionedRegion;
 import org.apache.geode.cache.lucene.internal.LuceneServiceImpl;
 import org.apache.geode.cache.lucene.internal.distributed.EntryScore;
 import org.apache.geode.internal.cache.LocalRegion;
 import org.apache.geode.internal.cache.wan.AbstractGatewaySender;
 import org.apache.geode.test.dunit.VM;
-import org.apache.lucene.document.FloatPoint;
-import org.apache.lucene.document.IntPoint;
-import org.apache.lucene.search.Query;
 
 public class LuceneTestUtilities {
   public static final String INDEX_NAME = "index";
@@ -79,6 +80,8 @@ public class LuceneTestUtilities {
       "Cannot create Lucene index index2 on region /region because it is not defined in another member.";
   public static final String CANNOT_CREATE_LUCENE_INDEX_DIFFERENT_INDEXES_3 =
       "Cannot create Lucene index index on region /region because it is not defined in another member.";
+  public static final String CANNOT_CREATE_LUCENE_INDEX_DIFFERENT_SERIALIZER =
+      "Cannot create Lucene index index on region /region with serializer DummyLuceneSerializer because another member defines the same index with different serializer HeterogeneousLuceneSerializer.";
 
   public static String Quarter1 = "Q1";
   public static String Quarter2 = "Q2";

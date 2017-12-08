@@ -57,12 +57,12 @@ public class ManagementListener implements ResourceEventsListener {
    * Checks various conditions which might arise due to race condition for lock of
    * GemFireCacheImpl.class which is obtained while GemFireCacheImpl constructor, cache.close(),
    * DistributedSystem.disconnect().
-   * 
+   *
    * As ManagementService creation logic is called in cache.init() method it leaves a small window
    * of loosing the lock of GemFireCacheImpl.class
-   * 
+   *
    * These checks ensures that something unwanted has not happened during that small window
-   * 
+   *
    * @return true or false depending on the status of Cache and System
    */
   private boolean shouldProceed(ResourceEvent event) {
@@ -90,7 +90,7 @@ public class ManagementListener implements ResourceEventsListener {
 
   /**
    * Handles various GFE resource life-cycle methods vis-a-vis Management and Monitoring
-   * 
+   *
    * It checks for race conditions cases by calling shouldProceed();
    *
    * @param event Management event for which invocation has happened

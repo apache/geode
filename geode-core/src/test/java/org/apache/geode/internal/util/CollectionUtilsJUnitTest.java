@@ -23,11 +23,6 @@ import static org.junit.Assert.assertSame;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
-import org.apache.commons.lang.StringUtils;
-import org.apache.geode.test.junit.categories.UnitTest;
-import org.junit.Test;
-import org.junit.experimental.categories.Category;
-
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -44,11 +39,17 @@ import java.util.Properties;
 import java.util.Set;
 import java.util.Vector;
 
+import org.apache.commons.lang.StringUtils;
+import org.junit.Test;
+import org.junit.experimental.categories.Category;
+
+import org.apache.geode.test.junit.categories.UnitTest;
+
 /**
  * The CollectionUtilsJUnitTest class is a test suite of test cases testing the contract and
  * functionality of the CollectionUtils class.
  * <p/>
- * 
+ *
  * @see org.apache.geode.internal.util.CollectionUtils
  * @see org.junit.Assert
  * @see org.junit.Test

@@ -23,12 +23,12 @@ import org.apache.geode.memcached.GemFireMemcachedServer.Protocol;
 
 /**
  * This command is currently no-op.<br/>
- * 
+ *
  * The command "stats" is used to query the server about statistics it maintains and other internal
  * data. It has two forms. Without arguments:
- * 
+ *
  * stats\r\n it causes the server to output general-purpose statistics
- * 
+ *
  *
  */
 public class StatsCommand extends AbstractCommand {

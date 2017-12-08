@@ -14,6 +14,25 @@
  */
 package org.apache.geode.internal.cache.tier.sockets;
 
+import java.io.EOFException;
+import java.io.IOException;
+import java.io.InterruptedIOException;
+import java.io.PrintWriter;
+import java.io.StringWriter;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Map.Entry;
+import java.util.Set;
+import java.util.concurrent.Semaphore;
+import java.util.regex.Pattern;
+
+import edu.umd.cs.findbugs.annotations.SuppressWarnings;
+import org.apache.logging.log4j.Logger;
+
 import org.apache.geode.CopyException;
 import org.apache.geode.InternalGemFireError;
 import org.apache.geode.SerializationException;
@@ -61,24 +80,6 @@ import org.apache.geode.internal.offheap.OffHeapHelper;
 import org.apache.geode.internal.security.SecurityService;
 import org.apache.geode.internal.sequencelog.EntryLogger;
 import org.apache.geode.security.GemFireSecurityException;
-import org.apache.logging.log4j.Logger;
-
-import java.io.EOFException;
-import java.io.IOException;
-import java.io.InterruptedIOException;
-import java.io.PrintWriter;
-import java.io.StringWriter;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Map.Entry;
-import java.util.Set;
-import java.util.concurrent.Semaphore;
-import java.util.regex.Pattern;
-import edu.umd.cs.findbugs.annotations.SuppressWarnings;
 
 public abstract class BaseCommand implements Command {
   protected static final Logger logger = LogService.getLogger();
@@ -189,7 +190,7 @@ public abstract class BaseCommand implements Command {
   /**
    * checks to see if this thread needs to masquerade as a transactional thread. clients after
    * GFE_66 should be able to start a transaction.
-   * 
+   *
    * @return true if thread should masquerade as a transactional thread.
    */
   protected boolean shouldMasqueradeForTx(Message clientMessage,
@@ -1001,7 +1002,7 @@ public abstract class BaseCommand implements Command {
   /**
    * Determines whether keys for destroyed entries (tombstones) should be sent to clients in
    * register-interest results.
-   * 
+   *
    * @return true if tombstones should be sent to the client
    */
   private static boolean sendTombstonesInRIResults(ServerConnection servConn,
@@ -1262,7 +1263,7 @@ public abstract class BaseCommand implements Command {
           VersionStamp vs = ((NonTXEntry) entry).getRegionEntry().getVersionStamp();
           vt = vs == null ? null : vs.asVersionTag();
           key = entry.getKey();
-          value = ((NonTXEntry) entry).getRegionEntry()._getValueRetain(region, true);
+          value = ((NonTXEntry) entry).getRegionEntry().getValueRetain(region, true);
           try {
             updateValues(values, key, value, vt);
           } finally {

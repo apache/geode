@@ -17,12 +17,15 @@ package org.apache.geode.management.internal.cli.result;
 import java.io.IOException;
 import java.nio.file.Path;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Vector;
 import java.util.zip.DataFormatException;
+
+import org.json.JSONArray;
 
 import org.apache.geode.management.cli.Result;
 import org.apache.geode.management.internal.cli.GfshParser;
@@ -36,7 +39,7 @@ import org.apache.geode.management.internal.cli.result.TableBuilder.Table;
 
 /**
  * Wraps the Result of a command execution.
- * 
+ *
  * @since GemFire 7.0
  */
 
@@ -605,6 +608,45 @@ public class CommandResult implements Result {
     return gfJsonObject.getJSONObject(ResultData.RESULT_CONTENT);
   }
 
+  /**
+   * The intent is that this method should be able to handle both ResultData as well as
+   * CompositeResultData
+   *
+   * @return the extracted GfJsonObject table
+   */
+  public GfJsonObject getTableContent() {
+    return getTableContent(0, 0);
+  }
+
+  /**
+   * Most frequently, only two index values are required: a section index followed by a table index.
+   * Some commands, such as 'describe region', may return command results with subsections, however.
+   * Include these in order, e.g., getTableContent(sectionIndex, subsectionIndex, tableIndex);
+   */
+  public GfJsonObject getTableContent(int... sectionAndTableIDs) {
+    GfJsonObject topLevelContent = getContent();
+    // Most common is receiving exactly one section index and one table index.
+    // Some results, however, will have subsections before the table listings.
+    assert (sectionAndTableIDs.length >= 2);
+
+    GfJsonObject sectionObject = topLevelContent;
+    for (int i = 0; i < sectionAndTableIDs.length - 1; i++) {
+      int idx = sectionAndTableIDs[i];
+      sectionObject = sectionObject.getJSONObject("__sections__-" + idx);
+      if (sectionObject == null) {
+        return topLevelContent;
+      }
+    }
+
+    int tableId = sectionAndTableIDs[sectionAndTableIDs.length - 1];
+    GfJsonObject tableContent = sectionObject.getJSONObject("__tables__-" + tableId);
+    if (tableContent == null) {
+      return topLevelContent;
+    }
+
+    return tableContent.getJSONObject("content");
+  }
+
   public String getFooter() {
     return getFooter(gfJsonObject);
   }
@@ -625,7 +667,6 @@ public class CommandResult implements Result {
 
   public int hashCode() {
     return this.gfJsonObject.hashCode(); // any arbitrary constant will do
-
   }
 
   @Override
@@ -647,5 +688,21 @@ public class CommandResult implements Result {
 
   public void setFileToDownload(Path fileToDownload) {
     this.fileToDownload = fileToDownload;
+  }
+
+  public List<Object> getColumnValues(String columnName) {
+    Object[] actualValues =
+        toArray(getTableContent().getInternalJsonObject().getJSONArray(columnName));
+    return Arrays.asList(actualValues);
+  }
+
+  private Object[] toArray(JSONArray array) {
+    Object[] values = new Object[array.length()];
+
+    for (int i = 0; i < array.length(); i++) {
+      values[i] = array.get(i);
+    }
+
+    return values;
   }
 }

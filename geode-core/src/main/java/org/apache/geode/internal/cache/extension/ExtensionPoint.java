@@ -17,7 +17,7 @@ package org.apache.geode.internal.cache.extension;
 
 /**
  * Allows {@link Extensible} objects to add and remove {@link Extension}s.
- * 
+ *
  *
  * @since GemFire 8.1
  */
@@ -25,7 +25,7 @@ public interface ExtensionPoint<T> {
 
   /**
    * Add {@link Extension} to {@link ExtensionPoint}.
-   * 
+   *
    * @param extension to add.
    * @since GemFire 8.1
    */
@@ -33,7 +33,7 @@ public interface ExtensionPoint<T> {
 
   /**
    * Remove {@link Extension} from {@link ExtensionPoint}.
-   * 
+   *
    * @param extension to remove.
    * @since GemFire 8.1
    */
@@ -41,7 +41,7 @@ public interface ExtensionPoint<T> {
 
   /**
    * Get {@link Iterable} of {@link Extension}s.
-   * 
+   *
    * @return {@link Exception}s
    * @since GemFire 8.1
    */
@@ -49,9 +49,9 @@ public interface ExtensionPoint<T> {
 
   /**
    * Helper method to get appropriately typed access to target {@link Extensible} object.
-   * 
+   *
    * @return {@link Extensible} object target.
-   * 
+   *
    * @since GemFire 8.1
    */
   T getTarget();

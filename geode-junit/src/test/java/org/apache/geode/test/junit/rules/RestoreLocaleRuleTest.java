@@ -31,8 +31,8 @@ import org.junit.Test;
 import org.junit.experimental.categories.Category;
 import org.junit.runner.Result;
 
-import org.apache.geode.test.junit.runners.TestRunner;
 import org.apache.geode.test.junit.categories.UnitTest;
+import org.apache.geode.test.junit.runners.TestRunner;
 
 /**
  * Unit tests for {@link RestoreLocaleRule}.

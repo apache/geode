@@ -13,9 +13,15 @@
  * the License.
  */
 /**
- * 
+ *
  */
 package org.apache.geode.internal.cache.xmlcache;
+
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Vector;
+
+import org.apache.logging.log4j.Logger;
 
 import org.apache.geode.DataSerializable;
 import org.apache.geode.DataSerializer;
@@ -23,12 +29,6 @@ import org.apache.geode.Instantiator;
 import org.apache.geode.internal.i18n.LocalizedStrings;
 import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.internal.logging.log4j.LocalizedMessage;
-
-import java.util.Map;
-import java.util.Vector;
-import java.util.HashMap;
-
-import org.apache.logging.log4j.Logger;
 
 /**
  *
@@ -53,7 +53,7 @@ public class SerializerCreation {
 
     /*
      * (non-Javadoc)
-     * 
+     *
      * @see org.apache.geode.Instantiator#newInstance()
      */
     @Override

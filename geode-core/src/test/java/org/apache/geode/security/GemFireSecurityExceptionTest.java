@@ -19,6 +19,7 @@ import static org.assertj.core.api.Assertions.*;
 
 import java.io.NotSerializableException;
 import java.io.Serializable;
+
 import javax.naming.NamingException;
 
 import org.apache.commons.lang.SerializationUtils;

@@ -14,18 +14,19 @@
  */
 package org.apache.geode.cache;
 
-import org.apache.geode.DataSerializable;
 import java.io.*;
+
+import org.apache.geode.DataSerializable;
 
 /**
  * Configuration attributes for defining subscriber requirements and behavior for a
  * <code>Region</code>.
- * 
+ *
  * <p>
  * The {@link InterestPolicy} defines what remote operation's data/event are of interest to this
  * cache's region.
  * </p>
- * 
+ *
  * @since GemFire 5.0
  */
 public class SubscriptionAttributes implements DataSerializable, Externalizable {
@@ -44,7 +45,7 @@ public class SubscriptionAttributes implements DataSerializable, Externalizable 
 
   /**
    * Creates a new <code>SubscriptionAttributes</code> with the given interest policy.
-   * 
+   *
    * @param interestPolicy the interest policy this subscriber will use
    */
   public SubscriptionAttributes(InterestPolicy interestPolicy) {
@@ -87,7 +88,7 @@ public class SubscriptionAttributes implements DataSerializable, Externalizable 
 
   /**
    * Returns a string representation of the object.
-   * 
+   *
    * @return a string representation of the object
    */
   @Override

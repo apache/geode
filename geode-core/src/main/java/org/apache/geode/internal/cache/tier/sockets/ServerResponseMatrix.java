@@ -22,22 +22,22 @@ import org.apache.geode.internal.cache.tier.MessageType;
 /**
  * Matrix describes the state machine that needs to be applied to register interest response
  * processing and events comming from notification chanel
- * 
+ *
  * When register interest responses are deserialized and added to the cache, the following rules are
  * applied
- * 
+ *
  * 1) If the entry exists in the cache with a valid value, we consider it to be more current (either
  * because it made it via the update channel or because the client updated it as part of put or
  * invalidate)
- * 
+ *
  * 2) If the entry is invalid, and the RI response is valid, the valid value is put into the cache
- * 
+ *
  * 3) If an entry is marked destroyed (either from the client operation or via the update channel),
  * it is not updated from the RI response. Destroyed entries are gathered up after the RI response
  * is completed and removed from the system
- * 
+ *
  * @since GemFire 5.1
- * 
+ *
  */
 public class ServerResponseMatrix {
 

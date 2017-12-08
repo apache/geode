@@ -38,7 +38,7 @@ public interface SecurityManager {
 
   /**
    * Verify the credentials provided in the properties
-   * 
+   *
    * @param credentials it contains the security-username and security-password as keys of the
    *        properties
    * @return a serializable principal object
@@ -48,7 +48,7 @@ public interface SecurityManager {
 
   /**
    * Authorize the ResourcePermission for a given Principal
-   * 
+   *
    * @param principal The principal that's requesting the permission
    * @param permission The permission requested
    * @return true if authorized, false if not

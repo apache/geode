@@ -233,7 +233,7 @@ public class AddressableMemoryManager {
   /**
    * Create a direct byte buffer given its address and size. The returned ByteBuffer will be direct
    * and use the memory at the given address.
-   * 
+   *
    * @return the created direct byte buffer or null if it could not be created.
    */
   @SuppressWarnings({"rawtypes", "unchecked"})

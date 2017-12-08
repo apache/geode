@@ -16,14 +16,15 @@ package org.apache.geode.management.internal.cli;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-import org.apache.geode.test.junit.categories.UnitTest;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
+import org.apache.geode.test.junit.categories.UnitTest;
 
 /**
  * GfshParserJUnitTest - Includes tests to check the parsing and auto-completion capabilities of

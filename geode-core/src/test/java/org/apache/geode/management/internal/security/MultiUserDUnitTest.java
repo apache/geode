@@ -39,13 +39,13 @@ import org.apache.geode.security.SimpleTestSecurityManager;
 import org.apache.geode.test.dunit.AsyncInvocation;
 import org.apache.geode.test.dunit.IgnoredException;
 import org.apache.geode.test.dunit.VM;
-import org.apache.geode.test.junit.rules.GfshShellConnectionRule;
-import org.apache.geode.test.junit.rules.GfshShellConnectionRule.PortType;
 import org.apache.geode.test.dunit.rules.LocatorServerStartupRule;
-import org.apache.geode.test.junit.rules.Member;
 import org.apache.geode.test.junit.categories.DistributedTest;
 import org.apache.geode.test.junit.categories.FlakyTest;
 import org.apache.geode.test.junit.categories.SecurityTest;
+import org.apache.geode.test.junit.rules.GfshCommandRule;
+import org.apache.geode.test.junit.rules.GfshCommandRule.PortType;
+import org.apache.geode.test.junit.rules.Member;
 
 @Category({DistributedTest.class, SecurityTest.class})
 public class MultiUserDUnitTest {
@@ -73,7 +73,7 @@ public class MultiUserDUnitTest {
     // test is done.
     VM vm1 = lsRule.getVM(1);
     AsyncInvocation vm1Invoke = vm1.invokeAsync("run as data-reader", () -> {
-      GfshShellConnectionRule gfsh = new GfshShellConnectionRule();
+      GfshCommandRule gfsh = new GfshCommandRule();
       gfsh.secureConnectAndVerify(jmxPort, PortType.jmxManager, "dataRead", "dataRead");
 
       Awaitility.waitAtMost(5, TimeUnit.MILLISECONDS);
@@ -84,7 +84,7 @@ public class MultiUserDUnitTest {
     // set up vm_2 as a gfsh vm, and then connect as "stranger" and try to execute the commands and
     // assert errors comes back are NotAuthorized
     AsyncInvocation vm2Invoke = vm2.invokeAsync("run as guest", () -> {
-      GfshShellConnectionRule gfsh = new GfshShellConnectionRule();
+      GfshCommandRule gfsh = new GfshCommandRule();
       gfsh.secureConnectAndVerify(jmxPort, PortType.jmxManager, "guest", "guest");
 
       List<TestCommand> allCommands = TestCommand.getOnlineCommands();
@@ -119,7 +119,7 @@ public class MultiUserDUnitTest {
     // set up vm_3 as another gfsh vm, and then connect as "super-user" and try to execute the
     // commands and assert we don't get a NotAuthorized Exception
     AsyncInvocation vm3Invoke = vm3.invokeAsync("run as superUser", () -> {
-      GfshShellConnectionRule gfsh = new GfshShellConnectionRule();
+      GfshCommandRule gfsh = new GfshCommandRule();
       gfsh.secureConnectAndVerify(jmxPort, PortType.jmxManager, "data,cluster", "data,cluster");
 
       List<TestCommand> allCommands = TestCommand.getOnlineCommands();

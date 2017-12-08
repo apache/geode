@@ -28,7 +28,7 @@ import org.apache.geode.internal.cache.xmlcache.XmlGenerator;
 
 /**
  * {@link MockCacheExtension} {@link XmlGenerator}.
- * 
+ *
  *
  * @since GemFire 8.1
  */

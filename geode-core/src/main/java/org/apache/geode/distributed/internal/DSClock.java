@@ -14,6 +14,11 @@
  */
 package org.apache.geode.distributed.internal;
 
+import java.util.Date;
+import java.util.concurrent.atomic.AtomicLong;
+
+import org.apache.logging.log4j.Logger;
+
 import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.internal.SystemTimer;
 import org.apache.geode.internal.SystemTimer.SystemTimerTask;
@@ -23,17 +28,13 @@ import org.apache.geode.internal.i18n.LocalizedStrings;
 import org.apache.geode.internal.logging.DateFormatter;
 import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.internal.logging.log4j.LocalizedMessage;
-import org.apache.logging.log4j.Logger;
-
-import java.util.Date;
-import java.util.concurrent.atomic.AtomicLong;
 
 /**
  * DSClock tracks the system time. The most useful method is cacheTimeMillis(). The rest are for
  * clock adjustments.
- * 
+ *
  * Clock adjustments can be turned off with gemfire.disable-distributed-clock
- * 
+ *
  */
 
 public class DSClock implements CacheTime {
@@ -46,7 +47,7 @@ public class DSClock implements CacheTime {
    * Time shift received from server must be at least this far off in order for the cacheTimeMillis
    * clock to be changed. Servers are much more aggressive about it.
    */
-  private final static long MINIMUM_TIME_DIFF = 5000;
+  private static final long MINIMUM_TIME_DIFF = 5000;
 
   /**
    * cacheTimeMillis offset from System.currentTimeMillis
@@ -178,10 +179,10 @@ public class DSClock implements CacheTime {
   /**
    * This method is called by a timer task which takes control of cache time and increments the
    * cache time at each call of this method.
-   * 
+   *
    * The timer task must be called each millisecond. We need to revisit the method implementation if
    * that condition is changed.
-   * 
+   *
    * @param stw True if Stop the world for this cache for a while.
    */
   private void suspendCacheTimeMillis(boolean stw) {

@@ -40,7 +40,7 @@ import org.apache.geode.test.junit.categories.UnitTest;
 
 /**
  * Unit tests for {@link ClassPathLoader}.
- * 
+ *
  * @since GemFire 6.5.1.4
  */
 @Category(UnitTest.class)
@@ -559,7 +559,7 @@ public class ClassPathLoaderTest {
     /**
      * Currently unused but potentially useful for some future test. This causes this loader to only
      * generate a class that the parent could not find.
-     * 
+     *
      * @param parent the parent class loader to check with first
      */
     @SuppressWarnings("unused")

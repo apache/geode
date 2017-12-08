@@ -21,8 +21,8 @@ package org.apache.geode.internal.cache;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Iterator;
-import java.util.RandomAccess;
 import java.util.NoSuchElementException;
+import java.util.RandomAccess;
 
 import it.unimi.dsi.fastutil.objects.AbstractObjectList;
 import it.unimi.dsi.fastutil.objects.AbstractObjectListIterator;
@@ -34,8 +34,8 @@ import it.unimi.dsi.fastutil.objects.ObjectList;
 import it.unimi.dsi.fastutil.objects.ObjectListIterator;
 
 /**
- * 
- * 
+ *
+ *
  * A type-specific array-based list; provides some additional methods that use polymorphism to avoid
  * (un)boxing.
  *
@@ -68,7 +68,7 @@ public class IdentityArrayList<K> extends AbstractObjectList<K>
   private static final long serialVersionUID = 449125332499184497L;
 
   /** The initial default capacity of an array list. */
-  public final static int DEFAULT_INITIAL_CAPACITY = 16;
+  public static final int DEFAULT_INITIAL_CAPACITY = 16;
 
   /**
    * Whether the backing array was passed to <code>wrap()</code>. In this case, we must reallocate
@@ -199,7 +199,7 @@ public class IdentityArrayList<K> extends AbstractObjectList<K>
    * If this array list was created by wrapping a given array, it is guaranteed that the type of the
    * returned array will be the same. Otherwise, the returned array will be of type {@link Object
    * Object[]} (in spite of the declared return type).
-   * 
+   *
    * <strong>Warning</strong>: This behaviour may cause (unfathomable) run-time errors if a method
    * expects an array actually of type <code>K[]</code>, but this methods returns an array of type
    * {@link Object Object[]}.
@@ -392,7 +392,7 @@ public class IdentityArrayList<K> extends AbstractObjectList<K>
 
   /**
    * Trims the backing array if it is too large.
-   * 
+   *
    * If the current array length is smaller than or equal to <code>n</code>, this method does
    * nothing. Otherwise, it trims the array length to the maximum between <code>n</code> and
    * {@link #size()}.

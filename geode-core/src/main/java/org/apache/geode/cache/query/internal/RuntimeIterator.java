@@ -33,14 +33,14 @@ import org.apache.geode.internal.i18n.LocalizedStrings;
 /**
  * Value representing a current iteration element. This is the representation used during
  * evaluation.
- * 
+ *
  * A RuntimeIterator can be in one of two states. If it is independent of the current context scope
  * then its collection is evaluated lazily, in which case collection is initialized and knows its
  * elementType. The elementType field is the same value as in the collection. Otherwise, collection
  * is UNINITIALIZED and the elementType is set in any case.
- * 
+ *
  * A RuntimeIterator can also be named or anonymous (name is null).
- * 
+ *
  */
 public class RuntimeIterator extends AbstractCompiledValue {
 

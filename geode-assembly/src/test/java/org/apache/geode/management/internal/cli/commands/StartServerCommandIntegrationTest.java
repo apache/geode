@@ -29,14 +29,13 @@ import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
-import org.junit.rules.TemporaryFolder;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Mockito;
 
 import org.apache.geode.management.internal.cli.shell.Gfsh;
 import org.apache.geode.management.internal.cli.util.CommandStringBuilder;
-import org.apache.geode.test.junit.rules.GfshParserRule;
 import org.apache.geode.test.junit.categories.IntegrationTest;
+import org.apache.geode.test.junit.rules.GfshParserRule;
 
 @Category(IntegrationTest.class)
 public class StartServerCommandIntegrationTest {
@@ -44,9 +43,6 @@ public class StartServerCommandIntegrationTest {
 
   @Rule
   public GfshParserRule commandRule = new GfshParserRule();
-
-  @Rule
-  public TemporaryFolder temporaryFolder = new TemporaryFolder();
 
   private StartServerCommand spy;
 
