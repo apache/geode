@@ -224,9 +224,14 @@ public class ConcurrentParallelGatewaySenderQueue implements RegionQueue {
   }
 
   public void clearQueue() {
-    for (int i = 0; i < processors.length; i++) {
+    try {
+      this.sender.getLifeCycleLock().writeLock().lock();
+      for (int i = 0; i < processors.length; i++) {
 
-      ((ParallelGatewaySenderQueue) this.processors[i].getQueue()).clearQueue();
+        ((ParallelGatewaySenderQueue) this.processors[i].getQueue()).clearQueue();
+      }
+    } finally {
+      this.sender.getLifeCycleLock().writeLock().unlock();
     }
   }
 }

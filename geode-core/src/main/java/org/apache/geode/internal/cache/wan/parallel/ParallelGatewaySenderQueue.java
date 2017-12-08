@@ -1787,17 +1787,15 @@ public class ParallelGatewaySenderQueue implements RegionQueue {
 
   public void clearQueue() {
 
-    
-    this.sender.getLifeCycleLock().writeLock().lock(); //no one will held this lock , only current
-    this.sender.pause(); //internal it will take write lock- so only one thread will held the lock
     try {
+      this.sender.pause();
       for (PartitionedRegion prQ : this.userRegionNameToshadowPRMap.values()) {
         clearPartitionedRegion((PartitionedRegion) prQ);
       }
     } finally {
-    	if (this.sender.isPaused())
-    	   this.sender.resume(); //internal it will take write lock- so only one thread will held the lock
-    	this.sender.getLifeCycleLock().writeLock().unlock(); //no one will held this lock , only current
+      if (this.sender.isPaused())
+        this.sender.resume();
+
     }
   }
 
@@ -1805,12 +1803,13 @@ public class ParallelGatewaySenderQueue implements RegionQueue {
   private void clearPartitionedRegion(PartitionedRegion partitionedRegion) {
     LocalDataSet lds = (LocalDataSet) PartitionRegionHelper.getLocalPrimaryData(partitionedRegion);
     Set<Integer> set = lds.getBucketSet(); // this returns bucket ids in the function context
+
     for (Integer bucketId : set) {
       Bucket bucket = partitionedRegion.getRegionAdvisor().getBucket(bucketId);
       if ((bucket instanceof ProxyBucketRegion == false) && bucket instanceof BucketRegion) {
         BucketRegion bucketRegion = (BucketRegion) bucket;
         ((BucketRegionQueue) bucketRegion).getInitializationLock().readLock().lock();
-         clearBucketRegion(bucketRegion);
+        clearBucketRegion(bucketRegion);
         ((BucketRegionQueue) bucketRegion).getInitializationLock().readLock().unlock();
       }
     }
@@ -1822,9 +1821,8 @@ public class ParallelGatewaySenderQueue implements RegionQueue {
       Object key = iterator.next();
       try {
         ((BucketRegionQueue) bucketRegion).destroyKey(key);
-      } catch (ForceReattemptException e) {
-        // TODO Auto-generated catch block
-        e.printStackTrace();
+      } catch (Exception e) {
+        logger.warn("exception raised in clearBucketRegion" + e.getMessage());
       }
     }
   }
