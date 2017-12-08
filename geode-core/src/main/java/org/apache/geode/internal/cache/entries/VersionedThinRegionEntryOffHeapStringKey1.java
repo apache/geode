@@ -1,3 +1,5 @@
+
+
 /*
  * Licensed to the Apache Software Foundation (ASF) under one or more contributor license
  * agreements. See the NOTICE file distributed with this work for additional information regarding
@@ -83,7 +85,7 @@ public class VersionedThinRegionEntryOffHeapStringKey1 extends VersionedThinRegi
   private int regionVersionLowBytes;
   private byte entryVersionHighByte;
   private byte distributedSystemId;
-  // ----------------------------------------- key code -------------------------------------------
+  // --------------------------------------- key fields -------------------------------------------
   // DO NOT modify this class. It was generated from LeafRegionEntry.cpp
   private final long bits1;
 

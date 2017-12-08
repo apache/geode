@@ -50,9 +50,9 @@ import org.apache.geode.internal.cache.entries.AbstractOplogDiskRegionEntry;
 import org.apache.geode.internal.cache.entries.AbstractRegionEntry;
 import org.apache.geode.internal.cache.entries.DiskEntry;
 import org.apache.geode.internal.cache.entries.OffHeapRegionEntry;
+import org.apache.geode.internal.cache.eviction.EvictableEntry;
 import org.apache.geode.internal.cache.ha.HAContainerWrapper;
 import org.apache.geode.internal.cache.ha.HARegionQueue;
-import org.apache.geode.internal.cache.lru.LRUEntry;
 import org.apache.geode.internal.cache.persistence.DiskRegionView;
 import org.apache.geode.internal.cache.region.entry.RegionEntryFactoryBuilder;
 import org.apache.geode.internal.cache.tier.sockets.CacheClientNotifier;
@@ -466,11 +466,6 @@ public abstract class AbstractRegionMap implements RegionMap {
   }
 
   @Override
-  public void lruUpdateCallback(int i) {
-    // By default do nothing; LRU maps needs to override this method
-  }
-
-  @Override
   public boolean disableLruUpdateCallback() {
     // By default do nothing; LRU maps needs to override this method
     return false;
@@ -517,7 +512,7 @@ public abstract class AbstractRegionMap implements RegionMap {
   }
 
   @Override
-  public boolean lruLimitExceeded(DiskRegionView drv) {
+  public boolean lruLimitExceeded(DiskRegionView diskRegionView) {
     return false;
   }
 
@@ -527,7 +522,7 @@ public abstract class AbstractRegionMap implements RegionMap {
   }
 
   @Override
-  public void lruEntryFaultIn(LRUEntry entry) {
+  public void lruEntryFaultIn(EvictableEntry entry) {
     // do nothing by default
   }
 
@@ -3919,6 +3914,16 @@ public abstract class AbstractRegionMap implements RegionMap {
       // ignore
     }
     return true;
+  }
+
+  @Override
+  public long getEvictions() {
+    return 0;
+  }
+
+  @Override
+  public void incRecentlyUsed() {
+    // nothing by default
   }
 
   public interface ARMLockTestHook {

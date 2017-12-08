@@ -65,8 +65,8 @@ import org.apache.geode.distributed.internal.DistributionConfig;
 import org.apache.geode.internal.Assert;
 import org.apache.geode.internal.AvailablePort;
 import org.apache.geode.internal.cache.PartitionedRegionLocalMaxMemoryDUnitTest.TestObject1;
+import org.apache.geode.internal.cache.eviction.EvictionController;
 import org.apache.geode.internal.cache.ha.HARegionQueue;
-import org.apache.geode.internal.cache.lru.EnableLRU;
 import org.apache.geode.internal.cache.tier.sockets.CacheServerTestUtil;
 import org.apache.geode.internal.cache.tier.sockets.ConflationDUnitTest;
 import org.apache.geode.internal.tcp.ConnectionTable;
@@ -788,13 +788,13 @@ public class DeltaPropagationDUnitTest extends JUnit4DistributedTestCase {
   }
 
   private void confirmEviction(Integer port) {
-    final EnableLRU cc = ((VMLRURegionMap) ((LocalRegion) cache.getRegion(
+    final EvictionController cc = ((VMLRURegionMap) ((LocalRegion) cache.getRegion(
         Region.SEPARATOR + CacheServerImpl.generateNameForClientMsgsRegion(port))).entries)
-            ._getCCHelper();
+            .getEvictionController();
 
     WaitCriterion wc = new WaitCriterion() {
       public boolean done() {
-        return cc.getStats().getEvictions() > 0;
+        return cc.getStatistics().getEvictions() > 0;
       }
 
       public String description() {
@@ -991,11 +991,11 @@ public class DeltaPropagationDUnitTest extends JUnit4DistributedTestCase {
   }
 
   private void verifyOverflowOccurred(long evictions, int regionsize) {
-    EnableLRU cc =
-        ((VMLRURegionMap) ((LocalRegion) cache.getRegion(regionName)).entries)._getCCHelper();
-    Assert.assertTrue(cc.getStats().getEvictions() == evictions,
+    EvictionController cc = ((VMLRURegionMap) ((LocalRegion) cache.getRegion(regionName)).entries)
+        .getEvictionController();
+    Assert.assertTrue(cc.getStatistics().getEvictions() == evictions,
         "Number of evictions expected to be " + evictions + " but was "
-            + cc.getStats().getEvictions());
+            + cc.getStatistics().getEvictions());
     int rSize = ((LocalRegion) cache.getRegion(regionName)).getRegionMap().size();
     Assert.assertTrue(rSize == regionsize,
         "Region size expected to be " + regionsize + " but was " + rSize);

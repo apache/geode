@@ -34,10 +34,8 @@ public class AbstractLRURegionMapTest {
 
     when(mockAbstractLRURegionMap.centralizedLruUpdateCallback()).thenReturn(1);
 
-    mockAbstractLRURegionMap.audit();
     mockAbstractLRURegionMap.changeTotalEntrySize(1);
 
-    verify(mockAbstractLRURegionMap, times(1)).audit();
     verify(mockAbstractLRURegionMap, times(1)).changeTotalEntrySize(1);
 
     assertThat(mockAbstractLRURegionMap.centralizedLruUpdateCallback()).isEqualTo(1);

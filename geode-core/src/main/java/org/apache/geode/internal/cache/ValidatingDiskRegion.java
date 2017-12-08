@@ -31,8 +31,8 @@ import org.apache.geode.internal.Version;
 import org.apache.geode.internal.cache.DistributedRegion.DiskPosition;
 import org.apache.geode.internal.cache.InitialImageOperation.Entry;
 import org.apache.geode.internal.cache.entries.DiskEntry;
-import org.apache.geode.internal.cache.lru.EnableLRU;
-import org.apache.geode.internal.cache.lru.NewLRUClockHand;
+import org.apache.geode.internal.cache.eviction.EvictionController;
+import org.apache.geode.internal.cache.eviction.EvictionList;
 import org.apache.geode.internal.cache.persistence.DiskExceptionHandler;
 import org.apache.geode.internal.cache.persistence.DiskRecoveryStore;
 import org.apache.geode.internal.cache.persistence.DiskRegionView;
@@ -229,7 +229,7 @@ public class ValidatingDiskRegion extends DiskRegion implements DiskRecoveryStor
     }
 
     @Override
-    public int updateAsyncEntrySize(EnableLRU capacityController) {
+    public int updateAsyncEntrySize(EvictionController capacityController) {
       throw new IllegalStateException("should never be called");
     }
 
@@ -305,7 +305,7 @@ public class ValidatingDiskRegion extends DiskRegion implements DiskRecoveryStor
     }
 
     @Override
-    public void setRecentlyUsed() {
+    public void setRecentlyUsed(RegionEntryContext context) {
       // nothing
     }
 
@@ -518,22 +518,17 @@ public class ValidatingDiskRegion extends DiskRegion implements DiskRecoveryStor
     }
 
     @Override
-    public void setInUseByTransaction(boolean inUseByTransaction) {
-      // nothing
-    }
-
-    @Override
     public void incRefCount() {
       // nothing
     }
 
     @Override
-    public void decRefCount(NewLRUClockHand lruList, InternalRegion region) {
+    public void decRefCount(EvictionList lruList, InternalRegion region) {
       // nothing
     }
 
     @Override
-    public void resetRefCount(NewLRUClockHand lruList) {
+    public void resetRefCount(EvictionList lruList) {
       // nothing
     }
 

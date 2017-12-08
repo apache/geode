@@ -27,7 +27,6 @@ import org.apache.geode.cache.EvictionAttributes;
 import org.apache.geode.cache.PartitionAttributes;
 import org.apache.geode.cache.PartitionAttributesFactory;
 import org.apache.geode.cache.Region;
-import org.apache.geode.cache30.CacheTestCase;
 import org.apache.geode.test.dunit.Host;
 import org.apache.geode.test.dunit.SerializableCallable;
 import org.apache.geode.test.dunit.SerializableRunnable;
@@ -125,7 +124,7 @@ public class DeltaFaultInDUnitTest extends JUnit4CacheTestCase {
         region.get(new Integer(113));
 
         long entriesEvicted = ((AbstractLRURegionMap) ((PartitionedRegion) region).entries)
-            ._getLruList().stats().getEvictions();
+            .getEvictionList().getStatistics().getEvictions();
         // assertIndexDetailsEquals(1, entriesEvicted);
 
         TestDelta result = region.get(new Integer(0));

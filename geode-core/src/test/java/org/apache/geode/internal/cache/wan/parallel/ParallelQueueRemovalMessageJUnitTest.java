@@ -14,8 +14,14 @@
  */
 package org.apache.geode.internal.cache.wan.parallel;
 
-import static org.junit.Assert.*;
-import static org.mockito.Mockito.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.mockito.Mockito.any;
+import static org.mockito.Mockito.doReturn;
+import static org.mockito.Mockito.eq;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.spy;
+import static org.mockito.Mockito.when;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -59,7 +65,7 @@ import org.apache.geode.internal.cache.PartitionedRegionHelper;
 import org.apache.geode.internal.cache.PartitionedRegionStats;
 import org.apache.geode.internal.cache.ProxyBucketRegion;
 import org.apache.geode.internal.cache.RegionQueue;
-import org.apache.geode.internal.cache.lru.LRUAlgorithm;
+import org.apache.geode.internal.cache.eviction.EvictionController;
 import org.apache.geode.internal.cache.partitioned.RegionAdvisor;
 import org.apache.geode.internal.cache.wan.AbstractGatewaySender;
 import org.apache.geode.internal.cache.wan.GatewaySenderEventImpl;
@@ -104,9 +110,9 @@ public class ParallelQueueRemovalMessageJUnitTest {
     when(this.queueRegion.getCache()).thenReturn(this.cache);
     EvictionAttributesImpl ea = (EvictionAttributesImpl) EvictionAttributes
         .createLRUMemoryAttributes(100, null, EvictionAction.OVERFLOW_TO_DISK);
-    LRUAlgorithm algorithm = ea.createEvictionController(this.queueRegion, false);
-    algorithm.getLRUHelper().initStats(this.queueRegion, this.cache.getDistributedSystem());
-    when(this.queueRegion.getEvictionController()).thenReturn(algorithm);
+    EvictionController eviction = ea.createEvictionController(this.queueRegion, false);
+    eviction.initStats(this.queueRegion, this.cache.getDistributedSystem());
+    when(this.queueRegion.getEvictionController()).thenReturn(eviction);
   }
 
   private void createGatewaySender() {

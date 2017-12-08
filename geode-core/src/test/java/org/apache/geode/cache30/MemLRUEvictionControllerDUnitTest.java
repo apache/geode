@@ -33,8 +33,8 @@ import org.apache.geode.cache.util.ObjectSizer;
 import org.apache.geode.distributed.DistributedSystem;
 import org.apache.geode.internal.SharedLibrary;
 import org.apache.geode.internal.cache.LocalRegion;
-import org.apache.geode.internal.cache.lru.LRUStatistics;
-import org.apache.geode.internal.cache.lru.MemLRUCapacityController;
+import org.apache.geode.internal.cache.eviction.EvictionStatistics;
+import org.apache.geode.internal.cache.eviction.MemoryLRUController;
 import org.apache.geode.internal.size.ReflectionSingleObjectSizer;
 import org.apache.geode.internal.size.WellKnownClassSizer;
 import org.apache.geode.test.dunit.cache.internal.JUnit4CacheTestCase;
@@ -60,22 +60,22 @@ public class MemLRUEvictionControllerDUnitTest extends JUnit4CacheTestCase {
   }
 
   /**
-   * Returns the <code>LRUStatistics</code> for the given region
+   * Returns the <code>EvictionStatistics</code> for the given region
    */
-  private LRUStatistics getLRUStats(Region region) {
+  private EvictionStatistics getLRUStats(Region region) {
     final LocalRegion l = (LocalRegion) region;
-    return l.getEvictionController().getLRUHelper().getStats();
+    return l.getEvictionController().getStatistics();
   }
 
   private int getEntryOverhead(Region region) {
     LocalRegion lRegion = (LocalRegion) region;
-    return ((MemLRUCapacityController) lRegion.getEvictionController()).getPerEntryOverhead();
+    return ((MemoryLRUController) lRegion.getEvictionController()).getPerEntryOverhead();
   }
 
   // ////// Test Methods
 
   /**
-   * Carefully verifies that region operations effect the {@link LRUStatistics} as expected.
+   * Carefully verifies that region operations effect the {@link EvictionStatistics} as expected.
    */
   @Test
   public void testRegionOperations() throws CacheException {
@@ -97,7 +97,7 @@ public class MemLRUEvictionControllerDUnitTest extends JUnit4CacheTestCase {
       region = createRegion(name, factory.create());
     }
 
-    LRUStatistics lruStats = getLRUStats(region);
+    EvictionStatistics lruStats = getLRUStats(region);
     assertNotNull(lruStats);
 
     String sampleKey = new String("10000");
@@ -158,7 +158,7 @@ public class MemLRUEvictionControllerDUnitTest extends JUnit4CacheTestCase {
 
     Region region = createRegion(name, factory.create());
 
-    LRUStatistics lruStats = getLRUStats(region);
+    EvictionStatistics lruStats = getLRUStats(region);
     assertNotNull(lruStats);
 
     TestObject object = new TestObject(50);

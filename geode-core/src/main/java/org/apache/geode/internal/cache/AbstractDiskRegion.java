@@ -1047,4 +1047,9 @@ public abstract class AbstractDiskRegion implements DiskRegionView {
   public String toString() {
     return getClass().getSimpleName() + ":" + getName();
   }
+
+  @Override
+  public void incRecentlyUsed() {
+    entries.incRecentlyUsed();
+  }
 }

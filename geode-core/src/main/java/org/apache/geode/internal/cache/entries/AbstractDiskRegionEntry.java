@@ -38,7 +38,7 @@ public abstract class AbstractDiskRegionEntry extends AbstractRegionEntry implem
   public void setValue(RegionEntryContext context, Object value, EntryEventImpl event)
       throws RegionClearedException {
     Helper.update(this, (LocalRegion) context, value, event);
-    setRecentlyUsed(); // fix for bug #42284 - entry just put into the cache is evicted
+    setRecentlyUsed(context); // fix for bug #42284 - entry just put into the cache is evicted
   }
 
   /**

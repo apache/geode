@@ -14,7 +14,9 @@
  */
 package org.apache.geode.internal.lang;
 
-import static org.junit.Assert.*;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
 
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
@@ -23,7 +25,7 @@ import org.apache.geode.test.junit.categories.UnitTest;
 
 @Category(UnitTest.class)
 public class SystemPropertyHelperJUnitTest {
-  String restoreSetOperationTransactionBehavior = "restoreSetOperationTransactionBehavior";
+  private String restoreSetOperationTransactionBehavior = "restoreSetOperationTransactionBehavior";
 
   @Test
   public void testRestoreSetOperationTransactionBehaviorDefaultToFalse() {
@@ -54,4 +56,30 @@ public class SystemPropertyHelperJUnitTest {
     System.clearProperty(gemfirePrefixProperty);
   }
 
+  @Test
+  public void getIntegerPropertyPrefersGeodePrefix() {
+    String testProperty = "testIntegerProperty";
+    String gemfirePrefixProperty = "gemfire." + testProperty;
+    String geodePrefixProperty = "geode." + testProperty;
+    System.setProperty(geodePrefixProperty, "1");
+    System.setProperty(gemfirePrefixProperty, "0");
+    assertThat(SystemPropertyHelper.getProductIntegerProperty(testProperty).get()).isEqualTo(1);
+    System.clearProperty(geodePrefixProperty);
+    System.clearProperty(gemfirePrefixProperty);
+  }
+
+  @Test
+  public void getIntegerPropertyReturnsGemfirePrefixIfGeodeMissing() {
+    String testProperty = "testIntegerProperty";
+    String gemfirePrefixProperty = "gemfire." + testProperty;
+    System.setProperty(gemfirePrefixProperty, "1");
+    assertThat(SystemPropertyHelper.getProductIntegerProperty(testProperty).get()).isEqualTo(1);
+    System.clearProperty(gemfirePrefixProperty);
+  }
+
+  @Test
+  public void getIntegerPropertyReturnsNullIfPropertiesMissing() {
+    String testProperty = "testIntegerProperty";
+    assertThat(SystemPropertyHelper.getProductIntegerProperty(testProperty).isPresent()).isFalse();
+  }
 }

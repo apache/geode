@@ -482,6 +482,7 @@ public abstract class EvictionAttributes implements DataSerializable {
   /**
    * @return an EvictionAttributes for the LIFOCapacityController
    * @since GemFire 5.7
+   * @deprecated For internal use only.
    */
   public static EvictionAttributes createLIFOEntryAttributes(int maximumEntries,
       EvictionAction evictionAction) {
@@ -492,6 +493,7 @@ public abstract class EvictionAttributes implements DataSerializable {
   /**
    * @return an EvictionAttributes for the MemLIFOCapacityController
    * @since GemFire 5.7
+   * @deprecated For internal use only.
    */
   public static EvictionAttributes createLIFOMemoryAttributes(int maximumMegabytes,
       EvictionAction evictionAction) {
