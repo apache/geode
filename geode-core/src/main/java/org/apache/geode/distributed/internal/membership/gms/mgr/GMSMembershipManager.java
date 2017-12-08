@@ -1401,6 +1401,7 @@ public class GMSMembershipManager implements MembershipManager, Manager {
    *
    * @return the current membership view coordinator
    */
+  @Override
   public DistributedMember getCoordinator() {
     latestViewReadLock.lock();
     try {

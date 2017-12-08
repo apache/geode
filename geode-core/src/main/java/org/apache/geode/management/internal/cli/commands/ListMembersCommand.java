@@ -24,7 +24,6 @@ import org.springframework.shell.core.annotation.CliOption;
 import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.distributed.internal.membership.MembershipManager;
-import org.apache.geode.distributed.internal.membership.gms.mgr.GMSMembershipManager;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.management.cli.CliMetaData;
 import org.apache.geode.management.cli.ConverterHint;
@@ -62,6 +61,7 @@ public class ListMembersCommand implements GfshCommand {
       if (memberSet.isEmpty()) {
         result = ResultBuilder.createInfoResult(CliStrings.LIST_MEMBER__MSG__NO_MEMBER_FOUND);
       } else {
+
         TabularResultData resultData = ResultBuilder.createTabularResultData();
         final String coordinatorMember = getCoordinator();
         resultData.accumulate("Name", "Coordinator:");
@@ -86,7 +86,7 @@ public class ListMembersCommand implements GfshCommand {
     InternalDistributedSystem ids = InternalDistributedSystem.getConnectedInstance();
     if ((ids != null) && (ids.isConnected())) {
       MembershipManager mmgr = ids.getDistributionManager().getMembershipManager();
-      DistributedMember coord = ((GMSMembershipManager) mmgr).getCoordinator();
+      DistributedMember coord = mmgr.getCoordinator();
       if (coord != null) {
         result = coord.toString();
       }
