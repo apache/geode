@@ -16,8 +16,12 @@ package org.apache.geode.connectors.jdbc.internal;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.assertj.core.api.Assertions.entry;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
+
+import java.util.HashMap;
+import java.util.Map;
 
 import org.junit.Before;
 import org.junit.Test;
@@ -35,6 +39,7 @@ public class JdbcConnectorServiceTest {
 
   private ConnectionConfiguration config;
   private ConnectionConfiguration config2;
+  private ConnectionConfiguration configToAlter;
   private RegionMapping mapping;
 
   private JdbcConnectorService service;
@@ -45,6 +50,11 @@ public class JdbcConnectorServiceTest {
     config = mock(ConnectionConfiguration.class);
     mapping = mock(RegionMapping.class);
     config2 = mock(ConnectionConfiguration.class);
+    Map<String, String> parameters = new HashMap<>();
+    parameters.put("key1", "value1");
+    parameters.put("key2", "value2");
+    configToAlter = new ConnectionConfiguration(TEST_CONFIG_NAME, "originalUrl", "originalUser",
+        "originalPassword", parameters);
 
     when(cache.getExtensionPoint()).thenReturn(mock(ExtensionPoint.class));
     when(config.getName()).thenReturn(TEST_CONFIG_NAME);
@@ -102,4 +112,5 @@ public class JdbcConnectorServiceTest {
     assertThatThrownBy(() -> service.createConnectionConfig(config2))
         .isInstanceOf(ConnectionConfigExistsException.class).hasMessageContaining(TEST_CONFIG_NAME);
   }
+
 }

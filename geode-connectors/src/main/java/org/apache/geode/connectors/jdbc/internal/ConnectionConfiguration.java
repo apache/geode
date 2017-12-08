@@ -36,8 +36,7 @@ public class ConnectionConfiguration implements Serializable {
     this.url = url;
     this.user = user;
     this.password = password;
-    this.parameters =
-        parameters == null ? new HashMap<>() : Collections.unmodifiableMap(parameters);
+    this.parameters = parameters == null ? null : Collections.unmodifiableMap(parameters);
   }
 
   public String getName() {
@@ -56,10 +55,16 @@ public class ConnectionConfiguration implements Serializable {
     return password;
   }
 
+  public Map<String, String> getParameters() {
+    return parameters;
+  }
+
   public Properties getConnectionProperties() {
     Properties properties = new Properties();
 
-    properties.putAll(parameters);
+    if (parameters != null) {
+      properties.putAll(parameters);
+    }
     if (user != null) {
       properties.put(USER, user);
     }

@@ -46,6 +46,19 @@ public class JdbcConnectorService implements InternalJdbcConnectorService {
   }
 
   @Override
+  public void replaceConnectionConfig(ConnectionConfiguration alteredConfig)
+      throws ConnectionConfigNotFoundException {
+    registerAsExtension();
+    ConnectionConfiguration existingConfig = connectionsByName.get(alteredConfig.getName());
+    if (existingConfig == null) {
+      throw new ConnectionConfigNotFoundException(
+          "ConnectionConfiguration " + alteredConfig.getName() + " was not found");
+    }
+
+    connectionsByName.put(existingConfig.getName(), alteredConfig);
+  }
+
+  @Override
   public void destroyConnectionConfig(String connectionName) {
     registerAsExtension();
     connectionsByName.remove(connectionName);

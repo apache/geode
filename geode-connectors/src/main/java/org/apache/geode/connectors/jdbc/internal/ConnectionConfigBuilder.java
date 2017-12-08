@@ -48,10 +48,14 @@ public class ConnectionConfigBuilder {
   }
 
   public ConnectionConfigBuilder withParameters(String[] params) {
-    for (String param : params) {
-      String[] keyValuePair = param.split(PARAMS_DELIMITER);
-      if (keyValuePair.length == 2) {
-        parameters.put(keyValuePair[0], keyValuePair[1]);
+    if (params == null) {
+      parameters = null;
+    } else {
+      for (String param : params) {
+        String[] keyValuePair = param.split(PARAMS_DELIMITER);
+        if (keyValuePair.length == 2) {
+          parameters.put(keyValuePair[0], keyValuePair[1]);
+        }
       }
     }
     return this;
