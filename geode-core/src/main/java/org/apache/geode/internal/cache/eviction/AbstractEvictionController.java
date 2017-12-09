@@ -78,6 +78,7 @@ public abstract class AbstractEvictionController implements EvictionController {
       } else {
         fullPathName = placeHolderDiskRegion.getName();
       }
+    }
     if (algorithm == EvictionAlgorithm.LRU_HEAP) {
       evictionStats = new HeapLRUStatistics(statsFactory, fullPathName);
       evictionCounters = new EvictionCountersImpl(evictionStats);

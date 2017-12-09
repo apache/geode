@@ -32,7 +32,7 @@ public class LRUListWithSyncSorting extends AbstractEvictionList {
 
   private final int maxEntries;
 
-  LRUListWithSyncSorting(InternalEvictionStatistics stats, BucketRegion region) {
+  LRUListWithSyncSorting(EvictionCounters stats, BucketRegion region) {
     super(stats, region);
     this.maxEntries = readMaxEntriesProperty();
   }
