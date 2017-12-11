@@ -24,7 +24,7 @@ into a bucket using a hashing policy on the key.
 Additionally, the physical location of the key-value pair
 is abstracted away from the application.
 You can change these policies for a partitioned region
-by providing a standard partition resolver that maps entries
+by providing a standard custom partition resolver that maps entries
 in a custom manner.
 
 <a id="custom_partition_region_data__section_CF05CE974C9C4AF78430DA55601D2158"></a>
@@ -38,21 +38,19 @@ To custom-partition your region data, follow two steps:
 - implement the interface
 - configure the regions
 
-These steps differ based on which partition resolver is used.
-
-**Implementing Standard Partitioning**
+**Implementing Standard Custom Partitioning**
 
 -   Implement the `org.apache.geode.cache.PartitionResolver` interface
 in one of the following ways,
 listed here in the search order used by <%=vars.product_name%>:
-    -   **Using a custom class**. Specify this class as the partition
+    -   **Using a custom class**. Implement the `PartitionResolver` within your class, and then specify your class as the partition
 resolver during region creation.
-    -   **Using the key's class**. For keys implemented as objects,
-define the interface within the key's class.
-    -   **Using the cache callback class**. Implement the interface
-within a cache callback's class. When using this implementation,
+    -   **Using the key's class**. Have the entry key's class implement the `PartitionResolver` interface.
+    -   **Using the callback argument's class**. Have the class that
+implements your callback argument implement the `PartitionResolver`
+interface. When using this implementation,
 any and all `Region` operations must be those that specify the callback
-as a parameter.
+argument.
 
 -   Implement the resolver's `getName`, `init`, and `close` methods.
 
@@ -83,10 +81,10 @@ desired bucket.
 `getRoutingObject`.  Do not use the value associated with the key or any additional metadata in the implementation of `getRoutingObject`.
 Do not use `getOperation` or `getValue`.
 
-**Implementing the String-Based Partition Resolver**
+**Implementing the String Prefix Partition Resolver**
 
 <%=vars.product_name%> provides an implementation of a
-a string-based partition resolver in
+string-based partition resolver in
 `org.apache.geode.cache.util.StringPrefixPartitionResolver`.
 This resolver does not require any further implementation.
 It groups entries into buckets based on a portion of the key.
@@ -95,49 +93,81 @@ a '|' character, which delimits the string.
 The substring that precedes the '|' delimiter within the key
 will be returned by `getRoutingObject`.
 
-**Configuring Standard Partitioning**
+**Configuring the Partition Resolver Region Attribute**
 
--   Configure the region so <%=vars.product_name%> finds your resolver
+Configure the region so <%=vars.product_name%> finds your resolver
 for all region operations.
-How you do this depends on where you chose to implement
-your custom partitioning.
-    -   **Custom class**. Define the class for the region at creation.
-Use one of these methods:
 
-        **XML:**
+- **Custom class**.
+Use one of these methods to specify the partition resolver region
+attribute:
 
-        ``` pre
-        <region name="trades">
-            <region-attributes>
-                <partition-attributes>
-                    <partition-resolver> 
-                        <class-name>myPackage.TradesPartitionResolver
-                        </class-name>
-                    </partition-resolver>
-                <partition-attributes>
-            </region-attributes>
-        </region>
-        ```
-        **Java API:**
+    **gfsh:**
 
+    Add the option `--partition-resolver` to the `gfsh create region` command, specifying the package and class name of the standard custom partition resolver.
 
-        ``` pre
-        PartitionResolver resolver = new TradesPartitionResolver();
-        PartitionAttributes attrs = 
-            new PartitionAttributesFactory()
-            .setPartitionResolver(resolver).create();
+    **gfsh for the String Prefix Partition Resolver:**
+    
+    Add the option `--partition-resolver=org.apache.geode.cache.util.StringPrefixPartitionResolver` to the `gfsh create region` command.
 
-        Cache c = new CacheFactory().create();
+    **Java API:**
 
-        Region r = c.createRegionFactory()
-            .setPartitionAttributes(attrs)
-            .create("trades");
-        ```
-        **gfsh:**
+    ``` pre
+    PartitionResolver resolver = new TradesPartitionResolver();
+    PartitionAttributes attrs = 
+        new PartitionAttributesFactory()
+        .setPartitionResolver(resolver).create();
 
-        Add the option `--partition-resolver` to the `gfsh create region` command, specifying the package and class name of the custom partition resolver.
-    -   **Entry key**. Use the key object with the resolver implementation for every entry operation.
-    -   **Cache callback argument**. Provide the argument to every call that accesses an entry. This restricts you to calls that take a callback argument.
+    Cache c = new CacheFactory().create();
+
+    Region r = c.createRegionFactory()
+        .setPartitionAttributes(attrs)
+        .create("trades");
+    ```
+
+    **Java API for the String Prefix Partition Resolver:**
+    
+    ``` pre
+    PartitionAttributes attrs = 
+        new PartitionAttributesFactory()
+        .setPartitionResolver(new StringPrefixPartitionResolver()).create();
+        
+    Cache c = new CacheFactory().create();
+        
+    Region r = c.createRegionFactory()
+        .setPartitionAttributes(attrs)
+        .create("customers");
+    ```
+
+    **XML:**
+
+    ``` pre
+    <region name="trades">
+        <region-attributes>
+            <partition-attributes>
+                <partition-resolver> 
+                    <class-name>myPackage.TradesPartitionResolver
+                    </class-name>
+                </partition-resolver>
+            <partition-attributes>
+        </region-attributes>
+    </region>
+    ```
+
+    **XML for the String Prefix Partition Resolver:**
+    
+    ``` pre
+    <region name="customers">
+        <region-attributes>
+            <partition-attributes>
+                <partition-resolver> 
+                    <class-name>org.apache.geode.cache.util.StringPrefixPartitionResolver
+                    </class-name>
+                </partition-resolver>
+            <partition-attributes>
+        </region-attributes>
+    </region>
+    ```
 
 -   If your colocated data is in a server system,
 add the `PartitionResolver` implementation class to the `CLASSPATH`
@@ -146,38 +176,3 @@ For Java single-hop access to work,
 the resolver class needs to have a zero-argument constructor,
 and the resolver class must not have any state;
 the `init` method is included in this restriction.
-
-**Configuring the String-Based Partition Resolver**
-
-Define the class for the region at creation. The resolver will be used for every entry operation. Use one of these methods:
-
-**XML:**
-    
-``` pre
-<region name="customers">
-    <region-attributes>
-        <partition-attributes>
-            <partition-resolver> 
-                <class-name>org.apache.geode.cache.util.StringPrefixPartitionResolver
-                </class-name>
-            </partition-resolver>
-        <partition-attributes>
-    </region-attributes>
-</region>
-```
-**Java API:**
-    
-``` pre
-PartitionAttributes attrs = 
-    new PartitionAttributesFactory()
-    .setPartitionResolver(new StringPrefixPartitionResolver()).create();
-    
-Cache c = new CacheFactory().create();
-    
-Region r = c.createRegionFactory()
-    .setPartitionAttributes(attrs)
-    .create("customers");
-```
-**gfsh:**
-    
-Add the option `--partition-resolver=org.apache.geode.cache.util.StringPrefixPartitionResolver` to the `gfsh create region` command.

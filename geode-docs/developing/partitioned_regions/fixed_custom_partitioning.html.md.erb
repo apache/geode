@@ -24,7 +24,7 @@ into a bucket using a hashing policy on the key.
 Additionally, the physical location of the key-value pair is
 abstracted away from the application.
 You can change these policies for a partitioned region
-by providing a fixed partition resolver that not only maps entries
+by providing a fixed custom partition resolver that not only maps entries
 to a set of buckets called a partition,
 but also specifies which members host which data buckets.  
 
@@ -41,7 +41,7 @@ To custom-partition your region data, follow two steps:
 
 These steps differ based on which partition resolver is used.
 
-**Implementing Fixed Partitioning**
+**Implementing Fixed Custom Partitioning**
 
 -   Implement the `org.apache.geode.cache.FixedPartitionResolver`
 interface within one of the following locations,
@@ -140,7 +140,7 @@ All entries within a partition will be on a single server.
     }
     ```
 
-**Configuring Fixed Partitioning**
+**Configuring Fixed Custom Partitioning**
 
 -  Set the fixed-partition attributes for each member.
 
