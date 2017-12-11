@@ -121,6 +121,7 @@ test {
 
 tasks.withType(Test){
   environment 'GEODE_HOME', "$buildDir/install/${distributions.main.baseName}"
+  systemProperty 'java.io.tmpdir', System.getProperty('java.io.tmpdir', '/tmp')
 }
 
 task defaultDistributionConfig(type: JavaExec, dependsOn: classes) {
