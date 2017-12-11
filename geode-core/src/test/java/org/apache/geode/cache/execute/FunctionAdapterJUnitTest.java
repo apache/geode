@@ -16,15 +16,29 @@ package org.apache.geode.cache.execute;
 
 import static org.junit.Assert.*;
 
+import java.io.BufferedOutputStream;
+import java.io.DataInputStream;
+import java.io.DataOutputStream;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
+import java.io.Serializable;
+
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
+import org.apache.geode.internal.InternalDataSerializer;
+import org.apache.geode.internal.Version;
+import org.apache.geode.internal.VersionedDataInputStream;
+import org.apache.geode.internal.VersionedDataOutputStream;
 import org.apache.geode.test.junit.categories.UnitTest;
+import org.apache.geode.util.test.TestUtil;
 
 @Category(UnitTest.class)
 public class FunctionAdapterJUnitTest {
 
+  private static final long serialVersionUID = 1L;
   private FunctionAdapter adapter;
 
   @Before
@@ -59,4 +73,39 @@ public class FunctionAdapterJUnitTest {
     public void execute(final FunctionContext context) {}
 
   }
+
+  @Test
+  public void deserializePreGeodeFunctionAdapterShouldNotThrowIncompatibleException()
+      throws Exception {
+    FileInputStream fis =
+        new FileInputStream(TestUtil.getResourcePath(getClass(), getClass().getSimpleName() + "."
+            + "serializedFunctionAdapterWithDifferentSerialVersionUID"));
+
+    DataInputStream dis = new VersionedDataInputStream(new DataInputStream(fis), Version.GFE_82);
+    Object o = InternalDataSerializer.basicReadObject(dis);
+    assertTrue(o instanceof FunctionAdapter);
+  }
+
+  private static class SomeFunction extends FunctionAdapter {
+
+    private static final long serialVersionUID = -6417837315839543937L;
+
+    @Override
+    public void execute(FunctionContext context) {
+      context.getResultSender().lastResult("S");
+    }
+
+    @Override
+    public String getId() {
+      return "I";
+    }
+
+    public boolean equals(Object o) {
+      if (o instanceof FunctionAdapter) {
+        return ((FunctionAdapter) o).getId().equals(("I"));
+      }
+      return false;
+    }
+  }
+
 }
