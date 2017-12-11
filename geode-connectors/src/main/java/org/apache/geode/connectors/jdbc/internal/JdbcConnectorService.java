@@ -77,6 +77,13 @@ public class JdbcConnectorService implements InternalJdbcConnectorService {
   }
 
   @Override
+  public Set<RegionMapping> getRegionMappings() {
+    Set<RegionMapping> regionMappings = new HashSet<>();
+    regionMappings.addAll(mappingsByRegion.values());
+    return regionMappings;
+  }
+
+  @Override
   public void createRegionMapping(RegionMapping mapping) throws RegionMappingExistsException {
     registerAsExtension();
     RegionMapping existing = mappingsByRegion.putIfAbsent(mapping.getRegionName(), mapping);
