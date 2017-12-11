@@ -25,7 +25,7 @@ import org.apache.geode.test.junit.categories.UnitTest;
  * The InOutParameterJUnitTest class is a test suite with test cases to test the contract and
  * functionality of the InOutParameter class.
  * <p/>
- * 
+ *
  * @see org.apache.geode.internal.lang.InOutParameter
  * @see org.junit.Test
  * @since GemFire 6.8

@@ -14,6 +14,14 @@
  */
 package org.apache.geode.internal.statistics;
 
+import java.io.File;
+import java.io.IOException;
+import java.io.PrintWriter;
+import java.io.StringWriter;
+import java.util.List;
+
+import org.apache.logging.log4j.Logger;
+
 import org.apache.geode.GemFireException;
 import org.apache.geode.GemFireIOException;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
@@ -26,13 +34,6 @@ import org.apache.geode.internal.logging.log4j.LogMarker;
 import org.apache.geode.internal.logging.log4j.LogWriterAppender;
 import org.apache.geode.internal.logging.log4j.LogWriterAppenders;
 import org.apache.geode.internal.logging.log4j.LogWriterLogger;
-import org.apache.logging.log4j.Logger;
-
-import java.io.File;
-import java.io.IOException;
-import java.io.PrintWriter;
-import java.io.StringWriter;
-import java.util.List;
 
 /**
  * Extracted from {@link HostStatSampler} and {@link GemFireStatSampler}.
@@ -41,7 +42,7 @@ import java.util.List;
  * provides archive file rolling (file size limit) and removal (disk space limit). This handler
  * creates and uses an instance of {@link StatArchiveWriter} for the currently open archive file
  * (unless archiving is disabled).
- * 
+ *
  * @since GemFire 7.0
  */
 public class StatArchiveHandler implements SampleHandler {
@@ -87,7 +88,7 @@ public class StatArchiveHandler implements SampleHandler {
 
   /**
    * Initializes the stat archiver with nanosTimeStamp.
-   * 
+   *
    * @param nanosTimeStamp
    */
   public void initialize(long nanosTimeStamp) {
@@ -97,7 +98,7 @@ public class StatArchiveHandler implements SampleHandler {
 
   /**
    * Closes any {@link StatArchiveWriter} currently in use by this handler.
-   * 
+   *
    * @throws GemFireException
    */
   public void close() throws GemFireException {
@@ -263,7 +264,7 @@ public class StatArchiveHandler implements SampleHandler {
    * trigger rolling and/or removal if appropriate based on
    * {@link StatArchiveHandlerConfig#getArchiveFileSizeLimit() file size limit} and
    * {@link StatArchiveHandlerConfig#getArchiveDiskSpaceLimit() disk space limit}.
-   * 
+   *
    * @param newFile the new archive file to use or "" to disable archiving
    * @param nanosTimeStamp
    */
@@ -286,10 +287,10 @@ public class StatArchiveHandler implements SampleHandler {
    * If resetHandler is true, then this handler will reset itself with the SampleCollector by
    * removing and re-adding itself in order to receive allocation notifications about all resource
    * types and instances.
-   * 
+   *
    * @param resetHandler true if the handler should reset itself with the SampleCollector in order
    *        to receive allocation notifications about all resource types and instances
-   * 
+   *
    * @param nanosTimeStamp
    */
   private void changeArchiveFile(boolean resetHandler, long nanosTimeStamp) {
@@ -307,7 +308,7 @@ public class StatArchiveHandler implements SampleHandler {
    * If resetHandler is true, then this handler will reset itself with the SampleCollector by
    * removing and re-adding itself in order to receive allocation notifications about all resource
    * types and instances.
-   * 
+   *
    * @param newFile
    * @param resetHandler
    * @param nanosTimeStamp
@@ -438,11 +439,11 @@ public class StatArchiveHandler implements SampleHandler {
    * {@link #archiveId} based on existing files {@link #archiveDir}. This is only used if
    * {@link StatArchiveHandlerConfig#getArchiveFileSizeLimit() file size limit} has been specified
    * as non-zero (which enables file rolling).
-   * 
+   *
    * @param archive the archive file name to modify
    * @param archiveClosed true if archive was just being written by us; false if it was written by
    *        the previous process.
-   * 
+   *
    * @return the modified archive file name to use; it is modified by applying mainArchiveId and
    *         archiveId to the name for supporting file rolling
    */
@@ -592,9 +593,9 @@ public class StatArchiveHandler implements SampleHandler {
    * Modifies the desired archive file name with a main id (similar to {@link #mainArchiveId} if the
    * archive file's dir already contains GemFire stat archive or log files containing a main id in
    * the file name.
-   * 
+   *
    * @param archive the archive file name to modify
-   * 
+   *
    * @return the modified archive file name to use; it is modified by applying the next main id if
    *         any files in the dir already have a main id in the file name
    */
@@ -626,7 +627,7 @@ public class StatArchiveHandler implements SampleHandler {
    * Remove old versions of the specified archive file name in order to stay under the specified
    * disk space limit. Old versions of the archive file are those that match based on using a
    * pattern which ignores mainArchiveId and archiveId.
-   * 
+   *
    * @param archiveFile the archive file to remove old versions of
    * @param spaceLimit the disk space limit
    */

@@ -41,7 +41,7 @@ import org.apache.geode.internal.logging.log4j.LocalizedMessage;
  * reply. This guarantees that all high priority messages have been received and applied to the
  * cache. Their reply messages may not necessarily have been sent back or processed (if they have
  * any).
- * 
+ *
  * @since GemFire 5.1
  */
 public class HighPriorityAckedMessage extends HighPriorityDistributionMessage
@@ -58,7 +58,7 @@ public class HighPriorityAckedMessage extends HighPriorityDistributionMessage
   };
 
   transient DistributionManager originDm;
-  transient private ReplyProcessor21 rp;
+  private transient ReplyProcessor21 rp;
   private boolean useNative;
 
   public HighPriorityAckedMessage() {
@@ -106,7 +106,7 @@ public class HighPriorityAckedMessage extends HighPriorityDistributionMessage
 
   /**
    * send the message and wait for replies
-   * 
+   *
    * @param recipients the destination manager ids
    * @param multicast whether to use multicast or unicast
    * @throws InterruptedException if the operation is interrupted (as by shutdown)

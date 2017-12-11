@@ -17,6 +17,7 @@ limitations under the License.
 -->
 <xsd:schema
     targetNamespace="http://geode.apache.org/schema/lucene"
+	xmlns:gf="http://geode.apache.org/schema/cache"
     xmlns:xsd="http://www.w3.org/2001/XMLSchema"
     elementFormDefault="qualified"
     attributeFormDefault="unqualified"
@@ -51,6 +52,13 @@ XML schema for Lucene indexes in Geode.
 				<xsd:attribute name="analyzer" type="xsd:string" />
 			</xsd:complexType>
     	  </xsd:element>
+			<xsd:element name="serializer" minOccurs="0" maxOccurs="1" type="gf:declarable-type">
+				<xsd:annotation>
+					<xsd:documentation>
+						A serializer controls how objects are converted to lucene documents
+					</xsd:documentation>
+				</xsd:annotation>
+			</xsd:element>
     	</xsd:sequence>
     	<xsd:attribute name="name" type="xsd:string"/>
     </xsd:complexType>

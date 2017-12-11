@@ -51,5 +51,3 @@ public class G_Student extends Student {
     _advisor = advisor;
   }
 }
-
-

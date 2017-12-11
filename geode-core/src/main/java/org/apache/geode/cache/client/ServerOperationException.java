@@ -19,7 +19,7 @@ import org.apache.geode.distributed.internal.InternalDistributedSystem;
 /**
  * An exception indicating that a failure has happened on the server while processing an operation
  * that was sent to it by a client.
- * 
+ *
  * @since GemFire 5.7
  */
 public class ServerOperationException extends ServerConnectivityException {
@@ -31,9 +31,9 @@ public class ServerOperationException extends ServerConnectivityException {
   public ServerOperationException() {}
 
   /**
-   * 
+   *
    * Create a new instance of ServerOperationException with a detail message
-   * 
+   *
    * @param message the detail message
    */
   public ServerOperationException(String message) {
@@ -42,7 +42,7 @@ public class ServerOperationException extends ServerConnectivityException {
 
   /**
    * Create a new instance of ServerOperationException with a detail message and cause
-   * 
+   *
    * @param message the detail message
    * @param cause the cause
    */
@@ -52,7 +52,7 @@ public class ServerOperationException extends ServerConnectivityException {
 
   /**
    * Create a new instance of ServerOperationException with a cause
-   * 
+   *
    * @param cause the cause
    */
   public ServerOperationException(Throwable cause) {

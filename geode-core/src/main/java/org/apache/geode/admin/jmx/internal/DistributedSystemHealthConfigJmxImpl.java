@@ -14,12 +14,11 @@
  */
 package org.apache.geode.admin.jmx.internal;
 
-import org.apache.geode.admin.*;
-import org.apache.geode.admin.internal.*;
-// import org.apache.geode.internal.admin.*;
 import javax.management.*;
 import javax.management.modelmbean.*;
-// import org.apache.commons.modeler.ManagedBean;
+
+import org.apache.geode.admin.*;
+import org.apache.geode.admin.internal.*;
 
 /**
  * The JMX "managed resource" that represents the configuration for the health of a distributed

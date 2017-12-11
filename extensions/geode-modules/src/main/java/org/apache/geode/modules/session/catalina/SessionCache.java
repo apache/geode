@@ -14,13 +14,15 @@
  */
 package org.apache.geode.modules.session.catalina;
 
+import java.util.Set;
+
+import javax.servlet.http.HttpSession;
+
+import org.apache.catalina.Session;
+
 import org.apache.geode.cache.GemFireCache;
 import org.apache.geode.cache.Region;
 import org.apache.geode.modules.session.catalina.internal.DeltaSessionStatistics;
-import org.apache.catalina.Session;
-
-import javax.servlet.http.HttpSession;
-import java.util.Set;
 
 public interface SessionCache {
 

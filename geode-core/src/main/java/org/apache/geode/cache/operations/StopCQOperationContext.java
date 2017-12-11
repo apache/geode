@@ -21,7 +21,7 @@ import java.util.Set;
 /**
  * Encapsulates a {@link org.apache.geode.cache.operations.OperationContext.OperationCode#STOP_CQ}
  * operation for the pre-operation case.
- * 
+ *
  * @since GemFire 5.5
  * @deprecated since Geode1.0, use {@link org.apache.geode.security.ResourcePermission} instead
  */
@@ -29,7 +29,7 @@ public class StopCQOperationContext extends ExecuteCQOperationContext {
 
   /**
    * Constructor for the STOP_CQ operation.
-   * 
+   *
    * @param cqName the name of the continuous query being stopped
    * @param queryString the query string for this operation
    * @param regionNames names of regions that are part of the query string
@@ -40,7 +40,7 @@ public class StopCQOperationContext extends ExecuteCQOperationContext {
 
   /**
    * Return the operation associated with the <code>OperationContext</code> object.
-   * 
+   *
    * @return <code>OperationCode.STOP_CQ</code>.
    */
   @Override

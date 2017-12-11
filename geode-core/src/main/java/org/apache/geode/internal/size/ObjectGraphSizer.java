@@ -14,16 +14,16 @@
  */
 package org.apache.geode.internal.size;
 
-import org.apache.geode.distributed.internal.DistributionConfig;
-import org.apache.geode.internal.ClassPathLoader;
-import org.apache.geode.internal.size.ObjectTraverser.Visitor;
-
 import java.lang.ref.SoftReference;
 import java.lang.ref.WeakReference;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
 import java.util.TreeSet;
+
+import org.apache.geode.distributed.internal.DistributionConfig;
+import org.apache.geode.internal.ClassPathLoader;
+import org.apache.geode.internal.size.ObjectTraverser.Visitor;
 
 
 public class ObjectGraphSizer {
@@ -52,11 +52,11 @@ public class ObjectGraphSizer {
   /**
    * Find the size of an object and all objects reachable from it using breadth first search. This
    * is equivalent to calling
-   * 
+   *
    * <pre>
    * size(root, false);
    * </pre>
-   * 
+   *
    */
   // TODO
   // - native byte buffers
@@ -69,7 +69,7 @@ public class ObjectGraphSizer {
    * Find the size of an object and all objects reachable from it using breadth first search. This
    * is equivalent to calling set(root, filter, includeStatics) where the filter will accept all
    * objects.
-   * 
+   *
    */
   public static long size(Object root, boolean includeStatics)
       throws IllegalArgumentException, IllegalAccessException {
@@ -80,17 +80,17 @@ public class ObjectGraphSizer {
    * Find the size of an object and all objects reachable from it using breadth first search. This
    * method will include objects reachable from static fields. Using this method requires some heap
    * space - probably between 8 - 30 bytes per reachable object.
-   * 
+   *
    * Objects reachable only through weak or soft references will not be considered part of the total
    * size.
-   * 
+   *
    * @param root the object to size
    * @param filter that can exclude objects from being counted in the results. If an object is not
    *        accepted, it's size will not be included and it's children will not be visited unless
    *        they are reachable by some other path.
    * @param includeStatics if set to true, static members of a class will be traversed the first
    *        time that a class is encountered.
-   * 
+   *
    */
   public static long size(Object root, ObjectFilter filter, boolean includeStatics)
       throws IllegalArgumentException, IllegalAccessException {

@@ -44,7 +44,7 @@ import org.apache.geode.security.ResourcePermission.Resource;
 
 public class Invalidate extends BaseCommand {
 
-  private final static Invalidate singleton = new Invalidate();
+  private static final Invalidate singleton = new Invalidate();
 
   public static Command getCommand() {
     return singleton;

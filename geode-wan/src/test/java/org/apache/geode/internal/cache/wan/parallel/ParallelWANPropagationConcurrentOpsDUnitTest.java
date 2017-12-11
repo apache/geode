@@ -14,22 +14,21 @@
  */
 package org.apache.geode.internal.cache.wan.parallel;
 
-import org.junit.experimental.categories.Category;
-import org.junit.Test;
-
 import static org.junit.Assert.*;
-
-import org.apache.geode.test.dunit.cache.internal.JUnit4CacheTestCase;
-import org.apache.geode.test.dunit.internal.JUnit4DistributedTestCase;
-import org.apache.geode.test.junit.categories.DistributedTest;
 
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 
+import org.junit.Test;
+import org.junit.experimental.categories.Category;
+
 import org.apache.geode.internal.cache.wan.WANTestBase;
 import org.apache.geode.test.dunit.AsyncInvocation;
 import org.apache.geode.test.dunit.Wait;
+import org.apache.geode.test.dunit.cache.internal.JUnit4CacheTestCase;
+import org.apache.geode.test.dunit.internal.JUnit4DistributedTestCase;
+import org.apache.geode.test.junit.categories.DistributedTest;
 
 @Category(DistributedTest.class)
 public class ParallelWANPropagationConcurrentOpsDUnitTest extends WANTestBase {
@@ -43,7 +42,7 @@ public class ParallelWANPropagationConcurrentOpsDUnitTest extends WANTestBase {
   /**
    * Normal propagation scenario test case for a PR with only one bucket. This has been added for
    * bug# 44284.
-   * 
+   *
    * @throws Exception
    */
   @Test
@@ -107,7 +106,7 @@ public class ParallelWANPropagationConcurrentOpsDUnitTest extends WANTestBase {
   /**
    * Normal propagation scenario test case for a PR with less number of buckets. Buckets have been
    * kept to 10 for this test. This has been added for bug# 44287.
-   * 
+   *
    * @throws Exception
    */
   @Test

@@ -30,7 +30,7 @@ import org.apache.geode.internal.util.DebuggerSupport;
  * </pre>
  *
  * Extracted from DistributedTestCase.
- * 
+ *
  * @see org.apache.geode.internal.util.DebuggerSupport
  */
 public class DebuggerUtils {

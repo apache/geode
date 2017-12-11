@@ -14,6 +14,12 @@
  */
 package org.apache.geode.modules.util;
 
+import java.io.PrintWriter;
+import java.io.StringWriter;
+import java.util.HashSet;
+import java.util.Set;
+import java.util.concurrent.CancellationException;
+
 import org.apache.geode.cache.AttributesFactory;
 import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.CacheWriter;
@@ -33,12 +39,6 @@ import org.apache.geode.internal.cache.xmlcache.CacheXmlGenerator;
 import org.apache.geode.internal.cache.xmlcache.RegionAttributesCreation;
 import org.apache.geode.modules.gatewaydelta.GatewayDeltaForwarderCacheListener;
 import org.apache.geode.modules.session.catalina.callback.SessionExpirationCacheListener;
-
-import java.io.PrintWriter;
-import java.io.StringWriter;
-import java.util.HashSet;
-import java.util.Set;
-import java.util.concurrent.CancellationException;
 
 @SuppressWarnings({"deprecation", "unchecked"})
 public class RegionHelper {

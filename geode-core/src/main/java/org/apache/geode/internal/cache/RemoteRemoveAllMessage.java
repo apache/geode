@@ -104,7 +104,7 @@ public class RemoteRemoveAllMessage extends RemoteOperationMessageWithDirectRepl
   /*
    * this is similar to send() but it selects an initialized replicate that is used to proxy the
    * message
-   * 
+   *
    */
   public static boolean distribute(EntryEventImpl event, RemoveAllEntryData[] data, int dataCount) {
     boolean successful = false;
@@ -187,14 +187,14 @@ public class RemoteRemoveAllMessage extends RemoteOperationMessageWithDirectRepl
 
   /*
    * Sends a LocalRegion RemoteRemoveAllMessage to the recipient
-   * 
+   *
    * @param recipient the member to which the message is sent
-   * 
+   *
    * @param r the LocalRegion for which the op was performed
-   * 
+   *
    * @return the processor used to await acknowledgement that the message was sent, or null to
    * indicate that no acknowledgement will be sent
-   * 
+   *
    * @throws ForceReattemptException if the peer is no longer available
    */
   public static RemoveAllResponse send(DistributedMember recipient, EntryEventImpl event,
@@ -328,7 +328,7 @@ public class RemoteRemoveAllMessage extends RemoteOperationMessageWithDirectRepl
    * sendMsgByBucket() when processing a msg targeted to local Jvm. LocalRegion Note: It is very
    * important that this message does NOT cause any deadlocks as the sender will wait indefinitely
    * for the acknowledgment
-   * 
+   *
    * @param r partitioned region
    * @param eventSender the endpoint server who received request from client
    * @return If succeeds, return true, otherwise, throw exception
@@ -456,7 +456,7 @@ public class RemoteRemoveAllMessage extends RemoteOperationMessageWithDirectRepl
 
     /**
      * Processes this message. This method is invoked by the receiver of the message.
-     * 
+     *
      * @param dm the distribution manager that is processing the message.
      */
     @Override

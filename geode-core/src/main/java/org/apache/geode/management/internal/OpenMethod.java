@@ -25,8 +25,8 @@ import javax.management.openmbean.OpenType;
 
 /**
  * Each data type in corresponding to an Open type will have a
- * 
- * 
+ *
+ *
  */
 public class OpenMethod {
 
@@ -40,7 +40,7 @@ public class OpenMethod {
 
   /**
    * Static method to get the OpenMethod
-   * 
+   *
    * @param m
    * @return an open method
    */

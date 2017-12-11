@@ -15,9 +15,16 @@
 
 package org.apache.geode.cache.query.dunit;
 
+import static org.apache.geode.distributed.ConfigurationProperties.*;
+import static org.junit.Assert.*;
+
 import java.io.File;
 import java.io.IOException;
 import java.util.Properties;
+
+import org.junit.Ignore;
+import org.junit.Test;
+import org.junit.experimental.categories.Category;
 
 import org.apache.geode.cache.AttributesFactory;
 import org.apache.geode.cache.Cache;
@@ -63,16 +70,9 @@ import org.apache.geode.test.junit.categories.ClientSubscriptionTest;
 import org.apache.geode.test.junit.categories.DistributedTest;
 import org.apache.geode.test.junit.categories.FlakyTest;
 
-import org.junit.Ignore;
-import org.junit.Test;
-import org.junit.experimental.categories.Category;
-
-import static org.apache.geode.distributed.ConfigurationProperties.*;
-import static org.junit.Assert.*;
-
 /**
  * Tests for QueryMonitoring service.
- * 
+ *
  * @since GemFire 6.0
  */
 @Category({DistributedTest.class, ClientSubscriptionTest.class})
@@ -884,7 +884,7 @@ public class QueryMonitorDUnitTest extends JUnit4CacheTestCase {
   /**
    * The following CQ test is added to make sure testMaxQueryExecutionTime is reset and is not
    * affecting other query related tests.
-   * 
+   *
    * @throws Exception
    */
   @Test
@@ -1181,4 +1181,3 @@ public class QueryMonitorDUnitTest extends JUnit4CacheTestCase {
   }
 
 }
-

@@ -16,27 +16,10 @@ package org.apache.geode.distributed.internal.membership.gms.messenger;
 
 import static org.mockito.Mockito.*;
 
-import org.apache.geode.distributed.ConfigurationProperties;
-import org.apache.geode.distributed.internal.DistributionConfigImpl;
-import org.apache.geode.distributed.internal.DistributionManager;
-import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
-import org.apache.geode.distributed.internal.membership.NetView;
-import org.apache.geode.distributed.internal.membership.gms.ServiceConfig;
-import org.apache.geode.distributed.internal.membership.gms.Services;
-import org.apache.geode.internal.admin.remote.RemoteTransportConfig;
-import org.apache.geode.test.junit.categories.IntegrationTest;
-
-import org.apache.geode.test.junit.categories.MembershipTest;
-import org.junit.Assert;
-import org.junit.Test;
-
 import java.math.BigInteger;
 import java.security.Key;
 import java.security.KeyPair;
 import java.security.KeyPairGenerator;
-
-import org.junit.experimental.categories.Category;
-
 import java.util.Arrays;
 import java.util.LinkedList;
 import java.util.List;
@@ -49,6 +32,21 @@ import javax.crypto.KeyAgreement;
 import javax.crypto.Mac;
 import javax.crypto.SecretKey;
 import javax.crypto.spec.DHParameterSpec;
+
+import org.junit.Assert;
+import org.junit.Test;
+import org.junit.experimental.categories.Category;
+
+import org.apache.geode.distributed.ConfigurationProperties;
+import org.apache.geode.distributed.internal.DistributionConfigImpl;
+import org.apache.geode.distributed.internal.DistributionManager;
+import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
+import org.apache.geode.distributed.internal.membership.NetView;
+import org.apache.geode.distributed.internal.membership.gms.ServiceConfig;
+import org.apache.geode.distributed.internal.membership.gms.Services;
+import org.apache.geode.internal.admin.remote.RemoteTransportConfig;
+import org.apache.geode.test.junit.categories.IntegrationTest;
+import org.apache.geode.test.junit.categories.MembershipTest;
 
 @Category({IntegrationTest.class, MembershipTest.class})
 public class GMSEncryptJUnitTest {

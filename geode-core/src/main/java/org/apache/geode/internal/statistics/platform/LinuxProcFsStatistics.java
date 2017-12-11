@@ -14,15 +14,16 @@
  */
 package org.apache.geode.internal.statistics.platform;
 
-import org.apache.geode.distributed.internal.DistributionConfig;
-import org.apache.logging.log4j.Logger;
-
 import java.io.*;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+
+import org.apache.logging.log4j.Logger;
+
+import org.apache.geode.distributed.internal.DistributionConfig;
 
 public class LinuxProcFsStatistics {
   private enum CPU {
@@ -33,6 +34,7 @@ public class LinuxProcFsStatistics {
     IOWAIT,
     IRQ,
     SOFTIRQ,
+    STEAL,
     /** stands for aggregation of all columns not present in the enum list */
     OTHER
   }
@@ -90,7 +92,7 @@ public class LinuxProcFsStatistics {
    * get the statistics for the specified process. ( pid_rssSize, pid_imageSize ) vsize is assumed
    * to be in units of kbytes System property gemfire.statistics.pagesSize can be used to configure
    * pageSize. This is the mem_unit member of the struct returned by sysinfo()
-   * 
+   *
    */
   public static void refreshProcess(int pid, int[] ints, long[] longs, double[] doubles) { // TODO:
                                                                                            // was
@@ -150,6 +152,7 @@ public class LinuxProcFsStatistics {
             ints[LinuxSystemStats.cpuNiceINT] = cpuData[CPU.NICE.ordinal()];
             ints[LinuxSystemStats.cpuSystemINT] = cpuData[CPU.SYSTEM.ordinal()];
             ints[LinuxSystemStats.cpuUserINT] = cpuData[CPU.USER.ordinal()];
+            ints[LinuxSystemStats.cpuStealINT] = cpuData[CPU.STEAL.ordinal()];
             ints[LinuxSystemStats.iowaitINT] = cpuData[CPU.IOWAIT.ordinal()];
             ints[LinuxSystemStats.irqINT] = cpuData[CPU.IRQ.ordinal()];
             ints[LinuxSystemStats.softirqINT] = cpuData[CPU.SOFTIRQ.ordinal()];
@@ -229,7 +232,7 @@ public class LinuxProcFsStatistics {
 
   /**
    * Returns the available system memory (free + cached).
-   * 
+   *
    * @param logger the logger
    * @return the available memory in bytes
    */
@@ -579,7 +582,7 @@ public class LinuxProcFsStatistics {
    * Count the number of files in /proc that do not represent processes. This value is cached to
    * make counting the number of running process a cheap operation. The assumption is that the
    * contents of /proc will not change on a running system.
-   * 
+   *
    * @return the files in /proc that do NOT match /proc/[0-9]*
    */
   private static int getNumberOfNonProcessProcFiles() {
@@ -637,12 +640,12 @@ public class LinuxProcFsStatistics {
       st.skipToken(); // cpu name
       final int MAX_CPU_STATS = CPU.values().length;
       /*
-       * newer kernels now have 8 columns for cpu in /proc/stat (up from 7). This number may
-       * increase even further, hence we now use List in place of long[]. We add up entries from all
-       * columns after 7 into CPU.OTHER
+       * newer kernels now have 10 columns for cpu in /proc/stat. This number may increase even
+       * further, hence we now use List in place of long[]. We add up entries from all columns after
+       * MAX_CPU_STATS into CPU.OTHER
        */
-      List<Long> newStats = new ArrayList<Long>(8);
-      List<Long> diffs = new ArrayList<Long>(8);
+      List<Long> newStats = new ArrayList<Long>(10);
+      List<Long> diffs = new ArrayList<Long>(10);
       long total_change = 0;
       int actualCpuStats = 0;
       long unaccountedCpuUtilization = 0;

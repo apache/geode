@@ -29,6 +29,10 @@ import java.util.List;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
 
+import net.spy.memcached.BinaryConnectionFactory;
+import net.spy.memcached.ConnectionFactoryBuilder;
+import net.spy.memcached.FailureMode;
+import net.spy.memcached.MemcachedClient;
 import org.junit.experimental.categories.Category;
 
 import org.apache.geode.cache.CacheLoader;
@@ -42,11 +46,6 @@ import org.apache.geode.internal.cache.GemFireCacheImpl;
 import org.apache.geode.internal.memcached.KeyWrapper;
 import org.apache.geode.memcached.GemFireMemcachedServer.Protocol;
 import org.apache.geode.test.junit.categories.IntegrationTest;
-
-import net.spy.memcached.BinaryConnectionFactory;
-import net.spy.memcached.ConnectionFactoryBuilder;
-import net.spy.memcached.FailureMode;
-import net.spy.memcached.MemcachedClient;
 
 /**
  * Test for binary protocol

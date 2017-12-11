@@ -27,6 +27,7 @@ import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
+import org.junit.rules.TemporaryFolder;
 import org.junit.rules.TestName;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
@@ -34,11 +35,10 @@ import org.junit.runners.Parameterized;
 import org.apache.geode.internal.AvailablePortHelper;
 import org.apache.geode.management.internal.cli.i18n.CliStrings;
 import org.apache.geode.management.internal.cli.util.CommandStringBuilder;
-import org.apache.geode.test.junit.rules.GfshShellConnectionRule;
-import org.apache.geode.test.dunit.rules.LocatorServerStartupRule;
 import org.apache.geode.test.dunit.standalone.VersionManager;
 import org.apache.geode.test.junit.categories.BackwardCompatibilityTest;
 import org.apache.geode.test.junit.categories.DistributedTest;
+import org.apache.geode.test.junit.rules.GfshCommandRule;
 import org.apache.geode.test.junit.runners.CategoryWithParameterizedRunnerFactory;
 
 /**
@@ -61,10 +61,10 @@ public class TomcatSessionBackwardsCompatibilityTest {
   }
 
   @Rule
-  public transient GfshShellConnectionRule gfsh = new GfshShellConnectionRule();
+  public transient GfshCommandRule gfsh = new GfshCommandRule();
 
   @Rule
-  public transient LocatorServerStartupRule locatorStartup = new LocatorServerStartupRule();
+  public TemporaryFolder tempFolder = new TemporaryFolder();
 
   @Rule
   public transient TestName testName = new TestName();
@@ -83,6 +83,8 @@ public class TomcatSessionBackwardsCompatibilityTest {
   int locatorPort;
   String classPathTomcat7079;
   String classPathTomcat8;
+  String serverDir;
+  String locatorDir;
 
   public TomcatSessionBackwardsCompatibilityTest(String version) {
     VersionManager versionManager = VersionManager.getInstance();
@@ -92,21 +94,24 @@ public class TomcatSessionBackwardsCompatibilityTest {
   }
 
   protected void startServer(String name, String classPath, int locatorPort) throws Exception {
+    serverDir = tempFolder.newFolder("server").getPath();
     CommandStringBuilder command = new CommandStringBuilder(CliStrings.START_SERVER);
     command.addOption(CliStrings.START_SERVER__NAME, name);
     command.addOption(CliStrings.START_SERVER__SERVER_PORT, "0");
     command.addOption(CliStrings.START_SERVER__CLASSPATH, classPath);
     command.addOption(CliStrings.START_SERVER__LOCATORS, "localhost[" + locatorPort + "]");
-    gfsh.executeAndVerifyCommand(command.toString());
+    command.addOption(CliStrings.START_SERVER__DIR, serverDir);
+    gfsh.executeAndAssertThat(command.toString()).statusIsSuccess();
   }
 
   protected void startLocator(String name, String classPath, int port) throws Exception {
+    locatorDir = tempFolder.newFolder("locator").getPath();
     CommandStringBuilder locStarter = new CommandStringBuilder(CliStrings.START_LOCATOR);
     locStarter.addOption(CliStrings.START_LOCATOR__MEMBER_NAME, name);
     locStarter.addOption(CliStrings.START_LOCATOR__CLASSPATH, classPath);
     locStarter.addOption(CliStrings.START_LOCATOR__PORT, Integer.toString(port));
-    gfsh.executeAndVerifyCommand(locStarter.toString());
-
+    locStarter.addOption(CliStrings.START_LOCATOR__DIR, locatorDir);
+    gfsh.executeAndAssertThat(locStarter.toString()).statusIsSuccess();
   }
 
   @Before
@@ -163,13 +168,13 @@ public class TomcatSessionBackwardsCompatibilityTest {
     manager.stopAllActiveContainers();
     manager.cleanUp();
 
-    CommandStringBuilder locStop = new CommandStringBuilder(CliStrings.STOP_LOCATOR);
-    locStop.addOption(CliStrings.STOP_LOCATOR__DIR, "loc");
-    gfsh.executeAndVerifyCommand(locStop.toString());
-
     CommandStringBuilder command = new CommandStringBuilder(CliStrings.STOP_SERVER);
-    command.addOption(CliStrings.STOP_SERVER__DIR, "server");
-    gfsh.executeAndVerifyCommand(command.toString());
+    command.addOption(CliStrings.STOP_SERVER__DIR, serverDir);
+    gfsh.executeAndAssertThat(command.toString()).statusIsSuccess();
+
+    CommandStringBuilder locStop = new CommandStringBuilder(CliStrings.STOP_LOCATOR);
+    locStop.addOption(CliStrings.STOP_LOCATOR__DIR, locatorDir);
+    gfsh.executeAndAssertThat(locStop.toString()).statusIsSuccess();
   }
 
   private void doPutAndGetSessionOnAllClients() throws IOException, URISyntaxException {

@@ -16,13 +16,11 @@
 
 package org.apache.geode.internal.admin.remote;
 
-// import org.apache.geode.*;
-import org.apache.geode.internal.i18n.LocalizedStrings;
-// import org.apache.geode.internal.admin.*;
-import org.apache.geode.distributed.internal.*;
 import java.io.*;
-// import java.util.*;
+
+import org.apache.geode.distributed.internal.*;
 import org.apache.geode.distributed.internal.membership.*;
+import org.apache.geode.internal.i18n.LocalizedStrings;
 import org.apache.geode.internal.statistics.GemFireStatSampler;
 
 /**
@@ -36,8 +34,8 @@ public class CancelStatListenerResponse extends AdminResponse {
    * Returns a <code>CancelStatListenerResponse</code> that will be returned to the specified
    * recipient. The message will contains a copy of the local manager's system config.
    */
-  public static CancelStatListenerResponse create(DistributionManager dm,
-      InternalDistributedMember recipient, int listenerId) {
+  public static CancelStatListenerResponse create(DM dm, InternalDistributedMember recipient,
+      int listenerId) {
     CancelStatListenerResponse m = new CancelStatListenerResponse();
     m.setRecipient(recipient);
     GemFireStatSampler sampler = null;

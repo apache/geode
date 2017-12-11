@@ -14,7 +14,6 @@
  */
 package org.apache.geode.admin.internal;
 
-import java.io.Serializable;
 import java.util.Map;
 import java.util.Set;
 
@@ -23,37 +22,32 @@ import org.apache.geode.cache.persistence.PersistentID;
 import org.apache.geode.distributed.DistributedMember;
 
 /**
- * Holds the result of a backup operation.
- * 
- *
+ * @deprecated as of 7.0 use the <code><a href=
+ *             "{@docRoot}/org/apache/geode/management/package-summary.html">management</a></code>
+ *             package instead
  */
-public class BackupStatusImpl implements BackupStatus, Serializable {
-  private static final long serialVersionUID = 3704162840296921840L;
+public class BackupStatusImpl implements BackupStatus {
+  private static final long serialVersionUID = 3704162840296921841L;
 
-  private Map<DistributedMember, Set<PersistentID>> backedUpDiskStores;
-  private Set<PersistentID> offlineDiskStores;
+  private org.apache.geode.management.BackupStatus status;
 
   public BackupStatusImpl(Map<DistributedMember, Set<PersistentID>> backedUpDiskStores,
       Set<PersistentID> offlineDiskStores) {
-    super();
-    this.backedUpDiskStores = backedUpDiskStores;
-    this.offlineDiskStores = offlineDiskStores;
+    status = new org.apache.geode.management.internal.BackupStatusImpl(backedUpDiskStores,
+        offlineDiskStores);
   }
 
-  public Map<DistributedMember, Set<PersistentID>> getBackedUpDiskStores() {
-    return backedUpDiskStores;
-  }
-
-  public Set<PersistentID> getOfflineDiskStores() {
-    return offlineDiskStores;
+  BackupStatusImpl(org.apache.geode.management.BackupStatus status) {
+    this.status = status;
   }
 
   @Override
-  public String toString() {
-    return "BackupStatus[backedUpDiskStores=" + backedUpDiskStores + ", offlineDiskStores="
-        + offlineDiskStores + "]";
+  public Map<DistributedMember, Set<PersistentID>> getBackedUpDiskStores() {
+    return status.getBackedUpDiskStores();
   }
 
-
-
+  @Override
+  public Set<PersistentID> getOfflineDiskStores() {
+    return status.getOfflineDiskStores();
+  }
 }

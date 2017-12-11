@@ -19,7 +19,7 @@ import org.apache.geode.cache.client.ServerConnectivityException;
 /**
  * Indicates that this client cannot contact any servers and therefore cannot perform operations
  * that require subscriptions, such as registering interest.
- * 
+ *
  * @since GemFire 5.7
  */
 public class NoSubscriptionServersAvailableException extends ServerConnectivityException {
@@ -33,9 +33,9 @@ public class NoSubscriptionServersAvailableException extends ServerConnectivityE
   public NoSubscriptionServersAvailableException() {}
 
   /**
-   * 
+   *
    * Create a new instance of NoSubscriptionServersAvailableException with a detail message
-   * 
+   *
    * @param message the detail message
    */
   public NoSubscriptionServersAvailableException(String message) {
@@ -45,7 +45,7 @@ public class NoSubscriptionServersAvailableException extends ServerConnectivityE
   /**
    * Create a new instance of NoSubscriptionServersAvailableException with a detail message and
    * cause
-   * 
+   *
    * @param message the detail message
    * @param cause the cause
    */
@@ -55,7 +55,7 @@ public class NoSubscriptionServersAvailableException extends ServerConnectivityE
 
   /**
    * Create a new instance of NoSubscriptionServersAvailableException with a cause
-   * 
+   *
    * @param cause the cause
    */
   public NoSubscriptionServersAvailableException(Throwable cause) {

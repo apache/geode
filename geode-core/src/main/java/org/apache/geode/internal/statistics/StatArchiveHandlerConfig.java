@@ -21,7 +21,7 @@ import java.io.File;
  * (some of which may change at runtime).
  * <p/>
  * Implemented by {@link HostStatSampler}.
- * 
+ *
  * @since GemFire 7.0
  * @see org.apache.geode.distributed.internal.RuntimeDistributionConfigImpl
  */

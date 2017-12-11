@@ -19,11 +19,11 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 import org.apache.geode.cache.Region;
 import org.apache.geode.redis.internal.ByteArrayWrapper;
+import org.apache.geode.redis.internal.Coder;
 import org.apache.geode.redis.internal.Command;
 import org.apache.geode.redis.internal.ExecutionHandlerContext;
 import org.apache.geode.redis.internal.Extendable;
 import org.apache.geode.redis.internal.RedisDataType;
-import org.apache.geode.redis.internal.Coder;
 
 public abstract class PushExecutor extends PushXExecutor implements Extendable {
 

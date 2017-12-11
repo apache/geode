@@ -19,28 +19,28 @@ import org.apache.geode.distributed.internal.DistributionAdvisor.Profile;
 /**
  * Callback for changes to profiles in a DistributionAdvisor. A ProfileListener can be registered
  * with a DistributionAdvisor.
- * 
+ *
  * These methods are called while the monitor is held on the DistributionAdvisor.
  *
  */
 public interface ProfileListener {
   /**
    * Method is invoked after a new profile is created/added to profiles.
-   * 
+   *
    * @param profile the created profile
    */
   void profileCreated(Profile profile);
 
   /**
    * Method is invoked after a profile is updated in profiles.
-   * 
+   *
    * @param profile the updated profile
    */
   void profileUpdated(Profile profile);
 
   /**
    * Method is invoked after a profile is removed from profiles.
-   * 
+   *
    * @param profile the removed profile
    * @param destroyed indicated that the profile member was destroyed, rather than closed (used for
    *        persistence)

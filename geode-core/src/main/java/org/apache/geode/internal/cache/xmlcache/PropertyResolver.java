@@ -13,7 +13,7 @@
  * the License.
  */
 /**
- * 
+ *
  */
 package org.apache.geode.internal.cache.xmlcache;
 
@@ -36,7 +36,7 @@ public interface PropertyResolver {
    * returns the replacement of the property found in available properties. If no string replacement
    * is found then {@link IllegalFormatException} would be thrown based on
    * <code>ignoreUnresolvedProperties</code> flag being set by {@link CacheXmlParser}.
-   * 
+   *
    * @param replaceString
    * @return resolvedString
    */

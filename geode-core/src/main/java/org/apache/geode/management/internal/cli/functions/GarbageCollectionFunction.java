@@ -16,6 +16,7 @@ package org.apache.geode.management.internal.cli.functions;
 
 import java.util.HashMap;
 import java.util.Map;
+
 import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.execute.Function;
 import org.apache.geode.cache.execute.FunctionContext;
@@ -25,11 +26,11 @@ import org.apache.geode.management.internal.cli.CliUtil;
 import org.apache.geode.management.internal.cli.util.BytesToString;
 
 /**
- * 
+ *
  * Class for Garbage collection function
- * 
- * 
- * 
+ *
+ *
+ *
  */
 public class GarbageCollectionFunction implements Function, InternalEntity {
   public static final String ID = GarbageCollectionFunction.class.getName();
@@ -76,5 +77,3 @@ public class GarbageCollectionFunction implements Function, InternalEntity {
     return false;
   }
 }
-
-

@@ -28,7 +28,7 @@ public class RegionReinitializedException extends RegionDestroyedException {
 
   /**
    * Constructs a <code>RegionReinitializedException</code> with a message.
-   * 
+   *
    * @param msg the String message
    */
   public RegionReinitializedException(String msg, String regionFullPath) {
@@ -37,7 +37,7 @@ public class RegionReinitializedException extends RegionDestroyedException {
 
   /**
    * Constructs a <code>RegionDestroyedException</code> with a message and a cause.
-   * 
+   *
    * @param s the String message
    * @param ex the Throwable cause
    */

@@ -17,6 +17,15 @@ package org.apache.geode.distributed.internal.membership.gms.auth;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
+import java.security.Principal;
+import java.util.Properties;
+
+import org.apache.shiro.subject.Subject;
+import org.junit.Before;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
+import org.mockito.MockitoAnnotations;
+
 import org.apache.geode.LogWriter;
 import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.distributed.internal.DistributionConfig;
@@ -27,14 +36,6 @@ import org.apache.geode.internal.security.SecurityService;
 import org.apache.geode.security.AuthInitialize;
 import org.apache.geode.security.AuthenticationFailedException;
 import org.apache.geode.security.Authenticator;
-import org.apache.shiro.subject.Subject;
-import org.junit.Before;
-import org.mockito.InjectMocks;
-import org.mockito.Mock;
-import org.mockito.MockitoAnnotations;
-
-import java.security.Principal;
-import java.util.Properties;
 
 public abstract class AbstractGMSAuthenticatorTestCase {
 

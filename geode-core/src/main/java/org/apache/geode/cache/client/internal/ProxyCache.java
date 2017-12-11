@@ -40,9 +40,9 @@ import org.apache.geode.pdx.internal.PdxInstanceFactoryImpl;
  * attribute is set to true. Application must use its {@link #getRegion(String)} API instead that of
  * actual Cache instance for getting a reference to Region instances, to perform operations on
  * server.
- * 
+ *
  * TODO Avoid creating multiple instances of ProxyCache for a single user.
- * 
+ *
  * @see ClientCache#createAuthenticatedView(Properties)
  * @see ProxyQueryService
  * @see ProxyRegion

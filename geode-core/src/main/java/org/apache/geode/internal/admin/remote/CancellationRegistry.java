@@ -16,6 +16,7 @@
 package org.apache.geode.internal.admin.remote;
 
 import java.util.*;
+
 import org.apache.geode.distributed.internal.membership.*;
 import org.apache.geode.internal.i18n.LocalizedStrings;
 
@@ -30,7 +31,7 @@ public class CancellationRegistry {
 
   private CancellationRegistry() {}
 
-  public synchronized static CancellationRegistry getInstance() {
+  public static synchronized CancellationRegistry getInstance() {
     if (internalRef == null) {
       internalRef = new CancellationRegistry();
     }
@@ -57,7 +58,7 @@ public class CancellationRegistry {
 
   /////// Inner Classes ////////////////////////////////////////
 
-  static private class Key {
+  private static class Key {
     private final InternalDistributedMember console;
     private final int msgId;
 

@@ -25,7 +25,7 @@ import org.apache.geode.pdx.internal.PdxType;
 
 /**
  * Retrieve all known PDX types.
- * 
+ *
  * @since GemFire 7.0
  */
 public class GetPDXTypesOp {

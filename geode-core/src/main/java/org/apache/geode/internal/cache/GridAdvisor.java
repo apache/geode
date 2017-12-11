@@ -297,7 +297,7 @@ public abstract class GridAdvisor extends DistributionAdvisor {
     /**
      * Tell local controllers about the received profile. Also if exchange profiles then add each
      * local controller to reply.
-     * 
+     *
      * @since GemFire 5.7
      */
     protected void tellLocalControllers(boolean removeProfile, boolean exchangeProfiles,
@@ -322,7 +322,7 @@ public abstract class GridAdvisor extends DistributionAdvisor {
     /**
      * Tell local bridge servers about the received profile. Also if exchange profiles then add each
      * local bridge server to reply.
-     * 
+     *
      * @since GemFire 5.7
      */
     protected void tellLocalBridgeServers(boolean removeProfile, boolean exchangeProfiles,

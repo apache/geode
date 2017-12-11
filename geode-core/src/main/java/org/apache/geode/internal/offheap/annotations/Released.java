@@ -33,10 +33,10 @@ import java.lang.annotation.Target;
  * within the containing method (typically in a finally block).</li>
  * <li>Can also be used on fields to augment the @Retained annotation.</li>
  * </ul>
- * 
+ *
  * One or more OffHeapIdentifiers may be supplied if the developer wishes to link this annotation
  * with other off-heap annotations.
- * 
+ *
  */
 @Retention(RetentionPolicy.SOURCE)
 @Target({ElementType.PARAMETER, ElementType.METHOD, ElementType.LOCAL_VARIABLE, ElementType.FIELD})

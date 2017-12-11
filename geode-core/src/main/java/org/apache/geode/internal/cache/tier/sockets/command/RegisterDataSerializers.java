@@ -29,7 +29,7 @@ import org.apache.geode.internal.security.SecurityService;
 
 public class RegisterDataSerializers extends BaseCommand {
 
-  private final static RegisterDataSerializers singleton = new RegisterDataSerializers();
+  private static final RegisterDataSerializers singleton = new RegisterDataSerializers();
 
   public static Command getCommand() {
     return singleton;

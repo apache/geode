@@ -16,14 +16,15 @@ package org.apache.geode.test.junit.rules.serializable;
 
 import static org.assertj.core.api.Assertions.*;
 
-import org.apache.geode.test.junit.categories.UnitTest;
+import java.io.Serializable;
+
 import org.apache.commons.lang.SerializationUtils;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 import org.junit.runner.Description;
 import org.junit.runners.model.Statement;
 
-import java.io.Serializable;
+import org.apache.geode.test.junit.categories.UnitTest;
 
 /**
  * Unit tests for {@link SerializableRuleList}.

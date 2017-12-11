@@ -28,7 +28,7 @@ import org.apache.geode.internal.cache.DiskStoreImpl;
 import org.apache.geode.internal.cache.GemFireCacheImpl;
 import org.apache.geode.internal.cache.LocalRegion;
 import org.apache.geode.internal.cache.PartitionedRegion;
-import org.apache.geode.internal.cache.lru.LRUStatistics;
+import org.apache.geode.internal.cache.eviction.EvictionStatistics;
 import org.apache.geode.management.EvictionAttributesData;
 import org.apache.geode.management.FixedPartitionAttributesData;
 import org.apache.geode.management.MembershipAttributesData;
@@ -89,7 +89,7 @@ public class RegionMBeanBridge<K, V> {
 
   private String member;
 
-  private LRUStatistics lruMemoryStats;
+  private EvictionStatistics lruMemoryStats;
 
   private CachePerfStats regionStats;
 
@@ -145,6 +145,13 @@ public class RegionMBeanBridge<K, V> {
     this.regAttrs = region.getAttributes();
 
     this.isStatisticsEnabled = regAttrs.getStatisticsEnabled();
+    if (isStatisticsEnabled) {
+      try {
+        region.getStatistics();
+      } catch (UnsupportedOperationException e) {
+        this.isStatisticsEnabled = false;
+      }
+    }
 
     this.regionAttributesData = RegionMBeanCompositeDataFactory.getRegionAttributesData(regAttrs);
     this.membershipAttributesData =
@@ -166,7 +173,7 @@ public class RegionMBeanBridge<K, V> {
 
     LocalRegion l = (LocalRegion) region;
     if (l.getEvictionController() != null) {
-      LRUStatistics stats = l.getEvictionController().getLRUHelper().getStats();
+      EvictionStatistics stats = l.getEvictionController().getStatistics();
       if (stats != null) {
         regionMonitor.addStatisticsToMonitor(stats.getStats());
         EvictionAttributes ea = region.getAttributes().getEvictionAttributes();
@@ -380,7 +387,7 @@ public class RegionMBeanBridge<K, V> {
 
   /**
    * Only applicable for PRs
-   * 
+   *
    * @return float
    */
   public float getPutLocalRate() {
@@ -389,7 +396,7 @@ public class RegionMBeanBridge<K, V> {
 
   /**
    * Only applicable for PRs
-   * 
+   *
    * @return float
    */
   public float getPutRemoteRate() {
@@ -398,7 +405,7 @@ public class RegionMBeanBridge<K, V> {
 
   /**
    * Only applicable for PRs
-   * 
+   *
    * @return long
    */
   public long getPutRemoteAvgLatency() {
@@ -407,7 +414,7 @@ public class RegionMBeanBridge<K, V> {
 
   /**
    * Only applicable for PRs
-   * 
+   *
    * @return long
    */
   public long getPutRemoteLatency() {
@@ -416,7 +423,7 @@ public class RegionMBeanBridge<K, V> {
 
   /**
    * Only applicable for PRs
-   * 
+   *
    * @return int
    */
   public int getActualRedundancy() {
@@ -425,7 +432,7 @@ public class RegionMBeanBridge<K, V> {
 
   /**
    * Only applicable for PRs
-   * 
+   *
    * @return int
    */
   public int getAvgBucketSize() {
@@ -434,7 +441,7 @@ public class RegionMBeanBridge<K, V> {
 
   /**
    * Only applicable for PRs
-   * 
+   *
    * @return int
    */
   public int getBucketCount() {
@@ -447,7 +454,7 @@ public class RegionMBeanBridge<K, V> {
 
   /**
    * Only applicable for PRs
-   * 
+   *
    * @return int
    */
   public int getNumBucketsWithoutRedundancy() {
@@ -456,7 +463,7 @@ public class RegionMBeanBridge<K, V> {
 
   /**
    * Only applicable for PRs
-   * 
+   *
    * @return int
    */
   public int getPrimaryBucketCount() {
@@ -465,7 +472,7 @@ public class RegionMBeanBridge<K, V> {
 
   /**
    * Only applicable for PRs
-   * 
+   *
    * @return int
    */
   public int getTotalBucketSize() {
@@ -474,7 +481,7 @@ public class RegionMBeanBridge<K, V> {
 
   /**
    * Only applicable for PRs
-   * 
+   *
    * @return list of fixed PR attributes
    */
   public FixedPartitionAttributesData[] listFixedPartitionAttributes() {
@@ -483,7 +490,7 @@ public class RegionMBeanBridge<K, V> {
 
   /**
    * Only applicable for PRs
-   * 
+   *
    * @return list of PR attributes
    */
   public PartitionAttributesData listPartitionAttributes() {

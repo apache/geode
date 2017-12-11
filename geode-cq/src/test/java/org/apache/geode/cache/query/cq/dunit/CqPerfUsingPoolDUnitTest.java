@@ -14,15 +14,7 @@
  */
 package org.apache.geode.cache.query.cq.dunit;
 
-import org.junit.Ignore;
-import org.junit.experimental.categories.Category;
-import org.junit.Test;
-
 import static org.junit.Assert.*;
-
-import org.apache.geode.test.dunit.cache.internal.JUnit4CacheTestCase;
-import org.apache.geode.test.dunit.internal.JUnit4DistributedTestCase;
-import org.apache.geode.test.junit.categories.DistributedTest;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -30,6 +22,8 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
 
+import org.junit.Ignore;
+import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
 import org.apache.geode.cache.CacheException;
@@ -39,10 +33,10 @@ import org.apache.geode.cache.query.CqListener;
 import org.apache.geode.cache.query.CqQuery;
 import org.apache.geode.cache.query.QueryService;
 import org.apache.geode.cache.query.internal.DefaultQueryService;
-import org.apache.geode.cache.query.internal.cq.ServerCQImpl;
 import org.apache.geode.cache.query.internal.cq.CqService;
 import org.apache.geode.cache.query.internal.cq.CqServiceImpl;
 import org.apache.geode.cache.query.internal.cq.InternalCqQuery;
+import org.apache.geode.cache.query.internal.cq.ServerCQImpl;
 import org.apache.geode.cache30.CacheSerializableRunnable;
 import org.apache.geode.cache30.CacheTestCase;
 import org.apache.geode.internal.AvailablePortHelper;
@@ -54,6 +48,9 @@ import org.apache.geode.test.dunit.NetworkUtils;
 import org.apache.geode.test.dunit.SerializableRunnable;
 import org.apache.geode.test.dunit.VM;
 import org.apache.geode.test.dunit.Wait;
+import org.apache.geode.test.dunit.cache.internal.JUnit4CacheTestCase;
+import org.apache.geode.test.dunit.internal.JUnit4DistributedTestCase;
+import org.apache.geode.test.junit.categories.DistributedTest;
 
 /**
  * This class tests the ContiunousQuery mechanism in GemFire. This includes the test with diffetent
@@ -83,7 +80,7 @@ public class CqPerfUsingPoolDUnitTest extends JUnit4CacheTestCase {
 
   /**
    * Tests the cq performance.
-   * 
+   *
    * @throws Exception
    */
   @Ignore("perf")
@@ -194,7 +191,7 @@ public class CqPerfUsingPoolDUnitTest extends JUnit4CacheTestCase {
 
   /**
    * Test for maintaining keys for update optimization.
-   * 
+   *
    * @throws Exception
    */
   @Test
@@ -416,7 +413,7 @@ public class CqPerfUsingPoolDUnitTest extends JUnit4CacheTestCase {
   /**
    * Test for common CQs. To test the changes relating to, executing CQ only once for all similar
    * CQs.
-   * 
+   *
    * @throws Exception
    */
   @Test
@@ -531,7 +528,7 @@ public class CqPerfUsingPoolDUnitTest extends JUnit4CacheTestCase {
   /**
    * Test for common CQs. To test the changes relating to, executing CQ only once for all similar
    * CQs.
-   * 
+   *
    * @throws Exception
    */
   @Test
@@ -692,7 +689,7 @@ public class CqPerfUsingPoolDUnitTest extends JUnit4CacheTestCase {
 
   /**
    * Test for CQ Fail over.
-   * 
+   *
    * @throws Exception
    */
   @Test
@@ -865,7 +862,7 @@ public class CqPerfUsingPoolDUnitTest extends JUnit4CacheTestCase {
 
   /**
    * Performance test for Matching CQ optimization changes.
-   * 
+   *
    * @throws Exception
    */
   @Ignore("perf")

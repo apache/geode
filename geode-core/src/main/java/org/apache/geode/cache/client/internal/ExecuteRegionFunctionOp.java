@@ -48,7 +48,7 @@ import org.apache.geode.internal.logging.LogService;
 /**
  * Does a Execution of function on server region.<br>
  * It alos gets result from the server
- * 
+ *
  * @since GemFire 5.8Beta
  */
 public class ExecuteRegionFunctionOp {
@@ -62,7 +62,7 @@ public class ExecuteRegionFunctionOp {
   /**
    * Does a execute Function on a server using connections from the given pool to communicate with
    * the server.
-   * 
+   *
    * @param pool the pool to use to communicate with the server.
    * @param region the name of the region to do the put on
    * @param function to be executed

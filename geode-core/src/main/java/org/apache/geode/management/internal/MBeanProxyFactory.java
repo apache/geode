@@ -69,7 +69,7 @@ public class MBeanProxyFactory {
   /**
    * Creates a single proxy and adds a {@link ProxyInfo} to proxy repository
    * {@link MBeanProxyInfoRepository}
-   * 
+   *
    * @param member {@link org.apache.geode.distributed.DistributedMember}
    * @param objectName {@link javax.management.ObjectName} of the Bean
    * @param monitoringRegion monitoring region containing the proxies
@@ -113,7 +113,7 @@ public class MBeanProxyFactory {
    * exception to its caller. It handles the error and logs error messages
    *
    * It will be called from GII or when a member joins the system
-   * 
+   *
    * @param member {@link org.apache.geode.distributed.DistributedMember}
    * @param monitoringRegion monitoring region containing the proxies
    */
@@ -145,7 +145,7 @@ public class MBeanProxyFactory {
 
   /**
    * Removes all proxies for a given member
-   * 
+   *
    * @param member {@link org.apache.geode.distributed.DistributedMember}
    * @param monitoringRegion monitoring region containing the proxies
    */
@@ -177,7 +177,7 @@ public class MBeanProxyFactory {
 
   /**
    * Removes the proxy
-   * 
+   *
    * @param member {@link org.apache.geode.distributed.DistributedMember}
    * @param objectName {@link javax.management.ObjectName} of the Bean
    */
@@ -226,7 +226,7 @@ public class MBeanProxyFactory {
    * {@link org.apache.geode.distributed.DistributedMember} and interface class If the proxy
    * interface does not implement the given interface class a {@link java.lang.ClassCastException}.
    * will be thrown
-   * 
+   *
    * @param objectName {@link javax.management.ObjectName} of the MBean
    * @param interfaceClass interface class implemented by proxy
    * @return an instance of proxy exposing the given interface
@@ -244,7 +244,7 @@ public class MBeanProxyFactory {
 
   /**
    * Find a set of proxies given a {@link org.apache.geode.distributed.DistributedMember}
-   * 
+   *
    * @param member {@link org.apache.geode.distributed.DistributedMember}
    * @return a set of {@link javax.management.ObjectName}
    */
@@ -256,7 +256,7 @@ public class MBeanProxyFactory {
 
   /**
    * This will return the last updated time of the proxyMBean
-   * 
+   *
    * @param objectName {@link javax.management.ObjectName} of the MBean
    * @return last updated time of the proxy
    */

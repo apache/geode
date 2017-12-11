@@ -14,18 +14,18 @@
  */
 package org.apache.geode.cache.client.internal.locator.wan;
 
-import org.apache.geode.distributed.internal.DistributionConfig;
-import org.apache.geode.internal.admin.remote.DistributionLocatorId;
-
 import java.util.Set;
 import java.util.concurrent.ConcurrentMap;
+
+import org.apache.geode.distributed.internal.DistributionConfig;
+import org.apache.geode.internal.admin.remote.DistributionLocatorId;
 
 /**
  * A listener to handle membership when new locator is added to remote locator metadata. This
  * listener is expected to inform all other locators in remote locator metadata about the new
  * locator so that they can update their remote locator metadata.
- * 
- * 
+ *
+ *
  */
 public interface LocatorMembershipListener {
 
@@ -38,7 +38,7 @@ public interface LocatorMembershipListener {
   /**
    * When the new locator is added to remote locator metadata, inform all other locators in remote
    * locator metadata about the new locator so that they can update their remote locator metadata.
-   * 
+   *
    * @param locator
    */
   public void locatorJoined(int distributedSystemId, DistributionLocatorId locator,

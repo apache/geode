@@ -14,20 +14,19 @@
  */
 package org.apache.geode.internal.cache.wan.concurrent;
 
-import org.junit.experimental.categories.Category;
-import org.junit.Test;
-
 import static org.junit.Assert.*;
 
-import org.apache.geode.test.dunit.cache.internal.JUnit4CacheTestCase;
-import org.apache.geode.test.dunit.internal.JUnit4DistributedTestCase;
-import org.apache.geode.test.junit.categories.DistributedTest;
+import org.junit.Test;
+import org.junit.experimental.categories.Category;
 
 import org.apache.geode.cache.asyncqueue.internal.AsyncEventQueueFactoryImpl;
 import org.apache.geode.cache.wan.GatewaySender.OrderPolicy;
 import org.apache.geode.internal.cache.wan.AsyncEventQueueTestBase;
 import org.apache.geode.test.dunit.Assert;
 import org.apache.geode.test.dunit.AsyncInvocation;
+import org.apache.geode.test.dunit.cache.internal.JUnit4CacheTestCase;
+import org.apache.geode.test.dunit.internal.JUnit4DistributedTestCase;
+import org.apache.geode.test.junit.categories.DistributedTest;
 
 /**
  *
@@ -89,7 +88,7 @@ public class ConcurrentAsyncEventQueueDUnitTest extends AsyncEventQueueTestBase 
 
   /**
    * Test configuration::
-   * 
+   *
    * Region: Replicated WAN: Serial Dispatcher threads: more than 1 Order policy: key based ordering
    */
 
@@ -137,7 +136,7 @@ public class ConcurrentAsyncEventQueueDUnitTest extends AsyncEventQueueTestBase 
 
   /**
    * Test configuration::
-   * 
+   *
    * Region: Replicated WAN: Serial Dispatcher threads: more than 1 Order policy: Thread ordering
    */
 
@@ -198,7 +197,7 @@ public class ConcurrentAsyncEventQueueDUnitTest extends AsyncEventQueueTestBase 
 
   /**
    * Test configuration::
-   * 
+   *
    * Region: PartitionedRegion WAN: Parallel Dispatcher threads: more than 1 Order policy: key based
    * ordering
    */
@@ -254,7 +253,7 @@ public class ConcurrentAsyncEventQueueDUnitTest extends AsyncEventQueueTestBase 
 
   /**
    * Test configuration::
-   * 
+   *
    * Region: PartitionedRegion WAN: Parallel Dispatcher threads: more than 1 Order policy: PARTITION
    * based ordering
    */

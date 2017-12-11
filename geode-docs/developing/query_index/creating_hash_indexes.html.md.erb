@@ -19,24 +19,30 @@ See the License for the specific language governing permissions and
 limitations under the License.
 -->
 
-<%=vars.product_name%> supports the creation of hash indexes for the purposes of performing equality-based queries.
+<%=vars.product_name%> supports the creation of hash indexes for the purpose of performing equality-based queries.
 
-## <a id="concept_5C7614F71F394C62ACA1BDC5684A7AC4__section_8A927DFB29364DA7856E7FE122FC1654" class="no-quick-link"></a>Why Create a HashIndex
-
-By creating a hash index, you can improve the memory usage of your index. If you are doing equality-based queries, your indexing footprint is significantly reduced. As an example, previously when you created an index that contained string fields, copies of the strings were included in the index. By using hash indexes, indexed expressions are canonicalized and stored in the index as pointers to the objects lying in the region. Improvements in the 30% range are expected, depending on the keys and data being used.
-
-**Note:**
-Your performance results may vary depending on the keys and data being indexed.
-
-## <a id="concept_5C7614F71F394C62ACA1BDC5684A7AC4__section_2EF23A54378E44FFBF1BEB32E41ABD61" class="no-quick-link"></a>Performance Considerations
+## <a id="concept_5C7614F71F394C62ACA1BDC5684A7AC4__section_8A927DFB29364DA7856E7FE122FC1654" class="no-quick-link"></a>Hash Index Performance
 
 The performance of put operations and recovery time when using a hash index 
 will be worse than a range index.
 Queries are expected to be slower due to the implementation 
-of hash index and the cost of recalculating the key on request,
-which is the trade-off for the space savings that using a hash index provides.
+of the hash index and the cost of recalculating the key on request.
+A hash index can improve the memory usage of the index.
+So, the trade-off of the hash index space savings must be weighed against the
+performance penalty it imposes.
 If memory usage is not a concern,
 a range index is recommended.
+
+Consider the memory usage when an index contains string fields.
+Copies of the strings are included in the index.
+With hash indexes, indexed expressions are canonicalized and stored in the index
+as pointers to the objects residing in the region,
+thereby using less memory.
+Tests achieved as high as a 30% reduction in memory footprint,
+but the savings depend on the keys and data being used.
+
+## <a id="concept_5C7614F71F394C62ACA1BDC5684A7AC4__section_2EF23A54378E44FFBF1BEB32E41ABD61" class="no-quick-link"></a>Performance Considerations
+
 
 ## <a id="concept_5C7614F71F394C62ACA1BDC5684A7AC4__section_800401C53E5841269F389329B8A4CDF3" class="no-quick-link"></a>Limitations
 

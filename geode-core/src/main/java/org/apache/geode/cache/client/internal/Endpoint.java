@@ -23,7 +23,7 @@ import org.apache.geode.distributed.internal.ServerLocation;
 
 /**
  * Represents a server. Keeps track of information about the specific server
- * 
+ *
  * @since GemFire 5.7
  *
  */

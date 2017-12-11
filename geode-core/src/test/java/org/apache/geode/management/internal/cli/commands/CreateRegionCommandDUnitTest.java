@@ -15,290 +15,138 @@
 
 package org.apache.geode.management.internal.cli.commands;
 
-import static org.apache.geode.test.dunit.LogWriterUtils.getLogWriter;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertTrue;
+import static org.assertj.core.api.Assertions.assertThat;
 
 import java.io.File;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.OutputStream;
-import java.util.List;
-import java.util.concurrent.CopyOnWriteArrayList;
 
+import org.junit.BeforeClass;
+import org.junit.ClassRule;
+import org.junit.Rule;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
+import org.junit.rules.TemporaryFolder;
+import org.junit.rules.TestName;
 
-import org.apache.geode.cache.PartitionAttributes;
+import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.PartitionResolver;
 import org.apache.geode.cache.Region;
 import org.apache.geode.compression.SnappyCompressor;
-import org.apache.geode.test.compiler.ClassBuilder;
 import org.apache.geode.internal.cache.PartitionedRegion;
 import org.apache.geode.internal.cache.RegionEntryContext;
-import org.apache.geode.management.cli.Result;
-import org.apache.geode.management.internal.cli.i18n.CliStrings;
-import org.apache.geode.management.internal.cli.result.CommandResult;
-import org.apache.geode.management.internal.cli.util.CommandStringBuilder;
-import org.apache.geode.test.dunit.Host;
-import org.apache.geode.test.dunit.VM;
+import org.apache.geode.test.compiler.JarBuilder;
+import org.apache.geode.test.dunit.rules.LocatorServerStartupRule;
+import org.apache.geode.test.dunit.rules.MemberVM;
 import org.apache.geode.test.junit.categories.DistributedTest;
-import org.apache.geode.test.junit.categories.FlakyTest;
+import org.apache.geode.test.junit.rules.GfshCommandRule;
+import org.apache.geode.test.junit.rules.serializable.SerializableTestName;
 
-@Category({DistributedTest.class, FlakyTest.class}) // GEODE-973 GEODE-3530
-@SuppressWarnings("serial")
-public class CreateRegionCommandDUnitTest extends CliCommandTestBase {
+@Category(DistributedTest.class)
+public class CreateRegionCommandDUnitTest {
 
-  private final List<String> filesToBeDeleted = new CopyOnWriteArrayList<>();
+  private static MemberVM locator, server;
 
-  /**
-   * Asserts that the "compressor" option for the "create region" command succeeds for a recognized
-   * compressor.
-   */
-  @Test
-  public void testCreateRegionWithGoodCompressor() {
-    setUpJmxManagerOnVm0ThenConnect(null);
-    VM vm = Host.getHost(0).getVM(1);
+  @ClassRule
+  public static LocatorServerStartupRule lsRule = new LocatorServerStartupRule();
 
-    // Create a cache in vm 1
-    vm.invoke(() -> assertNotNull(getCache()));
+  @ClassRule
+  public static GfshCommandRule gfsh = new GfshCommandRule();
 
-    // Run create region command with compression
-    CommandStringBuilder commandStringBuilder = new CommandStringBuilder(CliStrings.CREATE_REGION);
-    commandStringBuilder.addOption(CliStrings.CREATE_REGION__REGION, "compressedRegion");
-    commandStringBuilder.addOption(CliStrings.CREATE_REGION__REGIONSHORTCUT, "REPLICATE");
-    commandStringBuilder.addOption(CliStrings.CREATE_REGION__COMPRESSOR,
-        RegionEntryContext.DEFAULT_COMPRESSION_PROVIDER);
-    CommandResult cmdResult = executeCommand(commandStringBuilder.toString());
-    assertEquals(Result.Status.OK, cmdResult.getStatus());
+  @Rule
+  public TestName testName = new SerializableTestName();
 
-    // Make sure our region exists with compression enabled
-    vm.invoke(() -> {
-      Region region = getCache().getRegion("compressedRegion");
-      assertNotNull(region);
-      assertTrue(
-          SnappyCompressor.getDefaultInstance().equals(region.getAttributes().getCompressor()));
-    });
+  @Rule
+  public TemporaryFolder tmpDir = new TemporaryFolder();
 
-    // cleanup
-    commandStringBuilder = new CommandStringBuilder(CliStrings.DESTROY_REGION);
-    commandStringBuilder.addOption(CliStrings.DESTROY_REGION__REGION, "compressedRegion");
-    cmdResult = executeCommand(commandStringBuilder.toString());
-    assertEquals(Result.Status.OK, cmdResult.getStatus());
+  @BeforeClass
+  public static void before() throws Exception {
+    locator = lsRule.startLocatorVM(0);
+    server = lsRule.startServerVM(1, locator.getPort());
+
+    gfsh.connectAndVerify(locator);
   }
 
-  /**
-   * Asserts that the "compressor" option for the "create region" command fails for an unrecognized
-   * compressorc.
-   */
   @Test
-  public void testCreateRegionWithBadCompressor() {
-    setUpJmxManagerOnVm0ThenConnect(null);
+  public void testCreateRegionWithGoodCompressor() throws Exception {
+    String regionName = testName.getMethodName();
+    gfsh.executeAndAssertThat("create region --name=" + regionName
+        + " --type=REPLICATE --compressor=" + RegionEntryContext.DEFAULT_COMPRESSION_PROVIDER)
+        .statusIsSuccess();
 
-    VM vm = Host.getHost(0).getVM(1);
-
-    // Create a cache in vm 1
-    vm.invoke(() -> assertNotNull(getCache()));
-
-    // Create a region with an unrecognized compressor
-    CommandStringBuilder commandStringBuilder = new CommandStringBuilder(CliStrings.CREATE_REGION);
-    commandStringBuilder.addOption(CliStrings.CREATE_REGION__REGION, "compressedRegion");
-    commandStringBuilder.addOption(CliStrings.CREATE_REGION__REGIONSHORTCUT, "REPLICATE");
-    commandStringBuilder.addOption(CliStrings.CREATE_REGION__COMPRESSOR, "BAD_COMPRESSOR");
-    CommandResult cmdResult = executeCommand(commandStringBuilder.toString());
-    assertEquals(Result.Status.ERROR, cmdResult.getStatus());
-
-    // Assert that our region was not created
-    vm.invoke(() -> {
-      Region region = getCache().getRegion("compressedRegion");
-      assertNull(region);
+    server.invoke(() -> {
+      Cache cache = LocatorServerStartupRule.getCache();
+      Region region = cache.getRegion(regionName);
+      assertThat(region).isNotNull();
+      assertThat(region.getAttributes().getCompressor())
+          .isEqualTo(SnappyCompressor.getDefaultInstance());
     });
   }
 
-  /**
-   * Asserts that a missing "compressor" option for the "create region" command results in a region
-   * with no compression.
-   */
   @Test
-  public void testCreateRegionWithNoCompressor() {
-    setUpJmxManagerOnVm0ThenConnect(null);
+  public void testCreateRegionWithBadCompressor() throws Exception {
+    String regionName = testName.getMethodName();
+    gfsh.executeAndAssertThat(
+        "create region --name=" + regionName + " --type=REPLICATE --compressor=BAD_COMPRESSOR")
+        .statusIsError();
 
-    VM vm = Host.getHost(0).getVM(1);
-
-    // Create a cache in vm 1
-    vm.invoke(() -> assertNotNull(getCache()));
-
-    // Create a region with no compression
-    CommandStringBuilder commandStringBuilder = new CommandStringBuilder(CliStrings.CREATE_REGION);
-    commandStringBuilder.addOption(CliStrings.CREATE_REGION__REGION, "testRegion");
-    commandStringBuilder.addOption(CliStrings.CREATE_REGION__REGIONSHORTCUT, "REPLICATE");
-    CommandResult cmdResult = executeCommand(commandStringBuilder.toString());
-    assertEquals(Result.Status.OK, cmdResult.getStatus());
-
-    // Assert that our newly created region has no compression
-    vm.invoke(() -> {
-      Region region = getCache().getRegion("testRegion");
-      assertNotNull(region);
-      assertNull(region.getAttributes().getCompressor());
+    server.invoke(() -> {
+      Cache cache = LocatorServerStartupRule.getCache();
+      Region region = cache.getRegion(regionName);
+      assertThat(region).isNull();
     });
-
-    // Cleanup
-    commandStringBuilder = new CommandStringBuilder(CliStrings.DESTROY_REGION);
-    commandStringBuilder.addOption(CliStrings.DESTROY_REGION__REGION, "testRegion");
-    cmdResult = executeCommand(commandStringBuilder.toString());
-    assertEquals(Result.Status.OK, cmdResult.getStatus());
   }
 
-  @Test // FlakyTest: GEODE-973
-  public void testCreateRegion46391() throws IOException {
-    setUpJmxManagerOnVm0ThenConnect(null); // GEODE-973: getRandomAvailablePort
-    String region46391 = "region46391";
-    String command = CliStrings.CREATE_REGION + " --" + CliStrings.CREATE_REGION__REGION + "="
-        + region46391 + " --" + CliStrings.CREATE_REGION__REGIONSHORTCUT + "=REPLICATE";
-
-    getLogWriter().info("testCreateRegion46391 create region command=" + command);
-
-    CommandResult cmdResult = executeCommand(command);
-    assertEquals(Result.Status.OK, cmdResult.getStatus());
-
-    command = CliStrings.PUT + " --" + CliStrings.PUT__KEY + "=k1" + " --" + CliStrings.PUT__VALUE
-        + "=k1" + " --" + CliStrings.PUT__REGIONNAME + "=" + region46391;
-
-    getLogWriter().info("testCreateRegion46391 put command=" + command);
-
-    CommandResult cmdResult2 = executeCommand(command);
-    assertEquals(Result.Status.OK, cmdResult2.getStatus());
-
-    getLogWriter().info("testCreateRegion46391  cmdResult2=" + commandResultToString(cmdResult2));
-    String str1 = "Result      : true";
-    String str2 = "Key         : k1";
-    String str3 = "Key Class   : java.lang.String";
-    String str4 = "Value Class : java.lang.String";
-    String str5 = "Old Value   : <NULL>";
-
-    assertTrue(
-        commandResultToString(cmdResult).contains("Region \"/" + region46391 + "\" created on"));
-
-    assertTrue(commandResultToString(cmdResult2).contains(str1));
-    assertTrue(commandResultToString(cmdResult2).contains(str2));
-    assertTrue(commandResultToString(cmdResult2).contains(str3));
-    assertTrue(commandResultToString(cmdResult2).contains(str4));
-    assertTrue(commandResultToString(cmdResult2).contains(str5));
-  }
-
-  /**
-   * Test Description 1. Deploy a JAR with Custom Partition Resolver 2. Create Region with Partition
-   * Resolver 3. Region should get created with no Errors 4. Verify Region Partition Attributes for
-   * Partition Resolver
-   */
   @Test
-  public void testCreateRegionWithPartitionResolver() throws IOException {
-    setUpJmxManagerOnVm0ThenConnect(null);
-    VM vm = Host.getHost(0).getVM(1);
-    // Create a cache in vm 1
-    vm.invoke(() -> assertNotNull(getCache()));
+  public void testCreateRegionWithNoCompressor() throws Exception {
+    String regionName = testName.getMethodName();
+    gfsh.executeAndAssertThat("create region --name=" + regionName + " --type=REPLICATE")
+        .statusIsSuccess();
 
-    ClassBuilder classBuilder = new ClassBuilder();
-    // classBuilder.addToClassPath(".");
-    final File prJarFile = new File(temporaryFolder.getRoot().getCanonicalPath() + File.separator,
-        "myPartitionResolver.jar");
-    this.filesToBeDeleted.add(prJarFile.getAbsolutePath());
-    String PR_STRING = " package com.cadrdunit;"
-        + " public class TestPartitionResolver implements org.apache.geode.cache.PartitionResolver { "
+    server.invoke(() -> {
+      Cache cache = LocatorServerStartupRule.getCache();
+      Region region = cache.getRegion(regionName);
+      assertThat(region).isNotNull();
+      assertThat(region.getAttributes().getCompressor()).isNull();
+    });
+  }
+
+  @Test
+  public void testCreateRegionWithPartitionResolver() throws Exception {
+    String regionName = testName.getMethodName();
+    String PR_STRING = "package io.pivotal; "
+        + "public class TestPartitionResolver implements org.apache.geode.cache.PartitionResolver { "
         + "   @Override" + "   public void close() {" + "   }" + "   @Override"
         + "   public Object getRoutingObject(org.apache.geode.cache.EntryOperation opDetails) { "
         + "    return null; " + "   }" + "   @Override" + "   public String getName() { "
         + "    return \"TestPartitionResolver\";" + "   }" + " }";
-    byte[] jarBytes =
-        classBuilder.createJarFromClassContent("com/cadrdunit/TestPartitionResolver", PR_STRING);
-    writeJarBytesToFile(prJarFile, jarBytes);
+    final File prJarFile = new File(tmpDir.getRoot(), "myPartitionResolver.jar");
+    new JarBuilder().buildJar(prJarFile, PR_STRING);
 
-    CommandResult cmdResult = executeCommand("deploy --jar=" + prJarFile.getAbsolutePath());
-    assertEquals(Result.Status.OK, cmdResult.getStatus());
+    gfsh.executeAndAssertThat("deploy --jar=" + prJarFile.getAbsolutePath()).statusIsSuccess();
 
+    gfsh.executeAndAssertThat("create region --name=" + regionName
+        + " --type=PARTITION --partition-resolver=io.pivotal.TestPartitionResolver")
+        .statusIsSuccess();
 
-    // Create a region with an unrecognized compressor
-    CommandStringBuilder commandStringBuilder = new CommandStringBuilder(CliStrings.CREATE_REGION);
-    commandStringBuilder.addOption(CliStrings.CREATE_REGION__REGION, "regionWithPartitionResolver");
-    commandStringBuilder.addOption(CliStrings.CREATE_REGION__REGIONSHORTCUT, "PARTITION");
-    commandStringBuilder.addOption(CliStrings.CREATE_REGION__PARTITION_RESOLVER,
-        "com.cadrdunit.TestPartitionResolver");
-    CommandResult cmdResult1 = executeCommand(commandStringBuilder.toString());
-    assertEquals(Result.Status.OK, cmdResult1.getStatus());
-
-    // Assert that our region was not created
-    vm.invoke(() -> {
-      Region region = getCache().getRegion("regionWithPartitionResolver");
-      assertNotNull(region);
-
-      PartitionedRegion pr = (PartitionedRegion) region;
-      PartitionAttributes partitionAttributes = pr.getPartitionAttributes();
-      assertNotNull(partitionAttributes);
-      PartitionResolver partitionResolver = partitionAttributes.getPartitionResolver();
-      assertNotNull(partitionResolver);
-      assertEquals("TestPartitionResolver", partitionResolver.getName());
+    server.invoke(() -> {
+      Cache cache = LocatorServerStartupRule.getCache();
+      PartitionedRegion region = (PartitionedRegion) cache.getRegion(regionName);
+      PartitionResolver resolver = region.getPartitionAttributes().getPartitionResolver();
+      assertThat(resolver).isNotNull();
+      assertThat(resolver.getName()).isEqualTo("TestPartitionResolver");
     });
-
-    vm.invoke(() -> getCache().getRegion("regionWithPartitionResolver").destroyRegion());
   }
 
   @Test
-  public void testCreateRegionWithInvalidPartitionResolver() {
-    setUpJmxManagerOnVm0ThenConnect(null);
-    VM vm = Host.getHost(0).getVM(1);
-    // Create a cache in vm 1
-    vm.invoke(() -> assertNotNull(getCache()));
-
-    // Create a region with an unrecognized compressor
-    CommandStringBuilder commandStringBuilder = new CommandStringBuilder(CliStrings.CREATE_REGION);
-    commandStringBuilder.addOption(CliStrings.CREATE_REGION__REGION,
-        "testCreateRegionWithInvalidPartitionResolver");
-    commandStringBuilder.addOption(CliStrings.CREATE_REGION__REGIONSHORTCUT, "PARTITION");
-    commandStringBuilder.addOption(CliStrings.CREATE_REGION__PARTITION_RESOLVER, "a.b.c.d");
-    CommandResult cmdResult = executeCommand(commandStringBuilder.toString());
-    assertEquals(Result.Status.ERROR, cmdResult.getStatus());
-
-    // Assert that our region was not created
-    vm.invoke(() -> {
-      Region region = getCache().getRegion("testCreateRegionWithInvalidPartitionResolver");
-      assertNull(region);
-    });
+  public void testCreateRegionWithInvalidPartitionResolver() throws Exception {
+    gfsh.executeAndAssertThat("create region --name=" + testName.getMethodName()
+        + " --type=PARTITION --partition-resolver=InvalidPartitionResolver").statusIsError();
   }
 
-  /**
-   * Test Description Try creating region of type REPLICATED and specify partition resolver Region
-   * Creation should fail.
-   */
   @Test
-  public void testCreateRegionForReplicatedRegionWithParitionResolver() {
-    setUpJmxManagerOnVm0ThenConnect(null);
-    VM vm = Host.getHost(0).getVM(1);
-    // Create a cache in vm 1
-    vm.invoke(() -> assertNotNull(getCache()));
-
-    // Create a region with an unrecognized compressor
-    CommandStringBuilder commandStringBuilder = new CommandStringBuilder(CliStrings.CREATE_REGION);
-    commandStringBuilder.addOption(CliStrings.CREATE_REGION__REGION,
-        "testCreateRegionForReplicatedRegionWithParitionResolver");
-    commandStringBuilder.addOption(CliStrings.CREATE_REGION__REGIONSHORTCUT, "REPLICATE");
-    commandStringBuilder.addOption(CliStrings.CREATE_REGION__PARTITION_RESOLVER, "a.b.c.d");
-    CommandResult cmdResult = executeCommand(commandStringBuilder.toString());
-    assertEquals(Result.Status.ERROR, cmdResult.getStatus());
-
-    // Assert that our region was not created
-    vm.invoke(() -> {
-      Region region =
-          getCache().getRegion("testCreateRegionForReplicatedRegionWithParitionResolver");
-      assertNull(region);
-    });
-  }
-
-  private void writeJarBytesToFile(File jarFile, byte[] jarBytes) throws IOException {
-    final OutputStream outStream = new FileOutputStream(jarFile);
-    outStream.write(jarBytes);
-    outStream.flush();
-    outStream.close();
+  public void testCreateRegionForReplicatedRegionWithPartitionResolver() {
+    String regionName = testName.getMethodName();
+    gfsh.executeAndAssertThat("create region --name=" + regionName
+        + " --type=REPLICATE --partition-resolver=InvalidPartitionResolver")
+        .containsOutput("\"/" + regionName + "\" is not a Partitioned Region").statusIsError();
   }
 }

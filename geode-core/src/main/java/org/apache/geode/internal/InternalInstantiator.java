@@ -303,7 +303,7 @@ public class InternalInstantiator {
 
   /**
    * Lazily creates a new {@code Instantiator} with the given class and id.
-   * 
+   *
    * @throws IllegalArgumentException The instantiator cannot be created
    * @throws IllegalStateException The instantiator cannot be registered
    */
@@ -318,9 +318,9 @@ public class InternalInstantiator {
 
   /**
    * Lazily creates a new {@code Instantiator} with the given class and id.
-   * 
+   *
    * This method is only called when server connection and CacheClientUpdaterThread
-   * 
+   *
    * @throws IllegalArgumentException The instantiator cannot be created
    * @throws IllegalStateException The instantiator cannot be registered
    */
@@ -695,7 +695,7 @@ public class InternalInstantiator {
 
   /**
    * Does not trigger loading of the instantiator/instantiated classes into the vm.
-   * 
+   *
    * @return array of InstantiatorAttributesArray instances.
    */
   public static Object[] getInstantiatorsForSerialization() {
@@ -782,7 +782,7 @@ public class InternalInstantiator {
 
   /**
    * Read the data from in and register it with this class.
-   * 
+   *
    * @throws IllegalArgumentException if a registration fails
    */
   public static void loadRegistrations(DataInput in) throws IOException {

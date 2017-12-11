@@ -16,17 +16,15 @@
 
 package org.apache.geode.internal.admin.remote;
 
+import java.io.*;
+
 import org.apache.geode.distributed.internal.*;
 import org.apache.geode.internal.i18n.LocalizedStrings;
-// import org.apache.geode.*;
-// import org.apache.geode.internal.*;
-import java.io.*;
-// import java.util.*;
 
 /**
  * A message that is sent to a particular distribution manager to get information on its current
  * cache.
- * 
+ *
  * @since GemFire 3.5
  */
 public class CacheInfoRequest extends AdminRequest {
@@ -44,9 +42,11 @@ public class CacheInfoRequest extends AdminRequest {
 
   /**
    * Must return a proper response to this request.
+   *
+   * @param dm
    */
   @Override
-  protected AdminResponse createResponse(DistributionManager dm) {
+  protected AdminResponse createResponse(DM dm) {
     return CacheInfoResponse.create(dm, this.getSender());
   }
 

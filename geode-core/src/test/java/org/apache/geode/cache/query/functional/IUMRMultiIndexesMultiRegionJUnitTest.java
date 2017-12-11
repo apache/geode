@@ -793,9 +793,9 @@ public class IUMRMultiIndexesMultiRegionJUnitTest {
            * conditions is evalusted first for all Portfolio and Employee objects (999 * 1000) and
            * then other condition with AND is executed for pf.ID = 0 and pf.status = ''active' and
            * pf.ID = emp.ID. So total results are 999001.
-           * 
+           *
            * For expected results correct parenthesis must be used as in next query.
-           * 
+           *
            */
           {"SELECT pf.status, emp.empId, pf.getType() FROM /portfolio pf, /employee emp WHERE pf.ID = emp.empId AND pf.status='active' OR pf.ID > 0",
               "" + 999001},

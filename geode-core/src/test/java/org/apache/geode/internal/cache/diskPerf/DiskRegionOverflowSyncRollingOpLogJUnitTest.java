@@ -14,20 +14,17 @@
  */
 package org.apache.geode.internal.cache.diskPerf;
 
-import org.apache.geode.internal.cache.*;
+import static org.junit.Assert.*;
 
 import java.util.*;
 
-import org.junit.After;
-import org.junit.Before;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
-import static org.junit.Assert.*;
-
 import org.apache.geode.*;
 import org.apache.geode.cache.*;
-import org.apache.geode.internal.cache.lru.LRUStatistics;
+import org.apache.geode.internal.cache.*;
+import org.apache.geode.internal.cache.eviction.EvictionStatistics;
 import org.apache.geode.test.dunit.Wait;
 import org.apache.geode.test.dunit.WaitCriterion;
 import org.apache.geode.test.junit.categories.IntegrationTest;
@@ -36,7 +33,7 @@ import org.apache.geode.test.junit.categories.IntegrationTest;
  * 1) Performance of Get Operation for Entry faulting in from current Op Log 2) Performance of Get
  * operation for Entry faulting in from previous Op Log 3) Performance of Get operation for Entry
  * faulting in from H Tree
- * 
+ *
  */
 @Category(IntegrationTest.class)
 public class DiskRegionOverflowSyncRollingOpLogJUnitTest extends DiskRegionTestingBase {
@@ -67,7 +64,7 @@ public class DiskRegionOverflowSyncRollingOpLogJUnitTest extends DiskRegionTesti
   public void populateFirst0k_10Kbwrites() {
     // RegionAttributes ra = region.getAttributes();
 
-    // LRUStatistics lruStats = getLRUStats(region);
+    // EvictionStatistics lruStats = getLRUStats(region);
 
     // put first 0-9999 entries
     // final String key = "K";
@@ -105,9 +102,9 @@ public class DiskRegionOverflowSyncRollingOpLogJUnitTest extends DiskRegionTesti
     afterHavingCompacted = false;
     // RegionAttributes ra = region.getAttributes();
 
-    // LRUStatistics lruStats = getLRUStats(region);
+    // EvictionStatistics lruStats = getLRUStats(region);
 
-    DiskRegionTestingBase.setCacheObserverCallBack();
+    setCacheObserverCallBack();
 
     CacheObserverHolder.setInstance(new CacheObserverAdapter() {
       public void afterHavingCompacted() {
@@ -176,19 +173,18 @@ public class DiskRegionOverflowSyncRollingOpLogJUnitTest extends DiskRegionTesti
     log.info(statsGet2);
     System.out.println("Perf Stats of get which is fauting in from Second OpLog  :" + statsGet2);
 
-    DiskRegionTestingBase.unSetCacheObserverCallBack();
+    unSetCacheObserverCallBack();
 
   }
 
   /**
-   * 
+   *
    * @param region1
    * @return
    */
-  protected LRUStatistics getLRUStats(Region region1) {
-    return ((LocalRegion) region1).getEvictionController().getLRUHelper().getStats();
+  protected EvictionStatistics getLRUStats(Region region1) {
+    return ((LocalRegion) region1).getEvictionController().getStatistics();
 
   }
 
 }
-

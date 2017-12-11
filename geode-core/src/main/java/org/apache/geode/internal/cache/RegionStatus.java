@@ -15,12 +15,11 @@
 
 package org.apache.geode.internal.cache;
 
+import java.io.Serializable;
+
 import org.apache.geode.cache.EvictionAttributes;
 import org.apache.geode.cache.Region;
-
-import org.apache.geode.internal.cache.lru.LRUStatistics;
-
-import java.io.Serializable;
+import org.apache.geode.internal.cache.eviction.EvictionStatistics;
 
 /**
  * Class <code>RegionStatus</code> provides information about <code>Region</code>s. This class is
@@ -63,7 +62,8 @@ public class RegionStatus implements Serializable {
     EvictionAttributes ea = region.getAttributes().getEvictionAttributes();
     if (ea != null && ea.getAlgorithm().isLRUMemory()) {
       LocalRegion lr = (LocalRegion) region;
-      LRUStatistics stats = ((AbstractLRURegionMap) lr.getRegionMap())._getLruList().stats();
+      EvictionStatistics stats =
+          ((AbstractLRURegionMap) lr.getRegionMap()).getEvictionController().getStatistics();
       setHeapSize(stats.getCounter());
     } else {
       setHeapSize(-1);

@@ -27,7 +27,7 @@ import org.apache.geode.internal.Assert;
  * It may be used when collecting attributes from an XML parser or from attribute changes made using
  * the {@link org.apache.geode.cache.AttributesFactory}. Its initial usage was to validate when a
  * user set a value which should not be set (for PartitionedRegions).
- * 
+ *
  * @since GemFire 5.1
  *
  */
@@ -113,14 +113,14 @@ public abstract class UserSpecifiedRegionAttributes<K, V> implements RegionAttri
 
   /**
    * Whether this region has entry value compression.
-   * 
+   *
    * @since GemFire 8.0
    */
   private boolean hasCompressor = false;
 
   /**
    * Whether this region has enable off-heap memory set.
-   * 
+   *
    * @since Geode 1.0
    */
   private boolean hasOffHeap = false;
@@ -439,13 +439,13 @@ public abstract class UserSpecifiedRegionAttributes<K, V> implements RegionAttri
 
   /**
    * If set to true then an exception will be thrown at creation time if hasPoolName is not true.
-   * 
+   *
    * @since GemFire 6.5
    */
   public boolean requiresPoolName = false;
   /**
    * Holds index information. Hoisted up to this class in 7.0
-   * 
+   *
    * @since GemFire 6.5
    */
   private List indexes;

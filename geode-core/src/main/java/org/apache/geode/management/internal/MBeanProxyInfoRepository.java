@@ -33,8 +33,8 @@ import org.apache.geode.internal.logging.LogService;
  * This class is a repository of all proxy related information multiple indices are provided for
  * searching This searching capability will ease while various proxy ops. It will also be used while
  * filter addition/ removal if dynamic filters are going to be supported.
- * 
- * 
+ *
+ *
  */
 
 public class MBeanProxyInfoRepository {
@@ -59,7 +59,7 @@ public class MBeanProxyInfoRepository {
 
   /**
    * Add the {@link ProxyInfo} into repository for future quick access
-   * 
+   *
    * @param member Distributed Member
    * @param proxyInfo Proxy Info instance
    */
@@ -82,7 +82,7 @@ public class MBeanProxyInfoRepository {
 
   /**
    * Finds the proxy instance by {@link javax.management.ObjectName}
-   * 
+   *
    * @param objectName
    * @param interfaceClass
    * @return instance of proxy
@@ -105,7 +105,7 @@ public class MBeanProxyInfoRepository {
 
   /**
    * Finds the proxy instance by {@link javax.management.ObjectName}
-   * 
+   *
    * @param objectName
    * @return instance of proxy
    */
@@ -120,7 +120,7 @@ public class MBeanProxyInfoRepository {
 
   /**
    * Finds the set of proxy instances by {@link org.apache.geode.distributed.DistributedMember}
-   * 
+   *
    * @param member DistributedMember
    * @return A set of proxy instance on which user can invoke operations as defined by the proxy
    *         interface
@@ -141,7 +141,7 @@ public class MBeanProxyInfoRepository {
   /**
    * Removes a proxy of a given {@link org.apache.geode.distributed.DistributedMember} and given
    * {@link javax.management.ObjectName}
-   * 
+   *
    * @param member DistributedMember
    * @param objectName MBean name
    */

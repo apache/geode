@@ -14,14 +14,10 @@
  */
 package org.apache.geode.internal.cache;
 
-import org.junit.experimental.categories.Category;
-import org.junit.Test;
-
 import static org.junit.Assert.*;
 
-import org.apache.geode.test.dunit.cache.internal.JUnit4CacheTestCase;
-import org.apache.geode.test.dunit.internal.JUnit4DistributedTestCase;
-import org.apache.geode.test.junit.categories.DistributedTest;
+import org.junit.Test;
+import org.junit.experimental.categories.Category;
 
 import org.apache.geode.cache.AttributesFactory;
 import org.apache.geode.cache.Cache;
@@ -31,11 +27,13 @@ import org.apache.geode.cache.EvictionAttributes;
 import org.apache.geode.cache.PartitionAttributes;
 import org.apache.geode.cache.PartitionAttributesFactory;
 import org.apache.geode.cache.Region;
-import org.apache.geode.cache30.CacheTestCase;
 import org.apache.geode.test.dunit.Host;
 import org.apache.geode.test.dunit.SerializableCallable;
 import org.apache.geode.test.dunit.SerializableRunnable;
 import org.apache.geode.test.dunit.VM;
+import org.apache.geode.test.dunit.cache.internal.JUnit4CacheTestCase;
+import org.apache.geode.test.dunit.internal.JUnit4DistributedTestCase;
+import org.apache.geode.test.junit.categories.DistributedTest;
 
 /**
  * Test that the bucket size does not go negative when we fault out and in a delta object.
@@ -126,7 +124,7 @@ public class DeltaFaultInDUnitTest extends JUnit4CacheTestCase {
         region.get(new Integer(113));
 
         long entriesEvicted = ((AbstractLRURegionMap) ((PartitionedRegion) region).entries)
-            ._getLruList().stats().getEvictions();
+            .getEvictionList().getStatistics().getEvictions();
         // assertIndexDetailsEquals(1, entriesEvicted);
 
         TestDelta result = region.get(new Integer(0));

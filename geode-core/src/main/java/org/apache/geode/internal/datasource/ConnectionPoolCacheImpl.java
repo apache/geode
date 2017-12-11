@@ -17,7 +17,7 @@ package org.apache.geode.internal.datasource;
 /**
  * This class models a connection pool for non-transactional database connection. Extends the
  * AbstractPoolCache to inherit the pool bahavior.
- * 
+ *
  */
 import java.sql.SQLException;
 
@@ -71,7 +71,7 @@ public class ConnectionPoolCacheImpl extends AbstractPoolCache {
 
   /**
    * Creates a new connection for the pool.
-   * 
+   *
    * @return the connection from the database as Object.
    * @throws PoolException
    */

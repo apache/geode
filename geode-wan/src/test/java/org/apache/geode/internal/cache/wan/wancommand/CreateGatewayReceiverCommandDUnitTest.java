@@ -14,83 +14,59 @@
  */
 package org.apache.geode.internal.cache.wan.wancommand;
 
-import static org.apache.geode.test.dunit.Assert.assertEquals;
-import static org.apache.geode.test.dunit.Assert.assertTrue;
-import static org.apache.geode.test.dunit.Assert.fail;
-import static org.apache.geode.test.dunit.LogWriterUtils.getLogWriter;
+import static org.apache.geode.distributed.ConfigurationProperties.BIND_ADDRESS;
+import static org.apache.geode.distributed.ConfigurationProperties.DISTRIBUTED_SYSTEM_ID;
+import static org.apache.geode.distributed.ConfigurationProperties.GROUPS;
+import static org.apache.geode.distributed.ConfigurationProperties.SERVER_BIND_ADDRESS;
+import static org.apache.geode.internal.cache.wan.wancommand.WANCommandUtils.getMemberIdCallable;
+import static org.apache.geode.internal.cache.wan.wancommand.WANCommandUtils.verifyGatewayReceiverProfile;
+import static org.apache.geode.internal.cache.wan.wancommand.WANCommandUtils.verifyGatewayReceiverServerLocations;
+import static org.apache.geode.internal.cache.wan.wancommand.WANCommandUtils.verifyReceiverCreationWithAttributes;
+import static org.apache.geode.management.internal.cli.i18n.CliStrings.GROUP;
+import static org.assertj.core.api.Assertions.assertThat;
 
 import java.net.InetAddress;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Properties;
 
-import org.apache.geode.internal.net.SocketCreator;
+import org.junit.Before;
+import org.junit.Rule;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
+import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.wan.GatewayReceiver;
 import org.apache.geode.distributed.DistributedMember;
-import org.apache.geode.management.cli.Result;
+import org.apache.geode.internal.net.SocketCreator;
 import org.apache.geode.management.internal.cli.i18n.CliStrings;
-import org.apache.geode.management.internal.cli.result.CommandResult;
-import org.apache.geode.management.internal.cli.result.TabularResultData;
-import org.apache.geode.test.dunit.Host;
-import org.apache.geode.test.dunit.VM;
+import org.apache.geode.test.dunit.rules.LocatorServerStartupRule;
+import org.apache.geode.test.dunit.rules.MemberVM;
 import org.apache.geode.test.junit.categories.DistributedTest;
-import org.apache.geode.test.junit.categories.FlakyTest;
+import org.apache.geode.test.junit.rules.GfshCommandRule;
 
 /**
  * DUnit tests for 'create gateway-receiver' command.
  */
 @Category(DistributedTest.class)
-public class CreateGatewayReceiverCommandDUnitTest extends WANCommandTestBase {
+public class CreateGatewayReceiverCommandDUnitTest {
+  private MemberVM locatorSite1;
+  private MemberVM server1, server2, server3;
 
-  private static final long serialVersionUID = 1L;
+  @Rule
+  public LocatorServerStartupRule locatorServerStartupRule = new LocatorServerStartupRule();
 
-  /**
-   * GatewayReceiver with all default attributes
-   */
-  @Test
-  public void testCreateGatewayReceiverWithDefault() throws Exception {
-    VM puneLocator = Host.getLocator();
-    int dsIdPort = puneLocator.invoke(this::getLocatorPort);
-    propsSetUp(dsIdPort);
-    vm2.invoke(() -> createFirstRemoteLocator(2, dsIdPort));
+  @Rule
+  public GfshCommandRule gfsh = new GfshCommandRule();
 
-    vm3.invoke(() -> createCache(dsIdPort));
-    vm4.invoke(() -> createCache(dsIdPort));
-    vm5.invoke(() -> createCache(dsIdPort));
+  @Before
+  public void before() throws Exception {
+    Properties props = new Properties();
+    props.setProperty(DISTRIBUTED_SYSTEM_ID, "" + 1);
+    locatorSite1 = locatorServerStartupRule.startLocatorVM(1, props);
 
-    String command = CliStrings.CREATE_GATEWAYRECEIVER;
-    executeCommandAndVerifyStatus(command, 4);
-
-    // if neither bind-address or hostname-for-senders is set, profile
-    // uses AcceptorImpl.getExternalAddress() to derive canonical hostname
-    // when the Profile (and ServerLocation) are created
-    String hostname = getHostName();
-
-    vm3.invoke(() -> verifyGatewayReceiverProfile(hostname));
-    vm4.invoke(() -> verifyGatewayReceiverProfile(hostname));
-    vm5.invoke(() -> verifyGatewayReceiverProfile(hostname));
-
-    vm3.invoke(() -> verifyGatewayReceiverServerLocations(dsIdPort, hostname));
-    vm4.invoke(() -> verifyGatewayReceiverServerLocations(dsIdPort, hostname));
-    vm5.invoke(() -> verifyGatewayReceiverServerLocations(dsIdPort, hostname));
-
-    vm3.invoke(() -> verifyReceiverCreationWithAttributes(!GatewayReceiver.DEFAULT_MANUAL_START,
-        GatewayReceiver.DEFAULT_START_PORT, GatewayReceiver.DEFAULT_END_PORT,
-        GatewayReceiver.DEFAULT_BIND_ADDRESS, GatewayReceiver.DEFAULT_MAXIMUM_TIME_BETWEEN_PINGS,
-        GatewayReceiver.DEFAULT_SOCKET_BUFFER_SIZE, null,
-        GatewayReceiver.DEFAULT_HOSTNAME_FOR_SENDERS));
-    vm4.invoke(() -> verifyReceiverCreationWithAttributes(!GatewayReceiver.DEFAULT_MANUAL_START,
-        GatewayReceiver.DEFAULT_START_PORT, GatewayReceiver.DEFAULT_END_PORT,
-        GatewayReceiver.DEFAULT_BIND_ADDRESS, GatewayReceiver.DEFAULT_MAXIMUM_TIME_BETWEEN_PINGS,
-        GatewayReceiver.DEFAULT_SOCKET_BUFFER_SIZE, null,
-        GatewayReceiver.DEFAULT_HOSTNAME_FOR_SENDERS));
-    vm5.invoke(() -> verifyReceiverCreationWithAttributes(!GatewayReceiver.DEFAULT_MANUAL_START,
-        GatewayReceiver.DEFAULT_START_PORT, GatewayReceiver.DEFAULT_END_PORT,
-        GatewayReceiver.DEFAULT_BIND_ADDRESS, GatewayReceiver.DEFAULT_MAXIMUM_TIME_BETWEEN_PINGS,
-        GatewayReceiver.DEFAULT_SOCKET_BUFFER_SIZE, null,
-        GatewayReceiver.DEFAULT_HOSTNAME_FOR_SENDERS));
+    // Connect Gfsh to locator.
+    gfsh.connectAndVerify(locatorSite1);
   }
 
   private String getHostName() throws Exception {
@@ -101,40 +77,95 @@ public class CreateGatewayReceiverCommandDUnitTest extends WANCommandTestBase {
     return InetAddress.getLocalHost().getHostAddress();
   }
 
-  private void executeCommandAndVerifyStatus(String command, int numGatewayReceivers) {
-    CommandResult cmdResult = executeCommand(command);
-    if (cmdResult != null) {
-      String strCmdResult = commandResultToString(cmdResult);
-      getLogWriter().info("testCreateGatewayReceiver stringResult : " + strCmdResult + ">>>>");
-      assertEquals(Result.Status.OK, cmdResult.getStatus());
+  private MemberVM startServerWithGroups(int index, String groups, int locPort) throws Exception {
+    Properties props = new Properties();
+    props.setProperty(GROUPS, groups);
+    return locatorServerStartupRule.startServerVM(index, props, locPort);
+  }
 
-      TabularResultData resultData = (TabularResultData) cmdResult.getResultData();
-      List<String> status = resultData.retrieveAllValues("Status");
-      // expected size of 4 includes the manager node when we don't set the receiver groups to
-      // ignore it)
-      assertEquals(numGatewayReceivers, status.size());
-      // verify there is no error in the status
-      for (String stat : status) {
-        assertTrue("GatewayReceiver creation failed with: " + stat, !stat.contains("ERROR:"));
-      }
-    } else {
-      fail("testCreateGatewayReceiver failed as did not get CommandResult");
-    }
+  /**
+   * GatewayReceiver with given attributes. Error scenario where the user tries to create more than
+   * one receiver per member.
+   */
+  @Test
+  public void testCreateGatewayReceiverErrorWhenGatewayReceiverAlreadyExists() throws Exception {
+    Integer locator1Port = locatorSite1.getPort();
+    server1 = locatorServerStartupRule.startServerVM(3, locator1Port);
+    server2 = locatorServerStartupRule.startServerVM(4, locator1Port);
+    server3 = locatorServerStartupRule.startServerVM(5, locator1Port);
+
+    // Initial Creation should succeed
+    String command =
+        CliStrings.CREATE_GATEWAYRECEIVER + " --" + CliStrings.CREATE_GATEWAYRECEIVER__BINDADDRESS
+            + "=localhost" + " --" + CliStrings.CREATE_GATEWAYRECEIVER__STARTPORT + "=10000" + " --"
+            + CliStrings.CREATE_GATEWAYRECEIVER__ENDPORT + "=11000" + " --"
+            + CliStrings.CREATE_GATEWAYRECEIVER__MAXTIMEBETWEENPINGS + "=100000" + " --"
+            + CliStrings.CREATE_GATEWAYRECEIVER__SOCKETBUFFERSIZE + "=512000";
+    gfsh.executeAndAssertThat(command).statusIsSuccess()
+        .tableHasColumnWithExactValuesInAnyOrder("Member", "server-3", "server-4", "server-5")
+        .tableHasColumnWithValuesContaining("Status",
+            "GatewayReceiver created on member \"server-3\"",
+            "GatewayReceiver created on member \"server-4\"",
+            "GatewayReceiver created on member \"server-5\"");
+
+    MemberVM.invokeInEveryMember(() -> {
+      verifyReceiverCreationWithAttributes(!GatewayReceiver.DEFAULT_MANUAL_START, 10000, 11000,
+          "localhost", 100000, 512000, null, GatewayReceiver.DEFAULT_HOSTNAME_FOR_SENDERS);
+    }, server1, server2, server3);
+
+    // This should fail as there's already a gateway receiver created on the member.
+    gfsh.executeAndAssertThat(command).statusIsError()
+        .tableHasColumnWithExactValuesInAnyOrder("Member", "server-3", "server-4", "server-5")
+        .tableHasColumnWithExactValuesInAnyOrder("Status",
+            "ERROR: java.lang.IllegalStateException: A Gateway Receiver already exists on this member.",
+            "ERROR: java.lang.IllegalStateException: A Gateway Receiver already exists on this member.",
+            "ERROR: java.lang.IllegalStateException: A Gateway Receiver already exists on this member.");
+  }
+
+  /**
+   * GatewayReceiver with all default attributes
+   */
+  @Test
+  public void testCreateGatewayReceiverWithDefault() throws Exception {
+    Integer locator1Port = locatorSite1.getPort();
+    server1 = locatorServerStartupRule.startServerVM(3, locator1Port);
+    server2 = locatorServerStartupRule.startServerVM(4, locator1Port);
+    server3 = locatorServerStartupRule.startServerVM(5, locator1Port);
+
+    // Default attributes.
+    String command = CliStrings.CREATE_GATEWAYRECEIVER;
+    gfsh.executeAndAssertThat(command).statusIsSuccess()
+        .tableHasColumnWithExactValuesInAnyOrder("Member", "server-3", "server-4", "server-5")
+        .tableHasColumnWithValuesContaining("Status",
+            "GatewayReceiver created on member \"server-3\"",
+            "GatewayReceiver created on member \"server-4\"",
+            "GatewayReceiver created on member \"server-5\"");
+
+    // If neither bind-address or hostname-for-senders is set, profile
+    // uses AcceptorImpl.getExternalAddress() to derive canonical hostname
+    // when the Profile (and ServerLocation) are created
+    String hostname = getHostName();
+
+    MemberVM.invokeInEveryMember(() -> {
+      verifyGatewayReceiverProfile(hostname);
+      verifyGatewayReceiverServerLocations(locator1Port, hostname);
+      verifyReceiverCreationWithAttributes(!GatewayReceiver.DEFAULT_MANUAL_START,
+          GatewayReceiver.DEFAULT_START_PORT, GatewayReceiver.DEFAULT_END_PORT,
+          GatewayReceiver.DEFAULT_BIND_ADDRESS, GatewayReceiver.DEFAULT_MAXIMUM_TIME_BETWEEN_PINGS,
+          GatewayReceiver.DEFAULT_SOCKET_BUFFER_SIZE, null,
+          GatewayReceiver.DEFAULT_HOSTNAME_FOR_SENDERS);
+    }, server1, server2, server3);
   }
 
   /**
    * GatewayReceiver with given attributes
    */
   @Test
-  public void testCreateGatewayReceiver() {
-    VM puneLocator = Host.getLocator();
-    int dsIdPort = puneLocator.invoke(this::getLocatorPort);
-    propsSetUp(dsIdPort);
-    vm2.invoke(() -> createFirstRemoteLocator(2, dsIdPort));
-
-    vm3.invoke(() -> createCache(dsIdPort));
-    vm4.invoke(() -> createCache(dsIdPort));
-    vm5.invoke(() -> createCache(dsIdPort));
+  public void testCreateGatewayReceiver() throws Exception {
+    Integer locator1Port = locatorSite1.getPort();
+    server1 = locatorServerStartupRule.startServerVM(3, locator1Port);
+    server2 = locatorServerStartupRule.startServerVM(4, locator1Port);
+    server3 = locatorServerStartupRule.startServerVM(5, locator1Port);
 
     String command =
         CliStrings.CREATE_GATEWAYRECEIVER + " --" + CliStrings.CREATE_GATEWAYRECEIVER__MANUALSTART
@@ -143,16 +174,17 @@ public class CreateGatewayReceiverCommandDUnitTest extends WANCommandTestBase {
             + CliStrings.CREATE_GATEWAYRECEIVER__ENDPORT + "=11000" + " --"
             + CliStrings.CREATE_GATEWAYRECEIVER__MAXTIMEBETWEENPINGS + "=100000" + " --"
             + CliStrings.CREATE_GATEWAYRECEIVER__SOCKETBUFFERSIZE + "=512000";
-    executeCommandAndVerifyStatus(command, 4);
+    gfsh.executeAndAssertThat(command).statusIsSuccess()
+        .tableHasColumnWithExactValuesInAnyOrder("Member", "server-3", "server-4", "server-5")
+        .tableHasColumnWithValuesContaining("Status",
+            "GatewayReceiver created on member \"server-3\"",
+            "GatewayReceiver created on member \"server-4\"",
+            "GatewayReceiver created on member \"server-5\"");
 
-    // cannot verify Profile/ServerLocation when manualStart is true
-
-    vm3.invoke(() -> verifyReceiverCreationWithAttributes(false, 10000, 11000, "localhost", 100000,
-        512000, null, GatewayReceiver.DEFAULT_HOSTNAME_FOR_SENDERS));
-    vm4.invoke(() -> verifyReceiverCreationWithAttributes(false, 10000, 11000, "localhost", 100000,
-        512000, null, GatewayReceiver.DEFAULT_HOSTNAME_FOR_SENDERS));
-    vm5.invoke(() -> verifyReceiverCreationWithAttributes(false, 10000, 11000, "localhost", 100000,
-        512000, null, GatewayReceiver.DEFAULT_HOSTNAME_FOR_SENDERS));
+    MemberVM.invokeInEveryMember(() -> {
+      verifyReceiverCreationWithAttributes(false, 10000, 11000, "localhost", 100000, 512000, null,
+          GatewayReceiver.DEFAULT_HOSTNAME_FOR_SENDERS);
+    }, server1, server2, server3);
   }
 
   /**
@@ -160,14 +192,10 @@ public class CreateGatewayReceiverCommandDUnitTest extends WANCommandTestBase {
    */
   @Test
   public void testCreateGatewayReceiverWithHostnameForSenders() throws Exception {
-    VM puneLocator = Host.getLocator();
-    int dsIdPort = puneLocator.invoke(this::getLocatorPort);
-    propsSetUp(dsIdPort);
-    vm2.invoke(() -> createFirstRemoteLocator(2, dsIdPort));
-
-    vm3.invoke(() -> createCache(dsIdPort));
-    vm4.invoke(() -> createCache(dsIdPort));
-    vm5.invoke(() -> createCache(dsIdPort));
+    Integer locator1Port = locatorSite1.getPort();
+    server1 = locatorServerStartupRule.startServerVM(3, locator1Port);
+    server2 = locatorServerStartupRule.startServerVM(4, locator1Port);
+    server3 = locatorServerStartupRule.startServerVM(5, locator1Port);
 
     String hostnameForSenders = getHostName();
     String command =
@@ -177,23 +205,20 @@ public class CreateGatewayReceiverCommandDUnitTest extends WANCommandTestBase {
             + " --" + CliStrings.CREATE_GATEWAYRECEIVER__ENDPORT + "=11000" + " --"
             + CliStrings.CREATE_GATEWAYRECEIVER__MAXTIMEBETWEENPINGS + "=100000" + " --"
             + CliStrings.CREATE_GATEWAYRECEIVER__SOCKETBUFFERSIZE + "=512000";
-    executeCommandAndVerifyStatus(command, 4);
+    gfsh.executeAndAssertThat(command).statusIsSuccess()
+        .tableHasColumnWithExactValuesInAnyOrder("Member", "server-3", "server-4", "server-5")
+        .tableHasColumnWithValuesContaining("Status",
+            "GatewayReceiver created on member \"server-3\"",
+            "GatewayReceiver created on member \"server-4\"",
+            "GatewayReceiver created on member \"server-5\"");
 
-    // verify hostname-for-senders is used when configured
-    vm3.invoke(() -> verifyGatewayReceiverProfile(hostnameForSenders));
-    vm4.invoke(() -> verifyGatewayReceiverProfile(hostnameForSenders));
-    vm5.invoke(() -> verifyGatewayReceiverProfile(hostnameForSenders));
-
-    vm3.invoke(() -> verifyGatewayReceiverServerLocations(dsIdPort, hostnameForSenders));
-    vm4.invoke(() -> verifyGatewayReceiverServerLocations(dsIdPort, hostnameForSenders));
-    vm5.invoke(() -> verifyGatewayReceiverServerLocations(dsIdPort, hostnameForSenders));
-
-    vm3.invoke(() -> verifyReceiverCreationWithAttributes(true, 10000, 11000, "", 100000, 512000,
-        null, hostnameForSenders));
-    vm4.invoke(() -> verifyReceiverCreationWithAttributes(true, 10000, 11000, "", 100000, 512000,
-        null, hostnameForSenders));
-    vm5.invoke(() -> verifyReceiverCreationWithAttributes(true, 10000, 11000, "", 100000, 512000,
-        null, hostnameForSenders));
+    MemberVM.invokeInEveryMember(() -> {
+      // verify hostname-for-senders is used when configured
+      verifyGatewayReceiverProfile(hostnameForSenders);
+      verifyGatewayReceiverServerLocations(locator1Port, hostnameForSenders);
+      verifyReceiverCreationWithAttributes(true, 10000, 11000, "", 100000, 512000, null,
+          hostnameForSenders);
+    }, server1, server2, server3);
   }
 
   /**
@@ -201,46 +226,36 @@ public class CreateGatewayReceiverCommandDUnitTest extends WANCommandTestBase {
    */
   @Test
   public void testCreateGatewayReceiverWithDefaultAndBindProperty() throws Exception {
-    VM puneLocator = Host.getLocator();
-    int dsIdPort = puneLocator.invoke(this::getLocatorPort);
-    propsSetUp(dsIdPort);
-    vm2.invoke(() -> createFirstRemoteLocator(2, dsIdPort));
-
+    String receiverGroup = "receiverGroup";
+    Integer locator1Port = locatorSite1.getPort();
     String expectedBindAddress = getBindAddress();
 
-    String receiverGroup = "receiverGroup";
-    vm3.invoke(() -> createCacheWithBindAddress(dsIdPort, expectedBindAddress, receiverGroup));
-    vm4.invoke(() -> createCacheWithBindAddress(dsIdPort, expectedBindAddress, receiverGroup));
-    vm5.invoke(() -> createCacheWithBindAddress(dsIdPort, expectedBindAddress, receiverGroup));
+    Properties props = new Properties();
+    props.setProperty(GROUPS, receiverGroup);
+    props.setProperty(BIND_ADDRESS, expectedBindAddress);
 
-    String command =
-        CliStrings.CREATE_GATEWAYRECEIVER + " --" + CliStrings.GROUP + "=" + receiverGroup;
-    executeCommandAndVerifyStatus(command, 3);
+    server1 = locatorServerStartupRule.startServerVM(3, props, locator1Port);
+    server2 = locatorServerStartupRule.startServerVM(4, props, locator1Port);
+    server3 = locatorServerStartupRule.startServerVM(5, props, locator1Port);
 
-    // verify bind-address used when provided as a gemfire property
-    vm3.invoke(() -> verifyGatewayReceiverProfile(expectedBindAddress));
-    vm4.invoke(() -> verifyGatewayReceiverProfile(expectedBindAddress));
-    vm5.invoke(() -> verifyGatewayReceiverProfile(expectedBindAddress));
+    String command = CliStrings.CREATE_GATEWAYRECEIVER + " --" + GROUP + "=" + receiverGroup;
+    gfsh.executeAndAssertThat(command).statusIsSuccess()
+        .tableHasColumnWithExactValuesInAnyOrder("Member", "server-3", "server-4", "server-5")
+        .tableHasColumnWithValuesContaining("Status",
+            "GatewayReceiver created on member \"server-3\"",
+            "GatewayReceiver created on member \"server-4\"",
+            "GatewayReceiver created on member \"server-5\"");
 
-    vm3.invoke(() -> verifyGatewayReceiverServerLocations(dsIdPort, expectedBindAddress));
-    vm4.invoke(() -> verifyGatewayReceiverServerLocations(dsIdPort, expectedBindAddress));
-    vm5.invoke(() -> verifyGatewayReceiverServerLocations(dsIdPort, expectedBindAddress));
-
-    vm3.invoke(() -> verifyReceiverCreationWithAttributes(!GatewayReceiver.DEFAULT_MANUAL_START,
-        GatewayReceiver.DEFAULT_START_PORT, GatewayReceiver.DEFAULT_END_PORT,
-        GatewayReceiver.DEFAULT_BIND_ADDRESS, GatewayReceiver.DEFAULT_MAXIMUM_TIME_BETWEEN_PINGS,
-        GatewayReceiver.DEFAULT_SOCKET_BUFFER_SIZE, null,
-        GatewayReceiver.DEFAULT_HOSTNAME_FOR_SENDERS));
-    vm4.invoke(() -> verifyReceiverCreationWithAttributes(!GatewayReceiver.DEFAULT_MANUAL_START,
-        GatewayReceiver.DEFAULT_START_PORT, GatewayReceiver.DEFAULT_END_PORT,
-        GatewayReceiver.DEFAULT_BIND_ADDRESS, GatewayReceiver.DEFAULT_MAXIMUM_TIME_BETWEEN_PINGS,
-        GatewayReceiver.DEFAULT_SOCKET_BUFFER_SIZE, null,
-        GatewayReceiver.DEFAULT_HOSTNAME_FOR_SENDERS));
-    vm5.invoke(() -> verifyReceiverCreationWithAttributes(!GatewayReceiver.DEFAULT_MANUAL_START,
-        GatewayReceiver.DEFAULT_START_PORT, GatewayReceiver.DEFAULT_END_PORT,
-        GatewayReceiver.DEFAULT_BIND_ADDRESS, GatewayReceiver.DEFAULT_MAXIMUM_TIME_BETWEEN_PINGS,
-        GatewayReceiver.DEFAULT_SOCKET_BUFFER_SIZE, null,
-        GatewayReceiver.DEFAULT_HOSTNAME_FOR_SENDERS));
+    MemberVM.invokeInEveryMember(() -> {
+      // verify bind-address used when provided as a gemfire property
+      verifyGatewayReceiverProfile(expectedBindAddress);
+      verifyGatewayReceiverServerLocations(locator1Port, expectedBindAddress);
+      verifyReceiverCreationWithAttributes(!GatewayReceiver.DEFAULT_MANUAL_START,
+          GatewayReceiver.DEFAULT_START_PORT, GatewayReceiver.DEFAULT_END_PORT,
+          GatewayReceiver.DEFAULT_BIND_ADDRESS, GatewayReceiver.DEFAULT_MAXIMUM_TIME_BETWEEN_PINGS,
+          GatewayReceiver.DEFAULT_SOCKET_BUFFER_SIZE, null,
+          GatewayReceiver.DEFAULT_HOSTNAME_FOR_SENDERS);
+    }, server1, server2, server3);
   }
 
   /**
@@ -248,49 +263,36 @@ public class CreateGatewayReceiverCommandDUnitTest extends WANCommandTestBase {
    */
   @Test
   public void testCreateGatewayReceiverWithDefaultsAndServerBindAddressProperty() throws Exception {
-    VM puneLocator = Host.getLocator();
-    int dsIdPort = puneLocator.invoke(this::getLocatorPort);
-    propsSetUp(dsIdPort);
-    vm2.invoke(() -> createFirstRemoteLocator(2, dsIdPort));
-
+    String receiverGroup = "receiverGroup";
+    Integer locator1Port = locatorSite1.getPort();
     String expectedBindAddress = getBindAddress();
 
-    String receiverGroup = "receiverGroup";
-    vm3.invoke(
-        () -> createCacheWithServerBindAddress(dsIdPort, expectedBindAddress, receiverGroup));
-    vm4.invoke(
-        () -> createCacheWithServerBindAddress(dsIdPort, expectedBindAddress, receiverGroup));
-    vm5.invoke(
-        () -> createCacheWithServerBindAddress(dsIdPort, expectedBindAddress, receiverGroup));
+    Properties props = new Properties();
+    props.setProperty(GROUPS, receiverGroup);
+    props.setProperty(SERVER_BIND_ADDRESS, expectedBindAddress);
 
-    String command =
-        CliStrings.CREATE_GATEWAYRECEIVER + " --" + CliStrings.GROUP + "=" + receiverGroup;
-    executeCommandAndVerifyStatus(command, 3);
+    server1 = locatorServerStartupRule.startServerVM(3, props, locator1Port);
+    server2 = locatorServerStartupRule.startServerVM(4, props, locator1Port);
+    server3 = locatorServerStartupRule.startServerVM(5, props, locator1Port);
 
-    // verify server-bind-address used if provided as a gemfire property
-    vm3.invoke(() -> verifyGatewayReceiverProfile(expectedBindAddress));
-    vm4.invoke(() -> verifyGatewayReceiverProfile(expectedBindAddress));
-    vm5.invoke(() -> verifyGatewayReceiverProfile(expectedBindAddress));
+    String command = CliStrings.CREATE_GATEWAYRECEIVER + " --" + GROUP + "=" + receiverGroup;
+    gfsh.executeAndAssertThat(command).statusIsSuccess()
+        .tableHasColumnWithExactValuesInAnyOrder("Member", "server-3", "server-4", "server-5")
+        .tableHasColumnWithValuesContaining("Status",
+            "GatewayReceiver created on member \"server-3\"",
+            "GatewayReceiver created on member \"server-4\"",
+            "GatewayReceiver created on member \"server-5\"");
 
-    vm3.invoke(() -> verifyGatewayReceiverServerLocations(dsIdPort, expectedBindAddress));
-    vm4.invoke(() -> verifyGatewayReceiverServerLocations(dsIdPort, expectedBindAddress));
-    vm5.invoke(() -> verifyGatewayReceiverServerLocations(dsIdPort, expectedBindAddress));
-
-    vm3.invoke(() -> verifyReceiverCreationWithAttributes(!GatewayReceiver.DEFAULT_MANUAL_START,
-        GatewayReceiver.DEFAULT_START_PORT, GatewayReceiver.DEFAULT_END_PORT,
-        GatewayReceiver.DEFAULT_BIND_ADDRESS, GatewayReceiver.DEFAULT_MAXIMUM_TIME_BETWEEN_PINGS,
-        GatewayReceiver.DEFAULT_SOCKET_BUFFER_SIZE, null,
-        GatewayReceiver.DEFAULT_HOSTNAME_FOR_SENDERS));
-    vm4.invoke(() -> verifyReceiverCreationWithAttributes(!GatewayReceiver.DEFAULT_MANUAL_START,
-        GatewayReceiver.DEFAULT_START_PORT, GatewayReceiver.DEFAULT_END_PORT,
-        GatewayReceiver.DEFAULT_BIND_ADDRESS, GatewayReceiver.DEFAULT_MAXIMUM_TIME_BETWEEN_PINGS,
-        GatewayReceiver.DEFAULT_SOCKET_BUFFER_SIZE, null,
-        GatewayReceiver.DEFAULT_HOSTNAME_FOR_SENDERS));
-    vm5.invoke(() -> verifyReceiverCreationWithAttributes(!GatewayReceiver.DEFAULT_MANUAL_START,
-        GatewayReceiver.DEFAULT_START_PORT, GatewayReceiver.DEFAULT_END_PORT,
-        GatewayReceiver.DEFAULT_BIND_ADDRESS, GatewayReceiver.DEFAULT_MAXIMUM_TIME_BETWEEN_PINGS,
-        GatewayReceiver.DEFAULT_SOCKET_BUFFER_SIZE, null,
-        GatewayReceiver.DEFAULT_HOSTNAME_FOR_SENDERS));
+    MemberVM.invokeInEveryMember(() -> {
+      // verify server-bind-address used if provided as a gemfire property
+      verifyGatewayReceiverProfile(expectedBindAddress);
+      verifyGatewayReceiverServerLocations(locator1Port, expectedBindAddress);
+      verifyReceiverCreationWithAttributes(!GatewayReceiver.DEFAULT_MANUAL_START,
+          GatewayReceiver.DEFAULT_START_PORT, GatewayReceiver.DEFAULT_END_PORT,
+          GatewayReceiver.DEFAULT_BIND_ADDRESS, GatewayReceiver.DEFAULT_MAXIMUM_TIME_BETWEEN_PINGS,
+          GatewayReceiver.DEFAULT_SOCKET_BUFFER_SIZE, null,
+          GatewayReceiver.DEFAULT_HOSTNAME_FOR_SENDERS);
+    }, server1, server2, server3);
   }
 
   /**
@@ -299,52 +301,39 @@ public class CreateGatewayReceiverCommandDUnitTest extends WANCommandTestBase {
   @Test
   public void testCreateGatewayReceiverWithDefaultsAndMultipleBindAddressProperties()
       throws Exception {
-    VM puneLocator = Host.getLocator();
-    int dsIdPort = puneLocator.invoke(this::getLocatorPort);
-    propsSetUp(dsIdPort);
-    vm2.invoke(() -> createFirstRemoteLocator(2, dsIdPort));
-
     String extraBindAddress = "localhost";
-    String expectedBindAddress = getBindAddress();
     String receiverGroup = "receiverGroup";
+    Integer locator1Port = locatorSite1.getPort();
+    String expectedBindAddress = getBindAddress();
 
-    vm3.invoke(() -> createCacheWithMultipleBindAddressProperties(dsIdPort, extraBindAddress,
-        expectedBindAddress, receiverGroup));
-    vm4.invoke(() -> createCacheWithMultipleBindAddressProperties(dsIdPort, extraBindAddress,
-        expectedBindAddress, receiverGroup));
-    vm5.invoke(() -> createCacheWithMultipleBindAddressProperties(dsIdPort, extraBindAddress,
-        expectedBindAddress, receiverGroup));
+    Properties props = new Properties();
+    props.setProperty(GROUPS, receiverGroup);
+    props.setProperty(BIND_ADDRESS, extraBindAddress);
+    props.setProperty(SERVER_BIND_ADDRESS, expectedBindAddress);
 
-    String command =
-        CliStrings.CREATE_GATEWAYRECEIVER + " --" + CliStrings.GROUP + "=" + receiverGroup;
-    executeCommandAndVerifyStatus(command, 3);
+    server1 = locatorServerStartupRule.startServerVM(3, props, locator1Port);
+    server2 = locatorServerStartupRule.startServerVM(4, props, locator1Port);
+    server3 = locatorServerStartupRule.startServerVM(5, props, locator1Port);
 
-    // verify server-bind-address used if provided as a gemfire property
-    vm3.invoke(() -> verifyGatewayReceiverProfile(expectedBindAddress));
-    vm4.invoke(() -> verifyGatewayReceiverProfile(expectedBindAddress));
-    vm5.invoke(() -> verifyGatewayReceiverProfile(expectedBindAddress));
+    String command = CliStrings.CREATE_GATEWAYRECEIVER + " --" + GROUP + "=" + receiverGroup;
+    gfsh.executeAndAssertThat(command).statusIsSuccess()
+        .tableHasColumnWithExactValuesInAnyOrder("Member", "server-3", "server-4", "server-5")
+        .tableHasColumnWithValuesContaining("Status",
+            "GatewayReceiver created on member \"server-3\"",
+            "GatewayReceiver created on member \"server-4\"",
+            "GatewayReceiver created on member \"server-5\"");
 
-    vm3.invoke(() -> verifyGatewayReceiverServerLocations(dsIdPort, expectedBindAddress));
-    vm4.invoke(() -> verifyGatewayReceiverServerLocations(dsIdPort, expectedBindAddress));
-    vm5.invoke(() -> verifyGatewayReceiverServerLocations(dsIdPort, expectedBindAddress));
-
-    vm3.invoke(() -> verifyReceiverCreationWithAttributes(!GatewayReceiver.DEFAULT_MANUAL_START,
-        GatewayReceiver.DEFAULT_START_PORT, GatewayReceiver.DEFAULT_END_PORT,
-        GatewayReceiver.DEFAULT_BIND_ADDRESS, GatewayReceiver.DEFAULT_MAXIMUM_TIME_BETWEEN_PINGS,
-        GatewayReceiver.DEFAULT_SOCKET_BUFFER_SIZE, null,
-        GatewayReceiver.DEFAULT_HOSTNAME_FOR_SENDERS));
-    vm4.invoke(() -> verifyReceiverCreationWithAttributes(!GatewayReceiver.DEFAULT_MANUAL_START,
-        GatewayReceiver.DEFAULT_START_PORT, GatewayReceiver.DEFAULT_END_PORT,
-        GatewayReceiver.DEFAULT_BIND_ADDRESS, GatewayReceiver.DEFAULT_MAXIMUM_TIME_BETWEEN_PINGS,
-        GatewayReceiver.DEFAULT_SOCKET_BUFFER_SIZE, null,
-        GatewayReceiver.DEFAULT_HOSTNAME_FOR_SENDERS));
-    vm5.invoke(() -> verifyReceiverCreationWithAttributes(!GatewayReceiver.DEFAULT_MANUAL_START,
-        GatewayReceiver.DEFAULT_START_PORT, GatewayReceiver.DEFAULT_END_PORT,
-        GatewayReceiver.DEFAULT_BIND_ADDRESS, GatewayReceiver.DEFAULT_MAXIMUM_TIME_BETWEEN_PINGS,
-        GatewayReceiver.DEFAULT_SOCKET_BUFFER_SIZE, null,
-        GatewayReceiver.DEFAULT_HOSTNAME_FOR_SENDERS));
+    MemberVM.invokeInEveryMember(() -> {
+      // verify server-bind-address used if provided as a gemfire property
+      verifyGatewayReceiverProfile(expectedBindAddress);
+      verifyGatewayReceiverServerLocations(locator1Port, expectedBindAddress);
+      verifyReceiverCreationWithAttributes(!GatewayReceiver.DEFAULT_MANUAL_START,
+          GatewayReceiver.DEFAULT_START_PORT, GatewayReceiver.DEFAULT_END_PORT,
+          GatewayReceiver.DEFAULT_BIND_ADDRESS, GatewayReceiver.DEFAULT_MAXIMUM_TIME_BETWEEN_PINGS,
+          GatewayReceiver.DEFAULT_SOCKET_BUFFER_SIZE, null,
+          GatewayReceiver.DEFAULT_HOSTNAME_FOR_SENDERS);
+    }, server1, server2, server3);
   }
-
 
   /**
    * GatewayReceiver with hostnameForSenders
@@ -352,18 +341,18 @@ public class CreateGatewayReceiverCommandDUnitTest extends WANCommandTestBase {
   @Test
   public void testCreateGatewayReceiverWithHostnameForSendersAndServerBindAddressProperty()
       throws Exception {
-    VM puneLocator = Host.getLocator();
-    int dsIdPort = puneLocator.invoke(this::getLocatorPort);
-    propsSetUp(dsIdPort);
-    vm2.invoke(() -> createFirstRemoteLocator(2, dsIdPort));
-
+    String receiverGroup = "receiverGroup";
     String hostnameForSenders = getHostName();
     String serverBindAddress = getBindAddress();
+    Integer locator1Port = locatorSite1.getPort();
 
-    String receiverGroup = "receiverGroup";
-    vm3.invoke(() -> createCacheWithServerBindAddress(dsIdPort, serverBindAddress, receiverGroup));
-    vm4.invoke(() -> createCacheWithServerBindAddress(dsIdPort, serverBindAddress, receiverGroup));
-    vm5.invoke(() -> createCacheWithServerBindAddress(dsIdPort, serverBindAddress, receiverGroup));
+    Properties props = new Properties();
+    props.setProperty(GROUPS, receiverGroup);
+    props.setProperty(SERVER_BIND_ADDRESS, serverBindAddress);
+
+    server1 = locatorServerStartupRule.startServerVM(3, props, locator1Port);
+    server2 = locatorServerStartupRule.startServerVM(4, props, locator1Port);
+    server3 = locatorServerStartupRule.startServerVM(5, props, locator1Port);
 
     String command =
         CliStrings.CREATE_GATEWAYRECEIVER + " --" + CliStrings.CREATE_GATEWAYRECEIVER__MANUALSTART
@@ -371,25 +360,22 @@ public class CreateGatewayReceiverCommandDUnitTest extends WANCommandTestBase {
             + hostnameForSenders + " --" + CliStrings.CREATE_GATEWAYRECEIVER__STARTPORT + "=10000"
             + " --" + CliStrings.CREATE_GATEWAYRECEIVER__ENDPORT + "=11000" + " --"
             + CliStrings.CREATE_GATEWAYRECEIVER__MAXTIMEBETWEENPINGS + "=100000" + " --"
-            + CliStrings.CREATE_GATEWAYRECEIVER__SOCKETBUFFERSIZE + "=512000" + " --"
-            + CliStrings.GROUP + "=" + receiverGroup;
-    executeCommandAndVerifyStatus(command, 3);
+            + CliStrings.CREATE_GATEWAYRECEIVER__SOCKETBUFFERSIZE + "=512000" + " --" + GROUP + "="
+            + receiverGroup;
+    gfsh.executeAndAssertThat(command).statusIsSuccess()
+        .tableHasColumnWithExactValuesInAnyOrder("Member", "server-3", "server-4", "server-5")
+        .tableHasColumnWithValuesContaining("Status",
+            "GatewayReceiver created on member \"server-3\"",
+            "GatewayReceiver created on member \"server-4\"",
+            "GatewayReceiver created on member \"server-5\"");
 
-    // verify server-bind-address takes precedence over hostname-for-senders
-    vm3.invoke(() -> verifyGatewayReceiverProfile(hostnameForSenders));
-    vm4.invoke(() -> verifyGatewayReceiverProfile(hostnameForSenders));
-    vm5.invoke(() -> verifyGatewayReceiverProfile(hostnameForSenders));
-
-    vm3.invoke(() -> verifyGatewayReceiverServerLocations(dsIdPort, hostnameForSenders));
-    vm4.invoke(() -> verifyGatewayReceiverServerLocations(dsIdPort, hostnameForSenders));
-    vm5.invoke(() -> verifyGatewayReceiverServerLocations(dsIdPort, hostnameForSenders));
-
-    vm3.invoke(() -> verifyReceiverCreationWithAttributes(true, 10000, 11000, "", 100000, 512000,
-        null, hostnameForSenders));
-    vm4.invoke(() -> verifyReceiverCreationWithAttributes(true, 10000, 11000, "", 100000, 512000,
-        null, hostnameForSenders));
-    vm5.invoke(() -> verifyReceiverCreationWithAttributes(true, 10000, 11000, "", 100000, 512000,
-        null, hostnameForSenders));
+    MemberVM.invokeInEveryMember(() -> {
+      // verify server-bind-address takes precedence over hostname-for-senders
+      verifyGatewayReceiverProfile(hostnameForSenders);
+      verifyGatewayReceiverServerLocations(locator1Port, hostnameForSenders);
+      verifyReceiverCreationWithAttributes(true, 10000, 11000, "", 100000, 512000, null,
+          hostnameForSenders);
+    }, server1, server2, server3);
   }
 
   /**
@@ -398,18 +384,18 @@ public class CreateGatewayReceiverCommandDUnitTest extends WANCommandTestBase {
   @Test
   public void testCreateGatewayReceiverWithHostnameForSendersAndBindAddressProperty()
       throws Exception {
-    VM puneLocator = Host.getLocator();
-    int dsIdPort = puneLocator.invoke(this::getLocatorPort);
-    propsSetUp(dsIdPort);
-    vm2.invoke(() -> createFirstRemoteLocator(2, dsIdPort));
-
+    String receiverGroup = "receiverGroup";
     String hostnameForSenders = getHostName();
+    Integer locator1Port = locatorSite1.getPort();
     String expectedBindAddress = getBindAddress();
 
-    String receiverGroup = "receiverGroup";
-    vm3.invoke(() -> createCacheWithBindAddress(dsIdPort, expectedBindAddress, receiverGroup));
-    vm4.invoke(() -> createCacheWithBindAddress(dsIdPort, expectedBindAddress, receiverGroup));
-    vm5.invoke(() -> createCacheWithBindAddress(dsIdPort, expectedBindAddress, receiverGroup));
+    Properties props = new Properties();
+    props.setProperty(GROUPS, receiverGroup);
+    props.setProperty(BIND_ADDRESS, expectedBindAddress);
+
+    server1 = locatorServerStartupRule.startServerVM(3, props, locator1Port);
+    server2 = locatorServerStartupRule.startServerVM(4, props, locator1Port);
+    server3 = locatorServerStartupRule.startServerVM(5, props, locator1Port);
 
     String command =
         CliStrings.CREATE_GATEWAYRECEIVER + " --" + CliStrings.CREATE_GATEWAYRECEIVER__MANUALSTART
@@ -417,39 +403,32 @@ public class CreateGatewayReceiverCommandDUnitTest extends WANCommandTestBase {
             + hostnameForSenders + " --" + CliStrings.CREATE_GATEWAYRECEIVER__STARTPORT + "=10000"
             + " --" + CliStrings.CREATE_GATEWAYRECEIVER__ENDPORT + "=11000" + " --"
             + CliStrings.CREATE_GATEWAYRECEIVER__MAXTIMEBETWEENPINGS + "=100000" + " --"
-            + CliStrings.CREATE_GATEWAYRECEIVER__SOCKETBUFFERSIZE + "=512000" + " --"
-            + CliStrings.GROUP + "=" + receiverGroup;
-    executeCommandAndVerifyStatus(command, 3);
+            + CliStrings.CREATE_GATEWAYRECEIVER__SOCKETBUFFERSIZE + "=512000" + " --" + GROUP + "="
+            + receiverGroup;
+    gfsh.executeAndAssertThat(command).statusIsSuccess()
+        .tableHasColumnWithExactValuesInAnyOrder("Member", "server-3", "server-4", "server-5")
+        .tableHasColumnWithValuesContaining("Status",
+            "GatewayReceiver created on member \"server-3\"",
+            "GatewayReceiver created on member \"server-4\"",
+            "GatewayReceiver created on member \"server-5\"");
 
-    vm3.invoke(() -> verifyGatewayReceiverProfile(hostnameForSenders));
-    vm4.invoke(() -> verifyGatewayReceiverProfile(hostnameForSenders));
-    vm5.invoke(() -> verifyGatewayReceiverProfile(hostnameForSenders));
-
-    vm3.invoke(() -> verifyGatewayReceiverServerLocations(dsIdPort, hostnameForSenders));
-    vm4.invoke(() -> verifyGatewayReceiverServerLocations(dsIdPort, hostnameForSenders));
-    vm5.invoke(() -> verifyGatewayReceiverServerLocations(dsIdPort, hostnameForSenders));
-
-    vm3.invoke(() -> verifyReceiverCreationWithAttributes(true, 10000, 11000, "", 100000, 512000,
-        null, hostnameForSenders));
-    vm4.invoke(() -> verifyReceiverCreationWithAttributes(true, 10000, 11000, "", 100000, 512000,
-        null, hostnameForSenders));
-    vm5.invoke(() -> verifyReceiverCreationWithAttributes(true, 10000, 11000, "", 100000, 512000,
-        null, hostnameForSenders));
+    MemberVM.invokeInEveryMember(() -> {
+      verifyGatewayReceiverProfile(hostnameForSenders);
+      verifyGatewayReceiverServerLocations(locator1Port, hostnameForSenders);
+      verifyReceiverCreationWithAttributes(true, 10000, 11000, "", 100000, 512000, null,
+          hostnameForSenders);
+    }, server1, server2, server3);
   }
 
   /**
    * GatewayReceiver with given attributes and a single GatewayTransportFilter.
    */
   @Test
-  public void testCreateGatewayReceiverWithGatewayTransportFilter() {
-    VM puneLocator = Host.getLocator();
-    int dsIdPort = puneLocator.invoke(this::getLocatorPort);
-    propsSetUp(dsIdPort);
-    vm2.invoke(() -> createFirstRemoteLocator(2, dsIdPort));
-
-    vm3.invoke(() -> createCache(dsIdPort));
-    vm4.invoke(() -> createCache(dsIdPort));
-    vm5.invoke(() -> createCache(dsIdPort));
+  public void testCreateGatewayReceiverWithGatewayTransportFilter() throws Exception {
+    Integer locator1Port = locatorSite1.getPort();
+    server1 = locatorServerStartupRule.startServerVM(3, locator1Port);
+    server2 = locatorServerStartupRule.startServerVM(4, locator1Port);
+    server3 = locatorServerStartupRule.startServerVM(5, locator1Port);
 
     String command =
         CliStrings.CREATE_GATEWAYRECEIVER + " --" + CliStrings.CREATE_GATEWAYRECEIVER__MANUALSTART
@@ -460,31 +439,30 @@ public class CreateGatewayReceiverCommandDUnitTest extends WANCommandTestBase {
             + CliStrings.CREATE_GATEWAYRECEIVER__SOCKETBUFFERSIZE + "=512000" + " --"
             + CliStrings.CREATE_GATEWAYRECEIVER__GATEWAYTRANSPORTFILTER
             + "=org.apache.geode.cache30.MyGatewayTransportFilter1";
-    executeCommandAndVerifyStatus(command, 4);
-    List<String> transportFilters = new ArrayList<String>();
-    transportFilters.add("org.apache.geode.cache30.MyGatewayTransportFilter1");
+    gfsh.executeAndAssertThat(command).statusIsSuccess()
+        .tableHasColumnWithExactValuesInAnyOrder("Member", "server-3", "server-4", "server-5")
+        .tableHasColumnWithValuesContaining("Status",
+            "GatewayReceiver created on member \"server-3\"",
+            "GatewayReceiver created on member \"server-4\"",
+            "GatewayReceiver created on member \"server-5\"");
 
-    vm3.invoke(() -> verifyReceiverCreationWithAttributes(true, 10000, 11000, "localhost", 100000,
-        512000, transportFilters, GatewayReceiver.DEFAULT_HOSTNAME_FOR_SENDERS));
-    vm4.invoke(() -> verifyReceiverCreationWithAttributes(true, 10000, 11000, "localhost", 100000,
-        512000, transportFilters, GatewayReceiver.DEFAULT_HOSTNAME_FOR_SENDERS));
-    vm5.invoke(() -> verifyReceiverCreationWithAttributes(true, 10000, 11000, "localhost", 100000,
-        512000, transportFilters, GatewayReceiver.DEFAULT_HOSTNAME_FOR_SENDERS));
+    List<String> transportFilters = new ArrayList<>();
+    transportFilters.add("org.apache.geode.cache30.MyGatewayTransportFilter1");
+    MemberVM.invokeInEveryMember(() -> {
+      verifyReceiverCreationWithAttributes(true, 10000, 11000, "localhost", 100000, 512000,
+          transportFilters, GatewayReceiver.DEFAULT_HOSTNAME_FOR_SENDERS);
+    }, server1, server2, server3);
   }
 
   /**
    * GatewayReceiver with given attributes and multiple GatewayTransportFilters.
    */
   @Test
-  public void testCreateGatewayReceiverWithMultipleGatewayTransportFilters() {
-    VM puneLocator = Host.getLocator();
-    int dsIdPort = puneLocator.invoke(this::getLocatorPort);
-    propsSetUp(dsIdPort);
-    vm2.invoke(() -> createFirstRemoteLocator(2, dsIdPort));
-
-    vm3.invoke(() -> createCache(dsIdPort));
-    vm4.invoke(() -> createCache(dsIdPort));
-    vm5.invoke(() -> createCache(dsIdPort));
+  public void testCreateGatewayReceiverWithMultipleGatewayTransportFilters() throws Exception {
+    Integer locator1Port = locatorSite1.getPort();
+    server1 = locatorServerStartupRule.startServerVM(3, locator1Port);
+    server2 = locatorServerStartupRule.startServerVM(4, locator1Port);
+    server3 = locatorServerStartupRule.startServerVM(5, locator1Port);
 
     String command = CliStrings.CREATE_GATEWAYRECEIVER + " --"
         + CliStrings.CREATE_GATEWAYRECEIVER__BINDADDRESS + "=localhost" + " --"
@@ -494,76 +472,34 @@ public class CreateGatewayReceiverCommandDUnitTest extends WANCommandTestBase {
         + CliStrings.CREATE_GATEWAYRECEIVER__SOCKETBUFFERSIZE + "=512000" + " --"
         + CliStrings.CREATE_GATEWAYRECEIVER__GATEWAYTRANSPORTFILTER
         + "=org.apache.geode.cache30.MyGatewayTransportFilter1,org.apache.geode.cache30.MyGatewayTransportFilter2";
-    executeCommandAndVerifyStatus(command, 4);
-    List<String> transportFilters = new ArrayList<String>();
+    gfsh.executeAndAssertThat(command).statusIsSuccess()
+        .tableHasColumnWithExactValuesInAnyOrder("Member", "server-3", "server-4", "server-5")
+        .tableHasColumnWithValuesContaining("Status",
+            "GatewayReceiver created on member \"server-3\"",
+            "GatewayReceiver created on member \"server-4\"",
+            "GatewayReceiver created on member \"server-5\"");
+
+    List<String> transportFilters = new ArrayList<>();
     transportFilters.add("org.apache.geode.cache30.MyGatewayTransportFilter1");
     transportFilters.add("org.apache.geode.cache30.MyGatewayTransportFilter2");
 
-    vm3.invoke(() -> verifyReceiverCreationWithAttributes(!GatewayReceiver.DEFAULT_MANUAL_START,
-        10000, 11000, "localhost", 100000, 512000, transportFilters,
-        GatewayReceiver.DEFAULT_HOSTNAME_FOR_SENDERS));
-    vm4.invoke(() -> verifyReceiverCreationWithAttributes(!GatewayReceiver.DEFAULT_MANUAL_START,
-        10000, 11000, "localhost", 100000, 512000, transportFilters,
-        GatewayReceiver.DEFAULT_HOSTNAME_FOR_SENDERS));
-    vm5.invoke(() -> verifyReceiverCreationWithAttributes(!GatewayReceiver.DEFAULT_MANUAL_START,
-        10000, 11000, "localhost", 100000, 512000, transportFilters,
-        GatewayReceiver.DEFAULT_HOSTNAME_FOR_SENDERS));
-  }
-
-  /**
-   * GatewayReceiver with given attributes. Error scenario where startPort is greater than endPort.
-   */
-  @Test
-  public void testCreateGatewayReceiver_Error() {
-    VM puneLocator = Host.getLocator();
-    int dsIdPort = puneLocator.invoke(this::getLocatorPort);
-    propsSetUp(dsIdPort);
-    vm2.invoke(() -> createFirstRemoteLocator(2, dsIdPort));
-
-    vm3.invoke(() -> createCache(dsIdPort));
-    vm4.invoke(() -> createCache(dsIdPort));
-    vm5.invoke(() -> createCache(dsIdPort));
-
-    String command =
-        CliStrings.CREATE_GATEWAYRECEIVER + " --" + CliStrings.CREATE_GATEWAYRECEIVER__BINDADDRESS
-            + "=localhost" + " --" + CliStrings.CREATE_GATEWAYRECEIVER__STARTPORT + "=11000" + " --"
-            + CliStrings.CREATE_GATEWAYRECEIVER__ENDPORT + "=10000" + " --"
-            + CliStrings.CREATE_GATEWAYRECEIVER__MAXTIMEBETWEENPINGS + "=100000" + " --"
-            + CliStrings.CREATE_GATEWAYRECEIVER__SOCKETBUFFERSIZE + "=512000";
-    CommandResult cmdResult = executeCommand(command);
-    if (cmdResult != null) {
-      String strCmdResult = commandResultToString(cmdResult);
-      getLogWriter().info("testCreateGatewayReceiver stringResult : " + strCmdResult + ">>>>");
-      assertEquals(Result.Status.OK, cmdResult.getStatus());
-
-      TabularResultData resultData = (TabularResultData) cmdResult.getResultData();
-      List<String> status = resultData.retrieveAllValues("Status");
-      assertEquals(4, status.size());// expected size 4 includes the manager
-                                     // node
-      // verify there is no error in the status
-      for (String stat : status) {
-        assertTrue("GatewayReceiver creation should have failed", stat.contains("ERROR:"));
-      }
-    } else {
-      fail("testCreateGatewayReceiver failed as did not get CommandResult");
-    }
+    MemberVM.invokeInEveryMember(() -> {
+      verifyReceiverCreationWithAttributes(!GatewayReceiver.DEFAULT_MANUAL_START, 10000, 11000,
+          "localhost", 100000, 512000, transportFilters,
+          GatewayReceiver.DEFAULT_HOSTNAME_FOR_SENDERS);
+    }, server1, server2, server3);
   }
 
   /**
    * GatewayReceiver with given attributes on the given member.
    */
   @Test
-  public void testCreateGatewayReceiver_onMember() {
-    VM puneLocator = Host.getLocator();
-    int dsIdPort = puneLocator.invoke(this::getLocatorPort);
-    propsSetUp(dsIdPort);
-    vm2.invoke(() -> createFirstRemoteLocator(2, dsIdPort));
-
-    vm3.invoke(() -> createCache(dsIdPort));
-    vm4.invoke(() -> createCache(dsIdPort));
-    vm5.invoke(() -> createCache(dsIdPort));
-
-    final DistributedMember vm3Member = vm3.invoke(this::getMember);
+  public void testCreateGatewayReceiverOnSingleMember() throws Exception {
+    Integer locator1Port = locatorSite1.getPort();
+    server1 = locatorServerStartupRule.startServerVM(3, locator1Port);
+    server2 = locatorServerStartupRule.startServerVM(4, locator1Port);
+    server3 = locatorServerStartupRule.startServerVM(5, locator1Port);
+    final DistributedMember server1Member = server1.invoke(getMemberIdCallable());
 
     String command =
         CliStrings.CREATE_GATEWAYRECEIVER + " --" + CliStrings.CREATE_GATEWAYRECEIVER__MANUALSTART
@@ -572,47 +508,34 @@ public class CreateGatewayReceiverCommandDUnitTest extends WANCommandTestBase {
             + CliStrings.CREATE_GATEWAYRECEIVER__ENDPORT + "=11000" + " --"
             + CliStrings.CREATE_GATEWAYRECEIVER__MAXTIMEBETWEENPINGS + "=100000" + " --"
             + CliStrings.CREATE_GATEWAYRECEIVER__SOCKETBUFFERSIZE + "=512000" + " --"
-            + CliStrings.MEMBER + "=" + vm3Member.getId();
-    CommandResult cmdResult = executeCommand(command);
-    if (cmdResult != null) {
-      String strCmdResult = commandResultToString(cmdResult);
-      getLogWriter().info("testCreateGatewayReceiver stringResult : " + strCmdResult + ">>>>");
-      assertEquals(Result.Status.OK, cmdResult.getStatus());
+            + CliStrings.MEMBER + "=" + server1Member.getId();
+    gfsh.executeAndAssertThat(command).statusIsSuccess()
+        .tableHasColumnWithExactValuesInAnyOrder("Member", "server-3")
+        .tableHasColumnWithValuesContaining("Status",
+            "GatewayReceiver created on member \"server-3\"");
 
-      TabularResultData resultData = (TabularResultData) cmdResult.getResultData();
-      List<String> status = resultData.retrieveAllValues("Status");
-      assertEquals(1, status.size());
-      // verify there is no error in the status
-      for (String stat : status) {
-        assertTrue("GatewayReceiver creation failed with: " + stat, !stat.contains("ERROR:"));
-      }
-    } else {
-      fail("testCreateGatewayReceiver failed as did not get CommandResult");
-    }
+    MemberVM.invokeInEveryMember(() -> {
+      verifyReceiverCreationWithAttributes(false, 10000, 11000, "localhost", 100000, 512000, null,
+          GatewayReceiver.DEFAULT_HOSTNAME_FOR_SENDERS);
+    }, server1);
 
-    // cannot verify Profile/ServerLocation when manualStart is true
-
-    vm3.invoke(() -> verifyReceiverCreationWithAttributes(false, 10000, 11000, "localhost", 100000,
-        512000, null, GatewayReceiver.DEFAULT_HOSTNAME_FOR_SENDERS));
+    MemberVM.invokeInEveryMember(() -> {
+      Cache cache = LocatorServerStartupRule.getCache();
+      assertThat(cache.getGatewayReceivers()).isEmpty();
+    }, server2, server3);
   }
 
   /**
    * GatewayReceiver with given attributes on multiple members.
    */
-  @Category(FlakyTest.class) // GEODE-1355
   @Test
-  public void testCreateGatewayReceiver_onMultipleMembers() {
-    VM puneLocator = Host.getLocator();
-    int dsIdPort = puneLocator.invoke(this::getLocatorPort);
-    propsSetUp(dsIdPort);
-    vm2.invoke(() -> createFirstRemoteLocator(2, dsIdPort));
-
-    vm3.invoke(() -> createCache(dsIdPort));
-    vm4.invoke(() -> createCache(dsIdPort));
-    vm5.invoke(() -> createCache(dsIdPort));
-
-    final DistributedMember vm3Member = vm3.invoke(this::getMember);
-    final DistributedMember vm4Member = vm4.invoke(this::getMember);
+  public void testCreateGatewayReceiverOnMultipleMembers() throws Exception {
+    Integer locator1Port = locatorSite1.getPort();
+    server1 = locatorServerStartupRule.startServerVM(3, locator1Port);
+    server2 = locatorServerStartupRule.startServerVM(4, locator1Port);
+    server3 = locatorServerStartupRule.startServerVM(5, locator1Port);
+    final DistributedMember server1Member = server1.invoke(getMemberIdCallable());
+    final DistributedMember server2Member = server2.invoke(getMemberIdCallable());
 
     String command =
         CliStrings.CREATE_GATEWAYRECEIVER + " --" + CliStrings.CREATE_GATEWAYRECEIVER__MANUALSTART
@@ -621,45 +544,34 @@ public class CreateGatewayReceiverCommandDUnitTest extends WANCommandTestBase {
             + CliStrings.CREATE_GATEWAYRECEIVER__ENDPORT + "=11000" + " --"
             + CliStrings.CREATE_GATEWAYRECEIVER__MAXTIMEBETWEENPINGS + "=100000" + " --"
             + CliStrings.CREATE_GATEWAYRECEIVER__SOCKETBUFFERSIZE + "=512000" + " --"
-            + CliStrings.MEMBER + "=" + vm3Member.getId() + "," + vm4Member.getId();
-    CommandResult cmdResult = executeCommand(command);
-    if (cmdResult != null) {
-      String strCmdResult = commandResultToString(cmdResult);
-      getLogWriter().info("testCreateGatewayReceiver stringResult : " + strCmdResult + ">>>>");
-      assertEquals(Result.Status.OK, cmdResult.getStatus());
+            + CliStrings.MEMBER + "=" + server1Member.getId() + "," + server2Member.getId();
+    gfsh.executeAndAssertThat(command).statusIsSuccess()
+        .tableHasColumnWithExactValuesInAnyOrder("Member", "server-3", "server-4")
+        .tableHasColumnWithValuesContaining("Status",
+            "GatewayReceiver created on member \"server-3\"",
+            "GatewayReceiver created on member \"server-4\"");
 
-      TabularResultData resultData = (TabularResultData) cmdResult.getResultData();
-      List<String> status = resultData.retrieveAllValues("Status");
-      assertEquals(2, status.size());
-      // verify there is no error in the status
-      for (String stat : status) {
-        assertTrue("GatewayReceiver creation failed with: " + stat, !stat.contains("ERROR:"));
-      }
-    } else {
-      fail("testCreateGatewayReceiver failed as did not get CommandResult");
-    }
+    MemberVM.invokeInEveryMember(() -> {
+      verifyReceiverCreationWithAttributes(false, 10000, 11000, "localhost", 100000, 512000, null,
+          GatewayReceiver.DEFAULT_HOSTNAME_FOR_SENDERS);
+    }, server1, server2);
 
-    // cannot verify Profile/ServerLocation when manualStart is true
-
-    vm3.invoke(() -> verifyReceiverCreationWithAttributes(false, 10000, 11000, "localhost", 100000,
-        512000, null, GatewayReceiver.DEFAULT_HOSTNAME_FOR_SENDERS));
-    vm4.invoke(() -> verifyReceiverCreationWithAttributes(false, 10000, 11000, "localhost", 100000,
-        512000, null, GatewayReceiver.DEFAULT_HOSTNAME_FOR_SENDERS));
+    MemberVM.invokeInEveryMember(() -> {
+      Cache cache = LocatorServerStartupRule.getCache();
+      assertThat(cache.getGatewayReceivers()).isEmpty();
+    }, server3);
   }
 
   /**
    * GatewayReceiver with given attributes on the given group.
    */
   @Test
-  public void testCreateGatewayReceiver_onGroup() {
-    VM puneLocator = Host.getLocator();
-    int dsIdPort = puneLocator.invoke(this::getLocatorPort);
-    propsSetUp(dsIdPort);
-    vm2.invoke(() -> createFirstRemoteLocator(2, dsIdPort));
-
-    vm3.invoke(() -> createCacheWithGroups(dsIdPort, "receiverGroup1"));
-    vm4.invoke(() -> createCacheWithGroups(dsIdPort, "receiverGroup1"));
-    vm5.invoke(() -> createCacheWithGroups(dsIdPort, "receiverGroup1"));
+  public void testCreateGatewayReceiverOnGroup() throws Exception {
+    String groups = "receiverGroup1";
+    Integer locator1Port = locatorSite1.getPort();
+    server1 = startServerWithGroups(3, groups, locator1Port);
+    server2 = startServerWithGroups(4, groups, locator1Port);
+    server3 = startServerWithGroups(5, groups, locator1Port);
 
     String command =
         CliStrings.CREATE_GATEWAYRECEIVER + " --" + CliStrings.CREATE_GATEWAYRECEIVER__MANUALSTART
@@ -667,33 +579,19 @@ public class CreateGatewayReceiverCommandDUnitTest extends WANCommandTestBase {
             + " --" + CliStrings.CREATE_GATEWAYRECEIVER__STARTPORT + "=10000" + " --"
             + CliStrings.CREATE_GATEWAYRECEIVER__ENDPORT + "=11000" + " --"
             + CliStrings.CREATE_GATEWAYRECEIVER__MAXTIMEBETWEENPINGS + "=100000" + " --"
-            + CliStrings.CREATE_GATEWAYRECEIVER__SOCKETBUFFERSIZE + "=512000" + " --"
-            + CliStrings.GROUP + "=receiverGroup1";
-    CommandResult cmdResult = executeCommand(command);
-    if (cmdResult != null) {
-      String strCmdResult = commandResultToString(cmdResult);
-      getLogWriter().info("testCreateGatewayReceiver stringResult : " + strCmdResult + ">>>>");
-      assertEquals(Result.Status.OK, cmdResult.getStatus());
+            + CliStrings.CREATE_GATEWAYRECEIVER__SOCKETBUFFERSIZE + "=512000" + " --" + GROUP
+            + "=receiverGroup1";
+    gfsh.executeAndAssertThat(command).statusIsSuccess()
+        .tableHasColumnWithExactValuesInAnyOrder("Member", "server-3", "server-4", "server-5")
+        .tableHasColumnWithValuesContaining("Status",
+            "GatewayReceiver created on member \"server-3\"",
+            "GatewayReceiver created on member \"server-4\"",
+            "GatewayReceiver created on member \"server-5\"");
 
-      TabularResultData resultData = (TabularResultData) cmdResult.getResultData();
-      List<String> status = resultData.retrieveAllValues("Status");
-      assertEquals(3, status.size());//
-      // verify there is no error in the status
-      for (String stat : status) {
-        assertTrue("GatewayReceiver creation failed with: " + stat, !stat.contains("ERROR:"));
-      }
-    } else {
-      fail("testCreateGatewayReceiver failed as did not get CommandResult");
-    }
-
-    // cannot verify Profile/ServerLocation when manualStart is true
-
-    vm3.invoke(() -> verifyReceiverCreationWithAttributes(false, 10000, 11000, "localhost", 100000,
-        512000, null, GatewayReceiver.DEFAULT_HOSTNAME_FOR_SENDERS));
-    vm4.invoke(() -> verifyReceiverCreationWithAttributes(false, 10000, 11000, "localhost", 100000,
-        512000, null, GatewayReceiver.DEFAULT_HOSTNAME_FOR_SENDERS));
-    vm5.invoke(() -> verifyReceiverCreationWithAttributes(false, 10000, 11000, "localhost", 100000,
-        512000, null, GatewayReceiver.DEFAULT_HOSTNAME_FOR_SENDERS));
+    MemberVM.invokeInEveryMember(() -> {
+      verifyReceiverCreationWithAttributes(false, 10000, 11000, "localhost", 100000, 512000, null,
+          GatewayReceiver.DEFAULT_HOSTNAME_FOR_SENDERS);
+    }, server1, server2, server3);
   }
 
   /**
@@ -701,15 +599,13 @@ public class CreateGatewayReceiverCommandDUnitTest extends WANCommandTestBase {
    * group.
    */
   @Test
-  public void testCreateGatewayReceiver_onGroup_Scenario2() {
-    VM puneLocator = Host.getLocator();
-    int dsIdPort = puneLocator.invoke(this::getLocatorPort);
-    propsSetUp(dsIdPort);
-    vm2.invoke(() -> createFirstRemoteLocator(2, dsIdPort));
-
-    vm3.invoke(() -> createCacheWithGroups(dsIdPort, "receiverGroup1"));
-    vm4.invoke(() -> createCacheWithGroups(dsIdPort, "receiverGroup1"));
-    vm5.invoke(() -> createCacheWithGroups(dsIdPort, "receiverGroup2"));
+  public void testCreateGatewayReceiverOnGroupScenario2() throws Exception {
+    String group1 = "receiverGroup1";
+    String group2 = "receiverGroup2";
+    Integer locator1Port = locatorSite1.getPort();
+    server1 = startServerWithGroups(3, group1, locator1Port);
+    server2 = startServerWithGroups(4, group1, locator1Port);
+    server3 = startServerWithGroups(5, group2, locator1Port);
 
     String command =
         CliStrings.CREATE_GATEWAYRECEIVER + " --" + CliStrings.CREATE_GATEWAYRECEIVER__MANUALSTART
@@ -717,46 +613,34 @@ public class CreateGatewayReceiverCommandDUnitTest extends WANCommandTestBase {
             + " --" + CliStrings.CREATE_GATEWAYRECEIVER__STARTPORT + "=10000" + " --"
             + CliStrings.CREATE_GATEWAYRECEIVER__ENDPORT + "=11000" + " --"
             + CliStrings.CREATE_GATEWAYRECEIVER__MAXTIMEBETWEENPINGS + "=100000" + " --"
-            + CliStrings.CREATE_GATEWAYRECEIVER__SOCKETBUFFERSIZE + "=512000" + " --"
-            + CliStrings.GROUP + "=receiverGroup1";
-    CommandResult cmdResult = executeCommand(command);
-    if (cmdResult != null) {
-      String strCmdResult = commandResultToString(cmdResult);
-      getLogWriter().info("testCreateGatewayReceiver stringResult : " + strCmdResult + ">>>>");
-      assertEquals(Result.Status.OK, cmdResult.getStatus());
+            + CliStrings.CREATE_GATEWAYRECEIVER__SOCKETBUFFERSIZE + "=512000" + " --" + GROUP
+            + "=receiverGroup1";
+    gfsh.executeAndAssertThat(command).statusIsSuccess()
+        .tableHasColumnWithExactValuesInAnyOrder("Member", "server-3", "server-4")
+        .tableHasColumnWithValuesContaining("Status",
+            "GatewayReceiver created on member \"server-3\"",
+            "GatewayReceiver created on member \"server-4\"");
 
-      TabularResultData resultData = (TabularResultData) cmdResult.getResultData();
-      List<String> status = resultData.retrieveAllValues("Status");
-      assertEquals(2, status.size());//
-      // verify there is no error in the status
-      for (String stat : status) {
-        assertTrue("GatewayReceiver creation failed with: " + stat, !stat.contains("ERROR:"));
-      }
-    } else {
-      fail("testCreateGatewayReceiver failed as did not get CommandResult");
-    }
+    MemberVM.invokeInEveryMember(() -> {
+      verifyReceiverCreationWithAttributes(false, 10000, 11000, "localhost", 100000, 512000, null,
+          GatewayReceiver.DEFAULT_HOSTNAME_FOR_SENDERS);
+    }, server1, server2);
 
-    // cannot verify Profile/ServerLocation when manualStart is true
-
-    vm3.invoke(() -> verifyReceiverCreationWithAttributes(false, 10000, 11000, "localhost", 100000,
-        512000, null, GatewayReceiver.DEFAULT_HOSTNAME_FOR_SENDERS));
-    vm4.invoke(() -> verifyReceiverCreationWithAttributes(false, 10000, 11000, "localhost", 100000,
-        512000, null, GatewayReceiver.DEFAULT_HOSTNAME_FOR_SENDERS));
+    MemberVM.invokeInEveryMember(() -> {
+      Cache cache = LocatorServerStartupRule.getCache();
+      assertThat(cache.getGatewayReceivers()).isEmpty();
+    }, server3);
   }
 
   /**
    * GatewayReceiver with given attributes on multiple groups.
    */
   @Test
-  public void testCreateGatewayReceiver_onMultipleGroups() {
-    VM puneLocator = Host.getLocator();
-    int dsIdPort = puneLocator.invoke(this::getLocatorPort);
-    propsSetUp(dsIdPort);
-    vm2.invoke(() -> createFirstRemoteLocator(2, dsIdPort));
-
-    vm3.invoke(() -> createCacheWithGroups(dsIdPort, "receiverGroup1"));
-    vm4.invoke(() -> createCacheWithGroups(dsIdPort, "receiverGroup1"));
-    vm5.invoke(() -> createCacheWithGroups(dsIdPort, "receiverGroup2"));
+  public void testCreateGatewayReceiverOnMultipleGroups() throws Exception {
+    Integer locator1Port = locatorSite1.getPort();
+    server1 = startServerWithGroups(3, "receiverGroup1", locator1Port);
+    server2 = startServerWithGroups(4, "receiverGroup1", locator1Port);
+    server3 = startServerWithGroups(5, "receiverGroup2", locator1Port);
 
     String command =
         CliStrings.CREATE_GATEWAYRECEIVER + " --" + CliStrings.CREATE_GATEWAYRECEIVER__MANUALSTART
@@ -764,32 +648,18 @@ public class CreateGatewayReceiverCommandDUnitTest extends WANCommandTestBase {
             + " --" + CliStrings.CREATE_GATEWAYRECEIVER__STARTPORT + "=10000" + " --"
             + CliStrings.CREATE_GATEWAYRECEIVER__ENDPORT + "=11000" + " --"
             + CliStrings.CREATE_GATEWAYRECEIVER__MAXTIMEBETWEENPINGS + "=100000" + " --"
-            + CliStrings.CREATE_GATEWAYRECEIVER__SOCKETBUFFERSIZE + "=512000" + " --"
-            + CliStrings.GROUP + "=receiverGroup1,receiverGroup2";
-    CommandResult cmdResult = executeCommand(command);
-    if (cmdResult != null) {
-      String strCmdResult = commandResultToString(cmdResult);
-      getLogWriter().info("testCreateGatewayReceiver stringResult : " + strCmdResult + ">>>>");
-      assertEquals(Result.Status.OK, cmdResult.getStatus());
+            + CliStrings.CREATE_GATEWAYRECEIVER__SOCKETBUFFERSIZE + "=512000" + " --" + GROUP
+            + "=receiverGroup1,receiverGroup2";
+    gfsh.executeAndAssertThat(command).statusIsSuccess()
+        .tableHasColumnWithExactValuesInAnyOrder("Member", "server-3", "server-4", "server-5")
+        .tableHasColumnWithValuesContaining("Status",
+            "GatewayReceiver created on member \"server-3\"",
+            "GatewayReceiver created on member \"server-4\"",
+            "GatewayReceiver created on member \"server-5\"");
 
-      TabularResultData resultData = (TabularResultData) cmdResult.getResultData();
-      List<String> status = resultData.retrieveAllValues("Status");
-      assertEquals(3, status.size());//
-      // verify there is no error in the status
-      for (String stat : status) {
-        assertTrue("GatewayReceiver creation failed with: " + stat, !stat.contains("ERROR:"));
-      }
-    } else {
-      fail("testCreateGatewayReceiver failed as did not get CommandResult");
-    }
-
-    // cannot verify Profile/ServerLocation when manualStart is true
-
-    vm3.invoke(() -> verifyReceiverCreationWithAttributes(false, 10000, 11000, "localhost", 100000,
-        512000, null, GatewayReceiver.DEFAULT_HOSTNAME_FOR_SENDERS));
-    vm4.invoke(() -> verifyReceiverCreationWithAttributes(false, 10000, 11000, "localhost", 100000,
-        512000, null, GatewayReceiver.DEFAULT_HOSTNAME_FOR_SENDERS));
-    vm5.invoke(() -> verifyReceiverCreationWithAttributes(false, 10000, 11000, "localhost", 100000,
-        512000, null, GatewayReceiver.DEFAULT_HOSTNAME_FOR_SENDERS));
+    MemberVM.invokeInEveryMember(() -> {
+      verifyReceiverCreationWithAttributes(false, 10000, 11000, "localhost", 100000, 512000, null,
+          GatewayReceiver.DEFAULT_HOSTNAME_FOR_SENDERS);
+    }, server1, server2, server3);
   }
 }

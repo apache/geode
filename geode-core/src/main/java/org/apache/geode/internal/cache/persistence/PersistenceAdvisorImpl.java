@@ -14,6 +14,12 @@
  */
 package org.apache.geode.internal.cache.persistence;
 
+import java.util.*;
+import java.util.Map.Entry;
+import java.util.concurrent.TimeUnit;
+
+import org.apache.logging.log4j.Logger;
+
 import org.apache.geode.cache.DiskAccessException;
 import org.apache.geode.cache.RegionDestroyedException;
 import org.apache.geode.cache.persistence.ConflictingPersistentDataException;
@@ -33,11 +39,6 @@ import org.apache.geode.internal.logging.log4j.LocalizedMessage;
 import org.apache.geode.internal.logging.log4j.LogMarker;
 import org.apache.geode.internal.process.StartupStatus;
 import org.apache.geode.internal.util.TransformUtils;
-import org.apache.logging.log4j.Logger;
-
-import java.util.*;
-import java.util.Map.Entry;
-import java.util.concurrent.TimeUnit;
 
 /**
  *
@@ -1346,7 +1347,7 @@ public class PersistenceAdvisorImpl implements PersistenceAdvisor {
   }
 
   public static interface PersistenceAdvisorObserver {
-    default public void observe(String regionPath) {}
+    public default void observe(String regionPath) {}
   }
 
   public static void setPersistenceAdvisorObserver(PersistenceAdvisorObserver o) {

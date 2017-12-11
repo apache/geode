@@ -22,9 +22,7 @@ import java.util.Set;
 
 import org.springframework.shell.core.annotation.CliCommand;
 
-import org.apache.geode.SystemFailure;
 import org.apache.geode.cache.execute.Execution;
-import org.apache.geode.cache.execute.FunctionInvocationTargetException;
 import org.apache.geode.cache.execute.ResultCollector;
 import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.internal.cache.execute.AbstractExecution;
@@ -45,25 +43,12 @@ public class ListDiskStoresCommand implements GfshCommand {
   @ResourceOperation(resource = ResourcePermission.Resource.CLUSTER,
       operation = ResourcePermission.Operation.READ)
   public Result listDiskStores() {
-    try {
-      Set<DistributedMember> dataMembers = DiskStoreCommandsUtils.getNormalMembers(getCache());
+    Set<DistributedMember> dataMembers = DiskStoreCommandsUtils.getNormalMembers(getCache());
 
-      if (dataMembers.isEmpty()) {
-        return ResultBuilder.createInfoResult(CliStrings.NO_CACHING_MEMBERS_FOUND_MESSAGE);
-      }
-
-      return toTabularResult(getDiskStoreListing(dataMembers));
-    } catch (FunctionInvocationTargetException ignore) {
-      return ResultBuilder.createGemFireErrorResult(CliStrings
-          .format(CliStrings.COULD_NOT_EXECUTE_COMMAND_TRY_AGAIN, CliStrings.LIST_DISK_STORE));
-    } catch (VirtualMachineError e) {
-      SystemFailure.initiateFailure(e);
-      throw e;
-    } catch (Throwable t) {
-      SystemFailure.checkFailure();
-      return ResultBuilder.createGemFireErrorResult(
-          String.format(CliStrings.LIST_DISK_STORE__ERROR_MESSAGE, toString(t, isDebugging())));
+    if (dataMembers.isEmpty()) {
+      return ResultBuilder.createInfoResult(CliStrings.NO_CACHING_MEMBERS_FOUND_MESSAGE);
     }
+    return toTabularResult(getDiskStoreListing(dataMembers));
   }
 
   @SuppressWarnings("unchecked")

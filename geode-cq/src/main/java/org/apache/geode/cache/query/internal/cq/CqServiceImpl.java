@@ -111,7 +111,7 @@ public class CqServiceImpl implements CqService {
 
   /**
    * Manages CQ objects. uses serverCqName as key and CqQueryImpl as value
-   * 
+   *
    * GuardedBy cqQueryMapLock
    */
   private volatile HashMap<String, CqQueryImpl> cqQueryMap = new HashMap<>();
@@ -252,7 +252,7 @@ public class CqServiceImpl implements CqService {
   /**
    * Executes the given CqQuery, if the CqQuery for that name is not there it registers the one and
    * executes. This is called on the Server.
-   * 
+   *
    * @param manageEmptyRegions whether to update the 6.1 emptyRegions map held in the CCN
    * @param regionDataPolicy the data policy of the region associated with the query. This is only
    *        needed if manageEmptyRegions is true.
@@ -820,7 +820,7 @@ public class CqServiceImpl implements CqService {
 
   /**
    * Is the CQ service in a cache server environment
-   * 
+   *
    * @return true if cache server, false otherwise
    */
   public boolean isServer() {
@@ -890,9 +890,9 @@ public class CqServiceImpl implements CqService {
 
   /**
    * Checks if CQ with the given name already exists.
-   * 
+   *
    * @param cqName name of the CQ.
-   * 
+   *
    * @return true if exists else false.
    */
   private synchronized boolean isCqExists(String cqName) {
@@ -1533,7 +1533,7 @@ public class CqServiceImpl implements CqService {
 
   /**
    * Get the VSD ststs for CQ Service. There is one CQ Service per cache
-   * 
+   *
    * @return reference to VSD stats object for the CQ service
    */
   public CqServiceVsdStats getCqServiceVsdStats() {
@@ -1586,7 +1586,7 @@ public class CqServiceImpl implements CqService {
 
   /**
    * Returns the matching CQ map.
-   * 
+   *
    * @return HashMap matchingCqMap
    */
   public Map<String, HashSet<String>> getMatchingCqMap() {

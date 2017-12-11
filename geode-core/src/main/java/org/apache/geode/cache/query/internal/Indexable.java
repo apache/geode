@@ -21,13 +21,13 @@ import org.apache.geode.cache.query.TypeMismatchException;
 /**
  * Interface implemented by CompiledComparision and CompiledUndefibed to indicate that index can be
  * created on such CompiledValues.It indicates that they are filter evaluatable at the atomic level.
- * 
- * 
+ *
+ *
  */
 public interface Indexable {
   /**
    * Returns the IndexInfo object, if any, associated with the CompiledValue
-   * 
+   *
    * @param context ExecutionContext object
    * @return IndexInfo object , if any, associated with the CompiledValue
    * @throws TypeMismatchException
@@ -38,7 +38,7 @@ public interface Indexable {
       throws TypeMismatchException, AmbiguousNameException, NameResolutionException;
 
   /**
-   * 
+   *
    * @return boolean indicating whether the CompiledValue is RangeEvaluatable or not. Presently
    *         CompiledUndefined is assumed to be not range evaluatable while a CompiledComparison is
    *         assumed to be range evaluatable ( though we do not club compiled comparison having null

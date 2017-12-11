@@ -19,13 +19,13 @@ import java.nio.*;
 
 /**
  * An OutputStream that wraps to a ByteBuffer
- * 
+ *
  * @since GemFire 3.5
  */
 
 public class ByteBufferOutputStream extends OutputStream {
   private ByteBuffer buffer;
-  private final static int DEFAULT_SIZE = 1024;
+  private static final int DEFAULT_SIZE = 1024;
 
   public ByteBufferOutputStream() {
     this.buffer = ByteBuffer.allocate(DEFAULT_SIZE);

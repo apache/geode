@@ -248,7 +248,7 @@ public class RebalanceOperationImpl implements RebalanceOperation {
 
   /**
    * Returns true if this is a simulation.
-   * 
+   *
    * @return true if this is a simulation
    */
   boolean isSimulation() {

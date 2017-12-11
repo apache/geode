@@ -24,7 +24,7 @@ public class UnsupportedVersionException extends VersionException {
 
   /**
    * Constructs a new <code>UnsupportedVersionException</code>.
-   * 
+   *
    * @param versionOrdinal The ordinal of the requested <code>Version</code>
    */
   public UnsupportedVersionException(short versionOrdinal) {
@@ -33,7 +33,7 @@ public class UnsupportedVersionException extends VersionException {
 
   /**
    * Constructs a new <code>UnsupportedVersionException</code>.
-   * 
+   *
    * @param message The exception message
    */
   public UnsupportedVersionException(String message) {

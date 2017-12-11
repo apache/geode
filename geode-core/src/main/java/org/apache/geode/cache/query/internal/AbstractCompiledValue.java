@@ -15,16 +15,16 @@
 package org.apache.geode.cache.query.internal;
 
 import java.util.*;
+
 import org.apache.geode.cache.query.*;
 import org.apache.geode.cache.query.internal.parse.OQLLexerTokenTypes;
-import org.apache.geode.cache.query.types.*;
 import org.apache.geode.cache.query.internal.types.StructTypeImpl;
+import org.apache.geode.cache.query.types.*;
 import org.apache.geode.internal.i18n.LocalizedStrings;
 
-// import org.apache.geode.cache.query.internal.types.TypeUtils;
 /**
  * Class Description
- * 
+ *
  * @version $Revision: 1.1 $
  */
 public abstract class AbstractCompiledValue implements CompiledValue, Filter, OQLLexerTokenTypes {
@@ -185,7 +185,7 @@ public abstract class AbstractCompiledValue implements CompiledValue, Filter, OQ
    * normal filterEvaluate. This is here for benefit of nested CompiledJunctions: filterEvaluate is
    * called first, then auxFilterEvaluate is called on the operands that have been organized to be
    * filters
-   * 
+   *
    * @see CompiledJunction#filterEvaluate
    */
   public SelectResults auxFilterEvaluate(ExecutionContext context,

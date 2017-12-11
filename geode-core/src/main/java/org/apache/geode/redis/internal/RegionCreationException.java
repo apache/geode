@@ -17,7 +17,7 @@ package org.apache.geode.redis.internal;
 /**
  * This exception is used when an error happens while creating a
  * {@link org.apache.geode.cache.Region} globally
- * 
+ *
  *
  */
 public class RegionCreationException extends RuntimeException {

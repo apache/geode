@@ -17,7 +17,11 @@ package org.apache.geode.management.internal.cli.commands.lifecycle;
 import static org.apache.geode.management.internal.cli.i18n.CliStrings.LOCATOR_TERM_NAME;
 import static org.apache.geode.management.internal.cli.shell.MXBeanProvider.getMemberMXBean;
 
-import org.apache.geode.SystemFailure;
+import java.util.concurrent.TimeUnit;
+
+import org.springframework.shell.core.annotation.CliCommand;
+import org.springframework.shell.core.annotation.CliOption;
+
 import org.apache.geode.distributed.AbstractLauncher;
 import org.apache.geode.distributed.LocatorLauncher;
 import org.apache.geode.internal.lang.StringUtils;
@@ -30,10 +34,6 @@ import org.apache.geode.management.internal.cli.commands.GfshCommand;
 import org.apache.geode.management.internal.cli.i18n.CliStrings;
 import org.apache.geode.management.internal.cli.result.ResultBuilder;
 import org.apache.geode.management.internal.cli.shell.Gfsh;
-import org.springframework.shell.core.annotation.CliCommand;
-import org.springframework.shell.core.annotation.CliOption;
-
-import java.util.concurrent.TimeUnit;
 
 public class StopLocatorCommand implements GfshCommand {
   private static final long WAITING_FOR_STOP_TO_MAKE_PID_GO_AWAY_TIMEOUT_MILLIS = 30 * 1000;
@@ -48,77 +48,65 @@ public class StopLocatorCommand implements GfshCommand {
       @CliOption(key = CliStrings.STOP_LOCATOR__PID,
           help = CliStrings.STOP_LOCATOR__PID__HELP) final Integer pid,
       @CliOption(key = CliStrings.STOP_LOCATOR__DIR,
-          help = CliStrings.STOP_LOCATOR__DIR__HELP) final String workingDirectory) {
+          help = CliStrings.STOP_LOCATOR__DIR__HELP) final String workingDirectory)
+      throws Exception {
+
     LocatorLauncher.LocatorState locatorState;
+    if (StringUtils.isNotBlank(member)) {
+      if (isConnectedAndReady()) {
+        final MemberMXBean locatorProxy = getMemberMXBean(member);
 
-    try {
-      if (StringUtils.isNotBlank(member)) {
-        if (isConnectedAndReady()) {
-          final MemberMXBean locatorProxy = getMemberMXBean(member);
-
-          if (locatorProxy != null) {
-            if (!locatorProxy.isLocator()) {
-              throw new IllegalStateException(
-                  CliStrings.format(CliStrings.STOP_LOCATOR__NOT_LOCATOR_ERROR_MESSAGE, member));
-            }
-
-            if (locatorProxy.isServer()) {
-              throw new IllegalStateException(CliStrings
-                  .format(CliStrings.STOP_LOCATOR__LOCATOR_IS_CACHE_SERVER_ERROR_MESSAGE, member));
-            }
-
-            locatorState = LocatorLauncher.LocatorState.fromJson(locatorProxy.status());
-            locatorProxy.shutDownMember();
-          } else {
-            return ResultBuilder.createUserErrorResult(CliStrings.format(
-                CliStrings.STOP_LOCATOR__NO_LOCATOR_FOUND_FOR_MEMBER_ERROR_MESSAGE, member));
+        if (locatorProxy != null) {
+          if (!locatorProxy.isLocator()) {
+            throw new IllegalStateException(
+                CliStrings.format(CliStrings.STOP_LOCATOR__NOT_LOCATOR_ERROR_MESSAGE, member));
           }
+
+          if (locatorProxy.isServer()) {
+            throw new IllegalStateException(CliStrings
+                .format(CliStrings.STOP_LOCATOR__LOCATOR_IS_CACHE_SERVER_ERROR_MESSAGE, member));
+          }
+
+          locatorState = LocatorLauncher.LocatorState.fromJson(locatorProxy.status());
+          locatorProxy.shutDownMember();
         } else {
-          return ResultBuilder.createUserErrorResult(CliStrings.format(
-              CliStrings.STOP_SERVICE__GFSH_NOT_CONNECTED_ERROR_MESSAGE, LOCATOR_TERM_NAME));
+          return ResultBuilder.createUserErrorResult(CliStrings
+              .format(CliStrings.STOP_LOCATOR__NO_LOCATOR_FOUND_FOR_MEMBER_ERROR_MESSAGE, member));
         }
       } else {
-        final LocatorLauncher locatorLauncher =
-            new LocatorLauncher.Builder().setCommand(LocatorLauncher.Command.STOP)
-                .setDebug(isDebugging()).setPid(pid).setWorkingDirectory(workingDirectory).build();
-
-        locatorState = locatorLauncher.status();
-        locatorLauncher.stop();
+        return ResultBuilder.createUserErrorResult(CliStrings
+            .format(CliStrings.STOP_SERVICE__GFSH_NOT_CONNECTED_ERROR_MESSAGE, LOCATOR_TERM_NAME));
       }
+    } else {
+      final LocatorLauncher locatorLauncher =
+          new LocatorLauncher.Builder().setCommand(LocatorLauncher.Command.STOP)
+              .setDebug(isDebugging()).setPid(pid).setWorkingDirectory(workingDirectory).build();
 
-      if (AbstractLauncher.Status.ONLINE.equals(locatorState.getStatus())) {
-        getGfsh().logInfo(
-            String.format(CliStrings.STOP_LOCATOR__STOPPING_LOCATOR_MESSAGE,
-                locatorState.getWorkingDirectory(), locatorState.getServiceLocation(),
-                locatorState.getMemberName(), locatorState.getPid(), locatorState.getLogFile()),
-            null);
+      locatorState = locatorLauncher.status();
+      locatorLauncher.stop();
+    }
 
-        StopWatch stopWatch = new StopWatch(true);
-        while (locatorState.isVmWithProcessIdRunning()) {
-          Gfsh.print(".");
-          if (stopWatch.elapsedTimeMillis() > WAITING_FOR_STOP_TO_MAKE_PID_GO_AWAY_TIMEOUT_MILLIS) {
-            break;
-          }
-          synchronized (this) {
-            TimeUnit.MILLISECONDS.timedWait(this, 500);
-          }
+    if (AbstractLauncher.Status.ONLINE.equals(locatorState.getStatus())) {
+      getGfsh().logInfo(
+          String.format(CliStrings.STOP_LOCATOR__STOPPING_LOCATOR_MESSAGE,
+              locatorState.getWorkingDirectory(), locatorState.getServiceLocation(),
+              locatorState.getMemberName(), locatorState.getPid(), locatorState.getLogFile()),
+          null);
+
+      StopWatch stopWatch = new StopWatch(true);
+      while (locatorState.isVmWithProcessIdRunning()) {
+        Gfsh.print(".");
+        if (stopWatch.elapsedTimeMillis() > WAITING_FOR_STOP_TO_MAKE_PID_GO_AWAY_TIMEOUT_MILLIS) {
+          break;
         }
-
-        return ResultBuilder.createInfoResult(StringUtils.EMPTY);
-      } else {
-        return ResultBuilder.createUserErrorResult(locatorState.toString());
+        synchronized (this) {
+          TimeUnit.MILLISECONDS.timedWait(this, 500);
+        }
       }
-    } catch (IllegalArgumentException | IllegalStateException e) {
-      return ResultBuilder.createUserErrorResult(e.getMessage());
-    } catch (VirtualMachineError e) {
-      SystemFailure.initiateFailure(e);
-      throw e;
-    } catch (Throwable t) {
-      SystemFailure.checkFailure();
-      return ResultBuilder.createShellClientErrorResult(String.format(
-          CliStrings.STOP_LOCATOR__GENERAL_ERROR_MESSAGE, toString(t, getGfsh().getDebug())));
-    } finally {
-      Gfsh.redirectInternalJavaLoggers();
+
+      return ResultBuilder.createInfoResult(StringUtils.EMPTY);
+    } else {
+      return ResultBuilder.createUserErrorResult(locatorState.toString());
     }
   }
 }

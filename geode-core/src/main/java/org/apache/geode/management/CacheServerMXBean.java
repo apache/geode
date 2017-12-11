@@ -22,10 +22,10 @@ import org.apache.geode.security.ResourcePermission.Target;
 
 /**
  * MBean that provides access to information and management functionality for a {@link CacheServer}.
- * 
+ *
  * <p>
  * The will be one CacheServerMBean per {@link CacheServer} started in GemFire node.
- * 
+ *
  * <p>
  * ObjectName for this MBean is GemFire:service=CacheServer,port={0},type=Member,member={1}
  * <p>
@@ -51,9 +51,9 @@ import org.apache.geode.security.ResourcePermission.Target;
  * <td>Client left with Id &ltClient ID&gt</td>
  * </tr>
  * </table>
- * 
+ *
  * @since GemFire 7.0
- * 
+ *
  */
 @ResourceOperation(resource = Resource.CLUSTER, operation = Operation.READ)
 public interface CacheServerMXBean {
@@ -121,7 +121,7 @@ public interface CacheServerMXBean {
 
   /**
    * Returns whether or not this CacheServer is running.
-   * 
+   *
    * @return True of the server is running, false otherwise.
    */
   boolean isRunning();
@@ -273,7 +273,7 @@ public interface CacheServerMXBean {
 
   /**
    * Remove an index.
-   * 
+   *
    * @param indexName Name of the index to be removed.
    */
   @ResourceOperation(resource = Resource.DATA, operation = Operation.MANAGE)
@@ -286,7 +286,7 @@ public interface CacheServerMXBean {
 
   /**
    * Execute an ad-hoc CQ on the server
-   * 
+   *
    * @param queryName Name of the CQ to execute.
    * @deprecated This method is dangerous because it only modifies the target cache server - other
    *             copies of the CQ on other servers are not affected. Using the client side CQ
@@ -298,9 +298,9 @@ public interface CacheServerMXBean {
 
   /**
    * Stop (pause) a CQ from executing
-   * 
+   *
    * @param queryName Name of the CQ to stop.
-   * 
+   *
    * @deprecated This method is dangerous because it only modifies the target cache server - other
    *             copies of the CQ on other servers are not affected. Using the client side CQ
    *             methods to modify a CQ.
@@ -312,7 +312,7 @@ public interface CacheServerMXBean {
 
   /**
    * Unregister all CQs from a region
-   * 
+   *
    * @param regionName Name of the region from which to remove CQs.
    * @deprecated This method is dangerous because it only modifies the target cache server - other
    *             copies of the CQ on other servers are not affected. Using the client side CQ
@@ -326,7 +326,7 @@ public interface CacheServerMXBean {
 
   /**
    * Unregister a CQ
-   * 
+   *
    * @param queryName Name of the CQ to unregister.
    * @deprecated This method is dangerous because it only modifies the target cache server - other
    *             copies of the CQ on other servers are not affected. Using the client side CQ
@@ -340,7 +340,7 @@ public interface CacheServerMXBean {
 
   /**
    * Returns a list of IDs for all connected clients.
-   * 
+   *
    * @return A list of IDs or a length 0 array if no clients are registered.
    */
   String[] getClientIds() throws Exception;
@@ -349,7 +349,7 @@ public interface CacheServerMXBean {
    * Returns health and statistic information for the give client id. Some of the information (CPUs,
    * NumOfCacheListenerCalls, NumOfGets,NumOfMisses, NumOfPuts,NumOfThreads, ProcessCpuTime) only
    * available for clients which have set a "StatisticsInterval".
-   * 
+   *
    * @param clientId ID of the client for which to retrieve information.
    */
   ClientHealthStatus showClientStats(String clientId) throws Exception;
@@ -369,23 +369,23 @@ public interface CacheServerMXBean {
   /**
    * Shows a list of client with their queue statistics. Client queue statistics shown in this
    * method are the following
-   * 
+   *
    * eventsEnqueued,eventsRemoved , eventsConflated ,markerEventsConflated , eventsExpired,
    * eventsRemovedByQrm , eventsTaken , numVoidRemovals
-   * 
+   *
    * @return an array of ClientQueueDetail
    * @throws Exception
    */
   ClientQueueDetail[] showClientQueueDetails() throws Exception;
 
   /**
-   * 
+   *
    * Shows queue statistics of the given client. Client queue statistics shown in this method are
    * the following
-   * 
+   *
    * eventsEnqueued,eventsRemoved , eventsConflated ,markerEventsConflated , eventsExpired,
    * eventsRemovedByQrm , eventsTaken , numVoidRemovals
-   * 
+   *
    * @param clientId the ID of client which is returned by the attribute ClientIds
    * @return ClientQueueDetail
    * @throws Exception

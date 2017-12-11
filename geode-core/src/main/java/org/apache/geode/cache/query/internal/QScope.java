@@ -19,9 +19,9 @@ import java.util.*;
 /**
  * Nested name scope for name resolution Currently allow only one iterator per scope, and can be
  * known by zero or one identifier
- * 
+ *
  * @version $Revision: 1.1 $
- * 
+ *
  */
 class QScope {
 
@@ -34,7 +34,7 @@ class QScope {
   private int scopeID = 0;
 
   /**
-   * 
+   *
    * @param scopeID The scopeID assosciated with the scope
    */
   QScope(int scopeID) {
@@ -78,7 +78,7 @@ class QScope {
 
 
   /**
-   * 
+   *
    * @return unique int identifying the scope. It also indicates the relative visibility of scopes,
    *         with higher scope being able to see iterators of lower scope.
    */

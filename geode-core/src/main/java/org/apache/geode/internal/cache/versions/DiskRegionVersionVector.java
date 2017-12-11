@@ -14,13 +14,13 @@
  */
 package org.apache.geode.internal.cache.versions;
 
-import org.apache.geode.internal.cache.LocalRegion;
-import org.apache.geode.internal.cache.persistence.DiskStoreID;
-
 import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
 import java.util.concurrent.ConcurrentHashMap;
+
+import org.apache.geode.internal.cache.LocalRegion;
+import org.apache.geode.internal.cache.persistence.DiskStoreID;
 
 /**
  * A region version vector for regions with persistent data. This region version vector uses the

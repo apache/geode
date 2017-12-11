@@ -19,10 +19,11 @@ package org.apache.geode.management.internal.cli.util;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-import org.apache.geode.test.junit.categories.UnitTest;
 import org.apache.logging.log4j.Level;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
+
+import org.apache.geode.test.junit.categories.UnitTest;
 
 @Category(UnitTest.class)
 public class LogLevelExtractorTest {

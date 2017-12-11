@@ -14,12 +14,12 @@
  */
 package org.apache.geode.management.internal.cli.result;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import org.apache.geode.management.internal.cli.json.GfJsonArray;
 import org.apache.geode.management.internal.cli.json.GfJsonException;
 import org.apache.geode.management.internal.cli.json.GfJsonObject;
-
-import java.util.ArrayList;
-import java.util.List;
 
 /**
  * @since GemFire 7.0
@@ -49,6 +49,24 @@ public class TabularResultData extends AbstractResultData {
       e.printStackTrace();
     }
     return null;
+  }
+
+  public int columnSize() {
+    return contentObject.size();
+  }
+
+  public int rowSize(String key) {
+    GfJsonArray jsonArray = null;
+    try {
+      jsonArray = contentObject.getJSONArray(key);
+    } catch (GfJsonException e) {
+      throw new RuntimeException("unable to get the row size of " + key);
+    }
+    if (jsonArray == null) {
+      return 0;
+    }
+
+    return jsonArray.getInternalJsonArray().length();
   }
 
   /**

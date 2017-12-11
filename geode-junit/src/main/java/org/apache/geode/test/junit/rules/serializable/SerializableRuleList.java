@@ -14,13 +14,14 @@
  */
 package org.apache.geode.test.junit.rules.serializable;
 
-import org.apache.geode.test.junit.rules.RuleList;
-import org.junit.rules.TestRule;
-
 import java.io.InvalidObjectException;
 import java.io.ObjectInputStream;
 import java.io.Serializable;
 import java.util.List;
+
+import org.junit.rules.TestRule;
+
+import org.apache.geode.test.junit.rules.RuleList;
 
 /**
  * Serializable version of {@link RuleList}.

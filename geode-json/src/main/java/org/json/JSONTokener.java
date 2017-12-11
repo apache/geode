@@ -23,7 +23,7 @@ import java.io.Reader;
  * Parses a JSON (<a href="http://www.ietf.org/rfc/rfc4627.txt">RFC 4627</a>) encoded string into
  * the corresponding object. Most clients of this class will use only need the
  * {@link #JSONTokener(String) constructor} and {@link #nextValue} method. Example usage:
- * 
+ *
  * <pre>
  * String json = "{" + "  \"query\": \"Pizza\", " + "  \"locations\": [ 94043, 90210 ] " + "}";
  *

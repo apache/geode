@@ -16,28 +16,29 @@ package org.apache.geode.management.internal.cli.functions;
 
 import static org.apache.geode.distributed.ConfigurationProperties.*;
 
+import java.util.HashMap;
+import java.util.Map;
+
+import org.apache.logging.log4j.Level;
+import org.apache.logging.log4j.Logger;
+
 import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.execute.Function;
 import org.apache.geode.cache.execute.FunctionContext;
 import org.apache.geode.distributed.internal.DistributionConfig;
 import org.apache.geode.internal.InternalEntity;
 import org.apache.geode.internal.logging.LogService;
+import org.apache.geode.internal.logging.log4j.LogLevel;
 import org.apache.geode.internal.logging.log4j.LogMarker;
 import org.apache.geode.internal.logging.log4j.LogWriterLogger;
-import org.apache.geode.internal.logging.log4j.LogLevel;
-import org.apache.logging.log4j.Level;
-import org.apache.logging.log4j.Logger;
-
-import java.util.HashMap;
-import java.util.Map;
 
 
 /**
- * 
+ *
  * Class for change log level function
- * 
+ *
  * since 8.0
- * 
+ *
  */
 
 public class ChangeLogLevelFunction implements Function, InternalEntity {

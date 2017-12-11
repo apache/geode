@@ -14,6 +14,7 @@
  */
 package org.apache.geode.cache.query.dunit;
 
+import static org.apache.geode.distributed.ConfigurationProperties.LOCATORS;
 import static org.junit.Assert.*;
 
 import java.io.DataInput;
@@ -25,8 +26,8 @@ import java.util.Properties;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
 
-import org.awaitility.Awaitility;
 import org.apache.logging.log4j.Logger;
+import org.awaitility.Awaitility;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
@@ -64,8 +65,6 @@ import org.apache.geode.test.dunit.VM;
 import org.apache.geode.test.dunit.Wait;
 import org.apache.geode.test.dunit.cache.internal.JUnit4CacheTestCase;
 import org.apache.geode.test.junit.categories.DistributedTest;
-
-import static org.apache.geode.distributed.ConfigurationProperties.LOCATORS;
 
 /**
  * Tests remote (client/server) query execution.
@@ -1958,4 +1957,3 @@ public class QueryUsingPoolDUnitTest extends JUnit4CacheTestCase {
     }
   }
 }
-

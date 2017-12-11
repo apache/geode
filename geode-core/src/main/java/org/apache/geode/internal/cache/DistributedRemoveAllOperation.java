@@ -22,6 +22,8 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Set;
 
+import org.apache.logging.log4j.Logger;
+
 import org.apache.geode.DataSerializer;
 import org.apache.geode.cache.CacheEvent;
 import org.apache.geode.cache.DataPolicy;
@@ -51,13 +53,12 @@ import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.internal.offheap.annotations.Released;
 import org.apache.geode.internal.offheap.annotations.Retained;
 import org.apache.geode.internal.offheap.annotations.Unretained;
-import org.apache.logging.log4j.Logger;
 
 /**
  * Handles distribution of a Region.removeAll operation.
  *
  * TODO: extend DistributedCacheOperation instead of AbstractUpdateOperation
- * 
+ *
  * @since GemFire 8.1
  */
 public class DistributedRemoveAllOperation extends AbstractUpdateOperation {
@@ -605,7 +606,7 @@ public class DistributedRemoveAllOperation extends AbstractUpdateOperation {
 
   /**
    * Create RemoveAllPRMessage for notify only (to adjunct nodes)
-   * 
+   *
    * @param bucketId create message to send to this bucket
    * @return RemoveAllPRMessage
    */
@@ -627,7 +628,7 @@ public class DistributedRemoveAllOperation extends AbstractUpdateOperation {
 
   /**
    * Create RemoveAllPRMessages for primary buckets out of this op
-   * 
+   *
    * @return a HashMap contain RemoveAllPRMessages, key is bucket id
    */
   public HashMap<Integer, RemoveAllPRMessage> createPRMessages() {
@@ -794,7 +795,7 @@ public class DistributedRemoveAllOperation extends AbstractUpdateOperation {
   /**
    * version tags are gathered from local operations and remote operation responses. This method
    * gathers all of them and stores them in the given list.
-   * 
+   *
    * @param list
    */
   protected void fillVersionedObjectList(VersionedObjectList list) {
@@ -865,7 +866,7 @@ public class DistributedRemoveAllOperation extends AbstractUpdateOperation {
     /**
      * Does the "remove" of one entry for a "removeAll" operation. Note it calls back to
      * AbstractUpdateOperation.UpdateMessage#basicOperationOnRegion
-     * 
+     *
      * @param entry the entry being removed
      * @param rgn the region the entry is removed from
      */
@@ -902,7 +903,7 @@ public class DistributedRemoveAllOperation extends AbstractUpdateOperation {
 
     /**
      * create an event for a RemoveAllEntryData element
-     * 
+     *
      * @param entry
      * @param sender
      * @param context

@@ -14,8 +14,8 @@
  */
 package org.apache.geode.cache30;
 
-import static org.apache.geode.test.dunit.Assert.*;
 import static org.apache.geode.distributed.ConfigurationProperties.*;
+import static org.apache.geode.test.dunit.Assert.*;
 
 import java.io.File;
 import java.io.FileWriter;

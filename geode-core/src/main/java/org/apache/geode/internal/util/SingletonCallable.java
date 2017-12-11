@@ -21,7 +21,7 @@ import java.util.concurrent.Callable;
  * This class serializes execution of concurrent tasks. This is useful when we want only one thread
  * to perform an expensive operation such that if the operation fails, all other threads fail with
  * the same exception without having to perform the expensive operation.
- * 
+ *
  *
  * @param <T> the type of return value
  */
@@ -71,10 +71,10 @@ public class SingletonCallable<T> {
 
   /**
    * Override this method for handling exception encountered while running the Callable c.
-   * 
+   *
    * @return false if we want the waiting threads to fail immediately<br/>
    *         true if we want the waiting threads to invoke the callable
-   * 
+   *
    */
   public boolean ignoreException(Exception e) {
     return false;

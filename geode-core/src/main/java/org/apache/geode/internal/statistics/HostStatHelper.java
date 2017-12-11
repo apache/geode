@@ -14,11 +14,13 @@
  */
 package org.apache.geode.internal.statistics;
 
+import java.net.InetAddress;
+import java.net.UnknownHostException;
+
 import org.apache.geode.*;
 import org.apache.geode.internal.PureJavaMode;
-import org.apache.geode.internal.net.SocketCreator;
 import org.apache.geode.internal.i18n.LocalizedStrings;
-
+import org.apache.geode.internal.net.SocketCreator;
 import org.apache.geode.internal.statistics.platform.LinuxProcFsStatistics;
 import org.apache.geode.internal.statistics.platform.LinuxProcessStats;
 import org.apache.geode.internal.statistics.platform.LinuxSystemStats;
@@ -30,9 +32,6 @@ import org.apache.geode.internal.statistics.platform.SolarisProcessStats;
 import org.apache.geode.internal.statistics.platform.SolarisSystemStats;
 import org.apache.geode.internal.statistics.platform.WindowsProcessStats;
 import org.apache.geode.internal.statistics.platform.WindowsSystemStats;
-
-import java.net.InetAddress;
-import java.net.UnknownHostException;
 
 /**
  * Provides native methods which fetch operating system statistics.
@@ -285,7 +284,7 @@ public class HostStatHelper {
    * Generate a systemid based off of the ip address of the host. This duplicates the common
    * implementation of <code>long gethostid(void) </code>. Punt on the ipv6 case and just use the
    * same algorithm.
-   * 
+   *
    * @return a psuedo unique id based on the ip address
    */
   private static long getHostSystemId() {

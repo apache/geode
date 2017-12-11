@@ -18,26 +18,27 @@ package org.apache.geode.management.internal.cli.commands;
 import java.util.List;
 import java.util.Set;
 
+import org.apache.logging.log4j.Logger;
 import org.springframework.shell.core.annotation.CliCommand;
 import org.springframework.shell.core.annotation.CliOption;
 
-import org.apache.geode.cache.execute.ResultCollector;
 import org.apache.geode.distributed.DistributedMember;
+import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.management.cli.CliMetaData;
 import org.apache.geode.management.cli.ConverterHint;
 import org.apache.geode.management.cli.Result;
-import org.apache.geode.management.internal.cli.CliUtil;
-import org.apache.geode.management.internal.cli.LogWrapper;
 import org.apache.geode.management.internal.cli.functions.CliFunctionResult;
 import org.apache.geode.management.internal.cli.functions.GatewaySenderDestroyFunction;
 import org.apache.geode.management.internal.cli.functions.GatewaySenderDestroyFunctionArgs;
 import org.apache.geode.management.internal.cli.i18n.CliStrings;
+import org.apache.geode.management.internal.cli.result.CommandResult;
 import org.apache.geode.management.internal.cli.result.ResultBuilder;
-import org.apache.geode.management.internal.cli.result.TabularResultData;
 import org.apache.geode.management.internal.security.ResourceOperation;
 import org.apache.geode.security.ResourcePermission;
 
 public class DestroyGatewaySenderCommand implements GfshCommand {
+  private static final Logger logger = LogService.getLogger();
+
   @CliCommand(value = CliStrings.DESTROY_GATEWAYSENDER,
       help = CliStrings.DESTROY_GATEWAYSENDER__HELP)
   @CliMetaData(relatedTopic = CliStrings.TOPIC_GEODE_WAN)
@@ -52,39 +53,20 @@ public class DestroyGatewaySenderCommand implements GfshCommand {
           help = CliStrings.DESTROY_GATEWAYSENDER__MEMBER__HELP) String[] onMember,
       @CliOption(key = CliStrings.DESTROY_GATEWAYSENDER__ID, mandatory = true,
           optionContext = ConverterHint.GATEWAY_SENDER_ID,
-          help = CliStrings.DESTROY_GATEWAYSENDER__ID__HELP) String id) {
-    Result result;
-    try {
-      GatewaySenderDestroyFunctionArgs gatewaySenderDestroyFunctionArgs =
-          new GatewaySenderDestroyFunctionArgs(id);
+          help = CliStrings.DESTROY_GATEWAYSENDER__ID__HELP) String id,
+      @CliOption(key = CliStrings.IFEXISTS, help = CliStrings.IFEXISTS_HELP,
+          specifiedDefaultValue = "true", unspecifiedDefaultValue = "false") boolean ifExist) {
 
-      Set<DistributedMember> membersToDestroyGatewaySenderOn =
-          CliUtil.findMembers(onGroups, onMember);
+    GatewaySenderDestroyFunctionArgs gatewaySenderDestroyFunctionArgs =
+        new GatewaySenderDestroyFunctionArgs(id, ifExist);
 
-      if (membersToDestroyGatewaySenderOn.isEmpty()) {
-        return ResultBuilder.createUserErrorResult(CliStrings.NO_MEMBERS_FOUND_MESSAGE);
-      }
+    Set<DistributedMember> members = getMembers(onGroups, onMember);
 
-      ResultCollector<?, ?> resultCollector =
-          CliUtil.executeFunction(GatewaySenderDestroyFunction.INSTANCE,
-              gatewaySenderDestroyFunctionArgs, membersToDestroyGatewaySenderOn);
-      @SuppressWarnings("unchecked")
-      List<CliFunctionResult> gatewaySenderDestroyResults =
-          (List<CliFunctionResult>) resultCollector.getResult();
+    List<CliFunctionResult> functionResults = executeAndGetFunctionResult(
+        GatewaySenderDestroyFunction.INSTANCE, gatewaySenderDestroyFunctionArgs, members);
 
-      TabularResultData tabularResultData = ResultBuilder.createTabularResultData();
-      final String errorPrefix = "ERROR: ";
-      for (CliFunctionResult gatewaySenderDestroyResult : gatewaySenderDestroyResults) {
-        boolean success = gatewaySenderDestroyResult.isSuccessful();
-        tabularResultData.accumulate("Member", gatewaySenderDestroyResult.getMemberIdOrName());
-        tabularResultData.accumulate("Status",
-            (success ? "" : errorPrefix) + gatewaySenderDestroyResult.getMessage());
-      }
-      result = ResultBuilder.buildResult(tabularResultData);
-    } catch (IllegalArgumentException e) {
-      LogWrapper.getInstance().info(e.getMessage());
-      result = ResultBuilder.createUserErrorResult(e.getMessage());
-    }
+    CommandResult result = ResultBuilder.buildResult(functionResults);
+
     return result;
   }
 }

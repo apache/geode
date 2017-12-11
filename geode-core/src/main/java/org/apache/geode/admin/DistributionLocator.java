@@ -42,4 +42,3 @@ public interface DistributionLocator extends ManagedEntity {
   public DistributionLocatorConfig getConfig();
 
 }
-

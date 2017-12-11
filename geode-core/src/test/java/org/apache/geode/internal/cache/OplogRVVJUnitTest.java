@@ -16,15 +16,15 @@ package org.apache.geode.internal.cache;
 
 import static org.junit.Assert.assertEquals;
 
+import java.io.File;
+import java.net.UnknownHostException;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.EnumSet;
+import java.util.HashMap;
+import java.util.Map;
+
 import org.apache.commons.io.FileUtils;
-import org.apache.geode.StatisticsFactory;
-import org.apache.geode.i18n.LogWriterI18n;
-import org.apache.geode.internal.cache.DiskInitFile.DiskRegionFlag;
-import org.apache.geode.internal.cache.DiskStoreImpl.OplogEntryIdSet;
-import org.apache.geode.internal.cache.persistence.DiskRecoveryStore;
-import org.apache.geode.internal.cache.persistence.DiskStoreID;
-import org.apache.geode.internal.cache.versions.DiskRegionVersionVector;
-import org.apache.geode.test.junit.categories.IntegrationTest;
 import org.jmock.Expectations;
 import org.jmock.Mockery;
 import org.jmock.lib.concurrent.Synchroniser;
@@ -36,13 +36,14 @@ import org.junit.Test;
 import org.junit.experimental.categories.Category;
 import org.junit.rules.TemporaryFolder;
 
-import java.io.File;
-import java.net.UnknownHostException;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.EnumSet;
-import java.util.HashMap;
-import java.util.Map;
+import org.apache.geode.StatisticsFactory;
+import org.apache.geode.i18n.LogWriterI18n;
+import org.apache.geode.internal.cache.DiskInitFile.DiskRegionFlag;
+import org.apache.geode.internal.cache.DiskStoreImpl.OplogEntryIdSet;
+import org.apache.geode.internal.cache.persistence.DiskRecoveryStore;
+import org.apache.geode.internal.cache.persistence.DiskStoreID;
+import org.apache.geode.internal.cache.versions.DiskRegionVersionVector;
+import org.apache.geode.test.junit.categories.IntegrationTest;
 
 @Category(IntegrationTest.class)
 public class OplogRVVJUnitTest {

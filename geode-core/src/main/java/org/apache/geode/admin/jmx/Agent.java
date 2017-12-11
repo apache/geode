@@ -14,14 +14,13 @@
  */
 package org.apache.geode.admin.jmx;
 
-import org.apache.geode.LogWriter;
-import org.apache.geode.admin.AdminException;
-import org.apache.geode.admin.AdminDistributedSystem;
-
-// import javax.management.MBeanException;
-import javax.management.MalformedObjectNameException;
 import javax.management.MBeanServer;
+import javax.management.MalformedObjectNameException;
 import javax.management.ObjectName;
+
+import org.apache.geode.LogWriter;
+import org.apache.geode.admin.AdminDistributedSystem;
+import org.apache.geode.admin.AdminException;
 
 /**
  * A server component that provides administration-related information about a GemFire distributed

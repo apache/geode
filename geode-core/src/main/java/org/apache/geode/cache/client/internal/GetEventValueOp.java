@@ -24,13 +24,13 @@ import org.apache.geode.internal.cache.tier.sockets.Part;
 /**
  * Gets (full) value (unlike GetOp, which may get either a full value or a delta depending upon
  * delta flag) of a given event from the ha container on server.
- * 
+ *
  * @since GemFire 6.1
  */
 public class GetEventValueOp {
   /**
    * Does a get on the primary server using connections from the given pool
-   * 
+   *
    * @param pool the pool to use to communicate with the server.
    * @param event the eventid to do the get on
    * @param callbackArg an optional callback arg to pass to any cache callbacks

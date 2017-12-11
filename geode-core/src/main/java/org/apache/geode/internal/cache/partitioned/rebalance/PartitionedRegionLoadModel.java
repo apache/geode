@@ -47,22 +47,22 @@ import org.apache.geode.internal.logging.log4j.LocalizedMessage;
  * the best members to create buckets on or move buckets or primaries too. All of the actual work of
  * creating a copy, moving a primary, etc. Is performed by the BucketOperator that is passed to the
  * constructor.
- * 
+ *
  * To use, create a model and populate it using the addMember method. addMember takes a region
  * argument, to indicate which region the data is for. All of the regions added to a single model
  * are assumed to be colocated, and the model adds together the load from each of the individual
  * regions to balance all of the regions together.
- * 
+ *
  * Reblancing operations are performed by repeatedly calling model.nextStep until it returns false.
  * Each call to nextStep should perform another operation. The model will make callbacks to the
  * BucketOperator you provide to the contructor perform the actual create or move.
- * 
+ *
  * While creating redundant copies our moving buckets, this model tries to minimize the standard
  * deviation in the weighted loads for the members. The weighted load for the member is the sum of
  * the load for all of the buckets on the member divided by that members weight.
- * 
+ *
  * This model is not threadsafe.
- * 
+ *
  * @since GemFire 6.0
  */
 @SuppressWarnings("synthetic-access")
@@ -147,7 +147,7 @@ public class PartitionedRegionLoadModel {
 
   /**
    * Create a new model
-   * 
+   *
    * @param operator the operator which performs the actual creates/moves for buckets
    * @param redundancyLevel The expected redundancy level for the region
    */
@@ -167,7 +167,7 @@ public class PartitionedRegionLoadModel {
    * region added to the model should be the parent region. The parent region is expected to have at
    * least as many members as child regions; it may have more. If the parent has more members than
    * child regions those members will be considered invalid.
-   * 
+   *
    * @param region
    * @param memberDetailSet A set of details about each member.
    * @param offlineDetails
@@ -365,7 +365,7 @@ public class PartitionedRegionLoadModel {
 
   /**
    * Trigger the creation of a redundant bucket, potentially asynchronously.
-   * 
+   *
    * This method will find the best node to create a redundant bucket and invoke the bucket operator
    * to create a bucket on that node. Because the bucket operator is asynchronous, the bucket may
    * not be created immediately, but the model will be updated regardless. Invoke
@@ -444,7 +444,7 @@ public class PartitionedRegionLoadModel {
 
   /**
    * Find the best member to put a new bucket on.
-   * 
+   *
    * @param bucket the bucket we want to create
    * @param checkIPAddress true if we should only consider members that do not have the same IP
    *        Address as a member that already hosts the bucket
@@ -470,7 +470,7 @@ public class PartitionedRegionLoadModel {
 
   /**
    * Find the best member to remove a bucket from
-   * 
+   *
    * @param bucket the bucket we want to create
    */
   public Move findBestRemove(Bucket bucket) {
@@ -709,7 +709,7 @@ public class PartitionedRegionLoadModel {
 
   /**
    * Calculate how much the variance in load will decrease for a given move.
-   * 
+   *
    * @param sLoad the current load on the source member
    * @param sWeight the weight of the source member
    * @param tLoad the current load on the target member
@@ -791,7 +791,7 @@ public class PartitionedRegionLoadModel {
 
   /**
    * Return a snapshot of what the partitioned member details look like.
-   * 
+   *
    * @return a set of partitioned member details.
    */
   public Set<PartitionMemberInfo> getPartitionedMemberDetails(String region) {

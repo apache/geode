@@ -35,7 +35,7 @@ import org.apache.geode.security.ResourcePermission.Resource;
 
 public class ContainsKey extends BaseCommand {
 
-  private final static ContainsKey singleton = new ContainsKey();
+  private static final ContainsKey singleton = new ContainsKey();
 
   public static Command getCommand() {
     return singleton;

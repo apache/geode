@@ -46,7 +46,7 @@ import org.apache.geode.test.junit.categories.IntegrationTest;
  *
  * <p>
  * This test is an experiment in using given/when/then custom methods for better BDD readability.
- * 
+ *
  * @since GemFire 8.0
  */
 @Category(IntegrationTest.class)

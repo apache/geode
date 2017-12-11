@@ -15,19 +15,20 @@
 package org.apache.geode.cache.query.internal;
 
 import java.util.List;
-import org.apache.geode.internal.i18n.LocalizedStrings;
+
 import org.apache.geode.cache.query.*;
+import org.apache.geode.internal.i18n.LocalizedStrings;
 
 /**
  * Class Description
- * 
+ *
  * @version $Revision: 1.1 $
  */
 public interface Filter {
 
   /**
    * Evaluates as a filter taking advantage of indexes if appropriate.
-   * 
+   *
    * @return SelectResults
    */
   public SelectResults filterEvaluate(ExecutionContext context, SelectResults iterationLimit)
@@ -35,7 +36,7 @@ public interface Filter {
       QueryInvocationTargetException;
 
   /**
-   * 
+   *
    * Asif : Evaluates as a filter taking advantage of indexes if appropriate. This function has a
    * meaningful implementation only in CompiledComparison & CompiledUndefined . It is unsupported in
    * other classes. The additional parameters which it takes are a boolean which is used to indicate
@@ -51,7 +52,7 @@ public interface Filter {
    * iter operand can get evaluated during cartesian/expansion of GroupJunctions. Ofcourse, the iter
    * operands will get pushed to CompositeGroupJunction level, in the first place , only if a single
    * CompositeGroupJunction gets created. *
-   * 
+   *
    * @param context ExecutionContext object
    * @param iterationLimit SelectResults object representing the intermediate ResultSet. It is
    *        mostly passed as null or the value is ignored except when evaluating a filter
@@ -94,7 +95,7 @@ public interface Filter {
   /**
    * This method gets invoked from the filterEvaluate of CompiledJunction and GroupJunction if the
    * boolean isSingleFilter of OrganizedOperands happens to be false
-   * 
+   *
    * @param context ExecutionContext object
    * @param intermediateResults SelectResults Object which will usually be null or will mostly be
    *        ignored
@@ -113,7 +114,7 @@ public interface Filter {
       TypeMismatchException, NameResolutionException, QueryInvocationTargetException;
 
   /**
-   * 
+   *
    * @param context
    * @return boolean
    * @throws FunctionDomainException
@@ -127,7 +128,7 @@ public interface Filter {
 
   /**
    * Only used by single base collection index
-   * 
+   *
    * @param independentIter
    * @param context
    * @param completeExpnsNeeded
@@ -141,7 +142,7 @@ public interface Filter {
       throws AmbiguousNameException, TypeMismatchException, NameResolutionException;
 
   /**
-   * 
+   *
    * @param comparedTo
    * @param context
    * @param thisSize
@@ -162,7 +163,7 @@ public interface Filter {
    * works only if it has been ensured that the query is dependent on single iterator and for Group
    * junction so created in case of AND clause, would use exactly one index & rest to be iter
    * evaluated
-   * 
+   *
    * @return true if limit can be applied at index level
    */
   public boolean isLimitApplicableAtIndexLevel(ExecutionContext context)

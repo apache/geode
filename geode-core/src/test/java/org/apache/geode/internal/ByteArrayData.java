@@ -25,7 +25,7 @@ import org.apache.geode.internal.tcp.ByteBufferInputStream;
 /**
  * Provides byte stream for testing. Use {@link #getDataInput()} and {@link #getDataOutput()} to get
  * DataInput or DataOutput as needed for testing.
- * 
+ *
  * @since GemFire 7.0
  */
 public class ByteArrayData {

@@ -16,17 +16,17 @@ package org.apache.geode.internal.jta;
 
 /**
  * TransactionImpl implements the JTA Transaction interface.
- * 
+ *
  * @deprecated as of Geode 1.2.0 user should use a third party JTA transaction manager to manage JTA
  *             transactions.
  */
-import javax.transaction.xa.*;
+import java.util.*;
+
 import javax.transaction.*;
+import javax.transaction.xa.*;
 
 import org.apache.geode.i18n.LogWriterI18n;
 import org.apache.geode.internal.i18n.LocalizedStrings;
-
-import java.util.*;
 
 @Deprecated
 public class TransactionImpl implements Transaction {
@@ -56,7 +56,7 @@ public class TransactionImpl implements Transaction {
 
   /**
    * Calls the commit() of the TransactionManager that owns the current Transaction
-   * 
+   *
    * @throws RollbackException - Thrown to indicate that the transaction has been rolled back rather
    *         than committed.
    * @throws HeuristicMixedException - Thrown to indicate that a heuristic decision was made and
@@ -69,7 +69,7 @@ public class TransactionImpl implements Transaction {
    *         transaction.
    * @throws SystemException - Thrown if the transaction manager encounters an unexpected error
    *         condition.
-   * 
+   *
    * @see javax.transaction.Transaction#commit()
    */
   public void commit() throws RollbackException, HeuristicMixedException,
@@ -79,14 +79,14 @@ public class TransactionImpl implements Transaction {
 
   /**
    * Calls the rollback() of the TransactionManager that owns the current Transaction
-   * 
+   *
    * @throws java.lang.SecurityException - Thrown to indicate that the thread is not allowed to
    *         commit the transaction.
    * @throws java.lang.IllegalStateException - Thrown if the current thread is not associated with a
    *         transaction.
    * @throws SystemException - Thrown if the transaction manager encounters an unexpected error
    *         condition.
-   * 
+   *
    * @see javax.transaction.Transaction#rollback()
    */
   public void rollback() throws IllegalStateException, SystemException {
@@ -95,7 +95,7 @@ public class TransactionImpl implements Transaction {
 
   /**
    * Sets the status of the Global Transaction associated with this transaction to be RollBack only
-   * 
+   *
    * @see javax.transaction.Transaction#setRollbackOnly()
    */
   public void setRollbackOnly() throws IllegalStateException, SystemException {
@@ -114,7 +114,7 @@ public class TransactionImpl implements Transaction {
 
   /**
    * Get the status of the Global Transaction associated with this local transaction
-   * 
+   *
    * @see javax.transaction.Transaction#getStatus()
    */
   public int getStatus() throws SystemException {
@@ -139,7 +139,7 @@ public class TransactionImpl implements Transaction {
 
   /**
    * Enlist the XAResource specified to the Global Transaction associated with this transaction.
-   * 
+   *
    * @param xaRes XAResource to be enlisted
    * @return true, if resource was enlisted successfully, otherwise false.
    * @throws SystemException Thrown if the transaction manager encounters an unexpected error
@@ -148,7 +148,7 @@ public class TransactionImpl implements Transaction {
    *         state or the transaction is inactive.
    * @throws RollbackException Thrown to indicate that the transaction has been marked for rollback
    *         only.
-   * 
+   *
    * @see javax.transaction.Transaction#enlistResource(javax.transaction.xa.XAResource)
    */
   public boolean enlistResource(XAResource xaRes)
@@ -169,14 +169,14 @@ public class TransactionImpl implements Transaction {
   /**
    * Disassociate the resource specified from the global transaction. associated with this
    * transaction
-   * 
+   *
    * @param xaRes XAResource to be delisted
    * @param flag One of the values of TMSUCCESS, TMSUSPEND, or TMFAIL.
    * @return true, if resource was delisted successfully, otherwise false.
    * @throws SystemException Thrown if the transaction manager encounters an unexpected error
    *         condition.
    * @throws IllegalStateException Thrown if the transaction in the target object is not active.
-   * 
+   *
    * @see javax.transaction.Transaction#delistResource(javax.transaction.xa.XAResource, int)
    */
   public boolean delistResource(XAResource xaRes, int flag)
@@ -197,9 +197,9 @@ public class TransactionImpl implements Transaction {
   /**
    * Register the Synchronizations by adding the synchronization object to a list of
    * synchronizations
-   * 
+   *
    * @param synchronisation Synchronization the Synchronization which needs to be registered
-   * 
+   *
    * @see javax.transaction.Transaction#registerSynchronization(javax.transaction.Synchronization)
    */
   public void registerSynchronization(Synchronization synchronisation)
@@ -259,7 +259,7 @@ public class TransactionImpl implements Transaction {
   /**
    * Iterate over the list of Synchronizations to complete all the methods to be performed after
    * completion
-   * 
+   *
    * @param status int The status of the Global transaction associated with the transaction
    */
   void notifyAfterCompletion(int status) throws SystemException {

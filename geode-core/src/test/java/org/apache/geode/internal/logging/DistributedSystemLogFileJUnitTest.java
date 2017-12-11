@@ -14,14 +14,15 @@
  */
 package org.apache.geode.internal.logging;
 
-import org.apache.geode.distributed.DistributedSystem;
-import org.apache.geode.distributed.internal.DistributionConfig;
-import org.apache.geode.distributed.internal.InternalDistributedSystem;
-import org.apache.geode.internal.logging.log4j.FastLogger;
-import org.apache.geode.internal.logging.log4j.LogWriterLogger;
-import org.apache.geode.test.dunit.Wait;
-import org.apache.geode.test.dunit.WaitCriterion;
-import org.apache.geode.test.junit.categories.IntegrationTest;
+import static org.apache.geode.distributed.ConfigurationProperties.*;
+import static org.junit.Assert.*;
+
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.util.Properties;
+import java.util.Scanner;
+
 import org.apache.logging.log4j.Level;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -33,18 +34,18 @@ import org.junit.Test;
 import org.junit.experimental.categories.Category;
 import org.junit.rules.TestName;
 
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-import java.util.Properties;
-import java.util.Scanner;
-
-import static org.apache.geode.distributed.ConfigurationProperties.*;
-import static org.junit.Assert.*;
+import org.apache.geode.distributed.DistributedSystem;
+import org.apache.geode.distributed.internal.DistributionConfig;
+import org.apache.geode.distributed.internal.InternalDistributedSystem;
+import org.apache.geode.internal.logging.log4j.FastLogger;
+import org.apache.geode.internal.logging.log4j.LogWriterLogger;
+import org.apache.geode.test.dunit.Wait;
+import org.apache.geode.test.dunit.WaitCriterion;
+import org.apache.geode.test.junit.categories.IntegrationTest;
 
 /**
  * Connects DistributedSystem and tests logging behavior at a high level.
- * 
+ *
  */
 @Category(IntegrationTest.class)
 public class DistributedSystemLogFileJUnitTest {
@@ -1293,7 +1294,7 @@ public class DistributedSystemLogFileJUnitTest {
    * tests scenario where security log has not been set but a level has been set to a less granular
    * level than that of the regular log. Verifies that the correct logs for security show up in the
    * regular log as expected
-   * 
+   *
    * @throws Exception
    */
   @Test
@@ -1460,7 +1461,7 @@ public class DistributedSystemLogFileJUnitTest {
    * tests scenario where security log has not been set but a level has been set to a more granular
    * level than that of the regular log. Verifies that the correct logs for security show up in the
    * regular log as expected
-   * 
+   *
    * @throws Exception
    */
   @Test

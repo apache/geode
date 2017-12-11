@@ -55,7 +55,7 @@ public class CacheXml81DUnitTest extends CacheXml80DUnitTest {
 
   /**
    * Test extensions to <code>cache</code> element.
-   * 
+   *
    * @since GemFire 8.1
    */
   @Test
@@ -88,7 +88,7 @@ public class CacheXml81DUnitTest extends CacheXml80DUnitTest {
 
   /**
    * Test extensions to <code>region</code> element.
-   * 
+   *
    * @since GemFire 8.1
    */
   @Test
@@ -128,7 +128,7 @@ public class CacheXml81DUnitTest extends CacheXml80DUnitTest {
   /**
    * Test {@link Locator} is used in {@link SAXParseException}. Exercises
    * {@link XmlParser#setDocumentLocator(Locator)}
-   * 
+   *
    * @since GemFire 8.2
    */
   @Test

@@ -22,21 +22,21 @@ import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.apache.geode.internal.util.IOUtils;
-import org.apache.geode.management.internal.web.io.MultipartFileAdapter;
-import org.apache.geode.test.junit.categories.UnitTest;
-
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 import org.springframework.core.io.ByteArrayResource;
 import org.springframework.core.io.Resource;
 import org.springframework.web.multipart.MultipartFile;
 
+import org.apache.geode.internal.util.IOUtils;
+import org.apache.geode.management.internal.web.io.MultipartFileAdapter;
+import org.apache.geode.test.junit.categories.UnitTest;
+
 /**
  * The ConvertUtilsJUnitTest class is a test suite testing the contract and functionality of the
  * ConvertUtilsJUnitTest class.
  * <p/>
- * 
+ *
  * @see org.apache.geode.management.internal.web.util.ConvertUtils
  * @see org.junit.Assert
  * @see org.junit.Test

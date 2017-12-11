@@ -14,8 +14,9 @@
  */
 package com.examples.ds;
 
-import org.apache.geode.DataSerializer;
 import java.io.*;
+
+import org.apache.geode.DataSerializer;
 
 public class CompanySerializer extends DataSerializer {
 

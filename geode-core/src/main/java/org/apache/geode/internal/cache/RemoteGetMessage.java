@@ -52,9 +52,9 @@ import org.apache.geode.internal.util.BlobHelper;
  * This message is used as the request for a
  * {@link org.apache.geode.cache.Region#get(Object)}operation. The reply is sent in a
  * {@link org.apache.geode.internal.cache.RemoteGetMessage.GetReplyMessage}.
- * 
+ *
  * Replicate regions can use this message to send a Get request to another peer.
- * 
+ *
  * @since GemFire 6.5
  */
 public class RemoteGetMessage extends RemoteOperationMessageWithDirectReply {
@@ -180,7 +180,7 @@ public class RemoteGetMessage extends RemoteOperationMessageWithDirectReply {
 
   /**
    * Sends a ReplicateRegion {@link org.apache.geode.cache.Region#get(Object)} message
-   * 
+   *
    * @param recipient the member that the get message is sent to
    * @param r the ReplicateRegion for which get was performed upon
    * @param key the object to which the value should be feteched
@@ -208,10 +208,10 @@ public class RemoteGetMessage extends RemoteOperationMessageWithDirectReply {
    * This message is used for the reply to a
    * {@link org.apache.geode.cache.Region#get(Object)}operation This is the reply to a
    * {@link RemoteGetMessage}.
-   * 
+   *
    * Since the {@link org.apache.geode.cache.Region#get(Object)}operation is used <bold>very </bold>
    * frequently the performance of this class is critical.
-   * 
+   *
    * @since GemFire 6.5
    */
   public static class GetReplyMessage extends ReplyMessage {
@@ -255,7 +255,7 @@ public class RemoteGetMessage extends RemoteOperationMessageWithDirectReply {
      * Return the value from the get operation, serialize it bytes as late as possible to avoid
      * making un-neccesary byte[] copies. De-serialize those same bytes as late as possible to avoid
      * using precious threads (aka P2P readers).
-     * 
+     *
      * @param recipient the origin VM that performed the get
      * @param processorId the processor on which the origin thread is waiting
      * @param val the raw value that will eventually be serialized
@@ -271,7 +271,7 @@ public class RemoteGetMessage extends RemoteOperationMessageWithDirectReply {
 
     /**
      * Processes this message. This method is invoked by the receiver of the message.
-     * 
+     *
      * @param dm the distribution manager that is processing the message.
      */
     @Override
@@ -334,7 +334,7 @@ public class RemoteGetMessage extends RemoteOperationMessageWithDirectReply {
   /**
    * A processor to capture the value returned by
    * {@link org.apache.geode.internal.cache.RemoteGetMessage.GetReplyMessage}
-   * 
+   *
    * @since GemFire 5.0
    */
   public static class RemoteGetResponse extends RemoteOperationResponse {
@@ -369,7 +369,7 @@ public class RemoteGetMessage extends RemoteOperationMessageWithDirectReply {
     /**
      * De-seralize the value, if the value isn't already a byte array, this method should be called
      * in the context of the requesting thread for the best scalability
-     * 
+     *
      * @param preferCD
      * @see EntryEventImpl#deserialize(byte[])
      * @return the value object

@@ -30,14 +30,14 @@ public interface CollectionType extends ObjectType {
   /**
    * Return whether duplicates are kept in this type of collection. Duplicates are two objects are
    * equal to each other as defined by the <code>equals</code> method.
-   * 
+   *
    * @return true if duplicates have been retained, false if duplicates have been eliminated
    */
   public boolean allowsDuplicates();
 
   /**
    * Return whether this collection type has ordered elements.
-   * 
+   *
    * @return true if this collection type is ordered, false if not
    */
   public boolean isOrdered();

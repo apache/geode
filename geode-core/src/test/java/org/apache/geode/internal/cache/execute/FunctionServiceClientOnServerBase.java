@@ -14,13 +14,13 @@
  */
 package org.apache.geode.internal.cache.execute;
 
+import org.junit.Before;
+
 import org.apache.geode.cache.client.ClientCache;
 import org.apache.geode.cache.execute.Execution;
 import org.apache.geode.cache.execute.FunctionService;
 import org.apache.geode.test.dunit.Host;
 import org.apache.geode.test.dunit.VM;
-
-import org.junit.Before;
 
 public abstract class FunctionServiceClientOnServerBase extends FunctionServiceClientBase {
 

@@ -32,7 +32,7 @@ public interface ServerRegionDataAccess {
 
   /**
    * Does a get on the server
-   * 
+   *
    * @param key the entry key to do the get on
    * @param callbackArg an optional callback arg to pass to any cache callbacks
    * @param clientEvent the client event, if any, for version propagation
@@ -42,7 +42,7 @@ public interface ServerRegionDataAccess {
 
   /**
    * Does a region put on the server
-   * 
+   *
    * @param key the entry key to do the put on
    * @param value the entry value to put
    * @param clientEvent the client event, if any, for eventID and version tag propagation
@@ -59,7 +59,7 @@ public interface ServerRegionDataAccess {
 
   /**
    * Does a region entry destroy on the server
-   * 
+   *
    * @param key the entry key to do the destroy on
    * @param expectedOldValue the value that must be associated with the entry, or null
    * @param operation the operation being performed (Operation.DESTROY, Operation.REMOVE)
@@ -72,7 +72,7 @@ public interface ServerRegionDataAccess {
 
   /**
    * Does a region entry invalidate on the server
-   * 
+   *
    * @param event the entryEventImpl that represents the invalidate
    */
   public abstract void invalidate(EntryEventImpl event);
@@ -80,7 +80,7 @@ public interface ServerRegionDataAccess {
 
   /**
    * Does a region clear on the server
-   * 
+   *
    * @param eventId the event id for this clear
    * @param callbackArg an optional callback arg to pass to any cache callbacks
    */
@@ -89,14 +89,14 @@ public interface ServerRegionDataAccess {
 
   /**
    * Does a region containsKey on a server
-   * 
+   *
    * @param key the entry key to do the containsKey on
    */
   public abstract boolean containsKey(Object key);
 
   /**
    * Does a region containsKey on a server
-   * 
+   *
    * @param key the entry key to do the containsKey on
    */
   public abstract boolean containsValueForKey(Object key);
@@ -104,7 +104,7 @@ public interface ServerRegionDataAccess {
 
   /**
    * Does a region containsValue on a server
-   * 
+   *
    * @param value the entry value to search for
    */
   public boolean containsValue(Object value);
@@ -127,7 +127,7 @@ public interface ServerRegionDataAccess {
 
   /**
    * gets an entry from the server, does not invoke loaders
-   * 
+   *
    * @param key
    * @return an {@link EntrySnapshot} for the given key
    */

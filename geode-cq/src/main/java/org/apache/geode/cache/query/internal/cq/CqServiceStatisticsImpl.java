@@ -14,8 +14,8 @@
  */
 package org.apache.geode.cache.query.internal.cq;
 
-import org.apache.geode.cache.query.CqServiceStatistics;
 import org.apache.geode.cache.query.CqQuery;
+import org.apache.geode.cache.query.CqServiceStatistics;
 import org.apache.geode.cache.query.internal.DefaultQueryService;
 
 /**
@@ -29,7 +29,7 @@ public class CqServiceStatisticsImpl implements CqServiceStatistics {
 
   /**
    * Constructor for CqStatisticsImpl
-   * 
+   *
    * @param cqs - CqService
    */
   CqServiceStatisticsImpl(CqServiceImpl cqs) {
@@ -46,7 +46,7 @@ public class CqServiceStatisticsImpl implements CqServiceStatistics {
 
   /**
    * Returns number of CQs created.
-   * 
+   *
    * @return long number of cqs created.
    */
   @Override

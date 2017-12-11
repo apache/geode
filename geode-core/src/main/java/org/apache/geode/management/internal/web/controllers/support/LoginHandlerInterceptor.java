@@ -37,7 +37,7 @@ import org.apache.geode.management.internal.security.ResourceConstants;
  * The GetEnvironmentHandlerInterceptor class handles extracting Gfsh environment variables encoded
  * in the HTTP request message as request parameters.
  * <p/>
- * 
+ *
  * @see javax.servlet.http.HttpServletRequest
  * @see javax.servlet.http.HttpServletResponse
  * @see org.springframework.web.servlet.handler.HandlerInterceptorAdapter

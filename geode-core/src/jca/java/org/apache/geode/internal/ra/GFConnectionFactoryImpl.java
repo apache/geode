@@ -23,13 +23,13 @@ import javax.resource.spi.ManagedConnectionFactory;
 import org.apache.geode.ra.GFConnectionFactory;
 
 /**
- * 
+ *
  *
  */
 public class GFConnectionFactoryImpl implements GFConnectionFactory {
-  final private ConnectionManager cm;
+  private final ConnectionManager cm;
 
-  final private ManagedConnectionFactory mcf;
+  private final ManagedConnectionFactory mcf;
 
   private Reference ref;
 

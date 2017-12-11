@@ -25,7 +25,7 @@ public interface ClientCQ extends InternalCqQuery {
   /**
    * Closes the Query. On Client side, sends the cq close request to server. On Server side, takes
    * care of repository cleanup.
-   * 
+   *
    * @param sendRequestToServer true to send the request to server.
    * @throws CqException
    */

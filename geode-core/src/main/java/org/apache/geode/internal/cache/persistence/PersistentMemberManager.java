@@ -24,7 +24,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import org.apache.logging.log4j.Logger;
 
 import org.apache.geode.cache.persistence.RevokedPersistentDataException;
-import org.apache.geode.distributed.internal.DistributionManager;
+import org.apache.geode.distributed.internal.DM;
 import org.apache.geode.distributed.internal.MembershipListener;
 import org.apache.geode.distributed.internal.ProfileListener;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
@@ -63,9 +63,9 @@ public class PersistentMemberManager {
   }
 
   /**
-   * Add a new revokation listener
-   * 
-   * @param listener The revokocation listener
+   * Add a new revocation listener
+   *
+   * @param listener The revocation listener
    * @param recoveredRevokedMembers a set of members which the listener knows have been revoked
    */
   public HashSet<PersistentMemberPattern> addRevocationListener(MemberRevocationListener listener,
@@ -157,14 +157,14 @@ public class PersistentMemberManager {
 
   /**
    * Prepare the revoke of a persistent id.
-   * 
+   *
    * @param pattern the pattern to revoke
    * @param dm the distribution manager
    * @param sender the originator of the prepare
    * @return true if this member is not currently running the chosen disk store. false if the revoke
    *         should be aborted because the disk store is already running.
    */
-  public boolean prepareRevoke(PersistentMemberPattern pattern, DistributionManager dm,
+  public boolean prepareRevoke(PersistentMemberPattern pattern, DM dm,
       InternalDistributedMember sender) {
     if (logger.isDebugEnabled()) {
       logger.debug("Preparing revoke if pattern {}", pattern);
@@ -232,10 +232,10 @@ public class PersistentMemberManager {
   public class PendingRevokeListener implements MembershipListener {
     InternalDistributedMember sender;
     private PersistentMemberPattern pattern;
-    private DistributionManager dm;
+    private DM dm;
 
     public PendingRevokeListener(PersistentMemberPattern pattern, InternalDistributedMember sender,
-        DistributionManager dm) {
+        DM dm) {
       this.dm = dm;
       this.pattern = pattern;
       this.sender = sender;

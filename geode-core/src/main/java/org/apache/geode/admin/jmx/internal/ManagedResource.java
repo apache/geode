@@ -71,4 +71,3 @@ public interface ManagedResource {
   public void cleanupResource();
 
 }
-

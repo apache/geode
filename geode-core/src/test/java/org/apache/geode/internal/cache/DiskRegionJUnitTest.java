@@ -14,7 +14,12 @@
  */
 package org.apache.geode.internal.cache;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 
 import java.io.File;
 import java.lang.reflect.Array;
@@ -38,8 +43,9 @@ import org.apache.geode.cache.Region;
 import org.apache.geode.cache.Scope;
 import org.apache.geode.cache.server.CacheServer;
 import org.apache.geode.cache.util.CacheListenerAdapter;
-import org.apache.geode.internal.cache.lru.LRUStatistics;
-import org.apache.geode.internal.cache.lru.NewLRUClockHand;
+import org.apache.geode.internal.cache.entries.DiskEntry;
+import org.apache.geode.internal.cache.eviction.EvictionList;
+import org.apache.geode.internal.cache.eviction.EvictionStatistics;
 import org.apache.geode.internal.cache.persistence.UninterruptibleFileChannel;
 import org.apache.geode.test.dunit.ThreadUtils;
 import org.apache.geode.test.dunit.Wait;
@@ -47,9 +53,11 @@ import org.apache.geode.test.dunit.WaitCriterion;
 import org.apache.geode.test.junit.categories.IntegrationTest;
 
 /**
- * TODO: fails when running integrationTest from gradle command-line on Windows 7
- * 
  * JUnit tests covering some miscellaneous functionality of Disk Region.
+ *
+ * <p>
+ * TODO: fails when running integrationTest from gradle command-line on Windows 7<br>
+ * TODO: overhaul error handling and disk usage
  */
 @Category(IntegrationTest.class)
 public class DiskRegionJUnitTest extends DiskRegionTestingBase {
@@ -175,8 +183,7 @@ public class DiskRegionJUnitTest extends DiskRegionTestingBase {
     assertNotNull(dr);
 
     DiskRegionStats diskStats = dr.getStats();
-    LRUStatistics lruStats =
-        ((LocalRegion) region).getEvictionController().getLRUHelper().getStats();
+    EvictionStatistics lruStats = ((LocalRegion) region).getEvictionController().getStatistics();
     assertNotNull(diskStats);
     assertNotNull(lruStats);
 
@@ -193,7 +200,7 @@ public class DiskRegionJUnitTest extends DiskRegionTestingBase {
       // lruStats.getEvictions());
       int[] array = new int[250];
       array[0] = total;
-      region.put(new Integer(total), array);
+      region.put(total, array);
     }
 
     dr.flushForTesting();
@@ -203,7 +210,7 @@ public class DiskRegionJUnitTest extends DiskRegionTestingBase {
     assertEquals(1, lruStats.getEvictions());
     assertEquals(1, diskStats.getNumOverflowOnDisk());
     assertEquals(total - 1, diskStats.getNumEntriesInVM());
-    Object value = region.get(new Integer(0));
+    Object value = region.get(0);
     dr.flushForTesting();
 
     assertNotNull(value);
@@ -214,7 +221,7 @@ public class DiskRegionJUnitTest extends DiskRegionTestingBase {
     assertEquals(2, lruStats.getEvictions());
 
     for (int i = 0; i < total; i++) {
-      int[] array = (int[]) region.get(new Integer(i));
+      int[] array = (int[]) region.get(i);
       assertNotNull(array);
       assertEquals(i, array[0]);
     }
@@ -316,7 +323,7 @@ public class DiskRegionJUnitTest extends DiskRegionTestingBase {
 
     @Override
     public void run() {
-      region.put(new Integer(1), new Integer(2));
+      region.put(1, 2);
     }
 
   }
@@ -348,7 +355,7 @@ public class DiskRegionJUnitTest extends DiskRegionTestingBase {
             throw new AssertionError("exception not expected here", e);
           }
         }
-        region.get(new Integer(0));
+        region.get(0);
       } // synchronized
     } // run()
   }
@@ -378,7 +385,7 @@ public class DiskRegionJUnitTest extends DiskRegionTestingBase {
     thread5.start();
 
     for (int i = 0; i < 110; i++) {
-      region.put(new Integer(i), new Integer(i));
+      region.put(i, i);
     }
 
     synchronized (region) {
@@ -436,7 +443,7 @@ public class DiskRegionJUnitTest extends DiskRegionTestingBase {
           }
           try {
             Thread.sleep(10);
-            region.get(new Integer(i));
+            region.get(i);
           } catch (Exception e) {
             if (finished) {
               return;
@@ -450,7 +457,7 @@ public class DiskRegionJUnitTest extends DiskRegionTestingBase {
     };
 
     for (int i = 0; i < 8000; i++) {
-      region.put(new Integer(i), new Integer(i));
+      region.put(i, i);
     }
 
     finished = false;
@@ -485,7 +492,7 @@ public class DiskRegionJUnitTest extends DiskRegionTestingBase {
 
   /**
    * DiskDirectoriesJUnitTest:
-   * 
+   *
    * This tests the potential deadlock situation if the region is created such that rolling is
    * turned on but the Max directory space is less than or equal to the Max Oplog Size. In such
    * situations , if during switch over , if the Oplog to be rolled is added after function call of
@@ -627,7 +634,7 @@ public class DiskRegionJUnitTest extends DiskRegionTestingBase {
     // 5th should not fit because of record overhead.
     for (int i = 0; i <= 9; i++) {
       region.getCache().getLogger().info("putting " + i);
-      region.put(new Integer(i), new byte[101]);
+      region.put(i, new byte[101]);
     }
     // At this point we should have two oplogs that are basically full
     // (they should each contain 4 entries) and a third oplog that
@@ -643,14 +650,14 @@ public class DiskRegionJUnitTest extends DiskRegionTestingBase {
     // Now make sure that further oplogs can hold 4 entries
     for (int j = 10; j <= 13; j++) {
       region.getCache().getLogger().info("putting " + j);
-      region.put(new Integer(j), new byte[101]);
+      region.put(j, new byte[101]);
     }
     oplogs = dsi.testHookGetAllOverflowOplogs();
     assertEquals(4, oplogs.size());
     // now remove all entries and make sure old oplogs go away
     for (int i = 0; i <= 13; i++) {
       region.getCache().getLogger().info("removing " + i);
-      region.remove(new Integer(i));
+      region.remove(i);
     }
     // give background compactor chance to remove oplogs
     oplogs = dsi.testHookGetAllOverflowOplogs();
@@ -702,7 +709,7 @@ public class DiskRegionJUnitTest extends DiskRegionTestingBase {
         byte[] bytes = new byte[this.dataSize];
         synchronized (this) {
           putsHaveStarted = true;
-          this.notify();
+          this.notifyAll();
         }
         region.put("1", bytes);
         putSuccessful[0] = true;
@@ -1287,7 +1294,7 @@ public class DiskRegionJUnitTest extends DiskRegionTestingBase {
     region.put(key, value);
     // put few more entries to write on disk
     for (int i = 0; i < OP_COUNT; i++) {
-      region.put(new Integer(i), value);
+      region.put(i, value);
     }
     // get from disk
     try {
@@ -1374,19 +1381,19 @@ public class DiskRegionJUnitTest extends DiskRegionTestingBase {
     DiskRegionStats stats = ((LocalRegion) region).getDiskRegion().getStats();
 
     for (int i = 0; i < 5000; i++) {
-      region.put(new Integer(i), new Integer(i));
-      region.put(new Integer(i), new Integer(i));
-      region.put(new Integer(i), new Integer(i));
+      region.put(i, i);
+      region.put(i, i);
+      region.put(i, i);
       if (i > overflowCapacity + 5) {
-        region.get(new Integer(++counter));
-        region.get(new Integer(counter));
+        region.get(++counter);
+        region.get(counter);
       }
 
       if (i > overflowCapacity) {
-        if (!(stats.getNumEntriesInVM() == overflowCapacity)) {
+        if (stats.getNumEntriesInVM() != overflowCapacity) {
           fail(" number of entries is VM should be equal to overflow capacity");
         }
-        if (!(stats.getNumOverflowOnDisk() - 1 == i - overflowCapacity)) {
+        if (stats.getNumOverflowOnDisk() - 1 != i - overflowCapacity) {
           fail(" number of entries on disk not corrected expected " + (i - overflowCapacity)
               + " but is " + stats.getNumOverflowOnDisk());
         }
@@ -1407,7 +1414,7 @@ public class DiskRegionJUnitTest extends DiskRegionTestingBase {
 
     for (int i = 0; i < dirs.length; i++) {
       File[] files = dirs[i].listFiles();
-      assertTrue("Files already exists", files.length == 0);
+      assertTrue("Files already exists", files == null || files.length == 0);
     }
     region = DiskRegionHelperFactory.getAsyncOverFlowOnlyRegion(cache, diskProps);
 
@@ -1415,7 +1422,7 @@ public class DiskRegionJUnitTest extends DiskRegionTestingBase {
     Arrays.fill(value, (byte) 77);
 
     for (int i = 0; i < 100; i++) {
-      region.put(new Integer(i), value);
+      region.put(i, value);
     }
 
     region.close(); // closes disk file which will flush all buffers
@@ -1452,7 +1459,7 @@ public class DiskRegionJUnitTest extends DiskRegionTestingBase {
 
     for (int i = 0; i < dirs.length; i++) {
       File[] files = dirs[i].listFiles();
-      assertTrue("Files already exists", files.length == 0);
+      assertTrue("Files already exists", files == null || files.length == 0);
     }
     region = DiskRegionHelperFactory.getSyncPersistOnlyRegion(cache, diskProps, Scope.LOCAL);
 
@@ -1460,7 +1467,7 @@ public class DiskRegionJUnitTest extends DiskRegionTestingBase {
     Arrays.fill(value, (byte) 77);
 
     for (int i = 0; i < 100; i++) {
-      region.put(new Integer(i), value);
+      region.put(i, value);
     }
 
     region.destroyRegion();
@@ -1504,7 +1511,7 @@ public class DiskRegionJUnitTest extends DiskRegionTestingBase {
     region = DiskRegionHelperFactory.getSyncOverFlowAndPersistRegion(cache, diskRegionProperties);
     byte[] bytes = new byte[256];
     for (int i = 0; i < 1500; i++) {
-      region.put(new Integer(i % 10), bytes);
+      region.put(i % 10, bytes);
     }
   }
 
@@ -1543,11 +1550,10 @@ public class DiskRegionJUnitTest extends DiskRegionTestingBase {
     }
 
     assertFalse(this.failureCause, this.exceptionOccurred);
-    NewLRUClockHand lruList = ((VMLRURegionMap) ((LocalRegion) region).entries)._getLruList();
+    EvictionList lruList = ((VMLRURegionMap) ((LocalRegion) region).entries).getEvictionList();
     assertEquals(region.size(), 0);
-    lruList.audit();
     assertNull("The LRU List should have been empty instead it contained a cleared entry",
-        lruList.getLRUEntry());
+        lruList.getEvictableEntry());
   }
 
   /**
@@ -1691,8 +1697,6 @@ public class DiskRegionJUnitTest extends DiskRegionTestingBase {
   /**
    * If IOException occurs while updating an entry in a persist only synch mode, DiskAccessException
    * should occur & region should be destroyed
-   * 
-   * @throws Exception
    */
   private void entryUpdateInSynchPersistTypeForIOExceptionCase(Region region) throws Exception {
 
@@ -1750,8 +1754,6 @@ public class DiskRegionJUnitTest extends DiskRegionTestingBase {
   /**
    * If IOException occurs while invalidating an entry in a persist only synch mode,
    * DiskAccessException should occur & region should be destroyed
-   * 
-   * @throws Exception
    */
   private void entryInvalidateInSynchPersistTypeForIOExceptionCase(Region region) throws Exception {
     region.create("key1", "value1");
@@ -1804,11 +1806,8 @@ public class DiskRegionJUnitTest extends DiskRegionTestingBase {
   }
 
   /**
-   * 
    * If IOException occurs while creating an entry in a persist only synch mode, DiskAccessException
    * should occur & region should be destroyed
-   * 
-   * @throws Exception
    */
   private void entryCreateInSynchPersistTypeForIOExceptionCase(Region region) throws Exception {
 
@@ -1864,8 +1863,6 @@ public class DiskRegionJUnitTest extends DiskRegionTestingBase {
   /**
    * If IOException occurs while destroying an entry in a persist only synch mode,
    * DiskAccessException should occur & region should be destroyed
-   * 
-   * @throws Exception
    */
   private void entryDestructionInSynchPersistTypeForIOExceptionCase(Region region)
       throws Exception {
@@ -2085,7 +2082,7 @@ public class DiskRegionJUnitTest extends DiskRegionTestingBase {
           th.start();
           synchronized (region) {
             toWait[0] = false;
-            region.notify();
+            region.notifyAll();
           }
           // Lets wait for some time which will be enough to toggle glag.
           // ideally we need visibility
@@ -2228,7 +2225,7 @@ public class DiskRegionJUnitTest extends DiskRegionTestingBase {
           th.start();
           synchronized (region) {
             closeThreadStarted[0] = true;
-            region.notify();
+            region.notifyAll();
           }
           // wait for th to call afterSignallingCompactor
           synchronized (this.compactorSignalled) {
@@ -2301,7 +2298,7 @@ public class DiskRegionJUnitTest extends DiskRegionTestingBase {
         region.put("" + i, "" + i);
       }
       synchronized (anotherLock) {
-        anotherLock.notify();
+        anotherLock.notifyAll();
         allowCompactorThread[0] = true;
       }
       synchronized (region) {
@@ -2355,7 +2352,7 @@ public class DiskRegionJUnitTest extends DiskRegionTestingBase {
         }
       }
       assertTrue(i > 1);
-      assertTrue(switchedOplog[0].getOplogFile().delete());
+      assertTrue(switchedOplog[0].getOplogFileForTest().delete());
       region.close();
       // We don't validate the oplogs until we recreate the disk store.
       DiskStoreImpl store = ((LocalRegion) region).getDiskStore();
@@ -2439,7 +2436,7 @@ public class DiskRegionJUnitTest extends DiskRegionTestingBase {
           th.start();
           synchronized (region) {
             closeThreadStarted[0] = true;
-            region.notify();
+            region.notifyAll();
           }
           // wait for th to call afterSignallingCompactor
           synchronized (this.compactorSignalled) {
@@ -2485,7 +2482,7 @@ public class DiskRegionJUnitTest extends DiskRegionTestingBase {
         region.put("" + i, "" + i);
       }
       synchronized (anotherLock) {
-        anotherLock.notify();
+        anotherLock.notifyAll();
         allowCompactorThread[0] = true;
       }
       synchronized (region) {
@@ -2559,7 +2556,7 @@ public class DiskRegionJUnitTest extends DiskRegionTestingBase {
         public void afterStoppingCompactor() {
           synchronized (region) {
             regionDestroyed[0] = true;
-            region.notify();
+            region.notifyAll();
           }
         }
       });
@@ -2568,7 +2565,7 @@ public class DiskRegionJUnitTest extends DiskRegionTestingBase {
         region.put("" + i, new byte[10]);
       }
       synchronized (anotherLock) {
-        anotherLock.notify();
+        anotherLock.notifyAll();
         allowCompactorThread[0] = true;
       }
       synchronized (region) {
@@ -2599,7 +2596,7 @@ public class DiskRegionJUnitTest extends DiskRegionTestingBase {
     final int MAX_KEY = Integer.getInteger("MAX_KEY", 2).intValue();
     final Integer[] keys = new Integer[MAX_KEY];
     for (int i = 0; i < MAX_KEY; i++) {
-      keys[i] = Integer.valueOf(i);
+      keys[i] = i;
     }
     final int MAX_ITERATIONS = Integer.getInteger("MAX_ITERATIONS", 1000).intValue();
     int itCount = 0;
@@ -2625,7 +2622,7 @@ public class DiskRegionJUnitTest extends DiskRegionTestingBase {
     final int MAX_KEY = Integer.getInteger("MAX_KEY", 2).intValue();
     final Integer[] keys = new Integer[MAX_KEY];
     for (int i = 0; i < MAX_KEY; i++) {
-      keys[i] = Integer.valueOf(i);
+      keys[i] = i;
     }
     final int MAX_ITERATIONS = Integer.getInteger("MAX_ITERATIONS", 1000).intValue();
     int itCount = 0;

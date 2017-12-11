@@ -178,7 +178,7 @@ public interface DMStats {
 
   /**
    * increments the number of unicast writes performed and the number of bytes written
-   * 
+   *
    * @since GemFire 5.0
    */
   public void incUcastWriteBytes(int bytesWritten);
@@ -319,14 +319,14 @@ public interface DMStats {
 
   /**
    * increment the number of unicast UDP retransmission requests received from other processes
-   * 
+   *
    * @since GemFire 5.0
    */
   public void incUcastRetransmits();
 
   /**
    * increment the number of multicast UDP retransmissions sent to other processes
-   * 
+   *
    * @since GemFire 5.0
    */
   public void incMcastRetransmits();
@@ -338,7 +338,7 @@ public interface DMStats {
 
   /**
    * increment the number of multicast UDP retransmission requests sent to other processes
-   * 
+   *
    * @since GemFire 5.0
    */
   public void incMcastRetransmitRequests();
@@ -560,7 +560,7 @@ public interface DMStats {
 
   /**
    * increment/decrement the number of thread-owned receivers with the given domino count
-   * 
+   *
    * @param value
    * @param dominoCount thread-owned connection chain count
    */
@@ -568,7 +568,7 @@ public interface DMStats {
 
   /**
    * Called when a new message is received.
-   * 
+   *
    * @param newMsg true if a new message being received was detected; false if this is just
    *        additional data for a message already detected.
    * @param bytes the number of bytes read, so far, for the message being received.
@@ -578,7 +578,7 @@ public interface DMStats {
 
   /**
    * Called when we finish processing a received message.
-   * 
+   *
    * @param bytes the number of bytes read off the wire for the message we have finished with.
    * @since GemFire 5.0.2
    */
@@ -588,7 +588,7 @@ public interface DMStats {
 
   /**
    * Returns 1 if the system elder is this member, else returns 0.
-   * 
+   *
    * @return 1 if the system elder is this member, else returns 0
    */
   public int getElders();

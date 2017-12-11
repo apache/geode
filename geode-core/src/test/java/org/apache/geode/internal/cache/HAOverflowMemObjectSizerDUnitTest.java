@@ -39,7 +39,8 @@ import org.apache.geode.cache30.ClientServerTestCase;
 import org.apache.geode.distributed.DistributedSystem;
 import org.apache.geode.distributed.internal.InternalLocator;
 import org.apache.geode.internal.AvailablePort;
-import org.apache.geode.internal.cache.lru.EnableLRU;
+import org.apache.geode.internal.cache.eviction.EvictionController;
+import org.apache.geode.internal.cache.eviction.MemoryLRUController;
 import org.apache.geode.internal.cache.tier.sockets.ClientUpdateMessageImpl;
 import org.apache.geode.internal.cache.tier.sockets.ConflationDUnitTest;
 import org.apache.geode.test.dunit.Host;
@@ -49,9 +50,9 @@ import org.apache.geode.test.dunit.internal.JUnit4DistributedTestCase;
 import org.apache.geode.test.junit.categories.DistributedTest;
 
 /**
- * Tests the size of clientUpdateMessageImpl with the size calculated by
- * {@link org.apache.geode.internal.cache.lru.MemLRUCapacityController} for HA overFlow
- * 
+ * Tests the size of clientUpdateMessageImpl with the size calculated by {@link MemoryLRUController}
+ * for HA overFlow
+ *
  * @since GemFire 5.7
  */
 @Category(DistributedTest.class)
@@ -70,7 +71,7 @@ public class HAOverflowMemObjectSizerDUnitTest extends JUnit4DistributedTestCase
   static String regionName = HAOverflowMemObjectSizerDUnitTest.class.getSimpleName() + "-region";
 
   /* handler for LRU capacity controller */
-  private static EnableLRU cc = null;
+  private static EvictionController cc = null;
 
   VM client = null;
 
@@ -150,7 +151,7 @@ public class HAOverflowMemObjectSizerDUnitTest extends JUnit4DistributedTestCase
      */
     cc = ((VMLRURegionMap) ((LocalRegion) cache.getRegion(
         Region.SEPARATOR + CacheServerImpl.generateNameForClientMsgsRegion(port))).entries)
-            ._getCCHelper();
+            .getEvictionController();
     return new Integer(server1.getPort());
   }
 
@@ -276,7 +277,7 @@ public class HAOverflowMemObjectSizerDUnitTest extends JUnit4DistributedTestCase
 
   /**
    * perform put on server region that will put entries on CMR region
-   * 
+   *
    * @param lowerLimit
    * @param higerlimit - lower and upper limit on put
    */

@@ -34,7 +34,7 @@ public class IndexMaintenanceException extends CacheRuntimeException {
   /**
    * Constructs an instance of <code>IndexMaintenanceException</code> with the specified detail
    * message.
-   * 
+   *
    * @param msg the detail message.
    */
   public IndexMaintenanceException(String msg) {
@@ -45,7 +45,7 @@ public class IndexMaintenanceException extends CacheRuntimeException {
   /**
    * Constructs an instance of <code>IndexMaintenanceException</code> with the specified detail
    * message and cause.
-   * 
+   *
    * @param msg the detail message
    * @param cause the causal Throwable
    */
@@ -55,7 +55,7 @@ public class IndexMaintenanceException extends CacheRuntimeException {
 
   /**
    * Constructs an instance of <code>IndexMaintenanceException</code> with the specified cause.
-   * 
+   *
    * @param cause the causal Throwable
    */
   public IndexMaintenanceException(Throwable cause) {

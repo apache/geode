@@ -46,7 +46,7 @@ import org.apache.geode.internal.logging.LogService;
 
 /**
  * Does a region putAll on a server
- * 
+ *
  * @since GemFire 5.7
  */
 public class PutAllOp {
@@ -59,7 +59,7 @@ public class PutAllOp {
   /**
    * Does a region put on a server using connections from the given pool to communicate with the
    * server.
-   * 
+   *
    * @param pool the pool to use to communicate with the server.
    * @param region the name of the region to do the putAll on
    * @param map the Map of keys and values to put
@@ -80,7 +80,7 @@ public class PutAllOp {
   /**
    * Does a region put on a server using connections from the given pool to communicate with the
    * server.
-   * 
+   *
    * @param pool the pool to use to communicate with the server.
    * @param region the name of the region to do the putAll on
    * @param map the Map of keys and values to put

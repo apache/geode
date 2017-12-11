@@ -15,16 +15,16 @@
 
 package org.apache.geode.internal.cache;
 
-import org.apache.geode.internal.DSCODE;
-import org.apache.geode.internal.DataSerializableFixedID;
-import org.apache.geode.internal.Version;
-
 import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
 import java.io.ObjectStreamException;
 import java.io.Serializable;
 import java.nio.ByteBuffer;
+
+import org.apache.geode.internal.DSCODE;
+import org.apache.geode.internal.DataSerializableFixedID;
+import org.apache.geode.internal.Version;
 
 /**
  * Internal tokens used as region values. These tokens are never seen from the public API.

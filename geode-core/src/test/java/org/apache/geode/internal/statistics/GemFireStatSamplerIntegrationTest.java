@@ -91,7 +91,7 @@ public class GemFireStatSamplerIntegrationTest extends StatSamplerTestCase {
 
   /**
    * Tests the majority of getters and the basic functionality of the sampler.
-   * 
+   *
    * This test is skipped when running on Windows 7 because ProcessStats is not created for this OS.
    * See #45395.
    */

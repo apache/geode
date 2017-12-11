@@ -19,21 +19,21 @@ import org.apache.geode.cache.partition.PartitionMemberInfo;
 /**
  * Provides load and bucket level details for internal use. Extends
  * {@link org.apache.geode.cache.partition.PartitionMemberInfo}.
- * 
+ *
  */
 public interface InternalPartitionDetails
     extends PartitionMemberInfo, Comparable<InternalPartitionDetails> {
 
   /**
    * Returns the load for the partitioned region.
-   * 
+   *
    * @return the load for the partitioned region
    */
   public PRLoad getPRLoad();
 
   /**
    * Returns the size of the bucket in bytes.
-   * 
+   *
    * @param bucketId the identity of the bucket from 0 to number of buckets -1
    * @return the size of the bucket in bytes
    */

@@ -24,7 +24,7 @@ import org.apache.geode.DataSerializer;
 
 /**
  * A response from the TCP server with information about the server
- * 
+ *
  * @since GemFire 5.7
  */
 public class InfoResponse implements DataSerializable {

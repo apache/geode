@@ -14,13 +14,13 @@
  */
 package org.apache.geode.cache.query;
 
-import it.unimi.dsi.fastutil.floats.FloatArrayList;
-
 import java.text.DateFormat;
 import java.util.Date;
 import java.util.Iterator;
 import java.util.Properties;
 import java.util.Set;
+
+import it.unimi.dsi.fastutil.floats.FloatArrayList;
 
 import org.apache.geode.cache.AttributesFactory;
 import org.apache.geode.cache.Cache;

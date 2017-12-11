@@ -15,15 +15,16 @@
 
 package org.apache.geode.internal.cache.tier.sockets;
 
+import java.io.*;
+
 import org.apache.geode.DataSerializer;
 import org.apache.geode.cache.CacheFactory;
+import org.apache.geode.distributed.DistributedSystem;
 import org.apache.geode.internal.DataSerializableFixedID;
 import org.apache.geode.internal.Version;
 import org.apache.geode.internal.cache.EventID;
 import org.apache.geode.internal.cache.tier.InterestType;
 import org.apache.geode.internal.cache.tier.MessageType;
-
-import java.io.*;
 
 /**
  * Class <code>ClientInterestMessageImpl</code> represents an update to the a client's interest
@@ -59,7 +60,7 @@ public class ClientInterestMessageImpl implements ClientMessage {
   /**
    * Whether the create or update events for this <code>ClientMessage</code> is sent as an
    * invalidate
-   * 
+   *
    * @since GemFire 6.0.3
    */
   private boolean forUpdatesAsInvalidates;
@@ -90,7 +91,7 @@ public class ClientInterestMessageImpl implements ClientMessage {
   protected static final byte UNREGISTER = (byte) 1;
 
   /**
-   * 
+   *
    * @param eventId The EventID of this message
    * @param regionName The name of the region whose interest is changing
    * @param keyOfInterest The key in the region whose interest is changing
@@ -109,8 +110,9 @@ public class ClientInterestMessageImpl implements ClientMessage {
     this.action = action;
   }
 
-  public ClientInterestMessageImpl(ClientInterestMessageImpl message, Object keyOfInterest) {
-    this.eventId = new EventID(CacheFactory.getAnyInstance().getDistributedSystem());
+  public ClientInterestMessageImpl(DistributedSystem distributedSystem,
+      ClientInterestMessageImpl message, Object keyOfInterest) {
+    this.eventId = new EventID(distributedSystem);
     this.regionName = message.regionName;
     this.keyOfInterest = keyOfInterest;
     this.interestType = message.interestType;

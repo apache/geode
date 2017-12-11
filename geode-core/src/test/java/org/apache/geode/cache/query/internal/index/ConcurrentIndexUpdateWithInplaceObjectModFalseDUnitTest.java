@@ -13,7 +13,7 @@
  * the License.
  */
 /**
- * 
+ *
  */
 package org.apache.geode.cache.query.internal.index;
 
@@ -63,7 +63,7 @@ import org.apache.geode.test.junit.categories.FlakyTest;
  * This test is similar to {@link ConcurrentIndexUpdateWithoutWLDUnitTest} except that it sets
  * system property gemfire.index.INPLACE_OBJECT_MODIFICATION to false so no reverse map is used for
  * {@link CompactRangeIndex}.
- * 
+ *
  * During validation all region operations are paused for a while. Validation happens multiple time
  * during one test run on a fixed time interval.
  */
@@ -405,7 +405,7 @@ public class ConcurrentIndexUpdateWithInplaceObjectModFalseDUnitTest
   /**
    * This validator will iterate over RegionEntries and verify their corresponding index key and
    * entry presence in index valuesToEntriesMap.
-   * 
+   *
    *
    */
   public class IndexValidator {

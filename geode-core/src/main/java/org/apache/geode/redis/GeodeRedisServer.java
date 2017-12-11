@@ -211,7 +211,7 @@ public class GeodeRedisServer {
 
   private EventLoopGroup bossGroup;
   private EventLoopGroup workerGroup;
-  private final static int numExpirationThreads = 1;
+  private static final int numExpirationThreads = 1;
   private final ScheduledExecutorService expirationExecutor;
 
   /**
@@ -263,7 +263,7 @@ public class GeodeRedisServer {
   /**
    * Determine the {@link RegionShortcut} type from a String value. If the String value doesn't map
    * to a RegionShortcut type then {@link RegionShortcut#PARTITION} will be used by default.
-   * 
+   *
    * @return {@link RegionShortcut}
    */
   private static RegionShortcut setRegionType() {
@@ -279,7 +279,7 @@ public class GeodeRedisServer {
 
   /**
    * Helper method to set the number of worker threads
-   * 
+   *
    * @return If the System property {@value #NUM_THREADS_SYS_PROP_NAME} is set then that number is
    *         used, otherwise 4 * # of cores
    */
@@ -301,7 +301,7 @@ public class GeodeRedisServer {
   /**
    * Constructor for {@code GeodeRedisServer} that will start the server on the given port and bind
    * to the first non-loopback address
-   * 
+   *
    * @param port The port the server will bind to, will use {@value #DEFAULT_REDIS_SERVER_PORT} by
    *        default
    */
@@ -312,7 +312,7 @@ public class GeodeRedisServer {
   /**
    * Constructor for {@code GeodeRedisServer} that will start the server and bind to the given
    * address and port
-   * 
+   *
    * @param bindAddress The address to which the server will attempt to bind to
    * @param port The port the server will bind to, will use {@value #DEFAULT_REDIS_SERVER_PORT} by
    *        default if argument is less than or equal to 0
@@ -326,7 +326,7 @@ public class GeodeRedisServer {
    * address and port. Keep in mind that the log level configuration will only be set if a
    * {@link Cache} does not already exist, if one already exists then setting that property will
    * have no effect.
-   * 
+   *
    * @param bindAddress The address to which the server will attempt to bind to
    * @param port The port the server will bind to, will use {@value #DEFAULT_REDIS_SERVER_PORT} by
    *        default if argument is less than or equal to 0
@@ -365,7 +365,7 @@ public class GeodeRedisServer {
 
   /**
    * Helper method to get the host name to bind to
-   * 
+   *
    * @return The InetAddress to bind to
    * @throws UnknownHostException
    */
@@ -478,7 +478,7 @@ public class GeodeRedisServer {
   /**
    * Helper method to start the server listening for connections. The server is bound to the port
    * specified by {@link GeodeRedisServer#serverPort}
-   * 
+   *
    * @throws IOException
    * @throws InterruptedException
    */
@@ -558,7 +558,7 @@ public class GeodeRedisServer {
    * Takes an entry event and processes it. If the entry denotes that a
    * {@link RedisDataType#REDIS_LIST} or {@link RedisDataType#REDIS_SORTEDSET} was created then this
    * function will call the necessary calls to create the parameterized queries for those keys.
-   * 
+   *
    * @param event EntryEvent from meta data region
    */
   private void afterKeyCreate(EntryEvent<String, RedisDataType> event) {
@@ -610,7 +610,7 @@ public class GeodeRedisServer {
 
   /**
    * Helper method to get GemFire set socket buffer size, possibly a default of 32k
-   * 
+   *
    * @return Buffer size to use for server
    */
   private int getBufferSize() {
@@ -651,7 +651,7 @@ public class GeodeRedisServer {
    * -port= <br>
    * -bind-address= <br>
    * -log-level=
-   * 
+   *
    * @param args Command line args
    */
   public static void main(String[] args) {
@@ -681,7 +681,7 @@ public class GeodeRedisServer {
 
   /**
    * Helper method to parse the port to a number
-   * 
+   *
    * @param arg String where the argument is
    * @return The port number when the correct syntax was used, otherwise will return
    *         {@link #DEFAULT_REDIS_SERVER_PORT}
@@ -704,7 +704,7 @@ public class GeodeRedisServer {
 
   /**
    * Helper method to parse bind address
-   * 
+   *
    * @param arg String holding bind address
    * @return Bind address
    */
@@ -721,7 +721,7 @@ public class GeodeRedisServer {
 
   /**
    * Helper method to parse log level
-   * 
+   *
    * @param arg String holding log level
    * @return Log level
    */

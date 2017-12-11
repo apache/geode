@@ -26,14 +26,14 @@ import org.apache.geode.internal.cache.versions.VersionTag;
 public interface InternalCacheEvent extends CacheEvent {
   /**
    * Answers true if this event should generate user callbacks.
-   * 
+   *
    * @return true if this event will generate user callbacks
    */
   public boolean isGenerateCallbacks();
 
   /**
    * Answers true if this event is from a client
-   * 
+   *
    * @deprecated as of 5.7 use {@link #hasClientOrigin} instead.
    */
   @Deprecated
@@ -41,7 +41,7 @@ public interface InternalCacheEvent extends CacheEvent {
 
   /**
    * Answers true if this event is from a client
-   * 
+   *
    * @since GemFire 5.7
    */
   public boolean hasClientOrigin();
@@ -53,14 +53,14 @@ public interface InternalCacheEvent extends CacheEvent {
 
   /**
    * Returns the Operation type.
-   * 
+   *
    * @return eventType
    */
   public EnumListenerEvent getEventType();
 
   /**
    * sets the event type
-   * 
+   *
    * @param operation the operation performed by this event
    */
   public void setEventType(EnumListenerEvent operation);
@@ -72,7 +72,7 @@ public interface InternalCacheEvent extends CacheEvent {
 
   /**
    * set the client routing information for this event
-   * 
+   *
    * @param info TODO
    */
   public void setLocalFilterInfo(FilterInfo info);

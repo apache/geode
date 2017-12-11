@@ -18,7 +18,6 @@ import static java.util.stream.Collectors.toList;
 
 import java.io.BufferedReader;
 import java.io.File;
-
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FilenameFilter;
@@ -32,6 +31,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.apache.commons.io.FileUtils;
+
 import org.apache.geode.internal.logging.MergeLogFiles;
 import org.apache.geode.management.cli.Result;
 import org.apache.geode.management.internal.cli.GfshParser;
@@ -40,7 +40,7 @@ import org.apache.geode.management.internal.cli.i18n.CliStrings;
 import org.apache.geode.management.internal.cli.result.ResultBuilder;
 
 /**
- * 
+ *
  * @since GemFire 7.0
  */
 

@@ -20,12 +20,12 @@ import org.apache.geode.management.internal.cli.shell.Gfsh;
 
 /**
  * {@link GfeConsoleReader} implementation which uses JLine's Console Reader.
- * 
+ *
  * Using the default {@link GfeConsoleReader} which uses {@link java.io.Console} makes the shell
  * repeat the characters twice.
- * 
+ *
  * TODO - Abhishek: Investigate if stty settings can avoid this?
- * 
+ *
  * @since GemFire 7.0.1
  */
 public class GfshConsoleReader extends GfeConsoleReader {

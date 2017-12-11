@@ -14,11 +14,11 @@
  */
 package org.apache.geode.distributed.internal;
 
-// import org.apache.geode.*;
-import org.apache.geode.distributed.DistributedSystem;
-import org.apache.geode.internal.Assert;
 import java.util.Date;
 import java.util.Properties;
+
+import org.apache.geode.distributed.DistributedSystem;
+import org.apache.geode.internal.Assert;
 
 /**
  * A little program that periodically produces {@link DateMessage}s.

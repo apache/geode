@@ -23,7 +23,6 @@ import java.util.Properties;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicInteger;
 
-import org.apache.geode.test.junit.categories.ClientSubscriptionTest;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
@@ -63,6 +62,7 @@ import org.apache.geode.test.dunit.VM;
 import org.apache.geode.test.dunit.Wait;
 import org.apache.geode.test.dunit.WaitCriterion;
 import org.apache.geode.test.dunit.internal.JUnit4DistributedTestCase;
+import org.apache.geode.test.junit.categories.ClientSubscriptionTest;
 import org.apache.geode.test.junit.categories.DistributedTest;
 
 /**
@@ -96,10 +96,10 @@ public class InterestListDUnitTest extends JUnit4DistributedTestCase {
   private static final String REGION_NAME = "InterestListDUnitTest_region";
 
   // using a Integer instead of String to make sure ALL_KEYS works on non-String keys
-  private final static Integer key1 = new Integer(1);
-  private final static Integer key2 = new Integer(2);
-  private final static String key1_originalValue = "key-1-orig-value";
-  private final static String key2_originalValue = "key-2-orig-value";
+  private static final Integer key1 = new Integer(1);
+  private static final Integer key2 = new Integer(2);
+  private static final String key1_originalValue = "key-1-orig-value";
+  private static final String key2_originalValue = "key-2-orig-value";
 
   private static Cache cache = null;
 
@@ -764,7 +764,7 @@ public class InterestListDUnitTest extends JUnit4DistributedTestCase {
 
   /**
    * exercises the ClientSession interface to register interest in a server on behalf of a client
-   * 
+   *
    * @param clientId the DM of the client
    * @param key the key that the client is interested in
    */
@@ -867,7 +867,7 @@ public class InterestListDUnitTest extends JUnit4DistributedTestCase {
 
   /**
    * unregister a key for a particular client in the server
-   * 
+   *
    * @param clientId the client's ID
    * @param key the key it's no longer interest in
    */

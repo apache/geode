@@ -16,7 +16,6 @@ package org.apache.geode.admin.jmx;
 
 import org.apache.geode.admin.DistributedSystemConfig;
 import org.apache.geode.distributed.internal.DistributionConfig;
-// import org.apache.geode.admin.internal.InetAddressUtil;
 
 /**
  * A configuration object for a JMX administration {@linkplain Agent agent} that is hosted by a
@@ -66,7 +65,7 @@ import org.apache.geode.distributed.internal.DistributionConfig;
  * <dd><U>Description</U>: whether or not connections to the JMX agent require SSL</dd>
  * <dd><U>{@linkplain #DEFAULT_AGENT_SSL_ENABLED Default}</U>: false</dd>
  * </dl>
- * 
+ *
  * <dl>
  * <a name="agent-ssl-protocols">
  * <dt>{@linkplain #AGENT_SSL_PROTOCOLS_NAME agent-ssl-protocols}</dt></a>
@@ -105,7 +104,7 @@ import org.apache.geode.distributed.internal.DistributionConfig;
  * <dd><U>Description</U>: whether or not the HTTP adapter is enabled in the JMX agent.</dd>
  * <dd><U>{@linkplain #DEFAULT_HTTP_ENABLED Default}</U>: true</dd>
  * </dl>
- * 
+ *
  * <dl>
  * <a name="http-port">
  * <dt>{@linkplain #HTTP_PORT_NAME http-port}</dt></a>
@@ -170,7 +169,7 @@ import org.apache.geode.distributed.internal.DistributionConfig;
  * objects.</dd>
  * <dd><U>{@linkplain #DEFAULT_RMI_PORT Default}</U>: 1099</dd>
  * </dl>
- * 
+ *
  * <dl>
  * <a name="rmi-server-port">
  * <dt>{@linkplain #RMI_PORT_NAME rmi-server-port}</dt></a>
@@ -193,7 +192,7 @@ import org.apache.geode.distributed.internal.DistributionConfig;
  * <dd><U>Description</U>: whether or not the SNMP JMX adapter is enabled</dd>
  * <dd><U>{@linkplain #DEFAULT_SNMP_ENABLED Default}</U>: false</dd>
  * </dl>
- * 
+ *
  * <dl>
  * <a name="snmp-bind-address">
  * <dt>{@linkplain #SNMP_BIND_ADDRESS_NAME snmp-bind-address}</dt></a>
@@ -209,9 +208,9 @@ import org.apache.geode.distributed.internal.DistributionConfig;
  * <dd><U>Description</U>: the deployment directory for AdventNet SNMP Adaptor</dd>
  * <dd><U>{@linkplain #DEFAULT_SNMP_DIRECTORY Default}</U>: ""</dd>
  * </dl>
- * 
+ *
  * <B>JMX Agent Email Notification Properties (for statistics alerts)</B>
- * 
+ *
  * <dl>
  * <a name="email-notification-enabled">
  * <dt>{@linkplain #EMAIL_NOTIFICATIONS_ENABLED_NAME email-notification-enabled}</dt></a>
@@ -219,28 +218,28 @@ import org.apache.geode.distributed.internal.DistributionConfig;
  * </dd>
  * <dd><U>{@linkplain #DEFAULT_EMAIL_NOTIFICATIONS_ENABLED Default}</U>: false</dd>
  * </dl>
- * 
+ *
  * <dl>
  * <a name="email-notification-from">
  * <dt>{@linkplain #EMAIL_NOTIFICATIONS_FROM_NAME email-notification-from}</dt></a>
  * <dd><U>Description</U>: Email address to be used to send email notifications.</dd>
  * <dd><U>{@linkplain #DEFAULT_EMAIL_FROM Default}</U>: ""</dd>
  * </dl>
- * 
+ *
  * <dl>
  * <a name="email-notification-host">
  * <dt>{@linkplain #EMAIL_NOTIFICATIONS_HOST_NAME email-notification-host}</dt></a>
  * <dd><U>Description</U>: The host name of the mail server to be used for email communication.</dd>
  * <dd><U>{@linkplain #DEFAULT_EMAIL_HOST Default}</U>: ""</dd>
  * </dl>
- * 
+ *
  * <dl>
  * <a name="email-notification-to">
  * <dt>{@linkplain #EMAIL_NOTIFICATIONS_TO_LIST_NAME email-notification-to}</dt></a>
  * <dd><U>Description</U>: Email address where the email notifications should be sent.</dd>
  * <dd><U>{@linkplain #DEFAULT_EMAIL_TO_LIST Default}</U>: ""</dd>
  * </dl>
- * 
+ *
  * <dl>
  * <a name="state-save-file">
  * <dt>{@linkplain #STATE_SAVE_FILE_NAME state-save-file}</dt></a>
@@ -248,7 +247,7 @@ import org.apache.geode.distributed.internal.DistributionConfig;
  * stored in the same directory in which the agent.properties file is located</dd>
  * <dd><U>{@linkplain #DEFAULT_STATE_SAVE_FILE Default}</U>: ""</dd>
  * </dl>
- * 
+ *
  *
  * @since GemFire 4.0
  * @deprecated as of 7.0 use the <code><a href=
@@ -389,14 +388,14 @@ public interface AgentConfig extends DistributedSystemConfig {
 
   /**
    * The name of the "rmi-server-port" property
-   * 
+   *
    * @since GemFire 6.5
    */
   public static final String RMI_SERVER_PORT_NAME = "rmi-server-port";
 
   /**
    * The default value of the {@linkplain #RMI_SERVER_PORT_NAME rmi-server-port} property (0)
-   * 
+   *
    * @since GemFire 6.5
    */
   public static final int DEFAULT_RMI_SERVER_PORT = 0;
@@ -623,7 +622,7 @@ public interface AgentConfig extends DistributedSystemConfig {
    * Returns the port of the RMI Connector Server.
    *
    * See <a href="#rmi-server-port">description</a> above.
-   * 
+   *
    * @return the value set for rmi-server-port
    * @since GemFire 6.5
    */
@@ -633,7 +632,7 @@ public interface AgentConfig extends DistributedSystemConfig {
    * Sets the port of the RMI Connector Server.
    *
    * See <a href="#rmi-server-port">description</a> above.
-   * 
+   *
    * @param port rmi-server-port to set.
    * @since GemFire 6.5
    */

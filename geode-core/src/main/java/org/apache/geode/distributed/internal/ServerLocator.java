@@ -27,7 +27,6 @@ import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicInteger;
 
-import org.apache.geode.internal.DataSerializableFixedID;
 import org.apache.logging.log4j.Logger;
 
 import org.apache.geode.CancelCriterion;
@@ -51,7 +50,7 @@ import org.apache.geode.distributed.internal.DistributionAdvisor.Profile;
 import org.apache.geode.distributed.internal.tcpserver.TcpHandler;
 import org.apache.geode.distributed.internal.tcpserver.TcpServer;
 import org.apache.geode.i18n.LogWriterI18n;
-import org.apache.geode.internal.net.SocketCreator;
+import org.apache.geode.internal.DataSerializableFixedID;
 import org.apache.geode.internal.cache.CacheServerAdvisor.CacheServerProfile;
 import org.apache.geode.internal.cache.ControllerAdvisor;
 import org.apache.geode.internal.cache.ControllerAdvisor.ControllerProfile;
@@ -59,9 +58,10 @@ import org.apache.geode.internal.cache.FindDurableQueueProcessor;
 import org.apache.geode.internal.cache.GridAdvisor.GridProfile;
 import org.apache.geode.internal.i18n.LocalizedStrings;
 import org.apache.geode.internal.logging.LogService;
+import org.apache.geode.internal.net.SocketCreator;
 
 /**
- * 
+ *
  * @since GemFire 5.7
  */
 public class ServerLocator implements TcpHandler, DistributionAdvisee {
@@ -79,7 +79,7 @@ public class ServerLocator implements TcpHandler, DistributionAdvisee {
   private volatile List<ServerLocation> cachedLocators;
   private final Object cachedLocatorsLock = new Object();
 
-  private final static AtomicInteger profileSN = new AtomicInteger();
+  private static final AtomicInteger profileSN = new AtomicInteger();
 
   private static final long SERVER_LOAD_LOG_INTERVAL = (60 * 60 * 1000); // log server load once an
                                                                          // hour

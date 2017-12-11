@@ -22,7 +22,18 @@ package org.apache.geode.internal.cache;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
+import java.io.File;
+import java.io.IOException;
+import java.util.Iterator;
+import java.util.Random;
+import java.util.Set;
+
 import org.apache.commons.io.FileUtils;
+import org.junit.After;
+import org.junit.Before;
+import org.junit.Test;
+import org.junit.experimental.categories.Category;
+
 import org.apache.geode.LogWriter;
 import org.apache.geode.Statistics;
 import org.apache.geode.cache.AttributesFactory;
@@ -34,19 +45,9 @@ import org.apache.geode.cache.PartitionAttributesFactory;
 import org.apache.geode.cache.PartitionedRegionStorageException;
 import org.apache.geode.cache.RegionExistsException;
 import org.apache.geode.test.junit.categories.IntegrationTest;
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.experimental.categories.Category;
-
-import java.io.File;
-import java.io.IOException;
-import java.util.Iterator;
-import java.util.Random;
-import java.util.Set;
 
 /**
- *  
+ *
  */
 @Category(IntegrationTest.class)
 public class PartitionedRegionStatsJUnitTest {
@@ -111,7 +112,7 @@ public class PartitionedRegionStatsJUnitTest {
   /**
    * This test verifies that PR statistics are working properly for single/multiple
    * PartitionedRegions on single node.
-   * 
+   *
    * @throws Exception
    */
   @Test
@@ -247,7 +248,7 @@ public class PartitionedRegionStatsJUnitTest {
      * int maxRedundantCopies = stats.get("maxRedundantCopies").intValue(); int minRedundantCopies =
      * stats.get("minRedundantCopies").intValue(); int avgRedundantCopies =
      * stats.get("avgRedundantCopies").intValue();
-     * 
+     *
      * assertIndexDetailsEquals(minRedundantCopies, 2); assertIndexDetailsEquals(maxRedundantCopies,
      * 2); assertIndexDetailsEquals(avgRedundantCopies, 2);
      */
@@ -264,7 +265,7 @@ public class PartitionedRegionStatsJUnitTest {
   /**
    * This test verifies that PR statistics are working properly for single/multiple
    * PartitionedRegions on single node.
-   * 
+   *
    * @throws Exception
    */
   @Test
@@ -286,7 +287,7 @@ public class PartitionedRegionStatsJUnitTest {
   /**
    * This test verifies that PR statistics are working properly for single/multiple
    * PartitionedRegions on single node.
-   * 
+   *
    * @throws Exception
    */
   @Test

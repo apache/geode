@@ -17,7 +17,7 @@ package org.apache.geode.internal.offheap;
 /**
  * Instances that implement this interface must have release called on them before the instance
  * becomes garbage.
- * 
+ *
  * @since Geode 1.0
  */
 public interface Releasable {

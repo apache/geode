@@ -43,7 +43,7 @@ import org.apache.geode.internal.logging.log4j.LogMarker;
  * The primary request message signals bucket owners to re-select the primary owner of the bucket.
  * It is sent by client threads which need to use the bucket, however do not know of its primary
  * location.
- * 
+ *
  *
  */
 public class PrimaryRequestMessage extends PartitionMessage {
@@ -56,7 +56,7 @@ public class PrimaryRequestMessage extends PartitionMessage {
 
   /**
    * Send request for primary election
-   * 
+   *
    * @param recipients those members which own the bucket
    * @param r the Partitioned Region which uses/owns the bucket
    * @param bucketId the idenity of the bucket
@@ -136,7 +136,7 @@ public class PrimaryRequestMessage extends PartitionMessage {
   /**
    * The reply to a PrimarRequestMessage, indicating if the sender is the primary
    */
-  static public class PrimaryRequestReplyMessage extends ReplyMessage {
+  public static class PrimaryRequestReplyMessage extends ReplyMessage {
     private static final long serialVersionUID = 1L;
 
     public volatile boolean isPrimary;
@@ -175,10 +175,10 @@ public class PrimaryRequestMessage extends PartitionMessage {
 
   /**
    * A processor to capture the member who was selected as primary for the bucket requested
-   * 
+   *
    * @since GemFire 5.1
    */
-  static public class PrimaryResponse extends ReplyProcessor21 {
+  public static class PrimaryResponse extends ReplyProcessor21 {
     private volatile PrimaryRequestReplyMessage msg;
 
     protected PrimaryResponse(InternalDistributedSystem ds, Set recipients) {

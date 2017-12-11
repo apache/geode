@@ -18,7 +18,6 @@ import java.io.File;
 import java.io.Serializable;
 
 public interface Member extends Serializable {
-
   File getWorkingDir();
 
   int getPort();

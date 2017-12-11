@@ -14,17 +14,11 @@
  */
 package org.apache.geode.internal.cache;
 
-import org.junit.experimental.categories.Category;
-import org.junit.Test;
-
 import static org.junit.Assert.*;
-
-import org.apache.geode.test.dunit.cache.internal.JUnit4CacheTestCase;
-import org.apache.geode.test.dunit.internal.JUnit4DistributedTestCase;
-import org.apache.geode.test.junit.categories.DistributedTest;
 
 import java.util.Properties;
 
+import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
 import org.apache.geode.cache.AttributesFactory;
@@ -46,6 +40,9 @@ import org.apache.geode.test.dunit.LogWriterUtils;
 import org.apache.geode.test.dunit.SerializableRunnable;
 import org.apache.geode.test.dunit.ThreadUtils;
 import org.apache.geode.test.dunit.VM;
+import org.apache.geode.test.dunit.cache.internal.JUnit4CacheTestCase;
+import org.apache.geode.test.dunit.internal.JUnit4DistributedTestCase;
+import org.apache.geode.test.junit.categories.DistributedTest;
 import org.apache.geode.test.junit.categories.FlakyTest;
 
 /**
@@ -57,7 +54,7 @@ import org.apache.geode.test.junit.categories.FlakyTest;
 public class PartitionedRegionCreationDUnitTest extends PartitionedRegionDUnitTestCase {
   /**
    * constructor
-   * 
+   *
    * @param name
    */
   public PartitionedRegionCreationDUnitTest() {
@@ -102,7 +99,7 @@ public class PartitionedRegionCreationDUnitTest extends PartitionedRegionDUnitTe
   /**
    * This test create regions with scope = DISTRIBUTED_NO_ACK and then validating these partition
    * regons
-   * 
+   *
    * @throws Exception
    */
   // TODO: fix the hang that concurent creation often runs into -- mthomas
@@ -150,7 +147,7 @@ public class PartitionedRegionCreationDUnitTest extends PartitionedRegionDUnitTe
    * This test create regions with scope = DISTRIBUTED_NO_ACK and then validating these partition
    * regons. Test specially added for SQL fabric testing since that always creates regions in
    * parallel.
-   * 
+   *
    * @throws Exception
    */
   @Test
@@ -371,7 +368,7 @@ public class PartitionedRegionCreationDUnitTest extends PartitionedRegionDUnitTe
   /**
    * This test creates partition region with scope = DISTRIBUTED_ACK and tests whether all the
    * attributes of partiotion region are properlt initialized
-   * 
+   *
    * @throws Exception
    */
   @Category(FlakyTest.class) // GEODE-1104: time sensitive, async actions
@@ -426,7 +423,7 @@ public class PartitionedRegionCreationDUnitTest extends PartitionedRegionDUnitTe
 
   /**
    * This tests registration of partition region is happened in allpartition region
-   * 
+   *
    * @throws Exception
    */
   @Test
@@ -481,7 +478,7 @@ public class PartitionedRegionCreationDUnitTest extends PartitionedRegionDUnitTe
 
   /**
    * This tests persistence conflicts btw members of partition region
-   * 
+   *
    * @throws Exception
    */
   @Test
@@ -551,7 +548,7 @@ public class PartitionedRegionCreationDUnitTest extends PartitionedRegionDUnitTe
 
   /**
    * this function tests psConfig for the regions
-   * 
+   *
    * @param rgionName
    * @return
    */
@@ -741,7 +738,7 @@ public class PartitionedRegionCreationDUnitTest extends PartitionedRegionDUnitTe
 
   /**
    * this function validates partition regions
-   * 
+   *
    * @param regionName
    * @return
    */
@@ -831,7 +828,7 @@ public class PartitionedRegionCreationDUnitTest extends PartitionedRegionDUnitTe
 
   /**
    * This method validates that TotalNumberOfBuckets are getting set properly.
-   * 
+   *
    * @throws Exception
    */
   @Test

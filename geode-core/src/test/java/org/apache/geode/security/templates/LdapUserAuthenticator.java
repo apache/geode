@@ -16,6 +16,7 @@ package org.apache.geode.security.templates;
 
 import java.security.Principal;
 import java.util.Properties;
+
 import javax.naming.Context;
 import javax.naming.directory.DirContext;
 import javax.naming.directory.InitialDirContext;

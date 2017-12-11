@@ -26,19 +26,19 @@ import org.apache.geode.distributed.internal.membership.InternalDistributedMembe
 
 /**
  * A bucket operator that will perform operations on a bucket asynchronously.
- * 
+ *
  * This class wraps a delegate bucket operator that is synchronous. That is, the delegate bucket
  * operator is expected to move the bucket and notify the Completion within the scope of the call to
  * create bucket.
- * 
+ *
  * What this class does in make that call asynchronous. A task to create the bucket is handed to the
  * thread pool and executed there. After it is done, the completion is notified.
- * 
+ *
  * Calling waitForOperations waits for all previously submitted operations and ensures the
  * completions are notified.
- * 
+ *
  * Note that only createRedundantBucket is asynchronous, the rest of the operations are synchronous.
- * 
+ *
  */
 public class ParallelBucketOperator implements BucketOperator {
 
@@ -54,7 +54,7 @@ public class ParallelBucketOperator implements BucketOperator {
 
   /**
    * Create a parallel bucket operator
-   * 
+   *
    * @param maxParallelOperations The number of operations that can execute concurrently. Futher
    *        calls to createRedundantBucket will block.
    * @param executor the executor to submit tasks to. This executor should be able to create at
@@ -74,7 +74,7 @@ public class ParallelBucketOperator implements BucketOperator {
    * Create a redundant bucket asynchronously. If maxParallelOperations is not reached, this call
    * will submit a task and return immediately. Otherwise, it will block until an executor thread is
    * available to take a task.
-   * 
+   *
    * The completion will not be notified until the caller makes another call to createRedundant
    * bucket or waitForOperations.
    */

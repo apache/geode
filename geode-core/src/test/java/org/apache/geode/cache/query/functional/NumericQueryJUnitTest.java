@@ -309,9 +309,9 @@ public class NumericQueryJUnitTest {
 
   /*
    * helper method to test against a functional index
-   * 
+   *
    * @param query
-   * 
+   *
    * @throws Exception
    */
   private SelectResults helpTestFunctionalIndexForQuery(String query, String indexedExpression,

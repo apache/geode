@@ -34,7 +34,7 @@ public interface InternalCqQuery extends CqQuery {
   /**
    * Closes the Query. On Client side, sends the cq close request to server. On Server side, takes
    * care of repository cleanup.
-   * 
+   *
    * @param sendRequestToServer true to send the request to server.
    * @throws CqException
    */
@@ -62,7 +62,7 @@ public interface InternalCqQuery extends CqQuery {
 
   /**
    * Returns a reference to VSD stats of the CQ
-   * 
+   *
    * @return VSD stats of the CQ
    */
   public CqQueryVsdStats getVsdStats();

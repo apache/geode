@@ -14,20 +14,9 @@
  */
 package org.apache.geode.cache;
 
-import org.apache.geode.CancelException;
-import org.apache.geode.cache.client.PoolManager;
-import org.apache.geode.cache.util.CacheListenerAdapter;
-import org.apache.geode.cache.util.CacheWriterAdapter;
-import org.apache.geode.distributed.DistributedSystem;
-import org.apache.geode.distributed.internal.DistributionConfig;
-import org.apache.geode.internal.cache.LocalRegion;
-import org.apache.geode.test.junit.categories.IntegrationTest;
-import org.junit.After;
-import org.junit.Ignore;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.experimental.categories.Category;
-import org.junit.rules.TestName;
+import static org.apache.geode.cache.RegionShortcut.*;
+import static org.apache.geode.distributed.ConfigurationProperties.*;
+import static org.junit.Assert.*;
 
 import java.io.File;
 import java.io.FileWriter;
@@ -36,13 +25,25 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Properties;
 
-import static org.apache.geode.cache.RegionShortcut.*;
-import static org.apache.geode.distributed.ConfigurationProperties.*;
-import static org.junit.Assert.*;
+import org.junit.After;
+import org.junit.Ignore;
+import org.junit.Rule;
+import org.junit.Test;
+import org.junit.experimental.categories.Category;
+import org.junit.rules.TestName;
+
+import org.apache.geode.CancelException;
+import org.apache.geode.cache.client.PoolManager;
+import org.apache.geode.cache.util.CacheListenerAdapter;
+import org.apache.geode.cache.util.CacheWriterAdapter;
+import org.apache.geode.distributed.DistributedSystem;
+import org.apache.geode.distributed.internal.DistributionConfig;
+import org.apache.geode.internal.cache.LocalRegion;
+import org.apache.geode.test.junit.categories.IntegrationTest;
 
 /**
  * Unit test for the RegionFactory class
- * 
+ *
  * @since GemFire 5.0
  */
 @Category(IntegrationTest.class)
@@ -394,7 +395,7 @@ public class RegionFactoryJUnitTest {
 
   /**
    * Ensure that the RegionFactory set methods mirrors those found in RegionAttributes
-   * 
+   *
    * @throws Exception
    */
   @Test

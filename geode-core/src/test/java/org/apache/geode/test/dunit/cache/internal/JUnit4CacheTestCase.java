@@ -21,16 +21,16 @@ import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.PrintWriter;
-import java.util.Arrays;
 import java.util.Map;
 import java.util.Properties;
+import java.util.concurrent.TimeUnit;
 
-import org.apache.commons.io.FileUtils;
+import org.apache.logging.log4j.Logger;
+import org.awaitility.Awaitility;
 
 import org.apache.geode.cache.AttributesFactory;
 import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.CacheException;
-import org.apache.geode.cache.CacheExistsException;
 import org.apache.geode.cache.CacheFactory;
 import org.apache.geode.cache.CacheTransactionManager;
 import org.apache.geode.cache.ExpirationAttributes;
@@ -48,13 +48,10 @@ import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.cache.LocalRegion;
 import org.apache.geode.internal.cache.xmlcache.CacheCreation;
 import org.apache.geode.internal.cache.xmlcache.CacheXmlGenerator;
-import org.apache.geode.test.dunit.Assert;
+import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.test.dunit.IgnoredException;
 import org.apache.geode.test.dunit.Invoke;
-import org.apache.geode.test.dunit.LogWriterUtils;
 import org.apache.geode.test.dunit.VM;
-import org.apache.geode.test.dunit.Wait;
-import org.apache.geode.test.dunit.WaitCriterion;
 import org.apache.geode.test.dunit.internal.JUnit4DistributedTestCase;
 
 /**
@@ -64,6 +61,7 @@ import org.apache.geode.test.dunit.internal.JUnit4DistributedTestCase;
 public abstract class JUnit4CacheTestCase extends JUnit4DistributedTestCase
     implements CacheTestFixture {
 
+  private static final Logger logger = LogService.getLogger();
   /**
    * The Cache from which regions are obtained.
    *
@@ -122,16 +120,6 @@ public abstract class JUnit4CacheTestCase extends JUnit4DistributedTestCase
           }
         }
         cache = newCache;
-
-      } catch (CacheExistsException e) {
-        Assert.fail("the cache already exists", e); // TODO: remove error handling
-
-      } catch (RuntimeException ex) {
-        throw ex;
-
-      } catch (Exception ex) {
-        Assert.fail("Checked exception while initializing cache??", ex);
-
       } finally {
         System.clearProperty(GEMFIRE_PREFIX + "DISABLE_DISCONNECT_DS_ON_CACHE_CLOSE");
         System.clearProperty(GEMFIRE_PREFIX + "locators");
@@ -149,16 +137,6 @@ public abstract class JUnit4CacheTestCase extends JUnit4DistributedTestCase
         System.setProperty(GEMFIRE_PREFIX + "DISABLE_DISCONNECT_DS_ON_CACHE_CLOSE", "true");
         InternalCache newCache = (InternalCache) CacheFactory.create(getLonerSystem());
         cache = newCache;
-
-      } catch (CacheExistsException e) {
-        Assert.fail("the cache already exists", e);
-
-      } catch (RuntimeException ex) {
-        throw ex;
-
-      } catch (Exception ex) {
-        Assert.fail("Checked exception while initializing cache??", ex);
-
       } finally {
         System.clearProperty(GEMFIRE_PREFIX + "DISABLE_DISCONNECT_DS_ON_CACHE_CLOSE");
       }
@@ -170,7 +148,7 @@ public abstract class JUnit4CacheTestCase extends JUnit4DistributedTestCase
    * Sets this test up with a {@code CacheCreation} as its cache. Any existing cache is closed.
    * Whoever calls this must also call {@code finishCacheXml}.
    */
-  public static final synchronized void beginCacheXml() {
+  public static synchronized void beginCacheXml() {
     closeCache();
     cache = new TestCacheCreation();
   }
@@ -181,19 +159,16 @@ public abstract class JUnit4CacheTestCase extends JUnit4DistributedTestCase
    */
   public final void finishCacheXml(final String name) {
     synchronized (JUnit4CacheTestCase.class) {
-      File file = new File(name + "-cache.xml");
       try {
+        File file = new File(name + "-cache.xml");
         PrintWriter printWriter = new PrintWriter(new FileWriter(file), true);
         CacheXmlGenerator.generate(cache, printWriter);
         printWriter.close();
-      } catch (IOException ex) {
-        Assert.fail("IOException during cache.xml generation to " + file, ex);
-      }
-      // TODO: System.setProperty(GEMFIRE_PREFIX + CACHE_XML_FILE, file.getAbsolutePath());
-      cache = null;
-      GemFireCacheImpl.testCacheXml = file;
-      try {
+        cache = null;
+        GemFireCacheImpl.testCacheXml = file;
         createCache();
+      } catch (Exception ex) {
+        throw new RuntimeException(ex);
       } finally {
         GemFireCacheImpl.testCacheXml = null;
       }
@@ -205,19 +180,14 @@ public abstract class JUnit4CacheTestCase extends JUnit4DistributedTestCase
    * creating a real cache using that cache.xml.
    */
   public final void finishCacheXml(final File root, final String name, final boolean useSchema,
-      final String xmlVersion) {
+      final String xmlVersion) throws IOException {
     synchronized (JUnit4CacheTestCase.class) {
       File dir = new File(root, "XML_" + xmlVersion);
       dir.mkdirs();
       File file = new File(dir, name + ".xml");
-      try {
-        PrintWriter printWriter = new PrintWriter(new FileWriter(file), true);
-        CacheXmlGenerator.generate(cache, printWriter, useSchema, xmlVersion);
-        printWriter.close();
-      } catch (IOException ex) {
-        // TODO: remove error handling
-        Assert.fail("IOException during cache.xml generation to " + file, ex);
-      }
+      PrintWriter printWriter = new PrintWriter(new FileWriter(file), true);
+      CacheXmlGenerator.generate(cache, printWriter, useSchema, xmlVersion);
+      printWriter.close();
       cache = null;
       GemFireCacheImpl.testCacheXml = file;
       try {
@@ -253,18 +223,8 @@ public abstract class JUnit4CacheTestCase extends JUnit4DistributedTestCase
       InternalCache gemFireCache = GemFireCacheImpl.getInstance();
       if (gemFireCache != null && !gemFireCache.isClosed()
           && gemFireCache.getCancelCriterion().isCancelInProgress()) {
-        Wait.waitForCriterion(new WaitCriterion() { // TODO: replace with Awaitility
-
-          @Override
-          public boolean done() {
-            return gemFireCache.isClosed();
-          }
-
-          @Override
-          public String description() {
-            return "waiting for cache to close";
-          }
-        }, 30 * 1000, 300, true);
+        Awaitility.await("waiting for cache to close").atMost(30, TimeUnit.SECONDS)
+            .until(gemFireCache::isClosed);
       }
       if (cache == null || cache.isClosed()) {
         cache = null;
@@ -287,18 +247,8 @@ public abstract class JUnit4CacheTestCase extends JUnit4DistributedTestCase
       InternalCache gemFireCache = GemFireCacheImpl.getInstance();
       if (gemFireCache != null && !gemFireCache.isClosed()
           && gemFireCache.getCancelCriterion().isCancelInProgress()) {
-        Wait.waitForCriterion(new WaitCriterion() { // TODO: replace with Awaitility
-
-          @Override
-          public boolean done() {
-            return gemFireCache.isClosed();
-          }
-
-          @Override
-          public String description() {
-            return "waiting for cache to close";
-          }
-        }, 30 * 1000, 300, true);
+        Awaitility.await("waiting for cache to close").atMost(30, TimeUnit.SECONDS)
+            .until(gemFireCache::isClosed);
       }
       if (cache == null || cache.isClosed()) {
         cache = null;
@@ -383,7 +333,7 @@ public abstract class JUnit4CacheTestCase extends JUnit4DistributedTestCase
    */
   protected final void closeAllCache() {
     closeCache();
-    Invoke.invokeInEveryVM(() -> closeCache());
+    Invoke.invokeInEveryVM(JUnit4CacheTestCase::closeCache);
   }
 
   @Override
@@ -395,7 +345,7 @@ public abstract class JUnit4CacheTestCase extends JUnit4DistributedTestCase
 
   private final void tearDownCacheTestCase() {
     remoteTearDown();
-    Invoke.invokeInEveryVM(() -> remoteTearDown());
+    Invoke.invokeInEveryVM(JUnit4CacheTestCase::remoteTearDown);
   }
 
   @Override
@@ -415,7 +365,7 @@ public abstract class JUnit4CacheTestCase extends JUnit4DistributedTestCase
   /**
    * Local destroy all root regions and close the cache.
    */
-  protected static final synchronized void remoteTearDown() {
+  private static synchronized void remoteTearDown() {
     try {
       DistributionMessageObserver.setInstance(null);
       destroyRegions(cache);
@@ -426,7 +376,7 @@ public abstract class JUnit4CacheTestCase extends JUnit4DistributedTestCase
         try {
           cleanDiskDirs();
         } catch (Exception e) {
-          LogWriterUtils.getLogWriter().error("Error cleaning disk dirs", e);
+          logger.error("Error cleaning disk dirs", e);
         }
       }
     }
@@ -493,14 +443,11 @@ public abstract class JUnit4CacheTestCase extends JUnit4DistributedTestCase
   }
 
   /**
-   * TODO: delete addExceptionTag1 method
-   *
    * @deprecated Please use {@link IgnoredException#addIgnoredException(String)} instead.
    */
   @Deprecated
   public final CacheSerializableRunnable addExceptionTag1(final String exceptionStringToIgnore) {
     return new CacheSerializableRunnable("addExceptionTag") {
-
       @Override
       public void run2() {
         getCache().getLogger().info(
@@ -539,17 +486,6 @@ public abstract class JUnit4CacheTestCase extends JUnit4DistributedTestCase
    */
   public static final File[] getDiskDirs() {
     return new File[] {getDiskDir()};
-  }
-
-  public static final void cleanDiskDirs() throws IOException {
-    FileUtils.deleteQuietly(getDiskDir());
-    Arrays.stream(new File(".").listFiles()).forEach(file -> deleteBACKUPDiskStoreFile(file));
-  }
-
-  private static void deleteBACKUPDiskStoreFile(final File file) {
-    if (file.getName().startsWith("BACKUPDiskStore-")) {
-      FileUtils.deleteQuietly(file);
-    }
   }
 
   /**

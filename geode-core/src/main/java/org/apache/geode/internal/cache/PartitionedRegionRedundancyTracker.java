@@ -15,10 +15,11 @@
 
 package org.apache.geode.internal.cache;
 
+import org.apache.logging.log4j.Logger;
+
 import org.apache.geode.internal.i18n.LocalizedStrings;
 import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.internal.logging.log4j.LocalizedMessage;
-import org.apache.logging.log4j.Logger;
 
 /**
  * Keeps track redundancy statistics across the buckets of a given {@link PartitionedRegion}
@@ -75,7 +76,7 @@ class PartitionedRegionRedundancyTracker {
 
   /**
    * Updates the count of copies for the bucket with the least copies if a new low has been reached
-   * 
+   *
    * @param bucketCopies number of copies of a bucket remaining
    */
   synchronized void reportBucketCount(int bucketCopies) {

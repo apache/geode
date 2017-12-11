@@ -19,45 +19,27 @@ import java.util.List;
 import java.util.Set;
 import java.util.TreeSet;
 
-import org.apache.geode.management.cli.ConverterHint;
-import org.apache.geode.management.internal.cli.shell.Gfsh;
-
 import org.springframework.shell.core.Completion;
 import org.springframework.shell.core.Converter;
 import org.springframework.shell.core.MethodTarget;
+
+import org.apache.geode.management.cli.ConverterHint;
+import org.apache.geode.management.internal.cli.shell.Gfsh;
 
 /**
  *
  *
  * @since GemFire 8.0
  */
-public class LocatorIdNameConverter implements Converter<String> {
+public class LocatorIdNameConverter extends BaseStringConverter {
+
   @Override
-  public boolean supports(Class<?> type, String optionContext) {
-    return String.class.equals(type) && ConverterHint.LOCATOR_MEMBER_IDNAME.equals(optionContext);
+  public String getConverterHint() {
+    return ConverterHint.LOCATOR_MEMBER_IDNAME;
   }
 
   @Override
-  public String convertFromText(String value, Class<?> targetType, String optionContext) {
-    return value;
-  }
-
-  @Override
-  public boolean getAllPossibleValues(List<Completion> completions, Class<?> targetType,
-      String existingData, String optionContext, MethodTarget target) {
-    if (String.class.equals(targetType)
-        && ConverterHint.LOCATOR_MEMBER_IDNAME.equals(optionContext)) {
-      Set<String> locatorIdsAndNames = getLocatorIdAndNames();
-
-      for (String string : locatorIdsAndNames) {
-        completions.add(new Completion(string));
-      }
-    }
-
-    return !completions.isEmpty();
-  }
-
-  private Set<String> getLocatorIdAndNames() {
+  public Set<String> getCompletionValues() {
     final Set<String> locatorIdsAndNames = new TreeSet<String>();
 
     final Gfsh gfsh = Gfsh.getCurrentInstance();

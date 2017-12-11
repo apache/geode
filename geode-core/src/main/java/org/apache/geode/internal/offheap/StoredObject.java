@@ -30,7 +30,7 @@ import org.apache.geode.internal.offheap.annotations.Unretained;
  * if the object is still allocated. To increment the count call {@link #retain()}. To decrement the
  * count call {@link #release()}. At some point in the future it may also be used for values stored
  * in heap regions.
- * 
+ *
  * @since Geode 1.0
  */
 public interface StoredObject extends Sendable, CachedDeserializable, Releasable {
@@ -44,7 +44,7 @@ public interface StoredObject extends Sendable, CachedDeserializable, Releasable
    * Returns the data stored in this object as a deserialized heap object. If it is not serialized
    * then the result will be a byte[]. Otherwise the deserialized heap form of the stored object is
    * returned.
-   * 
+   *
    * @return the data stored in this object as a deserialized heap object.
    */
   public Object getValueAsDeserializedHeapObject();
@@ -53,7 +53,7 @@ public interface StoredObject extends Sendable, CachedDeserializable, Releasable
    * Returns the data stored in this object as a heap byte array. If it is not serialized then the
    * result will only contain the raw bytes stored in this object. Otherwise the serialized heap
    * form of the stored object is returned.
-   * 
+   *
    * @return the data stored in this object as a heap byte array.
    */
   public byte[] getValueAsHeapByteArray();
@@ -63,7 +63,7 @@ public interface StoredObject extends Sendable, CachedDeserializable, Releasable
    * StoredObject is not serialized then its raw byte array is sent. But if it is serialized then
    * the serialized byte array is sent. The corresponding de-serialization will need to call
    * readByteArray.
-   * 
+   *
    * @param out the data output to send this object to
    * @throws IOException
    */
@@ -74,7 +74,7 @@ public interface StoredObject extends Sendable, CachedDeserializable, Releasable
    * StoredObject is not serialized then an exception will be thrown. The corresponding
    * deserialization will need to call readObject and will get an instance of
    * VMCachedDeserializable.
-   * 
+   *
    * @param out the data output to send this object to
    * @throws IOException
    */
@@ -85,7 +85,7 @@ public interface StoredObject extends Sendable, CachedDeserializable, Releasable
    * allocated until {@link #release()} is called. It is ok for a thread other than the one that
    * called this method to call release. This method is called implicitly at the time the chunk is
    * allocated. Note: @Retained tells you that "this" is retained by this method.
-   * 
+   *
    * @throws IllegalStateException if the max ref count is exceeded.
    * @return true if we are able to retain this chunk; false if we need to retry
    */
@@ -159,7 +159,7 @@ public interface StoredObject extends Sendable, CachedDeserializable, Releasable
    * Creates and returns a direct ByteBuffer that contains the data of this stored object. Note that
    * the returned ByteBuffer has a reference to the address of this stored object so it can only be
    * used while this stored object is retained.
-   * 
+   *
    * @return the created direct byte buffer or null if it could not be created.
    */
   @Unretained

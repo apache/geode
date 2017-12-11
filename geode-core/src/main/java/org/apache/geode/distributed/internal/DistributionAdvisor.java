@@ -14,6 +14,23 @@
  */
 package org.apache.geode.distributed.internal;
 
+import java.io.DataInput;
+import java.io.DataOutput;
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
+import java.util.concurrent.atomic.AtomicInteger;
+
+import org.apache.logging.log4j.Logger;
+
 import org.apache.geode.CancelException;
 import org.apache.geode.GemFireIOException;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
@@ -31,22 +48,6 @@ import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.internal.logging.log4j.LocalizedMessage;
 import org.apache.geode.internal.logging.log4j.LogMarker;
 import org.apache.geode.internal.util.ArrayUtils;
-import org.apache.logging.log4j.Logger;
-
-import java.io.DataInput;
-import java.io.DataOutput;
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ConcurrentMap;
-import java.util.concurrent.atomic.AtomicInteger;
 
 /**
  * Provides advice on sending distribution messages. For a given operation, this advisor will
@@ -116,7 +117,7 @@ public class DistributionAdvisor {
 
   /**
    * Incrementing serial number used to identify order of region creation
-   * 
+   *
    * @see Profile#getVersion()
    */
   private final AtomicInteger profileVersionSequencer = new AtomicInteger(START_VERSION_NUMBER);
@@ -144,7 +145,7 @@ public class DistributionAdvisor {
 
   /**
    * the version of the profile set
-   * 
+   *
    * @since GemFire 5.1
    */
   private long membershipVersion;
@@ -258,7 +259,7 @@ public class DistributionAdvisor {
 
   /**
    * determine whether a delta-gii synchronization should be performed for this lost member
-   * 
+   *
    * @param id
    * @return true if a delta-gii should be performed
    */
@@ -347,7 +348,7 @@ public class DistributionAdvisor {
 
   /**
    * Increment and get next profile version from {@link #profileVersionSequencer}.
-   * 
+   *
    * @return next profile version number
    */
   protected int incrementAndGetVersion() {
@@ -383,7 +384,7 @@ public class DistributionAdvisor {
 
   /**
    * Free up resources used by this advisor once it is no longer being used.
-   * 
+   *
    * @since GemFire 3.5
    */
   public void close() {
@@ -434,7 +435,7 @@ public class DistributionAdvisor {
 
   /**
    * Remove listener from the list to receive notification when a provile is added or removed.
-   * 
+   *
    * @return true if listener was in the list
    */
   public boolean removeMembershipListener(MembershipListener listener) {
@@ -472,7 +473,7 @@ public class DistributionAdvisor {
   /**
    * Polls the isInitialized state. Unlike {@link #isInitialized} it will not wait for it to become
    * initialized if it is in the middle of being initialized.
-   * 
+   *
    * @since GemFire 5.7
    */
   public boolean pollIsInitialized() {
@@ -481,7 +482,7 @@ public class DistributionAdvisor {
 
   /**
    * Dumps out all profiles in this advisor.
-   * 
+   *
    * @param infoMsg prefix message to log
    */
 
@@ -512,7 +513,7 @@ public class DistributionAdvisor {
 
   /**
    * Create or update a profile for a remote counterpart.
-   * 
+   *
    * @param profile the profile, referenced by this advisor after this method returns.
    */
   public boolean putProfile(Profile profile) {
@@ -532,7 +533,7 @@ public class DistributionAdvisor {
   /**
    * Return true if the memberId on the specified Profile is a current member of the distributed
    * system.
-   * 
+   *
    * @since GemFire 5.7
    */
   protected boolean isCurrentMember(Profile p) {
@@ -544,11 +545,11 @@ public class DistributionAdvisor {
    * {@link DistributionAdvisor#getAdvisee()}. Profile information is versioned via
    * {@link Profile#getVersion()} and may be ignored if an older version is received after newer
    * versions.
-   * 
+   *
    * @param newProfile the profile to add
    * @param forceProfile true will force profile to be added even if member is not in distributed
    *        view (should only ever be true for tests that need to inject a bad profile)
-   * 
+   *
    * @return true if the profile was applied, false if the profile was ignored
    */
   private synchronized boolean doPutProfile(Profile newProfile, boolean forceProfile) {
@@ -640,7 +641,7 @@ public class DistributionAdvisor {
 
   /**
    * A callback to sub-classes for extra validation logic
-   * 
+   *
    * @param oldProfile
    * @param newProfile
    * @return true if the change from old to new is valid
@@ -655,7 +656,7 @@ public class DistributionAdvisor {
    * number being compared is above {@link #ROLLOVER_THRESHOLD_UPPER} and the new versioning number
    * is below {@link #ROLLOVER_THRESHOLD_LOWER} then a rollover is assumed to have occurred, which
    * means the new versioning number is newer.
-   * 
+   *
    * @param newProfile the newer profile
    * @param oldProfile the older profile
    * @return true if newProfile is newer than oldProfile
@@ -693,12 +694,12 @@ public class DistributionAdvisor {
 
   /**
    * Compare two serial numbers
-   * 
+   *
    * @param newSerialNumber
    * @param oldSerialNumber
    * @return return true if the first serial number (newSerialNumber) is more recent
    */
-  static public boolean isNewerSerialNumber(int newSerialNumber, int oldSerialNumber) {
+  public static boolean isNewerSerialNumber(int newSerialNumber, int oldSerialNumber) {
     boolean serialRolled =
         oldSerialNumber > ROLLOVER_THRESHOLD_UPPER && newSerialNumber < ROLLOVER_THRESHOLD_LOWER;
     return serialRolled || oldSerialNumber < newSerialNumber;
@@ -707,7 +708,7 @@ public class DistributionAdvisor {
   /**
    * Create a new version of the membership profile set. This is used in flushing state out of the
    * VM for previous versions of the set.
-   * 
+   *
    * @since GemFire 5.1
    */
   public synchronized void forceNewMembershipVersion() {
@@ -733,7 +734,7 @@ public class DistributionAdvisor {
    * this method must be invoked at the start of every operation that can modify the state of
    * resource. The return value must be recorded and sent to the advisor in an endOperation message
    * when messages for the operation have been put in the DistributionManager's outgoing "queue".
-   * 
+   *
    * @return the current membership version for this advisor
    * @since GemFire 5.1
    */
@@ -756,7 +757,7 @@ public class DistributionAdvisor {
   /**
    * This method must be invoked when messages for an operation have been put in the
    * DistributionManager's outgoing queue.
-   * 
+   *
    * @param version The membership version returned by startOperation
    * @since GemFire 5.1
    */
@@ -788,7 +789,7 @@ public class DistributionAdvisor {
   /**
    * wait for the current operations being sent on views prior to the joining of the given member to
    * be placed on communication channels before returning
-   * 
+   *
    * @since GemFire 5.1
    */
   public void waitForCurrentOperations(long timeout) {
@@ -845,10 +846,10 @@ public class DistributionAdvisor {
   /**
    * Bypass the distribution manager and ask the membership manager directly if a given member is
    * still in the view.
-   * 
+   *
    * We need this because we're asking membership questions from within listeners, and we don't know
    * whether the DM's membership listener fires before or after our own.
-   * 
+   *
    * @param id member we are asking about
    * @return true if we are still in the JGroups view (must return false if id == null)
    */
@@ -864,10 +865,10 @@ public class DistributionAdvisor {
 
   /**
    * Given member is no longer pertinent to this advisor; remove it.
-   * 
+   *
    * This is often overridden in subclasses, but they need to defer to their superclass at some
    * point in their re-implementation.
-   * 
+   *
    * @param memberId the member to remove
    * @param crashed true if the member did not leave normally
    * @return true if it was being tracked
@@ -898,7 +899,7 @@ public class DistributionAdvisor {
 
   /**
    * Removes the specified profile if it is registered with this advisor.
-   * 
+   *
    * @return true if it was registered; false if not.
    * @since GemFire 5.7
    */
@@ -908,7 +909,7 @@ public class DistributionAdvisor {
 
   /**
    * Removes the profile for the given member. This method is meant to be overriden by subclasses.
-   * 
+   *
    * @param memberId the member whose profile should be removed
    * @param crashed true if the member crashed
    * @param destroyed
@@ -969,7 +970,7 @@ public class DistributionAdvisor {
 
   /**
    * Removes the profile for the specified member and serial number
-   * 
+   *
    * @param memberId the member to remove the profile for
    * @param serialNum specific serial number to remove
    * @return true if a matching profile for the member was found
@@ -988,7 +989,7 @@ public class DistributionAdvisor {
   /**
    * Update the list of removed profiles based on given serial number, and ensure that the given
    * member is no longer in the list of bucket owners.
-   * 
+   *
    * @param memberId member to remove
    * @param serialNum serial number
    * @return true if this member was an owner
@@ -1075,7 +1076,7 @@ public class DistributionAdvisor {
 
   /**
    * Indicate whether given member is being tracked
-   * 
+   *
    * @param memberId the member
    * @return true if the member was being tracked
    */
@@ -1088,7 +1089,7 @@ public class DistributionAdvisor {
   // * @since GemFire 5.1
   // * @return the Profile or null
   // */
-  // synchronized public Profile getProfile(InternalDistributedMember memberId) {
+  // public synchronized Profile getProfile(InternalDistributedMember memberId) {
   // int index = indexOfMemberId(memberId);
   // if (index >= 0) {
   // return profiles[index];
@@ -1148,7 +1149,7 @@ public class DistributionAdvisor {
   /**
    * Provide recipient information for any other operation. Returns the set of members that have
    * remote counterparts.
-   * 
+   *
    * @return Set of Serializable members; no reference to Set kept by advisor so caller is free to
    *         modify it
    */
@@ -1183,7 +1184,7 @@ public class DistributionAdvisor {
 
   /**
    * Returns a set of the members this advisor should distribute to by default
-   * 
+   *
    * @since GemFire 5.7
    */
   @SuppressWarnings("unchecked")
@@ -1251,7 +1252,7 @@ public class DistributionAdvisor {
   /**
    * Template method for sub-classes to override. Method is invoked after a new profile is
    * created/added to profiles.
-   * 
+   *
    * @param profile the created profile
    */
   protected void profileCreated(Profile profile) {}
@@ -1259,7 +1260,7 @@ public class DistributionAdvisor {
   /**
    * Template method for sub-classes to override. Method is invoked after a profile is updated in
    * profiles.
-   * 
+   *
    * @param profile the updated profile
    */
   protected void profileUpdated(Profile profile) {}
@@ -1267,7 +1268,7 @@ public class DistributionAdvisor {
   /**
    * Template method for sub-classes to override. Method is invoked after a profile is removed from
    * profiles.
-   * 
+   *
    * @param profile the removed profile
    */
   protected void profileRemoved(Profile profile) {}
@@ -1301,7 +1302,7 @@ public class DistributionAdvisor {
 
   /**
    * This method calls filter->include on every profile until include returns true.
-   * 
+   *
    * @return false if all filter->include calls returns false; otherwise true.
    **/
   protected boolean satisfiesFilter(Filter f) {
@@ -1333,13 +1334,13 @@ public class DistributionAdvisor {
     /**
      * Visit a given {@link Profile} accumulating the results in the given aggregate. Returns false
      * when the visit has to be terminated.
-     * 
+     *
      * @param advisor the DistributionAdvisor that invoked this visitor
      * @param profile the profile being visited
      * @param profileIndex the index of current profile
      * @param numProfiles the total number of profiles being visited
      * @param aggregate result aggregated so far, if any
-     * 
+     *
      * @return false if the visit has to be terminated immediately and false otherwise
      */
     boolean visit(DistributionAdvisor advisor, Profile profile, int profileIndex, int numProfiles,
@@ -1351,14 +1352,14 @@ public class DistributionAdvisor {
    * {@link ProfileVisitor#visit} method returns false. Unlike the {@link #adviseFilter(Filter)}
    * method this does assume the return type to be a Set of qualifying members rather allows for
    * population of an arbitrary aggregator passed as the argument to this method.
-   * 
+   *
    * @param <T> the type of object used for aggregation of results
    * @param visitor the {@link ProfileVisitor} to use for the visit
    * @param aggregate an aggregate object that will be used to for aggregation of results by the
    *        {@link ProfileVisitor#visit} method; this allows the {@link ProfileVisitor} to not
    *        maintain any state so that in many situations a global static object encapsulating the
    *        required behaviour will work
-   * 
+   *
    * @return true if all the profiles were visited and false if the {@link ProfileVisitor#visit} cut
    *         it short by returning false
    */
@@ -1378,7 +1379,7 @@ public class DistributionAdvisor {
 
   /**
    * Get an unmodifiable list of the <code>Profile</code>s that match the given <code>Filter</code>.
-   * 
+   *
    * @since GemFire 5.7
    */
   protected List/* <Profile> */ fetchProfiles(Filter f) {
@@ -1409,7 +1410,7 @@ public class DistributionAdvisor {
 
   /**
    * Provide recipients for profile remove.
-   * 
+   *
    * @since GemFire 5.7
    */
   public Set adviseProfileRemove() {
@@ -1531,7 +1532,7 @@ public class DistributionAdvisor {
     public int serialNumber = ILLEGAL_SERIAL;
     /**
      * The DistributionAdvisor's membership version where this member was added
-     * 
+     *
      * @since GemFire 5.1
      */
     public transient long initialMembershipVersion;
@@ -1550,7 +1551,7 @@ public class DistributionAdvisor {
 
     /**
      * Return object that uniquely identifies this profile.
-     * 
+     *
      * @since GemFire 5.7
      */
     public ProfileId getId() {
@@ -1583,7 +1584,7 @@ public class DistributionAdvisor {
 
     /**
      * Return the DistributedMember associated with this profile
-     * 
+     *
      * @since GemFire 5.0
      */
     public InternalDistributedMember getDistributedMember() {
@@ -1622,7 +1623,7 @@ public class DistributionAdvisor {
     /**
      * Attempts to process this message with the specified {@link DistributionAdvisee}. Also if
      * exchange profiles then add the profile from {@link DistributionAdvisee} to reply.
-     * 
+     *
      * @param advisee the CacheDistributionAdvisee to apply this profile to
      * @param removeProfile true to remove profile else add profile
      * @param exchangeProfiles true to add the profile to reply

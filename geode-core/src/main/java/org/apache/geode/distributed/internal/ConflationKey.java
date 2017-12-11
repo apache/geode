@@ -19,7 +19,7 @@ import java.nio.ByteBuffer;
 /**
  * Used to uniquely identify a conflatable message. If two messages have keys that are equal then
  * the latter message can replace (i.e. conflate) the earlier message.
- * 
+ *
  * @since GemFire 4.2.1
  */
 public class ConflationKey {
@@ -79,4 +79,3 @@ public class ConflationKey {
     return this.allowsConflation;
   }
 }
-

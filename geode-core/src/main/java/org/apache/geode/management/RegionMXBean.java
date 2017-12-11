@@ -25,10 +25,10 @@ import org.apache.geode.security.ResourcePermission.Resource;
 /**
  * MBean that provides access to information and management functionality for a local
  * {@link Region}.
- * 
+ *
  * For all the latency related attributes e.g. PutRemoteLatency ,DiskWritesAverageLatency etc..
  * "enable-time-statistics" should be set to true.
- * 
+ *
  * @since GemFire 7.0
  *
  */
@@ -58,7 +58,7 @@ public interface RegionMXBean {
 
   /**
    * Returns a list of the names of the sub regions.
-   * 
+   *
    * @param recursive <code>True</code> to recursively traverse and find sub-regions.
    */
   public String[] listSubregionPaths(boolean recursive);
@@ -87,7 +87,7 @@ public interface RegionMXBean {
 
   /**
    * Returns the membership attributes of the Region.
-   * 
+   *
    * @deprecated this API is scheduled to be removed
    */
   public MembershipAttributesData listMembershipAttributes();
@@ -197,14 +197,14 @@ public interface RegionMXBean {
 
   /**
    * Returns the average latency of disk reads in nanoseconds
-   * 
+   *
    * @deprecated See corresponding DiskStores latency to get the latency.
    */
   public long getDiskReadsAverageLatency();
 
   /**
    * Returns the average latency of disk writes in nanoseconds.
-   * 
+   *
    * @deprecated See corresponding DiskStores latency to get the latency.
    */
   public long getDiskWritesAverageLatency();
@@ -222,7 +222,7 @@ public interface RegionMXBean {
   /**
    * Returns the current number of disk tasks (op-log compaction, asynchronous recoveries, etc) that
    * are waiting for a thread to run.
-   * 
+   *
    * @deprecated
    */
   public long getDiskTaskWaiting();
@@ -285,7 +285,7 @@ public interface RegionMXBean {
 
   /**
    * Returns the average number of entries in bucket. Only applicable for partitioned regions.
-   * 
+   *
    * @deprecated This attribute is removed from 8.0 for being incorrect and impacting performance.
    */
   public int getAvgBucketSize();
@@ -299,7 +299,7 @@ public interface RegionMXBean {
   /**
    * Returns the aggregate entry size (in bytes) of all entries. This will provide a correct value
    * only if the eviction algorithm has been set to {@link EvictionAlgorithm#LRU_MEMORY}.
-   * 
+   *
    * For all partition regions it will show entry size in bytes. It will also include size of all
    * the secondary entries in the data store. So while referring to size one should take redundancy
    * into account

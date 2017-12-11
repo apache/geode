@@ -14,6 +14,9 @@
  */
 package org.apache.geode.internal.cache.partitioned;
 
+import static org.apache.geode.internal.offheap.annotations.OffHeapIdentifier.ENTRY_EVENT_NEW_VALUE;
+import static org.apache.geode.internal.offheap.annotations.OffHeapIdentifier.ENTRY_EVENT_OLD_VALUE;
+
 import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
@@ -65,9 +68,6 @@ import org.apache.geode.internal.logging.log4j.LogMarker;
 import org.apache.geode.internal.offheap.annotations.Released;
 import org.apache.geode.internal.offheap.annotations.Retained;
 import org.apache.geode.internal.offheap.annotations.Unretained;
-
-import static org.apache.geode.internal.offheap.annotations.OffHeapIdentifier.ENTRY_EVENT_OLD_VALUE;
-import static org.apache.geode.internal.offheap.annotations.OffHeapIdentifier.ENTRY_EVENT_NEW_VALUE;
 
 /**
  * A Partitioned Region update message. Meant to be sent only to a bucket's primary owner. In
@@ -140,7 +140,7 @@ public class PutMessage extends PartitionMessageWithDirectReply implements NewVa
 
   /**
    * For put to happen, the old value must be equal to this expectedOldValue.
-   * 
+   *
    * @see PartitionedRegion#replace(Object, Object, Object)
    */
   private Object expectedOldValue;
@@ -356,7 +356,7 @@ public class PutMessage extends PartitionMessageWithDirectReply implements NewVa
   /**
    * Sends a PartitionedRegion {@link org.apache.geode.cache.Region#put(Object, Object)} message to
    * the recipient
-   * 
+   *
    * @param recipient the member to which the put message is sent
    * @param r the PartitionedRegion for which the put was performed
    * @param event the event prompting this message
@@ -396,7 +396,7 @@ public class PutMessage extends PartitionMessageWithDirectReply implements NewVa
   // return this.directAck;
   // }
 
-  // final public int getProcessorType() {
+  // public final int getProcessorType() {
   // return DistributionManager.PARTITIONED_REGION_EXECUTOR;
   // }
 
@@ -459,7 +459,7 @@ public class PutMessage extends PartitionMessageWithDirectReply implements NewVa
 
   /**
    * (ashetkar) Strictly for Delta Propagation purpose.
-   * 
+   *
    * @param o Object of type Delta
    */
   public void setDeltaValObj(Object o) {
@@ -937,7 +937,7 @@ public class PutMessage extends PartitionMessageWithDirectReply implements NewVa
 
     /**
      * Processes this message. This method is invoked by the receiver of the message.
-     * 
+     *
      * @param dm the distribution manager that is processing the message.
      */
     @Override
@@ -1045,7 +1045,7 @@ public class PutMessage extends PartitionMessageWithDirectReply implements NewVa
 
   /**
    * A processor to capture the value returned by {@link PutMessage}
-   * 
+   *
    * @since GemFire 5.1
    */
   public static class PutResponse extends PartitionResponse {

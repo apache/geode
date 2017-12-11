@@ -106,7 +106,7 @@ public class ControllerAdvisor extends GridAdvisor {
      * Used to process an incoming connection controller profile. Any controller or bridge server in
      * this vm needs to be told about this incoming new controller. The reply needs to contain any
      * controller(s) that exist in this vm and any bridge servers that exist in this vm.
-     * 
+     *
      * @since GemFire 5.7
      */
     @Override

@@ -45,7 +45,7 @@ import org.apache.geode.DataSerializer;
 import org.apache.geode.Delta;
 import org.apache.geode.InvalidDeltaException;
 import org.apache.geode.cache.Region;
-import org.apache.geode.internal.cache.lru.Sizeable;
+import org.apache.geode.internal.size.Sizeable;
 import org.apache.geode.internal.util.BlobHelper;
 import org.apache.geode.modules.gatewaydelta.GatewayDelta;
 import org.apache.geode.modules.gatewaydelta.GatewayDeltaEvent;
@@ -70,7 +70,7 @@ public class DeltaSession extends StandardSession
 
   private boolean enableGatewayDeltaReplication;
 
-  private transient final Object changeLock = new Object();
+  private final transient Object changeLock = new Object();
 
   private final List<DeltaSessionAttributeEvent> eventQueue =
       new ArrayList<DeltaSessionAttributeEvent>();

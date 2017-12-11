@@ -14,6 +14,12 @@
  */
 package org.apache.geode.internal.cache.tx;
 
+import java.util.Collection;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.Map;
+
 import org.apache.geode.CancelException;
 import org.apache.geode.cache.CacheClosedException;
 import org.apache.geode.cache.EntryNotFoundException;
@@ -47,12 +53,6 @@ import org.apache.geode.internal.cache.tier.sockets.ClientProxyMembershipID;
 import org.apache.geode.internal.cache.tier.sockets.VersionedObjectList;
 import org.apache.geode.internal.i18n.LocalizedStrings;
 import org.apache.geode.internal.offheap.annotations.Released;
-
-import java.util.Collection;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.Map;
 
 public class PartitionedTXRegionStub extends AbstractPeerTXRegionStub {
 
@@ -396,7 +396,7 @@ public class PartitionedTXRegionStub extends AbstractPeerTXRegionStub {
 
   /**
    * Create PutAllPRMsgs for each bucket, and send them.
-   * 
+   *
    * @param putallO DistributedPutAllOperation object.
    */
   public void postPutAll(DistributedPutAllOperation putallO, VersionedObjectList successfulPuts,

@@ -73,7 +73,7 @@ import org.apache.geode.internal.statistics.DummyStatisticsFactory;
 
 /**
  * Manages the client side of client to server connections and client queues.
- * 
+ *
  * @since GemFire 5.7
  */
 public class PoolImpl implements InternalPool {
@@ -96,7 +96,7 @@ public class PoolImpl implements InternalPool {
    * For durable client tests only. Connection Sources read this flag and return an empty list of
    * servers.
    */
-  public volatile static boolean TEST_DURABLE_IS_NET_DOWN = false;
+  public static volatile boolean TEST_DURABLE_IS_NET_DOWN = false;
 
   private final String name;
   private final int socketConnectTimeout;
@@ -272,7 +272,7 @@ public class PoolImpl implements InternalPool {
   /**
    * Return true if the given Pool is compatible with these attributes. Currently this does what
    * equals would but in the future we might decide to weaken the compatibility contract.
-   * 
+   *
    * @since GemFire 6.5
    */
   public boolean isCompatible(Pool p) {
@@ -362,7 +362,7 @@ public class PoolImpl implements InternalPool {
 
   /**
    * Returns the cancellation criterion for this proxy
-   * 
+   *
    * @return the cancellation criterion
    */
   public CancelCriterion getCancelCriterion() {
@@ -383,7 +383,7 @@ public class PoolImpl implements InternalPool {
 
   /*
    * (non-Javadoc)
-   * 
+   *
    * @see org.apache.geode.cache.Pool#getName()
    */
   public String getName() {
@@ -757,7 +757,7 @@ public class PoolImpl implements InternalPool {
   /**
    * Execute the given op on the servers that this pool connects to. This method is responsible for
    * retrying the op if an attempt fails. It will only execute it once and on one server.
-   * 
+   *
    * @param op the operation to execute
    * @return the result of execution if any; null if not
    * @since GemFire 5.7
@@ -777,7 +777,7 @@ public class PoolImpl implements InternalPool {
   /**
    * Execute the given op on the servers that this pool connects to. This method is responsible for
    * retrying the op if an attempt fails. It will only execute it once and on one server.
-   * 
+   *
    * @param op the operation to execute
    * @param retries how many times to retry the operation
    * @return the result of execution if any; null if not
@@ -790,7 +790,7 @@ public class PoolImpl implements InternalPool {
 
   /**
    * Execute the given op on the given server.
-   * 
+   *
    * @param server the server to do the execution on
    * @param op the operation to execute
    * @return the result of execution if any; null if not
@@ -802,7 +802,7 @@ public class PoolImpl implements InternalPool {
 
   /**
    * Execute the given op on the given server.
-   * 
+   *
    * @param server the server to do the execution on
    * @param op the operation to execute
    * @param accessed true if the connection is accessed by this execute
@@ -816,7 +816,7 @@ public class PoolImpl implements InternalPool {
 
   /**
    * Execute the given op on the given connection.
-   * 
+   *
    * @param con the connection to do the execution on
    * @param op the operation to execute
    * @return the result of execution if any; null if not
@@ -832,7 +832,7 @@ public class PoolImpl implements InternalPool {
 
   /**
    * Execute the given op on all the servers that have server-to-client queues for this pool
-   * 
+   *
    * @param op the operation to execute
    * @return the result of execution if any; null if not
    * @since GemFire 5.7
@@ -850,7 +850,7 @@ public class PoolImpl implements InternalPool {
 
   /**
    * Execute the given op on the current primary server.
-   * 
+   *
    * @param op the operation to execute
    * @return the result of execution if any; null if not
    */
@@ -896,7 +896,7 @@ public class PoolImpl implements InternalPool {
   /**
    * Borrows a connection from the pool.. Used by gateway and tests. Any connection that is acquired
    * using this method must be returned using returnConnection, even if it is destroyed.
-   * 
+   *
    */
   public Connection acquireConnection() {
     return manager.borrowConnection(45000L);
@@ -1115,7 +1115,7 @@ public class PoolImpl implements InternalPool {
 
   /**
    * Atomic counter used to keep track of services using this pool.
-   * 
+   *
    * @since GemFire 5.7
    */
   private final AtomicInteger attachCount = new AtomicInteger();
@@ -1125,7 +1125,7 @@ public class PoolImpl implements InternalPool {
    * Returns number of services currently using/attached to this pool.
    * <p>
    * Made public so it can be used by tests
-   * 
+   *
    * @since GemFire 5.7
    */
   public int getAttachCount() {
@@ -1134,7 +1134,7 @@ public class PoolImpl implements InternalPool {
 
   /**
    * This needs to be called when a service (like a Region or CQService) starts using a pool.
-   * 
+   *
    * @since GemFire 5.7
    */
   public void attach() {
@@ -1143,7 +1143,7 @@ public class PoolImpl implements InternalPool {
 
   /**
    * This needs to be called when a service (like a Region or CQService) stops using a pool.
-   * 
+   *
    * @since GemFire 5.7
    */
   public void detach() {
@@ -1152,9 +1152,9 @@ public class PoolImpl implements InternalPool {
 
   /**
    * Get the connection held by this thread if we're using thread local connections
-   * 
+   *
    * This is a a hook for hydra code to pass thread local connections between threads.
-   * 
+   *
    * @return the connection from the thread local, or null if there is no thread local connection.
    */
   public Connection getThreadLocalConnection() {
@@ -1193,7 +1193,7 @@ public class PoolImpl implements InternalPool {
 
   /**
    * Fetch the connection source for this pool
-   * 
+   *
    * @return the source
    */
   public ConnectionSource getConnectionSource() {
@@ -1245,7 +1245,7 @@ public class PoolImpl implements InternalPool {
 
   /**
    * Set the connection held by this thread if we're using thread local connections
-   * 
+   *
    * This is a a hook for hydra code to pass thread local connections between threads.
    */
   public void setThreadLocalConnection(Connection conn) {
@@ -1319,7 +1319,7 @@ public class PoolImpl implements InternalPool {
    */
   public static volatile boolean AFTER_PRIMARY_RECOVERED_CALLBACK_FLAG = false;
 
-  public static abstract class PoolTask implements Runnable {
+  public abstract static class PoolTask implements Runnable {
 
     public void run() {
       try {
@@ -1401,7 +1401,7 @@ public class PoolImpl implements InternalPool {
   /**
    * Returns the QueryService, that can be used to execute Query functions on the servers associated
    * with this pool.
-   * 
+   *
    * @return the QueryService
    */
   public QueryService getQueryService() {
@@ -1507,10 +1507,10 @@ public class PoolImpl implements InternalPool {
 
   /**
    * Assert thread-local var is not null, if it has multiuser-authentication set to true.
-   * 
+   *
    * If serverLocation is non-null, check if the the user is authenticated on that server. If not,
    * authenticate it and return.
-   * 
+   *
    * @param serverLocation
    * @param op
    */

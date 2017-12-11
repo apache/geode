@@ -16,20 +16,20 @@ package org.apache.geode.cache.client.internal;
 
 import org.apache.geode.cache.client.internal.AbstractOp;
 import org.apache.geode.cache.client.internal.ConnectionStats;
-import org.apache.geode.cache.client.internal.ExecutablePool;
 import org.apache.geode.cache.client.internal.CreateCQOp.CreateCQOpImpl;
+import org.apache.geode.cache.client.internal.ExecutablePool;
 import org.apache.geode.internal.cache.tier.MessageType;
 
 /**
  * Does a region query on a server
- * 
+ *
  * @since GemFire 5.7
  */
 public class StopCQOp {
   /**
    * Stop a continuous query on the server using connections from the given pool to communicate with
    * the server.
-   * 
+   *
    * @param pool the pool to use to communicate with the server.
    * @param cqName name of the CQ to stop
    */

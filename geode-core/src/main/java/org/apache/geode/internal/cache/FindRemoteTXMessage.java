@@ -66,7 +66,7 @@ public class FindRemoteTXMessage extends HighPriorityDistributionMessage
 
   /**
    * Asks all the peers if they host a transaction for the given txId
-   * 
+   *
    * @param txId the transaction id
    * @return reply processor containing memberId of the member that hosts the transaction and a
    *         recently committed transactionMessage if any

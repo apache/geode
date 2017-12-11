@@ -83,8 +83,8 @@ public class ResourceManagerWithQueryMonitorDUnitTest extends ClientServerTestCa
 
   private static int MAX_TEST_QUERY_TIMEOUT = 4000;
   private static int TEST_QUERY_TIMEOUT = 1000;
-  private final static int CRITICAL_HEAP_USED = 950;
-  private final static int NORMAL_HEAP_USED = 500;
+  private static final int CRITICAL_HEAP_USED = 950;
+  private static final int NORMAL_HEAP_USED = 500;
 
   @Override
   public final void postSetUpClientServerTestCase() throws Exception {

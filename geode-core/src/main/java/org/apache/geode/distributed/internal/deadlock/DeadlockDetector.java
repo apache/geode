@@ -41,20 +41,20 @@ import org.apache.geode.internal.ExitCode;
  * A class used for detecting deadlocks. The static method
  * {@link #collectAllDependencies(Serializable)} will find all dependencies between threads and
  * locks in the current VM.
- * 
+ *
  * To use this class, collect dependencies in each VM you want to analyze, and add them to an
  * instance of a {@link DeadlockDetector} using the {@link #addDependencies(Set)} method. The
  * {@link #findDeadlock()} method will analyze the dependencies to find any deadlocks.
- * 
+ *
  * This class uses Java 1.6 management APIs on {@link ThreadMXBean}, so it will not find any
  * deadlocks in 1.5 VM. It also uses the {@link DependencyMonitorManager} framework to collect
  * dependencies that are not reported by the VM - such as the association between message senders
  * and processors in different VMs.
- * 
+ *
  * This class also has a main() method that can read serialized DependencyGraphs from multiple JVMs,
  * merge them and perform various analysis on them.
- * 
- * 
+ *
+ *
  */
 public class DeadlockDetector {
   DependencyGraph graph = new DependencyGraph();
@@ -73,7 +73,7 @@ public class DeadlockDetector {
   /**
    * Finds the first deadlock in the list of dependencies, or null if there are no deadlocks in the
    * set of dependencies.
-   * 
+   *
    * @return a linked list of dependencies which shows the circular dependencies. The List will be
    *         of the form Dependency(A,B), Dependency(B,C), Dependency(C, A).
    */
@@ -98,13 +98,13 @@ public class DeadlockDetector {
   /**
    * Collect all of the dependencies that exist between threads in this VM, using java management
    * beans and the {@link DependencyMonitor}.
-   * 
+   *
    * Threads may depend on locks, or on other resources that are tracked by the
    * {@link DependencyMonitor}.
-   * 
+   *
    * @param locality a name tag to stick on entities to help associate them with this JVM and
    *        distinguish them from entities from other jvms
-   * 
+   *
    * @return All of the dependencies between threads and locks or other resources on this VM.
    */
   public static Set<Dependency> collectAllDependencies(Serializable locality) {
@@ -204,7 +204,7 @@ public class DeadlockDetector {
   /**
    * attempts to sort the given dependencies according to their contents so that dependents come
    * after dependers.
-   * 
+   *
    * @param dependencies TODO this method needs more work
    */
   public static List<Dependency> sortDependencies(Collection<Dependency> dependencies) {

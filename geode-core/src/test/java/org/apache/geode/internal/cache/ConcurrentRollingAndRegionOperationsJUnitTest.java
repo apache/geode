@@ -26,13 +26,14 @@ import org.junit.experimental.categories.Category;
 import org.apache.geode.cache.EntryNotFoundException;
 import org.apache.geode.cache.Region;
 import org.apache.geode.cache.Scope;
+import org.apache.geode.internal.cache.entries.DiskEntry;
 import org.apache.geode.test.dunit.ThreadUtils;
 import org.apache.geode.test.junit.categories.IntegrationTest;
 
 /**
  * This JUnit test tests concurrent rolling and normal region operations put,get,clear,destroy in
  * both sync and async mode
- * 
+ *
  * A region operation is done on the same key that is about to be rolled or has just been rolled and
  * the region operation is verified to have been correctly executed.
  */

@@ -20,7 +20,7 @@ import org.apache.geode.internal.admin.statalerts.StatisticInfo;
 
 /**
  * Base interface that supports a StatAlertDefinition
- * 
+ *
  */
 public interface StatAlertDefinition extends DataSerializable {
   /**
@@ -61,7 +61,7 @@ public interface StatAlertDefinition extends DataSerializable {
   /**
    * Get the value of the Statistic this Definition object is created for Depending on the Decorator
    * the value returned can be different
-   * 
+   *
    * @return Number[]
    */
   public Number[] getValue();
@@ -69,7 +69,7 @@ public interface StatAlertDefinition extends DataSerializable {
   /**
    * Get the value of the Statistic this Definition object is created for Depending on the Decorator
    * the value returned can be different
-   * 
+   *
    * @return Number[]
    */
   public Number[] getValue(Number[] vals);
@@ -84,14 +84,14 @@ public interface StatAlertDefinition extends DataSerializable {
 
   /**
    * This method returns the name of this stat alert definition.
-   * 
+   *
    * @return Name of the StatAlertDefinition
    */
   public String getName();
 
   /**
    * This method sets the name of this stat alert definition.
-   * 
+   *
    * @param name name to be set for this StatAlertDefinition.
    */
   public void setName(String name);

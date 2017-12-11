@@ -24,7 +24,7 @@ import org.apache.geode.internal.UniqueIdGenerator;
  * Currently ids are in the range 0..32767 inclusive.
  *
  * @since GemFire 5.0.2
- * 
+ *
  */
 public class MsgIdGenerator {
   /**
@@ -40,7 +40,7 @@ public class MsgIdGenerator {
 
   /**
    * Obtains a message id. Callers of this must call release when finished with the id.
-   * 
+   *
    * @throws IllegalStateException if all ids have been obtained
    */
   public static short obtain() {

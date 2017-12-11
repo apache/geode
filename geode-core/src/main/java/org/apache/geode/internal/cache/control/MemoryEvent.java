@@ -82,4 +82,3 @@ public class MemoryEvent implements ResourceEvent {
         .append(",thresholds:" + this.thresholds + "]").toString();
   }
 }
-

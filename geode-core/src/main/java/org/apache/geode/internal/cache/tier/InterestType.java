@@ -39,11 +39,11 @@ public class InterestType {
 
   /**
    * Convert an interest type to a printable string
-   * 
+   *
    * @param kind the type to convert
    * @return a printable string
    */
-  static public String getString(int kind) {
+  public static String getString(int kind) {
     switch (kind) {
       case KEY:
         return "KEY";

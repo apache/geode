@@ -27,7 +27,7 @@ public class QueryInvalidException extends GemFireException {
 
   /**
    * Construct an instance of QueryInvalidException
-   * 
+   *
    * @param msg the error message
    */
   public QueryInvalidException(String msg) {
@@ -36,7 +36,7 @@ public class QueryInvalidException extends GemFireException {
 
   /**
    * Construct an instance of QueryInvalidException
-   * 
+   *
    * @param msg the error message
    * @param cause a Throwable cause
    */

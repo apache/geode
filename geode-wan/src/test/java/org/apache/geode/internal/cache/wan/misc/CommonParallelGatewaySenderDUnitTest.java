@@ -14,15 +14,13 @@
  */
 package org.apache.geode.internal.cache.wan.misc;
 
-import org.junit.Ignore;
-import org.junit.experimental.categories.Category;
-import org.junit.Test;
-
 import static org.junit.Assert.*;
 
-import org.apache.geode.test.dunit.cache.internal.JUnit4CacheTestCase;
-import org.apache.geode.test.dunit.internal.JUnit4DistributedTestCase;
-import org.apache.geode.test.junit.categories.DistributedTest;
+import java.util.Set;
+
+import org.junit.Ignore;
+import org.junit.Test;
+import org.junit.experimental.categories.Category;
 
 import org.apache.geode.cache.wan.GatewaySender;
 import org.apache.geode.internal.cache.BucketRegion;
@@ -37,8 +35,9 @@ import org.apache.geode.test.dunit.IgnoredException;
 import org.apache.geode.test.dunit.LogWriterUtils;
 import org.apache.geode.test.dunit.Wait;
 import org.apache.geode.test.dunit.WaitCriterion;
-
-import java.util.Set;
+import org.apache.geode.test.dunit.cache.internal.JUnit4CacheTestCase;
+import org.apache.geode.test.dunit.internal.JUnit4DistributedTestCase;
+import org.apache.geode.test.junit.categories.DistributedTest;
 
 /**
  *
@@ -68,7 +67,7 @@ public class CommonParallelGatewaySenderDUnitTest extends WANTestBase {
 
   /**
    * Simple scenario. Two regions attach the same PGS
-   * 
+   *
    * @throws Exception Below test is disabled intentionally 1> In this release 8.0, for rolling
    *         upgrade support queue name is changed to old style 2>Common parallel sender for
    *         different non colocated regions is not supported in 8.0 so no need to bother about

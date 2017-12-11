@@ -17,7 +17,7 @@ package org.apache.geode.management.internal.configuration;
 import org.apache.geode.distributed.internal.ClusterConfigurationService;
 import org.apache.geode.distributed.internal.InternalLocator;
 import org.apache.geode.test.dunit.SerializableRunnable;
-import org.apache.geode.test.dunit.internal.JUnit3DistributedTestCase;
+import org.apache.geode.test.dunit.internal.JUnit4DistributedTestCase;
 
 public class SharedConfigurationTestUtils {
 
@@ -32,7 +32,7 @@ public class SharedConfigurationTestUtils {
         }
         locator.stop();
       }
-      JUnit3DistributedTestCase.disconnectAllFromDS();
+      JUnit4DistributedTestCase.disconnectAllFromDS();
     }
   };
 }

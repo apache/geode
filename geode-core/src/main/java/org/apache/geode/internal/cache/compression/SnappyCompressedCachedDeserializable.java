@@ -24,7 +24,7 @@ import org.apache.geode.internal.Version;
  * An implementation of {@link CompressedCachedDeserializable} that uses the built in Snappy
  * compression codec and favors absolute minimal region entry value overhead by sharing the same
  * Snappy {@link Compressor} instance with all instances of this class within the {@link Cache}.
- * 
+ *
  */
 public class SnappyCompressedCachedDeserializable extends CompressedCachedDeserializable {
 
@@ -38,7 +38,7 @@ public class SnappyCompressedCachedDeserializable extends CompressedCachedDeseri
   /**
    * Creates a new {@link SnappyCompressedCachedDeserializable} with a serialized value or raw byte
    * array.
-   * 
+   *
    * @param serializedValue a region entry value that has already been serialized or is a raw byte
    *        array.
    */
@@ -48,7 +48,7 @@ public class SnappyCompressedCachedDeserializable extends CompressedCachedDeseri
 
   /**
    * Creates a new {@link SnappyCompressedCachedDeserializable} with an unserialized value.
-   * 
+   *
    * @param obj a region entry value.
    */
   public SnappyCompressedCachedDeserializable(final Object obj) {

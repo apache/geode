@@ -18,7 +18,7 @@ import org.apache.geode.cache.DiskStore;
 
 /**
  * Composite data type used to distribute metrics for a {@link DiskStore}.
- * 
+ *
  * @since GemFire 7.0
  */
 public class DiskMetrics {

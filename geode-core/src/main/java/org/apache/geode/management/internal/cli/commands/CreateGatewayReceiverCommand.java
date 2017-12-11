@@ -17,24 +17,23 @@ package org.apache.geode.management.internal.cli.commands;
 
 import java.util.List;
 import java.util.Set;
-import java.util.concurrent.atomic.AtomicReference;
 
 import org.springframework.shell.core.annotation.CliCommand;
 import org.springframework.shell.core.annotation.CliOption;
 
-import org.apache.geode.cache.execute.ResultCollector;
+import org.apache.geode.cache.wan.GatewayReceiver;
 import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.management.cli.CliMetaData;
 import org.apache.geode.management.cli.ConverterHint;
 import org.apache.geode.management.cli.Result;
-import org.apache.geode.management.internal.cli.CliUtil;
-import org.apache.geode.management.internal.cli.LogWrapper;
+import org.apache.geode.management.internal.cli.AbstractCliAroundInterceptor;
+import org.apache.geode.management.internal.cli.GfshParseResult;
 import org.apache.geode.management.internal.cli.functions.CliFunctionResult;
 import org.apache.geode.management.internal.cli.functions.GatewayReceiverCreateFunction;
 import org.apache.geode.management.internal.cli.functions.GatewayReceiverFunctionArgs;
 import org.apache.geode.management.internal.cli.i18n.CliStrings;
+import org.apache.geode.management.internal.cli.result.CommandResult;
 import org.apache.geode.management.internal.cli.result.ResultBuilder;
-import org.apache.geode.management.internal.cli.result.TabularResultData;
 import org.apache.geode.management.internal.configuration.domain.XmlEntity;
 import org.apache.geode.management.internal.security.ResourceOperation;
 import org.apache.geode.security.ResourcePermission;
@@ -43,7 +42,8 @@ public class CreateGatewayReceiverCommand implements GfshCommand {
 
   @CliCommand(value = CliStrings.CREATE_GATEWAYRECEIVER,
       help = CliStrings.CREATE_GATEWAYRECEIVER__HELP)
-  @CliMetaData(relatedTopic = CliStrings.TOPIC_GEODE_WAN)
+  @CliMetaData(relatedTopic = CliStrings.TOPIC_GEODE_WAN,
+      interceptor = "org.apache.geode.management.internal.cli.commands.CreateGatewayReceiverCommand$Interceptor")
   @ResourceOperation(resource = ResourcePermission.Resource.CLUSTER,
       operation = ResourcePermission.Operation.MANAGE, target = ResourcePermission.Target.GATEWAY)
   public Result createGatewayReceiver(@CliOption(key = {CliStrings.GROUP, CliStrings.GROUPS},
@@ -78,51 +78,45 @@ public class CreateGatewayReceiverCommand implements GfshCommand {
       @CliOption(key = CliStrings.CREATE_GATEWAYRECEIVER__HOSTNAMEFORSENDERS,
           help = CliStrings.CREATE_GATEWAYRECEIVER__HOSTNAMEFORSENDERS__HELP) String hostnameForSenders) {
 
-    Result result;
+    GatewayReceiverFunctionArgs gatewayReceiverFunctionArgs =
+        new GatewayReceiverFunctionArgs(manualStart, startPort, endPort, bindAddress,
+            socketBufferSize, maximumTimeBetweenPings, gatewayTransportFilters, hostnameForSenders);
 
-    AtomicReference<XmlEntity> xmlEntity = new AtomicReference<>();
-    try {
-      GatewayReceiverFunctionArgs gatewayReceiverFunctionArgs = new GatewayReceiverFunctionArgs(
-          manualStart, startPort, endPort, bindAddress, socketBufferSize, maximumTimeBetweenPings,
-          gatewayTransportFilters, hostnameForSenders);
+    Set<DistributedMember> membersToCreateGatewayReceiverOn = getMembers(onGroups, onMember);
 
-      Set<DistributedMember> membersToCreateGatewayReceiverOn =
-          CliUtil.findMembers(onGroups, onMember);
+    List<CliFunctionResult> gatewayReceiverCreateResults =
+        executeAndGetFunctionResult(GatewayReceiverCreateFunction.INSTANCE,
+            gatewayReceiverFunctionArgs, membersToCreateGatewayReceiverOn);
 
-      if (membersToCreateGatewayReceiverOn.isEmpty()) {
-        return ResultBuilder.createUserErrorResult(CliStrings.NO_MEMBERS_FOUND_MESSAGE);
-      }
+    CommandResult result = ResultBuilder.buildResult(gatewayReceiverCreateResults);
 
-      ResultCollector<?, ?> resultCollector =
-          CliUtil.executeFunction(GatewayReceiverCreateFunction.INSTANCE,
-              gatewayReceiverFunctionArgs, membersToCreateGatewayReceiverOn);
-      @SuppressWarnings("unchecked")
-      List<CliFunctionResult> gatewayReceiverCreateResults =
-          (List<CliFunctionResult>) resultCollector.getResult();
-
-      TabularResultData tabularResultData = ResultBuilder.createTabularResultData();
-      final String errorPrefix = "ERROR: ";
-
-      for (CliFunctionResult gatewayReceiverCreateResult : gatewayReceiverCreateResults) {
-        boolean success = gatewayReceiverCreateResult.isSuccessful();
-        tabularResultData.accumulate("Member", gatewayReceiverCreateResult.getMemberIdOrName());
-        tabularResultData.accumulate("Status",
-            (success ? "" : errorPrefix) + gatewayReceiverCreateResult.getMessage());
-
-        if (success && xmlEntity.get() == null) {
-          xmlEntity.set(gatewayReceiverCreateResult.getXmlEntity());
-        }
-      }
-      result = ResultBuilder.buildResult(tabularResultData);
-    } catch (IllegalArgumentException e) {
-      LogWrapper.getInstance().info(e.getMessage());
-      result = ResultBuilder.createUserErrorResult(e.getMessage());
-    }
-
-    if (xmlEntity.get() != null) {
+    XmlEntity xmlEntity = findXmlEntity(gatewayReceiverCreateResults);
+    if (xmlEntity != null) {
       persistClusterConfiguration(result,
-          () -> getSharedConfiguration().addXmlEntity(xmlEntity.get(), onGroups));
+          () -> getSharedConfiguration().addXmlEntity(xmlEntity, onGroups));
     }
     return result;
+  }
+
+  public static class Interceptor extends AbstractCliAroundInterceptor {
+    @Override
+    public Result preExecution(GfshParseResult parseResult) {
+      Integer startPort = (Integer) parseResult.getParamValue("start-port");
+      Integer endPort = (Integer) parseResult.getParamValue("end-port");
+
+      if (startPort == null) {
+        startPort = GatewayReceiver.DEFAULT_START_PORT;
+      }
+
+      if (endPort == null) {
+        endPort = GatewayReceiver.DEFAULT_END_PORT;
+      }
+
+      if (startPort > endPort) {
+        return ResultBuilder.createUserErrorResult("start-port must be smaller than end-port.");
+      }
+
+      return ResultBuilder.createInfoResult("");
+    }
   }
 }

@@ -41,7 +41,7 @@ public class MyGatewayEventFilter2 implements GatewayEventFilter, Declarable2 {
 
   /*
    * (non-Javadoc)
-   * 
+   *
    * @see
    * org.apache.geode.cache.wan.GatewayEventFilter#afterAcknowledgement(org.apache.geode.cache.util.
    * GatewayEvent)

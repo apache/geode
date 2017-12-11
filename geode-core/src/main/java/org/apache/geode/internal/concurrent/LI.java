@@ -19,9 +19,9 @@ import java.io.Serializable;
 /**
  * These methods are the same as on the jdk 1.6 java.lang.management.LockInfo, but this class is
  * serializable.
- * 
+ *
  * Retained for backwards compatibility reasons.
- * 
+ *
  */
 public class LI implements Serializable {
 

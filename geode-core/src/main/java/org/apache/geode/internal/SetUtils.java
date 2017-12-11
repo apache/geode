@@ -20,9 +20,9 @@ import java.util.Set;
 
 /**
  * Utility methods for managing and using Sets
- * 
+ *
  * @since GemFire 59poc
- * 
+ *
  */
 public class SetUtils {
   public static <T> boolean intersectsWith(final Set<? extends T> a, final Set<? extends T> b) {

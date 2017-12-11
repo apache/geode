@@ -15,10 +15,10 @@
 
 package org.apache.geode.modules.session.internal.filter.attributes;
 
+import java.util.Set;
+
 import org.apache.geode.DataSerializable;
 import org.apache.geode.modules.session.internal.filter.GemfireHttpSession;
-
-import java.util.Set;
 
 /**
  * Interface for session attribute storage. In reality, this interface is responsible for anything,

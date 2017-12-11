@@ -14,6 +14,8 @@
  */
 package org.apache.geode.distributed.internal.membership.gms.messenger;
 
+import java.util.concurrent.RejectedExecutionException;
+
 import org.apache.logging.log4j.Logger;
 import org.jgroups.Event;
 import org.jgroups.Header;
@@ -30,12 +32,10 @@ import org.apache.geode.distributed.internal.DMStats;
 import org.apache.geode.distributed.internal.membership.gms.GMSUtil;
 import org.apache.geode.distributed.internal.membership.gms.Services;
 
-import java.util.concurrent.RejectedExecutionException;
-
 /**
  * JGroups doesn't capture quite the stats we want so this protocol is inserted into the stack to
  * gather the missing ones.
- * 
+ *
  *
  */
 public class StatRecorder extends Protocol {
@@ -54,7 +54,7 @@ public class StatRecorder extends Protocol {
 
   /**
    * sets the services object of the GMS that is using this recorder
-   * 
+   *
    * @param services the Services collective of the GMS
    */
   public void setServices(Services services) {

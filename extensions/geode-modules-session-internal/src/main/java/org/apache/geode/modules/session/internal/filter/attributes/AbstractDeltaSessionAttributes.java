@@ -15,10 +15,6 @@
 
 package org.apache.geode.modules.session.internal.filter.attributes;
 
-import org.apache.geode.DataSerializer;
-import org.apache.geode.Delta;
-import org.apache.geode.InvalidDeltaException;
-
 import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
@@ -28,6 +24,10 @@ import java.util.Map;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import org.apache.geode.DataSerializer;
+import org.apache.geode.Delta;
+import org.apache.geode.InvalidDeltaException;
 
 /**
  * This abstract class contains the structures and methods to handle delta updates to attributes.

@@ -79,7 +79,7 @@ import org.apache.geode.management.ManagementService;
  * The following code illustrates how a CacheServer application would use
  * <code>UniversalMembershipListenerAdapter</code>. The code in this example assumes that the class
  * MyMembershipListenerImpl extends <code>UniversalMembershipListenerAdapter</code>:
- * 
+ *
  * <pre>
  * <code>
  * public class MyMembershipListenerImpl extends UniversalMembershipListenerAdapter {
@@ -93,15 +93,15 @@ import org.apache.geode.management.ManagementService;
  *     // customer code
  *   }
  * }
- * 
+ *
  *  Cache cache = //Get hold of GemFire Cache instance
  *  ManagementService service = ManagementService.getExistingManagementService(cache);
- *    
+ *
  *  MyMembershipListenerImpl myListener = new MyMembershipListenerImpl();
  *  myListener.registerMembershipListener(service);
  * </code>
  * </pre>
- * 
+ *
  * The callback on MyMembershipListenerImpl would then be invoked for all
  * <code>MembershipEvent</code>s and <code>ClientMembershipEvent</code>s. The latter will appear to
  * be <code>MembershipEvent</code>s.
@@ -112,13 +112,13 @@ import org.apache.geode.management.ManagementService;
  * <code>UniversalMembershipListenerAdapter</code>, where MyMembershipListenerImpl is a
  * subclass.Simply by constructing this subclass of <code>UniversalMembershipListenerAdapter</code>
  * it is registering itself as a <code>ClientMembershipListener</code>:
- * 
+ *
  * <pre>
  * <code>
  * new MyMembershipListenerImpl();
  * </code>
  * </pre>
- * 
+ *
  * A client that also connects to the <code>DistributedSystem</code> could register with
  * the<code>ManagementService</code> as shown above.
  * </p>
@@ -131,7 +131,7 @@ import org.apache.geode.management.ManagementService;
  * ManagementService#addMembershipListener}.
  * </p>
  *
- * 
+ *
  * @since GemFire 8.0
  */
 public abstract class UniversalMembershipListenerAdapter implements MembershipListener {
@@ -154,7 +154,7 @@ public abstract class UniversalMembershipListenerAdapter implements MembershipLi
 
   /**
    * Constructs an instance of UniversalMembershipListenerAdapter.
-   * 
+   *
    * @param historySize number of historical events to track in order to avoid duplicate events for
    *        members that are both client and peer members; must a number between 10 and
    *        <code>Integer.MAX_INT</code>
@@ -208,7 +208,7 @@ public abstract class UniversalMembershipListenerAdapter implements MembershipLi
 
   /**
    * Unregisters this adapter as a <code>ClientMembershipListener</code>.
-   * 
+   *
    * @see #registerClientMembershipListener
    */
   public void unregisterClientMembershipListener() {
@@ -360,4 +360,3 @@ public abstract class UniversalMembershipListenerAdapter implements MembershipLi
   };
 
 }
-

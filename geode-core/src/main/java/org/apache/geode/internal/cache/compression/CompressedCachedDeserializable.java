@@ -28,14 +28,14 @@ import org.apache.geode.internal.cache.CachedDeserializable;
 import org.apache.geode.internal.cache.CachedDeserializableFactory;
 import org.apache.geode.internal.cache.EntryEventImpl;
 import org.apache.geode.internal.cache.RegionEntry;
-import org.apache.geode.internal.cache.lru.Sizeable;
 import org.apache.geode.internal.i18n.LocalizedStrings;
 import org.apache.geode.internal.lang.StringUtils;
+import org.apache.geode.internal.size.Sizeable;
 
 /**
  * An abstract implementation of {@link CachedDeserializable} that prefers serialization and
  * compresses the internal serialized value.
- * 
+ *
  */
 public abstract class CompressedCachedDeserializable
     implements CachedDeserializable, DataSerializableFixedID {
@@ -72,7 +72,7 @@ public abstract class CompressedCachedDeserializable
 
   /**
    * Creates a new {@link CompressedCachedDeserializable} with a serialized value.
-   * 
+   *
    * @param serializedValue a region entry value that has already been serialized.
    */
   public CompressedCachedDeserializable(final byte[] serializedValue) {
@@ -87,7 +87,7 @@ public abstract class CompressedCachedDeserializable
 
   /**
    * Creates a new {@link CompressedCachedDeserializable} with an unserialized value.
-   * 
+   *
    * @param obj a region entry value.
    */
   public CompressedCachedDeserializable(final Object obj) {
@@ -126,7 +126,7 @@ public abstract class CompressedCachedDeserializable
   /**
    * Returns the serialized value of the region entry contained by this
    * CompressedCachedDeserializable. This value is the uncompressed value.
-   * 
+   *
    * @see CachedDeserializable#getSerializedValue()
    */
   @Override

@@ -31,19 +31,19 @@ import org.apache.geode.distributed.internal.DistributionMessage;
 import org.apache.geode.distributed.internal.MembershipListener;
 import org.apache.geode.distributed.internal.ProcessorKeeper21;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
+import org.apache.geode.i18n.StringId;
 import org.apache.geode.internal.DataSerializableFixedID;
 import org.apache.geode.internal.i18n.LocalizedStrings;
 import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.internal.logging.log4j.LocalizedMessage;
-import org.apache.geode.i18n.StringId;
 
 /**
  * This class keeps track of how many InitialImageMessages are in flight between the initial image
  * provider and the image target.
- * 
+ *
  * The provider is responsible for calling acquirePermit before sending an initial image chunk. The
  * acquire will block if two many messages are in flight.
- * 
+ *
  * The initial image target sends FlowControlPermitMessage to the image provider after each
  * processed chunk. Upon receiving the FlowControlPermit message, the provider will increase the
  * number of permits available.

@@ -25,6 +25,7 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.SortedSet;
 import java.util.TreeSet;
+
 import org.apache.geode.cache.query.FunctionDomainException;
 import org.apache.geode.cache.query.NameResolutionException;
 import org.apache.geode.cache.query.QueryInvocationTargetException;
@@ -42,8 +43,8 @@ import org.apache.geode.cache.query.types.StructType;
  * GroupJunctions belonging to the regions participating in the equi join condition. A single
  * CompositeGroupJunction may span multiple Regions and hence may contain multiple filter
  * evaluatable equi join conditions of different regions as well as their GroupJunctions if any.
- * 
- * 
+ *
+ *
  */
 public class CompositeGroupJunction extends AbstractCompiledValue
     implements Filter, OQLLexerTokenTypes {
@@ -102,7 +103,7 @@ public class CompositeGroupJunction extends AbstractCompiledValue
 
   /**
    * Add the Independent iterator of the Group which is constituent of this CompositeGroupJunction
-   * 
+   *
    * @param itr RuntimeIterator The independent iterator for the region forming the
    *        CompositeGroupJunction
    */
@@ -114,7 +115,7 @@ public class CompositeGroupJunction extends AbstractCompiledValue
    * Add the GroupJunction for a Region as a part of CompositeGroupJunction , implying that their
    * exists atleast one equi join condition which involes the Region which the GroupJunction
    * represents
-   * 
+   *
    * @param gj GroupJunction object which is a part of CompositeGroupJunction
    */
   void addGroupOrRangeJunction(AbstractGroupOrRangeJunction gj) {
@@ -125,7 +126,7 @@ public class CompositeGroupJunction extends AbstractCompiledValue
   }
 
   /**
-   * 
+   *
    * @param iterOps List of CompiledValues representing conditions which are iter evaluatable. This
    *        will be set only if there does not exist any independent condition or filter evaluatabel
    *        subtree CompiledJunction and the complete expansion flag is turned on
@@ -138,12 +139,12 @@ public class CompositeGroupJunction extends AbstractCompiledValue
   }
 
   /**
-   * 
+   *
    * This flag gets toggled if only a Single CompositeGroupJunction gets created. It means that an
    * AllGroupJunction will not exist and the result obtained from the evaluation of
    * CompositeGroupJunction will be expanded to the level of query from clause ( i.e top level
    * iterators).
-   * 
+   *
    */
   void setCompleteExpansionOn() {
     this.completeExpansion = true;
@@ -161,7 +162,7 @@ public class CompositeGroupJunction extends AbstractCompiledValue
   }
 
   /**
-   * 
+   *
    * @param temp CompositeGroupJunction which gets merged in this CompositeGroupJunction. This
    *        fusion occurs during creation of junction if the order in which the conditions of where
    *        clause arrival are such that condition1 tying region1 & region2 , condition 2 tying
@@ -464,7 +465,7 @@ public class CompositeGroupJunction extends AbstractCompiledValue
   }
 
   /**
-   * 
+   *
    * @return List containing the filter evaluatable Composite Comparison conditions ( equi join
    *         conditions across the regions)
    */
@@ -474,12 +475,12 @@ public class CompositeGroupJunction extends AbstractCompiledValue
   }
 
   /**
-   * 
+   *
    * @return List containg GroupJunctions which are part of this CompositeGroupJunction. It can be
    *         null if there does not exist any filter evaluatable condition belonging solely to an
    *         independent region or its group of iterators, constituting the CompositeGroupJunction,
    *         so that no GroupJunctions get assosciated with the CompositeGroupJunction
-   * 
+   *
    */
   List getGroupJunctionList() {
     // return unmodifiable copy
@@ -487,7 +488,7 @@ public class CompositeGroupJunction extends AbstractCompiledValue
   }
 
   /**
-   * 
+   *
    * @return List containing the iter evaluatable conditions.This Can be null in case there exists
    *         more than one filter operand in CompiledJunction in which case all the iter ops will
    *         become part of iter operand of CompiledJunction. This can be not null iff the complete

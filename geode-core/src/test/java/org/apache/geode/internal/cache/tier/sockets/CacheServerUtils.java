@@ -14,12 +14,12 @@
  */
 package org.apache.geode.internal.cache.tier.sockets;
 
+import java.util.List;
+import java.util.Set;
+
 import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.server.CacheServer;
 import org.apache.geode.internal.cache.CacheServerImpl;
-
-import java.util.List;
-import java.util.Set;
 
 /**
  * Provides tests a way to access CacheServer, AcceptorImpl and ServerConnection

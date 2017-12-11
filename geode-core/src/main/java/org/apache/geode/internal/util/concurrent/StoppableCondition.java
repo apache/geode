@@ -47,7 +47,7 @@ public class StoppableCondition implements java.io.Serializable {
 
   /**
    * Create a new StoppableCondition based on given condition and cancellation criterion
-   * 
+   *
    * @param c the underlying condition
    **/
   StoppableCondition(Condition c, CancelCriterion stopper) {

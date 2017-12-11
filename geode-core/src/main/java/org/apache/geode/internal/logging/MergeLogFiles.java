@@ -71,12 +71,12 @@ import org.apache.geode.internal.i18n.LocalizedStrings;
  * emitted the log entry, and <i>x</i> is the position of this log file in the ordered set of log
  * files created by that process.
  * <p>
- * 
+ *
  * Normally, one log file reader is created per log file, and they are iterated over repeatedly to
  * find and write the next earliest timestamped line to the output stream. Text without a timestamp
  * is associated with the prior timestamped line in the file.
  * <p>
- * 
+ *
  * The <i>-threads</i> option will cause the program to also create threads for each reader that are
  * backed by bounded {@link BlockingQueue queues}, as outlined in the diagram below. This can
  * consume more memory, so it is wise to increase the Xmx of the java virtual machine if you are
@@ -104,7 +104,7 @@ public class MergeLogFiles {
    * @param logFiles The log files to be merged
    * @param logFileNames The names of the log files to be printed in the merged log
    * @param mergedFile Where the merged logs are printed to
-   * 
+   *
    * @return Whether or not problems occurred while merging the log files.
    *
    * @throws IllegalArgumentException If the length of <code>logFiles</code> is not the same as the
@@ -184,7 +184,7 @@ public class MergeLogFiles {
 
   /**
    * Find all of the .log files in the given directory
-   * 
+   *
    * @param dirName directory to search
    * @return all of the .log files found (Files)
    */
@@ -514,7 +514,7 @@ public class MergeLogFiles {
     /**
      * Creates a new <code>Reader</code> that reads from the given log file with the given name.
      * Invoking this constructor will start this reader thread.
-     * 
+     *
      * @param patterns java regular expressions that an entry must match one or more of
      */
     public NonThreadedReader(InputStream logFile, String logFileName, ThreadGroup group,
@@ -651,7 +651,7 @@ public class MergeLogFiles {
     /**
      * Creates a new <code>Reader</code> that reads from the given log file with the given name.
      * Invoking this constructor will start this reader thread.
-     * 
+     *
      * @param patterns TODO
      *
      * @see #run
@@ -975,5 +975,3 @@ public class MergeLogFiles {
   }
 
 }
-
-

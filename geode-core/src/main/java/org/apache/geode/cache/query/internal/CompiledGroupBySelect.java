@@ -41,7 +41,7 @@ import org.apache.geode.cache.query.types.StructType;
 import org.apache.geode.internal.i18n.LocalizedStrings;
 
 /**
- * 
+ *
  *
  */
 public class CompiledGroupBySelect extends CompiledSelect {

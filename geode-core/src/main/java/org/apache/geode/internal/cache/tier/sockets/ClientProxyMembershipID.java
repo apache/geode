@@ -14,6 +14,13 @@
  */
 package org.apache.geode.internal.cache.tier.sockets;
 
+import static org.apache.geode.distributed.ConfigurationProperties.*;
+
+import java.io.*;
+import java.util.Arrays;
+
+import org.apache.logging.log4j.Logger;
+
 import org.apache.geode.DataSerializer;
 import org.apache.geode.InternalGemFireException;
 import org.apache.geode.distributed.DistributedMember;
@@ -25,18 +32,12 @@ import org.apache.geode.internal.*;
 import org.apache.geode.internal.i18n.LocalizedStrings;
 import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.internal.logging.log4j.LocalizedMessage;
-import org.apache.logging.log4j.Logger;
-
-import java.io.*;
-import java.util.Arrays;
-
-import static org.apache.geode.distributed.ConfigurationProperties.*;
 
 /**
  * This class represents a ConnectionProxy of the CacheClient
- * 
- * 
- * 
+ *
+ *
+ *
  */
 public class ClientProxyMembershipID
     implements DataSerializableFixedID, Serializable, Externalizable {
@@ -55,7 +56,7 @@ public class ClientProxyMembershipID
 
   private static final int BYTES_32KB = 32768;
 
-  public volatile static DistributedSystem system = null;
+  public static volatile DistributedSystem system = null;
 
   /**
    * the membershpi id of the distributed system in this client (if running in a client)
@@ -243,7 +244,7 @@ public class ClientProxyMembershipID
 
   /**
    * For Externalizable
-   * 
+   *
    * @see Externalizable
    */
   public void writeExternal(ObjectOutput out) throws IOException {
@@ -267,7 +268,7 @@ public class ClientProxyMembershipID
 
   /**
    * For Externalizable
-   * 
+   *
    * @see Externalizable
    */
   public void readExternal(ObjectInput in) throws IOException, ClassNotFoundException {
@@ -400,9 +401,9 @@ public class ClientProxyMembershipID
 
   /**
    * Returns whether this <code>ClientProxyMembershipID</code> is durable.
-   * 
+   *
    * @return whether this <code>ClientProxyMembershipID</code> is durable
-   * 
+   *
    * @since GemFire 5.5
    */
   public boolean isDurable() {
@@ -412,9 +413,9 @@ public class ClientProxyMembershipID
 
   /**
    * Returns this <code>ClientProxyMembershipID</code>'s durable attributes.
-   * 
+   *
    * @return this <code>ClientProxyMembershipID</code>'s durable attributes
-   * 
+   *
    * @since GemFire 5.5
    */
   protected DurableClientAttributes getDurableAttributes() {
@@ -423,9 +424,9 @@ public class ClientProxyMembershipID
 
   /**
    * Returns this <code>ClientProxyMembershipID</code>'s durable id.
-   * 
+   *
    * @return this <code>ClientProxyMembershipID</code>'s durable id
-   * 
+   *
    * @since GemFire 5.5
    */
   public String getDurableId() {
@@ -435,9 +436,9 @@ public class ClientProxyMembershipID
 
   /**
    * Returns this <code>ClientProxyMembershipID</code>'s durable timeout.
-   * 
+   *
    * @return this <code>ClientProxyMembershipID</code>'s durable timeout
-   * 
+   *
    * @since GemFire 5.5
    */
   protected int getDurableTimeout() {
@@ -491,9 +492,9 @@ public class ClientProxyMembershipID
    * generated based on whether or not this proxy id is durable. If this proxy id is durable, then
    * the durable client id is used. If this proxy id is not durable, then
    * the<code>DistributedMember</code> string is used.
-   * 
+   *
    * @return the name of the <code>HARegion</code> queueing this proxy's messages.
-   * 
+   *
    * @since GemFire 5.5
    */
   protected String getHARegionName() {
@@ -502,9 +503,9 @@ public class ClientProxyMembershipID
 
   /**
    * Return the name of the region used for communicating interest changes between servers.
-   * 
+   *
    * @return the name of the region used for communicating interest changes between servers
-   * 
+   *
    * @since GemFire 5.6
    */
   protected String getInterestRegionName() {
@@ -524,7 +525,7 @@ public class ClientProxyMembershipID
   /**
    * Resets the unique id counter. This is done for durable clients that stops/starts its cache.
    * When it restarts its cache, it needs to maintain the same unique id
-   * 
+   *
    * @since GemFire 5.5
    */
   public static synchronized void resetUniqueIdCounter() {
@@ -541,7 +542,7 @@ public class ClientProxyMembershipID
    * <p>
    * This class is used to clean up resources associated with a particular client and thus does not
    * want to limit itself to the durable id.
-   * 
+   *
    * @since GemFire 5.7
    */
   public class Identity {

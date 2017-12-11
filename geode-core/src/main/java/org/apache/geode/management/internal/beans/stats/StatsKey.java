@@ -349,6 +349,6 @@ public class StatsKey {
   public static final String LINUX_SYSTEM_LOAD_AVERAGE5 = "loadAverage5";
 
   // Sampler Stats
-  public final static String JVM_PAUSES = "jvmPauses"; // int
+  public static final String JVM_PAUSES = "jvmPauses"; // int
 
 }

@@ -20,7 +20,7 @@ package org.apache.geode.cache.operations;
  * Encapsulates a
  * {@link org.apache.geode.cache.operations.OperationContext.OperationCode#INVALIDATE} region
  * operation having the key object for both the pre-operation case and for post-operation updates.
- * 
+ *
  * @since GemFire 5.5
  * @deprecated since Geode1.0, use {@link org.apache.geode.security.ResourcePermission} instead
  */
@@ -28,7 +28,7 @@ public class InvalidateOperationContext extends KeyOperationContext {
 
   /**
    * Constructor for the operation.
-   * 
+   *
    * @param key the key for this operation
    */
   public InvalidateOperationContext(Object key) {
@@ -37,7 +37,7 @@ public class InvalidateOperationContext extends KeyOperationContext {
 
   /**
    * Constructor for the operation to use for post-operation in updates.
-   * 
+   *
    * @param key the key for this operation
    * @param isPostOperation true if the context is at the time of sending updates
    */
@@ -47,7 +47,7 @@ public class InvalidateOperationContext extends KeyOperationContext {
 
   /**
    * Return the operation associated with the <code>OperationContext</code> object.
-   * 
+   *
    * @return <code>OperationCode.INVALIDATE</code>.
    */
   @Override

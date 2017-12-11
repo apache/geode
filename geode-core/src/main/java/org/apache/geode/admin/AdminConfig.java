@@ -14,8 +14,6 @@
  */
 package org.apache.geode.admin;
 
-import org.apache.geode.internal.i18n.LocalizedStrings;
-
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileOutputStream;
@@ -24,6 +22,8 @@ import java.io.IOException;
 import java.io.PrintStream;
 import java.util.ArrayList;
 import java.util.Date;
+
+import org.apache.geode.internal.i18n.LocalizedStrings;
 
 
 /**
@@ -36,7 +36,7 @@ import java.util.Date;
  * <li>Type=SERVER|CLIENT
  * <li>Host=A valid hostname or IP Address where the instance is running
  * <li>Port=The port you are using to open the monitor port for the instance
- * 
+ *
  * @deprecated as of 7.0 use the <code><a href=
  *             "{@docRoot}/org/apache/geode/management/package-summary.html">management</a></code>
  *             package instead

@@ -14,17 +14,9 @@
  */
 package org.apache.geode.internal.cache.execute;
 
-import org.junit.Ignore;
-import org.junit.experimental.categories.Category;
-import org.junit.Test;
-
 import static com.googlecode.catchexception.CatchException.catchException;
 import static com.googlecode.catchexception.CatchException.caughtException;
 import static org.junit.Assert.*;
-
-import org.apache.geode.test.junit.categories.DistributedTest;
-import org.apache.logging.log4j.Logger;
-import org.assertj.core.api.Assertions;
 
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -32,6 +24,11 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 
+import org.apache.logging.log4j.Logger;
+import org.assertj.core.api.Assertions;
+import org.junit.Ignore;
+import org.junit.Test;
+import org.junit.experimental.categories.Category;
 import util.TestException;
 
 import org.apache.geode.cache.CacheTransactionManager;
@@ -71,6 +68,7 @@ import org.apache.geode.test.dunit.Invoke;
 import org.apache.geode.test.dunit.LogWriterUtils;
 import org.apache.geode.test.dunit.SerializableCallable;
 import org.apache.geode.test.dunit.SerializableRunnable;
+import org.apache.geode.test.junit.categories.DistributedTest;
 
 /**
  * Test for co-located PR transactions. the test creates two data hosts and uses function execution
@@ -147,7 +145,7 @@ public class PRTransactionDUnitTest extends PRColocationDUnitTest {
   /**
    * Test two non colocated functions in a transaction. This method invokes
    * {@link MyTransactionFunction} and tells it what to test, using different arguments.
-   * 
+   *
    * @param redundantBuckets redundant buckets for colocated PRs
    */
   protected void basicPRTXInNonColocatedFunction(int redundantBuckets) {
@@ -209,7 +207,7 @@ public class PRTransactionDUnitTest extends PRColocationDUnitTest {
   /**
    * Test all the basic functionality of colocated transactions. This method invokes
    * {@link MyTransactionFunction} and tells it what to test, using different arguments.
-   * 
+   *
    * @param redundantBuckets redundant buckets for colocated PRs
    * @param populateData if false tests are carried out on empty colocated PRs
    */
@@ -400,7 +398,7 @@ public class PRTransactionDUnitTest extends PRColocationDUnitTest {
   /**
    * This method executes a transaction with get on non colocated entries and expects the
    * transaction to fail with TransactionDataNotColocatedException.
-   * 
+   *
    * @param bucketRedundancy redundancy for the colocated PRs
    */
   protected void basicPRTXWithNonColocatedGet(int bucketRedundancy) {
@@ -537,7 +535,7 @@ public class PRTransactionDUnitTest extends PRColocationDUnitTest {
   /**
    * This method executes a transaction with operation on a key in a moved bucket, and expects
    * transaction to fail with TransactionDataRebalancedException.
-   * 
+   *
    * @param op which entry op to be executed
    * @param bucketRedundancy redundancy for the colocated PRs
    */
@@ -733,7 +731,7 @@ public class PRTransactionDUnitTest extends PRColocationDUnitTest {
   /**
    * This method executes a transaction with entry op on non colocated entries and expects the
    * transaction to fail with TransactionDataNotColocatedException.
-   * 
+   *
    * @param bucketRedundancy redundancy for the colocated PRs
    */
   protected void basicPRTXWithNonColocatedOp(Op op, int bucketRedundancy) {
@@ -867,7 +865,7 @@ public class PRTransactionDUnitTest extends PRColocationDUnitTest {
 
   /**
    * This method executes a transaction inside a cache listener
-   * 
+   *
    * @param bucketRedundancy redundancy for the colocated PRs
    */
   protected void basicPRTXInCacheListener(int bucketRedundancy) {
@@ -904,7 +902,7 @@ public class PRTransactionDUnitTest extends PRColocationDUnitTest {
 
   /**
    * verify that 10 orders are created for each customer
-   * 
+   *
    * @throws ClassNotFoundException
    */
   public static void validatePRTXInCacheListener() throws ClassNotFoundException {

@@ -21,6 +21,10 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 
+import org.junit.Assume;
+import org.junit.Before;
+import org.junit.Test;
+
 import org.apache.geode.cache.Region;
 import org.apache.geode.cache.RegionShortcut;
 import org.apache.geode.cache.client.ClientCache;
@@ -36,10 +40,6 @@ import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
 import org.apache.geode.test.dunit.Host;
 import org.apache.geode.test.dunit.VM;
-
-import org.junit.Assume;
-import org.junit.Before;
-import org.junit.Test;
 
 public abstract class FunctionServiceClientAccessorPRBase extends FunctionServiceClientBase {
 

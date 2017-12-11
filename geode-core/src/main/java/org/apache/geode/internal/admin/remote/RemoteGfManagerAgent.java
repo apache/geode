@@ -14,6 +14,11 @@
  */
 package org.apache.geode.internal.admin.remote;
 
+import java.util.*;
+import java.util.concurrent.*;
+
+import org.apache.logging.log4j.Logger;
+
 import org.apache.geode.CancelException;
 import org.apache.geode.IncompatibleSystemException;
 import org.apache.geode.SystemFailure;
@@ -34,10 +39,6 @@ import org.apache.geode.internal.logging.LoggingThreadGroup;
 import org.apache.geode.internal.logging.log4j.LocalizedMessage;
 import org.apache.geode.internal.logging.log4j.LogMarker;
 import org.apache.geode.security.AuthenticationFailedException;
-import org.apache.logging.log4j.Logger;
-
-import java.util.*;
-import java.util.concurrent.*;
 
 /**
  * An implementation of <code>GfManagerAgent</code> that uses a {@link DistributionManager} to
@@ -149,14 +150,14 @@ class RemoteGfManagerAgent implements GfManagerAgent {
 
   private DisconnectListener disconnectListener;
 
-  static private final Object enumerationSync = new Object();
+  private static final Object enumerationSync = new Object();
 
   /**
    * Safe to read, updates controlled by {@link #enumerationSync}
    */
-  static private volatile ArrayList allAgents = new ArrayList();
+  private static volatile ArrayList allAgents = new ArrayList();
 
-  static private void addAgent(RemoteGfManagerAgent toAdd) {
+  private static void addAgent(RemoteGfManagerAgent toAdd) {
     synchronized (enumerationSync) {
       ArrayList replace = new ArrayList(allAgents);
       replace.add(toAdd);
@@ -164,7 +165,7 @@ class RemoteGfManagerAgent implements GfManagerAgent {
     }
   }
 
-  static private void removeAgent(RemoteGfManagerAgent toRemove) {
+  private static void removeAgent(RemoteGfManagerAgent toRemove) {
     synchronized (enumerationSync) {
       ArrayList replace = new ArrayList(allAgents);
       replace.remove(toRemove);
@@ -179,10 +180,10 @@ class RemoteGfManagerAgent implements GfManagerAgent {
 
   /**
    * Ensure that the InternalDistributedSystem class gets loaded.
-   * 
+   *
    * @see SystemFailure#loadEmergencyClasses()
    */
-  static public void loadEmergencyClasses() {
+  public static void loadEmergencyClasses() {
     if (emergencyClassesLoaded)
       return;
     emergencyClassesLoaded = true;
@@ -191,10 +192,10 @@ class RemoteGfManagerAgent implements GfManagerAgent {
 
   /**
    * Close all of the RemoteGfManagerAgent's.
-   * 
+   *
    * @see SystemFailure#emergencyClose()
    */
-  static public void emergencyClose() {
+  public static void emergencyClose() {
     ArrayList members = allAgents; // volatile fetch
     for (int i = 0; i < members.size(); i++) {
       RemoteGfManagerAgent each = (RemoteGfManagerAgent) members.get(i);
@@ -204,10 +205,10 @@ class RemoteGfManagerAgent implements GfManagerAgent {
 
   /**
    * Return a recent (though possibly incomplete) list of all existing agents
-   * 
+   *
    * @return list of agents
    */
-  static public ArrayList getAgents() {
+  public static ArrayList getAgents() {
     return allAgents;
   }
 
@@ -1287,7 +1288,7 @@ class RemoteGfManagerAgent implements GfManagerAgent {
           if (this.paused || noPendingJoins) {// fix for #39893
             /*
              * JoinProcessor waits when: 1. this.paused is set to true 2. There are no pending joins
-             * 
+             *
              * If the JoinProcessor is interrupted when it was waiting due to second reason, it
              * should still continue after catching InterruptedException. From code, currently,
              * JoinProcessor is interrupted through JoinProcessor.abort() method which is called
@@ -1423,4 +1424,3 @@ class RemoteGfManagerAgent implements GfManagerAgent {
   }
 
 }
-

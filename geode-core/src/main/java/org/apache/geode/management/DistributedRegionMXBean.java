@@ -25,9 +25,9 @@ import org.apache.geode.security.ResourcePermission.Resource;
 
 /**
  * MBean that provides access to information and management functionality for a {@link Region}.
- * 
+ *
  * @since GemFire 7.0
- * 
+ *
  */
 @ResourceOperation(resource = Resource.CLUSTER, operation = Operation.READ)
 public interface DistributedRegionMXBean {
@@ -64,7 +64,7 @@ public interface DistributedRegionMXBean {
 
   /**
    * Returns a list of the names of the subregions.
-   * 
+   *
    * @param recursive <code>true</code> to recursively traverse and find sub-regions.
    */
   public String[] listSubRegionPaths(boolean recursive);
@@ -91,7 +91,7 @@ public interface DistributedRegionMXBean {
 
   /**
    * Returns the membership attributes of the Region.
-   * 
+   *
    * @deprecated this API is scheduled to be removed
    */
   public MembershipAttributesData listMembershipAttributes();
@@ -129,7 +129,7 @@ public interface DistributedRegionMXBean {
 
   /**
    * Returns the number of entries in the Region.
-   * 
+   *
    */
   public long getSystemRegionEntryCount();
 
@@ -203,7 +203,7 @@ public interface DistributedRegionMXBean {
   /**
    * Returns the current number of disk tasks (op-log compaction, asynchronous recoveries, etc) that
    * are waiting for a thread to run.
-   * 
+   *
    * @deprecated
    */
   public long getDiskTaskWaiting();
@@ -276,14 +276,14 @@ public interface DistributedRegionMXBean {
 
   /**
    * Returns whether the Region sends data to a {@link GatewaySender}.
-   * 
+   *
    * @return True if the Region sends data, false otherwise.
    */
   public boolean isGatewayEnabled();
 
   /**
    * Returns whether persistence is enabled.
-   * 
+   *
    * @return True if persistence is enabled, false otherwise.
    */
   public boolean isPersistentEnabled();

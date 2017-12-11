@@ -174,7 +174,7 @@ public class FunctionServiceStats {
 
   /**
    * Constructor.
-   * 
+   *
    * @param factory The <code>StatisticsFactory</code> which creates the <code>Statistics</code>
    *        instance
    * @param name The name of the <code>Statistics</code>
@@ -202,7 +202,7 @@ public class FunctionServiceStats {
 
   /**
    * Returns the current value of the "Total number of completed function.execute() calls" stat.
-   * 
+   *
    * @return the current value of the "function Executions completed" stat
    */
   public int getFunctionExecutionsCompleted() {
@@ -218,7 +218,7 @@ public class FunctionServiceStats {
 
   /**
    * Returns the current value of the "Total time consumed for all completed invocations" stat.
-   * 
+   *
    * @return the current value of the "functionExecutionCompleteProcessingTime" stat
    */
   public long getFunctionExecutionCompleteProcessingTime() {
@@ -227,7 +227,7 @@ public class FunctionServiceStats {
 
   /**
    * Returns the current value of the "number of currently running invocations" stat.
-   * 
+   *
    * @return the current value of the "functionExecutionsRunning" stat
    */
   public int getFunctionExecutionsRunning() {
@@ -243,7 +243,7 @@ public class FunctionServiceStats {
 
   /**
    * Returns the current value of the "Total number of results sent to the ResultCollector" stat.
-   * 
+   *
    * @return the current value of the "resultsReturned" stat
    */
   public int getResultsSentToResultCollector() {
@@ -260,7 +260,7 @@ public class FunctionServiceStats {
   /**
    * Returns the current value of the "Total number of results received and passed to
    * ResultCollector" stat.
-   * 
+   *
    * @return the current value of the "resultsReturned" stat
    */
   public int getResultsReceived() {
@@ -276,7 +276,7 @@ public class FunctionServiceStats {
 
   /**
    * Returns the current value of the "Total number of FunctionService...execute() calls" stat.
-   * 
+   *
    * @return the current value of the "functionExecutionsCall" stat
    */
   public int getFunctionExecutionCalls() {
@@ -293,7 +293,7 @@ public class FunctionServiceStats {
   /**
    * Returns the current value of the "Total time consumed for all completed execute() calls where
    * hasResult() returns true" stat.
-   * 
+   *
    * @return the current value of the "functionExecutionHasResultCompleteProcessingTime" stat
    */
   public int getFunctionExecutionHasResultCompleteProcessingTime() {
@@ -303,7 +303,7 @@ public class FunctionServiceStats {
   /**
    * Returns the current value of the "A gauge indicating the number of currently active execute()
    * calls for functions where hasResult() returns true" stat.
-   * 
+   *
    * @return the current value of the "functionExecutionHasResultRunning" stat
    */
   public int getFunctionExecutionHasResultRunning() {
@@ -320,7 +320,7 @@ public class FunctionServiceStats {
   /**
    * Returns the current value of the "Total number of Exceptions Occurred while executing function"
    * stat.
-   * 
+   *
    * @return the current value of the "functionExecutionHasResultRunning" stat
    */
   public int getFunctionExecutionExceptions() {
@@ -336,7 +336,7 @@ public class FunctionServiceStats {
 
   /**
    * Returns the current time (ns).
-   * 
+   *
    * @return the current time (ns)
    */
   public long startTime() {
@@ -363,7 +363,7 @@ public class FunctionServiceStats {
   /**
    * Increments the "functionExecutionsCompleted" and "functionExecutionCompleteProcessingTime"
    * stats.
-   * 
+   *
    * @param start The start of the functionExecution (which is decremented from the current time to
    *        determine the function Execution processing time).
    * @param haveResult haveResult=true then update the _functionExecutionHasResultRunningId and
@@ -394,7 +394,7 @@ public class FunctionServiceStats {
 
   /**
    * Increments the "_functionExecutionException" and decrements "_functionExecutionsRunningId"
-   * 
+   *
    * @param haveResult
    */
   public void endFunctionExecutionWithException(boolean haveResult) {

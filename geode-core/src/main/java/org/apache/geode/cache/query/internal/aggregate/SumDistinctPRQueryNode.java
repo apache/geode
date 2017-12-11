@@ -18,7 +18,7 @@ import java.util.Set;
 
 /**
  * Computes the sum of distinct values on the PR query node.
- * 
+ *
  *
  */
 public class SumDistinctPRQueryNode extends DistinctAggregator {

@@ -24,7 +24,7 @@ import org.apache.geode.DataSerializer;
 import org.apache.geode.cache.Region;
 import org.apache.geode.internal.DataSerializableFixedID;
 import org.apache.geode.internal.Version;
-import org.apache.geode.internal.cache.lru.LRUEntry;
+import org.apache.geode.internal.cache.eviction.EvictableEntry;
 import org.apache.geode.internal.i18n.LocalizedStrings;
 import org.apache.geode.internal.lang.StringUtils;
 import org.apache.geode.pdx.PdxInstance;
@@ -73,7 +73,7 @@ public class VMCachedDeserializable implements CachedDeserializable, DataSeriali
   /**
    * Create a new instance with an object and it's size. Note the caller decides if objectSize is
    * the memory size or the serialized size.
-   * 
+   *
    * @param object
    * @param objectSize
    */
@@ -87,11 +87,11 @@ public class VMCachedDeserializable implements CachedDeserializable, DataSeriali
     if (v instanceof byte[]) {
       // org.apache.geode.internal.cache.GemFireCache.getInstance().getLogger().info("DEBUG
       // getDeserializedValue r=" + r + " re=" + re, new RuntimeException("STACK"));
-      LRUEntry le = null;
+      EvictableEntry le = null;
       if (re != null) {
         assert r != null;
-        if (re instanceof LRUEntry) {
-          le = (LRUEntry) re;
+        if (re instanceof EvictableEntry) {
+          le = (EvictableEntry) re;
         }
       }
       if (le != null) {
@@ -272,4 +272,3 @@ public class VMCachedDeserializable implements CachedDeserializable, DataSeriali
     return true;
   }
 }
-

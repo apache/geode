@@ -38,7 +38,7 @@ public class DistributionConfigSnapshot extends DistributionConfigImpl {
 
   /**
    * Constructs an internal system config given an existing one.
-   * 
+   *
    * @param dc an existing system configuration.
    */
   public DistributionConfigSnapshot(DistributionConfig dc) {

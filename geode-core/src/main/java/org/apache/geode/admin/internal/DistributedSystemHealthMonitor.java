@@ -32,7 +32,6 @@ import org.apache.geode.cache.RegionAttributes;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
 import org.apache.geode.internal.Assert;
 import org.apache.geode.internal.Config;
-import org.apache.geode.internal.net.SocketCreator;
 import org.apache.geode.internal.admin.AdminBridgeServer;
 import org.apache.geode.internal.admin.CacheInfo;
 import org.apache.geode.internal.admin.DLockInfo;
@@ -47,6 +46,7 @@ import org.apache.geode.internal.i18n.LocalizedStrings;
 import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.internal.logging.LoggingThreadGroup;
 import org.apache.geode.internal.logging.log4j.LocalizedMessage;
+import org.apache.geode.internal.net.SocketCreator;
 
 /**
  * A thread that monitors the health of the distributed system. It is kind of like a

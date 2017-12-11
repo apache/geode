@@ -41,10 +41,10 @@ import org.apache.geode.management.internal.security.ResourceConstants;
 import org.apache.geode.management.internal.security.TestFunctions.ReadFunction;
 import org.apache.geode.management.internal.security.TestFunctions.WriteFunction;
 import org.apache.geode.security.SimpleTestSecurityManager;
-import org.apache.geode.test.junit.rules.GfshShellConnectionRule;
 import org.apache.geode.test.dunit.rules.LocatorServerStartupRule;
 import org.apache.geode.test.dunit.rules.MemberVM;
 import org.apache.geode.test.junit.categories.DistributedTest;
+import org.apache.geode.test.junit.rules.GfshCommandRule;
 
 @Category(DistributedTest.class)
 public class ExecuteFunctionCommandSecurityTest implements Serializable {
@@ -53,7 +53,7 @@ public class ExecuteFunctionCommandSecurityTest implements Serializable {
   public static LocatorServerStartupRule lsRule = new LocatorServerStartupRule();
 
   @Rule
-  public GfshShellConnectionRule gfsh = new GfshShellConnectionRule();
+  public GfshCommandRule gfsh = new GfshCommandRule();
 
   private static MemberVM locator, server1, server2;
 
@@ -76,7 +76,7 @@ public class ExecuteFunctionCommandSecurityTest implements Serializable {
       FunctionService.registerFunction(new ReadFunction());
       FunctionService.registerFunction(new WriteFunction());
 
-      InternalCache cache = LocatorServerStartupRule.serverStarter.getCache();
+      InternalCache cache = LocatorServerStartupRule.getCache();
       cache.createRegionFactory(RegionShortcut.REPLICATE).create(REPLICATED_REGION);
       cache.createRegionFactory(RegionShortcut.PARTITION).create(PARTITIONED_REGION);
     }));
@@ -87,33 +87,35 @@ public class ExecuteFunctionCommandSecurityTest implements Serializable {
 
   @Test
   public void dataReaderCanExecuteReadFunction() throws Exception {
-    gfsh.secureConnectAndVerify(locator.getPort(), GfshShellConnectionRule.PortType.locator,
-        "dataRead", "dataRead");
-    gfsh.executeAndVerifyCommand("execute function --id=" + new ReadFunction().getId());
+    gfsh.secureConnectAndVerify(locator.getPort(), GfshCommandRule.PortType.locator, "dataRead",
+        "dataRead");
+    gfsh.executeAndAssertThat("execute function --id=" + new ReadFunction().getId())
+        .statusIsSuccess();
     assertThat(gfsh.getGfshOutput()).contains(ReadFunction.SUCCESS_OUTPUT);
   }
 
   @Test
   public void dataReaderCanNotExecuteWriteFunction() throws Exception {
-    gfsh.secureConnectAndVerify(locator.getPort(), GfshShellConnectionRule.PortType.locator,
-        "dataRead", "dataRead");
-    gfsh.executeCommand("execute function --id=" + new WriteFunction().getId());
-    assertThat(gfsh.getGfshOutput()).contains("dataRead not authorized for DATA:WRITE");
-    assertThat(gfsh.getGfshOutput()).doesNotContain(WriteFunction.SUCCESS_OUTPUT);
+    gfsh.secureConnectAndVerify(locator.getPort(), GfshCommandRule.PortType.locator, "dataRead",
+        "dataRead");
+    gfsh.executeAndAssertThat("execute function --id=" + new WriteFunction().getId())
+        .containsOutput("dataRead not authorized for DATA:WRITE")
+        .doesNotContainOutput(WriteFunction.SUCCESS_OUTPUT);
   }
 
   @Test
   public void dataWriterCanExecuteWriteFunction() throws Exception {
-    gfsh.secureConnectAndVerify(locator.getPort(), GfshShellConnectionRule.PortType.locator,
-        "dataWrite", "dataWrite");
-    gfsh.executeAndVerifyCommand("execute function --id=" + new WriteFunction().getId());
+    gfsh.secureConnectAndVerify(locator.getPort(), GfshCommandRule.PortType.locator, "dataWrite",
+        "dataWrite");
+    gfsh.executeAndAssertThat("execute function --id=" + new WriteFunction().getId())
+        .statusIsSuccess();
     assertThat(gfsh.getGfshOutput()).contains(WriteFunction.SUCCESS_OUTPUT);
   }
 
   @Test
   public void dataWriterCanNotExecuteReadFunction() throws Exception {
-    gfsh.secureConnectAndVerify(locator.getPort(), GfshShellConnectionRule.PortType.locator,
-        "dataWrite", "dataWrite");
+    gfsh.secureConnectAndVerify(locator.getPort(), GfshCommandRule.PortType.locator, "dataWrite",
+        "dataWrite");
     gfsh.executeCommand("execute function --id=" + new ReadFunction().getId());
     assertThat(gfsh.getGfshOutput()).contains("dataWrite not authorized for DATA:READ");
     assertThat(gfsh.getGfshOutput()).doesNotContain(ReadFunction.SUCCESS_OUTPUT);
@@ -121,36 +123,36 @@ public class ExecuteFunctionCommandSecurityTest implements Serializable {
 
   @Test
   public void readOnlyUserOnReplicatedRegion() throws Exception {
-    gfsh.secureConnectAndVerify(locator.getPort(), GfshShellConnectionRule.PortType.locator,
-        "dataRead", "dataRead");
-    gfsh.executeAndVerifyCommand(
-        "execute function --id=" + new ReadFunction().getId() + " --region=" + REPLICATED_REGION);
-    assertThat(gfsh.getGfshOutput()).contains(ReadFunction.SUCCESS_OUTPUT);
+    gfsh.secureConnectAndVerify(locator.getPort(), GfshCommandRule.PortType.locator, "dataRead",
+        "dataRead");
+    gfsh.executeAndAssertThat(
+        "execute function --id=" + new ReadFunction().getId() + " --region=" + REPLICATED_REGION)
+        .statusIsSuccess().containsOutput(ReadFunction.SUCCESS_OUTPUT);
 
-    gfsh.executeAndVerifyCommand(
-        "execute function --id=" + new WriteFunction().getId() + " --region=" + REPLICATED_REGION);
-    assertThat(gfsh.getGfshOutput()).contains("dataRead not authorized for DATA:WRITE");
-    assertThat(gfsh.getGfshOutput()).doesNotContain(WriteFunction.SUCCESS_OUTPUT);
+    gfsh.executeAndAssertThat(
+        "execute function --id=" + new WriteFunction().getId() + " --region=" + REPLICATED_REGION)
+        .statusIsSuccess().containsOutput("dataRead not authorized for DATA:WRITE")
+        .doesNotContainOutput(WriteFunction.SUCCESS_OUTPUT);
   }
 
   @Test
   public void readOnlyUserOnPartitionedRegion() throws Exception {
-    gfsh.secureConnectAndVerify(locator.getPort(), GfshShellConnectionRule.PortType.locator,
-        "dataRead", "dataRead");
-    gfsh.executeAndVerifyCommand(
-        "execute function --id=" + new ReadFunction().getId() + " --region=" + PARTITIONED_REGION);
-    assertThat(gfsh.getGfshOutput()).contains(ReadFunction.SUCCESS_OUTPUT);
+    gfsh.secureConnectAndVerify(locator.getPort(), GfshCommandRule.PortType.locator, "dataRead",
+        "dataRead");
+    gfsh.executeAndAssertThat(
+        "execute function --id=" + new ReadFunction().getId() + " --region=" + PARTITIONED_REGION)
+        .statusIsSuccess().containsOutput(ReadFunction.SUCCESS_OUTPUT);
 
-    gfsh.executeAndVerifyCommand(
-        "execute function --id=" + new WriteFunction().getId() + " --region=" + PARTITIONED_REGION);
-    assertThat(gfsh.getGfshOutput()).contains("dataRead not authorized for DATA:WRITE");
-    assertThat(gfsh.getGfshOutput()).doesNotContain(WriteFunction.SUCCESS_OUTPUT);
+    gfsh.executeAndAssertThat(
+        "execute function --id=" + new WriteFunction().getId() + " --region=" + PARTITIONED_REGION)
+        .statusIsSuccess().containsOutput("dataRead not authorized for DATA:WRITE")
+        .doesNotContainOutput(WriteFunction.SUCCESS_OUTPUT);
   }
 
   private static void waitUntilRegionMBeansAreRegistered() {
     Awaitility.await().atMost(10, TimeUnit.SECONDS).until(() -> {
       Set<DistributedMember> regionMembers = CliUtil.getRegionAssociatedMembers(REPLICATED_REGION,
-          (InternalCache) CacheFactory.getAnyInstance());
+          (InternalCache) CacheFactory.getAnyInstance(), true);
       assertThat(regionMembers).hasSize(2);
     });
   }

@@ -23,14 +23,14 @@ import org.apache.geode.internal.cache.tier.MessageType;
 
 /**
  * Does a region registerInterestList on a server
- * 
+ *
  * @since GemFire 5.7
  */
 public class RegisterInterestListOp {
   /**
    * Does a region registerInterestList on a server using connections from the given pool to
    * communicate with the server.
-   * 
+   *
    * @param pool the pool to use to communicate with the server.
    * @param region the name of the region to do the registerInterestList on
    * @param keys list of keys we are interested in
@@ -54,7 +54,7 @@ public class RegisterInterestListOp {
   /**
    * Does a region registerInterestList on a server using connections from the given pool to
    * communicate with the given server location.
-   * 
+   *
    * @param sl the server to do the register interest on.
    * @param pool the pool to use to communicate with the server.
    * @param region the name of the region to do the registerInterest on
@@ -76,7 +76,7 @@ public class RegisterInterestListOp {
   /**
    * Does a region registerInterestList on a server using connections from the given pool to
    * communicate with the given server location.
-   * 
+   *
    * @param conn the connection to do the register interest on.
    * @param pool the pool to use to communicate with the server.
    * @param region the name of the region to do the registerInterest on

@@ -205,7 +205,7 @@ declarative caching XML file elements unless indicated otherwise.
           </xsd:complexType>
         </xsd:element>
 
-        <xsd:element maxOccurs="unbounded" minOccurs="0" name="gateway-receiver">
+        <xsd:element maxOccurs="1" minOccurs="0" name="gateway-receiver">
           <xsd:complexType>
             <xsd:sequence>
               <xsd:element maxOccurs="unbounded" minOccurs="0" name="gateway-transport-filter" type="gf:class-with-parameters-type" />

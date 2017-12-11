@@ -44,7 +44,7 @@ public class StartupOperation {
    * responses to come back. This method may throw jgroups and other io exceptions since it
    * interacts with the distribution manager at a low level to send the startup messages. It does
    * this to ensure it knows which recipients didn't receive the message.
-   * 
+   *
    * @return whether all recipients could be contacted. The failure set can be fetched with
    *         getFailureSet??
    */

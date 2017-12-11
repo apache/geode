@@ -14,14 +14,7 @@
  */
 package org.apache.geode.cache30;
 
-import org.junit.experimental.categories.Category;
-import org.junit.Test;
-
 import static org.junit.Assert.*;
-
-import org.apache.geode.test.dunit.cache.internal.JUnit4CacheTestCase;
-import org.apache.geode.test.dunit.internal.JUnit4DistributedTestCase;
-import org.apache.geode.test.junit.categories.DistributedTest;
 
 import java.io.File;
 import java.lang.reflect.Array;
@@ -29,6 +22,9 @@ import java.util.BitSet;
 import java.util.Collection;
 import java.util.Iterator;
 import java.util.Set;
+
+import org.junit.Test;
+import org.junit.experimental.categories.Category;
 
 import org.apache.geode.cache.AttributesFactory;
 import org.apache.geode.cache.Cache;
@@ -52,8 +48,8 @@ import org.apache.geode.internal.cache.CachedDeserializable;
 import org.apache.geode.internal.cache.DiskRegion;
 import org.apache.geode.internal.cache.DiskRegionStats;
 import org.apache.geode.internal.cache.LocalRegion;
-import org.apache.geode.internal.cache.lru.LRUCapacityController;
-import org.apache.geode.internal.cache.lru.LRUStatistics;
+import org.apache.geode.internal.cache.eviction.CountLRUEviction;
+import org.apache.geode.internal.cache.eviction.EvictionStatistics;
 import org.apache.geode.test.dunit.Host;
 import org.apache.geode.test.dunit.LogWriterUtils;
 import org.apache.geode.test.dunit.SerializableCallable;
@@ -61,6 +57,9 @@ import org.apache.geode.test.dunit.SerializableRunnable;
 import org.apache.geode.test.dunit.VM;
 import org.apache.geode.test.dunit.Wait;
 import org.apache.geode.test.dunit.WaitCriterion;
+import org.apache.geode.test.dunit.cache.internal.JUnit4CacheTestCase;
+import org.apache.geode.test.dunit.internal.JUnit4DistributedTestCase;
+import org.apache.geode.test.junit.categories.DistributedTest;
 
 /**
  * Tests the functionality of cache regions whose contents may be written to disk.
@@ -95,11 +94,11 @@ public class DiskRegionDUnitTest extends JUnit4CacheTestCase {
   // }
 
   /**
-   * Returns the <code>LRUStatistics</code> for the given region
+   * Returns the <code>EvictionStatistics</code> for the given region
    */
-  protected LRUStatistics getLRUStats(Region region) {
+  protected EvictionStatistics getLRUStats(Region region) {
     final LocalRegion l = (LocalRegion) region;
-    return l.getEvictionController().getLRUHelper().getStats();
+    return l.getEvictionController().getStatistics();
   }
 
   //////// Test Methods
@@ -128,7 +127,7 @@ public class DiskRegionDUnitTest extends JUnit4CacheTestCase {
     assertNotNull(dr);
 
     DiskRegionStats diskStats = dr.getStats();
-    LRUStatistics lruStats = getLRUStats(region);
+    EvictionStatistics lruStats = getLRUStats(region);
     assertNotNull(diskStats);
     assertNotNull(lruStats);
 
@@ -216,7 +215,7 @@ public class DiskRegionDUnitTest extends JUnit4CacheTestCase {
       public void run2() throws CacheException {
         LocalRegion region = (LocalRegion) getRootRegion().getSubregion(name);
         // DiskRegion dr = region.getDiskRegion();
-        LRUStatistics lruStats = getLRUStats(region);
+        EvictionStatistics lruStats = getLRUStats(region);
         int i;
         for (i = 0; lruStats.getEvictions() <= 0; i++) {
           region.put(new Integer(i), new short[250]);
@@ -229,7 +228,7 @@ public class DiskRegionDUnitTest extends JUnit4CacheTestCase {
       public void run2() throws CacheException {
         LocalRegion region = (LocalRegion) getRootRegion().getSubregion(name);
         // DiskRegion dr = region.getDiskRegion();
-        // LRUStatistics lruStats = getLRUStats(region);
+        // EvictionStatistics lruStats = getLRUStats(region);
         for (int i = 0; i < 10; i++) {
           region.put(new Integer(i), new int[250]);
         }
@@ -240,7 +239,7 @@ public class DiskRegionDUnitTest extends JUnit4CacheTestCase {
       public void run2() throws CacheException {
         LocalRegion region = (LocalRegion) getRootRegion().getSubregion(name);
         // DiskRegion dr = region.getDiskRegion();
-        final LRUStatistics lruStats = getLRUStats(region);
+        final EvictionStatistics lruStats = getLRUStats(region);
         WaitCriterion ev = new WaitCriterion() {
           public boolean done() {
             return lruStats.getEvictions() > 6;
@@ -260,7 +259,7 @@ public class DiskRegionDUnitTest extends JUnit4CacheTestCase {
       public void run2() throws CacheException {
         LocalRegion region = (LocalRegion) getRootRegion().getSubregion(name);
         // DiskRegion dr = region.getDiskRegion();
-        // LRUStatistics lruStats = getLRUStats(region);
+        // EvictionStatistics lruStats = getLRUStats(region);
         for (int i = 0; i < 10000; i++) {
           region.put(String.valueOf(i), String.valueOf(i).getBytes());
         }
@@ -271,7 +270,7 @@ public class DiskRegionDUnitTest extends JUnit4CacheTestCase {
       public void run2() throws CacheException {
         LocalRegion region = (LocalRegion) getRootRegion().getSubregion(name);
         // DiskRegion dr = region.getDiskRegion();
-        // LRUStatistics lruStats = getLRUStats(region);
+        // EvictionStatistics lruStats = getLRUStats(region);
         for (int i = 0; i < 10000; i++) {
           byte[] bytes = (byte[]) region.get(String.valueOf(i));
           assertEquals(String.valueOf(i), new String(bytes));
@@ -299,7 +298,7 @@ public class DiskRegionDUnitTest extends JUnit4CacheTestCase {
     Region region = createRegion(name, factory.create());
     DiskRegion dr = ((LocalRegion) region).getDiskRegion();
     DiskRegionStats diskStats = dr.getStats();
-    LRUStatistics lruStats = getLRUStats(region);
+    EvictionStatistics lruStats = getLRUStats(region);
 
     // Put in larger stuff until we start evicting
     int total;
@@ -363,7 +362,7 @@ public class DiskRegionDUnitTest extends JUnit4CacheTestCase {
       public void run2() throws CacheException {
         LocalRegion region = (LocalRegion) getRootRegion().getSubregion(name);
         // DiskRegion dr = region.getDiskRegion();
-        LRUStatistics lruStats = getLRUStats(region);
+        EvictionStatistics lruStats = getLRUStats(region);
         for (int i = 0; lruStats.getEvictions() < 10; i++) {
           LogWriterUtils.getLogWriter().info("Put " + i);
           region.put(new Integer(i), new byte[1]);
@@ -377,7 +376,7 @@ public class DiskRegionDUnitTest extends JUnit4CacheTestCase {
       public void run2() throws CacheException {
         LocalRegion region = (LocalRegion) getRootRegion().getSubregion(name);
         // DiskRegion dr = region.getDiskRegion();
-        LRUStatistics lruStats = getLRUStats(region);
+        EvictionStatistics lruStats = getLRUStats(region);
         assertEquals(10, lruStats.getEvictions());
 
         // Because we are DISTRIBUTED_ACK, we can rely on the order
@@ -414,7 +413,7 @@ public class DiskRegionDUnitTest extends JUnit4CacheTestCase {
     Region region = createRegion(name, factory.create());
     DiskRegion dr = ((LocalRegion) region).getDiskRegion();
     DiskRegionStats diskStats = dr.getStats();
-    LRUStatistics lruStats = getLRUStats(region);
+    EvictionStatistics lruStats = getLRUStats(region);
 
     int total;
     for (total = 0; lruStats.getEvictions() < 40; total++) {
@@ -479,7 +478,7 @@ public class DiskRegionDUnitTest extends JUnit4CacheTestCase {
     Region region = createRegion(name, factory.create());
     // DiskRegion dr = ((LocalRegion) region).getDiskRegion();
     // DiskRegionStats diskStats = dr.getStats();
-    LRUStatistics lruStats = getLRUStats(region);
+    EvictionStatistics lruStats = getLRUStats(region);
 
     int total;
     for (total = 0; lruStats.getEvictions() < 20; total++) {
@@ -576,7 +575,7 @@ public class DiskRegionDUnitTest extends JUnit4CacheTestCase {
     Region region = createRegion(name, factory.create());
     // DiskRegion dr = ((LocalRegion) region).getDiskRegion();
     // DiskRegionStats diskStats = dr.getStats();
-    LRUStatistics lruStats = getLRUStats(region);
+    EvictionStatistics lruStats = getLRUStats(region);
 
     // Put in larger stuff until we start evicting
     int total;
@@ -861,7 +860,7 @@ public class DiskRegionDUnitTest extends JUnit4CacheTestCase {
     Region region = createRegion(name, factory.create());
     // DiskRegion dr = ((LocalRegion) region).getDiskRegion();
     // DiskRegionStats diskStats = dr.getStats();
-    LRUStatistics lruStats = getLRUStats(region);
+    EvictionStatistics lruStats = getLRUStats(region);
 
     // Put in larger stuff until we start evicting
     int total;
@@ -904,7 +903,7 @@ public class DiskRegionDUnitTest extends JUnit4CacheTestCase {
     Region region = createRegion(name, factory.create());
     // DiskRegion dr = ((LocalRegion) region).getDiskRegion();
     // DiskRegionStats diskStats = dr.getStats();
-    LRUStatistics lruStats = getLRUStats(region);
+    EvictionStatistics lruStats = getLRUStats(region);
 
     // Put in larger stuff until we start evicting
     int total;
@@ -954,7 +953,7 @@ public class DiskRegionDUnitTest extends JUnit4CacheTestCase {
       public void run2() throws CacheException {
         LocalRegion region = (LocalRegion) getRootRegion().getSubregion(name);
         // DiskRegion dr = region.getDiskRegion();
-        LRUStatistics lruStats = getLRUStats(region);
+        EvictionStatistics lruStats = getLRUStats(region);
         for (int i = 0; lruStats.getEvictions() < 10; i++) {
           LogWriterUtils.getLogWriter().info("Put " + i);
           region.put(new Integer(i), new byte[1]);
@@ -1035,7 +1034,7 @@ public class DiskRegionDUnitTest extends JUnit4CacheTestCase {
     Region region = createRegion(name, factory.create());
     // DiskRegion dr = ((LocalRegion) region).getDiskRegion();
     // DiskRegionStats diskStats = dr.getStats();
-    LRUStatistics lruStats = getLRUStats(region);
+    EvictionStatistics lruStats = getLRUStats(region);
 
     // Put in larger stuff until we start evicting
     int total;
@@ -1090,7 +1089,7 @@ public class DiskRegionDUnitTest extends JUnit4CacheTestCase {
     LocalRegion region = (LocalRegion) createRegion(name, factory.create());
     DiskRegion dr = region.getDiskRegion();
     DiskRegionStats diskStats = dr.getStats();
-    LRUStatistics lruStats = getLRUStats(region);
+    EvictionStatistics lruStats = getLRUStats(region);
 
     // Put in stuff until we start evicting
     int total;
@@ -1181,7 +1180,7 @@ public class DiskRegionDUnitTest extends JUnit4CacheTestCase {
     LocalRegion region = (LocalRegion) createRegion(name, factory.create());
     // DiskRegion dr = region.getDiskRegion();
     // DiskRegionStats diskStats = dr.getStats();
-    LRUStatistics lruStats = getLRUStats(region);
+    EvictionStatistics lruStats = getLRUStats(region);
 
     // Put in larger stuff until we start evicting
     int total;
@@ -1215,7 +1214,7 @@ public class DiskRegionDUnitTest extends JUnit4CacheTestCase {
   }
 
   /**
-   * Tests disk overflow with an entry-based {@link LRUCapacityController}.
+   * Tests disk overflow with an entry-based {@link CountLRUEviction}.
    */
   @Test
   public void testLRUCapacityController() throws CacheException {
@@ -1235,7 +1234,7 @@ public class DiskRegionDUnitTest extends JUnit4CacheTestCase {
     Region region = createRegion(name, factory.create());
     DiskRegion dr = ((LocalRegion) region).getDiskRegion();
     DiskRegionStats diskStats = dr.getStats();
-    LRUStatistics lruStats = getLRUStats(region);
+    EvictionStatistics lruStats = getLRUStats(region);
 
     flush(region);
 
@@ -1290,8 +1289,8 @@ public class DiskRegionDUnitTest extends JUnit4CacheTestCase {
   }
 
   /**
-   * Tests a disk-based region with an {@link LRUCapacityController} with size 1 and an eviction
-   * action of "overflow".
+   * Tests a disk-based region with an {@link CountLRUEviction} with size 1 and an eviction action
+   * of "overflow".
    */
   @Test
   public void testLRUCCSizeOne() throws CacheException {
@@ -1320,7 +1319,7 @@ public class DiskRegionDUnitTest extends JUnit4CacheTestCase {
     factory.setDiskStoreName(ds.getName());
 
     Region region = createRegion(name, factory.create());
-    LRUStatistics lruStats = getLRUStats(region);
+    EvictionStatistics lruStats = getLRUStats(region);
     assertNotNull(lruStats);
 
     for (int i = 1; i <= 1; i++) {

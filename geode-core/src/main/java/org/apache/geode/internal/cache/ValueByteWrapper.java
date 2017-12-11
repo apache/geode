@@ -26,7 +26,7 @@ class ValueByteWrapper {
 
   /**
    * Constructs the wrapper object
-   * 
+   *
    * @param value byte[] bytes read from oplog
    * @param userBit A byte describing the nature of the value i.e whether it is: serialized ,
    *        invalid or empty byte array etc.
@@ -39,7 +39,7 @@ class ValueByteWrapper {
 
   /**
    * @return boolean returns true if the value bytes are a serialized object
-   * 
+   *
    *         boolean isSerialized() { return isSerialized; }
    */
 
@@ -52,7 +52,7 @@ class ValueByteWrapper {
 
   /**
    * Getter method for the userBit assosciated with the value read from Oplog during initialization
-   * 
+   *
    * @return byte value
    */
   byte getUserBit() {

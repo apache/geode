@@ -72,7 +72,7 @@ import org.junit.Before;
  * as many exception-testing methods as there are exceptions the method can throw. Sometimes there
  * are multiple tests per JSR166 method when the different "normal" behaviors differ significantly.
  * And sometimes testcases cover multiple methods when they cannot be tested in isolation.</li>
- * 
+ *
  * <li>The documentation style for testcases is to provide as javadoc a simple sentence or two
  * describing the property that the testcase method purports to test. The javadocs do not say
  * anything about how the property is tested. To find out, read the code.</li>

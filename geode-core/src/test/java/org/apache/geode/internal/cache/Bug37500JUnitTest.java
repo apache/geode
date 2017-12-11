@@ -14,6 +14,7 @@
  */
 package org.apache.geode.internal.cache;
 
+import static org.junit.Assert.*;
 import static org.junit.Assert.fail;
 
 import java.io.File;
@@ -26,12 +27,10 @@ import org.junit.experimental.categories.Category;
 import org.apache.geode.cache.Scope;
 import org.apache.geode.test.junit.categories.IntegrationTest;
 
-import static org.junit.Assert.*;
-
 /**
  * This is a bugtest for bug 37500.
- * 
- * 
+ *
+ *
  */
 @Category(IntegrationTest.class)
 public class Bug37500JUnitTest extends DiskRegionTestingBase {
@@ -61,7 +60,7 @@ public class Bug37500JUnitTest extends DiskRegionTestingBase {
    * <li>rolling = true
    * <li>syncMode = true
    * <li>approx size on disk for operations = 440 bytes<br>
-   * 
+   *
    * 2.Make Roller go into WAIT state via CacheObserverAdapter.beforeGoingToCompact callback<br>
    * 3.Put 440 bytes , it will go in oplog1 <br>
    * 4.Put another 440 bytes ,it will go in oplog1<br>
@@ -74,7 +73,7 @@ public class Bug37500JUnitTest extends DiskRegionTestingBase {
    * expecting Roller to free up the space. The roller, which has now been notified to run, tries to
    * roll entry2 for which it seeks entry level lock which has been acquired by put-thread. So the
    * put thread eventually comes out of the wait with DiskAccessException<br>
-   * 
+   *
    * Another scenario for this bug is, once the disk space was getting exhausted , the entry
    * operation threads which had already taken a lock on Entry got stuck trying to seek the Oplog
    * Lock. The switching thread had acquired the Oplog.lock & was waiting for the roller thread to
@@ -83,8 +82,8 @@ public class Bug37500JUnitTest extends DiskRegionTestingBase {
    * DiskAccessException after completing the stipulated wait. The Roller was able to free space
    * only when it has rolled all the relevant entries which could happen only when the entry
    * operation threads released the entry lock after getting DiskAccessException.
-   * 
-   * 
+   *
+   *
    * @throws Exception
    */
   @Test

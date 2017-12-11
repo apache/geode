@@ -15,6 +15,13 @@
 
 package org.apache.geode.modules.session.internal.common;
 
+import java.util.Map;
+
+import javax.servlet.http.HttpSession;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.GemFireCache;
 import org.apache.geode.cache.Region;
@@ -27,12 +34,6 @@ import org.apache.geode.modules.util.RegionConfiguration;
 import org.apache.geode.modules.util.RegionHelper;
 import org.apache.geode.modules.util.TouchPartitionedRegionEntriesFunction;
 import org.apache.geode.modules.util.TouchReplicatedRegionEntriesFunction;
-
-import java.util.Map;
-import javax.servlet.http.HttpSession;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 /**
  * Class which defines a peer-to-peer cache

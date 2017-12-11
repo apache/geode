@@ -15,10 +15,10 @@
 
 package org.apache.geode.internal.cache.wan;
 
-import org.apache.geode.GemFireCheckedException;
-
 import java.util.ArrayList;
 import java.util.List;
+
+import org.apache.geode.GemFireCheckedException;
 
 /**
  * An exception thrown during batch processing.
@@ -38,7 +38,7 @@ public class BatchException70 extends GemFireCheckedException {
 
   /**
    * Required for serialization
-   * 
+   *
    * @param l
    */
   public BatchException70(List<BatchException70> l) {
@@ -57,7 +57,7 @@ public class BatchException70 extends GemFireCheckedException {
 
   /**
    * Answers the index in the batch where the exception occurred
-   * 
+   *
    * @return the index in the batch where the exception occurred
    */
   public int getIndex() {

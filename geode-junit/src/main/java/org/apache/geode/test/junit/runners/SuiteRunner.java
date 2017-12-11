@@ -14,6 +14,11 @@
  */
 package org.apache.geode.test.junit.runners;
 
+import java.lang.annotation.ElementType;
+import java.lang.annotation.Inherited;
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
+import java.lang.annotation.Target;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -33,6 +38,16 @@ import org.junit.runners.model.RunnerBuilder;
  */
 public class SuiteRunner extends Suite {
 
+  @Retention(RetentionPolicy.RUNTIME)
+  @Target(ElementType.TYPE)
+  @Inherited
+  public @interface Candidate {
+    /**
+     * @return the classes to be run
+     */
+    public Class<?> value();
+  }
+
   public SuiteRunner(final Class<?> testClass, final RunnerBuilder builder)
       throws InitializationError {
     super(testClass, getRunners(testClass));
@@ -44,10 +59,21 @@ public class SuiteRunner extends Suite {
       throw new InitializationError(
           String.format("class '%s' must have a SuiteClasses annotation", testClass.getName()));
     }
+
+    SuiteRunner.Candidate candidate = testClass.getAnnotation(Candidate.class);
+    Class<?> candidateClass = null;
+    if (candidate != null) {
+      candidateClass = candidate.value();
+    }
+
     Class<?>[] childClasses = annotation.value();
     List<Runner> runners = new ArrayList<>();
     for (Class childClass : childClasses) {
       runners.add(new SuiteBlockRunner(testClass, childClass));
+
+      if (candidateClass != null) {
+        runners.add(new SuiteBlockRunner(testClass, candidateClass));
+      }
     }
     return runners;
   }

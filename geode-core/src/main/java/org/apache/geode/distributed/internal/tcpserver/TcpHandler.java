@@ -22,13 +22,13 @@ import org.apache.geode.distributed.internal.ClusterConfigurationService;
 
 /**
  * A handler which responds to messages for the {@link TcpServer}
- * 
+ *
  * @since GemFire 5.7
  */
 public interface TcpHandler {
   /**
    * Process a request and return a response
-   * 
+   *
    * @param request
    * @return the response, or null if there is no reponse
    * @throws IOException
@@ -46,7 +46,7 @@ public interface TcpHandler {
 
   /**
    * Informs the handler that TcpServer is restarting with the given distributed system and cache
-   * 
+   *
    * @param sharedConfig TODO
    */
   void restarting(DistributedSystem ds, GemFireCache cache,

@@ -14,11 +14,11 @@
  */
 package org.apache.geode.modules.util;
 
+import java.util.Properties;
+
 import org.apache.geode.cache.Declarable;
 import org.apache.geode.cache.EntryEvent;
 import org.apache.geode.cache.util.CacheListenerAdapter;
-
-import java.util.Properties;
 
 @SuppressWarnings("unchecked")
 public class DebugCacheListener extends CacheListenerAdapter implements Declarable {

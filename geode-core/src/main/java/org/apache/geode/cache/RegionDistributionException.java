@@ -16,6 +16,7 @@ package org.apache.geode.cache;
 
 import java.io.*;
 import java.util.*;
+
 import org.apache.geode.distributed.Role;
 import org.apache.geode.distributed.internal.membership.InternalRole;
 
@@ -41,7 +42,7 @@ public class RegionDistributionException extends RegionRoleException {
 
   /**
    * Constructs a <code>RegionDistributionException</code> with a message.
-   * 
+   *
    * @param s the String message
    * @param regionFullPath full path of region for which access was attempted
    * @param failedRoles the required roles that caused this exception
@@ -56,7 +57,7 @@ public class RegionDistributionException extends RegionRoleException {
 
   /**
    * Constructs a <code>RegionDistributionException</code> with a message and a cause.
-   * 
+   *
    * @param s the String message
    * @param regionFullPath full path of region for which access was attempted
    * @param failedRoles the required roles that caused this exception
@@ -74,7 +75,7 @@ public class RegionDistributionException extends RegionRoleException {
   /**
    * Returns the required roles that caused this exception. One or more roles failed to receive a
    * cache distribution message or acknowledge receipt of that message.
-   * 
+   *
    * @return the required roles that caused this exception
    */
   public Set getFailedRoles() {
@@ -88,8 +89,12 @@ public class RegionDistributionException extends RegionRoleException {
   private void writeObject(java.io.ObjectOutputStream out) throws IOException {
     out.defaultWriteObject();
     // transform roles to string names which are serializable...
-    Set roleNames = new HashSet(this.failedRoles.size());
-    for (Iterator iter = this.failedRoles.iterator(); iter.hasNext();) {
+    Set fr = this.failedRoles;
+    if (fr == null) {
+      fr = Collections.EMPTY_SET;
+    }
+    Set roleNames = new HashSet(fr.size());
+    for (Iterator iter = fr.iterator(); iter.hasNext();) {
       String name = ((Role) iter.next()).getName();
       roleNames.add(name);
     }
@@ -113,4 +118,3 @@ public class RegionDistributionException extends RegionRoleException {
   }
 
 }
-

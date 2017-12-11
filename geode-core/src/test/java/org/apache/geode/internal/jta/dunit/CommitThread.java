@@ -61,7 +61,7 @@ public class CommitThread implements Runnable {
 
   static int keyFld = 0;
 
-  synchronized public static int getUniqueKey() {
+  public static synchronized int getUniqueKey() {
     keyFld = keyFld + 5;
     return keyFld;
   }

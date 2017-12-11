@@ -22,10 +22,10 @@ import org.apache.logging.log4j.Logger;
 
 import org.apache.geode.SystemFailure;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
+import org.apache.geode.i18n.StringId;
 import org.apache.geode.internal.Assert;
 import org.apache.geode.internal.i18n.LocalizedStrings;
 import org.apache.geode.internal.logging.log4j.LocalizedMessage;
-import org.apache.geode.i18n.StringId;
 
 /**
  * A <code>ThreadGroup</code> that logs all {@linkplain #uncaughtException uncaught exceptions} to a
@@ -316,7 +316,7 @@ public class LoggingThreadGroup extends ThreadGroup {
 
   /**
    * clean up the threadgroup, releasing resources that could be problematic (bug 35388)
-   * 
+   *
    * @since GemFire 4.2.3
    */
   public synchronized void cleanup() {

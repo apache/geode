@@ -19,9 +19,9 @@ package org.apache.geode.internal.concurrent;
  * (current as of 27 March 2015). The modifications made for GemFire turn it into a Set instead of a
  * Map by removing the map's storage for values and removing the methods that are associated with
  * values.
- * 
+ *
  * JSR 166 interest web site: http://gee.cs.oswego.edu/dl/concurrency-interest/
- * 
+ *
  * File download location:
  * http://gee.cs.oswego.edu/cgi-bin/viewcvs.cgi/jsr166/src/jdk7/java/util/concurrent/
  * CompactConcurrentHashSet2.java?revision=1.43
@@ -862,7 +862,7 @@ public class CompactConcurrentHashSet2<V> extends AbstractSet<V> implements Set<
   /**
    * Saves the state of the {@code CompactConcurrentHashSet2} instance to a stream (i.e., serializes
    * it).
-   * 
+   *
    * @param s the stream
    * @serialData the key (Object) and value (Object) for each key-value mapping, followed by a null
    *             pair. The key-value mappings are emitted in no particular order.
@@ -902,7 +902,7 @@ public class CompactConcurrentHashSet2<V> extends AbstractSet<V> implements Set<
 
   /**
    * Reconstitutes the instance from a stream (that is, deserializes it).
-   * 
+   *
    * @param s the stream
    */
   private void readObject(java.io.ObjectInputStream s)
@@ -1599,12 +1599,12 @@ public class CompactConcurrentHashSet2<V> extends AbstractSet<V> implements Set<
 
     /**
      * Finds or adds a node.
-     * 
+     *
      * @return null if added
      */
     /**
      * Finds or adds a node.
-     * 
+     *
      * @return null if added
      */
     TreeNode<K> putTreeVal(int h, K k) {

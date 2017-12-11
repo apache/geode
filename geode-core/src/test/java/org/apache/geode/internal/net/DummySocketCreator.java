@@ -14,12 +14,13 @@
  */
 package org.apache.geode.internal.net;
 
-import org.apache.geode.internal.admin.SSLConfig;
-
 import java.io.IOException;
 import java.net.Socket;
 import java.util.List;
+
 import javax.net.ssl.SSLException;
+
+import org.apache.geode.internal.admin.SSLConfig;
 
 public class DummySocketCreator extends SocketCreator {
 

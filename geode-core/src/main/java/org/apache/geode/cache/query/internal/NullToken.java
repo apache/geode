@@ -25,7 +25,7 @@ import org.apache.geode.internal.Version;
 
 /**
  * A Token representing null.
- * 
+ *
  * @since GemFire cedar
  *
  */

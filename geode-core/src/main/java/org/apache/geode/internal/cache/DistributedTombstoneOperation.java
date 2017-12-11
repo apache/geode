@@ -14,6 +14,14 @@
  */
 package org.apache.geode.internal.cache;
 
+import java.io.DataInput;
+import java.io.DataOutput;
+import java.io.IOException;
+import java.nio.BufferUnderflowException;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Set;
+
 import org.apache.geode.DataSerializer;
 import org.apache.geode.InternalGemFireException;
 import org.apache.geode.cache.CacheEvent;
@@ -25,17 +33,9 @@ import org.apache.geode.internal.InternalDataSerializer;
 import org.apache.geode.internal.SerializationVersions;
 import org.apache.geode.internal.Version;
 import org.apache.geode.internal.VersionedDataSerializable;
+import org.apache.geode.internal.cache.FilterRoutingInfo.FilterInfo;
 import org.apache.geode.internal.cache.persistence.DiskStoreID;
 import org.apache.geode.internal.cache.versions.VersionSource;
-import org.apache.geode.internal.cache.FilterRoutingInfo.FilterInfo;
-
-import java.io.DataInput;
-import java.io.DataOutput;
-import java.io.IOException;
-import java.nio.BufferUnderflowException;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Set;
 
 /**
  *
@@ -89,7 +89,7 @@ public class DistributedTombstoneOperation extends DistributedCacheOperation {
 
   /*
    * (non-Javadoc)
-   * 
+   *
    * @see
    * org.apache.geode.internal.cache.DistributedCacheOperation#getLocalFilterRouting(org.apache.
    * geode.internal.cache.FilterRoutingInfo)

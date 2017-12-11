@@ -69,7 +69,7 @@ public abstract class EvictionAttributes implements DataSerializable {
    * If you are using a <code>cache.xml</code> file to create a Cache Region declaratively, you can
    * include the following to configure a region for eviction
    * <p/>
-   * 
+   *
    * <pre>
    *         &lt;region-attributes&gt;
    *            &lt;eviction-attributes&gt;
@@ -179,7 +179,7 @@ public abstract class EvictionAttributes implements DataSerializable {
    * If you are using a <code>cache.xml</code> file to create a Cache Region declaratively, you can
    * include the following to create an LRU heap eviction controller:
    * <p/>
-   * 
+   *
    * <pre>
    *         &lt;region-attributes&gt;
    *            &lt;eviction-attributes&gt;
@@ -254,7 +254,7 @@ public abstract class EvictionAttributes implements DataSerializable {
    * If you are using a <code>cache.xml</code> file to create a Cache Region declaratively, you can
    * include the following to create an LRU memory eviction controller:
    * <p/>
-   * 
+   *
    * <pre>
    *          &lt;region-attributes&gt;
    *            &lt;eviction-attributes&gt;
@@ -482,6 +482,7 @@ public abstract class EvictionAttributes implements DataSerializable {
   /**
    * @return an EvictionAttributes for the LIFOCapacityController
    * @since GemFire 5.7
+   * @deprecated For internal use only.
    */
   public static EvictionAttributes createLIFOEntryAttributes(int maximumEntries,
       EvictionAction evictionAction) {
@@ -492,6 +493,7 @@ public abstract class EvictionAttributes implements DataSerializable {
   /**
    * @return an EvictionAttributes for the MemLIFOCapacityController
    * @since GemFire 5.7
+   * @deprecated For internal use only.
    */
   public static EvictionAttributes createLIFOMemoryAttributes(int maximumMegabytes,
       EvictionAction evictionAction) {

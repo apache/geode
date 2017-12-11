@@ -25,12 +25,10 @@ import static org.apache.geode.internal.AvailablePort.getRandomAvailablePort;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 
-import org.apache.geode.cache.CacheFactory;
-import org.apache.geode.distributed.DistributedSystem;
-import org.apache.geode.internal.cache.GemFireCacheImpl;
-import org.apache.geode.management.cli.Result;
-import org.apache.geode.management.internal.cli.result.CommandResult;
-import org.apache.geode.test.junit.categories.IntegrationTest;
+import java.io.IOException;
+import java.util.Properties;
+import java.util.concurrent.LinkedBlockingQueue;
+
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Rule;
@@ -39,9 +37,12 @@ import org.junit.experimental.categories.Category;
 import org.junit.rules.TemporaryFolder;
 import org.junit.rules.TestName;
 
-import java.io.IOException;
-import java.util.Properties;
-import java.util.concurrent.LinkedBlockingQueue;
+import org.apache.geode.cache.CacheFactory;
+import org.apache.geode.distributed.DistributedSystem;
+import org.apache.geode.internal.cache.GemFireCacheImpl;
+import org.apache.geode.management.cli.Result;
+import org.apache.geode.management.internal.cli.result.CommandResult;
+import org.apache.geode.test.junit.categories.IntegrationTest;
 
 /**
  * TODO : Add more tests for error-catch, different type of results etc

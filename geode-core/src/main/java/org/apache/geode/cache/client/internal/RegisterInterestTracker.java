@@ -35,16 +35,16 @@ import org.apache.geode.internal.logging.log4j.LocalizedMessage;
 /**
  * Used to keep track of what interest a client has registered. This code was extracted from the old
  * ConnectionProxyImpl.
- * 
+ *
  * @since GemFire 5.7
  */
 public class RegisterInterestTracker {
   private static final Logger logger = LogService.getLogger();
 
-  public final static int interestListIndex = 0;
-  public final static int durableInterestListIndex = 1;
-  public final static int interestListIndexForUpdatesAsInvalidates = 2;
-  public final static int durableInterestListIndexForUpdatesAsInvalidates = 3;
+  public static final int interestListIndex = 0;
+  public static final int durableInterestListIndex = 1;
+  public static final int interestListIndexForUpdatesAsInvalidates = 2;
+  public static final int durableInterestListIndexForUpdatesAsInvalidates = 3;
 
   private final FailoverInterestList[] fils = new FailoverInterestList[4];
 
@@ -186,7 +186,7 @@ public class RegisterInterestTracker {
 
   /**
    * Remove all interests of a given type on the given proxy's region.
-   * 
+   *
    * @param interestType the interest type
    * @param durable a boolean stating whether to remove durable or non-durable registrations
    */
@@ -313,11 +313,11 @@ public class RegisterInterestTracker {
   /**
    * A Holder object for client's register interest, this is required when a client fails over to
    * another server and does register interest based on this Data structure
-   * 
+   *
    * @since GemFire 5.5
    *
    */
-  static protected class FailoverInterestList {
+  protected static class FailoverInterestList {
     /**
      * Record of enumerated keys of interest.
      *
@@ -374,7 +374,7 @@ public class RegisterInterestTracker {
    *
    *
    */
-  static public class RegionInterestEntry {
+  public static class RegionInterestEntry {
     private final LocalRegion region;
 
     private final ConcurrentMap interests;

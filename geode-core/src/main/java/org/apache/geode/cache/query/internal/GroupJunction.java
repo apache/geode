@@ -19,6 +19,7 @@ package org.apache.geode.cache.query.internal;
 
 import java.util.ArrayList;
 import java.util.List;
+
 import org.apache.geode.cache.query.FunctionDomainException;
 import org.apache.geode.cache.query.NameResolutionException;
 import org.apache.geode.cache.query.QueryInvocationTargetException;
@@ -29,9 +30,9 @@ import org.apache.geode.cache.query.TypeMismatchException;
  * a group of iterators derived from a single independent iterator ( an iterator on the region) .
  * The iter evaluatable conditions belonging to other group of iterators can be a part of
  * GroupJunction only if the complete expansion flag is true.
- * 
- * 
- * 
+ *
+ *
+ *
  */
 public class GroupJunction extends AbstractGroupOrRangeJunction {
   private List unevaluatedFilterOperands = null;
