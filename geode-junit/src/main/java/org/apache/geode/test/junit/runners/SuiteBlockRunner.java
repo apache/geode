@@ -39,6 +39,7 @@ public class SuiteBlockRunner extends BlockJUnit4ClassRunner {
 
   @Override
   protected String testName(FrameworkMethod method) {
-    return method.getName() + "@" + suiteClass.getName();
+    // Some tests use the test name as the region name, so make sure we have valid chars
+    return method.getName() + "-" + suiteClass.getName().replace(".", "-");
   }
 }
