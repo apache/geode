@@ -121,7 +121,7 @@ org/apache/geode/cache/client/internal/ContainsKeyOp$MODE,false
 org/apache/geode/cache/client/internal/TXSynchronizationOp$CompletionType,false
 org/apache/geode/cache/client/internal/pooling/ConnectionDestroyedException,true,-6918516787578041316
 org/apache/geode/cache/execute/EmptyRegionFunctionException,true,1
-org/apache/geode/cache/execute/FunctionAdapter,true,-4891043890440825485
+org/apache/geode/cache/execute/FunctionAdapter,false
 org/apache/geode/cache/execute/FunctionException,true,4893171227542647452
 org/apache/geode/cache/execute/FunctionInvocationTargetException,true,1,id:org/apache/geode/distributed/DistributedMember
 org/apache/geode/cache/operations/OperationContext$OperationCode,false

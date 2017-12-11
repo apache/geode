@@ -35,7 +35,4 @@ package org.apache.geode.cache.execute;
  *
  */
 public abstract class FunctionAdapter implements Function {
-
-  private static final long serialVersionUID = -4891043890440825485L;
-
 }
