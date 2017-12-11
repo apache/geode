@@ -67,8 +67,6 @@ public class DestroyAsyncEventQueueCommand implements GfshCommand {
     DestroyAsyncEventQueueFunctionArgs asyncEventQueueDestoryFunctionArgs =
         new DestroyAsyncEventQueueFunctionArgs(aeqId, ifExists);
 
-    AtomicReference<XmlEntity> xmlEntity = new AtomicReference<>();
-
     Set<DistributedMember> members = getMembers(onGroups, null);
     if (members.size() == 0) {
       String message = String.format(DESTROY_ASYNC_EVENT_QUEUE__AEQ_0_NOT_FOUND, aeqId);
@@ -77,28 +75,11 @@ public class DestroyAsyncEventQueueCommand implements GfshCommand {
     List<CliFunctionResult> functionResults = executeAndGetFunctionResult(
         new DestroyAsyncEventQueueFunction(), asyncEventQueueDestoryFunctionArgs, members);
 
-    TabularResultData tabularResultData = ResultBuilder.createTabularResultData();
-    boolean success = false;
-    for (CliFunctionResult functionResult : functionResults) {
-      LogService.getLogger().info("FunctionResult = '" + functionResult + "'");
-      tabularResultData.accumulate("Member", functionResult.getMemberIdOrName());
-      if (functionResult.isSuccessful()) {
-        xmlEntity.set(functionResult.getXmlEntity());
-        tabularResultData.accumulate("Status", functionResult.getMessage());
-        success = true;
-      } else {
-        tabularResultData.accumulate("Status", "ERROR: " + functionResult.getErrorMessage());
-        if (functionResult.getThrowable() != null) {
-          throw functionResult.getThrowable();
-        }
-      }
-    }
-
-    tabularResultData.setStatus(success ? Result.Status.OK : Result.Status.ERROR);
-    Result result = ResultBuilder.buildResult(tabularResultData);
-    if (xmlEntity.get() != null) {
+    Result result = ResultBuilder.buildResult(functionResults);
+    XmlEntity xmlEntity = findXmlEntity(functionResults);
+    if (xmlEntity != null) {
       persistClusterConfiguration(result,
-          () -> getSharedConfiguration().deleteXmlEntity(xmlEntity.get(), onGroups));
+          () -> getSharedConfiguration().deleteXmlEntity(xmlEntity, onGroups));
     }
     return result;
   }

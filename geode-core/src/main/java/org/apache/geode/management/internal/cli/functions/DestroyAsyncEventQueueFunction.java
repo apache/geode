@@ -18,6 +18,7 @@ import org.apache.logging.log4j.Logger;
 
 import org.apache.geode.cache.Region;
 import org.apache.geode.cache.asyncqueue.internal.AsyncEventQueueImpl;
+import org.apache.geode.cache.execute.Function;
 import org.apache.geode.cache.execute.FunctionAdapter;
 import org.apache.geode.cache.execute.FunctionContext;
 import org.apache.geode.internal.InternalEntity;
@@ -31,11 +32,10 @@ import org.apache.geode.management.internal.configuration.domain.XmlEntity;
  *
  * @since GemFire 8.0
  */
-public class DestroyAsyncEventQueueFunction extends FunctionAdapter implements InternalEntity {
+public class DestroyAsyncEventQueueFunction implements Function, InternalEntity {
 
   private static final long serialVersionUID = -7754359270344102817L;
 
-  @SuppressWarnings("deprecation")
   @Override
   public void execute(FunctionContext context) {
     String memberId = "";
