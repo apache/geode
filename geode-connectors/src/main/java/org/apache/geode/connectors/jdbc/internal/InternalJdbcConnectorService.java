@@ -41,4 +41,7 @@ public interface InternalJdbcConnectorService extends Extension<Cache>, CacheSer
   void destroyRegionMapping(String regionName);
 
   RegionMapping getMappingForRegion(String regionName);
+
+  Set<RegionMapping> getRegionMappings();
+
 }

@@ -22,7 +22,7 @@ import java.util.Set;
 import org.springframework.shell.core.annotation.CliCommand;
 
 import org.apache.geode.cache.execute.ResultCollector;
-import org.apache.geode.connectors.jdbc.internal.ConnectionConfiguration;
+import org.apache.geode.connectors.jdbc.internal.RegionMapping;
 import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.management.cli.CliMetaData;
 import org.apache.geode.management.cli.Result;
@@ -33,19 +33,19 @@ import org.apache.geode.management.internal.cli.result.TabularResultData;
 import org.apache.geode.management.internal.security.ResourceOperation;
 import org.apache.geode.security.ResourcePermission;
 
-public class ListConnectionCommand implements GfshCommand {
+public class ListRegionMappingCommand implements GfshCommand {
 
-  static final String LIST_JDBC_CONNECTION = "list jdbc-connections";
-  static final String LIST_JDBC_CONNECTION__HELP = "Display jdbc connections for all members.";
+  static final String LIST_MAPPING = "list jdbc-mappings";
+  static final String LIST_MAPPING__HELP = "Display jdbc mappings for all members.";
 
-  static final String LIST_OF_CONNECTIONS = "List of connections";
-  static final String NO_CONNECTIONS_FOUND = "No connections found";
+  static final String LIST_OF_MAPPINGS = "List of mappings";
+  static final String NO_MAPPINGS_FOUND = "No mappings found";
 
-  @CliCommand(value = LIST_JDBC_CONNECTION, help = LIST_JDBC_CONNECTION__HELP)
+  @CliCommand(value = LIST_MAPPING, help = LIST_MAPPING__HELP)
   @CliMetaData(relatedTopic = CliStrings.DEFAULT_TOPIC_GEODE)
   @ResourceOperation(resource = ResourcePermission.Resource.CLUSTER,
       operation = ResourcePermission.Operation.MANAGE)
-  public Result listConnection() {
+  public Result listMapping() {
 
     // input
     Set<DistributedMember> targetMembers = getMembers(null, null);
@@ -54,27 +54,27 @@ public class ListConnectionCommand implements GfshCommand {
     }
 
     // action
-    ResultCollector<ConnectionConfiguration, List<ConnectionConfiguration[]>> resultCollector =
-        execute(new ListConnectionFunction(), targetMembers.iterator().next());
+    ResultCollector<RegionMapping, List<RegionMapping[]>> resultCollector =
+        execute(new ListRegionMappingFunction(), targetMembers.iterator().next());
 
     // output
     TabularResultData tabularResultData = ResultBuilder.createTabularResultData();
-    boolean connectionsExist = fillTabularResultData(resultCollector, tabularResultData);
-    return createResult(tabularResultData, connectionsExist);
+    boolean mappingsExist = fillTabularResultData(resultCollector, tabularResultData);
+    return createResult(tabularResultData, mappingsExist);
   }
 
-  ResultCollector<ConnectionConfiguration, List<ConnectionConfiguration[]>> execute(
-      ListConnectionFunction function, DistributedMember targetMember) {
-    return (ResultCollector<ConnectionConfiguration, List<ConnectionConfiguration[]>>) executeFunction(
-        function, null, targetMember);
+  ResultCollector<RegionMapping, List<RegionMapping[]>> execute(ListRegionMappingFunction function,
+      DistributedMember targetMember) {
+    return (ResultCollector<RegionMapping, List<RegionMapping[]>>) executeFunction(function, null,
+        targetMember);
   }
 
-  private Result createResult(TabularResultData tabularResultData, boolean connectionsExist) {
-    if (connectionsExist) {
+  private Result createResult(TabularResultData tabularResultData, boolean mappingsExist) {
+    if (mappingsExist) {
       return ResultBuilder.buildResult(tabularResultData);
 
     } else {
-      return ResultBuilder.createInfoResult(NO_CONNECTIONS_FOUND);
+      return ResultBuilder.createInfoResult(NO_MAPPINGS_FOUND);
     }
   }
 
@@ -82,13 +82,13 @@ public class ListConnectionCommand implements GfshCommand {
    * Returns true if any connections exist
    */
   private boolean fillTabularResultData(
-      ResultCollector<ConnectionConfiguration, List<ConnectionConfiguration[]>> resultCollector,
+      ResultCollector<RegionMapping, List<RegionMapping[]>> resultCollector,
       TabularResultData tabularResultData) {
-    Set<ConnectionConfiguration> connectionConfigs = new HashSet<>();
+    Set<RegionMapping> regionMappings = new HashSet<>();
 
     for (Object resultObject : resultCollector.getResult()) {
-      if (resultObject instanceof ConnectionConfiguration[]) {
-        connectionConfigs.addAll(Arrays.asList((ConnectionConfiguration[]) resultObject));
+      if (resultObject instanceof RegionMapping[]) {
+        regionMappings.addAll(Arrays.asList((RegionMapping[]) resultObject));
       } else if (resultObject instanceof Throwable) {
         throw new IllegalStateException((Throwable) resultObject);
       } else {
@@ -96,10 +96,10 @@ public class ListConnectionCommand implements GfshCommand {
       }
     }
 
-    for (ConnectionConfiguration connectionConfig : connectionConfigs) {
-      tabularResultData.accumulate(LIST_OF_CONNECTIONS, connectionConfig.getName());
+    for (RegionMapping mapping : regionMappings) {
+      tabularResultData.accumulate(LIST_OF_MAPPINGS, mapping.getRegionName());
     }
 
-    return !connectionConfigs.isEmpty();
+    return !regionMappings.isEmpty();
   }
 }
