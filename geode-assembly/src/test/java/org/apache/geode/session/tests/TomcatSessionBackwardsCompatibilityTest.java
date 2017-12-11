@@ -14,7 +14,6 @@
  */
 package org.apache.geode.session.tests;
 
-import static org.apache.geode.session.tests.ContainerInstall.TMP_DIR;
 import static org.junit.Assert.assertEquals;
 
 import java.io.File;
@@ -62,10 +61,10 @@ public class TomcatSessionBackwardsCompatibilityTest {
   }
 
   @Rule
-  public transient GfshCommandRule gfsh = new GfshCommandRule(new File(TMP_DIR));
+  public transient GfshCommandRule gfsh = new GfshCommandRule();
 
   @Rule
-  public TemporaryFolder tempFolder = new TemporaryFolder(new File(TMP_DIR));
+  public TemporaryFolder tempFolder = new TemporaryFolder();
 
   @Rule
   public transient TestName testName = new TestName();
