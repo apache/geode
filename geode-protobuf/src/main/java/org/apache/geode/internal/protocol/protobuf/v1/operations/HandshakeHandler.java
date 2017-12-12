@@ -21,7 +21,7 @@ import java.io.OutputStream;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
-import org.apache.geode.internal.protocol.protobuf.Version;
+import org.apache.geode.internal.protocol.protobuf.Handshake;
 import org.apache.geode.internal.protocol.statistics.ProtocolClientStatistics;
 
 public class HandshakeHandler {
@@ -30,17 +30,17 @@ public class HandshakeHandler {
 
   public static boolean handleHandshake(InputStream inputStream, OutputStream outputStream,
       ProtocolClientStatistics statistics) throws IOException {
-    Version.NewConnectionClientVersion handshakeRequest =
-        Version.NewConnectionClientVersion.parseDelimitedFrom(inputStream);
+    Handshake.NewConnectionHandshake handshakeRequest =
+        Handshake.NewConnectionHandshake.parseDelimitedFrom(inputStream);
 
     statistics.messageReceived(handshakeRequest.getSerializedSize());
 
     final boolean handshakeSucceeded =
         validator.isValid(handshakeRequest.getMajorVersion(), handshakeRequest.getMinorVersion());
 
-    Version.VersionAcknowledgement handshakeResponse = Version.VersionAcknowledgement
-        .newBuilder().setServerMajorVersion(Version.MajorVersions.CURRENT_MAJOR_VERSION_VALUE)
-        .setServerMinorVersion(Version.MinorVersions.CURRENT_MINOR_VERSION_VALUE)
+    Handshake.HandshakeAcknowledgement handshakeResponse = Handshake.HandshakeAcknowledgement
+        .newBuilder().setServerMajorVersion(Handshake.MajorVersions.CURRENT_MAJOR_VERSION_VALUE)
+        .setServerMinorVersion(Handshake.MinorVersions.CURRENT_MINOR_VERSION_VALUE)
         .setHandshakePassed(handshakeSucceeded).build();
 
     handshakeResponse.writeDelimitedTo(outputStream);

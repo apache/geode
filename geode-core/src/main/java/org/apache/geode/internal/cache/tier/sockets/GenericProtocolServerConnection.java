@@ -116,7 +116,7 @@ public class GenericProtocolServerConnection extends ServerConnection {
 
   @Override
   protected int getClientReadTimeout() {
-    return 0;
+    return PoolFactory.DEFAULT_READ_TIMEOUT;
   }
 
   @Override
