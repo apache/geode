@@ -177,9 +177,9 @@ public class LRUListWithAsyncSortingTest {
     when(recentlyUsedNode.next()).thenReturn(list.tail);
     list.incrementRecentlyUsed();
 
-    // unsetRecentlyUsed() is called once on appendEntry(...) and once during scan
+    // unsetRecentlyUsed() is called once during scan
     await().atMost(10, TimeUnit.SECONDS)
-        .until(() -> verify(recentlyUsedNode, times(2)).unsetRecentlyUsed());
+        .until(() -> verify(recentlyUsedNode, times(1)).unsetRecentlyUsed());
     realExecutor.shutdown();
   }
 
@@ -196,9 +196,9 @@ public class LRUListWithAsyncSortingTest {
     when(recentlyUsedNode.next()).thenReturn(recentlyUsedNode);
     list.incrementRecentlyUsed();
 
-    // unsetRecentlyUsed() is called once on appendEntry(...) and once during scan
+    // unsetRecentlyUsed() is called once during scan
     await().atMost(10, TimeUnit.SECONDS)
-        .until(() -> verify(recentlyUsedNode, times(2)).unsetRecentlyUsed());
+        .until(() -> verify(recentlyUsedNode, times(1)).unsetRecentlyUsed());
     realExecutor.shutdown();
   }
 
@@ -226,9 +226,9 @@ public class LRUListWithAsyncSortingTest {
     when(recentlyUsedNode.isRecentlyUsed()).thenReturn(true);
     list.incrementRecentlyUsed();
 
-    // unsetRecentlyUsed() is called once on appendEntry(...) and once during scan
+    // unsetRecentlyUsed() is called once during scan
     await().atMost(10, TimeUnit.SECONDS)
-        .until(() -> verify(recentlyUsedNode, times(2)).unsetRecentlyUsed());
+        .until(() -> verify(recentlyUsedNode, times(1)).unsetRecentlyUsed());
     assertThat(list.tail.previous()).isEqualTo(recentlyUsedNode);
     realExecutor.shutdown();
   }
