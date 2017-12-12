@@ -132,7 +132,7 @@ public class ClientUserAuths {
     UserAuthAttributes uaa = uniqueIdVsUserAuth.get(userId);
     if (uaa != null && !(uaa.isDurable() && keepAlive)) {
       uaa = uniqueIdVsUserAuth.remove(userId);
-      logger.debug("client of uniqueId {} closed. UserAuth of this client removed.");
+      logger.debug("UserAuth of {} removed.");
       if (uaa != null) {
         cleanUserAuth(uaa);
         return true;

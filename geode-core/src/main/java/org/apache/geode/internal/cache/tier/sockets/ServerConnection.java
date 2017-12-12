@@ -783,13 +783,13 @@ public abstract class ServerConnection implements Runnable {
           Subject subject = this.clientUserAuths.getSubject(uniqueId);
           if (subject != null) {
             threadState = securityService.bindSubject(subject);
-            logger.debug("Bound {} with uniqueId {} for message {}.", subject.getPrincipal(),
-                uniqueId, messageType);
+            logger.debug("Bound {} with uniqueId {} for message {} with {}", subject.getPrincipal(),
+                uniqueId, messageType, this.getName());
           } else if (uniqueId == 0) {
             logger.debug("No unique ID yet. {}, {}", messageType, this.getName());
           } else {
-            logger.error("Failed to bind the subject of uniqueId {} for message {}: ", uniqueId,
-                messageType);
+            logger.error("Failed to bind the subject of uniqueId {} for message {} with {}",
+                uniqueId, messageType, this.getName());
             throw new AuthenticationRequiredException("Failed to find the authenticated user.");
           }
         }
