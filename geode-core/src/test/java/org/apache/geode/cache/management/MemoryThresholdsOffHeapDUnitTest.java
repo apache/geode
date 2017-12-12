@@ -960,24 +960,18 @@ public class MemoryThresholdsOffHeapDUnitTest extends ClientServerTestCase {
 
     // Make sure the desired VMs will have a fresh DS. TODO: convert these from AsyncInvocation to
     // invoke
-    AsyncInvocation d0 = accessor.invokeAsync(() -> disconnectFromDS());
-    AsyncInvocation d1 = ds1.invokeAsync(() -> disconnectFromDS());
-    d0.join();
-    assertFalse(d0.exceptionOccurred());
-    d1.join();
-    assertFalse(d1.exceptionOccurred());
-    CacheSerializableRunnable establishConnectivity =
-        new CacheSerializableRunnable("establishcConnectivity") {
-          @Override
-          public void run2() throws CacheException {
-            getSystem();
-          }
-        };
-    ds1.invoke(establishConnectivity);
-    accessor.invoke(establishConnectivity);
+    accessor.invoke(() -> disconnectFromDS());
+    ds1.invoke(() -> disconnectFromDS());
 
-    ds1.invoke(createPR(rName, false));
-    accessor.invoke(createPR(rName, true));
+    ds1.invoke("establishcConnectivity", () -> {
+      getSystem();
+      createPR(rName, false);
+    });
+
+    accessor.invoke("establishcConnectivity", () -> {
+      getSystem();
+      createPR(rName, true);
+    });
 
     final AtomicInteger expectedInvocations = new AtomicInteger(0);
 
@@ -1103,12 +1097,18 @@ public class MemoryThresholdsOffHeapDUnitTest extends ClientServerTestCase {
         });
     expectedInvocations.set(ex.intValue());
 
+    ds1.invoke(new SerializableCallable() {
+       public Object call() throws Exception {
+         final OffHeapMemoryMonitor ohmm =
+             ((InternalResourceManager) getCache().getResourceManager()).getOffHeapMonitor();
+         assertFalse(ohmm.getState().isCritical());
+         return null;
+       }
+     });
+
     accessor.invoke(new SerializableCallable(
         "Data store in safe state, assert load behavior, accessor sets critical state, assert load behavior") {
       public Object call() throws Exception {
-        final OffHeapMemoryMonitor ohmm =
-            ((InternalResourceManager) getCache().getResourceManager()).getOffHeapMonitor();
-        assertFalse(ohmm.getState().isCritical());
         Integer k = new Integer(4);
         Integer expectedInvocations9 = new Integer(expectedInvocations.incrementAndGet());
         final PartitionedRegion r = (PartitionedRegion) getCache().getRegion(rName);
@@ -1119,6 +1119,13 @@ public class MemoryThresholdsOffHeapDUnitTest extends ClientServerTestCase {
         // Go critical in accessor
         r.put("oh3", new byte[157287]);
 
+        return null;
+      }});
+
+    ds1.invoke(new SerializableCallable() {
+      public Object call() throws Exception {
+        final PartitionedRegion r = (PartitionedRegion) getCache().getRegion(rName);
+
         WaitCriterion wc = new WaitCriterion() {
           public String description() {
             return "verify critical state";
@@ -1128,8 +1135,21 @@ public class MemoryThresholdsOffHeapDUnitTest extends ClientServerTestCase {
             return r.memoryThresholdReached.get();
           }
         };
+        Wait.waitForCriterion(wc, 30 * 1000, 100, true);
 
-        k = new Integer(5);
+        final OffHeapMemoryMonitor ohmm =
+            ((InternalResourceManager) getCache().getResourceManager()).getOffHeapMonitor();
+        assertTrue(ohmm.getState().isCritical());
+
+        return null;
+      }});
+
+    accessor.invoke(new SerializableCallable(
+        "Data store in safe state, assert load behavior, accessor sets critical state, assert load behavior") {
+      public Object call() throws Exception {
+        final PartitionedRegion r = (PartitionedRegion) getCache().getRegion(rName);
+
+        Integer k = new Integer(5);
         Integer expectedInvocations10 = new Integer(expectedInvocations.incrementAndGet());
         assertEquals(k.toString(), r.get(k, expectedInvocations10)); // load for key 5
         assertTrue(r.containsKey(k));
@@ -1137,7 +1157,16 @@ public class MemoryThresholdsOffHeapDUnitTest extends ClientServerTestCase {
 
         // Clean up critical state
         r.destroy("oh3");
-        wc = new WaitCriterion() {
+
+        return null;
+      }});
+
+    ds1.invoke(new SerializableCallable() {
+      public Object call() throws Exception {
+        final OffHeapMemoryMonitor ohmm =
+            ((InternalResourceManager) getCache().getResourceManager()).getOffHeapMonitor();
+
+        WaitCriterion wc = new WaitCriterion() {
           public String description() {
             return "verify critical state";
           }
@@ -1146,7 +1175,9 @@ public class MemoryThresholdsOffHeapDUnitTest extends ClientServerTestCase {
             return !ohmm.getState().isCritical();
           }
         };
-        return expectedInvocations10;
+        Wait.waitForCriterion(wc, 30 * 1000, 100, true);
+
+        return null;
       }
     });
 
