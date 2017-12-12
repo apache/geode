@@ -119,7 +119,7 @@ public class ProductUseLog implements MembershipListener {
       fos = new FileOutputStream(productUseLogFile, true);
     } catch (FileNotFoundException ex) {
       String s = LocalizedStrings.InternalDistributedSystem_COULD_NOT_OPEN_LOG_FILE_0
-          .toLocalizedString(productUseLogFile);
+          .toLocalizedString(productUseLogFile.getAbsolutePath());
       throw new GemFireIOException(s, ex);
     }
     PrintStream out = new PrintStream(fos);
