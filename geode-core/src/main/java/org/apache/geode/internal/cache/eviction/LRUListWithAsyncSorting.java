@@ -127,6 +127,7 @@ public class LRUListWithAsyncSorting extends AbstractEvictionList {
 
       if (evictionNode.isRecentlyUsed() && evictionAttempts < MAX_EVICTION_ATTEMPTS) {
         evictionAttempts++;
+        evictionNode.unsetRecentlyUsed();
         appendEntry(evictionNode);
         continue;
       }
