@@ -892,6 +892,82 @@ public class ClientServerTransactionDUnitTest extends RemoteTransactionDUnitTest
     }
   }
 
+  @Test
+  public void keySetFromClientRegionWillGetKeysFromServerIfTX() throws Exception {
+    Host host = Host.getHost(0);
+    VM server = host.getVM(0);
+    VM client = host.getVM(1);
+    VM client2 = host.getVM(2);
+    int port1 = createRegionsAndStartServer(server, false);
+    createClientRegionAndPopulateData(client, port1, false);
+    createClientRegion(client2, port1, false);
+
+    client2.invoke(new SerializableRunnable("verify client region with tx") {
+      public void run() throws Exception {
+        TXManagerImpl mgr = getGemfireCache().getTxManager();
+        Region<OrderId, Order> orderRegion = getCache().getRegion(ORDER);
+        LocalRegion lr = (LocalRegion) orderRegion;
+        assertEquals(DataPolicy.NORMAL, orderRegion.getAttributes().getDataPolicy());
+        CustId custId = new CustId(1);
+        OrderId orderId = new OrderId(1, custId);
+        Set setWithoutTX = orderRegion.keySet();
+        Iterator iterWithoutTX = setWithoutTX.iterator();
+        if (!iterWithoutTX.hasNext()) {
+          org.apache.geode.test.dunit.LogWriterUtils.getLogWriter().info("No keys in region");
+        } else {
+          org.apache.geode.test.dunit.LogWriterUtils.getLogWriter()
+              .info("Region size:" + orderRegion.size());
+        }
+        // without tx, the local region with NORMAL policy will get nothing from server
+        assertFalse(iterWithoutTX.hasNext());
+        assertEquals(0, orderRegion.size());
+        assertNull(lr.entries.getEntry(orderId));
+
+        org.apache.geode.test.dunit.LogWriterUtils.getLogWriter().info("Now check with TX");
+
+        mgr.begin();
+
+        Set setWithTX = orderRegion.keySet();
+        Iterator iterWithTX = setWithTX.iterator();
+        if (!iterWithTX.hasNext()) {
+          org.apache.geode.test.dunit.LogWriterUtils.getLogWriter().info("No keys in region");
+        } else {
+          org.apache.geode.test.dunit.LogWriterUtils.getLogWriter()
+              .info("Region size:" + orderRegion.size());
+        }
+        // with tx, the local region keySet() will get keys from server, but lr.entries is still
+        // empty
+        assertTrue(iterWithTX.hasNext());
+        assertEquals(5, orderRegion.size());
+
+        assertEquals(0, lr.entries.size());
+        Set aSet = lr.entries.keySet();
+        Iterator iter = aSet.iterator();
+        assertFalse(iter.hasNext());
+        assertNull(lr.entries.getEntry(orderId));
+        assertNotNull(lr.getEntry(orderId));
+
+        mgr.commit();
+      }
+    });
+
+    server.invoke(new SerializableCallable("verify tx") {
+      public Object call() throws Exception {
+        TXManagerImpl mgr = getGemfireCache().getTxManager();
+        Region<OrderId, Order> orderRegion = getCache().getRegion(ORDER);
+        mgr.begin();
+        CustId custId = new CustId(1);
+        OrderId orderId = new OrderId(1000, custId);
+        Order expectedOrder = new Order("fooOrder");
+        Map map = new HashMap();
+        map.put(orderId, expectedOrder);
+        orderRegion.putAll(map);
+        mgr.rollback();
+        assertNull(orderRegion.get(orderId));
+        return null;
+      }
+    });
+  }
 
   @Test
   public void testPutallRollbackInServer() throws Exception {
