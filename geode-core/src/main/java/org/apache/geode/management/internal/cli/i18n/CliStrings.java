@@ -213,7 +213,7 @@ public class CliStrings {
   public static final String SHARED_CONFIGURATION_NO_LOCATORS_WITH_SHARED_CONFIGURATION =
       "No locators with cluster configuration enabled.";
   public static final String SHARED_CONFIGURATION_FAILED_TO_PERSIST_COMMAND_CHANGES =
-      "Failed to persist the configuration changes due to this command, Revert the command to maintain consistency.\nPlease use \"status cluster-config-service\" to determine whether Cluster configuration service is RUNNING.";
+      "This change is not persisted in the cluster configuration, either because the cluster configuration service is not running or the command is operating on targeted members.";
   /* Other Constants */
   public static final String GFSH__MSG__NO_LONGER_CONNECTED_TO_0 = "No longer connected to {0}.";
   public static final String GFSHPARSER__MSG__REQUIRED_ARGUMENT_0 = "Required Argument: \"{0}\"";
