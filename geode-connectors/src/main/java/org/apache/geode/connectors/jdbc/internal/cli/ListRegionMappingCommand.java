@@ -21,6 +21,7 @@ import java.util.Set;
 
 import org.springframework.shell.core.annotation.CliCommand;
 
+import org.apache.geode.annotations.Experimental;
 import org.apache.geode.cache.execute.ResultCollector;
 import org.apache.geode.connectors.jdbc.internal.RegionMapping;
 import org.apache.geode.distributed.DistributedMember;
@@ -33,10 +34,11 @@ import org.apache.geode.management.internal.cli.result.TabularResultData;
 import org.apache.geode.management.internal.security.ResourceOperation;
 import org.apache.geode.security.ResourcePermission;
 
+@Experimental
 public class ListRegionMappingCommand implements GfshCommand {
-
+  static final String EXPERIMENTAL = "(Experimental) ";
   static final String LIST_MAPPING = "list jdbc-mappings";
-  static final String LIST_MAPPING__HELP = "Display jdbc mappings for all members.";
+  static final String LIST_MAPPING__HELP = EXPERIMENTAL + "Display jdbc mappings for all members.";
 
   static final String LIST_OF_MAPPINGS = "List of mappings";
   static final String NO_MAPPINGS_FOUND = "No mappings found";

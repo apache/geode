@@ -18,6 +18,9 @@ import java.io.Serializable;
 import java.util.Collections;
 import java.util.Map;
 
+import org.apache.geode.annotations.Experimental;
+
+@Experimental
 public class RegionMapping implements Serializable {
   private final String regionName;
   private final String pdxClassName;

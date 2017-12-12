@@ -19,6 +19,9 @@ import java.util.Collections;
 import java.util.Map;
 import java.util.Properties;
 
+import org.apache.geode.annotations.Experimental;
+
+@Experimental
 public class ConnectionConfiguration implements Serializable {
   private static final Object USER = "user";
   private static final Object PASSWORD = "password";

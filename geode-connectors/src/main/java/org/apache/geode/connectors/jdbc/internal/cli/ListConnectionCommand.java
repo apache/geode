@@ -21,6 +21,7 @@ import java.util.Set;
 
 import org.springframework.shell.core.annotation.CliCommand;
 
+import org.apache.geode.annotations.Experimental;
 import org.apache.geode.cache.execute.ResultCollector;
 import org.apache.geode.connectors.jdbc.internal.ConnectionConfiguration;
 import org.apache.geode.distributed.DistributedMember;
@@ -33,10 +34,12 @@ import org.apache.geode.management.internal.cli.result.TabularResultData;
 import org.apache.geode.management.internal.security.ResourceOperation;
 import org.apache.geode.security.ResourcePermission;
 
+@Experimental
 public class ListConnectionCommand implements GfshCommand {
-
+  static final String EXPERIMENTAL = "(Experimental) ";
   static final String LIST_JDBC_CONNECTION = "list jdbc-connections";
-  static final String LIST_JDBC_CONNECTION__HELP = "Display jdbc connections for all members.";
+  static final String LIST_JDBC_CONNECTION__HELP =
+      EXPERIMENTAL + "Display jdbc connections for all members.";
 
   static final String LIST_OF_CONNECTIONS = "List of connections";
   static final String NO_CONNECTIONS_FOUND = "No connections found";

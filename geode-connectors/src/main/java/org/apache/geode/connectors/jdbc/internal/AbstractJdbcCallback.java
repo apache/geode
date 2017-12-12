@@ -16,9 +16,11 @@ package org.apache.geode.connectors.jdbc.internal;
 
 import java.util.Properties;
 
+import org.apache.geode.annotations.Experimental;
 import org.apache.geode.cache.CacheCallback;
 import org.apache.geode.internal.cache.InternalCache;
 
+@Experimental
 public abstract class AbstractJdbcCallback implements CacheCallback {
 
   private volatile SqlHandler sqlHandler;
