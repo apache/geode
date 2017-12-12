@@ -14,7 +14,7 @@
  */
 package org.apache.geode.internal.cache.tier.sockets;
 
-import static org.apache.geode.distributed.ConfigurationProperties.*;
+import static org.apache.geode.distributed.ConfigurationProperties.SECURITY_CLIENT_AUTHENTICATOR;
 
 import java.io.ByteArrayInputStream;
 import java.io.DataInputStream;
@@ -779,9 +779,18 @@ public abstract class ServerConnection implements Runnable {
             && !isInternalMessage(this.requestMsg, allowInternalMessagesWithoutCredentials)
             && !this.communicationMode.isWAN()) {
           long uniqueId = getUniqueId();
+          String messageType = MessageType.getString(this.requestMsg.getMessageType());
           Subject subject = this.clientUserAuths.getSubject(uniqueId);
           if (subject != null) {
             threadState = securityService.bindSubject(subject);
+            logger.debug("Bound {} with uniqueId {} for message {} with {}", subject.getPrincipal(),
+                uniqueId, messageType, this.getName());
+          } else if (uniqueId == 0) {
+            logger.debug("No unique ID yet. {}, {}", messageType, this.getName());
+          } else {
+            logger.error("Failed to bind the subject of uniqueId {} for message {} with {}",
+                uniqueId, messageType, this.getName());
+            throw new AuthenticationRequiredException("Failed to find the authenticated user.");
           }
         }
 
@@ -1039,7 +1048,6 @@ public abstract class ServerConnection implements Runnable {
       if (principal instanceof Subject) {
         Subject subject = (Subject) principal;
         uniqueId = this.clientUserAuths.putSubject(subject);
-        logger.info(this.clientUserAuths);
       } else {
         // this sets principal in map as well....
         uniqueId = ServerHandShakeProcessor.getUniqueId(this, (Principal) principal);

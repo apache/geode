@@ -48,7 +48,7 @@ import org.apache.geode.test.junit.rules.GfshCommandRule.PortType;
 import org.apache.geode.test.junit.rules.Member;
 
 @Category({DistributedTest.class, SecurityTest.class})
-public class MultiUserDUnitTest {
+public class MultiGfshDUnitTest {
 
   @Rule
   public LocatorServerStartupRule lsRule = new LocatorServerStartupRule();
@@ -75,11 +75,13 @@ public class MultiUserDUnitTest {
     // test is done.
     VM vm1 = lsRule.getVM(1);
     AsyncInvocation vm1Invoke = vm1.invokeAsync("run as data-reader", () -> {
-      GfshCommandRule gfsh = new GfshCommandRule();
-      gfsh.secureConnectAndVerify(jmxPort, PortType.jmxManager, "dataRead", "dataRead");
+      while (true) {
+        GfshCommandRule gfsh = new GfshCommandRule();
+        gfsh.secureConnectAndVerify(jmxPort, PortType.jmxManager, "dataRead", "dataRead");
 
-      Awaitility.waitAtMost(5, TimeUnit.MILLISECONDS);
-      gfsh.close();
+        Awaitility.waitAtMost(5, TimeUnit.MILLISECONDS);
+        gfsh.close();
+      }
     });
 
     VM vm2 = lsRule.getVM(2);
