@@ -18,7 +18,6 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
-import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -41,15 +40,12 @@ import org.apache.geode.cache.CacheFactory;
 import org.apache.geode.cache.server.CacheServer;
 import org.apache.geode.distributed.ConfigurationProperties;
 import org.apache.geode.internal.AvailablePortHelper;
-import org.apache.geode.internal.cache.CacheServerImpl;
-import org.apache.geode.internal.cache.InternalCache;
-import org.apache.geode.internal.cache.tier.CommunicationMode;
-import org.apache.geode.internal.protocol.protobuf.Handshake;
+import org.apache.geode.internal.protocol.protobuf.ProtocolVersion;
 import org.apache.geode.internal.protocol.protobuf.v1.serializer.ProtobufProtocolSerializer;
 import org.apache.geode.test.junit.categories.IntegrationTest;
 
 @Category(IntegrationTest.class)
-public class HandshakeIntegrationTest {
+public class ProtocolVersionIntegrationTest {
   private Cache cache;
 
   @Rule
@@ -104,13 +100,13 @@ public class HandshakeIntegrationTest {
 
   @Test
   public void testInvalidMajorVersionBreaksConnection() throws Exception {
-    Handshake.NewConnectionHandshake.newBuilder().setMajorVersion(2000)
-        .setMinorVersion(Handshake.MinorVersions.CURRENT_MINOR_VERSION_VALUE).build()
+    ProtocolVersion.NewConnectionClientVersion.newBuilder().setMajorVersion(2000)
+        .setMinorVersion(ProtocolVersion.MinorVersions.CURRENT_MINOR_VERSION_VALUE).build()
         .writeDelimitedTo(socket.getOutputStream());
 
-    Handshake.HandshakeAcknowledgement handshakeResponse =
-        Handshake.HandshakeAcknowledgement.parseDelimitedFrom(socket.getInputStream());
-    assertFalse(handshakeResponse.getHandshakePassed());
+    ProtocolVersion.VersionAcknowledgement handshakeResponse =
+        ProtocolVersion.VersionAcknowledgement.parseDelimitedFrom(socket.getInputStream());
+    assertFalse(handshakeResponse.getVersionAccepted());
 
     // Verify that connection is closed
     Awaitility.await().atMost(10, TimeUnit.SECONDS).until(() -> {
@@ -129,9 +125,9 @@ public class HandshakeIntegrationTest {
    */
   @Test
   public void testMissingMajorVersionBreaksConnection() throws Exception {
-    Handshake.NewConnectionHandshake.newBuilder()
-        .setMajorVersion(Handshake.MajorVersions.CURRENT_MAJOR_VERSION_VALUE).setMinorVersion(0)
-        .build().writeDelimitedTo(socket.getOutputStream());
+    ProtocolVersion.NewConnectionClientVersion.newBuilder()
+        .setMajorVersion(ProtocolVersion.MajorVersions.CURRENT_MAJOR_VERSION_VALUE)
+        .setMinorVersion(0).build().writeDelimitedTo(socket.getOutputStream());
 
     // Verify that connection is closed
     Awaitility.await().atMost(10, TimeUnit.SECONDS).until(() -> {

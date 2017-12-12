@@ -25,13 +25,13 @@ enum MinorVersions {
     CURRENT_MINOR_VERSION = 1;  // Protobuf implementation at initial release
 }
 
-message NewConnectionHandshake {
+message NewConnectionClientVersion {
     fixed32 majorVersion = 1;
     fixed32 minorVersion = 2;
 }
 
-message HandshakeAcknowledgement {
+message VersionAcknowledgement {
     int32 serverMajorVersion = 1;
     int32 serverMinorVersion = 2;
-    bool handshakePassed = 3;
+    bool versionAccepted = 3;
 }

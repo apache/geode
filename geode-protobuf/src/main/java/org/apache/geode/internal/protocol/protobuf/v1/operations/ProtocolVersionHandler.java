@@ -21,34 +21,35 @@ import java.io.OutputStream;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
-import org.apache.geode.internal.protocol.protobuf.Handshake;
+import org.apache.geode.internal.protocol.protobuf.ProtocolVersion;
 import org.apache.geode.internal.protocol.statistics.ProtocolClientStatistics;
 
-public class HandshakeHandler {
+public class ProtocolVersionHandler {
   private static final Logger logger = LogManager.getLogger();
   private static final VersionValidator validator = new VersionValidator();
 
-  public static boolean handleHandshake(InputStream inputStream, OutputStream outputStream,
+  public static boolean handleVersionMessage(InputStream inputStream, OutputStream outputStream,
       ProtocolClientStatistics statistics) throws IOException {
-    Handshake.NewConnectionHandshake handshakeRequest =
-        Handshake.NewConnectionHandshake.parseDelimitedFrom(inputStream);
+    ProtocolVersion.NewConnectionClientVersion versionMessage =
+        ProtocolVersion.NewConnectionClientVersion.parseDelimitedFrom(inputStream);
 
-    statistics.messageReceived(handshakeRequest.getSerializedSize());
+    statistics.messageReceived(versionMessage.getSerializedSize());
 
-    final boolean handshakeSucceeded =
-        validator.isValid(handshakeRequest.getMajorVersion(), handshakeRequest.getMinorVersion());
+    final boolean versionAccepted =
+        validator.isValid(versionMessage.getMajorVersion(), versionMessage.getMinorVersion());
 
-    Handshake.HandshakeAcknowledgement handshakeResponse = Handshake.HandshakeAcknowledgement
-        .newBuilder().setServerMajorVersion(Handshake.MajorVersions.CURRENT_MAJOR_VERSION_VALUE)
-        .setServerMinorVersion(Handshake.MinorVersions.CURRENT_MINOR_VERSION_VALUE)
-        .setHandshakePassed(handshakeSucceeded).build();
+    ProtocolVersion.VersionAcknowledgement handshakeResponse =
+        ProtocolVersion.VersionAcknowledgement.newBuilder()
+            .setServerMajorVersion(ProtocolVersion.MajorVersions.CURRENT_MAJOR_VERSION_VALUE)
+            .setServerMinorVersion(ProtocolVersion.MinorVersions.CURRENT_MINOR_VERSION_VALUE)
+            .setVersionAccepted(versionAccepted).build();
 
     handshakeResponse.writeDelimitedTo(outputStream);
     statistics.messageSent(handshakeResponse.getSerializedSize());
-    if (!handshakeSucceeded) {
+    if (!versionAccepted) {
       throw new IOException("Incompatible protobuf version.");
     }
 
-    return handshakeSucceeded;
+    return versionAccepted;
   }
 }

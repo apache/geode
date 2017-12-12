@@ -19,7 +19,7 @@ import org.apache.geode.cache.Cache;
 import org.apache.geode.distributed.internal.InternalLocator;
 import org.apache.geode.internal.cache.client.protocol.ClientProtocolProcessor;
 import org.apache.geode.internal.cache.client.protocol.ClientProtocolService;
-import org.apache.geode.internal.protocol.protobuf.Handshake;
+import org.apache.geode.internal.protocol.protobuf.ProtocolVersion;
 import org.apache.geode.internal.protocol.protobuf.statistics.ProtobufClientStatisticsImpl;
 import org.apache.geode.internal.protocol.statistics.NoOpStatistics;
 import org.apache.geode.internal.protocol.statistics.ProtocolClientStatistics;
@@ -63,6 +63,6 @@ public class ProtobufProtocolService implements ClientProtocolService {
 
   @Override
   public int getServiceProtocolVersion() {
-    return Handshake.MajorVersions.CURRENT_MAJOR_VERSION_VALUE;
+    return ProtocolVersion.MajorVersions.CURRENT_MAJOR_VERSION_VALUE;
   }
 }
