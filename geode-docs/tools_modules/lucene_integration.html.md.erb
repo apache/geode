@@ -25,10 +25,10 @@ The Apache Lucene integration:
 
 - Enables users to create Lucene indexes on data stored in <%=vars.product_name%>
 - Provides high availability of indexes using <%=vars.product_name%>'s HA capabilities to store the indexes in memory
-- For persistent regions, Lucene indexes are also persisted to disk
+- Colocates indexes with data
+- For persistent regions, persists Lucene indexes to disk
 - Updates the indexes asynchronously to minimize impacting write latency
 - Provides scalability by partitioning index data
-- Colocates indexes with data
 
 For more details, see Javadocs for the classes and interfaces that implement Apache Lucene indexes and searches, including
 `LuceneService`, `LuceneSerializer`, `LuceneIndexFactory`, `LuceneQuery`, `LuceneQueryFactory`, `LuceneQueryProvider`, and `LuceneResultStruct`.
@@ -36,8 +36,7 @@ For more details, see Javadocs for the classes and interfaces that implement Apa
 # <a id="using-the-apache-lucene-integration" class="no-quick-link"></a>Using the Apache Lucene Integration
 
 You can interact with Apache Lucene indexes through a Java API,
-through the `gfsh` command-line utility,
-or by means of the `cache.xml` configuration file.
+through the `gfsh` command-line utility, or by means of the `cache.xml` configuration file.
 
 ## Key Points ###
 
@@ -46,7 +45,7 @@ or by means of the `cache.xml` configuration file.
 - A Lucene index applies to only one region. Multiple indexes can be defined for a single region.
 - Heterogeneous objects in a single region are supported.
 
-## <a id="lucene-index-create" class="no-quick-link"></a>Creating an Index
+## <a id="lucene-index-create" class="no-quick-link"></a>Creating a Lucene Index
 
 <p class="note">
 <strong>Note:</strong> Create the Lucene index <strong>before</strong> creating the region.
@@ -61,21 +60,27 @@ When you create a Lucene index, you must provide three pieces of information:
 You must specify at least one field to be indexed. 
 
 If the object value for the entries in the region comprises a single field to be indexed and
-searched (for example, each key has a value that is simply a string), then use `__REGION_VALUE_FIELD`
+searched (for example, some keys have values that are simply strings), then use `__REGION_VALUE_FIELD`
 to specify the field to be indexed.  `__REGION_VALUE_FIELD` supports entry values of all
 primitive types, including `String`, `Long`, `Integer`, `Float`, and `Double`.
 
-Each field has a corresponding analyzer to extract terms from text. When no analyzer is specified, the `org.apache.lucene.analysis.standard.StandardAnalyzer` is used.
+Each field has a corresponding analyzer to extract terms from text. When no analyzer is specified,
+the `org.apache.lucene.analysis.standard.StandardAnalyzer` is used.
 
-The index has an associated serializer that renders the indexed object as a searchable string. The default serializer is a simple one that does not handle
-collections or nested fields.
-<%=vars.product_name%> supplies a built-in serializer, `FlatFormatSerializer`,
-that does handle collections and nested fields, which you can specify using its fully qualified name,
-`org.apache.geode.cache.lucene.FlatFormatSerializer`. 
+The index has an associated serializer that renders the indexed object as a Lucene document comprised of searchable fields. 
+The default serializer is a simple one that handles top-level fields, but does not render collections or nested objects.
 
-Alternatively, you can create your own serializer, which must implement the `LuceneSerializer` interface.
+<%=vars.product_name%> supplies a built-in serializer, `FlatFormatSerializer()`, that handles
+collections and nested objects. See [Using FlatFormatSerializer to Index Fields within Nested Objects](#using-flatformatserializer) for more information
+regarding Lucene indexes for nested objects.
+
+As a third alternative, you can create your own serializer, which must implement the `LuceneSerializer` interface.
 
 ### <a id="api-create-example" class="no-quick-link"></a>Creating a Lucene Index: Java API Example
+
+The following example uses the Java API to create a Lucene index with two fields.
+No analyzers are specified, so the default analyzer handles both fields.
+No serializer is specified, so the default serializer is used.
 
 ``` pre
 // Get LuceneService
@@ -92,30 +97,27 @@ Region region = cache.createRegionFactory(RegionShortcut.PARTITION)
   .create(regionName);
 ```
 
-### <a id="gfsh-create-example" class="no-quick-link"></a>Creating a Lucene Index: Gfsh Examples
+### <a id="gfsh-create-example" class="no-quick-link"></a>Creating a Lucene Index: Gfsh Example
 
-For details, see the [gfsh create lucene index](gfsh/command-pages/create.html#create_lucene_index") command reference page.
+In gfsh, use the [create lucene index](gfsh/command-pages/create.html#create_lucene_index) command to create Lucene indexes.
 
-
-The following example creates an index with two fields. No analyzers are specified, so the default analyzer handles both fields. No serializer is specified, so the default serializer is used.
+The following example creates an index with two fields. The default analyzer handles both fields, and the default serializer is used.
 
 ``` pre
 gfsh>create lucene index --name=indexName --region=/orders --field=customer,tags
 ```
 
 The next example creates an index, specifying a custom analyzer for the second field. "DEFAULT" in the first analyzer position 
-specifies that the default analyzer should be used for the first field. The `--serializer` option specifies the built-in "flat format" serializer
-for all objects in the region so that nested object fields can be indexed and searched.
+specifies that the default analyzer will be used for the first field.
 
 ``` pre
-gfsh>create lucene index --name=indexName --region=/orders \
-  --field=customer,tags --analyzer=DEFAULT,org.apache.lucene.analysis.bg.BulgarianAnalyzer \
-  --serializer=org.apache.geode.cache.lucene.FlatFormatSerializer
+gfsh>create lucene index --name=indexName --region=/orders
+  --field=customer,tags --analyzer=DEFAULT,org.apache.lucene.analysis.bg.BulgarianAnalyzer
 ```
 
 ### <a id="xml-configuration" class="no-quick-link"></a>Creating a Lucene Index: XML Example
 
-This XML configuration file specifies a Lucene index with three fields, three analyzers, and the "flat format" serializer:
+This XML configuration file specifies a Lucene index with three fields and three analyzers:
 
 ``` pre
 <cache
@@ -137,26 +139,119 @@ This XML configuration file specifies a Lucene index with three fields, three an
           <lucene:field name="c" 
                         analyzer="org.apache.lucene.analysis.standard.ClassicAnalyzer"/>
           <lucene:field name="d" />
-          <lucene:serializer>
-            <class-name>org.apache.geode.cache.lucene.FlatFormatSerializer</class-name>
-          </lucene:serializer>
         </lucene:index>
     </region>
 </cache>
 ```
 
+## <a id="using-flatformatserializer" class="no-quick-link"></a>Using FlatFormatSerializer to Index Fields within Nested Objects
+
+<%=vars.product_name%> supplies a built-in serializer, `org.apache.geode.cache.lucene.FlatFormatSerializer`
+that renders collections and nested objects as searchable fields, which you can access using the syntax
+`fieldnameAtLevel1.fieldnameAtLevel2` for both indexing and querying.
+
+For example, in the following data model, the Customer object contains both a Person object and a
+collection of Page objects. The Person object also contains a Page object.
+
+```
+public class Customer implements Serializable {
+  private String name;
+  private Collection<String> phoneNumbers;
+  private Collection<Person> contacts;
+  private Page[] myHomePages;
+  ......
+}
+public class Person implements Serializable {
+  private String name;
+  private String email;
+  private int revenue;
+  private String address;
+  private String[] phoneNumbers;
+  private Page homepage;
+  .......
+}
+public class Page implements Serializable {
+  private int id; // search integer in int format
+  private String title;
+  private String content;
+  ......
+}
+```
+
+The `FlatFormatSerializer` creates one document for each parent object, adding an indexed field for each data field
+in a nested object, identified by its qualified name. Similarly, collections are flattened and
+treated as tokens in a single field.  For example, the `FlatFormatSerializer` will convert a
+Customer object, with the structure described above, into a document as 
+
+```
+(name:Jan),
+(contacts.name:Jones77),
+(contacts.email:Jones77@gmail.com),
+(contacts.address:15220 Wall St),
+(contacts.homepage.title: Mr. Jones),
+```
+
+The example below demonstrates how to index the `name` field and the nested fields `contacts.name`, `contacts.email`,
+`contacts.address`, `contacts.homepage.title`. Each segment is a field name, not a field type,
+because the Customer class could have more than one field of type Person.
+
+```
+// Get LuceneService
+LuceneService luceneService = LuceneServiceProvider.get(cache);
+ 
+// Create Index on fields, some are fields in nested objects:
+luceneService.createIndexFactory().setLuceneSerializer(new FlatFormatSerializer()) /* an out-of-box LuceneSerializer implementation */
+      .addField("name").addField("contacts.name").addField("contacts.email").addField("contacts.address").addField("contacts.homepage.title")
+      .create("customerIndex", "Customer");
+ 
+// Create region
+Region CustomerRegion = ((Cache)cache).createRegionFactory(shortcut).create("Customer");
+```
+
+The gfsh equivalent of the above Java code uses the `create lucene index` command, with options
+specifying the index name, region name, field names, and the `FlatFormatSerializer`, specified 
+using its fully qualified name,`org.apache.geode.cache.lucene.FlatFormatSerializer`:
+
+
+```
+gfsh>create lucene index --name=customerIndex --region=Customer
+  --field=name,contacts.name,contacts.email,contacts.address,contacts.homepage.title
+  --serializer=org.apache.geode.cache.lucene.FlatFormatSerializer
+```
+
+The syntax for querying a nested field is the same as for a top level field, but with the
+additional qualifying parent field name, such as `contacts.name:Jones77*`. This distinguishes which
+"name" field is intended when there can be more than one "name" field at different hierarchical
+levels in the object.
+
+Java query:
+
+```
+LuceneQuery query = luceneService.createLuceneQueryFactory().create("customerIndex", "Customer", "contacts.name:Jones77*", "name");
+ 
+PageableLuceneQueryResults<K,Object> results = query.findPages();
+```
+
+gfsh query:
+
+```
+gfsh>search lucene --name=customerIndex --region=Customer
+  --queryString="contacts.name:Jones77*"
+  --defaultField=contacts.name
+```
+
 ## <a id="lucene-index-query" class="no-quick-link"></a>Queries
 
-### <a id="gfsh-query-example" class="no-quick-link"></a>Gfsh Example to Query Using a Lucene Index
+### <a id="gfsh-query-example" class="no-quick-link"></a>Querying a Lucene Index: Gfsh Example
 
 For details, see the [gfsh search lucene](gfsh/command-pages/search.html#search_lucene") command reference page.
 
 ``` pre
-gfsh>search lucene --name=indexName --region=/orders --queryString="John*"
-   --defaultField=customer --limit=100
+gfsh>search lucene --name=indexName --region=/orders --queryString="Jones*"
+   --defaultField=customer
 ```
 
-### <a id="api-query-example" class="no-quick-link"></a>Java API Example to Query Using a Lucene Index
+### <a id="api-query-example" class="no-quick-link"></a>Querying a Lucene Index: Java API Example
 
 ``` pre
 LuceneQuery<String, Person> query = luceneService.createLuceneQueryFactory()
@@ -171,7 +266,7 @@ Since a region-destroy operation does not cause the destruction
 of any Lucene indexes,
 destroy any Lucene indexes prior to destroying the associated region.
 
-### <a id="API-destroy-example" class="no-quick-link"></a>Java API Example to Destroy a Lucene Index
+### <a id="API-destroy-example" class="no-quick-link"></a>Destroying a Lucene Index: Java API Example
 
 ``` pre
 luceneService.destroyIndex(indexName, regionName);
@@ -184,16 +279,9 @@ issuing an error message similar to:
 java.lang.IllegalStateException: The parent region [/orders] in colocation chain
  cannot be destroyed, unless all its children [[/indexName#_orders.files]] are
  destroyed
-at org.apache.geode.internal.cache.PartitionedRegion
-    .checkForColocatedChildren(PartitionedRegion.java:7231)
-at org.apache.geode.internal.cache.PartitionedRegion
-    .destroyRegion(PartitionedRegion.java:7243)
-at org.apache.geode.internal.cache.AbstractRegion
-    .destroyRegion(AbstractRegion.java:308)
-at DestroyLuceneIndexesAndRegionFunction
-    .destroyRegion(DestroyLuceneIndexesAndRegionFunction.java:46)
+...
 ```
-### <a id="gfsh-destroy-example" class="no-quick-link"></a>Gfsh Example to Destroy a Lucene Index
+### <a id="gfsh-destroy-example" class="no-quick-link"></a>Destroying a Lucene Index: Gfsh Example
 
 For details, see the [gfsh destroy lucene index](gfsh/command-pages/destroy.html#destroy_lucene_index") command reference page.
 
@@ -257,14 +345,7 @@ on the client (accessor) similar to:
 ``` pre
 Exception in thread "main" org.apache.geode.cache.lucene.LuceneQueryException:
  Lucene Query cannot be executed within a transaction
-at org.apache.geode.cache.lucene.internal.LuceneQueryImpl
-    .findTopEntries(LuceneQueryImpl.java:124)
-at org.apache.geode.cache.lucene.internal.LuceneQueryImpl
-    .findPages(LuceneQueryImpl.java:98)
-at org.apache.geode.cache.lucene.internal.LuceneQueryImpl
-    .findPages(LuceneQueryImpl.java:94)
-at TestClient.executeQuerySingleMethod(TestClient.java:196)
-at TestClient.main(TestClient.java:59)
+...
 ```
 - Lucene indexes must be created prior to creating the region.
 If an attempt is made to create a Lucene index after creating the region,
@@ -307,17 +388,9 @@ issuing an error message similar to:
 ``` pre
 [error 2017/05/02 16:12:32.461 PDT <main> tid=0x1] 
  java.lang.UnsupportedOperationException:
- Lucene indexes on regions with eviction and action local destroy are not supported
 Exception in thread "main" java.lang.UnsupportedOperationException:
  Lucene indexes on regions with eviction and action local destroy are not supported
-at org.apache.geode.cache.lucene.internal.LuceneRegionListener
-    .beforeCreate(LuceneRegionListener.java:85)
-at org.apache.geode.internal.cache.GemFireCacheImpl
-    .invokeRegionBefore(GemFireCacheImpl.java:3154)
-at org.apache.geode.internal.cache.GemFireCacheImpl
-    .createVMRegion(GemFireCacheImpl.java:3013)
-at org.apache.geode.internal.cache.GemFireCacheImpl
-    .basicCreateRegion(GemFireCacheImpl.java:2991)
+...
 ```
 - Be aware that using the same field name in different objects
 where the field has different data types 
