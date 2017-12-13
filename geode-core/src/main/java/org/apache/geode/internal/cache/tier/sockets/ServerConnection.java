@@ -1277,6 +1277,12 @@ public abstract class ServerConnection implements Runnable {
     this.requestSpecificTimeout = -1;
   }
 
+  /**
+   * Returns the client's read-timeout setting. This is used in the client health monitor to timeout
+   * connections that have taken too long & the client will have already given up waiting for a
+   * response. Certain messages also may include an override to the normal read-timeout, such as a
+   * query or a putAll.
+   */
   protected int getClientReadTimeout() {
     if (this.requestSpecificTimeout == -1) {
       return this.handshake.getClientReadTimeout();
