@@ -14,8 +14,14 @@
  */
 package org.apache.geode.internal.cache.versions;
 
-import static org.junit.Assert.*;
-import static org.mockito.Mockito.*;
+import static java.util.concurrent.TimeUnit.SECONDS;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatCode;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
@@ -27,8 +33,11 @@ import java.io.IOException;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.Future;
 
+import org.junit.After;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
@@ -46,10 +55,19 @@ import org.apache.geode.test.dunit.NetworkUtils;
 import org.apache.geode.test.junit.categories.UnitTest;
 
 @Category(UnitTest.class)
-public class RegionVersionVectorJUnitTest {
+public class RegionVersionVectorTest {
+
+  private Future<Void> result;
 
   @Rule
   public ExpectedException expectedException = ExpectedException.none();
+
+  @After
+  public void tearDown() throws Exception {
+    if (result != null && !result.isDone()) {
+      result.cancel(true);
+    }
+  }
 
   @Test
   public void testExceptionsWithContains() {
@@ -148,7 +166,6 @@ public class RegionVersionVectorJUnitTest {
     assertTrue(rv1.contains(server2, 9));
     assertTrue(rv1.getExceptionCount(server2) == 0);
     assertTrue(rv1.contains(server2, 8));
-
 
     // Test RVV comparisons for GII Delta
     rv1 = new VMRegionVersionVector(server1);
@@ -255,8 +272,6 @@ public class RegionVersionVectorJUnitTest {
     }
     assertFalse(rv1.contains(server2, boundary + 1));
 
-    RegionVersionVector.DEBUG = true;
-
     rv1.recordVersion(server2, bitSetRollPoint);
     rv1.recordVersion(server2, bitSetRollPoint + 1); // bitSet should be rolled at this point
     RegionVersionHolder h = (RegionVersionHolder) rv1.getMemberToVersion().get(server2);
@@ -275,7 +290,7 @@ public class RegionVersionVectorJUnitTest {
     // now test the merge
     System.out.println("testing merge for " + rv1.fullToString());
     assertEquals(1, rv1.getExceptionCount(server2)); // one exception from boundary-1 to
-                                                     // bitSetRollPoint
+    // bitSetRollPoint
     assertFalse(rv1.contains(server2, bitSetRollPoint - 1));
     assertTrue(rv1.contains(server2, bitSetRollPoint));
     assertTrue(rv1.contains(server2, bitSetRollPoint + 1));
@@ -567,7 +582,53 @@ public class RegionVersionVectorJUnitTest {
     rvv.recordVersion(ownerId, tag);
   }
 
-  public RegionVersionVector createRegionVersionVector(InternalDistributedMember ownerId,
+  @Test
+  public void usesNewVersionIfGreaterThanOldVersion() throws Exception {
+    VersionSource<InternalDistributedMember> ownerId = mock(VersionSource.class);
+    long oldVersion = 1;
+    long newVersion = 2;
+
+    RegionVersionVector rvv = new TestableRegionVersionVector(ownerId, oldVersion);
+    rvv.updateLocalVersion(newVersion);
+    assertThat(rvv.getVersionForMember(ownerId)).isEqualTo(newVersion);
+  }
+
+  @Test
+  public void usesOldVersionIfGreaterThanNewVersion() throws Exception {
+    VersionSource<InternalDistributedMember> ownerId = mock(VersionSource.class);
+    long oldVersion = 2;
+    long newVersion = 1;
+
+    RegionVersionVector rvv = new TestableRegionVersionVector(ownerId, oldVersion);
+    rvv.updateLocalVersion(newVersion);
+    assertThat(rvv.getVersionForMember(ownerId)).isEqualTo(oldVersion);
+  }
+
+  @Test
+  public void doesNothingIfVersionsAreSame() throws Exception {
+    VersionSource<InternalDistributedMember> ownerId = mock(VersionSource.class);
+    long oldVersion = 2;
+    long sameVersion = 2;
+
+    RegionVersionVector rvv = new TestableRegionVersionVector(ownerId, oldVersion);
+    rvv.updateLocalVersion(sameVersion);
+    assertThat(rvv.getVersionForMember(ownerId)).isEqualTo(oldVersion);
+  }
+
+  @Test
+  public void doesNotHangIfOtherThreadChangedVersion() throws Exception {
+    VersionSource<InternalDistributedMember> ownerId = mock(VersionSource.class);
+    long oldVersion = 1;
+    long newVersion = 2;
+
+    RegionVersionVector rvv = new VersionRaceConditionRegionVersionVector(ownerId, oldVersion);
+    result = CompletableFuture.runAsync(() -> rvv.updateLocalVersion(newVersion));
+
+    assertThatCode(() -> result.get(2, SECONDS)).doesNotThrowAnyException();
+    assertThat(rvv.getVersionForMember(ownerId)).isEqualTo(newVersion);
+  }
+
+  private RegionVersionVector createRegionVersionVector(InternalDistributedMember ownerId,
       LocalRegion owner) {
     @SuppressWarnings({"unchecked", "rawtypes"})
     RegionVersionVector rvv = new RegionVersionVector(ownerId, owner) {
@@ -615,4 +676,56 @@ public class RegionVersionVectorJUnitTest {
     assertEquals(0, rvv.getExceptionCount(id));
   }
 
+  private class TestableRegionVersionVector
+      extends RegionVersionVector<VersionSource<InternalDistributedMember>> {
+
+    TestableRegionVersionVector(VersionSource<InternalDistributedMember> ownerId, long version) {
+      super(ownerId, null, version);
+    }
+
+    @Override
+    protected RegionVersionVector createCopy(VersionSource ownerId, ConcurrentHashMap vector,
+        long version, ConcurrentHashMap gcVersions, long gcVersion, boolean singleMember,
+        RegionVersionHolder clonedLocalHolder) {
+      return null;
+    }
+
+    @Override
+    protected VersionSource<InternalDistributedMember> readMember(DataInput in)
+        throws IOException, ClassNotFoundException {
+      return null;
+    }
+
+    @Override
+    protected void writeMember(VersionSource member, DataOutput out) throws IOException {
+
+    }
+
+    @Override
+    public int getDSFID() {
+      return 0;
+    }
+  }
+
+  private class VersionRaceConditionRegionVersionVector extends TestableRegionVersionVector {
+
+    private boolean firstTime = true;
+
+    VersionRaceConditionRegionVersionVector(VersionSource<InternalDistributedMember> ownerId,
+        long version) {
+      super(ownerId, version);
+    }
+
+    @Override
+    boolean compareAndSetVersion(long currentVersion, long newVersion) {
+      if (firstTime) {
+        firstTime = false;
+        super.compareAndSetVersion(currentVersion, newVersion);
+        return false;
+      } else {
+        return super.compareAndSetVersion(currentVersion, newVersion);
+      }
+    }
+
+  }
 }
