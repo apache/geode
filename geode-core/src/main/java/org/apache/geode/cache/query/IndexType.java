@@ -50,7 +50,11 @@ public enum IndexType {
    * <code>long int short byte char float double</code>
    *
    * @see QueryService#createIndex(String, IndexType, String, String)
+   * @deprecated Due to the overhead caused by rehashing while expanding the backing array, hash
+   *             index has been deprecated since Apache Geode 1.4.0. Use
+   *             {@link IndexType#FUNCTIONAL} instead.
    */
+  @Deprecated
   HASH("HASH"),
 
 

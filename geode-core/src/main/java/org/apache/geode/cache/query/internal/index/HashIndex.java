@@ -86,7 +86,12 @@ import org.apache.geode.internal.offheap.StoredObject;
  * This index does not support the storage of projection attributes.
  * <p>
  * Currently this implementation only supports an index on a region path.
+ *
+ * @deprecated Due to the overhead caused by rehashing while expanding the backing array, Hash Index
+ *             has been deprecated since Apache Geode 1.4.0. Instead the use of
+ *             {@link CompactRangeIndex} is recommended
  */
+@Deprecated
 public class HashIndex extends AbstractIndex {
   private static final Logger logger = LogService.getLogger();
 
