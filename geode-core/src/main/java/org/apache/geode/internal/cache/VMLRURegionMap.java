@@ -23,6 +23,7 @@ import org.apache.logging.log4j.Logger;
 import org.apache.geode.InternalGemFireException;
 import org.apache.geode.cache.EvictionAction;
 import org.apache.geode.cache.EvictionAlgorithm;
+import org.apache.geode.cache.Region;
 import org.apache.geode.cache.RegionDestroyedException;
 import org.apache.geode.internal.Assert;
 import org.apache.geode.internal.cache.RegionMap.Attributes;
@@ -87,11 +88,10 @@ class VMLRURegionMap extends AbstractRegionMap {
 
   private static EvictionController createEvictionController(EvictableRegion owner,
       InternalRegionArguments internalRegionArgs) {
-    EvictionController controller = owner.getExistingController(null);
+    EvictionController controller = owner.getExistingController(internalRegionArgs);
     if (controller == null) {
-      // TODO create EvictionCounters and pass to controller create
       controller = AbstractEvictionController.create(owner.getEvictionAttributes(),
-          owner.getOffHeap(), /* TODO getEntryOverhead() */ 0, owner.getStatisticsFactory());
+          owner.getOffHeap(), /* TODO getEntryOverhead() */ 0, owner.getStatisticsFactory(), owner.getNameForStats());
     }
     return controller;
   }

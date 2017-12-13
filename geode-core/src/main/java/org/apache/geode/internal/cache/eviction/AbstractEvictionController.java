@@ -61,36 +61,25 @@ public abstract class AbstractEvictionController implements EvictionController {
    * Create and return the appropriate eviction controller using the attributes provided.
    */
   public static EvictionController create(EvictionAttributes evictionAttributes, boolean isOffHeap,
-      int entryOverhead, StatisticsFactory statsFactory) {
+      int entryOverhead, StatisticsFactory statsFactory, String statsName) {
     EvictionAlgorithm algorithm = evictionAttributes.getAlgorithm();
     EvictionAction action = evictionAttributes.getAction();
     ObjectSizer sizer = evictionAttributes.getObjectSizer();
     int maximum = evictionAttributes.getMaximum();
     EvictionStats evictionStats;
     EvictionCounters evictionCounters;
-    String fullPathName;
-    if (region instanceof Region) {
-      fullPathName = ((Region) region).getFullPath();
-    } else if (region instanceof PlaceHolderDiskRegion) {
-      PlaceHolderDiskRegion placeHolderDiskRegion = (PlaceHolderDiskRegion) region;
-      if (placeHolderDiskRegion.isBucket()) {
-        fullPathName = placeHolderDiskRegion.getPrName();
-      } else {
-        fullPathName = placeHolderDiskRegion.getName();
-      }
-    }
     if (algorithm == EvictionAlgorithm.LRU_HEAP) {
-      evictionStats = new HeapLRUStatistics(statsFactory, fullPathName);
+      evictionStats = new HeapLRUStatistics(statsFactory, statsName);
       evictionCounters = new EvictionCountersImpl(evictionStats);
       return new HeapLRUController(evictionCounters, action, sizer, entryOverhead);
     }
     if (algorithm == EvictionAlgorithm.LRU_MEMORY || algorithm == EvictionAlgorithm.LIFO_MEMORY) {
-      evictionStats = new MemoryLRUStatistics(statsFactory, fullPathName);
+      evictionStats = new MemoryLRUStatistics(statsFactory, statsName);
       evictionCounters = new EvictionCountersImpl(evictionStats);
       return new MemoryLRUController(evictionCounters, maximum, sizer, action, isOffHeap, entryOverhead);
     }
     if (algorithm == EvictionAlgorithm.LRU_ENTRY || algorithm == EvictionAlgorithm.LIFO_ENTRY) {
-      evictionStats = new CountLRUStatistics(statsFactory, fullPathName);
+      evictionStats = new CountLRUStatistics(statsFactory, statsName);
       evictionCounters = new EvictionCountersImpl(evictionStats);
       return new CountLRUEviction(evictionCounters, maximum, action);
     }

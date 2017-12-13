@@ -2464,4 +2464,9 @@ public class BucketRegion extends DistributedRegion implements Bucket {
   public EvictionController getExistingController(InternalRegionArguments internalArgs) {
     return internalArgs.getPartitionedRegion().getEvictionController();
   }
+
+  @Override
+  public String getNameForStats() {
+    return this.getPartitionedRegion().getFullPath();
+  }
 }

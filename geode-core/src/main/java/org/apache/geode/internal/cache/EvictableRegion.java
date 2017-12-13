@@ -31,4 +31,6 @@ public interface EvictableRegion {
   
   StatisticsFactory getStatisticsFactory();
 
+  String getNameForStats();
+
 }

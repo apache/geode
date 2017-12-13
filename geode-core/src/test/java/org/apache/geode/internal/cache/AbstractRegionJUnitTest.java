@@ -701,5 +701,10 @@ public class AbstractRegionJUnitTest {
     public EvictionController getExistingController(InternalRegionArguments internalArgs) {
       throw new UnsupportedOperationException();
     }
+
+    @Override
+    public String getNameForStats() {
+      throw new UnsupportedOperationException();
+    }
   }
 }
