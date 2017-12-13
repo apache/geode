@@ -734,11 +734,11 @@ public class CliStrings {
       "Name/Id of the member in which the index will be created.";
   public static final String CREATE_INDEX__TYPE = "type";
   public static final String CREATE_INDEX__TYPE__HELP =
-      "Type of the index. Valid values are: range, key and hash.";
+      "Type of the index. Valid values are: range and key. Deprecated : hash has been deprecated since Apache Geode 1.4.0";
   public static final String CREATE_INDEX__GROUP__HELP =
       "Group of members in which the index will be created.";
   public static final String CREATE_INDEX__INVALID__INDEX__TYPE__MESSAGE =
-      "Invalid index type,value must be one of the following: range, key or hash.";
+      "Invalid index type,value must be one of the following: range, key and hash. Deprecated : hash has been deprecated since Apache Geode 1.4.0";
   public static final String CREATE_INDEX__SUCCESS__MSG =
       "Index successfully created with following details";
   public static final String CREATE_INDEX__FAILURE__MSG =
