@@ -62,6 +62,7 @@ public class BackupManager {
 
   private static final String BACKUP_DIR_PREFIX = "dir";
   private static final String DATA_STORES_DIRECTORY = "diskstores";
+  public static final String DATA_STORES_TEMPORARY_DIRECTORY = "backupTemp_";
   private static final String USER_FILES = "user";
   private static final String CONFIG_DIRECTORY = "config";
 
@@ -72,12 +73,16 @@ public class BackupManager {
   private final InternalCache cache;
   private final CountDownLatch allowDestroys = new CountDownLatch(1);
   private final BackupDefinition backupDefinition = new BackupDefinition();
+  private final String diskStoreDirectoryName;
   private volatile boolean isCancelled = false;
   private Path tempDirectory;
+  private final Map<DiskStore, Map<DirectoryHolder, Path>> diskStoreDirTempDirsByDiskStore =
+      new HashMap<>();
 
   public BackupManager(InternalDistributedMember sender, InternalCache gemFireCache) {
     this.sender = sender;
     this.cache = gemFireCache;
+    diskStoreDirectoryName = DATA_STORES_TEMPORARY_DIRECTORY + System.currentTimeMillis();
   }
 
   public void validateRequestingAdmin() {
@@ -139,9 +144,6 @@ public class BackupManager {
 
     } finally {
       cleanup();
-      if (tempDirectory != null) {
-        FileUtils.deleteDirectory(tempDirectory.toFile());
-      }
     }
   }
 
@@ -196,9 +198,31 @@ public class BackupManager {
   private void cleanup() {
     isCancelled = true;
     allowDestroys.countDown();
+    cleanupTemporaryFiles();
     releaseBackupLocks();
     getDistributionManager().removeAllMembershipListener(membershipListener);
     cache.clearBackupManager();
+  }
+
+  private void cleanupTemporaryFiles() {
+    if (tempDirectory != null) {
+      try {
+        FileUtils.deleteDirectory(tempDirectory.toFile());
+      } catch (IOException e) {
+        logger.warn("Unable to delete temporary directory created during backup, " + tempDirectory,
+            e);
+      }
+    }
+    for (Map<DirectoryHolder, Path> diskStoreDirToTempDirMap : diskStoreDirTempDirsByDiskStore
+        .values()) {
+      for (Path tempDir : diskStoreDirToTempDirMap.values()) {
+        try {
+          FileUtils.deleteDirectory(tempDir.toFile());
+        } catch (IOException e) {
+          logger.warn("Unable to delete temporary directory created during backup, " + tempDir, e);
+        }
+      }
+    }
   }
 
   private void releaseBackupLocks() {
@@ -403,8 +427,7 @@ public class BackupManager {
         tempDir.resolve(subDir).resolve(diskInitFile.getName()));
   }
 
-  private void addDiskStoreDirectoriesToRestoreScript(DiskStoreImpl diskStore, File targetDir)
-      throws IOException {
+  private void addDiskStoreDirectoriesToRestoreScript(DiskStoreImpl diskStore, File targetDir) {
     DirectoryHolder[] directories = diskStore.getDirectoryHolders();
     for (int i = 0; i < directories.length; i++) {
       File backupDir = getBackupDir(targetDir, i);
@@ -563,24 +586,45 @@ public class BackupManager {
   }
 
   private void copyOplog(DiskStore diskStore, File targetDir, Oplog oplog) throws IOException {
-    backupFile(diskStore, targetDir, oplog.getCrfFile());
-    backupFile(diskStore, targetDir, oplog.getDrfFile());
+    DirectoryHolder dirHolder = oplog.getDirectoryHolder();
+    backupFile(diskStore, dirHolder, targetDir, oplog.getCrfFile());
+    backupFile(diskStore, dirHolder, targetDir, oplog.getDrfFile());
 
     oplog.finishKrf();
-    backupFile(diskStore, targetDir, oplog.getKrfFile());
+    backupFile(diskStore, dirHolder, targetDir, oplog.getKrfFile());
   }
 
-  private void backupFile(DiskStore diskStore, File targetDir, File file) throws IOException {
+  private void backupFile(DiskStore diskStore, DirectoryHolder dirHolder, File targetDir, File file)
+      throws IOException {
     if (file != null && file.exists()) {
       try {
-        Files.createLink(targetDir.toPath().resolve(file.getName()), file.toPath());
-        backupDefinition.addOplogFileToBackup(diskStore,
-            targetDir.toPath().resolve(file.getName()));
+        Path tempDiskDir = getTempDirForDiskStore(diskStore, dirHolder);
+        Files.createLink(tempDiskDir.resolve(file.getName()), file.toPath());
+        backupDefinition.addOplogFileToBackup(diskStore, tempDiskDir.resolve(file.getName()));
       } catch (IOException | UnsupportedOperationException e) {
         logger.warn("Unable to create hard link for + {}. Reverting to file copy", targetDir);
         FileUtils.copyFileToDirectory(file, targetDir);
       }
     }
+  }
+
+  private Path getTempDirForDiskStore(DiskStore diskStore, DirectoryHolder dirHolder)
+      throws IOException {
+    Map<DirectoryHolder, Path> tempDirByDirectoryHolder =
+        diskStoreDirTempDirsByDiskStore.get(diskStore);
+    if (tempDirByDirectoryHolder == null) {
+      tempDirByDirectoryHolder = new HashMap<>();
+      diskStoreDirTempDirsByDiskStore.put(diskStore, tempDirByDirectoryHolder);
+    }
+    Path directory = tempDirByDirectoryHolder.get(diskStore);
+    if (directory != null) {
+      return directory;
+    }
+
+    File diskStoreDir = dirHolder.getDir();
+    directory = diskStoreDir.toPath().resolve(diskStoreDirectoryName);
+    Files.createDirectories(directory);
+    return directory;
   }
 
   private String cleanSpecialCharacters(String string) {
