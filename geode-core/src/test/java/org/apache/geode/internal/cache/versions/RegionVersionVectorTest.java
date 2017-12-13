@@ -709,8 +709,6 @@ public class RegionVersionVectorTest {
 
   private class VersionRaceConditionRegionVersionVector extends TestableRegionVersionVector {
 
-    private boolean firstTime = true;
-
     VersionRaceConditionRegionVersionVector(VersionSource<InternalDistributedMember> ownerId,
         long version) {
       super(ownerId, version);
@@ -718,13 +716,8 @@ public class RegionVersionVectorTest {
 
     @Override
     boolean compareAndSetVersion(long currentVersion, long newVersion) {
-      if (firstTime) {
-        firstTime = false;
-        super.compareAndSetVersion(currentVersion, newVersion);
-        return false;
-      } else {
-        return super.compareAndSetVersion(currentVersion, newVersion);
-      }
+      super.compareAndSetVersion(currentVersion, newVersion);
+      return false;
     }
 
   }
