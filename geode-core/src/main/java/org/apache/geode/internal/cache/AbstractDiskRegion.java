@@ -25,6 +25,7 @@ import java.util.concurrent.atomic.AtomicLong;
 import joptsimple.internal.Strings;
 import org.apache.logging.log4j.Logger;
 
+import org.apache.geode.StatisticsFactory;
 import org.apache.geode.cache.EvictionAction;
 import org.apache.geode.cache.EvictionAlgorithm;
 import org.apache.geode.cache.EvictionAttributes;
@@ -1053,5 +1054,10 @@ public abstract class AbstractDiskRegion implements DiskRegionView {
   @Override
   public void incRecentlyUsed() {
     entries.incRecentlyUsed();
+  }
+  
+  @Override
+  public StatisticsFactory getStatisticsFactory() {
+    return this.ds.getStatisticsFactory();
   }
 }

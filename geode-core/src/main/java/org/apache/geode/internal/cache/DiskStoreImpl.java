@@ -4523,4 +4523,9 @@ public class DiskStoreImpl implements DiskStore {
   public boolean isDirectoryUsageNormal(DirectoryHolder dir) {
     return getCache().getDiskStoreMonitor().isNormal(this, dir);
   }
+  
+  public StatisticsFactory getStatisticsFactory() {
+    return this.cache.getDistributedSystem();
+  }
+
 }

@@ -32,6 +32,7 @@ import java.util.concurrent.atomic.AtomicLong;
 import org.apache.logging.log4j.Logger;
 
 import org.apache.geode.DataSerializer;
+import org.apache.geode.StatisticsFactory;
 import org.apache.geode.cache.AttributesMutator;
 import org.apache.geode.cache.CacheCallback;
 import org.apache.geode.cache.CacheListener;
@@ -1764,6 +1765,11 @@ public abstract class AbstractRegion implements InternalRegion, AttributesMutato
 
   public InternalDistributedSystem getSystem() {
     return getCache().getInternalDistributedSystem();
+  }
+  
+  @Override
+  public StatisticsFactory getStatisticsFactory() {
+    return getSystem();
   }
 
   @Override

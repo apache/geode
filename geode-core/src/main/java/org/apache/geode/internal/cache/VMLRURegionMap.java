@@ -91,7 +91,7 @@ class VMLRURegionMap extends AbstractRegionMap {
     if (controller == null) {
       // TODO create EvictionCounters and pass to controller create
       controller = AbstractEvictionController.create(owner.getEvictionAttributes(),
-          owner.getOffHeap(), /* TODO getEntryOverhead() */ 0, null);
+          owner.getOffHeap(), /* TODO getEntryOverhead() */ 0, owner.getStatisticsFactory());
     }
     return controller;
   }
