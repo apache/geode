@@ -271,6 +271,35 @@ public class WANTestBase extends JUnit4DistributedTestCase {
     test.getSystem(props);
   }
 
+  public static void clearGatewaySender(String senderId) {
+
+    Set<GatewaySender> senders = cache.getGatewaySenders();
+    AbstractGatewaySender sender = null;
+    for (GatewaySender s : senders) {
+      if (s.getId().equals(senderId)) {
+        sender = (AbstractGatewaySender) s;
+        ConcurrentParallelGatewaySenderQueue r =
+            (ConcurrentParallelGatewaySenderQueue) sender.getQueue();
+        r.clearQueue();
+        break;
+      }
+    }
+  }
+
+  public static Boolean isSenderPaused(String senderId) {
+    Boolean isPaused = false;
+    Set<GatewaySender> senders = cache.getGatewaySenders();
+    AbstractGatewaySender sender = null;
+    for (GatewaySender s : senders) {
+      if (s.getId().equals(senderId)) {
+        sender = (AbstractGatewaySender) s;
+        isPaused = sender.isPaused();
+        break;
+      }
+    }
+    return isPaused;
+  }
+
   public static Integer createFirstLocatorWithDSId(int dsId) {
     stopOldLocator();
     WANTestBase test = new WANTestBase();
