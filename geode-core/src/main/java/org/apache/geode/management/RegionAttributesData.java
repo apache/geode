@@ -386,14 +386,15 @@ public class RegionAttributesData {
   @Override
   public String toString() {
     return "RegionAttributesData [asyncConflationEnabled=" + asyncConflationEnabled
-        + ", cacheListeners=" + Arrays.toString(cacheListeners) + ", cacheLoaderClassName="
-        + cacheLoaderClassName + ", cacheWriterClassName=" + cacheWriterClassName
-        + ", cloningEnabled=" + cloningEnabled + ", compressorClassName=" + compressorClassName
-        + ", concurrencyLevel=" + concurrencyLevel + ", customEntryIdleTimeout="
-        + customEntryIdleTimeout + ", customEntryTimeToLive=" + customEntryTimeToLive
-        + ", dataPolicy=" + dataPolicy + ", diskStoreName=" + diskStoreName + ", diskSynchronous="
-        + diskSynchronous + ", entryIdleTimeout=" + entryIdleTimeout + ", entryTimeToLive="
-        + entryTimeToLive + ", ignoreJTA=" + ignoreJTA + ", indexMaintenanceSynchronous="
+        + ", asyncEventQueueIds=" + asyncEventQueueIds + ", cacheListeners="
+        + Arrays.toString(cacheListeners) + ", cacheLoaderClassName=" + cacheLoaderClassName
+        + ", cacheWriterClassName=" + cacheWriterClassName + ", cloningEnabled=" + cloningEnabled
+        + ", compressorClassName=" + compressorClassName + ", concurrencyLevel=" + concurrencyLevel
+        + ", customEntryIdleTimeout=" + customEntryIdleTimeout + ", customEntryTimeToLive="
+        + customEntryTimeToLive + ", dataPolicy=" + dataPolicy + ", diskStoreName=" + diskStoreName
+        + ", diskSynchronous=" + diskSynchronous + ", entryIdleTimeout=" + entryIdleTimeout
+        + ", entryTimeToLive=" + entryTimeToLive + ", gatewaySenderIds=" + gatewaySenderIds
+        + ", ignoreJTA=" + ignoreJTA + ", indexMaintenanceSynchronous="
         + indexMaintenanceSynchronous + ", initialCapacity=" + initialCapacity + ", interestPolicy="
         + interestPolicy + ", keyConstraintClassName=" + keyConstraintClassName + ", loadFactor="
         + loadFactor + ", lockGrantor=" + lockGrantor + ", multicastEnabled=" + multicastEnabled
@@ -401,10 +402,7 @@ public class RegionAttributesData {
         + regionIdleTimeout + ", regionTimeToLive=" + regionTimeToLive + ", scope=" + scope
         + ", statisticsEnabled=" + statisticsEnabled + ", subscriptionConflationEnabled="
         + subscriptionConflationEnabled + ", valueConstraintClassName=" + valueConstraintClassName
-        + ", asyncEventQueueIds=" + asyncEventQueueIds + ", gatewaySenderIds=" + gatewaySenderIds
         + "]";
   }
-
-
 
 }
