@@ -56,7 +56,8 @@ public class ListConnectionCommandIntegrationTest {
     connectionConfig3 = new ConnectionConfigBuilder().withName("connection3").withUrl("url3")
         .withUser("user3").withPassword("password3").withParameters(params).build();
 
-    cache = (InternalCache) new CacheFactory().set(ENABLE_CLUSTER_CONFIGURATION, "true").create();
+    cache = (InternalCache) new CacheFactory().set("locators", "").set("mcast-port", "0")
+        .set(ENABLE_CLUSTER_CONFIGURATION, "true").create();
     service = cache.getService(InternalJdbcConnectorService.class);
 
     command = new ListConnectionCommand();

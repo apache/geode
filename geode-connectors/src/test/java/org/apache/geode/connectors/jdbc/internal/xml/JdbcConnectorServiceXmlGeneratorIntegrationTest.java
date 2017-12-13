@@ -72,7 +72,7 @@ public class JdbcConnectorServiceXmlGeneratorIntegrationTest {
 
   @Before
   public void setup() throws IOException {
-    cache = (InternalCache) new CacheFactory().create();
+    cache = (InternalCache) new CacheFactory().set("locators", "").set("mcast-port", "0").create();
     cacheXmlFile = temporaryFolder.newFile("cache.xml");
   }
 

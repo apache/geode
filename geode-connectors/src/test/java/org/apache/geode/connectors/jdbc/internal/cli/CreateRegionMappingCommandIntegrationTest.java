@@ -52,7 +52,8 @@ public class CreateRegionMappingCommandIntegrationTest {
     keyInValue = true;
     fieldMappings = new String[] {"field1:column1", "field2:column2"};
 
-    cache = (InternalCache) new CacheFactory().set(ENABLE_CLUSTER_CONFIGURATION, "true").create();
+    cache = (InternalCache) new CacheFactory().set("locators", "").set("mcast-port", "0")
+        .set(ENABLE_CLUSTER_CONFIGURATION, "true").create();
 
     createRegionMappingCommand = new CreateRegionMappingCommand();
   }

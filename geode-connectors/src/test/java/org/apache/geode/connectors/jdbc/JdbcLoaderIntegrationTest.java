@@ -51,7 +51,8 @@ public class JdbcLoaderIntegrationTest {
 
   @Before
   public void setUp() throws Exception {
-    cache = new CacheFactory().setPdxReadSerialized(false).create();
+    cache = new CacheFactory().set("locators", "").set("mcast-port", "0")
+        .setPdxReadSerialized(false).create();
     connection = DriverManager.getConnection(CONNECTION_URL);
     statement = connection.createStatement();
     statement.execute("Create Table " + REGION_TABLE_NAME

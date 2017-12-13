@@ -49,7 +49,8 @@ public class CreateConnectionCommandIntegrationTest {
     password = "password";
     params = new String[] {"param1:value1", "param2:value2"};
 
-    cache = (InternalCache) new CacheFactory().set(ENABLE_CLUSTER_CONFIGURATION, "true").create();
+    cache = (InternalCache) new CacheFactory().set("locators", "").set("mcast-port", "0")
+        .set(ENABLE_CLUSTER_CONFIGURATION, "true").create();
 
     createConnectionCommand = new CreateConnectionCommand();
   }

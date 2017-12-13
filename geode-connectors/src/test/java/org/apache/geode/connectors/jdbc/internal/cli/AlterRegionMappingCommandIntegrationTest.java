@@ -46,7 +46,8 @@ public class AlterRegionMappingCommandIntegrationTest {
     Boolean keyInValue = true;
     String[] fieldMappings = new String[] {"field1:column1", "field2:column2"};
 
-    cache = (InternalCache) new CacheFactory().set(ENABLE_CLUSTER_CONFIGURATION, "true").create();
+    cache = (InternalCache) new CacheFactory().set("locators", "").set("mcast-port", "0")
+        .set(ENABLE_CLUSTER_CONFIGURATION, "true").create();
     new CreateRegionMappingCommand().createMapping(regionName, connectionName, tableName, pdxClass,
         keyInValue, fieldMappings);
 

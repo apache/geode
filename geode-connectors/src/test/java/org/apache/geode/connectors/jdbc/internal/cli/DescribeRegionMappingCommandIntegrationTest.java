@@ -54,7 +54,8 @@ public class DescribeRegionMappingCommandIntegrationTest {
   public void setup() {
     String[] fieldMappings = new String[] {"field1:column1", "field2:column2"};
 
-    cache = (InternalCache) new CacheFactory().set(ENABLE_CLUSTER_CONFIGURATION, "true").create();
+    cache = (InternalCache) new CacheFactory().set("locators", "").set("mcast-port", "0")
+        .set(ENABLE_CLUSTER_CONFIGURATION, "true").create();
     service = cache.getService(InternalJdbcConnectorService.class);
     regionMapping = new RegionMappingBuilder().withRegionName(REGION_NAME)
         .withConnectionConfigName("connection").withTableName("testTable")

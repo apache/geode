@@ -56,7 +56,8 @@ public class DescribeConnectionCommandIntegrationTest {
     connectionConfig = new ConnectionConfigBuilder().withName(CONNECTION).withUrl("myUrl")
         .withUser("username").withPassword("secret").withParameters(params).build();
 
-    cache = (InternalCache) new CacheFactory().set(ENABLE_CLUSTER_CONFIGURATION, "true").create();
+    cache = (InternalCache) new CacheFactory().set("locators", "").set("mcast-port", "0")
+        .set(ENABLE_CLUSTER_CONFIGURATION, "true").create();
     service = cache.getService(InternalJdbcConnectorService.class);
 
     command = new DescribeConnectionCommand();

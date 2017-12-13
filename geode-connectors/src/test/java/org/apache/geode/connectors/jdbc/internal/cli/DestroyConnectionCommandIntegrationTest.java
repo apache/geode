@@ -47,7 +47,8 @@ public class DestroyConnectionCommandIntegrationTest {
     connectionConfig = new ConnectionConfigBuilder().withName(connectionName).withUrl("url")
         .withUser("user").withPassword("password").withParameters(params).build();
 
-    cache = (InternalCache) new CacheFactory().set(ENABLE_CLUSTER_CONFIGURATION, "true").create();
+    cache = (InternalCache) new CacheFactory().set("locators", "").set("mcast-port", "0")
+        .set(ENABLE_CLUSTER_CONFIGURATION, "true").create();
 
     command = new DestroyConnectionCommand();
   }

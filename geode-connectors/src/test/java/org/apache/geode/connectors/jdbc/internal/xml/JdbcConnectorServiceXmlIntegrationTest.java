@@ -57,7 +57,7 @@ public class JdbcConnectorServiceXmlIntegrationTest {
 
   @Before
   public void setup() throws Exception {
-    cache = (InternalCache) new CacheFactory().create();
+    cache = (InternalCache) new CacheFactory().set("locators", "").set("mcast-port", "0").create();
     configureService();
     cacheXml = generateXml();
     cache.close();

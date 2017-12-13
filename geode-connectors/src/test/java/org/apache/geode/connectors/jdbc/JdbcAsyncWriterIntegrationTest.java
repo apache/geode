@@ -61,7 +61,8 @@ public class JdbcAsyncWriterIntegrationTest {
 
   @Before
   public void setup() throws Exception {
-    cache = new CacheFactory().setPdxReadSerialized(false).create();
+    cache = new CacheFactory().set("locators", "").set("mcast-port", "0")
+        .setPdxReadSerialized(false).create();
     employees = createRegionWithJDBCAsyncWriter(REGION_TABLE_NAME);
     connection = DriverManager.getConnection(CONNECTION_URL);
     statement = connection.createStatement();
