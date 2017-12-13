@@ -91,7 +91,6 @@ public class PartitionedRegionFunctionResultWaiter extends StreamingFunctionOper
 
   protected DistributionMessage createRequestMessage(InternalDistributedMember recipient,
       ReplyProcessor21 processor, FunctionRemoteContext context) {
-
     PartitionedRegionFunctionStreamingMessage msg =
         new PartitionedRegionFunctionStreamingMessage(recipient, this.regionId, processor, context);
 

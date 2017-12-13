@@ -206,7 +206,7 @@ public class IndexCommandsIntegrationTest {
     csb.addOption(CliStrings.DESTROY_INDEX__REGION, "IncorrectRegion");
     CommandResult result = gfsh.executeCommand(csb.toString());
     assertThat(result.getStatus()).isEqualTo(Result.Status.ERROR);
-    assertThat(gfsh.getGfshOutput()).contains("ERROR:Region \"IncorrectRegion\" not found");
+    assertThat(gfsh.getGfshOutput()).contains("ERROR: Region \"IncorrectRegion\" not found");
   }
 
   @Test

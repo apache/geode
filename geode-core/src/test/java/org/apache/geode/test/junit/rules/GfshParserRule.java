@@ -53,6 +53,9 @@ public class GfshParserRule extends ExternalResource {
     return parser.parse(command);
   }
 
+  /**
+   * @deprecated use executeAndAssertThat instead
+   */
   public <T> CommandResult executeCommandWithInstance(T instance, String command) {
     GfshParseResult parseResult = parse(command);
 

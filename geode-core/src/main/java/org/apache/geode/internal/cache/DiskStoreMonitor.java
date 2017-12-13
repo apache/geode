@@ -262,11 +262,12 @@ public class DiskStoreMonitor {
         return current;
       }
 
-      long min = getMinimumSpace();
+      long minMegabytes = getMinimumSpace();
+      final long minBytes = minMegabytes * 1024 * 1024;
       if (logger.isTraceEnabled(LogMarker.DISK_STORE_MONITOR)) {
         logger.trace(LogMarker.DISK_STORE_MONITOR,
             "Checking usage for directory {}, minimum free space is {} MB", dir().getAbsolutePath(),
-            min);
+            minMegabytes);
       }
 
       long start = System.nanoTime();
@@ -284,7 +285,7 @@ public class DiskStoreMonitor {
             remaining, total, pct);
       }
 
-      boolean belowMin = remaining < 1024 * 1024 * min;
+      boolean belowMin = remaining < minBytes;
       DiskState next = DiskState.select(use, warning, critical, belowMin);
       if (next == current) {
         return next;
@@ -294,7 +295,17 @@ public class DiskStoreMonitor {
         state = next;
       }
 
-      handleStateChange(next, pct);
+      String criticalMessage = null;
+      if (next == DiskState.CRITICAL) {
+        if (belowMin) {
+          criticalMessage = "the file system only has " + remaining
+              + " bytes free which is below the minimum of " + minBytes + ".";
+        } else {
+          criticalMessage = "the file system is " + pct
+              + " full, which exceeds the critical threshold of " + critical + "%.";
+        }
+      }
+      handleStateChange(next, pct, criticalMessage);
       return next;
     }
 
@@ -304,7 +315,7 @@ public class DiskStoreMonitor {
 
     protected abstract void recordStats(long total, long free, long elapsed);
 
-    protected abstract void handleStateChange(DiskState next, String pct);
+    protected abstract void handleStateChange(DiskState next, String pct, String criticalMessage);
   }
 
   static class LogUsage extends DiskUsage {
@@ -314,7 +325,7 @@ public class DiskStoreMonitor {
       this.dir = dir;
     }
 
-    protected void handleStateChange(DiskState next, String pct) {
+    protected void handleStateChange(DiskState next, String pct, String critcalMessage) {
       Object[] args = new Object[] {dir.getAbsolutePath(), pct};
       switch (next) {
         case NORMAL:
@@ -353,7 +364,7 @@ public class DiskStoreMonitor {
       this.dir = dir;
     }
 
-    protected void handleStateChange(DiskState next, String pct) {
+    protected void handleStateChange(DiskState next, String pct, String criticalMessage) {
       if (_testAction != null) {
         logger.info(LogMarker.DISK_STORE_MONITOR, "Invoking test handler for state change to {}",
             next);
@@ -361,8 +372,6 @@ public class DiskStoreMonitor {
       }
 
       Object[] args = new Object[] {dir.getDir(), disk.getName(), pct};
-      String msg = "Critical disk usage threshold exceeded for volume "
-          + dir.getDir().getAbsolutePath() + ": " + pct + " full";
 
       switch (next) {
         case NORMAL:
@@ -383,8 +392,8 @@ public class DiskStoreMonitor {
         case CRITICAL:
           logger.error(LogMarker.DISK_STORE_MONITOR,
               LocalizedMessage.create(LocalizedStrings.DiskStoreMonitor_DISK_CRITICAL, args));
-
-          // TODO: this is weird...
+          String msg = "Critical disk usage threshold exceeded for volume "
+              + dir.getDir().getAbsolutePath() + ": " + criticalMessage;
           disk.handleDiskAccessException(new DiskAccessException(msg, disk));
           break;
       }

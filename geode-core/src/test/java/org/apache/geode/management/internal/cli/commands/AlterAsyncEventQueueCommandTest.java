@@ -110,6 +110,13 @@ public class AlterAsyncEventQueueCommandTest {
   }
 
   @Test
+  public void cluster_config_service_not_available() throws Exception {
+    doReturn(null).when(command).getSharedConfiguration();
+    gfsh.executeAndAssertThat(command, "alter async-event-queue --id=test --batch-size=100")
+        .statusIsError().containsOutput("Cluster Configuration Service is not available");
+  }
+
+  @Test
   public void queueIdNotFoundInTheMap() throws Exception {
     Configuration configuration = new Configuration("group");
     configuration.setCacheXmlContent(getCacheXml("queue1", "queue2"));

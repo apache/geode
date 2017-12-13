@@ -14,9 +14,13 @@
  */
 package org.apache.geode.modules.util;
 
+import java.io.DataInput;
+import java.io.DataOutput;
+import java.io.IOException;
 import java.util.Properties;
 import java.util.Set;
 
+import org.apache.geode.DataSerializable;
 import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.CacheFactory;
 import org.apache.geode.cache.Declarable;
@@ -30,7 +34,8 @@ import org.apache.geode.cache.partition.PartitionRegionHelper;
  * Touches the keys contained in the set of keys by performing a get on the partitioned region.
  *
  */
-public class TouchPartitionedRegionEntriesFunction implements Function, Declarable {
+public class TouchPartitionedRegionEntriesFunction
+    implements Function, Declarable, DataSerializable {
 
   private static final long serialVersionUID = -3700389655056961153L;
 
@@ -88,4 +93,14 @@ public class TouchPartitionedRegionEntriesFunction implements Function, Declarab
   }
 
   public void init(Properties properties) {}
+
+  @Override
+  public void toData(DataOutput out) throws IOException {
+
+  }
+
+  @Override
+  public void fromData(DataInput in) throws IOException, ClassNotFoundException {
+
+  }
 }

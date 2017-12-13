@@ -15,8 +15,10 @@
 package org.apache.geode.internal.protocol.protobuf.v1;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -39,7 +41,10 @@ import org.apache.geode.cache.CacheFactory;
 import org.apache.geode.cache.server.CacheServer;
 import org.apache.geode.distributed.ConfigurationProperties;
 import org.apache.geode.internal.AvailablePortHelper;
+import org.apache.geode.internal.cache.CacheServerImpl;
+import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.cache.tier.CommunicationMode;
+import org.apache.geode.internal.protocol.protobuf.Handshake;
 import org.apache.geode.internal.protocol.protobuf.v1.serializer.ProtobufProtocolSerializer;
 import org.apache.geode.test.junit.categories.IntegrationTest;
 
@@ -94,23 +99,18 @@ public class HandshakeIntegrationTest {
 
   @Test
   public void testNormalHandshakeSucceeds() throws Exception {
-    outputStream.write(CommunicationMode.ProtobufClientServerProtocol.getModeNumber());
-    outputStream.write(ConnectionAPI.MajorVersions.CURRENT_MAJOR_VERSION_VALUE);
-
-    ClientProtocol.Message.newBuilder()
-        .setRequest(ClientProtocol.Request.newBuilder()
-            .setHandshakeRequest(ConnectionAPI.HandshakeRequest.newBuilder()
-                .setMajorVersion(ConnectionAPI.MajorVersions.CURRENT_MAJOR_VERSION_VALUE)
-                .setMinorVersion(ConnectionAPI.MinorVersions.CURRENT_MINOR_VERSION_VALUE)))
-        .build().writeDelimitedTo(outputStream);
-    ClientProtocol.Message handshakeResponse = protobufProtocolSerializer.deserialize(inputStream);
-    assertTrue(handshakeResponse.getResponse().getHandshakeResponse().getHandshakePassed());
+    MessageUtil.performAndVerifyHandshake(socket);
   }
 
   @Test
   public void testInvalidMajorVersionBreaksConnection() throws Exception {
-    outputStream.write(CommunicationMode.ProtobufClientServerProtocol.getModeNumber());
-    outputStream.write(ConnectionAPI.MajorVersions.INVALID_MAJOR_VERSION_VALUE);
+    Handshake.NewConnectionHandshake.newBuilder().setMajorVersion(2000)
+        .setMinorVersion(Handshake.MinorVersions.CURRENT_MINOR_VERSION_VALUE).build()
+        .writeDelimitedTo(socket.getOutputStream());
+
+    Handshake.HandshakeAcknowledgement handshakeResponse =
+        Handshake.HandshakeAcknowledgement.parseDelimitedFrom(socket.getInputStream());
+    assertFalse(handshakeResponse.getHandshakePassed());
 
     // Verify that connection is closed
     Awaitility.await().atMost(10, TimeUnit.SECONDS).until(() -> {
@@ -119,6 +119,28 @@ public class HandshakeIntegrationTest {
         return true;
       } catch (IOException e) {
         throw new RuntimeException(e);
+      }
+    });
+  }
+
+  /**
+   * Protobuf seems to omit values that are set to their default (0). This ruins the serialization
+   * trick we use because the message size changes.
+   */
+  @Test
+  public void testMissingMajorVersionBreaksConnection() throws Exception {
+    Handshake.NewConnectionHandshake.newBuilder()
+        .setMajorVersion(Handshake.MajorVersions.CURRENT_MAJOR_VERSION_VALUE).setMinorVersion(0)
+        .build().writeDelimitedTo(socket.getOutputStream());
+
+    // Verify that connection is closed
+    Awaitility.await().atMost(10, TimeUnit.SECONDS).until(() -> {
+      try {
+        assertEquals(-1, socket.getInputStream().read()); // EOF implies disconnected.
+        return true;
+      } catch (IOException e) {
+        // Ignore IOExceptions (sometimes socket reset exception is thrown)
+        return true;
       }
     });
   }

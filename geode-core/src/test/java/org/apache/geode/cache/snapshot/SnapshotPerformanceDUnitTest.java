@@ -23,6 +23,7 @@ import java.util.Map;
 
 import com.examples.snapshot.MyObject;
 import com.examples.snapshot.MyPdxSerializer;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
@@ -40,6 +41,7 @@ import org.apache.geode.test.dunit.cache.internal.JUnit4CacheTestCase;
 import org.apache.geode.test.dunit.internal.JUnit4DistributedTestCase;
 import org.apache.geode.test.junit.categories.DistributedTest;
 
+@Ignore("GEODE-4070")
 @Category(DistributedTest.class)
 public class SnapshotPerformanceDUnitTest extends JUnit4CacheTestCase {
   public SnapshotPerformanceDUnitTest() {

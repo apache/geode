@@ -122,7 +122,8 @@ import org.apache.geode.security.GemFireSecurityException;
  * any callbacks, ({@link CacheListener}, {@link CacheWriter}, and {@link CacheLoader} are shared by
  * the parent and all its dynamic children so make sure the callback is thread-safe and that its
  * {@link CacheCallback#close} implementation does not stop it from functioning. However the
- * products LRUAlgorithm instances will be cloned so that each dynamic Region has its own callback.
+ * products EvictionAlgorithm instances will be cloned so that each dynamic Region has its own
+ * callback.
  *
  * <li>The root Region name "DynamicRegions" is reserved. The factory creates a root Region of that
  * name and uses it to keep track of what dynamic Regions exist. Applications should not directly

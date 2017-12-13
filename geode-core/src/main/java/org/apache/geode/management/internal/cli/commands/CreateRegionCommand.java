@@ -18,7 +18,6 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Collectors;
 
 import javax.management.ObjectName;
@@ -53,7 +52,6 @@ import org.apache.geode.management.internal.cli.functions.RegionCreateFunction;
 import org.apache.geode.management.internal.cli.functions.RegionFunctionArgs;
 import org.apache.geode.management.internal.cli.i18n.CliStrings;
 import org.apache.geode.management.internal.cli.result.ResultBuilder;
-import org.apache.geode.management.internal.cli.result.TabularResultData;
 import org.apache.geode.management.internal.cli.util.RegionPath;
 import org.apache.geode.management.internal.configuration.domain.XmlEntity;
 import org.apache.geode.management.internal.security.ResourceOperation;
@@ -167,7 +165,6 @@ public class CreateRegionCommand implements GfshCommand {
   // NOTICE: keep the region attributes params in alphabetical order
   ) {
     Result result;
-    AtomicReference<XmlEntity> xmlEntity = new AtomicReference<>();
 
     if (regionShortcut != null && templateRegion != null) {
       return ResultBuilder.createUserErrorResult(
@@ -299,7 +296,7 @@ public class CreateRegionCommand implements GfshCommand {
         if (!specifiedGatewaySenders.isEmpty()) {
           return ResultBuilder.createUserErrorResult(CliStrings.format(
               CliStrings.CREATE_REGION__MSG__SPECIFY_VALID_GATEWAYSENDER_ID_UNKNOWN_0,
-              new Object[] {gatewaySenderIds}));
+              gatewaySenderIds));
         }
       }
     }
@@ -344,35 +341,16 @@ public class CreateRegionCommand implements GfshCommand {
       }
     }
 
-    ResultCollector<?, ?> resultCollector =
-        executeFunction(RegionCreateFunction.INSTANCE, functionArgs, membersToCreateRegionOn);
-    @SuppressWarnings("unchecked")
-    List<CliFunctionResult> regionCreateResults =
-        (List<CliFunctionResult>) resultCollector.getResult();
+    List<CliFunctionResult> regionCreateResults = executeAndGetFunctionResult(
+        RegionCreateFunction.INSTANCE, functionArgs, membersToCreateRegionOn);
 
-    TabularResultData tabularResultData = ResultBuilder.createTabularResultData();
-    final String errorPrefix = "ERROR: ";
-    for (CliFunctionResult regionCreateResult : regionCreateResults) {
-      boolean success = regionCreateResult.isSuccessful();
-      tabularResultData.accumulate("Member", regionCreateResult.getMemberIdOrName());
-      tabularResultData.accumulate("Status",
-          (success ? "" : errorPrefix) + regionCreateResult.getMessage());
-
-      if (success) {
-        xmlEntity.set(regionCreateResult.getXmlEntity());
-      } else {
-        tabularResultData.setStatus(Result.Status.ERROR);
-      }
-    }
-
-    result = ResultBuilder.buildResult(tabularResultData);
-    verifyDistributedRegionMbean(cache, regionPath);
-
-    if (xmlEntity.get() != null) {
+    result = ResultBuilder.buildResult(regionCreateResults);
+    XmlEntity xmlEntity = findXmlEntity(regionCreateResults);
+    if (xmlEntity != null) {
+      verifyDistributedRegionMbean(cache, regionPath);
       persistClusterConfiguration(result,
-          () -> getSharedConfiguration().addXmlEntity(xmlEntity.get(), groups));
+          () -> getSharedConfiguration().addXmlEntity(xmlEntity, groups));
     }
-
     return result;
   }
 

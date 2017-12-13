@@ -24,6 +24,9 @@ import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
+import java.io.DataInput;
+import java.io.DataOutput;
+import java.io.IOException;
 import java.io.Serializable;
 import java.util.Collection;
 import java.util.HashMap;
@@ -31,6 +34,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
+import org.apache.geode.DataSerializable;
 import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.Region;
 import org.apache.geode.cache.control.RebalanceOperation;
@@ -189,9 +193,11 @@ public class LuceneQueriesAccessorBase extends LuceneDUnitTest {
     });
   }
 
-  protected static class TestObject implements Serializable {
+  protected static class TestObject implements DataSerializable {
     private static final long serialVersionUID = 1L;
     private String text;
+
+    public TestObject() {}
 
     public TestObject(String text) {
       this.text = text;
@@ -225,6 +231,16 @@ public class LuceneQueriesAccessorBase extends LuceneDUnitTest {
     @Override
     public String toString() {
       return "TestObject[" + text + "]";
+    }
+
+    @Override
+    public void toData(DataOutput out) throws IOException {
+      out.writeUTF(text);
+    }
+
+    @Override
+    public void fromData(DataInput in) throws IOException, ClassNotFoundException {
+      text = in.readUTF();
     }
   }
 }

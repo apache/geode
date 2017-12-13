@@ -16,6 +16,7 @@ package org.apache.geode.internal.cache;
 
 import static org.apache.geode.distributed.ConfigurationProperties.*;
 import static org.junit.Assert.*;
+import static org.junit.Assert.assertNotNull;
 
 import java.io.File;
 import java.util.Properties;
@@ -28,8 +29,8 @@ import org.junit.experimental.categories.Category;
 
 import org.apache.geode.cache.*;
 import org.apache.geode.distributed.DistributedSystem;
-import org.apache.geode.internal.cache.lru.LRUStatistics;
-import org.apache.geode.internal.cache.lru.NewLRUClockHand;
+import org.apache.geode.internal.cache.eviction.EvictionList;
+import org.apache.geode.internal.cache.eviction.EvictionStatistics;
 import org.apache.geode.test.junit.categories.IntegrationTest;
 
 /**
@@ -45,7 +46,7 @@ public class LIFOEvictionAlgoEnabledRegionJUnitTest {
   private static Cache cache = null;
 
   /** Stores LIFO Related Statistics */
-  private static LRUStatistics lifoStats = null;
+  private static EvictionStatistics lifoStats = null;
 
   /** The distributedSystem instance */
   private static DistributedSystem distributedSystem = null;
@@ -54,7 +55,7 @@ public class LIFOEvictionAlgoEnabledRegionJUnitTest {
 
   private static int capacity = 5;
 
-  private static NewLRUClockHand lifoClockHand = null;
+  private static EvictionList lifoClockHand = null;
 
   @Before
   public void setUp() throws Exception {
@@ -107,15 +108,12 @@ public class LIFOEvictionAlgoEnabledRegionJUnitTest {
     RegionAttributes attr = factory.create();
 
     ((GemFireCacheImpl) cache).createRegion(regionName, attr);
-    /*
-     * NewLIFOClockHand extends NewLRUClockHand to hold on to the list reference
-     */
     lifoClockHand =
         ((VMLRURegionMap) ((LocalRegion) cache.getRegion(Region.SEPARATOR + regionName)).entries)
-            ._getLruList();
+            .getEvictionList();
 
     /* storing stats reference */
-    lifoStats = lifoClockHand.stats();
+    lifoStats = lifoClockHand.getStatistics();
 
   }
 

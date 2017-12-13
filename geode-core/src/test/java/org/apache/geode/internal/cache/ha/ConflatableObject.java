@@ -14,8 +14,13 @@
  */
 package org.apache.geode.internal.cache.ha;
 
+import java.io.DataInput;
+import java.io.DataOutput;
+import java.io.IOException;
 import java.io.Serializable;
 
+import org.apache.geode.DataSerializable;
+import org.apache.geode.DataSerializer;
 import org.apache.geode.internal.cache.Conflatable;
 import org.apache.geode.internal.cache.EventID;
 
@@ -25,7 +30,7 @@ import org.apache.geode.internal.cache.EventID;
  *
  *
  */
-public class ConflatableObject implements Conflatable, Serializable {
+public class ConflatableObject implements Conflatable, DataSerializable {
 
   /** The key for this entry */
   private Object key;
@@ -186,5 +191,23 @@ public class ConflatableObject implements Conflatable, Serializable {
    */
   void setValue(Object value) {
     this.value = value;
+  }
+
+  @Override
+  public void toData(DataOutput out) throws IOException {
+    DataSerializer.writeObject(key, out);
+    DataSerializer.writeObject(value, out);
+    DataSerializer.writeObject(id, out);
+    out.writeBoolean(conflate);
+    out.writeUTF(regionname);
+  }
+
+  @Override
+  public void fromData(DataInput in) throws IOException, ClassNotFoundException {
+    this.key = DataSerializer.readObject(in);
+    this.value = DataSerializer.readObject(in);
+    this.id = DataSerializer.readObject(in);
+    this.conflate = in.readBoolean();
+    this.regionname = in.readUTF();
   }
 }

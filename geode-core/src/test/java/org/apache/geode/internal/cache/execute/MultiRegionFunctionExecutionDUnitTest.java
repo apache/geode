@@ -35,6 +35,7 @@ import org.apache.geode.cache.execute.FunctionContext;
 import org.apache.geode.cache.execute.FunctionService;
 import org.apache.geode.cache.partition.PartitionRegionHelper;
 import org.apache.geode.cache30.CacheTestCase;
+import org.apache.geode.distributed.ConfigurationProperties;
 import org.apache.geode.distributed.DistributedSystem;
 import org.apache.geode.internal.Assert;
 import org.apache.geode.test.dunit.Host;
@@ -155,9 +156,19 @@ public class MultiRegionFunctionExecutionDUnitTest extends JUnit4CacheTestCase {
     }).getResult();
   }
 
+  @Override
+  public Properties getDistributedSystemProperties() {
+    Properties props = super.getDistributedSystemProperties();
+    props.put(ConfigurationProperties.SERIALIZABLE_OBJECT_FILTER,
+        "org.apache.geode.internal.cache.execute.MultiRegionFunctionExecutionDUnitTest*"
+            + ";org.apache.geode.test.dunit.**" + ";org.apache.geode.test.junit.rules.**"
+            + ";com.sun.proxy.**");
+    return props;
+  }
+
   public void createCache() {
     try {
-      Properties props = new Properties();
+      Properties props = getDistributedSystemProperties();
       DistributedSystem ds = getSystem(props);
       assertNotNull(ds);
       ds.disconnect();

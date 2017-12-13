@@ -20,7 +20,9 @@ import org.apache.geode.cache.execute.FunctionContext;
 import org.apache.geode.cache.execute.ResultSender;
 import org.apache.geode.cache.wan.GatewaySender;
 import org.apache.geode.internal.InternalEntity;
+import org.apache.geode.internal.cache.xmlcache.CacheXml;
 import org.apache.geode.management.internal.cli.CliUtil;
+import org.apache.geode.management.internal.configuration.domain.XmlEntity;
 
 public class GatewaySenderDestroyFunction implements Function, InternalEntity {
   private static final long serialVersionUID = 1L;
@@ -55,7 +57,8 @@ public class GatewaySenderDestroyFunction implements Function, InternalEntity {
     try {
       gatewaySender.stop();
       gatewaySender.destroy();
-      resultSender.lastResult(new CliFunctionResult(memberNameOrId, true,
+      XmlEntity xmlEntity = new XmlEntity(CacheXml.GATEWAY_SENDER, "id", senderId);
+      resultSender.lastResult(new CliFunctionResult(memberNameOrId, xmlEntity,
           String.format("GatewaySender \"%s\" destroyed on \"%s\"", senderId, memberNameOrId)));
     } catch (Exception e) {
       resultSender.lastResult(new CliFunctionResult(memberNameOrId, e, ""));

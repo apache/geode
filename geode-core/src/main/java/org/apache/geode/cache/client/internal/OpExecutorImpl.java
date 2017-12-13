@@ -251,21 +251,8 @@ public class OpExecutorImpl implements ExecutablePool {
     int transactionId = absOp.getMessage().getTransactionId();
     // for CommitOp we do not have transactionId in AbstractOp
     // so set it explicitly for TXFailoverOp
-    try {
-      TXFailoverOp.execute(this.pool, transactionId);
-    } catch (TransactionException e) {
-      // If this is the first operation in the transaction then
-      // do not throw TransactionDataNodeHasDeparted back to the
-      // user, re-try the op instead. fixes bug 44375. NOTE: TXFailoverOp
-      // is sent even after first op, as it is not known if the first
-      // operation has established a TXState already
-      TXStateProxy txState = TXManagerImpl.getCurrentTXState();
-      if (txState == null) {
-        throw e;
-      } else if (txState.operationCount() > 1) {
-        throw e;
-      }
-    }
+    TXFailoverOp.execute(this.pool, transactionId);
+
     if (op instanceof ExecuteRegionFunctionOpImpl) {
       op = new ExecuteRegionFunctionOpImpl((ExecuteRegionFunctionOpImpl) op,
           (byte) 1/* isReExecute */, new HashSet<String>());
@@ -342,7 +329,7 @@ public class OpExecutorImpl implements ExecutablePool {
     return executeOnServer(server, op, accessed, onlyUseExistingCnx);
   }
 
-  private Object executeOnServer(ServerLocation p_server, Op op, boolean accessed,
+  protected Object executeOnServer(ServerLocation p_server, Op op, boolean accessed,
       boolean onlyUseExistingCnx) {
     ServerLocation server = p_server;
     boolean returnCnx = true;

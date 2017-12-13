@@ -2070,4 +2070,31 @@ public interface ConfigurationProperties {
    * <U>Since</U>: Geode 1.0
    */
   String SSL_WEB_SERVICE_REQUIRE_AUTHENTICATION = "ssl-web-require-authentication";
+  /**
+   * The static String definition of the <i>"validate-serializable-objects"</i> property
+   *
+   * <U>Description</U>If true checks incoming java serializable objects against a filter (allows
+   * internal Geode classes and any others provided in the serializable-object-filter property).
+   * </p>
+   * <U>Default</U>: "false"
+   * </p>
+   * <U>Since</U>: Geode 1.4
+   */
+  String VALIDATE_SERIALIZABLE_OBJECTS = "validate-serializable-objects";
+  /**
+   * The static String definition of the <i>"serializable-object-filter"</i> property
+   *
+   * <U>Description</U>A user provided whitelist of objects that the system will allow to serialize.
+   *
+   * <p>
+   * See java.io.ObjectInputFilter.Config for details on the syntax for creating filters.
+   * https://docs.oracle.com/javase/9/docs/api/java/io/ObjectInputFilter.Config.html
+   * </p>
+   * </p>
+   * <U>Default</U>: "!*"
+   * </p>
+   * <U>Since</U>: Geode 1.4
+   *
+   */
+  String SERIALIZABLE_OBJECT_FILTER = "serializable-object-filter";
 }

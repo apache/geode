@@ -87,19 +87,10 @@ public class AuthenticationIntegrationTest {
     Awaitility.await().atMost(5, TimeUnit.SECONDS).until(socket::isConnected);
     outputStream = socket.getOutputStream();
     inputStream = socket.getInputStream();
-    outputStream.write(CommunicationMode.ProtobufClientServerProtocol.getModeNumber());
-    outputStream.write(ConnectionAPI.MajorVersions.CURRENT_MAJOR_VERSION_VALUE);
 
     protobufProtocolSerializer = new ProtobufProtocolSerializer();
 
-    ClientProtocol.Message.newBuilder()
-        .setRequest(ClientProtocol.Request.newBuilder()
-            .setHandshakeRequest(ConnectionAPI.HandshakeRequest.newBuilder()
-                .setMajorVersion(ConnectionAPI.MajorVersions.CURRENT_MAJOR_VERSION_VALUE)
-                .setMinorVersion(ConnectionAPI.MinorVersions.CURRENT_MINOR_VERSION_VALUE)))
-        .build().writeDelimitedTo(outputStream);
-    ClientProtocol.Message handshakeResponse = protobufProtocolSerializer.deserialize(inputStream);
-    assertTrue(handshakeResponse.getResponse().getHandshakeResponse().getHandshakePassed());
+    MessageUtil.performAndVerifyHandshake(socket);
   }
 
   private static class SimpleSecurityManager implements SecurityManager {
@@ -200,6 +191,7 @@ public class AuthenticationIntegrationTest {
         errorResponse.getResponse().getResponseAPICase());
     assertEquals(AUTHENTICATION_FAILED.codeValue,
         errorResponse.getResponse().getErrorResponse().getError().getErrorCode());
+    verifyConnectionClosed();
   }
 
   @Test
@@ -246,6 +238,7 @@ public class AuthenticationIntegrationTest {
     ConnectionAPI.AuthenticationResponse authenticationResponse =
         parseSimpleAuthenticationResponseFromInput();
     assertFalse(authenticationResponse.getAuthenticated());
+    verifyConnectionClosed();
   }
 
   @Test
@@ -265,6 +258,8 @@ public class AuthenticationIntegrationTest {
     ConnectionAPI.AuthenticationResponse authenticationResponse =
         parseSimpleAuthenticationResponseFromInput();
     assertFalse(authenticationResponse.getAuthenticated());
+
+    verifyConnectionClosed();
   }
 
   @Test
@@ -296,6 +291,7 @@ public class AuthenticationIntegrationTest {
         errorResponse.getResponse().getResponseAPICase());
     assertEquals(UNSUPPORTED_AUTHENTICATION_MODE.codeValue,
         errorResponse.getResponse().getErrorResponse().getError().getErrorCode());
+    verifyConnectionClosed();
   }
 
   @Test
@@ -316,6 +312,18 @@ public class AuthenticationIntegrationTest {
         errorResponse.getResponse().getResponseAPICase());
     assertEquals(UNSUPPORTED_AUTHENTICATION_MODE.codeValue,
         errorResponse.getResponse().getErrorResponse().getError().getErrorCode());
+    verifyConnectionClosed();
+  }
+
+  private void verifyConnectionClosed() {
+    Awaitility.await().atMost(10, TimeUnit.SECONDS).until(() -> {
+      try {
+        assertEquals(-1, socket.getInputStream().read()); // EOF implies disconnected.
+        return true;
+      } catch (IOException e) {
+        throw new RuntimeException(e);
+      }
+    });
   }
 
   private void createLegacyAuthCache(String authenticationProperty) {

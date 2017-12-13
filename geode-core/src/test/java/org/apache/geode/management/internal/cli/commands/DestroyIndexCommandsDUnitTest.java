@@ -123,7 +123,7 @@ public class DestroyIndexCommandsDUnitTest {
     // Check error result is correct
     gfsh.executeAndAssertThat("destroy index --name=" + INDEX_1 + " --region=" + REGION_1)
         .statusIsError().tableHasColumnWithExactValuesInAnyOrder("Status",
-            "ERROR:Index named \"INDEX1\" not found", "ERROR:Index named \"INDEX1\" not found");
+            "ERROR: Index named \"INDEX1\" not found", "ERROR: Index named \"INDEX1\" not found");
   }
 
   @Test
@@ -170,7 +170,7 @@ public class DestroyIndexCommandsDUnitTest {
     // Check error result is correct
     gfsh.executeAndAssertThat("destroy index --name=" + INDEX_1 + " --member=server-1")
         .statusIsError().tableHasColumnWithExactValuesInAnyOrder("Status",
-            "ERROR:Index named \"INDEX1\" not found");
+            "ERROR: Index named \"INDEX1\" not found");
   }
 
   @Test
@@ -190,9 +190,9 @@ public class DestroyIndexCommandsDUnitTest {
     });
 
     // Check error on partial failure
-    gfsh.executeAndAssertThat("destroy index --name=" + INDEX_1).statusIsError()
+    gfsh.executeAndAssertThat("destroy index --name=" + INDEX_1).statusIsSuccess()
         .tableHasColumnWithExactValuesInAnyOrder("Status", "Destroyed index INDEX1",
-            "ERROR:Index named \"INDEX1\" not found");
+            "ERROR: Index named \"INDEX1\" not found");
 
   }
 }

@@ -16,9 +16,12 @@ package org.apache.geode.internal.cache;
 
 import static org.junit.Assert.*;
 
+import java.util.Properties;
+
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
+import org.apache.geode.distributed.ConfigurationProperties;
 import org.apache.geode.test.dunit.cache.internal.JUnit4CacheTestCase;
 import org.apache.geode.test.dunit.internal.JUnit4DistributedTestCase;
 import org.apache.geode.test.junit.categories.DistributedTest;
@@ -27,6 +30,15 @@ import org.apache.geode.test.junit.categories.DistributedTest;
 public class RemoteTransactionCCEDUnitTest extends RemoteTransactionDUnitTest {
 
   private static final long serialVersionUID = 5960292521068781262L;
+
+  @Override
+  public Properties getDistributedSystemProperties() {
+    Properties properties = super.getDistributedSystemProperties();
+    String pattern = (String) properties.get(ConfigurationProperties.SERIALIZABLE_OBJECT_FILTER);
+    pattern += ";org.apache.geode.internal.cache.RemoteTransactionCCEDUnitTest";
+    properties.put(ConfigurationProperties.SERIALIZABLE_OBJECT_FILTER, pattern);
+    return properties;
+  }
 
   @Override
   protected boolean getConcurrencyChecksEnabled() {

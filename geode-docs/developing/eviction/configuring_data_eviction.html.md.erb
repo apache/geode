@@ -59,5 +59,6 @@ To configure a partitioned region for heap LRU eviction, first configure the res
 ```
 gfsh>start server --name=Server1 --eviction-heap-percentage=80
 ...
-gfsh>create region --type=PARTITION --eviction-enabled --eviction-action=overflow-to-disk
+gfsh>create region --name=myRegion --type=PARTITION --eviction-enabled \
+--eviction-action=overflow-to-disk
 ```

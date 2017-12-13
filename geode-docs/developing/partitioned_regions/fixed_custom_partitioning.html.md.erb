@@ -1,0 +1,204 @@
+---
+title:  Fixed Custom Partitioning
+---
+
+<!--
+Licensed to the Apache Software Foundation (ASF) under one or more
+contributor license agreements.  See the NOTICE file distributed with
+this work for additional information regarding copyright ownership.
+The ASF licenses this file to You under the Apache License, Version 2.0
+(the "License"); you may not use this file except in compliance with
+the License.  You may obtain a copy of the License at
+
+     http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+-->
+
+By default, <%=vars.product_name%> partitions each data entry
+into a bucket using a hashing policy on the key.
+Additionally, the physical location of the key-value pair is
+abstracted away from the application.
+You can change these policies for a partitioned region
+by providing a fixed custom partition resolver that not only maps entries
+to a set of buckets called a partition,
+but also specifies which members host which data buckets.  
+
+<a id="custom_partition_region_data__section_CF05CE974C9C4AF78430DA55601D2158"></a>
+**Note:**
+If you are both colocating region data and custom partitioning,
+all colocated regions must use the same custom partitioning mechanism.
+See [Colocate Data from Different Partitioned Regions](colocating_partitioned_region_data.html#colocating_partitioned_region_data).
+
+To custom-partition your region data, follow two steps:
+
+- implement the interface
+- configure the regions
+
+These steps differ based on which partition resolver is used.
+
+**Implementing Fixed Custom Partitioning**
+
+-   Implement the `org.apache.geode.cache.FixedPartitionResolver`
+interface within one of the following locations,
+listed here in the search order used by <%=vars.product_name%>:
+    -   **Custom class**. Specify this class as the partition resolver during region creation.
+    -   **Entry key**. For keys implemented as objects, define the interface for the key's class.
+    -   **Within the cache callback class**. Implement the interface
+within a cache callback's class. When using this implementation,
+any and all `Region` operations must be those that specify the callback
+as a parameter.
+
+-   Implement the resolver's `getName`, `init`, and `close` methods.
+
+    A simple implementation of `getName` is
+
+    ``` pre
+    return getClass().getName();
+    ```
+
+    The `init` method does any initialization steps upon cache
+    start that relate to the partition resolver's task. 
+
+    The `close` method accomplishes any clean up that must be accomplished
+    before a cache close completes. For example, `close` might close
+    files or connections that the partition resolver opened. 
+
+-   Implement the resolver's `getRoutingObject` method to return 
+the routing object for each entry.
+A hash of that returned routing object determines the bucket
+within a partition.
+   
+    This method can be empty for fixed partitioning where there is
+only one bucket per partition.
+That implementation assigns partitions to servers
+such that the application has full control of grouping entries
+on servers.
+
+    **Note:**
+    Only fields on the key should be used when creating the routing object. Do not use the value or additional metadata for this purpose.
+
+-   Implement the `getPartitionName` method 
+to return the name of the partition for each entry,
+based on where you want the entries to reside.
+All entries within a partition will be on a single server.
+
+    This example places the data based on date, with a different partition name for each quarter-year and a different routing object for each month.
+
+    ``` pre
+    /**
+     * Returns one of four different partition names
+     * (Q1, Q2, Q3, Q4) depending on the entry's date
+     */
+    class QuarterFixedPartitionResolver implements
+        FixedPartitionResolver<String, String> {
+
+      @Override
+      public String getPartitionName(EntryOperation<String, String> opDetails,
+          Set<String> targetPartitions) {
+
+         Date date = (Date)opDetails.getKey();
+         Calendar cal = Calendar.getInstance();
+         cal.setTime(date);
+         int month = cal.get(Calendar.MONTH);
+         if (month >= 0 && month < 3) {
+            if (targetPartitions.contains("Q1")) return "Q1";
+         }
+         else if (month >= 3 && month < 6) {
+            if (targetPartitions.contains("Q2")) return "Q2";
+         }
+         else if (month >= 6 && month < 9) {
+            if (targetPartitions.contains("Q3")) return "Q3";
+         }
+         else if (month >= 9 && month < 12) {
+            if (targetPartitions.contains("Q4")) return "Q4";
+         }
+         return "Invalid Quarter";
+      }
+
+      @Override
+      public String getName() {
+         return "QuarterFixedPartitionResolver";
+      }
+
+      @Override
+      public Serializable getRoutingObject(EntryOperation<String, String> opDetails) {
+         Date date = (Date)opDetails.getKey();
+         Calendar cal = Calendar.getInstance();
+         cal.setTime(date);
+         int month = cal.get(Calendar.MONTH);
+         return month;
+      }
+
+      @Override
+      public void close() {
+      }
+    }
+    ```
+
+**Configuring Fixed Custom Partitioning**
+
+-  Set the fixed-partition attributes for each member.
+
+    These attributes define the data stored for the region by the member and must be different for different members. See `org.apache.geode.cache.FixedPartitionAttributes` for definitions of the attributes. Define each `partition-name` in your data-host members for the region. For each partition name, in the member you want to host the primary copy, define it with `is-primary` set to `true`. In every member you want to host the secondary copy, define it with `is-primary` set to `false` (the default). The number of secondaries must match the number of redundant copies you have defined for the region. See [Configure High Availability for a Partitioned Region](configuring_ha_for_pr.html).
+
+    **Note:**
+    Buckets for a partition are hosted only by the members that have defined the partition name in their `FixedPartitionAttributes`.
+
+    These examples set the partition attributes for a member to be the primary host for the "Q1" partition data and a secondary host for "Q3" partition data.
+    -   XML:
+
+        ``` pre
+        <cache>
+           <region name="Trades">
+              <region-attributes>
+                 <partition-attributes redundant-copies="1">
+                   <partition-resolver>
+                      <class-name>myPackage.QuarterFixedPartitionResolver</class-name>
+                   </partition-resolver>
+                   <fixed-partition-attributes partition-name="Q1" is-primary="true"/>
+                   <fixed-partition-attributes partition-name="Q3" is-primary="false"
+                        num-buckets="6"/>
+                 </partition-attributes> 
+              </region-attributes>
+           </region>
+        </cache>
+        ```
+    -   Java:
+
+
+        ``` pre
+        FixedPartitionAttribute fpa1 = FixedPartitionAttributes
+             .createFixedPartition("Q1", true);
+        FixedPartitionAttribute fpa3 = FixedPartitionAttributes
+             .createFixedPartition("Q3", false, 6);
+
+        PartitionAttributesFactory paf = new PartitionAttributesFactory()
+             .setPartitionResolver(new QuarterFixedPartitionResolver())
+             .setTotalNumBuckets(12)
+             .setRedundantCopies(2)
+             .addFixedPartitionAttribute(fpa1)
+             .addFixedPartitionAttribute(fpa3);
+
+        Cache c = new CacheFactory().create();
+
+        Region r = c.createRegionFactory()
+            .setPartitionAttributes(paf.create())
+            .create("Trades");
+        ```
+    -   gfsh:
+
+        You cannot specify a fixed partition resolver using gfsh.
+
+-   If your colocated data is in a server system,
+add the class that implements the `FixedPartitionResolver` interface
+to the `CLASSPATH` of your Java clients.
+For Java single-hop access to work,
+the resolver class needs to have a zero-argument constructor,
+and the resolver class must not have any state;
+the `init` method is included in this restriction.
+

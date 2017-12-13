@@ -14,11 +14,15 @@
  */
 package org.apache.geode.internal.cache;
 
+import java.io.DataInput;
+import java.io.DataOutput;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
 import org.apache.logging.log4j.Logger;
 
+import org.apache.geode.DataSerializable;
 import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.CacheFactory;
 import org.apache.geode.cache.CacheTransactionManager;
@@ -62,10 +66,12 @@ import org.apache.geode.internal.logging.LogService;
  *
  * @since GemFire 6.6.1
  */
-public class RollbackFunction implements Function {
+public class RollbackFunction implements Function, DataSerializable {
   private static final Logger logger = LogService.getLogger();
 
   private static final long serialVersionUID = 1377183180063184795L;
+
+  public RollbackFunction() {}
 
   public boolean hasResult() {
     return true;
@@ -132,4 +138,13 @@ public class RollbackFunction implements Function {
     return true;
   }
 
+  @Override
+  public void toData(DataOutput out) throws IOException {
+
+  }
+
+  @Override
+  public void fromData(DataInput in) throws IOException, ClassNotFoundException {
+
+  }
 }

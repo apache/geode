@@ -21,8 +21,12 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.fail;
 
+import java.io.DataInput;
+import java.io.DataOutput;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Properties;
 import java.util.concurrent.TimeUnit;
 
 import org.junit.Assert;
@@ -31,13 +35,17 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
 
+import org.apache.geode.DataSerializable;
+import org.apache.geode.DataSerializer;
 import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.CacheClosedException;
+import org.apache.geode.cache.CacheFactory;
 import org.apache.geode.cache.execute.Execution;
 import org.apache.geode.cache.execute.Function;
 import org.apache.geode.cache.execute.FunctionContext;
 import org.apache.geode.cache.execute.FunctionException;
 import org.apache.geode.cache.execute.ResultCollector;
+import org.apache.geode.distributed.ConfigurationProperties;
 import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
@@ -70,6 +78,17 @@ public abstract class FunctionServiceBase extends JUnit4CacheTestCase {
    * Return the number of members the function is expected to execute on
    */
   public abstract int numberOfExecutions();
+
+
+  @Override
+  public Properties getDistributedSystemProperties() {
+    Properties result = super.getDistributedSystemProperties();
+    result.put(ConfigurationProperties.SERIALIZABLE_OBJECT_FILTER,
+        "org.apache.geode.internal.cache.execute.**;org.apache.geode.test.dunit.**");
+    return result;
+  }
+
+
 
   @Test
   public void functionContextGetCacheIsNotNullAndOpen() {
@@ -373,9 +392,11 @@ public abstract class FunctionServiceBase extends JUnit4CacheTestCase {
    * A function which will close the cache if the given member matches the member executing this
    * function
    */
-  private class CacheClosingNonHAFunction implements Function {
+  public static class CacheClosingNonHAFunction implements Function, DataSerializable {
 
-    private final InternalDistributedMember member;
+    private InternalDistributedMember member;
+
+    public CacheClosingNonHAFunction() {} // for serialization
 
     public CacheClosingNonHAFunction(final InternalDistributedMember member) {
       this.member = member;
@@ -386,7 +407,7 @@ public abstract class FunctionServiceBase extends JUnit4CacheTestCase {
       final InternalDistributedMember myId =
           InternalDistributedSystem.getAnyInstance().getDistributedMember();
       if (myId.equals(member)) {
-        getCache().close();
+        CacheFactory.getAnyInstance().close();
         throw new CacheClosedException();
       }
       pause(1000);
@@ -396,6 +417,16 @@ public abstract class FunctionServiceBase extends JUnit4CacheTestCase {
     @Override
     public boolean isHA() {
       return false;
+    }
+
+    @Override
+    public void toData(DataOutput out) throws IOException {
+      DataSerializer.writeObject(member, out);
+    }
+
+    @Override
+    public void fromData(DataInput in) throws IOException, ClassNotFoundException {
+      member = DataSerializer.readObject(in);
     }
   }
 

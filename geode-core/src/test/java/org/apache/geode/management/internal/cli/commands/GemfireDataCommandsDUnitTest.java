@@ -53,6 +53,7 @@ import org.apache.geode.cache.query.data.Portfolio;
 import org.apache.geode.cache.query.internal.CompiledValue;
 import org.apache.geode.cache.query.internal.QCompiler;
 import org.apache.geode.cache.util.CacheListenerAdapter;
+import org.apache.geode.distributed.ConfigurationProperties;
 import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.internal.cache.GemFireCacheImpl;
 import org.apache.geode.internal.cache.InternalCache;
@@ -132,10 +133,18 @@ public class GemfireDataCommandsDUnitTest extends CliCommandTestBase {
     return cache.getDistributedSystem().getDistributedMember().getId();
   }
 
+  @Override
+  public Properties getDistributedSystemProperties() {
+    Properties properties = super.getDistributedSystemProperties();
+    properties.put(ConfigurationProperties.SERIALIZABLE_OBJECT_FILTER,
+        "org.apache.geode.management.internal.cli.dto.**");
+    return properties;
+  }
+
   void setupForGetPutRemoveLocateEntry(String testName) {
     final VM vm1 = Host.getHost(0).getVM(1);
     final VM vm2 = Host.getHost(0).getVM(2);
-    Properties props = new Properties();
+    Properties props = getDistributedSystemProperties();
     props.setProperty(NAME, testName + "Manager");
     HeadlessGfsh gfsh = setUpJmxManagerOnVm0ThenConnect(props);
     assertNotNull(gfsh);

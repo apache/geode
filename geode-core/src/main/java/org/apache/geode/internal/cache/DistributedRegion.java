@@ -48,7 +48,6 @@ import org.apache.geode.cache.CacheWriter;
 import org.apache.geode.cache.CacheWriterException;
 import org.apache.geode.cache.DataPolicy;
 import org.apache.geode.cache.DiskAccessException;
-import org.apache.geode.cache.EntryExistsException;
 import org.apache.geode.cache.EntryNotFoundException;
 import org.apache.geode.cache.LossAction;
 import org.apache.geode.cache.MembershipAttributes;
@@ -95,6 +94,7 @@ import org.apache.geode.internal.cache.control.InternalResourceManager.ResourceT
 import org.apache.geode.internal.cache.control.MemoryEvent;
 import org.apache.geode.internal.cache.event.DistributedEventTracker;
 import org.apache.geode.internal.cache.event.EventTracker;
+import org.apache.geode.internal.cache.eviction.EvictableEntry;
 import org.apache.geode.internal.cache.execute.DistributedRegionFunctionExecutor;
 import org.apache.geode.internal.cache.execute.DistributedRegionFunctionResultSender;
 import org.apache.geode.internal.cache.execute.DistributedRegionFunctionResultWaiter;
@@ -102,7 +102,6 @@ import org.apache.geode.internal.cache.execute.FunctionStats;
 import org.apache.geode.internal.cache.execute.LocalResultCollector;
 import org.apache.geode.internal.cache.execute.RegionFunctionContextImpl;
 import org.apache.geode.internal.cache.execute.ServerToClientFunctionResultSender;
-import org.apache.geode.internal.cache.lru.LRUEntry;
 import org.apache.geode.internal.cache.partitioned.RemoteSizeMessage;
 import org.apache.geode.internal.cache.persistence.CreatePersistentRegionProcessor;
 import org.apache.geode.internal.cache.persistence.PersistenceAdvisor;
@@ -1645,7 +1644,7 @@ public class DistributedRegion extends LocalRegion implements InternalDistribute
   }
 
   @Override
-  boolean evictDestroy(LRUEntry entry) {
+  boolean evictDestroy(EvictableEntry entry) {
     boolean evictDestroyWasDone = super.evictDestroy(entry);
     if (evictDestroyWasDone) {
       if (this.scope.isGlobal()) {

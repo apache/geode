@@ -12,18 +12,15 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
-
 package org.apache.geode.internal.cache;
 
-import org.apache.geode.internal.cache.lru.*;
+import org.apache.geode.internal.cache.eviction.EvictionList;
 
 /**
  * Internal implementation of {@link RegionMap} for regions stored in normal VM memory that maintain
  * an LRU.
  *
  * @since GemFire 3.5.1
- *
- *
  */
 class VMLRURegionMap extends AbstractLRURegionMap {
 
@@ -32,31 +29,16 @@ class VMLRURegionMap extends AbstractLRURegionMap {
     initialize(owner, attr, internalRegionArgs);
   }
 
-  // LRU fields and accessors
-  /**
-   * A tool from the eviction controller for sizing entries and expressing limits.
-   */
-  private EnableLRU ccHelper;
   /** The list of nodes in LRU order */
-  private NewLRUClockHand lruList;
+  private EvictionList lruList;
 
   @Override
-  protected void _setCCHelper(EnableLRU ccHelper) {
-    this.ccHelper = ccHelper;
+  protected void setEvictionList(EvictionList evictionList) {
+    this.lruList = evictionList;
   }
 
   @Override
-  protected EnableLRU _getCCHelper() {
-    return this.ccHelper;
-  }
-
-  @Override
-  protected void _setLruList(NewLRUClockHand lruList) {
-    this.lruList = lruList;
-  }
-
-  @Override
-  public NewLRUClockHand _getLruList() {
+  public EvictionList getEvictionList() {
     return this.lruList;
   }
 }

@@ -143,8 +143,8 @@ public class CacheConnectionJUnitTest {
     }
     Awaitility.await().atMost(5, TimeUnit.SECONDS).until(socket::isConnected);
     outputStream = socket.getOutputStream();
-    outputStream.write(CommunicationMode.ProtobufClientServerProtocol.getModeNumber());
-    outputStream.write(ConnectionAPI.MajorVersions.CURRENT_MAJOR_VERSION_VALUE);
+
+    MessageUtil.performAndVerifyHandshake(socket);
 
     serializationService = new ProtobufSerializationService();
   }
@@ -159,16 +159,6 @@ public class CacheConnectionJUnitTest {
   @Test
   public void testBasicMessagesAndStats() throws Exception {
     ProtobufProtocolSerializer protobufProtocolSerializer = new ProtobufProtocolSerializer();
-
-    ClientProtocol.Message.newBuilder()
-        .setRequest(ClientProtocol.Request.newBuilder()
-            .setHandshakeRequest(ConnectionAPI.HandshakeRequest.newBuilder()
-                .setMajorVersion(ConnectionAPI.MajorVersions.CURRENT_MAJOR_VERSION_VALUE)
-                .setMinorVersion(ConnectionAPI.MinorVersions.CURRENT_MINOR_VERSION_VALUE)))
-        .build().writeDelimitedTo(outputStream);
-    ClientProtocol.Message handshakeResponse =
-        ClientProtocol.Message.parseDelimitedFrom(socket.getInputStream());
-    assertTrue(handshakeResponse.getResponse().getHandshakeResponse().getHandshakePassed());
 
     ClientProtocol.Message putMessage =
         MessageUtil.makePutRequestMessage(serializationService, TEST_KEY, TEST_VALUE, TEST_REGION);
@@ -204,7 +194,7 @@ public class CacheConnectionJUnitTest {
     CacheServer cacheServer = cacheServers.stream().findFirst().get();
     AcceptorImpl acceptor = ((CacheServerImpl) cacheServer).getAcceptor();
 
-    Awaitility.await().atMost(30, TimeUnit.SECONDS)
+    Awaitility.await().atMost(5, TimeUnit.SECONDS)
         .until(() -> acceptor.getClientServerCnxCount() == 1);
 
     // make a request to the server
@@ -216,7 +206,7 @@ public class CacheConnectionJUnitTest {
     // make sure socket is still open
     assertFalse(socket.isClosed());
     socket.close();
-    Awaitility.await().atMost(30, TimeUnit.SECONDS)
+    Awaitility.await().atMost(5, TimeUnit.SECONDS)
         .until(() -> acceptor.getClientServerCnxCount() == 0);
   }
 

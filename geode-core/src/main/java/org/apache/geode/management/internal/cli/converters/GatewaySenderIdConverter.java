@@ -32,33 +32,15 @@ import org.apache.geode.management.internal.cli.shell.Gfsh;
  *
  * @since GemFire 7.0
  */
-public class GatewaySenderIdConverter implements Converter<String> {
+public class GatewaySenderIdConverter extends BaseStringConverter {
 
   @Override
-  public boolean supports(Class<?> type, String optionContext) {
-    return String.class.equals(type) && ConverterHint.GATEWAY_SENDER_ID.equals(optionContext);
+  public String getConverterHint() {
+    return ConverterHint.GATEWAY_SENDER_ID;
   }
 
   @Override
-  public String convertFromText(String value, Class<?> targetType, String optionContext) {
-    return value;
-  }
-
-  @Override
-  public boolean getAllPossibleValues(List<Completion> completions, Class<?> targetType,
-      String existingData, String optionContext, MethodTarget target) {
-    if (String.class.equals(targetType) && ConverterHint.GATEWAY_SENDER_ID.equals(optionContext)) {
-      Set<String> gatewaySenderIds = getGatewaySenderIds();
-
-      for (String gatewaySenderId : gatewaySenderIds) {
-        completions.add(new Completion(gatewaySenderId));
-      }
-    }
-
-    return !completions.isEmpty();
-  }
-
-  public Set<String> getGatewaySenderIds() {
+  public Set<String> getCompletionValues() {
     Set<String> gatewaySenderIds = Collections.emptySet();
 
     Gfsh gfsh = Gfsh.getCurrentInstance();

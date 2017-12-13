@@ -27,13 +27,10 @@ import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
 import org.apache.geode.cache.Cache;
-import org.apache.geode.cache.PartitionAttributesFactory;
-import org.apache.geode.cache.RegionFactory;
-import org.apache.geode.cache.RegionShortcut;
-import org.apache.geode.cache.Scope;
 import org.apache.geode.distributed.Locator;
 import org.apache.geode.distributed.internal.ClusterConfigurationService;
 import org.apache.geode.distributed.internal.InternalLocator;
+import org.apache.geode.management.internal.configuration.domain.Configuration;
 import org.apache.geode.test.dunit.rules.LocatorServerStartupRule;
 import org.apache.geode.test.dunit.rules.MemberVM;
 import org.apache.geode.test.junit.categories.DistributedTest;
@@ -52,7 +49,7 @@ public class DestroyRegionCommandDUnitTest {
   @BeforeClass
   public static void beforeClass() throws Exception {
     locator = lsRule.startLocatorVM(0);
-    server1 = lsRule.startServerVM(1, locator.getPort());
+    server1 = lsRule.startServerVM(1, "group1", locator.getPort());
     server2 = lsRule.startServerVM(2, locator.getPort());
     server3 = lsRule.startServerVM(3, locator.getPort());
   }
@@ -64,91 +61,84 @@ public class DestroyRegionCommandDUnitTest {
 
   @Test
   public void testDestroyDistributedRegion() {
-    MemberVM.invokeInEveryMember(() -> {
-      Cache cache = LocatorServerStartupRule.getCache();
-      RegionFactory<Object, Object> factory = cache.createRegionFactory(RegionShortcut.PARTITION);
-      factory.create("Customer");
+    gfsh.executeAndAssertThat("create region --name=Customer --type=PARTITION").statusIsSuccess();
+    gfsh.executeAndAssertThat(
+        "create region --name=Order --type=PARTITION --colocated-with=Customer").statusIsSuccess();
 
-      PartitionAttributesFactory paFactory = new PartitionAttributesFactory();
-      paFactory.setColocatedWith("Customer");
-      factory.setPartitionAttributes(paFactory.create());
-      factory.create("Order");
-    }, server1, server2);
-
-    locator.waitTillRegionsAreReadyOnServers("/Customer", 2);
-    locator.waitTillRegionsAreReadyOnServers("/Order", 2);
+    locator.waitTillRegionsAreReadyOnServers("/Customer", 3);
+    locator.waitTillRegionsAreReadyOnServers("/Order", 3);
 
     // Test unable to destroy with co-location
     gfsh.executeAndAssertThat("destroy region --name=/Customer").statusIsError()
+        .tableHasRowCount("Member", 3)
         .containsOutput("The parent region [/Customer] in colocation chain cannot be destroyed");
 
     // Test success
     gfsh.executeAndAssertThat("destroy region --name=/Order").statusIsSuccess()
-        .containsOutput("destroyed successfully");
+        .tableHasRowCount("Member", 3).containsOutput("destroyed successfully");
     gfsh.executeAndAssertThat("destroy region --name=/Customer").statusIsSuccess()
-        .containsOutput("destroyed successfully");
+        .tableHasRowCount("Member", 3).containsOutput("destroyed successfully");
 
     // destroy something that's not exist anymore
     gfsh.executeAndAssertThat("destroy region --name=/Customer").statusIsError()
         .containsOutput("Could not find a Region");
-    gfsh.executeAndAssertThat("destroy region --name=/Customer --if-exists").statusIsSuccess();
+    gfsh.executeAndAssertThat("destroy region --name=/Customer --if-exists")
+        .containsOutput("Skipping: Could not find a Region").statusIsSuccess();
   }
 
   @Test
   public void testDestroyLocalRegions() {
-    MemberVM.invokeInEveryMember(() -> {
-      Cache cache = LocatorServerStartupRule.getCache();
-      RegionFactory<Object, Object> factory = cache.createRegionFactory(RegionShortcut.REPLICATE);
-      factory.setScope(Scope.LOCAL);
-      factory.create("Customer");
-    }, server1, server2, server3);
+    gfsh.executeAndAssertThat("create region --name=region1 --type=LOCAL").statusIsSuccess();
 
-    locator.waitTillRegionsAreReadyOnServers("/Customer", 3);
+    locator.waitTillRegionsAreReadyOnServers("/region1", 3);
 
-    gfsh.executeAndAssertThat("destroy region --name=Customer").statusIsSuccess()
-        .containsOutput("destroyed successfully");
+    gfsh.executeAndAssertThat("destroy region --name=region1").statusIsSuccess()
+        .tableHasRowCount("Member", 3).containsOutput("destroyed successfully");
 
     MemberVM.invokeInEveryMember(() -> {
       Cache cache = LocatorServerStartupRule.getCache();
-      assertThat(cache.getRegion("Customer")).isNull();
+      assertThat(cache.getRegion("region1")).isNull();
     }, server1, server2, server3);
   }
 
   @Test
   public void testDestroyLocalAndDistributedRegions() {
-    MemberVM.invokeInEveryMember(() -> {
-      Cache cache = LocatorServerStartupRule.getCache();
-      RegionFactory<Object, Object> factory = cache.createRegionFactory(RegionShortcut.PARTITION);
-      factory.create("Customer");
-      factory.create("Customer_2");
-      factory.create("Customer_3");
-    }, server1, server2);
+    gfsh.executeAndAssertThat("create region --name=region1 --type=LOCAL --group=group1")
+        .statusIsSuccess();
+    gfsh.executeAndAssertThat("create region --name=region1 --type=REPLICATE").statusIsSuccess();
 
-    server3.invoke(() -> {
-      Cache cache = LocatorServerStartupRule.getCache();
-      RegionFactory<Object, Object> factory = cache.createRegionFactory(RegionShortcut.REPLICATE);
-      factory.setScope(Scope.LOCAL);
-      factory.create("Customer");
-      factory.create("Customer_2");
-      factory.create("Customer_3");
+    locator.waitTillRegionsAreReadyOnServers("/region1", 3);
+
+    locator.invoke(() -> {
+      ClusterConfigurationService service =
+          LocatorServerStartupRule.getLocator().getSharedConfiguration();
+      Configuration group1Config = service.getConfiguration("group1");
+      assertThat(group1Config.getCacheXmlContent())
+          .contains("<region name=\"region1\">\n" + "    <region-attributes scope=\"local\"/>");
+
+      Configuration clusterConfig = service.getConfiguration("cluster");
+      assertThat(clusterConfig.getCacheXmlContent()).contains("<region name=\"region1\">\n"
+          + "    <region-attributes data-policy=\"replicate\" scope=\"distributed-ack\"/>");
     });
 
-    locator.waitTillRegionsAreReadyOnServers("/Customer", 3);
-    locator.waitTillRegionsAreReadyOnServers("/Customer_2", 3);
-    locator.waitTillRegionsAreReadyOnServers("/Customer_3", 3);
+    gfsh.executeAndAssertThat("destroy region --name=region1").statusIsSuccess()
+        .tableHasRowCount("Member", 3).containsOutput("destroyed successfully");
 
-    gfsh.executeAndAssertThat("destroy region --name=Customer").statusIsSuccess()
-        .containsOutput("destroyed successfully");
-    gfsh.executeAndAssertThat("destroy region --name=Customer_2").statusIsSuccess()
-        .containsOutput("destroyed successfully");
-    gfsh.executeAndAssertThat("destroy region --name=Customer_3").statusIsSuccess()
-        .containsOutput("destroyed successfully");
+    // verify that all cc entries are deleted, no matter what the scope is
+    locator.invoke(() -> {
+      ClusterConfigurationService service =
+          LocatorServerStartupRule.getLocator().getSharedConfiguration();
+      Configuration group1Config = service.getConfiguration("group1");
+      assertThat(group1Config.getCacheXmlContent()).doesNotContain("region1");
 
+      Configuration clusterConfig = service.getConfiguration("cluster");
+      assertThat(clusterConfig.getCacheXmlContent()).doesNotContain("region1");
+    });
+
+    // verify that all regions are destroyed, no matter what the scope is
     MemberVM.invokeInEveryMember(() -> {
       Cache cache = LocatorServerStartupRule.getCache();
-      assertThat(cache.getRegion("Customer")).isNull();
-      assertThat(cache.getRegion("Customer_2")).isNull();
-      assertThat(cache.getRegion("Customer_3")).isNull();
+      assertThat(cache.getRegion("region1")).isNull();
     }, server1, server2, server3);
   }
 
@@ -156,19 +146,13 @@ public class DestroyRegionCommandDUnitTest {
   public void testDestroyRegionWithSharedConfig() throws IOException {
     gfsh.executeAndAssertThat("create region --name=Customer --type=REPLICATE").statusIsSuccess();
 
+    // Make sure the region exists in the cluster config
     locator.invoke(() -> {
-      // Make sure the region exists in the cluster config
       ClusterConfigurationService sharedConfig =
           ((InternalLocator) Locator.getLocator()).getSharedConfiguration();
       assertThat(sharedConfig.getConfiguration("cluster").getCacheXmlContent())
           .contains("Customer");
     });
-
-    // make sure region does exists
-    MemberVM.invokeInEveryMember(() -> {
-      Cache cache = LocatorServerStartupRule.getCache();
-      assertThat(cache.getRegion("Customer")).isNotNull();
-    }, server1, server2, server3);
 
     // destroy the region
     gfsh.executeAndAssertThat("destroy region --name=Customer").statusIsSuccess()

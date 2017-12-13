@@ -38,6 +38,7 @@ import org.apache.geode.internal.protocol.protobuf.v1.BasicTypes;
 import org.apache.geode.internal.protocol.protobuf.v1.LocatorAPI;
 import org.apache.geode.internal.protocol.protobuf.v1.LocatorAPI.GetAvailableServersResponse;
 import org.apache.geode.internal.protocol.protobuf.v1.utilities.ProtobufRequestUtilities;
+import org.apache.geode.internal.protocol.state.exception.ConnectionStateException;
 import org.apache.geode.test.junit.categories.UnitTest;
 
 @Category(UnitTest.class)
@@ -81,8 +82,7 @@ public class GetAvailableServersOperationHandlerJUnitTest extends OperationHandl
   }
 
   @Test
-  public void testWhenServersFromSnapshotAreNullReturnsEmtpy()
-      throws InvalidExecutionContextException {
+  public void testWhenServersFromSnapshotAreNullReturnsEmtpy() throws Exception {
     when(locatorLoadSnapshot.getServers(any())).thenReturn(null);
 
     LocatorAPI.GetAvailableServersRequest getAvailableServersRequest =
@@ -95,8 +95,7 @@ public class GetAvailableServersOperationHandlerJUnitTest extends OperationHandl
   }
 
   private Result getOperationHandlerResult(
-      LocatorAPI.GetAvailableServersRequest getAvailableServersRequest)
-      throws InvalidExecutionContextException {
+      LocatorAPI.GetAvailableServersRequest getAvailableServersRequest) throws Exception {
     return operationHandler.process(serializationServiceStub, getAvailableServersRequest,
         TestExecutionContext.getLocatorExecutionContext(internalLocatorMock));
   }

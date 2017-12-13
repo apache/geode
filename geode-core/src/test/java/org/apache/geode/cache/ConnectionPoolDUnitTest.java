@@ -17,6 +17,8 @@ package org.apache.geode.cache;
 import static org.apache.geode.test.dunit.Assert.*;
 import static org.junit.runners.MethodSorters.*;
 
+import java.io.DataInput;
+import java.io.DataOutput;
 import java.io.IOException;
 import java.io.Serializable;
 import java.util.ArrayList;
@@ -33,6 +35,7 @@ import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
 import org.apache.geode.CancelException;
+import org.apache.geode.DataSerializable;
 import org.apache.geode.LogWriter;
 import org.apache.geode.cache.client.NoAvailableServersException;
 import org.apache.geode.cache.client.Pool;
@@ -5847,7 +5850,7 @@ public class ConnectionPoolDUnitTest extends JUnit4CacheTestCase {
     disconnectAllFromDS();
   }
 
-  static class Order implements Serializable {
+  static class Order implements DataSerializable {
     int index;
 
     public Order() {}
@@ -5858,6 +5861,16 @@ public class ConnectionPoolDUnitTest extends JUnit4CacheTestCase {
 
     public int getIndex() {
       return index;
+    }
+
+    @Override
+    public void toData(DataOutput out) throws IOException {
+      out.writeInt(index);
+    }
+
+    @Override
+    public void fromData(DataInput in) throws IOException, ClassNotFoundException {
+      index = in.readInt();
     }
   }
 }

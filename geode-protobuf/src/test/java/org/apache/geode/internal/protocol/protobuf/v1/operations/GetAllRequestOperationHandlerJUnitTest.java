@@ -33,7 +33,6 @@ import org.junit.experimental.categories.Category;
 
 import org.apache.geode.cache.CacheLoaderException;
 import org.apache.geode.cache.Region;
-import org.apache.geode.internal.exception.InvalidExecutionContextException;
 import org.apache.geode.internal.protocol.Result;
 import org.apache.geode.internal.protocol.Success;
 import org.apache.geode.internal.protocol.TestExecutionContext;
@@ -95,8 +94,7 @@ public class GetAllRequestOperationHandlerJUnitTest extends OperationHandlerJUni
   }
 
   @Test
-  public void processReturnsNoEntriesForNoKeysRequested() throws UnsupportedEncodingTypeException,
-      CodecNotRegisteredForTypeException, InvalidExecutionContextException {
+  public void processReturnsNoEntriesForNoKeysRequested() throws Exception {
     Result result =
         operationHandler.process(serializationServiceStub, generateTestRequest(false, false),
             TestExecutionContext.getNoAuthCacheExecutionContext(cacheStub));
@@ -129,8 +127,7 @@ public class GetAllRequestOperationHandlerJUnitTest extends OperationHandlerJUni
   }
 
   @Test
-  public void multipleKeysWhereOneThrows() throws UnsupportedEncodingTypeException,
-      CodecNotRegisteredForTypeException, InvalidExecutionContextException {
+  public void multipleKeysWhereOneThrows() throws Exception {
     Result result =
         operationHandler.process(serializationServiceStub, generateTestRequest(true, true),
             TestExecutionContext.getNoAuthCacheExecutionContext(cacheStub));
