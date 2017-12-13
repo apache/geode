@@ -34,11 +34,9 @@ import org.springframework.shell.core.annotation.CliOption;
 import org.apache.geode.cache.execute.ResultCollector;
 import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
-import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.management.cli.CliMetaData;
 import org.apache.geode.management.cli.ConverterHint;
 import org.apache.geode.management.cli.Result;
-import org.apache.geode.management.internal.cli.CliUtil;
 import org.apache.geode.management.internal.cli.domain.StackTracesPerMember;
 import org.apache.geode.management.internal.cli.functions.GetStackTracesFunction;
 import org.apache.geode.management.internal.cli.i18n.CliStrings;
@@ -51,7 +49,8 @@ public class ExportStackTraceCommand implements GfshCommand {
   private final GetStackTracesFunction getStackTracesFunction = new GetStackTracesFunction();
 
   /**
-   * Current implementation supports writing it to a file and returning the location of the file
+   * Current implementation supports writing it to a locator/server side file and returning the
+   * location of the file
    */
   @CliCommand(value = CliStrings.EXPORT_STACKTRACE, help = CliStrings.EXPORT_STACKTRACE__HELP)
   @CliMetaData(relatedTopic = {CliStrings.TOPIC_GEODE_DEBUG_UTIL})
@@ -68,55 +67,43 @@ public class ExportStackTraceCommand implements GfshCommand {
           help = CliStrings.EXPORT_STACKTRACE__FILE__HELP) String fileName,
 
       @CliOption(key = CliStrings.EXPORT_STACKTRACE__FAIL__IF__FILE__PRESENT,
-          unspecifiedDefaultValue = "false",
-          help = CliStrings.EXPORT_STACKTRACE__FAIL__IF__FILE__PRESENT__HELP) boolean failIfFilePresent) {
-
-    Result result;
-    StringBuilder filePrefix = new StringBuilder("stacktrace");
+          unspecifiedDefaultValue = "false", specifiedDefaultValue = "true",
+          help = CliStrings.EXPORT_STACKTRACE__FAIL__IF__FILE__PRESENT__HELP) boolean failIfFilePresent)
+      throws IOException {
 
     if (fileName == null) {
+      StringBuilder filePrefix = new StringBuilder("stacktrace");
       fileName = filePrefix.append("_").append(System.currentTimeMillis()).toString();
     }
     final File outFile = new File(fileName);
-    try {
-      if (outFile.exists() && failIfFilePresent) {
-        return ResultBuilder.createShellClientErrorResult(CliStrings.format(
-            CliStrings.EXPORT_STACKTRACE__ERROR__FILE__PRESENT, outFile.getCanonicalPath()));
-      }
 
-
-      InternalCache cache = getCache();
-      InternalDistributedSystem ads = cache.getInternalDistributedSystem();
-
-      InfoResultData resultData = ResultBuilder.createInfoResultData();
-
-      Map<String, byte[]> dumps = new HashMap<>();
-      Set<DistributedMember> targetMembers = CliUtil.findMembers(group, memberNameOrId);
-      if (targetMembers.isEmpty()) {
-        return ResultBuilder.createUserErrorResult(CliStrings.NO_MEMBERS_FOUND_MESSAGE);
-      }
-
-      ResultCollector<?, ?> rc =
-          CliUtil.executeFunction(getStackTracesFunction, null, targetMembers);
-      ArrayList<Object> resultList = (ArrayList<Object>) rc.getResult();
-
-      for (Object resultObj : resultList) {
-        if (resultObj instanceof StackTracesPerMember) {
-          StackTracesPerMember stackTracePerMember = (StackTracesPerMember) resultObj;
-          dumps.put(stackTracePerMember.getMemberNameOrId(), stackTracePerMember.getStackTraces());
-        }
-      }
-
-      String filePath = writeStacksToFile(dumps, fileName);
-      resultData.addLine(CliStrings.format(CliStrings.EXPORT_STACKTRACE__SUCCESS, filePath));
-      resultData.addLine(CliStrings.EXPORT_STACKTRACE__HOST + ads.getDistributedMember().getHost());
-
-      result = ResultBuilder.buildResult(resultData);
-    } catch (IOException ex) {
-      result = ResultBuilder
-          .createGemFireErrorResult(CliStrings.EXPORT_STACKTRACE__ERROR + ex.getMessage());
+    if (outFile.exists() && failIfFilePresent) {
+      return ResultBuilder.createUserErrorResult(CliStrings
+          .format(CliStrings.EXPORT_STACKTRACE__ERROR__FILE__PRESENT, outFile.getCanonicalPath()));
     }
-    return result;
+
+    Map<String, byte[]> dumps = new HashMap<>();
+    Set<DistributedMember> targetMembers = getMembers(group, memberNameOrId);
+
+    InfoResultData resultData = ResultBuilder.createInfoResultData();
+
+    ResultCollector<?, ?> rc = executeFunction(getStackTracesFunction, null, targetMembers);
+    ArrayList<Object> resultList = (ArrayList<Object>) rc.getResult();
+
+    for (Object resultObj : resultList) {
+      if (resultObj instanceof StackTracesPerMember) {
+        StackTracesPerMember stackTracePerMember = (StackTracesPerMember) resultObj;
+        dumps.put(stackTracePerMember.getMemberNameOrId(), stackTracePerMember.getStackTraces());
+      }
+    }
+
+    InternalDistributedSystem ads = getCache().getInternalDistributedSystem();
+    String filePath = writeStacksToFile(dumps, fileName);
+    resultData.addLine(CliStrings.format(CliStrings.EXPORT_STACKTRACE__SUCCESS, filePath));
+    resultData.addLine(CliStrings.EXPORT_STACKTRACE__HOST + ads.getDistributedMember().getHost());
+
+    return ResultBuilder.buildResult(resultData);
+
   }
 
   /***
