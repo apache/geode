@@ -57,7 +57,7 @@ public class RegionAttributesData {
   private boolean diskSynchronous;
   private String compressorClassName;
   private boolean offHeap;
-  private Set<String> eventQueueIds;
+  private Set<String> asyncEventQueueIds;
   private Set<String> gatewaySenderIds;
 
   /**
@@ -72,7 +72,7 @@ public class RegionAttributesData {
       "concurrencyLevel", "indexMaintenanceSynchronous", "statisticsEnabled",
       "subscriptionConflationEnabled", "asyncConflationEnabled", "poolName", "cloningEnabled",
       "diskStoreName", "interestPolicy", "diskSynchronous", "cacheListeners", "compressorClassName",
-      "offHeap", "eventQueueIds", "gatewaySenderIds"})
+      "offHeap", "asyncEventQueueIds", "gatewaySenderIds"})
 
 
   public RegionAttributesData(String cacheLoaderClassName, String cacheWriterClassName,
@@ -84,7 +84,7 @@ public class RegionAttributesData {
       boolean statisticsEnabled, boolean subscriptionConflationEnabled,
       boolean asyncConflationEnabled, String poolName, boolean cloningEnabled, String diskStoreName,
       String interestPolicy, boolean diskSynchronous, String[] cacheListeners,
-      String compressorClassName, boolean offHeap, Set<String> eventQueueIds,
+      String compressorClassName, boolean offHeap, Set<String> asyncEventQueueIds,
       Set<String> gatewaySenderIds) {
 
     this.cacheLoaderClassName = cacheLoaderClassName;
@@ -117,7 +117,7 @@ public class RegionAttributesData {
     this.cacheListeners = cacheListeners;
     this.compressorClassName = compressorClassName;
     this.offHeap = offHeap;
-    this.eventQueueIds = eventQueueIds;
+    this.asyncEventQueueIds = asyncEventQueueIds;
     this.gatewaySenderIds = gatewaySenderIds;
   }
 
@@ -367,8 +367,8 @@ public class RegionAttributesData {
    *
    * @return a set of ids.
    */
-  public Set<String> getEventQueueIds() {
-    return eventQueueIds;
+  public Set<String> getAsyncEventQueueIds() {
+    return asyncEventQueueIds;
   }
 
   /**
@@ -386,14 +386,15 @@ public class RegionAttributesData {
   @Override
   public String toString() {
     return "RegionAttributesData [asyncConflationEnabled=" + asyncConflationEnabled
-        + ", cacheListeners=" + Arrays.toString(cacheListeners) + ", cacheLoaderClassName="
-        + cacheLoaderClassName + ", cacheWriterClassName=" + cacheWriterClassName
-        + ", cloningEnabled=" + cloningEnabled + ", compressorClassName=" + compressorClassName
-        + ", concurrencyLevel=" + concurrencyLevel + ", customEntryIdleTimeout="
-        + customEntryIdleTimeout + ", customEntryTimeToLive=" + customEntryTimeToLive
-        + ", dataPolicy=" + dataPolicy + ", diskStoreName=" + diskStoreName + ", diskSynchronous="
-        + diskSynchronous + ", entryIdleTimeout=" + entryIdleTimeout + ", entryTimeToLive="
-        + entryTimeToLive + ", ignoreJTA=" + ignoreJTA + ", indexMaintenanceSynchronous="
+        + ", asyncEventQueueIds=" + asyncEventQueueIds + ", cacheListeners="
+        + Arrays.toString(cacheListeners) + ", cacheLoaderClassName=" + cacheLoaderClassName
+        + ", cacheWriterClassName=" + cacheWriterClassName + ", cloningEnabled=" + cloningEnabled
+        + ", compressorClassName=" + compressorClassName + ", concurrencyLevel=" + concurrencyLevel
+        + ", customEntryIdleTimeout=" + customEntryIdleTimeout + ", customEntryTimeToLive="
+        + customEntryTimeToLive + ", dataPolicy=" + dataPolicy + ", diskStoreName=" + diskStoreName
+        + ", diskSynchronous=" + diskSynchronous + ", entryIdleTimeout=" + entryIdleTimeout
+        + ", entryTimeToLive=" + entryTimeToLive + ", gatewaySenderIds=" + gatewaySenderIds
+        + ", ignoreJTA=" + ignoreJTA + ", indexMaintenanceSynchronous="
         + indexMaintenanceSynchronous + ", initialCapacity=" + initialCapacity + ", interestPolicy="
         + interestPolicy + ", keyConstraintClassName=" + keyConstraintClassName + ", loadFactor="
         + loadFactor + ", lockGrantor=" + lockGrantor + ", multicastEnabled=" + multicastEnabled
@@ -401,9 +402,7 @@ public class RegionAttributesData {
         + regionIdleTimeout + ", regionTimeToLive=" + regionTimeToLive + ", scope=" + scope
         + ", statisticsEnabled=" + statisticsEnabled + ", subscriptionConflationEnabled="
         + subscriptionConflationEnabled + ", valueConstraintClassName=" + valueConstraintClassName
-        + ", eventQueueIds=" + eventQueueIds + ", gatewaySenderIds=" + gatewaySenderIds + "]";
+        + "]";
   }
-
-
 
 }
