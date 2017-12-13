@@ -31,6 +31,7 @@ import static org.apache.geode.distributed.ConfigurationProperties.CACHE_XML_FIL
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.fail;
 
+import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
@@ -40,6 +41,7 @@ import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
 
+import org.apache.commons.io.FileUtils;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Rule;
@@ -166,9 +168,7 @@ public class JdbcConnectorServiceXmlGeneratorIntegrationTest {
     generateXml();
     cache.close();
 
-    cache = (InternalCache) new CacheFactory().set(CACHE_XML_FILE, cacheXmlFile.getAbsolutePath())
-        .create();
-
+    createCacheUsingXml();
     service = cache.getService(InternalJdbcConnectorService.class);
     assertThat(service.getConnectionConfig("name")).isEqualTo(config);
   }
@@ -184,9 +184,7 @@ public class JdbcConnectorServiceXmlGeneratorIntegrationTest {
     generateXml();
     cache.close();
 
-    cache = (InternalCache) new CacheFactory().set(CACHE_XML_FILE, cacheXmlFile.getAbsolutePath())
-        .create();
-
+    createCacheUsingXml();
     service = cache.getService(InternalJdbcConnectorService.class);
     assertThat(service.getMappingForRegion("region")).isEqualTo(mapping);
   }
@@ -205,9 +203,7 @@ public class JdbcConnectorServiceXmlGeneratorIntegrationTest {
     generateXml();
     cache.close();
 
-    cache = (InternalCache) new CacheFactory().set(CACHE_XML_FILE, cacheXmlFile.getAbsolutePath())
-        .create();
-
+    createCacheUsingXml();
     service = cache.getService(InternalJdbcConnectorService.class);
     assertThat(service.getConnectionConfig("name")).isEqualTo(config);
     assertThat(service.getMappingForRegion("region")).isEqualTo(mapping);
@@ -254,5 +250,11 @@ public class JdbcConnectorServiceXmlGeneratorIntegrationTest {
     PrintWriter printWriter = new PrintWriter(new FileWriter(cacheXmlFile));
     CacheXmlGenerator.generate(cache, printWriter, true, false, false);
     printWriter.flush();
+  }
+
+  private void createCacheUsingXml() throws IOException {
+    byte[] bytes = FileUtils.readFileToByteArray(cacheXmlFile);
+    cache = (InternalCache) new CacheFactory().set("locators", "").set("mcast-port", "0").create();
+    cache.loadCacheXml(new ByteArrayInputStream(bytes));
   }
 }

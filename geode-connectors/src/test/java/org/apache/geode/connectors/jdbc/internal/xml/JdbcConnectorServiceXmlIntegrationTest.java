@@ -17,11 +17,13 @@ package org.apache.geode.connectors.jdbc.internal.xml;
 import static org.apache.geode.distributed.ConfigurationProperties.CACHE_XML_FILE;
 import static org.assertj.core.api.Assertions.assertThat;
 
+import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.PrintWriter;
 
+import org.apache.commons.io.FileUtils;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Rule;
@@ -70,9 +72,7 @@ public class JdbcConnectorServiceXmlIntegrationTest {
 
   @Test
   public void canRecreateJdbcConnectorServiceFromXml() throws Exception {
-    cache =
-        (InternalCache) new CacheFactory().set(CACHE_XML_FILE, cacheXml.getAbsolutePath()).create();
-
+    createCacheUsingXml();
     JdbcConnectorService service =
         (JdbcConnectorService) cache.getExtensionPoint().getExtensions().iterator().next();
     assertThat(service.getConnectionConfig(config1.getName())).isEqualTo(config1);
@@ -118,5 +118,11 @@ public class JdbcConnectorServiceXmlIntegrationTest {
     CacheXmlGenerator.generate(cache, printWriter, true, false, false);
     printWriter.flush();
     return cacheXml;
+  }
+
+  private void createCacheUsingXml() throws IOException {
+    byte[] bytes = FileUtils.readFileToByteArray(cacheXml);
+    cache = (InternalCache) new CacheFactory().set("locators", "").set("mcast-port", "0").create();
+    cache.loadCacheXml(new ByteArrayInputStream(bytes));
   }
 }
