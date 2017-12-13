@@ -180,15 +180,15 @@ public class Page implements Serializable {
 
 The `FlatFormatSerializer` creates one document for each parent object, adding an indexed field for each data field
 in a nested object, identified by its qualified name. Similarly, collections are flattened and
-treated as tokens in a single field.  For example, the `FlatFormatSerializer` will convert a
-Customer object, with the structure described above, into a document as 
+treated as tokens in a single field.  For example, the `FlatFormatSerializer` could convert a
+Customer object, with the structure described above, into a document containing fields such as 
 
 ```
 (name:Jan),
 (contacts.name:Jones77),
 (contacts.email:Jones77@gmail.com),
 (contacts.address:15220 Wall St),
-(contacts.homepage.title: Mr. Jones),
+(contacts.homepage.title: Mr. Jones)
 ```
 
 The example below demonstrates how to index the `name` field and the nested fields `contacts.name`, `contacts.email`,
@@ -200,8 +200,12 @@ because the Customer class could have more than one field of type Person.
 LuceneService luceneService = LuceneServiceProvider.get(cache);
  
 // Create Index on fields, some are fields in nested objects:
-luceneService.createIndexFactory().setLuceneSerializer(new FlatFormatSerializer()) /* an out-of-box LuceneSerializer implementation */
-      .addField("name").addField("contacts.name").addField("contacts.email").addField("contacts.address").addField("contacts.homepage.title")
+luceneService.createIndexFactory().setLuceneSerializer(new FlatFormatSerializer())
+      .addField("name")
+      .addField("contacts.name")
+      .addField("contacts.email")
+      .addField("contacts.address")
+      .addField("contacts.homepage.title")
       .create("customerIndex", "Customer");
  
 // Create region
@@ -227,7 +231,8 @@ levels in the object.
 Java query:
 
 ```
-LuceneQuery query = luceneService.createLuceneQueryFactory().create("customerIndex", "Customer", "contacts.name:Jones77*", "name");
+LuceneQuery query = luceneService.createLuceneQueryFactory()
+    .create("customerIndex", "Customer", "contacts.name:Jones77*", "name");
  
 PageableLuceneQueryResults<K,Object> results = query.findPages();
 ```
@@ -406,8 +411,7 @@ For example, if an index on the field SSN has the following entries
     The standard analyzer will only try to break up string values.
     So, a string search for "SSN: 1111" will return `object_1`.
     An `IntRangeQuery` for `upper limit : 1112` and `lower limit : 1110`
-will return `object_2`.
-    And, a `FloatRangeQuery` with `upper limit : 1111.5` and `lower limit : 1111.0`
+will return `object_2`, and a `FloatRangeQuery` with `upper limit : 1111.5` and `lower limit : 1111.0`
 will return `object_3`.
 - Backups should only be made for regions with Lucene indexes
 when there are no puts, updates, or deletes in progress.
