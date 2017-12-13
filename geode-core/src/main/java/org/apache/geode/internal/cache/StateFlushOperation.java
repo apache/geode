@@ -379,11 +379,11 @@ public class StateFlushOperation {
         // is still usable:
         SystemFailure.checkFailure();
         logger.fatal(LocalizedMessage.create(
-        		LocalizedStrings.StateFlushOperation_0__THROWABLE_CAUGHT_WHILE_DETERMINING_CHANNEL_STATE,
-        		this), t);
+                LocalizedStrings.StateFlushOperation_0__THROWABLE_CAUGHT_WHILE_DETERMINING_CHANNEL_STATE,
+                this), t);
       } finally {
 
-      	
+      
         // no need to send a relay request to this process - just send the
         // ack back to the sender
         StateStabilizedMessage ga = new StateStabilizedMessage();
@@ -394,7 +394,8 @@ public class StateFlushOperation {
             logger.trace(LogMarker.STATE_FLUSH_OP, "Sending {}", ga);
           }
         dm.putOutgoing(ga);
-      }   
+      }
+      
       } else {
         // 1) wait for all messages based on the membership version (or older)
         // at which the sender "joined" this region to be put on the pipe
