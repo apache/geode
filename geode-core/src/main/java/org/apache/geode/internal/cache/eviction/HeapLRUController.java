@@ -16,7 +16,6 @@ package org.apache.geode.internal.cache.eviction;
 
 import static org.apache.geode.distributed.internal.DistributionConfig.GEMFIRE_PREFIX;
 
-import org.apache.geode.StatisticsFactory;
 import org.apache.geode.cache.EvictionAction;
 import org.apache.geode.cache.EvictionAlgorithm;
 import org.apache.geode.cache.Region;
@@ -129,11 +128,6 @@ public class HeapLRUController extends SizeLRUController {
     InternalResourceManager resourceManager =
         diskRegionView.getDiskStore().getCache().getInternalResourceManager();
     return resourceManager.getMemoryMonitor(diskRegionView.getOffHeap()).getState().isEviction();
-  }
-
-  @Override
-  protected EvictionStats createEvictionStatistics(StatisticsFactory statsFactory, String name) {
-    return new HeapLRUStatistics(statsFactory, name);
   }
 
 }

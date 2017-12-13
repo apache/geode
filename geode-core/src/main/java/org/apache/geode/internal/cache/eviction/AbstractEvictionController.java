@@ -172,31 +172,6 @@ public abstract class AbstractEvictionController implements EvictionController {
     return getCounters().getLimit();
   }
 
-  protected abstract EvictionStats createEvictionStatistics(StatisticsFactory statsFactory,
-      String name);
-
-  @Override
-  public EvictionCounters initStats(Object region, StatisticsFactory statsFactory) {
-    String fullPathName;
-    if (region instanceof Region) {
-      fullPathName = ((Region) region).getFullPath();
-    } else if (region instanceof PlaceHolderDiskRegion) {
-      PlaceHolderDiskRegion placeHolderDiskRegion = (PlaceHolderDiskRegion) region;
-      if (placeHolderDiskRegion.isBucket()) {
-        fullPathName = placeHolderDiskRegion.getPrName();
-      } else {
-        fullPathName = placeHolderDiskRegion.getName();
-      }
-    } else {
-      throw new IllegalStateException("expected Region or PlaceHolderDiskRegion");
-    }
-    EvictionStats stats = createEvictionStatistics(statsFactory, fullPathName);
-    EvictionCounters counters = new EvictionCountersImpl(stats);
-    counters.setLimit(getLimit());
-    //setCounters(counters);
-    return counters;
-  }
-
   @Override
   public void close() {
     getCounters().close();

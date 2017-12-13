@@ -14,8 +14,6 @@
  */
 package org.apache.geode.internal.cache.eviction;
 
-import org.apache.geode.InternalGemFireException;
-import org.apache.geode.StatisticsFactory;
 import org.apache.geode.cache.DataPolicy;
 import org.apache.geode.cache.EvictionAction;
 import org.apache.geode.cache.EvictionAlgorithm;
@@ -131,10 +129,5 @@ public class CountLRUEviction extends AbstractEvictionController {
   public String toString() {
     return LocalizedStrings.LRUCapacityController_LRUCAPACITYCONTROLLER_WITH_A_CAPACITY_OF_0_ENTRIES_AND_EVICTION_ACTION_1
         .toLocalizedString(getLimit(), getEvictionAction());
-  }
-
-  @Override
-  protected EvictionStats createEvictionStatistics(StatisticsFactory statsFactory, String name) {
-    return new CountLRUStatistics(statsFactory, name);
   }
 }

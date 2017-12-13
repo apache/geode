@@ -14,8 +14,6 @@
  */
 package org.apache.geode.internal.cache.eviction;
 
-import org.apache.geode.InternalGemFireException;
-import org.apache.geode.StatisticsFactory;
 import org.apache.geode.cache.EvictionAction;
 import org.apache.geode.cache.EvictionAlgorithm;
 import org.apache.geode.cache.util.ObjectSizer;
@@ -141,10 +139,5 @@ public class MemoryLRUController extends SizeLRUController {
   public String toString() {
     return "MemLRUCapacityController with a capacity of " + this.getLimit()
         + " megabytes and and eviction action " + this.getEvictionAction();
-  }
-
-  @Override
-  protected EvictionStats createEvictionStatistics(StatisticsFactory statsFactory, String name) {
-    return new MemoryLRUStatistics(statsFactory, name);
   }
 }

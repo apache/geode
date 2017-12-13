@@ -36,9 +36,6 @@ public interface EvictionController {
    */
   long limit();
 
-  /** setup stats for this LRU type, if reset is true, initialize counter on stats to zero. */
-  EvictionCounters initStats(Object region, StatisticsFactory statsFactory);
-
   /** return the eviction controller instance this came from */
   EvictionAlgorithm getEvictionAlgorithm();
 
