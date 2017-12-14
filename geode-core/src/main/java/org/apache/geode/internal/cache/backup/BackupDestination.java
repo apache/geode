@@ -14,29 +14,15 @@
  */
 package org.apache.geode.internal.cache.backup;
 
-import java.util.Set;
+import java.io.IOException;
 
-import org.apache.geode.distributed.internal.DM;
-import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
-import org.apache.geode.internal.cache.InternalCache;
+public interface BackupDestination {
+  String USER_FILES_DIRECTORY = "user";
+  String DEPLOYED_JARS_DIRECTORY = "user";
+  String CONFIG_DIRECTORY = "config";
+  String BACKUP_DIR_PREFIX = "dir";
+  String README_FILE = "README_FILE.txt";
+  String DATA_STORES_DIRECTORY = "diskstores";
 
-class FlushToDiskFactory {
-
-  FlushToDiskProcessor createReplyProcessor(DM dm, Set<InternalDistributedMember> recipients) {
-    return new FlushToDiskProcessor(dm, recipients);
-  }
-
-  FlushToDiskRequest createRequest(InternalDistributedMember sender,
-      Set<InternalDistributedMember> recipients, int processorId) {
-    return new FlushToDiskRequest(sender, recipients, processorId, this);
-  }
-
-  FlushToDisk createFlushToDisk(InternalCache cache) {
-    return new FlushToDisk(cache);
-  }
-
-  FlushToDiskResponse createResponse(InternalDistributedMember sender) {
-    return new FlushToDiskResponse(sender);
-  }
-
+  void backupFiles(BackupDefinition backupDefinition) throws IOException;
 }
