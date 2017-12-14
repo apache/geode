@@ -33,6 +33,7 @@ import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.CacheFactory;
 import org.apache.geode.cache.DiskStore;
 import org.apache.geode.cache.RegionShortcut;
+import org.apache.geode.distributed.ConfigurationProperties;
 import org.apache.geode.internal.cache.backup.BackupManager;
 import org.apache.geode.test.junit.categories.IntegrationTest;
 
@@ -48,7 +49,8 @@ public class DiskStoreImplIntegrationTest {
 
   @Before
   public void setup() {
-    cache = new CacheFactory(null).create();
+    // Setting MCAST port explicitly is currently required due to default properties set in gradle
+    cache = new CacheFactory().set(ConfigurationProperties.MCAST_PORT, "0").create();
   }
 
   @After
@@ -73,13 +75,10 @@ public class DiskStoreImplIntegrationTest {
     }
 
     cache.close();
-    cache = new CacheFactory(null).create();
+    cache = new CacheFactory().create();
     createRegionWithDiskStore(baseDir);
 
-    tempDirs.forEach(tempDir -> {
-      System.out.println(tempDir);
-      assertThat(Files.exists(tempDir)).isFalse();
-    });
+    tempDirs.forEach(tempDir -> assertThat(Files.exists(tempDir)).isFalse());
   }
 
   private void createRegionWithDiskStore(File baseDir) {

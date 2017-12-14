@@ -442,8 +442,7 @@ public class BackupManager {
    * @param baselineInspector the inspector for the previous backup.
    * @return an array of Oplogs to be copied for an incremental backup.
    */
-  private Oplog[] filterBaselineOplogs(DiskStoreImpl diskStore, BackupInspector baselineInspector)
-      throws IOException {
+  private Oplog[] filterBaselineOplogs(DiskStoreImpl diskStore, BackupInspector baselineInspector) {
     File baselineDir =
         new File(baselineInspector.getBackupDir(), BackupManager.DATA_STORES_DIRECTORY);
     baselineDir = new File(baselineDir, getBackupDirName(diskStore));
@@ -577,7 +576,7 @@ public class BackupManager {
     }
   }
 
-  private File getBackupDir(File targetDir) throws IOException {
+  private File getBackupDir(File targetDir) {
     InternalDistributedMember memberId =
         cache.getInternalDistributedSystem().getDistributedMember();
     String vmId = memberId.toString();
@@ -616,7 +615,7 @@ public class BackupManager {
       tempDirByDirectoryHolder = new HashMap<>();
       diskStoreDirTempDirsByDiskStore.put(diskStore, tempDirByDirectoryHolder);
     }
-    Path directory = tempDirByDirectoryHolder.get(diskStore);
+    Path directory = tempDirByDirectoryHolder.get(dirHolder);
     if (directory != null) {
       return directory;
     }
@@ -624,6 +623,7 @@ public class BackupManager {
     File diskStoreDir = dirHolder.getDir();
     directory = diskStoreDir.toPath().resolve(diskStoreDirectoryName);
     Files.createDirectories(directory);
+    tempDirByDirectoryHolder.put(dirHolder, directory);
     return directory;
   }
 
