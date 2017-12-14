@@ -98,18 +98,6 @@ public class LRUClearWithDiskRegionOpRegressionTest {
     DistributedRegion distributedRegion =
         new DistributedRegion(regionName, regionAttributes, null, cache, args);
 
-    EvictionController eviction = distributedRegion.getEvictionController();
-    assertThat(eviction).isNotNull();
-
-    EvictionCounters evictionStatistics = eviction.getCounters();
-    assertThat(evictionStatistics).isNotNull();
-
-    EvictionList evictionList = new TestLRUListWithAsyncSorting(evictionStatistics, null);
-    ((VMLRURegionMap) distributedRegion.entries).setEvictionList(evictionList); // TODO allow
-                                                                                // InternalRegionArguments
-                                                                                // to pass in
-                                                                                // EvictionList
-
     region = cache.createVMRegion(regionName, regionAttributes,
         new InternalRegionArguments().setInternalMetaRegion(distributedRegion)
             .setDestroyLockFlag(true).setSnapshotInputStream(null).setImageTarget(null));
