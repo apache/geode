@@ -49,8 +49,7 @@ public class DiskStoreImplIntegrationTest {
 
   @Before
   public void setup() {
-    // Setting MCAST port explicitly is currently required due to default properties set in gradle
-    cache = new CacheFactory().set(ConfigurationProperties.MCAST_PORT, "0").create();
+    cache = createCache();
   }
 
   @After
@@ -75,7 +74,7 @@ public class DiskStoreImplIntegrationTest {
     }
 
     cache.close();
-    cache = new CacheFactory().create();
+    cache = createCache();
     createRegionWithDiskStore(baseDir);
 
     tempDirs.forEach(tempDir -> assertThat(Files.exists(tempDir)).isFalse());
@@ -85,5 +84,10 @@ public class DiskStoreImplIntegrationTest {
     cache.createDiskStoreFactory().setDiskDirs(new File[] {baseDir}).create(DISK_STORE_NAME);
     cache.<String, String>createRegionFactory(RegionShortcut.PARTITION_PERSISTENT)
         .setDiskStoreName(DISK_STORE_NAME).create(REGION_NAME);
+  }
+
+  private Cache createCache() {
+    // Setting MCAST port explicitly is currently required due to default properties set in gradle
+    return new CacheFactory().set(ConfigurationProperties.MCAST_PORT, "0").create();
   }
 }
