@@ -32,24 +32,23 @@ import org.apache.geode.internal.protocol.MessageExecutionContext;
 import org.apache.geode.internal.protocol.ProtocolErrorCode;
 import org.apache.geode.internal.protocol.Result;
 import org.apache.geode.internal.protocol.Success;
-import org.apache.geode.internal.protocol.operations.OperationHandler;
+import org.apache.geode.internal.protocol.operations.ProtobufOperationHandler;
 import org.apache.geode.internal.protocol.protobuf.v1.BasicTypes;
 import org.apache.geode.internal.protocol.protobuf.v1.ClientProtocol;
+import org.apache.geode.internal.protocol.protobuf.v1.ProtobufSerializationService;
 import org.apache.geode.internal.protocol.protobuf.v1.RegionAPI;
 import org.apache.geode.internal.protocol.protobuf.v1.utilities.ProtobufResponseUtilities;
-import org.apache.geode.internal.protocol.protobuf.v1.utilities.ProtobufUtilities;
 import org.apache.geode.internal.protocol.serialization.SerializationService;
-import org.apache.geode.internal.protocol.serialization.exception.UnsupportedEncodingTypeException;
-import org.apache.geode.internal.protocol.serialization.registry.exception.CodecNotRegisteredForTypeException;
+import org.apache.geode.internal.protocol.serialization.exception.EncodingException;
 
 @Experimental
-public class PutAllRequestOperationHandler implements
-    OperationHandler<RegionAPI.PutAllRequest, RegionAPI.PutAllResponse, ClientProtocol.ErrorResponse> {
+public class PutAllRequestOperationHandler
+    implements ProtobufOperationHandler<RegionAPI.PutAllRequest, RegionAPI.PutAllResponse> {
   private static final Logger logger = LogManager.getLogger();
 
   @Override
   public Result<RegionAPI.PutAllResponse, ClientProtocol.ErrorResponse> process(
-      SerializationService serializationService, RegionAPI.PutAllRequest putAllRequest,
+      ProtobufSerializationService serializationService, RegionAPI.PutAllRequest putAllRequest,
       MessageExecutionContext messageExecutionContext) throws InvalidExecutionContextException {
     String regionName = putAllRequest.getRegionName();
     Region region = messageExecutionContext.getCache().getRegion(regionName);
@@ -70,15 +69,12 @@ public class PutAllRequestOperationHandler implements
   private BasicTypes.KeyedError singlePut(SerializationService serializationService, Region region,
       BasicTypes.Entry entry) {
     try {
-      Object decodedValue = ProtobufUtilities.decodeValue(serializationService, entry.getValue());
-      Object decodedKey = ProtobufUtilities.decodeValue(serializationService, entry.getKey());
+      Object decodedValue = serializationService.decode(entry.getValue());
+      Object decodedKey = serializationService.decode(entry.getKey());
 
       region.put(decodedKey, decodedValue);
-    } catch (UnsupportedEncodingTypeException ex) {
+    } catch (EncodingException ex) {
       return buildAndLogKeyedError(entry, VALUE_ENCODING_ERROR, "Encoding not supported", ex);
-    } catch (CodecNotRegisteredForTypeException ex) {
-      return buildAndLogKeyedError(entry, VALUE_ENCODING_ERROR,
-          "Codec error in protobuf deserialization", ex);
     } catch (ClassCastException ex) {
       return buildAndLogKeyedError(entry, CONSTRAINT_VIOLATION,
           "Invalid key or value type for region", ex);

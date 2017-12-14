@@ -26,18 +26,21 @@ import org.apache.geode.internal.protocol.MessageExecutionContext;
 import org.apache.geode.internal.protocol.Result;
 import org.apache.geode.internal.protocol.Success;
 import org.apache.geode.internal.protocol.operations.OperationHandler;
+import org.apache.geode.internal.protocol.operations.ProtobufOperationHandler;
 import org.apache.geode.internal.protocol.protobuf.v1.BasicTypes;
 import org.apache.geode.internal.protocol.protobuf.v1.ClientProtocol;
 import org.apache.geode.internal.protocol.protobuf.v1.LocatorAPI;
+import org.apache.geode.internal.protocol.protobuf.v1.ProtobufSerializationService;
 import org.apache.geode.internal.protocol.serialization.SerializationService;
 
 @Experimental
 public class GetAvailableServersOperationHandler implements
-    OperationHandler<LocatorAPI.GetAvailableServersRequest, LocatorAPI.GetAvailableServersResponse, ClientProtocol.ErrorResponse> {
+    ProtobufOperationHandler<LocatorAPI.GetAvailableServersRequest, LocatorAPI.GetAvailableServersResponse> {
 
   @Override
   public Result<LocatorAPI.GetAvailableServersResponse, ClientProtocol.ErrorResponse> process(
-      SerializationService serializationService, LocatorAPI.GetAvailableServersRequest request,
+      ProtobufSerializationService serializationService,
+      LocatorAPI.GetAvailableServersRequest request,
       MessageExecutionContext messageExecutionContext) throws InvalidExecutionContextException {
 
     InternalLocator internalLocator = (InternalLocator) messageExecutionContext.getLocator();

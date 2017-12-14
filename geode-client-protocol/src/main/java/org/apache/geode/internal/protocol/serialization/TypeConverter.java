@@ -12,28 +12,25 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
-package org.apache.geode.internal.protocol.serialization.codec;
+package org.apache.geode.internal.protocol.serialization;
 
 import org.apache.geode.annotations.Experimental;
-import org.apache.geode.internal.protocol.serialization.SerializationType;
-import org.apache.geode.internal.protocol.serialization.TypeCodec;
-import org.apache.geode.pdx.JSONFormatter;
-import org.apache.geode.pdx.PdxInstance;
 
+/**
+ * This interface converts a particular type to and from its binary representation.
+ *
+ * NOTE: it is expected that T will be one of the serialization types in @{@link SerializationType}.
+ *
+ * @param <T> the type this codec knows how to convert
+ */
 @Experimental
-public class JSONCodec implements TypeCodec<PdxInstance> {
-  @Override
-  public PdxInstance decode(byte[] incoming) {
-    return JSONFormatter.fromJSON(incoming);
-  }
+public interface TypeConverter<F, T> {
+  T decode(F incoming);
 
-  @Override
-  public byte[] encode(PdxInstance incoming) {
-    return JSONFormatter.toJSONByteArray(incoming);
-  }
+  F encode(T incoming);
 
-  @Override
-  public SerializationType getSerializationType() {
-    return SerializationType.JSON;
-  }
+  /**
+   * @return the SerializationType corresponding to T
+   */
+  SerializationType getSerializationType();
 }

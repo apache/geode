@@ -14,42 +14,124 @@
  */
 package org.apache.geode.internal.protocol.protobuf.v1;
 
+import com.google.protobuf.ByteString;
+
 import org.apache.geode.annotations.Experimental;
+import org.apache.geode.internal.protocol.protobuf.v1.utilities.ProtobufPrimitiveTypes;
+import org.apache.geode.internal.protocol.protobuf.v1.utilities.exception.UnknownProtobufPrimitiveType;
 import org.apache.geode.internal.protocol.serialization.SerializationService;
-import org.apache.geode.internal.protocol.serialization.SerializationType;
-import org.apache.geode.internal.protocol.serialization.TypeCodec;
-import org.apache.geode.internal.protocol.serialization.exception.UnsupportedEncodingTypeException;
-import org.apache.geode.internal.protocol.serialization.registry.SerializationCodecRegistry;
-import org.apache.geode.internal.protocol.serialization.registry.exception.CodecNotRegisteredForTypeException;
+import org.apache.geode.internal.protocol.serialization.codec.JsonPdxConverter;
+import org.apache.geode.internal.protocol.serialization.exception.EncodingException;
+import org.apache.geode.pdx.JSONFormatterException;
+import org.apache.geode.pdx.PdxInstance;
 
 @Experimental
-public class ProtobufSerializationService implements SerializationService<BasicTypes.EncodingType> {
-  private SerializationCodecRegistry serializationCodecRegistry = new SerializationCodecRegistry();
+public class ProtobufSerializationService implements SerializationService<BasicTypes.EncodedValue> {
+  private final JsonPdxConverter jsonPdxConverter = new JsonPdxConverter();
 
   public ProtobufSerializationService() {}
 
+  /**
+   * @param value the value to be encoded
+   *
+   * @return EncodedValue message with the serialized value
+   * @throws EncodingException
+   */
   @Override
-  public byte[] encode(BasicTypes.EncodingType encodingTypeValue, Object value)
-      throws UnsupportedEncodingTypeException, CodecNotRegisteredForTypeException {
-    TypeCodec codecForType = getTypeCodecForProtobufType(encodingTypeValue);
-    return codecForType.encode(value);
-  }
-
-  @Override
-  public Object decode(BasicTypes.EncodingType encodingTypeValue, byte[] value)
-      throws UnsupportedEncodingTypeException, CodecNotRegisteredForTypeException {
-    if (encodingTypeValue == BasicTypes.EncodingType.INVALID) {
-      return null;
+  public BasicTypes.EncodedValue encode(Object value) throws EncodingException {
+    BasicTypes.EncodedValue.Builder builder = BasicTypes.EncodedValue.newBuilder();
+    try {
+      ProtobufPrimitiveTypes protobufPrimitiveTypes =
+          ProtobufPrimitiveTypes.valueOf(value.getClass());
+      switch (protobufPrimitiveTypes) {
+        case INT: {
+          builder.setIntResult((Integer) value);
+          break;
+        }
+        case LONG: {
+          builder.setLongResult((Long) value);
+          break;
+        }
+        case SHORT: {
+          builder.setShortResult((Short) value);
+          break;
+        }
+        case BYTE: {
+          builder.setByteResult((Byte) value);
+          break;
+        }
+        case DOUBLE: {
+          builder.setDoubleResult((Double) value);
+          break;
+        }
+        case FLOAT: {
+          builder.setFloatResult((Float) value);
+          break;
+        }
+        case BINARY: {
+          builder.setBinaryResult(ByteString.copyFrom((byte[]) value));
+          break;
+        }
+        case BOOLEAN: {
+          builder.setBooleanResult((Boolean) value);
+          break;
+        }
+        case STRING: {
+          builder.setStringResult((String) value);
+          break;
+        }
+      }
+    } catch (UnknownProtobufPrimitiveType unknownProtobufPrimitiveType) {
+      if (value instanceof PdxInstance) {
+        try {
+          builder.setJsonObjectResult(jsonPdxConverter.encode((PdxInstance) value));
+        } catch (JSONFormatterException ex) {
+          throw new EncodingException("Could not encode PDX object as JSON", ex);
+        }
+      } else {
+        throw new EncodingException("No protobuf encoding for type " + value.getClass().getName());
+      }
     }
-    TypeCodec codecForType = getTypeCodecForProtobufType(encodingTypeValue);
-    return codecForType.decode(value);
+    return builder.build();
   }
 
-  private TypeCodec getTypeCodecForProtobufType(BasicTypes.EncodingType encodingTypeValue)
-      throws UnsupportedEncodingTypeException, CodecNotRegisteredForTypeException {
-    SerializationType serializationTypeForEncodingType =
-        EncodingTypeTranslator.getSerializationTypeForEncodingType(encodingTypeValue);
-
-    return serializationCodecRegistry.getCodecForType(serializationTypeForEncodingType);
+  /**
+   * @param encodedValue - The value to be decoded
+   * @return A decoded object representing encodedValue
+   * @throws EncodingException if the value cannot be decoded.
+   */
+  @Override
+  public Object decode(BasicTypes.EncodedValue encodedValue) throws EncodingException {
+    switch (encodedValue.getValueCase()) {
+      case BINARYRESULT:
+        return encodedValue.getBinaryResult().toByteArray();
+      case BOOLEANRESULT:
+        return encodedValue.getBooleanResult();
+      case BYTERESULT:
+        return (byte) encodedValue.getByteResult();
+      case DOUBLERESULT:
+        return encodedValue.getDoubleResult();
+      case FLOATRESULT:
+        return encodedValue.getFloatResult();
+      case INTRESULT:
+        return encodedValue.getIntResult();
+      case LONGRESULT:
+        return encodedValue.getLongResult();
+      case SHORTRESULT:
+        return (short) encodedValue.getShortResult();
+      case STRINGRESULT:
+        return encodedValue.getStringResult();
+      case JSONOBJECTRESULT:
+        try {
+          return jsonPdxConverter.decode(encodedValue.getJsonObjectResult());
+        } catch (JSONFormatterException ex) {
+          throw new EncodingException("Could not decode JSON-encoded object ", ex);
+        }
+      case VALUE_NOT_SET:
+        return null;
+      default:
+        throw new EncodingException(
+            "Unknown Protobuf encoding type: " + encodedValue.getValueCase());
+    }
   }
 }

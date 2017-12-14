@@ -55,22 +55,18 @@ import org.apache.geode.cache.server.CacheServer;
 import org.apache.geode.distributed.ConfigurationProperties;
 import org.apache.geode.internal.AvailablePortHelper;
 import org.apache.geode.internal.admin.SSLConfig;
-import org.apache.geode.internal.cache.tier.CommunicationMode;
 import org.apache.geode.internal.net.SocketCreator;
 import org.apache.geode.internal.net.SocketCreatorFactory;
 import org.apache.geode.internal.protocol.exception.InvalidProtocolMessageException;
 import org.apache.geode.internal.protocol.protobuf.v1.BasicTypes;
 import org.apache.geode.internal.protocol.protobuf.v1.ClientProtocol;
-import org.apache.geode.internal.protocol.protobuf.v1.ConnectionAPI;
 import org.apache.geode.internal.protocol.protobuf.v1.MessageUtil;
 import org.apache.geode.internal.protocol.protobuf.v1.ProtobufSerializationService;
 import org.apache.geode.internal.protocol.protobuf.v1.RegionAPI;
 import org.apache.geode.internal.protocol.protobuf.v1.serializer.ProtobufProtocolSerializer;
 import org.apache.geode.internal.protocol.protobuf.v1.utilities.ProtobufRequestUtilities;
 import org.apache.geode.internal.protocol.protobuf.v1.utilities.ProtobufUtilities;
-import org.apache.geode.internal.protocol.serialization.SerializationService;
-import org.apache.geode.internal.protocol.serialization.exception.UnsupportedEncodingTypeException;
-import org.apache.geode.internal.protocol.serialization.registry.exception.CodecNotRegisteredForTypeException;
+import org.apache.geode.internal.protocol.serialization.exception.EncodingException;
 import org.apache.geode.test.junit.categories.IntegrationTest;
 import org.apache.geode.util.test.TestUtil;
 
@@ -95,7 +91,7 @@ public class CacheOperationsJUnitTest {
 
   private Cache cache;
   private int cacheServerPort;
-  private SerializationService serializationService;
+  private ProtobufSerializationService serializationService;
   private Socket socket;
   private OutputStream outputStream;
 
@@ -169,9 +165,9 @@ public class CacheOperationsJUnitTest {
     validatePutAllResponse(socket, protobufProtocolSerializer, new HashSet<>());
 
     Set<BasicTypes.EncodedValue> getEntries = new HashSet<>();
-    getEntries.add(ProtobufUtilities.createEncodedValue(serializationService, TEST_MULTIOP_KEY1));
-    getEntries.add(ProtobufUtilities.createEncodedValue(serializationService, TEST_MULTIOP_KEY2));
-    getEntries.add(ProtobufUtilities.createEncodedValue(serializationService, TEST_MULTIOP_KEY3));
+    getEntries.add(serializationService.encode(TEST_MULTIOP_KEY1));
+    getEntries.add(serializationService.encode(TEST_MULTIOP_KEY2));
+    getEntries.add(serializationService.encode(TEST_MULTIOP_KEY3));
 
     RegionAPI.GetAllRequest getAllRequest =
         ProtobufRequestUtilities.createGetAllRequest(TEST_REGION, getEntries);
@@ -202,10 +198,8 @@ public class CacheOperationsJUnitTest {
 
     protobufProtocolSerializer.serialize(putAllMessage, outputStream);
     HashSet<BasicTypes.EncodedValue> expectedFailedKeys = new HashSet<BasicTypes.EncodedValue>();
-    expectedFailedKeys
-        .add(ProtobufUtilities.createEncodedValue(serializationService, TEST_MULTIOP_KEY2));
-    expectedFailedKeys
-        .add(ProtobufUtilities.createEncodedValue(serializationService, TEST_MULTIOP_KEY3));
+    expectedFailedKeys.add(serializationService.encode(TEST_MULTIOP_KEY2));
+    expectedFailedKeys.add(serializationService.encode(TEST_MULTIOP_KEY3));
     validatePutAllResponse(socket, protobufProtocolSerializer, expectedFailedKeys);
 
     ClientProtocol.Message getMessage =
@@ -214,8 +208,8 @@ public class CacheOperationsJUnitTest {
     validateGetResponse(socket, protobufProtocolSerializer, TEST_MULTIOP_VALUE1);
 
     ClientProtocol.Message removeMessage =
-        ProtobufUtilities.createProtobufMessage(ProtobufRequestUtilities.createRemoveRequest(
-            TEST_REGION, ProtobufUtilities.createEncodedValue(serializationService, TEST_KEY)));
+        ProtobufUtilities.createProtobufMessage(ProtobufRequestUtilities
+            .createRemoveRequest(TEST_REGION, serializationService.encode(TEST_KEY)));
     protobufProtocolSerializer.serialize(removeMessage, outputStream);
     validateRemoveResponse(socket, protobufProtocolSerializer);
   }
@@ -324,17 +318,16 @@ public class CacheOperationsJUnitTest {
   }
 
   private void validateGetAllResponse(Socket socket,
-      ProtobufProtocolSerializer protobufProtocolSerializer) throws InvalidProtocolMessageException,
-      IOException, UnsupportedEncodingTypeException, CodecNotRegisteredForTypeException {
+      ProtobufProtocolSerializer protobufProtocolSerializer)
+      throws InvalidProtocolMessageException, IOException, EncodingException {
     ClientProtocol.Response response = deserializeResponse(socket, protobufProtocolSerializer);
     assertEquals(ClientProtocol.Response.ResponseAPICase.GETALLRESPONSE,
         response.getResponseAPICase());
     RegionAPI.GetAllResponse getAllResponse = response.getGetAllResponse();
     assertEquals(3, getAllResponse.getEntriesCount());
     for (BasicTypes.Entry result : getAllResponse.getEntriesList()) {
-      String key = (String) ProtobufUtilities.decodeValue(serializationService, result.getKey());
-      String value =
-          (String) ProtobufUtilities.decodeValue(serializationService, result.getValue());
+      String key = (String) serializationService.decode(result.getKey());
+      String value = (String) serializationService.decode(result.getValue());
       switch (key) {
         case TEST_MULTIOP_KEY1:
           assertEquals(TEST_MULTIOP_VALUE1, value);

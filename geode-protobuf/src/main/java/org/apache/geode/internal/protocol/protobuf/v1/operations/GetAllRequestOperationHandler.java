@@ -38,24 +38,23 @@ import org.apache.geode.internal.protocol.MessageExecutionContext;
 import org.apache.geode.internal.protocol.ProtocolErrorCode;
 import org.apache.geode.internal.protocol.Result;
 import org.apache.geode.internal.protocol.Success;
-import org.apache.geode.internal.protocol.operations.OperationHandler;
+import org.apache.geode.internal.protocol.operations.ProtobufOperationHandler;
 import org.apache.geode.internal.protocol.protobuf.v1.BasicTypes;
 import org.apache.geode.internal.protocol.protobuf.v1.ClientProtocol;
+import org.apache.geode.internal.protocol.protobuf.v1.ProtobufSerializationService;
 import org.apache.geode.internal.protocol.protobuf.v1.RegionAPI;
 import org.apache.geode.internal.protocol.protobuf.v1.utilities.ProtobufResponseUtilities;
 import org.apache.geode.internal.protocol.protobuf.v1.utilities.ProtobufUtilities;
-import org.apache.geode.internal.protocol.serialization.SerializationService;
-import org.apache.geode.internal.protocol.serialization.exception.UnsupportedEncodingTypeException;
-import org.apache.geode.internal.protocol.serialization.registry.exception.CodecNotRegisteredForTypeException;
+import org.apache.geode.internal.protocol.serialization.exception.EncodingException;
 
 @Experimental
-public class GetAllRequestOperationHandler implements
-    OperationHandler<RegionAPI.GetAllRequest, RegionAPI.GetAllResponse, ClientProtocol.ErrorResponse> {
+public class GetAllRequestOperationHandler
+    implements ProtobufOperationHandler<RegionAPI.GetAllRequest, RegionAPI.GetAllResponse> {
   private static final Logger logger = LogService.getLogger();
 
   @Override
   public Result<RegionAPI.GetAllResponse, ClientProtocol.ErrorResponse> process(
-      SerializationService serializationService, RegionAPI.GetAllRequest request,
+      ProtobufSerializationService serializationService, RegionAPI.GetAllRequest request,
       MessageExecutionContext messageExecutionContext) throws InvalidExecutionContextException {
     String regionName = request.getRegionName();
     Region region = messageExecutionContext.getCache().getRegion(regionName);
@@ -81,13 +80,13 @@ public class GetAllRequestOperationHandler implements
     return Success.of(responseBuilder.build());
   }
 
-  private Object processOneMessage(SerializationService serializationService, Region region,
+  private Object processOneMessage(ProtobufSerializationService serializationService, Region region,
       BasicTypes.EncodedValue key) {
     try {
-      Object decodedKey = ProtobufUtilities.decodeValue(serializationService, key);
+      Object decodedKey = serializationService.decode(key);
       Object value = region.get(decodedKey);
       return ProtobufUtilities.createEntry(serializationService, decodedKey, value);
-    } catch (CodecNotRegisteredForTypeException | UnsupportedEncodingTypeException ex) {
+    } catch (EncodingException ex) {
       logger.error("Encoding not supported: {}", ex);
       return createKeyedError(key, "Encoding not supported.", VALUE_ENCODING_ERROR);
     } catch (org.apache.geode.distributed.LeaseExpiredException | TimeoutException e) {

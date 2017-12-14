@@ -28,24 +28,22 @@ import org.apache.geode.internal.protocol.Failure;
 import org.apache.geode.internal.protocol.MessageExecutionContext;
 import org.apache.geode.internal.protocol.Result;
 import org.apache.geode.internal.protocol.Success;
-import org.apache.geode.internal.protocol.operations.OperationHandler;
+import org.apache.geode.internal.protocol.operations.ProtobufOperationHandler;
 import org.apache.geode.internal.protocol.protobuf.v1.BasicTypes;
 import org.apache.geode.internal.protocol.protobuf.v1.ClientProtocol;
+import org.apache.geode.internal.protocol.protobuf.v1.ProtobufSerializationService;
 import org.apache.geode.internal.protocol.protobuf.v1.RegionAPI;
 import org.apache.geode.internal.protocol.protobuf.v1.utilities.ProtobufResponseUtilities;
-import org.apache.geode.internal.protocol.protobuf.v1.utilities.ProtobufUtilities;
-import org.apache.geode.internal.protocol.serialization.SerializationService;
-import org.apache.geode.internal.protocol.serialization.exception.UnsupportedEncodingTypeException;
-import org.apache.geode.internal.protocol.serialization.registry.exception.CodecNotRegisteredForTypeException;
+import org.apache.geode.internal.protocol.serialization.exception.EncodingException;
 
 @Experimental
-public class PutRequestOperationHandler implements
-    OperationHandler<RegionAPI.PutRequest, RegionAPI.PutResponse, ClientProtocol.ErrorResponse> {
+public class PutRequestOperationHandler
+    implements ProtobufOperationHandler<RegionAPI.PutRequest, RegionAPI.PutResponse> {
   private static final Logger logger = LogService.getLogger();
 
   @Override
   public Result<RegionAPI.PutResponse, ClientProtocol.ErrorResponse> process(
-      SerializationService serializationService, RegionAPI.PutRequest request,
+      ProtobufSerializationService serializationService, RegionAPI.PutRequest request,
       MessageExecutionContext messageExecutionContext) throws InvalidExecutionContextException {
     String regionName = request.getRegionName();
     Region region = messageExecutionContext.getCache().getRegion(regionName);
@@ -58,8 +56,8 @@ public class PutRequestOperationHandler implements
     try {
       BasicTypes.Entry entry = request.getEntry();
 
-      Object decodedValue = ProtobufUtilities.decodeValue(serializationService, entry.getValue());
-      Object decodedKey = ProtobufUtilities.decodeValue(serializationService, entry.getKey());
+      Object decodedValue = serializationService.decode(entry.getValue());
+      Object decodedKey = serializationService.decode(entry.getKey());
       try {
         region.put(decodedKey, decodedValue);
         return Success.of(RegionAPI.PutResponse.newBuilder().build());
@@ -68,7 +66,7 @@ public class PutRequestOperationHandler implements
         return Failure.of(ProtobufResponseUtilities.makeErrorResponse(CONSTRAINT_VIOLATION,
             "invalid key or value type for region " + regionName));
       }
-    } catch (UnsupportedEncodingTypeException | CodecNotRegisteredForTypeException ex) {
+    } catch (EncodingException ex) {
       logger.error("Got codec error when decoding Put request: {}", ex);
       return Failure
           .of(ProtobufResponseUtilities.makeErrorResponse(VALUE_ENCODING_ERROR, ex.getMessage()));

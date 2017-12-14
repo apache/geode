@@ -17,20 +17,21 @@ package org.apache.geode.internal.protocol;
 
 import java.util.function.Function;
 
+import org.apache.geode.SerializationException;
 import org.apache.geode.annotations.Experimental;
 import org.apache.geode.internal.protocol.operations.OperationHandler;
 import org.apache.geode.security.ResourcePermission;
 
 @Experimental
-public abstract class OperationContext<OperationRequest, OperationResponse, ErrorResponse, ProtocolRequest, ProtocolResponse> {
-  private final OperationHandler<OperationRequest, OperationResponse, ErrorResponse> operationHandler;
+public abstract class OperationContext<OperationRequest, OperationResponse, ErrorResponse, ProtocolRequest, ProtocolResponse, Serializer> {
+  private final OperationHandler<OperationRequest, OperationResponse, ErrorResponse, Serializer> operationHandler;
   private final Function<ProtocolRequest, OperationRequest> fromRequest;
   private final Function<OperationResponse, ProtocolResponse> toResponse;
   private final Function<ErrorResponse, ProtocolResponse> toErrorResponse;
   private final ResourcePermission accessPermissionRequired;
 
   public OperationContext(Function<ProtocolRequest, OperationRequest> fromRequest,
-      OperationHandler<OperationRequest, OperationResponse, ErrorResponse> operationHandler,
+      OperationHandler<OperationRequest, OperationResponse, ErrorResponse, Serializer> operationHandler,
       Function<OperationResponse, ProtocolResponse> toResponse,
       ResourcePermission permissionRequired) {
     this.operationHandler = operationHandler;
@@ -42,7 +43,7 @@ public abstract class OperationContext<OperationRequest, OperationResponse, Erro
 
   protected abstract ProtocolResponse makeErrorBuilder(ErrorResponse errorResponse);
 
-  public OperationHandler<OperationRequest, OperationResponse, ErrorResponse> getOperationHandler() {
+  public OperationHandler<OperationRequest, OperationResponse, ErrorResponse, Serializer> getOperationHandler() {
     return operationHandler;
   }
 

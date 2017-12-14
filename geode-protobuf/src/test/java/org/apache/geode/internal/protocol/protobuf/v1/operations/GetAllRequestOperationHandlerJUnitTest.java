@@ -39,9 +39,7 @@ import org.apache.geode.internal.protocol.TestExecutionContext;
 import org.apache.geode.internal.protocol.protobuf.v1.BasicTypes;
 import org.apache.geode.internal.protocol.protobuf.v1.RegionAPI;
 import org.apache.geode.internal.protocol.protobuf.v1.utilities.ProtobufRequestUtilities;
-import org.apache.geode.internal.protocol.protobuf.v1.utilities.ProtobufUtilities;
-import org.apache.geode.internal.protocol.serialization.exception.UnsupportedEncodingTypeException;
-import org.apache.geode.internal.protocol.serialization.registry.exception.CodecNotRegisteredForTypeException;
+import org.apache.geode.internal.protocol.serialization.exception.EncodingException;
 import org.apache.geode.test.junit.categories.UnitTest;
 
 @Category(UnitTest.class)
@@ -75,9 +73,8 @@ public class GetAllRequestOperationHandlerJUnitTest extends OperationHandlerJUni
 
   @Test
   public void processReturnsExpectedValuesForValidKeys() throws Exception {
-    Result result =
-        operationHandler.process(serializationServiceStub, generateTestRequest(true, false),
-            TestExecutionContext.getNoAuthCacheExecutionContext(cacheStub));
+    Result result = operationHandler.process(serializationService, generateTestRequest(true, false),
+        TestExecutionContext.getNoAuthCacheExecutionContext(cacheStub));
 
     assertTrue(result instanceof Success);
 
@@ -96,7 +93,7 @@ public class GetAllRequestOperationHandlerJUnitTest extends OperationHandlerJUni
   @Test
   public void processReturnsNoEntriesForNoKeysRequested() throws Exception {
     Result result =
-        operationHandler.process(serializationServiceStub, generateTestRequest(false, false),
+        operationHandler.process(serializationService, generateTestRequest(false, false),
             TestExecutionContext.getNoAuthCacheExecutionContext(cacheStub));
 
     assertTrue(result instanceof Success);
@@ -110,11 +107,10 @@ public class GetAllRequestOperationHandlerJUnitTest extends OperationHandlerJUni
   @Test
   public void singeNullKey() throws Exception {
     HashSet<BasicTypes.EncodedValue> testKeys = new HashSet<>();
-    testKeys.add(ProtobufUtilities.createEncodedValue(serializationServiceStub,
-        NO_VALUE_PRESENT_FOR_THIS_KEY));
+    testKeys.add(serializationService.encode(NO_VALUE_PRESENT_FOR_THIS_KEY));
     RegionAPI.GetAllRequest getAllRequest =
         ProtobufRequestUtilities.createGetAllRequest(TEST_REGION, testKeys);
-    Result result = operationHandler.process(serializationServiceStub, getAllRequest,
+    Result result = operationHandler.process(serializationService, getAllRequest,
         TestExecutionContext.getNoAuthCacheExecutionContext(cacheStub));
 
     assertTrue(result instanceof Success);
@@ -128,9 +124,8 @@ public class GetAllRequestOperationHandlerJUnitTest extends OperationHandlerJUni
 
   @Test
   public void multipleKeysWhereOneThrows() throws Exception {
-    Result result =
-        operationHandler.process(serializationServiceStub, generateTestRequest(true, true),
-            TestExecutionContext.getNoAuthCacheExecutionContext(cacheStub));
+    Result result = operationHandler.process(serializationService, generateTestRequest(true, true),
+        TestExecutionContext.getNoAuthCacheExecutionContext(cacheStub));
 
     assertTrue(result instanceof Success);
 
@@ -150,15 +145,14 @@ public class GetAllRequestOperationHandlerJUnitTest extends OperationHandlerJUni
   }
 
   private RegionAPI.GetAllRequest generateTestRequest(boolean addKeys, boolean useInvalid)
-      throws UnsupportedEncodingTypeException, CodecNotRegisteredForTypeException {
+      throws EncodingException {
     HashSet<BasicTypes.EncodedValue> testKeys = new HashSet<>();
     if (addKeys) {
-      testKeys.add(ProtobufUtilities.createEncodedValue(serializationServiceStub, TEST_KEY1));
-      testKeys.add(ProtobufUtilities.createEncodedValue(serializationServiceStub, TEST_KEY2));
-      testKeys.add(ProtobufUtilities.createEncodedValue(serializationServiceStub, TEST_KEY3));
+      testKeys.add(serializationService.encode(TEST_KEY1));
+      testKeys.add(serializationService.encode(TEST_KEY2));
+      testKeys.add(serializationService.encode(TEST_KEY3));
       if (useInvalid) {
-        testKeys
-            .add(ProtobufUtilities.createEncodedValue(serializationServiceStub, TEST_INVALID_KEY));
+        testKeys.add(serializationService.encode(TEST_INVALID_KEY));
       }
     }
     return ProtobufRequestUtilities.createGetAllRequest(TEST_REGION, testKeys);

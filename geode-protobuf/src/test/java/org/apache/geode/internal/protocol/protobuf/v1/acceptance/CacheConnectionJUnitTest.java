@@ -91,7 +91,7 @@ public class CacheConnectionJUnitTest {
 
   private Cache cache;
   private int cacheServerPort;
-  private SerializationService serializationService;
+  private ProtobufSerializationService serializationService;
   private Socket socket;
   private OutputStream outputStream;
 

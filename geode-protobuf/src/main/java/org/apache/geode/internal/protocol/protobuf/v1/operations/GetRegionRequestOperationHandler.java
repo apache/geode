@@ -27,21 +27,23 @@ import org.apache.geode.internal.protocol.MessageExecutionContext;
 import org.apache.geode.internal.protocol.Result;
 import org.apache.geode.internal.protocol.Success;
 import org.apache.geode.internal.protocol.operations.OperationHandler;
+import org.apache.geode.internal.protocol.operations.ProtobufOperationHandler;
 import org.apache.geode.internal.protocol.protobuf.v1.BasicTypes;
 import org.apache.geode.internal.protocol.protobuf.v1.ClientProtocol;
+import org.apache.geode.internal.protocol.protobuf.v1.ProtobufSerializationService;
 import org.apache.geode.internal.protocol.protobuf.v1.RegionAPI;
 import org.apache.geode.internal.protocol.protobuf.v1.utilities.ProtobufResponseUtilities;
 import org.apache.geode.internal.protocol.protobuf.v1.utilities.ProtobufUtilities;
 import org.apache.geode.internal.protocol.serialization.SerializationService;
 
 @Experimental
-public class GetRegionRequestOperationHandler implements
-    OperationHandler<RegionAPI.GetRegionRequest, RegionAPI.GetRegionResponse, ClientProtocol.ErrorResponse> {
+public class GetRegionRequestOperationHandler
+    implements ProtobufOperationHandler<RegionAPI.GetRegionRequest, RegionAPI.GetRegionResponse> {
   private static final Logger logger = LogService.getLogger();
 
   @Override
   public Result<RegionAPI.GetRegionResponse, ClientProtocol.ErrorResponse> process(
-      SerializationService serializationService, RegionAPI.GetRegionRequest request,
+      ProtobufSerializationService serializationService, RegionAPI.GetRegionRequest request,
       MessageExecutionContext messageExecutionContext) throws InvalidExecutionContextException {
     String regionName = request.getRegionName();
 

@@ -14,29 +14,18 @@
  */
 package org.apache.geode.internal.protocol.operations;
 
-import org.apache.geode.annotations.Experimental;
 import org.apache.geode.internal.exception.InvalidExecutionContextException;
 import org.apache.geode.internal.protocol.MessageExecutionContext;
 import org.apache.geode.internal.protocol.Result;
+import org.apache.geode.internal.protocol.protobuf.v1.ClientProtocol;
+import org.apache.geode.internal.protocol.protobuf.v1.ProtobufSerializationService;
 import org.apache.geode.internal.protocol.state.exception.ConnectionStateException;
 
-/**
- * This interface is implemented by a object capable of handling request types 'Req' and returning a
- * response of type 'Resp'.
- *
- * The Serializer deserializes and serializes values in 'Req' and 'Resp'.
- *
- */
-@Experimental
-public interface OperationHandler<Req, Resp, ErrorResp, Serializer> {
-  /**
-   * Decode the message, deserialize contained values using the serialization service, do the work
-   * indicated on the provided cache, and return a response.
-   *
-   * @throws ConnectionStateException if the connection is in an invalid state for the operation in
-   *         question.
-   */
-  Result<Resp, ErrorResp> process(Serializer serializationService, Req request,
+public interface ProtobufOperationHandler<Req, Resp> extends
+    OperationHandler<Req, Resp, ClientProtocol.ErrorResponse, ProtobufSerializationService> {
+  @Override
+  Result<Resp, ClientProtocol.ErrorResponse> process(
+      ProtobufSerializationService serializationService, Req request,
       MessageExecutionContext messageExecutionContext)
       throws InvalidExecutionContextException, ConnectionStateException;
 }

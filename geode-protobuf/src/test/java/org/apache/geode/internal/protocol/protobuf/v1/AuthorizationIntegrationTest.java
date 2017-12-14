@@ -192,7 +192,7 @@ public class AuthorizationIntegrationTest {
     ClientProtocol.Message removeMessage = ClientProtocol.Message.newBuilder()
         .setRequest(ClientProtocol.Request.newBuilder()
             .setRemoveRequest(RegionAPI.RemoveRequest.newBuilder().setRegionName(TEST_REGION)
-                .setKey(ProtobufUtilities.createEncodedValue(serializationService, "TEST_KEY"))))
+                .setKey(serializationService.encode("TEST_KEY"))))
         .build();
     validateOperationAuthorized(removeMessage, inputStream, outputStream,
         writeAllowed ? ClientProtocol.Response.ResponseAPICase.REMOVERESPONSE
