@@ -42,7 +42,6 @@ import org.apache.geode.security.ResourcePermission;
 public class CreateConnectionCommand implements GfshCommand {
   private static final Logger logger = LogService.getLogger();
 
-  static final String EXPERIMENTAL = "(Experimental) ";
   static final String CREATE_CONNECTION = "create jdbc-connection";
   static final String CREATE_CONNECTION__HELP =
       EXPERIMENTAL + "Create a connection for communicating with a database through jdbc.";
@@ -88,6 +87,7 @@ public class CreateConnectionCommand implements GfshCommand {
     // output
     TabularResultData tabularResultData = ResultBuilder.createTabularResultData();
     XmlEntity xmlEntity = fillTabularResultData(resultCollector, tabularResultData);
+    tabularResultData.setHeader(EXPERIMENTAL);
     Result result = ResultBuilder.buildResult(tabularResultData);
     updateClusterConfiguration(result, xmlEntity);
     return result;

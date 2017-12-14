@@ -36,7 +36,6 @@ import org.apache.geode.security.ResourcePermission;
 
 @Experimental
 public class DestroyConnectionCommand implements GfshCommand {
-  static final String EXPERIMENTAL = "(Experimental) ";
   static final String DESTROY_CONNECTION = "destroy jdbc-connection";
   static final String DESTROY_CONNECTION__HELP =
       EXPERIMENTAL + "Destroy/Remove the specified jdbc connection.";
@@ -63,6 +62,7 @@ public class DestroyConnectionCommand implements GfshCommand {
     // output
     TabularResultData tabularResultData = ResultBuilder.createTabularResultData();
     XmlEntity xmlEntity = fillTabularResultData(resultCollector, tabularResultData);
+    tabularResultData.setHeader(EXPERIMENTAL);
     Result result = ResultBuilder.buildResult(tabularResultData);
     updateClusterConfiguration(result, xmlEntity);
     return result;

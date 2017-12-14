@@ -119,7 +119,9 @@ public class JdbcConnectorServiceXmlGenerator implements XmlGenerator<Cache> {
 
     XmlGeneratorUtils.startElement(handler, PREFIX, ElementType.REGION_MAPPING.getTypeName(),
         attributes);
-    addFieldMappings(handler, mapping.getFieldToColumnMap());
+    if (mapping.getFieldToColumnMap() != null) {
+      addFieldMappings(handler, mapping.getFieldToColumnMap());
+    }
     XmlGeneratorUtils.endElement(handler, PREFIX, ElementType.REGION_MAPPING.getTypeName());
   }
 

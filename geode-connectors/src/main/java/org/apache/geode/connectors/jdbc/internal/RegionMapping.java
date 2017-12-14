@@ -37,8 +37,8 @@ public class RegionMapping implements Serializable {
     this.tableName = tableName;
     this.connectionConfigName = connectionConfigName;
     this.primaryKeyInValue = primaryKeyInValue;
-    this.fieldToColumnMap =
-        fieldToColumnMap == null ? null : Collections.unmodifiableMap(fieldToColumnMap);
+    this.fieldToColumnMap = fieldToColumnMap == null ? null
+        : Collections.unmodifiableMap(fieldToColumnMap);
   }
 
   public String getConnectionConfigName() {

@@ -36,7 +36,6 @@ import org.apache.geode.security.ResourcePermission;
 
 @Experimental
 public class DestroyRegionMappingCommand implements GfshCommand {
-  static final String EXPERIMENTAL = "(Experimental) ";
   static final String DESTROY_MAPPING = "destroy jdbc-mapping";
   static final String DESTROY_MAPPING__HELP = EXPERIMENTAL + "Destroy the specified mapping.";
   static final String DESTROY_MAPPING__REGION_NAME = "region";
@@ -61,6 +60,7 @@ public class DestroyRegionMappingCommand implements GfshCommand {
     // output
     TabularResultData tabularResultData = ResultBuilder.createTabularResultData();
     XmlEntity xmlEntity = fillTabularResultData(resultCollector, tabularResultData);
+    tabularResultData.setHeader(EXPERIMENTAL);
     Result result = ResultBuilder.buildResult(tabularResultData);
     updateClusterConfiguration(result, xmlEntity);
     return result;

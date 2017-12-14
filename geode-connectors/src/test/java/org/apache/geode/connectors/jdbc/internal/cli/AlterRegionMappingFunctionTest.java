@@ -20,7 +20,9 @@ import static org.assertj.core.api.Assertions.entry;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.doThrow;
+import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -44,6 +46,7 @@ import org.apache.geode.connectors.jdbc.internal.RegionMappingBuilder;
 import org.apache.geode.connectors.jdbc.internal.RegionMappingNotFoundException;
 import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.distributed.DistributedSystem;
+import org.apache.geode.internal.cache.CacheConfig;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.management.internal.cli.functions.CliFunctionResult;
 import org.apache.geode.test.junit.categories.UnitTest;
@@ -54,7 +57,7 @@ public class AlterRegionMappingFunctionTest {
   private static final String REGION_NAME = "testRegion";
 
   private RegionMapping regionMapping;
-  private RegionMapping existingMappping;
+  private RegionMapping existingMapping;
   private RegionMapping mappingToAlter;
   private FunctionContext<RegionMapping> context;
   private ResultSender<Object> resultSender;
@@ -72,7 +75,7 @@ public class AlterRegionMappingFunctionTest {
     service = mock(InternalJdbcConnectorService.class);
 
     regionMapping = new RegionMappingBuilder().withRegionName(REGION_NAME).build();
-    existingMappping = new RegionMappingBuilder().withRegionName(REGION_NAME).build();
+    existingMapping = new RegionMappingBuilder().withRegionName(REGION_NAME).build();
     Map<String, String> mappings = new HashMap<>();
     mappings.put("field1", "column1");
     mappings.put("field2", "column2");
@@ -85,7 +88,6 @@ public class AlterRegionMappingFunctionTest {
     when(system.getDistributedMember()).thenReturn(distributedMember);
     when(context.getArguments()).thenReturn(regionMapping);
     when(cache.getService(eq(InternalJdbcConnectorService.class))).thenReturn(service);
-
     function = new AlterRegionMappingFunction();
   }
 
@@ -114,13 +116,16 @@ public class AlterRegionMappingFunctionTest {
     doThrow(RegionMappingNotFoundException.class).when(alterFunction).alterRegionMapping(any(),
         any());
 
-    assertThatThrownBy(() -> alterFunction.alterRegionMapping(regionMapping, existingMappping))
+    assertThatThrownBy(() -> alterFunction.alterRegionMapping(regionMapping, existingMapping))
         .isInstanceOf(RegionMappingNotFoundException.class);
   }
 
   @Test
   public void executeInvokesReplaceOnService() throws Exception {
-    when(service.getMappingForRegion(REGION_NAME)).thenReturn(existingMappping);
+    when(service.getMappingForRegion(REGION_NAME)).thenReturn(existingMapping);
+
+    AlterRegionMappingFunction function = spy(new AlterRegionMappingFunction());
+    doReturn(null).when(function).createXmlEntity(context);
     function.execute(context);
 
     verify(service, times(1)).replaceRegionMapping(any());

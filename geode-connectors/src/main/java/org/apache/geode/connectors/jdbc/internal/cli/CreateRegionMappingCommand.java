@@ -38,7 +38,6 @@ import org.apache.geode.security.ResourcePermission;
 
 @Experimental
 public class CreateRegionMappingCommand implements GfshCommand {
-  static final String EXPERIMENTAL = "(Experimental) ";
   static final String CREATE_MAPPING = "create jdbc-mapping";
   static final String CREATE_MAPPING__HELP =
       EXPERIMENTAL + "Create a mapping for a region for use with a JDBC database connection.";
@@ -93,6 +92,7 @@ public class CreateRegionMappingCommand implements GfshCommand {
     // output
     TabularResultData tabularResultData = ResultBuilder.createTabularResultData();
     XmlEntity xmlEntity = fillTabularResultData(resultCollector, tabularResultData);
+    tabularResultData.setHeader(EXPERIMENTAL);
     Result result = ResultBuilder.buildResult(tabularResultData);
     updateClusterConfiguration(result, xmlEntity);
     return result;

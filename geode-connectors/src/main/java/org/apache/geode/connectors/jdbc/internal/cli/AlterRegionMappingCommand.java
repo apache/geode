@@ -38,7 +38,6 @@ import org.apache.geode.security.ResourcePermission;
 
 @Experimental
 public class AlterRegionMappingCommand implements GfshCommand {
-  static final String EXPERIMENTAL = "(Experimental) ";
   static final String ALTER_MAPPING = "alter jdbc-mapping";
   static final String ALTER_MAPPING__HELP =
       EXPERIMENTAL + "Alter properties for an existing jdbc mapping.";
@@ -93,6 +92,7 @@ public class AlterRegionMappingCommand implements GfshCommand {
     // output
     TabularResultData tabularResultData = ResultBuilder.createTabularResultData();
     XmlEntity xmlEntity = fillTabularResultData(resultCollector, tabularResultData);
+    tabularResultData.setHeader(EXPERIMENTAL);
     Result result = ResultBuilder.buildResult(tabularResultData);
     updateClusterConfiguration(result, xmlEntity);
     return result;

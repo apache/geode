@@ -84,7 +84,7 @@ public class CreateRegionMappingCommandIntegrationTest {
   }
 
   @Test
-  public void createsConnectionOnceOnly() {
+  public void createsRegionMappingOnceOnly() {
     createRegionMappingCommand.createMapping(regionName, connectionName, tableName, pdxClass,
         keyInValue, fieldMappings);
     InternalJdbcConnectorService service = cache.getService(InternalJdbcConnectorService.class);
@@ -97,5 +97,24 @@ public class CreateRegionMappingCommandIntegrationTest {
     assertThat(result.getStatus()).isSameAs(Result.Status.ERROR);
 
     assertThat(service.getConnectionConfig(regionName)).isSameAs(connectionConfig);
+  }
+
+  @Test
+  public void createsRegionMappingWithMinimumParams() {
+    Result result = createRegionMappingCommand.createMapping(regionName, connectionName, null, null,
+        false, null);
+
+    assertThat(result.getStatus()).isSameAs(Result.Status.OK);
+
+    InternalJdbcConnectorService service = cache.getService(InternalJdbcConnectorService.class);
+    RegionMapping regionMapping = service.getMappingForRegion(regionName);
+
+    assertThat(regionMapping).isNotNull();
+    assertThat(regionMapping.getRegionName()).isEqualTo(regionName);
+    assertThat(regionMapping.getConnectionConfigName()).isEqualTo(connectionName);
+    assertThat(regionMapping.getTableName()).isNull();
+    assertThat(regionMapping.getPdxClassName()).isNull();
+    assertThat(regionMapping.isPrimaryKeyInValue()).isFalse();
+    assertThat(regionMapping.getFieldToColumnMap()).isNull();
   }
 }

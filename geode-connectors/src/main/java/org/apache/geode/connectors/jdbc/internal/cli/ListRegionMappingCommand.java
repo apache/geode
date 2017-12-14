@@ -36,7 +36,6 @@ import org.apache.geode.security.ResourcePermission;
 
 @Experimental
 public class ListRegionMappingCommand implements GfshCommand {
-  static final String EXPERIMENTAL = "(Experimental) ";
   static final String LIST_MAPPING = "list jdbc-mappings";
   static final String LIST_MAPPING__HELP = EXPERIMENTAL + "Display jdbc mappings for all members.";
 
@@ -73,10 +72,10 @@ public class ListRegionMappingCommand implements GfshCommand {
 
   private Result createResult(TabularResultData tabularResultData, boolean mappingsExist) {
     if (mappingsExist) {
+      tabularResultData.setHeader(EXPERIMENTAL);
       return ResultBuilder.buildResult(tabularResultData);
-
     } else {
-      return ResultBuilder.createInfoResult(NO_MAPPINGS_FOUND);
+      return ResultBuilder.createInfoResult(EXPERIMENTAL + "\n" + NO_MAPPINGS_FOUND);
     }
   }
 

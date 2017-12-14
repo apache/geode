@@ -42,7 +42,6 @@ import org.apache.geode.security.ResourcePermission;
 
 @Experimental
 public class DescribeRegionMappingCommand implements GfshCommand {
-  static final String EXPERIMENTAL = "(Experimental) ";
   static final String DESCRIBE_MAPPING = "describe jdbc-mapping";
   static final String DESCRIBE_MAPPING__HELP =
       EXPERIMENTAL + "Describe the specified jdbc mapping.";
@@ -74,12 +73,13 @@ public class DescribeRegionMappingCommand implements GfshCommand {
     // output
     RegionMapping config = resultCollector.getResult().get(0);
     if (config == null) {
-      return ResultBuilder
-          .createInfoResult(String.format("Mapping for region '%s' not found", regionName));
+      return ResultBuilder.createInfoResult(
+          String.format(EXPERIMENTAL + "\n" + "Mapping for region '%s' not found", regionName));
     }
 
     CompositeResultData resultData = ResultBuilder.createCompositeResultData();
     fillResultData(config, resultData);
+    resultData.setHeader(EXPERIMENTAL);
     return ResultBuilder.buildResult(resultData);
   }
 
@@ -93,7 +93,6 @@ public class DescribeRegionMappingCommand implements GfshCommand {
   private void fillResultData(RegionMapping mapping, CompositeResultData resultData) {
     CompositeResultData.SectionResultData sectionResult =
         resultData.addSection(RESULT_SECTION_NAME);
-
     sectionResult.addSeparator('-');
     sectionResult.addData(CREATE_MAPPING__REGION_NAME, mapping.getRegionName());
     sectionResult.addData(CREATE_MAPPING__CONNECTION_NAME, mapping.getConnectionConfigName());

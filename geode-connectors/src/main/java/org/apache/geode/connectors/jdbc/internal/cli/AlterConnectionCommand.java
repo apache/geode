@@ -38,7 +38,6 @@ import org.apache.geode.security.ResourcePermission;
 
 @Experimental
 public class AlterConnectionCommand implements GfshCommand {
-  static final String EXPERIMENTAL = "(Experimental) ";
   static final String ALTER_JDBC_CONNECTION = "alter jdbc-connection";
   static final String ALTER_JDBC_CONNECTION__HELP =
       EXPERIMENTAL + "Alter properties for an existing jdbc connection.";
@@ -85,6 +84,7 @@ public class AlterConnectionCommand implements GfshCommand {
     // output
     TabularResultData tabularResultData = ResultBuilder.createTabularResultData();
     XmlEntity xmlEntity = fillTabularResultData(resultCollector, tabularResultData);
+    tabularResultData.setHeader(EXPERIMENTAL);
     Result result = ResultBuilder.buildResult(tabularResultData);
     updateClusterConfiguration(result, xmlEntity);
     return result;

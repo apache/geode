@@ -40,7 +40,6 @@ import org.apache.geode.security.ResourcePermission;
 
 @Experimental
 public class DescribeConnectionCommand implements GfshCommand {
-  static final String EXPERIMENTAL = "(Experimental) ";
   static final String DESCRIBE_CONNECTION = "describe jdbc-connection";
   static final String DESCRIBE_CONNECTION__HELP =
       EXPERIMENTAL + "Describe the specified jdbc connection.";
@@ -72,11 +71,13 @@ public class DescribeConnectionCommand implements GfshCommand {
     // output
     ConnectionConfiguration config = resultCollector.getResult().get(0);
     if (config == null) {
-      return ResultBuilder.createInfoResult(String.format("Connection named '%s' not found", name));
+      return ResultBuilder.createInfoResult(
+          String.format(EXPERIMENTAL + "\n" + "Connection named '%s' not found", name));
     }
 
     CompositeResultData resultData = ResultBuilder.createCompositeResultData();
     fillResultData(config, resultData);
+    resultData.setHeader(EXPERIMENTAL);
     return ResultBuilder.buildResult(resultData);
   }
 
