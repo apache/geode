@@ -58,7 +58,7 @@ public class ExportStackTraceCommandTest {
   }
 
   @Test
-  public void fileExists() throws IOException {
+  public void abortIfFileExists() throws IOException {
     File file = temporaryFolder.newFile("stackTrace.txt");
     gfsh.executeAndAssertThat(command,
         "export stack-traces --abort-if-file-exists --file=" + file.getAbsolutePath())
