@@ -34,7 +34,7 @@ import org.apache.geode.management.internal.cli.result.CommandResult;
 import org.apache.geode.test.junit.categories.IntegrationTest;
 
 @Category(IntegrationTest.class)
-public class ListRegionMappingCommandIntegrationTest {
+public class ListMappingCommandIntegrationTest {
 
   private InternalCache cache;
   private InternalJdbcConnectorService service;

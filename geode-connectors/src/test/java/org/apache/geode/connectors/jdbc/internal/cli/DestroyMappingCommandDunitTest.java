@@ -14,8 +14,8 @@
  */
 package org.apache.geode.connectors.jdbc.internal.cli;
 
-import static org.apache.geode.connectors.jdbc.internal.cli.ListRegionMappingCommand.LIST_MAPPING;
-import static org.apache.geode.connectors.jdbc.internal.cli.ListRegionMappingCommand.LIST_OF_MAPPINGS;
+import static org.apache.geode.connectors.jdbc.internal.cli.DestroyMappingCommand.DESTROY_MAPPING;
+import static org.apache.geode.connectors.jdbc.internal.cli.DestroyMappingCommand.DESTROY_MAPPING__REGION_NAME;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import java.io.Serializable;
@@ -26,19 +26,21 @@ import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
 import org.apache.geode.connectors.jdbc.internal.InternalJdbcConnectorService;
+import org.apache.geode.connectors.jdbc.internal.RegionMapping;
 import org.apache.geode.connectors.jdbc.internal.RegionMappingBuilder;
 import org.apache.geode.connectors.jdbc.internal.RegionMappingExistsException;
+import org.apache.geode.distributed.internal.InternalLocator;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.management.internal.cli.util.CommandStringBuilder;
 import org.apache.geode.test.dunit.rules.LocatorServerStartupRule;
 import org.apache.geode.test.dunit.rules.MemberVM;
-import org.apache.geode.test.junit.assertions.CommandResultAssert;
 import org.apache.geode.test.junit.categories.DistributedTest;
 import org.apache.geode.test.junit.rules.GfshCommandRule;
 import org.apache.geode.test.junit.rules.serializable.SerializableTestName;
 
 @Category(DistributedTest.class)
-public class ListRegionMappingCommandDUnitTest implements Serializable {
+public class DestroyMappingCommandDunitTest implements Serializable {
+
 
   @Rule
   public transient GfshCommandRule gfsh = new GfshCommandRule();
@@ -61,63 +63,39 @@ public class ListRegionMappingCommandDUnitTest implements Serializable {
     locator = startupRule.startLocatorVM(0);
     server = startupRule.startServerVM(1, locator.getPort());
 
+    server.invoke(() -> createRegionMapping());
+
     gfsh.connectAndVerify(locator);
   }
 
   @Test
-  public void listsOneRegionMapping() throws Exception {
-    server.invoke(() -> createOneRegionMapping());
-    CommandStringBuilder csb = new CommandStringBuilder(LIST_MAPPING);
+  public void destroysRegionMapping() throws Exception {
+    CommandStringBuilder csb = new CommandStringBuilder(DESTROY_MAPPING);
+    csb.addOption(DESTROY_MAPPING__REGION_NAME, "testRegion");
 
-    CommandResultAssert commandResultAssert = gfsh.executeAndAssertThat(csb.toString());
+    gfsh.executeAndAssertThat(csb.toString()).statusIsSuccess();
 
-    commandResultAssert.statusIsSuccess();
-    commandResultAssert.tableHasRowCount(LIST_OF_MAPPINGS, 1);
-    commandResultAssert.tableHasColumnOnlyWithValues(LIST_OF_MAPPINGS, regionName);
+    locator.invoke(() -> {
+      String xml = InternalLocator.getLocator().getSharedConfiguration().getConfiguration("cluster")
+          .getCacheXmlContent();
+      assertThat(xml).contains("jdbc:connector-service");
+    });
+
+    server.invoke(() -> {
+      InternalCache cache = LocatorServerStartupRule.getCache();
+      RegionMapping mapping =
+          cache.getService(InternalJdbcConnectorService.class).getMappingForRegion("testRegion");
+      assertThat(mapping).isNull();
+    });
   }
 
-  @Test
-  public void listsMultipleRegionMappings() throws Exception {
-    server.invoke(() -> createNRegionMappings(3));
-    CommandStringBuilder csb = new CommandStringBuilder(LIST_MAPPING);
-
-    CommandResultAssert commandResultAssert = gfsh.executeAndAssertThat(csb.toString());
-
-    commandResultAssert.statusIsSuccess();
-    commandResultAssert.tableHasRowCount(LIST_OF_MAPPINGS, 3);
-    commandResultAssert.tableHasColumnOnlyWithValues(LIST_OF_MAPPINGS, regionName + "-1",
-        regionName + "-2", regionName + "-3");
-  }
-
-  @Test
-  public void reportsNoRegionMappingsFound() throws Exception {
-    CommandStringBuilder csb = new CommandStringBuilder(LIST_MAPPING);
-
-    CommandResultAssert commandResultAssert = gfsh.executeAndAssertThat(csb.toString());
-
-    commandResultAssert.statusIsSuccess();
-    commandResultAssert.containsOutput("No mappings found");
-  }
-
-  private void createOneRegionMapping() throws RegionMappingExistsException {
+  private void createRegionMapping() throws RegionMappingExistsException {
     InternalCache cache = LocatorServerStartupRule.getCache();
     InternalJdbcConnectorService service = cache.getService(InternalJdbcConnectorService.class);
 
-    service.createRegionMapping(new RegionMappingBuilder().withRegionName(regionName)
-        .withPdxClassName("x.y.MyPdxClass").withPrimaryKeyInValue(true).build());
+    service.createRegionMapping(new RegionMappingBuilder().withRegionName(regionName).build());
 
     assertThat(service.getMappingForRegion(regionName)).isNotNull();
-  }
-
-  private void createNRegionMappings(int N) throws RegionMappingExistsException {
-    InternalCache cache = LocatorServerStartupRule.getCache();
-    InternalJdbcConnectorService service = cache.getService(InternalJdbcConnectorService.class);
-    for (int i = 1; i <= N; i++) {
-      String name = regionName + "-" + i;
-      service.createRegionMapping(new RegionMappingBuilder().withRegionName(name)
-          .withPdxClassName("x.y.MyPdxClass").withPrimaryKeyInValue(true).build());
-      assertThat(service.getMappingForRegion(name)).isNotNull();
-    }
   }
 
 }

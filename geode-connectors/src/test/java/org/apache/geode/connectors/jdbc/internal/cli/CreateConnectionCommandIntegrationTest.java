@@ -90,4 +90,22 @@ public class CreateConnectionCommandIntegrationTest {
 
     assertThat(service.getConnectionConfig(name)).isSameAs(connectionConfig);
   }
+
+  @Test
+  public void createsConnectionConfigurationWithMinimumParams() throws Exception {
+    Result result = createConnectionCommand.createConnection(name, url, null, null, null);
+
+    assertThat(result.getStatus()).isSameAs(Result.Status.OK);
+
+    InternalJdbcConnectorService service = cache.getService(InternalJdbcConnectorService.class);
+    ConnectionConfiguration connectionConfig = service.getConnectionConfig(name);
+
+    assertThat(connectionConfig).isNotNull();
+    assertThat(connectionConfig.getName()).isEqualTo(name);
+    assertThat(connectionConfig.getUrl()).isEqualTo(url);
+    assertThat(connectionConfig.getUser()).isNull();
+    assertThat(connectionConfig.getPassword()).isNull();
+    assertThat(connectionConfig.getConnectionProperties().size()).isEqualTo(0);
+  }
+
 }

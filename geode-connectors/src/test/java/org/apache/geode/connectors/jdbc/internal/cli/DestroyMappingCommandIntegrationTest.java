@@ -31,13 +31,13 @@ import org.apache.geode.management.cli.Result;
 import org.apache.geode.test.junit.categories.IntegrationTest;
 
 @Category(IntegrationTest.class)
-public class DestroyRegionMappingCommandIntegrationTest {
+public class DestroyMappingCommandIntegrationTest {
 
   private String regionName;
   private InternalCache cache;
   private RegionMapping mapping;
 
-  private DestroyRegionMappingCommand command;
+  private DestroyMappingCommand command;
 
   @Before
   public void setup() throws Exception {
@@ -49,7 +49,7 @@ public class DestroyRegionMappingCommandIntegrationTest {
     cache = (InternalCache) new CacheFactory().set("locators", "").set("mcast-port", "0")
         .set(ENABLE_CLUSTER_CONFIGURATION, "true").create();
 
-    command = new DestroyRegionMappingCommand();
+    command = new DestroyMappingCommand();
   }
 
   @After

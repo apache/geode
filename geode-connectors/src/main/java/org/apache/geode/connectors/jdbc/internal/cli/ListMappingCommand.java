@@ -35,7 +35,7 @@ import org.apache.geode.management.internal.security.ResourceOperation;
 import org.apache.geode.security.ResourcePermission;
 
 @Experimental
-public class ListRegionMappingCommand implements GfshCommand {
+public class ListMappingCommand implements GfshCommand {
   static final String LIST_MAPPING = "list jdbc-mappings";
   static final String LIST_MAPPING__HELP = EXPERIMENTAL + "Display jdbc mappings for all members.";
 
@@ -56,7 +56,7 @@ public class ListRegionMappingCommand implements GfshCommand {
 
     // action
     ResultCollector<RegionMapping, List<RegionMapping[]>> resultCollector =
-        execute(new ListRegionMappingFunction(), targetMembers.iterator().next());
+        execute(new ListMappingFunction(), targetMembers.iterator().next());
 
     // output
     TabularResultData tabularResultData = ResultBuilder.createTabularResultData();
@@ -64,7 +64,7 @@ public class ListRegionMappingCommand implements GfshCommand {
     return createResult(tabularResultData, mappingsExist);
   }
 
-  ResultCollector<RegionMapping, List<RegionMapping[]>> execute(ListRegionMappingFunction function,
+  ResultCollector<RegionMapping, List<RegionMapping[]>> execute(ListMappingFunction function,
       DistributedMember targetMember) {
     return (ResultCollector<RegionMapping, List<RegionMapping[]>>) executeFunction(function, null,
         targetMember);

@@ -130,14 +130,15 @@ public class SqlHandler {
     if (regionMapping == null) {
       throw new IllegalStateException("JDBC write failed. JDBC mapping for region " +
           region.getFullPath() +
-          " not found. Create mapping with gfsh command 'create jdbc-mapping'.");
+          " not found. Create the mapping with the gfsh command 'create jdbc-mapping'.");
     }
     ConnectionConfiguration connectionConfig =
         manager.getConnectionConfig(regionMapping.getConnectionConfigName());
     if (connectionConfig == null) {
       throw new IllegalStateException(
-          "JDBC write failed. JDBC Connection configuration for connection name " +
-      regionMapping.getConnectionConfigName() + " not found.");
+          "JDBC write failed. JDBC connection with name " +
+          regionMapping.getConnectionConfigName() +
+              " not found. Create the connection with the gfsh command 'create jdbc-connection'");
     }
 
     List<ColumnValue> columnList =

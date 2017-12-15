@@ -15,7 +15,9 @@
 package org.apache.geode.connectors.jdbc.internal.cli;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
@@ -31,9 +33,11 @@ import org.mockito.ArgumentCaptor;
 
 import org.apache.geode.cache.execute.FunctionContext;
 import org.apache.geode.cache.execute.ResultSender;
+import org.apache.geode.connectors.jdbc.internal.ConnectionConfigExistsException;
 import org.apache.geode.connectors.jdbc.internal.InternalJdbcConnectorService;
 import org.apache.geode.connectors.jdbc.internal.RegionMapping;
 import org.apache.geode.connectors.jdbc.internal.RegionMappingBuilder;
+import org.apache.geode.connectors.jdbc.internal.RegionMappingExistsException;
 import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.distributed.DistributedSystem;
 import org.apache.geode.internal.cache.InternalCache;
@@ -41,35 +45,37 @@ import org.apache.geode.management.internal.cli.functions.CliFunctionResult;
 import org.apache.geode.test.junit.categories.UnitTest;
 
 @Category(UnitTest.class)
-public class DestroyRegionMappingCommandFunctionTest {
+public class CreateMappingFunctionTest {
 
-  private static final String regionName = "testRegion";
+  private static final String REGION_NAME = "testRegion";
 
-  private DestroyRegionMappingFunction function;
-  private FunctionContext<String> context;
+  private RegionMapping regionMapping;
+  private FunctionContext<RegionMapping> context;
+  private DistributedMember distributedMember;
   private ResultSender<Object> resultSender;
-  private RegionMapping mapping;
   private InternalJdbcConnectorService service;
+
+  private CreateMappingFunction function;
 
   @Before
   public void setUp() {
-    InternalCache cache = mock(InternalCache.class);
     context = mock(FunctionContext.class);
-    DistributedMember member = mock(DistributedMember.class);
     resultSender = mock(ResultSender.class);
-    service = mock(InternalJdbcConnectorService.class);
+    InternalCache cache = mock(InternalCache.class);
     DistributedSystem system = mock(DistributedSystem.class);
+    distributedMember = mock(DistributedMember.class);
+    service = mock(InternalJdbcConnectorService.class);
+
+    regionMapping = new RegionMappingBuilder().withRegionName(REGION_NAME).build();
 
     when(context.getResultSender()).thenReturn(resultSender);
     when(context.getCache()).thenReturn(cache);
     when(cache.getDistributedSystem()).thenReturn(system);
-    when(system.getDistributedMember()).thenReturn(member);
-    when(context.getArguments()).thenReturn(regionName);
+    when(system.getDistributedMember()).thenReturn(distributedMember);
+    when(context.getArguments()).thenReturn(regionMapping);
     when(cache.getService(eq(InternalJdbcConnectorService.class))).thenReturn(service);
 
-    mapping = new RegionMappingBuilder().build();
-
-    function = new DestroyRegionMappingFunction();
+    function = new CreateMappingFunction();
   }
 
   @Test
@@ -88,37 +94,44 @@ public class DestroyRegionMappingCommandFunctionTest {
 
     Object copy = SerializationUtils.clone(original);
 
-    assertThat(copy).isNotSameAs(original).isInstanceOf(DestroyRegionMappingFunction.class);
+    assertThat(copy).isNotSameAs(original).isInstanceOf(CreateMappingFunction.class);
   }
 
   @Test
-  public void destroyRegionMappingReturnsTrueIfConnectionDestroyed() {
-    when(service.getMappingForRegion(eq(regionName))).thenReturn(mapping);
+  public void createRegionMappingReturnsRegionName() throws Exception {
+    function.createRegionMapping(service, regionMapping);
 
-    assertThat(function.destroyRegionMapping(service, regionName)).isTrue();
+    verify(service, times(1)).createRegionMapping(regionMapping);
   }
 
   @Test
-  public void destroyRegionMappingReturnsFalseIfMappingDoesNotExist() {
-    assertThat(function.destroyRegionMapping(service, regionName)).isFalse();
+  public void createRegionMappingThrowsIfMappingExists() throws Exception {
+    doThrow(ConnectionConfigExistsException.class).when(service)
+        .createRegionMapping(eq(regionMapping));
+
+    assertThatThrownBy(() -> function.createRegionMapping(service, regionMapping))
+        .isInstanceOf(ConnectionConfigExistsException.class);
+
+    verify(service, times(1)).createRegionMapping(regionMapping);
   }
 
   @Test
-  public void executeDestroysIfMappingFound() {
-    when(service.getMappingForRegion(eq(regionName))).thenReturn(mapping);
-
+  public void executeCreatesMapping() throws Exception {
     function.execute(context);
 
-    verify(service, times(1)).destroyRegionMapping(eq(regionName));
+    verify(service, times(1)).createRegionMapping(regionMapping);
   }
 
   @Test
-  public void executeReportsErrorIfMappingNotFound() {
+  public void executeReportsErrorIfRegionMappingExists() throws Exception {
+    doThrow(RegionMappingExistsException.class).when(service)
+        .createRegionMapping(eq(regionMapping));
+
     function.execute(context);
 
     ArgumentCaptor<CliFunctionResult> argument = ArgumentCaptor.forClass(CliFunctionResult.class);
     verify(resultSender, times(1)).lastResult(argument.capture());
     assertThat(argument.getValue().getErrorMessage())
-        .contains("Region mapping for region \"" + regionName + "\" not found");
+        .contains(RegionMappingExistsException.class.getName());
   }
 }

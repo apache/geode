@@ -42,7 +42,7 @@ import org.apache.geode.management.internal.cli.functions.CliFunctionResult;
 import org.apache.geode.test.junit.categories.UnitTest;
 
 @Category(UnitTest.class)
-public class ListRegionMappingFunctionTest {
+public class ListMappingFunctionTest {
 
   private FunctionContext<Void> context;
   private ResultSender<Object> resultSender;
@@ -54,7 +54,7 @@ public class ListRegionMappingFunctionTest {
 
   private Set<RegionMapping> expected;
 
-  private ListRegionMappingFunction function;
+  private ListMappingFunction function;
 
   @Before
   public void setUp() {
@@ -78,7 +78,7 @@ public class ListRegionMappingFunctionTest {
     when(cache.getService(eq(InternalJdbcConnectorService.class))).thenReturn(service);
     when(service.getRegionMappings()).thenReturn(expected);
 
-    function = new ListRegionMappingFunction();
+    function = new ListMappingFunction();
   }
 
   @Test
@@ -97,7 +97,7 @@ public class ListRegionMappingFunctionTest {
 
     Object copy = SerializationUtils.clone(original);
 
-    assertThat(copy).isNotSameAs(original).isInstanceOf(ListRegionMappingFunction.class);
+    assertThat(copy).isNotSameAs(original).isInstanceOf(ListMappingFunction.class);
   }
 
   @Test

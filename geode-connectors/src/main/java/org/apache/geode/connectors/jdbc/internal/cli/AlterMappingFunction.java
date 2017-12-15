@@ -14,8 +14,6 @@
  */
 package org.apache.geode.connectors.jdbc.internal.cli;
 
-import java.util.Collection;
-import java.util.Collections;
 import java.util.Map;
 
 import org.apache.geode.annotations.Experimental;
@@ -27,9 +25,9 @@ import org.apache.geode.management.internal.cli.functions.CliFunctionResult;
 import org.apache.geode.management.internal.configuration.domain.XmlEntity;
 
 @Experimental
-public class AlterRegionMappingFunction extends JdbcCliFunction<RegionMapping, CliFunctionResult> {
+public class AlterMappingFunction extends JdbcCliFunction<RegionMapping, CliFunctionResult> {
 
-  AlterRegionMappingFunction() {
+  AlterMappingFunction() {
     super(new FunctionContextArgumentProvider(), new ExceptionHandler());
   }
 

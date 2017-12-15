@@ -22,9 +22,9 @@ import org.apache.geode.connectors.jdbc.internal.InternalJdbcConnectorService;
 import org.apache.geode.connectors.jdbc.internal.RegionMapping;
 
 @Experimental
-public class ListRegionMappingFunction extends JdbcCliFunction<Void, RegionMapping[]> {
+public class ListMappingFunction extends JdbcCliFunction<Void, RegionMapping[]> {
 
-  ListRegionMappingFunction() {
+  ListMappingFunction() {
     super(new FunctionContextArgumentProvider(), new ExceptionHandler());
   }
 

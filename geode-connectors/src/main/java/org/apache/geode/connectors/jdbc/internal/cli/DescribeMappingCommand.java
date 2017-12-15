@@ -14,11 +14,11 @@
  */
 package org.apache.geode.connectors.jdbc.internal.cli;
 
-import static org.apache.geode.connectors.jdbc.internal.cli.CreateRegionMappingCommand.CREATE_MAPPING__CONNECTION_NAME;
-import static org.apache.geode.connectors.jdbc.internal.cli.CreateRegionMappingCommand.CREATE_MAPPING__PDX_CLASS_NAME;
-import static org.apache.geode.connectors.jdbc.internal.cli.CreateRegionMappingCommand.CREATE_MAPPING__PRIMARY_KEY_IN_VALUE;
-import static org.apache.geode.connectors.jdbc.internal.cli.CreateRegionMappingCommand.CREATE_MAPPING__REGION_NAME;
-import static org.apache.geode.connectors.jdbc.internal.cli.CreateRegionMappingCommand.CREATE_MAPPING__TABLE_NAME;
+import static org.apache.geode.connectors.jdbc.internal.cli.CreateMappingCommand.CREATE_MAPPING__CONNECTION_NAME;
+import static org.apache.geode.connectors.jdbc.internal.cli.CreateMappingCommand.CREATE_MAPPING__PDX_CLASS_NAME;
+import static org.apache.geode.connectors.jdbc.internal.cli.CreateMappingCommand.CREATE_MAPPING__VALUE_CONTAINS_PRIMARY_KEY;
+import static org.apache.geode.connectors.jdbc.internal.cli.CreateMappingCommand.CREATE_MAPPING__REGION_NAME;
+import static org.apache.geode.connectors.jdbc.internal.cli.CreateMappingCommand.CREATE_MAPPING__TABLE_NAME;
 
 import java.util.List;
 import java.util.Set;
@@ -41,13 +41,13 @@ import org.apache.geode.management.internal.security.ResourceOperation;
 import org.apache.geode.security.ResourcePermission;
 
 @Experimental
-public class DescribeRegionMappingCommand implements GfshCommand {
+public class DescribeMappingCommand implements GfshCommand {
   static final String DESCRIBE_MAPPING = "describe jdbc-mapping";
   static final String DESCRIBE_MAPPING__HELP =
       EXPERIMENTAL + "Describe the specified jdbc mapping.";
-  static final String DESCRIBE_MAPPING__REGION_NAME = "name";
+  static final String DESCRIBE_MAPPING__REGION_NAME = "region";
   static final String DESCRIBE_MAPPING__REGION_NAME__HELP =
-      "Name of the jdbc mapping to be described.";
+      "Region name of the jdbc mapping to be described.";
 
   static final String RESULT_SECTION_NAME = "MappingDescription";
   static final String FIELD_TO_COLUMN_TABLE = "fieldToColumnTable";
@@ -68,7 +68,7 @@ public class DescribeRegionMappingCommand implements GfshCommand {
 
     // action
     ResultCollector<RegionMapping, List<RegionMapping>> resultCollector =
-        execute(new DescribeRegionMappingFunction(), regionName, targetMember);
+        execute(new DescribeMappingFunction(), regionName, targetMember);
 
     // output
     RegionMapping config = resultCollector.getResult().get(0);
@@ -84,7 +84,7 @@ public class DescribeRegionMappingCommand implements GfshCommand {
   }
 
   ResultCollector<RegionMapping, List<RegionMapping>> execute(
-      DescribeRegionMappingFunction function, String connectionName,
+      DescribeMappingFunction function, String connectionName,
       DistributedMember targetMember) {
     return (ResultCollector<RegionMapping, List<RegionMapping>>) executeFunction(function,
         connectionName, targetMember);
@@ -98,7 +98,7 @@ public class DescribeRegionMappingCommand implements GfshCommand {
     sectionResult.addData(CREATE_MAPPING__CONNECTION_NAME, mapping.getConnectionConfigName());
     sectionResult.addData(CREATE_MAPPING__TABLE_NAME, mapping.getTableName());
     sectionResult.addData(CREATE_MAPPING__PDX_CLASS_NAME, mapping.getPdxClassName());
-    sectionResult.addData(CREATE_MAPPING__PRIMARY_KEY_IN_VALUE, mapping.isPrimaryKeyInValue());
+    sectionResult.addData(CREATE_MAPPING__VALUE_CONTAINS_PRIMARY_KEY, mapping.isPrimaryKeyInValue());
 
     TabularResultData tabularResultData = sectionResult.addTable(FIELD_TO_COLUMN_TABLE);
     tabularResultData.setHeader("Field to Column Mappings:");

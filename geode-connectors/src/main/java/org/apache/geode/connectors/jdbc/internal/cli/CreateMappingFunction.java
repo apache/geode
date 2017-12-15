@@ -23,9 +23,9 @@ import org.apache.geode.management.internal.cli.functions.CliFunctionResult;
 import org.apache.geode.management.internal.configuration.domain.XmlEntity;
 
 @Experimental
-public class CreateRegionMappingFunction extends JdbcCliFunction<RegionMapping, CliFunctionResult> {
+public class CreateMappingFunction extends JdbcCliFunction<RegionMapping, CliFunctionResult> {
 
-  CreateRegionMappingFunction() {
+  CreateMappingFunction() {
     super(new FunctionContextArgumentProvider(), new ExceptionHandler());
   }
 

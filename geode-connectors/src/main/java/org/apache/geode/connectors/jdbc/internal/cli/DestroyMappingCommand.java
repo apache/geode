@@ -35,7 +35,7 @@ import org.apache.geode.management.internal.security.ResourceOperation;
 import org.apache.geode.security.ResourcePermission;
 
 @Experimental
-public class DestroyRegionMappingCommand implements GfshCommand {
+public class DestroyMappingCommand implements GfshCommand {
   static final String DESTROY_MAPPING = "destroy jdbc-mapping";
   static final String DESTROY_MAPPING__HELP = EXPERIMENTAL + "Destroy the specified mapping.";
   static final String DESTROY_MAPPING__REGION_NAME = "region";
@@ -55,7 +55,7 @@ public class DestroyRegionMappingCommand implements GfshCommand {
 
     // action
     ResultCollector<CliFunctionResult, List<CliFunctionResult>> resultCollector =
-        execute(new DestroyRegionMappingFunction(), regionName, targetMembers);
+        execute(new DestroyMappingFunction(), regionName, targetMembers);
 
     // output
     TabularResultData tabularResultData = ResultBuilder.createTabularResultData();
@@ -67,7 +67,7 @@ public class DestroyRegionMappingCommand implements GfshCommand {
   }
 
   ResultCollector<CliFunctionResult, List<CliFunctionResult>> execute(
-      DestroyRegionMappingFunction function, String regionName,
+      DestroyMappingFunction function, String regionName,
       Set<DistributedMember> targetMembers) {
     return (ResultCollector<CliFunctionResult, List<CliFunctionResult>>) executeFunction(function,
         regionName, targetMembers);

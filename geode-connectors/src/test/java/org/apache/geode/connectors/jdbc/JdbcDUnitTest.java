@@ -16,6 +16,7 @@ package org.apache.geode.connectors.jdbc;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
+
 import java.io.Serializable;
 import java.sql.Connection;
 import java.sql.DriverManager;
@@ -30,11 +31,9 @@ import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
-import org.junit.rules.ExpectedException;
 
 import org.apache.geode.cache.CacheFactory;
 import org.apache.geode.cache.Region;
-import org.apache.geode.cache.TransactionException;
 import org.apache.geode.pdx.PdxInstance;
 import org.apache.geode.test.dunit.IgnoredException;
 import org.apache.geode.test.dunit.rules.LocatorServerStartupRule;
@@ -43,7 +42,9 @@ import org.apache.geode.test.junit.categories.DistributedTest;
 import org.apache.geode.test.junit.rules.GfshCommandRule;
 import org.apache.geode.test.junit.rules.serializable.SerializableTestName;
 
-
+/** End-to-end dunits for jdbc connector
+ *
+ */
 @Category(DistributedTest.class)
 public class JdbcDUnitTest implements Serializable {
 
@@ -62,17 +63,14 @@ public class JdbcDUnitTest implements Serializable {
   @Rule
   public SerializableTestName testName = new SerializableTestName();
 
-  private MemberVM locator;
   private MemberVM server;
 
   @Before
   public void setup() throws Exception {
-    locator = startupRule.startLocatorVM(0);
+    MemberVM locator = startupRule.startLocatorVM(0);
     gfsh.connectAndVerify(locator);
     server = startupRule.startServerVM(1, locator.getPort());
-    server.invoke(()-> {
-      createTable();
-    });
+    server.invoke(()-> createTable());
   }
 
   private void createTable() throws SQLException {
@@ -100,9 +98,7 @@ public class JdbcDUnitTest implements Serializable {
       statement.execute("Drop table " + TABLE_NAME);
       statement.close();
 
-      if (connection != null) {
-        connection.close();
-      }
+      connection.close();
     } catch (SQLException ex) {
       System.out.println("SQL Exception is thrown while closing the database.");
     }

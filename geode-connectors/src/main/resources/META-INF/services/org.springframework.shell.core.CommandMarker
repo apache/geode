@@ -20,8 +20,8 @@ org.apache.geode.connectors.jdbc.internal.cli.DestroyConnectionCommand
 org.apache.geode.connectors.jdbc.internal.cli.ListConnectionCommand
 org.apache.geode.connectors.jdbc.internal.cli.DescribeConnectionCommand
 org.apache.geode.connectors.jdbc.internal.cli.AlterConnectionCommand
-org.apache.geode.connectors.jdbc.internal.cli.CreateRegionMappingCommand
-org.apache.geode.connectors.jdbc.internal.cli.AlterRegionMappingCommand
-org.apache.geode.connectors.jdbc.internal.cli.DestroyRegionMappingCommand
-org.apache.geode.connectors.jdbc.internal.cli.DescribeRegionMappingCommand
-org.apache.geode.connectors.jdbc.internal.cli.ListRegionMappingCommand
+org.apache.geode.connectors.jdbc.internal.cli.CreateMappingCommand
+org.apache.geode.connectors.jdbc.internal.cli.AlterMappingCommand
+org.apache.geode.connectors.jdbc.internal.cli.DestroyMappingCommand
+org.apache.geode.connectors.jdbc.internal.cli.DescribeMappingCommand
+org.apache.geode.connectors.jdbc.internal.cli.ListMappingCommand

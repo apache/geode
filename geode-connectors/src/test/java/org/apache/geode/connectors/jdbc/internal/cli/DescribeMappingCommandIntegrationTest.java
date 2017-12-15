@@ -14,13 +14,13 @@
  */
 package org.apache.geode.connectors.jdbc.internal.cli;
 
-import static org.apache.geode.connectors.jdbc.internal.cli.CreateRegionMappingCommand.CREATE_MAPPING__CONNECTION_NAME;
-import static org.apache.geode.connectors.jdbc.internal.cli.CreateRegionMappingCommand.CREATE_MAPPING__PDX_CLASS_NAME;
-import static org.apache.geode.connectors.jdbc.internal.cli.CreateRegionMappingCommand.CREATE_MAPPING__PRIMARY_KEY_IN_VALUE;
-import static org.apache.geode.connectors.jdbc.internal.cli.CreateRegionMappingCommand.CREATE_MAPPING__REGION_NAME;
-import static org.apache.geode.connectors.jdbc.internal.cli.CreateRegionMappingCommand.CREATE_MAPPING__TABLE_NAME;
-import static org.apache.geode.connectors.jdbc.internal.cli.DescribeRegionMappingCommand.FIELD_TO_COLUMN_TABLE;
-import static org.apache.geode.connectors.jdbc.internal.cli.DescribeRegionMappingCommand.RESULT_SECTION_NAME;
+import static org.apache.geode.connectors.jdbc.internal.cli.CreateMappingCommand.CREATE_MAPPING__CONNECTION_NAME;
+import static org.apache.geode.connectors.jdbc.internal.cli.CreateMappingCommand.CREATE_MAPPING__PDX_CLASS_NAME;
+import static org.apache.geode.connectors.jdbc.internal.cli.CreateMappingCommand.CREATE_MAPPING__VALUE_CONTAINS_PRIMARY_KEY;
+import static org.apache.geode.connectors.jdbc.internal.cli.CreateMappingCommand.CREATE_MAPPING__REGION_NAME;
+import static org.apache.geode.connectors.jdbc.internal.cli.CreateMappingCommand.CREATE_MAPPING__TABLE_NAME;
+import static org.apache.geode.connectors.jdbc.internal.cli.DescribeMappingCommand.FIELD_TO_COLUMN_TABLE;
+import static org.apache.geode.connectors.jdbc.internal.cli.DescribeMappingCommand.RESULT_SECTION_NAME;
 import static org.apache.geode.distributed.ConfigurationProperties.ENABLE_CLUSTER_CONFIGURATION;
 import static org.apache.geode.management.internal.cli.result.AbstractResultData.SECTION_DATA_ACCESSOR;
 import static org.apache.geode.management.internal.cli.result.AbstractResultData.TABLE_DATA_ACCESSOR;
@@ -42,13 +42,13 @@ import org.apache.geode.management.internal.cli.result.CommandResult;
 import org.apache.geode.test.junit.categories.IntegrationTest;
 
 @Category(IntegrationTest.class)
-public class DescribeRegionMappingCommandIntegrationTest {
+public class DescribeMappingCommandIntegrationTest {
   private static final String REGION_NAME = "testRegion";
 
   private InternalCache cache;
   private InternalJdbcConnectorService service;
   private RegionMapping regionMapping;
-  private DescribeRegionMappingCommand command;
+  private DescribeMappingCommand command;
 
   @Before
   public void setup() {
@@ -61,7 +61,7 @@ public class DescribeRegionMappingCommandIntegrationTest {
         .withConnectionConfigName("connection").withTableName("testTable")
         .withPdxClassName("myPdxClass").withPrimaryKeyInValue(true)
         .withFieldToColumnMappings(fieldMappings).build();
-    command = new DescribeRegionMappingCommand();
+    command = new DescribeMappingCommand();
   }
 
   @After
@@ -99,7 +99,7 @@ public class DescribeRegionMappingCommandIntegrationTest {
         .isEqualTo(regionMapping.getTableName());
     assertThat(sectionContent.get(CREATE_MAPPING__PDX_CLASS_NAME))
         .isEqualTo(regionMapping.getPdxClassName());
-    assertThat(sectionContent.get(CREATE_MAPPING__PRIMARY_KEY_IN_VALUE))
+    assertThat(sectionContent.get(CREATE_MAPPING__VALUE_CONTAINS_PRIMARY_KEY))
         .isEqualTo(regionMapping.isPrimaryKeyInValue());
 
     GfJsonObject tableContent = sectionContent

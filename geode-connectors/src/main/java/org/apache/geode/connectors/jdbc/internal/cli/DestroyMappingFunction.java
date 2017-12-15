@@ -22,9 +22,9 @@ import org.apache.geode.management.internal.cli.functions.CliFunctionResult;
 import org.apache.geode.management.internal.configuration.domain.XmlEntity;
 
 @Experimental
-public class DestroyRegionMappingFunction extends JdbcCliFunction<String, CliFunctionResult> {
+public class DestroyMappingFunction extends JdbcCliFunction<String, CliFunctionResult> {
 
-  DestroyRegionMappingFunction() {
+  DestroyMappingFunction() {
     super(new FunctionContextArgumentProvider(), new ExceptionHandler());
   }
 

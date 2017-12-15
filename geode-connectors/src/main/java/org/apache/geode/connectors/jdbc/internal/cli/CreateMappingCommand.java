@@ -37,7 +37,7 @@ import org.apache.geode.management.internal.security.ResourceOperation;
 import org.apache.geode.security.ResourcePermission;
 
 @Experimental
-public class CreateRegionMappingCommand implements GfshCommand {
+public class CreateMappingCommand implements GfshCommand {
   static final String CREATE_MAPPING = "create jdbc-mapping";
   static final String CREATE_MAPPING__HELP =
       EXPERIMENTAL + "Create a mapping for a region for use with a JDBC database connection.";
@@ -46,18 +46,18 @@ public class CreateRegionMappingCommand implements GfshCommand {
       "Name of the region the mapping is being created for.";
   static final String CREATE_MAPPING__PDX_CLASS_NAME = "pdx-class-name";
   static final String CREATE_MAPPING__PDX_CLASS_NAME__HELP =
-      "Name of pdx class for which values with be written to the database.";
+      "Name of pdx class for which values will be written to the database.";
   static final String CREATE_MAPPING__TABLE_NAME = "table";
   static final String CREATE_MAPPING__TABLE_NAME__HELP =
       "Name of database table for values to be written to.";
   static final String CREATE_MAPPING__CONNECTION_NAME = "connection";
   static final String CREATE_MAPPING__CONNECTION_NAME__HELP = "Name of JDBC connection to use.";
-  static final String CREATE_MAPPING__PRIMARY_KEY_IN_VALUE = "primary-key-in-value";
+  static final String CREATE_MAPPING__VALUE_CONTAINS_PRIMARY_KEY = "value-contains-primary-key";
   static final String CREATE_MAPPING__PRIMARY_KEY_IN_VALUE__HELP =
-      "If false, the entry value does not contain the data used for the database table's primary key, instead the entry key will be used for the primary key column value.";
+      "If true, the primary key is contained in the PDX object, otherwise the region entry key is used for the primary key column value.";
   static final String CREATE_MAPPING__FIELD_MAPPING = "field-mapping";
   static final String CREATE_MAPPING__FIELD_MAPPING__HELP =
-      "Key value pairs of entry value fields to database columns.";
+      "Key value pairs of PDX field names to database column names formatted like \"key:value(,key:value)*\".";
 
   private static final String ERROR_PREFIX = "ERROR: ";
 
@@ -74,7 +74,7 @@ public class CreateRegionMappingCommand implements GfshCommand {
           help = CREATE_MAPPING__TABLE_NAME__HELP) String table,
       @CliOption(key = CREATE_MAPPING__PDX_CLASS_NAME,
           help = CREATE_MAPPING__PDX_CLASS_NAME__HELP) String pdxClassName,
-      @CliOption(key = CREATE_MAPPING__PRIMARY_KEY_IN_VALUE,
+      @CliOption(key = CREATE_MAPPING__VALUE_CONTAINS_PRIMARY_KEY,
           help = CREATE_MAPPING__PRIMARY_KEY_IN_VALUE__HELP, unspecifiedDefaultValue = "true",
           specifiedDefaultValue = "true") boolean keyInValue,
       @CliOption(key = CREATE_MAPPING__FIELD_MAPPING,
@@ -87,7 +87,7 @@ public class CreateRegionMappingCommand implements GfshCommand {
 
     // action
     ResultCollector<CliFunctionResult, List<CliFunctionResult>> resultCollector =
-        execute(new CreateRegionMappingFunction(), mapping, targetMembers);
+        execute(new CreateMappingFunction(), mapping, targetMembers);
 
     // output
     TabularResultData tabularResultData = ResultBuilder.createTabularResultData();
@@ -108,7 +108,7 @@ public class CreateRegionMappingCommand implements GfshCommand {
   }
 
   ResultCollector<CliFunctionResult, List<CliFunctionResult>> execute(
-      CreateRegionMappingFunction function, RegionMapping regionMapping,
+      CreateMappingFunction function, RegionMapping regionMapping,
       Set<DistributedMember> targetMembers) {
     return (ResultCollector<CliFunctionResult, List<CliFunctionResult>>) executeFunction(function,
         regionMapping, targetMembers);

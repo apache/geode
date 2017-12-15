@@ -46,13 +46,12 @@ import org.apache.geode.connectors.jdbc.internal.RegionMappingBuilder;
 import org.apache.geode.connectors.jdbc.internal.RegionMappingNotFoundException;
 import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.distributed.DistributedSystem;
-import org.apache.geode.internal.cache.CacheConfig;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.management.internal.cli.functions.CliFunctionResult;
 import org.apache.geode.test.junit.categories.UnitTest;
 
 @Category(UnitTest.class)
-public class AlterRegionMappingFunctionTest {
+public class AlterMappingFunctionTest {
 
   private static final String REGION_NAME = "testRegion";
 
@@ -63,7 +62,7 @@ public class AlterRegionMappingFunctionTest {
   private ResultSender<Object> resultSender;
   private InternalJdbcConnectorService service;
 
-  private AlterRegionMappingFunction function;
+  private AlterMappingFunction function;
 
   @Before
   public void setUp() {
@@ -88,7 +87,7 @@ public class AlterRegionMappingFunctionTest {
     when(system.getDistributedMember()).thenReturn(distributedMember);
     when(context.getArguments()).thenReturn(regionMapping);
     when(cache.getService(eq(InternalJdbcConnectorService.class))).thenReturn(service);
-    function = new AlterRegionMappingFunction();
+    function = new AlterMappingFunction();
   }
 
   @Test
@@ -107,12 +106,12 @@ public class AlterRegionMappingFunctionTest {
 
     Object copy = SerializationUtils.clone(original);
 
-    assertThat(copy).isNotSameAs(original).isInstanceOf(AlterRegionMappingFunction.class);
+    assertThat(copy).isNotSameAs(original).isInstanceOf(AlterMappingFunction.class);
   }
 
   @Test
   public void alterMissingRegionMappingThrowsRegionMappingNotFound() {
-    AlterRegionMappingFunction alterFunction = mock(AlterRegionMappingFunction.class);
+    AlterMappingFunction alterFunction = mock(AlterMappingFunction.class);
     doThrow(RegionMappingNotFoundException.class).when(alterFunction).alterRegionMapping(any(),
         any());
 
@@ -124,7 +123,7 @@ public class AlterRegionMappingFunctionTest {
   public void executeInvokesReplaceOnService() throws Exception {
     when(service.getMappingForRegion(REGION_NAME)).thenReturn(existingMapping);
 
-    AlterRegionMappingFunction function = spy(new AlterRegionMappingFunction());
+    AlterMappingFunction function = spy(new AlterMappingFunction());
     doReturn(null).when(function).createXmlEntity(context);
     function.execute(context);
 

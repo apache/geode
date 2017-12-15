@@ -31,10 +31,10 @@ import org.apache.geode.management.cli.Result;
 import org.apache.geode.test.junit.categories.IntegrationTest;
 
 @Category(IntegrationTest.class)
-public class CreateRegionMappingCommandIntegrationTest {
+public class CreateMappingCommandIntegrationTest {
 
   private InternalCache cache;
-  private CreateRegionMappingCommand createRegionMappingCommand;
+  private CreateMappingCommand createRegionMappingCommand;
 
   private String regionName;
   private String connectionName;
@@ -55,7 +55,7 @@ public class CreateRegionMappingCommandIntegrationTest {
     cache = (InternalCache) new CacheFactory().set("locators", "").set("mcast-port", "0")
         .set(ENABLE_CLUSTER_CONFIGURATION, "true").create();
 
-    createRegionMappingCommand = new CreateRegionMappingCommand();
+    createRegionMappingCommand = new CreateMappingCommand();
   }
 
   @After

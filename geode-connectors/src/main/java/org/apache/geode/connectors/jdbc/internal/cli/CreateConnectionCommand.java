@@ -57,7 +57,7 @@ public class CreateConnectionCommand implements GfshCommand {
       "Password to use when connecting to database.";
   static final String CREATE_CONNECTION__PARAMS = "params";
   static final String CREATE_CONNECTION__PARAMS__HELP =
-      "Additional parameters to use when connecting to the database.";
+      "Additional parameters to use when connecting to the database formatted like \"key:value(,key:value)*\".";
 
   private static final String ERROR_PREFIX = "ERROR: ";
 

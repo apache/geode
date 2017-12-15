@@ -37,7 +37,7 @@ import org.apache.geode.management.internal.security.ResourceOperation;
 import org.apache.geode.security.ResourcePermission;
 
 @Experimental
-public class AlterRegionMappingCommand implements GfshCommand {
+public class AlterMappingCommand implements GfshCommand {
   static final String ALTER_MAPPING = "alter jdbc-mapping";
   static final String ALTER_MAPPING__HELP =
       EXPERIMENTAL + "Alter properties for an existing jdbc mapping.";
@@ -87,7 +87,7 @@ public class AlterRegionMappingCommand implements GfshCommand {
 
     // action
     ResultCollector<CliFunctionResult, List<CliFunctionResult>> resultCollector =
-        execute(new AlterRegionMappingFunction(), mapping, targetMembers);
+        execute(new AlterMappingFunction(), mapping, targetMembers);
 
     // output
     TabularResultData tabularResultData = ResultBuilder.createTabularResultData();
@@ -99,7 +99,7 @@ public class AlterRegionMappingCommand implements GfshCommand {
   }
 
   ResultCollector<CliFunctionResult, List<CliFunctionResult>> execute(
-      AlterRegionMappingFunction function, RegionMapping mapping,
+      AlterMappingFunction function, RegionMapping mapping,
       Set<DistributedMember> targetMembers) {
     return (ResultCollector<CliFunctionResult, List<CliFunctionResult>>) executeFunction(function,
         mapping, targetMembers);

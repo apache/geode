@@ -14,20 +14,20 @@
  */
 package org.apache.geode.connectors.jdbc.internal.cli;
 
-import static org.apache.geode.connectors.jdbc.internal.cli.AlterRegionMappingCommand.ALTER_MAPPING;
-import static org.apache.geode.connectors.jdbc.internal.cli.AlterRegionMappingCommand.ALTER_MAPPING__CONNECTION_NAME;
-import static org.apache.geode.connectors.jdbc.internal.cli.AlterRegionMappingCommand.ALTER_MAPPING__FIELD_MAPPING;
-import static org.apache.geode.connectors.jdbc.internal.cli.AlterRegionMappingCommand.ALTER_MAPPING__PDX_CLASS_NAME;
-import static org.apache.geode.connectors.jdbc.internal.cli.AlterRegionMappingCommand.ALTER_MAPPING__PRIMARY_KEY_IN_VALUE;
-import static org.apache.geode.connectors.jdbc.internal.cli.AlterRegionMappingCommand.ALTER_MAPPING__REGION_NAME;
-import static org.apache.geode.connectors.jdbc.internal.cli.AlterRegionMappingCommand.ALTER_MAPPING__TABLE_NAME;
-import static org.apache.geode.connectors.jdbc.internal.cli.CreateRegionMappingCommand.CREATE_MAPPING;
-import static org.apache.geode.connectors.jdbc.internal.cli.CreateRegionMappingCommand.CREATE_MAPPING__CONNECTION_NAME;
-import static org.apache.geode.connectors.jdbc.internal.cli.CreateRegionMappingCommand.CREATE_MAPPING__FIELD_MAPPING;
-import static org.apache.geode.connectors.jdbc.internal.cli.CreateRegionMappingCommand.CREATE_MAPPING__PDX_CLASS_NAME;
-import static org.apache.geode.connectors.jdbc.internal.cli.CreateRegionMappingCommand.CREATE_MAPPING__PRIMARY_KEY_IN_VALUE;
-import static org.apache.geode.connectors.jdbc.internal.cli.CreateRegionMappingCommand.CREATE_MAPPING__REGION_NAME;
-import static org.apache.geode.connectors.jdbc.internal.cli.CreateRegionMappingCommand.CREATE_MAPPING__TABLE_NAME;
+import static org.apache.geode.connectors.jdbc.internal.cli.AlterMappingCommand.ALTER_MAPPING;
+import static org.apache.geode.connectors.jdbc.internal.cli.AlterMappingCommand.ALTER_MAPPING__CONNECTION_NAME;
+import static org.apache.geode.connectors.jdbc.internal.cli.AlterMappingCommand.ALTER_MAPPING__FIELD_MAPPING;
+import static org.apache.geode.connectors.jdbc.internal.cli.AlterMappingCommand.ALTER_MAPPING__PDX_CLASS_NAME;
+import static org.apache.geode.connectors.jdbc.internal.cli.AlterMappingCommand.ALTER_MAPPING__PRIMARY_KEY_IN_VALUE;
+import static org.apache.geode.connectors.jdbc.internal.cli.AlterMappingCommand.ALTER_MAPPING__REGION_NAME;
+import static org.apache.geode.connectors.jdbc.internal.cli.AlterMappingCommand.ALTER_MAPPING__TABLE_NAME;
+import static org.apache.geode.connectors.jdbc.internal.cli.CreateMappingCommand.CREATE_MAPPING;
+import static org.apache.geode.connectors.jdbc.internal.cli.CreateMappingCommand.CREATE_MAPPING__CONNECTION_NAME;
+import static org.apache.geode.connectors.jdbc.internal.cli.CreateMappingCommand.CREATE_MAPPING__FIELD_MAPPING;
+import static org.apache.geode.connectors.jdbc.internal.cli.CreateMappingCommand.CREATE_MAPPING__PDX_CLASS_NAME;
+import static org.apache.geode.connectors.jdbc.internal.cli.CreateMappingCommand.CREATE_MAPPING__VALUE_CONTAINS_PRIMARY_KEY;
+import static org.apache.geode.connectors.jdbc.internal.cli.CreateMappingCommand.CREATE_MAPPING__REGION_NAME;
+import static org.apache.geode.connectors.jdbc.internal.cli.CreateMappingCommand.CREATE_MAPPING__TABLE_NAME;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.entry;
 
@@ -48,7 +48,7 @@ import org.apache.geode.test.junit.rules.GfshCommandRule;
 import org.apache.geode.test.junit.rules.serializable.SerializableTestName;
 
 @Category(DistributedTest.class)
-public class AlterRegionMappingCommandDUnitTest {
+public class AlterMappingCommandDUnitTest {
 
   @Rule
   public transient GfshCommandRule gfsh = new GfshCommandRule();
@@ -73,7 +73,7 @@ public class AlterRegionMappingCommandDUnitTest {
     csb.addOption(CREATE_MAPPING__CONNECTION_NAME, "connection");
     csb.addOption(CREATE_MAPPING__TABLE_NAME, "myTable");
     csb.addOption(CREATE_MAPPING__PDX_CLASS_NAME, "myPdxClass");
-    csb.addOption(CREATE_MAPPING__PRIMARY_KEY_IN_VALUE, "true");
+    csb.addOption(CREATE_MAPPING__VALUE_CONTAINS_PRIMARY_KEY, "true");
     csb.addOption(CREATE_MAPPING__FIELD_MAPPING, "field1:column1,field2:column2");
 
     gfsh.executeAndAssertThat(csb.toString()).statusIsSuccess();

@@ -20,9 +20,9 @@ import org.apache.geode.connectors.jdbc.internal.InternalJdbcConnectorService;
 import org.apache.geode.connectors.jdbc.internal.RegionMapping;
 
 @Experimental
-public class DescribeRegionMappingFunction extends JdbcCliFunction<String, RegionMapping> {
+public class DescribeMappingFunction extends JdbcCliFunction<String, RegionMapping> {
 
-  DescribeRegionMappingFunction() {
+  DescribeMappingFunction() {
     super(new FunctionContextArgumentProvider(), new ExceptionHandler());
   }
 

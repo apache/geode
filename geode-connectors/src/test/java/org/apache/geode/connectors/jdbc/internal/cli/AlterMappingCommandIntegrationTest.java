@@ -30,10 +30,10 @@ import org.apache.geode.management.cli.Result;
 import org.apache.geode.test.junit.categories.IntegrationTest;
 
 @Category(IntegrationTest.class)
-public class AlterRegionMappingCommandIntegrationTest {
+public class AlterMappingCommandIntegrationTest {
 
   private InternalCache cache;
-  private AlterRegionMappingCommand alterRegionMappingCommand;
+  private AlterMappingCommand alterRegionMappingCommand;
 
   private String regionName;
 
@@ -48,10 +48,10 @@ public class AlterRegionMappingCommandIntegrationTest {
 
     cache = (InternalCache) new CacheFactory().set("locators", "").set("mcast-port", "0")
         .set(ENABLE_CLUSTER_CONFIGURATION, "true").create();
-    new CreateRegionMappingCommand().createMapping(regionName, connectionName, tableName, pdxClass,
+    new CreateMappingCommand().createMapping(regionName, connectionName, tableName, pdxClass,
         keyInValue, fieldMappings);
 
-    alterRegionMappingCommand = new AlterRegionMappingCommand();
+    alterRegionMappingCommand = new AlterMappingCommand();
   }
 
   @After
