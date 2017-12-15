@@ -15,12 +15,16 @@
 package org.apache.geode.connectors.jdbc.internal.cli;
 
 import static org.apache.geode.connectors.jdbc.internal.cli.CreateConnectionCommand.CREATE_CONNECTION__NAME;
+import static org.apache.geode.connectors.jdbc.internal.cli.CreateConnectionCommand.CREATE_CONNECTION__PARAMS;
 import static org.apache.geode.connectors.jdbc.internal.cli.CreateConnectionCommand.CREATE_CONNECTION__PASSWORD;
 import static org.apache.geode.connectors.jdbc.internal.cli.CreateConnectionCommand.CREATE_CONNECTION__URL;
+import static org.apache.geode.connectors.jdbc.internal.cli.CreateConnectionCommand.CREATE_CONNECTION__USER;
 import static org.apache.geode.connectors.jdbc.internal.cli.DescribeConnectionCommand.OBSCURED_PASSWORD;
 import static org.apache.geode.connectors.jdbc.internal.cli.DescribeConnectionCommand.RESULT_SECTION_NAME;
+import static org.apache.geode.connectors.jdbc.internal.cli.DescribeMappingCommand.FIELD_TO_COLUMN_TABLE;
 import static org.apache.geode.distributed.ConfigurationProperties.ENABLE_CLUSTER_CONFIGURATION;
 import static org.apache.geode.management.internal.cli.result.AbstractResultData.SECTION_DATA_ACCESSOR;
+import static org.apache.geode.management.internal.cli.result.AbstractResultData.TABLE_DATA_ACCESSOR;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import java.util.Properties;
@@ -92,16 +96,17 @@ public class DescribeConnectionCommandIntegrationTest {
 
     assertThat(sectionContent.get(CREATE_CONNECTION__NAME)).isEqualTo(connectionConfig.getName());
     assertThat(sectionContent.get(CREATE_CONNECTION__URL)).isEqualTo(connectionConfig.getUrl());
+    assertThat(sectionContent.get(CREATE_CONNECTION__USER)).isEqualTo(connectionConfig.getUser());
+    assertThat(sectionContent.get(CREATE_CONNECTION__PASSWORD)).isEqualTo(OBSCURED_PASSWORD);
 
-    Properties connectionProperties = connectionConfig.getConnectionProperties();
-    for (String parameterName : connectionProperties.stringPropertyNames()) {
-      if (parameterName.equals(CREATE_CONNECTION__PASSWORD)) {
-        assertThat(sectionContent.get(parameterName)).isEqualTo(OBSCURED_PASSWORD);
-      } else {
-        assertThat(sectionContent.get(parameterName))
-            .isEqualTo(connectionProperties.getProperty(parameterName));
-      }
-    }
+    GfJsonObject tableContent =
+        sectionContent.getJSONObject(TABLE_DATA_ACCESSOR + "-" + CREATE_CONNECTION__PARAMS)
+            .getJSONObject("content");
+    connectionConfig.getParameters().entrySet().forEach((entry) -> {
+      assertThat(tableContent.get("Param Name").toString()).contains(entry.getKey());
+      assertThat(tableContent.get("Value").toString()).contains(entry.getValue());
+    });
+
   }
 
   @Test

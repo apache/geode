@@ -74,8 +74,11 @@ public class DescribeConnectionCommandDUnitTest implements Serializable {
     commandResultAssert.containsKeyValuePair("url", "myUrl");
     commandResultAssert.containsKeyValuePair("user", "username");
     commandResultAssert.containsKeyValuePair("password", "\\*\\*\\*\\*\\*\\*\\*\\*");
-    commandResultAssert.containsKeyValuePair("key1", "value1");
-    commandResultAssert.containsKeyValuePair("key2", "value2");
+    commandResultAssert.containsOutput("key1");
+    commandResultAssert.containsOutput("value1");
+    commandResultAssert.containsOutput("key2");
+    commandResultAssert.containsOutput("value2");
+
   }
 
   @Test

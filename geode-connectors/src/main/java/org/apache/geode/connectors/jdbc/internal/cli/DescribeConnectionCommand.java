@@ -15,8 +15,10 @@
 package org.apache.geode.connectors.jdbc.internal.cli;
 
 import static org.apache.geode.connectors.jdbc.internal.cli.CreateConnectionCommand.CREATE_CONNECTION__NAME;
+import static org.apache.geode.connectors.jdbc.internal.cli.CreateConnectionCommand.CREATE_CONNECTION__PARAMS;
 import static org.apache.geode.connectors.jdbc.internal.cli.CreateConnectionCommand.CREATE_CONNECTION__PASSWORD;
 import static org.apache.geode.connectors.jdbc.internal.cli.CreateConnectionCommand.CREATE_CONNECTION__URL;
+import static org.apache.geode.connectors.jdbc.internal.cli.CreateConnectionCommand.CREATE_CONNECTION__USER;
 
 import java.util.List;
 import java.util.Properties;
@@ -35,6 +37,7 @@ import org.apache.geode.management.internal.cli.commands.GfshCommand;
 import org.apache.geode.management.internal.cli.i18n.CliStrings;
 import org.apache.geode.management.internal.cli.result.CompositeResultData;
 import org.apache.geode.management.internal.cli.result.ResultBuilder;
+import org.apache.geode.management.internal.cli.result.TabularResultData;
 import org.apache.geode.management.internal.security.ResourceOperation;
 import org.apache.geode.security.ResourcePermission;
 
@@ -90,17 +93,20 @@ public class DescribeConnectionCommand implements GfshCommand {
   private void fillResultData(ConnectionConfiguration config, CompositeResultData resultData) {
     CompositeResultData.SectionResultData sectionResult =
         resultData.addSection(RESULT_SECTION_NAME);
-
     sectionResult.addSeparator('-');
     sectionResult.addData(CREATE_CONNECTION__NAME, config.getName());
     sectionResult.addData(CREATE_CONNECTION__URL, config.getUrl());
-    Properties parameters = config.getConnectionProperties();
-    for (String parameterName : parameters.stringPropertyNames()) {
-      if (parameterName.equals(CREATE_CONNECTION__PASSWORD)) {
-        sectionResult.addData(parameterName, OBSCURED_PASSWORD);
-      } else {
-        sectionResult.addData(parameterName, parameters.getProperty(parameterName));
-      }
+    if (config.getUser() != null) {
+      sectionResult.addData(CREATE_CONNECTION__USER, config.getUser());
     }
+    if (config.getPassword() != null) {
+      sectionResult.addData(CREATE_CONNECTION__PASSWORD, OBSCURED_PASSWORD);
+    }
+    TabularResultData tabularResultData = sectionResult.addTable(CREATE_CONNECTION__PARAMS);
+    tabularResultData.setHeader("Additional connection parameters:");
+    config.getParameters().entrySet().forEach((entry) -> {
+      tabularResultData.accumulate("Param Name", entry.getKey());
+      tabularResultData.accumulate("Value", entry.getValue());
+    });
   }
 }
