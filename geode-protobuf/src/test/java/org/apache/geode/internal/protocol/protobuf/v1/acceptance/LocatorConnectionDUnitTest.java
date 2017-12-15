@@ -38,6 +38,7 @@ import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.protocol.ProtocolErrorCode;
 import org.apache.geode.internal.protocol.exception.InvalidProtocolMessageException;
 import org.apache.geode.internal.protocol.protobuf.statistics.ProtobufClientStatisticsImpl;
+import org.apache.geode.internal.protocol.protobuf.v1.BasicTypes;
 import org.apache.geode.internal.protocol.protobuf.v1.ClientProtocol;
 import org.apache.geode.internal.protocol.protobuf.v1.ConnectionAPI;
 import org.apache.geode.internal.protocol.protobuf.v1.LocatorAPI;
@@ -149,7 +150,7 @@ public class LocatorConnectionDUnitTest extends JUnit4CacheTestCase {
       ClientProtocol.Response messageResponse = getAvailableServersResponseMessage.getResponse();
       assertEquals(ClientProtocol.Response.ResponseAPICase.ERRORRESPONSE,
           messageResponse.getResponseAPICase());
-      assertEquals(ProtocolErrorCode.UNSUPPORTED_OPERATION.codeValue,
+      assertEquals(BasicTypes.ErrorCode.UNSUPPORTED_OPERATION,
           messageResponse.getErrorResponse().getError().getErrorCode());
 
       validateStats(messagesReceived + 1, messagesSent + 1,

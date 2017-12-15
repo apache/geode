@@ -189,7 +189,7 @@ public class AuthenticationIntegrationTest {
     ClientProtocol.Message errorResponse = protobufProtocolSerializer.deserialize(inputStream);
     assertEquals(ClientProtocol.Response.ResponseAPICase.ERRORRESPONSE,
         errorResponse.getResponse().getResponseAPICase());
-    assertEquals(AUTHENTICATION_FAILED.codeValue,
+    assertEquals(BasicTypes.ErrorCode.AUTHENTICATION_FAILED,
         errorResponse.getResponse().getErrorResponse().getError().getErrorCode());
     verifyConnectionClosed();
   }
@@ -289,7 +289,7 @@ public class AuthenticationIntegrationTest {
     ClientProtocol.Message errorResponse = protobufProtocolSerializer.deserialize(inputStream);
     assertEquals(ClientProtocol.Response.ResponseAPICase.ERRORRESPONSE,
         errorResponse.getResponse().getResponseAPICase());
-    assertEquals(UNSUPPORTED_AUTHENTICATION_MODE.codeValue,
+    assertEquals(BasicTypes.ErrorCode.UNSUPPORTED_AUTHENTICATION_MODE,
         errorResponse.getResponse().getErrorResponse().getError().getErrorCode());
     verifyConnectionClosed();
   }
@@ -310,7 +310,7 @@ public class AuthenticationIntegrationTest {
     ClientProtocol.Message errorResponse = protobufProtocolSerializer.deserialize(inputStream);
     assertEquals(ClientProtocol.Response.ResponseAPICase.ERRORRESPONSE,
         errorResponse.getResponse().getResponseAPICase());
-    assertEquals(UNSUPPORTED_AUTHENTICATION_MODE.codeValue,
+    assertEquals(BasicTypes.ErrorCode.UNSUPPORTED_AUTHENTICATION_MODE,
         errorResponse.getResponse().getErrorResponse().getError().getErrorCode());
     verifyConnectionClosed();
   }

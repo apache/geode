@@ -91,8 +91,8 @@ public class PutAllRequestOperationHandler implements
     logger.error(message, ex);
 
     return BasicTypes.KeyedError.newBuilder().setKey(entry.getKey())
-        .setError(
-            BasicTypes.Error.newBuilder().setErrorCode(errorCode.codeValue).setMessage(message))
+        .setError(BasicTypes.Error.newBuilder()
+            .setErrorCode(ProtobufUtilities.getProtobufErrorCode(errorCode)).setMessage(message))
         .build();
   }
 }

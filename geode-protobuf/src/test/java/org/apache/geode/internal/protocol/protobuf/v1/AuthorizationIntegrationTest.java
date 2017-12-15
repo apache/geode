@@ -206,7 +206,7 @@ public class AuthorizationIntegrationTest {
     ClientProtocol.Message response = protobufProtocolSerializer.deserialize(inputStream);
     assertEquals(expectedResponseType, response.getResponse().getResponseAPICase());
     if (expectedResponseType == ClientProtocol.Response.ResponseAPICase.ERRORRESPONSE) {
-      Assert.assertEquals(ProtocolErrorCode.AUTHORIZATION_FAILED.codeValue,
+      Assert.assertEquals(BasicTypes.ErrorCode.AUTHORIZATION_FAILED,
           response.getResponse().getErrorResponse().getError().getErrorCode());
     }
   }

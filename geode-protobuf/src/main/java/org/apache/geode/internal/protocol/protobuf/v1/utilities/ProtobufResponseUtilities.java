@@ -53,8 +53,8 @@ public abstract class ProtobufResponseUtilities {
   public static ClientProtocol.ErrorResponse makeErrorResponse(ProtocolErrorCode errorCode,
       String message) {
     return ClientProtocol.ErrorResponse.newBuilder()
-        .setError(
-            BasicTypes.Error.newBuilder().setErrorCode(errorCode.codeValue).setMessage(message))
+        .setError(BasicTypes.Error.newBuilder()
+            .setErrorCode(ProtobufUtilities.getProtobufErrorCode(errorCode)).setMessage(message))
         .build();
   }
 
