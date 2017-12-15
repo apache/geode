@@ -73,9 +73,9 @@ public class FileSystemBackupDestination implements BackupDestination {
     for (Map.Entry<DiskStore, Path> entry : diskInitFiles.entrySet()) {
       Path destinationDirectory = getOplogBackupDir(entry.getKey(),
           ((DiskStoreImpl) entry.getKey()).getInforFileDirIndex());
-      Files.createDirectories(destinationDirectory.resolve(destinationDirectory));
-      Files.copy(entry.getValue(), destinationDirectory.resolve(destinationDirectory)
-          .resolve(entry.getValue().getFileName()), StandardCopyOption.COPY_ATTRIBUTES);
+      Files.createDirectories(destinationDirectory);
+      Files.copy(entry.getValue(), destinationDirectory.resolve(entry.getValue().getFileName()),
+          StandardCopyOption.COPY_ATTRIBUTES);
     }
   }
 
