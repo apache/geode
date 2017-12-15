@@ -41,6 +41,7 @@ public class JdbcAsyncWriter extends AbstractJdbcCallback implements AsyncEventL
 
   private AtomicLong totalEvents = new AtomicLong();
   private AtomicLong successfulEvents = new AtomicLong();
+  private AtomicLong failedEvents = new AtomicLong();
 
   @SuppressWarnings("unused")
   public JdbcAsyncWriter() {
@@ -68,6 +69,7 @@ public class JdbcAsyncWriter extends AbstractJdbcCallback implements AsyncEventL
               getPdxInstance(event));
           changeSuccessfulEvents(1);
         } catch (RuntimeException ex) {
+          changeFailedEvents(1);
           logger.error("Exception processing event {}", event, ex);
         }
       }
@@ -86,8 +88,16 @@ public class JdbcAsyncWriter extends AbstractJdbcCallback implements AsyncEventL
     return successfulEvents.get();
   }
 
+  long getFailedEvents() {
+    return failedEvents.get();
+  }
+
   private void changeSuccessfulEvents(long delta) {
     successfulEvents.addAndGet(delta);
+  }
+
+  private void changeFailedEvents(long delta) {
+    failedEvents.addAndGet(delta);
   }
 
   private void changeTotalEvents(long delta) {

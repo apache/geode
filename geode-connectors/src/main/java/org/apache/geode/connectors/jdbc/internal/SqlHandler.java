@@ -51,7 +51,7 @@ public class SqlHandler {
 
     List<ColumnValue> columnList =
         manager.getColumnToValueList(connectionConfig, regionMapping, key, null, Operation.GET);
-    String tableName = regionMapping.getTableName();
+    String tableName = regionMapping.getRegionToTableName();
     PreparedStatement statement = manager.getPreparedStatement(
         manager.getConnection(connectionConfig), columnList, tableName, Operation.GET, 0);
     PdxInstanceFactory factory = getPdxInstanceFactory(region, regionMapping);
@@ -126,12 +126,24 @@ public class SqlHandler {
       throw new IllegalArgumentException("PdxInstance cannot be null for non-destroy operations");
     }
     RegionMapping regionMapping = manager.getMappingForRegion(region.getName());
-    final String tableName = regionMapping.getTableName();
+
+    if (regionMapping == null) {
+      throw new IllegalStateException("JDBC write failed. JDBC mapping for region " +
+          region.getFullPath() +
+          " not found. Create mapping with gfsh command 'create jdbc-mapping'.");
+    }
     ConnectionConfiguration connectionConfig =
         manager.getConnectionConfig(regionMapping.getConnectionConfigName());
+    if (connectionConfig == null) {
+      throw new IllegalStateException(
+          "JDBC write failed. JDBC Connection configuration for connection name " +
+      regionMapping.getConnectionConfigName() + " not found.");
+    }
+
     List<ColumnValue> columnList =
         manager.getColumnToValueList(connectionConfig, regionMapping, key, value, operation);
 
+    String tableName = regionMapping.getRegionToTableName();
     int pdxTypeId = value == null ? 0 : ((PdxInstanceImpl) value).getPdxType().getTypeId();
     PreparedStatement statement = manager.getPreparedStatement(
         manager.getConnection(connectionConfig), columnList, tableName, operation, pdxTypeId);

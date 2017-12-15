@@ -68,6 +68,7 @@ public class ConnectionManagerUnitTest {
     connectionConfig = new ConnectionConfiguration("name", "url", null, null, null);
 
     when(mapping.getTableName()).thenReturn(TABLE_NAME);
+    when(mapping.getRegionToTableName()).thenReturn(TABLE_NAME);
     doReturn(connection).when(manager).getSQLConnection(connectionConfig);
 
     key = new Object();

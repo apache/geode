@@ -334,6 +334,7 @@ public class SqlHandlerTest {
     regionMapping = mock(RegionMapping.class);
     when(regionMapping.getRegionName()).thenReturn(REGION_NAME);
     when(regionMapping.getTableName()).thenReturn(TABLE_NAME);
+    when(regionMapping.getRegionToTableName()).thenReturn(TABLE_NAME);
     when(manager.getMappingForRegion(any())).thenReturn(regionMapping);
 
     List<ColumnValue> columnList = new ArrayList<>();

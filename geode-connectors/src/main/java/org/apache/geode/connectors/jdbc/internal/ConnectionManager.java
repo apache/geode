@@ -59,7 +59,8 @@ class ConnectionManager {
 
   <K> List<ColumnValue> getColumnToValueList(ConnectionConfiguration config,
       RegionMapping regionMapping, K key, PdxInstance value, Operation operation) {
-    String keyColumnName = getKeyColumnName(config, regionMapping.getTableName());
+    String tableName = regionMapping.getRegionToTableName();
+    String keyColumnName = getKeyColumnName(config, tableName);
     ColumnValue keyColumnValue = new ColumnValue(true, keyColumnName, key);
 
     if (operation.isDestroy() || operation.isGet()) {

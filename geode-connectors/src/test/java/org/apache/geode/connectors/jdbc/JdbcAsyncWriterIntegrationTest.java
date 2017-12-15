@@ -137,7 +137,7 @@ public class JdbcAsyncWriterIntegrationTest {
 
     awaitUntil(() -> assertThat(jdbcWriter.getTotalEvents()).isEqualTo(1));
 
-    assertThat(jdbcWriter.getSuccessfulEvents()).isEqualTo(0);
+    awaitUntil(() -> assertThat(jdbcWriter.getFailedEvents()).isEqualTo(1));
   }
 
   @Test

@@ -61,8 +61,18 @@ public class RegionMapping implements Serializable {
     return primaryKeyInValue;
   }
 
+  public String getRegionToTableName() {
+    if (tableName == null) {
+      return regionName;
+    }
+    return tableName;
+  }
+
   public String getColumnNameForField(String fieldName) {
-    String columnName = fieldToColumnMap.get(fieldName);
+    String columnName = null;
+    if (fieldToColumnMap != null) {
+      columnName = fieldToColumnMap.get(fieldName);
+    }
     return columnName != null ? columnName : fieldName;
   }
 
