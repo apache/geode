@@ -132,7 +132,7 @@ class ProxyRegionMap implements RegionMap {
 
   @Override
   @SuppressWarnings({"rawtypes", "unchecked"})
-  public Set<VersionSource> clear(RegionVersionVector rvv) {
+  public Set<VersionSource> clear(RegionVersionVector rvv, BucketRegion bucketRegion) {
     // nothing needs to be done
     RegionVersionVector v = this.owner.getVersionVector();
     if (v != null) {
@@ -875,7 +875,7 @@ class ProxyRegionMap implements RegionMap {
   }
 
   @Override
-  public void close() {
+  public void close(BucketRegion bucketRegion) {
     // nothing
   }
 

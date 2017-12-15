@@ -57,6 +57,7 @@ import org.apache.geode.internal.cache.tier.sockets.CacheClientNotifier;
 import org.apache.geode.internal.cache.tier.sockets.ClientProxyMembershipID;
 import org.apache.geode.internal.cache.tier.sockets.ClientTombstoneMessage;
 import org.apache.geode.internal.cache.tier.sockets.ClientUpdateMessage;
+import org.apache.geode.internal.cache.versions.RegionVersionVector;
 import org.apache.geode.internal.cache.versions.VersionSource;
 import org.apache.geode.internal.cache.versions.VersionStamp;
 import org.apache.geode.internal.cache.versions.VersionTag;
@@ -2469,4 +2470,15 @@ public class BucketRegion extends DistributedRegion implements Bucket {
   public String getNameForStats() {
     return this.getPartitionedRegion().getFullPath();
   }
+  
+  @Override
+  public void closeEntries() {
+    this.entries.close(this);
+  }
+
+  @Override
+  public Set<VersionSource> clearEntries(RegionVersionVector rvv) {
+    return this.entries.clear(rvv, this);
+  }
+
 }

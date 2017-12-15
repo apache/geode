@@ -163,9 +163,7 @@ public class LRUListWithSyncSortingIntegrationTest {
   private LRUListWithSyncSorting getEvictionList(Region region, EvictionController eviction) {
     System.setProperty("geode." + SystemPropertyHelper.EVICTION_SCAN_ASYNC, "false");
     System.setProperty("geode." + SystemPropertyHelper.EVICTION_SEARCH_MAX_ENTRIES, "15");
-    return (LRUListWithSyncSorting) new EvictionListBuilder(EvictionAlgorithm.LRU_HEAP)
-        .withRegion(region).withEvictionController(eviction).withArgs(new InternalRegionArguments())
-        .create();
+    return (LRUListWithSyncSorting) new EvictionListBuilder(eviction).create();
   }
 
   private InternalRegion createRegion() throws Exception {

@@ -163,7 +163,7 @@ public class PlaceHolderDiskRegion extends AbstractDiskRegion implements DiskRec
   public void close() {
     RegionMap rm = getRecoveredEntryMap();
     if (rm != null) {
-      rm.close();
+      rm.close(null);
     }
   }
 

@@ -138,7 +138,7 @@ public interface RegionMap extends EvictableMap {
    * Clear the region and, if the parameter rvv is not null, return a collection of the IDs of
    * version sources that are still in the map when the operation completes.
    */
-  Set<VersionSource> clear(RegionVersionVector rvv);
+  Set<VersionSource> clear(RegionVersionVector rvv, BucketRegion bucketRegion);
 
   /**
    * Used by disk regions when recovering data from backup. Currently this "put" is done at a very
@@ -346,7 +346,7 @@ public interface RegionMap extends EvictableMap {
    */
   void decTxRefCount(RegionEntry e);
 
-  void close();
+  void close(BucketRegion bucketRegion);
 
   default void lockRegionForAtomicTX(LocalRegion r) {}
 

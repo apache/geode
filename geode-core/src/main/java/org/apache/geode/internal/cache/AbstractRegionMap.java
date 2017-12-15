@@ -349,8 +349,8 @@ public abstract class AbstractRegionMap implements RegionMap {
   }
 
   @Override
-  public void close() {
-    clear(null);
+  public void close(BucketRegion bucketRegion) {
+    clear(null, bucketRegion);
   }
 
   /**
@@ -358,7 +358,7 @@ public abstract class AbstractRegionMap implements RegionMap {
    * remaining tags
    */
   @Override
-  public Set<VersionSource> clear(RegionVersionVector rvv) {
+  public Set<VersionSource> clear(RegionVersionVector rvv, BucketRegion bucketRegion) {
     Set<VersionSource> result = new HashSet<VersionSource>();
 
     if (!_isOwnerALocalRegion()) {

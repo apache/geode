@@ -16,7 +16,6 @@ package org.apache.geode.internal.cache.eviction;
 
 import java.util.concurrent.Executors;
 
-import org.apache.geode.internal.cache.BucketRegion;
 import org.apache.geode.internal.cache.LRUClearWithDiskRegionOpRegressionTest;
 
 /**
@@ -25,7 +24,7 @@ import org.apache.geode.internal.cache.LRUClearWithDiskRegionOpRegressionTest;
  */
 public class TestLRUListWithAsyncSorting extends LRUListWithAsyncSorting {
 
-  public TestLRUListWithAsyncSorting(EvictionCounters stats, BucketRegion region) {
-    super(stats, region, Executors.newSingleThreadExecutor());
+  public TestLRUListWithAsyncSorting(EvictionController controller) {
+    super(controller, Executors.newSingleThreadExecutor());
   }
 }

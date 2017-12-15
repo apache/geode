@@ -14,11 +14,10 @@
  */
 package org.apache.geode.internal.cache.eviction;
 
+import org.apache.geode.internal.cache.BucketRegion;
 import org.apache.geode.internal.cache.versions.RegionVersionVector;
 
 public interface EvictionList {
-
-  void setBucketRegion(Object region);
 
   void closeStats();
 
@@ -48,7 +47,7 @@ public interface EvictionList {
   /**
    * called when an LRU map is cleared... resets stats and releases prev and next.
    */
-  void clear(RegionVersionVector regionVersionVector);
+  void clear(RegionVersionVector regionVersionVector, BucketRegion bucketRegion);
 
   /**
    * Returns the number of EvictionNodes in the EvictionList.

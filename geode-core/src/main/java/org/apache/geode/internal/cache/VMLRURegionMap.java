@@ -61,10 +61,7 @@ class VMLRURegionMap extends AbstractRegionMap {
     super(internalRegionArgs);
     initialize(owner, attr, internalRegionArgs);
     this.evictionController = createEvictionController(owner, internalRegionArgs);
-    EvictionAlgorithm evictionAlgorithm = owner.getEvictionAttributes().getAlgorithm();
-    // TODO clean up the EvictionListBuilder so it does not do so much
-    this.lruList = new EvictionListBuilder(evictionAlgorithm).withArgs(internalRegionArgs)
-        .withRegion(owner).withEvictionController(getEvictionController()).create();
+    this.lruList = new EvictionListBuilder(getEvictionController()).create();
   }
 
   private final EvictionController evictionController;
@@ -94,12 +91,6 @@ class VMLRURegionMap extends AbstractRegionMap {
           owner.getOffHeap(), /* TODO getEntryOverhead() */ 0, owner.getStatisticsFactory(), owner.getNameForStats());
     }
     return controller;
-  }
-
-  @Override
-  public void changeOwner(LocalRegion r) {
-    super.changeOwner(r);
-    getEvictionList().setBucketRegion(r);
   }
 
   /**
@@ -605,9 +596,9 @@ class VMLRURegionMap extends AbstractRegionMap {
   }
 
   @Override
-  public Set<VersionSource> clear(RegionVersionVector rvv) {
-    getEvictionList().clear(rvv);
-    return super.clear(rvv);
+  public Set<VersionSource> clear(RegionVersionVector rvv, BucketRegion bucketRegion) {
+    getEvictionList().clear(rvv, bucketRegion);
+    return super.clear(rvv, bucketRegion);
   }
 
   /*

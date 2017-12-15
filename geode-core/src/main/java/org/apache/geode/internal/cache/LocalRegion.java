@@ -2717,11 +2717,11 @@ public class LocalRegion extends AbstractRegion implements LoaderHelperFactory,
   }
 
   public void closeEntries() {
-    this.entries.close();
+    this.entries.close(null);
   }
 
   public Set<VersionSource> clearEntries(RegionVersionVector rvv) {
-    return this.entries.clear(rvv);
+    return this.entries.clear(rvv, null);
   }
 
   @Override
