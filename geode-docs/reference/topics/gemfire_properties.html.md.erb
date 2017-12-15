@@ -762,7 +762,7 @@ See <a href="../../developing/distributed_regions/how_region_versioning_works.ht
 </tr>
 <tr class="even">
 <td>validate-serializable-objects</td>
-<td>A boolean that defaults to false. When true, all internal <%=vars.product_name%> classes and the objects defined by the property serializable-object-filter will be serialized. An <code>IncompatibleClassException</code> is thrown for objects not listed. JDK 8 build 121 or a later build must be installed to use this property. Servers and clients that do not meet this requirement will throw an exception upon startup.</td>
+<td>A boolean that defaults to false. When true, instances of classes that are not internal to <%=vars.product_name%> and whose class name is not allowed by the list defined in the serializable-object-filter property will not be permitted to be deserialized. An <code>IncompatibleClassException</code> is thrown for objects not listed. JDK 8 build 121 or a later build must be installed to use this property. Servers and clients that do not meet this requirement will throw an exception upon startup.</td>
 <td>S, C</td>
 <td>false</td>
 </tr>
