@@ -59,9 +59,8 @@ When you create a Lucene index, you must provide three pieces of information:
 
 You must specify at least one field to be indexed. 
 
-If the object value for the entries in the region comprises a single field to be indexed and
-searched (for example, some keys have values that are simply strings), then use `__REGION_VALUE_FIELD`
-to specify the field to be indexed.  `__REGION_VALUE_FIELD` serves as the field name for entry values of all
+If the object value for the entries in the region comprises a primitive type value without a field name,
+then use `__REGION_VALUE_FIELD` to specify the field to be indexed.  `__REGION_VALUE_FIELD` serves as the field name for entry values of all
 primitive types, including `String`, `Long`, `Integer`, `Float`, and `Double`.
 
 Each field has a corresponding analyzer to extract terms from text. When no analyzer is specified,
@@ -182,7 +181,7 @@ The `FlatFormatSerializer` creates one document for each parent object, adding a
 in a nested object, identified by its qualified name. Similarly, collections are flattened and
 treated as tokens in a single field.  For example, the `FlatFormatSerializer` could convert a
 Customer object, with the structure described above, into a document containing fields such as `name`, `contacts.name`,
-and `contacts.homepage.title`. Each segment is a field name, not a field type,
+and `contacts.homepage.title` based on the indexed fields specified at index creation. Each segment is a field name, not a field type,
 because a class (such as Customer) could have more than one field of the same type (such as Person).
 
 The serializer creates and indexes the fields you specify when you request index creation.
@@ -236,7 +235,7 @@ gfsh query:
 ```
 gfsh>search lucene --name=customerIndex --region=Customer
   --queryString="contacts.name:Jones77*"
-  --defaultField=contacts.name
+  --defaultField=name
 ```
 
 ## <a id="lucene-index-query" class="no-quick-link"></a>Queries
