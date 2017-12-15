@@ -50,7 +50,7 @@ import org.apache.geode.test.junit.categories.IntegrationTest;
 @Category(IntegrationTest.class)
 @RunWith(JUnitParamsRunner.class)
 public class FileSystemBackupDestinationTest {
-  private static final Path RELATIVE_TARGER_DIR = Paths.get("backupTest");
+  private static final Path RELATIVE_TARGET_DIR = Paths.get("backupTest");
 
   @Rule
   public TemporaryFolder tempDir = new TemporaryFolder();
@@ -71,8 +71,8 @@ public class FileSystemBackupDestinationTest {
   @After
   public void tearDown() throws IOException {
     // Testing relative paths forces creation of files in working dir instead of temporary folder
-    if (Files.exists(RELATIVE_TARGER_DIR)) {
-      FileUtils.deleteDirectory(RELATIVE_TARGER_DIR.toFile());
+    if (Files.exists(RELATIVE_TARGET_DIR)) {
+      FileUtils.deleteDirectory(RELATIVE_TARGET_DIR.toFile());
     }
   }
 
@@ -224,6 +224,6 @@ public class FileSystemBackupDestinationTest {
   }
 
   private Path getTargetDir(boolean useRelativePath) {
-    return useRelativePath ? RELATIVE_TARGER_DIR : targetDir;
+    return useRelativePath ? RELATIVE_TARGET_DIR : targetDir;
   }
 }
