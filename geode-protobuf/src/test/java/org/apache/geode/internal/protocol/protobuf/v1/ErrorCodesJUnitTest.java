@@ -23,7 +23,7 @@ import org.apache.geode.internal.protocol.ProtocolErrorCode;
 import org.apache.geode.test.junit.categories.UnitTest;
 
 @Category(UnitTest.class)
-public class ErrorCodesDUnitTest {
+public class ErrorCodesJUnitTest {
   @Test
   public void testProtobufErrorCodesMatchProtocolErrorCodes() {
     BasicTypes.ErrorCode[] protobufErrorCodes = BasicTypes.ErrorCode.values();
