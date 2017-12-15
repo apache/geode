@@ -42,7 +42,7 @@ public class MemoryLRUController extends SizeLRUController {
 
   /**
    * Create an instance of the capacity controller the given settings.
-   * 
+   *
    * @param evictionCounters
    *
    * @param megabytes the amount of memory allowed in this region specified in megabytes.<br>
