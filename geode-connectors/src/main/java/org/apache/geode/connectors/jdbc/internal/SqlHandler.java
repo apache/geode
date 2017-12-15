@@ -128,17 +128,16 @@ public class SqlHandler {
     RegionMapping regionMapping = manager.getMappingForRegion(region.getName());
 
     if (regionMapping == null) {
-      throw new IllegalStateException("JDBC write failed. JDBC mapping for region " +
-          region.getFullPath() +
-          " not found. Create the mapping with the gfsh command 'create jdbc-mapping'.");
+      throw new IllegalStateException(
+          "JDBC write failed. JDBC mapping for region " + region.getFullPath()
+              + " not found. Create the mapping with the gfsh command 'create jdbc-mapping'.");
     }
     ConnectionConfiguration connectionConfig =
         manager.getConnectionConfig(regionMapping.getConnectionConfigName());
     if (connectionConfig == null) {
       throw new IllegalStateException(
-          "JDBC write failed. JDBC connection with name " +
-          regionMapping.getConnectionConfigName() +
-              " not found. Create the connection with the gfsh command 'create jdbc-connection'");
+          "JDBC write failed. JDBC connection with name " + regionMapping.getConnectionConfigName()
+              + " not found. Create the connection with the gfsh command 'create jdbc-connection'");
     }
 
     List<ColumnValue> columnList =

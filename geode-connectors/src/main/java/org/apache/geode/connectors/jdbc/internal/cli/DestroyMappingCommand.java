@@ -67,8 +67,7 @@ public class DestroyMappingCommand implements GfshCommand {
   }
 
   ResultCollector<CliFunctionResult, List<CliFunctionResult>> execute(
-      DestroyMappingFunction function, String regionName,
-      Set<DistributedMember> targetMembers) {
+      DestroyMappingFunction function, String regionName, Set<DistributedMember> targetMembers) {
     return (ResultCollector<CliFunctionResult, List<CliFunctionResult>>) executeFunction(function,
         regionName, targetMembers);
   }

@@ -98,9 +98,8 @@ public class AlterMappingCommand implements GfshCommand {
     return result;
   }
 
-  ResultCollector<CliFunctionResult, List<CliFunctionResult>> execute(
-      AlterMappingFunction function, RegionMapping mapping,
-      Set<DistributedMember> targetMembers) {
+  ResultCollector<CliFunctionResult, List<CliFunctionResult>> execute(AlterMappingFunction function,
+      RegionMapping mapping, Set<DistributedMember> targetMembers) {
     return (ResultCollector<CliFunctionResult, List<CliFunctionResult>>) executeFunction(function,
         mapping, targetMembers);
   }

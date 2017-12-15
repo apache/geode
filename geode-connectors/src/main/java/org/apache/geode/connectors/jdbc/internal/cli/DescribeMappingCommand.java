@@ -16,9 +16,9 @@ package org.apache.geode.connectors.jdbc.internal.cli;
 
 import static org.apache.geode.connectors.jdbc.internal.cli.CreateMappingCommand.CREATE_MAPPING__CONNECTION_NAME;
 import static org.apache.geode.connectors.jdbc.internal.cli.CreateMappingCommand.CREATE_MAPPING__PDX_CLASS_NAME;
-import static org.apache.geode.connectors.jdbc.internal.cli.CreateMappingCommand.CREATE_MAPPING__VALUE_CONTAINS_PRIMARY_KEY;
 import static org.apache.geode.connectors.jdbc.internal.cli.CreateMappingCommand.CREATE_MAPPING__REGION_NAME;
 import static org.apache.geode.connectors.jdbc.internal.cli.CreateMappingCommand.CREATE_MAPPING__TABLE_NAME;
+import static org.apache.geode.connectors.jdbc.internal.cli.CreateMappingCommand.CREATE_MAPPING__VALUE_CONTAINS_PRIMARY_KEY;
 
 import java.util.List;
 import java.util.Set;
@@ -83,9 +83,8 @@ public class DescribeMappingCommand implements GfshCommand {
     return ResultBuilder.buildResult(resultData);
   }
 
-  ResultCollector<RegionMapping, List<RegionMapping>> execute(
-      DescribeMappingFunction function, String connectionName,
-      DistributedMember targetMember) {
+  ResultCollector<RegionMapping, List<RegionMapping>> execute(DescribeMappingFunction function,
+      String connectionName, DistributedMember targetMember) {
     return (ResultCollector<RegionMapping, List<RegionMapping>>) executeFunction(function,
         connectionName, targetMember);
   }
@@ -98,7 +97,8 @@ public class DescribeMappingCommand implements GfshCommand {
     sectionResult.addData(CREATE_MAPPING__CONNECTION_NAME, mapping.getConnectionConfigName());
     sectionResult.addData(CREATE_MAPPING__TABLE_NAME, mapping.getTableName());
     sectionResult.addData(CREATE_MAPPING__PDX_CLASS_NAME, mapping.getPdxClassName());
-    sectionResult.addData(CREATE_MAPPING__VALUE_CONTAINS_PRIMARY_KEY, mapping.isPrimaryKeyInValue());
+    sectionResult.addData(CREATE_MAPPING__VALUE_CONTAINS_PRIMARY_KEY,
+        mapping.isPrimaryKeyInValue());
 
     TabularResultData tabularResultData = sectionResult.addTable(FIELD_TO_COLUMN_TABLE);
     tabularResultData.setHeader("Field to Column Mappings:");

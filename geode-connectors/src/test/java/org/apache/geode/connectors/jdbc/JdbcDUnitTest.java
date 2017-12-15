@@ -42,7 +42,8 @@ import org.apache.geode.test.junit.categories.DistributedTest;
 import org.apache.geode.test.junit.rules.GfshCommandRule;
 import org.apache.geode.test.junit.rules.serializable.SerializableTestName;
 
-/** End-to-end dunits for jdbc connector
+/**
+ * End-to-end dunits for jdbc connector
  *
  */
 @Category(DistributedTest.class)
@@ -70,7 +71,7 @@ public class JdbcDUnitTest implements Serializable {
     MemberVM locator = startupRule.startLocatorVM(0);
     gfsh.connectAndVerify(locator);
     server = startupRule.startServerVM(1, locator.getPort());
-    server.invoke(()-> createTable());
+    server.invoke(() -> createTable());
   }
 
   private void createTable() throws SQLException {
@@ -114,7 +115,9 @@ public class JdbcDUnitTest implements Serializable {
           CacheFactory.getAnyInstance().createPdxInstanceFactory(Employee.class.getName())
               .writeString("name", "Emp1").writeInt("age", 55).create();
       Region region = CacheFactory.getAnyInstance().getRegion(REGION_NAME);
-      assertThatThrownBy(() -> region.put("key1", pdxEmployee1)).isExactlyInstanceOf(IllegalStateException.class).hasMessageContaining("JDBC write failed");
+      assertThatThrownBy(() -> region.put("key1", pdxEmployee1))
+          .isExactlyInstanceOf(IllegalStateException.class)
+          .hasMessageContaining("JDBC write failed");
     });
   }
 
@@ -131,7 +134,8 @@ public class JdbcDUnitTest implements Serializable {
       Region region = CacheFactory.getAnyInstance().getRegion(REGION_NAME);
       region.put("key1", pdxEmployee1);
 
-      JdbcAsyncWriter asyncWriter = (JdbcAsyncWriter)CacheFactory.getAnyInstance().getAsyncEventQueue("JAW").getAsyncEventListener();
+      JdbcAsyncWriter asyncWriter = (JdbcAsyncWriter) CacheFactory.getAnyInstance()
+          .getAsyncEventQueue("JAW").getAsyncEventListener();
       Awaitility.await().atMost(30, TimeUnit.SECONDS).until(() -> {
         assertThat(asyncWriter.getFailedEvents()).isEqualTo(1);
       });
@@ -150,7 +154,9 @@ public class JdbcDUnitTest implements Serializable {
           CacheFactory.getAnyInstance().createPdxInstanceFactory(Employee.class.getName())
               .writeString("name", "Emp1").writeInt("age", 55).create();
       Region region = CacheFactory.getAnyInstance().getRegion(REGION_NAME);
-      assertThatThrownBy(() -> region.put("key1", pdxEmployee1)).isExactlyInstanceOf(IllegalStateException.class).hasMessageContaining("JDBC write failed");
+      assertThatThrownBy(() -> region.put("key1", pdxEmployee1))
+          .isExactlyInstanceOf(IllegalStateException.class)
+          .hasMessageContaining("JDBC write failed");
     });
   }
 
@@ -164,7 +170,10 @@ public class JdbcDUnitTest implements Serializable {
           CacheFactory.getAnyInstance().createPdxInstanceFactory(Employee.class.getName())
               .writeString("name", "Emp1").writeInt("age", 55).create();
       Region region = CacheFactory.getAnyInstance().getRegion(REGION_NAME);
-      assertThatThrownBy(() -> region.put("key1", pdxEmployee1)).isExactlyInstanceOf(IllegalStateException.class).hasMessageContaining("JDBC write failed");    });
+      assertThatThrownBy(() -> region.put("key1", pdxEmployee1))
+          .isExactlyInstanceOf(IllegalStateException.class)
+          .hasMessageContaining("JDBC write failed");
+    });
   }
 
   @Test
@@ -175,9 +184,7 @@ public class JdbcDUnitTest implements Serializable {
     server.invoke(() -> {
       PdxInstance pdxEmployee1 =
           CacheFactory.getAnyInstance().createPdxInstanceFactory(Employee.class.getName())
-              .writeString("id", "key1")
-              .writeString("name", "Emp1")
-              .writeInt("age", 55).create();
+              .writeString("id", "key1").writeString("name", "Emp1").writeInt("age", 55).create();
 
       String key = "emp1";
       CacheFactory.getAnyInstance().getRegion(REGION_NAME).put(key, pdxEmployee1);
@@ -193,9 +200,7 @@ public class JdbcDUnitTest implements Serializable {
     server.invoke(() -> {
       PdxInstance pdxEmployee1 =
           CacheFactory.getAnyInstance().createPdxInstanceFactory(Employee.class.getName())
-              .writeString("id", "key1")
-              .writeString("name", "Emp1")
-              .writeInt("age", 55).create();
+              .writeString("id", "key1").writeString("name", "Emp1").writeInt("age", 55).create();
 
       String key = "emp1";
       CacheFactory.getAnyInstance().getRegion(REGION_NAME).put(key, pdxEmployee1);
@@ -224,16 +229,14 @@ public class JdbcDUnitTest implements Serializable {
     server.invoke(() -> {
       PdxInstance pdxEmployee1 =
           CacheFactory.getAnyInstance().createPdxInstanceFactory(Employee.class.getName())
-              .writeString("id", "id1")
-              .writeString("name", "Emp1")
-              .writeInt("age", 55).create();
+              .writeString("id", "id1").writeString("name", "Emp1").writeInt("age", 55).create();
 
       String key = "id1";
       Region region = CacheFactory.getAnyInstance().getRegion(REGION_NAME);
       region.put(key, pdxEmployee1);
       region.invalidate(key);
 
-      PdxInstance result = (PdxInstance)region.get(key);
+      PdxInstance result = (PdxInstance) region.get(key);
       assertThat(result.getField("id")).isEqualTo(pdxEmployee1.getField("id"));
       assertThat(result.getField("name")).isEqualTo(pdxEmployee1.getField("name"));
       assertThat(result.getField("age")).isEqualTo(pdxEmployee1.getField("age"));
@@ -248,9 +251,9 @@ public class JdbcDUnitTest implements Serializable {
   }
 
   private void createAsyncListener(String id) {
-    final String commandStr = "create async-event-queue --id=" + id
-        + " --listener=" + JdbcAsyncWriter.class.getName()
-        + " --batch-size=1 --batch-time-interval=0 --parallel=false";
+    final String commandStr =
+        "create async-event-queue --id=" + id + " --listener=" + JdbcAsyncWriter.class.getName()
+            + " --batch-size=1 --batch-time-interval=0 --parallel=false";
     gfsh.executeAndAssertThat(commandStr).statusIsSuccess();
   }
 
@@ -285,7 +288,8 @@ public class JdbcDUnitTest implements Serializable {
       assertThat(getRowCount(statement, TABLE_NAME)).isEqualTo(size);
     });
 
-    ResultSet resultSet = statement.executeQuery("select * from " + REGION_NAME + " order by id asc");
+    ResultSet resultSet =
+        statement.executeQuery("select * from " + REGION_NAME + " order by id asc");
     assertThat(resultSet.next()).isTrue();
     assertThat(resultSet.getString("id")).isEqualTo(key);
     assertThat(resultSet.getString("name")).isEqualTo(employee.getField("name"));
@@ -294,11 +298,10 @@ public class JdbcDUnitTest implements Serializable {
 
   private int getRowCount(Statement stmt, String tableName) {
     try {
-      ResultSet resultSet =
-          stmt.executeQuery("select count(*) from " + tableName);
+      ResultSet resultSet = stmt.executeQuery("select count(*) from " + tableName);
       resultSet.next();
       return resultSet.getInt(1);
-    } catch (SQLException e){
+    } catch (SQLException e) {
       return -1;
     }
   }
