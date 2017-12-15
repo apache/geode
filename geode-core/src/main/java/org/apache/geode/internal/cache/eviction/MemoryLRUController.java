@@ -42,7 +42,8 @@ public class MemoryLRUController extends SizeLRUController {
 
   /**
    * Create an instance of the capacity controller the given settings.
-   * @param evictionCounters 
+   * 
+   * @param evictionCounters
    *
    * @param megabytes the amount of memory allowed in this region specified in megabytes.<br>
    *        <p>
@@ -56,8 +57,8 @@ public class MemoryLRUController extends SizeLRUController {
    *        MemLRU
    * @param isOffHeap true if the region that owns this cc is stored off heap
    */
-  public MemoryLRUController(EvictionCounters evictionCounters, int megabytes, ObjectSizer sizer, EvictionAction evictionAction,
-      boolean isOffHeap) {
+  public MemoryLRUController(EvictionCounters evictionCounters, int megabytes, ObjectSizer sizer,
+      EvictionAction evictionAction, boolean isOffHeap) {
     super(evictionCounters, evictionAction, sizer);
     this.isOffHeap = isOffHeap;
     setMaximumMegabytes(megabytes);

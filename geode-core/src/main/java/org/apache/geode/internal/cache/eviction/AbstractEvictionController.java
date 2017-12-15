@@ -96,9 +96,11 @@ public abstract class AbstractEvictionController implements EvictionController {
   /**
    * Creates a new {@code AbstractEvictionController} with the given {@linkplain EvictionAction
    * eviction action}.
-   * @param evictionCounters 
+   * 
+   * @param evictionCounters
    */
-  protected AbstractEvictionController(EvictionCounters evictionCounters, EvictionAction evictionAction) {
+  protected AbstractEvictionController(EvictionCounters evictionCounters,
+      EvictionAction evictionAction) {
     this.counters = evictionCounters;
     this.evictionAction = evictionAction;
   }

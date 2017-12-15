@@ -67,7 +67,7 @@ public interface EvictionController {
   void close();
 
   void closeBucket(BucketRegion bucketRegion);
-  
+
   void setPerEntryOverhead(int entryOverhead);
 
 }

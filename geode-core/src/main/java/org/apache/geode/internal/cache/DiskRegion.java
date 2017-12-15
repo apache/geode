@@ -850,6 +850,7 @@ public class DiskRegion extends AbstractDiskRegion {
   @Override
   public EvictionController getExistingController(InternalRegionArguments internalArgs) {
     // should never be called so throw an exception
-    throw new IllegalStateException("getExistingController should never be called on " + getClass());
+    throw new IllegalStateException(
+        "getExistingController should never be called on " + getClass());
   }
 }

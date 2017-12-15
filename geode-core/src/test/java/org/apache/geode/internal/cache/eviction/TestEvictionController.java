@@ -80,7 +80,7 @@ class TestEvictionController implements EvictionController {
   public void closeBucket(BucketRegion bucketRegion) {
     throw new UnsupportedOperationException("Not implemented");
   }
-  
+
   @Override
   public void setPerEntryOverhead(int entryOverhead) {
     throw new UnsupportedOperationException("Not implemented");

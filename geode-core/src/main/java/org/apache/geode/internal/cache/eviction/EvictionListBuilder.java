@@ -22,11 +22,11 @@ public class EvictionListBuilder {
       SystemPropertyHelper.getProductBooleanProperty(SystemPropertyHelper.EVICTION_SCAN_ASYNC);
 
   private final EvictionController controller;
-  
+
   public EvictionListBuilder(EvictionController evictionController) {
     this.controller = evictionController;
   }
-  
+
   public EvictionList create() {
     if (this.controller.getEvictionAlgorithm().isLIFO()) {
       return new LIFOList(this.controller);

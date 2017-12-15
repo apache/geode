@@ -1056,12 +1056,12 @@ public abstract class AbstractDiskRegion implements DiskRegionView {
   public void incRecentlyUsed() {
     entries.incRecentlyUsed();
   }
-  
+
   @Override
   public StatisticsFactory getStatisticsFactory() {
     return this.ds.getStatisticsFactory();
   }
-  
+
   @Override
   public String getNameForStats() {
     if (isBucket()) {

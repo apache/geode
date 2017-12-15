@@ -77,8 +77,7 @@ public class LRUListWithAsyncSorting extends AbstractEvictionList {
     this(controller, SINGLETON_EXECUTOR);
   }
 
-  LRUListWithAsyncSorting(EvictionController controller,
-      ExecutorService executor) {
+  LRUListWithAsyncSorting(EvictionController controller, ExecutorService executor) {
     super(controller);
     this.scanThreshold = calculateScanThreshold();
     this.executor = executor;

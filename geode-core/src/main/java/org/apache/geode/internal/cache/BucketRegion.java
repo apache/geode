@@ -2470,7 +2470,7 @@ public class BucketRegion extends DistributedRegion implements Bucket {
   public String getNameForStats() {
     return this.getPartitionedRegion().getFullPath();
   }
-  
+
   @Override
   public void closeEntries() {
     this.entries.close(this);

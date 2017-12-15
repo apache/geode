@@ -28,7 +28,7 @@ public interface EvictableRegion {
    * from the partitioned region that owns this bucket. Otherwise returns null.
    */
   EvictionController getExistingController(InternalRegionArguments internalArgs);
-  
+
   StatisticsFactory getStatisticsFactory();
 
   String getNameForStats();

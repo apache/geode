@@ -38,7 +38,7 @@ abstract class AbstractEvictionList implements EvictionList {
   private final AtomicInteger size = new AtomicInteger();
 
   private final EvictionController controller;
-  
+
   protected AbstractEvictionList(EvictionController controller) {
     this.controller = controller;
     initEmptyList();
@@ -195,5 +195,5 @@ abstract class AbstractEvictionList implements EvictionList {
     }
     return true;
   }
-  
+
 }

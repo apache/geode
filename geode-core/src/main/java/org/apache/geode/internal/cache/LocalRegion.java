@@ -12166,7 +12166,7 @@ public class LocalRegion extends AbstractRegion implements LoaderHelperFactory,
   public EvictionController getExistingController(InternalRegionArguments internalArgs) {
     return null;
   }
-  
+
   @Override
   public String getNameForStats() {
     return getFullPath();

@@ -82,7 +82,7 @@ class VMLRURegionMap extends AbstractRegionMap {
       InternalRegionArguments internalRegionArgs) {
     super.initialize(owner, attr, internalRegionArgs, true);
   }
-  
+
   @Override
   public void setEntryFactory(RegionEntryFactory f) {
     super.setEntryFactory(f);

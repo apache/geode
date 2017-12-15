@@ -3937,7 +3937,8 @@ public class DiskStoreImpl implements DiskStore {
     synchronized (this.prEvictionControllerMap) {
       result = this.prEvictionControllerMap.get(prName);
       if (result == null) {
-        result = AbstractEvictionController.create(dr.getEvictionAttributes(), dr.getOffHeap(), dr.getStatisticsFactory(), prName);
+        result = AbstractEvictionController.create(dr.getEvictionAttributes(), dr.getOffHeap(),
+            dr.getStatisticsFactory(), prName);
         this.prEvictionControllerMap.put(prName, result);
       }
     }
@@ -4513,7 +4514,7 @@ public class DiskStoreImpl implements DiskStore {
   public boolean isDirectoryUsageNormal(DirectoryHolder dir) {
     return getCache().getDiskStoreMonitor().isNormal(this, dir);
   }
-  
+
   public StatisticsFactory getStatisticsFactory() {
     return this.cache.getDistributedSystem();
   }

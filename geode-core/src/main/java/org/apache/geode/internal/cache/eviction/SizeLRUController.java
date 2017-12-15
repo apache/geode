@@ -26,7 +26,8 @@ abstract class SizeLRUController extends AbstractEvictionController {
 
   private final ObjectSizer sizer;
 
-  SizeLRUController(EvictionCounters evictionCounters, EvictionAction evictionAction, ObjectSizer sizer) {
+  SizeLRUController(EvictionCounters evictionCounters, EvictionAction evictionAction,
+      ObjectSizer sizer) {
     super(evictionCounters, evictionAction);
     this.sizer = sizer;
   }
@@ -34,7 +35,7 @@ abstract class SizeLRUController extends AbstractEvictionController {
   public int getPerEntryOverhead() {
     return perEntryOverhead;
   }
-  
+
   @Override
   public void setPerEntryOverhead(int entryOverhead) {
     this.perEntryOverhead = entryOverhead;

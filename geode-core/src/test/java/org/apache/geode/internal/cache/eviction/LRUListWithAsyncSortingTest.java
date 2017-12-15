@@ -239,8 +239,7 @@ public class LRUListWithAsyncSortingTest {
   @Test
   public void startScanIfEvictableEntryIsRecentlyUsed() throws Exception {
     List<EvictionNode> nodes = new ArrayList<>();
-    LRUListWithAsyncSorting lruEvictionList =
-        new LRUListWithAsyncSorting(controller, executor);
+    LRUListWithAsyncSorting lruEvictionList = new LRUListWithAsyncSorting(controller, executor);
     IntStream.range(0, 11).forEach(i -> {
       EvictionNode node = new LRUTestEntry(i);
       nodes.add(node);

@@ -52,7 +52,8 @@ public class HeapLRUController extends SizeLRUController {
   public static final String TOP_UP_HEAP_EVICTION_PERCENTAGE_PROPERTY =
       GEMFIRE_PREFIX + "topUpHeapEvictionPercentage";
 
-  public HeapLRUController(EvictionCounters evictionCounters, EvictionAction evictionAction, ObjectSizer sizer) {
+  public HeapLRUController(EvictionCounters evictionCounters, EvictionAction evictionAction,
+      ObjectSizer sizer) {
     super(evictionCounters, evictionAction, sizer);
   }
 

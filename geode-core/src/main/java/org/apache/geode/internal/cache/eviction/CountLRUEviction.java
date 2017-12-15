@@ -35,7 +35,8 @@ public class CountLRUEviction extends AbstractEvictionController {
 
   /**
    * Creates an LRU capacity controller that allows the given number of maximum entries.
-   * @param evictionCounters 
+   * 
+   * @param evictionCounters
    *
    * @param maximumEntries The maximum number of entries allowed in the region whose capacity this
    *        controller controls. Once there are {@code capacity} entries in a region, this
@@ -48,7 +49,8 @@ public class CountLRUEviction extends AbstractEvictionController {
    *        in which the subsequent {@code put} takes place.
    * @param evictionAction The action to perform upon the least recently used entry.
    */
-  public CountLRUEviction(EvictionCounters evictionCounters, int maximumEntries, EvictionAction evictionAction) {
+  public CountLRUEviction(EvictionCounters evictionCounters, int maximumEntries,
+      EvictionAction evictionAction) {
     super(evictionCounters, evictionAction);
     setMaximumEntries(maximumEntries);
   }
