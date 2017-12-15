@@ -38,9 +38,7 @@ public interface EvictionList {
   void destroyEntry(EvictionNode evictionNode);
 
   /**
-   * Get the modifier for lru based statistics.
-   *
-   * @return The EvictionStatistics for this Clock hand's region.
+   * Returns the eviction counters for this list.
    */
   EvictionCounters getStatistics();
 
