@@ -3937,7 +3937,7 @@ public class DiskStoreImpl implements DiskStore {
     synchronized (this.prEvictionControllerMap) {
       result = this.prEvictionControllerMap.get(prName);
       if (result == null) {
-        result = AbstractEvictionController.create(dr.getEvictionAttributes(), dr.getOffHeap(), 0 /* TODO get entrySize */, dr.getStatisticsFactory(), prName);
+        result = AbstractEvictionController.create(dr.getEvictionAttributes(), dr.getOffHeap(), dr.getStatisticsFactory(), prName);
         this.prEvictionControllerMap.put(prName, result);
       }
     }

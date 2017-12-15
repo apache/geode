@@ -14,7 +14,6 @@
  */
 package org.apache.geode.internal.cache.eviction;
 
-import org.apache.geode.StatisticsFactory;
 import org.apache.geode.cache.EvictionAction;
 import org.apache.geode.cache.EvictionAlgorithm;
 import org.apache.geode.internal.cache.BucketRegion;
@@ -68,5 +67,7 @@ public interface EvictionController {
   void close();
 
   void closeBucket(BucketRegion bucketRegion);
+  
+  void setPerEntryOverhead(int entryOverhead);
 
 }

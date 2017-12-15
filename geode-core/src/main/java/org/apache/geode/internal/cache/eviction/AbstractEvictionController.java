@@ -14,16 +14,12 @@
  */
 package org.apache.geode.internal.cache.eviction;
 
-import org.apache.geode.InternalGemFireException;
 import org.apache.geode.StatisticsFactory;
 import org.apache.geode.cache.EvictionAction;
 import org.apache.geode.cache.EvictionAlgorithm;
 import org.apache.geode.cache.EvictionAttributes;
-import org.apache.geode.cache.Region;
 import org.apache.geode.cache.util.ObjectSizer;
 import org.apache.geode.internal.cache.BucketRegion;
-import org.apache.geode.internal.cache.PlaceHolderDiskRegion;
-import org.apache.geode.internal.i18n.LocalizedStrings;
 
 /**
  * Eviction controllers that extend this class evict the least recently used (LRU) entry in the
@@ -61,7 +57,7 @@ public abstract class AbstractEvictionController implements EvictionController {
    * Create and return the appropriate eviction controller using the attributes provided.
    */
   public static EvictionController create(EvictionAttributes evictionAttributes, boolean isOffHeap,
-      int entryOverhead, StatisticsFactory statsFactory, String statsName) {
+      StatisticsFactory statsFactory, String statsName) {
     EvictionAlgorithm algorithm = evictionAttributes.getAlgorithm();
     EvictionAction action = evictionAttributes.getAction();
     ObjectSizer sizer = evictionAttributes.getObjectSizer();
@@ -71,12 +67,12 @@ public abstract class AbstractEvictionController implements EvictionController {
     if (algorithm == EvictionAlgorithm.LRU_HEAP) {
       evictionStats = new HeapLRUStatistics(statsFactory, statsName);
       evictionCounters = new EvictionCountersImpl(evictionStats);
-      return new HeapLRUController(evictionCounters, action, sizer, entryOverhead);
+      return new HeapLRUController(evictionCounters, action, sizer);
     }
     if (algorithm == EvictionAlgorithm.LRU_MEMORY || algorithm == EvictionAlgorithm.LIFO_MEMORY) {
       evictionStats = new MemoryLRUStatistics(statsFactory, statsName);
       evictionCounters = new EvictionCountersImpl(evictionStats);
-      return new MemoryLRUController(evictionCounters, maximum, sizer, action, isOffHeap, entryOverhead);
+      return new MemoryLRUController(evictionCounters, maximum, sizer, action, isOffHeap);
     }
     if (algorithm == EvictionAlgorithm.LRU_ENTRY || algorithm == EvictionAlgorithm.LIFO_ENTRY) {
       evictionStats = new CountLRUStatistics(statsFactory, statsName);
@@ -85,30 +81,6 @@ public abstract class AbstractEvictionController implements EvictionController {
     }
 
     throw new IllegalStateException("Unhandled algorithm " + algorithm);
-    // if (region instanceof BucketRegion) {
-    // if (args != null && args.getPartitionedRegion() != null) {
-    // statistics = args.getPartitionedRegion()
-    // .getEvictionController().getStatistics();
-    // } else {
-    // statistics = new DisabledEvictionStatistics();
-    // }
-    // } else if (region instanceof PlaceHolderDiskRegion) {
-    // statistics = ((PlaceHolderDiskRegion) region).getPRLRUStats();
-    // } else if (region instanceof PartitionedRegion) {
-    // statistics = ((PartitionedRegion) region)
-    // .getPRLRUStatsDuringInitialization();
-    // if (statistics != null) {
-    // PartitionedRegion partitionedRegion = (PartitionedRegion) region;
-    // EvictionController evictionController = partitionedRegion.getEvictionController();
-    // ((AbstractEvictionController) evictionController).setStatistics(statistics);
-    // }
-    // }
-    // }
-    // if (statistics == null) {
-    // StatisticsFactory sf = GemFireCacheImpl.getExisting("").getDistributedSystem();
-    // statistics = controller.initStats(region, sf);
-    // }
-
   }
 
   /**
@@ -171,4 +143,8 @@ public abstract class AbstractEvictionController implements EvictionController {
     getCounters().decrementCounter(bucketRegion.getCounter());
   }
 
+  @Override
+  public void setPerEntryOverhead(int entryOverhead) {
+    // nothing needed by default
+  }
 }

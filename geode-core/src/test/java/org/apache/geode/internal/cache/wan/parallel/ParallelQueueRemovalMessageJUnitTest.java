@@ -111,7 +111,7 @@ public class ParallelQueueRemovalMessageJUnitTest {
     when(this.queueRegion.getCache()).thenReturn(this.cache);
     EvictionAttributesImpl ea = (EvictionAttributesImpl) EvictionAttributes
         .createLRUMemoryAttributes(100, null, EvictionAction.OVERFLOW_TO_DISK);
-    EvictionController eviction = AbstractEvictionController.create(ea, false, 50, this.cache.getDistributedSystem(), "queueRegion");
+    EvictionController eviction = AbstractEvictionController.create(ea, false, this.cache.getDistributedSystem(), "queueRegion");
     when(this.queueRegion.getEvictionController()).thenReturn(eviction);
   }
 

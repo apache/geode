@@ -82,13 +82,21 @@ class VMLRURegionMap extends AbstractRegionMap {
       InternalRegionArguments internalRegionArgs) {
     super.initialize(owner, attr, internalRegionArgs, true);
   }
+  
+  @Override
+  public void setEntryFactory(RegionEntryFactory f) {
+    super.setEntryFactory(f);
+    // any time the entry factory changes we need to recalculate the entry overhead
+    getEvictionController().setPerEntryOverhead(getEntryOverhead());
+  }
+
 
   private static EvictionController createEvictionController(EvictableRegion owner,
       InternalRegionArguments internalRegionArgs) {
     EvictionController controller = owner.getExistingController(internalRegionArgs);
     if (controller == null) {
       controller = AbstractEvictionController.create(owner.getEvictionAttributes(),
-          owner.getOffHeap(), /* TODO getEntryOverhead() */ 0, owner.getStatisticsFactory(), owner.getNameForStats());
+          owner.getOffHeap(), owner.getStatisticsFactory(), owner.getNameForStats());
     }
     return controller;
   }

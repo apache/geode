@@ -52,8 +52,8 @@ public class HeapLRUController extends SizeLRUController {
   public static final String TOP_UP_HEAP_EVICTION_PERCENTAGE_PROPERTY =
       GEMFIRE_PREFIX + "topUpHeapEvictionPercentage";
 
-  public HeapLRUController(EvictionCounters evictionCounters, EvictionAction evictionAction, ObjectSizer sizer, int entryOverhead) {
-    super(evictionCounters, evictionAction, sizer, entryOverhead);
+  public HeapLRUController(EvictionCounters evictionCounters, EvictionAction evictionAction, ObjectSizer sizer) {
+    super(evictionCounters, evictionAction, sizer);
   }
 
   @Override
@@ -85,9 +85,6 @@ public class HeapLRUController extends SizeLRUController {
     return EvictionAlgorithm.LRU_HEAP;
   }
 
-  /**
-   * As far as we're concerned all entries have the same size
-   */
   @Override
   public int entrySize(Object key, Object value) {
     // value is null only after eviction occurs. A change in size is

@@ -55,11 +55,10 @@ public class MemoryLRUController extends SizeLRUController {
    * @param sizer classname of a class that implements ObjectSizer, used to compute object sizes for
    *        MemLRU
    * @param isOffHeap true if the region that owns this cc is stored off heap
-   * @param entryOverhead how much memory is used by the entry class
    */
   public MemoryLRUController(EvictionCounters evictionCounters, int megabytes, ObjectSizer sizer, EvictionAction evictionAction,
-      boolean isOffHeap, int entryOverhead) {
-    super(evictionCounters, evictionAction, sizer, entryOverhead);
+      boolean isOffHeap) {
+    super(evictionCounters, evictionAction, sizer);
     this.isOffHeap = isOffHeap;
     setMaximumMegabytes(megabytes);
   }

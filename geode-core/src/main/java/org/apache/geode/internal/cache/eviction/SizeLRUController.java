@@ -22,18 +22,22 @@ import org.apache.geode.internal.size.Sizeable;
 
 abstract class SizeLRUController extends AbstractEvictionController {
 
-  private final int perEntryOverhead;
+  private int perEntryOverhead;
 
   private final ObjectSizer sizer;
 
-  SizeLRUController(EvictionCounters evictionCounters, EvictionAction evictionAction, ObjectSizer sizer, int entryOverhead) {
+  SizeLRUController(EvictionCounters evictionCounters, EvictionAction evictionAction, ObjectSizer sizer) {
     super(evictionCounters, evictionAction);
-    this.perEntryOverhead = entryOverhead;
     this.sizer = sizer;
   }
 
   public int getPerEntryOverhead() {
     return perEntryOverhead;
+  }
+  
+  @Override
+  public void setPerEntryOverhead(int entryOverhead) {
+    this.perEntryOverhead = entryOverhead;
   }
 
   /**
