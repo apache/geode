@@ -19,13 +19,11 @@ import static org.apache.geode.management.internal.cli.i18n.CliStrings.IFEXISTS_
 
 import java.util.List;
 import java.util.Set;
-import java.util.concurrent.atomic.AtomicReference;
 
 import org.springframework.shell.core.annotation.CliCommand;
 import org.springframework.shell.core.annotation.CliOption;
 
 import org.apache.geode.distributed.DistributedMember;
-import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.management.cli.ConverterHint;
 import org.apache.geode.management.cli.Result;
 import org.apache.geode.management.internal.cli.functions.CliFunctionResult;
@@ -33,7 +31,6 @@ import org.apache.geode.management.internal.cli.functions.DestroyAsyncEventQueue
 import org.apache.geode.management.internal.cli.functions.DestroyAsyncEventQueueFunctionArgs;
 import org.apache.geode.management.internal.cli.i18n.CliStrings;
 import org.apache.geode.management.internal.cli.result.ResultBuilder;
-import org.apache.geode.management.internal.cli.result.TabularResultData;
 import org.apache.geode.management.internal.configuration.domain.XmlEntity;
 import org.apache.geode.management.internal.security.ResourceOperation;
 import org.apache.geode.security.ResourcePermission;
@@ -51,6 +48,8 @@ public class DestroyAsyncEventQueueCommand implements GfshCommand {
       "Async event queue \"%s\" not found";
   public static final String DESTROY_ASYNC_EVENT_QUEUE__AEQ_0_DESTROYED =
       "Async event queue \"%s\" destroyed";
+  public static final String DESTROY_ASYNC_EVENT_QUEUE__COULD_NOT_FIND_MEMBER_WITH_AEQ_0 =
+      "Could not find any members which host async event queue \"{0}\"";
 
   @CliCommand(value = DESTROY_ASYNC_EVENT_QUEUE, help = DESTROY_ASYNC_EVENT_QUEUE__HELP)
   @ResourceOperation(resource = ResourcePermission.Resource.CLUSTER,
@@ -68,19 +67,15 @@ public class DestroyAsyncEventQueueCommand implements GfshCommand {
         new DestroyAsyncEventQueueFunctionArgs(aeqId, ifExists);
 
     Set<DistributedMember> members = getMembers(onGroups, null);
-    if (members.size() == 0) {
-      String message = String.format(DESTROY_ASYNC_EVENT_QUEUE__AEQ_0_NOT_FOUND, aeqId);
-    }
-
     List<CliFunctionResult> functionResults = executeAndGetFunctionResult(
         new DestroyAsyncEventQueueFunction(), asyncEventQueueDestoryFunctionArgs, members);
 
-    Result result = ResultBuilder.buildResult(functionResults);
+    Result commandResult = ResultBuilder.buildResult(functionResults);
     XmlEntity xmlEntity = findXmlEntity(functionResults);
     if (xmlEntity != null) {
-      persistClusterConfiguration(result,
+      persistClusterConfiguration(commandResult,
           () -> getSharedConfiguration().deleteXmlEntity(xmlEntity, onGroups));
     }
-    return result;
+    return commandResult;
   }
 }
