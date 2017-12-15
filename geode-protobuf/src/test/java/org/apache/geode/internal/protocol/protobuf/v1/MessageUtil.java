@@ -23,7 +23,7 @@ import java.net.Socket;
 
 import com.google.protobuf.MessageLite;
 
-import org.apache.geode.internal.protocol.protobuf.Handshake;
+import org.apache.geode.internal.protocol.protobuf.ProtocolVersion;
 import org.apache.geode.internal.protocol.protobuf.v1.utilities.ProtobufRequestUtilities;
 import org.apache.geode.internal.protocol.protobuf.v1.utilities.ProtobufUtilities;
 import org.apache.geode.internal.protocol.serialization.SerializationService;
@@ -38,15 +38,15 @@ public class MessageUtil {
   }
 
   public static void verifyHandshakeSuccess(Socket socket) throws IOException {
-    Handshake.HandshakeAcknowledgement handshakeResponse =
-        Handshake.HandshakeAcknowledgement.parseDelimitedFrom(socket.getInputStream());
-    assertTrue(handshakeResponse.getHandshakePassed());
+    ProtocolVersion.VersionAcknowledgement handshakeResponse =
+        ProtocolVersion.VersionAcknowledgement.parseDelimitedFrom(socket.getInputStream());
+    assertTrue(handshakeResponse.getVersionAccepted());
   }
 
   public static void sendHandshake(Socket socket) throws IOException {
-    Handshake.NewConnectionHandshake.newBuilder()
-        .setMajorVersion(Handshake.MajorVersions.CURRENT_MAJOR_VERSION_VALUE)
-        .setMinorVersion(Handshake.MinorVersions.CURRENT_MINOR_VERSION_VALUE).build()
+    ProtocolVersion.NewConnectionClientVersion.newBuilder()
+        .setMajorVersion(ProtocolVersion.MajorVersions.CURRENT_MAJOR_VERSION_VALUE)
+        .setMinorVersion(ProtocolVersion.MinorVersions.CURRENT_MINOR_VERSION_VALUE).build()
         .writeDelimitedTo(socket.getOutputStream());
   }
 

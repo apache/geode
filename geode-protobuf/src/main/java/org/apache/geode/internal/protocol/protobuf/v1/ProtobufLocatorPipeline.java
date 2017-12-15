@@ -26,7 +26,7 @@ import org.apache.geode.distributed.internal.InternalLocator;
 import org.apache.geode.internal.cache.client.protocol.ClientProtocolProcessor;
 import org.apache.geode.internal.cache.tier.CommunicationMode;
 import org.apache.geode.internal.protocol.MessageExecutionContext;
-import org.apache.geode.internal.protocol.protobuf.Handshake;
+import org.apache.geode.internal.protocol.protobuf.ProtocolVersion;
 import org.apache.geode.internal.protocol.protobuf.v1.operations.VersionValidator;
 import org.apache.geode.internal.protocol.state.ConnectionStateProcessor;
 import org.apache.geode.internal.protocol.state.NoSecurityConnectionStateProcessor;
@@ -75,8 +75,8 @@ public final class ProtobufLocatorPipeline implements ClientProtocolProcessor {
     PushbackInputStream handshakeStream = new PushbackInputStream(inputStream);
     handshakeStream.unread(CommunicationMode.ProtobufClientServerProtocol.getModeNumber());
 
-    Handshake.NewConnectionHandshake handshakeRequest =
-        Handshake.NewConnectionHandshake.parseDelimitedFrom(handshakeStream);
+    ProtocolVersion.NewConnectionClientVersion handshakeRequest =
+        ProtocolVersion.NewConnectionClientVersion.parseDelimitedFrom(handshakeStream);
     int majorVersion = handshakeRequest.getMajorVersion();
     int minorVersion = handshakeRequest.getMinorVersion();
     if (!validator.isValid(majorVersion, minorVersion)) {
