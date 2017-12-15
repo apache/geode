@@ -44,6 +44,7 @@ import org.apache.geode.test.dunit.rules.LocatorServerStartupRule;
 import org.apache.geode.test.dunit.rules.MemberVM;
 import org.apache.geode.test.junit.categories.DistributedTest;
 import org.apache.geode.test.junit.rules.GfshCommandRule;
+import org.apache.geode.test.junit.rules.VMProvider;
 
 /**
  * DUnit tests for 'create gateway-receiver' command.
@@ -108,7 +109,7 @@ public class CreateGatewayReceiverCommandDUnitTest {
             "GatewayReceiver created on member \"server-4\"",
             "GatewayReceiver created on member \"server-5\"");
 
-    MemberVM.invokeInEveryMember(() -> {
+    VMProvider.invokeInEveryMember(() -> {
       verifyReceiverCreationWithAttributes(!GatewayReceiver.DEFAULT_MANUAL_START, 10000, 11000,
           "localhost", 100000, 512000, null, GatewayReceiver.DEFAULT_HOSTNAME_FOR_SENDERS);
     }, server1, server2, server3);
@@ -146,7 +147,7 @@ public class CreateGatewayReceiverCommandDUnitTest {
     // when the Profile (and ServerLocation) are created
     String hostname = getHostName();
 
-    MemberVM.invokeInEveryMember(() -> {
+    VMProvider.invokeInEveryMember(() -> {
       verifyGatewayReceiverProfile(hostname);
       verifyGatewayReceiverServerLocations(locator1Port, hostname);
       verifyReceiverCreationWithAttributes(!GatewayReceiver.DEFAULT_MANUAL_START,
@@ -181,7 +182,7 @@ public class CreateGatewayReceiverCommandDUnitTest {
             "GatewayReceiver created on member \"server-4\"",
             "GatewayReceiver created on member \"server-5\"");
 
-    MemberVM.invokeInEveryMember(() -> {
+    VMProvider.invokeInEveryMember(() -> {
       verifyReceiverCreationWithAttributes(false, 10000, 11000, "localhost", 100000, 512000, null,
           GatewayReceiver.DEFAULT_HOSTNAME_FOR_SENDERS);
     }, server1, server2, server3);
@@ -212,7 +213,7 @@ public class CreateGatewayReceiverCommandDUnitTest {
             "GatewayReceiver created on member \"server-4\"",
             "GatewayReceiver created on member \"server-5\"");
 
-    MemberVM.invokeInEveryMember(() -> {
+    VMProvider.invokeInEveryMember(() -> {
       // verify hostname-for-senders is used when configured
       verifyGatewayReceiverProfile(hostnameForSenders);
       verifyGatewayReceiverServerLocations(locator1Port, hostnameForSenders);
@@ -246,7 +247,7 @@ public class CreateGatewayReceiverCommandDUnitTest {
             "GatewayReceiver created on member \"server-4\"",
             "GatewayReceiver created on member \"server-5\"");
 
-    MemberVM.invokeInEveryMember(() -> {
+    VMProvider.invokeInEveryMember(() -> {
       // verify bind-address used when provided as a gemfire property
       verifyGatewayReceiverProfile(expectedBindAddress);
       verifyGatewayReceiverServerLocations(locator1Port, expectedBindAddress);
@@ -283,7 +284,7 @@ public class CreateGatewayReceiverCommandDUnitTest {
             "GatewayReceiver created on member \"server-4\"",
             "GatewayReceiver created on member \"server-5\"");
 
-    MemberVM.invokeInEveryMember(() -> {
+    VMProvider.invokeInEveryMember(() -> {
       // verify server-bind-address used if provided as a gemfire property
       verifyGatewayReceiverProfile(expectedBindAddress);
       verifyGatewayReceiverServerLocations(locator1Port, expectedBindAddress);
@@ -323,7 +324,7 @@ public class CreateGatewayReceiverCommandDUnitTest {
             "GatewayReceiver created on member \"server-4\"",
             "GatewayReceiver created on member \"server-5\"");
 
-    MemberVM.invokeInEveryMember(() -> {
+    VMProvider.invokeInEveryMember(() -> {
       // verify server-bind-address used if provided as a gemfire property
       verifyGatewayReceiverProfile(expectedBindAddress);
       verifyGatewayReceiverServerLocations(locator1Port, expectedBindAddress);
@@ -369,7 +370,7 @@ public class CreateGatewayReceiverCommandDUnitTest {
             "GatewayReceiver created on member \"server-4\"",
             "GatewayReceiver created on member \"server-5\"");
 
-    MemberVM.invokeInEveryMember(() -> {
+    VMProvider.invokeInEveryMember(() -> {
       // verify server-bind-address takes precedence over hostname-for-senders
       verifyGatewayReceiverProfile(hostnameForSenders);
       verifyGatewayReceiverServerLocations(locator1Port, hostnameForSenders);
@@ -412,7 +413,7 @@ public class CreateGatewayReceiverCommandDUnitTest {
             "GatewayReceiver created on member \"server-4\"",
             "GatewayReceiver created on member \"server-5\"");
 
-    MemberVM.invokeInEveryMember(() -> {
+    VMProvider.invokeInEveryMember(() -> {
       verifyGatewayReceiverProfile(hostnameForSenders);
       verifyGatewayReceiverServerLocations(locator1Port, hostnameForSenders);
       verifyReceiverCreationWithAttributes(true, 10000, 11000, "", 100000, 512000, null,
@@ -448,7 +449,7 @@ public class CreateGatewayReceiverCommandDUnitTest {
 
     List<String> transportFilters = new ArrayList<>();
     transportFilters.add("org.apache.geode.cache30.MyGatewayTransportFilter1");
-    MemberVM.invokeInEveryMember(() -> {
+    VMProvider.invokeInEveryMember(() -> {
       verifyReceiverCreationWithAttributes(true, 10000, 11000, "localhost", 100000, 512000,
           transportFilters, GatewayReceiver.DEFAULT_HOSTNAME_FOR_SENDERS);
     }, server1, server2, server3);
@@ -483,7 +484,7 @@ public class CreateGatewayReceiverCommandDUnitTest {
     transportFilters.add("org.apache.geode.cache30.MyGatewayTransportFilter1");
     transportFilters.add("org.apache.geode.cache30.MyGatewayTransportFilter2");
 
-    MemberVM.invokeInEveryMember(() -> {
+    VMProvider.invokeInEveryMember(() -> {
       verifyReceiverCreationWithAttributes(!GatewayReceiver.DEFAULT_MANUAL_START, 10000, 11000,
           "localhost", 100000, 512000, transportFilters,
           GatewayReceiver.DEFAULT_HOSTNAME_FOR_SENDERS);
@@ -514,12 +515,12 @@ public class CreateGatewayReceiverCommandDUnitTest {
         .tableHasColumnWithValuesContaining("Status",
             "GatewayReceiver created on member \"server-3\"");
 
-    MemberVM.invokeInEveryMember(() -> {
+    VMProvider.invokeInEveryMember(() -> {
       verifyReceiverCreationWithAttributes(false, 10000, 11000, "localhost", 100000, 512000, null,
           GatewayReceiver.DEFAULT_HOSTNAME_FOR_SENDERS);
     }, server1);
 
-    MemberVM.invokeInEveryMember(() -> {
+    VMProvider.invokeInEveryMember(() -> {
       Cache cache = LocatorServerStartupRule.getCache();
       assertThat(cache.getGatewayReceivers()).isEmpty();
     }, server2, server3);
@@ -551,12 +552,12 @@ public class CreateGatewayReceiverCommandDUnitTest {
             "GatewayReceiver created on member \"server-3\"",
             "GatewayReceiver created on member \"server-4\"");
 
-    MemberVM.invokeInEveryMember(() -> {
+    VMProvider.invokeInEveryMember(() -> {
       verifyReceiverCreationWithAttributes(false, 10000, 11000, "localhost", 100000, 512000, null,
           GatewayReceiver.DEFAULT_HOSTNAME_FOR_SENDERS);
     }, server1, server2);
 
-    MemberVM.invokeInEveryMember(() -> {
+    VMProvider.invokeInEveryMember(() -> {
       Cache cache = LocatorServerStartupRule.getCache();
       assertThat(cache.getGatewayReceivers()).isEmpty();
     }, server3);
@@ -588,7 +589,7 @@ public class CreateGatewayReceiverCommandDUnitTest {
             "GatewayReceiver created on member \"server-4\"",
             "GatewayReceiver created on member \"server-5\"");
 
-    MemberVM.invokeInEveryMember(() -> {
+    VMProvider.invokeInEveryMember(() -> {
       verifyReceiverCreationWithAttributes(false, 10000, 11000, "localhost", 100000, 512000, null,
           GatewayReceiver.DEFAULT_HOSTNAME_FOR_SENDERS);
     }, server1, server2, server3);
@@ -621,12 +622,12 @@ public class CreateGatewayReceiverCommandDUnitTest {
             "GatewayReceiver created on member \"server-3\"",
             "GatewayReceiver created on member \"server-4\"");
 
-    MemberVM.invokeInEveryMember(() -> {
+    VMProvider.invokeInEveryMember(() -> {
       verifyReceiverCreationWithAttributes(false, 10000, 11000, "localhost", 100000, 512000, null,
           GatewayReceiver.DEFAULT_HOSTNAME_FOR_SENDERS);
     }, server1, server2);
 
-    MemberVM.invokeInEveryMember(() -> {
+    VMProvider.invokeInEveryMember(() -> {
       Cache cache = LocatorServerStartupRule.getCache();
       assertThat(cache.getGatewayReceivers()).isEmpty();
     }, server3);
@@ -657,7 +658,7 @@ public class CreateGatewayReceiverCommandDUnitTest {
             "GatewayReceiver created on member \"server-4\"",
             "GatewayReceiver created on member \"server-5\"");
 
-    MemberVM.invokeInEveryMember(() -> {
+    VMProvider.invokeInEveryMember(() -> {
       verifyReceiverCreationWithAttributes(false, 10000, 11000, "localhost", 100000, 512000, null,
           GatewayReceiver.DEFAULT_HOSTNAME_FOR_SENDERS);
     }, server1, server2, server3);

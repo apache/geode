@@ -32,7 +32,6 @@ import org.junit.rules.TemporaryFolder;
 
 import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.Region;
-import org.apache.geode.compression.SnappyCompressor;
 import org.apache.geode.distributed.Locator;
 import org.apache.geode.distributed.internal.ClusterConfigurationService;
 import org.apache.geode.distributed.internal.InternalLocator;
@@ -41,6 +40,7 @@ import org.apache.geode.test.dunit.rules.LocatorServerStartupRule;
 import org.apache.geode.test.dunit.rules.MemberVM;
 import org.apache.geode.test.junit.categories.DistributedTest;
 import org.apache.geode.test.junit.rules.GfshCommandRule;
+import org.apache.geode.test.junit.rules.ServerStarterRule;
 
 @Category(DistributedTest.class)
 public class DiskStoreCommandsDUnitTest {
@@ -96,7 +96,7 @@ public class DiskStoreCommandsDUnitTest {
     gfsh.executeAndAssertThat("show missing-disk-stores")
         .containsOutput("No missing disk store found");
 
-    server1.invoke(LocatorServerStartupRule::stopMemberInThisVM);
+    server1.stopVM(false);
 
     server2.invoke(() -> {
       Cache cache = LocatorServerStartupRule.getCache();
@@ -104,10 +104,16 @@ public class DiskStoreCommandsDUnitTest {
       r.put("A", "C");
     });
 
-    server2.invoke(LocatorServerStartupRule::stopMemberInThisVM);
+    server2.stopVM(false);
 
-    props.setProperty("log-file", "");
-    rule.startServerVMAsync(server1.getVM().getId(), props, locator.getPort());
+    int locatorPort = locator.getPort();
+    server1.invokeAsync(() -> {
+      // trying to restart the server asynchronously
+      ServerStarterRule serverRule = new ServerStarterRule().withProperties(props)
+          .withName("server-1").withConnectionToLocator(locatorPort).withAutoStart();
+      LocatorServerStartupRule.memberStarter = serverRule;
+      serverRule.before();
+    });
 
     locator.waitTillDiskstoreIsReady(DISKSTORE, 1);
 
@@ -148,7 +154,7 @@ public class DiskStoreCommandsDUnitTest {
     gfsh.executeAndAssertThat("show missing-disk-stores")
         .containsOutput("No missing disk store found");
 
-    server1.invoke(LocatorServerStartupRule::stopMemberInThisVM);
+    server1.stopVM(false);
 
     String diskDirs = new File(server1.getWorkingDir(), DISKSTORE).getAbsolutePath();
     gfsh.executeAndAssertThat(
@@ -176,7 +182,7 @@ public class DiskStoreCommandsDUnitTest {
     gfsh.executeAndAssertThat("show missing-disk-stores")
         .containsOutput("No missing disk store found");
 
-    server1.invoke(LocatorServerStartupRule::stopMemberInThisVM);
+    server1.stopVM(false);
 
     String diskDirs = new File(server1.getWorkingDir(), DISKSTORE).getAbsolutePath();
     File exportDir = tempDir.newFolder();
