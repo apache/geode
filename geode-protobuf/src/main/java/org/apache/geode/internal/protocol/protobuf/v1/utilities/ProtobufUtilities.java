@@ -19,6 +19,7 @@ import com.google.protobuf.ByteString;
 import org.apache.geode.annotations.Experimental;
 import org.apache.geode.cache.Region;
 import org.apache.geode.cache.RegionAttributes;
+import org.apache.geode.internal.protocol.ProtocolErrorCode;
 import org.apache.geode.internal.protocol.protobuf.v1.BasicTypes;
 import org.apache.geode.internal.protocol.protobuf.v1.ClientProtocol;
 import org.apache.geode.internal.protocol.protobuf.v1.EncodingTypeTranslator;
@@ -168,6 +169,16 @@ public abstract class ProtobufUtilities {
             unknownProtobufPrimitiveType);
       }
     }
+  }
+
+  /**
+   * This will convert a ProtocolErrorCode to a BasicTypes.ErrorCode for protobuf
+   *
+   * @param errorCode - incoming ProtocolErrorCode
+   * @return matching protobuf error code
+   */
+  public static BasicTypes.ErrorCode getProtobufErrorCode(ProtocolErrorCode errorCode) {
+    return BasicTypes.ErrorCode.forNumber(errorCode.codeValue);
   }
 
   /**

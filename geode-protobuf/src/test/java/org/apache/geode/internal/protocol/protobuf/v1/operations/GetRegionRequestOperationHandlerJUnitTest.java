@@ -98,7 +98,7 @@ public class GetRegionRequestOperationHandlerJUnitTest extends OperationHandlerJ
     Assert.assertTrue(result instanceof Failure);
     ClientProtocol.ErrorResponse errorMessage =
         (ClientProtocol.ErrorResponse) result.getErrorMessage();
-    Assert.assertEquals(ProtocolErrorCode.REGION_NOT_FOUND.codeValue,
+    Assert.assertEquals(BasicTypes.ErrorCode.REGION_NOT_FOUND,
         errorMessage.getError().getErrorCode());
   }
 

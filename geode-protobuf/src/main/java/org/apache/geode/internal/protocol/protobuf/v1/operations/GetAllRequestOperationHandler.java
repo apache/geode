@@ -104,8 +104,8 @@ public class GetAllRequestOperationHandler implements
 
   private Object createKeyedError(BasicTypes.EncodedValue key, String errorMessage,
       ProtocolErrorCode errorCode) {
-    return BasicTypes.KeyedError.newBuilder().setKey(key).setError(
-        BasicTypes.Error.newBuilder().setErrorCode(errorCode.codeValue).setMessage(errorMessage))
+    return BasicTypes.KeyedError.newBuilder().setKey(key).setError(BasicTypes.Error.newBuilder()
+        .setErrorCode(ProtobufUtilities.getProtobufErrorCode(errorCode)).setMessage(errorMessage))
         .build();
   }
 }
