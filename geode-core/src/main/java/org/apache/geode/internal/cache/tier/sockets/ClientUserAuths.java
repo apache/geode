@@ -51,6 +51,7 @@ public class ClientUserAuths {
   public long putSubject(Subject subject) {
     long newId = getNextID();
     uniqueIdVsSubject.put(newId, subject);
+    logger.debug("Subject of {} added.", newId);
     return newId;
   }
 
@@ -83,6 +84,7 @@ public class ClientUserAuths {
 
   public boolean removeSubject(long userId) {
     Subject subject = uniqueIdVsSubject.remove(userId);
+    logger.debug("Subject of {} removed.", userId);
     if (subject == null)
       return false;
 
@@ -130,6 +132,7 @@ public class ClientUserAuths {
     UserAuthAttributes uaa = uniqueIdVsUserAuth.get(userId);
     if (uaa != null && !(uaa.isDurable() && keepAlive)) {
       uaa = uniqueIdVsUserAuth.remove(userId);
+      logger.debug("UserAuth of {} removed.");
       if (uaa != null) {
         cleanUserAuth(uaa);
         return true;

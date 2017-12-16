@@ -15,13 +15,8 @@
 package org.apache.geode.management.internal.cli.converters;
 
 import java.util.Arrays;
-import java.util.List;
 import java.util.Set;
 import java.util.TreeSet;
-
-import org.springframework.shell.core.Completion;
-import org.springframework.shell.core.Converter;
-import org.springframework.shell.core.MethodTarget;
 
 import org.apache.geode.management.cli.ConverterHint;
 import org.apache.geode.management.internal.cli.shell.Gfsh;
@@ -31,33 +26,16 @@ import org.apache.geode.management.internal.cli.shell.Gfsh;
  *
  * @since GemFire 7.0
  */
-public class MemberIdNameConverter implements Converter<String> {
+public class MemberIdNameConverter extends BaseStringConverter {
+
   @Override
-  public boolean supports(Class<?> type, String optionContext) {
-    return String.class.equals(type) && ConverterHint.MEMBERIDNAME.equals(optionContext);
+  public String getConverterHint() {
+    return ConverterHint.MEMBERIDNAME;
   }
 
   @Override
-  public String convertFromText(String value, Class<?> targetType, String optionContext) {
-    return value;
-  }
-
-  @Override
-  public boolean getAllPossibleValues(List<Completion> completions, Class<?> targetType,
-      String existingData, String optionContext, MethodTarget target) {
-    if (String.class.equals(targetType) && ConverterHint.MEMBERIDNAME.equals(optionContext)) {
-      Set<String> memberIdAndNames = getMemberIdAndNames();
-
-      for (String string : memberIdAndNames) {
-        completions.add(new Completion(string));
-      }
-    }
-
-    return !completions.isEmpty();
-  }
-
-  private Set<String> getMemberIdAndNames() {
-    final Set<String> nonLocatorMembers = new TreeSet<String>();
+  public Set<String> getCompletionValues() {
+    final Set<String> nonLocatorMembers = new TreeSet<>();
 
     final Gfsh gfsh = Gfsh.getCurrentInstance();
 

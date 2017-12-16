@@ -160,7 +160,7 @@ public class DistTXState extends TXState {
       throws CommitConflictException, UnsupportedOperationInTransactionException {
     if (logger.isDebugEnabled()) {
       logger.debug("DistTXState.precommit transaction {} is closed {} ", getTransactionId(),
-          this.closed, new Throwable());
+          this.closed/* , new Throwable() */);
     }
 
     if (this.closed) {
@@ -250,7 +250,7 @@ public class DistTXState extends TXState {
   public void commit() throws CommitConflictException {
     if (logger.isDebugEnabled()) {
       logger.debug("DistTXState.commit transaction {} is closed {} ", getTransactionId(),
-          this.closed, new Throwable());
+          this.closed/* , new Throwable() */);
     }
 
     if (this.closed) {
@@ -479,9 +479,7 @@ public class DistTXState extends TXState {
     this.updatingTxStateDuringPreCommit = updatingTxState;
     if (logger.isDebugEnabled()) {
       logger.debug("DistTXState setUpdatingTxStateDuringPreCommit incoming {} final {} ",
-          updatingTxState, this.updatingTxStateDuringPreCommit, new Throwable()); // [DISTTX] TODO:
-                                                                                  // Remove
-                                                                                  // throwable
+          updatingTxState, this.updatingTxStateDuringPreCommit);
     }
   }
 

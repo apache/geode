@@ -15,7 +15,6 @@
 
 package org.apache.geode.management.internal.cli.commands;
 
-import org.junit.Before;
 import org.junit.ClassRule;
 import org.junit.Rule;
 import org.junit.Test;
@@ -41,12 +40,7 @@ public class ListDiskStoreCommandIntegrationTest {
           .withName(MEMBER_NAME).withJMXManager().withAutoStart();
 
   @Rule
-  public GfshCommandRule gfsh = new GfshCommandRule();
-
-  @Before
-  public void setTimeout() {
-    gfsh.setTimeout(1);
-  }
+  public GfshCommandRule gfsh = new GfshCommandRule().withTimeout(1);
 
   @Test
   public void commandSucceedsWhenConnected() throws Exception {

@@ -28,7 +28,7 @@ import org.apache.geode.internal.cache.DiskStoreImpl;
 import org.apache.geode.internal.cache.GemFireCacheImpl;
 import org.apache.geode.internal.cache.LocalRegion;
 import org.apache.geode.internal.cache.PartitionedRegion;
-import org.apache.geode.internal.cache.lru.LRUStatistics;
+import org.apache.geode.internal.cache.eviction.EvictionStatistics;
 import org.apache.geode.management.EvictionAttributesData;
 import org.apache.geode.management.FixedPartitionAttributesData;
 import org.apache.geode.management.MembershipAttributesData;
@@ -89,7 +89,7 @@ public class RegionMBeanBridge<K, V> {
 
   private String member;
 
-  private LRUStatistics lruMemoryStats;
+  private EvictionStatistics lruMemoryStats;
 
   private CachePerfStats regionStats;
 
@@ -173,7 +173,7 @@ public class RegionMBeanBridge<K, V> {
 
     LocalRegion l = (LocalRegion) region;
     if (l.getEvictionController() != null) {
-      LRUStatistics stats = l.getEvictionController().getLRUHelper().getStats();
+      EvictionStatistics stats = l.getEvictionController().getStatistics();
       if (stats != null) {
         regionMonitor.addStatisticsToMonitor(stats.getStats());
         EvictionAttributes ea = region.getAttributes().getEvictionAttributes();

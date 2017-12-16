@@ -1,3 +1,5 @@
+
+
 /*
  * Licensed to the Apache Software Foundation (ASF) under one or more contributor license
  * agreements. See the NOTICE file distributed with this work for additional information regarding
@@ -23,9 +25,8 @@ import org.apache.geode.distributed.internal.membership.InternalDistributedMembe
 import org.apache.geode.internal.cache.InternalRegion;
 import org.apache.geode.internal.cache.RegionEntryContext;
 import org.apache.geode.internal.cache.Token;
-import org.apache.geode.internal.cache.lru.EnableLRU;
-import org.apache.geode.internal.cache.lru.LRUClockNode;
-import org.apache.geode.internal.cache.lru.NewLRUClockHand;
+import org.apache.geode.internal.cache.eviction.EvictionController;
+import org.apache.geode.internal.cache.eviction.EvictionNode;
 import org.apache.geode.internal.cache.persistence.DiskRecoveryStore;
 import org.apache.geode.internal.cache.versions.VersionSource;
 import org.apache.geode.internal.cache.versions.VersionStamp;
@@ -88,7 +89,7 @@ public class VersionedThinLRURegionEntryOffHeapIntKey extends VersionedThinLRURe
   private int regionVersionLowBytes;
   private byte entryVersionHighByte;
   private byte distributedSystemId;
-  // ----------------------------------------- key code -------------------------------------------
+  // --------------------------------------- key fields -------------------------------------------
   // DO NOT modify this class. It was generated from LeafRegionEntry.cpp
   private final int key;
 
@@ -182,29 +183,33 @@ public class VersionedThinLRURegionEntryOffHeapIntKey extends VersionedThinLRURe
   }
 
   @Override
-  public synchronized int updateEntrySize(final EnableLRU capacityController) {
+  public synchronized int updateEntrySize(final EvictionController evictionController) {
     // OFFHEAP: getValue ok w/o incing refcount because we are synced and only getting the size
-    return updateEntrySize(capacityController, getValue());
+    return updateEntrySize(evictionController, getValue());
   }
 
   // DO NOT modify this class. It was generated from LeafRegionEntry.cpp
   @Override
-  public synchronized int updateEntrySize(final EnableLRU capacityController, final Object value) {
+  public synchronized int updateEntrySize(final EvictionController evictionController,
+      final Object value) {
     int oldSize = getEntrySize();
-    int newSize = capacityController.entrySize(getKeyForSizing(), value);
+    int newSize = evictionController.entrySize(getKeyForSizing(), value);
     setEntrySize(newSize);
     int delta = newSize - oldSize;
     return delta;
   }
 
   @Override
-  public boolean testRecentlyUsed() {
+  public boolean isRecentlyUsed() {
     return areAnyBitsSet(RECENTLY_USED);
   }
 
   @Override
-  public void setRecentlyUsed() {
-    setBits(RECENTLY_USED);
+  public void setRecentlyUsed(RegionEntryContext context) {
+    if (!isRecentlyUsed()) {
+      setBits(RECENTLY_USED);
+      context.incRecentlyUsed();
+    }
   }
 
   @Override
@@ -213,7 +218,7 @@ public class VersionedThinLRURegionEntryOffHeapIntKey extends VersionedThinLRURe
   }
 
   @Override
-  public boolean testEvicted() {
+  public boolean isEvicted() {
     return areAnyBitsSet(EVICTED);
   }
 
@@ -228,28 +233,28 @@ public class VersionedThinLRURegionEntryOffHeapIntKey extends VersionedThinLRURe
   }
 
   // DO NOT modify this class. It was generated from LeafRegionEntry.cpp
-  private LRUClockNode nextLRU;
-  private LRUClockNode previousLRU;
+  private EvictionNode nextEvictionNode;
+  private EvictionNode previousEvictionNode;
   private int size;
 
   @Override
-  public void setNextLRUNode(final LRUClockNode nextLRU) {
-    this.nextLRU = nextLRU;
+  public void setNext(final EvictionNode nextEvictionNode) {
+    this.nextEvictionNode = nextEvictionNode;
   }
 
   @Override
-  public LRUClockNode nextLRUNode() {
-    return this.nextLRU;
+  public EvictionNode next() {
+    return this.nextEvictionNode;
   }
 
   @Override
-  public void setPrevLRUNode(final LRUClockNode previousLRU) {
-    this.previousLRU = previousLRU;
+  public void setPrevious(final EvictionNode previousEvictionNode) {
+    this.previousEvictionNode = previousEvictionNode;
   }
 
   @Override
-  public LRUClockNode prevLRUNode() {
-    return this.previousLRU;
+  public EvictionNode previous() {
+    return this.previousEvictionNode;
   }
 
   @Override

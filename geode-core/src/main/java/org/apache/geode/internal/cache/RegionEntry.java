@@ -26,7 +26,7 @@ import org.apache.geode.internal.ByteArrayDataInput;
 import org.apache.geode.internal.InternalStatisticsDisabledException;
 import org.apache.geode.internal.Version;
 import org.apache.geode.internal.cache.InitialImageOperation.Entry;
-import org.apache.geode.internal.cache.lru.NewLRUClockHand;
+import org.apache.geode.internal.cache.eviction.EvictionList;
 import org.apache.geode.internal.cache.versions.VersionSource;
 import org.apache.geode.internal.cache.versions.VersionStamp;
 import org.apache.geode.internal.cache.versions.VersionTag;
@@ -105,7 +105,7 @@ public interface RegionEntry {
   /**
    * Used to mark an LRU entry as having been recently used.
    */
-  void setRecentlyUsed();
+  void setRecentlyUsed(RegionEntryContext context); // same method as on EvictionNode interface
 
   void updateStatsForGet(boolean hit, long time);
 
@@ -437,8 +437,6 @@ public interface RegionEntry {
 
   boolean isInUseByTransaction();
 
-  void setInUseByTransaction(final boolean inUseByTransaction);
-
   /**
    * Increments the number of transactions that are currently referencing this node.
    */
@@ -449,13 +447,13 @@ public interface RegionEntry {
    *
    * @param region the local region that owns this region entry; null if no local region owner
    */
-  void decRefCount(NewLRUClockHand lruList, InternalRegion region);
+  void decRefCount(EvictionList lruList, InternalRegion region);
 
   /**
    * Clear the number of transactions that are currently referencing this node and returns to LRU
    * list
    */
-  void resetRefCount(NewLRUClockHand lruList);
+  void resetRefCount(EvictionList lruList);
 
   @Retained(ABSTRACT_REGION_ENTRY_PREPARE_VALUE_FOR_CACHE)
   Object prepareValueForCache(RegionEntryContext context, Object value, boolean isEntryUpdate);

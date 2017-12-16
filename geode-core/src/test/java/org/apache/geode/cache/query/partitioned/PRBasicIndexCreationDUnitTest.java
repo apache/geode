@@ -18,6 +18,7 @@ import static org.apache.geode.cache.query.Utils.*;
 import static org.junit.Assert.*;
 
 import java.util.Collection;
+import java.util.Properties;
 
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
@@ -29,6 +30,7 @@ import org.apache.geode.cache.query.IndexNameConflictException;
 import org.apache.geode.cache.query.data.Portfolio;
 import org.apache.geode.cache.query.data.PortfolioData;
 import org.apache.geode.cache30.CacheSerializableRunnable;
+import org.apache.geode.distributed.ConfigurationProperties;
 import org.apache.geode.internal.cache.GemFireCacheImpl;
 import org.apache.geode.internal.cache.PartitionedRegionDUnitTestCase;
 import org.apache.geode.test.dunit.Assert;
@@ -75,6 +77,15 @@ public class PRBasicIndexCreationDUnitTest extends PartitionedRegionDUnitTestCas
   final int cnt = 0, cntDest = 1003;
 
   final int redundancy = 0;
+
+
+  @Override
+  public Properties getDistributedSystemProperties() {
+    Properties properties = super.getDistributedSystemProperties();
+    properties.put(ConfigurationProperties.SERIALIZABLE_OBJECT_FILTER,
+        "org.apache.geode.cache.query.data.*");
+    return properties;
+  }
 
   /**
    * Tests basic index creation on a partitioned system.

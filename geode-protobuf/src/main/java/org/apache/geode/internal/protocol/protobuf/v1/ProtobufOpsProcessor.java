@@ -28,7 +28,9 @@ import org.apache.geode.internal.protocol.Result;
 import org.apache.geode.internal.protocol.protobuf.v1.registry.ProtobufOperationContextRegistry;
 import org.apache.geode.internal.protocol.protobuf.v1.utilities.ProtobufResponseUtilities;
 import org.apache.geode.internal.protocol.serialization.SerializationService;
+import org.apache.geode.internal.protocol.state.ConnectionTerminatingStateProcessor;
 import org.apache.geode.internal.protocol.state.exception.ConnectionStateException;
+import org.apache.geode.internal.protocol.state.exception.OperationNotAuthorizedException;
 
 /**
  * This handles protobuf requests by determining the operation type of the request and dispatching
@@ -59,8 +61,14 @@ public class ProtobufOpsProcessor {
       messageExecutionContext.getConnectionStateProcessor()
           .validateOperation(messageExecutionContext, operationContext);
       result = processOperation(request, messageExecutionContext, requestType, operationContext);
+    } catch (OperationNotAuthorizedException e) {
+      // Don't move to a terminating state for authorization state failures
+      logger.warn(e.getMessage());
+      result = Failure.of(ProtobufResponseUtilities.makeErrorResponse(e));
     } catch (ConnectionStateException e) {
       logger.warn(e.getMessage());
+      messageExecutionContext
+          .setConnectionStateProcessor(new ConnectionTerminatingStateProcessor());
       result = Failure.of(ProtobufResponseUtilities.makeErrorResponse(e));
     }
 
@@ -69,7 +77,8 @@ public class ProtobufOpsProcessor {
   }
 
   private Result processOperation(ClientProtocol.Request request, MessageExecutionContext context,
-      ClientProtocol.Request.RequestAPICase requestType, OperationContext operationContext) {
+      ClientProtocol.Request.RequestAPICase requestType, OperationContext operationContext)
+      throws ConnectionStateException {
     try {
       return operationContext.getOperationHandler().process(serializationService,
           operationContext.getFromRequest().apply(request), context);

@@ -14,17 +14,12 @@
  */
 package org.apache.geode.management.internal.cli.util;
 
-import java.util.List;
-
 import org.apache.geode.cache.DataPolicy;
 import org.apache.geode.cache.EvictionAction;
-import org.apache.geode.cache.EvictionAlgorithm;
 import org.apache.geode.cache.ExpirationAction;
 import org.apache.geode.cache.PartitionAttributesFactory;
 import org.apache.geode.cache.Scope;
 import org.apache.geode.internal.cache.AbstractRegion;
-import org.apache.geode.management.internal.cli.domain.EvictionAttributesInfo;
-import org.apache.geode.management.internal.cli.domain.PartitionAttributesInfo;
 
 /***
  * Contains the default values for the region attributes
@@ -36,26 +31,19 @@ public class RegionAttributesDefault {
   public static final boolean CLONING_ENABLED = false;
   public static final boolean CONCURRENCY_CHECK_ENABLED = true;
   public static final boolean ENABLE_ASYNC_CONFLATION = false;
-  public static final boolean ENABLE_GATEWAY = false;
   public static final boolean ENABLE_SUBSCRIPTION_CONFLATION = false;
   public static final boolean IGNORE_JTA = false;
   public static final boolean INDEX_MAINTENANCE_SYNCHRONOUS = true;
   public static final boolean MULTICAST_ENABLED = false;
   public static final int CONCURRENCY_LEVEL = 16;
   public static final String DISK_STORE_NAME = "";
-  public static final String GATEWAY_HUB_ID = "";
   public static final int INITIAL_CAPACITY = 16;
   public static final float LOAD_FACTOR = 0.75f;
   public static final String POOL_NAME = "";
   public static final boolean STATISTICS_ENABLED = false;
   public static final boolean IS_LOCK_GRANTOR = false;
-  public static final String cacheListenerClassNames = "";
-  public static final String cacheLoaderClassName = "";
-  public static final String cacheWriterClassName = "";
   public static final String COMPRESSOR_CLASS_NAME = null;
 
-  public static final PartitionAttributesInfo partitionAttributesInfo = null;
-  public static final EvictionAttributesInfo evictionAttributesInfo = null;
   public static final int ENTRY_TIME_TO_LIVE = 0;
   public static final int REGION_TIME_TO_LIVE = 0;
   public static final int ENTRY_IDLE_TIMEOUT = 0;
@@ -68,14 +56,12 @@ public class RegionAttributesDefault {
   // PA
   // Partition attributes
   public static final int REDUNDANT_COPIES = 0;
-  public static final long TOTAL_MAX_MEMORY = PartitionAttributesFactory.GLOBAL_MAX_MEMORY_DEFAULT;
   public static final int TOTAL_NUM_BUCKETS = PartitionAttributesFactory.GLOBAL_MAX_BUCKETS_DEFAULT;
   public static final String COLOCATED_WITH = "";
   public static final long RECOVERY_DELAY = PartitionAttributesFactory.RECOVERY_DELAY_DEFAULT;
   public static final long STARTUP_RECOVERY_DELAY =
       PartitionAttributesFactory.STARTUP_RECOVERY_DELAY_DEFAULT;
   public static final String PARTITION_RESOLVER = "";
-  public static final List<String> PARTITION_LISTENERS = null;
 
 
   // EVICTION ATTRIBUTES

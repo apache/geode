@@ -1215,7 +1215,7 @@ public class PartitionedRegionQueryDUnitTest extends JUnit4CacheTestCase {
   }
 
 
-  private class TestObject implements Serializable, Comparable {
+  public static class TestObject implements DataSerializable, Comparable {
     @Override
     public int compareTo(Object o) {
       if (o instanceof TestObject) {
@@ -1226,10 +1226,21 @@ public class PartitionedRegionQueryDUnitTest extends JUnit4CacheTestCase {
 
     public Double score;
 
+    public TestObject() {}
+
     public TestObject(double score) {
       this.score = score;
     }
 
+    @Override
+    public void toData(DataOutput out) throws IOException {
+      out.writeDouble(score);
+    }
+
+    @Override
+    public void fromData(DataInput in) throws IOException, ClassNotFoundException {
+      score = in.readDouble();
+    }
   }
 
   public interface PdxAssetFactory extends Serializable {

@@ -42,6 +42,10 @@ public class CommandResultAssert
     super(new CommandResultExecution(output, commandResult), CommandResultAssert.class);
   }
 
+  public CommandResult getCommandResult() {
+    return actual.getCommandResult();
+  }
+
   /**
    * Verifies that the gfsh output contains the given key, value pair.
    *
@@ -98,6 +102,16 @@ public class CommandResultAssert
     Assertions.assertThat(result.getStatus()).describedAs(actual.getOutput())
         .isEqualTo(Result.Status.OK);
 
+    return this;
+  }
+
+  public CommandResultAssert hasFailToPersistError() {
+    Assertions.assertThat(actual.getCommandResult().failedToPersist()).isTrue();
+    return this;
+  }
+
+  public CommandResultAssert hasNoFailToPersistError() {
+    Assertions.assertThat(actual.getCommandResult().failedToPersist()).isFalse();
     return this;
   }
 
@@ -195,7 +209,7 @@ public class CommandResultAssert
     for (int rowIndex = 0; rowIndex < numberOfRows; rowIndex++) {
       Object[] rowValues = new Object[headers.length];
       for (int columnIndex = 0; columnIndex < headers.length; columnIndex++) {
-        rowValues[columnIndex] = allValues.get(headers[columnIndex]).get(rowIndex);
+        rowValues[columnIndex] = allValues.get(headers[columnIndex]).get(rowIndex).toString();
       }
 
       // check if entire row is equal, but if not, continue to next row
@@ -205,7 +219,7 @@ public class CommandResultAssert
     }
 
     // did not find any matching rows, then this would pass only if we do not pass in any values
-    assertThat(headersThenValues.length).isEqualTo(0);
+    assertThat(headersThenValues.length).describedAs("No matching row found.").isEqualTo(0);
     return this;
   }
 

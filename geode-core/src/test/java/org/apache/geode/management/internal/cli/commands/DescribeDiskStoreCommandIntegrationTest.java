@@ -18,10 +18,8 @@ package org.apache.geode.management.internal.cli.commands;
 import java.util.Arrays;
 import java.util.List;
 
-import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.ClassRule;
-import org.junit.Rule;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
@@ -56,12 +54,7 @@ public class DescribeDiskStoreCommandIntegrationTest {
   }
 
   @ClassRule
-  public static GfshCommandRule gfsh = new GfshCommandRule();
-
-  @Before
-  public void setTimeout() {
-    gfsh.setTimeout(1);
-  }
+  public static GfshCommandRule gfsh = new GfshCommandRule().withTimeout(1);
 
   @Test
   public void commandFailsWithoutOptions() throws Exception {

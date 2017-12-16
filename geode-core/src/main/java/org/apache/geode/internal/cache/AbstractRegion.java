@@ -83,10 +83,10 @@ import org.apache.geode.distributed.internal.DistributionConfig;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
 import org.apache.geode.internal.DataSerializableFixedID;
+import org.apache.geode.internal.cache.eviction.EvictionController;
 import org.apache.geode.internal.cache.extension.Extensible;
 import org.apache.geode.internal.cache.extension.ExtensionPoint;
 import org.apache.geode.internal.cache.extension.SimpleExtensionPoint;
-import org.apache.geode.internal.cache.lru.LRUAlgorithm;
 import org.apache.geode.internal.cache.snapshot.RegionSnapshotServiceImpl;
 import org.apache.geode.internal.i18n.LocalizedStrings;
 import org.apache.geode.internal.logging.LogService;
@@ -127,7 +127,7 @@ public abstract class AbstractRegion implements InternalRegion, AttributesMutato
 
   private volatile CacheWriter cacheWriter;
 
-  private LRUAlgorithm evictionController;
+  private EvictionController evictionController;
 
   protected int entryIdleTimeout;
 
@@ -1699,11 +1699,11 @@ public abstract class AbstractRegion implements InternalRegion, AttributesMutato
     return this.evictionAttributes;
   }
 
-  private void setEvictionController(LRUAlgorithm evictionController) {
+  private void setEvictionController(EvictionController evictionController) {
     this.evictionController = evictionController;
   }
 
-  public LRUAlgorithm getEvictionController() {
+  public EvictionController getEvictionController() {
     return this.evictionController;
   }
 
@@ -1759,6 +1759,7 @@ public abstract class AbstractRegion implements InternalRegion, AttributesMutato
     return this.cache;
   }
 
+  @Override
   public long cacheTimeMillis() {
     return this.cache.getInternalDistributedSystem().getClock().cacheTimeMillis();
   }
@@ -1841,7 +1842,13 @@ public abstract class AbstractRegion implements InternalRegion, AttributesMutato
     return this.offHeap;
   }
 
+  @Override
   public boolean isConcurrencyChecksEnabled() {
     return this.concurrencyChecksEnabled;
+  }
+
+  @Override
+  public void incRecentlyUsed() {
+    // nothing
   }
 }

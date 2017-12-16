@@ -57,7 +57,7 @@ public class DistributedAckRegionDUnitTest extends MultiVMRegionTestCase {
   }
 
   public Properties getDistributedSystemProperties() {
-    Properties p = new Properties();
+    Properties p = super.getDistributedSystemProperties();
     p.put(STATISTIC_SAMPLING_ENABLED, "true");
     p.put(LOG_LEVEL, LogWriterUtils.getDUnitLogLevel());
     return p;

@@ -108,7 +108,7 @@ subprojects {
       includeCategories 'org.apache.geode.test.junit.categories.DistributedTest'
       excludeCategories 'org.apache.geode.test.junit.categories.FlakyTest'
     }
-    forkEvery 30
+    forkEvery 1
   }
   
   task flakyTest(type:Test) {
@@ -249,6 +249,9 @@ subprojects {
         maxHeapSize '768m'
 //        jvmArgs = ['-XX:+HeapDumpOnOutOfMemoryError', '-ea',"-XX:+PrintGC", "-XX:+PrintGCDetails","-XX:+PrintGCTimeStamps"]
         jvmArgs = ['-XX:+HeapDumpOnOutOfMemoryError', '-ea']
+//        if(!testJVM.trim().isEmpty()) {
+//          executable="${testJVM}/bin/java"
+//        }
 
         systemProperty 'gemfire.DEFAULT_MAX_OPLOG_SIZE', '10'
         systemProperty 'gemfire.disallowMcastDefaults', 'true'

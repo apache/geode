@@ -68,6 +68,10 @@ public class GenericProtocolServerConnection extends ServerConnection {
       OutputStream outputStream = socket.getOutputStream();
 
       protocolProcessor.processMessage(inputStream, outputStream);
+
+      if (protocolProcessor.socketProcessingIsFinished()) {
+        this.setFlagProcessMessagesAsFalse();
+      }
     } catch (EOFException e) {
       this.setFlagProcessMessagesAsFalse();
       setClientDisconnectedException(e);
@@ -112,7 +116,7 @@ public class GenericProtocolServerConnection extends ServerConnection {
 
   @Override
   protected int getClientReadTimeout() {
-    return PoolFactory.DEFAULT_READ_TIMEOUT;
+    return 0;
   }
 
   @Override

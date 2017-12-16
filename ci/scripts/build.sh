@@ -42,6 +42,11 @@ if [ -z ${SERVICE_ACCOUNT+x} ]; then
   exit 1
 fi
 
+if [ -z ${PUBLIC_BUCKET+x} ]; then
+  echo "PUBLIC_BUCKET is unset. Check your pipeline configuration and make sure this script is called properly."
+  exit 1
+fi
+
 if [ -z ${GEODE_BUILD_VERSION_NUMBER+x} ]; then
   echo "gradle.properties does not seem to contain a valid versionNumber. Please check the source tree."
   exit 1
@@ -81,8 +86,8 @@ GRADLE_EXIT_STATUS=$?
 set -e
 
 popd
-ARTIFACTS_DESTINATION="files.apachegeode-ci.info/builds/${FULL_PRODUCT_VERSION}"
-TEST_RESULTS_DESTINATION="${ARTIFACTS_DESTINATION}/test-results/"
+ARTIFACTS_DESTINATION="${PUBLIC_BUCKET}/builds/${FULL_PRODUCT_VERSION}"
+TEST_RESULTS_DESTINATION="${ARTIFACTS_DESTINATION}/test-results/build/"
 FULL_BUILD_ARCHIVE_DESTINATION="${ARTIFACTS_DESTINATION}/geodefiles-${FULL_PRODUCT_VERSION}.tgz"
 BUILD_ARTIFACTS_FILENAME=geode-build-artifacts-${FULL_PRODUCT_VERSION}.tgz
 BUILD_ARTIFACTS_DESTINATION="${ARTIFACTS_DESTINATION}/${BUILD_ARTIFACTS_FILENAME}"

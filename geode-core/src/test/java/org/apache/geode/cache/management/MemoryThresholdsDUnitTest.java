@@ -17,6 +17,9 @@ package org.apache.geode.cache.management;
 import static org.apache.geode.distributed.ConfigurationProperties.*;
 import static org.apache.geode.test.dunit.Assert.*;
 
+import java.io.DataInput;
+import java.io.DataOutput;
+import java.io.IOException;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -34,6 +37,7 @@ import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
+import org.apache.geode.DataSerializable;
 import org.apache.geode.cache.AttributesFactory;
 import org.apache.geode.cache.AttributesMutator;
 import org.apache.geode.cache.Cache;
@@ -105,10 +109,12 @@ import org.apache.geode.test.junit.categories.FlakyTest;
 @Category(DistributedTest.class)
 public class MemoryThresholdsDUnitTest extends ClientServerTestCase {
 
-  public static class Range implements Serializable {
+  public static class Range implements DataSerializable {
     public static final Range DEFAULT = new Range(0, 20);
-    public final int start;
-    public final int end;
+    public int start;
+    public int end;
+
+    public Range() {}
 
     public Range(int s, int e) {
       this.start = s;
@@ -122,6 +128,18 @@ public class MemoryThresholdsDUnitTest extends ClientServerTestCase {
 
     public int width() {
       return end - start;
+    }
+
+    @Override
+    public void toData(DataOutput out) throws IOException {
+      out.writeInt(start);
+      out.writeInt(end);
+    }
+
+    @Override
+    public void fromData(DataInput in) throws IOException, ClassNotFoundException {
+      start = in.readInt();
+      end = in.readInt();
     }
   }
 
@@ -1654,7 +1672,7 @@ public class MemoryThresholdsDUnitTest extends ClientServerTestCase {
     }
   };
 
-  private class RejectFunction extends FunctionAdapter {
+  static class RejectFunction extends FunctionAdapter implements DataSerializable {
     private boolean optimizeForWrite = true;
     private String id = "RejectFunction";
 
@@ -1698,6 +1716,16 @@ public class MemoryThresholdsDUnitTest extends ClientServerTestCase {
 
     public boolean isHA() {
       return false;
+    }
+
+    @Override
+    public void toData(DataOutput out) throws IOException {
+      out.writeBoolean(optimizeForWrite);
+    }
+
+    @Override
+    public void fromData(DataInput in) throws IOException, ClassNotFoundException {
+      optimizeForWrite = in.readBoolean();
     }
   }
 

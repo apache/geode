@@ -19,6 +19,8 @@ import static org.apache.geode.test.dunit.Assert.assertFalse;
 import static org.apache.geode.test.dunit.Assert.assertTrue;
 import static org.apache.geode.test.dunit.Assert.fail;
 
+import java.io.DataInput;
+import java.io.DataOutput;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
@@ -45,6 +47,7 @@ import org.junit.experimental.categories.Category;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
 
+import org.apache.geode.DataSerializable;
 import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.CacheFactory;
 import org.apache.geode.cache.DataPolicy;
@@ -1684,6 +1687,10 @@ public class RollingUpgrade2DUnitTest extends JUnit4DistributedTestCase {
 
   public static Cache createCache(Properties systemProperties) throws Exception {
     systemProperties.setProperty(DistributionConfig.USE_CLUSTER_CONFIGURATION_NAME, "false");
+    if (Version.CURRENT_ORDINAL < 75) {
+      systemProperties.remove("validate-serializable-objects");
+      systemProperties.remove("serializable-object-filter");
+    }
     CacheFactory cf = new CacheFactory(systemProperties);
     return cf.create();
   }
@@ -1978,7 +1985,9 @@ public class RollingUpgrade2DUnitTest extends JUnit4DistributedTestCase {
     return ccp.getHARegion().getName();
   }
 
-  public static class GetDataSerializableFunction implements Function {
+  public static class GetDataSerializableFunction implements Function, DataSerializable {
+
+    public GetDataSerializableFunction() {}
 
     @Override
     public void execute(FunctionContext context) {
@@ -1995,6 +2004,16 @@ public class RollingUpgrade2DUnitTest extends JUnit4DistributedTestCase {
     @Override
     public String getId() {
       return GetDataSerializableFunction.class.getName();
+    }
+
+    @Override
+    public void toData(DataOutput out) throws IOException {
+
+    }
+
+    @Override
+    public void fromData(DataInput in) throws IOException, ClassNotFoundException {
+
     }
   }
 }

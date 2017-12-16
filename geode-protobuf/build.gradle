@@ -15,21 +15,11 @@
  * limitations under the License.
  */
 
-apply plugin: 'com.google.protobuf'
-apply plugin: 'idea'
-
-buildscript {
-    repositories {
-        mavenCentral()
-    }
-    dependencies {
-        classpath 'com.google.protobuf:protobuf-gradle-plugin:' + project.'protobuf-gradle-plugin.version'
-    }
-}
-
 dependencies {
     provided project(':geode-client-protocol')
     provided project(':geode-core')
+    compile project(':geode-protobuf-messages')
+
     testCompile project(':geode-junit')
     testCompile files(project(':geode-core').sourceSets.test.output)
 
@@ -39,33 +29,3 @@ dependencies {
 
     compile 'com.google.protobuf:protobuf-java:' + project.'protobuf-java.version'
 }
-
-protobuf {
-    protoc {
-        // The artifact spec for the Protobuf Compiler
-        artifact = 'com.google.protobuf:protoc:' + project.'protoc.version'
-    }
-    generatedFilesBaseDir = "$buildDir/generated-src/proto"
-}
-
-sourceSets {
-    main {
-        java {
-            srcDir "$buildDir/generated-src/proto/main/java"
-        }
-    }
-}
-// let IntelliJ know where the generated sources are.
-idea {
-    module {
-        sourceDirs += file("${protobuf.generatedFilesBaseDir}/main/java")
-    }
-}
-
-task zip(type: Zip) {
-    from 'src/main/proto'
-    baseName = "${project.name}-definitions"
-    destinationDir = file("$buildDir/libs")
-}
-
-assemble.dependsOn 'zip'

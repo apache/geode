@@ -36,6 +36,7 @@ import org.junit.ClassRule;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
+import org.apache.geode.DataSerializable;
 import org.apache.geode.DataSerializer;
 import org.apache.geode.Delta;
 import org.apache.geode.cache.CacheFactory;
@@ -271,11 +272,13 @@ public class ClientProxyWithDeltaTest implements Serializable {
   /**
    * Object that implements {@code Delta} for use in {@code Cache}.
    */
-  private static class DeltaEnabledObject implements Delta, Serializable {
+  private static class DeltaEnabledObject implements Delta, DataSerializable {
 
     private static final AtomicBoolean fromDeltaInvoked = new AtomicBoolean();
 
     private int value = 0;
+
+    public DeltaEnabledObject() {}
 
     public void setValue(int value) {
       this.value = value;
@@ -303,6 +306,16 @@ public class ClientProxyWithDeltaTest implements Serializable {
 
     static boolean fromDeltaInvoked() {
       return fromDeltaInvoked.get();
+    }
+
+    @Override
+    public void toData(DataOutput out) throws IOException {
+      out.writeInt(value);
+    }
+
+    @Override
+    public void fromData(DataInput in) throws IOException, ClassNotFoundException {
+      value = in.readInt();
     }
   }
 }

@@ -14,6 +14,16 @@
  */
 package org.apache.geode.internal.protocol.protobuf.v1;
 
+import static org.junit.Assert.assertTrue;
+
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.net.Socket;
+
+import com.google.protobuf.MessageLite;
+
+import org.apache.geode.internal.protocol.protobuf.ProtocolVersion;
 import org.apache.geode.internal.protocol.protobuf.v1.utilities.ProtobufRequestUtilities;
 import org.apache.geode.internal.protocol.protobuf.v1.utilities.ProtobufUtilities;
 import org.apache.geode.internal.protocol.serialization.SerializationService;
@@ -21,6 +31,24 @@ import org.apache.geode.internal.protocol.serialization.exception.UnsupportedEnc
 import org.apache.geode.internal.protocol.serialization.registry.exception.CodecNotRegisteredForTypeException;
 
 public class MessageUtil {
+
+  public static void performAndVerifyHandshake(Socket socket) throws IOException {
+    sendHandshake(socket);
+    verifyHandshakeSuccess(socket);
+  }
+
+  public static void verifyHandshakeSuccess(Socket socket) throws IOException {
+    ProtocolVersion.VersionAcknowledgement handshakeResponse =
+        ProtocolVersion.VersionAcknowledgement.parseDelimitedFrom(socket.getInputStream());
+    assertTrue(handshakeResponse.getVersionAccepted());
+  }
+
+  public static void sendHandshake(Socket socket) throws IOException {
+    ProtocolVersion.NewConnectionClientVersion.newBuilder()
+        .setMajorVersion(ProtocolVersion.MajorVersions.CURRENT_MAJOR_VERSION_VALUE)
+        .setMinorVersion(ProtocolVersion.MinorVersions.CURRENT_MINOR_VERSION_VALUE).build()
+        .writeDelimitedTo(socket.getOutputStream());
+  }
 
   public static RegionAPI.GetRegionRequest makeGetRegionRequest(String requestRegion) {
     return RegionAPI.GetRegionRequest.newBuilder().setRegionName(requestRegion).build();
@@ -67,5 +95,15 @@ public class MessageUtil {
 
   private static RegionAPI.GetRequest.Builder getGetRequestBuilder() {
     return RegionAPI.GetRequest.newBuilder();
+  }
+
+  public static ByteArrayInputStream writeMessageDelimitedToInputStream(MessageLite message) {
+    try {
+      ByteArrayOutputStream output = new ByteArrayOutputStream();
+      message.writeDelimitedTo(output);
+      return new ByteArrayInputStream(output.toByteArray());
+    } catch (IOException e) {
+      throw new RuntimeException(e); // never happens.
+    }
   }
 }

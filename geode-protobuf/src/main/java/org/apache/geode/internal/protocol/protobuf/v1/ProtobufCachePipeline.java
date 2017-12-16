@@ -57,4 +57,9 @@ public final class ProtobufCachePipeline implements ClientProtocolProcessor {
   public void close() {
     this.statistics.clientDisconnected();
   }
+
+  @Override
+  public boolean socketProcessingIsFinished() {
+    return messageExecutionContext.getConnectionStateProcessor().socketProcessingIsFinished();
+  }
 }

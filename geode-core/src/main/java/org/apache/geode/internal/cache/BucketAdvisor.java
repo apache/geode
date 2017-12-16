@@ -21,6 +21,7 @@ import java.io.ObjectInputStream;
 import java.io.Serializable;
 import java.util.AbstractSet;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -658,7 +659,7 @@ public class BucketAdvisor extends CacheDistributionAdvisor {
     @SuppressWarnings("unchecked")
     private void readObject(ObjectInputStream stream) throws IOException, ClassNotFoundException {
       stream.defaultReadObject();
-      backingSet = m.keySet();
+      backingSet = m == null ? Collections.<E>emptySet() : m.keySet();
     }
   }
 

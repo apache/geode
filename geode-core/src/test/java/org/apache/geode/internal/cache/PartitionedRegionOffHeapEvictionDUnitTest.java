@@ -23,7 +23,7 @@ import org.junit.experimental.categories.Category;
 import org.apache.geode.cache.Region;
 import org.apache.geode.internal.cache.control.InternalResourceManager.ResourceType;
 import org.apache.geode.internal.cache.control.OffHeapMemoryMonitor;
-import org.apache.geode.internal.cache.lru.HeapEvictor;
+import org.apache.geode.internal.cache.eviction.HeapEvictor;
 import org.apache.geode.test.dunit.Invoke;
 import org.apache.geode.test.dunit.SerializableRunnable;
 import org.apache.geode.test.junit.categories.DistributedTest;
@@ -76,7 +76,7 @@ public class PartitionedRegionOffHeapEvictionDUnitTest extends PartitionedRegion
 
   @Override
   protected void raiseFakeNotification() {
-    ((GemFireCacheImpl) getCache()).getOffHeapEvictor().testAbortAfterLoopCount = 1;
+    ((GemFireCacheImpl) getCache()).getOffHeapEvictor().setTestAbortAfterLoopCount(1);
 
     setEvictionPercentage(85);
     OffHeapMemoryMonitor ohmm =
@@ -88,6 +88,7 @@ public class PartitionedRegionOffHeapEvictionDUnitTest extends PartitionedRegion
 
   @Override
   protected void cleanUpAfterFakeNotification() {
-    ((GemFireCacheImpl) getCache()).getOffHeapEvictor().testAbortAfterLoopCount = Integer.MAX_VALUE;
+    ((GemFireCacheImpl) getCache()).getOffHeapEvictor()
+        .setTestAbortAfterLoopCount(Integer.MAX_VALUE);
   }
 }

@@ -17,7 +17,7 @@ package org.apache.geode.management.internal.cli.functions;
 import org.apache.logging.log4j.Logger;
 
 import org.apache.geode.cache.Cache;
-import org.apache.geode.cache.execute.FunctionAdapter;
+import org.apache.geode.cache.execute.Function;
 import org.apache.geode.cache.execute.FunctionContext;
 import org.apache.geode.cache.execute.ResultSender;
 import org.apache.geode.cache.wan.GatewayEventFilter;
@@ -27,14 +27,12 @@ import org.apache.geode.cache.wan.GatewaySenderFactory;
 import org.apache.geode.cache.wan.GatewayTransportFilter;
 import org.apache.geode.internal.ClassPathLoader;
 import org.apache.geode.internal.InternalEntity;
-import org.apache.geode.internal.cache.wan.GatewaySenderException;
 import org.apache.geode.internal.cache.xmlcache.CacheXml;
 import org.apache.geode.internal.logging.LogService;
-import org.apache.geode.management.internal.cli.CliUtil;
 import org.apache.geode.management.internal.cli.i18n.CliStrings;
 import org.apache.geode.management.internal.configuration.domain.XmlEntity;
 
-public class GatewaySenderCreateFunction extends FunctionAdapter implements InternalEntity {
+public class GatewaySenderCreateFunction implements Function, InternalEntity {
 
   private static final Logger logger = LogService.getLogger();
 
@@ -50,8 +48,7 @@ public class GatewaySenderCreateFunction extends FunctionAdapter implements Inte
     ResultSender<Object> resultSender = context.getResultSender();
 
     Cache cache = context.getCache();
-    String memberNameOrId =
-        CliUtil.getMemberNameOrId(cache.getDistributedSystem().getDistributedMember());
+    String memberNameOrId = context.getMemberName();
 
     GatewaySenderFunctionArgs gatewaySenderCreateArgs =
         (GatewaySenderFunctionArgs) context.getArguments();
@@ -63,27 +60,10 @@ public class GatewaySenderCreateFunction extends FunctionAdapter implements Inte
       resultSender.lastResult(new CliFunctionResult(memberNameOrId, xmlEntity,
           CliStrings.format(CliStrings.CREATE_GATEWAYSENDER__MSG__GATEWAYSENDER_0_CREATED_ON_1,
               new Object[] {createdGatewaySender.getId(), memberNameOrId})));
-    } catch (GatewaySenderException e) {
-      resultSender.lastResult(handleException(memberNameOrId, e.getMessage(), e));
     } catch (Exception e) {
-      String exceptionMsg = e.getMessage();
-      if (exceptionMsg == null) {
-        exceptionMsg = CliUtil.stackTraceAsString(e);
-      }
-      resultSender.lastResult(handleException(memberNameOrId, exceptionMsg, e));
+      logger.error(e.getMessage(), e);
+      resultSender.lastResult(new CliFunctionResult(memberNameOrId, e, null));
     }
-  }
-
-  private CliFunctionResult handleException(final String memberNameOrId, final String exceptionMsg,
-      final Exception e) {
-    if (e != null && logger.isDebugEnabled()) {
-      logger.debug(e.getMessage(), e);
-    }
-    if (exceptionMsg != null) {
-      return new CliFunctionResult(memberNameOrId, false, exceptionMsg);
-    }
-
-    return new CliFunctionResult(memberNameOrId);
   }
 
   /**
@@ -93,7 +73,7 @@ public class GatewaySenderCreateFunction extends FunctionAdapter implements Inte
    * @param gatewaySenderCreateArgs
    * @return GatewaySender
    */
-  private static GatewaySender createGatewaySender(Cache cache,
+  private GatewaySender createGatewaySender(Cache cache,
       GatewaySenderFunctionArgs gatewaySenderCreateArgs) {
     GatewaySenderFactory gateway = cache.createGatewaySenderFactory();
 

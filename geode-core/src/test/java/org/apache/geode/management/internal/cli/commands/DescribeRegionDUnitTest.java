@@ -14,22 +14,9 @@
  */
 package org.apache.geode.management.internal.cli.commands;
 
-import static org.apache.geode.distributed.ConfigurationProperties.ENABLE_TIME_STATISTICS;
-import static org.apache.geode.distributed.ConfigurationProperties.GROUPS;
-import static org.apache.geode.distributed.ConfigurationProperties.LOCATORS;
-import static org.apache.geode.distributed.ConfigurationProperties.LOG_LEVEL;
-import static org.apache.geode.distributed.ConfigurationProperties.MCAST_PORT;
-import static org.apache.geode.distributed.ConfigurationProperties.NAME;
-import static org.apache.geode.distributed.ConfigurationProperties.STATISTIC_SAMPLING_ENABLED;
 import static org.apache.geode.management.internal.cli.i18n.CliStrings.DESCRIBE_REGION;
 import static org.apache.geode.management.internal.cli.i18n.CliStrings.DESCRIBE_REGION__NAME;
-import static org.apache.geode.management.internal.cli.i18n.CliStrings.GROUP;
-import static org.apache.geode.management.internal.cli.i18n.CliStrings.LIST_REGION;
-import static org.apache.geode.management.internal.cli.i18n.CliStrings.MEMBER;
 import static org.assertj.core.api.Assertions.assertThat;
-
-import java.io.Serializable;
-import java.util.Properties;
 
 import org.junit.BeforeClass;
 import org.junit.ClassRule;
@@ -55,11 +42,10 @@ import org.apache.geode.test.dunit.VM;
 import org.apache.geode.test.dunit.rules.LocatorServerStartupRule;
 import org.apache.geode.test.dunit.rules.MemberVM;
 import org.apache.geode.test.junit.categories.DistributedTest;
-import org.apache.geode.test.junit.categories.FlakyTest;
 import org.apache.geode.test.junit.rules.GfshCommandRule;
 
 @Category(DistributedTest.class)
-public class DescribeRegionDUnitTest implements Serializable {
+public class DescribeRegionDUnitTest {
   private static final String REGION1 = "region1";
   private static final String REGION2 = "region2";
   private static final String REGION3 = "region3";
@@ -67,14 +53,8 @@ public class DescribeRegionDUnitTest implements Serializable {
   private static final String SUBREGION1B = "subregion1B";
   private static final String SUBREGION1C = "subregion1C";
   private static final String PR1 = "PR1";
-  private static final String LOCALREGIONONMANAGER = "LocalRegionOnManager";
+  private static final String LOCAL_REGION = "LocalRegion";
 
-  private static final String LOCATOR_NAME = "Locator";
-  private static final String SERVER1_NAME = "Server-1";
-  private static final String SERVER2_NAME = "Server-2";
-  private static final String GROUP1_NAME = "G1";
-  private static final String GROUP2_NAME = "G2";
-  private static final String GROUP3_NAME = "G3";
   private static final String PART1_NAME = "Par1";
   private static final String PART2_NAME = "Par2";
 
@@ -82,22 +62,16 @@ public class DescribeRegionDUnitTest implements Serializable {
   public static LocatorServerStartupRule lsRule = new LocatorServerStartupRule();
 
   @ClassRule
-  public static GfshCommandRule gfshCommandRule = new GfshCommandRule();
+  public static GfshCommandRule gfsh = new GfshCommandRule();
 
   @BeforeClass
   public static void setupSystem() throws Exception {
-    final Properties locatorProps = createProperties(LOCATOR_NAME, GROUP3_NAME);
-    MemberVM locator = lsRule.startLocatorVM(0, locatorProps);
+    MemberVM locator = lsRule.startLocatorVM(0);
+    MemberVM server1 = lsRule.startServerVM(1, "group1", locator.getPort());
+    MemberVM server2 = lsRule.startServerVM(2, "group2", locator.getPort());
 
-    final Properties managerProps = createProperties(SERVER1_NAME, GROUP1_NAME);
-    managerProps.setProperty(LOCATORS, "localhost[" + locator.getPort() + "]");
-    MemberVM manager = lsRule.startServerVM(1, managerProps, locator.getPort());
-
-    final Properties serverProps = createProperties(SERVER2_NAME, GROUP2_NAME);
-    MemberVM server = lsRule.startServerVM(2, serverProps, locator.getPort());
-
-    manager.invoke(() -> {
-      final Cache cache = CacheFactory.getAnyInstance();
+    server1.invoke(() -> {
+      final Cache cache = LocatorServerStartupRule.getCache();
       RegionFactory<String, Integer> dataRegionFactory =
           cache.createRegionFactory(RegionShortcut.PARTITION);
       dataRegionFactory.setConcurrencyLevel(4);
@@ -114,11 +88,11 @@ public class DescribeRegionDUnitTest implements Serializable {
       dataRegionFactory.setPartitionAttributes(pa);
 
       dataRegionFactory.create(PR1);
-      createLocalRegion(LOCALREGIONONMANAGER);
+      createLocalRegion(LOCAL_REGION);
     });
 
-    server.invoke(() -> {
-      final Cache cache = CacheFactory.getAnyInstance();
+    server2.invoke(() -> {
+      final Cache cache = LocatorServerStartupRule.getCache();
       RegionFactory<String, Integer> dataRegionFactory =
           cache.createRegionFactory(RegionShortcut.PARTITION);
       dataRegionFactory.setConcurrencyLevel(4);
@@ -137,23 +111,31 @@ public class DescribeRegionDUnitTest implements Serializable {
       createRegionsWithSubRegions();
     });
 
-    gfshCommandRule.connectAndVerify(locator);
+    gfsh.connectAndVerify(locator);
+    gfsh.executeAndAssertThat("create async-event-queue --id=queue1 --group=group1 "
+        + "--listener=org.apache.geode.internal.cache.wan.MyAsyncEventListener").statusIsSuccess();
+
+    locator.waitTillAsyncEventQueuesAreReadyOnServers("queue1", 1);
+    gfsh.executeAndAssertThat(
+        "create region --name=region4 --type=REPLICATE --async-event-queue-id=queue1")
+        .statusIsSuccess();
+
   }
 
   @Test
-  public void describeRegionsOnServer2() throws Exception {
+  public void describeRegionOnBothServers() throws Exception {
     CommandStringBuilder csb = new CommandStringBuilder(DESCRIBE_REGION);
     csb.addOption(DESCRIBE_REGION__NAME, PR1);
-    gfshCommandRule.executeAndAssertThat(csb.toString()).statusIsSuccess().containsOutput(PR1,
-        "Server");
+    gfsh.executeAndAssertThat(csb.toString()).statusIsSuccess().containsOutput(PR1, "server-1",
+        "server-2");
   }
 
   @Test
-  public void describeRegionsOnServer1() throws Exception {
+  public void describeLocalRegionOnlyOneServer1() throws Exception {
     CommandStringBuilder csb = new CommandStringBuilder(DESCRIBE_REGION);
-    csb.addOption(DESCRIBE_REGION__NAME, LOCALREGIONONMANAGER);
-    gfshCommandRule.executeAndAssertThat(csb.toString()).statusIsSuccess()
-        .containsOutput(LOCALREGIONONMANAGER, SERVER1_NAME);
+    csb.addOption(DESCRIBE_REGION__NAME, LOCAL_REGION);
+    gfsh.executeAndAssertThat(csb.toString()).statusIsSuccess()
+        .containsOutput(LOCAL_REGION, "server-1").doesNotContainOutput("server-2");
   }
 
   /**
@@ -172,7 +154,7 @@ public class DescribeRegionDUnitTest implements Serializable {
     CommandStringBuilder csb = new CommandStringBuilder(DESCRIBE_REGION);
     csb.addOption(DESCRIBE_REGION__NAME, regionName);
     String commandString = csb.toString();
-    gfshCommandRule.executeAndAssertThat(commandString).statusIsSuccess().containsOutput(regionName,
+    gfsh.executeAndAssertThat(commandString).statusIsSuccess().containsOutput(regionName,
         RegionAttributesNames.COMPRESSOR, RegionEntryContext.DEFAULT_COMPRESSION_PROVIDER);
 
     // Destroy compressed region
@@ -183,15 +165,10 @@ public class DescribeRegionDUnitTest implements Serializable {
     });
   }
 
-  private static Properties createProperties(String name, String groups) {
-    Properties props = new Properties();
-    props.setProperty(MCAST_PORT, "0");
-    props.setProperty(LOG_LEVEL, "info");
-    props.setProperty(STATISTIC_SAMPLING_ENABLED, "true");
-    props.setProperty(ENABLE_TIME_STATISTICS, "true");
-    props.setProperty(NAME, name);
-    props.setProperty(GROUPS, groups);
-    return props;
+  @Test
+  public void describeRegionWithAsyncEventQueue() throws Exception {
+    gfsh.executeAndAssertThat("describe region --name=region4").statusIsSuccess()
+        .containsOutput("async-event-queue-id", "queue1");
   }
 
   private static void createLocalRegion(final String regionName) {

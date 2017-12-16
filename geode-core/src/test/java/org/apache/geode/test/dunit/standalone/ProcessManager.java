@@ -36,6 +36,7 @@ import java.util.Map;
 
 import org.apache.commons.io.FileUtils;
 
+import org.apache.geode.distributed.ConfigurationProperties;
 import org.apache.geode.distributed.internal.DistributionConfig;
 import org.apache.geode.distributed.internal.InternalLocator;
 import org.apache.geode.test.dunit.VM;
@@ -253,6 +254,8 @@ public class ProcessManager {
     cmds.add("-D" + DistributionConfig.GEMFIRE_PREFIX + "DEFAULT_MAX_OPLOG_SIZE=10");
     cmds.add("-D" + DistributionConfig.GEMFIRE_PREFIX + "disallowMcastDefaults=true");
     cmds.add("-D" + DistributionConfig.RESTRICT_MEMBERSHIP_PORT_RANGE + "=true");
+    cmds.add("-D" + DistributionConfig.GEMFIRE_PREFIX
+        + ConfigurationProperties.VALIDATE_SERIALIZABLE_OBJECTS + "=true");
     cmds.add("-ea");
     cmds.add("-XX:MetaspaceSize=512m");
     cmds.add("-XX:+PrintGC");

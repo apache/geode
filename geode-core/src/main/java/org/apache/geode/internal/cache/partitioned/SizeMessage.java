@@ -106,7 +106,7 @@ public class SizeMessage extends PartitionMessage {
 
   /**
    * This message may be sent to nodes before the PartitionedRegion is completely initialized due to
-   * the RegionAdvisor(s) knowing about the existance of a partitioned region at a very early part
+   * the RegionAdvisor(s) knowing about the existence of a partitioned region at a very early part
    * of the initialization
    */
   @Override
@@ -166,8 +166,12 @@ public class SizeMessage extends PartitionMessage {
             dm, r.isInternalRegion());
       }
     } else {
-      logger.warn(LocalizedMessage.create(
-          LocalizedStrings.SizeMessage_SIZEMESSAGE_REGION_NOT_FOUND_FOR_THIS_MEMBER, regionId));
+      if (logger.isDebugEnabled()) {
+        // Note that this is more likely to happen with this message
+        // because of it returning false from failIfRegionMissing.
+        logger.debug(LocalizedMessage.create(
+            LocalizedStrings.SizeMessage_SIZEMESSAGE_REGION_NOT_FOUND_FOR_THIS_MEMBER, regionId));
+      }
       ReplyMessage.send(getSender(), getProcessorId(),
           new ReplyException(new ForceReattemptException(
               LocalizedStrings.SizeMessage_0_COULD_NOT_FIND_PARTITIONED_REGION_WITH_ID_1

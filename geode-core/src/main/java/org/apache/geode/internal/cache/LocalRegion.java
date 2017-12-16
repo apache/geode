@@ -173,13 +173,13 @@ import org.apache.geode.internal.cache.control.ResourceListener;
 import org.apache.geode.internal.cache.entries.DiskEntry;
 import org.apache.geode.internal.cache.event.EventTracker;
 import org.apache.geode.internal.cache.event.NonDistributedEventTracker;
+import org.apache.geode.internal.cache.eviction.EvictableEntry;
 import org.apache.geode.internal.cache.execute.DistributedRegionFunctionExecutor;
 import org.apache.geode.internal.cache.execute.DistributedRegionFunctionResultSender;
 import org.apache.geode.internal.cache.execute.LocalResultCollector;
 import org.apache.geode.internal.cache.execute.RegionFunctionContextImpl;
 import org.apache.geode.internal.cache.execute.ServerToClientFunctionResultSender;
 import org.apache.geode.internal.cache.ha.ThreadIdentifier;
-import org.apache.geode.internal.cache.lru.LRUEntry;
 import org.apache.geode.internal.cache.partitioned.Bucket;
 import org.apache.geode.internal.cache.partitioned.RedundancyAlreadyMetException;
 import org.apache.geode.internal.cache.persistence.DiskExceptionHandler;
@@ -231,7 +231,7 @@ import org.apache.geode.pdx.PdxInstance;
  * distribution behavior.
  */
 @SuppressWarnings("deprecation")
-public class LocalRegion extends AbstractRegion implements InternalRegion, LoaderHelperFactory,
+public class LocalRegion extends AbstractRegion implements LoaderHelperFactory,
     ResourceListener<MemoryEvent>, DiskExceptionHandler, DiskRecoveryStore {
 
   // package-private to avoid synthetic accessor
@@ -854,6 +854,7 @@ public class LocalRegion extends AbstractRegion implements InternalRegion, Loade
   }
 
   // TODO: createSubregion method is too complex for IDE to analyze
+  @Override
   public Region createSubregion(String subregionName, RegionAttributes attrs,
       InternalRegionArguments internalRegionArgs)
       throws RegionExistsException, TimeoutException, IOException, ClassNotFoundException {
@@ -6598,7 +6599,7 @@ public class LocalRegion extends AbstractRegion implements InternalRegion, Loade
   /**
    * @return true if the evict destroy was done; false if it was not needed
    */
-  boolean evictDestroy(LRUEntry entry) {
+  boolean evictDestroy(EvictableEntry entry) {
     checkReadiness();
 
     @Released
@@ -7098,7 +7099,7 @@ public class LocalRegion extends AbstractRegion implements InternalRegion, Loade
     long lastAccessed = cacheTimeMillis();
     if (lruRecentUse) {
       // fix for bug 31102
-      entry.setRecentlyUsed();
+      entry.setRecentlyUsed(this);
     }
     if (lastModified == 0L) {
       lastModified = lastAccessed;
@@ -8272,9 +8273,9 @@ public class LocalRegion extends AbstractRegion implements InternalRegion, Loade
       try {
         synchronized (regionEntry) {
           if (!regionEntry.isRemoved()) {
-            if (regionEntry instanceof DiskEntry && regionEntry instanceof LRUEntry) {
-              LRUEntry le = (LRUEntry) regionEntry;
-              if (le.testEvicted()) {
+            if (regionEntry instanceof DiskEntry && regionEntry instanceof EvictableEntry) {
+              EvictableEntry le = (EvictableEntry) regionEntry;
+              if (le.isEvicted()) {
                 // Handle the case where we fault in a disk entry
                 txLRUStart();
                 needsLRUCleanup = true;
@@ -8408,9 +8409,11 @@ public class LocalRegion extends AbstractRegion implements InternalRegion, Loade
     return names;
   }
 
-  /*****************************************************************************
-   * INNER CLASSES
-   ****************************************************************************/
+  @Override
+  public void incRecentlyUsed() {
+    // nothing
+    this.entries.incRecentlyUsed();
+  }
 
   // package-private to avoid synthetic accessor
   static void dispatchEvent(LocalRegion region, InternalCacheEvent event,
@@ -8465,6 +8468,10 @@ public class LocalRegion extends AbstractRegion implements InternalRegion, Loade
       }
     }
   }
+
+  /*****************************************************************************
+   * INNER CLASSES
+   ****************************************************************************/
 
   class EventDispatcher implements Runnable {
     /**
@@ -10064,7 +10071,7 @@ public class LocalRegion extends AbstractRegion implements InternalRegion, Loade
       discoverJTA();
 
       /*
-       * If this is tx, do removeEntry, unless it is a local region?
+       * If this is tx, do destroyEntry, unless it is a local region?
        */
       try {
         performRemoveAllEntry(event);
@@ -12072,6 +12079,14 @@ public class LocalRegion extends AbstractRegion implements InternalRegion, Loade
   public long getLatestLastAccessTimeFromOthers(Object key) {
     // local regions have no other members so return 0.
     return 0L;
+  }
+
+  /**
+   * Returns the number of LRU evictions done by this region.
+   */
+  @Override
+  public long getEvictions() {
+    return this.entries.getEvictions();
   }
 
 }

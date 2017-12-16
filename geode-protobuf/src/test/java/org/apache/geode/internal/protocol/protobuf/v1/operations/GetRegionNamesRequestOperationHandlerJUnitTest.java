@@ -61,7 +61,7 @@ public class GetRegionNamesRequestOperationHandlerJUnitTest extends OperationHan
   }
 
   @Test
-  public void processReturnsCacheRegions() throws InvalidExecutionContextException {
+  public void processReturnsCacheRegions() throws Exception {
     Result result = operationHandler.process(serializationServiceStub,
         ProtobufRequestUtilities.createGetRegionNamesRequest(),
         getNoAuthCacheExecutionContext(cacheStub));

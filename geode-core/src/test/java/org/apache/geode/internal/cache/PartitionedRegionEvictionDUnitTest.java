@@ -47,8 +47,8 @@ import org.apache.geode.distributed.internal.DistributionConfig;
 import org.apache.geode.internal.OSProcess;
 import org.apache.geode.internal.cache.control.HeapMemoryMonitor;
 import org.apache.geode.internal.cache.control.InternalResourceManager.ResourceType;
-import org.apache.geode.internal.cache.lru.HeapEvictor;
-import org.apache.geode.internal.cache.lru.HeapLRUCapacityController;
+import org.apache.geode.internal.cache.eviction.HeapEvictor;
+import org.apache.geode.internal.cache.eviction.HeapLRUController;
 import org.apache.geode.test.dunit.Assert;
 import org.apache.geode.test.dunit.Host;
 import org.apache.geode.test.dunit.IgnoredException;
@@ -80,7 +80,7 @@ public class PartitionedRegionEvictionDUnitTest extends JUnit4CacheTestCase {
     final CacheSerializableRunnable create =
         new CacheSerializableRunnable("Create Heap LRU with Overflow to disk partitioned Region") {
           public void run2() {
-            System.setProperty(HeapLRUCapacityController.TOP_UP_HEAP_EVICTION_PERCENTAGE_PROPERTY,
+            System.setProperty(HeapLRUController.TOP_UP_HEAP_EVICTION_PERCENTAGE_PROPERTY,
                 Float.toString(0));
             setEvictionPercentage(heapPercentage);
             final Properties sp = System.getProperties();
@@ -191,7 +191,7 @@ public class PartitionedRegionEvictionDUnitTest extends JUnit4CacheTestCase {
   }
 
   protected void raiseFakeNotification() {
-    ((GemFireCacheImpl) getCache()).getHeapEvictor().testAbortAfterLoopCount = 1;
+    ((GemFireCacheImpl) getCache()).getHeapEvictor().setTestAbortAfterLoopCount(1);
     HeapMemoryMonitor.setTestDisableMemoryUpdates(true);
     System.setProperty(DistributionConfig.GEMFIRE_PREFIX + "memoryEventTolerance", "0");
 
@@ -204,7 +204,7 @@ public class PartitionedRegionEvictionDUnitTest extends JUnit4CacheTestCase {
   }
 
   protected void cleanUpAfterFakeNotification() {
-    ((GemFireCacheImpl) getCache()).getHeapEvictor().testAbortAfterLoopCount = Integer.MAX_VALUE;
+    ((GemFireCacheImpl) getCache()).getHeapEvictor().setTestAbortAfterLoopCount(Integer.MAX_VALUE);
     HeapMemoryMonitor.setTestDisableMemoryUpdates(false);
     System.clearProperty(DistributionConfig.GEMFIRE_PREFIX + "memoryEventTolerance");
   }
@@ -226,7 +226,7 @@ public class PartitionedRegionEvictionDUnitTest extends JUnit4CacheTestCase {
     final SerializableRunnable create = new CacheSerializableRunnable(
         "Create Heap LRU with local destroy on a partitioned Region") {
       public void run2() {
-        System.setProperty(HeapLRUCapacityController.TOP_UP_HEAP_EVICTION_PERCENTAGE_PROPERTY,
+        System.setProperty(HeapLRUController.TOP_UP_HEAP_EVICTION_PERCENTAGE_PROPERTY,
             Float.toString(0));
         setEvictionPercentage(heapPercentage);
         final Properties sp = System.getProperties();
@@ -292,7 +292,7 @@ public class PartitionedRegionEvictionDUnitTest extends JUnit4CacheTestCase {
 
                 public boolean done() {
                   // we have a primary
-                  if (((AbstractLRURegionMap) pr.entries)._getLruList().stats()
+                  if (((AbstractLRURegionMap) pr.entries).getEvictionList().getStatistics()
                       .getEvictions() == 9) {
                     return true;
                   }
@@ -305,8 +305,8 @@ public class PartitionedRegionEvictionDUnitTest extends JUnit4CacheTestCase {
               };
               Wait.waitForCriterion(wc, 60000, 1000, true);
 
-              entriesEvicted =
-                  ((AbstractLRURegionMap) pr.entries)._getLruList().stats().getEvictions();
+              entriesEvicted = ((AbstractLRURegionMap) pr.entries).getEvictionList().getStatistics()
+                  .getEvictions();
               return new Long(entriesEvicted);
             } finally {
               cleanUpAfterFakeNotification();
@@ -492,8 +492,8 @@ public class PartitionedRegionEvictionDUnitTest extends JUnit4CacheTestCase {
                 assertTrue(bucketRegion.getAttributes().getEvictionAttributes().getAction()
                     .isLocalDestroy());
               }
-              entriesEvicted =
-                  ((AbstractLRURegionMap) pr.entries)._getLruList().stats().getEvictions();
+              entriesEvicted = ((AbstractLRURegionMap) pr.entries).getEvictionList().getStatistics()
+                  .getEvictions();
               return new Long(entriesEvicted);
             } finally {
             }
@@ -692,8 +692,8 @@ public class PartitionedRegionEvictionDUnitTest extends JUnit4CacheTestCase {
                 assertTrue(bucketRegion.getAttributes().getEvictionAttributes().getAction()
                     .isLocalDestroy());
               }
-              entriesEvicted =
-                  ((AbstractLRURegionMap) pr.entries)._getLruList().stats().getEvictions();
+              entriesEvicted = ((AbstractLRURegionMap) pr.entries).getEvictionList().getStatistics()
+                  .getEvictions();
               return new Long(entriesEvicted);
             } finally {
             }
@@ -713,7 +713,7 @@ public class PartitionedRegionEvictionDUnitTest extends JUnit4CacheTestCase {
         RegionAttributes attrs = pr.getAttributes();
         assertNotNull(attrs);
         long entriesEvicted =
-            ((AbstractLRURegionMap) pr.entries)._getLruList().stats().getEvictions();
+            ((AbstractLRURegionMap) pr.entries).getEvictionList().getStatistics().getEvictions();
         VerifiableCacheListener verifyMe = null;
         for (CacheListener listener : attrs.getCacheListeners()) {
           if (listener instanceof VerifiableCacheListener) {

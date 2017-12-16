@@ -42,11 +42,6 @@ public class ListRegionIntegrationTest {
   @Rule
   public GfshCommandRule gfsh = new GfshCommandRule(server::getJmxPort, PortType.jmxManager);
 
-  @Before
-  public void setup() {
-    gfsh.setTimeout(2);
-  }
-
   @Test
   public void commandFailsWhenNotConnected() throws Exception {
     gfsh.disconnect();

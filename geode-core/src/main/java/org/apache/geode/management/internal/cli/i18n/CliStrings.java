@@ -213,7 +213,7 @@ public class CliStrings {
   public static final String SHARED_CONFIGURATION_NO_LOCATORS_WITH_SHARED_CONFIGURATION =
       "No locators with cluster configuration enabled.";
   public static final String SHARED_CONFIGURATION_FAILED_TO_PERSIST_COMMAND_CHANGES =
-      "Failed to persist the configuration changes due to this command, Revert the command to maintain consistency.\nPlease use \"status cluster-config-service\" to determine whether Cluster configuration service is RUNNING.";
+      "This change is not persisted in the cluster configuration, either because the cluster configuration service is not running or the command is operating on targeted members.";
   /* Other Constants */
   public static final String GFSH__MSG__NO_LONGER_CONNECTED_TO_0 = "No longer connected to {0}.";
   public static final String GFSHPARSER__MSG__REQUIRED_ARGUMENT_0 = "Required Argument: \"{0}\"";
@@ -734,11 +734,11 @@ public class CliStrings {
       "Name/Id of the member in which the index will be created.";
   public static final String CREATE_INDEX__TYPE = "type";
   public static final String CREATE_INDEX__TYPE__HELP =
-      "Type of the index. Valid values are: range, key and hash.";
+      "Type of the index. Valid values are: range and key. Deprecated : hash has been deprecated since Apache Geode 1.4.0";
   public static final String CREATE_INDEX__GROUP__HELP =
       "Group of members in which the index will be created.";
   public static final String CREATE_INDEX__INVALID__INDEX__TYPE__MESSAGE =
-      "Invalid index type,value must be one of the following: range, key or hash.";
+      "Invalid index type,value must be one of the following: range, key and hash. Deprecated : hash has been deprecated since Apache Geode 1.4.0";
   public static final String CREATE_INDEX__SUCCESS__MSG =
       "Index successfully created with following details";
   public static final String CREATE_INDEX__FAILURE__MSG =

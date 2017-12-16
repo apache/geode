@@ -23,13 +23,13 @@ import org.apache.lucene.analysis.Analyzer;
 import org.apache.lucene.analysis.standard.StandardAnalyzer;
 
 import org.apache.geode.cache.Cache;
-import org.apache.geode.cache.CacheFactory;
 import org.apache.geode.cache.execute.FunctionAdapter;
 import org.apache.geode.cache.execute.FunctionContext;
-import org.apache.geode.cache.lucene.LuceneIndexFactory;
 import org.apache.geode.cache.lucene.LuceneSerializer;
 import org.apache.geode.cache.lucene.LuceneService;
 import org.apache.geode.cache.lucene.LuceneServiceProvider;
+import org.apache.geode.cache.lucene.internal.LuceneIndexFactoryImpl;
+import org.apache.geode.cache.lucene.internal.LuceneServiceImpl;
 import org.apache.geode.cache.lucene.internal.cli.LuceneCliStrings;
 import org.apache.geode.cache.lucene.internal.cli.LuceneIndexDetails;
 import org.apache.geode.cache.lucene.internal.cli.LuceneIndexInfo;
@@ -72,7 +72,8 @@ public class LuceneCreateIndexFunction extends FunctionAdapter implements Intern
       String[] analyzerName = indexInfo.getFieldAnalyzers();
       String serializerName = indexInfo.getSerializer();
 
-      final LuceneIndexFactory indexFactory = service.createIndexFactory();
+      final LuceneIndexFactoryImpl indexFactory =
+          (LuceneIndexFactoryImpl) service.createIndexFactory();
       if (analyzerName == null || analyzerName.length == 0) {
         for (String field : fields) {
           indexFactory.addField(field);
@@ -91,8 +92,11 @@ public class LuceneCreateIndexFunction extends FunctionAdapter implements Intern
       }
 
       REGION_PATH.validateName(indexInfo.getRegionPath());
-
-      indexFactory.create(indexInfo.getIndexName(), indexInfo.getRegionPath());
+      if (LuceneServiceImpl.LUCENE_REINDEX) {
+        indexFactory.create(indexInfo.getIndexName(), indexInfo.getRegionPath(), true);
+      } else {
+        indexFactory.create(indexInfo.getIndexName(), indexInfo.getRegionPath(), false);
+      }
 
       // TODO - update cluster configuration by returning a valid XmlEntity
       XmlEntity xmlEntity = null;

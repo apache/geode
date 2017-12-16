@@ -1,3 +1,5 @@
+
+
 /*
  * Licensed to the Apache Software Foundation (ASF) under one or more contributor license
  * agreements. See the NOTICE file distributed with this work for additional information regarding
@@ -25,7 +27,7 @@ import org.apache.geode.internal.cache.DiskStoreImpl;
 import org.apache.geode.internal.cache.PlaceHolderDiskRegion;
 import org.apache.geode.internal.cache.RegionEntry;
 import org.apache.geode.internal.cache.RegionEntryContext;
-import org.apache.geode.internal.cache.lru.EnableLRU;
+import org.apache.geode.internal.cache.eviction.EvictionController;
 import org.apache.geode.internal.cache.persistence.DiskRecoveryStore;
 import org.apache.geode.internal.util.concurrent.CustomEntryConcurrentHashMap.HashEntry;
 
@@ -65,7 +67,7 @@ public class VMStatsDiskRegionEntryHeapUUIDKey extends VMStatsDiskRegionEntryHea
       AtomicIntegerFieldUpdater.newUpdater(VMStatsDiskRegionEntryHeapUUIDKey.class, "hitCount");
   private static final AtomicIntegerFieldUpdater<VMStatsDiskRegionEntryHeapUUIDKey> MISS_COUNT_UPDATER =
       AtomicIntegerFieldUpdater.newUpdater(VMStatsDiskRegionEntryHeapUUIDKey.class, "missCount");
-  // ----------------------------------------- key code -------------------------------------------
+  // --------------------------------------- key fields -------------------------------------------
   // DO NOT modify this class. It was generated from LeafRegionEntry.cpp
   private final long keyMostSigBits;
   private final long keyLeastSigBits;
@@ -127,7 +129,7 @@ public class VMStatsDiskRegionEntryHeapUUIDKey extends VMStatsDiskRegionEntryHea
   }
 
   @Override
-  public int updateAsyncEntrySize(final EnableLRU capacityController) {
+  public int updateAsyncEntrySize(final EvictionController evictionController) {
     throw new IllegalStateException("should never be called");
   }
 

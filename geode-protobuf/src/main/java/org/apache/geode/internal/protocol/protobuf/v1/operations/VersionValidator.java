@@ -14,15 +14,15 @@
  */
 package org.apache.geode.internal.protocol.protobuf.v1.operations;
 
-import org.apache.geode.internal.protocol.protobuf.v1.ConnectionAPI;
+import org.apache.geode.internal.protocol.protobuf.ProtocolVersion;
 
 public class VersionValidator {
   private int majorVersion;
   private int minorVersion;
 
   public VersionValidator() {
-    this(ConnectionAPI.MajorVersions.CURRENT_MAJOR_VERSION_VALUE,
-        ConnectionAPI.MinorVersions.CURRENT_MINOR_VERSION_VALUE);
+    this(ProtocolVersion.MajorVersions.CURRENT_MAJOR_VERSION_VALUE,
+        ProtocolVersion.MinorVersions.CURRENT_MINOR_VERSION_VALUE);
   }
 
   VersionValidator(int majorVersion, int minorVersion) {
@@ -31,9 +31,9 @@ public class VersionValidator {
   }
 
   public boolean isValid(int majorVersion, int minorVersion) {
-    if (majorVersion != ConnectionAPI.MajorVersions.INVALID_MAJOR_VERSION_VALUE
+    if (majorVersion != ProtocolVersion.MajorVersions.INVALID_MAJOR_VERSION_VALUE
         && majorVersion == this.majorVersion) {
-      if (minorVersion != ConnectionAPI.MinorVersions.INVALID_MINOR_VERSION_VALUE
+      if (minorVersion != ProtocolVersion.MinorVersions.INVALID_MINOR_VERSION_VALUE
           && minorVersion <= this.minorVersion) {
         return true;
       }

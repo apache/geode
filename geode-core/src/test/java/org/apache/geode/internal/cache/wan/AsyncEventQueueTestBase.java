@@ -90,7 +90,7 @@ import org.apache.geode.internal.cache.PartitionedRegion;
 import org.apache.geode.internal.cache.RegionQueue;
 import org.apache.geode.internal.cache.control.InternalResourceManager;
 import org.apache.geode.internal.cache.control.InternalResourceManager.ResourceObserver;
-import org.apache.geode.internal.cache.lru.Sizeable;
+import org.apache.geode.internal.size.Sizeable;
 import org.apache.geode.test.dunit.Assert;
 import org.apache.geode.test.dunit.Host;
 import org.apache.geode.test.dunit.IgnoredException;
@@ -99,7 +99,6 @@ import org.apache.geode.test.dunit.LogWriterUtils;
 import org.apache.geode.test.dunit.VM;
 import org.apache.geode.test.dunit.Wait;
 import org.apache.geode.test.dunit.WaitCriterion;
-import org.apache.geode.test.dunit.cache.internal.JUnit4CacheTestCase;
 import org.apache.geode.test.dunit.internal.JUnit4DistributedTestCase;
 import org.apache.geode.test.junit.categories.DistributedTest;
 
@@ -1558,7 +1557,7 @@ public class AsyncEventQueueTestBase extends JUnit4DistributedTestCase {
 
   public static void cleanupVM() throws IOException {
     closeCache();
-    JUnit4CacheTestCase.cleanDiskDirs();
+    JUnit4DistributedTestCase.cleanDiskDirs();
   }
 
   public static void closeCache() throws IOException {

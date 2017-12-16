@@ -21,6 +21,7 @@ import java.util.List;
 import org.apache.commons.lang.StringUtils;
 
 import org.apache.geode.management.cli.Result;
+import org.apache.geode.management.internal.cli.functions.CliFunctionResult;
 import org.apache.geode.management.internal.cli.json.GfJsonException;
 import org.apache.geode.management.internal.cli.json.GfJsonObject;
 
@@ -186,6 +187,22 @@ public class ResultBuilder {
    */
   public static CommandResult buildResult(ResultData resultData) {
     return new CommandResult(resultData);
+  }
+
+  public static CommandResult buildResult(List<CliFunctionResult> functionResults) {
+    TabularResultData tabularData = ResultBuilder.createTabularResultData();
+    boolean success = false;
+    for (CliFunctionResult result : functionResults) {
+      tabularData.accumulate("Member", result.getMemberIdOrName());
+      tabularData.accumulate("Status", result.getStatus());
+      // if one member returns back successful results, the command results in success
+      if (result.isSuccessful()) {
+        success = true;
+      }
+    }
+
+    tabularData.setStatus(success ? Result.Status.OK : Result.Status.ERROR);
+    return ResultBuilder.buildResult(tabularData);
   }
 
   /**

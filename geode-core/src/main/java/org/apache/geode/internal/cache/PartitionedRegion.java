@@ -166,6 +166,8 @@ import org.apache.geode.internal.cache.control.InternalResourceManager;
 import org.apache.geode.internal.cache.control.InternalResourceManager.ResourceType;
 import org.apache.geode.internal.cache.control.MemoryEvent;
 import org.apache.geode.internal.cache.control.MemoryThresholds;
+import org.apache.geode.internal.cache.eviction.EvictionStatistics;
+import org.apache.geode.internal.cache.eviction.HeapEvictor;
 import org.apache.geode.internal.cache.execute.AbstractExecution;
 import org.apache.geode.internal.cache.execute.FunctionExecutionNodePruner;
 import org.apache.geode.internal.cache.execute.FunctionRemoteContext;
@@ -177,9 +179,6 @@ import org.apache.geode.internal.cache.execute.PartitionedRegionFunctionResultWa
 import org.apache.geode.internal.cache.execute.RegionFunctionContextImpl;
 import org.apache.geode.internal.cache.execute.ServerToClientFunctionResultSender;
 import org.apache.geode.internal.cache.ha.ThreadIdentifier;
-import org.apache.geode.internal.cache.lru.HeapEvictor;
-import org.apache.geode.internal.cache.lru.LRUStatistics;
-import org.apache.geode.internal.cache.lru.Sizeable;
 import org.apache.geode.internal.cache.partitioned.ContainsKeyValueMessage;
 import org.apache.geode.internal.cache.partitioned.ContainsKeyValueMessage.ContainsKeyValueResponse;
 import org.apache.geode.internal.cache.partitioned.DestroyMessage;
@@ -249,6 +248,7 @@ import org.apache.geode.internal.logging.log4j.LogMarker;
 import org.apache.geode.internal.offheap.annotations.Released;
 import org.apache.geode.internal.offheap.annotations.Unretained;
 import org.apache.geode.internal.sequencelog.RegionLogger;
+import org.apache.geode.internal.size.Sizeable;
 import org.apache.geode.internal.util.TransformUtils;
 import org.apache.geode.internal.util.concurrent.StoppableCountDownLatch;
 
@@ -510,11 +510,11 @@ public class PartitionedRegion extends LocalRegion
   }
 
   /**
-   * Returns the LRUStatistics for this PR. This is needed to find the single instance of
-   * LRUStatistics created early for a PR when it is recovered from disk. This fixes bug 41938
+   * Returns the EvictionStatistics for this PR. This is needed to find the single instance of
+   * EvictionStatistics created early for a PR when it is recovered from disk. This fixes bug 41938
    */
-  public LRUStatistics getPRLRUStatsDuringInitialization() {
-    LRUStatistics result = null;
+  public EvictionStatistics getPRLRUStatsDuringInitialization() {
+    EvictionStatistics result = null;
     if (getDiskStore() != null) {
       result = getDiskStore().getPRLRUStats(this);
     }

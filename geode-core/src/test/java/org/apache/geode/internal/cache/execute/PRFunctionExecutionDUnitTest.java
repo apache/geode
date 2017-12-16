@@ -53,6 +53,7 @@ import org.apache.geode.cache.execute.FunctionService;
 import org.apache.geode.cache.execute.RegionFunctionContext;
 import org.apache.geode.cache.execute.ResultCollector;
 import org.apache.geode.cache.partition.PartitionRegionHelper;
+import org.apache.geode.distributed.ConfigurationProperties;
 import org.apache.geode.distributed.DistributedSystem;
 import org.apache.geode.distributed.internal.DM;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
@@ -97,6 +98,16 @@ public class PRFunctionExecutionDUnitTest extends PartitionedRegionDUnitTestCase
     cache = null;
     regionName = null;
   }
+
+  @Override
+  public Properties getDistributedSystemProperties() {
+    Properties result = super.getDistributedSystemProperties();
+    result.put(ConfigurationProperties.SERIALIZABLE_OBJECT_FILTER,
+        "org.apache.geode.test.junit.rules.**;org.apache.geode.internal.cache.PartitionedRegionDUnitTestCase;org.apache.geode.internal.cache.execute.**;org.apache.geode.internal.cache.functions.**;org.apache.geode.test.dunit.**");
+    return result;
+  }
+
+
 
   /**
    * Test to validate that the function execution is successful on PR with Loner Distributed System

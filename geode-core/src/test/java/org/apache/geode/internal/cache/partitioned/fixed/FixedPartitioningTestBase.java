@@ -51,6 +51,7 @@ import org.apache.geode.cache.control.RebalanceOperation;
 import org.apache.geode.cache.control.RebalanceResults;
 import org.apache.geode.cache.control.ResourceManager;
 import org.apache.geode.cache.partition.PartitionRegionHelper;
+import org.apache.geode.distributed.ConfigurationProperties;
 import org.apache.geode.distributed.DistributedSystem;
 import org.apache.geode.distributed.internal.DistributionConfig;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
@@ -145,6 +146,7 @@ public class FixedPartitioningTestBase extends JUnit4DistributedTestCase {
   private void createCache() {
     try {
       Properties props = new Properties();
+      props.put(ConfigurationProperties.SERIALIZABLE_OBJECT_FILTER, "*");
       cache = null;
       DistributedSystem ds = getSystem(props);
       assertNotNull(ds);
@@ -1284,13 +1286,13 @@ public class FixedPartitioningTestBase extends JUnit4DistributedTestCase {
     }
 
     try {
-      cleanDiskDirs();
+      cleanDisk();
     } catch (IOException e) {
       LogWriterUtils.getLogWriter().error("Error cleaning disk dirs", e);
     }
   }
 
-  public static void cleanDiskDirs() throws IOException {
+  public static void cleanDisk() throws IOException {
     FileUtils.deleteDirectory(getDiskDir());
   }
 

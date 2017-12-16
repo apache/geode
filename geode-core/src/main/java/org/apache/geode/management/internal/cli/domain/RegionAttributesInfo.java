@@ -18,8 +18,10 @@ import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import org.apache.commons.lang.StringUtils;
 
@@ -40,11 +42,8 @@ import org.apache.geode.management.internal.cli.util.RegionAttributesNames;
 
 
 public class RegionAttributesInfo implements Serializable {
-  /**
-   *
-   */
-  private static final long serialVersionUID = 1L;
 
+  private static final long serialVersionUID = 336184564012988487L;
   private Scope scope = AbstractRegion.DEFAULT_SCOPE;
 
   private boolean cloningEnabled = false;
@@ -70,6 +69,8 @@ public class RegionAttributesInfo implements Serializable {
 
   private String compressorClassName = null;
 
+  private Set<String> asyncEventQueueIDs = new HashSet<>();
+  private Set<String> gatewaySenderIDs = new HashSet<>();
 
   private PartitionAttributesInfo partitionAttributesInfo = null;
   private EvictionAttributesInfo evictionAttributesInfo = null;
@@ -138,7 +139,8 @@ public class RegionAttributesInfo implements Serializable {
       regionIdleTimeoutAction = expAction.toString();
     }
 
-
+    asyncEventQueueIDs = ra.getAsyncEventQueueIds();
+    gatewaySenderIDs = ra.getGatewaySenderIds();
 
     // Collecting information about all the CacheListeners, CacheWriters, CacheLoaders
     CacheListener<?, ?>[] cacheListeners = ra.getCacheListeners();
@@ -170,15 +172,15 @@ public class RegionAttributesInfo implements Serializable {
     PartitionAttributes<?, ?> partitionAttributes = ra.getPartitionAttributes();
     EvictionAttributes evictionAttributes = ra.getEvictionAttributes();
 
-
-    if (partitionAttributes != null)
+    if (partitionAttributes != null) {
       partitionAttributesInfo = new PartitionAttributesInfo(partitionAttributes);
+    }
 
     if (evictionAttributes != null) {
       evictionAttributesInfo = new EvictionAttributesInfo(evictionAttributes);
 
     }
-    this.offHeap = ra.getOffHeap();
+    offHeap = ra.getOffHeap();
   }
 
 
@@ -258,6 +260,14 @@ public class RegionAttributesInfo implements Serializable {
     return initialCapacity;
   }
 
+  public Set<String> getAsyncEventQueueIDs() {
+    return asyncEventQueueIDs;
+  }
+
+  public Set<String> getGatewaySenderIDs() {
+    return gatewaySenderIDs;
+  }
+
   public float getLoadFactor() {
     return loadFactor;
   }
@@ -305,7 +315,7 @@ public class RegionAttributesInfo implements Serializable {
   }
 
   public boolean getOffHeap() {
-    return this.offHeap;
+    return offHeap;
   }
 
   @Override
@@ -323,175 +333,166 @@ public class RegionAttributesInfo implements Serializable {
    */
   public Map<String, String> getNonDefaultAttributes() {
 
-    if (nonDefaultAttributes == null) {
-      nonDefaultAttributes = new HashMap<String, String>();
-
-      if (cloningEnabled != RegionAttributesDefault.CLONING_ENABLED) {
-        nonDefaultAttributes.put(RegionAttributesNames.CLONING_ENABLED,
-            Boolean.toString(cloningEnabled));
-      }
-
-      if (!StringUtils.equals(RegionAttributesDefault.COMPRESSOR_CLASS_NAME, compressorClassName)) {
-        nonDefaultAttributes.put(RegionAttributesNames.COMPRESSOR, compressorClassName);
-      }
-
-      if (concurrencyChecksEnabled != RegionAttributesDefault.CONCURRENCY_CHECK_ENABLED) {
-        nonDefaultAttributes.put(RegionAttributesNames.CONCURRENCY_CHECK_ENABLED,
-            Boolean.toString(concurrencyChecksEnabled));
-      }
-
-
-      if (concurrencyLevel != RegionAttributesDefault.CONCURRENCY_LEVEL) {
-        nonDefaultAttributes.put(RegionAttributesNames.CONCURRENCY_LEVEL,
-            Integer.toString(concurrencyLevel));
-      }
-
-
-      if (!dataPolicy.equals(RegionAttributesDefault.DATA_POLICY)) {
-        nonDefaultAttributes.put(RegionAttributesNames.DATA_POLICY, dataPolicy.toString());
-      }
-
-
-      if (diskStoreName != null && !diskStoreName.equals(RegionAttributesDefault.DISK_STORE_NAME)) {
-        nonDefaultAttributes.put(RegionAttributesNames.DISK_STORE_NAME, diskStoreName);
-      }
-
-
-      if (enableAsyncConflation != RegionAttributesDefault.ENABLE_ASYNC_CONFLATION) {
-        nonDefaultAttributes.put(RegionAttributesNames.ENABLE_ASYNC_CONFLATION,
-            Boolean.toString(enableAsyncConflation));
-      }
-
-
-
-      if (enableSubscriptionConflation != RegionAttributesDefault.ENABLE_SUBSCRIPTION_CONFLATION) {
-        nonDefaultAttributes.put(RegionAttributesNames.ENABLE_SUBSCRIPTION_CONFLATION,
-            Boolean.toString(enableSubscriptionConflation));
-      }
-
-
-      if (entryIdleTimeout != RegionAttributesDefault.ENTRY_IDLE_TIMEOUT) {
-        nonDefaultAttributes.put(RegionAttributesNames.ENTRY_IDLE_TIMEOUT,
-            Integer.toString(entryIdleTimeout));
-      }
-
-
-      if (ignoreJTA != RegionAttributesDefault.IGNORE_JTA) {
-        nonDefaultAttributes.put(RegionAttributesNames.IGNORE_JTA, Boolean.toString(ignoreJTA));
-      }
-
-
-      if (indexMaintenanceSynchronous != RegionAttributesDefault.INDEX_MAINTENANCE_SYNCHRONOUS) {
-        nonDefaultAttributes.put(RegionAttributesNames.INDEX_MAINTENANCE_SYNCHRONOUS,
-            Boolean.toString(indexMaintenanceSynchronous));
-      }
-
-
-      if (initialCapacity != RegionAttributesDefault.INITIAL_CAPACITY) {
-        nonDefaultAttributes.put(RegionAttributesNames.INITIAL_CAPACITY,
-            Integer.toString(initialCapacity));
-      }
-
-
-      if (loadFactor != RegionAttributesDefault.LOAD_FACTOR) {
-        nonDefaultAttributes.put(RegionAttributesNames.LOAD_FACTOR, Float.toString(loadFactor));
-      }
-
-
-      if (multicastEnabled != RegionAttributesDefault.MULTICAST_ENABLED) {
-        nonDefaultAttributes.put(RegionAttributesNames.MULTICAST_ENABLED,
-            Boolean.toString(multicastEnabled));
-      }
-
-
-      if (poolName != null && !poolName.equals(RegionAttributesDefault.POOL_NAME)) {
-        nonDefaultAttributes.put(RegionAttributesNames.POOL_NAME, poolName);
-      }
-
-
-      if (!scope.equals(RegionAttributesDefault.SCOPE)) {
-        nonDefaultAttributes.put(RegionAttributesNames.SCOPE, scope.toString());
-      }
-
-
-      if (statisticsEnabled != RegionAttributesDefault.STATISTICS_ENABLED) {
-        nonDefaultAttributes.put(RegionAttributesNames.STATISTICS_ENABLED,
-            Boolean.toString(statisticsEnabled));
-      }
-
-
-
-      if (isLockGrantor != RegionAttributesDefault.IS_LOCK_GRANTOR) {
-        nonDefaultAttributes.put(RegionAttributesNames.IS_LOCK_GRANTOR,
-            Boolean.toString(isLockGrantor));
-      }
-
-
-      if (entryIdleTimeout != RegionAttributesDefault.ENTRY_IDLE_TIMEOUT) {
-        nonDefaultAttributes.put(RegionAttributesNames.ENTRY_IDLE_TIMEOUT,
-            Integer.toString(entryIdleTimeout));
-      }
-
-      if (entryIdleTimeoutAction != null
-          && !entryIdleTimeoutAction.equals(RegionAttributesDefault.ENTRY_IDLE_TIMEOUT_ACTION)) {
-        nonDefaultAttributes.put(RegionAttributesNames.ENTRY_IDLE_TIMEOUT_ACTION,
-            entryIdleTimeoutAction);
-      }
-
-
-      if (entryTimeToLive != RegionAttributesDefault.ENTRY_TIME_TO_LIVE) {
-        nonDefaultAttributes.put(RegionAttributesNames.ENTRY_TIME_TO_LIVE,
-            Integer.toString(entryTimeToLive));
-      }
-
-
-      if (entryTimeToLiveAction != null
-          && !entryTimeToLiveAction.equals(RegionAttributesDefault.ENTRY_TIME_TO_LIVE_ACTION)) {
-        nonDefaultAttributes.put(RegionAttributesNames.ENTRY_TIME_TO_LIVE_ACTION,
-            entryTimeToLiveAction);
-      }
-
-
-      if (regionIdleTimeout != RegionAttributesDefault.REGION_IDLE_TIMEOUT) {
-        nonDefaultAttributes.put(RegionAttributesNames.REGION_IDLE_TIMEOUT,
-            Integer.toString(regionIdleTimeout));
-      }
-
-      if (regionIdleTimeoutAction != null
-          && !regionIdleTimeoutAction.equals(RegionAttributesDefault.REGION_IDLE_TIMEOUT_ACTION)) {
-        nonDefaultAttributes.put(RegionAttributesNames.REGION_IDLE_TIMEOUT_ACTION,
-            regionIdleTimeoutAction);
-      }
-
-      if (regionTimeToLive != RegionAttributesDefault.REGION_TIME_TO_LIVE) {
-        nonDefaultAttributes.put(RegionAttributesNames.REGION_TIME_TO_LIVE,
-            Integer.toString(regionTimeToLive));
-      }
-
-
-      if (regionTimeToLiveAction != null
-          && !regionTimeToLiveAction.equals(RegionAttributesDefault.REGION_TIME_TO_LIVE_ACTION)) {
-        nonDefaultAttributes.put(RegionAttributesNames.REGION_TIME_TO_LIVE_ACTION,
-            regionTimeToLiveAction);
-      }
-
-      if (cacheListenerClassNames != null && !cacheListenerClassNames.isEmpty()) {
-        nonDefaultAttributes.put(RegionAttributesNames.CACHE_LISTENERS,
-            CliUtil.convertStringListToString(cacheListenerClassNames, ','));
-      }
-
-      if (cacheLoaderClassName != null && !cacheLoaderClassName.isEmpty()) {
-        nonDefaultAttributes.put(RegionAttributesNames.CACHE_LOADER, cacheLoaderClassName);
-      }
-
-      if (cacheWriterClassName != null && !cacheWriterClassName.isEmpty()) {
-        nonDefaultAttributes.put(RegionAttributesNames.CACHE_WRITER, cacheWriterClassName);
-      }
-
-      if (this.offHeap != RegionAttributesDefault.OFF_HEAP) {
-        nonDefaultAttributes.put(RegionAttributesNames.OFF_HEAP, Boolean.toString(this.offHeap));
-      }
+    if (nonDefaultAttributes != null) {
+      return nonDefaultAttributes;
     }
-    return this.nonDefaultAttributes;
+
+    nonDefaultAttributes = new HashMap<>();
+
+    if (cloningEnabled != RegionAttributesDefault.CLONING_ENABLED) {
+      nonDefaultAttributes.put(RegionAttributesNames.CLONING_ENABLED,
+          Boolean.toString(cloningEnabled));
+    }
+
+    if (!StringUtils.equals(RegionAttributesDefault.COMPRESSOR_CLASS_NAME, compressorClassName)) {
+      nonDefaultAttributes.put(RegionAttributesNames.COMPRESSOR, compressorClassName);
+    }
+
+    if (concurrencyChecksEnabled != RegionAttributesDefault.CONCURRENCY_CHECK_ENABLED) {
+      nonDefaultAttributes.put(RegionAttributesNames.CONCURRENCY_CHECK_ENABLED,
+          Boolean.toString(concurrencyChecksEnabled));
+    }
+
+    if (concurrencyLevel != RegionAttributesDefault.CONCURRENCY_LEVEL) {
+      nonDefaultAttributes.put(RegionAttributesNames.CONCURRENCY_LEVEL,
+          Integer.toString(concurrencyLevel));
+    }
+
+    if (!dataPolicy.equals(RegionAttributesDefault.DATA_POLICY)) {
+      nonDefaultAttributes.put(RegionAttributesNames.DATA_POLICY, dataPolicy.toString());
+    }
+
+    if (diskStoreName != null && !diskStoreName.equals(RegionAttributesDefault.DISK_STORE_NAME)) {
+      nonDefaultAttributes.put(RegionAttributesNames.DISK_STORE_NAME, diskStoreName);
+    }
+
+    if (enableAsyncConflation != RegionAttributesDefault.ENABLE_ASYNC_CONFLATION) {
+      nonDefaultAttributes.put(RegionAttributesNames.ENABLE_ASYNC_CONFLATION,
+          Boolean.toString(enableAsyncConflation));
+    }
+
+    if (enableSubscriptionConflation != RegionAttributesDefault.ENABLE_SUBSCRIPTION_CONFLATION) {
+      nonDefaultAttributes.put(RegionAttributesNames.ENABLE_SUBSCRIPTION_CONFLATION,
+          Boolean.toString(enableSubscriptionConflation));
+    }
+
+    if (entryIdleTimeout != RegionAttributesDefault.ENTRY_IDLE_TIMEOUT) {
+      nonDefaultAttributes.put(RegionAttributesNames.ENTRY_IDLE_TIMEOUT,
+          Integer.toString(entryIdleTimeout));
+    }
+
+    if (ignoreJTA != RegionAttributesDefault.IGNORE_JTA) {
+      nonDefaultAttributes.put(RegionAttributesNames.IGNORE_JTA, Boolean.toString(ignoreJTA));
+    }
+
+    if (indexMaintenanceSynchronous != RegionAttributesDefault.INDEX_MAINTENANCE_SYNCHRONOUS) {
+      nonDefaultAttributes.put(RegionAttributesNames.INDEX_MAINTENANCE_SYNCHRONOUS,
+          Boolean.toString(indexMaintenanceSynchronous));
+    }
+
+    if (initialCapacity != RegionAttributesDefault.INITIAL_CAPACITY) {
+      nonDefaultAttributes.put(RegionAttributesNames.INITIAL_CAPACITY,
+          Integer.toString(initialCapacity));
+    }
+
+    if (loadFactor != RegionAttributesDefault.LOAD_FACTOR) {
+      nonDefaultAttributes.put(RegionAttributesNames.LOAD_FACTOR, Float.toString(loadFactor));
+    }
+
+    if (multicastEnabled != RegionAttributesDefault.MULTICAST_ENABLED) {
+      nonDefaultAttributes.put(RegionAttributesNames.MULTICAST_ENABLED,
+          Boolean.toString(multicastEnabled));
+    }
+
+    if (poolName != null && !poolName.equals(RegionAttributesDefault.POOL_NAME)) {
+      nonDefaultAttributes.put(RegionAttributesNames.POOL_NAME, poolName);
+    }
+
+    if (!scope.equals(RegionAttributesDefault.SCOPE)) {
+      nonDefaultAttributes.put(RegionAttributesNames.SCOPE, scope.toString());
+    }
+
+    if (statisticsEnabled != RegionAttributesDefault.STATISTICS_ENABLED) {
+      nonDefaultAttributes.put(RegionAttributesNames.STATISTICS_ENABLED,
+          Boolean.toString(statisticsEnabled));
+    }
+
+    if (isLockGrantor != RegionAttributesDefault.IS_LOCK_GRANTOR) {
+      nonDefaultAttributes.put(RegionAttributesNames.IS_LOCK_GRANTOR,
+          Boolean.toString(isLockGrantor));
+    }
+
+    if (entryIdleTimeout != RegionAttributesDefault.ENTRY_IDLE_TIMEOUT) {
+      nonDefaultAttributes.put(RegionAttributesNames.ENTRY_IDLE_TIMEOUT,
+          Integer.toString(entryIdleTimeout));
+    }
+
+    if (entryIdleTimeoutAction != null
+        && !entryIdleTimeoutAction.equals(RegionAttributesDefault.ENTRY_IDLE_TIMEOUT_ACTION)) {
+      nonDefaultAttributes.put(RegionAttributesNames.ENTRY_IDLE_TIMEOUT_ACTION,
+          entryIdleTimeoutAction);
+    }
+
+    if (entryTimeToLive != RegionAttributesDefault.ENTRY_TIME_TO_LIVE) {
+      nonDefaultAttributes.put(RegionAttributesNames.ENTRY_TIME_TO_LIVE,
+          Integer.toString(entryTimeToLive));
+    }
+
+    if (entryTimeToLiveAction != null
+        && !entryTimeToLiveAction.equals(RegionAttributesDefault.ENTRY_TIME_TO_LIVE_ACTION)) {
+      nonDefaultAttributes.put(RegionAttributesNames.ENTRY_TIME_TO_LIVE_ACTION,
+          entryTimeToLiveAction);
+    }
+
+    if (regionIdleTimeout != RegionAttributesDefault.REGION_IDLE_TIMEOUT) {
+      nonDefaultAttributes.put(RegionAttributesNames.REGION_IDLE_TIMEOUT,
+          Integer.toString(regionIdleTimeout));
+    }
+
+    if (regionIdleTimeoutAction != null
+        && !regionIdleTimeoutAction.equals(RegionAttributesDefault.REGION_IDLE_TIMEOUT_ACTION)) {
+      nonDefaultAttributes.put(RegionAttributesNames.REGION_IDLE_TIMEOUT_ACTION,
+          regionIdleTimeoutAction);
+    }
+
+    if (regionTimeToLive != RegionAttributesDefault.REGION_TIME_TO_LIVE) {
+      nonDefaultAttributes.put(RegionAttributesNames.REGION_TIME_TO_LIVE,
+          Integer.toString(regionTimeToLive));
+    }
+
+    if (regionTimeToLiveAction != null
+        && !regionTimeToLiveAction.equals(RegionAttributesDefault.REGION_TIME_TO_LIVE_ACTION)) {
+      nonDefaultAttributes.put(RegionAttributesNames.REGION_TIME_TO_LIVE_ACTION,
+          regionTimeToLiveAction);
+    }
+
+    if (cacheListenerClassNames != null && !cacheListenerClassNames.isEmpty()) {
+      nonDefaultAttributes.put(RegionAttributesNames.CACHE_LISTENERS,
+          CliUtil.convertStringListToString(cacheListenerClassNames, ','));
+    }
+
+    if (cacheLoaderClassName != null && !cacheLoaderClassName.isEmpty()) {
+      nonDefaultAttributes.put(RegionAttributesNames.CACHE_LOADER, cacheLoaderClassName);
+    }
+
+    if (cacheWriterClassName != null && !cacheWriterClassName.isEmpty()) {
+      nonDefaultAttributes.put(RegionAttributesNames.CACHE_WRITER, cacheWriterClassName);
+    }
+
+    if (offHeap != RegionAttributesDefault.OFF_HEAP) {
+      nonDefaultAttributes.put(RegionAttributesNames.OFF_HEAP, Boolean.toString(offHeap));
+    }
+
+    if (!asyncEventQueueIDs.isEmpty()) {
+      nonDefaultAttributes.put(RegionAttributesNames.ASYNC_EVENT_QUEUE_ID,
+          String.join(",", asyncEventQueueIDs));
+    }
+
+    if (!gatewaySenderIDs.isEmpty()) {
+      nonDefaultAttributes.put(RegionAttributesNames.GATEWAY_SENDER_ID,
+          String.join(",", gatewaySenderIDs));
+    }
+
+    return nonDefaultAttributes;
   }
 }

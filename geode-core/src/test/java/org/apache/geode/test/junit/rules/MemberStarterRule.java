@@ -259,6 +259,12 @@ public abstract class MemberStarterRule<T> extends SerializableExternalResource 
     return count;
   }
 
+  public void waitTilGatewaySendersAreReady(int expectedGatewayObjectCount) throws Exception {
+    DistributedSystemMXBean dsMXBean = getManagementService().getDistributedSystemMXBean();
+    await().atMost(30, TimeUnit.SECONDS)
+        .until(() -> dsMXBean.listGatewaySenderObjectNames().length == expectedGatewayObjectCount);
+  }
+
   public void waitTillDiskStoreIsReady(String diskstoreName, int serverCount) {
     await().atMost(30, TimeUnit.SECONDS)
         .until(() -> getDiskStoreCount(diskstoreName) == serverCount);

@@ -15,6 +15,11 @@
 
 package org.apache.geode.internal.cache.extension.mock;
 
+import java.io.DataInput;
+import java.io.DataOutput;
+import java.io.IOException;
+
+import org.apache.geode.DataSerializable;
 import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.CacheFactory;
 import org.apache.geode.cache.Region;
@@ -48,7 +53,7 @@ import org.apache.geode.management.internal.configuration.domain.XmlEntity;
  *
  * @since GemFire 8.1
  */
-public class CreateMockRegionExtensionFunction extends FunctionAdapter {
+public class CreateMockRegionExtensionFunction implements Function, DataSerializable {
 
   private static final long serialVersionUID = 1L;
 
@@ -98,4 +103,13 @@ public class CreateMockRegionExtensionFunction extends FunctionAdapter {
     return new Object[] {regionName, value};
   }
 
+  @Override
+  public void toData(DataOutput out) throws IOException {
+
+  }
+
+  @Override
+  public void fromData(DataInput in) throws IOException, ClassNotFoundException {
+
+  }
 }

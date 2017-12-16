@@ -14,11 +14,25 @@
  */
 package org.apache.geode.security;
 
-import static org.apache.geode.internal.AvailablePort.*;
-import static org.apache.geode.security.SecurityTestUtils.*;
-import static org.apache.geode.test.dunit.Assert.*;
-import static org.apache.geode.test.dunit.IgnoredException.*;
-import static org.apache.geode.test.dunit.LogWriterUtils.*;
+import static org.apache.geode.internal.AvailablePort.SOCKET;
+import static org.apache.geode.internal.AvailablePort.getRandomAvailablePort;
+import static org.apache.geode.security.SecurityTestUtils.AUTHFAIL_EXCEPTION;
+import static org.apache.geode.security.SecurityTestUtils.NOTAUTHZ_EXCEPTION;
+import static org.apache.geode.security.SecurityTestUtils.NO_EXCEPTION;
+import static org.apache.geode.security.SecurityTestUtils.OTHER_EXCEPTION;
+import static org.apache.geode.security.SecurityTestUtils.closeCache;
+import static org.apache.geode.security.SecurityTestUtils.concatProperties;
+import static org.apache.geode.security.SecurityTestUtils.createCacheClient;
+import static org.apache.geode.security.SecurityTestUtils.createCacheClientWithDynamicRegion;
+import static org.apache.geode.security.SecurityTestUtils.doGets;
+import static org.apache.geode.security.SecurityTestUtils.doNGets;
+import static org.apache.geode.security.SecurityTestUtils.doNPuts;
+import static org.apache.geode.security.SecurityTestUtils.doPutAllP;
+import static org.apache.geode.security.SecurityTestUtils.doPuts;
+import static org.apache.geode.security.SecurityTestUtils.getLocatorPort;
+import static org.apache.geode.test.dunit.Assert.fail;
+import static org.apache.geode.test.dunit.IgnoredException.addIgnoredException;
+import static org.apache.geode.test.dunit.LogWriterUtils.getLogWriter;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -39,7 +53,6 @@ import org.apache.geode.security.generator.CredentialGenerator;
 import org.apache.geode.security.generator.DummyCredentialGenerator;
 import org.apache.geode.security.generator.XmlAuthzCredentialGenerator;
 import org.apache.geode.security.templates.UserPasswordAuthInit;
-import org.apache.geode.test.dunit.Host;
 import org.apache.geode.test.dunit.VM;
 import org.apache.geode.test.dunit.standalone.VersionManager;
 import org.apache.geode.test.junit.categories.DistributedTest;
@@ -60,7 +73,9 @@ import org.apache.geode.test.junit.runners.CategoryWithParameterizedRunnerFactor
 public class ClientAuthorizationDUnitTest extends ClientAuthorizationTestCase {
   @Parameterized.Parameters
   public static Collection<String> data() {
-    List<String> result = VersionManager.getInstance().getVersions();
+    List<String> result = VersionManager.getInstance().getVersionsWithoutCurrent();
+    result.add("000");
+    result.remove("130");
     if (result.size() < 1) {
       throw new RuntimeException("No older versions of Geode were found to test against");
     } else {

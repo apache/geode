@@ -97,7 +97,7 @@ public class ClusterConfig implements Serializable {
       ClusterConfigurationService sc = internalLocator.getSharedConfiguration();
 
       // verify no extra configs exist in memory
-      Set<String> actualGroupConfigs = sc.getEntireConfiguration().keySet();
+      Set<String> actualGroupConfigs = sc.getConfigurationRegion().keySet();
       assertThat(actualGroupConfigs).isEqualTo(expectedGroupConfigs);
 
       for (ConfigGroup configGroup : this.getGroups()) {

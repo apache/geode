@@ -14,6 +14,7 @@
  */
 package org.apache.geode.management;
 
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
@@ -59,17 +60,7 @@ public class WANManagementDUnitTest extends ManagementTestBase {
   }
 
   @Test
-  public void testMBeanCallbackSerial() throws Exception {
-    testMBeanCallback(false);
-  }
-
-  @Test
-  public void testMBeanCallbackParallel() throws Exception {
-    testMBeanCallback(true);
-
-  }
-
-  public void testMBeanCallback(boolean parallel) throws Exception {
+  public void testMBeanCallback() throws Exception {
 
     VM nyLocator = getManagedNodeList().get(0);
     VM nyReceiver = getManagedNodeList().get(1);
@@ -81,12 +72,9 @@ public class WANManagementDUnitTest extends ManagementTestBase {
 
     Integer nyPort = nyLocator.invoke(() -> WANTestBase.createFirstRemoteLocator(12, dsIdPort));
 
-
-
     puneSender.invoke(() -> WANTestBase.createCache(dsIdPort));
     managing.invoke(() -> WANTestBase.createManagementCache(dsIdPort));
     startManagingNode(managing);
-
 
     // keep a larger batch to minimize number of exception occurrences in the
     // log
@@ -253,6 +241,37 @@ public class WANManagementDUnitTest extends ManagementTestBase {
     checkAsyncQueueMBean(memberVM, false);
     checkAsyncQueueMBean(managerVm, false);
     checkProxyAsyncQueue(managerVm, member, false);
+  }
+
+  @Test
+  public void testDistributedRegionMBeanHasGatewaySenderIds() {
+    VM locator = Host.getLocator();
+    VM managing = getManagingNode();
+    VM sender = getManagedNodeList().get(0);
+
+    int dsIdPort = locator.invoke(() -> WANManagementDUnitTest.getLocatorPort());
+
+    sender.invoke(() -> WANTestBase.createCache(dsIdPort));
+    managing.invoke(() -> WANTestBase.createManagementCache(dsIdPort));
+    startManagingNode(managing);
+
+    sender
+        .invoke(() -> WANTestBase.createSender("pn", 12, true, 100, 300, false, false, null, true));
+
+    String regionName = getTestMethodName() + "_PR";
+    sender.invoke(() -> WANTestBase.createPartitionedRegion(regionName, "pn", 0, 13, false));
+
+    String regionPath = "/" + regionName;
+    managing.invoke(() -> {
+      Cache cache = GemFireCacheImpl.getInstance();
+      ManagementService service = ManagementService.getManagementService(cache);
+
+      Awaitility.await().atMost(5, TimeUnit.SECONDS)
+          .until(() -> assertNotNull(service.getDistributedRegionMXBean(regionPath)));
+
+      DistributedRegionMXBean bean = service.getDistributedRegionMXBean(regionPath);
+      assertThat(bean.listRegionAttributes().getGatewaySenderIds()).containsExactly("pn");
+    });
   }
 
   @SuppressWarnings("serial")
