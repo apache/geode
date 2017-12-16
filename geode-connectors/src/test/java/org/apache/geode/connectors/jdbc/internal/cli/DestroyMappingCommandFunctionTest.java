@@ -118,7 +118,7 @@ public class DestroyMappingCommandFunctionTest {
 
     ArgumentCaptor<CliFunctionResult> argument = ArgumentCaptor.forClass(CliFunctionResult.class);
     verify(resultSender, times(1)).lastResult(argument.capture());
-    assertThat(argument.getValue().getErrorMessage())
+    assertThat(argument.getValue().getStatus())
         .contains("Region mapping for region \"" + regionName + "\" not found");
   }
 }
