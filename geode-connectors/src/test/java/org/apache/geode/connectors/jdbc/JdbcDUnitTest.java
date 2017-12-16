@@ -245,8 +245,7 @@ public class JdbcDUnitTest implements Serializable {
 
   private void createJdbcConnection() {
     final String commandStr = "create jdbc-connection --name=" + CONNECTION_NAME + " --url="
-        + CONNECTION_URL
-        + " --params=param1:value1,this.is.param2:value.2,this-is-value-3,value-3,this_is_param_4:value_4";
+        + CONNECTION_URL;
     gfsh.executeAndAssertThat(commandStr).statusIsSuccess();
   }
 

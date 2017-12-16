@@ -15,6 +15,7 @@
 package org.apache.geode.connectors.jdbc.internal.xml;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
@@ -48,5 +49,18 @@ public class ConnectionConfigBuilderTest {
     assertThat(config.getPassword()).isEqualTo("password");
     assertThat(config.getConnectionProperties()).containsEntry("param1", "value1")
         .containsEntry("param2", "value2");
+  }
+
+  @Test
+  public void throwsExceptionWithInvalidParams() {
+    ConnectionConfigBuilder config = new ConnectionConfigBuilder();
+    assertThatThrownBy(() -> config.withParameters(new String[] {"param1value1"}))
+        .isInstanceOf(IllegalArgumentException.class);
+    assertThatThrownBy(() -> config.withParameters(new String[] {":param1value1"}))
+        .isInstanceOf(IllegalArgumentException.class);
+    assertThatThrownBy(() -> config.withParameters(new String[] {"param1value1:"}))
+        .isInstanceOf(IllegalArgumentException.class);
+    assertThatThrownBy(() -> config.withParameters(new String[] {":"}))
+        .isInstanceOf(IllegalArgumentException.class);
   }
 }

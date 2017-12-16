@@ -71,13 +71,24 @@ public class RegionMappingBuilder {
       fieldToColumnMap = null;
     } else {
       for (String mapping : mappings) {
+        if (mapping.isEmpty()) {
+          continue;
+        }
         String[] keyValuePair = mapping.split(MAPPINGS_DELIMITER);
+        validateParam(keyValuePair, mapping);
         if (keyValuePair.length == 2) {
           fieldToColumnMap.put(keyValuePair[0], keyValuePair[1]);
         }
       }
     }
     return this;
+  }
+
+  private void validateParam(String[] paramKeyValue, String mapping) {
+    if (paramKeyValue.length <= 1 || paramKeyValue[0].isEmpty() || paramKeyValue[1].isEmpty()) {
+      throw new IllegalArgumentException("Field to column mapping '" + mapping
+          + "' is not of the form 'Field" + MAPPINGS_DELIMITER + "Column'");
+    }
   }
 
   public RegionMapping build() {

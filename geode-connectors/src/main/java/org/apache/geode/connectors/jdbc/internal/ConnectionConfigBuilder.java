@@ -55,13 +55,24 @@ public class ConnectionConfigBuilder {
       parameters = null;
     } else {
       for (String param : params) {
+        if (param.isEmpty()) {
+          continue;
+        }
         String[] keyValuePair = param.split(PARAMS_DELIMITER);
+        validateParam(keyValuePair, param);
         if (keyValuePair.length == 2) {
           parameters.put(keyValuePair[0], keyValuePair[1]);
         }
       }
     }
     return this;
+  }
+
+  private void validateParam(String[] paramKeyValue, String param) {
+    if ((paramKeyValue.length <= 1) || paramKeyValue[0].isEmpty() || paramKeyValue[1].isEmpty()) {
+      throw new IllegalArgumentException("Parameter '" + param
+          + "' is not of the form 'parameterName" + PARAMS_DELIMITER + "value'");
+    }
   }
 
   public ConnectionConfiguration build() {

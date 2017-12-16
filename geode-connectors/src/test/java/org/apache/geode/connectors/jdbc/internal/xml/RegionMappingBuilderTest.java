@@ -15,6 +15,7 @@
 package org.apache.geode.connectors.jdbc.internal.xml;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
@@ -60,5 +61,22 @@ public class RegionMappingBuilderTest {
 
     assertThat(regionMapping.getColumnNameForField("field1")).isEqualTo("column1");
     assertThat(regionMapping.getColumnNameForField("field2")).isEqualTo("column2");
+  }
+
+  @Test
+  public void throwsExceptionForInvalidFieldMappings() {
+    RegionMappingBuilder regionMappingbuilder = new RegionMappingBuilder();
+
+    assertThatThrownBy(
+        () -> regionMappingbuilder.withFieldToColumnMappings(new String[] {"field1column1"}))
+            .isInstanceOf(IllegalArgumentException.class);
+    assertThatThrownBy(
+        () -> regionMappingbuilder.withFieldToColumnMappings(new String[] {":field1column1"}))
+            .isInstanceOf(IllegalArgumentException.class);
+    assertThatThrownBy(
+        () -> regionMappingbuilder.withFieldToColumnMappings(new String[] {"field1column1:"}))
+            .isInstanceOf(IllegalArgumentException.class);
+    assertThatThrownBy(() -> regionMappingbuilder.withFieldToColumnMappings(new String[] {":"}))
+        .isInstanceOf(IllegalArgumentException.class);
   }
 }
