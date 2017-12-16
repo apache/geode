@@ -87,6 +87,7 @@ public class LRUListWithAsyncSorting extends AbstractEvictionList {
 
   LRUListWithAsyncSorting(InternalEvictionStatistics stats, BucketRegion region) {
     this(stats, region, SINGLETON_EXECUTOR);
+    logger.info("Using experimental LRUListWithAsyncSorting");
   }
 
   LRUListWithAsyncSorting(InternalEvictionStatistics stats, BucketRegion region,
