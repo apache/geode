@@ -23,7 +23,7 @@ import org.apache.lucene.analysis.Analyzer;
 import org.apache.lucene.analysis.standard.StandardAnalyzer;
 
 import org.apache.geode.cache.Cache;
-import org.apache.geode.cache.execute.FunctionAdapter;
+import org.apache.geode.cache.execute.Function;
 import org.apache.geode.cache.execute.FunctionContext;
 import org.apache.geode.cache.lucene.LuceneSerializer;
 import org.apache.geode.cache.lucene.LuceneService;
@@ -46,13 +46,15 @@ import org.apache.geode.management.internal.configuration.domain.XmlEntity;
  *
  * @see Cache
  * @see org.apache.geode.cache.execute.Function
- * @see FunctionAdapter
+ * @see Function
  * @see FunctionContext
  * @see InternalEntity
  * @see LuceneIndexDetails
  */
 @SuppressWarnings("unused")
-public class LuceneCreateIndexFunction extends FunctionAdapter implements InternalEntity {
+public class LuceneCreateIndexFunction implements InternalEntity, Function {
+
+  private static final long serialVersionUID = 3061443846664615818L;
 
   public String getId() {
     return LuceneCreateIndexFunction.class.getName();
