@@ -18,6 +18,9 @@ import java.io.BufferedWriter;
 import java.io.File;
 import java.io.IOException;
 
+import org.apache.geode.internal.cache.backup.RestoreScript;
+import org.apache.geode.internal.cache.backup.ScriptGenerator;
+
 class UnixScriptGenerator implements ScriptGenerator {
 
   private static final String SCRIPT_FILE_NAME = "restore.sh";

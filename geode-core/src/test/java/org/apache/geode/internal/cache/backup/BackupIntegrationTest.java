@@ -319,7 +319,7 @@ public class BackupIntegrationTest {
     backup.prepareForBackup();
     backup.doBackup(backupDir, null, false);
     Collection<File> fileCollection = FileUtils.listFiles(backupDir,
-        new RegexFileFilter("BackupIntegrationTest.cache.xml"), DirectoryFileFilter.DIRECTORY);
+        new RegexFileFilter("cache.xml"), DirectoryFileFilter.DIRECTORY);
     assertEquals(1, fileCollection.size());
     File cacheXmlBackup = fileCollection.iterator().next();
     assertTrue(cacheXmlBackup.exists());

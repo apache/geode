@@ -28,8 +28,6 @@ import java.net.InetAddress;
 import java.nio.channels.ClosedByInterruptException;
 import java.nio.channels.FileChannel;
 import java.nio.channels.FileLock;
-import java.nio.file.Files;
-import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -38,7 +36,6 @@ import java.util.Comparator;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
-import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
@@ -61,11 +58,9 @@ import java.util.concurrent.locks.ReentrantReadWriteLock.ReadLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock.WriteLock;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-import java.util.stream.Collectors;
 
 import it.unimi.dsi.fastutil.ints.IntOpenHashSet;
 import it.unimi.dsi.fastutil.longs.LongOpenHashSet;
-import org.apache.commons.io.FileUtils;
 import org.apache.logging.log4j.Logger;
 
 import org.apache.geode.CancelCriterion;
@@ -1962,8 +1957,6 @@ public class DiskStoreImpl implements DiskStore {
         deleteFiles(overflowFileFilter);
       }
 
-      cleanupOrphanedBackupDirectories();
-
       persistentOplogs.createOplogs(needsOplogs, persistentBackupFiles);
       finished = true;
 
@@ -1985,28 +1978,6 @@ public class DiskStoreImpl implements DiskStore {
         if (getDiskInitFile() != null) {
           getDiskInitFile().close();
         }
-      }
-    }
-  }
-
-  private void cleanupOrphanedBackupDirectories() {
-    for (DirectoryHolder directoryHolder : getDirectoryHolders()) {
-      try {
-        List<Path> backupDirectories = Files.list(directoryHolder.getDir().toPath())
-            .filter((path) -> path.getFileName().toString()
-                .startsWith(BackupManager.DATA_STORES_TEMPORARY_DIRECTORY))
-            .filter(p -> Files.isDirectory(p)).collect(Collectors.toList());
-        for (Path backupDirectory : backupDirectories) {
-          try {
-            logger.info("Deleting orphaned backup temporary directory: " + backupDirectory);
-            FileUtils.deleteDirectory(backupDirectory.toFile());
-          } catch (IOException e) {
-            logger.warn("Failed to remove orphaned backup temporary directory: " + backupDirectory,
-                e);
-          }
-        }
-      } catch (IOException e) {
-        logger.warn(e);
       }
     }
   }
