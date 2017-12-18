@@ -1098,17 +1098,20 @@ public class MemoryThresholdsOffHeapDUnitTest extends ClientServerTestCase {
     expectedInvocations.set(ex.intValue());
 
     ds1.invoke(new SerializableCallable() {
-       public Object call() throws Exception {
-         final OffHeapMemoryMonitor ohmm =
-             ((InternalResourceManager) getCache().getResourceManager()).getOffHeapMonitor();
-         assertFalse(ohmm.getState().isCritical());
-         return null;
-       }
-     });
+      public Object call() throws Exception {
+        final OffHeapMemoryMonitor ohmm =
+            ((InternalResourceManager) getCache().getResourceManager()).getOffHeapMonitor();
+        assertFalse(ohmm.getState().isCritical());
+        return null;
+      }
+    });
 
     accessor.invoke(new SerializableCallable(
         "Data store in safe state, assert load behavior, accessor sets critical state, assert load behavior") {
       public Object call() throws Exception {
+        final OffHeapMemoryMonitor ohmm =
+            ((InternalResourceManager) getCache().getResourceManager()).getOffHeapMonitor();
+        assertFalse(ohmm.getState().isCritical());
         Integer k = new Integer(4);
         Integer expectedInvocations9 = new Integer(expectedInvocations.incrementAndGet());
         final PartitionedRegion r = (PartitionedRegion) getCache().getRegion(rName);
@@ -1116,15 +1119,13 @@ public class MemoryThresholdsOffHeapDUnitTest extends ClientServerTestCase {
         assertTrue(r.containsKey(k));
         assertEquals(k.toString(), r.get(k, expectedInvocations9)); // no load
 
-        // Go critical in accessor
-        r.put("oh3", new byte[157287]);
-
-        return null;
-      }});
-
-    ds1.invoke(new SerializableCallable() {
-      public Object call() throws Exception {
-        final PartitionedRegion r = (PartitionedRegion) getCache().getRegion(rName);
+        // Go critical in accessor by creating entries in local node
+        String localRegionName = "localRegionName";
+        AttributesFactory<Integer, String> af = getLocalRegionAttributesFactory();
+        final LocalRegion localRegion =
+            (LocalRegion) getCache().createRegion(localRegionName, af.create());
+        localRegion.put("oh1", new byte[838860]);
+        localRegion.put("oh3", new byte[157287]);
 
         WaitCriterion wc = new WaitCriterion() {
           public String description() {
@@ -1132,41 +1133,20 @@ public class MemoryThresholdsOffHeapDUnitTest extends ClientServerTestCase {
           }
 
           public boolean done() {
-            return r.memoryThresholdReached.get();
+            return ohmm.getState().isCritical();
           }
         };
-        Wait.waitForCriterion(wc, 30 * 1000, 100, true);
+        Wait.waitForCriterion(wc, 30 * 1000, 10, true);
 
-        final OffHeapMemoryMonitor ohmm =
-            ((InternalResourceManager) getCache().getResourceManager()).getOffHeapMonitor();
-        assertTrue(ohmm.getState().isCritical());
-
-        return null;
-      }});
-
-    accessor.invoke(new SerializableCallable(
-        "Data store in safe state, assert load behavior, accessor sets critical state, assert load behavior") {
-      public Object call() throws Exception {
-        final PartitionedRegion r = (PartitionedRegion) getCache().getRegion(rName);
-
-        Integer k = new Integer(5);
+        k = new Integer(5);
         Integer expectedInvocations10 = new Integer(expectedInvocations.incrementAndGet());
         assertEquals(k.toString(), r.get(k, expectedInvocations10)); // load for key 5
         assertTrue(r.containsKey(k));
         assertEquals(k.toString(), r.get(k, expectedInvocations10)); // no load
 
         // Clean up critical state
-        r.destroy("oh3");
-
-        return null;
-      }});
-
-    ds1.invoke(new SerializableCallable() {
-      public Object call() throws Exception {
-        final OffHeapMemoryMonitor ohmm =
-            ((InternalResourceManager) getCache().getResourceManager()).getOffHeapMonitor();
-
-        WaitCriterion wc = new WaitCriterion() {
+        localRegion.destroy("oh3");
+        wc = new WaitCriterion() {
           public String description() {
             return "verify critical state";
           }
@@ -1175,9 +1155,9 @@ public class MemoryThresholdsOffHeapDUnitTest extends ClientServerTestCase {
             return !ohmm.getState().isCritical();
           }
         };
-        Wait.waitForCriterion(wc, 30 * 1000, 100, true);
+        Wait.waitForCriterion(wc, 30 * 1000, 10, true);
 
-        return null;
+        return expectedInvocations10;
       }
     });
 
@@ -1185,40 +1165,34 @@ public class MemoryThresholdsOffHeapDUnitTest extends ClientServerTestCase {
     ds1.invoke(removeExpectedException);
   }
 
-  private CacheSerializableRunnable createPR(final String rName, final boolean accessor) {
-    return new CacheSerializableRunnable("create PR accessor") {
-      @Override
-      public void run2() throws CacheException {
-        // Assert some level of connectivity
-        getSystem(getOffHeapProperties());
-        InternalResourceManager irm = (InternalResourceManager) getCache().getResourceManager();
-        irm.setCriticalOffHeapPercentage(90f);
-        AttributesFactory<Integer, String> af = new AttributesFactory<Integer, String>();
-        if (!accessor) {
-          af.setCacheLoader(new CacheLoader<Integer, String>() {
-            final AtomicInteger numLoaderInvocations = new AtomicInteger(0);
+  private void createPR(final String rName, final boolean accessor) {
+    getSystem(getOffHeapProperties());
+    InternalResourceManager irm = (InternalResourceManager) getCache().getResourceManager();
+    irm.setCriticalOffHeapPercentage(90f);
+    AttributesFactory<Integer, String> af = new AttributesFactory<Integer, String>();
+    if (!accessor) {
+      af.setCacheLoader(new CacheLoader<Integer, String>() {
+        final AtomicInteger numLoaderInvocations = new AtomicInteger(0);
 
-            public String load(LoaderHelper<Integer, String> helper) throws CacheLoaderException {
-              Integer expectedInvocations = (Integer) helper.getArgument();
-              final int actualInvocations = this.numLoaderInvocations.getAndIncrement();
-              if (expectedInvocations.intValue() != actualInvocations) {
-                throw new CacheLoaderException("Expected " + expectedInvocations
-                    + " invocations, actual is " + actualInvocations);
-              }
-              return helper.getKey().toString();
-            }
-
-            public void close() {}
-          });
-
-          af.setPartitionAttributes(new PartitionAttributesFactory().create());
-        } else {
-          af.setPartitionAttributes(new PartitionAttributesFactory().setLocalMaxMemory(0).create());
+        public String load(LoaderHelper<Integer, String> helper) throws CacheLoaderException {
+          Integer expectedInvocations = (Integer) helper.getArgument();
+          final int actualInvocations = this.numLoaderInvocations.getAndIncrement();
+          if (expectedInvocations.intValue() != actualInvocations) {
+            throw new CacheLoaderException("Expected " + expectedInvocations
+                + " invocations, actual is " + actualInvocations + " for key " + helper.getKey());
+          }
+          return helper.getKey().toString();
         }
-        af.setOffHeap(true);
-        getCache().createRegion(rName, af.create());
-      }
-    };
+
+        public void close() {}
+      });
+
+      af.setPartitionAttributes(new PartitionAttributesFactory().create());
+    } else {
+      af.setPartitionAttributes(new PartitionAttributesFactory().setLocalMaxMemory(0).create());
+    }
+    af.setOffHeap(true);
+    getCache().createRegion(rName, af.create());
   }
 
   /**
@@ -1240,9 +1214,7 @@ public class MemoryThresholdsOffHeapDUnitTest extends ClientServerTestCase {
         InternalResourceManager irm = (InternalResourceManager) getCache().getResourceManager();
         final OffHeapMemoryMonitor ohmm = irm.getOffHeapMonitor();
         irm.setCriticalOffHeapPercentage(90f);
-        AttributesFactory<Integer, String> af = new AttributesFactory<Integer, String>();
-        af.setScope(Scope.LOCAL);
-        af.setOffHeap(true);
+        AttributesFactory<Integer, String> af = getLocalRegionAttributesFactory();
         final AtomicInteger numLoaderInvocations = new AtomicInteger(0);
         af.setCacheLoader(new CacheLoader<Integer, String>() {
           public String load(LoaderHelper<Integer, String> helper) throws CacheLoaderException {
@@ -1326,6 +1298,13 @@ public class MemoryThresholdsOffHeapDUnitTest extends ClientServerTestCase {
         }
       }
     });
+  }
+
+  private AttributesFactory<Integer, String> getLocalRegionAttributesFactory() {
+    AttributesFactory<Integer, String> af = new AttributesFactory<Integer, String>();
+    af.setScope(Scope.LOCAL);
+    af.setOffHeap(true);
+    return af;
   }
 
   /**
