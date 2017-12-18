@@ -126,6 +126,7 @@ public class GMSHealthMonitorJUnitTest {
       mockMembers = new ArrayList<InternalDistributedMember>();
       for (int i = 0; i < 7; i++) {
         InternalDistributedMember mbr = new InternalDistributedMember("localhost", 8888 + i);
+        mbr.getNetMember().setName("member" + i);
 
         if (i == 0 || i == 1) {
           mbr.setVmKind(DistributionManager.LOCATOR_DM_TYPE);
@@ -243,6 +244,11 @@ public class GMSHealthMonitorJUnitTest {
   private NetView installAView() {
     System.out.println("installAView starting");
     NetView v = new NetView(mockMembers.get(0), 2, mockMembers);
+    int i = 0;
+    for (InternalDistributedMember mbr : v.getMembers()) {
+      v.getMembersTimeout().put(mbr.getName(), memberTimeout * i);
+      i++;
+    }
 
     // 3rd is current member
     when(messenger.getMemberID()).thenReturn(mockMembers.get(myAddressIndex));
@@ -737,7 +743,8 @@ public class GMSHealthMonitorJUnitTest {
     when(fakeSocket.getInputStream()).thenReturn(mockInputStream);
     when(fakeSocket.getOutputStream()).thenReturn(outputStream);
     when(fakeSocket.isConnected()).thenReturn(true);
-
+    installAView();
+    otherMember.getNetMember().setName("member1");
     assertEquals(expectedResult, gmsHealthMonitor.doTCPCheckMember(otherMember, fakeSocket));
     Assert.assertTrue(gmsHealthMonitor.getStats().getFinalCheckRequestsSent() > 0);
     Assert.assertTrue(gmsHealthMonitor.getStats().getTcpFinalCheckRequestsSent() > 0);

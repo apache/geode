@@ -427,6 +427,7 @@ public class GMSJoinLeave implements JoinLeave, MessageHandler {
       JoinRequestMessage req = new JoinRequestMessage(coord, this.localAddress,
           services.getAuthenticator().getCredentials(coord), port,
           services.getMessenger().getRequestId());
+      req.setMember_timeout((long) services.getConfig().getMemberTimeout());
       // services.getMessenger().send(req, state.view);
       services.getMessenger().send(req);
     }
@@ -809,6 +810,8 @@ public class GMSJoinLeave implements JoinLeave, MessageHandler {
       newView.setFailureDetectionPort(localAddress,
           services.getHealthMonitor().getFailureDetectionPort());
       this.localAddress.setVmViewId(0);
+      newView.getMembersTimeout().put(this.getMemberID().getName(),
+          services.getConfig().getMemberTimeout());
       installView(newView);
       isJoined = true;
       createAndStartViewCreator(newView);
@@ -816,6 +819,8 @@ public class GMSJoinLeave implements JoinLeave, MessageHandler {
     } else {
       // create and send out a new view
       NetView newView = addMemberToNetView(oldCoordinator);
+      newView.getMembersTimeout().put(this.getMemberID().getName(),
+          services.getConfig().getMemberTimeout());
       createAndStartViewCreator(newView);
       startViewBroadcaster();
     }
@@ -2322,6 +2327,8 @@ public class GMSJoinLeave implements JoinLeave, MessageHandler {
               joinReqs.add(mbr);
               joinPorts.put(mbr, port);
             }
+
+            oldView.getMembersTimeout().put(jmsg.getMemberID().getName(), jmsg.getMember_timeout());
             break;
           case LEAVE_REQUEST_MESSAGE:
             mbr = ((LeaveRequestMessage) msg).getMemberID();
@@ -2387,11 +2394,29 @@ public class GMSJoinLeave implements JoinLeave, MessageHandler {
         mbrs.addAll(joinReqs);
         newView = new NetView(localAddress, viewNumber, mbrs, leaveReqs,
             new HashSet<InternalDistributedMember>(removalReqs));
+        newView.getMembersTimeout().putAll(oldView.getMembersTimeout());
         for (InternalDistributedMember mbr : joinReqs) {
           if (mbrs.contains(mbr)) {
             newView.setFailureDetectionPort(mbr, joinPorts.get(mbr));
           }
         }
+
+        // make sure that memberstimeout doesn't contain old memberstimeout which are not in view
+        for (String mbrName : newView.getMembersTimeout().keySet()) {
+          boolean mbrPresent = false;
+          for (InternalDistributedMember mbr : newView.getMembers()) {
+            if (mbr.getName().equals(mbrName)) {
+              mbrPresent = true;
+            }
+          }
+
+          if (false == mbrPresent) {
+            newView.getMembersTimeout().remove(mbrName);
+          }
+        }
+
+
+
         if (currentView != null) {
           newView.setFailureDetectionPorts(currentView);
           newView.setPublicKeys(currentView);

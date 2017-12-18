@@ -58,6 +58,7 @@ public class NetView implements DataSerializableFixedID {
   private Set<InternalDistributedMember> hashedMembers;
   private final Object membersLock = new Object();
   public static final Random RANDOM = new Random();
+  private Map<String, Long> membersTimeout = new ConcurrentHashMap<>();
 
 
   public NetView() {
@@ -553,6 +554,18 @@ public class NetView implements DataSerializableFixedID {
     // sb.append(ports[i]);
     // }
     sb.append("]");
+    sb.append(", MemberTimeouts : [");
+    first = true;
+    for (String mbrName : this.membersTimeout.keySet()) {
+      if (!first)
+        sb.append(",");
+      sb.append(mbrName);
+      sb.append(" ");
+      sb.append(this.membersTimeout.get(mbrName));
+      first = false;
+
+    }
+    sb.append("]");
     return sb.toString();
   }
 
@@ -597,6 +610,9 @@ public class NetView implements DataSerializableFixedID {
     DataSerializer.writeIntArray(failureDetectionPorts, out);
     // TODO expensive serialization
     DataSerializer.writeHashMap(publicKeys, out);
+    if (InternalDataSerializer.getVersionForDataStream(out).compareTo(Version.GEODE_120) >= 0) {
+      DataSerializer.writeHashMap(membersTimeout, out);
+    }
   }
 
   @Override
@@ -612,6 +628,12 @@ public class NetView implements DataSerializableFixedID {
     Map pubkeys = DataSerializer.readHashMap(in);
     if (pubkeys != null) {
       publicKeys.putAll(pubkeys);
+    }
+    if (InternalDataSerializer.getVersionForDataStream(in).compareTo(Version.GEODE_120) >= 0) {
+      Map memb_timeouts = DataSerializer.readHashMap(in);
+      if (memb_timeouts != null) {
+        membersTimeout.putAll(memb_timeouts);
+      }
     }
   }
 
@@ -639,5 +661,13 @@ public class NetView implements DataSerializableFixedID {
   @Override
   public int getDSFID() {
     return NETVIEW;
+  }
+
+  public Map<String, Long> getMembersTimeout() {
+    return membersTimeout;
+  }
+
+  public void setMembersTimeout(Map<String, Long> membersTimeout) {
+    this.membersTimeout = membersTimeout;
   }
 }
