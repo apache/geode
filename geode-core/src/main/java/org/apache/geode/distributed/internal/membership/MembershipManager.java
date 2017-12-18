@@ -314,4 +314,9 @@ public interface MembershipManager {
    */
   public void releaseQuorumChecker(QuorumChecker checker);
 
+  /**
+   * return the coordinator for the view.
+   */
+  public DistributedMember getCoordinator();
+
 }
