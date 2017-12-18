@@ -1246,6 +1246,7 @@ public class GemFireCacheImpl implements InternalCache, InternalClientCache, Has
       service.init(this);
       this.services.put(service.getInterface(), service);
       this.system.handleResourceEvent(ResourceEvent.CACHE_SERVICE_CREATE, service);
+      logger.info("Initialized cache service {}", service.getClass().getName());
     }
   }
 
