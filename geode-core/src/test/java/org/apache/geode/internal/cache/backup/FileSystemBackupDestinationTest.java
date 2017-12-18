@@ -28,12 +28,18 @@ import static org.mockito.Mockito.when;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.Paths;
 
+import junitparams.JUnitParamsRunner;
+import junitparams.Parameters;
+import org.apache.commons.io.FileUtils;
+import org.junit.After;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 import org.junit.rules.TemporaryFolder;
+import org.junit.runner.RunWith;
 
 import org.apache.geode.internal.cache.DiskStoreImpl;
 import org.apache.geode.internal.cache.GemFireCacheImpl;
@@ -42,7 +48,9 @@ import org.apache.geode.internal.cache.persistence.DiskStoreID;
 import org.apache.geode.test.junit.categories.IntegrationTest;
 
 @Category(IntegrationTest.class)
+@RunWith(JUnitParamsRunner.class)
 public class FileSystemBackupDestinationTest {
+  private static final Path RELATIVE_TARGET_DIR = Paths.get("backupTest");
 
   @Rule
   public TemporaryFolder tempDir = new TemporaryFolder();
@@ -60,17 +68,26 @@ public class FileSystemBackupDestinationTest {
     when(restoreScript.generate(any())).thenReturn(tempDir.newFile());
   }
 
+  @After
+  public void tearDown() throws IOException {
+    // Testing relative paths forces creation of files in working dir instead of temporary folder
+    if (Files.exists(RELATIVE_TARGET_DIR)) {
+      FileUtils.deleteDirectory(RELATIVE_TARGET_DIR.toFile());
+    }
+  }
+
   @Test
-  public void userFilesAreBackedUp() throws Exception {
+  @Parameters({"true", "false"})
+  public void userFilesAreBackedUp(boolean useRelativePath) throws Exception {
     Path userFile = tempDir.newFile("userFile").toPath();
     Path userSubdir = tempDir.newFolder("userSubDir").toPath();
     Path userFileInDir = Files.write(userSubdir.resolve("fileInDir"), new byte[] {});
     backupDefinition.addUserFilesToBackup(userFile);
     backupDefinition.addUserFilesToBackup(userSubdir);
 
-    executeBackup();
+    executeBackup(useRelativePath);
 
-    Path userDir = targetDir.resolve(USER_FILES_DIRECTORY);
+    Path userDir = getTargetDir(useRelativePath).resolve(USER_FILES_DIRECTORY);
     assertThat(userDir.resolve(userFile.getFileName())).exists();
     assertThat(userDir.resolve(userSubdir.getFileName())).exists();
     assertThat(userDir.resolve(userSubdir.getFileName()).resolve(userFileInDir.getFileName()))
@@ -78,16 +95,17 @@ public class FileSystemBackupDestinationTest {
   }
 
   @Test
-  public void deployedJarsAreBackedUp() throws Exception {
+  @Parameters({"true", "false"})
+  public void deployedJarsAreBackedUp(boolean useRelativePath) throws Exception {
     Path jarFile = tempDir.newFile("jarFile").toPath();
     Path jarSubdir = tempDir.newFolder("jarSubdir").toPath();
     Path jarInSubdir = Files.write(jarSubdir.resolve("jarInSubdir"), new byte[] {});
     backupDefinition.addDeployedJarToBackup(jarFile);
     backupDefinition.addDeployedJarToBackup(jarSubdir);
 
-    executeBackup();
+    executeBackup(useRelativePath);
 
-    Path userDir = targetDir.resolve(DEPLOYED_JARS_DIRECTORY);
+    Path userDir = getTargetDir(useRelativePath).resolve(DEPLOYED_JARS_DIRECTORY);
     assertThat(userDir.resolve(jarFile.getFileName())).exists();
     assertThat(userDir.resolve(jarSubdir.getFileName())).exists();
     assertThat(userDir.resolve(jarSubdir.getFileName()).resolve(jarInSubdir.getFileName()))
@@ -95,21 +113,23 @@ public class FileSystemBackupDestinationTest {
   }
 
   @Test
-  public void configFilesAreBackedUp() throws Exception {
+  @Parameters({"true", "false"})
+  public void configFilesAreBackedUp(boolean useRelativePath) throws Exception {
     Path cacheXml = tempDir.newFile("cache.xml").toPath();
     Path propertyFile = tempDir.newFile("properties").toPath();
     backupDefinition.addConfigFileToBackup(cacheXml);
     backupDefinition.addConfigFileToBackup(propertyFile);
 
-    executeBackup();
+    executeBackup(useRelativePath);
 
-    Path configDir = targetDir.resolve(CONFIG_DIRECTORY);
+    Path configDir = getTargetDir(useRelativePath).resolve(CONFIG_DIRECTORY);
     assertThat(configDir.resolve(cacheXml.getFileName())).exists();
     assertThat(configDir.resolve(propertyFile.getFileName())).exists();
   }
 
   @Test
-  public void oplogFilesAreBackedUp() throws Exception {
+  @Parameters({"true", "false"})
+  public void oplogFilesAreBackedUp(boolean useRelativePath) throws Exception {
     DiskStoreImpl diskStore = mock(DiskStoreImpl.class);
     when(diskStore.getDiskStoreID()).thenReturn(new DiskStoreID(1, 2));
     Oplog oplog = mock(Oplog.class);
@@ -122,9 +142,9 @@ public class FileSystemBackupDestinationTest {
     backupDefinition.addOplogFileToBackup(diskStore, oplog.getDrfFile().toPath());
     backupDefinition.addOplogFileToBackup(diskStore, oplog.getKrfFile().toPath());
 
-    executeBackup();
+    executeBackup(useRelativePath);
 
-    Path diskStoreDir = targetDir.resolve(DATA_STORES_DIRECTORY)
+    Path diskStoreDir = getTargetDir(useRelativePath).resolve(DATA_STORES_DIRECTORY)
         .resolve(GemFireCacheImpl.getDefaultDiskStoreName() + "_1-2");
     assertThat(diskStoreDir.resolve("dir1").resolve("crf")).exists();
     assertThat(diskStoreDir.resolve("dir1").resolve("drf")).exists();
@@ -132,7 +152,8 @@ public class FileSystemBackupDestinationTest {
   }
 
   @Test
-  public void diskInitFilesAreBackedUp() throws Exception {
+  @Parameters({"true", "false"})
+  public void diskInitFilesAreBackedUp(boolean useRelativePath) throws Exception {
     DiskStoreImpl diskStore1 = mock(DiskStoreImpl.class);
     when(diskStore1.getDiskStoreID()).thenReturn(new DiskStoreID(1, 2));
     when(diskStore1.getInforFileDirIndex()).thenReturn(1);
@@ -146,54 +167,63 @@ public class FileSystemBackupDestinationTest {
     backupDefinition.addDiskInitFile(diskStore1, initFile1);
     backupDefinition.addDiskInitFile(diskStore2, initFile2);
 
-    executeBackup();
+    executeBackup(useRelativePath);
 
-    Path diskStoreDir = targetDir.resolve(DATA_STORES_DIRECTORY)
+    Path diskStoreDir = getTargetDir(useRelativePath).resolve(DATA_STORES_DIRECTORY)
         .resolve(GemFireCacheImpl.getDefaultDiskStoreName() + "_1-2");
     assertThat(diskStoreDir.resolve("dir1").resolve("initFile1")).exists();
     assertThat(diskStoreDir.resolve("dir2").resolve("initFile2")).exists();
   }
 
   @Test
-  public void restoreScriptIsBackedUp() throws Exception {
+  @Parameters({"true", "false"})
+  public void restoreScriptIsBackedUp(boolean useRelativePath) throws Exception {
     Path restoreScriptPath = tempDir.newFile("restoreScript").toPath();
     when(restoreScript.generate(any())).thenReturn(restoreScriptPath.toFile());
     backupDefinition.setRestoreScript(restoreScript);
 
-    executeBackup();
+    executeBackup(useRelativePath);
 
-    assertThat(targetDir.resolve("restoreScript")).exists();
+    assertThat(getTargetDir(useRelativePath).resolve("restoreScript")).exists();
   }
 
   @Test
-  public void backupContainsReadMe() throws IOException {
-    executeBackup();
+  @Parameters({"true", "false"})
+  public void backupContainsReadMe(boolean useRelativePath) throws IOException {
+    executeBackup(useRelativePath);
 
-    assertThat(targetDir.resolve(README_FILE)).exists();
+    assertThat(getTargetDir(useRelativePath).resolve(README_FILE)).exists();
   }
 
   @Test
-  public void leavesBehindIncompleteFileOnFailure() throws Exception {
+  @Parameters({"true", "false"})
+  public void leavesBehindIncompleteFileOnFailure(boolean useRelativePath) throws Exception {
     Path notCreatedFile = tempDir.newFolder("dir1").toPath().resolve("notCreated");
     backupDefinition.addDeployedJarToBackup(notCreatedFile);
 
     try {
-      executeBackup();
+      executeBackup(useRelativePath);
     } catch (IOException ignore) {
       // expected to occur on missing file
     }
 
-    assertThat(targetDir.resolve(INCOMPLETE_BACKUP_FILE)).exists();
+    assertThat(getTargetDir(useRelativePath).resolve(INCOMPLETE_BACKUP_FILE)).exists();
   }
 
   @Test
-  public void doesNotLeaveBehindIncompleteFileOnSuccess() throws Exception {
-    executeBackup();
-    assertThat(targetDir.resolve(INCOMPLETE_BACKUP_FILE)).doesNotExist();
+  @Parameters({"true", "false"})
+  public void doesNotLeaveBehindIncompleteFileOnSuccess(boolean useRelativePath) throws Exception {
+    executeBackup(useRelativePath);
+    assertThat(getTargetDir(useRelativePath).resolve(INCOMPLETE_BACKUP_FILE)).doesNotExist();
   }
 
-  private void executeBackup() throws IOException {
-    BackupDestination backupDestination = new FileSystemBackupDestination(targetDir);
+  private void executeBackup(boolean useRelativePath) throws IOException {
+    BackupDestination backupDestination =
+        new FileSystemBackupDestination(getTargetDir(useRelativePath));
     backupDestination.backupFiles(backupDefinition);
+  }
+
+  private Path getTargetDir(boolean useRelativePath) {
+    return useRelativePath ? RELATIVE_TARGET_DIR : targetDir;
   }
 }
