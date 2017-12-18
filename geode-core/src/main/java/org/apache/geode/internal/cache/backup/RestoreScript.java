@@ -77,7 +77,7 @@ public class RestoreScript {
     existenceTests.add(originalFile.getAbsoluteFile());
   }
 
-  public File generate(final File outputDir) throws IOException {
+  public void generate(final File outputDir) throws IOException {
     File outputFile = new File(outputDir, generator.getScriptName());
     try (BufferedWriter writer = Files.newBufferedWriter(outputFile.toPath())) {
 
@@ -90,7 +90,6 @@ public class RestoreScript {
     }
 
     outputFile.setExecutable(true, true);
-    return outputFile;
   }
 
   private void writePreamble(BufferedWriter writer) throws IOException {

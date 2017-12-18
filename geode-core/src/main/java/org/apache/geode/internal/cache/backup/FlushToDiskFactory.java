@@ -14,8 +14,10 @@
  */
 package org.apache.geode.internal.cache.backup;
 
+import java.util.HashSet;
 import java.util.Set;
 
+import org.apache.geode.cache.persistence.PersistentID;
 import org.apache.geode.distributed.internal.DM;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
 import org.apache.geode.internal.cache.InternalCache;
