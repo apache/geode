@@ -34,8 +34,6 @@ gfsh> define index --name=myIndex1 --expression=exp1 --region=/exampleRegion
 
 gfsh> define index --name=myIndex2 --expression="c.exp2" --region="/exampleRegion e, e.collection1 c" 
 
-gfsh> define index --name=myIndex3 --expression=exp3 --region=/exampleRegion --type=hash 
-
 gfsh> create defined indexes
  
 ```
@@ -56,7 +54,6 @@ Message : Region ' /r3' not found: from  /r3Occurred on following members
     QueryService queryService = cache.getQueryService();
     queryService.defineIndex("name1", "indexExpr1", "regionPath1");
     queryService.defineIndex("name2", "indexExpr2", "regionPath2");
-    queryService.defineHashIndex("name3", "indexExpr3", "regionPath2");
     queryService.defineKeyIndex("name4", "indexExpr4", "regionPath2");
     List<Index> indexes = queryService.createDefinedIndexes();
 ```
