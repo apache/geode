@@ -17,19 +17,29 @@ package org.apache.geode.internal.protocol.serialization.codec;
 import org.apache.geode.annotations.Experimental;
 import org.apache.geode.internal.protocol.serialization.SerializationType;
 import org.apache.geode.internal.protocol.serialization.TypeConverter;
+import org.apache.geode.internal.protocol.serialization.exception.EncodingException;
 import org.apache.geode.pdx.JSONFormatter;
+import org.apache.geode.pdx.JSONFormatterException;
 import org.apache.geode.pdx.PdxInstance;
 
 @Experimental
 public class JsonPdxConverter implements TypeConverter<String, PdxInstance> {
   @Override
-  public PdxInstance decode(String incoming) {
-    return JSONFormatter.fromJSON(incoming);
+  public PdxInstance decode(String incoming) throws EncodingException {
+    try {
+      return JSONFormatter.fromJSON(incoming);
+    } catch (JSONFormatterException ex) {
+      throw new EncodingException("Could not decode JSON-encoded object ", ex);
+    }
   }
 
   @Override
-  public String encode(PdxInstance incoming) {
-    return JSONFormatter.toJSON(incoming);
+  public String encode(PdxInstance incoming) throws EncodingException {
+    try {
+      return JSONFormatter.toJSON(incoming);
+    } catch (JSONFormatterException ex) {
+      throw new EncodingException("Could not encode PDX object as JSON", ex);
+    }
   }
 
   @Override

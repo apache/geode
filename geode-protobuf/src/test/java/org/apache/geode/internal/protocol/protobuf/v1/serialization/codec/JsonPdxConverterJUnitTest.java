@@ -99,7 +99,7 @@ public class JsonPdxConverterJUnitTest {
   }
 
   @Test
-  public void testComplexJSONEncode() {
+  public void testComplexJSONEncode() throws Exception {
     PdxInstance pdxInstanceForComplexJSONString = createPDXInstanceForComplexJSONString();
     PdxInstance decodedJSONPdxInstance = new JsonPdxConverter().decode(complexJSONString);
 

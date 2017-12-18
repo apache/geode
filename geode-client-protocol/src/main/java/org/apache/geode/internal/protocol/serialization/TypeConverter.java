@@ -15,6 +15,7 @@
 package org.apache.geode.internal.protocol.serialization;
 
 import org.apache.geode.annotations.Experimental;
+import org.apache.geode.internal.protocol.serialization.exception.EncodingException;
 
 /**
  * This interface converts a particular type to and from its binary representation.
@@ -25,9 +26,9 @@ import org.apache.geode.annotations.Experimental;
  */
 @Experimental
 public interface TypeConverter<F, T> {
-  T decode(F incoming);
+  T decode(F incoming) throws EncodingException;
 
-  F encode(T incoming);
+  F encode(T incoming) throws EncodingException;
 
   /**
    * @return the SerializationType corresponding to T

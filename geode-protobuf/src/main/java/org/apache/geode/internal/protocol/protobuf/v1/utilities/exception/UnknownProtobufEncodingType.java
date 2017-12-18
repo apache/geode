@@ -17,8 +17,8 @@ package org.apache.geode.internal.protocol.protobuf.v1.utilities.exception;
 import org.apache.geode.annotations.Experimental;
 
 @Experimental
-public class UnknownProtobufPrimitiveType extends Exception {
-  public UnknownProtobufPrimitiveType(String message) {
+public class UnknownProtobufEncodingType extends Exception {
+  public UnknownProtobufEncodingType(String message) {
     super(message);
   }
 }

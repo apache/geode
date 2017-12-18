@@ -17,12 +17,11 @@ package org.apache.geode.internal.protocol.protobuf.v1;
 import com.google.protobuf.ByteString;
 
 import org.apache.geode.annotations.Experimental;
-import org.apache.geode.internal.protocol.protobuf.v1.utilities.ProtobufPrimitiveTypes;
-import org.apache.geode.internal.protocol.protobuf.v1.utilities.exception.UnknownProtobufPrimitiveType;
+import org.apache.geode.internal.protocol.protobuf.v1.utilities.ProtobufEncodingTypes;
+import org.apache.geode.internal.protocol.protobuf.v1.utilities.exception.UnknownProtobufEncodingType;
 import org.apache.geode.internal.protocol.serialization.SerializationService;
 import org.apache.geode.internal.protocol.serialization.codec.JsonPdxConverter;
 import org.apache.geode.internal.protocol.serialization.exception.EncodingException;
-import org.apache.geode.pdx.JSONFormatterException;
 import org.apache.geode.pdx.PdxInstance;
 
 @Experimental
@@ -41,9 +40,8 @@ public class ProtobufSerializationService implements SerializationService<BasicT
   public BasicTypes.EncodedValue encode(Object value) throws EncodingException {
     BasicTypes.EncodedValue.Builder builder = BasicTypes.EncodedValue.newBuilder();
     try {
-      ProtobufPrimitiveTypes protobufPrimitiveTypes =
-          ProtobufPrimitiveTypes.valueOf(value.getClass());
-      switch (protobufPrimitiveTypes) {
+      ProtobufEncodingTypes protobufEncodingTypes = ProtobufEncodingTypes.valueOf(value.getClass());
+      switch (protobufEncodingTypes) {
         case INT: {
           builder.setIntResult((Integer) value);
           break;
@@ -80,17 +78,13 @@ public class ProtobufSerializationService implements SerializationService<BasicT
           builder.setStringResult((String) value);
           break;
         }
-      }
-    } catch (UnknownProtobufPrimitiveType unknownProtobufPrimitiveType) {
-      if (value instanceof PdxInstance) {
-        try {
+        case PDX_OBJECT: {
           builder.setJsonObjectResult(jsonPdxConverter.encode((PdxInstance) value));
-        } catch (JSONFormatterException ex) {
-          throw new EncodingException("Could not encode PDX object as JSON", ex);
+          break;
         }
-      } else {
-        throw new EncodingException("No protobuf encoding for type " + value.getClass().getName());
       }
+    } catch (UnknownProtobufEncodingType unknownProtobufEncodingType) {
+      throw new EncodingException("No protobuf encoding for type " + value.getClass().getName());
     }
     return builder.build();
   }
@@ -122,11 +116,7 @@ public class ProtobufSerializationService implements SerializationService<BasicT
       case STRINGRESULT:
         return encodedValue.getStringResult();
       case JSONOBJECTRESULT:
-        try {
-          return jsonPdxConverter.decode(encodedValue.getJsonObjectResult());
-        } catch (JSONFormatterException ex) {
-          throw new EncodingException("Could not decode JSON-encoded object ", ex);
-        }
+        return jsonPdxConverter.decode(encodedValue.getJsonObjectResult());
       case VALUE_NOT_SET:
         return null;
       default:
