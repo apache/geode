@@ -21,13 +21,10 @@ import static org.apache.geode.connectors.jdbc.internal.cli.CreateConnectionComm
 import static org.apache.geode.connectors.jdbc.internal.cli.CreateConnectionCommand.CREATE_CONNECTION__USER;
 import static org.apache.geode.connectors.jdbc.internal.cli.DescribeConnectionCommand.OBSCURED_PASSWORD;
 import static org.apache.geode.connectors.jdbc.internal.cli.DescribeConnectionCommand.RESULT_SECTION_NAME;
-import static org.apache.geode.connectors.jdbc.internal.cli.DescribeMappingCommand.FIELD_TO_COLUMN_TABLE;
 import static org.apache.geode.distributed.ConfigurationProperties.ENABLE_CLUSTER_CONFIGURATION;
 import static org.apache.geode.management.internal.cli.result.AbstractResultData.SECTION_DATA_ACCESSOR;
 import static org.apache.geode.management.internal.cli.result.AbstractResultData.TABLE_DATA_ACCESSOR;
 import static org.assertj.core.api.Assertions.assertThat;
-
-import java.util.Properties;
 
 import org.junit.After;
 import org.junit.Before;

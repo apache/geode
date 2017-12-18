@@ -21,7 +21,6 @@ import static org.apache.geode.connectors.jdbc.internal.cli.CreateConnectionComm
 import static org.apache.geode.connectors.jdbc.internal.cli.CreateConnectionCommand.CREATE_CONNECTION__USER;
 
 import java.util.List;
-import java.util.Properties;
 import java.util.Set;
 
 import org.springframework.shell.core.annotation.CliCommand;
