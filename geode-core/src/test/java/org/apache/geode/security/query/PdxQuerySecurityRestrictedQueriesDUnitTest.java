@@ -32,7 +32,9 @@ import org.apache.geode.pdx.PdxWriter;
 import org.apache.geode.security.query.data.PdxQueryTestObject;
 import org.apache.geode.test.junit.categories.DistributedTest;
 import org.apache.geode.test.junit.categories.SecurityTest;
+import org.apache.geode.test.junit.runners.CategoryWithParameterizedRunnerFactory;
 
+@Parameterized.UseParametersRunnerFactory(CategoryWithParameterizedRunnerFactory.class)
 @Category({DistributedTest.class, SecurityTest.class})
 @RunWith(Parameterized.class)
 public class PdxQuerySecurityRestrictedQueriesDUnitTest extends QuerySecurityBase {

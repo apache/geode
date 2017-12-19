@@ -18,11 +18,6 @@ import static org.apache.geode.internal.Assert.assertTrue;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.fail;
 
-import java.util.Arrays;
-import java.util.List;
-
-import junitparams.JUnitParamsRunner;
-import junitparams.Parameters;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
@@ -36,7 +31,9 @@ import org.apache.geode.cache.query.QueryService;
 import org.apache.geode.security.query.data.QueryTestObject;
 import org.apache.geode.test.junit.categories.DistributedTest;
 import org.apache.geode.test.junit.categories.SecurityTest;
+import org.apache.geode.test.junit.runners.CategoryWithParameterizedRunnerFactory;
 
+@Parameterized.UseParametersRunnerFactory(CategoryWithParameterizedRunnerFactory.class)
 @Category({DistributedTest.class, SecurityTest.class})
 @RunWith(Parameterized.class)
 public class IndexSecurityDUnitTest extends QuerySecurityBase {

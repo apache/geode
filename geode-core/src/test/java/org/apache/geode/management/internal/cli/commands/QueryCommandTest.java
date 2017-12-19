@@ -41,7 +41,9 @@ import org.apache.geode.management.internal.cli.shell.Gfsh;
 import org.apache.geode.test.junit.categories.IntegrationTest;
 import org.apache.geode.test.junit.rules.GfshCommandRule;
 import org.apache.geode.test.junit.rules.ServerStarterRule;
+import org.apache.geode.test.junit.runners.CategoryWithParameterizedRunnerFactory;
 
+@Parameterized.UseParametersRunnerFactory(CategoryWithParameterizedRunnerFactory.class)
 @Category(IntegrationTest.class)
 @RunWith(Parameterized.class)
 public class QueryCommandTest {

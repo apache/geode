@@ -14,25 +14,21 @@
  */
 package org.apache.geode.security.query;
 
-import java.io.Serializable;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
-import junitparams.Parameters;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
 
-import org.apache.geode.pdx.PdxReader;
-import org.apache.geode.pdx.PdxSerializable;
-import org.apache.geode.pdx.PdxWriter;
 import org.apache.geode.security.query.data.PdxQueryTestObject;
 import org.apache.geode.test.junit.categories.DistributedTest;
 import org.apache.geode.test.junit.categories.SecurityTest;
+import org.apache.geode.test.junit.runners.CategoryWithParameterizedRunnerFactory;
 
+@Parameterized.UseParametersRunnerFactory(CategoryWithParameterizedRunnerFactory.class)
 @Category({DistributedTest.class, SecurityTest.class})
 @RunWith(Parameterized.class)
 public class PdxQuerySecurityAllowedQueriesDUnitTest extends QuerySecurityBase {
