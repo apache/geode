@@ -12,17 +12,23 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
-package org.apache.geode.internal.protocol.serialization.registry.exception;
+package org.apache.geode.internal.protocol;
+
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
 
 import org.apache.geode.annotations.Experimental;
+import org.apache.geode.internal.protocol.exception.InvalidProtocolMessageException;
 
 /**
- * This indicates that we're attempting to register a codec for a type which we already have a
- * handler for.
+ * This interface is used to translate between binary data and protocol specific messages.
+ *
+ * @param <T> The message type of the protocol.
  */
 @Experimental
-public class CodecAlreadyRegisteredForTypeException extends RuntimeException {
-  public CodecAlreadyRegisteredForTypeException(String message) {
-    super(message);
-  }
+public interface ProtocolSerializer<T> {
+  T deserialize(InputStream inputStream) throws InvalidProtocolMessageException;
+
+  void serialize(T inputMessage, OutputStream outputStream) throws IOException;
 }

@@ -12,7 +12,7 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
-package org.apache.geode.internal.protocol.serialization.codec;
+package org.apache.geode.internal.protocol.serialization;
 
 import org.apache.geode.annotations.Experimental;
 import org.apache.geode.internal.protocol.serialization.SerializationType;

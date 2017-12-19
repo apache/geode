@@ -17,10 +17,9 @@ package org.apache.geode.internal.protocol.protobuf.v1;
 import com.google.protobuf.ByteString;
 
 import org.apache.geode.annotations.Experimental;
-import org.apache.geode.internal.protocol.protobuf.v1.utilities.ProtobufEncodingTypes;
 import org.apache.geode.internal.protocol.protobuf.v1.utilities.exception.UnknownProtobufEncodingType;
+import org.apache.geode.internal.protocol.serialization.JsonPdxConverter;
 import org.apache.geode.internal.protocol.serialization.SerializationService;
-import org.apache.geode.internal.protocol.serialization.codec.JsonPdxConverter;
 import org.apache.geode.internal.protocol.serialization.exception.EncodingException;
 import org.apache.geode.pdx.PdxInstance;
 
@@ -124,4 +123,44 @@ public class ProtobufSerializationService implements SerializationService<BasicT
             "Unknown Protobuf encoding type: " + encodedValue.getValueCase());
     }
   }
+
+  /**
+   * Maps classes to encoding for protobuf.
+   *
+   * This currently conflates object type with serialization, which may be an issue if we add more
+   * types of object serialization.
+   */
+  private enum ProtobufEncodingTypes {
+
+    STRING(String.class),
+    INT(Integer.class),
+    LONG(Long.class),
+    SHORT(Short.class),
+    BYTE(Byte.class),
+    BOOLEAN(Boolean.class),
+    DOUBLE(Double.class),
+    FLOAT(Float.class),
+    BINARY(byte[].class),
+
+    // This will probably have to change once the protocol supports multiple object encodings.
+    PDX_OBJECT(PdxInstance.class);
+
+    private Class clazz;
+
+    ProtobufEncodingTypes(Class clazz) {
+      this.clazz = clazz;
+    }
+
+    public static ProtobufEncodingTypes valueOf(Class unencodedValueClass)
+        throws UnknownProtobufEncodingType {
+      for (ProtobufEncodingTypes protobufEncodingTypes : values()) {
+        if (protobufEncodingTypes.clazz.equals(unencodedValueClass)) {
+          return protobufEncodingTypes;
+        }
+      }
+      throw new UnknownProtobufEncodingType(
+          "There is no primitive protobuf type mapping for class:" + unencodedValueClass);
+    }
+  }
+
 }
