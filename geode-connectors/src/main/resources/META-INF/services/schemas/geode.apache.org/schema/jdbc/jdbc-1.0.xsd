@@ -1,0 +1,85 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  ~ Licensed to the Apache Software Foundation (ASF) under one or more
+  ~ contributor license agreements.  See the NOTICE file distributed with
+  ~ this work for additional information regarding copyright ownership.
+  ~ The ASF licenses this file to You under the Apache License, Version 2.0
+  ~ (the "License"); you may not use this file except in compliance with
+  ~ the License.  You may obtain a copy of the License at
+  ~
+  ~      http://www.apache.org/licenses/LICENSE-2.0
+  ~
+  ~ Unless required by applicable law or agreed to in writing, software
+  ~ distributed under the License is distributed on an "AS IS" BASIS,
+  ~ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  ~ See the License for the specific language governing permissions and
+  ~ limitations under the License.
+  -->
+<xsd:schema
+        targetNamespace="http://geode.apache.org/schema/jdbc"
+        xmlns:gf="http://geode.apache.org/schema/cache"
+        xmlns:xsd="http://www.w3.org/2001/XMLSchema"
+        elementFormDefault="qualified"
+        attributeFormDefault="unqualified"
+        version="1.0">
+
+    <xsd:import
+            namespace="http://geode.apache.org/schema/cache"
+            schemaLocation="http://geode.apache.org/schema/cache/cache-1.0.xsd"/>
+
+    <xsd:annotation>
+        <xsd:documentation><![CDATA[
+XML schema for JDBC Connector Service in Geode.
+
+  <cache
+    xmlns="http://geode.apache.org/schema/cache"
+    xmlns:lucene="http://geode.apache.org/schema/jdbc"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://geode.apache.org/schema/cache
+        http://geode.apache.org/schema/cache/cache-1.0.xsd
+        http://geode.apache.org/schema/jdbc
+        http://geode.apache.org/schema/jdbc/jdbc-1.0.xsd"
+    version="1.0">
+
+    ]]></xsd:documentation>
+    </xsd:annotation>
+    <xsd:element name="connector-service">
+        <xsd:complexType>
+            <xsd:sequence>
+                <xsd:element name="connection" maxOccurs="unbounded" minOccurs="0">
+                    <xsd:complexType>
+                        <xsd:simpleContent>
+                            <xsd:extension base="xsd:string">
+                                <xsd:attribute type="xsd:string" name="name" use="optional"/>
+                                <xsd:attribute type="xsd:string" name="url" use="optional"/>
+                                <xsd:attribute type="xsd:string" name="user" use="optional"/>
+                                <xsd:attribute type="xsd:string" name="password" use="optional"/>
+                            </xsd:extension>
+                        </xsd:simpleContent>
+                    </xsd:complexType>
+                </xsd:element>
+                <xsd:element name="region-mapping" maxOccurs="unbounded" minOccurs="0">
+                    <xsd:complexType>
+                        <xsd:sequence>
+                            <xsd:element name="field-mapping" maxOccurs="unbounded" minOccurs="0">
+                                <xsd:complexType>
+                                    <xsd:simpleContent>
+                                        <xsd:extension base="xsd:string">
+                                            <xsd:attribute type="xsd:string" name="field-name" use="optional"/>
+                                            <xsd:attribute type="xsd:string" name="column-name" use="optional"/>
+                                        </xsd:extension>
+                                    </xsd:simpleContent>
+                                </xsd:complexType>
+                            </xsd:element>
+                        </xsd:sequence>
+                        <xsd:attribute type="xsd:string" name="connection-name" use="optional"/>
+                        <xsd:attribute type="xsd:string" name="region" use="optional"/>
+                        <xsd:attribute type="xsd:string" name="table" use="optional"/>
+                        <xsd:attribute type="xsd:string" name="pdx-class" use="optional"/>
+                        <xsd:attribute type="xsd:string" name="primary-key-in-value" use="optional"/>
+                    </xsd:complexType>
+                </xsd:element>
+            </xsd:sequence>
+        </xsd:complexType>
+    </xsd:element>
+</xsd:schema>

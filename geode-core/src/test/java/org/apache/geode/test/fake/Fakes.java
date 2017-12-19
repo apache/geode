@@ -35,6 +35,7 @@ import org.apache.geode.distributed.internal.membership.InternalDistributedMembe
 import org.apache.geode.internal.cache.CachePerfStats;
 import org.apache.geode.internal.cache.GemFireCacheImpl;
 import org.apache.geode.internal.security.SecurityService;
+import org.apache.geode.pdx.PdxInstanceFactory;
 
 /**
  * Factory methods for fake objects for use in test.
@@ -62,6 +63,7 @@ public class Fakes {
     InternalDistributedSystem system = mock(InternalDistributedSystem.class);
     DistributionConfig config = mock(DistributionConfig.class);
     DistributionManager distributionManager = mock(DistributionManager.class);
+    PdxInstanceFactory pdxInstanceFactory = mock(PdxInstanceFactory.class);
     CancelCriterion systemCancelCriterion = mock(CancelCriterion.class);
     DSClock clock = mock(DSClock.class);
     LogWriter logger = mock(LogWriter.class);
@@ -81,6 +83,7 @@ public class Fakes {
     when(cache.getCancelCriterion()).thenReturn(systemCancelCriterion);
     when(cache.getCachePerfStats()).thenReturn(mock(CachePerfStats.class));
     when(cache.getSecurityService()).thenReturn(mock(SecurityService.class));
+    when(cache.createPdxInstanceFactory(any())).thenReturn(pdxInstanceFactory);
 
     when(system.getDistributedMember()).thenReturn(member);
     when(system.getConfig()).thenReturn(config);
@@ -122,7 +125,7 @@ public class Fakes {
     when(region.getCache()).thenReturn(cache);
     when(region.getRegionService()).thenReturn(cache);
     when(region.getName()).thenReturn(name);
-
+    when(region.getFullPath()).thenReturn("/" + name);
     return region;
   }
 
