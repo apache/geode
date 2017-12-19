@@ -86,7 +86,7 @@ public class ListMembersCommandDUnitTest {
     gfsh.executeAndAssertThat(LIST_MEMBER + " --group=serverGroup1").statusIsSuccess();
     String output = gfsh.getGfshOutput();
 
-    assertThat(output).doesNotContain("locator-0");
+    assertThat(output).contains("Coordinator:");
     assertThat(output).contains("server-1");
     assertThat(output).contains("server-2");
     assertThat(output).doesNotContain("server-3");
@@ -97,7 +97,7 @@ public class ListMembersCommandDUnitTest {
     gfsh.executeAndAssertThat(LIST_MEMBER + " --group=serverGroup2").statusIsSuccess();
     String output = gfsh.getGfshOutput();
 
-    assertThat(output).doesNotContain("locator-0");
+    assertThat(output).contains("Coordinator:");
     assertThat(output).doesNotContain("server-1");
     assertThat(output).doesNotContain("server-2");
     assertThat(output).contains("server-3");
