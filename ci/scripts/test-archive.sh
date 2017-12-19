@@ -44,7 +44,7 @@ EMAIL_BODY="${BUILDROOT}/built-geode/body"
 
 # Called by trap when the script is exiting
 function error_exit() {
-  echo "Geode unit tests completed in pipeline ${PIPELINE_NAME} with non-zero exit code" > $EMAIL_SUBJECT
+  echo "Geode unit tests completed in '${BUILD_PIPELINE_NAME}/${BUILD_JOB_NAME}' with non-zero exit code" > $EMAIL_SUBJECT
   echo "Pipeline results can be found at:" >$EMAIL_BODY
   echo "" >>$EMAIL_BODY
   echo "Concourse: \${ATC_EXTERNAL_URL}/teams/\${BUILD_TEAM_NAME}/pipelines/\${BUILD_PIPELINE_NAME}/jobs/\${BUILD_JOB_NAME}/builds/\${BUILD_NAME}" >>$EMAIL_BODY
