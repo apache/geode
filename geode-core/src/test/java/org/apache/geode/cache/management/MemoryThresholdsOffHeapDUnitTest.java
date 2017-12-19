@@ -950,7 +950,6 @@ public class MemoryThresholdsOffHeapDUnitTest extends ClientServerTestCase {
    * Test that a Partitioned Region loader invocation is rejected if the VM with the bucket is in a
    * critical state.
    */
-  @Category(FlakyTest.class) // GEODE-551: waitForCriterion, memory sensitive
   @Test
   public void testPRLoadRejection() throws Exception {
     final Host host = Host.getHost(0);
