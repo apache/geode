@@ -1075,6 +1075,8 @@ public class MemoryThresholdsOffHeapDUnitTest extends ClientServerTestCase {
         new SerializableCallable("Set safe state on datastore, assert local load behavior") {
           public Object call() throws Exception {
             final PartitionedRegion r = (PartitionedRegion) getCache().getRegion(rName);
+            final OffHeapMemoryMonitor ohmm =
+                ((InternalResourceManager) getCache().getResourceManager()).getOffHeapMonitor();
 
             r.destroy("oh3");
             WaitCriterion wc = new WaitCriterion() {
@@ -1083,7 +1085,7 @@ public class MemoryThresholdsOffHeapDUnitTest extends ClientServerTestCase {
               }
 
               public boolean done() {
-                return !r.memoryThresholdReached.get();
+                return !ohmm.getState().isCritical();
               }
             };
             Wait.waitForCriterion(wc, 30 * 1000, 10, true);
@@ -1096,15 +1098,6 @@ public class MemoryThresholdsOffHeapDUnitTest extends ClientServerTestCase {
           }
         });
     expectedInvocations.set(ex.intValue());
-
-    ds1.invoke(new SerializableCallable() {
-      public Object call() throws Exception {
-        final OffHeapMemoryMonitor ohmm =
-            ((InternalResourceManager) getCache().getResourceManager()).getOffHeapMonitor();
-        assertFalse(ohmm.getState().isCritical());
-        return null;
-      }
-    });
 
     accessor.invoke(new SerializableCallable(
         "Data store in safe state, assert load behavior, accessor sets critical state, assert load behavior") {
