@@ -23,17 +23,53 @@ limitations under the License.
 
 Modify an existing <%=vars.product_name%> resource.
 
--   **[alter disk-store](../../../tools_modules/gfsh/command-pages/alter.html#topic_99BCAD98BDB5470189662D2F308B68EB)**
+-   **[alter async-event-queue](#topic_alter_async_event_queue)**
 
-    Modify or remove a region from an offline disk-store.
+    Modifies attributes of an async event queue
 
--   **[alter region](../../../tools_modules/gfsh/command-pages/alter.html#topic_E74ED23CB60342538B2175C326E7D758)**
+-   **[alter disk-store](#topic_99BCAD98BDB5470189662D2F308B68EB)**
+
+    Modifies or removes a region from an offline disk-store.
+
+-   **[alter region](#topic_E74ED23CB60342538B2175C326E7D758)**
 
     Alters the configuration of a region.
 
--   **[alter runtime](../../../tools_modules/gfsh/command-pages/alter.html#topic_7E6B7E1B972D4F418CB45354D1089C2B)**
+-   **[alter runtime](#topic_7E6B7E1B972D4F418CB45354D1089C2B)**
 
     Alters configuration properties for all members or a subset of members while the member or members are running.
+
+## <a id="topic_alter_async_event_queue" class="no-quick-link"></a>alter async-event-queue
+
+Alter attributes of a specified asynchronous event queue. Each server hosting the specified async event queue must be restarted for the new attribute
+settings to take effect on that server.
+
+**Availability:** Online. You must be connected in <span class="keyword parmname">gfsh</span> to a JMX Manager member to use this command.
+
+**Syntax:**
+
+``` pre
+alter async-event-queue --id=value [--batch-size=value] [--batch-time-interval=value]
+    [--max-queue-memory=value] [--if-exists(=value)]
+```
+
+The required option, `--id`, identifies the async event queue to be altered.
+
+**Parameters, alter async-event-queue**
+
+| Name | Description |
+|------|-------------|
+| &#8209;&#8209;id   | _Required._ Id of the async event queue to be changed |
+| &#8209;&#8209;batch&#8209;size | Maximum number of events that a batch can contain |
+| &#8209;&#8209;batch&#8209;time&#8209;interval | Maximum amount of time, in ms, that can elapse before a batch is delivered |
+| &#8209;&#8209;max&#8209;queue&#8209;memory | Maximum amount of memory, in megabytes, that the queue can consume before overflowing to disk |
+| &#8209;&#8209;if&#8209;exists | If the specified async event queue does not exist, gfsh responds with a message to that effect. If this parameter is true, the response is prefixed with the label "Skipping: ". Useful for scripted tests. Default (if the parameter is not specified): false. Default (if the parameter is specified without value): true. |
+
+**Example Commands:**
+
+``` pre
+alter async-event-queue --id=myAsyncEventQueue --batch-size=50 --if-exists
+```
 
 ## <a id="topic_99BCAD98BDB5470189662D2F308B68EB" class="no-quick-link"></a>alter disk-store
 
@@ -54,6 +90,8 @@ alter disk-store --name=value --region=value --disk-dirs=value(,value)*
 ```
 
 The three required options, `--name`, `--region`, and `--disk-dirs`, identify the disk store and region to be altered. If no additional options are specified, `gfsh` displays the current configuration without making any changes.
+
+**Parameters, alter disk-store**
 
 <table>
 <colgroup>
@@ -164,10 +202,9 @@ alter region --name=value [--groups=value(,value)*]
     [--eviction-max(=value)?]
 ```
 
-<a id="topic_E74ED23CB60342538B2175C326E7D758__table_2277A2CE8F6E4731B45FEFA2B1366DB6"></a>
+**Parameters, alter region**
 
 <table>
-<caption><span class="tablecap">Table 1. Alter Region Parameters</span></caption>
 <colgroup>
 <col width="25%" />
 <col width="60%" />
@@ -361,8 +398,6 @@ Select one of the following expiration actions:
 </tbody>
 </table>
 
-<span class="tablecap">Table 1. Alter Region Parameters</span>
-
 **Example Commands:**
 
 ``` pre
@@ -398,10 +433,8 @@ alter runtime [--members=value(,value)*] [--groups=value(,value)*]
     [--lock-timeout=value] [--message-sync-interval=value] [--search-timeout=value]
 ```
 
-<a id="topic_7E6B7E1B972D4F418CB45354D1089C2B__table_09BEBCECA4A44286A2A56C3714A4F6A3"></a>
-
+**Parameters, alter runtime**
 <table>
-<caption><span class="tablecap">Table 2. Alter Runtime Parameters</span></caption>
 <colgroup>
 <col width="25%" />
 <col width="50%" />
@@ -493,8 +526,6 @@ Valid values are: `ALL`, `TRACE`, `DEBUG`, `INFO`, `WARN`, `ERROR`, `FATAL`, `OF
 </tr>
 </tbody>
 </table>
-
-<span class="tablecap">Table 2. Alter Runtime Parameters</span>
 
 **Example Commands:**
 
