@@ -31,7 +31,6 @@ import org.apache.lucene.analysis.Analyzer;
 import org.apache.lucene.analysis.core.KeywordAnalyzer;
 import org.apache.lucene.analysis.core.SimpleAnalyzer;
 import org.apache.lucene.analysis.standard.ClassicAnalyzer;
-import org.junit.After;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
@@ -45,7 +44,6 @@ import org.apache.geode.cache.lucene.LuceneSerializer;
 import org.apache.geode.cache.lucene.LuceneService;
 import org.apache.geode.cache.lucene.LuceneServiceProvider;
 import org.apache.geode.cache.lucene.test.LuceneTestSerializer;
-import org.apache.geode.internal.cache.GemFireCacheImpl;
 import org.apache.geode.internal.cache.extension.Extension;
 import org.apache.geode.internal.cache.xmlcache.CacheCreation;
 import org.apache.geode.internal.cache.xmlcache.CacheXmlParser;
@@ -59,9 +57,7 @@ public class LuceneIndexXmlParserIntegrationJUnitTest {
   @Rule
   public TestName name = new TestName();
 
-  @After
-  public void tearDown() {
-    Cache cache = GemFireCacheImpl.getInstance();
+  public void tearDownCacheAfterCreateIndexTestIsCompleted(Cache cache) {
     if (cache != null) {
       cache.close();
     }
@@ -214,14 +210,18 @@ public class LuceneIndexXmlParserIntegrationJUnitTest {
     cf.set(CACHE_XML_FILE, getXmlFileForTest());
     Cache cache = cf.create();
 
-    LuceneService service = LuceneServiceProvider.get(cache);
-    assertEquals(3, service.getAllIndexes().size());
-    LuceneIndex index1 = service.getIndex("index1", "/region");
-    LuceneIndex index2 = service.getIndex("index2", "/region");
-    LuceneIndex index3 = service.getIndex("index3", "/region");
-    assertArrayEquals(index1.getFieldNames(), new String[] {"a", "b", "c", "d"});
-    assertArrayEquals(index2.getFieldNames(), new String[] {"f", "g"});
-    assertArrayEquals(index3.getFieldNames(), new String[] {"h", "i", "j"});
+    try {
+      LuceneService service = LuceneServiceProvider.get(cache);
+      assertEquals(3, service.getAllIndexes().size());
+      LuceneIndex index1 = service.getIndex("index1", "/region");
+      LuceneIndex index2 = service.getIndex("index2", "/region");
+      LuceneIndex index3 = service.getIndex("index3", "/region");
+      assertArrayEquals(index1.getFieldNames(), new String[] {"a", "b", "c", "d"});
+      assertArrayEquals(index2.getFieldNames(), new String[] {"f", "g"});
+      assertArrayEquals(index3.getFieldNames(), new String[] {"h", "i", "j"});
+    } finally {
+      tearDownCacheAfterCreateIndexTestIsCompleted(cache);
+    }
   }
 
   private String getXmlFileForTest() {
