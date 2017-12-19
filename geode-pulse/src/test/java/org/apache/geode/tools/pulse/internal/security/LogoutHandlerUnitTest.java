@@ -40,6 +40,7 @@ import org.springframework.mock.web.MockHttpServletResponse;
 import org.springframework.security.core.Authentication;
 
 import org.apache.geode.test.junit.categories.UnitTest;
+import org.apache.geode.test.junit.runners.CategoryWithParameterizedRunnerFactory;
 import org.apache.geode.tools.pulse.internal.data.Cluster;
 import org.apache.geode.tools.pulse.internal.data.Repository;
 
@@ -48,6 +49,7 @@ import org.apache.geode.tools.pulse.internal.data.Repository;
 @PrepareForTest(Repository.class)
 @PowerMockRunnerDelegate(Parameterized.class)
 @PowerMockIgnore({"javax.management.*", "javax.security.*", "*.UnitTest"})
+@Parameterized.UseParametersRunnerFactory(CategoryWithParameterizedRunnerFactory.class)
 public class LogoutHandlerUnitTest {
   private Repository repository;
   private LogoutHandler handler;
@@ -65,7 +67,7 @@ public class LogoutHandlerUnitTest {
         mock(GemFireAuthentication.class, "GemFire Authentication");
     when(gemfireAuthentication.getName()).thenReturn(mockUser);
 
-    return Arrays.asList(new Authentication[] {defaultAuthentication, gemfireAuthentication});
+    return Arrays.asList(defaultAuthentication, gemfireAuthentication);
   }
 
   @Before
