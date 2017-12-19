@@ -135,7 +135,7 @@ jobs:
           rootfs: true
     - task: runtests
       privileged: true
-      timeout: 6h
+      timeout: 7h
       config:
         inputs:
           - name: geode
@@ -200,7 +200,7 @@ jobs:
           rootfs: true
     - task: runtests
       privileged: true
-      timeout: 6h
+      timeout: 7h
       config:
         inputs:
           - name: geode
@@ -265,7 +265,7 @@ jobs:
           rootfs: true
     - task: runtests
       privileged: true
-      timeout: 6h
+      timeout: 7h
       config:
         inputs:
           - name: geode
@@ -330,7 +330,7 @@ jobs:
           rootfs: true
     - task: runtests
       privileged: true
-      timeout: 6h
+      timeout: 7h
       config:
         inputs:
           - name: geode
