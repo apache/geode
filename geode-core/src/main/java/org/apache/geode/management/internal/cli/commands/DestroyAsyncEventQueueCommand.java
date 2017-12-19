@@ -48,8 +48,6 @@ public class DestroyAsyncEventQueueCommand implements GfshCommand {
       "Async event queue \"%s\" not found";
   public static final String DESTROY_ASYNC_EVENT_QUEUE__AEQ_0_DESTROYED =
       "Async event queue \"%s\" destroyed";
-  public static final String DESTROY_ASYNC_EVENT_QUEUE__COULD_NOT_FIND_MEMBER_WITH_AEQ_0 =
-      "Could not find any members which host async event queue \"{0}\"";
 
   @CliCommand(value = DESTROY_ASYNC_EVENT_QUEUE, help = DESTROY_ASYNC_EVENT_QUEUE__HELP)
   @ResourceOperation(resource = ResourcePermission.Resource.CLUSTER,
