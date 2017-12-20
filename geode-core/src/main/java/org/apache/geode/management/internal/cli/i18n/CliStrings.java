@@ -866,10 +866,10 @@ public class CliStrings {
       "The eviction action to apply. Must be either 'local-destroy' or 'overflow-to-disk'";
   public static final String CREATE_REGION__EVICTION_MAX_MEMORY = "eviction-max-memory";
   public static final String CREATE_REGION__EVICTION_MAX_MEMORY__HELP =
-      "Activates LRU eviction based on the region's memory usage specified by this value.";
+      "Activates LRU eviction based on the region's memory usage specified by this value (in megabytes).";
   public static final String CREATE_REGION__EVICTION_ENTRY_COUNT = "eviction-entry-count";
   public static final String CREATE_REGION__EVICTION_ENTRY_COUNT__HELP =
-      "Activates LRU eviction based on the region's entry count specified by this value (in megabytes).";
+      "Activates LRU eviction based on the region's entry count specified by this value.";
   public static final String CREATE_REGION__EVICTION_OBJECT_SIZER = "eviction-object-sizer";
   public static final String CREATE_REGION__EVICTION_OBJECT_SIZER__HELP =
       "A custom class which implements ObjectSizer in order to perform max memory eviction.";
