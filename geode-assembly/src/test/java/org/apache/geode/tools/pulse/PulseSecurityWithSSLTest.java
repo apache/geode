@@ -35,6 +35,9 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
+import org.apache.geode.distributed.internal.DistributionConfigImpl;
+import org.apache.geode.internal.net.SocketCreatorFactory;
+import org.apache.geode.internal.security.SecurableCommunicationChannel;
 import org.apache.geode.security.SecurableCommunicationChannels;
 import org.apache.geode.security.SimpleTestSecurityManager;
 import org.apache.geode.test.junit.categories.IntegrationTest;
@@ -54,7 +57,7 @@ public class PulseSecurityWithSSLTest {
   @BeforeClass
   public static void beforeClass() throws Exception {
     Properties securityProps = new Properties();
-    securityProps.setProperty(SSL_ENABLED_COMPONENTS, SecurableCommunicationChannels.JMX);
+    securityProps.setProperty(SSL_ENABLED_COMPONENTS, SecurableCommunicationChannels.WEB);
     securityProps.setProperty(SSL_KEYSTORE, jks.getCanonicalPath());
     securityProps.setProperty(SSL_KEYSTORE_PASSWORD, "password");
     securityProps.setProperty(SSL_TRUSTSTORE, jks.getCanonicalPath());
@@ -64,10 +67,13 @@ public class PulseSecurityWithSSLTest {
 
     locator.withSecurityManager(SimpleTestSecurityManager.class).withProperties(securityProps)
         .startLocator();
+
+    // initialize SocketCreatorFactory so that the client will have the correct configuration
+    SocketCreatorFactory.setDistributionConfig(new DistributionConfigImpl(securityProps));
   }
 
   @Rule
-  public HttpClientRule client = new HttpClientRule(locator::getHttpPort);
+  public HttpClientRule client = new HttpClientRule(locator::getHttpPort).withSSL();
 
 
   @Test

@@ -28,6 +28,7 @@ import org.junit.experimental.categories.Category;
 import org.apache.geode.GemFireConfigException;
 import org.apache.geode.distributed.internal.DistributionConfigImpl;
 import org.apache.geode.internal.net.SSLConfigurationFactory;
+import org.apache.geode.internal.net.SocketCreatorFactory;
 import org.apache.geode.internal.security.SecurableCommunicationChannel;
 import org.apache.geode.test.junit.categories.UnitTest;
 
@@ -58,8 +59,7 @@ public class JettyHelperJUnitTest {
 
     final Server jetty;
     try {
-      jetty = JettyHelper.initJetty(null, 8090,
-          SSLConfigurationFactory.getSSLConfigForComponent(SecurableCommunicationChannel.WEB));
+      jetty = JettyHelper.initJetty(null, 8090, SecurableCommunicationChannel.WEB);
       assertNotNull(jetty);
       assertNotNull(jetty.getConnectors()[0]);
       assertEquals(8090, ((ServerConnector) jetty.getConnectors()[0]).getPort());
@@ -71,8 +71,8 @@ public class JettyHelperJUnitTest {
   @Test
   public void testSetPortWithBindAddress() throws Exception {
     try {
-      final Server jetty = JettyHelper.initJetty("10.123.50.1", 10480,
-          SSLConfigurationFactory.getSSLConfigForComponent(SecurableCommunicationChannel.WEB));
+      final Server jetty =
+          JettyHelper.initJetty("10.123.50.1", 10480, SecurableCommunicationChannel.WEB);
 
       assertNotNull(jetty);
       assertNotNull(jetty.getConnectors()[0]);

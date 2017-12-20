@@ -15,6 +15,7 @@
 package org.apache.geode.management.internal;
 
 import java.io.File;
+import java.util.Properties;
 import java.util.concurrent.CountDownLatch;
 
 import org.apache.commons.lang.StringUtils;
@@ -32,8 +33,14 @@ import org.eclipse.jetty.util.ssl.SslContextFactory;
 import org.eclipse.jetty.webapp.WebAppContext;
 
 import org.apache.geode.GemFireConfigException;
+import org.apache.geode.distributed.internal.DistributionConfig;
+import org.apache.geode.distributed.internal.DistributionConfigImpl;
 import org.apache.geode.internal.admin.SSLConfig;
 import org.apache.geode.internal.logging.LogService;
+import org.apache.geode.internal.net.SSLConfigurationFactory;
+import org.apache.geode.internal.net.SocketCreator;
+import org.apache.geode.internal.net.SocketCreatorFactory;
+import org.apache.geode.internal.security.SecurableCommunicationChannel;
 
 /**
  * @since GemFire 8.1
@@ -54,7 +61,8 @@ public class JettyHelper {
 
   private static int port = 0;
 
-  public static Server initJetty(final String bindAddress, final int port, SSLConfig sslConfig) {
+  public static Server initJetty(final String bindAddress, final int port,
+      SecurableCommunicationChannel component) {
 
     final Server jettyServer = new Server();
 
@@ -67,51 +75,54 @@ public class JettyHelper {
     httpConfig.setSecureScheme(HTTPS);
     httpConfig.setSecurePort(port);
 
-    if (sslConfig.isEnabled()) {
+    SocketCreator socketCreator = SocketCreatorFactory.getSocketCreatorForComponent(component);
+    if (socketCreator.useSSL()) {
       SslContextFactory sslContextFactory = new SslContextFactory();
+      sslContextFactory.setSslContext(socketCreator.getSslContext());
 
-      if (StringUtils.isNotBlank(sslConfig.getAlias())) {
-        sslContextFactory.setCertAlias(sslConfig.getAlias());
-      }
-
-      sslContextFactory.setNeedClientAuth(sslConfig.isRequireAuth());
-
-      if (StringUtils.isNotBlank(sslConfig.getCiphers())
-          && !"any".equalsIgnoreCase(sslConfig.getCiphers())) {
-        // If use has mentioned "any" let the SSL layer decide on the ciphers
-        sslContextFactory.setIncludeCipherSuites(SSLUtil.readArray(sslConfig.getCiphers()));
-      }
-
-      String protocol = SSLUtil.getSSLAlgo(SSLUtil.readArray(sslConfig.getProtocols()));
-      if (protocol != null) {
-        sslContextFactory.setProtocol(protocol);
-      } else {
-        logger.warn(ManagementStrings.SSL_PROTOCOAL_COULD_NOT_BE_DETERMINED);
-      }
-
-
-      if (StringUtils.isBlank(sslConfig.getKeystore())) {
-        throw new GemFireConfigException(
-            "Key store can't be empty if SSL is enabled for HttpService");
-      }
-
-      sslContextFactory.setKeyStorePath(sslConfig.getKeystore());
-
-      if (StringUtils.isNotBlank(sslConfig.getKeystoreType())) {
-        sslContextFactory.setKeyStoreType(sslConfig.getKeystoreType());
-      }
-
-      if (StringUtils.isNotBlank(sslConfig.getKeystorePassword())) {
-        sslContextFactory.setKeyStorePassword(sslConfig.getKeystorePassword());
-      }
-
-      if (StringUtils.isNotBlank(sslConfig.getTruststore())) {
-        sslContextFactory.setTrustStorePath(sslConfig.getTruststore());
-      }
-
-      if (StringUtils.isNotBlank(sslConfig.getTruststorePassword())) {
-        sslContextFactory.setTrustStorePassword(sslConfig.getTruststorePassword());
-      }
+      // SSLConfig sslConfig = SSLConfigurationFactory.getSSLConfigForComponent(component);
+      // if (StringUtils.isNotBlank(sslConfig.getAlias())) {
+      // sslContextFactory.setCertAlias(sslConfig.getAlias());
+      // }
+      //
+      // sslContextFactory.setNeedClientAuth(sslConfig.isRequireAuth());
+      //
+      // if (StringUtils.isNotBlank(sslConfig.getCiphers())
+      // && !"any".equalsIgnoreCase(sslConfig.getCiphers())) {
+      // // If use has mentioned "any" let the SSL layer decide on the ciphers
+      // sslContextFactory.setIncludeCipherSuites(SSLUtil.readArray(sslConfig.getCiphers()));
+      // }
+      //
+      // String protocol = SSLUtil.getSSLAlgo(SSLUtil.readArray(sslConfig.getProtocols()));
+      // if (protocol != null) {
+      // sslContextFactory.setProtocol(protocol);
+      // } else {
+      // logger.warn(ManagementStrings.SSL_PROTOCOAL_COULD_NOT_BE_DETERMINED);
+      // }
+      //
+      //
+      // if (StringUtils.isBlank(sslConfig.getKeystore())) {
+      // throw new GemFireConfigException(
+      // "Key store can't be empty if SSL is enabled for HttpService");
+      // }
+      //
+      // sslContextFactory.setKeyStorePath(sslConfig.getKeystore());
+      //
+      // if (StringUtils.isNotBlank(sslConfig.getKeystoreType())) {
+      // sslContextFactory.setKeyStoreType(sslConfig.getKeystoreType());
+      // }
+      //
+      // if (StringUtils.isNotBlank(sslConfig.getKeystorePassword())) {
+      // sslContextFactory.setKeyStorePassword(sslConfig.getKeystorePassword());
+      // }
+      //
+      // if (StringUtils.isNotBlank(sslConfig.getTruststore())) {
+      // sslContextFactory.setTrustStorePath(sslConfig.getTruststore());
+      // }
+      //
+      // if (StringUtils.isNotBlank(sslConfig.getTruststorePassword())) {
+      // sslContextFactory.setTrustStorePassword(sslConfig.getTruststorePassword());
+      // }
 
       httpConfig.addCustomizer(new SecureRequestCustomizer());
 
@@ -195,7 +206,10 @@ public class JettyHelper {
     if (args.length > 1) {
       System.out.printf("Temporary Directory @ ($1%s)%n", USER_DIR);
 
-      final Server jetty = JettyHelper.initJetty(null, 8090, new SSLConfig());
+      DistributionConfig distributionConfig = new DistributionConfigImpl(new Properties());
+      SocketCreatorFactory.setDistributionConfig(distributionConfig);
+
+      final Server jetty = JettyHelper.initJetty(null, 8090, SecurableCommunicationChannel.WEB);
 
       for (int index = 0; index < args.length; index += 2) {
         final String webAppContext = args[index];
