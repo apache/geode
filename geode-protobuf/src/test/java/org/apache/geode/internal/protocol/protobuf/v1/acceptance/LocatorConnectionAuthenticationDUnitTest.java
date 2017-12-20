@@ -1,0 +1,167 @@
+/*
+ * Licensed to the Apache Software Foundation (ASF) under one or more contributor license
+ * agreements. See the NOTICE file distributed with this work for additional information regarding
+ * copyright ownership. The ASF licenses this file to You under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance with the License. You may obtain a
+ * copy of the License at
+ *
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software distributed under the License
+ * is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
+ * or implied. See the License for the specific language governing permissions and limitations under
+ * the License.
+ */
+
+package org.apache.geode.internal.protocol.protobuf.v1.acceptance;
+
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+
+import java.io.IOException;
+import java.net.Socket;
+import java.util.Properties;
+
+import org.junit.After;
+import org.junit.Before;
+import org.junit.Rule;
+import org.junit.Test;
+import org.junit.experimental.categories.Category;
+import org.junit.rules.ExpectedException;
+
+import org.apache.geode.cache.server.CacheServer;
+import org.apache.geode.distributed.ConfigurationProperties;
+import org.apache.geode.distributed.Locator;
+import org.apache.geode.internal.cache.InternalCache;
+import org.apache.geode.internal.protocol.exception.InvalidProtocolMessageException;
+import org.apache.geode.internal.protocol.protobuf.v1.ClientProtocol;
+import org.apache.geode.internal.protocol.protobuf.v1.ConnectionAPI;
+import org.apache.geode.internal.protocol.protobuf.v1.MessageUtil;
+import org.apache.geode.internal.protocol.protobuf.v1.serializer.ProtobufProtocolSerializer;
+import org.apache.geode.internal.protocol.protobuf.v1.utilities.ProtobufRequestUtilities;
+import org.apache.geode.internal.protocol.protobuf.v1.utilities.ProtobufUtilities;
+import org.apache.geode.security.SimpleTestSecurityManager;
+import org.apache.geode.test.dunit.DistributedTestUtils;
+import org.apache.geode.test.dunit.Host;
+import org.apache.geode.test.dunit.cache.internal.JUnit4CacheTestCase;
+import org.apache.geode.test.dunit.rules.DistributedRestoreSystemProperties;
+import org.apache.geode.test.junit.categories.DistributedTest;
+
+/**
+ * Test sending ProtoBuf messages to the locator, with a security manager configured on the locator
+ */
+@Category(DistributedTest.class)
+public class LocatorConnectionAuthenticationDUnitTest extends JUnit4CacheTestCase {
+  @Rule
+  public final DistributedRestoreSystemProperties restoreSystemProperties =
+      new DistributedRestoreSystemProperties();
+  private int locatorPort;
+
+  @Before
+  public void setup() throws IOException {
+    // Start a new locator with authorization
+    locatorPort = Host.getHost(0).getVM(0).invoke(() -> {
+      System.setProperty("geode.feature-protobuf-protocol", "true");
+      Properties props = new Properties();
+      props.setProperty(ConfigurationProperties.SECURITY_MANAGER,
+          SimpleTestSecurityManager.class.getName());
+      Locator locator = Locator.startLocatorAndDS(0, null, props);
+      return locator.getPort();
+    });
+
+    startCacheWithCacheServer(locatorPort);
+  }
+
+  private Socket createSocket() throws IOException {
+    Host host = Host.getHost(0);
+    Socket socket = new Socket(host.getHostName(), locatorPort);
+    MessageUtil.sendHandshake(socket);
+    MessageUtil.verifyHandshakeSuccess(socket);
+    return socket;
+  }
+
+  /**
+   * Test that if the locator has a security manager, an unauthorized client is not allowed to do
+   * anything.
+   */
+  @Test
+  public void authorizedClientCanGetServersIfSecurityIsEnabled() throws Throwable {
+    ClientProtocol.Request.Builder protobufRequestBuilder =
+        ProtobufUtilities.createProtobufRequestBuilder();
+
+    ClientProtocol.Message authorization =
+        ProtobufUtilities.createProtobufMessage(ProtobufUtilities.createProtobufRequestBuilder()
+            .setAuthenticationRequest(ConnectionAPI.AuthenticationRequest.newBuilder()
+                .putCredentials("security-username", "data").putCredentials("security-password",
+                    "data"))
+            .build());
+    ClientProtocol.Message getAvailableServersRequestMessage = ProtobufUtilities
+        .createProtobufMessage(protobufRequestBuilder.setGetAvailableServersRequest(
+            ProtobufRequestUtilities.createGetAvailableServersRequest()).build());
+
+    ProtobufProtocolSerializer protobufProtocolSerializer = new ProtobufProtocolSerializer();
+
+    try (Socket socket = createSocket()) {
+      protobufProtocolSerializer.serialize(authorization, socket.getOutputStream());
+
+      ClientProtocol.Message authorizationResponse =
+          protobufProtocolSerializer.deserialize(socket.getInputStream());
+      assertEquals(true,
+          authorizationResponse.getResponse().getAuthenticationResponse().getAuthenticated());
+      protobufProtocolSerializer.serialize(getAvailableServersRequestMessage,
+          socket.getOutputStream());
+
+      ClientProtocol.Message getAvailableServersResponseMessage =
+          protobufProtocolSerializer.deserialize(socket.getInputStream());
+      assertNotNull("Got response: " + getAvailableServersResponseMessage,
+          getAvailableServersRequestMessage.getResponse().getErrorResponse());
+    }
+  }
+
+  /**
+   * Test that if the locator has a security manager, an unauthorized client is not allowed to do
+   * anything.
+   */
+  @Test
+  public void unauthorizedClientCannotGetServersIfSecurityIsEnabled() throws Throwable {
+    ClientProtocol.Request.Builder protobufRequestBuilder =
+        ProtobufUtilities.createProtobufRequestBuilder();
+    ClientProtocol.Message getAvailableServersRequestMessage = ProtobufUtilities
+        .createProtobufMessage(protobufRequestBuilder.setGetAvailableServersRequest(
+            ProtobufRequestUtilities.createGetAvailableServersRequest()).build());
+
+    ProtobufProtocolSerializer protobufProtocolSerializer = new ProtobufProtocolSerializer();
+
+    try (Socket socket = createSocket()) {
+      protobufProtocolSerializer.serialize(getAvailableServersRequestMessage,
+          socket.getOutputStream());
+
+      ClientProtocol.Message getAvailableServersResponseMessage =
+          protobufProtocolSerializer.deserialize(socket.getInputStream());
+      assertNotNull("Got response: " + getAvailableServersResponseMessage,
+          getAvailableServersRequestMessage.getResponse().getErrorResponse());
+    }
+  }
+
+  @Override
+  public Properties getDistributedSystemProperties() {
+    Properties properties = super.getDistributedSystemProperties();
+    properties.put(ConfigurationProperties.STATISTIC_SAMPLING_ENABLED, "true");
+    properties.put(ConfigurationProperties.STATISTIC_SAMPLE_RATE, "100");
+    return properties;
+  }
+
+  private Integer startCacheWithCacheServer(int locatorPort) throws IOException {
+    System.setProperty("geode.feature-protobuf-protocol", "true");
+
+    Properties props = new Properties();
+    props.setProperty(ConfigurationProperties.LOCATORS, "localhost[" + locatorPort + "]");
+    props.setProperty("security-username", "cluster");
+    props.setProperty("security-password", "cluster");
+    InternalCache cache = getCache(props);
+    CacheServer cacheServer = cache.addCacheServer();
+    cacheServer.setPort(0);
+    cacheServer.start();
+    return cacheServer.getPort();
+  }
+}

@@ -21,12 +21,12 @@ import org.apache.geode.internal.protocol.statistics.NoOpStatistics;
 
 public class TestExecutionContext {
   public static MessageExecutionContext getNoAuthCacheExecutionContext(Cache cache) {
-    return new MessageExecutionContext(cache, new NoOpStatistics(),
+    return new ServerMessageExecutionContext(cache, new NoOpStatistics(),
         new NoSecurityConnectionStateProcessor());
   }
 
   public static MessageExecutionContext getLocatorExecutionContext(InternalLocator locator) {
-    return new MessageExecutionContext(locator, new NoOpStatistics(),
+    return new LocatorMessageExecutionContext(locator, new NoOpStatistics(),
         new NoSecurityConnectionStateProcessor());
   }
 }

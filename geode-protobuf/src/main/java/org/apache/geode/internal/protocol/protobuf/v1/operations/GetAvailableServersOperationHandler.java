@@ -32,6 +32,7 @@ import org.apache.geode.internal.protocol.protobuf.v1.ClientProtocol;
 import org.apache.geode.internal.protocol.protobuf.v1.LocatorAPI;
 import org.apache.geode.internal.protocol.protobuf.v1.ProtobufSerializationService;
 import org.apache.geode.internal.protocol.serialization.SerializationService;
+import org.apache.geode.internal.protocol.state.ConnectionTerminatingStateProcessor;
 
 @Experimental
 public class GetAvailableServersOperationHandler implements
@@ -43,6 +44,7 @@ public class GetAvailableServersOperationHandler implements
       LocatorAPI.GetAvailableServersRequest request,
       MessageExecutionContext messageExecutionContext) throws InvalidExecutionContextException {
 
+    messageExecutionContext.setConnectionStateProcessor(new ConnectionTerminatingStateProcessor());
     InternalLocator internalLocator = (InternalLocator) messageExecutionContext.getLocator();
     ArrayList serversFromSnapshot =
         internalLocator.getServerLocatorAdvisee().getLoadSnapshot().getServers(null);
