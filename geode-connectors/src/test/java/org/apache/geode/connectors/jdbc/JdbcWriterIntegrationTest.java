@@ -27,6 +27,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Properties;
 
+import com.zaxxer.hikari.HikariDataSource;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -67,7 +68,13 @@ public class JdbcWriterIntegrationTest {
     cache = new CacheFactory().set("locators", "").set("mcast-port", "0")
         .setPdxReadSerialized(false).create();
     employees = createRegionWithJDBCSynchronousWriter(REGION_TABLE_NAME);
-    connection = DriverManager.getConnection(CONNECTION_URL);
+
+    HikariDataSource ds = new HikariDataSource();
+    ds.setJdbcUrl(CONNECTION_URL);
+    // ds.setDataSourceClassName("org.apache.derby.jdbc.ClientDataSource");
+    connection = ds.getConnection();
+
+    // connection = DriverManager.getConnection(CONNECTION_URL);
     statement = connection.createStatement();
     statement.execute("Create Table " + REGION_TABLE_NAME
         + " (id varchar(10) primary key not null, name varchar(10), age int)");

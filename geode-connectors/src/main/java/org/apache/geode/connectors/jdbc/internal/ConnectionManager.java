@@ -27,13 +27,17 @@ import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 
+import javax.sql.DataSource;
+
+import com.zaxxer.hikari.HikariDataSource;
+
 import org.apache.geode.cache.Operation;
 import org.apache.geode.pdx.PdxInstance;
 
 class ConnectionManager {
 
   private final InternalJdbcConnectorService configService;
-  private final Map<String, Connection> connectionMap = new ConcurrentHashMap<>();
+  private final Map<String, HikariDataSource> dataSourceMap = new ConcurrentHashMap<>();
   private final ConcurrentMap<String, String> tableToPrimaryKeyMap = new ConcurrentHashMap<>();
   private final ThreadLocal<PreparedStatementCache> preparedStatementCache = new ThreadLocal<>();
 
@@ -45,16 +49,32 @@ class ConnectionManager {
     return configService.getMappingForRegion(regionName);
   }
 
-  Connection getConnection(ConnectionConfiguration config) {
-    Connection connection = connectionMap.get(config.getName());
-    try {
-      if (connection != null && !connection.isClosed()) {
-        return connection;
-      }
-    } catch (SQLException ignore) {
-      // If isClosed throws fall through and connect again
+  synchronized DataSource createDataSource(ConnectionConfiguration config) {
+    DataSource dataSource = dataSourceMap.get(config.getName());
+    if (dataSource != null) {
+      return dataSource;
     }
-    return getNewConnection(config);
+    HikariDataSource ds = new HikariDataSource();
+    ds.setJdbcUrl(config.getUrl());
+    ds.setDataSourceProperties(config.getConnectionProperties());
+    dataSourceMap.put(config.getName(), ds);
+    return ds;
+  }
+
+  private DataSource getDataSource(ConnectionConfiguration config) {
+    DataSource dataSource = dataSourceMap.get(config.getName());
+    if (dataSource != null) {
+      return dataSource;
+    }
+    return createDataSource(config);
+  }
+
+  Connection getConnection(ConnectionConfiguration config) {
+    try {
+      return getDataSource(config).getConnection();
+    } catch (SQLException e) {
+      throw new IllegalStateException("Could not connect to " + config.getUrl(), e);
+    }
   }
 
   <K> List<ColumnValue> getColumnToValueList(ConnectionConfiguration config,
@@ -73,7 +93,7 @@ class ConnectionManager {
   }
 
   void close() {
-    connectionMap.values().forEach(this::close);
+    dataSourceMap.values().forEach(this::close);
   }
 
   String getKeyColumnName(ConnectionConfiguration connectionConfig, String tableName) {
@@ -96,22 +116,6 @@ class ConnectionManager {
 
     return statementCache.getPreparedStatement(connection, columnList, tableName, operation,
         pdxTypeId);
-  }
-
-  Connection getSQLConnection(ConnectionConfiguration config) throws SQLException {
-    return DriverManager.getConnection(config.getUrl(), config.getConnectionProperties());
-  }
-
-  private synchronized Connection getNewConnection(ConnectionConfiguration config) {
-    Connection connection;
-    try {
-      connection = getSQLConnection(config);
-    } catch (SQLException e) {
-      // TODO: consider a different exception
-      throw new IllegalStateException("Could not connect to " + config.getUrl(), e);
-    }
-    connectionMap.put(config.getName(), connection);
-    return connection;
   }
 
   private List<ColumnValue> createColumnValueList(RegionMapping regionMapping, PdxInstance value,
@@ -182,12 +186,9 @@ class ConnectionManager {
     throw new IllegalStateException("NYI: handleSQLException", e);
   }
 
-  private void close(Connection connection) {
-    if (connection != null) {
-      try {
-        connection.close();
-      } catch (SQLException ignore) {
-      }
+  private void close(HikariDataSource dataSource) {
+    if (dataSource != null) {
+      dataSource.close();
     }
   }
 }

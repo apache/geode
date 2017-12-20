@@ -69,7 +69,7 @@ public class ConnectionManagerUnitTest {
 
     when(mapping.getTableName()).thenReturn(TABLE_NAME);
     when(mapping.getRegionToTableName()).thenReturn(TABLE_NAME);
-    doReturn(connection).when(manager).getSQLConnection(connectionConfig);
+    doReturn(connection).when(manager).createDataSource(connectionConfig);
 
     key = new Object();
   }
@@ -109,7 +109,7 @@ public class ConnectionManagerUnitTest {
     Connection secondConnection = mock(Connection.class);
     ConnectionConfiguration secondConnectionConfig =
         new ConnectionConfiguration("newName", "url", null, null, null);
-    doReturn(secondConnection).when(manager).getSQLConnection(secondConnectionConfig);
+    doReturn(secondConnection).when(manager).createDataSource(secondConnectionConfig);
 
     Connection returnedConnection = manager.getConnection(connectionConfig);
     Connection secondReturnedConnection = manager.getConnection(secondConnectionConfig);
@@ -124,7 +124,7 @@ public class ConnectionManagerUnitTest {
     manager.getConnection(connectionConfig);
     when(connection.isClosed()).thenReturn(true);
     Connection secondConnection = mock(Connection.class);
-    doReturn(secondConnection).when(manager).getSQLConnection(connectionConfig);
+    doReturn(secondConnection).when(manager).createDataSource(connectionConfig);
 
     Connection secondReturnedConnection = manager.getConnection(connectionConfig);
 
@@ -136,7 +136,7 @@ public class ConnectionManagerUnitTest {
     Connection secondConnection = mock(Connection.class);
     ConnectionConfiguration secondConnectionConfig =
         new ConnectionConfiguration("newName", "url", null, null, null);
-    doReturn(secondConnection).when(manager).getSQLConnection(secondConnectionConfig);
+    doReturn(secondConnection).when(manager).createDataSource(secondConnectionConfig);
     manager.getConnection(connectionConfig);
     manager.getConnection(secondConnectionConfig);
 
