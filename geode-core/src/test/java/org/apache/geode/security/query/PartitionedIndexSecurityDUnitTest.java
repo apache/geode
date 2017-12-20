@@ -14,7 +14,6 @@
  */
 package org.apache.geode.security.query;
 
-import junitparams.JUnitParamsRunner;
 import org.junit.experimental.categories.Category;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
@@ -22,7 +21,9 @@ import org.junit.runners.Parameterized;
 import org.apache.geode.cache.RegionShortcut;
 import org.apache.geode.test.junit.categories.DistributedTest;
 import org.apache.geode.test.junit.categories.SecurityTest;
+import org.apache.geode.test.junit.runners.CategoryWithParameterizedRunnerFactory;
 
+@Parameterized.UseParametersRunnerFactory(CategoryWithParameterizedRunnerFactory.class)
 @Category({DistributedTest.class, SecurityTest.class})
 @RunWith(Parameterized.class)
 public class PartitionedIndexSecurityDUnitTest extends IndexSecurityDUnitTest {
