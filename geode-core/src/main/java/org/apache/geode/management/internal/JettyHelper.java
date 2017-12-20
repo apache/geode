@@ -80,50 +80,6 @@ public class JettyHelper {
       SslContextFactory sslContextFactory = new SslContextFactory();
       sslContextFactory.setSslContext(socketCreator.getSslContext());
 
-      // SSLConfig sslConfig = SSLConfigurationFactory.getSSLConfigForComponent(component);
-      // if (StringUtils.isNotBlank(sslConfig.getAlias())) {
-      // sslContextFactory.setCertAlias(sslConfig.getAlias());
-      // }
-      //
-      // sslContextFactory.setNeedClientAuth(sslConfig.isRequireAuth());
-      //
-      // if (StringUtils.isNotBlank(sslConfig.getCiphers())
-      // && !"any".equalsIgnoreCase(sslConfig.getCiphers())) {
-      // // If use has mentioned "any" let the SSL layer decide on the ciphers
-      // sslContextFactory.setIncludeCipherSuites(SSLUtil.readArray(sslConfig.getCiphers()));
-      // }
-      //
-      // String protocol = SSLUtil.getSSLAlgo(SSLUtil.readArray(sslConfig.getProtocols()));
-      // if (protocol != null) {
-      // sslContextFactory.setProtocol(protocol);
-      // } else {
-      // logger.warn(ManagementStrings.SSL_PROTOCOAL_COULD_NOT_BE_DETERMINED);
-      // }
-      //
-      //
-      // if (StringUtils.isBlank(sslConfig.getKeystore())) {
-      // throw new GemFireConfigException(
-      // "Key store can't be empty if SSL is enabled for HttpService");
-      // }
-      //
-      // sslContextFactory.setKeyStorePath(sslConfig.getKeystore());
-      //
-      // if (StringUtils.isNotBlank(sslConfig.getKeystoreType())) {
-      // sslContextFactory.setKeyStoreType(sslConfig.getKeystoreType());
-      // }
-      //
-      // if (StringUtils.isNotBlank(sslConfig.getKeystorePassword())) {
-      // sslContextFactory.setKeyStorePassword(sslConfig.getKeystorePassword());
-      // }
-      //
-      // if (StringUtils.isNotBlank(sslConfig.getTruststore())) {
-      // sslContextFactory.setTrustStorePath(sslConfig.getTruststore());
-      // }
-      //
-      // if (StringUtils.isNotBlank(sslConfig.getTruststorePassword())) {
-      // sslContextFactory.setTrustStorePassword(sslConfig.getTruststorePassword());
-      // }
-
       httpConfig.addCustomizer(new SecureRequestCustomizer());
 
       // Somehow With HTTP_2.0 Jetty throwing NPE. Need to investigate further whether all GemFire
