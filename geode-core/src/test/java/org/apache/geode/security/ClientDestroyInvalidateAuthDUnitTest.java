@@ -15,7 +15,10 @@
 package org.apache.geode.security;
 
 import static org.apache.geode.distributed.ConfigurationProperties.SECURITY_MANAGER;
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
 
 import org.junit.Before;
 import org.junit.Rule;
@@ -26,28 +29,23 @@ import org.apache.geode.cache.Region;
 import org.apache.geode.cache.RegionShortcut;
 import org.apache.geode.cache.client.ClientCache;
 import org.apache.geode.cache.client.ClientRegionShortcut;
-import org.apache.geode.test.dunit.AsyncInvocation;
-import org.apache.geode.test.dunit.Host;
-import org.apache.geode.test.dunit.VM;
-import org.apache.geode.test.dunit.internal.JUnit4DistributedTestCase;
+import org.apache.geode.test.dunit.rules.ClientVM;
+import org.apache.geode.test.dunit.rules.LocatorServerStartupRule;
 import org.apache.geode.test.junit.categories.DistributedTest;
 import org.apache.geode.test.junit.categories.SecurityTest;
 import org.apache.geode.test.junit.rules.ServerStarterRule;
 
 @Category({DistributedTest.class, SecurityTest.class})
-public class ClientDestroyInvalidateAuthDUnitTest extends JUnit4DistributedTestCase {
+public class ClientDestroyInvalidateAuthDUnitTest {
   private static String REGION_NAME = "AuthRegion";
 
-  final Host host = Host.getHost(0);
-  final VM client1 = host.getVM(1);
-  final VM client2 = host.getVM(2);
-
+  private ClientVM client1, client2;
+  @Rule
+  public LocatorServerStartupRule lsRule = new LocatorServerStartupRule();
   @Rule
   public ServerStarterRule server =
       new ServerStarterRule().withProperty(SECURITY_MANAGER, TestSecurityManager.class.getName())
-          .withProperty(TestSecurityManager.SECURITY_JSON,
-              "org/apache/geode/management/internal/security/clientServer.json")
-          .withAutoStart();
+          .withSecurityManager(SimpleTestSecurityManager.class).withAutoStart();
 
   @Before
   public void before() throws Exception {
@@ -60,12 +58,10 @@ public class ClientDestroyInvalidateAuthDUnitTest extends JUnit4DistributedTestC
 
   @Test
   public void testDestroyInvalidate() throws Exception {
-
+    client1 = lsRule.startClientVM(1, "data", "data", true, server.getPort());
     // Delete one key and invalidate another key with an authorized user.
-    AsyncInvocation ai1 = client1.invokeAsync(() -> {
-      ClientCache cache =
-          SecurityTestUtil.createClientCache("dataUser", "1234567", server.getPort());
-
+    client1.invoke(() -> {
+      ClientCache cache = LocatorServerStartupRule.getClientCache();
       Region region =
           cache.createClientRegionFactory(ClientRegionShortcut.PROXY).create(REGION_NAME);
       assertTrue(region.containsKeyOnServer("key1"));
@@ -78,13 +74,13 @@ public class ClientDestroyInvalidateAuthDUnitTest extends JUnit4DistributedTestC
       assertNotNull("Value of key2 should not be null", region.get("key2"));
       region.invalidate("key2");
       assertNull("Value of key2 should have been null", region.get("key2"));
-
+      cache.close();
     });
 
+    client2 = lsRule.startClientVM(2, "dataRead", "dataRead", true, server.getPort());
     // Delete one key and invalidate another key with an unauthorized user.
-    AsyncInvocation ai2 = client2.invokeAsync(() -> {
-      ClientCache cache =
-          SecurityTestUtil.createClientCache("authRegionReader", "1234567", server.getPort());
+    client2.invoke(() -> {
+      ClientCache cache = LocatorServerStartupRule.getClientCache();
 
       Region region =
           cache.createClientRegionFactory(ClientRegionShortcut.PROXY).create(REGION_NAME);
@@ -100,10 +96,8 @@ public class ClientDestroyInvalidateAuthDUnitTest extends JUnit4DistributedTestC
       SecurityTestUtil.assertNotAuthorized(() -> region.invalidate("key4"),
           "DATA:WRITE:AuthRegion");
       assertNotNull("Value of key4 should not be null", region.get("key4"));
+      cache.close();
     });
-
-    ai1.await();
-    ai2.await();
   }
 
 }

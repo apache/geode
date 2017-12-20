@@ -35,6 +35,7 @@ import org.apache.geode.test.dunit.rules.LocatorServerStartupRule;
 import org.apache.geode.test.dunit.rules.MemberVM;
 import org.apache.geode.test.junit.categories.DistributedTest;
 import org.apache.geode.test.junit.rules.GfshCommandRule;
+import org.apache.geode.test.junit.rules.VMProvider;
 
 @Category(DistributedTest.class)
 public class DestroyRegionCommandDUnitTest {
@@ -95,7 +96,7 @@ public class DestroyRegionCommandDUnitTest {
     gfsh.executeAndAssertThat("destroy region --name=region1").statusIsSuccess()
         .tableHasRowCount("Member", 3).containsOutput("destroyed successfully");
 
-    MemberVM.invokeInEveryMember(() -> {
+    VMProvider.invokeInEveryMember(() -> {
       Cache cache = LocatorServerStartupRule.getCache();
       assertThat(cache.getRegion("region1")).isNull();
     }, server1, server2, server3);
@@ -136,7 +137,7 @@ public class DestroyRegionCommandDUnitTest {
     });
 
     // verify that all regions are destroyed, no matter what the scope is
-    MemberVM.invokeInEveryMember(() -> {
+    VMProvider.invokeInEveryMember(() -> {
       Cache cache = LocatorServerStartupRule.getCache();
       assertThat(cache.getRegion("region1")).isNull();
     }, server1, server2, server3);
@@ -171,7 +172,7 @@ public class DestroyRegionCommandDUnitTest {
     lsRule.startServerVM(1, locator.getPort());
 
     // make sure region does not exist
-    MemberVM.invokeInEveryMember(() -> {
+    VMProvider.invokeInEveryMember(() -> {
       Cache cache = LocatorServerStartupRule.getCache();
       assertThat(cache.getRegion("Customer")).isNull();
     }, server1, server2, server3);

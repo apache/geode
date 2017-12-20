@@ -39,6 +39,7 @@ import org.apache.geode.test.dunit.rules.LocatorServerStartupRule;
 import org.apache.geode.test.dunit.rules.MemberVM;
 import org.apache.geode.test.junit.categories.DistributedTest;
 import org.apache.geode.test.junit.rules.GfshCommandRule;
+import org.apache.geode.test.junit.rules.VMProvider;
 
 @Category(DistributedTest.class)
 public class CreateDestroyGatewaySenderCommandDUnitTest {
@@ -93,7 +94,7 @@ public class CreateDestroyGatewaySenderCommandDUnitTest {
         "GatewaySender \"ln\" created on \"server-4\"",
         "GatewaySender \"ln\" created on \"server-5\"");
 
-    MemberVM.invokeInEveryMember(() -> verifySenderState("ln", true, false), server1, server2,
+    VMProvider.invokeInEveryMember(() -> verifySenderState("ln", true, false), server1, server2,
         server3);
 
     locatorSite1.invoke(() -> {
@@ -108,7 +109,7 @@ public class CreateDestroyGatewaySenderCommandDUnitTest {
         "GatewaySender \"ln\" destroyed on \"server-4\"",
         "GatewaySender \"ln\" destroyed on \"server-5\"");
 
-    MemberVM.invokeInEveryMember(() -> verifySenderDoesNotExist("ln", false), server1, server2,
+    VMProvider.invokeInEveryMember(() -> verifySenderDoesNotExist("ln", false), server1, server2,
         server3);
 
     locatorSite1.invoke(() -> {
@@ -146,7 +147,7 @@ public class CreateDestroyGatewaySenderCommandDUnitTest {
         "GatewaySender \"ln\" created on \"server-5\"");
 
 
-    MemberVM.invokeInEveryMember(() -> {
+    VMProvider.invokeInEveryMember(() -> {
       verifySenderState("ln", false, false);
       verifySenderAttributes("ln", 2, false, true, 1000, socketReadTimeout, true, 1000, 5000, true,
           false, 1000, 100, 2, GatewaySender.OrderPolicy.THREAD, null, null);
@@ -158,7 +159,7 @@ public class CreateDestroyGatewaySenderCommandDUnitTest {
         "GatewaySender \"ln\" destroyed on \"server-4\"",
         "GatewaySender \"ln\" destroyed on \"server-5\"");
 
-    MemberVM.invokeInEveryMember(() -> verifySenderDoesNotExist("ln", false), server1, server2,
+    VMProvider.invokeInEveryMember(() -> verifySenderDoesNotExist("ln", false), server1, server2,
         server3);
   }
 
@@ -195,7 +196,7 @@ public class CreateDestroyGatewaySenderCommandDUnitTest {
     eventFilters.add("org.apache.geode.cache30.MyGatewayEventFilter1");
     eventFilters.add("org.apache.geode.cache30.MyGatewayEventFilter2");
 
-    MemberVM.invokeInEveryMember(() -> {
+    VMProvider.invokeInEveryMember(() -> {
       verifySenderState("ln", false, false);
       verifySenderAttributes("ln", 2, false, true, 1000, socketReadTimeout, true, 1000, 5000, true,
           false, 1000, 100, 2, GatewaySender.OrderPolicy.THREAD, eventFilters, null);
@@ -208,7 +209,7 @@ public class CreateDestroyGatewaySenderCommandDUnitTest {
         "GatewaySender \"ln\" destroyed on \"server-4\"",
         "GatewaySender \"ln\" destroyed on \"server-5\"");
 
-    MemberVM.invokeInEveryMember(() -> verifySenderDoesNotExist("ln", false), server1, server2,
+    VMProvider.invokeInEveryMember(() -> verifySenderDoesNotExist("ln", false), server1, server2,
         server3);
   }
 
@@ -243,7 +244,7 @@ public class CreateDestroyGatewaySenderCommandDUnitTest {
     List<String> transportFilters = new ArrayList<String>();
     transportFilters.add("org.apache.geode.cache30.MyGatewayTransportFilter1");
 
-    MemberVM.invokeInEveryMember(() -> {
+    VMProvider.invokeInEveryMember(() -> {
       verifySenderState("ln", false, false);
       verifySenderAttributes("ln", 2, false, true, 1000, socketReadTimeout, true, 1000, 5000, true,
           false, 1000, 100, 2, GatewaySender.OrderPolicy.THREAD, null, transportFilters);
@@ -256,7 +257,7 @@ public class CreateDestroyGatewaySenderCommandDUnitTest {
         "GatewaySender \"ln\" destroyed on \"server-4\"",
         "GatewaySender \"ln\" destroyed on \"server-5\"");
 
-    MemberVM.invokeInEveryMember(() -> verifySenderDoesNotExist("ln", false), server1, server2,
+    VMProvider.invokeInEveryMember(() -> verifySenderDoesNotExist("ln", false), server1, server2,
         server3);
   }
 
@@ -273,13 +274,13 @@ public class CreateDestroyGatewaySenderCommandDUnitTest {
       verifySenderState("ln", true, false);
     });
 
-    MemberVM.invokeInEveryMember(() -> verifySenderDoesNotExist("ln", false), server2, server3);
+    VMProvider.invokeInEveryMember(() -> verifySenderDoesNotExist("ln", false), server2, server3);
 
     gfsh.executeAndAssertThat(DESTROY + " --member=" + server1.getName()).statusIsSuccess()
         .tableHasColumnWithExactValuesInAnyOrder("Status",
             "GatewaySender \"ln\" destroyed on \"server-3\"");
 
-    MemberVM.invokeInEveryMember(() -> verifySenderDoesNotExist("ln", false), server1);
+    VMProvider.invokeInEveryMember(() -> verifySenderDoesNotExist("ln", false), server1);
   }
 
   /**
@@ -295,13 +296,13 @@ public class CreateDestroyGatewaySenderCommandDUnitTest {
       verifySenderState("ln", true, false);
     });
 
-    MemberVM.invokeInEveryMember(() -> verifySenderDoesNotExist("ln", false), server2, server3);
+    VMProvider.invokeInEveryMember(() -> verifySenderDoesNotExist("ln", false), server2, server3);
 
     gfsh.executeAndAssertThat(DESTROY + " --group=senderGroup1").statusIsSuccess()
         .tableHasColumnWithExactValuesInAnyOrder("Status",
             "GatewaySender \"ln\" destroyed on \"server-3\"");
 
-    MemberVM.invokeInEveryMember(() -> verifySenderDoesNotExist("ln", false), server1);
+    VMProvider.invokeInEveryMember(() -> verifySenderDoesNotExist("ln", false), server1);
   }
 
   /**
@@ -321,7 +322,7 @@ public class CreateDestroyGatewaySenderCommandDUnitTest {
         "GatewaySender \"ln\" destroyed on \"server-4\"",
         "GatewaySender \"ln\" destroyed on \"server-5\"");
 
-    MemberVM.invokeInEveryMember(() -> verifySenderDoesNotExist("ln", false), server1, server2,
+    VMProvider.invokeInEveryMember(() -> verifySenderDoesNotExist("ln", false), server1, server2,
         server3);
   }
 }
