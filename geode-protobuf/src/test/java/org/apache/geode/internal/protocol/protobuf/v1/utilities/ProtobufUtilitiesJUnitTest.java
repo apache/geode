@@ -25,136 +25,132 @@ import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
 import org.apache.geode.internal.protocol.protobuf.v1.BasicTypes;
-import org.apache.geode.internal.protocol.protobuf.v1.utilities.exception.UnknownProtobufPrimitiveType;
+import org.apache.geode.internal.protocol.protobuf.v1.ProtobufSerializationService;
+import org.apache.geode.internal.protocol.serialization.exception.EncodingException;
 import org.apache.geode.test.junit.categories.UnitTest;
 
 @Category(UnitTest.class)
 public class ProtobufUtilitiesJUnitTest {
+
+  private ProtobufSerializationService protobufSerializationService =
+      new ProtobufSerializationService();;
+
   @Test
-  public void getIntPrimitiveFromEncodedValue() throws UnknownProtobufPrimitiveType {
+  public void getIntPrimitiveFromEncodedValue() throws Exception {
     BasicTypes.EncodedValue.Builder builder = BasicTypes.EncodedValue.newBuilder();
     BasicTypes.EncodedValue encodedValue = builder.setIntResult(1).build();
-    assertEquals(1, ProtobufUtilities.getPrimitiveValueFromEncodedValue(encodedValue));
+    assertEquals(1, protobufSerializationService.decode(encodedValue));
   }
 
   @Test
-  public void getLongPrimitiveFromEncodedValue() throws UnknownProtobufPrimitiveType {
+  public void getLongPrimitiveFromEncodedValue() throws Exception {
     BasicTypes.EncodedValue encodedValue =
         BasicTypes.EncodedValue.newBuilder().setLongResult(1).build();
-    assertEquals(1l, ProtobufUtilities.getPrimitiveValueFromEncodedValue(encodedValue));
+    assertEquals(1l, protobufSerializationService.decode(encodedValue));
   }
 
   @Test
-  public void getShortPrimitiveFromEncodedValue() throws UnknownProtobufPrimitiveType {
+  public void getShortPrimitiveFromEncodedValue() throws Exception {
     BasicTypes.EncodedValue encodedValue =
         BasicTypes.EncodedValue.newBuilder().setShortResult(1).build();
-    assertEquals((short) 1, ProtobufUtilities.getPrimitiveValueFromEncodedValue(encodedValue));
+    assertEquals((short) 1, protobufSerializationService.decode(encodedValue));
   }
 
   @Test
-  public void getBytePrimitiveFromEncodedValue() throws UnknownProtobufPrimitiveType {
+  public void getBytePrimitiveFromEncodedValue() throws Exception {
     BasicTypes.EncodedValue encodedValue =
         BasicTypes.EncodedValue.newBuilder().setByteResult(1).build();
-    assertEquals((byte) 1, ProtobufUtilities.getPrimitiveValueFromEncodedValue(encodedValue));
+    assertEquals((byte) 1, protobufSerializationService.decode(encodedValue));
   }
 
   @Test
-  public void getBooleanPrimitiveFromEncodedValue() throws UnknownProtobufPrimitiveType {
+  public void getBooleanPrimitiveFromEncodedValue() throws Exception {
     BasicTypes.EncodedValue encodedValue =
         BasicTypes.EncodedValue.newBuilder().setBooleanResult(true).build();
-    assertEquals(true, ProtobufUtilities.getPrimitiveValueFromEncodedValue(encodedValue));
+    assertEquals(true, protobufSerializationService.decode(encodedValue));
   }
 
   @Test
-  public void getDoublePrimitiveFromEncodedValue() throws UnknownProtobufPrimitiveType {
+  public void getDoublePrimitiveFromEncodedValue() throws Exception {
     BasicTypes.EncodedValue encodedValue =
         BasicTypes.EncodedValue.newBuilder().setDoubleResult(1.0).build();
-    assertEquals(1.0, ProtobufUtilities.getPrimitiveValueFromEncodedValue(encodedValue));
+    assertEquals(1.0, protobufSerializationService.decode(encodedValue));
   }
 
   @Test
-  public void getFloatPrimitiveFromEncodedValue() throws UnknownProtobufPrimitiveType {
+  public void getFloatPrimitiveFromEncodedValue() throws Exception {
     BasicTypes.EncodedValue encodedValue =
         BasicTypes.EncodedValue.newBuilder().setFloatResult(1).build();
-    assertEquals(1f, ProtobufUtilities.getPrimitiveValueFromEncodedValue(encodedValue));
+    assertEquals(1f, protobufSerializationService.decode(encodedValue));
   }
 
   @Test
-  public void getByteArrayPrimitiveFromEncodedValue() throws UnknownProtobufPrimitiveType {
+  public void getByteArrayPrimitiveFromEncodedValue() throws Exception {
     BasicTypes.EncodedValue encodedValue = BasicTypes.EncodedValue.newBuilder()
         .setBinaryResult(ByteString.copyFrom("SomeBinary".getBytes())).build();
     assertArrayEquals("SomeBinary".getBytes(Charset.forName("UTF-8")),
-        (byte[]) ProtobufUtilities.getPrimitiveValueFromEncodedValue(encodedValue));
+        (byte[]) protobufSerializationService.decode(encodedValue));
   }
 
   @Test
-  public void getStringPrimitiveFromEncodedValue() throws UnknownProtobufPrimitiveType {
+  public void getStringPrimitiveFromEncodedValue() throws Exception {
     BasicTypes.EncodedValue encodedValue =
         BasicTypes.EncodedValue.newBuilder().setStringResult("SomeString").build();
-    assertEquals("SomeString", ProtobufUtilities.getPrimitiveValueFromEncodedValue(encodedValue));
+    assertEquals("SomeString", protobufSerializationService.decode(encodedValue));
   }
 
   @Test
-  public void doesAIntValueSuccessfullyEncodeIntoPrimitiveEncodedValues()
-      throws UnknownProtobufPrimitiveType {
+  public void doesAIntValueSuccessfullyEncodeIntoPrimitiveEncodedValues() throws Exception {
     createAndVerifyEncodedValue(1);
   }
 
   @Test
-  public void doesALongValueSuccessfullyEncodeIntoPrimitiveEncodedValues()
-      throws UnknownProtobufPrimitiveType {
+  public void doesALongValueSuccessfullyEncodeIntoPrimitiveEncodedValues() throws Exception {
     createAndVerifyEncodedValue(1l);
   }
 
   @Test
-  public void doesAShortValueSuccessfullyEncodeIntoPrimitiveEncodedValues()
-      throws UnknownProtobufPrimitiveType {
+  public void doesAShortValueSuccessfullyEncodeIntoPrimitiveEncodedValues() throws Exception {
     createAndVerifyEncodedValue((short) 1);
   }
 
   @Test
-  public void doesAByteValueSuccessfullyEncodeIntoPrimitiveEncodedValues()
-      throws UnknownProtobufPrimitiveType {
+  public void doesAByteValueSuccessfullyEncodeIntoPrimitiveEncodedValues() throws Exception {
     createAndVerifyEncodedValue((byte) 1);
   }
 
   @Test
-  public void doesABooleanValueSuccessfullyEncodeIntoPrimitiveEncodedValues()
-      throws UnknownProtobufPrimitiveType {
+  public void doesABooleanValueSuccessfullyEncodeIntoPrimitiveEncodedValues() throws Exception {
     createAndVerifyEncodedValue(true);
   }
 
   @Test
-  public void doesADoubleValueSuccessfullyEncodeIntoPrimitiveEncodedValues()
-      throws UnknownProtobufPrimitiveType {
+  public void doesADoubleValueSuccessfullyEncodeIntoPrimitiveEncodedValues() throws Exception {
     createAndVerifyEncodedValue((double) 1);
   }
 
   @Test
-  public void doesAFloatValueSuccessfullyEncodeIntoPrimitiveEncodedValues()
-      throws UnknownProtobufPrimitiveType {
+  public void doesAFloatValueSuccessfullyEncodeIntoPrimitiveEncodedValues() throws Exception {
     createAndVerifyEncodedValue((float) 1);
   }
 
   @Test
-  public void doesABinaryValueSuccessfullyEncodeIntoPrimitiveEncodedValues()
-      throws UnknownProtobufPrimitiveType {
+  public void doesABinaryValueSuccessfullyEncodeIntoPrimitiveEncodedValues() throws Exception {
     createAndVerifyEncodedValue("Some Text to Binary".getBytes());
   }
 
   @Test
-  public void doesAStringValueSuccessfullyEncodeIntoPrimitiveEncodedValues()
-      throws UnknownProtobufPrimitiveType {
+  public void doesAStringValueSuccessfullyEncodeIntoPrimitiveEncodedValues() throws Exception {
     createAndVerifyEncodedValue("Some String text to test");
   }
 
-  private <T> void createAndVerifyEncodedValue(T testObj) throws UnknownProtobufPrimitiveType {
-    BasicTypes.EncodedValue encodedValue = ProtobufUtilities.createPrimitiveEncodedValue(testObj);
+  private <T> void createAndVerifyEncodedValue(T testObj) throws EncodingException {
+    BasicTypes.EncodedValue encodedValue = protobufSerializationService.encode(testObj);
     if (testObj instanceof byte[]) {
       assertArrayEquals((byte[]) testObj,
-          (byte[]) ProtobufUtilities.getPrimitiveValueFromEncodedValue(encodedValue));
+          (byte[]) protobufSerializationService.decode(encodedValue));
     } else {
-      assertEquals(testObj, ProtobufUtilities.getPrimitiveValueFromEncodedValue(encodedValue));
+      assertEquals(testObj, protobufSerializationService.decode(encodedValue));
     }
   }
 }

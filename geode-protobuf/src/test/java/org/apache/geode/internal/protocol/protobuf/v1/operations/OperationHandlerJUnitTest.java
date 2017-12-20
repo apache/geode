@@ -21,18 +21,18 @@ import org.junit.experimental.categories.Category;
 
 import org.apache.geode.cache.Cache;
 import org.apache.geode.internal.protocol.operations.OperationHandler;
-import org.apache.geode.internal.protocol.serialization.SerializationService;
+import org.apache.geode.internal.protocol.protobuf.v1.ProtobufSerializationService;
 import org.apache.geode.test.junit.categories.UnitTest;
 
 @Category(UnitTest.class)
 public class OperationHandlerJUnitTest {
   protected Cache cacheStub;
-  protected SerializationService serializationServiceStub;
+  protected ProtobufSerializationService serializationService;
   protected OperationHandler operationHandler;
 
   @Before
   public void setUp() throws Exception {
     cacheStub = mock(Cache.class);
-    serializationServiceStub = mock(SerializationService.class);
+    serializationService = new ProtobufSerializationService();
   }
 }

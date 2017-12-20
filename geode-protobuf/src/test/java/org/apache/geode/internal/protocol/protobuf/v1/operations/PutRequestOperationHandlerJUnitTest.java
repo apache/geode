@@ -23,7 +23,6 @@ import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
-import com.google.protobuf.ByteString;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
@@ -36,11 +35,11 @@ import org.apache.geode.internal.protocol.Success;
 import org.apache.geode.internal.protocol.TestExecutionContext;
 import org.apache.geode.internal.protocol.protobuf.v1.BasicTypes;
 import org.apache.geode.internal.protocol.protobuf.v1.ClientProtocol;
+import org.apache.geode.internal.protocol.protobuf.v1.ProtobufSerializationService;
 import org.apache.geode.internal.protocol.protobuf.v1.RegionAPI;
 import org.apache.geode.internal.protocol.protobuf.v1.utilities.ProtobufRequestUtilities;
 import org.apache.geode.internal.protocol.protobuf.v1.utilities.ProtobufUtilities;
-import org.apache.geode.internal.protocol.serialization.exception.UnsupportedEncodingTypeException;
-import org.apache.geode.internal.protocol.serialization.registry.exception.CodecNotRegisteredForTypeException;
+import org.apache.geode.internal.protocol.serialization.exception.EncodingException;
 import org.apache.geode.test.junit.categories.UnitTest;
 
 @Category(UnitTest.class)
@@ -63,7 +62,7 @@ public class PutRequestOperationHandlerJUnitTest extends OperationHandlerJUnitTe
   @Test
   public void test_puttingTheEncodedEntryIntoRegion() throws Exception {
     PutRequestOperationHandler operationHandler = new PutRequestOperationHandler();
-    Result result = operationHandler.process(serializationServiceStub, generateTestRequest(),
+    Result result = operationHandler.process(serializationService, generateTestRequest(),
         TestExecutionContext.getNoAuthCacheExecutionContext(cacheStub));
 
     assertTrue(result instanceof Success);
@@ -75,20 +74,17 @@ public class PutRequestOperationHandlerJUnitTest extends OperationHandlerJUnitTe
   @Test
   public void test_invalidEncodingType() throws Exception {
     String exceptionText = "unsupported type!";
-    UnsupportedEncodingTypeException exception =
-        new UnsupportedEncodingTypeException(exceptionText);
-    when(serializationServiceStub.decode(any(), any())).thenThrow(exception);
+    EncodingException exception = new EncodingException(exceptionText);
+    ProtobufSerializationService serializationServiceStub =
+        mock(ProtobufSerializationService.class);
+    when(serializationServiceStub.decode(any())).thenThrow(exception);
 
-    ByteString byteString = ByteString.copyFrom("{\"someKey\":\"someValue\"}", "UTF-8");
-    BasicTypes.CustomEncodedValue.Builder customEncodedValueBuilder = BasicTypes.CustomEncodedValue
-        .newBuilder().setEncodingType(BasicTypes.EncodingType.JSON).setValue(byteString);
     BasicTypes.EncodedValue encodedKey = BasicTypes.EncodedValue.newBuilder()
-        .setCustomEncodedValue(customEncodedValueBuilder).build();
+        .setJsonObjectResult("{\"someKey\":\"someValue\"}").build();
 
     PutRequestOperationHandler operationHandler = new PutRequestOperationHandler();
 
-    BasicTypes.EncodedValue testValue =
-        ProtobufUtilities.createEncodedValue(serializationServiceStub, TEST_VALUE);
+    BasicTypes.EncodedValue testValue = serializationService.encode(TEST_VALUE);
     BasicTypes.Entry testEntry = ProtobufUtilities.createEntry(encodedKey, testValue);
     RegionAPI.PutRequest putRequest =
         ProtobufRequestUtilities.createPutRequest(TEST_REGION, testEntry).getPutRequest();
@@ -105,7 +101,7 @@ public class PutRequestOperationHandlerJUnitTest extends OperationHandlerJUnitTe
   public void test_RegionNotFound() throws Exception {
     when(cacheStub.getRegion(TEST_REGION)).thenReturn(null);
     PutRequestOperationHandler operationHandler = new PutRequestOperationHandler();
-    Result result = operationHandler.process(serializationServiceStub, generateTestRequest(),
+    Result result = operationHandler.process(serializationService, generateTestRequest(),
         TestExecutionContext.getNoAuthCacheExecutionContext(cacheStub));
 
     assertTrue(result instanceof Failure);
@@ -119,7 +115,7 @@ public class PutRequestOperationHandlerJUnitTest extends OperationHandlerJUnitTe
     when(regionMock.put(any(), any())).thenThrow(ClassCastException.class);
 
     PutRequestOperationHandler operationHandler = new PutRequestOperationHandler();
-    Result result = operationHandler.process(serializationServiceStub, generateTestRequest(),
+    Result result = operationHandler.process(serializationService, generateTestRequest(),
         TestExecutionContext.getNoAuthCacheExecutionContext(cacheStub));
 
     assertTrue(result instanceof Failure);
@@ -128,12 +124,9 @@ public class PutRequestOperationHandlerJUnitTest extends OperationHandlerJUnitTe
     assertEquals(BasicTypes.ErrorCode.CONSTRAINT_VIOLATION, errorMessage.getError().getErrorCode());
   }
 
-  private RegionAPI.PutRequest generateTestRequest()
-      throws UnsupportedEncodingTypeException, CodecNotRegisteredForTypeException {
-    BasicTypes.EncodedValue testKey =
-        ProtobufUtilities.createEncodedValue(serializationServiceStub, TEST_KEY);
-    BasicTypes.EncodedValue testValue =
-        ProtobufUtilities.createEncodedValue(serializationServiceStub, TEST_VALUE);
+  private RegionAPI.PutRequest generateTestRequest() throws EncodingException {
+    BasicTypes.EncodedValue testKey = serializationService.encode(TEST_KEY);
+    BasicTypes.EncodedValue testValue = serializationService.encode(TEST_VALUE);
     BasicTypes.Entry testEntry = ProtobufUtilities.createEntry(testKey, testValue);
     return ProtobufRequestUtilities.createPutRequest(TEST_REGION, testEntry).getPutRequest();
   }

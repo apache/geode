@@ -12,25 +12,20 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
-package org.apache.geode.internal.protocol.serialization;
+package org.apache.geode.internal.protocol.serialization.exception;
 
 import org.apache.geode.annotations.Experimental;
 
 /**
- * This interface converts a particular type to and from its binary representation.
- *
- * NOTE: it is expected that T will be one of the serialization types in @{@link SerializationType}.
- *
- * @param <T> the type this codec knows how to convert
+ * This indicates an encoding type that we don't know how to handle.
  */
 @Experimental
-public interface TypeCodec<T> {
-  T decode(byte[] incoming);
+public class EncodingException extends Exception {
+  public EncodingException(String message) {
+    super(message);
+  }
 
-  byte[] encode(T incoming);
-
-  /**
-   * @return the SerializationType corresponding to T
-   */
-  SerializationType getSerializationType();
+  public EncodingException(String message, Throwable cause) {
+    super(message, cause);
+  }
 }

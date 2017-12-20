@@ -17,9 +17,6 @@ package org.apache.geode.experimental.driver;
 import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertEquals;
 
-import java.io.UnsupportedEncodingException;
-
-import com.google.protobuf.ByteString;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
@@ -40,11 +37,11 @@ public class ValueEncoderTest {
   }
 
   @Test(expected = IllegalStateException.class)
-  public void cantDecodeJson() throws UnsupportedEncodingException {
+  public void cantDecodeJson() throws Exception {
     BasicTypes.EncodedValue.Builder builder = BasicTypes.EncodedValue.newBuilder();
-    BasicTypes.CustomEncodedValue.Builder customEncodedValue =
-        BasicTypes.CustomEncodedValue.newBuilder().setValue(ByteString.copyFrom("hello", "UTF-8"));
-    builder.setCustomEncodedValue(customEncodedValue);
+
+    builder.setJsonObjectResult("hello").build();
+
     ValueEncoder.decodeValue(builder.build());
   }
 }

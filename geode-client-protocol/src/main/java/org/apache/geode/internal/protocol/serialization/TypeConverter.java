@@ -12,23 +12,26 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
-package org.apache.geode.internal.protocol.protobuf.v1.serializer;
-
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
+package org.apache.geode.internal.protocol.serialization;
 
 import org.apache.geode.annotations.Experimental;
-import org.apache.geode.internal.protocol.exception.InvalidProtocolMessageException;
+import org.apache.geode.internal.protocol.serialization.exception.EncodingException;
 
 /**
- * This interface is used to translate between binary data and protocol specific messages.
+ * This interface converts a particular type to and from its binary representation.
  *
- * @param <T> The message type of the protocol.
+ * NOTE: it is expected that T will be one of the serialization types in @{@link SerializationType}.
+ *
+ * @param <T> the type this codec knows how to convert
  */
 @Experimental
-public interface ProtocolSerializer<T> {
-  T deserialize(InputStream inputStream) throws InvalidProtocolMessageException;
+public interface TypeConverter<F, T> {
+  T decode(F incoming) throws EncodingException;
 
-  void serialize(T inputMessage, OutputStream outputStream) throws IOException;
+  F encode(T incoming) throws EncodingException;
+
+  /**
+   * @return the SerializationType corresponding to T
+   */
+  SerializationType getSerializationType();
 }
