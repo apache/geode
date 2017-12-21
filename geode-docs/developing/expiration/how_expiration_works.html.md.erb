@@ -19,9 +19,8 @@ See the License for the specific language governing permissions and
 limitations under the License.
 -->
 
-Expiration removes old entries and entries that you are not using. You can destroy or invalidate entries.
+Expiration removes old entries and entries that you are not using. You can choose whether expired entries are invalidated or destroyed.
 
-<a id="how_expiration_works__section_94FDBB821CDE49C48A0EFA6ED4DE194F"></a>
 Expiration activities in distributed regions can be distributed or local. Thus, one cache could control expiration for a number of caches in the system.
 
 This figure shows two basic expiration settings for a producer/consumer system. The producer member (on the right) populates the region from a database and the data is automatically distributed throughout the system. The data is valid only for one hour, so the producer performs a distributed destroy on entries that are an hour old. The other applications are consumers. The consumers free up space in their caches by removing their local copies of the entries for which there is no local interest (idle-time expiration). Requests for entries that have expired on the consumers will be forwarded to the producer.
@@ -39,27 +38,27 @@ This figure shows two basic expiration settings for a producer/consumer system. 
 
 <%=vars.product_name_long%> uses the following expiration actions:
 
--   destroy
--   local destroy
--   invalidate (default)
--   local invalidate
+-   invalidate (default) - The data item's value is deleted, but the key remains in the cache. Applies to all distributed members in which the data item is replicated.
+-   destroy - The data item's key and value are both deleted. Applies to all distributed members in which the data item is replicated.
+-   local invalidate - Deletes the data item's value. Applies only to the local member.
+-   local destroy - Deletes the data item's key and value. Applies only to the local member.
 
-## <a id="how_expiration_works__section_AB4AB9E57D434159AA6E9B402E5E599D" class="no-quick-link"></a>Partitioned Regions and Entry Expiration
+You cannot use `local-destroy` or `local-invalidate` expiration actions in replicated or partitioned regions. You can use the local options only on distributed regions with a data-policy of empty, normal or preloaded.
 
-For overall region performance, idle time expiration in partitioned regions may expire some entries sooner than expected. To ensure reliable read behavior across the partitioned region, we recommend that you use `entry-time-to-live` for entry expiration in partitioned regions instead of `entry-idle-time`.
+## <a id="how_expiration_works__section_AB4AB9E57D434159AA6E9B402E5E599D" class="no-quick-link"></a>Entry Expiration in Replicated Regions and Partitioned Regions
 
-Expiration in partitioned regions is executed in the primary copy, based on the primary’s last accessed and last updated statistics.
+In replicated regions, entry updates are performed in the most convenient available copy of the data, then replicated to the other members, resetting their last-updated statistics to the same time.
+In partitioned regions, entry updates are always done in the primary copy, resetting the primary copy’s last-updated and last-accessed statistics, then the secondary copies are updated to match.
 
--   Entry updates are always done in the primary copy, resetting the primary copy’s last updated and last accessed statistics.
--   Entry retrieval uses the most convenient available copy of the data, which may be one of the secondary copies. This provides the best performance at the cost of possibly not updating the primary copy’s statistic for last accessed time.
+In both replicated and partitioned regions, entry retrieval uses the most convenient available copy of the data, which may be any of the distributed copies. Retrievals are not propagated to other members. Differences in last-access times are reconciled when the data item is considered for expiration.
 
-When the primary expires entries, it does not request last accessed statistics from the secondaries, as the performance hit would be too great. It expires entries based solely on the last time the entries were accessed in the primary copy.
+Expiration can be triggered in any copy of a replicated region, if the time elapsed since the last update or read access exceeds the established threshold. Expiration in partitioned regions is executed in the primary copy, based on the primary’s last-accessed and last-updated statistics. 
+In both cases, the expiration mechanism checks the last-accessed dates of all copies of the data item and updates the last-access date of all copies to the most recent last-accessed date. Then, if the elapsed time still puts the data item over the expiration threshold, the item is deleted in accordance with the expiration action specified for the region.
 
-You cannot use `local-destroy` or `local-invalidate` expiration actions in a partitioned region.
 
-## <a id="how_expiration_works__section_expiration_settings_and_netSearch" class="no-quick-link"></a>Interaction Between Expiration Settings and `netSearch`
+## <a id="how_expiration_works__section_expiration_settings_and_netSearch" class="no-quick-link"></a>Interaction Between Expiration Settings and netSearch
 
-Before `netSearch` retrieves an entry value from a remote cache, it validates the *remote* entry’s statistics against the *local* region’s expiration settings. Entries that would have already expired in the local cache are passed over. Once validated, the entry is brought into the local cache and the local access and update statistics are updated for the local copy. The last accessed time is reset and the last modified time is updated to the time in the remote cache, with corrections made for system clock differences. Thus the local entry is assigned the true last time the entry was modified in the distributed system. The `netSearch` operation has no effect on the expiration counters in remote caches.
+Before `netSearch` retrieves an entry value from a remote cache, it validates the *remote* entry’s statistics against the *local* region’s expiration settings. Entries that would have already expired in the local cache are passed over. Once validated, the entry is brought into the local cache and the local access and update statistics are updated for the local copy. The last-accessed time is reset and the last-modified time is updated to the time in the remote cache, with corrections made for system clock differences. Thus the local entry is assigned the true last time the entry was modified in the distributed system. The `netSearch` operation has no effect on the expiration counters in remote caches.
 
 The `netSearch` method operates only on distributed regions with a data-policy of empty, normal and preloaded.
 
