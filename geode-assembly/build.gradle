@@ -209,7 +209,10 @@ def cp = {
         it.contains('lucene-analyzers-phonetic') ||
 
         // dependencies from geode-protobuf
-        it.contains('protobuf-java')
+        it.contains('protobuf-java') ||
+
+        // dependencies from geode-connectors
+        it.contains('HikariCP')
       }
     }
   }.flatten().unique().join(' ')
