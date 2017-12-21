@@ -14,7 +14,7 @@
  */
 package org.apache.geode.internal.protocol.protobuf.v1.operations;
 
-import static org.apache.geode.internal.protocol.ProtocolErrorCode.REGION_NOT_FOUND;
+import static org.apache.geode.internal.protocol.ProtocolErrorCode.SERVER_ERROR;
 
 import org.apache.logging.log4j.Logger;
 
@@ -26,7 +26,6 @@ import org.apache.geode.internal.protocol.Failure;
 import org.apache.geode.internal.protocol.MessageExecutionContext;
 import org.apache.geode.internal.protocol.Result;
 import org.apache.geode.internal.protocol.Success;
-import org.apache.geode.internal.protocol.operations.OperationHandler;
 import org.apache.geode.internal.protocol.operations.ProtobufOperationHandler;
 import org.apache.geode.internal.protocol.protobuf.v1.BasicTypes;
 import org.apache.geode.internal.protocol.protobuf.v1.ClientProtocol;
@@ -34,7 +33,6 @@ import org.apache.geode.internal.protocol.protobuf.v1.ProtobufSerializationServi
 import org.apache.geode.internal.protocol.protobuf.v1.RegionAPI;
 import org.apache.geode.internal.protocol.protobuf.v1.utilities.ProtobufResponseUtilities;
 import org.apache.geode.internal.protocol.protobuf.v1.utilities.ProtobufUtilities;
-import org.apache.geode.internal.protocol.serialization.SerializationService;
 
 @Experimental
 public class GetRegionRequestOperationHandler
@@ -50,7 +48,7 @@ public class GetRegionRequestOperationHandler
     Region region = messageExecutionContext.getCache().getRegion(regionName);
     if (region == null) {
       logger.error("Received GetRegion request for non-existing region {}", regionName);
-      return Failure.of(ProtobufResponseUtilities.makeErrorResponse(REGION_NOT_FOUND,
+      return Failure.of(ProtobufResponseUtilities.makeErrorResponse(SERVER_ERROR,
           "No region exists for name: " + regionName));
     }
 

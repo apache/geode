@@ -47,8 +47,8 @@ public interface ConnectionStateProcessor {
    */
   default ConnectionAuthenticatingStateProcessor allowAuthentication()
       throws ConnectionStateException {
-    throw new ConnectionStateException(ProtocolErrorCode.UNSUPPORTED_OPERATION,
-        "Requested operation not allowed at this time");
+    throw new ConnectionStateException(ProtocolErrorCode.AUTHENTICATION_REQUIRED,
+        "Authentication is required before processing further requests");
   }
 
   /**

@@ -85,8 +85,7 @@ public class GetRequestOperationHandlerJUnitTest extends OperationHandlerJUnitTe
     Assert.assertTrue(response instanceof Failure);
     ClientProtocol.ErrorResponse errorMessage =
         (ClientProtocol.ErrorResponse) response.getErrorMessage();
-    Assert.assertEquals(BasicTypes.ErrorCode.REGION_NOT_FOUND,
-        errorMessage.getError().getErrorCode());
+    Assert.assertEquals(BasicTypes.ErrorCode.SERVER_ERROR, errorMessage.getError().getErrorCode());
   }
 
   @Test
@@ -125,7 +124,7 @@ public class GetRequestOperationHandlerJUnitTest extends OperationHandlerJUnitTe
     Assert.assertTrue(response instanceof Failure);
     ClientProtocol.ErrorResponse errorMessage =
         (ClientProtocol.ErrorResponse) response.getErrorMessage();
-    Assert.assertEquals(BasicTypes.ErrorCode.VALUE_ENCODING_ERROR,
+    Assert.assertEquals(BasicTypes.ErrorCode.INVALID_REQUEST,
         errorMessage.getError().getErrorCode());
   }
 

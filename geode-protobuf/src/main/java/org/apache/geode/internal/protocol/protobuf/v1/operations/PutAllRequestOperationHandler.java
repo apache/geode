@@ -14,9 +14,8 @@
  */
 package org.apache.geode.internal.protocol.protobuf.v1.operations;
 
-import static org.apache.geode.internal.protocol.ProtocolErrorCode.CONSTRAINT_VIOLATION;
-import static org.apache.geode.internal.protocol.ProtocolErrorCode.REGION_NOT_FOUND;
-import static org.apache.geode.internal.protocol.ProtocolErrorCode.VALUE_ENCODING_ERROR;
+import static org.apache.geode.internal.protocol.ProtocolErrorCode.INVALID_REQUEST;
+import static org.apache.geode.internal.protocol.ProtocolErrorCode.SERVER_ERROR;
 
 import java.util.Objects;
 import java.util.stream.Collectors;
@@ -56,7 +55,7 @@ public class PutAllRequestOperationHandler
 
     if (region == null) {
       logger.error("Received PutAll request for non-existing region {}", regionName);
-      return Failure.of(ProtobufResponseUtilities.makeErrorResponse(REGION_NOT_FOUND,
+      return Failure.of(ProtobufResponseUtilities.makeErrorResponse(SERVER_ERROR,
           "Region passed does not exist: " + regionName));
     }
 
@@ -75,10 +74,9 @@ public class PutAllRequestOperationHandler
 
       region.put(decodedKey, decodedValue);
     } catch (EncodingException ex) {
-      return buildAndLogKeyedError(entry, VALUE_ENCODING_ERROR, "Encoding not supported", ex);
+      return buildAndLogKeyedError(entry, INVALID_REQUEST, "Encoding not supported", ex);
     } catch (ClassCastException ex) {
-      return buildAndLogKeyedError(entry, CONSTRAINT_VIOLATION,
-          "Invalid key or value type for region", ex);
+      return buildAndLogKeyedError(entry, SERVER_ERROR, ex.toString(), ex);
     }
     return null;
   }
