@@ -23,7 +23,7 @@ public class ConnectionTerminatingStateProcessor implements ConnectionStateProce
   @Override
   public void validateOperation(MessageExecutionContext messageContext,
       OperationContext operationContext) throws ConnectionStateException {
-    throw new ConnectionStateException(ProtocolErrorCode.GENERIC_FAILURE,
+    throw new ConnectionStateException(ProtocolErrorCode.SERVER_ERROR,
         "This connection has been marked as terminating.");
   }
 

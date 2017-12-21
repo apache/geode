@@ -14,8 +14,8 @@
  */
 package org.apache.geode.internal.protocol.protobuf.v1.operations;
 
-import static org.apache.geode.internal.protocol.ProtocolErrorCode.REGION_NOT_FOUND;
-import static org.apache.geode.internal.protocol.ProtocolErrorCode.VALUE_ENCODING_ERROR;
+import static org.apache.geode.internal.protocol.ProtocolErrorCode.INVALID_REQUEST;
+import static org.apache.geode.internal.protocol.ProtocolErrorCode.SERVER_ERROR;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -49,7 +49,7 @@ public class RemoveRequestOperationHandler
     if (region == null) {
       logger.error("Received Remove request for non-existing region {}", regionName);
       return Failure
-          .of(ProtobufResponseUtilities.makeErrorResponse(REGION_NOT_FOUND, "Region not found"));
+          .of(ProtobufResponseUtilities.makeErrorResponse(SERVER_ERROR, "Region not found"));
     }
 
     try {
@@ -60,7 +60,7 @@ public class RemoveRequestOperationHandler
     } catch (EncodingException ex) {
       // can be thrown by encoding or decoding.
       logger.error("Received Remove request with unsupported encoding: {}", ex);
-      return Failure.of(ProtobufResponseUtilities.makeErrorResponse(VALUE_ENCODING_ERROR,
+      return Failure.of(ProtobufResponseUtilities.makeErrorResponse(INVALID_REQUEST,
           "Encoding not supported: " + ex.getMessage()));
     }
   }
