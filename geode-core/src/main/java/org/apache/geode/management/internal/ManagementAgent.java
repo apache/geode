@@ -40,12 +40,14 @@ import javax.management.remote.JMXServiceURL;
 import javax.management.remote.rmi.RMIConnectorServer;
 import javax.management.remote.rmi.RMIJRMPServerImpl;
 import javax.management.remote.rmi.RMIServerImpl;
+import javax.net.ssl.SSLContext;
 import javax.rmi.ssl.SslRMIClientSocketFactory;
 
 import org.apache.commons.lang.StringUtils;
 import org.apache.logging.log4j.Logger;
 import org.eclipse.jetty.server.Server;
 import org.eclipse.jetty.server.ServerConnector;
+import org.eclipse.jetty.util.ssl.SslContextFactory;
 
 import org.apache.geode.GemFireConfigException;
 import org.apache.geode.cache.CacheFactory;
@@ -235,8 +237,10 @@ public class ManagementAgent {
 
           boolean isRestWebAppAdded = false;
 
-          this.httpServer = JettyHelper.initJetty(bindAddress, port,
-              SSLConfigurationFactory.getSSLConfigForComponent(SecurableCommunicationChannel.WEB));
+          SocketCreator webSocketCreator =
+              SocketCreatorFactory.getSocketCreatorForComponent(SecurableCommunicationChannel.WEB);
+          this.httpServer =
+              JettyHelper.initJetty(bindAddress, port, SecurableCommunicationChannel.WEB);
 
           if (agentUtil.isWebApplicationAvailable(gemfireWar)) {
             this.httpServer =

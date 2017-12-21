@@ -33,6 +33,7 @@ import org.apache.geode.internal.cache.InternalRegionArguments;
 import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.internal.net.SSLConfigurationFactory;
 import org.apache.geode.internal.net.SocketCreator;
+import org.apache.geode.internal.net.SocketCreatorFactory;
 import org.apache.geode.internal.security.SecurableCommunicationChannel;
 import org.apache.geode.management.ManagementService;
 
@@ -131,8 +132,8 @@ public class RestAgent {
 
         final int port = this.config.getHttpServicePort();
 
-        this.httpServer = JettyHelper.initJetty(httpServiceBindAddress, port,
-            SSLConfigurationFactory.getSSLConfigForComponent(SecurableCommunicationChannel.WEB));
+        this.httpServer =
+            JettyHelper.initJetty(httpServiceBindAddress, port, SecurableCommunicationChannel.WEB);
 
         this.httpServer = JettyHelper.addWebApplication(httpServer, "/gemfire-api", gemfireAPIWar);
         this.httpServer = JettyHelper.addWebApplication(httpServer, "/geode", gemfireAPIWar);

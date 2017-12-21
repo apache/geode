@@ -21,8 +21,11 @@ import java.util.Properties;
 import org.awaitility.Awaitility;
 import org.junit.rules.ExternalResource;
 
+import org.apache.geode.distributed.internal.DistributionConfigImpl;
 import org.apache.geode.internal.AvailablePort;
 import org.apache.geode.internal.admin.SSLConfig;
+import org.apache.geode.internal.net.SocketCreatorFactory;
+import org.apache.geode.internal.security.SecurableCommunicationChannel;
 import org.apache.geode.management.internal.JettyHelper;
 import org.apache.geode.tools.pulse.internal.data.PulseConstants;
 import org.apache.geode.tools.pulse.tests.Server;
@@ -44,8 +47,9 @@ public class ServerRule extends ExternalResource {
     System.setProperty(PulseConstants.SYSTEM_PROPERTY_PULSE_HOST, LOCALHOST);
     System.setProperty(PulseConstants.SYSTEM_PROPERTY_PULSE_PORT, Integer.toString(jmxPort));
 
+    SocketCreatorFactory.setDistributionConfig(new DistributionConfigImpl(new Properties()));
     int httpPort = AvailablePort.getRandomAvailablePort(AvailablePort.SOCKET);
-    jetty = JettyHelper.initJetty(LOCALHOST, httpPort, new SSLConfig());
+    jetty = JettyHelper.initJetty(LOCALHOST, httpPort, SecurableCommunicationChannel.WEB);
     JettyHelper.addWebApplication(jetty, PULSE_CONTEXT, getPulseWarPath());
     pulseURL = "http://" + LOCALHOST + ":" + httpPort + PULSE_CONTEXT;
     System.out.println("Pulse started at " + pulseURL);

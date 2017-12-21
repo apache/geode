@@ -350,7 +350,16 @@ public class SocketCreator {
       try {
         if (this.sslConfig.isEnabled() && sslContext == null) {
           sslContext = createAndConfigureSSLContext();
-          SSLContext.setDefault(sslContext);
+          // if (SecurableCommunicationChannel.JMX
+          // .equals(sslConfig.getSecuredCommunicationChannel())) {
+          // // JMX connections use the default SSL context so we must override it
+          // if (System.getProperty("javax.net.ssl.keyStore") != null) {
+          // logger.warn("Overriding the default SSL context that was established through system
+          // properties");
+          // }
+          // logger.error("Setting a default SSLContext", new Exception());
+          // SSLContext.setDefault(sslContext);
+          // }
         }
       } catch (Exception e) {
         throw new GemFireConfigException("Error configuring GemFire ssl ", e);
@@ -379,6 +388,11 @@ public class SocketCreator {
       re.printStackTrace();
       throw re;
     }
+  }
+
+  /** returns the SSLContext for this SocketCreator, or null if SSL is not configured */
+  public SSLContext getSslContext() {
+    return this.sslContext;
   }
 
   /**
