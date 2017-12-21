@@ -31,6 +31,8 @@ import java.sql.SQLException;
 import java.util.Arrays;
 import java.util.List;
 
+import javax.sql.DataSource;
+
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
@@ -48,6 +50,7 @@ public class ConnectionManagerUnitTest {
   private static final String KEY_COLUMN = "keyColumn";
 
   private JdbcConnectorService configService;
+  private JdbcDataSource dataSource;
   private ConnectionManager manager;
   private Connection connection;
   private RegionMapping mapping;
@@ -57,8 +60,10 @@ public class ConnectionManagerUnitTest {
 
   private ConnectionConfiguration connectionConfig;
 
+
   @Before
   public void setup() throws Exception {
+    dataSource = mock(JdbcDataSource.class);
     configService = mock(JdbcConnectorService.class);
     manager = spy(new ConnectionManager(configService));
     connection = mock(Connection.class);
@@ -69,7 +74,8 @@ public class ConnectionManagerUnitTest {
 
     when(mapping.getTableName()).thenReturn(TABLE_NAME);
     when(mapping.getRegionToTableName()).thenReturn(TABLE_NAME);
-    doReturn(connection).when(manager).createDataSource(connectionConfig);
+    doReturn(dataSource).when(manager).buildJdbcDataSource(connectionConfig);
+    doReturn(connection).when(dataSource).getConnection();
 
     key = new Object();
   }
@@ -107,9 +113,11 @@ public class ConnectionManagerUnitTest {
   @Test
   public void retrievesDifferentConnectionForEachConfig() throws Exception {
     Connection secondConnection = mock(Connection.class);
+    JdbcDataSource dataSource2 = mock(JdbcDataSource.class);
     ConnectionConfiguration secondConnectionConfig =
         new ConnectionConfiguration("newName", "url", null, null, null);
-    doReturn(secondConnection).when(manager).createDataSource(secondConnectionConfig);
+    doReturn(dataSource2).when(manager).buildJdbcDataSource(secondConnectionConfig);
+    doReturn(secondConnection).when(dataSource2).getConnection();
 
     Connection returnedConnection = manager.getConnection(connectionConfig);
     Connection secondReturnedConnection = manager.getConnection(secondConnectionConfig);
@@ -120,30 +128,16 @@ public class ConnectionManagerUnitTest {
   }
 
   @Test
-  public void retrievesANewConnectionIfCachedOneIsClosed() throws Exception {
-    manager.getConnection(connectionConfig);
-    when(connection.isClosed()).thenReturn(true);
-    Connection secondConnection = mock(Connection.class);
-    doReturn(secondConnection).when(manager).createDataSource(connectionConfig);
-
-    Connection secondReturnedConnection = manager.getConnection(connectionConfig);
-
-    assertThat(secondReturnedConnection).isSameAs(secondConnection);
-  }
-
-  @Test
-  public void closesAllConnections() throws Exception {
-    Connection secondConnection = mock(Connection.class);
+  public void closesAllDataSources() throws Exception {
+    JdbcDataSource dataSource2 = mock(JdbcDataSource.class);
     ConnectionConfiguration secondConnectionConfig =
         new ConnectionConfiguration("newName", "url", null, null, null);
-    doReturn(secondConnection).when(manager).createDataSource(secondConnectionConfig);
+    doReturn(dataSource2).when(manager).buildJdbcDataSource(secondConnectionConfig);
     manager.getConnection(connectionConfig);
     manager.getConnection(secondConnectionConfig);
-
     manager.close();
-
-    verify(connection).close();
-    verify(secondConnection).close();
+    verify(dataSource).close();
+    verify(dataSource2).close();
   }
 
   @Test

@@ -16,7 +16,6 @@ package org.apache.geode.connectors.jdbc.internal;
 
 import java.sql.Connection;
 import java.sql.DatabaseMetaData;
-import java.sql.DriverManager;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -27,17 +26,13 @@ import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 
-import javax.sql.DataSource;
-
-import com.zaxxer.hikari.HikariDataSource;
-
 import org.apache.geode.cache.Operation;
 import org.apache.geode.pdx.PdxInstance;
 
 class ConnectionManager {
 
   private final InternalJdbcConnectorService configService;
-  private final Map<String, HikariDataSource> dataSourceMap = new ConcurrentHashMap<>();
+  private final Map<String, JdbcDataSource> dataSourceMap = new ConcurrentHashMap<>();
   private final ConcurrentMap<String, String> tableToPrimaryKeyMap = new ConcurrentHashMap<>();
   private final ThreadLocal<PreparedStatementCache> preparedStatementCache = new ThreadLocal<>();
 
@@ -49,20 +44,21 @@ class ConnectionManager {
     return configService.getMappingForRegion(regionName);
   }
 
-  synchronized DataSource createDataSource(ConnectionConfiguration config) {
-    DataSource dataSource = dataSourceMap.get(config.getName());
-    if (dataSource != null) {
-      return dataSource;
+  private synchronized JdbcDataSource createDataSource(ConnectionConfiguration config) {
+    JdbcDataSource dataSource = dataSourceMap.get(config.getName());
+    if (dataSource == null) {
+      dataSource = buildJdbcDataSource(config);
+      dataSourceMap.put(config.getName(), dataSource);
     }
-    HikariDataSource ds = new HikariDataSource();
-    ds.setJdbcUrl(config.getUrl());
-    ds.setDataSourceProperties(config.getConnectionProperties());
-    dataSourceMap.put(config.getName(), ds);
-    return ds;
+    return dataSource;
   }
 
-  private DataSource getDataSource(ConnectionConfiguration config) {
-    DataSource dataSource = dataSourceMap.get(config.getName());
+  JdbcDataSource buildJdbcDataSource(ConnectionConfiguration config) {
+    return new JdbcDataSourceBuilder(config).create();
+  }
+
+  private JdbcDataSource getDataSource(ConnectionConfiguration config) {
+    JdbcDataSource dataSource = dataSourceMap.get(config.getName());
     if (dataSource != null) {
       return dataSource;
     }
@@ -183,12 +179,16 @@ class ConnectionManager {
   }
 
   private void handleSQLException(SQLException e) {
-    throw new IllegalStateException("NYI: handleSQLException", e);
+    throw new IllegalStateException("JDBC connector detected unexpected SQLException", e);
   }
 
-  private void close(HikariDataSource dataSource) {
+  private void close(JdbcDataSource dataSource) {
     if (dataSource != null) {
-      dataSource.close();
+      try {
+        dataSource.close();
+      } catch (Exception e) {
+        // TODO ignored for now; should it be logged?
+      }
     }
   }
 }
