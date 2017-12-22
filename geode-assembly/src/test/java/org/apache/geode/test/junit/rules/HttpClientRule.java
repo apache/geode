@@ -16,9 +16,14 @@ package org.apache.geode.test.junit.rules;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+import java.security.cert.CertificateException;
+import java.security.cert.X509Certificate;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Supplier;
+
+import javax.net.ssl.SSLContext;
+import javax.net.ssl.X509TrustManager;
 
 import org.apache.http.HttpHost;
 import org.apache.http.HttpResponse;
@@ -27,10 +32,16 @@ import org.apache.http.client.HttpClient;
 import org.apache.http.client.entity.UrlEncodedFormEntity;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.client.methods.HttpPost;
+import org.apache.http.client.protocol.HttpClientContext;
 import org.apache.http.client.utils.URIBuilder;
+import org.apache.http.conn.ssl.NoopHostnameVerifier;
+import org.apache.http.impl.client.HttpClientBuilder;
 import org.apache.http.impl.client.HttpClients;
 import org.apache.http.message.BasicNameValuePair;
 import org.junit.rules.ExternalResource;
+
+import org.apache.geode.internal.net.SocketCreatorFactory;
+import org.apache.geode.internal.security.SecurableCommunicationChannel;
 
 /**
  * this rules simplifies creating a httpClient for verification of pulse behaviors or any http
@@ -46,6 +57,7 @@ public class HttpClientRule extends ExternalResource {
   private Supplier<Integer> portSupplier;
   private HttpHost host;
   private HttpClient httpClient;
+  private boolean useSSL;
 
   public HttpClientRule(String hostName, Supplier<Integer> portSupplier) {
     this.hostName = hostName;
@@ -56,10 +68,40 @@ public class HttpClientRule extends ExternalResource {
     this("localhost", portSupplier);
   }
 
+  public HttpClientRule withSSL() {
+    this.useSSL = true;
+    return this;
+  }
+
   @Override
   protected void before() {
-    host = new HttpHost(hostName, portSupplier.get());
-    httpClient = HttpClients.createDefault();
+    host = new HttpHost(hostName, portSupplier.get(), useSSL ? "https" : "http");
+    if (useSSL) {
+      HttpClientBuilder clientBuilder = HttpClients.custom();
+      SSLContext ctx = SocketCreatorFactory
+          .getSocketCreatorForComponent(SecurableCommunicationChannel.WEB).getSslContext();
+      clientBuilder.setSSLContext(ctx);
+      clientBuilder.setSSLHostnameVerifier(new NoopHostnameVerifier());
+      httpClient = clientBuilder.build();
+    } else {
+      httpClient = HttpClients.createDefault();
+    }
+  }
+
+  private static class DefaultTrustManager implements X509TrustManager {
+
+    @Override
+    public void checkClientTrusted(X509Certificate[] arg0, String arg1)
+        throws CertificateException {}
+
+    @Override
+    public void checkServerTrusted(X509Certificate[] arg0, String arg1)
+        throws CertificateException {}
+
+    @Override
+    public X509Certificate[] getAcceptedIssuers() {
+      return null;
+    }
   }
 
   public HttpResponse loginToPulse(String username, String password) throws Exception {
@@ -78,11 +120,13 @@ public class HttpClientRule extends ExternalResource {
   }
 
   public HttpResponse get(String uri, String... params) throws Exception {
-    return httpClient.execute(host, buildHttpGet(uri, params));
+    HttpClientContext clientContext = HttpClientContext.create();
+    return httpClient.execute(host, buildHttpGet(uri, params), clientContext);
   }
 
   public HttpResponse post(String uri, String... params) throws Exception {
-    return httpClient.execute(host, buildHttpPost(uri, params));
+    HttpClientContext clientContext = HttpClientContext.create();
+    return httpClient.execute(host, buildHttpPost(uri, params), clientContext);
   }
 
   private HttpPost buildHttpPost(String uri, String... params) throws Exception {
