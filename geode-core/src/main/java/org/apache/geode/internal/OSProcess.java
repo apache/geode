@@ -32,20 +32,54 @@ import org.apache.geode.internal.logging.LoggingThreadGroup;
  * Used to interact with operating system processes. Use <code>exec</code> to create a new process
  * by executing a command. Use <code>kill</code> to kill a process.
  *
- *
+ * TODO: In the next major release, we should remove the variables and logic related to the system
+ * properties used to determine whether output redirection is allowed or not. GFSH should always use
+ * the new redirect-output flag.
  */
 public class OSProcess {
   private static final Logger logger = LogService.getLogger();
 
+  /**
+   * @deprecated use redirect-output instead
+   */
+  @Deprecated
   public static final String DISABLE_OUTPUT_REDIRECTION_PROPERTY =
       DistributionConfig.GEMFIRE_PREFIX + "OSProcess.DISABLE_OUTPUT_REDIRECTION";
+
+  /**
+   * @deprecated use redirect-output instead
+   */
+  @Deprecated
   public static final String ENABLE_OUTPUT_REDIRECTION_PROPERTY =
       DistributionConfig.GEMFIRE_PREFIX + "OSProcess.ENABLE_OUTPUT_REDIRECTION";
 
-  private static final boolean DISABLE_OUTPUT_REDIRECTION =
-      Boolean.getBoolean(DISABLE_OUTPUT_REDIRECTION_PROPERTY);
+  /**
+   * This should be removed once the previous properties are deleted from the product.
+   */
+  @Deprecated
+  public static final String DISABLE_REDIRECTION_CONFIGURATION_PROPERTY =
+      DistributionConfig.GEMFIRE_PREFIX + "OSProcess.DISABLE_REDIRECTION_CONFIGURATION";
+
+  /**
+   * @deprecated redirect-output should be used.
+   */
+  @Deprecated
   private static final boolean ENABLE_OUTPUT_REDIRECTION =
       Boolean.getBoolean(ENABLE_OUTPUT_REDIRECTION_PROPERTY);
+
+  /**
+   * @deprecated redirect-output should be used.
+   */
+  @Deprecated
+  private static final boolean DISABLE_OUTPUT_REDIRECTION =
+      Boolean.getBoolean(DISABLE_OUTPUT_REDIRECTION_PROPERTY);
+
+  /**
+   * This should be removed once the previous properties are deleted from the product.
+   */
+  @Deprecated
+  private static final boolean DISABLE_REDIRECTION_CONFIGURATION =
+      Boolean.getBoolean(DISABLE_REDIRECTION_CONFIGURATION_PROPERTY);
 
   static final boolean pureMode = PureJavaMode.isPure();
 
@@ -716,7 +750,8 @@ public class OSProcess {
     }
     final PrintStream newPrintStream =
         new PrintStream(new BufferedOutputStream(newFileStream, 128), true);
-    if (ENABLE_OUTPUT_REDIRECTION && !DISABLE_OUTPUT_REDIRECTION && setOut) {
+    if (((DISABLE_REDIRECTION_CONFIGURATION)
+        || (ENABLE_OUTPUT_REDIRECTION && !DISABLE_OUTPUT_REDIRECTION)) && setOut) {
       System.setOut(newPrintStream);
       if (System.err instanceof TeePrintStream) {
         ((TeePrintStream) System.err).getTeeOutputStream()
