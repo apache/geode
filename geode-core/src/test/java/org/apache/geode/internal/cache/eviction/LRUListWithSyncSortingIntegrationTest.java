@@ -30,11 +30,9 @@ import org.junit.rules.TestName;
 
 import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.CacheFactory;
-import org.apache.geode.cache.EvictionAlgorithm;
 import org.apache.geode.cache.Region;
 import org.apache.geode.cache.RegionShortcut;
 import org.apache.geode.internal.cache.InternalRegion;
-import org.apache.geode.internal.cache.InternalRegionArguments;
 import org.apache.geode.internal.lang.SystemPropertyHelper;
 import org.apache.geode.test.junit.categories.IntegrationTest;
 

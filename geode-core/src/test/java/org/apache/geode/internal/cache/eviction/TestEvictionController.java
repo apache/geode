@@ -14,6 +14,8 @@
  */
 package org.apache.geode.internal.cache.eviction;
 
+import static org.mockito.Mockito.mock;
+
 import org.apache.geode.cache.EvictionAction;
 import org.apache.geode.cache.EvictionAlgorithm;
 import org.apache.geode.internal.cache.BucketRegion;
@@ -21,6 +23,8 @@ import org.apache.geode.internal.cache.InternalRegion;
 import org.apache.geode.internal.cache.persistence.DiskRegionView;
 
 class TestEvictionController implements EvictionController {
+
+  private final EvictionCounters evictionCounters = mock(EvictionCounters.class);
 
   @Override
   public int entrySize(Object key, Object value) throws IllegalArgumentException {
@@ -43,7 +47,7 @@ class TestEvictionController implements EvictionController {
 
   @Override
   public EvictionCounters getCounters() {
-    return null;
+    return this.evictionCounters;
   }
 
   @Override
