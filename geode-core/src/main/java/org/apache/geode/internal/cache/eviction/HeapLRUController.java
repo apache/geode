@@ -53,8 +53,8 @@ public class HeapLRUController extends SizeLRUController {
       GEMFIRE_PREFIX + "topUpHeapEvictionPercentage";
 
   public HeapLRUController(EvictionCounters evictionCounters, EvictionAction evictionAction,
-      ObjectSizer sizer) {
-    super(evictionCounters, evictionAction, sizer);
+      ObjectSizer sizer, EvictionAlgorithm algorithm) {
+    super(evictionCounters, evictionAction, sizer, algorithm);
   }
 
   @Override
@@ -76,14 +76,6 @@ public class HeapLRUController extends SizeLRUController {
   public String toString() {
     return LocalizedStrings.HeapLRUCapacityController_HEAPLRUCAPACITYCONTROLLER_WITH_A_CAPACITY_OF_0_OF_HEAP_AND_AN_THREAD_INTERVAL_OF_1_AND_EVICTION_ACTION_2
         .toLocalizedString(getLimit(), getEvictionAction());
-  }
-
-  /**
-   * Indicate what kind of {@code AbstractEvictionController} this helper implements
-   */
-  @Override
-  public EvictionAlgorithm getEvictionAlgorithm() {
-    return EvictionAlgorithm.LRU_HEAP;
   }
 
   @Override

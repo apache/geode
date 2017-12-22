@@ -58,8 +58,8 @@ public class MemoryLRUController extends SizeLRUController {
    * @param isOffHeap true if the region that owns this cc is stored off heap
    */
   public MemoryLRUController(EvictionCounters evictionCounters, int megabytes, ObjectSizer sizer,
-      EvictionAction evictionAction, boolean isOffHeap) {
-    super(evictionCounters, evictionAction, sizer);
+      EvictionAction evictionAction, boolean isOffHeap, EvictionAlgorithm algorithm) {
+    super(evictionCounters, evictionAction, sizer, algorithm);
     this.isOffHeap = isOffHeap;
     setMaximumMegabytes(megabytes);
   }
@@ -88,15 +88,6 @@ public class MemoryLRUController extends SizeLRUController {
   public long getLimit() {
     return this.limit;
   }
-
-  /**
-   * Indicate what kind of {@code AbstractEvictionController} this helper implements
-   */
-  @Override
-  public EvictionAlgorithm getEvictionAlgorithm() {
-    return EvictionAlgorithm.LRU_MEMORY;
-  }
-
 
   /**
    * compute the size of storing a key/value pair in the cache..

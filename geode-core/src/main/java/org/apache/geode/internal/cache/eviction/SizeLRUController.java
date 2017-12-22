@@ -15,6 +15,7 @@
 package org.apache.geode.internal.cache.eviction;
 
 import org.apache.geode.cache.EvictionAction;
+import org.apache.geode.cache.EvictionAlgorithm;
 import org.apache.geode.cache.util.ObjectSizer;
 import org.apache.geode.internal.cache.CachedDeserializableFactory;
 import org.apache.geode.internal.cache.Token;
@@ -27,8 +28,8 @@ abstract class SizeLRUController extends AbstractEvictionController {
   private final ObjectSizer sizer;
 
   SizeLRUController(EvictionCounters evictionCounters, EvictionAction evictionAction,
-      ObjectSizer sizer) {
-    super(evictionCounters, evictionAction);
+      ObjectSizer sizer, EvictionAlgorithm algorithm) {
+    super(evictionCounters, evictionAction, algorithm);
     this.sizer = sizer;
   }
 

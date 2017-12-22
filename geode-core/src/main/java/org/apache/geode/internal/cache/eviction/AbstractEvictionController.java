@@ -67,17 +67,18 @@ public abstract class AbstractEvictionController implements EvictionController {
     if (algorithm == EvictionAlgorithm.LRU_HEAP) {
       evictionStats = new HeapLRUStatistics(statsFactory, statsName);
       evictionCounters = new EvictionCountersImpl(evictionStats);
-      return new HeapLRUController(evictionCounters, action, sizer);
+      return new HeapLRUController(evictionCounters, action, sizer, algorithm);
     }
     if (algorithm == EvictionAlgorithm.LRU_MEMORY || algorithm == EvictionAlgorithm.LIFO_MEMORY) {
       evictionStats = new MemoryLRUStatistics(statsFactory, statsName);
       evictionCounters = new EvictionCountersImpl(evictionStats);
-      return new MemoryLRUController(evictionCounters, maximum, sizer, action, isOffHeap);
+      return new MemoryLRUController(evictionCounters, maximum, sizer, action, isOffHeap,
+          algorithm);
     }
     if (algorithm == EvictionAlgorithm.LRU_ENTRY || algorithm == EvictionAlgorithm.LIFO_ENTRY) {
       evictionStats = new CountLRUStatistics(statsFactory, statsName);
       evictionCounters = new EvictionCountersImpl(evictionStats);
-      return new CountLRUEviction(evictionCounters, maximum, action);
+      return new CountLRUEviction(evictionCounters, maximum, action, algorithm);
     }
 
     throw new IllegalStateException("Unhandled algorithm " + algorithm);
@@ -93,6 +94,8 @@ public abstract class AbstractEvictionController implements EvictionController {
    */
   private final EvictionCounters counters;
 
+  private final EvictionAlgorithm algorithm;
+
   /**
    * Creates a new {@code AbstractEvictionController} with the given {@linkplain EvictionAction
    * eviction action}.
@@ -100,9 +103,10 @@ public abstract class AbstractEvictionController implements EvictionController {
    * @param evictionCounters
    */
   protected AbstractEvictionController(EvictionCounters evictionCounters,
-      EvictionAction evictionAction) {
+      EvictionAction evictionAction, EvictionAlgorithm algorithm) {
     this.counters = evictionCounters;
     this.evictionAction = evictionAction;
+    this.algorithm = algorithm;
   }
 
   /**
@@ -128,6 +132,11 @@ public abstract class AbstractEvictionController implements EvictionController {
   @Override
   public EvictionCounters getCounters() {
     return this.counters;
+  }
+
+  @Override
+  public EvictionAlgorithm getEvictionAlgorithm() {
+    return this.algorithm;
   }
 
   @Override

@@ -50,8 +50,8 @@ public class CountLRUEviction extends AbstractEvictionController {
    * @param evictionAction The action to perform upon the least recently used entry.
    */
   public CountLRUEviction(EvictionCounters evictionCounters, int maximumEntries,
-      EvictionAction evictionAction) {
-    super(evictionCounters, evictionAction);
+      EvictionAction evictionAction, EvictionAlgorithm algorithm) {
+    super(evictionCounters, evictionAction, algorithm);
     setMaximumEntries(maximumEntries);
   }
 
@@ -79,14 +79,6 @@ public class CountLRUEviction extends AbstractEvictionController {
   @Override
   public long getLimit() {
     return this.maximumEntries;
-  }
-
-  /**
-   * Indicate what kind of {@code AbstractEvictionController} this helper implements
-   */
-  @Override
-  public EvictionAlgorithm getEvictionAlgorithm() {
-    return EvictionAlgorithm.LRU_ENTRY;
   }
 
   /**
