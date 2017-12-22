@@ -58,9 +58,6 @@ import org.apache.geode.test.junit.categories.DistributedTest;
 @Category(DistributedTest.class)
 public class HAOverflowMemObjectSizerDUnitTest extends JUnit4DistributedTestCase {
 
-  /* entry over head used by memCapacityController */
-  private static final int OVERHEAD_PER_ENTRY = 250;
-
   protected static InternalLocator locator;
 
   /** The cache instance */
@@ -240,10 +237,8 @@ public class HAOverflowMemObjectSizerDUnitTest extends JUnit4DistributedTestCase
       // but this function also add overhead per entry
       // so to get exact size calculated by memCapacityController
       // we need substract this over head
-      // as this default value is private static in MemLRUCapacityController
-      // cannot access directly
-      assertTrue("cum size is not equal",
-          (cc.entrySize(null, entry.getValue()) - OVERHEAD_PER_ENTRY) == cum.getSizeInBytes());
+      int perEntryOverhead = ((MemoryLRUController) cc).getPerEntryOverhead();
+      assertEquals(cum.getSizeInBytes(), cc.entrySize(null, entry.getValue()) - perEntryOverhead);
     }
     cache.getLogger().fine("Test passed. Now, doing a cleanup job.");
     // added here as sleep should be on server where CMR is present and
