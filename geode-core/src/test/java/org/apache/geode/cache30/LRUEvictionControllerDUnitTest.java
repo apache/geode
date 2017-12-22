@@ -243,43 +243,6 @@ public class LRUEvictionControllerDUnitTest extends JUnit4CacheTestCase {
   }
 
   /**
-   * Tests that a single set of eviction attributes can be used multiple times (and does the right
-   * thing).
-   */
-  @Test
-  public void testMultipleUsesOfEvictionAttributes()
-      throws CacheException, CloneNotSupportedException {
-
-    int threshold = 42;
-
-    final String name = this.getUniqueName();
-    AttributesFactory factory = new AttributesFactory();
-    factory.setScope(Scope.LOCAL);
-    factory.setEvictionAttributes(EvictionAttributes.createLRUEntryAttributes(threshold));
-    Region region = createRegion(name, factory.create());
-
-    RegionAttributes ra = region.getAttributes();
-    Region r2 = createRegion(name + 2, ra);
-
-    factory = new AttributesFactory(ra);
-    Region r3 = createRegion(name + 3, factory.create());
-
-    assertEquals(region.getAttributes().getEvictionAttributes(),
-        r2.getAttributes().getEvictionAttributes());
-    assertEquals(r2.getAttributes().getEvictionAttributes(),
-        r3.getAttributes().getEvictionAttributes());
-    {
-      LocalRegion lRegion = (LocalRegion) region;
-      LocalRegion lr2 = (LocalRegion) r2;
-      LocalRegion lr3 = (LocalRegion) r3;
-      assertNotSame(lRegion.getEvictionController(), lr2.getEvictionController());
-      assertEquals(lRegion.getEvictionController(), lr2.getEvictionController());
-      assertNotSame(lr2.getEvictionController(), lr3.getEvictionController());
-      assertEquals(lr2.getEvictionController(), lr3.getEvictionController());
-    }
-  }
-
-  /**
    * Tests that a Region with an LRU capacity controller can be accessed from inside a cache
    * listener.
    */
