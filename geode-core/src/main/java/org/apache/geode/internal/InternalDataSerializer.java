@@ -1702,13 +1702,12 @@ public abstract class InternalDataSerializer extends DataSerializer implements D
   }
 
   /**
-   * Test to see if the object is in the gemfire package, to see if we should pass it on to a users
+   * Test to see if the object is in the gemfire package, to see if we should pass it on to a user's
    * custom serializater.
    */
-  private static boolean isGemfireObject(Object o) {
+  static boolean isGemfireObject(Object o) {
     return (o instanceof Function // fixes 43691
-        || o.getClass().getName().startsWith("org.apache.")
-        || o.getClass().getName().startsWith("org.apache.geode"))
+        || o.getClass().getName().startsWith("org.apache.geode."))
         && !(o instanceof PdxSerializerObject);
   }
 
