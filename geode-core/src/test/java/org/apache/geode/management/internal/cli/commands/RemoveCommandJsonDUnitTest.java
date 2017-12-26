@@ -37,7 +37,7 @@ import org.apache.geode.management.internal.cli.CliUtil;
 import org.apache.geode.management.internal.cli.dto.Key1;
 import org.apache.geode.management.internal.cli.dto.Value2;
 import org.apache.geode.test.dunit.SerializableCallableIF;
-import org.apache.geode.test.dunit.rules.LocatorServerStartupRule;
+import org.apache.geode.test.dunit.rules.ClusterStartupRule;
 import org.apache.geode.test.dunit.rules.MemberVM;
 import org.apache.geode.test.junit.categories.DistributedTest;
 import org.apache.geode.test.junit.rules.GfshCommandRule;
@@ -47,7 +47,7 @@ public class RemoveCommandJsonDUnitTest implements Serializable {
   private static final String JSON_REGION_NAME = "jsonReplicateRegion";
 
   @Rule
-  public LocatorServerStartupRule locatorServerStartupRule = new LocatorServerStartupRule();
+  public ClusterStartupRule clusterStartupRule = new ClusterStartupRule();
 
   @Rule
   public transient GfshCommandRule gfsh = new GfshCommandRule();
@@ -58,10 +58,10 @@ public class RemoveCommandJsonDUnitTest implements Serializable {
 
   @Before
   public void setup() throws Exception {
-    locator = locatorServerStartupRule.startLocatorVM(0);
+    locator = clusterStartupRule.startLocatorVM(0);
 
-    server1 = locatorServerStartupRule.startServerVM(1, locator.getPort());
-    server2 = locatorServerStartupRule.startServerVM(2, locator.getPort());
+    server1 = clusterStartupRule.startServerVM(1, locator.getPort());
+    server2 = clusterStartupRule.startServerVM(2, locator.getPort());
 
     server1.invoke(this::populateTestRegions);
     server2.invoke(this::populateTestRegions);

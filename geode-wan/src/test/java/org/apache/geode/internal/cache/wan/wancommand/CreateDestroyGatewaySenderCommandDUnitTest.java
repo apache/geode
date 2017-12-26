@@ -35,7 +35,7 @@ import org.junit.experimental.categories.Category;
 
 import org.apache.geode.cache.wan.GatewaySender;
 import org.apache.geode.management.internal.cli.i18n.CliStrings;
-import org.apache.geode.test.dunit.rules.LocatorServerStartupRule;
+import org.apache.geode.test.dunit.rules.ClusterStartupRule;
 import org.apache.geode.test.dunit.rules.MemberVM;
 import org.apache.geode.test.junit.categories.DistributedTest;
 import org.apache.geode.test.junit.rules.GfshCommandRule;
@@ -49,7 +49,7 @@ public class CreateDestroyGatewaySenderCommandDUnitTest {
   public static final String DESTROY = "destroy gateway-sender --id=ln ";
 
   @ClassRule
-  public static LocatorServerStartupRule locatorServerStartupRule = new LocatorServerStartupRule();
+  public static ClusterStartupRule clusterStartupRule = new ClusterStartupRule();
 
   @Rule
   public GfshCommandRule gfsh = new GfshCommandRule();
@@ -63,15 +63,15 @@ public class CreateDestroyGatewaySenderCommandDUnitTest {
   public static void beforeClass() throws Exception {
     Properties props = new Properties();
     props.setProperty(DISTRIBUTED_SYSTEM_ID, "" + 1);
-    locatorSite1 = locatorServerStartupRule.startLocatorVM(1, props);
+    locatorSite1 = clusterStartupRule.startLocatorVM(1, props);
 
     props.setProperty(DISTRIBUTED_SYSTEM_ID, "" + 2);
     props.setProperty(REMOTE_LOCATORS, "localhost[" + locatorSite1.getPort() + "]");
-    locatorServerStartupRule.startLocatorVM(2, props);
+    clusterStartupRule.startLocatorVM(2, props);
 
-    server1 = locatorServerStartupRule.startServerVM(3, "senderGroup1", locatorSite1.getPort());
-    server2 = locatorServerStartupRule.startServerVM(4, locatorSite1.getPort());
-    server3 = locatorServerStartupRule.startServerVM(5, locatorSite1.getPort());
+    server1 = clusterStartupRule.startServerVM(3, "senderGroup1", locatorSite1.getPort());
+    server2 = clusterStartupRule.startServerVM(4, locatorSite1.getPort());
+    server3 = clusterStartupRule.startServerVM(5, locatorSite1.getPort());
   }
 
   @Before
@@ -98,7 +98,7 @@ public class CreateDestroyGatewaySenderCommandDUnitTest {
         server3);
 
     locatorSite1.invoke(() -> {
-      String xml = LocatorServerStartupRule.getLocator().getSharedConfiguration()
+      String xml = ClusterStartupRule.getLocator().getSharedConfiguration()
           .getConfiguration("cluster").getCacheXmlContent();
       assertThat(xml).contains("<gateway-sender id=\"ln\" remote-distributed-system-id=\"2\"/>");
     });
@@ -113,7 +113,7 @@ public class CreateDestroyGatewaySenderCommandDUnitTest {
         server3);
 
     locatorSite1.invoke(() -> {
-      String xml = LocatorServerStartupRule.getLocator().getSharedConfiguration()
+      String xml = ClusterStartupRule.getLocator().getSharedConfiguration()
           .getConfiguration("cluster").getCacheXmlContent();
       assertThat(xml).doesNotContain("gateway-sender id=\"ln\"");
     });

@@ -33,7 +33,7 @@ import org.junit.runner.RunWith;
 import org.apache.geode.distributed.internal.DistributionConfig;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.internal.cache.InternalCache;
-import org.apache.geode.test.dunit.rules.LocatorServerStartupRule;
+import org.apache.geode.test.dunit.rules.ClusterStartupRule;
 import org.apache.geode.test.dunit.rules.MemberVM;
 import org.apache.geode.test.junit.categories.DistributedTest;
 import org.apache.geode.test.junit.rules.GfshCommandRule;
@@ -42,8 +42,8 @@ import org.apache.geode.test.junit.rules.GfshCommandRule;
 @RunWith(JUnitParamsRunner.class)
 public class DescribeConfigCommandDUnitTest {
   @Rule
-  public LocatorServerStartupRule startupRule =
-      new LocatorServerStartupRule().withTempWorkingDir().withLogFile();
+  public ClusterStartupRule startupRule =
+      new ClusterStartupRule().withTempWorkingDir().withLogFile();
 
   @Rule
   public GfshCommandRule gfsh = new GfshCommandRule();
@@ -67,7 +67,7 @@ public class DescribeConfigCommandDUnitTest {
     }
 
     server0.invoke(() -> {
-      InternalCache cache = LocatorServerStartupRule.getCache();
+      InternalCache cache = ClusterStartupRule.getCache();
       InternalDistributedSystem system = cache.getInternalDistributedSystem();
       DistributionConfig config = system.getConfig();
       config.setArchiveFileSizeLimit(1000);

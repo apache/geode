@@ -15,17 +15,8 @@
 
 package org.apache.geode.management.internal.cli;
 
-import static org.apache.geode.distributed.ConfigurationProperties.GROUPS;
-import static org.apache.geode.distributed.ConfigurationProperties.JMX_MANAGER;
-import static org.apache.geode.distributed.ConfigurationProperties.JMX_MANAGER_PORT;
-import static org.apache.geode.distributed.ConfigurationProperties.JMX_MANAGER_START;
-import static org.apache.geode.distributed.ConfigurationProperties.NAME;
-import static org.apache.geode.distributed.ConfigurationProperties.SERIALIZABLE_OBJECT_FILTER;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
 
 import java.util.Arrays;
 import java.util.Properties;
@@ -42,7 +33,7 @@ import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.cache.wan.MyAsyncEventListener;
 import org.apache.geode.management.internal.cli.exceptions.UserErrorException;
-import org.apache.geode.test.dunit.rules.LocatorServerStartupRule;
+import org.apache.geode.test.dunit.rules.ClusterStartupRule;
 import org.apache.geode.test.dunit.rules.MemberVM;
 import org.apache.geode.test.junit.categories.DistributedTest;
 import org.apache.geode.test.junit.rules.GfshCommandRule;
@@ -51,7 +42,7 @@ import org.apache.geode.test.junit.rules.GfshCommandRule;
 public class CliUtilDUnitTest {
 
   @ClassRule
-  public static LocatorServerStartupRule lsRule = new LocatorServerStartupRule();
+  public static ClusterStartupRule lsRule = new ClusterStartupRule();
 
   @ClassRule
   public static GfshCommandRule gfsh = new GfshCommandRule();
@@ -140,7 +131,7 @@ public class CliUtilDUnitTest {
   @Test
   public void getAllMembers() throws Exception {
     locator.invoke(() -> {
-      InternalCache cache = LocatorServerStartupRule.getCache();
+      InternalCache cache = ClusterStartupRule.getCache();
       members = CliUtil.getAllMembers(cache);
       assertThat(getNames(members)).containsExactlyInAnyOrder("locator-0", "member1", "member2",
           "member3", "member4");
@@ -154,7 +145,7 @@ public class CliUtilDUnitTest {
   @Test
   public void getRegionAssociatedMembers() throws Exception {
     locator.invoke(() -> {
-      InternalCache cache = LocatorServerStartupRule.getCache();
+      InternalCache cache = ClusterStartupRule.getCache();
       members = CliUtil.getRegionAssociatedMembers("commonRegion", cache, true);
       assertThat(getNames(members)).containsExactlyInAnyOrder("member1", "member2", "member3",
           "member4");
@@ -167,7 +158,7 @@ public class CliUtilDUnitTest {
   @Test
   public void getRegionsAssociatedMembers() throws Exception {
     locator.invoke(() -> {
-      InternalCache cache = LocatorServerStartupRule.getCache();
+      InternalCache cache = ClusterStartupRule.getCache();
       // this finds the members that host both these two regions
       Set<String> regions =
           Arrays.stream("commonRegion,group1Region".split(",")).collect(Collectors.toSet());
@@ -209,15 +200,13 @@ public class CliUtilDUnitTest {
     locator.waitTillAsyncEventQueuesAreReadyOnServers("queue", 4);
 
     locator.invoke(() -> {
-      members =
-          CliUtil.getMembersWithAsyncEventQueue(LocatorServerStartupRule.getCache(), "queue1");
+      members = CliUtil.getMembersWithAsyncEventQueue(ClusterStartupRule.getCache(), "queue1");
       assertThat(getNames(members)).containsExactlyInAnyOrder("member1", "member2");
 
-      members =
-          CliUtil.getMembersWithAsyncEventQueue(LocatorServerStartupRule.getCache(), "queue2");
+      members = CliUtil.getMembersWithAsyncEventQueue(ClusterStartupRule.getCache(), "queue2");
       assertThat(getNames(members)).containsExactlyInAnyOrder("member3", "member4");
 
-      members = CliUtil.getMembersWithAsyncEventQueue(LocatorServerStartupRule.getCache(), "queue");
+      members = CliUtil.getMembersWithAsyncEventQueue(ClusterStartupRule.getCache(), "queue");
       assertThat(getNames(members)).containsExactlyInAnyOrder("member1", "member2", "member3",
           "member4");
     });

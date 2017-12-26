@@ -30,7 +30,7 @@ import org.junit.experimental.categories.Category;
 
 import org.apache.geode.security.AuthenticationFailedException;
 import org.apache.geode.security.SecurityManager;
-import org.apache.geode.test.dunit.rules.LocatorServerStartupRule;
+import org.apache.geode.test.dunit.rules.ClusterStartupRule;
 import org.apache.geode.test.dunit.rules.MemberVM;
 import org.apache.geode.test.junit.categories.IntegrationTest;
 import org.apache.geode.test.junit.rules.GfshCommandRule;
@@ -40,7 +40,7 @@ public class LogNoPasswordTest {
 
   private static String PASSWORD = "abcdefghijklmn";
   @Rule
-  public LocatorServerStartupRule lsRule = new LocatorServerStartupRule().withLogFile();
+  public ClusterStartupRule lsRule = new ClusterStartupRule().withLogFile();
 
   @Rule
   public GfshCommandRule gfsh = new GfshCommandRule();

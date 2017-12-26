@@ -30,7 +30,7 @@ import org.junit.rules.TemporaryFolder;
 import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.Region;
 import org.apache.geode.management.internal.configuration.utils.ZipUtils;
-import org.apache.geode.test.dunit.rules.LocatorServerStartupRule;
+import org.apache.geode.test.dunit.rules.ClusterStartupRule;
 import org.apache.geode.test.dunit.rules.MemberVM;
 import org.apache.geode.test.junit.categories.DistributedTest;
 import org.apache.geode.test.junit.rules.GfshCommandRule;
@@ -38,7 +38,7 @@ import org.apache.geode.test.junit.rules.GfshCommandRule;
 @Category(DistributedTest.class)
 public class ImportOldClusterConfigDUnitTest {
   @Rule
-  public LocatorServerStartupRule lsRule = new LocatorServerStartupRule();
+  public ClusterStartupRule lsRule = new ClusterStartupRule();
 
   @Rule
   public GfshCommandRule gfsh = new GfshCommandRule();
@@ -96,7 +96,7 @@ public class ImportOldClusterConfigDUnitTest {
   }
 
   private static void regionExists(String regionName) {
-    Cache cache = LocatorServerStartupRule.getCache();
+    Cache cache = ClusterStartupRule.getCache();
     assertThat(cache).isNotNull();
     Region<Object, Object> one = cache.getRegion(regionName);
     assertThat(one).isNotNull();

@@ -113,22 +113,22 @@ public class MemberVM extends VMProvider implements Member {
    * this should called on a locatorVM or a serverVM with jmxManager enabled
    */
   public void waitTillRegionsAreReadyOnServers(String regionPath, int serverCount) {
-    vm.invoke(() -> LocatorServerStartupRule.memberStarter
-        .waitTillRegionIsReadyOnServers(regionPath, serverCount));
+    vm.invoke(() -> ClusterStartupRule.memberStarter.waitTillRegionIsReadyOnServers(regionPath,
+        serverCount));
   }
 
   public void waitTillDiskstoreIsReady(String diskstoreName, int serverCount) {
-    vm.invoke(() -> LocatorServerStartupRule.memberStarter.waitTillDiskStoreIsReady(diskstoreName,
+    vm.invoke(() -> ClusterStartupRule.memberStarter.waitTillDiskStoreIsReady(diskstoreName,
         serverCount));
   }
 
   public void waitTillAsyncEventQueuesAreReadyOnServers(String queueId, int serverCount) {
-    vm.invoke(() -> LocatorServerStartupRule.memberStarter
+    vm.invoke(() -> ClusterStartupRule.memberStarter
         .waitTillAsyncEventQueuesAreReadyOnServers(queueId, serverCount));
   }
 
   public void waitTilGatewaySendersAreReady(int expectedGatewayObjectCount) throws Exception {
-    vm.invoke(() -> LocatorServerStartupRule.memberStarter
+    vm.invoke(() -> ClusterStartupRule.memberStarter
         .waitTilGatewaySendersAreReady(expectedGatewayObjectCount));
   }
 }

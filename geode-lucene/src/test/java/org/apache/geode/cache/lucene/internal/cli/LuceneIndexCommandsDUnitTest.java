@@ -57,7 +57,7 @@ import org.apache.geode.management.cli.Result.Status;
 import org.apache.geode.management.internal.cli.i18n.CliStrings;
 import org.apache.geode.management.internal.cli.result.CommandResult;
 import org.apache.geode.management.internal.cli.util.CommandStringBuilder;
-import org.apache.geode.test.dunit.rules.LocatorServerStartupRule;
+import org.apache.geode.test.dunit.rules.ClusterStartupRule;
 import org.apache.geode.test.dunit.rules.MemberVM;
 import org.apache.geode.test.junit.assertions.CommandResultAssert;
 import org.apache.geode.test.junit.categories.DistributedTest;
@@ -73,7 +73,7 @@ public class LuceneIndexCommandsDUnitTest implements Serializable {
   public transient GfshCommandRule gfsh = new GfshCommandRule();
 
   @Rule
-  public LocatorServerStartupRule startupRule = new LocatorServerStartupRule();
+  public ClusterStartupRule startupRule = new ClusterStartupRule();
 
   @Rule
   public SerializableTestName testName = new SerializableTestName();
@@ -673,7 +673,7 @@ public class LuceneIndexCommandsDUnitTest implements Serializable {
 
   private void createIndex() {
     serverVM.invoke(() -> {
-      LuceneService luceneService = LuceneServiceProvider.get(LocatorServerStartupRule.getCache());
+      LuceneService luceneService = LuceneServiceProvider.get(ClusterStartupRule.getCache());
       Map<String, Analyzer> fieldAnalyzers = new HashMap();
       fieldAnalyzers.put("field1", new StandardAnalyzer());
       fieldAnalyzers.put("field2", new KeywordAnalyzer());
@@ -685,7 +685,7 @@ public class LuceneIndexCommandsDUnitTest implements Serializable {
 
   private void createIndexWithoutRegion() {
     serverVM.invoke(() -> {
-      LuceneService luceneService = LuceneServiceProvider.get(LocatorServerStartupRule.getCache());
+      LuceneService luceneService = LuceneServiceProvider.get(ClusterStartupRule.getCache());
       Map<String, Analyzer> fieldAnalyzers = new HashMap();
       fieldAnalyzers.put("field1", new StandardAnalyzer());
       fieldAnalyzers.put("field2", new KeywordAnalyzer());
@@ -728,7 +728,7 @@ public class LuceneIndexCommandsDUnitTest implements Serializable {
   }
 
   protected static Cache getCache() {
-    return LocatorServerStartupRule.getCache();
+    return ClusterStartupRule.getCache();
   }
 
   protected class TestObject implements Serializable {

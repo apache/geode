@@ -40,7 +40,7 @@ import org.apache.geode.management.cli.Result;
 import org.apache.geode.management.internal.cli.i18n.CliStrings;
 import org.apache.geode.management.internal.cli.result.CommandResult;
 import org.apache.geode.management.internal.cli.result.TabularResultData;
-import org.apache.geode.test.dunit.rules.LocatorServerStartupRule;
+import org.apache.geode.test.dunit.rules.ClusterStartupRule;
 import org.apache.geode.test.dunit.rules.MemberVM;
 import org.apache.geode.test.junit.categories.DistributedTest;
 import org.apache.geode.test.junit.rules.GfshCommandRule;
@@ -49,7 +49,7 @@ import org.apache.geode.test.junit.rules.GfshCommandRule;
 public class StartGatewayReceiverCommandDUnitTest {
 
   @Rule
-  public LocatorServerStartupRule locatorServerStartupRule = new LocatorServerStartupRule();
+  public ClusterStartupRule clusterStartupRule = new ClusterStartupRule();
 
   @Rule
   public GfshCommandRule gfsh = new GfshCommandRule();
@@ -66,11 +66,11 @@ public class StartGatewayReceiverCommandDUnitTest {
   public void before() throws Exception {
     Properties props = new Properties();
     props.setProperty(DISTRIBUTED_SYSTEM_ID, "" + 1);
-    locatorSite1 = locatorServerStartupRule.startLocatorVM(1, props);
+    locatorSite1 = clusterStartupRule.startLocatorVM(1, props);
 
     props.setProperty(DISTRIBUTED_SYSTEM_ID, "" + 2);
     props.setProperty(REMOTE_LOCATORS, "localhost[" + locatorSite1.getPort() + "]");
-    locatorSite2 = locatorServerStartupRule.startLocatorVM(2, props);
+    locatorSite2 = clusterStartupRule.startLocatorVM(2, props);
 
     // Connect Gfsh to locator.
     gfsh.connectAndVerify(locatorSite1);
@@ -86,7 +86,7 @@ public class StartGatewayReceiverCommandDUnitTest {
     Integer locator1Port = locatorSite1.getPort();
 
     // setup servers in Site #1
-    server1 = locatorServerStartupRule.startServerVM(3, locator1Port);
+    server1 = clusterStartupRule.startServerVM(3, locator1Port);
 
     final DistributedMember vm1Member = (DistributedMember) server1.invoke(getMemberIdCallable());
     String command = CliStrings.START_GATEWAYRECEIVER + " --" + CliStrings.MEMBER + "="
@@ -101,9 +101,9 @@ public class StartGatewayReceiverCommandDUnitTest {
     Integer locator1Port = locatorSite1.getPort();
 
     // setup servers in Site #1
-    server1 = locatorServerStartupRule.startServerVM(3, locator1Port);
-    server2 = locatorServerStartupRule.startServerVM(4, locator1Port);
-    server3 = locatorServerStartupRule.startServerVM(5, locator1Port);
+    server1 = clusterStartupRule.startServerVM(3, locator1Port);
+    server2 = clusterStartupRule.startServerVM(4, locator1Port);
+    server3 = clusterStartupRule.startServerVM(5, locator1Port);
 
     server1.invoke(() -> createReceiver(locator1Port));
     server2.invoke(() -> createReceiver(locator1Port));
@@ -142,9 +142,9 @@ public class StartGatewayReceiverCommandDUnitTest {
     Integer locator1Port = locatorSite1.getPort();
 
     // setup servers in Site #1
-    server1 = locatorServerStartupRule.startServerVM(3, locator1Port);
-    server2 = locatorServerStartupRule.startServerVM(4, locator1Port);
-    server3 = locatorServerStartupRule.startServerVM(5, locator1Port);
+    server1 = clusterStartupRule.startServerVM(3, locator1Port);
+    server2 = clusterStartupRule.startServerVM(4, locator1Port);
+    server3 = clusterStartupRule.startServerVM(5, locator1Port);
 
     server1.invoke(() -> createReceiver(locator1Port));
     server2.invoke(() -> createReceiver(locator1Port));
@@ -271,6 +271,6 @@ public class StartGatewayReceiverCommandDUnitTest {
   private MemberVM startServerWithGroups(int index, String groups, int locPort) throws Exception {
     Properties props = new Properties();
     props.setProperty(GROUPS, groups);
-    return locatorServerStartupRule.startServerVM(index, props, locPort);
+    return clusterStartupRule.startServerVM(index, props, locPort);
   }
 }

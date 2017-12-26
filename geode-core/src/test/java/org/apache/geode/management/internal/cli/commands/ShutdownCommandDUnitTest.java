@@ -37,7 +37,7 @@ import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.CacheClosedException;
 import org.apache.geode.cache.CacheFactory;
 import org.apache.geode.test.dunit.SerializableCallableIF;
-import org.apache.geode.test.dunit.rules.LocatorServerStartupRule;
+import org.apache.geode.test.dunit.rules.ClusterStartupRule;
 import org.apache.geode.test.dunit.rules.MemberVM;
 import org.apache.geode.test.junit.categories.DistributedTest;
 import org.apache.geode.test.junit.rules.GfshCommandRule;
@@ -67,7 +67,7 @@ public class ShutdownCommandDUnitTest {
   }
 
   @Rule
-  public LocatorServerStartupRule locatorServerStartupRule = new LocatorServerStartupRule();
+  public ClusterStartupRule clusterStartupRule = new ClusterStartupRule();
 
   @Rule
   public GfshCommandRule gfsh = new GfshCommandRule();
@@ -80,17 +80,17 @@ public class ShutdownCommandDUnitTest {
     managerProps.setProperty(GROUPS, GROUP0);
     managerProps.setProperty(LOG_FILE, "someLog.log");
 
-    manager = locatorServerStartupRule.startLocatorVM(0, managerProps);
+    manager = clusterStartupRule.startLocatorVM(0, managerProps);
 
     Properties server1Props = new Properties();
     server1Props.setProperty(NAME, SERVER1_NAME);
     server1Props.setProperty(GROUPS, GROUP1);
-    server1 = locatorServerStartupRule.startServerVM(1, server1Props, manager.getPort());
+    server1 = clusterStartupRule.startServerVM(1, server1Props, manager.getPort());
 
     Properties server2Props = new Properties();
     server2Props.setProperty(NAME, SERVER2_NAME);
     server2Props.setProperty(GROUPS, GROUP2);
-    server2 = locatorServerStartupRule.startServerVM(2, server2Props, manager.getPort());
+    server2 = clusterStartupRule.startServerVM(2, server2Props, manager.getPort());
 
     if (useHttp) {
       gfsh.connectAndVerify(manager.getHttpPort(), http);

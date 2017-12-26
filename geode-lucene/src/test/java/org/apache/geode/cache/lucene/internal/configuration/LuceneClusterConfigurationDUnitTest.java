@@ -45,7 +45,7 @@ import org.apache.geode.management.internal.cli.i18n.CliStrings;
 import org.apache.geode.management.internal.cli.util.CommandStringBuilder;
 import org.apache.geode.management.internal.configuration.domain.Configuration;
 import org.apache.geode.test.dunit.SerializableRunnableIF;
-import org.apache.geode.test.dunit.rules.LocatorServerStartupRule;
+import org.apache.geode.test.dunit.rules.ClusterStartupRule;
 import org.apache.geode.test.dunit.rules.MemberVM;
 import org.apache.geode.test.junit.categories.DistributedTest;
 import org.apache.geode.test.junit.rules.GfshCommandRule;
@@ -55,7 +55,7 @@ import org.apache.geode.test.junit.rules.GfshCommandRule;
 public class LuceneClusterConfigurationDUnitTest {
 
   @Rule
-  public LocatorServerStartupRule ls = new LocatorServerStartupRule();
+  public ClusterStartupRule ls = new ClusterStartupRule();
 
   @Rule
   public GfshCommandRule gfshConnector = new GfshCommandRule();
@@ -83,7 +83,7 @@ public class LuceneClusterConfigurationDUnitTest {
     // configuration.
     MemberVM vm2 = ls.startServerVM(2, locator.getPort());
     vm2.invoke(() -> {
-      LuceneService luceneService = LuceneServiceProvider.get(LocatorServerStartupRule.getCache());
+      LuceneService luceneService = LuceneServiceProvider.get(ClusterStartupRule.getCache());
       final LuceneIndex index = luceneService.getIndex(INDEX_NAME, REGION_NAME);
       assertNotNull(index);
       validateIndexFields(new String[] {"field1", "field2", "field3"}, index);
@@ -107,7 +107,7 @@ public class LuceneClusterConfigurationDUnitTest {
     // configuration.
     MemberVM vm2 = ls.startServerVM(2, locator.getPort());
     vm2.invoke(() -> {
-      LuceneService luceneService = LuceneServiceProvider.get(LocatorServerStartupRule.getCache());
+      LuceneService luceneService = LuceneServiceProvider.get(ClusterStartupRule.getCache());
       final LuceneIndex index = luceneService.getIndex(INDEX_NAME, REGION_NAME);
       assertNotNull(index);
       String[] fields = new String[] {"field1", "field2", "field3"};
@@ -137,7 +137,7 @@ public class LuceneClusterConfigurationDUnitTest {
     // configuration.
     MemberVM vm2 = ls.startServerVM(2, locator.getPort());
     vm2.invoke(() -> {
-      LuceneService luceneService = LuceneServiceProvider.get(LocatorServerStartupRule.getCache());
+      LuceneService luceneService = LuceneServiceProvider.get(ClusterStartupRule.getCache());
       final LuceneIndex index = luceneService.getIndex(INDEX_NAME, REGION_NAME);
       assertNotNull(index);
       String[] fields = new String[] {"field1", "field2", "field3"};
@@ -239,7 +239,7 @@ public class LuceneClusterConfigurationDUnitTest {
 
   private SerializableRunnableIF verifyClusterConfiguration(boolean verifyIndexesExist) {
     return () -> {
-      InternalLocator internalLocator = LocatorServerStartupRule.getLocator();
+      InternalLocator internalLocator = ClusterStartupRule.getLocator();
       ClusterConfigurationService sc = internalLocator.getSharedConfiguration();
       Configuration config = sc.getConfiguration(ClusterConfigurationService.CLUSTER_CONFIG);
       String xmlContent = config.getCacheXmlContent();

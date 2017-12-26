@@ -33,15 +33,14 @@ import org.junit.experimental.categories.Category;
 
 import org.apache.geode.distributed.internal.DistributionConfig;
 import org.apache.geode.internal.logging.LogService;
-import org.apache.geode.test.dunit.rules.LocatorServerStartupRule;
+import org.apache.geode.test.dunit.rules.ClusterStartupRule;
 import org.apache.geode.test.dunit.rules.MemberVM;
 import org.apache.geode.test.junit.categories.DistributedTest;
 
 @Category(DistributedTest.class)
 public class MergeLogsDUnitTest {
   @Rule
-  public LocatorServerStartupRule lsRule =
-      new LocatorServerStartupRule().withTempWorkingDir().withLogFile();
+  public ClusterStartupRule lsRule = new ClusterStartupRule().withTempWorkingDir().withLogFile();
   private MemberVM locator;
 
   private static final String MESSAGE_1 = "MergeLogsMessage1";

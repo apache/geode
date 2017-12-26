@@ -38,7 +38,7 @@ import org.apache.geode.management.internal.cli.i18n.CliStrings;
 import org.apache.geode.management.internal.cli.result.CommandResult;
 import org.apache.geode.management.internal.cli.util.CommandStringBuilder;
 import org.apache.geode.test.dunit.IgnoredException;
-import org.apache.geode.test.dunit.rules.LocatorServerStartupRule;
+import org.apache.geode.test.dunit.rules.ClusterStartupRule;
 import org.apache.geode.test.dunit.rules.MemberVM;
 import org.apache.geode.test.junit.categories.DistributedTest;
 import org.apache.geode.test.junit.rules.GfshCommandRule;
@@ -47,8 +47,8 @@ import org.apache.geode.test.junit.rules.GfshCommandRule;
 @RunWith(JUnitParamsRunner.class)
 public class AlterRuntimeCommandDUnitTest {
   @Rule
-  public LocatorServerStartupRule startupRule =
-      new LocatorServerStartupRule().withTempWorkingDir().withLogFile();
+  public ClusterStartupRule startupRule =
+      new ClusterStartupRule().withTempWorkingDir().withLogFile();
 
   @Rule
   public GfshCommandRule gfsh = new GfshCommandRule();
@@ -59,7 +59,7 @@ public class AlterRuntimeCommandDUnitTest {
   private void verifyDefaultConfig(MemberVM[] servers) {
     for (MemberVM server : servers) {
       server.invoke(() -> {
-        InternalCache cache = LocatorServerStartupRule.getCache();
+        InternalCache cache = ClusterStartupRule.getCache();
         DistributionConfig config = cache.getInternalDistributedSystem().getConfig();
         assertThat(config.getLogLevel()).isEqualTo(LogWriterImpl.ERROR_LEVEL);
         assertThat(config.getLogFileSizeLimit()).isEqualTo(0);
@@ -103,7 +103,7 @@ public class AlterRuntimeCommandDUnitTest {
     gfsh.executeAndAssertThat(csb.toString()).statusIsSuccess();
 
     server0.invoke(() -> {
-      InternalCache cache = LocatorServerStartupRule.getCache();
+      InternalCache cache = ClusterStartupRule.getCache();
       DistributionConfig config = cache.getInternalDistributedSystem().getConfig();
       assertThat(config.getLogLevel()).isEqualTo(LogWriterImpl.INFO_LEVEL);
       assertThat(config.getLogFileSizeLimit()).isEqualTo(50);
@@ -149,7 +149,7 @@ public class AlterRuntimeCommandDUnitTest {
 
     for (MemberVM server : new MemberVM[] {server1, server2}) {
       server.invoke(() -> {
-        InternalCache cache = LocatorServerStartupRule.getCache();
+        InternalCache cache = ClusterStartupRule.getCache();
         DistributionConfig config = cache.getInternalDistributedSystem().getConfig();
         assertThat(config.getLogFileSizeLimit()).isEqualTo(0);
         assertThat(config.getArchiveDiskSpaceLimit()).isEqualTo(0);
@@ -184,7 +184,7 @@ public class AlterRuntimeCommandDUnitTest {
     gfsh.executeAndAssertThat(csbSetFileSizeLimit.toString()).statusIsSuccess();
 
     server2.invoke(() -> {
-      InternalCache cache = LocatorServerStartupRule.getCache();
+      InternalCache cache = ClusterStartupRule.getCache();
       DistributionConfig config = cache.getInternalDistributedSystem().getConfig();
       assertThat(config.getLogFileSizeLimit()).isEqualTo(50);
       assertThat(config.getLogDiskSpaceLimit()).isEqualTo(0);
@@ -198,7 +198,7 @@ public class AlterRuntimeCommandDUnitTest {
 
     for (MemberVM server : new MemberVM[] {server1, server2}) {
       server.invoke(() -> {
-        InternalCache cache = LocatorServerStartupRule.getCache();
+        InternalCache cache = ClusterStartupRule.getCache();
         DistributionConfig config = cache.getInternalDistributedSystem().getConfig();
         assertThat(config.getLogFileSizeLimit()).isEqualTo(50);
         assertThat(config.getLogDiskSpaceLimit()).isEqualTo(10);
@@ -240,7 +240,7 @@ public class AlterRuntimeCommandDUnitTest {
         expectedLimit = 0;
       }
       server.invoke(() -> {
-        InternalCache cache = LocatorServerStartupRule.getCache();
+        InternalCache cache = ClusterStartupRule.getCache();
         DistributionConfig config = cache.getInternalDistributedSystem().getConfig();
         assertThat(config.getLogFileSizeLimit()).isEqualTo(0);
         assertThat(config.getLogDiskSpaceLimit()).isEqualTo(expectedLimit);
@@ -289,7 +289,7 @@ public class AlterRuntimeCommandDUnitTest {
         expectedGroup = "";
       }
       server.invoke(() -> {
-        InternalCache cache = LocatorServerStartupRule.getCache();
+        InternalCache cache = ClusterStartupRule.getCache();
         DistributionConfig config = cache.getInternalDistributedSystem().getConfig();
         assertThat(config.getGroups()).isEqualTo(expectedGroup);
         assertThat(config.getLogFileSizeLimit()).isEqualTo(0);
@@ -326,7 +326,7 @@ public class AlterRuntimeCommandDUnitTest {
 
     for (MemberVM server : new MemberVM[] {server1, server2}) {
       server.invoke(() -> {
-        InternalCache cache = LocatorServerStartupRule.getCache();
+        InternalCache cache = ClusterStartupRule.getCache();
         DistributionConfig config = cache.getInternalDistributedSystem().getConfig();
         assertThat(config.getLogFileSizeLimit()).isEqualTo(11);
         assertThat(config.getArchiveDiskSpaceLimit()).isEqualTo(0);
@@ -436,7 +436,7 @@ public class AlterRuntimeCommandDUnitTest {
 
     for (MemberVM server : new MemberVM[] {server1, server2}) {
       server.invoke(() -> {
-        InternalCache cache = LocatorServerStartupRule.getCache();
+        InternalCache cache = ClusterStartupRule.getCache();
         DistributionConfig config = cache.getInternalDistributedSystem().getConfig();
         assertThat(config.getLogFileSizeLimit()).isEqualTo(0);
         assertThat(config.getArchiveDiskSpaceLimit()).isEqualTo(0);
@@ -480,7 +480,7 @@ public class AlterRuntimeCommandDUnitTest {
         expectedName = "";
       }
       server.invoke(() -> {
-        InternalCache cache = LocatorServerStartupRule.getCache();
+        InternalCache cache = ClusterStartupRule.getCache();
         DistributionConfig config = cache.getInternalDistributedSystem().getConfig();
         assertThat(config.getLogFileSizeLimit()).isEqualTo(0);
         assertThat(config.getArchiveDiskSpaceLimit()).isEqualTo(0);
@@ -525,7 +525,7 @@ public class AlterRuntimeCommandDUnitTest {
         expectedName = "";
       }
       server.invoke(() -> {
-        InternalCache cache = LocatorServerStartupRule.getCache();
+        InternalCache cache = ClusterStartupRule.getCache();
         DistributionConfig config = cache.getInternalDistributedSystem().getConfig();
         assertThat(config.getLogFileSizeLimit()).isEqualTo(0);
         assertThat(config.getArchiveDiskSpaceLimit()).isEqualTo(0);
@@ -561,7 +561,7 @@ public class AlterRuntimeCommandDUnitTest {
 
     for (MemberVM server : new MemberVM[] {server1, server2}) {
       server.invoke(() -> {
-        InternalCache cache = LocatorServerStartupRule.getCache();
+        InternalCache cache = ClusterStartupRule.getCache();
         DistributionConfig config = cache.getInternalDistributedSystem().getConfig();
         assertThat(config.getLogFileSizeLimit()).isEqualTo(0);
         assertThat(config.getArchiveDiskSpaceLimit()).isEqualTo(0);
@@ -606,7 +606,7 @@ public class AlterRuntimeCommandDUnitTest {
         expectedSampleRate = 1000;
       }
       server.invoke(() -> {
-        InternalCache cache = LocatorServerStartupRule.getCache();
+        InternalCache cache = ClusterStartupRule.getCache();
         DistributionConfig config = cache.getInternalDistributedSystem().getConfig();
         assertThat(config.getLogFileSizeLimit()).isEqualTo(0);
         assertThat(config.getArchiveDiskSpaceLimit()).isEqualTo(0);
@@ -652,7 +652,7 @@ public class AlterRuntimeCommandDUnitTest {
         expectedSampleRate = 1000;
       }
       server.invoke(() -> {
-        InternalCache cache = LocatorServerStartupRule.getCache();
+        InternalCache cache = ClusterStartupRule.getCache();
         DistributionConfig config = cache.getInternalDistributedSystem().getConfig();
         assertThat(config.getLogFileSizeLimit()).isEqualTo(0);
         assertThat(config.getArchiveDiskSpaceLimit()).isEqualTo(0);
@@ -727,7 +727,7 @@ public class AlterRuntimeCommandDUnitTest {
 
     for (MemberVM server : new MemberVM[] {server1, server2}) {
       server.invoke(() -> {
-        InternalCache cache = LocatorServerStartupRule.getCache();
+        InternalCache cache = ClusterStartupRule.getCache();
         DistributionConfig config = cache.getInternalDistributedSystem().getConfig();
         assertThat(config.getLogFileSizeLimit()).isEqualTo(0);
         assertThat(config.getArchiveDiskSpaceLimit()).isEqualTo(TEST_LIMIT);
@@ -773,7 +773,7 @@ public class AlterRuntimeCommandDUnitTest {
         expectedLimit = 0;
       }
       server.invoke(() -> {
-        InternalCache cache = LocatorServerStartupRule.getCache();
+        InternalCache cache = ClusterStartupRule.getCache();
         DistributionConfig config = cache.getInternalDistributedSystem().getConfig();
         assertThat(config.getLogFileSizeLimit()).isEqualTo(0);
         assertThat(config.getArchiveDiskSpaceLimit()).isEqualTo(expectedLimit);
@@ -820,7 +820,7 @@ public class AlterRuntimeCommandDUnitTest {
         expectedLimit = 0;
       }
       server.invoke(() -> {
-        InternalCache cache = LocatorServerStartupRule.getCache();
+        InternalCache cache = ClusterStartupRule.getCache();
         DistributionConfig config = cache.getInternalDistributedSystem().getConfig();
         assertThat(config.getLogFileSizeLimit()).isEqualTo(0);
         assertThat(config.getArchiveDiskSpaceLimit()).isEqualTo(expectedLimit);
@@ -870,7 +870,7 @@ public class AlterRuntimeCommandDUnitTest {
 
     for (MemberVM server : new MemberVM[] {server1, server2}) {
       server.invoke(() -> {
-        InternalCache cache = LocatorServerStartupRule.getCache();
+        InternalCache cache = ClusterStartupRule.getCache();
         DistributionConfig config = cache.getInternalDistributedSystem().getConfig();
         assertThat(config.getLogFileSizeLimit()).isEqualTo(0);
         assertThat(config.getArchiveDiskSpaceLimit()).isEqualTo(0);
@@ -909,7 +909,7 @@ public class AlterRuntimeCommandDUnitTest {
 
     for (MemberVM server : new MemberVM[] {server1, server2}) {
       server.invoke(() -> {
-        InternalCache cache = LocatorServerStartupRule.getCache();
+        InternalCache cache = ClusterStartupRule.getCache();
         DistributionConfig config = cache.getInternalDistributedSystem().getConfig();
         assertThat(config.getLogFileSizeLimit()).isEqualTo(0);
         assertThat(config.getArchiveDiskSpaceLimit()).isEqualTo(0);
@@ -955,7 +955,7 @@ public class AlterRuntimeCommandDUnitTest {
         expectedLimit = 0;
       }
       server.invoke(() -> {
-        InternalCache cache = LocatorServerStartupRule.getCache();
+        InternalCache cache = ClusterStartupRule.getCache();
         DistributionConfig config = cache.getInternalDistributedSystem().getConfig();
         assertThat(config.getLogFileSizeLimit()).isEqualTo(0);
         assertThat(config.getArchiveDiskSpaceLimit()).isEqualTo(0);
@@ -1002,7 +1002,7 @@ public class AlterRuntimeCommandDUnitTest {
         expectedLimit = 0;
       }
       server.invoke(() -> {
-        InternalCache cache = LocatorServerStartupRule.getCache();
+        InternalCache cache = ClusterStartupRule.getCache();
         DistributionConfig config = cache.getInternalDistributedSystem().getConfig();
         assertThat(config.getLogFileSizeLimit()).isEqualTo(0);
         assertThat(config.getArchiveDiskSpaceLimit()).isEqualTo(0);
@@ -1076,7 +1076,7 @@ public class AlterRuntimeCommandDUnitTest {
 
     for (MemberVM server : new MemberVM[] {server1, server2}) {
       server.invoke(() -> {
-        InternalCache cache = LocatorServerStartupRule.getCache();
+        InternalCache cache = ClusterStartupRule.getCache();
         DistributionConfig config = cache.getInternalDistributedSystem().getConfig();
         assertThat(config.getLogFileSizeLimit()).isEqualTo(0);
         assertThat(config.getArchiveDiskSpaceLimit()).isEqualTo(0);
@@ -1111,7 +1111,7 @@ public class AlterRuntimeCommandDUnitTest {
     }
 
     server2.invoke(() -> {
-      InternalCache cache = LocatorServerStartupRule.getCache();
+      InternalCache cache = ClusterStartupRule.getCache();
       DistributionConfig config = cache.getInternalDistributedSystem().getConfig();
       assertThat(config.getGroups()).isEqualTo("G1");
     });
@@ -1125,7 +1125,7 @@ public class AlterRuntimeCommandDUnitTest {
         .contains(CliStrings.ALTER_RUNTIME_CONFIG__RELEVANT__OPTION__MESSAGE);
 
     server1.invoke(() -> {
-      InternalCache cache = LocatorServerStartupRule.getCache();
+      InternalCache cache = ClusterStartupRule.getCache();
       DistributionConfig config = cache.getInternalDistributedSystem().getConfig();
       assertThat(config.getLogFileSizeLimit()).isEqualTo(0);
       assertThat(config.getLogDiskSpaceLimit()).isEqualTo(0);
@@ -1165,7 +1165,7 @@ public class AlterRuntimeCommandDUnitTest {
         .contains(CliStrings.ALTER_RUNTIME_CONFIG__RELEVANT__OPTION__MESSAGE);
 
     server1.invoke(() -> {
-      InternalCache cache = LocatorServerStartupRule.getCache();
+      InternalCache cache = ClusterStartupRule.getCache();
       DistributionConfig config = cache.getInternalDistributedSystem().getConfig();
       assertThat(config.getLogFileSizeLimit()).isEqualTo(0);
       assertThat(config.getLogDiskSpaceLimit()).isEqualTo(0);
@@ -1197,7 +1197,7 @@ public class AlterRuntimeCommandDUnitTest {
 
     locator.invoke(() -> {
       ClusterConfigurationService sharedConfig =
-          LocatorServerStartupRule.getLocator().getSharedConfiguration();
+          ClusterStartupRule.getLocator().getSharedConfiguration();
       Properties properties = sharedConfig.getConfiguration("Group1").getGemfireProperties();
       assertThat(properties.get(LOG_LEVEL)).isEqualTo("fine");
     });

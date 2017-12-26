@@ -34,7 +34,7 @@ import org.apache.geode.cache.RegionFactory;
 import org.apache.geode.cache.Scope;
 import org.apache.geode.management.internal.cli.i18n.CliStrings;
 import org.apache.geode.management.internal.cli.util.CommandStringBuilder;
-import org.apache.geode.test.dunit.rules.LocatorServerStartupRule;
+import org.apache.geode.test.dunit.rules.ClusterStartupRule;
 import org.apache.geode.test.dunit.rules.MemberVM;
 import org.apache.geode.test.junit.categories.DistributedTest;
 import org.apache.geode.test.junit.rules.GfshCommandRule;
@@ -51,7 +51,7 @@ public class AlterDiskStoreDUnitTest {
   private static MemberVM server1;
 
   @Rule
-  public LocatorServerStartupRule startupRule = new LocatorServerStartupRule();
+  public ClusterStartupRule startupRule = new ClusterStartupRule();
 
   @Rule
   public GfshCommandRule gfsh = new GfshCommandRule();
@@ -69,7 +69,7 @@ public class AlterDiskStoreDUnitTest {
     server1 = startupRule.startServerVM(1, locator.getPort());
     String diskDirPathString = getDiskDirPathString();
     server1.invoke(() -> {
-      Cache cache = LocatorServerStartupRule.getCache();
+      Cache cache = ClusterStartupRule.getCache();
       cache.createDiskStoreFactory().setDiskDirs(new File[] {new File(diskDirPathString)})
           .setMaxOplogSize(1).setAllowForceCompaction(true).setAutoCompact(false)
           .create(diskStoreName);
@@ -111,7 +111,7 @@ public class AlterDiskStoreDUnitTest {
   public void alterDiskStoreWithRemoveDoesRemoveRegion() throws IOException {
     // Verify to start that there exists the data in the region
     server1.invoke(() -> {
-      Region region = LocatorServerStartupRule.getCache().getRegion(regionName);
+      Region region = ClusterStartupRule.getCache().getRegion(regionName);
       assertThat(region).isNotNull();
       assertThat(region.get(aKey)).isNotNull();
     });
@@ -125,7 +125,7 @@ public class AlterDiskStoreDUnitTest {
     // Restart the member and see that the disk store / region is gone.
     startupRule.startServerVM(1, locator.getPort());
     server1.invoke(() -> {
-      Region region = LocatorServerStartupRule.getCache().getRegion(regionName);
+      Region region = ClusterStartupRule.getCache().getRegion(regionName);
       assertThat(region).isNull();
     });
   }

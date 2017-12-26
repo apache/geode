@@ -29,7 +29,7 @@ import org.junit.experimental.categories.Category;
 
 import org.apache.geode.internal.ClassPathLoader;
 import org.apache.geode.test.compiler.ClassBuilder;
-import org.apache.geode.test.dunit.rules.LocatorServerStartupRule;
+import org.apache.geode.test.dunit.rules.ClusterStartupRule;
 import org.apache.geode.test.dunit.rules.MemberVM;
 import org.apache.geode.test.junit.categories.DistributedTest;
 import org.apache.geode.test.junit.rules.GfshCommandRule;
@@ -70,7 +70,7 @@ public class DeployWithGroupsDUnitTest implements Serializable {
   public SerializableTemporaryFolder temporaryFolder = new SerializableTemporaryFolder();
 
   @Rule
-  public LocatorServerStartupRule lsRule = new LocatorServerStartupRule();
+  public ClusterStartupRule lsRule = new ClusterStartupRule();
 
   @Rule
   public transient GfshCommandRule gfshConnector = new GfshCommandRule();
