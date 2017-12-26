@@ -20,6 +20,7 @@ import static org.junit.Assert.assertNotNull;
 
 import java.io.IOException;
 import java.net.Socket;
+import java.util.List;
 import java.util.Properties;
 
 import org.junit.After;
@@ -34,6 +35,7 @@ import org.apache.geode.distributed.ConfigurationProperties;
 import org.apache.geode.distributed.Locator;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.protocol.exception.InvalidProtocolMessageException;
+import org.apache.geode.internal.protocol.protobuf.v1.BasicTypes.Server;
 import org.apache.geode.internal.protocol.protobuf.v1.ClientProtocol;
 import org.apache.geode.internal.protocol.protobuf.v1.ConnectionAPI;
 import org.apache.geode.internal.protocol.protobuf.v1.MessageUtil;
@@ -81,8 +83,8 @@ public class LocatorConnectionAuthenticationDUnitTest extends JUnit4CacheTestCas
   }
 
   /**
-   * Test that if the locator has a security manager, an unauthorized client is not allowed to do
-   * anything.
+   * Test that if the locator has a security manager, an authorized client is allowed to get the
+   * available servers
    */
   @Test
   public void authorizedClientCanGetServersIfSecurityIsEnabled() throws Throwable {
@@ -92,8 +94,8 @@ public class LocatorConnectionAuthenticationDUnitTest extends JUnit4CacheTestCas
     ClientProtocol.Message authorization =
         ProtobufUtilities.createProtobufMessage(ProtobufUtilities.createProtobufRequestBuilder()
             .setAuthenticationRequest(ConnectionAPI.AuthenticationRequest.newBuilder()
-                .putCredentials("security-username", "data").putCredentials("security-password",
-                    "data"))
+                .putCredentials("security-username", "cluster").putCredentials("security-password",
+                    "cluster"))
             .build());
     ClientProtocol.Message getAvailableServersRequestMessage = ProtobufUtilities
         .createProtobufMessage(protobufRequestBuilder.setGetAvailableServersRequest(
@@ -113,8 +115,9 @@ public class LocatorConnectionAuthenticationDUnitTest extends JUnit4CacheTestCas
 
       ClientProtocol.Message getAvailableServersResponseMessage =
           protobufProtocolSerializer.deserialize(socket.getInputStream());
-      assertNotNull("Got response: " + getAvailableServersResponseMessage,
-          getAvailableServersRequestMessage.getResponse().getErrorResponse());
+      assertEquals("Got response: " + getAvailableServersResponseMessage, 1,
+          getAvailableServersResponseMessage.getResponse().getGetAvailableServersResponse()
+              .getServersCount());
     }
   }
 
@@ -143,13 +146,6 @@ public class LocatorConnectionAuthenticationDUnitTest extends JUnit4CacheTestCas
     }
   }
 
-  @Override
-  public Properties getDistributedSystemProperties() {
-    Properties properties = super.getDistributedSystemProperties();
-    properties.put(ConfigurationProperties.STATISTIC_SAMPLING_ENABLED, "true");
-    properties.put(ConfigurationProperties.STATISTIC_SAMPLE_RATE, "100");
-    return properties;
-  }
 
   private Integer startCacheWithCacheServer(int locatorPort) throws IOException {
     System.setProperty("geode.feature-protobuf-protocol", "true");
@@ -158,6 +154,7 @@ public class LocatorConnectionAuthenticationDUnitTest extends JUnit4CacheTestCas
     props.setProperty(ConfigurationProperties.LOCATORS, "localhost[" + locatorPort + "]");
     props.setProperty("security-username", "cluster");
     props.setProperty("security-password", "cluster");
+    props.setProperty(ConfigurationProperties.USE_CLUSTER_CONFIGURATION, "true");
     InternalCache cache = getCache(props);
     CacheServer cacheServer = cache.addCacheServer();
     cacheServer.setPort(0);
