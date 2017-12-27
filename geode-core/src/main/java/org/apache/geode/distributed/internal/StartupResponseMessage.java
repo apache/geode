@@ -17,7 +17,6 @@ package org.apache.geode.distributed.internal;
 import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
-import java.util.Properties;
 import java.util.Set;
 
 import org.apache.logging.log4j.Logger;

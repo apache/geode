@@ -222,7 +222,7 @@ public class MembershipJUnitTest {
       // let the managers idle for a while and get used to each other
       // Thread.sleep(4000l);
 
-      m2.shutdown();
+      m2.disconnect(false);
       assertTrue(!m2.isConnected());
 
       assertTrue(m1.getView().size() == 1);
@@ -357,7 +357,7 @@ public class MembershipJUnitTest {
       // let the managers idle for a while and get used to each other
       Thread.sleep(4000l);
 
-      m2.shutdown();
+      m2.disconnect(false);
       assertTrue(!m2.isConnected());
 
       assertTrue(m1.getView().size() == 1);
@@ -365,10 +365,10 @@ public class MembershipJUnitTest {
     } finally {
 
       if (m2 != null) {
-        m2.shutdown();
+        m2.disconnect(false);
       }
       if (m1 != null) {
-        m1.shutdown();
+        m1.disconnect(false);
       }
       if (l != null) {
         l.stop();

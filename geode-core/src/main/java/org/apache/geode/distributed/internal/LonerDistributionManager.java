@@ -213,7 +213,7 @@ public class LonerDistributionManager implements DM {
     return this.elderState;
   }
 
-  public long getChannelId() {
+  public long getMembershipPort() {
     return 0;
   }
 
@@ -276,6 +276,11 @@ public class LonerDistributionManager implements DM {
   }
 
   public ExecutorService getPrMetaDataCleanupThreadPool() {
+    return executor;
+  }
+
+  @Override
+  public Executor getFunctionExcecutor() {
     return executor;
   }
 
@@ -1372,12 +1377,6 @@ public class LonerDistributionManager implements DM {
   @Override
   public int getDMType() {
     return 0;
-  }
-
-  @Override
-  public boolean isSharedConfigurationServiceEnabledForDS() {
-    // return false for loner
-    return false;
   }
 
   @Override

@@ -20,7 +20,6 @@ import static org.junit.runners.MethodSorters.*;
 import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
-import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.LinkedList;
@@ -62,7 +61,6 @@ import org.apache.geode.internal.cache.tier.sockets.CacheClientNotifierStats;
 import org.apache.geode.internal.cache.tier.sockets.ClientProxyMembershipID;
 import org.apache.geode.internal.logging.InternalLogWriter;
 import org.apache.geode.internal.logging.LocalLogWriter;
-import org.apache.geode.internal.net.SocketCreatorFactory;
 import org.apache.geode.test.dunit.AsyncInvocation;
 import org.apache.geode.test.dunit.Host;
 import org.apache.geode.test.dunit.Invoke;
@@ -908,9 +906,9 @@ public class ConnectionPoolDUnitTest extends JUnit4CacheTestCase {
     List l = InternalDistributedSystem.getExistingSystems();
     if (l.size() > 1) {
       getSystem().getLogWriter().info("validateDS: size=" + l.size() + " isDedicatedAdminVM="
-          + DistributionManager.isDedicatedAdminVM + " l=" + l);
+          + DistributionManager.isDedicatedAdminVM() + " l=" + l);
     }
-    assertFalse(DistributionManager.isDedicatedAdminVM);
+    assertFalse(DistributionManager.isDedicatedAdminVM());
     assertEquals(1, l.size());
   }
 

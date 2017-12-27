@@ -59,6 +59,14 @@ import org.apache.geode.internal.util.Breadcrumbs;
  */
 public abstract class DistributionMessage implements DataSerializableFixedID, Cloneable {
 
+  /**
+   * WARNING: setting this to true may break dunit tests.
+   * <p>
+   * see org.apache.geode.cache30.ClearMultiVmCallBkDUnitTest
+   */
+  private static final boolean INLINE_PROCESS =
+      !Boolean.getBoolean("DistributionManager.enqueueOrderedMessages");
+
   private static final Logger logger = LogService.getLogger();
 
   /**
@@ -410,7 +418,7 @@ public abstract class DistributionMessage implements DataSerializableFixedID, Cl
    * Schedule this message's process() method in a thread determined by getExecutor()
    */
   protected void schedule(final DistributionManager dm) {
-    boolean inlineProcess = DistributionManager.INLINE_PROCESS
+    boolean inlineProcess = INLINE_PROCESS
         && getProcessorType() == DistributionManager.SERIAL_EXECUTOR && !isPreciousThread();
 
     boolean forceInline = this.acker != null || getInlineProcess() || Connection.isDominoThread();

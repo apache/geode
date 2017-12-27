@@ -376,7 +376,7 @@ public class AgentLauncher {
   }
 
   private Agent createAgent(final Properties props) throws IOException, AdminException {
-    DistributionManager.isDedicatedAdminVM = true;
+    DistributionManager.setIsDedicatedAdminVM(true);
     SystemFailure.setExitOK(true);
 
     final AgentConfigImpl config = new AgentConfigImpl(props);
