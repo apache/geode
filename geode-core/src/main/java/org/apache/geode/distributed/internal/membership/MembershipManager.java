@@ -88,6 +88,13 @@ public interface MembershipManager {
   public boolean isBeingSick();
 
   /**
+   * Instructs this manager to shut down
+   * 
+   * @param beforeJoined whether we've joined the cluster or not
+   */
+  public void disconnect(boolean beforeJoined);
+
+  /**
    * Instruct this manager to release resources
    */
   public void shutdown();

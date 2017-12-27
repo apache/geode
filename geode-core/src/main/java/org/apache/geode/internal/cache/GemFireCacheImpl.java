@@ -2689,7 +2689,7 @@ public class GemFireCacheImpl implements InternalCache, InternalClientCache, Has
 
   @Override
   public Set<DistributedMember> getAdminMembers() {
-    return (Set<DistributedMember>) this.dm.getAdminMemberSet();
+    return (Set) this.dm.getAdminMemberSet();
   }
 
   @Override

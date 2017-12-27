@@ -156,7 +156,7 @@ public abstract class DistributedSystem implements StatisticsFactory {
       config = new Properties();
     }
     synchronized (existingSystemsLock) {
-      if (DistributionManager.isDedicatedAdminVM) {
+      if (DistributionManager.isDedicatedAdminVM()) {
         // For a dedicated admin VM, check to see if there is already
         // a connect that will suit our purposes.
         DistributedSystem existingSystem = getConnection(config);
@@ -323,7 +323,7 @@ public abstract class DistributedSystem implements StatisticsFactory {
             LocalizedStrings.DistributedSystem_THIS_VM_ALREADY_HAS_ONE_OR_MORE_DISTRIBUTED_SYSTEM_CONNECTIONS_0
                 .toLocalizedString(existingSystems));
       }
-      DistributionManager.isDedicatedAdminVM = adminOnly;
+      DistributionManager.setIsDedicatedAdminVM(adminOnly);
     }
   }
 
