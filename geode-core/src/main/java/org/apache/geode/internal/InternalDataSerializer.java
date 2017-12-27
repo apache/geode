@@ -156,6 +156,7 @@ public abstract class InternalDataSerializer extends DataSerializer implements D
           + ";org.apache.shiro.*;org.apache.shiro.authz.*;org.apache.shiro.authc.*" // security
                                                                                     // services
           + ";org.apache.geode.modules.util.SessionCustomExpiry" // geode-modules
+          + ";com.healthmarketscience.rmiio.*;com.sun.proxy.*" // Jar deployment
           + ";";
 
 

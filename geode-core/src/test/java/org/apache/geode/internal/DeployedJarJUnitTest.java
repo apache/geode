@@ -15,7 +15,6 @@
 package org.apache.geode.internal;
 
 
-import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import java.io.File;
@@ -51,22 +50,14 @@ public class DeployedJarJUnitTest {
 
   @Test
   public void validJarContentDoesNotThrow() throws Exception {
-    new DeployedJar(jarFile, JAR_NAME, expectedJarBytes);
-  }
-
-  @Test
-  public void unexpectedContentThrowsException() throws Exception {
-    givenUnexpectedJarFileContents();
-
-    assertThatThrownBy(() -> new DeployedJar(jarFile, JAR_NAME, expectedJarBytes))
-        .isInstanceOf(IllegalStateException.class);
+    new DeployedJar(jarFile, JAR_NAME);
   }
 
   @Test
   public void invalidContentThrowsException() throws Exception {
     byte[] invalidJarBytes = givenInvalidJarBytes();
 
-    assertThatThrownBy(() -> new DeployedJar(jarFile, JAR_NAME, invalidJarBytes))
+    assertThatThrownBy(() -> new DeployedJar(jarFile, JAR_NAME))
         .isInstanceOf(IllegalArgumentException.class);
   }
 

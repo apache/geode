@@ -14,6 +14,7 @@
  */
 package org.apache.geode.management;
 
+import java.util.List;
 import java.util.Map;
 
 import org.apache.geode.distributed.DistributedMember;
@@ -214,11 +215,12 @@ public interface MemberMXBean {
    *
    * @param commandString Command to be execute.
    * @param env Environmental properties to use during command execution.
-   * @param binaryData Binary data specific to the command being executed.
+   * @param stagedFilePaths Local files (as relevant to the command). May be null.
    * @return Result of the execution in JSON format.
    */
   @ResourceOperation()
-  String processCommand(String commandString, Map<String, String> env, Byte[][] binaryData);
+  String processCommand(String commandString, Map<String, String> env,
+      List<String> stagedFilePaths);
 
   /**
    * Returns the name of all disk stores in use by this member.

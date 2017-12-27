@@ -12,25 +12,21 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
+
 package org.apache.geode.management.internal.security;
 
 import static org.apache.geode.distributed.ConfigurationProperties.SECURITY_MANAGER;
-import static org.mockito.Mockito.mock;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
-import java.lang.management.ManagementFactory;
-
-import javax.management.ObjectName;
-
-import org.assertj.core.api.SoftAssertions;
 import org.junit.Before;
-import org.junit.BeforeClass;
 import org.junit.ClassRule;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
-import org.apache.geode.management.ManagerMXBean;
-import org.apache.geode.management.internal.beans.ManagerMBean;
+import org.apache.geode.management.internal.beans.FileUploaderMBean;
+import org.apache.geode.security.NotAuthorizedException;
+import org.apache.geode.security.SimpleTestSecurityManager;
 import org.apache.geode.security.TestSecurityManager;
 import org.apache.geode.test.junit.categories.IntegrationTest;
 import org.apache.geode.test.junit.categories.SecurityTest;
@@ -39,53 +35,33 @@ import org.apache.geode.test.junit.rules.MBeanServerConnectionRule;
 import org.apache.geode.test.junit.rules.ServerStarterRule;
 
 @Category({IntegrationTest.class, SecurityTest.class})
-public class ManagerMBeanAuthorizationJUnitTest {
-  private ManagerMXBean managerMXBean;
+public class FileUploaderMBeanSecurityTest {
+
+  private FileUploaderMBean bean;
 
   @ClassRule
   public static ServerStarterRule server = new ServerStarterRule().withJMXManager()
       .withProperty(SECURITY_MANAGER, TestSecurityManager.class.getName())
-      .withProperty(TestSecurityManager.SECURITY_JSON,
-          "org/apache/geode/management/internal/security/cacheServer.json")
-      .withAutoStart();
+      .withSecurityManager(SimpleTestSecurityManager.class).withAutoStart();
 
   @Rule
   public MBeanServerConnectionRule connectionRule =
       new MBeanServerConnectionRule(server::getJmxPort);
 
-  @BeforeClass
-  public static void beforeClassSetup() throws Exception {
-    // Create a mock ManagerMBean that we will use to call against.
-    ObjectName managerMBeanName = ObjectName.getInstance("GemFire", "mock", "Manager");
-    ManagerMXBean bean = mock(ManagerMBean.class);
-    ManagementFactory.getPlatformMBeanServer().registerMBean(bean, managerMBeanName);
-  }
-
   @Before
   public void setUp() throws Exception {
-    managerMXBean = connectionRule.getProxyMXBean(ManagerMXBean.class, "GemFire:mock=Manager");
+    bean = connectionRule.getProxyMBean(FileUploaderMBean.class);
   }
 
   @Test
-  @ConnectionConfiguration(user = "cluster-admin", password = "1234567")
-  public void testAllAccess() throws Exception {
-    managerMXBean.setPulseURL("foo");
-    managerMXBean.start();
-    managerMXBean.stop();
-    managerMXBean.isRunning();
+  @ConnectionConfiguration(user = "clusterManageDeploy", password = "clusterManageDeploy")
+  public void testClusterManageDeployAccess() throws Exception {
+    assertThatThrownBy(() -> bean.uploadFile(null)).isNotInstanceOf(NotAuthorizedException.class);
   }
 
   @Test
-  @ConnectionConfiguration(user = "data-admin", password = "1234567")
-  public void testSomeAccess() throws Exception {
-    SoftAssertions softly = new SoftAssertions();
-
-    softly.assertThatThrownBy(() -> managerMXBean.start())
-        .hasMessageContaining(ResourcePermissions.CLUSTER_MANAGE.toString());
-    softly.assertThatThrownBy(() -> managerMXBean.getPulseURL())
-        .hasMessageContaining(ResourcePermissions.CLUSTER_WRITE.toString());
-
-    softly.assertAll();
-    managerMXBean.isRunning();
+  @ConnectionConfiguration(user = "clusterManage", password = "clusterManage")
+  public void testClusterManageAccess() throws Exception {
+    assertThatThrownBy(() -> bean.uploadFile(null)).isNotInstanceOf(NotAuthorizedException.class);
   }
 }

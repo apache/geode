@@ -132,6 +132,7 @@ dependencies {
   // https://mvnrepository.com/artifact/io.github.lukehutch/fast-classpath-scanner
   compile 'io.github.lukehutch:fast-classpath-scanner:' + project.'fast-classpath-scanner.version'
 
+  compile 'com.healthmarketscience.rmiio:rmiio:' + project.'rmiio.version'
 
   compile project(':geode-common')
   compile project(':geode-json')

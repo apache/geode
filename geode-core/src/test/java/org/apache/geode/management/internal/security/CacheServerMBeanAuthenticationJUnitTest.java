@@ -43,7 +43,7 @@ public class CacheServerMBeanAuthenticationJUnitTest {
 
   @Before
   public void setUp() throws Exception {
-    bean = connectionRule.getProxyMBean(CacheServerMXBean.class, "GemFire:service=CacheServer,*");
+    bean = connectionRule.getProxyMXBean(CacheServerMXBean.class, "GemFire:service=CacheServer,*");
   }
 
   @Test

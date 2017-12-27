@@ -21,8 +21,10 @@ import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 
 import java.io.BufferedReader;
+import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.FileFilter;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.nio.file.Files;
@@ -36,6 +38,7 @@ import java.util.Set;
 import java.util.regex.Pattern;
 
 import org.apache.commons.io.FileUtils;
+import org.apache.commons.io.IOUtils;
 import org.apache.commons.io.filefilter.DirectoryFileFilter;
 import org.apache.commons.io.filefilter.RegexFileFilter;
 import org.apache.logging.log4j.Logger;
@@ -1002,6 +1005,9 @@ public class IncrementalBackupDistributedTest extends JUnit4CacheTestCase {
     final ClassBuilder classBuilder = new ClassBuilder();
     final byte[] classBytes = classBuilder.createJarFromName(jarName);
 
+    File jarFile = tempDir.newFile();
+    IOUtils.copyLarge(new ByteArrayInputStream(classBytes), new FileOutputStream(jarFile));
+
     VM vm0 = Host.getHost(0).getVM(0);
 
     /*
@@ -1009,7 +1015,7 @@ public class IncrementalBackupDistributedTest extends JUnit4CacheTestCase {
      */
     File deployedJarFile = vm0.invoke(() -> {
       DeployedJar deployedJar =
-          ClassPathLoader.getLatest().getJarDeployer().deploy(jarName, classBytes);
+          ClassPathLoader.getLatest().getJarDeployer().deploy(jarName, jarFile);
       return deployedJar.getFile();
     });
 

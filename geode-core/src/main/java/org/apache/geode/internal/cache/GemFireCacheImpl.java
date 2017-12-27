@@ -1018,24 +1018,19 @@ public class GemFireCacheImpl implements InternalCache, InternalClientCache, Has
     }
 
     // can't simply return null if server is not using shared configuration, since we need to find
-    // out
-    // if the locator is running in secure mode or not, if yes, then we need to throw an exception
-    // if server is not using cluster config
+    // out if the locator is running in secure mode or not, if yes, then we need to throw an
+    // exception if server is not using cluster config.
 
-    Map<InternalDistributedMember, Collection<String>> scl =
+    Map<InternalDistributedMember, Collection<String>> locatorsWithClusterConfig =
         getDistributionManager().getAllHostedLocatorsWithSharedConfiguration();
 
     // If there are no locators with Shared configuration, that means the system has been started
-    // without shared configuration
-    // then do not make requests to the locators
-    if (scl.isEmpty()) {
+    // without shared configuration then do not make requests to the locators.
+    if (locatorsWithClusterConfig.isEmpty()) {
       logger.info(LocalizedMessage
           .create(LocalizedStrings.GemFireCache_NO_LOCATORS_FOUND_WITH_SHARED_CONFIGURATION));
       return null;
     }
-
-    Map<InternalDistributedMember, Collection<String>> locatorsWithClusterConfig =
-        getDistributionManager().getAllHostedLocatorsWithSharedConfiguration();
 
     try {
       ConfigurationResponse response = ccLoader.requestConfigurationFromLocators(
@@ -1169,7 +1164,7 @@ public class GemFireCacheImpl implements InternalCache, InternalClientCache, Has
     ClassPathLoader.setLatestToDefault(this.system.getConfig().getDeployWorkingDir());
 
     try {
-      ccLoader.deployJarsReceivedFromClusterConfiguration(this, this.configurationResponse);
+      ccLoader.deployJarsReceivedFromClusterConfiguration(this.configurationResponse);
     } catch (IOException | ClassNotFoundException e) {
       throw new GemFireConfigException(
           LocalizedStrings.GemFireCache_EXCEPTION_OCCURRED_WHILE_DEPLOYING_JARS_FROM_SHARED_CONDFIGURATION

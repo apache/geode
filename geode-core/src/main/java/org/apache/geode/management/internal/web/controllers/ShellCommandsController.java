@@ -52,7 +52,6 @@ import org.apache.geode.management.cli.Result;
 import org.apache.geode.management.internal.cli.result.CommandResult;
 import org.apache.geode.management.internal.cli.result.ResultBuilder;
 import org.apache.geode.management.internal.web.domain.QueryParameterSource;
-import org.apache.geode.management.internal.web.util.ConvertUtils;
 
 /**
  * The ShellCommandsController class implements GemFire REST API calls for Gfsh Shell Commands.
@@ -73,8 +72,7 @@ public class ShellCommandsController extends AbstractCommandsController {
   public ResponseEntity<InputStreamResource> command(@RequestParam(value = "cmd") String command,
       @RequestParam(value = "resources", required = false) MultipartFile[] fileResource)
       throws IOException {
-    String result =
-        processCommand(decode(command), getEnvironment(), ConvertUtils.convert(fileResource));
+    String result = processCommand(decode(command), getEnvironment(), fileResource);
     return getResponse(result);
   }
 

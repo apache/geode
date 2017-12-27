@@ -49,7 +49,7 @@ public class CacheServerMBeanAuthorizationJUnitTest {
 
   @Before
   public void setUp() throws Exception {
-    bean = connectionRule.getProxyMBean(CacheServerMXBean.class);
+    bean = connectionRule.getProxyMXBean(CacheServerMXBean.class);
   }
 
   @Test

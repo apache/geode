@@ -3,6 +3,7 @@ antlr
 aopalliance
 classmate
 commons-beanutils
+commons-codec
 commons-collections
 commons-digester
 commons-fileupload
@@ -10,7 +11,7 @@ commons-io
 commons-lang
 commons-logging
 commons-modeler
-commons-codec
+commons-validator
 fast-classpath-scanner
 fastutil
 findbugs-annotations
@@ -44,10 +45,11 @@ log4j-jcl
 log4j-jul
 log4j-slf4j-impl
 lucene-analyzers-common
+lucene-analyzers-phonetic
 lucene-core
 lucene-queries
 lucene-queryparser
-lucene-analyzers-phonetic
+mapstruct
 mx4j
 mx4j-remote
 mx4j-tools
@@ -55,6 +57,7 @@ netty-all
 paranamer
 protobuf-java
 ra.jar
+rmiio
 scala-library
 scala-reflect
 shiro-core
@@ -69,6 +72,8 @@ spring-expression
 spring-hateoas
 spring-ldap-core
 spring-oxm
+spring-plugin-core
+spring-plugin-metadata
 spring-security-config
 spring-security-core
 spring-security-ldap
@@ -77,10 +82,6 @@ spring-shell
 spring-tx
 spring-web
 spring-webmvc
-swagger-annotations
-mapstruct
-spring-plugin-core
-spring-plugin-metadata
 springfox-core
 springfox-schema
 springfox-spi
@@ -88,5 +89,5 @@ springfox-spring-web
 springfox-swagger
 springfox-swagger-common
 springfox-swagger-ui
+swagger-annotations
 swagger-models
-commons-validator

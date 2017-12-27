@@ -17,20 +17,30 @@ package org.apache.geode.management.internal.cli.commands;
 
 import static org.apache.commons.io.FileUtils.ONE_MB;
 
+import java.io.File;
+import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.nio.file.Files;
+import java.rmi.RemoteException;
 import java.text.DecimalFormat;
-import java.util.Arrays;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 
+import com.healthmarketscience.rmiio.RemoteInputStream;
+import com.healthmarketscience.rmiio.SimpleRemoteInputStream;
+import org.apache.commons.io.FileUtils;
+import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.lang.ArrayUtils;
 import org.apache.commons.lang.StringUtils;
+import org.apache.logging.log4j.Logger;
 import org.springframework.shell.core.annotation.CliCommand;
 import org.springframework.shell.core.annotation.CliOption;
 
 import org.apache.geode.cache.execute.ResultCollector;
 import org.apache.geode.distributed.DistributedMember;
+import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.management.cli.CliMetaData;
 import org.apache.geode.management.cli.ConverterHint;
 import org.apache.geode.management.cli.Result;
@@ -49,6 +59,7 @@ import org.apache.geode.security.ResourcePermission;
 
 public class DeployCommand implements GfshCommand {
   private final DeployFunction deployFunction = new DeployFunction();
+  private final Logger logger = LogService.getLogger();
 
   /**
    * Deploy one or more JAR files to members of a group or all members.
@@ -69,48 +80,65 @@ public class DeployCommand implements GfshCommand {
           optionContext = ConverterHint.MEMBERGROUP) String[] groups,
       @CliOption(key = {CliStrings.JAR, CliStrings.JARS},
           help = CliStrings.DEPLOY__JAR__HELP) String[] jars,
-      @CliOption(key = {CliStrings.DEPLOY__DIR}, help = CliStrings.DEPLOY__DIR__HELP) String dir) {
+      @CliOption(key = {CliStrings.DEPLOY__DIR}, help = CliStrings.DEPLOY__DIR__HELP) String dir)
+      throws FileNotFoundException, RemoteException {
 
     TabularResultData tabularData = ResultBuilder.createTabularResultData();
 
-    byte[][] shellBytesData = CommandExecutionContext.getBytesFromShell();
-    String[] jarNames = CliUtil.bytesToNames(shellBytesData);
-    byte[][] jarBytes = CliUtil.bytesToData(shellBytesData);
+    List<String> jarFullPaths = CommandExecutionContext.getFilePathFromShell();
 
     Set<DistributedMember> targetMembers;
-
     targetMembers = CliUtil.findMembers(groups, null);
 
-    if (targetMembers.size() > 0) {
+    List results = new ArrayList();
+    for (DistributedMember member : targetMembers) {
+      List<RemoteInputStream> remoteStreams = new ArrayList<>();
+      List<String> jarNames = new ArrayList<>();
+      for (int i = 0; i < jarFullPaths.size(); i++) {
+        remoteStreams
+            .add(new SimpleRemoteInputStream(new FileInputStream(jarFullPaths.get(i))).export());
+        jarNames.add(FilenameUtils.getName(jarFullPaths.get(i)));
+      }
+
       // this deploys the jars to all the matching servers
-      ResultCollector<?, ?> resultCollector = CliUtil.executeFunction(this.deployFunction,
-          new Object[] {jarNames, jarBytes}, targetMembers);
+      ResultCollector<?, ?> resultCollector =
+          executeFunction(this.deployFunction, new Object[] {jarNames, remoteStreams}, member);
 
-      List<CliFunctionResult> results =
-          CliFunctionResult.cleanResults((List<?>) resultCollector.getResult());
+      results.add(((List) resultCollector.getResult()).get(0));
 
-      for (CliFunctionResult result : results) {
-        if (result.getThrowable() != null) {
+      for (RemoteInputStream ris : remoteStreams) {
+        try {
+          ris.close(true);
+        } catch (IOException ex) {
+          // Ignored
+        }
+      }
+    }
+
+    List<CliFunctionResult> cleanedResults = CliFunctionResult.cleanResults(results);
+
+    for (CliFunctionResult result : cleanedResults) {
+      if (result.getThrowable() != null) {
+        tabularData.accumulate("Member", result.getMemberIdOrName());
+        tabularData.accumulate("Deployed JAR", "");
+        tabularData.accumulate("Deployed JAR Location",
+            "ERROR: " + result.getThrowable().getClass().getName() + ": "
+                + result.getThrowable().getMessage());
+        tabularData.setStatus(Result.Status.ERROR);
+      } else {
+        String[] strings = (String[]) result.getSerializables();
+        for (int i = 0; i < strings.length; i += 2) {
           tabularData.accumulate("Member", result.getMemberIdOrName());
-          tabularData.accumulate("Deployed JAR", "");
-          tabularData.accumulate("Deployed JAR Location",
-              "ERROR: " + result.getThrowable().getClass().getName() + ": "
-                  + result.getThrowable().getMessage());
-          tabularData.setStatus(Result.Status.ERROR);
-        } else {
-          String[] strings = (String[]) result.getSerializables();
-          for (int i = 0; i < strings.length; i += 2) {
-            tabularData.accumulate("Member", result.getMemberIdOrName());
-            tabularData.accumulate("Deployed JAR", strings[i]);
-            tabularData.accumulate("Deployed JAR Location", strings[i + 1]);
-          }
+          tabularData.accumulate("Deployed JAR", strings[i]);
+          tabularData.accumulate("Deployed JAR Location", strings[i + 1]);
         }
       }
     }
 
     Result result = ResultBuilder.buildResult(tabularData);
     persistClusterConfiguration(result,
-        () -> getSharedConfiguration().addJarsToThisLocator(jarNames, jarBytes, groups));
+        () -> getSharedConfiguration().addJarsToThisLocator(jarFullPaths, groups));
+
     return result;
   }
 
@@ -122,10 +150,8 @@ public class DeployCommand implements GfshCommand {
 
     @Override
     public Result preExecution(GfshParseResult parseResult) {
-      // 2nd argument is the jar
-      String[] jars = (String[]) parseResult.getArguments()[1];
-      // 3rd argument is the dir
-      String dir = (String) parseResult.getArguments()[2];
+      String[] jars = (String[]) parseResult.getParamValue("jar");
+      String dir = (String) parseResult.getParamValue("dir");
 
       if (ArrayUtils.isEmpty(jars) && StringUtils.isBlank(dir)) {
         return ResultBuilder.createUserErrorResult(
@@ -137,34 +163,37 @@ public class DeployCommand implements GfshCommand {
             .createUserErrorResult("Parameters \"jar\" and \"dir\" can not both be specified.");
       }
 
-      FileResult fileResult;
-      String[] filesToUpload = jars;
-      if (filesToUpload == null) {
-        filesToUpload = new String[] {dir};
-      }
-      try {
-
-        fileResult = new FileResult(filesToUpload);
-      } catch (FileNotFoundException fnfex) {
-        return ResultBuilder
-            .createGemFireErrorResult("'" + Arrays.toString(filesToUpload) + "' not found.");
-      } catch (IOException ioex) {
-        return ResultBuilder.createGemFireErrorResult("I/O error when reading jar/dir: "
-            + ioex.getClass().getName() + ": " + ioex.getMessage());
-      }
-
-      // Only do this additional check if a dir was provided
-      if (dir != null) {
-        String message =
-            "\nDeploying files: " + fileResult.getFormattedFileList() + "\nTotal file size is: "
-                + this.numFormatter.format((double) fileResult.computeFileSizeTotal() / ONE_MB)
-                + "MB\n\nContinue? ";
-
-        if (readYesNo(message, Response.YES) == Response.NO) {
-          return ResultBuilder.createShellClientAbortOperationResult(
-              "Aborted deploy of " + Arrays.toString(filesToUpload) + ".");
+      FileResult fileResult = new FileResult();
+      if (jars != null) {
+        for (String jar : jars) {
+          File jarFile = new File(jar);
+          if (!jarFile.exists()) {
+            return ResultBuilder.createUserErrorResult(jar + " not found.");
+          }
+          fileResult.addFile(jarFile);
+        }
+      } else {
+        File fileDir = new File(dir);
+        if (!fileDir.isDirectory()) {
+          return ResultBuilder.createUserErrorResult(dir + " is not a directory");
+        }
+        File[] childJarFile = fileDir.listFiles(CliUtil.JAR_FILE_FILTER);
+        for (File file : childJarFile) {
+          fileResult.addFile(file);
         }
       }
+
+      // check if user wants to upload with the computed file size
+      String message =
+          "\nDeploying files: " + fileResult.getFormattedFileList() + "\nTotal file size is: "
+              + this.numFormatter.format((double) fileResult.computeFileSizeTotal() / ONE_MB)
+              + "MB\n\nContinue? ";
+
+      if (readYesNo(message, Response.YES) == Response.NO) {
+        return ResultBuilder.createShellClientAbortOperationResult(
+            "Aborted deploy of " + fileResult.getFormattedFileList() + ".");
+      }
+
       return fileResult;
     }
   }
