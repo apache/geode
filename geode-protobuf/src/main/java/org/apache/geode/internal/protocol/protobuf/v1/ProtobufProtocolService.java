@@ -19,8 +19,11 @@ import org.apache.geode.cache.Cache;
 import org.apache.geode.distributed.internal.InternalLocator;
 import org.apache.geode.internal.cache.client.protocol.ClientProtocolProcessor;
 import org.apache.geode.internal.cache.client.protocol.ClientProtocolService;
+import org.apache.geode.internal.protocol.LocatorMessageExecutionContext;
+import org.apache.geode.internal.protocol.ServerMessageExecutionContext;
 import org.apache.geode.internal.protocol.protobuf.ProtocolVersion;
 import org.apache.geode.internal.protocol.protobuf.statistics.ProtobufClientStatisticsImpl;
+import org.apache.geode.internal.protocol.protobuf.v1.state.ProtobufConnectionHandshakeStateProcessor;
 import org.apache.geode.internal.protocol.statistics.NoOpStatistics;
 import org.apache.geode.internal.protocol.statistics.ProtocolClientStatistics;
 import org.apache.geode.internal.security.SecurityService;
@@ -41,8 +44,10 @@ public class ProtobufProtocolService implements ClientProtocolService {
       SecurityService securityService) {
     assert (statistics != null);
 
-    return new ProtobufCachePipeline(protobufStreamProcessor, getStatistics(), cache,
-        securityService);
+    ProtobufConnectionHandshakeStateProcessor connectionStateProcessor =
+        new ProtobufConnectionHandshakeStateProcessor(securityService);
+    return new ProtobufCachePipeline(protobufStreamProcessor,
+        new ServerMessageExecutionContext(cache, statistics, connectionStateProcessor));
   }
 
   /**
@@ -57,8 +62,12 @@ public class ProtobufProtocolService implements ClientProtocolService {
   }
 
   @Override
-  public ClientProtocolProcessor createProcessorForLocator(InternalLocator locator) {
-    return new ProtobufLocatorPipeline(protobufStreamProcessor, getStatistics(), locator);
+  public ClientProtocolProcessor createProcessorForLocator(InternalLocator locator,
+      SecurityService securityService) {
+    ProtobufConnectionHandshakeStateProcessor connectionStateProcessor =
+        new ProtobufConnectionHandshakeStateProcessor(securityService);
+    return new ProtobufCachePipeline(protobufStreamProcessor,
+        new LocatorMessageExecutionContext(locator, statistics, connectionStateProcessor));
   }
 
   @Override

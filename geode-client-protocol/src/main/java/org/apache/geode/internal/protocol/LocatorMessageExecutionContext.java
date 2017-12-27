@@ -12,43 +12,50 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
+
 package org.apache.geode.internal.protocol;
+
 
 import org.apache.geode.annotations.Experimental;
 import org.apache.geode.cache.Cache;
 import org.apache.geode.distributed.Locator;
 import org.apache.geode.internal.exception.InvalidExecutionContextException;
 import org.apache.geode.internal.protocol.state.ConnectionStateProcessor;
+import org.apache.geode.internal.protocol.state.ConnectionTerminatingStateProcessor;
 import org.apache.geode.internal.protocol.statistics.ProtocolClientStatistics;
 
 @Experimental
-public abstract class MessageExecutionContext {
-  protected final ProtocolClientStatistics statistics;
-  protected ConnectionStateProcessor connectionStateProcessor;
+public class LocatorMessageExecutionContext extends MessageExecutionContext {
+  private final Locator locator;
 
-  public MessageExecutionContext(ProtocolClientStatistics statistics,
-      ConnectionStateProcessor connectionStateProcessor) {
-    this.statistics = statistics;
-    this.connectionStateProcessor = connectionStateProcessor;
+  public LocatorMessageExecutionContext(Locator locator, ProtocolClientStatistics statistics,
+      ConnectionStateProcessor initialConnectionStateProcessor) {
+    super(statistics, initialConnectionStateProcessor);
+    this.locator = locator;
   }
-
-  public ConnectionStateProcessor getConnectionStateProcessor() {
-    return connectionStateProcessor;
-  }
-
-  public abstract Cache getCache() throws InvalidExecutionContextException;
-
-  public abstract Locator getLocator() throws InvalidExecutionContextException;
 
   /**
-   * Returns the statistics for recording operation stats. In a unit test environment this may not
-   * be a protocol-specific statistics implementation.
+   * Returns the cache associated with this execution
+   * <p>
+   *
+   * @throws InvalidExecutionContextException if there is no cache available
    */
-  public ProtocolClientStatistics getStatistics() {
-    return statistics;
+  @Override
+  public Cache getCache() throws InvalidExecutionContextException {
+    setConnectionStateProcessor(new ConnectionTerminatingStateProcessor());
+    throw new InvalidExecutionContextException(
+        "Operations on the locator should not to try to operate on a server");
   }
 
-  public void setConnectionStateProcessor(ConnectionStateProcessor connectionStateProcessor) {
-    this.connectionStateProcessor = connectionStateProcessor;
+  /**
+   * Returns the locator associated with this execution
+   * <p>
+   *
+   * @throws InvalidExecutionContextException if there is no locator available
+   */
+  @Override
+  public Locator getLocator() throws InvalidExecutionContextException {
+    return locator;
   }
+
 }

@@ -75,6 +75,7 @@ public class LocatorConnectionDUnitTest extends JUnit4CacheTestCase {
     int locatorPort = DistributedTestUtils.getDUnitLocatorPort();
     Socket socket = new Socket(host.getHostName(), locatorPort);
     MessageUtil.sendHandshake(socket);
+    MessageUtil.verifyHandshakeSuccess(socket);
     return socket;
   }
 

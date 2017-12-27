@@ -534,9 +534,11 @@ public class TcpServer {
       ClientProtocolService clientProtocolService = clientProtocolServiceLoader.lookupService();
       clientProtocolService.initializeStatistics("LocatorStats",
           internalLocator.getDistributedSystem());
-      try (ClientProtocolProcessor pipeline =
-          clientProtocolService.createProcessorForLocator(internalLocator)) {
-        pipeline.processMessage(input, socket.getOutputStream());
+      try (ClientProtocolProcessor pipeline = clientProtocolService.createProcessorForLocator(
+          internalLocator, internalLocator.getCache().getSecurityService())) {
+        while (!pipeline.socketProcessingIsFinished()) {
+          pipeline.processMessage(input, socket.getOutputStream());
+        }
       } catch (IncompatibleVersionException e) {
         // should not happen on the locator as there is no handshake.
         log.error("Unexpected exception in client message processing", e);

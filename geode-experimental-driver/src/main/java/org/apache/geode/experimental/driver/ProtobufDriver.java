@@ -133,24 +133,23 @@ public class ProtobufDriver implements Driver {
         final Socket locatorSocket = new Socket(locator.getAddress(), locator.getPort());
 
         final OutputStream outputStream = locatorSocket.getOutputStream();
+        final InputStream inputStream = locatorSocket.getInputStream();
         ProtocolVersion.NewConnectionClientVersion.newBuilder()
             .setMajorVersion(ProtocolVersion.MajorVersions.CURRENT_MAJOR_VERSION_VALUE)
             .setMinorVersion(ProtocolVersion.MinorVersions.CURRENT_MINOR_VERSION_VALUE).build()
             .writeDelimitedTo(outputStream);
 
         // The locator does not currently send a reply to the ProtocolVersion...
-        // if
-        // (!ProtocolVersion.HandshakeAcknowledgement.parseDelimitedFrom(inputStream).getHandshakePassed())
-        // {
-        // throw new IOException("Failed ProtocolVersion.");
-        // }
+        if (!ProtocolVersion.VersionAcknowledgement.parseDelimitedFrom(inputStream)
+            .getVersionAccepted()) {
+          throw new IOException("Failed ProtocolVersion.");
+        }
 
         ClientProtocol.Message.newBuilder()
             .setRequest(ClientProtocol.Request.newBuilder()
                 .setGetAvailableServersRequest(LocatorAPI.GetAvailableServersRequest.newBuilder()))
             .build().writeDelimitedTo(outputStream);
 
-        final InputStream inputStream = locatorSocket.getInputStream();
         LocatorAPI.GetAvailableServersResponse getAvailableServersResponse = ClientProtocol.Message
             .parseDelimitedFrom(inputStream).getResponse().getGetAvailableServersResponse();
         if (getAvailableServersResponse.getServersCount() < 1) {
