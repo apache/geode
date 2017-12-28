@@ -25,6 +25,7 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoMoreInteractions;
 import static org.mockito.Mockito.when;
 
+import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.ResultSetMetaData;
@@ -59,6 +60,7 @@ public class SqlHandlerTest {
   public ExpectedException thrown = ExpectedException.none();
 
   private ConnectionManager manager;
+  private Connection connection;
   private Region region;
   private InternalCache cache;
   private SqlHandler handler;
@@ -99,7 +101,9 @@ public class SqlHandlerTest {
   public void readClearsPreparedStatementWhenFinished() throws Exception {
     setupEmptyResultSet();
     handler.read(region, new Object());
-    verify(statement).clearParameters();
+    verify(statement).executeQuery();
+    verify(statement).setObject(1, COLUMN_VALUE_1);
+    verify(statement).close();
   }
 
   @Test
@@ -189,7 +193,9 @@ public class SqlHandlerTest {
     when(statement.executeUpdate()).thenReturn(1);
     handler.write(region, Operation.CREATE, new Object(), value);
     verify(statement).setObject(1, COLUMN_VALUE_1);
-    verify(statement).setObject(2, COLUMN_VALUE_2);
+    // verify(statement).setObject(2, COLUMN_VALUE_2);
+    verify(statement).executeUpdate();
+    verify(statement).close();
   }
 
   @Test
@@ -197,7 +203,9 @@ public class SqlHandlerTest {
     when(statement.executeUpdate()).thenReturn(1);
     handler.write(region, Operation.UPDATE, new Object(), value);
     verify(statement).setObject(1, COLUMN_VALUE_1);
-    verify(statement).setObject(2, COLUMN_VALUE_2);
+    // verify(statement).setObject(2, COLUMN_VALUE_2);
+    verify(statement).executeUpdate();
+    verify(statement).close();
   }
 
   @Test
@@ -209,6 +217,7 @@ public class SqlHandlerTest {
     handler.write(region, Operation.DESTROY, new Object(), value);
     verify(statement).setObject(1, COLUMN_VALUE_1);
     verify(statement, times(1)).setObject(anyInt(), any());
+    verify(statement).close();
   }
 
   @Test
@@ -220,6 +229,7 @@ public class SqlHandlerTest {
     handler.write(region, Operation.DESTROY, new Object(), value);
     verify(statement).setObject(1, COLUMN_VALUE_1);
     verify(statement, times(1)).setObject(anyInt(), any());
+    verify(statement).close();
   }
 
   @Test
@@ -237,7 +247,7 @@ public class SqlHandlerTest {
   public void preparedStatementClearedAfterExecution() throws Exception {
     when(statement.executeUpdate()).thenReturn(1);
     handler.write(region, Operation.CREATE, new Object(), value);
-    verify(statement).clearParameters();
+    verify(statement).close();
   }
 
   @Test
@@ -246,14 +256,13 @@ public class SqlHandlerTest {
 
     PreparedStatement updateStatement = mock(PreparedStatement.class);
     when(updateStatement.executeUpdate()).thenReturn(1);
-    when(manager.getPreparedStatement(any(), any(), any(), any(), anyInt())).thenReturn(statement)
-        .thenReturn(updateStatement);
+    when(connection.prepareStatement(any())).thenReturn(statement).thenReturn(updateStatement);
 
     handler.write(region, Operation.CREATE, new Object(), value);
     verify(statement).executeUpdate();
     verify(updateStatement).executeUpdate();
-    verify(statement).clearParameters();
-    verify(updateStatement).clearParameters();
+    verify(statement).close();
+    verify(updateStatement).close();
   }
 
   @Test
@@ -262,14 +271,17 @@ public class SqlHandlerTest {
 
     PreparedStatement insertStatement = mock(PreparedStatement.class);
     when(insertStatement.executeUpdate()).thenReturn(1);
-    when(manager.getPreparedStatement(any(), any(), any(), any(), anyInt())).thenReturn(statement)
-        .thenReturn(insertStatement);
+    when(connection.prepareStatement(any())).thenReturn(statement).thenReturn(insertStatement);
 
     handler.write(region, Operation.UPDATE, new Object(), value);
     verify(statement).executeUpdate();
     verify(insertStatement).executeUpdate();
-    verify(statement).clearParameters();
-    verify(insertStatement).clearParameters();
+    verify(statement).executeUpdate();
+    verify(statement).setObject(1, COLUMN_VALUE_1);
+    verify(statement).close();
+    verify(statement).executeUpdate();
+    verify(statement).setObject(1, COLUMN_VALUE_1);
+    verify(insertStatement).close();
   }
 
   @Test
@@ -278,14 +290,13 @@ public class SqlHandlerTest {
 
     PreparedStatement updateStatement = mock(PreparedStatement.class);
     when(updateStatement.executeUpdate()).thenReturn(1);
-    when(manager.getPreparedStatement(any(), any(), any(), any(), anyInt())).thenReturn(statement)
-        .thenReturn(updateStatement);
+    when(connection.prepareStatement(any())).thenReturn(statement).thenReturn(updateStatement);
 
     handler.write(region, Operation.CREATE, new Object(), value);
     verify(statement).executeUpdate();
     verify(updateStatement).executeUpdate();
-    verify(statement).clearParameters();
-    verify(updateStatement).clearParameters();
+    verify(statement).close();
+    verify(updateStatement).close();
   }
 
   @Test
@@ -294,14 +305,13 @@ public class SqlHandlerTest {
 
     PreparedStatement insertStatement = mock(PreparedStatement.class);
     when(insertStatement.executeUpdate()).thenReturn(1);
-    when(manager.getPreparedStatement(any(), any(), any(), any(), anyInt())).thenReturn(statement)
-        .thenReturn(insertStatement);
+    when(connection.prepareStatement(any())).thenReturn(statement).thenReturn(insertStatement);
 
     handler.write(region, Operation.UPDATE, new Object(), value);
     verify(statement).executeUpdate();
     verify(insertStatement).executeUpdate();
-    verify(statement).clearParameters();
-    verify(insertStatement).clearParameters();
+    verify(statement).close();
+    verify(insertStatement).close();
   }
 
   @Test
@@ -310,13 +320,12 @@ public class SqlHandlerTest {
 
     PreparedStatement insertStatement = mock(PreparedStatement.class);
     when(insertStatement.executeUpdate()).thenThrow(SQLException.class);
-    when(manager.getPreparedStatement(any(), any(), any(), any(), anyInt())).thenReturn(statement)
-        .thenReturn(insertStatement);
+    when(connection.prepareStatement(any())).thenReturn(statement).thenReturn(insertStatement);
 
     thrown.expect(IllegalStateException.class);
     handler.write(region, Operation.UPDATE, new Object(), value);
-    verify(statement).clearParameters();
-    verify(insertStatement).clearParameters();
+    verify(statement).close();
+    verify(insertStatement).close();
   }
 
   @Test
@@ -324,7 +333,7 @@ public class SqlHandlerTest {
     when(statement.executeUpdate()).thenReturn(2);
     thrown.expect(IllegalStateException.class);
     handler.write(region, Operation.CREATE, new Object(), value);
-    verify(statement).clearParameters();
+    verify(statement).close();
   }
 
   private void setupManagerMock() throws SQLException {
@@ -339,11 +348,14 @@ public class SqlHandlerTest {
 
     List<ColumnValue> columnList = new ArrayList<>();
     columnList.add(new ColumnValue(true, COLUMN_NAME_1, COLUMN_VALUE_1));
-    columnList.add(new ColumnValue(true, COLUMN_NAME_2, COLUMN_VALUE_2));
+    // columnList.add(new ColumnValue(true, COLUMN_NAME_2, COLUMN_VALUE_2));
     when(manager.getColumnToValueList(any(), any(), any(), any(), any())).thenReturn(columnList);
 
+    this.connection = mock(Connection.class);
+    when(manager.getConnection(any())).thenReturn(this.connection);
+
     statement = mock(PreparedStatement.class);
-    when(manager.getPreparedStatement(any(), any(), any(), any(), anyInt())).thenReturn(statement);
+    when(this.connection.prepareStatement(any())).thenReturn(statement);
   }
 
   private void setupResultSet(ResultSet result) throws SQLException {

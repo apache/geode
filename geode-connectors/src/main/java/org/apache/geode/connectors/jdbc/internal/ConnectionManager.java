@@ -16,7 +16,6 @@ package org.apache.geode.connectors.jdbc.internal;
 
 import java.sql.Connection;
 import java.sql.DatabaseMetaData;
-import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
@@ -34,7 +33,6 @@ class ConnectionManager {
   private final InternalJdbcConnectorService configService;
   private final Map<String, JdbcDataSource> dataSourceMap = new ConcurrentHashMap<>();
   private final ConcurrentMap<String, String> tableToPrimaryKeyMap = new ConcurrentHashMap<>();
-  private final ThreadLocal<PreparedStatementCache> preparedStatementCache = new ThreadLocal<>();
 
   ConnectionManager(InternalJdbcConnectorService configService) {
     this.configService = configService;
@@ -44,13 +42,10 @@ class ConnectionManager {
     return configService.getMappingForRegion(regionName);
   }
 
-  private synchronized JdbcDataSource createDataSource(ConnectionConfiguration config) {
-    JdbcDataSource dataSource = dataSourceMap.get(config.getName());
-    if (dataSource == null) {
-      dataSource = buildJdbcDataSource(config);
-      dataSourceMap.put(config.getName(), dataSource);
-    }
-    return dataSource;
+  private JdbcDataSource createDataSource(ConnectionConfiguration config) {
+    return dataSourceMap.computeIfAbsent(config.getName(), k -> {
+      return buildJdbcDataSource(config);
+    });
   }
 
   JdbcDataSource buildJdbcDataSource(ConnectionConfiguration config) {
@@ -101,19 +96,6 @@ class ConnectionManager {
     return configService.getConnectionConfig(connectionConfigName);
   }
 
-  PreparedStatement getPreparedStatement(Connection connection, List<ColumnValue> columnList,
-      String tableName, Operation operation, int pdxTypeId) {
-    PreparedStatementCache statementCache = preparedStatementCache.get();
-
-    if (statementCache == null) {
-      statementCache = new PreparedStatementCache();
-      preparedStatementCache.set(statementCache);
-    }
-
-    return statementCache.getPreparedStatement(connection, columnList, tableName, operation,
-        pdxTypeId);
-  }
-
   private List<ColumnValue> createColumnValueList(RegionMapping regionMapping, PdxInstance value,
       String keyColumnName) {
     List<ColumnValue> result = new ArrayList<>();
@@ -131,8 +113,7 @@ class ConnectionManager {
   private String computeKeyColumnName(ConnectionConfiguration connectionConfig, String tableName) {
     // TODO: check config for key column
     String key = null;
-    try {
-      Connection connection = getConnection(connectionConfig);
+    try (Connection connection = getConnection(connectionConfig)) {
       DatabaseMetaData metaData = connection.getMetaData();
       ResultSet tables = metaData.getTables(null, null, "%", null);
 

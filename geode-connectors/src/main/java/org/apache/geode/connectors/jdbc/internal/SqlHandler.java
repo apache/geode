@@ -14,6 +14,7 @@
  */
 package org.apache.geode.connectors.jdbc.internal;
 
+import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.ResultSetMetaData;
@@ -52,11 +53,17 @@ public class SqlHandler {
     List<ColumnValue> columnList =
         manager.getColumnToValueList(connectionConfig, regionMapping, key, null, Operation.GET);
     String tableName = regionMapping.getRegionToTableName();
-    PreparedStatement statement = manager.getPreparedStatement(
-        manager.getConnection(connectionConfig), columnList, tableName, Operation.GET, 0);
-    PdxInstanceFactory factory = getPdxInstanceFactory(region, regionMapping);
-    String keyColumnName = manager.getKeyColumnName(connectionConfig, tableName);
-    return executeReadStatement(statement, columnList, factory, regionMapping, keyColumnName);
+    PdxInstance result = null;
+    try (Connection connection = manager.getConnection(connectionConfig);
+        PreparedStatement statement =
+            getPreparedStatement(connection, columnList, tableName, Operation.GET, 0)) {
+      PdxInstanceFactory factory = getPdxInstanceFactory(region, regionMapping);
+      String keyColumnName = manager.getKeyColumnName(connectionConfig, tableName);
+      result = executeReadStatement(statement, columnList, factory, regionMapping, keyColumnName);
+    } catch (SQLException e) {
+      handleSQLException(e);
+    }
+    return result;
   }
 
   private <K, V> PdxInstanceFactory getPdxInstanceFactory(Region<K, V> region,
@@ -76,12 +83,10 @@ public class SqlHandler {
       List<ColumnValue> columnList, PdxInstanceFactory factory, RegionMapping regionMapping,
       String keyColumnName) {
     PdxInstance pdxInstance = null;
-    synchronized (statement) {
-      try {
-        setValuesInStatement(statement, columnList);
-        ResultSet resultSet = statement.executeQuery();
+    try {
+      setValuesInStatement(statement, columnList);
+      try (ResultSet resultSet = statement.executeQuery()) {
         if (resultSet.next()) {
-
           ResultSetMetaData metaData = resultSet.getMetaData();
           int ColumnsNumber = metaData.getColumnCount();
           for (int i = 1; i <= ColumnsNumber; i++) {
@@ -99,11 +104,9 @@ public class SqlHandler {
           }
           pdxInstance = factory.create();
         }
-      } catch (SQLException e) {
-        handleSQLException(e);
-      } finally {
-        clearStatementParameters(statement);
       }
+    } catch (SQLException e) {
+      handleSQLException(e);
     }
     return pdxInstance;
   }
@@ -145,24 +148,30 @@ public class SqlHandler {
 
     String tableName = regionMapping.getRegionToTableName();
     int pdxTypeId = value == null ? 0 : ((PdxInstanceImpl) value).getPdxType().getTypeId();
-    PreparedStatement statement = manager.getPreparedStatement(
-        manager.getConnection(connectionConfig), columnList, tableName, operation, pdxTypeId);
-    int updateCount = executeWriteStatement(statement, columnList, operation, false);
 
-    // Destroy action not guaranteed to modify any database rows
-    if (operation.isDestroy()) {
-      return;
-    }
+    try (Connection connection = manager.getConnection(connectionConfig);
+        PreparedStatement statement =
+            getPreparedStatement(connection, columnList, tableName, operation, pdxTypeId)) {
+      int updateCount = executeWriteStatement(statement, columnList, operation, false);
 
-    if (updateCount <= 0) {
-      Operation upsertOp = getOppositeOperation(operation);
-      PreparedStatement upsertStatement = manager.getPreparedStatement(
-          manager.getConnection(connectionConfig), columnList, tableName, upsertOp, pdxTypeId);
-      updateCount = executeWriteStatement(upsertStatement, columnList, upsertOp, true);
-    }
+      // Destroy action not guaranteed to modify any database rows
+      if (operation.isDestroy()) {
+        return;
+      }
 
-    if (updateCount != 1) {
-      throw new IllegalStateException("Unexpected updateCount " + updateCount);
+      if (updateCount <= 0) {
+        Operation upsertOp = getOppositeOperation(operation);
+        try (PreparedStatement upsertStatement =
+            getPreparedStatement(connection, columnList, tableName, upsertOp, pdxTypeId)) {
+          updateCount = executeWriteStatement(upsertStatement, columnList, upsertOp, true);
+        }
+      }
+
+      if (updateCount != 1) {
+        throw new IllegalStateException("Unexpected updateCount " + updateCount);
+      }
+    } catch (SQLException e) {
+      handleSQLException(e);
     }
   }
 
@@ -173,29 +182,45 @@ public class SqlHandler {
   private int executeWriteStatement(PreparedStatement statement, List<ColumnValue> columnList,
       Operation operation, boolean handleException) {
     int updateCount = 0;
-    synchronized (statement) {
-      try {
-        setValuesInStatement(statement, columnList);
-        updateCount = statement.executeUpdate();
-      } catch (SQLException e) {
-        if (handleException || operation.isDestroy()) {
-          handleSQLException(e);
-        }
-      } finally {
-        clearStatementParameters(statement);
+    try {
+      setValuesInStatement(statement, columnList);
+      updateCount = statement.executeUpdate();
+    } catch (SQLException e) {
+      if (handleException || operation.isDestroy()) {
+        handleSQLException(e);
       }
     }
     return updateCount;
   }
 
-  private void clearStatementParameters(PreparedStatement statement) {
+  private PreparedStatement getPreparedStatement(Connection connection,
+      List<ColumnValue> columnList, String tableName, Operation operation, int pdxTypeId) {
+    String sqlStr = getSqlString(tableName, columnList, operation);
+    PreparedStatement statement = null;
     try {
-      statement.clearParameters();
-    } catch (SQLException ignore) {
+      statement = connection.prepareStatement(sqlStr);
+    } catch (SQLException e) {
+      handleSQLException(e);
+    }
+    return statement;
+  }
+
+  private String getSqlString(String tableName, List<ColumnValue> columnList, Operation operation) {
+    SqlStatementFactory statementFactory = new SqlStatementFactory();
+    if (operation.isCreate()) {
+      return statementFactory.createInsertSqlString(tableName, columnList);
+    } else if (operation.isUpdate()) {
+      return statementFactory.createUpdateSqlString(tableName, columnList);
+    } else if (operation.isDestroy()) {
+      return statementFactory.createDestroySqlString(tableName, columnList);
+    } else if (operation.isGet()) {
+      return statementFactory.createSelectQueryString(tableName, columnList);
+    } else {
+      throw new IllegalArgumentException("unsupported operation " + operation);
     }
   }
 
   private void handleSQLException(SQLException e) {
-    throw new IllegalStateException("NYI: handleSQLException", e);
+    throw new IllegalStateException("JDBC connector detected unexpected SQLException", e);
   }
 }
