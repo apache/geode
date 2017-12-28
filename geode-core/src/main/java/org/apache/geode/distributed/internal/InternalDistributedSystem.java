@@ -82,7 +82,6 @@ import org.apache.geode.internal.SystemTimer;
 import org.apache.geode.internal.admin.remote.DistributionLocatorId;
 import org.apache.geode.internal.cache.CacheConfig;
 import org.apache.geode.internal.cache.CacheServerImpl;
-import org.apache.geode.internal.cache.CacheService;
 import org.apache.geode.internal.cache.EventID;
 import org.apache.geode.internal.cache.GemFireCacheImpl;
 import org.apache.geode.internal.cache.InternalCache;
@@ -759,7 +758,7 @@ public class InternalDistributedSystem extends DistributedSystem
       Assert.assertTrue(this.dm.getSystem() == this);
 
       try {
-        this.id = this.dm.getChannelId();
+        this.id = this.dm.getMembershipPort();
       } catch (DistributedSystemDisconnectedException e) {
         // bug #48144 - The dm's channel threw an NPE. It now throws this exception
         // but during startup we should instead throw a SystemConnectException
@@ -1625,7 +1624,6 @@ public class InternalDistributedSystem extends DistributedSystem
    * Returns the id of this connection to the distributed system. This is actually the port of the
    * distribution manager's distribution channel.
    *
-   * @see org.apache.geode.distributed.internal.DistributionChannel#getId
    */
   @Override
   public long getId() {
@@ -3019,7 +3017,6 @@ public class InternalDistributedSystem extends DistributedSystem
 
   public static void setCommandLineAdmin(boolean adminOnly) {
     DistributedSystem.setEnableAdministrationOnly(adminOnly);
-    DistributionManager.isCommandLineAdminVM = adminOnly;
   }
 
   public boolean isServerLocator() {

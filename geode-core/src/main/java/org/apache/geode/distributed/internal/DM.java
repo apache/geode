@@ -21,6 +21,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.NoSuchElementException;
 import java.util.Set;
+import java.util.concurrent.Executor;
 import java.util.concurrent.ExecutorService;
 
 import org.apache.geode.CancelCriterion;
@@ -175,27 +176,15 @@ public interface DM extends ReplySender {
   ElderState getElderState(boolean force, boolean useTryLock);
 
   /**
-   * Returns the id of the underlying distribution channel used for communication.
+   * Returns the membership port of the underlying distribution manager used for communication.
    *
    * @since GemFire 3.0
    */
-  long getChannelId();
+  long getMembershipPort();
 
   /**
-   * Adds a message to the outgoing queue. Note that <code>message</code> should not be modified
-   * after it has been added to the queue. After <code>message</code> is distributed, it will be
-   * recycled.
+   * Sends a message
    *
-   * @return recipients who did not receive the message
-   * @throws NotSerializableException If <code>message</code> cannot be serialized
-   * @see #putOutgoing(DistributionMessage)
-   */
-  Set putOutgoingUserData(DistributionMessage message) throws NotSerializableException;
-
-  /**
-   * Sends a message, guaranteed to be serialized
-   *
-   * @see #putOutgoingUserData(DistributionMessage)
    * @param msg
    * @return recipients who did not receive the message
    */
@@ -227,6 +216,11 @@ public interface DM extends ReplySender {
    */
   void removeAllMembershipListener(MembershipListener l);
 
+  /**
+   * Makes note of a new administration console (admin-only member).
+   *
+   * @Deprecated admin members are deprecated
+   */
   void addAdminConsole(InternalDistributedMember id);
 
   DMStats getStats();
@@ -269,6 +263,11 @@ public interface DM extends ReplySender {
   ExecutorService getPrMetaDataCleanupThreadPool();
 
   /**
+   * Return the executor used for function processing
+   */
+  Executor getFunctionExcecutor();
+
+  /**
    * gets this distribution manager's message-processing executor for ordered (i.e. serialized)
    * message processing
    */
@@ -295,7 +294,7 @@ public interface DM extends ReplySender {
   /**
    * @return Set of Admin VM nodes
    */
-  Set getAdminMemberSet();
+  Set<InternalDistributedMember> getAdminMemberSet();
 
   /** Throws ShutdownException if closeInProgress returns true. */
   void throwIfDistributionStopped();
@@ -440,14 +439,6 @@ public interface DM extends ReplySender {
    */
   Map<InternalDistributedMember, Collection<String>> getAllHostedLocatorsWithSharedConfiguration();
 
-  /****
-   * Determines if the distributed system has the shared configuration service enabled or not.
-   *
-   * @return true if the distributed system was started or had a locator with
-   *         enable-cluster-configuration = true
-   */
-  boolean isSharedConfigurationServiceEnabledForDS();
-
   /**
    * Forces use of UDP for communications in the current thread. UDP is connectionless, so no tcp/ip
    * connections will be created or used for messaging until this setting is released with
@@ -461,6 +452,11 @@ public interface DM extends ReplySender {
    */
   void releaseUDPMessagingForCurrentThread();
 
+  /**
+   * returns the type of node
+   *
+   * @return
+   */
   int getDMType();
 
   /**

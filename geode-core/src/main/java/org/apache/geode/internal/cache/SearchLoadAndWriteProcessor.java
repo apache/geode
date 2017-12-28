@@ -2149,8 +2149,8 @@ public class SearchLoadAndWriteProcessor implements MembershipListener {
       msg.setRecipient(recipient);
 
       try {
-        processor.distributionManager.putOutgoingUserData(msg);
-      } catch (NotSerializableException ignore) {
+        processor.distributionManager.putOutgoing(msg);
+      } catch (InternalGemFireException e) {
         throw new IllegalArgumentException(
             LocalizedStrings.SearchLoadAndWriteProcessor_MESSAGE_NOT_SERIALIZABLE
                 .toLocalizedString());
