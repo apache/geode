@@ -41,7 +41,7 @@ import org.apache.geode.management.internal.security.ResourceConstants;
 import org.apache.geode.management.internal.security.TestFunctions.ReadFunction;
 import org.apache.geode.management.internal.security.TestFunctions.WriteFunction;
 import org.apache.geode.security.SimpleTestSecurityManager;
-import org.apache.geode.test.dunit.rules.LocatorServerStartupRule;
+import org.apache.geode.test.dunit.rules.ClusterStartupRule;
 import org.apache.geode.test.dunit.rules.MemberVM;
 import org.apache.geode.test.junit.categories.DistributedTest;
 import org.apache.geode.test.junit.rules.GfshCommandRule;
@@ -50,7 +50,7 @@ import org.apache.geode.test.junit.rules.GfshCommandRule;
 public class ExecuteFunctionCommandSecurityTest implements Serializable {
 
   @ClassRule
-  public static LocatorServerStartupRule lsRule = new LocatorServerStartupRule();
+  public static ClusterStartupRule lsRule = new ClusterStartupRule();
 
   @Rule
   public GfshCommandRule gfsh = new GfshCommandRule();
@@ -76,7 +76,7 @@ public class ExecuteFunctionCommandSecurityTest implements Serializable {
       FunctionService.registerFunction(new ReadFunction());
       FunctionService.registerFunction(new WriteFunction());
 
-      InternalCache cache = LocatorServerStartupRule.getCache();
+      InternalCache cache = ClusterStartupRule.getCache();
       cache.createRegionFactory(RegionShortcut.REPLICATE).create(REPLICATED_REGION);
       cache.createRegionFactory(RegionShortcut.PARTITION).create(PARTITIONED_REGION);
     }));

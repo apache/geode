@@ -41,7 +41,7 @@ import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.management.cli.Result;
 import org.apache.geode.management.internal.cli.CliUtil;
 import org.apache.geode.management.internal.cli.result.CommandResult;
-import org.apache.geode.test.dunit.rules.LocatorServerStartupRule;
+import org.apache.geode.test.dunit.rules.ClusterStartupRule;
 import org.apache.geode.test.dunit.rules.MemberVM;
 import org.apache.geode.test.junit.categories.DistributedTest;
 import org.apache.geode.test.junit.rules.GfshCommandRule;
@@ -62,7 +62,7 @@ public class ShowLogCommandDUnitTest implements Serializable {
   private static MemberVM server1;
   private static MemberVM server2;
   @ClassRule
-  public static LocatorServerStartupRule locatorServerStartupRule = new LocatorServerStartupRule();
+  public static ClusterStartupRule clusterStartupRule = new ClusterStartupRule();
 
   @ClassRule
   public static GfshCommandRule gfsh = new GfshCommandRule();
@@ -83,7 +83,7 @@ public class ShowLogCommandDUnitTest implements Serializable {
     managerProps.setProperty(LOG_FILE, MANAGER_NAME + ".log");
     managerProps.setProperty(LOG_LEVEL, "info");
 
-    manager = locatorServerStartupRule.startLocatorVM(0, managerProps);
+    manager = clusterStartupRule.startLocatorVM(0, managerProps);
 
     Properties server1Props = new Properties();
     server1Props.setProperty(NAME, SERVER1_NAME);
@@ -91,7 +91,7 @@ public class ShowLogCommandDUnitTest implements Serializable {
     server1Props.setProperty(LOG_FILE, SERVER1_NAME + ".log");
     managerProps.setProperty(LOG_LEVEL, "info");
 
-    server1 = locatorServerStartupRule.startServerVM(1, server1Props, manager.getPort());
+    server1 = clusterStartupRule.startServerVM(1, server1Props, manager.getPort());
 
     Properties server2Props = new Properties();
     server2Props.setProperty(NAME, SERVER2_NAME);
@@ -99,7 +99,7 @@ public class ShowLogCommandDUnitTest implements Serializable {
     server2Props.setProperty(LOG_FILE, SERVER2_NAME + ".log");
     managerProps.setProperty(LOG_LEVEL, "info");
 
-    server2 = locatorServerStartupRule.startServerVM(2, server2Props, manager.getPort());
+    server2 = clusterStartupRule.startServerVM(2, server2Props, manager.getPort());
 
     if (useHttp) {
       gfsh.connectAndVerify(manager.getHttpPort(), http);

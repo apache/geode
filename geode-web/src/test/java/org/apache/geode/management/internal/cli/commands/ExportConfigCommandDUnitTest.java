@@ -32,7 +32,7 @@ import org.junit.experimental.categories.Category;
 import org.junit.rules.TemporaryFolder;
 import org.junit.runner.RunWith;
 
-import org.apache.geode.test.dunit.rules.LocatorServerStartupRule;
+import org.apache.geode.test.dunit.rules.ClusterStartupRule;
 import org.apache.geode.test.dunit.rules.MemberVM;
 import org.apache.geode.test.junit.categories.DistributedTest;
 import org.apache.geode.test.junit.rules.GfshCommandRule;
@@ -41,8 +41,8 @@ import org.apache.geode.test.junit.rules.GfshCommandRule;
 @RunWith(JUnitParamsRunner.class)
 public class ExportConfigCommandDUnitTest {
   @Rule
-  public LocatorServerStartupRule startupRule =
-      new LocatorServerStartupRule().withTempWorkingDir().withLogFile();
+  public ClusterStartupRule startupRule =
+      new ClusterStartupRule().withTempWorkingDir().withLogFile();
 
   @Rule
   public GfshCommandRule gfsh = new GfshCommandRule();

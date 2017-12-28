@@ -38,7 +38,7 @@ import org.apache.geode.management.internal.cli.i18n.CliStrings;
 import org.apache.geode.management.internal.cli.result.CommandResult;
 import org.apache.geode.management.internal.cli.result.CompositeResultData;
 import org.apache.geode.management.internal.cli.result.TabularResultData;
-import org.apache.geode.test.dunit.rules.LocatorServerStartupRule;
+import org.apache.geode.test.dunit.rules.ClusterStartupRule;
 import org.apache.geode.test.dunit.rules.MemberVM;
 import org.apache.geode.test.junit.categories.DistributedTest;
 import org.apache.geode.test.junit.rules.GfshCommandRule;
@@ -49,7 +49,7 @@ public class WanCommandListDUnitTest {
   private static final long serialVersionUID = 1L;
 
   @Rule
-  public LocatorServerStartupRule locatorServerStartupRule = new LocatorServerStartupRule();
+  public ClusterStartupRule clusterStartupRule = new ClusterStartupRule();
 
   @Rule
   public GfshCommandRule gfsh = new GfshCommandRule();
@@ -67,11 +67,11 @@ public class WanCommandListDUnitTest {
     Properties props = new Properties();
 
     props.setProperty(DISTRIBUTED_SYSTEM_ID, "" + 1);
-    locatorSite1 = locatorServerStartupRule.startLocatorVM(1, props);
+    locatorSite1 = clusterStartupRule.startLocatorVM(1, props);
 
     props.setProperty(DISTRIBUTED_SYSTEM_ID, "" + 2);
     props.setProperty(REMOTE_LOCATORS, "localhost[" + locatorSite1.getPort() + "]");
-    locatorSite2 = locatorServerStartupRule.startLocatorVM(2, props);
+    locatorSite2 = clusterStartupRule.startLocatorVM(2, props);
 
     gfsh.connectAndVerify(locatorSite1);
 
@@ -82,9 +82,9 @@ public class WanCommandListDUnitTest {
     Integer lnPort = locatorSite1.getPort();
 
     // setup servers in Site #1 (London)
-    server1 = locatorServerStartupRule.startServerVM(3, lnPort);
-    server2 = locatorServerStartupRule.startServerVM(4, lnPort);
-    server3 = locatorServerStartupRule.startServerVM(5, lnPort);
+    server1 = clusterStartupRule.startServerVM(3, lnPort);
+    server2 = clusterStartupRule.startServerVM(4, lnPort);
+    server3 = clusterStartupRule.startServerVM(5, lnPort);
 
     pause(10000);
     String command = CliStrings.LIST_GATEWAY;
@@ -104,13 +104,13 @@ public class WanCommandListDUnitTest {
     Integer nyPort = locatorSite2.getPort();
 
     // setup servers in Site #1 (London)
-    server1 = locatorServerStartupRule.startServerVM(3, lnPort);
-    server2 = locatorServerStartupRule.startServerVM(4, lnPort);
-    server3 = locatorServerStartupRule.startServerVM(5, lnPort);
+    server1 = clusterStartupRule.startServerVM(3, lnPort);
+    server2 = clusterStartupRule.startServerVM(4, lnPort);
+    server3 = clusterStartupRule.startServerVM(5, lnPort);
 
     // servers in Site 2 (New York)
-    server4 = locatorServerStartupRule.startServerVM(6, nyPort);
-    server5 = locatorServerStartupRule.startServerVM(7, nyPort);
+    server4 = clusterStartupRule.startServerVM(6, nyPort);
+    server5 = clusterStartupRule.startServerVM(7, nyPort);
 
     // Site 2 Receivers
     server4.invoke(() -> createAndStartReceiver(nyPort));
@@ -155,12 +155,12 @@ public class WanCommandListDUnitTest {
     Integer nyPort = locatorSite2.getPort();
 
     // setup servers in Site #1 (London)
-    server1 = locatorServerStartupRule.startServerVM(3, lnPort);
-    server2 = locatorServerStartupRule.startServerVM(4, lnPort);
+    server1 = clusterStartupRule.startServerVM(3, lnPort);
+    server2 = clusterStartupRule.startServerVM(4, lnPort);
 
     // servers in Site 2 (New York)
-    server3 = locatorServerStartupRule.startServerVM(5, nyPort);
-    server4 = locatorServerStartupRule.startServerVM(6, nyPort);
+    server3 = clusterStartupRule.startServerVM(5, nyPort);
+    server4 = clusterStartupRule.startServerVM(6, nyPort);
 
     server1.invoke(() -> createAndStartReceiver(lnPort));
     server2.invoke(() -> createAndStartReceiver(lnPort));
@@ -198,13 +198,13 @@ public class WanCommandListDUnitTest {
     Integer nyPort = locatorSite2.getPort();
 
     // setup servers in Site #1 (London)
-    server1 = locatorServerStartupRule.startServerVM(3, lnPort);
-    server2 = locatorServerStartupRule.startServerVM(4, lnPort);
-    server3 = locatorServerStartupRule.startServerVM(5, lnPort);
+    server1 = clusterStartupRule.startServerVM(3, lnPort);
+    server2 = clusterStartupRule.startServerVM(4, lnPort);
+    server3 = clusterStartupRule.startServerVM(5, lnPort);
 
     // servers in Site 2 (New York)
-    server4 = locatorServerStartupRule.startServerVM(6, nyPort);
-    server5 = locatorServerStartupRule.startServerVM(7, nyPort);
+    server4 = clusterStartupRule.startServerVM(6, nyPort);
+    server5 = clusterStartupRule.startServerVM(7, nyPort);
 
     server4.invoke(() -> createAndStartReceiver(nyPort));
 
@@ -262,8 +262,8 @@ public class WanCommandListDUnitTest {
     server3 = startServerWithGroups(5, "Parallel_Sender, Receiver_Group", lnPort);
 
     // server in Site 2 (New York)
-    server4 = locatorServerStartupRule.startServerVM(6, nyPort);
-    server5 = locatorServerStartupRule.startServerVM(7, nyPort);
+    server4 = clusterStartupRule.startServerVM(6, nyPort);
+    server5 = clusterStartupRule.startServerVM(7, nyPort);
 
     server4.invoke(() -> createAndStartReceiver(nyPort));
 
@@ -399,6 +399,6 @@ public class WanCommandListDUnitTest {
   private MemberVM startServerWithGroups(int index, String groups, int locPort) throws Exception {
     Properties props = new Properties();
     props.setProperty(GROUPS, groups);
-    return locatorServerStartupRule.startServerVM(index, props, locPort);
+    return clusterStartupRule.startServerVM(index, props, locPort);
   }
 }

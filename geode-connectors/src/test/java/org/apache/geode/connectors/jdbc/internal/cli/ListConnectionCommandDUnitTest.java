@@ -30,7 +30,7 @@ import org.apache.geode.connectors.jdbc.internal.ConnectionConfigExistsException
 import org.apache.geode.connectors.jdbc.internal.InternalJdbcConnectorService;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.management.internal.cli.util.CommandStringBuilder;
-import org.apache.geode.test.dunit.rules.LocatorServerStartupRule;
+import org.apache.geode.test.dunit.rules.ClusterStartupRule;
 import org.apache.geode.test.dunit.rules.MemberVM;
 import org.apache.geode.test.junit.assertions.CommandResultAssert;
 import org.apache.geode.test.junit.categories.DistributedTest;
@@ -44,7 +44,7 @@ public class ListConnectionCommandDUnitTest implements Serializable {
   public transient GfshCommandRule gfsh = new GfshCommandRule();
 
   @Rule
-  public LocatorServerStartupRule startupRule = new LocatorServerStartupRule();
+  public ClusterStartupRule startupRule = new ClusterStartupRule();
 
   @Rule
   public SerializableTestName testName = new SerializableTestName();
@@ -100,7 +100,7 @@ public class ListConnectionCommandDUnitTest implements Serializable {
   }
 
   private void createOneConnection() throws ConnectionConfigExistsException {
-    InternalCache cache = LocatorServerStartupRule.getCache();
+    InternalCache cache = ClusterStartupRule.getCache();
     InternalJdbcConnectorService service = cache.getService(InternalJdbcConnectorService.class);
 
     service.createConnectionConfig(new ConnectionConfigBuilder().withName(connectionName).build());
@@ -109,7 +109,7 @@ public class ListConnectionCommandDUnitTest implements Serializable {
   }
 
   private void createNConnections(int N) throws ConnectionConfigExistsException {
-    InternalCache cache = LocatorServerStartupRule.getCache();
+    InternalCache cache = ClusterStartupRule.getCache();
     InternalJdbcConnectorService service = cache.getService(InternalJdbcConnectorService.class);
     for (int i = 1; i <= N; i++) {
       String name = connectionName + "-" + i;

@@ -36,7 +36,7 @@ import org.apache.geode.distributed.Locator;
 import org.apache.geode.distributed.internal.ClusterConfigurationService;
 import org.apache.geode.distributed.internal.InternalLocator;
 import org.apache.geode.internal.cache.SnapshotTestUtil;
-import org.apache.geode.test.dunit.rules.LocatorServerStartupRule;
+import org.apache.geode.test.dunit.rules.ClusterStartupRule;
 import org.apache.geode.test.dunit.rules.MemberVM;
 import org.apache.geode.test.junit.categories.DistributedTest;
 import org.apache.geode.test.junit.rules.GfshCommandRule;
@@ -50,7 +50,7 @@ public class DiskStoreCommandsDUnitTest {
   private static final String GROUP = "GROUP1";
 
   @Rule
-  public LocatorServerStartupRule rule = new LocatorServerStartupRule();
+  public ClusterStartupRule rule = new ClusterStartupRule();
 
   @Rule
   public GfshCommandRule gfsh = new GfshCommandRule();
@@ -88,7 +88,7 @@ public class DiskStoreCommandsDUnitTest {
     createDiskStoreAndRegion(locator, 2);
 
     server1.invoke(() -> {
-      Cache cache = LocatorServerStartupRule.getCache();
+      Cache cache = ClusterStartupRule.getCache();
       Region r = cache.getRegion(REGION_1);
       r.put("A", "B");
     });
@@ -99,7 +99,7 @@ public class DiskStoreCommandsDUnitTest {
     server1.stopVM(false);
 
     server2.invoke(() -> {
-      Cache cache = LocatorServerStartupRule.getCache();
+      Cache cache = ClusterStartupRule.getCache();
       Region r = cache.getRegion(REGION_1);
       r.put("A", "C");
     });
@@ -111,7 +111,7 @@ public class DiskStoreCommandsDUnitTest {
       // trying to restart the server asynchronously
       ServerStarterRule serverRule = new ServerStarterRule().withProperties(props)
           .withName("server-1").withConnectionToLocator(locatorPort).withAutoStart();
-      LocatorServerStartupRule.memberStarter = serverRule;
+      ClusterStartupRule.memberStarter = serverRule;
       serverRule.before();
     });
 
@@ -129,7 +129,7 @@ public class DiskStoreCommandsDUnitTest {
     locator.waitTillRegionsAreReadyOnServers("/" + REGION_1, 1);
 
     server1.invoke(() -> {
-      Cache cache = LocatorServerStartupRule.getCache();
+      Cache cache = ClusterStartupRule.getCache();
       Region<String, String> r = cache.getRegion(REGION_1);
       assertThat(r.get("A")).isEqualTo("B");
     });
@@ -146,7 +146,7 @@ public class DiskStoreCommandsDUnitTest {
     createDiskStoreAndRegion(server1, 1);
 
     server1.invoke(() -> {
-      Cache cache = LocatorServerStartupRule.getCache();
+      Cache cache = ClusterStartupRule.getCache();
       Region r = cache.getRegion(REGION_1);
       r.put("A", "B");
     });
@@ -174,7 +174,7 @@ public class DiskStoreCommandsDUnitTest {
     createDiskStoreAndRegion(server1, 1);
 
     server1.invoke(() -> {
-      Cache cache = LocatorServerStartupRule.getCache();
+      Cache cache = ClusterStartupRule.getCache();
       Region r = cache.getRegion(REGION_1);
       r.put("A", "B");
     });
@@ -257,7 +257,7 @@ public class DiskStoreCommandsDUnitTest {
     createDiskStoreAndRegion(locator, 1);
 
     server1.invoke(() -> {
-      Cache cache = LocatorServerStartupRule.getCache();
+      Cache cache = ClusterStartupRule.getCache();
       Region r = cache.getRegion(REGION_1);
       r.put("A", "B");
     });

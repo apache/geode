@@ -62,7 +62,7 @@ import org.apache.geode.test.junit.rules.serializable.SerializableTemporaryFolde
  * test</a>. This rule will start Servers and Locators inside of the four remote {@link VM}s created
  * by the DUnit framework.
  */
-public class LocatorServerStartupRule extends ExternalResource implements Serializable {
+public class ClusterStartupRule extends ExternalResource implements Serializable {
   /**
    * This is only available in each Locator/Server VM, not in the controller (test) VM.
    */
@@ -89,7 +89,7 @@ public class LocatorServerStartupRule extends ExternalResource implements Serial
 
   private boolean logFile = false;
 
-  public LocatorServerStartupRule() {
+  public ClusterStartupRule() {
     DUnitLauncher.launchIfNeeded();
   }
 
@@ -106,7 +106,7 @@ public class LocatorServerStartupRule extends ExternalResource implements Serial
    * locator0View.dat and locator0views.log and other random log files. This will cause the VMs to
    * be bounced after test is done, because it dynamically changes the user.dir system property.
    */
-  public LocatorServerStartupRule withTempWorkingDir() {
+  public ClusterStartupRule withTempWorkingDir() {
     tempWorkingDir = new SerializableTemporaryFolder();
     return this;
   }
@@ -118,7 +118,7 @@ public class LocatorServerStartupRule extends ExternalResource implements Serial
   /**
    * this will allow all the logs go into log files instead of going into the console output
    */
-  public LocatorServerStartupRule withLogFile() {
+  public ClusterStartupRule withLogFile() {
     this.logFile = true;
     return this;
   }

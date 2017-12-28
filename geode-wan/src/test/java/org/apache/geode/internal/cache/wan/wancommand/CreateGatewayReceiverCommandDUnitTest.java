@@ -40,7 +40,7 @@ import org.apache.geode.cache.wan.GatewayReceiver;
 import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.internal.net.SocketCreator;
 import org.apache.geode.management.internal.cli.i18n.CliStrings;
-import org.apache.geode.test.dunit.rules.LocatorServerStartupRule;
+import org.apache.geode.test.dunit.rules.ClusterStartupRule;
 import org.apache.geode.test.dunit.rules.MemberVM;
 import org.apache.geode.test.junit.categories.DistributedTest;
 import org.apache.geode.test.junit.rules.GfshCommandRule;
@@ -55,7 +55,7 @@ public class CreateGatewayReceiverCommandDUnitTest {
   private MemberVM server1, server2, server3;
 
   @Rule
-  public LocatorServerStartupRule locatorServerStartupRule = new LocatorServerStartupRule();
+  public ClusterStartupRule clusterStartupRule = new ClusterStartupRule();
 
   @Rule
   public GfshCommandRule gfsh = new GfshCommandRule();
@@ -64,7 +64,7 @@ public class CreateGatewayReceiverCommandDUnitTest {
   public void before() throws Exception {
     Properties props = new Properties();
     props.setProperty(DISTRIBUTED_SYSTEM_ID, "" + 1);
-    locatorSite1 = locatorServerStartupRule.startLocatorVM(1, props);
+    locatorSite1 = clusterStartupRule.startLocatorVM(1, props);
 
     // Connect Gfsh to locator.
     gfsh.connectAndVerify(locatorSite1);
@@ -81,7 +81,7 @@ public class CreateGatewayReceiverCommandDUnitTest {
   private MemberVM startServerWithGroups(int index, String groups, int locPort) throws Exception {
     Properties props = new Properties();
     props.setProperty(GROUPS, groups);
-    return locatorServerStartupRule.startServerVM(index, props, locPort);
+    return clusterStartupRule.startServerVM(index, props, locPort);
   }
 
   /**
@@ -91,9 +91,9 @@ public class CreateGatewayReceiverCommandDUnitTest {
   @Test
   public void testCreateGatewayReceiverErrorWhenGatewayReceiverAlreadyExists() throws Exception {
     Integer locator1Port = locatorSite1.getPort();
-    server1 = locatorServerStartupRule.startServerVM(3, locator1Port);
-    server2 = locatorServerStartupRule.startServerVM(4, locator1Port);
-    server3 = locatorServerStartupRule.startServerVM(5, locator1Port);
+    server1 = clusterStartupRule.startServerVM(3, locator1Port);
+    server2 = clusterStartupRule.startServerVM(4, locator1Port);
+    server3 = clusterStartupRule.startServerVM(5, locator1Port);
 
     // Initial Creation should succeed
     String command =
@@ -129,9 +129,9 @@ public class CreateGatewayReceiverCommandDUnitTest {
   @Test
   public void testCreateGatewayReceiverWithDefault() throws Exception {
     Integer locator1Port = locatorSite1.getPort();
-    server1 = locatorServerStartupRule.startServerVM(3, locator1Port);
-    server2 = locatorServerStartupRule.startServerVM(4, locator1Port);
-    server3 = locatorServerStartupRule.startServerVM(5, locator1Port);
+    server1 = clusterStartupRule.startServerVM(3, locator1Port);
+    server2 = clusterStartupRule.startServerVM(4, locator1Port);
+    server3 = clusterStartupRule.startServerVM(5, locator1Port);
 
     // Default attributes.
     String command = CliStrings.CREATE_GATEWAYRECEIVER;
@@ -164,9 +164,9 @@ public class CreateGatewayReceiverCommandDUnitTest {
   @Test
   public void testCreateGatewayReceiver() throws Exception {
     Integer locator1Port = locatorSite1.getPort();
-    server1 = locatorServerStartupRule.startServerVM(3, locator1Port);
-    server2 = locatorServerStartupRule.startServerVM(4, locator1Port);
-    server3 = locatorServerStartupRule.startServerVM(5, locator1Port);
+    server1 = clusterStartupRule.startServerVM(3, locator1Port);
+    server2 = clusterStartupRule.startServerVM(4, locator1Port);
+    server3 = clusterStartupRule.startServerVM(5, locator1Port);
 
     String command =
         CliStrings.CREATE_GATEWAYRECEIVER + " --" + CliStrings.CREATE_GATEWAYRECEIVER__MANUALSTART
@@ -194,9 +194,9 @@ public class CreateGatewayReceiverCommandDUnitTest {
   @Test
   public void testCreateGatewayReceiverWithHostnameForSenders() throws Exception {
     Integer locator1Port = locatorSite1.getPort();
-    server1 = locatorServerStartupRule.startServerVM(3, locator1Port);
-    server2 = locatorServerStartupRule.startServerVM(4, locator1Port);
-    server3 = locatorServerStartupRule.startServerVM(5, locator1Port);
+    server1 = clusterStartupRule.startServerVM(3, locator1Port);
+    server2 = clusterStartupRule.startServerVM(4, locator1Port);
+    server3 = clusterStartupRule.startServerVM(5, locator1Port);
 
     String hostnameForSenders = getHostName();
     String command =
@@ -235,9 +235,9 @@ public class CreateGatewayReceiverCommandDUnitTest {
     props.setProperty(GROUPS, receiverGroup);
     props.setProperty(BIND_ADDRESS, expectedBindAddress);
 
-    server1 = locatorServerStartupRule.startServerVM(3, props, locator1Port);
-    server2 = locatorServerStartupRule.startServerVM(4, props, locator1Port);
-    server3 = locatorServerStartupRule.startServerVM(5, props, locator1Port);
+    server1 = clusterStartupRule.startServerVM(3, props, locator1Port);
+    server2 = clusterStartupRule.startServerVM(4, props, locator1Port);
+    server3 = clusterStartupRule.startServerVM(5, props, locator1Port);
 
     String command = CliStrings.CREATE_GATEWAYRECEIVER + " --" + GROUP + "=" + receiverGroup;
     gfsh.executeAndAssertThat(command).statusIsSuccess()
@@ -272,9 +272,9 @@ public class CreateGatewayReceiverCommandDUnitTest {
     props.setProperty(GROUPS, receiverGroup);
     props.setProperty(SERVER_BIND_ADDRESS, expectedBindAddress);
 
-    server1 = locatorServerStartupRule.startServerVM(3, props, locator1Port);
-    server2 = locatorServerStartupRule.startServerVM(4, props, locator1Port);
-    server3 = locatorServerStartupRule.startServerVM(5, props, locator1Port);
+    server1 = clusterStartupRule.startServerVM(3, props, locator1Port);
+    server2 = clusterStartupRule.startServerVM(4, props, locator1Port);
+    server3 = clusterStartupRule.startServerVM(5, props, locator1Port);
 
     String command = CliStrings.CREATE_GATEWAYRECEIVER + " --" + GROUP + "=" + receiverGroup;
     gfsh.executeAndAssertThat(command).statusIsSuccess()
@@ -312,9 +312,9 @@ public class CreateGatewayReceiverCommandDUnitTest {
     props.setProperty(BIND_ADDRESS, extraBindAddress);
     props.setProperty(SERVER_BIND_ADDRESS, expectedBindAddress);
 
-    server1 = locatorServerStartupRule.startServerVM(3, props, locator1Port);
-    server2 = locatorServerStartupRule.startServerVM(4, props, locator1Port);
-    server3 = locatorServerStartupRule.startServerVM(5, props, locator1Port);
+    server1 = clusterStartupRule.startServerVM(3, props, locator1Port);
+    server2 = clusterStartupRule.startServerVM(4, props, locator1Port);
+    server3 = clusterStartupRule.startServerVM(5, props, locator1Port);
 
     String command = CliStrings.CREATE_GATEWAYRECEIVER + " --" + GROUP + "=" + receiverGroup;
     gfsh.executeAndAssertThat(command).statusIsSuccess()
@@ -351,9 +351,9 @@ public class CreateGatewayReceiverCommandDUnitTest {
     props.setProperty(GROUPS, receiverGroup);
     props.setProperty(SERVER_BIND_ADDRESS, serverBindAddress);
 
-    server1 = locatorServerStartupRule.startServerVM(3, props, locator1Port);
-    server2 = locatorServerStartupRule.startServerVM(4, props, locator1Port);
-    server3 = locatorServerStartupRule.startServerVM(5, props, locator1Port);
+    server1 = clusterStartupRule.startServerVM(3, props, locator1Port);
+    server2 = clusterStartupRule.startServerVM(4, props, locator1Port);
+    server3 = clusterStartupRule.startServerVM(5, props, locator1Port);
 
     String command =
         CliStrings.CREATE_GATEWAYRECEIVER + " --" + CliStrings.CREATE_GATEWAYRECEIVER__MANUALSTART
@@ -394,9 +394,9 @@ public class CreateGatewayReceiverCommandDUnitTest {
     props.setProperty(GROUPS, receiverGroup);
     props.setProperty(BIND_ADDRESS, expectedBindAddress);
 
-    server1 = locatorServerStartupRule.startServerVM(3, props, locator1Port);
-    server2 = locatorServerStartupRule.startServerVM(4, props, locator1Port);
-    server3 = locatorServerStartupRule.startServerVM(5, props, locator1Port);
+    server1 = clusterStartupRule.startServerVM(3, props, locator1Port);
+    server2 = clusterStartupRule.startServerVM(4, props, locator1Port);
+    server3 = clusterStartupRule.startServerVM(5, props, locator1Port);
 
     String command =
         CliStrings.CREATE_GATEWAYRECEIVER + " --" + CliStrings.CREATE_GATEWAYRECEIVER__MANUALSTART
@@ -427,9 +427,9 @@ public class CreateGatewayReceiverCommandDUnitTest {
   @Test
   public void testCreateGatewayReceiverWithGatewayTransportFilter() throws Exception {
     Integer locator1Port = locatorSite1.getPort();
-    server1 = locatorServerStartupRule.startServerVM(3, locator1Port);
-    server2 = locatorServerStartupRule.startServerVM(4, locator1Port);
-    server3 = locatorServerStartupRule.startServerVM(5, locator1Port);
+    server1 = clusterStartupRule.startServerVM(3, locator1Port);
+    server2 = clusterStartupRule.startServerVM(4, locator1Port);
+    server3 = clusterStartupRule.startServerVM(5, locator1Port);
 
     String command =
         CliStrings.CREATE_GATEWAYRECEIVER + " --" + CliStrings.CREATE_GATEWAYRECEIVER__MANUALSTART
@@ -461,9 +461,9 @@ public class CreateGatewayReceiverCommandDUnitTest {
   @Test
   public void testCreateGatewayReceiverWithMultipleGatewayTransportFilters() throws Exception {
     Integer locator1Port = locatorSite1.getPort();
-    server1 = locatorServerStartupRule.startServerVM(3, locator1Port);
-    server2 = locatorServerStartupRule.startServerVM(4, locator1Port);
-    server3 = locatorServerStartupRule.startServerVM(5, locator1Port);
+    server1 = clusterStartupRule.startServerVM(3, locator1Port);
+    server2 = clusterStartupRule.startServerVM(4, locator1Port);
+    server3 = clusterStartupRule.startServerVM(5, locator1Port);
 
     String command = CliStrings.CREATE_GATEWAYRECEIVER + " --"
         + CliStrings.CREATE_GATEWAYRECEIVER__BINDADDRESS + "=localhost" + " --"
@@ -497,9 +497,9 @@ public class CreateGatewayReceiverCommandDUnitTest {
   @Test
   public void testCreateGatewayReceiverOnSingleMember() throws Exception {
     Integer locator1Port = locatorSite1.getPort();
-    server1 = locatorServerStartupRule.startServerVM(3, locator1Port);
-    server2 = locatorServerStartupRule.startServerVM(4, locator1Port);
-    server3 = locatorServerStartupRule.startServerVM(5, locator1Port);
+    server1 = clusterStartupRule.startServerVM(3, locator1Port);
+    server2 = clusterStartupRule.startServerVM(4, locator1Port);
+    server3 = clusterStartupRule.startServerVM(5, locator1Port);
     final DistributedMember server1Member = server1.invoke(getMemberIdCallable());
 
     String command =
@@ -521,7 +521,7 @@ public class CreateGatewayReceiverCommandDUnitTest {
     }, server1);
 
     VMProvider.invokeInEveryMember(() -> {
-      Cache cache = LocatorServerStartupRule.getCache();
+      Cache cache = ClusterStartupRule.getCache();
       assertThat(cache.getGatewayReceivers()).isEmpty();
     }, server2, server3);
   }
@@ -532,9 +532,9 @@ public class CreateGatewayReceiverCommandDUnitTest {
   @Test
   public void testCreateGatewayReceiverOnMultipleMembers() throws Exception {
     Integer locator1Port = locatorSite1.getPort();
-    server1 = locatorServerStartupRule.startServerVM(3, locator1Port);
-    server2 = locatorServerStartupRule.startServerVM(4, locator1Port);
-    server3 = locatorServerStartupRule.startServerVM(5, locator1Port);
+    server1 = clusterStartupRule.startServerVM(3, locator1Port);
+    server2 = clusterStartupRule.startServerVM(4, locator1Port);
+    server3 = clusterStartupRule.startServerVM(5, locator1Port);
     final DistributedMember server1Member = server1.invoke(getMemberIdCallable());
     final DistributedMember server2Member = server2.invoke(getMemberIdCallable());
 
@@ -558,7 +558,7 @@ public class CreateGatewayReceiverCommandDUnitTest {
     }, server1, server2);
 
     VMProvider.invokeInEveryMember(() -> {
-      Cache cache = LocatorServerStartupRule.getCache();
+      Cache cache = ClusterStartupRule.getCache();
       assertThat(cache.getGatewayReceivers()).isEmpty();
     }, server3);
   }
@@ -628,7 +628,7 @@ public class CreateGatewayReceiverCommandDUnitTest {
     }, server1, server2);
 
     VMProvider.invokeInEveryMember(() -> {
-      Cache cache = LocatorServerStartupRule.getCache();
+      Cache cache = ClusterStartupRule.getCache();
       assertThat(cache.getGatewayReceivers()).isEmpty();
     }, server3);
   }

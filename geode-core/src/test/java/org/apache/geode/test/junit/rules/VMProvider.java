@@ -21,7 +21,7 @@ import org.apache.geode.test.dunit.AsyncInvocation;
 import org.apache.geode.test.dunit.SerializableCallableIF;
 import org.apache.geode.test.dunit.SerializableRunnableIF;
 import org.apache.geode.test.dunit.VM;
-import org.apache.geode.test.dunit.rules.LocatorServerStartupRule;
+import org.apache.geode.test.dunit.rules.ClusterStartupRule;
 
 public abstract class VMProvider {
   public static void invokeInEveryMember(SerializableRunnableIF runnableIF, VMProvider... members) {
@@ -32,7 +32,7 @@ public abstract class VMProvider {
 
   public void stopVM(boolean cleanWorkingDir) {
     getVM().invoke(() -> {
-      LocatorServerStartupRule.stopElementInsideVM();
+      ClusterStartupRule.stopElementInsideVM();
       MemberStarterRule.disconnectDSIfAny();
     });
   };

@@ -28,7 +28,7 @@ import org.apache.geode.internal.cache.wan.MyAsyncEventListener;
 import org.apache.geode.management.internal.cli.i18n.CliStrings;
 import org.apache.geode.management.internal.cli.json.GfJsonException;
 import org.apache.geode.management.internal.configuration.domain.Configuration;
-import org.apache.geode.test.dunit.rules.LocatorServerStartupRule;
+import org.apache.geode.test.dunit.rules.ClusterStartupRule;
 import org.apache.geode.test.dunit.rules.MemberVM;
 import org.apache.geode.test.junit.categories.DistributedTest;
 import org.apache.geode.test.junit.rules.GfshCommandRule;
@@ -39,7 +39,7 @@ public class DestroyAsyncEventQueueCommandDUnitTest {
   private static MemberVM locator, server1, server2, server3;
 
   @Rule
-  public LocatorServerStartupRule lsRule = new LocatorServerStartupRule();
+  public ClusterStartupRule lsRule = new ClusterStartupRule();
 
   @Rule
   public GfshCommandRule gfsh = new GfshCommandRule();
@@ -63,7 +63,7 @@ public class DestroyAsyncEventQueueCommandDUnitTest {
 
     locator.invoke(() -> {
       ClusterConfigurationService service =
-          LocatorServerStartupRule.getLocator().getSharedConfiguration();
+          ClusterStartupRule.getLocator().getSharedConfiguration();
       Configuration config = service.getConfiguration("cluster");
       assertThat(config.getCacheXmlContent()).contains("id=\"queue1\"");
     });
@@ -75,7 +75,7 @@ public class DestroyAsyncEventQueueCommandDUnitTest {
     // verify that aeq entry is deleted from cluster config
     locator.invoke(() -> {
       ClusterConfigurationService service =
-          LocatorServerStartupRule.getLocator().getSharedConfiguration();
+          ClusterStartupRule.getLocator().getSharedConfiguration();
       Configuration config = service.getConfiguration("cluster");
       assertThat(config.getCacheXmlContent()).doesNotContain("id=\"queue1\"");
     });
@@ -114,7 +114,7 @@ public class DestroyAsyncEventQueueCommandDUnitTest {
     // verify that aeq entry is deleted from cluster config
     locator.invoke(() -> {
       ClusterConfigurationService service =
-          LocatorServerStartupRule.getLocator().getSharedConfiguration();
+          ClusterStartupRule.getLocator().getSharedConfiguration();
       Configuration config = service.getConfiguration("cluster");
       assertThat(config.getCacheXmlContent()).doesNotContain("id=\"queue1\"");
     });
@@ -135,7 +135,7 @@ public class DestroyAsyncEventQueueCommandDUnitTest {
     // verify that aeq entry is deleted from cluster config
     locator.invoke(() -> {
       ClusterConfigurationService service =
-          LocatorServerStartupRule.getLocator().getSharedConfiguration();
+          ClusterStartupRule.getLocator().getSharedConfiguration();
       Configuration config = service.getConfiguration("group1");
       assertThat(config.getCacheXmlContent()).doesNotContain("id=\"queue1\"");
     });
@@ -155,7 +155,7 @@ public class DestroyAsyncEventQueueCommandDUnitTest {
     // verify that aeq entry is not deleted from cluster config
     locator.invoke(() -> {
       ClusterConfigurationService service =
-          LocatorServerStartupRule.getLocator().getSharedConfiguration();
+          ClusterStartupRule.getLocator().getSharedConfiguration();
       Configuration config = service.getConfiguration("group1");
       assertThat(config.getCacheXmlContent()).contains("id=\"queue1\"");
     });
@@ -205,7 +205,7 @@ public class DestroyAsyncEventQueueCommandDUnitTest {
     // verify that cluster config aeq entry for destroyed queue is deleted
     locator.invoke(() -> {
       ClusterConfigurationService service =
-          LocatorServerStartupRule.getLocator().getSharedConfiguration();
+          ClusterStartupRule.getLocator().getSharedConfiguration();
       System.out.println("cluster config: " + service.getConfiguration("cluster"));
       Configuration config1 = service.getConfiguration("group1");
       assertThat(config1.getCacheXmlContent()).doesNotContain("id=\"queue1\"");

@@ -40,7 +40,7 @@ import org.apache.geode.management.internal.cli.result.ErrorResultData;
 import org.apache.geode.management.internal.cli.result.ResultBuilder;
 import org.apache.geode.management.internal.cli.util.CommandStringBuilder;
 import org.apache.geode.security.SimpleTestSecurityManager;
-import org.apache.geode.test.dunit.rules.LocatorServerStartupRule;
+import org.apache.geode.test.dunit.rules.ClusterStartupRule;
 import org.apache.geode.test.dunit.rules.MemberVM;
 import org.apache.geode.test.junit.categories.DistributedTest;
 import org.apache.geode.test.junit.categories.SecurityTest;
@@ -51,7 +51,7 @@ import org.apache.geode.test.junit.rules.GfshCommandRule;
 public class LuceneCommandsSecurityDUnitTest {
 
   @Rule
-  public LocatorServerStartupRule locatorServer = new LocatorServerStartupRule();
+  public ClusterStartupRule locatorServer = new ClusterStartupRule();
 
   @Rule
   public GfshCommandRule gfshShell = new GfshCommandRule();
