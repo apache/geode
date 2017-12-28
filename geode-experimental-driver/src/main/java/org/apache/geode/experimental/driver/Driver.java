@@ -44,7 +44,7 @@ public interface Driver {
    * @param regionName String that uniquely identifies the region.
    * @param <K> Type of region keys.
    * @param <V> Type of region values.
-   * @return
+   * @return the region object
    */
   <K, V> Region<K, V> getRegion(String regionName);
 }

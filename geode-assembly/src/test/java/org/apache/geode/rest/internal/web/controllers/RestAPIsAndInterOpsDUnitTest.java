@@ -174,7 +174,7 @@ public class RestAPIsAndInterOpsDUnitTest extends LocatorTestBase {
 
     DistributedSystem ds = getSystem(props);
     InternalCache cache = (InternalCache) CacheFactory.create(ds);
-    cache.setReadSerialized(true);
+    cache.setReadSerializedForTest(true);
     AttributesFactory factory = new AttributesFactory();
 
     factory.setEnableBridgeConflation(true);

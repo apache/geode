@@ -76,7 +76,7 @@ public class RegionIntegrationTest {
   @Test
   public void getShouldReturnPutValue() throws Exception {
     Driver driver = new DriverFactory().addLocator("localhost", locatorPort).create();
-    Region region = driver.getRegion("region");
+    Region<String, String> region = driver.getRegion("region");
 
     region.put("key", "value");
     assertEquals("value", region.get("key"));
@@ -88,15 +88,15 @@ public class RegionIntegrationTest {
   @Test
   public void putWithIntegerKey() throws Exception {
     Driver driver = new DriverFactory().addLocator("localhost", locatorPort).create();
-    Region region = driver.getRegion("region");
+    Region<Integer, Integer> region = driver.getRegion("region");
     region.put(37, 42);
-    assertEquals(42, region.get(37));
+    assertEquals(42, region.get(37).intValue());
   }
 
   @Test
   public void removeWithIntegerKey() throws Exception {
     Driver driver = new DriverFactory().addLocator("localhost", locatorPort).create();
-    Region region = driver.getRegion("region");
+    Region<Integer, Integer> region = driver.getRegion("region");
     region.put(37, 42);
     region.remove(37);
     assertEquals(null, region.get(37));
