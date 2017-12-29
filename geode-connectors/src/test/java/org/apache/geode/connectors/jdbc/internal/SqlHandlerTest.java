@@ -15,6 +15,7 @@
 package org.apache.geode.connectors.jdbc.internal;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyBoolean;
 import static org.mockito.ArgumentMatchers.anyInt;
@@ -26,11 +27,12 @@ import static org.mockito.Mockito.verifyNoMoreInteractions;
 import static org.mockito.Mockito.when;
 
 import java.sql.Connection;
+import java.sql.DatabaseMetaData;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
-import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 import org.junit.Before;
@@ -51,15 +53,17 @@ import org.apache.geode.test.junit.categories.UnitTest;
 public class SqlHandlerTest {
   private static final String REGION_NAME = "testRegion";
   private static final String TABLE_NAME = "testTable";
-  private static final Object COLUMN_VALUE_1 = new Object();
+  private static final Object COLUMN_VALUE_1 = "columnValue1";
   private static final String COLUMN_NAME_1 = "columnName1";
-  private static final Object COLUMN_VALUE_2 = new Object();
+  private static final Object COLUMN_VALUE_2 = "columnValue2";
   private static final String COLUMN_NAME_2 = "columnName2";
+  private static final String KEY_COLUMN = "keyColumn";
 
   @Rule
   public ExpectedException thrown = ExpectedException.none();
 
   private ConnectionManager manager;
+  private TableKeyColumnManager tableKeyColumnManager;
   private Connection connection;
   private Region region;
   private InternalCache cache;
@@ -67,17 +71,40 @@ public class SqlHandlerTest {
   private PreparedStatement statement;
   private RegionMapping regionMapping;
   private PdxInstanceImpl value;
+  private Object key;
 
   @Before
   public void setup() throws Exception {
     manager = mock(ConnectionManager.class);
     region = mock(Region.class);
     cache = mock(InternalCache.class);
+    connection = mock(Connection.class);
     when(region.getRegionService()).thenReturn(cache);
-    handler = new SqlHandler(manager);
+    tableKeyColumnManager = mock(TableKeyColumnManager.class);
+    when(tableKeyColumnManager.getKeyColumnName(connection, TABLE_NAME)).thenReturn(KEY_COLUMN);
+    handler = new SqlHandler(manager, tableKeyColumnManager);
+    key = new Object();
     value = mock(PdxInstanceImpl.class);
     when(value.getPdxType()).thenReturn(mock(PdxType.class));
-    setupManagerMock();
+
+    ConnectionConfiguration connectionConfig = mock(ConnectionConfiguration.class);
+    when(manager.getConnectionConfig(any())).thenReturn(connectionConfig);
+
+    regionMapping = mock(RegionMapping.class);
+    when(regionMapping.getRegionName()).thenReturn(REGION_NAME);
+    when(regionMapping.getTableName()).thenReturn(TABLE_NAME);
+    when(regionMapping.getRegionToTableName()).thenReturn(TABLE_NAME);
+    when(manager.getMappingForRegion(any())).thenReturn(regionMapping);
+
+    // List<ColumnValue> columnList = new ArrayList<>();
+    // columnList.add(new ColumnValue(true, COLUMN_NAME_1, COLUMN_VALUE_1));
+    // columnList.add(new ColumnValue(true, COLUMN_NAME_2, COLUMN_VALUE_2));
+    // when(manager.getColumnToValueList(any(), any(), any(), any(), any())).thenReturn(columnList);
+
+    when(manager.getConnection(any())).thenReturn(this.connection);
+
+    statement = mock(PreparedStatement.class);
+    when(this.connection.prepareStatement(any())).thenReturn(statement);
   }
 
   @Test
@@ -98,11 +125,12 @@ public class SqlHandlerTest {
   }
 
   @Test
-  public void readClearsPreparedStatementWhenFinished() throws Exception {
+  public void readClosesPreparedStatementWhenFinished() throws Exception {
     setupEmptyResultSet();
-    handler.read(region, new Object());
+    Object getKey = "getkey";
+    handler.read(region, getKey);
     verify(statement).executeQuery();
-    verify(statement).setObject(1, COLUMN_VALUE_1);
+    verify(statement).setObject(1, getKey);
     verify(statement).close();
   }
 
@@ -136,7 +164,6 @@ public class SqlHandlerTest {
     when(result.next()).thenReturn(true).thenReturn(false);
     when(statement.executeQuery()).thenReturn(result);
 
-    when(manager.getKeyColumnName(any(), anyString())).thenReturn("key");
     PdxInstanceFactory factory = mock(PdxInstanceFactory.class);
     when(cache.createPdxInstanceFactory(anyString(), anyBoolean())).thenReturn(factory);
 
@@ -154,14 +181,14 @@ public class SqlHandlerTest {
     setupResultSet(result);
     when(result.next()).thenReturn(true).thenReturn(false);
     when(statement.executeQuery()).thenReturn(result);
+    when(tableKeyColumnManager.getKeyColumnName(connection, TABLE_NAME)).thenReturn(COLUMN_NAME_1);
 
-    when(manager.getKeyColumnName(any(), anyString())).thenReturn(COLUMN_NAME_1);
     PdxInstanceFactory factory = mock(PdxInstanceFactory.class);
     when(cache.createPdxInstanceFactory(anyString(), anyBoolean())).thenReturn(factory);
 
-    String filedName2 = COLUMN_NAME_2.toLowerCase();
+    String fieldName2 = COLUMN_NAME_2.toLowerCase();
     handler.read(region, new Object());
-    verify(factory).writeField(filedName2, COLUMN_VALUE_2, Object.class);
+    verify(factory).writeField(fieldName2, COLUMN_VALUE_2, Object.class);
     verify(factory, times(1)).writeField(any(), any(), any());
     verify(factory).create();
   }
@@ -174,7 +201,7 @@ public class SqlHandlerTest {
     when(result.getStatement()).thenReturn(mock(PreparedStatement.class));
     when(statement.executeQuery()).thenReturn(result);
 
-    when(manager.getKeyColumnName(any(), anyString())).thenReturn("key");
+    // when(manager.getKeyColumnName(any(), anyString())).thenReturn("key");
     when(cache.createPdxInstanceFactory(anyString(), anyBoolean()))
         .thenReturn(mock(PdxInstanceFactory.class));
 
@@ -191,9 +218,9 @@ public class SqlHandlerTest {
   @Test
   public void insertActionSucceeds() throws Exception {
     when(statement.executeUpdate()).thenReturn(1);
-    handler.write(region, Operation.CREATE, new Object(), value);
-    verify(statement).setObject(1, COLUMN_VALUE_1);
-    // verify(statement).setObject(2, COLUMN_VALUE_2);
+    Object createKey = "createKey";
+    handler.write(region, Operation.CREATE, createKey, value);
+    verify(statement).setObject(1, createKey);
     verify(statement).executeUpdate();
     verify(statement).close();
   }
@@ -201,42 +228,35 @@ public class SqlHandlerTest {
   @Test
   public void updateActionSucceeds() throws Exception {
     when(statement.executeUpdate()).thenReturn(1);
-    handler.write(region, Operation.UPDATE, new Object(), value);
-    verify(statement).setObject(1, COLUMN_VALUE_1);
-    // verify(statement).setObject(2, COLUMN_VALUE_2);
+    Object updateKey = "updateKey";
+    handler.write(region, Operation.UPDATE, updateKey, value);
+    verify(statement).setObject(1, updateKey);
     verify(statement).executeUpdate();
     verify(statement).close();
   }
 
   @Test
   public void destroyActionSucceeds() throws Exception {
-    List<ColumnValue> columnList = new ArrayList<>();
-    columnList.add(new ColumnValue(true, COLUMN_NAME_1, COLUMN_VALUE_1));
-    when(manager.getColumnToValueList(any(), any(), any(), any(), any())).thenReturn(columnList);
     when(statement.executeUpdate()).thenReturn(1);
-    handler.write(region, Operation.DESTROY, new Object(), value);
-    verify(statement).setObject(1, COLUMN_VALUE_1);
+    Object destroyKey = "destroyKey";
+    handler.write(region, Operation.DESTROY, destroyKey, value);
+    verify(statement).setObject(1, destroyKey);
     verify(statement, times(1)).setObject(anyInt(), any());
     verify(statement).close();
   }
 
   @Test
   public void destroyActionThatRemovesNoRowCompletesUnexceptionally() throws Exception {
-    List<ColumnValue> columnList = new ArrayList<>();
-    columnList.add(new ColumnValue(true, COLUMN_NAME_1, COLUMN_VALUE_1));
-    when(manager.getColumnToValueList(any(), any(), any(), any(), any())).thenReturn(columnList);
     when(statement.executeUpdate()).thenReturn(0);
-    handler.write(region, Operation.DESTROY, new Object(), value);
-    verify(statement).setObject(1, COLUMN_VALUE_1);
+    Object destroyKey = "destroyKey";
+    handler.write(region, Operation.DESTROY, destroyKey, value);
+    verify(statement).setObject(1, destroyKey);
     verify(statement, times(1)).setObject(anyInt(), any());
     verify(statement).close();
   }
 
   @Test
   public void destroyThrowExceptionWhenFail() throws Exception {
-    List<ColumnValue> columnList = new ArrayList<>();
-    columnList.add(new ColumnValue(true, COLUMN_NAME_1, COLUMN_VALUE_1));
-    when(manager.getColumnToValueList(any(), any(), any(), any(), any())).thenReturn(columnList);
     when(statement.executeUpdate()).thenThrow(SQLException.class);
 
     thrown.expect(IllegalStateException.class);
@@ -273,14 +293,15 @@ public class SqlHandlerTest {
     when(insertStatement.executeUpdate()).thenReturn(1);
     when(connection.prepareStatement(any())).thenReturn(statement).thenReturn(insertStatement);
 
-    handler.write(region, Operation.UPDATE, new Object(), value);
+    Object putKey = "putKey";
+    handler.write(region, Operation.UPDATE, putKey, value);
     verify(statement).executeUpdate();
     verify(insertStatement).executeUpdate();
     verify(statement).executeUpdate();
-    verify(statement).setObject(1, COLUMN_VALUE_1);
+    verify(statement).setObject(1, putKey);
     verify(statement).close();
     verify(statement).executeUpdate();
-    verify(statement).setObject(1, COLUMN_VALUE_1);
+    verify(statement).setObject(1, putKey);
     verify(insertStatement).close();
   }
 
@@ -336,28 +357,6 @@ public class SqlHandlerTest {
     verify(statement).close();
   }
 
-  private void setupManagerMock() throws SQLException {
-    ConnectionConfiguration connectionConfig = mock(ConnectionConfiguration.class);
-    when(manager.getConnectionConfig(any())).thenReturn(connectionConfig);
-
-    regionMapping = mock(RegionMapping.class);
-    when(regionMapping.getRegionName()).thenReturn(REGION_NAME);
-    when(regionMapping.getTableName()).thenReturn(TABLE_NAME);
-    when(regionMapping.getRegionToTableName()).thenReturn(TABLE_NAME);
-    when(manager.getMappingForRegion(any())).thenReturn(regionMapping);
-
-    List<ColumnValue> columnList = new ArrayList<>();
-    columnList.add(new ColumnValue(true, COLUMN_NAME_1, COLUMN_VALUE_1));
-    // columnList.add(new ColumnValue(true, COLUMN_NAME_2, COLUMN_VALUE_2));
-    when(manager.getColumnToValueList(any(), any(), any(), any(), any())).thenReturn(columnList);
-
-    this.connection = mock(Connection.class);
-    when(manager.getConnection(any())).thenReturn(this.connection);
-
-    statement = mock(PreparedStatement.class);
-    when(this.connection.prepareStatement(any())).thenReturn(statement);
-  }
-
   private void setupResultSet(ResultSet result) throws SQLException {
     ResultSetMetaData metaData = mock(ResultSetMetaData.class);
     when(result.getMetaData()).thenReturn(metaData);
@@ -374,5 +373,61 @@ public class SqlHandlerTest {
     ResultSet result = mock(ResultSet.class);
     when(result.next()).thenReturn(false);
     when(statement.executeQuery()).thenReturn(result);
+  }
+
+  @Test
+  public void returnsCorrectColumnForGet() throws Exception {
+    ResultSet primaryKeys = getPrimaryKeysMetaData();
+    when(primaryKeys.next()).thenReturn(true).thenReturn(false);
+
+    List<ColumnValue> columnValueList =
+        handler.getColumnToValueList(connection, regionMapping, key, value, Operation.GET);
+
+    assertThat(columnValueList).hasSize(1);
+    assertThat(columnValueList.get(0).getColumnName()).isEqualTo(KEY_COLUMN);
+  }
+
+  @Test
+  public void returnsCorrectColumnsForUpsertOperations() throws Exception {
+    ResultSet primaryKeys = getPrimaryKeysMetaData();
+    String nonKeyColumn = "otherColumn";
+    when(regionMapping.getColumnNameForField(KEY_COLUMN)).thenReturn(KEY_COLUMN);
+    when(regionMapping.getColumnNameForField(nonKeyColumn)).thenReturn(nonKeyColumn);
+    when(primaryKeys.next()).thenReturn(true).thenReturn(false);
+    when(value.getFieldNames()).thenReturn(Arrays.asList(KEY_COLUMN, nonKeyColumn));
+
+    List<ColumnValue> columnValueList =
+        handler.getColumnToValueList(connection, regionMapping, key, value, Operation.UPDATE);
+
+    assertThat(columnValueList).hasSize(2);
+    assertThat(columnValueList.get(0).getColumnName()).isEqualTo(nonKeyColumn);
+    assertThat(columnValueList.get(1).getColumnName()).isEqualTo(KEY_COLUMN);
+  }
+
+  @Test
+  public void returnsCorrectColumnForDestroy() throws Exception {
+    ResultSet primaryKeys = getPrimaryKeysMetaData();
+    when(primaryKeys.next()).thenReturn(true).thenReturn(false);
+
+    List<ColumnValue> columnValueList =
+        handler.getColumnToValueList(connection, regionMapping, key, value, Operation.DESTROY);
+
+    assertThat(columnValueList).hasSize(1);
+    assertThat(columnValueList.get(0).getColumnName()).isEqualTo(KEY_COLUMN);
+  }
+
+  private ResultSet getPrimaryKeysMetaData() throws SQLException {
+    DatabaseMetaData metadata = mock(DatabaseMetaData.class);
+    ResultSet resultSet = mock(ResultSet.class);
+    ResultSet primaryKeys = mock(ResultSet.class);
+
+    when(connection.getMetaData()).thenReturn(metadata);
+    when(metadata.getTables(any(), any(), any(), any())).thenReturn(resultSet);
+    when(metadata.getPrimaryKeys(any(), any(), anyString())).thenReturn(primaryKeys);
+    when(primaryKeys.getString("COLUMN_NAME")).thenReturn(KEY_COLUMN);
+    when(resultSet.next()).thenReturn(true).thenReturn(false);
+    when(resultSet.getString("TABLE_NAME")).thenReturn(TABLE_NAME);
+
+    return primaryKeys;
   }
 }

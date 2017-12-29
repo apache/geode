@@ -19,6 +19,8 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 import org.apache.geode.annotations.Experimental;
@@ -32,9 +34,15 @@ import org.apache.geode.pdx.internal.PdxInstanceImpl;
 @Experimental
 public class SqlHandler {
   private final ConnectionManager manager;
+  private final TableKeyColumnManager tableKeyColumnManager;
 
   public SqlHandler(ConnectionManager manager) {
+    this(manager, new TableKeyColumnManager());
+  }
+
+  SqlHandler(ConnectionManager manager, TableKeyColumnManager tableKeyColumnManager) {
     this.manager = manager;
+    this.tableKeyColumnManager = tableKeyColumnManager;
   }
 
   public void close() {
@@ -50,20 +58,25 @@ public class SqlHandler {
     ConnectionConfiguration connectionConfig =
         manager.getConnectionConfig(regionMapping.getConnectionConfigName());
 
-    List<ColumnValue> columnList =
-        manager.getColumnToValueList(connectionConfig, regionMapping, key, null, Operation.GET);
     String tableName = regionMapping.getRegionToTableName();
     PdxInstance result = null;
-    try (Connection connection = manager.getConnection(connectionConfig);
-        PreparedStatement statement =
-            getPreparedStatement(connection, columnList, tableName, Operation.GET, 0)) {
-      PdxInstanceFactory factory = getPdxInstanceFactory(region, regionMapping);
-      String keyColumnName = manager.getKeyColumnName(connectionConfig, tableName);
-      result = executeReadStatement(statement, columnList, factory, regionMapping, keyColumnName);
+    try (Connection connection = manager.getConnection(connectionConfig)) {
+      List<ColumnValue> columnList =
+          getColumnToValueList(connection, regionMapping, key, null, Operation.GET);
+      try (PreparedStatement statement =
+          getPreparedStatement(connection, columnList, tableName, Operation.GET, 0)) {
+        PdxInstanceFactory factory = getPdxInstanceFactory(region, regionMapping);
+        String keyColumnName = getKeyColumnName(connection, tableName);
+        result = executeReadStatement(statement, columnList, factory, regionMapping, keyColumnName);
+      }
     } catch (SQLException e) {
       handleSQLException(e);
     }
     return result;
+  }
+
+  private String getKeyColumnName(Connection connection, String tableName) {
+    return this.tableKeyColumnManager.getKeyColumnName(connection, tableName);
   }
 
   private <K, V> PdxInstanceFactory getPdxInstanceFactory(Region<K, V> region,
@@ -143,16 +156,17 @@ public class SqlHandler {
               + " not found. Create the connection with the gfsh command 'create jdbc-connection'");
     }
 
-    List<ColumnValue> columnList =
-        manager.getColumnToValueList(connectionConfig, regionMapping, key, value, operation);
-
     String tableName = regionMapping.getRegionToTableName();
     int pdxTypeId = value == null ? 0 : ((PdxInstanceImpl) value).getPdxType().getTypeId();
 
-    try (Connection connection = manager.getConnection(connectionConfig);
-        PreparedStatement statement =
-            getPreparedStatement(connection, columnList, tableName, operation, pdxTypeId)) {
-      int updateCount = executeWriteStatement(statement, columnList, operation, false);
+    try (Connection connection = manager.getConnection(connectionConfig)) {
+      List<ColumnValue> columnList =
+          getColumnToValueList(connection, regionMapping, key, value, operation);
+      int updateCount = 0;
+      try (PreparedStatement statement =
+          getPreparedStatement(connection, columnList, tableName, operation, pdxTypeId)) {
+        updateCount = executeWriteStatement(statement, columnList, operation, false);
+      }
 
       // Destroy action not guaranteed to modify any database rows
       if (operation.isDestroy()) {
@@ -218,6 +232,35 @@ public class SqlHandler {
     } else {
       throw new IllegalArgumentException("unsupported operation " + operation);
     }
+  }
+
+  <K> List<ColumnValue> getColumnToValueList(Connection connection, RegionMapping regionMapping,
+      K key, PdxInstance value, Operation operation) {
+    String tableName = regionMapping.getRegionToTableName();
+    String keyColumnName = getKeyColumnName(connection, tableName);
+    ColumnValue keyColumnValue = new ColumnValue(true, keyColumnName, key);
+
+    if (operation.isDestroy() || operation.isGet()) {
+      return Collections.singletonList(keyColumnValue);
+    }
+
+    List<ColumnValue> result = createColumnValueList(regionMapping, value, keyColumnName);
+    result.add(keyColumnValue);
+    return result;
+  }
+
+  private List<ColumnValue> createColumnValueList(RegionMapping regionMapping, PdxInstance value,
+      String keyColumnName) {
+    List<ColumnValue> result = new ArrayList<>();
+    for (String fieldName : value.getFieldNames()) {
+      String columnName = regionMapping.getColumnNameForField(fieldName);
+      if (columnName.equalsIgnoreCase(keyColumnName)) {
+        continue;
+      }
+      ColumnValue columnValue = new ColumnValue(false, columnName, value.getField(fieldName));
+      result.add(columnValue);
+    }
+    return result;
   }
 
   static void handleSQLException(SQLException e) {

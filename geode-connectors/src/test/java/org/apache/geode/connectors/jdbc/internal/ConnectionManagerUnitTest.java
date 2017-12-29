@@ -45,18 +45,11 @@ import org.apache.geode.test.junit.categories.UnitTest;
 public class ConnectionManagerUnitTest {
 
   private static final String REGION_NAME = "testRegion";
-  private static final String TABLE_NAME = "testTable";
   private static final String CONFIG_NAME = "configName";
-  private static final String KEY_COLUMN = "keyColumn";
-
   private JdbcConnectorService configService;
   private JdbcDataSource dataSource;
   private ConnectionManager manager;
   private Connection connection;
-  private RegionMapping mapping;
-
-  private Object key;
-  private PdxInstance value;
 
   private ConnectionConfiguration connectionConfig;
 
@@ -67,17 +60,11 @@ public class ConnectionManagerUnitTest {
     configService = mock(JdbcConnectorService.class);
     manager = spy(new ConnectionManager(configService));
     connection = mock(Connection.class);
-    mapping = mock(RegionMapping.class);
-    value = mock(PdxInstance.class);
 
     connectionConfig = new ConnectionConfiguration("name", "url", null, null, null);
 
-    when(mapping.getTableName()).thenReturn(TABLE_NAME);
-    when(mapping.getRegionToTableName()).thenReturn(TABLE_NAME);
     doReturn(dataSource).when(manager).buildJdbcDataSource(connectionConfig);
     doReturn(connection).when(dataSource).getConnection();
-
-    key = new Object();
   }
 
   @Test
@@ -138,120 +125,5 @@ public class ConnectionManagerUnitTest {
     manager.close();
     verify(dataSource).close();
     verify(dataSource2).close();
-  }
-
-  @Test
-  public void returnsCorrectColumnForDestroy() throws Exception {
-    ResultSet primaryKeys = getPrimaryKeysMetaData();
-    when(primaryKeys.next()).thenReturn(true).thenReturn(false);
-
-    List<ColumnValue> columnValueList =
-        manager.getColumnToValueList(connectionConfig, mapping, key, value, Operation.DESTROY);
-
-    assertThat(columnValueList).hasSize(1);
-    assertThat(columnValueList.get(0).getColumnName()).isEqualTo(KEY_COLUMN);
-  }
-
-  @Test
-  public void returnsCorrectColumnForGet() throws Exception {
-    ResultSet primaryKeys = getPrimaryKeysMetaData();
-    when(primaryKeys.next()).thenReturn(true).thenReturn(false);
-
-    List<ColumnValue> columnValueList =
-        manager.getColumnToValueList(connectionConfig, mapping, key, value, Operation.GET);
-
-    assertThat(columnValueList).hasSize(1);
-    assertThat(columnValueList.get(0).getColumnName()).isEqualTo(KEY_COLUMN);
-  }
-
-  @Test
-  public void throwsExceptionIfTableHasCompositePrimaryKey() throws Exception {
-    ResultSet primaryKeys = getPrimaryKeysMetaData();
-    when(primaryKeys.next()).thenReturn(true);
-
-    assertThatThrownBy(
-        () -> manager.getColumnToValueList(connectionConfig, mapping, key, value, Operation.GET))
-            .isInstanceOf(IllegalStateException.class);
-  }
-
-  @Test
-  public void throwsExceptionWhenTwoTablesHasCaseInsensitiveSameName() throws Exception {
-    DatabaseMetaData metadata = mock(DatabaseMetaData.class);
-    ResultSet resultSet = mock(ResultSet.class);
-    when(connection.getMetaData()).thenReturn(metadata);
-    when(metadata.getTables(any(), any(), any(), any())).thenReturn(resultSet);
-    when(resultSet.next()).thenReturn(true).thenReturn(true).thenReturn(false);
-    when(resultSet.getString("TABLE_NAME")).thenReturn(TABLE_NAME);
-    when(resultSet.getString("TABLE_NAME")).thenReturn(TABLE_NAME.toUpperCase());
-
-    assertThatThrownBy(
-        () -> manager.getColumnToValueList(connectionConfig, mapping, key, value, Operation.GET))
-            .isInstanceOf(IllegalStateException.class)
-            .hasMessage("Duplicate tables that match region name");
-  }
-
-  @Test
-  public void throwsExceptionWhenDesiredTableNotFound() throws Exception {
-    DatabaseMetaData metadata = mock(DatabaseMetaData.class);
-    ResultSet resultSet = mock(ResultSet.class);
-    when(connection.getMetaData()).thenReturn(metadata);
-    when(metadata.getTables(any(), any(), any(), any())).thenReturn(resultSet);
-    when(resultSet.next()).thenReturn(true).thenReturn(false);
-    when(resultSet.getString("TABLE_NAME")).thenReturn("otherTable");
-
-    assertThatThrownBy(
-        () -> manager.getColumnToValueList(connectionConfig, mapping, key, value, Operation.GET))
-            .isInstanceOf(IllegalStateException.class);
-  }
-
-  @Test
-  public void throwsExceptionWhenNoPrimaryKeyInTable() throws Exception {
-    ResultSet primaryKeys = getPrimaryKeysMetaData();
-    when(primaryKeys.next()).thenReturn(false);
-
-    assertThatThrownBy(
-        () -> manager.getColumnToValueList(connectionConfig, mapping, key, value, Operation.GET))
-            .isInstanceOf(IllegalStateException.class);
-  }
-
-  @Test
-  public void throwsExceptionWhenFailsToGetTableMetadata() throws Exception {
-    when(connection.getMetaData()).thenThrow(SQLException.class);
-
-    assertThatThrownBy(
-        () -> manager.getColumnToValueList(connectionConfig, mapping, key, value, Operation.GET))
-            .isInstanceOf(IllegalStateException.class);
-  }
-
-  @Test
-  public void returnsCorrectColumnsForUpsertOperations() throws Exception {
-    ResultSet primaryKeys = getPrimaryKeysMetaData();
-    String nonKeyColumn = "otherColumn";
-    when(mapping.getColumnNameForField(KEY_COLUMN)).thenReturn(KEY_COLUMN);
-    when(mapping.getColumnNameForField(nonKeyColumn)).thenReturn(nonKeyColumn);
-    when(primaryKeys.next()).thenReturn(true).thenReturn(false);
-    when(value.getFieldNames()).thenReturn(Arrays.asList(KEY_COLUMN, nonKeyColumn));
-
-    List<ColumnValue> columnValueList =
-        manager.getColumnToValueList(connectionConfig, mapping, key, value, Operation.UPDATE);
-
-    assertThat(columnValueList).hasSize(2);
-    assertThat(columnValueList.get(0).getColumnName()).isEqualTo(nonKeyColumn);
-    assertThat(columnValueList.get(1).getColumnName()).isEqualTo(KEY_COLUMN);
-  }
-
-  private ResultSet getPrimaryKeysMetaData() throws SQLException {
-    DatabaseMetaData metadata = mock(DatabaseMetaData.class);
-    ResultSet resultSet = mock(ResultSet.class);
-    ResultSet primaryKeys = mock(ResultSet.class);
-
-    when(connection.getMetaData()).thenReturn(metadata);
-    when(metadata.getTables(any(), any(), any(), any())).thenReturn(resultSet);
-    when(metadata.getPrimaryKeys(any(), any(), anyString())).thenReturn(primaryKeys);
-    when(primaryKeys.getString("COLUMN_NAME")).thenReturn(KEY_COLUMN);
-    when(resultSet.next()).thenReturn(true).thenReturn(false);
-    when(resultSet.getString("TABLE_NAME")).thenReturn(TABLE_NAME);
-
-    return primaryKeys;
   }
 }
