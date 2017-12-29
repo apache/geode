@@ -14,14 +14,22 @@
  */
 package org.apache.geode.internal.protocol.protobuf.v1.operations;
 
+import static org.apache.geode.internal.protocol.ProtocolErrorCode.INVALID_REQUEST;
+
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 import org.apache.geode.annotations.Experimental;
+import org.apache.geode.cache.client.internal.locator.ClientConnectionRequest;
+import org.apache.geode.cache.client.internal.locator.ClientConnectionResponse;
 import org.apache.geode.distributed.internal.InternalLocator;
 import org.apache.geode.distributed.internal.ServerLocation;
 import org.apache.geode.internal.exception.InvalidExecutionContextException;
+import org.apache.geode.internal.protocol.Failure;
 import org.apache.geode.internal.protocol.MessageExecutionContext;
 import org.apache.geode.internal.protocol.Result;
 import org.apache.geode.internal.protocol.Success;
@@ -31,38 +39,54 @@ import org.apache.geode.internal.protocol.protobuf.v1.BasicTypes;
 import org.apache.geode.internal.protocol.protobuf.v1.ClientProtocol;
 import org.apache.geode.internal.protocol.protobuf.v1.LocatorAPI;
 import org.apache.geode.internal.protocol.protobuf.v1.ProtobufSerializationService;
+import org.apache.geode.internal.protocol.protobuf.v1.utilities.ProtobufResponseUtilities;
 import org.apache.geode.internal.protocol.serialization.SerializationService;
 import org.apache.geode.internal.protocol.state.ConnectionTerminatingStateProcessor;
 
 @Experimental
-public class GetAvailableServersOperationHandler implements
-    ProtobufOperationHandler<LocatorAPI.GetAvailableServersRequest, LocatorAPI.GetAvailableServersResponse> {
+public class GetServerOperationHandler
+    implements ProtobufOperationHandler<LocatorAPI.GetServerRequest, LocatorAPI.GetServerResponse> {
 
   @Override
-  public Result<LocatorAPI.GetAvailableServersResponse, ClientProtocol.ErrorResponse> process(
-      ProtobufSerializationService serializationService,
-      LocatorAPI.GetAvailableServersRequest request,
+  public Result<LocatorAPI.GetServerResponse, ClientProtocol.ErrorResponse> process(
+      ProtobufSerializationService serializationService, LocatorAPI.GetServerRequest request,
       MessageExecutionContext messageExecutionContext) throws InvalidExecutionContextException {
+
+    // A client may send a set of servers to exclude and/or a server-group.
+    Set<ServerLocation> excludedServers = new HashSet<>();
+    List<BasicTypes.Server> excludedServersList = request.getExcludedServersList();
+    for (BasicTypes.Server server : excludedServersList) {
+      excludedServers.add(new ServerLocation(server.getHostname(), server.getPort()));
+    }
+
+    // note: an empty string is okay - the ServerLocator code checks for this
+    String serverGroup = request.getServerGroup();
 
     messageExecutionContext.setConnectionStateProcessor(new ConnectionTerminatingStateProcessor());
     InternalLocator internalLocator = (InternalLocator) messageExecutionContext.getLocator();
-    ArrayList serversFromSnapshot =
-        internalLocator.getServerLocatorAdvisee().getLoadSnapshot().getServers(null);
-    if (serversFromSnapshot == null) {
-      serversFromSnapshot = new ArrayList();
+
+    // In order to ensure that proper checks are performed on the request we will use
+    // the locator's processRequest() API. We assume that all servers have Protobuf
+    // enabled.
+    ClientConnectionRequest clientConnectionRequest =
+        new ClientConnectionRequest(excludedServers, serverGroup);
+    ClientConnectionResponse connectionResponse = (ClientConnectionResponse) internalLocator
+        .getServerLocatorAdvisee().processRequest(clientConnectionRequest);
+
+    ServerLocation serverLocation = null;
+    if (connectionResponse != null) {
+      serverLocation = connectionResponse.getServer();
     }
 
-    Collection<BasicTypes.Server> servers = (Collection<BasicTypes.Server>) serversFromSnapshot
-        .stream().map(serverLocation -> getServerProtobufMessage((ServerLocation) serverLocation))
-        .collect(Collectors.toList());
-    LocatorAPI.GetAvailableServersResponse.Builder builder =
-        LocatorAPI.GetAvailableServersResponse.newBuilder().addAllServers(servers);
-    return Success.of(builder.build());
-  }
+    LocatorAPI.GetServerResponse.Builder builder = LocatorAPI.GetServerResponse.newBuilder();
 
-  private BasicTypes.Server getServerProtobufMessage(ServerLocation serverLocation) {
-    BasicTypes.Server.Builder serverBuilder = BasicTypes.Server.newBuilder();
-    serverBuilder.setHostname(serverLocation.getHostName()).setPort(serverLocation.getPort());
-    return serverBuilder.build();
+    if (serverLocation != null) {
+      BasicTypes.Server.Builder serverBuilder = BasicTypes.Server.newBuilder();
+      serverBuilder.setHostname(serverLocation.getHostName()).setPort(serverLocation.getPort());
+      BasicTypes.Server server = serverBuilder.build();
+      builder.setServer(server);
+    }
+
+    return Success.of(builder.build());
   }
 }

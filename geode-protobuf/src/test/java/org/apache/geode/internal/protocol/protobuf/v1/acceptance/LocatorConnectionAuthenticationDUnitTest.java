@@ -17,25 +17,21 @@ package org.apache.geode.internal.protocol.protobuf.v1.acceptance;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
 
 import java.io.IOException;
 import java.net.Socket;
-import java.util.List;
 import java.util.Properties;
 
-import org.junit.After;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
-import org.junit.rules.ExpectedException;
 
 import org.apache.geode.cache.server.CacheServer;
 import org.apache.geode.distributed.ConfigurationProperties;
 import org.apache.geode.distributed.Locator;
 import org.apache.geode.internal.cache.InternalCache;
-import org.apache.geode.internal.protocol.exception.InvalidProtocolMessageException;
-import org.apache.geode.internal.protocol.protobuf.v1.BasicTypes.Server;
 import org.apache.geode.internal.protocol.protobuf.v1.ClientProtocol;
 import org.apache.geode.internal.protocol.protobuf.v1.ConnectionAPI;
 import org.apache.geode.internal.protocol.protobuf.v1.MessageUtil;
@@ -43,7 +39,6 @@ import org.apache.geode.internal.protocol.protobuf.v1.serializer.ProtobufProtoco
 import org.apache.geode.internal.protocol.protobuf.v1.utilities.ProtobufRequestUtilities;
 import org.apache.geode.internal.protocol.protobuf.v1.utilities.ProtobufUtilities;
 import org.apache.geode.security.SimpleTestSecurityManager;
-import org.apache.geode.test.dunit.DistributedTestUtils;
 import org.apache.geode.test.dunit.Host;
 import org.apache.geode.test.dunit.cache.internal.JUnit4CacheTestCase;
 import org.apache.geode.test.dunit.rules.DistributedRestoreSystemProperties;
@@ -83,8 +78,8 @@ public class LocatorConnectionAuthenticationDUnitTest extends JUnit4CacheTestCas
   }
 
   /**
-   * Test that if the locator has a security manager, an authorized client is allowed to get the
-   * available servers
+   * Test that if the locator has a security manager, an authorized client is allowed to get an
+   * available server
    */
   @Test
   public void authorizedClientCanGetServersIfSecurityIsEnabled() throws Throwable {
@@ -97,9 +92,9 @@ public class LocatorConnectionAuthenticationDUnitTest extends JUnit4CacheTestCas
                 .putCredentials("security-username", "cluster").putCredentials("security-password",
                     "cluster"))
             .build());
-    ClientProtocol.Message getAvailableServersRequestMessage = ProtobufUtilities
-        .createProtobufMessage(protobufRequestBuilder.setGetAvailableServersRequest(
-            ProtobufRequestUtilities.createGetAvailableServersRequest()).build());
+    ClientProtocol.Message GetServerRequestMessage =
+        ProtobufUtilities.createProtobufMessage(protobufRequestBuilder
+            .setGetServerRequest(ProtobufRequestUtilities.createGetServerRequest()).build());
 
     ProtobufProtocolSerializer protobufProtocolSerializer = new ProtobufProtocolSerializer();
 
@@ -110,14 +105,12 @@ public class LocatorConnectionAuthenticationDUnitTest extends JUnit4CacheTestCas
           protobufProtocolSerializer.deserialize(socket.getInputStream());
       assertEquals(true,
           authorizationResponse.getResponse().getAuthenticationResponse().getAuthenticated());
-      protobufProtocolSerializer.serialize(getAvailableServersRequestMessage,
-          socket.getOutputStream());
+      protobufProtocolSerializer.serialize(GetServerRequestMessage, socket.getOutputStream());
 
-      ClientProtocol.Message getAvailableServersResponseMessage =
+      ClientProtocol.Message GetServerResponseMessage =
           protobufProtocolSerializer.deserialize(socket.getInputStream());
-      assertEquals("Got response: " + getAvailableServersResponseMessage, 1,
-          getAvailableServersResponseMessage.getResponse().getGetAvailableServersResponse()
-              .getServersCount());
+      assertTrue("Got response: " + GetServerResponseMessage,
+          GetServerResponseMessage.getResponse().getGetServerResponse().hasServer());
     }
   }
 
@@ -129,20 +122,19 @@ public class LocatorConnectionAuthenticationDUnitTest extends JUnit4CacheTestCas
   public void unauthorizedClientCannotGetServersIfSecurityIsEnabled() throws Throwable {
     ClientProtocol.Request.Builder protobufRequestBuilder =
         ProtobufUtilities.createProtobufRequestBuilder();
-    ClientProtocol.Message getAvailableServersRequestMessage = ProtobufUtilities
-        .createProtobufMessage(protobufRequestBuilder.setGetAvailableServersRequest(
-            ProtobufRequestUtilities.createGetAvailableServersRequest()).build());
+    ClientProtocol.Message getServerRequestMessage =
+        ProtobufUtilities.createProtobufMessage(protobufRequestBuilder
+            .setGetServerRequest(ProtobufRequestUtilities.createGetServerRequest()).build());
 
     ProtobufProtocolSerializer protobufProtocolSerializer = new ProtobufProtocolSerializer();
 
     try (Socket socket = createSocket()) {
-      protobufProtocolSerializer.serialize(getAvailableServersRequestMessage,
-          socket.getOutputStream());
+      protobufProtocolSerializer.serialize(getServerRequestMessage, socket.getOutputStream());
 
-      ClientProtocol.Message getAvailableServersResponseMessage =
+      ClientProtocol.Message getServerResponseMessage =
           protobufProtocolSerializer.deserialize(socket.getInputStream());
-      assertNotNull("Got response: " + getAvailableServersResponseMessage,
-          getAvailableServersRequestMessage.getResponse().getErrorResponse());
+      assertNotNull("Got response: " + getServerResponseMessage,
+          getServerRequestMessage.getResponse().getErrorResponse());
     }
   }
 

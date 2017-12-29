@@ -23,10 +23,11 @@ package org.apache.geode.internal.protocol.protobuf.v1;
 
 import "v1/basicTypes.proto";
 
-message GetAvailableServersRequest {
-
+message GetServerRequest {
+    repeated Server excludedServers = 1;
+    string serverGroup = 2;
 }
 
-message GetAvailableServersResponse {
-    repeated Server servers = 1;
+message GetServerResponse {
+    Server server = 1;
 }

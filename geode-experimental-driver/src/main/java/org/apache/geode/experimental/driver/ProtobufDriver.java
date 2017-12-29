@@ -19,8 +19,6 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.InetSocketAddress;
 import java.net.Socket;
-import java.util.ArrayList;
-import java.util.Collection;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -60,9 +58,8 @@ public class ProtobufDriver implements Driver {
    */
   ProtobufDriver(Set<InetSocketAddress> locators) throws IOException {
     this.locators = locators;
-    Collection<InetSocketAddress> servers = getAvailableServers();
-    InetSocketAddress anyServer = servers.iterator().next();
-    socket = new Socket(anyServer.getAddress(), anyServer.getPort());
+    InetSocketAddress server = findAServer();
+    socket = new Socket(server.getAddress(), server.getPort());
 
     final OutputStream outputStream = socket.getOutputStream();
     ProtocolVersion.NewConnectionClientVersion.newBuilder()
@@ -119,13 +116,12 @@ public class ProtobufDriver implements Driver {
   }
 
   /**
-   * Queries a locator for the GemFire servers that have Protobuf enabled.
+   * Queries locators for a Geode server that has Protobuf enabled.
    *
-   * @return Set of Internet-address-or-host-name/port pairs of the GemFire servers that have
-   *         Protobuf enabled.
+   * @return The server chosen by the Locator service for this client
    * @throws IOException
    */
-  private Collection<InetSocketAddress> getAvailableServers() throws IOException {
+  private InetSocketAddress findAServer() throws IOException {
     IOException lastException = null;
 
     for (InetSocketAddress locator : locators) {
@@ -147,22 +143,17 @@ public class ProtobufDriver implements Driver {
 
         ClientProtocol.Message.newBuilder()
             .setRequest(ClientProtocol.Request.newBuilder()
-                .setGetAvailableServersRequest(LocatorAPI.GetAvailableServersRequest.newBuilder()))
+                .setGetServerRequest(LocatorAPI.GetServerRequest.newBuilder()))
             .build().writeDelimitedTo(outputStream);
 
-        LocatorAPI.GetAvailableServersResponse getAvailableServersResponse = ClientProtocol.Message
-            .parseDelimitedFrom(inputStream).getResponse().getGetAvailableServersResponse();
-        if (getAvailableServersResponse.getServersCount() < 1) {
+        LocatorAPI.GetServerResponse getServerResponse = ClientProtocol.Message
+            .parseDelimitedFrom(inputStream).getResponse().getGetServerResponse();
+        if (!getServerResponse.hasServer()) {
           continue;
         }
 
-        ArrayList<InetSocketAddress> availableServers =
-            new ArrayList<>(getAvailableServersResponse.getServersCount());
-        for (int i = 0; i < getAvailableServersResponse.getServersCount(); ++i) {
-          final BasicTypes.Server server = getAvailableServersResponse.getServers(i);
-          availableServers.add(new InetSocketAddress(server.getHostname(), server.getPort()));
-        }
-        return availableServers;
+        BasicTypes.Server server = getServerResponse.getServer();
+        return new InetSocketAddress(server.getHostname(), server.getPort());
       } catch (IOException e) {
         lastException = e;
       }

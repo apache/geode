@@ -15,6 +15,7 @@
 
 package org.apache.geode.internal.protocol.protobuf.v1.acceptance;
 
+import static org.apache.geode.internal.Assert.assertTrue;
 import static org.apache.geode.internal.cache.tier.CommunicationMode.ProtobufClientServerProtocol;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
@@ -84,9 +85,9 @@ public class LocatorConnectionDUnitTest extends JUnit4CacheTestCase {
   public void testGetAvailableServersWithStats() throws Throwable {
     ClientProtocol.Request.Builder protobufRequestBuilder =
         ProtobufUtilities.createProtobufRequestBuilder();
-    ClientProtocol.Message getAvailableServersRequestMessage = ProtobufUtilities
-        .createProtobufMessage(protobufRequestBuilder.setGetAvailableServersRequest(
-            ProtobufRequestUtilities.createGetAvailableServersRequest()).build());
+    ClientProtocol.Message getAvailableServersRequestMessage =
+        ProtobufUtilities.createProtobufMessage(protobufRequestBuilder
+            .setGetServerRequest(ProtobufRequestUtilities.createGetServerRequest()).build());
 
     ProtobufProtocolSerializer protobufProtocolSerializer = new ProtobufProtocolSerializer();
 
@@ -220,11 +221,10 @@ public class LocatorConnectionDUnitTest extends JUnit4CacheTestCase {
     assertEquals(ClientProtocol.Message.MessageTypeCase.RESPONSE,
         getAvailableServersResponseMessage.getMessageTypeCase());
     ClientProtocol.Response messageResponse = getAvailableServersResponseMessage.getResponse();
-    assertEquals(ClientProtocol.Response.ResponseAPICase.GETAVAILABLESERVERSRESPONSE,
+    assertEquals(ClientProtocol.Response.ResponseAPICase.GETSERVERRESPONSE,
         messageResponse.getResponseAPICase());
-    LocatorAPI.GetAvailableServersResponse getAvailableServersResponse =
-        messageResponse.getGetAvailableServersResponse();
-    assertEquals(1, getAvailableServersResponse.getServersCount());
+    LocatorAPI.GetServerResponse getServerResponse = messageResponse.getGetServerResponse();
+    assertTrue(getServerResponse.hasServer());
   }
 
   private void validateStats(long messagesReceived, long messagesSent, long bytesReceived,

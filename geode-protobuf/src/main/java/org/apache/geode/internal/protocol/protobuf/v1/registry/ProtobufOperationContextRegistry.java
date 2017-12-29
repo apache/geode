@@ -23,10 +23,10 @@ import org.apache.geode.internal.protocol.protobuf.v1.ClientProtocol;
 import org.apache.geode.internal.protocol.protobuf.v1.ClientProtocol.Request.RequestAPICase;
 import org.apache.geode.internal.protocol.protobuf.v1.ProtobufOperationContext;
 import org.apache.geode.internal.protocol.protobuf.v1.operations.GetAllRequestOperationHandler;
-import org.apache.geode.internal.protocol.protobuf.v1.operations.GetAvailableServersOperationHandler;
 import org.apache.geode.internal.protocol.protobuf.v1.operations.GetRegionNamesRequestOperationHandler;
 import org.apache.geode.internal.protocol.protobuf.v1.operations.GetRegionRequestOperationHandler;
 import org.apache.geode.internal.protocol.protobuf.v1.operations.GetRequestOperationHandler;
+import org.apache.geode.internal.protocol.protobuf.v1.operations.GetServerOperationHandler;
 import org.apache.geode.internal.protocol.protobuf.v1.operations.PutAllRequestOperationHandler;
 import org.apache.geode.internal.protocol.protobuf.v1.operations.PutRequestOperationHandler;
 import org.apache.geode.internal.protocol.protobuf.v1.operations.RemoveRequestOperationHandler;
@@ -103,10 +103,10 @@ public class ProtobufOperationContextRegistry {
             new ResourcePermission(ResourcePermission.Resource.DATA,
                 ResourcePermission.Operation.READ)));
 
-    operationContexts.put(RequestAPICase.GETAVAILABLESERVERSREQUEST,
-        new ProtobufOperationContext<>(ClientProtocol.Request::getGetAvailableServersRequest,
-            new GetAvailableServersOperationHandler(),
-            opsResp -> ClientProtocol.Response.newBuilder().setGetAvailableServersResponse(opsResp),
+    operationContexts.put(RequestAPICase.GETSERVERREQUEST,
+        new ProtobufOperationContext<>(ClientProtocol.Request::getGetServerRequest,
+            new GetServerOperationHandler(),
+            opsResp -> ClientProtocol.Response.newBuilder().setGetServerResponse(opsResp),
             new ResourcePermission(ResourcePermission.Resource.CLUSTER,
                 ResourcePermission.Operation.READ)));
   }
