@@ -23,25 +23,22 @@ Contains TCP/IP communications conduit
 <p>The tcp/ip conduit is designed to be used in one way:</p>
 
 </p>1) The conduit is used by the GemFire
-{@link org.apache.geode.distributed.internal.DistributionChannel}
-when true multicast messaging is not needed.  When used in this way, the
+{@link org.apache.geode.distributed.internal.membership.MembershipManager}
+when true multicast messaging is not needed and disable-tcp is not
+set to true, which is the default setting.  When used in this way, the
 conduit manages the serialization and transmission of
 {@link org.apache.geode.distributed.internal.DistributionMessage}
 objects from one system to another.  The
-{@link org.apache.geode.distributed.internal.DistributionManager}
-maintains a
-Map of JavaGroups Addresses to the corresponding tcp/ip address for each
-system.  The <code>DistributionManager</code> also maintains a set of
-known tcp/ip addresses that the conduit uses for fast iteration when simulating
-multicast message transmission.</p>
-
+{@link org.apache.geode.distributed.internal.membershp.MembershipManager}
+routes outgoing messages to TCPConduit and handles receipt of messages
+received by TCPConduit {@link org.apache.geode.internal.tcp.Connection "Connections"}.
 <hr>
 
-<p>Messaging uses Java serialization to send messages (and
+<p>Messaging uses DataSerializer serialization to send messages (and
 receive replies).
 <hr>
 
-<p>The GemFire JCache implementation initializes a <code>TCPConduit</code> when the
+<p>The GemFire Cache implementation initializes a <code>TCPConduit</code> when the
 cache is initialized.
 <code>TCPConduit</code>s created by the
 cache use a wildcard bind to select a server port unless the property
@@ -77,7 +74,7 @@ destination.</p>
 
 <p>When a message is received from another conduit it is deserialized
 and examined.  If it is a <code>DistributionMessage</code>, the message is delegated
-to the <code>DirectChannel</code> held by the <code>DistributionManager</code>.  
+to the <code>DirectChannel</code> held by the <code>MembershipManager</code>.
 </p>
 
    TCPConduit  ----->  ConnectionTable
