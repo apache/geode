@@ -31,7 +31,7 @@ import org.apache.geode.pdx.internal.PdxInstanceImpl;
 
 @Experimental
 public class SqlHandler {
-  private ConnectionManager manager;
+  private final ConnectionManager manager;
 
   public SqlHandler(ConnectionManager manager) {
     this.manager = manager;
@@ -220,7 +220,7 @@ public class SqlHandler {
     }
   }
 
-  private void handleSQLException(SQLException e) {
+  static void handleSQLException(SQLException e) {
     throw new IllegalStateException("JDBC connector detected unexpected SQLException", e);
   }
 }

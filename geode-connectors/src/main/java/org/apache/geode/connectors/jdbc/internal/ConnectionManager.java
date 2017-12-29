@@ -42,22 +42,14 @@ class ConnectionManager {
     return configService.getMappingForRegion(regionName);
   }
 
-  private JdbcDataSource createDataSource(ConnectionConfiguration config) {
-    return dataSourceMap.computeIfAbsent(config.getName(), k -> {
-      return buildJdbcDataSource(config);
-    });
-  }
-
   JdbcDataSource buildJdbcDataSource(ConnectionConfiguration config) {
     return new JdbcDataSourceBuilder(config).create();
   }
 
   private JdbcDataSource getDataSource(ConnectionConfiguration config) {
-    JdbcDataSource dataSource = dataSourceMap.get(config.getName());
-    if (dataSource != null) {
-      return dataSource;
-    }
-    return createDataSource(config);
+    return dataSourceMap.computeIfAbsent(config.getName(), k -> {
+      return buildJdbcDataSource(config);
+    });
   }
 
   Connection getConnection(ConnectionConfiguration config) {
@@ -111,17 +103,15 @@ class ConnectionManager {
   }
 
   private String computeKeyColumnName(ConnectionConfiguration connectionConfig, String tableName) {
-    // TODO: check config for key column
     String key = null;
     try (Connection connection = getConnection(connectionConfig)) {
       DatabaseMetaData metaData = connection.getMetaData();
-      ResultSet tables = metaData.getTables(null, null, "%", null);
-
-      String realTableName = getTableNameFromMetaData(tableName, tables);
-      key = getPrimaryKeyColumnNameFromMetaData(realTableName, metaData);
-
+      try (ResultSet tables = metaData.getTables(null, null, "%", null)) {
+        String realTableName = getTableNameFromMetaData(tableName, tables);
+        key = getPrimaryKeyColumnNameFromMetaData(realTableName, metaData);
+      }
     } catch (SQLException e) {
-      handleSQLException(e);
+      SqlHandler.handleSQLException(e);
     }
     return key;
   }
@@ -157,10 +147,6 @@ class ConnectionManager {
           "The table " + tableName + " has more than one primary key column.");
     }
     return key;
-  }
-
-  private void handleSQLException(SQLException e) {
-    throw new IllegalStateException("JDBC connector detected unexpected SQLException", e);
   }
 
   private void close(JdbcDataSource dataSource) {
