@@ -27,7 +27,6 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Properties;
 
-import com.zaxxer.hikari.HikariDataSource;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -69,12 +68,7 @@ public class JdbcWriterIntegrationTest {
         .setPdxReadSerialized(false).create();
     employees = createRegionWithJDBCSynchronousWriter(REGION_TABLE_NAME);
 
-    HikariDataSource ds = new HikariDataSource();
-    ds.setJdbcUrl(CONNECTION_URL);
-    // ds.setDataSourceClassName("org.apache.derby.jdbc.ClientDataSource");
-    connection = ds.getConnection();
-
-    // connection = DriverManager.getConnection(CONNECTION_URL);
+    connection = DriverManager.getConnection(CONNECTION_URL);
     statement = connection.createStatement();
     statement.execute("Create Table " + REGION_TABLE_NAME
         + " (id varchar(10) primary key not null, name varchar(10), age int)");
@@ -233,7 +227,8 @@ public class JdbcWriterIntegrationTest {
 
   private SqlHandler createSqlHandler()
       throws ConnectionConfigExistsException, RegionMappingExistsException {
-    return new SqlHandler(new TestableConnectionManager(TestConfigService.getTestConfigService()));
+    return new SqlHandler(new TestableConnectionManager(),
+        TestConfigService.getTestConfigService());
   }
 
   private void assertRecordMatchesEmployee(ResultSet resultSet, String key, Employee employee)

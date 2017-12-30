@@ -33,20 +33,31 @@ import org.apache.geode.pdx.internal.PdxInstanceImpl;
 
 @Experimental
 public class SqlHandler {
-  private final ConnectionManager manager;
+  private final InternalJdbcConnectorService configService;
+  private final DataSourceManager manager;
   private final TableKeyColumnManager tableKeyColumnManager;
 
-  public SqlHandler(ConnectionManager manager) {
-    this(manager, new TableKeyColumnManager());
+  public SqlHandler(DataSourceManager manager, InternalJdbcConnectorService configService) {
+    this(manager, new TableKeyColumnManager(), configService);
   }
 
-  SqlHandler(ConnectionManager manager, TableKeyColumnManager tableKeyColumnManager) {
+  SqlHandler(DataSourceManager manager, TableKeyColumnManager tableKeyColumnManager,
+      InternalJdbcConnectorService configService) {
     this.manager = manager;
     this.tableKeyColumnManager = tableKeyColumnManager;
+    this.configService = configService;
   }
 
   public void close() {
     manager.close();
+  }
+
+  Connection getConnection(ConnectionConfiguration config) {
+    try {
+      return manager.getDataSource(config).getConnection();
+    } catch (SQLException e) {
+      throw new IllegalStateException("Could not connect to " + config.getUrl(), e);
+    }
   }
 
   public <K, V> PdxInstance read(Region<K, V> region, K key) {
@@ -54,13 +65,12 @@ public class SqlHandler {
       throw new IllegalArgumentException("Key for query cannot be null");
     }
 
-    RegionMapping regionMapping = manager.getMappingForRegion(region.getName());
+    RegionMapping regionMapping = getMappingForRegion(region.getName());
     ConnectionConfiguration connectionConfig =
-        manager.getConnectionConfig(regionMapping.getConnectionConfigName());
-
+        getConnectionConfig(regionMapping.getConnectionConfigName());
     String tableName = regionMapping.getRegionToTableName();
     PdxInstance result = null;
-    try (Connection connection = manager.getConnection(connectionConfig)) {
+    try (Connection connection = getConnection(connectionConfig)) {
       List<ColumnValue> columnList =
           getColumnToValueList(connection, regionMapping, key, null, Operation.GET);
       try (PreparedStatement statement =
@@ -73,6 +83,14 @@ public class SqlHandler {
       handleSQLException(e);
     }
     return result;
+  }
+
+  private RegionMapping getMappingForRegion(String regionName) {
+    return this.configService.getMappingForRegion(regionName);
+  }
+
+  private ConnectionConfiguration getConnectionConfig(String connectionConfigName) {
+    return this.configService.getConnectionConfig(connectionConfigName);
   }
 
   private String getKeyColumnName(Connection connection, String tableName) {
@@ -141,15 +159,14 @@ public class SqlHandler {
     if (value == null && operation != Operation.DESTROY) {
       throw new IllegalArgumentException("PdxInstance cannot be null for non-destroy operations");
     }
-    RegionMapping regionMapping = manager.getMappingForRegion(region.getName());
-
+    RegionMapping regionMapping = getMappingForRegion(region.getName());
     if (regionMapping == null) {
       throw new IllegalStateException(
           "JDBC write failed. JDBC mapping for region " + region.getFullPath()
               + " not found. Create the mapping with the gfsh command 'create jdbc-mapping'.");
     }
     ConnectionConfiguration connectionConfig =
-        manager.getConnectionConfig(regionMapping.getConnectionConfigName());
+        getConnectionConfig(regionMapping.getConnectionConfigName());
     if (connectionConfig == null) {
       throw new IllegalStateException(
           "JDBC write failed. JDBC connection with name " + regionMapping.getConnectionConfigName()
@@ -159,7 +176,7 @@ public class SqlHandler {
     String tableName = regionMapping.getRegionToTableName();
     int pdxTypeId = value == null ? 0 : ((PdxInstanceImpl) value).getPdxType().getTypeId();
 
-    try (Connection connection = manager.getConnection(connectionConfig)) {
+    try (Connection connection = getConnection(connectionConfig)) {
       List<ColumnValue> columnList =
           getColumnToValueList(connection, regionMapping, key, value, operation);
       int updateCount = 0;

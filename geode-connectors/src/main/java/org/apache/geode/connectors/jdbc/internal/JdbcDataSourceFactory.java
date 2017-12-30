@@ -14,9 +14,12 @@
  */
 package org.apache.geode.connectors.jdbc.internal;
 
-public class TestableConnectionManager extends DataSourceManager {
-
-  public TestableConnectionManager() {
-    super(new HikariJdbcDataSourceFactory());
-  }
+/**
+ * Given a ConnnectionConfiguration create a JdbcDataSource.
+ */
+interface JdbcDataSourceFactory {
+  /**
+   * Given a ConnnectionConfiguration create and return a JdbcDataSource
+   */
+  JdbcDataSource create(ConnectionConfiguration configuration);
 }

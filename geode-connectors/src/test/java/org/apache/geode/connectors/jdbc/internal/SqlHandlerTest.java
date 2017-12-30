@@ -20,6 +20,7 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyBoolean;
 import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
@@ -62,7 +63,10 @@ public class SqlHandlerTest {
   @Rule
   public ExpectedException thrown = ExpectedException.none();
 
-  private ConnectionManager manager;
+  private DataSourceManager manager;
+  private JdbcDataSource dataSource;
+  private ConnectionConfiguration connectionConfig;
+  private InternalJdbcConnectorService connectorService;
   private TableKeyColumnManager tableKeyColumnManager;
   private Connection connection;
   private Region region;
@@ -75,33 +79,33 @@ public class SqlHandlerTest {
 
   @Before
   public void setup() throws Exception {
-    manager = mock(ConnectionManager.class);
+    manager = mock(DataSourceManager.class);
+    dataSource = mock(JdbcDataSource.class);
+    connectionConfig = mock(ConnectionConfiguration.class);
+    when(connectionConfig.getUrl()).thenReturn("fake:url");
     region = mock(Region.class);
     cache = mock(InternalCache.class);
     connection = mock(Connection.class);
     when(region.getRegionService()).thenReturn(cache);
     tableKeyColumnManager = mock(TableKeyColumnManager.class);
     when(tableKeyColumnManager.getKeyColumnName(connection, TABLE_NAME)).thenReturn(KEY_COLUMN);
-    handler = new SqlHandler(manager, tableKeyColumnManager);
-    key = new Object();
+    connectorService = mock(InternalJdbcConnectorService.class);
+    handler = new SqlHandler(manager, tableKeyColumnManager, connectorService);
+    key = "key";
     value = mock(PdxInstanceImpl.class);
     when(value.getPdxType()).thenReturn(mock(PdxType.class));
 
-    ConnectionConfiguration connectionConfig = mock(ConnectionConfiguration.class);
-    when(manager.getConnectionConfig(any())).thenReturn(connectionConfig);
+    when(connectorService.getConnectionConfig(any())).thenReturn(connectionConfig);
 
     regionMapping = mock(RegionMapping.class);
     when(regionMapping.getRegionName()).thenReturn(REGION_NAME);
     when(regionMapping.getTableName()).thenReturn(TABLE_NAME);
     when(regionMapping.getRegionToTableName()).thenReturn(TABLE_NAME);
-    when(manager.getMappingForRegion(any())).thenReturn(regionMapping);
+    when(connectorService.getMappingForRegion(any())).thenReturn(regionMapping);
 
-    // List<ColumnValue> columnList = new ArrayList<>();
-    // columnList.add(new ColumnValue(true, COLUMN_NAME_1, COLUMN_VALUE_1));
-    // columnList.add(new ColumnValue(true, COLUMN_NAME_2, COLUMN_VALUE_2));
-    // when(manager.getColumnToValueList(any(), any(), any(), any(), any())).thenReturn(columnList);
 
-    when(manager.getConnection(any())).thenReturn(this.connection);
+    when(manager.getDataSource(any())).thenReturn(this.dataSource);
+    when(dataSource.getConnection()).thenReturn(this.connection);
 
     statement = mock(PreparedStatement.class);
     when(this.connection.prepareStatement(any())).thenReturn(statement);
@@ -430,4 +434,13 @@ public class SqlHandlerTest {
 
     return primaryKeys;
   }
+
+  @Test
+  public void handlesSQLExceptionFromGetConnection() throws Exception {
+    doThrow(new SQLException("test exception")).when(dataSource).getConnection();
+
+    assertThatThrownBy(() -> handler.getConnection(connectionConfig))
+        .isInstanceOf(IllegalStateException.class).hasMessage("Could not connect to fake:url");
+  }
+
 }

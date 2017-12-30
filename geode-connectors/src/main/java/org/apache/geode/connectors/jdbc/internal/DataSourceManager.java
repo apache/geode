@@ -19,43 +19,23 @@ import java.sql.SQLException;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
-class ConnectionManager {
+class DataSourceManager {
 
-  private final InternalJdbcConnectorService configService;
+  private final JdbcDataSourceFactory jdbcDataSourceFactory;
   private final Map<String, JdbcDataSource> dataSourceMap = new ConcurrentHashMap<>();
 
-  ConnectionManager(InternalJdbcConnectorService configService) {
-    this.configService = configService;
+  DataSourceManager(JdbcDataSourceFactory jdbcDataSourceFactory) {
+    this.jdbcDataSourceFactory = jdbcDataSourceFactory;
   }
 
-  RegionMapping getMappingForRegion(String regionName) {
-    return configService.getMappingForRegion(regionName);
-  }
-
-  JdbcDataSource buildJdbcDataSource(ConnectionConfiguration config) {
-    return new JdbcDataSourceBuilder(config).create();
-  }
-
-  private JdbcDataSource getDataSource(ConnectionConfiguration config) {
+  JdbcDataSource getDataSource(ConnectionConfiguration config) {
     return dataSourceMap.computeIfAbsent(config.getName(), k -> {
-      return buildJdbcDataSource(config);
+      return this.jdbcDataSourceFactory.create(config);
     });
-  }
-
-  Connection getConnection(ConnectionConfiguration config) {
-    try {
-      return getDataSource(config).getConnection();
-    } catch (SQLException e) {
-      throw new IllegalStateException("Could not connect to " + config.getUrl(), e);
-    }
   }
 
   void close() {
     dataSourceMap.values().forEach(this::close);
-  }
-
-  ConnectionConfiguration getConnectionConfig(String connectionConfigName) {
-    return configService.getConnectionConfig(connectionConfigName);
   }
 
   private void close(JdbcDataSource dataSource) {

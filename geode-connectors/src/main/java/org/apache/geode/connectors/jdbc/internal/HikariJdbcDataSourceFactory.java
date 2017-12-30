@@ -14,15 +14,8 @@
  */
 package org.apache.geode.connectors.jdbc.internal;
 
-public class JdbcDataSourceBuilder {
-  private final ConnectionConfiguration configuration;
-
-  public JdbcDataSourceBuilder(ConnectionConfiguration configuration) {
-    this.configuration = configuration;
+public class HikariJdbcDataSourceFactory implements JdbcDataSourceFactory {
+  public JdbcDataSource create(ConnectionConfiguration configuration) {
+    return new HikariJdbcDataSource(configuration);
   }
-
-  public JdbcDataSource create() {
-    return new HikariJdbcDataSource(this.configuration);
-  }
-
 }
