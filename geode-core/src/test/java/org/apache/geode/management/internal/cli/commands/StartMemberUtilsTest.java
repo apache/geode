@@ -28,9 +28,11 @@ import java.nio.file.Paths;
 import org.apache.commons.io.FileUtils;
 import org.junit.Rule;
 import org.junit.Test;
+import org.junit.contrib.java.lang.system.RestoreSystemProperties;
 import org.junit.experimental.categories.Category;
 import org.junit.rules.TemporaryFolder;
 
+import org.apache.geode.internal.GemFireVersion;
 import org.apache.geode.internal.util.IOUtils;
 import org.apache.geode.test.junit.categories.IntegrationTest;
 
@@ -39,6 +41,9 @@ public class StartMemberUtilsTest {
 
   @Rule
   public TemporaryFolder temporaryFolder = new TemporaryFolder();
+
+  @Rule
+  public RestoreSystemProperties restorer = new RestoreSystemProperties();
 
   @Test
   public void workingDirDefaultsToMemberName() {
@@ -79,6 +84,21 @@ public class StartMemberUtilsTest {
 
     final int actualPid = StartMemberUtils.readPid(pidFile);
     assertEquals(expectedPid, actualPid);
+  }
+
+  @Test
+  public void testGeodeOnClasspathIsFirst() {
+    String currentClasspath = System.getProperty("java.class.path");
+    String customGeodeCore = "/custom/geode-core-" + GemFireVersion.getGemFireVersion() + ".jar";
+    System.setProperty("java.class.path", currentClasspath + ":" + customGeodeCore);
+
+    String[] otherJars = new String[] {"/other/one.jar", "/other/two.jar"};
+
+    String gemfireClasspath = StartMemberUtils.toClasspath(true, otherJars);
+    assertThat(gemfireClasspath).startsWith(customGeodeCore);
+
+    gemfireClasspath = StartMemberUtils.toClasspath(false, otherJars);
+    assertThat(gemfireClasspath).startsWith(customGeodeCore);
   }
 
   private void writePid(final File pidFile, final int pid) throws IOException {
