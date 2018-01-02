@@ -1029,7 +1029,12 @@ public class CacheCreation implements InternalCache {
   }
 
   @Override
-  public void setReadSerialized(final boolean value) {
+  public void setReadSerializedForCurrentThread(final boolean value) {
+    throw new UnsupportedOperationException(LocalizedStrings.SHOULDNT_INVOKE.toLocalizedString());
+  }
+
+  @Override
+  public void setReadSerializedForTest(final boolean value) {
     throw new UnsupportedOperationException(LocalizedStrings.SHOULDNT_INVOKE.toLocalizedString());
   }
 

@@ -455,7 +455,10 @@ public interface DM extends ReplySender {
   /**
    * returns the type of node
    *
-   * @return
+   * @see DistributionManager#NORMAL_DM_TYPE
+   * @see DistributionManager#LONER_DM_TYPE
+   * @see DistributionManager#LOCATOR_DM_TYPE
+   * @see DistributionManager#ADMIN_ONLY_DM_TYPE
    */
   int getDMType();
 

@@ -77,13 +77,6 @@ public class ProtobufDriver implements Driver {
     }
   }
 
-  /**
-   * Retrieves a set of unique names of regions in the GemFire server to which this driver is
-   * connected.
-   *
-   * @return Set of strings of names that uniquely identify regions.
-   * @throws IOException
-   */
   @Override
   public Set<String> getRegionNames() throws IOException {
     Set<String> regionNames = new HashSet<>();
@@ -104,15 +97,6 @@ public class ProtobufDriver implements Driver {
     return regionNames;
   }
 
-  /**
-   * Creates an implementation of the region interface for the region with the unique name of
-   * <code>regionName</code>.
-   *
-   * @param regionName String that uniquely identifies the region.
-   * @param <K> Type of region keys.
-   * @param <V> Type of region values.
-   * @return
-   */
   @Override
   public <K, V> Region<K, V> getRegion(String regionName) {
     return new ProtobufRegion(regionName, socket);
