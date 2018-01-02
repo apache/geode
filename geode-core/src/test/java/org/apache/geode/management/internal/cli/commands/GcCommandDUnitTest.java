@@ -124,7 +124,6 @@ public class GcCommandDUnitTest {
 
     CommandResult result = gfsh.executeCommand(gcCommand);
     assertThat(result.getStatus()).isEqualTo(Result.Status.ERROR);
-    assertThat(gfsh.getGfshOutput())
-        .contains("Member NotAValidMember could not be found.");
+    assertThat(gfsh.getGfshOutput()).contains("Member NotAValidMember could not be found.");
   }
 }
