@@ -68,8 +68,8 @@ public class GMSLocatorRecoveryJUnitTest {
     if (this.tempStateFile.exists()) {
       this.tempStateFile.delete();
     }
-    this.locator =
-        new GMSLocator(null, this.tempStateFile, null, false, false, new LocatorStats(), "");
+    this.locator = new GMSLocator(null, null, false, false, new LocatorStats(), "");
+    locator.setViewFile(tempStateFile);
     // System.out.println("temp state file: " + tempStateFile);
   }
 
@@ -153,7 +153,7 @@ public class GMSLocatorRecoveryJUnitTest {
       // this locator will hook itself up with the first MembershipManager
       // to be created
       // l = Locator.startLocator(port, new File(""), localHost);
-      l = InternalLocator.startLocator(port, new File(""), null, null, null, localHost, false,
+      l = InternalLocator.startLocator(port, new File(""), null, null, localHost, false,
           new Properties(), null);
 
       // create configuration objects
@@ -177,8 +177,9 @@ public class GMSLocatorRecoveryJUnitTest {
       // hook up the locator to the membership manager
       ((InternalLocator) l).getLocatorHandler().setMembershipManager(m1);
 
-      GMSLocator l2 = new GMSLocator(SocketCreator.getLocalHost(), new File("l2.dat"),
+      GMSLocator l2 = new GMSLocator(SocketCreator.getLocalHost(),
           m1.getLocalMember().getHost() + "[" + port + "]", true, true, new LocatorStats(), "");
+      l2.setViewFile(new File("l2.dat"));
       l2.init(null);
 
       assertTrue("expected view to contain " + m1.getLocalMember() + ": " + l2.getMembers(),

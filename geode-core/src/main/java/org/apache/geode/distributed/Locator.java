@@ -250,8 +250,8 @@ public abstract class Locator {
   private static Locator startLocator(int port, File logFile, InetAddress bindAddress,
       java.util.Properties dsProperties, boolean peerLocator, boolean serverLocator,
       String hostnameForClients) throws IOException {
-    return InternalLocator.startLocator(port, logFile, null, null, null, bindAddress, true,
-        dsProperties, hostnameForClients);
+    return InternalLocator.startLocator(port, logFile, null, null, bindAddress, true, dsProperties,
+        hostnameForClients);
   }
 
   /**
@@ -261,7 +261,7 @@ public abstract class Locator {
   private static Locator startLocator(int port, File logFile, boolean startDistributedSystem,
       InetAddress bindAddress, java.util.Properties dsProperties, boolean peerLocator,
       boolean serverLocator, String hostnameForClients) throws IOException {
-    return InternalLocator.startLocator(port, logFile, null, null, null, bindAddress,
+    return InternalLocator.startLocator(port, logFile, null, null, bindAddress,
         startDistributedSystem, dsProperties, hostnameForClients);
   }
 
@@ -430,7 +430,8 @@ public abstract class Locator {
    * hostname-for-clients - the ip address or host name that clients will be told to use to connect
    * to this locator. If unspecified, defaults to the bind-address.
    *
-   * @since GemFire 5.0
+   * @deprecated as of Geode 1.4 use {@link org.apache.geode.distributed.LocatorLauncher
+   *             "LocatorLauncher" to start a locator}
    */
   public static void main(String args[]) {
     org.apache.geode.internal.DistributionLocator.main(args);
