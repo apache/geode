@@ -15,6 +15,7 @@
 package org.apache.geode.internal.protocol.protobuf.v1.operations;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
@@ -26,6 +27,8 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
+import org.apache.geode.cache.client.internal.locator.ClientConnectionRequest;
+import org.apache.geode.cache.client.internal.locator.ClientConnectionResponse;
 import org.apache.geode.distributed.internal.InternalLocator;
 import org.apache.geode.distributed.internal.LocatorLoadSnapshot;
 import org.apache.geode.distributed.internal.ServerLocation;
@@ -35,12 +38,12 @@ import org.apache.geode.internal.protocol.Success;
 import org.apache.geode.internal.protocol.TestExecutionContext;
 import org.apache.geode.internal.protocol.protobuf.v1.BasicTypes;
 import org.apache.geode.internal.protocol.protobuf.v1.LocatorAPI;
-import org.apache.geode.internal.protocol.protobuf.v1.LocatorAPI.GetAvailableServersResponse;
+import org.apache.geode.internal.protocol.protobuf.v1.LocatorAPI.GetServerResponse;
 import org.apache.geode.internal.protocol.protobuf.v1.utilities.ProtobufRequestUtilities;
 import org.apache.geode.test.junit.categories.UnitTest;
 
 @Category(UnitTest.class)
-public class GetAvailableServersOperationHandlerJUnitTest extends OperationHandlerJUnitTest {
+public class GetServerOperationHandlerJUnitTest extends OperationHandlerJUnitTest {
 
   private final String HOSTNAME_1 = "hostname1";
   private final int PORT_1 = 12345;
@@ -49,63 +52,53 @@ public class GetAvailableServersOperationHandlerJUnitTest extends OperationHandl
   private final int PORT_2 = 23456;
 
   private InternalLocator internalLocatorMock;
-  private LocatorLoadSnapshot locatorLoadSnapshot;
+  ServerLocator serverLocatorAdviseeMock;
 
   @Before
   public void setUp() throws Exception {
     super.setUp();
 
-    operationHandler = new GetAvailableServersOperationHandler();
+    operationHandler = new GetServerOperationHandler();
     internalLocatorMock = mock(InternalLocator.class);
-    ServerLocator serverLocatorAdviseeMock = mock(ServerLocator.class);
-    locatorLoadSnapshot = mock(LocatorLoadSnapshot.class);
+    serverLocatorAdviseeMock = mock(ServerLocator.class);
 
     when(internalLocatorMock.getServerLocatorAdvisee()).thenReturn(serverLocatorAdviseeMock);
-    when(serverLocatorAdviseeMock.getLoadSnapshot()).thenReturn(locatorLoadSnapshot);
   }
 
   @Test
   public void testServerReturnedFromHandler() throws Exception {
-    ArrayList<Object> serverList = new ArrayList<>();
-    serverList.add(new ServerLocation(HOSTNAME_1, PORT_1));
-    serverList.add(new ServerLocation(HOSTNAME_2, PORT_2));
-    when(locatorLoadSnapshot.getServers(null)).thenReturn(serverList);
+    when(serverLocatorAdviseeMock.processRequest(any(Object.class)))
+        .thenReturn(new ClientConnectionResponse(new ServerLocation(HOSTNAME_1, PORT_1)));
 
-    LocatorAPI.GetAvailableServersRequest getAvailableServersRequest =
-        ProtobufRequestUtilities.createGetAvailableServersRequest();
-    Result operationHandlerResult = getOperationHandlerResult(getAvailableServersRequest);
+    LocatorAPI.GetServerRequest GetServerRequest =
+        ProtobufRequestUtilities.createGetServerRequest();
+    Result operationHandlerResult = getOperationHandlerResult(GetServerRequest);
     assertTrue(operationHandlerResult instanceof Success);
-    ValidateGetAvailableServersResponse(
-        (GetAvailableServersResponse) operationHandlerResult.getMessage());
+    validateGetServerResponse((GetServerResponse) operationHandlerResult.getMessage());
   }
 
   @Test
-  public void testWhenServersFromSnapshotAreNullReturnsEmtpy() throws Exception {
-    when(locatorLoadSnapshot.getServers(any())).thenReturn(null);
+  public void testWhenServersFromSnapshotAreNullDoesNotReturnAServer() throws Exception {
+    when(serverLocatorAdviseeMock.processRequest(any(Object.class))).thenReturn(null);
 
-    LocatorAPI.GetAvailableServersRequest getAvailableServersRequest =
-        ProtobufRequestUtilities.createGetAvailableServersRequest();
-    Result operationHandlerResult = getOperationHandlerResult(getAvailableServersRequest);
+    LocatorAPI.GetServerRequest GetServerRequest =
+        ProtobufRequestUtilities.createGetServerRequest();
+    Result operationHandlerResult = getOperationHandlerResult(GetServerRequest);
     assertTrue(operationHandlerResult instanceof Success);
-    GetAvailableServersResponse availableServersResponse =
-        (GetAvailableServersResponse) operationHandlerResult.getMessage();
-    assertEquals(0, availableServersResponse.getServersCount());
+    GetServerResponse serverResponse = (GetServerResponse) operationHandlerResult.getMessage();
+    assertFalse(serverResponse.hasServer());
   }
 
-  private Result getOperationHandlerResult(
-      LocatorAPI.GetAvailableServersRequest getAvailableServersRequest) throws Exception {
-    return operationHandler.process(serializationService, getAvailableServersRequest,
+  private Result getOperationHandlerResult(LocatorAPI.GetServerRequest GetServerRequest)
+      throws Exception {
+    return operationHandler.process(serializationService, GetServerRequest,
         TestExecutionContext.getLocatorExecutionContext(internalLocatorMock));
   }
 
-  private void ValidateGetAvailableServersResponse(
-      GetAvailableServersResponse getAvailableServersResponse) {
-    assertEquals(2, getAvailableServersResponse.getServersCount());
-    BasicTypes.Server server = getAvailableServersResponse.getServers(0);
+  private void validateGetServerResponse(GetServerResponse GetServerResponse) {
+    assertTrue(GetServerResponse.hasServer());
+    BasicTypes.Server server = GetServerResponse.getServer();
     assertEquals(HOSTNAME_1, server.getHostname());
     assertEquals(PORT_1, server.getPort());
-    server = getAvailableServersResponse.getServers(1);
-    assertEquals(HOSTNAME_2, server.getHostname());
-    assertEquals(PORT_2, server.getPort());
   }
 }

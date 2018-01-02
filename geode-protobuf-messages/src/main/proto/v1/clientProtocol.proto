@@ -41,7 +41,8 @@ message Request {
         GetAllRequest getAllRequest = 13;
         RemoveRequest removeRequest = 14;
 
-        GetAvailableServersRequest getAvailableServersRequest = 40;
+        GetServerRequest getServerRequest = 40;
+
         GetRegionNamesRequest getRegionNamesRequest = 41;
         GetRegionRequest getRegionRequest = 42;
 
@@ -57,7 +58,8 @@ message Response {
         GetAllResponse getAllResponse = 13;
         RemoveResponse removeResponse = 14;
 
-        GetAvailableServersResponse getAvailableServersResponse = 40;
+        GetServerResponse getServerResponse = 40;
+
         GetRegionNamesResponse getRegionNamesResponse = 41;
         GetRegionResponse getRegionResponse = 42;
 
