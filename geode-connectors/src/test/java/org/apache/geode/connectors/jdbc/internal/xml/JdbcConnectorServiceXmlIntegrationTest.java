@@ -35,7 +35,7 @@ import org.apache.geode.connectors.jdbc.internal.ConnectionConfigBuilder;
 import org.apache.geode.connectors.jdbc.internal.ConnectionConfigExistsException;
 import org.apache.geode.connectors.jdbc.internal.ConnectionConfiguration;
 import org.apache.geode.connectors.jdbc.internal.InternalJdbcConnectorService;
-import org.apache.geode.connectors.jdbc.internal.JdbcConnectorService;
+import org.apache.geode.connectors.jdbc.internal.JdbcConnectorServiceImpl;
 import org.apache.geode.connectors.jdbc.internal.RegionMapping;
 import org.apache.geode.connectors.jdbc.internal.RegionMappingBuilder;
 import org.apache.geode.connectors.jdbc.internal.RegionMappingExistsException;
@@ -72,8 +72,8 @@ public class JdbcConnectorServiceXmlIntegrationTest {
   @Test
   public void canRecreateJdbcConnectorServiceFromXml() throws Exception {
     createCacheUsingXml();
-    JdbcConnectorService service =
-        (JdbcConnectorService) cache.getExtensionPoint().getExtensions().iterator().next();
+    JdbcConnectorServiceImpl service =
+        (JdbcConnectorServiceImpl) cache.getExtensionPoint().getExtensions().iterator().next();
     assertThat(service.getConnectionConfig(config1.getName())).isEqualTo(config1);
     assertThat(service.getConnectionConfig(config2.getName())).isEqualTo(config2);
     assertThat(service.getMappingForRegion(regionMapping1.getRegionName()))

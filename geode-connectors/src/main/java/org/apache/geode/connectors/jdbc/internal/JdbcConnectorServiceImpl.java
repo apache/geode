@@ -29,7 +29,7 @@ import org.apache.geode.internal.cache.xmlcache.XmlGenerator;
 import org.apache.geode.management.internal.beans.CacheServiceMBeanBase;
 
 @Experimental
-public class JdbcConnectorService implements InternalJdbcConnectorService {
+public class JdbcConnectorServiceImpl implements InternalJdbcConnectorService {
 
   private final Map<String, ConnectionConfiguration> connectionsByName = new ConcurrentHashMap<>();
   private final Map<String, RegionMapping> mappingsByRegion = new ConcurrentHashMap<>();
