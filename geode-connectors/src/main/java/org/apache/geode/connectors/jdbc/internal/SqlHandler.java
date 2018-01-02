@@ -86,11 +86,22 @@ public class SqlHandler {
   }
 
   private RegionMapping getMappingForRegion(String regionName) {
-    return this.configService.getMappingForRegion(regionName);
+    RegionMapping regionMapping = this.configService.getMappingForRegion(regionName);
+    if (regionMapping == null) {
+      throw new IllegalStateException("JDBC mapping for region " + regionName
+          + " not found. Create the mapping with the gfsh command 'create jdbc-mapping'.");
+    }
+    return regionMapping;
   }
 
   private ConnectionConfiguration getConnectionConfig(String connectionConfigName) {
-    return this.configService.getConnectionConfig(connectionConfigName);
+    ConnectionConfiguration connectionConfig =
+        this.configService.getConnectionConfig(connectionConfigName);
+    if (connectionConfig == null) {
+      throw new IllegalStateException("JDBC connection with name " + connectionConfigName
+          + " not found. Create the connection with the gfsh command 'create jdbc-connection'");
+    }
+    return connectionConfig;
   }
 
   private String getKeyColumnName(Connection connection, String tableName) {
@@ -160,18 +171,8 @@ public class SqlHandler {
       throw new IllegalArgumentException("PdxInstance cannot be null for non-destroy operations");
     }
     RegionMapping regionMapping = getMappingForRegion(region.getName());
-    if (regionMapping == null) {
-      throw new IllegalStateException(
-          "JDBC write failed. JDBC mapping for region " + region.getFullPath()
-              + " not found. Create the mapping with the gfsh command 'create jdbc-mapping'.");
-    }
     ConnectionConfiguration connectionConfig =
         getConnectionConfig(regionMapping.getConnectionConfigName());
-    if (connectionConfig == null) {
-      throw new IllegalStateException(
-          "JDBC write failed. JDBC connection with name " + regionMapping.getConnectionConfigName()
-              + " not found. Create the connection with the gfsh command 'create jdbc-connection'");
-    }
 
     String tableName = regionMapping.getRegionToTableName();
     int pdxTypeId = value == null ? 0 : ((PdxInstanceImpl) value).getPdxType().getTypeId();
