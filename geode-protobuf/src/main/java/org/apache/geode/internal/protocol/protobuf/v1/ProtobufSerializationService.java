@@ -154,7 +154,7 @@ public class ProtobufSerializationService implements SerializationService<BasicT
     public static ProtobufEncodingTypes valueOf(Class unencodedValueClass)
         throws UnknownProtobufEncodingType {
       for (ProtobufEncodingTypes protobufEncodingTypes : values()) {
-        if (protobufEncodingTypes.clazz.equals(unencodedValueClass)) {
+        if (protobufEncodingTypes.clazz.isAssignableFrom(unencodedValueClass)) {
           return protobufEncodingTypes;
         }
       }

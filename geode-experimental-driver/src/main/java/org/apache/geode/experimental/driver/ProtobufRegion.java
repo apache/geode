@@ -61,32 +61,6 @@ public class ProtobufRegion<K, V> implements Region<K, V> {
     this.socket = socket;
   }
 
-  /**
-   * Captures a snapshot of the attributes (e.g., size) of this region.
-   *
-   * @return Attributes associated with this region.
-   * @throws IOException
-   */
-  @Override
-  public RegionAttributes getRegionAttributes() throws IOException {
-    final OutputStream outputStream = socket.getOutputStream();
-    ClientProtocol.Message.newBuilder()
-        .setRequest(ClientProtocol.Request.newBuilder()
-            .setGetRegionRequest(RegionAPI.GetRegionRequest.newBuilder().setRegionName(name)))
-        .build().writeDelimitedTo(outputStream);
-
-    final InputStream inputStream = socket.getInputStream();
-    return new RegionAttributes(ClientProtocol.Message.parseDelimitedFrom(inputStream).getResponse()
-        .getGetRegionResponse().getRegion());
-  }
-
-  /**
-   * Gets the value, if any, contained in this region for the <code>key</code>.
-   *
-   * @param key Unique key associated with a value.
-   * @return Value, if any, associated with <code>key</code>.
-   * @throws IOException
-   */
   @Override
   public V get(K key) throws IOException {
     final OutputStream outputStream = socket.getOutputStream();
@@ -100,13 +74,20 @@ public class ProtobufRegion<K, V> implements Region<K, V> {
         .getResponse().getGetResponse().getResult());
   }
 
-  /**
-   * Gets the values, if any, contained in this region for the collection of <code>keys</code>.
-   *
-   * @param keys Collection of unique keys associated with values.
-   * @return Map from <code>keys</code> to their associated values.
-   * @throws IOException
-   */
+  @Override
+  public RegionAttributes getRegionAttributes() throws IOException {
+    final OutputStream outputStream = socket.getOutputStream();
+    ClientProtocol.Message.newBuilder()
+        .setRequest(ClientProtocol.Request.newBuilder()
+            .setGetRegionRequest(RegionAPI.GetRegionRequest.newBuilder().setRegionName(name)))
+        .build().writeDelimitedTo(outputStream);
+
+    final InputStream inputStream = socket.getInputStream();
+    return new RegionAttributes(ClientProtocol.Message.parseDelimitedFrom(inputStream).getResponse()
+        .getGetRegionResponse().getRegion());
+  }
+
+
   @Override
   public Map<K, V> getAll(Collection<K> keys) throws IOException {
     Map<K, V> values = new HashMap<>();
@@ -132,13 +113,6 @@ public class ProtobufRegion<K, V> implements Region<K, V> {
     return values;
   }
 
-  /**
-   * Puts the <code>value</code> into this region for the <code>key</code>.
-   *
-   * @param key Unique key to associate with the <code>value</code>.
-   * @param value Value to associate with the <code>key</code>.
-   * @throws IOException
-   */
   @Override
   public void put(K key, V value) throws IOException {
     final OutputStream outputStream = socket.getOutputStream();
@@ -152,13 +126,6 @@ public class ProtobufRegion<K, V> implements Region<K, V> {
     ClientProtocol.Message.parseDelimitedFrom(inputStream).getResponse().getPutResponse();
   }
 
-  /**
-   * Puts the map from keys to <code>values</code> into this region. If any one key/value pair can
-   * not be inserted, the remaining pair insertions will be attempted.
-   *
-   * @param values Map from <code>keys</code> to their associated values.
-   * @throws IOException
-   */
   @Override
   public void putAll(Map<K, V> values) throws IOException {
     final OutputStream outputStream = socket.getOutputStream();
@@ -186,12 +153,7 @@ public class ProtobufRegion<K, V> implements Region<K, V> {
     }
   }
 
-  /**
-   * Removes any value associated with the <code>key</code> from this region.
-   *
-   * @param key Unique key associated with a value.
-   * @throws IOException
-   */
+
   @Override
   public void remove(K key) throws IOException {
     final OutputStream outputStream = socket.getOutputStream();

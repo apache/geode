@@ -5127,9 +5127,15 @@ public class GemFireCacheImpl implements InternalCache, InternalClientCache, Has
     }
   }
 
+  @Override
+  public void setReadSerializedForCurrentThread(boolean value) {
+    PdxInstanceImpl.setPdxReadSerialized(value);
+    DefaultQuery.setPdxReadSerialized(value);
+  }
+
   // test hook
   @Override
-  public void setReadSerialized(boolean value) {
+  public void setReadSerializedForTest(boolean value) {
     this.cacheConfig.setPdxReadSerialized(value);
   }
 

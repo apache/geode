@@ -25,6 +25,7 @@ import org.apache.logging.log4j.Logger;
 
 import org.apache.geode.annotations.Experimental;
 import org.apache.geode.cache.Region;
+import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.exception.InvalidExecutionContextException;
 import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.internal.protocol.Failure;
@@ -58,9 +59,16 @@ public class GetAllRequestOperationHandler
           .of(ProtobufResponseUtilities.makeErrorResponse(SERVER_ERROR, "Region not found"));
     }
 
-    Map<Boolean, List<Object>> resultsCollection = request.getKeyList().stream()
-        .map((key) -> processOneMessage(serializationService, region, key))
-        .collect(Collectors.partitioningBy(x -> x instanceof BasicTypes.Entry));
+    Map<Boolean, List<Object>> resultsCollection;
+    try {
+      ((InternalCache) messageExecutionContext.getCache()).setReadSerializedForCurrentThread(true);
+
+      resultsCollection = request.getKeyList().stream()
+          .map((key) -> processOneMessage(serializationService, region, key))
+          .collect(Collectors.partitioningBy(x -> x instanceof BasicTypes.Entry));
+    } finally {
+      ((InternalCache) messageExecutionContext.getCache()).setReadSerializedForCurrentThread(false);
+    }
     RegionAPI.GetAllResponse.Builder responseBuilder = RegionAPI.GetAllResponse.newBuilder();
 
     for (Object entry : resultsCollection.get(true)) {
