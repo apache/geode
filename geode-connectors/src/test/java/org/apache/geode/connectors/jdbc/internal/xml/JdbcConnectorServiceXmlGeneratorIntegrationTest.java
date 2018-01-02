@@ -114,6 +114,8 @@ public class JdbcConnectorServiceXmlGeneratorIntegrationTest {
 
     Element serviceElement = (Element) serviceElements.item(0);
     assertThat(serviceElement.getAttribute("xmlns:" + PREFIX)).isEqualTo(NAMESPACE);
+    assertThat(serviceElement.getAttribute(NAME))
+        .isEqualTo(ElementType.CONNECTION_SERVICE.getTypeName());
 
     NodeList connectionElements = getElementsByName(document, ElementType.CONNECTION);
     assertThat(connectionElements.getLength()).isEqualTo(1);

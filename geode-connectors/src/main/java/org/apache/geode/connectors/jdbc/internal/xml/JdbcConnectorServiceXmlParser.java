@@ -22,7 +22,7 @@ import org.apache.geode.internal.cache.xmlcache.AbstractXmlParser;
 public class JdbcConnectorServiceXmlParser extends AbstractXmlParser {
   public static final String NAMESPACE = "http://geode.apache.org/schema/jdbc";
   public static final String PARAMS_DELIMITER = ":";
-  static final String NAME = "name";
+  public static final String NAME = "name";
   static final String URL = "url";
   static final String USER = "user";
   static final String PASSWORD = "password";
