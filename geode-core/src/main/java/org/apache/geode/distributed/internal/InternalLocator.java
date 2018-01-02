@@ -288,11 +288,10 @@ public class InternalLocator extends Locator implements ConnectListener {
    *        addr/port, other locators)
    * @param hostnameForClients the name to give to clients for connecting to this locator
    */
-  public static InternalLocator startLocator(int portNumber, File logFile, InternalLogWriter logger,
+  public static InternalLocator startLocator(int port, File logFile, InternalLogWriter logger,
       InternalLogWriter securityLogger, InetAddress bindAddress, boolean startDistributedSystem,
       Properties dsProperties, String hostnameForClients) throws IOException {
 
-    int port = portNumber;
     System.setProperty(FORCE_LOCATOR_DM_TYPE, "true");
     InternalLocator newLocator = null;
 
@@ -303,10 +302,7 @@ public class InternalLocator extends Locator implements ConnectListener {
           hostnameForClients, dsProperties, startDistributedSystem);
 
       try {
-        port = newLocator.startPeerLocation();
-
-        File productUseFile = new File("locator" + port + "views.log");
-        newLocator.productUseLog = new ProductUseLog(productUseFile);
+        newLocator.startPeerLocation();
 
         if (startDistributedSystem) {
           try {
@@ -545,7 +541,11 @@ public class InternalLocator extends Locator implements ConnectListener {
     if (!this.server.isAlive()) {
       startTcpServer();
     }
-    return this.server.getPort();
+    int boundPort = this.server.getPort();
+    File productUseFile = new File("locator" + boundPort + "views.log");
+    productUseLog = new ProductUseLog(productUseFile);
+
+    return boundPort;
   }
 
   /**
