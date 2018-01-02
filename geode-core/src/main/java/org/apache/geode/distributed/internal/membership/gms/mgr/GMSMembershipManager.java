@@ -2637,4 +2637,13 @@ public class GMSMembershipManager implements MembershipManager, Manager {
     return shutdownInProgress || (dm != null && dm.isShutdownStarted());
   }
 
+  public void disconnect(boolean beforeJoined) {
+    if (beforeJoined) {
+      uncleanShutdown("Failed to start distribution", null);
+    } else {
+      shutdown();
+    }
+  }
+
+
 }

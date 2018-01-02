@@ -20,32 +20,39 @@ import static org.apache.geode.distributed.ConfigurationProperties.GROUPS;
 import static org.apache.geode.distributed.ConfigurationProperties.JMX_MANAGER_PORT;
 import static org.apache.geode.distributed.ConfigurationProperties.LOCATORS;
 import static org.apache.geode.distributed.ConfigurationProperties.NAME;
+import static org.apache.geode.distributed.ConfigurationProperties.SECURITY_CLIENT_AUTH_INIT;
 import static org.apache.geode.test.dunit.Host.getHost;
 
 import java.io.File;
 import java.io.IOException;
 import java.io.Serializable;
-import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Properties;
+import java.util.function.Consumer;
 import java.util.stream.Collectors;
-import java.util.stream.IntStream;
 
 import org.junit.rules.ExternalResource;
 import org.junit.rules.TemporaryFolder;
 
+import org.apache.geode.cache.client.ClientCache;
+import org.apache.geode.cache.client.ClientCacheFactory;
 import org.apache.geode.cache.server.CacheServer;
 import org.apache.geode.distributed.internal.InternalLocator;
 import org.apache.geode.internal.AvailablePortHelper;
 import org.apache.geode.internal.cache.InternalCache;
+import org.apache.geode.security.templates.UserPasswordAuthInit;
 import org.apache.geode.test.dunit.VM;
 import org.apache.geode.test.dunit.standalone.DUnitLauncher;
+import org.apache.geode.test.junit.rules.ClientCacheRule;
 import org.apache.geode.test.junit.rules.Locator;
 import org.apache.geode.test.junit.rules.LocatorStarterRule;
 import org.apache.geode.test.junit.rules.Member;
 import org.apache.geode.test.junit.rules.MemberStarterRule;
 import org.apache.geode.test.junit.rules.Server;
 import org.apache.geode.test.junit.rules.ServerStarterRule;
+import org.apache.geode.test.junit.rules.VMProvider;
 import org.apache.geode.test.junit.rules.serializable.SerializableTemporaryFolder;
 
 
@@ -55,11 +62,12 @@ import org.apache.geode.test.junit.rules.serializable.SerializableTemporaryFolde
  * test</a>. This rule will start Servers and Locators inside of the four remote {@link VM}s created
  * by the DUnit framework.
  */
-public class LocatorServerStartupRule extends ExternalResource implements Serializable {
+public class ClusterStartupRule extends ExternalResource implements Serializable {
   /**
    * This is only available in each Locator/Server VM, not in the controller (test) VM.
    */
   public static MemberStarterRule memberStarter;
+  public static ClientCacheRule clientCacheRule;
 
   public static InternalCache getCache() {
     return memberStarter.getCache();
@@ -77,12 +85,16 @@ public class LocatorServerStartupRule extends ExternalResource implements Serial
       new DistributedRestoreSystemProperties();
 
   private TemporaryFolder tempWorkingDir;
-  private ArrayList<MemberVM> members;
+  private Map<Integer, VMProvider> occupiedVMs;
 
   private boolean logFile = false;
 
-  public LocatorServerStartupRule() {
+  public ClusterStartupRule() {
     DUnitLauncher.launchIfNeeded();
+  }
+
+  public static ClientCache getClientCache() {
+    return clientCacheRule.getCache();
   }
 
   /**
@@ -94,7 +106,7 @@ public class LocatorServerStartupRule extends ExternalResource implements Serial
    * locator0View.dat and locator0views.log and other random log files. This will cause the VMs to
    * be bounced after test is done, because it dynamically changes the user.dir system property.
    */
-  public LocatorServerStartupRule withTempWorkingDir() {
+  public ClusterStartupRule withTempWorkingDir() {
     tempWorkingDir = new SerializableTemporaryFolder();
     return this;
   }
@@ -106,7 +118,7 @@ public class LocatorServerStartupRule extends ExternalResource implements Serial
   /**
    * this will allow all the logs go into log files instead of going into the console output
    */
-  public LocatorServerStartupRule withLogFile() {
+  public ClusterStartupRule withLogFile() {
     this.logFile = true;
     return this;
   }
@@ -117,7 +129,7 @@ public class LocatorServerStartupRule extends ExternalResource implements Serial
     if (useTempWorkingDir()) {
       tempWorkingDir.create();
     }
-    members = new ArrayList<>();
+    occupiedVMs = new HashMap<>();
   }
 
   @Override
@@ -126,7 +138,9 @@ public class LocatorServerStartupRule extends ExternalResource implements Serial
       DUnitLauncher.closeAndCheckForSuspects();
     } finally {
       MemberStarterRule.disconnectDSIfAny();
-      IntStream.range(0, members.size()).forEach(this::stopVM);
+
+      // stop all the clientsVM before stop all the memberVM
+      occupiedVMs.values().stream().forEach(x -> x.stopVM(true));
 
       if (useTempWorkingDir()) {
         tempWorkingDir.delete();
@@ -176,16 +190,9 @@ public class LocatorServerStartupRule extends ExternalResource implements Serial
       locatorStarter.before();
       return locatorStarter;
     });
-
-    return setMember(index, new MemberVM(locator, locatorVM, useTempWorkingDir()));
-  }
-
-  private MemberVM setMember(int index, MemberVM element) {
-    while (members.size() <= index) {
-      members.add(null);
-    }
-    members.set(index, element);
-    return members.get(index);
+    MemberVM memberVM = new MemberVM(locator, locatorVM, useTempWorkingDir());
+    occupiedVMs.put(index, memberVM);
+    return memberVM;
   }
 
   public MemberVM startServerVM(int index) throws IOException {
@@ -233,41 +240,10 @@ public class LocatorServerStartupRule extends ExternalResource implements Serial
       serverStarter.before();
       return serverStarter;
     });
-    return setMember(index, new MemberVM(server, serverVM, useTempWorkingDir()));
-  }
 
-  public void startServerVMAsync(int index) {
-    startServerVMAsync(index, new Properties(), -1);
-  }
-
-  public void startServerVMAsync(int index, int locatorPort) {
-    startServerVMAsync(index, new Properties(), locatorPort);
-  }
-
-  public void startServerVMAsync(int index, Properties specifiedProperties, int locatorPort) {
-    assert members.get(index) != null;
-
-    Properties properties = new Properties();
-    properties.putAll(specifiedProperties);
-
-    String defaultName = "server-" + index;
-    properties.putIfAbsent(NAME, defaultName);
-    String name = properties.getProperty(NAME);
-
-    VM serverVM = getVM(index);
-    serverVM.invokeAsync(() -> {
-      memberStarter = new ServerStarterRule();
-      ServerStarterRule serverStarter = (ServerStarterRule) memberStarter;
-      if (useTempWorkingDir()) {
-        File workingDirFile = createWorkingDirForMember(name);
-        serverStarter.withWorkingDir(workingDirFile);
-      }
-      if (logFile) {
-        serverStarter.withLogFile();
-      }
-      serverStarter.withProperties(properties).withConnectionToLocator(locatorPort).withAutoStart();
-      serverStarter.before();
-    });
+    MemberVM memberVM = new MemberVM(server, serverVM, useTempWorkingDir());
+    occupiedVMs.put(index, memberVM);
+    return memberVM;
   }
 
   public MemberVM startServerAsJmxManager(int index) throws IOException {
@@ -277,12 +253,6 @@ public class LocatorServerStartupRule extends ExternalResource implements Serial
   public MemberVM startServerAsJmxManager(int index, Properties properties) throws IOException {
     properties.setProperty(JMX_MANAGER_PORT, AvailablePortHelper.getRandomAvailableTCPPort() + "");
     return startServerVM(index, properties, -1);
-  }
-
-  public MemberVM startServerAsJmxManager(int index, Properties properties, int locatorPort)
-      throws IOException {
-    properties.setProperty(JMX_MANAGER_PORT, AvailablePortHelper.getRandomAvailableTCPPort() + "");
-    return startServerVM(index, properties, locatorPort);
   }
 
   public MemberVM startServerAsEmbededLocator(int index) throws IOException {
@@ -308,7 +278,10 @@ public class LocatorServerStartupRule extends ExternalResource implements Serial
       serverStarter.before();
       return serverStarter;
     });
-    return setMember(index, new MemberVM(server, serverVM, useTempWorkingDir()));
+
+    MemberVM memberVM = new MemberVM(server, serverVM, useTempWorkingDir());
+    occupiedVMs.put(index, memberVM);
+    return memberVM;
   }
 
   public void stopVM(int index) {
@@ -316,22 +289,57 @@ public class LocatorServerStartupRule extends ExternalResource implements Serial
   }
 
   public void stopVM(int index, boolean cleanWorkingDir) {
-    MemberVM member = members.get(index);
-    // user has started a server/locator in this VM
-    if (member != null) {
-      member.stopMember(cleanWorkingDir);
+    VMProvider member = occupiedVMs.get(index);
+
+    if (member == null)
+      return;
+
+    member.stopVM(cleanWorkingDir);
+  }
+
+  public ClientVM startClientVM(int index, String username, String password,
+      boolean subscriptionEnabled, int... serverPorts) throws Exception {
+    Properties props = new Properties();
+    props.setProperty(UserPasswordAuthInit.USER_NAME, username);
+    props.setProperty(UserPasswordAuthInit.PASSWORD, password);
+    props.setProperty(SECURITY_CLIENT_AUTH_INIT, UserPasswordAuthInit.class.getName());
+
+    Consumer<ClientCacheFactory> consumer =
+        (Serializable & Consumer<ClientCacheFactory>) ((cacheFactory) -> {
+          cacheFactory.setPoolSubscriptionEnabled(subscriptionEnabled);
+          for (int serverPort : serverPorts) {
+            cacheFactory.addPoolServer("localhost", serverPort);
+          }
+        });
+    return startClientVM(index, props, consumer);
+  }
+
+  public ClientVM startClientVM(int index, Properties properties,
+      Consumer<ClientCacheFactory> cacheFactorySetup) throws Exception {
+    VM client = getVM(index);
+    Exception error = client.invoke(() -> {
+      clientCacheRule =
+          new ClientCacheRule().withProperties(properties).withCacheSetup(cacheFactorySetup);
+      try {
+        clientCacheRule.before();
+        return null;
+      } catch (Exception e) {
+        return e;
+      }
+    });
+    if (error != null) {
+      throw error;
     }
-    // user may have used this VM as a client VM
-    else {
-      getVM(index).invoke(() -> MemberStarterRule.disconnectDSIfAny());
-    }
+    ClientVM clientVM = new ClientVM(client);
+    occupiedVMs.put(index, clientVM);
+    return clientVM;
   }
 
   /**
    * Returns the {@link Member} running inside the VM with the specified {@code index}
    */
   public MemberVM getMember(int index) {
-    return members.get(index);
+    return (MemberVM) occupiedVMs.get(index);
   }
 
   public VM getVM(int index) {
@@ -350,10 +358,14 @@ public class LocatorServerStartupRule extends ExternalResource implements Serial
     return new File(DUnitLauncher.DUNIT_DIR);
   }
 
-  public static void stopMemberInThisVM() {
+  public static void stopElementInsideVM() {
     if (memberStarter != null) {
       memberStarter.after();
       memberStarter = null;
+    }
+    if (clientCacheRule != null) {
+      clientCacheRule.after();
+      clientCacheRule = null;
     }
   }
 

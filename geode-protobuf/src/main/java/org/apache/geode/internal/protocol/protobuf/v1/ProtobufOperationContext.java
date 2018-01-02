@@ -17,14 +17,14 @@ package org.apache.geode.internal.protocol.protobuf.v1;
 import java.util.function.Function;
 
 import org.apache.geode.internal.protocol.OperationContext;
-import org.apache.geode.internal.protocol.operations.OperationHandler;
+import org.apache.geode.internal.protocol.operations.ProtobufOperationHandler;
 import org.apache.geode.security.ResourcePermission;
 
 public class ProtobufOperationContext<OperationRequest, OperationResponse> extends
-    OperationContext<OperationRequest, OperationResponse, ClientProtocol.ErrorResponse, ClientProtocol.Request, ClientProtocol.Response.Builder> {
+    OperationContext<OperationRequest, OperationResponse, ClientProtocol.ErrorResponse, ClientProtocol.Request, ClientProtocol.Response.Builder, ProtobufSerializationService> {
 
   public ProtobufOperationContext(Function<ClientProtocol.Request, OperationRequest> fromRequest,
-      OperationHandler<OperationRequest, OperationResponse, ClientProtocol.ErrorResponse> operationHandler,
+      ProtobufOperationHandler<OperationRequest, OperationResponse> operationHandler,
       Function<OperationResponse, ClientProtocol.Response.Builder> toResponse,
       ResourcePermission permissionRequired) {
     super(fromRequest, operationHandler, toResponse, permissionRequired);

@@ -375,7 +375,7 @@ class RemoteGfManagerAgent implements GfManagerAgent {
           // ignore a forced disconnect and finish clean-up
         }
 
-        if (system != null && DistributionManager.isDedicatedAdminVM && system.isConnected()) {
+        if (system != null && DistributionManager.isDedicatedAdminVM() && system.isConnected()) {
           system.disconnect();
         }
 

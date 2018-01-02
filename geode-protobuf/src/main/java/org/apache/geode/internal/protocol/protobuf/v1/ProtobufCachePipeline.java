@@ -20,31 +20,23 @@ import java.io.InputStream;
 import java.io.OutputStream;
 
 import org.apache.geode.annotations.Experimental;
-import org.apache.geode.cache.Cache;
 import org.apache.geode.internal.cache.client.protocol.ClientProtocolProcessor;
 import org.apache.geode.internal.protocol.MessageExecutionContext;
-import org.apache.geode.internal.protocol.protobuf.v1.state.ProtobufConnectionHandshakeStateProcessor;
-import org.apache.geode.internal.protocol.state.ConnectionStateProcessor;
 import org.apache.geode.internal.protocol.statistics.ProtocolClientStatistics;
-import org.apache.geode.internal.security.SecurityService;
 
 
 @Experimental
 public final class ProtobufCachePipeline implements ClientProtocolProcessor {
   private final ProtocolClientStatistics statistics;
   private final ProtobufStreamProcessor streamProcessor;
-  private final ConnectionStateProcessor initialCacheConnectionStateProcessor;
   private final MessageExecutionContext messageExecutionContext;
 
   ProtobufCachePipeline(ProtobufStreamProcessor protobufStreamProcessor,
-      ProtocolClientStatistics statistics, Cache cache, SecurityService securityService) {
+      MessageExecutionContext context) {
     this.streamProcessor = protobufStreamProcessor;
-    this.statistics = statistics;
+    this.statistics = context.getStatistics();
     this.statistics.clientConnected();
-    this.initialCacheConnectionStateProcessor =
-        new ProtobufConnectionHandshakeStateProcessor(securityService);
-    this.messageExecutionContext =
-        new MessageExecutionContext(cache, statistics, initialCacheConnectionStateProcessor);
+    this.messageExecutionContext = context;
   }
 
   @Override

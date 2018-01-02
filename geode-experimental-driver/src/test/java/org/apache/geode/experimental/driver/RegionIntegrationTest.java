@@ -30,6 +30,7 @@ import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.CacheFactory;
 import org.apache.geode.cache.RegionShortcut;
 import org.apache.geode.cache.server.CacheServer;
+import org.apache.geode.distributed.ConfigurationProperties;
 import org.apache.geode.distributed.Locator;
 import org.apache.geode.test.junit.categories.IntegrationTest;
 
@@ -50,6 +51,7 @@ public class RegionIntegrationTest {
 
     // Create a cache
     CacheFactory cf = new CacheFactory();
+    cf.set(ConfigurationProperties.MCAST_PORT, "0");
     cache = cf.create();
 
     // Start a locator

@@ -18,7 +18,6 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
-import com.google.protobuf.ByteString;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
@@ -32,11 +31,10 @@ import org.apache.geode.internal.protocol.Success;
 import org.apache.geode.internal.protocol.TestExecutionContext;
 import org.apache.geode.internal.protocol.protobuf.v1.BasicTypes;
 import org.apache.geode.internal.protocol.protobuf.v1.ClientProtocol;
+import org.apache.geode.internal.protocol.protobuf.v1.ProtobufSerializationService;
 import org.apache.geode.internal.protocol.protobuf.v1.RegionAPI;
 import org.apache.geode.internal.protocol.protobuf.v1.utilities.ProtobufRequestUtilities;
-import org.apache.geode.internal.protocol.protobuf.v1.utilities.ProtobufUtilities;
-import org.apache.geode.internal.protocol.serialization.exception.UnsupportedEncodingTypeException;
-import org.apache.geode.internal.protocol.serialization.registry.exception.CodecNotRegisteredForTypeException;
+import org.apache.geode.internal.protocol.serialization.exception.EncodingException;
 import org.apache.geode.test.junit.categories.UnitTest;
 
 @Category(UnitTest.class)
@@ -67,7 +65,7 @@ public class GetRequestOperationHandlerJUnitTest extends OperationHandlerJUnitTe
   @Test
   public void processReturnsTheEncodedValueFromTheRegion() throws Exception {
     RegionAPI.GetRequest getRequest = generateTestRequest(false, false, false);
-    Result result = operationHandler.process(serializationServiceStub, getRequest,
+    Result result = operationHandler.process(serializationService, getRequest,
         TestExecutionContext.getNoAuthCacheExecutionContext(cacheStub));
 
     Assert.assertTrue(result instanceof Success);
@@ -81,20 +79,19 @@ public class GetRequestOperationHandlerJUnitTest extends OperationHandlerJUnitTe
   @Test
   public void processReturnsUnsucessfulResponseForInvalidRegion() throws Exception {
     RegionAPI.GetRequest getRequest = generateTestRequest(true, false, false);
-    Result response = operationHandler.process(serializationServiceStub, getRequest,
+    Result response = operationHandler.process(serializationService, getRequest,
         TestExecutionContext.getNoAuthCacheExecutionContext(cacheStub));
 
     Assert.assertTrue(response instanceof Failure);
     ClientProtocol.ErrorResponse errorMessage =
         (ClientProtocol.ErrorResponse) response.getErrorMessage();
-    Assert.assertEquals(BasicTypes.ErrorCode.REGION_NOT_FOUND,
-        errorMessage.getError().getErrorCode());
+    Assert.assertEquals(BasicTypes.ErrorCode.SERVER_ERROR, errorMessage.getError().getErrorCode());
   }
 
   @Test
   public void processReturnsKeyNotFoundWhenKeyIsNotFound() throws Exception {
     RegionAPI.GetRequest getRequest = generateTestRequest(false, true, false);
-    Result response = operationHandler.process(serializationServiceStub, getRequest,
+    Result response = operationHandler.process(serializationService, getRequest,
         TestExecutionContext.getNoAuthCacheExecutionContext(cacheStub));
 
     Assert.assertTrue(response instanceof Success);
@@ -103,7 +100,7 @@ public class GetRequestOperationHandlerJUnitTest extends OperationHandlerJUnitTe
   @Test
   public void processReturnsLookupFailureWhenKeyFoundWithNoValue() throws Exception {
     RegionAPI.GetRequest getRequest = generateTestRequest(false, false, true);
-    Result response = operationHandler.process(serializationServiceStub, getRequest,
+    Result response = operationHandler.process(serializationService, getRequest,
         TestExecutionContext.getNoAuthCacheExecutionContext(cacheStub));
 
     Assert.assertTrue(response instanceof Success);
@@ -111,34 +108,31 @@ public class GetRequestOperationHandlerJUnitTest extends OperationHandlerJUnitTe
 
   @Test
   public void processReturnsErrorWhenUnableToDecodeRequest() throws Exception {
-    CodecNotRegisteredForTypeException exception =
-        new CodecNotRegisteredForTypeException("error finding codec for type");
-    when(serializationServiceStub.decode(any(), any())).thenThrow(exception);
+    EncodingException exception = new EncodingException("error finding codec for type");
+    ProtobufSerializationService serializationServiceStub =
+        mock(ProtobufSerializationService.class);
+    when(serializationServiceStub.decode(any())).thenThrow(exception);
 
-    ByteString byteString = ByteString.copyFrom("{\"someKey\":\"someValue\"}", "UTF-8");
-    BasicTypes.CustomEncodedValue.Builder customEncodedValueBuilder = BasicTypes.CustomEncodedValue
-        .newBuilder().setEncodingType(BasicTypes.EncodingType.JSON).setValue(byteString);
     BasicTypes.EncodedValue encodedKey = BasicTypes.EncodedValue.newBuilder()
-        .setCustomEncodedValue(customEncodedValueBuilder).build();
+        .setJsonObjectResult("{\"someKey\":\"someValue\"}").build();
     RegionAPI.GetRequest getRequest =
         ProtobufRequestUtilities.createGetRequest(TEST_REGION, encodedKey).getGetRequest();
+
     Result response = operationHandler.process(serializationServiceStub, getRequest,
         TestExecutionContext.getNoAuthCacheExecutionContext(cacheStub));
 
     Assert.assertTrue(response instanceof Failure);
     ClientProtocol.ErrorResponse errorMessage =
         (ClientProtocol.ErrorResponse) response.getErrorMessage();
-    Assert.assertEquals(BasicTypes.ErrorCode.VALUE_ENCODING_ERROR,
+    Assert.assertEquals(BasicTypes.ErrorCode.INVALID_REQUEST,
         errorMessage.getError().getErrorCode());
   }
 
   private RegionAPI.GetRequest generateTestRequest(boolean missingRegion, boolean missingKey,
-      boolean nulledKey)
-      throws UnsupportedEncodingTypeException, CodecNotRegisteredForTypeException {
+      boolean nulledKey) throws EncodingException {
     String region = missingRegion ? MISSING_REGION : TEST_REGION;
     String key = missingKey ? MISSING_KEY : (nulledKey ? NULLED_KEY : TEST_KEY);
-    BasicTypes.EncodedValue testKey =
-        ProtobufUtilities.createEncodedValue(serializationServiceStub, key);
+    BasicTypes.EncodedValue testKey = serializationService.encode(key);
     return ProtobufRequestUtilities.createGetRequest(region, testKey).getGetRequest();
   }
 }

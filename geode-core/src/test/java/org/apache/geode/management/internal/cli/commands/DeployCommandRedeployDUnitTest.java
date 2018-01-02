@@ -41,7 +41,7 @@ import org.apache.geode.distributed.DistributedSystem;
 import org.apache.geode.internal.ClassPathLoader;
 import org.apache.geode.internal.cache.GemFireCacheImpl;
 import org.apache.geode.test.compiler.ClassBuilder;
-import org.apache.geode.test.dunit.rules.LocatorServerStartupRule;
+import org.apache.geode.test.dunit.rules.ClusterStartupRule;
 import org.apache.geode.test.dunit.rules.MemberVM;
 import org.apache.geode.test.junit.categories.DistributedTest;
 import org.apache.geode.test.junit.rules.GfshCommandRule;
@@ -71,7 +71,7 @@ public class DeployCommandRedeployDUnitTest {
   public SerializableTemporaryFolder temporaryFolder = new SerializableTemporaryFolder();
 
   @Rule
-  public LocatorServerStartupRule lsRule = new LocatorServerStartupRule();
+  public ClusterStartupRule lsRule = new ClusterStartupRule();
 
   @Rule
   public transient GfshCommandRule gfshConnector = new GfshCommandRule();
@@ -136,7 +136,7 @@ public class DeployCommandRedeployDUnitTest {
     server.invoke(() -> assertThatCanLoad(JAR_NAME_A, FUNCTION_A));
     server.invoke(() -> assertThatFunctionHasVersion(FUNCTION_A, VERSION2));
 
-    server.stopMember(false);
+    server.stopVM(false);
 
     lsRule.startServerVM(1, locator.getPort());
 

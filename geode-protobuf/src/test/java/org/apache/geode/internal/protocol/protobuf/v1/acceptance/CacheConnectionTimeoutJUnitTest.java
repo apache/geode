@@ -67,7 +67,7 @@ public class CacheConnectionTimeoutJUnitTest {
   private final String TEST_REGION = "testRegion";
 
   private Cache cache;
-  private SerializationService serializationService;
+  private ProtobufSerializationService serializationService;
   private Socket socket;
   private OutputStream outputStream;
 

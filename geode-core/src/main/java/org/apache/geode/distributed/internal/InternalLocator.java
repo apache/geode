@@ -523,6 +523,9 @@ public class InternalLocator extends Locator implements ConnectListener {
   }
 
   public InternalCache getCache() {
+    if (myCache == null) {
+      return GemFireCacheImpl.getInstance();
+    }
     return myCache;
   }
 
@@ -1082,7 +1085,11 @@ public class InternalLocator extends Locator implements ConnectListener {
 
   @Override
   public DistributedSystem getDistributedSystem() {
-    return this.myDs;
+    if (myDs == null) {
+      return InternalDistributedSystem.getAnyInstance();
+    }
+
+    return myDs;
   }
 
   @Override

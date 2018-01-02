@@ -12,28 +12,20 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
-package org.apache.geode.internal.protocol.serialization.codec;
+package org.apache.geode.internal.protocol.serialization.exception;
 
 import org.apache.geode.annotations.Experimental;
-import org.apache.geode.internal.protocol.serialization.SerializationType;
-import org.apache.geode.internal.protocol.serialization.TypeCodec;
-import org.apache.geode.pdx.JSONFormatter;
-import org.apache.geode.pdx.PdxInstance;
 
+/**
+ * This indicates an encoding type that we don't know how to handle.
+ */
 @Experimental
-public class JSONCodec implements TypeCodec<PdxInstance> {
-  @Override
-  public PdxInstance decode(byte[] incoming) {
-    return JSONFormatter.fromJSON(incoming);
+public class EncodingException extends Exception {
+  public EncodingException(String message) {
+    super(message);
   }
 
-  @Override
-  public byte[] encode(PdxInstance incoming) {
-    return JSONFormatter.toJSONByteArray(incoming);
-  }
-
-  @Override
-  public SerializationType getSerializationType() {
-    return SerializationType.JSON;
+  public EncodingException(String message, Throwable cause) {
+    super(message, cause);
   }
 }

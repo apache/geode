@@ -38,7 +38,7 @@ import org.apache.geode.management.CacheServerMXBean;
 import org.apache.geode.management.ManagementService;
 import org.apache.geode.management.MemberMXBean;
 import org.apache.geode.management.RegionMXBean;
-import org.apache.geode.test.dunit.rules.LocatorServerStartupRule;
+import org.apache.geode.test.dunit.rules.ClusterStartupRule;
 import org.apache.geode.test.dunit.rules.MemberVM;
 import org.apache.geode.test.junit.categories.DistributedTest;
 import org.apache.geode.test.junit.rules.GfshCommandRule;
@@ -49,7 +49,7 @@ public class ShowMetricsDUnitTest {
   private MemberVM locator, server;
 
   @Rule
-  public LocatorServerStartupRule lsRule = new LocatorServerStartupRule();
+  public ClusterStartupRule lsRule = new ClusterStartupRule();
 
   @Rule
   public GfshCommandRule gfsh = new GfshCommandRule();
@@ -63,7 +63,7 @@ public class ShowMetricsDUnitTest {
     server = lsRule.startServerVM(1, locator.getPort());
     int serverPort = server.getPort();
     server.invoke(() -> {
-      Cache cache = LocatorServerStartupRule.getCache();
+      Cache cache = ClusterStartupRule.getCache();
       RegionFactory<Integer, Integer> dataRegionFactory =
           cache.createRegionFactory(RegionShortcut.REPLICATE);
       dataRegionFactory.create("REGION1");
@@ -73,7 +73,7 @@ public class ShowMetricsDUnitTest {
     });
 
     locator.invoke(() -> {
-      Cache cache = LocatorServerStartupRule.getCache();
+      Cache cache = ClusterStartupRule.getCache();
       // Wait for all of the relevant beans to be ready
       await().atMost(120, SECONDS).until(() -> isBeanReady(cache, 1, "", null, 0));
       await().atMost(120, SECONDS).until(() -> isBeanReady(cache, 2, "REGION1", null, 0));

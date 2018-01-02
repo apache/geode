@@ -32,7 +32,7 @@ import org.apache.geode.connectors.jdbc.internal.InternalJdbcConnectorService;
 import org.apache.geode.distributed.internal.InternalLocator;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.management.internal.cli.util.CommandStringBuilder;
-import org.apache.geode.test.dunit.rules.LocatorServerStartupRule;
+import org.apache.geode.test.dunit.rules.ClusterStartupRule;
 import org.apache.geode.test.dunit.rules.MemberVM;
 import org.apache.geode.test.junit.categories.DistributedTest;
 import org.apache.geode.test.junit.rules.GfshCommandRule;
@@ -45,7 +45,7 @@ public class DestroyConnectionCommandDUnitTest implements Serializable {
   public transient GfshCommandRule gfsh = new GfshCommandRule();
 
   @Rule
-  public LocatorServerStartupRule startupRule = new LocatorServerStartupRule();
+  public ClusterStartupRule startupRule = new ClusterStartupRule();
 
   @Rule
   public SerializableTestName testName = new SerializableTestName();
@@ -81,7 +81,7 @@ public class DestroyConnectionCommandDUnitTest implements Serializable {
     });
 
     server.invoke(() -> {
-      InternalCache cache = LocatorServerStartupRule.getCache();
+      InternalCache cache = ClusterStartupRule.getCache();
       ConnectionConfiguration config =
           cache.getService(InternalJdbcConnectorService.class).getConnectionConfig("name");
       assertThat(config).isNull();
@@ -89,7 +89,7 @@ public class DestroyConnectionCommandDUnitTest implements Serializable {
   }
 
   private void createConnection() throws ConnectionConfigExistsException {
-    InternalCache cache = LocatorServerStartupRule.getCache();
+    InternalCache cache = ClusterStartupRule.getCache();
     InternalJdbcConnectorService service = cache.getService(InternalJdbcConnectorService.class);
 
     service.createConnectionConfig(new ConnectionConfigBuilder().withName(connectionName).build());

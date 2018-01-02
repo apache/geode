@@ -14,8 +14,6 @@
  */
 package org.apache.geode.internal.protocol.protobuf.v1;
 
-import static org.apache.geode.internal.protocol.ProtocolErrorCode.UNSUPPORTED_OPERATION;
-
 import org.apache.logging.log4j.Logger;
 
 import org.apache.geode.annotations.Experimental;
@@ -24,6 +22,7 @@ import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.internal.protocol.Failure;
 import org.apache.geode.internal.protocol.MessageExecutionContext;
 import org.apache.geode.internal.protocol.OperationContext;
+import org.apache.geode.internal.protocol.ProtocolErrorCode;
 import org.apache.geode.internal.protocol.Result;
 import org.apache.geode.internal.protocol.protobuf.v1.registry.ProtobufOperationContextRegistry;
 import org.apache.geode.internal.protocol.protobuf.v1.utilities.ProtobufResponseUtilities;
@@ -84,8 +83,8 @@ public class ProtobufOpsProcessor {
           operationContext.getFromRequest().apply(request), context);
     } catch (InvalidExecutionContextException exception) {
       logger.error("Invalid execution context found for operation {}", requestType);
-      return Failure.of(ProtobufResponseUtilities.makeErrorResponse(UNSUPPORTED_OPERATION,
-          "Invalid execution context found for operation."));
+      return Failure.of(ProtobufResponseUtilities.makeErrorResponse(
+          ProtocolErrorCode.INVALID_REQUEST, "Invalid execution context found for operation."));
     }
   }
 }

@@ -35,7 +35,7 @@ import org.apache.geode.internal.cache.xmlcache.XmlParser;
 import org.apache.geode.management.internal.cli.i18n.CliStrings;
 import org.apache.geode.management.internal.cli.util.CommandStringBuilder;
 import org.apache.geode.management.internal.configuration.domain.XmlEntity;
-import org.apache.geode.test.dunit.rules.LocatorServerStartupRule;
+import org.apache.geode.test.dunit.rules.ClusterStartupRule;
 import org.apache.geode.test.dunit.rules.MemberVM;
 import org.apache.geode.test.junit.categories.DistributedTest;
 import org.apache.geode.test.junit.rules.GfshCommandRule;
@@ -45,7 +45,7 @@ import org.apache.geode.test.junit.rules.GfshCommandRule;
 public class ExtensionClusterConfigurationDUnitTest {
 
   @Rule
-  public LocatorServerStartupRule locatorServerStartupRule = new LocatorServerStartupRule();
+  public ClusterStartupRule clusterStartupRule = new ClusterStartupRule();
 
   @Rule
   public GfshCommandRule gfsh = new GfshCommandRule();
@@ -57,7 +57,7 @@ public class ExtensionClusterConfigurationDUnitTest {
 
   @Before
   public void before() throws Exception {
-    locator = locatorServerStartupRule.startLocatorVM(3);
+    locator = clusterStartupRule.startLocatorVM(3);
   }
 
   /**
@@ -71,7 +71,7 @@ public class ExtensionClusterConfigurationDUnitTest {
   public void testCreateExtensions() throws Exception {
 
     // create caching member
-    dataMember = locatorServerStartupRule.startServerVM(1, locator.getPort());
+    dataMember = clusterStartupRule.startServerVM(1, locator.getPort());
 
     // Connect Gfsh to locator.
     gfsh.connectAndVerify(locator);
@@ -84,9 +84,9 @@ public class ExtensionClusterConfigurationDUnitTest {
 
     // Start a new member which receives the shared configuration
     // Verify the config creation on this member
-    MemberVM newMember = locatorServerStartupRule.startServerVM(2, locator.getPort());
+    MemberVM newMember = clusterStartupRule.startServerVM(2, locator.getPort());
     newMember.invoke(() -> {
-      InternalCache cache = LocatorServerStartupRule.getCache();
+      InternalCache cache = ClusterStartupRule.getCache();
       assertNotNull(cache);
 
       Region<?, ?> region1 = cache.getRegion(REPLICATE_REGION);
@@ -126,7 +126,7 @@ public class ExtensionClusterConfigurationDUnitTest {
   public void testDestroyExtensions() throws Exception {
 
     // create caching member
-    dataMember = locatorServerStartupRule.startServerVM(1, locator.getPort());
+    dataMember = clusterStartupRule.startServerVM(1, locator.getPort());
 
     // Connect Gfsh to locator.
     gfsh.connectAndVerify(locator);
@@ -139,9 +139,9 @@ public class ExtensionClusterConfigurationDUnitTest {
 
     // Start a new member which receives the shared configuration
     // Verify the config creation on this member
-    MemberVM newMember = locatorServerStartupRule.startServerVM(2, locator.getPort());
+    MemberVM newMember = clusterStartupRule.startServerVM(2, locator.getPort());
     newMember.invoke(() -> {
-      InternalCache cache = LocatorServerStartupRule.getCache();
+      InternalCache cache = ClusterStartupRule.getCache();
       assertNotNull(cache);
 
       Region<?, ?> region1 = cache.getRegion(REPLICATE_REGION);

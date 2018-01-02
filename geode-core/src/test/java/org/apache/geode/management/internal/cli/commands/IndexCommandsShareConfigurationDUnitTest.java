@@ -48,7 +48,7 @@ import org.apache.geode.management.internal.cli.domain.Stock;
 import org.apache.geode.management.internal.cli.i18n.CliStrings;
 import org.apache.geode.management.internal.cli.util.CommandStringBuilder;
 import org.apache.geode.test.dunit.Assert;
-import org.apache.geode.test.dunit.rules.LocatorServerStartupRule;
+import org.apache.geode.test.dunit.rules.ClusterStartupRule;
 import org.apache.geode.test.dunit.rules.MemberVM;
 import org.apache.geode.test.junit.categories.DistributedTest;
 import org.apache.geode.test.junit.rules.GfshCommandRule;
@@ -60,7 +60,7 @@ public class IndexCommandsShareConfigurationDUnitTest {
   public GfshCommandRule gfsh = new GfshCommandRule();
 
   @Rule
-  public LocatorServerStartupRule startupRule = new LocatorServerStartupRule();
+  public ClusterStartupRule startupRule = new ClusterStartupRule();
   private static String partitionedRegionName = "partitionedRegion";
   private static String indexName = "index1";
   private static String groupName = "group1";
@@ -92,7 +92,7 @@ public class IndexCommandsShareConfigurationDUnitTest {
     props.setProperty(GROUPS, groupName);
     serverVM = startupRule.startServerVM(1, props, locator.getPort());
     serverVM.invoke(() -> {
-      InternalCache cache = LocatorServerStartupRule.getCache();
+      InternalCache cache = ClusterStartupRule.getCache();
       Region parReg =
           createPartitionedRegion(partitionedRegionName, cache, String.class, Stock.class);
       parReg.put("VMW", new Stock("VMW", 98));
@@ -148,7 +148,7 @@ public class IndexCommandsShareConfigurationDUnitTest {
     serverVM = startupRule.startServerVM(1, props, locator.getPort());
 
     serverVM.invoke(() -> {
-      InternalCache restartedCache = LocatorServerStartupRule.getCache();
+      InternalCache restartedCache = ClusterStartupRule.getCache();
       assertNotNull(restartedCache);
       Region region = restartedCache.getRegion(partitionedRegionName);
       assertNotNull(region);

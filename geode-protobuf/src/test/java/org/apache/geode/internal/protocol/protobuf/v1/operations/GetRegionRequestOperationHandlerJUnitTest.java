@@ -69,7 +69,7 @@ public class GetRegionRequestOperationHandlerJUnitTest extends OperationHandlerJ
     when(regionAttributesStub.getScope()).thenReturn(Scope.DISTRIBUTED_ACK);
 
 
-    Result result = operationHandler.process(serializationServiceStub,
+    Result result = operationHandler.process(serializationService,
         MessageUtil.makeGetRegionRequest(TEST_REGION1), getNoAuthCacheExecutionContext(cacheStub));
     RegionAPI.GetRegionResponse response = (RegionAPI.GetRegionResponse) result.getMessage();
     BasicTypes.Region region = response.getRegion();
@@ -92,14 +92,13 @@ public class GetRegionRequestOperationHandlerJUnitTest extends OperationHandlerJ
     when(emptyCache.rootRegions())
         .thenReturn(Collections.unmodifiableSet(new HashSet<Region<String, String>>()));
     String unknownRegionName = "UNKNOWN_REGION";
-    Result result = operationHandler.process(serializationServiceStub,
+    Result result = operationHandler.process(serializationService,
         MessageUtil.makeGetRegionRequest(unknownRegionName),
         getNoAuthCacheExecutionContext(emptyCache));
     Assert.assertTrue(result instanceof Failure);
     ClientProtocol.ErrorResponse errorMessage =
         (ClientProtocol.ErrorResponse) result.getErrorMessage();
-    Assert.assertEquals(BasicTypes.ErrorCode.REGION_NOT_FOUND,
-        errorMessage.getError().getErrorCode());
+    Assert.assertEquals(BasicTypes.ErrorCode.SERVER_ERROR, errorMessage.getError().getErrorCode());
   }
 
 }

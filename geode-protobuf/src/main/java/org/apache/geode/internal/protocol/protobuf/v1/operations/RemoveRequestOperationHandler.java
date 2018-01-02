@@ -14,8 +14,8 @@
  */
 package org.apache.geode.internal.protocol.protobuf.v1.operations;
 
-import static org.apache.geode.internal.protocol.ProtocolErrorCode.REGION_NOT_FOUND;
-import static org.apache.geode.internal.protocol.ProtocolErrorCode.VALUE_ENCODING_ERROR;
+import static org.apache.geode.internal.protocol.ProtocolErrorCode.INVALID_REQUEST;
+import static org.apache.geode.internal.protocol.ProtocolErrorCode.SERVER_ERROR;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -27,23 +27,21 @@ import org.apache.geode.internal.protocol.Failure;
 import org.apache.geode.internal.protocol.MessageExecutionContext;
 import org.apache.geode.internal.protocol.Result;
 import org.apache.geode.internal.protocol.Success;
-import org.apache.geode.internal.protocol.operations.OperationHandler;
+import org.apache.geode.internal.protocol.operations.ProtobufOperationHandler;
 import org.apache.geode.internal.protocol.protobuf.v1.ClientProtocol;
+import org.apache.geode.internal.protocol.protobuf.v1.ProtobufSerializationService;
 import org.apache.geode.internal.protocol.protobuf.v1.RegionAPI;
 import org.apache.geode.internal.protocol.protobuf.v1.utilities.ProtobufResponseUtilities;
-import org.apache.geode.internal.protocol.protobuf.v1.utilities.ProtobufUtilities;
-import org.apache.geode.internal.protocol.serialization.SerializationService;
-import org.apache.geode.internal.protocol.serialization.exception.UnsupportedEncodingTypeException;
-import org.apache.geode.internal.protocol.serialization.registry.exception.CodecNotRegisteredForTypeException;
+import org.apache.geode.internal.protocol.serialization.exception.EncodingException;
 
 @Experimental
-public class RemoveRequestOperationHandler implements
-    OperationHandler<RegionAPI.RemoveRequest, RegionAPI.RemoveResponse, ClientProtocol.ErrorResponse> {
+public class RemoveRequestOperationHandler
+    implements ProtobufOperationHandler<RegionAPI.RemoveRequest, RegionAPI.RemoveResponse> {
   private static final Logger logger = LogManager.getLogger();
 
   @Override
   public Result<RegionAPI.RemoveResponse, ClientProtocol.ErrorResponse> process(
-      SerializationService serializationService, RegionAPI.RemoveRequest request,
+      ProtobufSerializationService serializationService, RegionAPI.RemoveRequest request,
       MessageExecutionContext messageExecutionContext) throws InvalidExecutionContextException {
 
     String regionName = request.getRegionName();
@@ -51,23 +49,19 @@ public class RemoveRequestOperationHandler implements
     if (region == null) {
       logger.error("Received Remove request for non-existing region {}", regionName);
       return Failure
-          .of(ProtobufResponseUtilities.makeErrorResponse(REGION_NOT_FOUND, "Region not found"));
+          .of(ProtobufResponseUtilities.makeErrorResponse(SERVER_ERROR, "Region not found"));
     }
 
     try {
-      Object decodedKey = ProtobufUtilities.decodeValue(serializationService, request.getKey());
+      Object decodedKey = serializationService.decode(request.getKey());
       region.remove(decodedKey);
 
       return Success.of(RegionAPI.RemoveResponse.newBuilder().build());
-    } catch (UnsupportedEncodingTypeException ex) {
+    } catch (EncodingException ex) {
       // can be thrown by encoding or decoding.
       logger.error("Received Remove request with unsupported encoding: {}", ex);
-      return Failure.of(ProtobufResponseUtilities.makeErrorResponse(VALUE_ENCODING_ERROR,
+      return Failure.of(ProtobufResponseUtilities.makeErrorResponse(INVALID_REQUEST,
           "Encoding not supported: " + ex.getMessage()));
-    } catch (CodecNotRegisteredForTypeException ex) {
-      logger.error("Got codec error when decoding Remove request: {}", ex);
-      return Failure.of(ProtobufResponseUtilities.makeErrorResponse(VALUE_ENCODING_ERROR,
-          "Codec error in protobuf deserialization: " + ex.getMessage()));
     }
   }
 }

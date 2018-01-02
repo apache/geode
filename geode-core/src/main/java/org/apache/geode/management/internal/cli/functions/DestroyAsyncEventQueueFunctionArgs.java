@@ -12,23 +12,27 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
-package org.apache.geode.internal.protocol.protobuf.v1.serializer;
+package org.apache.geode.management.internal.cli.functions;
 
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
+import java.io.Serializable;
 
-import org.apache.geode.annotations.Experimental;
-import org.apache.geode.internal.protocol.exception.InvalidProtocolMessageException;
+public class DestroyAsyncEventQueueFunctionArgs implements Serializable {
 
-/**
- * This interface is used to translate between binary data and protocol specific messages.
- *
- * @param <T> The message type of the protocol.
- */
-@Experimental
-public interface ProtocolSerializer<T> {
-  T deserialize(InputStream inputStream) throws InvalidProtocolMessageException;
+  private static final long serialVersionUID = 1755045410754561928L;
+  private String id;
+  private boolean ifExists;
 
-  void serialize(T inputMessage, OutputStream outputStream) throws IOException;
+
+  public DestroyAsyncEventQueueFunctionArgs(String id, boolean ifExists) {
+    this.id = id;
+    this.ifExists = ifExists;
+  }
+
+  public String getId() {
+    return id;
+  }
+
+  public boolean isIfExists() {
+    return ifExists;
+  }
 }

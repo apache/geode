@@ -15,13 +15,12 @@
 package org.apache.geode.cache.lucene.internal.management;
 
 import static org.apache.geode.cache.lucene.test.LuceneTestUtilities.INDEX_NAME;
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
 
 import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
-import java.io.Serializable;
-import java.util.Properties;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
 
@@ -39,9 +38,8 @@ import org.apache.geode.cache.lucene.LuceneService;
 import org.apache.geode.cache.lucene.LuceneServiceProvider;
 import org.apache.geode.cache.lucene.management.LuceneIndexMetrics;
 import org.apache.geode.cache.lucene.management.LuceneServiceMXBean;
-import org.apache.geode.distributed.ConfigurationProperties;
 import org.apache.geode.distributed.DistributedMember;
-import org.apache.geode.internal.cache.GemFireCacheImpl;
+import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.management.ManagementTestBase;
 import org.apache.geode.management.MemberMXBean;
 import org.apache.geode.management.internal.MBeanJMXAdapter;
@@ -62,7 +60,7 @@ public class LuceneManagementDUnitTest extends ManagementTestBase {
     }
 
     // Verify MBean proxies are created in the managing node
-    getManagingNode().invoke(() -> verifyMBeanProxies());
+    getManagingNode().invoke(() -> verifyMBeanProxies(getCache()));
   }
 
   @Test
@@ -79,8 +77,8 @@ public class LuceneManagementDUnitTest extends ManagementTestBase {
     }
 
     // Verify MBean proxies are created in the managing node
-    getManagingNode()
-        .invoke(() -> verifyAllMBeanProxyIndexMetrics(regionName, numIndexes, numIndexes));
+    getManagingNode().invoke(
+        () -> verifyAllMBeanProxyIndexMetrics(regionName, numIndexes, numIndexes, getCache()));
   }
 
   @Test
@@ -107,8 +105,8 @@ public class LuceneManagementDUnitTest extends ManagementTestBase {
     // Verify index metrics in the managing node
     for (int i = 0; i < numRegions; i++) {
       String regionName = baseRegionName + i;
-      getManagingNode().invoke(
-          () -> verifyAllMBeanProxyIndexMetrics(regionName, numIndexes, numIndexes * numRegions));
+      getManagingNode().invoke(() -> verifyAllMBeanProxyIndexMetrics(regionName, numIndexes,
+          numIndexes * numRegions, getCache()));
     }
   }
 
@@ -131,17 +129,17 @@ public class LuceneManagementDUnitTest extends ManagementTestBase {
     getManagedNodeList().get(0).invoke(() -> queryEntries(regionName, indexName));
 
     // Wait for the managed members to be updated a few times in the manager node
-    getManagingNode().invoke(() -> waitForMemberProxiesToRefresh(2));
+    getManagingNode().invoke(() -> waitForMemberProxiesToRefresh(2, getCache()));
 
     // Verify index metrics
     int numManagedNodes = getManagedNodeList().size();
     getManagingNode().invoke(() -> verifyMBeanIndexMetricsValues(regionName, indexName, numPuts,
-        numManagedNodes/* 1 query per managed node */, 1/* 1 result */));
+        numManagedNodes/* 1 query per managed node */, 1/* 1 result */, getCache()));
   }
 
-  private static void waitForMemberProxiesToRefresh(int refreshCount) {
-    Set<DistributedMember> members = GemFireCacheImpl.getInstance().getDistributionManager()
-        .getOtherNormalDistributionManagerIds();
+  private static void waitForMemberProxiesToRefresh(int refreshCount, final InternalCache cache) {
+    Set<DistributedMember> members =
+        cache.getDistributionManager().getOtherNormalDistributionManagerIds();
     // Currently, the LuceneServiceMBean is not updated in the manager since it has no getters,
     // so use the MemberMBean instead.
     for (DistributedMember member : members) {
@@ -164,9 +162,9 @@ public class LuceneManagementDUnitTest extends ManagementTestBase {
     return getManagementService().getMBeanInstance(objectName, LuceneServiceMXBean.class);
   }
 
-  private static void verifyMBeanProxies() {
-    Set<DistributedMember> members = GemFireCacheImpl.getInstance().getDistributionManager()
-        .getOtherNormalDistributionManagerIds();
+  private static void verifyMBeanProxies(final InternalCache cache) {
+    Set<DistributedMember> members =
+        cache.getDistributionManager().getOtherNormalDistributionManagerIds();
     for (DistributedMember member : members) {
       getMBeanProxy(member);
     }
@@ -203,9 +201,9 @@ public class LuceneManagementDUnitTest extends ManagementTestBase {
   }
 
   private static void verifyAllMBeanProxyIndexMetrics(String regionName, int numRegionIndexes,
-      int numTotalIndexes) {
-    Set<DistributedMember> members = GemFireCacheImpl.getInstance().getDistributionManager()
-        .getOtherNormalDistributionManagerIds();
+      int numTotalIndexes, final InternalCache cache) {
+    Set<DistributedMember> members =
+        cache.getDistributionManager().getOtherNormalDistributionManagerIds();
     for (DistributedMember member : members) {
       LuceneServiceMXBean mbean = getMBeanProxy(member);
       verifyMBeanIndexMetrics(mbean, regionName, numRegionIndexes, numTotalIndexes);
@@ -238,10 +236,10 @@ public class LuceneManagementDUnitTest extends ManagementTestBase {
   }
 
   private void verifyMBeanIndexMetricsValues(String regionName, String indexName, int expectedPuts,
-      int expectedQueries, int expectedHits) {
+      int expectedQueries, int expectedHits, final InternalCache cache) {
     // Get index metrics from all members
-    Set<DistributedMember> members = GemFireCacheImpl.getInstance().getDistributionManager()
-        .getOtherNormalDistributionManagerIds();
+    Set<DistributedMember> members =
+        cache.getDistributionManager().getOtherNormalDistributionManagerIds();
     int totalCommits = 0, totalUpdates = 0, totalDocuments = 0, totalQueries = 0, totalHits = 0;
     for (DistributedMember member : members) {
       LuceneServiceMXBean mbean = getMBeanProxy(member);

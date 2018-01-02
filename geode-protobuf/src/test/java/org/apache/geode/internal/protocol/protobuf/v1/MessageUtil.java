@@ -26,9 +26,7 @@ import com.google.protobuf.MessageLite;
 import org.apache.geode.internal.protocol.protobuf.ProtocolVersion;
 import org.apache.geode.internal.protocol.protobuf.v1.utilities.ProtobufRequestUtilities;
 import org.apache.geode.internal.protocol.protobuf.v1.utilities.ProtobufUtilities;
-import org.apache.geode.internal.protocol.serialization.SerializationService;
-import org.apache.geode.internal.protocol.serialization.exception.UnsupportedEncodingTypeException;
-import org.apache.geode.internal.protocol.serialization.registry.exception.CodecNotRegisteredForTypeException;
+import org.apache.geode.internal.protocol.serialization.exception.EncodingException;
 
 public class MessageUtil {
 
@@ -69,12 +67,10 @@ public class MessageUtil {
   }
 
   public static ClientProtocol.Message makePutRequestMessage(
-      SerializationService serializationService, String requestKey, String requestValue,
-      String requestRegion)
-      throws CodecNotRegisteredForTypeException, UnsupportedEncodingTypeException {
-    BasicTypes.Entry entry = ProtobufUtilities.createEntry(
-        ProtobufUtilities.createEncodedValue(serializationService, requestKey),
-        ProtobufUtilities.createEncodedValue(serializationService, requestValue));
+      ProtobufSerializationService serializationService, String requestKey, String requestValue,
+      String requestRegion) throws EncodingException {
+    BasicTypes.Entry entry = ProtobufUtilities.createEntry(serializationService.encode(requestKey),
+        serializationService.encode(requestValue));
 
     ClientProtocol.Request request =
         ProtobufRequestUtilities.createPutRequest(requestRegion, entry);
@@ -82,10 +78,10 @@ public class MessageUtil {
   }
 
   public static ClientProtocol.Message makeGetRequestMessage(
-      SerializationService serializationService, Object requestKey, String requestRegion)
+      ProtobufSerializationService serializationService, Object requestKey, String requestRegion)
       throws Exception {
     ClientProtocol.Request request = ProtobufRequestUtilities.createGetRequest(requestRegion,
-        ProtobufUtilities.createEncodedValue(serializationService, requestKey));
+        serializationService.encode(requestKey));
     return ProtobufUtilities.createProtobufMessage(request);
   }
 

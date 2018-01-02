@@ -21,7 +21,6 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
-import com.google.protobuf.ByteString;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
@@ -34,11 +33,10 @@ import org.apache.geode.internal.protocol.Success;
 import org.apache.geode.internal.protocol.TestExecutionContext;
 import org.apache.geode.internal.protocol.protobuf.v1.BasicTypes;
 import org.apache.geode.internal.protocol.protobuf.v1.ClientProtocol;
+import org.apache.geode.internal.protocol.protobuf.v1.ProtobufSerializationService;
 import org.apache.geode.internal.protocol.protobuf.v1.RegionAPI;
 import org.apache.geode.internal.protocol.protobuf.v1.utilities.ProtobufRequestUtilities;
-import org.apache.geode.internal.protocol.protobuf.v1.utilities.ProtobufUtilities;
-import org.apache.geode.internal.protocol.serialization.exception.UnsupportedEncodingTypeException;
-import org.apache.geode.internal.protocol.serialization.registry.exception.CodecNotRegisteredForTypeException;
+import org.apache.geode.internal.protocol.serialization.exception.EncodingException;
 import org.apache.geode.test.junit.categories.UnitTest;
 
 @Category(UnitTest.class)
@@ -67,7 +65,7 @@ public class RemoveRequestOperationHandlerJUnitTest extends OperationHandlerJUni
   @Test
   public void processValidKeyRemovesTheEntryAndReturnSuccess() throws Exception {
     RegionAPI.RemoveRequest removeRequest = generateTestRequest(false, false).getRemoveRequest();
-    Result result = operationHandler.process(serializationServiceStub, removeRequest,
+    Result result = operationHandler.process(serializationService, removeRequest,
         TestExecutionContext.getNoAuthCacheExecutionContext(cacheStub));
 
     assertTrue(result instanceof Success);
@@ -77,19 +75,19 @@ public class RemoveRequestOperationHandlerJUnitTest extends OperationHandlerJUni
   @Test
   public void processReturnsUnsucessfulResponseForInvalidRegion() throws Exception {
     RegionAPI.RemoveRequest removeRequest = generateTestRequest(true, false).getRemoveRequest();
-    Result result = operationHandler.process(serializationServiceStub, removeRequest,
+    Result result = operationHandler.process(serializationService, removeRequest,
         TestExecutionContext.getNoAuthCacheExecutionContext(cacheStub));
 
     assertTrue(result instanceof Failure);
     ClientProtocol.ErrorResponse errorMessage =
         (ClientProtocol.ErrorResponse) result.getErrorMessage();
-    assertEquals(BasicTypes.ErrorCode.REGION_NOT_FOUND, errorMessage.getError().getErrorCode());
+    assertEquals(BasicTypes.ErrorCode.SERVER_ERROR, errorMessage.getError().getErrorCode());
   }
 
   @Test
   public void processReturnsSuccessWhenKeyIsNotFound() throws Exception {
     RegionAPI.RemoveRequest removeRequest = generateTestRequest(false, true).getRemoveRequest();
-    Result result = operationHandler.process(serializationServiceStub, removeRequest,
+    Result result = operationHandler.process(serializationService, removeRequest,
         TestExecutionContext.getNoAuthCacheExecutionContext(cacheStub));
 
     assertTrue(result instanceof Success);
@@ -97,15 +95,13 @@ public class RemoveRequestOperationHandlerJUnitTest extends OperationHandlerJUni
 
   @Test
   public void processReturnsErrorWhenUnableToDecodeRequest() throws Exception {
-    CodecNotRegisteredForTypeException exception =
-        new CodecNotRegisteredForTypeException("error finding codec for type");
-    when(serializationServiceStub.decode(any(), any())).thenThrow(exception);
+    EncodingException exception = new EncodingException("error finding codec for type");
+    ProtobufSerializationService serializationServiceStub =
+        mock(ProtobufSerializationService.class);
+    when(serializationServiceStub.decode(any())).thenThrow(exception);
 
-    ByteString byteString = ByteString.copyFrom("{\"someKey\":\"someValue\"}", "UTF-8");
-    BasicTypes.CustomEncodedValue.Builder customEncodedValueBuilder = BasicTypes.CustomEncodedValue
-        .newBuilder().setEncodingType(BasicTypes.EncodingType.JSON).setValue(byteString);
     BasicTypes.EncodedValue encodedKey = BasicTypes.EncodedValue.newBuilder()
-        .setCustomEncodedValue(customEncodedValueBuilder).build();
+        .setJsonObjectResult("{\"someKey\":\"someValue\"}").build();
 
     RegionAPI.RemoveRequest removeRequest =
         ProtobufRequestUtilities.createRemoveRequest(TEST_REGION, encodedKey).getRemoveRequest();;
@@ -115,15 +111,14 @@ public class RemoveRequestOperationHandlerJUnitTest extends OperationHandlerJUni
     assertTrue(result instanceof Failure);
     ClientProtocol.ErrorResponse errorMessage =
         (ClientProtocol.ErrorResponse) result.getErrorMessage();
-    assertEquals(BasicTypes.ErrorCode.VALUE_ENCODING_ERROR, errorMessage.getError().getErrorCode());
+    assertEquals(BasicTypes.ErrorCode.INVALID_REQUEST, errorMessage.getError().getErrorCode());
   }
 
   private ClientProtocol.Request generateTestRequest(boolean missingRegion, boolean missingKey)
-      throws UnsupportedEncodingTypeException, CodecNotRegisteredForTypeException {
+      throws EncodingException {
     String region = missingRegion ? MISSING_REGION : TEST_REGION;
     String key = missingKey ? MISSING_KEY : TEST_KEY;
-    BasicTypes.EncodedValue testKey =
-        ProtobufUtilities.createEncodedValue(serializationServiceStub, key);
+    BasicTypes.EncodedValue testKey = serializationService.encode(key);
     return ProtobufRequestUtilities.createRemoveRequest(region, testKey);
   }
 }

@@ -75,6 +75,7 @@ public class LocatorConnectionDUnitTest extends JUnit4CacheTestCase {
     int locatorPort = DistributedTestUtils.getDUnitLocatorPort();
     Socket socket = new Socket(host.getHostName(), locatorPort);
     MessageUtil.sendHandshake(socket);
+    MessageUtil.verifyHandshakeSuccess(socket);
     return socket;
   }
 
@@ -150,7 +151,7 @@ public class LocatorConnectionDUnitTest extends JUnit4CacheTestCase {
       ClientProtocol.Response messageResponse = getAvailableServersResponseMessage.getResponse();
       assertEquals(ClientProtocol.Response.ResponseAPICase.ERRORRESPONSE,
           messageResponse.getResponseAPICase());
-      assertEquals(BasicTypes.ErrorCode.UNSUPPORTED_OPERATION,
+      assertEquals(BasicTypes.ErrorCode.INVALID_REQUEST,
           messageResponse.getErrorResponse().getError().getErrorCode());
 
       validateStats(messagesReceived + 1, messagesSent + 1,

@@ -32,15 +32,15 @@ import org.junit.rules.TemporaryFolder;
 
 import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.Region;
-import org.apache.geode.compression.SnappyCompressor;
 import org.apache.geode.distributed.Locator;
 import org.apache.geode.distributed.internal.ClusterConfigurationService;
 import org.apache.geode.distributed.internal.InternalLocator;
 import org.apache.geode.internal.cache.SnapshotTestUtil;
-import org.apache.geode.test.dunit.rules.LocatorServerStartupRule;
+import org.apache.geode.test.dunit.rules.ClusterStartupRule;
 import org.apache.geode.test.dunit.rules.MemberVM;
 import org.apache.geode.test.junit.categories.DistributedTest;
 import org.apache.geode.test.junit.rules.GfshCommandRule;
+import org.apache.geode.test.junit.rules.ServerStarterRule;
 
 @Category(DistributedTest.class)
 public class DiskStoreCommandsDUnitTest {
@@ -50,7 +50,7 @@ public class DiskStoreCommandsDUnitTest {
   private static final String GROUP = "GROUP1";
 
   @Rule
-  public LocatorServerStartupRule rule = new LocatorServerStartupRule();
+  public ClusterStartupRule rule = new ClusterStartupRule();
 
   @Rule
   public GfshCommandRule gfsh = new GfshCommandRule();
@@ -88,7 +88,7 @@ public class DiskStoreCommandsDUnitTest {
     createDiskStoreAndRegion(locator, 2);
 
     server1.invoke(() -> {
-      Cache cache = LocatorServerStartupRule.getCache();
+      Cache cache = ClusterStartupRule.getCache();
       Region r = cache.getRegion(REGION_1);
       r.put("A", "B");
     });
@@ -96,18 +96,24 @@ public class DiskStoreCommandsDUnitTest {
     gfsh.executeAndAssertThat("show missing-disk-stores")
         .containsOutput("No missing disk store found");
 
-    server1.invoke(LocatorServerStartupRule::stopMemberInThisVM);
+    server1.stopVM(false);
 
     server2.invoke(() -> {
-      Cache cache = LocatorServerStartupRule.getCache();
+      Cache cache = ClusterStartupRule.getCache();
       Region r = cache.getRegion(REGION_1);
       r.put("A", "C");
     });
 
-    server2.invoke(LocatorServerStartupRule::stopMemberInThisVM);
+    server2.stopVM(false);
 
-    props.setProperty("log-file", "");
-    rule.startServerVMAsync(server1.getVM().getId(), props, locator.getPort());
+    int locatorPort = locator.getPort();
+    server1.invokeAsync(() -> {
+      // trying to restart the server asynchronously
+      ServerStarterRule serverRule = new ServerStarterRule().withProperties(props)
+          .withName("server-1").withConnectionToLocator(locatorPort).withAutoStart();
+      ClusterStartupRule.memberStarter = serverRule;
+      serverRule.before();
+    });
 
     locator.waitTillDiskstoreIsReady(DISKSTORE, 1);
 
@@ -123,7 +129,7 @@ public class DiskStoreCommandsDUnitTest {
     locator.waitTillRegionsAreReadyOnServers("/" + REGION_1, 1);
 
     server1.invoke(() -> {
-      Cache cache = LocatorServerStartupRule.getCache();
+      Cache cache = ClusterStartupRule.getCache();
       Region<String, String> r = cache.getRegion(REGION_1);
       assertThat(r.get("A")).isEqualTo("B");
     });
@@ -140,7 +146,7 @@ public class DiskStoreCommandsDUnitTest {
     createDiskStoreAndRegion(server1, 1);
 
     server1.invoke(() -> {
-      Cache cache = LocatorServerStartupRule.getCache();
+      Cache cache = ClusterStartupRule.getCache();
       Region r = cache.getRegion(REGION_1);
       r.put("A", "B");
     });
@@ -148,7 +154,7 @@ public class DiskStoreCommandsDUnitTest {
     gfsh.executeAndAssertThat("show missing-disk-stores")
         .containsOutput("No missing disk store found");
 
-    server1.invoke(LocatorServerStartupRule::stopMemberInThisVM);
+    server1.stopVM(false);
 
     String diskDirs = new File(server1.getWorkingDir(), DISKSTORE).getAbsolutePath();
     gfsh.executeAndAssertThat(
@@ -168,7 +174,7 @@ public class DiskStoreCommandsDUnitTest {
     createDiskStoreAndRegion(server1, 1);
 
     server1.invoke(() -> {
-      Cache cache = LocatorServerStartupRule.getCache();
+      Cache cache = ClusterStartupRule.getCache();
       Region r = cache.getRegion(REGION_1);
       r.put("A", "B");
     });
@@ -176,7 +182,7 @@ public class DiskStoreCommandsDUnitTest {
     gfsh.executeAndAssertThat("show missing-disk-stores")
         .containsOutput("No missing disk store found");
 
-    server1.invoke(LocatorServerStartupRule::stopMemberInThisVM);
+    server1.stopVM(false);
 
     String diskDirs = new File(server1.getWorkingDir(), DISKSTORE).getAbsolutePath();
     File exportDir = tempDir.newFolder();
@@ -251,7 +257,7 @@ public class DiskStoreCommandsDUnitTest {
     createDiskStoreAndRegion(locator, 1);
 
     server1.invoke(() -> {
-      Cache cache = LocatorServerStartupRule.getCache();
+      Cache cache = ClusterStartupRule.getCache();
       Region r = cache.getRegion(REGION_1);
       r.put("A", "B");
     });

@@ -15,7 +15,6 @@
 package org.apache.geode.internal.protocol.protobuf.v1.serialization.codec;
 
 import static java.util.Arrays.asList;
-import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 
@@ -34,7 +33,7 @@ import org.apache.geode.cache.CacheFactory;
 import org.apache.geode.distributed.ConfigurationProperties;
 import org.apache.geode.internal.cache.GemFireCacheImpl;
 import org.apache.geode.internal.cache.InternalCache;
-import org.apache.geode.internal.protocol.serialization.codec.JSONCodec;
+import org.apache.geode.internal.protocol.serialization.JsonPdxConverter;
 import org.apache.geode.pdx.JSONFormatter;
 import org.apache.geode.pdx.PdxInstance;
 import org.apache.geode.pdx.PdxInstanceFactory;
@@ -42,7 +41,7 @@ import org.apache.geode.pdx.WritablePdxInstance;
 import org.apache.geode.test.junit.categories.UnitTest;
 
 @Category(UnitTest.class)
-public class JSONCodecJUnitTest {
+public class JsonPdxConverterJUnitTest {
 
   private String complexJSONString = "{\n" + "    \"_id\": \"599c7d885df276ac3e0bf10a\",\n"
       + "    \"index\": 0,\n" + "    \"guid\": \"395902d8-36ed-4178-ad70-2f720c557c55\",\n"
@@ -91,18 +90,18 @@ public class JSONCodecJUnitTest {
     pdxInstanceFactory.writeBoolean("boolean", true);
     PdxInstance pdxInstance = pdxInstanceFactory.create();
 
-    byte[] encodedJSONByte = new JSONCodec().encode(pdxInstance);
+    String encodedJSON = new JsonPdxConverter().encode(pdxInstance);
 
     String lineSeparator = System.lineSeparator();
     String expectedJsonString = "{" + lineSeparator + "" + "  \"string\" : \"someString\","
         + lineSeparator + "" + "  \"boolean\" : true" + lineSeparator + "}";
-    assertArrayEquals(expectedJsonString.getBytes(), encodedJSONByte);
+    assertEquals(expectedJsonString, encodedJSON);
   }
 
   @Test
-  public void testComplexJSONEncode() {
+  public void testComplexJSONEncode() throws Exception {
     PdxInstance pdxInstanceForComplexJSONString = createPDXInstanceForComplexJSONString();
-    PdxInstance decodedJSONPdxInstance = new JSONCodec().decode(complexJSONString.getBytes());
+    PdxInstance decodedJSONPdxInstance = new JsonPdxConverter().decode(complexJSONString);
 
     pdxInstanceEquals(pdxInstanceForComplexJSONString, decodedJSONPdxInstance);
   }
@@ -219,7 +218,7 @@ public class JSONCodecJUnitTest {
 
   @Test
   public void testJSONDecode() throws Exception {
-    PdxInstance pdxInstance = new JSONCodec().decode(complexJSONString.getBytes());
+    PdxInstance pdxInstance = new JsonPdxConverter().decode(complexJSONString);
 
     assertNotNull(pdxInstance);
     List<String> fieldNames = asList("_id", "index", "guid", "isActive", "balance", "picture",

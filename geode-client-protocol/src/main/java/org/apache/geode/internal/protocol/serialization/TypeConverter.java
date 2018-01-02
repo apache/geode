@@ -12,15 +12,26 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
-package org.apache.geode.internal.cache.tier.sockets;
+package org.apache.geode.internal.protocol.serialization;
 
-import org.junit.runner.RunWith;
-import org.junit.runners.Suite;
+import org.apache.geode.annotations.Experimental;
+import org.apache.geode.internal.protocol.serialization.exception.EncodingException;
 
-@RunWith(Suite.class)
-@Suite.SuiteClasses({HAInterestPart1DUnitTest.class, HAInterestPart2DUnitTest.class,})
 /**
- * Suite of distributed tests for HAInterest.
+ * This interface converts a particular type to and from its binary representation.
+ *
+ * NOTE: it is expected that T will be one of the serialization types in @{@link SerializationType}.
+ *
+ * @param <T> the type this codec knows how to convert
  */
-public class HAInterestDistributedTestCase {
+@Experimental
+public interface TypeConverter<F, T> {
+  T decode(F incoming) throws EncodingException;
+
+  F encode(T incoming) throws EncodingException;
+
+  /**
+   * @return the SerializationType corresponding to T
+   */
+  SerializationType getSerializationType();
 }

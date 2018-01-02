@@ -12,16 +12,21 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
-package org.apache.geode.internal.protocol.serialization.registry.exception;
 
-import org.apache.geode.annotations.Experimental;
+package org.apache.geode.test.dunit.rules;
 
-/**
- * This indicates we're attempting to handle a type for which we don't have a registered codec.
- */
-@Experimental
-public class CodecNotRegisteredForTypeException extends Exception {
-  public CodecNotRegisteredForTypeException(String message) {
-    super(message);
+import org.apache.geode.test.dunit.VM;
+import org.apache.geode.test.junit.rules.VMProvider;
+
+public class ClientVM extends VMProvider {
+  private VM vm;
+
+  public ClientVM(VM vm) {
+    this.vm = vm;
+  }
+
+  @Override
+  public VM getVM() {
+    return vm;
   }
 }

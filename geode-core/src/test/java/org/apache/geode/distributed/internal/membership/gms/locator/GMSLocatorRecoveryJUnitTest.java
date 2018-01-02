@@ -185,7 +185,7 @@ public class GMSLocatorRecoveryJUnitTest {
           l2.getMembers().contains(m1.getLocalMember()));
     } finally {
       if (m1 != null) {
-        m1.shutdown();
+        m1.disconnect(false);
       }
       if (l != null) {
         l.stop();

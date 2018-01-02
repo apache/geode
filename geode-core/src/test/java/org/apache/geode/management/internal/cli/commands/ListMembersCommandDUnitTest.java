@@ -27,7 +27,7 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
-import org.apache.geode.test.dunit.rules.LocatorServerStartupRule;
+import org.apache.geode.test.dunit.rules.ClusterStartupRule;
 import org.apache.geode.test.dunit.rules.MemberVM;
 import org.apache.geode.test.junit.categories.DistributedTest;
 import org.apache.geode.test.junit.rules.GfshCommandRule;
@@ -35,7 +35,7 @@ import org.apache.geode.test.junit.rules.GfshCommandRule;
 @Category(DistributedTest.class)
 public class ListMembersCommandDUnitTest {
   @ClassRule
-  public static LocatorServerStartupRule lsRule = new LocatorServerStartupRule();
+  public static ClusterStartupRule lsRule = new ClusterStartupRule();
   private static MemberVM locator;
 
   @Rule
@@ -86,7 +86,7 @@ public class ListMembersCommandDUnitTest {
     gfsh.executeAndAssertThat(LIST_MEMBER + " --group=serverGroup1").statusIsSuccess();
     String output = gfsh.getGfshOutput();
 
-    assertThat(output).doesNotContain("locator-0");
+    assertThat(output).contains("Coordinator:");
     assertThat(output).contains("server-1");
     assertThat(output).contains("server-2");
     assertThat(output).doesNotContain("server-3");
@@ -97,7 +97,7 @@ public class ListMembersCommandDUnitTest {
     gfsh.executeAndAssertThat(LIST_MEMBER + " --group=serverGroup2").statusIsSuccess();
     String output = gfsh.getGfshOutput();
 
-    assertThat(output).doesNotContain("locator-0");
+    assertThat(output).contains("Coordinator:");
     assertThat(output).doesNotContain("server-1");
     assertThat(output).doesNotContain("server-2");
     assertThat(output).contains("server-3");

@@ -12,72 +12,33 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
-
 package org.apache.geode.internal.protocol;
-
 
 import org.apache.geode.annotations.Experimental;
 import org.apache.geode.cache.Cache;
 import org.apache.geode.distributed.Locator;
-import org.apache.geode.distributed.internal.InternalLocator;
 import org.apache.geode.internal.exception.InvalidExecutionContextException;
 import org.apache.geode.internal.protocol.state.ConnectionStateProcessor;
 import org.apache.geode.internal.protocol.statistics.ProtocolClientStatistics;
 
 @Experimental
-public class MessageExecutionContext {
-  private final Cache cache;
-  private final Locator locator;
-  private final ProtocolClientStatistics statistics;
-  private ConnectionStateProcessor connectionStateProcessor;
+public abstract class MessageExecutionContext {
+  protected final ProtocolClientStatistics statistics;
+  protected ConnectionStateProcessor connectionStateProcessor;
 
-  public MessageExecutionContext(Cache cache, ProtocolClientStatistics statistics,
-      ConnectionStateProcessor initialConnectionStateProcessor) {
-    this.cache = cache;
-    this.locator = null;
+  public MessageExecutionContext(ProtocolClientStatistics statistics,
+      ConnectionStateProcessor connectionStateProcessor) {
     this.statistics = statistics;
-    this.connectionStateProcessor = initialConnectionStateProcessor;
-  }
-
-  public MessageExecutionContext(InternalLocator locator, ProtocolClientStatistics statistics,
-      ConnectionStateProcessor initialConnectionStateProcessor) {
-    this.locator = locator;
-    this.cache = null;
-    this.statistics = statistics;
-    connectionStateProcessor = initialConnectionStateProcessor;
+    this.connectionStateProcessor = connectionStateProcessor;
   }
 
   public ConnectionStateProcessor getConnectionStateProcessor() {
     return connectionStateProcessor;
   }
 
-  /**
-   * Returns the cache associated with this execution
-   * <p>
-   *
-   * @throws InvalidExecutionContextException if there is no cache available
-   */
-  public Cache getCache() throws InvalidExecutionContextException {
-    if (cache != null) {
-      return cache;
-    }
-    throw new InvalidExecutionContextException(
-        "Operations on the locator should not to try to operate on a cache");
-  }
+  public abstract Cache getCache() throws InvalidExecutionContextException;
 
-  /**
-   * Returns the locator associated with this execution
-   * <p>
-   *
-   * @throws InvalidExecutionContextException if there is no locator available
-   */
-  public Locator getLocator() throws InvalidExecutionContextException {
-    if (locator != null) {
-      return locator;
-    }
-    throw new InvalidExecutionContextException(
-        "Operations on the server should not to try to operate on a locator");
-  }
+  public abstract Locator getLocator() throws InvalidExecutionContextException;
 
   /**
    * Returns the statistics for recording operation stats. In a unit test environment this may not

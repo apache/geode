@@ -12,17 +12,13 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
-package org.apache.geode.internal.protocol.serialization.registry.exception;
+package org.apache.geode.internal.protocol.protobuf.v1.utilities.exception;
 
 import org.apache.geode.annotations.Experimental;
 
-/**
- * This indicates that we're attempting to register a codec for a type which we already have a
- * handler for.
- */
 @Experimental
-public class CodecAlreadyRegisteredForTypeException extends RuntimeException {
-  public CodecAlreadyRegisteredForTypeException(String message) {
+public class UnknownProtobufEncodingType extends Exception {
+  public UnknownProtobufEncodingType(String message) {
     super(message);
   }
 }

@@ -78,6 +78,9 @@ Configure the type of expiration and the expiration action to use.
         </region-attributes>
         ```
 
+-   When the primary expires entries, it requests last-accessed statistics from the secondaries.  The
+primary adopts the most recent access time and reschedules the expiration, if warranted. This is
+done only for distributed expiration actions, and applies to both partitioned and replicated
+regions.
+
 You can also configure Regions using the gfsh command-line interface, however, you cannot configure `custom-expiry` using gfsh. See [Region Commands](../../tools_modules/gfsh/quick_ref_commands_by_area.html#topic_EF03119A40EE492984F3B6248596E1DD).
-
-

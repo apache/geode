@@ -38,18 +38,9 @@ message EncodedValue {
         float floatResult = 7;
         bytes binaryResult = 8;
         string stringResult = 9;
-        CustomEncodedValue customEncodedValue = 50;
+
+        string jsonObjectResult = 10;
     }
-}
-
-message CustomEncodedValue {
-    EncodingType encodingType = 1;
-    bytes value = 2;
-}
-
-enum EncodingType {
-    INVALID = 0;
-    JSON = 10;
 }
 
 message Region {
@@ -79,24 +70,11 @@ message KeyedError {
 
 enum ErrorCode {
     INVALID_ERROR_CODE = 0;
-    GENERIC_FAILURE = 1000;
-    VALUE_ENCODING_ERROR = 1100;
-    UNSUPPORTED_VERSION = 1101;
-    UNSUPPORTED_OPERATION = 1102;
-    UNSUPPORTED_AUTHENTICATION_MODE = 1103;
-    HANDSHAKE_REQUIRED = 1104;
-    AUTHENTICATION_FAILED = 1200;
-    AUTHORIZATION_FAILED = 1201;
-    ALREADY_AUTHENTICATED = 1202;
-    AUTHENTICATION_NOT_SUPPORTED = 1203;
-    LOW_MEMORY = 1300;
-    DATA_UNREACHABLE = 1301;
-    OPERATION_TIMEOUT = 1302;
-    CONSTRAINT_VIOLATION = 2000;
-    BAD_QUERY = 2001;
-    REGION_NOT_FOUND = 2100;
-    QUERY_PARAMETER_MISMATCH = 2200;
-    QUERY_BIND_FAILURE = 2201;
-    QUERY_NOT_PERMITTED = 2202;
-    QUERY_TIMEOUT = 2203;
+    AUTHENTICATION_REQUIRED = 10;
+    AUTHENTICATION_FAILED = 11;
+    ALREADY_AUTHENTICATED = 12;
+    AUTHENTICATION_NOT_SUPPORTED = 13;
+    AUTHORIZATION_FAILED = 20;
+    INVALID_REQUEST = 50;
+    SERVER_ERROR = 100;
 }

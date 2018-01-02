@@ -85,7 +85,7 @@ public class ConsoleDistributionManagerDUnitTest extends JUnit4CacheTestCase
         firstTime = false;
       }
 
-      DistributionManager.isDedicatedAdminVM = true;
+      DistributionManager.setIsDedicatedAdminVM(true);
 
       populateCache();
 
@@ -138,7 +138,7 @@ public class ConsoleDistributionManagerDUnitTest extends JUnit4CacheTestCase
           throw e;
         } catch (Throwable ignore) {
         }
-        DistributionManager.isDedicatedAdminVM = false;
+        DistributionManager.setIsDedicatedAdminVM(false);
       }
     }
   }
@@ -153,7 +153,7 @@ public class ConsoleDistributionManagerDUnitTest extends JUnit4CacheTestCase
     try {
       disconnectFromDS(); // make sure there's no ldm lying around
     } finally {
-      DistributionManager.isDedicatedAdminVM = false;
+      DistributionManager.setIsDedicatedAdminVM(false);
     }
   }
 

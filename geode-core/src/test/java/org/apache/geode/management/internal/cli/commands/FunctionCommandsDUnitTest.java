@@ -37,7 +37,7 @@ import org.apache.geode.cache.execute.FunctionService;
 import org.apache.geode.internal.cache.functions.TestFunction;
 import org.apache.geode.management.DistributedSystemMXBean;
 import org.apache.geode.management.ManagementService;
-import org.apache.geode.test.dunit.rules.LocatorServerStartupRule;
+import org.apache.geode.test.dunit.rules.ClusterStartupRule;
 import org.apache.geode.test.dunit.rules.MemberVM;
 import org.apache.geode.test.junit.categories.DistributedTest;
 import org.apache.geode.test.junit.rules.GfshCommandRule;
@@ -51,7 +51,7 @@ public class FunctionCommandsDUnitTest {
   private static final String REGION_TWO = "RegionTwo";
 
   @Rule
-  public LocatorServerStartupRule lsRule = new LocatorServerStartupRule();
+  public ClusterStartupRule lsRule = new ClusterStartupRule();
 
   @Rule
   public GfshCommandRule gfsh = new GfshCommandRule();
@@ -67,7 +67,7 @@ public class FunctionCommandsDUnitTest {
     server2 = lsRule.startServerVM(2, locator.getPort());
 
     server1.invoke(() -> {
-      Cache cache = LocatorServerStartupRule.getCache();
+      Cache cache = ClusterStartupRule.getCache();
 
       RegionFactory<Integer, Integer> dataRegionFactory =
           cache.createRegionFactory(RegionShortcut.PARTITION);
@@ -82,7 +82,7 @@ public class FunctionCommandsDUnitTest {
     });
 
     server2.invoke(() -> {
-      Cache cache = LocatorServerStartupRule.getCache();
+      Cache cache = ClusterStartupRule.getCache();
       RegionFactory<Integer, Integer> dataRegionFactory =
           cache.createRegionFactory(RegionShortcut.PARTITION);
       Region region = dataRegionFactory.create(REGION_ONE);
@@ -99,7 +99,7 @@ public class FunctionCommandsDUnitTest {
     registerFunction(new TestFunction(true, TEST_FUNCTION_RETURN_ARGS), locator, server1, server2);
 
     locator.invoke(() -> {
-      Cache cache = LocatorServerStartupRule.getCache();
+      Cache cache = ClusterStartupRule.getCache();
       ManagementService managementService = ManagementService.getManagementService(cache);
       DistributedSystemMXBean dsMXBean = managementService.getDistributedSystemMXBean();
 
