@@ -22,7 +22,7 @@ import org.apache.geode.internal.cache.CacheService;
 import org.apache.geode.internal.cache.extension.Extension;
 
 @Experimental
-public interface InternalJdbcConnectorService extends Extension<Cache>, CacheService {
+public interface JdbcConnectorService extends Extension<Cache>, CacheService {
 
   void createConnectionConfig(ConnectionConfiguration config)
       throws ConnectionConfigExistsException;

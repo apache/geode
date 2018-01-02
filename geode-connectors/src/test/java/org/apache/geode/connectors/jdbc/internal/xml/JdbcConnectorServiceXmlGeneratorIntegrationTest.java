@@ -55,7 +55,7 @@ import org.xml.sax.SAXException;
 import org.apache.geode.cache.CacheFactory;
 import org.apache.geode.connectors.jdbc.internal.ConnectionConfigBuilder;
 import org.apache.geode.connectors.jdbc.internal.ConnectionConfiguration;
-import org.apache.geode.connectors.jdbc.internal.InternalJdbcConnectorService;
+import org.apache.geode.connectors.jdbc.internal.JdbcConnectorService;
 import org.apache.geode.connectors.jdbc.internal.RegionMapping;
 import org.apache.geode.connectors.jdbc.internal.RegionMappingBuilder;
 import org.apache.geode.internal.cache.InternalCache;
@@ -85,12 +85,12 @@ public class JdbcConnectorServiceXmlGeneratorIntegrationTest {
 
   @Test
   public void cacheGetServiceReturnsJdbcConnectorService() {
-    assertThat(cache.getService(InternalJdbcConnectorService.class)).isNotNull();
+    assertThat(cache.getService(JdbcConnectorService.class)).isNotNull();
   }
 
   @Test
   public void serviceWithoutInformationDoesNotPersist() throws Exception {
-    cache.getService(InternalJdbcConnectorService.class);
+    cache.getService(JdbcConnectorService.class);
 
     generateXml();
 
@@ -101,7 +101,7 @@ public class JdbcConnectorServiceXmlGeneratorIntegrationTest {
 
   @Test
   public void serviceWithConnectionsHasCorrectXml() throws Exception {
-    InternalJdbcConnectorService service = cache.getService(InternalJdbcConnectorService.class);
+    JdbcConnectorService service = cache.getService(JdbcConnectorService.class);
     ConnectionConfiguration config = new ConnectionConfigBuilder().withName("name").withUrl("url")
         .withUser("username").withPassword("secret").build();
     service.createConnectionConfig(config);
@@ -127,7 +127,7 @@ public class JdbcConnectorServiceXmlGeneratorIntegrationTest {
 
   @Test
   public void generatesXmlContainingRegionMapping() throws Exception {
-    InternalJdbcConnectorService service = cache.getService(InternalJdbcConnectorService.class);
+    JdbcConnectorService service = cache.getService(JdbcConnectorService.class);
     RegionMappingBuilder regionMappingBuilder = new RegionMappingBuilder()
         .withRegionName("regionName").withPdxClassName("pdxClassName").withTableName("tableName")
         .withConnectionConfigName("connectionConfigName").withPrimaryKeyInValue("true");
@@ -160,7 +160,7 @@ public class JdbcConnectorServiceXmlGeneratorIntegrationTest {
 
   @Test
   public void generatedXmlWithConnectionConfigurationCanBeParsed() throws Exception {
-    InternalJdbcConnectorService service = cache.getService(InternalJdbcConnectorService.class);
+    JdbcConnectorService service = cache.getService(JdbcConnectorService.class);
     ConnectionConfiguration config = new ConnectionConfigBuilder().withName("name").withUrl("url")
         .withUser("username").withPassword("secret").build();
     service.createConnectionConfig(config);
@@ -168,13 +168,13 @@ public class JdbcConnectorServiceXmlGeneratorIntegrationTest {
     cache.close();
 
     createCacheUsingXml();
-    service = cache.getService(InternalJdbcConnectorService.class);
+    service = cache.getService(JdbcConnectorService.class);
     assertThat(service.getConnectionConfig("name")).isEqualTo(config);
   }
 
   @Test
   public void generatedXmlWithRegionMappingCanBeParsed() throws Exception {
-    InternalJdbcConnectorService service = cache.getService(InternalJdbcConnectorService.class);
+    JdbcConnectorService service = cache.getService(JdbcConnectorService.class);
     RegionMapping mapping = new RegionMappingBuilder().withRegionName("region")
         .withPdxClassName("class").withTableName("table").withConnectionConfigName("connection")
         .withPrimaryKeyInValue(true).withFieldToColumnMapping("field1", "columnMapping1")
@@ -184,13 +184,13 @@ public class JdbcConnectorServiceXmlGeneratorIntegrationTest {
     cache.close();
 
     createCacheUsingXml();
-    service = cache.getService(InternalJdbcConnectorService.class);
+    service = cache.getService(JdbcConnectorService.class);
     assertThat(service.getMappingForRegion("region")).isEqualTo(mapping);
   }
 
   @Test
   public void generatedXmlWithEverythingCanBeParsed() throws Exception {
-    InternalJdbcConnectorService service = cache.getService(InternalJdbcConnectorService.class);
+    JdbcConnectorService service = cache.getService(JdbcConnectorService.class);
     ConnectionConfiguration config = new ConnectionConfigBuilder().withName("name").withUrl("url")
         .withUser("username").withPassword("secret").build();
     service.createConnectionConfig(config);
@@ -203,7 +203,7 @@ public class JdbcConnectorServiceXmlGeneratorIntegrationTest {
     cache.close();
 
     createCacheUsingXml();
-    service = cache.getService(InternalJdbcConnectorService.class);
+    service = cache.getService(JdbcConnectorService.class);
     assertThat(service.getConnectionConfig("name")).isEqualTo(config);
     assertThat(service.getMappingForRegion("region")).isEqualTo(mapping);
   }

@@ -34,7 +34,7 @@ import org.apache.geode.cache.CacheFactory;
 import org.apache.geode.connectors.jdbc.internal.ConnectionConfigBuilder;
 import org.apache.geode.connectors.jdbc.internal.ConnectionConfigExistsException;
 import org.apache.geode.connectors.jdbc.internal.ConnectionConfiguration;
-import org.apache.geode.connectors.jdbc.internal.InternalJdbcConnectorService;
+import org.apache.geode.connectors.jdbc.internal.JdbcConnectorService;
 import org.apache.geode.connectors.jdbc.internal.JdbcConnectorServiceImpl;
 import org.apache.geode.connectors.jdbc.internal.RegionMapping;
 import org.apache.geode.connectors.jdbc.internal.RegionMappingBuilder;
@@ -84,7 +84,7 @@ public class JdbcConnectorServiceXmlIntegrationTest {
 
   private void configureService()
       throws ConnectionConfigExistsException, RegionMappingExistsException {
-    InternalJdbcConnectorService service = cache.getService(InternalJdbcConnectorService.class);
+    JdbcConnectorService service = cache.getService(JdbcConnectorService.class);
     config1 = new ConnectionConfigBuilder().withName("connection1").withUrl("url1")
         .withUser("username1").withPassword("secret1")
         .withParameters(new String[] {"param1:value1", "param2:value2"}).build();

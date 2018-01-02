@@ -62,7 +62,7 @@ public class AbstractJdbcCallbackTest {
   public void initializedSqlHandlerIfNoneExists() {
     jdbcCallback = new AbstractJdbcCallback() {};
     InternalCache cache = mock(InternalCache.class);
-    InternalJdbcConnectorService service = mock(InternalJdbcConnectorService.class);
+    JdbcConnectorService service = mock(JdbcConnectorService.class);
     when(cache.getService(any())).thenReturn(service);
     assertThat(jdbcCallback.getSqlHandler()).isNull();
 

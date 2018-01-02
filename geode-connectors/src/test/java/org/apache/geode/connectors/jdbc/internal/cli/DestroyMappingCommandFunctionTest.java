@@ -31,7 +31,7 @@ import org.mockito.ArgumentCaptor;
 
 import org.apache.geode.cache.execute.FunctionContext;
 import org.apache.geode.cache.execute.ResultSender;
-import org.apache.geode.connectors.jdbc.internal.InternalJdbcConnectorService;
+import org.apache.geode.connectors.jdbc.internal.JdbcConnectorService;
 import org.apache.geode.connectors.jdbc.internal.RegionMapping;
 import org.apache.geode.connectors.jdbc.internal.RegionMappingBuilder;
 import org.apache.geode.distributed.DistributedMember;
@@ -49,7 +49,7 @@ public class DestroyMappingCommandFunctionTest {
   private FunctionContext<String> context;
   private ResultSender<Object> resultSender;
   private RegionMapping mapping;
-  private InternalJdbcConnectorService service;
+  private JdbcConnectorService service;
 
   @Before
   public void setUp() {
@@ -57,7 +57,7 @@ public class DestroyMappingCommandFunctionTest {
     context = mock(FunctionContext.class);
     DistributedMember member = mock(DistributedMember.class);
     resultSender = mock(ResultSender.class);
-    service = mock(InternalJdbcConnectorService.class);
+    service = mock(JdbcConnectorService.class);
     DistributedSystem system = mock(DistributedSystem.class);
 
     when(context.getResultSender()).thenReturn(resultSender);
@@ -65,7 +65,7 @@ public class DestroyMappingCommandFunctionTest {
     when(cache.getDistributedSystem()).thenReturn(system);
     when(system.getDistributedMember()).thenReturn(member);
     when(context.getArguments()).thenReturn(regionName);
-    when(cache.getService(eq(InternalJdbcConnectorService.class))).thenReturn(service);
+    when(cache.getService(eq(JdbcConnectorService.class))).thenReturn(service);
 
     mapping = new RegionMappingBuilder().build();
 

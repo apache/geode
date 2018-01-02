@@ -33,7 +33,7 @@ import org.apache.geode.cache.execute.FunctionContext;
 import org.apache.geode.cache.execute.ResultSender;
 import org.apache.geode.connectors.jdbc.internal.ConnectionConfigBuilder;
 import org.apache.geode.connectors.jdbc.internal.ConnectionConfiguration;
-import org.apache.geode.connectors.jdbc.internal.InternalJdbcConnectorService;
+import org.apache.geode.connectors.jdbc.internal.JdbcConnectorService;
 import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.distributed.DistributedSystem;
 import org.apache.geode.internal.cache.InternalCache;
@@ -49,7 +49,7 @@ public class DestroyConnectionFunctionTest {
   private FunctionContext<String> context;
   private ResultSender<Object> resultSender;
   private ConnectionConfiguration configuration;
-  private InternalJdbcConnectorService service;
+  private JdbcConnectorService service;
 
   @Before
   public void setUp() {
@@ -57,7 +57,7 @@ public class DestroyConnectionFunctionTest {
     context = mock(FunctionContext.class);
     DistributedMember member = mock(DistributedMember.class);
     resultSender = mock(ResultSender.class);
-    service = mock(InternalJdbcConnectorService.class);
+    service = mock(JdbcConnectorService.class);
     DistributedSystem system = mock(DistributedSystem.class);
 
     when(context.getResultSender()).thenReturn(resultSender);
@@ -65,7 +65,7 @@ public class DestroyConnectionFunctionTest {
     when(cache.getDistributedSystem()).thenReturn(system);
     when(system.getDistributedMember()).thenReturn(member);
     when(context.getArguments()).thenReturn(connectionName);
-    when(cache.getService(eq(InternalJdbcConnectorService.class))).thenReturn(service);
+    when(cache.getService(eq(JdbcConnectorService.class))).thenReturn(service);
 
     configuration = new ConnectionConfigBuilder().build();
 

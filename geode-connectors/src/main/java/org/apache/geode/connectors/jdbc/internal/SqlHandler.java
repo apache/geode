@@ -33,16 +33,16 @@ import org.apache.geode.pdx.internal.PdxInstanceImpl;
 
 @Experimental
 public class SqlHandler {
-  private final InternalJdbcConnectorService configService;
+  private final JdbcConnectorService configService;
   private final DataSourceManager manager;
   private final TableKeyColumnManager tableKeyColumnManager;
 
-  public SqlHandler(DataSourceManager manager, InternalJdbcConnectorService configService) {
+  public SqlHandler(DataSourceManager manager, JdbcConnectorService configService) {
     this(manager, new TableKeyColumnManager(), configService);
   }
 
   SqlHandler(DataSourceManager manager, TableKeyColumnManager tableKeyColumnManager,
-      InternalJdbcConnectorService configService) {
+      JdbcConnectorService configService) {
     this.manager = manager;
     this.tableKeyColumnManager = tableKeyColumnManager;
     this.configService = configService;

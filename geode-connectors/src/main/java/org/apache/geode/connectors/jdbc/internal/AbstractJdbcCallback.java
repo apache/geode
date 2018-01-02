@@ -57,7 +57,7 @@ public abstract class AbstractJdbcCallback implements CacheCallback {
 
   private synchronized void initialize(InternalCache cache) {
     if (sqlHandler == null) {
-      InternalJdbcConnectorService service = cache.getService(InternalJdbcConnectorService.class);
+      JdbcConnectorService service = cache.getService(JdbcConnectorService.class);
       DataSourceManager manager = new DataSourceManager(new HikariJdbcDataSourceFactory());
       sqlHandler = new SqlHandler(manager, service);
     }

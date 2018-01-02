@@ -25,7 +25,7 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
-import org.apache.geode.connectors.jdbc.internal.InternalJdbcConnectorService;
+import org.apache.geode.connectors.jdbc.internal.JdbcConnectorService;
 import org.apache.geode.connectors.jdbc.internal.RegionMappingBuilder;
 import org.apache.geode.connectors.jdbc.internal.RegionMappingExistsException;
 import org.apache.geode.internal.cache.InternalCache;
@@ -101,7 +101,7 @@ public class ListMappingCommandDUnitTest implements Serializable {
 
   private void createOneRegionMapping() throws RegionMappingExistsException {
     InternalCache cache = ClusterStartupRule.getCache();
-    InternalJdbcConnectorService service = cache.getService(InternalJdbcConnectorService.class);
+    JdbcConnectorService service = cache.getService(JdbcConnectorService.class);
 
     service.createRegionMapping(new RegionMappingBuilder().withRegionName(regionName)
         .withPdxClassName("x.y.MyPdxClass").withPrimaryKeyInValue(true).build());
@@ -111,7 +111,7 @@ public class ListMappingCommandDUnitTest implements Serializable {
 
   private void createNRegionMappings(int N) throws RegionMappingExistsException {
     InternalCache cache = ClusterStartupRule.getCache();
-    InternalJdbcConnectorService service = cache.getService(InternalJdbcConnectorService.class);
+    JdbcConnectorService service = cache.getService(JdbcConnectorService.class);
     for (int i = 1; i <= N; i++) {
       String name = regionName + "-" + i;
       service.createRegionMapping(new RegionMappingBuilder().withRegionName(name)
