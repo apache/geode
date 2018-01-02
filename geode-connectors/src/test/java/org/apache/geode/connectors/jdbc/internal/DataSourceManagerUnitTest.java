@@ -92,7 +92,7 @@ public class DataSourceManagerUnitTest {
   }
 
   @Test
-  public void retrievesDifferentConnectionForEachConfig() throws Exception {
+  public void retrievesDifferentDataSourceForEachConfig() throws Exception {
     registerTwoDataSourceFactory();
     JdbcDataSource returnedDataSource = manager.getDataSource(connectionConfig);
     JdbcDataSource secondReturnedDataSource = manager.getDataSource(connectionConfig2);
