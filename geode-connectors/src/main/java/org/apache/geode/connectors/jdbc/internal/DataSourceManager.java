@@ -14,8 +14,6 @@
  */
 package org.apache.geode.connectors.jdbc.internal;
 
-import java.sql.Connection;
-import java.sql.SQLException;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
