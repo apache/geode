@@ -22,6 +22,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
 
 import org.apache.geode.cache.Region;
 import org.apache.geode.cache.query.Index;
@@ -77,7 +78,7 @@ public class PartitionedIndex extends AbstractIndex {
    */
   private String imports;
 
-  private HashSet mapIndexKeys = new HashSet();
+  protected Set mapIndexKeys = Collections.newSetFromMap(new ConcurrentHashMap());
 
   // Flag indicating that the populationg of this index is in progress
   private volatile boolean populateInProgress;
