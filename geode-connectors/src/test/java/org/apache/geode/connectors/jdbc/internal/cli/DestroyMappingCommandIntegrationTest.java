@@ -23,7 +23,7 @@ import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
 import org.apache.geode.cache.CacheFactory;
-import org.apache.geode.connectors.jdbc.internal.InternalJdbcConnectorService;
+import org.apache.geode.connectors.jdbc.internal.JdbcConnectorService;
 import org.apache.geode.connectors.jdbc.internal.RegionMapping;
 import org.apache.geode.connectors.jdbc.internal.RegionMappingBuilder;
 import org.apache.geode.internal.cache.InternalCache;
@@ -59,7 +59,7 @@ public class DestroyMappingCommandIntegrationTest {
 
   @Test
   public void destroysNamedMapping() throws Exception {
-    InternalJdbcConnectorService service = cache.getService(InternalJdbcConnectorService.class);
+    JdbcConnectorService service = cache.getService(JdbcConnectorService.class);
     service.createRegionMapping(mapping);
     assertThat(service.getMappingForRegion(regionName)).isSameAs(mapping);
 
@@ -71,7 +71,7 @@ public class DestroyMappingCommandIntegrationTest {
 
   @Test
   public void returnsErrorIfNamedMappingNotFound() throws Exception {
-    InternalJdbcConnectorService service = cache.getService(InternalJdbcConnectorService.class);
+    JdbcConnectorService service = cache.getService(JdbcConnectorService.class);
     assertThat(service.getMappingForRegion(regionName)).isNull();
 
     Result result = command.destroyMapping(regionName);

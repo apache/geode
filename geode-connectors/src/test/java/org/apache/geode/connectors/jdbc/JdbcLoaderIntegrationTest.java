@@ -96,7 +96,8 @@ public class JdbcLoaderIntegrationTest {
 
   private SqlHandler createSqlHandler()
       throws ConnectionConfigExistsException, RegionMappingExistsException {
-    return new SqlHandler(new TestableConnectionManager(TestConfigService.getTestConfigService()));
+    return new SqlHandler(new TestableConnectionManager(),
+        TestConfigService.getTestConfigService());
   }
 
   private Region<String, PdxInstance> createRegionWithJDBCLoader(String regionName)

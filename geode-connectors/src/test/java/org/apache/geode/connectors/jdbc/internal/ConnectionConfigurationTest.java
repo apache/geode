@@ -88,10 +88,9 @@ public class ConnectionConfigurationTest {
 
   @Test
   public void hasCorrectProperties() {
-    config = new ConnectionConfiguration(null, null, "username", "secret", parameters);
+    config = new ConnectionConfiguration(null, null, null, null, parameters);
 
-    assertThat(config.getConnectionProperties()).containsEntry("user", "username")
-        .containsEntry("password", "secret").containsEntry("param1", "value1")
+    assertThat(config.getConnectionProperties()).containsEntry("param1", "value1")
         .containsEntry("param2", "value2");
   }
 }

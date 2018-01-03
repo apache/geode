@@ -22,7 +22,7 @@ import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
 import org.apache.geode.cache.execute.FunctionContext;
-import org.apache.geode.connectors.jdbc.internal.InternalJdbcConnectorService;
+import org.apache.geode.connectors.jdbc.internal.JdbcConnectorService;
 import org.apache.geode.test.junit.categories.UnitTest;
 
 @Category(UnitTest.class)
@@ -36,7 +36,7 @@ public class JdbcCliFunctionTest {
     ExceptionHandler exceptionHandler = mock(ExceptionHandler.class);
     function = new JdbcCliFunction<Void, Void>(argumentProvider, exceptionHandler) {
       @Override
-      Void getFunctionResult(InternalJdbcConnectorService service, FunctionContext<Void> context) {
+      Void getFunctionResult(JdbcConnectorService service, FunctionContext<Void> context) {
         return null;
       }
     };

@@ -116,8 +116,8 @@ public class JdbcDUnitTest implements Serializable {
               .writeString("name", "Emp1").writeInt("age", 55).create();
       Region region = CacheFactory.getAnyInstance().getRegion(REGION_NAME);
       assertThatThrownBy(() -> region.put("key1", pdxEmployee1))
-          .isExactlyInstanceOf(IllegalStateException.class)
-          .hasMessageContaining("JDBC write failed");
+          .isExactlyInstanceOf(IllegalStateException.class).hasMessage(
+              "JDBC mapping for region employees not found. Create the mapping with the gfsh command 'create jdbc-mapping'.");
     });
   }
 
@@ -155,8 +155,8 @@ public class JdbcDUnitTest implements Serializable {
               .writeString("name", "Emp1").writeInt("age", 55).create();
       Region region = CacheFactory.getAnyInstance().getRegion(REGION_NAME);
       assertThatThrownBy(() -> region.put("key1", pdxEmployee1))
-          .isExactlyInstanceOf(IllegalStateException.class)
-          .hasMessageContaining("JDBC write failed");
+          .isExactlyInstanceOf(IllegalStateException.class).hasMessage(
+              "JDBC mapping for region employees not found. Create the mapping with the gfsh command 'create jdbc-mapping'.");
     });
   }
 
@@ -171,8 +171,8 @@ public class JdbcDUnitTest implements Serializable {
               .writeString("name", "Emp1").writeInt("age", 55).create();
       Region region = CacheFactory.getAnyInstance().getRegion(REGION_NAME);
       assertThatThrownBy(() -> region.put("key1", pdxEmployee1))
-          .isExactlyInstanceOf(IllegalStateException.class)
-          .hasMessageContaining("JDBC write failed");
+          .isExactlyInstanceOf(IllegalStateException.class).hasMessage(
+              "JDBC connection with name TestConnection not found. Create the connection with the gfsh command 'create jdbc-connection'");
     });
   }
 

@@ -253,7 +253,8 @@ public class JdbcAsyncWriterIntegrationTest {
 
   private SqlHandler createSqlHandler()
       throws ConnectionConfigExistsException, RegionMappingExistsException {
-    return new SqlHandler(new TestableConnectionManager(TestConfigService.getTestConfigService()));
+    return new SqlHandler(new TestableConnectionManager(),
+        TestConfigService.getTestConfigService());
   }
 
 }

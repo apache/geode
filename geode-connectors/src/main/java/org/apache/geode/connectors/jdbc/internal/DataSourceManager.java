@@ -14,9 +14,33 @@
  */
 package org.apache.geode.connectors.jdbc.internal;
 
-public class TestableConnectionManager extends DataSourceManager {
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
-  public TestableConnectionManager() {
-    super(new HikariJdbcDataSourceFactory());
+class DataSourceManager {
+
+  private final JdbcDataSourceFactory jdbcDataSourceFactory;
+  private final Map<String, JdbcDataSource> dataSourceMap = new ConcurrentHashMap<>();
+
+  DataSourceManager(JdbcDataSourceFactory jdbcDataSourceFactory) {
+    this.jdbcDataSourceFactory = jdbcDataSourceFactory;
+  }
+
+  JdbcDataSource getDataSource(ConnectionConfiguration config) {
+    return dataSourceMap.computeIfAbsent(config.getName(), k -> {
+      return this.jdbcDataSourceFactory.create(config);
+    });
+  }
+
+  void close() {
+    dataSourceMap.values().forEach(this::close);
+  }
+
+  private void close(JdbcDataSource dataSource) {
+    try {
+      dataSource.close();
+    } catch (Exception e) {
+      // TODO ignored for now; should it be logged?
+    }
   }
 }

@@ -32,7 +32,7 @@ import org.mockito.ArgumentCaptor;
 
 import org.apache.geode.cache.execute.FunctionContext;
 import org.apache.geode.cache.execute.ResultSender;
-import org.apache.geode.connectors.jdbc.internal.InternalJdbcConnectorService;
+import org.apache.geode.connectors.jdbc.internal.JdbcConnectorService;
 import org.apache.geode.connectors.jdbc.internal.RegionMapping;
 import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.distributed.DistributedSystem;
@@ -46,7 +46,7 @@ public class DescribeMappingFunctionTest {
   private static final String EXISTING_MAPPING = "existingMapping";
 
   private DescribeMappingFunction function;
-  private InternalJdbcConnectorService service;
+  private JdbcConnectorService service;
   private FunctionContext<String> context;
   private RegionMapping regionMapping;
   private ResultSender<Object> resultSender;
@@ -57,7 +57,7 @@ public class DescribeMappingFunctionTest {
 
     InternalCache cache = mock(InternalCache.class);
     context = mock(FunctionContext.class);
-    service = mock(InternalJdbcConnectorService.class);
+    service = mock(JdbcConnectorService.class);
     regionMapping = mock(RegionMapping.class);
     resultSender = mock(ResultSender.class);
 
@@ -66,7 +66,7 @@ public class DescribeMappingFunctionTest {
 
     when(context.getResultSender()).thenReturn(resultSender);
     when(context.getCache()).thenReturn(cache);
-    when(cache.getService(eq(InternalJdbcConnectorService.class))).thenReturn(service);
+    when(cache.getService(eq(JdbcConnectorService.class))).thenReturn(service);
     when(service.getMappingForRegion(EXISTING_MAPPING)).thenReturn(regionMapping);
     when(cache.getDistributedSystem()).thenReturn(system);
     when(system.getDistributedMember()).thenReturn(member);

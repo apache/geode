@@ -34,7 +34,7 @@ import org.mockito.ArgumentCaptor;
 import org.apache.geode.cache.execute.FunctionContext;
 import org.apache.geode.cache.execute.ResultSender;
 import org.apache.geode.connectors.jdbc.internal.ConnectionConfiguration;
-import org.apache.geode.connectors.jdbc.internal.InternalJdbcConnectorService;
+import org.apache.geode.connectors.jdbc.internal.JdbcConnectorService;
 import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.distributed.DistributedSystem;
 import org.apache.geode.internal.cache.InternalCache;
@@ -46,7 +46,7 @@ public class ListConnectionFunctionTest {
 
   private FunctionContext<Void> context;
   private ResultSender<Object> resultSender;
-  private InternalJdbcConnectorService service;
+  private JdbcConnectorService service;
 
   private ConnectionConfiguration connectionConfig1;
   private ConnectionConfiguration connectionConfig2;
@@ -62,7 +62,7 @@ public class ListConnectionFunctionTest {
     context = mock(FunctionContext.class);
     DistributedMember member = mock(DistributedMember.class);
     resultSender = mock(ResultSender.class);
-    service = mock(InternalJdbcConnectorService.class);
+    service = mock(JdbcConnectorService.class);
     DistributedSystem system = mock(DistributedSystem.class);
 
     connectionConfig1 = mock(ConnectionConfiguration.class);
@@ -75,7 +75,7 @@ public class ListConnectionFunctionTest {
     when(context.getCache()).thenReturn(cache);
     when(cache.getDistributedSystem()).thenReturn(system);
     when(system.getDistributedMember()).thenReturn(member);
-    when(cache.getService(eq(InternalJdbcConnectorService.class))).thenReturn(service);
+    when(cache.getService(eq(JdbcConnectorService.class))).thenReturn(service);
     when(service.getConnectionConfigs()).thenReturn(expected);
 
     function = new ListConnectionFunction();

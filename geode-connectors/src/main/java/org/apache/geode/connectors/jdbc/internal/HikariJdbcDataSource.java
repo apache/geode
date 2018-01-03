@@ -14,9 +14,32 @@
  */
 package org.apache.geode.connectors.jdbc.internal;
 
-public class TestableConnectionManager extends DataSourceManager {
+import java.sql.Connection;
+import java.sql.SQLException;
 
-  public TestableConnectionManager() {
-    super(new HikariJdbcDataSourceFactory());
+import com.zaxxer.hikari.HikariDataSource;
+
+public class HikariJdbcDataSource implements JdbcDataSource {
+
+  private final HikariDataSource delegate;
+
+  public HikariJdbcDataSource(ConnectionConfiguration config) {
+    HikariDataSource ds = new HikariDataSource();
+    ds.setJdbcUrl(config.getUrl());
+    ds.setUsername(config.getUser());
+    ds.setPassword(config.getPassword());
+    ds.setDataSourceProperties(config.getConnectionProperties());
+    this.delegate = ds;
   }
+
+  @Override
+  public Connection getConnection() throws SQLException {
+    return this.delegate.getConnection();
+  }
+
+  @Override
+  public void close() {
+    this.delegate.close();
+  }
+
 }

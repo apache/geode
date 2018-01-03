@@ -14,9 +14,9 @@
  */
 package org.apache.geode.connectors.jdbc.internal;
 
-public class TestableConnectionManager extends DataSourceManager {
+import java.sql.Connection;
+import java.sql.SQLException;
 
-  public TestableConnectionManager() {
-    super(new HikariJdbcDataSourceFactory());
-  }
+public interface JdbcDataSource extends AutoCloseable {
+  Connection getConnection() throws SQLException;
 }
