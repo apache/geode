@@ -311,7 +311,19 @@ public interface InternalCache extends Cache, Extensible<Cache>, CacheTime {
 
   CacheServer addCacheServer(boolean isGatewayReceiver);
 
-  void setReadSerialized(boolean value);
+  /**
+   * A test-hook allowing you to alter the cache setting established by
+   * CacheFactory.setPdxReadSerialized()
+   *
+   * @deprecated tests using this method should be refactored to not require it
+   */
+  void setReadSerializedForTest(boolean value);
+
+  /**
+   * Enables or disables the reading of PdxInstances from all cache Regions for the thread that
+   * invokes this method.
+   */
+  void setReadSerializedForCurrentThread(boolean value);
 
   PdxInstanceFactory createPdxInstanceFactory(String className, boolean expectDomainClass);
 

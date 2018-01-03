@@ -28,6 +28,7 @@ import org.apache.geode.cache.PartitionAttributesFactory;
 import org.apache.geode.cache.Region;
 import org.apache.geode.cache.RegionFactory;
 import org.apache.geode.test.junit.categories.DistributedTest;
+import org.apache.geode.test.junit.runners.CategoryWithParameterizedRunnerFactory;
 
 /**
  * This class tests event triggering and handling in partitioned regions.
@@ -39,6 +40,7 @@ import org.apache.geode.test.junit.categories.DistributedTest;
  */
 @Category(DistributedTest.class)
 @RunWith(Parameterized.class)
+@Parameterized.UseParametersRunnerFactory(CategoryWithParameterizedRunnerFactory.class)
 @SuppressWarnings("serial")
 public class PRCacheListenerInvocationTest extends ReplicateCacheListenerInvocationTest {
 

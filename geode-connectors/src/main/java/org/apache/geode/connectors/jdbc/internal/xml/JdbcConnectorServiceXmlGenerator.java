@@ -70,8 +70,10 @@ public class JdbcConnectorServiceXmlGenerator implements XmlGenerator<Cache> {
     final ContentHandler handler = cacheXmlGenerator.getContentHandler();
 
     handler.startPrefixMapping(PREFIX, NAMESPACE);
+    AttributesImpl attributes = new AttributesImpl();
+    XmlGeneratorUtils.addAttribute(attributes, NAME, ElementType.CONNECTION_SERVICE.getTypeName());
     XmlGeneratorUtils.startElement(handler, PREFIX, ElementType.CONNECTION_SERVICE.getTypeName(),
-        EMPTY);
+        attributes);
     for (ConnectionConfiguration connection : connections) {
       outputConnectionConfiguration(handler, connection);
     }

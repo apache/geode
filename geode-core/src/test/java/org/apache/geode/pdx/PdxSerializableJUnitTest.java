@@ -438,7 +438,7 @@ public class PdxSerializableJUnitTest {
         "Mismatch in write and read value: Value Write..." + pdx + " Value Read..." + actualVal,
         pdx.equals(actualVal));
 
-    c.setReadSerialized(true);
+    c.setReadSerializedForTest(true);
     try {
       in = new DataInputStream(new ByteArrayInputStream(actual));
       PdxInstance pi = (PdxInstance) DataSerializer.readObject(in);
@@ -535,7 +535,7 @@ public class PdxSerializableJUnitTest {
           (byte) (floatBytes >> 16), (byte) (floatBytes >> 8), (byte) floatBytes}),
           reader.getRaw(7));
     } finally {
-      c.setReadSerialized(false);
+      c.setReadSerializedForTest(false);
     }
   }
 
@@ -664,7 +664,7 @@ public class PdxSerializableJUnitTest {
     assertTrue(
         "Mismatch in write and read value: Value Write..." + pdx + " Value Read..." + actualVal,
         pdx.equals(actualVal));
-    c.setReadSerialized(true);
+    c.setReadSerializedForTest(true);
     try {
       in = new DataInputStream(new ByteArrayInputStream(actual));
       PdxInstance pi = (PdxInstance) DataSerializer.readObject(in);
@@ -761,7 +761,7 @@ public class PdxSerializableJUnitTest {
           (byte) (floatBytes >> 16), (byte) (floatBytes >> 8), (byte) floatBytes}),
           reader.getRaw(7));
     } finally {
-      c.setReadSerialized(false);
+      c.setReadSerializedForTest(false);
     }
   }
 

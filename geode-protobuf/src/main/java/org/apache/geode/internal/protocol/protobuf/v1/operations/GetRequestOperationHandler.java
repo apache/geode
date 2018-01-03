@@ -21,6 +21,7 @@ import org.apache.logging.log4j.Logger;
 
 import org.apache.geode.annotations.Experimental;
 import org.apache.geode.cache.Region;
+import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.exception.InvalidExecutionContextException;
 import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.internal.protocol.Failure;
@@ -53,6 +54,8 @@ public class GetRequestOperationHandler
     }
 
     try {
+      ((InternalCache) messageExecutionContext.getCache()).setReadSerializedForCurrentThread(true);
+
       Object decodedKey = serializationService.decode(request.getKey());
       Object resultValue = region.get(decodedKey);
 
@@ -66,6 +69,8 @@ public class GetRequestOperationHandler
       logger.error("Received Get request with unsupported encoding: {}", ex);
       return Failure.of(
           ProtobufResponseUtilities.makeErrorResponse(INVALID_REQUEST, "Encoding not supported."));
+    } finally {
+      ((InternalCache) messageExecutionContext.getCache()).setReadSerializedForCurrentThread(false);
     }
   }
 }

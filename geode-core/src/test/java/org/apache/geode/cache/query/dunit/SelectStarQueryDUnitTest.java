@@ -1252,7 +1252,7 @@ public class SelectStarQueryDUnitTest extends JUnit4CacheTestCase {
       @Override
       public Object call() throws Exception {
         GemFireCacheImpl cache = (GemFireCacheImpl) getCache();
-        cache.setReadSerialized(true);
+        cache.setReadSerializedForTest(true);
         QueryService qs = null;
         try {
           qs = getCache().getQueryService();
@@ -1463,7 +1463,7 @@ public class SelectStarQueryDUnitTest extends JUnit4CacheTestCase {
       @Override
       public Object call() throws Exception {
         GemFireCacheImpl cache = (GemFireCacheImpl) getCache();
-        cache.setReadSerialized(true);
+        cache.setReadSerializedForTest(true);
         QueryService qs = null;
         try {
           qs = getCache().getQueryService();
@@ -1518,7 +1518,7 @@ public class SelectStarQueryDUnitTest extends JUnit4CacheTestCase {
     final int port = (Integer) server1.invoke(new SerializableCallable("Create Server1") {
       @Override
       public Object call() throws Exception {
-        ((GemFireCacheImpl) getCache()).setReadSerialized(true);
+        ((GemFireCacheImpl) getCache()).setReadSerializedForTest(true);
         Region r1 = getCache().createRegionFactory(RegionShortcut.REPLICATE).create(regName);
         CacheServer server = getCache().addCacheServer();
         int port = AvailablePortHelper.getRandomAvailablePortForDUnitSite();
