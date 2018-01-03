@@ -217,12 +217,12 @@ public class TcpServer {
 
   public void start() throws IOException {
     this.shuttingDown = false;
-    initializeServerSocket();
     startServerThread();
     handler.init(this);
   }
 
   private void startServerThread() throws IOException {
+    initializeServerSocket();
     if (serverThread == null || !serverThread.isAlive()) {
       serverThread = new Thread(threadGroup, threadName) {
         @Override
@@ -235,7 +235,7 @@ public class TcpServer {
     }
   }
 
-  void initializeServerSocket() throws IOException {
+  private void initializeServerSocket() throws IOException {
     if (srv_sock == null || srv_sock.isClosed()) {
       if (bind_address == null) {
         srv_sock = getSocketCreator().createServerSocket(port, BACKLOG);
@@ -246,7 +246,6 @@ public class TcpServer {
       // GEODE-4176 - set the port from a wild-card bind so that handlers know the correct value
       if (this.port <= 0) {
         this.port = srv_sock.getLocalPort();
-        log.warn("DEBUG: set local port to {}", port);
       }
 
       if (log.isInfoEnabled()) {
@@ -299,10 +298,16 @@ public class TcpServer {
         // Allocate no objects here!
         try {
           srv_sock.close();
+          return;
         } catch (IOException ignore) {
           // ignore
         }
         SystemFailure.checkFailure(); // throws
+      }
+      if (srv_sock.isClosed()) {
+        log.error("Locator socket was closed unexpectedly - server thread is exiting.");
+        shuttingDown = true;
+        break;
       }
       try {
         try {
@@ -324,11 +329,12 @@ public class TcpServer {
       }
     }
 
-    try {
-      srv_sock.close();
-
-    } catch (java.io.IOException ex) {
-      log.warn("exception closing server socket during shutdown", ex);
+    if (!srv_sock.isClosed()) {
+      try {
+        srv_sock.close();
+      } catch (java.io.IOException ex) {
+        log.warn("exception closing server socket during shutdown", ex);
+      }
     }
 
     if (shuttingDown) {
