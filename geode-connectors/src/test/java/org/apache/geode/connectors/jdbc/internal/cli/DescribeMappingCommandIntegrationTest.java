@@ -110,4 +110,35 @@ public class DescribeMappingCommandIntegrationTest {
       assertThat(tableContent.get("Column").toString()).contains(entry.getValue());
     });
   }
+
+  @Test
+  public void displaysMappingInformationWhenMappingWithNoFieldToColumnsExists() throws Exception {
+    regionMapping = new RegionMappingBuilder().withRegionName(REGION_NAME)
+        .withConnectionConfigName("connection").withTableName("testTable")
+        .withPdxClassName("myPdxClass").withPrimaryKeyInValue(true).withFieldToColumnMappings(null)
+        .build();
+    service.createRegionMapping(regionMapping);
+    Result result = command.describeMapping(REGION_NAME);
+
+    assertThat(result.getStatus()).isSameAs(Result.Status.OK);
+    CommandResult commandResult = (CommandResult) result;
+    GfJsonObject sectionContent = commandResult.getTableContent()
+        .getJSONObject(SECTION_DATA_ACCESSOR + "-" + RESULT_SECTION_NAME);
+
+    assertThat(sectionContent.get(CREATE_MAPPING__REGION_NAME))
+        .isEqualTo(regionMapping.getRegionName());
+    assertThat(sectionContent.get(CREATE_MAPPING__CONNECTION_NAME))
+        .isEqualTo(regionMapping.getConnectionConfigName());
+    assertThat(sectionContent.get(CREATE_MAPPING__TABLE_NAME))
+        .isEqualTo(regionMapping.getTableName());
+    assertThat(sectionContent.get(CREATE_MAPPING__PDX_CLASS_NAME))
+        .isEqualTo(regionMapping.getPdxClassName());
+    assertThat(sectionContent.get(CREATE_MAPPING__VALUE_CONTAINS_PRIMARY_KEY))
+        .isEqualTo(regionMapping.isPrimaryKeyInValue());
+
+    GfJsonObject tableContent = sectionContent
+        .getJSONObject(TABLE_DATA_ACCESSOR + "-" + FIELD_TO_COLUMN_TABLE).getJSONObject("content");
+    assertThat(tableContent.get("Field")).isNull();
+    assertThat(tableContent.get("Column")).isNull();
+  }
 }
