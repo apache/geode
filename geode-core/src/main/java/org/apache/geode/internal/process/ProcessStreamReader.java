@@ -19,6 +19,7 @@ import static org.apache.commons.lang.Validate.notNull;
 
 import java.io.InputStream;
 
+import edu.umd.cs.findbugs.annotations.NonNull;
 import org.apache.commons.lang.SystemUtils;
 
 /**
@@ -36,8 +37,7 @@ public abstract class ProcessStreamReader implements Runnable {
 
   private Thread thread;
 
-  protected ProcessStreamReader(final Builder builder) {
-    notNull(builder, "Invalid builder '" + builder + "' specified");
+  protected ProcessStreamReader(@NonNull final Builder builder) {
 
     this.process = builder.process;
     this.inputStream = builder.inputStream;
@@ -168,9 +168,8 @@ public abstract class ProcessStreamReader implements Runnable {
     BLOCKING, NON_BLOCKING
   }
 
-  private static String waitAndCaptureProcessStandardOutputStream(final Process process,
+  private static String waitAndCaptureProcessStandardOutputStream(@NonNull final Process process,
       final long waitTimeMilliseconds) {
-    notNull(process, "Invalid process '" + process + "' specified");
 
     return waitAndCaptureProcessStream(process, process.getInputStream(), waitTimeMilliseconds);
   }

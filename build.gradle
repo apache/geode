@@ -31,6 +31,10 @@ buildscript {
   }
 }
 
+plugins {
+  id 'tech.harmonysoft.oss.traute' version '1.1.8'
+}
+
 apply plugin: 'wrapper'
 
 wrapper {
@@ -96,6 +100,17 @@ subprojects {
   clean.finalizedBy rootProject.cleanAll
 
   apply plugin: "com.diffplug.gradle.spotless"
+  apply plugin: "tech.harmonysoft.oss.traute"
+
+  traute {
+    exceptionsToThrow = [
+            // Throw a IllegalArgumentException when a null is given to a method parameter marked by @NonNull
+            'parameter': 'IllegalArgumentException',
+    ]
+    // Use exception message like "Invalid myArg 'null' specified" for a method parameter named 'myArg'
+    exceptionTexts = [ 'parameter': 'Invalid ${PARAMETER_NAME} \'null\' specified' ]
+  }
+
   spotless {
     lineEndings = 'unix'
     java {

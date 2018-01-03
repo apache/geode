@@ -16,13 +16,14 @@ package org.apache.geode.internal.process;
 
 import static org.apache.commons.lang.Validate.isTrue;
 import static org.apache.commons.lang.Validate.notEmpty;
-import static org.apache.commons.lang.Validate.notNull;
 
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
+
+import edu.umd.cs.findbugs.annotations.NonNull;
 
 /**
  * File wrapper that adds support for reading process id (pid) from a pid file written to disk by
@@ -41,8 +42,7 @@ public class PidFile {
    *
    * @throws IllegalArgumentException if the specified file is null or does not exist
    */
-  public PidFile(final File file) {
-    notNull(file, "Invalid file '" + file + "' specified");
+  public PidFile(@NonNull final File file) {
     isTrue(file.exists(), "Nonexistent file '" + file + "' specified");
 
     this.pidFile = file;
@@ -57,8 +57,8 @@ public class PidFile {
    * @throws FileNotFoundException if the specified filename is not found within the directory
    * @throws IllegalArgumentException if directory is null, does not exist or is not a directory
    */
-  public PidFile(final File directory, final String filename) throws FileNotFoundException {
-    notNull(directory, "Invalid directory '" + directory + "' specified");
+  public PidFile(@NonNull final File directory, final String filename)
+      throws FileNotFoundException {
     notEmpty(filename, "Invalid filename '" + filename + "' specified");
     isTrue(directory.isDirectory() && directory.exists(),
         "Nonexistent directory '" + directory + "' specified");

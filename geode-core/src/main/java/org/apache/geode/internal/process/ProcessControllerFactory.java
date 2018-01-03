@@ -16,11 +16,12 @@ package org.apache.geode.internal.process;
 
 import static org.apache.commons.lang.Validate.isTrue;
 import static org.apache.commons.lang.Validate.notEmpty;
-import static org.apache.commons.lang.Validate.notNull;
 
 import java.io.File;
 import java.io.IOException;
 import java.util.concurrent.TimeoutException;
+
+import edu.umd.cs.findbugs.annotations.NonNull;
 
 import org.apache.geode.distributed.internal.DistributionConfig;
 
@@ -44,9 +45,8 @@ public class ProcessControllerFactory {
     this.disableAttachApi = Boolean.getBoolean(PROPERTY_DISABLE_ATTACH_API);
   }
 
-  public ProcessController createProcessController(final ProcessControllerParameters parameters,
-      final int pid) {
-    notNull(parameters, "Invalid parameters '" + parameters + "' specified");
+  public ProcessController createProcessController(
+      @NonNull final ProcessControllerParameters parameters, final int pid) {
     isTrue(pid > 0, "Invalid pid '" + pid + "' specified");
 
     if (isAttachAPIFound()) {
@@ -58,11 +58,9 @@ public class ProcessControllerFactory {
     return new FileProcessController(parameters, pid);
   }
 
-  public ProcessController createProcessController(final ProcessControllerParameters parameters,
-      final File directory, final String pidFileName)
-      throws IOException, InterruptedException, TimeoutException {
-    notNull(parameters, "Invalid parameters '" + parameters + "' specified");
-    notNull(directory, "Invalid directory '" + directory + "' specified");
+  public ProcessController createProcessController(
+      @NonNull final ProcessControllerParameters parameters, @NonNull final File directory,
+      final String pidFileName) throws IOException, InterruptedException, TimeoutException {
     notEmpty(pidFileName, "Invalid pidFileName '" + pidFileName + "' specified");
 
     return createProcessController(parameters, readPid(directory, pidFileName));

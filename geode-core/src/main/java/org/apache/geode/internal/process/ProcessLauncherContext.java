@@ -14,9 +14,9 @@
  */
 package org.apache.geode.internal.process;
 
-import static org.apache.commons.lang.Validate.notNull;
-
 import java.util.Properties;
+
+import edu.umd.cs.findbugs.annotations.NonNull;
 
 import org.apache.geode.distributed.internal.DistributionConfig;
 
@@ -91,10 +91,8 @@ public class ProcessLauncherContext {
   /**
    * Sets the ProcessLauncherContext data for the calling thread.
    */
-  public static void set(final boolean redirectOutput, final Properties overriddenDefaults,
+  public static void set(final boolean redirectOutput, @NonNull final Properties overriddenDefaults,
       final StartupStatusListener startupListener) {
-    notNull(overriddenDefaults,
-        "Invalid overriddenDefaults '" + overriddenDefaults + "' specified");
 
     DATA.set(new ProcessLauncherContext(redirectOutput, overriddenDefaults, startupListener));
     installLogListener(startupListener);

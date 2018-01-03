@@ -14,13 +14,12 @@
  */
 package org.apache.geode.internal.process;
 
-import static org.apache.commons.lang.Validate.notNull;
-
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.UncheckedIOException;
 
+import edu.umd.cs.findbugs.annotations.NonNull;
 import org.apache.logging.log4j.Logger;
 
 import org.apache.geode.distributed.AbstractLauncher.ServiceState;
@@ -57,16 +56,10 @@ public class ControllableProcess {
         createStatusRequestFileWatchdog(directory, processType, statusHandler));
   }
 
-  ControllableProcess(final File directory, final ProcessType processType,
-      final LocalProcessLauncher launcher, final ControlFileWatchdog stopRequestFileWatchdog,
-      final ControlFileWatchdog statusRequestFileWatchdog) {
-    notNull(directory, "Invalid directory '" + directory + "' specified");
-    notNull(processType, "Invalid processType '" + processType + "' specified");
-    notNull(launcher, "Invalid launcher '" + launcher + "' specified");
-    notNull(stopRequestFileWatchdog,
-        "Invalid stopRequestFileWatchdog '" + stopRequestFileWatchdog + "' specified");
-    notNull(statusRequestFileWatchdog,
-        "Invalid statusRequestFileWatchdog '" + statusRequestFileWatchdog + "' specified");
+  ControllableProcess(@NonNull final File directory, @NonNull final ProcessType processType,
+      @NonNull final LocalProcessLauncher launcher,
+      @NonNull final ControlFileWatchdog stopRequestFileWatchdog,
+      @NonNull final ControlFileWatchdog statusRequestFileWatchdog) {
 
     this.directory = directory;
     this.launcher = launcher;

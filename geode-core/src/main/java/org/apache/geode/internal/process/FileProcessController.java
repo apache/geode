@@ -17,7 +17,6 @@ package org.apache.geode.internal.process;
 import static java.util.concurrent.TimeUnit.MILLISECONDS;
 import static org.apache.commons.lang.StringUtils.isBlank;
 import static org.apache.commons.lang.Validate.isTrue;
-import static org.apache.commons.lang.Validate.notNull;
 
 import java.io.BufferedReader;
 import java.io.File;
@@ -26,6 +25,8 @@ import java.io.IOException;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 import java.util.concurrent.atomic.AtomicReference;
+
+import edu.umd.cs.findbugs.annotations.NonNull;
 
 import org.apache.geode.internal.i18n.LocalizedStrings;
 import org.apache.geode.internal.process.ControlFileWatchdog.ControlRequestHandler;
@@ -66,12 +67,10 @@ class FileProcessController implements ProcessController {
    *
    * @throws IllegalArgumentException if pid is not a positive integer
    */
-  FileProcessController(final FileControllerParameters parameters, final int pid,
-      final long timeout, final TimeUnit units) {
-    notNull(parameters, "Invalid parameters '" + parameters + "' specified");
+  FileProcessController(@NonNull final FileControllerParameters parameters, final int pid,
+      final long timeout, @NonNull final TimeUnit units) {
     isTrue(pid > 0, "Invalid pid '" + pid + "' specified");
     isTrue(timeout >= 0, "Invalid timeout '" + timeout + "' specified");
-    notNull(units, "Invalid units '" + units + "' specified");
 
     this.pid = pid;
     this.parameters = parameters;

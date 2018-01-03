@@ -16,13 +16,14 @@ package org.apache.geode.internal.process;
 
 import static org.apache.commons.lang.Validate.isTrue;
 import static org.apache.commons.lang.Validate.notEmpty;
-import static org.apache.commons.lang.Validate.notNull;
 
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
 import java.lang.management.ManagementFactory;
+
+import edu.umd.cs.findbugs.annotations.NonNull;
 
 /**
  * Utility operations for processes such as identifying the process id (pid).
@@ -88,9 +89,7 @@ public class ProcessUtils {
    * @param process the Process to check
    * @return true if the Process is a currently running process
    */
-  public static boolean isProcessAlive(final Process process) {
-    notNull(process, "Invalid process '" + process + "' specified");
-
+  public static boolean isProcessAlive(@NonNull final Process process) {
     return process.isAlive();
   }
 
@@ -107,8 +106,7 @@ public class ProcessUtils {
     return internal.killProcess(pid);
   }
 
-  public static int readPid(final File pidFile) throws IOException {
-    notNull(pidFile, "Invalid pidFile '" + pidFile + "' specified");
+  public static int readPid(@NonNull final File pidFile) throws IOException {
     isTrue(pidFile.exists(), "Nonexistent pidFile '" + pidFile + "' specified");
 
     try (BufferedReader reader = new BufferedReader(new FileReader(pidFile))) {

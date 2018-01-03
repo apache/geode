@@ -14,12 +14,13 @@
  */
 package org.apache.geode.internal.process;
 
-import static org.apache.commons.lang.Validate.notNull;
 import static org.apache.geode.internal.process.ProcessUtils.identifyPid;
 
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
+
+import edu.umd.cs.findbugs.annotations.NonNull;
 
 import org.apache.geode.distributed.internal.DistributionConfig;
 
@@ -61,9 +62,8 @@ class LocalProcessLauncher {
    *
    * @see java.lang.management.RuntimeMXBean
    */
-  LocalProcessLauncher(final File pidFile, final boolean force)
+  LocalProcessLauncher(@NonNull final File pidFile, final boolean force)
       throws FileAlreadyExistsException, IOException, PidUnavailableException {
-    notNull(pidFile, "Invalid pidFile '" + pidFile + "' specified");
 
     this.pid = identifyPid();
     this.pidFile = pidFile;

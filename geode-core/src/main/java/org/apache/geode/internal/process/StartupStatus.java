@@ -14,8 +14,7 @@
  */
 package org.apache.geode.internal.process;
 
-import static org.apache.commons.lang.Validate.notNull;
-
+import edu.umd.cs.findbugs.annotations.NonNull;
 import org.apache.logging.log4j.Logger;
 
 import org.apache.geode.i18n.StringId;
@@ -40,10 +39,8 @@ public class StartupStatus {
    *
    * @since GemFire 7.0
    */
-  public static synchronized void startup(final StringId msgId, final Object... params) {
-    notNull(msgId, "Invalid msgId '" + msgId + "' specified");
-    notNull(params, "Invalid params '" + params + "' specified");
-
+  public static synchronized void startup(@NonNull final StringId msgId,
+      @NonNull final Object... params) {
     String message = msgId.toLocalizedString(params);
 
     if (listener != null) {
