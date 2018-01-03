@@ -36,10 +36,12 @@ import org.apache.geode.test.dunit.rules.ClusterStartupRule;
 import org.apache.geode.test.dunit.rules.MemberVM;
 import org.apache.geode.test.junit.categories.DistributedTest;
 import org.apache.geode.test.junit.rules.GfshCommandRule;
+import org.apache.geode.test.junit.runners.CategoryWithParameterizedRunnerFactory;
 
 
 @Category(DistributedTest.class)
 @RunWith(Parameterized.class)
+@Parameterized.UseParametersRunnerFactory(CategoryWithParameterizedRunnerFactory.class)
 public class GcCommandDUnitTest {
   private static final String MANAGER_NAME = "Manager";
   private static final String SERVER1_NAME = "Server1";
@@ -51,7 +53,7 @@ public class GcCommandDUnitTest {
   @Parameterized.Parameter
   public static boolean useHttp;
 
-  @Parameterized.Parameters
+  @Parameterized.Parameters(name = "Use http: {0}")
   public static Object[] data() {
     return new Object[] {true, false};
   }
@@ -122,7 +124,6 @@ public class GcCommandDUnitTest {
 
     CommandResult result = gfsh.executeCommand(gcCommand);
     assertThat(result.getStatus()).isEqualTo(Result.Status.ERROR);
-    assertThat(gfsh.getGfshOutput())
-        .contains("Could not process command due to error. NotAValidMemberMember not found");
+    assertThat(gfsh.getGfshOutput()).contains("Member NotAValidMember could not be found.");
   }
 }

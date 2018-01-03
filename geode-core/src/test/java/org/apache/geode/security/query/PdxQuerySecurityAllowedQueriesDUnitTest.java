@@ -26,9 +26,11 @@ import org.junit.runners.Parameterized;
 import org.apache.geode.security.query.data.PdxQueryTestObject;
 import org.apache.geode.test.junit.categories.DistributedTest;
 import org.apache.geode.test.junit.categories.SecurityTest;
+import org.apache.geode.test.junit.runners.CategoryWithParameterizedRunnerFactory;
 
 @Category({DistributedTest.class, SecurityTest.class})
 @RunWith(Parameterized.class)
+@Parameterized.UseParametersRunnerFactory(CategoryWithParameterizedRunnerFactory.class)
 public class PdxQuerySecurityAllowedQueriesDUnitTest extends QuerySecurityBase {
   @Parameterized.Parameters
   public static Object[] usersAllowed() {
