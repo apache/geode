@@ -15,14 +15,11 @@
 package org.apache.geode.connectors.jdbc.internal;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatThrownBy;
-import static org.mockito.Mockito.doReturn;
+import static org.mockito.Mockito.any;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
-
-import java.sql.Connection;
-import java.sql.SQLException;
+import static org.mockito.Mockito.when;
 
 import org.junit.Before;
 import org.junit.Test;
@@ -44,13 +41,8 @@ public class DataSourceManagerUnitTest {
   @Before
   public void setup() throws Exception {
     dataSource = mock(JdbcDataSource.class);
-    JdbcDataSourceFactory dataSourceFactory = new JdbcDataSourceFactory() {
-      @Override
-      public JdbcDataSource create(ConnectionConfiguration configuration) {
-        return dataSource;
-      }
-
-    };
+    JdbcDataSourceFactory dataSourceFactory = mock(JdbcDataSourceFactory.class);
+    when(dataSourceFactory.create(any())).thenReturn(dataSource);
     manager = new DataSourceManager(dataSourceFactory);
     connectionConfig = new ConnectionConfiguration("dataSource1", "url", null, null, null);
     connectionConfig2 = new ConnectionConfiguration("dataSource2", "url", null, null, null);
@@ -76,18 +68,9 @@ public class DataSourceManagerUnitTest {
   }
 
   private void registerTwoDataSourceFactory() {
-    JdbcDataSourceFactory dataSourceFactory = new JdbcDataSourceFactory() {
-      @Override
-      public JdbcDataSource create(ConnectionConfiguration configuration) {
-        if (configuration.getName().equals("dataSource1")) {
-          return dataSource;
-        } else if (configuration.getName().equals("dataSource2")) {
-          return dataSource2;
-        } else {
-          throw new IllegalStateException("unexpected " + configuration);
-        }
-      }
-    };
+    JdbcDataSourceFactory dataSourceFactory = mock(JdbcDataSourceFactory.class);
+    when(dataSourceFactory.create(connectionConfig)).thenReturn(dataSource);
+    when(dataSourceFactory.create(connectionConfig2)).thenReturn(dataSource2);
     manager = new DataSourceManager(dataSourceFactory);
   }
 
