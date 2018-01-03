@@ -14,6 +14,7 @@
  */
 package org.apache.geode.internal.cache.tier.sockets;
 
+import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
 import org.apache.geode.test.junit.categories.ClientServerTest;
@@ -25,9 +26,10 @@ import org.apache.geode.test.junit.categories.IntegrationTest;
  *
  *
  */
-@Category({IntegrationTest.class, ClientServerTest.class, FlakyTest.class})
+@Category({IntegrationTest.class, ClientServerTest.class})
 public class ClientHealthMonitorSelectorJUnitTest extends ClientHealthMonitorJUnitTest {
   protected int getMaxThreads() {
     return 2;
   }
+
 }
