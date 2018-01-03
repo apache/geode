@@ -60,6 +60,8 @@ public class ConnectionConfigBuilderTest {
         .isInstanceOf(IllegalArgumentException.class);
     assertThatThrownBy(() -> config.withParameters(new String[] {"param1value1:"}))
         .isInstanceOf(IllegalArgumentException.class);
+    assertThatThrownBy(() -> config.withParameters(new String[] {"1:2:3"}))
+        .isInstanceOf(IllegalArgumentException.class);
     assertThatThrownBy(() -> config.withParameters(new String[] {":"}))
         .isInstanceOf(IllegalArgumentException.class);
   }

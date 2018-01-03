@@ -107,6 +107,30 @@ public class DescribeConnectionCommandIntegrationTest {
   }
 
   @Test
+  public void displaysConnectionInformationForConfigurationWithNullParameters() throws Exception {
+    connectionConfig = new ConnectionConfigBuilder().withName(CONNECTION).withUrl("myUrl")
+        .withParameters(null).build();
+    service.createConnectionConfig(connectionConfig);
+    Result result = command.describeConnection(CONNECTION);
+
+    assertThat(result.getStatus()).isSameAs(Result.Status.OK);
+    CommandResult commandResult = (CommandResult) result;
+    GfJsonObject sectionContent = commandResult.getTableContent()
+        .getJSONObject(SECTION_DATA_ACCESSOR + "-" + RESULT_SECTION_NAME);
+
+    assertThat(sectionContent.get(CREATE_CONNECTION__NAME)).isEqualTo(connectionConfig.getName());
+    assertThat(sectionContent.get(CREATE_CONNECTION__URL)).isEqualTo(connectionConfig.getUrl());
+    assertThat(sectionContent.get(CREATE_CONNECTION__USER)).isEqualTo(connectionConfig.getUser());
+    assertThat(sectionContent.get(CREATE_CONNECTION__PASSWORD)).isEqualTo(null);
+
+    GfJsonObject tableContent =
+        sectionContent.getJSONObject(TABLE_DATA_ACCESSOR + "-" + CREATE_CONNECTION__PARAMS)
+            .getJSONObject("content");
+    assertThat(tableContent.get("Param Name")).isNull();
+    assertThat(tableContent.get("Value")).isNull();
+  }
+
+  @Test
   public void doesNotDisplayParametersWithNoValue() throws Exception {
     connectionConfig = new ConnectionConfigBuilder().withName(CONNECTION).withUrl("myUrl").build();
 
