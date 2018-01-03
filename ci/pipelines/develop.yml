@@ -377,3 +377,26 @@ jobs:
                - flakytestfiles
                path: geode-ci/ci/scripts/test-archive.sh
 
+- name: UpdatePassingRef
+  serial: true
+  public: true
+  plan:
+    - get: geode
+      passed: [AcceptanceTest, DistributedTest, IntegrationTest]
+      trigger: true
+    - get: geode-ci
+    - task: updatepassingref
+      config:
+        inputs:
+          - name: geode
+          - name: geode-ci
+        platform: linux
+        outputs:
+          - name: results
+        image_resource: *docker-geode-build-image
+        params:
+          MAINTENANCE_VERSION: ((!maintenance-version))
+          SERVICE_ACCOUNT: ((!concourse-gcp-account))
+          PUBLIC_BUCKET: ((!public-bucket))
+        run:
+          path: geode-ci/ci/scripts/update-passing-ref.sh
