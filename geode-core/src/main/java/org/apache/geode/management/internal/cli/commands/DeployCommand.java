@@ -19,10 +19,7 @@ import static org.apache.commons.io.FileUtils.ONE_MB;
 
 import java.io.File;
 import java.io.FileInputStream;
-import java.io.FileNotFoundException;
 import java.io.IOException;
-import java.nio.file.Files;
-import java.rmi.RemoteException;
 import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.List;
@@ -30,17 +27,15 @@ import java.util.Set;
 
 import com.healthmarketscience.rmiio.RemoteInputStream;
 import com.healthmarketscience.rmiio.SimpleRemoteInputStream;
-import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.lang.ArrayUtils;
 import org.apache.commons.lang.StringUtils;
-import org.apache.logging.log4j.Logger;
 import org.springframework.shell.core.annotation.CliCommand;
 import org.springframework.shell.core.annotation.CliOption;
 
 import org.apache.geode.cache.execute.ResultCollector;
 import org.apache.geode.distributed.DistributedMember;
-import org.apache.geode.internal.logging.LogService;
+import org.apache.geode.distributed.internal.ClusterConfigurationService;
 import org.apache.geode.management.cli.CliMetaData;
 import org.apache.geode.management.cli.ConverterHint;
 import org.apache.geode.management.cli.Result;
@@ -59,7 +54,6 @@ import org.apache.geode.security.ResourcePermission;
 
 public class DeployCommand implements GfshCommand {
   private final DeployFunction deployFunction = new DeployFunction();
-  private final Logger logger = LogService.getLogger();
 
   /**
    * Deploy one or more JAR files to members of a group or all members.
@@ -81,7 +75,7 @@ public class DeployCommand implements GfshCommand {
       @CliOption(key = {CliStrings.JAR, CliStrings.JARS},
           help = CliStrings.DEPLOY__JAR__HELP) String[] jars,
       @CliOption(key = {CliStrings.DEPLOY__DIR}, help = CliStrings.DEPLOY__DIR__HELP) String dir)
-      throws FileNotFoundException, RemoteException {
+      throws IOException {
 
     TabularResultData tabularData = ResultBuilder.createTabularResultData();
 
@@ -94,10 +88,9 @@ public class DeployCommand implements GfshCommand {
     for (DistributedMember member : targetMembers) {
       List<RemoteInputStream> remoteStreams = new ArrayList<>();
       List<String> jarNames = new ArrayList<>();
-      for (int i = 0; i < jarFullPaths.size(); i++) {
-        remoteStreams
-            .add(new SimpleRemoteInputStream(new FileInputStream(jarFullPaths.get(i))).export());
-        jarNames.add(FilenameUtils.getName(jarFullPaths.get(i)));
+      for (String jarFullPath : jarFullPaths) {
+        remoteStreams.add(new SimpleRemoteInputStream(new FileInputStream(jarFullPath)).export());
+        jarNames.add(FilenameUtils.getName(jarFullPath));
       }
 
       // this deploys the jars to all the matching servers
@@ -110,7 +103,7 @@ public class DeployCommand implements GfshCommand {
         try {
           ris.close(true);
         } catch (IOException ex) {
-          // Ignored
+          // Ignored. the stream may have already been closed.
         }
       }
     }
@@ -136,8 +129,13 @@ public class DeployCommand implements GfshCommand {
     }
 
     Result result = ResultBuilder.buildResult(tabularData);
-    persistClusterConfiguration(result,
-        () -> getSharedConfiguration().addJarsToThisLocator(jarFullPaths, groups));
+    ClusterConfigurationService sc = getSharedConfiguration();
+    if (sc == null) {
+      result.setCommandPersisted(false);
+    } else {
+      sc.addJarsToThisLocator(jarFullPaths, groups);
+      result.setCommandPersisted(true);
+    }
 
     return result;
   }

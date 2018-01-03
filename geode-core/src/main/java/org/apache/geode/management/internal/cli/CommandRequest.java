@@ -46,19 +46,19 @@ public class CommandRequest {
     downloadFile = false;
   }
 
-  public CommandRequest(final Map<String, String> env, final List<File> fileData) {
+  public CommandRequest(final Map<String, String> env, final List<File> fileList) {
     this.env = env;
-    this.fileList = fileData;
+    this.fileList = fileList;
     this.parseResult = null;
     downloadFile = false;
   }
 
   public CommandRequest(final GfshParseResult parseResult, final Map<String, String> env,
-      final List<File> fileData) {
+      final List<File> fileList) {
     assert parseResult != null : "The Gfsh ParseResult cannot be null!";
     assert env != null : "The reference to the Gfsh CLI environment cannot be null!";
     this.env = env;
-    this.fileList = fileData;
+    this.fileList = fileList;
     this.parseResult = parseResult;
 
     CliMetaData metaData = parseResult.getMethod().getDeclaredAnnotation(CliMetaData.class);
@@ -79,7 +79,7 @@ public class CommandRequest {
     return fileList;
   }
 
-  public boolean hasFileData() {
+  public boolean hasFileList() {
     return (getFileList() != null);
   }
 

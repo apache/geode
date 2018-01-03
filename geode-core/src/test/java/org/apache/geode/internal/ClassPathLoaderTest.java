@@ -25,10 +25,8 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URL;
-import java.util.ArrayList;
 import java.util.Enumeration;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 import java.util.Vector;
 
@@ -45,7 +43,6 @@ import org.junit.rules.TemporaryFolder;
 
 import org.apache.geode.test.compiler.ClassBuilder;
 import org.apache.geode.test.junit.categories.UnitTest;
-import org.apache.geode.test.junit.rules.TemporaryFileRule;
 
 /**
  * Unit tests for {@link ClassPathLoader}.

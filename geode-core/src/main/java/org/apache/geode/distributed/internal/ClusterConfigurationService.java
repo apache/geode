@@ -295,12 +295,9 @@ public class ClusterConfigurationService {
   /**
    * Add jar information into the shared configuration and save the jars in the file system used
    * when deploying jars
-   *
-   * @return true on success
    */
-  public boolean addJarsToThisLocator(List<String> jarFullPaths, String[] groups) {
+  public void addJarsToThisLocator(List<String> jarFullPaths, String[] groups) throws IOException {
     lockSharedConfiguration();
-    boolean success = true;
     try {
       if (groups == null) {
         groups = new String[] {ClusterConfigurationService.CLUSTER_CONFIG};
@@ -316,16 +313,12 @@ public class ClusterConfigurationService {
 
         String groupDir = FilenameUtils.concat(this.configDirPath, group);
         Set<String> jarNames = new HashSet<>();
-        for (int i = 0; i < jarFullPaths.size(); i++) {
-          File stagedJar = new File(jarFullPaths.get(i));
+        for (String jarFullPath : jarFullPaths) {
+          File stagedJar = new File(jarFullPath);
           jarNames.add(stagedJar.getName());
           String filePath = FilenameUtils.concat(groupDir, stagedJar.getName());
-          try {
-            File jarFile = new File(filePath);
-            FileUtils.copyFile(stagedJar, jarFile);
-          } catch (IOException e) {
-            logger.info(e);
-          }
+          File jarFile = new File(filePath);
+          FileUtils.copyFile(stagedJar, jarFile);
         }
 
         // update the record after writing the jars to the file system, since the listener
@@ -338,13 +331,9 @@ public class ClusterConfigurationService {
         configurationCopy.addJarNames(jarNames);
         configRegion.put(group, configurationCopy, memberId);
       }
-    } catch (Exception e) {
-      success = false;
-      logger.info(e.getMessage(), e);
     } finally {
       unlockSharedConfiguration();
     }
-    return success;
   }
 
   /**
@@ -461,21 +450,6 @@ public class ClusterConfigurationService {
     input.close();
 
     return tempJar.toFile();
-  }
-
-  // used when creating cluster config response
-  public Set<String> getAllJarNamesFromThisLocator(Set<String> groups) {
-    Set<String> jarNames = new HashSet<>();
-    for (String group : groups) {
-      Configuration groupConfig = getConfiguration(group);
-      if (groupConfig == null) {
-        break;
-      }
-
-      jarNames.addAll(groupConfig.getJarNames());
-    }
-
-    return jarNames;
   }
 
   /**

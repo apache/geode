@@ -417,7 +417,7 @@ public class HttpOperationInvoker implements OperationInvoker {
   public Object processCommand(final CommandRequest command) {
     URI link =
         HttpRequester.createURI(baseUrl, COMMANDS_URI, CMD_QUERY_PARAMETER, command.getUserInput());
-    if (command.hasFileData()) {
+    if (command.hasFileList()) {
       MultiValueMap<String, Object> content = new LinkedMultiValueMap<String, Object>();
 
       for (File file : command.getFileList()) {

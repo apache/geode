@@ -17,8 +17,6 @@ package org.apache.geode.management.internal.cli.shell;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
-import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.text.MessageFormat;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -262,7 +260,7 @@ public class JmxOperationInvoker implements OperationInvoker {
 
     List<String> stagedFilePaths = null;
     try {
-      if (commandRequest.hasFileData()) {
+      if (commandRequest.hasFileList()) {
         Map<String, RemoteInputStream> remoteFiles = new HashMap<>();
 
         for (File file : commandRequest.getFileList()) {

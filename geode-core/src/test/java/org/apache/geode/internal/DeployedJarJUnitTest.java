@@ -55,15 +55,10 @@ public class DeployedJarJUnitTest {
 
   @Test
   public void invalidContentThrowsException() throws Exception {
-    byte[] invalidJarBytes = givenInvalidJarBytes();
+    givenInvalidJarBytes();
 
     assertThatThrownBy(() -> new DeployedJar(jarFile, JAR_NAME))
         .isInstanceOf(IllegalArgumentException.class);
-  }
-
-  private void givenUnexpectedJarFileContents() throws IOException {
-    FileUtils.deleteQuietly(jarFile);
-    jarBuilder.buildJarFromClassNames(jarFile, "UnexpectedClass");
   }
 
   private byte[] givenInvalidJarBytes() throws IOException {
