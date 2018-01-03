@@ -14,7 +14,6 @@
  */
 package org.apache.geode.distributed.internal.membership.gms;
 
-import java.io.File;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
 
@@ -119,11 +118,11 @@ public class GMSMemberFactory implements MemberServices {
   }
 
   @Override
-  public NetLocator newLocatorHandler(InetAddress bindAddress, File stateFile, String locatorString,
+  public NetLocator newLocatorHandler(InetAddress bindAddress, String locatorString,
       boolean usePreferredCoordinators, boolean networkPartitionDetectionEnabled,
       LocatorStats stats, String securityUDPDHAlgo) {
 
-    return new GMSLocator(bindAddress, stateFile, locatorString, usePreferredCoordinators,
+    return new GMSLocator(bindAddress, locatorString, usePreferredCoordinators,
         networkPartitionDetectionEnabled, stats, securityUDPDHAlgo);
   }
 

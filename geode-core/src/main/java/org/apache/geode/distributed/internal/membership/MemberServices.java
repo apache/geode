@@ -14,7 +14,6 @@
  */
 package org.apache.geode.distributed.internal.membership;
 
-import java.io.File;
 import java.net.InetAddress;
 
 import org.apache.geode.distributed.internal.DMStats;
@@ -84,7 +83,7 @@ public interface MemberServices {
    * currently this is a test method but it ought to be used by InternalLocator to create the peer
    * location TcpHandler
    */
-  public abstract NetLocator newLocatorHandler(InetAddress bindAddress, File stateFile,
-      String locatorString, boolean usePreferredCoordinators,
-      boolean networkPartitionDetectionEnabled, LocatorStats stats, String securityUDPDHAlgo);
+  public abstract NetLocator newLocatorHandler(InetAddress bindAddress, String locatorString,
+      boolean usePreferredCoordinators, boolean networkPartitionDetectionEnabled,
+      LocatorStats stats, String securityUDPDHAlgo);
 }

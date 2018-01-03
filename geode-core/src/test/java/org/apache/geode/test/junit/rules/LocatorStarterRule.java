@@ -83,7 +83,6 @@ public class LocatorStarterRule extends MemberStarterRule<LocatorStarterRule> im
     DistributionConfig config = locator.getConfig();
     jmxPort = config.getJmxManagerPort();
     httpPort = config.getHttpServicePort();
-    locator.resetInternalLocatorFileNamesWithCorrectPortNumber(memberPort);
 
     if (config.getEnableClusterConfiguration()) {
       Awaitility.await().atMost(65, TimeUnit.SECONDS)
