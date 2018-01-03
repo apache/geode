@@ -785,8 +785,6 @@ public class InternalDistributedSystem extends DistributedSystem
       }
 
       if (!statsDisabled) {
-        // to fix bug 42527 we need a sampler
-        // even if sampling is not enabled.
         this.sampler = new GemFireStatSampler(this);
         this.sampler.start();
       }
@@ -798,8 +796,6 @@ public class InternalDistributedSystem extends DistributedSystem
         LogWriterAppenders.startupComplete(LogWriterAppenders.Identifier.SECURITY);
       }
 
-      // this.logger.info("ds created", new RuntimeException("DEBUG: STACK"));
-
       // Log any instantiators that were registered before the log writer
       // was created
       InternalInstantiator.logInstantiators();
@@ -808,7 +804,7 @@ public class InternalDistributedSystem extends DistributedSystem
       throw ex;
     }
 
-    resourceListeners = new CopyOnWriteArrayList<ResourceEventsListener>();
+    resourceListeners = new CopyOnWriteArrayList<>();
     this.reconnected = this.attemptingToReconnect;
     this.attemptingToReconnect = false;
   }
@@ -836,24 +832,16 @@ public class InternalDistributedSystem extends DistributedSystem
     }
     DistributionLocatorId locId = new DistributionLocatorId(locatorString);
     try {
-      this.startedLocator =
-          InternalLocator.createLocator(locId.getPort(), null, null, this.logWriter, // LOG: this is
-                                                                                     // after IDS
-                                                                                     // has created
-                                                                                     // LogWriterLoggers
-                                                                                     // and
-                                                                                     // Appenders
-              this.securityLogWriter, // LOG: this is after IDS has created LogWriterLoggers and
-                                      // Appenders
-              locId.getHost().getAddress(), locId.getHostnameForClients(),
-              this.originalConfig.toProperties(), false);
+      this.startedLocator = InternalLocator.createLocator(locId.getPort(), null, this.logWriter,
+          this.securityLogWriter, locId.getHost().getAddress(), locId.getHostnameForClients(),
+          this.originalConfig.toProperties(), false);
 
       // if locator is started this way, cluster config is not enabled, set the flag correctly
       this.startedLocator.getConfig().setEnableClusterConfiguration(false);
 
       boolean startedPeerLocation = false;
       try {
-        this.startedLocator.startPeerLocation(true);
+        this.startedLocator.startPeerLocation();
         startedPeerLocation = true;
       } finally {
         if (!startedPeerLocation) {
