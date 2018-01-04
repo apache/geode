@@ -51,6 +51,7 @@ import org.apache.geode.management.internal.MBeanJMXAdapter;
 import org.apache.geode.management.internal.ManagementConstants;
 import org.apache.geode.management.internal.cli.CommandRequest;
 import org.apache.geode.management.internal.cli.LogWrapper;
+import org.apache.geode.management.internal.security.ResourceConstants;
 
 /**
  * OperationInvoker JMX Implementation
@@ -100,7 +101,15 @@ public class JmxOperationInvoker implements OperationInvoker {
       final Map<String, Object> env = new HashMap<>();
 
       env.put(JMXConnectionListener.CHECK_PERIOD_PROP, JMXConnectionListener.CHECK_PERIOD);
-      env.put(JMXConnector.CREDENTIALS, gfProperties);
+
+      // when not using JMXShiroAuthenticator in the integrated security, JMX own password file
+      // authentication requires the credentials been sent in String[] format.
+      // Our JMXShiroAuthenticator handles both String[] and Properties format
+      String username = gfProperties.getProperty(ResourceConstants.USER_NAME);
+      String password = gfProperties.getProperty(ResourceConstants.PASSWORD);
+      if (username != null) {
+        env.put(JMXConnector.CREDENTIALS, new String[] {username, password});
+      }
 
       SSLConfig sslConfig = SSLConfigurationFactory.getSSLConfigForComponent(gfProperties,
           SecurableCommunicationChannel.JMX);
