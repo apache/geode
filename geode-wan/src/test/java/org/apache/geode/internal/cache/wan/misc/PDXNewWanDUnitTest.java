@@ -478,19 +478,18 @@ public class PDXNewWanDUnitTest extends WANTestBase {
     Integer nyPort = (Integer) vm1.invoke(() -> WANTestBase.createFirstRemoteLocator(2, lnPort));
 
     createCacheInVMs(nyPort, vm2);
+    vm2.invoke(() -> WANTestBase.createPartitionedRegion(getTestMethodName() + "_PR", null, 0, 1,
+        isOffHeap()));
     vm2.invoke(() -> WANTestBase.createReceiver());
 
     vm3.invoke(() -> WANTestBase.createCache(lnPort));
-
-    vm3.invoke(() -> WANTestBase.createSender("ln", 2, true, 100, 10, false, false, null, true));
-
-    vm2.invoke(() -> WANTestBase.createPartitionedRegion(getTestMethodName() + "_PR", null, 0, 1,
-        isOffHeap()));
-
     vm3.invoke(() -> WANTestBase.createPartitionedRegion(getTestMethodName() + "_PR", "ln", 0, 1,
         isOffHeap()));
+    vm3.invoke(() -> WANTestBase.createSender("ln", 2, true, 100, 10, false, false, null, true));
 
     vm3.invoke(() -> WANTestBase.startSender("ln"));
+
+    vm3.invoke(() -> WANTestBase.waitForSenderRunningState("ln"));
 
     vm3.invoke(() -> WANTestBase.doPutsPDXSerializable(getTestMethodName() + "_PR", 1));
 
