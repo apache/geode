@@ -21,7 +21,8 @@ public enum ProtocolErrorCode {
   AUTHENTICATION_NOT_SUPPORTED(13),
   AUTHORIZATION_FAILED(20),
   INVALID_REQUEST(50),
-  SERVER_ERROR(100);
+  SERVER_ERROR(100),
+  NO_AVAILABLE_SERVER(101);
 
   ProtocolErrorCode(int value) {
     codeValue = value;
