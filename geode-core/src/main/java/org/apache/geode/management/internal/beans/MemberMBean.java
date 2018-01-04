@@ -15,11 +15,11 @@
 package org.apache.geode.management.internal.beans;
 
 import java.util.Collections;
+import java.util.List;
 import java.util.Map;
 
 import javax.management.NotificationBroadcasterSupport;
 
-import org.apache.geode.internal.util.ArrayUtils;
 import org.apache.geode.management.GemFireProperties;
 import org.apache.geode.management.JVMMetrics;
 import org.apache.geode.management.MemberMXBean;
@@ -402,8 +402,9 @@ public class MemberMBean extends NotificationBroadcasterSupport implements Membe
   }
 
   @Override
-  public String processCommand(String commandString, Map<String, String> env, Byte[][] binaryData) {
-    return bridge.processCommand(commandString, env, ArrayUtils.toBytes(binaryData));
+  public String processCommand(String commandString, Map<String, String> env,
+      List<String> stagedFilePaths) {
+    return bridge.processCommand(commandString, env, stagedFilePaths);
   }
 
   @Override

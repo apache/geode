@@ -64,7 +64,7 @@ public class RegionMBeanAttributesTest {
     gfsh.executeAndAssertThat("alter region --name=FOO --async-event-queue-id=AEQ1")
         .statusIsSuccess();
 
-    bean = mBeanRule.getProxyMBean(RegionMXBean.class);
+    bean = mBeanRule.getProxyMXBean(RegionMXBean.class);
 
     assertThat(bean).isNotNull();
     Set<String> eventQueueIds = bean.listRegionAttributes().getAsyncEventQueueIds();
@@ -79,7 +79,7 @@ public class RegionMBeanAttributesTest {
     gfsh.executeAndAssertThat("alter region --name=FOO --async-event-queue-id=AEQ1")
         .statusIsSuccess();
 
-    bean = mBeanRule.getProxyMBean(RegionMXBean.class);
+    bean = mBeanRule.getProxyMXBean(RegionMXBean.class);
 
     assertThat(bean).isNotNull();
     Set<String> eventQueueIds = bean.listRegionAttributes().getAsyncEventQueueIds();

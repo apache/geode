@@ -70,7 +70,7 @@ public class GatewayReceiverMBeanSecurityTest {
 
   @Before
   public void before() throws Exception {
-    bean = connectionRule.getProxyMBean(GatewayReceiverMXBean.class);
+    bean = connectionRule.getProxyMXBean(GatewayReceiverMXBean.class);
   }
 
   @Test

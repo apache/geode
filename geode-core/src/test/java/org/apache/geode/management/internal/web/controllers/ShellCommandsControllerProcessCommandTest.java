@@ -31,6 +31,7 @@ import org.springframework.core.io.InputStreamResource;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.multipart.MultipartFile;
 
 import org.apache.geode.management.internal.cli.CommandResponseBuilder;
 import org.apache.geode.management.internal.cli.result.CommandResult;
@@ -53,7 +54,7 @@ public class ShellCommandsControllerProcessCommandTest {
     controller = new ShellCommandsController() {
       @Override
       protected String processCommand(String command, final Map<String, String> environment,
-          byte[][] fileData) {
+          MultipartFile[] fileData) {
         return CommandResponseBuilder.createCommandResponseJson("someMember", fakeResult);
       }
     };

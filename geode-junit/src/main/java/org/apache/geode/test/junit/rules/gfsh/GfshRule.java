@@ -79,6 +79,10 @@ public class GfshRule extends ExternalResource {
     return temporaryFolder;
   }
 
+  public Path getGfshPath() {
+    return gfsh;
+  }
+
   public GfshExecution execute(String... commands) {
     return execute(GfshScript.of(commands));
   }

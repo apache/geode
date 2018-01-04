@@ -2089,8 +2089,8 @@ toData,22,2a2bb600682ab400162bb800692ab400172bb80069b1
 toDataPre_GEODE_1_1_1_0,49,2ab400062bb800692ab400032bb8006a2ab400022bb800692ab4001f2bb800692ab400052bb800692ab400042bb80069b1
 
 org/apache/geode/management/internal/configuration/messages/ConfigurationResponse,2
-fromData,36,2a2bb8000eb500042a2bb8000fb500082a2bb80010b5000a2a2bb80011b60012b50005b1
-toData,39,2ab40004c000022bb800072ab400082bb800092ab4000a2bb8000b2ab40005b8000c2bb8000db1
+fromData,28,2a2bb8000bb500042a2bb8000bb500052a2bb8000cb6000db50006b1
+toData,28,2ab400042bb800082ab400052bb800082ab40006b800092bb8000ab1
 
 org/apache/geode/management/internal/configuration/messages/SharedConfigurationStatusRequest,2
 fromData,1,b1
@@ -2135,4 +2135,3 @@ toData,9,2ab400022bb80005b1
 org/apache/geode/redis/internal/DoubleWrapper,2
 fromData,9,2a2bb80004b50002b1
 toData,9,2ab400022bb80003b1
-

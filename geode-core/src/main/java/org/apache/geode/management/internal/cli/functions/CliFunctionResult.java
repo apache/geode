@@ -51,13 +51,6 @@ public class CliFunctionResult implements Comparable<CliFunctionResult>, DataSer
     this.successful = true;
   }
 
-  public CliFunctionResult(final String memberIdOrName, final byte[] byteData,
-      final Serializable[] serializables) {
-    this.byteData = byteData;
-    this.serializables = serializables;
-    this.successful = true;
-  }
-
   public CliFunctionResult(final String memberIdOrName, final XmlEntity xmlEntity) {
     this.memberIdOrName = memberIdOrName;
     this.xmlEntity = xmlEntity;

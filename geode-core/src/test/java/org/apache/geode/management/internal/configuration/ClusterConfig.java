@@ -160,7 +160,7 @@ public class ClusterConfig implements Serializable {
       }
 
       for (String jar : this.getJarNames()) {
-        DeployedJar deployedJar = ClassPathLoader.getLatest().getJarDeployer().findDeployedJar(jar);
+        DeployedJar deployedJar = ClassPathLoader.getLatest().getJarDeployer().getDeployedJar(jar);
         assertThat(deployedJar).isNotNull();
         assertThat(Class.forName(nameOfClassContainedInJar(jar), true,
             new URLClassLoader(new URL[] {deployedJar.getFileURL()}))).isNotNull();
@@ -172,7 +172,7 @@ public class ClusterConfig implements Serializable {
       for (String jar : undeployedJarNames) {
         System.out.println("Verifying undeployed jar: " + jar);
         DeployedJar undeployedJar =
-            ClassPathLoader.getLatest().getJarDeployer().findDeployedJar(jar);
+            ClassPathLoader.getLatest().getJarDeployer().getDeployedJar(jar);
         assertThat(undeployedJar).isNull();
       }
     });

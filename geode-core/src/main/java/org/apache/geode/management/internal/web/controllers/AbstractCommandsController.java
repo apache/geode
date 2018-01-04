@@ -14,11 +14,20 @@
  */
 package org.apache.geode.management.internal.web.controllers;
 
+import java.io.File;
+import java.io.IOException;
 import java.io.PrintWriter;
 import java.io.StringWriter;
-import java.lang.management.ManagementFactory;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.attribute.PosixFilePermission;
+import java.nio.file.attribute.PosixFilePermissions;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import javax.management.InstanceNotFoundException;
 import javax.management.JMX;
@@ -26,6 +35,7 @@ import javax.management.MBeanServer;
 import javax.management.MalformedObjectNameException;
 import javax.management.ObjectName;
 
+import org.apache.commons.io.FileUtils;
 import org.apache.logging.log4j.Logger;
 import org.springframework.beans.propertyeditors.StringArrayPropertyEditor;
 import org.springframework.http.HttpStatus;
@@ -33,14 +43,11 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.WebDataBinder;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.InitBinder;
-import org.springframework.web.bind.annotation.ResponseBody;
+import org.springframework.web.multipart.MultipartFile;
 
 import org.apache.geode.internal.cache.GemFireCacheImpl;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.logging.LogService;
-import org.apache.geode.internal.logging.log4j.LogMarker;
-import org.apache.geode.internal.security.SecurityService;
-import org.apache.geode.internal.util.ArrayUtils;
 import org.apache.geode.management.DistributedSystemMXBean;
 import org.apache.geode.management.ManagementService;
 import org.apache.geode.management.MemberMXBean;
@@ -48,11 +55,9 @@ import org.apache.geode.management.internal.MBeanJMXAdapter;
 import org.apache.geode.management.internal.ManagementAgent;
 import org.apache.geode.management.internal.SystemManagementService;
 import org.apache.geode.management.internal.cli.shell.Gfsh;
-import org.apache.geode.management.internal.security.MBeanServerWrapper;
 import org.apache.geode.management.internal.web.controllers.support.LoginHandlerInterceptor;
 import org.apache.geode.management.internal.web.util.UriUtils;
 import org.apache.geode.security.AuthenticationFailedException;
-import org.apache.geode.security.GemFireSecurityException;
 import org.apache.geode.security.NotAuthorizedException;
 
 /**
@@ -232,18 +237,36 @@ public abstract class AbstractCommandsController {
    *        Gfsh, the key/value pair (APP_NAME=gfsh) is a specified mapping in the "environment.
    *        Note, it is common for the REST API to act as a bridge, or an adapter between Gfsh and
    *        the Manager, and thus need to specify this key/value pair mapping.
-   * @param fileData is a two-dimensional byte array containing the pathnames and contents of file
-   *        data streamed to the Manager, usually for the 'deploy' Gfsh command.
+   * @param multipartFiles uploaded files
    * @return a result of the command execution as a String, typically marshalled in JSON to be
    *         serialized back to Gfsh.
-   * @see org.apache.geode.management.MemberMXBean#processCommand(String, java.util.Map, Byte[][])
    */
   protected String processCommand(final String command, final Map<String, String> environment,
-      final byte[][] fileData) {
-    logger.debug(LogMarker.CONFIG,
-        "Processing Command ({}) with Environment ({}) having File Data ({})...", command,
-        environment, (fileData != null && fileData.length > 0));
+      final MultipartFile[] multipartFiles) throws IOException {
+    List<String> filePaths = null;
+    Path tempDir = null;
+    if (multipartFiles != null) {
+      Set<PosixFilePermission> perms = new HashSet<>();
+      perms.add(PosixFilePermission.OWNER_READ);
+      perms.add(PosixFilePermission.OWNER_WRITE);
+      perms.add(PosixFilePermission.OWNER_EXECUTE);
+      tempDir = Files.createTempDirectory("uploaded-", PosixFilePermissions.asFileAttribute(perms));
+      // staging the files to local
+      filePaths = new ArrayList<>();
+      for (MultipartFile multipartFile : multipartFiles) {
+        File dest = new File(tempDir.toFile(), multipartFile.getOriginalFilename());
+        multipartFile.transferTo(dest);
+        filePaths.add(dest.getAbsolutePath());
+      }
+    }
+
     MemberMXBean manager = getManagingMemberMXBean();
-    return manager.processCommand(command, environment, ArrayUtils.toByteArray(fileData));
+    try {
+      return manager.processCommand(command, environment, filePaths);
+    } finally {
+      if (tempDir != null) {
+        FileUtils.deleteDirectory(tempDir.toFile());
+      }
+    }
   }
 }

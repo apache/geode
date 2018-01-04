@@ -587,7 +587,7 @@ org/apache/geode/management/internal/configuration/domain/SharedConfigurationSta
 org/apache/geode/management/internal/configuration/functions/GetClusterConfigurationFunction,false
 org/apache/geode/management/internal/configuration/functions/GetRegionNamesFunction,false
 org/apache/geode/management/internal/configuration/functions/RecreateCacheFunction,false
-org/apache/geode/management/internal/configuration/functions/UploadJarFunction,true,1
+org/apache/geode/management/internal/configuration/functions/DownloadJarFunction,true,1
 org/apache/geode/management/internal/web/domain/QueryParameterSource,true,34131123582155,objectName:javax/management/ObjectName,queryExpression:javax/management/QueryExp
 org/apache/geode/management/internal/web/shell/MBeanAccessException,true,813768898269516238
 org/apache/geode/memcached/GemFireMemcachedServer$Protocol,false

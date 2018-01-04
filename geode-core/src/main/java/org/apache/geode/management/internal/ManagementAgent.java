@@ -64,6 +64,7 @@ import org.apache.geode.internal.tcp.TCPConduit;
 import org.apache.geode.management.ManagementException;
 import org.apache.geode.management.ManagementService;
 import org.apache.geode.management.ManagerMXBean;
+import org.apache.geode.management.internal.beans.FileUploader;
 import org.apache.geode.management.internal.security.AccessControlMBean;
 import org.apache.geode.management.internal.security.MBeanServerWrapper;
 import org.apache.geode.management.internal.security.ResourceConstants;
@@ -491,6 +492,7 @@ public class ManagementAgent {
         controller.setMBeanServer(mbs);
       }
     }
+    registerFileUploaderMBean();
 
     jmxConnectorServer.start();
     if (logger.isDebugEnabled()) {
@@ -518,6 +520,22 @@ public class ManagementAgent {
     } catch (MalformedObjectNameException e) {
       throw new GemFireConfigException("Error while configuring access control for jmx resource",
           e);
+    }
+  }
+
+  private void registerFileUploaderMBean() {
+    try {
+      ObjectName mbeanON = new ObjectName(ManagementConstants.OBJECTNAME__FILEUPLOADER_MBEAN);
+      MBeanServer platformMBeanServer = ManagementFactory.getPlatformMBeanServer();
+
+      Set<ObjectName> names = platformMBeanServer.queryNames(mbeanON, null);
+      if (names.isEmpty()) {
+        platformMBeanServer.registerMBean(new FileUploader(), mbeanON);
+        logger.info("Registered FileUploaderMBean on " + mbeanON);
+      }
+    } catch (InstanceAlreadyExistsException | MBeanRegistrationException
+        | NotCompliantMBeanException | MalformedObjectNameException e) {
+      throw new GemFireConfigException("Error while configuring FileUploader MBean", e);
     }
   }
 

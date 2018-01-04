@@ -18,11 +18,20 @@ import static java.util.stream.Collectors.joining;
 import static java.util.stream.Collectors.toList;
 
 import java.io.ByteArrayInputStream;
+import java.io.File;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.UnknownHostException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.nio.file.attribute.PosixFilePermission;
+import java.nio.file.attribute.PosixFilePermissions;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
@@ -31,9 +40,8 @@ import java.util.Objects;
 import java.util.Properties;
 import java.util.Set;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
-import org.apache.commons.lang.ArrayUtils;
+import com.healthmarketscience.rmiio.RemoteInputStream;
 import org.apache.commons.lang.StringUtils;
 import org.apache.logging.log4j.Logger;
 
@@ -41,6 +49,7 @@ import org.apache.geode.UnmodifiableException;
 import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.execute.FunctionService;
 import org.apache.geode.cache.execute.ResultCollector;
+import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.distributed.internal.ClusterConfigurationService;
 import org.apache.geode.distributed.internal.DistributionConfig;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
@@ -50,7 +59,9 @@ import org.apache.geode.internal.DeployedJar;
 import org.apache.geode.internal.JarDeployer;
 import org.apache.geode.internal.config.ClusterConfigurationNotAvailableException;
 import org.apache.geode.internal.logging.LogService;
+import org.apache.geode.management.internal.cli.CliUtil;
 import org.apache.geode.management.internal.configuration.domain.Configuration;
+import org.apache.geode.management.internal.configuration.functions.DownloadJarFunction;
 import org.apache.geode.management.internal.configuration.functions.GetClusterConfigurationFunction;
 import org.apache.geode.management.internal.configuration.messages.ConfigurationResponse;
 
@@ -62,34 +73,36 @@ public class ClusterConfigurationLoader {
    * Deploys the jars received from shared configuration, it undeploys any other jars that were not
    * part of shared configuration
    *
-   * @param cache Cache of this member
    * @param response {@link ConfigurationResponse} received from the locators
    */
-  public void deployJarsReceivedFromClusterConfiguration(Cache cache,
-      ConfigurationResponse response) throws IOException, ClassNotFoundException {
+  public void deployJarsReceivedFromClusterConfiguration(ConfigurationResponse response)
+      throws IOException, ClassNotFoundException {
     logger.info("Requesting cluster configuration");
     if (response == null) {
       return;
     }
 
-    String[] jarFileNames = response.getJarNames();
-    byte[][] jarBytes = response.getJars();
+    List<String> jarFileNames =
+        response.getJarNames().values().stream().flatMap(Set::stream).collect(Collectors.toList());
 
-    if (jarFileNames != null && jarBytes != null) {
-      logger.info("Got response with jars: {}", Stream.of(jarFileNames).collect(joining(",")));
+    if (jarFileNames != null && !jarFileNames.isEmpty()) {
+      logger.info("Got response with jars: {}", jarFileNames.stream().collect(joining(",")));
       JarDeployer jarDeployer = ClassPathLoader.getLatest().getJarDeployer();
       jarDeployer.suspendAll();
       try {
         List<String> extraJarsOnServer =
             jarDeployer.findDeployedJars().stream().map(DeployedJar::getJarName)
-                .filter(jarName -> !ArrayUtils.contains(jarFileNames, jarName)).collect(toList());
+                .filter(jarName -> !jarFileNames.contains(jarName)).collect(toList());
 
         for (String extraJar : extraJarsOnServer) {
           logger.info("Removing jar not present in cluster configuration: {}", extraJar);
           jarDeployer.deleteAllVersionsOfJar(extraJar);
         }
 
-        List<DeployedJar> deployedJars = jarDeployer.deploy(jarFileNames, jarBytes);
+        Map<String, File> stagedJarFiles =
+            getJarsFromLocator(response.getMember(), response.getJarNames());
+
+        List<DeployedJar> deployedJars = jarDeployer.deploy(stagedJarFiles);
 
         deployedJars.stream().filter(Objects::nonNull)
             .forEach((jar) -> logger.info("Deployed: {}", jar.getFile().getAbsolutePath()));
@@ -97,6 +110,53 @@ public class ClusterConfigurationLoader {
         jarDeployer.resumeAll();
       }
     }
+  }
+
+  private Map<String, File> getJarsFromLocator(DistributedMember locator,
+      Map<String, Set<String>> jarNames) throws IOException {
+    Map<String, File> results = new HashMap<>();
+
+    for (String group : jarNames.keySet()) {
+      for (String jar : jarNames.get(group)) {
+        results.put(jar, downloadJar(locator, group, jar));
+      }
+    }
+
+    return results;
+  }
+
+  public File downloadJar(DistributedMember locator, String groupName, String jarName)
+      throws IOException {
+    ResultCollector<RemoteInputStream, List<RemoteInputStream>> rc =
+        (ResultCollector<RemoteInputStream, List<RemoteInputStream>>) CliUtil.executeFunction(
+            new DownloadJarFunction(), new Object[] {groupName, jarName},
+            Collections.singleton(locator));
+
+    List<RemoteInputStream> result = rc.getResult();
+    RemoteInputStream jarStream = result.get(0);
+
+    Set<PosixFilePermission> perms = new HashSet<>();
+    perms.add(PosixFilePermission.OWNER_READ);
+    perms.add(PosixFilePermission.OWNER_WRITE);
+    perms.add(PosixFilePermission.OWNER_EXECUTE);
+    Path tempDir =
+        Files.createTempDirectory("deploy-", PosixFilePermissions.asFileAttribute(perms));
+    Path tempJar = Paths.get(tempDir.toString(), jarName);
+    FileOutputStream fos = new FileOutputStream(tempJar.toString());
+
+    int packetId = 0;
+    while (true) {
+      byte[] data = jarStream.readPacket(packetId);
+      if (data == null) {
+        break;
+      }
+      fos.write(data);
+      packetId++;
+    }
+    fos.close();
+    jarStream.close(true);
+
+    return tempJar.toFile();
   }
 
   /***
@@ -225,6 +285,7 @@ public class ClusterConfigurationLoader {
       Object result = ((ArrayList) resultCollector.getResult()).get(0);
       if (result instanceof ConfigurationResponse) {
         response = (ConfigurationResponse) result;
+        response.setMember(locator);
         break;
       } else {
         logger.error("Received invalid result from {}: {}", locator.toString(), result);

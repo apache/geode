@@ -197,7 +197,7 @@ public class JMXMBeanDUnitTest implements Serializable {
       throws Exception {
     // Get MBean proxy instance that will be used to make calls to registered MBean
     DistributedSystemMXBean distributedSystemMXBean =
-        mBeanServerConnectionRule.getProxyMBean(DistributedSystemMXBean.class);
+        mBeanServerConnectionRule.getProxyMXBean(DistributedSystemMXBean.class);
     assertEquals(1, distributedSystemMXBean.getMemberCount());
     assertEquals(1, distributedSystemMXBean.getLocatorCount());
   }

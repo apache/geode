@@ -55,7 +55,7 @@ public class GetClusterConfigurationFunction implements Function {
           clusterConfigurationService.createConfigurationResponse(groups);
       context.getResultSender().lastResult(response);
     } catch (IOException e) {
-      logger.error("Unable to retrieve the cluster configuraton", e);
+      logger.error("Unable to retrieve the cluster configuration", e);
       context.getResultSender().lastResult(e);
     }
   }

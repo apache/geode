@@ -537,7 +537,7 @@ public class CliUtil {
   }
 
   /***
-   * Executes a function with arguments on a set of members , ignores the departed members.
+   * Executes a function with arguments on a set of members, ignoring the departed members.
    *
    * @param function Function to be executed.
    * @param args Arguments passed to the function, pass null if you wish to pass no arguments to the

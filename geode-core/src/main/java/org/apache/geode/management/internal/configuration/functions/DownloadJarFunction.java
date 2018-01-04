@@ -15,19 +15,28 @@
  */
 package org.apache.geode.management.internal.configuration.functions;
 
-import java.util.List;
+import java.io.BufferedInputStream;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.rmi.RemoteException;
 
+import com.healthmarketscience.rmiio.GZIPRemoteInputStream;
+import com.healthmarketscience.rmiio.RemoteInputStream;
+import com.healthmarketscience.rmiio.RemoteInputStreamServer;
+import com.healthmarketscience.rmiio.SimpleRemoteInputStream;
 import org.apache.logging.log4j.Logger;
 
 import org.apache.geode.cache.execute.Function;
 import org.apache.geode.cache.execute.FunctionContext;
+import org.apache.geode.cache.execute.FunctionException;
 import org.apache.geode.distributed.Locator;
 import org.apache.geode.distributed.internal.ClusterConfigurationService;
 import org.apache.geode.distributed.internal.InternalLocator;
 import org.apache.geode.internal.InternalEntity;
 import org.apache.geode.internal.logging.LogService;
 
-public class UploadJarFunction implements Function<Object[]>, InternalEntity {
+public class DownloadJarFunction implements Function<Object[]>, InternalEntity {
   private static final Logger logger = LogService.getLogger();
 
   private static final long serialVersionUID = 1L;
@@ -39,24 +48,41 @@ public class UploadJarFunction implements Function<Object[]>, InternalEntity {
     String group = (String) args[0];
     String jarName = (String) args[1];
 
-    byte[] jarBytes = null;
+    RemoteInputStream result = null;
     if (locator != null && group != null && jarName != null) {
       ClusterConfigurationService sharedConfig = locator.getSharedConfiguration();
       if (sharedConfig != null) {
         try {
-          jarBytes = sharedConfig.getJarBytesFromThisLocator(group, jarName);
-          context.getResultSender().lastResult(jarBytes);
+          File jarFile = sharedConfig.getPathToJarOnThisLocator(group, jarName).toFile();
+
+          RemoteInputStreamServer istream = null;
+          try {
+            istream =
+                new SimpleRemoteInputStream(new BufferedInputStream(new FileInputStream(jarFile)));
+            result = istream.export();
+            istream = null;
+          } catch (FileNotFoundException | RemoteException ex) {
+            throw new FunctionException(ex);
+          } finally {
+            // we will only close the stream here if the server fails before
+            // returning an exported stream
+            if (istream != null) {
+              istream.close();
+            }
+          }
         } catch (Exception e) {
           logger.error(e);
           throw new IllegalStateException(e.getMessage());
         }
       }
     }
+
+    context.getResultSender().lastResult(result);
   }
 
   @Override
   public String getId() {
-    return UploadJarFunction.class.getName();
+    return DownloadJarFunction.class.getName();
   }
 
 }
