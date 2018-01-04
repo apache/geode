@@ -56,7 +56,7 @@ import org.apache.geode.cache.RegionShortcut;
 import org.apache.geode.cache.persistence.PersistentID;
 import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.distributed.DistributedSystem;
-import org.apache.geode.distributed.internal.DM;
+import org.apache.geode.distributed.internal.DistributionManager;
 import org.apache.geode.internal.ClassPathLoader;
 import org.apache.geode.internal.DeployedJar;
 import org.apache.geode.internal.cache.DiskStoreImpl;
@@ -204,7 +204,7 @@ public class IncrementalBackupDistributedTest extends JUnit4CacheTestCase {
   }
 
   /**
-   * Invokes {@link BackupUtil#backupAllMembers(DM, File, File)} on a member.
+   * Invokes {@link BackupUtil#backupAllMembers(DistributionManager, File, File)} on a member.
    *
    * @param vm a member of the distributed system
    * @return the status of the backup.
@@ -221,7 +221,7 @@ public class IncrementalBackupDistributedTest extends JUnit4CacheTestCase {
   }
 
   /**
-   * Invokes {@link BackupUtil#backupAllMembers(DM, File, File)} on a member.
+   * Invokes {@link BackupUtil#backupAllMembers(DistributionManager, File, File)} on a member.
    *
    * @param vm a member of the distributed system.
    * @return a status of the backup operation.
@@ -238,7 +238,7 @@ public class IncrementalBackupDistributedTest extends JUnit4CacheTestCase {
   }
 
   /**
-   * Invokes {@link BackupUtil#backupAllMembers(DM, File, File)} on a member.
+   * Invokes {@link BackupUtil#backupAllMembers(DistributionManager, File, File)} on a member.
    *
    * @param vm a member of the distributed system.
    * @return a status of the backup operation.

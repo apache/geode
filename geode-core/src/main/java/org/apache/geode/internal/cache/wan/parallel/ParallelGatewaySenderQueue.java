@@ -53,7 +53,7 @@ import org.apache.geode.cache.Region;
 import org.apache.geode.cache.RegionAttributes;
 import org.apache.geode.cache.RegionDestroyedException;
 import org.apache.geode.cache.asyncqueue.internal.AsyncEventQueueImpl;
-import org.apache.geode.distributed.internal.DM;
+import org.apache.geode.distributed.internal.DistributionManager;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
 import org.apache.geode.internal.cache.AbstractBucketRegionQueue;
@@ -70,7 +70,6 @@ import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.cache.InternalRegionArguments;
 import org.apache.geode.internal.cache.LocalRegion;
 import org.apache.geode.internal.cache.PartitionedRegion;
-import org.apache.geode.internal.cache.PartitionedRegionDataStore;
 import org.apache.geode.internal.cache.PartitionedRegionHelper;
 import org.apache.geode.internal.cache.PrimaryBucketException;
 import org.apache.geode.internal.cache.RegionQueue;
@@ -1565,7 +1564,7 @@ public class ParallelGatewaySenderQueue implements RegionQueue {
     public void run() {
       try {
         InternalDistributedSystem ids = cache.getInternalDistributedSystem();
-        DM dm = ids.getDistributionManager();
+        DistributionManager dm = ids.getDistributionManager();
         for (;;) {
           try { // be somewhat tolerant of failures
             if (checkCancelled()) {

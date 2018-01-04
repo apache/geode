@@ -23,7 +23,7 @@ import java.util.Set;
 import org.apache.logging.log4j.Logger;
 
 import org.apache.geode.cache.CacheException;
-import org.apache.geode.distributed.internal.DM;
+import org.apache.geode.distributed.internal.ClusterDistributionManager;
 import org.apache.geode.distributed.internal.DistributionManager;
 import org.apache.geode.distributed.internal.DistributionMessage;
 import org.apache.geode.distributed.internal.DistributionStats;
@@ -67,7 +67,7 @@ public class BucketSizeMessage extends PartitionMessage {
 
   @Override
   public int getProcessorType() {
-    return DistributionManager.STANDARD_EXECUTOR;
+    return ClusterDistributionManager.STANDARD_EXECUTOR;
   }
 
   /**
@@ -94,7 +94,7 @@ public class BucketSizeMessage extends PartitionMessage {
   }
 
   @Override
-  protected boolean operateOnPartitionedRegion(DistributionManager dm, PartitionedRegion r,
+  protected boolean operateOnPartitionedRegion(ClusterDistributionManager dm, PartitionedRegion r,
       long startTime) throws CacheException, ForceReattemptException {
 
     PartitionedRegionDataStore ds = r.getDataStore();
@@ -153,8 +153,8 @@ public class BucketSizeMessage extends PartitionMessage {
     }
 
     /** Send an ack */
-    public static void send(InternalDistributedMember recipient, int processorId, DM dm,
-        long size) {
+    public static void send(InternalDistributedMember recipient, int processorId,
+        DistributionManager dm, long size) {
       Assert.assertTrue(recipient != null, "PRDistribuedGetReplyMessage NULL reply message");
       BucketSizeReplyMessage m = new BucketSizeReplyMessage(processorId, size);
       m.setRecipient(recipient);
@@ -167,7 +167,7 @@ public class BucketSizeMessage extends PartitionMessage {
      * @param dm the distribution manager that is processing the message.
      */
     @Override
-    protected void process(final DistributionManager dm) {
+    protected void process(final ClusterDistributionManager dm) {
       final long startTime = getTimestamp();
       if (logger.isTraceEnabled(LogMarker.DM)) {
         logger.trace(LogMarker.DM,

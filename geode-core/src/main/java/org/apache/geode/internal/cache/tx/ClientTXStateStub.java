@@ -30,8 +30,8 @@ import org.apache.geode.cache.TransactionInDoubtException;
 import org.apache.geode.cache.client.internal.ServerRegionDataAccess;
 import org.apache.geode.cache.client.internal.ServerRegionProxy;
 import org.apache.geode.distributed.DistributedMember;
-import org.apache.geode.distributed.internal.DM;
 import org.apache.geode.distributed.internal.DistributionConfig;
+import org.apache.geode.distributed.internal.DistributionManager;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.distributed.internal.ServerLocation;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
@@ -166,7 +166,7 @@ public class ClientTXStateStub extends TXStateStub {
     }
     cache.getCancelCriterion().checkCancelInProgress(null);
     InternalDistributedSystem ds = cache.getInternalDistributedSystem();
-    DM dm = ds.getDistributionManager();
+    DistributionManager dm = ds.getDistributionManager();
 
     txcm.setDM(dm);
     txcm.setAckRequired(false);

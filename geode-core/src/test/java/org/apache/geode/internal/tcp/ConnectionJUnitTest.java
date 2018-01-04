@@ -24,7 +24,7 @@ import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
 import org.apache.geode.CancelCriterion;
-import org.apache.geode.distributed.internal.DM;
+import org.apache.geode.distributed.internal.DistributionManager;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
 import org.apache.geode.distributed.internal.membership.MembershipManager;
 import org.apache.geode.internal.net.SocketCloser;
@@ -46,7 +46,7 @@ public class ConnectionJUnitTest {
 
     // mock the socket
     ConnectionTable table = mock(ConnectionTable.class);
-    DM distMgr = mock(DM.class);
+    DistributionManager distMgr = mock(DistributionManager.class);
     MembershipManager membership = mock(MembershipManager.class);
     TCPConduit conduit = mock(TCPConduit.class);
 

@@ -34,10 +34,10 @@ import org.apache.geode.cache.RegionService;
 import org.apache.geode.cache.persistence.PartitionOfflineException;
 import org.apache.geode.distributed.DistributedLockService;
 import org.apache.geode.distributed.DistributedMember;
-import org.apache.geode.distributed.internal.DM;
 import org.apache.geode.distributed.internal.DistributionAdvisee;
 import org.apache.geode.distributed.internal.DistributionAdvisor;
 import org.apache.geode.distributed.internal.DistributionAdvisor.Profile;
+import org.apache.geode.distributed.internal.DistributionManager;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
 import org.apache.geode.internal.Assert;
@@ -170,7 +170,7 @@ public class ProxyBucketRegion implements Bucket {
     return this.serialNumber;
   }
 
-  public DM getDistributionManager() {
+  public DistributionManager getDistributionManager() {
     return getSystem().getDistributionManager();
   }
 

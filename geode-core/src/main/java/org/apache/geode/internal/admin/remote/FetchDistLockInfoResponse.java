@@ -35,7 +35,8 @@ public class FetchDistLockInfoResponse extends AdminResponse {
    * recipient. The message will contains a copy of the local manager's distributed lock service
    * information.
    */
-  public static FetchDistLockInfoResponse create(DM dm, InternalDistributedMember recipient) {
+  public static FetchDistLockInfoResponse create(DistributionManager dm,
+      InternalDistributedMember recipient) {
     FetchDistLockInfoResponse m = new FetchDistLockInfoResponse();
     InternalDistributedMember id = dm.getDistributionManagerId();
     Set entries = DLockService.snapshotAllServices().entrySet();

@@ -82,10 +82,10 @@ import org.apache.geode.SystemFailure;
 import org.apache.geode.ToDataException;
 import org.apache.geode.cache.CacheClosedException;
 import org.apache.geode.cache.execute.Function;
+import org.apache.geode.distributed.internal.ClusterDistributionManager;
 import org.apache.geode.distributed.internal.DMStats;
 import org.apache.geode.distributed.internal.DistributedSystemService;
 import org.apache.geode.distributed.internal.DistributionConfig;
-import org.apache.geode.distributed.internal.DistributionManager;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.distributed.internal.LonerDistributionManager;
 import org.apache.geode.distributed.internal.SerialDistributionMessage;
@@ -3374,7 +3374,7 @@ public abstract class InternalDataSerializer extends DataSerializer implements D
     }
 
     @Override
-    protected void process(DistributionManager dm) {
+    protected void process(ClusterDistributionManager dm) {
       if (CacheClientNotifier.getInstance() != null) {
         // This is a server so we need to send the dataserializer to clients
         // right away. For that we need to load the class as the constructor of

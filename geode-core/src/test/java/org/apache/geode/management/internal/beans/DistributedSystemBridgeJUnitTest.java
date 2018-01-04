@@ -26,7 +26,7 @@ import org.junit.Test;
 import org.junit.experimental.categories.Category;
 import org.mockito.InOrder;
 
-import org.apache.geode.distributed.internal.DM;
+import org.apache.geode.distributed.internal.DistributionManager;
 import org.apache.geode.distributed.internal.locks.DLockService;
 import org.apache.geode.internal.cache.GemFireCacheImpl;
 import org.apache.geode.internal.cache.backup.BackupDataStoreHelper;
@@ -67,7 +67,7 @@ public class DistributedSystemBridgeJUnitTest {
 
   @Test
   public void testSuccessfulBackup() throws Exception {
-    DM dm = cache.getDistributionManager();
+    DistributionManager dm = cache.getDistributionManager();
 
     DistributedSystemBridge bridge = new DistributedSystemBridge(null);
     bridge.backupAllMembers("/tmp", null);
@@ -81,7 +81,7 @@ public class DistributedSystemBridgeJUnitTest {
 
   @Test
   public void testPrepareErrorAbortsBackup() throws Exception {
-    DM dm = cache.getDistributionManager();
+    DistributionManager dm = cache.getDistributionManager();
     PersistentMemberManager memberManager = mock(PersistentMemberManager.class);
     BackupManager backupManager = mock(BackupManager.class);
     when(cache.startBackup(any())).thenReturn(backupManager);

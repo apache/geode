@@ -32,7 +32,7 @@ import org.apache.geode.cache.RegionDestroyedException;
 import org.apache.geode.cache.execute.Function;
 import org.apache.geode.cache.execute.FunctionException;
 import org.apache.geode.cache.execute.FunctionService;
-import org.apache.geode.distributed.internal.DM;
+import org.apache.geode.distributed.internal.ClusterDistributionManager;
 import org.apache.geode.distributed.internal.DistributionManager;
 import org.apache.geode.distributed.internal.DistributionMessage;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
@@ -102,7 +102,8 @@ public class DistributedRegionFunctionStreamingMessage extends DistributionMessa
     }
   }
 
-  private TXStateProxy prepForTransaction(DistributionManager dm) throws InterruptedException {
+  private TXStateProxy prepForTransaction(ClusterDistributionManager dm)
+      throws InterruptedException {
     if (this.txUniqId == TXManagerImpl.NOTX) {
       return null;
     } else {
@@ -129,7 +130,7 @@ public class DistributedRegionFunctionStreamingMessage extends DistributionMessa
   }
 
   @Override
-  protected void process(final DistributionManager dm) {
+  protected void process(final ClusterDistributionManager dm) {
     Throwable thr = null;
     boolean sendReply = true;
     DistributedRegion dr = null;
@@ -224,8 +225,8 @@ public class DistributedRegionFunctionStreamingMessage extends DistributionMessa
     }
   }
 
-  protected boolean operateOnDistributedRegion(final DistributionManager dm, DistributedRegion r)
-      throws ForceReattemptException {
+  protected boolean operateOnDistributedRegion(final ClusterDistributionManager dm,
+      DistributedRegion r) throws ForceReattemptException {
     if (this.functionObject == null) {
       ReplyMessage.send(getSender(), this.processorId,
           new ReplyException(new FunctionException(
@@ -274,7 +275,7 @@ public class DistributedRegionFunctionStreamingMessage extends DistributionMessa
   /**
    * check to see if the cache is closing
    */
-  private boolean checkCacheClosing(DistributionManager dm) {
+  private boolean checkCacheClosing(ClusterDistributionManager dm) {
     InternalCache cache = dm.getCache();
     return cache == null || cache.getCancelCriterion().isCancelInProgress();
   }
@@ -284,7 +285,7 @@ public class DistributedRegionFunctionStreamingMessage extends DistributionMessa
    *
    * @return true if the distributed system is closing
    */
-  private boolean checkDSClosing(DistributionManager dm) {
+  private boolean checkDSClosing(ClusterDistributionManager dm) {
     InternalDistributedSystem ds = dm.getSystem();
     return (ds == null || ds.isDisconnecting());
   }
@@ -362,8 +363,8 @@ public class DistributedRegionFunctionStreamingMessage extends DistributionMessa
     DataSerializer.writeString(this.regionPath, out);
   }
 
-  public synchronized boolean sendReplyForOneResult(DM dm, Object oneResult, boolean lastResult,
-      boolean sendResultsInOrder)
+  public synchronized boolean sendReplyForOneResult(DistributionManager dm, Object oneResult,
+      boolean lastResult, boolean sendResultsInOrder)
       throws CacheException, ForceReattemptException, InterruptedException {
     if (this.replyLastMsg) {
       return false;
@@ -383,8 +384,9 @@ public class DistributedRegionFunctionStreamingMessage extends DistributionMessa
     return false;
   }
 
-  protected void sendReply(InternalDistributedMember member, int procId, DM dm, ReplyException ex,
-      Object result, int msgNum, boolean lastResult, boolean sendResultsInOrder) {
+  protected void sendReply(InternalDistributedMember member, int procId, DistributionManager dm,
+      ReplyException ex, Object result, int msgNum, boolean lastResult,
+      boolean sendResultsInOrder) {
     // if there was an exception, then throw out any data
     if (ex != null) {
       this.result = null;
@@ -400,7 +402,7 @@ public class DistributedRegionFunctionStreamingMessage extends DistributionMessa
 
   @Override
   public int getProcessorType() {
-    return DistributionManager.REGION_FUNCTION_EXECUTION_EXECUTOR;
+    return ClusterDistributionManager.REGION_FUNCTION_EXECUTION_EXECUTOR;
   }
 
   /*

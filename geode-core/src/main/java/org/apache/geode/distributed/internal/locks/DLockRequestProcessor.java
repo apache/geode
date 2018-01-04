@@ -27,7 +27,7 @@ import org.apache.geode.DataSerializer;
 import org.apache.geode.InternalGemFireError;
 import org.apache.geode.SystemFailure;
 import org.apache.geode.distributed.LockServiceDestroyedException;
-import org.apache.geode.distributed.internal.DM;
+import org.apache.geode.distributed.internal.ClusterDistributionManager;
 import org.apache.geode.distributed.internal.DistributionManager;
 import org.apache.geode.distributed.internal.DistributionMessage;
 import org.apache.geode.distributed.internal.HighPriorityDistributionMessage;
@@ -56,7 +56,7 @@ public class DLockRequestProcessor extends ReplyProcessor21 {
 
   protected final DLockRequestMessage request;
 
-  private final DM dm;
+  private final DistributionManager dm;
 
   protected final DLockService svc;
 
@@ -89,28 +89,28 @@ public class DLockRequestProcessor extends ReplyProcessor21 {
 
   protected DLockRequestProcessor(LockGrantorId lockGrantorId, DLockService svc, Object objectName,
       int threadId, long startTime, long leaseMillis, long waitMillis, boolean reentrant,
-      boolean tryLock, DM dm) {
+      boolean tryLock, DistributionManager dm) {
     this(lockGrantorId, svc, objectName, threadId, startTime, leaseMillis, waitMillis, reentrant,
         tryLock, false, dm, false);
   }
 
   protected DLockRequestProcessor(LockGrantorId lockGrantorId, DLockService svc, Object objectName,
       int threadId, long startTime, long leaseMillis, long waitMillis, boolean reentrant,
-      boolean tryLock, boolean disableAlerts, DM dm) {
+      boolean tryLock, boolean disableAlerts, DistributionManager dm) {
     this(lockGrantorId, svc, objectName, threadId, startTime, leaseMillis, waitMillis, reentrant,
         tryLock, disableAlerts, dm, false);
   }
 
   protected DLockRequestProcessor(LockGrantorId lockGrantorId, DLockService svc, Object objectName,
       int threadId, long startTime, long leaseMillis, long waitMillis, boolean reentrant,
-      boolean tryLock, DM dm, boolean async) {
+      boolean tryLock, DistributionManager dm, boolean async) {
     this(lockGrantorId, svc, objectName, threadId, startTime, leaseMillis, waitMillis, reentrant,
         tryLock, false, dm, false);
   }
 
   protected DLockRequestProcessor(LockGrantorId lockGrantorId, DLockService svc, Object objectName,
       int threadId, long startTime, long leaseMillis, long waitMillis, boolean reentrant,
-      boolean tryLock, boolean disableAlerts, DM dm, boolean async) {
+      boolean tryLock, boolean disableAlerts, DistributionManager dm, boolean async) {
     super(dm, lockGrantorId.getLockGrantorMember());
 
     this.svc = svc;
@@ -142,7 +142,7 @@ public class DLockRequestProcessor extends ReplyProcessor21 {
     return new DLockRequestMessage();
   }
 
-  protected CancelCriterion getCancelCriterion(DM ignoreDM) {
+  protected CancelCriterion getCancelCriterion(DistributionManager ignoreDM) {
     return this.svc.getCancelCriterion();
   }
 
@@ -440,7 +440,7 @@ public class DLockRequestProcessor extends ReplyProcessor21 {
     protected transient DLockService svc;
     protected transient DLockGrantor grantor;
     private transient long statStart = -1;
-    private transient volatile DM receivingDM;
+    private transient volatile DistributionManager receivingDM;
     private transient DLockResponseMessage response;
     private transient RemoteThread rThread;
 
@@ -533,7 +533,7 @@ public class DLockRequestProcessor extends ReplyProcessor21 {
      * Processes this message - invoked on the node that is the lock grantor.
      */
     @Override
-    protected void process(final DistributionManager dm) {
+    protected void process(final ClusterDistributionManager dm) {
       boolean failed = false;
       Throwable replyException = null;
       try {
@@ -575,7 +575,7 @@ public class DLockRequestProcessor extends ReplyProcessor21 {
     }
 
     /** Process locally without using messaging or executor */
-    protected void processLocally(final DM dm) {
+    protected void processLocally(final DistributionManager dm) {
       this.statStart = startGrantWait();
       this.svc = DLockService.getInternalServiceNamed(this.serviceName);
       basicProcess(dm, true); // don't use executor
@@ -587,7 +587,7 @@ public class DLockRequestProcessor extends ReplyProcessor21 {
      * <p>
      * this.svc and this.grantor must be set before calling this method.
      */
-    private void executeBasicProcess(final DM dm) {
+    private void executeBasicProcess(final DistributionManager dm) {
       final DLockRequestMessage msg = this;
       dm.getWaitingThreadPool().execute(new Runnable() {
         public void run() {
@@ -599,7 +599,7 @@ public class DLockRequestProcessor extends ReplyProcessor21 {
       });
     }
 
-    protected void basicProcess(final DM dm, final boolean waitForGrantor) {
+    protected void basicProcess(final DistributionManager dm, final boolean waitForGrantor) {
       final boolean isDebugEnabled_DLS = logger.isTraceEnabled(LogMarker.DLS);
       try {
         this.receivingDM = dm;
@@ -1068,7 +1068,7 @@ public class DLockRequestProcessor extends ReplyProcessor21 {
      * receiving a GRANT response which may already be in transit to this node.
      */
     @Override
-    public void process(final DM dm, final ReplyProcessor21 processor) {
+    public void process(final DistributionManager dm, final ReplyProcessor21 processor) {
       if (processor == null) {
         // The processor was probably cleaned up because of memberDeparted and we need to abandon
         return;
@@ -1099,7 +1099,8 @@ public class DLockRequestProcessor extends ReplyProcessor21 {
       }
     }
 
-    protected boolean callReleaseProcessor(DM dm, InternalDistributedMember grantor) {
+    protected boolean callReleaseProcessor(DistributionManager dm,
+        InternalDistributedMember grantor) {
       return DLockService.callReleaseProcessor(dm, this.serviceName, grantor, this.objectName,
           false, this.lockId);
     }
@@ -1108,7 +1109,7 @@ public class DLockRequestProcessor extends ReplyProcessor21 {
      * Releases a granted lock that was orphaned by interruption of the lock request. This also
      * releases any lock grant for which we cannot find an active reply processor.
      */
-    public void releaseOrphanedGrant(DM dm) {
+    public void releaseOrphanedGrant(DistributionManager dm) {
       InternalDistributedMember grantor = getSender();
       // method is rewritten to fix bug 35252
       boolean released = false;
@@ -1261,7 +1262,7 @@ public class DLockRequestProcessor extends ReplyProcessor21 {
     }
   }
 
-  public static void waitToProcessDLockResponse(DM dm) {
+  public static void waitToProcessDLockResponse(DistributionManager dm) {
     synchronized (waitToProcessDLockResponseLock) {
       while (waitToProcessDLockResponse) {
         dm.getCancelCriterion().checkCancelInProgress(null);

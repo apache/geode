@@ -16,7 +16,7 @@ package org.apache.geode.internal.cache.backup;
 
 import java.util.Set;
 
-import org.apache.geode.distributed.internal.DM;
+import org.apache.geode.distributed.internal.DistributionManager;
 import org.apache.geode.distributed.internal.DistributionMessage;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
 import org.apache.geode.internal.admin.remote.AdminMultipleReplyProcessor;
@@ -25,7 +25,7 @@ class BackupReplyProcessor extends AdminMultipleReplyProcessor {
 
   private final BackupResultCollector resultCollector;
 
-  BackupReplyProcessor(BackupResultCollector resultCollector, DM dm,
+  BackupReplyProcessor(BackupResultCollector resultCollector, DistributionManager dm,
       Set<InternalDistributedMember> recipients) {
     super(dm, recipients);
     this.resultCollector = resultCollector;

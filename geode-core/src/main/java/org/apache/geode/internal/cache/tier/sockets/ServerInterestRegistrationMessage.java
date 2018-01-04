@@ -20,7 +20,7 @@ import java.io.IOException;
 import java.util.Set;
 
 import org.apache.geode.CancelException;
-import org.apache.geode.distributed.internal.DM;
+import org.apache.geode.distributed.internal.ClusterDistributionManager;
 import org.apache.geode.distributed.internal.DistributionManager;
 import org.apache.geode.distributed.internal.HighPriorityDistributionMessage;
 import org.apache.geode.distributed.internal.MessageWithReply;
@@ -51,7 +51,7 @@ public class ServerInterestRegistrationMessage extends HighPriorityDistributionM
     // deserializing in fromData
   }
 
-  static void sendInterestChange(DM dm, ClientProxyMembershipID clientId,
+  static void sendInterestChange(DistributionManager dm, ClientProxyMembershipID clientId,
       ClientInterestMessageImpl clientInterestMessage) {
     ServerInterestRegistrationMessage registrationMessage =
         new ServerInterestRegistrationMessage(clientId, clientInterestMessage);
@@ -72,7 +72,7 @@ public class ServerInterestRegistrationMessage extends HighPriorityDistributionM
   }
 
   @Override
-  protected void process(DistributionManager dm) {
+  protected void process(ClusterDistributionManager dm) {
     // Get the proxy for the proxy id
     try {
       CacheClientNotifier clientNotifier = CacheClientNotifier.getInstance();

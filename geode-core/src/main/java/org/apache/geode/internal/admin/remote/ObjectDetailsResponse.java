@@ -38,7 +38,8 @@ public class ObjectDetailsResponse extends AdminResponse implements Cancellable 
    * Returns a <code>ObjectValueResponse</code> that will be returned to the specified recipient.
    * The message will contains a copy of the local manager's system config.
    */
-  public static ObjectDetailsResponse create(DM dm, InternalDistributedMember recipient) {
+  public static ObjectDetailsResponse create(DistributionManager dm,
+      InternalDistributedMember recipient) {
     ObjectDetailsResponse m = new ObjectDetailsResponse();
     m.setRecipient(recipient);
     return m;

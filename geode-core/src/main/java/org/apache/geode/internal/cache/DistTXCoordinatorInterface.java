@@ -16,11 +16,10 @@ package org.apache.geode.internal.cache;
 
 import java.util.ArrayList;
 import java.util.HashSet;
-import java.util.TreeMap;
 import java.util.TreeSet;
 
 import org.apache.geode.cache.UnsupportedOperationInTransactionException;
-import org.apache.geode.distributed.internal.DM;
+import org.apache.geode.distributed.internal.DistributionManager;
 import org.apache.geode.internal.cache.tx.DistTxEntryEvent;
 
 /**
@@ -46,13 +45,13 @@ public interface DistTXCoordinatorInterface extends TXStateInterface {
   public void addSecondaryTransactionalOperations(DistTxEntryEvent dtop)
       throws UnsupportedOperationInTransactionException;
 
-  public void setPrecommitMessage(DistTXPrecommitMessage precommitMsg, DM dm)
+  public void setPrecommitMessage(DistTXPrecommitMessage precommitMsg, DistributionManager dm)
       throws UnsupportedOperationInTransactionException;
 
-  public void setCommitMessage(DistTXCommitMessage commitMsg, DM dm)
+  public void setCommitMessage(DistTXCommitMessage commitMsg, DistributionManager dm)
       throws UnsupportedOperationInTransactionException;
 
-  public void setRollbackMessage(DistTXRollbackMessage rollbackMsg, DM dm)
+  public void setRollbackMessage(DistTXRollbackMessage rollbackMsg, DistributionManager dm)
       throws UnsupportedOperationInTransactionException;
 
   public void gatherAffectedRegions(HashSet<LocalRegion> regionSet, boolean includePrimaryRegions,

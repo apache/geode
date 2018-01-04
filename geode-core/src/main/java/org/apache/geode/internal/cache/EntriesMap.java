@@ -15,12 +15,11 @@
 
 package org.apache.geode.internal.cache;
 
-import java.util.*;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ConcurrentMap;
 
 import org.apache.geode.cache.*;
-import org.apache.geode.distributed.internal.DM;
+import org.apache.geode.distributed.internal.DistributionManager;
 import org.apache.geode.internal.InternalStatisticsDisabledException;
 
 /**
@@ -101,7 +100,7 @@ public interface EntriesMap extends ConcurrentMap {
    * @return false if map entry not found
    * @since GemFire 3.2.1
    */
-  public boolean fillInValue(InitialImageOperation.Entry entry, DM mgr);
+  public boolean fillInValue(InitialImageOperation.Entry entry, DistributionManager mgr);
 
 
   /**

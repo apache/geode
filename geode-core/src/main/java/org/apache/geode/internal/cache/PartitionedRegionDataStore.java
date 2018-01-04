@@ -67,7 +67,7 @@ import org.apache.geode.cache.query.internal.QCompiler;
 import org.apache.geode.cache.query.internal.index.IndexCreationData;
 import org.apache.geode.cache.query.internal.index.PartitionedIndex;
 import org.apache.geode.distributed.DistributedMember;
-import org.apache.geode.distributed.internal.DM;
+import org.apache.geode.distributed.internal.ClusterDistributionManager;
 import org.apache.geode.distributed.internal.DistributionConfig;
 import org.apache.geode.distributed.internal.DistributionManager;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
@@ -1637,7 +1637,7 @@ public class PartitionedRegionDataStore implements HasCachePerfStats {
       InternalDistributedMember primary = bucketAdvisor.getPrimary();
       if (!myId.equals(primary)) {
         StateFlushOperation flush = new StateFlushOperation(bucketRegion);
-        int executor = DistributionManager.WAITING_POOL_EXECUTOR;
+        int executor = ClusterDistributionManager.WAITING_POOL_EXECUTOR;
         try {
           flush.flush(Collections.singleton(primary), myId, executor, false);
         } catch (InterruptedException e) {
@@ -3014,7 +3014,7 @@ public class PartitionedRegionDataStore implements HasCachePerfStats {
       throw new BucketMovedException(
           LocalizedStrings.FunctionService_BUCKET_MIGRATED_TO_ANOTHER_NODE.toLocalizedString());
     }
-    final DM dm = this.partitionedRegion.getDistributionManager();
+    final DistributionManager dm = this.partitionedRegion.getDistributionManager();
 
     ResultSender resultSender = new PartitionedRegionFunctionResultSender(dm,
         this.partitionedRegion, time, msg, function, bucketSet);

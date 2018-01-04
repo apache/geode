@@ -31,7 +31,7 @@ import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
 import org.apache.geode.cache.persistence.PersistentID;
-import org.apache.geode.distributed.internal.DM;
+import org.apache.geode.distributed.internal.DistributionManager;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
 import org.apache.geode.internal.admin.remote.AdminFailureResponse;
 import org.apache.geode.internal.cache.InternalCache;
@@ -42,7 +42,7 @@ public class FinishBackupRequestTest {
 
   private FinishBackupRequest finishBackupRequest;
 
-  private DM dm;
+  private DistributionManager dm;
   private InternalCache cache;
   private BackupManager backupManager;
   private int processorId = 79;
@@ -58,7 +58,7 @@ public class FinishBackupRequestTest {
   @Before
   public void setUp() throws Exception {
     // mocks here
-    dm = mock(DM.class);
+    dm = mock(DistributionManager.class);
     cache = mock(InternalCache.class);
     backupManager = mock(BackupManager.class);
     targetDir = mock(File.class);

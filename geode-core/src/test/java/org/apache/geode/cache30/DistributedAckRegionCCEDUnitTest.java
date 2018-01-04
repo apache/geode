@@ -37,8 +37,8 @@ import org.apache.geode.cache.Operation;
 import org.apache.geode.cache.RegionAttributes;
 import org.apache.geode.cache.RegionFactory;
 import org.apache.geode.cache.Scope;
+import org.apache.geode.distributed.internal.ClusterDistributionManager;
 import org.apache.geode.distributed.internal.DistributionAdvisor;
-import org.apache.geode.distributed.internal.DistributionManager;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
 import org.apache.geode.distributed.internal.membership.NetMember;
 import org.apache.geode.internal.cache.DistributedCacheOperation;
@@ -65,7 +65,6 @@ import org.apache.geode.test.dunit.VM;
 import org.apache.geode.test.dunit.Wait;
 import org.apache.geode.test.dunit.WaitCriterion;
 import org.apache.geode.test.junit.categories.DistributedTest;
-import org.apache.geode.test.junit.categories.FlakyTest;
 
 @Category(DistributedTest.class)
 public class DistributedAckRegionCCEDUnitTest extends DistributedAckRegionDUnitTest {
@@ -238,8 +237,8 @@ public class DistributedAckRegionCCEDUnitTest extends DistributedAckRegionDUnitT
         InternalDistributedMember mbr = null;
         try {
           mbr = new InternalDistributedMember(nm.getInetAddress().getCanonicalHostName(),
-              nm.getPort() - 1, "fake_id", "fake_id_ustring", DistributionManager.NORMAL_DM_TYPE,
-              null, null);
+              nm.getPort() - 1, "fake_id", "fake_id_ustring",
+              ClusterDistributionManager.NORMAL_DM_TYPE, null, null);
           tag.setMemberID(mbr);
         } catch (UnknownHostException e) {
           org.apache.geode.test.dunit.Assert.fail("could not create member id", e);

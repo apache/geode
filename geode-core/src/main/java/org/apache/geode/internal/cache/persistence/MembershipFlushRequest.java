@@ -23,9 +23,8 @@ import org.apache.geode.CancelException;
 import org.apache.geode.DataSerializer;
 import org.apache.geode.SystemFailure;
 import org.apache.geode.cache.Cache;
-import org.apache.geode.cache.CacheFactory;
 import org.apache.geode.cache.RegionDestroyedException;
-import org.apache.geode.distributed.internal.DM;
+import org.apache.geode.distributed.internal.ClusterDistributionManager;
 import org.apache.geode.distributed.internal.DistributionManager;
 import org.apache.geode.distributed.internal.MessageWithReply;
 import org.apache.geode.distributed.internal.PooledDistributionMessage;
@@ -53,8 +52,8 @@ public class MembershipFlushRequest extends PooledDistributionMessage implements
     this.processorId = processorId;
   }
 
-  public static void send(Set<InternalDistributedMember> recipients, DM dm, String regionPath)
-      throws ReplyException {
+  public static void send(Set<InternalDistributedMember> recipients, DistributionManager dm,
+      String regionPath) throws ReplyException {
     ReplyProcessor21 processor = new ReplyProcessor21(dm, recipients);
     MembershipFlushRequest msg = new MembershipFlushRequest(regionPath, processor.getProcessorId());
     msg.setRecipients(recipients);
@@ -64,7 +63,7 @@ public class MembershipFlushRequest extends PooledDistributionMessage implements
 
 
   @Override
-  protected void process(DistributionManager dm) {
+  protected void process(ClusterDistributionManager dm) {
     int initLevel = LocalRegion.ANY_INIT;
     int oldLevel = LocalRegion.setThreadInitLevelRequirement(initLevel);
 

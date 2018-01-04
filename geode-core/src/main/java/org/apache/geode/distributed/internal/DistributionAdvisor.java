@@ -374,7 +374,7 @@ public class DistributionAdvisor {
     }
   }
 
-  public DM getDistributionManager() {
+  public DistributionManager getDistributionManager() {
     return getAdvisee().getDistributionManager();
   }
 
@@ -1611,8 +1611,8 @@ public class DistributionAdvisor {
     /**
      * Process add/remove/update of an incoming profile.
      */
-    public void processIncoming(DistributionManager dm, String adviseePath, boolean removeProfile,
-        boolean exchangeProfiles, final List<Profile> replyProfiles) {
+    public void processIncoming(ClusterDistributionManager dm, String adviseePath,
+        boolean removeProfile, boolean exchangeProfiles, final List<Profile> replyProfiles) {
       // nothing by default; just log that nothing was done
       if (logger.isDebugEnabled()) {
         logger.debug("While processing UpdateAttributes message ignored incoming profile: {}",

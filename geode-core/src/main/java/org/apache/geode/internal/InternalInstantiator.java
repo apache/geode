@@ -30,7 +30,7 @@ import org.apache.logging.log4j.Logger;
 import org.apache.geode.DataSerializer;
 import org.apache.geode.Instantiator;
 import org.apache.geode.cache.Cache;
-import org.apache.geode.distributed.internal.DistributionManager;
+import org.apache.geode.distributed.internal.ClusterDistributionManager;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.distributed.internal.SerialDistributionMessage;
 import org.apache.geode.i18n.StringId;
@@ -863,7 +863,7 @@ public class InternalInstantiator {
     }
 
     @Override
-    protected void process(DistributionManager dm) {
+    protected void process(ClusterDistributionManager dm) {
       if (this.fromDataProblems != null) {
         if (logger.isDebugEnabled()) {
           logger.debug(this.fromDataProblems);
@@ -979,7 +979,7 @@ public class InternalInstantiator {
     }
 
     @Override
-    protected void process(DistributionManager dm) {
+    protected void process(ClusterDistributionManager dm) {
       if (fromDataProblems != null) {
         if (logger.isDebugEnabled()) {
           logger.debug(fromDataProblems);

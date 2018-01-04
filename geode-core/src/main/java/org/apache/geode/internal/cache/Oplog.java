@@ -68,8 +68,8 @@ import org.apache.geode.cache.RegionDestroyedException;
 import org.apache.geode.cache.TimeoutException;
 import org.apache.geode.cache.UnsupportedVersionException;
 import org.apache.geode.distributed.OplogCancelledException;
-import org.apache.geode.distributed.internal.DM;
 import org.apache.geode.distributed.internal.DistributionConfig;
+import org.apache.geode.distributed.internal.DistributionManager;
 import org.apache.geode.internal.Assert;
 import org.apache.geode.internal.ByteArrayDataInput;
 import org.apache.geode.internal.HeapDataOutputStream;
@@ -7202,7 +7202,7 @@ public class Oplog implements CompactableOplog, Flushable {
 
     @Override
     public boolean fillInValue(InternalRegion region, InitialImageOperation.Entry entry,
-        ByteArrayDataInput in, DM distributionManager, final Version version) {
+        ByteArrayDataInput in, DistributionManager distributionManager, final Version version) {
       return false;
     }
 

@@ -615,7 +615,7 @@ public class AdminDistributedSystemImpl implements org.apache.geode.admin.AdminD
   }
 
   protected void checkCancellation() {
-    DM dm = this.getDistributionManager();
+    DistributionManager dm = this.getDistributionManager();
     // TODO does dm == null mean we're dead?
     if (dm != null) {
       dm.getCancelCriterion().checkCancelInProgress(null);
@@ -901,7 +901,7 @@ public class AdminDistributedSystemImpl implements org.apache.geode.admin.AdminD
    * Returns the DistributionManager this implementation is using to connect to the distributed
    * system.
    */
-  public DM getDistributionManager() {
+  public DistributionManager getDistributionManager() {
     if (this.gfManagerAgent == null) {
       return null;
     }
@@ -1647,7 +1647,7 @@ public class AdminDistributedSystemImpl implements org.apache.geode.admin.AdminD
   private GfManagerAgentConfig buildAgentConfig(InternalLogWriter logWriter) {
     RemoteTransportConfig conf = new RemoteTransportConfig(isMcastEnabled(), getDisableTcp(),
         getDisableAutoReconnect(), getBindAddress(), buildSSLConfig(), parseLocators(),
-        getMembershipPortRange(), getTcpPort(), DistributionManager.ADMIN_ONLY_DM_TYPE);
+        getMembershipPortRange(), getTcpPort(), ClusterDistributionManager.ADMIN_ONLY_DM_TYPE);
     return new GfManagerAgentConfig(getSystemName(), conf, logWriter, this.alertLevel.getSeverity(),
         this, this);
   }
@@ -2171,7 +2171,7 @@ public class AdminDistributedSystemImpl implements org.apache.geode.admin.AdminD
 
   public Set<PersistentID> getMissingPersistentMembers() throws AdminException {
     connectAdminDS();
-    DM dm = getDistributionManager();
+    DistributionManager dm = getDistributionManager();
     if (dm == null) {
       throw new IllegalStateException(
           LocalizedStrings.AdminDistributedSystemImpl_CONNECT_HAS_NOT_BEEN_INVOKED_ON_THIS_ADMINDISTRIBUTEDSYSTEM
@@ -2180,13 +2180,13 @@ public class AdminDistributedSystemImpl implements org.apache.geode.admin.AdminD
     return getMissingPersistentMembers(dm);
   }
 
-  public static Set<PersistentID> getMissingPersistentMembers(DM dm) {
+  public static Set<PersistentID> getMissingPersistentMembers(DistributionManager dm) {
     return MissingPersistentIDsRequest.send(dm);
   }
 
   public void revokePersistentMember(InetAddress host, String directory) throws AdminException {
     connectAdminDS();
-    DM dm = getDistributionManager();
+    DistributionManager dm = getDistributionManager();
     if (dm == null) {
       throw new IllegalStateException(
           LocalizedStrings.AdminDistributedSystemImpl_CONNECT_HAS_NOT_BEEN_INVOKED_ON_THIS_ADMINDISTRIBUTEDSYSTEM
@@ -2198,7 +2198,7 @@ public class AdminDistributedSystemImpl implements org.apache.geode.admin.AdminD
 
   public void revokePersistentMember(UUID diskStoreID) throws AdminException {
     connectAdminDS();
-    DM dm = getDistributionManager();
+    DistributionManager dm = getDistributionManager();
     if (dm == null) {
       throw new IllegalStateException(
           LocalizedStrings.AdminDistributedSystemImpl_CONNECT_HAS_NOT_BEEN_INVOKED_ON_THIS_ADMINDISTRIBUTEDSYSTEM
@@ -2208,7 +2208,7 @@ public class AdminDistributedSystemImpl implements org.apache.geode.admin.AdminD
 
   }
 
-  public static void revokePersistentMember(DM dm, UUID diskStoreID) {
+  public static void revokePersistentMember(DistributionManager dm, UUID diskStoreID) {
     PersistentMemberPattern pattern = new PersistentMemberPattern(diskStoreID);
     boolean success = false;
     try {
@@ -2246,7 +2246,8 @@ public class AdminDistributedSystemImpl implements org.apache.geode.admin.AdminD
    *
    * @deprecated use {@link #revokePersistentMember(UUID)} instead
    */
-  public static void revokePersistentMember(DM dm, InetAddress host, String directory) {
+  public static void revokePersistentMember(DistributionManager dm, InetAddress host,
+      String directory) {
 
     PersistentMemberPattern pattern =
         new PersistentMemberPattern(host, directory, System.currentTimeMillis());
@@ -2273,7 +2274,7 @@ public class AdminDistributedSystemImpl implements org.apache.geode.admin.AdminD
 
   public Set shutDownAllMembers(long timeout) throws AdminException {
     connectAdminDS();
-    DM dm = getDistributionManager();
+    DistributionManager dm = getDistributionManager();
     if (dm == null) {
       throw new IllegalStateException(
           LocalizedStrings.AdminDistributedSystemImpl_CONNECT_HAS_NOT_BEEN_INVOKED_ON_THIS_ADMINDISTRIBUTEDSYSTEM
@@ -2291,7 +2292,7 @@ public class AdminDistributedSystemImpl implements org.apache.geode.admin.AdminD
    *        timeout is exceeded, persistent recovery after the shutdown may need to do a GII. -1
    *        indicates that the shutdown should wait forever.
    */
-  public static Set shutDownAllMembers(DM dm, long timeout) {
+  public static Set shutDownAllMembers(DistributionManager dm, long timeout) {
     return ShutdownAllRequest.send(dm, timeout);
   }
 
@@ -2301,7 +2302,7 @@ public class AdminDistributedSystemImpl implements org.apache.geode.admin.AdminD
 
   public BackupStatus backupAllMembers(File targetDir, File baselineDir) throws AdminException {
     connectAdminDS();
-    DM dm = getDistributionManager();
+    DistributionManager dm = getDistributionManager();
     if (dm == null) {
       throw new IllegalStateException(
           LocalizedStrings.AdminDistributedSystemImpl_CONNECT_HAS_NOT_BEEN_INVOKED_ON_THIS_ADMINDISTRIBUTEDSYSTEM
@@ -2310,14 +2311,14 @@ public class AdminDistributedSystemImpl implements org.apache.geode.admin.AdminD
     return backupAllMembers(dm, targetDir, baselineDir);
   }
 
-  public static BackupStatus backupAllMembers(DM dm, File targetDir, File baselineDir)
-      throws AdminException {
+  public static BackupStatus backupAllMembers(DistributionManager dm, File targetDir,
+      File baselineDir) throws AdminException {
     return new BackupStatusImpl(BackupUtil.backupAllMembers(dm, targetDir, baselineDir));
   }
 
   public Map<DistributedMember, Set<PersistentID>> compactAllDiskStores() throws AdminException {
     connectAdminDS();
-    DM dm = getDistributionManager();
+    DistributionManager dm = getDistributionManager();
     if (dm == null) {
       throw new IllegalStateException(
           LocalizedStrings.AdminDistributedSystemImpl_CONNECT_HAS_NOT_BEEN_INVOKED_ON_THIS_ADMINDISTRIBUTEDSYSTEM
@@ -2326,8 +2327,8 @@ public class AdminDistributedSystemImpl implements org.apache.geode.admin.AdminD
     return compactAllDiskStores(dm);
   }
 
-  public static Map<DistributedMember, Set<PersistentID>> compactAllDiskStores(DM dm)
-      throws AdminException {
+  public static Map<DistributedMember, Set<PersistentID>> compactAllDiskStores(
+      DistributionManager dm) throws AdminException {
     return CompactRequest.send(dm);
   }
 

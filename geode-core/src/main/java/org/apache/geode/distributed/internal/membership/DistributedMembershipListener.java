@@ -17,7 +17,6 @@ package org.apache.geode.distributed.internal.membership;
 import java.util.List;
 import java.util.Set;
 
-import org.apache.geode.distributed.internal.DistributionManager;
 import org.apache.geode.distributed.internal.DistributionMessage;
 import org.apache.geode.distributed.internal.direct.DirectChannelListener;
 

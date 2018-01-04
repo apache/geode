@@ -23,7 +23,7 @@ import java.io.IOException;
 import org.apache.logging.log4j.Logger;
 
 import org.apache.geode.DataSerializer;
-import org.apache.geode.distributed.internal.DistributionManager;
+import org.apache.geode.distributed.internal.ClusterDistributionManager;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.distributed.internal.PooledDistributionMessage;
 import org.apache.geode.internal.i18n.LocalizedStrings;
@@ -77,7 +77,7 @@ public class AdminConsoleDisconnectMessage extends PooledDistributionMessage {
   }
 
   @Override
-  public void process(DistributionManager dm) {
+  public void process(ClusterDistributionManager dm) {
     InternalDistributedSystem sys = dm.getSystem();
     // DistributionConfig config = sys.getConfig();
     if (alertListenerExpected) {

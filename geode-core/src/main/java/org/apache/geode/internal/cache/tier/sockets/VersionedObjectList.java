@@ -35,7 +35,7 @@ import org.apache.logging.log4j.Logger;
 import org.apache.geode.DataSerializer;
 import org.apache.geode.InternalGemFireException;
 import org.apache.geode.distributed.DistributedMember;
-import org.apache.geode.distributed.internal.DM;
+import org.apache.geode.distributed.internal.DistributionManager;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
 import org.apache.geode.internal.DataSerializableFixedID;
@@ -324,7 +324,8 @@ public class VersionedObjectList extends ObjectPartList implements Externalizabl
    */
   private void getCanonicalIDs() {
     if (this.versionTags != null) {
-      DM dm = InternalDistributedSystem.getConnectedInstance().getDistributionManager();
+      DistributionManager dm =
+          InternalDistributedSystem.getConnectedInstance().getDistributionManager();
       if (dm != null) {
         for (VersionTag tag : this.versionTags) {
           if (tag != null) {

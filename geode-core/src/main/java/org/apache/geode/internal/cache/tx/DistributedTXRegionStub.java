@@ -14,8 +14,6 @@
  */
 package org.apache.geode.internal.cache.tx;
 
-import java.util.Collections;
-
 import org.apache.geode.cache.CacheException;
 import org.apache.geode.cache.EntryNotFoundException;
 import org.apache.geode.cache.Region.Entry;
@@ -23,7 +21,7 @@ import org.apache.geode.cache.RegionDestroyedException;
 import org.apache.geode.cache.TransactionDataNodeHasDepartedException;
 import org.apache.geode.cache.TransactionDataNotColocatedException;
 import org.apache.geode.cache.TransactionException;
-import org.apache.geode.distributed.internal.DistributionManager;
+import org.apache.geode.distributed.internal.ClusterDistributionManager;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
 import org.apache.geode.internal.cache.DistributedPutAllOperation;
 import org.apache.geode.internal.cache.DistributedRegion;
@@ -65,9 +63,9 @@ public class DistributedTXRegionStub extends AbstractPeerTXRegionStub {
     // TODO Auto-generated method stub
     // this.prStats.incPartitionMessagesSent();
     try {
-      RemoteOperationResponse response =
-          RemoteDestroyMessage.send(state.getTarget(), event.getLocalRegion(), event,
-              expectedOldValue, DistributionManager.PARTITIONED_REGION_EXECUTOR, true, false);
+      RemoteOperationResponse response = RemoteDestroyMessage.send(state.getTarget(),
+          event.getLocalRegion(), event, expectedOldValue,
+          ClusterDistributionManager.PARTITIONED_REGION_EXECUTOR, true, false);
       response.waitForCacheException();
     } catch (EntryNotFoundException enfe) {
       throw enfe;
@@ -118,8 +116,9 @@ public class DistributedTXRegionStub extends AbstractPeerTXRegionStub {
   public void invalidateExistingEntry(EntryEventImpl event, boolean invokeCallbacks,
       boolean forceNewEntry) {
     try {
-      RemoteOperationResponse response = RemoteInvalidateMessage.send(state.getTarget(),
-          event.getRegion(), event, DistributionManager.PARTITIONED_REGION_EXECUTOR, true, false);
+      RemoteOperationResponse response =
+          RemoteInvalidateMessage.send(state.getTarget(), event.getRegion(), event,
+              ClusterDistributionManager.PARTITIONED_REGION_EXECUTOR, true, false);
       response.waitForCacheException();
     } catch (RegionDestroyedException rde) {
       throw new TransactionDataNotColocatedException(
@@ -234,7 +233,7 @@ public class DistributedTXRegionStub extends AbstractPeerTXRegionStub {
       RemotePutAllMessage.PutAllResponse response =
           RemotePutAllMessage.send(state.getTarget(), putallOp.getBaseEvent(),
               putallOp.getPutAllEntryData(), putallOp.getPutAllEntryData().length, true,
-              DistributionManager.PARTITIONED_REGION_EXECUTOR, false);
+              ClusterDistributionManager.PARTITIONED_REGION_EXECUTOR, false);
       response.waitForCacheException();
     } catch (RegionDestroyedException rde) {
       throw new TransactionDataNotColocatedException(
@@ -253,7 +252,7 @@ public class DistributedTXRegionStub extends AbstractPeerTXRegionStub {
       RemoteRemoveAllMessage.RemoveAllResponse response =
           RemoteRemoveAllMessage.send(state.getTarget(), op.getBaseEvent(),
               op.getRemoveAllEntryData(), op.getRemoveAllEntryData().length, true,
-              DistributionManager.PARTITIONED_REGION_EXECUTOR, false);
+              ClusterDistributionManager.PARTITIONED_REGION_EXECUTOR, false);
       response.waitForCacheException();
     } catch (RegionDestroyedException rde) {
       throw new TransactionDataNotColocatedException(

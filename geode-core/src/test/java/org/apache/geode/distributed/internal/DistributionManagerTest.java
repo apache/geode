@@ -33,7 +33,7 @@ public class DistributionManagerTest {
 
   @Test
   public void shouldBeMockable() throws Exception {
-    DistributionManager mockDistributionManager = mock(DistributionManager.class);
+    ClusterDistributionManager mockDistributionManager = mock(ClusterDistributionManager.class);
     InternalDistributedMember mockInternalDistributedMember = mock(InternalDistributedMember.class);
     Executor mockExecutor = mock(Executor.class);
     when(mockDistributionManager.getExecutor(anyInt(), eq(mockInternalDistributedMember)))

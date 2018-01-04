@@ -36,7 +36,8 @@ public class ObjectNamesResponse extends AdminResponse implements Cancellable {
    * Returns a <code>ObjectNamesResponse</code> that will be returned to the specified recipient.
    * The message will contains a copy of the local manager's system config.
    */
-  public static ObjectNamesResponse create(DM dm, InternalDistributedMember recipient) {
+  public static ObjectNamesResponse create(DistributionManager dm,
+      InternalDistributedMember recipient) {
     ObjectNamesResponse m = new ObjectNamesResponse();
     m.setRecipient(recipient);
     return m;

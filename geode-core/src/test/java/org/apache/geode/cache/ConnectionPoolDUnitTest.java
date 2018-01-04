@@ -49,7 +49,7 @@ import org.apache.geode.cache30.ClientServerTestCase;
 import org.apache.geode.cache30.TestCacheLoader;
 import org.apache.geode.cache30.TestCacheWriter;
 import org.apache.geode.distributed.DistributedMember;
-import org.apache.geode.distributed.internal.DistributionManager;
+import org.apache.geode.distributed.internal.ClusterDistributionManager;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.internal.Assert;
 import org.apache.geode.internal.cache.CacheServerImpl;
@@ -906,9 +906,9 @@ public class ConnectionPoolDUnitTest extends JUnit4CacheTestCase {
     List l = InternalDistributedSystem.getExistingSystems();
     if (l.size() > 1) {
       getSystem().getLogWriter().info("validateDS: size=" + l.size() + " isDedicatedAdminVM="
-          + DistributionManager.isDedicatedAdminVM() + " l=" + l);
+          + ClusterDistributionManager.isDedicatedAdminVM() + " l=" + l);
     }
-    assertFalse(DistributionManager.isDedicatedAdminVM());
+    assertFalse(ClusterDistributionManager.isDedicatedAdminVM());
     assertEquals(1, l.size());
   }
 

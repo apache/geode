@@ -34,7 +34,7 @@ import org.apache.geode.cache.EntryNotFoundException;
 import org.apache.geode.cache.Operation;
 import org.apache.geode.cache.TransactionDataNotColocatedException;
 import org.apache.geode.distributed.DistributedMember;
-import org.apache.geode.distributed.internal.DM;
+import org.apache.geode.distributed.internal.ClusterDistributionManager;
 import org.apache.geode.distributed.internal.DirectReplyProcessor;
 import org.apache.geode.distributed.internal.DistributionManager;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
@@ -125,7 +125,7 @@ public class RemoteRemoveAllMessage extends RemoteOperationMessageWithDirectRepl
         attempts++;
         final boolean posDup = (attempts > 1);
         RemoveAllResponse response = send(replicate, event, data, dataCount, false,
-            DistributionManager.SERIAL_EXECUTOR, posDup);
+            ClusterDistributionManager.SERIAL_EXECUTOR, posDup);
         response.waitForCacheException();
         VersionedObjectList result = response.getResponse();
 
@@ -302,7 +302,7 @@ public class RemoteRemoveAllMessage extends RemoteOperationMessageWithDirectRepl
   }
 
   @Override
-  protected boolean operateOnRegion(DistributionManager dm, LocalRegion r, long startTime)
+  protected boolean operateOnRegion(ClusterDistributionManager dm, LocalRegion r, long startTime)
       throws RemoteOperationException {
 
     final boolean sendReply;
@@ -409,8 +409,8 @@ public class RemoteRemoveAllMessage extends RemoteOperationMessageWithDirectRepl
 
   // override reply message type from PartitionMessage
   @Override
-  protected void sendReply(InternalDistributedMember member, int procId, DM dm, ReplyException ex,
-      LocalRegion r, long startTime) {
+  protected void sendReply(InternalDistributedMember member, int procId, DistributionManager dm,
+      ReplyException ex, LocalRegion r, long startTime) {
     ReplyMessage.send(member, procId, ex, getReplySender(dm), r != null && r.isInternalRegion());
   }
 
@@ -460,7 +460,7 @@ public class RemoteRemoveAllMessage extends RemoteOperationMessageWithDirectRepl
      * @param dm the distribution manager that is processing the message.
      */
     @Override
-    public void process(final DM dm, final ReplyProcessor21 rp) {
+    public void process(final DistributionManager dm, final ReplyProcessor21 rp) {
       final long startTime = getTimestamp();
 
       if (rp == null) {

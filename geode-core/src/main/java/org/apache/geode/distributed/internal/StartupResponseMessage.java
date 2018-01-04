@@ -61,7 +61,7 @@ public class StartupResponseMessage extends HighPriorityDistributionMessage
 
   }
 
-  StartupResponseMessage(DistributionManager dm, int processorId,
+  StartupResponseMessage(ClusterDistributionManager dm, int processorId,
       InternalDistributedMember recipient, String rejectionMessage, boolean responderIsAdmin) {
     // StartupResponseMessage m = new StartupResponseMessage();
 
@@ -131,7 +131,7 @@ public class StartupResponseMessage extends HighPriorityDistributionMessage
    * This method is invoked on the receiver side
    */
   @Override
-  protected void process(DistributionManager dm) {
+  protected void process(ClusterDistributionManager dm) {
 
     if (this.interfaces == null || this.interfaces.size() == 0) {
       // this.rejectionMessage = "Peer " + getSender() + " has no network interfaces";

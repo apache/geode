@@ -34,8 +34,8 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
+import org.apache.geode.distributed.internal.ClusterDistributionManager;
 import org.apache.geode.distributed.internal.DistributionConfigImpl;
-import org.apache.geode.distributed.internal.DistributionManager;
 import org.apache.geode.distributed.internal.LonerDistributionManager.DummyDMStats;
 import org.apache.geode.distributed.internal.membership.gms.ServiceConfig;
 import org.apache.geode.distributed.internal.membership.gms.Services;
@@ -182,7 +182,7 @@ public class StatRecorderJUnitTest {
     when(mockConfig.getDistributionConfig()).thenReturn(config);
 
     RemoteTransportConfig transport =
-        new RemoteTransportConfig(config, DistributionManager.NORMAL_DM_TYPE);
+        new RemoteTransportConfig(config, ClusterDistributionManager.NORMAL_DM_TYPE);
     when(mockConfig.getTransport()).thenReturn(transport);
 
     JGroupsMessenger messenger = new JGroupsMessenger();
@@ -194,7 +194,7 @@ public class StatRecorderJUnitTest {
     // now test to see if the multicast stack has the recorder installed
     nonDefault.put(MCAST_PORT, "12345");
     config = new DistributionConfigImpl(nonDefault);
-    transport = new RemoteTransportConfig(config, DistributionManager.NORMAL_DM_TYPE);
+    transport = new RemoteTransportConfig(config, ClusterDistributionManager.NORMAL_DM_TYPE);
     when(mockConfig.getDistributionConfig()).thenReturn(config);
     when(mockConfig.getTransport()).thenReturn(transport);
     messenger = new JGroupsMessenger();

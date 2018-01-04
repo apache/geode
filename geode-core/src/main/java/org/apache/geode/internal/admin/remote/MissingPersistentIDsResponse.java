@@ -21,8 +21,7 @@ import java.util.HashSet;
 import java.util.Set;
 
 import org.apache.geode.cache.persistence.PersistentID;
-import org.apache.geode.distributed.internal.DistributionManager;
-import org.apache.geode.distributed.internal.InternalDistributedSystem;
+import org.apache.geode.distributed.internal.ClusterDistributionManager;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
 import org.apache.geode.internal.InternalDataSerializer;
 import org.apache.geode.internal.cache.persistence.PersistentMemberPattern;
@@ -51,7 +50,7 @@ public class MissingPersistentIDsResponse extends AdminResponse {
   }
 
   @Override
-  protected void process(DistributionManager dm) {
+  protected void process(ClusterDistributionManager dm) {
     super.process(dm);
   }
 

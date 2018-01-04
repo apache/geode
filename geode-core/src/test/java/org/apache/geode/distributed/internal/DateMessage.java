@@ -54,7 +54,7 @@ public class DateMessage extends SerialDistributionMessage {
   /**
    * Just prints out the date
    */
-  public void process(DistributionManager dm) {
+  public void process(ClusterDistributionManager dm) {
     // Make sure that message state is what we expect
     Assert.assertTrue(this.date != null);
 

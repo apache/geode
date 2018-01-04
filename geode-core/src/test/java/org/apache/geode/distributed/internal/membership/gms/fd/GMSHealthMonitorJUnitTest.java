@@ -64,7 +64,6 @@ import org.apache.geode.internal.HeapDataOutputStream;
 import org.apache.geode.internal.Version;
 import org.apache.geode.internal.net.SocketCreator;
 import org.apache.geode.internal.net.SocketCreatorFactory;
-import org.apache.geode.test.junit.categories.FlakyTest;
 import org.apache.geode.test.junit.categories.IntegrationTest;
 import org.apache.geode.test.junit.categories.MembershipTest;
 
@@ -106,7 +105,7 @@ public class GMSHealthMonitorJUnitTest {
     nonDefault.put(LOG_LEVEL, "fine");
     nonDefault.put(MEMBER_TIMEOUT, "2000");
     nonDefault.put(LOCATORS, "localhost[10344]");
-    DM dm = mock(DM.class);
+    DistributionManager dm = mock(DistributionManager.class);
     SocketCreatorFactory.setDistributionConfig(new DistributionConfigImpl(new Properties()));
     InternalDistributedSystem system =
         InternalDistributedSystem.newInstanceForTesting(dm, nonDefault);
@@ -128,7 +127,7 @@ public class GMSHealthMonitorJUnitTest {
         InternalDistributedMember mbr = new InternalDistributedMember("localhost", 8888 + i);
 
         if (i == 0 || i == 1) {
-          mbr.setVmKind(DistributionManager.LOCATOR_DM_TYPE);
+          mbr.setVmKind(ClusterDistributionManager.LOCATOR_DM_TYPE);
           mbr.getNetMember().setPreferredForCoordinator(true);
         }
         mockMembers.add(mbr);
