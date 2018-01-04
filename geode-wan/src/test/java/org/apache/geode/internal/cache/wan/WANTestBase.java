@@ -2760,16 +2760,20 @@ public class WANTestBase extends JUnit4DistributedTestCase {
   public static void validateRegionSize_PDX(String regionName, final int regionSize) {
     final Region r = cache.getRegion(Region.SEPARATOR + regionName);
     assertNotNull(r);
-    Awaitility.await().atMost(200, TimeUnit.SECONDS)
-        .until(
-            () -> assertEquals(
-                "Expected region entries: " + regionSize + " but actual entries: "
-                    + r.keySet().size() + " present region keyset " + r.keySet(),
-                true, (regionSize <= r.keySet().size())));
+    Awaitility.await().atMost(200, TimeUnit.SECONDS).until(() -> {
+      assertEquals("Expected region entries: " + regionSize + " but actual entries: "
+          + r.keySet().size() + " present region keyset " + r.keySet(), true,
+          (regionSize <= r.keySet().size()));
+      assertEquals("Expected region size: " + regionSize + " but actual size: " + r.size(), true,
+          (regionSize == r.size()));
+    });
     for (int i = 0; i < regionSize; i++) {
+      final int temp = i;
       logger.info("For Key : Key_" + i + " : Values : " + r.get("Key_" + i));
-      assertEquals("keySet = " + r.keySet() + " values() = " + r.values(),
-          new SimpleClass(i, (byte) i), r.get("Key_" + i));
+      Awaitility.await().atMost(200, TimeUnit.SECONDS)
+          .until(() -> assertEquals(
+              "keySet = " + r.keySet() + " values() = " + r.values() + "Region Size = " + r.size(),
+              new SimpleClass(temp, (byte) temp), r.get("Key_" + temp)));
     }
   }
 
