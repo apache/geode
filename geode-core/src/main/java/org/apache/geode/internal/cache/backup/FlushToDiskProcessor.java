@@ -16,13 +16,13 @@ package org.apache.geode.internal.cache.backup;
 
 import java.util.Collection;
 
-import org.apache.geode.distributed.internal.DM;
+import org.apache.geode.distributed.internal.DistributionManager;
 import org.apache.geode.distributed.internal.DistributionMessage;
 import org.apache.geode.internal.admin.remote.AdminMultipleReplyProcessor;
 
 class FlushToDiskProcessor extends AdminMultipleReplyProcessor {
 
-  FlushToDiskProcessor(DM dm, Collection initMembers) {
+  FlushToDiskProcessor(DistributionManager dm, Collection initMembers) {
     super(dm, initMembers);
   }
 

@@ -31,7 +31,7 @@ import org.apache.geode.cache.RegionFactory;
 import org.apache.geode.cache.RegionShortcut;
 import org.apache.geode.cache.Scope;
 import org.apache.geode.cache.SubscriptionAttributes;
-import org.apache.geode.distributed.internal.DistributionManager;
+import org.apache.geode.distributed.internal.ClusterDistributionManager;
 import org.apache.geode.distributed.internal.DistributionMessage;
 import org.apache.geode.distributed.internal.DistributionMessageObserver;
 import org.apache.geode.internal.cache.SearchLoadAndWriteProcessor.NetSearchRequestMessage;
@@ -241,7 +241,8 @@ public class NetSearchMessagingDUnitTest extends JUnit4CacheTestCase {
 
       public void run() {
         DistributionMessageObserver ob = new DistributionMessageObserver() {
-          public void beforeProcessMessage(DistributionManager dm, DistributionMessage message) {
+          public void beforeProcessMessage(ClusterDistributionManager dm,
+              DistributionMessage message) {
             if (message instanceof NetSearchRequestMessage) {
               disconnectFromDS();
             }
@@ -292,7 +293,8 @@ public class NetSearchMessagingDUnitTest extends JUnit4CacheTestCase {
 
       public void run() {
         DistributionMessageObserver ob = new DistributionMessageObserver() {
-          public void beforeProcessMessage(DistributionManager dm, DistributionMessage message) {
+          public void beforeProcessMessage(ClusterDistributionManager dm,
+              DistributionMessage message) {
             if (message instanceof NetSearchRequestMessage) {
               disconnectFromDS();
             }

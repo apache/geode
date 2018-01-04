@@ -21,7 +21,7 @@ import java.io.IOException;
 import org.apache.geode.CancelException;
 import org.apache.geode.DataSerializer;
 import org.apache.geode.cache.CacheFactory;
-import org.apache.geode.distributed.internal.DM;
+import org.apache.geode.distributed.internal.DistributionManager;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
 import org.apache.geode.internal.cache.InternalCache;
 
@@ -37,7 +37,8 @@ public class CacheInfoResponse extends AdminResponse {
   /**
    * Returns a {@code CacheInfoResponse} that will be returned to the specified recipient.
    */
-  public static CacheInfoResponse create(DM dm, InternalDistributedMember recipient) {
+  public static CacheInfoResponse create(DistributionManager dm,
+      InternalDistributedMember recipient) {
     CacheInfoResponse m = new CacheInfoResponse();
     m.setRecipient(recipient);
     try {

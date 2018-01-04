@@ -22,7 +22,7 @@ import org.apache.geode.CancelException;
 import org.apache.geode.DataSerializer;
 import org.apache.geode.cache.CacheFactory;
 import org.apache.geode.cache.server.CacheServer;
-import org.apache.geode.distributed.internal.DM;
+import org.apache.geode.distributed.internal.DistributionManager;
 import org.apache.geode.internal.Assert;
 import org.apache.geode.internal.cache.CacheServerImpl;
 import org.apache.geode.internal.cache.InternalCache;
@@ -44,7 +44,7 @@ public class BridgeServerResponse extends AdminResponse {
   /**
    * Creates a {@code BridgeServerResponse} in response to the given request.
    */
-  static BridgeServerResponse create(DM dm, BridgeServerRequest request) {
+  static BridgeServerResponse create(DistributionManager dm, BridgeServerRequest request) {
     BridgeServerResponse m = new BridgeServerResponse();
     m.setRecipient(request.getSender());
 

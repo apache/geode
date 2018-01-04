@@ -46,7 +46,7 @@ import org.apache.logging.log4j.Logger;
 
 import org.apache.geode.cache.persistence.PersistentID;
 import org.apache.geode.distributed.DistributedMember;
-import org.apache.geode.distributed.internal.DM;
+import org.apache.geode.distributed.internal.ClusterDistributionManager;
 import org.apache.geode.distributed.internal.DistributionManager;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
@@ -174,7 +174,7 @@ public class DistributedSystemBridge {
   /**
    * Distribution manager
    */
-  private DM dm;
+  private DistributionManager dm;
 
   private String alertLevel;
 
@@ -500,7 +500,7 @@ public class DistributedSystemBridge {
           baselineDir = new File(baselineDirPath);
         }
 
-        DM dm = cache.getDistributionManager();
+        DistributionManager dm = cache.getDistributionManager();
         Set recipients = dm.getOtherDistributionManagerIds();
 
         BackupDataStoreResult result =
@@ -804,7 +804,7 @@ public class DistributedSystemBridge {
     if (!members.isEmpty()) {
       Set<String> locatorMemberSet = new TreeSet<>();
       for (DistributedMember member : members) {
-        if (DistributionManager.LOCATOR_DM_TYPE == ((InternalDistributedMember) member)
+        if (ClusterDistributionManager.LOCATOR_DM_TYPE == ((InternalDistributedMember) member)
             .getVmKind()) {
           String name = member.getName();
           name = StringUtils.isNotBlank(name) ? name : member.getId();
@@ -904,7 +904,7 @@ public class DistributedSystemBridge {
   @SuppressWarnings("unchecked")
   public String[] shutDownAllMembers() throws Exception {
     try {
-      DM dm = cache.getDistributionManager();
+      DistributionManager dm = cache.getDistributionManager();
       Set<InternalDistributedMember> members = ShutdownAllRequest.send(dm, 0);
       String[] shutDownMembers = new String[members.size()];
       int j = 0;

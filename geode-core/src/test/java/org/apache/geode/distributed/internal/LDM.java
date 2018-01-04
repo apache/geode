@@ -36,7 +36,7 @@ public class LDM {
     props.setProperty("mcastPort", "0");
     props.setProperty("logLevel", "config");
     InternalDistributedSystem system = (InternalDistributedSystem) DistributedSystem.connect(props);
-    DM dm = system.getDistributionManager();
+    DistributionManager dm = system.getDistributionManager();
 
     DistributionMessage message = new HelloMessage();
     dm.putOutgoing(message);
@@ -58,7 +58,7 @@ public class LDM {
     public HelloMessage() {} // for Externalizable
 
     @Override
-    public void process(DistributionManager dm) {
+    public void process(ClusterDistributionManager dm) {
       logger.fatal("Hello World");
     }
 

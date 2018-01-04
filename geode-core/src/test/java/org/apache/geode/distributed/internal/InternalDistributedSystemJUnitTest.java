@@ -66,7 +66,7 @@ public class InternalDistributedSystemJUnitTest {
    * Creates a <code>DistributedSystem</code> with the given configuration properties.
    */
   protected InternalDistributedSystem createSystem(Properties props) {
-    assertFalse(DistributionManager.isDedicatedAdminVM());
+    assertFalse(ClusterDistributionManager.isDedicatedAdminVM());
     this.system = (InternalDistributedSystem) DistributedSystem.connect(props);
     return this.system;
   }

@@ -34,8 +34,8 @@ import org.apache.geode.cache.Region;
 import org.apache.geode.cache.RegionDestroyedException;
 import org.apache.geode.cache.persistence.PartitionOfflineException;
 import org.apache.geode.distributed.DistributedMember;
-import org.apache.geode.distributed.internal.DM;
 import org.apache.geode.distributed.internal.DistributionConfig;
+import org.apache.geode.distributed.internal.DistributionManager;
 import org.apache.geode.distributed.internal.LonerDistributionManager;
 import org.apache.geode.distributed.internal.MembershipListener;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
@@ -900,7 +900,7 @@ public class PRHARedundancyProvider {
       final Set<InternalDistributedMember> allStores) {
     HashSet<InternalDistributedMember> allMembersOnSystem =
         new HashSet<InternalDistributedMember>();
-    DM dm = this.prRegion.getDistributionManager();
+    DistributionManager dm = this.prRegion.getDistributionManager();
     Set<InternalDistributedMember> buddies = dm.getMembersInSameZone(acceptedMember);
     // TODO Dan - I'm not sure this retain all is necessary, but there may have been a reason we
     // were
@@ -1298,7 +1298,7 @@ public class PRHARedundancyProvider {
     ArrayList<DataStoreBuckets> stores = this.prRegion.getRegionAdvisor()
         .adviseFilteredDataStores(new HashSet<InternalDistributedMember>(candidates));
 
-    final DM dm = this.prRegion.getDistributionManager();
+    final DistributionManager dm = this.prRegion.getDistributionManager();
     // Add ourself as a candidate, if appropriate
     InternalDistributedMember moi = dm.getId();
     PartitionedRegionDataStore myDS = this.prRegion.getDataStore();

@@ -85,7 +85,7 @@ public class ConsoleDistributionManagerDUnitTest extends JUnit4CacheTestCase
         firstTime = false;
       }
 
-      DistributionManager.setIsDedicatedAdminVM(true);
+      ClusterDistributionManager.setIsDedicatedAdminVM(true);
 
       populateCache();
 
@@ -93,8 +93,8 @@ public class ConsoleDistributionManagerDUnitTest extends JUnit4CacheTestCase
       {
         boolean created = !isConnectedToDS();
         InternalDistributedSystem ds = getSystem();
-        transport =
-            new RemoteTransportConfig(ds.getConfig(), DistributionManager.ADMIN_ONLY_DM_TYPE);
+        transport = new RemoteTransportConfig(ds.getConfig(),
+            ClusterDistributionManager.ADMIN_ONLY_DM_TYPE);
         if (created) {
           disconnectFromDS();
         }
@@ -138,7 +138,7 @@ public class ConsoleDistributionManagerDUnitTest extends JUnit4CacheTestCase
           throw e;
         } catch (Throwable ignore) {
         }
-        DistributionManager.setIsDedicatedAdminVM(false);
+        ClusterDistributionManager.setIsDedicatedAdminVM(false);
       }
     }
   }
@@ -153,15 +153,15 @@ public class ConsoleDistributionManagerDUnitTest extends JUnit4CacheTestCase
     try {
       disconnectFromDS(); // make sure there's no ldm lying around
     } finally {
-      DistributionManager.setIsDedicatedAdminVM(false);
+      ClusterDistributionManager.setIsDedicatedAdminVM(false);
     }
   }
 
   @Test
   public void testGetDistributionVMType() {
-    DM dm = this.agent.getDM();
+    DistributionManager dm = this.agent.getDM();
     InternalDistributedMember ipaddr = dm.getId();
-    assertEquals(DistributionManager.ADMIN_ONLY_DM_TYPE, ipaddr.getVmKind());
+    assertEquals(ClusterDistributionManager.ADMIN_ONLY_DM_TYPE, ipaddr.getVmKind());
   }
 
   @Test

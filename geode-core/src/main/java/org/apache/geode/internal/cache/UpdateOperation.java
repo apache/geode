@@ -20,9 +20,6 @@ import static org.apache.geode.internal.offheap.annotations.OffHeapIdentifier.EN
 import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.List;
 
 import org.apache.logging.log4j.Logger;
 
@@ -32,23 +29,18 @@ import org.apache.geode.InvalidDeltaException;
 import org.apache.geode.cache.DataPolicy;
 import org.apache.geode.cache.EntryNotFoundException;
 import org.apache.geode.distributed.internal.ConflationKey;
-import org.apache.geode.distributed.internal.DM;
 import org.apache.geode.distributed.internal.DirectReplyProcessor;
+import org.apache.geode.distributed.internal.DistributionManager;
 import org.apache.geode.distributed.internal.ReplyException;
 import org.apache.geode.distributed.internal.ReplyMessage;
 import org.apache.geode.internal.Assert;
 import org.apache.geode.internal.InternalDataSerializer;
 import org.apache.geode.internal.cache.EntryEventImpl.NewValueImporter;
-import org.apache.geode.internal.cache.EntryEventImpl.SerializedCacheValueImpl;
 import org.apache.geode.internal.cache.tier.sockets.ClientProxyMembershipID;
 import org.apache.geode.internal.i18n.LocalizedStrings;
 import org.apache.geode.internal.logging.LogService;
-import org.apache.geode.internal.offheap.MemoryAllocatorImpl;
-import org.apache.geode.internal.offheap.StoredObject;
 import org.apache.geode.internal.offheap.annotations.Retained;
 import org.apache.geode.internal.offheap.annotations.Unretained;
-import org.apache.geode.internal.util.BlobHelper;
-import org.apache.geode.internal.util.Breadcrumbs;
 
 /**
  * Handles distribution messaging for updating an entry in a region.
@@ -227,7 +219,7 @@ public class UpdateOperation extends AbstractUpdateOperation {
         UpdateMessage message = this;
         if (!(message.hasBridgeContext() && message.getDataPolicy() == DataPolicy.EMPTY)) {
           final UpdateMessage updateMsg;
-          final DM dm = this.event.getRegion().getDistributionManager();
+          final DistributionManager dm = this.event.getRegion().getDistributionManager();
           if (this instanceof UpdateWithContextMessage) {
             updateMsg =
                 new UpdateOperation.UpdateWithContextMessage((UpdateWithContextMessage) this);

@@ -22,7 +22,7 @@ import org.apache.logging.log4j.Logger;
 import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.CacheClosedException;
 import org.apache.geode.distributed.DistributedMember;
-import org.apache.geode.distributed.internal.DistributionManager;
+import org.apache.geode.distributed.internal.ClusterDistributionManager;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.distributed.internal.ReliableReplyProcessor21;
 import org.apache.geode.distributed.internal.ReplyProcessor21;
@@ -56,7 +56,7 @@ public class TXRemoteRollbackMessage extends TXMessage {
   }
 
   @Override
-  protected boolean operateOnTx(TXId txId, DistributionManager dm) {
+  protected boolean operateOnTx(TXId txId, ClusterDistributionManager dm) {
     InternalCache cache = dm.getCache();
     if (cache == null) {
       throw new CacheClosedException(

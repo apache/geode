@@ -47,7 +47,7 @@ public class CancelStatListenerRequest extends AdminRequest {
    * Must return a proper response to this request.
    */
   @Override
-  protected AdminResponse createResponse(DM dm) {
+  protected AdminResponse createResponse(DistributionManager dm) {
     return CancelStatListenerResponse.create(dm, this.getSender(), this.listenerId);
   }
 

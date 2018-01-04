@@ -16,7 +16,7 @@ package org.apache.geode.internal.admin.remote;
 
 import java.util.Collection;
 
-import org.apache.geode.distributed.internal.DM;
+import org.apache.geode.distributed.internal.DistributionManager;
 import org.apache.geode.distributed.internal.DistributionMessage;
 import org.apache.geode.distributed.internal.ReplyException;
 import org.apache.geode.distributed.internal.ReplyProcessor21;
@@ -28,7 +28,7 @@ import org.apache.geode.distributed.internal.ReplyProcessor21;
  */
 public class AdminMultipleReplyProcessor extends ReplyProcessor21 {
 
-  public AdminMultipleReplyProcessor(DM dm, Collection initMembers) {
+  public AdminMultipleReplyProcessor(DistributionManager dm, Collection initMembers) {
     super(dm, initMembers);
   }
 

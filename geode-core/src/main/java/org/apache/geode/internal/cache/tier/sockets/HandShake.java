@@ -73,8 +73,8 @@ import org.apache.geode.cache.client.ServerRefusedConnectionException;
 import org.apache.geode.cache.client.internal.Connection;
 import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.distributed.DistributedSystem;
-import org.apache.geode.distributed.internal.DM;
 import org.apache.geode.distributed.internal.DistributionConfig;
+import org.apache.geode.distributed.internal.DistributionManager;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.distributed.internal.LonerDistributionManager;
 import org.apache.geode.distributed.internal.ServerLocation;
@@ -86,7 +86,6 @@ import org.apache.geode.internal.InternalInstantiator;
 import org.apache.geode.internal.Version;
 import org.apache.geode.internal.VersionedDataInputStream;
 import org.apache.geode.internal.VersionedDataOutputStream;
-import org.apache.geode.internal.cache.tier.Acceptor;
 import org.apache.geode.internal.cache.tier.ClientHandShake;
 import org.apache.geode.internal.cache.tier.CommunicationMode;
 import org.apache.geode.internal.cache.tier.ConnectionProxy;
@@ -1198,7 +1197,7 @@ public class HandShake implements ClientHandShake {
       DistributedMember member = getIDForSocket(sock);
       // if running in a loner system, use the new port number in the ID to
       // help differentiate from other clients
-      DM dm = ((InternalDistributedSystem) this.system).getDistributionManager();
+      DistributionManager dm = ((InternalDistributedSystem) this.system).getDistributionManager();
       InternalDistributedMember idm = dm.getDistributionManagerId();
       synchronized (idm) {
         if (idm.getPort() == 0 && dm instanceof LonerDistributionManager) {

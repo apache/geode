@@ -14,7 +14,7 @@
  */
 package org.apache.geode.internal.admin;
 
-import org.apache.geode.distributed.internal.DM;
+import org.apache.geode.distributed.internal.DistributionManager;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
 
 /**
@@ -86,7 +86,7 @@ public interface GfManagerAgent {
    *
    * @since GemFire 3.5
    */
-  public DM getDM();
+  public DistributionManager getDM();
 
   /**
    * Sets the alert level for this manager agent.

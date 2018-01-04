@@ -20,7 +20,7 @@ import java.util.WeakHashMap;
 import org.apache.logging.log4j.Logger;
 
 import org.apache.geode.distributed.LeaseExpiredException;
-import org.apache.geode.distributed.internal.DM;
+import org.apache.geode.distributed.internal.DistributionManager;
 import org.apache.geode.internal.Assert;
 import org.apache.geode.internal.i18n.LocalizedStrings;
 import org.apache.geode.internal.logging.LogService;
@@ -46,9 +46,9 @@ public class DLockToken {
 
   /**
    * DistributionManager using this lock token. Reference is used to identify local member identity
-   * and to {@link DLockService#getLockTimeStamp(DM)}.
+   * and to {@link DLockService#getLockTimeStamp(DistributionManager)}.
    */
-  private final DM dm;
+  private final DistributionManager dm;
 
   /**
    * The reply processor id is used to identify the distinct lease which a thread has used to lease
@@ -112,7 +112,7 @@ public class DLockToken {
    * @param dm the DistributionManager for this member
    * @param name the identifying name of this lock
    */
-  public DLockToken(DM dm, Object name) {
+  public DLockToken(DistributionManager dm, Object name) {
     this.dm = dm;
     this.name = name;
   }

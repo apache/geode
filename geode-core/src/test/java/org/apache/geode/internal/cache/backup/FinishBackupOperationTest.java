@@ -37,7 +37,7 @@ import org.mockito.stubbing.Answer;
 
 import org.apache.geode.cache.CacheClosedException;
 import org.apache.geode.cache.persistence.PersistentID;
-import org.apache.geode.distributed.internal.DM;
+import org.apache.geode.distributed.internal.DistributionManager;
 import org.apache.geode.distributed.internal.ReplyException;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
 import org.apache.geode.internal.cache.InternalCache;
@@ -46,7 +46,7 @@ import org.apache.geode.test.junit.categories.UnitTest;
 @Category(UnitTest.class)
 public class FinishBackupOperationTest {
 
-  private DM dm;
+  private DistributionManager dm;
   private InternalCache cache;
   private Set<InternalDistributedMember> recipients;
 
@@ -67,7 +67,7 @@ public class FinishBackupOperationTest {
 
   @Before
   public void setUp() throws Exception {
-    dm = mock(DM.class);
+    dm = mock(DistributionManager.class);
     cache = mock(InternalCache.class);
 
     finishBackupReplyProcessor = mock(BackupReplyProcessor.class);

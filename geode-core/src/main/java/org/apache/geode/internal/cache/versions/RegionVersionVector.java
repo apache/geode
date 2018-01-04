@@ -36,8 +36,8 @@ import org.apache.logging.log4j.Logger;
 import org.apache.geode.CancelCriterion;
 import org.apache.geode.annotations.TestingOnly;
 import org.apache.geode.distributed.DistributedMember;
-import org.apache.geode.distributed.internal.DM;
 import org.apache.geode.distributed.internal.DistributionConfig;
+import org.apache.geode.distributed.internal.DistributionManager;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.distributed.internal.MembershipListener;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
@@ -295,7 +295,8 @@ public abstract class RegionVersionVector<T extends VersionSource<?>>
    *
    * @param regionPath
    */
-  public long lockForClear(String regionPath, DM dm, InternalDistributedMember locker) {
+  public long lockForClear(String regionPath, DistributionManager dm,
+      InternalDistributedMember locker) {
     lockVersionGeneration(regionPath, dm, locker);
     return this.localVersion.get();
   }
@@ -327,7 +328,7 @@ public abstract class RegionVersionVector<T extends VersionSource<?>>
    * @param dm the distribution manager - used to obtain an executor to hold the thread
    * @param locker the member requesting the lock (currently not used)
    */
-  private void lockVersionGeneration(final String regionPath, final DM dm,
+  private void lockVersionGeneration(final String regionPath, final DistributionManager dm,
       final InternalDistributedMember locker) {
     final CountDownLatch acquiredLock = new CountDownLatch(1);
     if (logger.isDebugEnabled()) {

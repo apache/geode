@@ -36,7 +36,7 @@ import org.apache.geode.cache.EntryExistsException;
 import org.apache.geode.cache.Operation;
 import org.apache.geode.cache.TransactionDataNotColocatedException;
 import org.apache.geode.distributed.DistributedMember;
-import org.apache.geode.distributed.internal.DM;
+import org.apache.geode.distributed.internal.ClusterDistributionManager;
 import org.apache.geode.distributed.internal.DirectReplyProcessor;
 import org.apache.geode.distributed.internal.DistributionManager;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
@@ -298,7 +298,7 @@ public class RemotePutMessage extends RemoteOperationMessageWithDirectReply
         final boolean posDup = (attempts > 1);
         RemotePutResponse response =
             send(replicate, event.getRegion(), event, lastModified, ifNew, ifOld, expectedOldValue,
-                requireOldValue, false, DistributionManager.SERIAL_EXECUTOR, posDup);
+                requireOldValue, false, ClusterDistributionManager.SERIAL_EXECUTOR, posDup);
         PutResult result = response.waitForResult();
         event.setOldValue(result.oldValue, true/* force */);
         event.setOperation(result.op);
@@ -364,7 +364,7 @@ public class RemotePutMessage extends RemoteOperationMessageWithDirectReply
       EntryEventImpl event, final long lastModified, boolean ifNew, boolean ifOld,
       Object expectedOldValue, boolean requireOldValue) throws RemoteOperationException {
     return send(recipient, r, event, lastModified, ifNew, ifOld, expectedOldValue, requireOldValue,
-        true, DistributionManager.PARTITIONED_REGION_EXECUTOR, false);
+        true, ClusterDistributionManager.PARTITIONED_REGION_EXECUTOR, false);
   }
 
   /**
@@ -616,7 +616,7 @@ public class RemotePutMessage extends RemoteOperationMessageWithDirectReply
    * indefinitely for the acknowledgement
    */
   @Override
-  protected boolean operateOnRegion(DistributionManager dm, LocalRegion r, long startTime)
+  protected boolean operateOnRegion(ClusterDistributionManager dm, LocalRegion r, long startTime)
       throws EntryExistsException, RemoteOperationException {
     this.setInternalDs(r.getSystem());// set the internal DS. Required to
                                       // checked DS level delta-enabled property
@@ -711,8 +711,8 @@ public class RemotePutMessage extends RemoteOperationMessageWithDirectReply
   }
 
 
-  protected void sendReply(InternalDistributedMember member, int procId, DM dm, ReplyException ex,
-      LocalRegion pr, long startTime, EntryEventImpl event) {
+  protected void sendReply(InternalDistributedMember member, int procId, DistributionManager dm,
+      ReplyException ex, LocalRegion pr, long startTime, EntryEventImpl event) {
     Collection distributedTo = null;
     if (this.processorId != 0) {
       // if the sender is waiting for responses from the cache-op message
@@ -726,8 +726,8 @@ public class RemotePutMessage extends RemoteOperationMessageWithDirectReply
 
   // override reply message type from PartitionMessage
   @Override
-  protected void sendReply(InternalDistributedMember member, int procId, DM dm, ReplyException ex,
-      LocalRegion pr, long startTime) {
+  protected void sendReply(InternalDistributedMember member, int procId, DistributionManager dm,
+      ReplyException ex, LocalRegion pr, long startTime) {
     PutReplyMessage.send(member, procId, getReplySender(dm), result, getOperation(), ex, this,
         null);
   }
@@ -849,7 +849,7 @@ public class RemotePutMessage extends RemoteOperationMessageWithDirectReply
      * @param dm the distribution manager that is processing the message.
      */
     @Override
-    public void process(final DM dm, final ReplyProcessor21 rp) {
+    public void process(final DistributionManager dm, final ReplyProcessor21 rp) {
       final long startTime = getTimestamp();
       if (logger.isDebugEnabled()) {
         logger.debug("Processing {}", this);

@@ -137,7 +137,7 @@ public class ReplyProcessor21 implements MembershipListener {
   protected final InternalDistributedSystem system;
 
   /** the distribution manager - if null, get the manager from the system */
-  protected final DM dmgr;
+  protected final DistributionManager dmgr;
 
   /** Start time for replyWait stat, in nanos */
   long statStart;
@@ -232,26 +232,28 @@ public class ReplyProcessor21 implements MembershipListener {
    * @param dm the DistributionManager to use for messaging and membership
    * @param member the member this processor wants a reply from
    */
-  public ReplyProcessor21(DM dm, InternalDistributedMember member) {
+  public ReplyProcessor21(DistributionManager dm, InternalDistributedMember member) {
     this(dm, Collections.singleton(member));
   }
 
   /**
    * Creates a new <code>ReplyProcessor</code> that wants replies from some number of members of a
-   * distributed system. Call this method with {@link DistributionManager#getDistributionManagerIds}
-   * if you want replies from all DMs including the one hosted in this VM.
+   * distributed system. Call this method with
+   * {@link ClusterDistributionManager#getDistributionManagerIds} if you want replies from all DMs
+   * including the one hosted in this VM.
    *
    * @param dm the DistributionManager to use for messaging and membership
    * @param initMembers the Set of members this processor wants replies from
    */
-  public ReplyProcessor21(DM dm, Collection initMembers) {
+  public ReplyProcessor21(DistributionManager dm, Collection initMembers) {
     this(dm, dm.getSystem(), initMembers, null);
   }
 
   /**
    * Creates a new <code>ReplyProcessor</code> that wants replies from some number of members of a
-   * distributed system. Call this method with {@link DistributionManager#getDistributionManagerIds}
-   * if you want replies from all DMs including the one hosted in this VM.
+   * distributed system. Call this method with
+   * {@link ClusterDistributionManager#getDistributionManagerIds} if you want replies from all DMs
+   * including the one hosted in this VM.
    *
    * @param system the DistributedSystem connection
    * @param initMembers the Set of members this processor wants replies from
@@ -262,8 +264,9 @@ public class ReplyProcessor21 implements MembershipListener {
 
   /**
    * Creates a new <code>ReplyProcessor</code> that wants replies from some number of members of a
-   * distributed system. Call this method with {@link DistributionManager#getDistributionManagerIds}
-   * if you want replies from all DMs including the one hosted in this VM.
+   * distributed system. Call this method with
+   * {@link ClusterDistributionManager#getDistributionManagerIds} if you want replies from all DMs
+   * including the one hosted in this VM.
    *
    * @param system the DistributedSystem connection
    * @param initMembers the Set of members this processor wants replies from
@@ -283,8 +286,8 @@ public class ReplyProcessor21 implements MembershipListener {
    * @param initMembers the collection of members this processor wants replies from
    * @param cancelCriterion optional CancelCriterion to use; will use the dm if null
    */
-  private ReplyProcessor21(DM dm, InternalDistributedSystem system, Collection initMembers,
-      CancelCriterion cancelCriterion) {
+  private ReplyProcessor21(DistributionManager dm, InternalDistributedSystem system,
+      Collection initMembers, CancelCriterion cancelCriterion) {
 
     this(dm, system, initMembers, cancelCriterion, true);
   }
@@ -297,8 +300,8 @@ public class ReplyProcessor21 implements MembershipListener {
    * @param initMembers the collection of members this processor wants replies from
    * @param cancelCriterion optional CancelCriterion to use; will use the dm if null
    */
-  protected ReplyProcessor21(DM dm, InternalDistributedSystem system, Collection initMembers,
-      CancelCriterion cancelCriterion, boolean register) {
+  protected ReplyProcessor21(DistributionManager dm, InternalDistributedSystem system,
+      Collection initMembers, CancelCriterion cancelCriterion, boolean register) {
     if (!allowReplyFromSender()) {
       Assert.assertTrue(initMembers != null, "null initMembers");
       Assert.assertTrue(system != null, "null system");
@@ -343,9 +346,9 @@ public class ReplyProcessor21 implements MembershipListener {
    * manager, it is used. Otherwise, we expect a distribution manager has been set with
    * setDistributionManager and we'll use that
    */
-  protected DM getDistributionManager() {
+  protected DistributionManager getDistributionManager() {
     try {
-      DM result = this.system.getDistributionManager();
+      DistributionManager result = this.system.getDistributionManager();
       if (result == null) {
         result = this.dmgr;
         Assert.assertTrue(result != null, "null DistributionManager");
@@ -409,7 +412,7 @@ public class ReplyProcessor21 implements MembershipListener {
     final InternalDistributedMember sender = msg.getSender();
     if (!removeMember(sender, false) && warn) {
       // if the member hasn't left the system, something is wrong
-      final DM dm = getDistributionManager(); // fix for bug 33253
+      final DistributionManager dm = getDistributionManager(); // fix for bug 33253
       Set ids = getDistributionManagerIds();
       if (ids == null || ids.contains(sender)) {
         List viewMembers = dm.getViewMembers();
@@ -550,7 +553,7 @@ public class ReplyProcessor21 implements MembershipListener {
 
   protected void preWait() {
     waiting = true;
-    DM mgr = getDistributionManager();
+    DistributionManager mgr = getDistributionManager();
     statStart = mgr.getStats().startReplyWait();
     synchronized (this.members) {
       Set activeMembers = addListenerAndGetMembers();
@@ -576,7 +579,7 @@ public class ReplyProcessor21 implements MembershipListener {
   private void postWait() {
     waiting = false;
     removeListener();
-    final DM mgr = getDistributionManager();
+    final DistributionManager mgr = getDistributionManager();
     mgr.getStats().endReplyWait(this.statStart, this.initTime);
     mgr.getCancelCriterion().checkCancelInProgress(null);
   }

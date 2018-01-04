@@ -210,7 +210,7 @@ public class DirectChannel {
    * Returns true if calling thread owns its own communication resources.
    */
   boolean threadOwnsResources() {
-    DM d = getDM();
+    DistributionManager d = getDM();
     if (d != null) {
       return d.getSystem().threadOwnsResources() && !AlertAppender.isThreadAlerting();
     }
@@ -613,7 +613,7 @@ public class DirectChannel {
    * Returns null if no stats available.
    */
   public DMStats getDMStats() {
-    DM dm = getDM();
+    DistributionManager dm = getDM();
     if (dm != null) {
       return dm.getStats(); // fix for bug#34004
     } else {
@@ -627,7 +627,7 @@ public class DirectChannel {
    * @since GemFire 4.2.2
    */
   public DistributionConfig getDMConfig() {
-    DM dm = getDM();
+    DistributionManager dm = getDM();
     if (dm != null) {
       return dm.getConfig();
     } else {
@@ -638,7 +638,7 @@ public class DirectChannel {
   /**
    * Returns null if no dm available.
    */
-  public DM getDM() {
+  public DistributionManager getDM() {
     return this.receiver.getDM();
   }
 
@@ -652,7 +652,7 @@ public class DirectChannel {
    */
   private void handleAckTimeout(long ackTimeout, long ackSATimeout, Connection c,
       DirectReplyProcessor processor) throws ConnectionException {
-    DM dm = getDM();
+    DistributionManager dm = getDM();
     Set activeMembers = dm.getDistributionManagerIds();
 
     // Increment the stat

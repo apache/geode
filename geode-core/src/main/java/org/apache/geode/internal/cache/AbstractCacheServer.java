@@ -23,8 +23,8 @@ import org.apache.geode.cache.server.CacheServer;
 import org.apache.geode.cache.server.ClientSubscriptionConfig;
 import org.apache.geode.cache.server.ServerLoadProbe;
 import org.apache.geode.distributed.DistributedMember;
-import org.apache.geode.distributed.internal.DM;
 import org.apache.geode.distributed.internal.DistributionConfig;
+import org.apache.geode.distributed.internal.DistributionManager;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.internal.admin.ClientMembershipMessage;
 import org.apache.geode.internal.cache.xmlcache.CacheCreation;
@@ -191,7 +191,7 @@ public abstract class AbstractCacheServer implements InternalCacheServer {
 
         // ds could be null
         if (ds != null && ds.isConnected()) {
-          DM dm = ds.getDistributionManager();
+          DistributionManager dm = ds.getDistributionManager();
           Set adminMemberSet = dm.getAdminMemberSet();
 
           /* check if there are any admin members at all */

@@ -66,7 +66,7 @@ public class ShutdownMessage extends HighPriorityDistributionMessage
    * This method is invoked on the receiver side
    */
   @Override
-  protected void process(final DistributionManager dm) {
+  protected void process(final ClusterDistributionManager dm) {
     Assert.assertTrue(this.id != null);
     // The peer goes deaf after sending us this message, so do not
     // attempt a reply.
