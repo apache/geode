@@ -28,7 +28,7 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
-import org.apache.geode.connectors.jdbc.internal.InternalJdbcConnectorService;
+import org.apache.geode.connectors.jdbc.internal.JdbcConnectorService;
 import org.apache.geode.connectors.jdbc.internal.RegionMapping;
 import org.apache.geode.distributed.internal.InternalLocator;
 import org.apache.geode.internal.cache.InternalCache;
@@ -83,7 +83,7 @@ public class CreateMappingCommandDUnitTest {
     server.invoke(() -> {
       InternalCache cache = ClusterStartupRule.getCache();
       RegionMapping mapping =
-          cache.getService(InternalJdbcConnectorService.class).getMappingForRegion("testRegion");
+          cache.getService(JdbcConnectorService.class).getMappingForRegion("testRegion");
       assertThat(mapping.getConnectionConfigName()).isEqualTo("connection");
       assertThat(mapping.getTableName()).isEqualTo("myTable");
       assertThat(mapping.getPdxClassName()).isEqualTo("myPdxClass");

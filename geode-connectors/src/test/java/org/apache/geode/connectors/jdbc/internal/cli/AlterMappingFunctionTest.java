@@ -40,7 +40,7 @@ import org.mockito.ArgumentCaptor;
 import org.apache.geode.cache.execute.FunctionContext;
 import org.apache.geode.cache.execute.ResultSender;
 import org.apache.geode.connectors.jdbc.internal.ConnectionConfigNotFoundException;
-import org.apache.geode.connectors.jdbc.internal.InternalJdbcConnectorService;
+import org.apache.geode.connectors.jdbc.internal.JdbcConnectorService;
 import org.apache.geode.connectors.jdbc.internal.RegionMapping;
 import org.apache.geode.connectors.jdbc.internal.RegionMappingBuilder;
 import org.apache.geode.connectors.jdbc.internal.RegionMappingNotFoundException;
@@ -60,7 +60,7 @@ public class AlterMappingFunctionTest {
   private RegionMapping mappingToAlter;
   private FunctionContext<RegionMapping> context;
   private ResultSender<Object> resultSender;
-  private InternalJdbcConnectorService service;
+  private JdbcConnectorService service;
 
   private AlterMappingFunction function;
 
@@ -71,7 +71,7 @@ public class AlterMappingFunctionTest {
     InternalCache cache = mock(InternalCache.class);
     DistributedSystem system = mock(DistributedSystem.class);
     DistributedMember distributedMember = mock(DistributedMember.class);
-    service = mock(InternalJdbcConnectorService.class);
+    service = mock(JdbcConnectorService.class);
 
     regionMapping = new RegionMappingBuilder().withRegionName(REGION_NAME).build();
     existingMapping = new RegionMappingBuilder().withRegionName(REGION_NAME).build();
@@ -86,7 +86,7 @@ public class AlterMappingFunctionTest {
     when(cache.getDistributedSystem()).thenReturn(system);
     when(system.getDistributedMember()).thenReturn(distributedMember);
     when(context.getArguments()).thenReturn(regionMapping);
-    when(cache.getService(eq(InternalJdbcConnectorService.class))).thenReturn(service);
+    when(cache.getService(eq(JdbcConnectorService.class))).thenReturn(service);
     function = new AlterMappingFunction();
   }
 

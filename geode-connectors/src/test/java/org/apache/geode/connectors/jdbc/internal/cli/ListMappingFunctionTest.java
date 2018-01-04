@@ -33,7 +33,7 @@ import org.mockito.ArgumentCaptor;
 
 import org.apache.geode.cache.execute.FunctionContext;
 import org.apache.geode.cache.execute.ResultSender;
-import org.apache.geode.connectors.jdbc.internal.InternalJdbcConnectorService;
+import org.apache.geode.connectors.jdbc.internal.JdbcConnectorService;
 import org.apache.geode.connectors.jdbc.internal.RegionMapping;
 import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.distributed.DistributedSystem;
@@ -46,7 +46,7 @@ public class ListMappingFunctionTest {
 
   private FunctionContext<Void> context;
   private ResultSender<Object> resultSender;
-  private InternalJdbcConnectorService service;
+  private JdbcConnectorService service;
 
   private RegionMapping regionMapping1;
   private RegionMapping regionMapping2;
@@ -62,7 +62,7 @@ public class ListMappingFunctionTest {
     context = mock(FunctionContext.class);
     DistributedMember member = mock(DistributedMember.class);
     resultSender = mock(ResultSender.class);
-    service = mock(InternalJdbcConnectorService.class);
+    service = mock(JdbcConnectorService.class);
     DistributedSystem system = mock(DistributedSystem.class);
 
     regionMapping1 = mock(RegionMapping.class);
@@ -75,7 +75,7 @@ public class ListMappingFunctionTest {
     when(context.getCache()).thenReturn(cache);
     when(cache.getDistributedSystem()).thenReturn(system);
     when(system.getDistributedMember()).thenReturn(member);
-    when(cache.getService(eq(InternalJdbcConnectorService.class))).thenReturn(service);
+    when(cache.getService(eq(JdbcConnectorService.class))).thenReturn(service);
     when(service.getRegionMappings()).thenReturn(expected);
 
     function = new ListMappingFunction();

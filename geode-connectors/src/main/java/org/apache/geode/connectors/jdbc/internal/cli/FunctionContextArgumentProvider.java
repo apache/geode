@@ -23,8 +23,7 @@ import static org.apache.geode.internal.cache.xmlcache.CacheXml.CACHE;
 import java.io.Serializable;
 
 import org.apache.geode.cache.execute.FunctionContext;
-import org.apache.geode.connectors.jdbc.internal.InternalJdbcConnectorService;
-import org.apache.geode.connectors.jdbc.internal.xml.JdbcConnectorServiceXmlParser;
+import org.apache.geode.connectors.jdbc.internal.JdbcConnectorService;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.management.internal.cli.CliUtil;
 import org.apache.geode.management.internal.configuration.domain.XmlEntity;
@@ -46,8 +45,8 @@ class FunctionContextArgumentProvider implements Serializable {
   /**
    * Returns the JdbcConnectorService
    */
-  InternalJdbcConnectorService getJdbcConnectorService(FunctionContext<?> context) {
-    return getCacheFromContext(context).getService(InternalJdbcConnectorService.class);
+  JdbcConnectorService getJdbcConnectorService(FunctionContext<?> context) {
+    return getCacheFromContext(context).getService(JdbcConnectorService.class);
   }
 
   /**

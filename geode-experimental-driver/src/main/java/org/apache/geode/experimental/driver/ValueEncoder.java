@@ -53,6 +53,8 @@ class ValueEncoder {
       builder.setBooleanResult((Boolean) unencodedValue);
     } else if (String.class.equals(unencodedValue.getClass())) {
       builder.setStringResult((String) unencodedValue);
+    } else if (JSONWrapper.class == unencodedValue.getClass()) {
+      builder.setJsonObjectResult(((JSONWrapper) unencodedValue).getJSON());
     } else {
       throw new IllegalStateException("We don't know how to handle an object of type "
           + unencodedValue.getClass() + ": " + unencodedValue);
@@ -87,6 +89,8 @@ class ValueEncoder {
         return (short) encodedValue.getShortResult();
       case STRINGRESULT:
         return encodedValue.getStringResult();
+      case JSONOBJECTRESULT:
+        return JSONWrapper.wrapJSON(encodedValue.getJsonObjectResult());
       case VALUE_NOT_SET:
         return null;
       default:

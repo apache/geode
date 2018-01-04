@@ -30,7 +30,7 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
-import org.apache.geode.connectors.jdbc.internal.InternalJdbcConnectorService;
+import org.apache.geode.connectors.jdbc.internal.JdbcConnectorService;
 import org.apache.geode.connectors.jdbc.internal.RegionMapping;
 import org.apache.geode.connectors.jdbc.internal.RegionMappingBuilder;
 import org.apache.geode.connectors.jdbc.internal.RegionMappingExistsException;
@@ -101,7 +101,7 @@ public class DescribeMappingCommandDUnitTest implements Serializable {
 
   private void createMapping() throws RegionMappingExistsException {
     InternalCache cache = ClusterStartupRule.getCache();
-    InternalJdbcConnectorService service = cache.getService(InternalJdbcConnectorService.class);
+    JdbcConnectorService service = cache.getService(JdbcConnectorService.class);
 
     String[] fieldMappings = new String[] {"field1:column1", "field2:column2"};
     RegionMapping regionMapping = new RegionMappingBuilder().withRegionName(REGION_NAME)

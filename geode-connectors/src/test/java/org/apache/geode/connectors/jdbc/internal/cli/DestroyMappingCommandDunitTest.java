@@ -25,7 +25,7 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
-import org.apache.geode.connectors.jdbc.internal.InternalJdbcConnectorService;
+import org.apache.geode.connectors.jdbc.internal.JdbcConnectorService;
 import org.apache.geode.connectors.jdbc.internal.RegionMapping;
 import org.apache.geode.connectors.jdbc.internal.RegionMappingBuilder;
 import org.apache.geode.connectors.jdbc.internal.RegionMappingExistsException;
@@ -84,14 +84,14 @@ public class DestroyMappingCommandDunitTest implements Serializable {
     server.invoke(() -> {
       InternalCache cache = ClusterStartupRule.getCache();
       RegionMapping mapping =
-          cache.getService(InternalJdbcConnectorService.class).getMappingForRegion("testRegion");
+          cache.getService(JdbcConnectorService.class).getMappingForRegion("testRegion");
       assertThat(mapping).isNull();
     });
   }
 
   private void createRegionMapping() throws RegionMappingExistsException {
     InternalCache cache = ClusterStartupRule.getCache();
-    InternalJdbcConnectorService service = cache.getService(InternalJdbcConnectorService.class);
+    JdbcConnectorService service = cache.getService(JdbcConnectorService.class);
 
     service.createRegionMapping(new RegionMappingBuilder().withRegionName(regionName).build());
 

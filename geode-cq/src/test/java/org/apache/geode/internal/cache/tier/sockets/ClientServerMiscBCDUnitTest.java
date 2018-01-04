@@ -133,7 +133,7 @@ public class ClientServerMiscBCDUnitTest extends ClientServerMiscDUnitTest {
     // start servers first
     int server1Port = initServerCache(true);
 
-    int server2Port = initServerCache2(true);
+    int server2Port = initServerCache2();
 
     int server3Port = server3.invoke(() -> createServerCache(true, getMaxThreads(), false));
 

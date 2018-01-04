@@ -34,7 +34,7 @@ import org.junit.experimental.categories.Category;
 import org.apache.geode.cache.CacheFactory;
 import org.apache.geode.connectors.jdbc.internal.ConnectionConfigBuilder;
 import org.apache.geode.connectors.jdbc.internal.ConnectionConfiguration;
-import org.apache.geode.connectors.jdbc.internal.InternalJdbcConnectorService;
+import org.apache.geode.connectors.jdbc.internal.JdbcConnectorService;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.management.cli.Result;
 import org.apache.geode.management.internal.cli.json.GfJsonObject;
@@ -46,7 +46,7 @@ public class DescribeConnectionCommandIntegrationTest {
   private static final String CONNECTION = "connection";
 
   private InternalCache cache;
-  private InternalJdbcConnectorService service;
+  private JdbcConnectorService service;
   private ConnectionConfiguration connectionConfig;
   private DescribeConnectionCommand command;
 
@@ -59,7 +59,7 @@ public class DescribeConnectionCommandIntegrationTest {
 
     cache = (InternalCache) new CacheFactory().set("locators", "").set("mcast-port", "0")
         .set(ENABLE_CLUSTER_CONFIGURATION, "true").create();
-    service = cache.getService(InternalJdbcConnectorService.class);
+    service = cache.getService(JdbcConnectorService.class);
 
     command = new DescribeConnectionCommand();
   }

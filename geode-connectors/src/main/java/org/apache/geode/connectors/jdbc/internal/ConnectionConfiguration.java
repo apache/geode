@@ -63,15 +63,8 @@ public class ConnectionConfiguration implements Serializable {
 
   public Properties getConnectionProperties() {
     Properties properties = new Properties();
-
     if (parameters != null) {
       properties.putAll(parameters);
-    }
-    if (user != null) {
-      properties.put(USER, user);
-    }
-    if (password != null) {
-      properties.put(PASSWORD, password);
     }
     return properties;
   }

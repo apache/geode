@@ -18,6 +18,7 @@
 dependencies {
     compile project(':geode-core')
     compile project(':geode-common')
+    compile group: 'com.zaxxer', name: 'HikariCP', version: project.'HikariCP.version'
 
     testCompile project(':geode-junit')
 

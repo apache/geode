@@ -21,7 +21,7 @@ import org.apache.geode.InternalGemFireException;
 import org.apache.geode.cache.Cache;
 import org.apache.geode.connectors.jdbc.internal.ConnectionConfigExistsException;
 import org.apache.geode.connectors.jdbc.internal.ConnectionConfiguration;
-import org.apache.geode.connectors.jdbc.internal.InternalJdbcConnectorService;
+import org.apache.geode.connectors.jdbc.internal.JdbcConnectorService;
 import org.apache.geode.connectors.jdbc.internal.RegionMapping;
 import org.apache.geode.connectors.jdbc.internal.RegionMappingExistsException;
 import org.apache.geode.internal.cache.InternalCache;
@@ -55,13 +55,12 @@ public class JdbcServiceConfiguration implements Extension<Cache> {
   @Override
   public void onCreate(Extensible<Cache> source, Extensible<Cache> target) {
     InternalCache internalCache = (InternalCache) target;
-    InternalJdbcConnectorService service =
-        internalCache.getService(InternalJdbcConnectorService.class);
+    JdbcConnectorService service = internalCache.getService(JdbcConnectorService.class);
     connections.forEach(connection -> createConnectionConfig(service, connection));
     mappings.forEach(mapping -> createRegionMapping(service, mapping));
   }
 
-  private void createConnectionConfig(InternalJdbcConnectorService service,
+  private void createConnectionConfig(JdbcConnectorService service,
       ConnectionConfiguration connectionConfig) {
     try {
       service.createConnectionConfig(connectionConfig);
@@ -70,8 +69,7 @@ public class JdbcServiceConfiguration implements Extension<Cache> {
     }
   }
 
-  private void createRegionMapping(InternalJdbcConnectorService service,
-      RegionMapping regionMapping) {
+  private void createRegionMapping(JdbcConnectorService service, RegionMapping regionMapping) {
     try {
       service.createRegionMapping(regionMapping);
     } catch (RegionMappingExistsException e) {

@@ -17,7 +17,7 @@ package org.apache.geode.connectors.jdbc.internal.cli;
 import org.apache.geode.annotations.Experimental;
 import org.apache.geode.cache.execute.FunctionContext;
 import org.apache.geode.connectors.jdbc.internal.ConnectionConfiguration;
-import org.apache.geode.connectors.jdbc.internal.InternalJdbcConnectorService;
+import org.apache.geode.connectors.jdbc.internal.JdbcConnectorService;
 import org.apache.geode.management.internal.cli.functions.CliFunctionResult;
 import org.apache.geode.management.internal.configuration.domain.XmlEntity;
 
@@ -29,7 +29,7 @@ public class DestroyConnectionFunction extends JdbcCliFunction<String, CliFuncti
   }
 
   @Override
-  CliFunctionResult getFunctionResult(InternalJdbcConnectorService service,
+  CliFunctionResult getFunctionResult(JdbcConnectorService service,
       FunctionContext<String> context) {
     String connectionName = context.getArguments();
     boolean success = destroyConnectionConfig(service, connectionName);
@@ -44,7 +44,7 @@ public class DestroyConnectionFunction extends JdbcCliFunction<String, CliFuncti
    *
    * @return true if the connection was found and destroyed
    */
-  boolean destroyConnectionConfig(InternalJdbcConnectorService service, String connectionName) {
+  boolean destroyConnectionConfig(JdbcConnectorService service, String connectionName) {
     ConnectionConfiguration connectionConfig = service.getConnectionConfig(connectionName);
     if (connectionConfig != null) {
       service.destroyConnectionConfig(connectionName);

@@ -16,6 +16,7 @@ fastutil
 findbugs-annotations
 gfsh-dependencies.jar
 guava
+HikariCP
 jackson-annotations
 jackson-core
 jackson-databind

@@ -638,7 +638,7 @@ public class LocatorLauncher extends AbstractLauncher<String> {
             statusMessage -> LocatorLauncher.this.statusMessage = statusMessage);
 
         try {
-          this.locator = InternalLocator.startLocator(getPort(), getLogFile(), null, null, null,
+          this.locator = InternalLocator.startLocator(getPort(), getLogFile(), null, null,
               getBindAddress(), true, getDistributedSystemProperties(), getHostnameForClients());
         } finally {
           ProcessLauncherContext.remove();

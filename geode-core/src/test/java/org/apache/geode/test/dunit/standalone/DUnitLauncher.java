@@ -310,7 +310,6 @@ public class DUnitLauncher {
           Locator.startLocatorAndDS(0, locatorLogFile, p);
           InternalLocator internalLocator = (InternalLocator) Locator.getLocator();
           locatorPort = internalLocator.getPort();
-          internalLocator.resetInternalLocatorFileNamesWithCorrectPortNumber(locatorPort);
         } finally {
           System.getProperties().remove(GMSJoinLeave.BYPASS_DISCOVERY_PROPERTY);
         }

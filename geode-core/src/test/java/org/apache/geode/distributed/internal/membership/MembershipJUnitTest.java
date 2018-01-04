@@ -126,7 +126,7 @@ public class MembershipJUnitTest {
 
       // this locator will hook itself up with the first MembershipManager
       // to be created
-      l = InternalLocator.startLocator(port, new File(""), null, null, null, localHost, false,
+      l = InternalLocator.startLocator(port, new File(""), null, null, localHost, false,
           new Properties(), null);
 
       // create configuration objects
@@ -267,8 +267,7 @@ public class MembershipJUnitTest {
       p.setProperty(ConfigurationProperties.SECURITY_UDP_DHALGO, "AES:128");
       // this locator will hook itself up with the first MembershipManager
       // to be created
-      l = InternalLocator.startLocator(port, new File(""), null, null, null, localHost, false, p,
-          null);
+      l = InternalLocator.startLocator(port, new File(""), null, null, localHost, false, p, null);
 
       // create configuration objects
       Properties nonDefault = new Properties();
