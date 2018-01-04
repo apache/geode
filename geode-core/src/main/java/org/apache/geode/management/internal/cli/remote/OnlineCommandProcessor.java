@@ -28,6 +28,7 @@ import org.springframework.util.StringUtils;
 import org.apache.geode.annotations.TestingOnly;
 import org.apache.geode.internal.security.SecurityService;
 import org.apache.geode.internal.security.SecurityServiceFactory;
+import org.apache.geode.management.cli.CliMetaData;
 import org.apache.geode.management.cli.CommandProcessingException;
 import org.apache.geode.management.cli.Result;
 import org.apache.geode.management.internal.cli.CommandManager;
@@ -122,7 +123,13 @@ public class OnlineCommandProcessor {
           resourceOperation.target(), ResourcePermission.ALL);
     }
 
-    return (Result) commandExecutor.execute(parseResult);
+    // this command processor does not exeucte command that needs fileData passed from client
+    CliMetaData metaData = method.getAnnotation(CliMetaData.class);
+    if (metaData != null && metaData.isFileUploaded() && stagedFilePaths == null) {
+      return ResultBuilder
+          .createUserErrorResult(command + " can not be executed only from server side");
+    }
 
+    return (Result) commandExecutor.execute(parseResult);
   }
 }
