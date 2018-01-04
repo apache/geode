@@ -706,9 +706,11 @@ public class ClusterDistributionManager implements DistributionManager {
           poolQueue = this.serialQueue;
         }
         ThreadFactory tf = new ThreadFactory() {
+          @Override
           public Thread newThread(final Runnable command) {
             ClusterDistributionManager.this.stats.incSerialThreadStarts();
             final Runnable r = new Runnable() {
+              @Override
               public void run() {
                 ClusterDistributionManager.this.stats.incNumSerialThreads(1);
                 try {
@@ -735,9 +737,11 @@ public class ClusterDistributionManager implements DistributionManager {
       {
         BlockingQueue q = new LinkedBlockingQueue();
         ThreadFactory tf = new ThreadFactory() {
+          @Override
           public Thread newThread(final Runnable command) {
             ClusterDistributionManager.this.stats.incViewThreadStarts();
             final Runnable r = new Runnable() {
+              @Override
               public void run() {
                 ClusterDistributionManager.this.stats.incNumViewThreads(1);
                 try {
@@ -771,9 +775,11 @@ public class ClusterDistributionManager implements DistributionManager {
         ThreadFactory tf = new ThreadFactory() {
           private int next = 0;
 
+          @Override
           public Thread newThread(final Runnable command) {
             ClusterDistributionManager.this.stats.incProcessingThreadStarts();
             final Runnable r = new Runnable() {
+              @Override
               public void run() {
                 ClusterDistributionManager.this.stats.incNumProcessingThreads(1);
                 try {
@@ -810,9 +816,11 @@ public class ClusterDistributionManager implements DistributionManager {
         ThreadFactory tf = new ThreadFactory() {
           private int next = 0;
 
+          @Override
           public Thread newThread(final Runnable command) {
             ClusterDistributionManager.this.stats.incHighPriorityThreadStarts();
             final Runnable r = new Runnable() {
+              @Override
               public void run() {
                 ClusterDistributionManager.this.stats.incHighPriorityThreads(1);
                 try {
@@ -841,9 +849,11 @@ public class ClusterDistributionManager implements DistributionManager {
         ThreadFactory tf = new ThreadFactory() {
           private int next = 0;
 
+          @Override
           public Thread newThread(final Runnable command) {
             ClusterDistributionManager.this.stats.incWaitingThreadStarts();
             final Runnable r = new Runnable() {
+              @Override
               public void run() {
                 ClusterDistributionManager.this.stats.incWaitingThreads(1);
                 try {
@@ -878,9 +888,11 @@ public class ClusterDistributionManager implements DistributionManager {
         ThreadFactory tf = new ThreadFactory() {
           private int next = 0;
 
+          @Override
           public Thread newThread(final Runnable command) {
             ClusterDistributionManager.this.stats.incWaitingThreadStarts();// will it be ok?
             final Runnable r = new Runnable() {
+              @Override
               public void run() {
                 ClusterDistributionManager.this.stats.incWaitingThreads(1);// will it be ok
                 try {
@@ -917,9 +929,11 @@ public class ClusterDistributionManager implements DistributionManager {
         ThreadFactory tf = new ThreadFactory() {
           private int next = 0;
 
+          @Override
           public Thread newThread(final Runnable command) {
             ClusterDistributionManager.this.stats.incPartitionedRegionThreadStarts();
             final Runnable r = new Runnable() {
+              @Override
               public void run() {
                 stats.incPartitionedRegionThreads(1);
                 try {
@@ -959,9 +973,11 @@ public class ClusterDistributionManager implements DistributionManager {
         ThreadFactory tf = new ThreadFactory() {
           private int next = 0;
 
+          @Override
           public Thread newThread(final Runnable command) {
             ClusterDistributionManager.this.stats.incFunctionExecutionThreadStarts();
             final Runnable r = new Runnable() {
+              @Override
               public void run() {
                 stats.incFunctionExecutionThreads(1);
                 isFunctionExecutionThread.set(Boolean.TRUE);
@@ -1225,10 +1241,12 @@ public class ClusterDistributionManager implements DistributionManager {
     }
   }
 
+  @Override
   public int getDMType() {
     return this.dmType;
   }
 
+  @Override
   public List<InternalDistributedMember> getViewMembers() {
     return membershipManager.getView().getMembers();
   }
@@ -1285,6 +1303,7 @@ public class ClusterDistributionManager implements DistributionManager {
     }
     try {
       getWaitingThreadPool().execute(new Runnable() {
+        @Override
         public void run() {
           // call in background since it might need to send a reply
           // and we are not ready to send messages until startup is finished
@@ -1407,6 +1426,7 @@ public class ClusterDistributionManager implements DistributionManager {
   /**
    * Did an exception occur in one of the threads launched by this distribution manager?
    */
+  @Override
   public boolean exceptionInThreads() {
     return this.exceptionInThreads || this.threadGroup.getUncaughtExceptionsCount() > 0;
   }
@@ -1415,7 +1435,8 @@ public class ClusterDistributionManager implements DistributionManager {
    * Clears the boolean that determines whether or not an exception occurred in one of the worker
    * threads. This method should be used for testing purposes only!
    */
-  void clearExceptionInThreads() {
+  @Override
+  public void clearExceptionInThreads() {
     this.exceptionInThreads = false;
     this.threadGroup.clearUncaughtExceptionsCount();
   }
@@ -1553,6 +1574,7 @@ public class ClusterDistributionManager implements DistributionManager {
    *
    * @since GemFire 6.6.3
    */
+  @Override
   public Map<InternalDistributedMember, Collection<String>> getAllHostedLocators() {
     synchronized (this.membersLock) {
       return this.hostedLocatorsAll;
@@ -1728,6 +1750,7 @@ public class ClusterDistributionManager implements DistributionManager {
         // Don't block indefinitely trying to send the shutdown message, in
         // case other VMs in the system are ill-behaved. (bug 34710)
         final Runnable r = new Runnable() {
+          @Override
           public void run() {
             try {
               ConnectionTable.threadWantsSharedResources();
@@ -2196,6 +2219,7 @@ public class ClusterDistributionManager implements DistributionManager {
   protected class MemberEventInvoker implements Runnable {
 
 
+    @Override
     @SuppressWarnings("synthetic-access")
     public void run() {
       for (;;) {
@@ -3363,21 +3387,25 @@ public class ClusterDistributionManager implements DistributionManager {
           }
           if (l == null) {
             l = new MembershipListener() {
+              @Override
               public void memberJoined(InternalDistributedMember theId) {
                 // nothing needed
               }
 
+              @Override
               public void memberDeparted(InternalDistributedMember theId, boolean crashed) {
                 if (desiredElder.equals(theId)) {
                   notifyElderChangeWaiters();
                 }
               }
 
+              @Override
               public void memberSuspect(InternalDistributedMember id,
                   InternalDistributedMember whoSuspected, String reason) {}
 
               public void viewInstalled(NetView view) {}
 
+              @Override
               public void quorumLost(Set<InternalDistributedMember> failures,
                   List<InternalDistributedMember> remaining) {}
             };
@@ -3863,9 +3891,11 @@ public class ClusterDistributionManager implements DistributionManager {
       serialQueuedMap.put(id, poolQueue);
 
       ThreadFactory tf = new ThreadFactory() {
+        @Override
         public Thread newThread(final Runnable command) {
           SerialQueuedExecutorPool.this.stats.incSerialPooledThreadStarts();
           final Runnable r = new Runnable() {
+            @Override
             public void run() {
               ConnectionTable.threadWantsSharedResources();
               Connection.makeReaderThread();

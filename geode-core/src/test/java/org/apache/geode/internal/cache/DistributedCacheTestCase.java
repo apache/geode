@@ -28,7 +28,7 @@ import org.apache.geode.cache.LoaderHelper;
 import org.apache.geode.cache.Region;
 import org.apache.geode.cache.Scope;
 import org.apache.geode.distributed.internal.ClusterDistributionManager;
-import org.apache.geode.distributed.internal.DistributionManagerDUnitTest;
+import org.apache.geode.distributed.internal.ClusterDistributionManagerDUnitTest;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.internal.Assert;
 import org.apache.geode.test.dunit.Host;
@@ -141,11 +141,10 @@ public abstract class DistributedCacheTestCase extends JUnit4DistributedTestCase
     Assert.assertTrue(cache != null, "No cache on this VM?");
     Assert.assertTrue(!cache.isClosed(), "Who closed my cache?");
 
-    InternalDistributedSystem system =
-        (InternalDistributedSystem) ((GemFireCacheImpl) cache).getDistributedSystem();
+    InternalDistributedSystem system = (InternalDistributedSystem) cache.getDistributedSystem();
     ClusterDistributionManager dm = (ClusterDistributionManager) system.getDistributionManager();
     boolean exceptionInThreads = dm.exceptionInThreads();
-    DistributionManagerDUnitTest.clearExceptionInThreads(dm);
+    dm.clearExceptionInThreads();
 
     cache.close();
     cache = null;

@@ -1421,4 +1421,14 @@ public class LonerDistributionManager implements DistributionManager {
     throw new UnsupportedOperationException(
         "createHealthMonitor is not supported by " + getClass().getSimpleName());
   }
+
+  @Override
+  public boolean exceptionInThreads() {
+    return false;
+  }
+
+  @Override
+  public void clearExceptionInThreads() {
+    // no-op
+  }
 }
