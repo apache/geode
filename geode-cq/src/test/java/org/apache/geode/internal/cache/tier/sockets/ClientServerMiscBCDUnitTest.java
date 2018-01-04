@@ -26,12 +26,12 @@ import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
 
-import io.codearte.catchexception.shade.mockito.Mockito;
 import org.awaitility.Awaitility;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
+import org.mockito.Mockito;
 
 import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.Region;
