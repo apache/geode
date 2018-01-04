@@ -485,4 +485,8 @@ public interface DistributionManager extends ReplySender {
   void removeHealthMonitor(InternalDistributedMember owner, int theId);
 
   void createHealthMonitor(InternalDistributedMember owner, GemFireHealthConfig cfg);
+
+  boolean exceptionInThreads();
+
+  void clearExceptionInThreads();
 }
