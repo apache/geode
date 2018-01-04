@@ -34,6 +34,8 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyZeroInteractions;
 import static org.mockito.Mockito.when;
 
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Stack;
 
 import org.junit.Before;
@@ -136,6 +138,29 @@ public class ElementTypeTest {
     assertThat(config.getUrl()).isEqualTo("url");
     assertThat(config.getUser()).isEqualTo("username");
     assertThat(config.getPassword()).isEqualTo("secret");
+    assertThat(config.getParameters()).isNull();
+  }
+
+  @Test
+  public void startElementConnectionWithParameters() {
+    JdbcServiceConfiguration serviceConfiguration = mock(JdbcServiceConfiguration.class);
+    stack.push(serviceConfiguration);
+    when(attributes.getValue(JdbcConnectorServiceXmlParser.NAME)).thenReturn("connectionName");
+    when(attributes.getValue(JdbcConnectorServiceXmlParser.URL)).thenReturn("url");
+    when(attributes.getValue(JdbcConnectorServiceXmlParser.PARAMETERS))
+        .thenReturn("key1:value1,key2:value2");
+
+    CONNECTION.startElement(stack, attributes);
+
+    ConnectionConfiguration config = ((ConnectionConfigBuilder) stack.pop()).build();
+    assertThat(config.getName()).isEqualTo("connectionName");
+    assertThat(config.getUrl()).isEqualTo("url");
+    assertThat(config.getUser()).isNull();
+    assertThat(config.getPassword()).isNull();
+    Map<String, String> expectedParams = new HashMap<>();
+    expectedParams.put("key1", "value1");
+    expectedParams.put("key2", "value2");
+    assertThat(config.getParameters()).isEqualTo(expectedParams);
   }
 
   @Test

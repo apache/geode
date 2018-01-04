@@ -68,7 +68,9 @@ public class ConnectionConfigBuilder {
   }
 
   private void validateParam(String[] paramKeyValue, String param) {
-    if ((paramKeyValue.length != 2) || paramKeyValue[0].isEmpty() || paramKeyValue[1].isEmpty()) {
+    // paramKeyValue is produced by split which will never give us
+    // an empty second element
+    if ((paramKeyValue.length != 2) || paramKeyValue[0].isEmpty()) {
       throw new IllegalArgumentException("Parameter '" + param
           + "' is not of the form 'parameterName" + PARAMS_DELIMITER + "value'");
     }
