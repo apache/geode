@@ -25,6 +25,7 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Properties;
 import java.util.Set;
+import java.util.SplittableRandom;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ThreadFactory;
@@ -159,6 +160,26 @@ public class PoolImpl implements InternalPool {
     return pool;
   }
 
+  /**
+   * Adds an arbitrary variance to a positive temporal interval. Where possible, 10% of the interval
+   * is added or subtracted from the interval. Otherwise, 1 is added or subtracted from the
+   * interval. For all positive intervals, the returned value will <bold>not</bold> equal the
+   * supplied interval.
+   *
+   * @param interval Positive temporal interval.
+   * @return Adjusted interval including the variance for positive intervals; the unmodified
+   *         interval for non-positive intervals.
+   */
+  static int addVarianceToInterval(int interval) {
+    if (1 <= interval) {
+      final SplittableRandom random = new SplittableRandom();
+      final int variance = (interval < 10) ? 1 : random.nextInt(interval / 10);
+      final int sign = random.nextBoolean() ? 1 : -1;
+      return interval + (sign * variance);
+    }
+    return interval;
+  }
+
   public boolean isUsedByGateway() {
     return usedByGateway;
   }
@@ -186,7 +207,7 @@ public class PoolImpl implements InternalPool {
     this.name = name;
     this.socketConnectTimeout = attributes.getSocketConnectTimeout();
     this.freeConnectionTimeout = attributes.getFreeConnectionTimeout();
-    this.loadConditioningInterval = attributes.getLoadConditioningInterval();
+    this.loadConditioningInterval = addVarianceToInterval(attributes.getLoadConditioningInterval());
     this.socketBufferSize = attributes.getSocketBufferSize();
     this.threadLocalConnections = attributes.getThreadLocalConnections();
     this.readTimeout = attributes.getReadTimeout();
