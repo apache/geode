@@ -103,9 +103,11 @@ public class DescribeConnectionCommand implements GfshCommand {
     }
     TabularResultData tabularResultData = sectionResult.addTable(CREATE_CONNECTION__PARAMS);
     tabularResultData.setHeader("Additional connection parameters:");
-    config.getParameters().entrySet().forEach((entry) -> {
-      tabularResultData.accumulate("Param Name", entry.getKey());
-      tabularResultData.accumulate("Value", entry.getValue());
-    });
+    if (config.getParameters() != null) {
+      config.getParameters().entrySet().forEach((entry) -> {
+        tabularResultData.accumulate("Param Name", entry.getKey());
+        tabularResultData.accumulate("Value", entry.getValue());
+      });
+    }
   }
 }

@@ -51,21 +51,22 @@ public enum ElementType {
         throw new CacheXmlException(
             "jdbc <connection> elements must occur within <connector-service> elements");
       }
-      ConnectionConfigBuilder connectionConfig = new ConnectionConfigBuilder()
+      ConnectionConfigBuilder connectionConfigBuilder = new ConnectionConfigBuilder()
           .withName(attributes.getValue(JdbcConnectorServiceXmlParser.NAME))
           .withUrl(attributes.getValue(JdbcConnectorServiceXmlParser.URL))
           .withUser(attributes.getValue(JdbcConnectorServiceXmlParser.USER))
-          .withPassword(attributes.getValue(JdbcConnectorServiceXmlParser.PASSWORD));
-      addParameters(connectionConfig,
-          attributes.getValue(JdbcConnectorServiceXmlParser.PARAMETERS));
-      stack.push(connectionConfig);
+          .withPassword(attributes.getValue(JdbcConnectorServiceXmlParser.PASSWORD))
+          .withParameters(parseParameters(attributes));
+      stack.push(connectionConfigBuilder);
     }
 
-    private void addParameters(ConnectionConfigBuilder connectionConfig, String value) {
-      if (value == null) {
-        return;
+    private String[] parseParameters(Attributes attributes) {
+      String[] result = null;
+      String value = attributes.getValue(JdbcConnectorServiceXmlParser.PARAMETERS);
+      if (value != null) {
+        result = value.split(",");
       }
-      connectionConfig.withParameters(value.split(","));
+      return result;
     }
 
     @Override
