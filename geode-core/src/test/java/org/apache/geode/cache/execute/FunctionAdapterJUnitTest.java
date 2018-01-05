@@ -1,7 +1,7 @@
 /*
  * Licensed to the Apache Software Foundation (ASF) under one or more contributor license
  * agreements. See the NOTICE file distributed with this work for additional information regarding
- * copyright ownership. The ASF licenses this file to You under the Apache License, Version 2.0 (the
+ * copyright ownership. The ASF licenses this file to you under the Apache License, Version 2.0 (the
  * "License"); you may not use this file except in compliance with the License. You may obtain a
  * copy of the License at
  *
@@ -12,6 +12,7 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
+
 package org.apache.geode.cache.execute;
 
 import static org.junit.Assert.*;
@@ -79,7 +80,7 @@ public class FunctionAdapterJUnitTest {
       throws Exception {
     FileInputStream fis =
         new FileInputStream(TestUtil.getResourcePath(getClass(), getClass().getSimpleName() + "."
-            + "serializedFunctionAdapterWithDifferentSerialVersionUID"));
+            + "serializedFunctionAdapterWithDifferentSerialVersionUID.ser"));
 
     DataInputStream dis = new VersionedDataInputStream(new DataInputStream(fis), Version.GFE_82);
     Object o = InternalDataSerializer.basicReadObject(dis);
