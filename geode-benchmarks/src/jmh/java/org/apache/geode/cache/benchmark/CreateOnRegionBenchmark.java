@@ -76,7 +76,8 @@ public class CreateOnRegionBenchmark {
   }
 
   private Region<String, String> createRegion(Cache cache) {
-    Region<String, String> region = cache.<String, String>createRegionFactory(RegionShortcut.LOCAL).create("testRegion");
+    Region<String, String> region =
+        cache.<String, String>createRegionFactory(RegionShortcut.LOCAL).create("testRegion");
     return region;
   }
 }

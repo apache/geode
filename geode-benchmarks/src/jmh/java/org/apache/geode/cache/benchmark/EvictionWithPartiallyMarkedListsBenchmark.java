@@ -94,8 +94,10 @@ public class EvictionWithPartiallyMarkedListsBenchmark {
   }
 
   private Region<String, String> createRegion(Cache cache, int maxSize) {
-    Region<String, String> region = cache.<String, String>createRegionFactory(RegionShortcut.LOCAL).setEvictionAttributes(
-        EvictionAttributes.createLRUEntryAttributes(maxSize, EvictionAction.LOCAL_DESTROY)).create("testRegion");
+    Region<String, String> region = cache.<String, String>createRegionFactory(RegionShortcut.LOCAL)
+        .setEvictionAttributes(
+            EvictionAttributes.createLRUEntryAttributes(maxSize, EvictionAction.LOCAL_DESTROY))
+        .create("testRegion");
     for (int i = 0; i < maxEntries; i++) {
       region.put(Integer.toString(i), "value");
     }

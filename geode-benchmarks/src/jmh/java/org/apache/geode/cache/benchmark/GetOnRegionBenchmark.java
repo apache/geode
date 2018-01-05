@@ -75,7 +75,8 @@ public class GetOnRegionBenchmark {
   }
 
   private Region<String, String> createRegion(Cache cache) {
-    Region<String, String> region = cache.<String, String>createRegionFactory(RegionShortcut.LOCAL).create("testRegion");
+    Region<String, String> region =
+        cache.<String, String>createRegionFactory(RegionShortcut.LOCAL).create("testRegion");
     for (int i = 0; i < ENTRIES; i++) {
       region.put(Integer.toString(i), "value");
     }

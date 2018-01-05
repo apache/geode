@@ -67,7 +67,7 @@ public class EvictionBasePerformanceBenchmark {
   @State(Scope.Thread)
   public static class MyState {
     Random random = new Random();
-    int nextKey = MAX_ENTRIES +1;
+    int nextKey = MAX_ENTRIES + 1;
   }
 
   @Benchmark
@@ -91,8 +91,10 @@ public class EvictionBasePerformanceBenchmark {
   }
 
   private Region<String, String> createRegion(Cache cache, int maxSize) {
-    Region<String, String> region = cache.<String, String>createRegionFactory(RegionShortcut.LOCAL).setEvictionAttributes(
-        EvictionAttributes.createLRUEntryAttributes(maxSize, EvictionAction.LOCAL_DESTROY)).create("testRegion");
+    Region<String, String> region = cache.<String, String>createRegionFactory(RegionShortcut.LOCAL)
+        .setEvictionAttributes(
+            EvictionAttributes.createLRUEntryAttributes(maxSize, EvictionAction.LOCAL_DESTROY))
+        .create("testRegion");
     for (int i = 0; i < MAX_ENTRIES; i++) {
       region.put(Integer.toString(i), "value");
     }
