@@ -130,11 +130,17 @@ public class ProtobufDriver implements Driver {
                 .setGetServerRequest(LocatorAPI.GetServerRequest.newBuilder()))
             .build().writeDelimitedTo(outputStream);
 
-        LocatorAPI.GetServerResponse getServerResponse = ClientProtocol.Message
-            .parseDelimitedFrom(inputStream).getResponse().getGetServerResponse();
-        if (!getServerResponse.hasServer()) {
-          continue;
+        ClientProtocol.Response response =
+            ClientProtocol.Message.parseDelimitedFrom(inputStream).getResponse();
+        ClientProtocol.ErrorResponse errorResponse = response.getErrorResponse();
+
+        if (errorResponse != null && errorResponse.hasError()) {
+          throw new IOException(
+              "Error finding server: error code= " + errorResponse.getError().getErrorCode()
+                  + "; error message=" + errorResponse.getError().getMessage());
         }
+
+        LocatorAPI.GetServerResponse getServerResponse = response.getGetServerResponse();
 
         BasicTypes.Server server = getServerResponse.getServer();
         return new InetSocketAddress(server.getHostname(), server.getPort());
