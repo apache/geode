@@ -15,13 +15,16 @@
 
 package org.apache.geode.management.internal.security;
 
+import static org.apache.geode.distributed.ConfigurationProperties.SECURITY_CLIENT_AUTH_INIT;
 import static org.apache.geode.distributed.ConfigurationProperties.SECURITY_MANAGER;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
+import java.io.Serializable;
 import java.util.Properties;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
+import java.util.function.Consumer;
 
 import org.junit.BeforeClass;
 import org.junit.ClassRule;
@@ -32,10 +35,12 @@ import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.Region;
 import org.apache.geode.cache.RegionShortcut;
 import org.apache.geode.cache.client.ClientCache;
+import org.apache.geode.cache.client.ClientCacheFactory;
 import org.apache.geode.cache.client.ClientRegionShortcut;
 import org.apache.geode.cache.client.ServerOperationException;
 import org.apache.geode.examples.SimpleSecurityManager;
 import org.apache.geode.security.AuthenticationFailedException;
+import org.apache.geode.security.templates.UserPasswordAuthInit;
 import org.apache.geode.test.dunit.AsyncInvocation;
 import org.apache.geode.test.dunit.IgnoredException;
 import org.apache.geode.test.dunit.rules.ClientVM;
@@ -72,12 +77,10 @@ public class MultiClientDUnitTest {
       cache.createRegionFactory(RegionShortcut.PARTITION).create("region");
     }, server1, server2);
 
-    client3 = lsRule.startClientVM(3, "data", "data", false, server1.getPort(), server2.getPort());
-    client4 = lsRule.startClientVM(4, "stranger", "stranger", false, server1.getPort(),
-        server2.getPort());
-    client5 = lsRule.startClientVM(5, "data", "data", false, server1.getPort(), server2.getPort());
-    client6 = lsRule.startClientVM(6, "dataWithWrongPswd", "data", false, server1.getPort(),
-        server2.getPort());
+    client3 = startClientWithUsernameAndPassword(3, "data", "data");
+    client4 = startClientWithUsernameAndPassword(4, "stranger", "stranger");
+    client5 = startClientWithUsernameAndPassword(5, "data", "data");
+    client6 = startClientWithUsernameAndPassword(6, "dataWithWrongPswd", "data");
   }
 
   @Test
@@ -128,5 +131,22 @@ public class MultiClientDUnitTest {
     vm4Invoke.await(60, TimeUnit.MINUTES);
     vm5Invoke.await(60, TimeUnit.MINUTES);
     vm6Invoke.await(60, TimeUnit.MINUTES);
+  }
+
+  private static ClientVM startClientWithUsernameAndPassword(int index, String username,
+      String password) throws Exception {
+    Properties props = new Properties();
+    props.setProperty(UserPasswordAuthInit.USER_NAME, username);
+    props.setProperty(UserPasswordAuthInit.PASSWORD, password);
+    props.setProperty(SECURITY_CLIENT_AUTH_INIT, UserPasswordAuthInit.class.getName());
+
+    Consumer<ClientCacheFactory> consumer =
+        (Serializable & Consumer<ClientCacheFactory>) ((cacheFactory) -> {
+          cacheFactory.setPoolSubscriptionEnabled(false);
+          for (int serverPort : new int[] {server1.getPort(), server2.getPort()}) {
+            cacheFactory.addPoolServer("localhost", serverPort);
+          }
+        });
+    return lsRule.startClientVM(index, props, consumer);
   }
 }
