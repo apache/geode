@@ -85,7 +85,7 @@ public class GMSLocator implements Locator, NetLocator {
 
   private transient NetView recoveredView;
 
-  private File viewFile;
+  private volatile File viewFile;
 
   private volatile boolean isCoordinator;
 
@@ -141,10 +141,14 @@ public class GMSLocator implements Locator, NetLocator {
     this.viewFile = file;
   }
 
+  public File getViewFile() {
+    return this.viewFile;
+  }
+
   @Override
   public void init(TcpServer server) throws InternalGemFireException {
     if (this.viewFile == null) {
-      this.viewFile = new File("locator" + server.getPort() + "view.dat");
+      this.viewFile = new File(System.getProperty("user.dir"), "locator" + server.getPort() + "view.dat");
     }
     logger.info(
         "GemFire peer location service starting.  Other locators: {}  Locators preferred as coordinators: {}  Network partition detection enabled: {}  View persistence file: {}",
