@@ -21,7 +21,7 @@ import java.util.concurrent.atomic.AtomicIntegerFieldUpdater;
 
 import org.apache.logging.log4j.Logger;
 
-import org.apache.geode.distributed.internal.DM;
+import org.apache.geode.distributed.internal.DistributionManager;
 import org.apache.geode.internal.DataSerializableFixedID;
 import org.apache.geode.internal.InternalDataSerializer;
 import org.apache.geode.internal.cache.persistence.DiskStoreID;
@@ -218,7 +218,7 @@ public abstract class VersionTag<T extends VersionSource>
    *
    * @param distributionManager
    */
-  public void setCanonicalIDs(DM distributionManager) {}
+  public void setCanonicalIDs(DistributionManager distributionManager) {}
 
   /**
    * @return the memberID

@@ -66,8 +66,8 @@ import org.apache.geode.cache.query.CqException;
 import org.apache.geode.cache.query.internal.cq.CqService;
 import org.apache.geode.cache.query.internal.cq.InternalCqQuery;
 import org.apache.geode.distributed.DistributedMember;
+import org.apache.geode.distributed.internal.ClusterDistributionManager;
 import org.apache.geode.distributed.internal.DistributionConfig;
-import org.apache.geode.distributed.internal.DistributionManager;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.i18n.StringId;
 import org.apache.geode.internal.SystemTimer;
@@ -1292,7 +1292,7 @@ public class CacheClientProxy implements ClientSession {
         recips.addAll(advice.getEmpties());
         recips.addAll(advice.getPreloaded());
         recips.addAll(advice.getOthers());
-        sfo.flush(recips, target, DistributionManager.HIGH_PRIORITY_EXECUTOR, true);
+        sfo.flush(recips, target, ClusterDistributionManager.HIGH_PRIORITY_EXECUTOR, true);
       } catch (InterruptedException ie) {
         Thread.currentThread().interrupt();
         return;

@@ -40,7 +40,7 @@ import org.apache.geode.cache.client.ClientCache;
 import org.apache.geode.cache.client.ClientCacheFactory;
 import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.distributed.DistributedSystemDisconnectedException;
-import org.apache.geode.distributed.internal.DM;
+import org.apache.geode.distributed.internal.DistributionManager;
 import org.apache.geode.internal.cache.GemFireCacheImpl;
 import org.apache.geode.management.internal.SystemManagementService;
 import org.apache.geode.test.dunit.Invoke;
@@ -249,7 +249,7 @@ public class ManagementTestRule implements MethodRule, Serializable {
     Invoke.invokeInEveryVM("disconnectFromDS", () -> JUnit4DistributedTestCase.disconnectFromDS());
   }
 
-  private DM getDistributionManager() {
+  private DistributionManager getDistributionManager() {
     return ((GemFireCacheImpl) getCache()).getDistributionManager();
   }
 

@@ -41,7 +41,7 @@ public class FetchHostRequest extends AdminRequest {
    * Must return a proper response to this request.
    */
   @Override
-  protected AdminResponse createResponse(DM dm) {
+  protected AdminResponse createResponse(DistributionManager dm) {
     return FetchHostResponse.create(dm, this.getSender());
   }
 

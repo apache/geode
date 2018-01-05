@@ -22,7 +22,7 @@ import java.util.Set;
 import org.apache.logging.log4j.Logger;
 
 import org.apache.geode.CancelException;
-import org.apache.geode.distributed.internal.DM;
+import org.apache.geode.distributed.internal.ClusterDistributionManager;
 import org.apache.geode.distributed.internal.DistributionManager;
 import org.apache.geode.distributed.internal.ReplyException;
 import org.apache.geode.internal.InternalDataSerializer;
@@ -50,7 +50,7 @@ public class RevokePersistentIDRequest extends CliLegacyMessage {
     this.pattern = pattern;
   }
 
-  public static void send(DM dm, PersistentMemberPattern pattern) {
+  public static void send(DistributionManager dm, PersistentMemberPattern pattern) {
     Set recipients = dm.getOtherDistributionManagerIds();
     RevokePersistentIDRequest request = new RevokePersistentIDRequest(pattern);
     request.setRecipients(recipients);
@@ -69,11 +69,11 @@ public class RevokePersistentIDRequest extends CliLegacyMessage {
     } catch (InterruptedException e) {
       logger.warn(e);
     }
-    request.createResponse((DistributionManager) dm);
+    request.createResponse((ClusterDistributionManager) dm);
   }
 
   @Override
-  protected AdminResponse createResponse(DM dm) {
+  protected AdminResponse createResponse(DistributionManager dm) {
     InternalCache cache = dm.getCache();
     if (cache != null && !cache.isClosed()) {
       PersistentMemberManager mm = cache.getPersistentMemberManager();

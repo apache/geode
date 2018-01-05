@@ -15,7 +15,7 @@
 package org.apache.geode.distributed.internal.membership.gms.membership;
 
 import org.apache.geode.distributed.Locator;
-import org.apache.geode.distributed.internal.DM;
+import org.apache.geode.distributed.internal.DistributionManager;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
 import org.apache.geode.distributed.internal.membership.gms.Services;
@@ -66,7 +66,7 @@ public class GMSJoinLeaveTestHelper {
 
   private static GMSJoinLeave getGmsJoinLeave() {
     InternalDistributedSystem distributedSystem = getInternalDistributedSystem();
-    DM dm = distributedSystem.getDM();
+    DistributionManager dm = distributedSystem.getDM();
     GMSMembershipManager membershipManager = (GMSMembershipManager) dm.getMembershipManager();
     Services services = membershipManager.getServices();
     return (GMSJoinLeave) services.getJoinLeave();

@@ -16,7 +16,7 @@ package org.apache.geode.internal.cache.entries;
 
 import org.apache.geode.cache.EntryEvent;
 import org.apache.geode.cache.EntryNotFoundException;
-import org.apache.geode.distributed.internal.DM;
+import org.apache.geode.distributed.internal.DistributionManager;
 import org.apache.geode.internal.ByteArrayDataInput;
 import org.apache.geode.internal.Version;
 import org.apache.geode.internal.cache.DiskId;
@@ -64,8 +64,8 @@ public abstract class AbstractOplogDiskRegionEntry extends AbstractDiskRegionEnt
   }
 
   @Override
-  public boolean fillInValue(InternalRegion region, Entry entry, ByteArrayDataInput in, DM mgr,
-      final Version version) {
+  public boolean fillInValue(InternalRegion region, Entry entry, ByteArrayDataInput in,
+      DistributionManager mgr, final Version version) {
     return Helper.fillInValue(this, entry, region.getDiskRegion(), mgr, in, region, version);
   }
 

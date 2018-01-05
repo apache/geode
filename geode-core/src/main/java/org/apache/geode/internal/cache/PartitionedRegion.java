@@ -136,7 +136,7 @@ import org.apache.geode.cache.wan.GatewaySender;
 import org.apache.geode.distributed.DistributedLockService;
 import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.distributed.LockServiceDestroyedException;
-import org.apache.geode.distributed.internal.DM;
+import org.apache.geode.distributed.internal.ClusterDistributionManager;
 import org.apache.geode.distributed.internal.DistributionAdvisee;
 import org.apache.geode.distributed.internal.DistributionAdvisor;
 import org.apache.geode.distributed.internal.DistributionAdvisor.Profile;
@@ -1035,7 +1035,7 @@ public class PartitionedRegion extends LocalRegion
       StateFlushOperation sfo = new StateFlushOperation(getDistributionManager());
       try {
         sfo.flush(this.distAdvisor.adviseAllPRNodes(), getDistributionManager().getId(),
-            DistributionManager.HIGH_PRIORITY_EXECUTOR, false);
+            ClusterDistributionManager.HIGH_PRIORITY_EXECUTOR, false);
       } catch (InterruptedException ie) {
         Thread.currentThread().interrupt();
         getCancelCriterion().checkCancelInProgress(ie);
@@ -2807,7 +2807,7 @@ public class PartitionedRegion extends LocalRegion
             // given that most manipulation of values is remote (requiring serialization to send).
             // But... function execution always implies local manipulation of
             // values so keeping locally updated values in Object form should be more efficient.
-            if (!DistributionManager.isFunctionExecutionThread()) {
+            if (!ClusterDistributionManager.isFunctionExecutionThread()) {
               // TODO: this condition may not help since BucketRegion.virtualPut calls
               // forceSerialized
               br.forceSerialized(event);
@@ -3478,7 +3478,7 @@ public class PartitionedRegion extends LocalRegion
     }
     final LocalResultCollector<?, ?> localResultCollector =
         execution.getLocalResultCollector(function, rc);
-    final DM dm = getDistributionManager();
+    final DistributionManager dm = getDistributionManager();
     final PartitionedRegionFunctionResultSender resultSender =
         new PartitionedRegionFunctionResultSender(dm, this, 0L, localResultCollector,
             execution.getServerResultSender(), memberToKeysMap.isEmpty(), remoteOnly,
@@ -3619,7 +3619,7 @@ public class PartitionedRegion extends LocalRegion
     execution.setExecutionNodes(singleMember);
     LocalResultCollector<?, ?> localRC = execution.getLocalResultCollector(function, rc);
     if (targetNode.equals(localVm)) {
-      final DM dm = getDistributionManager();
+      final DistributionManager dm = getDistributionManager();
       PartitionedRegionFunctionResultSender resultSender =
           new PartitionedRegionFunctionResultSender(dm, PartitionedRegion.this, 0, localRC,
               execution.getServerResultSender(), true, false, execution.isForwardExceptions(),
@@ -3747,7 +3747,7 @@ public class PartitionedRegion extends LocalRegion
     }
     final LocalResultCollector<?, ?> localRC = execution.getLocalResultCollector(function, rc);
 
-    final DM dm = getDistributionManager();
+    final DistributionManager dm = getDistributionManager();
     final PartitionedRegionFunctionResultSender resultSender =
         new PartitionedRegionFunctionResultSender(dm, this, 0L, localRC,
             execution.getServerResultSender(), recipMap.isEmpty(), !isSelf,
@@ -3843,7 +3843,7 @@ public class PartitionedRegion extends LocalRegion
     }
     final LocalResultCollector<?, ?> localResultCollector =
         execution.getLocalResultCollector(function, rc);
-    final DM dm = getDistributionManager();
+    final DistributionManager dm = getDistributionManager();
     final PartitionedRegionFunctionResultSender resultSender =
         new PartitionedRegionFunctionResultSender(dm, this, 0L, localResultCollector,
             execution.getServerResultSender(), recipMap.isEmpty(), !isSelf,
@@ -4508,7 +4508,7 @@ public class PartitionedRegion extends LocalRegion
    * @return Map of <old members, set/map of bucket ids they host>.
    */
   private HashMap filterOldMembers(HashMap nodeToBuckets) {
-    DistributionManager dm = (DistributionManager) getDistributionManager();
+    ClusterDistributionManager dm = (ClusterDistributionManager) getDistributionManager();
     HashMap oldGuys = new HashMap();
 
     Set<InternalDistributedMember> oldMembers =
@@ -6671,7 +6671,7 @@ public class PartitionedRegion extends LocalRegion
         ReplyProcessor21.forceSevereAlertProcessing();
       }
       try {
-        DM dm = cache.getInternalDistributedSystem().getDistributionManager();
+        DistributionManager dm = cache.getInternalDistributedSystem().getDistributionManager();
 
         long ackWaitThreshold = 0;
         long ackSAThreshold = dm.getConfig().getAckSevereAlertThreshold() * 1000;
@@ -6746,7 +6746,7 @@ public class PartitionedRegion extends LocalRegion
     private void basicTryLock(long time) {
       final Object key = this.lockName;
 
-      final DM dm = cache.getInternalDistributedSystem().getDistributionManager();
+      final DistributionManager dm = cache.getInternalDistributedSystem().getDistributionManager();
 
       long start = System.currentTimeMillis();
       long end;

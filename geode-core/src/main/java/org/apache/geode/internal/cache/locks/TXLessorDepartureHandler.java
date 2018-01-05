@@ -20,7 +20,7 @@ import java.util.concurrent.RejectedExecutionException;
 
 import org.apache.logging.log4j.Logger;
 
-import org.apache.geode.distributed.internal.DM;
+import org.apache.geode.distributed.internal.DistributionManager;
 import org.apache.geode.distributed.internal.locks.DLockBatch;
 import org.apache.geode.distributed.internal.locks.DLockGrantor;
 import org.apache.geode.distributed.internal.locks.DLockLessorDepartureHandler;
@@ -69,7 +69,7 @@ public class TXLessorDepartureHandler implements DLockLessorDepartureHandler {
     } // outer try-catch
   }
 
-  private void sendRecoveryMsgs(final DM dm, final DLockBatch[] batches,
+  private void sendRecoveryMsgs(final DistributionManager dm, final DLockBatch[] batches,
       final InternalDistributedMember owner, final DLockGrantor grantor) {
     try {
       dm.getWaitingThreadPool().execute(new Runnable() {

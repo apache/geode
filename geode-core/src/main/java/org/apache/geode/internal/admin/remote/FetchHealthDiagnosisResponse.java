@@ -36,8 +36,8 @@ public class FetchHealthDiagnosisResponse extends AdminResponse {
    * Returns a <code>FetchHealthDiagnosisResponse</code> that will be returned to the specified
    * recipient.
    */
-  public static FetchHealthDiagnosisResponse create(DM dm, InternalDistributedMember recipient,
-      int id, GemFireHealth.Health healthCode) {
+  public static FetchHealthDiagnosisResponse create(DistributionManager dm,
+      InternalDistributedMember recipient, int id, GemFireHealth.Health healthCode) {
     FetchHealthDiagnosisResponse m = new FetchHealthDiagnosisResponse();
     m.setRecipient(recipient);
     {

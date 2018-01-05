@@ -292,7 +292,7 @@ public class ServerLocator implements TcpHandler, DistributionAdvisee {
   }
 
   // DistributionAdvisee methods
-  public DM getDistributionManager() {
+  public DistributionManager getDistributionManager() {
     return getSystem().getDistributionManager();
   }
 

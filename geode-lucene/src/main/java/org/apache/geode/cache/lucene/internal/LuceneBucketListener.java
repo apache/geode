@@ -18,17 +18,17 @@ import org.apache.logging.log4j.Logger;
 import org.apache.lucene.store.AlreadyClosedException;
 
 import org.apache.geode.cache.partition.PartitionListenerAdapter;
-import org.apache.geode.distributed.internal.DM;
+import org.apache.geode.distributed.internal.DistributionManager;
 import org.apache.geode.internal.cache.PrimaryBucketException;
 import org.apache.geode.internal.logging.LogService;
 
 public class LuceneBucketListener extends PartitionListenerAdapter {
   private static final Logger logger = LogService.getLogger();
   private AbstractPartitionedRepositoryManager lucenePartitionRepositoryManager;
-  private final DM dm;
+  private final DistributionManager dm;
 
   public LuceneBucketListener(AbstractPartitionedRepositoryManager partitionedRepositoryManager,
-      final DM dm) {
+      final DistributionManager dm) {
     lucenePartitionRepositoryManager = partitionedRepositoryManager;
     this.dm = dm;
   }

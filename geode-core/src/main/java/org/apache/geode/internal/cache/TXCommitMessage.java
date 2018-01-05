@@ -34,7 +34,6 @@ import org.apache.geode.DataSerializer;
 import org.apache.geode.SystemFailure;
 import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.CacheClosedException;
-import org.apache.geode.cache.CacheFactory;
 import org.apache.geode.cache.CacheRuntimeException;
 import org.apache.geode.cache.CommitDistributionException;
 import org.apache.geode.cache.CommitIncompleteException;
@@ -45,7 +44,7 @@ import org.apache.geode.cache.RegionDistributionException;
 import org.apache.geode.cache.TransactionId;
 import org.apache.geode.cache.TransactionListener;
 import org.apache.geode.distributed.DistributedMember;
-import org.apache.geode.distributed.internal.DM;
+import org.apache.geode.distributed.internal.ClusterDistributionManager;
 import org.apache.geode.distributed.internal.DistributionManager;
 import org.apache.geode.distributed.internal.DistributionMessage;
 import org.apache.geode.distributed.internal.MembershipListener;
@@ -94,7 +93,7 @@ public class TXCommitMessage extends PooledDistributionMessage
   protected TXLockIdImpl lockId;
   protected HashSet farSiders;
 
-  protected transient DM dm; // Used on the sending side of this message
+  protected transient DistributionManager dm; // Used on the sending side of this message
   private transient int sequenceNum = 0;
 
   // Maps receiver Serializables to RegionCommitList instances
@@ -146,7 +145,7 @@ public class TXCommitMessage extends PooledDistributionMessage
    */
   public static final TXCommitMessage EXCEPTION_MSG = new TXCommitMessage();
 
-  public TXCommitMessage(TXId txIdent, DM dm, TXState txState) {
+  public TXCommitMessage(TXId txIdent, DistributionManager dm, TXState txState) {
     this.dm = dm;
     this.txIdent = txIdent;
     this.lockId = null;
@@ -181,7 +180,7 @@ public class TXCommitMessage extends PooledDistributionMessage
    * Return the TXCommitMessage we have already received that is associated with id. Note because of
    * bug 37657 we may need to wait for it to show up.
    */
-  public static TXCommitMessage waitForMessage(Object id, DM dm) {
+  public static TXCommitMessage waitForMessage(Object id, DistributionManager dm) {
     TXFarSideCMTracker map = getTracker();
     return map.waitForMessage(id, dm);
   }
@@ -525,7 +524,7 @@ public class TXCommitMessage extends PooledDistributionMessage
   }
 
   @Override
-  protected void process(DistributionManager dm) {
+  protected void process(ClusterDistributionManager dm) {
     this.dm = dm;
     // Remove this node from the set of recipients
     if (this.farSiders != null) {
@@ -569,11 +568,11 @@ public class TXCommitMessage extends PooledDistributionMessage
     this.processingExceptions.add(e);
   }
 
-  public void setDM(DM dm) {
+  public void setDM(DistributionManager dm) {
     this.dm = dm;
   }
 
-  public DM getDM() {
+  public DistributionManager getDM() {
     if (this.dm == null) {
       InternalCache cache = GemFireCacheImpl.getExisting("Applying TXCommit");
       this.dm = cache.getDistributionManager();
@@ -582,7 +581,7 @@ public class TXCommitMessage extends PooledDistributionMessage
   }
 
   public void basicProcess() {
-    final DM dm = this.dm;
+    final DistributionManager dm = this.dm;
 
     synchronized (this) {
       if (isProcessing()) {
@@ -1132,7 +1131,7 @@ public class TXCommitMessage extends PooledDistributionMessage
      * @return true if region should be processed; false if it can be ignored
      * @throws CacheClosedException if the cache has been closed
      */
-    boolean beginProcess(DM dm, TransactionId txIdent, TXRmtEvent txEvent)
+    boolean beginProcess(DistributionManager dm, TransactionId txIdent, TXRmtEvent txEvent)
         throws CacheClosedException {
       if (logger.isDebugEnabled()) {
         logger.debug("begin processing TXCommitMessage {} for region {}", txIdent, this.regionPath);
@@ -1172,7 +1171,7 @@ public class TXCommitMessage extends PooledDistributionMessage
       return this.r != null;
     }
 
-    private boolean hookupRegion(DM dm) {
+    private boolean hookupRegion(DistributionManager dm) {
       this.r = LocalRegion.getRegionFromPath(dm.getSystem(), this.regionPath);
       if (this.r == null && this.parentRegionPath != null) {
         this.r = LocalRegion.getRegionFromPath(dm.getSystem(), this.parentRegionPath);
@@ -1355,7 +1354,7 @@ public class TXCommitMessage extends PooledDistributionMessage
     }
 
 
-    public boolean isForceFireEvent(DM dm) {
+    public boolean isForceFireEvent(DistributionManager dm) {
       LocalRegion r = LocalRegion.getRegionFromPath(dm.getSystem(), this.regionPath);
       if (r instanceof PartitionedRegion || (r != null && r.isUsedForPartitionedRegionBucket())) {
         return false;
@@ -1666,7 +1665,7 @@ public class TXCommitMessage extends PooledDistributionMessage
     }
 
     @Override
-    protected void process(DistributionManager dm) {
+    protected void process(ClusterDistributionManager dm) {
       final TXCommitMessage mess = waitForMessage(this.lockId, dm);
       Assert.assertTrue(mess != null, "Commit data for TXLockId: " + this.lockId + " not found");
       basicProcess(mess, dm);
@@ -1718,7 +1717,7 @@ public class TXCommitMessage extends PooledDistributionMessage
     }
 
     @Override
-    protected void process(DistributionManager dm) {
+    protected void process(ClusterDistributionManager dm) {
       final TXCommitMessage mess = waitForMessage(this.txId, dm);
       Assert.assertTrue(mess != null, "Commit data for TXId: " + this.txId + " not found");
       basicProcess(mess, dm);
@@ -1750,7 +1749,7 @@ public class TXCommitMessage extends PooledDistributionMessage
   }
 
   public abstract static class CommitProcessMessage extends PooledDistributionMessage {
-    protected void basicProcess(final TXCommitMessage mess, final DistributionManager dm) {
+    protected void basicProcess(final TXCommitMessage mess, final ClusterDistributionManager dm) {
       dm.removeMembershipListener(mess);
       synchronized (mess) {
         if (mess.dontProcess()) {
@@ -1790,7 +1789,7 @@ public class TXCommitMessage extends PooledDistributionMessage
     }
 
     @Override
-    protected void process(DistributionManager dm) {
+    protected void process(ClusterDistributionManager dm) {
       final boolean processMsgReceived = txTracker.commitProcessReceived(this.trackerKey, dm);
       if (!processMsgReceived) {
         if (logger.isDebugEnabled()) {
@@ -1880,7 +1879,7 @@ public class TXCommitMessage extends PooledDistributionMessage
   public static class CommitProcessQueryReplyProcessor extends ReplyProcessor21 {
     public boolean receivedOnePositive;
 
-    CommitProcessQueryReplyProcessor(DM dm, Set members) {
+    CommitProcessQueryReplyProcessor(DistributionManager dm, Set members) {
       super(dm, members);
       this.receivedOnePositive = false;
     }
@@ -2068,7 +2067,7 @@ public class TXCommitMessage extends PooledDistributionMessage
   private class CommitReplyProcessor extends ReliableReplyProcessor21 {
     private HashMap msgMap;
 
-    public CommitReplyProcessor(DM dm, Set initMembers, HashMap msgMap) {
+    public CommitReplyProcessor(DistributionManager dm, Set initMembers, HashMap msgMap) {
       super(dm, initMembers);
       this.msgMap = msgMap;
     }
@@ -2286,7 +2285,7 @@ public class TXCommitMessage extends PooledDistributionMessage
     }
   }
 
-  public void hookupRegions(DM dm) {
+  public void hookupRegions(DistributionManager dm) {
     if (regions != null) {
       Iterator it = regions.iterator();
       while (it.hasNext()) {

@@ -35,7 +35,7 @@ public class SnapshotResultMessage extends PooledDistributionMessage implements 
   }
 
   @Override
-  public void process(DistributionManager dm) {
+  public void process(ClusterDistributionManager dm) {
     RemoteGfManagerAgent agent = dm.getAgent();
     if (agent != null) {
       agent.enqueueSnapshotResults(this);

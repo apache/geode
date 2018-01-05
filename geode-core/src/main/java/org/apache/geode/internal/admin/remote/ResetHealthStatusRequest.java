@@ -50,7 +50,7 @@ public class ResetHealthStatusRequest extends AdminRequest {
    * @param dm
    */
   @Override
-  protected AdminResponse createResponse(DM dm) {
+  protected AdminResponse createResponse(DistributionManager dm) {
     return ResetHealthStatusResponse.create(dm, this.getSender(), this.id);
   }
 

@@ -24,7 +24,7 @@ import org.apache.logging.log4j.Logger;
 
 import org.apache.geode.DataSerializer;
 import org.apache.geode.admin.RuntimeAdminException;
-import org.apache.geode.distributed.internal.DM;
+import org.apache.geode.distributed.internal.ClusterDistributionManager;
 import org.apache.geode.distributed.internal.DistributionManager;
 import org.apache.geode.distributed.internal.PooledDistributionMessage;
 import org.apache.geode.distributed.internal.ReplyException;
@@ -71,7 +71,7 @@ public abstract class AdminRequest extends PooledDistributionMessage {
   /**
    * Sends this request, waits for the AdminReponse, and returns it
    */
-  public AdminResponse sendAndWait(DistributionManager dm) {
+  public AdminResponse sendAndWait(ClusterDistributionManager dm) {
     InternalDistributedMember recipient = this.getRecipient();
     if (dm.getId().equals(recipient)) {
       // We're sending this message to ourselves, we won't need a
@@ -128,7 +128,7 @@ public abstract class AdminRequest extends PooledDistributionMessage {
    * outgoing queue.
    */
   @Override
-  protected void process(DistributionManager dm) {
+  protected void process(ClusterDistributionManager dm) {
     AdminResponse response = null;
     InspectionClasspathManager cpMgr = InspectionClasspathManager.getInstance();
     try {
@@ -151,7 +151,7 @@ public abstract class AdminRequest extends PooledDistributionMessage {
   /**
    * Must return a proper response to this request.
    */
-  protected abstract AdminResponse createResponse(DM dm);
+  protected abstract AdminResponse createResponse(DistributionManager dm);
 
   @Override
   public void toData(DataOutput out) throws IOException {

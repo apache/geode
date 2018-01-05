@@ -361,12 +361,12 @@ public class InternalLocator extends Locator implements ConnectListener {
     if (ids == null) {
       return false;
     }
-    DM dm = ids.getDistributionManager();
+    DistributionManager dm = ids.getDistributionManager();
     if (dm.isLoner()) {
       return false;
     }
-    DistributionManager distMgr = (DistributionManager) ids.getDistributionManager();
-    return distMgr.getDMType() == DistributionManager.LOCATOR_DM_TYPE;
+    ClusterDistributionManager distMgr = (ClusterDistributionManager) ids.getDistributionManager();
+    return distMgr.getDMType() == ClusterDistributionManager.LOCATOR_DM_TYPE;
   }
 
   /**

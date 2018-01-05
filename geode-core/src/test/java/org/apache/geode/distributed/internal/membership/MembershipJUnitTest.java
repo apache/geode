@@ -40,10 +40,10 @@ import org.junit.experimental.categories.Category;
 import org.apache.geode.GemFireConfigException;
 import org.apache.geode.distributed.ConfigurationProperties;
 import org.apache.geode.distributed.Locator;
+import org.apache.geode.distributed.internal.ClusterDistributionManager;
 import org.apache.geode.distributed.internal.DMStats;
 import org.apache.geode.distributed.internal.DistributionConfig;
 import org.apache.geode.distributed.internal.DistributionConfigImpl;
-import org.apache.geode.distributed.internal.DistributionManager;
 import org.apache.geode.distributed.internal.InternalLocator;
 import org.apache.geode.distributed.internal.SerialAckedMessage;
 import org.apache.geode.distributed.internal.membership.gms.GMSUtil;
@@ -140,7 +140,7 @@ public class MembershipJUnitTest {
       nonDefault.put(LOCATORS, localHost.getHostName() + '[' + port + ']');
       DistributionConfigImpl config = new DistributionConfigImpl(nonDefault);
       RemoteTransportConfig transport =
-          new RemoteTransportConfig(config, DistributionManager.NORMAL_DM_TYPE);
+          new RemoteTransportConfig(config, ClusterDistributionManager.NORMAL_DM_TYPE);
 
       // start the first membership manager
       try {
@@ -281,7 +281,7 @@ public class MembershipJUnitTest {
       nonDefault.put(ConfigurationProperties.SECURITY_UDP_DHALGO, "AES:128");
       DistributionConfigImpl config = new DistributionConfigImpl(nonDefault);
       RemoteTransportConfig transport =
-          new RemoteTransportConfig(config, DistributionManager.NORMAL_DM_TYPE);
+          new RemoteTransportConfig(config, ClusterDistributionManager.NORMAL_DM_TYPE);
 
       // start the first membership manager
       try {
@@ -382,21 +382,21 @@ public class MembershipJUnitTest {
     nonDefault.put(MEMBER_TIMEOUT, "" + timeout);
     DistributionConfigImpl config = new DistributionConfigImpl(nonDefault);
     RemoteTransportConfig transport =
-        new RemoteTransportConfig(config, DistributionManager.NORMAL_DM_TYPE);
+        new RemoteTransportConfig(config, ClusterDistributionManager.NORMAL_DM_TYPE);
     ServiceConfig sc = new ServiceConfig(transport, config);
     assertEquals(2 * timeout + ServiceConfig.MEMBER_REQUEST_COLLECTION_INTERVAL,
         sc.getJoinTimeout());
 
     nonDefault.clear();
     config = new DistributionConfigImpl(nonDefault);
-    transport = new RemoteTransportConfig(config, DistributionManager.NORMAL_DM_TYPE);
+    transport = new RemoteTransportConfig(config, ClusterDistributionManager.NORMAL_DM_TYPE);
     sc = new ServiceConfig(transport, config);
     assertEquals(24000, sc.getJoinTimeout());
 
     nonDefault.clear();
     nonDefault.put(LOCATORS, SocketCreator.getLocalHost().getHostAddress() + "[" + 12345 + "]");
     config = new DistributionConfigImpl(nonDefault);
-    transport = new RemoteTransportConfig(config, DistributionManager.NORMAL_DM_TYPE);
+    transport = new RemoteTransportConfig(config, ClusterDistributionManager.NORMAL_DM_TYPE);
     sc = new ServiceConfig(transport, config);
     assertEquals(60000, sc.getJoinTimeout());
 
@@ -404,7 +404,7 @@ public class MembershipJUnitTest {
     System.setProperty("p2p.joinTimeout", "" + timeout);
     try {
       config = new DistributionConfigImpl(nonDefault);
-      transport = new RemoteTransportConfig(config, DistributionManager.NORMAL_DM_TYPE);
+      transport = new RemoteTransportConfig(config, ClusterDistributionManager.NORMAL_DM_TYPE);
       sc = new ServiceConfig(transport, config);
       assertEquals(timeout, sc.getJoinTimeout());
     } finally {
@@ -423,7 +423,7 @@ public class MembershipJUnitTest {
     nonDefault.put(LOCATORS, "");
     DistributionConfigImpl config = new DistributionConfigImpl(nonDefault);
     RemoteTransportConfig transport =
-        new RemoteTransportConfig(config, DistributionManager.NORMAL_DM_TYPE);
+        new RemoteTransportConfig(config, ClusterDistributionManager.NORMAL_DM_TYPE);
 
     ServiceConfig serviceConfig = mock(ServiceConfig.class);
     when(serviceConfig.getDistributionConfig()).thenReturn(config);
@@ -458,7 +458,7 @@ public class MembershipJUnitTest {
 
   @Test
   public void testMessagesThrowExceptionIfProcessed() throws Exception {
-    DistributionManager dm = null;
+    ClusterDistributionManager dm = null;
     try {
       new HeartbeatMessage().process(dm);
       fail("expected an exception to be thrown");

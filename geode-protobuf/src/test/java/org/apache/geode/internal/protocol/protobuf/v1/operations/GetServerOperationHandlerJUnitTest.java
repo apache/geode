@@ -14,29 +14,27 @@
  */
 package org.apache.geode.internal.protocol.protobuf.v1.operations;
 
+import static org.apache.geode.internal.protocol.protobuf.v1.BasicTypes.ErrorCode.NO_AVAILABLE_SERVER;
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
-import java.util.ArrayList;
-
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
-import org.apache.geode.cache.client.internal.locator.ClientConnectionRequest;
 import org.apache.geode.cache.client.internal.locator.ClientConnectionResponse;
 import org.apache.geode.distributed.internal.InternalLocator;
-import org.apache.geode.distributed.internal.LocatorLoadSnapshot;
 import org.apache.geode.distributed.internal.ServerLocation;
 import org.apache.geode.distributed.internal.ServerLocator;
+import org.apache.geode.internal.protocol.Failure;
 import org.apache.geode.internal.protocol.Result;
 import org.apache.geode.internal.protocol.Success;
 import org.apache.geode.internal.protocol.TestExecutionContext;
 import org.apache.geode.internal.protocol.protobuf.v1.BasicTypes;
+import org.apache.geode.internal.protocol.protobuf.v1.ClientProtocol;
 import org.apache.geode.internal.protocol.protobuf.v1.LocatorAPI;
 import org.apache.geode.internal.protocol.protobuf.v1.LocatorAPI.GetServerResponse;
 import org.apache.geode.internal.protocol.protobuf.v1.utilities.ProtobufRequestUtilities;
@@ -78,15 +76,17 @@ public class GetServerOperationHandlerJUnitTest extends OperationHandlerJUnitTes
   }
 
   @Test
-  public void testWhenServersFromSnapshotAreNullDoesNotReturnAServer() throws Exception {
+  public void testExceptionReturnedWhenNoServers() throws Exception {
     when(serverLocatorAdviseeMock.processRequest(any(Object.class))).thenReturn(null);
 
     LocatorAPI.GetServerRequest GetServerRequest =
         ProtobufRequestUtilities.createGetServerRequest();
     Result operationHandlerResult = getOperationHandlerResult(GetServerRequest);
-    assertTrue(operationHandlerResult instanceof Success);
-    GetServerResponse serverResponse = (GetServerResponse) operationHandlerResult.getMessage();
-    assertFalse(serverResponse.hasServer());
+    assertTrue(operationHandlerResult instanceof Failure);
+    Failure failure = (Failure) operationHandlerResult;
+    ClientProtocol.ErrorResponse errorResponse =
+        (ClientProtocol.ErrorResponse) failure.getErrorMessage();
+    assertEquals(NO_AVAILABLE_SERVER, errorResponse.getError().getErrorCode());
   }
 
   private Result getOperationHandlerResult(LocatorAPI.GetServerRequest GetServerRequest)

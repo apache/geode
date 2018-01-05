@@ -39,7 +39,7 @@ import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
 import org.apache.geode.distributed.DistributedSystemDisconnectedException;
-import org.apache.geode.distributed.internal.DM;
+import org.apache.geode.distributed.internal.ClusterDistributionManager;
 import org.apache.geode.distributed.internal.DMStats;
 import org.apache.geode.distributed.internal.DistributionConfig;
 import org.apache.geode.distributed.internal.DistributionConfigImpl;
@@ -105,7 +105,7 @@ public class GMSMembershipManagerJUnitTest {
     distConfig = new DistributionConfigImpl(nonDefault);
     distProperties = nonDefault;
     RemoteTransportConfig tconfig =
-        new RemoteTransportConfig(distConfig, DistributionManager.NORMAL_DM_TYPE);
+        new RemoteTransportConfig(distConfig, ClusterDistributionManager.NORMAL_DM_TYPE);
 
     mockConfig = mock(ServiceConfig.class);
     when(mockConfig.getDistributionConfig()).thenReturn(distConfig);
@@ -402,7 +402,7 @@ public class GMSMembershipManagerJUnitTest {
 
   @Test
   public void testReplyProcessorInitiatesSuspicion() throws Exception {
-    DM dm = mock(DM.class);
+    DistributionManager dm = mock(DistributionManager.class);
     DMStats stats = mock(DMStats.class);
 
     InternalDistributedSystem system =

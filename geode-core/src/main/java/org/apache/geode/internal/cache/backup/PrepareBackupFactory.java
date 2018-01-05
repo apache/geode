@@ -18,14 +18,14 @@ import java.util.HashSet;
 import java.util.Set;
 
 import org.apache.geode.cache.persistence.PersistentID;
-import org.apache.geode.distributed.internal.DM;
+import org.apache.geode.distributed.internal.DistributionManager;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
 import org.apache.geode.internal.cache.InternalCache;
 
 class PrepareBackupFactory {
 
-  BackupReplyProcessor createReplyProcessor(BackupResultCollector resultCollector, DM dm,
-      Set<InternalDistributedMember> recipients) {
+  BackupReplyProcessor createReplyProcessor(BackupResultCollector resultCollector,
+      DistributionManager dm, Set<InternalDistributedMember> recipients) {
     return new BackupReplyProcessor(resultCollector, dm, recipients);
   }
 

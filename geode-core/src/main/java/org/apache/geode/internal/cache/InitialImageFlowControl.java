@@ -25,7 +25,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 
 import org.apache.logging.log4j.Logger;
 
-import org.apache.geode.distributed.internal.DM;
+import org.apache.geode.distributed.internal.ClusterDistributionManager;
 import org.apache.geode.distributed.internal.DistributionManager;
 import org.apache.geode.distributed.internal.DistributionMessage;
 import org.apache.geode.distributed.internal.MembershipListener;
@@ -56,11 +56,12 @@ public class InitialImageFlowControl implements MembershipListener {
   private int id;
   private int maxPermits = InitialImageOperation.CHUNK_PERMITS;
   private final Semaphore permits = new Semaphore(maxPermits);
-  private final DM dm;
+  private final DistributionManager dm;
   private final InternalDistributedMember target;
   private final AtomicBoolean aborted = new AtomicBoolean();
 
-  public static InitialImageFlowControl register(DM dm, InternalDistributedMember target) {
+  public static InitialImageFlowControl register(DistributionManager dm,
+      InternalDistributedMember target) {
     InitialImageFlowControl control = new InitialImageFlowControl(dm, target);
     int id = keeper.put(control);
     control.id = id;
@@ -72,7 +73,7 @@ public class InitialImageFlowControl implements MembershipListener {
     return control;
   }
 
-  private InitialImageFlowControl(DM dm, InternalDistributedMember target) {
+  private InitialImageFlowControl(DistributionManager dm, InternalDistributedMember target) {
     this.dm = dm;
     this.target = target;
   }
@@ -205,7 +206,8 @@ public class InitialImageFlowControl implements MembershipListener {
 
     public FlowControlPermitMessage() {}
 
-    public static void send(DM dm, InternalDistributedMember recipient, int keeperId) {
+    public static void send(DistributionManager dm, InternalDistributedMember recipient,
+        int keeperId) {
       FlowControlPermitMessage message = new FlowControlPermitMessage(keeperId);
       message.setRecipient(recipient);
       dm.putOutgoing(message);
@@ -213,7 +215,7 @@ public class InitialImageFlowControl implements MembershipListener {
 
     @Override
     public int getProcessorType() {
-      return DistributionManager.STANDARD_EXECUTOR;
+      return ClusterDistributionManager.STANDARD_EXECUTOR;
     }
 
     @Override
@@ -222,7 +224,7 @@ public class InitialImageFlowControl implements MembershipListener {
     }
 
     @Override
-    protected void process(DistributionManager dm) {
+    protected void process(ClusterDistributionManager dm) {
       InitialImageFlowControl control = (InitialImageFlowControl) keeper.retrieve(keeperId);
       if (control != null) {
         control.releasePermit();

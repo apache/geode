@@ -49,8 +49,7 @@ import org.apache.geode.ForcedDisconnectException;
 import org.apache.geode.GemFireIOException;
 import org.apache.geode.distributed.ConfigurationProperties;
 import org.apache.geode.distributed.DistributedSystemDisconnectedException;
-import org.apache.geode.distributed.internal.*;
-import org.apache.geode.distributed.internal.DM;
+import org.apache.geode.distributed.internal.ClusterDistributionManager;
 import org.apache.geode.distributed.internal.DistributionConfigImpl;
 import org.apache.geode.distributed.internal.DistributionManager;
 import org.apache.geode.distributed.internal.DistributionMessage;
@@ -74,7 +73,6 @@ import org.apache.geode.distributed.internal.membership.gms.messages.JoinRequest
 import org.apache.geode.distributed.internal.membership.gms.messages.JoinResponseMessage;
 import org.apache.geode.distributed.internal.membership.gms.messages.LeaveRequestMessage;
 import org.apache.geode.distributed.internal.membership.gms.messenger.JGroupsMessenger.JGroupsReceiver;
-import org.apache.geode.internal.*;
 import org.apache.geode.internal.AvailablePort;
 import org.apache.geode.internal.AvailablePortHelper;
 import org.apache.geode.internal.DataSerializableFixedID;
@@ -122,7 +120,7 @@ public class JGroupsMessengerJUnitTest {
     nonDefault.putAll(addProp);
     DistributionConfigImpl config = new DistributionConfigImpl(nonDefault);
     RemoteTransportConfig tconfig =
-        new RemoteTransportConfig(config, DistributionManager.NORMAL_DM_TYPE);
+        new RemoteTransportConfig(config, ClusterDistributionManager.NORMAL_DM_TYPE);
 
     stopper = mock(Stopper.class);
     when(stopper.isCancelInProgress()).thenReturn(false);
@@ -143,7 +141,7 @@ public class JGroupsMessengerJUnitTest {
     when(services.getManager()).thenReturn(manager);
     when(services.getJoinLeave()).thenReturn(joinLeave);
 
-    DM dm = mock(DM.class);
+    DistributionManager dm = mock(DistributionManager.class);
     InternalDistributedSystem system =
         InternalDistributedSystem.newInstanceForTesting(dm, nonDefault);
     when(services.getStatistics()).thenReturn(new DistributionStats(system, statsId));
@@ -218,7 +216,7 @@ public class JGroupsMessengerJUnitTest {
     initMocks(false);
     Message jgmsg = new Message();
     DistributionMessage dmsg = mock(DistributionMessage.class);
-    when(dmsg.getProcessorType()).thenReturn(DistributionManager.SERIAL_EXECUTOR);
+    when(dmsg.getProcessorType()).thenReturn(ClusterDistributionManager.SERIAL_EXECUTOR);
     messenger.setMessageFlags(dmsg, jgmsg);
     assertFalse("expected no_fc to not be set in " + jgmsg.getFlags(),
         jgmsg.isFlagSet(Message.Flag.NO_FC));
@@ -1130,7 +1128,7 @@ public class JGroupsMessengerJUnitTest {
   private InternalDistributedMember createAddress(int port) {
     GMSMember gms = new GMSMember("localhost", port);
     gms.setUUID(UUID.randomUUID());
-    gms.setVmKind(DistributionManager.NORMAL_DM_TYPE);
+    gms.setVmKind(ClusterDistributionManager.NORMAL_DM_TYPE);
     gms.setVersionOrdinal(Version.CURRENT_ORDINAL);
     return new InternalDistributedMember(gms);
   }
