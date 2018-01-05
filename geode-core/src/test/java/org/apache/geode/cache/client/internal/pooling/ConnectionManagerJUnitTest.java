@@ -16,12 +16,12 @@ package org.apache.geode.cache.client.internal.pooling;
 
 import static org.apache.geode.distributed.ConfigurationProperties.LOCATORS;
 import static org.apache.geode.distributed.ConfigurationProperties.MCAST_PORT;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.fail;
 
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.Socket;
-import java.net.UnknownHostException;
 import java.nio.ByteBuffer;
 import java.util.Collections;
 import java.util.Properties;
@@ -40,7 +40,16 @@ import org.junit.experimental.categories.Category;
 import org.apache.geode.CancelCriterion;
 import org.apache.geode.cache.client.AllConnectionsInUseException;
 import org.apache.geode.cache.client.NoAvailableServersException;
-import org.apache.geode.cache.client.internal.*;
+import org.apache.geode.cache.client.internal.ClientUpdater;
+import org.apache.geode.cache.client.internal.Connection;
+import org.apache.geode.cache.client.internal.ConnectionFactory;
+import org.apache.geode.cache.client.internal.ConnectionStats;
+import org.apache.geode.cache.client.internal.Endpoint;
+import org.apache.geode.cache.client.internal.EndpointManager;
+import org.apache.geode.cache.client.internal.EndpointManagerImpl;
+import org.apache.geode.cache.client.internal.Op;
+import org.apache.geode.cache.client.internal.QueueManager;
+import org.apache.geode.cache.client.internal.ServerBlackList;
 import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.distributed.DistributedSystem;
 import org.apache.geode.distributed.internal.ServerLocation;
@@ -102,6 +111,17 @@ public class ConnectionManagerJUnitTest {
       manager.close(false);
     }
     background.shutdownNow();
+  }
+
+  @Test
+  public void testAddVarianceToInterval() {
+    assertThat(ConnectionManagerImpl.addVarianceToInterval(0)).as("Zero gets zero variance")
+        .isEqualTo(0);
+    assertThat(ConnectionManagerImpl.addVarianceToInterval(300000))
+        .as("Large value gets +/-10% variance").isNotEqualTo(300000).isGreaterThanOrEqualTo(270000)
+        .isLessThanOrEqualTo(330000);
+    assertThat(ConnectionManagerImpl.addVarianceToInterval(9)).as("Small value gets +/-1 variance")
+        .isNotEqualTo(9).isGreaterThanOrEqualTo(8).isLessThanOrEqualTo(10);
   }
 
   @Test
