@@ -223,6 +223,22 @@ public interface MemberMXBean {
       List<String> stagedFilePaths);
 
   /**
+   * Executes a command on the member. this is the method that's used by the HttpOperationInvoker
+   * and JmxOperationInvoker
+   *
+   * @param commandString Command to be execute.
+   * @param env Environmental properties to use during command execution.
+   * @param binaryData Binary data specific to the command being executed.
+   * @return Result of the execution in JSON format.
+   *
+   * @deprecated since 1.4 use processCommand(String commandString, Map<String, String> env,
+   *             List<String> stagedFilePaths) instead
+   */
+  @Deprecated
+  @ResourceOperation()
+  String processCommand(String commandString, Map<String, String> env, Byte[][] binaryData);
+
+  /**
    * Returns the name of all disk stores in use by this member.
    *
    * @param includeRegionOwned Whether to include disk stores owned by a region.

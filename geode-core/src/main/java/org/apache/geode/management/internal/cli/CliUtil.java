@@ -40,6 +40,7 @@ import java.util.zip.DataFormatException;
 import java.util.zip.Deflater;
 import java.util.zip.Inflater;
 
+import org.apache.commons.lang.ArrayUtils;
 import org.apache.commons.lang.StringUtils;
 
 import org.apache.geode.cache.CacheClosedException;
@@ -127,7 +128,14 @@ public class CliUtil {
     return cache;
   }
 
-  public static byte[][] filesToBytes(String[] fileNames) throws IOException {
+  /**
+   * Even thought this is only used in a test, caller of MemberMXBean.processCommand(String, Map,
+   * Byte[][]) will need to use this method to convert a fileList to Byte[][] to call that
+   * deprecated API.
+   *
+   * Once that deprecated API is removed, we can delete this method and the tests.
+   */
+  public static Byte[][] filesToBytes(List<String> fileNames) throws IOException {
     List<byte[]> filesDataList = new ArrayList<>();
 
     for (String fileName : fileNames) {
@@ -151,11 +159,10 @@ public class CliUtil {
       }
     }
 
-    byte[][] filesData = new byte[filesDataList.size()][];
+    List<Byte[]> convertedList =
+        filesDataList.stream().map(ArrayUtils::toObject).collect(Collectors.toList());
 
-    filesData = filesDataList.toArray(filesData);
-
-    return filesData;
+    return convertedList.toArray(new Byte[convertedList.size()][]);
   }
 
   public static byte[] toByteArray(InputStream input) throws IOException {
@@ -169,46 +176,32 @@ public class CliUtil {
     return output.toByteArray();
   }
 
-  public static String[] bytesToNames(byte[][] fileData) {
-    String[] names = new String[fileData.length / 2];
-    for (int i = 0; i < fileData.length; i += 2) {
-      names[i / 2] = new String(fileData[i]);
-    }
-
-    return names;
-  }
-
-  public static byte[][] bytesToData(byte[][] fileData) {
-    byte[][] data = new byte[fileData.length / 2][];
-    for (int i = 1; i < fileData.length; i += 2) {
-      data[i / 2] = fileData[i];
-    }
-
-    return data;
-  }
-
-  public static void bytesToFiles(byte[][] fileData, String parentDirPath, boolean mkRequireddirs)
+  public static List<String> bytesToFiles(Byte[][] fileData, String parentDirPath)
       throws IOException, UnsupportedOperationException {
+    List<String> filesPaths = new ArrayList<>();
     FileOutputStream fos = null;
+    File file = null;
 
     File parentDir = new File(parentDirPath);
-    if (mkRequireddirs && !parentDir.exists()) {
-      if (!parentDir.mkdirs()) {
-        throw new UnsupportedOperationException(
-            "Couldn't create required directory structure for " + parentDirPath);
-      }
+    if (!parentDir.exists() && !parentDir.mkdirs()) {
+      throw new UnsupportedOperationException(
+          "Couldn't create required directory structure for " + parentDirPath);
     }
     for (int i = 0; i < fileData.length; i++) {
+      byte[] bytes = ArrayUtils.toPrimitive(fileData[i]);
       if (i % 2 == 0) {
         // Expect file name as bytes at even index
-        String fileName = new String(fileData[i]);
-        fos = new FileOutputStream(new File(parentDir, fileName));
+        String fileName = new String(bytes);
+        file = new File(parentDir, fileName);
+        fos = new FileOutputStream(file);
       } else {
         // Expect file contents as bytes at odd index
-        fos.write(fileData[i]);
+        fos.write(bytes);
         fos.close();
+        filesPaths.add(file.getAbsolutePath());
       }
     }
+    return filesPaths;
   }
 
   private static InternalCache getInternalCache() {
