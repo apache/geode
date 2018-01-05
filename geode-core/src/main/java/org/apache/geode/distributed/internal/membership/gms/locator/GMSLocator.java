@@ -148,7 +148,8 @@ public class GMSLocator implements Locator, NetLocator {
   @Override
   public void init(TcpServer server) throws InternalGemFireException {
     if (this.viewFile == null) {
-      this.viewFile = new File(System.getProperty("user.dir"), "locator" + server.getPort() + "view.dat");
+      this.viewFile =
+          new File(System.getProperty("user.dir"), "locator" + server.getPort() + "view.dat");
     }
     logger.info(
         "GemFire peer location service starting.  Other locators: {}  Locators preferred as coordinators: {}  Network partition detection enabled: {}  View persistence file: {}",
