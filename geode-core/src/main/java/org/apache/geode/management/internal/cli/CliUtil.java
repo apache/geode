@@ -129,11 +129,11 @@ public class CliUtil {
   }
 
   /**
-   * even thought this is only used in a test, caller of MemberMXBean.processCommand(String, Map,
+   * Even thought this is only used in a test, caller of MemberMXBean.processCommand(String, Map,
    * Byte[][]) will need to use this method to convert a fileList to Byte[][] to call that
    * deprecated API.
    *
-   * Once that deprecated API is removed, we can delete this method and the tests
+   * Once that deprecated API is removed, we can delete this method and the tests.
    */
   public static Byte[][] filesToBytes(List<String> fileNames) throws IOException {
     List<byte[]> filesDataList = new ArrayList<>();
