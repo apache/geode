@@ -305,7 +305,6 @@ public class TcpServer {
         SystemFailure.checkFailure(); // throws
       }
       if (srv_sock.isClosed()) {
-        log.error("Locator socket was closed unexpectedly - server thread is exiting.");
         shuttingDown = true;
         break;
       }
