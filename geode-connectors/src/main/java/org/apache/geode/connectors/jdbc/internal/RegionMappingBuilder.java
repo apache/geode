@@ -50,14 +50,15 @@ public class RegionMappingBuilder {
     return this;
   }
 
-  // TODO: delete withPrimaryKeyInValue(String)
-  public RegionMappingBuilder withPrimaryKeyInValue(String primaryKeyInValue) {
-    this.primaryKeyInValue = Boolean.parseBoolean(primaryKeyInValue);
+  public RegionMappingBuilder withPrimaryKeyInValue(String v) {
+    if (v != null) {
+      withPrimaryKeyInValue(Boolean.parseBoolean(v));
+    }
     return this;
   }
 
-  public RegionMappingBuilder withPrimaryKeyInValue(Boolean primaryKeyInValue) {
-    this.primaryKeyInValue = primaryKeyInValue;
+  public RegionMappingBuilder withPrimaryKeyInValue(Boolean v) {
+    this.primaryKeyInValue = v;
     return this;
   }
 
@@ -76,16 +77,16 @@ public class RegionMappingBuilder {
         }
         String[] keyValuePair = mapping.split(MAPPINGS_DELIMITER);
         validateParam(keyValuePair, mapping);
-        if (keyValuePair.length == 2) {
-          fieldToColumnMap.put(keyValuePair[0], keyValuePair[1]);
-        }
+        fieldToColumnMap.put(keyValuePair[0], keyValuePair[1]);
       }
     }
     return this;
   }
 
   private void validateParam(String[] paramKeyValue, String mapping) {
-    if (paramKeyValue.length <= 1 || paramKeyValue[0].isEmpty() || paramKeyValue[1].isEmpty()) {
+    // paramKeyValue is produced by split which will never give us
+    // an empty second element
+    if (paramKeyValue.length != 2 || paramKeyValue[0].isEmpty()) {
       throw new IllegalArgumentException("Field to column mapping '" + mapping
           + "' is not of the form 'Field" + MAPPINGS_DELIMITER + "Column'");
     }

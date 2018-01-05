@@ -175,12 +175,55 @@ public class JdbcConnectorServiceXmlGeneratorIntegrationTest {
   }
 
   @Test
+  public void generatedXmlWithConnectionConfigurationWithNoUserNameAndPasswordCanBeParsed()
+      throws Exception {
+    JdbcConnectorService service = cache.getService(JdbcConnectorService.class);
+    ConnectionConfiguration config =
+        new ConnectionConfigBuilder().withName("name").withUrl("url").build();
+    service.createConnectionConfig(config);
+    generateXml();
+    cache.close();
+
+    createCacheUsingXml();
+    service = cache.getService(JdbcConnectorService.class);
+    assertThat(service.getConnectionConfig("name")).isEqualTo(config);
+  }
+
+  @Test
+  public void generatedXmlWithConnectionConfigurationWithParametersCanBeParsed() throws Exception {
+    JdbcConnectorService service = cache.getService(JdbcConnectorService.class);
+    ConnectionConfiguration config = new ConnectionConfigBuilder().withName("name").withUrl("url")
+        .withParameters(new String[] {"key1:value1", "key2:value2"}).build();
+    service.createConnectionConfig(config);
+    generateXml();
+    cache.close();
+
+    createCacheUsingXml();
+    service = cache.getService(JdbcConnectorService.class);
+    assertThat(service.getConnectionConfig("name")).isEqualTo(config);
+  }
+
+  @Test
   public void generatedXmlWithRegionMappingCanBeParsed() throws Exception {
     JdbcConnectorService service = cache.getService(JdbcConnectorService.class);
     RegionMapping mapping = new RegionMappingBuilder().withRegionName("region")
         .withPdxClassName("class").withTableName("table").withConnectionConfigName("connection")
         .withPrimaryKeyInValue(true).withFieldToColumnMapping("field1", "columnMapping1")
         .withFieldToColumnMapping("field2", "columnMapping2").build();
+    service.createRegionMapping(mapping);
+    generateXml();
+    cache.close();
+
+    createCacheUsingXml();
+    service = cache.getService(JdbcConnectorService.class);
+    assertThat(service.getMappingForRegion("region")).isEqualTo(mapping);
+  }
+
+  @Test
+  public void generatedXmlWithRegionMappingWithNoOptionalParametersCanBeParsed() throws Exception {
+    JdbcConnectorService service = cache.getService(JdbcConnectorService.class);
+    RegionMapping mapping = new RegionMappingBuilder().withRegionName("region")
+        .withConnectionConfigName("connection").build();
     service.createRegionMapping(mapping);
     generateXml();
     cache.close();

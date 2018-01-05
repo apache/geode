@@ -12,7 +12,7 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
-package org.apache.geode.connectors.jdbc.internal.xml;
+package org.apache.geode.connectors.jdbc.internal;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
@@ -52,6 +52,30 @@ public class ConnectionConfigBuilderTest {
   }
 
   @Test
+  public void createsObjectWithEmptyParameterElement() {
+    ConnectionConfiguration config = new ConnectionConfigBuilder().withName("name").withUrl("url")
+        .withUser("user").withPassword("password")
+        .withParameters(new String[] {"param1:value1", "", "param2:value2"}).build();
+
+    assertThat(config.getName()).isEqualTo("name");
+    assertThat(config.getUrl()).isEqualTo("url");
+    assertThat(config.getUser()).isEqualTo("user");
+    assertThat(config.getPassword()).isEqualTo("password");
+    assertThat(config.getConnectionProperties()).containsEntry("param1", "value1")
+        .containsEntry("param2", "value2");
+  }
+
+  @Test
+  public void createsObjectWithNullParameters() {
+    ConnectionConfiguration config =
+        new ConnectionConfigBuilder().withName("name").withUrl("url").withParameters(null).build();
+
+    assertThat(config.getName()).isEqualTo("name");
+    assertThat(config.getUrl()).isEqualTo("url");
+    assertThat(config.getParameters()).isNull();
+  }
+
+  @Test
   public void throwsExceptionWithInvalidParams() {
     ConnectionConfigBuilder config = new ConnectionConfigBuilder();
     assertThatThrownBy(() -> config.withParameters(new String[] {"param1value1"}))
@@ -59,6 +83,8 @@ public class ConnectionConfigBuilderTest {
     assertThatThrownBy(() -> config.withParameters(new String[] {":param1value1"}))
         .isInstanceOf(IllegalArgumentException.class);
     assertThatThrownBy(() -> config.withParameters(new String[] {"param1value1:"}))
+        .isInstanceOf(IllegalArgumentException.class);
+    assertThatThrownBy(() -> config.withParameters(new String[] {"1:2:3"}))
         .isInstanceOf(IllegalArgumentException.class);
     assertThatThrownBy(() -> config.withParameters(new String[] {":"}))
         .isInstanceOf(IllegalArgumentException.class);
