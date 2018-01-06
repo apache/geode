@@ -15,6 +15,7 @@
 package org.apache.geode.cache.wan;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 
 import java.io.IOException;
 import java.util.Collection;
@@ -103,6 +104,10 @@ public class WANRollingUpgradeDUnitTest extends JUnit4CacheTestCase {
       // Start old server
       oldServer.invoke(() -> createCache(locators));
 
+      // Locators before 1.4 handled configuration asynchronously. We must wait for configuration.
+      oldLocator.invoke(() -> Awaitility.await().atMost(65, TimeUnit.SECONDS)
+          .until(() -> assertTrue(InternalLocator.getLocator().isSharedConfigurationRunning())));
+
       // Create GatewaySender in old server
       String senderId = getName() + "_gatewaysender";
       oldServer.invoke(() -> createGatewaySender(senderId, 10,
@@ -151,6 +156,10 @@ public class WANRollingUpgradeDUnitTest extends JUnit4CacheTestCase {
     // Start old site locator
     site1Locator.invoke(() -> startLocator(site1LocatorPort, site1DistributedSystemId,
         site1Locators, site2Locators));
+
+    // Locators before 1.4 handled configuration asynchronously. We must wait for configuration.
+    site1Locator.invoke(() -> Awaitility.await().atMost(65, TimeUnit.SECONDS)
+        .until(() -> assertTrue(InternalLocator.getLocator().isSharedConfigurationRunning())));
 
     // Start current site locator
     site2Locator.invoke(() -> startLocator(site2LocatorPort, site2DistributedSystemId,
@@ -213,6 +222,10 @@ public class WANRollingUpgradeDUnitTest extends JUnit4CacheTestCase {
     // Start old site locator
     site1Locator.invoke(() -> startLocator(site1LocatorPort, site1DistributedSystemId,
         site1Locators, site2Locators));
+
+    // Locators before 1.4 handled configuration asynchronously. We must wait for configuration.
+    site1Locator.invoke(() -> Awaitility.await().atMost(65, TimeUnit.SECONDS)
+        .until(() -> assertTrue(InternalLocator.getLocator().isSharedConfigurationRunning())));
 
     // Start current site locator
     site2Locator.invoke(() -> startLocator(site2LocatorPort, site2DistributedSystemId,
@@ -277,6 +290,10 @@ public class WANRollingUpgradeDUnitTest extends JUnit4CacheTestCase {
     site1Locator.invoke(() -> startLocator(site1LocatorPort, site1DistributedSystemId,
         site1Locators, site2Locators));
 
+    // Locators before 1.4 handled configuration asynchronously. We must wait for configuration.
+    site1Locator.invoke(() -> Awaitility.await().atMost(65, TimeUnit.SECONDS)
+        .until(() -> assertTrue(InternalLocator.getLocator().isSharedConfigurationRunning())));
+
     // Start current site locator
     site2Locator.invoke(() -> startLocator(site2LocatorPort, site2DistributedSystemId,
         site2Locators, site1Locators));
@@ -339,6 +356,10 @@ public class WANRollingUpgradeDUnitTest extends JUnit4CacheTestCase {
     // Start old site locator
     site1Locator.invoke(() -> startLocator(site1LocatorPort, site1DistributedSystemId,
         site1Locators, site2Locators));
+
+    // Locators before 1.4 handled configuration asynchronously. We must wait for configuration.
+    site1Locator.invoke(() -> Awaitility.await().atMost(65, TimeUnit.SECONDS)
+        .until(() -> assertTrue(InternalLocator.getLocator().isSharedConfigurationRunning())));
 
     // Start current site locator
     site2Locator.invoke(() -> startLocator(site2LocatorPort, site2DistributedSystemId,
@@ -406,6 +427,13 @@ public class WANRollingUpgradeDUnitTest extends JUnit4CacheTestCase {
     site2Locator.invoke(() -> startLocator(site2LocatorPort, site2DistributedSystemId,
         site2Locators, site1Locators));
 
+
+    // Locators before 1.4 handled configuration asynchronously. We must wait for configuration.
+    site1Locator.invoke(() -> Awaitility.await().atMost(65, TimeUnit.SECONDS)
+        .until(() -> assertTrue(InternalLocator.getLocator().isSharedConfigurationRunning())));
+    site2Locator.invoke(() -> Awaitility.await().atMost(65, TimeUnit.SECONDS)
+        .until(() -> assertTrue(InternalLocator.getLocator().isSharedConfigurationRunning())));
+
     // Start and configure mixed site servers
     String regionName = getName() + "_region";
     String site1SenderId = getName() + "_gatewaysender_" + site2DistributedSystemId;
@@ -462,6 +490,10 @@ public class WANRollingUpgradeDUnitTest extends JUnit4CacheTestCase {
     // Start mixed site locator
     site1Locator.invoke(() -> startLocator(site1LocatorPort, site1DistributedSystemId,
         site1Locators, site2Locators));
+
+    // Locators before 1.4 handled configuration asynchronously. We must wait for configuration.
+    site1Locator.invoke(() -> Awaitility.await().atMost(65, TimeUnit.SECONDS)
+        .until(() -> assertTrue(InternalLocator.getLocator().isSharedConfigurationRunning())));
 
     // Start old site locator
     site2Locator.invoke(() -> startLocator(site2LocatorPort, site2DistributedSystemId,
