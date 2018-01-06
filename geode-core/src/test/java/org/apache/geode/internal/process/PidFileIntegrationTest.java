@@ -20,10 +20,7 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import java.io.File;
 import java.io.FileNotFoundException;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
 
-import org.junit.After;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -45,7 +42,6 @@ public class PidFileIntegrationTest {
   private File directory;
   private File pidFile;
   private String pidFileName;
-  private ExecutorService futures;
   private int pid;
 
   @Rule
@@ -56,13 +52,7 @@ public class PidFileIntegrationTest {
     directory = temporaryFolder.getRoot();
     pidFile = new File(directory, "pid.txt");
     pidFileName = pidFile.getName();
-    futures = Executors.newFixedThreadPool(2);
     pid = identifyPid();
-  }
-
-  @After
-  public void after() {
-    assertThat(this.futures.shutdownNow()).isEmpty();
   }
 
   @Test
