@@ -20,6 +20,7 @@ import static org.apache.geode.distributed.ConfigurationProperties.GROUPS;
 import static org.apache.geode.distributed.ConfigurationProperties.JMX_MANAGER_PORT;
 import static org.apache.geode.distributed.ConfigurationProperties.LOCATORS;
 import static org.apache.geode.distributed.ConfigurationProperties.NAME;
+import static org.apache.geode.distributed.ConfigurationProperties.SECURITY_CLIENT_AUTH_INIT;
 import static org.apache.geode.test.dunit.Host.getHost;
 
 import java.io.File;
@@ -41,6 +42,7 @@ import org.apache.geode.cache.server.CacheServer;
 import org.apache.geode.distributed.internal.InternalLocator;
 import org.apache.geode.internal.AvailablePortHelper;
 import org.apache.geode.internal.cache.InternalCache;
+import org.apache.geode.security.templates.UserPasswordAuthInit;
 import org.apache.geode.test.dunit.VM;
 import org.apache.geode.test.dunit.standalone.DUnitLauncher;
 import org.apache.geode.test.dunit.standalone.VersionManager;
@@ -340,6 +342,24 @@ public class ClusterStartupRule extends ExternalResource implements Serializable
       Consumer<ClientCacheFactory> cacheFactorySetup) throws Exception {
     return startClientVM(index, properties, cacheFactorySetup, VersionManager.CURRENT_VERSION);
   }
+
+  public ClientVM startClientVM(int index, String username, String password,
+      boolean subscriptionEnabled, int... serverPorts) throws Exception {
+    Properties props = new Properties();
+    props.setProperty(UserPasswordAuthInit.USER_NAME, username);
+    props.setProperty(UserPasswordAuthInit.PASSWORD, password);
+    props.setProperty(SECURITY_CLIENT_AUTH_INIT, UserPasswordAuthInit.class.getName());
+
+    Consumer<ClientCacheFactory> consumer =
+        (Serializable & Consumer<ClientCacheFactory>) ((cacheFactory) -> {
+          cacheFactory.setPoolSubscriptionEnabled(subscriptionEnabled);
+          for (int serverPort : serverPorts) {
+            cacheFactory.addPoolServer("localhost", serverPort);
+          }
+        });
+    return startClientVM(index, props, consumer);
+  }
+
 
   /**
    * Returns the {@link Member} running inside the VM with the specified {@code index}

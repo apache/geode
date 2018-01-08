@@ -14,22 +14,14 @@
  */
 package org.apache.geode.security;
 
-import static org.apache.geode.distributed.ConfigurationProperties.SECURITY_CLIENT_AUTH_INIT;
 import static org.apache.geode.distributed.ConfigurationProperties.SECURITY_MANAGER;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
-
-import java.io.Serializable;
-import java.util.Properties;
-import java.util.function.Consumer;
 
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
-import org.apache.geode.cache.client.ClientCacheFactory;
-import org.apache.geode.security.templates.UserPasswordAuthInit;
 import org.apache.geode.test.dunit.IgnoredException;
-import org.apache.geode.test.dunit.rules.ClientVM;
 import org.apache.geode.test.dunit.rules.ClusterStartupRule;
 import org.apache.geode.test.junit.categories.DistributedTest;
 import org.apache.geode.test.junit.categories.SecurityTest;
@@ -46,32 +38,15 @@ public class ClientAuthDUnitTest {
 
   @Test
   public void authWithCorrectPasswordShouldPass() throws Exception {
-    startClientWithUsernameAndPassword(0, "test", "test");
+    lsRule.startClientVM(0, "test", "test", true, server.getPort());
   }
 
   @Test
   public void authWithIncorrectPasswordShouldFail() throws Exception {
     IgnoredException.addIgnoredException(AuthenticationFailedException.class.getName());
 
-    assertThatThrownBy(() -> startClientWithUsernameAndPassword(0, "test", "invalidPassword"))
-        .isInstanceOf(AuthenticationFailedException.class);
+    assertThatThrownBy(
+        () -> lsRule.startClientVM(0, "test", "invalidPassword", true, server.getPort()))
+            .isInstanceOf(AuthenticationFailedException.class);
   }
-
-  private ClientVM startClientWithUsernameAndPassword(int index, String username, String password)
-      throws Exception {
-    Properties props = new Properties();
-    props.setProperty(UserPasswordAuthInit.USER_NAME, username);
-    props.setProperty(UserPasswordAuthInit.PASSWORD, password);
-    props.setProperty(SECURITY_CLIENT_AUTH_INIT, UserPasswordAuthInit.class.getName());
-
-    Consumer<ClientCacheFactory> consumer =
-        (Serializable & Consumer<ClientCacheFactory>) ((cacheFactory) -> {
-          cacheFactory.setPoolSubscriptionEnabled(true);
-          for (int serverPort : new int[] {server.getPort()}) {
-            cacheFactory.addPoolServer("localhost", serverPort);
-          }
-        });
-    return lsRule.startClientVM(index, props, consumer);
-  }
-
 }

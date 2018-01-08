@@ -14,16 +14,11 @@
  */
 package org.apache.geode.security;
 
-import static org.apache.geode.distributed.ConfigurationProperties.SECURITY_CLIENT_AUTH_INIT;
 import static org.apache.geode.distributed.ConfigurationProperties.SECURITY_MANAGER;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
-
-import java.io.Serializable;
-import java.util.Properties;
-import java.util.function.Consumer;
 
 import org.junit.Before;
 import org.junit.Rule;
@@ -33,9 +28,7 @@ import org.junit.experimental.categories.Category;
 import org.apache.geode.cache.Region;
 import org.apache.geode.cache.RegionShortcut;
 import org.apache.geode.cache.client.ClientCache;
-import org.apache.geode.cache.client.ClientCacheFactory;
 import org.apache.geode.cache.client.ClientRegionShortcut;
-import org.apache.geode.security.templates.UserPasswordAuthInit;
 import org.apache.geode.test.dunit.rules.ClientVM;
 import org.apache.geode.test.dunit.rules.ClusterStartupRule;
 import org.apache.geode.test.junit.categories.DistributedTest;
@@ -65,7 +58,7 @@ public class ClientDestroyInvalidateAuthDUnitTest {
 
   @Test
   public void testDestroyInvalidate() throws Exception {
-    client1 = startClientWithUsernameAndPassword(1, "data", "data");
+    client1 = lsRule.startClientVM(1, "data", "data", true, server.getPort());
     // Delete one key and invalidate another key with an authorized user.
     client1.invoke(() -> {
       ClientCache cache = ClusterStartupRule.getClientCache();
@@ -84,7 +77,7 @@ public class ClientDestroyInvalidateAuthDUnitTest {
       cache.close();
     });
 
-    client2 = startClientWithUsernameAndPassword(2, "dataRead", "dataRead");
+    client2 = lsRule.startClientVM(2, "dataRead", "dataRead", true, server.getPort());
     // Delete one key and invalidate another key with an unauthorized user.
     client2.invoke(() -> {
       ClientCache cache = ClusterStartupRule.getClientCache();
@@ -107,20 +100,4 @@ public class ClientDestroyInvalidateAuthDUnitTest {
     });
   }
 
-  private ClientVM startClientWithUsernameAndPassword(int index, String username, String password)
-      throws Exception {
-    Properties props = new Properties();
-    props.setProperty(UserPasswordAuthInit.USER_NAME, username);
-    props.setProperty(UserPasswordAuthInit.PASSWORD, password);
-    props.setProperty(SECURITY_CLIENT_AUTH_INIT, UserPasswordAuthInit.class.getName());
-
-    Consumer<ClientCacheFactory> consumer =
-        (Serializable & Consumer<ClientCacheFactory>) ((cacheFactory) -> {
-          cacheFactory.setPoolSubscriptionEnabled(true);
-          for (int serverPort : new int[] {server.getPort()}) {
-            cacheFactory.addPoolServer("localhost", serverPort);
-          }
-        });
-    return lsRule.startClientVM(index, props, consumer);
-  }
 }
