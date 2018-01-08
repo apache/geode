@@ -19,7 +19,7 @@ import java.io.DataOutput;
 import java.io.IOException;
 
 import org.apache.geode.DataSerializer;
-import org.apache.geode.distributed.internal.ClusterDistributionManager;
+import org.apache.geode.distributed.internal.DistributionManager;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.distributed.internal.PooledDistributionMessage;
 import org.apache.geode.internal.admin.StatAlertDefinition;
@@ -87,7 +87,7 @@ public class UpdateAlertDefinitionMessage extends PooledDistributionMessage {
   }
 
   @Override
-  protected void process(ClusterDistributionManager dm) {
+  protected void process(DistributionManager dm) {
     StatAlertsManager.getInstance(dm).updateAlertDefinition(_alertDefinitions, _actionCode);
   }
 

@@ -30,7 +30,7 @@ import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.CacheFactory;
 import org.apache.geode.cache.wan.GatewayQueueEvent;
 import org.apache.geode.cache.wan.GatewaySender;
-import org.apache.geode.distributed.internal.ClusterDistributionManager;
+import org.apache.geode.distributed.internal.DM;
 import org.apache.geode.distributed.internal.DistributionManager;
 import org.apache.geode.distributed.internal.DistributionMessage;
 import org.apache.geode.distributed.internal.MessageWithReply;
@@ -74,7 +74,7 @@ public class GatewaySenderQueueEntrySynchronizationOperation {
           this.entriesToSynchronize);
     }
     // Create and send message
-    DistributionManager dm = this.region.getDistributionManager();
+    DM dm = this.region.getDistributionManager();
     GatewaySenderQueueEntrySynchronizationReplyProcessor processor =
         new GatewaySenderQueueEntrySynchronizationReplyProcessor(dm, this.recipient, this);
     GatewaySenderQueueEntrySynchronizationMessage message =
@@ -111,7 +111,7 @@ public class GatewaySenderQueueEntrySynchronizationOperation {
 
     private GatewaySenderQueueEntrySynchronizationOperation operation;
 
-    public GatewaySenderQueueEntrySynchronizationReplyProcessor(DistributionManager dm,
+    public GatewaySenderQueueEntrySynchronizationReplyProcessor(DM dm,
         InternalDistributedMember recipient,
         GatewaySenderQueueEntrySynchronizationOperation operation) {
       super(dm, recipient);
@@ -188,7 +188,7 @@ public class GatewaySenderQueueEntrySynchronizationOperation {
     }
 
     @Override
-    protected void process(ClusterDistributionManager dm) {
+    protected void process(DistributionManager dm) {
       Object result = null;
       ReplyException replyException = null;
       try {

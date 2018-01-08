@@ -14,6 +14,9 @@
  */
 package org.apache.geode.internal.cache;
 
+import static org.apache.geode.internal.cache.DistributedCacheOperation.VALUE_IS_BYTES;
+import static org.apache.geode.internal.cache.DistributedCacheOperation.VALUE_IS_SERIALIZED_OBJECT;
+
 import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
@@ -31,7 +34,7 @@ import org.apache.geode.cache.EntryExistsException;
 import org.apache.geode.cache.EntryNotFoundException;
 import org.apache.geode.cache.TransactionDataNotColocatedException;
 import org.apache.geode.distributed.DistributedMember;
-import org.apache.geode.distributed.internal.ClusterDistributionManager;
+import org.apache.geode.distributed.internal.DM;
 import org.apache.geode.distributed.internal.DirectReplyProcessor;
 import org.apache.geode.distributed.internal.DistributionManager;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
@@ -47,6 +50,7 @@ import org.apache.geode.internal.cache.versions.DiskVersionTag;
 import org.apache.geode.internal.cache.versions.VersionTag;
 import org.apache.geode.internal.i18n.LocalizedStrings;
 import org.apache.geode.internal.logging.LogService;
+import org.apache.geode.internal.logging.log4j.LocalizedMessage;
 import org.apache.geode.internal.logging.log4j.LogMarker;
 import org.apache.geode.internal.offheap.annotations.Released;
 
@@ -62,7 +66,7 @@ public class RemoteInvalidateMessage extends RemoteDestroyMessage {
   private RemoteInvalidateMessage(Set recipients, String regionPath, DirectReplyProcessor processor,
       EntryEventImpl event, boolean useOriginRemote, boolean possibleDuplicate) {
     super(recipients, regionPath, processor, event, null,
-        ClusterDistributionManager.PARTITIONED_REGION_EXECUTOR, useOriginRemote, possibleDuplicate);
+        DistributionManager.PARTITIONED_REGION_EXECUTOR, useOriginRemote, possibleDuplicate);
   }
 
   public static boolean distribute(EntryEventImpl event, boolean onlyPersistent) {
@@ -86,7 +90,7 @@ public class RemoteInvalidateMessage extends RemoteDestroyMessage {
         attempts++;
         final boolean posDup = (attempts > 1);
         InvalidateResponse processor = send(replicate, event.getRegion(), event,
-            ClusterDistributionManager.SERIAL_EXECUTOR, false, posDup);
+            DistributionManager.SERIAL_EXECUTOR, false, posDup);
         processor.waitForCacheException();
         VersionTag versionTag = processor.getVersionTag();
         if (versionTag != null) {
@@ -162,7 +166,7 @@ public class RemoteInvalidateMessage extends RemoteDestroyMessage {
    * @throws EntryExistsException
    */
   @Override
-  protected boolean operateOnRegion(ClusterDistributionManager dm, LocalRegion r, long startTime)
+  protected boolean operateOnRegion(DistributionManager dm, LocalRegion r, long startTime)
       throws EntryExistsException, RemoteOperationException {
 
     InternalDistributedMember eventSender = originalSender;
@@ -237,13 +241,13 @@ public class RemoteInvalidateMessage extends RemoteDestroyMessage {
 
   // override reply message type from PartitionMessage
   @Override
-  protected void sendReply(InternalDistributedMember member, int procId, DistributionManager dm,
-      ReplyException ex, LocalRegion r, long startTime) {
+  protected void sendReply(InternalDistributedMember member, int procId, DM dm, ReplyException ex,
+      LocalRegion r, long startTime) {
     sendReply(member, procId, dm, ex, r, null, startTime);
   }
 
-  protected void sendReply(InternalDistributedMember member, int procId, DistributionManager dm,
-      ReplyException ex, LocalRegion r, VersionTag versionTag, long startTime) {
+  protected void sendReply(InternalDistributedMember member, int procId, DM dm, ReplyException ex,
+      LocalRegion r, VersionTag versionTag, long startTime) {
     /*
      * if (pr != null && startTime > 0) { pr.getPrStats().endPartitionMessagesProcessing(startTime);
      * }
@@ -290,7 +294,7 @@ public class RemoteInvalidateMessage extends RemoteDestroyMessage {
      * @param dm the distribution manager that is processing the message.
      */
     @Override
-    public void process(final DistributionManager dm, final ReplyProcessor21 rp) {
+    public void process(final DM dm, final ReplyProcessor21 rp) {
       final long startTime = getTimestamp();
       if (logger.isTraceEnabled(LogMarker.DM)) {
         logger.trace(LogMarker.DM,

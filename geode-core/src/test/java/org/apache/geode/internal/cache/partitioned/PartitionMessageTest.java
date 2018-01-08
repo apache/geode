@@ -26,7 +26,7 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
-import org.apache.geode.distributed.internal.ClusterDistributionManager;
+import org.apache.geode.distributed.internal.DistributionManager;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
 import org.apache.geode.internal.cache.GemFireCacheImpl;
 import org.apache.geode.internal.cache.PartitionedRegion;
@@ -41,7 +41,7 @@ public class PartitionMessageTest {
 
   private GemFireCacheImpl cache;
   private PartitionMessage msg;
-  private ClusterDistributionManager dm;
+  private DistributionManager dm;
   private PartitionedRegion pr;
   private TXManagerImpl txMgr;
   private long startTime = 1;
@@ -50,7 +50,7 @@ public class PartitionMessageTest {
   @Before
   public void setUp() throws Exception {
     cache = Fakes.cache();
-    dm = mock(ClusterDistributionManager.class);
+    dm = mock(DistributionManager.class);
     msg = mock(PartitionMessage.class);
     pr = mock(PartitionedRegion.class);
     txMgr = mock(TXManagerImpl.class);

@@ -28,7 +28,7 @@ import org.apache.logging.log4j.Logger;
 import org.apache.geode.CancelException;
 import org.apache.geode.InternalGemFireError;
 import org.apache.geode.SystemFailure;
-import org.apache.geode.distributed.internal.ClusterDistributionManager;
+import org.apache.geode.distributed.internal.DM;
 import org.apache.geode.distributed.internal.DistributionConfig;
 import org.apache.geode.distributed.internal.DistributionManager;
 import org.apache.geode.distributed.internal.DistributionMessage;
@@ -60,10 +60,9 @@ public class ShutdownAllRequest extends AdminRequest {
    * Sends a shutdownAll request to all other members and performs local shutdownAll processing in
    * the waitingThreadPool.
    */
-  public static Set send(final DistributionManager dm, long timeout) {
+  public static Set send(final DM dm, long timeout) {
     boolean hadCache = hasCache();
-    ClusterDistributionManager dism =
-        dm instanceof ClusterDistributionManager ? (ClusterDistributionManager) dm : null;
+    DistributionManager dism = dm instanceof DistributionManager ? (DistributionManager) dm : null;
     InternalDistributedMember myId = dm.getDistributionManagerId();
 
     Set recipients = dm.getOtherNormalDistributionManagerIds();
@@ -139,7 +138,7 @@ public class ShutdownAllRequest extends AdminRequest {
   }
 
   @Override
-  protected void process(ClusterDistributionManager dm) {
+  protected void process(DistributionManager dm) {
     boolean isToShutdown = hasCache();
     super.process(dm);
 
@@ -174,7 +173,7 @@ public class ShutdownAllRequest extends AdminRequest {
   }
 
   @Override
-  protected AdminResponse createResponse(DistributionManager dm) {
+  protected AdminResponse createResponse(DM dm) {
     boolean isToShutdown = hasCache();
     if (isToShutdown) {
       boolean isSuccess = false;
@@ -240,7 +239,7 @@ public class ShutdownAllRequest extends AdminRequest {
   private static class ShutDownAllReplyProcessor extends AdminMultipleReplyProcessor {
     Set results = Collections.synchronizedSet(new TreeSet());
 
-    ShutDownAllReplyProcessor(DistributionManager dm, Collection initMembers) {
+    ShutDownAllReplyProcessor(DM dm, Collection initMembers) {
       super(dm, initMembers);
     }
 

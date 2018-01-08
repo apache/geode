@@ -25,11 +25,12 @@ import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicBoolean;
 
+import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
 import org.apache.geode.SystemFailure;
-import org.apache.geode.distributed.internal.ClusterDistributionManager;
+import org.apache.geode.distributed.internal.DistributionManager;
 import org.apache.geode.distributed.internal.DistributionMessage;
 import org.apache.geode.distributed.internal.DistributionMessageObserver;
 import org.apache.geode.distributed.internal.locks.DLockGrantor;
@@ -2249,7 +2250,7 @@ public class DistributedLockServiceDUnitTest extends JUnit4DistributedTestCase {
     DistributionMessageObserver.setInstance(new DistributionMessageObserver() {
 
       @Override
-      public void beforeProcessMessage(ClusterDistributionManager dm, DistributionMessage message) {
+      public void beforeProcessMessage(DistributionManager dm, DistributionMessage message) {
         if (message instanceof DLockResponseMessage) {
           DistributedLockService.destroy(serviceName);
         }
@@ -2300,7 +2301,7 @@ public class DistributedLockServiceDUnitTest extends JUnit4DistributedTestCase {
     DistributionMessageObserver.setInstance(new DistributionMessageObserver() {
 
       @Override
-      public void beforeSendMessage(ClusterDistributionManager dm, DistributionMessage message) {
+      public void beforeSendMessage(DistributionManager dm, DistributionMessage message) {
         if (message instanceof DLockRequestMessage) {
           DistributedLockService.destroy(serviceName);
         }

@@ -23,7 +23,7 @@ import java.util.Set;
 import org.apache.logging.log4j.Logger;
 
 import org.apache.geode.SystemFailure;
-import org.apache.geode.distributed.internal.ClusterDistributionManager;
+import org.apache.geode.distributed.internal.DM;
 import org.apache.geode.distributed.internal.DistributionManager;
 import org.apache.geode.distributed.internal.DistributionMessage;
 import org.apache.geode.distributed.internal.DistributionStats;
@@ -81,7 +81,7 @@ public class IdentityRequestMessage extends DistributionMessage implements Messa
   }
 
   @Override
-  protected void process(ClusterDistributionManager dm) {
+  protected void process(DistributionManager dm) {
     try {
       if (logger.isTraceEnabled(LogMarker.DM)) {
         logger.trace(LogMarker.DM, "{}: processing message {}", getClass().getName(), this);
@@ -112,7 +112,7 @@ public class IdentityRequestMessage extends DistributionMessage implements Messa
 
   @Override
   public int getProcessorType() {
-    return ClusterDistributionManager.HIGH_PRIORITY_EXECUTOR;
+    return DistributionManager.HIGH_PRIORITY_EXECUTOR;
   }
 
   /**
@@ -182,8 +182,7 @@ public class IdentityRequestMessage extends DistributionMessage implements Messa
       this.Id = IdentityRequestMessage.getLatestId();
     }
 
-    public static void send(InternalDistributedMember recipient, int processorId,
-        DistributionManager dm) {
+    public static void send(InternalDistributedMember recipient, int processorId, DM dm) {
       Assert.assertTrue(recipient != null, "IdentityReplyMessage NULL reply message");
       IdentityReplyMessage m = new IdentityReplyMessage(processorId);
       m.setRecipient(recipient);
@@ -191,7 +190,7 @@ public class IdentityRequestMessage extends DistributionMessage implements Messa
     }
 
     @Override
-    protected void process(final ClusterDistributionManager dm) {
+    protected void process(final DistributionManager dm) {
       final long startTime = getTimestamp();
       if (logger.isTraceEnabled(LogMarker.DM)) {
         logger.trace(LogMarker.DM, "{} process invoking reply processor with processorId:{}",

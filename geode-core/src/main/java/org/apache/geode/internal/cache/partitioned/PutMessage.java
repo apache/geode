@@ -33,7 +33,7 @@ import org.apache.geode.cache.CacheWriterException;
 import org.apache.geode.cache.EntryExistsException;
 import org.apache.geode.cache.Operation;
 import org.apache.geode.distributed.DistributedMember;
-import org.apache.geode.distributed.internal.ClusterDistributionManager;
+import org.apache.geode.distributed.internal.DM;
 import org.apache.geode.distributed.internal.DirectReplyProcessor;
 import org.apache.geode.distributed.internal.DistributionManager;
 import org.apache.geode.distributed.internal.DistributionMessage;
@@ -675,7 +675,7 @@ public class PutMessage extends PartitionMessageWithDirectReply implements NewVa
    * indefinitely for the acknowledgement
    */
   @Override
-  protected boolean operateOnPartitionedRegion(ClusterDistributionManager dm, PartitionedRegion r,
+  protected boolean operateOnPartitionedRegion(DistributionManager dm, PartitionedRegion r,
       long startTime) throws EntryExistsException, DataLocationException, IOException {
     this.setInternalDs(r.getSystem());// set the internal DS. Required to
                                       // checked DS level delta-enabled property
@@ -811,8 +811,8 @@ public class PutMessage extends PartitionMessageWithDirectReply implements NewVa
   }
 
 
-  protected void sendReply(InternalDistributedMember member, int procId, DistributionManager dm,
-      ReplyException ex, PartitionedRegion pr, long startTime, EntryEventImpl ev) {
+  protected void sendReply(InternalDistributedMember member, int procId, DM dm, ReplyException ex,
+      PartitionedRegion pr, long startTime, EntryEventImpl ev) {
     if (pr != null && startTime > 0) {
       pr.getPrStats().endPartitionMessagesProcessing(startTime);
       pr.getCancelCriterion().checkCancelInProgress(null); // bug 39014 - don't send a positive
@@ -873,7 +873,7 @@ public class PutMessage extends PartitionMessageWithDirectReply implements NewVa
   }
 
   @Override
-  protected boolean mayAddToMultipleSerialGateways(ClusterDistributionManager dm) {
+  protected boolean mayAddToMultipleSerialGateways(DistributionManager dm) {
     return _mayAddToMultipleSerialGateways(dm);
   }
 
@@ -941,7 +941,7 @@ public class PutMessage extends PartitionMessageWithDirectReply implements NewVa
      * @param dm the distribution manager that is processing the message.
      */
     @Override
-    public void process(final DistributionManager dm, final ReplyProcessor21 rp) {
+    public void process(final DM dm, final ReplyProcessor21 rp) {
       final long startTime = getTimestamp();
       if (logger.isTraceEnabled(LogMarker.DM)) {
         logger.trace(LogMarker.DM,
@@ -1117,7 +1117,7 @@ public class PutMessage extends PartitionMessageWithDirectReply implements NewVa
             // Why is this code not happening for bug 41916?
             && (ex != null && ex.getCause() instanceof InvalidDeltaException)) {
           final PutMessage putMsg = new PutMessage(this.putMessage);
-          final DistributionManager dm = getDistributionManager();
+          final DM dm = getDistributionManager();
           Runnable sendFullObject = new Runnable() {
             public void run() {
               putMsg.resetRecipients();

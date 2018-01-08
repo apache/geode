@@ -156,7 +156,7 @@ public class InternalDistributedSystem extends DistributedSystem
   /**
    * The distribution manager that is used to communicate with the distributed system.
    */
-  protected DistributionManager dm;
+  protected DM dm;
 
   private final GrantorRequestProcessor.GrantorRequestContext grc;
 
@@ -349,8 +349,7 @@ public class InternalDistributedSystem extends DistributedSystem
    *
    * @param nonDefault - non-default distributed system properties
    */
-  public static InternalDistributedSystem newInstanceForTesting(DistributionManager dm,
-      Properties nonDefault) {
+  public static InternalDistributedSystem newInstanceForTesting(DM dm, Properties nonDefault) {
     InternalDistributedSystem sys = new InternalDistributedSystem(nonDefault);
     sys.config = new RuntimeDistributionConfigImpl(sys);
     sys.dm = dm;
@@ -738,7 +737,7 @@ public class InternalDistributedSystem extends DistributedSystem
           if (this.quorumChecker != null) {
             this.quorumChecker.suspend();
           }
-          this.dm = ClusterDistributionManager.create(this);
+          this.dm = DistributionManager.create(this);
           // fix bug #46324
           if (InternalLocator.hasLocator()) {
             InternalLocator locator = InternalLocator.getLocator();
@@ -886,7 +885,7 @@ public class InternalDistributedSystem extends DistributedSystem
   /**
    * Used by DistributionManager to fix bug 33362
    */
-  void setDM(DistributionManager dm) {
+  void setDM(DM dm) {
     this.dm = dm;
   }
 
@@ -1488,7 +1487,7 @@ public class InternalDistributedSystem extends DistributedSystem
   /**
    * Returns the distribution manager for accessing this distributed system.
    */
-  public DistributionManager getDistributionManager() {
+  public DM getDistributionManager() {
     checkConnected();
     return this.dm;
   }
@@ -1496,7 +1495,7 @@ public class InternalDistributedSystem extends DistributedSystem
   /**
    * Returns the distribution manager without checking for connected or not so can also return null.
    */
-  public DistributionManager getDM() {
+  public DM getDM() {
     return this.dm;
   }
 
@@ -2763,11 +2762,11 @@ public class InternalDistributedSystem extends DistributedSystem
         }
 
 
-        DistributionManager newDM = this.reconnectDS.getDistributionManager();
-        if (newDM instanceof ClusterDistributionManager) {
+        DM newDM = this.reconnectDS.getDistributionManager();
+        if (newDM instanceof DistributionManager) {
           // Admin systems don't carry a cache, but for others we can now create
           // a cache
-          if (newDM.getDMType() != ClusterDistributionManager.ADMIN_ONLY_DM_TYPE) {
+          if (newDM.getDMType() != DistributionManager.ADMIN_ONLY_DM_TYPE) {
             try {
               CacheConfig config = new CacheConfig();
               if (cacheXML != null) {

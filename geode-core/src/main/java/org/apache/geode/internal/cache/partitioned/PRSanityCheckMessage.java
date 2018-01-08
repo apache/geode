@@ -23,7 +23,7 @@ import org.apache.geode.CancelException;
 import org.apache.geode.DataSerializer;
 import org.apache.geode.cache.CacheException;
 import org.apache.geode.cache.query.QueryException;
-import org.apache.geode.distributed.internal.ClusterDistributionManager;
+import org.apache.geode.distributed.internal.DM;
 import org.apache.geode.distributed.internal.DistributionConfig;
 import org.apache.geode.distributed.internal.DistributionManager;
 import org.apache.geode.distributed.internal.ReplyProcessor21;
@@ -96,7 +96,7 @@ public class PRSanityCheckMessage extends PartitionMessage {
    */
   public static void schedule(final PartitionedRegion pr) {
     if (Boolean.getBoolean(DistributionConfig.GEMFIRE_PREFIX + "PRSanityCheckEnabled")) {
-      final DistributionManager dm = pr.getDistributionManager();
+      final DM dm = pr.getDistributionManager();
       // RegionAdvisor ra = pr.getRegionAdvisor();
       // final Set recipients = ra.adviseAllPRNodes();
       DistributedRegion prRoot =
@@ -138,7 +138,7 @@ public class PRSanityCheckMessage extends PartitionMessage {
 
   @Override
   public int getProcessorType() {
-    return ClusterDistributionManager.HIGH_PRIORITY_EXECUTOR;
+    return DistributionManager.HIGH_PRIORITY_EXECUTOR;
   }
 
   /**
@@ -148,12 +148,12 @@ public class PRSanityCheckMessage extends PartitionMessage {
    * @param dm the distribution manager to use
    */
   @Override
-  public void process(ClusterDistributionManager dm) {
+  public void process(DistributionManager dm) {
     PartitionedRegion.validatePRID(getSender(), this.regionId, this.regionName);
   }
 
   @Override
-  protected boolean operateOnPartitionedRegion(ClusterDistributionManager dm, PartitionedRegion pr,
+  protected boolean operateOnPartitionedRegion(DistributionManager dm, PartitionedRegion pr,
       long startTime)
       throws CacheException, QueryException, ForceReattemptException, InterruptedException {
     return false;

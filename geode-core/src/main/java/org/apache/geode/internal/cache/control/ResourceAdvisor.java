@@ -27,13 +27,15 @@ import org.apache.logging.log4j.Logger;
 import org.apache.geode.CancelException;
 import org.apache.geode.SystemFailure;
 import org.apache.geode.cache.control.ResourceManager;
-import org.apache.geode.distributed.internal.ClusterDistributionManager;
+import org.apache.geode.distributed.internal.DM;
 import org.apache.geode.distributed.internal.DistributionAdvisee;
 import org.apache.geode.distributed.internal.DistributionAdvisor;
 import org.apache.geode.distributed.internal.DistributionManager;
 import org.apache.geode.distributed.internal.HighPriorityDistributionMessage;
+import org.apache.geode.distributed.internal.ReplyException;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
 import org.apache.geode.internal.InternalDataSerializer;
+import org.apache.geode.internal.cache.GemFireCacheImpl;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.cache.UpdateAttributesProcessor;
 import org.apache.geode.internal.cache.control.InternalResourceManager.ResourceType;
@@ -81,7 +83,7 @@ public class ResourceAdvisor extends DistributionAdvisor {
     }
 
     @Override
-    protected void process(ClusterDistributionManager dm) {
+    protected void process(DistributionManager dm) {
       Throwable thr = null;
       ResourceManagerProfile p = null;
       try {
@@ -174,7 +176,7 @@ public class ResourceAdvisor extends DistributionAdvisor {
      */
     public static void send(final InternalResourceManager irm,
         Set<InternalDistributedMember> recips, ResourceManagerProfile profile) {
-      final DistributionManager dm = irm.getResourceAdvisor().getDistributionManager();
+      final DM dm = irm.getResourceAdvisor().getDistributionManager();
       ResourceProfileMessage r = new ResourceProfileMessage(recips, profile);
       dm.putOutgoing(r);
     }
@@ -335,8 +337,8 @@ public class ResourceAdvisor extends DistributionAdvisor {
      * @since GemFire 6.0
      */
     @Override
-    public void processIncoming(ClusterDistributionManager dm, String adviseePath,
-        boolean removeProfile, boolean exchangeProfiles, final List<Profile> replyProfiles) {
+    public void processIncoming(DistributionManager dm, String adviseePath, boolean removeProfile,
+        boolean exchangeProfiles, final List<Profile> replyProfiles) {
       final InternalCache cache = dm.getCache();
       if (cache != null && !cache.isClosed()) {
         handleDistributionAdvisee((DistributionAdvisee) cache, removeProfile, exchangeProfiles,

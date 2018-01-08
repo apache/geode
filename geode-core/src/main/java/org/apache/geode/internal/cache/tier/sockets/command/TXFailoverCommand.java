@@ -17,7 +17,7 @@ package org.apache.geode.internal.cache.tier.sockets.command;
 import java.io.IOException;
 
 import org.apache.geode.cache.TransactionDataNodeHasDepartedException;
-import org.apache.geode.distributed.internal.ClusterDistributionManager;
+import org.apache.geode.distributed.internal.DistributionManager;
 import org.apache.geode.distributed.internal.ReplyException;
 import org.apache.geode.distributed.internal.WaitForViewInstallation;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
@@ -104,7 +104,7 @@ public class TXFailoverCommand extends BaseCommand {
         // the same keys can be used in a new transaction by the same client thread
         InternalCache cache = serverConnection.getCache();
         try {
-          WaitForViewInstallation.send((ClusterDistributionManager) cache.getDistributionManager());
+          WaitForViewInstallation.send((DistributionManager) cache.getDistributionManager());
         } catch (InterruptedException e) {
           cache.getDistributionManager().getCancelCriterion().checkCancelInProgress(e);
           Thread.currentThread().interrupt();

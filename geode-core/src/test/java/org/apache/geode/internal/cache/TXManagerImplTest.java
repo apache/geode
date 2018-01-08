@@ -26,7 +26,8 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
-import org.apache.geode.distributed.internal.ClusterDistributionManager;
+import org.apache.geode.cache.Cache;
+import org.apache.geode.distributed.internal.DistributionManager;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
 import org.apache.geode.internal.cache.partitioned.DestroyMessage;
 import org.apache.geode.test.fake.Fakes;
@@ -44,14 +45,14 @@ public class TXManagerImplTest {
   InternalDistributedMember member;
   CountDownLatch latch;
   TXStateProxy tx1, tx2;
-  ClusterDistributionManager dm;
+  DistributionManager dm;
   TXRemoteRollbackMessage rollbackMsg;
   TXRemoteCommitMessage commitMsg;
 
   @Before
   public void setUp() {
     InternalCache cache = Fakes.cache();
-    dm = mock(ClusterDistributionManager.class);
+    dm = mock(DistributionManager.class);
     txMgr = new TXManagerImpl(mock(CachePerfStats.class), cache);
     txid = new TXId(null, 0);
     msg = mock(DestroyMessage.class);

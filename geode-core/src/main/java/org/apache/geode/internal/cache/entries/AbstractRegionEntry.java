@@ -35,8 +35,8 @@ import org.apache.geode.cache.query.internal.index.IndexManager;
 import org.apache.geode.cache.query.internal.index.IndexProtocol;
 import org.apache.geode.cache.util.GatewayConflictHelper;
 import org.apache.geode.cache.util.GatewayConflictResolver;
+import org.apache.geode.distributed.internal.DM;
 import org.apache.geode.distributed.internal.DistributionConfig;
-import org.apache.geode.distributed.internal.DistributionManager;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
 import org.apache.geode.internal.Assert;
 import org.apache.geode.internal.ByteArrayDataInput;
@@ -347,8 +347,8 @@ public abstract class AbstractRegionEntry implements RegionEntry, HashEntry<Obje
 
   @Override
   public boolean fillInValue(InternalRegion region,
-      @Retained(ABSTRACT_REGION_ENTRY_FILL_IN_VALUE) Entry entry, ByteArrayDataInput in,
-      DistributionManager mgr, final Version version) {
+      @Retained(ABSTRACT_REGION_ENTRY_FILL_IN_VALUE) Entry entry, ByteArrayDataInput in, DM mgr,
+      final Version version) {
 
     // starting default value
     entry.setSerialized(false);

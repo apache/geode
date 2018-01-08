@@ -26,18 +26,22 @@ import org.apache.geode.CancelException;
 import org.apache.geode.DataSerializer;
 import org.apache.geode.SystemFailure;
 import org.apache.geode.cache.Cache;
+import org.apache.geode.cache.CacheFactory;
 import org.apache.geode.cache.Region;
 import org.apache.geode.cache.RegionDestroyedException;
-import org.apache.geode.distributed.internal.ClusterDistributionManager;
+import org.apache.geode.distributed.internal.DM;
 import org.apache.geode.distributed.internal.DistributionManager;
 import org.apache.geode.distributed.internal.DistributionMessage;
+import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.distributed.internal.MessageWithReply;
 import org.apache.geode.distributed.internal.ReplyException;
 import org.apache.geode.distributed.internal.ReplyMessage;
 import org.apache.geode.distributed.internal.ReplyProcessor21;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
+import org.apache.geode.i18n.LogWriterI18n;
 import org.apache.geode.internal.InternalDataSerializer;
 import org.apache.geode.internal.cache.DistributedRegion;
+import org.apache.geode.internal.cache.GemFireCacheImpl;
 import org.apache.geode.internal.cache.LocalRegion;
 import org.apache.geode.internal.cache.PartitionedRegionHelper;
 import org.apache.geode.internal.cache.partitioned.Bucket;
@@ -64,9 +68,8 @@ public class MembershipViewRequest extends DistributionMessage implements Messag
     this.targetReinitializing = targetReinitializing;
   }
 
-  public static PersistentMembershipView send(InternalDistributedMember recipient,
-      DistributionManager dm, String regionPath, boolean targetReinitializing)
-      throws ReplyException {
+  public static PersistentMembershipView send(InternalDistributedMember recipient, DM dm,
+      String regionPath, boolean targetReinitializing) throws ReplyException {
     MembershipViewRequestReplyProcessor processor =
         new MembershipViewRequestReplyProcessor(dm, recipient);
     MembershipViewRequest msg =
@@ -76,8 +79,8 @@ public class MembershipViewRequest extends DistributionMessage implements Messag
     return processor.getResult();
   }
 
-  public static Set<PersistentMembershipView> send(Set<InternalDistributedMember> recipients,
-      DistributionManager dm, String regionPath) throws ReplyException {
+  public static Set<PersistentMembershipView> send(Set<InternalDistributedMember> recipients, DM dm,
+      String regionPath) throws ReplyException {
     MembershipViewRequestReplyProcessor processor =
         new MembershipViewRequestReplyProcessor(dm, recipients);
     MembershipViewRequest msg =
@@ -89,12 +92,12 @@ public class MembershipViewRequest extends DistributionMessage implements Messag
 
   @Override
   public int getProcessorType() {
-    return this.targetReinitializing ? ClusterDistributionManager.WAITING_POOL_EXECUTOR
-        : ClusterDistributionManager.HIGH_PRIORITY_EXECUTOR;
+    return this.targetReinitializing ? DistributionManager.WAITING_POOL_EXECUTOR
+        : DistributionManager.HIGH_PRIORITY_EXECUTOR;
   }
 
   @Override
-  protected void process(ClusterDistributionManager dm) {
+  protected void process(DistributionManager dm) {
     int initLevel =
         this.targetReinitializing ? LocalRegion.AFTER_INITIAL_IMAGE : LocalRegion.ANY_INIT;
     int oldLevel = LocalRegion.setThreadInitLevelRequirement(initLevel);
@@ -174,13 +177,11 @@ public class MembershipViewRequest extends DistributionMessage implements Messag
 
 
 
-    public MembershipViewRequestReplyProcessor(DistributionManager dm,
-        InternalDistributedMember member) {
+    public MembershipViewRequestReplyProcessor(DM dm, InternalDistributedMember member) {
       super(dm, member);
     }
 
-    public MembershipViewRequestReplyProcessor(DistributionManager dm,
-        Set<InternalDistributedMember> members) {
+    public MembershipViewRequestReplyProcessor(DM dm, Set<InternalDistributedMember> members) {
       super(dm, members);
     }
 

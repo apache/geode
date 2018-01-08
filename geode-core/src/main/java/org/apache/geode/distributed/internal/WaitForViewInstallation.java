@@ -34,7 +34,7 @@ public class WaitForViewInstallation extends HighPriorityDistributionMessage
 
   private static final Logger logger = LogService.getLogger();
 
-  public static void send(ClusterDistributionManager dm) throws InterruptedException {
+  public static void send(DistributionManager dm) throws InterruptedException {
     long viewId = dm.getMembershipManager().getView().getViewId();
     ReplyProcessor21 rp = new ReplyProcessor21(dm, dm.getOtherDistributionManagerIds());
     rp.enableSevereAlertProcessing();
@@ -57,7 +57,7 @@ public class WaitForViewInstallation extends HighPriorityDistributionMessage
 
   @Override
   public int getProcessorType() {
-    return ClusterDistributionManager.WAITING_POOL_EXECUTOR;
+    return DistributionManager.WAITING_POOL_EXECUTOR;
   }
 
   @Override
@@ -112,7 +112,7 @@ public class WaitForViewInstallation extends HighPriorityDistributionMessage
    * internal.DistributionManager)
    */
   @Override
-  protected void process(ClusterDistributionManager dm) {
+  protected void process(DistributionManager dm) {
     boolean interrupted = false;
     try {
       dm.waitForViewInstallation(this.viewId);

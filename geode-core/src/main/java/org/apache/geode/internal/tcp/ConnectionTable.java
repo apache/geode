@@ -42,7 +42,7 @@ import org.apache.logging.log4j.Logger;
 import org.apache.geode.SystemFailure;
 import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.distributed.DistributedSystemDisconnectedException;
-import org.apache.geode.distributed.internal.DistributionManager;
+import org.apache.geode.distributed.internal.DM;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
 import org.apache.geode.distributed.internal.membership.MembershipManager;
@@ -177,7 +177,7 @@ public class ConnectionTable {
    * Returns true if calling thread owns its own communication resources.
    */
   boolean threadOwnsResources() {
-    DistributionManager d = getDM();
+    DM d = getDM();
     if (d != null) {
       return d.getSystem().threadOwnsResources() && !AlertAppender.isThreadAlerting();
     }
@@ -1123,7 +1123,7 @@ public class ConnectionTable {
     }
   }
 
-  protected DistributionManager getDM() {
+  protected DM getDM() {
     return this.owner.getDM();
   }
 

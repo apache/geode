@@ -30,7 +30,7 @@ import org.apache.geode.CancelException;
 import org.apache.geode.cache.DiskStore;
 import org.apache.geode.cache.persistence.PersistentID;
 import org.apache.geode.distributed.DistributedMember;
-import org.apache.geode.distributed.internal.ClusterDistributionManager;
+import org.apache.geode.distributed.internal.DM;
 import org.apache.geode.distributed.internal.DistributionManager;
 import org.apache.geode.distributed.internal.DistributionMessage;
 import org.apache.geode.distributed.internal.ReplyException;
@@ -49,7 +49,7 @@ public class CompactRequest extends CliLegacyMessage {
     // do nothing
   }
 
-  public static Map<DistributedMember, Set<PersistentID>> send(DistributionManager dm) {
+  public static Map<DistributedMember, Set<PersistentID>> send(DM dm) {
     Set recipients = dm.getOtherDistributionManagerIds();
     CompactRequest request = new CompactRequest();
     request.setRecipients(recipients);
@@ -59,7 +59,7 @@ public class CompactRequest extends CliLegacyMessage {
     dm.putOutgoing(request);
 
     request.setSender(dm.getDistributionManagerId());
-    request.process((ClusterDistributionManager) dm);
+    request.process((DistributionManager) dm);
 
     try {
       replyProcessor.waitForReplies();
@@ -75,12 +75,12 @@ public class CompactRequest extends CliLegacyMessage {
   }
 
   @Override
-  protected void process(ClusterDistributionManager dm) {
+  protected void process(DistributionManager dm) {
     super.process(dm);
   }
 
   @Override
-  protected AdminResponse createResponse(DistributionManager dm) {
+  protected AdminResponse createResponse(DM dm) {
     InternalCache cache = dm.getCache();
     HashSet<PersistentID> compactedStores = new HashSet<>();
     if (cache != null && !cache.isClosed()) {
@@ -119,7 +119,7 @@ public class CompactRequest extends CliLegacyMessage {
     Map<DistributedMember, Set<PersistentID>> results =
         Collections.synchronizedMap(new HashMap<DistributedMember, Set<PersistentID>>());
 
-    CompactReplyProcessor(DistributionManager dm, Collection initMembers) {
+    CompactReplyProcessor(DM dm, Collection initMembers) {
       super(dm, initMembers);
     }
 

@@ -31,7 +31,7 @@ import org.apache.geode.cache.EntryNotFoundException;
 import org.apache.geode.cache.RegionAttributes;
 import org.apache.geode.cache.Scope;
 import org.apache.geode.cache.TimeoutException;
-import org.apache.geode.distributed.internal.ClusterDistributionManager;
+import org.apache.geode.distributed.internal.DM;
 import org.apache.geode.distributed.internal.DirectReplyProcessor;
 import org.apache.geode.distributed.internal.DistributionManager;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
@@ -72,7 +72,7 @@ public abstract class AbstractUpdateOperation extends DistributedCacheOperation 
     super.initMessage(msg, pr);
     AbstractUpdateMessage m = (AbstractUpdateMessage) msg;
     DistributedRegion region = getRegion();
-    DistributionManager mgr = region.getDistributionManager();
+    DM mgr = region.getDistributionManager();
     // [bruce] We might have to stop using cacheTimeMillis because it causes a skew between
     // lastModified and the version tag's timestamp
     m.lastModified = this.lastModifiedTime;
@@ -231,11 +231,11 @@ public abstract class AbstractUpdateOperation extends DistributedCacheOperation 
     protected long lastModified;
 
     @Override
-    protected boolean operateOnRegion(CacheEvent event, ClusterDistributionManager dm)
+    protected boolean operateOnRegion(CacheEvent event, DistributionManager dm)
         throws EntryNotFoundException {
       EntryEventImpl ev = (EntryEventImpl) event;
       DistributedRegion rgn = (DistributedRegion) ev.region;
-      DistributionManager mgr = dm;
+      DM mgr = dm;
       boolean sendReply = true; // by default tell caller to send ack
 
       // if (!rgn.hasSeenEvent((InternalCacheEvent)event)) {
@@ -314,7 +314,7 @@ public abstract class AbstractUpdateOperation extends DistributedCacheOperation 
     }
 
     @Override
-    protected boolean mayAddToMultipleSerialGateways(ClusterDistributionManager dm) {
+    protected boolean mayAddToMultipleSerialGateways(DistributionManager dm) {
       return _mayAddToMultipleSerialGateways(dm);
     }
   }

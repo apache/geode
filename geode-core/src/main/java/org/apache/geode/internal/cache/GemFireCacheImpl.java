@@ -152,7 +152,7 @@ import org.apache.geode.distributed.DistributedSystemDisconnectedException;
 import org.apache.geode.distributed.Locator;
 import org.apache.geode.distributed.internal.CacheTime;
 import org.apache.geode.distributed.internal.ClusterConfigurationService;
-import org.apache.geode.distributed.internal.ClusterDistributionManager;
+import org.apache.geode.distributed.internal.DM;
 import org.apache.geode.distributed.internal.DistributionAdvisee;
 import org.apache.geode.distributed.internal.DistributionAdvisor;
 import org.apache.geode.distributed.internal.DistributionAdvisor.Profile;
@@ -334,7 +334,7 @@ public class GemFireCacheImpl implements InternalCache, InternalClientCache, Has
 
   private final InternalDistributedSystem system;
 
-  private final DistributionManager dm;
+  private final DM dm;
 
   private final Map<String, LocalRegion> rootRegions;
 
@@ -859,7 +859,7 @@ public class GemFireCacheImpl implements InternalCache, InternalClientCache, Has
       }
 
       // Don't let admin-only VMs create Cache's just yet.
-      if (this.dm.getDMType() == ClusterDistributionManager.ADMIN_ONLY_DM_TYPE) {
+      if (this.dm.getDMType() == DistributionManager.ADMIN_ONLY_DM_TYPE) {
         throw new IllegalStateException(
             LocalizedStrings.GemFireCache_CANNOT_CREATE_A_CACHE_IN_AN_ADMINONLY_VM
                 .toLocalizedString());
@@ -1007,12 +1007,12 @@ public class GemFireCacheImpl implements InternalCache, InternalClientCache, Has
   private ConfigurationResponse requestSharedConfiguration() {
     final DistributionConfig config = this.system.getConfig();
 
-    if (!(this.dm instanceof ClusterDistributionManager)) {
+    if (!(this.dm instanceof DistributionManager)) {
       return null;
     }
 
     // do nothing if this vm is/has locator or this is a client
-    if (this.dm.getDMType() == ClusterDistributionManager.LOCATOR_DM_TYPE || this.isClient
+    if (this.dm.getDMType() == DistributionManager.LOCATOR_DM_TYPE || this.isClient
         || Locator.getLocator() != null) {
       return null;
     }
@@ -1250,10 +1250,8 @@ public class GemFireCacheImpl implements InternalCache, InternalClientCache, Has
   }
 
   private boolean isServerNode() {
-    return this.system.getDistributedMember()
-        .getVmKind() != ClusterDistributionManager.LOCATOR_DM_TYPE
-        && this.system.getDistributedMember()
-            .getVmKind() != ClusterDistributionManager.ADMIN_ONLY_DM_TYPE
+    return this.system.getDistributedMember().getVmKind() != DistributionManager.LOCATOR_DM_TYPE
+        && this.system.getDistributedMember().getVmKind() != DistributionManager.ADMIN_ONLY_DM_TYPE
         && !isClient();
   }
 
@@ -1309,7 +1307,7 @@ public class GemFireCacheImpl implements InternalCache, InternalClientCache, Has
 
   @Override
   public URL getCacheXmlURL() {
-    if (this.getMyId().getVmKind() == ClusterDistributionManager.LOCATOR_DM_TYPE) {
+    if (this.getMyId().getVmKind() == DistributionManager.LOCATOR_DM_TYPE) {
       return null;
     }
     File xmlFile = testCacheXml;
@@ -1458,7 +1456,7 @@ public class GemFireCacheImpl implements InternalCache, InternalClientCache, Has
   public synchronized void initializePdxRegistry() {
     if (this.pdxRegistry == null) {
       // The member with locator is initialized with a NullTypePdxRegistration
-      if (this.getMyId().getVmKind() == ClusterDistributionManager.LOCATOR_DM_TYPE) {
+      if (this.getMyId().getVmKind() == DistributionManager.LOCATOR_DM_TYPE) {
         this.pdxRegistry = new TypeRegistry(this, true);
       } else {
         this.pdxRegistry = new TypeRegistry(this, false);
@@ -2308,7 +2306,7 @@ public class GemFireCacheImpl implements InternalCache, InternalClientCache, Has
           this.tombstoneService.stop();
 
           // NOTICE: the CloseCache message is the *last* message you can send!
-          DistributionManager distributionManager = null;
+          DM distributionManager = null;
           try {
             distributionManager = this.system.getDistributionManager();
             distributionManager.removeMembershipListener(this.transactionManager);
@@ -3002,7 +3000,7 @@ public class GemFireCacheImpl implements InternalCache, InternalClientCache, Has
       InternalRegionArguments internalRegionArgs)
       throws RegionExistsException, TimeoutException, IOException, ClassNotFoundException {
 
-    if (getMyId().getVmKind() == ClusterDistributionManager.LOCATOR_DM_TYPE) {
+    if (getMyId().getVmKind() == DistributionManager.LOCATOR_DM_TYPE) {
       if (!internalRegionArgs.isUsedForMetaRegion()
           && internalRegionArgs.getInternalMetaRegion() == null) {
         throw new IllegalStateException("Regions can not be created in a locator.");
@@ -5043,7 +5041,7 @@ public class GemFireCacheImpl implements InternalCache, InternalClientCache, Has
   }
 
   @Override
-  public DistributionManager getDistributionManager() {
+  public DM getDistributionManager() {
     return this.dm;
   }
 

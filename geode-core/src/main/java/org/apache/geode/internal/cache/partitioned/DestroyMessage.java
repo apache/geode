@@ -28,7 +28,7 @@ import org.apache.geode.cache.EntryExistsException;
 import org.apache.geode.cache.EntryNotFoundException;
 import org.apache.geode.cache.Operation;
 import org.apache.geode.distributed.DistributedMember;
-import org.apache.geode.distributed.internal.ClusterDistributionManager;
+import org.apache.geode.distributed.internal.DM;
 import org.apache.geode.distributed.internal.DirectReplyProcessor;
 import org.apache.geode.distributed.internal.DistributionManager;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
@@ -226,7 +226,7 @@ public class DestroyMessage extends PartitionMessageWithDirectReply {
    * indefinitely for the acknowledgement
    */
   @Override
-  protected boolean operateOnPartitionedRegion(ClusterDistributionManager dm, PartitionedRegion r,
+  protected boolean operateOnPartitionedRegion(DistributionManager dm, PartitionedRegion r,
       long startTime) throws EntryExistsException, DataLocationException {
     InternalDistributedMember eventSender = originalSender;
     if (eventSender == null) {
@@ -316,8 +316,8 @@ public class DestroyMessage extends PartitionMessageWithDirectReply {
   }
 
   @Override
-  protected void sendReply(InternalDistributedMember member, int procId, DistributionManager dm,
-      ReplyException ex, PartitionedRegion pr, long startTime) {
+  protected void sendReply(InternalDistributedMember member, int procId, DM dm, ReplyException ex,
+      PartitionedRegion pr, long startTime) {
     if (pr != null && startTime > 0) {
       pr.getPrStats().endPartitionMessagesProcessing(startTime);
     }
@@ -466,7 +466,7 @@ public class DestroyMessage extends PartitionMessageWithDirectReply {
   }
 
   @Override
-  protected boolean mayAddToMultipleSerialGateways(ClusterDistributionManager dm) {
+  protected boolean mayAddToMultipleSerialGateways(DistributionManager dm) {
     return _mayAddToMultipleSerialGateways(dm);
   }
 
@@ -496,7 +496,7 @@ public class DestroyMessage extends PartitionMessageWithDirectReply {
     }
 
     @Override
-    public void process(final DistributionManager dm, final ReplyProcessor21 rp) {
+    public void process(final DM dm, final ReplyProcessor21 rp) {
       final long startTime = getTimestamp();
       if (logger.isTraceEnabled(LogMarker.DM)) {
         logger.trace(LogMarker.DM,

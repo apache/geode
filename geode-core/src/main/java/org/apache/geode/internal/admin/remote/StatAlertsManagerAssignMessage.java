@@ -19,7 +19,7 @@ import java.io.DataOutput;
 import java.io.IOException;
 
 import org.apache.geode.DataSerializer;
-import org.apache.geode.distributed.internal.ClusterDistributionManager;
+import org.apache.geode.distributed.internal.DistributionManager;
 import org.apache.geode.distributed.internal.PooledDistributionMessage;
 import org.apache.geode.internal.admin.StatAlertDefinition;
 import org.apache.geode.internal.admin.StatAlertsManager;
@@ -76,7 +76,7 @@ public class StatAlertsManagerAssignMessage extends PooledDistributionMessage {
    * @param dm DistributionManager instance
    */
   @Override
-  protected void process(ClusterDistributionManager dm) {
+  protected void process(DistributionManager dm) {
     setManager(dm);
   }
 
@@ -86,7 +86,7 @@ public class StatAlertsManagerAssignMessage extends PooledDistributionMessage {
    *
    * @param dm DistributionManager instance
    */
-  private void setManager(ClusterDistributionManager dm) {
+  private void setManager(DistributionManager dm) {
     StatAlertsManager manager = StatAlertsManager.getInstance(dm);
     manager.updateAlertDefinition(alertDefs, UpdateAlertDefinitionMessage.ADD_ALERT_DEFINITION);
     manager.setRefreshTimeInterval(refreshInterval);

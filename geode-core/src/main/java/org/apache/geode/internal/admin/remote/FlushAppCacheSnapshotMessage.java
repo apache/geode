@@ -34,7 +34,7 @@ public class FlushAppCacheSnapshotMessage extends PooledDistributionMessage {
 
 
   @Override
-  protected void process(ClusterDistributionManager dm) {
+  protected void process(DistributionManager dm) {
     // try {
     // AppCacheSnapshotMessage.flushSnapshots(this.getSender());
     // } catch (Exception ex) {

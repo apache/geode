@@ -20,7 +20,7 @@ import java.io.IOException;
 import java.util.Set;
 
 import org.apache.geode.DataSerializer;
-import org.apache.geode.distributed.internal.ClusterDistributionManager;
+import org.apache.geode.distributed.internal.DistributionManager;
 import org.apache.geode.distributed.internal.MessageWithReply;
 import org.apache.geode.distributed.internal.PooledDistributionMessage;
 import org.apache.geode.distributed.internal.ReplyMessage;
@@ -58,7 +58,7 @@ public class LatestLastAccessTimeMessage<K> extends PooledDistributionMessage
   }
 
   @Override
-  protected void process(ClusterDistributionManager dm) {
+  protected void process(DistributionManager dm) {
     long latestLastAccessTime = 0L;
     InternalDistributedRegion<K, ?> region =
         (InternalDistributedRegion<K, ?>) dm.getCache().getRegion(this.regionName);

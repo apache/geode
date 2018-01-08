@@ -24,7 +24,7 @@ import org.apache.logging.log4j.Logger;
 
 import org.apache.geode.DataSerializer;
 import org.apache.geode.cache.CacheException;
-import org.apache.geode.distributed.internal.ClusterDistributionManager;
+import org.apache.geode.distributed.internal.DM;
 import org.apache.geode.distributed.internal.DirectReplyProcessor;
 import org.apache.geode.distributed.internal.DistributionManager;
 import org.apache.geode.distributed.internal.DistributionMessage;
@@ -105,7 +105,7 @@ public class ContainsKeyValueMessage extends PartitionMessageWithDirectReply {
   }
 
   @Override
-  protected boolean operateOnPartitionedRegion(ClusterDistributionManager dm, PartitionedRegion r,
+  protected boolean operateOnPartitionedRegion(DistributionManager dm, PartitionedRegion r,
       long startTime) throws CacheException, ForceReattemptException {
     PartitionedRegionDataStore ds = r.getDataStore();
     final boolean replyVal;
@@ -200,7 +200,7 @@ public class ContainsKeyValueMessage extends PartitionMessageWithDirectReply {
      * @param dm the distribution manager that is processing the message.
      */
     @Override
-    public void process(final DistributionManager dm, ReplyProcessor21 processor) {
+    public void process(final DM dm, ReplyProcessor21 processor) {
       final long startTime = getTimestamp();
 
       if (processor == null) {

@@ -41,7 +41,7 @@ import org.apache.geode.InternalGemFireException;
 import org.apache.geode.cache.GemFireCache;
 import org.apache.geode.distributed.DistributedSystem;
 import org.apache.geode.distributed.internal.ClusterConfigurationService;
-import org.apache.geode.distributed.internal.ClusterDistributionManager;
+import org.apache.geode.distributed.internal.DistributionManager;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.distributed.internal.LocatorStats;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
@@ -450,7 +450,7 @@ public class GMSLocator implements Locator, NetLocator {
       // GEODE-3052 - remove locators from the view. Since we couldn't recover from an existing
       // locator we know that all of the locators in the view are defunct
       for (InternalDistributedMember member : members) {
-        if (member.getVmKind() == ClusterDistributionManager.LOCATOR_DM_TYPE) {
+        if (member.getVmKind() == DistributionManager.LOCATOR_DM_TYPE) {
           recoveredView.remove(member);
         }
       }

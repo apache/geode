@@ -25,7 +25,7 @@ import org.apache.logging.log4j.Logger;
 import org.apache.geode.DataSerializer;
 import org.apache.geode.cache.CacheException;
 import org.apache.geode.cache.EntryNotFoundException;
-import org.apache.geode.distributed.internal.ClusterDistributionManager;
+import org.apache.geode.distributed.internal.DM;
 import org.apache.geode.distributed.internal.DistributionManager;
 import org.apache.geode.distributed.internal.DistributionMessage;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
@@ -97,7 +97,7 @@ public class RemoteFetchVersionMessage extends RemoteOperationMessage {
 
   @Override
   public int getProcessorType() {
-    return ClusterDistributionManager.SERIAL_EXECUTOR;
+    return DistributionManager.SERIAL_EXECUTOR;
   }
 
   @Override
@@ -113,7 +113,7 @@ public class RemoteFetchVersionMessage extends RemoteOperationMessage {
   }
 
   @Override
-  protected boolean operateOnRegion(ClusterDistributionManager dm, LocalRegion r, long startTime)
+  protected boolean operateOnRegion(DistributionManager dm, LocalRegion r, long startTime)
       throws RemoteOperationException {
     if (!(r instanceof PartitionedRegion)) {
       r.waitOnInitialization();
@@ -156,14 +156,14 @@ public class RemoteFetchVersionMessage extends RemoteOperationMessage {
     }
 
     public static void send(InternalDistributedMember recipient, int processorId, VersionTag tag,
-        DistributionManager dm) {
+        DM dm) {
       FetchVersionReplyMessage reply = new FetchVersionReplyMessage(processorId, tag);
       reply.setRecipient(recipient);
       dm.putOutgoing(reply);
     }
 
     @Override
-    public void process(DistributionManager dm, ReplyProcessor21 processor) {
+    public void process(DM dm, ReplyProcessor21 processor) {
       final long startTime = getTimestamp();
       final boolean isDebugEnabled = logger.isTraceEnabled(LogMarker.DM);
 

@@ -34,7 +34,7 @@ import org.apache.geode.cache.CommitIncompleteException;
 import org.apache.geode.cache.RegionDestroyedException;
 import org.apache.geode.cache.UnsupportedOperationInTransactionException;
 import org.apache.geode.distributed.DistributedMember;
-import org.apache.geode.distributed.internal.ClusterDistributionManager;
+import org.apache.geode.distributed.internal.DM;
 import org.apache.geode.distributed.internal.DistributionManager;
 import org.apache.geode.distributed.internal.DistributionMessage;
 import org.apache.geode.distributed.internal.ReplyException;
@@ -68,8 +68,7 @@ public class DistTXCommitMessage extends TXMessage {
   }
 
   @Override
-  protected boolean operateOnTx(TXId txId, ClusterDistributionManager dm)
-      throws RemoteOperationException {
+  protected boolean operateOnTx(TXId txId, DistributionManager dm) throws RemoteOperationException {
     if (logger.isDebugEnabled()) {
       logger.debug("DistTXCommitMessage.operateOnTx: Tx {}", txId);
     }
@@ -219,7 +218,7 @@ public class DistTXCommitMessage extends TXMessage {
      * @param dm the distribution manager that is processing the message.
      */
     @Override
-    public void process(final DistributionManager dm, ReplyProcessor21 processor) {
+    public void process(final DM dm, ReplyProcessor21 processor) {
       final long startTime = getTimestamp();
       if (logger.isTraceEnabled(LogMarker.DM)) {
         logger.trace(LogMarker.DM,
@@ -280,7 +279,7 @@ public class DistTXCommitMessage extends TXMessage {
     private Map<DistributedMember, TXCommitMessage> commitResponseMap;
     private transient TXId txIdent = null;
 
-    public DistTxCommitReplyProcessor(TXId txUniqId, DistributionManager dm, Set initMembers,
+    public DistTxCommitReplyProcessor(TXId txUniqId, DM dm, Set initMembers,
         HashMap<DistributedMember, DistTXCoordinatorInterface> msgMap) {
       super(dm, initMembers);
       this.msgMap = msgMap;

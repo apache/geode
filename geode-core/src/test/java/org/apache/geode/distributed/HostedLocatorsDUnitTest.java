@@ -32,8 +32,8 @@ import org.junit.experimental.categories.Category;
 import org.apache.geode.distributed.AbstractLauncher.Status;
 import org.apache.geode.distributed.LocatorLauncher.Builder;
 import org.apache.geode.distributed.LocatorLauncher.LocatorState;
-import org.apache.geode.distributed.internal.ClusterDistributionManager;
 import org.apache.geode.distributed.internal.DistributionConfig;
+import org.apache.geode.distributed.internal.DistributionManager;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.distributed.internal.InternalLocator;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
@@ -118,8 +118,7 @@ public class HostedLocatorsDUnitTest extends JUnit4DistributedTestCase {
     }
 
     // validation within non-locator
-    final ClusterDistributionManager dm =
-        (ClusterDistributionManager) system.getDistributionManager();
+    final DistributionManager dm = (DistributionManager) system.getDistributionManager();
 
     final Set<InternalDistributedMember> locatorIds = dm.getLocatorDistributionManagerIds();
     assertEquals(5, locatorIds.size());
@@ -140,9 +139,8 @@ public class HostedLocatorsDUnitTest extends JUnit4DistributedTestCase {
       getHost(0).getVM(whichvm).invoke(new SerializableRunnable() {
         @Override
         public void run() {
-          final ClusterDistributionManager dm =
-              (ClusterDistributionManager) InternalDistributedSystem.getAnyInstance()
-                  .getDistributionManager();
+          final DistributionManager dm = (DistributionManager) InternalDistributedSystem
+              .getAnyInstance().getDistributionManager();
           final InternalDistributedMember self = dm.getDistributionManagerId();
 
           final Set<InternalDistributedMember> locatorIds = dm.getLocatorDistributionManagerIds();
@@ -163,9 +161,8 @@ public class HostedLocatorsDUnitTest extends JUnit4DistributedTestCase {
       getHost(0).getVM(whichvm).invoke(new SerializableRunnable() {
         @Override
         public void run() {
-          final ClusterDistributionManager dm =
-              (ClusterDistributionManager) InternalDistributedSystem.getAnyInstance()
-                  .getDistributionManager();
+          final DistributionManager dm = (DistributionManager) InternalDistributedSystem
+              .getAnyInstance().getDistributionManager();
 
           final Set<InternalDistributedMember> locatorIds = dm.getLocatorDistributionManagerIds();
           assertEquals(5, locatorIds.size());
@@ -237,8 +234,7 @@ public class HostedLocatorsDUnitTest extends JUnit4DistributedTestCase {
     }
 
     // validation within non-locator
-    final ClusterDistributionManager dm =
-        (ClusterDistributionManager) system.getDistributionManager();
+    final DistributionManager dm = (DistributionManager) system.getDistributionManager();
 
     final Set<InternalDistributedMember> locatorIds = dm.getLocatorDistributionManagerIds();
     assertEquals(5, locatorIds.size());
@@ -259,9 +255,8 @@ public class HostedLocatorsDUnitTest extends JUnit4DistributedTestCase {
       Host.getHost(0).getVM(whichvm).invoke(new SerializableRunnable() {
         @Override
         public void run() {
-          final ClusterDistributionManager dm =
-              (ClusterDistributionManager) InternalDistributedSystem.getAnyInstance()
-                  .getDistributionManager();
+          final DistributionManager dm = (DistributionManager) InternalDistributedSystem
+              .getAnyInstance().getDistributionManager();
           final InternalDistributedMember self = dm.getDistributionManagerId();
 
           final Set<InternalDistributedMember> locatorIds = dm.getLocatorDistributionManagerIds();
@@ -282,9 +277,8 @@ public class HostedLocatorsDUnitTest extends JUnit4DistributedTestCase {
       Host.getHost(0).getVM(whichvm).invoke(new SerializableRunnable() {
         @Override
         public void run() {
-          final ClusterDistributionManager dm =
-              (ClusterDistributionManager) InternalDistributedSystem.getAnyInstance()
-                  .getDistributionManager();
+          final DistributionManager dm = (DistributionManager) InternalDistributedSystem
+              .getAnyInstance().getDistributionManager();
 
           final Set<InternalDistributedMember> locatorIds = dm.getLocatorDistributionManagerIds();
           assertEquals(5, locatorIds.size());

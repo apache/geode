@@ -23,12 +23,13 @@ import java.util.*;
 import java.util.concurrent.TimeUnit;
 
 import org.awaitility.Awaitility;
+import org.jgroups.protocols.pbcast.GMS;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
 import org.apache.geode.IncompatibleSystemException;
+import org.apache.geode.distributed.internal.DM;
 import org.apache.geode.distributed.internal.DistributionConfig;
-import org.apache.geode.distributed.internal.DistributionManager;
 import org.apache.geode.distributed.internal.HighPriorityAckedMessage;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
@@ -67,7 +68,7 @@ public class DistributedMemberDUnitTest extends JUnit4DistributedTestCase {
       assertTrue(system.getConfig().getGroups().equals(DistributionConfig.DEFAULT_ROLES));
       assertTrue(system.getConfig().getName().equals(DistributionConfig.DEFAULT_NAME));
 
-      DistributionManager dm = system.getDistributionManager();
+      DM dm = system.getDistributionManager();
       InternalDistributedMember member = dm.getDistributionManagerId();
 
       Set roles = member.getRoles();
@@ -90,7 +91,7 @@ public class DistributedMemberDUnitTest extends JUnit4DistributedTestCase {
     try {
       assertEquals("nondefault", system.getConfig().getName());
 
-      DistributionManager dm = system.getDistributionManager();
+      DM dm = system.getDistributionManager();
       InternalDistributedMember member = dm.getDistributionManagerId();
 
       assertEquals("nondefault", member.getName());
@@ -120,7 +121,7 @@ public class DistributedMemberDUnitTest extends JUnit4DistributedTestCase {
       assertEquals(rolesProp, system.getConfig().getRoles());
       assertEquals(groupsProp, system.getConfig().getGroups());
 
-      DistributionManager dm = system.getDistributionManager();
+      DM dm = system.getDistributionManager();
       InternalDistributedMember member = dm.getDistributionManagerId();
 
       Set roles = member.getRoles();
@@ -198,7 +199,7 @@ public class DistributedMemberDUnitTest extends JUnit4DistributedTestCase {
           assertNotNull(sys.getConfig().getRoles());
           assertTrue(sys.getConfig().getRoles().equals(vmRoles[vm]));
 
-          DistributionManager dm = sys.getDistributionManager();
+          DM dm = sys.getDistributionManager();
           InternalDistributedMember self = dm.getDistributionManagerId();
 
           Set myRoles = self.getRoles();
@@ -327,7 +328,7 @@ public class DistributedMemberDUnitTest extends JUnit4DistributedTestCase {
           final String expectedMyGroup = makeGroupsString(vm);
           assertEquals(expectedMyGroup, sys.getConfig().getGroups());
 
-          DistributionManager dm = sys.getDistributionManager();
+          DM dm = sys.getDistributionManager();
           DistributedMember self = sys.getDistributedMember();
 
           List<String> myGroups = self.getGroups();
@@ -390,7 +391,7 @@ public class DistributedMemberDUnitTest extends JUnit4DistributedTestCase {
     InternalDistributedSystem system = getSystem(config);
     try {
 
-      DistributionManager dm = system.getDistributionManager();
+      DM dm = system.getDistributionManager();
       DistributedMember member = dm.getDistributionManagerId();
 
       assertEquals(member.getId(), system.getMemberId());

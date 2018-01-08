@@ -21,7 +21,7 @@ import java.util.Set;
 
 import org.apache.geode.admin.internal.AdminDistributedSystemImpl;
 import org.apache.geode.cache.persistence.PersistentID;
-import org.apache.geode.distributed.internal.DistributionManager;
+import org.apache.geode.distributed.internal.DM;
 import org.apache.geode.internal.i18n.LocalizedStrings;
 import org.apache.geode.management.BackupStatus;
 import org.apache.geode.management.ManagementException;
@@ -33,8 +33,8 @@ public class BackupUtil {
     // do not instantiate
   }
 
-  public static BackupStatus backupAllMembers(DistributionManager dm, File targetDir,
-      File baselineDir) throws ManagementException {
+  public static BackupStatus backupAllMembers(DM dm, File targetDir, File baselineDir)
+      throws ManagementException {
     BackupStatus status = null;
     if (BackupDataStoreHelper.obtainLock(dm)) {
       try {

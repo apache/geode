@@ -26,7 +26,7 @@ import org.apache.logging.log4j.Logger;
 import org.apache.geode.CancelException;
 import org.apache.geode.DataSerializer;
 import org.apache.geode.cache.Operation;
-import org.apache.geode.distributed.internal.ClusterDistributionManager;
+import org.apache.geode.distributed.internal.DistributionManager;
 import org.apache.geode.distributed.internal.DistributionMessage;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.distributed.internal.ReplyMessage;
@@ -93,8 +93,8 @@ public class PRTombstoneMessage extends PartitionMessageWithDirectReply
   }
 
   @Override
-  protected boolean operateOnPartitionedRegion(final ClusterDistributionManager dm,
-      PartitionedRegion r, long startTime) throws ForceReattemptException {
+  protected boolean operateOnPartitionedRegion(final DistributionManager dm, PartitionedRegion r,
+      long startTime) throws ForceReattemptException {
     if (logger.isTraceEnabled(LogMarker.DM)) {
       logger.debug("PRTombstoneMessage operateOnRegion: {}", r.getFullPath());
     }

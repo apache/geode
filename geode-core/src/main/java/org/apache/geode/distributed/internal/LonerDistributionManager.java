@@ -45,7 +45,7 @@ import org.apache.geode.internal.net.SocketCreator;
  *
  * @since GemFire 3.5
  */
-public class LonerDistributionManager implements DistributionManager {
+public class LonerDistributionManager implements DM {
   private final InternalDistributedSystem system;
   private final InternalLogWriter logger;
   private ElderState elderState;
@@ -1200,7 +1200,7 @@ public class LonerDistributionManager implements DistributionManager {
             config.getDurableClientTimeout());
       }
       result = new InternalDistributedMember(host, lonerPort, name, uniqueString,
-          ClusterDistributionManager.LONER_DM_TYPE,
+          DistributionManager.LONER_DM_TYPE,
           MemberAttributes.parseGroups(config.getRoles(), config.getGroups()), dac);
 
     } catch (UnknownHostException ex) {

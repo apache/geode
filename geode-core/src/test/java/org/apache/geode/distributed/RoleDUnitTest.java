@@ -24,7 +24,7 @@ import java.util.Set;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
-import org.apache.geode.distributed.internal.DistributionManager;
+import org.apache.geode.distributed.internal.DM;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
 import org.apache.geode.distributed.internal.membership.InternalRole;
@@ -62,7 +62,7 @@ public class RoleDUnitTest extends JUnit4DistributedTestCase {
 
     InternalDistributedSystem system = getSystem(distributionProperties);
     try {
-      DistributionManager dm = system.getDistributionManager();
+      DM dm = system.getDistributionManager();
       Set allRoles = dm.getAllRoles();
       assertEquals(rolesArray.length, allRoles.size());
 
@@ -114,7 +114,7 @@ public class RoleDUnitTest extends JUnit4DistributedTestCase {
       Host.getHost(0).getVM(vm).invoke(new SerializableRunnable("verify roles") {
         public void run() {
           InternalDistributedSystem sys = getSystem();
-          DistributionManager dm = sys.getDistributionManager();
+          DM dm = sys.getDistributionManager();
 
           Set allRoles = dm.getAllRoles();
           assertEquals(
@@ -156,7 +156,7 @@ public class RoleDUnitTest extends JUnit4DistributedTestCase {
 
     InternalDistributedSystem system = getSystem();
     try {
-      DistributionManager dm = system.getDistributionManager();
+      DM dm = system.getDistributionManager();
       InternalDistributedMember member = dm.getDistributionManagerId();
 
       Set roles = member.getRoles();

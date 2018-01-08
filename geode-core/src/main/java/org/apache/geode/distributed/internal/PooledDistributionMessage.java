@@ -24,7 +24,7 @@ public abstract class PooledDistributionMessage extends DistributionMessage {
 
   @Override
   public int getProcessorType() {
-    return ClusterDistributionManager.STANDARD_EXECUTOR;
+    return DistributionManager.STANDARD_EXECUTOR;
   }
 
 }

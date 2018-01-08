@@ -18,6 +18,7 @@ import static org.apache.geode.distributed.ConfigurationProperties.*;
 import static org.apache.geode.test.dunit.Assert.*;
 
 import java.net.InetAddress;
+import java.net.UnknownHostException;
 import java.util.Properties;
 import java.util.concurrent.TimeUnit;
 
@@ -66,7 +67,7 @@ import org.apache.geode.test.junit.categories.DistributedTest;
 import org.apache.geode.test.junit.categories.MembershipTest;
 
 /**
- * This class tests the functionality of the {@link ClusterDistributionManager} class.
+ * This class tests the functionality of the {@link DistributionManager} class.
  */
 @Category({DistributedTest.class, MembershipTest.class})
 public class DistributionManagerDUnitTest extends JUnit4DistributedTestCase {
@@ -81,7 +82,7 @@ public class DistributionManagerDUnitTest extends JUnit4DistributedTestCase {
   /**
    * Clears the exceptionInThread flag in the given distribution manager.
    */
-  public static void clearExceptionInThreads(ClusterDistributionManager dm) {
+  public static void clearExceptionInThreads(DistributionManager dm) {
     dm.clearExceptionInThreads();
   }
 
@@ -97,16 +98,16 @@ public class DistributionManagerDUnitTest extends JUnit4DistributedTestCase {
     }
 
     @Override
-    protected void process(ClusterDistributionManager dm) {
+    protected void process(DistributionManager dm) {
       // We should never get here
     }
   };
 
   @Test
   public void testGetDistributionVMType() {
-    DistributionManager dm = getSystem().getDistributionManager();
+    DM dm = getSystem().getDistributionManager();
     InternalDistributedMember ipaddr = dm.getId();
-    assertEquals(ClusterDistributionManager.NORMAL_DM_TYPE, ipaddr.getVmKind());
+    assertEquals(DistributionManager.NORMAL_DM_TYPE, ipaddr.getVmKind());
   }
 
   /**
@@ -115,8 +116,7 @@ public class DistributionManagerDUnitTest extends JUnit4DistributedTestCase {
   @Ignore
   @Test
   public void testExceptionInThreads() throws InterruptedException {
-    ClusterDistributionManager dm =
-        (ClusterDistributionManager) getSystem().getDistributionManager();
+    DistributionManager dm = (DistributionManager) getSystem().getDistributionManager();
     String p1 = "ItsOkayForMyClassNotToBeFound";
     logger.info("<ExpectedException action=add>" + p1 + "</ExpectedException>");
     DistributionMessage m = new ItsOkayForMyClassNotToBeFound();
@@ -518,7 +518,7 @@ public class DistributionManagerDUnitTest extends JUnit4DistributedTestCase {
     Thread t = new Thread("wait for view installation") {
       public void run() {
         try {
-          ((ClusterDistributionManager) basicGetSystem().getDM())
+          ((DistributionManager) basicGetSystem().getDM())
               .waitForViewInstallation(v.getViewId() + 1);
           synchronized (passed) {
             passed[0] = true;

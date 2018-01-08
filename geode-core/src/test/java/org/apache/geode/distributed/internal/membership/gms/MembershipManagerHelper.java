@@ -15,9 +15,10 @@
 package org.apache.geode.distributed.internal.membership.gms;
 
 import org.apache.geode.CancelException;
+import org.apache.geode.ForcedDisconnectException;
 import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.distributed.DistributedSystem;
-import org.apache.geode.distributed.internal.ClusterDistributionManager;
+import org.apache.geode.distributed.internal.DistributionManager;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
 import org.apache.geode.distributed.internal.membership.MembershipManager;
@@ -36,7 +37,7 @@ public class MembershipManagerHelper {
   /** returns the JGroupMembershipManager for the given distributed system */
   public static MembershipManager getMembershipManager(DistributedSystem sys) {
     InternalDistributedSystem isys = (InternalDistributedSystem) sys;
-    ClusterDistributionManager dm = (ClusterDistributionManager) isys.getDM();
+    DistributionManager dm = (DistributionManager) isys.getDM();
     MembershipManager mgr = dm.getMembershipManager();
     return mgr;
   }

@@ -34,7 +34,7 @@ import org.apache.geode.DataSerializer;
 import org.apache.geode.cache.RegionDestroyedException;
 import org.apache.geode.cache.TransactionException;
 import org.apache.geode.distributed.DistributedMember;
-import org.apache.geode.distributed.internal.ClusterDistributionManager;
+import org.apache.geode.distributed.internal.DM;
 import org.apache.geode.distributed.internal.DistributionManager;
 import org.apache.geode.distributed.internal.DistributionMessage;
 import org.apache.geode.distributed.internal.DistributionStats;
@@ -77,7 +77,7 @@ public class RemoteFetchKeysMessage extends RemoteOperationMessage {
    * distributed.internal.DistributionManager, org.apache.geode.internal.cache.LocalRegion, long)
    */
   @Override
-  protected boolean operateOnRegion(ClusterDistributionManager dm, LocalRegion r, long startTime)
+  protected boolean operateOnRegion(DistributionManager dm, LocalRegion r, long startTime)
       throws RemoteOperationException {
     if (!(r instanceof PartitionedRegion)) { // prs already wait on initialization
       r.waitOnInitialization(); // bug #43371 - accessing a region before it's initialized
@@ -174,7 +174,7 @@ public class RemoteFetchKeysMessage extends RemoteOperationMessage {
      * @throws ForceReattemptException if the peer is no longer available
      */
     public static void send(final InternalDistributedMember recipient, final int processorId,
-        final DistributionManager dm, Set keys) throws ForceReattemptException {
+        final DM dm, Set keys) throws ForceReattemptException {
 
       Assert.assertTrue(recipient != null, "FetchKeysReplyMessage NULL reply message");
 
@@ -227,9 +227,9 @@ public class RemoteFetchKeysMessage extends RemoteOperationMessage {
     }
 
 
-    static boolean sendChunk(InternalDistributedMember recipient, int processorId,
-        DistributionManager dm, HeapDataOutputStream chunk, int seriesNum, int msgNum,
-        int numSeries, boolean lastInSeries) {
+    static boolean sendChunk(InternalDistributedMember recipient, int processorId, DM dm,
+        HeapDataOutputStream chunk, int seriesNum, int msgNum, int numSeries,
+        boolean lastInSeries) {
       RemoteFetchKeysReplyMessage reply = new RemoteFetchKeysReplyMessage(recipient, processorId,
           chunk, seriesNum, msgNum, numSeries, lastInSeries);
       Set failures = dm.putOutgoing(reply);
@@ -296,7 +296,7 @@ public class RemoteFetchKeysMessage extends RemoteOperationMessage {
      * @param dm the distribution manager that is processing the message.
      */
     @Override
-    public void process(final DistributionManager dm, final ReplyProcessor21 p) {
+    public void process(final DM dm, final ReplyProcessor21 p) {
       final long startTime = getTimestamp();
       FetchKeysResponse processor = (FetchKeysResponse) p;
 

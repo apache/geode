@@ -35,6 +35,7 @@ import org.apache.geode.InvalidDeltaException;
 import org.apache.geode.InvalidVersionException;
 import org.apache.geode.SystemFailure;
 import org.apache.geode.cache.CacheEvent;
+import org.apache.geode.cache.CacheFactory;
 import org.apache.geode.cache.DiskAccessException;
 import org.apache.geode.cache.EntryNotFoundException;
 import org.apache.geode.cache.EntryOperation;
@@ -42,7 +43,7 @@ import org.apache.geode.cache.Operation;
 import org.apache.geode.cache.RegionDestroyedException;
 import org.apache.geode.cache.query.internal.cq.CqService;
 import org.apache.geode.cache.query.internal.cq.ServerCQ;
-import org.apache.geode.distributed.internal.ClusterDistributionManager;
+import org.apache.geode.distributed.internal.DM;
 import org.apache.geode.distributed.internal.DirectReplyProcessor;
 import org.apache.geode.distributed.internal.DistributionManager;
 import org.apache.geode.distributed.internal.DistributionMessage;
@@ -310,7 +311,7 @@ public abstract class DistributedCacheOperation {
    */
   private void _distribute() {
     DistributedRegion region = getRegion();
-    DistributionManager mgr = region.getDistributionManager();
+    DM mgr = region.getDistributionManager();
     boolean reliableOp = isOperationReliable() && region.requiresReliabilityCheck();
 
     if (SLOW_DISTRIBUTION_MS > 0) { // test hook
@@ -1060,14 +1061,14 @@ public abstract class DistributedCacheOperation {
       return true;
     }
 
-    protected LocalRegion getLocalRegionForProcessing(ClusterDistributionManager dm) {
+    protected LocalRegion getLocalRegionForProcessing(DistributionManager dm) {
       Assert.assertTrue(this.regionPath != null, "regionPath was null");
       InternalCache gfc = dm.getExistingCache();
       return gfc.getRegionByPathForProcessing(this.regionPath);
     }
 
     @Override
-    protected void process(final ClusterDistributionManager dm) {
+    protected void process(final DistributionManager dm) {
       Throwable thr = null;
       boolean sendReply = true;
 
@@ -1079,7 +1080,7 @@ public abstract class DistributedCacheOperation {
       boolean resetOldLevel = true;
       int oldLevel = LocalRegion.setThreadInitLevelRequirement(LocalRegion.BEFORE_INITIAL_IMAGE);
       try {
-        if (dm.getDMType() == ClusterDistributionManager.ADMIN_ONLY_DM_TYPE) {
+        if (dm.getDMType() == DistributionManager.ADMIN_ONLY_DM_TYPE) {
           // this was probably a multicast message
           return;
         }
@@ -1125,7 +1126,7 @@ public abstract class DistributedCacheOperation {
     }
 
     /** Return true if a reply should be sent */
-    protected void basicProcess(ClusterDistributionManager dm, LocalRegion lclRgn) {
+    protected void basicProcess(DistributionManager dm, LocalRegion lclRgn) {
       Throwable thr = null;
       boolean sendReply = true;
 
@@ -1247,7 +1248,7 @@ public abstract class DistributedCacheOperation {
 
     public void sendReply(InternalDistributedMember recipient, int pId, ReplyException rex,
         ReplySender dm) {
-      if (pId == 0 && (dm instanceof DistributionManager) && !this.directAck) {// Fix for #41871
+      if (pId == 0 && (dm instanceof DM) && !this.directAck) {// Fix for #41871
         // distributed-no-ack message. Don't respond
       } else {
         ReplyMessage.send(recipient, pId, rex, dm, !this.appliedOperation, this.closed, false,
@@ -1299,7 +1300,7 @@ public abstract class DistributedCacheOperation {
     protected abstract InternalCacheEvent createEvent(DistributedRegion rgn)
         throws EntryNotFoundException;
 
-    protected abstract boolean operateOnRegion(CacheEvent event, ClusterDistributionManager dm)
+    protected abstract boolean operateOnRegion(CacheEvent event, DistributionManager dm)
         throws EntryNotFoundException;
 
     @Override
@@ -1516,7 +1517,7 @@ public abstract class DistributedCacheOperation {
       this.hasOldValue = true;
     }
 
-    protected boolean _mayAddToMultipleSerialGateways(ClusterDistributionManager dm) {
+    protected boolean _mayAddToMultipleSerialGateways(DistributionManager dm) {
       int oldLevel = LocalRegion.setThreadInitLevelRequirement(LocalRegion.ANY_INIT);
       try {
         LocalRegion lr = getLocalRegionForProcessing(dm);
@@ -1537,7 +1538,7 @@ public abstract class DistributedCacheOperation {
 
     private final Set failedMembers;
 
-    private final DistributionManager dm;
+    private final DM dm;
 
     public ReliableCacheReplyProcessor(InternalDistributedSystem system, Collection initMembers,
         Set departedMembers) {

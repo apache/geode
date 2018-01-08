@@ -60,7 +60,7 @@ public class StatListenerMessage extends PooledDistributionMessage implements Ad
   }
 
   @Override
-  public void process(ClusterDistributionManager dm) {
+  public void process(DistributionManager dm) {
     RemoteGfManagerAgent agent = dm.getAgent();
     if (agent != null) {
       RemoteGemFireVM mgr = agent.getMemberById(this.getSender());

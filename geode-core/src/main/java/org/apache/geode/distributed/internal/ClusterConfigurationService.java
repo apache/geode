@@ -387,7 +387,7 @@ public class ClusterConfigurationService {
   public void downloadJarFromOtherLocators(String groupName, String jarName)
       throws IllegalStateException, IOException {
     logger.info("Getting Jar files from other locators");
-    DistributionManager dm = this.cache.getDistributionManager();
+    DM dm = this.cache.getDistributionManager();
     DistributedMember me = this.cache.getMyId();
     List<DistributedMember> locators =
         new ArrayList<>(dm.getAllHostedLocatorsWithSharedConfiguration().keySet());

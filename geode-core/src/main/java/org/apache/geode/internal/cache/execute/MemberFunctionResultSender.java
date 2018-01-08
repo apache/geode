@@ -22,7 +22,7 @@ import org.apache.geode.cache.execute.FunctionException;
 import org.apache.geode.cache.execute.ResultCollector;
 import org.apache.geode.cache.query.QueryException;
 import org.apache.geode.distributed.DistributedMember;
-import org.apache.geode.distributed.internal.DistributionManager;
+import org.apache.geode.distributed.internal.DM;
 import org.apache.geode.internal.cache.ForceReattemptException;
 import org.apache.geode.internal.cache.MemberFunctionStreamingMessage;
 import org.apache.geode.internal.i18n.LocalizedStrings;
@@ -39,7 +39,7 @@ public class MemberFunctionResultSender implements InternalResultSender {
 
   MemberFunctionStreamingMessage msg = null;
 
-  private final DistributionManager dm;
+  private final DM dm;
 
   private ResultCollector rc;
 
@@ -62,8 +62,7 @@ public class MemberFunctionResultSender implements InternalResultSender {
    * @param msg
    * @param dm
    */
-  public MemberFunctionResultSender(DistributionManager dm, MemberFunctionStreamingMessage msg,
-      Function function) {
+  public MemberFunctionResultSender(DM dm, MemberFunctionStreamingMessage msg, Function function) {
     this.msg = msg;
     this.dm = dm;
     this.function = function;
@@ -76,8 +75,8 @@ public class MemberFunctionResultSender implements InternalResultSender {
    * @param dm
    * @param rc
    */
-  public MemberFunctionResultSender(DistributionManager dm, ResultCollector rc, Function function,
-      boolean onlyLocal, boolean onlyRemote, ServerToClientFunctionResultSender sender) {
+  public MemberFunctionResultSender(DM dm, ResultCollector rc, Function function, boolean onlyLocal,
+      boolean onlyRemote, ServerToClientFunctionResultSender sender) {
     this.dm = dm;
     this.rc = rc;
     this.function = function;

@@ -21,7 +21,7 @@ import java.util.TreeSet;
 import org.apache.geode.cache.EntryNotFoundException;
 import org.apache.geode.cache.Operation;
 import org.apache.geode.cache.UnsupportedOperationInTransactionException;
-import org.apache.geode.distributed.internal.DistributionManager;
+import org.apache.geode.distributed.internal.DM;
 import org.apache.geode.internal.cache.tier.sockets.VersionedObjectList;
 import org.apache.geode.internal.cache.tx.DistTxEntryEvent;
 import org.apache.geode.internal.i18n.LocalizedStrings;
@@ -259,7 +259,7 @@ public class DistTXStateOnCoordinator extends DistTXState implements DistTXCoord
   }
 
   @Override
-  public void setPrecommitMessage(DistTXPrecommitMessage precommitMsg, DistributionManager dm)
+  public void setPrecommitMessage(DistTXPrecommitMessage precommitMsg, DM dm)
       throws UnsupportedOperationInTransactionException {
     throw new UnsupportedOperationInTransactionException(
         LocalizedStrings.Dist_TX_PRECOMMIT_NOT_SUPPORTED_IN_A_TRANSACTION
@@ -267,7 +267,7 @@ public class DistTXStateOnCoordinator extends DistTXState implements DistTXCoord
   }
 
   @Override
-  public void setCommitMessage(DistTXCommitMessage commitMsg, DistributionManager dm)
+  public void setCommitMessage(DistTXCommitMessage commitMsg, DM dm)
       throws UnsupportedOperationInTransactionException {
     throw new UnsupportedOperationInTransactionException(
         LocalizedStrings.Dist_TX_PRECOMMIT_NOT_SUPPORTED_IN_A_TRANSACTION
@@ -275,7 +275,7 @@ public class DistTXStateOnCoordinator extends DistTXState implements DistTXCoord
   }
 
   @Override
-  public void setRollbackMessage(DistTXRollbackMessage rollbackMsg, DistributionManager dm)
+  public void setRollbackMessage(DistTXRollbackMessage rollbackMsg, DM dm)
       throws UnsupportedOperationInTransactionException {
     throw new UnsupportedOperationInTransactionException(
         LocalizedStrings.Dist_TX_ROLLBACK_NOT_SUPPORTED_IN_A_TRANSACTION

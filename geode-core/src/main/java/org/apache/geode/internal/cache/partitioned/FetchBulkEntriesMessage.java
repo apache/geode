@@ -34,7 +34,7 @@ import org.apache.logging.log4j.Logger;
 import org.apache.geode.CancelException;
 import org.apache.geode.DataSerializer;
 import org.apache.geode.cache.CacheException;
-import org.apache.geode.distributed.internal.ClusterDistributionManager;
+import org.apache.geode.distributed.internal.DM;
 import org.apache.geode.distributed.internal.DistributionManager;
 import org.apache.geode.distributed.internal.DistributionStats;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
@@ -126,7 +126,7 @@ public class FetchBulkEntriesMessage extends PartitionMessage {
   }
 
   @Override
-  protected boolean operateOnPartitionedRegion(ClusterDistributionManager dm, PartitionedRegion pr,
+  protected boolean operateOnPartitionedRegion(DistributionManager dm, PartitionedRegion pr,
       long startTime) throws CacheException, ForceReattemptException {
     if (logger.isTraceEnabled(LogMarker.DM)) {
       logger.debug("FetchBulkEntriesMessage operateOnRegion: {}", pr.getFullPath());
@@ -207,9 +207,9 @@ public class FetchBulkEntriesMessage extends PartitionMessage {
     }
 
     public static void sendReply(PartitionedRegion pr, final InternalDistributedMember recipient,
-        final int processorId, final DistributionManager dm,
-        final HashMap<Integer, HashSet> bucketKeys, final HashSet<Integer> bucketIds, String regex,
-        boolean allowTombstones, long startTime) throws ForceReattemptException {
+        final int processorId, final DM dm, final HashMap<Integer, HashSet> bucketKeys,
+        final HashSet<Integer> bucketIds, String regex, boolean allowTombstones, long startTime)
+        throws ForceReattemptException {
 
       PartitionedRegionDataStore ds = pr.getDataStore();
       if (ds == null) {
@@ -404,7 +404,7 @@ public class FetchBulkEntriesMessage extends PartitionMessage {
      * @param dm the distribution manager that is processing the message.
      */
     @Override
-    public void process(final DistributionManager dm, final ReplyProcessor21 p) {
+    public void process(final DM dm, final ReplyProcessor21 p) {
       final long startTime = getTimestamp();
       FetchBulkEntriesResponse processor = (FetchBulkEntriesResponse) p;
 

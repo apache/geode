@@ -65,8 +65,8 @@ import org.apache.geode.cache.RegionDestroyedException;
 import org.apache.geode.cache.client.internal.PoolImpl;
 import org.apache.geode.cache.server.CacheServer;
 import org.apache.geode.cache.wan.GatewayTransportFilter;
+import org.apache.geode.distributed.internal.DM;
 import org.apache.geode.distributed.internal.DistributionConfig;
-import org.apache.geode.distributed.internal.DistributionManager;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.distributed.internal.LonerDistributionManager;
 import org.apache.geode.distributed.internal.PooledExecutorWithDMStats;
@@ -509,7 +509,7 @@ public class AcceptorImpl implements Acceptor, Runnable, CommBufferPool {
       {
         InternalDistributedSystem ds = InternalDistributedSystem.getConnectedInstance();
         if (ds != null) {
-          DistributionManager dm = ds.getDistributionManager();
+          DM dm = ds.getDistributionManager();
           if (dm != null && dm.getDistributionManagerId().getPort() == 0
               && (dm instanceof LonerDistributionManager)) {
             // a server with a loner distribution manager - update it's port number

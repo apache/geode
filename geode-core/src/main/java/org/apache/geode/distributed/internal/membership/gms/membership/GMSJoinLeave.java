@@ -56,8 +56,8 @@ import org.apache.geode.SystemConnectException;
 import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.distributed.DistributedSystemDisconnectedException;
 import org.apache.geode.distributed.Locator;
-import org.apache.geode.distributed.internal.ClusterDistributionManager;
 import org.apache.geode.distributed.internal.DistributionConfig;
+import org.apache.geode.distributed.internal.DistributionManager;
 import org.apache.geode.distributed.internal.DistributionMessage;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
 import org.apache.geode.distributed.internal.membership.NetMember;
@@ -1608,7 +1608,7 @@ public class GMSJoinLeave implements JoinLeave, MessageHandler {
       boolean preferred = false;
       if (services.getLocator() != null || Locator.hasLocator()
           || !services.getConfig().getDistributionConfig().getStartLocator().isEmpty()
-          || localAddress.getVmKind() == ClusterDistributionManager.LOCATOR_DM_TYPE) {
+          || localAddress.getVmKind() == DistributionManager.LOCATOR_DM_TYPE) {
         logger
             .info("This member is hosting a locator will be preferred as a membership coordinator");
         preferred = true;
@@ -2484,9 +2484,8 @@ public class GMSJoinLeave implements JoinLeave, MessageHandler {
             lastConflictingView = conflictingView;
             // if I am not a locator and the conflicting view is from a locator I should
             // let it take control and stop sending membership views
-            if (localAddress.getVmKind() != ClusterDistributionManager.LOCATOR_DM_TYPE
-                && conflictingView.getCreator()
-                    .getVmKind() == ClusterDistributionManager.LOCATOR_DM_TYPE) {
+            if (localAddress.getVmKind() != DistributionManager.LOCATOR_DM_TYPE && conflictingView
+                .getCreator().getVmKind() == DistributionManager.LOCATOR_DM_TYPE) {
               logger.info("View preparation interrupted - a locator is taking over as "
                   + "membership coordinator in this view: {}", conflictingView);
               abandonedViews++;

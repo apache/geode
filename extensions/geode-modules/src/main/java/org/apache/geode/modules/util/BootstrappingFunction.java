@@ -28,7 +28,7 @@ import org.apache.geode.cache.execute.Function;
 import org.apache.geode.cache.execute.FunctionContext;
 import org.apache.geode.cache.execute.FunctionService;
 import org.apache.geode.cache.execute.ResultCollector;
-import org.apache.geode.distributed.internal.DistributionManager;
+import org.apache.geode.distributed.internal.DM;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.distributed.internal.MembershipListener;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
@@ -88,8 +88,7 @@ public class BootstrappingFunction implements Function, MembershipListener, Data
   }
 
   private void registerAsMembershipListener(Cache cache) {
-    DistributionManager dm =
-        ((InternalDistributedSystem) cache.getDistributedSystem()).getDistributionManager();
+    DM dm = ((InternalDistributedSystem) cache.getDistributedSystem()).getDistributionManager();
     dm.addMembershipListener(this);
   }
 

@@ -24,7 +24,7 @@ import org.apache.logging.log4j.Logger;
 
 import org.apache.geode.DataSerializer;
 import org.apache.geode.cache.RegionDestroyedException;
-import org.apache.geode.distributed.internal.ClusterDistributionManager;
+import org.apache.geode.distributed.internal.DM;
 import org.apache.geode.distributed.internal.DistributionManager;
 import org.apache.geode.distributed.internal.DistributionMessage;
 import org.apache.geode.distributed.internal.DistributionStats;
@@ -136,7 +136,7 @@ public class RemoteSizeMessage extends RemoteOperationMessage {
   }
 
   @Override
-  protected boolean operateOnRegion(ClusterDistributionManager dm, LocalRegion r, long startTime)
+  protected boolean operateOnRegion(DistributionManager dm, LocalRegion r, long startTime)
       throws RemoteOperationException {
 
     int size = 0;
@@ -203,8 +203,7 @@ public class RemoteSizeMessage extends RemoteOperationMessage {
     }
 
     /** Send an ack */
-    public static void send(InternalDistributedMember recipient, int processorId,
-        DistributionManager dm, int size) {
+    public static void send(InternalDistributedMember recipient, int processorId, DM dm, int size) {
       Assert.assertTrue(recipient != null, "SizeReplyMessage NULL reply message");
       SizeReplyMessage m = new SizeReplyMessage(processorId, size);
       m.setRecipient(recipient);
@@ -217,7 +216,7 @@ public class RemoteSizeMessage extends RemoteOperationMessage {
      * @param dm the distribution manager that is processing the message.
      */
     @Override
-    public void process(final DistributionManager dm, final ReplyProcessor21 processor) {
+    public void process(final DM dm, final ReplyProcessor21 processor) {
       final long startTime = getTimestamp();
       if (logger.isTraceEnabled(LogMarker.DM)) {
         logger.trace(LogMarker.DM, "{}: process invoking reply processor with processorId: {}",

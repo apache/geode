@@ -72,9 +72,9 @@ import org.apache.geode.SystemConnectException;
 import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.distributed.DistributedSystemDisconnectedException;
 import org.apache.geode.distributed.DurableClientAttributes;
-import org.apache.geode.distributed.internal.ClusterDistributionManager;
 import org.apache.geode.distributed.internal.DMStats;
 import org.apache.geode.distributed.internal.DistributionConfig;
+import org.apache.geode.distributed.internal.DistributionManager;
 import org.apache.geode.distributed.internal.DistributionMessage;
 import org.apache.geode.distributed.internal.DistributionStats;
 import org.apache.geode.distributed.internal.HighPriorityDistributionMessage;
@@ -505,9 +505,9 @@ public class JGroupsMessenger implements Messenger {
     myChannel.down(new Event(Event.SET_LOCAL_ADDRESS, this.jgAddress));
 
     DistributionConfig config = services.getConfig().getDistributionConfig();
-    boolean isLocator = (services.getConfig().getTransport()
-        .getVmKind() == ClusterDistributionManager.LOCATOR_DM_TYPE)
-        || !services.getConfig().getDistributionConfig().getStartLocator().isEmpty();
+    boolean isLocator =
+        (services.getConfig().getTransport().getVmKind() == DistributionManager.LOCATOR_DM_TYPE)
+            || !services.getConfig().getDistributionConfig().getStartLocator().isEmpty();
 
     // establish the DistributedSystem's address
     DurableClientAttributes dca = null;
@@ -950,7 +950,7 @@ public class JGroupsMessenger implements Messenger {
     // which is fairly rare
     msg.setFlag(Flag.DONT_BUNDLE);
 
-    if (gfmsg.getProcessorType() == ClusterDistributionManager.HIGH_PRIORITY_EXECUTOR
+    if (gfmsg.getProcessorType() == DistributionManager.HIGH_PRIORITY_EXECUTOR
         || gfmsg instanceof HighPriorityDistributionMessage || AlertAppender.isThreadAlerting()) {
       msg.setFlag(Flag.OOB);
       msg.setFlag(Flag.NO_FC);
@@ -1289,7 +1289,7 @@ public class JGroupsMessenger implements Messenger {
         // multicast to them, avoiding deserialization cost and classpath
         // problems
         if ((services.getConfig().getTransport()
-            .getVmKind() == ClusterDistributionManager.ADMIN_ONLY_DM_TYPE)
+            .getVmKind() == DistributionManager.ADMIN_ONLY_DM_TYPE)
             && (msg instanceof DistributedCacheOperation.CacheOperationMessage)) {
           return;
         }

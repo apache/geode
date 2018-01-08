@@ -60,7 +60,7 @@ public class ObjectDetailsRequest extends RegionAdminRequest implements Cancella
    * @param dm
    */
   @Override
-  protected AdminResponse createResponse(DistributionManager dm) {
+  protected AdminResponse createResponse(DM dm) {
     CancellationRegistry.getInstance().registerMessage(this);
     resp = ObjectDetailsResponse.create(dm, this.getSender());
     if (cancelled) {

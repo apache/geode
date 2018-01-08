@@ -30,7 +30,7 @@ import org.junit.runners.MethodSorters;
 
 import org.apache.geode.cache.*;
 import org.apache.geode.distributed.DistributedSystem;
-import org.apache.geode.distributed.internal.DistributionManager;
+import org.apache.geode.distributed.internal.DM;
 import org.apache.geode.internal.ByteArrayDataInput;
 import org.apache.geode.internal.InternalStatisticsDisabledException;
 import org.apache.geode.internal.Version;
@@ -635,8 +635,7 @@ public class LIFOEvictionAlgoMemoryEnabledRegionJUnitTest {
 
     @Override
     public boolean fillInValue(final InternalRegion region, final Entry entry,
-        final ByteArrayDataInput in, final DistributionManager distributionManager,
-        final Version version) {
+        final ByteArrayDataInput in, final DM distributionManager, final Version version) {
       return false;
     }
 

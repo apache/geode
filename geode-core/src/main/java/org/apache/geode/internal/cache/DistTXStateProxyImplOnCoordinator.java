@@ -15,8 +15,10 @@
 package org.apache.geode.internal.cache;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
@@ -28,9 +30,11 @@ import org.apache.geode.cache.Operation;
 import org.apache.geode.cache.TransactionInDoubtException;
 import org.apache.geode.cache.UnsupportedOperationInTransactionException;
 import org.apache.geode.distributed.DistributedMember;
-import org.apache.geode.distributed.internal.DistributionManager;
+import org.apache.geode.distributed.internal.DM;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
 import org.apache.geode.internal.cache.DistTXPrecommitMessage.DistTxPrecommitResponse;
+import org.apache.geode.internal.cache.DistributedPutAllOperation.PutAllEntryData;
+import org.apache.geode.internal.cache.DistributedRemoveAllOperation.RemoveAllEntryData;
 import org.apache.geode.internal.cache.TXEntryState.DistTxThinEntryState;
 import org.apache.geode.internal.cache.tier.sockets.VersionedObjectList;
 import org.apache.geode.internal.cache.tx.DistClientTXStateStub;
@@ -193,7 +197,7 @@ public class DistTXStateProxyImplOnCoordinator extends DistTXStateProxyImpl {
 
     boolean finalResult = false;
     final GemFireCacheImpl cache = GemFireCacheImpl.getExisting("Applying Dist TX Rollback");
-    final DistributionManager dm = cache.getDistributionManager();
+    final DM dm = cache.getDistributionManager();
     try {
       // Create Tx Participants
       Set<DistributedMember> txRemoteParticpants = getTxRemoteParticpants(dm);
@@ -417,7 +421,7 @@ public class DistTXStateProxyImplOnCoordinator extends DistTXStateProxyImpl {
     return m;
   }
 
-  private Set<DistributedMember> getTxRemoteParticpants(final DistributionManager dm) {
+  private Set<DistributedMember> getTxRemoteParticpants(final DM dm) {
     if (this.txRemoteParticpants == null) {
       Set<DistributedMember> txParticpants = target2realDeals.keySet();
       this.txRemoteParticpants = new HashSet<DistributedMember>(txParticpants);
@@ -435,7 +439,7 @@ public class DistTXStateProxyImplOnCoordinator extends DistTXStateProxyImpl {
   private boolean doPrecommit() {
     boolean finalResult = true;
     final GemFireCacheImpl cache = GemFireCacheImpl.getExisting("Applying Dist TX Precommit");
-    final DistributionManager dm = cache.getDistributionManager();
+    final DM dm = cache.getDistributionManager();
     Set<DistributedMember> txRemoteParticpants = getTxRemoteParticpants(dm);
 
     // create processor and precommit message
@@ -620,7 +624,7 @@ public class DistTXStateProxyImplOnCoordinator extends DistTXStateProxyImpl {
   private boolean doCommit() {
     boolean finalResult = true;
     final GemFireCacheImpl cache = GemFireCacheImpl.getExisting("Applying Dist TX Commit");
-    final DistributionManager dm = cache.getDistributionManager();
+    final DM dm = cache.getDistributionManager();
 
     // Create Tx Participants
     Set<DistributedMember> txRemoteParticpants = getTxRemoteParticpants(dm);

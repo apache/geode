@@ -50,7 +50,7 @@ public class StoreSysCfgRequest extends AdminRequest {
    * Must return a proper response to this request.
    */
   @Override
-  protected AdminResponse createResponse(DistributionManager dm) {
+  protected AdminResponse createResponse(DM dm) {
     return StoreSysCfgResponse.create(dm, this.getSender(), this.sc);
   }
 

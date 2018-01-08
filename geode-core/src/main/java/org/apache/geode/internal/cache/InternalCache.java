@@ -47,8 +47,8 @@ import org.apache.geode.cache.wan.GatewayReceiver;
 import org.apache.geode.cache.wan.GatewaySender;
 import org.apache.geode.distributed.DistributedLockService;
 import org.apache.geode.distributed.internal.CacheTime;
+import org.apache.geode.distributed.internal.DM;
 import org.apache.geode.distributed.internal.DistributionAdvisor;
-import org.apache.geode.distributed.internal.DistributionManager;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
 import org.apache.geode.internal.SystemTimer;
@@ -113,7 +113,7 @@ public interface InternalCache extends Cache, Extensible<Cache>, CacheTime {
 
   CachePerfStats getCachePerfStats();
 
-  DistributionManager getDistributionManager();
+  DM getDistributionManager();
 
   void regionReinitialized(Region region);
 

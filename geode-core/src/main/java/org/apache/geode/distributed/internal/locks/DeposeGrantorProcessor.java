@@ -22,7 +22,7 @@ import java.io.IOException;
 import org.apache.logging.log4j.Logger;
 
 import org.apache.geode.DataSerializer;
-import org.apache.geode.distributed.internal.ClusterDistributionManager;
+import org.apache.geode.distributed.internal.DM;
 import org.apache.geode.distributed.internal.DistributionManager;
 import org.apache.geode.distributed.internal.MessageWithReply;
 import org.apache.geode.distributed.internal.PooledDistributionMessage;
@@ -52,7 +52,7 @@ public class DeposeGrantorProcessor extends ReplyProcessor21 {
    */
   static void send(String serviceName, InternalDistributedMember oldGrantor,
       InternalDistributedMember newGrantor, long newGrantorVersion, int newGrantorSerialNumber,
-      DistributionManager dm) {
+      DM dm) {
     final InternalDistributedMember elder = dm.getId();
     if (elder.equals(oldGrantor)) {
       doOldGrantorWork(serviceName, elder, newGrantor, newGrantorVersion, newGrantorSerialNumber,
@@ -71,7 +71,7 @@ public class DeposeGrantorProcessor extends ReplyProcessor21 {
 
   protected static void doOldGrantorWork(final String serviceName,
       final InternalDistributedMember elder, final InternalDistributedMember youngTurk,
-      final long newGrantorVersion, final int newGrantorSerialNumber, final DistributionManager dm,
+      final long newGrantorVersion, final int newGrantorSerialNumber, final DM dm,
       final DeposeGrantorMessage msg) {
     try {
       DLockService svc = DLockService.getInternalServiceNamed(serviceName);
@@ -92,7 +92,7 @@ public class DeposeGrantorProcessor extends ReplyProcessor21 {
   /**
    * Creates a new instance of DeposeGrantorProcessor
    */
-  private DeposeGrantorProcessor(DistributionManager dm, InternalDistributedMember oldGrantor) {
+  private DeposeGrantorProcessor(DM dm, InternalDistributedMember oldGrantor) {
     super(dm, oldGrantor);
   }
 
@@ -109,7 +109,7 @@ public class DeposeGrantorProcessor extends ReplyProcessor21 {
 
     protected static void send(String serviceName, InternalDistributedMember oldGrantor,
         InternalDistributedMember newGrantor, long newGrantorVersion, int newGrantorSerialNumber,
-        DistributionManager dm, ReplyProcessor21 proc) {
+        DM dm, ReplyProcessor21 proc) {
       DeposeGrantorMessage msg = new DeposeGrantorMessage();
       msg.serviceName = serviceName;
       msg.newGrantor = newGrantor;
@@ -128,12 +128,12 @@ public class DeposeGrantorProcessor extends ReplyProcessor21 {
       return this.processorId;
     }
 
-    void reply(DistributionManager dm) {
+    void reply(DM dm) {
       ReplyMessage.send(this.getSender(), this.getProcessorId(), null, dm);
     }
 
     @Override
-    protected void process(final ClusterDistributionManager dm) {
+    protected void process(final DistributionManager dm) {
       // if we are currently the grantor then
       // mark it as being destroyed until we hear from this.newGrantor
       // or he goes away or the grantor that sent us this message goes away.

@@ -32,8 +32,9 @@ import org.apache.geode.CancelException;
 import org.apache.geode.DataSerializer;
 import org.apache.geode.cache.CommitIncompleteException;
 import org.apache.geode.cache.RegionDestroyedException;
+import org.apache.geode.cache.TransactionDataNotColocatedException;
 import org.apache.geode.distributed.DistributedMember;
-import org.apache.geode.distributed.internal.ClusterDistributionManager;
+import org.apache.geode.distributed.internal.DM;
 import org.apache.geode.distributed.internal.DistributionManager;
 import org.apache.geode.distributed.internal.DistributionMessage;
 import org.apache.geode.distributed.internal.DistributionStats;
@@ -69,8 +70,7 @@ public class DistTXRollbackMessage extends TXMessage {
   }
 
   @Override
-  protected boolean operateOnTx(TXId txId, ClusterDistributionManager dm)
-      throws RemoteOperationException {
+  protected boolean operateOnTx(TXId txId, DistributionManager dm) throws RemoteOperationException {
     if (logger.isDebugEnabled()) {
       logger.debug("Dist TX: Rollback: {}", txId);
     }
@@ -179,7 +179,7 @@ public class DistTXRollbackMessage extends TXMessage {
      * @param dm the distribution manager that is processing the message.
      */
     @Override
-    public void process(final DistributionManager dm, ReplyProcessor21 processor) {
+    public void process(final DM dm, ReplyProcessor21 processor) {
       final long startTime = getTimestamp();
       if (logger.isTraceEnabled(LogMarker.DM)) {
         logger.trace(LogMarker.DM,
@@ -288,7 +288,7 @@ public class DistTXRollbackMessage extends TXMessage {
     private Map<DistributedMember, Boolean> rollbackResponseMap;
     private transient TXId txIdent = null;
 
-    public DistTxRollbackReplyProcessor(TXId txUniqId, DistributionManager dm, Set initMembers,
+    public DistTxRollbackReplyProcessor(TXId txUniqId, DM dm, Set initMembers,
         HashMap<DistributedMember, DistTXCoordinatorInterface> msgMap) {
       super(dm, initMembers);
       this.msgMap = msgMap;

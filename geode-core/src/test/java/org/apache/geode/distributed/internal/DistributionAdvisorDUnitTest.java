@@ -67,7 +67,7 @@ public class DistributionAdvisorDUnitTest extends JUnit4DistributedTestCase {
         return getName();
       }
 
-      public DistributionManager getDistributionManager() {
+      public DM getDistributionManager() {
         return getSystem().getDistributionManager();
       }
 

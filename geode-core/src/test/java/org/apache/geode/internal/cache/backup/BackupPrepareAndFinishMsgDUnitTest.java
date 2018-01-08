@@ -50,7 +50,7 @@ import org.apache.geode.cache.query.NameResolutionException;
 import org.apache.geode.cache.query.QueryInvocationTargetException;
 import org.apache.geode.cache.query.TypeMismatchException;
 import org.apache.geode.cache30.CacheTestCase;
-import org.apache.geode.distributed.internal.DistributionManager;
+import org.apache.geode.distributed.internal.DM;
 import org.apache.geode.internal.cache.DiskStoreImpl;
 import org.apache.geode.internal.cache.GemFireCacheImpl;
 import org.apache.geode.test.junit.categories.DistributedTest;
@@ -134,7 +134,7 @@ public abstract class BackupPrepareAndFinishMsgDUnitTest extends CacheTestCase {
 
   private void doActionAndVerifyWaitForBackup(Runnable function)
       throws InterruptedException, TimeoutException, ExecutionException {
-    DistributionManager dm = GemFireCacheImpl.getInstance().getDistributionManager();
+    DM dm = GemFireCacheImpl.getInstance().getDistributionManager();
     Set recipients = dm.getOtherDistributionManagerIds();
     Future<Void> future = null;
     new PrepareBackupOperation(dm, dm.getId(), dm.getCache(), recipients,
@@ -149,7 +149,7 @@ public abstract class BackupPrepareAndFinishMsgDUnitTest extends CacheTestCase {
   }
 
   private void doReadActionsAndVerifyCompletion() {
-    DistributionManager dm = GemFireCacheImpl.getInstance().getDistributionManager();
+    DM dm = GemFireCacheImpl.getInstance().getDistributionManager();
     Set recipients = dm.getOtherDistributionManagerIds();
     new PrepareBackupOperation(dm, dm.getId(), dm.getCache(), recipients,
         new PrepareBackupFactory()).send();

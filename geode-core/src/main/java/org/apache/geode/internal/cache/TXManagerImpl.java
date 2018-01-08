@@ -52,7 +52,7 @@ import org.apache.geode.cache.TransactionListener;
 import org.apache.geode.cache.TransactionWriter;
 import org.apache.geode.cache.UnsupportedOperationInTransactionException;
 import org.apache.geode.distributed.TXManagerCancelledException;
-import org.apache.geode.distributed.internal.ClusterDistributionManager;
+import org.apache.geode.distributed.internal.DM;
 import org.apache.geode.distributed.internal.DistributionConfig;
 import org.apache.geode.distributed.internal.DistributionManager;
 import org.apache.geode.distributed.internal.HighPriorityDistributionMessage;
@@ -94,7 +94,7 @@ public class TXManagerImpl implements CacheTransactionManager, MembershipListene
   // The unique transaction ID for this Manager
   private final AtomicInteger uniqId;
 
-  private final DistributionManager dm;
+  private final DM dm;
   private final InternalCache cache;
 
   // The DistributionMemberID used to construct TXId's
@@ -807,7 +807,7 @@ public class TXManagerImpl implements CacheTransactionManager, MembershipListene
     }
   }
 
-  DistributionManager getDM() {
+  DM getDM() {
     return this.dm;
   }
 
@@ -1270,7 +1270,7 @@ public class TXManagerImpl implements CacheTransactionManager, MembershipListene
     /** for deserialization */
     public TXRemovalMessage() {}
 
-    static void send(DistributionManager dm, Set recipients, Set<TXId> txIds) {
+    static void send(DM dm, Set recipients, Set<TXId> txIds) {
       TXRemovalMessage msg = new TXRemovalMessage();
       msg.txIds = txIds;
       msg.setRecipients(recipients);
@@ -1292,7 +1292,7 @@ public class TXManagerImpl implements CacheTransactionManager, MembershipListene
     }
 
     @Override
-    protected void process(ClusterDistributionManager dm) {
+    protected void process(DistributionManager dm) {
       InternalCache cache = dm.getCache();
       if (cache != null) {
         TXManagerImpl mgr = cache.getTXMgr();

@@ -17,7 +17,7 @@ package org.apache.geode.internal.cache;
 import java.util.Set;
 
 import org.apache.geode.CancelException;
-import org.apache.geode.distributed.internal.DistributionManager;
+import org.apache.geode.distributed.internal.DM;
 import org.apache.geode.distributed.internal.ReplyException;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
 import org.apache.geode.internal.Version;
@@ -39,7 +39,7 @@ public class LatestLastAccessTimeOperation<K> {
   public long getLatestLastAccessTime() {
     final Set<InternalDistributedMember> recipients =
         this.region.getCacheDistributionAdvisor().adviseInitializedReplicates();
-    final DistributionManager dm = this.region.getDistributionManager();
+    final DM dm = this.region.getDistributionManager();
     dm.retainMembersWithSameOrNewerVersion(recipients, Version.GEODE_140);
     final LatestLastAccessTimeReplyProcessor replyProcessor =
         new LatestLastAccessTimeReplyProcessor(dm, recipients);

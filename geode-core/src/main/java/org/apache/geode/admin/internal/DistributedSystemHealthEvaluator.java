@@ -18,7 +18,7 @@ import java.util.List;
 import java.util.Set;
 
 import org.apache.geode.admin.DistributedSystemHealthConfig;
-import org.apache.geode.distributed.internal.ClusterDistributionManager;
+import org.apache.geode.distributed.internal.DM;
 import org.apache.geode.distributed.internal.DistributionConfig;
 import org.apache.geode.distributed.internal.DistributionManager;
 import org.apache.geode.distributed.internal.MembershipListener;
@@ -47,7 +47,7 @@ class DistributedSystemHealthEvaluator extends AbstractHealthEvaluator
   /**
    * The distribution manager with which this MembershipListener is registered
    */
-  private DistributionManager dm;
+  private DM dm;
 
   /** The description of the distributed system being evaluated */
   private String description;
@@ -62,7 +62,7 @@ class DistributedSystemHealthEvaluator extends AbstractHealthEvaluator
   /**
    * Creates a new <code>DistributedSystemHealthEvaluator</code>
    */
-  DistributedSystemHealthEvaluator(DistributedSystemHealthConfig config, DistributionManager dm) {
+  DistributedSystemHealthEvaluator(DistributedSystemHealthConfig config, DM dm) {
     super(null, dm);
 
     this.config = config;
@@ -73,8 +73,8 @@ class DistributedSystemHealthEvaluator extends AbstractHealthEvaluator
     sb.append("Distributed System ");
 
     String desc = null;
-    if (dm instanceof ClusterDistributionManager) {
-      desc = ((ClusterDistributionManager) dm).getDistributionConfigDescription();
+    if (dm instanceof DistributionManager) {
+      desc = ((DistributionManager) dm).getDistributionConfigDescription();
     }
 
     if (desc != null) {
@@ -148,8 +148,8 @@ class DistributedSystemHealthEvaluator extends AbstractHealthEvaluator
     synchronized (this) {
       int kind = id.getVmKind();
       switch (kind) {
-        case ClusterDistributionManager.LOCATOR_DM_TYPE:
-        case ClusterDistributionManager.NORMAL_DM_TYPE:
+        case DistributionManager.LOCATOR_DM_TYPE:
+        case DistributionManager.NORMAL_DM_TYPE:
           this.crashedApplications++;
           break;
         default:

@@ -17,10 +17,11 @@ package org.apache.geode.distributed.internal.membership.gms.messages;
 import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.List;
 
 import org.apache.geode.DataSerializer;
-import org.apache.geode.distributed.internal.ClusterDistributionManager;
+import org.apache.geode.distributed.internal.DistributionManager;
 import org.apache.geode.distributed.internal.HighPriorityDistributionMessage;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
 import org.apache.geode.internal.Version;
@@ -56,7 +57,7 @@ public class RemoveMemberMessage extends HighPriorityDistributionMessage impleme
   }
 
   @Override
-  public void process(ClusterDistributionManager dm) {
+  public void process(DistributionManager dm) {
     throw new IllegalStateException("this message is not intended to execute in a thread pool");
   }
 

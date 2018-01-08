@@ -77,9 +77,9 @@ import org.apache.geode.cache.snapshot.RegionSnapshotService;
 import org.apache.geode.cache.wan.GatewaySender;
 import org.apache.geode.compression.Compressor;
 import org.apache.geode.distributed.DistributedMember;
+import org.apache.geode.distributed.internal.DM;
 import org.apache.geode.distributed.internal.DistributionAdvisor;
 import org.apache.geode.distributed.internal.DistributionConfig;
-import org.apache.geode.distributed.internal.DistributionManager;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
 import org.apache.geode.internal.DataSerializableFixedID;
@@ -1770,7 +1770,7 @@ public abstract class AbstractRegion implements InternalRegion, AttributesMutato
   }
 
   @Override
-  public DistributionManager getDistributionManager() {
+  public DM getDistributionManager() {
     return getSystem().getDistributionManager();
   }
 

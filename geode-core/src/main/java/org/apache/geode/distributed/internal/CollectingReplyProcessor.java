@@ -30,7 +30,7 @@ public class CollectingReplyProcessor<T> extends ReplyProcessor21 {
 
   private Map<InternalDistributedMember, T> results = new HashMap<InternalDistributedMember, T>();
 
-  public CollectingReplyProcessor(DistributionManager dm, Collection initMembers) {
+  public CollectingReplyProcessor(DM dm, Collection initMembers) {
     super(dm, initMembers);
   }
 

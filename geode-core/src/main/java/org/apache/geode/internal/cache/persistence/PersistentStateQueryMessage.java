@@ -27,9 +27,10 @@ import org.apache.geode.CancelException;
 import org.apache.geode.DataSerializer;
 import org.apache.geode.SystemFailure;
 import org.apache.geode.cache.Cache;
+import org.apache.geode.cache.CacheFactory;
 import org.apache.geode.cache.Region;
 import org.apache.geode.cache.RegionDestroyedException;
-import org.apache.geode.distributed.internal.ClusterDistributionManager;
+import org.apache.geode.distributed.internal.DM;
 import org.apache.geode.distributed.internal.DistributionManager;
 import org.apache.geode.distributed.internal.DistributionMessage;
 import org.apache.geode.distributed.internal.HighPriorityDistributionMessage;
@@ -39,6 +40,7 @@ import org.apache.geode.distributed.internal.ReplyMessage;
 import org.apache.geode.distributed.internal.ReplyProcessor21;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
 import org.apache.geode.internal.cache.DistributedRegion;
+import org.apache.geode.internal.cache.GemFireCacheImpl;
 import org.apache.geode.internal.cache.LocalRegion;
 import org.apache.geode.internal.cache.PartitionedRegionHelper;
 import org.apache.geode.internal.cache.partitioned.Bucket;
@@ -69,9 +71,9 @@ public class PersistentStateQueryMessage extends HighPriorityDistributionMessage
     this.processorId = processorId;
   }
 
-  public static PersistentStateQueryResults send(Set<InternalDistributedMember> members,
-      DistributionManager dm, String regionPath, PersistentMemberID persistentId,
-      PersistentMemberID initializingId) throws ReplyException {
+  public static PersistentStateQueryResults send(Set<InternalDistributedMember> members, DM dm,
+      String regionPath, PersistentMemberID persistentId, PersistentMemberID initializingId)
+      throws ReplyException {
     PersistentStateQueryReplyProcessor processor =
         new PersistentStateQueryReplyProcessor(dm, members);
     PersistentStateQueryMessage msg = new PersistentStateQueryMessage(regionPath, persistentId,
@@ -84,7 +86,7 @@ public class PersistentStateQueryMessage extends HighPriorityDistributionMessage
   }
 
   @Override
-  protected void process(ClusterDistributionManager dm) {
+  protected void process(DistributionManager dm) {
     int oldLevel = // Set thread local flag to allow entrance through initialization Latch
         LocalRegion.setThreadInitLevelRequirement(LocalRegion.ANY_INIT);
 
@@ -206,7 +208,7 @@ public class PersistentStateQueryMessage extends HighPriorityDistributionMessage
   private static class PersistentStateQueryReplyProcessor extends ReplyProcessor21 {
     PersistentStateQueryResults results = new PersistentStateQueryResults();
 
-    public PersistentStateQueryReplyProcessor(DistributionManager dm, Collection initMembers) {
+    public PersistentStateQueryReplyProcessor(DM dm, Collection initMembers) {
       super(dm, initMembers);
     }
 

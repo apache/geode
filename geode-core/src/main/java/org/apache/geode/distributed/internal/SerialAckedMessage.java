@@ -41,14 +41,14 @@ public class SerialAckedMessage extends SerialDistributionMessage implements Mes
   private InternalDistributedMember id;
   private int processorId;
 
-  transient ClusterDistributionManager originDm;
+  transient DistributionManager originDm;
   private transient ReplyProcessor21 rp;
 
   public SerialAckedMessage() {
     super();
     InternalDistributedSystem ds = InternalDistributedSystem.getAnyInstance();
     if (ds != null) { // this constructor is used in serialization as well as when sending to others
-      this.originDm = (ClusterDistributionManager) ds.getDistributionManager();
+      this.originDm = (DistributionManager) ds.getDistributionManager();
       this.id = this.originDm.getDistributionManagerId();
     }
   }
@@ -119,7 +119,7 @@ public class SerialAckedMessage extends SerialDistributionMessage implements Mes
    * This method is invoked on the receiver side
    */
   @Override
-  protected void process(ClusterDistributionManager dm) {
+  protected void process(DistributionManager dm) {
     Assert.assertTrue(this.id != null);
     ReplyMessage reply = new ReplyMessage();
     reply.setProcessorId(processorId);

@@ -24,7 +24,7 @@ import org.apache.logging.log4j.Logger;
 
 import org.apache.geode.cache.Cache;
 import org.apache.geode.distributed.DistributedMember;
-import org.apache.geode.distributed.internal.ClusterDistributionManager;
+import org.apache.geode.distributed.internal.DistributionManager;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.distributed.internal.ReplyProcessor21;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
@@ -64,17 +64,16 @@ public class JtaAfterCompletionMessage extends TXMessage {
     msg.setRecipients(recipients);
     // bug #43087 - hang sending JTA synchronizations from delegate server
     if (system.threadOwnsResources()) {
-      msg.processorType = ClusterDistributionManager.SERIAL_EXECUTOR;
+      msg.processorType = DistributionManager.SERIAL_EXECUTOR;
     } else {
-      msg.processorType = ClusterDistributionManager.HIGH_PRIORITY_EXECUTOR;
+      msg.processorType = DistributionManager.HIGH_PRIORITY_EXECUTOR;
     }
     system.getDistributionManager().putOutgoing(msg);
     return response;
   }
 
   @Override
-  protected boolean operateOnTx(TXId txId, ClusterDistributionManager dm)
-      throws RemoteOperationException {
+  protected boolean operateOnTx(TXId txId, DistributionManager dm) throws RemoteOperationException {
     TXManagerImpl txMgr = dm.getCache().getTXMgr();
     if (logger.isDebugEnabled()) {
       logger.debug("JTA: Calling afterCompletion for :{}", txId);

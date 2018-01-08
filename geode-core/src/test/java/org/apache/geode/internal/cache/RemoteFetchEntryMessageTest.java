@@ -22,7 +22,7 @@ import static org.mockito.Mockito.when;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
-import org.apache.geode.distributed.internal.ClusterDistributionManager;
+import org.apache.geode.distributed.internal.DistributionManager;
 import org.apache.geode.test.junit.categories.UnitTest;
 
 @Category(UnitTest.class)
@@ -31,7 +31,7 @@ public class RemoteFetchEntryMessageTest {
   @Test
   public void shouldBeMockable() throws Exception {
     RemoteFetchEntryMessage mockRemoteFetchEntryMessage = mock(RemoteFetchEntryMessage.class);
-    ClusterDistributionManager mockDistributionManager = mock(ClusterDistributionManager.class);
+    DistributionManager mockDistributionManager = mock(DistributionManager.class);
     LocalRegion mockLocalRegion = mock(LocalRegion.class);
     long startTime = System.currentTimeMillis();
 

@@ -21,7 +21,7 @@ import org.apache.logging.log4j.Logger;
 
 import org.apache.geode.cache.CacheClosedException;
 import org.apache.geode.cache.DiskAccessException;
-import org.apache.geode.distributed.internal.DistributionManager;
+import org.apache.geode.distributed.internal.DM;
 import org.apache.geode.internal.Assert;
 import org.apache.geode.internal.ByteArrayDataInput;
 import org.apache.geode.internal.HeapDataOutputStream;
@@ -293,8 +293,7 @@ public interface DiskEntry extends RegionEntry {
      * @since GemFire 3.2.1
      */
     static boolean fillInValue(DiskEntry de, InitialImageOperation.Entry entry, DiskRegion dr,
-        DistributionManager mgr, ByteArrayDataInput in, RegionEntryContext context,
-        Version version) {
+        DM mgr, ByteArrayDataInput in, RegionEntryContext context, Version version) {
       @Retained
       @Released
       Object v = null;
