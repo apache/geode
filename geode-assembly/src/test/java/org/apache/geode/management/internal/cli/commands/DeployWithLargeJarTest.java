@@ -37,12 +37,10 @@ public class DeployWithLargeJarTest {
   @Test
   public void deployLargeSetOfJars() throws Exception {
     File libDir = gfsh.getGfshPath().getParent().getParent().resolve("lib").toFile();
-    String commonLibs = Arrays
-        .stream(libDir
-            .listFiles(x -> x.getName().startsWith("commons") || x.getName().startsWith("spring")))
+    String commonLibs = Arrays.stream(libDir.listFiles(x -> x.getName().startsWith("commons")))
         .map(File::getAbsolutePath).collect(Collectors.joining(","));
-    GfshExecution execution = GfshScript.of("start locator --name=locator --max-heap=64m",
-        "start server --name=server --max-heap=64m", "sleep --time=1",
+    GfshExecution execution = GfshScript.of("start locator --name=locator --max-heap=128m",
+        "start server --name=server --max-heap=128m", "sleep --time=1",
         "deploy --jars=" + commonLibs).execute(gfsh);
   }
 
