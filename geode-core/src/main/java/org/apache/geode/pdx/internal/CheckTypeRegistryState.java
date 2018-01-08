@@ -20,14 +20,13 @@ import java.io.IOException;
 import java.util.Set;
 
 import org.apache.geode.InternalGemFireError;
-import org.apache.geode.distributed.internal.DM;
+import org.apache.geode.distributed.internal.ClusterDistributionManager;
 import org.apache.geode.distributed.internal.DistributionManager;
 import org.apache.geode.distributed.internal.HighPriorityDistributionMessage;
 import org.apache.geode.distributed.internal.MessageWithReply;
 import org.apache.geode.distributed.internal.ReplyException;
 import org.apache.geode.distributed.internal.ReplyMessage;
 import org.apache.geode.distributed.internal.ReplyProcessor21;
-import org.apache.geode.internal.cache.GemFireCacheImpl;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.pdx.PdxInitializationException;
 
@@ -45,7 +44,7 @@ public class CheckTypeRegistryState extends HighPriorityDistributionMessage
     this.processorId = processorId;
   }
 
-  public static void send(DM dm) {
+  public static void send(DistributionManager dm) {
     Set recipients = dm.getOtherDistributionManagerIds();
     ReplyProcessor21 replyProcessor = new ReplyProcessor21(dm, recipients);
     CheckTypeRegistryState msg = new CheckTypeRegistryState(replyProcessor.getProcessorId());
@@ -67,7 +66,7 @@ public class CheckTypeRegistryState extends HighPriorityDistributionMessage
   }
 
   @Override
-  protected void process(DistributionManager dm) {
+  protected void process(ClusterDistributionManager dm) {
     ReplyException e = null;
     try {
       InternalCache cache = dm.getCache();

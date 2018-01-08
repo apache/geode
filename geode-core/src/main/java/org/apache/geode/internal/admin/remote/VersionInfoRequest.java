@@ -46,7 +46,7 @@ public class VersionInfoRequest extends AdminRequest {
    * @param dm
    */
   @Override
-  protected AdminResponse createResponse(DM dm) {
+  protected AdminResponse createResponse(DistributionManager dm) {
     return VersionInfoResponse.create(dm, this.getSender());
   }
 

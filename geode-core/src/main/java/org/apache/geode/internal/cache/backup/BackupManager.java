@@ -38,7 +38,7 @@ import org.apache.geode.InternalGemFireError;
 import org.apache.geode.cache.DiskStore;
 import org.apache.geode.cache.persistence.PersistentID;
 import org.apache.geode.distributed.DistributedSystem;
-import org.apache.geode.distributed.internal.DM;
+import org.apache.geode.distributed.internal.DistributionManager;
 import org.apache.geode.distributed.internal.MembershipListener;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
 import org.apache.geode.internal.ClassPathLoader;
@@ -191,7 +191,7 @@ public class BackupManager {
     }
   }
 
-  private DM getDistributionManager() {
+  private DistributionManager getDistributionManager() {
     return cache.getInternalDistributedSystem().getDistributionManager();
   }
 

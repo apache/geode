@@ -14,9 +14,6 @@
  */
 package org.apache.geode.internal.cache;
 
-import static org.apache.geode.internal.cache.DistributedCacheOperation.VALUE_IS_BYTES;
-import static org.apache.geode.internal.cache.DistributedCacheOperation.VALUE_IS_OBJECT;
-import static org.apache.geode.internal.cache.DistributedCacheOperation.VALUE_IS_SERIALIZED_OBJECT;
 import static org.apache.geode.internal.offheap.annotations.OffHeapIdentifier.ENTRY_EVENT_OLD_VALUE;
 
 import java.io.DataInput;
@@ -39,7 +36,7 @@ import org.apache.geode.cache.EntryNotFoundException;
 import org.apache.geode.cache.Operation;
 import org.apache.geode.cache.TransactionDataNotColocatedException;
 import org.apache.geode.distributed.DistributedMember;
-import org.apache.geode.distributed.internal.DM;
+import org.apache.geode.distributed.internal.ClusterDistributionManager;
 import org.apache.geode.distributed.internal.DirectReplyProcessor;
 import org.apache.geode.distributed.internal.DistributionManager;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
@@ -57,9 +54,7 @@ import org.apache.geode.internal.cache.versions.DiskVersionTag;
 import org.apache.geode.internal.cache.versions.VersionTag;
 import org.apache.geode.internal.i18n.LocalizedStrings;
 import org.apache.geode.internal.logging.LogService;
-import org.apache.geode.internal.logging.log4j.LocalizedMessage;
 import org.apache.geode.internal.logging.log4j.LogMarker;
-import org.apache.geode.internal.offheap.StoredObject;
 import org.apache.geode.internal.offheap.annotations.Released;
 import org.apache.geode.internal.offheap.annotations.Unretained;
 
@@ -256,7 +251,7 @@ public class RemoteDestroyMessage extends RemoteOperationMessageWithDirectReply
         attempts++;
         final boolean posDup = (attempts > 1);
         RemoteDestroyReplyProcessor processor = send(replicate, event.getRegion(), event,
-            expectedOldValue, DistributionManager.SERIAL_EXECUTOR, false, posDup);
+            expectedOldValue, ClusterDistributionManager.SERIAL_EXECUTOR, false, posDup);
         processor.waitForCacheException();
         VersionTag versionTag = processor.getVersionTag();
         if (versionTag != null) {
@@ -337,7 +332,7 @@ public class RemoteDestroyMessage extends RemoteOperationMessageWithDirectReply
    * indefinitely for the acknowledgement
    */
   @Override
-  protected boolean operateOnRegion(DistributionManager dm, LocalRegion r, long startTime)
+  protected boolean operateOnRegion(ClusterDistributionManager dm, LocalRegion r, long startTime)
       throws EntryExistsException, RemoteOperationException {
     InternalDistributedMember eventSender = originalSender;
     if (eventSender == null) {
@@ -417,7 +412,7 @@ public class RemoteDestroyMessage extends RemoteOperationMessageWithDirectReply
     return R_DESTROY_MESSAGE;
   }
 
-  private void sendReply(DM dm, VersionTag versionTag) {
+  private void sendReply(DistributionManager dm, VersionTag versionTag) {
     DestroyReplyMessage.send(this.getSender(), getReplySender(dm), this.processorId, versionTag);
   }
 
@@ -612,7 +607,7 @@ public class RemoteDestroyMessage extends RemoteOperationMessageWithDirectReply
     }
 
     @Override
-    public void process(final DM dm, final ReplyProcessor21 rp) {
+    public void process(final DistributionManager dm, final ReplyProcessor21 rp) {
       final long startTime = getTimestamp();
       if (logger.isTraceEnabled(LogMarker.DM)) {
         logger.trace(LogMarker.DM,

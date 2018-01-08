@@ -22,7 +22,7 @@ import java.util.Set;
 import org.apache.logging.log4j.Logger;
 
 import org.apache.geode.cache.CacheException;
-import org.apache.geode.distributed.internal.DistributionManager;
+import org.apache.geode.distributed.internal.ClusterDistributionManager;
 import org.apache.geode.internal.Assert;
 import org.apache.geode.internal.cache.PartitionedRegion;
 import org.apache.geode.internal.cache.PartitionedRegionDataStore;
@@ -78,7 +78,7 @@ public class BucketBackupMessage extends PartitionMessage {
   }
 
   @Override
-  protected boolean operateOnPartitionedRegion(DistributionManager dm, PartitionedRegion pr,
+  protected boolean operateOnPartitionedRegion(ClusterDistributionManager dm, PartitionedRegion pr,
       long startTime) throws CacheException {
 
     // This call has come to an uninitialized region.
@@ -104,7 +104,7 @@ public class BucketBackupMessage extends PartitionMessage {
 
   @Override
   public int getProcessorType() {
-    return DistributionManager.WAITING_POOL_EXECUTOR;
+    return ClusterDistributionManager.WAITING_POOL_EXECUTOR;
   }
 
   public int getDSFID() {

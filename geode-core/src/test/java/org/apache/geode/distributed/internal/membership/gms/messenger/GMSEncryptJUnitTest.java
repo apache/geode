@@ -38,8 +38,8 @@ import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
 import org.apache.geode.distributed.ConfigurationProperties;
+import org.apache.geode.distributed.internal.ClusterDistributionManager;
 import org.apache.geode.distributed.internal.DistributionConfigImpl;
-import org.apache.geode.distributed.internal.DistributionManager;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
 import org.apache.geode.distributed.internal.membership.NetView;
 import org.apache.geode.distributed.internal.membership.gms.ServiceConfig;
@@ -66,7 +66,7 @@ public class GMSEncryptJUnitTest {
     nonDefault.put(ConfigurationProperties.SECURITY_UDP_DHALGO, algo);
     DistributionConfigImpl config = new DistributionConfigImpl(nonDefault);
     RemoteTransportConfig tconfig =
-        new RemoteTransportConfig(config, DistributionManager.NORMAL_DM_TYPE);
+        new RemoteTransportConfig(config, ClusterDistributionManager.NORMAL_DM_TYPE);
 
     ServiceConfig serviceConfig = new ServiceConfig(tconfig, config);
 

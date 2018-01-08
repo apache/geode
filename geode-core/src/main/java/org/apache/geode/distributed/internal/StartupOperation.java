@@ -30,11 +30,11 @@ import org.apache.geode.internal.logging.log4j.LocalizedMessage;
 public class StartupOperation {
   private static final Logger logger = LogService.getLogger();
 
-  DistributionManager dm;
+  ClusterDistributionManager dm;
   RemoteTransportConfig transport;
   Set newlyDeparted;
 
-  StartupOperation(DistributionManager dm, RemoteTransportConfig transport) {
+  StartupOperation(ClusterDistributionManager dm, RemoteTransportConfig transport) {
     this.dm = dm;
     this.transport = transport;
   }

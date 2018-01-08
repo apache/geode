@@ -22,7 +22,7 @@ import org.apache.geode.CancelException;
 import org.apache.geode.admin.CacheHealthConfig;
 import org.apache.geode.admin.GemFireHealthConfig;
 import org.apache.geode.cache.CacheFactory;
-import org.apache.geode.distributed.internal.DM;
+import org.apache.geode.distributed.internal.DistributionManager;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.internal.OSProcess;
 import org.apache.geode.internal.cache.CacheLifecycleListener;
@@ -72,7 +72,7 @@ class CacheHealthEvaluator extends AbstractHealthEvaluator implements CacheLifec
   /**
    * Creates a new {@code CacheHealthEvaluator}
    */
-  CacheHealthEvaluator(GemFireHealthConfig config, DM dm) {
+  CacheHealthEvaluator(GemFireHealthConfig config, DistributionManager dm) {
     super(config, dm);
 
     this.config = config;
@@ -97,7 +97,7 @@ class CacheHealthEvaluator extends AbstractHealthEvaluator implements CacheLifec
   /**
    * Initializes the state of this evaluator based on the given cache instance.
    */
-  private void initialize(InternalCache cache, DM dm) {
+  private void initialize(InternalCache cache, DistributionManager dm) {
     StringBuilder sb = new StringBuilder();
     if (cache != null) {
       this.cacheStats = cache.getCachePerfStats();
@@ -123,7 +123,7 @@ class CacheHealthEvaluator extends AbstractHealthEvaluator implements CacheLifec
   @Override
   public void cacheCreated(InternalCache cache) {
     InternalDistributedSystem system = (InternalDistributedSystem) cache.getDistributedSystem();
-    DM dm = system.getDistributionManager();
+    DistributionManager dm = system.getDistributionManager();
     initialize(cache, dm);
   }
 

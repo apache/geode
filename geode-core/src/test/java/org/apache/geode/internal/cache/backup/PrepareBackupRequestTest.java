@@ -30,7 +30,7 @@ import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
 import org.apache.geode.cache.persistence.PersistentID;
-import org.apache.geode.distributed.internal.DM;
+import org.apache.geode.distributed.internal.DistributionManager;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
 import org.apache.geode.internal.admin.remote.AdminFailureResponse;
 import org.apache.geode.internal.cache.InternalCache;
@@ -41,7 +41,7 @@ public class PrepareBackupRequestTest {
 
   private PrepareBackupRequest prepareBackupRequest;
 
-  private DM dm;
+  private DistributionManager dm;
   private Set<InternalDistributedMember> recipients;
   private int msgId;
   private PrepareBackupFactory prepareBackupFactory;
@@ -52,7 +52,7 @@ public class PrepareBackupRequestTest {
 
   @Before
   public void setUp() throws Exception {
-    dm = mock(DM.class);
+    dm = mock(DistributionManager.class);
     sender = mock(InternalDistributedMember.class);
     cache = mock(InternalCache.class);
     prepareBackupFactory = mock(PrepareBackupFactory.class);

@@ -20,7 +20,7 @@ import java.io.IOException;
 import java.util.Collection;
 
 import org.apache.geode.DataSerializer;
-import org.apache.geode.distributed.internal.DistributionManager;
+import org.apache.geode.distributed.internal.ClusterDistributionManager;
 import org.apache.geode.distributed.internal.HighPriorityDistributionMessage;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
 import org.apache.geode.internal.Version;
@@ -55,7 +55,7 @@ public class LeaveRequestMessage extends HighPriorityDistributionMessage impleme
   }
 
   @Override
-  public void process(DistributionManager dm) {
+  public void process(ClusterDistributionManager dm) {
     throw new IllegalStateException("this message is not intended to execute in a thread pool");
   }
 

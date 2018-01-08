@@ -41,8 +41,8 @@ import org.apache.geode.cache.client.ClientCacheFactory;
 import org.apache.geode.cache.client.ClientRegionShortcut;
 import org.apache.geode.cache.server.CacheServer;
 import org.apache.geode.distributed.DistributedMember;
+import org.apache.geode.distributed.internal.ClusterDistributionManager;
 import org.apache.geode.distributed.internal.DistributionConfig;
-import org.apache.geode.distributed.internal.DistributionManager;
 import org.apache.geode.distributed.internal.DistributionMessage;
 import org.apache.geode.distributed.internal.DistributionMessageObserver;
 import org.apache.geode.internal.AvailablePortHelper;
@@ -215,7 +215,8 @@ public class ClientsWithVersioningRetryDUnitTest extends JUnit4CacheTestCase {
         DistributionMessageObserver.setInstance(new DistributionMessageObserver() {
 
           @Override
-          public void beforeSendMessage(DistributionManager dm, DistributionMessage message) {
+          public void beforeSendMessage(ClusterDistributionManager dm,
+              DistributionMessage message) {
             if (message instanceof DistributedPutAllOperation.PutAllMessage) {
               DistributionMessageObserver.setInstance(null);
               disconnectFromDS(vm1);
@@ -314,7 +315,7 @@ public class ClientsWithVersioningRetryDUnitTest extends JUnit4CacheTestCase {
         DistributionMessageObserver.setInstance(new DistributionMessageObserver() {
 
           @Override
-          public void beforeProcessMessage(DistributionManager dm, DistributionMessage msg) {
+          public void beforeProcessMessage(ClusterDistributionManager dm, DistributionMessage msg) {
             if (msg instanceof DistributedPutAllOperation.PutAllMessage) {
               DistributionMessageObserver.setInstance(null);
               Wait.pause(5000); // give vm1 time to process the message that we're ignoring

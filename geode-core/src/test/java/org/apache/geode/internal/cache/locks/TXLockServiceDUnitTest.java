@@ -37,7 +37,7 @@ import org.junit.experimental.categories.Category;
 import org.apache.geode.cache.CommitConflictException;
 import org.apache.geode.distributed.DistributedLockService;
 import org.apache.geode.distributed.DistributedSystem;
-import org.apache.geode.distributed.internal.DM;
+import org.apache.geode.distributed.internal.ClusterDistributionManager;
 import org.apache.geode.distributed.internal.DistributionManager;
 import org.apache.geode.distributed.internal.DistributionMessage;
 import org.apache.geode.distributed.internal.DistributionMessageObserver;
@@ -287,7 +287,7 @@ public class TXLockServiceDUnitTest extends JUnit4DistributedTestCase {
     }
 
     @Override
-    public void beforeProcessMessage(DistributionManager dm, DistributionMessage message) {
+    public void beforeProcessMessage(ClusterDistributionManager dm, DistributionMessage message) {
       if (message instanceof DLockRecoverGrantorMessage) {
         synchronized (preventingMessageProcessing) {
           preventingMessageProcessing[0] = true;
@@ -809,7 +809,7 @@ public class TXLockServiceDUnitTest extends JUnit4DistributedTestCase {
   // -------------------------------------------------------------------------
 
   private static class TestDLockRecoverGrantorProcessor extends ReplyProcessor21 {
-    public TestDLockRecoverGrantorProcessor(DM dm, Set members) {
+    public TestDLockRecoverGrantorProcessor(DistributionManager dm, Set members) {
       super(dm.getSystem(), members);
     }
 

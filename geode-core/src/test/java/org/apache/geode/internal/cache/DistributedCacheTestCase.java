@@ -27,8 +27,8 @@ import org.apache.geode.cache.EntryNotFoundException;
 import org.apache.geode.cache.LoaderHelper;
 import org.apache.geode.cache.Region;
 import org.apache.geode.cache.Scope;
-import org.apache.geode.distributed.internal.DistributionManager;
-import org.apache.geode.distributed.internal.DistributionManagerDUnitTest;
+import org.apache.geode.distributed.internal.ClusterDistributionManager;
+import org.apache.geode.distributed.internal.ClusterDistributionManagerDUnitTest;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.internal.Assert;
 import org.apache.geode.test.dunit.Host;
@@ -135,17 +135,16 @@ public abstract class DistributedCacheTestCase extends JUnit4DistributedTestCase
    * distribution manager to which this VM is attached. Note that the exception flag is cleared by
    * this method.
    *
-   * @see DistributionManager#exceptionInThreads()
+   * @see ClusterDistributionManager#exceptionInThreads()
    */
   private static boolean remoteCloseCache() throws CacheException {
     Assert.assertTrue(cache != null, "No cache on this VM?");
     Assert.assertTrue(!cache.isClosed(), "Who closed my cache?");
 
-    InternalDistributedSystem system =
-        (InternalDistributedSystem) ((GemFireCacheImpl) cache).getDistributedSystem();
-    DistributionManager dm = (DistributionManager) system.getDistributionManager();
+    InternalDistributedSystem system = (InternalDistributedSystem) cache.getDistributedSystem();
+    ClusterDistributionManager dm = (ClusterDistributionManager) system.getDistributionManager();
     boolean exceptionInThreads = dm.exceptionInThreads();
-    DistributionManagerDUnitTest.clearExceptionInThreads(dm);
+    dm.clearExceptionInThreads();
 
     cache.close();
     cache = null;
@@ -171,7 +170,7 @@ public abstract class DistributedCacheTestCase extends JUnit4DistributedTestCase
    *
    * @since GemFire 2.1
    */
-  protected static DistributionManager getDistributionManager() {
+  protected static ClusterDistributionManager getDistributionManager() {
     if (cache == null) {
       String s = "Cache not created yet!";
       throw new IllegalStateException(s);
@@ -179,7 +178,7 @@ public abstract class DistributedCacheTestCase extends JUnit4DistributedTestCase
 
     InternalDistributedSystem system =
         (InternalDistributedSystem) ((GemFireCacheImpl) cache).getDistributedSystem();
-    return (DistributionManager) system.getDistributionManager();
+    return (ClusterDistributionManager) system.getDistributionManager();
   }
 
   /**

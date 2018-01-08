@@ -49,8 +49,8 @@ import org.eclipse.jetty.server.ServerConnector;
 
 import org.apache.geode.GemFireConfigException;
 import org.apache.geode.cache.CacheFactory;
+import org.apache.geode.distributed.internal.ClusterDistributionManager;
 import org.apache.geode.distributed.internal.DistributionConfig;
-import org.apache.geode.distributed.internal.DistributionManager;
 import org.apache.geode.internal.GemFireVersion;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.logging.LogService;
@@ -129,9 +129,9 @@ public class ManagementAgent {
 
   private boolean isServerNode(InternalCache cache) {
     return (cache.getInternalDistributedSystem().getDistributedMember()
-        .getVmKind() != DistributionManager.LOCATOR_DM_TYPE
+        .getVmKind() != ClusterDistributionManager.LOCATOR_DM_TYPE
         && cache.getInternalDistributedSystem().getDistributedMember()
-            .getVmKind() != DistributionManager.ADMIN_ONLY_DM_TYPE
+            .getVmKind() != ClusterDistributionManager.ADMIN_ONLY_DM_TYPE
         && !cache.isClient());
   }
 

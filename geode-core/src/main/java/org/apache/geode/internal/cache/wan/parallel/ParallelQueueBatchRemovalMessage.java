@@ -29,7 +29,7 @@ import org.apache.geode.cache.EntryNotFoundException;
 import org.apache.geode.cache.TransactionDataNotColocatedException;
 import org.apache.geode.cache.wan.GatewayEventFilter;
 import org.apache.geode.cache.wan.GatewayQueueEvent;
-import org.apache.geode.distributed.internal.DM;
+import org.apache.geode.distributed.internal.ClusterDistributionManager;
 import org.apache.geode.distributed.internal.DistributionManager;
 import org.apache.geode.distributed.internal.DistributionMessage;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
@@ -77,7 +77,7 @@ public class ParallelQueueBatchRemovalMessage extends PartitionMessage {
   }
 
   @Override
-  protected boolean operateOnPartitionedRegion(DistributionManager dm, PartitionedRegion pr,
+  protected boolean operateOnPartitionedRegion(ClusterDistributionManager dm, PartitionedRegion pr,
       long startTime) throws CacheException {
     for (Integer bucketId : this.bucketToTailKey.keySet()) {
       if (pr.getRegionAdvisor().getBucketAdvisor(bucketId).isHosting()) {
@@ -170,7 +170,7 @@ public class ParallelQueueBatchRemovalMessage extends PartitionMessage {
     }
 
     @Override
-    public void process(DM dm, ReplyProcessor21 processor) {
+    public void process(DistributionManager dm, ReplyProcessor21 processor) {
       final long startTime = getTimestamp();
       if (logger.isTraceEnabled(LogMarker.DM)) {
         logger.debug(
@@ -193,7 +193,7 @@ public class ParallelQueueBatchRemovalMessage extends PartitionMessage {
     }
 
     private static void sendWithException(InternalDistributedMember recipient, int processorId,
-        DM dm, ReplyException re) {
+        DistributionManager dm, ReplyException re) {
       Assert.assertTrue(recipient != null, "BecomePrimaryBucketReplyMessage NULL recipient");
       BatchRemovalReplyMessage m = new BatchRemovalReplyMessage(processorId, re);
       m.setRecipient(recipient);

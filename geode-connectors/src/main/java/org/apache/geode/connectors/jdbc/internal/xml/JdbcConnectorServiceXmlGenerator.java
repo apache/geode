@@ -102,9 +102,15 @@ public class JdbcConnectorServiceXmlGenerator implements XmlGenerator<Cache> {
     AttributesImpl attributes = new AttributesImpl();
     XmlGeneratorUtils.addAttribute(attributes, NAME, config.getName());
     XmlGeneratorUtils.addAttribute(attributes, URL, config.getUrl());
-    XmlGeneratorUtils.addAttribute(attributes, USER, config.getUser());
-    XmlGeneratorUtils.addAttribute(attributes, PASSWORD, config.getPassword());
-    XmlGeneratorUtils.addAttribute(attributes, PARAMETERS, createParametersString(config));
+    if (config.getUser() != null) {
+      XmlGeneratorUtils.addAttribute(attributes, USER, config.getUser());
+    }
+    if (config.getPassword() != null) {
+      XmlGeneratorUtils.addAttribute(attributes, PASSWORD, config.getPassword());
+    }
+    if (config.getParameters() != null) {
+      XmlGeneratorUtils.addAttribute(attributes, PARAMETERS, createParametersString(config));
+    }
     XmlGeneratorUtils.emptyElement(handler, PREFIX, ElementType.CONNECTION.getTypeName(),
         attributes);
   }
@@ -114,17 +120,23 @@ public class JdbcConnectorServiceXmlGenerator implements XmlGenerator<Cache> {
     AttributesImpl attributes = new AttributesImpl();
     XmlGeneratorUtils.addAttribute(attributes, CONNECTION_NAME, mapping.getConnectionConfigName());
     XmlGeneratorUtils.addAttribute(attributes, REGION, mapping.getRegionName());
-    XmlGeneratorUtils.addAttribute(attributes, TABLE, mapping.getTableName());
-    XmlGeneratorUtils.addAttribute(attributes, PDX_CLASS, mapping.getPdxClassName());
-    XmlGeneratorUtils.addAttribute(attributes, PRIMARY_KEY_IN_VALUE,
-        Boolean.toString(mapping.isPrimaryKeyInValue()));
-
-    XmlGeneratorUtils.startElement(handler, PREFIX, ElementType.REGION_MAPPING.getTypeName(),
-        attributes);
-    if (mapping.getFieldToColumnMap() != null) {
-      addFieldMappings(handler, mapping.getFieldToColumnMap());
+    if (mapping.getTableName() != null) {
+      XmlGeneratorUtils.addAttribute(attributes, TABLE, mapping.getTableName());
     }
-    XmlGeneratorUtils.endElement(handler, PREFIX, ElementType.REGION_MAPPING.getTypeName());
+    if (mapping.getPdxClassName() != null) {
+      XmlGeneratorUtils.addAttribute(attributes, PDX_CLASS, mapping.getPdxClassName());
+    }
+    if (mapping.isPrimaryKeyInValue() != null) {
+      XmlGeneratorUtils.addAttribute(attributes, PRIMARY_KEY_IN_VALUE,
+          Boolean.toString(mapping.isPrimaryKeyInValue()));
+    }
+
+    if (mapping.getFieldToColumnMap() != null) {
+      XmlGeneratorUtils.startElement(handler, PREFIX, ElementType.REGION_MAPPING.getTypeName(),
+          attributes);
+      addFieldMappings(handler, mapping.getFieldToColumnMap());
+      XmlGeneratorUtils.endElement(handler, PREFIX, ElementType.REGION_MAPPING.getTypeName());
+    }
   }
 
   private void addFieldMappings(ContentHandler handler, Map<String, String> fieldMappings)
@@ -139,16 +151,13 @@ public class JdbcConnectorServiceXmlGenerator implements XmlGenerator<Cache> {
   }
 
   private String createParametersString(ConnectionConfiguration config) {
-    Properties properties = config.getConnectionProperties();
+    assert config.getParameters() != null;
     StringBuilder stringBuilder = new StringBuilder();
-    for (Map.Entry<Object, Object> entry : properties.entrySet()) {
-      Object key = entry.getKey();
-      if (!key.equals(USER) && !key.equals(PASSWORD)) {
-        if (stringBuilder.length() > 0) {
-          stringBuilder.append(",");
-        }
-        stringBuilder.append(key).append(PARAMS_DELIMITER).append(entry.getValue());
+    for (Map.Entry<String, String> entry : config.getParameters().entrySet()) {
+      if (stringBuilder.length() > 0) {
+        stringBuilder.append(",");
       }
+      stringBuilder.append(entry.getKey()).append(PARAMS_DELIMITER).append(entry.getValue());
     }
     return stringBuilder.toString();
   }

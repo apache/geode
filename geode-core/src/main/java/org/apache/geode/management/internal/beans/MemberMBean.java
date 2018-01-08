@@ -14,16 +14,21 @@
  */
 package org.apache.geode.management.internal.beans;
 
+import java.io.File;
+import java.io.IOException;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 
 import javax.management.NotificationBroadcasterSupport;
 
+import org.apache.commons.io.FileUtils;
+
 import org.apache.geode.management.GemFireProperties;
 import org.apache.geode.management.JVMMetrics;
 import org.apache.geode.management.MemberMXBean;
 import org.apache.geode.management.OSMetrics;
+import org.apache.geode.management.internal.cli.CliUtil;
 
 /**
  * This MBean is a gateway to cache and a member
@@ -398,13 +403,36 @@ public class MemberMBean extends NotificationBroadcasterSupport implements Membe
 
   @Override
   public String processCommand(String commandString, Map<String, String> env) {
-    return processCommand(commandString, env, null);
+    return processCommand(commandString, env, (List<String>) null);
   }
 
   @Override
   public String processCommand(String commandString, Map<String, String> env,
       List<String> stagedFilePaths) {
     return bridge.processCommand(commandString, env, stagedFilePaths);
+  }
+
+  @Override
+  /**
+   * We don't expect any callers to call this code, but just in case, implementation is provided for
+   * backward compatibility
+   *
+   * @deprecated since 1.4 use processCommand(String commandString, Map<String, String> env,
+   *             List<String> stagedFilePaths)
+   */
+  public String processCommand(String commandString, Map<String, String> env, Byte[][] binaryData) {
+    // save the binaryData into stagedFile first, and then call the new api
+    File tempDir = FileUtils.getTempDirectory();
+    List<String> filePaths = null;
+    try {
+      filePaths = CliUtil.bytesToFiles(binaryData, tempDir.getAbsolutePath());
+      return bridge.processCommand(commandString, env, filePaths);
+    } catch (IOException e) {
+      throw new RuntimeException(e.getMessage(), e);
+    } finally {
+      // delete the staged files
+      FileUtils.deleteQuietly(tempDir);
+    }
   }
 
   @Override

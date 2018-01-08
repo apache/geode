@@ -12,7 +12,7 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
-package org.apache.geode.connectors.jdbc.internal.xml;
+package org.apache.geode.connectors.jdbc.internal;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
@@ -54,8 +54,38 @@ public class RegionMappingBuilderTest {
   }
 
   @Test
+  public void createsMappingWithNullAsPrimaryKeyInValue() {
+    RegionMapping regionMapping = new RegionMappingBuilder().withRegionName("regionName")
+        .withConnectionConfigName("configName").withPrimaryKeyInValue((String) null).build();
+
+    assertThat(regionMapping.getRegionName()).isEqualTo("regionName");
+    assertThat(regionMapping.getConnectionConfigName()).isEqualTo("configName");
+    assertThat(regionMapping.isPrimaryKeyInValue()).isNull();
+  }
+
+  @Test
+  public void createsMappingWithNullFieldToColumnMappings() {
+    RegionMapping regionMapping = new RegionMappingBuilder().withRegionName("regionName")
+        .withConnectionConfigName("configName").withFieldToColumnMappings(null).build();
+
+    assertThat(regionMapping.getRegionName()).isEqualTo("regionName");
+    assertThat(regionMapping.getConnectionConfigName()).isEqualTo("configName");
+    assertThat(regionMapping.getFieldToColumnMap()).isNull();
+  }
+
+  @Test
   public void createsFieldMappingsFromArray() {
     String[] fieldMappings = new String[] {"field1:column1", "field2:column2"};
+    RegionMapping regionMapping =
+        new RegionMappingBuilder().withFieldToColumnMappings(fieldMappings).build();
+
+    assertThat(regionMapping.getColumnNameForField("field1")).isEqualTo("column1");
+    assertThat(regionMapping.getColumnNameForField("field2")).isEqualTo("column2");
+  }
+
+  @Test
+  public void createsFieldMappingsFromArrayWithEmptyElement() {
+    String[] fieldMappings = new String[] {"field1:column1", "", "field2:column2"};
     RegionMapping regionMapping =
         new RegionMappingBuilder().withFieldToColumnMappings(fieldMappings).build();
 
@@ -72,6 +102,9 @@ public class RegionMappingBuilderTest {
             .isInstanceOf(IllegalArgumentException.class);
     assertThatThrownBy(
         () -> regionMappingbuilder.withFieldToColumnMappings(new String[] {":field1column1"}))
+            .isInstanceOf(IllegalArgumentException.class);
+    assertThatThrownBy(
+        () -> regionMappingbuilder.withFieldToColumnMappings(new String[] {"field1:column1:extra"}))
             .isInstanceOf(IllegalArgumentException.class);
     assertThatThrownBy(
         () -> regionMappingbuilder.withFieldToColumnMappings(new String[] {"field1column1:"}))

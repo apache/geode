@@ -28,7 +28,7 @@ public class ConnectionConfigBuilder {
   private String url;
   private String user;
   private String password;
-  private Map<String, String> parameters = new HashMap<>();
+  private Map<String, String> parameters;
 
   public ConnectionConfigBuilder withName(String name) {
     this.name = name;
@@ -51,25 +51,26 @@ public class ConnectionConfigBuilder {
   }
 
   public ConnectionConfigBuilder withParameters(String[] params) {
-    if (params == null) {
-      parameters = null;
-    } else {
+    if (params != null) {
+      parameters = new HashMap<>();
       for (String param : params) {
         if (param.isEmpty()) {
           continue;
         }
         String[] keyValuePair = param.split(PARAMS_DELIMITER);
         validateParam(keyValuePair, param);
-        if (keyValuePair.length == 2) {
-          parameters.put(keyValuePair[0], keyValuePair[1]);
-        }
+        parameters.put(keyValuePair[0], keyValuePair[1]);
       }
+    } else {
+      parameters = null;
     }
     return this;
   }
 
   private void validateParam(String[] paramKeyValue, String param) {
-    if ((paramKeyValue.length <= 1) || paramKeyValue[0].isEmpty() || paramKeyValue[1].isEmpty()) {
+    // paramKeyValue is produced by split which will never give us
+    // an empty second element
+    if ((paramKeyValue.length != 2) || paramKeyValue[0].isEmpty()) {
       throw new IllegalArgumentException("Parameter '" + param
           + "' is not of the form 'parameterName" + PARAMS_DELIMITER + "value'");
     }

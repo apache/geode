@@ -24,7 +24,7 @@ import org.apache.logging.log4j.Logger;
 import org.apache.geode.CancelException;
 import org.apache.geode.DataSerializer;
 import org.apache.geode.distributed.DistributedSystemDisconnectedException;
-import org.apache.geode.distributed.internal.DM;
+import org.apache.geode.distributed.internal.DistributionManager;
 import org.apache.geode.distributed.internal.ReplyException;
 import org.apache.geode.distributed.internal.ReplyMessage;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
@@ -46,7 +46,8 @@ public class FunctionStreamingReplyMessage extends ReplyMessage {
    * @param lastMsg if this is the last message in this series
    */
   public static void send(InternalDistributedMember recipient, int processorId,
-      ReplyException exception, DM dm, Object result, int msgNum, boolean lastMsg) {
+      ReplyException exception, DistributionManager dm, Object result, int msgNum,
+      boolean lastMsg) {
     FunctionStreamingReplyMessage m = new FunctionStreamingReplyMessage();
     m.processorId = processorId;
     if (exception != null) {

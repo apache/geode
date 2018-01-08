@@ -28,7 +28,7 @@ public class TailLogRequest extends AdminRequest {
   }
 
   @Override
-  public AdminResponse createResponse(DM dm) {
+  public AdminResponse createResponse(DistributionManager dm) {
     return TailLogResponse.create(dm, this.getSender());
   }
 

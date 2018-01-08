@@ -82,10 +82,10 @@ import org.apache.geode.SystemFailure;
 import org.apache.geode.ToDataException;
 import org.apache.geode.cache.CacheClosedException;
 import org.apache.geode.cache.execute.Function;
+import org.apache.geode.distributed.internal.ClusterDistributionManager;
 import org.apache.geode.distributed.internal.DMStats;
 import org.apache.geode.distributed.internal.DistributedSystemService;
 import org.apache.geode.distributed.internal.DistributionConfig;
-import org.apache.geode.distributed.internal.DistributionManager;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.distributed.internal.LonerDistributionManager;
 import org.apache.geode.distributed.internal.SerialDistributionMessage;
@@ -1702,13 +1702,12 @@ public abstract class InternalDataSerializer extends DataSerializer implements D
   }
 
   /**
-   * Test to see if the object is in the gemfire package, to see if we should pass it on to a users
+   * Test to see if the object is in the gemfire package, to see if we should pass it on to a user's
    * custom serializater.
    */
-  private static boolean isGemfireObject(Object o) {
+  static boolean isGemfireObject(Object o) {
     return (o instanceof Function // fixes 43691
-        || o.getClass().getName().startsWith("org.apache.")
-        || o.getClass().getName().startsWith("org.apache.geode"))
+        || o.getClass().getName().startsWith("org.apache.geode."))
         && !(o instanceof PdxSerializerObject);
   }
 
@@ -3375,7 +3374,7 @@ public abstract class InternalDataSerializer extends DataSerializer implements D
     }
 
     @Override
-    protected void process(DistributionManager dm) {
+    protected void process(ClusterDistributionManager dm) {
       if (CacheClientNotifier.getInstance() != null) {
         // This is a server so we need to send the dataserializer to clients
         // right away. For that we need to load the class as the constructor of

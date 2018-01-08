@@ -62,7 +62,7 @@ import org.apache.geode.cache.query.internal.index.IndexManager;
 import org.apache.geode.cache.query.internal.index.PartitionedIndex;
 import org.apache.geode.cache.server.CacheServer;
 import org.apache.geode.cache30.CacheSerializableRunnable;
-import org.apache.geode.distributed.internal.DistributionManager;
+import org.apache.geode.distributed.internal.ClusterDistributionManager;
 import org.apache.geode.distributed.internal.DistributionMessage;
 import org.apache.geode.distributed.internal.DistributionMessageObserver;
 import org.apache.geode.internal.AvailablePortHelper;
@@ -317,7 +317,8 @@ public class PartitionedRegionQueryDUnitTest extends JUnit4CacheTestCase {
         DistributionMessageObserver.setInstance(new DistributionMessageObserver() {
 
           @Override
-          public void beforeProcessMessage(DistributionManager dm, DistributionMessage message) {
+          public void beforeProcessMessage(ClusterDistributionManager dm,
+              DistributionMessage message) {
             if (message instanceof QueryMessage) {
               RebalanceOperation rebalance =
                   getCache().getResourceManager().createRebalanceFactory().start();

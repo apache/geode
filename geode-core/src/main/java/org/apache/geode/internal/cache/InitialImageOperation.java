@@ -278,7 +278,8 @@ public class InitialImageOperation {
           continue;
         }
       }
-      final DistributionManager dm = (DistributionManager) this.region.getDistributionManager();
+      final ClusterDistributionManager dm =
+          (ClusterDistributionManager) this.region.getDistributionManager();
       boolean allowDeltaGII = true;
       if (FORCE_FULL_GII || recipient.getVersionObject().compareTo(Version.GFE_80) < 0) {
         allowDeltaGII = false;
@@ -343,8 +344,9 @@ public class InitialImageOperation {
             r.addAll(advice.others);
             r.addAll(advice.empties);
             r.addAll(advice.uninitialized);
-            int processorType = targetReinitialized ? DistributionManager.WAITING_POOL_EXECUTOR
-                : DistributionManager.HIGH_PRIORITY_EXECUTOR;
+            int processorType =
+                targetReinitialized ? ClusterDistributionManager.WAITING_POOL_EXECUTOR
+                    : ClusterDistributionManager.HIGH_PRIORITY_EXECUTOR;
             try {
               boolean success = sf.flush(r, recipient, processorType, true);
               if (!success) {
@@ -368,8 +370,8 @@ public class InitialImageOperation {
         r.addAll(advice.others);
         r.addAll(advice.empties);
         r.addAll(advice.uninitialized);
-        int processorType = targetReinitialized ? DistributionManager.WAITING_POOL_EXECUTOR
-            : DistributionManager.HIGH_PRIORITY_EXECUTOR;
+        int processorType = targetReinitialized ? ClusterDistributionManager.WAITING_POOL_EXECUTOR
+            : ClusterDistributionManager.HIGH_PRIORITY_EXECUTOR;
         try {
           boolean success = sf.flush(r, recipient, processorType, false);
           if (!success) {
@@ -566,7 +568,8 @@ public class InitialImageOperation {
    */
   public void synchronizeWith(InternalDistributedMember target, VersionSource lostMemberVersionID,
       InternalDistributedMember lostMember) {
-    final DistributionManager dm = (DistributionManager) this.region.getDistributionManager();
+    final ClusterDistributionManager dm =
+        (ClusterDistributionManager) this.region.getDistributionManager();
 
     this.isSynchronizing = true;
     RequestImageMessage m = new RequestImageMessage();
@@ -724,7 +727,7 @@ public class InitialImageOperation {
   private boolean requestFilterInfo(InternalDistributedMember recipient) {
     // Request for Filter Information before getting the
     // HARegion snapshot.
-    final DM dm = this.region.getDistributionManager();
+    final DistributionManager dm = this.region.getDistributionManager();
     RequestFilterInfoMessage filterInfoMsg = new RequestFilterInfoMessage();
     filterInfoMsg.regionPath = this.region.getFullPath();
     filterInfoMsg.setRecipient(recipient);
@@ -972,7 +975,7 @@ public class InitialImageOperation {
     }
   }
 
-  protected RegionVersionVector getRVVFromProvider(final DistributionManager dm,
+  protected RegionVersionVector getRVVFromProvider(final ClusterDistributionManager dm,
       InternalDistributedMember recipient, boolean targetReinitialized) {
     RegionVersionVector received_rvv = null;
     // RequestRVVMessage is to send rvv of gii provider for both persistent and non-persistent
@@ -1422,8 +1425,8 @@ public class InitialImageOperation {
     return buf.toString();
   }
 
-  protected static LocalRegion getGIIRegion(final DistributionManager dm, final String regionPath,
-      final boolean targetReinitialized) {
+  protected static LocalRegion getGIIRegion(final ClusterDistributionManager dm,
+      final String regionPath, final boolean targetReinitialized) {
 
     final boolean isDebugEnabled = logger.isDebugEnabled();
 
@@ -1535,8 +1538,8 @@ public class InitialImageOperation {
 
     @Override
     public int getProcessorType() {
-      return this.targetReinitialized ? DistributionManager.WAITING_POOL_EXECUTOR
-          : DistributionManager.HIGH_PRIORITY_EXECUTOR;
+      return this.targetReinitialized ? ClusterDistributionManager.WAITING_POOL_EXECUTOR
+          : ClusterDistributionManager.HIGH_PRIORITY_EXECUTOR;
     }
 
     public boolean goWithFullGII(DistributedRegion rgn, RegionVersionVector requesterRVV) {
@@ -1563,7 +1566,7 @@ public class InitialImageOperation {
     }
 
     @Override
-    protected void process(final DistributionManager dm) {
+    protected void process(final ClusterDistributionManager dm) {
       final boolean isGiiDebugEnabled = logger.isTraceEnabled(LogMarker.GII);
 
       Throwable thr = null;
@@ -1856,7 +1859,7 @@ public class InitialImageOperation {
       }
 
       ByteArrayDataInput in = null;
-      DistributionManager dm = (DistributionManager) rgn.getDistributionManager();
+      ClusterDistributionManager dm = (ClusterDistributionManager) rgn.getDistributionManager();
 
       List chunkEntries = null;
       chunkEntries =
@@ -1983,14 +1986,14 @@ public class InitialImageOperation {
       }
     }
 
-    private void replyNoData(DistributionManager dm, boolean isDeltaGII,
+    private void replyNoData(ClusterDistributionManager dm, boolean isDeltaGII,
         Map<VersionSource, Long> gcVersions) {
       ImageReplyMessage.send(getSender(), this.processorId, null, dm, null, 0, 0, 1, true, 0,
           isDeltaGII, null, gcVersions);
     }
 
-    protected void replyWithData(DistributionManager dm, List entries, int seriesNum, int msgNum,
-        int numSeries, boolean lastInSeries, int flowControlId, boolean isDeltaGII,
+    protected void replyWithData(ClusterDistributionManager dm, List entries, int seriesNum,
+        int msgNum, int numSeries, boolean lastInSeries, int flowControlId, boolean isDeltaGII,
         RegionVersionHolder holderToSend, Map<VersionSource, Long> gcVersions) {
       ImageReplyMessage.send(getSender(), this.processorId, null, dm, entries, seriesNum, msgNum,
           numSeries, lastInSeries, flowControlId, isDeltaGII, holderToSend, gcVersions);
@@ -1998,7 +2001,7 @@ public class InitialImageOperation {
 
 
     // test hook
-    private void initiateLocalAbortForTest(final DM dm) {
+    private void initiateLocalAbortForTest(final DistributionManager dm) {
       if (!dm.getSystem().isDisconnecting()) {
         if (logger.isDebugEnabled()) {
           logger.debug(
@@ -2182,11 +2185,11 @@ public class InitialImageOperation {
 
     @Override
     public int getProcessorType() {
-      return DistributionManager.HIGH_PRIORITY_EXECUTOR;
+      return ClusterDistributionManager.HIGH_PRIORITY_EXECUTOR;
     }
 
     @Override
-    protected void process(final DistributionManager dm) {
+    protected void process(final ClusterDistributionManager dm) {
       Throwable thr = null;
       boolean sendFailureMessage = true;
       LocalRegion lclRgn = null;
@@ -2374,7 +2377,7 @@ public class InitialImageOperation {
       this.versionVector = rvv;
     }
 
-    public static void send(DM dm, InternalDistributedMember dest, int processorId,
+    public static void send(DistributionManager dm, InternalDistributedMember dest, int processorId,
         RegionVersionVector rvv, ReplyException ex) {
       RVVReplyMessage msg = new RVVReplyMessage(dest, processorId, rvv);
       if (ex != null) {
@@ -2453,12 +2456,12 @@ public class InitialImageOperation {
 
     @Override
     public int getProcessorType() {
-      return this.targetReinitialized ? DistributionManager.WAITING_POOL_EXECUTOR
-          : DistributionManager.HIGH_PRIORITY_EXECUTOR;
+      return this.targetReinitialized ? ClusterDistributionManager.WAITING_POOL_EXECUTOR
+          : ClusterDistributionManager.HIGH_PRIORITY_EXECUTOR;
     }
 
     @Override
-    protected void process(final DistributionManager dm) {
+    protected void process(final ClusterDistributionManager dm) {
       Throwable thr = null;
       boolean sendFailureMessage = true;
       LocalRegion lclRgn = null;
@@ -2574,7 +2577,7 @@ public class InitialImageOperation {
 
 
     @Override
-    protected void process(final DistributionManager dm) {
+    protected void process(final ClusterDistributionManager dm) {
       LocalRegion lclRgn = null;
       try {
         Assert.assertTrue(this.regionPath != null, "Region path is null.");
@@ -2705,8 +2708,8 @@ public class InitialImageOperation {
      * @param holderToSend higher version holder to sync for the lost member
      */
     public static void send(InternalDistributedMember recipient, int processorId,
-        ReplyException exception, DistributionManager dm, List entries, int seriesNum, int msgNum,
-        int numSeries, boolean lastInSeries, int flowControlId, boolean isDeltaGII,
+        ReplyException exception, ClusterDistributionManager dm, List entries, int seriesNum,
+        int msgNum, int numSeries, boolean lastInSeries, int flowControlId, boolean isDeltaGII,
         RegionVersionHolder holderToSend, Map<VersionSource, Long> gcVersions) {
       ImageReplyMessage m = new ImageReplyMessage();
 
@@ -2734,7 +2737,7 @@ public class InitialImageOperation {
 
 
     @Override
-    public void process(DM dm, ReplyProcessor21 processor) {
+    public void process(DistributionManager dm, ReplyProcessor21 processor) {
       // We have to do this here, rather than in the reply processor code,
       // because the reply processor may be null.
       try {
@@ -2906,12 +2909,12 @@ public class InitialImageOperation {
     private VersionTag versionTag;
 
     /** Given local milliseconds, store as cache milliseconds */
-    public void setLastModified(DM dm, long localMillis) {
+    public void setLastModified(DistributionManager dm, long localMillis) {
       this.lastModified = localMillis;
     }
 
     /** Return lastModified as local milliseconds */
-    public long getLastModified(DM dm) {
+    public long getLastModified(DistributionManager dm) {
       return this.lastModified;
     }
 
@@ -3348,14 +3351,14 @@ public class InitialImageOperation {
       this.isHARegion = isHARegion;
     }
 
-    public static void send(DM dm, InternalDistributedMember dest, int processorId,
+    public static void send(DistributionManager dm, InternalDistributedMember dest, int processorId,
         Map<? extends DataSerializable, ? extends DataSerializable> eventState,
         boolean isHARegion) {
       RegionStateMessage msg = new RegionStateMessage(dest, processorId, eventState, isHARegion);
       dm.putOutgoing(msg);
     }
 
-    public static void send(DM dm, InternalDistributedMember dest, int processorId,
+    public static void send(DistributionManager dm, InternalDistributedMember dest, int processorId,
         RegionVersionVector rvv, boolean isHARegion) {
       RegionStateMessage msg = new RegionStateMessage(dest, processorId, rvv, isHARegion);
       dm.putOutgoing(msg);
@@ -3825,8 +3828,8 @@ public class InitialImageOperation {
       }
     }
 
-    public static void send(DM dm, InternalDistributedMember dest, int processorId, LocalRegion rgn,
-        ReplyException ex) {
+    public static void send(DistributionManager dm, InternalDistributedMember dest, int processorId,
+        LocalRegion rgn, ReplyException ex) {
       FilterInfoMessage msg = new FilterInfoMessage(dest, processorId, rgn);
       if (ex != null) {
         msg.setException(ex);
