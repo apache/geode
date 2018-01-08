@@ -16,6 +16,7 @@ package org.apache.geode.internal.cache;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.any;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.times;
@@ -26,7 +27,7 @@ import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
 import org.apache.geode.GemFireIOException;
-import org.apache.geode.distributed.internal.ClusterDistributionManager;
+import org.apache.geode.distributed.internal.DistributionManager;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
 import org.apache.geode.internal.cache.StateFlushOperation.StateMarkerMessage;
 import org.apache.geode.test.junit.categories.UnitTest;
@@ -44,7 +45,7 @@ public class StateMarkerMessageTest {
   @Test
   public void testProcessWithWaitForCurrentOperationsThatTimesOut() {
     InternalDistributedMember relayRecipient = mock(InternalDistributedMember.class);
-    ClusterDistributionManager dm = mock(ClusterDistributionManager.class);
+    DistributionManager dm = mock(DistributionManager.class);
     InternalCache gfc = mock(InternalCache.class);
     DistributedRegion region = mock(DistributedRegion.class);
     CacheDistributionAdvisor distributionAdvisor = mock(CacheDistributionAdvisor.class);
