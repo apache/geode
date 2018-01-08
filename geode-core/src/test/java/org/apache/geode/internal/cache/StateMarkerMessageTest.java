@@ -15,12 +15,20 @@
 package org.apache.geode.internal.cache;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.any;
+import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
+import org.apache.geode.GemFireIOException;
+import org.apache.geode.distributed.internal.DistributionManager;
+import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
 import org.apache.geode.internal.cache.StateFlushOperation.StateMarkerMessage;
 import org.apache.geode.test.junit.categories.UnitTest;
 
@@ -32,5 +40,29 @@ public class StateMarkerMessageTest {
     StateMarkerMessage mockStateMarkerMessage = mock(StateMarkerMessage.class);
     when(mockStateMarkerMessage.getProcessorType()).thenReturn(1);
     assertThat(mockStateMarkerMessage.getProcessorType()).isEqualTo(1);
+  }
+
+  @Test
+  public void testProcessWithWaitForCurrentOperationsThatTimesOut() {
+    InternalDistributedMember relayRecipient = mock(InternalDistributedMember.class);
+    DistributionManager dm = mock(DistributionManager.class);
+    InternalCache gfc = mock(InternalCache.class);
+    DistributedRegion region = mock(DistributedRegion.class);
+    CacheDistributionAdvisor distributionAdvisor = mock(CacheDistributionAdvisor.class);
+
+    when(dm.getDistributionManagerId()).thenReturn(relayRecipient);
+    when(dm.getExistingCache()).thenReturn(gfc);
+    when(region.isInitialized()).thenReturn(true);
+    when(region.getDistributionAdvisor()).thenReturn(distributionAdvisor);
+    when(gfc.getRegionByPathForProcessing(any())).thenReturn(region);
+    doThrow(new GemFireIOException("expected in fatal log message")).when(distributionAdvisor)
+        .waitForCurrentOperations();
+
+    StateMarkerMessage message = new StateMarkerMessage();
+    message.relayRecipient = relayRecipient;
+
+    message.process(dm);
+
+    verify(dm, times(1)).putOutgoing(any());
   }
 }
