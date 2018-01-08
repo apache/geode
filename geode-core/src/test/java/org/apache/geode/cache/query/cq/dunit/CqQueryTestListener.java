@@ -392,7 +392,7 @@ public class CqQueryTestListener implements CqStatusListener {
       final int totalEvents) {
     // Wait for expected events to arrive
     try {
-      Awaitility.await().atMost(5, TimeUnit.SECONDS).until(() -> {
+      Awaitility.await().atMost(10, TimeUnit.SECONDS).until(() -> {
         if ((creates > 0 && creates != this.getCreateEventCount())
             || (updates > 0 && updates != this.getUpdateEventCount())
             || (deletes > 0 && deletes != this.getDeleteEventCount())
