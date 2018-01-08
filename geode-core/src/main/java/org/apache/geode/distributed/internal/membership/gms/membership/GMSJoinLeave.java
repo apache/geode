@@ -809,9 +809,8 @@ public class GMSJoinLeave implements JoinLeave, MessageHandler {
       NetView newView = new NetView(this.localAddress);
       newView.setFailureDetectionPort(localAddress,
           services.getHealthMonitor().getFailureDetectionPort());
+      newView.setMemberTimeout(localAddress, services.getConfig().getMemberTimeout());
       this.localAddress.setVmViewId(0);
-      newView.getMembersTimeout().put(this.getMemberID().getName(),
-          services.getConfig().getMemberTimeout());
       installView(newView);
       isJoined = true;
       createAndStartViewCreator(newView);
@@ -819,8 +818,6 @@ public class GMSJoinLeave implements JoinLeave, MessageHandler {
     } else {
       // create and send out a new view
       NetView newView = addMemberToNetView(oldCoordinator);
-      newView.getMembersTimeout().put(this.getMemberID().getName(),
-          services.getConfig().getMemberTimeout());
       createAndStartViewCreator(newView);
       startViewBroadcaster();
     }
@@ -870,6 +867,9 @@ public class GMSJoinLeave implements JoinLeave, MessageHandler {
       newView.setFailureDetectionPorts(currentView);
       newView.setFailureDetectionPort(this.localAddress,
           services.getHealthMonitor().getFailureDetectionPort());
+      newView.setMemberTimeouts(currentView);
+      newView.setMemberTimeout(this.localAddress,
+    		  services.getConfig().getMemberTimeout());
     }
     return newView;
   }
@@ -2139,6 +2139,7 @@ public class GMSJoinLeave implements JoinLeave, MessageHandler {
         for (InternalDistributedMember newMember : newMembers) {
           newView.add(newMember);
           newView.setFailureDetectionPort(newMember, v.getFailureDetectionPort(newMember));
+          newView.setMemberTimeout(newMember, v.getMemberTimeout(newMember));
           newView.setPublicKey(newMember, v.getPublicKey(newMember));
         }
 
@@ -2293,6 +2294,7 @@ public class GMSJoinLeave implements JoinLeave, MessageHandler {
         throws InterruptedException, ViewAbandonedException {
       List<InternalDistributedMember> joinReqs = new ArrayList<>(10);
       Map<InternalDistributedMember, Integer> joinPorts = new HashMap<>(10);
+      Map<InternalDistributedMember, Long> joinTimeouts = new HashMap<>(10);
       Set<InternalDistributedMember> leaveReqs = new HashSet<>(10);
       List<InternalDistributedMember> removalReqs = new ArrayList<>(10);
       List<String> removalReasons = new ArrayList<String>(10);
@@ -2315,6 +2317,7 @@ public class GMSJoinLeave implements JoinLeave, MessageHandler {
             JoinRequestMessage jmsg = (JoinRequestMessage) msg;
             mbr = jmsg.getMemberID();
             int port = jmsg.getFailureDetectionPort();
+            long member_timeout = jmsg.getMember_timeout();
             // see if an old member ID is being reused. If
             // so we'll remove it from the new view
             for (InternalDistributedMember m : oldMembers) {
@@ -2326,9 +2329,9 @@ public class GMSJoinLeave implements JoinLeave, MessageHandler {
             if (!joinReqs.contains(mbr)) {
               joinReqs.add(mbr);
               joinPorts.put(mbr, port);
+              joinTimeouts.put(mbr, member_timeout);
+              
             }
-
-            oldView.getMembersTimeout().put(jmsg.getMemberID().getName(), jmsg.getMember_timeout());
             break;
           case LEAVE_REQUEST_MESSAGE:
             mbr = ((LeaveRequestMessage) msg).getMemberID();
@@ -2394,24 +2397,10 @@ public class GMSJoinLeave implements JoinLeave, MessageHandler {
         mbrs.addAll(joinReqs);
         newView = new NetView(localAddress, viewNumber, mbrs, leaveReqs,
             new HashSet<InternalDistributedMember>(removalReqs));
-        newView.getMembersTimeout().putAll(oldView.getMembersTimeout());
         for (InternalDistributedMember mbr : joinReqs) {
           if (mbrs.contains(mbr)) {
             newView.setFailureDetectionPort(mbr, joinPorts.get(mbr));
-          }
-        }
-
-        // make sure that memberstimeout doesn't contain old memberstimeout which are not in view
-        for (String mbrName : newView.getMembersTimeout().keySet()) {
-          boolean mbrPresent = false;
-          for (InternalDistributedMember mbr : newView.getMembers()) {
-            if (mbr.getName().equals(mbrName)) {
-              mbrPresent = true;
-            }
-          }
-
-          if (false == mbrPresent) {
-            newView.getMembersTimeout().remove(mbrName);
+            newView.setMemberTimeout(mbr, joinTimeouts.get(mbr));
           }
         }
 
@@ -2419,6 +2408,7 @@ public class GMSJoinLeave implements JoinLeave, MessageHandler {
 
         if (currentView != null) {
           newView.setFailureDetectionPorts(currentView);
+          newView.setMemberTimeouts(currentView);
           newView.setPublicKeys(currentView);
         }
       }
@@ -2531,8 +2521,10 @@ public class GMSJoinLeave implements JoinLeave, MessageHandler {
                   newMembers);
               for (InternalDistributedMember mbr : newMembers) {
                 int port = conflictingView.getFailureDetectionPort(mbr);
+                long memberTimeout = conflictingView.getMemberTimeout(mbr);
                 newView.add(mbr);
                 newView.setFailureDetectionPort(mbr, port);
+                newView.setMemberTimeout(mbr, memberTimeout);
                 joinReqs.add(mbr);
               }
             }
@@ -2562,6 +2554,7 @@ public class GMSJoinLeave implements JoinLeave, MessageHandler {
           for (InternalDistributedMember mbr : newView.getMembers()) {
             if (tempView.contains(mbr)) {
               tempView.setFailureDetectionPort(mbr, newView.getFailureDetectionPort(mbr));
+              tempView.setMemberTimeout(mbr, newView.getMemberTimeout(mbr));
             }
           }
           newView = tempView;

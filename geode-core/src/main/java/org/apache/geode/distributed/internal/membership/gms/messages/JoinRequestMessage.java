@@ -89,7 +89,7 @@ public class JoinRequestMessage extends HighPriorityDistributionMessage {
     // if this is a mcast join request
     out.writeBoolean(getMulticast());
     out.writeInt(requestId);
-    if (InternalDataSerializer.getVersionForDataStream(out).compareTo(Version.GEODE_120) >= 0) {
+    if (InternalDataSerializer.getVersionForDataStream(out).compareTo(Version.GEODE_140) >= 0) {
       out.writeLong(member_timeout);
     }
   }
@@ -101,7 +101,7 @@ public class JoinRequestMessage extends HighPriorityDistributionMessage {
     failureDetectionPort = DataSerializer.readPrimitiveInt(in);
     setMulticast(in.readBoolean());
     requestId = in.readInt();
-    if (InternalDataSerializer.getVersionForDataStream(in).compareTo(Version.GEODE_120) >= 0) {
+    if (InternalDataSerializer.getVersionForDataStream(in).compareTo(Version.GEODE_140) >= 0) {
       member_timeout = in.readLong();
     }
   }

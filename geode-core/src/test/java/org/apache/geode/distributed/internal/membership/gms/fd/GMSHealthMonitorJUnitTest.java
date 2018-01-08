@@ -67,6 +67,7 @@ import org.apache.geode.internal.net.SocketCreatorFactory;
 import org.apache.geode.test.junit.categories.FlakyTest;
 import org.apache.geode.test.junit.categories.IntegrationTest;
 import org.apache.geode.test.junit.categories.MembershipTest;
+import java.net.SocketTimeoutException;
 
 @Category({IntegrationTest.class, MembershipTest.class})
 public class GMSHealthMonitorJUnitTest {
@@ -126,7 +127,6 @@ public class GMSHealthMonitorJUnitTest {
       mockMembers = new ArrayList<InternalDistributedMember>();
       for (int i = 0; i < 7; i++) {
         InternalDistributedMember mbr = new InternalDistributedMember("localhost", 8888 + i);
-        mbr.getNetMember().setName("member" + i);
 
         if (i == 0 || i == 1) {
           mbr.setVmKind(DistributionManager.LOCATOR_DM_TYPE);
@@ -243,13 +243,7 @@ public class GMSHealthMonitorJUnitTest {
 
   private NetView installAView() {
     System.out.println("installAView starting");
-    NetView v = new NetView(mockMembers.get(0), 2, mockMembers);
-    int i = 0;
-    for (InternalDistributedMember mbr : v.getMembers()) {
-      v.getMembersTimeout().put(mbr.getName(), memberTimeout * i);
-      i++;
-    }
-
+    NetView v = new NetView(mockMembers.get(0), 2, mockMembers);    
     // 3rd is current member
     when(messenger.getMemberID()).thenReturn(mockMembers.get(myAddressIndex));
     gmsHealthMonitor.started();
@@ -258,6 +252,16 @@ public class GMSHealthMonitorJUnitTest {
 
     return v;
   }
+  
+  private void setMemberTimeouts(NetView v) {
+	    java.util.Iterator<InternalDistributedMember> itr = mockMembers.iterator();
+
+	    long member_timeout = 1000l;
+	    while (itr.hasNext()) {
+	      v.setMemberTimeout(itr.next(), member_timeout);
+	      member_timeout = member_timeout +1000L;
+	    }
+	  }
 
   private void setFailureDetectionPorts(NetView v) {
     java.util.Iterator<InternalDistributedMember> itr = mockMembers.iterator();
@@ -743,8 +747,8 @@ public class GMSHealthMonitorJUnitTest {
     when(fakeSocket.getInputStream()).thenReturn(mockInputStream);
     when(fakeSocket.getOutputStream()).thenReturn(outputStream);
     when(fakeSocket.isConnected()).thenReturn(true);
-    installAView();
-    otherMember.getNetMember().setName("member1");
+
+    
     assertEquals(expectedResult, gmsHealthMonitor.doTCPCheckMember(otherMember, fakeSocket));
     Assert.assertTrue(gmsHealthMonitor.getStats().getFinalCheckRequestsSent() > 0);
     Assert.assertTrue(gmsHealthMonitor.getStats().getTcpFinalCheckRequestsSent() > 0);
@@ -755,6 +759,39 @@ public class GMSHealthMonitorJUnitTest {
     byte[] bytesWritten = outputStream.toByteArray();
     Assert.assertArrayEquals(writeMemberToBytes((GMSMember) gmsMember.getNetMember()),
         bytesWritten);
+  }
+  
+  @Test
+  public void testFinalCheckonSocketTimeout() throws Exception{
+	  NetView v = new NetView(mockMembers.get(0), 2, mockMembers);
+	  setMemberTimeouts(v);
+	  gmsHealthMonitor.installView(v);
+	  
+	  
+	  ByteArrayOutputStream baos = new ByteArrayOutputStream();
+	  byte[] receivedBytes = baos.toByteArray();
+      InputStream mockInputStream = new ByteArrayInputStream(receivedBytes);
+      InputStream mockInputStream1 = new ByteArrayInputStream(receivedBytes);
+      
+      Socket fakeSocket = mock(Socket.class);
+      InputStream mockin = mock(InputStream.class);
+      ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
+      when(fakeSocket.getInputStream()).thenReturn(mockin);
+      when(fakeSocket.getOutputStream()).thenReturn(outputStream);
+      when(fakeSocket.isConnected()).thenReturn(true);
+      
+      when(mockin.read()).then(new Answer(){
+          public Integer answer(InvocationOnMock invocation) throws Exception{
+        	  System.out.println("aravind call "+v.getMemberTimeout(mockMembers.get(1)));
+        	  throw new SocketTimeoutException("Socket Timeout test");
+			      
+          }
+          
+   });
+      
+      Assert.assertFalse(gmsHealthMonitor.doTCPCheckMember(mockMembers.get(1), fakeSocket));
+	  
+	  
   }
 
   private InternalDistributedMember createInternalDistributedMember(short version, int viewId,
