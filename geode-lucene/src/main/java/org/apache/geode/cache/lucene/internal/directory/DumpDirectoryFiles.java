@@ -17,6 +17,8 @@ package org.apache.geode.cache.lucene.internal.directory;
 
 import java.io.File;
 import java.util.Collection;
+import java.util.HashSet;
+import java.util.Set;
 
 import org.apache.logging.log4j.Logger;
 import org.apache.lucene.index.IndexWriter;
@@ -35,6 +37,9 @@ import org.apache.geode.cache.lucene.internal.repository.RepositoryManager;
 import org.apache.geode.internal.InternalEntity;
 import org.apache.geode.internal.cache.BucketNotFoundException;
 import org.apache.geode.internal.logging.LogService;
+import org.apache.geode.security.ResourcePermission;
+import org.apache.geode.security.ResourcePermission.Operation;
+import org.apache.geode.security.ResourcePermission.Resource;
 
 public class DumpDirectoryFiles implements Function, InternalEntity {
   private static final long serialVersionUID = 1L;
@@ -95,5 +100,13 @@ public class DumpDirectoryFiles implements Function, InternalEntity {
   @Override
   public boolean optimizeForWrite() {
     return true;
+  }
+
+  @Override
+  public Collection<ResourcePermission> getRequiredPermissions(String regionName) {
+    Set<ResourcePermission> required = new HashSet<>();
+    required.add(new ResourcePermission(Resource.DATA, Operation.READ, regionName));
+    required.add(new ResourcePermission(Resource.CLUSTER, Operation.MANAGE));
+    return required;
   }
 }
