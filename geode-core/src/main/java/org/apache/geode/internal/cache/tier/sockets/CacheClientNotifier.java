@@ -66,8 +66,8 @@ import org.apache.geode.cache.query.internal.cq.ServerCQ;
 import org.apache.geode.cache.server.CacheServer;
 import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.distributed.DistributedSystem;
-import org.apache.geode.distributed.internal.DM;
 import org.apache.geode.distributed.internal.DistributionConfig;
+import org.apache.geode.distributed.internal.DistributionManager;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.internal.ClassLoadUtil;
 import org.apache.geode.internal.InternalDataSerializer;
@@ -99,7 +99,6 @@ import org.apache.geode.internal.cache.ha.HAContainerRegion;
 import org.apache.geode.internal.cache.ha.HAContainerWrapper;
 import org.apache.geode.internal.cache.ha.HARegionQueue;
 import org.apache.geode.internal.cache.ha.ThreadIdentifier;
-import org.apache.geode.internal.cache.tier.Acceptor;
 import org.apache.geode.internal.cache.tier.CommunicationMode;
 import org.apache.geode.internal.cache.tier.MessageType;
 import org.apache.geode.internal.cache.versions.VersionTag;
@@ -1041,7 +1040,7 @@ public class CacheClientNotifier {
       addToBlacklistedClient(proxy.getProxyID());
       InternalDistributedSystem ids =
           (InternalDistributedSystem) this.getCache().getDistributedSystem();
-      final DM dm = ids.getDistributionManager();
+      final DistributionManager dm = ids.getDistributionManager();
       dm.getWaitingThreadPool().execute(new Runnable() {
         public void run() {
 
@@ -1933,7 +1932,7 @@ public class CacheClientNotifier {
 
   protected void deliverInterestChange(ClientProxyMembershipID proxyID,
       ClientInterestMessageImpl message) {
-    DM dm = ((InternalDistributedSystem) this.getCache().getDistributedSystem())
+    DistributionManager dm = ((InternalDistributedSystem) this.getCache().getDistributedSystem())
         .getDistributionManager();
     ServerInterestRegistrationMessage.sendInterestChange(dm, proxyID, message);
   }

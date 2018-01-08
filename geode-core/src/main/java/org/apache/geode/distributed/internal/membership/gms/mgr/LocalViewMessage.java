@@ -18,7 +18,7 @@ import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
 
-import org.apache.geode.distributed.internal.DistributionManager;
+import org.apache.geode.distributed.internal.ClusterDistributionManager;
 import org.apache.geode.distributed.internal.SerialDistributionMessage;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
 import org.apache.geode.distributed.internal.membership.NetView;
@@ -48,12 +48,12 @@ public class LocalViewMessage extends SerialDistributionMessage {
 
   @Override
   public int getProcessorType() {
-    return DistributionManager.VIEW_EXECUTOR;
+    return ClusterDistributionManager.VIEW_EXECUTOR;
   }
 
 
   @Override
-  protected void process(DistributionManager dm) {
+  protected void process(ClusterDistributionManager dm) {
     // dm.getLogger().info("view message processed", new Exception());
     manager.processView(viewId, view);
   }

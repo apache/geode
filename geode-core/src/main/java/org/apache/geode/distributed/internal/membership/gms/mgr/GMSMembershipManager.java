@@ -52,10 +52,10 @@ import org.apache.geode.distributed.DistributedSystem;
 import org.apache.geode.distributed.DistributedSystemDisconnectedException;
 import org.apache.geode.distributed.Locator;
 import org.apache.geode.distributed.internal.AdminMessageType;
+import org.apache.geode.distributed.internal.ClusterDistributionManager;
 import org.apache.geode.distributed.internal.DMStats;
 import org.apache.geode.distributed.internal.DistributionConfig;
 import org.apache.geode.distributed.internal.DistributionException;
-import org.apache.geode.distributed.internal.DistributionManager;
 import org.apache.geode.distributed.internal.DistributionMessage;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.distributed.internal.InternalLocator;
@@ -408,7 +408,7 @@ public class GMSMembershipManager implements MembershipManager, Manager {
       handleOrDeferMessage(msg);
     }
 
-    public DistributionManager getDM() {
+    public ClusterDistributionManager getDM() {
       return upCall.getDM();
     }
 
@@ -1956,7 +1956,7 @@ public class GMSMembershipManager implements MembershipManager, Manager {
   public boolean shutdownInProgress() {
     // Impossible condition (bug36329): make sure that we check DM's
     // view of shutdown here
-    DistributionManager dm = listener.getDM();
+    ClusterDistributionManager dm = listener.getDM();
     return shutdownInProgress || (dm != null && dm.shutdownInProgress());
   }
 
@@ -2521,7 +2521,7 @@ public class GMSMembershipManager implements MembershipManager, Manager {
       }
     }
 
-    protected void process(DistributionManager dm) {
+    protected void process(ClusterDistributionManager dm) {
       // not used
     }
 
@@ -2530,7 +2530,7 @@ public class GMSMembershipManager implements MembershipManager, Manager {
     }
 
     public int getProcessorType() {
-      return DistributionManager.SERIAL_EXECUTOR;
+      return ClusterDistributionManager.SERIAL_EXECUTOR;
     }
   }
 
@@ -2633,7 +2633,7 @@ public class GMSMembershipManager implements MembershipManager, Manager {
 
   @Override
   public boolean isShutdownStarted() {
-    DistributionManager dm = listener.getDM();
+    ClusterDistributionManager dm = listener.getDM();
     return shutdownInProgress || (dm != null && dm.isShutdownStarted());
   }
 

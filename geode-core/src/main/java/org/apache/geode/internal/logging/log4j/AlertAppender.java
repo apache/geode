@@ -30,7 +30,7 @@ import org.apache.logging.log4j.core.config.LoggerConfig;
 import org.apache.logging.log4j.core.layout.PatternLayout;
 
 import org.apache.geode.distributed.DistributedMember;
-import org.apache.geode.distributed.internal.DistributionManager;
+import org.apache.geode.distributed.internal.ClusterDistributionManager;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.internal.admin.Alert;
 import org.apache.geode.internal.admin.remote.AlertListenerMessage;
@@ -132,7 +132,7 @@ public class AlertAppender extends AbstractAppender implements PropertyChangeLis
         logger.info("Did not append alert event because the distributed system is set to null.");
         return;
       }
-      DistributionManager distMgr = (DistributionManager) ds.getDistributionManager();
+      ClusterDistributionManager distMgr = (ClusterDistributionManager) ds.getDistributionManager();
 
       final int intLevel = logLevelToAlertLevel(event.getLevel().intLevel());
       final Date date = new Date(event.getTimeMillis());

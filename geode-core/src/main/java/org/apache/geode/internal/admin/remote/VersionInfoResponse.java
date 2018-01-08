@@ -36,7 +36,8 @@ public class VersionInfoResponse extends AdminResponse {
   /**
    * Returns a <code>VersionInfoResponse</code> that will be returned to the specified recipient.
    */
-  public static VersionInfoResponse create(DM dm, InternalDistributedMember recipient) {
+  public static VersionInfoResponse create(DistributionManager dm,
+      InternalDistributedMember recipient) {
     VersionInfoResponse m = new VersionInfoResponse();
     m.setRecipient(recipient);
     m.verInfo = GemFireVersion.asString();

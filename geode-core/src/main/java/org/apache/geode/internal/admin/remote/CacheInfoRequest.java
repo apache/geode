@@ -46,7 +46,7 @@ public class CacheInfoRequest extends AdminRequest {
    * @param dm
    */
   @Override
-  protected AdminResponse createResponse(DM dm) {
+  protected AdminResponse createResponse(DistributionManager dm) {
     return CacheInfoResponse.create(dm, this.getSender());
   }
 

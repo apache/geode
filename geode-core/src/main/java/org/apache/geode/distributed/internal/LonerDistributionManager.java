@@ -45,7 +45,7 @@ import org.apache.geode.internal.net.SocketCreator;
  *
  * @since GemFire 3.5
  */
-public class LonerDistributionManager implements DM {
+public class LonerDistributionManager implements DistributionManager {
   private final InternalDistributedSystem system;
   private final InternalLogWriter logger;
   private ElderState elderState;
@@ -1200,7 +1200,7 @@ public class LonerDistributionManager implements DM {
             config.getDurableClientTimeout());
       }
       result = new InternalDistributedMember(host, lonerPort, name, uniqueString,
-          DistributionManager.LONER_DM_TYPE,
+          ClusterDistributionManager.LONER_DM_TYPE,
           MemberAttributes.parseGroups(config.getRoles(), config.getGroups()), dac);
 
     } catch (UnknownHostException ex) {
@@ -1420,5 +1420,15 @@ public class LonerDistributionManager implements DM {
   public void createHealthMonitor(InternalDistributedMember owner, GemFireHealthConfig cfg) {
     throw new UnsupportedOperationException(
         "createHealthMonitor is not supported by " + getClass().getSimpleName());
+  }
+
+  @Override
+  public boolean exceptionInThreads() {
+    return false;
+  }
+
+  @Override
+  public void clearExceptionInThreads() {
+    // no-op
   }
 }

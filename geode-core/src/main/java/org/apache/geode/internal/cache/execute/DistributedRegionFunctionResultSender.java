@@ -20,7 +20,7 @@ import org.apache.geode.cache.execute.Function;
 import org.apache.geode.cache.execute.FunctionException;
 import org.apache.geode.cache.execute.ResultCollector;
 import org.apache.geode.distributed.DistributedMember;
-import org.apache.geode.distributed.internal.DM;
+import org.apache.geode.distributed.internal.DistributionManager;
 import org.apache.geode.internal.cache.DistributedRegionFunctionStreamingMessage;
 import org.apache.geode.internal.cache.ForceReattemptException;
 import org.apache.geode.internal.i18n.LocalizedStrings;
@@ -33,7 +33,7 @@ public class DistributedRegionFunctionResultSender implements InternalResultSend
 
   DistributedRegionFunctionStreamingMessage msg = null;
 
-  private final DM dm;
+  private final DistributionManager dm;
 
   private ResultCollector rc;
 
@@ -53,8 +53,8 @@ public class DistributedRegionFunctionResultSender implements InternalResultSend
    * @param msg
    * @param dm
    */
-  public DistributedRegionFunctionResultSender(DM dm, DistributedRegionFunctionStreamingMessage msg,
-      Function function) {
+  public DistributedRegionFunctionResultSender(DistributionManager dm,
+      DistributedRegionFunctionStreamingMessage msg, Function function) {
     this.msg = msg;
     this.dm = dm;
     this.functionObject = function;
@@ -64,8 +64,8 @@ public class DistributedRegionFunctionResultSender implements InternalResultSend
    * Have to combine next two construcotr in one and make a new class which will send Results back.
    *
    */
-  public DistributedRegionFunctionResultSender(DM dm, ResultCollector rc, Function function,
-      final ServerToClientFunctionResultSender sender) {
+  public DistributedRegionFunctionResultSender(DistributionManager dm, ResultCollector rc,
+      Function function, final ServerToClientFunctionResultSender sender) {
     this.dm = dm;
     this.isLocal = true;
     this.rc = rc;

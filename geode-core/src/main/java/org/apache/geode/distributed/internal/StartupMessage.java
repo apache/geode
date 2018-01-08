@@ -63,7 +63,7 @@ public class StartupMessage extends HighPriorityDistributionMessage implements A
    * @return list of addresses for this host
    * @since GemFire 5.7
    */
-  public static Set getMyAddresses(DistributionManager dm) {
+  public static Set getMyAddresses(ClusterDistributionManager dm) {
     try {
       Set addresses = SocketCreator.getMyAddresses();
       return addresses;
@@ -176,10 +176,11 @@ public class StartupMessage extends HighPriorityDistributionMessage implements A
    * This method is invoked on the receiver side
    */
   @Override
-  protected void process(DistributionManager dm) {
+  protected void process(ClusterDistributionManager dm) {
     String rejectionMessage = null;
-    final boolean isAdminDM = dm.getId().getVmKind() == DistributionManager.ADMIN_ONLY_DM_TYPE
-        || dm.getId().getVmKind() == DistributionManager.LOCATOR_DM_TYPE;
+    final boolean isAdminDM =
+        dm.getId().getVmKind() == ClusterDistributionManager.ADMIN_ONLY_DM_TYPE
+            || dm.getId().getVmKind() == ClusterDistributionManager.LOCATOR_DM_TYPE;
 
     String myVersion = GemFireVersion.getGemFireVersion();
     String theirVersion = this.version;

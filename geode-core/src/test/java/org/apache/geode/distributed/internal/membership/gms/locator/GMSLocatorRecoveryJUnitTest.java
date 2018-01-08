@@ -39,9 +39,9 @@ import org.junit.experimental.categories.Category;
 import org.apache.geode.DataSerializer;
 import org.apache.geode.InternalGemFireException;
 import org.apache.geode.distributed.Locator;
+import org.apache.geode.distributed.internal.ClusterDistributionManager;
 import org.apache.geode.distributed.internal.DMStats;
 import org.apache.geode.distributed.internal.DistributionConfigImpl;
-import org.apache.geode.distributed.internal.DistributionManager;
 import org.apache.geode.distributed.internal.InternalLocator;
 import org.apache.geode.distributed.internal.LocatorStats;
 import org.apache.geode.distributed.internal.membership.DistributedMembershipListener;
@@ -166,7 +166,7 @@ public class GMSLocatorRecoveryJUnitTest {
       nonDefault.put(BIND_ADDRESS, localHost.getHostAddress());
       DistributionConfigImpl config = new DistributionConfigImpl(nonDefault);
       RemoteTransportConfig transport =
-          new RemoteTransportConfig(config, DistributionManager.NORMAL_DM_TYPE);
+          new RemoteTransportConfig(config, ClusterDistributionManager.NORMAL_DM_TYPE);
 
       // start the first membership manager
       DistributedMembershipListener listener1 = mock(DistributedMembershipListener.class);

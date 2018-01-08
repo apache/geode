@@ -60,7 +60,7 @@ import org.apache.geode.cache.query.Query;
 import org.apache.geode.cache.query.QueryService;
 import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.distributed.LeaseExpiredException;
-import org.apache.geode.distributed.internal.DistributionManager;
+import org.apache.geode.distributed.internal.ClusterDistributionManager;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.logging.LogService;
@@ -939,7 +939,7 @@ public abstract class AbstractBaseController {
     // find valid data nodes, i.e non locator, non-admin, non-loner nodes
     for (DistributedMember member : distMembers) {
       InternalDistributedMember idm = (InternalDistributedMember) member;
-      if (idm.getVmKind() == DistributionManager.NORMAL_DM_TYPE) {
+      if (idm.getVmKind() == ClusterDistributionManager.NORMAL_DM_TYPE) {
         targetedMembers.add(member);
       }
     }

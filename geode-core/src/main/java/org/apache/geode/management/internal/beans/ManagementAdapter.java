@@ -40,7 +40,7 @@ import org.apache.geode.cache.server.CacheServer;
 import org.apache.geode.cache.wan.GatewayReceiver;
 import org.apache.geode.cache.wan.GatewaySender;
 import org.apache.geode.distributed.Locator;
-import org.apache.geode.distributed.internal.DistributionManager;
+import org.apache.geode.distributed.internal.ClusterDistributionManager;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.distributed.internal.InternalLocator;
 import org.apache.geode.distributed.internal.locks.DLockService;
@@ -970,7 +970,7 @@ public class ManagementAdapter {
     // Don't register the CacheServices in the Locator
     InternalDistributedMember member =
         internalCache.getInternalDistributedSystem().getDistributedMember();
-    if (member.getVmKind() == DistributionManager.LOCATOR_DM_TYPE) {
+    if (member.getVmKind() == ClusterDistributionManager.LOCATOR_DM_TYPE) {
       return;
     }
     CacheServiceMBeanBase mbean = cacheService.getMBean();

@@ -36,7 +36,6 @@ import org.apache.geode.InvalidValueException;
 import org.apache.geode.cache.AttributesFactory;
 import org.apache.geode.cache.ClientSession;
 import org.apache.geode.cache.DataPolicy;
-import org.apache.geode.cache.DiskStore;
 import org.apache.geode.cache.DiskStoreFactory;
 import org.apache.geode.cache.DynamicRegionFactory;
 import org.apache.geode.cache.EvictionAction;
@@ -51,11 +50,11 @@ import org.apache.geode.cache.server.ServerLoadProbe;
 import org.apache.geode.cache.server.internal.LoadMonitor;
 import org.apache.geode.cache.wan.GatewayTransportFilter;
 import org.apache.geode.distributed.DistributedMember;
-import org.apache.geode.distributed.internal.DM;
 import org.apache.geode.distributed.internal.DistributionAdvisee;
 import org.apache.geode.distributed.internal.DistributionAdvisor;
 import org.apache.geode.distributed.internal.DistributionAdvisor.Profile;
 import org.apache.geode.distributed.internal.DistributionConfig;
+import org.apache.geode.distributed.internal.DistributionManager;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.distributed.internal.ResourceEvent;
 import org.apache.geode.distributed.internal.ServerLocation;
@@ -537,7 +536,7 @@ public class CacheServerImpl extends AbstractCacheServer implements Distribution
   // DistributionAdvisee methods
 
   @Override
-  public DM getDistributionManager() {
+  public DistributionManager getDistributionManager() {
     return getSystem().getDistributionManager();
   }
 

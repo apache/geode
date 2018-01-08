@@ -1234,6 +1234,44 @@ public class AutoSerializableJUnitTest {
   }
 
   /*
+   * Tests the exclusion algorithm to verify that it can be disabled.
+   */
+  @Test
+  public void testNoHardCodedExcludes() {
+    System.setProperty(
+        DistributionConfig.GEMFIRE_PREFIX + "auto.serialization.no.hardcoded.excludes", "true");
+    setupSerializer();
+    assertFalse(manager.isExcluded("com.gemstone.gemfire.GemFireException"));
+    assertFalse(manager.isExcluded("com.gemstoneplussuffix.gemfire.GemFireException"));
+    assertFalse(manager.isExcluded("org.apache.geode.GemFireException"));
+    assertFalse(manager.isExcluded("org.apache.geodeplussuffix.gemfire.GemFireException"));
+    assertFalse(manager.isExcluded("javax.management.MBeanException"));
+    assertFalse(manager.isExcluded("javaxplussuffix.management.MBeanException"));
+    assertFalse(manager.isExcluded("java.lang.Exception"));
+    assertFalse(manager.isExcluded("javaplussuffix.lang.Exception"));
+    assertFalse(manager.isExcluded("com.example.Moof"));
+  }
+
+  /*
+   * Tests the exclusion algorithm to verify that it does not cast too wide of a net.
+   */
+  @Test
+  public void testHardCodedExcludes() {
+    System.setProperty(
+        DistributionConfig.GEMFIRE_PREFIX + "auto.serialization.no.hardcoded.excludes", "false");
+    setupSerializer();
+    assertTrue(manager.isExcluded("com.gemstone.gemfire.GemFireException"));
+    assertFalse(manager.isExcluded("com.gemstoneplussuffix.gemfire.GemFireException"));
+    assertTrue(manager.isExcluded("org.apache.geode.GemFireException"));
+    assertFalse(manager.isExcluded("org.apache.geodeplussuffix.gemfire.GemFireException"));
+    assertTrue(manager.isExcluded("javax.management.MBeanException"));
+    assertFalse(manager.isExcluded("javaxplussuffix.management.MBeanException"));
+    assertTrue(manager.isExcluded("java.lang.Exception"));
+    assertFalse(manager.isExcluded("javaplussuffix.lang.Exception"));
+    assertFalse(manager.isExcluded("com.example.Moof"));
+  }
+
+  /*
    * This test intends to simulate what happens when differing class loaders hold references to the
    * same named class - something that would happen in the context of an app server. We need to
    * ensure that the AutoSerializableManager tracks these as separate classes even though they might

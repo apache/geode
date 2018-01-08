@@ -37,8 +37,8 @@ import org.apache.geode.cache.Region.Entry;
 import org.apache.geode.cache.RegionEvent;
 import org.apache.geode.cache.Scope;
 import org.apache.geode.cache.util.CacheListenerAdapter;
-import org.apache.geode.distributed.internal.DM;
 import org.apache.geode.distributed.internal.DMStats;
+import org.apache.geode.distributed.internal.DistributionManager;
 import org.apache.geode.internal.tcp.Connection;
 import org.apache.geode.test.dunit.Host;
 import org.apache.geode.test.dunit.LogWriterUtils;
@@ -643,7 +643,7 @@ public class SlowRecDUnitTest extends JUnit4CacheTestCase {
     final AttributesFactory factory = new AttributesFactory();
     factory.setScope(Scope.DISTRIBUTED_NO_ACK);
     final Region r = createRootRegion("slowrec", factory.create());
-    final DM dm = getSystem().getDistributionManager();
+    final DistributionManager dm = getSystem().getDistributionManager();
     final DMStats stats = dm.getStats();
     // set others before vm0 connects
     final Set others = dm.getOtherDistributionManagerIds();
@@ -719,7 +719,7 @@ public class SlowRecDUnitTest extends JUnit4CacheTestCase {
     final AttributesFactory factory = new AttributesFactory();
     factory.setScope(Scope.DISTRIBUTED_NO_ACK);
     final Region r = createRootRegion("slowrec", factory.create());
-    final DM dm = getSystem().getDistributionManager();
+    final DistributionManager dm = getSystem().getDistributionManager();
     final DMStats stats = dm.getStats();
     // set others before vm0 connects
     final Set others = dm.getOtherDistributionManagerIds();
@@ -954,7 +954,7 @@ public class SlowRecDUnitTest extends JUnit4CacheTestCase {
     assertNotNull(getCache());
     assertNotNull(getCache().getRegion("slowrec2"));
 
-    final DM dm = getSystem().getDistributionManager();
+    final DistributionManager dm = getSystem().getDistributionManager();
     final Serializable controllerVM = dm.getDistributionManagerId();
     final DMStats stats = dm.getStats();
     final int millisToWait = 1000 * 60 * 5; // 5 minutes
@@ -972,7 +972,7 @@ public class SlowRecDUnitTest extends JUnit4CacheTestCase {
       public void run2() throws CacheException {
         getSystem(p);
 
-        DM dm = getSystem().getDistributionManager();
+        DistributionManager dm = getSystem().getDistributionManager();
         assertTrue(dm.getDistributionManagerIds().contains(controllerVM));
 
         AttributesFactory af = new AttributesFactory();
@@ -1173,7 +1173,7 @@ public class SlowRecDUnitTest extends JUnit4CacheTestCase {
     final AttributesFactory factory = new AttributesFactory();
     factory.setScope(Scope.DISTRIBUTED_NO_ACK);
     final Region r = createRootRegion("slowrec", factory.create());
-    final DM dm = getSystem().getDistributionManager();
+    final DistributionManager dm = getSystem().getDistributionManager();
     final DMStats stats = dm.getStats();
     // set others before vm0 connects
     final Set others = dm.getOtherDistributionManagerIds();
@@ -1320,7 +1320,7 @@ public class SlowRecDUnitTest extends JUnit4CacheTestCase {
     factory.setScope(Scope.DISTRIBUTED_NO_ACK);
     factory.setEnableAsyncConflation(true);
     final Region r = createRootRegion("slowrec", factory.create());
-    final DM dm = getSystem().getDistributionManager();
+    final DistributionManager dm = getSystem().getDistributionManager();
     final DMStats stats = dm.getStats();
 
     // set others before vm0 connects

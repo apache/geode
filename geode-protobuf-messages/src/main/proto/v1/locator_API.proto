@@ -23,6 +23,7 @@ package org.apache.geode.internal.protocol.protobuf.v1;
 
 import "v1/basicTypes.proto";
 
+// this will return failure code LOCATOR_ERROR if unable to find a suitable server
 message GetServerRequest {
     repeated Server excludedServers = 1;
     string serverGroup = 2;

@@ -63,7 +63,7 @@ public class ProductUseLog implements MembershipListener {
    */
   public void monitorUse(InternalDistributedSystem system) {
     this.system = system;
-    DM dmgr = system.getDistributionManager();
+    DistributionManager dmgr = system.getDistributionManager();
     dmgr.addMembershipListener(this);
     MembershipManager mmgr = dmgr.getMembershipManager();
     if (mmgr != null) {

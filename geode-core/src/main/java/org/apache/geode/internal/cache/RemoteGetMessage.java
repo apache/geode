@@ -26,7 +26,7 @@ import org.apache.logging.log4j.Logger;
 import org.apache.geode.DataSerializer;
 import org.apache.geode.cache.TransactionDataNotColocatedException;
 import org.apache.geode.distributed.DistributedSystemDisconnectedException;
-import org.apache.geode.distributed.internal.DM;
+import org.apache.geode.distributed.internal.ClusterDistributionManager;
 import org.apache.geode.distributed.internal.DirectReplyProcessor;
 import org.apache.geode.distributed.internal.DistributionManager;
 import org.apache.geode.distributed.internal.DistributionMessage;
@@ -84,7 +84,7 @@ public class RemoteGetMessage extends RemoteOperationMessageWithDirectReply {
 
   @Override
   public int getProcessorType() {
-    return DistributionManager.SERIAL_EXECUTOR;
+    return ClusterDistributionManager.SERIAL_EXECUTOR;
   }
 
   @Override
@@ -94,8 +94,8 @@ public class RemoteGetMessage extends RemoteOperationMessageWithDirectReply {
   }
 
   @Override
-  protected boolean operateOnRegion(final DistributionManager dm, LocalRegion r, long startTime)
-      throws RemoteOperationException {
+  protected boolean operateOnRegion(final ClusterDistributionManager dm, LocalRegion r,
+      long startTime) throws RemoteOperationException {
     if (logger.isTraceEnabled(LogMarker.DM)) {
       logger.trace(LogMarker.DM, "RemoteGetMessage operateOnRegion: {}", r.getFullPath());
     }
@@ -275,7 +275,7 @@ public class RemoteGetMessage extends RemoteOperationMessageWithDirectReply {
      * @param dm the distribution manager that is processing the message.
      */
     @Override
-    public void process(final DM dm, ReplyProcessor21 processor) {
+    public void process(final DistributionManager dm, ReplyProcessor21 processor) {
       final boolean isDebugEnabled = logger.isTraceEnabled(LogMarker.DM);
 
       final long startTime = getTimestamp();

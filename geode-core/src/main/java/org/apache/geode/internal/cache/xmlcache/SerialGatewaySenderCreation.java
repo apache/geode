@@ -19,10 +19,10 @@ import java.util.List;
 import org.apache.geode.CancelCriterion;
 import org.apache.geode.cache.wan.GatewayQueueEvent;
 import org.apache.geode.cache.wan.GatewaySender;
-import org.apache.geode.distributed.internal.DM;
 import org.apache.geode.distributed.internal.DistributionAdvisee;
 import org.apache.geode.distributed.internal.DistributionAdvisor;
 import org.apache.geode.distributed.internal.DistributionAdvisor.Profile;
+import org.apache.geode.distributed.internal.DistributionManager;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.internal.cache.EntryEventImpl;
 import org.apache.geode.internal.cache.EnumListenerEvent;
@@ -58,7 +58,7 @@ public class SerialGatewaySenderCreation extends AbstractGatewaySender implement
     return null;
   }
 
-  public DM getDistributionManager() {
+  public DistributionManager getDistributionManager() {
     return null;
   }
 
