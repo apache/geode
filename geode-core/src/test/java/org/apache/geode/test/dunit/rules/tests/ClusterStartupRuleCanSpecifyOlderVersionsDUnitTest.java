@@ -40,39 +40,17 @@ import org.apache.geode.test.junit.runners.CategoryWithParameterizedRunnerFactor
 @Category(DistributedTest.class)
 @RunWith(Parameterized.class)
 @Parameterized.UseParametersRunnerFactory(CategoryWithParameterizedRunnerFactory.class)
-public class ClusterStartupRuleCanSpecifyVersionsDUnitTest {
+public class ClusterStartupRuleCanSpecifyOlderVersionsDUnitTest {
   @Parameterized.Parameter
   public String version;
 
   @Parameterized.Parameters
   public static List<String> versions() {
-    return VersionManager.getInstance().getVersions();
+    return VersionManager.getInstance().getVersionsWithoutCurrent();
   }
 
   @Rule
   public ClusterStartupRule csRule = new ClusterStartupRule();
-
-  private static String getLongVersionFromShorthand(String shorthand) throws Exception {
-    switch (shorthand) {
-      case "000":
-        return "1.5.0-SNAPSHOT";
-      case "100":
-        return "1.0.0-incubating";
-      case "110":
-        // fallthrough
-      case "111":
-        // fallthrough
-      case "120":
-        // fallthrough
-      case "130":
-        // fallthrough
-      case "140":
-        // Inject dots between each digit, e.g., 140 -> 1.4.0
-        return shorthand.charAt(0) + "." + shorthand.charAt(1) + "." + shorthand.charAt(2);
-      default:
-        throw new Exception("Unexpected version shorthand '" + shorthand + "'");
-    }
-  }
 
   @Test
   public void locatorVersioningTest() throws Exception {
@@ -80,7 +58,7 @@ public class ClusterStartupRuleCanSpecifyVersionsDUnitTest {
     String locatorVMVersion = locator.getVM().getVersion();
     String locatorActualVersion = locator.invoke(GemFireVersion::getGemFireVersion);
     assertThat(locatorVMVersion).isEqualTo(version);
-    assertThat(locatorActualVersion).isEqualTo(getLongVersionFromShorthand(version));
+    assertThat(locatorActualVersion).isEqualTo(getDottedVersionString(version));
   }
 
   @Test
@@ -89,7 +67,7 @@ public class ClusterStartupRuleCanSpecifyVersionsDUnitTest {
     String locatorVMVersion = locator.getVM().getVersion();
     String locatorActualVersion = locator.invoke(GemFireVersion::getGemFireVersion);
     assertThat(locatorVMVersion).isEqualTo(version);
-    assertThat(locatorActualVersion).isEqualTo(getLongVersionFromShorthand(version));
+    assertThat(locatorActualVersion).isEqualTo(getDottedVersionString(version));
   }
 
   @Test
@@ -98,7 +76,7 @@ public class ClusterStartupRuleCanSpecifyVersionsDUnitTest {
     String locatorVMVersion = locator.getVM().getVersion();
     String locatorActualVersion = locator.invoke(GemFireVersion::getGemFireVersion);
     assertThat(locatorVMVersion).isEqualTo(version);
-    assertThat(locatorActualVersion).isEqualTo(getLongVersionFromShorthand(version));
+    assertThat(locatorActualVersion).isEqualTo(getDottedVersionString(version));
   }
 
   @Test
@@ -109,6 +87,15 @@ public class ClusterStartupRuleCanSpecifyVersionsDUnitTest {
     String locatorVMVersion = locator.getVM().getVersion();
     String locatorActualVersion = locator.invoke(GemFireVersion::getGemFireVersion);
     assertThat(locatorVMVersion).isEqualTo(version);
-    assertThat(locatorActualVersion).isEqualTo(getLongVersionFromShorthand(version));
+    assertThat(locatorActualVersion).isEqualTo(getDottedVersionString(version));
+  }
+
+  private static String getDottedVersionString(String vmVersionShorthand) throws Exception {
+    if (vmVersionShorthand.equals("100")) {
+      return "1.0.0-incubating";
+    } else {
+      return vmVersionShorthand.charAt(0) + "." + vmVersionShorthand.charAt(1) + "."
+          + vmVersionShorthand.charAt(2);
+    }
   }
 }
