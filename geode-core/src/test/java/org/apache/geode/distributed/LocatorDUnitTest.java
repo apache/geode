@@ -2058,9 +2058,6 @@ public class LocatorDUnitTest extends JUnit4DistributedTestCase {
 
       locator.stop();
       locator = Locator.startLocatorAndDS(port1, logFile, p);
-      vm0.invoke("dump stack", () -> {
-        OSProcess.printStacks(0);
-      });
       assertEquals(2, ((InternalDistributedSystem) locator.getDistributedSystem()).getDM()
           .getViewMembers().size());
 
