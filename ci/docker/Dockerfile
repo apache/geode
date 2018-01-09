@@ -47,7 +47,7 @@ ADD ./initdocker /usr/local/bin/initdocker
 RUN chmod +x /usr/local/bin/initdocker
 
 # Install dunit-process
-RUN curl -Lo /usr/local/bin/dunit-process https://github.com/jdeppe-pivotal/progress-util/releases/download/0.1/progress.linux
+RUN curl -Lo /usr/local/bin/dunit-process https://github.com/jdeppe-pivotal/progress-util/releases/download/0.2/progress.linux
 RUN chmod +x /usr/local/bin/dunit-process
 
 # Cache gradle for performance
