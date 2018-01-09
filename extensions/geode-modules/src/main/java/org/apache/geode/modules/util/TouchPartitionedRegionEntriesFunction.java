@@ -17,6 +17,8 @@ package org.apache.geode.modules.util;
 import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
+import java.util.Collection;
+import java.util.Collections;
 import java.util.Properties;
 import java.util.Set;
 
@@ -29,6 +31,7 @@ import org.apache.geode.cache.execute.Function;
 import org.apache.geode.cache.execute.FunctionContext;
 import org.apache.geode.cache.execute.RegionFunctionContext;
 import org.apache.geode.cache.partition.PartitionRegionHelper;
+import org.apache.geode.security.ResourcePermission;
 
 /**
  * Touches the keys contained in the set of keys by performing a get on the partitioned region.
@@ -74,6 +77,13 @@ public class TouchPartitionedRegionEntriesFunction
 
     // Return result to get around NPE in LocalResultCollectorImpl
     context.getResultSender().lastResult(true);
+  }
+
+  @Override
+  public Collection<ResourcePermission> getRequiredPermissions(String regionName) {
+    return Collections.singletonList(
+        new ResourcePermission(ResourcePermission.Resource.DATA, ResourcePermission.Operation.READ,
+            regionName));
   }
 
   public String getId() {

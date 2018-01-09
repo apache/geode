@@ -17,6 +17,8 @@ package org.apache.geode.modules.util;
 import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
+import java.util.Collection;
+import java.util.Collections;
 import java.util.Properties;
 import java.util.Set;
 
@@ -27,6 +29,7 @@ import org.apache.geode.cache.Declarable;
 import org.apache.geode.cache.Region;
 import org.apache.geode.cache.execute.Function;
 import org.apache.geode.cache.execute.FunctionContext;
+import org.apache.geode.security.ResourcePermission;
 
 /**
  * Touches the keys contained in the set of keys by performing a get on the replicated region. This
@@ -69,6 +72,13 @@ public class TouchReplicatedRegionEntriesFunction
 
     // Return result to get around NPE in LocalResultCollectorImpl
     context.getResultSender().lastResult(true);
+  }
+
+  @Override
+  public Collection<ResourcePermission> getRequiredPermissions(String regionName) {
+    return Collections.singletonList(
+        new ResourcePermission(ResourcePermission.Resource.DATA, ResourcePermission.Operation.READ,
+            regionName));
   }
 
   public String getId() {
