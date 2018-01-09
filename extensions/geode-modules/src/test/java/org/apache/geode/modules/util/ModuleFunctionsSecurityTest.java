@@ -15,9 +15,9 @@
 
 package org.apache.geode.modules.util;
 
-import org.junit.After;
 import org.junit.BeforeClass;
 import org.junit.ClassRule;
+import org.junit.Rule;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
@@ -25,6 +25,7 @@ import org.apache.geode.cache.RegionShortcut;
 import org.apache.geode.cache.execute.FunctionService;
 import org.apache.geode.examples.SimpleSecurityManager;
 import org.apache.geode.test.junit.categories.IntegrationTest;
+import org.apache.geode.test.junit.rules.ConnectionConfiguration;
 import org.apache.geode.test.junit.rules.GfshCommandRule;
 import org.apache.geode.test.junit.rules.ServerStarterRule;
 
@@ -37,8 +38,8 @@ public class ModuleFunctionsSecurityTest {
           .withRegion(RegionShortcut.REPLICATE, "REPLICATE_1")
           .withRegion(RegionShortcut.PARTITION, "PARTITION_1").withAutoStart();
 
-  @ClassRule
-  public static GfshCommandRule gfsh = new GfshCommandRule();
+  @Rule
+  public GfshCommandRule gfsh = new GfshCommandRule(server::getJmxPort, GfshCommandRule.PortType.jmxManager);
 
   @BeforeClass
   public static void setupClass() {
@@ -49,92 +50,40 @@ public class ModuleFunctionsSecurityTest {
     FunctionService.registerFunction(new TouchReplicatedRegionEntriesFunction());
   }
 
-  @After
-  public void teardown() throws Exception {
-    gfsh.disconnect();
-  }
-
   @Test
+  @ConnectionConfiguration(user = "dataWrite", password = "dataWrite")
   public void testInvalidPermissionsForBootstrappingFunction() throws Exception {
-    gfsh.secureConnectAndVerify(server.getJmxPort(), GfshCommandRule.PortType.jmxManager,
-        "dataWrite", "dataWrite");
     gfsh.executeAndAssertThat("execute function --id=" + BootstrappingFunction.ID)
         .containsOutput("not authorized for CLUSTER:MANAGE").statusIsSuccess();
   }
 
   @Test
-  public void testValidPermissionsForBootstrappingFunction() throws Exception {
-    gfsh.secureConnectAndVerify(server.getJmxPort(), GfshCommandRule.PortType.jmxManager,
-        "clusterManage", "clusterManage");
-    gfsh.executeAndAssertThat("execute function --id=" + BootstrappingFunction.ID)
-        .containsOutput("true").statusIsSuccess();
-  }
-
-  @Test
+  @ConnectionConfiguration(user = "dataWrite", password = "dataWrite")
   public void testInvalidPermissionsForCreateRegionFunction() throws Exception {
-    gfsh.secureConnectAndVerify(server.getJmxPort(), GfshCommandRule.PortType.jmxManager,
-        "dataWrite", "dataWrite");
     gfsh.executeAndAssertThat("execute function --id=" + CreateRegionFunction.ID)
         .containsOutput("not authorized for DATA:MANAGE").statusIsSuccess();
   }
 
   @Test
-  public void testValidPermissionsForCreateRegionFunction() throws Exception {
-    gfsh.secureConnectAndVerify(server.getJmxPort(), GfshCommandRule.PortType.jmxManager,
-        "dataManage", "dataManage");
-    gfsh.executeAndAssertThat("execute function --id=" + CreateRegionFunction.ID)
-        .containsOutput("java.lang.NullPointerException").statusIsSuccess();
-  }
-
-  @Test
+  @ConnectionConfiguration(user = "dataWrite", password = "dataWrite")
   public void testInvalidPermissionsForRegionSizeFunction() throws Exception {
-    gfsh.secureConnectAndVerify(server.getJmxPort(), GfshCommandRule.PortType.jmxManager,
-        "dataWrite", "dataWrite");
     gfsh.executeAndAssertThat("execute function --region=REPLICATE_1 --id=" + RegionSizeFunction.ID)
         .containsOutput("not authorized for DATA:READ:REPLICATE_1").statusIsSuccess();
   }
 
   @Test
-  public void testValidPermissionsForRegionSizeFunction() throws Exception {
-    gfsh.secureConnectAndVerify(server.getJmxPort(), GfshCommandRule.PortType.jmxManager,
-        "dataRead", "dataRead");
-    gfsh.executeAndAssertThat("execute function --arguments=REPLICATE_1 --region=REPLICATE_1 --id="
-        + RegionSizeFunction.ID).containsOutput(" 0\n").statusIsSuccess();
-  }
-
-  @Test
+  @ConnectionConfiguration(user = "dataWrite", password = "dataWrite")
   public void testInvalidPermissionsForTouchPartitionedRegionEntriesFunction() throws Exception {
-    gfsh.secureConnectAndVerify(server.getJmxPort(), GfshCommandRule.PortType.jmxManager,
-        "dataWrite", "dataWrite");
     gfsh.executeAndAssertThat(
         "execute function --region=PARTITION_1 --id=" + TouchPartitionedRegionEntriesFunction.ID)
         .containsOutput("not authorized for DATA:READ:PARTITION_1").statusIsSuccess();
   }
 
   @Test
-  public void testValidPermissionsForTouchPartitionedRegionEntriesFunction() throws Exception {
-    gfsh.secureConnectAndVerify(server.getJmxPort(), GfshCommandRule.PortType.jmxManager,
-        "dataRead", "dataRead");
-    gfsh.executeAndAssertThat("execute function --arguments=PARTITION_1 --region=PARTITION_1 --id="
-        + TouchPartitionedRegionEntriesFunction.ID).containsOutput("java.lang.NullPointerException")
-        .statusIsSuccess();
-  }
-
-  @Test
+  @ConnectionConfiguration(user = "dataWrite", password = "dataWrite")
   public void testInvalidPermissionsForTouchReplicatedRegionEntriesFunction() throws Exception {
-    gfsh.secureConnectAndVerify(server.getJmxPort(), GfshCommandRule.PortType.jmxManager,
-        "dataWrite", "dataWrite");
     gfsh.executeAndAssertThat(
         "execute function --region=REPLICATE_1 --id=" + TouchReplicatedRegionEntriesFunction.ID)
         .containsOutput("not authorized for DATA:READ:REPLICATE_1").statusIsSuccess();
-  }
-
-  @Test
-  public void testValidPermissionsForTouchReplicatedRegionEntriesFunction() throws Exception {
-    gfsh.secureConnectAndVerify(server.getJmxPort(), GfshCommandRule.PortType.jmxManager,
-        "dataRead", "dataRead");
-    gfsh.executeAndAssertThat(
-        "execute function --arguments=REPLICATE_1 --id=" + TouchReplicatedRegionEntriesFunction.ID)
-        .containsOutput("java.lang.ArrayIndexOutOfBoundsException").statusIsSuccess();
   }
 }
