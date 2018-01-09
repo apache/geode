@@ -32,12 +32,10 @@ import org.apache.geode.test.junit.rules.ServerStarterRule;
 public class ModuleFunctionsSecurityTest {
 
   @ClassRule
-  public static ServerStarterRule server = new ServerStarterRule()
-      .withJMXManager()
-      .withSecurityManager(SimpleSecurityManager.class)
-      .withRegion(RegionShortcut.REPLICATE, "REPLICATE_1")
-      .withRegion(RegionShortcut.PARTITION, "PARTITION_1")
-      .withAutoStart();
+  public static ServerStarterRule server =
+      new ServerStarterRule().withJMXManager().withSecurityManager(SimpleSecurityManager.class)
+          .withRegion(RegionShortcut.REPLICATE, "REPLICATE_1")
+          .withRegion(RegionShortcut.PARTITION, "PARTITION_1").withAutoStart();
 
   @ClassRule
   public static GfshCommandRule gfsh = new GfshCommandRule();
@@ -61,8 +59,7 @@ public class ModuleFunctionsSecurityTest {
     gfsh.secureConnectAndVerify(server.getJmxPort(), GfshCommandRule.PortType.jmxManager,
         "dataWrite", "dataWrite");
     gfsh.executeAndAssertThat("execute function --id=" + BootstrappingFunction.ID)
-        .containsOutput("not authorized for CLUSTER:MANAGE")
-        .statusIsSuccess();
+        .containsOutput("not authorized for CLUSTER:MANAGE").statusIsSuccess();
   }
 
   @Test
@@ -70,8 +67,7 @@ public class ModuleFunctionsSecurityTest {
     gfsh.secureConnectAndVerify(server.getJmxPort(), GfshCommandRule.PortType.jmxManager,
         "clusterManage", "clusterManage");
     gfsh.executeAndAssertThat("execute function --id=" + BootstrappingFunction.ID)
-        .containsOutput("true")
-        .statusIsSuccess();
+        .containsOutput("true").statusIsSuccess();
   }
 
   @Test
@@ -79,8 +75,7 @@ public class ModuleFunctionsSecurityTest {
     gfsh.secureConnectAndVerify(server.getJmxPort(), GfshCommandRule.PortType.jmxManager,
         "dataWrite", "dataWrite");
     gfsh.executeAndAssertThat("execute function --id=" + CreateRegionFunction.ID)
-        .containsOutput("not authorized for DATA:MANAGE")
-        .statusIsSuccess();
+        .containsOutput("not authorized for DATA:MANAGE").statusIsSuccess();
   }
 
   @Test
@@ -88,8 +83,7 @@ public class ModuleFunctionsSecurityTest {
     gfsh.secureConnectAndVerify(server.getJmxPort(), GfshCommandRule.PortType.jmxManager,
         "dataManage", "dataManage");
     gfsh.executeAndAssertThat("execute function --id=" + CreateRegionFunction.ID)
-        .containsOutput("java.lang.NullPointerException")
-        .statusIsSuccess();
+        .containsOutput("java.lang.NullPointerException").statusIsSuccess();
   }
 
   @Test
@@ -97,34 +91,32 @@ public class ModuleFunctionsSecurityTest {
     gfsh.secureConnectAndVerify(server.getJmxPort(), GfshCommandRule.PortType.jmxManager,
         "dataWrite", "dataWrite");
     gfsh.executeAndAssertThat("execute function --region=REPLICATE_1 --id=" + RegionSizeFunction.ID)
-        .containsOutput("not authorized for DATA:READ:REPLICATE_1")
-        .statusIsSuccess();
+        .containsOutput("not authorized for DATA:READ:REPLICATE_1").statusIsSuccess();
   }
 
   @Test
   public void testValidPermissionsForRegionSizeFunction() throws Exception {
     gfsh.secureConnectAndVerify(server.getJmxPort(), GfshCommandRule.PortType.jmxManager,
         "dataRead", "dataRead");
-    gfsh.executeAndAssertThat("execute function --arguments=REPLICATE_1 --region=REPLICATE_1 --id=" + RegionSizeFunction.ID)
-        .containsOutput(" 0\n")
-        .statusIsSuccess();
+    gfsh.executeAndAssertThat("execute function --arguments=REPLICATE_1 --region=REPLICATE_1 --id="
+        + RegionSizeFunction.ID).containsOutput(" 0\n").statusIsSuccess();
   }
 
   @Test
   public void testInvalidPermissionsForTouchPartitionedRegionEntriesFunction() throws Exception {
     gfsh.secureConnectAndVerify(server.getJmxPort(), GfshCommandRule.PortType.jmxManager,
         "dataWrite", "dataWrite");
-    gfsh.executeAndAssertThat("execute function --region=PARTITION_1 --id=" + TouchPartitionedRegionEntriesFunction.ID)
-        .containsOutput("not authorized for DATA:READ:PARTITION_1")
-        .statusIsSuccess();
+    gfsh.executeAndAssertThat(
+        "execute function --region=PARTITION_1 --id=" + TouchPartitionedRegionEntriesFunction.ID)
+        .containsOutput("not authorized for DATA:READ:PARTITION_1").statusIsSuccess();
   }
 
   @Test
   public void testValidPermissionsForTouchPartitionedRegionEntriesFunction() throws Exception {
     gfsh.secureConnectAndVerify(server.getJmxPort(), GfshCommandRule.PortType.jmxManager,
         "dataRead", "dataRead");
-    gfsh.executeAndAssertThat("execute function --arguments=PARTITION_1 --region=PARTITION_1 --id=" + TouchPartitionedRegionEntriesFunction.ID)
-        .containsOutput("java.lang.NullPointerException")
+    gfsh.executeAndAssertThat("execute function --arguments=PARTITION_1 --region=PARTITION_1 --id="
+        + TouchPartitionedRegionEntriesFunction.ID).containsOutput("java.lang.NullPointerException")
         .statusIsSuccess();
   }
 
@@ -132,17 +124,17 @@ public class ModuleFunctionsSecurityTest {
   public void testInvalidPermissionsForTouchReplicatedRegionEntriesFunction() throws Exception {
     gfsh.secureConnectAndVerify(server.getJmxPort(), GfshCommandRule.PortType.jmxManager,
         "dataWrite", "dataWrite");
-    gfsh.executeAndAssertThat("execute function --region=REPLICATE_1 --id=" + TouchReplicatedRegionEntriesFunction.ID)
-        .containsOutput("not authorized for DATA:READ:REPLICATE_1")
-        .statusIsSuccess();
+    gfsh.executeAndAssertThat(
+        "execute function --region=REPLICATE_1 --id=" + TouchReplicatedRegionEntriesFunction.ID)
+        .containsOutput("not authorized for DATA:READ:REPLICATE_1").statusIsSuccess();
   }
 
   @Test
   public void testValidPermissionsForTouchReplicatedRegionEntriesFunction() throws Exception {
     gfsh.secureConnectAndVerify(server.getJmxPort(), GfshCommandRule.PortType.jmxManager,
         "dataRead", "dataRead");
-    gfsh.executeAndAssertThat("execute function --arguments=REPLICATE_1 --id=" + TouchReplicatedRegionEntriesFunction.ID)
-        .containsOutput("java.lang.ArrayIndexOutOfBoundsException")
-        .statusIsSuccess();
+    gfsh.executeAndAssertThat(
+        "execute function --arguments=REPLICATE_1 --id=" + TouchReplicatedRegionEntriesFunction.ID)
+        .containsOutput("java.lang.ArrayIndexOutOfBoundsException").statusIsSuccess();
   }
 }

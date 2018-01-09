@@ -81,9 +81,8 @@ public class TouchPartitionedRegionEntriesFunction
 
   @Override
   public Collection<ResourcePermission> getRequiredPermissions(String regionName) {
-    return Collections.singletonList(
-        new ResourcePermission(ResourcePermission.Resource.DATA, ResourcePermission.Operation.READ,
-            regionName));
+    return Collections.singletonList(new ResourcePermission(ResourcePermission.Resource.DATA,
+        ResourcePermission.Operation.READ, regionName));
   }
 
   public String getId() {
