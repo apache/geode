@@ -18,12 +18,15 @@ import static java.util.concurrent.TimeUnit.MILLISECONDS;
 import static java.util.concurrent.TimeUnit.SECONDS;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.awaitility.Awaitility.await;
+import static org.mockito.Mockito.inOrder;
+import static org.mockito.Mockito.mock;
 
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeoutException;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.atomic.AtomicReference;
 
 import org.junit.After;
 import org.junit.Before;
@@ -32,27 +35,34 @@ import org.junit.Test;
 import org.junit.experimental.categories.Category;
 import org.junit.runner.Result;
 import org.junit.runner.notification.Failure;
+import org.mockito.InOrder;
+import org.mockito.verification.VerificationMode;
 
 import org.apache.geode.test.junit.categories.UnitTest;
 import org.apache.geode.test.junit.runners.TestRunner;
 
 @Category(UnitTest.class)
-public class ExecutorServiceTest {
+public class ExecutorServiceRuleTest {
 
   static volatile AtomicIntegerWithMaxValueSeen concurrentTasks;
   static volatile CountDownLatch hangLatch;
   static volatile CountDownLatch terminateLatch;
   static volatile ExecutorService executorService;
+  static Awaits.Invocations invocations;
 
   @Before
   public void setUp() throws Exception {
     concurrentTasks = new AtomicIntegerWithMaxValueSeen(0);
     hangLatch = new CountDownLatch(1);
     terminateLatch = new CountDownLatch(1);
+    invocations = mock(Awaits.Invocations.class);
   }
 
   @After
   public void tearDown() throws Exception {
+    concurrentTasks = null;
+    invocations = null;
+
     while (hangLatch != null && hangLatch.getCount() > 0) {
       hangLatch.countDown();;
     }
@@ -61,6 +71,9 @@ public class ExecutorServiceTest {
       executorService.shutdownNow();
       executorService = null;
     }
+
+    hangLatch = null;
+    terminateLatch = null;
   }
 
   @Test
@@ -90,7 +103,7 @@ public class ExecutorServiceTest {
     assertThat(result.wasSuccessful()).isTrue();
     assertThat(isTestHung()).isTrue();
     assertThat(executorService.isShutdown()).isTrue();
-    terminateLatch.await(30, SECONDS);
+    terminateLatch.await(10, SECONDS);
   }
 
   @Test
@@ -98,7 +111,7 @@ public class ExecutorServiceTest {
     Result result = TestRunner.runTest(Hangs.class);
     assertThat(result.wasSuccessful()).isTrue();
     assertThat(isTestHung()).isTrue();
-    await().atMost(30, SECONDS).until(() -> assertThat(executorService.isTerminated()).isTrue());
+    await().atMost(10, SECONDS).until(() -> assertThat(executorService.isTerminated()).isTrue());
     terminateLatch.await(1, SECONDS);
   }
 
@@ -109,6 +122,23 @@ public class ExecutorServiceTest {
     assertThat(result.getFailures()).hasSize(1);
     Failure failure = result.getFailures().get(0);
     assertThat(failure.getException()).isInstanceOf(TimeoutException.class);
+  }
+
+  @Test
+  public void awaitTermination() throws Exception {
+    Result result = TestRunner.runTest(Awaits.class);
+    assertThat(result.wasSuccessful()).isTrue();
+
+    assertThat(isTestHung()).isTrue();
+    await().atMost(10, SECONDS).until(() -> assertThat(executorService.isTerminated()).isTrue());
+    invocations.awaitTermination();
+
+    InOrder invocationOrder = inOrder(invocations);
+    invocationOrder.verify(invocations).after();
+    invocationOrder.verify(invocations).hangLatch();
+    invocationOrder.verify(invocations).terminateLatch();
+    invocationOrder.verify(invocations).awaitTermination();
+    invocationOrder.verifyNoMoreInteractions();
   }
 
   @Test
@@ -250,6 +280,45 @@ public class ExecutorServiceTest {
       hang2Latch.countDown();
       task2.get(30, SECONDS);
       assertThat(terminateLatch.getCount()).isEqualTo(0);
+    }
+  }
+
+  public static class Awaits {
+
+    @Rule
+    public ExecutorServiceRule executorServiceRule =
+        ExecutorServiceRule.builder().awaitTermination(2, SECONDS).build();
+
+    @Before
+    public void setUp() throws Exception {
+      executorService = executorServiceRule.getExecutorService();
+    }
+
+    @After
+    public void after() throws Exception {
+      invocations.after();
+    }
+
+    @Test
+    public void doTest() throws Exception {
+      executorServiceRule.runAsync(() -> {
+        try {
+          hangLatch.await(1, SECONDS);
+          invocations.hangLatch();
+        } catch (InterruptedException e) {
+          throw new RuntimeException(e);
+        } finally {
+          terminateLatch.countDown();
+          invocations.terminateLatch();
+        }
+      });
+    }
+
+    interface Invocations {
+      void hangLatch();
+      void terminateLatch();
+      void awaitTermination();
+      void after();
     }
   }
 

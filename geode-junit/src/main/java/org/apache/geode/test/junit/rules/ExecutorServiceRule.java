@@ -15,7 +15,6 @@
 package org.apache.geode.test.junit.rules;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.extractProperty;
 
 import java.util.concurrent.Callable;
 import java.util.concurrent.CompletableFuture;
@@ -30,24 +29,12 @@ import org.apache.geode.test.junit.rules.serializable.SerializableExternalResour
 
 /**
  * Provides a reusable mechanism for executing tasks asynchronously in tests. This {@code Rule}
- * creates an {@code ExecutorService} which is terminated after the scope of the {@code Rule}.
+ * creates an {@code ExecutorService} which is terminated after the scope of the {@code Rule}. This
+ * {@code Rule} can be used in tests for hangs, deadlocks, and infinite loops.
  *
  * <p>
  * By default, the {@code ExecutorService} is single-threaded. You can specify the thread count by
- * using {@link Builder#threadCount(int)}.
- *
- * <p>
- * The {@code Rule} can be configured to assert that all tasks completed before the scope of the
- * {@code Rule} by specifying {@link Builder#assertTasksAreDone()}.
- *
- * <p>
- * The {@code Rule} can be configured to await termination by specifying
- * {@link Builder#awaitTermination(long, TimeUnit)}. If all tasks have not terminated by the
- * specified timeout, then {@code TimeoutException} will be thrown. This has the potential to
- * obscure any {@code Throwable}s thrown by the test itself.
- *
- * <p>
- * This can be used in tests to prove existence of and fix for hangs, deadlocks, and infinite loops.
+ * using {@link Builder#threadCount(int)} or {@link ExecutorServiceRule(int)}.
  *
  * <p>
  * Example with default configuration (single-threaded and does not assert that tasks are done):
@@ -73,79 +60,14 @@ import org.apache.geode.test.junit.rules.serializable.SerializableExternalResour
  * </pre>
  *
  * <p>
- * Example with assertTasksAreDone enabled (asserts that no tasks are queued up, still waiting to be
- * processed after test completes). Note, this example fails:
- *
- * <pre>
- * private CountDownLatch hangLatch = new CountDownLatch(1);
- *
- * {@literal @}Rule
- * public AsynchronousRule asynchronousRule = AsynchronousRule.builder().assertTasksAreDone().build();
- *
- * {@literal @}Test
- * public void doTest() throws Exception {
- *   Future<Void> thread1 = asynchronousRule.runAsync(() -> {
- *     try {
- *       hangLatch.await();
- *     } catch (InterruptedException e) {
- *       throw new RuntimeException(e);
- *     }
- *   });
- *
- *   Future<Void> thread2 = asynchronousRule.runAsync(() -> {
- *     try {
- *       hangLatch.await();
- *     } catch (InterruptedException e) {
- *     throw new RuntimeException(e);
- *     }
- *   });
- *
- *   assertThatThrownBy(() -> thread1.get(1, MILLISECONDS)).isInstanceOf(TimeoutException.class);
- * }
- * </pre>
+ * The {@code Rule} can be configured to await termination by specifying
+ * {@link Builder#awaitTermination(long, TimeUnit)}. If all tasks have not terminated by the
+ * specified timeout, then {@code TimeoutException} will be thrown. This has the potential to
+ * obscure any {@code Throwable}s thrown by the test itself.
  *
  * <p>
- * Fix for the above example is to perform tearDown that terminates both tasks before the
- * {@code Rule} performs its own {@code after}:
- *
- * <pre>
- * private CountDownLatch hangLatch = new CountDownLatch(1);
- *
- * {@literal @}Rule
- * public AsynchronousRule asynchronousRule = AsynchronousRule.builder().assertTasksAreDone().build();
- *
- * {@literal @}After
- * public void tearDown() throws Exception {
- *   hangLatch.countDown();
- * }
- *
- * {@literal @}Test
- * public void doTest() throws Exception {
- *   Future<Void> thread1 = asynchronousRule.runAsync(() -> {
- *     try {
- *       hangLatch.await();
- *     } catch (InterruptedException e) {
- *       throw new RuntimeException(e);
- *     }
- *   });
- *
- *   Future<Void> thread2 = asynchronousRule.runAsync(() -> {
- *     try {
- *       hangLatch.await();
- *     } catch (InterruptedException e) {
- *     throw new RuntimeException(e);
- *     }
- *   });
- *
- *   assertThatThrownBy(() -> thread1.get(1, MILLISECONDS)).isInstanceOf(TimeoutException.class);
- * }
- * </pre>
- *
- * <p>
- * Example with awaitTermination enabled (awaits up to timeout for all submitted tasks to terminate
- * after being interrupted). This causes the {@code Rule} to await termination of all threads during
- * its tear down. This would only be interesting if you're trying to discover tasks that might not
- * be responsive to interrupts such as blocking IO reads on Windows:
+ * Example with awaitTermination enabled. Awaits up to timeout for all submitted tasks to terminate.
+ * This causes the {@code Rule} to invoke awaitTermination during its tear down:
  *
  * <pre>
  * private CountDownLatch hangLatch = new CountDownLatch(1);
@@ -171,31 +93,58 @@ import org.apache.geode.test.junit.rules.serializable.SerializableExternalResour
 public class ExecutorServiceRule extends SerializableExternalResource {
 
   protected final int threadCount;
-  protected final boolean assertTasksAreDone;
-  protected final boolean awaitTermination;
+  protected final boolean enableAwaitTermination;
   protected final long awaitTerminationTimeout;
   protected final TimeUnit awaitTerminationTimeUnit;
+  protected final boolean awaitTerminationBeforeShutdown;
+  protected final boolean useShutdown;
+  protected final boolean useShutdownNow;
 
   protected transient volatile ExecutorService executor;
 
+  /**
+   * Returns a {@code Builder} to configure a new {@code ExecutorServiceRule}.
+   */
   public static Builder builder() {
     return new Builder();
   }
 
   protected ExecutorServiceRule(Builder builder) {
     this.threadCount = builder.threadCount;
-    this.assertTasksAreDone = builder.assertTasksAreDone;
-    this.awaitTermination = builder.awaitTermination;
+    this.enableAwaitTermination = builder.enableAwaitTermination;
     this.awaitTerminationTimeout = builder.awaitTerminationTimeout;
     this.awaitTerminationTimeUnit = builder.awaitTerminationTimeUnit;
+    this.awaitTerminationBeforeShutdown = builder.awaitTerminationBeforeShutdown;
+    this.useShutdown = builder.useShutdown;
+    this.useShutdownNow = builder.useShutdownNow;
   }
 
+  /**
+   * Constructs a new single-threaded {@code ExecutorServiceRule} which invokes
+   * {@code ExecutorService.shutdownNow()} during {@code tearDown}.
+   */
   public ExecutorServiceRule() {
     this.threadCount = 1;
-    this.assertTasksAreDone = false;
-    this.awaitTermination = false;
+    this.enableAwaitTermination = false;
     this.awaitTerminationTimeout = 0;
     this.awaitTerminationTimeUnit = TimeUnit.NANOSECONDS;
+    this.awaitTerminationBeforeShutdown = false;
+    this.useShutdown = false;
+    this.useShutdownNow = true;
+  }
+
+  /**
+   * Constructs a new multi-threaded {@code ExecutorServiceRule} which invokes
+   * {@code ExecutorService.shutdownNow()} during {@code tearDown}.
+   */
+  public ExecutorServiceRule(int threadCount) {
+    this.threadCount = threadCount;
+    this.enableAwaitTermination = false;
+    this.awaitTerminationTimeout = 0;
+    this.awaitTerminationTimeUnit = TimeUnit.NANOSECONDS;
+    this.awaitTerminationBeforeShutdown = false;
+    this.useShutdown = false;
+    this.useShutdownNow = true;
   }
 
   @Override
@@ -209,13 +158,21 @@ public class ExecutorServiceRule extends SerializableExternalResource {
 
   @Override
   public void after() {
-    if (assertTasksAreDone) {
-      assertThat(executor.shutdownNow()).isEmpty();
-
-    } else {
+    if (awaitTerminationBeforeShutdown) {
+      enableAwaitTermination();
+    }
+    if (useShutdown) {
+      executor.shutdown();
+    } else if (useShutdownNow) {
       executor.shutdownNow();
     }
-    if (awaitTermination) {
+    if (!awaitTerminationBeforeShutdown) {
+      enableAwaitTermination();
+    }
+  }
+
+  private void enableAwaitTermination() {
+    if (enableAwaitTermination) {
       try {
         executor.awaitTermination(awaitTerminationTimeout, awaitTerminationTimeUnit);
       } catch (InterruptedException e) {
@@ -224,6 +181,9 @@ public class ExecutorServiceRule extends SerializableExternalResource {
     }
   }
 
+  /**
+   * Returns a direct reference to the underlying {@code ExecutorService}.
+   */
   public ExecutorService getExecutorService() {
     return executor;
   }
@@ -313,10 +273,12 @@ public class ExecutorServiceRule extends SerializableExternalResource {
   public static class Builder {
 
     protected int threadCount = 1;
-    protected boolean assertTasksAreDone = false;
-    protected boolean awaitTermination = false;
+    protected boolean enableAwaitTermination = false;
     protected long awaitTerminationTimeout = 0;
     protected TimeUnit awaitTerminationTimeUnit = TimeUnit.NANOSECONDS;
+    protected boolean awaitTerminationBeforeShutdown = true;
+    protected boolean useShutdown = false;
+    protected boolean useShutdownNow = true;
 
     protected Builder() {
       // nothing
@@ -333,26 +295,58 @@ public class ExecutorServiceRule extends SerializableExternalResource {
     }
 
     /**
-     * Enables assertion that all tasks are done. Default is false.
-     */
-    public Builder assertTasksAreDone() {
-      this.assertTasksAreDone = true;
-      return this;
-    }
-
-    /**
-     * Enables awaiting termination of all tasks. Default is disabled.
+     * Enables invocation of {@code awaitTermination} during {@code tearDown}. Default is disabled.
      *
      * @param timeout the maximum time to wait
      * @param unit the time unit of the timeout argument
      */
     public Builder awaitTermination(long timeout, TimeUnit unit) {
-      this.awaitTermination = true;
+      this.enableAwaitTermination = true;
       this.awaitTerminationTimeout = timeout;
       this.awaitTerminationTimeUnit = unit;
       return this;
     }
 
+    /**
+     * Enables invocation of {@code shutdown} during {@code tearDown}. Default is disabled.
+     */
+    public Builder useShutdown() {
+      this.useShutdown = true;
+      this.useShutdownNow = false;
+      return this;
+    }
+
+    /**
+     * Enables invocation of {@code shutdownNow} during {@code tearDown}. Default is enabled.
+     *
+     */
+    public Builder useShutdownNow() {
+      this.useShutdown = false;
+      this.useShutdownNow = true;
+      return this;
+    }
+
+    /**
+     * Specifies invocation of {@code awaitTermination} before {@code shutdown} or
+     * {@code shutdownNow}.
+     */
+    public Builder awaitTerminationBeforeShutdown() {
+      this.awaitTerminationBeforeShutdown = true;
+      return this;
+    }
+
+    /**
+     * Specifies invocation of {@code awaitTermination} after {@code shutdown} or
+     * {@code shutdownNow}.
+     */
+    public Builder awaitTerminationAfterShutdown() {
+      this.awaitTerminationBeforeShutdown = false;
+      return this;
+    }
+
+    /**
+     * Builds the instance of {@code ExecutorServiceRule}.
+     */
     public ExecutorServiceRule build() {
       assertThat(threadCount).isGreaterThan(0);
       return new ExecutorServiceRule(this);
