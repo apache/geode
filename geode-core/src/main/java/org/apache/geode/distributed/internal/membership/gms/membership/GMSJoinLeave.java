@@ -868,8 +868,7 @@ public class GMSJoinLeave implements JoinLeave, MessageHandler {
       newView.setFailureDetectionPort(this.localAddress,
           services.getHealthMonitor().getFailureDetectionPort());
       newView.setMemberTimeouts(currentView);
-      newView.setMemberTimeout(this.localAddress,
-    		  services.getConfig().getMemberTimeout());
+      newView.setMemberTimeout(this.localAddress, services.getConfig().getMemberTimeout());
     }
     return newView;
   }
@@ -2330,7 +2329,7 @@ public class GMSJoinLeave implements JoinLeave, MessageHandler {
               joinReqs.add(mbr);
               joinPorts.put(mbr, port);
               joinTimeouts.put(mbr, member_timeout);
-              
+
             }
             break;
           case LEAVE_REQUEST_MESSAGE:

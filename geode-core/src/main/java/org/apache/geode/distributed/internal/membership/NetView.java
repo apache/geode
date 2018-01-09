@@ -93,7 +93,7 @@ public class NetView implements DataSerializableFixedID {
     crashedMembers = Collections.emptySet();
     this.creator = creator;
     Arrays.fill(failureDetectionPorts, -1);
-    Arrays.fill(memberTimeouts,-1);
+    Arrays.fill(memberTimeouts, -1);
 
   }
 
@@ -126,8 +126,7 @@ public class NetView implements DataSerializableFixedID {
     System.arraycopy(other.failureDetectionPorts, 0, this.failureDetectionPorts, 0,
         other.failureDetectionPorts.length);
     this.memberTimeouts = new long[other.memberTimeouts.length];
-    System.arraycopy(other.memberTimeouts, 0 , this.memberTimeouts, 0,
-    		other.memberTimeouts.length);
+    System.arraycopy(other.memberTimeouts, 0, this.memberTimeouts, 0, other.memberTimeouts.length);
     this.shutdownMembers = new HashSet<>(other.shutdownMembers);
     this.crashedMembers = new HashSet<>(other.crashedMembers);
     this.publicKeys.putAll(other.publicKeys);
@@ -145,7 +144,7 @@ public class NetView implements DataSerializableFixedID {
     this.failureDetectionPorts = new int[mbrs.size() + 10];
     Arrays.fill(this.failureDetectionPorts, -1);
     this.memberTimeouts = new long[mbrs.size() + 10];
-    Arrays.fill(this.memberTimeouts,-1);
+    Arrays.fill(this.memberTimeouts, -1);
   }
 
   public int getViewId() {
@@ -185,9 +184,9 @@ public class NetView implements DataSerializableFixedID {
   public int[] getFailureDetectionPorts() {
     return this.failureDetectionPorts;
   }
-  
-  public long[] getMemberTimeouts(){
-	  return this.memberTimeouts;
+
+  public long[] getMemberTimeouts() {
+    return this.memberTimeouts;
   }
 
   public int getFailureDetectionPort(InternalDistributedMember mbr) {
@@ -197,14 +196,13 @@ public class NetView implements DataSerializableFixedID {
     }
     return failureDetectionPorts[idx];
   }
-  
-  public long getMemberTimeout(InternalDistributedMember mbr)
-  {
-	  int idx = members.indexOf(mbr);
-	  if (idx < 0 || idx >= memberTimeouts.length) {
-	    return -1;
-	  }
-	  return memberTimeouts[idx];
+
+  public long getMemberTimeout(InternalDistributedMember mbr) {
+    int idx = members.indexOf(mbr);
+    if (idx < 0 || idx >= memberTimeouts.length) {
+      return -1;
+    }
+    return memberTimeouts[idx];
   }
 
 
@@ -216,15 +214,15 @@ public class NetView implements DataSerializableFixedID {
     ensureFDCapacity(idx);
     failureDetectionPorts[idx] = port;
   }
-  
+
   public void setMemberTimeout(InternalDistributedMember mbr, long memberTimeout) {
-	    int idx = members.indexOf(mbr);
-	    if (idx < 0) {
-	      throw new IllegalArgumentException("element not found in members list:" + mbr);
-	    }
-	    ensureMTCapacity(idx);
-	    memberTimeouts[idx] = memberTimeout;
-  } 
+    int idx = members.indexOf(mbr);
+    if (idx < 0) {
+      throw new IllegalArgumentException("element not found in members list:" + mbr);
+    }
+    ensureMTCapacity(idx);
+    memberTimeouts[idx] = memberTimeout;
+  }
 
   /**
    * Transfer the failure-detection ports from another view to this one
@@ -248,7 +246,7 @@ public class NetView implements DataSerializableFixedID {
       }
     }
   }
-  
+
   /**
    * Transfer the member-timeouts from another view to this one
    */
@@ -262,14 +260,14 @@ public class NetView implements DataSerializableFixedID {
           if (idx < timeoutsLength) {
             setMemberTimeout(mbr, timeouts[idx]);
           } else {
-        	  setMemberTimeout(mbr, -1);
+            setMemberTimeout(mbr, -1);
           }
         }
         idx += 1;
       }
     }
   }
-  
+
 
   /**
    * ensures that there is a slot at idx to store an int
@@ -284,8 +282,8 @@ public class NetView implements DataSerializableFixedID {
       failureDetectionPorts = p;
     }
   }
-  
-  
+
+
   /**
    * ensures that there is a slot at idx to store a long
    */
@@ -333,6 +331,7 @@ public class NetView implements DataSerializableFixedID {
     int idx = members.size() - 1;
     ensureFDCapacity(idx);
     this.failureDetectionPorts[idx] = -1;
+    ensureMTCapacity(idx);
     this.memberTimeouts[idx] = -1;
   }
 
@@ -347,8 +346,8 @@ public class NetView implements DataSerializableFixedID {
       System.arraycopy(failureDetectionPorts, idx + 1, failureDetectionPorts, idx,
           failureDetectionPorts.length - idx - 1);
       failureDetectionPorts[failureDetectionPorts.length - 1] = -1;
-      System.arraycopy(memberTimeouts, idx+1, memberTimeouts, idx,
-    		  memberTimeouts.length - idx - 1);
+      System.arraycopy(memberTimeouts, idx + 1, memberTimeouts, idx,
+          memberTimeouts.length - idx - 1);
       memberTimeouts[memberTimeouts.length - 1] = -1;
     }
     return this.members.remove(mbr);
@@ -670,9 +669,8 @@ public class NetView implements DataSerializableFixedID {
     DataSerializer.writeIntArray(failureDetectionPorts, out);
     // TODO expensive serialization
     DataSerializer.writeHashMap(publicKeys, out);
-    if(InternalDataSerializer.getVersionForDataStream(out).compareTo(Version.GEODE_140) >= 0)
-    {
-    	DataSerializer.writeLongArray(memberTimeouts, out);
+    if (InternalDataSerializer.getVersionForDataStream(out).compareTo(Version.GEODE_140) >= 0) {
+      DataSerializer.writeLongArray(memberTimeouts, out);
     }
   }
 
@@ -690,11 +688,10 @@ public class NetView implements DataSerializableFixedID {
     if (pubkeys != null) {
       publicKeys.putAll(pubkeys);
     }
-    if(InternalDataSerializer.getVersionForDataStream(in).compareTo(Version.GEODE_140) >= 0)
-    {
-    	memberTimeouts = DataSerializer.readLongArray(in);
+    if (InternalDataSerializer.getVersionForDataStream(in).compareTo(Version.GEODE_140) >= 0) {
+      memberTimeouts = DataSerializer.readLongArray(in);
     }
-    
+
   }
 
   /** this will deserialize as an ArrayList */

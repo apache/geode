@@ -27,6 +27,7 @@ import java.io.*;
 import java.net.InetAddress;
 import java.net.ServerSocket;
 import java.net.Socket;
+import java.net.SocketTimeoutException;
 import java.net.UnknownHostException;
 import java.util.ArrayList;
 import java.util.List;
@@ -67,7 +68,6 @@ import org.apache.geode.internal.net.SocketCreatorFactory;
 import org.apache.geode.test.junit.categories.FlakyTest;
 import org.apache.geode.test.junit.categories.IntegrationTest;
 import org.apache.geode.test.junit.categories.MembershipTest;
-import java.net.SocketTimeoutException;
 
 @Category({IntegrationTest.class, MembershipTest.class})
 public class GMSHealthMonitorJUnitTest {
@@ -243,7 +243,7 @@ public class GMSHealthMonitorJUnitTest {
 
   private NetView installAView() {
     System.out.println("installAView starting");
-    NetView v = new NetView(mockMembers.get(0), 2, mockMembers);    
+    NetView v = new NetView(mockMembers.get(0), 2, mockMembers);
     // 3rd is current member
     when(messenger.getMemberID()).thenReturn(mockMembers.get(myAddressIndex));
     gmsHealthMonitor.started();
@@ -252,16 +252,16 @@ public class GMSHealthMonitorJUnitTest {
 
     return v;
   }
-  
-  private void setMemberTimeouts(NetView v) {
-	    java.util.Iterator<InternalDistributedMember> itr = mockMembers.iterator();
 
-	    long member_timeout = 1000l;
-	    while (itr.hasNext()) {
-	      v.setMemberTimeout(itr.next(), member_timeout);
-	      member_timeout = member_timeout +1000L;
-	    }
-	  }
+  private void setMemberTimeouts(NetView v) {
+    java.util.Iterator<InternalDistributedMember> itr = mockMembers.iterator();
+
+    long member_timeout = 1000l;
+    while (itr.hasNext()) {
+      v.setMemberTimeout(itr.next(), member_timeout);
+      member_timeout = member_timeout + 1000L;
+    }
+  }
 
   private void setFailureDetectionPorts(NetView v) {
     java.util.Iterator<InternalDistributedMember> itr = mockMembers.iterator();
@@ -734,6 +734,11 @@ public class GMSHealthMonitorJUnitTest {
     InternalDistributedMember gmsMember =
         createInternalDistributedMember(Version.CURRENT_ORDINAL, 0, 1, 1);
 
+    NetView v = installAView();
+    v.add(otherMember);
+    v.add(gmsMember);
+    setFailureDetectionPorts(v);
+
     // Set up the incoming/received bytes. We just wrap output streams and write out the gms member
     // information
     ByteArrayOutputStream baos = new ByteArrayOutputStream();
@@ -748,7 +753,7 @@ public class GMSHealthMonitorJUnitTest {
     when(fakeSocket.getOutputStream()).thenReturn(outputStream);
     when(fakeSocket.isConnected()).thenReturn(true);
 
-    
+
     assertEquals(expectedResult, gmsHealthMonitor.doTCPCheckMember(otherMember, fakeSocket));
     Assert.assertTrue(gmsHealthMonitor.getStats().getFinalCheckRequestsSent() > 0);
     Assert.assertTrue(gmsHealthMonitor.getStats().getTcpFinalCheckRequestsSent() > 0);
@@ -760,38 +765,38 @@ public class GMSHealthMonitorJUnitTest {
     Assert.assertArrayEquals(writeMemberToBytes((GMSMember) gmsMember.getNetMember()),
         bytesWritten);
   }
-  
+
   @Test
-  public void testFinalCheckonSocketTimeout() throws Exception{
-	  NetView v = new NetView(mockMembers.get(0), 2, mockMembers);
-	  setMemberTimeouts(v);
-	  gmsHealthMonitor.installView(v);
-	  
-	  
-	  ByteArrayOutputStream baos = new ByteArrayOutputStream();
-	  byte[] receivedBytes = baos.toByteArray();
-      InputStream mockInputStream = new ByteArrayInputStream(receivedBytes);
-      InputStream mockInputStream1 = new ByteArrayInputStream(receivedBytes);
-      
-      Socket fakeSocket = mock(Socket.class);
-      InputStream mockin = mock(InputStream.class);
-      ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
-      when(fakeSocket.getInputStream()).thenReturn(mockin);
-      when(fakeSocket.getOutputStream()).thenReturn(outputStream);
-      when(fakeSocket.isConnected()).thenReturn(true);
-      
-      when(mockin.read()).then(new Answer(){
-          public Integer answer(InvocationOnMock invocation) throws Exception{
-        	  System.out.println("aravind call "+v.getMemberTimeout(mockMembers.get(1)));
-        	  throw new SocketTimeoutException("Socket Timeout test");
-			      
-          }
-          
-   });
-      
-      Assert.assertFalse(gmsHealthMonitor.doTCPCheckMember(mockMembers.get(1), fakeSocket));
-	  
-	  
+  public void testFinalCheckonSocketTimeout() throws Exception {
+    NetView v = new NetView(mockMembers.get(0), 2, mockMembers);
+    setMemberTimeouts(v);
+    gmsHealthMonitor.installView(v);
+
+
+    ByteArrayOutputStream baos = new ByteArrayOutputStream();
+    byte[] receivedBytes = baos.toByteArray();
+    InputStream mockInputStream = new ByteArrayInputStream(receivedBytes);
+    InputStream mockInputStream1 = new ByteArrayInputStream(receivedBytes);
+
+    Socket fakeSocket = mock(Socket.class);
+    InputStream mockin = mock(InputStream.class);
+    ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
+    when(fakeSocket.getInputStream()).thenReturn(mockin);
+    when(fakeSocket.getOutputStream()).thenReturn(outputStream);
+    when(fakeSocket.isConnected()).thenReturn(true);
+
+    when(mockin.read()).then(new Answer() {
+      public Integer answer(InvocationOnMock invocation) throws Exception {
+        System.out.println("aravind call " + v.getMemberTimeout(mockMembers.get(1)));
+        throw new SocketTimeoutException("Socket Timeout test");
+
+      }
+
+    });
+
+    Assert.assertFalse(gmsHealthMonitor.doTCPCheckMember(mockMembers.get(1), fakeSocket));
+
+
   }
 
   private InternalDistributedMember createInternalDistributedMember(short version, int viewId,

@@ -69,11 +69,21 @@ public class NetViewJUnitTest {
     }
   }
 
+  private void setMemberTimeouts(NetView view) {
+    int numMembers = members.size();
+    long member_timeout = 1000L;
+    for (int i = 0; i < numMembers; i++) {
+      view.setMemberTimeout(members.get(i), member_timeout);
+      member_timeout = member_timeout + 500L;
+    }
+  }
+
   @Test
   public void testCreateView() throws Exception {
     int numMembers = members.size();
     NetView view = new NetView(members.get(0), 2, members);
     setFailureDetectionPorts(view);
+    setMemberTimeouts(view);
 
     assertTrue(view.getCreator().equals(members.get(0)));
     assertEquals(2, view.getViewId());
@@ -109,6 +119,7 @@ public class NetViewJUnitTest {
     int numMembers = members.size();
     NetView view = new NetView(members.get(0), 2, new ArrayList<>(members));
     setFailureDetectionPorts(view);
+    setMemberTimeouts(view);
 
     for (int i = 1; i < numMembers; i += 2) {
       view.remove(members.get(i));
@@ -128,6 +139,7 @@ public class NetViewJUnitTest {
     int numMembers = members.size();
     NetView view = new NetView(members.get(0), 2, new ArrayList<>(members));
     setFailureDetectionPorts(view);
+    setMemberTimeouts(view);
 
     Collection<InternalDistributedMember> removals = new ArrayList<>(numMembers / 2);
     for (int i = 1; i < numMembers; i += 2) {
@@ -152,6 +164,7 @@ public class NetViewJUnitTest {
   public void testCopyView() throws Exception {
     NetView view = new NetView(members.get(0), 2, new ArrayList<>(members));
     setFailureDetectionPorts(view);
+    setMemberTimeouts(view);
 
     NetView newView = new NetView(view, 3);
 
@@ -172,6 +185,7 @@ public class NetViewJUnitTest {
   public void testAddLotsOfMembers() throws Exception {
     NetView view = new NetView(members.get(0), 2, new ArrayList<>(members));
     setFailureDetectionPorts(view);
+    setMemberTimeouts(view);
 
     NetView copy = new NetView(view, 2);
 
@@ -183,6 +197,7 @@ public class NetViewJUnitTest {
       mbr.setVmViewId(2);
       view.add(mbr);
       view.setFailureDetectionPort(mbr, 2000 + i);
+      view.setMemberTimeout(mbr, 1000 + i * 500);
     }
 
     assertEquals(oldSize + 100, view.size());
