@@ -79,6 +79,7 @@ import org.apache.geode.distributed.internal.membership.gms.membership.GMSJoinLe
 import org.apache.geode.internal.Assert;
 import org.apache.geode.internal.AvailablePort;
 import org.apache.geode.internal.AvailablePortHelper;
+import org.apache.geode.internal.OSProcess;
 import org.apache.geode.internal.cache.GemFireCacheImpl;
 import org.apache.geode.internal.logging.InternalLogWriter;
 import org.apache.geode.internal.logging.LocalLogWriter;
@@ -2016,6 +2017,55 @@ public class LocatorDUnitTest extends JUnit4DistributedTestCase {
       });
 
     } finally {
+      locator.stop();
+    }
+
+  }
+
+  /**
+   * See GEODE-3588 - a locator is restarted twice with a server and ends up in a split-brain
+   */
+  @Test
+  public void testRestartLocatorMultipleTimes() throws Exception {
+    disconnectAllFromDS();
+    port1 = AvailablePort.getRandomAvailablePort(AvailablePort.SOCKET);
+    DistributedTestUtils.deleteLocatorStateFile(port1);
+    File logFile = new File("");
+    File stateFile = new File("locator" + port1 + "state.dat");
+    VM vm0 = Host.getHost(0).getVM(0);
+    final Properties p = new Properties();
+    p.setProperty(LOCATORS, Host.getHost(0).getHostName() + "[" + port1 + "]");
+    p.setProperty(MCAST_PORT, "0");
+    p.setProperty(ENABLE_CLUSTER_CONFIGURATION, "false");
+    p.setProperty(LOG_LEVEL, "finest");
+    addDSProps(p);
+    if (stateFile.exists()) {
+      stateFile.delete();
+    }
+
+    Locator locator = Locator.startLocatorAndDS(port1, logFile, p);
+
+    vm0.invoke(() -> {
+      DistributedSystem.connect(p);
+      return null;
+    });
+
+    try {
+      locator.stop();
+      locator = Locator.startLocatorAndDS(port1, logFile, p);
+      assertEquals(2, ((InternalDistributedSystem) locator.getDistributedSystem()).getDM()
+          .getViewMembers().size());
+
+      locator.stop();
+      locator = Locator.startLocatorAndDS(port1, logFile, p);
+      assertEquals(2, ((InternalDistributedSystem) locator.getDistributedSystem()).getDM()
+          .getViewMembers().size());
+
+    } finally {
+      vm0.invoke("disconnect", () -> {
+        DistributedSystem.connect(p).disconnect();
+        return null;
+      });
       locator.stop();
     }
 
