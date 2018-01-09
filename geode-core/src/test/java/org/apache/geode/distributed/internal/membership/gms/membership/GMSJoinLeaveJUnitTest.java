@@ -1331,7 +1331,7 @@ public class GMSJoinLeaveJUnitTest {
     this.removeMember = null;
 
     assertTrue("testFlagForRemovalRequest should be true",
-        gmsJoinLeave.getViewCreator().getTestFlageForRemovalRequest());
+        gmsJoinLeave.getViewCreator().getTestFlagForRemovalRequest());
   }
 
   @Test
@@ -1354,7 +1354,7 @@ public class GMSJoinLeaveJUnitTest {
     this.leaveMember = null;
 
     assertTrue("testFlagForRemovalRequest should be true",
-        gmsJoinLeave.getViewCreator().getTestFlageForRemovalRequest());
+        gmsJoinLeave.getViewCreator().getTestFlagForRemovalRequest());
   }
 
   private void installView() throws Exception {

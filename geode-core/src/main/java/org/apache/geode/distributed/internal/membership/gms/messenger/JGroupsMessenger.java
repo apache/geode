@@ -409,7 +409,7 @@ public class JGroupsMessenger implements Messenger {
     mbrs.addAll(v.getMembers().stream().map(JGAddress::new).collect(Collectors.toList()));
     ViewId vid = new ViewId(new JGAddress(v.getCoordinator()), v.getViewId());
     View jgv = new View(vid, new ArrayList<>(mbrs));
-    logger.trace("installing JGroups view: {}", jgv);
+    logger.trace("installing view into JGroups stack: {}", jgv);
     this.myChannel.down(new Event(Event.VIEW_CHANGE, jgv));
 
     addressesWithIoExceptionsProcessed.clear();
