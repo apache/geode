@@ -12,11 +12,7 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
-package org.apache.geode.cache.benchmark;
-
-import static org.junit.Assert.*;
-
-import java.util.stream.IntStream;
+package org.apache.geode.cache;
 
 import org.openjdk.jmh.annotations.Benchmark;
 import org.openjdk.jmh.annotations.Fork;
@@ -26,17 +22,10 @@ import org.openjdk.jmh.annotations.Setup;
 import org.openjdk.jmh.annotations.State;
 import org.openjdk.jmh.annotations.Warmup;
 
-import org.apache.geode.cache.Cache;
-import org.apache.geode.cache.CacheFactory;
-import org.apache.geode.cache.Region;
-import org.apache.geode.cache.RegionShortcut;
 import org.apache.geode.cache.query.FunctionDomainException;
 import org.apache.geode.cache.query.NameResolutionException;
-import org.apache.geode.cache.query.Query;
 import org.apache.geode.cache.query.QueryInvocationTargetException;
-import org.apache.geode.cache.query.SelectResults;
 import org.apache.geode.cache.query.TypeMismatchException;
-import org.apache.geode.cache.query.internal.index.AbstractIndex;
 
 @Fork(10)
 public class RegionOperationBenchmark {

@@ -12,7 +12,7 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
-package org.apache.geode.cache.benchmark;
+package org.apache.geode.cache;
 
 import static org.apache.geode.distributed.ConfigurationProperties.LOG_LEVEL;
 
@@ -26,24 +26,18 @@ import org.openjdk.jmh.annotations.Level;
 import org.openjdk.jmh.annotations.Measurement;
 import org.openjdk.jmh.annotations.Mode;
 import org.openjdk.jmh.annotations.OutputTimeUnit;
-import org.openjdk.jmh.annotations.Param;
 import org.openjdk.jmh.annotations.Scope;
 import org.openjdk.jmh.annotations.Setup;
 import org.openjdk.jmh.annotations.State;
 import org.openjdk.jmh.annotations.TearDown;
 import org.openjdk.jmh.annotations.Warmup;
 
-import org.apache.geode.cache.Cache;
-import org.apache.geode.cache.CacheFactory;
-import org.apache.geode.cache.EvictionAction;
-import org.apache.geode.cache.EvictionAttributes;
-import org.apache.geode.cache.Region;
-import org.apache.geode.cache.RegionShortcut;
-import org.apache.geode.internal.lang.SystemPropertyHelper;
-
+/**
+ * This benchmark measures the raw throughput of get actions on a region
+ */
 @State(Scope.Thread)
 @Fork(1)
-public class UpdateOnRegionBenchmark {
+public class GetOnRegionBenchmark {
   private static final int ENTRIES = 1_000_000;
 
   Cache cache;
@@ -52,7 +46,7 @@ public class UpdateOnRegionBenchmark {
   @Setup(Level.Trial)
   public void setup() {
     cache = new CacheFactory().set(LOG_LEVEL, "warn").create();
-    region = createRegion(cache, ENTRIES);
+    region = createRegion(cache);
   }
 
   @TearDown(Level.Trial)
@@ -70,16 +64,14 @@ public class UpdateOnRegionBenchmark {
   @Warmup(iterations = 5)
   @BenchmarkMode(Mode.Throughput)
   @OutputTimeUnit(TimeUnit.MILLISECONDS)
-  public String updateRegion(MyState state) {
+  public String createEntry(MyState state) {
     String key = Integer.toString(state.random.nextInt(ENTRIES));
-    return region.put(key, "value");
+    return region.get(key);
   }
 
-  private Region<String, String> createRegion(Cache cache, int maxSize) {
-    Region<String, String> region = cache.<String, String>createRegionFactory(RegionShortcut.LOCAL)
-        .setEvictionAttributes(
-            EvictionAttributes.createLRUEntryAttributes(maxSize, EvictionAction.LOCAL_DESTROY))
-        .create("testRegion");
+  private Region<String, String> createRegion(Cache cache) {
+    Region<String, String> region =
+        cache.<String, String>createRegionFactory(RegionShortcut.LOCAL).create("testRegion");
     for (int i = 0; i < ENTRIES; i++) {
       region.put(Integer.toString(i), "value");
     }

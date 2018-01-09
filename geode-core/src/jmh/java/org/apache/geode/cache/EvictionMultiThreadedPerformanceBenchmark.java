@@ -12,7 +12,7 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
-package org.apache.geode.cache.benchmark;
+package org.apache.geode.cache;
 
 import static org.apache.geode.distributed.ConfigurationProperties.LOG_LEVEL;
 
@@ -34,12 +34,6 @@ import org.openjdk.jmh.annotations.TearDown;
 import org.openjdk.jmh.annotations.Threads;
 import org.openjdk.jmh.annotations.Warmup;
 
-import org.apache.geode.cache.Cache;
-import org.apache.geode.cache.CacheFactory;
-import org.apache.geode.cache.EvictionAction;
-import org.apache.geode.cache.EvictionAttributes;
-import org.apache.geode.cache.Region;
-import org.apache.geode.cache.RegionShortcut;
 import org.apache.geode.internal.lang.SystemPropertyHelper;
 
 @State(Scope.Benchmark)

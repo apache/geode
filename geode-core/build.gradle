@@ -17,6 +17,7 @@
 
 
 apply plugin: 'antlr'
+apply plugin: 'me.champeau.gradle.jmh'
 
 sourceSets {
   jca {
@@ -174,6 +175,11 @@ sourceSets {
   test {
     output.dir(generatedResources, builtBy: 'createVersionPropertiesFile')
   }
+}
+
+jmh {
+  include = project.hasProperty('include') ? project.getProperties().get('include') : '.*'
+  duplicateClassesStrategy = 'warn'
 }
 
 // Creates the version properties file and writes it to the classes dir

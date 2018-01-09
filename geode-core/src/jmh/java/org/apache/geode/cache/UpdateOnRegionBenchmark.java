@@ -12,7 +12,7 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
-package org.apache.geode.cache.benchmark;
+package org.apache.geode.cache;
 
 import static org.apache.geode.distributed.ConfigurationProperties.LOG_LEVEL;
 
@@ -26,42 +26,24 @@ import org.openjdk.jmh.annotations.Level;
 import org.openjdk.jmh.annotations.Measurement;
 import org.openjdk.jmh.annotations.Mode;
 import org.openjdk.jmh.annotations.OutputTimeUnit;
-import org.openjdk.jmh.annotations.Param;
 import org.openjdk.jmh.annotations.Scope;
 import org.openjdk.jmh.annotations.Setup;
 import org.openjdk.jmh.annotations.State;
 import org.openjdk.jmh.annotations.TearDown;
 import org.openjdk.jmh.annotations.Warmup;
 
-import org.apache.geode.cache.Cache;
-import org.apache.geode.cache.CacheFactory;
-import org.apache.geode.cache.EvictionAction;
-import org.apache.geode.cache.EvictionAttributes;
-import org.apache.geode.cache.Region;
-import org.apache.geode.cache.RegionShortcut;
-import org.apache.geode.internal.lang.SystemPropertyHelper;
-
-/**
- * This benchmark tests the raw throughput of get operations on a region with eviction enabled. For
- * each operation, a random key (that exists) is used. Comparison to a benchmark for a region
- * without eviction would isolate the overhead of this operation when eviction is enabled
- */
 @State(Scope.Thread)
 @Fork(1)
-public class GetsWithEvictionPerformanceBenchmark {
-  private static final int MAX_ENTRIES = 1_000_000;
-
-  @Param({"true", "false"})
-  public String useAsync;
+public class UpdateOnRegionBenchmark {
+  private static final int ENTRIES = 1_000_000;
 
   Cache cache;
   Region<String, String> region;
 
   @Setup(Level.Trial)
   public void setup() {
-    System.setProperty("geode." + SystemPropertyHelper.EVICTION_SCAN_ASYNC, useAsync);
     cache = new CacheFactory().set(LOG_LEVEL, "warn").create();
-    region = createRegion(cache, MAX_ENTRIES);
+    region = createRegion(cache, ENTRIES);
   }
 
   @TearDown(Level.Trial)
@@ -75,13 +57,13 @@ public class GetsWithEvictionPerformanceBenchmark {
   }
 
   @Benchmark
-  @Measurement(iterations = 10)
+  @Measurement(iterations = 50)
   @Warmup(iterations = 5)
   @BenchmarkMode(Mode.Throughput)
   @OutputTimeUnit(TimeUnit.MILLISECONDS)
-  public String evictingCreate(MyState state) {
-    String key = Integer.toString(state.random.nextInt(MAX_ENTRIES));
-    return region.get(key);
+  public String updateRegion(MyState state) {
+    String key = Integer.toString(state.random.nextInt(ENTRIES));
+    return region.put(key, "value");
   }
 
   private Region<String, String> createRegion(Cache cache, int maxSize) {
@@ -89,10 +71,9 @@ public class GetsWithEvictionPerformanceBenchmark {
         .setEvictionAttributes(
             EvictionAttributes.createLRUEntryAttributes(maxSize, EvictionAction.LOCAL_DESTROY))
         .create("testRegion");
-    for (int i = 0; i < MAX_ENTRIES; i++) {
+    for (int i = 0; i < ENTRIES; i++) {
       region.put(Integer.toString(i), "value");
     }
-    region.put("over", "limit");
     return region;
   }
 }
