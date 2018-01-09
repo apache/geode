@@ -44,7 +44,7 @@ public class ClusterStartupRuleCanSpecifyOlderVersionsDUnitTest {
   @Parameterized.Parameter
   public String version;
 
-  @Parameterized.Parameters
+  @Parameterized.Parameters(name = "version={0}")
   public static List<String> versions() {
     return VersionManager.getInstance().getVersionsWithoutCurrent();
   }
