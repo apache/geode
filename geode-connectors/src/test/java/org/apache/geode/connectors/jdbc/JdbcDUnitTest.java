@@ -274,8 +274,8 @@ public class JdbcDUnitTest implements Serializable {
   }
 
   private void createMapping(String regionName, String connectionName) {
-    final String commandStr =
-        "create jdbc-mapping --region=" + regionName + " --connection=" + connectionName + " --value-contains-primary-key";
+    final String commandStr = "create jdbc-mapping --region=" + regionName + " --connection="
+        + connectionName + " --value-contains-primary-key";
     gfsh.executeAndAssertThat(commandStr).statusIsSuccess();
   }
 
