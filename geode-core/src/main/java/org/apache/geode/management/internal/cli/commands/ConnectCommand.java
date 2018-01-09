@@ -165,12 +165,12 @@ public class ConnectCommand implements GfshCommand {
 
     String gfshVersion = gfsh.getVersion();
     try {
-      String version = invoker.getRemoteVersion();
-      if (version.equalsIgnoreCase(gfshVersion)) {
+      String remoteVersion = invoker.getRemoteVersion();
+      if (remoteVersion.equalsIgnoreCase(gfshVersion)) {
         return result;
       }
-      return ResultBuilder.createUserErrorResult(String
-          .format("Cannot use a %s gfsh client to connect to %s cluster.", gfshVersion, version));
+      return ResultBuilder.createUserErrorResult(String.format(
+          "Cannot use a %s gfsh client to connect to a %s cluster.", gfshVersion, remoteVersion));
     } catch (Exception e) {
       return ResultBuilder.createUserErrorResult(
           String.format("Cannot use a %s gfsh client to connect to this cluster.", gfshVersion));

@@ -307,7 +307,8 @@ public class ConnectCommandTest {
     when(operationInvoker.getRemoteVersion()).thenReturn("1.3");
     when(operationInvoker.isConnected()).thenReturn(true);
     gfshParserRule.executeAndAssertThat(connectCommand, "connect --locator=localhost:4040")
-        .statusIsError().containsOutput("Cannot use a 1.2 gfsh client to connect to 1.3 cluster.");
+        .statusIsError()
+        .containsOutput("Cannot use a 1.2 gfsh client to connect to a 1.3 cluster.");
   }
 
   @Test

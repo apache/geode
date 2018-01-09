@@ -1260,8 +1260,6 @@ public class MemberMBeanBridge {
     return gemFireVersion;
   }
 
-
-
   /**
    * @return true if this members has a gateway receiver
    */
