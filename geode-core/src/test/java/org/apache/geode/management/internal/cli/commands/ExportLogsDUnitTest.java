@@ -253,7 +253,6 @@ public class ExportLogsDUnitTest {
 
     File logFileForMember = new File(dirForMember, memberName + ".log");
     assertThat(logFileForMember).exists();
-    assertThat(fileNamesInDir).hasSize(1);
 
     String logFileContents = FileUtils.readLines(logFileForMember, Charset.defaultCharset())
         .stream().collect(joining("\n"));

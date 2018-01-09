@@ -57,8 +57,7 @@ public class ExportLogsOnServerManagerDUnit {
     Set<String> expectedZipEntries = Sets.newHashSet("server-0/server-0.log");
     Set<String> actualZipEnries =
         new ZipFile(zipPath).stream().map(ZipEntry::getName).collect(Collectors.toSet());
-    assertThat(actualZipEnries).isEqualTo(expectedZipEntries);
-    assertEquals(actualZipEnries.size(), 4);
+    assertThat(actualZipEnries).containsAll(expectedZipEntries);
   }
 
   @Test
@@ -78,8 +77,6 @@ public class ExportLogsOnServerManagerDUnit {
     Set<String> actualZipEnries =
         new ZipFile(zipPath).stream().map(ZipEntry::getName).collect(Collectors.toSet());
     assertThat(actualZipEnries).containsAll(expectedZipEntries);
-    assertEquals(actualZipEnries.size(), 4);
-
   }
 
   private String getZipPathFromCommandResult(String message) {
