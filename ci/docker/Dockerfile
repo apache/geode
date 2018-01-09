@@ -46,6 +46,10 @@ RUN go build -o /usr/local/bin/tini-wrapper ./tini-wrapper.go
 ADD ./initdocker /usr/local/bin/initdocker
 RUN chmod +x /usr/local/bin/initdocker
 
+# Install dunit-process
+RUN curl -Lo /usr/local/bin/dunit-process https://github.com/jdeppe-pivotal/progress-util/releases/download/0.1/progress.linux
+RUN chmod +x /usr/local/bin/dunit-process
+
 # Cache gradle for performance
 ENV GRADLE_USER_HOME /usr/local/maven_files
 WORKDIR /tmp/work
