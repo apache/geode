@@ -45,6 +45,7 @@ import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.security.templates.UserPasswordAuthInit;
 import org.apache.geode.test.dunit.VM;
 import org.apache.geode.test.dunit.standalone.DUnitLauncher;
+import org.apache.geode.test.dunit.standalone.VersionManager;
 import org.apache.geode.test.junit.rules.ClientCacheRule;
 import org.apache.geode.test.junit.rules.Locator;
 import org.apache.geode.test.junit.rules.LocatorStarterRule;
@@ -140,7 +141,7 @@ public class ClusterStartupRule extends ExternalResource implements Serializable
       MemberStarterRule.disconnectDSIfAny();
 
       // stop all the clientsVM before stop all the memberVM
-      occupiedVMs.values().stream().forEach(x -> x.stopVM(true));
+      occupiedVMs.values().forEach(x -> x.stopVM(true));
 
       if (useTempWorkingDir()) {
         tempWorkingDir.delete();
@@ -149,25 +150,14 @@ public class ClusterStartupRule extends ExternalResource implements Serializable
     }
   }
 
-  public MemberVM startLocatorVM(int index) throws Exception {
-    return startLocatorVM(index, new Properties());
-  }
-
-  public MemberVM startLocatorVM(int index, int... locatorPort) throws Exception {
-    Properties properties = new Properties();
-    String locators = Arrays.stream(locatorPort).mapToObj(i -> "localhost[" + i + "]")
-        .collect(Collectors.joining(","));
-    properties.setProperty(LOCATORS, locators);
-    return startLocatorVM(index, properties);
-  }
-
   /**
    * Starts a locator instance with the given configuration properties inside
    * {@code getHost(0).getVM(index)}.
    *
    * @return VM locator vm
    */
-  public MemberVM startLocatorVM(int index, Properties specifiedProperties) throws Exception {
+  public MemberVM startLocatorVM(int index, Properties specifiedProperties, String version)
+      throws Exception {
     Properties properties = new Properties();
     properties.putAll(specifiedProperties);
 
@@ -175,7 +165,7 @@ public class ClusterStartupRule extends ExternalResource implements Serializable
     properties.putIfAbsent(NAME, defaultName);
     String name = properties.getProperty(NAME);
 
-    VM locatorVM = getVM(index);
+    VM locatorVM = getVM(index, version);
     Locator locator = locatorVM.invoke(() -> {
       memberStarter = new LocatorStarterRule();
       LocatorStarterRule locatorStarter = (LocatorStarterRule) memberStarter;
@@ -195,29 +185,27 @@ public class ClusterStartupRule extends ExternalResource implements Serializable
     return memberVM;
   }
 
-  public MemberVM startServerVM(int index) throws IOException {
-    return startServerVM(index, new Properties(), -1);
+  public MemberVM startLocatorVM(int index, Properties specifiedProperties) throws Exception {
+    return startLocatorVM(index, specifiedProperties, VersionManager.CURRENT_VERSION);
   }
 
-  public MemberVM startServerVM(int index, int locatorPort) throws IOException {
-    return startServerVM(index, new Properties(), locatorPort);
-  }
-
-  public MemberVM startServerVM(int index, String group, int locatorPort) throws IOException {
+  public MemberVM startLocatorVM(int index, int... locatorPort) throws Exception {
     Properties properties = new Properties();
-    properties.put(GROUPS, group);
-    return startServerVM(index, properties, locatorPort);
+    String locators = Arrays.stream(locatorPort).mapToObj(i -> "localhost[" + i + "]")
+        .collect(Collectors.joining(","));
+    properties.setProperty(LOCATORS, locators);
+    return startLocatorVM(index, properties);
   }
 
-  public MemberVM startServerVM(int index, Properties properties) throws IOException {
-    return startServerVM(index, properties, -1);
+  public MemberVM startLocatorVM(int index) throws Exception {
+    return startLocatorVM(index, new Properties());
   }
 
   /**
    * Starts a cache server with given properties
    */
-  public MemberVM startServerVM(int index, Properties specifiedProperties, int locatorPort)
-      throws IOException {
+  public MemberVM startServerVM(int index, Properties specifiedProperties, int locatorPort,
+      String version) throws IOException {
     Properties properties = new Properties();
     properties.putAll(specifiedProperties);
 
@@ -225,7 +213,7 @@ public class ClusterStartupRule extends ExternalResource implements Serializable
     properties.putIfAbsent(NAME, defaultName);
     String name = properties.getProperty(NAME);
 
-    VM serverVM = getVM(index);
+    VM serverVM = getVM(index, version);
     Server server = serverVM.invoke(() -> {
       memberStarter = new ServerStarterRule();
       ServerStarterRule serverStarter = (ServerStarterRule) memberStarter;
@@ -246,23 +234,55 @@ public class ClusterStartupRule extends ExternalResource implements Serializable
     return memberVM;
   }
 
-  public MemberVM startServerAsJmxManager(int index) throws IOException {
-    return startServerAsJmxManager(index, new Properties());
+  public MemberVM startServerVM(int index, Properties specifiedProperties, int locatorPort)
+      throws IOException {
+    return startServerVM(index, specifiedProperties, locatorPort, VersionManager.CURRENT_VERSION);
   }
 
+  public MemberVM startServerVM(int index, String group, int locatorPort) throws IOException {
+    Properties properties = new Properties();
+    properties.put(GROUPS, group);
+    return startServerVM(index, properties, locatorPort);
+  }
+
+  public MemberVM startServerVM(int index, int locatorPort) throws IOException {
+    return startServerVM(index, new Properties(), locatorPort);
+  }
+
+  public MemberVM startServerVM(int index, Properties properties) throws IOException {
+    return startServerVM(index, properties, -1);
+  }
+
+  public MemberVM startServerVM(int index) throws IOException {
+    return startServerVM(index, new Properties(), -1);
+  }
+
+  /**
+   * Starts a cache server with given properties, plus an available port for a JMX manager
+   */
   public MemberVM startServerAsJmxManager(int index, Properties properties) throws IOException {
     properties.setProperty(JMX_MANAGER_PORT, AvailablePortHelper.getRandomAvailableTCPPort() + "");
     return startServerVM(index, properties, -1);
   }
 
-  public MemberVM startServerAsEmbededLocator(int index) throws IOException {
-    return startServerAsEmbededLocator(index, new Properties());
+  public MemberVM startServerAsJmxManager(int index) throws IOException {
+    return startServerAsJmxManager(index, new Properties());
   }
 
-  public MemberVM startServerAsEmbededLocator(int index, Properties properties) throws IOException {
-    String name = "server-" + index;
+  /**
+   * Starts a cache server with given properties. Additionally, start the server with a JMX manager
+   * and embedded locator.
+   */
+  public MemberVM startServerAsEmbeddedLocator(int index, Properties specifiedProperties,
+      String version) throws IOException {
+    Properties properties = new Properties();
+    properties.putAll(specifiedProperties);
 
-    VM serverVM = getVM(index);
+    String defaultName = "server-" + index;
+    properties.putIfAbsent(NAME, defaultName);
+    String name = properties.getProperty(NAME);
+
+    VM serverVM = getVM(index, version);
     Server server = serverVM.invoke(() -> {
       memberStarter = new ServerStarterRule();
       ServerStarterRule serverStarter = (ServerStarterRule) memberStarter;
@@ -284,17 +304,43 @@ public class ClusterStartupRule extends ExternalResource implements Serializable
     return memberVM;
   }
 
-  public void stopVM(int index) {
-    stopVM(index, true);
+  public MemberVM startServerAsEmbeddedLocator(int index, Properties properties)
+      throws IOException {
+    return startServerAsEmbeddedLocator(index, properties, VersionManager.CURRENT_VERSION);
   }
 
-  public void stopVM(int index, boolean cleanWorkingDir) {
-    VMProvider member = occupiedVMs.get(index);
+  public MemberVM startServerAsEmbeddedLocator(int index) throws IOException {
+    return startServerAsEmbeddedLocator(index, new Properties());
+  }
 
-    if (member == null)
-      return;
+  /**
+   * Starts a client with the given properties, configuring the cacheFactory with the provided
+   * Consumer
+   */
+  public ClientVM startClientVM(int index, Properties properties,
+      Consumer<ClientCacheFactory> cacheFactorySetup, String clientVersion) throws Exception {
+    VM client = getVM(index, clientVersion);
+    Exception error = client.invoke(() -> {
+      clientCacheRule =
+          new ClientCacheRule().withProperties(properties).withCacheSetup(cacheFactorySetup);
+      try {
+        clientCacheRule.before();
+        return null;
+      } catch (Exception e) {
+        return e;
+      }
+    });
+    if (error != null) {
+      throw error;
+    }
+    ClientVM clientVM = new ClientVM(client);
+    occupiedVMs.put(index, clientVM);
+    return clientVM;
+  }
 
-    member.stopVM(cleanWorkingDir);
+  public ClientVM startClientVM(int index, Properties properties,
+      Consumer<ClientCacheFactory> cacheFactorySetup) throws Exception {
+    return startClientVM(index, properties, cacheFactorySetup, VersionManager.CURRENT_VERSION);
   }
 
   public ClientVM startClientVM(int index, String username, String password,
@@ -314,26 +360,6 @@ public class ClusterStartupRule extends ExternalResource implements Serializable
     return startClientVM(index, props, consumer);
   }
 
-  public ClientVM startClientVM(int index, Properties properties,
-      Consumer<ClientCacheFactory> cacheFactorySetup) throws Exception {
-    VM client = getVM(index);
-    Exception error = client.invoke(() -> {
-      clientCacheRule =
-          new ClientCacheRule().withProperties(properties).withCacheSetup(cacheFactorySetup);
-      try {
-        clientCacheRule.before();
-        return null;
-      } catch (Exception e) {
-        return e;
-      }
-    });
-    if (error != null) {
-      throw error;
-    }
-    ClientVM clientVM = new ClientVM(client);
-    occupiedVMs.put(index, clientVM);
-    return clientVM;
-  }
 
   /**
    * Returns the {@link Member} running inside the VM with the specified {@code index}
@@ -342,8 +368,25 @@ public class ClusterStartupRule extends ExternalResource implements Serializable
     return (MemberVM) occupiedVMs.get(index);
   }
 
+  public VM getVM(int index, String version) {
+    return getHost(0).getVM(version, index);
+  }
+
   public VM getVM(int index) {
-    return getHost(0).getVM(index);
+    return getVM(index, VersionManager.CURRENT_VERSION);
+  }
+
+  public void stopVM(int index) {
+    stopVM(index, true);
+  }
+
+  public void stopVM(int index, boolean cleanWorkingDir) {
+    VMProvider member = occupiedVMs.get(index);
+
+    if (member == null)
+      return;
+
+    member.stopVM(cleanWorkingDir);
   }
 
   public TemporaryFolder getTempWorkingDir() {
