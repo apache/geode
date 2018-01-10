@@ -40,7 +40,8 @@ public class ModuleFunctionsSecurityTest {
           .withRegion(RegionShortcut.PARTITION, "PARTITION_1").withAutoStart();
 
   @Rule
-  public GfshCommandRule gfsh = new GfshCommandRule(server::getJmxPort, GfshCommandRule.PortType.jmxManager);
+  public GfshCommandRule gfsh =
+      new GfshCommandRule(server::getJmxPort, GfshCommandRule.PortType.jmxManager);
 
   @BeforeClass
   public static void setupClass() {
