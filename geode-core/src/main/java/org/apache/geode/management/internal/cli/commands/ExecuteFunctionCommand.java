@@ -35,6 +35,7 @@ import org.apache.geode.management.cli.ConverterHint;
 import org.apache.geode.management.cli.Result;
 import org.apache.geode.management.internal.cli.CliAroundInterceptor;
 import org.apache.geode.management.internal.cli.GfshParseResult;
+import org.apache.geode.management.internal.cli.functions.CliFunctionResult;
 import org.apache.geode.management.internal.cli.functions.UserFunctionExecution;
 import org.apache.geode.management.internal.cli.i18n.CliStrings;
 import org.apache.geode.management.internal.cli.result.CompositeResultData;
@@ -84,8 +85,10 @@ public class ExecuteFunctionCommand implements GfshCommand {
     }
 
     for (DistributedMember member : dsMembers) {
-      executeAndGetResults(functionId, filterString, resultCollector, arguments, member,
-          resultTable, onRegion);
+      if (!executeAndGetResults(functionId, filterString, resultCollector, arguments, member,
+          resultTable, onRegion)) {
+        resultTable.setStatus(Result.Status.ERROR);
+      }
     }
     return ResultBuilder.buildResult(resultTable);
   }
@@ -114,7 +117,7 @@ public class ExecuteFunctionCommand implements GfshCommand {
     }
   }
 
-  void executeAndGetResults(String functionId, String filterString, String resultCollector,
+  boolean executeAndGetResults(String functionId, String filterString, String resultCollector,
       String[] arguments, DistributedMember member, TabularResultData resultTable,
       String onRegion) {
     StringBuilder resultMessage = new StringBuilder();
@@ -146,15 +149,22 @@ public class ExecuteFunctionCommand implements GfshCommand {
       args[5] = null;
     }
 
+    boolean functionSuccessful = true;
+
     Execution execution = FunctionService.onMember(member).setArguments(args);
     if (execution != null) {
       List<Object> results = (List<Object>) execution.execute(function).getResult();
       if (results != null) {
         for (Object resultObj : results) {
           if (resultObj != null) {
-            if (resultObj instanceof String) {
-              resultMessage.append(((String) resultObj));
+            if (resultObj instanceof CliFunctionResult) {
+              // Any single error will report an overall failure status
+              if (!((CliFunctionResult) resultObj).isSuccessful()) {
+                functionSuccessful = false;
+              }
+              resultMessage.append(((CliFunctionResult) resultObj).getMessage());
             } else if (resultObj instanceof Exception) {
+              functionSuccessful = false;
               resultMessage.append(((Exception) resultObj).getMessage());
             } else {
               resultMessage.append(resultObj);
@@ -164,9 +174,12 @@ public class ExecuteFunctionCommand implements GfshCommand {
       }
       toTabularResultData(resultTable, member.getId(), resultMessage.toString());
     } else {
+      functionSuccessful = false;
       toTabularResultData(resultTable, member.getId(),
           CliStrings.EXECUTE_FUNCTION__MSG__ERROR_IN_RETRIEVING_EXECUTOR);
     }
+
+    return functionSuccessful;
   }
 
   private void toTabularResultData(TabularResultData table, String memberId, String memberResult) {
