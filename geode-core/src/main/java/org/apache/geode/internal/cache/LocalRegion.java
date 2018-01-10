@@ -7364,7 +7364,7 @@ public class LocalRegion extends AbstractRegion implements LoaderHelperFactory,
       if (this.reinitialized_old) {
         regionDestroyedException = new RegionReinitializedException(toString(), getFullPath());
       } else if (this.cache.isCacheAtShutdownAll()) {
-        throw new CacheClosedException("Cache is being closed by ShutdownAll");
+        throw cache.getCacheClosedException("Cache is being closed by ShutdownAll");
       } else {
         regionDestroyedException = new RegionDestroyedException(toString(), getFullPath());
       }

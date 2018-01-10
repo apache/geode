@@ -720,7 +720,7 @@ public class BucketRegion extends DistributedRegion implements Bucket {
     }
 
     if (cache.isCacheAtShutdownAll()) {
-      throw new CacheClosedException("Cache is shutting down");
+      throw cache.getCacheClosedException("Cache is shutting down");
     }
 
     Object keys[] = new Object[1];
@@ -757,7 +757,7 @@ public class BucketRegion extends DistributedRegion implements Bucket {
       checkForPrimary();
 
       if (cache.isCacheAtShutdownAll()) {
-        throw new CacheClosedException("Cache is shutting down");
+        throw cache.getCacheClosedException("Cache is shutting down");
       }
 
       isPrimary = true;

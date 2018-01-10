@@ -711,7 +711,7 @@ public class GemFireCacheImpl implements InternalCache, InternalClientCache, Has
     }
     if (result != null) {
       throw result.getCacheClosedException(
-          LocalizedStrings.CacheFactory_THE_CACHE_HAS_BEEN_CLOSED.toLocalizedString(), null);
+          LocalizedStrings.CacheFactory_THE_CACHE_HAS_BEEN_CLOSED.toLocalizedString());
     }
     throw new CacheClosedException(
         LocalizedStrings.CacheFactory_A_CACHE_HAS_NOT_YET_BEEN_CREATED.toLocalizedString());
@@ -1568,6 +1568,12 @@ public class GemFireCacheImpl implements InternalCache, InternalClientCache, Has
   }
 
   /** return a CacheClosedException with the given reason */
+  @Override
+  public CacheClosedException getCacheClosedException(String reason) {
+    return getCacheClosedException(reason, null);
+  }
+
+  /** return a CacheClosedException with the given reason and cause */
   @Override
   public CacheClosedException getCacheClosedException(String reason, Throwable cause) {
     CacheClosedException result;

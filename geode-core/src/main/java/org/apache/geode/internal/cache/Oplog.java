@@ -3601,7 +3601,8 @@ public class Oplog implements CompactableOplog, Flushable {
           useNextOplog = true;
         } else {
           if (this.lockedForKRFcreate) {
-            CacheClosedException cce = new CacheClosedException("The disk store is closed.");
+            CacheClosedException cce =
+                getParent().getCache().getCacheClosedException("The disk store is closed.");
             dr.getCancelCriterion().checkCancelInProgress(cce);
             throw cce;
           }
@@ -4631,7 +4632,8 @@ public class Oplog implements CompactableOplog, Flushable {
             useNextOplog = true;
           } else {
             if (this.lockedForKRFcreate) {
-              CacheClosedException cce = new CacheClosedException("The disk store is closed.");
+              CacheClosedException cce =
+                  getParent().getCache().getCacheClosedException("The disk store is closed.");
               dr.getCancelCriterion().checkCancelInProgress(cce);
               throw cce;
             }
@@ -4758,7 +4760,8 @@ public class Oplog implements CompactableOplog, Flushable {
             useNextOplog = true;
           } else {
             if (this.lockedForKRFcreate) {
-              CacheClosedException cce = new CacheClosedException("The disk store is closed.");
+              CacheClosedException cce =
+                  getParent().getCache().getCacheClosedException("The disk store is closed.");
               dr.getCancelCriterion().checkCancelInProgress(cce);
               throw cce;
             }
@@ -5076,7 +5079,8 @@ public class Oplog implements CompactableOplog, Flushable {
           useNextOplog = true;
         } else {
           if (this.lockedForKRFcreate) {
-            CacheClosedException cce = new CacheClosedException("The disk store is closed.");
+            CacheClosedException cce =
+                parent.getCache().getCacheClosedException("The disk store is closed.");
             dr.getCancelCriterion().checkCancelInProgress(cce);
             throw cce;
           }

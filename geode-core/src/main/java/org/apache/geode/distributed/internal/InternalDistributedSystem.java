@@ -2647,9 +2647,16 @@ public class InternalDistributedSystem extends DistributedSystem
                   "Stopping the checkrequiredrole thread because reconnect : {} reached the max number of reconnect tries : {}",
                   reconnectAttemptCounter, maxTries);
             }
-            throw new CacheClosedException(
-                LocalizedStrings.InternalDistributedSystem_SOME_REQUIRED_ROLES_MISSING
-                    .toLocalizedString());
+            InternalCache internalCache = dm.getCache();
+            if (internalCache == null) {
+              throw new CacheClosedException(
+                  LocalizedStrings.InternalDistributedSystem_SOME_REQUIRED_ROLES_MISSING
+                      .toLocalizedString());
+            } else {
+              internalCache.getCacheClosedException(
+                  LocalizedStrings.InternalDistributedSystem_SOME_REQUIRED_ROLES_MISSING
+                      .toLocalizedString());
+            }
           }
         }
 
