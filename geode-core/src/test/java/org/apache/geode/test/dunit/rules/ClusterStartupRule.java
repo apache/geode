@@ -373,7 +373,7 @@ public class ClusterStartupRule extends ExternalResource implements Serializable
   }
 
   public VM getVM(int index) {
-    return getVM(index, VersionManager.CURRENT_VERSION);
+    return getHost(0).getVM(index);
   }
 
   public void stopVM(int index) {
