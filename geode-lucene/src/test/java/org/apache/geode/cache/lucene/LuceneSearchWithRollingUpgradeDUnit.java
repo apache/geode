@@ -166,11 +166,18 @@ public class LuceneSearchWithRollingUpgradeDUnit extends JUnit4DistributedTestCa
           invokeStartLocator(hostName, locatorPorts[1], getLocatorPropertiesPre91(locatorString)));
       invokeRunnableInVMs(invokeCreateCache(getSystemProperties(locatorPorts)), server1, server2);
 
-      // Locators before 1.4 handled configuration asynchronously. We must wait for configuration.
-      locator1.invoke(() -> Awaitility.await().atMost(65, TimeUnit.SECONDS)
-          .until(() -> assertTrue(InternalLocator.getLocator().isSharedConfigurationRunning())));
-      locator2.invoke(() -> Awaitility.await().atMost(65, TimeUnit.SECONDS)
-          .until(() -> assertTrue(InternalLocator.getLocator().isSharedConfigurationRunning())));
+      // Locators before 1.4 handled configuration asynchronously.
+      // We must wait for configuration configuration to be ready, or confirm that it is disabled.
+      locator1.invoke(
+          () -> Awaitility.await().atMost(65, TimeUnit.SECONDS).pollInterval(1, TimeUnit.SECONDS)
+              .until(() -> assertTrue(
+                  !InternalLocator.getLocator().getConfig().getEnableClusterConfiguration()
+                      || InternalLocator.getLocator().isSharedConfigurationRunning())));
+      locator2.invoke(
+          () -> Awaitility.await().atMost(65, TimeUnit.SECONDS).pollInterval(1, TimeUnit.SECONDS)
+              .until(() -> assertTrue(
+                  !InternalLocator.getLocator().getConfig().getEnableClusterConfiguration()
+                      || InternalLocator.getLocator().isSharedConfigurationRunning())));
 
       server1.invoke(() -> createLuceneIndex(cache, regionName, INDEX_NAME));
       server2.invoke(() -> createLuceneIndex(cache, regionName, INDEX_NAME));
@@ -245,9 +252,13 @@ public class LuceneSearchWithRollingUpgradeDUnit extends JUnit4DistributedTestCa
       locator.invoke(
           invokeStartLocator(hostName, locatorPorts[0], getLocatorPropertiesPre91(locatorString)));
 
-      // Locators before 1.4 handled configuration asynchronously. We must wait for configuration.
-      locator.invoke(() -> Awaitility.await().atMost(65, TimeUnit.SECONDS)
-          .until(() -> assertTrue(InternalLocator.getLocator().isSharedConfigurationRunning())));
+      // Locators before 1.4 handled configuration asynchronously.
+      // We must wait for configuration configuration to be ready, or confirm that it is disabled.
+      locator.invoke(
+          () -> Awaitility.await().atMost(65, TimeUnit.SECONDS).pollInterval(1, TimeUnit.SECONDS)
+              .until(() -> assertTrue(
+                  !InternalLocator.getLocator().getConfig().getEnableClusterConfiguration()
+                      || InternalLocator.getLocator().isSharedConfigurationRunning())));
 
       invokeRunnableInVMs(invokeCreateCache(getSystemProperties(locatorPorts)), server2, server3);
       invokeRunnableInVMs(invokeStartCacheServer(csPorts[0]), server2);
@@ -364,9 +375,13 @@ public class LuceneSearchWithRollingUpgradeDUnit extends JUnit4DistributedTestCa
       locator.invoke(
           invokeStartLocator(hostName, locatorPorts[0], getLocatorPropertiesPre91(locatorString)));
 
-      // Locators before 1.4 handled configuration asynchronously. We must wait for configuration.
-      locator.invoke(() -> Awaitility.await().atMost(65, TimeUnit.SECONDS)
-          .until(() -> assertTrue(InternalLocator.getLocator().isSharedConfigurationRunning())));
+      // Locators before 1.4 handled configuration asynchronously.
+      // We must wait for configuration configuration to be ready, or confirm that it is disabled.
+      locator.invoke(
+          () -> Awaitility.await().atMost(65, TimeUnit.SECONDS).pollInterval(1, TimeUnit.SECONDS)
+              .until(() -> assertTrue(
+                  !InternalLocator.getLocator().getConfig().getEnableClusterConfiguration()
+                      || InternalLocator.getLocator().isSharedConfigurationRunning())));
 
       invokeRunnableInVMs(invokeCreateCache(getSystemProperties(locatorPorts)), server1, server2);
       invokeRunnableInVMs(invokeStartCacheServer(csPorts[0]), server1);

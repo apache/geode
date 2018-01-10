@@ -73,7 +73,6 @@ import org.apache.geode.test.junit.runners.CategoryWithParameterizedRunnerFactor
 @RunWith(Parameterized.class)
 @Parameterized.UseParametersRunnerFactory(CategoryWithParameterizedRunnerFactory.class)
 public class RollingUpgradeDUnitTest extends JUnit4DistributedTestCase {
-
   @Parameterized.Parameters(name = "from_v{0}")
   public static Collection<String> data() {
     List<String> result = VersionManager.getInstance().getVersionsWithoutCurrent();
@@ -182,9 +181,13 @@ public class RollingUpgradeDUnitTest extends JUnit4DistributedTestCase {
       locator.invoke(invokeStartLocator(hostName, locatorPorts[0], getTestMethodName(),
           locatorString, locatorProps));
 
-      // Locators before 1.4 handled configuration asynchronously. We must wait for configuration.
-      locator.invoke(() -> Awaitility.await().atMost(65, TimeUnit.SECONDS)
-          .until(() -> assertTrue(InternalLocator.getLocator().isSharedConfigurationRunning())));
+      // Locators before 1.4 handled configuration asynchronously.
+      // We must wait for configuration configuration to be ready, or confirm that it is disabled.
+      locator.invoke(
+          () -> Awaitility.await().atMost(65, TimeUnit.SECONDS).pollInterval(1, TimeUnit.SECONDS)
+              .until(() -> assertTrue(
+                  !InternalLocator.getLocator().getConfig().getEnableClusterConfiguration()
+                      || InternalLocator.getLocator().isSharedConfigurationRunning())));
 
       invokeRunnableInVMs(invokeCreateCache(getSystemProperties(locatorPorts)), server1, server2,
           server3);
