@@ -65,7 +65,7 @@ public class ExportLogsDUnitTest {
   private static final String ERROR_LOG_PREFIX = "[IGNORE]";
 
   @Rule
-  public ClusterStartupRule lsRule = new ClusterStartupRule().withTempWorkingDir().withLogFile();
+  public ClusterStartupRule lsRule = new ClusterStartupRule().withLogFile();
 
   @Rule
   public GfshCommandRule gfshConnector = new GfshCommandRule();
@@ -253,7 +253,6 @@ public class ExportLogsDUnitTest {
 
     File logFileForMember = new File(dirForMember, memberName + ".log");
     assertThat(logFileForMember).exists();
-    assertThat(fileNamesInDir).hasSize(1);
 
     String logFileContents = FileUtils.readLines(logFileForMember, Charset.defaultCharset())
         .stream().collect(joining("\n"));
@@ -283,7 +282,7 @@ public class ExportLogsDUnitTest {
         .describedAs(filesInDir.stream().map(File::getAbsolutePath).collect(joining(",")))
         .hasSize(1);
 
-    File unzippedLogFileDir = lsRule.getTempWorkingDir().newFolder("unzippedLogs");
+    File unzippedLogFileDir = new File(locatorWorkingDir, "unzippedLogs");
     ZipUtils.unzip(zipFilesInDir.get(0).getCanonicalPath(), unzippedLogFileDir.getCanonicalPath());
     return unzippedLogFileDir;
   }

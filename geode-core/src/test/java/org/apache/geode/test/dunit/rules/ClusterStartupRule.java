@@ -104,8 +104,14 @@ public class ClusterStartupRule extends ExternalResource implements Serializable
    *
    * use this if you want to examine each member's file system without worrying about it's being
    * contaminated with DUnitLauncher's log files that exists in each dunit/vm folder such as
-   * locator0View.dat and locator0views.log and other random log files. This will cause the VMs to
-   * be bounced after test is done, because it dynamically changes the user.dir system property.
+   * locatorxxxView.dat and locatorxxxviews.log and other random log files.
+   *
+   * If the product code is doing new File(".") or new File("relative-path.log"), it will still
+   * pointing to the a File under the old CWD. So avoid using relative path and always use absolute
+   * path or with a parent dir when creating new File object.
+   *
+   * But this will cause the VMs to be bounced after test is done, because it dynamically changes
+   * the user.dir system property, causing slow running tests. Use with discretion.
    */
   public ClusterStartupRule withTempWorkingDir() {
     tempWorkingDir = new SerializableTemporaryFolder();
