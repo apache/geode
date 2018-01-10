@@ -957,7 +957,7 @@ public class GemFireCacheImpl implements InternalCache, InternalClientCache, Has
 
       SystemFailure.signalCacheCreate();
 
-      this.diskMonitor = new DiskStoreMonitor();
+      this.diskMonitor = new DiskStoreMonitor(system.getConfig().getLogFile());
 
       addRegionEntrySynchronizationListener(new GatewaySenderQueueEntrySynchronizationListener());
     } // synchronized
