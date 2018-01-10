@@ -25,11 +25,12 @@ import org.apache.geode.cache.RegionShortcut;
 import org.apache.geode.cache.execute.FunctionService;
 import org.apache.geode.examples.SimpleSecurityManager;
 import org.apache.geode.test.junit.categories.IntegrationTest;
+import org.apache.geode.test.junit.categories.SecurityTest;
 import org.apache.geode.test.junit.rules.ConnectionConfiguration;
 import org.apache.geode.test.junit.rules.GfshCommandRule;
 import org.apache.geode.test.junit.rules.ServerStarterRule;
 
-@Category(IntegrationTest.class)
+@Category({IntegrationTest.class, SecurityTest.class})
 public class ModuleFunctionsSecurityTest {
 
   @ClassRule
