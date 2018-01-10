@@ -80,16 +80,15 @@ public class TXRemoteCommitMessage extends TXMessage {
       logger.debug("TX: Committing: {}", txId);
     }
     final TXStateProxy txState = txMgr.getTXState();
-    TXCommitMessage cmsg = null;
+    TXCommitMessage commitMessage = txMgr.getRecentlyCompletedMessage(txId);
     try {
       // do the actual commit, only if it was not done before
-      if (txMgr.isHostedTxRecentlyCompleted(txId)) {
+      if (commitMessage != null) {
         if (logger.isDebugEnabled()) {
           logger.debug("TX: found a previously committed transaction:{}", txId);
         }
-        cmsg = txMgr.getRecentlyCompletedMessage(txId);
-        if (txMgr.isExceptionToken(cmsg)) {
-          throw txMgr.getExceptionForToken(cmsg, txId);
+        if (txMgr.isExceptionToken(commitMessage)) {
+          throw txMgr.getExceptionForToken(commitMessage, txId);
         }
       } else {
         // if no TXState was created (e.g. due to only getEntry/size operations
@@ -97,13 +96,14 @@ public class TXRemoteCommitMessage extends TXMessage {
         if (txState != null) {
           txState.setCommitOnBehalfOfRemoteStub(true);
           txMgr.commit();
-          cmsg = txState.getCommitMessage();
+          commitMessage = txState.getCommitMessage();
         }
       }
     } finally {
       txMgr.removeHostedTXState(txId);
     }
-    TXRemoteCommitReplyMessage.send(getSender(), getProcessorId(), cmsg, getReplySender(dm));
+    TXRemoteCommitReplyMessage.send(getSender(), getProcessorId(), commitMessage,
+        getReplySender(dm));
 
     /*
      * return false so there isn't another reply

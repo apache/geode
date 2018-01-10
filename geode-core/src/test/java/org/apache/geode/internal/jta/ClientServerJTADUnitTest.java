@@ -22,6 +22,7 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 
 import javax.transaction.Status;
+import javax.transaction.TransactionManager;
 
 import org.awaitility.Awaitility;
 import org.junit.Test;
@@ -36,7 +37,10 @@ import org.apache.geode.cache.client.ClientCacheFactory;
 import org.apache.geode.cache.client.ClientRegionShortcut;
 import org.apache.geode.cache.server.CacheServer;
 import org.apache.geode.internal.AvailablePortHelper;
+import org.apache.geode.internal.cache.TXCommitMessage;
+import org.apache.geode.internal.cache.TXId;
 import org.apache.geode.internal.cache.TXManagerImpl;
+import org.apache.geode.internal.cache.TXStateProxy;
 import org.apache.geode.internal.cache.TXStateProxyImpl;
 import org.apache.geode.internal.cache.tx.ClientTXStateStub;
 import org.apache.geode.internal.logging.LogService;
@@ -61,14 +65,7 @@ public class ClientServerJTADUnitTest extends JUnit4CacheTestCase {
     getBlackboard().initBlackboard();
     final Properties properties = getDistributedSystemProperties();
 
-    final int port = server.invoke("create cache", () -> {
-      Cache cache = getCache(properties);
-      CacheServer cacheServer = createCacheServer(cache, 0);
-      Region region = cache.createRegionFactory(RegionShortcut.REPLICATE).create(regionName);
-      region.put(key, value);
-
-      return cacheServer.getPort();
-    });
+    final int port = server.invoke(() -> createServerRegion(regionName, properties));
 
     client.invoke(() -> createClientRegion(host, port, regionName));
 
@@ -193,4 +190,68 @@ public class ClientServerJTADUnitTest extends JUnit4CacheTestCase {
     }
     assertTrue(region.get(key).equals(newValue));
   }
+
+  @Test
+  public void testClientCompletedJTAIsInFailoverMap() throws Exception {
+    final String regionName = getUniqueName();
+    final Properties properties = getDistributedSystemProperties();
+
+    final int port = server.invoke(() -> createServerRegion(regionName, properties));
+
+    createClientRegion(host, port, regionName);
+
+    Region region = getCache().getRegion(regionName);
+    assertTrue(region.get(key).equals(value));
+
+    TransactionManager JTAManager =
+        (TransactionManager) getCache().getJNDIContext().lookup("java:/TransactionManager");
+    assertNotNull(JTAManager);
+
+    // commit
+    JTAManager.begin();
+    region.put(key, newValue);
+    final TXId committedTXId = getTxId();
+    JTAManager.commit();
+    assertTrue(region.get(key).equals(newValue));
+
+    server.invoke(() -> verifyJTAIsCompleted(properties, committedTXId));
+
+    // rollback
+    JTAManager.begin();
+    region.put(key, "UncommittedValue");
+    final TXId rolledBackTXId = getTxId();
+    JTAManager.rollback();
+    assertTrue(region.get(key).equals(newValue));
+
+    server.invoke(() -> verifyJTAIsRollback(properties, rolledBackTXId));
+  }
+
+  private Integer createServerRegion(String regionName, Properties properties) {
+    Cache cache = getCache(properties);
+    CacheServer cacheServer = createCacheServer(cache, 0);
+    Region region = cache.createRegionFactory(RegionShortcut.REPLICATE).create(regionName);
+    region.put(key, value);
+
+    return cacheServer.getPort();
+  }
+
+  private TXId getTxId() {
+    TXManagerImpl txManager = (TXManagerImpl) getCache().getCacheTransactionManager();
+    TXStateProxy txStateProxy = txManager.getTXState();
+    return txStateProxy.getTxId();
+  }
+
+  private void verifyJTAIsCompleted(Properties properties, TXId committedTXId) {
+    Cache cache = getCache(properties);
+    assertTrue(((TXManagerImpl) cache.getCacheTransactionManager())
+        .isHostedTxRecentlyCompleted(committedTXId));
+  }
+
+  private void verifyJTAIsRollback(Properties properties, TXId rollbackTXId) {
+    Cache cache = getCache(properties);
+    assertEquals(TXCommitMessage.ROLLBACK_MSG, ((TXManagerImpl) cache.getCacheTransactionManager())
+        .getRecentlyCompletedMessage(rollbackTXId));
+
+  }
+
 }

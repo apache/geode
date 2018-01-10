@@ -61,6 +61,12 @@ public class JtaBeforeCompletionMessage extends TXMessage {
     if (logger.isDebugEnabled()) {
       logger.debug("JTA: Calling beforeCompletion for :{}", txId);
     }
+    // Check if jta has been completed, possible due to tx failover.
+    // No need to execute beforeCompletion if already completed.
+    if (txMgr.isHostedTxRecentlyCompleted(txId)) {
+      return true;
+    }
+
     txMgr.getTXState().beforeCompletion();
     return true;
   }

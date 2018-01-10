@@ -78,11 +78,18 @@ public class JtaAfterCompletionMessage extends TXMessage {
     if (logger.isDebugEnabled()) {
       logger.debug("JTA: Calling afterCompletion for :{}", txId);
     }
+    TXCommitMessage commitMessage = txMgr.getRecentlyCompletedMessage(txId);
+    if (commitMessage != null) {
+      TXRemoteCommitReplyMessage.send(getSender(), getProcessorId(), commitMessage,
+          getReplySender(dm));
+      return false;
+    }
     TXStateProxy txState = txMgr.getTXState();
     txState.setCommitOnBehalfOfRemoteStub(true);
     txState.afterCompletion(status);
-    TXCommitMessage cmsg = txState.getCommitMessage();
-    TXRemoteCommitReplyMessage.send(getSender(), getProcessorId(), cmsg, getReplySender(dm));
+    commitMessage = txState.getCommitMessage();
+    TXRemoteCommitReplyMessage.send(getSender(), getProcessorId(), commitMessage,
+        getReplySender(dm));
     txMgr.removeHostedTXState(txId);
     return false;
   }
