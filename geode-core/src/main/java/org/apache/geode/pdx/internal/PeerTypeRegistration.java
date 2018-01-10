@@ -449,7 +449,17 @@ public class PeerTypeRegistration implements TypeRegistration {
     verifyConfiguration();
     TXStateProxy currentState = suspendTX();
     try {
-      return (PdxType) getIdToType().get(typeId);
+      PdxType pdxType = (PdxType) getIdToType().get(typeId);
+      if (pdxType == null) {
+        lock();
+        try {
+          pdxType = (PdxType) getIdToType().get(typeId);
+        } finally {
+          unlock();
+        }
+      }
+
+      return pdxType;
     } finally {
       resumeTX(currentState);
     }
@@ -466,7 +476,7 @@ public class PeerTypeRegistration implements TypeRegistration {
         // the distributed lock.
         lock();
         try {
-          r.put(typeId, type);
+          r.putIfAbsent(typeId, type);
         } finally {
           unlock();
         }
