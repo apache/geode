@@ -159,21 +159,29 @@ public class ConnectCommand implements GfshCommand {
     }
 
     OperationInvoker invoker = gfsh.getOperationInvoker();
-    if (!invoker.isConnected()) {
+    if (invoker == null || !invoker.isConnected()) {
       return result;
     }
 
     String gfshVersion = gfsh.getVersion();
+    String remoteVersion = null;
     try {
-      String remoteVersion = invoker.getRemoteVersion();
+      remoteVersion = invoker.getRemoteVersion();
       if (remoteVersion.equalsIgnoreCase(gfshVersion)) {
         return result;
       }
-      return ResultBuilder.createUserErrorResult(String.format(
-          "Cannot use a %s gfsh client to connect to a %s cluster.", gfshVersion, remoteVersion));
     } catch (Exception e) {
+      gfsh.logInfo("failed to get the the remote version.", e);
+    }
+
+    // will reach here only when remoteVersion is not available or does not match
+    invoker.stop();
+    if (remoteVersion == null) {
       return ResultBuilder.createUserErrorResult(
           String.format("Cannot use a %s gfsh client to connect to this cluster.", gfshVersion));
+    } else {
+      return ResultBuilder.createUserErrorResult(String.format(
+          "Cannot use a %s gfsh client to connect to a %s cluster.", gfshVersion, remoteVersion));
     }
   }
 
