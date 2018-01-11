@@ -237,7 +237,7 @@ public class RegionSnapshotServiceImpl<K, V> implements RegionSnapshotService<K,
     // Would be interesting to use a PriorityQueue ordered on isDone()
     // but this is probably close enough in practice.
     LinkedList<Future<?>> puts = new LinkedList<>();
-    GFSnapshotImporter in = new GFSnapshotImporter(snapshot);
+    GFSnapshotImporter in = new GFSnapshotImporter(snapshot, local.getCache().getPdxRegistry());
 
     try {
       int bufferSize = 0;
