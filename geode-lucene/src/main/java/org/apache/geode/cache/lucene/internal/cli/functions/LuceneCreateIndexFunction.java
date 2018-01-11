@@ -18,6 +18,9 @@ package org.apache.geode.cache.lucene.internal.cli.functions;
 import static org.apache.geode.cache.lucene.internal.LuceneServiceImpl.validateCommandParameters.INDEX_NAME;
 import static org.apache.geode.cache.lucene.internal.LuceneServiceImpl.validateCommandParameters.REGION_PATH;
 
+import java.util.Collection;
+import java.util.Collections;
+
 import org.apache.commons.lang.StringUtils;
 import org.apache.lucene.analysis.Analyzer;
 import org.apache.lucene.analysis.standard.StandardAnalyzer;
@@ -33,11 +36,15 @@ import org.apache.geode.cache.lucene.internal.LuceneServiceImpl;
 import org.apache.geode.cache.lucene.internal.cli.LuceneCliStrings;
 import org.apache.geode.cache.lucene.internal.cli.LuceneIndexDetails;
 import org.apache.geode.cache.lucene.internal.cli.LuceneIndexInfo;
+import org.apache.geode.cache.lucene.internal.security.LucenePermission;
 import org.apache.geode.internal.InternalEntity;
 import org.apache.geode.management.internal.cli.CliUtil;
 import org.apache.geode.management.internal.cli.functions.CliFunctionResult;
 import org.apache.geode.management.internal.cli.i18n.CliStrings;
 import org.apache.geode.management.internal.configuration.domain.XmlEntity;
+import org.apache.geode.security.ResourcePermission;
+import org.apache.geode.security.ResourcePermission.Operation;
+import org.apache.geode.security.ResourcePermission.Resource;
 
 
 /**
@@ -110,6 +117,12 @@ public class LuceneCreateIndexFunction implements InternalEntity, Function {
     }
   }
 
+  @Override
+  public Collection<ResourcePermission> getRequiredPermissions(String regionName) {
+    return Collections.singleton(
+        new ResourcePermission(Resource.CLUSTER, Operation.MANAGE, LucenePermission.TARGET));
+  }
+
   private LuceneSerializer toSerializer(String serializerName)
       throws InstantiationException, IllegalAccessException, ClassNotFoundException {
     String trimmedName = StringUtils.trim(serializerName);
@@ -136,5 +149,4 @@ public class LuceneCreateIndexFunction implements InternalEntity, Function {
         CliUtil.forName(className, LuceneCliStrings.LUCENE_CREATE_INDEX__ANALYZER);
     return CliUtil.newInstance(clazz, LuceneCliStrings.LUCENE_CREATE_INDEX__ANALYZER);
   }
-
 }

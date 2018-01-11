@@ -14,6 +14,9 @@
  */
 package org.apache.geode.cache.lucene.internal.cli.functions;
 
+import java.util.Collection;
+import java.util.Collections;
+
 import org.apache.commons.lang.StringUtils;
 
 import org.apache.geode.cache.execute.Function;
@@ -22,16 +25,19 @@ import org.apache.geode.cache.lucene.LuceneService;
 import org.apache.geode.cache.lucene.LuceneServiceProvider;
 import org.apache.geode.cache.lucene.internal.LuceneServiceImpl;
 import org.apache.geode.cache.lucene.internal.cli.LuceneDestroyIndexInfo;
+import org.apache.geode.cache.lucene.internal.security.LucenePermission;
 import org.apache.geode.cache.lucene.internal.xml.LuceneXmlConstants;
 import org.apache.geode.internal.InternalEntity;
 import org.apache.geode.internal.cache.xmlcache.CacheXml;
 import org.apache.geode.management.internal.cli.functions.CliFunctionResult;
 import org.apache.geode.management.internal.configuration.domain.XmlEntity;
+import org.apache.geode.security.ResourcePermission;
+import org.apache.geode.security.ResourcePermission.Operation;
+import org.apache.geode.security.ResourcePermission.Resource;
 
 public class LuceneDestroyIndexFunction implements Function, InternalEntity {
-
   public void execute(final FunctionContext context) {
-    CliFunctionResult result = null;
+    CliFunctionResult result;
     String memberId = context.getCache().getDistributedSystem().getDistributedMember().getId();
     try {
       LuceneDestroyIndexInfo indexInfo = (LuceneDestroyIndexInfo) context.getArguments();
@@ -65,5 +71,11 @@ public class LuceneDestroyIndexFunction implements Function, InternalEntity {
     String regionName = StringUtils.stripStart(regionPath, "/");
     return new XmlEntity(CacheXml.REGION, "name", regionName, LuceneXmlConstants.PREFIX,
         LuceneXmlConstants.NAMESPACE, LuceneXmlConstants.INDEX, "name", indexName);
+  }
+
+  @Override
+  public Collection<ResourcePermission> getRequiredPermissions(String regionName) {
+    return Collections.singleton(
+        new ResourcePermission(Resource.CLUSTER, Operation.MANAGE, LucenePermission.TARGET));
   }
 }
