@@ -81,7 +81,8 @@ public class TXFailoverCommand extends BaseCommand {
 
     if (!tx.isRealDealLocal()) {
       // send message to all peers to find out who hosts the transaction
-      FindRemoteTXMessageReplyProcessor processor = sendFindRemoteTXMessage(serverConnection.getCache(), txId);
+      FindRemoteTXMessageReplyProcessor processor =
+          sendFindRemoteTXMessage(serverConnection.getCache(), txId);
       try {
         processor.waitForRepliesUninterruptibly();
       } catch (ReplyException e) {

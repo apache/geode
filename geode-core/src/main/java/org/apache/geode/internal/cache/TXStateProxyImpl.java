@@ -283,7 +283,7 @@ public class TXStateProxyImpl implements TXStateProxy {
 
   @Override
   public void destroyExistingEntry(EntryEventImpl event, boolean cacheWrite,
-                                   Object expectedOldValue) throws EntryNotFoundException {
+      Object expectedOldValue) throws EntryNotFoundException {
     try {
       this.operationCount++;
       getRealDeal(event.getKeyInfo(), event.getLocalRegion()).destroyExistingEntry(event,
@@ -312,8 +312,8 @@ public class TXStateProxyImpl implements TXStateProxy {
 
   @Override
   public Object getDeserializedValue(KeyInfo keyInfo, LocalRegion localRegion, boolean updateStats,
-                                     boolean disableCopyOnRead, boolean preferCD, EntryEventImpl clientEvent,
-                                     boolean returnTombstones, boolean retainResult) {
+      boolean disableCopyOnRead, boolean preferCD, EntryEventImpl clientEvent,
+      boolean returnTombstones, boolean retainResult) {
     Object val = getRealDeal(keyInfo, localRegion).getDeserializedValue(keyInfo, localRegion,
         updateStats, disableCopyOnRead, preferCD, null, false, retainResult);
     if (val != null) {
@@ -361,7 +361,7 @@ public class TXStateProxyImpl implements TXStateProxy {
 
   @Override
   public void invalidateExistingEntry(EntryEventImpl event, boolean invokeCallbacks,
-                                      boolean forceNewEntry) {
+      boolean forceNewEntry) {
     try {
       this.operationCount++;
       getRealDeal(event.getKeyInfo(), event.getLocalRegion()).invalidateExistingEntry(event,
@@ -420,7 +420,7 @@ public class TXStateProxyImpl implements TXStateProxy {
 
   @Override
   public boolean txPutEntry(EntryEventImpl event, boolean ifNew, boolean requireOldValue,
-                            boolean checkResources, Object expectedOldValue) {
+      boolean checkResources, Object expectedOldValue) {
     try {
       this.operationCount++;
       boolean retVal = getRealDeal(event.getKeyInfo(), (LocalRegion) event.getRegion())
@@ -434,7 +434,7 @@ public class TXStateProxyImpl implements TXStateProxy {
 
   @Override
   public TXEntryState txReadEntry(KeyInfo keyInfo, LocalRegion localRegion, boolean rememberRead,
-                                  boolean createTxEntryIfAbsent) {
+      boolean createTxEntryIfAbsent) {
     try {
       this.operationCount++;
       TXEntryState retVal = getRealDeal(keyInfo, localRegion).txReadEntry(keyInfo, localRegion,
@@ -530,9 +530,9 @@ public class TXStateProxyImpl implements TXStateProxy {
 
   @Override
   public Object findObject(KeyInfo key, LocalRegion r, boolean isCreate, boolean generateCallbacks,
-                           Object value, boolean disableCopyOnRead, boolean preferCD,
-                           ClientProxyMembershipID requestingClient, EntryEventImpl clientEvent,
-                           boolean returnTombstones) {
+      Object value, boolean disableCopyOnRead, boolean preferCD,
+      ClientProxyMembershipID requestingClient, EntryEventImpl clientEvent,
+      boolean returnTombstones) {
     try {
       this.operationCount++;
       Object retVal = getRealDeal(key, r).findObject(key, r, isCreate, generateCallbacks, value,
@@ -557,7 +557,7 @@ public class TXStateProxyImpl implements TXStateProxy {
 
   @Override
   public Object getEntryForIterator(KeyInfo key, LocalRegion currRgn, boolean rememberReads,
-                                    boolean allowTombstones) {
+      boolean allowTombstones) {
     boolean resetTxState = isTransactionInternalSuspendNeeded(currRgn);
     TXStateProxy txp = null;
     if (resetTxState) {
@@ -584,7 +584,7 @@ public class TXStateProxyImpl implements TXStateProxy {
 
   @Override
   public Object getKeyForIterator(KeyInfo keyInfo, LocalRegion currRgn, boolean rememberReads,
-                                  boolean allowTombstones) {
+      boolean allowTombstones) {
     boolean resetTxState = isTransactionInternalSuspendNeeded(currRgn);
     TXStateProxy txp = null;
     if (resetTxState) {
@@ -618,8 +618,8 @@ public class TXStateProxyImpl implements TXStateProxy {
 
   @Override
   public boolean putEntry(EntryEventImpl event, boolean ifNew, boolean ifOld,
-                          Object expectedOldValue, boolean requireOldValue, long lastModified,
-                          boolean overwriteDestroyed) {
+      Object expectedOldValue, boolean requireOldValue, long lastModified,
+      boolean overwriteDestroyed) {
     try {
       this.operationCount++;
       boolean retVal = getRealDeal(event.getKeyInfo(), event.getLocalRegion()).putEntry(event,
@@ -643,8 +643,8 @@ public class TXStateProxyImpl implements TXStateProxy {
 
   @Override
   public Object getSerializedValue(LocalRegion localRegion, KeyInfo key, boolean doNotLockEntry,
-                                   ClientProxyMembershipID requestingClient, EntryEventImpl clientEvent,
-                                   boolean returnTombstones) throws DataLocationException {
+      ClientProxyMembershipID requestingClient, EntryEventImpl clientEvent,
+      boolean returnTombstones) throws DataLocationException {
     this.operationCount++;
     return getRealDeal(key, localRegion).getSerializedValue(localRegion, key, doNotLockEntry,
         requestingClient, clientEvent, returnTombstones);
@@ -652,8 +652,8 @@ public class TXStateProxyImpl implements TXStateProxy {
 
   @Override
   public boolean putEntryOnRemote(EntryEventImpl event, boolean ifNew, boolean ifOld,
-                                  Object expectedOldValue, boolean requireOldValue, long lastModified,
-                                  boolean overwriteDestroyed) throws DataLocationException {
+      Object expectedOldValue, boolean requireOldValue, long lastModified,
+      boolean overwriteDestroyed) throws DataLocationException {
     this.operationCount++;
     TXStateInterface tx = getRealDeal(event.getKeyInfo(), event.getLocalRegion());
     assert (tx instanceof TXState) : tx.getClass().getSimpleName();
@@ -677,7 +677,7 @@ public class TXStateProxyImpl implements TXStateProxy {
 
   @Override
   public void invalidateOnRemote(EntryEventImpl event, boolean invokeCallbacks,
-                                 boolean forceNewEntry) throws DataLocationException {
+      boolean forceNewEntry) throws DataLocationException {
     this.operationCount++;
     TXStateInterface tx = getRealDeal(event.getKeyInfo(), event.getLocalRegion());
     assert (tx instanceof TXState);
@@ -841,7 +841,7 @@ public class TXStateProxyImpl implements TXStateProxy {
 
   @Override
   public void postPutAll(DistributedPutAllOperation putallOp, VersionedObjectList successfulPuts,
-                         LocalRegion region) {
+      LocalRegion region) {
     if (putallOp.putAllData.length == 0) {
       return;
     }
@@ -911,7 +911,7 @@ public class TXStateProxyImpl implements TXStateProxy {
   /** test hook - record a list of ops in the transaction */
   @Override
   public void recordTXOperation(ServerRegionDataAccess region, ServerRegionOperation op, Object key,
-                                Object arguments[]) {
+      Object arguments[]) {
     if (ClientTXStateStub.transactionRecordingEnabled()) {
       getRealDeal(null, (LocalRegion) region.getRegion()).recordTXOperation(region, op, key,
           arguments);

@@ -149,7 +149,7 @@ public abstract class TXStateStub implements TXStateInterface {
    */
   @Override
   public void destroyExistingEntry(EntryEventImpl event, boolean cacheWrite,
-                                   Object expectedOldValue) throws EntryNotFoundException {
+      Object expectedOldValue) throws EntryNotFoundException {
     if (event.getOperation().isLocal()) {
       throw new UnsupportedOperationInTransactionException(
           LocalizedStrings.TXStateStub_LOCAL_DESTROY_NOT_ALLOWED_IN_TRANSACTION
@@ -199,8 +199,8 @@ public abstract class TXStateStub implements TXStateInterface {
    */
   @Override
   public Object getDeserializedValue(KeyInfo keyInfo, LocalRegion localRegion, boolean updateStats,
-                                     boolean disableCopyOnRead, boolean preferCD, EntryEventImpl clientEvent,
-                                     boolean returnTombstones, boolean retainResult) {
+      boolean disableCopyOnRead, boolean preferCD, EntryEventImpl clientEvent,
+      boolean returnTombstones, boolean retainResult) {
     // We never have a local value if we are a stub...
     return null;
   }
@@ -277,7 +277,7 @@ public abstract class TXStateStub implements TXStateInterface {
    */
   @Override
   public void invalidateExistingEntry(EntryEventImpl event, boolean invokeCallbacks,
-                                      boolean forceNewEntry) {
+      boolean forceNewEntry) {
     if (event.getOperation().isLocal()) {
       throw new UnsupportedOperationInTransactionException(
           LocalizedStrings.TXStateStub_LOCAL_INVALIDATE_NOT_ALLOWED_IN_TRANSACTION
@@ -376,7 +376,7 @@ public abstract class TXStateStub implements TXStateInterface {
    */
   @Override
   public boolean txPutEntry(EntryEventImpl event, boolean ifNew, boolean requireOldValue,
-                            boolean checkResources, Object expectedOldValue) {
+      boolean checkResources, Object expectedOldValue) {
     return false;
   }
 
@@ -388,7 +388,7 @@ public abstract class TXStateStub implements TXStateInterface {
    */
   @Override
   public TXEntryState txReadEntry(KeyInfo entryKey, LocalRegion localRegion, boolean rememberRead,
-                                  boolean createTxEntryIfAbsent) {
+      boolean createTxEntryIfAbsent) {
     // TODO Auto-generated method stub
     return null;
   }
@@ -475,9 +475,9 @@ public abstract class TXStateStub implements TXStateInterface {
    */
   @Override
   public Object findObject(KeyInfo keyInfo, LocalRegion r, boolean isCreate,
-                           boolean generateCallbacks, Object value, boolean disableCopyOnRead, boolean preferCD,
-                           ClientProxyMembershipID requestingClient, EntryEventImpl clientEvent,
-                           boolean returnTombstones) {
+      boolean generateCallbacks, Object value, boolean disableCopyOnRead, boolean preferCD,
+      ClientProxyMembershipID requestingClient, EntryEventImpl clientEvent,
+      boolean returnTombstones) {
     return getTXRegionStub(r).findObject(keyInfo, isCreate, generateCallbacks, value, preferCD,
         requestingClient, clientEvent);
   }
@@ -504,7 +504,7 @@ public abstract class TXStateStub implements TXStateInterface {
    */
   @Override
   public Object getEntryForIterator(KeyInfo keyInfo, LocalRegion currRgn, boolean rememberReads,
-                                    boolean allowTombstones) {
+      boolean allowTombstones) {
     return getTXRegionStub(currRgn).getEntryForIterator(keyInfo, allowTombstones);
   }
 
@@ -516,7 +516,7 @@ public abstract class TXStateStub implements TXStateInterface {
    */
   @Override
   public Object getKeyForIterator(KeyInfo keyInfo, LocalRegion currRgn, boolean rememberReads,
-                                  boolean allowTombstones) {
+      boolean allowTombstones) {
     Object key = keyInfo.getKey();
     if (key instanceof RegionEntry) {
       return ((RegionEntry) key).getKey();
@@ -554,8 +554,8 @@ public abstract class TXStateStub implements TXStateInterface {
    */
   @Override
   public boolean putEntry(EntryEventImpl event, boolean ifNew, boolean ifOld,
-                          Object expectedOldValue, boolean requireOldValue, long lastModified,
-                          boolean overwriteDestroyed) {
+      Object expectedOldValue, boolean requireOldValue, long lastModified,
+      boolean overwriteDestroyed) {
     return getTXRegionStub(event.getRegion()).putEntry(event, ifNew, ifOld, expectedOldValue,
         requireOldValue, lastModified, overwriteDestroyed);
   }
@@ -569,8 +569,8 @@ public abstract class TXStateStub implements TXStateInterface {
    */
   @Override
   public Object getSerializedValue(LocalRegion localRegion, KeyInfo key, boolean doNotLockEntry,
-                                   ClientProxyMembershipID requestingClient, EntryEventImpl clientEvent,
-                                   boolean returnTombstones) {
+      ClientProxyMembershipID requestingClient, EntryEventImpl clientEvent,
+      boolean returnTombstones) {
     throw new UnsupportedOperationException();
   }
 
@@ -583,8 +583,8 @@ public abstract class TXStateStub implements TXStateInterface {
    */
   @Override
   public boolean putEntryOnRemote(EntryEventImpl event, boolean ifNew, boolean ifOld,
-                                  Object expectedOldValue, boolean requireOldValue, long lastModified,
-                                  boolean overwriteDestroyed) throws DataLocationException {
+      Object expectedOldValue, boolean requireOldValue, long lastModified,
+      boolean overwriteDestroyed) throws DataLocationException {
     throw new IllegalStateException();
   }
 
@@ -614,7 +614,7 @@ public abstract class TXStateStub implements TXStateInterface {
    */
   @Override
   public void invalidateOnRemote(EntryEventImpl event, boolean invokeCallbacks,
-                                 boolean forceNewEntry) throws DataLocationException {
+      boolean forceNewEntry) throws DataLocationException {
     throw new IllegalStateException();
   }
 
@@ -699,7 +699,7 @@ public abstract class TXStateStub implements TXStateInterface {
 
   @Override
   public void postPutAll(DistributedPutAllOperation putallOp, VersionedObjectList successfulPuts,
-                         LocalRegion region) {
+      LocalRegion region) {
     getTXRegionStub(region).postPutAll(putallOp, successfulPuts, region);
   }
 
