@@ -287,7 +287,7 @@ public class CacheFactory {
   private static Cache basicGetInstancePart2(DistributedSystem system, boolean closeOk) {
     InternalCache instance = GemFireCacheImpl.getInstance();
     if (instance == null) {
-      throw instance.getCacheClosedException(
+      throw new CacheClosedException(
           LocalizedStrings.CacheFactory_A_CACHE_HAS_NOT_YET_BEEN_CREATED.toLocalizedString());
     } else {
       if (instance.isClosed() && !closeOk) {
