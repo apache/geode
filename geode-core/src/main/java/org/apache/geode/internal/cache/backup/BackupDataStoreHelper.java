@@ -21,7 +21,7 @@ import java.util.Set;
 import org.apache.geode.cache.persistence.PersistentID;
 import org.apache.geode.distributed.DistributedLockService;
 import org.apache.geode.distributed.DistributedMember;
-import org.apache.geode.distributed.internal.DistributionManager;
+import org.apache.geode.distributed.internal.DM;
 import org.apache.geode.internal.Assert;
 
 public class BackupDataStoreHelper {
@@ -34,8 +34,8 @@ public class BackupDataStoreHelper {
   private static final FinishBackupFactory finishBackupFactory = new FinishBackupFactory();
 
   @SuppressWarnings("rawtypes")
-  public static BackupDataStoreResult backupAllMembers(DistributionManager dm, Set recipients,
-      File targetDir, File baselineDir) {
+  public static BackupDataStoreResult backupAllMembers(DM dm, Set recipients, File targetDir,
+      File baselineDir) {
     new FlushToDiskOperation(dm, dm.getId(), dm.getCache(), recipients, flushToDiskFactory).send();
 
     boolean abort = true;
@@ -52,7 +52,7 @@ public class BackupDataStoreHelper {
     return new BackupDataStoreResult(existingDataStores, successfulMembers);
   }
 
-  private static DistributedLockService getLockService(DistributionManager dm) {
+  private static DistributedLockService getLockService(DM dm) {
     DistributedLockService dls = DistributedLockService.getServiceNamed(LOCK_SERVICE_NAME);
     if (dls == null) {
       synchronized (LOCK_SYNC) {
@@ -67,11 +67,11 @@ public class BackupDataStoreHelper {
     return dls;
   }
 
-  public static boolean obtainLock(DistributionManager dm) {
+  public static boolean obtainLock(DM dm) {
     return getLockService(dm).lock(LOCK_NAME, 0, -1);
   }
 
-  public static void releaseLock(DistributionManager dm) {
+  public static void releaseLock(DM dm) {
     getLockService(dm).unlock(LOCK_NAME);
   }
 }

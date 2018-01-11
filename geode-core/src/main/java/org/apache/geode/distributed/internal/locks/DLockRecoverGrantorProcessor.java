@@ -25,7 +25,7 @@ import java.util.Set;
 import org.apache.logging.log4j.Logger;
 
 import org.apache.geode.DataSerializer;
-import org.apache.geode.distributed.internal.ClusterDistributionManager;
+import org.apache.geode.distributed.internal.DM;
 import org.apache.geode.distributed.internal.DistributionManager;
 import org.apache.geode.distributed.internal.DistributionMessage;
 import org.apache.geode.distributed.internal.MessageWithReply;
@@ -52,7 +52,7 @@ public class DLockRecoverGrantorProcessor extends ReplyProcessor21 {
   protected static final DefaultMessageProcessor nullServiceProcessor =
       new DefaultMessageProcessor();
 
-  private DistributionManager dm;
+  private DM dm;
 
   private DLockGrantor newGrantor;
 
@@ -68,7 +68,7 @@ public class DLockRecoverGrantorProcessor extends ReplyProcessor21 {
    * This method should block until transfer of lock grantor has completed.
    */
   static boolean recoverLockGrantor(Set members, DLockService service, DLockGrantor newGrantor,
-      DistributionManager dm, InternalDistributedMember elder) {
+      DM dm, InternalDistributedMember elder) {
     // proc will wait for replies from everyone including THIS member...
     DLockRecoverGrantorProcessor processor =
         new DLockRecoverGrantorProcessor(dm, members, newGrantor);
@@ -112,8 +112,7 @@ public class DLockRecoverGrantorProcessor extends ReplyProcessor21 {
   // -------------------------------------------------------------------------
 
   /** Creates a new instance of DLockRecoverGrantorProcessor */
-  private DLockRecoverGrantorProcessor(DistributionManager dm, Set members,
-      DLockGrantor newGrantor) {
+  private DLockRecoverGrantorProcessor(DM dm, Set members, DLockGrantor newGrantor) {
     super(dm, members);
     this.dm = dm;
     this.newGrantor = newGrantor;
@@ -236,7 +235,7 @@ public class DLockRecoverGrantorProcessor extends ReplyProcessor21 {
     }
 
     @Override
-    protected void process(ClusterDistributionManager dm) {
+    protected void process(DistributionManager dm) {
       processMessage(dm);
     }
 
@@ -246,15 +245,15 @@ public class DLockRecoverGrantorProcessor extends ReplyProcessor21 {
      *
      * @param dm the distribution manager
      */
-    protected void scheduleMessage(DistributionManager dm) {
-      if (dm instanceof ClusterDistributionManager) {
-        super.scheduleAction((ClusterDistributionManager) dm);
+    protected void scheduleMessage(DM dm) {
+      if (dm instanceof DistributionManager) {
+        super.scheduleAction((DistributionManager) dm);
       } else {
         processMessage(dm);
       }
     }
 
-    protected void processMessage(DistributionManager dm) {
+    protected void processMessage(DM dm) {
       MessageProcessor processor = nullServiceProcessor;
 
       DLockService svc = DLockService.getInternalServiceNamed(this.serviceName);
@@ -384,11 +383,11 @@ public class DLockRecoverGrantorProcessor extends ReplyProcessor21 {
   }
 
   public static interface MessageProcessor {
-    public void process(DistributionManager dm, DLockRecoverGrantorMessage msg);
+    public void process(DM dm, DLockRecoverGrantorMessage msg);
   }
 
   static class DefaultMessageProcessor implements MessageProcessor {
-    public void process(DistributionManager dm, DLockRecoverGrantorMessage msg) {
+    public void process(DM dm, DLockRecoverGrantorMessage msg) {
       ReplyException replyException = null;
       int replyCode = DLockRecoverGrantorReplyMessage.OK;
       DLockRemoteToken[] heldLocks = new DLockRemoteToken[0];

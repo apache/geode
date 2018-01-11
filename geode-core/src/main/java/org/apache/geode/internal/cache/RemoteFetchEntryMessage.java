@@ -30,7 +30,7 @@ import org.apache.geode.cache.EntryNotFoundException;
 import org.apache.geode.cache.Region;
 import org.apache.geode.cache.RegionDestroyedException;
 import org.apache.geode.cache.TransactionException;
-import org.apache.geode.distributed.internal.ClusterDistributionManager;
+import org.apache.geode.distributed.internal.DM;
 import org.apache.geode.distributed.internal.DistributionManager;
 import org.apache.geode.distributed.internal.DistributionMessage;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
@@ -100,7 +100,7 @@ public class RemoteFetchEntryMessage extends RemoteOperationMessage {
   }
 
   @Override
-  protected boolean operateOnRegion(ClusterDistributionManager dm, LocalRegion r, long startTime)
+  protected boolean operateOnRegion(DistributionManager dm, LocalRegion r, long startTime)
       throws RemoteOperationException {
     // RemoteFetchEntryMessage is used in refreshing client caches during interest list recovery,
     // so don't be too verbose or hydra tasks may time out
@@ -183,7 +183,7 @@ public class RemoteFetchEntryMessage extends RemoteOperationMessage {
 
     /** Send an ack */
     public static void send(InternalDistributedMember recipient, int processorId,
-        EntrySnapshot value, DistributionManager dm, ReplyException re) {
+        EntrySnapshot value, DM dm, ReplyException re) {
       Assert.assertTrue(recipient != null, "FetchEntryReplyMessage NULL recipient");
       FetchEntryReplyMessage m = new FetchEntryReplyMessage(processorId, value, re);
       m.setRecipient(recipient);
@@ -196,7 +196,7 @@ public class RemoteFetchEntryMessage extends RemoteOperationMessage {
      * @param dm the distribution manager that is processing the message.
      */
     @Override
-    public void process(final DistributionManager dm, final ReplyProcessor21 processor) {
+    public void process(final DM dm, final ReplyProcessor21 processor) {
       final boolean isDebugEnabled = logger.isTraceEnabled(LogMarker.DM);
 
       final long startTime = getTimestamp();

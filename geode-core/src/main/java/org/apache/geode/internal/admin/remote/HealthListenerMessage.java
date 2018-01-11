@@ -42,7 +42,7 @@ public class HealthListenerMessage extends PooledDistributionMessage implements 
   }
 
   @Override
-  public void process(ClusterDistributionManager dm) {
+  public void process(DistributionManager dm) {
     RemoteGfManagerAgent agent = dm.getAgent();
     if (agent != null) {
       RemoteGemFireVM mgr = agent.getMemberById(this.getSender());

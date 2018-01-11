@@ -64,8 +64,8 @@ import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.CacheFactory;
 import org.apache.geode.cache.Region;
 import org.apache.geode.cache.RegionShortcut;
-import org.apache.geode.distributed.internal.ClusterDistributionManager;
 import org.apache.geode.distributed.internal.DistributionException;
+import org.apache.geode.distributed.internal.DistributionManager;
 import org.apache.geode.distributed.internal.HighPriorityAckedMessage;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.distributed.internal.InternalLocator;
@@ -198,7 +198,7 @@ public class LocatorDUnitTest extends JUnit4DistributedTestCase {
     addDSProps(properties);
     system = (InternalDistributedSystem) DistributedSystem.connect(properties);
     InternalDistributedMember mbr = system.getDistributedMember();
-    assertEquals("expected the VM to have NORMAL vmKind", ClusterDistributionManager.NORMAL_DM_TYPE,
+    assertEquals("expected the VM to have NORMAL vmKind", DistributionManager.NORMAL_DM_TYPE,
         system.getDistributedMember().getVmKind());
 
     properties.remove(START_LOCATOR);
@@ -831,8 +831,8 @@ public class LocatorDUnitTest extends JUnit4DistributedTestCase {
           vm1.invoke(() -> LocatorDUnitTest.isSystemConnected()));
 
       // ensure quorumLost is properly invoked
-      ClusterDistributionManager dm =
-          (ClusterDistributionManager) ((InternalDistributedSystem) sys).getDistributionManager();
+      DistributionManager dm =
+          (DistributionManager) ((InternalDistributedSystem) sys).getDistributionManager();
       MyMembershipListener listener = new MyMembershipListener();
       dm.addMembershipListener(listener);
       // ensure there is an unordered reader thread for the member
@@ -1870,7 +1870,7 @@ public class LocatorDUnitTest extends JUnit4DistributedTestCase {
         .until(() -> {
           try {
             InternalDistributedMember c = GMSJoinLeaveTestHelper.getCurrentCoordinator();
-            return c.getVmKind() == ClusterDistributionManager.LOCATOR_DM_TYPE;
+            return c.getVmKind() == DistributionManager.LOCATOR_DM_TYPE;
           } catch (Exception e) {
             e.printStackTrace();
             org.apache.geode.test.dunit.Assert.fail("unexpected exception", e);

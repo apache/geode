@@ -16,11 +16,12 @@ package org.apache.geode.internal.cache.tx;
 
 import java.util.ArrayList;
 import java.util.HashSet;
+import java.util.TreeMap;
 import java.util.TreeSet;
 
 import org.apache.geode.cache.UnsupportedOperationInTransactionException;
 import org.apache.geode.distributed.DistributedMember;
-import org.apache.geode.distributed.internal.DistributionManager;
+import org.apache.geode.distributed.internal.DM;
 import org.apache.geode.internal.cache.DistTXCommitMessage;
 import org.apache.geode.internal.cache.DistTXCoordinatorInterface;
 import org.apache.geode.internal.cache.DistTXPrecommitMessage;
@@ -76,7 +77,7 @@ public class DistClientTXStateStub extends ClientTXStateStub implements DistTXCo
   }
 
   @Override
-  public void setPrecommitMessage(DistTXPrecommitMessage precommitMsg, DistributionManager dm)
+  public void setPrecommitMessage(DistTXPrecommitMessage precommitMsg, DM dm)
       throws UnsupportedOperationInTransactionException {
     throw new UnsupportedOperationInTransactionException(
         LocalizedStrings.Dist_TX_PRECOMMIT_NOT_SUPPORTED_IN_A_TRANSACTION
@@ -84,7 +85,7 @@ public class DistClientTXStateStub extends ClientTXStateStub implements DistTXCo
   }
 
   @Override
-  public void setCommitMessage(DistTXCommitMessage commitMsg, DistributionManager dm)
+  public void setCommitMessage(DistTXCommitMessage commitMsg, DM dm)
       throws UnsupportedOperationInTransactionException {
     throw new UnsupportedOperationInTransactionException(
         LocalizedStrings.Dist_TX_PRECOMMIT_NOT_SUPPORTED_IN_A_TRANSACTION
@@ -92,7 +93,7 @@ public class DistClientTXStateStub extends ClientTXStateStub implements DistTXCo
   }
 
   @Override
-  public void setRollbackMessage(DistTXRollbackMessage rollbackMsg, DistributionManager dm)
+  public void setRollbackMessage(DistTXRollbackMessage rollbackMsg, DM dm)
       throws UnsupportedOperationInTransactionException {
     throw new UnsupportedOperationInTransactionException(
         LocalizedStrings.Dist_TX_ROLLBACK_NOT_SUPPORTED_IN_A_TRANSACTION

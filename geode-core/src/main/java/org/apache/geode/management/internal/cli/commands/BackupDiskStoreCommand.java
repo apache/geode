@@ -24,7 +24,7 @@ import org.springframework.shell.core.annotation.CliOption;
 
 import org.apache.geode.cache.persistence.PersistentID;
 import org.apache.geode.distributed.DistributedMember;
-import org.apache.geode.distributed.internal.DistributionManager;
+import org.apache.geode.distributed.internal.DM;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.cache.backup.BackupUtil;
 import org.apache.geode.management.BackupStatus;
@@ -57,7 +57,7 @@ public class BackupDiskStoreCommand implements GfshCommand {
     Result result;
     try {
       InternalCache cache = getCache();
-      DistributionManager dm = cache.getDistributionManager();
+      DM dm = cache.getDistributionManager();
       BackupStatus backupStatus;
 
       if (baselineDir != null && !baselineDir.isEmpty()) {

@@ -73,12 +73,12 @@ import org.apache.geode.distributed.DistributedLockService;
 import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.distributed.LockServiceDestroyedException;
 import org.apache.geode.distributed.Role;
+import org.apache.geode.distributed.internal.DM;
 import org.apache.geode.distributed.internal.DistributionAdvisee;
 import org.apache.geode.distributed.internal.DistributionAdvisor;
 import org.apache.geode.distributed.internal.DistributionAdvisor.Profile;
 import org.apache.geode.distributed.internal.DistributionAdvisor.ProfileVisitor;
 import org.apache.geode.distributed.internal.DistributionConfig;
-import org.apache.geode.distributed.internal.DistributionManager;
 import org.apache.geode.distributed.internal.MembershipListener;
 import org.apache.geode.distributed.internal.ReplyProcessor21;
 import org.apache.geode.distributed.internal.locks.DLockRemoteToken;
@@ -1973,8 +1973,7 @@ public class DistributedRegion extends LocalRegion implements InternalDistribute
    * pause local operations so that a clear() can be performed and flush comm channels to the given
    * member
    */
-  void lockLocallyForClear(DistributionManager dm, InternalDistributedMember locker,
-      CacheEvent event) {
+  void lockLocallyForClear(DM dm, InternalDistributedMember locker, CacheEvent event) {
     RegionVersionVector rvv = getVersionVector();
 
     ARMLockTestHook armLockTestHook = getRegionMap().getARMLockTestHook();
@@ -3007,7 +3006,7 @@ public class DistributedRegion extends LocalRegion implements InternalDistribute
         throws InterruptedException {
       // if (Thread.interrupted()) throw new InterruptedException(); not necessary lockInterruptibly
       // does this
-      final DistributionManager dm = getDistributionManager();
+      final DM dm = getDistributionManager();
 
       long start = System.currentTimeMillis();
       long timeoutMS = getLockTimeoutForLock(time, unit);
@@ -3718,7 +3717,7 @@ public class DistributedRegion extends LocalRegion implements InternalDistribute
 
   void executeOnRegion(DistributedRegionFunctionStreamingMessage msg, final Function function,
       final Object args, int prid, final Set filter, boolean isReExecute) throws IOException {
-    final DistributionManager dm = getDistributionManager();
+    final DM dm = getDistributionManager();
     ResultSender resultSender = new DistributedRegionFunctionResultSender(dm, msg, function);
     final RegionFunctionContextImpl context = new RegionFunctionContextImpl(cache, function.getId(),
         this, args, filter, null, null, resultSender, isReExecute);
@@ -3755,7 +3754,7 @@ public class DistributedRegion extends LocalRegion implements InternalDistribute
       final Function function, final Object args, int prid, final ResultCollector rc,
       final Set filter, final ServerToClientFunctionResultSender sender) {
     final LocalResultCollector<?, ?> localRC = execution.getLocalResultCollector(function, rc);
-    final DistributionManager dm = getDistributionManager();
+    final DM dm = getDistributionManager();
     final DistributedRegionFunctionResultSender resultSender =
         new DistributedRegionFunctionResultSender(dm, localRC, function, sender);
     final RegionFunctionContextImpl context = new RegionFunctionContextImpl(cache, function.getId(),

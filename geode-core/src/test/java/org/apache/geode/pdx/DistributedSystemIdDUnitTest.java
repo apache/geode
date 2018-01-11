@@ -22,7 +22,7 @@ import java.util.Properties;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
-import org.apache.geode.distributed.internal.ClusterDistributionManager;
+import org.apache.geode.distributed.internal.DistributionManager;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.internal.AvailablePortHelper;
 import org.apache.geode.test.dunit.Host;
@@ -140,8 +140,8 @@ public class DistributedSystemIdDUnitTest extends JUnit4DistributedTestCase {
 
     SerializableCallable createSystem = new SerializableCallable() {
       public Object call() throws Exception {
-        ClusterDistributionManager dm = (ClusterDistributionManager) InternalDistributedSystem
-            .getAnyInstance().getDistributionManager();
+        DistributionManager dm = (DistributionManager) InternalDistributedSystem.getAnyInstance()
+            .getDistributionManager();
         assertEquals(dsId, dm.getDistributedSystemId());
         return null;
       }

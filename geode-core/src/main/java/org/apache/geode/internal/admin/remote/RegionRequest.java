@@ -115,7 +115,7 @@ public class RegionRequest extends AdminRequest {
    * @param dm
    */
   @Override
-  protected AdminResponse createResponse(DistributionManager dm) {
+  protected AdminResponse createResponse(DM dm) {
     // nothing needs to be done. If we got this far then a cache must exist.
     return RegionResponse.create(dm, this.getSender(), this);
   }

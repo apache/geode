@@ -59,28 +59,26 @@ public class DirectReplyProcessor extends ReplyProcessor21 {
    * @param dm the DistributionManager to use for messaging and membership
    * @param member the member this processor wants a reply from
    */
-  public DirectReplyProcessor(DistributionManager dm, InternalDistributedMember member) {
+  public DirectReplyProcessor(DM dm, InternalDistributedMember member) {
     this(dm, Collections.singleton(member));
   }
 
   /**
    * Creates a new <code>ReplyProcessor</code> that wants replies from some number of members of a
-   * distributed system. Call this method with
-   * {@link ClusterDistributionManager#getDistributionManagerIds} if you want replies from all DMs
-   * including the one hosted in this VM.
+   * distributed system. Call this method with {@link DistributionManager#getDistributionManagerIds}
+   * if you want replies from all DMs including the one hosted in this VM.
    *
    * @param dm the DistributionManager to use for messaging and membership
    * @param initMembers the Set of members this processor wants replies from
    */
-  public DirectReplyProcessor(DistributionManager dm, Collection initMembers) {
+  public DirectReplyProcessor(DM dm, Collection initMembers) {
     this(dm, dm.getSystem(), initMembers, null);
   }
 
   /**
    * Creates a new <code>ReplyProcessor</code> that wants replies from some number of members of a
-   * distributed system. Call this method with
-   * {@link ClusterDistributionManager#getDistributionManagerIds} if you want replies from all DMs
-   * including the one hosted in this VM.
+   * distributed system. Call this method with {@link DistributionManager#getDistributionManagerIds}
+   * if you want replies from all DMs including the one hosted in this VM.
    *
    * @param system the DistributedSystem connection
    * @param initMembers the Set of members this processor wants replies from
@@ -91,9 +89,8 @@ public class DirectReplyProcessor extends ReplyProcessor21 {
 
   /**
    * Creates a new <code>ReplyProcessor</code> that wants replies from some number of members of a
-   * distributed system. Call this method with
-   * {@link ClusterDistributionManager#getDistributionManagerIds} if you want replies from all DMs
-   * including the one hosted in this VM.
+   * distributed system. Call this method with {@link DistributionManager#getDistributionManagerIds}
+   * if you want replies from all DMs including the one hosted in this VM.
    *
    * @param system the DistributedSystem connection
    * @param initMembers the Set of members this processor wants replies from
@@ -111,8 +108,8 @@ public class DirectReplyProcessor extends ReplyProcessor21 {
    * @param initMembers
    * @param cancelCriterion
    */
-  public DirectReplyProcessor(DistributionManager dm, InternalDistributedSystem system,
-      Collection initMembers, CancelCriterion cancelCriterion) {
+  public DirectReplyProcessor(DM dm, InternalDistributedSystem system, Collection initMembers,
+      CancelCriterion cancelCriterion) {
     super(dm, system, initMembers, cancelCriterion, false);
   }
 

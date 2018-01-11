@@ -219,7 +219,7 @@ public class PersistenceAdvisorImpl implements PersistenceAdvisor {
   public void updateMembershipView(InternalDistributedMember replicate,
       boolean targetReinitializing) {
     beginUpdatingPersistentView();
-    DistributionManager dm = advisor.getDistributionManager();
+    DM dm = advisor.getDistributionManager();
     PersistentMembershipView view =
         MembershipViewRequest.send(replicate, dm, regionPath, targetReinitializing);
     if (logger.isDebugEnabled(LogMarker.PERSIST_ADVISOR)) {
@@ -392,7 +392,7 @@ public class PersistenceAdvisorImpl implements PersistenceAdvisor {
 
     beginUpdatingPersistentView();
 
-    DistributionManager dm = advisor.getDistributionManager();
+    DM dm = advisor.getDistributionManager();
 
     PersistentMemberID oldId = getPersistentID();
     PersistentMemberID initializingId = getInitializingID();

@@ -29,17 +29,15 @@ import org.apache.geode.distributed.internal.membership.InternalDistributedMembe
 import org.apache.geode.test.junit.categories.UnitTest;
 
 @Category(UnitTest.class)
-public class ClusterDistributionManagerTest {
+public class DistributionManagerTest {
 
   @Test
   public void shouldBeMockable() throws Exception {
-    ClusterDistributionManager mockDistributionManager = mock(ClusterDistributionManager.class);
+    DistributionManager mockDistributionManager = mock(DistributionManager.class);
     InternalDistributedMember mockInternalDistributedMember = mock(InternalDistributedMember.class);
     Executor mockExecutor = mock(Executor.class);
-
     when(mockDistributionManager.getExecutor(anyInt(), eq(mockInternalDistributedMember)))
         .thenReturn(mockExecutor);
-
     assertThat(mockDistributionManager.getExecutor(1, mockInternalDistributedMember))
         .isSameAs(mockExecutor);
   }

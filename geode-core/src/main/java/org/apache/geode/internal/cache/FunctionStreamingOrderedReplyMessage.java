@@ -17,7 +17,7 @@ package org.apache.geode.internal.cache;
 
 import org.apache.logging.log4j.Logger;
 
-import org.apache.geode.distributed.internal.ClusterDistributionManager;
+import org.apache.geode.distributed.internal.DM;
 import org.apache.geode.distributed.internal.DistributionManager;
 import org.apache.geode.distributed.internal.ReplyException;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
@@ -32,8 +32,7 @@ public class FunctionStreamingOrderedReplyMessage extends FunctionStreamingReply
 
 
   public static void send(InternalDistributedMember recipient, int processorId,
-      ReplyException exception, DistributionManager dm, Object result, int msgNum,
-      boolean lastMsg) {
+      ReplyException exception, DM dm, Object result, int msgNum, boolean lastMsg) {
     FunctionStreamingOrderedReplyMessage m = new FunctionStreamingOrderedReplyMessage();
     m.processorId = processorId;
     if (exception != null) {
@@ -55,6 +54,6 @@ public class FunctionStreamingOrderedReplyMessage extends FunctionStreamingReply
   }
 
   public int getProcessorType() {
-    return ClusterDistributionManager.SERIAL_EXECUTOR;
+    return DistributionManager.SERIAL_EXECUTOR;
   }
 }

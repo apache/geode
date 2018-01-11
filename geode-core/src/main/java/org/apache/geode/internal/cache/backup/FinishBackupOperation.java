@@ -20,7 +20,7 @@ import java.util.Set;
 
 import org.apache.logging.log4j.Logger;
 
-import org.apache.geode.distributed.internal.DistributionManager;
+import org.apache.geode.distributed.internal.DM;
 import org.apache.geode.distributed.internal.DistributionMessage;
 import org.apache.geode.distributed.internal.ReplyProcessor21;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
@@ -38,9 +38,9 @@ class FinishBackupOperation extends BackupOperation {
   private final boolean abort;
   private final FinishBackupFactory finishBackupFactory;
 
-  FinishBackupOperation(DistributionManager dm, InternalDistributedMember member,
-      InternalCache cache, Set<InternalDistributedMember> recipients, File targetDir,
-      File baselineDir, boolean abort, FinishBackupFactory FinishBackupFactory) {
+  FinishBackupOperation(DM dm, InternalDistributedMember member, InternalCache cache,
+      Set<InternalDistributedMember> recipients, File targetDir, File baselineDir, boolean abort,
+      FinishBackupFactory FinishBackupFactory) {
     super(dm);
     this.member = member;
     this.cache = cache;

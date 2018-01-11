@@ -53,7 +53,7 @@ import org.apache.geode.cache.wan.GatewaySender;
 import org.apache.geode.distributed.Locator;
 import org.apache.geode.distributed.LocatorLauncher;
 import org.apache.geode.distributed.ServerLauncher;
-import org.apache.geode.distributed.internal.ClusterDistributionManager;
+import org.apache.geode.distributed.internal.DM;
 import org.apache.geode.distributed.internal.DistributionConfig;
 import org.apache.geode.distributed.internal.DistributionManager;
 import org.apache.geode.distributed.internal.DistributionStats;
@@ -157,7 +157,7 @@ public class MemberMBeanBridge {
   /**
    * Distribution manager
    */
-  private DistributionManager dm;
+  private DM dm;
 
   /**
    * Command Service
@@ -328,9 +328,8 @@ public class MemberMBeanBridge {
 
     this.dm = system.getDistributionManager();
 
-    if (dm instanceof ClusterDistributionManager) {
-      ClusterDistributionManager distManager =
-          (ClusterDistributionManager) system.getDistributionManager();
+    if (dm instanceof DistributionManager) {
+      DistributionManager distManager = (DistributionManager) system.getDistributionManager();
       this.redundancyZone = distManager
           .getRedundancyZone(cache.getInternalDistributedSystem().getDistributedMember());
     }

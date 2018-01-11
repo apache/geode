@@ -51,7 +51,7 @@ public abstract class AdminResponse extends HighPriorityDistributionMessage
    * This method is invoked on the side that sent the original AdminRequest.
    */
   @Override
-  protected void process(ClusterDistributionManager dm) {
+  protected void process(DistributionManager dm) {
     AdminWaiters.sendResponse(this);
   }
 

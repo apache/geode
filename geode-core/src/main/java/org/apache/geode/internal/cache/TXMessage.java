@@ -26,7 +26,7 @@ import org.apache.geode.cache.CacheClosedException;
 import org.apache.geode.cache.CommitConflictException;
 import org.apache.geode.cache.RegionDestroyedException;
 import org.apache.geode.distributed.DistributedSystemDisconnectedException;
-import org.apache.geode.distributed.internal.ClusterDistributionManager;
+import org.apache.geode.distributed.internal.DistributionManager;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.distributed.internal.MessageWithReply;
 import org.apache.geode.distributed.internal.ReplyException;
@@ -66,7 +66,7 @@ public abstract class TXMessage extends SerialDistributionMessage
   }
 
   @Override
-  protected void process(final ClusterDistributionManager dm) {
+  protected void process(final DistributionManager dm) {
     Throwable thr = null;
     boolean sendReply = true;
     try {
@@ -135,7 +135,7 @@ public abstract class TXMessage extends SerialDistributionMessage
   }
 
   private void sendReply(InternalDistributedMember recipient, int processorId2,
-      ClusterDistributionManager dm, ReplyException rex) {
+      DistributionManager dm, ReplyException rex) {
     ReplyMessage.send(recipient, processorId2, rex, getReplySender(dm));
   }
 
@@ -162,7 +162,7 @@ public abstract class TXMessage extends SerialDistributionMessage
    * @param txId The transaction Id to operate on
    * @return true if TXMessage should send a reply false otherwise
    */
-  protected abstract boolean operateOnTx(TXId txId, ClusterDistributionManager dm)
+  protected abstract boolean operateOnTx(TXId txId, DistributionManager dm)
       throws RemoteOperationException;
 
   public int getTXUniqId() {

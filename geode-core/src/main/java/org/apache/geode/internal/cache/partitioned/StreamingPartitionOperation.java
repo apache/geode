@@ -33,7 +33,7 @@ import org.apache.geode.cache.CacheClosedException;
 import org.apache.geode.cache.CacheException;
 import org.apache.geode.cache.RegionDestroyedException;
 import org.apache.geode.cache.query.QueryException;
-import org.apache.geode.distributed.internal.ClusterDistributionManager;
+import org.apache.geode.distributed.internal.DM;
 import org.apache.geode.distributed.internal.DistributionManager;
 import org.apache.geode.distributed.internal.DistributionMessage;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
@@ -342,8 +342,8 @@ public abstract class StreamingPartitionOperation extends StreamingOperation {
      * @see PutMessage#sendReply
      */
     @Override
-    protected void sendReply(InternalDistributedMember member, int procId, DistributionManager dm,
-        ReplyException ex, PartitionedRegion pr, long startTime) {
+    protected void sendReply(InternalDistributedMember member, int procId, DM dm, ReplyException ex,
+        PartitionedRegion pr, long startTime) {
       // if there was an exception, then throw out any data
       if (ex != null) {
         this.outStream = null;
@@ -369,8 +369,8 @@ public abstract class StreamingPartitionOperation extends StreamingOperation {
      * @throws ForceReattemptException if the peer is no longer available
      */
     @Override
-    protected boolean operateOnPartitionedRegion(ClusterDistributionManager dm,
-        PartitionedRegion pr, long startTime)
+    protected boolean operateOnPartitionedRegion(DistributionManager dm, PartitionedRegion pr,
+        long startTime)
         throws CacheException, QueryException, ForceReattemptException, InterruptedException {
       final boolean isTraceEnabled = logger.isTraceEnabled();
 

@@ -21,7 +21,7 @@ import java.util.Iterator;
 import org.apache.logging.log4j.Logger;
 
 import org.apache.geode.InternalGemFireError;
-import org.apache.geode.distributed.internal.DistributionManager;
+import org.apache.geode.distributed.internal.DM;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
 import org.apache.geode.internal.Assert;
 import org.apache.geode.internal.i18n.LocalizedStrings;
@@ -41,13 +41,13 @@ public class ElderState {
    * Maps service name keys to GrantorInfo values.
    */
   private final HashMap nameToInfo;
-  private final DistributionManager dm;
+  private final DM dm;
 
   /**
    * Constructs the EdlerState for the given dm. Note that this constructor does not complete until
    * elder recovery is complete.
    */
-  public ElderState(DistributionManager dm) {
+  public ElderState(DM dm) {
     Assert.assertTrue(dm != null);
     this.dm = dm;
     this.nameToInfo = new HashMap();
@@ -81,7 +81,7 @@ public class ElderState {
     }
   }
 
-  private void checkForProblem(DistributionManager checkDM) {
+  private void checkForProblem(DM checkDM) {
     if (checkDM.getSystem() == null) {
       logger.warn(LogMarker.DLS, LocalizedMessage
           .create(LocalizedStrings.ElderState_ELDERSTATE_PROBLEM_SYSTEM_0, checkDM.getSystem()));

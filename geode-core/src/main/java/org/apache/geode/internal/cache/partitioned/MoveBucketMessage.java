@@ -23,7 +23,7 @@ import org.apache.logging.log4j.Logger;
 
 import org.apache.geode.CancelException;
 import org.apache.geode.DataSerializer;
-import org.apache.geode.distributed.internal.ClusterDistributionManager;
+import org.apache.geode.distributed.internal.DM;
 import org.apache.geode.distributed.internal.DistributionManager;
 import org.apache.geode.distributed.internal.DistributionMessage;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
@@ -105,8 +105,8 @@ public class MoveBucketMessage extends PartitionMessage {
   }
 
   @Override
-  protected boolean operateOnPartitionedRegion(ClusterDistributionManager dm,
-      PartitionedRegion region, long startTime) throws ForceReattemptException {
+  protected boolean operateOnPartitionedRegion(DistributionManager dm, PartitionedRegion region,
+      long startTime) throws ForceReattemptException {
 
     PartitionedRegionDataStore dataStore = region.getDataStore();
     boolean moved = dataStore.moveBucket(this.bucketId, this.source, true);
@@ -162,8 +162,8 @@ public class MoveBucketMessage extends PartitionMessage {
     }
 
     /** Send a reply */
-    public static void send(InternalDistributedMember recipient, int processorId,
-        DistributionManager dm, ReplyException re, boolean moved) {
+    public static void send(InternalDistributedMember recipient, int processorId, DM dm,
+        ReplyException re, boolean moved) {
       Assert.assertTrue(recipient != null, "MoveBucketReplyMessage NULL recipient");
       MoveBucketReplyMessage m = new MoveBucketReplyMessage(processorId, re, moved);
       m.setRecipient(recipient);
@@ -175,7 +175,7 @@ public class MoveBucketMessage extends PartitionMessage {
     }
 
     @Override
-    public void process(final DistributionManager dm, final ReplyProcessor21 processor) {
+    public void process(final DM dm, final ReplyProcessor21 processor) {
       final long startTime = getTimestamp();
       if (logger.isTraceEnabled(LogMarker.DM)) {
         logger.trace(LogMarker.DM,

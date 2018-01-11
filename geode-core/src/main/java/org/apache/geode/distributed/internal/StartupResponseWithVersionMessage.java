@@ -24,6 +24,7 @@ import org.apache.logging.log4j.Logger;
 import org.apache.geode.DataSerializer;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
 import org.apache.geode.internal.GemFireVersion;
+import org.apache.geode.internal.InternalDataSerializer;
 import org.apache.geode.internal.Version;
 import org.apache.geode.internal.logging.LogService;
 
@@ -43,7 +44,7 @@ public class StartupResponseWithVersionMessage extends StartupResponseMessage {
 
   }
 
-  StartupResponseWithVersionMessage(ClusterDistributionManager dm, int processorId,
+  StartupResponseWithVersionMessage(DistributionManager dm, int processorId,
       InternalDistributedMember recipient, String rejectionMessage, boolean responderIsAdmin) {
     super(dm, processorId, recipient, rejectionMessage, responderIsAdmin);
     version = GemFireVersion.getGemFireVersion();
@@ -55,7 +56,7 @@ public class StartupResponseWithVersionMessage extends StartupResponseMessage {
   }
 
   @Override
-  protected void process(ClusterDistributionManager dm) {
+  protected void process(DistributionManager dm) {
     if (this.hostedLocators != null) {
       dm.addHostedLocators(getSender(), this.hostedLocators, this.isSharedConfigurationEnabled);
     }

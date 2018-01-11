@@ -30,8 +30,8 @@ import org.apache.geode.cache.client.PoolManager;
 import org.apache.geode.cache.server.CacheServer;
 import org.apache.geode.distributed.DistributedSystem;
 import org.apache.geode.distributed.Locator;
+import org.apache.geode.distributed.internal.DM;
 import org.apache.geode.distributed.internal.DistributionConfig;
-import org.apache.geode.distributed.internal.DistributionManager;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
 import org.apache.geode.internal.admin.ClientHealthMonitoringRegion;
@@ -635,7 +635,7 @@ public class GemFireMemberStatus implements Serializable {
 
   protected void initializePeers(DistributedSystem distributedSystem) {
     InternalDistributedSystem ids = (InternalDistributedSystem) distributedSystem;
-    DistributionManager dm = ids.getDistributionManager();
+    DM dm = ids.getDistributionManager();
     Set connections = dm.getOtherNormalDistributionManagerIds();
     Set connectionsIDs = new HashSet(connections.size());
     for (Iterator iter = connections.iterator(); iter.hasNext();) {

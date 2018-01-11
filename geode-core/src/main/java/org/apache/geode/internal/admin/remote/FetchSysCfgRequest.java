@@ -48,7 +48,7 @@ public class FetchSysCfgRequest extends AdminRequest {
    * Must return a proper response to this request.
    */
   @Override
-  protected AdminResponse createResponse(DistributionManager dm) {
+  protected AdminResponse createResponse(DM dm) {
     return FetchSysCfgResponse.create(dm, this.getSender());
   }
 

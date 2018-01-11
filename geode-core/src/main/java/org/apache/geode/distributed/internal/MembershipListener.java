@@ -26,7 +26,7 @@ import org.apache.geode.distributed.internal.membership.*;
  * but the callback methods are always invoked in the GemFire manager VM. Thus, the callback methods
  * should not perform time-consuming operations.
  *
- * @see ClusterDistributionManager#addMembershipListener
+ * @see DistributionManager#addMembershipListener
  */
 public interface MembershipListener {
 

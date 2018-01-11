@@ -26,8 +26,8 @@ import org.apache.geode.CancelException;
 import org.apache.geode.cache.CommitConflictException;
 import org.apache.geode.distributed.DistributedSystemDisconnectedException;
 import org.apache.geode.distributed.LockServiceDestroyedException;
+import org.apache.geode.distributed.internal.DM;
 import org.apache.geode.distributed.internal.DistributionConfig;
-import org.apache.geode.distributed.internal.DistributionManager;
 import org.apache.geode.distributed.internal.MembershipListener;
 import org.apache.geode.distributed.internal.locks.DLockQueryProcessor.DLockQueryMessage;
 import org.apache.geode.distributed.internal.locks.DLockRequestProcessor.DLockRequestMessage;
@@ -161,7 +161,7 @@ public class DLockGrantor {
   /**
    * Used to verify that requestor member is still in view when granting.
    */
-  protected final DistributionManager dm;
+  protected final DM dm;
 
   // -------------------------------------------------------------------------
   // SuspendLocking state (BEGIN)
@@ -3373,7 +3373,7 @@ public class DLockGrantor {
     }
 
     private long now() {
-      DistributionManager dm = this.grantor.dlock.getDistributionManager();
+      DM dm = this.grantor.dlock.getDistributionManager();
       return DLockService.getLockTimeStamp(dm);
     }
 
@@ -3646,7 +3646,7 @@ public class DLockGrantor {
 
     public void memberDeparted(final InternalDistributedMember id, final boolean crashed) {
       final DLockGrantor me = DLockGrantor.this;
-      final DistributionManager distMgr = me.dlock.getDistributionManager();
+      final DM distMgr = me.dlock.getDistributionManager();
       // if the VM is being forcibly disconnected, we shouldn't release locks as it
       // will take longer than the time allowed by the InternalDistributedSystem
       // shutdown mechanism.

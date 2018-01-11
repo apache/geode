@@ -48,8 +48,8 @@ import org.apache.geode.cache.util.CacheListenerAdapter;
 import org.apache.geode.cache.util.CacheWriterAdapter;
 import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.distributed.DistributedSystem;
+import org.apache.geode.distributed.internal.DM;
 import org.apache.geode.distributed.internal.DistributionConfig;
-import org.apache.geode.distributed.internal.DistributionManager;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.distributed.internal.MembershipListener;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
@@ -312,7 +312,7 @@ public class PartitionedRegionHelper {
         return;
       }
 
-      DistributionManager dm = cache.getInternalDistributedSystem().getDistributionManager();
+      DM dm = cache.getInternalDistributedSystem().getDistributionManager();
 
       if (logger.isDebugEnabled()) {
         logger.debug("Cleaning PartitionedRegion meta data for memberId={}", failedMemId);

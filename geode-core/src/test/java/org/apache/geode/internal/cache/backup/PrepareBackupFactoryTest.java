@@ -26,7 +26,7 @@ import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
 import org.apache.geode.CancelCriterion;
-import org.apache.geode.distributed.internal.DistributionManager;
+import org.apache.geode.distributed.internal.DM;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
 import org.apache.geode.internal.cache.InternalCache;
@@ -38,7 +38,7 @@ public class PrepareBackupFactoryTest {
   private PrepareBackupFactory prepareBackupFactory;
 
   private BackupResultCollector resultCollector;
-  private DistributionManager dm;
+  private DM dm;
   private InternalDistributedMember sender;
   private Set<InternalDistributedMember> recipients;
   private InternalDistributedMember member;
@@ -47,7 +47,7 @@ public class PrepareBackupFactoryTest {
   @Before
   public void setUp() throws Exception {
     resultCollector = mock(BackupResultCollector.class);
-    dm = mock(DistributionManager.class);
+    dm = mock(DM.class);
     sender = mock(InternalDistributedMember.class);
     member = mock(InternalDistributedMember.class);
     cache = mock(InternalCache.class);

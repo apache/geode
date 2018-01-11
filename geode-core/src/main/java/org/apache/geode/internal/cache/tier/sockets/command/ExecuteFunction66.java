@@ -16,6 +16,7 @@ package org.apache.geode.internal.cache.tier.sockets.command;
 
 import java.io.IOException;
 import java.util.Collections;
+import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -31,7 +32,7 @@ import org.apache.geode.cache.execute.FunctionException;
 import org.apache.geode.cache.execute.FunctionService;
 import org.apache.geode.cache.operations.ExecuteFunctionOperationContext;
 import org.apache.geode.distributed.DistributedMember;
-import org.apache.geode.distributed.internal.ClusterDistributionManager;
+import org.apache.geode.distributed.internal.DM;
 import org.apache.geode.distributed.internal.DistributionManager;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
 import org.apache.geode.internal.Version;
@@ -246,7 +247,7 @@ public class ExecuteFunction66 extends BaseCommand {
          * if cache is null, then either cache has not yet been created on this node or it is a
          * shutdown scenario.
          */
-        DistributionManager dm = null;
+        DM dm = null;
         if (cache != null) {
           dm = cache.getDistributionManager();
         }
@@ -323,8 +324,8 @@ public class ExecuteFunction66 extends BaseCommand {
   }
 
   private void executeFunctionaLocally(final Function fn, final FunctionContext cx,
-      final ServerToClientFunctionResultSender65 sender, DistributionManager dm,
-      final FunctionStats stats) throws IOException {
+      final ServerToClientFunctionResultSender65 sender, DM dm, final FunctionStats stats)
+      throws IOException {
     long startExecution = stats.startTime();
     stats.startFunctionExecution(fn.hasResult());
 
@@ -396,7 +397,7 @@ public class ExecuteFunction66 extends BaseCommand {
          */
         execService.execute(functionExecution);
       } else {
-        final ClusterDistributionManager newDM = (ClusterDistributionManager) dm;
+        final DistributionManager newDM = (DistributionManager) dm;
         newDM.getFunctionExcecutor().execute(functionExecution);
       }
     }

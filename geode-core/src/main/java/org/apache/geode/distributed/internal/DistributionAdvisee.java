@@ -15,7 +15,9 @@
 package org.apache.geode.distributed.internal;
 
 import org.apache.geode.CancelCriterion;
+import org.apache.geode.distributed.internal.DM;
 import org.apache.geode.distributed.internal.DistributionAdvisor.Profile;
+import org.apache.geode.distributed.internal.InternalDistributedSystem;
 
 /**
  * Resource which uses a {@link DistributionAdvisor}.
@@ -29,7 +31,7 @@ public interface DistributionAdvisee {
    *
    * @return the underlying <code>DistributionManager</code>
    */
-  public DistributionManager getDistributionManager();
+  public DM getDistributionManager();
 
   /**
    * @return the cancellation object for the advisee

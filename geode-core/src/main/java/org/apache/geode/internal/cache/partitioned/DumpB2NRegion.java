@@ -31,7 +31,7 @@ import org.apache.geode.DataSerializer;
 import org.apache.geode.cache.CacheException;
 import org.apache.geode.cache.RegionDestroyedException;
 import org.apache.geode.cache.TimeoutException;
-import org.apache.geode.distributed.internal.ClusterDistributionManager;
+import org.apache.geode.distributed.internal.DM;
 import org.apache.geode.distributed.internal.DistributionManager;
 import org.apache.geode.distributed.internal.DistributionMessage;
 import org.apache.geode.distributed.internal.DistributionStats;
@@ -79,7 +79,7 @@ public class DumpB2NRegion extends PartitionMessage {
   }
 
   @Override
-  public void process(final ClusterDistributionManager dm) {
+  public void process(final DistributionManager dm) {
     PartitionedRegion pr = null;
 
     // Get the region, or die trying...
@@ -133,7 +133,7 @@ public class DumpB2NRegion extends PartitionMessage {
 
 
   @Override
-  protected boolean operateOnPartitionedRegion(ClusterDistributionManager dm, PartitionedRegion pr,
+  protected boolean operateOnPartitionedRegion(DistributionManager dm, PartitionedRegion pr,
       long startTime) throws CacheException {
     PrimaryInfo pinfo = null;
     if (this.onlyReturnPrimaryInfo) {
@@ -178,8 +178,8 @@ public class DumpB2NRegion extends PartitionMessage {
       this.primaryInfo = pinfo;
     }
 
-    public static void send(InternalDistributedMember recipient, int processorId,
-        DistributionManager dm, PrimaryInfo pinfo) {
+    public static void send(InternalDistributedMember recipient, int processorId, DM dm,
+        PrimaryInfo pinfo) {
       DumpB2NReplyMessage m = new DumpB2NReplyMessage(processorId, pinfo);
       m.setRecipient(recipient);
       dm.putOutgoing(m);
@@ -187,7 +187,7 @@ public class DumpB2NRegion extends PartitionMessage {
 
 
     @Override
-    public void process(final DistributionManager dm, final ReplyProcessor21 processor) {
+    public void process(final DM dm, final ReplyProcessor21 processor) {
       final long startTime = getTimestamp();
       if (logger.isTraceEnabled(LogMarker.DM)) {
         logger.trace(LogMarker.DM,

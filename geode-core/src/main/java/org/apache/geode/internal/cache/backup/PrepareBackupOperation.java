@@ -19,7 +19,7 @@ import java.util.Set;
 
 import org.apache.logging.log4j.Logger;
 
-import org.apache.geode.distributed.internal.DistributionManager;
+import org.apache.geode.distributed.internal.DM;
 import org.apache.geode.distributed.internal.DistributionMessage;
 import org.apache.geode.distributed.internal.ReplyProcessor21;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
@@ -34,9 +34,8 @@ class PrepareBackupOperation extends BackupOperation {
   private final Set<InternalDistributedMember> recipients;
   private final PrepareBackupFactory prepareBackupFactory;
 
-  PrepareBackupOperation(DistributionManager dm, InternalDistributedMember member,
-      InternalCache cache, Set<InternalDistributedMember> recipients,
-      PrepareBackupFactory prepareBackupFactory) {
+  PrepareBackupOperation(DM dm, InternalDistributedMember member, InternalCache cache,
+      Set<InternalDistributedMember> recipients, PrepareBackupFactory prepareBackupFactory) {
     super(dm);
     this.member = member;
     this.cache = cache;

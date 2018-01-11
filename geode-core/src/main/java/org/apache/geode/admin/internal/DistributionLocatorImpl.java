@@ -25,8 +25,8 @@ import org.apache.geode.admin.AdminDistributedSystem;
 import org.apache.geode.admin.DistributionLocator;
 import org.apache.geode.admin.DistributionLocatorConfig;
 import org.apache.geode.admin.ManagedEntityConfig;
+import org.apache.geode.distributed.internal.DM;
 import org.apache.geode.distributed.internal.DistributionConfig;
-import org.apache.geode.distributed.internal.DistributionManager;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
 import org.apache.geode.internal.admin.remote.DistributionLocatorId;
 import org.apache.geode.internal.i18n.LocalizedStrings;
@@ -174,8 +174,7 @@ public class DistributionLocatorImpl implements DistributionLocator, InternalMan
   }
 
   public boolean isRunning() {
-    DistributionManager dm =
-        ((AdminDistributedSystemImpl) getDistributedSystem()).getDistributionManager();
+    DM dm = ((AdminDistributedSystemImpl) getDistributedSystem()).getDistributionManager();
     if (dm == null) {
       try {
         return this.controller.isRunning(this);

@@ -72,7 +72,7 @@ import org.apache.geode.cache.persistence.RevokedPersistentDataException;
 import org.apache.geode.cache.query.QueryException;
 import org.apache.geode.cache.server.CacheServer;
 import org.apache.geode.distributed.ConfigurationProperties;
-import org.apache.geode.distributed.internal.ClusterDistributionManager;
+import org.apache.geode.distributed.internal.DistributionManager;
 import org.apache.geode.distributed.internal.DistributionMessage;
 import org.apache.geode.distributed.internal.DistributionMessageObserver;
 import org.apache.geode.distributed.internal.ReplyException;
@@ -1525,8 +1525,7 @@ public class PersistentPartitionedRegionDUnitTest extends PersistentPartitionedR
         DistributionMessageObserver.setInstance(new DistributionMessageObserver() {
 
           @Override
-          public void beforeSendMessage(ClusterDistributionManager dm,
-              DistributionMessage message) {
+          public void beforeSendMessage(DistributionManager dm, DistributionMessage message) {
             if (message instanceof ManageBucketReplyMessage) {
               Cache cache = getCache();
               disconnectFromDS();
@@ -1743,8 +1742,7 @@ public class PersistentPartitionedRegionDUnitTest extends PersistentPartitionedR
         DistributionMessageObserver.setInstance(new DistributionMessageObserver() {
 
           @Override
-          public void beforeProcessMessage(ClusterDistributionManager dm,
-              DistributionMessage message) {
+          public void beforeProcessMessage(DistributionManager dm, DistributionMessage message) {
             if (message instanceof RequestImageMessage) {
               RequestImageMessage rim = (RequestImageMessage) message;
               // Don't disconnect until we see a bucket
@@ -1756,8 +1754,7 @@ public class PersistentPartitionedRegionDUnitTest extends PersistentPartitionedR
           }
 
           @Override
-          public void afterProcessMessage(ClusterDistributionManager dm,
-              DistributionMessage message) {
+          public void afterProcessMessage(DistributionManager dm, DistributionMessage message) {
 
           }
         });
@@ -1946,8 +1943,7 @@ public class PersistentPartitionedRegionDUnitTest extends PersistentPartitionedR
       public void run() {
         DistributionMessageObserver.setInstance(new DistributionMessageObserver() {
           @Override
-          public void beforeProcessMessage(ClusterDistributionManager dm,
-              DistributionMessage message) {
+          public void beforeProcessMessage(DistributionManager dm, DistributionMessage message) {
             if (message instanceof RequestImageMessage) {
               RequestImageMessage rim = (RequestImageMessage) message;
               if (rim.regionPath.contains("_0")) {
@@ -2000,8 +1996,7 @@ public class PersistentPartitionedRegionDUnitTest extends PersistentPartitionedR
       public void run() {
         DistributionMessageObserver.setInstance(new DistributionMessageObserver() {
           @Override
-          public void beforeProcessMessage(ClusterDistributionManager dm,
-              DistributionMessage message) {
+          public void beforeProcessMessage(DistributionManager dm, DistributionMessage message) {
             if (message instanceof RequestImageMessage) {
               RequestImageMessage rim = (RequestImageMessage) message;
               if (rim.regionPath.contains("_0")) {
@@ -2436,7 +2431,7 @@ public class PersistentPartitionedRegionDUnitTest extends PersistentPartitionedR
     CountDownLatch cdl = new CountDownLatch(1);
 
     @Override
-    public void beforeSendMessage(ClusterDistributionManager dm, DistributionMessage message) {
+    public void beforeSendMessage(DistributionManager dm, DistributionMessage message) {
       if (message instanceof RequestImageMessage) {
         RequestImageMessage rim = (RequestImageMessage) message;
         // make sure this is a bucket region doing a GII
