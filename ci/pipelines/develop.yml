@@ -403,8 +403,6 @@ jobs:
           - name: geode-examples
           - name: docker-test-image
         platform: linux
-        outputs:
-          - name: built-geode
         image_resource: *docker-geode-build-image
         params:
           MAINTENANCE_VERSION: ((!maintenance-version))
@@ -413,12 +411,6 @@ jobs:
         run:
           args:
           path: geode-ci/ci/scripts/build-examples.sh
-      on_failure:
-        aggregate:
-          - put: send-notification-email
-            params:
-              subject: built-geode/subject
-              body: built-geode/body
 
 - name: UpdatePassingRef
   serial: true
