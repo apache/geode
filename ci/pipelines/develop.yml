@@ -140,6 +140,7 @@ jobs:
         params:
           rootfs: true
     - task: runtests
+      tags: [large]
       privileged: true
       timeout: 7h
       config:
