@@ -12,13 +12,12 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
-
 package org.apache.geode.internal.cache;
 
-
-import static org.junit.Assert.*;
+import static org.assertj.core.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
+import org.junit.Before;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
@@ -28,22 +27,36 @@ import org.apache.geode.internal.cache.region.entry.RegionEntryFactoryBuilder;
 import org.apache.geode.test.junit.categories.UnitTest;
 
 @Category(UnitTest.class)
-public class TXStateProxyImplJUnitTest {
+public class TXStateProxyImplTest {
+
+  private InternalCache cache;
+  private LocalRegion region;
+  String key = "testkey";
+  TXStateProxyImpl tx;
+  LocalRegionDataView view;
+  private TXId txId;
+  private TXManagerImpl txManager;
+
+  @Before
+  public void setUp() {
+    cache = mock(InternalCache.class);
+    region = mock(LocalRegion.class);
+    txId = new TXId(mock(InternalDistributedMember.class), 1);
+    txManager = mock(TXManagerImpl.class);
+    view = mock(LocalRegionDataView.class);
+  }
+
   @Test
-  public void testGetKeyForIterator() {
-    RegionEntryFactory factory = new RegionEntryFactoryBuilder().getRegionEntryFactoryOrNull(false,
+  public void getKeyForIteratorReturnsKey() {
+    RegionEntryFactory regionEntryFactory = new RegionEntryFactoryBuilder().getRegionEntryFactoryOrNull(false,
         false, false, false, false);
-    LocalRegion region = mock(LocalRegion.class);
-    String key = "testkey";
-    RegionEntry re = factory.createEntry(region, key, null);
-    TXId txId = new TXId(mock(InternalDistributedMember.class), 1);
-    TXStateProxyImpl tx = new TXStateProxyImpl(mock(TXManagerImpl.class), txId, false);
-    LocalRegionDataView view = mock(LocalRegionDataView.class);
-    boolean allowTombstones = false;
-    boolean rememberReads = true;
+    RegionEntry regionEntry = regionEntryFactory.createEntry(region, key, null);
 
     KeyInfo stringKeyInfo = new KeyInfo(key, null, null);
-    KeyInfo regionEntryKeyInfo = new KeyInfo(re, null, null);
+    KeyInfo regionEntryKeyInfo = new KeyInfo(regionEntry, null, null);
+
+    boolean allowTombstones = false;
+    boolean rememberReads = true;
 
     when(region.getSharedDataView()).thenReturn(view);
     when(view.getEntry(stringKeyInfo, region, allowTombstones)).thenReturn(mock(NonTXEntry.class));
@@ -52,10 +65,18 @@ public class TXStateProxyImplJUnitTest {
     when(view.getKeyForIterator(regionEntryKeyInfo, region, rememberReads, allowTombstones))
         .thenCallRealMethod();
 
+    TXStateProxyImpl tx = new TXStateProxyImpl(cache, txManager, txId, false);
+
     Object key1 = tx.getKeyForIterator(regionEntryKeyInfo, region, rememberReads, allowTombstones);
-    assertTrue(key1.equals(key));
+    assertThat(key1.equals(key)).isTrue();
+
     Object key2 = tx.getKeyForIterator(stringKeyInfo, region, rememberReads, allowTombstones);
-    assertTrue(key2.equals(key));
+    assertThat(key2.equals(key)).isTrue();
   }
 
+  @Test
+  public void getCacheReturnsInjectedCache() {
+    TXStateProxyImpl tx = new TXStateProxyImpl(cache, txManager, txId, false);
+    assertThat(tx.getCache()).isSameAs(cache);
+  }
 }

@@ -76,14 +76,41 @@ public class TXStateProxyImpl implements TXStateProxy {
    */
   private Map<Integer, Boolean> buckets = new HashMap<Integer, Boolean>();
 
+  protected volatile TXStateInterface realDeal;
+
+  protected boolean inProgress = true;
+
+  protected InternalDistributedMember onBehalfOfClientMember = null;
+
+  private final InternalCache cache;
+
+  public TXStateProxyImpl(InternalCache cache, TXManagerImpl managerImpl, TXId id,
+      InternalDistributedMember clientMember) {
+    this.cache = cache;
+    this.txMgr = managerImpl;
+    this.txId = id;
+    this.isJTA = false;
+    this.onBehalfOfClientMember = clientMember;
+  }
+
+  public TXStateProxyImpl(InternalCache cache, TXManagerImpl managerImpl, TXId id, boolean isjta) {
+    this.cache = cache;
+    this.txMgr = managerImpl;
+    this.txId = id;
+    this.isJTA = isjta;
+  }
+
+  @Override
   public void setSynchronizationRunnable(TXSynchronizationRunnable synch) {
     this.synchRunnable = synch;
   }
 
+  @Override
   public TXSynchronizationRunnable getSynchronizationRunnable() {
     return this.synchRunnable;
   }
 
+  @Override
   public ReentrantLock getLock() {
     return this.lock;
   }
@@ -92,19 +119,15 @@ public class TXStateProxyImpl implements TXStateProxy {
     return isJTA;
   }
 
+  @Override
   public TXId getTxId() {
     return txId;
   }
 
+  @Override
   public TXManagerImpl getTxMgr() {
     return txMgr;
   }
-
-  protected volatile TXStateInterface realDeal;
-
-  protected boolean inProgress = true;
-
-  protected InternalDistributedMember onBehalfOfClientMember = null;
 
   /**
    * This returns either the TXState for the current transaction or a proxy for the state if it is
@@ -169,32 +192,21 @@ public class TXStateProxyImpl implements TXStateProxy {
     return this.realDeal;
   }
 
-  public TXStateProxyImpl(TXManagerImpl managerImpl, TXId id,
-      InternalDistributedMember clientMember) {
-    this.txMgr = managerImpl;
-    this.txId = id;
-    this.isJTA = false;
-    this.onBehalfOfClientMember = clientMember;
-  }
-
-  public TXStateProxyImpl(TXManagerImpl managerImpl, TXId id, boolean isjta) {
-    this.txMgr = managerImpl;
-    this.txId = id;
-    this.isJTA = isjta;
-  }
-
   protected void setTXIDForReplay(TXId id) {
     this.txId = id;
   }
 
+  @Override
   public boolean isOnBehalfOfClient() {
     return this.onBehalfOfClientMember != null;
   }
 
+  @Override
   public void setIsJTA(boolean isJTA) {
     this.isJTA = isJTA;
   }
 
+  @Override
   public void checkJTA(String errmsg) throws IllegalStateException {
     if (isJTA()) {
       throw new IllegalStateException(errmsg);
@@ -209,6 +221,7 @@ public class TXStateProxyImpl implements TXStateProxy {
             .toLocalizedString("precommit"));
   }
 
+  @Override
   public void commit() throws CommitConflictException {
     boolean preserveTx = false;
     try {
@@ -245,6 +258,7 @@ public class TXStateProxyImpl implements TXStateProxy {
     return (TransactionException) e;
   }
 
+  @Override
   public boolean containsValueForKey(KeyInfo keyInfo, LocalRegion region) {
     try {
       this.operationCount++;
@@ -267,8 +281,9 @@ public class TXStateProxyImpl implements TXStateProxy {
     }
   }
 
+  @Override
   public void destroyExistingEntry(EntryEventImpl event, boolean cacheWrite,
-      Object expectedOldValue) throws EntryNotFoundException {
+                                   Object expectedOldValue) throws EntryNotFoundException {
     try {
       this.operationCount++;
       getRealDeal(event.getKeyInfo(), event.getLocalRegion()).destroyExistingEntry(event,
@@ -279,22 +294,26 @@ public class TXStateProxyImpl implements TXStateProxy {
     }
   }
 
+  @Override
   public long getBeginTime() {
     return getRealDeal(null, null).getBeginTime();
   }
 
-  public Cache getCache() {
-    return txMgr.getCache();
+  @Override
+  public InternalCache getCache() {
+    return cache;
   }
 
+  @Override
   public int getChanges() {
     assertBootstrapped();
     return getRealDeal(null, null).getChanges();
   }
 
+  @Override
   public Object getDeserializedValue(KeyInfo keyInfo, LocalRegion localRegion, boolean updateStats,
-      boolean disableCopyOnRead, boolean preferCD, EntryEventImpl clientEvent,
-      boolean returnTombstones, boolean retainResult) {
+                                     boolean disableCopyOnRead, boolean preferCD, EntryEventImpl clientEvent,
+                                     boolean returnTombstones, boolean retainResult) {
     Object val = getRealDeal(keyInfo, localRegion).getDeserializedValue(keyInfo, localRegion,
         updateStats, disableCopyOnRead, preferCD, null, false, retainResult);
     if (val != null) {
@@ -305,6 +324,7 @@ public class TXStateProxyImpl implements TXStateProxy {
     return val;
   }
 
+  @Override
   public Entry getEntry(KeyInfo keyInfo, LocalRegion region, boolean allowTombstones) {
     try {
       this.operationCount++;
@@ -316,27 +336,32 @@ public class TXStateProxyImpl implements TXStateProxy {
     }
   }
 
+  @Override
   public TXEvent getEvent() {
     assertBootstrapped();
     return getRealDeal(null, null).getEvent();
   }
 
+  @Override
   public List getEvents() {
     assertBootstrapped();
     return getRealDeal(null, null).getEvents();
   }
 
+  @Override
   public Collection<LocalRegion> getRegions() {
     assertBootstrapped();
     return getRealDeal(null, null).getRegions();
   }
 
+  @Override
   public TransactionId getTransactionId() {
     return txId;
   }
 
+  @Override
   public void invalidateExistingEntry(EntryEventImpl event, boolean invokeCallbacks,
-      boolean forceNewEntry) {
+                                      boolean forceNewEntry) {
     try {
       this.operationCount++;
       getRealDeal(event.getKeyInfo(), event.getLocalRegion()).invalidateExistingEntry(event,
@@ -347,6 +372,7 @@ public class TXStateProxyImpl implements TXStateProxy {
     }
   }
 
+  @Override
   public boolean isInProgress() {
     return inProgress;
   }
@@ -356,26 +382,31 @@ public class TXStateProxyImpl implements TXStateProxy {
     this.inProgress = progress;
   }
 
+  @Override
   public boolean needsLargeModCount() {
     assertBootstrapped();
     return getRealDeal(null, null).needsLargeModCount();
   }
 
+  @Override
   public int nextModSerialNum() {
     assertBootstrapped();
     return getRealDeal(null, null).nextModSerialNum();
   }
 
+  @Override
   public TXRegionState readRegion(LocalRegion r) {
     assertBootstrapped();
     return getRealDeal(null, r).readRegion(r);
   }
 
+  @Override
   public void rmRegion(LocalRegion r) {
     assertBootstrapped();
     getRealDeal(null, r).rmRegion(r);
   }
 
+  @Override
   public void rollback() {
     try {
       getRealDeal(null, null).rollback();
@@ -387,8 +418,9 @@ public class TXStateProxyImpl implements TXStateProxy {
     }
   }
 
+  @Override
   public boolean txPutEntry(EntryEventImpl event, boolean ifNew, boolean requireOldValue,
-      boolean checkResources, Object expectedOldValue) {
+                            boolean checkResources, Object expectedOldValue) {
     try {
       this.operationCount++;
       boolean retVal = getRealDeal(event.getKeyInfo(), (LocalRegion) event.getRegion())
@@ -400,8 +432,9 @@ public class TXStateProxyImpl implements TXStateProxy {
     }
   }
 
+  @Override
   public TXEntryState txReadEntry(KeyInfo keyInfo, LocalRegion localRegion, boolean rememberRead,
-      boolean createTxEntryIfAbsent) {
+                                  boolean createTxEntryIfAbsent) {
     try {
       this.operationCount++;
       TXEntryState retVal = getRealDeal(keyInfo, localRegion).txReadEntry(keyInfo, localRegion,
@@ -413,15 +446,18 @@ public class TXStateProxyImpl implements TXStateProxy {
     }
   }
 
+  @Override
   public TXRegionState txReadRegion(LocalRegion localRegion) {
     assertBootstrapped();
     return getRealDeal(null, localRegion).txReadRegion(localRegion);
   }
 
+  @Override
   public TXRegionState txWriteRegion(LocalRegion localRegion, KeyInfo entryKey) {
     return getRealDeal(entryKey, localRegion).txWriteRegion(localRegion, entryKey);
   }
 
+  @Override
   public TXRegionState writeRegion(LocalRegion r) {
     assertBootstrapped();
     return getRealDeal(null, r).writeRegion(r);
@@ -431,6 +467,7 @@ public class TXStateProxyImpl implements TXStateProxy {
     assert realDeal != null;
   }
 
+  @Override
   public void afterCompletion(int status) {
     assertBootstrapped();
     try {
@@ -443,11 +480,13 @@ public class TXStateProxyImpl implements TXStateProxy {
     }
   }
 
+  @Override
   public void beforeCompletion() {
     assertBootstrapped();
     getRealDeal(null, null).beforeCompletion();
   }
 
+  @Override
   public boolean containsKey(KeyInfo keyInfo, LocalRegion localRegion) {
     try {
       this.operationCount++;
@@ -459,6 +498,7 @@ public class TXStateProxyImpl implements TXStateProxy {
     }
   }
 
+  @Override
   @edu.umd.cs.findbugs.annotations.SuppressWarnings(value = "UL_UNRELEASED_LOCK",
       justification = "This method unlocks and then conditionally undoes the unlock in the finally-block. Review again at later time.")
   public int entryCount(LocalRegion localRegion) {
@@ -488,10 +528,11 @@ public class TXStateProxyImpl implements TXStateProxy {
     }
   }
 
+  @Override
   public Object findObject(KeyInfo key, LocalRegion r, boolean isCreate, boolean generateCallbacks,
-      Object value, boolean disableCopyOnRead, boolean preferCD,
-      ClientProxyMembershipID requestingClient, EntryEventImpl clientEvent,
-      boolean returnTombstones) {
+                           Object value, boolean disableCopyOnRead, boolean preferCD,
+                           ClientProxyMembershipID requestingClient, EntryEventImpl clientEvent,
+                           boolean returnTombstones) {
     try {
       this.operationCount++;
       Object retVal = getRealDeal(key, r).findObject(key, r, isCreate, generateCallbacks, value,
@@ -503,6 +544,7 @@ public class TXStateProxyImpl implements TXStateProxy {
     }
   }
 
+  @Override
   public Set getAdditionalKeysForIterator(LocalRegion currRgn) {
     if (this.realDeal == null) {
       return null;
@@ -513,8 +555,9 @@ public class TXStateProxyImpl implements TXStateProxy {
   protected final boolean restoreSetOperationTransactionBehavior =
       SystemPropertyHelper.restoreSetOperationTransactionBehavior();
 
+  @Override
   public Object getEntryForIterator(KeyInfo key, LocalRegion currRgn, boolean rememberReads,
-      boolean allowTombstones) {
+                                    boolean allowTombstones) {
     boolean resetTxState = isTransactionInternalSuspendNeeded(currRgn);
     TXStateProxy txp = null;
     if (resetTxState) {
@@ -539,8 +582,9 @@ public class TXStateProxyImpl implements TXStateProxy {
     return resetTxState;
   }
 
+  @Override
   public Object getKeyForIterator(KeyInfo keyInfo, LocalRegion currRgn, boolean rememberReads,
-      boolean allowTombstones) {
+                                  boolean allowTombstones) {
     boolean resetTxState = isTransactionInternalSuspendNeeded(currRgn);
     TXStateProxy txp = null;
     if (resetTxState) {
@@ -560,19 +604,22 @@ public class TXStateProxyImpl implements TXStateProxy {
     }
   }
 
+  @Override
   public Object getValueInVM(KeyInfo keyInfo, LocalRegion localRegion, boolean rememberRead) {
     this.operationCount++;
     return getRealDeal(keyInfo, localRegion).getValueInVM(keyInfo, localRegion, rememberRead);
   }
 
+  @Override
   public boolean isDeferredStats() {
     assertBootstrapped();
     return getRealDeal(null, null).isDeferredStats();
   }
 
+  @Override
   public boolean putEntry(EntryEventImpl event, boolean ifNew, boolean ifOld,
-      Object expectedOldValue, boolean requireOldValue, long lastModified,
-      boolean overwriteDestroyed) {
+                          Object expectedOldValue, boolean requireOldValue, long lastModified,
+                          boolean overwriteDestroyed) {
     try {
       this.operationCount++;
       boolean retVal = getRealDeal(event.getKeyInfo(), event.getLocalRegion()).putEntry(event,
@@ -584,25 +631,29 @@ public class TXStateProxyImpl implements TXStateProxy {
     }
   }
 
+  @Override
   public boolean isInProgressAndSameAs(TXStateInterface otherState) {
     return isInProgress() && otherState == this;
   }
 
+  @Override
   public void setLocalTXState(TXStateInterface state) {
     this.realDeal = state;
   }
 
+  @Override
   public Object getSerializedValue(LocalRegion localRegion, KeyInfo key, boolean doNotLockEntry,
-      ClientProxyMembershipID requestingClient, EntryEventImpl clientEvent,
-      boolean returnTombstones) throws DataLocationException {
+                                   ClientProxyMembershipID requestingClient, EntryEventImpl clientEvent,
+                                   boolean returnTombstones) throws DataLocationException {
     this.operationCount++;
     return getRealDeal(key, localRegion).getSerializedValue(localRegion, key, doNotLockEntry,
         requestingClient, clientEvent, returnTombstones);
   }
 
+  @Override
   public boolean putEntryOnRemote(EntryEventImpl event, boolean ifNew, boolean ifOld,
-      Object expectedOldValue, boolean requireOldValue, long lastModified,
-      boolean overwriteDestroyed) throws DataLocationException {
+                                  Object expectedOldValue, boolean requireOldValue, long lastModified,
+                                  boolean overwriteDestroyed) throws DataLocationException {
     this.operationCount++;
     TXStateInterface tx = getRealDeal(event.getKeyInfo(), event.getLocalRegion());
     assert (tx instanceof TXState) : tx.getClass().getSimpleName();
@@ -610,10 +661,12 @@ public class TXStateProxyImpl implements TXStateProxy {
         overwriteDestroyed);
   }
 
+  @Override
   public boolean isFireCallbacks() {
     return getRealDeal(null, null).isFireCallbacks();
   }
 
+  @Override
   public void destroyOnRemote(EntryEventImpl event, boolean cacheWrite, Object expectedOldValue)
       throws DataLocationException {
     this.operationCount++;
@@ -622,19 +675,22 @@ public class TXStateProxyImpl implements TXStateProxy {
     tx.destroyOnRemote(event, cacheWrite, expectedOldValue);
   }
 
+  @Override
   public void invalidateOnRemote(EntryEventImpl event, boolean invokeCallbacks,
-      boolean forceNewEntry) throws DataLocationException {
+                                 boolean forceNewEntry) throws DataLocationException {
     this.operationCount++;
     TXStateInterface tx = getRealDeal(event.getKeyInfo(), event.getLocalRegion());
     assert (tx instanceof TXState);
     tx.invalidateOnRemote(event, invokeCallbacks, forceNewEntry);
   }
 
+  @Override
   public void checkSupportsRegionDestroy() throws UnsupportedOperationInTransactionException {
     throw new UnsupportedOperationInTransactionException(
         LocalizedStrings.TXState_REGION_DESTROY_NOT_SUPPORTED_IN_A_TRANSACTION.toLocalizedString());
   }
 
+  @Override
   public void checkSupportsRegionInvalidate() throws UnsupportedOperationInTransactionException {
     throw new UnsupportedOperationInTransactionException(
         LocalizedStrings.TXState_REGION_INVALIDATE_NOT_SUPPORTED_IN_A_TRANSACTION
@@ -647,6 +703,7 @@ public class TXStateProxyImpl implements TXStateProxy {
         LocalizedStrings.TXState_REGION_CLEAR_NOT_SUPPORTED_IN_A_TRANSACTION.toLocalizedString());
   }
 
+  @Override
   public Set getBucketKeys(LocalRegion localRegion, int bucketId, boolean allowTombstones) {
     boolean resetTxState = isTransactionInternalSuspendNeeded(localRegion);
     TXStateProxy txp = null;
@@ -665,6 +722,7 @@ public class TXStateProxyImpl implements TXStateProxy {
     }
   }
 
+  @Override
   public Entry getEntryOnRemote(KeyInfo keyInfo, LocalRegion localRegion, boolean allowTombstones)
       throws DataLocationException {
     this.operationCount++;
@@ -677,15 +735,18 @@ public class TXStateProxyImpl implements TXStateProxy {
     getRealDeal(null, null);
   }
 
+  @Override
   public DistributedMember getTarget() {
     return this.target;
   }
 
+  @Override
   public void setTarget(DistributedMember target) {
     assert this.target == null;
     getRealDeal(target);
   }
 
+  @Override
   public Collection<?> getRegionKeysForIteration(LocalRegion currRegion) {
     if (currRegion.isUsedForPartitionedRegionBucket()) {
       return currRegion.getRegionKeysForIteration();
@@ -708,14 +769,17 @@ public class TXStateProxyImpl implements TXStateProxy {
     }
   }
 
+  @Override
   public boolean isCommitOnBehalfOfRemoteStub() {
     return this.commitRequestedByOwner;
   }
 
+  @Override
   public boolean setCommitOnBehalfOfRemoteStub(boolean requestedByOwner) {
     return this.commitRequestedByOwner = requestedByOwner;
   }
 
+  @Override
   public boolean isRealDealLocal() {
     if (this.realDeal != null) {
       return this.realDeal.isRealDealLocal();
@@ -748,6 +812,7 @@ public class TXStateProxyImpl implements TXStateProxy {
     return builder.toString();
   }
 
+  @Override
   public InternalDistributedMember getOriginatingMember() {
     if (this.realDeal == null) {
       return null;
@@ -756,6 +821,7 @@ public class TXStateProxyImpl implements TXStateProxy {
     }
   }
 
+  @Override
   public boolean isMemberIdForwardingRequired() {
     if (this.realDeal == null) {
       return false;
@@ -764,6 +830,7 @@ public class TXStateProxyImpl implements TXStateProxy {
     }
   }
 
+  @Override
   public TXCommitMessage getCommitMessage() {
     if (this.realDeal == null) {
       return null;
@@ -772,8 +839,9 @@ public class TXStateProxyImpl implements TXStateProxy {
     }
   }
 
+  @Override
   public void postPutAll(DistributedPutAllOperation putallOp, VersionedObjectList successfulPuts,
-      LocalRegion region) {
+                         LocalRegion region) {
     if (putallOp.putAllData.length == 0) {
       return;
     }
@@ -803,15 +871,18 @@ public class TXStateProxyImpl implements TXStateProxy {
     tsi.postRemoveAll(op, successfulOps, region);
   }
 
+  @Override
   public boolean isJCATransaction() {
     return this.isJCATransaction;
   }
 
 
+  @Override
   public void setJCATransaction() {
     this.isJCATransaction = true;
   }
 
+  @Override
   public Entry accessEntry(KeyInfo keyInfo, LocalRegion region) {
     try {
       this.operationCount++;
@@ -823,12 +894,14 @@ public class TXStateProxyImpl implements TXStateProxy {
     }
   }
 
+  @Override
   public void suspend() {
     if (this.realDeal != null) {
       getRealDeal(null, null).suspend();
     }
   }
 
+  @Override
   public void resume() {
     if (this.realDeal != null) {
       getRealDeal(null, null).resume();
@@ -836,8 +909,9 @@ public class TXStateProxyImpl implements TXStateProxy {
   }
 
   /** test hook - record a list of ops in the transaction */
+  @Override
   public void recordTXOperation(ServerRegionDataAccess region, ServerRegionOperation op, Object key,
-      Object arguments[]) {
+                                Object arguments[]) {
     if (ClientTXStateStub.transactionRecordingEnabled()) {
       getRealDeal(null, (LocalRegion) region.getRegion()).recordTXOperation(region, op, key,
           arguments);
@@ -861,6 +935,7 @@ public class TXStateProxyImpl implements TXStateProxy {
     // Do nothing. Not applicable for transactions.
   }
 
+  @Override
   public void close() {
     if (this.realDeal != null) {
       this.realDeal.close();

@@ -23,7 +23,6 @@ import java.util.concurrent.locks.ReentrantLock;
 
 import javax.transaction.Synchronization;
 
-import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.CommitConflictException;
 import org.apache.geode.cache.Region.Entry;
 import org.apache.geode.cache.TransactionId;
@@ -34,7 +33,6 @@ import org.apache.geode.internal.cache.tx.TransactionalOperation.ServerRegionOpe
 
 /**
  * An entity that tracks transactions must implement this interface.
- *
  */
 public interface TXStateInterface extends Synchronization, InternalDataView {
 
@@ -100,7 +98,7 @@ public interface TXStateInterface extends Synchronization, InternalDataView {
 
 
   /** Implement TransactionEvent's getCache */
-  public Cache getCache();
+  public InternalCache getCache();
 
   public Collection<LocalRegion> getRegions();
 

@@ -44,19 +44,23 @@ public class DistTXStateProxyImplOnCoordinator extends DistTXStateProxyImpl {
    * A map of distributed system member to either {@link DistPeerTXStateStub} or
    * {@link DistTXStateOnCoordinator} (in case of TX coordinator is also a data node)
    */
-  protected HashMap<DistributedMember, DistTXCoordinatorInterface> target2realDeals =
+  private final HashMap<DistributedMember, DistTXCoordinatorInterface> target2realDeals =
       new HashMap<>();
-  private HashMap<LocalRegion, DistributedMember> rrTargets;
-  private Set<DistributedMember> txRemoteParticpants = null; // other than local
-  protected HashMap<String, ArrayList<DistTxThinEntryState>> txEntryEventMap = null;
 
-  public DistTXStateProxyImplOnCoordinator(TXManagerImpl managerImpl, TXId id,
+  private HashMap<LocalRegion, DistributedMember> rrTargets;
+
+  private Set<DistributedMember> txRemoteParticpants = null; // other than local
+
+  private HashMap<String, ArrayList<DistTxThinEntryState>> txEntryEventMap = null;
+
+  public DistTXStateProxyImplOnCoordinator(InternalCache cache, TXManagerImpl managerImpl, TXId id,
       InternalDistributedMember clientMember) {
-    super(managerImpl, id, clientMember);
+    super(cache, managerImpl, id, clientMember);
   }
 
-  public DistTXStateProxyImplOnCoordinator(TXManagerImpl managerImpl, TXId id, boolean isjta) {
-    super(managerImpl, id, isjta);
+  public DistTXStateProxyImplOnCoordinator(InternalCache cache, TXManagerImpl managerImpl, TXId id,
+      boolean isjta) {
+    super(cache, managerImpl, id, isjta);
   }
 
   /*
@@ -128,10 +132,8 @@ public class DistTXStateProxyImplOnCoordinator extends DistTXStateProxyImpl {
    * those
    */
   private HashMap<DistributedMember, DistTXCoordinatorInterface> getSecondariesAndReplicasForTxOps() {
-    final GemFireCacheImpl cache =
-        GemFireCacheImpl.getExisting("getSecondariesAndReplicasForTxOps");
     InternalDistributedMember currentNode =
-        cache.getInternalDistributedSystem().getDistributedMember();
+        getCache().getInternalDistributedSystem().getDistributedMember();
 
     HashMap<DistributedMember, DistTXCoordinatorInterface> secondaryTarget2realDeals =
         new HashMap<>();
@@ -192,8 +194,7 @@ public class DistTXStateProxyImplOnCoordinator extends DistTXStateProxyImpl {
     }
 
     boolean finalResult = false;
-    final GemFireCacheImpl cache = GemFireCacheImpl.getExisting("Applying Dist TX Rollback");
-    final DistributionManager dm = cache.getDistributionManager();
+    final DistributionManager dm = getCache().getDistributionManager();
     try {
       // Create Tx Participants
       Set<DistributedMember> txRemoteParticpants = getTxRemoteParticpants(dm);
@@ -435,8 +436,7 @@ public class DistTXStateProxyImplOnCoordinator extends DistTXStateProxyImpl {
 
   private boolean doPrecommit() {
     boolean finalResult = true;
-    final GemFireCacheImpl cache = GemFireCacheImpl.getExisting("Applying Dist TX Precommit");
-    final DistributionManager dm = cache.getDistributionManager();
+    final DistributionManager dm = getCache().getDistributionManager();
     Set<DistributedMember> txRemoteParticpants = getTxRemoteParticpants(dm);
 
     // create processor and precommit message
@@ -620,8 +620,7 @@ public class DistTXStateProxyImplOnCoordinator extends DistTXStateProxyImpl {
    */
   private boolean doCommit() {
     boolean finalResult = true;
-    final GemFireCacheImpl cache = GemFireCacheImpl.getExisting("Applying Dist TX Commit");
-    final DistributionManager dm = cache.getDistributionManager();
+    final DistributionManager dm = getCache().getDistributionManager();
 
     // Create Tx Participants
     Set<DistributedMember> txRemoteParticpants = getTxRemoteParticpants(dm);
@@ -937,8 +936,7 @@ public class DistTXStateProxyImplOnCoordinator extends DistTXStateProxyImpl {
   public DistributedMember getOwnerForKey(LocalRegion r, KeyInfo key) {
     DistributedMember m = r.getOwnerForKey(key);
     if (m == null) {
-      GemFireCacheImpl cache = GemFireCacheImpl.getExisting("getOwnerForKey");
-      m = cache.getDistributedSystem().getDistributedMember();
+      m = getCache().getDistributedSystem().getDistributedMember();
     }
     return m;
   }
