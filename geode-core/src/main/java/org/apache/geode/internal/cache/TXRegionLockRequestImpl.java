@@ -39,7 +39,7 @@ public class TXRegionLockRequestImpl implements TXRegionLockRequest {
   private static final long serialVersionUID = 5840033961584078082L;
   private static final Logger logger = LogService.getLogger();
 
-  private InternalCache cache;
+  private transient InternalCache cache;
 
   private transient LocalRegion r;
 
