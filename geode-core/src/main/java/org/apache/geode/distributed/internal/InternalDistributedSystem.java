@@ -2653,7 +2653,7 @@ public class InternalDistributedSystem extends DistributedSystem
                   LocalizedStrings.InternalDistributedSystem_SOME_REQUIRED_ROLES_MISSING
                       .toLocalizedString());
             } else {
-              internalCache.getCacheClosedException(
+              throw internalCache.getCacheClosedException(
                   LocalizedStrings.InternalDistributedSystem_SOME_REQUIRED_ROLES_MISSING
                       .toLocalizedString());
             }
