@@ -54,6 +54,12 @@ resources:
     branch: develop
     paths:
     - ci/*
+- name: geode-examples
+  type: git
+  source:
+    uri: https://github.com/apache/geode-examples.git
+    branch: develop
+    depth: 10
 - name: geode-build-version
   type: semver
   source:
@@ -376,6 +382,35 @@ jobs:
                - flakyTest
                - flakytestfiles
                path: geode-ci/ci/scripts/test-archive.sh
+
+- name: TestExamples
+  serial: true
+  public: true
+  plan:
+    - aggregate:
+      - get: geode-ci
+      - get: geode-examples
+        trigger: true
+      - get: docker-test-image
+        params:
+          rootfs: true
+    - task: testexamples
+      privileged: true
+      timeout: 7h
+      config:
+        inputs:
+          - name: geode-ci
+          - name: geode-examples
+          - name: docker-test-image
+        platform: linux
+        image_resource: *docker-geode-build-image
+        params:
+          MAINTENANCE_VERSION: ((!maintenance-version))
+          SERVICE_ACCOUNT: ((!concourse-gcp-account))
+          PUBLIC_BUCKET: ((!public-bucket))
+        run:
+          args:
+          path: geode-ci/ci/scripts/build-examples.sh
 
 - name: UpdatePassingRef
   serial: true
