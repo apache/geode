@@ -405,6 +405,11 @@ public class HttpOperationInvoker implements OperationInvoker {
     return String.format("GemFire Manager HTTP service @ %1$s", httpRequester);
   }
 
+  public String getRemoteVersion() {
+    final URI link = HttpRequester.createURI(baseUrl, "/version/release");
+    return httpRequester.get(link, String.class);
+  }
+
 
   /**
    * Processes the requested command. Sends the command to the GemFire Manager for remote processing
