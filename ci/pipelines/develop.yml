@@ -403,6 +403,8 @@ jobs:
           - name: geode-examples
           - name: docker-test-image
         platform: linux
+        outputs:
+          - name: built-geode
         image_resource: *docker-geode-build-image
         params:
           MAINTENANCE_VERSION: ((!maintenance-version))
@@ -410,8 +412,6 @@ jobs:
           PUBLIC_BUCKET: ((!public-bucket))
         run:
           args:
-          - buildExamples
-          - testexamplesfiles
           path: geode-ci/ci/scripts/build-examples.sh
       on_failure:
         aggregate:
