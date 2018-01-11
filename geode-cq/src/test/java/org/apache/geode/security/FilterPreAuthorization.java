@@ -13,11 +13,10 @@
  * the License.
  */
 
-package org.apache.geode.internal.security;
+package org.apache.geode.security;
 
 import java.security.Principal;
 import java.util.Collection;
-import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
 
@@ -34,10 +33,6 @@ import org.apache.geode.i18n.LogWriterI18n;
 import org.apache.geode.internal.HeapDataOutputStream;
 import org.apache.geode.internal.InternalDataSerializer;
 import org.apache.geode.internal.Version;
-import org.apache.geode.internal.cache.CachedDeserializable;
-import org.apache.geode.internal.cache.CachedDeserializableFactory;
-import org.apache.geode.security.AccessControl;
-import org.apache.geode.security.NotAuthorizedException;
 
 /**
  * An authorization implementation for testing that changes a string value in pre-operation phase to
