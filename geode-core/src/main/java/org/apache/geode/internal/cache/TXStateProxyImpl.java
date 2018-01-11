@@ -121,7 +121,8 @@ public class TXStateProxyImpl implements TXStateProxy {
       } else {
         // Code to keep going forward
         if (r.hasServerProxy()) {
-          this.realDeal = new ClientTXStateStub(this, target, r);
+          this.realDeal =
+              new ClientTXStateStub(r.getCache(), r.getDistributionManager(), this, target, r);
           if (r.scope.isDistributed()) {
             if (txDistributedClientWarningIssued.compareAndSet(false, true)) {
               logger.warn(LocalizedMessage.create(

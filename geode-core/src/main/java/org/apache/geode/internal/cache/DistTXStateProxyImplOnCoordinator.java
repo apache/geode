@@ -331,7 +331,8 @@ public class DistTXStateProxyImplOnCoordinator extends DistTXStateProxyImpl {
         // Code to keep going forward
         if (r.hasServerProxy()) {
           // TODO [DISTTX] See what we need for client?
-          this.realDeal = new DistClientTXStateStub(this, target, r);
+          this.realDeal =
+              new DistClientTXStateStub(r.getCache(), r.getDistributionManager(), this, target, r);
           if (r.scope.isDistributed()) {
             if (txDistributedClientWarningIssued.compareAndSet(false, true)) {
               logger.warn(LocalizedMessage.create(
