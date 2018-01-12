@@ -64,6 +64,7 @@ import org.apache.geode.management.internal.cli.result.InfoResultData;
 import org.apache.geode.management.internal.cli.result.ResultBuilder;
 import org.apache.geode.management.internal.cli.shell.Gfsh;
 import org.apache.geode.management.internal.cli.shell.JmxOperationInvoker;
+import org.apache.geode.management.internal.cli.shell.OperationInvoker;
 import org.apache.geode.management.internal.cli.util.ConnectionEndpoint;
 import org.apache.geode.management.internal.security.ResourceConstants;
 import org.apache.geode.management.internal.web.shell.HttpOperationInvoker;
@@ -157,7 +158,31 @@ public class ConnectCommand implements GfshCommand {
       result = jmxConnect(gfProperties, useSsl, jmxManagerEndPoint, locatorEndPoint, false);
     }
 
-    return result;
+    OperationInvoker invoker = gfsh.getOperationInvoker();
+    if (invoker == null || !invoker.isConnected()) {
+      return result;
+    }
+
+    String gfshVersion = gfsh.getVersion();
+    String remoteVersion = null;
+    try {
+      remoteVersion = invoker.getRemoteVersion();
+      if (remoteVersion.equalsIgnoreCase(gfshVersion)) {
+        return result;
+      }
+    } catch (Exception e) {
+      gfsh.logInfo("failed to get the the remote version.", e);
+    }
+
+    // will reach here only when remoteVersion is not available or does not match
+    invoker.stop();
+    if (remoteVersion == null) {
+      return ResultBuilder.createUserErrorResult(
+          String.format("Cannot use a %s gfsh client to connect to this cluster.", gfshVersion));
+    } else {
+      return ResultBuilder.createUserErrorResult(String.format(
+          "Cannot use a %s gfsh client to connect to a %s cluster.", gfshVersion, remoteVersion));
+    }
   }
 
   /**

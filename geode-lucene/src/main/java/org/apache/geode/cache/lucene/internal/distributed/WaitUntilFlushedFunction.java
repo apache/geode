@@ -17,7 +17,6 @@ package org.apache.geode.cache.lucene.internal.distributed;
 
 import java.util.Collection;
 import java.util.Collections;
-import java.util.Optional;
 import java.util.concurrent.TimeUnit;
 
 import org.apache.geode.cache.Cache;

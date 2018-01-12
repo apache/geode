@@ -13,7 +13,7 @@
  * the License.
  */
 
-package org.apache.geode.internal.security;
+package org.apache.geode.security;
 
 import java.io.DataInput;
 import java.io.DataOutput;

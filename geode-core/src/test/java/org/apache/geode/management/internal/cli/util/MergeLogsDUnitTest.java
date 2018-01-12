@@ -73,7 +73,7 @@ public class MergeLogsDUnitTest {
 
   @Test
   public void testExportInProcess() throws Exception {
-    assertThat(MergeLogs.findLogFilesToMerge(lsRule.getTempWorkingDir().getRoot())).hasSize(3);
+    assertThat(MergeLogs.findLogFilesToMerge(lsRule.getTempWorkingDir().getRoot())).hasSize(4);
 
     File result = MergeLogs.mergeLogFile(lsRule.getTempWorkingDir().getRoot().getCanonicalPath());
     assertOnLogContents(result);
@@ -81,7 +81,7 @@ public class MergeLogsDUnitTest {
 
   @Test
   public void testExportInNewProcess() throws Throwable {
-    assertThat(MergeLogs.findLogFilesToMerge(lsRule.getTempWorkingDir().getRoot())).hasSize(3);
+    assertThat(MergeLogs.findLogFilesToMerge(lsRule.getTempWorkingDir().getRoot())).hasSize(4);
 
     MergeLogs.mergeLogsInNewProcess(lsRule.getTempWorkingDir().getRoot().toPath());
     File result = Arrays.stream(lsRule.getTempWorkingDir().getRoot().listFiles())

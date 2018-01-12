@@ -173,11 +173,13 @@ public class StartServerCommand implements GfshCommand {
       @CliOption(key = CliStrings.START_SERVER__USERNAME, unspecifiedDefaultValue = "",
           help = CliStrings.START_SERVER__USERNAME__HELP) final String userName,
       @CliOption(key = CliStrings.START_SERVER__PASSWORD, unspecifiedDefaultValue = "",
-          help = CliStrings.START_SERVER__PASSWORD__HELP) String passwordToUse)
-      throws Exception
-  // NOTICE: keep the parameters in alphabetical order based on their CliStrings.START_SERVER_* text
-  {
-
+          help = CliStrings.START_SERVER__PASSWORD__HELP) String passwordToUse,
+      @CliOption(key = CliStrings.START_SERVER__REDIRECT_OUTPUT, unspecifiedDefaultValue = "false",
+          specifiedDefaultValue = "true",
+          help = CliStrings.START_SERVER__REDIRECT_OUTPUT__HELP) final Boolean redirectOutput)
+      throws Exception {
+    // NOTICE: keep the parameters in alphabetical order based on their CliStrings.START_SERVER_*
+    // text
     if (StringUtils.isBlank(memberName)) {
       // when the user doesn't give us a name, we make one up!
       memberName = StartMemberUtils.getNameGenerator().generate('-');
@@ -272,10 +274,6 @@ public class StartServerCommand implements GfshCommand {
       gemfireProperties.setProperty(ResourceConstants.USER_NAME, userName);
       gemfireProperties.setProperty(ResourceConstants.PASSWORD, passwordToUse);
     }
-
-    // read the OSProcess enable redirect system property here -- TODO: replace with new GFSH
-    // argument
-    final boolean redirectOutput = Boolean.getBoolean(OSProcess.ENABLE_OUTPUT_REDIRECTION_PROPERTY);
 
     ServerLauncher.Builder serverLauncherBuilder = new ServerLauncher.Builder()
         .setAssignBuckets(assignBuckets).setDisableDefaultServer(disableDefaultServer)
@@ -426,7 +424,10 @@ public class StartServerCommand implements GfshCommand {
     commandLine.add("-Djava.awt.headless=true");
     commandLine.add(
         "-Dsun.rmi.dgc.server.gcInterval".concat("=").concat(Long.toString(Long.MAX_VALUE - 1)));
-
+    if (launcher.isRedirectingOutput()) {
+      commandLine
+          .add("-D".concat(OSProcess.DISABLE_REDIRECTION_CONFIGURATION_PROPERTY).concat("=true"));
+    }
     commandLine.add(ServerLauncher.class.getName());
     commandLine.add(ServerLauncher.Command.START.getName());
 

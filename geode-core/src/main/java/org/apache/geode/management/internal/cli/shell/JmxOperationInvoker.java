@@ -212,6 +212,10 @@ public class JmxOperationInvoker implements OperationInvoker {
     }
   }
 
+  public String getRemoteVersion() {
+    return memberMXBeanProxy.getReleaseVersion();
+  }
+
   @Override
   public Object invoke(String resourceName, String operationName, Object[] params,
       String[] signature) throws JMXInvocationException {

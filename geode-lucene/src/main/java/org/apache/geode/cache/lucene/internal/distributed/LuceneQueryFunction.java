@@ -19,7 +19,6 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.Optional;
 
 import org.apache.logging.log4j.Logger;
 import org.apache.lucene.search.Query;

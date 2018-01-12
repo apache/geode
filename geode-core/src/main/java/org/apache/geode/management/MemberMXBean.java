@@ -286,9 +286,17 @@ public interface MemberMXBean {
   String status();
 
   /**
-   * Returns the GemFire version.
+   * Returns the GemFire version, including build id, jdk version, product name and release version
+   * etc.
    */
+  @ResourceOperation()
   String getVersion();
+
+  /**
+   * returns only the version string
+   */
+  @ResourceOperation()
+  String getReleaseVersion();
 
   /**
    * Returns whether this member is attached to at least one Locator.
