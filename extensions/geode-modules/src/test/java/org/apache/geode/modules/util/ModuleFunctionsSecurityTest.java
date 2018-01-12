@@ -33,6 +33,8 @@ import org.apache.geode.test.junit.rules.ServerStarterRule;
 @Category({IntegrationTest.class, SecurityTest.class})
 public class ModuleFunctionsSecurityTest {
 
+  private static final String RESULT_HEADER = "Function Execution Result";
+
   @ClassRule
   public static ServerStarterRule server =
       new ServerStarterRule().withJMXManager().withSecurityManager(SimpleSecurityManager.class)
@@ -56,21 +58,27 @@ public class ModuleFunctionsSecurityTest {
   @ConnectionConfiguration(user = "dataWrite", password = "dataWrite")
   public void testInvalidPermissionsForBootstrappingFunction() throws Exception {
     gfsh.executeAndAssertThat("execute function --id=" + BootstrappingFunction.ID)
-        .containsOutput("not authorized for CLUSTER:MANAGE").statusIsSuccess();
+        .tableHasColumnWithExactValuesInAnyOrder(RESULT_HEADER,
+            "Exception: dataWrite not authorized for CLUSTER:MANAGE")
+        .statusIsError();
   }
 
   @Test
   @ConnectionConfiguration(user = "dataWrite", password = "dataWrite")
   public void testInvalidPermissionsForCreateRegionFunction() throws Exception {
     gfsh.executeAndAssertThat("execute function --id=" + CreateRegionFunction.ID)
-        .containsOutput("not authorized for DATA:MANAGE").statusIsSuccess();
+        .tableHasColumnWithExactValuesInAnyOrder(RESULT_HEADER,
+            "Exception: dataWrite not authorized for DATA:MANAGE")
+        .statusIsError();
   }
 
   @Test
   @ConnectionConfiguration(user = "dataWrite", password = "dataWrite")
   public void testInvalidPermissionsForRegionSizeFunction() throws Exception {
     gfsh.executeAndAssertThat("execute function --region=REPLICATE_1 --id=" + RegionSizeFunction.ID)
-        .containsOutput("not authorized for DATA:READ:REPLICATE_1").statusIsSuccess();
+        .tableHasColumnWithExactValuesInAnyOrder(RESULT_HEADER,
+            "Exception: dataWrite not authorized for DATA:READ:REPLICATE_1")
+        .statusIsError();
   }
 
   @Test
@@ -78,7 +86,9 @@ public class ModuleFunctionsSecurityTest {
   public void testInvalidPermissionsForTouchPartitionedRegionEntriesFunction() throws Exception {
     gfsh.executeAndAssertThat(
         "execute function --region=PARTITION_1 --id=" + TouchPartitionedRegionEntriesFunction.ID)
-        .containsOutput("not authorized for DATA:READ:PARTITION_1").statusIsSuccess();
+        .tableHasColumnWithExactValuesInAnyOrder(RESULT_HEADER,
+            "Exception: dataWrite not authorized for DATA:READ:PARTITION_1")
+        .statusIsError();
   }
 
   @Test
@@ -86,6 +96,8 @@ public class ModuleFunctionsSecurityTest {
   public void testInvalidPermissionsForTouchReplicatedRegionEntriesFunction() throws Exception {
     gfsh.executeAndAssertThat(
         "execute function --region=REPLICATE_1 --id=" + TouchReplicatedRegionEntriesFunction.ID)
-        .containsOutput("not authorized for DATA:READ:REPLICATE_1").statusIsSuccess();
+        .tableHasColumnWithExactValuesInAnyOrder(RESULT_HEADER,
+            "Exception: dataWrite not authorized for DATA:READ:REPLICATE_1")
+        .statusIsError();
   }
 }

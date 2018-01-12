@@ -29,9 +29,12 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 import org.mockito.Mockito;
+import org.mockito.invocation.InvocationOnMock;
+import org.mockito.stubbing.Answer;
 
 import org.apache.geode.cache.RegionShortcut;
 import org.apache.geode.cache.execute.Function;
+import org.apache.geode.cache.execute.FunctionContext;
 import org.apache.geode.cache.execute.FunctionService;
 import org.apache.geode.cache.lucene.internal.cli.functions.LuceneCreateIndexFunction;
 import org.apache.geode.cache.lucene.internal.cli.functions.LuceneDescribeIndexFunction;
@@ -79,15 +82,24 @@ public class LuceneFunctionSecurityTest {
   private static Function luceneGetPageFunction = Mockito.spy(new LuceneGetPageFunction());
 
   static {
-    Mockito.doNothing().when(luceneCreateIndexFunction).execute(any());
-    Mockito.doNothing().when(luceneDescribeIndexFunction).execute(any());
-    Mockito.doNothing().when(luceneDestroyIndexFunction).execute(any());
-    Mockito.doNothing().when(luceneListIndexFunction).execute(any());
-    Mockito.doNothing().when(luceneSearchIndexFunction).execute(any());
-    Mockito.doNothing().when(dumpDirectoryFiles).execute(any());
-    Mockito.doNothing().when(luceneQueryFunction).execute(any());
-    Mockito.doNothing().when(waitUntilFlushedFunction).execute(any());
-    Mockito.doNothing().when(luceneGetPageFunction).execute(any());
+    Mockito.doAnswer(callLastResult()).when(luceneCreateIndexFunction).execute(any());
+    Mockito.doAnswer(callLastResult()).when(luceneDescribeIndexFunction).execute(any());
+    Mockito.doAnswer(callLastResult()).when(luceneDestroyIndexFunction).execute(any());
+    Mockito.doAnswer(callLastResult()).when(luceneListIndexFunction).execute(any());
+    Mockito.doAnswer(callLastResult()).when(luceneSearchIndexFunction).execute(any());
+    Mockito.doAnswer(callLastResult()).when(dumpDirectoryFiles).execute(any());
+    Mockito.doAnswer(callLastResult()).when(luceneQueryFunction).execute(any());
+    Mockito.doAnswer(callLastResult()).when(waitUntilFlushedFunction).execute(any());
+    Mockito.doAnswer(callLastResult()).when(luceneGetPageFunction).execute(any());
+  }
+
+  // The FunctionService requires a lastResult to be produced
+  private static Answer<Void> callLastResult() {
+    return invocation -> {
+      FunctionContext context = invocation.getArgument(0);
+      context.getResultSender().lastResult(null);
+      return null;
+    };
   }
 
   @ClassRule
@@ -115,7 +127,7 @@ public class LuceneFunctionSecurityTest {
   /* Command authorized tests */
   @Test
   @ConnectionConfiguration(user = "clusterManageLucene", password = "clusterManageLucene")
-  public void testValidPermissionsForLuceneCreateIndexFunction() throws Exception {
+  public void testValidPermissionsForLuceneCreateIndexFunction() {
     Function thisFunction = luceneCreateIndexFunction;
 
     gfsh.executeAndAssertThat("execute function --id=" + thisFunction.getId())
@@ -124,7 +136,7 @@ public class LuceneFunctionSecurityTest {
 
   @Test
   @ConnectionConfiguration(user = "clusterReadLucene", password = "clusterReadLucene")
-  public void testValidPermissionsForLuceneDescribeIndexFunction() throws Exception {
+  public void testValidPermissionsForLuceneDescribeIndexFunction() {
     Function thisFunction = luceneDescribeIndexFunction;
 
     gfsh.executeAndAssertThat("execute function --id=" + thisFunction.getId())
@@ -133,7 +145,7 @@ public class LuceneFunctionSecurityTest {
 
   @Test
   @ConnectionConfiguration(user = "clusterManageLucene", password = "clusterManageLucene")
-  public void testValidPermissionsForLuceneDestroyIndexFunction() throws Exception {
+  public void testValidPermissionsForLuceneDestroyIndexFunction() {
     Function thisFunction = luceneDestroyIndexFunction;
 
     gfsh.executeAndAssertThat("execute function --id=" + thisFunction.getId())
@@ -142,7 +154,7 @@ public class LuceneFunctionSecurityTest {
 
   @Test
   @ConnectionConfiguration(user = "clusterReadLucene", password = "clusterReadLucene")
-  public void testValidPermissionsForLuceneListIndexFunction() throws Exception {
+  public void testValidPermissionsForLuceneListIndexFunction() {
     Function thisFunction = luceneListIndexFunction;
 
     gfsh.executeAndAssertThat("execute function --id=" + thisFunction.getId())
@@ -152,7 +164,7 @@ public class LuceneFunctionSecurityTest {
   @Test
   @ConnectionConfiguration(user = "dataReadThis_test_region,clusterManage",
       password = "dataReadThis_test_region,clusterManage")
-  public void testValidPermissionsForDumpDirectoryFilesWithRegionParameter() throws Exception {
+  public void testValidPermissionsForDumpDirectoryFilesWithRegionParameter() {
     Function thisFunction = dumpDirectoryFiles;
 
     gfsh.executeAndAssertThat(
@@ -162,7 +174,7 @@ public class LuceneFunctionSecurityTest {
 
   @Test
   @ConnectionConfiguration(user = "dataRead,clusterManage", password = "dataRead,clusterManage")
-  public void testValidPermissionsForDumpDirectoryFilesWithoutRegionParameter() throws Exception {
+  public void testValidPermissionsForDumpDirectoryFilesWithoutRegionParameter() {
     Function thisFunction = dumpDirectoryFiles;
 
     gfsh.executeAndAssertThat("execute function --id=" + thisFunction.getId())
@@ -172,8 +184,7 @@ public class LuceneFunctionSecurityTest {
 
   @Test
   @ConnectionConfiguration(user = "dataRead", password = "dataRead")
-  public void testValidPermissionsForLuceneSearchIndexFunctionWithoutRegionParameter()
-      throws Exception {
+  public void testValidPermissionsForLuceneSearchIndexFunctionWithoutRegionParameter() {
     Function thisFunction = luceneSearchIndexFunction;
 
     gfsh.executeAndAssertThat("execute function --id=" + thisFunction.getId())
@@ -182,8 +193,7 @@ public class LuceneFunctionSecurityTest {
 
   @Test
   @ConnectionConfiguration(user = "dataReadThis_test_region", password = "dataReadThis_test_region")
-  public void testValidPermissionsForLuceneSearchIndexFunctionWithRegionParameter()
-      throws Exception {
+  public void testValidPermissionsForLuceneSearchIndexFunctionWithRegionParameter() {
     Function thisFunction = luceneSearchIndexFunction;
 
     gfsh.executeAndAssertThat(
@@ -193,7 +203,7 @@ public class LuceneFunctionSecurityTest {
 
   @Test
   @ConnectionConfiguration(user = "dataRead", password = "dataRead")
-  public void testValidPermissionsForLuceneQueryFunctionWithoutRegionParameter() throws Exception {
+  public void testValidPermissionsForLuceneQueryFunctionWithoutRegionParameter() {
     Function thisFunction = luceneQueryFunction;
 
     gfsh.executeAndAssertThat("execute function --id=" + thisFunction.getId())
@@ -202,7 +212,7 @@ public class LuceneFunctionSecurityTest {
 
   @Test
   @ConnectionConfiguration(user = "dataReadThis_test_region", password = "dataReadThis_test_region")
-  public void testValidPermissionsForLuceneQueryFunctionWithRegionParameter() throws Exception {
+  public void testValidPermissionsForLuceneQueryFunctionWithRegionParameter() {
     Function thisFunction = luceneQueryFunction;
 
     gfsh.executeAndAssertThat(
@@ -212,8 +222,7 @@ public class LuceneFunctionSecurityTest {
 
   @Test
   @ConnectionConfiguration(user = "dataRead", password = "dataRead")
-  public void testValidPermissionsForWaitUntilFlushedFunctionWithoutRegionParameter()
-      throws Exception {
+  public void testValidPermissionsForWaitUntilFlushedFunctionWithoutRegionParameter() {
     Function thisFunction = waitUntilFlushedFunction;
 
     gfsh.executeAndAssertThat("execute function --id=" + thisFunction.getId())
@@ -222,8 +231,7 @@ public class LuceneFunctionSecurityTest {
 
   @Test
   @ConnectionConfiguration(user = "dataReadThis_test_region", password = "dataReadThis_test_region")
-  public void testValidPermissionsForWaitUntilFlushedFunctionWithRegionParameter()
-      throws Exception {
+  public void testValidPermissionsForWaitUntilFlushedFunctionWithRegionParameter() {
     Function thisFunction = waitUntilFlushedFunction;
 
     gfsh.executeAndAssertThat(
@@ -233,8 +241,7 @@ public class LuceneFunctionSecurityTest {
 
   @Test
   @ConnectionConfiguration(user = "dataRead", password = "dataRead")
-  public void testValidPermissionsForLuceneGetPageFunctionWithoutRegionParameter()
-      throws Exception {
+  public void testValidPermissionsForLuceneGetPageFunctionWithoutRegionParameter() {
     Function thisFunction = luceneGetPageFunction;
 
     gfsh.executeAndAssertThat("execute function --id=" + thisFunction.getId())
@@ -243,7 +250,7 @@ public class LuceneFunctionSecurityTest {
 
   @Test
   @ConnectionConfiguration(user = "dataReadThis_test_region", password = "dataReadThis_test_region")
-  public void testValidPermissionsForLuceneGetPageFunctionWithRegionParameter() throws Exception {
+  public void testValidPermissionsForLuceneGetPageFunctionWithRegionParameter() {
     Function thisFunction = luceneGetPageFunction;
 
     gfsh.executeAndAssertThat(
@@ -255,46 +262,42 @@ public class LuceneFunctionSecurityTest {
   /* Command refused tests */
   @Test
   @ConnectionConfiguration(user = "noPermissions", password = "noPermissions")
-  public void testInvalidPermissionsForLuceneCreateIndexFunction() throws Exception {
+  public void testInvalidPermissionsForLuceneCreateIndexFunction() {
     Function thisFunction = luceneCreateIndexFunction;
     ResourcePermission thisRequiredPermission = CLUSTER_MANAGE_LUCENE;
 
     gfsh.executeAndAssertThat("execute function --id=" + thisFunction.getId())
-        .containsOutput("not authorized for " + thisRequiredPermission.toString())
-        .statusIsSuccess();
+        .containsOutput("not authorized for " + thisRequiredPermission.toString()).statusIsError();
   }
 
   @Test
   @ConnectionConfiguration(user = "noPermissions", password = "noPermissions")
-  public void testInvalidPermissionsForLuceneDescribeIndexFunction() throws Exception {
+  public void testInvalidPermissionsForLuceneDescribeIndexFunction() {
     Function thisFunction = luceneDescribeIndexFunction;
     ResourcePermission thisRequiredPermission = CLUSTER_READ_LUCENE;
 
     gfsh.executeAndAssertThat("execute function --id=" + thisFunction.getId())
-        .containsOutput("not authorized for " + thisRequiredPermission.toString())
-        .statusIsSuccess();
+        .containsOutput("not authorized for " + thisRequiredPermission.toString()).statusIsError();
   }
 
   @Test
   @ConnectionConfiguration(user = "noPermissions", password = "noPermissions")
-  public void testInvalidPermissionsForLuceneDestroyIndexFunction() throws Exception {
+  public void testInvalidPermissionsForLuceneDestroyIndexFunction() {
     Function thisFunction = luceneDestroyIndexFunction;
     ResourcePermission thisRequiredPermission = CLUSTER_MANAGE_LUCENE;
 
     gfsh.executeAndAssertThat("execute function --id=" + thisFunction.getId())
-        .containsOutput("not authorized for " + thisRequiredPermission.toString())
-        .statusIsSuccess();
+        .containsOutput("not authorized for " + thisRequiredPermission.toString()).statusIsError();
   }
 
   @Test
   @ConnectionConfiguration(user = "noPermissions", password = "noPermissions")
-  public void testInvalidPermissionsForLuceneListIndexFunction() throws Exception {
+  public void testInvalidPermissionsForLuceneListIndexFunction() {
     Function thisFunction = luceneListIndexFunction;
     ResourcePermission thisRequiredPermission = CLUSTER_READ_LUCENE;
 
     gfsh.executeAndAssertThat("execute function --id=" + thisFunction.getId())
-        .containsOutput("not authorized for " + thisRequiredPermission.toString())
-        .statusIsSuccess();
+        .containsOutput("not authorized for " + thisRequiredPermission.toString()).statusIsError();
   }
 
   @Test
@@ -319,24 +322,22 @@ public class LuceneFunctionSecurityTest {
 
   @Test
   @ConnectionConfiguration(user = "dataRead", password = "dataRead")
-  public void testInvalidPermissionsForDumpDirectoryFilesWithoutRegionParameter_withDataRead()
-      throws Exception {
+  public void testInvalidPermissionsForDumpDirectoryFilesWithoutRegionParameter_withDataRead() {
     Function thisFunction = dumpDirectoryFiles;
     ResourcePermission thisMissingPermission = CLUSTER_MANAGE;
 
     gfsh.executeAndAssertThat("execute function --id=" + thisFunction.getId())
-        .containsOutput("not authorized for " + thisMissingPermission.toString()).statusIsSuccess();
+        .containsOutput("not authorized for " + thisMissingPermission.toString()).statusIsError();
   }
 
   @Test
   @ConnectionConfiguration(user = "clusterManage", password = "clusterManage")
-  public void testInvalidPermissionsForDumpDirectoryFilesWithoutRegionParameter_withClusterManage()
-      throws Exception {
+  public void testInvalidPermissionsForDumpDirectoryFilesWithoutRegionParameter_withClusterManage() {
     Function thisFunction = dumpDirectoryFiles;
     ResourcePermission thisMissingPermission = DATA_READ;
 
     gfsh.executeAndAssertThat("execute function --id=" + thisFunction.getId())
-        .containsOutput("not authorized for " + thisMissingPermission.toString()).statusIsSuccess();
+        .containsOutput("not authorized for " + thisMissingPermission.toString()).statusIsError();
   }
 
   @Test
@@ -362,124 +363,108 @@ public class LuceneFunctionSecurityTest {
 
   @Test
   @ConnectionConfiguration(user = "dataReadThis_test_region", password = "dataReadThis_test_region")
-  public void testInvalidPermissionsForDumpDirectoryFilesWithRegionParameter_withDataReadRegion()
-      throws Exception {
+  public void testInvalidPermissionsForDumpDirectoryFilesWithRegionParameter_withDataReadRegion() {
     Function thisFunction = dumpDirectoryFiles;
     ResourcePermission thisMissingPermission = CLUSTER_MANAGE;
 
     gfsh.executeAndAssertThat(
         "execute function  --region=" + regionName + " --id=" + thisFunction.getId())
-        .containsOutput("not authorized for " + thisMissingPermission.toString()).statusIsSuccess();
+        .containsOutput("not authorized for " + thisMissingPermission.toString()).statusIsError();
   }
 
   @Test
   @ConnectionConfiguration(user = "clusterManage", password = "clusterManage")
-  public void testInvalidPermissionsForDumpDirectoryFilesWithRegionParameter_withClusterManage()
-      throws Exception {
+  public void testInvalidPermissionsForDumpDirectoryFilesWithRegionParameter_withClusterManage() {
     Function thisFunction = dumpDirectoryFiles;
     ResourcePermission thisMissingPermission = DATA_READ;
 
     gfsh.executeAndAssertThat(
         "execute function  --region=" + regionName + " --id=" + thisFunction.getId())
-        .containsOutput("not authorized for " + thisMissingPermission.toString()).statusIsSuccess();
+        .containsOutput("not authorized for " + thisMissingPermission.toString()).statusIsError();
   }
 
 
   @Test
   @ConnectionConfiguration(user = "noPermissions", password = "noPermissions")
-  public void testInvalidPermissionsForLuceneSearchIndexFunctionWithoutRegionParameter()
-      throws Exception {
+  public void testInvalidPermissionsForLuceneSearchIndexFunctionWithoutRegionParameter() {
     Function thisFunction = luceneSearchIndexFunction;
     ResourcePermission thisRequiredPermission = DATA_READ;
 
     gfsh.executeAndAssertThat("execute function --id=" + thisFunction.getId())
-        .containsOutput("not authorized for " + thisRequiredPermission.toString())
-        .statusIsSuccess();
+        .containsOutput("not authorized for " + thisRequiredPermission.toString()).statusIsError();
   }
 
   @Test
   @ConnectionConfiguration(user = "noPermissions", password = "noPermissions")
-  public void testInvalidPermissionsForLuceneSearchIndexFunctionWithRegionParameter()
-      throws Exception {
+  public void testInvalidPermissionsForLuceneSearchIndexFunctionWithRegionParameter() {
     Function thisFunction = luceneSearchIndexFunction;
     ResourcePermission thisRequiredPermission = DATA_READ_REGION;
 
     gfsh.executeAndAssertThat(
         "execute function --region=" + regionName + " --id=" + thisFunction.getId())
-        .containsOutput("not authorized for " + thisRequiredPermission.toString())
-        .statusIsSuccess();
+        .containsOutput("not authorized for " + thisRequiredPermission.toString()).statusIsError();
   }
 
   @Test
   @ConnectionConfiguration(user = "noPermissions", password = "noPermissions")
-  public void testInvalidPermissionsForLuceneQueryFunctionWithoutRegionParameter()
-      throws Exception {
+  public void testInvalidPermissionsForLuceneQueryFunctionWithoutRegionParameter() {
     Function thisFunction = luceneQueryFunction;
     ResourcePermission thisRequiredPermission = DATA_READ;
 
     gfsh.executeAndAssertThat("execute function --id=" + thisFunction.getId())
-        .containsOutput("not authorized for " + thisRequiredPermission.toString())
-        .statusIsSuccess();
+        .containsOutput("not authorized for " + thisRequiredPermission.toString()).statusIsError();
   }
 
   @Test
   @ConnectionConfiguration(user = "noPermissions", password = "noPermissions")
-  public void testInvalidPermissionsForLuceneQueryFunctionWithRegionParameter() throws Exception {
+  public void testInvalidPermissionsForLuceneQueryFunctionWithRegionParameter() {
     Function thisFunction = luceneQueryFunction;
     ResourcePermission thisRequiredPermission = DATA_READ_REGION;
 
     gfsh.executeAndAssertThat(
         "execute function --region=" + regionName + " --id=" + thisFunction.getId())
-        .containsOutput("not authorized for " + thisRequiredPermission.toString())
-        .statusIsSuccess();
+        .containsOutput("not authorized for " + thisRequiredPermission.toString()).statusIsError();
   }
 
   @Test
   @ConnectionConfiguration(user = "noPermissions", password = "noPermissions")
-  public void testInvalidPermissionsForWaitUntilFlushedFunctionWithoutRegionParameter()
-      throws Exception {
+  public void testInvalidPermissionsForWaitUntilFlushedFunctionWithoutRegionParameter() {
     Function thisFunction = waitUntilFlushedFunction;
     ResourcePermission thisRequiredPermission = DATA_READ;
 
     gfsh.executeAndAssertThat("execute function --id=" + thisFunction.getId())
-        .containsOutput("not authorized for " + thisRequiredPermission.toString())
-        .statusIsSuccess();
+        .containsOutput("not authorized for " + thisRequiredPermission.toString()).statusIsError();
   }
 
   @Test
   @ConnectionConfiguration(user = "noPermissions", password = "noPermissions")
-  public void testInvalidPermissionsForWaitUntilFlushedFunctionWithRegionParameter()
-      throws Exception {
+  public void testInvalidPermissionsForWaitUntilFlushedFunctionWithRegionParameter() {
     Function thisFunction = waitUntilFlushedFunction;
     ResourcePermission thisRequiredPermission = DATA_READ_REGION;
 
     gfsh.executeAndAssertThat(
         "execute function --region=" + regionName + " --id=" + thisFunction.getId())
-        .containsOutput("not authorized for " + thisRequiredPermission.toString())
-        .statusIsSuccess();
+        .containsOutput("not authorized for " + thisRequiredPermission.toString()).statusIsError();
   }
 
   @Test
   @ConnectionConfiguration(user = "noPermissions", password = "noPermissions")
-  public void testInvalidPermissionsForLuceneGetPageFunctionWithoutRegionParameter()
-      throws Exception {
+  public void testInvalidPermissionsForLuceneGetPageFunctionWithoutRegionParameter() {
     Function thisFunction = luceneGetPageFunction;
     ResourcePermission thisRequiredPermission = DATA_READ;
 
     gfsh.executeAndAssertThat("execute function --id=" + thisFunction.getId())
-        .containsOutput("not authorized for " + thisRequiredPermission.toString())
-        .statusIsSuccess();
+        .containsOutput("not authorized for " + thisRequiredPermission.toString()).statusIsError();
   }
 
   @Test
   @ConnectionConfiguration(user = "noPermissions", password = "noPermissions")
-  public void testInvalidPermissionsForLuceneGetPageFunctionWithRegionParameter() throws Exception {
+  public void testInvalidPermissionsForLuceneGetPageFunctionWithRegionParameter() {
     Function thisFunction = luceneGetPageFunction;
     ResourcePermission thisRequiredPermission = DATA_READ_REGION;
 
     gfsh.executeAndAssertThat(
         "execute function --region=" + regionName + " --id=" + thisFunction.getId())
-        .containsOutput("not authorized for " + thisRequiredPermission.toString())
-        .statusIsSuccess();
+        .containsOutput("not authorized for " + thisRequiredPermission.toString()).statusIsError();
   }
 }

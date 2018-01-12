@@ -131,8 +131,9 @@ public class ExecuteFunctionCommandSecurityTest implements Serializable {
 
     gfsh.executeAndAssertThat(
         "execute function --id=" + new WriteFunction().getId() + " --region=" + REPLICATED_REGION)
-        .statusIsSuccess().containsOutput("dataRead not authorized for DATA:WRITE")
-        .doesNotContainOutput(WriteFunction.SUCCESS_OUTPUT);
+        .statusIsError().tableHasColumnWithExactValuesInAnyOrder("Function Execution Result",
+            "Exception: dataRead not authorized for DATA:WRITE",
+            "Exception: dataRead not authorized for DATA:WRITE");
   }
 
   @Test
@@ -145,8 +146,9 @@ public class ExecuteFunctionCommandSecurityTest implements Serializable {
 
     gfsh.executeAndAssertThat(
         "execute function --id=" + new WriteFunction().getId() + " --region=" + PARTITIONED_REGION)
-        .statusIsSuccess().containsOutput("dataRead not authorized for DATA:WRITE")
-        .doesNotContainOutput(WriteFunction.SUCCESS_OUTPUT);
+        .statusIsError().tableHasColumnWithExactValuesInAnyOrder("Function Execution Result",
+            "Exception: dataRead not authorized for DATA:WRITE",
+            "Exception: dataRead not authorized for DATA:WRITE");
   }
 
   private static void waitUntilRegionMBeansAreRegistered() {

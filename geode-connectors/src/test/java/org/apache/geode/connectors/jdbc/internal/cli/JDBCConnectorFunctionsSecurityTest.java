@@ -87,64 +87,64 @@ public class JDBCConnectorFunctionsSecurityTest {
 
   @Test
   @ConnectionConfiguration(user = "dataWrite", password = "dataWrite")
-  public void testInvalidPermissionsForAlterConnectionFunction() throws Exception {
+  public void testInvalidPermissionsForAlterConnectionFunction() {
     gfsh.executeAndAssertThat("execute function --id=" + alterConnectionFunction.getId())
-        .containsOutput("not authorized for CLUSTER:MANAGE").statusIsSuccess();
+        .containsOutput("not authorized for CLUSTER:MANAGE").statusIsError();
   }
 
   @Test
   @ConnectionConfiguration(user = "dataWrite", password = "dataWrite")
-  public void testInvalidPermissionsForAlterMappingFunction() throws Exception {
+  public void testInvalidPermissionsForAlterMappingFunction() {
     gfsh.executeAndAssertThat("execute function --id=" + alterMappingFunction.getId())
-        .containsOutput("not authorized for CLUSTER:MANAGE").statusIsSuccess();
+        .containsOutput("not authorized for CLUSTER:MANAGE").statusIsError();
   }
 
   @Test
   @ConnectionConfiguration(user = "dataWrite", password = "dataWrite")
-  public void testInvalidPermissionsForCreateConnectionFunction() throws Exception {
+  public void testInvalidPermissionsForCreateConnectionFunction() {
     gfsh.executeAndAssertThat("execute function --id=" + createConnectionFunction.getId())
-        .containsOutput("not authorized for CLUSTER:MANAGE").statusIsSuccess();
+        .containsOutput("not authorized for CLUSTER:MANAGE").statusIsError();
   }
 
   @Test
   @ConnectionConfiguration(user = "dataWrite", password = "dataWrite")
-  public void testInvalidPermissionsForCreateMappingFunction() throws Exception {
+  public void testInvalidPermissionsForCreateMappingFunction() {
     gfsh.executeAndAssertThat("execute function --id=" + createMappingFunction.getId())
-        .containsOutput("not authorized for CLUSTER:MANAGE").statusIsSuccess();
+        .containsOutput("not authorized for CLUSTER:MANAGE").statusIsError();
   }
 
   @Test
   @ConnectionConfiguration(user = "dataWrite", password = "dataWrite")
-  public void testInvalidPermissionsForDescribeConnectionFunction() throws Exception {
+  public void testInvalidPermissionsForDescribeConnectionFunction() {
     gfsh.executeAndAssertThat("execute function --id=" + describeConnectionFunction.getId())
-        .containsOutput("not authorized for CLUSTER:READ").statusIsSuccess();
+        .containsOutput("not authorized for CLUSTER:READ").statusIsError();
   }
 
   @Test
   @ConnectionConfiguration(user = "dataWrite", password = "dataWrite")
-  public void testInvalidPermissionsForDescribeMappingFunction() throws Exception {
+  public void testInvalidPermissionsForDescribeMappingFunction() {
     gfsh.executeAndAssertThat("execute function --id=" + describeMappingFunction.getId())
-        .containsOutput("not authorized for CLUSTER:READ").statusIsSuccess();
+        .containsOutput("not authorized for CLUSTER:READ").statusIsError();
   }
 
   @Test
   @ConnectionConfiguration(user = "dataWrite", password = "dataWrite")
-  public void testInvalidPermissionsForDestroyConnectionFunction() throws Exception {
+  public void testInvalidPermissionsForDestroyConnectionFunction() {
     gfsh.executeAndAssertThat("execute function --id=" + destroyConnectionFunction.getId())
-        .containsOutput("not authorized for CLUSTER:MANAGE").statusIsSuccess();
+        .containsOutput("not authorized for CLUSTER:MANAGE").statusIsError();
   }
 
   @Test
   @ConnectionConfiguration(user = "dataWrite", password = "dataWrite")
-  public void testInvalidPermissionsForDestroyMappingFunction() throws Exception {
+  public void testInvalidPermissionsForDestroyMappingFunction() {
     gfsh.executeAndAssertThat("execute function --id=" + destroyMappingFunction.getId())
-        .containsOutput("not authorized for CLUSTER:MANAGE").statusIsSuccess();
+        .containsOutput("not authorized for CLUSTER:MANAGE").statusIsError();
   }
 
   @Test
   @ConnectionConfiguration(user = "dataWrite", password = "dataWrite")
-  public void testInvalidPermissionsForFunctionInheritingDefaultPermissions() throws Exception {
+  public void testInvalidPermissionsForFunctionInheritingDefaultPermissions() {
     gfsh.executeAndAssertThat("execute function --id=" + inheritsDefaultPermissionsFunction.getId())
-        .containsOutput("not authorized for CLUSTER:READ").statusIsSuccess();
+        .containsOutput("not authorized for CLUSTER:READ").statusIsError();
   }
 }
