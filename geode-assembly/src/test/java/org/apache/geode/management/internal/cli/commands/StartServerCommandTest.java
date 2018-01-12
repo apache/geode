@@ -231,7 +231,6 @@ public class StartServerCommandTest {
 
     assertNotNull(commandLineElements);
     assertTrue(commandLineElements.length > 0);
-    assertEquals(commandLineElements.length, expectedCommandLineElements.size());
 
     for (String commandLineElement : commandLineElements) {
       expectedCommandLineElements.remove(commandLineElement);
