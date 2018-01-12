@@ -1052,4 +1052,9 @@ public abstract class AbstractDiskRegion implements DiskRegionView {
   public void incRecentlyUsed() {
     entries.incRecentlyUsed();
   }
+
+  @Override
+  public InternalCache getCache() {
+    return getDiskStore().getCache();
+  }
 }

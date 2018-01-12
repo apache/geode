@@ -265,7 +265,7 @@ public class RegionSnapshotServiceImpl<K, V> implements RegionSnapshotService<K,
             // keep the logic in the InternalDataSerializer.
             val = record.getValueObject();
           } else {
-            val = (V) CachedDeserializableFactory.create(record.getValue());
+            val = (V) CachedDeserializableFactory.create(record.getValue(), local.getCache());
           }
         }
 

@@ -4312,7 +4312,7 @@ public class LocalRegion extends AbstractRegion implements LoaderHelperFactory,
             }
 
             if (val instanceof byte[] && !isBytes) {
-              val = CachedDeserializableFactory.create((byte[]) val);
+              val = CachedDeserializableFactory.create((byte[]) val, getCache());
             }
 
             if (isTombstone) {

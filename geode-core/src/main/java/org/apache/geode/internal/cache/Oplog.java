@@ -2360,7 +2360,8 @@ public class Oplog implements CompactableOplog, Flushable {
         value = Token.INVALID;
         valueLength = 0;
       } else if (EntryBits.isSerialized(userBits)) {
-        value = DiskEntry.Helper.readSerializedValue(valueBytes, version, in, false);
+        value = DiskEntry.Helper.readSerializedValue(valueBytes, version, in, false,
+            getParent().getCache());
       } else if (EntryBits.isTombstone(userBits)) {
         value = Token.TOMBSTONE;
       } else {
@@ -2862,7 +2863,8 @@ public class Oplog implements CompactableOplog, Flushable {
         // make sure values are deserializable
         if (!PdxWriterImpl.isPdx(valueBytes)) { // fix bug 43011
           try {
-            DiskEntry.Helper.readSerializedValue(valueBytes, version, in, true);
+            DiskEntry.Helper.readSerializedValue(valueBytes, version, in, true,
+                getParent().getCache());
           } catch (SerializationException ex) {
             if (logger.isDebugEnabled()) {
               logger.debug("Could not deserialize recovered value: {}", ex.getCause(), ex);

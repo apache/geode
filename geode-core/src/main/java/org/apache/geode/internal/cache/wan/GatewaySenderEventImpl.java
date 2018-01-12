@@ -487,39 +487,6 @@ public class GatewaySenderEventImpl
   }
 
   /**
-   * Return the value as a byte[] array, if it is plain byte array, otherwise return a cache
-   * deserializable or plain object, depending on if the currently held form of the object is
-   * serialized or not.
-   *
-   * If the object is held off heap, this will copy it to the heap return the heap copy.
-   *
-   * //OFFHEAP TODO: Optimize callers by returning a reference to the off heap value
-   */
-  public Object getValue() {
-    Object rawValue = this.value;
-    if (rawValue == null) {
-      rawValue = this.substituteValue;
-    }
-    if (rawValue == null) {
-      @Unretained(OffHeapIdentifier.GATEWAY_SENDER_EVENT_IMPL_VALUE)
-      Object vo = this.valueObj;
-      if (vo instanceof StoredObject) {
-        rawValue = ((StoredObject) vo).getValueAsHeapByteArray();
-      } else {
-        rawValue = vo;
-      }
-    }
-    if (valueIsObject == 0x00) {
-      // if the value is a byte array, just return it
-      return rawValue;
-    } else if (rawValue instanceof byte[]) {
-      return CachedDeserializableFactory.create((byte[]) rawValue);
-    } else {
-      return rawValue;
-    }
-  }
-
-  /**
    * Return the currently held form of the object. May return a retained OFF_HEAP_REFERENCE.
    */
   @Retained

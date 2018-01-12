@@ -874,7 +874,8 @@ public class InitialImageOperation {
                   continue;
                 }
                 if (entry.isSerialized() && !Token.isInvalidOrRemoved(tmpValue)) {
-                  tmpValue = CachedDeserializableFactory.create((byte[]) tmpValue);
+                  tmpValue =
+                      CachedDeserializableFactory.create((byte[]) tmpValue, region.getCache());
                 }
                 try {
                   if (tag != null) {
@@ -919,7 +920,7 @@ public class InitialImageOperation {
           if (tmpValue == null) {
             tmpValue = entry.isLocalInvalid() ? Token.LOCAL_INVALID : Token.INVALID;
           } else if (entry.isSerialized()) {
-            tmpValue = CachedDeserializableFactory.create((byte[]) tmpValue);
+            tmpValue = CachedDeserializableFactory.create((byte[]) tmpValue, region.getCache());
           }
           try {
             // null IDs in a version tag are meant to mean "this member", so

@@ -1524,7 +1524,8 @@ public class TXCommitMessage extends PooledDistributionMessage
             if (isToken) {
               this.value = DataSerializer.readObject(in);
             } else {
-              this.value = CachedDeserializableFactory.create(DataSerializer.readByteArray(in));
+              this.value = CachedDeserializableFactory.create(DataSerializer.readByteArray(in),
+                  GemFireCacheImpl.getInstance());
             }
           }
         }
