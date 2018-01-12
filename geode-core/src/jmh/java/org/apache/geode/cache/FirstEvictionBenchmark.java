@@ -12,14 +12,10 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
-package org.apache.geode.cache.benchmark;
+package org.apache.geode.cache;
 
 import static org.apache.geode.distributed.ConfigurationProperties.LOG_LEVEL;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-import java.util.Random;
 import java.util.concurrent.TimeUnit;
 
 import org.openjdk.jmh.annotations.Benchmark;
@@ -36,50 +32,28 @@ import org.openjdk.jmh.annotations.State;
 import org.openjdk.jmh.annotations.TearDown;
 import org.openjdk.jmh.annotations.Warmup;
 
-import org.apache.geode.cache.Cache;
-import org.apache.geode.cache.CacheFactory;
-import org.apache.geode.cache.EvictionAction;
-import org.apache.geode.cache.EvictionAttributes;
-import org.apache.geode.cache.Region;
-import org.apache.geode.cache.RegionShortcut;
 import org.apache.geode.internal.lang.SystemPropertyHelper;
 
 @State(Scope.Thread)
 @Fork(1)
-public class EvictionWithPartiallyMarkedListsBenchmark {
+public class FirstEvictionBenchmark {
   @Param({"10000", "100000", "1000000"})
   public int maxEntries;
 
   @Param({"true", "false"})
   public String useAsync;
 
-  @Param({"95", "90", "75", "50", "25", "10"})
-  public int markedPercentage;
-
   Cache cache;
   Region<String, String> region;
-  List<String> keys = new ArrayList<>();
-  Random random = new Random();
 
   @Setup(Level.Iteration)
-  public void markEntries() {
-    Collections.shuffle(keys);
-    for (int i = 0; i < maxEntries * (markedPercentage / 100d); i++) {
-      region.get(keys.get(i));
-    }
-  }
-
-  @Setup(Level.Trial)
   public void setup() {
     System.setProperty("geode." + SystemPropertyHelper.EVICTION_SCAN_ASYNC, useAsync);
     cache = new CacheFactory().set(LOG_LEVEL, "warn").create();
     region = createRegion(cache, maxEntries);
-    for (int i = 0; i < maxEntries; i++) {
-      keys.add(Integer.toString(i));
-    }
   }
 
-  @TearDown(Level.Trial)
+  @TearDown(Level.Iteration)
   public void tearDown() {
     cache.close();
   }
@@ -90,7 +64,7 @@ public class EvictionWithPartiallyMarkedListsBenchmark {
   @BenchmarkMode(Mode.SingleShotTime)
   @OutputTimeUnit(TimeUnit.MILLISECONDS)
   public String evict() {
-    return region.put("over-limit" + Long.toString(random.nextLong()), "value");
+    return region.put("over-limit", "value");
   }
 
   private Region<String, String> createRegion(Cache cache, int maxSize) {
@@ -101,7 +75,6 @@ public class EvictionWithPartiallyMarkedListsBenchmark {
     for (int i = 0; i < maxEntries; i++) {
       region.put(Integer.toString(i), "value");
     }
-    region.put("over-limit", "value");
     return region;
   }
 }
