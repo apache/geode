@@ -99,6 +99,20 @@ public class ProtobufDriver implements Driver {
     return new ProtobufRegion(regionName, socket);
   }
 
+  @Override
+  public void close() {
+    try {
+      this.socket.close();
+    } catch (IOException e) {
+      // ignore
+    }
+  }
+
+  @Override
+  public boolean isConnected() {
+    return !this.socket.isClosed();
+  }
+
   /**
    * Queries locators for a Geode server that has Protobuf enabled.
    *
