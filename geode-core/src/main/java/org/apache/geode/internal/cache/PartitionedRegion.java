@@ -595,14 +595,6 @@ public class PartitionedRegion extends LocalRegion
     }
 
     public Object getRegion(Object key) throws PRLocallyDestroyedException {
-      if (cleared) {
-        Cache cache = GemFireCacheImpl.getInstance();
-        if (cache == null) {
-          throw new CacheClosedException();
-        } else {
-          cache.getCancelCriterion().checkCancelInProgress(null);
-        }
-      }
       Assert.assertTrue(key instanceof Integer);
 
       Object o = super.get(key);
