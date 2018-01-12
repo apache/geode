@@ -37,7 +37,7 @@ public class ClientExporterTest {
 
   @Test
   public void proxyExportFunctionGetsRequestedRegion() {
-    Cache cache = spy(new CacheFactory().create());
+    Cache cache = spy(new CacheFactory().set("locators", "").set("mcast-port", "0").create());
     cache.createRegionFactory(RegionShortcut.PARTITION).create("testRegion");
     ResultSender resultSender = mock(ResultSender.class);
     ClientExporter.ClientArgs<String, String> args = mock(ClientExporter.ClientArgs.class);
