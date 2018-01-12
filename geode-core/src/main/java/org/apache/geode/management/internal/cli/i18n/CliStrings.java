@@ -2409,6 +2409,9 @@ public class CliStrings {
   public static final String START_LOCATOR__HTTP_SERVICE_BIND_ADDRESS = "http-service-bind-address";
   public static final String START_LOCATOR__HTTP_SERVICE_BIND_ADDRESS__HELP =
       "The IP address on which the HTTP Service will be bound.  By default, the Server is bound to all local addresses.";
+  public static final String START_LOCATOR__REDIRECT_OUTPUT = "redirect-output";
+  public static final String START_LOCATOR__REDIRECT_OUTPUT__HELP =
+      "Causes the member to redirect standard out and standard error to its own log file";
 
   /* 'start manager' command */
   public static final String START_MANAGER = "start manager";
@@ -3157,6 +3160,9 @@ public class CliStrings {
       "Password to securely connect to the cluster.";
   public static final String START_SERVER__MSG__PASSWORD_MUST_BE_SPECIFIED =
       "password must be specified.";
+  public static final String START_SERVER__REDIRECT_OUTPUT = "redirect-output";
+  public static final String START_SERVER__REDIRECT_OUTPUT__HELP =
+      "Causes the member to redirect standard out and standard error to its own log file.";
 
 
 
