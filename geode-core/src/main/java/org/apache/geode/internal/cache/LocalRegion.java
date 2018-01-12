@@ -144,7 +144,6 @@ import org.apache.geode.cache.query.internal.index.IndexUtils;
 import org.apache.geode.cache.util.ObjectSizer;
 import org.apache.geode.cache.wan.GatewaySender;
 import org.apache.geode.distributed.DistributedMember;
-import org.apache.geode.distributed.DistributedSystem;
 import org.apache.geode.distributed.internal.DistributionAdvisor;
 import org.apache.geode.distributed.internal.DistributionAdvisor.Profile;
 import org.apache.geode.distributed.internal.DistributionConfig;
@@ -2261,21 +2260,6 @@ public class LocalRegion extends AbstractRegion implements LoaderHelperFactory,
     RegionEventImpl event = new RegionEventImpl(this, Operation.REGION_LOCAL_INVALIDATE,
         aCallbackArgument, false, getMyId());
     basicInvalidateRegion(event);
-  }
-
-  /**
-   * Look up the LocalRegion with the specified full path.
-   *
-   * @param system the distributed system whose cache contains the root of interest
-   * @return the LocalRegion or null if not found
-   */
-  static LocalRegion getRegionFromPath(DistributedSystem system, String path) {
-    Cache cache = GemFireCacheImpl.getInstance();
-    if (cache == null) {
-      return null;
-    } else {
-      return (LocalRegion) cache.getRegion(path);
-    }
   }
 
   /**
