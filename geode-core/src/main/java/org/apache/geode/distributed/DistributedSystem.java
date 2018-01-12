@@ -15,6 +15,7 @@
 package org.apache.geode.distributed;
 
 import static org.apache.geode.distributed.ConfigurationProperties.CONSERVE_SOCKETS;
+import static org.apache.geode.distributed.internal.InternalDistributedSystem.ALLOW_MULTIPLE_SYSTEMS;
 
 import java.io.File;
 import java.net.InetAddress;
@@ -155,6 +156,11 @@ public abstract class DistributedSystem implements StatisticsFactory {
       // fix for bug 33992
       config = new Properties();
     }
+
+    if (ALLOW_MULTIPLE_SYSTEMS) {
+      return InternalDistributedSystem.newInstance(config);
+    }
+
     synchronized (existingSystemsLock) {
       if (ClusterDistributionManager.isDedicatedAdminVM()) {
         // For a dedicated admin VM, check to see if there is already
