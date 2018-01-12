@@ -516,7 +516,7 @@ public class EntryEventImpl
     setEventFlag(EventFlags.FLAG_LOCAL_INVALID, b);
   }
 
-  void setGenerateCallbacks(boolean b) {
+  public void setGenerateCallbacks(boolean b) {
     setEventFlag(EventFlags.FLAG_GENERATE_CALLBACKS, b);
   }
 
