@@ -18,6 +18,7 @@ package org.apache.geode.management.internal.cli.commands;
 import static org.apache.geode.distributed.ConfigurationProperties.HTTP_SERVICE_BIND_ADDRESS;
 import static org.apache.geode.distributed.ConfigurationProperties.HTTP_SERVICE_PORT;
 import static org.apache.geode.distributed.ConfigurationProperties.START_DEV_REST_API;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
@@ -197,16 +198,6 @@ public class StartServerCommandTest {
     expectedCommandLineElements.add("-Dgemfire.statistic-sample-rate=1500");
     expectedCommandLineElements.add("-Dgemfire.disable-auto-reconnect=true");
     expectedCommandLineElements.addAll(Arrays.asList(jvmArguments));
-    expectedCommandLineElements.add("-XX:OnOutOfMemoryError=kill -KILL %p");
-    expectedCommandLineElements.add("-Xms".concat(heapSize));
-    expectedCommandLineElements.add("-Xmx".concat(heapSize));
-    expectedCommandLineElements.add("-XX:+UseConcMarkSweepGC");
-    expectedCommandLineElements.add("-XX:CMSInitiatingOccupancyFraction="
-        .concat(String.valueOf(StartMemberUtils.CMS_INITIAL_OCCUPANCY_FRACTION)));
-    expectedCommandLineElements.add("-Dgemfire.launcher.registerSignalHandlers=true");
-    expectedCommandLineElements.add("-Djava.awt.headless=true");
-    expectedCommandLineElements.add("-Dsun.rmi.dgc.server.gcInterval=9223372036854775806");
-    expectedCommandLineElements.add("-Dgemfire.OSProcess.DISABLE_REDIRECTION_CONFIGURATION=true");
     expectedCommandLineElements.add("org.apache.geode.distributed.ServerLauncher");
     expectedCommandLineElements.add("start");
     expectedCommandLineElements.add("fullServer");
@@ -232,11 +223,6 @@ public class StartServerCommandTest {
     assertNotNull(commandLineElements);
     assertTrue(commandLineElements.length > 0);
 
-    for (String commandLineElement : commandLineElements) {
-      expectedCommandLineElements.remove(commandLineElement);
-    }
-
-    assertTrue(String.format("Expected ([]); but was (%1$s)", expectedCommandLineElements),
-        expectedCommandLineElements.isEmpty());
+    assertThat(commandLineElements).containsAll(expectedCommandLineElements);
   }
 }
