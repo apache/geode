@@ -71,7 +71,7 @@ public abstract class HostStatSampler
 
   private static final int WAIT_FOR_SLEEP_INTERVAL = 10;
 
-  private static Thread statThread = null;
+  private Thread statThread = null;
 
   private volatile boolean stopRequested = false;
 
