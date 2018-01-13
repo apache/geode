@@ -1187,7 +1187,8 @@ public class TXCommitMessage extends PooledDistributionMessage
     }
 
     LocalRegion getRegionByPath(DistributionManager dm, String regionPath) {
-      return dm.getCache().getRegionByPath(regionPath);
+      InternalCache cache = dm.getCache();
+      return cache == null ? null : cache.getRegionByPath(regionPath);
     }
 
     /**
@@ -1359,7 +1360,7 @@ public class TXCommitMessage extends PooledDistributionMessage
 
 
     public boolean isForceFireEvent(DistributionManager dm) {
-      LocalRegion r = dm.getCache().getRegionByPath(regionPath);
+      LocalRegion r = getRegionByPath(dm, regionPath);
       if (r instanceof PartitionedRegion || (r != null && r.isUsedForPartitionedRegionBucket())) {
         return false;
       }

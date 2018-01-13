@@ -1478,7 +1478,8 @@ public class InitialImageOperation {
         logger.debug("RequestImageMessage: attempting to get region reference for {}, initLevel={}",
             regionPath, initLevel);
       }
-      lclRgn = dm.getCache().getRegionByPath(regionPath);
+      InternalCache cache = dm.getCache();
+      lclRgn = cache == null ? null : cache.getRegionByPath(regionPath);
       // if this is a targeted getInitialImage after a region was initialized,
       // make sure this is the region that was reinitialized.
       if (lclRgn != null && !lclRgn.isUsedForPartitionedRegionBucket() && targetReinitialized
@@ -2234,7 +2235,8 @@ public class InitialImageOperation {
       ReplyException rex = null;
       try {
         Assert.assertTrue(this.regionPath != null, "Region path is null.");
-        lclRgn = dm.getCache().getRegionByPath(regionPath);
+        InternalCache cache = dm.getCache();
+        lclRgn = cache == null ? null : cache.getRegionByPath(regionPath);
 
         if (lclRgn == null) {
           if (logger.isDebugEnabled()) {
