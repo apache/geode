@@ -25,6 +25,8 @@ import java.text.SimpleDateFormat;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.util.Arrays;
+import java.util.Collection;
+import java.util.Collections;
 
 import org.apache.commons.lang.StringUtils;
 import org.apache.logging.log4j.Level;
@@ -38,7 +40,6 @@ import org.apache.geode.cache.execute.Function;
 import org.apache.geode.cache.execute.FunctionContext;
 import org.apache.geode.distributed.internal.DistributionConfig;
 import org.apache.geode.internal.InternalEntity;
-import org.apache.geode.internal.cache.GemFireCacheImpl;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.cache.InternalRegionArguments;
 import org.apache.geode.internal.logging.LogService;
@@ -48,6 +49,8 @@ import org.apache.geode.management.internal.cli.util.ExportLogsCacheWriter;
 import org.apache.geode.management.internal.cli.util.LogExporter;
 import org.apache.geode.management.internal.cli.util.LogFilter;
 import org.apache.geode.management.internal.configuration.domain.Configuration;
+import org.apache.geode.management.internal.security.ResourcePermissions;
+import org.apache.geode.security.ResourcePermission;
 
 /**
  * this function extracts the logs using a LogExporter which creates a zip file, and then writes the
@@ -118,6 +121,11 @@ public class ExportLogsFunction implements Function, InternalEntity {
       logger.error(e);
       context.getResultSender().sendException(e);
     }
+  }
+
+  @Override
+  public Collection<ResourcePermission> getRequiredPermissions(String regionName) {
+    return Collections.singleton(ResourcePermissions.CLUSTER_READ);
   }
 
   public static Region createOrGetExistingExportLogsRegion(boolean isInitiatingMember,

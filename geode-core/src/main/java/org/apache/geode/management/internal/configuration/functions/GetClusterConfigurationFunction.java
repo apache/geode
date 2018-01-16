@@ -15,18 +15,10 @@
 
 package org.apache.geode.management.internal.configuration.functions;
 
-import static org.apache.geode.management.internal.security.ResourcePermissions.CLUSTER_MANAGE;
-import static org.apache.geode.management.internal.security.ResourcePermissions.CLUSTER_READ;
-import static org.apache.geode.management.internal.security.ResourcePermissions.CLUSTER_WRITE;
-import static org.apache.geode.management.internal.security.ResourcePermissions.DATA_MANAGE;
-import static org.apache.geode.management.internal.security.ResourcePermissions.DATA_READ;
-import static org.apache.geode.management.internal.security.ResourcePermissions.DATA_WRITE;
-
 import java.io.IOException;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.Set;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 import org.apache.logging.log4j.Logger;
 
@@ -37,6 +29,7 @@ import org.apache.geode.distributed.internal.InternalLocator;
 import org.apache.geode.internal.InternalEntity;
 import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.management.internal.configuration.messages.ConfigurationResponse;
+import org.apache.geode.management.internal.security.ResourcePermissions;
 import org.apache.geode.security.ResourcePermission;
 
 public class GetClusterConfigurationFunction implements Function, InternalEntity {
@@ -61,9 +54,11 @@ public class GetClusterConfigurationFunction implements Function, InternalEntity
     }
   }
 
+  /**
+   * this function will return all cluster config which will potentially leak security information.
+   * Thus we require all permissions to execute this function
+   **/
   public Collection<ResourcePermission> getRequiredPermissions(String regionName) {
-    return Stream
-        .of(DATA_READ, DATA_WRITE, DATA_MANAGE, CLUSTER_READ, CLUSTER_WRITE, CLUSTER_MANAGE)
-        .collect(Collectors.toSet());
+    return Collections.singleton(ResourcePermissions.ALL);
   }
 }

@@ -20,12 +20,15 @@ package org.apache.geode.management.internal.cli.functions;
  * @since GemFire 8.0
  */
 
+import java.util.Collection;
+import java.util.Collections;
+
 import org.apache.logging.log4j.Logger;
 
 import org.apache.geode.SystemFailure;
 import org.apache.geode.cache.CacheClosedException;
 import org.apache.geode.cache.DiskStoreFactory;
-import org.apache.geode.cache.execute.FunctionAdapter;
+import org.apache.geode.cache.execute.Function;
 import org.apache.geode.cache.execute.FunctionContext;
 import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.internal.InternalEntity;
@@ -34,8 +37,10 @@ import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.cache.xmlcache.CacheXml;
 import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.management.internal.configuration.domain.XmlEntity;
+import org.apache.geode.management.internal.security.ResourcePermissions;
+import org.apache.geode.security.ResourcePermission;
 
-public class CreateDiskStoreFunction extends FunctionAdapter implements InternalEntity {
+public class CreateDiskStoreFunction implements Function, InternalEntity {
   private static final Logger logger = LogService.getLogger();
 
   private static final long serialVersionUID = 1L;
@@ -77,6 +82,11 @@ public class CreateDiskStoreFunction extends FunctionAdapter implements Internal
       logger.error("Could not create disk store: {}", th.getMessage(), th);
       context.getResultSender().lastResult(new CliFunctionResult(memberId, th, null));
     }
+  }
+
+  @Override
+  public Collection<ResourcePermission> getRequiredPermissions(String regionName) {
+    return Collections.singleton(ResourcePermissions.CLUSTER_MANAGE_DISK);
   }
 
   @Override

@@ -14,6 +14,9 @@
  */
 package org.apache.geode.management.internal.cli.functions;
 
+import java.util.Collection;
+import java.util.Collections;
+
 import org.apache.geode.cache.DiskStore;
 import org.apache.geode.cache.execute.Function;
 import org.apache.geode.cache.execute.FunctionContext;
@@ -22,6 +25,8 @@ import org.apache.geode.internal.InternalEntity;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.cache.xmlcache.CacheXml;
 import org.apache.geode.management.internal.configuration.domain.XmlEntity;
+import org.apache.geode.management.internal.security.ResourcePermissions;
+import org.apache.geode.security.ResourcePermission;
 
 /**
  * Function used by the 'destroy disk-store' gfsh command to destroy a disk store on each member.
@@ -70,4 +75,9 @@ public class DestroyDiskStoreFunction implements Function, InternalEntity {
     context.getResultSender().lastResult(result);
   }
 
+
+  @Override
+  public Collection<ResourcePermission> getRequiredPermissions(String regionName) {
+    return Collections.singleton(ResourcePermissions.CLUSTER_MANAGE_DISK);
+  }
 }
