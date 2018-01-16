@@ -218,7 +218,7 @@ public interface DistributionManager extends ReplySender {
   /**
    * Makes note of a new administration console (admin-only member).
    *
-   * @Deprecated admin members are deprecated
+   * @deprecated admin members are deprecated
    */
   void addAdminConsole(InternalDistributedMember id);
 

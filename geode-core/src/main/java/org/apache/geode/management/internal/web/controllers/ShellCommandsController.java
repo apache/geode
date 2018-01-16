@@ -133,6 +133,12 @@ public class ShellCommandsController extends AbstractCommandsController {
     return GemFireVersion.asString();
   }
 
+  @RequestMapping(method = RequestMethod.GET, value = "/version/release")
+  @ResponseBody
+  public String releaseVersion() {
+    return GemFireVersion.getGemFireVersion();
+  }
+
 
   private ResponseEntity<InputStreamResource> getResponse(String result) {
     CommandResult commandResult = ResultBuilder.fromJson(result);

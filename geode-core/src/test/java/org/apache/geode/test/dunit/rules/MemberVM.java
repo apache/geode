@@ -103,10 +103,9 @@ public class MemberVM extends VMProvider implements Member {
        */
       vm.bounce();
     } else
-      // if using the dunit/vm dir as the preset working dir, need to cleanup dir except
-      // the locator0view* file, so that regions/indexes won't get persisted across tests
-      Arrays.stream(getWorkingDir().listFiles((dir, name) -> !name.startsWith("locator0view")))
-          .forEach(FileUtils::deleteQuietly);
+      // if using the dunit/vm dir as the preset working dir, need to cleanup dir
+      // so that regions/indexes won't get persisted across tests
+      Arrays.stream(getWorkingDir().listFiles()).forEach(FileUtils::deleteQuietly);
   }
 
   /**

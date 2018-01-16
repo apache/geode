@@ -129,6 +129,8 @@ public interface OperationInvoker {
    */
   public Set<ObjectName> queryNames(ObjectName objectName, QueryExp queryExpression);
 
+  public String getRemoteVersion();
+
   /**
    * Processes the requested command. Sends the command to the GemFire Manager for remote processing
    * (execution). NOTE refactoring return type in favor of covariant return types.
