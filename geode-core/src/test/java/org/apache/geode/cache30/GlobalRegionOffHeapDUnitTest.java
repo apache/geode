@@ -45,7 +45,7 @@ public class GlobalRegionOffHeapDUnitTest extends GlobalRegionDUnitTest {
       @Override
       public void run() {
         if (hasCache()) {
-          OffHeapTestUtil.checkOrphans();
+          OffHeapTestUtil.checkOrphans(getCache());
         }
       }
     };

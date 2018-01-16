@@ -46,7 +46,7 @@ public class OffHeapEvictionStatsDUnitTest extends EvictionStatsDUnitTest {
       @Override
       public void run() {
         if (hasCache()) {
-          OffHeapTestUtil.checkOrphans();
+          OffHeapTestUtil.checkOrphans(getCache());
         }
       }
     };

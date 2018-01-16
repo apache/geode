@@ -46,7 +46,7 @@ public class DistrbutedRegionProfileOffHeapDUnitTest extends JUnit4CacheTestCase
       @Override
       public void run() {
         if (hasCache()) {
-          OffHeapTestUtil.checkOrphans();
+          OffHeapTestUtil.checkOrphans(getCache());
         }
       }
     };
