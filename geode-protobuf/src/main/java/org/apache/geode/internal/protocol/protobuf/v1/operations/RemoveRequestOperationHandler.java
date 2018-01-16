@@ -52,6 +52,7 @@ public class RemoveRequestOperationHandler
           .of(ProtobufResponseUtilities.makeErrorResponse(SERVER_ERROR, "Region not found"));
     }
 
+    long startTime = messageExecutionContext.getStatistics().startOperation();
     try {
       Object decodedKey = serializationService.decode(request.getKey());
       region.remove(decodedKey);
@@ -62,6 +63,8 @@ public class RemoveRequestOperationHandler
       logger.error("Received Remove request with unsupported encoding: {}", ex);
       return Failure.of(ProtobufResponseUtilities.makeErrorResponse(INVALID_REQUEST,
           "Encoding not supported: " + ex.getMessage()));
+    } finally {
+      messageExecutionContext.getStatistics().endOperation(startTime);
     }
   }
 }
