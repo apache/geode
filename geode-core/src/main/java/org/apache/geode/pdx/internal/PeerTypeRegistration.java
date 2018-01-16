@@ -446,23 +446,27 @@ public class PeerTypeRegistration implements TypeRegistration {
   }
 
   public PdxType getType(int typeId) {
+    return getById(typeId);
+  }
+
+  private <T> T getById(Object typeId) {
     verifyConfiguration();
     TXStateProxy currentState = suspendTX();
     try {
-      PdxType pdxType = (PdxType) getIdToType().get(typeId);
+      T pdxType = (T) getIdToType().get(typeId);
       if (pdxType == null) {
         lock();
         try {
-          pdxType = (PdxType) getIdToType().get(typeId);
+          pdxType = (T) getIdToType().get(typeId);
         } finally {
           unlock();
         }
       }
-
       return pdxType;
     } finally {
       resumeTX(currentState);
     }
+
   }
 
   public void addRemoteType(int typeId, PdxType type) {
@@ -713,14 +717,8 @@ public class PeerTypeRegistration implements TypeRegistration {
   }
 
   public EnumInfo getEnumById(int id) {
-    verifyConfiguration();
     EnumId enumId = new EnumId(id);
-    TXStateProxy currentState = suspendTX();
-    try {
-      return (EnumInfo) getIdToType().get(enumId);
-    } finally {
-      resumeTX(currentState);
-    }
+    return getById(enumId);
   }
 
   @Override
