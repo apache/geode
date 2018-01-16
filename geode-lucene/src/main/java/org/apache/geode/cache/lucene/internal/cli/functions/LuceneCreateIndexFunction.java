@@ -36,8 +36,8 @@ import org.apache.geode.cache.lucene.internal.LuceneServiceImpl;
 import org.apache.geode.cache.lucene.internal.cli.LuceneCliStrings;
 import org.apache.geode.cache.lucene.internal.cli.LuceneIndexDetails;
 import org.apache.geode.cache.lucene.internal.cli.LuceneIndexInfo;
-import org.apache.geode.cache.lucene.internal.xml.LuceneXmlConstants;
 import org.apache.geode.cache.lucene.internal.security.LucenePermission;
+import org.apache.geode.cache.lucene.internal.xml.LuceneXmlConstants;
 import org.apache.geode.internal.InternalEntity;
 import org.apache.geode.internal.cache.xmlcache.CacheXml;
 import org.apache.geode.management.internal.cli.CliUtil;
@@ -128,7 +128,7 @@ public class LuceneCreateIndexFunction implements InternalEntity, Function {
     String regionName = StringUtils.stripStart(regionPath, "/");
     return new XmlEntity(CacheXml.REGION, "name", regionName);
   }
-  
+
   @Override
   public Collection<ResourcePermission> getRequiredPermissions(String regionName) {
     return Collections.singleton(
