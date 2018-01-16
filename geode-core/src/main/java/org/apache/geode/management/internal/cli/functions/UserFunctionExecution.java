@@ -20,6 +20,8 @@ import java.util.List;
 import java.util.Properties;
 import java.util.Set;
 
+import org.apache.shiro.subject.Subject;
+
 import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.Region;
 import org.apache.geode.cache.execute.Execution;
@@ -33,6 +35,7 @@ import org.apache.geode.internal.InternalEntity;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.security.SecurityService;
 import org.apache.geode.management.internal.cli.i18n.CliStrings;
+import org.apache.geode.security.AuthenticationRequiredException;
 
 /**
  * @since GemFire 7.0
@@ -64,9 +67,20 @@ public class UserFunctionExecution implements Function<Object[]>, InternalEntity
       Properties credentials = (Properties) args[5];
 
       SecurityService securityService = ((InternalCache) context.getCache()).getSecurityService();
+      boolean loginNeeded = false;
+      try {
+        // if the function is executed on a server with jmx-manager that user is already logged into
+        // then we do not need to do login/logout here.
+        Subject subject = securityService.getSubject();
+        loginNeeded = !subject.isAuthenticated();
+      } catch (AuthenticationRequiredException e) {
+        loginNeeded = true;
+      }
 
       try {
-        securityService.login(credentials);
+        if (loginNeeded) {
+          securityService.login(credentials);
+        }
 
         if (argumentsString != null && argumentsString.length() > 0) {
           functionArgs = argumentsString.split(",");
@@ -157,7 +171,9 @@ public class UserFunctionExecution implements Function<Object[]>, InternalEntity
         context.getResultSender().lastResult(
             new CliFunctionResult(member.getId(), false, "Exception: " + e.getMessage()));
       } finally {
-        securityService.logout();
+        if (loginNeeded) {
+          securityService.logout();
+        }
       }
 
     } catch (Exception ex) {

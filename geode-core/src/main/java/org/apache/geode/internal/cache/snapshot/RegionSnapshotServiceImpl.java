@@ -49,6 +49,7 @@ import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.distributed.internal.DistributionConfig;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.internal.DSCODE;
+import org.apache.geode.internal.InternalEntity;
 import org.apache.geode.internal.cache.CachePerfStats;
 import org.apache.geode.internal.cache.CachedDeserializable;
 import org.apache.geode.internal.cache.CachedDeserializableFactory;
@@ -501,7 +502,7 @@ public class RegionSnapshotServiceImpl<K, V> implements RegionSnapshotService<K,
     }
   }
 
-  private static class ParallelExportFunction<K, V> implements Function {
+  private static class ParallelExportFunction<K, V> implements Function, InternalEntity {
     @Override
     public boolean hasResult() {
       return true;
@@ -544,7 +545,7 @@ public class RegionSnapshotServiceImpl<K, V> implements RegionSnapshotService<K,
     }
   }
 
-  private static class ParallelImportFunction<K, V> implements Function {
+  private static class ParallelImportFunction<K, V> implements Function, InternalEntity {
     @Override
     public boolean hasResult() {
       return true;

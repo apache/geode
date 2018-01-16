@@ -15,6 +15,9 @@
 
 package org.apache.geode.connectors.jdbc.internal.cli;
 
+import java.util.HashMap;
+import java.util.Map;
+
 import org.junit.BeforeClass;
 import org.junit.ClassRule;
 import org.junit.Rule;
@@ -48,20 +51,6 @@ class InheritsDefaultPermissionsJDBCFunction extends JdbcCliFunction<String, Cli
 
 @Category({IntegrationTest.class, SecurityException.class})
 public class JDBCConnectorFunctionsSecurityTest {
-
-  private static Function alterConnectionFunction = new AlterConnectionFunction();
-  private static Function alterMappingFunction = new AlterMappingFunction();
-  private static Function createConnectionFunction = new CreateConnectionFunction();
-  private static Function createMappingFunction = new CreateMappingFunction();
-  private static Function describeConnectionFunction = new DescribeConnectionFunction();
-  private static Function describeMappingFunction = new DescribeMappingFunction();
-  private static Function destroyConnectionFunction = new DestroyConnectionFunction();
-  private static Function destroyMappingFunction = new DestroyMappingFunction();
-  private static Function listConnectionFunction = new ListConnectionFunction();
-  private static Function listMappingFunction = new ListMappingFunction();
-  private static Function inheritsDefaultPermissionsFunction =
-      new InheritsDefaultPermissionsJDBCFunction();
-
   @ClassRule
   public static ServerStarterRule server = new ServerStarterRule().withJMXManager()
       .withSecurityManager(SimpleSecurityManager.class).withAutoStart();
@@ -70,81 +59,35 @@ public class JDBCConnectorFunctionsSecurityTest {
   public GfshCommandRule gfsh =
       new GfshCommandRule(server::getJmxPort, GfshCommandRule.PortType.jmxManager);
 
+  private static Map<Function, String> functionStringMap = new HashMap<>();
+
   @BeforeClass
   public static void setupClass() {
-    FunctionService.registerFunction(alterConnectionFunction);
-    FunctionService.registerFunction(alterMappingFunction);
-    FunctionService.registerFunction(createConnectionFunction);
-    FunctionService.registerFunction(createMappingFunction);
-    FunctionService.registerFunction(describeConnectionFunction);
-    FunctionService.registerFunction(describeMappingFunction);
-    FunctionService.registerFunction(destroyConnectionFunction);
-    FunctionService.registerFunction(destroyMappingFunction);
-    FunctionService.registerFunction(listConnectionFunction);
-    FunctionService.registerFunction(listMappingFunction);
-    FunctionService.registerFunction(inheritsDefaultPermissionsFunction);
+    functionStringMap.put(new AlterConnectionFunction(), "CLUSTER:MANAGE");
+    functionStringMap.put(new AlterMappingFunction(), "CLUSTER:MANAGE");
+    functionStringMap.put(new CreateConnectionFunction(), "CLUSTER:MANAGE");
+    functionStringMap.put(new CreateMappingFunction(), "CLUSTER:MANAGE");
+    functionStringMap.put(new DescribeConnectionFunction(), "CLUSTER:READ");
+    functionStringMap.put(new DescribeMappingFunction(), "CLUSTER:READ");
+    functionStringMap.put(new DestroyConnectionFunction(), "CLUSTER:MANAGE");
+    functionStringMap.put(new DestroyMappingFunction(), "CLUSTER:MANAGE");
+    functionStringMap.put(new ListConnectionFunction(), "CLUSTER:READ");
+    functionStringMap.put(new ListMappingFunction(), "CLUSTER:READ");
+    functionStringMap.put(new InheritsDefaultPermissionsJDBCFunction(), "CLUSTER:READ");
+    functionStringMap.keySet().forEach(FunctionService::registerFunction);
   }
 
-  @Test
-  @ConnectionConfiguration(user = "dataWrite", password = "dataWrite")
-  public void testInvalidPermissionsForAlterConnectionFunction() {
-    gfsh.executeAndAssertThat("execute function --id=" + alterConnectionFunction.getId())
-        .containsOutput("not authorized for CLUSTER:MANAGE").statusIsError();
-  }
 
   @Test
-  @ConnectionConfiguration(user = "dataWrite", password = "dataWrite")
-  public void testInvalidPermissionsForAlterMappingFunction() {
-    gfsh.executeAndAssertThat("execute function --id=" + alterMappingFunction.getId())
-        .containsOutput("not authorized for CLUSTER:MANAGE").statusIsError();
-  }
-
-  @Test
-  @ConnectionConfiguration(user = "dataWrite", password = "dataWrite")
-  public void testInvalidPermissionsForCreateConnectionFunction() {
-    gfsh.executeAndAssertThat("execute function --id=" + createConnectionFunction.getId())
-        .containsOutput("not authorized for CLUSTER:MANAGE").statusIsError();
-  }
-
-  @Test
-  @ConnectionConfiguration(user = "dataWrite", password = "dataWrite")
-  public void testInvalidPermissionsForCreateMappingFunction() {
-    gfsh.executeAndAssertThat("execute function --id=" + createMappingFunction.getId())
-        .containsOutput("not authorized for CLUSTER:MANAGE").statusIsError();
-  }
-
-  @Test
-  @ConnectionConfiguration(user = "dataWrite", password = "dataWrite")
-  public void testInvalidPermissionsForDescribeConnectionFunction() {
-    gfsh.executeAndAssertThat("execute function --id=" + describeConnectionFunction.getId())
-        .containsOutput("not authorized for CLUSTER:READ").statusIsError();
-  }
-
-  @Test
-  @ConnectionConfiguration(user = "dataWrite", password = "dataWrite")
-  public void testInvalidPermissionsForDescribeMappingFunction() {
-    gfsh.executeAndAssertThat("execute function --id=" + describeMappingFunction.getId())
-        .containsOutput("not authorized for CLUSTER:READ").statusIsError();
-  }
-
-  @Test
-  @ConnectionConfiguration(user = "dataWrite", password = "dataWrite")
-  public void testInvalidPermissionsForDestroyConnectionFunction() {
-    gfsh.executeAndAssertThat("execute function --id=" + destroyConnectionFunction.getId())
-        .containsOutput("not authorized for CLUSTER:MANAGE").statusIsError();
-  }
-
-  @Test
-  @ConnectionConfiguration(user = "dataWrite", password = "dataWrite")
-  public void testInvalidPermissionsForDestroyMappingFunction() {
-    gfsh.executeAndAssertThat("execute function --id=" + destroyMappingFunction.getId())
-        .containsOutput("not authorized for CLUSTER:MANAGE").statusIsError();
-  }
-
-  @Test
-  @ConnectionConfiguration(user = "dataWrite", password = "dataWrite")
-  public void testInvalidPermissionsForFunctionInheritingDefaultPermissions() {
-    gfsh.executeAndAssertThat("execute function --id=" + inheritsDefaultPermissionsFunction.getId())
-        .containsOutput("not authorized for CLUSTER:READ").statusIsError();
+  @ConnectionConfiguration(user = "user", password = "user")
+  public void functionRequireExpectedPermission() throws Exception {
+    functionStringMap.entrySet().stream().forEach(entry -> {
+      Function function = entry.getKey();
+      String permission = entry.getValue();
+      gfsh.executeAndAssertThat("execute function --id=" + function.getId())
+          .tableHasRowCount("Function Execution Result", 1)
+          .tableHasColumnWithValuesContaining("Function Execution Result", permission)
+          .statusIsError();
+    });
   }
 }

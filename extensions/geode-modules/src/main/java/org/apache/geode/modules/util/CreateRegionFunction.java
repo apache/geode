@@ -33,7 +33,6 @@ import org.apache.geode.cache.Declarable;
 import org.apache.geode.cache.Region;
 import org.apache.geode.cache.RegionAttributes;
 import org.apache.geode.cache.Scope;
-import org.apache.geode.cache.client.ClientCache;
 import org.apache.geode.cache.execute.Function;
 import org.apache.geode.cache.execute.FunctionContext;
 import org.apache.geode.cache.partition.PartitionRegionHelper;
@@ -64,17 +63,8 @@ public class CreateRegionFunction implements Function, Declarable, DataSerializa
       "__regionConfigurationMetadata";
 
   public CreateRegionFunction() {
-    this(CacheFactory.getAnyInstance());
-  }
-
-  public CreateRegionFunction(Cache cache) {
-    this.cache = cache;
+    this.cache = CacheFactory.getAnyInstance();
     this.regionConfigurationsRegion = createRegionConfigurationMetadataRegion();
-  }
-
-  public CreateRegionFunction(ClientCache cache) {
-    this.cache = null;
-    this.regionConfigurationsRegion = null;
   }
 
   public void execute(FunctionContext context) {
