@@ -38,18 +38,9 @@ message EncodedValue {
         float floatResult = 7;
         bytes binaryResult = 8;
         string stringResult = 9;
-        CustomEncodedValue customEncodedValue = 50;
+
+        string jsonObjectResult = 10;
     }
-}
-
-message CustomEncodedValue {
-    EncodingType encodingType = 1;
-    bytes value = 2;
-}
-
-enum EncodingType {
-    INVALID = 0;
-    JSON = 10;
 }
 
 message Region {
@@ -68,11 +59,23 @@ message Server {
 }
 
 message Error {
-    int32 errorCode = 1;
+    ErrorCode errorCode = 1;
     string message = 2;
 }
 
 message KeyedError {
     EncodedValue key = 1;
     Error error = 2;
+}
+
+enum ErrorCode {
+    INVALID_ERROR_CODE = 0;
+    AUTHENTICATION_REQUIRED = 10;
+    AUTHENTICATION_FAILED = 11;
+    ALREADY_AUTHENTICATED = 12;
+    AUTHENTICATION_NOT_SUPPORTED = 13;
+    AUTHORIZATION_FAILED = 20;
+    INVALID_REQUEST = 50;
+    SERVER_ERROR = 100;
+    NO_AVAILABLE_SERVER = 101;
 }

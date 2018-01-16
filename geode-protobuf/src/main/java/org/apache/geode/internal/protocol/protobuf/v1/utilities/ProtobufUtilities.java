@@ -14,20 +14,15 @@
  */
 package org.apache.geode.internal.protocol.protobuf.v1.utilities;
 
-import com.google.protobuf.ByteString;
-
 import org.apache.geode.annotations.Experimental;
 import org.apache.geode.cache.Region;
 import org.apache.geode.cache.RegionAttributes;
+import org.apache.geode.internal.protocol.ProtocolErrorCode;
 import org.apache.geode.internal.protocol.protobuf.v1.BasicTypes;
 import org.apache.geode.internal.protocol.protobuf.v1.ClientProtocol;
-import org.apache.geode.internal.protocol.protobuf.v1.EncodingTypeTranslator;
 import org.apache.geode.internal.protocol.protobuf.v1.ProtobufSerializationService;
 import org.apache.geode.internal.protocol.protobuf.v1.RegionAPI;
-import org.apache.geode.internal.protocol.protobuf.v1.utilities.exception.UnknownProtobufPrimitiveType;
-import org.apache.geode.internal.protocol.serialization.SerializationService;
-import org.apache.geode.internal.protocol.serialization.exception.UnsupportedEncodingTypeException;
-import org.apache.geode.internal.protocol.serialization.registry.exception.CodecNotRegisteredForTypeException;
+import org.apache.geode.internal.protocol.serialization.exception.EncodingException;
 
 /**
  * This class contains helper functions for assistance in creating protobuf objects. This class is
@@ -40,36 +35,6 @@ import org.apache.geode.internal.protocol.serialization.registry.exception.Codec
  */
 @Experimental
 public abstract class ProtobufUtilities {
-  /**
-   * Creates a object containing the type and value encoding of a piece of data
-   *
-   * @param serializationService - object which knows how to encode objects for the protobuf
-   *        protocol {@link ProtobufSerializationService}
-   * @param unencodedValue - the value object which is to be encoded
-   * @return a protobuf EncodedValue object
-   * @throws UnsupportedEncodingTypeException - The object passed doesn't have a corresponding
-   *         SerializationType
-   * @throws CodecNotRegisteredForTypeException - There isn't a protobuf codec for the
-   *         SerializationType of the passed object
-   */
-  public static BasicTypes.EncodedValue createEncodedValue(
-      SerializationService serializationService, Object unencodedValue)
-      throws UnsupportedEncodingTypeException, CodecNotRegisteredForTypeException {
-
-    try {
-      return createPrimitiveEncodedValue(unencodedValue);
-    } catch (UnknownProtobufPrimitiveType e) {
-      BasicTypes.EncodingType resultEncodingType =
-          EncodingTypeTranslator.getEncodingTypeForObject(unencodedValue);
-      byte[] encodedValue = serializationService.encode(resultEncodingType, unencodedValue);
-      BasicTypes.CustomEncodedValue.Builder customEncodedValueBuilder =
-          BasicTypes.CustomEncodedValue.newBuilder().setEncodingType(resultEncodingType)
-              .setValue(ByteString.copyFrom(encodedValue));
-      return BasicTypes.EncodedValue.newBuilder().setCustomEncodedValue(customEncodedValueBuilder)
-          .build();
-    }
-  }
-
   /**
    * Creates a protobuf key,value pair from an encoded key and value
    *
@@ -93,20 +58,17 @@ public abstract class ProtobufUtilities {
    * @param unencodedKey - the unencoded key for the entry
    * @param unencodedValue - the unencoded value for the entry
    * @return a protobuf Entry containing the encoded key and value
-   * @throws UnsupportedEncodingTypeException - The key or value passed doesn't have a corresponding
+   * @throws EncodingException - The key or value passed doesn't have a corresponding
    *         SerializationType
-   * @throws CodecNotRegisteredForTypeException - There isn't a protobuf codec for the
-   *         SerializationType of the passed key or value
    */
-  public static BasicTypes.Entry createEntry(SerializationService serializationService,
-      Object unencodedKey, Object unencodedValue)
-      throws UnsupportedEncodingTypeException, CodecNotRegisteredForTypeException {
+  public static BasicTypes.Entry createEntry(ProtobufSerializationService serializationService,
+      Object unencodedKey, Object unencodedValue) throws EncodingException {
     if (unencodedValue == null) {
-      return BasicTypes.Entry.newBuilder()
-          .setKey(createEncodedValue(serializationService, unencodedKey)).build();
+      return BasicTypes.Entry.newBuilder().setKey(serializationService.encode(unencodedKey))
+          .build();
     }
-    return createEntry(createEncodedValue(serializationService, unencodedKey),
-        createEncodedValue(serializationService, unencodedValue));
+    return createEntry(serializationService.encode(unencodedKey),
+        serializationService.encode(unencodedValue));
   }
 
   /**
@@ -141,33 +103,13 @@ public abstract class ProtobufUtilities {
   }
 
   /**
-   * This will return the object encoded in a protobuf EncodedValue
+   * This will convert a ProtocolErrorCode to a BasicTypes.ErrorCode for protobuf
    *
-   * @param serializationService - object which knows how to encode objects for the protobuf
-   *        protocol {@link ProtobufSerializationService}
-   * @param encodedValue - The value to be decoded
-   * @return the object encoded in the passed encodedValue
-   * @throws UnsupportedEncodingTypeException - There isn't a SerializationType matching the
-   *         encodedValues type
-   * @throws CodecNotRegisteredForTypeException - There isn't a protobuf codec for the
-   *         SerializationType matching the encodedValues type
+   * @param errorCode - incoming ProtocolErrorCode
+   * @return matching protobuf error code
    */
-  public static Object decodeValue(SerializationService serializationService,
-      BasicTypes.EncodedValue encodedValue)
-      throws UnsupportedEncodingTypeException, CodecNotRegisteredForTypeException {
-
-    if (encodedValue.getValueCase() == BasicTypes.EncodedValue.ValueCase.CUSTOMENCODEDVALUE) {
-      BasicTypes.CustomEncodedValue customEncodedValue = encodedValue.getCustomEncodedValue();
-      return serializationService.decode(customEncodedValue.getEncodingType(),
-          customEncodedValue.getValue().toByteArray());
-    } else {
-      try {
-        return getPrimitiveValueFromEncodedValue(encodedValue);
-      } catch (UnknownProtobufPrimitiveType unknownProtobufPrimitiveType) {
-        throw new UnsupportedEncodingTypeException("Unknown primitive type encoding",
-            unknownProtobufPrimitiveType);
-      }
-    }
+  public static BasicTypes.ErrorCode getProtobufErrorCode(ProtocolErrorCode errorCode) {
+    return BasicTypes.ErrorCode.forNumber(errorCode.codeValue);
   }
 
   /**
@@ -196,87 +138,5 @@ public abstract class ProtobufUtilities {
 
   public static ClientProtocol.Request.Builder createProtobufRequestBuilder() {
     return ClientProtocol.Request.newBuilder();
-  }
-
-  /**
-   * This will create an EncodedValue message for a primitive type.
-   *
-   * @param valueToEncode this represents the potential primitive value that needs to be encoded in
-   *        an EncodedValue
-   * @return EncodedValue message with the correct primitive value populated
-   * @throws UnknownProtobufPrimitiveType
-   */
-  static BasicTypes.EncodedValue createPrimitiveEncodedValue(Object valueToEncode)
-      throws UnknownProtobufPrimitiveType {
-    ProtobufPrimitiveTypes protobufPrimitiveTypes =
-        ProtobufPrimitiveTypes.valueOf(valueToEncode.getClass());
-    BasicTypes.EncodedValue.Builder builder = BasicTypes.EncodedValue.newBuilder();
-    switch (protobufPrimitiveTypes) {
-      case INT: {
-        builder.setIntResult((Integer) valueToEncode);
-        break;
-      }
-      case LONG: {
-        builder.setLongResult((Long) valueToEncode);
-        break;
-      }
-      case SHORT: {
-        builder.setShortResult((Short) valueToEncode);
-        break;
-      }
-      case BYTE: {
-        builder.setByteResult((Byte) valueToEncode);
-        break;
-      }
-      case DOUBLE: {
-        builder.setDoubleResult((Double) valueToEncode);
-        break;
-      }
-      case FLOAT: {
-        builder.setFloatResult((Float) valueToEncode);
-        break;
-      }
-      case BINARY: {
-        builder.setBinaryResult(ByteString.copyFrom((byte[]) valueToEncode));
-        break;
-      }
-      case BOOLEAN: {
-        builder.setBooleanResult((Boolean) valueToEncode);
-        break;
-      }
-      case STRING: {
-        builder.setStringResult((String) valueToEncode);
-        break;
-      }
-
-    }
-    return builder.build();
-  }
-
-  static Object getPrimitiveValueFromEncodedValue(BasicTypes.EncodedValue encodedValue)
-      throws UnknownProtobufPrimitiveType {
-    switch (encodedValue.getValueCase()) {
-      case BINARYRESULT:
-        return encodedValue.getBinaryResult().toByteArray();
-      case BOOLEANRESULT:
-        return encodedValue.getBooleanResult();
-      case BYTERESULT:
-        return (byte) encodedValue.getByteResult();
-      case DOUBLERESULT:
-        return encodedValue.getDoubleResult();
-      case FLOATRESULT:
-        return encodedValue.getFloatResult();
-      case INTRESULT:
-        return encodedValue.getIntResult();
-      case LONGRESULT:
-        return encodedValue.getLongResult();
-      case SHORTRESULT:
-        return (short) encodedValue.getShortResult();
-      case STRINGRESULT:
-        return encodedValue.getStringResult();
-      default:
-        throw new UnknownProtobufPrimitiveType(
-            "Unknown primitive type for: " + encodedValue.getValueCase());
-    }
   }
 }

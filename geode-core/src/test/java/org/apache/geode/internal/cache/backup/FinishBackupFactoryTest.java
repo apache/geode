@@ -14,8 +14,9 @@
  */
 package org.apache.geode.internal.cache.backup;
 
-import static org.assertj.core.api.Assertions.*;
-import static org.mockito.Mockito.*;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
 import java.io.File;
 import java.util.HashSet;
@@ -26,8 +27,7 @@ import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
 import org.apache.geode.CancelCriterion;
-import org.apache.geode.cache.persistence.PersistentID;
-import org.apache.geode.distributed.internal.DM;
+import org.apache.geode.distributed.internal.DistributionManager;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
 import org.apache.geode.internal.cache.InternalCache;
@@ -39,7 +39,7 @@ public class FinishBackupFactoryTest {
   private FinishBackupFactory finishBackupFactory;
 
   private BackupResultCollector resultCollector;
-  private DM dm;
+  private DistributionManager dm;
   private InternalDistributedMember sender;
   private Set<InternalDistributedMember> recipients;
   private InternalDistributedMember member;
@@ -48,7 +48,7 @@ public class FinishBackupFactoryTest {
   @Before
   public void setUp() throws Exception {
     resultCollector = mock(BackupResultCollector.class);
-    dm = mock(DM.class);
+    dm = mock(DistributionManager.class);
     sender = mock(InternalDistributedMember.class);
     member = mock(InternalDistributedMember.class);
     cache = mock(InternalCache.class);

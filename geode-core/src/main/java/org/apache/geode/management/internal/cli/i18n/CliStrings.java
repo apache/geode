@@ -213,7 +213,7 @@ public class CliStrings {
   public static final String SHARED_CONFIGURATION_NO_LOCATORS_WITH_SHARED_CONFIGURATION =
       "No locators with cluster configuration enabled.";
   public static final String SHARED_CONFIGURATION_FAILED_TO_PERSIST_COMMAND_CHANGES =
-      "Failed to persist the configuration changes due to this command, Revert the command to maintain consistency.\nPlease use \"status cluster-config-service\" to determine whether Cluster configuration service is RUNNING.";
+      "This change is not persisted in the cluster configuration, either because the cluster configuration service is not running or the command is operating on targeted members.";
   /* Other Constants */
   public static final String GFSH__MSG__NO_LONGER_CONNECTED_TO_0 = "No longer connected to {0}.";
   public static final String GFSHPARSER__MSG__REQUIRED_ARGUMENT_0 = "Required Argument: \"{0}\"";
@@ -734,11 +734,11 @@ public class CliStrings {
       "Name/Id of the member in which the index will be created.";
   public static final String CREATE_INDEX__TYPE = "type";
   public static final String CREATE_INDEX__TYPE__HELP =
-      "Type of the index. Valid values are: range, key and hash.";
+      "Type of the index. Valid values are: range and key. Deprecated : hash has been deprecated since Apache Geode 1.4.0";
   public static final String CREATE_INDEX__GROUP__HELP =
       "Group of members in which the index will be created.";
   public static final String CREATE_INDEX__INVALID__INDEX__TYPE__MESSAGE =
-      "Invalid index type,value must be one of the following: range, key or hash.";
+      "Invalid index type,value must be one of the following: range, key and hash. Deprecated : hash has been deprecated since Apache Geode 1.4.0";
   public static final String CREATE_INDEX__SUCCESS__MSG =
       "Index successfully created with following details";
   public static final String CREATE_INDEX__FAILURE__MSG =
@@ -866,10 +866,10 @@ public class CliStrings {
       "The eviction action to apply. Must be either 'local-destroy' or 'overflow-to-disk'";
   public static final String CREATE_REGION__EVICTION_MAX_MEMORY = "eviction-max-memory";
   public static final String CREATE_REGION__EVICTION_MAX_MEMORY__HELP =
-      "Activates LRU eviction based on the region's memory usage specified by this value.";
+      "Activates LRU eviction based on the region's memory usage specified by this value (in megabytes).";
   public static final String CREATE_REGION__EVICTION_ENTRY_COUNT = "eviction-entry-count";
   public static final String CREATE_REGION__EVICTION_ENTRY_COUNT__HELP =
-      "Activates LRU eviction based on the region's entry count specified by this value (in megabytes).";
+      "Activates LRU eviction based on the region's entry count specified by this value.";
   public static final String CREATE_REGION__EVICTION_OBJECT_SIZER = "eviction-object-sizer";
   public static final String CREATE_REGION__EVICTION_OBJECT_SIZER__HELP =
       "A custom class which implements ObjectSizer in order to perform max memory eviction.";
@@ -2409,6 +2409,9 @@ public class CliStrings {
   public static final String START_LOCATOR__HTTP_SERVICE_BIND_ADDRESS = "http-service-bind-address";
   public static final String START_LOCATOR__HTTP_SERVICE_BIND_ADDRESS__HELP =
       "The IP address on which the HTTP Service will be bound.  By default, the Server is bound to all local addresses.";
+  public static final String START_LOCATOR__REDIRECT_OUTPUT = "redirect-output";
+  public static final String START_LOCATOR__REDIRECT_OUTPUT__HELP =
+      "Causes the member to redirect standard out and standard error to its own log file";
 
   /* 'start manager' command */
   public static final String START_MANAGER = "start manager";
@@ -3157,6 +3160,9 @@ public class CliStrings {
       "Password to securely connect to the cluster.";
   public static final String START_SERVER__MSG__PASSWORD_MUST_BE_SPECIFIED =
       "password must be specified.";
+  public static final String START_SERVER__REDIRECT_OUTPUT = "redirect-output";
+  public static final String START_SERVER__REDIRECT_OUTPUT__HELP =
+      "Causes the member to redirect standard out and standard error to its own log file.";
 
 
 

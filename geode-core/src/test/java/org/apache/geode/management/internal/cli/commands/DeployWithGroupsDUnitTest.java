@@ -29,7 +29,7 @@ import org.junit.experimental.categories.Category;
 
 import org.apache.geode.internal.ClassPathLoader;
 import org.apache.geode.test.compiler.ClassBuilder;
-import org.apache.geode.test.dunit.rules.LocatorServerStartupRule;
+import org.apache.geode.test.dunit.rules.ClusterStartupRule;
 import org.apache.geode.test.dunit.rules.MemberVM;
 import org.apache.geode.test.junit.categories.DistributedTest;
 import org.apache.geode.test.junit.rules.GfshCommandRule;
@@ -70,7 +70,7 @@ public class DeployWithGroupsDUnitTest implements Serializable {
   public SerializableTemporaryFolder temporaryFolder = new SerializableTemporaryFolder();
 
   @Rule
-  public LocatorServerStartupRule lsRule = new LocatorServerStartupRule();
+  public ClusterStartupRule lsRule = new ClusterStartupRule();
 
   @Rule
   public transient GfshCommandRule gfshConnector = new GfshCommandRule();
@@ -253,12 +253,12 @@ public class DeployWithGroupsDUnitTest implements Serializable {
   }
 
   private void assertThatCanLoad(String jarName, String className) throws ClassNotFoundException {
-    assertThat(ClassPathLoader.getLatest().getJarDeployer().findDeployedJar(jarName)).isNotNull();
+    assertThat(ClassPathLoader.getLatest().getJarDeployer().getDeployedJar(jarName)).isNotNull();
     assertThat(ClassPathLoader.getLatest().forName(className)).isNotNull();
   }
 
   private void assertThatCannotLoad(String jarName, String className) {
-    assertThat(ClassPathLoader.getLatest().getJarDeployer().findDeployedJar(jarName)).isNull();
+    assertThat(ClassPathLoader.getLatest().getJarDeployer().getDeployedJar(jarName)).isNull();
     assertThatThrownBy(() -> ClassPathLoader.getLatest().forName(className))
         .isExactlyInstanceOf(ClassNotFoundException.class);
   }

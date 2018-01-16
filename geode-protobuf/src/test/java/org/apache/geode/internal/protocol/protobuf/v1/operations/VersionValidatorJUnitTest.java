@@ -20,7 +20,7 @@ import static org.junit.Assert.assertTrue;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
-import org.apache.geode.internal.protocol.protobuf.Handshake;
+import org.apache.geode.internal.protocol.protobuf.ProtocolVersion;
 import org.apache.geode.test.junit.categories.UnitTest;
 
 @Category(UnitTest.class)
@@ -32,12 +32,12 @@ public class VersionValidatorJUnitTest {
 
   @Test
   public void testInvalidVersions() throws Exception {
-    assertFalse(
-        validator.isValid(MAJOR_VERSION, Handshake.MinorVersions.INVALID_MINOR_VERSION_VALUE));
-    assertFalse(
-        validator.isValid(Handshake.MajorVersions.INVALID_MAJOR_VERSION_VALUE, MINOR_VERSION));
-    assertFalse(validator.isValid(Handshake.MajorVersions.INVALID_MAJOR_VERSION_VALUE,
-        Handshake.MinorVersions.INVALID_MINOR_VERSION_VALUE));
+    assertFalse(validator.isValid(MAJOR_VERSION,
+        ProtocolVersion.MinorVersions.INVALID_MINOR_VERSION_VALUE));
+    assertFalse(validator.isValid(ProtocolVersion.MajorVersions.INVALID_MAJOR_VERSION_VALUE,
+        MINOR_VERSION));
+    assertFalse(validator.isValid(ProtocolVersion.MajorVersions.INVALID_MAJOR_VERSION_VALUE,
+        ProtocolVersion.MinorVersions.INVALID_MINOR_VERSION_VALUE));
   }
 
   @Test

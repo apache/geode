@@ -14,9 +14,11 @@
  */
 package org.apache.geode.cache.query;
 
-import java.util.*;
+import java.util.Collection;
+import java.util.List;
 
-import org.apache.geode.cache.*;
+import org.apache.geode.cache.Cache;
+import org.apache.geode.cache.Region;
 import org.apache.geode.cache.query.internal.Undefined;
 
 /**
@@ -76,7 +78,11 @@ public interface QueryService {
    * @throws UnsupportedOperationException If Index is being created on a region which does not
    *         support indexes.
    *
+   * @deprecated Due to the overhead caused by rehashing while expanding the backing array, hash
+   *             index has been deprecated since Apache Geode 1.4.0. Use method
+   *             {@link QueryService#createIndex(String, String, String)} instead.
    */
+  @Deprecated
   public Index createHashIndex(String indexName, String indexedExpression, String regionPath)
       throws IndexInvalidException, IndexNameConflictException, IndexExistsException,
       RegionNotFoundException, UnsupportedOperationException;
@@ -120,7 +126,11 @@ public interface QueryService {
    *
    * @throws RegionNotFoundException if the region referred to in the fromClause doesn't exist
    *
+   * @deprecated Due to the overhead caused by rehashing while expanding the backing array, hash
+   *             index has been deprecated since Apache Geode 1.4.0. Use method
+   *             {@link QueryService#defineIndex(String, String, String)} instead.
    */
+  @Deprecated
   public void defineHashIndex(String indexName, String indexedExpression, String regionPath)
       throws RegionNotFoundException;
 
@@ -146,7 +156,12 @@ public interface QueryService {
    *        mktValue field: indexExpression: "p.mktValue" regionPath: "/portfolio p"
    *
    * @throws RegionNotFoundException if the region referred to in the fromClause doesn't exist
+   *
+   * @deprecated Due to the overhead caused by rehashing while expanding the backing array, hash
+   *             index has been deprecated since Apache Geode 1.4.0. Use method
+   *             {@link QueryService#defineIndex(String, String, String, String)} instead.
    */
+  @Deprecated
   public void defineHashIndex(String indexName, String indexedExpression, String regionPath,
       String imports) throws RegionNotFoundException;
 
@@ -232,7 +247,12 @@ public interface QueryService {
    * @throws RegionNotFoundException if the region referred to in the fromClause doesn't exist
    * @throws UnsupportedOperationException If Index is being created on a region which overflows to
    *         disk
+   *
+   * @deprecated Due to the overhead caused by rehashing while expanding the backing array, hash
+   *             index has been deprecated since Apache Geode 1.4.0. Use method
+   *             {@link QueryService#createIndex(String, String, String, String)} instead
    */
+  @Deprecated
   public Index createHashIndex(String indexName, String indexedExpression, String regionPath,
       String imports) throws IndexInvalidException, IndexNameConflictException,
       IndexExistsException, RegionNotFoundException, UnsupportedOperationException;

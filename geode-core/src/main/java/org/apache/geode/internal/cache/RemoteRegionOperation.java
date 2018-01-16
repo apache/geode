@@ -23,7 +23,7 @@ import java.util.Set;
 import org.apache.logging.log4j.Logger;
 
 import org.apache.geode.cache.CacheException;
-import org.apache.geode.distributed.internal.DM;
+import org.apache.geode.distributed.internal.ClusterDistributionManager;
 import org.apache.geode.distributed.internal.DistributionManager;
 import org.apache.geode.distributed.internal.DistributionStats;
 import org.apache.geode.distributed.internal.ReplyMessage;
@@ -87,7 +87,7 @@ public class RemoteRegionOperation extends RemoteOperationMessageWithDirectReply
   }
 
   @Override
-  protected boolean operateOnRegion(DistributionManager dm, LocalRegion r, long startTime)
+  protected boolean operateOnRegion(ClusterDistributionManager dm, LocalRegion r, long startTime)
       throws CacheException, RemoteOperationException {
     if (logger.isTraceEnabled(LogMarker.DM)) {
       logger.trace(LogMarker.DM, "DistributedRemoteRegionOperation operateOnRegion: {}",
@@ -161,7 +161,7 @@ public class RemoteRegionOperation extends RemoteOperationMessageWithDirectReply
      * @param dm the distribution manager that is processing the message.
      */
     @Override
-    public void process(final DM dm, ReplyProcessor21 processor) {
+    public void process(final DistributionManager dm, ReplyProcessor21 processor) {
       final long startTime = getTimestamp();
 
       if (processor == null) {

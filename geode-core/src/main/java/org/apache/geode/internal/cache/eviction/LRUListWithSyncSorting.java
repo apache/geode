@@ -88,6 +88,7 @@ public class LRUListWithSyncSorting extends AbstractEvictionList {
           logger.trace(LogMarker.LRU_CLOCK, LocalizedMessage
               .create(LocalizedStrings.NewLRUClockHand_SKIPPING_RECENTLY_USED_ENTRY, aNode));
         }
+        aNode.unsetRecentlyUsed();
         appendEntry(aNode);
         continue; // keep looking
       } else {

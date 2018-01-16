@@ -19,7 +19,7 @@ import java.io.*;
 import java.util.Set;
 
 import org.apache.geode.DataSerializer;
-import org.apache.geode.distributed.internal.DistributionManager;
+import org.apache.geode.distributed.internal.ClusterDistributionManager;
 import org.apache.geode.distributed.internal.MessageWithReply;
 import org.apache.geode.distributed.internal.PooledDistributionMessage;
 import org.apache.geode.distributed.internal.ReplyMessage;
@@ -70,7 +70,7 @@ public class TXLockUpdateParticipantsMessage extends PooledDistributionMessage
   }
 
   @Override
-  public void process(DistributionManager dm) {
+  public void process(ClusterDistributionManager dm) {
     // dm.getLogger().info("DEBUG Processing " + this);
     DLockService svc = DLockService.getInternalServiceNamed(this.serviceName);
     if (svc != null) {

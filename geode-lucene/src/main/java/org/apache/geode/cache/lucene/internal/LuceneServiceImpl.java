@@ -32,7 +32,6 @@ import org.apache.lucene.analysis.Analyzer;
 import org.apache.lucene.analysis.miscellaneous.PerFieldAnalyzerWrapper;
 import org.apache.lucene.analysis.standard.StandardAnalyzer;
 
-import org.apache.geode.cache.AttributesFactory;
 import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.EvictionAlgorithm;
 import org.apache.geode.cache.EvictionAttributes;
@@ -62,11 +61,11 @@ import org.apache.geode.cache.lucene.internal.management.ManagementIndexListener
 import org.apache.geode.cache.lucene.internal.results.LuceneGetPageFunction;
 import org.apache.geode.cache.lucene.internal.results.PageResults;
 import org.apache.geode.cache.lucene.internal.xml.LuceneServiceXmlGenerator;
+import org.apache.geode.distributed.internal.DistributionConfig;
 import org.apache.geode.internal.DSFIDFactory;
 import org.apache.geode.internal.DataSerializableFixedID;
 import org.apache.geode.internal.cache.CacheService;
 import org.apache.geode.internal.cache.InternalCache;
-import org.apache.geode.internal.cache.InternalRegion;
 import org.apache.geode.internal.cache.PartitionedRegion;
 import org.apache.geode.internal.cache.RegionListener;
 import org.apache.geode.internal.cache.extension.Extensible;
@@ -89,6 +88,8 @@ public class LuceneServiceImpl implements InternalLuceneService {
   private final HashMap<String, LuceneIndex> indexMap = new HashMap<String, LuceneIndex>();
   private final HashMap<String, LuceneIndexCreationProfile> definedIndexMap = new HashMap<>();
   private IndexListener managementListener;
+  public static boolean LUCENE_REINDEX =
+      Boolean.getBoolean(DistributionConfig.GEMFIRE_PREFIX + "luceneReindex");
 
   public LuceneServiceImpl() {}
 

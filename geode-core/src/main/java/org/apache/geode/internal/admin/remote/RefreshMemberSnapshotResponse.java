@@ -22,7 +22,7 @@ import org.apache.geode.DataSerializer;
 import org.apache.geode.admin.GemFireMemberStatus;
 import org.apache.geode.cache.CacheFactory;
 import org.apache.geode.distributed.DistributedSystem;
-import org.apache.geode.distributed.internal.DM;
+import org.apache.geode.distributed.internal.DistributionManager;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
 import org.apache.geode.internal.cache.InternalCache;
 
@@ -38,7 +38,8 @@ public class RefreshMemberSnapshotResponse extends AdminResponse {
    * Returns a {@code FetchSysCfgResponse} that will be returned to the specified recipient. The
    * message will contains a copy of the local manager's config.
    */
-  public static RefreshMemberSnapshotResponse create(DM dm, InternalDistributedMember recipient) {
+  public static RefreshMemberSnapshotResponse create(DistributionManager dm,
+      InternalDistributedMember recipient) {
     RefreshMemberSnapshotResponse m = new RefreshMemberSnapshotResponse();
     m.setRecipient(recipient);
 

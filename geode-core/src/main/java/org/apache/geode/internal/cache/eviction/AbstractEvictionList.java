@@ -102,8 +102,6 @@ abstract class AbstractEvictionList implements EvictionList {
       return;
     }
 
-    evictionNode.unsetRecentlyUsed();
-
     if (logger.isTraceEnabled(LogMarker.LRU_CLOCK)) {
       logger.trace(LogMarker.LRU_CLOCK, LocalizedMessage
           .create(LocalizedStrings.NewLRUClockHand_ADDING_ANODE_TO_LRU_LIST, evictionNode));

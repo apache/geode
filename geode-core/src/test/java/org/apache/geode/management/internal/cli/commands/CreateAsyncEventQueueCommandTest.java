@@ -15,7 +15,6 @@
 
 package org.apache.geode.management.internal.cli.commands;
 
-import static io.codearte.catchexception.shade.mockito.Matchers.any;
 import static org.apache.geode.management.internal.cli.i18n.CliStrings.CREATE_ASYNC_EVENT_QUEUE__BATCHTIMEINTERVAL;
 import static org.apache.geode.management.internal.cli.i18n.CliStrings.CREATE_ASYNC_EVENT_QUEUE__BATCH_SIZE;
 import static org.apache.geode.management.internal.cli.i18n.CliStrings.CREATE_ASYNC_EVENT_QUEUE__DISKSYNCHRONOUS;
@@ -27,6 +26,7 @@ import static org.apache.geode.management.internal.cli.i18n.CliStrings.CREATE_AS
 import static org.apache.geode.management.internal.cli.i18n.CliStrings.CREATE_ASYNC_EVENT_QUEUE__PARALLEL;
 import static org.apache.geode.management.internal.cli.i18n.CliStrings.CREATE_ASYNC_EVENT_QUEUE__PERSISTENT;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.isA;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.mock;
@@ -131,7 +131,7 @@ public class CreateAsyncEventQueueCommandTest {
     doReturn(functionResults).when(command).executeAndGetFunctionResult(isA(Function.class),
         isA(Object.class), isA(Set.class));
 
-    gfsh.executeAndAssertThat(command, MINIUM_COMMAND).statusIsSuccess().persisted()
+    gfsh.executeAndAssertThat(command, MINIUM_COMMAND).statusIsSuccess().hasNoFailToPersistError()
         .tableHasRowCount("Member", 2)
         .tableHasRowWithValues("Member", "Status", "member1", "SUCCESS")
         .tableHasRowWithValues("Member", "Status", "member2", "SUCCESS");
@@ -154,8 +154,7 @@ public class CreateAsyncEventQueueCommandTest {
     doReturn(functionResults).when(command).executeAndGetFunctionResult(isA(Function.class),
         isA(Object.class), isA(Set.class));
 
-    // need to make sure failToPersist flag is not set so that we won't print out the warning
-    gfsh.executeAndAssertThat(command, MINIUM_COMMAND).statusIsError().persisted()
+    gfsh.executeAndAssertThat(command, MINIUM_COMMAND).statusIsError().hasNoFailToPersistError()
         .tableHasRowCount("Member", 2)
         .tableHasRowWithValues("Member", "Status", "member1", "ERROR: failed")
         .tableHasRowWithValues("Member", "Status", "member2",
@@ -178,7 +177,7 @@ public class CreateAsyncEventQueueCommandTest {
     doReturn(functionResults).when(command).executeAndGetFunctionResult(isA(Function.class),
         isA(Object.class), isA(Set.class));
 
-    gfsh.executeAndAssertThat(command, MINIUM_COMMAND).statusIsSuccess().persisted()
+    gfsh.executeAndAssertThat(command, MINIUM_COMMAND).statusIsSuccess().hasNoFailToPersistError()
         .tableHasRowCount("Member", 2)
         .tableHasRowWithValues("Member", "Status", "member1", "SUCCESS").tableHasRowWithValues(
             "Member", "Status", "member2", "ERROR: java.lang.RuntimeException: exception happened");
@@ -198,7 +197,7 @@ public class CreateAsyncEventQueueCommandTest {
     doReturn(functionResults).when(command).executeAndGetFunctionResult(isA(Function.class),
         isA(Object.class), isA(Set.class));
 
-    gfsh.executeAndAssertThat(command, MINIUM_COMMAND).statusIsSuccess().failToPersist();
+    gfsh.executeAndAssertThat(command, MINIUM_COMMAND).statusIsSuccess().hasFailToPersistError();
 
     // addXmlEntity should not be called
     verify(service, times(0)).addXmlEntity(xmlEntity, null);

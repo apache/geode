@@ -50,7 +50,7 @@ import org.apache.geode.cache.Region;
 import org.apache.geode.cache.RegionAttributes;
 import org.apache.geode.cache.Scope;
 import org.apache.geode.distributed.DistributedMember;
-import org.apache.geode.distributed.internal.DistributionManager;
+import org.apache.geode.distributed.internal.ClusterDistributionManager;
 import org.apache.geode.internal.cache.BucketAdvisor;
 import org.apache.geode.internal.cache.BucketRegionQueue;
 import org.apache.geode.internal.cache.BucketRegionQueueHelper;
@@ -282,7 +282,7 @@ public class ParallelQueueRemovalMessageJUnitTest {
   private void createAndProcessParallelQueueRemovalMessage() {
     ParallelQueueRemovalMessage message =
         new ParallelQueueRemovalMessage(createRegionToDispatchedKeysMap());
-    message.process((DistributionManager) this.cache.getDistributionManager());
+    message.process((ClusterDistributionManager) this.cache.getDistributionManager());
   }
 
   private HashMap<String, Map<Integer, List<Long>>> createRegionToDispatchedKeysMap() {

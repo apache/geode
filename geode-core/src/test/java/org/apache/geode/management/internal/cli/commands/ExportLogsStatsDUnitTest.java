@@ -21,6 +21,7 @@ import static org.apache.geode.distributed.ConfigurationProperties.JMX_MANAGER_P
 import static org.apache.geode.distributed.ConfigurationProperties.STATISTIC_ARCHIVE_FILE;
 import static org.apache.geode.management.internal.cli.commands.ExportLogsCommand.ONLY_DATE_FORMAT;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.Assert.assertEquals;
 
 import java.io.IOException;
 import java.time.LocalDateTime;
@@ -45,7 +46,7 @@ import org.apache.geode.internal.AvailablePortHelper;
 import org.apache.geode.management.cli.Result;
 import org.apache.geode.management.internal.cli.result.CommandResult;
 import org.apache.geode.management.internal.cli.util.CommandStringBuilder;
-import org.apache.geode.test.dunit.rules.LocatorServerStartupRule;
+import org.apache.geode.test.dunit.rules.ClusterStartupRule;
 import org.apache.geode.test.dunit.rules.MemberVM;
 import org.apache.geode.test.junit.categories.DistributedTest;
 import org.apache.geode.test.junit.rules.GfshCommandRule;
@@ -53,8 +54,8 @@ import org.apache.geode.test.junit.rules.GfshCommandRule;
 @Category(DistributedTest.class)
 public class ExportLogsStatsDUnitTest {
   @ClassRule
-  public static LocatorServerStartupRule lsRule =
-      new LocatorServerStartupRule().withTempWorkingDir().withLogFile();
+  public static ClusterStartupRule lsRule =
+      new ClusterStartupRule().withTempWorkingDir().withLogFile();
 
   @ClassRule
   public static GfshCommandRule connector = new GfshCommandRule();
@@ -100,7 +101,8 @@ public class ExportLogsStatsDUnitTest {
 
     Set<String> expectedFiles = Sets.newHashSet("locator-0/locator-0.log", "server-1/server-1.log",
         "server-1/statistics.gfs");
-    assertThat(actualZipEnries).isEqualTo(expectedFiles);
+    assertThat(actualZipEnries).containsAll(expectedFiles);
+    assertEquals(actualZipEnries.size(), 4);
   }
 
   @Test
@@ -111,7 +113,8 @@ public class ExportLogsStatsDUnitTest {
     Set<String> actualZipEnries = getZipEntries(zipPath);
 
     Set<String> expectedFiles = Sets.newHashSet("locator-0/locator-0.log", "server-1/server-1.log");
-    assertThat(actualZipEnries).isEqualTo(expectedFiles);
+    assertThat(actualZipEnries).containsAll(expectedFiles);
+    assertEquals(actualZipEnries.size(), 3);
   }
 
   @Test

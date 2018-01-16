@@ -16,7 +16,7 @@ package org.apache.geode.internal.admin.remote;
 
 import org.apache.logging.log4j.Logger;
 
-import org.apache.geode.distributed.internal.DistributionManager;
+import org.apache.geode.distributed.internal.ClusterDistributionManager;
 import org.apache.geode.internal.i18n.LocalizedStrings;
 import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.internal.logging.log4j.LocalizedMessage;
@@ -33,7 +33,7 @@ public abstract class CliLegacyMessage extends AdminRequest {
   private static final Logger logger = LogService.getLogger();
 
   @Override
-  protected void process(DistributionManager dm) {
+  protected void process(ClusterDistributionManager dm) {
     AdminResponse response = null;
     try {
       response = createResponse(dm);

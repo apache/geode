@@ -147,7 +147,8 @@ public class LRUListWithSyncSortingIntegrationTest {
   }
 
   @Test
-  public void evictsRecentlyUsedNodeIfOverLimit() throws Exception {
+  public void getEvictableEntryReturnsRecentlyUsedNodeAfterSearchMaxEntriesExceeded()
+      throws Exception {
     IntStream.range(10, 16).forEach(i -> {
       EvictionNode node = new LRUTestEntry(i);
       nodes.add(node);

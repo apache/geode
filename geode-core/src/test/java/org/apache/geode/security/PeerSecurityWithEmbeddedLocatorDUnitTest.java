@@ -29,7 +29,7 @@ import org.junit.experimental.categories.Category;
 import org.apache.geode.internal.AvailablePortHelper;
 import org.apache.geode.security.templates.DummyAuthenticator;
 import org.apache.geode.test.dunit.VM;
-import org.apache.geode.test.dunit.rules.LocatorServerStartupRule;
+import org.apache.geode.test.dunit.rules.ClusterStartupRule;
 import org.apache.geode.test.junit.categories.DistributedTest;
 import org.apache.geode.test.junit.categories.SecurityTest;
 import org.apache.geode.test.junit.rules.ServerStarterRule;
@@ -38,7 +38,7 @@ import org.apache.geode.test.junit.rules.ServerStarterRule;
 public class PeerSecurityWithEmbeddedLocatorDUnitTest {
 
   @Rule
-  public LocatorServerStartupRule lsRule = new LocatorServerStartupRule();
+  public ClusterStartupRule lsRule = new ClusterStartupRule();
 
 
   @Test
@@ -63,7 +63,7 @@ public class PeerSecurityWithEmbeddedLocatorDUnitTest {
     VM server2 = getHost(0).getVM(2);
     server2.invoke(() -> {
       ServerStarterRule serverStarter = new ServerStarterRule();
-      LocatorServerStartupRule.memberStarter = serverStarter;
+      ClusterStartupRule.memberStarter = serverStarter;
       assertThatThrownBy(() -> serverStarter.startServer(server2Props, locatorPort))
           .isInstanceOf(GemFireSecurityException.class)
           .hasMessageContaining("Security check failed. Authentication error");
@@ -94,7 +94,7 @@ public class PeerSecurityWithEmbeddedLocatorDUnitTest {
     VM server2 = getHost(0).getVM(2);
     server2.invoke(() -> {
       ServerStarterRule serverStarter = new ServerStarterRule();
-      LocatorServerStartupRule.memberStarter = serverStarter;
+      ClusterStartupRule.memberStarter = serverStarter;
       assertThatThrownBy(() -> serverStarter.startServer(server2Props, locatorPort))
           .isInstanceOf(GemFireSecurityException.class).hasMessageContaining("Invalid user name");
     });

@@ -31,7 +31,6 @@ import org.junit.experimental.categories.Category;
 
 import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.Region;
-import org.apache.geode.internal.exception.InvalidExecutionContextException;
 import org.apache.geode.internal.protocol.Result;
 import org.apache.geode.internal.protocol.Success;
 import org.apache.geode.internal.protocol.protobuf.v1.RegionAPI;
@@ -62,7 +61,7 @@ public class GetRegionNamesRequestOperationHandlerJUnitTest extends OperationHan
 
   @Test
   public void processReturnsCacheRegions() throws Exception {
-    Result result = operationHandler.process(serializationServiceStub,
+    Result result = operationHandler.process(serializationService,
         ProtobufRequestUtilities.createGetRegionNamesRequest(),
         getNoAuthCacheExecutionContext(cacheStub));
     Assert.assertTrue(result instanceof Success);
@@ -92,7 +91,7 @@ public class GetRegionNamesRequestOperationHandlerJUnitTest extends OperationHan
     Cache emptyCache = mock(Cache.class);;
     when(emptyCache.rootRegions())
         .thenReturn(Collections.unmodifiableSet(new HashSet<Region<String, String>>()));
-    Result result = operationHandler.process(serializationServiceStub,
+    Result result = operationHandler.process(serializationService,
         ProtobufRequestUtilities.createGetRegionNamesRequest(),
         getNoAuthCacheExecutionContext(emptyCache));
     Assert.assertTrue(result instanceof Success);

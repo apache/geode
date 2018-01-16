@@ -14,8 +14,6 @@
  */
 package org.apache.geode.internal.protocol.protobuf.v1;
 
-import static org.apache.geode.internal.protocol.ProtocolErrorCode.AUTHENTICATION_FAILED;
-import static org.apache.geode.internal.protocol.ProtocolErrorCode.UNSUPPORTED_AUTHENTICATION_MODE;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
@@ -41,7 +39,6 @@ import org.apache.geode.cache.server.CacheServer;
 import org.apache.geode.distributed.ConfigurationProperties;
 import org.apache.geode.internal.AvailablePortHelper;
 import org.apache.geode.internal.cache.InternalCache;
-import org.apache.geode.internal.cache.tier.CommunicationMode;
 import org.apache.geode.internal.protocol.protobuf.v1.serializer.ProtobufProtocolSerializer;
 import org.apache.geode.management.internal.security.ResourceConstants;
 import org.apache.geode.security.AuthenticationFailedException;
@@ -189,7 +186,7 @@ public class AuthenticationIntegrationTest {
     ClientProtocol.Message errorResponse = protobufProtocolSerializer.deserialize(inputStream);
     assertEquals(ClientProtocol.Response.ResponseAPICase.ERRORRESPONSE,
         errorResponse.getResponse().getResponseAPICase());
-    assertEquals(AUTHENTICATION_FAILED.codeValue,
+    assertEquals(BasicTypes.ErrorCode.AUTHENTICATION_FAILED,
         errorResponse.getResponse().getErrorResponse().getError().getErrorCode());
     verifyConnectionClosed();
   }
@@ -289,7 +286,7 @@ public class AuthenticationIntegrationTest {
     ClientProtocol.Message errorResponse = protobufProtocolSerializer.deserialize(inputStream);
     assertEquals(ClientProtocol.Response.ResponseAPICase.ERRORRESPONSE,
         errorResponse.getResponse().getResponseAPICase());
-    assertEquals(UNSUPPORTED_AUTHENTICATION_MODE.codeValue,
+    assertEquals(BasicTypes.ErrorCode.AUTHENTICATION_FAILED,
         errorResponse.getResponse().getErrorResponse().getError().getErrorCode());
     verifyConnectionClosed();
   }
@@ -310,7 +307,7 @@ public class AuthenticationIntegrationTest {
     ClientProtocol.Message errorResponse = protobufProtocolSerializer.deserialize(inputStream);
     assertEquals(ClientProtocol.Response.ResponseAPICase.ERRORRESPONSE,
         errorResponse.getResponse().getResponseAPICase());
-    assertEquals(UNSUPPORTED_AUTHENTICATION_MODE.codeValue,
+    assertEquals(BasicTypes.ErrorCode.AUTHENTICATION_FAILED,
         errorResponse.getResponse().getErrorResponse().getError().getErrorCode());
     verifyConnectionClosed();
   }

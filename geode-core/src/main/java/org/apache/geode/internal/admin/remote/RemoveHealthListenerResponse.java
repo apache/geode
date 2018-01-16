@@ -33,8 +33,8 @@ public class RemoveHealthListenerResponse extends AdminResponse {
    * Returns a <code>RemoveHealthListenerResponse</code> that will be returned to the specified
    * recipient.
    */
-  public static RemoveHealthListenerResponse create(DM dm, InternalDistributedMember recipient,
-      int id) {
+  public static RemoveHealthListenerResponse create(DistributionManager dm,
+      InternalDistributedMember recipient, int id) {
     RemoveHealthListenerResponse m = new RemoveHealthListenerResponse();
     m.setRecipient(recipient);
     dm.removeHealthMonitor(recipient, id);

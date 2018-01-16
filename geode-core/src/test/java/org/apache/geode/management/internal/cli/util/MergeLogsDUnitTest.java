@@ -33,15 +33,14 @@ import org.junit.experimental.categories.Category;
 
 import org.apache.geode.distributed.internal.DistributionConfig;
 import org.apache.geode.internal.logging.LogService;
-import org.apache.geode.test.dunit.rules.LocatorServerStartupRule;
+import org.apache.geode.test.dunit.rules.ClusterStartupRule;
 import org.apache.geode.test.dunit.rules.MemberVM;
 import org.apache.geode.test.junit.categories.DistributedTest;
 
 @Category(DistributedTest.class)
 public class MergeLogsDUnitTest {
   @Rule
-  public LocatorServerStartupRule lsRule =
-      new LocatorServerStartupRule().withTempWorkingDir().withLogFile();
+  public ClusterStartupRule lsRule = new ClusterStartupRule().withTempWorkingDir().withLogFile();
   private MemberVM locator;
 
   private static final String MESSAGE_1 = "MergeLogsMessage1";
@@ -74,7 +73,7 @@ public class MergeLogsDUnitTest {
 
   @Test
   public void testExportInProcess() throws Exception {
-    assertThat(MergeLogs.findLogFilesToMerge(lsRule.getTempWorkingDir().getRoot())).hasSize(3);
+    assertThat(MergeLogs.findLogFilesToMerge(lsRule.getTempWorkingDir().getRoot())).hasSize(4);
 
     File result = MergeLogs.mergeLogFile(lsRule.getTempWorkingDir().getRoot().getCanonicalPath());
     assertOnLogContents(result);
@@ -82,7 +81,7 @@ public class MergeLogsDUnitTest {
 
   @Test
   public void testExportInNewProcess() throws Throwable {
-    assertThat(MergeLogs.findLogFilesToMerge(lsRule.getTempWorkingDir().getRoot())).hasSize(3);
+    assertThat(MergeLogs.findLogFilesToMerge(lsRule.getTempWorkingDir().getRoot())).hasSize(4);
 
     MergeLogs.mergeLogsInNewProcess(lsRule.getTempWorkingDir().getRoot().toPath());
     File result = Arrays.stream(lsRule.getTempWorkingDir().getRoot().listFiles())

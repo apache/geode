@@ -14,17 +14,16 @@
  */
 package org.apache.geode.internal.cache.backup;
 
-import java.util.HashSet;
 import java.util.Set;
 
-import org.apache.geode.cache.persistence.PersistentID;
-import org.apache.geode.distributed.internal.DM;
+import org.apache.geode.distributed.internal.DistributionManager;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
 import org.apache.geode.internal.cache.InternalCache;
 
 class FlushToDiskFactory {
 
-  FlushToDiskProcessor createReplyProcessor(DM dm, Set<InternalDistributedMember> recipients) {
+  FlushToDiskProcessor createReplyProcessor(DistributionManager dm,
+      Set<InternalDistributedMember> recipients) {
     return new FlushToDiskProcessor(dm, recipients);
   }
 

@@ -34,7 +34,7 @@ import org.apache.geode.cache.Operation;
 import org.apache.geode.cache.RegionDestroyedException;
 import org.apache.geode.cache.client.PoolFactory;
 import org.apache.geode.distributed.DistributedMember;
-import org.apache.geode.distributed.internal.DM;
+import org.apache.geode.distributed.internal.ClusterDistributionManager;
 import org.apache.geode.distributed.internal.DirectReplyProcessor;
 import org.apache.geode.distributed.internal.DistributionManager;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
@@ -313,7 +313,7 @@ public class PutAllPRMessage extends PartitionMessageWithDirectReply {
    * indefinitely for the acknowledgement
    */
   @Override
-  protected boolean operateOnPartitionedRegion(DistributionManager dm, PartitionedRegion pr,
+  protected boolean operateOnPartitionedRegion(ClusterDistributionManager dm, PartitionedRegion pr,
       long startTime) throws EntryExistsException, ForceReattemptException, DataLocationException {
     boolean sendReply = true;
 
@@ -629,8 +629,8 @@ public class PutAllPRMessage extends PartitionMessageWithDirectReply {
 
   // override reply message type from PartitionMessage
   @Override
-  protected void sendReply(InternalDistributedMember member, int procId, DM dm, ReplyException ex,
-      PartitionedRegion pr, long startTime) {
+  protected void sendReply(InternalDistributedMember member, int procId, DistributionManager dm,
+      ReplyException ex, PartitionedRegion pr, long startTime) {
     // if (!result && getOperation().isCreate()) {
     // System.err.println("DEBUG: put returning false. ifNew=" + ifNew
     // +" ifOld="+ifOld + " message=" + this);
@@ -673,7 +673,7 @@ public class PutAllPRMessage extends PartitionMessageWithDirectReply {
   }
 
   @Override
-  protected boolean mayAddToMultipleSerialGateways(DistributionManager dm) {
+  protected boolean mayAddToMultipleSerialGateways(ClusterDistributionManager dm) {
     return _mayAddToMultipleSerialGateways(dm);
   }
 
@@ -751,7 +751,7 @@ public class PutAllPRMessage extends PartitionMessageWithDirectReply {
      * @param dm the distribution manager that is processing the message.
      */
     @Override
-    public void process(final DM dm, final ReplyProcessor21 rp) {
+    public void process(final DistributionManager dm, final ReplyProcessor21 rp) {
       final long startTime = getTimestamp();
       if (rp == null) {
         if (logger.isTraceEnabled(LogMarker.DM)) {

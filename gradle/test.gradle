@@ -108,7 +108,7 @@ subprojects {
       includeCategories 'org.apache.geode.test.junit.categories.DistributedTest'
       excludeCategories 'org.apache.geode.test.junit.categories.FlakyTest'
     }
-    forkEvery 30
+    forkEvery 1
   }
   
   task flakyTest(type:Test) {

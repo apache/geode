@@ -37,7 +37,7 @@ import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.RegionShortcut;
 import org.apache.geode.management.cli.Result;
 import org.apache.geode.management.internal.cli.result.CommandResult;
-import org.apache.geode.test.dunit.rules.LocatorServerStartupRule;
+import org.apache.geode.test.dunit.rules.ClusterStartupRule;
 import org.apache.geode.test.dunit.rules.MemberVM;
 import org.apache.geode.test.junit.categories.DistributedTest;
 import org.apache.geode.test.junit.rules.GfshCommandRule;
@@ -69,7 +69,7 @@ public class ClusterConfigImportDUnitTest extends ClusterConfigTestBase {
     String regionName = "regionA";
     server1.invoke(() -> {
       // this region will be created on both servers, but we should only be getting the name once.
-      Cache cache = LocatorServerStartupRule.getCache();
+      Cache cache = ClusterStartupRule.getCache();
       cache.createRegionFactory(RegionShortcut.REPLICATE).create(regionName);
     });
 

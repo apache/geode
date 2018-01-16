@@ -47,8 +47,8 @@ import org.apache.geode.cache.wan.GatewayReceiver;
 import org.apache.geode.cache.wan.GatewaySender;
 import org.apache.geode.distributed.DistributedLockService;
 import org.apache.geode.distributed.internal.CacheTime;
-import org.apache.geode.distributed.internal.DM;
 import org.apache.geode.distributed.internal.DistributionAdvisor;
+import org.apache.geode.distributed.internal.DistributionManager;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
 import org.apache.geode.internal.SystemTimer;
@@ -113,7 +113,7 @@ public interface InternalCache extends Cache, Extensible<Cache>, CacheTime {
 
   CachePerfStats getCachePerfStats();
 
-  DM getDistributionManager();
+  DistributionManager getDistributionManager();
 
   void regionReinitialized(Region region);
 
@@ -311,7 +311,19 @@ public interface InternalCache extends Cache, Extensible<Cache>, CacheTime {
 
   CacheServer addCacheServer(boolean isGatewayReceiver);
 
-  void setReadSerialized(boolean value);
+  /**
+   * A test-hook allowing you to alter the cache setting established by
+   * CacheFactory.setPdxReadSerialized()
+   *
+   * @deprecated tests using this method should be refactored to not require it
+   */
+  void setReadSerializedForTest(boolean value);
+
+  /**
+   * Enables or disables the reading of PdxInstances from all cache Regions for the thread that
+   * invokes this method.
+   */
+  void setReadSerializedForCurrentThread(boolean value);
 
   PdxInstanceFactory createPdxInstanceFactory(String className, boolean expectDomainClass);
 

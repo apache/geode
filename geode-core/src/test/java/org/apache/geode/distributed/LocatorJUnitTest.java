@@ -24,6 +24,7 @@ import static org.apache.geode.distributed.ConfigurationProperties.MCAST_PORT;
 import static org.apache.geode.internal.AvailablePort.SOCKET;
 import static org.apache.geode.internal.AvailablePort.getRandomAvailablePort;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
@@ -88,7 +89,11 @@ public class LocatorJUnitTest {
   public void setUp() throws IOException {
     tmpFile = File.createTempFile("locator", ".log");
     this.port = portSupplier.getAsInt();
-    File locatorFile = new File("locator" + this.port + ".dat");
+    deleteLocatorViewFile(port);
+  }
+
+  private void deleteLocatorViewFile(int portNumber) {
+    File locatorFile = new File("locator" + portNumber + "view.dat");
     if (locatorFile.exists()) {
       locatorFile.delete();
     }
@@ -100,6 +105,24 @@ public class LocatorJUnitTest {
       locator.stop();
     }
     assertEquals(false, Locator.hasLocator());
+  }
+
+  /**
+   * GEODE-4176: locator creates "locator0view.dat" file when started with port 0
+   *
+   * @throws Exception
+   */
+  @Test
+  public void testThatLocatorDoesNotCreateFileWithZeroPort() throws Exception {
+    deleteLocatorViewFile(0);
+    Properties dsprops = new Properties();
+    dsprops.setProperty(MCAST_PORT, "0");
+    dsprops.setProperty(ENABLE_CLUSTER_CONFIGURATION, "false");
+    dsprops.setProperty(LOCATOR_WAIT_TIME, "1"); // seconds
+    dsprops.setProperty(LOG_FILE, "");
+    locator = Locator.startLocatorAndDS(port, null, dsprops);
+    File viewFile = new File("locator0view.dat");
+    assertFalse("file should not exist: " + viewFile.getAbsolutePath(), viewFile.exists());
   }
 
   /**

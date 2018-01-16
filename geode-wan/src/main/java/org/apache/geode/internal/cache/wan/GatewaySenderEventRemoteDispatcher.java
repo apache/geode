@@ -48,7 +48,7 @@ public class GatewaySenderEventRemoteDispatcher implements GatewaySenderEventDis
 
   private static final Logger logger = LogService.getLogger();
 
-  private final AbstractGatewaySenderEventProcessor processor;
+  protected final AbstractGatewaySenderEventProcessor processor;
 
   private volatile Connection connection;
 
@@ -67,6 +67,10 @@ public class GatewaySenderEventRemoteDispatcher implements GatewaySenderEventDis
    */
   private int failedConnectCount = 0;
 
+  void setAckReaderThread(AckReaderThread ackReaderThread) {
+    this.ackReaderThread = ackReaderThread;
+  }
+
   public GatewaySenderEventRemoteDispatcher(AbstractGatewaySenderEventProcessor eventProcessor) {
     this.processor = eventProcessor;
     this.sender = eventProcessor.getSender();
@@ -77,7 +81,15 @@ public class GatewaySenderEventRemoteDispatcher implements GatewaySenderEventDis
       if (e.getCause() instanceof GemFireSecurityException) {
         throw e;
       }
+
     }
+  }
+
+  GatewaySenderEventRemoteDispatcher(AbstractGatewaySenderEventProcessor processor,
+      Connection connection) {
+    this.processor = processor;
+    this.sender = processor.getSender();
+    this.connection = connection;
   }
 
   protected GatewayAck readAcknowledgement() {
@@ -299,6 +311,7 @@ public class GatewaySenderEventRemoteDispatcher implements GatewaySenderEventDis
    */
   public Connection getConnection(boolean startAckReaderThread) throws GatewaySenderException {
     if (this.processor.isStopped()) {
+      stop();
       return null;
     }
     // IF the connection is null
@@ -364,7 +377,7 @@ public class GatewaySenderEventRemoteDispatcher implements GatewaySenderEventDis
    */
   private void initializeConnection() throws GatewaySenderException, GemFireSecurityException {
     if (ackReaderThread != null) {
-      ackReaderThread.shutDownAckReaderConnection();
+      ackReaderThread.shutDownAckReaderConnection(connection);
     }
     this.connectionLifeCycleLock.writeLock().lock();
     try {
@@ -560,6 +573,10 @@ public class GatewaySenderEventRemoteDispatcher implements GatewaySenderEventDis
       this(sender, processor.getName());
     }
 
+    boolean isShutdown() {
+      return shutdown;
+    }
+
     public AckReaderThread(GatewaySender sender, String name) {
       super("AckReaderThread for : " + name);
       this.setDaemon(true);
@@ -749,9 +766,9 @@ public class GatewaySenderEventRemoteDispatcher implements GatewaySenderEventDis
       // we need to destroy connection irrespective of we are listening on it or
       // not. No need to take lock as the reader thread may be blocked and we might not
       // get chance to destroy unless that returns.
-      if (connection != null) {
-        Connection conn = connection;
-        shutDownAckReaderConnection();
+      Connection conn = connection;
+      if (conn != null) {
+        shutDownAckReaderConnection(conn);
         if (!conn.isDestroyed()) {
           conn.destroy();
           sender.getProxy().returnConnection(conn);
@@ -774,7 +791,7 @@ public class GatewaySenderEventRemoteDispatcher implements GatewaySenderEventDis
       }
     }
 
-    private void shutDownAckReaderConnection() {
+    private void shutDownAckReaderConnection(Connection connection) {
       Connection conn = connection;
       // attempt to unblock the ackReader thread by shutting down the inputStream, if it was stuck
       // on a read
@@ -808,7 +825,7 @@ public class GatewaySenderEventRemoteDispatcher implements GatewaySenderEventDis
 
   public void shutDownAckReaderConnection() {
     if (ackReaderThread != null) {
-      ackReaderThread.shutDownAckReaderConnection();
+      ackReaderThread.shutDownAckReaderConnection(connection);
     }
   }
 

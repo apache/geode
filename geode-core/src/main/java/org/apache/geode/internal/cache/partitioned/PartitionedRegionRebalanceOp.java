@@ -29,8 +29,8 @@ import org.apache.logging.log4j.Logger;
 import org.apache.geode.CancelException;
 import org.apache.geode.cache.partition.PartitionMemberInfo;
 import org.apache.geode.cache.partition.PartitionRebalanceInfo;
-import org.apache.geode.distributed.internal.DM;
 import org.apache.geode.distributed.internal.DistributionConfig;
+import org.apache.geode.distributed.internal.DistributionManager;
 import org.apache.geode.distributed.internal.MembershipListener;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
 import org.apache.geode.internal.Assert;
@@ -439,7 +439,7 @@ public class PartitionedRegionRebalanceOp {
 
     final boolean isDebugEnabled = logger.isDebugEnabled();
 
-    final DM dm = leaderRegion.getDistributionManager();
+    final DistributionManager dm = leaderRegion.getDistributionManager();
     AddressComparor comparor = new AddressComparor() {
 
       public boolean areSameZone(InternalDistributedMember member1,

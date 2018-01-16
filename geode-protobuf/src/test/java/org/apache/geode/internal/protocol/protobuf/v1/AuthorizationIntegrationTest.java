@@ -192,7 +192,7 @@ public class AuthorizationIntegrationTest {
     ClientProtocol.Message removeMessage = ClientProtocol.Message.newBuilder()
         .setRequest(ClientProtocol.Request.newBuilder()
             .setRemoveRequest(RegionAPI.RemoveRequest.newBuilder().setRegionName(TEST_REGION)
-                .setKey(ProtobufUtilities.createEncodedValue(serializationService, "TEST_KEY"))))
+                .setKey(serializationService.encode("TEST_KEY"))))
         .build();
     validateOperationAuthorized(removeMessage, inputStream, outputStream,
         writeAllowed ? ClientProtocol.Response.ResponseAPICase.REMOVERESPONSE
@@ -206,7 +206,7 @@ public class AuthorizationIntegrationTest {
     ClientProtocol.Message response = protobufProtocolSerializer.deserialize(inputStream);
     assertEquals(expectedResponseType, response.getResponse().getResponseAPICase());
     if (expectedResponseType == ClientProtocol.Response.ResponseAPICase.ERRORRESPONSE) {
-      Assert.assertEquals(ProtocolErrorCode.AUTHORIZATION_FAILED.codeValue,
+      Assert.assertEquals(BasicTypes.ErrorCode.AUTHORIZATION_FAILED,
           response.getResponse().getErrorResponse().getError().getErrorCode());
     }
   }

@@ -59,6 +59,7 @@ dependencies {
   archives project(':geode-client-protocol')
   archives project(':geode-json')
   archives project(':geode-core')
+  archives project(':geode-connectors')
   archives project(':geode-lucene')
   archives project(':geode-old-client-support')
   archives project(':geode-protobuf')
@@ -192,6 +193,7 @@ def cp = {
         it.contains('log4j-jcl') ||
         it.contains('log4j-jul') ||
         it.contains('log4j-slf4j-impl') ||
+        it.contains('rmiio') ||
         it.contains('shiro') ||
         it.contains('slf4j-api') ||
         it.contains('spring-core') ||
@@ -208,7 +210,10 @@ def cp = {
         it.contains('lucene-analyzers-phonetic') ||
 
         // dependencies from geode-protobuf
-        it.contains('protobuf-java')
+        it.contains('protobuf-java') ||
+
+        // dependencies from geode-connectors
+        it.contains('HikariCP')
       }
     }
   }.flatten().unique().join(' ')
@@ -365,7 +370,10 @@ distributions {
 
         from project(":geode-lucene").configurations.runtime
         from project(":geode-lucene").configurations.archives.allArtifacts.files
-        
+       
+        from project(":geode-connectors").configurations.runtime
+        from project(":geode-connectors").configurations.archives.allArtifacts.files
+ 
         from project(":geode-old-client-support").configurations.runtime
         from project(":geode-old-client-support").configurations.archives.allArtifacts.files
 

@@ -25,7 +25,7 @@ import org.apache.geode.CancelException;
 import org.apache.geode.DataSerializer;
 import org.apache.geode.SystemFailure;
 import org.apache.geode.cache.RegionDestroyedException;
-import org.apache.geode.distributed.internal.DM;
+import org.apache.geode.distributed.internal.ClusterDistributionManager;
 import org.apache.geode.distributed.internal.DistributionManager;
 import org.apache.geode.distributed.internal.DistributionMessage;
 import org.apache.geode.distributed.internal.MessageWithReply;
@@ -55,7 +55,7 @@ public class BucketProfileUpdateMessage extends DistributionMessage implements M
 
   @Override
   public int getProcessorType() {
-    return DistributionManager.WAITING_POOL_EXECUTOR;
+    return ClusterDistributionManager.WAITING_POOL_EXECUTOR;
   }
 
   private BucketProfileUpdateMessage(Set recipients, int partitionedRegionId, int processorId,
@@ -78,7 +78,7 @@ public class BucketProfileUpdateMessage extends DistributionMessage implements M
   }
 
   @Override
-  protected void process(DistributionManager dm) {
+  protected void process(ClusterDistributionManager dm) {
     try {
       PartitionedRegion pr = PartitionedRegion.getPRFromId(this.prId);
       // pr.waitOnBucketInitialization(); // While PR doesn't directly do GII, wait on this for
@@ -124,8 +124,8 @@ public class BucketProfileUpdateMessage extends DistributionMessage implements M
    * @return an instance of reply processor if requireAck is true on which the caller can wait until
    *         the event has finished.
    */
-  public static ReplyProcessor21 send(Set recipients, DM dm, int prId, int bucketId,
-      BucketProfile bp, boolean requireAck) {
+  public static ReplyProcessor21 send(Set recipients, DistributionManager dm, int prId,
+      int bucketId, BucketProfile bp, boolean requireAck) {
     if (recipients.isEmpty()) {
       return null;
     }

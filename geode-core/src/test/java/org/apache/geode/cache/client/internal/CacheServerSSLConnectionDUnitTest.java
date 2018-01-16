@@ -56,6 +56,7 @@ import org.apache.geode.test.dunit.VM;
 import org.apache.geode.test.dunit.internal.JUnit4DistributedTestCase;
 import org.apache.geode.test.junit.categories.ClientServerTest;
 import org.apache.geode.test.junit.categories.DistributedTest;
+import org.apache.geode.test.junit.runners.CategoryWithParameterizedRunnerFactory;
 import org.apache.geode.util.test.TestUtil;
 
 /**
@@ -64,6 +65,7 @@ import org.apache.geode.util.test.TestUtil;
  */
 @Category({DistributedTest.class, ClientServerTest.class})
 @RunWith(Parameterized.class)
+@Parameterized.UseParametersRunnerFactory(CategoryWithParameterizedRunnerFactory.class)
 public class CacheServerSSLConnectionDUnitTest extends JUnit4DistributedTestCase {
 
   private static boolean useOldSSLSettings;
@@ -205,42 +207,44 @@ public class CacheServerSSLConnectionDUnitTest extends JUnit4DistributedTestCase
     String trustStorePath =
         TestUtil.getResourcePath(CacheServerSSLConnectionDUnitTest.class, trustStore);
 
-    if (useOldSSLSettings) {
-      gemFireProps.put(SERVER_SSL_ENABLED, String.valueOf(cacheServerSslenabled));
-      gemFireProps.put(SERVER_SSL_PROTOCOLS, cacheServerSslprotocols);
-      gemFireProps.put(SERVER_SSL_CIPHERS, cacheServerSslciphers);
-      gemFireProps.put(SERVER_SSL_REQUIRE_AUTHENTICATION,
-          String.valueOf(cacheServerSslRequireAuth));
-      if (clientHasTrustedKeystore) {
-        gemFireProps.put(SERVER_SSL_KEYSTORE_TYPE, "jks");
-        gemFireProps.put(SERVER_SSL_KEYSTORE, keyStorePath);
-        gemFireProps.put(SERVER_SSL_KEYSTORE_PASSWORD, "password");
-        gemFireProps.put(SERVER_SSL_TRUSTSTORE, trustStorePath);
-        gemFireProps.put(SERVER_SSL_TRUSTSTORE_PASSWORD, "password");
+    if (cacheServerSslenabled) {
+      if (useOldSSLSettings) {
+        gemFireProps.put(SERVER_SSL_ENABLED, String.valueOf(cacheServerSslenabled));
+        gemFireProps.put(SERVER_SSL_PROTOCOLS, cacheServerSslprotocols);
+        gemFireProps.put(SERVER_SSL_CIPHERS, cacheServerSslciphers);
+        gemFireProps.put(SERVER_SSL_REQUIRE_AUTHENTICATION,
+            String.valueOf(cacheServerSslRequireAuth));
+        if (clientHasTrustedKeystore) {
+          gemFireProps.put(SERVER_SSL_KEYSTORE_TYPE, "jks");
+          gemFireProps.put(SERVER_SSL_KEYSTORE, keyStorePath);
+          gemFireProps.put(SERVER_SSL_KEYSTORE_PASSWORD, "password");
+          gemFireProps.put(SERVER_SSL_TRUSTSTORE, trustStorePath);
+          gemFireProps.put(SERVER_SSL_TRUSTSTORE_PASSWORD, "password");
+        } else {
+          gemFireProps.put(SERVER_SSL_KEYSTORE_TYPE, "jks");
+          gemFireProps.put(SERVER_SSL_KEYSTORE, "");
+          gemFireProps.put(SERVER_SSL_KEYSTORE_PASSWORD, "password");
+          gemFireProps.put(SERVER_SSL_TRUSTSTORE, trustStorePath);
+          gemFireProps.put(SERVER_SSL_TRUSTSTORE_PASSWORD, "password");
+        }
       } else {
-        gemFireProps.put(SERVER_SSL_KEYSTORE_TYPE, "jks");
-        gemFireProps.put(SERVER_SSL_KEYSTORE, "");
-        gemFireProps.put(SERVER_SSL_KEYSTORE_PASSWORD, "password");
-        gemFireProps.put(SERVER_SSL_TRUSTSTORE, trustStorePath);
-        gemFireProps.put(SERVER_SSL_TRUSTSTORE_PASSWORD, "password");
-      }
-    } else {
-      gemFireProps.put(SSL_ENABLED_COMPONENTS, "server");
-      gemFireProps.put(SSL_CIPHERS, cacheServerSslciphers);
-      gemFireProps.put(SSL_PROTOCOLS, cacheServerSslprotocols);
-      gemFireProps.put(SSL_REQUIRE_AUTHENTICATION, String.valueOf(cacheServerSslRequireAuth));
-      if (clientHasTrustedKeystore) {
-        gemFireProps.put(SSL_KEYSTORE_TYPE, "jks");
-        gemFireProps.put(SSL_KEYSTORE, keyStorePath);
-        gemFireProps.put(SSL_KEYSTORE_PASSWORD, "password");
-        gemFireProps.put(SSL_TRUSTSTORE, trustStorePath);
-        gemFireProps.put(SSL_TRUSTSTORE_PASSWORD, "password");
-      } else {
-        gemFireProps.put(SSL_KEYSTORE_TYPE, "jks");
-        gemFireProps.put(SSL_KEYSTORE, "");
-        gemFireProps.put(SSL_KEYSTORE_PASSWORD, "password");
-        gemFireProps.put(SSL_TRUSTSTORE, trustStorePath);
-        gemFireProps.put(SSL_TRUSTSTORE_PASSWORD, "password");
+        gemFireProps.put(SSL_ENABLED_COMPONENTS, "server");
+        gemFireProps.put(SSL_CIPHERS, cacheServerSslciphers);
+        gemFireProps.put(SSL_PROTOCOLS, cacheServerSslprotocols);
+        gemFireProps.put(SSL_REQUIRE_AUTHENTICATION, String.valueOf(cacheServerSslRequireAuth));
+        if (clientHasTrustedKeystore) {
+          gemFireProps.put(SSL_KEYSTORE_TYPE, "jks");
+          gemFireProps.put(SSL_KEYSTORE, keyStorePath);
+          gemFireProps.put(SSL_KEYSTORE_PASSWORD, "password");
+          gemFireProps.put(SSL_TRUSTSTORE, trustStorePath);
+          gemFireProps.put(SSL_TRUSTSTORE_PASSWORD, "password");
+        } else {
+          gemFireProps.put(SSL_KEYSTORE_TYPE, "jks");
+          gemFireProps.put(SSL_KEYSTORE, "");
+          gemFireProps.put(SSL_KEYSTORE_PASSWORD, "password");
+          gemFireProps.put(SSL_TRUSTSTORE, trustStorePath);
+          gemFireProps.put(SSL_TRUSTSTORE_PASSWORD, "password");
+        }
       }
     }
 

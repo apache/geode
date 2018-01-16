@@ -30,7 +30,7 @@ import org.apache.geode.cache.Region;
 import org.apache.geode.cache.RegionFactory;
 import org.apache.geode.cache.RegionShortcut;
 import org.apache.geode.management.internal.cli.util.CommandStringBuilder;
-import org.apache.geode.test.dunit.rules.LocatorServerStartupRule;
+import org.apache.geode.test.dunit.rules.ClusterStartupRule;
 import org.apache.geode.test.dunit.rules.MemberVM;
 import org.apache.geode.test.junit.categories.DistributedTest;
 import org.apache.geode.test.junit.rules.GfshCommandRule;
@@ -54,7 +54,7 @@ public class ListRegionDUnitTest {
   private static final String GROUP3_NAME = "G3";
 
   @ClassRule
-  public static LocatorServerStartupRule lsRule = new LocatorServerStartupRule();
+  public static ClusterStartupRule lsRule = new ClusterStartupRule();
 
   @ClassRule
   public static GfshCommandRule gfsh = new GfshCommandRule();
@@ -66,7 +66,7 @@ public class ListRegionDUnitTest {
     MemberVM server = lsRule.startServerVM(2, GROUP2_NAME, locator.getPort());
 
     server1.invoke(() -> {
-      final Cache cache = LocatorServerStartupRule.getCache();
+      final Cache cache = ClusterStartupRule.getCache();
       RegionFactory<String, Integer> dataRegionFactory =
           cache.createRegionFactory(RegionShortcut.PARTITION);
       dataRegionFactory.create(PR1);
@@ -74,7 +74,7 @@ public class ListRegionDUnitTest {
     });
 
     server.invoke(() -> {
-      final Cache cache = LocatorServerStartupRule.getCache();
+      final Cache cache = ClusterStartupRule.getCache();
       RegionFactory<String, Integer> dataRegionFactory =
           cache.createRegionFactory(RegionShortcut.PARTITION);
       dataRegionFactory.create(PR1);

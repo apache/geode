@@ -26,7 +26,9 @@ import java.util.concurrent.TimeUnit;
 
 import org.awaitility.Awaitility;
 import org.junit.After;
+import org.junit.Rule;
 import org.junit.Test;
+import org.junit.contrib.java.lang.system.RestoreSystemProperties;
 import org.junit.experimental.categories.Category;
 
 import org.apache.geode.Statistics;
@@ -53,8 +55,13 @@ import org.apache.geode.test.junit.categories.IntegrationTest;
 /**
  * This is a functional-test for <code>ClientHealthMonitor</code>.
  */
-@Category({IntegrationTest.class, ClientServerTest.class, FlakyTest.class})
+@Category({IntegrationTest.class, ClientServerTest.class})
 public class ClientHealthMonitorJUnitTest {
+
+  @Rule
+  public RestoreSystemProperties restoreSystemProperties = new RestoreSystemProperties();
+
+
   /**
    * Default to 0; override in sub tests to add thread pool
    */
@@ -106,7 +113,6 @@ public class ClientHealthMonitorJUnitTest {
    */
   private void createProxyAndRegionForClient() {
     try {
-      // props.setProperty("retryAttempts", "5");
       PoolFactory pf = PoolManager.createFactory();
       proxy = (PoolImpl) pf.addServer("localhost", PORT).setThreadLocalConnections(true)
           .setReadTimeout(10000).setPingInterval(10000).setMinConnections(0).create("junitPool");
@@ -119,7 +125,7 @@ public class ClientHealthMonitorJUnitTest {
     }
   }
 
-  private static final int TIME_BETWEEN_PINGS = 50;
+  private static final int TIME_BETWEEN_PINGS = 2500;
 
   /**
    * Creates and starts the server instance
@@ -206,11 +212,6 @@ public class ClientHealthMonitorJUnitTest {
             + statistics.getInt("currentClientConnections"));
     this.system.getLogWriter().info("acquired connection " + connection1);
 
-    int pollInterval = 20;
-    int maximumTimeBetweenPings = ClientHealthMonitor.getInstance().getMaximumTimeBetweenPings();
-
-    long monitorInterval = ClientHealthMonitor.getInstance().getMonitorInterval();
-
     Awaitility.await().pollDelay(0, TimeUnit.MILLISECONDS).pollDelay(10, TimeUnit.MILLISECONDS)
         .atMost(1, TimeUnit.SECONDS).until(() -> statistics.getInt("currentClients") == 1);
 
@@ -221,8 +222,8 @@ public class ClientHealthMonitorJUnitTest {
     srp.putOnForTestsOnly(connection1, "key-1", "value-1", new EventID(new byte[] {1}, 1, 1), null);
     this.system.getLogWriter().info("did put 1");
 
-    Awaitility.await().pollDelay(0, TimeUnit.MILLISECONDS).pollDelay(10, TimeUnit.MILLISECONDS)
-        .atMost(1, TimeUnit.SECONDS).until(() -> statistics.getInt("currentClients") == 0);
+    Awaitility.await().pollDelay(0, TimeUnit.MILLISECONDS).pollDelay(100, TimeUnit.MILLISECONDS)
+        .atMost(5, TimeUnit.SECONDS).until(() -> statistics.getInt("currentClients") == 0);
 
     this.system.getLogWriter().info("currentClients=" + statistics.getInt("currentClients")
         + " currentClientConnections=" + statistics.getInt("currentClientConnections"));

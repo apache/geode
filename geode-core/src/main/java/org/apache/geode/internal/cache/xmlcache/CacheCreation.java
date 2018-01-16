@@ -96,8 +96,8 @@ import org.apache.geode.cache.wan.GatewayTransportFilter;
 import org.apache.geode.distributed.DistributedLockService;
 import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.distributed.DistributedSystem;
-import org.apache.geode.distributed.internal.DM;
 import org.apache.geode.distributed.internal.DistributionAdvisor;
+import org.apache.geode.distributed.internal.DistributionManager;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
 import org.apache.geode.i18n.LogWriterI18n;
@@ -1029,7 +1029,12 @@ public class CacheCreation implements InternalCache {
   }
 
   @Override
-  public void setReadSerialized(final boolean value) {
+  public void setReadSerializedForCurrentThread(final boolean value) {
+    throw new UnsupportedOperationException(LocalizedStrings.SHOULDNT_INVOKE.toLocalizedString());
+  }
+
+  @Override
+  public void setReadSerializedForTest(final boolean value) {
     throw new UnsupportedOperationException(LocalizedStrings.SHOULDNT_INVOKE.toLocalizedString());
   }
 
@@ -2041,7 +2046,7 @@ public class CacheCreation implements InternalCache {
   }
 
   @Override
-  public DM getDistributionManager() {
+  public DistributionManager getDistributionManager() {
     throw new UnsupportedOperationException(LocalizedStrings.SHOULDNT_INVOKE.toLocalizedString());
   }
 

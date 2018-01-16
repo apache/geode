@@ -24,7 +24,7 @@ import org.junit.rules.TemporaryFolder;
 import org.apache.geode.management.internal.cli.i18n.CliStrings;
 import org.apache.geode.management.internal.cli.util.CommandStringBuilder;
 import org.apache.geode.test.dunit.DUnitEnv;
-import org.apache.geode.test.dunit.rules.LocatorServerStartupRule;
+import org.apache.geode.test.dunit.rules.ClusterStartupRule;
 import org.apache.geode.test.junit.rules.GfshCommandRule;
 
 /**
@@ -42,7 +42,7 @@ public abstract class TomcatClientServerTest extends CargoTestBase {
   public transient GfshCommandRule gfsh = new GfshCommandRule();
 
   @Rule
-  public transient LocatorServerStartupRule locatorStartup = new LocatorServerStartupRule();
+  public transient ClusterStartupRule locatorStartup = new ClusterStartupRule();
 
   /**
    * Starts a server for the client Tomcat container to connect to using the GFSH command line

@@ -19,7 +19,9 @@ See the License for the specific language governing permissions and
 limitations under the License.
 -->
 
+**Hash indexes are deprecated.**
 <%=vars.product_name%> supports the creation of hash indexes for the purpose of performing equality-based queries.
+
 
 ## <a id="concept_5C7614F71F394C62ACA1BDC5684A7AC4__section_8A927DFB29364DA7856E7FE122FC1654" class="no-quick-link"></a>Hash Index Performance
 
@@ -58,6 +60,8 @@ If memory is not a concern, use a range index instead of a hash index.
 
 ## <a id="concept_5C7614F71F394C62ACA1BDC5684A7AC4__section_CA2476E015D14DE7B522377C931A8492" class="no-quick-link"></a>Examples of Creating a Hash Index
 
+**Hash indexes are deprecated.**
+
 **Using the Java API:**
 
 ``` pre
@@ -69,6 +73,7 @@ QueryService qs = cache.getQueryService();
 
 ``` pre
 gfsh> create index --name=myHashIndex --expression=mktValue --region=/exampleRegion
+  --type=hash
 ```
 
 **Using cache.xml:**

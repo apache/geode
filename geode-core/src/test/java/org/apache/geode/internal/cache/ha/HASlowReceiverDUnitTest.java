@@ -14,17 +14,29 @@
  */
 package org.apache.geode.internal.cache.ha;
 
-import static org.apache.geode.distributed.ConfigurationProperties.*;
-import static org.junit.Assert.*;
+import static org.apache.geode.distributed.ConfigurationProperties.LOCATORS;
+import static org.apache.geode.distributed.ConfigurationProperties.MCAST_PORT;
+import static org.apache.geode.distributed.ConfigurationProperties.REMOVE_UNRESPONSIVE_CLIENT;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
 
 import java.net.SocketException;
 import java.util.Properties;
+import java.util.concurrent.TimeUnit;
 
+import org.awaitility.Awaitility;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
 import org.apache.geode.LogWriter;
-import org.apache.geode.cache.*;
+import org.apache.geode.cache.AttributesFactory;
+import org.apache.geode.cache.Cache;
+import org.apache.geode.cache.CacheFactory;
+import org.apache.geode.cache.DataPolicy;
+import org.apache.geode.cache.EntryEvent;
+import org.apache.geode.cache.Region;
+import org.apache.geode.cache.RegionAttributes;
+import org.apache.geode.cache.Scope;
 import org.apache.geode.cache.client.PoolManager;
 import org.apache.geode.cache.client.internal.PoolImpl;
 import org.apache.geode.cache.server.CacheServer;
@@ -39,8 +51,6 @@ import org.apache.geode.test.dunit.Host;
 import org.apache.geode.test.dunit.IgnoredException;
 import org.apache.geode.test.dunit.NetworkUtils;
 import org.apache.geode.test.dunit.VM;
-import org.apache.geode.test.dunit.Wait;
-import org.apache.geode.test.dunit.WaitCriterion;
 import org.apache.geode.test.dunit.internal.JUnit4DistributedTestCase;
 import org.apache.geode.test.junit.categories.ClientSubscriptionTest;
 import org.apache.geode.test.junit.categories.DistributedTest;
@@ -219,23 +229,19 @@ public class HASlowReceiverDUnitTest extends JUnit4DistributedTestCase {
   }
 
   public static void checkRedundancyLevel(final Integer redundantServers) {
-    WaitCriterion wc = new WaitCriterion() {
-      public boolean done() {
-        return pool.getRedundantNames().size() == redundantServers.intValue();
-      }
-
-      public String description() {
-        return "Expected redundant count (" + pool.getRedundantNames().size() + ") to become "
-            + redundantServers.intValue();
-      }
-    };
-    Wait.waitForCriterion(wc, 200 * 1000, 1000, true);
+    Awaitility.await().atMost(20, TimeUnit.SECONDS).until(() -> {
+      // check for slow client queue is removed or not.
+      assertTrue(
+          "Expected redundant count (" + pool.getRedundantNames().size() + ") to become "
+              + redundantServers.intValue(),
+          pool.getRedundantNames().size() == redundantServers.intValue());
+    });
   }
 
   // Test slow client
   @Test
   public void testSlowClient() throws Exception {
-    setBridgeObeserverForAfterQueueDestroyMessage();
+    setBridgeObserverForAfterQueueDestroyMessage();
     Host host = Host.getHost(0);
     clientVM.invoke(
         () -> HASlowReceiverDUnitTest.createClientCache(NetworkUtils.getServerHostName(host),
@@ -246,18 +252,23 @@ public class HASlowReceiverDUnitTest extends JUnit4DistributedTestCase {
         IgnoredException.addIgnoredException(SocketException.class.getName());
     final IgnoredException ex2 =
         IgnoredException.addIgnoredException(InterruptedException.class.getName());
+
     putEntries();
-    Thread.sleep(20000);// wait for put to block and allow server to remove
-                        // client queue
+
+    Awaitility.await().atMost(60, TimeUnit.SECONDS).until(() -> {
+      // check for slow client queue is removed or not.
+      assertTrue("isUnresponsiveClientRemoved is false, but should be true " + "after 60 seconds",
+          isUnresponsiveClientRemoved);
+    });
+
+    // verify that we get reconnected
     clientVM.invoke(() -> HASlowReceiverDUnitTest.checkRedundancyLevel(new Integer(2)));
-    // check for slow client queue is removed or not.
-    assertTrue("isUnresponsiveClientRemoved is false, but should be true " + "after 20 seconds",
-        isUnresponsiveClientRemoved);
+
     ex1.remove();
     ex2.remove();
   }
 
-  public static void setBridgeObeserverForAfterQueueDestroyMessage() throws Exception {
+  public static void setBridgeObserverForAfterQueueDestroyMessage() throws Exception {
     PoolImpl.AFTER_QUEUE_DESTROY_MESSAGE_FLAG = true;
     ClientServerObserverHolder.setInstance(new ClientServerObserverAdapter() {
       @Override

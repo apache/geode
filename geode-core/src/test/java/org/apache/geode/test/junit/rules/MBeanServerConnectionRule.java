@@ -91,11 +91,35 @@ public class MBeanServerConnectionRule extends DescribedExternalResource {
   }
 
   /**
+   * Retrieve a new proxy MXBean
+   *
+   * @return A new proxy MXBean of the same type with which the class was constructed
+   */
+  public <T> T getProxyMXBean(Class<T> proxyClass, String beanQueryName)
+      throws MalformedObjectNameException, IOException {
+    return JMX.newMXBeanProxy(con, getObjectName(proxyClass, beanQueryName), proxyClass);
+  }
+
+  /**
    * Retrieve a new proxy MBean
    *
    * @return A new proxy MBean of the same type with which the class was constructed
    */
   public <T> T getProxyMBean(Class<T> proxyClass, String beanQueryName)
+      throws IOException, MalformedObjectNameException {
+    return JMX.newMBeanProxy(con, getObjectName(proxyClass, beanQueryName), proxyClass);
+  }
+
+  /**
+   * Retrieve a new proxy MBean
+   *
+   * @return A new proxy MBean of the same type with which the class was constructed
+   */
+  public <T> T getProxyMBean(Class<T> proxyClass) throws MalformedObjectNameException, IOException {
+    return getProxyMBean(proxyClass, null);
+  }
+
+  private ObjectName getObjectName(Class<?> proxyClass, String beanQueryName)
       throws MalformedObjectNameException, IOException {
     ObjectName name = null;
     QueryExp query = null;
@@ -112,8 +136,7 @@ public class MBeanServerConnectionRule extends DescribedExternalResource {
     assertEquals("failed to find only one instance of type " + proxyClass.getName() + " with name "
         + beanQueryName, 1, beans.size());
 
-    return JMX.newMXBeanProxy(con, ((ObjectInstance) beans.toArray()[0]).getObjectName(),
-        proxyClass);
+    return ((ObjectInstance) beans.toArray()[0]).getObjectName();
   }
 
   public AccessControlMXBean getAccessControlMBean() throws Exception {
@@ -122,17 +145,18 @@ public class MBeanServerConnectionRule extends DescribedExternalResource {
   }
 
   /**
-   * Retrieve a new proxy MBean
+   * Retrieve a new proxy MXBean
    *
-   * @return A new proxy MBean of the same type with which the class was constructed
+   * @return A new proxy MXBean of the same type with which the class was constructed
    */
-  public <T> T getProxyMBean(Class<T> proxyClass) throws MalformedObjectNameException, IOException {
-    return getProxyMBean(proxyClass, null);
+  public <T> T getProxyMXBean(Class<T> proxyClass)
+      throws MalformedObjectNameException, IOException {
+    return getProxyMXBean(proxyClass, null);
   }
 
-  public <T> T getProxyMBean(String beanQueryName)
+  public <T> T getProxyMXBean(String beanQueryName)
       throws MalformedObjectNameException, IOException {
-    return getProxyMBean(null, beanQueryName);
+    return getProxyMXBean(null, beanQueryName);
   }
 
   public MBeanServerConnection getMBeanServerConnection() throws IOException {

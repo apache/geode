@@ -17,7 +17,14 @@ package org.apache.geode.internal.cache.versions;
 import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
-import java.util.*;
+import java.util.Collections;
+import java.util.ConcurrentModificationException;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
@@ -27,9 +34,10 @@ import java.util.concurrent.locks.ReentrantReadWriteLock;
 import org.apache.logging.log4j.Logger;
 
 import org.apache.geode.CancelCriterion;
+import org.apache.geode.annotations.TestingOnly;
 import org.apache.geode.distributed.DistributedMember;
-import org.apache.geode.distributed.internal.DM;
 import org.apache.geode.distributed.internal.DistributionConfig;
+import org.apache.geode.distributed.internal.DistributionManager;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.distributed.internal.MembershipListener;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
@@ -144,22 +152,56 @@ public abstract class RegionVersionVector<T extends VersionSource<?>>
   private final transient Object clearLockSync = new Object(); // sync for coordinating thread
                                                                // startup and lockOwner setting
 
-  /** create a live version vector for a region */
-  public RegionVersionVector(T ownerId) {
-    this(ownerId, null);
+  /**
+   * constructor used to create a cloned vector
+   */
+  protected RegionVersionVector(T ownerId, ConcurrentHashMap<T, RegionVersionHolder<T>> vector,
+      long version, ConcurrentHashMap<T, Long> gcVersions, long gcVersion, boolean singleMember,
+      RegionVersionHolder<T> localExceptions) {
+    this.myId = ownerId;
+    this.memberToVersion = vector;
+    this.memberToGCVersion = gcVersions;
+    this.localGCVersion.set(gcVersion);
+    this.localVersion.set(version);
+    this.singleMember = singleMember;
+    this.localExceptions = localExceptions;
   }
 
-  /** create a live version vector for a region */
-  public RegionVersionVector(T ownerId, LocalRegion owner) {
-    this.myId = ownerId;
-    this.isLiveVector = true;
-    this.region = owner;
-
-    this.localExceptions = new RegionVersionHolder<T>(0);
+  /**
+   * deserialize a cloned vector
+   */
+  public RegionVersionVector() {
     this.memberToVersion = new ConcurrentHashMap<T, RegionVersionHolder<T>>(INITIAL_CAPACITY,
         LOAD_FACTOR, CONCURRENCY_LEVEL);
     this.memberToGCVersion =
         new ConcurrentHashMap<T, Long>(INITIAL_CAPACITY, LOAD_FACTOR, CONCURRENCY_LEVEL);
+  }
+
+  /**
+   * create a live version vector for a region
+   */
+  public RegionVersionVector(T ownerId) {
+    this(ownerId, null);
+  }
+
+  /**
+   * create a live version vector for a region
+   */
+  public RegionVersionVector(T ownerId, LocalRegion owner) {
+    this(ownerId, owner, 0);
+  }
+
+  @TestingOnly
+  RegionVersionVector(T ownerId, LocalRegion owner, long version) {
+    this.myId = ownerId;
+    this.isLiveVector = true;
+    this.region = owner;
+    this.localExceptions = new RegionVersionHolder<T>(0);
+    this.memberToVersion =
+        new ConcurrentHashMap<>(INITIAL_CAPACITY, LOAD_FACTOR, CONCURRENCY_LEVEL);
+    this.memberToGCVersion =
+        new ConcurrentHashMap<>(INITIAL_CAPACITY, LOAD_FACTOR, CONCURRENCY_LEVEL);
+    this.localVersion.set(version);
   }
 
   /**
@@ -253,7 +295,8 @@ public abstract class RegionVersionVector<T extends VersionSource<?>>
    *
    * @param regionPath
    */
-  public long lockForClear(String regionPath, DM dm, InternalDistributedMember locker) {
+  public long lockForClear(String regionPath, DistributionManager dm,
+      InternalDistributedMember locker) {
     lockVersionGeneration(regionPath, dm, locker);
     return this.localVersion.get();
   }
@@ -285,7 +328,7 @@ public abstract class RegionVersionVector<T extends VersionSource<?>>
    * @param dm the distribution manager - used to obtain an executor to hold the thread
    * @param locker the member requesting the lock (currently not used)
    */
-  private void lockVersionGeneration(final String regionPath, final DM dm,
+  private void lockVersionGeneration(final String regionPath, final DistributionManager dm,
       final InternalDistributedMember locker) {
     final CountDownLatch acquiredLock = new CountDownLatch(1);
     if (logger.isDebugEnabled()) {
@@ -574,17 +617,20 @@ public abstract class RegionVersionVector<T extends VersionSource<?>>
     }
   }
 
-  private void updateLocalVersion(long version) {
-    boolean repeat = false;
+  void updateLocalVersion(long newVersion) {
+    boolean needToTrySetAgain;
     do {
-      long myVersion = this.localVersion.get();
-      if (myVersion < version) {
-        repeat = !this.localVersion.compareAndSet(myVersion, version);
+      needToTrySetAgain = false;
+      long currentVersion = this.localVersion.get();
+      if (currentVersion < newVersion) {
+        needToTrySetAgain = !compareAndSetVersion(currentVersion, newVersion);
       }
-    } while (repeat);
+    } while (needToTrySetAgain);
   }
 
-
+  boolean compareAndSetVersion(long currentVersion, long newVersion) {
+    return this.localVersion.compareAndSet(currentVersion, newVersion);
+  }
 
   /**
    * Records a received region-version. These are transmitted in VersionTags in messages between
@@ -1090,32 +1136,6 @@ public abstract class RegionVersionVector<T extends VersionSource<?>>
       throw new IllegalStateException("there should be a holder for " + mbr);
     }
     return h.getExceptionCount();
-  }
-
-  /**
-   * constructor used to create a cloned vector
-   *
-   * @param localExceptions
-   */
-  protected RegionVersionVector(T ownerId, ConcurrentHashMap<T, RegionVersionHolder<T>> vector,
-      long version, ConcurrentHashMap<T, Long> gcVersions, long gcVersion, boolean singleMember,
-      RegionVersionHolder<T> localExceptions) {
-    this.myId = ownerId;
-    this.memberToVersion = vector;
-    this.memberToGCVersion = gcVersions;
-    this.localGCVersion.set(gcVersion);
-    this.localVersion.set(version);
-    this.singleMember = singleMember;
-    this.localExceptions = localExceptions;
-  }
-
-
-  /** deserialize a cloned vector */
-  public RegionVersionVector() {
-    this.memberToVersion = new ConcurrentHashMap<T, RegionVersionHolder<T>>(INITIAL_CAPACITY,
-        LOAD_FACTOR, CONCURRENCY_LEVEL);
-    this.memberToGCVersion =
-        new ConcurrentHashMap<T, Long>(INITIAL_CAPACITY, LOAD_FACTOR, CONCURRENCY_LEVEL);
   }
 
   /**

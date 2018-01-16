@@ -30,7 +30,7 @@ import org.apache.geode.StatisticDescriptor;
 import org.apache.geode.Statistics;
 import org.apache.geode.StatisticsType;
 import org.apache.geode.admin.jmx.internal.StatAlertsAggregator;
-import org.apache.geode.distributed.internal.DistributionManager;
+import org.apache.geode.distributed.internal.ClusterDistributionManager;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.internal.SystemTimer;
 import org.apache.geode.internal.SystemTimer.SystemTimerTask;
@@ -88,9 +88,9 @@ public class StatAlertsManager {
   /**
    * Provides life cycle support
    */
-  protected final DistributionManager dm;
+  protected final ClusterDistributionManager dm;
 
-  private StatAlertsManager(DistributionManager dm) {
+  private StatAlertsManager(ClusterDistributionManager dm) {
     this.dm = dm;
     logger.info(
         LocalizedMessage.create(LocalizedStrings.StatAlertsManager_STATALERTSMANAGER_CREATED));
@@ -99,7 +99,7 @@ public class StatAlertsManager {
   /**
    * @return singleton instance of StatAlertsManager
    */
-  public static synchronized StatAlertsManager getInstance(DistributionManager dm) {
+  public static synchronized StatAlertsManager getInstance(ClusterDistributionManager dm) {
     // As per current implementation set up request will be send only once ,
     // when member joined to Admin distributed system
     // we don't need to care about race condition
@@ -258,7 +258,7 @@ public class StatAlertsManager {
    * Convert {@link StatAlertDefinition }(Created by client like GFMon2.0) with
    * {@link DummyStatisticInfoImpl} to StatAlertDefinition with {@link StatisticInfoImpl}
    */
-  private StatAlertDefinition[] createMemberStatAlertDefinition(DistributionManager dm,
+  private StatAlertDefinition[] createMemberStatAlertDefinition(ClusterDistributionManager dm,
       StatAlertDefinition[] defns) {
     dm.getCancelCriterion().checkCancelInProgress(null);
 

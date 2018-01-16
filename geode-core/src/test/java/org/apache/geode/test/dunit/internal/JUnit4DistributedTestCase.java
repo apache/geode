@@ -73,6 +73,7 @@ import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.internal.net.SocketCreator;
 import org.apache.geode.internal.net.SocketCreatorFactory;
 import org.apache.geode.management.internal.cli.LogWrapper;
+import org.apache.geode.pdx.internal.TypeRegistry;
 import org.apache.geode.test.dunit.DUnitBlackboard;
 import org.apache.geode.test.dunit.Disconnect;
 import org.apache.geode.test.dunit.Host;
@@ -597,6 +598,8 @@ public abstract class JUnit4DistributedTestCase implements DistributedTestFixtur
 
     IgnoredException.removeAllExpectedExceptions();
     SocketCreatorFactory.close();
+    TypeRegistry.setPdxSerializer(null);
+    TypeRegistry.init();
     cleanDiskDirs();
   }
 

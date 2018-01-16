@@ -51,7 +51,7 @@ public class AddStatListenerRequest extends AdminRequest {
    * @param dm
    */
   @Override
-  protected AdminResponse createResponse(DM dm) {
+  protected AdminResponse createResponse(DistributionManager dm) {
     return AddStatListenerResponse.create(dm, this.getSender(), this.resourceId, this.statName);
   }
 

@@ -23,7 +23,6 @@ import org.apache.mina.util.AvailablePortFinder;
 public class TestPropertiesWriter {
   public static void writeTestProperties(File parent, String name) {
     Properties props = new Properties();
-    props.setProperty('mcast-port', Integer.toString(AvailablePortFinder.getNextAvailable()));
     props.setProperty('log-level', 'config');
     File propsFile = new File(testResultsDir(parent, name), 'gemfire.properties');
     BufferedWriter writer = propsFile.newWriter();

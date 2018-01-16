@@ -678,7 +678,7 @@ public class PdxQueryDUnitTest extends PDXQueryTestBase {
       public void run2() throws CacheException {
         // Execute query locally.
         GemFireCacheImpl cache = (GemFireCacheImpl) getCache();
-        cache.setReadSerialized(true);
+        cache.setReadSerializedForTest(true);
         try {
           QueryService queryService = getCache().getQueryService();
           for (int i = 0; i < qs.length; i++) {
@@ -707,7 +707,7 @@ public class PdxQueryDUnitTest extends PDXQueryTestBase {
             }
           }
         } finally {
-          cache.setReadSerialized(false);
+          cache.setReadSerializedForTest(false);
         }
       }
     });
@@ -1442,7 +1442,7 @@ public class PdxQueryDUnitTest extends PDXQueryTestBase {
         GemFireCacheImpl c = (GemFireCacheImpl) region.getCache();
         try {
           // Set read serialized.
-          c.setReadSerialized(true);
+          c.setReadSerializedForTest(true);
 
           QueryService localQueryService = null;
 
@@ -1469,7 +1469,7 @@ public class PdxQueryDUnitTest extends PDXQueryTestBase {
             }
           }
         } finally {
-          c.setReadSerialized(false);
+          c.setReadSerializedForTest(false);
         }
       }
     });
@@ -2992,7 +2992,7 @@ public class PdxQueryDUnitTest extends PDXQueryTestBase {
       @Override
       public Object call() throws Exception {
         GemFireCacheImpl cache = (GemFireCacheImpl) getCache();
-        cache.setReadSerialized(true);
+        cache.setReadSerializedForTest(true);
         QueryService queryService = null;
         try {
           queryService = getCache().getQueryService();
@@ -3165,7 +3165,7 @@ public class PdxQueryDUnitTest extends PDXQueryTestBase {
       @Override
       public Object call() throws Exception {
         GemFireCacheImpl cache = (GemFireCacheImpl) getCache();
-        cache.setReadSerialized(true);
+        cache.setReadSerializedForTest(true);
         QueryService localQueryService = null;
         // Execute query remotely
         try {
@@ -3373,7 +3373,7 @@ public class PdxQueryDUnitTest extends PDXQueryTestBase {
       @Override
       public Object call() throws Exception {
         GemFireCacheImpl cache = (GemFireCacheImpl) getCache();
-        cache.setReadSerialized(true);
+        cache.setReadSerializedForTest(true);
 
         QueryService qs = null;
         SelectResults[][] sr = new SelectResults[1][2];

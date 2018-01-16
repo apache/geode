@@ -633,7 +633,7 @@ create index --name=value --expression=value --region=value
 [--members=value(,value)*] [--type=value] [--groups=value(,value)*]
 ```
 
-**Parameters: create index:**
+**Parameters, create index:**
 
 | Name                                               | Description                                                                            | Default |
 |----------------------------------------------------|----------------------------------------------------------------------------------------|---------|
@@ -692,7 +692,7 @@ create lucene index --name=value --region=value --field=value(,value)*
 | <span class="keyword parmname">\\-\\-region</span>     | *Required.* Name/Path of the region on which to define the index. |         |
 | <span class="keyword parmname">\\-\\-field</span>      | *Required.* Field(s) of the region values that are referenced by the index, specified as a comma-separated list. To treat the entire value as a single field, specify `__REGION_VALUE_FIELD`. |         |
 | <span class="keyword parmname">&#8209;&#8209;analyzer</span>   | Analyzer(s) to extract terms from text, specified as a comma-separated list. If not specified, the default analyzer is used for all fields. If specified, the number of analyzers must exactly match the number of fields specified. When listing analyzers, use the keyword `DEFAULT` for any field that will use the default analyzer.                                  | Lucene `StandardAnalyzer`        |
-| <span class="keyword parmname">&#8209;&#8209;serializer</span>   | Fully qualified classname of the serializer to be used with this index. The serializer must implement the `LuceneSerializer` interface. You can use the built-in `org.apache.geode.cache.lucene.FlatFormatSerializer` to index and search collections and nested fields. If not specified, the simple default serializer is used, which indexes and searches only the top level fields of the region objects.   | simple serializer        |
+| <span class="keyword parmname">&#8209;&#8209;serializer</span>   | Fully qualified class name of the serializer to be used with this index. The serializer must implement the `LuceneSerializer` interface. You can use the built-in `org.apache.geode.cache.lucene.FlatFormatSerializer` to index and search collections and nested fields. If not specified, the simple default serializer is used, which indexes and searches only the top level fields of the region objects.   | simple serializer        |
 | <span class="keyword parmname">\\-\\-group</span>      | The index will be created on all the members in the specified member groups.                     |         |
 
 
@@ -960,7 +960,7 @@ See [Region Data Storage and Distribution](../../../developing/region_options/ch
 </tr>
 <tr class="even">
 <td><span class="keyword parmname">\-\-partition-resolver</span></td>
-<td>Specifies the full path to a custom partition resolver. To use the provided default partition resolver, specify <code class="ph codeph">org.apache.geode.cache.util.StringPrefixPartitionResolver</code>.</td>
+<td>Specifies the full path to a custom partition resolver. Specify <code class="ph codeph">org.apache.geode.cache.util.StringPrefixPartitionResolver</code> to use the included string prefix partition resolver.</td>
 <td></td>
 </tr>
 <tr>

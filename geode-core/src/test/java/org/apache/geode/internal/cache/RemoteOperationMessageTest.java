@@ -25,7 +25,7 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
-import org.apache.geode.distributed.internal.DistributionManager;
+import org.apache.geode.distributed.internal.ClusterDistributionManager;
 import org.apache.geode.test.fake.Fakes;
 import org.apache.geode.test.junit.categories.UnitTest;
 
@@ -35,7 +35,7 @@ public class RemoteOperationMessageTest {
 
   private GemFireCacheImpl cache;
   private RemoteOperationMessage msg;
-  private DistributionManager dm;
+  private ClusterDistributionManager dm;
   private LocalRegion r;
   private TXManagerImpl txMgr;
   private long startTime = 0;
@@ -44,7 +44,7 @@ public class RemoteOperationMessageTest {
   @Before
   public void setUp() throws Exception {
     cache = Fakes.cache();
-    dm = mock(DistributionManager.class);
+    dm = mock(ClusterDistributionManager.class);
     msg = mock(RemoteOperationMessage.class);
     r = mock(LocalRegion.class);
     txMgr = mock(TXManagerImpl.class);

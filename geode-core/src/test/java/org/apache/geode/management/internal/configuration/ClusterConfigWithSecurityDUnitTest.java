@@ -36,7 +36,7 @@ import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.management.internal.cli.i18n.CliStrings;
 import org.apache.geode.management.internal.configuration.utils.ZipUtils;
 import org.apache.geode.security.SimpleTestSecurityManager;
-import org.apache.geode.test.dunit.rules.LocatorServerStartupRule;
+import org.apache.geode.test.dunit.rules.ClusterStartupRule;
 import org.apache.geode.test.dunit.rules.MemberVM;
 import org.apache.geode.test.junit.categories.DistributedTest;
 import org.apache.geode.test.junit.categories.SecurityTest;
@@ -54,7 +54,7 @@ public class ClusterConfigWithSecurityDUnitTest {
   public SerializableTemporaryFolder temporaryFolder = new SerializableTemporaryFolder();
 
   @Rule
-  public LocatorServerStartupRule lsRule = new LocatorServerStartupRule();
+  public ClusterStartupRule lsRule = new ClusterStartupRule();
 
   @Rule
   public GfshCommandRule connector = new GfshCommandRule();
@@ -79,7 +79,7 @@ public class ClusterConfigWithSecurityDUnitTest {
 
     // the second locator should inherit the first locator's security props
     locator1.invoke(() -> {
-      InternalLocator locator = LocatorServerStartupRule.getLocator();
+      InternalLocator locator = ClusterStartupRule.getLocator();
       ClusterConfigurationService sc = locator.getSharedConfiguration();
       Properties clusterConfigProps = sc.getConfiguration("cluster").getGemfireProperties();
       assertThat(clusterConfigProps.getProperty(SECURITY_MANAGER))
@@ -99,7 +99,7 @@ public class ClusterConfigWithSecurityDUnitTest {
         .statusIsSuccess();
 
     locator0.invoke(() -> {
-      InternalLocator locator = LocatorServerStartupRule.getLocator();
+      InternalLocator locator = ClusterStartupRule.getLocator();
       ClusterConfigurationService sc = locator.getSharedConfiguration();
       Properties properties = sc.getConfiguration("cluster").getGemfireProperties();
       assertThat(properties.getProperty(MCAST_PORT)).isEqualTo("0");
@@ -121,7 +121,7 @@ public class ClusterConfigWithSecurityDUnitTest {
 
     // cluster config specifies a security-manager so integrated security should be enabled
     server.invoke(() -> {
-      InternalCache cache = LocatorServerStartupRule.getCache();
+      InternalCache cache = ClusterStartupRule.getCache();
       Properties properties = cache.getDistributedSystem().getSecurityProperties();
       assertThat(properties.getProperty(SECURITY_MANAGER))
           .isEqualTo(SimpleTestSecurityManager.class.getName());

@@ -25,7 +25,7 @@ import org.apache.geode.distributed.internal.ClusterConfigurationService;
 import org.apache.geode.internal.cache.wan.MyAsyncEventListener;
 import org.apache.geode.management.internal.configuration.domain.Configuration;
 import org.apache.geode.test.dunit.IgnoredException;
-import org.apache.geode.test.dunit.rules.LocatorServerStartupRule;
+import org.apache.geode.test.dunit.rules.ClusterStartupRule;
 import org.apache.geode.test.dunit.rules.MemberVM;
 import org.apache.geode.test.junit.categories.DistributedTest;
 import org.apache.geode.test.junit.rules.GfshCommandRule;
@@ -40,7 +40,7 @@ public class CreateAsyncEventQueueCommandDUnitTest {
       COMMAND + "--listener=" + MyAsyncEventListener.class.getName();
 
   @Rule
-  public LocatorServerStartupRule lsRule = new LocatorServerStartupRule();
+  public ClusterStartupRule lsRule = new ClusterStartupRule();
 
   @Rule
   public GfshCommandRule gfsh = new GfshCommandRule();
@@ -62,7 +62,7 @@ public class CreateAsyncEventQueueCommandDUnitTest {
     server = lsRule.startServerAsJmxManager(0);
     gfsh.connectAndVerify(server.getJmxPort(), GfshCommandRule.PortType.jmxManager);
     gfsh.executeAndAssertThat(VALID_COMMAND + " --id=queue").statusIsSuccess()
-        .containsOutput("Failed to persist the configuration")
+        .containsOutput("This change is not persisted in the cluster configuration")
         .tableHasColumnWithExactValuesInAnyOrder("Status", "Success").tableHasRowCount("Member", 1);
   }
 
@@ -111,7 +111,7 @@ public class CreateAsyncEventQueueCommandDUnitTest {
 
     locator.invoke(() -> {
       ClusterConfigurationService service =
-          LocatorServerStartupRule.getLocator().getSharedConfiguration();
+          ClusterStartupRule.getLocator().getSharedConfiguration();
       assertThat(service.getConfiguration("cluster").getCacheXmlContent()).isNull();
     });
 
@@ -120,7 +120,7 @@ public class CreateAsyncEventQueueCommandDUnitTest {
 
     locator.invoke(() -> {
       ClusterConfigurationService service =
-          LocatorServerStartupRule.getLocator().getSharedConfiguration();
+          ClusterStartupRule.getLocator().getSharedConfiguration();
       Configuration configuration = service.getConfiguration("cluster");
       configuration.getCacheXmlContent().contains("id=queue");
     });

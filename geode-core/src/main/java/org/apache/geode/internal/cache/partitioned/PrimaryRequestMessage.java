@@ -23,7 +23,7 @@ import org.apache.logging.log4j.Logger;
 
 import org.apache.geode.CancelException;
 import org.apache.geode.cache.CacheException;
-import org.apache.geode.distributed.internal.DM;
+import org.apache.geode.distributed.internal.ClusterDistributionManager;
 import org.apache.geode.distributed.internal.DistributionManager;
 import org.apache.geode.distributed.internal.DistributionMessage;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
@@ -93,7 +93,7 @@ public class PrimaryRequestMessage extends PartitionMessage {
   }
 
   @Override
-  protected boolean operateOnPartitionedRegion(DistributionManager dm, PartitionedRegion pr,
+  protected boolean operateOnPartitionedRegion(ClusterDistributionManager dm, PartitionedRegion pr,
       long startTime) throws CacheException, ForceReattemptException {
     if (logger.isTraceEnabled(LogMarker.DM)) {
       logger.trace(LogMarker.DM, "PrimaryRequestMessage operateOnRegion: {}", pr.getFullPath());
@@ -130,7 +130,7 @@ public class PrimaryRequestMessage extends PartitionMessage {
 
   @Override
   public int getProcessorType() {
-    return DistributionManager.WAITING_POOL_EXECUTOR;
+    return ClusterDistributionManager.WAITING_POOL_EXECUTOR;
   }
 
   /**
@@ -142,7 +142,7 @@ public class PrimaryRequestMessage extends PartitionMessage {
     public volatile boolean isPrimary;
 
     protected static void sendReply(InternalDistributedMember member, int procId, boolean isPrimary,
-        DM dm) {
+        DistributionManager dm) {
       dm.putOutgoing(new PrimaryRequestReplyMessage(member, procId, isPrimary));
     }
 

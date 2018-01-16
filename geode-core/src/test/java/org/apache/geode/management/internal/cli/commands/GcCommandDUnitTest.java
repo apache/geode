@@ -32,14 +32,16 @@ import org.junit.runners.Parameterized;
 
 import org.apache.geode.management.cli.Result;
 import org.apache.geode.management.internal.cli.result.CommandResult;
-import org.apache.geode.test.dunit.rules.LocatorServerStartupRule;
+import org.apache.geode.test.dunit.rules.ClusterStartupRule;
 import org.apache.geode.test.dunit.rules.MemberVM;
 import org.apache.geode.test.junit.categories.DistributedTest;
 import org.apache.geode.test.junit.rules.GfshCommandRule;
+import org.apache.geode.test.junit.runners.CategoryWithParameterizedRunnerFactory;
 
 
 @Category(DistributedTest.class)
 @RunWith(Parameterized.class)
+@Parameterized.UseParametersRunnerFactory(CategoryWithParameterizedRunnerFactory.class)
 public class GcCommandDUnitTest {
   private static final String MANAGER_NAME = "Manager";
   private static final String SERVER1_NAME = "Server1";
@@ -51,14 +53,14 @@ public class GcCommandDUnitTest {
   @Parameterized.Parameter
   public static boolean useHttp;
 
-  @Parameterized.Parameters
+  @Parameterized.Parameters(name = "Use http: {0}")
   public static Object[] data() {
     return new Object[] {true, false};
   }
 
 
   @ClassRule
-  public static LocatorServerStartupRule locatorServerStartupRule = new LocatorServerStartupRule();
+  public static ClusterStartupRule clusterStartupRule = new ClusterStartupRule();
 
   @ClassRule
   public static GfshCommandRule gfsh = new GfshCommandRule();
@@ -70,17 +72,17 @@ public class GcCommandDUnitTest {
     managerProps.setProperty(GROUPS, GROUP0);
     managerProps.setProperty(LOG_FILE, "someLog.log");
 
-    MemberVM manager = locatorServerStartupRule.startLocatorVM(0, managerProps);
+    MemberVM manager = clusterStartupRule.startLocatorVM(0, managerProps);
 
     Properties server1Props = new Properties();
     server1Props.setProperty(NAME, SERVER1_NAME);
     server1Props.setProperty(GROUPS, GROUP1);
-    locatorServerStartupRule.startServerVM(1, server1Props, manager.getPort());
+    clusterStartupRule.startServerVM(1, server1Props, manager.getPort());
 
     Properties server2Props = new Properties();
     server2Props.setProperty(NAME, SERVER2_NAME);
     server2Props.setProperty(GROUPS, GROUP2);
-    locatorServerStartupRule.startServerVM(2, server2Props, manager.getPort());
+    clusterStartupRule.startServerVM(2, server2Props, manager.getPort());
 
     if (useHttp) {
       gfsh.connectAndVerify(manager.getHttpPort(), http);
@@ -122,7 +124,6 @@ public class GcCommandDUnitTest {
 
     CommandResult result = gfsh.executeCommand(gcCommand);
     assertThat(result.getStatus()).isEqualTo(Result.Status.ERROR);
-    assertThat(gfsh.getGfshOutput())
-        .contains("Could not process command due to error. NotAValidMemberMember not found");
+    assertThat(gfsh.getGfshOutput()).contains("Member NotAValidMember could not be found.");
   }
 }

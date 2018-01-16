@@ -17,7 +17,6 @@ package org.apache.geode.internal.cache;
 import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
-import java.io.NotSerializableException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashSet;
@@ -37,7 +36,6 @@ import org.apache.geode.GemFireException;
 import org.apache.geode.InternalGemFireException;
 import org.apache.geode.SystemFailure;
 import org.apache.geode.cache.CacheEvent;
-import org.apache.geode.cache.CacheFactory;
 import org.apache.geode.cache.CacheLoader;
 import org.apache.geode.cache.CacheLoaderException;
 import org.apache.geode.cache.CacheWriter;
@@ -53,7 +51,7 @@ import org.apache.geode.cache.Scope;
 import org.apache.geode.cache.TimeoutException;
 import org.apache.geode.cache.util.ObjectSizer;
 import org.apache.geode.distributed.DistributedSystemDisconnectedException;
-import org.apache.geode.distributed.internal.DM;
+import org.apache.geode.distributed.internal.ClusterDistributionManager;
 import org.apache.geode.distributed.internal.DistributionConfig;
 import org.apache.geode.distributed.internal.DistributionManager;
 import org.apache.geode.distributed.internal.HighPriorityDistributionMessage;
@@ -109,7 +107,7 @@ public class SearchLoadAndWriteProcessor implements MembershipListener {
   private boolean isSerialized = false; // is result serialized?
   private CacheDistributionAdvisor advisor = null;
   protected Exception remoteException = null;
-  public DM distributionManager = null;
+  public DistributionManager distributionManager = null;
   private volatile boolean requestInProgress = false;
   private boolean remoteGetInProgress = false;
   private volatile boolean authorative = false;
@@ -964,7 +962,7 @@ public class SearchLoadAndWriteProcessor implements MembershipListener {
    */
   protected synchronized void incomingResponse(Object obj, long lastModifiedTime, boolean isPresent,
       boolean serialized, final boolean requestorTimedOut, final InternalDistributedMember sender,
-      DistributionManager dm, VersionTag versionTag) {
+      ClusterDistributionManager dm, VersionTag versionTag) {
     // NOTE: keep this method efficient since it is optimized
     // by executing it in the p2p reader.
     // This is done with this line in DistributionMessage.java:
@@ -1206,7 +1204,7 @@ public class SearchLoadAndWriteProcessor implements MembershipListener {
   private synchronized void waitForObject2(final int timeoutMs) throws TimeoutException {
     if (this.requestInProgress) {
       try {
-        final DM dm =
+        final DistributionManager dm =
             this.region.getCache().getInternalDistributedSystem().getDistributionManager();
         long waitTimeMs = timeoutMs;
         final long endTime = System.currentTimeMillis() + waitTimeMs;
@@ -1345,7 +1343,7 @@ public class SearchLoadAndWriteProcessor implements MembershipListener {
       int theTtl, int theIdleTime) {
     NetSearchRequestMessage nMsg = new NetSearchRequestMessage();
     nMsg.initialize(this, theRegionName, theKey, theTimeoutMs, theTtl, theIdleTime);
-    nMsg.doGet((DistributionManager) this.distributionManager);
+    nMsg.doGet((ClusterDistributionManager) this.distributionManager);
   }
 
   /**
@@ -1424,7 +1422,7 @@ public class SearchLoadAndWriteProcessor implements MembershipListener {
      * exists in shared memory on this node, and if so, sends back a ResponseMessage.
      */
     @Override
-    protected void process(DistributionManager dm) {
+    protected void process(ClusterDistributionManager dm) {
       doGet(dm);
 
     }
@@ -1489,7 +1487,7 @@ public class SearchLoadAndWriteProcessor implements MembershipListener {
           + ", ttl=" + this.ttl + ", idleTime=" + this.idleTime;
     }
 
-    private void doGet(DistributionManager dm) {
+    private void doGet(ClusterDistributionManager dm) {
       long startTime = dm.cacheTimeMillis();
       // boolean retVal = true;
       boolean isPresent = false;
@@ -1499,7 +1497,7 @@ public class SearchLoadAndWriteProcessor implements MembershipListener {
       boolean requestorTimedOut = false;
       VersionTag tag = null;
 
-      if (dm.getDMType() == DistributionManager.ADMIN_ONLY_DM_TYPE
+      if (dm.getDMType() == ClusterDistributionManager.ADMIN_ONLY_DM_TYPE
           || getSender().equals(dm.getDistributionManagerId())) {
         // this was probably a multicast message
         // replyWithNull(dm); - bug 35266: don't send a reply
@@ -1588,7 +1586,7 @@ public class SearchLoadAndWriteProcessor implements MembershipListener {
       }
     }
 
-    private void replyWithNull(DistributionManager dm) {
+    private void replyWithNull(ClusterDistributionManager dm) {
       ResponseMessage.sendMessage(this.key, this.getSender(), processorId, null, 0, false, false,
           false, dm, null);
     }
@@ -1628,7 +1626,8 @@ public class SearchLoadAndWriteProcessor implements MembershipListener {
 
     public static void sendMessage(Object key, InternalDistributedMember recipient, int processorId,
         Object result, long lastModified, boolean isPresent, boolean isSerialized,
-        boolean requestorTimedOut, DistributionManager distributionManager, VersionTag versionTag) {
+        boolean requestorTimedOut, ClusterDistributionManager distributionManager,
+        VersionTag versionTag) {
 
       // create a message
       ResponseMessage msg = new ResponseMessage();
@@ -1656,7 +1655,7 @@ public class SearchLoadAndWriteProcessor implements MembershipListener {
      * Invoked on the receiver - which, in this case, was the initiator of the QueryMessage .
      */
     @Override
-    protected void process(DistributionManager dm) {
+    protected void process(ClusterDistributionManager dm) {
       // NOTE: keep this method efficient since it is optimized
       // by executing it in the p2p reader.
       // This is done with this line in DistributionMessage.java:
@@ -1781,7 +1780,7 @@ public class SearchLoadAndWriteProcessor implements MembershipListener {
 
     /** Invoked on the node that has the object */
     @Override
-    protected void process(DistributionManager dm) {
+    protected void process(ClusterDistributionManager dm) {
       doGet(dm);
     }
 
@@ -1841,7 +1840,7 @@ public class SearchLoadAndWriteProcessor implements MembershipListener {
           + "\" in region \"" + this.regionName + "\", processorId " + processorId;
     }
 
-    private void doGet(DistributionManager dm) {
+    private void doGet(ClusterDistributionManager dm) {
       long startTime = dm.cacheTimeMillis();
       // boolean retVal = true;
       byte[] ebv = null;
@@ -1943,7 +1942,7 @@ public class SearchLoadAndWriteProcessor implements MembershipListener {
       }
     }
 
-    private void replyWithNull(DistributionManager dm) {
+    private void replyWithNull(ClusterDistributionManager dm) {
       NetSearchReplyMessage.sendMessage(NetSearchRequestMessage.this.getSender(), processorId,
           this.key, null, null, 0, 0, false, false, false, dm, null);
     }
@@ -1991,8 +1990,8 @@ public class SearchLoadAndWriteProcessor implements MembershipListener {
 
     public static void sendMessage(InternalDistributedMember recipient, int processorId, Object key,
         byte[] value, Object valueObj, int valueLen, long lastModified, boolean isSerialized,
-        boolean requestorTimedOut, boolean authoritative, DistributionManager distributionManager,
-        VersionTag versionTag) {
+        boolean requestorTimedOut, boolean authoritative,
+        ClusterDistributionManager distributionManager, VersionTag versionTag) {
       // create a message
       NetSearchReplyMessage msg = new NetSearchReplyMessage();
       msg.initialize(processorId, value, valueObj, valueLen, lastModified, isSerialized,
@@ -2022,7 +2021,7 @@ public class SearchLoadAndWriteProcessor implements MembershipListener {
      * NetSearchRequestMessage. This concludes the net request, by communicating an object value.
      */
     @Override
-    protected void process(DistributionManager dm) {
+    protected void process(ClusterDistributionManager dm) {
       SearchLoadAndWriteProcessor processor = null;
       processor = (SearchLoadAndWriteProcessor) getProcessorKeeper().retrieve(processorId);
       if (processor == null) {
@@ -2149,8 +2148,8 @@ public class SearchLoadAndWriteProcessor implements MembershipListener {
       msg.setRecipient(recipient);
 
       try {
-        processor.distributionManager.putOutgoingUserData(msg);
-      } catch (NotSerializableException ignore) {
+        processor.distributionManager.putOutgoing(msg);
+      } catch (InternalGemFireException e) {
         throw new IllegalArgumentException(
             LocalizedStrings.SearchLoadAndWriteProcessor_MESSAGE_NOT_SERIALIZABLE
                 .toLocalizedString());
@@ -2171,7 +2170,7 @@ public class SearchLoadAndWriteProcessor implements MembershipListener {
 
     /** Invoked on the node that has the object */
     @Override
-    protected void process(DistributionManager dm) {
+    protected void process(ClusterDistributionManager dm) {
       doLoad(dm);
     }
 
@@ -2210,7 +2209,7 @@ public class SearchLoadAndWriteProcessor implements MembershipListener {
           + "\" in region \"" + this.regionName + "\", processorId " + processorId;
     }
 
-    private void doLoad(DistributionManager dm) {
+    private void doLoad(ClusterDistributionManager dm) {
       long startTime = dm.cacheTimeMillis();
       int oldLevel = LocalRegion.setThreadInitLevelRequirement(LocalRegion.BEFORE_INITIAL_IMAGE);
       try {
@@ -2277,7 +2276,7 @@ public class SearchLoadAndWriteProcessor implements MembershipListener {
 
     }
 
-    void replyWithException(Exception e, DistributionManager dm) {
+    void replyWithException(Exception e, ClusterDistributionManager dm) {
       NetLoadReplyMessage.sendMessage(NetLoadRequestMessage.this.getSender(), processorId, null, dm,
           this.aCallbackArgument, e, false, false);
     }
@@ -2309,7 +2308,7 @@ public class SearchLoadAndWriteProcessor implements MembershipListener {
     public NetLoadReplyMessage() {}
 
     public static void sendMessage(InternalDistributedMember recipient, int processorId, Object obj,
-        DistributionManager distributionManager, Object aCallbackArgument, Exception e,
+        ClusterDistributionManager distributionManager, Object aCallbackArgument, Exception e,
         boolean isSerialized, boolean requestorTimedOut) {
       // create a message
       NetLoadReplyMessage msg = new NetLoadReplyMessage();
@@ -2333,7 +2332,7 @@ public class SearchLoadAndWriteProcessor implements MembershipListener {
      * NetLoadRequestMessage. This concludes the net request, by communicating an object value.
      */
     @Override
-    protected void process(DistributionManager dm) {
+    protected void process(ClusterDistributionManager dm) {
       SearchLoadAndWriteProcessor processor = null;
       processor = (SearchLoadAndWriteProcessor) getProcessorKeeper().retrieve(processorId);
       if (processor == null) {
@@ -2467,7 +2466,7 @@ public class SearchLoadAndWriteProcessor implements MembershipListener {
 
     /** Invoked on the node that has the object */
     @Override
-    protected void process(DistributionManager dm) {
+    protected void process(ClusterDistributionManager dm) {
       long startTime = dm.cacheTimeMillis();
       int oldLevel = LocalRegion.setThreadInitLevelRequirement(LocalRegion.BEFORE_INITIAL_IMAGE);
       try {
@@ -2616,7 +2615,7 @@ public class SearchLoadAndWriteProcessor implements MembershipListener {
     public NetWriteReplyMessage() {}
 
     public static void sendMessage(InternalDistributedMember recipient, int processorId,
-        DistributionManager distributionManager, boolean netWriteSucceeded, Exception e,
+        ClusterDistributionManager distributionManager, boolean netWriteSucceeded, Exception e,
         boolean cacheWriterException) {
       // create a message
       NetWriteReplyMessage msg = new NetWriteReplyMessage();
@@ -2639,7 +2638,7 @@ public class SearchLoadAndWriteProcessor implements MembershipListener {
      * value.
      */
     @Override
-    protected void process(DistributionManager dm) {
+    protected void process(ClusterDistributionManager dm) {
       SearchLoadAndWriteProcessor processor = null;
       processor = (SearchLoadAndWriteProcessor) getProcessorKeeper().retrieve(processorId);
       if (processor == null) {

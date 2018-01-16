@@ -18,26 +18,33 @@ package org.apache.geode.cache.lucene.internal.cli.functions;
 import static org.apache.geode.cache.lucene.internal.LuceneServiceImpl.validateCommandParameters.INDEX_NAME;
 import static org.apache.geode.cache.lucene.internal.LuceneServiceImpl.validateCommandParameters.REGION_PATH;
 
+import java.util.Collection;
+import java.util.Collections;
+
 import org.apache.commons.lang.StringUtils;
 import org.apache.lucene.analysis.Analyzer;
 import org.apache.lucene.analysis.standard.StandardAnalyzer;
 
 import org.apache.geode.cache.Cache;
-import org.apache.geode.cache.CacheFactory;
-import org.apache.geode.cache.execute.FunctionAdapter;
+import org.apache.geode.cache.execute.Function;
 import org.apache.geode.cache.execute.FunctionContext;
-import org.apache.geode.cache.lucene.LuceneIndexFactory;
 import org.apache.geode.cache.lucene.LuceneSerializer;
 import org.apache.geode.cache.lucene.LuceneService;
 import org.apache.geode.cache.lucene.LuceneServiceProvider;
+import org.apache.geode.cache.lucene.internal.LuceneIndexFactoryImpl;
+import org.apache.geode.cache.lucene.internal.LuceneServiceImpl;
 import org.apache.geode.cache.lucene.internal.cli.LuceneCliStrings;
 import org.apache.geode.cache.lucene.internal.cli.LuceneIndexDetails;
 import org.apache.geode.cache.lucene.internal.cli.LuceneIndexInfo;
+import org.apache.geode.cache.lucene.internal.security.LucenePermission;
 import org.apache.geode.internal.InternalEntity;
 import org.apache.geode.management.internal.cli.CliUtil;
 import org.apache.geode.management.internal.cli.functions.CliFunctionResult;
 import org.apache.geode.management.internal.cli.i18n.CliStrings;
 import org.apache.geode.management.internal.configuration.domain.XmlEntity;
+import org.apache.geode.security.ResourcePermission;
+import org.apache.geode.security.ResourcePermission.Operation;
+import org.apache.geode.security.ResourcePermission.Resource;
 
 
 /**
@@ -46,13 +53,15 @@ import org.apache.geode.management.internal.configuration.domain.XmlEntity;
  *
  * @see Cache
  * @see org.apache.geode.cache.execute.Function
- * @see FunctionAdapter
+ * @see Function
  * @see FunctionContext
  * @see InternalEntity
  * @see LuceneIndexDetails
  */
 @SuppressWarnings("unused")
-public class LuceneCreateIndexFunction extends FunctionAdapter implements InternalEntity {
+public class LuceneCreateIndexFunction implements InternalEntity, Function {
+
+  private static final long serialVersionUID = 3061443846664615818L;
 
   public String getId() {
     return LuceneCreateIndexFunction.class.getName();
@@ -72,7 +81,8 @@ public class LuceneCreateIndexFunction extends FunctionAdapter implements Intern
       String[] analyzerName = indexInfo.getFieldAnalyzers();
       String serializerName = indexInfo.getSerializer();
 
-      final LuceneIndexFactory indexFactory = service.createIndexFactory();
+      final LuceneIndexFactoryImpl indexFactory =
+          (LuceneIndexFactoryImpl) service.createIndexFactory();
       if (analyzerName == null || analyzerName.length == 0) {
         for (String field : fields) {
           indexFactory.addField(field);
@@ -91,8 +101,11 @@ public class LuceneCreateIndexFunction extends FunctionAdapter implements Intern
       }
 
       REGION_PATH.validateName(indexInfo.getRegionPath());
-
-      indexFactory.create(indexInfo.getIndexName(), indexInfo.getRegionPath());
+      if (LuceneServiceImpl.LUCENE_REINDEX) {
+        indexFactory.create(indexInfo.getIndexName(), indexInfo.getRegionPath(), true);
+      } else {
+        indexFactory.create(indexInfo.getIndexName(), indexInfo.getRegionPath(), false);
+      }
 
       // TODO - update cluster configuration by returning a valid XmlEntity
       XmlEntity xmlEntity = null;
@@ -102,6 +115,12 @@ public class LuceneCreateIndexFunction extends FunctionAdapter implements Intern
           e.getClass().getName(), e.getMessage());
       context.getResultSender().lastResult(new CliFunctionResult(memberId, e, e.getMessage()));
     }
+  }
+
+  @Override
+  public Collection<ResourcePermission> getRequiredPermissions(String regionName) {
+    return Collections.singleton(
+        new ResourcePermission(Resource.CLUSTER, Operation.MANAGE, LucenePermission.TARGET));
   }
 
   private LuceneSerializer toSerializer(String serializerName)
@@ -130,5 +149,4 @@ public class LuceneCreateIndexFunction extends FunctionAdapter implements Intern
         CliUtil.forName(className, LuceneCliStrings.LUCENE_CREATE_INDEX__ANALYZER);
     return CliUtil.newInstance(clazz, LuceneCliStrings.LUCENE_CREATE_INDEX__ANALYZER);
   }
-
 }

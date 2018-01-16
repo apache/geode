@@ -15,9 +15,11 @@
 
 package org.apache.geode.cache.lucene.internal.cli.functions;
 
+import java.util.Collection;
+import java.util.Collections;
+
 import org.apache.geode.cache.Cache;
-import org.apache.geode.cache.CacheFactory;
-import org.apache.geode.cache.execute.FunctionAdapter;
+import org.apache.geode.cache.execute.Function;
 import org.apache.geode.cache.execute.FunctionContext;
 import org.apache.geode.cache.lucene.LuceneIndex;
 import org.apache.geode.cache.lucene.LuceneServiceProvider;
@@ -26,7 +28,11 @@ import org.apache.geode.cache.lucene.internal.LuceneIndexImpl;
 import org.apache.geode.cache.lucene.internal.LuceneServiceImpl;
 import org.apache.geode.cache.lucene.internal.cli.LuceneIndexDetails;
 import org.apache.geode.cache.lucene.internal.cli.LuceneIndexInfo;
+import org.apache.geode.cache.lucene.internal.security.LucenePermission;
 import org.apache.geode.internal.InternalEntity;
+import org.apache.geode.security.ResourcePermission;
+import org.apache.geode.security.ResourcePermission.Operation;
+import org.apache.geode.security.ResourcePermission.Resource;
 
 /**
  * The LuceneDescribeIndexFunction class is a function used to collect the information on a
@@ -35,14 +41,16 @@ import org.apache.geode.internal.InternalEntity;
  *
  * @see Cache
  * @see org.apache.geode.cache.execute.Function
- * @see FunctionAdapter
+ * @see Function
  * @see FunctionContext
  * @see InternalEntity
  * @see LuceneIndexDetails
  * @see LuceneIndexInfo
  */
 @SuppressWarnings("unused")
-public class LuceneDescribeIndexFunction extends FunctionAdapter implements InternalEntity {
+public class LuceneDescribeIndexFunction implements InternalEntity, Function {
+
+  private static final long serialVersionUID = 1776072528558670172L;
 
   public String getId() {
     return LuceneDescribeIndexFunction.class.getName();
@@ -64,5 +72,11 @@ public class LuceneDescribeIndexFunction extends FunctionAdapter implements Inte
       result = new LuceneIndexDetails(profile, serverName);
     }
     context.getResultSender().lastResult(result);
+  }
+
+  @Override
+  public Collection<ResourcePermission> getRequiredPermissions(String regionName) {
+    return Collections.singleton(
+        new ResourcePermission(Resource.CLUSTER, Operation.READ, LucenePermission.TARGET));
   }
 }

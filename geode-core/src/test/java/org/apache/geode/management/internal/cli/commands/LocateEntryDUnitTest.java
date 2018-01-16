@@ -22,7 +22,7 @@ import org.junit.experimental.categories.Category;
 
 import org.apache.geode.management.internal.cli.dto.Key;
 import org.apache.geode.management.internal.cli.dto.Value;
-import org.apache.geode.test.dunit.rules.LocatorServerStartupRule;
+import org.apache.geode.test.dunit.rules.ClusterStartupRule;
 import org.apache.geode.test.dunit.rules.MemberVM;
 import org.apache.geode.test.junit.categories.DistributedTest;
 import org.apache.geode.test.junit.rules.GfshCommandRule;
@@ -31,7 +31,7 @@ import org.apache.geode.test.junit.rules.GfshCommandRule;
 @Category(DistributedTest.class)
 public class LocateEntryDUnitTest {
   @ClassRule
-  public static LocatorServerStartupRule lsRule = new LocatorServerStartupRule();
+  public static ClusterStartupRule lsRule = new ClusterStartupRule();
 
   @ClassRule
   public static GfshCommandRule gfsh = new GfshCommandRule();

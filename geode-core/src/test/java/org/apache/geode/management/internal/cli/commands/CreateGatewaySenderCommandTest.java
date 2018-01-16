@@ -18,15 +18,25 @@ package org.apache.geode.management.internal.cli.commands;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.doReturn;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.spy;
+import static org.mockito.Mockito.verify;
 
+import java.util.ArrayList;
 import java.util.Collections;
+import java.util.List;
+import java.util.Set;
 
 import org.junit.Before;
 import org.junit.ClassRule;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
+import org.apache.geode.distributed.internal.ClusterConfigurationService;
+import org.apache.geode.internal.cache.InternalCache;
+import org.apache.geode.management.internal.cli.functions.CliFunctionResult;
+import org.apache.geode.management.internal.configuration.domain.XmlEntity;
 import org.apache.geode.test.junit.categories.UnitTest;
 import org.apache.geode.test.junit.rules.GfshParserRule;
 
@@ -37,10 +47,23 @@ public class CreateGatewaySenderCommandTest {
   public static GfshParserRule gfsh = new GfshParserRule();
 
   private CreateGatewaySenderCommand command;
+  private InternalCache cache;
+  private List<CliFunctionResult> functionResults;
+  private ClusterConfigurationService ccService;
+  private CliFunctionResult result1, result2;
+  private XmlEntity xmlEntity;
 
   @Before
   public void before() {
     command = spy(CreateGatewaySenderCommand.class);
+    ccService = mock(ClusterConfigurationService.class);
+    xmlEntity = mock(XmlEntity.class);
+    cache = mock(InternalCache.class);
+    doReturn(cache).when(command).getCache();
+    doReturn(ccService).when(command).getSharedConfiguration();
+    functionResults = new ArrayList<>();
+    doReturn(functionResults).when(command).executeAndGetFunctionResult(any(), any(),
+        any(Set.class));
   }
 
   @Test
@@ -86,5 +109,43 @@ public class CreateGatewaySenderCommandTest {
     GfshParserRule.CommandCandidate candidate = gfsh.complete(command);
     assertThat(candidate.getCandidates()).hasSize(3);
     assertThat(candidate.getFirstCandidate()).isEqualTo(command + "=KEY");
+  }
+
+  @Test
+  public void whenNoCCService() {
+    doReturn(mock(Set.class)).when(command).getMembers(any(), any());
+    doReturn(null).when(command).getSharedConfiguration();
+    result1 = new CliFunctionResult("member", xmlEntity, "result1");
+    functionResults.add(result1);
+    gfsh.executeAndAssertThat(command,
+        "create gateway-sender --id=1  --remote-distributed-system-id=1").statusIsSuccess()
+        .hasFailToPersistError();
+    verify(ccService, never()).deleteXmlEntity(any(), any());
+  }
+
+  @Test
+  public void whenCommandOnMember() {
+    doReturn(mock(Set.class)).when(command).getMembers(any(), any());
+    doReturn(ccService).when(command).getSharedConfiguration();
+    result1 = new CliFunctionResult("member", xmlEntity, "result1");
+    functionResults.add(result1);
+    gfsh.executeAndAssertThat(command,
+        "create gateway-sender --member=xyz --id=1 --remote-distributed-system-id=1")
+        .statusIsSuccess().hasFailToPersistError();
+    verify(ccService, never()).deleteXmlEntity(any(), any());
+  }
+
+  @Test
+  public void whenNoXml() {
+    doReturn(mock(Set.class)).when(command).getMembers(any(), any());
+    doReturn(ccService).when(command).getSharedConfiguration();
+    result1 = new CliFunctionResult("member", false, "result1");
+    functionResults.add(result1);
+
+    // does not delete because command failed, so hasNoFailToPersistError should still be true
+    gfsh.executeAndAssertThat(command,
+        "create gateway-sender --id=1 --remote-distributed-system-id=1").statusIsError()
+        .hasNoFailToPersistError();
+    verify(ccService, never()).deleteXmlEntity(any(), any());
   }
 }

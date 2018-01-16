@@ -27,7 +27,6 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoMoreInteractions;
 import static org.mockito.Mockito.when;
 
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -49,17 +48,15 @@ import org.mockito.ArgumentCaptor;
 import org.apache.geode.admin.internal.AdminDistributedSystemImpl;
 import org.apache.geode.cache.AttributesFactory;
 import org.apache.geode.cache.Cache;
-import org.apache.geode.cache.CacheClosedException;
 import org.apache.geode.cache.DataPolicy;
 import org.apache.geode.cache.DiskStore;
 import org.apache.geode.cache.PartitionAttributesFactory;
-import org.apache.geode.cache.PartitionedRegionStorageException;
 import org.apache.geode.cache.Region;
 import org.apache.geode.cache.control.RebalanceOperation;
 import org.apache.geode.cache.control.RebalanceResults;
 import org.apache.geode.cache.persistence.PartitionOfflineException;
+import org.apache.geode.distributed.internal.ClusterDistributionManager;
 import org.apache.geode.distributed.internal.DistributionConfig;
-import org.apache.geode.distributed.internal.DistributionManager;
 import org.apache.geode.distributed.internal.DistributionMessage;
 import org.apache.geode.distributed.internal.DistributionMessageObserver;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
@@ -2061,7 +2058,8 @@ public class PersistentColocatedPartitionedRegionDUnitTest
       public void run() {
         DistributionMessageObserver.setInstance(new DistributionMessageObserver() {
           @Override
-          public void beforeProcessMessage(DistributionManager dm, DistributionMessage message) {
+          public void beforeProcessMessage(ClusterDistributionManager dm,
+              DistributionMessage message) {
             if (message instanceof RequestImageMessage) {
               if (((RequestImageMessage) message).regionPath.contains("region2")) {
                 DistributionMessageObserver.setInstance(null);
@@ -2136,144 +2134,6 @@ public class PersistentColocatedPartitionedRegionDUnitTest
     checkData(vm0, 0, NUM_BUCKETS, "a");
     // Workaround for bug 46748.
     checkData(vm0, 0, NUM_BUCKETS, "a", "region2");
-  }
-
-  /**
-   * Test what happens when we restart persistent members while there is an accessor concurrently
-   * performing puts. This is for bug 43899
-   */
-  @Test
-  public void testRecoverySystemWithConcurrentPutter() throws Throwable {
-    Host host = Host.getHost(0);
-    VM vm0 = host.getVM(0);
-    VM vm1 = host.getVM(1);
-    VM vm2 = host.getVM(2);
-    VM vm3 = host.getVM(3);
-
-    // Define all of the runnables used in this test
-
-    // runnable to create accessors
-    SerializableRunnable createAccessor = new SerializableRunnable("createAccessor") {
-      public void run() {
-        Cache cache = getCache();
-
-        AttributesFactory af = new AttributesFactory();
-        PartitionAttributesFactory paf = new PartitionAttributesFactory();
-        paf.setRedundantCopies(1);
-        paf.setLocalMaxMemory(0);
-        af.setPartitionAttributes(paf.create());
-        af.setDataPolicy(DataPolicy.PARTITION);
-        cache.createRegion(getPartitionedRegionName(), af.create());
-
-        paf.setColocatedWith(getPartitionedRegionName());
-        af.setPartitionAttributes(paf.create());
-        cache.createRegion("region2", af.create());
-      }
-    };
-
-    // runnable to create PRs
-    SerializableRunnable createPRs = new SerializableRunnable("createPRs") {
-      public void run() {
-        Cache cache = getCache();
-
-        DiskStore ds = cache.findDiskStore("disk");
-        if (ds == null) {
-          ds = cache.createDiskStoreFactory().setDiskDirs(getDiskDirs()).create("disk");
-        }
-        AttributesFactory af = new AttributesFactory();
-        PartitionAttributesFactory paf = new PartitionAttributesFactory();
-        paf.setRedundantCopies(1);
-        af.setPartitionAttributes(paf.create());
-        af.setDataPolicy(DataPolicy.PERSISTENT_PARTITION);
-        af.setDiskStoreName("disk");
-        cache.createRegion(getPartitionedRegionName(), af.create());
-
-        paf.setColocatedWith(getPartitionedRegionName());
-        af.setPartitionAttributes(paf.create());
-        cache.createRegion("region2", af.create());
-      }
-    };
-
-    // runnable to close the cache.
-    SerializableRunnable closeCache = new SerializableRunnable("closeCache") {
-      public void run() {
-        closeCache();
-      }
-    };
-
-    // Runnable to do a bunch of puts handle exceptions
-    // due to the fact that member is offline.
-    SerializableRunnable doABunchOfPuts = new SerializableRunnable("doABunchOfPuts") {
-      public void run() {
-        Cache cache = getCache();
-        Region region = cache.getRegion(getPartitionedRegionName());
-        try {
-          for (int i = 0;; i++) {
-            try {
-              region.get(i % NUM_BUCKETS);
-            } catch (PartitionOfflineException expected) {
-              // do nothing.
-            } catch (PartitionedRegionStorageException expected) {
-              // do nothing.
-            }
-            Thread.yield();
-          }
-        } catch (CacheClosedException expected) {
-          // ok, we're done.
-        }
-      }
-    };
-
-
-    // Runnable to clean up disk dirs on a members
-    SerializableRunnable cleanDiskDirs = new SerializableRunnable("Clean disk dirs") {
-      public void run() {
-        cleanDiskDirs();
-      }
-    };
-
-    // Create the PR two members
-    vm1.invoke(createPRs);
-    vm2.invoke(createPRs);
-
-    // create the accessor.
-    vm0.invoke(createAccessor);
-
-
-    // Create some buckets.
-    createData(vm0, 0, NUM_BUCKETS, "a");
-    createData(vm0, 0, NUM_BUCKETS, "a", "region2");
-
-
-    // backup the system. We use this to get a snapshot of vm1 and vm2
-    // when they both are online. Recovering from this backup simulates
-    // a simulataneous kill and recovery.
-    backup(vm3);
-
-    // close vm1 and vm2.
-    vm1.invoke(closeCache);
-    vm2.invoke(closeCache);
-
-    // restore the backup
-    vm1.invoke(cleanDiskDirs);
-    vm2.invoke(cleanDiskDirs);
-    restoreBackup(2);
-
-    // in vm0, start doing a bunch of concurrent puts.
-    AsyncInvocation async0 = vm0.invokeAsync(doABunchOfPuts);
-
-    // This recovery should not hang (that's what we're testing for
-    // here.
-    AsyncInvocation async1 = vm1.invokeAsync(createPRs);
-    AsyncInvocation async2 = vm2.invokeAsync(createPRs);
-    async1.getResult(MAX_WAIT);
-    async2.getResult(MAX_WAIT);
-
-    // close the cache in vm0 to stop the async puts.
-    vm0.invoke(closeCache);
-
-    // make sure we didn't get an exception
-    async0.getResult(MAX_WAIT);
   }
 
   @Category(FlakyTest.class) // GEODE-506: time sensitive, async actions with 30 sec max

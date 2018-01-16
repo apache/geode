@@ -34,7 +34,7 @@ import org.junit.experimental.categories.Category;
 import org.apache.geode.GemFireConfigException;
 import org.apache.geode.distributed.DistributedSystem;
 import org.apache.geode.internal.i18n.LocalizedStrings;
-import org.apache.geode.test.dunit.rules.LocatorServerStartupRule;
+import org.apache.geode.test.dunit.rules.ClusterStartupRule;
 import org.apache.geode.test.junit.categories.DistributedTest;
 import org.apache.geode.test.junit.categories.SecurityTest;
 import org.apache.geode.test.junit.rules.ServerStarterRule;
@@ -43,7 +43,7 @@ import org.apache.geode.test.junit.rules.ServerStarterRule;
 public class SecurityClusterConfigDUnitTest {
 
   @Rule
-  public LocatorServerStartupRule lsRule = new LocatorServerStartupRule();
+  public ClusterStartupRule lsRule = new ClusterStartupRule();
 
   @Rule
   public ServerStarterRule serverStarter = new ServerStarterRule();

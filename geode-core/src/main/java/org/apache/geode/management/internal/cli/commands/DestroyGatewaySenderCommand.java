@@ -33,6 +33,7 @@ import org.apache.geode.management.internal.cli.functions.GatewaySenderDestroyFu
 import org.apache.geode.management.internal.cli.i18n.CliStrings;
 import org.apache.geode.management.internal.cli.result.CommandResult;
 import org.apache.geode.management.internal.cli.result.ResultBuilder;
+import org.apache.geode.management.internal.configuration.domain.XmlEntity;
 import org.apache.geode.management.internal.security.ResourceOperation;
 import org.apache.geode.security.ResourcePermission;
 
@@ -66,7 +67,21 @@ public class DestroyGatewaySenderCommand implements GfshCommand {
         GatewaySenderDestroyFunction.INSTANCE, gatewaySenderDestroyFunctionArgs, members);
 
     CommandResult result = ResultBuilder.buildResult(functionResults);
+    XmlEntity xmlEntity = findXmlEntity(functionResults);
 
+    // no xml needs to be updated, simply return
+    if (xmlEntity == null) {
+      return result;
+    }
+
+    // has xml but unable to persist to cluster config, need to print warning message and return
+    if (onMember != null || getSharedConfiguration() == null) {
+      result.setCommandPersisted(false);
+      return result;
+    }
+
+    // update cluster config
+    getSharedConfiguration().deleteXmlEntity(xmlEntity, onGroups);
     return result;
   }
 }

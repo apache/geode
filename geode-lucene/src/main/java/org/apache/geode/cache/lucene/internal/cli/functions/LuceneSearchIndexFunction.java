@@ -15,13 +15,14 @@
 
 package org.apache.geode.cache.lucene.internal.cli.functions;
 
+import java.util.Collection;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
 import org.apache.geode.cache.Cache;
-import org.apache.geode.cache.CacheFactory;
-import org.apache.geode.cache.execute.FunctionAdapter;
+import org.apache.geode.cache.execute.Function;
 import org.apache.geode.cache.execute.FunctionContext;
 import org.apache.geode.cache.lucene.LuceneQuery;
 import org.apache.geode.cache.lucene.LuceneQueryException;
@@ -34,6 +35,9 @@ import org.apache.geode.cache.lucene.internal.cli.LuceneIndexInfo;
 import org.apache.geode.cache.lucene.internal.cli.LuceneQueryInfo;
 import org.apache.geode.cache.lucene.internal.cli.LuceneSearchResults;
 import org.apache.geode.internal.InternalEntity;
+import org.apache.geode.security.ResourcePermission;
+import org.apache.geode.security.ResourcePermission.Operation;
+import org.apache.geode.security.ResourcePermission.Resource;
 
 /**
  * The LuceneSearchIndexFunction class is a function used to collect the information on a particular
@@ -42,14 +46,16 @@ import org.apache.geode.internal.InternalEntity;
  *
  * @see Cache
  * @see org.apache.geode.cache.execute.Function
- * @see FunctionAdapter
+ * @see Function
  * @see FunctionContext
  * @see InternalEntity
  * @see LuceneIndexDetails
  * @see LuceneIndexInfo
  */
 @SuppressWarnings("unused")
-public class LuceneSearchIndexFunction<K, V> extends FunctionAdapter implements InternalEntity {
+public class LuceneSearchIndexFunction<K, V> implements InternalEntity, Function {
+
+  private static final long serialVersionUID = 163818919780803222L;
 
   public String getId() {
     return LuceneSearchIndexFunction.class.getName();
@@ -91,5 +97,10 @@ public class LuceneSearchIndexFunction<K, V> extends FunctionAdapter implements 
       result.add(new LuceneSearchResults(true, e.getMessage()));
       context.getResultSender().lastResult(result);
     }
+  }
+
+  @Override
+  public Collection<ResourcePermission> getRequiredPermissions(String regionName) {
+    return Collections.singleton(new ResourcePermission(Resource.DATA, Operation.READ, regionName));
   }
 }

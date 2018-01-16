@@ -32,10 +32,11 @@ import org.apache.geode.distributed.ConfigurationProperties;
 import org.apache.geode.distributed.Locator;
 import org.apache.geode.distributed.internal.ClusterConfigurationService;
 import org.apache.geode.distributed.internal.InternalLocator;
-import org.apache.geode.test.dunit.rules.LocatorServerStartupRule;
+import org.apache.geode.test.dunit.rules.ClusterStartupRule;
 import org.apache.geode.test.dunit.rules.MemberVM;
 import org.apache.geode.test.junit.categories.DistributedTest;
 import org.apache.geode.test.junit.rules.GfshCommandRule;
+import org.apache.geode.test.junit.rules.VMProvider;
 import org.apache.geode.test.junit.rules.serializable.SerializableTestName;
 
 @Category(DistributedTest.class)
@@ -46,22 +47,22 @@ public class CreateDefinedIndexesCommandDUnitTest {
   public GfshCommandRule gfsh = new GfshCommandRule();
 
   @Rule
-  public LocatorServerStartupRule locatorServerStartupRule = new LocatorServerStartupRule();
+  public ClusterStartupRule clusterStartupRule = new ClusterStartupRule();
 
   @Rule
   public TestName testName = new SerializableTestName();
 
   @Before
   public void before() throws Exception {
-    locator = locatorServerStartupRule.startLocatorVM(0);
-    server1 = locatorServerStartupRule.startServerVM(1, locator.getPort());
-    server2 = locatorServerStartupRule.startServerVM(2, locator.getPort());
+    locator = clusterStartupRule.startLocatorVM(0);
+    server1 = clusterStartupRule.startServerVM(1, locator.getPort());
+    server2 = clusterStartupRule.startServerVM(2, locator.getPort());
 
     Properties server3Properties = new Properties();
     server3Properties.setProperty(ConfigurationProperties.LOCATORS,
         "localhost[" + locator.getPort() + "]");
     server3Properties.setProperty(ConfigurationProperties.GROUPS, "group1");
-    server3 = locatorServerStartupRule.startServerVM(3, server3Properties);
+    server3 = clusterStartupRule.startServerVM(3, server3Properties);
 
     gfsh.connectAndVerify(locator);
     gfsh.executeAndAssertThat("clear defined indexes").statusIsSuccess()
@@ -78,8 +79,8 @@ public class CreateDefinedIndexesCommandDUnitTest {
   public void nonexistentRegion() {
     String regionName = testName.getMethodName();
 
-    MemberVM.invokeInEveryMember(() -> {
-      Cache cache = LocatorServerStartupRule.getCache();
+    VMProvider.invokeInEveryMember(() -> {
+      Cache cache = ClusterStartupRule.getCache();
       assertThat(cache.getRegion(regionName)).isNull();
     }, server1, server2, server3);
 
@@ -90,8 +91,8 @@ public class CreateDefinedIndexesCommandDUnitTest {
     gfsh.executeAndAssertThat("create defined indexes").statusIsError()
         .containsOutput("RegionNotFoundException");
 
-    MemberVM.invokeInEveryMember(() -> {
-      Cache cache = LocatorServerStartupRule.getCache();
+    VMProvider.invokeInEveryMember(() -> {
+      Cache cache = ClusterStartupRule.getCache();
       QueryService queryService = cache.getQueryService();
 
       assertThat(queryService.getIndexes().isEmpty()).isTrue();
@@ -115,8 +116,8 @@ public class CreateDefinedIndexesCommandDUnitTest {
         .containsOutput("Region \"/" + region2Name + "\" created on \"server-2\"")
         .containsOutput("Region \"/" + region2Name + "\" created on \"server-3\"");
 
-    MemberVM.invokeInEveryMember(() -> {
-      Cache cache = LocatorServerStartupRule.getCache();
+    VMProvider.invokeInEveryMember(() -> {
+      Cache cache = ClusterStartupRule.getCache();
       assertThat(cache.getRegion(region1Name)).isNotNull();
       assertThat(cache.getRegion(region2Name)).isNotNull();
     }, server1, server2, server3);
@@ -132,8 +133,8 @@ public class CreateDefinedIndexesCommandDUnitTest {
     gfsh.executeAndAssertThat("create defined indexes").statusIsSuccess()
         .containsOutput("Indexes successfully created");
 
-    MemberVM.invokeInEveryMember(() -> {
-      Cache cache = LocatorServerStartupRule.getCache();
+    VMProvider.invokeInEveryMember(() -> {
+      Cache cache = ClusterStartupRule.getCache();
       QueryService queryService = cache.getQueryService();
       Region region1 = cache.getRegion(region1Name);
       Region region2 = cache.getRegion(region2Name);
@@ -171,14 +172,14 @@ public class CreateDefinedIndexesCommandDUnitTest {
         .statusIsSuccess()
         .containsOutput("Region \"/" + region2Name + "\" created on \"server-3\"");
 
-    MemberVM.invokeInEveryMember(() -> {
-      Cache cache = LocatorServerStartupRule.getCache();
+    VMProvider.invokeInEveryMember(() -> {
+      Cache cache = ClusterStartupRule.getCache();
       assertThat(cache.getRegion(region1Name)).isNull();
       assertThat(cache.getRegion(region2Name)).isNull();
     }, server1, server2);
 
-    MemberVM.invokeInEveryMember(() -> {
-      Cache cache = LocatorServerStartupRule.getCache();
+    VMProvider.invokeInEveryMember(() -> {
+      Cache cache = ClusterStartupRule.getCache();
       assertThat(cache.getRegion(region1Name)).isNotNull();
       assertThat(cache.getRegion(region2Name)).isNotNull();
     }, server3);
@@ -194,8 +195,8 @@ public class CreateDefinedIndexesCommandDUnitTest {
     gfsh.executeAndAssertThat("create defined indexes --group=group1").statusIsSuccess()
         .containsOutput("Indexes successfully created");
 
-    MemberVM.invokeInEveryMember(() -> {
-      Cache cache = LocatorServerStartupRule.getCache();
+    VMProvider.invokeInEveryMember(() -> {
+      Cache cache = ClusterStartupRule.getCache();
       QueryService queryService = cache.getQueryService();
       Region region1 = cache.getRegion(region1Name);
       Region region2 = cache.getRegion(region2Name);

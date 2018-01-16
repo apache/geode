@@ -82,7 +82,6 @@ import org.apache.geode.internal.SystemTimer;
 import org.apache.geode.internal.admin.remote.DistributionLocatorId;
 import org.apache.geode.internal.cache.CacheConfig;
 import org.apache.geode.internal.cache.CacheServerImpl;
-import org.apache.geode.internal.cache.CacheService;
 import org.apache.geode.internal.cache.EventID;
 import org.apache.geode.internal.cache.GemFireCacheImpl;
 import org.apache.geode.internal.cache.InternalCache;
@@ -157,7 +156,7 @@ public class InternalDistributedSystem extends DistributedSystem
   /**
    * The distribution manager that is used to communicate with the distributed system.
    */
-  protected DM dm;
+  protected DistributionManager dm;
 
   private final GrantorRequestProcessor.GrantorRequestContext grc;
 
@@ -350,7 +349,8 @@ public class InternalDistributedSystem extends DistributedSystem
    *
    * @param nonDefault - non-default distributed system properties
    */
-  public static InternalDistributedSystem newInstanceForTesting(DM dm, Properties nonDefault) {
+  public static InternalDistributedSystem newInstanceForTesting(DistributionManager dm,
+      Properties nonDefault) {
     InternalDistributedSystem sys = new InternalDistributedSystem(nonDefault);
     sys.config = new RuntimeDistributionConfigImpl(sys);
     sys.dm = dm;
@@ -738,7 +738,7 @@ public class InternalDistributedSystem extends DistributedSystem
           if (this.quorumChecker != null) {
             this.quorumChecker.suspend();
           }
-          this.dm = DistributionManager.create(this);
+          this.dm = ClusterDistributionManager.create(this);
           // fix bug #46324
           if (InternalLocator.hasLocator()) {
             InternalLocator locator = InternalLocator.getLocator();
@@ -759,7 +759,7 @@ public class InternalDistributedSystem extends DistributedSystem
       Assert.assertTrue(this.dm.getSystem() == this);
 
       try {
-        this.id = this.dm.getChannelId();
+        this.id = this.dm.getMembershipPort();
       } catch (DistributedSystemDisconnectedException e) {
         // bug #48144 - The dm's channel threw an NPE. It now throws this exception
         // but during startup we should instead throw a SystemConnectException
@@ -786,8 +786,6 @@ public class InternalDistributedSystem extends DistributedSystem
       }
 
       if (!statsDisabled) {
-        // to fix bug 42527 we need a sampler
-        // even if sampling is not enabled.
         this.sampler = new GemFireStatSampler(this);
         this.sampler.start();
       }
@@ -799,8 +797,6 @@ public class InternalDistributedSystem extends DistributedSystem
         LogWriterAppenders.startupComplete(LogWriterAppenders.Identifier.SECURITY);
       }
 
-      // this.logger.info("ds created", new RuntimeException("DEBUG: STACK"));
-
       // Log any instantiators that were registered before the log writer
       // was created
       InternalInstantiator.logInstantiators();
@@ -809,7 +805,7 @@ public class InternalDistributedSystem extends DistributedSystem
       throw ex;
     }
 
-    resourceListeners = new CopyOnWriteArrayList<ResourceEventsListener>();
+    resourceListeners = new CopyOnWriteArrayList<>();
     this.reconnected = this.attemptingToReconnect;
     this.attemptingToReconnect = false;
   }
@@ -837,24 +833,16 @@ public class InternalDistributedSystem extends DistributedSystem
     }
     DistributionLocatorId locId = new DistributionLocatorId(locatorString);
     try {
-      this.startedLocator =
-          InternalLocator.createLocator(locId.getPort(), null, null, this.logWriter, // LOG: this is
-                                                                                     // after IDS
-                                                                                     // has created
-                                                                                     // LogWriterLoggers
-                                                                                     // and
-                                                                                     // Appenders
-              this.securityLogWriter, // LOG: this is after IDS has created LogWriterLoggers and
-                                      // Appenders
-              locId.getHost().getAddress(), locId.getHostnameForClients(),
-              this.originalConfig.toProperties(), false);
+      this.startedLocator = InternalLocator.createLocator(locId.getPort(), null, this.logWriter,
+          this.securityLogWriter, locId.getHost().getAddress(), locId.getHostnameForClients(),
+          this.originalConfig.toProperties(), false);
 
       // if locator is started this way, cluster config is not enabled, set the flag correctly
       this.startedLocator.getConfig().setEnableClusterConfiguration(false);
 
       boolean startedPeerLocation = false;
       try {
-        this.startedLocator.startPeerLocation(true);
+        this.startedLocator.startPeerLocation();
         startedPeerLocation = true;
       } finally {
         if (!startedPeerLocation) {
@@ -898,7 +886,7 @@ public class InternalDistributedSystem extends DistributedSystem
   /**
    * Used by DistributionManager to fix bug 33362
    */
-  void setDM(DM dm) {
+  void setDM(DistributionManager dm) {
     this.dm = dm;
   }
 
@@ -1500,7 +1488,7 @@ public class InternalDistributedSystem extends DistributedSystem
   /**
    * Returns the distribution manager for accessing this distributed system.
    */
-  public DM getDistributionManager() {
+  public DistributionManager getDistributionManager() {
     checkConnected();
     return this.dm;
   }
@@ -1508,7 +1496,7 @@ public class InternalDistributedSystem extends DistributedSystem
   /**
    * Returns the distribution manager without checking for connected or not so can also return null.
    */
-  public DM getDM() {
+  public DistributionManager getDM() {
     return this.dm;
   }
 
@@ -1625,7 +1613,6 @@ public class InternalDistributedSystem extends DistributedSystem
    * Returns the id of this connection to the distributed system. This is actually the port of the
    * distribution manager's distribution channel.
    *
-   * @see org.apache.geode.distributed.internal.DistributionChannel#getId
    */
   @Override
   public long getId() {
@@ -2776,11 +2763,11 @@ public class InternalDistributedSystem extends DistributedSystem
         }
 
 
-        DM newDM = this.reconnectDS.getDistributionManager();
-        if (newDM instanceof DistributionManager) {
+        DistributionManager newDM = this.reconnectDS.getDistributionManager();
+        if (newDM instanceof ClusterDistributionManager) {
           // Admin systems don't carry a cache, but for others we can now create
           // a cache
-          if (newDM.getDMType() != DistributionManager.ADMIN_ONLY_DM_TYPE) {
+          if (newDM.getDMType() != ClusterDistributionManager.ADMIN_ONLY_DM_TYPE) {
             try {
               CacheConfig config = new CacheConfig();
               if (cacheXML != null) {
@@ -3019,7 +3006,6 @@ public class InternalDistributedSystem extends DistributedSystem
 
   public static void setCommandLineAdmin(boolean adminOnly) {
     DistributedSystem.setEnableAdministrationOnly(adminOnly);
-    DistributionManager.isCommandLineAdminVM = adminOnly;
   }
 
   public boolean isServerLocator() {

@@ -18,6 +18,8 @@ import org.apache.geode.StatisticDescriptor;
 import org.apache.geode.Statistics;
 import org.apache.geode.StatisticsFactory;
 import org.apache.geode.StatisticsType;
+import org.apache.geode.distributed.DistributedSystem;
+import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.internal.protocol.statistics.ProtocolClientStatistics;
 
 public class ProtobufClientStatisticsImpl implements ProtocolClientStatistics {
@@ -35,6 +37,9 @@ public class ProtobufClientStatisticsImpl implements ProtocolClientStatistics {
   private final int authenticationFailuresId;
 
   public ProtobufClientStatisticsImpl(StatisticsFactory statisticsFactory, String statisticsName) {
+    if (statisticsFactory == null) {
+      statisticsFactory = InternalDistributedSystem.getAnyInstance();
+    }
     StatisticDescriptor[] serverStatDescriptors = new StatisticDescriptor[] {
         statisticsFactory.createIntGauge("currentClientConnections",
             "Number of sockets accepted and used for client to server messaging.", "sockets"),

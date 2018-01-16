@@ -117,7 +117,7 @@ public class GetMessage extends PartitionMessageWithDirectReply {
         // processed in the p2p msg reader.
         if (pr.getAttributes().getDataPolicy().withPersistence()
             || !pr.getAttributes().getEvictionAttributes().getAlgorithm().isNone()) {
-          return DistributionManager.PARTITIONED_REGION_EXECUTOR;
+          return ClusterDistributionManager.PARTITIONED_REGION_EXECUTOR;
         }
       } catch (PRLocallyDestroyedException ignore) {
       } catch (RuntimeException ignore) {
@@ -129,13 +129,13 @@ public class GetMessage extends PartitionMessageWithDirectReply {
       }
     }
     if (forceUseOfPRExecutor) {
-      return DistributionManager.PARTITIONED_REGION_EXECUTOR;
+      return ClusterDistributionManager.PARTITIONED_REGION_EXECUTOR;
     } else if (ORDER_PR_GETS) {
-      return DistributionManager.PARTITIONED_REGION_EXECUTOR;
+      return ClusterDistributionManager.PARTITIONED_REGION_EXECUTOR;
     } else {
       // Make this guy serial so that it will be processed in the p2p msg reader
       // which gives it better performance.
-      return DistributionManager.SERIAL_EXECUTOR;
+      return ClusterDistributionManager.SERIAL_EXECUTOR;
     }
   }
 
@@ -146,8 +146,8 @@ public class GetMessage extends PartitionMessageWithDirectReply {
   }
 
   @Override
-  protected boolean operateOnPartitionedRegion(final DistributionManager dm, PartitionedRegion r,
-      long startTime) throws ForceReattemptException {
+  protected boolean operateOnPartitionedRegion(final ClusterDistributionManager dm,
+      PartitionedRegion r, long startTime) throws ForceReattemptException {
     if (logger.isTraceEnabled(LogMarker.DM)) {
       logger.trace(LogMarker.DM, "GetMessage operateOnRegion: {}", r.getFullPath());
     }
@@ -386,7 +386,7 @@ public class GetMessage extends PartitionMessageWithDirectReply {
      * @param dm the distribution manager that is processing the message.
      */
     @Override
-    public void process(final DM dm, ReplyProcessor21 processor) {
+    public void process(final DistributionManager dm, ReplyProcessor21 processor) {
       final boolean isDebugEnabled = logger.isTraceEnabled(LogMarker.DM);
       final long startTime = getTimestamp();
       if (isDebugEnabled) {

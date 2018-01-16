@@ -20,8 +20,6 @@ import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertSame;
 import static org.junit.Assert.assertTrue;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
 
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
@@ -40,16 +38,15 @@ import org.xml.sax.SAXException;
 
 import org.apache.geode.cache.client.ClientCache;
 import org.apache.geode.cache.client.ClientCacheFactory;
-import org.apache.geode.distributed.internal.DM;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
-import org.apache.geode.test.junit.categories.UnitTest;
+import org.apache.geode.test.junit.categories.IntegrationTest;
 
 /**
  * Test cases for {@link CacheXmlParser}.
  *
  * @since GemFire 8.1
  */
-@Category(UnitTest.class)
+@Category(IntegrationTest.class)
 public class CacheXmlParserJUnitTest {
 
   @Rule

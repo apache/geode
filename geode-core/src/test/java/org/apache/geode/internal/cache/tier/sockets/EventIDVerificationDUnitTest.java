@@ -319,6 +319,10 @@ public class EventIDVerificationDUnitTest extends JUnit4DistributedTestCase {
           gotCallback = true;
           // verifyEventIDsDuringRegionDestroy(event);
           testEventIDResult = ((RegionEventImpl) event).getEventId().equals(eventId);
+          if (!testEventIDResult) {
+            cache.getLogger().warning("Expected " + eventId.expensiveToString() + ", but processed"
+                + ((RegionEventImpl) event).getEventId().expensiveToString());
+          }
           EventIDVerificationDUnitTest.class.notify();
         }
       }

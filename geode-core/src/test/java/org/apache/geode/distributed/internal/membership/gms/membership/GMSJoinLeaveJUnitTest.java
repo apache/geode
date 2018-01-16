@@ -52,8 +52,8 @@ import org.mockito.internal.verification.Times;
 import org.mockito.verification.Timeout;
 
 import org.apache.geode.distributed.DistributedMember;
+import org.apache.geode.distributed.internal.ClusterDistributionManager;
 import org.apache.geode.distributed.internal.DistributionConfig;
-import org.apache.geode.distributed.internal.DistributionManager;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
 import org.apache.geode.distributed.internal.membership.NetView;
 import org.apache.geode.distributed.internal.membership.gms.GMSMember;
@@ -80,7 +80,6 @@ import org.apache.geode.distributed.internal.membership.gms.messages.RemoveMembe
 import org.apache.geode.distributed.internal.membership.gms.messages.ViewAckMessage;
 import org.apache.geode.internal.Version;
 import org.apache.geode.security.AuthenticationFailedException;
-import org.apache.geode.test.junit.categories.FlakyTest;
 import org.apache.geode.test.junit.categories.IntegrationTest;
 import org.apache.geode.test.junit.categories.MembershipTest;
 
@@ -874,7 +873,7 @@ public class GMSJoinLeaveJUnitTest {
     // create the GMSJoinLeave instance we'll be testing
     initMocks(false);
     InternalDistributedMember otherMember = mockMembers[0];
-    gmsJoinLeaveMemberId.setVmKind(DistributionManager.NORMAL_DM_TYPE);
+    gmsJoinLeaveMemberId.setVmKind(ClusterDistributionManager.NORMAL_DM_TYPE);
     List<InternalDistributedMember> members = createMemberList(gmsJoinLeaveMemberId, otherMember);
     prepareAndInstallView(gmsJoinLeaveMemberId, members);
     NetView installedView = gmsJoinLeave.getView();
@@ -884,7 +883,7 @@ public class GMSJoinLeaveJUnitTest {
     // create a view coming from the locator that conflicts with the installed view
     InternalDistributedMember locatorMemberId = new InternalDistributedMember("localhost",
         mockMembers[mockMembers.length - 1].getPort() + 1);
-    locatorMemberId.setVmKind(DistributionManager.LOCATOR_DM_TYPE);
+    locatorMemberId.setVmKind(ClusterDistributionManager.LOCATOR_DM_TYPE);
     List<InternalDistributedMember> newMemberList = new ArrayList<>(members);
     newMemberList.add(locatorMemberId);
     NetView locatorView =
@@ -1331,7 +1330,7 @@ public class GMSJoinLeaveJUnitTest {
     this.removeMember = null;
 
     assertTrue("testFlagForRemovalRequest should be true",
-        gmsJoinLeave.getViewCreator().getTestFlageForRemovalRequest());
+        gmsJoinLeave.getViewCreator().getTestFlagForRemovalRequest());
   }
 
   @Test
@@ -1354,7 +1353,7 @@ public class GMSJoinLeaveJUnitTest {
     this.leaveMember = null;
 
     assertTrue("testFlagForRemovalRequest should be true",
-        gmsJoinLeave.getViewCreator().getTestFlageForRemovalRequest());
+        gmsJoinLeave.getViewCreator().getTestFlagForRemovalRequest());
   }
 
   private void installView() throws Exception {

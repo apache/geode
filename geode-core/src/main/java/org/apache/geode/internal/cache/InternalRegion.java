@@ -26,7 +26,7 @@ import org.apache.geode.cache.RegionExistsException;
 import org.apache.geode.cache.TimeoutException;
 import org.apache.geode.cache.client.internal.ServerRegionProxy;
 import org.apache.geode.cache.query.internal.index.IndexManager;
-import org.apache.geode.distributed.internal.DM;
+import org.apache.geode.distributed.internal.DistributionManager;
 import org.apache.geode.internal.cache.versions.RegionVersionVector;
 import org.apache.geode.internal.cache.versions.VersionSource;
 import org.apache.geode.internal.cache.versions.VersionTag;
@@ -85,7 +85,7 @@ public interface InternalRegion<K, V>
 
   void addExpiryTaskIfAbsent(RegionEntry entry);
 
-  DM getDistributionManager();
+  DistributionManager getDistributionManager();
 
   void generateAndSetVersionTag(InternalCacheEvent event, RegionEntry entry);
 

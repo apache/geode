@@ -22,7 +22,7 @@ import org.apache.geode.DataSerializer;
 import org.apache.geode.StatisticDescriptor;
 import org.apache.geode.Statistics;
 import org.apache.geode.StatisticsType;
-import org.apache.geode.distributed.internal.DM;
+import org.apache.geode.distributed.internal.DistributionManager;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
 
@@ -30,8 +30,8 @@ public class FetchResourceAttributesResponse extends AdminResponse {
 
   private RemoteStat[] stats;
 
-  public static FetchResourceAttributesResponse create(DM dm, InternalDistributedMember recipient,
-      long rsrcUniqueId) {
+  public static FetchResourceAttributesResponse create(DistributionManager dm,
+      InternalDistributedMember recipient, long rsrcUniqueId) {
     FetchResourceAttributesResponse m = new FetchResourceAttributesResponse();
     m.setRecipient(recipient);
     Statistics s = null;

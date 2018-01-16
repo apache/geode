@@ -114,11 +114,7 @@ public class CreateGatewaySenderCommand implements GfshCommand {
             alertThreshold, dispatcherThreads, orderPolicy == null ? null : orderPolicy.name(),
             gatewayEventFilters, gatewayTransportFilter);
 
-    Set<DistributedMember> membersToCreateGatewaySenderOn = findMembers(onGroups, onMember);
-
-    if (membersToCreateGatewaySenderOn.isEmpty()) {
-      return ResultBuilder.createUserErrorResult(CliStrings.NO_MEMBERS_FOUND_MESSAGE);
-    }
+    Set<DistributedMember> membersToCreateGatewaySenderOn = getMembers(onGroups, onMember);
 
     List<CliFunctionResult> gatewaySenderCreateResults =
         executeAndGetFunctionResult(GatewaySenderCreateFunction.INSTANCE, gatewaySenderFunctionArgs,
@@ -126,10 +122,20 @@ public class CreateGatewaySenderCommand implements GfshCommand {
 
     CommandResult result = ResultBuilder.buildResult(gatewaySenderCreateResults);
     XmlEntity xmlEntity = findXmlEntity(gatewaySenderCreateResults);
-    if (xmlEntity != null) {
-      persistClusterConfiguration(result,
-          () -> getSharedConfiguration().addXmlEntity(xmlEntity, onGroups));
+
+    // no xml needs to be updated, simply return
+    if (xmlEntity == null) {
+      return result;
     }
+
+    // has xml but unable to persist to cluster config, need to print warning message and return
+    if (onMember != null || getSharedConfiguration() == null) {
+      result.setCommandPersisted(false);
+      return result;
+    }
+
+    // update cluster config
+    getSharedConfiguration().addXmlEntity(xmlEntity, onGroups);
     return result;
   }
 

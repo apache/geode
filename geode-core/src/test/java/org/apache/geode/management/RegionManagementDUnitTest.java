@@ -58,7 +58,8 @@ import org.apache.geode.cache.RegionShortcut;
 import org.apache.geode.cache.Scope;
 import org.apache.geode.cache.query.data.Portfolio;
 import org.apache.geode.distributed.DistributedMember;
-import org.apache.geode.distributed.internal.DM;
+import org.apache.geode.distributed.internal.DistributionManager;
+import org.apache.geode.internal.cache.AbstractRegion;
 import org.apache.geode.internal.cache.GemFireCacheImpl;
 import org.apache.geode.internal.cache.LocalRegion;
 import org.apache.geode.internal.cache.TestObjectSizerImpl;
@@ -1024,7 +1025,7 @@ public class RegionManagementDUnitTest implements Serializable {
     return (SystemManagementService) getManagementService();
   }
 
-  private DM getDistributionManager_tmp() {
+  private DistributionManager getDistributionManager_tmp() {
     return ((GemFireCacheImpl) getCache()).getDistributionManager();
   }
 

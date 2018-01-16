@@ -88,6 +88,13 @@ public interface MembershipManager {
   public boolean isBeingSick();
 
   /**
+   * Instructs this manager to shut down
+   *
+   * @param beforeJoined whether we've joined the cluster or not
+   */
+  public void disconnect(boolean beforeJoined);
+
+  /**
    * Instruct this manager to release resources
    */
   public void shutdown();
@@ -313,5 +320,10 @@ public interface MembershipManager {
    * @param checker the QuorumChecker instance
    */
   public void releaseQuorumChecker(QuorumChecker checker);
+
+  /**
+   * return the coordinator for the view.
+   */
+  public DistributedMember getCoordinator();
 
 }

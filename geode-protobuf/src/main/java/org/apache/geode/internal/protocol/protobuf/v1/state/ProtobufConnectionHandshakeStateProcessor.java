@@ -23,7 +23,7 @@ import org.apache.geode.internal.cache.tier.CommunicationMode;
 import org.apache.geode.internal.protocol.MessageExecutionContext;
 import org.apache.geode.internal.protocol.OperationContext;
 import org.apache.geode.internal.protocol.ProtocolErrorCode;
-import org.apache.geode.internal.protocol.protobuf.v1.operations.HandshakeHandler;
+import org.apache.geode.internal.protocol.protobuf.v1.operations.ProtocolVersionHandler;
 import org.apache.geode.internal.protocol.state.ConnectionStateProcessor;
 import org.apache.geode.internal.protocol.state.LegacySecurityConnectionStateProcessor;
 import org.apache.geode.internal.protocol.state.NoSecurityConnectionStateProcessor;
@@ -40,7 +40,7 @@ public class ProtobufConnectionHandshakeStateProcessor implements ConnectionStat
   @Override
   public void validateOperation(MessageExecutionContext messageContext,
       OperationContext operationContext) throws ConnectionStateException {
-    throw new ConnectionStateException(ProtocolErrorCode.GENERIC_FAILURE,
+    throw new ConnectionStateException(ProtocolErrorCode.INVALID_REQUEST,
         "Connection processing should never be asked to validate an operation");
   }
 
@@ -64,7 +64,7 @@ public class ProtobufConnectionHandshakeStateProcessor implements ConnectionStat
     PushbackInputStream messageStream = new PushbackInputStream(inputStream);
     messageStream.unread(CommunicationMode.ProtobufClientServerProtocol.getModeNumber());
 
-    if (HandshakeHandler.handleHandshake(messageStream, outputStream,
+    if (ProtocolVersionHandler.handleVersionMessage(messageStream, outputStream,
         executionContext.getStatistics())) {
       executionContext.setConnectionStateProcessor(nextConnectionState());
     }

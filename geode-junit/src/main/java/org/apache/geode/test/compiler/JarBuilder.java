@@ -56,15 +56,6 @@ import java.util.jar.JarOutputStream;
  *   jarBuilder.buildJar(outputJar, sourceFileOne, sourceFileTwo);
  * }
  *
- * &#064;Test
- * public void buildJarUsingClassNames() {
- *   JarBuilder jarBuilder = new JarBuilder();
- *   File outputJar = new File("output.jar");
- *
- *   String classInFooBarPackage = "foo.bar.ClassInFooBarPackage";
- *   String classInDefaultPackage = "ClassInDefaultPackage";
- *   jarBuilder.buildJar(outputJar, classInFooBarPackage, classInDefaultPackage);
- * }
  * </pre>
  **/
 public class JarBuilder {

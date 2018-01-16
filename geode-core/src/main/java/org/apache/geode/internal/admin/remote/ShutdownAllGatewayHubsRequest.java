@@ -18,7 +18,7 @@ import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
 
-import org.apache.geode.distributed.internal.DistributionManager;
+import org.apache.geode.distributed.internal.ClusterDistributionManager;
 import org.apache.geode.distributed.internal.DistributionMessage;
 import org.apache.geode.distributed.internal.ReplyMessage;
 
@@ -45,11 +45,11 @@ public class ShutdownAllGatewayHubsRequest extends DistributionMessage {
 
   @Override
   public int getProcessorType() {
-    return DistributionManager.STANDARD_EXECUTOR;
+    return ClusterDistributionManager.STANDARD_EXECUTOR;
   }
 
   @Override
-  protected void process(DistributionManager dm) {
+  protected void process(ClusterDistributionManager dm) {
     ReplyMessage.send(getSender(), this.rpid, null, dm, true /* ignored */, false, false);
   }
 

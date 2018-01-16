@@ -14,8 +14,10 @@
  */
 package org.apache.geode.management.internal.cli.shell;
 
+import java.io.File;
 import java.lang.reflect.Method;
 import java.nio.file.Path;
+import java.util.List;
 import java.util.Map;
 
 import org.apache.commons.lang.StringUtils;
@@ -148,7 +150,7 @@ public class GfshExecutionStrategy implements ExecutionStrategy {
       return null;
     }
 
-    byte[][] fileData = null;
+    List<File> fileData = null;
     CliAroundInterceptor interceptor = null;
 
     String interceptorClass = getInterceptor(parseResult.getMethod());
@@ -174,7 +176,7 @@ public class GfshExecutionStrategy implements ExecutionStrategy {
       // when the preExecution yields a FileResult, we will get the fileData out of it
       if (preExecResult instanceof FileResult) {
         FileResult fileResult = (FileResult) preExecResult;
-        fileData = fileResult.toBytes();
+        fileData = fileResult.getFiles();
       }
     }
 

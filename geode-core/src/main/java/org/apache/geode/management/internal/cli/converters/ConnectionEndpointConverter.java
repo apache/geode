@@ -102,47 +102,4 @@ public class ConnectionEndpointConverter implements Converter<ConnectionEndpoint
 
     return completions.size() > 0;
   }
-
-  public static void main(String[] args) {
-    ConnectionEndpointConverter cec = new ConnectionEndpointConverter();
-
-    try {
-      System.out.println(cec.convertFromText("halibut[2555]", null, null));
-    } catch (Exception e) {
-      e.printStackTrace();
-    }
-
-    try {
-      System.out.println(cec.convertFromText("halibut.pune.gemstone.com[2555]", null, null));
-    } catch (Exception e) {
-      e.printStackTrace();
-    }
-
-    try {
-      System.out.println(cec.convertFromText("halibut[]", null, null));
-    } catch (Exception e) {
-      e.printStackTrace();
-    }
-
-    try {
-      System.out.println(cec.convertFromText("halibut2555]", null, null));
-    } catch (Exception e) {
-      e.printStackTrace();
-    }
-
-    try {
-      System.out.println(cec.convertFromText("halibut[", null, null));
-    } catch (Exception e) {
-      e.printStackTrace();
-    }
-
-    try {
-      System.out.println(cec.convertFromText("halibut", null, null));
-    } catch (Exception e) {
-      e.printStackTrace();
-    }
-
-
-  }
-
 }

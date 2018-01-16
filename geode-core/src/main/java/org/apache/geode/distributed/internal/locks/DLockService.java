@@ -44,8 +44,8 @@ import org.apache.geode.distributed.DistributedSystemDisconnectedException;
 import org.apache.geode.distributed.LeaseExpiredException;
 import org.apache.geode.distributed.LockNotHeldException;
 import org.apache.geode.distributed.LockServiceDestroyedException;
-import org.apache.geode.distributed.internal.DM;
 import org.apache.geode.distributed.internal.DistributionConfig;
+import org.apache.geode.distributed.internal.DistributionManager;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.distributed.internal.ResourceEvent;
 import org.apache.geode.distributed.internal.deadlock.UnsafeThreadLocal;
@@ -91,7 +91,7 @@ public class DLockService extends DistributedLockService {
   protected final String serviceName;
 
   /** DistributionManager for this member */
-  private final DM dm;
+  private final DistributionManager dm;
 
   /**
    * DistributedSystem connection for this member (used for DisconnectListener, logging, etc)
@@ -1319,7 +1319,7 @@ public class DLockService extends DistributedLockService {
         lockId);
   }
 
-  protected static boolean callReleaseProcessor(DM dm, String serviceName,
+  protected static boolean callReleaseProcessor(DistributionManager dm, String serviceName,
       InternalDistributedMember grantor, Object name, boolean lockBatch, int lockId) {
     DLockReleaseProcessor processor = new DLockReleaseProcessor(dm, grantor, serviceName, name);
     return processor.release(grantor, serviceName, lockBatch, lockId);
@@ -2168,7 +2168,7 @@ public class DLockService extends DistributedLockService {
     return this.serviceName;
   }
 
-  public DM getDistributionManager() {
+  public DistributionManager getDistributionManager() {
     return this.dm;
   }
 
@@ -2852,7 +2852,7 @@ public class DLockService extends DistributedLockService {
    *
    * @param dm our local DM
    */
-  public static void recoverLocalElder(DM dm, Map grantors, Set needsRecovery) {
+  public static void recoverLocalElder(DistributionManager dm, Map grantors, Set needsRecovery) {
     synchronized (services) {
       Iterator entries = services.entrySet().iterator();
       while (entries.hasNext()) {
@@ -2952,7 +2952,7 @@ public class DLockService extends DistributedLockService {
    *
    * @since GemFire 3.5
    */
-  static long getLockTimeStamp(DM dm) {
+  static long getLockTimeStamp(DistributionManager dm) {
     return dm.cacheTimeMillis();
   }
 
@@ -3097,7 +3097,7 @@ public class DLockService extends DistributedLockService {
      * @param dm the DM to check for shutdown
      * @param dls the DLockService to check for DLS destroy
      */
-    DLockStopper(DM dm, DLockService dls) {
+    DLockStopper(DistributionManager dm, DLockService dls) {
       Assert.assertTrue(dls != null);
       this.dls = dls;
       Assert.assertTrue(dls.getDistributionManager() != null);

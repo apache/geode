@@ -26,7 +26,7 @@ import org.apache.logging.log4j.Logger;
 
 import org.apache.geode.DataSerializer;
 import org.apache.geode.cache.CacheException;
-import org.apache.geode.distributed.internal.DM;
+import org.apache.geode.distributed.internal.ClusterDistributionManager;
 import org.apache.geode.distributed.internal.DistributionManager;
 import org.apache.geode.distributed.internal.DistributionMessage;
 import org.apache.geode.distributed.internal.DistributionStats;
@@ -106,7 +106,7 @@ public class SizeMessage extends PartitionMessage {
 
   /**
    * This message may be sent to nodes before the PartitionedRegion is completely initialized due to
-   * the RegionAdvisor(s) knowing about the existance of a partitioned region at a very early part
+   * the RegionAdvisor(s) knowing about the existence of a partitioned region at a very early part
    * of the initialization
    */
   @Override
@@ -135,7 +135,7 @@ public class SizeMessage extends PartitionMessage {
   }
 
   @Override
-  protected boolean operateOnPartitionedRegion(DistributionManager dm, PartitionedRegion r,
+  protected boolean operateOnPartitionedRegion(ClusterDistributionManager dm, PartitionedRegion r,
       long startTime) throws CacheException, ForceReattemptException {
     Map<Integer, SizeEntry> sizes;
     if (r != null) {
@@ -166,8 +166,12 @@ public class SizeMessage extends PartitionMessage {
             dm, r.isInternalRegion());
       }
     } else {
-      logger.warn(LocalizedMessage.create(
-          LocalizedStrings.SizeMessage_SIZEMESSAGE_REGION_NOT_FOUND_FOR_THIS_MEMBER, regionId));
+      if (logger.isDebugEnabled()) {
+        // Note that this is more likely to happen with this message
+        // because of it returning false from failIfRegionMissing.
+        logger.debug(LocalizedMessage.create(
+            LocalizedStrings.SizeMessage_SIZEMESSAGE_REGION_NOT_FOUND_FOR_THIS_MEMBER, regionId));
+      }
       ReplyMessage.send(getSender(), getProcessorId(),
           new ReplyException(new ForceReattemptException(
               LocalizedStrings.SizeMessage_0_COULD_NOT_FIND_PARTITIONED_REGION_WITH_ID_1
@@ -217,8 +221,8 @@ public class SizeMessage extends PartitionMessage {
     }
 
     /** Send an ack */
-    public static void send(InternalDistributedMember recipient, int processorId, DM dm,
-        Map<Integer, SizeEntry> sizes) {
+    public static void send(InternalDistributedMember recipient, int processorId,
+        DistributionManager dm, Map<Integer, SizeEntry> sizes) {
       Assert.assertTrue(recipient != null, "SizeReplyMessage NULL reply message");
       SizeReplyMessage m = new SizeReplyMessage(processorId, sizes);
       m.setRecipient(recipient);
@@ -231,7 +235,7 @@ public class SizeMessage extends PartitionMessage {
      * @param dm the distribution manager that is processing the message.
      */
     @Override
-    public void process(final DM dm, final ReplyProcessor21 processor) {
+    public void process(final DistributionManager dm, final ReplyProcessor21 processor) {
       final long startTime = getTimestamp();
       if (logger.isTraceEnabled(LogMarker.DM)) {
         logger.trace(LogMarker.DM, "{} process invoking reply processor with processorId: {}",

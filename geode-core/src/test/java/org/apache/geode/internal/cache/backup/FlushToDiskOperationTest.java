@@ -14,7 +14,13 @@
  */
 package org.apache.geode.internal.cache.backup;
 
-import static org.mockito.Mockito.*;
+import static org.mockito.Mockito.doThrow;
+import static org.mockito.Mockito.eq;
+import static org.mockito.Mockito.inOrder;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 import java.util.HashSet;
 import java.util.Set;
@@ -25,7 +31,7 @@ import org.junit.experimental.categories.Category;
 import org.mockito.InOrder;
 
 import org.apache.geode.cache.CacheClosedException;
-import org.apache.geode.distributed.internal.DM;
+import org.apache.geode.distributed.internal.DistributionManager;
 import org.apache.geode.distributed.internal.ReplyException;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
 import org.apache.geode.internal.cache.InternalCache;
@@ -34,7 +40,7 @@ import org.apache.geode.test.junit.categories.UnitTest;
 @Category(UnitTest.class)
 public class FlushToDiskOperationTest {
 
-  private DM dm;
+  private DistributionManager dm;
   private InternalCache cache;
   private Set<InternalDistributedMember> recipients;
 
@@ -49,7 +55,7 @@ public class FlushToDiskOperationTest {
 
   @Before
   public void setUp() throws Exception {
-    dm = mock(DM.class);
+    dm = mock(DistributionManager.class);
     cache = mock(InternalCache.class);
 
     flushToDiskReplyProcessor = mock(FlushToDiskProcessor.class);

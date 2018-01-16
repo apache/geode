@@ -54,7 +54,7 @@ import org.apache.geode.admin.AdminException;
 import org.apache.geode.admin.jmx.Agent;
 import org.apache.geode.admin.jmx.AgentConfig;
 import org.apache.geode.admin.jmx.AgentFactory;
-import org.apache.geode.distributed.internal.DistributionManager;
+import org.apache.geode.distributed.internal.ClusterDistributionManager;
 import org.apache.geode.i18n.StringId;
 import org.apache.geode.internal.Banner;
 import org.apache.geode.internal.ExitCode;
@@ -411,7 +411,7 @@ public class AgentImpl implements org.apache.geode.admin.jmx.Agent,
           return ((AdminDistributedSystemJmxImpl) this.system).getObjectName();
         }
 
-        DistributionManager.isDedicatedAdminVM = true;
+        ClusterDistributionManager.setIsDedicatedAdminVM(true);
 
         AdminDistributedSystemJmxImpl systemJmx = (AdminDistributedSystemJmxImpl) this.system;
         if (systemJmx == null) {
@@ -477,7 +477,7 @@ public class AgentImpl implements org.apache.geode.admin.jmx.Agent,
         logger.warn(e.getMessage(), e);
         throw e;
       } finally {
-        DistributionManager.isDedicatedAdminVM = false;
+        ClusterDistributionManager.setIsDedicatedAdminVM(false);
       }
     }
   }

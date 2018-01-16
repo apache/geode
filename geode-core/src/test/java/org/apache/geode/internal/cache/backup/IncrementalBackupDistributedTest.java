@@ -21,12 +21,15 @@ import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 
 import java.io.BufferedReader;
+import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.FileFilter;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.nio.file.Files;
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
@@ -35,8 +38,11 @@ import java.util.Set;
 import java.util.regex.Pattern;
 
 import org.apache.commons.io.FileUtils;
+import org.apache.commons.io.IOUtils;
 import org.apache.commons.io.filefilter.DirectoryFileFilter;
 import org.apache.commons.io.filefilter.RegexFileFilter;
+import org.apache.logging.log4j.Logger;
+import org.junit.Rule;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
@@ -45,18 +51,20 @@ import org.apache.geode.admin.internal.AdminDistributedSystemImpl;
 import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.CacheFactory;
 import org.apache.geode.cache.DiskStore;
+import org.apache.geode.cache.PartitionAttributes;
+import org.apache.geode.cache.PartitionAttributesFactory;
 import org.apache.geode.cache.Region;
 import org.apache.geode.cache.RegionFactory;
 import org.apache.geode.cache.RegionShortcut;
 import org.apache.geode.cache.persistence.PersistentID;
 import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.distributed.DistributedSystem;
-import org.apache.geode.distributed.internal.DM;
+import org.apache.geode.distributed.internal.DistributionManager;
 import org.apache.geode.internal.ClassPathLoader;
 import org.apache.geode.internal.DeployedJar;
 import org.apache.geode.internal.cache.DiskStoreImpl;
 import org.apache.geode.internal.cache.InternalCache;
-import org.apache.geode.internal.util.IOUtils;
+import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.internal.util.TransformUtils;
 import org.apache.geode.management.BackupStatus;
 import org.apache.geode.management.ManagementException;
@@ -70,6 +78,7 @@ import org.apache.geode.test.dunit.Wait;
 import org.apache.geode.test.dunit.WaitCriterion;
 import org.apache.geode.test.dunit.cache.internal.JUnit4CacheTestCase;
 import org.apache.geode.test.junit.categories.DistributedTest;
+import org.apache.geode.test.junit.rules.serializable.SerializableTemporaryFolder;
 
 /**
  * Tests for the incremental backup feature.
@@ -77,6 +86,9 @@ import org.apache.geode.test.junit.categories.DistributedTest;
 @Category(DistributedTest.class)
 @SuppressWarnings("serial")
 public class IncrementalBackupDistributedTest extends JUnit4CacheTestCase {
+
+  private static final Logger logger = LogService.getLogger();
+
   /**
    * Data load increment.
    */
@@ -97,22 +109,37 @@ public class IncrementalBackupDistributedTest extends JUnit4CacheTestCase {
    */
   private static final String OPLOG_REGEX = ".*\\.[kdc]rf$";
 
+  @Rule
+  public SerializableTemporaryFolder tempDir = new SerializableTemporaryFolder();
+
+  private final Map<Integer, File> baseDirectoryByVm = new HashMap<>();
+
   /**
    * Creates test regions for a member.
    */
-  private final SerializableRunnable createRegions = new SerializableRunnable() {
-    @Override
-    public void run() {
-      Cache cache = getCache(new CacheFactory().set(LOG_LEVEL, LogWriterUtils.getDUnitLogLevel()));
-      cache.createDiskStoreFactory().setDiskDirs(getDiskDirs()).create("fooStore");
-      cache.createDiskStoreFactory().setDiskDirs(getDiskDirs()).create("barStore");
-      getRegionFactory(cache).setDiskStoreName("fooStore").create("fooRegion");
-      getRegionFactory(cache).setDiskStoreName("barStore").create("barRegion");
-    }
-  };
+  private void createRegions(File baseDirectory, int vmNumber) throws IOException {
+    Cache cache = getCache(new CacheFactory().set(LOG_LEVEL, LogWriterUtils.getDUnitLogLevel()));
+    cache.createDiskStoreFactory().setDiskDirs(getDiskDirectory(baseDirectory, vmNumber))
+        .create("fooStore");
+    cache.createDiskStoreFactory().setDiskDirs(getDiskDirectory(baseDirectory, vmNumber))
+        .create("barStore");
+    getRegionFactory(cache).setDiskStoreName("fooStore").create("fooRegion");
+    getRegionFactory(cache).setDiskStoreName("barStore").create("barRegion");
+  }
+
+  private File[] getDiskDirectory(File parent, int vmNumber) throws IOException {
+    File dir = new File(parent, "disk" + String.valueOf(vmNumber)).getAbsoluteFile();
+    dir.mkdirs();
+    return new File[] {dir};
+  }
 
   private RegionFactory<Integer, String> getRegionFactory(Cache cache) {
-    return cache.createRegionFactory(RegionShortcut.PARTITION_PERSISTENT);
+    PartitionAttributes<Integer, String> attributes =
+        new PartitionAttributesFactory<Integer, String>().setTotalNumBuckets(5).create();
+    RegionFactory<Integer, String> factory =
+        cache.<Integer, String>createRegionFactory(RegionShortcut.PARTITION_PERSISTENT)
+            .setPartitionAttributes(attributes);
+    return factory;
   }
 
   /**
@@ -122,15 +149,6 @@ public class IncrementalBackupDistributedTest extends JUnit4CacheTestCase {
     // This will break in about 90 years...
     return file.isDirectory() && file.getName().startsWith("20");
   };
-
-  /**
-   * Abstracts the logging mechanism.
-   *
-   * @param message a message to log.
-   */
-  private void log(String message) {
-    LogWriterUtils.getLogWriter().info("[IncrementalBackupDistributedTest] " + message);
-  }
 
   /**
    * @return the baseline backup directory.
@@ -172,21 +190,6 @@ public class IncrementalBackupDistributedTest extends JUnit4CacheTestCase {
   }
 
   /**
-   * Returns the directory for a given member.
-   *
-   * @param vm a distributed system member.
-   * @return the disk directories for a member.
-   */
-  private File getVMDir(VM vm) {
-    return (File) vm.invoke(new SerializableCallable() {
-      @Override
-      public Object call() throws Exception {
-        return IOUtils.tryGetCanonicalFileElseGetAbsoluteFile(new File(getDiskDirs()[0], "../.."));
-      }
-    });
-  }
-
-  /**
    * Invokes {@link AdminDistributedSystem#getMissingPersistentMembers()} on a member.
    *
    * @param vm a member of the distributed system.
@@ -204,64 +207,52 @@ public class IncrementalBackupDistributedTest extends JUnit4CacheTestCase {
   }
 
   /**
-   * Invokes {@link BackupUtil#backupAllMembers(DM, File, File)} on a member.
+   * Invokes {@link BackupUtil#backupAllMembers(DistributionManager, File, File)} on a member.
    *
    * @param vm a member of the distributed system
    * @return the status of the backup.
    */
   private BackupStatus baseline(VM vm) {
-    return (BackupStatus) vm.invoke(new SerializableCallable("Backup all members.") {
-      @Override
-      public Object call() {
-        try {
-          return BackupUtil.backupAllMembers(getSystem().getDistributionManager(), getBaselineDir(),
-              null);
-
-        } catch (ManagementException e) {
-          throw new RuntimeException(e);
-        }
+    return vm.invoke(() -> {
+      try {
+        return BackupUtil.backupAllMembers(getSystem().getDistributionManager(), getBaselineDir(),
+            null);
+      } catch (ManagementException e) {
+        throw new RuntimeException(e);
       }
     });
   }
 
   /**
-   * Invokes {@link BackupUtil#backupAllMembers(DM, File, File)} on a member.
+   * Invokes {@link BackupUtil#backupAllMembers(DistributionManager, File, File)} on a member.
    *
    * @param vm a member of the distributed system.
    * @return a status of the backup operation.
    */
   private BackupStatus incremental(VM vm) {
-    return (BackupStatus) vm.invoke(new SerializableCallable("Backup all members.") {
-      @Override
-      public Object call() {
-        try {
-          return BackupUtil.backupAllMembers(getSystem().getDistributionManager(),
-              getIncrementalDir(), getBaselineBackupDir());
-
-        } catch (ManagementException e) {
-          throw new RuntimeException(e);
-        }
+    return vm.invoke(() -> {
+      try {
+        return BackupUtil.backupAllMembers(getSystem().getDistributionManager(),
+            getIncrementalDir(), getBaselineBackupDir());
+      } catch (ManagementException e) {
+        throw new RuntimeException(e);
       }
     });
   }
 
   /**
-   * Invokes {@link BackupUtil#backupAllMembers(DM, File, File)} on a member.
+   * Invokes {@link BackupUtil#backupAllMembers(DistributionManager, File, File)} on a member.
    *
    * @param vm a member of the distributed system.
    * @return a status of the backup operation.
    */
   private BackupStatus incremental2(VM vm) {
-    return (BackupStatus) vm.invoke(new SerializableCallable("Backup all members.") {
-      @Override
-      public Object call() {
-        try {
-          return BackupUtil.backupAllMembers(getSystem().getDistributionManager(),
-              getIncremental2Dir(), getIncrementalBackupDir());
-
-        } catch (ManagementException e) {
-          throw new RuntimeException(e);
-        }
+    return vm.invoke(() -> {
+      try {
+        return BackupUtil.backupAllMembers(getSystem().getDistributionManager(),
+            getIncremental2Dir(), getIncrementalBackupDir());
+      } catch (ManagementException e) {
+        throw new RuntimeException(e);
       }
     });
   }
@@ -273,13 +264,8 @@ public class IncrementalBackupDistributedTest extends JUnit4CacheTestCase {
    * @return the member's id.
    */
   private String getMemberId(VM vm) {
-    return (String) vm.invoke(new SerializableCallable("getMemberId") {
-      @Override
-      public Object call() throws Exception {
-        return getCache().getDistributedSystem().getDistributedMember().toString()
-            .replaceAll("[^\\w]+", "_");
-      }
-    });
+    return vm.invoke(() -> getCache().getDistributedSystem().getDistributedMember().toString()
+        .replaceAll("[^\\w]+", "_"));
   }
 
   /**
@@ -334,7 +320,7 @@ public class IncrementalBackupDistributedTest extends JUnit4CacheTestCase {
   private PersistentID disconnect(final VM disconnectVM, final VM testVM) {
     final PersistentID id = disconnectVM.invoke(() -> {
       PersistentID persistentID = null;
-      Collection<DiskStore> diskStores = ((InternalCache) getCache()).listDiskStores();
+      Collection<DiskStore> diskStores = getCache().listDiskStores();
       for (DiskStore diskStore : diskStores) {
         if (diskStore.getName().equals("fooStore")) {
           persistentID = ((DiskStoreImpl) diskStore).getPersistentID();
@@ -371,8 +357,19 @@ public class IncrementalBackupDistributedTest extends JUnit4CacheTestCase {
    *
    * @param vm a member of the distributed system.
    */
-  private void openCache(VM vm) {
-    vm.invoke(this.createRegions);
+  private void openCache(VM vm) throws IOException {
+    int vmNumber = vm.getId();
+    File vmDir = getBaseDir(vmNumber);
+    vm.invoke(() -> createRegions(vmDir, vmNumber));
+  }
+
+  private File getBaseDir(int vmNumber) throws IOException {
+    File baseDir = baseDirectoryByVm.get(vmNumber);
+    if (baseDir == null) {
+      baseDir = tempDir.newFolder("vm" + vmNumber);
+      baseDirectoryByVm.put(vmNumber, baseDir);
+    }
+    return baseDir;
   }
 
   /**
@@ -443,15 +440,6 @@ public class IncrementalBackupDistributedTest extends JUnit4CacheTestCase {
   }
 
   /**
-   * @return the directory for the completed baseline backup.
-   */
-  private static File getIncremental2BackupDir() {
-    File[] dirs = getIncremental2Dir().listFiles(backupDirFilter);
-    assertEquals(1, dirs.length);
-    return dirs[0];
-  }
-
-  /**
    * Returns an individual member's backup directory.
    *
    * @param rootDir the directory to begin searching for the member's backup dir from.
@@ -478,7 +466,7 @@ public class IncrementalBackupDistributedTest extends JUnit4CacheTestCase {
    * Adds the data region to every participating VM.
    */
   @SuppressWarnings("serial")
-  private void createDataRegions() {
+  private void createDataRegions() throws IOException {
     Host host = Host.getHost(0);
     int numberOfVms = host.getVMCount();
 
@@ -512,12 +500,11 @@ public class IncrementalBackupDistributedTest extends JUnit4CacheTestCase {
 
           do {
             line = reader.readLine();
-            log(line);
           } while (null != line);
 
           reader.close();
         } catch (IOException e) {
-          log("Execute: error while reading standard in: " + e.getMessage());
+          logger.info(e);
         }
       }
     }).start();
@@ -539,7 +526,7 @@ public class IncrementalBackupDistributedTest extends JUnit4CacheTestCase {
 
           reader.close();
         } catch (IOException e) {
-          log("Execute: error while reading standard error: " + e.getMessage());
+          logger.info(e);
         }
       }
     }).start();
@@ -644,10 +631,9 @@ public class IncrementalBackupDistributedTest extends JUnit4CacheTestCase {
   @Override
   public final void postSetUp() throws Exception {
     createDataRegions();
-    this.createRegions.run();
+    File dir = getBaseDir(-1);
+    createRegions(dir, -1);
     loadMoreData();
-
-    log("Data region created and populated.");
   }
 
   /**
@@ -670,7 +656,8 @@ public class IncrementalBackupDistributedTest extends JUnit4CacheTestCase {
   public void testIncrementalBackup() throws Exception {
     String memberId = getMemberId(Host.getHost(0).getVM(1));
 
-    File memberDir = getVMDir(Host.getHost(0).getVM(1));
+    File memberDir = baseDirectoryByVm.get(1);
+    // getVMDir(Host.getHost(0).getVM(1));
     assertNotNull(memberDir);
 
     // Find all of the member's oplogs in the disk directory (*.crf,*.krf,*.drf)
@@ -707,9 +694,6 @@ public class IncrementalBackupDistributedTest extends JUnit4CacheTestCase {
     TransformUtils.transform(memberIncrementalOplogs, memberIncrementalOplogNames,
         TransformUtils.fileNameTransformer);
 
-    log("BASELINE OPLOGS = " + memberBaselineOplogNames);
-    log("INCREMENTAL OPLOGS = " + memberIncrementalOplogNames);
-
     /*
      * Assert that the incremental backup does not contain baseline operation logs that the member
      * still has copies of.
@@ -731,8 +715,6 @@ public class IncrementalBackupDistributedTest extends JUnit4CacheTestCase {
     List<String> memberIncremental2OplogNames = new LinkedList<>();
     TransformUtils.transform(memberIncremental2Oplogs, memberIncremental2OplogNames,
         TransformUtils.fileNameTransformer);
-
-    log("INCREMENTAL 2 OPLOGS = " + memberIncremental2OplogNames);
 
     /*
      * Assert that the second incremental backup does not contain operation logs copied into the
@@ -1023,6 +1005,9 @@ public class IncrementalBackupDistributedTest extends JUnit4CacheTestCase {
     final ClassBuilder classBuilder = new ClassBuilder();
     final byte[] classBytes = classBuilder.createJarFromName(jarName);
 
+    File jarFile = tempDir.newFile();
+    IOUtils.copyLarge(new ByteArrayInputStream(classBytes), new FileOutputStream(jarFile));
+
     VM vm0 = Host.getHost(0).getVM(0);
 
     /*
@@ -1030,7 +1015,7 @@ public class IncrementalBackupDistributedTest extends JUnit4CacheTestCase {
      */
     File deployedJarFile = vm0.invoke(() -> {
       DeployedJar deployedJar =
-          ClassPathLoader.getLatest().getJarDeployer().deploy(jarName, classBytes);
+          ClassPathLoader.getLatest().getJarDeployer().deploy(jarName, jarFile);
       return deployedJar.getFile();
     });
 
@@ -1089,16 +1074,12 @@ public class IncrementalBackupDistributedTest extends JUnit4CacheTestCase {
     /*
      * Remove the "dummy" jar from the VM.
      */
-    vm0.invoke(new SerializableCallable() {
-      @Override
-      public Object call() throws Exception {
-        for (DeployedJar jarClassLoader : ClassPathLoader.getLatest().getJarDeployer()
-            .findDeployedJars()) {
-          if (jarClassLoader.getJarName().startsWith(jarName)) {
-            ClassPathLoader.getLatest().getJarDeployer().undeploy(jarClassLoader.getJarName());
-          }
+    vm0.invoke(() -> {
+      for (DeployedJar jarClassLoader : ClassPathLoader.getLatest().getJarDeployer()
+          .findDeployedJars()) {
+        if (jarClassLoader.getJarName().startsWith(jarName)) {
+          ClassPathLoader.getLatest().getJarDeployer().undeploy(jarClassLoader.getJarName());
         }
-        return null;
       }
     });
 

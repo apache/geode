@@ -63,7 +63,7 @@ public class ManagerMBeanAuthorizationJUnitTest {
 
   @Before
   public void setUp() throws Exception {
-    managerMXBean = connectionRule.getProxyMBean(ManagerMXBean.class, "GemFire:mock=Manager");
+    managerMXBean = connectionRule.getProxyMXBean(ManagerMXBean.class, "GemFire:mock=Manager");
   }
 
   @Test

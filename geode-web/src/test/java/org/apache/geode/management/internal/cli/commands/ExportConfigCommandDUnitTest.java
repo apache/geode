@@ -32,7 +32,7 @@ import org.junit.experimental.categories.Category;
 import org.junit.rules.TemporaryFolder;
 import org.junit.runner.RunWith;
 
-import org.apache.geode.test.dunit.rules.LocatorServerStartupRule;
+import org.apache.geode.test.dunit.rules.ClusterStartupRule;
 import org.apache.geode.test.dunit.rules.MemberVM;
 import org.apache.geode.test.junit.categories.DistributedTest;
 import org.apache.geode.test.junit.rules.GfshCommandRule;
@@ -41,8 +41,8 @@ import org.apache.geode.test.junit.rules.GfshCommandRule;
 @RunWith(JUnitParamsRunner.class)
 public class ExportConfigCommandDUnitTest {
   @Rule
-  public LocatorServerStartupRule startupRule =
-      new LocatorServerStartupRule().withTempWorkingDir().withLogFile();
+  public ClusterStartupRule startupRule =
+      new ClusterStartupRule().withTempWorkingDir().withLogFile();
 
   @Rule
   public GfshCommandRule gfsh = new GfshCommandRule();
@@ -56,7 +56,7 @@ public class ExportConfigCommandDUnitTest {
     Properties props = new Properties();
     props.setProperty(GROUPS, "Group1");
 
-    MemberVM server0 = startupRule.startServerAsEmbededLocator(0, props);
+    MemberVM server0 = startupRule.startServerAsEmbeddedLocator(0, props);
 
     if (connectOverHttp) {
       gfsh.connectAndVerify(server0.getHttpPort(), GfshCommandRule.PortType.http);

@@ -138,7 +138,6 @@ public class AbstractEvictionListTest {
     EvictionNode node = mock(EvictionNode.class);
     evictionList.appendEntry(node);
 
-    verify(node).unsetRecentlyUsed();
     verify(node).setNext(evictionList.tail);
     verify(node).setPrevious(evictionList.head);
     assertThat(evictionList.tail.previous()).isSameAs(node);

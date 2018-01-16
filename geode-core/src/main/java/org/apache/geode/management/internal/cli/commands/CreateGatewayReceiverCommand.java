@@ -89,12 +89,20 @@ public class CreateGatewayReceiverCommand implements GfshCommand {
             gatewayReceiverFunctionArgs, membersToCreateGatewayReceiverOn);
 
     CommandResult result = ResultBuilder.buildResult(gatewayReceiverCreateResults);
-
     XmlEntity xmlEntity = findXmlEntity(gatewayReceiverCreateResults);
-    if (xmlEntity != null) {
-      persistClusterConfiguration(result,
-          () -> getSharedConfiguration().addXmlEntity(xmlEntity, onGroups));
+    // no xml needs to be updated, simply return
+    if (xmlEntity == null) {
+      return result;
     }
+
+    // has xml but unable to persist to cluster config, need to print warning message and return
+    if (onMember != null || getSharedConfiguration() == null) {
+      result.setCommandPersisted(false);
+      return result;
+    }
+
+    // update cluster config
+    getSharedConfiguration().addXmlEntity(xmlEntity, onGroups);
     return result;
   }
 

@@ -48,8 +48,7 @@ public class InternalLocatorIntegrationTest {
     properties.setProperty(LOG_FILE, temporaryFolder.newFile("testVM.log").getAbsolutePath());
 
     int port = AvailablePortHelper.getRandomAvailableTCPPort();
-    locator =
-        InternalLocator.startLocator(port, null, null, null, null, null, false, properties, null);
+    locator = InternalLocator.startLocator(port, null, null, null, null, false, properties, null);
 
     appender = LogWriterAppenders.getAppender(LogWriterAppenders.Identifier.MAIN);
     assertThat(appender).isNotNull();

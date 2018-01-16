@@ -21,23 +21,20 @@ import java.util.Arrays;
 import java.util.stream.Collectors;
 
 import org.junit.Before;
-import org.junit.BeforeClass;
 import org.junit.ClassRule;
-import org.junit.Rule;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
-import org.springframework.shell.core.Converter;
 
-import org.apache.geode.management.cli.ConverterHint;
-import org.apache.geode.management.internal.cli.shell.Gfsh;
 import org.apache.geode.test.junit.categories.UnitTest;
 import org.apache.geode.test.junit.rules.GfshParserRule;
 import org.apache.geode.test.junit.rules.GfshParserRule.CommandCandidate;
+import org.apache.geode.test.junit.runners.CategoryWithParameterizedRunnerFactory;
 
 @Category(UnitTest.class)
 @RunWith(Parameterized.class)
+@Parameterized.UseParametersRunnerFactory(CategoryWithParameterizedRunnerFactory.class)
 public class BaseStringConverterJUnitTest {
 
   @ClassRule

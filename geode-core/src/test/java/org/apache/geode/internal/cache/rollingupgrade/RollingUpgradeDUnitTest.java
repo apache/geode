@@ -260,8 +260,6 @@ public class RollingUpgradeDUnitTest extends JUnit4DistributedTestCase {
       putter.invoke(invokePut(regionName, "" + i, "VALUE(" + i + ")"));
     }
 
-    threadSleep();
-
     // verify present in others
     for (VM vm : vms) {
       vm.invoke(invokeAssertEntriesEqual(regionName, start, end));
@@ -273,8 +271,6 @@ public class RollingUpgradeDUnitTest extends JUnit4DistributedTestCase {
     for (int i = start; i < end; i++) {
       putter.invoke(invokePut(regionName, "" + i, new Properties()));
     }
-
-    threadSleep();
 
     // verify present in others
     for (VM vm : vms) {
@@ -292,8 +288,6 @@ public class RollingUpgradeDUnitTest extends JUnit4DistributedTestCase {
       putter.invoke(invokePut(regionName, "" + i, testDataSerializable));
     }
 
-    threadSleep();
-
     // verify present in others
     for (VM vm : vms) {
       vm.invoke(invokeAssertEntriesExist(regionName, start, end));
@@ -301,7 +295,6 @@ public class RollingUpgradeDUnitTest extends JUnit4DistributedTestCase {
   }
 
   private void verifyValues(String objectType, String regionName, int start, int end, VM... vms) {
-    threadSleep();
     if (objectType.equals("strings")) {
       for (VM vm : vms) {
         vm.invoke(invokeAssertEntriesEqual(regionName, start, end));
@@ -314,16 +307,6 @@ public class RollingUpgradeDUnitTest extends JUnit4DistributedTestCase {
       for (VM vm : vms) {
         vm.invoke(invokeAssertEntriesExist(regionName, start, end));
       }
-    }
-  }
-
-  // Oddly the puts will return and for some reason the other vms have yet to recieve or process the
-  // put?
-  private void threadSleep() {
-    try {
-      Thread.sleep(250);
-    } catch (InterruptedException e) {
-      Thread.currentThread().interrupt();
     }
   }
 
@@ -889,6 +872,9 @@ public class RollingUpgradeDUnitTest extends JUnit4DistributedTestCase {
     Class dataPolicyObject = Thread.currentThread().getContextClassLoader()
         .loadClass("org.apache.geode.cache.DataPolicy");
     Object dataPolicy = dataPolicyObject.getField("PERSISTENT_REPLICATE").get(null);
+    Class scopeClass =
+        Thread.currentThread().getContextClassLoader().loadClass("org.apache.geode.cache.Scope");
+    Object scope = scopeClass.getField("DISTRIBUTED_ACK").get(null);
     if (store == null) {
       Object dsf = cache.getClass().getMethod("createDiskStoreFactory").invoke(cache);
       dsf.getClass().getMethod("setMaxOplogSize", long.class).invoke(dsf, 1L);
@@ -899,6 +885,7 @@ public class RollingUpgradeDUnitTest extends JUnit4DistributedTestCase {
     Object rf = cache.getClass().getMethod("createRegionFactory").invoke(cache);
     rf.getClass().getMethod("setDiskStoreName", String.class).invoke(rf, "store");
     rf.getClass().getMethod("setDataPolicy", dataPolicy.getClass()).invoke(rf, dataPolicy);
+    rf.getClass().getMethod("setScope", scope.getClass()).invoke(rf, scope);
     rf.getClass().getMethod("create", String.class).invoke(rf, regionName);
   }
 

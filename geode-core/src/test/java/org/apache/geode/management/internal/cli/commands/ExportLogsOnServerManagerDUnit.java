@@ -16,6 +16,7 @@
 package org.apache.geode.management.internal.cli.commands;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.Assert.assertEquals;
 
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -27,7 +28,7 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
-import org.apache.geode.test.dunit.rules.LocatorServerStartupRule;
+import org.apache.geode.test.dunit.rules.ClusterStartupRule;
 import org.apache.geode.test.dunit.rules.MemberVM;
 import org.apache.geode.test.junit.categories.DistributedTest;
 import org.apache.geode.test.junit.rules.GfshCommandRule;
@@ -37,8 +38,7 @@ import org.apache.geode.test.junit.rules.GfshCommandRule;
 public class ExportLogsOnServerManagerDUnit {
 
   @Rule
-  public LocatorServerStartupRule lsRule =
-      new LocatorServerStartupRule().withTempWorkingDir().withLogFile();
+  public ClusterStartupRule lsRule = new ClusterStartupRule().withTempWorkingDir().withLogFile();
 
   @Rule
   public GfshCommandRule gfshConnector = new GfshCommandRule();
@@ -57,12 +57,12 @@ public class ExportLogsOnServerManagerDUnit {
     Set<String> expectedZipEntries = Sets.newHashSet("server-0/server-0.log");
     Set<String> actualZipEnries =
         new ZipFile(zipPath).stream().map(ZipEntry::getName).collect(Collectors.toSet());
-    assertThat(actualZipEnries).isEqualTo(expectedZipEntries);
+    assertThat(actualZipEnries).containsAll(expectedZipEntries);
   }
 
   @Test
   public void testExportWithPeerLocator() throws Exception {
-    MemberVM server0 = lsRule.startServerAsEmbededLocator(0);
+    MemberVM server0 = lsRule.startServerAsEmbeddedLocator(0);
     lsRule.startServerVM(1, server0.getEmbeddedLocatorPort());
     gfshConnector.connect(server0.getEmbeddedLocatorPort(), GfshCommandRule.PortType.locator);
     gfshConnector.executeAndAssertThat("export logs").statusIsSuccess();
@@ -76,8 +76,7 @@ public class ExportLogsOnServerManagerDUnit {
         Sets.newHashSet("server-0/server-0.log", "server-1/server-1.log");
     Set<String> actualZipEnries =
         new ZipFile(zipPath).stream().map(ZipEntry::getName).collect(Collectors.toSet());
-    assertThat(actualZipEnries).isEqualTo(expectedZipEntries);
-
+    assertThat(actualZipEnries).containsAll(expectedZipEntries);
   }
 
   private String getZipPathFromCommandResult(String message) {

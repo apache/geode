@@ -31,7 +31,7 @@ import org.apache.geode.cache.wan.GatewayReceiver;
 import org.apache.geode.cache.wan.GatewaySender;
 import org.apache.geode.management.internal.cli.i18n.CliStrings;
 import org.apache.geode.management.internal.cli.util.CommandStringBuilder;
-import org.apache.geode.test.dunit.rules.LocatorServerStartupRule;
+import org.apache.geode.test.dunit.rules.ClusterStartupRule;
 import org.apache.geode.test.dunit.rules.MemberVM;
 import org.apache.geode.test.junit.categories.DistributedTest;
 import org.apache.geode.test.junit.rules.GfshCommandRule;
@@ -41,7 +41,7 @@ import org.apache.geode.test.junit.rules.GfshCommandRule;
 public class WANClusterConfigurationDUnitTest {
 
   @Rule
-  public LocatorServerStartupRule locatorServerStartupRule = new LocatorServerStartupRule();
+  public ClusterStartupRule clusterStartupRule = new ClusterStartupRule();
 
   @Rule
   public GfshCommandRule gfsh = new GfshCommandRule();
@@ -53,7 +53,7 @@ public class WANClusterConfigurationDUnitTest {
 
   @Before
   public void before() throws Exception {
-    locator = locatorServerStartupRule.startLocatorVM(3);
+    locator = clusterStartupRule.startLocatorVM(3);
   }
 
   @Test
@@ -76,7 +76,7 @@ public class WANClusterConfigurationDUnitTest {
     final String socketReadTimeout =
         String.valueOf(GatewaySender.MINIMUM_SOCKET_READ_TIMEOUT + 200);
 
-    dataMember = locatorServerStartupRule.startServerVM(1, locator.getPort());
+    dataMember = clusterStartupRule.startServerVM(1, locator.getPort());
 
     // Connect Gfsh to locator.
     gfsh.connectAndVerify(locator);
@@ -116,12 +116,11 @@ public class WANClusterConfigurationDUnitTest {
     // Start a new member which receives the shared configuration
     // Verify the config creation on this member
 
-    MemberVM newMember = locatorServerStartupRule.startServerVM(2, locator.getPort());
+    MemberVM newMember = clusterStartupRule.startServerVM(2, locator.getPort());
 
     // verify GatewayReceiver attributes saved in cluster config
     newMember.invoke(() -> {
-      Set<GatewayReceiver> gatewayReceivers =
-          LocatorServerStartupRule.getCache().getGatewayReceivers();
+      Set<GatewayReceiver> gatewayReceivers = ClusterStartupRule.getCache().getGatewayReceivers();
       assertNotNull(gatewayReceivers);
       assertFalse(gatewayReceivers.isEmpty());
       assertTrue(gatewayReceivers.size() == 1);
@@ -136,7 +135,7 @@ public class WANClusterConfigurationDUnitTest {
 
     // verify GatewaySender attributes saved in cluster config
     newMember.invoke(() -> {
-      GatewaySender gs = LocatorServerStartupRule.getCache().getGatewaySender(gsId);
+      GatewaySender gs = ClusterStartupRule.getCache().getGatewaySender(gsId);
       assertNotNull(gs);
       assertTrue(alertThreshold.equals(Integer.toString(gs.getAlertThreshold())));
       assertTrue(batchSize.equals(Integer.toString(gs.getBatchSize())));

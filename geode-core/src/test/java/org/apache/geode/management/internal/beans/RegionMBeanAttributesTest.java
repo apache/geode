@@ -57,17 +57,17 @@ public class RegionMBeanAttributesTest {
   }
 
   @Test
-  public void regionMBeanContainsEventQueueId() throws Exception {
+  public void regionMBeanContainsAsyncEventQueueId() throws Exception {
     gfsh.executeAndAssertThat(
         "create async-event-queue --id=AEQ1 --listener=" + TestEventListener.class.getName())
         .statusIsSuccess();
     gfsh.executeAndAssertThat("alter region --name=FOO --async-event-queue-id=AEQ1")
         .statusIsSuccess();
 
-    bean = mBeanRule.getProxyMBean(RegionMXBean.class);
+    bean = mBeanRule.getProxyMXBean(RegionMXBean.class);
 
     assertThat(bean).isNotNull();
-    Set<String> eventQueueIds = bean.listRegionAttributes().getEventQueueIds();
+    Set<String> eventQueueIds = bean.listRegionAttributes().getAsyncEventQueueIds();
     assertThat(eventQueueIds).containsExactly("AEQ1");
   }
 
@@ -79,15 +79,15 @@ public class RegionMBeanAttributesTest {
     gfsh.executeAndAssertThat("alter region --name=FOO --async-event-queue-id=AEQ1")
         .statusIsSuccess();
 
-    bean = mBeanRule.getProxyMBean(RegionMXBean.class);
+    bean = mBeanRule.getProxyMXBean(RegionMXBean.class);
 
     assertThat(bean).isNotNull();
-    Set<String> eventQueueIds = bean.listRegionAttributes().getEventQueueIds();
+    Set<String> eventQueueIds = bean.listRegionAttributes().getAsyncEventQueueIds();
     assertThat(eventQueueIds).containsExactly("AEQ1");
 
     gfsh.executeAndAssertThat("alter region --name=/FOO --async-event-queue-id=").statusIsSuccess();
 
-    eventQueueIds = bean.listRegionAttributes().getEventQueueIds();
+    eventQueueIds = bean.listRegionAttributes().getAsyncEventQueueIds();
     assertThat(eventQueueIds).containsExactly("");
   }
 }

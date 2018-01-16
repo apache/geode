@@ -41,7 +41,7 @@ import org.apache.geode.management.internal.cli.i18n.CliStrings;
 import org.apache.geode.management.internal.cli.result.CommandResult;
 import org.apache.geode.management.internal.cli.result.CompositeResultData;
 import org.apache.geode.management.internal.cli.result.TabularResultData;
-import org.apache.geode.test.dunit.rules.LocatorServerStartupRule;
+import org.apache.geode.test.dunit.rules.ClusterStartupRule;
 import org.apache.geode.test.dunit.rules.MemberVM;
 import org.apache.geode.test.junit.categories.DistributedTest;
 import org.apache.geode.test.junit.rules.GfshCommandRule;
@@ -50,7 +50,7 @@ import org.apache.geode.test.junit.rules.GfshCommandRule;
 public class StatusGatewayReceiverCommandDUnitTest {
 
   @Rule
-  public LocatorServerStartupRule locatorServerStartupRule = new LocatorServerStartupRule();
+  public ClusterStartupRule clusterStartupRule = new ClusterStartupRule();
 
   @Rule
   public GfshCommandRule gfsh = new GfshCommandRule();
@@ -67,11 +67,11 @@ public class StatusGatewayReceiverCommandDUnitTest {
   public void before() throws Exception {
     Properties props = new Properties();
     props.setProperty(DISTRIBUTED_SYSTEM_ID, "" + 1);
-    locatorSite1 = locatorServerStartupRule.startLocatorVM(1, props);
+    locatorSite1 = clusterStartupRule.startLocatorVM(1, props);
 
     props.setProperty(DISTRIBUTED_SYSTEM_ID, "" + 2);
     props.setProperty(REMOTE_LOCATORS, "localhost[" + locatorSite1.getPort() + "]");
-    locatorSite2 = locatorServerStartupRule.startLocatorVM(2, props);
+    locatorSite2 = clusterStartupRule.startLocatorVM(2, props);
 
     // Connect Gfsh to locator.
     gfsh.connectAndVerify(locatorSite1);
@@ -84,12 +84,12 @@ public class StatusGatewayReceiverCommandDUnitTest {
     Integer nyPort = locatorSite2.getPort();
 
     // setup servers in Site #1 (London)
-    server1 = locatorServerStartupRule.startServerVM(3, lnPort);
-    server2 = locatorServerStartupRule.startServerVM(4, lnPort);
-    server3 = locatorServerStartupRule.startServerVM(5, lnPort);
+    server1 = clusterStartupRule.startServerVM(3, lnPort);
+    server2 = clusterStartupRule.startServerVM(4, lnPort);
+    server3 = clusterStartupRule.startServerVM(5, lnPort);
 
     // server in Site 2 (New York)
-    server4 = locatorServerStartupRule.startServerVM(6, nyPort);
+    server4 = clusterStartupRule.startServerVM(6, nyPort);
 
     server1.invoke(() -> createAndStartReceiver(lnPort));
     server2.invoke(() -> createAndStartReceiver(lnPort));
@@ -146,12 +146,12 @@ public class StatusGatewayReceiverCommandDUnitTest {
     Integer nyPort = locatorSite2.getPort();
 
     // setup servers in Site #1 (London)
-    server1 = locatorServerStartupRule.startServerVM(3, lnPort);
-    server2 = locatorServerStartupRule.startServerVM(4, lnPort);
-    server3 = locatorServerStartupRule.startServerVM(5, lnPort);
+    server1 = clusterStartupRule.startServerVM(3, lnPort);
+    server2 = clusterStartupRule.startServerVM(4, lnPort);
+    server3 = clusterStartupRule.startServerVM(5, lnPort);
 
     // server in Site 2 (New York)
-    server4 = locatorServerStartupRule.startServerVM(6, nyPort);
+    server4 = clusterStartupRule.startServerVM(6, nyPort);
 
     server1.invoke(() -> createAndStartReceiver(lnPort));
     server2.invoke(() -> createAndStartReceiver(lnPort));
@@ -214,7 +214,7 @@ public class StatusGatewayReceiverCommandDUnitTest {
     server4 = startServerWithGroups(6, "RG2", lnPort);
 
     // server in Site 2 (New York) - no group
-    server5 = locatorServerStartupRule.startServerVM(7, nyPort);
+    server5 = clusterStartupRule.startServerVM(7, nyPort);
 
     server1.invoke(() -> createAndStartReceiver(lnPort));
     server2.invoke(() -> createAndStartReceiver(lnPort));
@@ -266,6 +266,6 @@ public class StatusGatewayReceiverCommandDUnitTest {
   private MemberVM startServerWithGroups(int index, String groups, int locPort) throws Exception {
     Properties props = new Properties();
     props.setProperty(GROUPS, groups);
-    return locatorServerStartupRule.startServerVM(index, props, locPort);
+    return clusterStartupRule.startServerVM(index, props, locPort);
   }
 }
