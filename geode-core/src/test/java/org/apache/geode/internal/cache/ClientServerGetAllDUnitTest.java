@@ -846,7 +846,7 @@ public class ClientServerGetAllDUnitTest extends ClientServerTestCase {
       public void run2() throws CacheException {
         Region region = getRootRegion(regionName);
         region.close();
-        OffHeapTestUtil.checkOrphans();
+        OffHeapTestUtil.checkOrphans(getCache());
       }
     });
 

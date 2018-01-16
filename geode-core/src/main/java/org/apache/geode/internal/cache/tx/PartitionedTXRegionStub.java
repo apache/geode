@@ -402,7 +402,7 @@ public class PartitionedTXRegionStub extends AbstractPeerTXRegionStub {
   public void postPutAll(DistributedPutAllOperation putallO, VersionedObjectList successfulPuts,
       LocalRegion r) throws TransactionException {
     if (r.getCache().isCacheAtShutdownAll()) {
-      throw new CacheClosedException("Cache is shutting down");
+      throw r.getCache().getCacheClosedException("Cache is shutting down");
     }
 
     PartitionedRegion pr = (PartitionedRegion) r;
@@ -462,7 +462,7 @@ public class PartitionedTXRegionStub extends AbstractPeerTXRegionStub {
   public void postRemoveAll(DistributedRemoveAllOperation op, VersionedObjectList successfulOps,
       LocalRegion r) {
     if (r.getCache().isCacheAtShutdownAll()) {
-      throw new CacheClosedException("Cache is shutting down");
+      throw r.getCache().getCacheClosedException("Cache is shutting down");
     }
 
     PartitionedRegion pr = (PartitionedRegion) r;

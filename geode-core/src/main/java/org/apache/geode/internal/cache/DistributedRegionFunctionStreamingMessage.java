@@ -138,8 +138,15 @@ public class DistributedRegionFunctionStreamingMessage extends DistributionMessa
 
     try {
       if (checkCacheClosing(dm) || checkDSClosing(dm)) {
-        thr = new CacheClosedException(LocalizedStrings.PartitionMessage_REMOTE_CACHE_IS_CLOSED_0
-            .toLocalizedString(dm.getId()));
+        InternalCache cache = dm.getCache();
+        if (cache != null) {
+          thr = cache
+              .getCacheClosedException(LocalizedStrings.PartitionMessage_REMOTE_CACHE_IS_CLOSED_0
+                  .toLocalizedString(dm.getId()));
+        } else {
+          thr = new CacheClosedException(LocalizedStrings.PartitionMessage_REMOTE_CACHE_IS_CLOSED_0
+              .toLocalizedString(dm.getId()));
+        }
         return;
       }
       dr = (DistributedRegion) dm.getCache().getRegion(this.regionPath);

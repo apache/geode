@@ -123,7 +123,7 @@ public class CacheServerAdvisor extends GridAdvisor {
       // tell local controllers about this cache server
       tellLocalControllers(removeProfile, exchangeProfiles, replyProfiles);
       // for QRM messaging we need cache servers to know about each other
-      tellLocalBridgeServers(removeProfile, exchangeProfiles, replyProfiles);
+      tellLocalBridgeServers(dm.getCache(), removeProfile, exchangeProfiles, replyProfiles);
     }
 
     @Override

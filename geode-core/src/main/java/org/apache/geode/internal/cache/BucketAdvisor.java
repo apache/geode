@@ -1390,7 +1390,7 @@ public class BucketAdvisor extends CacheDistributionAdvisor {
           this.getAdvisee().getCancelCriterion().checkCancelInProgress(null);
           final InternalCache cache = getBucket().getCache();
           if (cache != null && cache.isCacheAtShutdownAll()) {
-            throw new CacheClosedException("Cache is shutting down");
+            throw cache.getCacheClosedException("Cache is shutting down");
           }
 
           if (getBucketRedundancy() == -1) {

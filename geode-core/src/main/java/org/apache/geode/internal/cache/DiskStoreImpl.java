@@ -822,7 +822,7 @@ public class DiskStoreImpl implements DiskStore {
           if (bb == CLEAR_BB) {
             return Token.REMOVED_PHASE1;
           }
-          return convertBytesAndBitsIntoObject(bb);
+          return convertBytesAndBitsIntoObject(bb, getCache());
         } catch (IllegalArgumentException e) {
           count++;
           if (logger.isDebugEnabled()) {
@@ -881,13 +881,13 @@ public class DiskStoreImpl implements DiskStore {
    *
    * @return the converted object
    */
-  static Object convertBytesAndBitsIntoObject(BytesAndBits bb) {
+  static Object convertBytesAndBitsIntoObject(BytesAndBits bb, InternalCache cache) {
     byte[] bytes = bb.getBytes();
     Object value;
     if (EntryBits.isInvalid(bb.getBits())) {
       value = Token.INVALID;
     } else if (EntryBits.isSerialized(bb.getBits())) {
-      value = DiskEntry.Helper.readSerializedValue(bytes, bb.getVersion(), null, true);
+      value = DiskEntry.Helper.readSerializedValue(bytes, bb.getVersion(), null, true, cache);
     } else if (EntryBits.isLocalInvalid(bb.getBits())) {
       value = Token.LOCAL_INVALID;
     } else if (EntryBits.isTombstone(bb.getBits())) {
@@ -903,13 +903,13 @@ public class DiskStoreImpl implements DiskStore {
    *
    * @return the converted object
    */
-  static Object convertBytesAndBitsToSerializedForm(BytesAndBits bb) {
+  static Object convertBytesAndBitsToSerializedForm(BytesAndBits bb, InternalCache cache) {
     final byte[] bytes = bb.getBytes();
     Object value;
     if (EntryBits.isInvalid(bb.getBits())) {
       value = Token.INVALID;
     } else if (EntryBits.isSerialized(bb.getBits())) {
-      value = DiskEntry.Helper.readSerializedValue(bytes, bb.getVersion(), null, false);
+      value = DiskEntry.Helper.readSerializedValue(bytes, bb.getVersion(), null, false, cache);
     } else if (EntryBits.isLocalInvalid(bb.getBits())) {
       value = Token.LOCAL_INVALID;
     } else if (EntryBits.isTombstone(bb.getBits())) {
@@ -1030,7 +1030,7 @@ public class DiskStoreImpl implements DiskStore {
       if (opId != -1) {
         OplogSet oplogSet = getOplogSet(dr);
         bb = oplogSet.getChild(opId).getNoBuffer(dr, id);
-        return convertBytesAndBitsIntoObject(bb);
+        return convertBytesAndBitsIntoObject(bb, getCache());
       } else {
         return null;
       }
@@ -1231,7 +1231,7 @@ public class DiskStoreImpl implements DiskStore {
    * @since GemFire 5.7
    */
   public Object getSerializedData(DiskRegion dr, DiskId id) {
-    return convertBytesAndBitsToSerializedForm(getBytesAndBits(dr, id, true));
+    return convertBytesAndBitsToSerializedForm(getBytesAndBits(dr, id, true), dr.getCache());
   }
 
   private void checkForFlusherThreadTermination() {

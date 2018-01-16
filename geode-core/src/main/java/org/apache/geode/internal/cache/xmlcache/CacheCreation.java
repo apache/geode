@@ -2174,6 +2174,11 @@ public class CacheCreation implements InternalCache {
   }
 
   @Override
+  public CacheClosedException getCacheClosedException(final String reason) {
+    throw new UnsupportedOperationException(LocalizedStrings.SHOULDNT_INVOKE.toLocalizedString());
+  }
+
+  @Override
   public CacheClosedException getCacheClosedException(final String reason, final Throwable cause) {
     throw new UnsupportedOperationException(LocalizedStrings.SHOULDNT_INVOKE.toLocalizedString());
   }

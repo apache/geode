@@ -335,7 +335,7 @@ public class DistributedPutAllOperation extends AbstractUpdateOperation {
       } else {
         byte[] bb = DataSerializer.readByteArray(in);
         if ((flgs & IS_CACHED_DESER) != 0) {
-          this.value = CachedDeserializableFactory.create(bb);
+          this.value = CachedDeserializableFactory.create(bb, GemFireCacheImpl.getInstance());
         } else {
           this.value = bb;
         }

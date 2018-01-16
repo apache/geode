@@ -295,7 +295,7 @@ public class CacheFactory {
             LocalizedStrings.CacheFactory_THE_CACHE_HAS_BEEN_CLOSED.toLocalizedString(), null);
       }
       if (!instance.getDistributedSystem().equals(system)) {
-        throw new CacheClosedException(
+        throw instance.getCacheClosedException(
             LocalizedStrings.CacheFactory_A_CACHE_HAS_NOT_YET_BEEN_CREATED_FOR_THE_GIVEN_DISTRIBUTED_SYSTEM
                 .toLocalizedString());
       }

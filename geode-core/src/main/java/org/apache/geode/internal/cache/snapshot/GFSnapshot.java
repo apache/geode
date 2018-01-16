@@ -79,7 +79,7 @@ public class GFSnapshot {
       ExitCode.FATAL.doSystemExit();
     }
 
-    GFSnapshotImporter imp = new GFSnapshotImporter(new File(args[0]));
+    GFSnapshotImporter imp = new GFSnapshotImporter(new File(args[0]), null);
     try {
       System.out.println("Snapshot format is version " + imp.getVersion());
       System.out.println("Snapshot region is " + imp.getRegionName());
@@ -141,10 +141,10 @@ public class GFSnapshot {
    * @throws IOException error reading the snapshot file
    * @throws ClassNotFoundException unable to deserialize entry
    */
-  public static <K, V> SnapshotIterator<K, V> read(final File snapshot)
+  public static <K, V> SnapshotIterator<K, V> read(final File snapshot, TypeRegistry typeRegistry)
       throws IOException, ClassNotFoundException {
     return new SnapshotIterator<K, V>() {
-      GFSnapshotImporter in = new GFSnapshotImporter(snapshot);
+      GFSnapshotImporter in = new GFSnapshotImporter(snapshot, typeRegistry);
 
       private boolean foundNext;
       private Entry<K, V> next;
@@ -290,7 +290,8 @@ public class GFSnapshot {
     /** the input stream */
     private final DataInputStream dis;
 
-    public GFSnapshotImporter(File in) throws IOException, ClassNotFoundException {
+    public GFSnapshotImporter(File in, TypeRegistry typeRegistry)
+        throws IOException, ClassNotFoundException {
       pdx = new ExportedRegistry();
 
       // read header and pdx registry
@@ -340,8 +341,8 @@ public class GFSnapshot {
       // check compatibility with the existing pdx types so we don't have to
       // do any translation...preexisting types or concurrent put ops may cause
       // this check to fail
-      checkPdxTypeCompatibility();
-      checkPdxEnumCompatibility();
+      checkPdxTypeCompatibility(typeRegistry);
+      checkPdxEnumCompatibility(typeRegistry);
 
       // open new stream with buffering for reading entries
       dis = new DataInputStream(new BufferedInputStream(new FileInputStream(in)));
@@ -396,16 +397,7 @@ public class GFSnapshot {
       dis.close();
     }
 
-    private TypeRegistry getRegistry() {
-      InternalCache gfc = GemFireCacheImpl.getInstance();
-      if (gfc != null) {
-        return gfc.getPdxRegistry();
-      }
-      return null;
-    }
-
-    private void checkPdxTypeCompatibility() {
-      TypeRegistry tr = getRegistry();
+    private void checkPdxTypeCompatibility(TypeRegistry tr) {
       if (tr == null) {
         return;
       }
@@ -415,8 +407,7 @@ public class GFSnapshot {
       }
     }
 
-    private void checkPdxEnumCompatibility() {
-      TypeRegistry tr = getRegistry();
+    private void checkPdxEnumCompatibility(TypeRegistry tr) {
       if (tr == null) {
         return;
       }

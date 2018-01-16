@@ -1070,4 +1070,9 @@ public abstract class AbstractDiskRegion implements DiskRegionView {
       return getName();
     }
   }
+
+  @Override
+  public InternalCache getCache() {
+    return getDiskStore().getCache();
+  }
 }

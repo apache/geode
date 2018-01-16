@@ -596,14 +596,6 @@ public class PartitionedRegion extends LocalRegion
     }
 
     public Object getRegion(Object key) throws PRLocallyDestroyedException {
-      if (cleared) {
-        Cache cache = GemFireCacheImpl.getInstance();
-        if (cache == null) {
-          throw new CacheClosedException();
-        } else {
-          cache.getCancelCriterion().checkCancelInProgress(null);
-        }
-      }
       Assert.assertTrue(key instanceof Integer);
 
       Object o = super.get(key);
@@ -976,7 +968,7 @@ public class PartitionedRegion extends LocalRegion
     }
     /* Initialize the PartitionRegion */
     if (cache.isCacheAtShutdownAll()) {
-      throw new CacheClosedException("Cache is shutting down");
+      throw cache.getCacheClosedException("Cache is shutting down");
     }
     validator.validateColocation();
 
@@ -2157,7 +2149,7 @@ public class PartitionedRegion extends LocalRegion
     final boolean isDebugEnabled = logger.isDebugEnabled();
 
     if (cache.isCacheAtShutdownAll()) {
-      throw new CacheClosedException("Cache is shutting down");
+      throw cache.getCacheClosedException("Cache is shutting down");
     }
 
     final long startTime = PartitionedRegionStats.startTime();
@@ -2249,7 +2241,7 @@ public class PartitionedRegion extends LocalRegion
     final boolean isDebugEnabled = logger.isDebugEnabled();
 
     if (cache.isCacheAtShutdownAll()) {
-      throw new CacheClosedException("Cache is shutting down");
+      throw cache.getCacheClosedException("Cache is shutting down");
     }
 
     final long startTime = PartitionedRegionStats.startTime();

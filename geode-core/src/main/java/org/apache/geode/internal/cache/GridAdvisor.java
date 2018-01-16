@@ -204,7 +204,8 @@ public abstract class GridAdvisor extends DistributionAdvisor {
       // Exchange with any local servers or controllers.
       List<Profile> otherProfiles = new ArrayList<Profile>();
       GridProfile profile = (GridProfile) createProfile();
-      profile.tellLocalBridgeServers(false, true, otherProfiles);
+      profile.tellLocalBridgeServers(getDistributionManager().getCache(), false, true,
+          otherProfiles);
       profile.tellLocalControllers(false, true, otherProfiles);
       for (Profile otherProfile : otherProfiles) {
         if (!otherProfile.equals(profile)) {
@@ -223,7 +224,7 @@ public abstract class GridAdvisor extends DistributionAdvisor {
       // Notify any local bridge servers or controllers
       // that we are closing.
       GridProfile profile = (GridProfile) createProfile();
-      profile.tellLocalBridgeServers(true, false, null);
+      profile.tellLocalBridgeServers(getDistributionManager().getCache(), true, false, null);
       profile.tellLocalControllers(true, false, null);
       super.close();
     } catch (DistributedSystemDisconnectedException ignore) {
@@ -325,9 +326,9 @@ public abstract class GridAdvisor extends DistributionAdvisor {
      *
      * @since GemFire 5.7
      */
-    protected void tellLocalBridgeServers(boolean removeProfile, boolean exchangeProfiles,
-        final List<Profile> replyProfiles) {
-      final InternalCache cache = GemFireCacheImpl.getInstance();
+    protected void tellLocalBridgeServers(InternalCache cache, boolean removeProfile,
+        boolean exchangeProfiles, final List<Profile> replyProfiles) {
+
       if (cache != null && !cache.isClosed()) {
         List<?> bridgeServers = cache.getCacheServersAndGatewayReceiver();
         for (int i = 0; i < bridgeServers.size(); i++) {

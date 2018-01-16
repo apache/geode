@@ -37,7 +37,7 @@ public class CompressionCacheListenerOffHeapDUnitTest extends CompressionCacheLi
       @Override
       public void run() {
         if (hasCache()) {
-          OffHeapTestUtil.checkOrphans();
+          OffHeapTestUtil.checkOrphans(getCache());
         }
       }
     };

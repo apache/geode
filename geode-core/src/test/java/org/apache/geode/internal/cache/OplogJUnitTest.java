@@ -367,7 +367,7 @@ public class OplogJUnitTest extends DiskRegionTestingBase {
         }
       }
       val = (byte[]) DiskStoreImpl.convertBytesAndBitsIntoObject(
-          dr.getBytesAndBitsWithoutLock(entry.getDiskId(), true, false));
+          dr.getBytesAndBitsWithoutLock(entry.getDiskId(), true, false), (InternalCache) cache);
       for (int i = 0; i < val.length; ++i) {
         if (val[i] != (byte) i) {
           fail("Test for fault in from disk failed");
