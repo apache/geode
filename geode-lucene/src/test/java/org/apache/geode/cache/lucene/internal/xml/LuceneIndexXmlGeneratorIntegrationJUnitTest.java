@@ -31,7 +31,6 @@ import org.junit.experimental.categories.Category;
 
 import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.CacheFactory;
-import org.apache.geode.cache.Declarable;
 import org.apache.geode.cache.RegionShortcut;
 import org.apache.geode.cache.lucene.*;
 import org.apache.geode.cache.lucene.test.LuceneDeclarable2TestSerializer;
@@ -42,11 +41,23 @@ import org.apache.geode.test.junit.categories.IntegrationTest;
 @Category(IntegrationTest.class)
 public class LuceneIndexXmlGeneratorIntegrationJUnitTest {
 
-  private Cache cache;
+  protected Cache cache;
 
   @After
   public void closeCache() {
     cache.close();
+  }
+
+  protected void createDataRegionAndLuceneIndex(LuceneService service) {
+    service.createIndexFactory().setFields("a", "b", "c").create("index", "region");
+    cache.createRegionFactory(RegionShortcut.PARTITION).create("region");
+  }
+
+  protected void createDataRegionAndLuceneIndexWithSerializer(LuceneTestSerializer luceneSerializer,
+      LuceneService service) {
+    service.createIndexFactory().setLuceneSerializer(luceneSerializer).setFields("a", "b", "c")
+        .create("index", "region");
+    cache.createRegionFactory(RegionShortcut.PARTITION).create("region");
   }
 
   /**
@@ -56,8 +67,7 @@ public class LuceneIndexXmlGeneratorIntegrationJUnitTest {
   public void generateWithFields() {
     cache = new CacheFactory().set(MCAST_PORT, "0").create();
     LuceneService service = LuceneServiceProvider.get(cache);
-    service.createIndexFactory().setFields("a", "b", "c").create("index", "region");
-    cache.createRegionFactory(RegionShortcut.PARTITION).create("region");
+    createDataRegionAndLuceneIndex(service);
 
 
     LuceneIndex index = generateAndParseXml(service);
@@ -92,9 +102,7 @@ public class LuceneIndexXmlGeneratorIntegrationJUnitTest {
       LuceneDeclarable2TestSerializer luceneSerializer) {
     cache = new CacheFactory().set(MCAST_PORT, "0").create();
     LuceneService service = LuceneServiceProvider.get(cache);
-    service.createIndexFactory().setLuceneSerializer(luceneSerializer).setFields("a", "b", "c")
-        .create("index", "region");
-    cache.createRegionFactory(RegionShortcut.PARTITION).create("region");
+    createDataRegionAndLuceneIndexWithSerializer(luceneSerializer, service);
 
     LuceneIndex index = generateAndParseXml(service);
 
@@ -104,14 +112,11 @@ public class LuceneIndexXmlGeneratorIntegrationJUnitTest {
     return ((LuceneDeclarable2TestSerializer) testSerializer).getConfig();
   }
 
-
   @Test
   public void generateWithSerializer() {
     cache = new CacheFactory().set(MCAST_PORT, "0").create();
     LuceneService service = LuceneServiceProvider.get(cache);
-    service.createIndexFactory().setLuceneSerializer(new LuceneTestSerializer())
-        .setFields("a", "b", "c").create("index", "region");
-    cache.createRegionFactory(RegionShortcut.PARTITION).create("region");
+    createDataRegionAndLuceneIndexWithSerializer(new LuceneTestSerializer(), service);
 
     LuceneIndex index = generateAndParseXml(service);
 
