@@ -60,6 +60,9 @@ public class ProtobufDriver implements Driver {
     this.locators = locators;
     InetSocketAddress server = findAServer();
     socket = new Socket(server.getAddress(), server.getPort());
+    socket.setTcpNoDelay(true);
+    socket.setSendBufferSize(65535);
+    socket.setReceiveBufferSize(65535);
 
     final OutputStream outputStream = socket.getOutputStream();
     ProtocolVersion.NewConnectionClientVersion.newBuilder()
