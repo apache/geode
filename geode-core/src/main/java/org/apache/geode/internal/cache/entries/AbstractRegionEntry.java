@@ -949,7 +949,7 @@ public abstract class AbstractRegionEntry implements RegionEntry, HashEntry<Obje
     } else {
       boolean isCompressedOffHeap =
           region.getAttributes().getOffHeap() && region.getAttributes().getCompressor() != null;
-      return checkEquals(expectedOldValue, actualValue, isCompressedOffHeap);
+      return checkEquals(expectedOldValue, actualValue, isCompressedOffHeap, region.getCache());
     }
   }
 
@@ -1021,31 +1021,30 @@ public abstract class AbstractRegionEntry implements RegionEntry, HashEntry<Obje
   }
 
   private static boolean checkEquals(@Unretained Object v1, @Unretained Object v2,
-      boolean isCompressedOffHeap) {
+      boolean isCompressedOffHeap, InternalCache cache) {
     // need to give PdxInstance#equals priority
     if (v1 instanceof PdxInstance) {
-      return checkPdxEquals((PdxInstance) v1, v2);
+      return checkPdxEquals((PdxInstance) v1, v2, cache);
     } else if (v2 instanceof PdxInstance) {
-      return checkPdxEquals((PdxInstance) v2, v1);
+      return checkPdxEquals((PdxInstance) v2, v1, cache);
     } else if (v1 instanceof StoredObject) {
-      return checkOffHeapEquals((StoredObject) v1, v2);
+      return checkOffHeapEquals((StoredObject) v1, v2, cache);
     } else if (v2 instanceof StoredObject) {
-      return checkOffHeapEquals((StoredObject) v2, v1);
+      return checkOffHeapEquals((StoredObject) v2, v1, cache);
     } else if (v1 instanceof CachedDeserializable) {
-      return checkCDEquals((CachedDeserializable) v1, v2, isCompressedOffHeap);
+      return checkCDEquals((CachedDeserializable) v1, v2, isCompressedOffHeap, cache);
     } else if (v2 instanceof CachedDeserializable) {
-      return checkCDEquals((CachedDeserializable) v2, v1, isCompressedOffHeap);
+      return checkCDEquals((CachedDeserializable) v2, v1, isCompressedOffHeap, cache);
     } else {
       return basicEquals(v1, v2);
     }
   }
 
-  private static boolean checkOffHeapEquals(@Unretained StoredObject ohVal,
-      @Unretained Object obj) {
+  private static boolean checkOffHeapEquals(@Unretained StoredObject ohVal, @Unretained Object obj,
+      InternalCache cache) {
     if (ohVal.isSerializedPdxInstance()) {
-      PdxInstance pi = InternalDataSerializer.readPdxInstance(ohVal.getSerializedValue(),
-          GemFireCacheImpl.getForPdx("Could not check value equality"));
-      return checkPdxEquals(pi, obj);
+      PdxInstance pi = InternalDataSerializer.readPdxInstance(ohVal.getSerializedValue(), cache);
+      return checkPdxEquals(pi, obj, cache);
     }
     if (obj instanceof StoredObject) {
       return ohVal.checkDataEquals((StoredObject) obj);
@@ -1077,7 +1076,7 @@ public abstract class AbstractRegionEntry implements RegionEntry, HashEntry<Obje
   }
 
   private static boolean checkCDEquals(CachedDeserializable cd, Object obj,
-      boolean isCompressedOffHeap) {
+      boolean isCompressedOffHeap, InternalCache cache) {
     if (!cd.isSerialized()) {
       // cd is an actual byte[].
       byte[] ba2;
@@ -1098,10 +1097,9 @@ public abstract class AbstractRegionEntry implements RegionEntry, HashEntry<Obje
     Object cdVal = cd.getValue();
     if (cdVal instanceof byte[]) {
       byte[] cdValBytes = (byte[]) cdVal;
-      PdxInstance pi = InternalDataSerializer.readPdxInstance(cdValBytes,
-          GemFireCacheImpl.getForPdx("Could not check value equality"));
+      PdxInstance pi = InternalDataSerializer.readPdxInstance(cdValBytes, cache);
       if (pi != null) {
-        return checkPdxEquals(pi, obj);
+        return checkPdxEquals(pi, obj, cache);
       }
       if (isCompressedOffHeap) {
         // fix for bug 52248
@@ -1144,7 +1142,7 @@ public abstract class AbstractRegionEntry implements RegionEntry, HashEntry<Obje
   /**
    * This method fixes bug 43643
    */
-  private static boolean checkPdxEquals(PdxInstance pdx, Object obj) {
+  private static boolean checkPdxEquals(PdxInstance pdx, Object obj, InternalCache cache) {
     if (!(obj instanceof PdxInstance)) {
       // obj may be a CachedDeserializable in which case we want to convert it to a PdxInstance even
       // if we are not readSerialized.
@@ -1157,8 +1155,7 @@ public abstract class AbstractRegionEntry implements RegionEntry, HashEntry<Obje
         Object cdVal = cdObj.getValue();
         if (cdVal instanceof byte[]) {
           byte[] cdValBytes = (byte[]) cdVal;
-          PdxInstance pi = InternalDataSerializer.readPdxInstance(cdValBytes,
-              GemFireCacheImpl.getForPdx("Could not check value equality"));
+          PdxInstance pi = InternalDataSerializer.readPdxInstance(cdValBytes, cache);
           if (pi != null) {
             return pi.equals(pdx);
           } else {
@@ -1171,29 +1168,25 @@ public abstract class AbstractRegionEntry implements RegionEntry, HashEntry<Obje
         }
       }
       if (obj != null && obj.getClass().getName().equals(pdx.getClassName())) {
-        InternalCache internalCache = GemFireCacheImpl.getForPdx("Could not access Pdx registry");
-        if (internalCache != null) {
-          PdxSerializer pdxSerializer;
-          if (obj instanceof PdxSerializable) {
-            pdxSerializer = null;
-          } else {
-            pdxSerializer = internalCache.getPdxSerializer();
-          }
-          if (pdxSerializer != null || obj instanceof PdxSerializable) {
-            // try to convert obj to a PdxInstance
-            HeapDataOutputStream hdos = new HeapDataOutputStream(Version.CURRENT);
-            try {
-              if (InternalDataSerializer.autoSerialized(obj, hdos)
-                  || InternalDataSerializer.writePdx(hdos, internalCache, obj, pdxSerializer)) {
-                PdxInstance pi =
-                    InternalDataSerializer.readPdxInstance(hdos.toByteArray(), internalCache);
-                if (pi != null) {
-                  obj = pi;
-                }
+        PdxSerializer pdxSerializer;
+        if (obj instanceof PdxSerializable) {
+          pdxSerializer = null;
+        } else {
+          pdxSerializer = cache.getPdxSerializer();
+        }
+        if (pdxSerializer != null || obj instanceof PdxSerializable) {
+          // try to convert obj to a PdxInstance
+          HeapDataOutputStream hdos = new HeapDataOutputStream(Version.CURRENT);
+          try {
+            if (InternalDataSerializer.autoSerialized(obj, hdos, cache)
+                || InternalDataSerializer.writePdx(hdos, cache, obj, pdxSerializer)) {
+              PdxInstance pi = InternalDataSerializer.readPdxInstance(hdos.toByteArray(), cache);
+              if (pi != null) {
+                obj = pi;
               }
-            } catch (IOException | PdxSerializationException ignore) {
-              // we are not able to convert it so just fall through
             }
+          } catch (IOException | PdxSerializationException ignore) {
+            // we are not able to convert it so just fall through
           }
         }
       }

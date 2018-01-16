@@ -736,6 +736,9 @@ public class GemFireCacheImpl implements InternalCache, InternalClientCache, Has
 
   /**
    * Pdx is allowed to obtain the cache even while it is being closed
+   *
+   * @deprecated Rather than fishing for a cache with this static method, use a cache that is passed
+   *             in to your method.
    */
   public static GemFireCacheImpl getForPdx(String reason) {
     GemFireCacheImpl result = pdxInstance;
@@ -5208,12 +5211,12 @@ public class GemFireCacheImpl implements InternalCache, InternalClientCache, Has
 
   @Override
   public PdxInstanceFactory createPdxInstanceFactory(String className) {
-    return PdxInstanceFactoryImpl.newCreator(className, true);
+    return PdxInstanceFactoryImpl.newCreator(className, true, this);
   }
 
   @Override
   public PdxInstanceFactory createPdxInstanceFactory(String className, boolean expectDomainClass) {
-    return PdxInstanceFactoryImpl.newCreator(className, expectDomainClass);
+    return PdxInstanceFactoryImpl.newCreator(className, expectDomainClass, this);
   }
 
   @Override

@@ -53,6 +53,7 @@ import org.apache.geode.internal.cache.CachePerfStats;
 import org.apache.geode.internal.cache.CachedDeserializable;
 import org.apache.geode.internal.cache.CachedDeserializableFactory;
 import org.apache.geode.internal.cache.GemFireCacheImpl;
+import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.cache.LocalDataSet;
 import org.apache.geode.internal.cache.LocalRegion;
 import org.apache.geode.internal.cache.Token;
@@ -347,7 +348,8 @@ public class RegionSnapshotServiceImpl<K, V> implements RegionSnapshotService<K,
 
     long count = 0;
     long start = CachePerfStats.getStatTime();
-    SnapshotWriter writer = GFSnapshot.create(snapshot, region.getFullPath());
+    SnapshotWriter writer =
+        GFSnapshot.create(snapshot, region.getFullPath(), (InternalCache) region.getCache());
     try {
       if (getLoggerI18n().infoEnabled())
         getLoggerI18n().info(LocalizedStrings.Snapshot_EXPORT_BEGIN_0, region.getName());

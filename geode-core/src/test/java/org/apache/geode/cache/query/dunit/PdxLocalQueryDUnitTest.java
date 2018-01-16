@@ -168,7 +168,7 @@ public class PdxLocalQueryDUnitTest extends PDXQueryTestBase {
 
         PositionPdx pos = new PositionPdx("IBM", 100);
         PdxInstanceFactory out = PdxInstanceFactoryImpl
-            .newCreator("org.apache.geode.cache.query.data.PositionPdx", false);
+            .newCreator("org.apache.geode.cache.query.data.PositionPdx", false, getCache());
         out.writeLong("avg20DaysVol", 0);
         out.writeString("bondRating", "");
         out.writeDouble("convRatio", 0);
@@ -368,7 +368,7 @@ public class PdxLocalQueryDUnitTest extends PDXQueryTestBase {
         ((GemFireCacheImpl) getCache()).setReadSerializedForTest(true);
 
         PdxInstanceFactory out = PdxInstanceFactoryImpl
-            .newCreator("org.apache.geode.cache.query.data.PositionPdx", false);
+            .newCreator("org.apache.geode.cache.query.data.PositionPdx", false, getCache());
         out.writeLong("avg20DaysVol", 0);
         out.writeString("bondRating", "");
         out.writeDouble("convRatio", 0);

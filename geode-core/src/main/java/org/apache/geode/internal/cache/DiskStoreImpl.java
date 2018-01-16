@@ -3840,7 +3840,7 @@ public class DiskStoreImpl implements DiskStore {
         if (writer == null) {
           String fname = regionName.substring(1).replace('/', '-');
           File f = new File(out, "snapshot-" + name + "-" + fname + ".gfd");
-          writer = GFSnapshot.create(f, regionName);
+          writer = GFSnapshot.create(f, regionName, cache);
           regions.put(regionName, writer);
         }
         // Add a mapping from the bucket name to the writer for the PR

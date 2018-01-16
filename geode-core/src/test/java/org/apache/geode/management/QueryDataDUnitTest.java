@@ -64,6 +64,7 @@ import org.apache.geode.cache.RegionShortcut;
 import org.apache.geode.cache.query.data.Portfolio;
 import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.internal.cache.BucketRegion;
+import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.cache.PartitionedRegion;
 import org.apache.geode.internal.cache.PartitionedRegionHelper;
 import org.apache.geode.internal.cache.partitioned.fixed.SingleHopQuarterPartitionResolver;
@@ -531,30 +532,32 @@ public class QueryDataDUnitTest implements Serializable {
   }
 
   private void putPdxInstances(final String regionName) throws CacheException {
-    Region region = managementTestRule.getCache().getRegion(regionName);
+    InternalCache cache = (InternalCache) managementTestRule.getCache();
+    Region region = cache.getRegion(regionName);
 
-    PdxInstanceFactory pdxInstanceFactory = PdxInstanceFactoryImpl.newCreator("Portfolio", false);
+    PdxInstanceFactory pdxInstanceFactory =
+        PdxInstanceFactoryImpl.newCreator("Portfolio", false, cache);
     pdxInstanceFactory.writeInt("ID", 111);
     pdxInstanceFactory.writeString("status", "active");
     pdxInstanceFactory.writeString("secId", "IBM");
     PdxInstance pdxInstance = pdxInstanceFactory.create();
     region.put("IBM", pdxInstance);
 
-    pdxInstanceFactory = PdxInstanceFactoryImpl.newCreator("Portfolio", false);
+    pdxInstanceFactory = PdxInstanceFactoryImpl.newCreator("Portfolio", false, cache);
     pdxInstanceFactory.writeInt("ID", 222);
     pdxInstanceFactory.writeString("status", "inactive");
     pdxInstanceFactory.writeString("secId", "YHOO");
     pdxInstance = pdxInstanceFactory.create();
     region.put("YHOO", pdxInstance);
 
-    pdxInstanceFactory = PdxInstanceFactoryImpl.newCreator("Portfolio", false);
+    pdxInstanceFactory = PdxInstanceFactoryImpl.newCreator("Portfolio", false, cache);
     pdxInstanceFactory.writeInt("ID", 333);
     pdxInstanceFactory.writeString("status", "active");
     pdxInstanceFactory.writeString("secId", "GOOGL");
     pdxInstance = pdxInstanceFactory.create();
     region.put("GOOGL", pdxInstance);
 
-    pdxInstanceFactory = PdxInstanceFactoryImpl.newCreator("Portfolio", false);
+    pdxInstanceFactory = PdxInstanceFactoryImpl.newCreator("Portfolio", false, cache);
     pdxInstanceFactory.writeInt("ID", 111);
     pdxInstanceFactory.writeString("status", "inactive");
     pdxInstanceFactory.writeString("secId", "VMW");

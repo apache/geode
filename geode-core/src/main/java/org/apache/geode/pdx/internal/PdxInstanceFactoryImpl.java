@@ -37,17 +37,15 @@ public class PdxInstanceFactoryImpl implements PdxInstanceFactory {
 
   private boolean created = false;
 
-  private PdxInstanceFactoryImpl(String name, boolean expectDomainClass) {
+  private PdxInstanceFactoryImpl(String name, boolean expectDomainClass, TypeRegistry pdxRegistry) {
     PdxOutputStream pdxOutputStream = new PdxOutputStream();
     PdxType pdxType = new PdxType(name, expectDomainClass);
-    InternalCache internalCache = GemFireCacheImpl
-        .getForPdx("PDX registry is unavailable because the Cache has been closed.");
-    TypeRegistry pdxRegistry = internalCache.getPdxRegistry();
     this.writer = new PdxWriterImpl(pdxType, pdxRegistry, pdxOutputStream);
   }
 
-  public static PdxInstanceFactory newCreator(String name, boolean expectDomainClass) {
-    return new PdxInstanceFactoryImpl(name, expectDomainClass);
+  public static PdxInstanceFactory newCreator(String name, boolean expectDomainClass,
+      InternalCache cache) {
+    return new PdxInstanceFactoryImpl(name, expectDomainClass, cache.getPdxRegistry());
   }
 
   @Override
