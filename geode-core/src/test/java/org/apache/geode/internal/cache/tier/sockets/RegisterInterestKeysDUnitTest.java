@@ -162,8 +162,8 @@ public class RegisterInterestKeysDUnitTest extends JUnit4DistributedTestCase {
     Pool p;
     try {
       p = PoolManager.createFactory().addServer(host, PORT1).addServer(host, PORT2)
-          .setSubscriptionEnabled(true).setSubscriptionRedundancy(-1).setReadTimeout(2000)
-          .setSocketBufferSize(1000).setMinConnections(4)
+          .setSubscriptionEnabled(true).setSubscriptionRedundancy(-1).setSocketBufferSize(1000)
+          .setMinConnections(4)
           // retryAttempts 2
           // retryInterval 250
           .create("RegisterInterestKeysDUnitTestPool");
