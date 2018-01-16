@@ -52,6 +52,7 @@ public class PutRequestOperationHandler
           "Region passed by client did not exist: " + regionName));
     }
 
+    long startTime = messageExecutionContext.getStatistics().startOperation();
     try {
       BasicTypes.Entry entry = request.getEntry();
 
@@ -68,6 +69,8 @@ public class PutRequestOperationHandler
       logger.error("Got error when decoding Put request: {}", ex);
       return Failure
           .of(ProtobufResponseUtilities.makeErrorResponse(INVALID_REQUEST, ex.toString()));
+    } finally {
+      messageExecutionContext.getStatistics().endOperation(startTime);
     }
   }
 }

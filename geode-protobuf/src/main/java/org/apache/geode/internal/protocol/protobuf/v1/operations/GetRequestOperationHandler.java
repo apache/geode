@@ -52,6 +52,7 @@ public class GetRequestOperationHandler
       return Failure
           .of(ProtobufResponseUtilities.makeErrorResponse(SERVER_ERROR, "Region not found"));
     }
+    long startOperationTime = messageExecutionContext.getStatistics().startOperation();
 
     try {
       ((InternalCache) messageExecutionContext.getCache()).setReadSerializedForCurrentThread(true);
@@ -71,6 +72,7 @@ public class GetRequestOperationHandler
           ProtobufResponseUtilities.makeErrorResponse(INVALID_REQUEST, "Encoding not supported."));
     } finally {
       ((InternalCache) messageExecutionContext.getCache()).setReadSerializedForCurrentThread(false);
+      messageExecutionContext.getStatistics().endOperation(startOperationTime);
     }
   }
 }
