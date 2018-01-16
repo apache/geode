@@ -57,7 +57,7 @@ public class CloseCacheMessage extends HighPriorityDistributionMessage implement
     boolean systemError = false;
     try {
       try {
-        PartitionedRegionHelper.cleanUpMetaDataOnNodeFailure(getSender());
+        PartitionedRegionHelper.cleanUpMetaDataOnNodeFailure(dm.getCache(), getSender());
       } catch (VirtualMachineError err) {
         systemError = true;
         SystemFailure.initiateFailure(err);

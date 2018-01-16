@@ -101,7 +101,7 @@ public class CacheSnapshotServiceImpl implements CacheSnapshotService {
       SnapshotOptions<Object, Object> options) throws IOException, ClassNotFoundException {
 
     for (File file : snapshotFiles) {
-      GFSnapshotImporter in = new GFSnapshotImporter(file);
+      GFSnapshotImporter in = new GFSnapshotImporter(file, cache.getPdxRegistry());
       try {
         byte version = in.getVersion();
         if (version == GFSnapshot.SNAP_VER_1) {

@@ -28,7 +28,7 @@ import org.apache.geode.internal.offheap.ReferenceCountHelper;
 @SuppressWarnings("deprecation")
 public class OffHeapTestUtil {
 
-  public static void checkOrphans() {
+  public static void checkOrphans(InternalCache cache) {
     MemoryAllocatorImpl allocator = null;
     try {
       allocator = MemoryAllocatorImpl.getAllocator();
@@ -37,7 +37,7 @@ public class OffHeapTestUtil {
       return;
     }
     long end = System.currentTimeMillis() + 5000;
-    List<MemoryBlock> orphans = allocator.getOrphans();
+    List<MemoryBlock> orphans = allocator.getOrphans(cache);
 
     // Wait for the orphans to go away
     while (orphans != null && !orphans.isEmpty() && System.currentTimeMillis() < end) {
@@ -46,7 +46,7 @@ public class OffHeapTestUtil {
       } catch (InterruptedException e) {
         throw new RuntimeException(e);
       }
-      orphans = allocator.getOrphans();
+      orphans = allocator.getOrphans(null);
     }
 
     if (orphans != null && !orphans.isEmpty()) {

@@ -237,7 +237,7 @@ public class RegionSnapshotServiceImpl<K, V> implements RegionSnapshotService<K,
     // Would be interesting to use a PriorityQueue ordered on isDone()
     // but this is probably close enough in practice.
     LinkedList<Future<?>> puts = new LinkedList<>();
-    GFSnapshotImporter in = new GFSnapshotImporter(snapshot);
+    GFSnapshotImporter in = new GFSnapshotImporter(snapshot, local.getCache().getPdxRegistry());
 
     try {
       int bufferSize = 0;
@@ -265,7 +265,7 @@ public class RegionSnapshotServiceImpl<K, V> implements RegionSnapshotService<K,
             // keep the logic in the InternalDataSerializer.
             val = record.getValueObject();
           } else {
-            val = (V) CachedDeserializableFactory.create(record.getValue());
+            val = (V) CachedDeserializableFactory.create(record.getValue(), local.getCache());
           }
         }
 
@@ -282,9 +282,8 @@ public class RegionSnapshotServiceImpl<K, V> implements RegionSnapshotService<K,
             }
 
             final Map<K, V> copy = new HashMap<>(buffer);
-            Future<?> f = GemFireCacheImpl.getExisting("Importing region from snapshot")
-                .getDistributionManager().getWaitingThreadPool().submit((Runnable) () -> local
-                    .basicImportPutAll(copy, !options.shouldInvokeCallbacks()));
+            Future<?> f = local.getCache().getDistributionManager().getWaitingThreadPool().submit(
+                (Runnable) () -> local.basicImportPutAll(copy, !options.shouldInvokeCallbacks()));
 
             puts.addLast(f);
             buffer.clear();

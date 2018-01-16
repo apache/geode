@@ -14,7 +14,6 @@
  */
 package org.apache.geode.internal.cache;
 
-import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
@@ -25,42 +24,34 @@ import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
 import org.apache.geode.distributed.internal.ClusterDistributionManager;
-import org.apache.geode.internal.cache.InitialImageOperation.RequestFilterInfoMessage;
+import org.apache.geode.internal.cache.CacheDistributionAdvisor.CacheProfile;
 import org.apache.geode.test.junit.categories.UnitTest;
 
 @Category(UnitTest.class)
-public class RequestFilterInfoMessageTest {
+public class CacheProfileTest {
 
   private ClusterDistributionManager dm;
   private InternalCache cache;
-  private String path;
+  private String adviseePath;
   private LocalRegion region;
 
   @Before
   public void setUp() {
-    path = "path";
+    adviseePath = "adviseePath";
 
     dm = mock(ClusterDistributionManager.class);
     cache = mock(InternalCache.class);
     region = mock(LocalRegion.class);
 
     when(dm.getCache()).thenReturn(cache);
-    when(cache.getRegionByPath(path)).thenReturn(region);
-  }
-
-  @Test
-  public void shouldBeMockable() throws Exception {
-    RequestFilterInfoMessage mockRequestFilterInfoMessage = mock(RequestFilterInfoMessage.class);
-    when(mockRequestFilterInfoMessage.getProcessorType()).thenReturn(1);
-    assertThat(mockRequestFilterInfoMessage.getProcessorType()).isEqualTo(1);
+    when(cache.getRegionByPath(adviseePath)).thenReturn(region);
   }
 
   @Test
   public void getsRegionFromCacheFromDM() {
-    RequestFilterInfoMessage message = new RequestFilterInfoMessage();
-    message.regionPath = path;
-    message.process(dm);
+    CacheProfile profile = new CacheProfile();
+    profile.processIncoming(dm, adviseePath, false, false, null);
     verify(dm, times(1)).getCache();
-    verify(cache, times(1)).getRegionByPath(path);
+    verify(cache, times(1)).getRegionByPath(adviseePath);
   }
 }

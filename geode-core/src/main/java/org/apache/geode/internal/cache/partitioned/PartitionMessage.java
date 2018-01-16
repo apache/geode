@@ -302,9 +302,16 @@ public abstract class PartitionMessage extends DistributionMessage
     long startTime = 0;
     EntryLogger.setSource(getSender(), "PR");
     try {
+      InternalCache cache = dm.getCache();
       if (checkCacheClosing(dm) || checkDSClosing(dm)) {
-        thr = new CacheClosedException(LocalizedStrings.PartitionMessage_REMOTE_CACHE_IS_CLOSED_0
-            .toLocalizedString(dm.getId()));
+        if (cache != null) {
+          thr = cache
+              .getCacheClosedException(LocalizedStrings.PartitionMessage_REMOTE_CACHE_IS_CLOSED_0
+                  .toLocalizedString(dm.getId()));
+        } else {
+          thr = new CacheClosedException(LocalizedStrings.PartitionMessage_REMOTE_CACHE_IS_CLOSED_0
+              .toLocalizedString(dm.getId()));
+        }
         return;
       }
       pr = getPartitionedRegion();
@@ -322,7 +329,6 @@ public abstract class PartitionMessage extends DistributionMessage
       }
       thr = UNHANDLED_EXCEPTION;
 
-      InternalCache cache = getInternalCache();
       if (cache == null) {
         throw new ForceReattemptException(
             LocalizedStrings.PartitionMessage_REMOTE_CACHE_IS_CLOSED_0.toLocalizedString());

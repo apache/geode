@@ -17,10 +17,15 @@ package org.apache.geode.cache.snapshot;
 import java.io.File;
 import java.io.IOException;
 
+import org.apache.geode.CancelException;
 import org.apache.geode.DataSerializer;
 import org.apache.geode.Instantiator;
+import org.apache.geode.cache.Cache;
+import org.apache.geode.cache.CacheFactory;
+import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.cache.snapshot.GFSnapshot;
 import org.apache.geode.pdx.PdxSerializer;
+import org.apache.geode.pdx.internal.TypeRegistry;
 
 /**
  * Provides utilities for reading cache data.
@@ -47,6 +52,15 @@ public class SnapshotReader {
    */
   public static <K, V> SnapshotIterator<K, V> read(File snapshot)
       throws IOException, ClassNotFoundException {
-    return GFSnapshot.read(snapshot);
+    TypeRegistry typeRegistry = null;
+    try {
+      Cache cache = CacheFactory.getAnyInstance();
+      if (cache != null) {
+        typeRegistry = ((InternalCache) cache).getPdxRegistry();
+      }
+    } catch (CancelException ignore) {
+      // proceed with no type registry
+    }
+    return GFSnapshot.read(snapshot, typeRegistry);
   }
 }

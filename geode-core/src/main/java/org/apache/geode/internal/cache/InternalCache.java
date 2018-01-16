@@ -164,6 +164,8 @@ public interface InternalCache extends Cache, Extensible<Cache>, CacheTime {
 
   boolean keepDurableSubscriptionsAlive();
 
+  CacheClosedException getCacheClosedException(String reason);
+
   CacheClosedException getCacheClosedException(String reason, Throwable cause);
 
   TypeRegistry getPdxRegistry();

@@ -70,7 +70,7 @@ public class GatewayReceiverCommand extends BaseCommand {
   private void handleRegionNull(ServerConnection servConn, String regionName, int batchId) {
     InternalCache cache = servConn.getCachedRegionHelper().getCache();
     if (cache != null && cache.isCacheAtShutdownAll()) {
-      throw new CacheClosedException("Shutdown occurred during message processing");
+      throw cache.getCacheClosedException("Shutdown occurred during message processing");
     } else {
       String reason = LocalizedStrings.ProcessBatch_WAS_NOT_FOUND_DURING_BATCH_CREATE_REQUEST_0
           .toLocalizedString(new Object[] {regionName, Integer.valueOf(batchId)});

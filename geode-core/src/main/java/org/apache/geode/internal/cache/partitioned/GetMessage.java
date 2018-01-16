@@ -538,7 +538,8 @@ public class GetMessage extends PartitionMessageWithDirectReply {
             default:
               if (reply.valueInBytes != null) {
                 if (preferCD) {
-                  return CachedDeserializableFactory.create(reply.valueInBytes);
+                  return CachedDeserializableFactory.create(reply.valueInBytes,
+                      getDistributionManager().getCache());
                 } else {
                   return BlobHelper.deserializeBlob(reply.valueInBytes, reply.remoteVersion, null);
                 }

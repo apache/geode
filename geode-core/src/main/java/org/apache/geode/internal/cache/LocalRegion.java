@@ -144,7 +144,6 @@ import org.apache.geode.cache.query.internal.index.IndexUtils;
 import org.apache.geode.cache.util.ObjectSizer;
 import org.apache.geode.cache.wan.GatewaySender;
 import org.apache.geode.distributed.DistributedMember;
-import org.apache.geode.distributed.DistributedSystem;
 import org.apache.geode.distributed.internal.DistributionAdvisor;
 import org.apache.geode.distributed.internal.DistributionAdvisor.Profile;
 import org.apache.geode.distributed.internal.DistributionConfig;
@@ -2264,21 +2263,6 @@ public class LocalRegion extends AbstractRegion implements LoaderHelperFactory,
   }
 
   /**
-   * Look up the LocalRegion with the specified full path.
-   *
-   * @param system the distributed system whose cache contains the root of interest
-   * @return the LocalRegion or null if not found
-   */
-  static LocalRegion getRegionFromPath(DistributedSystem system, String path) {
-    Cache cache = GemFireCacheImpl.getInstance();
-    if (cache == null) {
-      return null;
-    } else {
-      return (LocalRegion) cache.getRegion(path);
-    }
-  }
-
-  /**
    * Do any extra initialization required. Region is already visible in parent's subregion map. This
    * method releases the initialization Latches, so subclasses should call this super method last
    * after performing additional initialization.
@@ -4312,7 +4296,7 @@ public class LocalRegion extends AbstractRegion implements LoaderHelperFactory,
             }
 
             if (val instanceof byte[] && !isBytes) {
-              val = CachedDeserializableFactory.create((byte[]) val);
+              val = CachedDeserializableFactory.create((byte[]) val, getCache());
             }
 
             if (isTombstone) {
@@ -7364,7 +7348,7 @@ public class LocalRegion extends AbstractRegion implements LoaderHelperFactory,
       if (this.reinitialized_old) {
         regionDestroyedException = new RegionReinitializedException(toString(), getFullPath());
       } else if (this.cache.isCacheAtShutdownAll()) {
-        throw new CacheClosedException("Cache is being closed by ShutdownAll");
+        throw cache.getCacheClosedException("Cache is being closed by ShutdownAll");
       } else {
         regionDestroyedException = new RegionDestroyedException(toString(), getFullPath());
       }

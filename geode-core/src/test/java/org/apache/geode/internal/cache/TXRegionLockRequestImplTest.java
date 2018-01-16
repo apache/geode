@@ -12,55 +12,44 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
+
 package org.apache.geode.internal.cache;
 
-import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.times;
-import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
-import org.apache.geode.distributed.internal.ClusterDistributionManager;
-import org.apache.geode.internal.cache.InitialImageOperation.RequestFilterInfoMessage;
+import org.apache.geode.CancelCriterion;
+import org.apache.geode.CancelException;
+import org.apache.geode.cache.CacheClosedException;
 import org.apache.geode.test.junit.categories.UnitTest;
 
 @Category(UnitTest.class)
-public class RequestFilterInfoMessageTest {
+public class TXRegionLockRequestImplTest {
 
-  private ClusterDistributionManager dm;
   private InternalCache cache;
-  private String path;
   private LocalRegion region;
+  private CancelCriterion cancelCriterion;
 
   @Before
   public void setUp() {
-    path = "path";
-
-    dm = mock(ClusterDistributionManager.class);
     cache = mock(InternalCache.class);
     region = mock(LocalRegion.class);
+    cancelCriterion = mock(CancelCriterion.class);
 
-    when(dm.getCache()).thenReturn(cache);
-    when(cache.getRegionByPath(path)).thenReturn(region);
+    when(cache.getCancelCriterion()).thenReturn(cancelCriterion);
+    doThrow(new CacheClosedException()).when(cancelCriterion).checkCancelInProgress(any());
   }
 
   @Test
-  public void shouldBeMockable() throws Exception {
-    RequestFilterInfoMessage mockRequestFilterInfoMessage = mock(RequestFilterInfoMessage.class);
-    when(mockRequestFilterInfoMessage.getProcessorType()).thenReturn(1);
-    assertThat(mockRequestFilterInfoMessage.getProcessorType()).isEqualTo(1);
-  }
-
-  @Test
-  public void getsRegionFromCacheFromDM() {
-    RequestFilterInfoMessage message = new RequestFilterInfoMessage();
-    message.regionPath = path;
-    message.process(dm);
-    verify(dm, times(1)).getCache();
-    verify(cache, times(1)).getRegionByPath(path);
+  public void getKeysThrowsCancelExceptionIfCacheIsClosed() {
+    TXRegionLockRequestImpl txRegionLockRequest = new TXRegionLockRequestImpl(cache, region);
+    assertThatThrownBy(() -> txRegionLockRequest.getKeys()).isInstanceOf(CancelException.class);
   }
 }

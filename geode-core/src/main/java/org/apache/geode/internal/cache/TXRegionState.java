@@ -222,7 +222,7 @@ public class TXRegionState {
     final boolean distributedTX = !byPassDLock && r.getScope().isDistributedAck();
     if (this.uaMods != null || (!distributedTX && this.entryMods.size() > 0)) {
       // need some local locks
-      TXRegionLockRequestImpl rlr = new TXRegionLockRequestImpl(r);
+      TXRegionLockRequestImpl rlr = new TXRegionLockRequestImpl(r.getCache(), r);
       if (this.uaMods != null) {
         rlr.addEntryKeys(this.uaMods.keySet());
       }
@@ -235,7 +235,7 @@ public class TXRegionState {
     }
     if (distributedTX && this.entryMods.size() > 0) {
       // need some distributed locks
-      TXRegionLockRequestImpl rlr = new TXRegionLockRequestImpl(r);
+      TXRegionLockRequestImpl rlr = new TXRegionLockRequestImpl(r.getCache(), r);
       rlr.addEntryKeys(getLockRequestEntryKeys());
       if (!rlr.isEmpty()) {
         req.setOtherMembers(this.otherMembers);

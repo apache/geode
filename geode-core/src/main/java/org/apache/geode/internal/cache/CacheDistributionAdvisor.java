@@ -752,7 +752,8 @@ public class CacheDistributionAdvisor extends DistributionAdvisor {
         LocalRegion lclRgn;
         int oldLevel = LocalRegion.setThreadInitLevelRequirement(LocalRegion.ANY_INIT);
         try {
-          lclRgn = LocalRegion.getRegionFromPath(dm.getSystem(), adviseePath);
+          InternalCache cache = dm.getCache();
+          lclRgn = cache == null ? null : cache.getRegionByPath(adviseePath);
         } finally {
           LocalRegion.setThreadInitLevelRequirement(oldLevel);
         }

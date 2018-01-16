@@ -42,6 +42,8 @@ public class DistTxEntryEvent extends EntryEventImpl {
   protected static final byte HAS_PUTALL_OP = 0x1;
   protected static final byte HAS_REMOVEALL_OP = 0x2;
 
+  private String regionName;
+
   /**
    * TODO DISTTX: callers of this constructor need to make sure that release is called. In general
    * the distributed tx code needs to be reviewed to see if it correctly handles off-heap.
@@ -53,6 +55,10 @@ public class DistTxEntryEvent extends EntryEventImpl {
 
   // For Serialization
   public DistTxEntryEvent() {}
+
+  public String getRegionName() {
+    return this.regionName;
+  }
 
   @Override
   public Version[] getSerializationVersions() {
@@ -96,9 +102,7 @@ public class DistTxEntryEvent extends EntryEventImpl {
   @Override
   public void fromData(DataInput in) throws IOException, ClassNotFoundException {
     this.eventID = (EventID) DataSerializer.readObject(in);
-    String regionName = DataSerializer.readString(in);
-    InternalCache cache = GemFireCacheImpl.getInstance();
-    this.region = (LocalRegion) cache.getRegion(regionName);
+    this.regionName = DataSerializer.readString(in);
     this.op = Operation.fromOrdinal(in.readByte());
     Object key = DataSerializer.readObject(in);
     Integer bucketId = DataSerializer.readInteger(in);
@@ -168,11 +172,11 @@ public class DistTxEntryEvent extends EntryEventImpl {
         }
       }
     }
-    // TODO DISTTX: release this event?
-    EntryEventImpl e = EntryEventImpl.create(this.region, Operation.PUTALL_CREATE, null, null, null,
-        true, this.getDistributedMember(), true, true);
+    this.op = Operation.PUTALL_CREATE;
+    this.setOriginRemote(true);
+    this.setGenerateCallbacks(true);
 
-    this.putAllOp = new DistributedPutAllOperation(e, putAllSize, false /* [DISTTX] TODO */);
+    this.putAllOp = new DistributedPutAllOperation(this, putAllSize, false /* [DISTTX] TODO */);
     this.putAllOp.setPutAllEntryData(putAllEntries);
   }
 
@@ -224,11 +228,12 @@ public class DistTxEntryEvent extends EntryEventImpl {
         removeAllData[i].versionTag = versionTags.get(i);
       }
     }
-    // TODO DISTTX: release this event
-    EntryEventImpl e = EntryEventImpl.create(this.region, Operation.REMOVEALL_DESTROY, null, null,
-        null, true, this.getDistributedMember(), true, true);
+    this.op = Operation.REMOVEALL_DESTROY;
+    this.setOriginRemote(true);
+    this.setGenerateCallbacks(true);
+
     this.removeAllOp =
-        new DistributedRemoveAllOperation(e, removeAllSize, false /* [DISTTX] TODO */);
+        new DistributedRemoveAllOperation(this, removeAllSize, false /* [DISTTX] TODO */);
     this.removeAllOp.setRemoveAllEntryData(removeAllData);
   }
 

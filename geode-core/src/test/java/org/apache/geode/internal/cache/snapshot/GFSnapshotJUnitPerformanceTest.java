@@ -101,7 +101,7 @@ public class GFSnapshotJUnitPerformanceTest {
       long start = System.currentTimeMillis();
       int count = 0;
 
-      GFSnapshotImporter in = new GFSnapshotImporter(f);
+      GFSnapshotImporter in = new GFSnapshotImporter(f, null);
 
       SnapshotRecord entry;
       while ((entry = in.readSnapshotRecord()) != null) {
@@ -128,7 +128,7 @@ public class GFSnapshotJUnitPerformanceTest {
       final SnapshotWriter writer = GFSnapshot.create(tmp, "test");
 
       long start = System.currentTimeMillis();
-      SnapshotIterator<Integer, String> iter = GFSnapshot.read(f);
+      SnapshotIterator<Integer, String> iter = GFSnapshot.read(f, null);
       try {
         while (iter.hasNext()) {
           Entry<Integer, String> entry = iter.next();

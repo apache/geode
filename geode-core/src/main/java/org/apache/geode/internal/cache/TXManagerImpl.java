@@ -328,9 +328,9 @@ public class TXManagerImpl implements CacheTransactionManager, MembershipListene
     TXId id = new TXId(this.distributionMgrId, this.uniqId.incrementAndGet());
     TXStateProxyImpl proxy = null;
     if (isDistributed()) {
-      proxy = new DistTXStateProxyImplOnCoordinator(this, id, null);
+      proxy = new DistTXStateProxyImplOnCoordinator(cache, this, id, null);
     } else {
-      proxy = new TXStateProxyImpl(this, id, null);
+      proxy = new TXStateProxyImpl(cache, this, id, null);
     }
     setTXState(proxy);
     this.localTxMap.put(id, proxy);
@@ -348,9 +348,9 @@ public class TXManagerImpl implements CacheTransactionManager, MembershipListene
     TXStateProxy newState = null;
 
     if (isDistributed()) {
-      newState = new DistTXStateProxyImplOnCoordinator(this, id, true);
+      newState = new DistTXStateProxyImplOnCoordinator(cache, this, id, true);
     } else {
-      newState = new TXStateProxyImpl(this, id, true);
+      newState = new TXStateProxyImpl(cache, this, id, true);
     }
     setTXState(newState);
     return newState;
@@ -877,10 +877,10 @@ public class TXManagerImpl implements CacheTransactionManager, MembershipListene
         val = this.hostedTXStates.get(key);
         if (val == null && msg.canStartRemoteTransaction()) {
           if (msg.isTransactionDistributed()) {
-            val = new DistTXStateProxyImplOnDatanode(this, key, msg.getTXOriginatorClient());
+            val = new DistTXStateProxyImplOnDatanode(cache, this, key, msg.getTXOriginatorClient());
             val.setLocalTXState(new DistTXState(val, true));
           } else {
-            val = new TXStateProxyImpl(this, key, msg.getTXOriginatorClient());
+            val = new TXStateProxyImpl(cache, this, key, msg.getTXOriginatorClient());
             val.setLocalTXState(new TXState(val, true));
           }
           this.hostedTXStates.put(key, val);
@@ -942,10 +942,10 @@ public class TXManagerImpl implements CacheTransactionManager, MembershipListene
           // TODO: Conditionally create object based on distributed or non-distributed tx mode
           if (msg instanceof TransactionMessage
               && ((TransactionMessage) msg).isTransactionDistributed()) {
-            val = new DistTXStateProxyImplOnDatanode(this, key, memberId);
+            val = new DistTXStateProxyImplOnDatanode(cache, this, key, memberId);
             // val.setLocalTXState(new DistTXState(val,true));
           } else {
-            val = new TXStateProxyImpl(this, key, memberId);
+            val = new TXStateProxyImpl(cache, this, key, memberId);
             // val.setLocalTXState(new TXState(val,true));
           }
           this.hostedTXStates.put(key, val);

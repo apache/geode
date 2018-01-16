@@ -508,7 +508,7 @@ public class PRHARedundancyProvider {
 
     synchronized (this) {
       if (this.prRegion.getCache().isCacheAtShutdownAll()) {
-        throw new CacheClosedException("Cache is shutting down");
+        throw prRegion.getCache().getCacheClosedException("Cache is shutting down");
       }
 
       if (isDebugEnabled) {
@@ -551,7 +551,7 @@ public class PRHARedundancyProvider {
             if (isDebugEnabled) {
               logger.debug("Aborted createBucketAtomically due to ShutdownAll");
             }
-            throw new CacheClosedException("Cache is shutting down");
+            throw prRegion.getCache().getCacheClosedException("Cache is shutting down");
           }
           // this.prRegion.getCache().getLogger().config(
           // "DEBUG createBucketAtomically: "
