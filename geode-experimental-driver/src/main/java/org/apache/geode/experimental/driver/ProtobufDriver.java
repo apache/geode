@@ -60,6 +60,9 @@ public class ProtobufDriver implements Driver {
     this.locators = locators;
     InetSocketAddress server = findAServer();
     socket = new Socket(server.getAddress(), server.getPort());
+    socket.setTcpNoDelay(true);
+    socket.setSendBufferSize(65535);
+    socket.setReceiveBufferSize(65535);
 
     final OutputStream outputStream = socket.getOutputStream();
     ProtocolVersion.NewConnectionClientVersion.newBuilder()
@@ -97,6 +100,20 @@ public class ProtobufDriver implements Driver {
   @Override
   public <K, V> Region<K, V> getRegion(String regionName) {
     return new ProtobufRegion(regionName, socket);
+  }
+
+  @Override
+  public void close() {
+    try {
+      this.socket.close();
+    } catch (IOException e) {
+      // ignore
+    }
+  }
+
+  @Override
+  public boolean isConnected() {
+    return !this.socket.isClosed();
   }
 
   /**

@@ -167,9 +167,15 @@ public class MemberFunctionStreamingMessage extends DistributionMessage
       if (this.regionPathSet != null) {
         for (String regionPath : this.regionPathSet) {
           if (checkCacheClosing(dm) || checkDSClosing(dm)) {
-            thr =
-                new CacheClosedException(LocalizedStrings.PartitionMessage_REMOTE_CACHE_IS_CLOSED_0
-                    .toLocalizedString(dm.getId()));
+            if (dm.getCache() == null) {
+              thr = new CacheClosedException(
+                  LocalizedStrings.PartitionMessage_REMOTE_CACHE_IS_CLOSED_0
+                      .toLocalizedString(dm.getId()));
+            } else {
+              dm.getCache().getCacheClosedException(
+                  LocalizedStrings.PartitionMessage_REMOTE_CACHE_IS_CLOSED_0
+                      .toLocalizedString(dm.getId()));
+            }
             return;
           }
           regions.add(cache.getRegion(regionPath));

@@ -117,7 +117,7 @@ public class StringUtilsJUnitTest {
     DataSerializer.writeObject(v, dos);
     dos.flush();
     byte[] valueBytes = baos.toByteArray();
-    CachedDeserializable cd = CachedDeserializableFactory.create(valueBytes);
+    CachedDeserializable cd = CachedDeserializableFactory.create(valueBytes, null);
     assertSame(valueBytes, cd.getValue());
     assertEquals("value", StringUtils.forceToString(cd));
     assertSame(valueBytes, cd.getValue());

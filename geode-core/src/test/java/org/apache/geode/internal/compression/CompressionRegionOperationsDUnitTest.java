@@ -113,9 +113,12 @@ public class CompressionRegionOperationsDUnitTest extends JUnit4CacheTestCase {
     putAllMap.put(KEY_2, VALUE_2);
     putAllMap.put(KEY_3, VALUE_3);
 
-    putAllMap2.put(KEY_1, CachedDeserializableFactory.create(EntryEventImpl.serialize(VALUE_1)));
-    putAllMap2.put(KEY_2, CachedDeserializableFactory.create(EntryEventImpl.serialize(VALUE_2)));
-    putAllMap2.put(KEY_3, CachedDeserializableFactory.create(EntryEventImpl.serialize(VALUE_3)));
+    putAllMap2.put(KEY_1,
+        CachedDeserializableFactory.create(EntryEventImpl.serialize(VALUE_1), null));
+    putAllMap2.put(KEY_2,
+        CachedDeserializableFactory.create(EntryEventImpl.serialize(VALUE_2), null));
+    putAllMap2.put(KEY_3,
+        CachedDeserializableFactory.create(EntryEventImpl.serialize(VALUE_3), null));
 
     putAllMap3.put(KEY_1, VALUE_1.getBytes());
     putAllMap3.put(KEY_2, VALUE_2.getBytes());
@@ -337,14 +340,14 @@ public class CompressionRegionOperationsDUnitTest extends JUnit4CacheTestCase {
       public void run() {
         Region<String, Object> region = getCache().getRegion(REGION_NAME);
         String oldValue = (String) region.put(KEY_1,
-            CachedDeserializableFactory.create(EntryEventImpl.serialize(VALUE_1)));
+            CachedDeserializableFactory.create(EntryEventImpl.serialize(VALUE_1), getCache()));
         assertNull(oldValue);
 
         oldValue = (String) region.get(KEY_1);
         assertEquals(VALUE_1, oldValue);
 
         oldValue = (String) region.put(KEY_1,
-            CachedDeserializableFactory.create(EntryEventImpl.serialize(VALUE_2)));
+            CachedDeserializableFactory.create(EntryEventImpl.serialize(VALUE_2), getCache()));
         if (null != oldValue) {
           assertEquals(VALUE_1, oldValue);
         }
@@ -353,7 +356,7 @@ public class CompressionRegionOperationsDUnitTest extends JUnit4CacheTestCase {
         assertEquals(VALUE_2, oldValue);
 
         oldValue = (String) region.putIfAbsent(KEY_1,
-            CachedDeserializableFactory.create(EntryEventImpl.serialize(VALUE_3)));
+            CachedDeserializableFactory.create(EntryEventImpl.serialize(VALUE_3), getCache()));
         assertEquals(VALUE_2, oldValue);
 
         region.putAll(putAllMap2);

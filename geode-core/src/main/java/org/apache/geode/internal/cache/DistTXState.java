@@ -22,6 +22,7 @@ import java.util.Map.Entry;
 import java.util.Set;
 import java.util.TreeMap;
 
+import org.apache.geode.InternalGemFireException;
 import org.apache.geode.InvalidDeltaException;
 import org.apache.geode.SystemFailure;
 import org.apache.geode.cache.CacheWriterException;
@@ -368,11 +369,20 @@ public class DistTXState extends TXState {
         }
         dtop.setDistributedMember(sender);
         dtop.setOriginRemote(false);
+
         /*
          * [DISTTX} TODO handle call back argument version tag and other settings in PutMessage
          */
         String failureReason = null;
         try {
+          if (dtop.getRegion() == null) {
+            // Tx event from the peer.
+            if (dtop.getRegionName() == null) {
+              throw new InternalGemFireException("Region is unavailable on DistTxEntryEvent.");
+            }
+            dtop.setRegion((LocalRegion) getCache().getRegion(dtop.getRegionName()));
+          }
+
           if (dtop.getKeyInfo().isDistKeyInfo()) {
             dtop.getKeyInfo().setCheckPrimary(false);
           } else {

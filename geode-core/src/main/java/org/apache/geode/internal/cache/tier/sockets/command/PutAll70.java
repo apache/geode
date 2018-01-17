@@ -167,7 +167,8 @@ public class PutAll70 extends BaseCommand {
           if (skipCallbacks && Token.INVALID.isSerializedValue(valuePart.getSerializedForm())) {
             value = Token.INVALID;
           } else {
-            value = CachedDeserializableFactory.create(valuePart.getSerializedForm());
+            value = CachedDeserializableFactory.create(valuePart.getSerializedForm(),
+                region.getCache());
           }
         } else {
           value = valuePart.getSerializedForm();

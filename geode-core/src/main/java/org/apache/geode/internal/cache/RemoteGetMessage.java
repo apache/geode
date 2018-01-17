@@ -381,7 +381,8 @@ public class RemoteGetMessage extends RemoteOperationMessageWithDirectReply {
           if (reply.valueIsByteArray) {
             return reply.valueInBytes;
           } else if (preferCD) {
-            return CachedDeserializableFactory.create(reply.valueInBytes);
+            return CachedDeserializableFactory.create(reply.valueInBytes,
+                getDistributionManager().getCache());
           } else {
             return BlobHelper.deserializeBlob(reply.valueInBytes, reply.remoteVersion, null);
           }

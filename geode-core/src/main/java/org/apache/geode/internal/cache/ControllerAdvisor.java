@@ -114,7 +114,7 @@ public class ControllerAdvisor extends GridAdvisor {
       // tell local controllers about this remote controller
       tellLocalControllers(removeProfile, exchangeProfiles, replyProfiles);
       // tell local bridge servers about this remote controller
-      tellLocalBridgeServers(removeProfile, exchangeProfiles, replyProfiles);
+      tellLocalBridgeServers(dm.getCache(), removeProfile, exchangeProfiles, replyProfiles);
     }
 
     @Override

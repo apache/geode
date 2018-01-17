@@ -213,8 +213,11 @@ public class ManagementAgent {
         if (logger.isDebugEnabled()) {
           logger.debug(message);
         }
-      } else if (securityService.isIntegratedSecurity()) {
-        System.setProperty("spring.profiles.active", "pulse.authentication.gemfire");
+      } else {
+        String pwFile = this.config.getJmxManagerPasswordFile();
+        if (securityService.isIntegratedSecurity() || StringUtils.isNotBlank(pwFile)) {
+          System.setProperty("spring.profiles.active", "pulse.authentication.gemfire");
+        }
       }
 
       // Find developer REST WAR file
@@ -477,7 +480,6 @@ public class ManagementAgent {
       // should take care of that
       MBeanServerWrapper mBeanServerWrapper = new MBeanServerWrapper(this.securityService);
       jmxConnectorServer.setMBeanServerForwarder(mBeanServerWrapper);
-      registerAccessControlMBean();
     } else {
       /* Disable the old authenticator mechanism */
       String pwFile = this.config.getJmxManagerPasswordFile();
@@ -492,6 +494,7 @@ public class ManagementAgent {
         controller.setMBeanServer(mbs);
       }
     }
+    registerAccessControlMBean();
     registerFileUploaderMBean();
 
     jmxConnectorServer.start();

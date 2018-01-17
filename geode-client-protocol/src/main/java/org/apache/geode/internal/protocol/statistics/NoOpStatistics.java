@@ -44,4 +44,14 @@ public class NoOpStatistics implements ProtocolClientStatistics {
   public void incAuthenticationFailures() {
 
   }
+
+  @Override
+  public long startOperation() {
+    return 0;
+  }
+
+  @Override
+  public void endOperation(long startOperationTime) {
+
+  }
 }

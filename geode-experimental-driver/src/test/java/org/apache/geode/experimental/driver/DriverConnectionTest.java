@@ -56,7 +56,7 @@ public class DriverConnectionTest {
   private int locatorPort;
 
   @Before
-  public void createServerAndDriver() throws Exception {
+  public void createServer() throws Exception {
     System.setProperty("geode.feature-protobuf-protocol", "true");
 
     // Create a cache
@@ -77,8 +77,6 @@ public class DriverConnectionTest {
     cache.close();
   }
 
-
-
   @Test
   public void driverFailsToConnectWhenThereAreNoServers() throws Exception {
     try {
@@ -96,6 +94,18 @@ public class DriverConnectionTest {
     server.setPort(0);
     server.start();
     driver = new DriverFactory().addLocator("localhost", locatorPort).create();
+    assertTrue(driver.isConnected());
   }
+
+  @Test
+  public void driverReportsItIsDisconnected() throws Exception {
+    CacheServer server = cache.addCacheServer();
+    server.setPort(0);
+    server.start();
+    driver = new DriverFactory().addLocator("localhost", locatorPort).create();
+    driver.close();
+    assertFalse(driver.isConnected());
+  }
+
 
 }

@@ -39,4 +39,6 @@ public interface RegionEntryContext extends HasCachePerfStats {
   boolean getOffHeap();
 
   void incRecentlyUsed();
+
+  InternalCache getCache();
 }

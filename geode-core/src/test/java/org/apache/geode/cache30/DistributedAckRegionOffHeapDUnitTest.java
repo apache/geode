@@ -43,7 +43,7 @@ public class DistributedAckRegionOffHeapDUnitTest extends DistributedAckRegionDU
       @Override
       public void run() {
         if (hasCache()) {
-          OffHeapTestUtil.checkOrphans();
+          OffHeapTestUtil.checkOrphans(getCache());
         }
       }
     };
