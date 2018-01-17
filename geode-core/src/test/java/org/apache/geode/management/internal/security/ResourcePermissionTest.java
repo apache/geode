@@ -14,6 +14,7 @@
  */
 package org.apache.geode.management.internal.security;
 
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
@@ -30,11 +31,9 @@ import org.apache.geode.test.junit.categories.UnitTest;
 
 @Category({UnitTest.class, SecurityTest.class})
 public class ResourcePermissionTest {
-  private ResourcePermission context;
-
   @Test
   public void testEmptyConstructor() {
-    context = new ResourcePermission();
+    ResourcePermission context = new ResourcePermission();
     assertEquals(Resource.NULL, context.getResource());
     assertEquals(Operation.NULL, context.getOperation());
     assertEquals(ResourcePermission.ALL, context.getTarget());
@@ -42,13 +41,13 @@ public class ResourcePermissionTest {
 
   @Test
   public void testIsPermission() {
-    context = new ResourcePermission();
+    ResourcePermission context = new ResourcePermission();
     assertTrue(context instanceof WildcardPermission);
   }
 
   @Test
   public void testConstructor() {
-    context = new ResourcePermission();
+    ResourcePermission context = new ResourcePermission();
     assertEquals(Resource.NULL, context.getResource());
     assertEquals(Operation.NULL, context.getOperation());
     assertEquals(ResourcePermission.ALL, context.getTarget());
@@ -95,7 +94,7 @@ public class ResourcePermissionTest {
 
   @Test
   public void testToString() {
-    context = new ResourcePermission();
+    ResourcePermission context = new ResourcePermission();
     assertEquals("NULL:NULL", context.toString());
 
     context = new ResourcePermission(Resource.DATA, Operation.MANAGE);
@@ -110,16 +109,25 @@ public class ResourcePermissionTest {
 
   @Test
   public void testImplies() {
-    WildcardPermission role = new WildcardPermission("*:read");
-    role.implies(new ResourcePermission(Resource.DATA, Operation.READ));
-    role.implies(new ResourcePermission(Resource.CLUSTER, Operation.READ));
+    // If caseSensitive=false, the permission string becomes lower-case, which will cause failures
+    // when testing implication against our (case sensitive) resources, e.g., DATA
 
-    role = new WildcardPermission("*:read:*");
-    role.implies(new ResourcePermission(Resource.DATA, Operation.READ, "testRegion"));
-    role.implies(new ResourcePermission(Resource.CLUSTER, Operation.READ, "anotherRegion", "key1"));
+    WildcardPermission context = new WildcardPermission("*:READ", true);
+    assertThat(context.implies(new ResourcePermission(Resource.DATA, Operation.READ))).isTrue();
+    assertThat(context.implies(new ResourcePermission(Resource.CLUSTER, Operation.READ))).isTrue();
 
-    role = new WildcardPermission("data:*:testRegion");
-    role.implies(new ResourcePermission(Resource.DATA, Operation.READ, "testRegion"));
-    role.implies(new ResourcePermission(Resource.DATA, Operation.WRITE, "testRegion"));
+    context = new WildcardPermission("*:READ:*", true);
+    assertThat(context.implies(new ResourcePermission(Resource.DATA, Operation.READ, "testRegion")))
+        .isTrue();
+    assertThat(context
+        .implies(new ResourcePermission(Resource.CLUSTER, Operation.READ, "anotherRegion", "key1")))
+            .isTrue();
+
+    context = new WildcardPermission("DATA:*:testRegion", true);
+    assertThat(context.implies(new ResourcePermission(Resource.DATA, Operation.READ, "testRegion")))
+        .isTrue();
+    assertThat(
+        context.implies(new ResourcePermission(Resource.DATA, Operation.WRITE, "testRegion")))
+            .isTrue();
   }
 }
