@@ -15,6 +15,7 @@
 package org.apache.geode.internal.cache;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
@@ -63,11 +64,8 @@ public class AbstractRegionMapTest {
     EntryEventImpl event = createEventForInvalidate(arm.owner);
     when(arm.owner.isInitialized()).thenReturn(true);
 
-    try {
-      arm.invalidate(event, true, false, false);
-      fail("expected EntryNotFoundException");
-    } catch (EntryNotFoundException expected) {
-    }
+    assertThatThrownBy(() -> arm.invalidate(event, true, false, false))
+    .isInstanceOf(EntryNotFoundException.class);
     verify(arm.owner, never()).basicInvalidatePart2(any(), any(), anyBoolean(), anyBoolean());
     verify(arm.owner, never()).invokeInvalidateCallbacks(any(), any(), anyBoolean());
   }
@@ -80,11 +78,8 @@ public class AbstractRegionMapTest {
       EntryEventImpl event = createEventForInvalidate(arm.owner);
       when(arm.owner.isInitialized()).thenReturn(true);
 
-      try {
-        arm.invalidate(event, true, false, false);
-        fail("expected EntryNotFoundException");
-      } catch (EntryNotFoundException expected) {
-      }
+      assertThatThrownBy(() -> arm.invalidate(event, true, false, false))
+      .isInstanceOf(EntryNotFoundException.class);
       verify(arm.owner, never()).basicInvalidatePart2(any(), any(), anyBoolean(), anyBoolean());
       verify(arm.owner, times(1)).invokeInvalidateCallbacks(any(), any(), anyBoolean());
     } finally {
@@ -99,11 +94,8 @@ public class AbstractRegionMapTest {
 
     // invalidate on region that is not initialized should create
     // entry in map as invalid.
-    try {
-      arm.invalidate(event, true, false, false);
-      fail("expected EntryNotFoundException");
-    } catch (EntryNotFoundException expected) {
-    }
+    assertThatThrownBy(() -> arm.invalidate(event, true, false, false))
+    .isInstanceOf(EntryNotFoundException.class);
 
     when(arm.owner.isInitialized()).thenReturn(true);
     assertFalse(arm.invalidate(event, true, false, false));
@@ -120,11 +112,8 @@ public class AbstractRegionMapTest {
 
       // invalidate on region that is not initialized should create
       // entry in map as invalid.
-      try {
-        arm.invalidate(event, true, false, false);
-        fail("expected EntryNotFoundException");
-      } catch (EntryNotFoundException expected) {
-      }
+      assertThatThrownBy(() -> arm.invalidate(event, true, false, false))
+      .isInstanceOf(EntryNotFoundException.class);
 
       when(arm.owner.isInitialized()).thenReturn(true);
       assertFalse(arm.invalidate(event, true, false, false));
@@ -186,10 +175,11 @@ public class AbstractRegionMapTest {
   }
 
   @Test
-  public void destroy() {
+  public void destroyWithEmptyRegionThrowsException() {
     TestableAbstractRegionMap arm = new TestableAbstractRegionMap();
-      EntryEventImpl event = createEventForDestroy(arm.owner);
-      assertTrue(arm.destroy(event, false, false, false, false, null, false));
+    EntryEventImpl event = createEventForDestroy(arm.owner);
+    assertThatThrownBy(() -> arm.destroy(event, false, false, false, false, null, false))
+    .isInstanceOf(EntryNotFoundException.class);
   }
 
   private static class TestableAbstractRegionMap extends AbstractRegionMap {
