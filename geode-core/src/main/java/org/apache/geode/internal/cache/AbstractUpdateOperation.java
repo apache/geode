@@ -171,7 +171,7 @@ public abstract class AbstractUpdateOperation extends DistributedCacheOperation 
               updated = true;
             } else { // key not here or blocked by DESTROYED token
               if (rgn.isUsedForPartitionedRegionBucket()
-                  || (rgn.dataPolicy.withReplication() && rgn.getConcurrencyChecksEnabled())) {
+                  || (rgn.getDataPolicy().withReplication() && rgn.getConcurrencyChecksEnabled())) {
                 overwriteDestroyed = true;
                 ev.makeCreate();
                 rgn.basicUpdate(ev, true /* ifNew */, false/* ifOld */, lastMod,

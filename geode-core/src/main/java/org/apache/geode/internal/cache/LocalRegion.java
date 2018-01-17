@@ -712,12 +712,12 @@ public class LocalRegion extends AbstractRegion implements LoaderHelperFactory,
   void createVersionVector() {
     this.versionVector = RegionVersionVector.create(getVersionMember(), this);
 
-    if (this.dataPolicy.withPersistence()) {
+    if (this.getDataPolicy().withPersistence()) {
       // copy the versions that we have recovered from disk into
       // the version vector.
       RegionVersionVector diskVector = this.diskRegion.getRegionVersionVector();
       this.versionVector.recordVersions(diskVector.getCloneForTransmission());
-    } else if (!this.dataPolicy.withStorage()) {
+    } else if (!this.getDataPolicy().withStorage()) {
       // version vectors are currently only necessary in empty regions for
       // tracking canonical member IDs
       this.versionVector.turnOffRecordingForEmptyRegion();
@@ -845,7 +845,7 @@ public class LocalRegion extends AbstractRegion implements LoaderHelperFactory,
 
   @Override
   public VersionSource getVersionMember() {
-    if (this.dataPolicy.withPersistence()) {
+    if (this.getDataPolicy().withPersistence()) {
       return getDiskStore().getDiskStoreID();
     } else {
       return this.cache.getInternalDistributedSystem().getDistributedMember();
@@ -2687,7 +2687,7 @@ public class LocalRegion extends AbstractRegion implements LoaderHelperFactory,
       } else {
         closeAllCallbacks();
       }
-      if (this.concurrencyChecksEnabled && this.dataPolicy.withReplication()
+      if (this.concurrencyChecksEnabled && this.getDataPolicy().withReplication()
           && !this.cache.isClosed()) {
         this.cache.getTombstoneService().unscheduleTombstones(this);
       }
@@ -3330,13 +3330,13 @@ public class LocalRegion extends AbstractRegion implements LoaderHelperFactory,
       return true;
     } else {
       return this.concurrencyChecksEnabled
-          && (entry.getVersionStamp().hasValidVersion() || this.dataPolicy.withReplication());
+          && (entry.getVersionStamp().hasValidVersion() || this.getDataPolicy().withReplication());
     }
   }
 
   protected void enableConcurrencyChecks() {
     this.concurrencyChecksEnabled = true;
-    if (this.dataPolicy.withStorage()) {
+    if (this.getDataPolicy().withStorage()) {
       RegionEntryFactory versionedEntryFactory = this.entries.getEntryFactory().makeVersioned();
       Assert.assertTrue(this.entries.isEmpty(),
           "RegionMap should be empty but was of size:" + this.entries.size());
@@ -5620,7 +5620,7 @@ public class LocalRegion extends AbstractRegion implements LoaderHelperFactory,
     // for EMPTY clients, see if a concurrent map operation had an entry on the server
     ServerRegionProxy mySRP = getServerProxy();
 
-    if (mySRP != null && this.dataPolicy == DataPolicy.EMPTY) {
+    if (mySRP != null && this.getDataPolicy() == DataPolicy.EMPTY) {
       if (originalOp == Operation.PUT_IF_ABSENT) {
         return !event.hasOldValue();
       }
@@ -8948,7 +8948,7 @@ public class LocalRegion extends AbstractRegion implements LoaderHelperFactory,
   // TODO: what does cmn refer to?
   void cmnClearRegion(RegionEventImpl regionEvent, boolean cacheWrite, boolean useRVV) {
     RegionVersionVector rvv = null;
-    if (useRVV && this.dataPolicy.withReplication() && this.concurrencyChecksEnabled) {
+    if (useRVV && this.getDataPolicy().withReplication() && this.concurrencyChecksEnabled) {
       rvv = this.versionVector.getCloneForTransmission();
     }
     clearRegionLocally(regionEvent, cacheWrite, rvv);
@@ -8971,7 +8971,7 @@ public class LocalRegion extends AbstractRegion implements LoaderHelperFactory,
       // clients and local regions do not maintain a full RVV. can't use it with clear()
       rvv = null;
     }
-    if (rvv != null && this.dataPolicy.withStorage()) {
+    if (rvv != null && this.getDataPolicy().withStorage()) {
       if (isRvvDebugEnabled) {
         logger.trace(LogMarker.RVV, "waiting for my version vector to dominate{}mine={}{} other={}",
             getLineSeparator(), getLineSeparator(), this.versionVector.fullToString(), rvv);
@@ -9074,7 +9074,7 @@ public class LocalRegion extends AbstractRegion implements LoaderHelperFactory,
       txClearRegion();
       // Now clear the map of committed entries
       Set<VersionSource> remainingIDs = clearEntries(rvv);
-      if (!this.dataPolicy.withPersistence()) {
+      if (!this.getDataPolicy().withPersistence()) {
         // persistent regions do not reap IDs
         if (myVector != null) {
           myVector.removeOldMembers(remainingIDs);
@@ -9519,7 +9519,7 @@ public class LocalRegion extends AbstractRegion implements LoaderHelperFactory,
     // generated at commit
     // so treat transactional putAll as if the server is not versioned
     final boolean serverIsVersioned = proxyResult != null && proxyResult.regionIsVersioned()
-        && !isTX() && this.dataPolicy != DataPolicy.EMPTY;
+        && !isTX() && this.getDataPolicy() != DataPolicy.EMPTY;
     if (!serverIsVersioned && !partialResult) {
       // we don't need server information if it isn't versioned or if the region is empty
       proxyResult = null;
@@ -9567,7 +9567,7 @@ public class LocalRegion extends AbstractRegion implements LoaderHelperFactory,
                   logger.debug("putAll key {} -> {} version={}", key, value, versionTag);
                 }
                 if (versionTag == null && serverIsVersioned && concurrencyChecksEnabled
-                    && dataPolicy.withStorage()) {
+                    && getDataPolicy().withStorage()) {
                   // server was unable to determine the version for this operation.
                   // I'm not sure this can still happen as described below on a pr.
                   // But it can happen on the server if NORMAL or PRELOADED. See bug 51644.
@@ -9905,7 +9905,7 @@ public class LocalRegion extends AbstractRegion implements LoaderHelperFactory,
       testHook.beforeBulkLock(this);
     }
 
-    if (this.versionVector != null && this.dataPolicy.withReplication()) {
+    if (this.versionVector != null && this.getDataPolicy().withReplication()) {
       this.versionVector.lockForCacheModification(this);
     }
 
@@ -9920,7 +9920,7 @@ public class LocalRegion extends AbstractRegion implements LoaderHelperFactory,
       testHook.beforeBulkRelease(this);
     }
 
-    if (this.versionVector != null && this.dataPolicy.withReplication()) {
+    if (this.versionVector != null && this.getDataPolicy().withReplication()) {
       this.versionVector.releaseCacheModificationLock(this);
     }
 
@@ -10086,7 +10086,7 @@ public class LocalRegion extends AbstractRegion implements LoaderHelperFactory,
   public void postPutAllFireEvents(DistributedPutAllOperation putAllOp,
       VersionedObjectList successfulPuts) {
 
-    if (!this.dataPolicy.withStorage() && this.concurrencyChecksEnabled
+    if (!this.getDataPolicy().withStorage() && this.concurrencyChecksEnabled
         && putAllOp.getBaseEvent().isBridgeEvent()) {
       // if there is no local storage we need to transfer version information
       // to the successfulPuts list for transmission back to the client
@@ -10120,7 +10120,7 @@ public class LocalRegion extends AbstractRegion implements LoaderHelperFactory,
   public void postRemoveAllFireEvents(DistributedRemoveAllOperation removeAllOp,
       VersionedObjectList successfulOps) {
 
-    if (!this.dataPolicy.withStorage() && this.concurrencyChecksEnabled
+    if (!this.getDataPolicy().withStorage() && this.concurrencyChecksEnabled
         && removeAllOp.getBaseEvent().isBridgeEvent()) {
       // if there is no local storage we need to transfer version information
       // to the successfulOps list for transmission back to the client
@@ -10259,7 +10259,7 @@ public class LocalRegion extends AbstractRegion implements LoaderHelperFactory,
    * @return true if synchronization should be attempted
    */
   public boolean shouldSyncForCrashedMember(InternalDistributedMember id) {
-    return this.concurrencyChecksEnabled && this.dataPolicy.withReplication()
+    return this.concurrencyChecksEnabled && this.getDataPolicy().withReplication()
         && !this.isUsedForPartitionedRegionAdmin && !this.isUsedForMetaRegion
         && !this.isUsedForSerialGatewaySenderQueue;
   }
@@ -10470,7 +10470,7 @@ public class LocalRegion extends AbstractRegion implements LoaderHelperFactory,
    */
   @Override
   public boolean supportsConcurrencyChecks() {
-    return !isSecret() || this.dataPolicy.withPersistence();
+    return !isSecret() || this.getDataPolicy().withPersistence();
   }
 
   /**
@@ -11450,8 +11450,8 @@ public class LocalRegion extends AbstractRegion implements LoaderHelperFactory,
   private void checkIfConcurrentMapOpsAllowed() {
     // This check allows NORMAL with local scope to fix bug 44856
     if (this.serverRegionProxy == null
-        && (this.dataPolicy == DataPolicy.NORMAL && this.scope.isDistributed()
-            || this.dataPolicy == DataPolicy.EMPTY)) {
+        && (this.getDataPolicy() == DataPolicy.NORMAL && this.scope.isDistributed()
+            || this.getDataPolicy() == DataPolicy.EMPTY)) {
       // the functional spec says these data policies do not support concurrent map
       // operations
       throw new UnsupportedOperationException();
@@ -11459,7 +11459,7 @@ public class LocalRegion extends AbstractRegion implements LoaderHelperFactory,
   }
 
   public boolean canStoreDataLocally() {
-    return this.dataPolicy.withStorage();
+    return this.getDataPolicy().withStorage();
   }
 
   /**
