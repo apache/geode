@@ -38,7 +38,9 @@ import org.apache.geode.cache.DataPolicy;
 import org.apache.geode.cache.EntryNotFoundException;
 import org.apache.geode.cache.Operation;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
+import org.apache.geode.internal.cache.versions.RegionVersionVector;
 import org.apache.geode.internal.cache.versions.VersionHolder;
+import org.apache.geode.internal.cache.versions.VersionTag;
 import org.apache.geode.test.junit.categories.UnitTest;
 
 @Category(UnitTest.class)
@@ -200,6 +202,70 @@ public class AbstractRegionMapTest {
     verify(arm.owner, times(1)).basicDestroyPart3(any(), eq(event), eq(inTokenMode), eq(duringRI),
         eq(invokeCallbacks), eq(expectedOldValue));
   }
+
+  @Test
+  public void destroyWithEmptyRegionWithConcurrencyChecksThrowsException() {
+    TestableAbstractRegionMap arm = new TestableAbstractRegionMap();
+    when(arm.owner.getConcurrencyChecksEnabled()).thenReturn(true);
+    EntryEventImpl event = createEventForDestroy(arm.owner);
+    assertThatThrownBy(() -> arm.destroy(event, false, false, false, false, null, false))
+        .isInstanceOf(EntryNotFoundException.class);
+  }
+
+  @Test
+  public void destroyWithEmptyRegionWithConcurrencyChecksAddsATombstone() {
+    final TestableAbstractRegionMap arm = new TestableAbstractRegionMap();
+    when(arm.owner.getConcurrencyChecksEnabled()).thenReturn(true);
+    RegionVersionVector versionVector = mock(RegionVersionVector.class);
+    when(arm.owner.getVersionVector()).thenReturn(versionVector);
+    CachePerfStats cachePerfStats = mock(CachePerfStats.class);
+    when(arm.owner.getCachePerfStats()).thenReturn(cachePerfStats);
+    final EntryEventImpl event = createEventForDestroy(arm.owner);
+    VersionTag versionTag = mock(VersionTag.class);
+    when(versionTag.hasValidVersion()).thenReturn(true);
+    event.setVersionTag(versionTag);
+    event.setOriginRemote(true);
+    final Object expectedOldValue = null;
+    final boolean inTokenMode = false;
+    final boolean duringRI = false;
+    assertThat(arm.destroy(event, inTokenMode, duringRI, false, false, expectedOldValue, false))
+        .isTrue();
+    assertThat(arm._getMap().containsKey(event.getKey())).isTrue();
+    RegionEntry re = (RegionEntry) arm._getMap().get(event.getKey());
+    assertThat(re.getValueAsToken()).isEqualTo(Token.TOMBSTONE);
+    boolean invokeCallbacks = true;
+    verify(arm.owner, times(1)).basicDestroyPart2(any(), eq(event), eq(inTokenMode), eq(false),
+        eq(duringRI), eq(invokeCallbacks));
+    verify(arm.owner, times(1)).basicDestroyPart3(any(), eq(event), eq(inTokenMode), eq(duringRI),
+        eq(invokeCallbacks), eq(expectedOldValue));
+  }
+
+
+  // @Test
+  // public void destroyWithEmptyRegionWithConcurrencyChecksAndNullVersionTagAddsATombstone() {
+  // final TestableAbstractRegionMap arm = new TestableAbstractRegionMap();
+  // when(arm.owner.getConcurrencyChecksEnabled()).thenReturn(true);
+  // final EntryEventImpl event = createEventForDestroy(arm.owner);
+  // event.setOriginRemote(true);
+  // final Object expectedOldValue = null;
+  // final boolean inTokenMode = false;
+  // final boolean duringRI = false;
+  // assertThat(arm.destroy(event, inTokenMode, duringRI, false, false, expectedOldValue, false))
+  // .isTrue();
+  // assertThat(arm._getMap().containsKey(event.getKey())).isTrue();
+  // RegionEntry re = (RegionEntry) arm._getMap().get(event.getKey());
+  // // instead of a TOMBSTONE we leave an entry whose value is REMOVE_PHASE1
+  // // this should not happen. It is caused by some code in: AbstractRegionEntry.destroy()
+  // // that calls removePhase1 when the versionTag is null.
+  // // It seems like this code path needs to tell the higher levels
+  // // to call removeEntry
+  // assertThat(re.getValueAsToken()).isEqualTo(Token.TOMBSTONE);
+  // boolean invokeCallbacks = true;
+  // verify(arm.owner, times(1)).basicDestroyPart2(any(), eq(event), eq(inTokenMode), eq(false),
+  // eq(duringRI), eq(invokeCallbacks));
+  // verify(arm.owner, times(1)).basicDestroyPart3(any(), eq(event), eq(inTokenMode), eq(duringRI),
+  // eq(invokeCallbacks), eq(expectedOldValue));
+  // }
 
   private static class TestableAbstractRegionMap extends AbstractRegionMap {
 
