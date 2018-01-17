@@ -16,7 +16,6 @@ package org.apache.geode.security;
 
 import static org.apache.geode.cache.execute.FunctionService.onServer;
 import static org.apache.geode.distributed.ConfigurationProperties.SECURITY_MANAGER;
-import static org.apache.geode.management.internal.security.TestFunctions.WriteFunction.SUCCESS_OUTPUT;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
@@ -81,14 +80,14 @@ public class ClientExecuteFunctionAuthDUnitTest {
 
       // can read
       ResultCollector rc = onServer(cache.getDefaultPool()).execute(readFunction);
-      assertThat(((ArrayList) rc.getResult()).get(0)).isEqualTo(SUCCESS_OUTPUT);
+      assertThat(((ArrayList) rc.getResult()).get(0)).isEqualTo(ReadFunction.SUCCESS_OUTPUT);
     });
 
     client2.invoke(() -> {
       ClientCache cache = ClusterStartupRule.getClientCache();
       // can write
       ResultCollector rc = onServer(cache.getDefaultPool()).execute(writeFunction);
-      assertThat(((ArrayList) rc.getResult()).get(0)).isEqualTo(SUCCESS_OUTPUT);
+      assertThat(((ArrayList) rc.getResult()).get(0)).isEqualTo(WriteFunction.SUCCESS_OUTPUT);
 
       // can not read
       assertThatThrownBy(() -> onServer(cache.getDefaultPool()).execute(readFunction))
