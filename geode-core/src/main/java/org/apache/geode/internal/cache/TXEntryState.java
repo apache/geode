@@ -1862,10 +1862,9 @@ public class TXEntryState implements Releasable {
     DataSerializer.writeObject(getFilterRoutingInfo(), out);
     if (sendVersionTag) {
       DataSerializer.writeObject(getVersionTag(), out);
-      assert getVersionTag() != null || !txRegionState.getRegion().concurrencyChecksEnabled
-          || txRegionState.getRegion().getDataPolicy() != DataPolicy.REPLICATE : "tag:"
-              + getVersionTag() + " r:" + txRegionState.getRegion() + " op:" + opToString()
-              + " key:";
+      assert getVersionTag() != null || !txRegionState.getRegion().getConcurrencyChecksEnabled()
+          || txRegionState.getRegion().getDataPolicy() != DataPolicy.REPLICATE : "tag:" + getVersionTag()
+              + " r:" + txRegionState.getRegion() + " op:" + opToString() + " key:";
     }
     if (sendShadowKey) {
       out.writeLong(this.tailKey);

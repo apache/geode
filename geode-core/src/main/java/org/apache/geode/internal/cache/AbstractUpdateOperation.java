@@ -85,9 +85,10 @@ public abstract class AbstractUpdateOperation extends DistributedCacheOperation 
   private static boolean shouldDoRemoteCreate(LocalRegion rgn, EntryEventImpl ev) {
     DataPolicy dp = rgn.getAttributes().getDataPolicy();
     if (!rgn.isAllEvents() || (dp.withReplication() && rgn.isInitialized()
-        && ev.getOperation().isUpdate() && !rgn.concurrencyChecksEnabled // misordered CREATE and
-                                                                         // UPDATE messages can
-                                                                         // cause inconsistencies
+        && ev.getOperation().isUpdate() && !rgn.getConcurrencyChecksEnabled()
+        // misordered CREATE and
+        // UPDATE messages can
+        // cause inconsistencies
         && !ALWAYS_REPLICATE_UPDATES)) {
       // we are not accepting all events
       // or we are a replicate and initialized and it was an update
