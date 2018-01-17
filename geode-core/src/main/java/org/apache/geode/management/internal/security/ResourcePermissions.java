@@ -27,8 +27,6 @@ public final class ResourcePermissions {
   public static final ResourcePermission DATA_READ = new ResourcePermission(DATA, READ);
   public static final ResourcePermission DATA_WRITE = new ResourcePermission(DATA, WRITE);
   public static final ResourcePermission DATA_MANAGE = new ResourcePermission(DATA, MANAGE);
-  public static final ResourcePermission CLUSTER_ALL =
-      new ResourcePermission(CLUSTER.toString(), ResourcePermission.ALL);
   public static final ResourcePermission CLUSTER_READ = new ResourcePermission(CLUSTER, READ);
   public static final ResourcePermission CLUSTER_WRITE = new ResourcePermission(CLUSTER, WRITE);
   public static final ResourcePermission CLUSTER_MANAGE = new ResourcePermission(CLUSTER, MANAGE);
