@@ -36,7 +36,7 @@ import org.apache.geode.cache.control.RebalanceFactory;
 import org.apache.geode.cache.control.RebalanceOperation;
 import org.apache.geode.cache.control.RebalanceResults;
 import org.apache.geode.cache.control.ResourceManager;
-import org.apache.geode.cache.execute.FunctionAdapter;
+import org.apache.geode.cache.execute.Function;
 import org.apache.geode.cache.execute.FunctionContext;
 import org.apache.geode.cache.execute.FunctionInvocationTargetException;
 import org.apache.geode.cache.execute.RegionFunctionContext;
@@ -56,7 +56,7 @@ import org.apache.geode.internal.cache.xmlcache.Declarable2;
 import org.apache.geode.test.dunit.Wait;
 import org.apache.geode.test.dunit.WaitCriterion;
 
-public class TestFunction extends FunctionAdapter implements Declarable2, DataSerializable {
+public class TestFunction implements Function, Declarable2, DataSerializable {
   public static final String TEST_FUNCTION10 = "TestFunction10";
   public static final String TEST_FUNCTION9 = "TestFunction9";
   public static final String TEST_FUNCTION8 = "TestFunction8";
