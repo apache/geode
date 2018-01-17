@@ -15,6 +15,11 @@
 
 package org.apache.geode.cache.lucene.test;
 
+import static org.apache.geode.management.internal.security.ResourcePermissions.CLUSTER_MANAGE;
+import static org.apache.geode.security.ResourcePermission.Operation.READ;
+import static org.apache.geode.security.ResourcePermission.Resource.DATA;
+import static org.assertj.core.api.Assertions.assertThat;
+
 import java.util.HashMap;
 import java.util.Map;
 
@@ -39,6 +44,7 @@ import org.apache.geode.cache.lucene.internal.distributed.LuceneQueryFunction;
 import org.apache.geode.cache.lucene.internal.distributed.WaitUntilFlushedFunction;
 import org.apache.geode.cache.lucene.internal.results.LuceneGetPageFunction;
 import org.apache.geode.examples.SimpleSecurityManager;
+import org.apache.geode.security.ResourcePermission;
 import org.apache.geode.test.junit.categories.IntegrationTest;
 import org.apache.geode.test.junit.categories.SecurityTest;
 import org.apache.geode.test.junit.rules.ConnectionConfiguration;
@@ -76,7 +82,6 @@ public class LuceneFunctionSecurityTest {
     functionStringMap.put(new LuceneDestroyIndexFunction(), "CLUSTER:MANAGE:LUCENE");
     functionStringMap.put(new LuceneListIndexFunction(), "CLUSTER:READ:LUCENE");
     functionStringMap.put(new LuceneSearchIndexFunction(), "DATA:READ:testRegion");
-    functionStringMap.put(new DumpDirectoryFiles(), "CLUSTER:MANAGE");
     functionStringMap.put(new LuceneQueryFunction(), "DATA:READ:testRegion");
     functionStringMap.put(new WaitUntilFlushedFunction(), "DATA:READ:testRegion");
     functionStringMap.put(new LuceneGetPageFunction(), "DATA:READ:testRegion");
@@ -95,5 +100,12 @@ public class LuceneFunctionSecurityTest {
           .tableHasRowCount(RESULT_HEADER, 1)
           .tableHasColumnWithValuesContaining(RESULT_HEADER, permission).statusIsError();
     });
+  }
+
+  @Test
+  public void dumpDirectoryFileRequires() {
+    Function function = new DumpDirectoryFiles();
+    assertThat(function.getRequiredPermissions("testRegion")).containsExactlyInAnyOrder(
+        CLUSTER_MANAGE, new ResourcePermission(DATA, READ, "testRegion"));
   }
 }
