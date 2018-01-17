@@ -728,7 +728,7 @@ public class SerialGatewaySenderEventProcessor extends AbstractGatewaySenderEven
       // @todo add an assertion that !getPrimary()
       // now we can safely use the unprocessedEvents field
       Long v = this.unprocessedTokens.remove(gatewayEvent.getEventId());
-      if (v != null && gatewayEvent.isConcurrencyConflict) {
+      if (v != null) {
         logger.info("GGG:secondary after removed token:" + v + ":" + gatewayEvent);
       }
 
@@ -737,8 +737,8 @@ public class SerialGatewaySenderEventProcessor extends AbstractGatewaySenderEven
           logger.info("GGG:secondary before add to:" + gatewayEvent, new Exception());
         }
         // first time for the event
-        if (logger.isTraceEnabled()) {
-          logger.trace("{}: fromSecondary event {}:{}->{} added from unprocessed events map",
+        if (logger.isDebugEnabled()) {
+          logger.debug("{}: fromSecondary event {}:{}->{} added from unprocessed events map",
               sender.getId(), gatewayEvent.getEventId(), gatewayEvent.getKey(),
               gatewayEvent.getValueAsString(true));
         }
@@ -759,8 +759,8 @@ public class SerialGatewaySenderEventProcessor extends AbstractGatewaySenderEven
         }
       } else {
         // token already added by primary already removed
-        if (logger.isTraceEnabled()) {
-          logger.trace("{}: Secondary created event {}:{}->{} removed from unprocessed events map",
+        if (logger.isDebugEnabled()) {
+          logger.debug("{}: Secondary created event {}:{}->{} removed from unprocessed events map",
               sender.getId(), gatewayEvent.getEventId(), gatewayEvent.getKey(),
               gatewayEvent.getValueAsString(true));
         }
