@@ -313,7 +313,7 @@ public class LocalRegionDataView implements InternalDataView {
   @Override
   public void postPutAll(DistributedPutAllOperation putallOp, VersionedObjectList successfulPuts,
       LocalRegion region) {
-    if (!region.dataPolicy.withStorage() && region.concurrencyChecksEnabled
+    if (!region.getDataPolicy().withStorage() && region.concurrencyChecksEnabled
         && putallOp.getBaseEvent().isBridgeEvent()) {
       // if there is no local storage we need to transfer version information
       // to the successfulPuts list for transmission back to the client
@@ -335,7 +335,7 @@ public class LocalRegionDataView implements InternalDataView {
   @Override
   public void postRemoveAll(DistributedRemoveAllOperation op, VersionedObjectList successfulOps,
       LocalRegion region) {
-    if (!region.dataPolicy.withStorage() && region.concurrencyChecksEnabled
+    if (!region.getDataPolicy().withStorage() && region.concurrencyChecksEnabled
         && op.getBaseEvent().isBridgeEvent()) {
       // if there is no local storage we need to transfer version information
       // to the successfulOps list for transmission back to the client
