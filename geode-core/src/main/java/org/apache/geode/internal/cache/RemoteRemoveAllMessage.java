@@ -360,7 +360,7 @@ public class RemoteRemoveAllMessage extends RemoteOperationMessageWithDirectRepl
           new DistributedRemoveAllOperation(baseEvent, removeAllDataCount, false);
       try {
         final VersionedObjectList versions =
-            new VersionedObjectList(removeAllDataCount, true, dr.concurrencyChecksEnabled);
+            new VersionedObjectList(removeAllDataCount, true, dr.getConcurrencyChecksEnabled());
         dr.syncBulkOp(new Runnable() {
           @SuppressWarnings("synthetic-access")
           public void run() {

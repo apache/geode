@@ -695,7 +695,7 @@ public class PartitionedRegionDataStore implements HasCachePerfStats {
     } else {
       factory.setScope(Scope.DISTRIBUTED_ACK);
     }
-    factory.setConcurrencyChecksEnabled(this.partitionedRegion.concurrencyChecksEnabled);
+    factory.setConcurrencyChecksEnabled(this.partitionedRegion.getConcurrencyChecksEnabled());
     factory.setIndexMaintenanceSynchronous(this.partitionedRegion.getIndexMaintenanceSynchronous());
 
     if (this.partitionedRegion.getValueConstraint() != null) {

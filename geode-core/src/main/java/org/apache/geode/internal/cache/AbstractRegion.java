@@ -171,7 +171,7 @@ public abstract class AbstractRegion implements InternalRegion, AttributesMutato
 
   protected int concurrencyLevel;
 
-  protected volatile boolean concurrencyChecksEnabled;
+  private volatile boolean concurrencyChecksEnabled;
 
   protected boolean earlyAck;
 
@@ -433,7 +433,7 @@ public abstract class AbstractRegion implements InternalRegion, AttributesMutato
     buf.append(getClass().getName());
     buf.append("[path='").append(getFullPath()).append("';scope=").append(getScope())
         .append("';dataPolicy=").append(this.dataPolicy);
-    if (this.concurrencyChecksEnabled) {
+    if (this.getConcurrencyChecksEnabled()) {
       buf.append("; concurrencyChecksEnabled");
     }
     return buf;
@@ -720,6 +720,10 @@ public abstract class AbstractRegion implements InternalRegion, AttributesMutato
   @Override
   public boolean getConcurrencyChecksEnabled() {
     return this.concurrencyChecksEnabled;
+  }
+
+  public void setConcurrencyChecksEnabled(boolean concurrencyChecksEnabled) {
+    this.concurrencyChecksEnabled = concurrencyChecksEnabled;
   }
 
   @Override
@@ -1602,8 +1606,8 @@ public abstract class AbstractRegion implements InternalRegion, AttributesMutato
     this.initialCapacity = attrs.getInitialCapacity();
     this.loadFactor = attrs.getLoadFactor();
     this.concurrencyLevel = attrs.getConcurrencyLevel();
-    this.concurrencyChecksEnabled =
-        attrs.getConcurrencyChecksEnabled() && supportsConcurrencyChecks();
+    this.setConcurrencyChecksEnabled(
+        attrs.getConcurrencyChecksEnabled() && supportsConcurrencyChecks());
     this.earlyAck = attrs.getEarlyAck();
     this.gatewaySenderIds = attrs.getGatewaySenderIds();
     this.asyncEventQueueIds = attrs.getAsyncEventQueueIds();
@@ -1840,11 +1844,6 @@ public abstract class AbstractRegion implements InternalRegion, AttributesMutato
   @Override
   public boolean getOffHeap() {
     return this.offHeap;
-  }
-
-  @Override
-  public boolean isConcurrencyChecksEnabled() {
-    return this.concurrencyChecksEnabled;
   }
 
   @Override
