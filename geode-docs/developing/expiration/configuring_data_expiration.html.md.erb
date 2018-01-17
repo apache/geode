@@ -31,8 +31,8 @@ Configure the type of expiration and the expiration action to use.
 
 **For partitioned regions:**
 
- - Expiration is supported only for entries, not for regions. Region expiration attributes, such as `region-time-to-live` and `region-idle-time` do not apply to partitioned regions.
- - To ensure reliable read behavior, use the `entry-time-to-live` attribute, not the `entry-idle-time` attribute when working with partitioned regions.
+ - On a partitioned region, expiration is supported only for the region's entries, not for the region itself. Region expiration attributes, such as `region-time-to-live` and `region-idle-time` do not apply to partitioned regions.
+ - To ensure reliable read behavior when working with partitioned regions, use the `entry-time-to-live` attribute, not the `entry-idle-time` attribute.
  - You cannot use `local-destroy` or `local-invalidate` expiration actions in partitioned regions.
 
 **Replicated regions example:**
