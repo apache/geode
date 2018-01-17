@@ -141,6 +141,12 @@ public class AbstractRegionMapTest {
     return EntryEventImpl.create(lr, Operation.INVALIDATE, key, false, null, true, false);
   }
 
+  private EntryEventImpl createEventForDestroy(LocalRegion lr) {
+    Object key = "key";
+    when(lr.getKeyInfo(key)).thenReturn(new KeyInfo(key, null, null));
+    return EntryEventImpl.create(lr, Operation.DESTROY, key, false, null, true, false);
+  }
+
   @Test
   public void invalidateForceNewEntryOfAlreadyInvalidEntryReturnsFalse() {
     TestableAbstractRegionMap arm = new TestableAbstractRegionMap();
@@ -177,6 +183,13 @@ public class AbstractRegionMapTest {
     } finally {
       AbstractRegionMap.FORCE_INVALIDATE_EVENT = false;
     }
+  }
+
+  @Test
+  public void destroy() {
+    TestableAbstractRegionMap arm = new TestableAbstractRegionMap();
+      EntryEventImpl event = createEventForDestroy(arm.owner);
+      assertTrue(arm.destroy(event, false, false, false, false, null, false));
   }
 
   private static class TestableAbstractRegionMap extends AbstractRegionMap {
