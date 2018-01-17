@@ -891,7 +891,7 @@ public class ServerLauncher extends AbstractLauncher<String> {
   /**
    * Causes the calling Thread to block until the GemFire Cache Server/Data Member stops.
    */
-  void waitOnServer() {
+  public void waitOnServer() {
     assert getCache() != null : "The Cache Server must first be started with a call to start!";
 
     if (!isServing(getCache())) {
