@@ -55,7 +55,7 @@ import org.apache.geode.internal.logging.LogService;
  * @since GemFire 5.7bugfix
  */
 @SuppressWarnings("serial")
-public class IgnoredException implements Serializable {
+public class IgnoredException implements Serializable, AutoCloseable {
 
   private static final Logger logger = LogService.getLogger();
 
@@ -126,6 +126,11 @@ public class IgnoredException implements Serializable {
     } else {
       Invoke.invokeInEveryVM(removeRunnable);
     }
+  }
+
+  @Override
+  public void close() throws Exception {
+    remove();
   }
 
   public static void removeAllExpectedExceptions() {
