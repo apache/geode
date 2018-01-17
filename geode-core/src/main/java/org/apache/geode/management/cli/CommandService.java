@@ -112,9 +112,11 @@ public abstract class CommandService {
    */
   public static CommandService createLocalCommandService(Cache cache)
       throws CommandServiceException {
-    if (cache == null || cache.isClosed()) {
-      throw new CacheClosedException(
-          "Can not create command service as cache doesn't exist or cache is closed.");
+    if (cache == null) {
+      throw new CacheClosedException("Can not create command service as cache doesn't exist.");
+    } else if (cache.isClosed()) {
+      throw ((InternalCache) cache)
+          .getCacheClosedException("Can not create command service as cache is closed.");
     }
 
     if (localCommandService == null || !localCommandService.isUsable()) {

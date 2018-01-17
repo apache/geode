@@ -17,12 +17,17 @@ package org.apache.geode.management.internal.cli.commands;
 
 import static org.apache.geode.distributed.ConfigurationProperties.HTTP_SERVICE_BIND_ADDRESS;
 import static org.apache.geode.distributed.ConfigurationProperties.HTTP_SERVICE_PORT;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.spy;
+import static org.mockito.Mockito.when;
 
 import java.io.File;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Properties;
@@ -33,6 +38,7 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
+import org.apache.geode.distributed.ConfigurationProperties;
 import org.apache.geode.distributed.LocatorLauncher;
 import org.apache.geode.distributed.internal.DistributionConfig;
 import org.apache.geode.internal.lang.SystemUtils;
@@ -143,5 +149,96 @@ public class StartLocatorCommandTest {
       // http://docs.oracle.com/cd/E13150_01/jrockit_jvm/jrockit/jrdocs/refman/optionXX.html
       commandLine.add("-XXexitOnOutOfMemory");
     }
+  }
+
+  @Test
+  public void testCreateStartLocatorCommandLine() throws Exception {
+    LocatorLauncher locatorLauncher = new LocatorLauncher.Builder().setMemberName("defaultLocator")
+        .setCommand(LocatorLauncher.Command.START).build();
+
+    String[] commandLineElements = locatorCommands.createStartLocatorCommandLine(locatorLauncher,
+        null, null, new Properties(), null, false, null, null, null);
+
+    Set<String> expectedCommandLineElements = new HashSet<>();
+    expectedCommandLineElements.add(StartMemberUtils.getJavaPath());
+    expectedCommandLineElements.add("-server");
+    expectedCommandLineElements.add("-classpath");
+    expectedCommandLineElements.add(StartMemberUtils.getGemFireJarPath().concat(File.pathSeparator)
+        .concat(StartMemberUtils.CORE_DEPENDENCIES_JAR_PATHNAME));
+    expectedCommandLineElements.add("-Dgemfire.launcher.registerSignalHandlers=true");
+    expectedCommandLineElements.add("-Djava.awt.headless=true");
+    expectedCommandLineElements.add("-Dsun.rmi.dgc.server.gcInterval=9223372036854775806");
+    expectedCommandLineElements.add("org.apache.geode.distributed.LocatorLauncher");
+    expectedCommandLineElements.add("start");
+    expectedCommandLineElements.add("defaultLocator");
+    expectedCommandLineElements.add("--port=10334");
+
+    assertNotNull(commandLineElements);
+    assertTrue(commandLineElements.length > 0);
+    assertEquals(commandLineElements.length, expectedCommandLineElements.size());
+
+    for (String commandLineElement : commandLineElements) {
+      expectedCommandLineElements.remove(commandLineElement);
+    }
+
+    assertTrue(String.format("Expected ([]); but was (%1$s)", expectedCommandLineElements),
+        expectedCommandLineElements.isEmpty());
+  }
+
+  @Test
+  public void testCreateStartLocatorCommandLineWithAllOptions() throws Exception {
+    LocatorLauncher locatorLauncher =
+        new LocatorLauncher.Builder().setCommand(LocatorLauncher.Command.START)
+            .setDebug(Boolean.TRUE).setDeletePidFileOnStop(Boolean.TRUE).setForce(Boolean.TRUE)
+            .setHostnameForClients("localhost").setMemberName("customLocator").setPort(10101)
+            .setRedirectOutput(Boolean.TRUE).build();
+
+    File gemfirePropertiesFile = spy(mock(File.class));
+    when(gemfirePropertiesFile.getAbsolutePath()).thenReturn("/config/customGemfire.properties");
+
+    File gemfireSecurityPropertiesFile = spy(mock(File.class));
+    when(gemfireSecurityPropertiesFile.getAbsolutePath())
+        .thenReturn("/config/customGemfireSecurity.properties");
+
+    Properties gemfireProperties = new Properties();
+    gemfireProperties.setProperty(ConfigurationProperties.STATISTIC_SAMPLE_RATE, "1500");
+    gemfireProperties.setProperty(ConfigurationProperties.DISABLE_AUTO_RECONNECT, "true");
+
+    String heapSize = "1024m";
+    String customClasspath = "/temp/domain-1.0.0.jar";
+    String[] jvmArguments = new String[] {"-verbose:gc", "-Xloggc:member-gc.log",
+        "-XX:+PrintGCDateStamps", "-XX:+PrintGCDetails"};
+
+    String[] commandLineElements = locatorCommands.createStartLocatorCommandLine(locatorLauncher,
+        gemfirePropertiesFile, gemfireSecurityPropertiesFile, gemfireProperties, customClasspath,
+        Boolean.FALSE, jvmArguments, heapSize, heapSize);
+
+    Set<String> expectedCommandLineElements = new HashSet<>();
+    expectedCommandLineElements.add(StartMemberUtils.getJavaPath());
+    expectedCommandLineElements.add("-server");
+    expectedCommandLineElements.add("-classpath");
+    expectedCommandLineElements
+        .add(StartMemberUtils.getGemFireJarPath().concat(File.pathSeparator).concat(customClasspath)
+            .concat(File.pathSeparator).concat(StartMemberUtils.CORE_DEPENDENCIES_JAR_PATHNAME));
+    expectedCommandLineElements
+        .add("-DgemfirePropertyFile=".concat(gemfirePropertiesFile.getAbsolutePath()));
+    expectedCommandLineElements.add(
+        "-DgemfireSecurityPropertyFile=".concat(gemfireSecurityPropertiesFile.getAbsolutePath()));
+    expectedCommandLineElements.add("-Dgemfire.statistic-sample-rate=1500");
+    expectedCommandLineElements.add("-Dgemfire.disable-auto-reconnect=true");
+    expectedCommandLineElements.addAll(Arrays.asList(jvmArguments));
+    expectedCommandLineElements.add("org.apache.geode.distributed.LocatorLauncher");
+    expectedCommandLineElements.add("start");
+    expectedCommandLineElements.add("customLocator");
+    expectedCommandLineElements.add("--debug");
+    expectedCommandLineElements.add("--force");
+    expectedCommandLineElements.add("--hostname-for-clients=localhost");
+    expectedCommandLineElements.add("--port=10101");
+    expectedCommandLineElements.add("--redirect-output");
+
+    assertNotNull(commandLineElements);
+    assertTrue(commandLineElements.length > 0);
+
+    assertThat(commandLineElements).containsAll(expectedCommandLineElements);
   }
 }

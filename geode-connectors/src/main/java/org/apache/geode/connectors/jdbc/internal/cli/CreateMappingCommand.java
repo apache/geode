@@ -75,7 +75,7 @@ public class CreateMappingCommand implements GfshCommand {
       @CliOption(key = CREATE_MAPPING__PDX_CLASS_NAME,
           help = CREATE_MAPPING__PDX_CLASS_NAME__HELP) String pdxClassName,
       @CliOption(key = CREATE_MAPPING__VALUE_CONTAINS_PRIMARY_KEY,
-          help = CREATE_MAPPING__PRIMARY_KEY_IN_VALUE__HELP, unspecifiedDefaultValue = "true",
+          help = CREATE_MAPPING__PRIMARY_KEY_IN_VALUE__HELP, unspecifiedDefaultValue = "false",
           specifiedDefaultValue = "true") boolean keyInValue,
       @CliOption(key = CREATE_MAPPING__FIELD_MAPPING,
           help = CREATE_MAPPING__FIELD_MAPPING__HELP) String[] fieldMappings) {

@@ -70,7 +70,7 @@ public class TXReservationMgrJUnitTest {
       do {
         try {
           IdentityArrayList l = new IdentityArrayList(1);
-          TXRegionLockRequestImpl lr = new TXRegionLockRequestImpl(this.r);
+          TXRegionLockRequestImpl lr = new TXRegionLockRequestImpl(this.r.getCache(), this.r);
           lr.addEntryKeys(Collections.singleton(key));
           l.add(lr);
           mgr.makeReservation(l);

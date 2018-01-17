@@ -14,12 +14,16 @@
  */
 package org.apache.geode.connectors.jdbc.internal.cli;
 
+import java.util.Collection;
+import java.util.Collections;
 import java.util.Set;
 
 import org.apache.geode.annotations.Experimental;
 import org.apache.geode.cache.execute.FunctionContext;
 import org.apache.geode.connectors.jdbc.internal.ConnectionConfiguration;
 import org.apache.geode.connectors.jdbc.internal.JdbcConnectorService;
+import org.apache.geode.management.internal.security.ResourcePermissions;
+import org.apache.geode.security.ResourcePermission;
 
 @Experimental
 public class ListConnectionFunction extends JdbcCliFunction<Void, ConnectionConfiguration[]> {
@@ -41,5 +45,10 @@ public class ListConnectionFunction extends JdbcCliFunction<Void, ConnectionConf
 
   private Set<ConnectionConfiguration> getConnectionConfigs(JdbcConnectorService service) {
     return service.getConnectionConfigs();
+  }
+
+  @Override
+  public Collection<ResourcePermission> getRequiredPermissions(String regionName) {
+    return Collections.singletonList(ResourcePermissions.CLUSTER_READ);
   }
 }

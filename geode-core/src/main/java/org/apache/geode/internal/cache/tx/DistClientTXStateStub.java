@@ -25,24 +25,16 @@ import org.apache.geode.internal.cache.DistTXCommitMessage;
 import org.apache.geode.internal.cache.DistTXCoordinatorInterface;
 import org.apache.geode.internal.cache.DistTXPrecommitMessage;
 import org.apache.geode.internal.cache.DistTXRollbackMessage;
+import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.cache.LocalRegion;
 import org.apache.geode.internal.cache.TXStateProxy;
 import org.apache.geode.internal.i18n.LocalizedStrings;
 
-/**
- *
- */
 public class DistClientTXStateStub extends ClientTXStateStub implements DistTXCoordinatorInterface {
 
-  /**
-   * @param stateProxy
-   * @param target
-   * @param firstRegion
-   */
-  public DistClientTXStateStub(TXStateProxy stateProxy, DistributedMember target,
-      LocalRegion firstRegion) {
-    super(stateProxy, target, firstRegion);
-    // TODO Auto-generated constructor stub
+  public DistClientTXStateStub(InternalCache cache, DistributionManager dm, TXStateProxy stateProxy,
+      DistributedMember target, LocalRegion firstRegion) {
+    super(cache, dm, stateProxy, target, firstRegion);
   }
 
   @Override

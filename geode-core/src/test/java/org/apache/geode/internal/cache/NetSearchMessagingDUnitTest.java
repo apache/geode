@@ -191,7 +191,7 @@ public class NetSearchMessagingDUnitTest extends JUnit4CacheTestCase {
           Cache cache = getCache();
           LocalRegion region = (LocalRegion) cache.getRegion("region");
           RegionEntry re = region.getRegionEntry("a");
-          Object o = re.getValueInVM(null);
+          Object o = re.getValueInVM(region);
           LogWriterUtils.getLogWriter().info("key a=" + o);;
           return o == null || o == Token.NOT_AVAILABLE;
         }
@@ -213,7 +213,7 @@ public class NetSearchMessagingDUnitTest extends JUnit4CacheTestCase {
           String[] keys = new String[] {"b", "c", "d", "e", "f"};
           for (String key : keys) {
             RegionEntry re = region.getRegionEntry(key);
-            Object o = re.getValueInVM(null);
+            Object o = re.getValueInVM(region);
             LogWriterUtils.getLogWriter().info("key " + key + "=" + o);
             assertTrue("expected key " + key + " to not be evicted",
                 (o != null) && (o != Token.NOT_AVAILABLE));

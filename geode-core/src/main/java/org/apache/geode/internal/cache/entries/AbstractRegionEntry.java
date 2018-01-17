@@ -460,7 +460,7 @@ public abstract class AbstractRegionEntry implements RegionEntry, HashEntry<Obje
       ReferenceCountHelper.setReferenceCountOwner(null);
       return null;
     } else {
-      result = OffHeapHelper.copyAndReleaseIfNeeded(result);
+      result = OffHeapHelper.copyAndReleaseIfNeeded(result, context.getCache());
       ReferenceCountHelper.setReferenceCountOwner(null);
       setRecentlyUsed(context);
       return result;
@@ -564,8 +564,8 @@ public abstract class AbstractRegionEntry implements RegionEntry, HashEntry<Obje
           if (!(cd.getValue() instanceof byte[])) {
             // The cd now has the object form so use the cached serialized form in a new cd.
             // This serialization is much cheaper than reserializing the object form.
-            serializedValue =
-                EntryEventImpl.serialize(CachedDeserializableFactory.create(serializedValue));
+            serializedValue = EntryEventImpl
+                .serialize(CachedDeserializableFactory.create(serializedValue, context.getCache()));
           } else {
             serializedValue = EntryEventImpl.serialize(cd);
           }
@@ -617,7 +617,7 @@ public abstract class AbstractRegionEntry implements RegionEntry, HashEntry<Obje
       // should only be possible if disk entry
       v = Token.NOT_AVAILABLE;
     }
-    Object result = OffHeapHelper.copyAndReleaseIfNeeded(v);
+    Object result = OffHeapHelper.copyAndReleaseIfNeeded(v, context.getCache());
     ReferenceCountHelper.setReferenceCountOwner(null);
     return result;
   }
@@ -1341,7 +1341,7 @@ public abstract class AbstractRegionEntry implements RegionEntry, HashEntry<Obje
           byte[] valAsBytes = soVal.getValueAsHeapByteArray();
           Object heapValue;
           if (soVal.isSerialized()) {
-            heapValue = CachedDeserializableFactory.create(valAsBytes);
+            heapValue = CachedDeserializableFactory.create(valAsBytes, r.getCache());
           } else {
             heapValue = valAsBytes;
           }
@@ -1394,7 +1394,7 @@ public abstract class AbstractRegionEntry implements RegionEntry, HashEntry<Obje
     if (nv instanceof StoredObject) {
       // This off heap value is being put into a on heap region.
       byte[] data = ((StoredObject) nv).getSerializedValue();
-      nv = CachedDeserializableFactory.create(data);
+      nv = CachedDeserializableFactory.create(data, r.getCache());
     }
     if (nv instanceof PdxInstanceImpl) {
       // We do not want to put PDXs in the cache as values.
@@ -1404,7 +1404,7 @@ public abstract class AbstractRegionEntry implements RegionEntry, HashEntry<Obje
         byte[] compressedData = compressBytes(r, data);
         // TODO: array comparison is broken
         if (data == compressedData) {
-          nv = CachedDeserializableFactory.create(data);
+          nv = CachedDeserializableFactory.create(data, r.getCache());
         } else {
           nv = compressedData;
         }

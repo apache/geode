@@ -17,6 +17,8 @@ package org.apache.geode.modules.util;
 import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
+import java.util.Collection;
+import java.util.Collections;
 import java.util.Properties;
 
 import org.apache.geode.DataSerializable;
@@ -24,6 +26,7 @@ import org.apache.geode.cache.Declarable;
 import org.apache.geode.cache.execute.Function;
 import org.apache.geode.cache.execute.FunctionContext;
 import org.apache.geode.cache.execute.RegionFunctionContext;
+import org.apache.geode.security.ResourcePermission;
 
 public class RegionSizeFunction implements Function, Declarable, DataSerializable {
 
@@ -36,6 +39,12 @@ public class RegionSizeFunction implements Function, Declarable, DataSerializabl
   public void execute(FunctionContext context) {
     RegionFunctionContext rfc = (RegionFunctionContext) context;
     context.getResultSender().lastResult(rfc.getDataSet().size());
+  }
+
+  @Override
+  public Collection<ResourcePermission> getRequiredPermissions(String regionName) {
+    return Collections.singletonList(new ResourcePermission(ResourcePermission.Resource.DATA,
+        ResourcePermission.Operation.READ, regionName));
   }
 
   public String getId() {

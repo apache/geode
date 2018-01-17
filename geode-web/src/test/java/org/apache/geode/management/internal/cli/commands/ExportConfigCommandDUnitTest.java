@@ -56,7 +56,7 @@ public class ExportConfigCommandDUnitTest {
     Properties props = new Properties();
     props.setProperty(GROUPS, "Group1");
 
-    MemberVM server0 = startupRule.startServerAsEmbededLocator(0, props);
+    MemberVM server0 = startupRule.startServerAsEmbeddedLocator(0, props);
 
     if (connectOverHttp) {
       gfsh.connectAndVerify(server0.getHttpPort(), GfshCommandRule.PortType.http);

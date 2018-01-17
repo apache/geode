@@ -38,6 +38,7 @@ import org.apache.geode.internal.cache.DistributedRegion;
 import org.apache.geode.internal.cache.EntryBits;
 import org.apache.geode.internal.cache.EntryEventImpl;
 import org.apache.geode.internal.cache.InitialImageOperation;
+import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.cache.InternalRegion;
 import org.apache.geode.internal.cache.PlaceHolderDiskRegion;
 import org.apache.geode.internal.cache.RegionClearedException;
@@ -1001,8 +1002,8 @@ public interface DiskEntry extends RegionEntry {
     }
 
     public static Object getValueInVMOrDiskWithoutFaultIn(DiskEntry entry, InternalRegion region) {
-      Object result =
-          OffHeapHelper.copyAndReleaseIfNeeded(getValueOffHeapOrDiskWithoutFaultIn(entry, region));
+      Object result = OffHeapHelper.copyAndReleaseIfNeeded(
+          getValueOffHeapOrDiskWithoutFaultIn(entry, region), region.getCache());
       if (result instanceof CachedDeserializable) {
         result = ((CachedDeserializable) result).getDeserializedValue(null, null);
       }
@@ -1092,7 +1093,7 @@ public interface DiskEntry extends RegionEntry {
         }
       } finally {
         if (!retainResult) {
-          v = OffHeapHelper.copyAndReleaseIfNeeded(v);
+          v = OffHeapHelper.copyAndReleaseIfNeeded(v, region.getCache());
           // At this point v should be either a heap object
         }
       }
@@ -1122,7 +1123,7 @@ public interface DiskEntry extends RegionEntry {
               synchronized (did) {
                 // don't read if the oplog has changed.
                 if (oplogId == did.getOplogId()) {
-                  value = getValueFromDisk(dr, did, in);
+                  value = getValueFromDisk(dr, did, in, dr.getCache());
                   if (value != null) {
                     setValueOnFaultIn(value, did, entry, dr, recoveryStore);
                   }
@@ -1148,7 +1149,8 @@ public interface DiskEntry extends RegionEntry {
     /**
      * Caller must have "did" synced.
      */
-    private static Object getValueFromDisk(DiskRegionView dr, DiskId did, ByteArrayDataInput in) {
+    private static Object getValueFromDisk(DiskRegionView dr, DiskId did, ByteArrayDataInput in,
+        InternalCache cache) {
       Object value;
       if (dr.isBackup() && did.getKeyId() == DiskRegion.INVALID_ID) {
         // must have been destroyed
@@ -1165,7 +1167,7 @@ public interface DiskEntry extends RegionEntry {
           } else if (EntryBits.isTombstone(bb.getBits())) {
             value = Token.TOMBSTONE;
           } else if (EntryBits.isSerialized(bb.getBits())) {
-            value = readSerializedValue(bb.getBytes(), bb.getVersion(), in, false);
+            value = readSerializedValue(bb.getBytes(), bb.getVersion(), in, false, cache);
           } else {
             value = readRawValue(bb.getBytes(), bb.getVersion(), in);
           }
@@ -1219,7 +1221,7 @@ public interface DiskEntry extends RegionEntry {
       dr.acquireReadLock();
       try {
         synchronized (did) {
-          Object value = getValueFromDisk(dr, did, null);
+          Object value = getValueFromDisk(dr, did, null, dr.getCache());
           if (value == null)
             return null;
           setValueOnFaultIn(value, did, entry, dr, region);
@@ -1261,7 +1263,7 @@ public interface DiskEntry extends RegionEntry {
     }
 
     public static Object readSerializedValue(byte[] valueBytes, Version version,
-        ByteArrayDataInput in, boolean forceDeserialize) {
+        ByteArrayDataInput in, boolean forceDeserialize, InternalCache cache) {
       if (forceDeserialize) {
         // deserialize checking for product version change
         return EntryEventImpl.deserialize(valueBytes, version, in);
@@ -1269,7 +1271,7 @@ public interface DiskEntry extends RegionEntry {
         // TODO: upgrades: is there a case where GemFire values are internal
         // ones that need to be upgraded transparently; probably messages
         // being persisted (gateway events?)
-        return CachedDeserializableFactory.create(valueBytes);
+        return CachedDeserializableFactory.create(valueBytes, cache);
       }
     }
 

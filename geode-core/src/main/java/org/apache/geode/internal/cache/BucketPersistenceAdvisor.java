@@ -101,7 +101,7 @@ public class BucketPersistenceAdvisor extends PersistenceAdvisorImpl {
   protected void checkInterruptedByShutdownAll() {
     // when ShutdownAll is on-going, break all the GII for BR
     if (proxyBucket.getCache().isCacheAtShutdownAll()) {
-      throw new CacheClosedException("Cache is being closed by ShutdownAll");
+      throw proxyBucket.getCache().getCacheClosedException("Cache is being closed by ShutdownAll");
     }
     proxyBucket.getPartitionedRegion().checkReadiness();
   }

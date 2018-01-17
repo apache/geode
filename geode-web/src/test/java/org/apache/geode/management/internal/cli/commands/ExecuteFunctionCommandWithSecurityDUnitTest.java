@@ -101,8 +101,9 @@ public class ExecuteFunctionCommandWithSecurityDUnitTest {
 
   private void executeWriteFunctionThrowsError() {
     gfsh.executeAndAssertThat("execute function --id=" + new WriteFunction().getId())
-        .statusIsSuccess();
-    assertThat(gfsh.getGfshOutput()).contains("dataRead not authorized for DATA:WRITE");
+        .tableHasColumnWithExactValuesInAnyOrder("Function Execution Result",
+            "Exception: dataRead not authorized for DATA:WRITE")
+        .statusIsError();
   }
 
   private void givenReadOnlyConnectionOverHttp() throws Exception {

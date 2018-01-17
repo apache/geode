@@ -1786,4 +1786,8 @@ public class MemberMBeanBridge {
   public long getUsedMemory() {
     return getVMStatistic(StatsKey.VM_USED_MEMORY).longValue() / MBFactor;
   }
+
+  public String getReleaseVersion() {
+    return GemFireVersion.getGemFireVersion();
+  }
 }

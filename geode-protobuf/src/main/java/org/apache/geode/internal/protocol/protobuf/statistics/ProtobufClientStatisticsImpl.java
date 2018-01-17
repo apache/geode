@@ -35,6 +35,7 @@ public class ProtobufClientStatisticsImpl implements ProtocolClientStatistics {
   private final int messagesSentId;
   private final int authorizationViolationsId;
   private final int authenticationFailuresId;
+  private final int operationTimeId;
 
   public ProtobufClientStatisticsImpl(StatisticsFactory statisticsFactory, String statisticsName) {
     if (statisticsFactory == null) {
@@ -58,7 +59,9 @@ public class ProtobufClientStatisticsImpl implements ProtocolClientStatistics {
         statisticsFactory.createLongCounter("messagesReceived", "Messages received from clients.",
             "messages"),
         statisticsFactory.createLongCounter("messagesSent", "Messages sent to clients.",
-            "messages")};
+            "messages"),
+        statisticsFactory.createLongCounter("operationTime", "Time spent performing operations",
+            "nanoseconds")};
     statType = statisticsFactory.createType(getStatsName(), "Protobuf client/server statistics",
         serverStatDescriptors);
     this.stats = statisticsFactory.createAtomicStatistics(statType, statisticsName);
@@ -71,6 +74,7 @@ public class ProtobufClientStatisticsImpl implements ProtocolClientStatistics {
     bytesSentId = this.stats.nameToId("bytesSent");
     messagesReceivedId = this.stats.nameToId("messagesReceived");
     messagesSentId = this.stats.nameToId("messagesSent");
+    operationTimeId = this.stats.nameToId("operationTime");
   }
 
 
@@ -111,5 +115,15 @@ public class ProtobufClientStatisticsImpl implements ProtocolClientStatistics {
   @Override
   public void incAuthenticationFailures() {
     stats.incLong(authenticationFailuresId, 1);
+  }
+
+  @Override
+  public long startOperation() {
+    return System.nanoTime();
+  }
+
+  @Override
+  public void endOperation(long startOperationTime) {
+    stats.incLong(operationTimeId, System.nanoTime() - startOperationTime);
   }
 }

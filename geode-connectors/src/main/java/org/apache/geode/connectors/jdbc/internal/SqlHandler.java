@@ -121,9 +121,8 @@ public class SqlHandler {
     return factory;
   }
 
-  private PdxInstance executeReadStatement(PreparedStatement statement,
-      List<ColumnValue> columnList, PdxInstanceFactory factory, RegionMapping regionMapping,
-      String keyColumnName) {
+  PdxInstance executeReadStatement(PreparedStatement statement, List<ColumnValue> columnList,
+      PdxInstanceFactory factory, RegionMapping regionMapping, String keyColumnName) {
     PdxInstance pdxInstance = null;
     try {
       setValuesInStatement(statement, columnList);
@@ -134,7 +133,7 @@ public class SqlHandler {
           for (int i = 1; i <= ColumnsNumber; i++) {
             Object columnValue = resultSet.getObject(i);
             String columnName = metaData.getColumnName(i);
-            String fieldName = mapColumnNameToFieldName(columnName);
+            String fieldName = mapColumnNameToFieldName(columnName, regionMapping);
             if (regionMapping.isPrimaryKeyInValue()
                 || !keyColumnName.equalsIgnoreCase(columnName)) {
               factory.writeField(fieldName, columnValue, Object.class);
@@ -162,8 +161,8 @@ public class SqlHandler {
     }
   }
 
-  private String mapColumnNameToFieldName(String columnName) {
-    return columnName.toLowerCase();
+  private String mapColumnNameToFieldName(String columnName, RegionMapping regionMapping) {
+    return regionMapping.getFieldNameForColumn(columnName);
   }
 
   public <K, V> void write(Region<K, V> region, Operation operation, K key, PdxInstance value) {

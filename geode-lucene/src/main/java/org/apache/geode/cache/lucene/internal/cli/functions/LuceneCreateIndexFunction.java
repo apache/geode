@@ -18,6 +18,9 @@ package org.apache.geode.cache.lucene.internal.cli.functions;
 import static org.apache.geode.cache.lucene.internal.LuceneServiceImpl.validateCommandParameters.INDEX_NAME;
 import static org.apache.geode.cache.lucene.internal.LuceneServiceImpl.validateCommandParameters.REGION_PATH;
 
+import java.util.Collection;
+import java.util.Collections;
+
 import org.apache.commons.lang.StringUtils;
 import org.apache.lucene.analysis.Analyzer;
 import org.apache.lucene.analysis.standard.StandardAnalyzer;
@@ -33,11 +36,17 @@ import org.apache.geode.cache.lucene.internal.LuceneServiceImpl;
 import org.apache.geode.cache.lucene.internal.cli.LuceneCliStrings;
 import org.apache.geode.cache.lucene.internal.cli.LuceneIndexDetails;
 import org.apache.geode.cache.lucene.internal.cli.LuceneIndexInfo;
+import org.apache.geode.cache.lucene.internal.security.LucenePermission;
+import org.apache.geode.cache.lucene.internal.xml.LuceneXmlConstants;
 import org.apache.geode.internal.InternalEntity;
+import org.apache.geode.internal.cache.xmlcache.CacheXml;
 import org.apache.geode.management.internal.cli.CliUtil;
 import org.apache.geode.management.internal.cli.functions.CliFunctionResult;
 import org.apache.geode.management.internal.cli.i18n.CliStrings;
 import org.apache.geode.management.internal.configuration.domain.XmlEntity;
+import org.apache.geode.security.ResourcePermission;
+import org.apache.geode.security.ResourcePermission.Operation;
+import org.apache.geode.security.ResourcePermission.Resource;
 
 
 /**
@@ -65,10 +74,13 @@ public class LuceneCreateIndexFunction implements InternalEntity, Function {
     try {
       final LuceneIndexInfo indexInfo = (LuceneIndexInfo) context.getArguments();
       final Cache cache = context.getCache();
+      final String indexName = indexInfo.getIndexName();
+      final String regionPath = indexInfo.getRegionPath();
+
       memberId = cache.getDistributedSystem().getDistributedMember().getId();
       LuceneService service = LuceneServiceProvider.get(cache);
 
-      INDEX_NAME.validateName(indexInfo.getIndexName());
+      INDEX_NAME.validateName(indexName);
 
       String[] fields = indexInfo.getSearchableFieldNames();
       String[] analyzerName = indexInfo.getFieldAnalyzers();
@@ -93,21 +105,34 @@ public class LuceneCreateIndexFunction implements InternalEntity, Function {
         indexFactory.setLuceneSerializer(toSerializer(serializerName));
       }
 
-      REGION_PATH.validateName(indexInfo.getRegionPath());
+      XmlEntity xmlEntity = null;
+      REGION_PATH.validateName(regionPath);
       if (LuceneServiceImpl.LUCENE_REINDEX) {
-        indexFactory.create(indexInfo.getIndexName(), indexInfo.getRegionPath(), true);
+        indexFactory.create(indexName, regionPath, true);
+        if (cache.getRegion(regionPath) != null) {
+          xmlEntity = getXmlEntity(indexName, regionPath);
+        }
       } else {
-        indexFactory.create(indexInfo.getIndexName(), indexInfo.getRegionPath(), false);
+        indexFactory.create(indexName, regionPath, false);
       }
 
-      // TODO - update cluster configuration by returning a valid XmlEntity
-      XmlEntity xmlEntity = null;
       context.getResultSender().lastResult(new CliFunctionResult(memberId, xmlEntity));
     } catch (Exception e) {
       String exceptionMessage = CliStrings.format(CliStrings.EXCEPTION_CLASS_AND_MESSAGE,
           e.getClass().getName(), e.getMessage());
       context.getResultSender().lastResult(new CliFunctionResult(memberId, e, e.getMessage()));
     }
+  }
+
+  protected XmlEntity getXmlEntity(String indexName, String regionPath) {
+    String regionName = StringUtils.stripStart(regionPath, "/");
+    return new XmlEntity(CacheXml.REGION, "name", regionName);
+  }
+
+  @Override
+  public Collection<ResourcePermission> getRequiredPermissions(String regionName) {
+    return Collections.singleton(
+        new ResourcePermission(Resource.CLUSTER, Operation.MANAGE, LucenePermission.TARGET));
   }
 
   private LuceneSerializer toSerializer(String serializerName)
@@ -136,5 +161,4 @@ public class LuceneCreateIndexFunction implements InternalEntity, Function {
         CliUtil.forName(className, LuceneCliStrings.LUCENE_CREATE_INDEX__ANALYZER);
     return CliUtil.newInstance(clazz, LuceneCliStrings.LUCENE_CREATE_INDEX__ANALYZER);
   }
-
 }

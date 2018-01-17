@@ -143,7 +143,8 @@ public class TXSynchronizationCommand extends BaseCommand {
             }
           };
           TXSynchronizationRunnable sync =
-              new TXSynchronizationRunnable(beforeCompletion, serverConnection.getAcceptor());
+              new TXSynchronizationRunnable(serverConnection.getCache().getCancelCriterion(),
+                  serverConnection.getAcceptor(), beforeCompletion);
           txProxy.setSynchronizationRunnable(sync);
           Executor exec = InternalDistributedSystem.getConnectedInstance().getDistributionManager()
               .getWaitingThreadPool();

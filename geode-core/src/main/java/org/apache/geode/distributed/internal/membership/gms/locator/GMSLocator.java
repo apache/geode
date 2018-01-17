@@ -137,14 +137,17 @@ public class GMSLocator implements Locator, NetLocator {
   /**
    * Test hook - set the persistent view file
    */
-  public void setViewFile(File file) {
-    this.viewFile = file;
+  public File setViewFile(File file) {
+    this.viewFile = new File(file.getAbsolutePath()); // GEODE-4180, use absolute paths
+    return this.viewFile;
   }
 
   @Override
   public void init(TcpServer server) throws InternalGemFireException {
     if (this.viewFile == null) {
-      this.viewFile = new File("locator" + server.getPort() + "view.dat");
+      // GEODE-4180, use absolute paths
+      this.viewFile =
+          new File(new File("locator" + server.getPort() + "view.dat").getAbsolutePath());
     }
     logger.info(
         "GemFire peer location service starting.  Other locators: {}  Locators preferred as coordinators: {}  Network partition detection enabled: {}  View persistence file: {}",

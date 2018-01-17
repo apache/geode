@@ -88,6 +88,11 @@ public class LocatorLauncherBuilderTest {
   }
 
   @Test
+  public void getRedirectOutputReturnsNullByDefault() throws Exception {
+    assertThat(new LocatorLauncher.Builder().getRedirectOutput()).isNull();
+  }
+
+  @Test
   public void getPortReturnsDefaultLocatorPortByDefault() throws Exception {
     assertThat(new Builder().getPort()).isEqualTo(Integer.valueOf(DEFAULT_LOCATOR_PORT));
   }
@@ -343,6 +348,13 @@ public class LocatorLauncherBuilderTest {
   }
 
   @Test
+  public void setRedirectOutputReturnsBuilderInstance() throws Exception {
+    LocatorLauncher.Builder builder = new LocatorLauncher.Builder();
+
+    assertThat(builder.setRedirectOutput(Boolean.TRUE)).isSameAs(builder);
+  }
+
+  @Test
   public void parseArgumentsWithForceSetsForceToTrue() throws Exception {
     Builder builder = new Builder();
 
@@ -473,7 +485,7 @@ public class LocatorLauncherBuilderTest {
 
     LocatorLauncher launcher = builder.setCommand(Command.START).setDebug(true)
         .setHostnameForClients("beanstock.vmware.com").setMemberName("Beanstock").setPort(8192)
-        .build();
+        .setRedirectOutput(Boolean.TRUE).build();
 
     assertThat(launcher.getCommand()).isEqualTo(builder.getCommand());
     assertThat(launcher.isDebugging()).isTrue();
@@ -481,6 +493,7 @@ public class LocatorLauncherBuilderTest {
     assertThat(launcher.getMemberName()).isEqualTo(builder.getMemberName());
     assertThat(launcher.getPort()).isEqualTo(builder.getPort());
     assertThat(launcher.getWorkingDirectory()).isEqualTo(builder.getWorkingDirectory());
+    assertThat(launcher.isRedirectingOutput()).isTrue();
 
     assertThat(launcher.isHelping()).isFalse();
     assertThat(launcher.isRunning()).isFalse();

@@ -33,6 +33,7 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
@@ -171,11 +172,13 @@ public class SqlHandlerTest {
     PdxInstanceFactory factory = mock(PdxInstanceFactory.class);
     when(cache.createPdxInstanceFactory(anyString(), anyBoolean())).thenReturn(factory);
 
-    String filedName1 = COLUMN_NAME_1.toLowerCase();
-    String filedName2 = COLUMN_NAME_2.toLowerCase();
+    String fieldName1 = COLUMN_NAME_1.toLowerCase();
+    String fieldName2 = COLUMN_NAME_2.toLowerCase();
+    when(regionMapping.getFieldNameForColumn(COLUMN_NAME_1)).thenReturn(fieldName1);
+    when(regionMapping.getFieldNameForColumn(COLUMN_NAME_2)).thenReturn(fieldName2);
     handler.read(region, new Object());
-    verify(factory).writeField(filedName1, COLUMN_VALUE_1, Object.class);
-    verify(factory).writeField(filedName2, COLUMN_VALUE_2, Object.class);
+    verify(factory).writeField(fieldName1, COLUMN_VALUE_1, Object.class);
+    verify(factory).writeField(fieldName2, COLUMN_VALUE_2, Object.class);
     verify(factory).create();
   }
 
@@ -191,6 +194,7 @@ public class SqlHandlerTest {
     when(cache.createPdxInstanceFactory(anyString(), anyBoolean())).thenReturn(factory);
 
     String fieldName2 = COLUMN_NAME_2.toLowerCase();
+    when(regionMapping.getFieldNameForColumn(COLUMN_NAME_2)).thenReturn(fieldName2);
     handler.read(region, new Object());
     verify(factory).writeField(fieldName2, COLUMN_VALUE_2, Object.class);
     verify(factory, times(1)).writeField(any(), any(), any());
@@ -420,6 +424,28 @@ public class SqlHandlerTest {
     assertThat(columnValueList.get(0).getColumnName()).isEqualTo(KEY_COLUMN);
   }
 
+  @Test
+  public void usesMappedPdxFieldNameWhenReading() throws Exception {
+    ResultSet result = mock(ResultSet.class);
+    setupResultSet(result);
+    when(result.next()).thenReturn(true).thenReturn(false);
+    when(statement.executeQuery()).thenReturn(result);
+
+    PdxInstanceFactory factory = mock(PdxInstanceFactory.class);
+    when(cache.createPdxInstanceFactory(anyString(), anyBoolean())).thenReturn(factory);
+
+    List<ColumnValue> columnList = new ArrayList<>();
+
+    String fieldName1 = "pdxFieldName1";
+    String fieldName2 = "pdxFieldName2";
+    when(regionMapping.getFieldNameForColumn(COLUMN_NAME_1)).thenReturn(fieldName1);
+    when(regionMapping.getFieldNameForColumn(COLUMN_NAME_2)).thenReturn(fieldName2);
+    handler.executeReadStatement(statement, columnList, factory, regionMapping, "keyColumn");
+    verify(factory).writeField(fieldName1, COLUMN_VALUE_1, Object.class);
+    verify(factory).writeField(fieldName2, COLUMN_VALUE_2, Object.class);
+    verify(factory).create();
+  }
+
   private ResultSet getPrimaryKeysMetaData() throws SQLException {
     DatabaseMetaData metadata = mock(DatabaseMetaData.class);
     ResultSet resultSet = mock(ResultSet.class);
@@ -442,5 +468,6 @@ public class SqlHandlerTest {
     assertThatThrownBy(() -> handler.getConnection(connectionConfig))
         .isInstanceOf(IllegalStateException.class).hasMessage("Could not connect to fake:url");
   }
+
 
 }

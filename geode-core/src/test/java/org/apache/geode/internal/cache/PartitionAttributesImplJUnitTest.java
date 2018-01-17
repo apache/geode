@@ -14,7 +14,13 @@
  */
 package org.apache.geode.internal.cache;
 
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.junit.Assert.*;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 import java.util.Properties;
 
@@ -23,11 +29,14 @@ import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
+import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.EntryOperation;
+import org.apache.geode.cache.PartitionAttributes;
 import org.apache.geode.cache.PartitionAttributesFactory;
 import org.apache.geode.cache.PartitionResolver;
 import org.apache.geode.cache.Region;
 import org.apache.geode.cache.partition.PartitionListener;
+import org.apache.geode.test.fake.Fakes;
 import org.apache.geode.test.junit.categories.UnitTest;
 
 /**
@@ -61,6 +70,7 @@ public class PartitionAttributesImplJUnitTest {
 
   private FixedPartitionAttributesImpl fixedPartitionAttributes;
   private PartitionListener partitionListener;
+  private Cache cache;
 
   @Before
   public void before() {
@@ -78,6 +88,7 @@ public class PartitionAttributesImplJUnitTest {
 
     this.localMaxMemory = 123;
     this.offHeap = false;
+    this.cache = Fakes.cache();
 
     this.partitionResolver = new PartitionResolver<Object, Object>() {
       @Override
@@ -471,6 +482,42 @@ public class PartitionAttributesImplJUnitTest {
     other.addFixedPartitionAttributes(fixedPartitionAttributes2);
 
     assertNotEquals(instance, other);
+  }
+
+  @Test
+  public void validateColocationWithNonExistingRegion() {
+    PartitionAttributesImpl instance = createPartitionAttributesImpl();
+    instance.setColocatedWith("nonExistingRegion");
+    assertThatThrownBy(() -> instance.validateColocation(cache))
+        .isInstanceOf(IllegalStateException.class)
+        .hasMessageContaining("It should be created before setting");
+  }
+
+  @Test
+  public void validateColocationWithNonPartitionedRegion() {
+    Region region = mock(Region.class);
+    when(cache.getRegion("nonPrRegion")).thenReturn(region);
+    PartitionAttributesImpl instance = createPartitionAttributesImpl();
+    instance.setColocatedWith("nonPrRegion");
+
+    assertThatThrownBy(() -> instance.validateColocation(cache))
+        .isInstanceOf(IllegalStateException.class)
+        .hasMessageContaining("supported only for PartitionedRegions");
+  }
+
+  @Test
+  public void validateColocationWithSimilarPartitionedRegion() {
+    PartitionedRegion region = mock(PartitionedRegion.class);
+    PartitionAttributes prAttributes = mock(PartitionAttributes.class);
+    when(cache.getRegion("PrRegion")).thenReturn(region);
+    when(region.getPartitionAttributes()).thenReturn(prAttributes);
+
+    PartitionAttributesImpl instance = createPartitionAttributesImpl();
+    when(prAttributes.getTotalNumBuckets()).thenReturn(instance.getTotalNumBuckets());
+    when(prAttributes.getRedundantCopies()).thenReturn(instance.getRedundantCopies());
+    instance.setColocatedWith("PrRegion");
+    instance.validateColocation(cache);
+    verify(cache, times(1)).getRegion("PrRegion");
   }
 
   private void fillInForEqualityTest(PartitionAttributesImpl instance) {

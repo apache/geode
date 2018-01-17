@@ -301,7 +301,7 @@ public class PartitionRegionConfigValidator {
     final PartitionAttributesImpl userPA =
         (PartitionAttributesImpl) pr.getAttributes().getPartitionAttributes();
 
-    userPA.validateColocation(); // do this here to fix bug 47197
+    userPA.validateColocation(pr.getCache()); // do this here to fix bug 47197
 
     PartitionedRegion colocatedPR = ColocationHelper.getColocatedRegion(pr);
     if (colocatedPR != null) {

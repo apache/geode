@@ -69,6 +69,7 @@ import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.cache.LocalRegion;
 import org.apache.geode.internal.cache.PartitionedRegion;
 import org.apache.geode.internal.cache.RegionEntry;
+import org.apache.geode.internal.cache.RegionEntryContext;
 import org.apache.geode.internal.cache.partitioned.Bucket;
 import org.apache.geode.internal.cache.persistence.query.CloseableIterator;
 import org.apache.geode.internal.i18n.LocalizedStrings;
@@ -1338,7 +1339,9 @@ public abstract class AbstractIndex implements IndexProtocol {
         valuesInRegion = evaluateIndexIteratorsFromRE(re, context);
         valueInIndex = verifyAndGetPdxDomainObject(value);
       } else {
-        Object val = re.getValueInVM(context.getPartitionedRegion());
+        RegionEntryContext regionEntryContext = context.getPartitionedRegion() != null
+            ? context.getPartitionedRegion() : (RegionEntryContext) region;
+        Object val = re.getValueInVM(regionEntryContext);
         if (val instanceof CachedDeserializable) {
           val = ((CachedDeserializable) val).getDeserializedValue(getRegion(), re);
         }

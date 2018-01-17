@@ -1172,9 +1172,9 @@ public class TXCommitMessage extends PooledDistributionMessage
     }
 
     private boolean hookupRegion(DistributionManager dm) {
-      this.r = LocalRegion.getRegionFromPath(dm.getSystem(), this.regionPath);
+      this.r = getRegionByPath(dm, regionPath);
       if (this.r == null && this.parentRegionPath != null) {
-        this.r = LocalRegion.getRegionFromPath(dm.getSystem(), this.parentRegionPath);
+        this.r = getRegionByPath(dm, this.parentRegionPath);
         this.regionPath = this.parentRegionPath;
       }
       if (this.r == null && dm.getSystem().isLoner()) {
@@ -1184,6 +1184,11 @@ public class TXCommitMessage extends PooledDistributionMessage
         return false;
       }
       return true;
+    }
+
+    LocalRegion getRegionByPath(DistributionManager dm, String regionPath) {
+      InternalCache cache = dm.getCache();
+      return cache == null ? null : cache.getRegionByPath(regionPath);
     }
 
     /**
@@ -1355,7 +1360,7 @@ public class TXCommitMessage extends PooledDistributionMessage
 
 
     public boolean isForceFireEvent(DistributionManager dm) {
-      LocalRegion r = LocalRegion.getRegionFromPath(dm.getSystem(), this.regionPath);
+      LocalRegion r = getRegionByPath(dm, regionPath);
       if (r instanceof PartitionedRegion || (r != null && r.isUsedForPartitionedRegionBucket())) {
         return false;
       }
@@ -1524,7 +1529,8 @@ public class TXCommitMessage extends PooledDistributionMessage
             if (isToken) {
               this.value = DataSerializer.readObject(in);
             } else {
-              this.value = CachedDeserializableFactory.create(DataSerializer.readByteArray(in));
+              this.value = CachedDeserializableFactory.create(DataSerializer.readByteArray(in),
+                  GemFireCacheImpl.getInstance());
             }
           }
         }

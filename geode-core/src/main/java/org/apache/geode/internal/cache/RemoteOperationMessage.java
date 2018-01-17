@@ -195,12 +195,18 @@ public abstract class RemoteOperationMessage extends DistributionMessage
     LocalRegion r = null;
     long startTime = 0;
     try {
+      InternalCache cache = getCache(dm);
       if (checkCacheClosing(dm) || checkDSClosing(dm)) {
-        thr = new CacheClosedException(LocalizedStrings.PartitionMessage_REMOTE_CACHE_IS_CLOSED_0
-            .toLocalizedString(dm.getId()));
+        if (cache == null) {
+          thr = new CacheClosedException(LocalizedStrings.PartitionMessage_REMOTE_CACHE_IS_CLOSED_0
+              .toLocalizedString(dm.getId()));
+        } else {
+          thr = cache
+              .getCacheClosedException(LocalizedStrings.PartitionMessage_REMOTE_CACHE_IS_CLOSED_0
+                  .toLocalizedString(dm.getId()));
+        }
         return;
       }
-      InternalCache cache = getCache(dm);
       r = getRegionByPath(cache);
       if (r == null && failIfRegionMissing()) {
         // if the distributed system is disconnecting, don't send a reply saying
