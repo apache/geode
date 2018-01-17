@@ -182,6 +182,16 @@ public class AbstractRegionMapTest {
     .isInstanceOf(EntryNotFoundException.class);
   }
 
+  @Test
+  public void destroyWithEmptyRegionInTokenModeAddsAToken() {
+    TestableAbstractRegionMap arm = new TestableAbstractRegionMap();
+    EntryEventImpl event = createEventForDestroy(arm.owner);
+    assertThat(arm.destroy(event, true, false, false, false, null, false)).isTrue();
+    assertThat(arm._getMap().containsKey(event.getKey())).isTrue();
+    RegionEntry re = (RegionEntry) arm._getMap().get(event.getKey());
+    assertThat(re.getValueAsToken()).isEqualTo(Token.DESTROYED);
+  }
+
   private static class TestableAbstractRegionMap extends AbstractRegionMap {
 
     public LocalRegion owner;
