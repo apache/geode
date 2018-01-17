@@ -1889,8 +1889,8 @@ public class DistributedRegion extends LocalRegion implements InternalDistribute
 
   @Override
   void cmnClearRegion(RegionEventImpl regionEvent, boolean cacheWrite, boolean useRVV) {
-    boolean enableRVV = useRVV && this.getDataPolicy().withReplication() && this.getConcurrencyChecksEnabled()
-        && !getDistributionManager().isLoner();
+    boolean enableRVV = useRVV && this.getDataPolicy().withReplication()
+        && this.getConcurrencyChecksEnabled() && !getDistributionManager().isLoner();
 
     // Fix for 46338 - apparently multiple threads from the same VM are allowed
     // to suspend locking, which is what distributedLockForClear() does. We don't
