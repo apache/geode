@@ -301,7 +301,6 @@ public class AcceptorImpl implements Acceptor, Runnable, CommBufferPool {
   private long acceptorId;
 
   private static boolean isAuthenticationRequired;
-  private static boolean isIntegratedSecurity;
 
   private static boolean isPostAuthzCallbackPresent;
 
@@ -546,8 +545,6 @@ public class AcceptorImpl implements Acceptor, Runnable, CommBufferPool {
     clientQueueInitPool = initializeClientQueueInitializerThreadPool();
 
     isAuthenticationRequired = this.securityService.isClientSecurityRequired();
-
-    isIntegratedSecurity = this.securityService.isIntegratedSecurity();
 
     String postAuthzFactoryName =
         this.cache.getDistributedSystem().getProperties().getProperty(SECURITY_CLIENT_ACCESSOR_PP);
@@ -1784,10 +1781,6 @@ public class AcceptorImpl implements Acceptor, Runnable, CommBufferPool {
     return isAuthenticationRequired;
   }
 
-  public static boolean isIntegratedSecurity() {
-    return isIntegratedSecurity;
-  }
-
   public static boolean isPostAuthzCallbackPresent() {
     return isPostAuthzCallbackPresent;
   }
@@ -1842,7 +1835,7 @@ public class AcceptorImpl implements Acceptor, Runnable, CommBufferPool {
           isPrimaryServerToClient ? "primary" : "secondary", socket);
       try {
         acceptor.getCacheClientNotifier().registerClient(socket, isPrimaryServerToClient,
-            acceptor.getAcceptorId(), acceptor.isNotifyBySubscription());
+            acceptor.getAcceptorId(), acceptor.isNotifyBySubscription(), acceptor);
       } catch (IOException ex) {
         closeSocket(socket);
         if (isRunning()) {

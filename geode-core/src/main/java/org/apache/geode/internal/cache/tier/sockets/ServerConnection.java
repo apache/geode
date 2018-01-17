@@ -97,7 +97,7 @@ public abstract class ServerConnection implements Runnable {
 
   private Map commands;
 
-  private final SecurityService securityService;
+  protected final SecurityService securityService;
 
   protected final CacheServerStats stats;
 
@@ -107,6 +107,7 @@ public abstract class ServerConnection implements Runnable {
   // The key is the size of each ByteBuffer. The value is a queue of byte buffers all of that size.
   private static final ConcurrentHashMap<Integer, LinkedBlockingQueue<ByteBuffer>> commBufferMap =
       new ConcurrentHashMap<>(4, 0.75f, 1);
+  private ServerConnectionCollection serverConnectionCollection;
 
   public static ByteBuffer allocateCommBuffer(int size, Socket sock) {
     // I expect that size will almost always be the same value
@@ -177,7 +178,7 @@ public abstract class ServerConnection implements Runnable {
   private Thread owner;
 
   /**
-   * Handshake reference uniquely identifying a client
+   * Handshake reference uniquely identifying a connection
    */
   protected ClientHandShake handshake;
   private int handShakeTimeout;
@@ -194,17 +195,8 @@ public abstract class ServerConnection implements Runnable {
    */
   private int latestBatchIdReplied = -1;
 
-  /*
-   * Uniquely identifying the client's Distributed System
-   *
-   *
-   * private String membershipId;
-   *
-   *
-   * Uniquely identifying the client's ConnectionProxy object
-   *
-   *
-   * private String proxyID ;
+  /**
+   * Client identity from handshake
    */
   ClientProxyMembershipID proxyId;
 
@@ -333,7 +325,8 @@ public abstract class ServerConnection implements Runnable {
     synchronized (this.handShakeMonitor) {
       if (this.handshake == null) {
         // synchronized (getCleanupTable()) {
-        boolean readHandShake = ServerHandShakeProcessor.readHandShake(this, getSecurityService());
+        boolean readHandShake =
+            ServerHandShakeProcessor.readHandShake(this, getSecurityService(), acceptor);
         if (readHandShake) {
           if (this.handshake.isOK()) {
             try {
@@ -469,11 +462,7 @@ public abstract class ServerConnection implements Runnable {
     return acceptor.getClientHealthMonitor().getCleanupProxyIdTable();
   }
 
-  private ClientHealthMonitor getClientHealthMonitor() {
-    return acceptor.getClientHealthMonitor();
-  }
-
-  private boolean processHandShake() {
+  protected boolean processHandShake() {
     boolean result = false;
     boolean clientJoined = false;
     boolean registerClient = false;
@@ -559,8 +548,6 @@ public abstract class ServerConnection implements Runnable {
           numRefs = new Counter();
           numRefs.incr();
           getCleanupProxyIdTable().put(this.proxyId, numRefs);
-          InternalDistributedMember idm =
-              (InternalDistributedMember) this.proxyId.getDistributedMember();
         }
         this.incedCleanupProxyIdTableRef = true;
       }
@@ -583,7 +570,7 @@ public abstract class ServerConnection implements Runnable {
         chm.registerClient(this.proxyId);
       }
       // hitesh:it will add client connection in set
-      chm.addConnection(this.proxyId, this);
+      serverConnectionCollection = chm.addConnection(this.proxyId, this);
       this.acceptor.getConnectionListener().connectionOpened(registerClient, communicationMode);
       // Hitesh: add user creds in map for single user case.
     } // finally
@@ -727,6 +714,19 @@ public abstract class ServerConnection implements Runnable {
   protected void doNormalMsg() {
     Message msg = null;
     msg = BaseCommand.readRequest(this);
+    processMessage(msg);
+
+  }
+
+  void processMessage(Message msg) {
+    synchronized (serverConnectionCollection) {
+      if (serverConnectionCollection.isTerminating) {
+        // Client is being disconnected, don't try to process message.
+        this.processMessages = false;
+        return;
+      }
+      serverConnectionCollection.connectionsProcessing.incrementAndGet();
+    }
     ThreadState threadState = null;
     try {
       if (msg != null) {
@@ -775,7 +775,7 @@ public abstract class ServerConnection implements Runnable {
 
         // if a subject exists for this uniqueId, binds the subject to this thread so that we can do
         // authorization later
-        if (AcceptorImpl.isIntegratedSecurity()
+        if (securityService.isIntegratedSecurity()
             && !isInternalMessage(this.requestMsg, allowInternalMessagesWithoutCredentials)
             && !this.communicationMode.isWAN()) {
           long uniqueId = getUniqueId();
@@ -799,13 +799,13 @@ public abstract class ServerConnection implements Runnable {
     } finally {
       // Keep track of the fact that a message is no longer being
       // processed.
+      serverConnectionCollection.connectionsProcessing.decrementAndGet();
       setNotProcessingMessage();
       clearRequestMsg();
       if (threadState != null) {
         threadState.clear();
       }
     }
-
   }
 
   private final Object terminationLock = new Object();
@@ -874,8 +874,6 @@ public abstract class ServerConnection implements Runnable {
             getCleanupProxyIdTable().remove(this.proxyId);
             // here we can remove entry multiuser map for client
             proxyIdVsClientUserAuths.remove(this.proxyId);
-            InternalDistributedMember idm =
-                (InternalDistributedMember) this.proxyId.getDistributedMember();
           }
         }
       }
@@ -937,7 +935,7 @@ public abstract class ServerConnection implements Runnable {
     return retCua;
   }
 
-  private void initializeCommands() {
+  protected void initializeCommands() {
     // The commands are cached here, but are just referencing the ones
     // stored in the CommandInitializer
     this.commands = CommandInitializer.getCommands(this);
@@ -1762,7 +1760,7 @@ public abstract class ServerConnection implements Runnable {
       return null;
     }
 
-    if (AcceptorImpl.isIntegratedSecurity()) {
+    if (securityService.isIntegratedSecurity()) {
       return null;
     }
 
@@ -1796,7 +1794,7 @@ public abstract class ServerConnection implements Runnable {
       return null;
     }
 
-    if (AcceptorImpl.isIntegratedSecurity()) {
+    if (securityService.isIntegratedSecurity()) {
       return null;
     }
 
