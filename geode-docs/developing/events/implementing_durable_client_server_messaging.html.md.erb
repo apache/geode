@@ -173,7 +173,7 @@ During initialization, the client cache is not blocked from doing operations, so
 
 This figure shows the three concurrent procedures during the initialization process. The application begins operations immediately on the client (step 1), while the client’s cache ready message (also step 1) triggers a series of queue operations on the servers (starting with step 2 on the primary server). At the same time, the client registers interest (step 2 on the client) and receives a response from the server. Message B2 applies to an entry in Region A, so the cache listener handles B2’s event. Because B2 comes before the marker, the client does not apply the update to the cache.
 
-<img src="../../images/ClientServerAdvancedTopics-6.gif" alt="Durable client reconnection. " id="implementing_durable_client_server_messaging__image_068A59FA019E46FA9DE0BC7FA60AAADD" class="image" />
+<img src="../../images/ClientServerAdvancedTopics-6.png" alt="Durable client reconnection. " class="image" />
 
 ## <a id="implementing_durable_client_server_messaging__section_C848DF6D649F4DCAA2B895F5439BAA97" class="no-quick-link"></a>Durable Event Replay
 
