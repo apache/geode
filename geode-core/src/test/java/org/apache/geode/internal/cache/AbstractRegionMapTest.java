@@ -65,7 +65,7 @@ public class AbstractRegionMapTest {
     when(arm.owner.isInitialized()).thenReturn(true);
 
     assertThatThrownBy(() -> arm.invalidate(event, true, false, false))
-    .isInstanceOf(EntryNotFoundException.class);
+        .isInstanceOf(EntryNotFoundException.class);
     verify(arm.owner, never()).basicInvalidatePart2(any(), any(), anyBoolean(), anyBoolean());
     verify(arm.owner, never()).invokeInvalidateCallbacks(any(), any(), anyBoolean());
   }
@@ -79,7 +79,7 @@ public class AbstractRegionMapTest {
       when(arm.owner.isInitialized()).thenReturn(true);
 
       assertThatThrownBy(() -> arm.invalidate(event, true, false, false))
-      .isInstanceOf(EntryNotFoundException.class);
+          .isInstanceOf(EntryNotFoundException.class);
       verify(arm.owner, never()).basicInvalidatePart2(any(), any(), anyBoolean(), anyBoolean());
       verify(arm.owner, times(1)).invokeInvalidateCallbacks(any(), any(), anyBoolean());
     } finally {
@@ -95,7 +95,7 @@ public class AbstractRegionMapTest {
     // invalidate on region that is not initialized should create
     // entry in map as invalid.
     assertThatThrownBy(() -> arm.invalidate(event, true, false, false))
-    .isInstanceOf(EntryNotFoundException.class);
+        .isInstanceOf(EntryNotFoundException.class);
 
     when(arm.owner.isInitialized()).thenReturn(true);
     assertFalse(arm.invalidate(event, true, false, false));
@@ -113,7 +113,7 @@ public class AbstractRegionMapTest {
       // invalidate on region that is not initialized should create
       // entry in map as invalid.
       assertThatThrownBy(() -> arm.invalidate(event, true, false, false))
-      .isInstanceOf(EntryNotFoundException.class);
+          .isInstanceOf(EntryNotFoundException.class);
 
       when(arm.owner.isInitialized()).thenReturn(true);
       assertFalse(arm.invalidate(event, true, false, false));
@@ -179,17 +179,26 @@ public class AbstractRegionMapTest {
     TestableAbstractRegionMap arm = new TestableAbstractRegionMap();
     EntryEventImpl event = createEventForDestroy(arm.owner);
     assertThatThrownBy(() -> arm.destroy(event, false, false, false, false, null, false))
-    .isInstanceOf(EntryNotFoundException.class);
+        .isInstanceOf(EntryNotFoundException.class);
   }
 
   @Test
   public void destroyWithEmptyRegionInTokenModeAddsAToken() {
-    TestableAbstractRegionMap arm = new TestableAbstractRegionMap();
-    EntryEventImpl event = createEventForDestroy(arm.owner);
-    assertThat(arm.destroy(event, true, false, false, false, null, false)).isTrue();
+    final TestableAbstractRegionMap arm = new TestableAbstractRegionMap();
+    final EntryEventImpl event = createEventForDestroy(arm.owner);
+    final Object expectedOldValue = null;
+    final boolean inTokenMode = true;
+    final boolean duringRI = false;
+    assertThat(arm.destroy(event, inTokenMode, duringRI, false, false, expectedOldValue, false))
+        .isTrue();
     assertThat(arm._getMap().containsKey(event.getKey())).isTrue();
     RegionEntry re = (RegionEntry) arm._getMap().get(event.getKey());
     assertThat(re.getValueAsToken()).isEqualTo(Token.DESTROYED);
+    boolean invokeCallbacks = true;
+    verify(arm.owner, times(1)).basicDestroyPart2(any(), eq(event), eq(inTokenMode), eq(false),
+        eq(duringRI), eq(invokeCallbacks));
+    verify(arm.owner, times(1)).basicDestroyPart3(any(), eq(event), eq(inTokenMode), eq(duringRI),
+        eq(invokeCallbacks), eq(expectedOldValue));
   }
 
   private static class TestableAbstractRegionMap extends AbstractRegionMap {
