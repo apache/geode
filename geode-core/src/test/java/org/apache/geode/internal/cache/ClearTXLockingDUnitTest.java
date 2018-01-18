@@ -256,8 +256,9 @@ public class ClearTXLockingDUnitTest extends JUnit4CacheTestCase {
    */
   private static void regionOperationWait(CountDownLatch latch) throws InterruptedException {
     latch.await();
-    /*regionLatch = new CountDownLatch(1);
-    regionLatch.await();*/
+    /*
+     * regionLatch = new CountDownLatch(1); regionLatch.await();
+     */
   }
 
   /*
@@ -311,7 +312,7 @@ public class ClearTXLockingDUnitTest extends JUnit4CacheTestCase {
     return vm.invoke(() -> {
       cache = getCache(new CacheFactory().set("conserve-sockets", "true"));
       return getSystem().getDistributedMember();
-      });
+    });
   }
 
   private static void createRegion(String rgnName) {
