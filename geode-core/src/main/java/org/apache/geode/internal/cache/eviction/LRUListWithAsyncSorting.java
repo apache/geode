@@ -85,14 +85,13 @@ public class LRUListWithAsyncSorting extends AbstractEvictionList {
     return Executors.newFixedThreadPool(threads, threadFactory);
   }
 
-  LRUListWithAsyncSorting(InternalEvictionStatistics stats, BucketRegion region) {
-    this(stats, region, SINGLETON_EXECUTOR);
+  LRUListWithAsyncSorting(EvictionController controller) {
+    this(controller, SINGLETON_EXECUTOR);
     logger.info("Using experimental LRUListWithAsyncSorting");
   }
 
-  LRUListWithAsyncSorting(InternalEvictionStatistics stats, BucketRegion region,
-      ExecutorService executor) {
-    super(stats, region);
+  LRUListWithAsyncSorting(EvictionController controller, ExecutorService executor) {
+    super(controller);
     this.scanThreshold = calculateScanThreshold();
     this.executor = executor;
   }
@@ -111,8 +110,8 @@ public class LRUListWithAsyncSorting extends AbstractEvictionList {
   }
 
   @Override
-  public void clear(RegionVersionVector regionVersionVector) {
-    super.clear(regionVersionVector);
+  public void clear(RegionVersionVector regionVersionVector, BucketRegion bucketRegion) {
+    super.clear(regionVersionVector, bucketRegion);
     recentlyUsedCounter.set(0);
   }
 
@@ -151,7 +150,7 @@ public class LRUListWithAsyncSorting extends AbstractEvictionList {
       }
       if (evictionNode.isRecentlyUsed()) {
         scanIfNeeded();
-        stats.incGreedyReturns(1);
+        getStatistics().incGreedyReturns(1);
       }
       return (EvictableEntry) evictionNode;
     }

@@ -27,7 +27,6 @@ import org.apache.geode.internal.ByteArrayDataInput;
 import org.apache.geode.internal.HeapDataOutputStream;
 import org.apache.geode.internal.Version;
 import org.apache.geode.internal.cache.AbstractDiskRegion;
-import org.apache.geode.internal.cache.AbstractLRURegionMap;
 import org.apache.geode.internal.cache.BucketRegion;
 import org.apache.geode.internal.cache.CachedDeserializable;
 import org.apache.geode.internal.cache.CachedDeserializableFactory;
@@ -938,7 +937,7 @@ public interface DiskEntry extends RegionEntry {
           } else {
             // If we have concurrency checks enabled for a persistent region, we need
             // to add an entry to the async queue for every update to maintain the RVV
-            boolean maintainRVV = region.isConcurrencyChecksEnabled();
+            boolean maintainRVV = region.getConcurrencyChecksEnabled();
 
             if (!did.isPendingAsync() || maintainRVV) {
               // if the entry is not async, we need to schedule it
@@ -1185,7 +1184,7 @@ public interface DiskEntry extends RegionEntry {
       try {
         if (recoveryStore.getEvictionAttributes() != null
             && recoveryStore.getEvictionAttributes().getAlgorithm().isLIFO()) {
-          ((AbstractLRURegionMap) recoveryStore.getRegionMap()).updateStats();
+          recoveryStore.getRegionMap().updateEvictionCounter();
           return;
         }
         // this must be done after releasing synchronization
@@ -1571,7 +1570,7 @@ public interface DiskEntry extends RegionEntry {
       } else {
         // If we have concurrency checks enabled for a persistent region, we need
         // to add an entry to the async queue for every update to maintain the RVV
-        boolean maintainRVV = region.isConcurrencyChecksEnabled() && dr.isBackup();
+        boolean maintainRVV = region.getConcurrencyChecksEnabled() && dr.isBackup();
         if (!did.isPendingAsync() || maintainRVV) {
           did.setPendingAsync(true);
           VersionTag tag = null;

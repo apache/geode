@@ -14,26 +14,35 @@
  */
 package org.apache.geode.internal.cache.eviction;
 
-interface InternalEvictionStatistics extends EvictionStatistics {
+import org.apache.geode.Statistics;
 
-  void close();
+public interface EvictionCounters {
 
-  void setLimit(long newValue);
-
-  /** destroy limit */
-  void setDestroysLimit(long newValue);
-
-  long getDestroysLimit();
-
-  long getDestroys();
-
-  void resetCounter();
+  long getCounter();
 
   void decrementCounter(long delta);
 
-  void incEvictions(long delta);
+  void updateCounter(long delta);
+
+  void resetCounter();
+
+  long getLimit();
+
+  void setLimit(long newValue);
+
+  long getEvictions();
+
+  void incEvictions();
+
+  long getDestroys();
+
+  void incDestroys();
 
   void incEvaluations(long evaluations);
 
   void incGreedyReturns(long greedyReturns);
+
+  Statistics getStatistics();
+
+  void close();
 }

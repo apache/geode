@@ -64,4 +64,6 @@ public interface EvictableMap {
    * Called when an entry is faulted in from disk.
    */
   void lruEntryFaultIn(EvictableEntry entry);
+
+  EvictionController getEvictionController();
 }

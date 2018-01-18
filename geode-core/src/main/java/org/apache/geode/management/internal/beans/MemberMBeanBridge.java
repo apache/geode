@@ -70,12 +70,13 @@ import org.apache.geode.internal.cache.DiskRegion;
 import org.apache.geode.internal.cache.DiskStoreImpl;
 import org.apache.geode.internal.cache.DiskStoreStats;
 import org.apache.geode.internal.cache.InternalCache;
+import org.apache.geode.internal.cache.InternalRegion;
 import org.apache.geode.internal.cache.LocalRegion;
 import org.apache.geode.internal.cache.PartitionedRegion;
 import org.apache.geode.internal.cache.PartitionedRegionStats;
 import org.apache.geode.internal.cache.backup.BackupManager;
 import org.apache.geode.internal.cache.control.ResourceManagerStats;
-import org.apache.geode.internal.cache.eviction.EvictionStatistics;
+import org.apache.geode.internal.cache.eviction.EvictionCounters;
 import org.apache.geode.internal.cache.execute.FunctionServiceStats;
 import org.apache.geode.internal.i18n.LocalizedStrings;
 import org.apache.geode.internal.logging.LogService;
@@ -512,15 +513,9 @@ public class MemberMBeanBridge {
       addPartionRegionStats(((PartitionedRegion) region).getPrStats());
     }
 
-    LocalRegion l = (LocalRegion) region;
-    if (l.getEvictionController() != null) {
-      EvictionStatistics stats = l.getEvictionController().getStatistics();
-      if (stats != null) {
-        addLRUStats(stats);
-      }
-    }
-
-    DiskRegion dr = l.getDiskRegion();
+    InternalRegion<?, ?> internalRegion = (InternalRegion<?, ?>) region;
+    addLRUStats(internalRegion.getEvictionStatistics());
+    DiskRegion dr = internalRegion.getDiskRegion();
     if (dr != null) {
       for (DirectoryHolder dh : dr.getDirectories()) {
         addDirectoryStats(dh.getDiskDirectoryStats());
@@ -532,8 +527,10 @@ public class MemberMBeanBridge {
     regionMonitor.addStatisticsToMonitor(parStats.getStats());
   }
 
-  public void addLRUStats(EvictionStatistics lruStats) {
-    regionMonitor.addStatisticsToMonitor(lruStats.getStats());
+  public void addLRUStats(Statistics lruStats) {
+    if (lruStats != null) {
+      regionMonitor.addStatisticsToMonitor(lruStats);
+    }
   }
 
   public void addDirectoryStats(DiskDirectoryStats diskDirStats) {
@@ -546,12 +543,7 @@ public class MemberMBeanBridge {
     }
 
     LocalRegion l = (LocalRegion) region;
-    if (l.getEvictionController() != null) {
-      EvictionStatistics stats = l.getEvictionController().getStatistics();
-      if (stats != null) {
-        removeLRUStats(stats);
-      }
-    }
+    removeLRUStats(l.getEvictionStatistics());
 
     DiskRegion dr = l.getDiskRegion();
     if (dr != null) {
@@ -565,8 +557,10 @@ public class MemberMBeanBridge {
     regionMonitor.removePartitionStatistics(parStats.getStats());
   }
 
-  public void removeLRUStats(EvictionStatistics lruStats) {
-    regionMonitor.removeLRUStatistics(lruStats.getStats());
+  public void removeLRUStats(Statistics statistics) {
+    if (statistics != null) {
+      regionMonitor.removeLRUStatistics(statistics);
+    }
   }
 
   public void removeDirectoryStats(DiskDirectoryStats diskDirStats) {

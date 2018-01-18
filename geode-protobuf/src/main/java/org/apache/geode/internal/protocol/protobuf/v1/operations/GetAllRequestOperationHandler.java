@@ -59,6 +59,7 @@ public class GetAllRequestOperationHandler
           .of(ProtobufResponseUtilities.makeErrorResponse(SERVER_ERROR, "Region not found"));
     }
 
+    long startTime = messageExecutionContext.getStatistics().startOperation();
     Map<Boolean, List<Object>> resultsCollection;
     try {
       ((InternalCache) messageExecutionContext.getCache()).setReadSerializedForCurrentThread(true);
@@ -68,6 +69,7 @@ public class GetAllRequestOperationHandler
           .collect(Collectors.partitioningBy(x -> x instanceof BasicTypes.Entry));
     } finally {
       ((InternalCache) messageExecutionContext.getCache()).setReadSerializedForCurrentThread(false);
+      messageExecutionContext.getStatistics().endOperation(startTime);
     }
     RegionAPI.GetAllResponse.Builder responseBuilder = RegionAPI.GetAllResponse.newBuilder();
 

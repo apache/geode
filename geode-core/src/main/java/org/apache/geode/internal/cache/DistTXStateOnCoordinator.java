@@ -333,8 +333,9 @@ public class DistTXStateOnCoordinator extends DistTXState implements DistTXCoord
       if (dtop.op.isPutAll()) {
         assert (dtop.getPutAllOperation() != null);
         // [DISTTX] TODO what do with versions next?
-        final VersionedObjectList versions = new VersionedObjectList(
-            dtop.getPutAllOperation().putAllDataSize, true, dtop.region.concurrencyChecksEnabled);
+        final VersionedObjectList versions =
+            new VersionedObjectList(dtop.getPutAllOperation().putAllDataSize, true,
+                dtop.region.getConcurrencyChecksEnabled());
         postPutAll(dtop.getPutAllOperation(), versions, dtop.region);
       } else {
         result = putEntry(dtop, false/* ifNew */, false/* ifOld */, null/* expectedOldValue */,
@@ -348,7 +349,7 @@ public class DistTXStateOnCoordinator extends DistTXState implements DistTXCoord
         // [DISTTX] TODO what do with versions next?
         final VersionedObjectList versions =
             new VersionedObjectList(dtop.getRemoveAllOperation().removeAllDataSize, true,
-                dtop.region.concurrencyChecksEnabled);
+                dtop.region.getConcurrencyChecksEnabled());
         postRemoveAll(dtop.getRemoveAllOperation(), versions, dtop.region);
       } else {
         destroyExistingEntry(dtop, false/* TODO [DISTTX] */, null/*

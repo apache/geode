@@ -370,7 +370,7 @@ public class RemotePutAllMessage extends RemoteOperationMessageWithDirectReply {
           new DistributedPutAllOperation(baseEvent, putAllDataCount, false);
       try {
         final VersionedObjectList versions =
-            new VersionedObjectList(putAllDataCount, true, dr.concurrencyChecksEnabled);
+            new VersionedObjectList(putAllDataCount, true, dr.getConcurrencyChecksEnabled());
         dr.syncBulkOp(new Runnable() {
           @SuppressWarnings("synthetic-access")
           public void run() {

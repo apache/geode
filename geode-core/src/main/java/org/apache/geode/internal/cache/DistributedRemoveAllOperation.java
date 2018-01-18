@@ -215,7 +215,7 @@ public class DistributedRemoveAllOperation extends AbstractUpdateOperation {
     try {
       ev.setPossibleDuplicate(entry.isPossibleDuplicate());
       ev.setIsRedestroyedEntry(entry.getRedestroyedEntry());
-      if (entry.versionTag != null && region.concurrencyChecksEnabled) {
+      if (entry.versionTag != null && region.getConcurrencyChecksEnabled()) {
         VersionSource id = entry.versionTag.getMemberID();
         if (id != null) {
           entry.versionTag.setMemberID(ev.getRegion().getVersionVector().getCanonicalId(id));
@@ -741,7 +741,7 @@ public class DistributedRemoveAllOperation extends AbstractUpdateOperation {
     // thread, so
     // we require an ACK if concurrency checks are enabled to make sure that the previous op has
     // finished first.
-    return super.shouldAck() || getRegion().concurrencyChecksEnabled;
+    return super.shouldAck() || getRegion().getConcurrencyChecksEnabled();
   }
 
   private RemoveAllEntryData[] selectVersionlessEntries() {

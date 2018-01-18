@@ -326,7 +326,7 @@ public class InitialImageOperation {
       Set keysOfUnfinishedOps = null;
       RegionVersionVector received_rvv = null;
       RegionVersionVector remote_rvv = null;
-      if (this.region.concurrencyChecksEnabled
+      if (this.region.getConcurrencyChecksEnabled()
           && recipient.getVersionObject().compareTo(Version.GFE_80) >= 0) {
         if (internalBeforeRequestRVV != null
             && internalBeforeRequestRVV.getRegionName().equals(this.region.getName())) {
@@ -430,7 +430,7 @@ public class InitialImageOperation {
       m.targetReinitialized = targetReinitialized;
       m.setRecipient(recipient);
 
-      if (this.region.concurrencyChecksEnabled) {
+      if (this.region.getConcurrencyChecksEnabled()) {
         if (allowDeltaGII && recoveredFromDisk) {
           if (!this.region.getDiskRegion().getRVVTrusted()) {
             if (isDebugEnabled) {
@@ -699,7 +699,7 @@ public class InitialImageOperation {
     // We have to check all of the received versions for members that
     // left during GII to see if the RVV contains them.
     RegionVersionVector rvv = this.region.getVersionVector();
-    if (this.region.concurrencyChecksEnabled && rvv != null) {
+    if (this.region.getConcurrencyChecksEnabled() && rvv != null) {
       ImageState state = this.region.getImageState();
       if (state.hasLeftMembers()) {
         Set<VersionSource> needsSync = null;
@@ -1722,14 +1722,14 @@ public class InitialImageOperation {
             }
           } else if (getSender().getVersionObject().compareTo(Version.GFE_80) < 0) {
             // older versions of the product expect a RegionStateMessage at this point
-            if (rgn.concurrencyChecksEnabled && this.versionVector == null
+            if (rgn.getConcurrencyChecksEnabled() && this.versionVector == null
                 && !recoveringForLostMember) {
               RegionVersionVector rvv = rgn.getVersionVector().getCloneForTransmission();
               RegionStateMessage.send(dm, getSender(), this.processorId, rvv, false);
             }
           }
           if (this.checkTombstoneVersions && this.versionVector != null
-              && rgn.concurrencyChecksEnabled) {
+              && rgn.getConcurrencyChecksEnabled()) {
             synchronized (rgn.getCache().getTombstoneService().getBlockGCLock()) {
               if (goWithFullGII(rgn, this.versionVector)) {
                 if (isGiiDebugEnabled) {
@@ -1901,8 +1901,8 @@ public class InitialImageOperation {
       ClusterDistributionManager dm = (ClusterDistributionManager) rgn.getDistributionManager();
 
       List chunkEntries = null;
-      chunkEntries =
-          new InitialImageVersionedEntryList(rgn.concurrencyChecksEnabled, MAX_ENTRIES_PER_CHUNK);
+      chunkEntries = new InitialImageVersionedEntryList(rgn.getConcurrencyChecksEnabled(),
+          MAX_ENTRIES_PER_CHUNK);
       DiskRegion dr = rgn.getDiskRegion();
       if (dr != null) {
         dr.setClearCountReference();

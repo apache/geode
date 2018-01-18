@@ -2732,8 +2732,8 @@ public class EntryEventImpl
    * returns true if it is okay to process this event even though it has a null version
    */
   public boolean noVersionReceivedFromServer() {
-    return versionTag == null && region.concurrencyChecksEnabled && region.getServerProxy() != null
-        && !op.isLocal() && !isOriginRemote();
+    return versionTag == null && region.getConcurrencyChecksEnabled()
+        && region.getServerProxy() != null && !op.isLocal() && !isOriginRemote();
   }
 
   /** returns a copy of this event with the additional fields for WAN conflict resolution */

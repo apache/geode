@@ -462,9 +462,6 @@ public class DiskInitFile implements DiskInitFileInterpreter {
         if (drv.getMyPersistentID() != null || drv.getMyInitializingID() != null) {
           // Prepare each region we found in the init file for early recovery.
           if (drv.isBucket() || !getDiskStore().getOwnedByRegion()) {
-            if (drv.isBucket() && !drv.getActualLruAlgorithm().isNone()) {
-              drv.prlruStats = getDiskStore().getOrCreatePRLRUStats(drv);
-            }
             getDiskStore().getStats().incUncreatedRecoveredRegions(1);
             drv.setRecoveredEntryMap(RegionMapFactory.createVM(drv, getDiskStore(),
                 getDiskStore().getInternalRegionArguments()));

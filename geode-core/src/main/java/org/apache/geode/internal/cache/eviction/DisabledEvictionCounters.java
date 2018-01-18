@@ -16,7 +16,7 @@ package org.apache.geode.internal.cache.eviction;
 
 import org.apache.geode.Statistics;
 
-class DisabledEvictionStatistics implements InternalEvictionStatistics {
+class DisabledEvictionCounters implements EvictionCounters {
 
   @Override
   public void close() {
@@ -29,27 +29,12 @@ class DisabledEvictionStatistics implements InternalEvictionStatistics {
   }
 
   @Override
-  public void setDestroysLimit(long newValue) {
-    // nothing
-  }
-
-  @Override
-  public long getDestroysLimit() {
-    return 0;
-  }
-
-  @Override
   public void resetCounter() {
     // nothing
   }
 
   @Override
   public void decrementCounter(long delta) {
-    // nothing
-  }
-
-  @Override
-  public void incEvictions(long delta) {
     // nothing
   }
 
@@ -94,7 +79,7 @@ class DisabledEvictionStatistics implements InternalEvictionStatistics {
   }
 
   @Override
-  public Statistics getStats() {
+  public Statistics getStatistics() {
     return null;
   }
 

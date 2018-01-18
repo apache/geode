@@ -37,6 +37,7 @@ import org.apache.geode.internal.cache.AbstractRegionMap.ARMLockTestHook;
 import org.apache.geode.internal.cache.InitialImageOperation.Entry;
 import org.apache.geode.internal.cache.entries.DiskEntry;
 import org.apache.geode.internal.cache.eviction.EvictableEntry;
+import org.apache.geode.internal.cache.eviction.EvictionController;
 import org.apache.geode.internal.cache.eviction.EvictionList;
 import org.apache.geode.internal.cache.persistence.DiskRegionView;
 import org.apache.geode.internal.cache.tier.sockets.ClientProxyMembershipID;
@@ -131,7 +132,7 @@ class ProxyRegionMap implements RegionMap {
 
   @Override
   @SuppressWarnings({"rawtypes", "unchecked"})
-  public Set<VersionSource> clear(RegionVersionVector rvv) {
+  public Set<VersionSource> clear(RegionVersionVector rvv, BucketRegion bucketRegion) {
     // nothing needs to be done
     RegionVersionVector v = this.owner.getVersionVector();
     if (v != null) {
@@ -874,7 +875,7 @@ class ProxyRegionMap implements RegionMap {
   }
 
   @Override
-  public void close() {
+  public void close(BucketRegion bucketRegion) {
     // nothing
   }
 
@@ -892,4 +893,31 @@ class ProxyRegionMap implements RegionMap {
   public void incRecentlyUsed() {
     // nothing
   }
+
+  @Override
+  public EvictionController getEvictionController() {
+    return null;
+  }
+
+  @Override
+  public int getEntryOverhead() {
+    return 0;
+  }
+
+  @Override
+  public boolean beginChangeValueForm(EvictableEntry le,
+      CachedDeserializable vmCachedDeserializable, Object v) {
+    return false;
+  }
+
+  @Override
+  public void finishChangeValueForm() {}
+
+  @Override
+  public int centralizedLruUpdateCallback() {
+    return 0;
+  }
+
+  @Override
+  public void updateEvictionCounter() {}
 }

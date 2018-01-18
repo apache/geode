@@ -92,8 +92,9 @@ import org.apache.geode.internal.cache.backup.BackupManager;
 import org.apache.geode.internal.cache.entries.DiskEntry;
 import org.apache.geode.internal.cache.entries.DiskEntry.Helper.ValueWrapper;
 import org.apache.geode.internal.cache.entries.DiskEntry.RecoveredEntry;
+import org.apache.geode.internal.cache.eviction.AbstractEvictionController;
 import org.apache.geode.internal.cache.eviction.EvictionController;
-import org.apache.geode.internal.cache.eviction.EvictionStatistics;
+import org.apache.geode.internal.cache.eviction.EvictionCounters;
 import org.apache.geode.internal.cache.persistence.BytesAndBits;
 import org.apache.geode.internal.cache.persistence.DiskRecoveryStore;
 import org.apache.geode.internal.cache.persistence.DiskRegionView;
@@ -3946,8 +3947,8 @@ public class DiskStoreImpl implements DiskStore {
     }
   }
 
-  private final HashMap<String, EvictionStatistics> prlruStatMap =
-      new HashMap<String, EvictionStatistics>();
+  private final HashMap<String, EvictionController> prEvictionControllerMap =
+      new HashMap<String, EvictionController>();
 
   /**
    * Lock used to synchronize access to the init file. This is a lock rather than a synchronized
@@ -3959,31 +3960,29 @@ public class DiskStoreImpl implements DiskStore {
     return backupLock;
   }
 
-  EvictionStatistics getOrCreatePRLRUStats(PlaceHolderDiskRegion dr) {
+  EvictionController getOrCreatePRLRUStats(PlaceHolderDiskRegion dr) {
     String prName = dr.getPrName();
-    EvictionStatistics result = null;
-    synchronized (this.prlruStatMap) {
-      result = this.prlruStatMap.get(prName);
+    EvictionController result = null;
+    synchronized (this.prEvictionControllerMap) {
+      result = this.prEvictionControllerMap.get(prName);
       if (result == null) {
-        EvictionAttributesImpl ea = dr.getEvictionAttributes();
-        EvictionController ec = ea.createEvictionController(null, dr.getOffHeap());
-        StatisticsFactory sf = cache.getDistributedSystem();
-        result = ec.initStats(dr, sf);
-        this.prlruStatMap.put(prName, result);
+        result = AbstractEvictionController.create(dr.getEvictionAttributes(), dr.getOffHeap(),
+            dr.getStatisticsFactory(), prName);
+        this.prEvictionControllerMap.put(prName, result);
       }
     }
     return result;
   }
 
   /**
-   * If we have recovered a bucket earlier for the given pr then we will have an EvictionStatistics
+   * If we have recovered a bucket earlier for the given pr then we will have an EvictionController
    * to return for it. Otherwise return null.
    */
-  EvictionStatistics getPRLRUStats(PartitionedRegion pr) {
+  EvictionController getExistingPREvictionContoller(PartitionedRegion pr) {
     String prName = pr.getFullPath();
-    EvictionStatistics result = null;
-    synchronized (this.prlruStatMap) {
-      result = this.prlruStatMap.get(prName);
+    EvictionController result = null;
+    synchronized (this.prEvictionControllerMap) {
+      result = this.prEvictionControllerMap.get(prName);
     }
     return result;
   }
@@ -4544,4 +4543,9 @@ public class DiskStoreImpl implements DiskStore {
   public boolean isDirectoryUsageNormal(DirectoryHolder dir) {
     return getCache().getDiskStoreMonitor().isNormal(this, dir);
   }
+
+  public StatisticsFactory getStatisticsFactory() {
+    return this.cache.getDistributedSystem();
+  }
+
 }
