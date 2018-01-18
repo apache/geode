@@ -20,7 +20,6 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
 import static org.mockito.Mockito.any;
 import static org.mockito.Mockito.anyBoolean;
 import static org.mockito.Mockito.doThrow;
@@ -29,6 +28,7 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyZeroInteractions;
 import static org.mockito.Mockito.when;
 
 import org.junit.Test;
@@ -213,6 +213,35 @@ public class AbstractRegionMapTest {
   }
 
   @Test
+  public void evictDestroyWithEmptyRegionWithConcurrencyChecksDoesNothing() {
+    TestableAbstractRegionMap arm = new TestableAbstractRegionMap();
+    when(arm.owner.getConcurrencyChecksEnabled()).thenReturn(true);
+    EntryEventImpl event = createEventForDestroy(arm.owner);
+    assertThat(arm.destroy(event, false, false, false, true, null, false)).isFalse();
+    verify(arm.owner, never()).basicDestroyPart2(any(), any(), anyBoolean(), anyBoolean(),
+        anyBoolean(), anyBoolean());
+    verify(arm.owner, never()).basicDestroyPart3(any(), any(), anyBoolean(), anyBoolean(),
+        anyBoolean(), any());
+    // This seems to be a bug. We should not leave an entry in the map
+    // added by the destroy call if destroy returns false.
+    assertThat(arm._getMap().containsKey(event.getKey())).isTrue();
+    RegionEntry re = (RegionEntry) arm._getMap().get(event.getKey());
+    assertThat(re.getValueAsToken()).isEqualTo(Token.REMOVED_PHASE1);
+  }
+
+  @Test
+  public void evictDestroyWithEmptyRegionDoesNothing() {
+    TestableAbstractRegionMap arm = new TestableAbstractRegionMap();
+    EntryEventImpl event = createEventForDestroy(arm.owner);
+    assertThat(arm.destroy(event, false, false, false, true, null, false)).isFalse();
+    verify(arm.owner, never()).basicDestroyPart2(any(), any(), anyBoolean(), anyBoolean(),
+        anyBoolean(), anyBoolean());
+    verify(arm.owner, never()).basicDestroyPart3(any(), any(), anyBoolean(), anyBoolean(),
+        anyBoolean(), any());
+    assertThat(arm._getMap().containsKey(event.getKey())).isFalse();
+  }
+
+  @Test
   public void destroyWithEmptyRegionWithConcurrencyChecksAddsATombstone() {
     final TestableAbstractRegionMap arm = new TestableAbstractRegionMap();
     when(arm.owner.getConcurrencyChecksEnabled()).thenReturn(true);
@@ -241,31 +270,31 @@ public class AbstractRegionMapTest {
   }
 
 
-  // @Test
-  // public void destroyWithEmptyRegionWithConcurrencyChecksAndNullVersionTagAddsATombstone() {
-  // final TestableAbstractRegionMap arm = new TestableAbstractRegionMap();
-  // when(arm.owner.getConcurrencyChecksEnabled()).thenReturn(true);
-  // final EntryEventImpl event = createEventForDestroy(arm.owner);
-  // event.setOriginRemote(true);
-  // final Object expectedOldValue = null;
-  // final boolean inTokenMode = false;
-  // final boolean duringRI = false;
-  // assertThat(arm.destroy(event, inTokenMode, duringRI, false, false, expectedOldValue, false))
-  // .isTrue();
-  // assertThat(arm._getMap().containsKey(event.getKey())).isTrue();
-  // RegionEntry re = (RegionEntry) arm._getMap().get(event.getKey());
-  // // instead of a TOMBSTONE we leave an entry whose value is REMOVE_PHASE1
-  // // this should not happen. It is caused by some code in: AbstractRegionEntry.destroy()
-  // // that calls removePhase1 when the versionTag is null.
-  // // It seems like this code path needs to tell the higher levels
-  // // to call removeEntry
-  // assertThat(re.getValueAsToken()).isEqualTo(Token.TOMBSTONE);
-  // boolean invokeCallbacks = true;
-  // verify(arm.owner, times(1)).basicDestroyPart2(any(), eq(event), eq(inTokenMode), eq(false),
-  // eq(duringRI), eq(invokeCallbacks));
-  // verify(arm.owner, times(1)).basicDestroyPart3(any(), eq(event), eq(inTokenMode), eq(duringRI),
-  // eq(invokeCallbacks), eq(expectedOldValue));
-  // }
+  @Test
+  public void destroyWithEmptyRegionWithConcurrencyChecksAndNullVersionTagAddsATombstone() {
+    final TestableAbstractRegionMap arm = new TestableAbstractRegionMap();
+    when(arm.owner.getConcurrencyChecksEnabled()).thenReturn(true);
+    final EntryEventImpl event = createEventForDestroy(arm.owner);
+    event.setOriginRemote(true);
+    final Object expectedOldValue = null;
+    final boolean inTokenMode = false;
+    final boolean duringRI = false;
+    assertThat(arm.destroy(event, inTokenMode, duringRI, false, false, expectedOldValue, false))
+        .isTrue();
+    assertThat(arm._getMap().containsKey(event.getKey())).isTrue();
+    boolean invokeCallbacks = true;
+    verify(arm.owner, times(1)).basicDestroyPart2(any(), eq(event), eq(inTokenMode), eq(false),
+        eq(duringRI), eq(invokeCallbacks));
+    verify(arm.owner, times(1)).basicDestroyPart3(any(), eq(event), eq(inTokenMode), eq(duringRI),
+        eq(invokeCallbacks), eq(expectedOldValue));
+    // instead of a TOMBSTONE we leave an entry whose value is REMOVE_PHASE1
+    // this looks like a bug. It is caused by some code in: AbstractRegionEntry.destroy()
+    // that calls removePhase1 when the versionTag is null.
+    // It seems like this code path needs to tell the higher levels
+    // to call removeEntry
+    RegionEntry re = (RegionEntry) arm._getMap().get(event.getKey());
+    assertThat(re.getValueAsToken()).isEqualTo(Token.REMOVED_PHASE1);
+  }
 
   private static class TestableAbstractRegionMap extends AbstractRegionMap {
 
