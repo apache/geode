@@ -20,15 +20,14 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
-import static org.mockito.Mockito.any;
-import static org.mockito.Mockito.anyBoolean;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyBoolean;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.doThrow;
-import static org.mockito.Mockito.eq;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.verifyZeroInteractions;
 import static org.mockito.Mockito.when;
 
 import org.junit.Test;
@@ -39,10 +38,8 @@ import org.apache.geode.cache.EntryNotFoundException;
 import org.apache.geode.cache.EvictionAttributes;
 import org.apache.geode.cache.Operation;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
-import org.apache.geode.internal.cache.RegionMap.Attributes;
 import org.apache.geode.internal.cache.eviction.EvictionController;
 import org.apache.geode.internal.cache.eviction.EvictionCounters;
-import org.apache.geode.internal.cache.eviction.EvictionList;
 import org.apache.geode.internal.cache.versions.RegionVersionVector;
 import org.apache.geode.internal.cache.versions.VersionHolder;
 import org.apache.geode.internal.cache.versions.VersionTag;
@@ -215,6 +212,23 @@ public class AbstractRegionMapTest {
   }
 
   @Test
+  public void evictDestroyWithEmptyRegionInTokenModeDoesNothing() {
+    final TestableVMLRURegionMap arm = new TestableVMLRURegionMap(true);
+    final EntryEventImpl event = createEventForDestroy(arm._getOwner());
+    final Object expectedOldValue = null;
+    final boolean inTokenMode = true;
+    final boolean duringRI = false;
+    final boolean evict = true;
+    assertThat(arm.destroy(event, inTokenMode, duringRI, false, evict, expectedOldValue, false))
+        .isFalse();
+    assertThat(arm._getMap().containsKey(event.getKey())).isFalse();
+    verify(arm._getOwner(), never()).basicDestroyPart2(any(), any(), anyBoolean(), anyBoolean(),
+        anyBoolean(), anyBoolean());
+    verify(arm._getOwner(), never()).basicDestroyPart3(any(), any(), anyBoolean(), anyBoolean(),
+        anyBoolean(), any());
+  }
+
+  @Test
   public void destroyOfExistingEntryInTokenModeAddsAToken() {
     final TestableAbstractRegionMap arm = new TestableAbstractRegionMap();
     addEntry(arm);
@@ -232,6 +246,55 @@ public class AbstractRegionMapTest {
         eq(false), eq(duringRI), eq(invokeCallbacks));
     verify(arm._getOwner(), times(1)).basicDestroyPart3(any(), eq(event), eq(inTokenMode),
         eq(duringRI), eq(invokeCallbacks), eq(expectedOldValue));
+  }
+
+  @Test
+  public void destroyOfExistingTombstoneInTokenModeWithConcurrencyChecksDoesNothing() {
+    final TestableAbstractRegionMap arm = new TestableAbstractRegionMap(true);
+    RegionVersionVector<?> versionVector = mock(RegionVersionVector.class);
+    when(arm._getOwner().getVersionVector()).thenReturn(versionVector);
+    CachePerfStats cachePerfStats = mock(CachePerfStats.class);
+    when(arm._getOwner().getCachePerfStats()).thenReturn(cachePerfStats);
+    final EntryEventImpl event = createEventForDestroy(arm._getOwner());
+    VersionTag<?> versionTag = mock(VersionTag.class);
+    when(versionTag.hasValidVersion()).thenReturn(true);
+    event.setVersionTag(versionTag);
+    addEntry(arm, Token.TOMBSTONE);
+    final Object expectedOldValue = null;
+    final boolean inTokenMode = true;
+    final boolean duringRI = false;
+    assertThat(arm.destroy(event, inTokenMode, duringRI, false, false, expectedOldValue, false))
+        .isTrue();
+    assertThat(arm._getMap().containsKey(event.getKey())).isTrue();
+    RegionEntry re = (RegionEntry) arm._getMap().get(event.getKey());
+    // why not DESTROY token?
+    assertThat(re.getValueAsToken()).isEqualTo(Token.TOMBSTONE);
+    // since it was already destroyed why do we do the parts?
+    boolean invokeCallbacks = true;
+    verify(arm._getOwner(), times(1)).basicDestroyPart2(any(), eq(event), eq(inTokenMode),
+        eq(false), eq(duringRI), eq(invokeCallbacks));
+    verify(arm._getOwner(), times(1)).basicDestroyPart3(any(), eq(event), eq(inTokenMode),
+        eq(duringRI), eq(invokeCallbacks), eq(expectedOldValue));
+  }
+
+  @Test
+  public void destroyOfExistingTombstoneWithConcurrencyChecksThrowsEntryNotFound() {
+    final TestableAbstractRegionMap arm = new TestableAbstractRegionMap(true);
+    RegionVersionVector<?> versionVector = mock(RegionVersionVector.class);
+    when(arm._getOwner().getVersionVector()).thenReturn(versionVector);
+    CachePerfStats cachePerfStats = mock(CachePerfStats.class);
+    when(arm._getOwner().getCachePerfStats()).thenReturn(cachePerfStats);
+    final EntryEventImpl event = createEventForDestroy(arm._getOwner());
+    VersionTag<?> versionTag = mock(VersionTag.class);
+    when(versionTag.hasValidVersion()).thenReturn(true);
+    event.setVersionTag(versionTag);
+    addEntry(arm, Token.TOMBSTONE);
+    final Object expectedOldValue = null;
+    final boolean inTokenMode = false;
+    final boolean duringRI = false;
+    assertThatThrownBy(
+        () -> arm.destroy(event, inTokenMode, duringRI, false, false, expectedOldValue, false))
+            .isInstanceOf(EntryNotFoundException.class);
   }
 
   @Test
@@ -329,7 +392,11 @@ public class AbstractRegionMapTest {
 
 
   private void addEntry(AbstractRegionMap arm) {
-    RegionEntry entry = arm.getEntryFactory().createEntry(arm._getOwner(), KEY, "value");
+    addEntry(arm, "value");
+  }
+
+  private void addEntry(AbstractRegionMap arm, Object value) {
+    RegionEntry entry = arm.getEntryFactory().createEntry(arm._getOwner(), KEY, value);
     arm._getMap().put(KEY, entry);
   }
 
