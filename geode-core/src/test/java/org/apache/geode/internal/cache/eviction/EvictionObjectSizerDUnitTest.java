@@ -38,10 +38,10 @@ import org.apache.geode.cache.util.ObjectSizer;
 import org.apache.geode.distributed.DistributedSystem;
 import org.apache.geode.internal.OSProcess;
 import org.apache.geode.internal.SharedLibrary;
-import org.apache.geode.internal.cache.AbstractLRURegionMap;
 import org.apache.geode.internal.cache.BucketRegion;
 import org.apache.geode.internal.cache.CachedDeserializableFactory;
 import org.apache.geode.internal.cache.PartitionedRegion;
+import org.apache.geode.internal.cache.RegionMap;
 import org.apache.geode.internal.cache.TestNonSizerObject;
 import org.apache.geode.internal.cache.TestObjectSizerImpl;
 import org.apache.geode.internal.cache.entries.AbstractLRURegionEntry;
@@ -97,7 +97,7 @@ public class EvictionObjectSizerDUnitTest extends CacheTestCase {
             .getPerEntryOverhead();
     verifySize("PR1", 2, entrySize);
     assertEquals(2 * entrySize,
-        ((PartitionedRegion) region).getEvictionController().getStatistics().getCounter());
+        ((PartitionedRegion) region).getEvictionController().getCounters().getCounter());
   }
 
   /**
@@ -202,7 +202,7 @@ public class EvictionObjectSizerDUnitTest extends CacheTestCase {
             .getPerEntryOverhead());
     assertEquals(expected, getSizeOfCustomizedData(1));
     assertEquals(expected,
-        ((PartitionedRegion) region).getEvictionController().getStatistics().getCounter());
+        ((PartitionedRegion) region).getEvictionController().getCounters().getCounter());
   }
 
   /**
@@ -223,7 +223,7 @@ public class EvictionObjectSizerDUnitTest extends CacheTestCase {
             .getPerEntryOverhead());
     assertEquals(expected, getSizeOfCustomizedObject(new TestNonSizerObject("1")));
     assertEquals(expected,
-        ((PartitionedRegion) region).getEvictionController().getStatistics().getCounter());
+        ((PartitionedRegion) region).getEvictionController().getCounters().getCounter());
   }
 
   private void prepareScenario(EvictionAlgorithm evictionAlgorithm, ObjectSizer sizer) {
@@ -303,7 +303,7 @@ public class EvictionObjectSizerDUnitTest extends CacheTestCase {
       if (bucketRegion == null) {
         continue;
       } else {
-        AbstractLRURegionMap map = (AbstractLRURegionMap) bucketRegion.entries;
+        RegionMap map = bucketRegion.getRegionMap();
         if (map == null || map.size() == 0) {
           continue;
         }
@@ -337,7 +337,7 @@ public class EvictionObjectSizerDUnitTest extends CacheTestCase {
       if (bucketRegion == null) {
         continue;
       } else {
-        AbstractLRURegionMap map = (AbstractLRURegionMap) bucketRegion.entries;
+        RegionMap map = bucketRegion.getRegionMap();
         return ((AbstractLRURegionEntry) map.getEntry(new Integer(counter))).getEntrySize();
       }
     }
@@ -353,7 +353,7 @@ public class EvictionObjectSizerDUnitTest extends CacheTestCase {
       if (bucketRegion == null) {
         continue;
       } else {
-        AbstractLRURegionMap map = (AbstractLRURegionMap) bucketRegion.entries;
+        RegionMap map = bucketRegion.getRegionMap();
         AbstractLRURegionEntry re = (AbstractLRURegionEntry) map.getEntry(object);
         if (re != null) {
           return re.getEntrySize();

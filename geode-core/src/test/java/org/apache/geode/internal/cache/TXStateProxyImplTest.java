@@ -48,8 +48,8 @@ public class TXStateProxyImplTest {
 
   @Test
   public void getKeyForIteratorReturnsKey() {
-    RegionEntryFactory regionEntryFactory = new RegionEntryFactoryBuilder()
-        .getRegionEntryFactoryOrNull(false, false, false, false, false);
+    RegionEntryFactory regionEntryFactory =
+        new RegionEntryFactoryBuilder().create(false, false, false, false, false);
     RegionEntry regionEntry = regionEntryFactory.createEntry(region, key, null);
 
     KeyInfo stringKeyInfo = new KeyInfo(key, null, null);

@@ -26,18 +26,18 @@ import org.junit.experimental.categories.Category;
 import org.apache.geode.test.junit.categories.UnitTest;
 
 @Category(UnitTest.class)
-public class AbstractLRURegionMapTest {
+public class VMLRURegionMapTest {
 
   @Test
   public void shouldBeMockable() throws Exception {
-    AbstractLRURegionMap mockAbstractLRURegionMap = mock(AbstractLRURegionMap.class);
+    VMLRURegionMap mockVMLRURegionMap = mock(VMLRURegionMap.class);
 
-    when(mockAbstractLRURegionMap.centralizedLruUpdateCallback()).thenReturn(1);
+    when(mockVMLRURegionMap.centralizedLruUpdateCallback()).thenReturn(1);
 
-    mockAbstractLRURegionMap.changeTotalEntrySize(1);
+    mockVMLRURegionMap.changeTotalEntrySize(1);
 
-    verify(mockAbstractLRURegionMap, times(1)).changeTotalEntrySize(1);
+    verify(mockVMLRURegionMap, times(1)).changeTotalEntrySize(1);
 
-    assertThat(mockAbstractLRURegionMap.centralizedLruUpdateCallback()).isEqualTo(1);
+    assertThat(mockVMLRURegionMap.centralizedLruUpdateCallback()).isEqualTo(1);
   }
 }

@@ -51,6 +51,7 @@ import org.apache.geode.internal.cache.entries.AbstractRegionEntry;
 import org.apache.geode.internal.cache.entries.DiskEntry;
 import org.apache.geode.internal.cache.entries.OffHeapRegionEntry;
 import org.apache.geode.internal.cache.eviction.EvictableEntry;
+import org.apache.geode.internal.cache.eviction.EvictionController;
 import org.apache.geode.internal.cache.ha.HAContainerWrapper;
 import org.apache.geode.internal.cache.ha.HARegionQueue;
 import org.apache.geode.internal.cache.persistence.DiskRegionView;
@@ -79,6 +80,7 @@ import org.apache.geode.internal.offheap.annotations.Released;
 import org.apache.geode.internal.offheap.annotations.Retained;
 import org.apache.geode.internal.offheap.annotations.Unretained;
 import org.apache.geode.internal.sequencelog.EntryLogger;
+import org.apache.geode.internal.size.ReflectionSingleObjectSizer;
 import org.apache.geode.internal.util.BlobHelper;
 import org.apache.geode.internal.util.concurrent.CustomEntryConcurrentHashMap;
 
@@ -134,8 +136,8 @@ public abstract class AbstractRegionMap implements RegionMap {
       throw new IllegalStateException("expected LocalRegion or PlaceHolderDiskRegion");
     }
 
-    setEntryFactory(new RegionEntryFactoryBuilder().getRegionEntryFactoryOrNull(
-        attr.statisticsEnabled, isLRU, isDisk, withVersioning, offHeap));
+    setEntryFactory(new RegionEntryFactoryBuilder().create(attr.statisticsEnabled, isLRU, isDisk,
+        withVersioning, offHeap));
   }
 
   private CustomEntryConcurrentHashMap<Object, Object> createConcurrentMap(int initialCapacity,
@@ -347,8 +349,8 @@ public abstract class AbstractRegionMap implements RegionMap {
   }
 
   @Override
-  public void close() {
-    clear(null);
+  public void close(BucketRegion bucketRegion) {
+    clear(null, bucketRegion);
   }
 
   /**
@@ -356,7 +358,7 @@ public abstract class AbstractRegionMap implements RegionMap {
    * remaining tags
    */
   @Override
-  public Set<VersionSource> clear(RegionVersionVector rvv) {
+  public Set<VersionSource> clear(RegionVersionVector rvv, BucketRegion bucketRegion) {
     Set<VersionSource> result = new HashSet<VersionSource>();
 
     if (!_isOwnerALocalRegion()) {
@@ -3926,6 +3928,33 @@ public abstract class AbstractRegionMap implements RegionMap {
     // nothing by default
   }
 
+  @Override
+  public EvictionController getEvictionController() {
+    return null;
+  }
+
+  @Override
+  public int getEntryOverhead() {
+    return (int) ReflectionSingleObjectSizer.sizeof(getEntryFactory().getEntryClass());
+  }
+
+  @Override
+  public boolean beginChangeValueForm(EvictableEntry le,
+      CachedDeserializable vmCachedDeserializable, Object v) {
+    return false;
+  }
+
+  @Override
+  public void finishChangeValueForm() {}
+
+  @Override
+  public int centralizedLruUpdateCallback() {
+    return 0;
+  }
+
+  @Override
+  public void updateEvictionCounter() {}
+
   public interface ARMLockTestHook {
     public void beforeBulkLock(LocalRegion region);
 
@@ -3956,5 +3985,4 @@ public abstract class AbstractRegionMap implements RegionMap {
   public void setARMLockTestHook(ARMLockTestHook theHook) {
     armLockTestHook = theHook;
   }
-
 }

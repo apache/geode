@@ -112,7 +112,6 @@ import org.apache.geode.internal.cache.FixedPartitionAttributesImpl;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.cache.PartitionAttributesImpl;
 import org.apache.geode.internal.cache.PartitionedRegionHelper;
-import org.apache.geode.internal.cache.eviction.CountLRUEviction;
 import org.apache.geode.internal.datasource.ConfigProperty;
 import org.apache.geode.internal.i18n.LocalizedStrings;
 import org.apache.geode.internal.jndi.JNDIInvoker;
@@ -2109,7 +2108,7 @@ public class CacheXmlParser extends CacheXml implements ContentHandler {
    */
   private void startLRUEntryCount(Attributes atts) {
     final String maximum = atts.getValue(MAXIMUM);
-    int max = CountLRUEviction.DEFAULT_MAXIMUM_ENTRIES;
+    int max = EvictionAttributes.DEFAULT_ENTRIES_MAXIMUM;
     if (maximum != null) {
       max = parseInt(maximum);
     }

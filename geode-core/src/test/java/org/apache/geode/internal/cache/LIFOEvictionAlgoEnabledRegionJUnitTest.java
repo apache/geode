@@ -29,8 +29,8 @@ import org.junit.experimental.categories.Category;
 
 import org.apache.geode.cache.*;
 import org.apache.geode.distributed.DistributedSystem;
+import org.apache.geode.internal.cache.eviction.EvictionCounters;
 import org.apache.geode.internal.cache.eviction.EvictionList;
-import org.apache.geode.internal.cache.eviction.EvictionStatistics;
 import org.apache.geode.test.junit.categories.IntegrationTest;
 
 /**
@@ -46,7 +46,7 @@ public class LIFOEvictionAlgoEnabledRegionJUnitTest {
   private static Cache cache = null;
 
   /** Stores LIFO Related Statistics */
-  private static EvictionStatistics lifoStats = null;
+  private static EvictionCounters lifoStats = null;
 
   /** The distributedSystem instance */
   private static DistributedSystem distributedSystem = null;

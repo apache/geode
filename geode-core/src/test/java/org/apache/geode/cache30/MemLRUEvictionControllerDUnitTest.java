@@ -33,7 +33,7 @@ import org.apache.geode.cache.util.ObjectSizer;
 import org.apache.geode.distributed.DistributedSystem;
 import org.apache.geode.internal.SharedLibrary;
 import org.apache.geode.internal.cache.LocalRegion;
-import org.apache.geode.internal.cache.eviction.EvictionStatistics;
+import org.apache.geode.internal.cache.eviction.EvictionCounters;
 import org.apache.geode.internal.cache.eviction.MemoryLRUController;
 import org.apache.geode.internal.size.ReflectionSingleObjectSizer;
 import org.apache.geode.internal.size.WellKnownClassSizer;
@@ -62,9 +62,9 @@ public class MemLRUEvictionControllerDUnitTest extends JUnit4CacheTestCase {
   /**
    * Returns the <code>EvictionStatistics</code> for the given region
    */
-  private EvictionStatistics getLRUStats(Region region) {
+  private EvictionCounters getLRUStats(Region region) {
     final LocalRegion l = (LocalRegion) region;
-    return l.getEvictionController().getStatistics();
+    return l.getEvictionController().getCounters();
   }
 
   private int getEntryOverhead(Region region) {
@@ -75,7 +75,7 @@ public class MemLRUEvictionControllerDUnitTest extends JUnit4CacheTestCase {
   // ////// Test Methods
 
   /**
-   * Carefully verifies that region operations effect the {@link EvictionStatistics} as expected.
+   * Carefully verifies that region operations effect the {@link EvictionCounters} as expected.
    */
   @Test
   public void testRegionOperations() throws CacheException {
@@ -97,7 +97,7 @@ public class MemLRUEvictionControllerDUnitTest extends JUnit4CacheTestCase {
       region = createRegion(name, factory.create());
     }
 
-    EvictionStatistics lruStats = getLRUStats(region);
+    EvictionCounters lruStats = getLRUStats(region);
     assertNotNull(lruStats);
 
     String sampleKey = new String("10000");
@@ -158,7 +158,7 @@ public class MemLRUEvictionControllerDUnitTest extends JUnit4CacheTestCase {
 
     Region region = createRegion(name, factory.create());
 
-    EvictionStatistics lruStats = getLRUStats(region);
+    EvictionCounters lruStats = getLRUStats(region);
     assertNotNull(lruStats);
 
     TestObject object = new TestObject(50);
