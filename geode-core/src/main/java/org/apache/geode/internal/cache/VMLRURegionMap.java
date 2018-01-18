@@ -58,9 +58,15 @@ class VMLRURegionMap extends AbstractRegionMap {
 
   VMLRURegionMap(EvictableRegion owner, Attributes attr,
       InternalRegionArguments internalRegionArgs) {
+    this(owner, attr, internalRegionArgs, createEvictionController(owner, internalRegionArgs));
+  }
+
+  /** used by unit tests */
+  VMLRURegionMap(EvictableRegion owner, Attributes attr, InternalRegionArguments internalRegionArgs,
+      EvictionController evictionController) {
     super(internalRegionArgs);
     initialize(owner, attr, internalRegionArgs);
-    this.evictionController = createEvictionController(owner, internalRegionArgs);
+    this.evictionController = evictionController;
     getEvictionController().setPerEntryOverhead(getEntryOverhead());
     this.lruList = new EvictionListBuilder(getEvictionController()).create();
   }
