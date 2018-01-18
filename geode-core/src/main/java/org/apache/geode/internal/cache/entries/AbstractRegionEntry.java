@@ -1178,7 +1178,7 @@ public abstract class AbstractRegionEntry implements RegionEntry, HashEntry<Obje
           // try to convert obj to a PdxInstance
           HeapDataOutputStream hdos = new HeapDataOutputStream(Version.CURRENT);
           try {
-            if (InternalDataSerializer.autoSerialized(obj, hdos, cache)
+            if (InternalDataSerializer.autoSerialized(obj, hdos)
                 || InternalDataSerializer.writePdx(hdos, cache, obj, pdxSerializer)) {
               PdxInstance pi = InternalDataSerializer.readPdxInstance(hdos.toByteArray(), cache);
               if (pi != null) {
