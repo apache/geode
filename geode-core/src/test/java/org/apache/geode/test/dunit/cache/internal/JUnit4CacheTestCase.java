@@ -28,6 +28,7 @@ import java.util.concurrent.TimeUnit;
 import org.apache.logging.log4j.Logger;
 import org.awaitility.Awaitility;
 
+import org.apache.geode.CancelException;
 import org.apache.geode.cache.AttributesFactory;
 import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.CacheException;
@@ -389,8 +390,13 @@ public abstract class JUnit4CacheTestCase extends JUnit4DistributedTestCase
    */
   private static void waitForNoRebalancing() {
     if (cache != null) {
-      Awaitility.await().atMost(10, TimeUnit.SECONDS)
-          .until(() -> cache.getResourceManager().getRebalanceOperations().size() == 0);
+      Awaitility.await().atMost(10, TimeUnit.SECONDS).until(() -> {
+        try {
+          return cache.getResourceManager().getRebalanceOperations().size() == 0;
+        } catch (CancelException ex) {
+          return true;
+        }
+      });
     }
   }
 
