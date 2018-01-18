@@ -14,29 +14,26 @@
  */
 package org.apache.geode.internal.cache.eviction;
 
-import org.apache.geode.internal.lang.SystemPropertyHelper;
+import org.apache.geode.Statistics;
 
-public class EvictionListBuilder {
+public interface EvictionStats {
 
-  private final boolean EVICTION_SCAN_ASYNC =
-      SystemPropertyHelper.getProductBooleanProperty(SystemPropertyHelper.EVICTION_SCAN_ASYNC);
+  void incEvictions();
 
-  private final EvictionController controller;
+  void updateCounter(long delta);
 
-  public EvictionListBuilder(EvictionController evictionController) {
-    this.controller = evictionController;
-  }
+  Statistics getStatistics();
 
-  public EvictionList create() {
-    if (this.controller.getEvictionAlgorithm().isLIFO()) {
-      return new LIFOList(this.controller);
-    } else {
-      if (EVICTION_SCAN_ASYNC) {
-        return new LRUListWithAsyncSorting(this.controller);
-      } else {
-        return new LRUListWithSyncSorting(this.controller);
-      }
-    }
-  }
+  void incDestroys();
+
+  void close();
+
+  void setLimit(long newValue);
+
+  void setCounter(long l);
+
+  void incEvaluations(long evaluations);
+
+  void incGreedyReturns(long greedyReturns);
 
 }

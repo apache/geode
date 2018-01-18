@@ -892,7 +892,7 @@ public abstract class AbstractRegionEntry implements RegionEntry, HashEntry<Obje
 
       boolean removeEntry = false;
       VersionTag v = event.getVersionTag();
-      if (region.isConcurrencyChecksEnabled() && !removeRecoveredEntry
+      if (region.getConcurrencyChecksEnabled() && !removeRecoveredEntry
           && !event.isFromRILocalDestroy()) {
         // bug #46780, don't retain tombstones for entries destroyed for register-interest
         // Destroy will write a tombstone instead

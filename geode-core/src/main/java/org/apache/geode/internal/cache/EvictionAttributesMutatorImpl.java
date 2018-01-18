@@ -12,31 +12,25 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
-package org.apache.geode.internal.cache.eviction;
+package org.apache.geode.internal.cache;
 
-import org.apache.geode.internal.lang.SystemPropertyHelper;
+import org.apache.geode.cache.EvictionAttributesMutator;
 
-public class EvictionListBuilder {
+public class EvictionAttributesMutatorImpl implements EvictionAttributesMutator {
 
-  private final boolean EVICTION_SCAN_ASYNC =
-      SystemPropertyHelper.getProductBooleanProperty(SystemPropertyHelper.EVICTION_SCAN_ASYNC);
+  private final InternalRegion<?, ?> region;
+  private final EvictionAttributesImpl evictionAttributes;
 
-  private final EvictionController controller;
-
-  public EvictionListBuilder(EvictionController evictionController) {
-    this.controller = evictionController;
+  EvictionAttributesMutatorImpl(InternalRegion<?, ?> region,
+      EvictionAttributesImpl evictionAttributes) {
+    this.region = region;
+    this.evictionAttributes = evictionAttributes;
   }
 
-  public EvictionList create() {
-    if (this.controller.getEvictionAlgorithm().isLIFO()) {
-      return new LIFOList(this.controller);
-    } else {
-      if (EVICTION_SCAN_ASYNC) {
-        return new LRUListWithAsyncSorting(this.controller);
-      } else {
-        return new LRUListWithSyncSorting(this.controller);
-      }
-    }
+  @Override
+  public void setMaximum(int maximum) {
+    this.region.setEvictionMaximum(maximum);
+    this.evictionAttributes.setMaximum(maximum);
   }
 
 }

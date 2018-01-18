@@ -34,7 +34,7 @@ import org.apache.geode.internal.Assert;
 import org.apache.geode.internal.cache.DiskRegion;
 import org.apache.geode.internal.cache.DiskRegionStats;
 import org.apache.geode.internal.cache.LocalRegion;
-import org.apache.geode.internal.cache.eviction.EvictionStatistics;
+import org.apache.geode.internal.cache.eviction.EvictionCounters;
 
 /**
  * A little test program for testing (and debugging) disk regions.
@@ -47,9 +47,9 @@ public class TestDiskRegion {
   /**
    * Returns the <code>EvictionStatistics</code> for the given region
    */
-  private static EvictionStatistics getLRUStats(Region region) {
+  private static EvictionCounters getLRUStats(Region region) {
     final LocalRegion l = (LocalRegion) region;
-    return l.getEvictionController().getStatistics();
+    return l.getEvictionController().getCounters();
   }
 
   public static void main(String[] args) throws Exception {
@@ -70,7 +70,7 @@ public class TestDiskRegion {
     DiskRegion dr = region.getDiskRegion();
     Assert.assertTrue(dr != null);
     DiskRegionStats diskStats = dr.getStats();
-    EvictionStatistics lruStats = getLRUStats(region);
+    EvictionCounters lruStats = getLRUStats(region);
     Assert.assertTrue(diskStats != null);
     Assert.assertTrue(lruStats != null);
 
@@ -156,7 +156,7 @@ public class TestDiskRegion {
     LocalRegion region = (LocalRegion) cache.createRegion("TestDiskRegion", factory.create());
     DiskRegion dr = region.getDiskRegion();
     DiskRegionStats diskStats = dr.getStats();
-    EvictionStatistics lruStats = getLRUStats(region);
+    EvictionCounters lruStats = getLRUStats(region);
 
     BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
     System.out.println("Hit enter to perform action");
@@ -213,7 +213,7 @@ public class TestDiskRegion {
     LocalRegion region = (LocalRegion) cache.createRegion("TestDiskRegion", factory.create());
     // DiskRegion dr = region.getDiskRegion();
     // DiskRegionStats diskStats = dr.getStats();
-    EvictionStatistics lruStats = getLRUStats(region);
+    EvictionCounters lruStats = getLRUStats(region);
 
     for (int i = 0; i < 10000; i++) {
       int[] array = new int[1000];

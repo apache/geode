@@ -32,8 +32,8 @@ public class LRUListWithSyncSorting extends AbstractEvictionList {
 
   private final int maxEntries;
 
-  LRUListWithSyncSorting(InternalEvictionStatistics stats, BucketRegion region) {
-    super(stats, region);
+  public LRUListWithSyncSorting(EvictionController controller) {
+    super(controller);
     this.maxEntries = readMaxEntriesProperty();
   }
 
@@ -63,7 +63,7 @@ public class LRUListWithSyncSorting extends AbstractEvictionList {
       }
 
       if (aNode == null) { // hit the end of the list
-        this.stats.incEvaluations(numEvals);
+        getStatistics().incEvaluations(numEvals);
         return null;
       }
 
@@ -81,7 +81,7 @@ public class LRUListWithSyncSorting extends AbstractEvictionList {
           logger.trace(LogMarker.LRU_CLOCK, LocalizedMessage
               .create(LocalizedStrings.NewLRUClockHand_GREEDILY_PICKING_AN_AVAILABLE_ENTRY));
         }
-        this.stats.incGreedyReturns(1);
+        getStatistics().incGreedyReturns(1);
         // fall through, return this node
       } else if (aNode.isRecentlyUsed()) {
         if (logger.isTraceEnabled(LogMarker.LRU_CLOCK)) {
@@ -100,7 +100,7 @@ public class LRUListWithSyncSorting extends AbstractEvictionList {
       }
 
       // Return the current node.
-      this.stats.incEvaluations(numEvals);
+      getStatistics().incEvaluations(numEvals);
       return (EvictableEntry) aNode;
     } // synchronized
   } // for

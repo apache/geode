@@ -17,6 +17,7 @@ package org.apache.geode.internal.cache;
 import java.io.IOException;
 
 import org.apache.geode.CancelCriterion;
+import org.apache.geode.Statistics;
 import org.apache.geode.cache.CacheWriterException;
 import org.apache.geode.cache.EntryNotFoundException;
 import org.apache.geode.cache.Region;
@@ -97,8 +98,6 @@ public interface InternalRegion<K, V>
 
   IndexManager getIndexManager();
 
-  boolean isConcurrencyChecksEnabled();
-
   boolean isThisRegionBeingClosedOrDestroyed();
 
   CancelCriterion getCancelCriterion();
@@ -118,7 +117,7 @@ public interface InternalRegion<K, V>
   void invokeInvalidateCallbacks(final EnumListenerEvent eventType, final EntryEventImpl event,
       final boolean callDispatchListenerEvent);
 
-  long getEvictions();
+  long getTotalEvictions();
 
   Region createSubregion(String subregionName, RegionAttributes attrs,
       InternalRegionArguments internalRegionArgs)
@@ -127,5 +126,17 @@ public interface InternalRegion<K, V>
   void addCacheServiceProfile(CacheServiceProfile profile);
 
   InternalCache getCache();
+
+  void setEvictionMaximum(int maximum);
+
+  /**
+   * Returns null if the region is not configured for eviction otherwise returns the Statistics used
+   * to measure eviction activity.
+   */
+  Statistics getEvictionStatistics();
+
+  long getEvictionCounter();
+
+  RegionMap getRegionMap();
 
 }

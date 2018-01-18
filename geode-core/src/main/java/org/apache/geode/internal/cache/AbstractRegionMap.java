@@ -51,6 +51,7 @@ import org.apache.geode.internal.cache.entries.AbstractRegionEntry;
 import org.apache.geode.internal.cache.entries.DiskEntry;
 import org.apache.geode.internal.cache.entries.OffHeapRegionEntry;
 import org.apache.geode.internal.cache.eviction.EvictableEntry;
+import org.apache.geode.internal.cache.eviction.EvictionController;
 import org.apache.geode.internal.cache.ha.HAContainerWrapper;
 import org.apache.geode.internal.cache.ha.HARegionQueue;
 import org.apache.geode.internal.cache.persistence.DiskRegionView;
@@ -79,6 +80,7 @@ import org.apache.geode.internal.offheap.annotations.Released;
 import org.apache.geode.internal.offheap.annotations.Retained;
 import org.apache.geode.internal.offheap.annotations.Unretained;
 import org.apache.geode.internal.sequencelog.EntryLogger;
+import org.apache.geode.internal.size.ReflectionSingleObjectSizer;
 import org.apache.geode.internal.util.BlobHelper;
 import org.apache.geode.internal.util.concurrent.CustomEntryConcurrentHashMap;
 
@@ -134,8 +136,8 @@ public abstract class AbstractRegionMap implements RegionMap {
       throw new IllegalStateException("expected LocalRegion or PlaceHolderDiskRegion");
     }
 
-    setEntryFactory(new RegionEntryFactoryBuilder().getRegionEntryFactoryOrNull(
-        attr.statisticsEnabled, isLRU, isDisk, withVersioning, offHeap));
+    setEntryFactory(new RegionEntryFactoryBuilder().create(attr.statisticsEnabled, isLRU, isDisk,
+        withVersioning, offHeap));
   }
 
   private CustomEntryConcurrentHashMap<Object, Object> createConcurrentMap(int initialCapacity,
@@ -347,8 +349,8 @@ public abstract class AbstractRegionMap implements RegionMap {
   }
 
   @Override
-  public void close() {
-    clear(null);
+  public void close(BucketRegion bucketRegion) {
+    clear(null, bucketRegion);
   }
 
   /**
@@ -356,7 +358,7 @@ public abstract class AbstractRegionMap implements RegionMap {
    * remaining tags
    */
   @Override
-  public Set<VersionSource> clear(RegionVersionVector rvv) {
+  public Set<VersionSource> clear(RegionVersionVector rvv, BucketRegion bucketRegion) {
     Set<VersionSource> result = new HashSet<VersionSource>();
 
     if (!_isOwnerALocalRegion()) {
@@ -882,7 +884,7 @@ public abstract class AbstractRegionMap implements RegionMap {
                   oldRe = putEntryIfAbsent(key, newRe);
                 } else {
                   boolean acceptedVersionTag = false;
-                  if (entryVersion != null && owner.concurrencyChecksEnabled) {
+                  if (entryVersion != null && owner.getConcurrencyChecksEnabled()) {
                     Assert.assertTrue(entryVersion.getMemberID() != null,
                         "GII entry versions must have identifiers");
                     try {
@@ -962,7 +964,7 @@ public abstract class AbstractRegionMap implements RegionMap {
             }
             if (!done) {
               boolean versionTagAccepted = false;
-              if (entryVersion != null && owner.concurrencyChecksEnabled) {
+              if (entryVersion != null && owner.getConcurrencyChecksEnabled()) {
                 Assert.assertTrue(entryVersion.getMemberID() != null,
                     "GII entry versions must have identifiers");
                 try {
@@ -1099,7 +1101,7 @@ public abstract class AbstractRegionMap implements RegionMap {
                 "ARM.destroy() inTokenMode={}; duringRI={}; riLocalDestroy={}; withRepl={}; fromServer={}; concurrencyEnabled={}; isOriginRemote={}; isEviction={}; operation={}; re={}",
                 inTokenMode, duringRI, event.isFromRILocalDestroy(),
                 owner.dataPolicy.withReplication(), event.isFromServer(),
-                owner.concurrencyChecksEnabled, event.isOriginRemote(), isEviction,
+                owner.getConcurrencyChecksEnabled(), event.isOriginRemote(), isEviction,
                 event.getOperation(), re);
           }
           if (event.isFromRILocalDestroy()) {
@@ -1123,7 +1125,7 @@ public abstract class AbstractRegionMap implements RegionMap {
             // information for concurrency checks
             boolean retainForConcurrency = (!haveTombstone
                 && (owner.dataPolicy.withReplication() || event.isFromServer())
-                && owner.concurrencyChecksEnabled
+                && owner.getConcurrencyChecksEnabled()
                 && (event.isOriginRemote() /* destroy received from other must create tombstone */
                     || event.isFromWANAndVersioned() /* wan event must create a tombstone */
                     || event.isBridgeEvent())); /*
@@ -1263,7 +1265,7 @@ public abstract class AbstractRegionMap implements RegionMap {
               }
             } // inTokenMode or tombstone creation
             else {
-              if (!isEviction || owner.concurrencyChecksEnabled) {
+              if (!isEviction || owner.getConcurrencyChecksEnabled()) {
                 // The following ensures that there is not a concurrent operation
                 // on the entry and leaves behind a tombstone if concurrencyChecksEnabled.
                 // It fixes bug #32467 by propagating the destroy to the server even though
@@ -1338,7 +1340,7 @@ public abstract class AbstractRegionMap implements RegionMap {
                       // either remove the entry or leave a tombstone
                       try {
                         if (!event.isOriginRemote() && event.getVersionTag() != null
-                            && owner.concurrencyChecksEnabled) {
+                            && owner.getConcurrencyChecksEnabled()) {
                           // this shouldn't fail since we just created the entry.
                           // it will either generate a tag or apply a server's version tag
                           processVersionTag(newRe, event);
@@ -1414,7 +1416,7 @@ public abstract class AbstractRegionMap implements RegionMap {
                 // Bug 45170: If removeRecoveredEntry, we treat tombstone as regular entry to be
                 // deleted
                 boolean createTombstoneForConflictChecks =
-                    (owner.concurrencyChecksEnabled && (event.isOriginRemote()
+                    (owner.getConcurrencyChecksEnabled() && (event.isOriginRemote()
                         || event.getContext() != null || removeRecoveredEntry));
                 if (!re.isRemoved() || createTombstoneForConflictChecks) {
                   if (re.isRemovedPhase2()) {
@@ -1696,7 +1698,8 @@ public abstract class AbstractRegionMap implements RegionMap {
                 if (!clearOccured) {
                   lruEntryDestroy(re);
                 }
-                if (owner.concurrencyChecksEnabled && txEntryState != null && cbEvent != null) {
+                if (owner.getConcurrencyChecksEnabled() && txEntryState != null
+                    && cbEvent != null) {
                   txEntryState.setVersionTag(cbEvent.getVersionTag());
                 }
               } finally {
@@ -1710,7 +1713,7 @@ public abstract class AbstractRegionMap implements RegionMap {
             oqlIndexManager.countDownIndexUpdaters();
           }
         }
-      } else if (inTokenMode || owner.concurrencyChecksEnabled) {
+      } else if (inTokenMode || owner.getConcurrencyChecksEnabled()) {
         // treating tokenMode and re == null as same, since we now want to
         // generate versions and Tombstones for destroys
         boolean dispatchListenerEvent = inTokenMode;
@@ -1841,7 +1844,7 @@ public abstract class AbstractRegionMap implements RegionMap {
                   cbEvent.release();
               }
             }
-            if (owner.concurrencyChecksEnabled && txEntryState != null && cbEvent != null) {
+            if (owner.getConcurrencyChecksEnabled() && txEntryState != null && cbEvent != null) {
               txEntryState.setVersionTag(cbEvent.getVersionTag());
             }
           }
@@ -1981,7 +1984,8 @@ public abstract class AbstractRegionMap implements RegionMap {
                         }
                       } else {
                         owner.serverInvalidate(event);
-                        if (owner.concurrencyChecksEnabled && event.noVersionReceivedFromServer()) {
+                        if (owner.getConcurrencyChecksEnabled()
+                            && event.noVersionReceivedFromServer()) {
                           // server did not perform the invalidation, so don't leave an invalid
                           // entry here
                           return false;
@@ -2153,7 +2157,7 @@ public abstract class AbstractRegionMap implements RegionMap {
                     // bug #43287 - send event to server even if it's not in the client (LRU may
                     // have evicted it)
                     owner.serverInvalidate(event);
-                    if (owner.concurrencyChecksEnabled) {
+                    if (owner.getConcurrencyChecksEnabled()) {
                       if (event.getVersionTag() == null) {
                         // server did not perform the invalidation, so don't leave an invalid
                         // entry here
@@ -2217,7 +2221,8 @@ public abstract class AbstractRegionMap implements RegionMap {
                     } else { // previous value not invalid
                       event.setRegionEntry(re);
                       owner.serverInvalidate(event);
-                      if (owner.concurrencyChecksEnabled && event.noVersionReceivedFromServer()) {
+                      if (owner.getConcurrencyChecksEnabled()
+                          && event.noVersionReceivedFromServer()) {
                         // server did not perform the invalidation, so don't leave an invalid
                         // entry here
                         if (isDebugEnabled) {
@@ -3267,7 +3272,7 @@ public abstract class AbstractRegionMap implements RegionMap {
                 owner.txApplyInvalidatePart2(re, re.getKey(), true, false /* clear */);
               }
             }
-            if (owner.concurrencyChecksEnabled && txEntryState != null && cbEvent != null) {
+            if (owner.getConcurrencyChecksEnabled() && txEntryState != null && cbEvent != null) {
               txEntryState.setVersionTag(cbEvent.getVersionTag());
             }
             return;
@@ -3437,7 +3442,7 @@ public abstract class AbstractRegionMap implements RegionMap {
             }
           }
         }
-        if (owner.concurrencyChecksEnabled && txEntryState != null && cbEvent != null) {
+        if (owner.getConcurrencyChecksEnabled() && txEntryState != null && cbEvent != null) {
           txEntryState.setVersionTag(cbEvent.getVersionTag());
         }
       } catch (DiskAccessException dae) {
@@ -3926,6 +3931,33 @@ public abstract class AbstractRegionMap implements RegionMap {
     // nothing by default
   }
 
+  @Override
+  public EvictionController getEvictionController() {
+    return null;
+  }
+
+  @Override
+  public int getEntryOverhead() {
+    return (int) ReflectionSingleObjectSizer.sizeof(getEntryFactory().getEntryClass());
+  }
+
+  @Override
+  public boolean beginChangeValueForm(EvictableEntry le,
+      CachedDeserializable vmCachedDeserializable, Object v) {
+    return false;
+  }
+
+  @Override
+  public void finishChangeValueForm() {}
+
+  @Override
+  public int centralizedLruUpdateCallback() {
+    return 0;
+  }
+
+  @Override
+  public void updateEvictionCounter() {}
+
   public interface ARMLockTestHook {
     public void beforeBulkLock(LocalRegion region);
 
@@ -3956,5 +3988,4 @@ public abstract class AbstractRegionMap implements RegionMap {
   public void setARMLockTestHook(ARMLockTestHook theHook) {
     armLockTestHook = theHook;
   }
-
 }

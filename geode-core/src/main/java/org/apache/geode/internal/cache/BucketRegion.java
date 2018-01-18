@@ -42,6 +42,7 @@ import org.apache.geode.internal.cache.CreateRegionProcessor.CreateRegionReplyPr
 import org.apache.geode.internal.cache.FilterRoutingInfo.FilterInfo;
 import org.apache.geode.internal.cache.control.MemoryEvent;
 import org.apache.geode.internal.cache.event.EventSequenceNumberHolder;
+import org.apache.geode.internal.cache.eviction.EvictionController;
 import org.apache.geode.internal.cache.ha.ThreadIdentifier;
 import org.apache.geode.internal.cache.partitioned.Bucket;
 import org.apache.geode.internal.cache.partitioned.DestroyMessage;
@@ -56,6 +57,7 @@ import org.apache.geode.internal.cache.tier.sockets.CacheClientNotifier;
 import org.apache.geode.internal.cache.tier.sockets.ClientProxyMembershipID;
 import org.apache.geode.internal.cache.tier.sockets.ClientTombstoneMessage;
 import org.apache.geode.internal.cache.tier.sockets.ClientUpdateMessage;
+import org.apache.geode.internal.cache.versions.RegionVersionVector;
 import org.apache.geode.internal.cache.versions.VersionSource;
 import org.apache.geode.internal.cache.versions.VersionStamp;
 import org.apache.geode.internal.cache.versions.VersionTag;
@@ -998,7 +1000,7 @@ public class BucketRegion extends DistributedRegion implements Bucket {
     if (event.getOperation().isLocal()) { // bug #45402 - localDestroy generated a version tag
       return false;
     }
-    return this.concurrencyChecksEnabled
+    return this.getConcurrencyChecksEnabled()
         && ((event.getVersionTag() == null) || event.getVersionTag().isGatewayTag());
   }
 
@@ -2178,7 +2180,10 @@ public class BucketRegion extends DistributedRegion implements Bucket {
   protected void closeCallbacksExceptListener() {
     // closeCacheCallback(getCacheLoader()); - fix bug 40228 - do NOT close loader
     closeCacheCallback(getCacheWriter());
-    closeCacheCallback(getEvictionController());
+    EvictionController evictionController = getEvictionController();
+    if (evictionController != null) {
+      evictionController.closeBucket(this);
+    }
   }
 
   public long getTotalBytes() {
@@ -2337,11 +2342,12 @@ public class BucketRegion extends DistributedRegion implements Bucket {
     this.numEntriesInVM.addAndGet(delta);
   }
 
-  public void incEvictions(long delta) {
-    this.evictions.getAndAdd(delta);
+  @Override
+  public void incBucketEvictions() {
+    this.evictions.getAndAdd(1);
   }
 
-  public long getEvictions() {
+  public long getBucketEvictions() {
     return this.evictions.get();
   }
 
@@ -2454,4 +2460,25 @@ public class BucketRegion extends DistributedRegion implements Bucket {
     }
     super.postDestroyRegion(destroyDiskRegion, event);
   }
+
+  @Override
+  public EvictionController getExistingController(InternalRegionArguments internalArgs) {
+    return internalArgs.getPartitionedRegion().getEvictionController();
+  }
+
+  @Override
+  public String getNameForStats() {
+    return this.getPartitionedRegion().getFullPath();
+  }
+
+  @Override
+  public void closeEntries() {
+    this.entries.close(this);
+  }
+
+  @Override
+  public Set<VersionSource> clearEntries(RegionVersionVector rvv) {
+    return this.entries.clear(rvv, this);
+  }
+
 }

@@ -695,7 +695,7 @@ public class PartitionedRegionDataStore implements HasCachePerfStats {
     } else {
       factory.setScope(Scope.DISTRIBUTED_ACK);
     }
-    factory.setConcurrencyChecksEnabled(this.partitionedRegion.concurrencyChecksEnabled);
+    factory.setConcurrencyChecksEnabled(this.partitionedRegion.getConcurrencyChecksEnabled());
     factory.setIndexMaintenanceSynchronous(this.partitionedRegion.getIndexMaintenanceSynchronous());
 
     if (this.partitionedRegion.getValueConstraint() != null) {
@@ -1834,8 +1834,7 @@ public class PartitionedRegionDataStore implements HasCachePerfStats {
    */
   public int getPerEntryLRUOverhead() {
     BucketRegion br = (localBucket2RegionMap.values().iterator().next());
-    AbstractLRURegionMap map = (AbstractLRURegionMap) br.getRegionMap();
-    return map.getEntryOverHead();
+    return br.getRegionMap().getEntryOverhead();
   }
 
   /**
