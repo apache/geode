@@ -25,7 +25,6 @@ import org.apache.geode.internal.cache.entries.AbstractRegionEntry;
 import org.apache.geode.internal.cache.tier.sockets.ClientProxyMembershipID;
 import org.apache.geode.internal.cache.tier.sockets.VersionedObjectList;
 import org.apache.geode.internal.cache.versions.ConcurrentCacheModificationException;
-import org.apache.geode.internal.logging.LogService;
 
 /**
  *
@@ -72,10 +71,6 @@ public class LocalRegionDataView implements InternalDataView {
     } catch (ConcurrentCacheModificationException e) {
       // a newer event has already been applied to the cache. this can happen
       // in a client cache if another thread is operating on the same key
-      event.isConcurrencyConflict(true);
-      LocalRegion lr = event.getLocalRegion();
-      LogService.getLogger().info("GGG:invalidateExistingEntry:" + event, new Exception());
-      // lr.notifyGatewaySender(EnumListenerEvent.AFTER_INVALIDATE, event);
     }
   }
 
@@ -86,10 +81,6 @@ public class LocalRegionDataView implements InternalDataView {
     } catch (ConcurrentCacheModificationException e) {
       // a later in time event has already been applied to the cache. this can happen
       // in a cache if another thread is operating on the same key
-      event.isConcurrencyConflict(true);
-      LocalRegion lr = event.getLocalRegion();
-      LogService.getLogger().info("GGG:updateEntryVersion:" + event, new Exception());
-      // lr.notifyGatewaySender(EnumListenerEvent.TIMESTAMP_UPDATE, event);
     }
   }
 

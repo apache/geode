@@ -739,7 +739,7 @@ public class SerialGatewaySenderEventProcessor extends AbstractGatewaySenderEven
         // first time for the event
         if (logger.isDebugEnabled()) {
           logger.debug("{}: fromSecondary event {}:{}->{} added from unprocessed events map",
-              sender.getId(), gatewayEvent.getEventId(), gatewayEvent.getKey(),
+              sender.getId(), gatewayEvent.getEventId(), gatewayEvent,
               gatewayEvent.getValueAsString(true));
         }
         {
