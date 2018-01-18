@@ -368,6 +368,7 @@ public abstract class JUnit4CacheTestCase extends JUnit4DistributedTestCase
   private static synchronized void remoteTearDown() {
     try {
       DistributionMessageObserver.setInstance(null);
+      waitForNoRebalancing();
       destroyRegions(cache);
     } finally {
       try {
@@ -379,6 +380,17 @@ public abstract class JUnit4CacheTestCase extends JUnit4DistributedTestCase
           logger.error("Error cleaning disk dirs", e);
         }
       }
+    }
+  }
+
+  /**
+   * Some tests run so quickly that the rebalance operation doesn't even have time to start before
+   * regions are already being destroyed - GEDOE-4312.
+   */
+  private static void waitForNoRebalancing() {
+    if (cache != null) {
+      Awaitility.await().atMost(10, TimeUnit.SECONDS)
+          .until(() -> cache.getResourceManager().getRebalanceOperations().size() == 0);
     }
   }
 
