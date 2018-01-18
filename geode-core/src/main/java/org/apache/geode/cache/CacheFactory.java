@@ -307,6 +307,12 @@ public class CacheFactory {
    * Gets an arbitrary open instance of {@link Cache} produced by an earlier call to
    * {@link #create()}.
    *
+   * <p>
+   * WARNING: To avoid risk of deadlock, do not invoke getAnyInstance() from within any
+   * CacheCallback including CacheListener, CacheLoader, CacheWriter, TransactionListener,
+   * TransactionWriter.
+   * </p>
+   *
    * @throws CacheClosedException if a cache has not been created or the only created one is
    *         {@link Cache#isClosed closed}
    */
