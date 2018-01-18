@@ -438,7 +438,6 @@ public class MemoryThresholdsDUnitTest extends ClientServerTestCase {
    *
    * @throws Exception
    */
-  @Category(FlakyTest.class) // GEODE-427: random ports, time sensitive, waitForCriterions
   @Test
   public void testEventDelivery() throws Exception {
     final Host host = Host.getHost(0);
@@ -522,17 +521,29 @@ public class MemoryThresholdsDUnitTest extends ClientServerTestCase {
     verifyListenerValue(server1, MemoryState.EVICTION, 2, true);
     verifyListenerValue(server1, MemoryState.NORMAL, 1, true);
 
-    LogWriterUtils.getLogWriter().info("before NORMAL->CRITICAL->NORMAL");
-    // NORMAL -> EVICTION -> NORMAL
-    server2.invoke(new SerializableCallable("NORMAL->CRITICAL->NORMAL") {
+    // NORMAL -> CRITICAL
+    server2.invoke(new SerializableCallable("NORMAL->CRITICAL") {
       public Object call() throws Exception {
         GemFireCacheImpl gfCache = (GemFireCacheImpl) getCache();
         gfCache.getInternalResourceManager().getHeapMonitor().updateStateAndSendEvent(950);
+        return null;
+      }
+    });
+
+    verifyListenerValue(server2, MemoryState.CRITICAL, 2, true);
+    verifyListenerValue(server2, MemoryState.EVICTION, 3, true);
+    verifyListenerValue(server2, MemoryState.NORMAL, 1, true);
+    verifyListenerValue(server1, MemoryState.CRITICAL, 2, true);
+    verifyListenerValue(server1, MemoryState.EVICTION, 3, true);
+    verifyListenerValue(server1, MemoryState.NORMAL, 1, true);
+
+    server2.invoke(new SerializableCallable("CRITICAL->NORMAL") {
+      public Object call() throws Exception {
+        GemFireCacheImpl gfCache = (GemFireCacheImpl) getCache();
         gfCache.getInternalResourceManager().getHeapMonitor().updateStateAndSendEvent(750);
         return null;
       }
     });
-    LogWriterUtils.getLogWriter().info("after NORMAL->CRITICAL->NORMAL");
 
     verifyListenerValue(server2, MemoryState.CRITICAL, 2, true);
     verifyListenerValue(server2, MemoryState.EVICTION, 3, true);
