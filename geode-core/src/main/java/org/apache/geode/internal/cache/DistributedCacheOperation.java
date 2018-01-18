@@ -1294,7 +1294,20 @@ public abstract class DistributedCacheOperation {
       ev.isConcurrencyConflict(true);
       rgn.generateLocalFilterRouting(ev);
       rgn.notifyBridgeClients(ev);
+      // rgn.notifyGatewaySender(getOperation(ev), ev);
     }
+
+    // private EnumListenerEvent getOperation(EntryEventImpl ev) {
+    // if (ev.getOperation().isInvalidate()) {
+    // return EnumListenerEvent.AFTER_INVALIDATE;
+    // } else if (ev.getOperation().isDestroy()) {
+    // return EnumListenerEvent.AFTER_DESTROY;
+    // } else if (ev.getOperation().isUpdate()) {
+    // return EnumListenerEvent.AFTER_UPDATE;
+    // } else {
+    // return EnumListenerEvent.AFTER_CREATE;
+    // }
+    // }
 
     protected abstract InternalCacheEvent createEvent(DistributedRegion rgn)
         throws EntryNotFoundException;
