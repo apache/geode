@@ -827,7 +827,7 @@ public class PartitionedRegion extends LocalRegion
     /*
      * Start persistent profile logging if we are a persistent region.
      */
-    if (dataPolicy.withPersistence()) {
+    if (getDataPolicy().withPersistence()) {
       startPersistenceProfileLogging();
     }
   }
@@ -902,7 +902,7 @@ public class PartitionedRegion extends LocalRegion
 
   private void createAndValidatePersistentConfig() {
     DiskStoreImpl dsi = this.getDiskStore();
-    if (this.dataPolicy.withPersistence() && !this.getConcurrencyChecksEnabled()
+    if (this.getDataPolicy().withPersistence() && !this.getConcurrencyChecksEnabled()
         && supportsConcurrencyChecks()) {
       logger.info(LocalizedMessage.create(
           LocalizedStrings.PartitionedRegion_ENABLING_CONCURRENCY_CHECKS_FOR_PERSISTENT_PR,
@@ -4935,7 +4935,7 @@ public class PartitionedRegion extends LocalRegion
     CacheProfile profile = (CacheProfile) p;
     // set fields on CacheProfile...
     profile.isPartitioned = true;
-    profile.isPersistent = dataPolicy.withPersistence();
+    profile.isPersistent = getDataPolicy().withPersistence();
     profile.dataPolicy = getDataPolicy();
     profile.hasCacheLoader = basicGetLoader() != null;
     profile.hasCacheWriter = basicGetWriter() != null;
@@ -4955,7 +4955,7 @@ public class PartitionedRegion extends LocalRegion
     profile.gatewaySenderIds = getGatewaySenderIds();
     profile.asyncEventQueueIds = getVisibleAsyncEventQueueIds();
 
-    if (dataPolicy.withPersistence()) {
+    if (getDataPolicy().withPersistence()) {
       profile.persistentID = getDiskStore().generatePersistentID(null);
     }
 
@@ -6919,7 +6919,7 @@ public class PartitionedRegion extends LocalRegion
   public String toString() {
     return new StringBuffer().append("Partitioned Region ").append("@")
         .append(Integer.toHexString(hashCode())).append(" [").append("path='").append(getFullPath())
-        .append("'; dataPolicy=").append(this.dataPolicy).append("; prId=")
+        .append("'; dataPolicy=").append(this.getDataPolicy()).append("; prId=")
         .append(this.partitionedRegionId).append("; isDestroyed=").append(this.isDestroyed)
         .append("; isClosed=").append(this.isClosed).append("; retryTimeout=")
         .append(this.retryTimeout).append("; serialNumber=").append(getSerialNumber())

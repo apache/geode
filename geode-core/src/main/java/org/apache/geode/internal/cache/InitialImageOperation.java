@@ -569,7 +569,7 @@ public class InitialImageOperation {
             // TODO add localizedString
             logger.info("{} failed to get image from {}", this.region.getName(), recipient);
           }
-          if (this.region.dataPolicy.withPersistence()) {
+          if (this.region.getDataPolicy().withPersistence()) {
             logger.info(LocalizedMessage.create(
                 LocalizedStrings.InitialImageOperation_REGION_0_INITIALIZED_PERSISTENT_REGION_WITH_ID_1_FROM_2,
                 new Object[] {this.region.getName(), this.region.getPersistentID(), recipient}));

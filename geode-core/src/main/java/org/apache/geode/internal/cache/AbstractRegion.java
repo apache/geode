@@ -148,7 +148,7 @@ public abstract class AbstractRegion implements InternalRegion, AttributesMutato
 
   protected float loadFactor;
 
-  protected DataPolicy dataPolicy;
+  private DataPolicy dataPolicy;
 
   protected int regionIdleTimeout;
 
@@ -434,7 +434,7 @@ public abstract class AbstractRegion implements InternalRegion, AttributesMutato
     StringBuilder buf = new StringBuilder();
     buf.append(getClass().getName());
     buf.append("[path='").append(getFullPath()).append("';scope=").append(getScope())
-        .append("';dataPolicy=").append(this.dataPolicy);
+        .append("';dataPolicy=").append(this.getDataPolicy());
     if (this.getConcurrencyChecksEnabled()) {
       buf.append("; concurrencyChecksEnabled");
     }
@@ -546,15 +546,15 @@ public abstract class AbstractRegion implements InternalRegion, AttributesMutato
 
   @Override
   public MirrorType getMirrorType() {
-    if (this.dataPolicy.isNormal() || this.dataPolicy.isPreloaded() || this.dataPolicy.isEmpty()
-        || this.dataPolicy.withPartitioning()) {
+    if (this.getDataPolicy().isNormal() || this.getDataPolicy().isPreloaded()
+        || this.getDataPolicy().isEmpty() || this.getDataPolicy().withPartitioning()) {
       return MirrorType.NONE;
-    } else if (this.dataPolicy.withReplication()) {
+    } else if (this.getDataPolicy().withReplication()) {
       return MirrorType.KEYS_VALUES;
     } else {
       throw new IllegalStateException(
           LocalizedStrings.AbstractRegion_NO_MIRROR_TYPE_CORRESPONDS_TO_DATA_POLICY_0
-              .toLocalizedString(this.dataPolicy));
+              .toLocalizedString(this.getDataPolicy()));
     }
   }
 
@@ -1093,7 +1093,7 @@ public abstract class AbstractRegion implements InternalRegion, AttributesMutato
   }
 
   void checkEntryTimeoutAction(String mode, ExpirationAction ea) {
-    if ((this.dataPolicy.withReplication() || this.dataPolicy.withPartitioning())
+    if ((this.getDataPolicy().withReplication() || this.getDataPolicy().withPartitioning())
         && (ea == ExpirationAction.LOCAL_DESTROY || ea == ExpirationAction.LOCAL_INVALIDATE)) {
       throw new IllegalArgumentException(
           LocalizedStrings.AbstractRegion_0_ACTION_IS_INCOMPATIBLE_WITH_THIS_REGIONS_DATA_POLICY
@@ -1203,7 +1203,7 @@ public abstract class AbstractRegion implements InternalRegion, AttributesMutato
       validatePRRegionExpirationAttributes(idleTimeout);
     }
     if (idleTimeout.getAction() == ExpirationAction.LOCAL_INVALIDATE
-        && this.dataPolicy.withReplication()) {
+        && this.getDataPolicy().withReplication()) {
       throw new IllegalArgumentException(
           LocalizedStrings.AbstractRegion_0_ACTION_IS_INCOMPATIBLE_WITH_THIS_REGIONS_DATA_POLICY
               .toLocalizedString("idleTimeout"));
@@ -1232,7 +1232,7 @@ public abstract class AbstractRegion implements InternalRegion, AttributesMutato
       validatePRRegionExpirationAttributes(timeToLive);
     }
     if (timeToLive.getAction() == ExpirationAction.LOCAL_INVALIDATE
-        && this.dataPolicy.withReplication()) {
+        && this.getDataPolicy().withReplication()) {
       throw new IllegalArgumentException(
           LocalizedStrings.AbstractRegion_0_ACTION_IS_INCOMPATIBLE_WITH_THIS_REGIONS_DATA_POLICY
               .toLocalizedString("timeToLive"));
@@ -1628,7 +1628,7 @@ public abstract class AbstractRegion implements InternalRegion, AttributesMutato
                 .toLocalizedString(this.poolName));
       }
       cp.attach();
-      if (cp.getMultiuserAuthentication() && !this.dataPolicy.isEmpty()) {
+      if (cp.getMultiuserAuthentication() && !this.getDataPolicy().isEmpty()) {
         throw new IllegalStateException(
             "Region must have empty data-policy " + "when multiuser-authentication is true.");
       }

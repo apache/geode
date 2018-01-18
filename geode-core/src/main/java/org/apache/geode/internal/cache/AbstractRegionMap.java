@@ -1100,7 +1100,7 @@ public abstract class AbstractRegionMap implements RegionMap {
             logger.trace(LogMarker.LRU_TOMBSTONE_COUNT,
                 "ARM.destroy() inTokenMode={}; duringRI={}; riLocalDestroy={}; withRepl={}; fromServer={}; concurrencyEnabled={}; isOriginRemote={}; isEviction={}; operation={}; re={}",
                 inTokenMode, duringRI, event.isFromRILocalDestroy(),
-                owner.dataPolicy.withReplication(), event.isFromServer(),
+                owner.getDataPolicy().withReplication(), event.isFromServer(),
                 owner.getConcurrencyChecksEnabled(), event.isOriginRemote(), isEviction,
                 event.getOperation(), re);
           }
@@ -1124,7 +1124,7 @@ public abstract class AbstractRegionMap implements RegionMap {
             // a destroy from a peer or WAN gateway and we need to retain version
             // information for concurrency checks
             boolean retainForConcurrency = (!haveTombstone
-                && (owner.dataPolicy.withReplication() || event.isFromServer())
+                && (owner.getDataPolicy().withReplication() || event.isFromServer())
                 && owner.getConcurrencyChecksEnabled()
                 && (event.isOriginRemote() /* destroy received from other must create tombstone */
                     || event.isFromWANAndVersioned() /* wan event must create a tombstone */
@@ -3722,7 +3722,7 @@ public abstract class AbstractRegionMap implements RegionMap {
 
   /** get version-generation permission from the region's version vector */
   void lockForCacheModification(LocalRegion owner, EntryEventImpl event) {
-    boolean lockedByBulkOp = event.isBulkOpInProgress() && owner.dataPolicy.withReplication();
+    boolean lockedByBulkOp = event.isBulkOpInProgress() && owner.getDataPolicy().withReplication();
 
     if (armLockTestHook != null)
       armLockTestHook.beforeLock(owner, event);
@@ -3741,7 +3741,7 @@ public abstract class AbstractRegionMap implements RegionMap {
 
   /** release version-generation permission from the region's version vector */
   void releaseCacheModificationLock(LocalRegion owner, EntryEventImpl event) {
-    boolean lockedByBulkOp = event.isBulkOpInProgress() && owner.dataPolicy.withReplication();
+    boolean lockedByBulkOp = event.isBulkOpInProgress() && owner.getDataPolicy().withReplication();
 
     if (armLockTestHook != null)
       armLockTestHook.beforeRelease(owner, event);
