@@ -310,7 +310,7 @@ public class DistributedRegion extends LocalRegion implements InternalDistribute
     if (!this.generateVersionTag) {
       return true;
     }
-    return this.concurrencyChecksEnabled && (this.serverRegionProxy == null) && !isTX()
+    return this.getConcurrencyChecksEnabled() && (this.serverRegionProxy == null) && !isTX()
         && this.scope.isDistributed() && !this.dataPolicy.withReplication();
   }
 
@@ -508,7 +508,7 @@ public class DistributedRegion extends LocalRegion implements InternalDistribute
     } else {
       // bug #48205 - a retried PR operation may already have a version assigned to it
       // in another VM
-      if (event.isPossibleDuplicate() && event.getRegion().concurrencyChecksEnabled
+      if (event.isPossibleDuplicate() && event.getRegion().getConcurrencyChecksEnabled()
           && event.getVersionTag() == null && event.getEventId() != null) {
         boolean isBulkOp = event.getOperation().isPutAll() || event.getOperation().isRemoveAll();
         VersionTag tag =
@@ -521,7 +521,7 @@ public class DistributedRegion extends LocalRegion implements InternalDistribute
 
   private void markEventAsDuplicate(EntryEventImpl event) {
     event.setPossibleDuplicate(true);
-    if (concurrencyChecksEnabled && event.getVersionTag() == null) {
+    if (getConcurrencyChecksEnabled() && event.getVersionTag() == null) {
       if (event.isBulkOpInProgress()) {
         event.setVersionTag(getEventTracker().findVersionTagForBulkOp(event.getEventId()));
       } else {
@@ -546,9 +546,9 @@ public class DistributedRegion extends LocalRegion implements InternalDistribute
     if (logger.isTraceEnabled()) {
       logger.trace(
           "shouldGenerateVersionTag this.generateVersionTag={} ccenabled={} dataPolicy={} event:{}",
-          this.generateVersionTag, this.concurrencyChecksEnabled, this.dataPolicy, event);
+          this.generateVersionTag, this.getConcurrencyChecksEnabled(), this.dataPolicy, event);
     }
-    if (!this.concurrencyChecksEnabled || this.dataPolicy == DataPolicy.EMPTY
+    if (!this.getConcurrencyChecksEnabled() || this.dataPolicy == DataPolicy.EMPTY
         || !this.generateVersionTag) {
       return false;
     }
@@ -1028,7 +1028,7 @@ public class DistributedRegion extends LocalRegion implements InternalDistribute
     }
 
     // if we're versioning entries we need a region-level version vector
-    if (this.scope.isDistributed() && this.concurrencyChecksEnabled) {
+    if (this.scope.isDistributed() && this.getConcurrencyChecksEnabled()) {
       createVersionVector();
     }
 
@@ -1276,7 +1276,7 @@ public class DistributedRegion extends LocalRegion implements InternalDistribute
    */
   public void synchronizeForLostMember(InternalDistributedMember lostMember,
       VersionSource lostVersionID) {
-    if (!this.concurrencyChecksEnabled) {
+    if (!this.getConcurrencyChecksEnabled()) {
       return;
     }
     CacheDistributionAdvisor advisor = getCacheDistributionAdvisor();
@@ -1860,7 +1860,7 @@ public class DistributedRegion extends LocalRegion implements InternalDistribute
 
   @Override
   void basicClear(RegionEventImpl regionEvent, boolean cacheWrite) {
-    if (this.concurrencyChecksEnabled && !this.dataPolicy.withReplication()) {
+    if (this.getConcurrencyChecksEnabled() && !this.dataPolicy.withReplication()) {
       boolean retry = false;
       do {
         // non-replicate regions must defer to a replicate for clear/invalidate of region
@@ -1888,8 +1888,8 @@ public class DistributedRegion extends LocalRegion implements InternalDistribute
 
   @Override
   void cmnClearRegion(RegionEventImpl regionEvent, boolean cacheWrite, boolean useRVV) {
-    boolean enableRVV = useRVV && this.dataPolicy.withReplication() && this.concurrencyChecksEnabled
-        && !getDistributionManager().isLoner();
+    boolean enableRVV = useRVV && this.dataPolicy.withReplication()
+        && this.getConcurrencyChecksEnabled() && !getDistributionManager().isLoner();
 
     // Fix for 46338 - apparently multiple threads from the same VM are allowed
     // to suspend locking, which is what distributedLockForClear() does. We don't
@@ -3543,14 +3543,14 @@ public class DistributedRegion extends LocalRegion implements InternalDistribute
   @Override
   public DistributedMember getOwnerForKey(KeyInfo key) {
     assert !this.isInternalRegion() || this.isMetaRegionWithTransactions();
-    if (!this.getAttributes().getDataPolicy().withStorage() || (this.concurrencyChecksEnabled
+    if (!this.getAttributes().getDataPolicy().withStorage() || (this.getConcurrencyChecksEnabled()
         && this.getAttributes().getDataPolicy() == DataPolicy.NORMAL)) {
       // execute on random replicate
       return getRandomReplicate();
     }
     // if we are non-persistent, forward transactions to
     // a persistent member
-    if (this.concurrencyChecksEnabled && !generateVersionTag) {
+    if (this.getConcurrencyChecksEnabled() && !generateVersionTag) {
       return getRandomPersistentReplicate();
     }
     return super.getOwnerForKey(key);

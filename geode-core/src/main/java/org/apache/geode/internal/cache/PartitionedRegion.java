@@ -56,8 +56,6 @@ import org.apache.geode.StatisticsFactory;
 import org.apache.geode.SystemFailure;
 import org.apache.geode.cache.AttributesFactory;
 import org.apache.geode.cache.AttributesMutator;
-import org.apache.geode.cache.Cache;
-import org.apache.geode.cache.CacheClosedException;
 import org.apache.geode.cache.CacheException;
 import org.apache.geode.cache.CacheListener;
 import org.apache.geode.cache.CacheLoader;
@@ -904,12 +902,12 @@ public class PartitionedRegion extends LocalRegion
 
   private void createAndValidatePersistentConfig() {
     DiskStoreImpl dsi = this.getDiskStore();
-    if (this.dataPolicy.withPersistence() && !this.concurrencyChecksEnabled
+    if (this.dataPolicy.withPersistence() && !this.getConcurrencyChecksEnabled()
         && supportsConcurrencyChecks()) {
       logger.info(LocalizedMessage.create(
           LocalizedStrings.PartitionedRegion_ENABLING_CONCURRENCY_CHECKS_FOR_PERSISTENT_PR,
           this.getFullPath()));
-      this.concurrencyChecksEnabled = true;
+      this.setConcurrencyChecksEnabled(true);
     }
     if (dsi != null && this.getDataPolicy().withPersistence()) {
       String colocatedWith = colocatedWithRegion == null ? "" : colocatedWithRegion.getFullPath();
@@ -1006,7 +1004,7 @@ public class PartitionedRegion extends LocalRegion
       // after toggling the concurrencyChecksEnabled flag. This is
       // required because for persistent regions, we enforce concurrencyChecks
       if (!this.isDataStore() && supportsConcurrencyChecks()) {
-        this.concurrencyChecksEnabled = !this.concurrencyChecksEnabled;
+        this.setConcurrencyChecksEnabled(!this.getConcurrencyChecksEnabled());
         new CreateRegionProcessor(this).initializeRegion();
       } else {
         throw e;
@@ -2053,7 +2051,7 @@ public class PartitionedRegion extends LocalRegion
     }
     if (!result) {
       checkReadiness();
-      if (!ifNew && !ifOld && !this.concurrencyChecksEnabled) {
+      if (!ifNew && !ifOld && !this.getConcurrencyChecksEnabled()) {
         // may fail due to concurrency conflict
         // failed for unknown reason
         // throw new PartitionedRegionStorageException("unable to execute operation");
@@ -2177,7 +2175,7 @@ public class PartitionedRegion extends LocalRegion
         if (versions.size() > 0) {
           partialKeys.addKeysAndVersions(versions);
           versions.saveVersions(keyToVersionMap);
-        } else if (!this.concurrencyChecksEnabled) { // no keys returned if not versioned
+        } else if (!this.getConcurrencyChecksEnabled()) { // no keys returned if not versioned
           Set keys = prMsg.getKeys();
           partialKeys.addKeys(keys);
         }
@@ -2268,7 +2266,7 @@ public class PartitionedRegion extends LocalRegion
         if (versions.size() > 0) {
           partialKeys.addKeysAndVersions(versions);
           versions.saveVersions(keyToVersionMap);
-        } else if (!this.concurrencyChecksEnabled) { // no keys returned if not versioned
+        } else if (!this.getConcurrencyChecksEnabled()) { // no keys returned if not versioned
           Set keys = prMsg.getKeys();
           partialKeys.addKeys(keys);
         }
@@ -8033,7 +8031,7 @@ public class PartitionedRegion extends LocalRegion
   @Override
   protected void enableConcurrencyChecks() {
     if (supportsConcurrencyChecks()) {
-      this.concurrencyChecksEnabled = true;
+      this.setConcurrencyChecksEnabled(true);
       assert !isDataStore();
     }
   }

@@ -98,8 +98,6 @@ public interface InternalRegion<K, V>
 
   IndexManager getIndexManager();
 
-  boolean isConcurrencyChecksEnabled();
-
   boolean isThisRegionBeingClosedOrDestroyed();
 
   CancelCriterion getCancelCriterion();

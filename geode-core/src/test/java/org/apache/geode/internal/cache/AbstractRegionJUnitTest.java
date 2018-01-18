@@ -562,11 +562,6 @@ public class AbstractRegionJUnitTest {
     }
 
     @Override
-    public boolean isConcurrencyChecksEnabled() {
-      throw new UnsupportedOperationException();
-    }
-
-    @Override
     public boolean isThisRegionBeingClosedOrDestroyed() {
       throw new UnsupportedOperationException();
     }

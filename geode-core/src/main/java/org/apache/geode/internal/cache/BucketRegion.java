@@ -1000,7 +1000,7 @@ public class BucketRegion extends DistributedRegion implements Bucket {
     if (event.getOperation().isLocal()) { // bug #45402 - localDestroy generated a version tag
       return false;
     }
-    return this.concurrencyChecksEnabled
+    return this.getConcurrencyChecksEnabled()
         && ((event.getVersionTag() == null) || event.getVersionTag().isGatewayTag());
   }
 
