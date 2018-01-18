@@ -42,7 +42,8 @@ public class OffHeapHelper {
   }
 
   /**
-   * Just like {@link #copyIfNeeded(Object)} except that if off-heap is copied it is also released.
+   * Just like {@link #copyIfNeeded(Object, InternalCache)} except that if off-heap is copied it is
+   * also released.
    *
    * @param v If this value is off-heap then the caller must have already retained it.
    * @return the heap copy to use in place of v
