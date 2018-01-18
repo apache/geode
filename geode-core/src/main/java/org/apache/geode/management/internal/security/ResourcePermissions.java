@@ -22,8 +22,14 @@ import static org.apache.geode.security.ResourcePermission.Resource.CLUSTER;
 import static org.apache.geode.security.ResourcePermission.Resource.DATA;
 
 import org.apache.geode.security.ResourcePermission;
+import org.apache.geode.security.ResourcePermission.Operation;
+import org.apache.geode.security.ResourcePermission.Resource;
 
 public final class ResourcePermissions {
+  public static final ResourcePermission ALL = new ResourcePermission(Resource.ALL, Operation.ALL);
+  public static final ResourcePermission DATA_ALL = new ResourcePermission(DATA, Operation.ALL);
+  public static final ResourcePermission CLUSTER_ALL =
+      new ResourcePermission(CLUSTER, Operation.ALL);
   public static final ResourcePermission DATA_READ = new ResourcePermission(DATA, READ);
   public static final ResourcePermission DATA_WRITE = new ResourcePermission(DATA, WRITE);
   public static final ResourcePermission DATA_MANAGE = new ResourcePermission(DATA, MANAGE);
