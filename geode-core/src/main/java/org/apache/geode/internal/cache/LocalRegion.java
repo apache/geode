@@ -66,6 +66,7 @@ import org.apache.geode.DeltaSerializationException;
 import org.apache.geode.InternalGemFireError;
 import org.apache.geode.InternalGemFireException;
 import org.apache.geode.LogWriter;
+import org.apache.geode.Statistics;
 import org.apache.geode.SystemFailure;
 import org.apache.geode.admin.internal.SystemMemberCacheEventProcessor;
 import org.apache.geode.cache.AttributesMutator;
@@ -173,6 +174,8 @@ import org.apache.geode.internal.cache.entries.DiskEntry;
 import org.apache.geode.internal.cache.event.EventTracker;
 import org.apache.geode.internal.cache.event.NonDistributedEventTracker;
 import org.apache.geode.internal.cache.eviction.EvictableEntry;
+import org.apache.geode.internal.cache.eviction.EvictionController;
+import org.apache.geode.internal.cache.eviction.EvictionCounters;
 import org.apache.geode.internal.cache.execute.DistributedRegionFunctionExecutor;
 import org.apache.geode.internal.cache.execute.DistributedRegionFunctionResultSender;
 import org.apache.geode.internal.cache.execute.LocalResultCollector;
@@ -2698,11 +2701,11 @@ public class LocalRegion extends AbstractRegion implements LoaderHelperFactory,
   }
 
   public void closeEntries() {
-    this.entries.close();
+    this.entries.close(null);
   }
 
   public Set<VersionSource> clearEntries(RegionVersionVector rvv) {
-    return this.entries.clear(rvv);
+    return this.entries.clear(rvv, null);
   }
 
   @Override
@@ -7180,7 +7183,10 @@ public class LocalRegion extends AbstractRegion implements LoaderHelperFactory,
   protected void closeCallbacksExceptListener() {
     closeCacheCallback(getCacheLoader());
     closeCacheCallback(getCacheWriter());
-    closeCacheCallback(getEvictionController());
+    EvictionController evictionController = getEvictionController();
+    if (evictionController != null) {
+      evictionController.close();
+    }
   }
 
   /** This is only done when the cache is closed. */
@@ -12065,8 +12071,85 @@ public class LocalRegion extends AbstractRegion implements LoaderHelperFactory,
    * Returns the number of LRU evictions done by this region.
    */
   @Override
-  public long getEvictions() {
+  public long getTotalEvictions() {
     return this.entries.getEvictions();
+  }
+
+  public void incBucketEvictions() {
+    // nothing needed by default
+    // override this method on BucketRegion
+  }
+
+  @Override
+  public long getEvictionCounter() {
+    long result = 0L;
+    EvictionController evictionController = getEvictionController();
+    if (evictionController != null) {
+      EvictionCounters es = evictionController.getCounters();
+      if (es != null) {
+        result = es.getCounter();
+      }
+    }
+    return result;
+  }
+
+  public long getEvictionLimit() {
+    long result = 0L;
+    EvictionController evictionController = getEvictionController();
+    if (evictionController != null) {
+      EvictionCounters es = evictionController.getCounters();
+      if (es != null) {
+        result = es.getLimit();
+      }
+    }
+    return result;
+  }
+
+  public long getEvictionDestroys() {
+    long result = 0;
+    EvictionController evictionController = getEvictionController();
+    if (evictionController != null) {
+      EvictionCounters es = evictionController.getCounters();
+      if (es != null) {
+        result = es.getDestroys();
+      }
+    }
+    return result;
+  }
+
+  public EvictionController getEvictionController() {
+    return getRegionMap().getEvictionController();
+  }
+
+  @Override
+  public void setEvictionMaximum(int maximum) {
+    EvictionController evictionController = getEvictionController();
+    if (evictionController != null) {
+      evictionController.setLimit(maximum);
+    }
+  }
+
+  @Override
+  public Statistics getEvictionStatistics() {
+    Statistics result = null;
+    EvictionController evictionController = getEvictionController();
+    if (evictionController != null) {
+      EvictionCounters es = evictionController.getCounters();
+      if (es != null) {
+        result = es.getStatistics();
+      }
+    }
+    return result;
+  }
+
+  @Override
+  public EvictionController getExistingController(InternalRegionArguments internalArgs) {
+    return null;
+  }
+
+  @Override
+  public String getNameForStats() {
+    return getFullPath();
   }
 
 }

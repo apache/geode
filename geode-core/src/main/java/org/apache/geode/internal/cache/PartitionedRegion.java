@@ -164,7 +164,8 @@ import org.apache.geode.internal.cache.control.InternalResourceManager;
 import org.apache.geode.internal.cache.control.InternalResourceManager.ResourceType;
 import org.apache.geode.internal.cache.control.MemoryEvent;
 import org.apache.geode.internal.cache.control.MemoryThresholds;
-import org.apache.geode.internal.cache.eviction.EvictionStatistics;
+import org.apache.geode.internal.cache.eviction.EvictionController;
+import org.apache.geode.internal.cache.eviction.EvictionCounters;
 import org.apache.geode.internal.cache.eviction.HeapEvictor;
 import org.apache.geode.internal.cache.execute.AbstractExecution;
 import org.apache.geode.internal.cache.execute.FunctionExecutionNodePruner;
@@ -508,13 +509,13 @@ public class PartitionedRegion extends LocalRegion
   }
 
   /**
-   * Returns the EvictionStatistics for this PR. This is needed to find the single instance of
-   * EvictionStatistics created early for a PR when it is recovered from disk. This fixes bug 41938
+   * Returns the EvictionController for this PR. This is needed to find the single instance of
+   * EvictionController created early for a PR when it is recovered from disk. This fixes bug 41938
    */
-  public EvictionStatistics getPRLRUStatsDuringInitialization() {
-    EvictionStatistics result = null;
+  public EvictionController getPREvictionControllerFromDiskInitialization() {
+    EvictionController result = null;
     if (getDiskStore() != null) {
-      result = getDiskStore().getPRLRUStats(this);
+      result = getDiskStore().getExistingPREvictionContoller(this);
     }
     return result;
   }

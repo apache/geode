@@ -16,6 +16,7 @@ package org.apache.geode.cache.lucene;
 
 import static org.apache.geode.test.dunit.Assert.fail;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 
 import java.io.File;
 import java.io.IOException;
@@ -46,6 +47,7 @@ import org.apache.geode.cache.server.CacheServer;
 import org.apache.geode.cache30.CacheSerializableRunnable;
 import org.apache.geode.distributed.Locator;
 import org.apache.geode.distributed.internal.DistributionConfig;
+import org.apache.geode.distributed.internal.InternalLocator;
 import org.apache.geode.internal.AvailablePortHelper;
 import org.apache.geode.internal.Version;
 import org.apache.geode.internal.cache.GemFireCacheImpl;
@@ -69,7 +71,7 @@ import org.apache.geode.test.junit.runners.CategoryWithParameterizedRunnerFactor
 public class LuceneSearchWithRollingUpgradeDUnit extends JUnit4DistributedTestCase {
 
 
-  @Parameterized.Parameters
+  @Parameterized.Parameters(name = "from_v{0}")
   public static Collection<String> data() {
     List<String> result = VersionManager.getInstance().getVersionsWithoutCurrent();
     // Lucene Compatibility checks start with Apache Geode v1.2.0
@@ -164,6 +166,19 @@ public class LuceneSearchWithRollingUpgradeDUnit extends JUnit4DistributedTestCa
           invokeStartLocator(hostName, locatorPorts[1], getLocatorPropertiesPre91(locatorString)));
       invokeRunnableInVMs(invokeCreateCache(getSystemProperties(locatorPorts)), server1, server2);
 
+      // Locators before 1.4 handled configuration asynchronously.
+      // We must wait for configuration configuration to be ready, or confirm that it is disabled.
+      locator1.invoke(
+          () -> Awaitility.await().atMost(65, TimeUnit.SECONDS).pollInterval(1, TimeUnit.SECONDS)
+              .until(() -> assertTrue(
+                  !InternalLocator.getLocator().getConfig().getEnableClusterConfiguration()
+                      || InternalLocator.getLocator().isSharedConfigurationRunning())));
+      locator2.invoke(
+          () -> Awaitility.await().atMost(65, TimeUnit.SECONDS).pollInterval(1, TimeUnit.SECONDS)
+              .until(() -> assertTrue(
+                  !InternalLocator.getLocator().getConfig().getEnableClusterConfiguration()
+                      || InternalLocator.getLocator().isSharedConfigurationRunning())));
+
       server1.invoke(() -> createLuceneIndex(cache, regionName, INDEX_NAME));
       server2.invoke(() -> createLuceneIndex(cache, regionName, INDEX_NAME));
 
@@ -236,6 +251,15 @@ public class LuceneSearchWithRollingUpgradeDUnit extends JUnit4DistributedTestCa
     try {
       locator.invoke(
           invokeStartLocator(hostName, locatorPorts[0], getLocatorPropertiesPre91(locatorString)));
+
+      // Locators before 1.4 handled configuration asynchronously.
+      // We must wait for configuration configuration to be ready, or confirm that it is disabled.
+      locator.invoke(
+          () -> Awaitility.await().atMost(65, TimeUnit.SECONDS).pollInterval(1, TimeUnit.SECONDS)
+              .until(() -> assertTrue(
+                  !InternalLocator.getLocator().getConfig().getEnableClusterConfiguration()
+                      || InternalLocator.getLocator().isSharedConfigurationRunning())));
+
       invokeRunnableInVMs(invokeCreateCache(getSystemProperties(locatorPorts)), server2, server3);
       invokeRunnableInVMs(invokeStartCacheServer(csPorts[0]), server2);
       invokeRunnableInVMs(invokeStartCacheServer(csPorts[1]), server3);
@@ -350,6 +374,15 @@ public class LuceneSearchWithRollingUpgradeDUnit extends JUnit4DistributedTestCa
       // Start locator, servers and client in old version
       locator.invoke(
           invokeStartLocator(hostName, locatorPorts[0], getLocatorPropertiesPre91(locatorString)));
+
+      // Locators before 1.4 handled configuration asynchronously.
+      // We must wait for configuration configuration to be ready, or confirm that it is disabled.
+      locator.invoke(
+          () -> Awaitility.await().atMost(65, TimeUnit.SECONDS).pollInterval(1, TimeUnit.SECONDS)
+              .until(() -> assertTrue(
+                  !InternalLocator.getLocator().getConfig().getEnableClusterConfiguration()
+                      || InternalLocator.getLocator().isSharedConfigurationRunning())));
+
       invokeRunnableInVMs(invokeCreateCache(getSystemProperties(locatorPorts)), server1, server2);
       invokeRunnableInVMs(invokeStartCacheServer(csPorts[0]), server1);
       invokeRunnableInVMs(invokeStartCacheServer(csPorts[1]), server2);
@@ -471,8 +504,6 @@ public class LuceneSearchWithRollingUpgradeDUnit extends JUnit4DistributedTestCa
 
     return cf.create();
   }
-
-
 
   // We start an "old" locator and old servers
   // We roll the locator
@@ -672,13 +703,7 @@ public class LuceneSearchWithRollingUpgradeDUnit extends JUnit4DistributedTestCa
   private VM rollServerToCurrent(VM oldServer, int[] locatorPorts) throws Exception {
     // Roll the server
     oldServer.invoke(invokeCloseCache());
-    VM rollServer = Host.getHost(0).getVM(VersionManager.CURRENT_VERSION, oldServer.getId()); // gets
-                                                                                              // a
-                                                                                              // vm
-                                                                                              // with
-                                                                                              // the
-                                                                                              // current
-                                                                                              // version
+    VM rollServer = Host.getHost(0).getVM(VersionManager.CURRENT_VERSION, oldServer.getId());
     rollServer.invoke(invokeCreateCache(locatorPorts == null ? getSystemPropertiesPost71()
         : getSystemPropertiesPost71(locatorPorts)));
     rollServer.invoke(invokeAssertVersion(Version.CURRENT_ORDINAL));
@@ -705,12 +730,7 @@ public class LuceneSearchWithRollingUpgradeDUnit extends JUnit4DistributedTestCa
       final String testName, final String locatorString) throws Exception {
     // Roll the locator
     oldLocator.invoke(invokeStopLocator());
-    VM rollLocator = Host.getHost(0).getVM(VersionManager.CURRENT_VERSION, oldLocator.getId()); // gets
-                                                                                                // a
-                                                                                                // VM
-                                                                                                // with
-                                                                                                // current
-                                                                                                // version
+    VM rollLocator = Host.getHost(0).getVM(VersionManager.CURRENT_VERSION, oldLocator.getId());
     final Properties props = new Properties();
     props.setProperty(DistributionConfig.ENABLE_CLUSTER_CONFIGURATION_NAME, "false");
     rollLocator.invoke(invokeStartLocator(serverHostName, port, testName, locatorString, props));

@@ -59,10 +59,12 @@ public class PutAllRequestOperationHandler
           "Region passed does not exist: " + regionName));
     }
 
+    long startTime = messageExecutionContext.getStatistics().startOperation();
     RegionAPI.PutAllResponse.Builder builder = RegionAPI.PutAllResponse.newBuilder()
         .addAllFailedKeys(putAllRequest.getEntryList().stream()
             .map((entry) -> singlePut(serializationService, region, entry)).filter(Objects::nonNull)
             .collect(Collectors.toList()));
+    messageExecutionContext.getStatistics().endOperation(startTime);
     return Success.of(builder.build());
   }
 

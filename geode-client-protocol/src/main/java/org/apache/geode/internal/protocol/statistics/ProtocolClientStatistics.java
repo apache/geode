@@ -30,4 +30,16 @@ public interface ProtocolClientStatistics {
   void incAuthorizationViolations();
 
   void incAuthenticationFailures();
+
+  /**
+   * Invoke this at the start of an operation and then invoke endOperation in a finally block
+   */
+  long startOperation();
+
+  /**
+   * record the end of an operation. The parameter value should be from startOperation and
+   * endOperation must be invoked in the same thread as startOperation because we're using
+   * System.nanoTime()
+   */
+  void endOperation(long startOperationTime);
 }

@@ -16,7 +16,9 @@ package org.apache.geode.cache.client.internal;
 
 import static org.apache.geode.distributed.ConfigurationProperties.LOCATORS;
 import static org.apache.geode.distributed.ConfigurationProperties.MCAST_PORT;
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 
 import java.net.InetSocketAddress;
 import java.net.SocketTimeoutException;
@@ -266,5 +268,4 @@ public class ConnectionPoolImplJUnitTest {
     assertEquals(location1, pool.executeOnPrimary(testOp));
     assertEquals(location1, pool.executeOnQueuesAndReturnPrimaryResult(testOp));
   }
-
 }

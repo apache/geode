@@ -20,7 +20,6 @@ import java.util.List;
 import org.apache.logging.log4j.Logger;
 
 import org.apache.geode.cache.RegionDestroyedException;
-import org.apache.geode.internal.cache.AbstractLRURegionMap;
 import org.apache.geode.internal.cache.CachePerfStats;
 import org.apache.geode.internal.cache.LocalRegion;
 import org.apache.geode.internal.i18n.LocalizedStrings;
@@ -78,8 +77,7 @@ public class RegionEvictorTask implements Runnable {
           for (Iterator<LocalRegion> iterator = regions.iterator(); iterator.hasNext();) {
             LocalRegion region = iterator.next();
             try {
-              long bytesEvicted =
-                  ((AbstractLRURegionMap) region.entries).centralizedLruUpdateCallback();
+              long bytesEvicted = region.getRegionMap().centralizedLruUpdateCallback();
               if (bytesEvicted == 0) {
                 iterator.remove();
               }
