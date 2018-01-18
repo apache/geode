@@ -131,7 +131,7 @@ public class PartitionedRegionAPIDUnitTest extends CacheTestCase {
     validateDestroyInDatastore(vm2);
     validatePutAndCreateInAccessorAgain(vm3);
     validateGetAndContainsInAll();
-    
+
     destroyPartitionedRegion(vm0);
     validateMetaDataAfterRegionDestroyInAll();
 
@@ -146,10 +146,6 @@ public class PartitionedRegionAPIDUnitTest extends CacheTestCase {
     destroyPartitionedRegion(vm0);
   }
 
-  /**
-   * This is a PartitionedRegion test for the ConcurrentMap operations for scope = D_ACK. 4 VMs are
-   * used to create the PR with and without(Only Accessor) the DataStore.
-   */
   @Test
   public void testPartitionedRegionConcurrentOperations() throws Exception {
     vm0.invoke(() -> createPartitionedRegion());
@@ -162,12 +158,8 @@ public class PartitionedRegionAPIDUnitTest extends CacheTestCase {
     destroyPartitionedRegion(vm0);
   }
 
-  /**
-   * Verify that localMaxMemory is set correctly when using attributes
-   */
   @Test
-  public void localMaxMemoryShouldNotDefaultToZero() throws Exception {
-    // TODO: move to IntegrationTest
+  public void localMaxMemoryShouldDefaultToNonZero() throws Exception {
     vm0.invoke(() -> {
       Cache cache = getCache();
       RegionFactory<String, String> regionFactory = cache.createRegionFactory(RegionShortcut.PARTITION);
@@ -227,7 +219,6 @@ public class PartitionedRegionAPIDUnitTest extends CacheTestCase {
   private void createPartitionedRegionWithCacheLoader() {
     Cache cache = getCache();
 
-    // TODO: replace usage of TestCacheLoader
     CacheLoader<String, String> cacheLoader = new TestCacheLoader() {
       @Override
       public Object load2(final LoaderHelper helper) throws CacheLoaderException {
