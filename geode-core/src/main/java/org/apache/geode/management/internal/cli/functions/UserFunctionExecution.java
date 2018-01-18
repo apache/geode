@@ -79,9 +79,11 @@ public class UserFunctionExecution implements Function<Object[]>, InternalEntity
       loginNeeded = true;
     }
 
+    boolean loginSuccessful = false;
     try {
       if (loginNeeded) {
         securityService.login(credentials);
+        loginSuccessful = true;
       }
 
       if (argumentsString != null && argumentsString.length() > 0) {
@@ -174,7 +176,7 @@ public class UserFunctionExecution implements Function<Object[]>, InternalEntity
       context.getResultSender()
           .lastResult(new CliFunctionResult(member.getId(), false, "Exception: " + e.getMessage()));
     } finally {
-      if (loginNeeded) {
+      if (loginSuccessful) {
         securityService.logout();
       }
     }

@@ -243,7 +243,8 @@ public class CommandResultAssert
           Arrays.stream(expectedValues).anyMatch(actualValueString::contains);
 
       if (!actualValueContainsAnExpectedValue) {
-        failWithMessage("Found unexpected value: " + actualValue);
+        failWithMessage(
+            "Expecting: " + Arrays.toString(expectedValues) + ", but found: " + actualValue);
       }
     }
 

@@ -15,11 +15,6 @@
 
 package org.apache.geode.cache.lucene.test;
 
-import static org.apache.geode.management.internal.security.ResourcePermissions.CLUSTER_MANAGE;
-import static org.apache.geode.security.ResourcePermission.Operation.READ;
-import static org.apache.geode.security.ResourcePermission.Resource.DATA;
-import static org.assertj.core.api.Assertions.assertThat;
-
 import java.util.HashMap;
 import java.util.Map;
 
@@ -28,11 +23,9 @@ import org.junit.ClassRule;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
-import org.mockito.stubbing.Answer;
 
 import org.apache.geode.cache.RegionShortcut;
 import org.apache.geode.cache.execute.Function;
-import org.apache.geode.cache.execute.FunctionContext;
 import org.apache.geode.cache.execute.FunctionService;
 import org.apache.geode.cache.lucene.internal.cli.functions.LuceneCreateIndexFunction;
 import org.apache.geode.cache.lucene.internal.cli.functions.LuceneDescribeIndexFunction;
@@ -44,7 +37,6 @@ import org.apache.geode.cache.lucene.internal.distributed.LuceneQueryFunction;
 import org.apache.geode.cache.lucene.internal.distributed.WaitUntilFlushedFunction;
 import org.apache.geode.cache.lucene.internal.results.LuceneGetPageFunction;
 import org.apache.geode.examples.SimpleSecurityManager;
-import org.apache.geode.security.ResourcePermission;
 import org.apache.geode.test.junit.categories.IntegrationTest;
 import org.apache.geode.test.junit.categories.SecurityTest;
 import org.apache.geode.test.junit.rules.ConnectionConfiguration;
@@ -54,15 +46,6 @@ import org.apache.geode.test.junit.rules.ServerStarterRule;
 @Category({IntegrationTest.class, SecurityTest.class})
 public class LuceneFunctionSecurityTest {
   private static final String RESULT_HEADER = "Function Execution Result";
-
-  // The FunctionService requires a lastResult to be produced
-  private static Answer<Void> callLastResult() {
-    return invocation -> {
-      FunctionContext context = invocation.getArgument(0);
-      context.getResultSender().lastResult(null);
-      return null;
-    };
-  }
 
   @ClassRule
   public static ServerStarterRule server =
@@ -87,8 +70,8 @@ public class LuceneFunctionSecurityTest {
     functionStringMap.put(new LuceneGetPageFunction(), "DATA:READ:testRegion");
 
     functionStringMap.keySet().forEach(FunctionService::registerFunction);
+    FunctionService.registerFunction(new DumpDirectoryFiles());
   }
-
 
   @Test
   @ConnectionConfiguration(user = "user", password = "user")
@@ -102,10 +85,47 @@ public class LuceneFunctionSecurityTest {
     });
   }
 
+  // use DumpDirectoryFile function to verify that all the permissions returned by the
+  // getRequiredPermission are all enforced before trying to execute
   @Test
-  public void dumpDirectoryFileRequires() {
-    Function function = new DumpDirectoryFiles();
-    assertThat(function.getRequiredPermissions("testRegion")).containsExactlyInAnyOrder(
-        CLUSTER_MANAGE, new ResourcePermission(DATA, READ, "testRegion"));
+  @ConnectionConfiguration(user = "clusterManage", password = "clusterManage")
+  public void dumpDirectoryFileRequiresBoth_AsClusterManage() {
+    gfsh.executeAndAssertThat("execute function --region=testRegion --id=" + DumpDirectoryFiles.ID)
+        .tableHasRowCount(RESULT_HEADER, 1)
+        .tableHasColumnWithValuesContaining(RESULT_HEADER, "DATA:READ:testRegion").statusIsError();
+  }
+
+  @Test
+  @ConnectionConfiguration(user = "dataRead", password = "dataRead")
+  public void dumpDirectoryFileRequiresBoth_AsDataRead() {
+    gfsh.executeAndAssertThat("execute function --region=testRegion --id=" + DumpDirectoryFiles.ID)
+        .tableHasRowCount(RESULT_HEADER, 1)
+        .tableHasColumnWithValuesContaining(RESULT_HEADER, "CLUSTER:MANAGE").statusIsError();
+  }
+
+  @Test
+  @ConnectionConfiguration(user = "clusterManage,dataReadRegionB",
+      password = "clusterManage,dataReadRegionB")
+  public void dumpDirectoryFileRequiresBoth_dataReadAnotherRegion() {
+    gfsh.executeAndAssertThat("execute function --region=testRegion --id=" + DumpDirectoryFiles.ID)
+        .tableHasRowCount(RESULT_HEADER, 1)
+        .tableHasColumnWithValuesContaining(RESULT_HEADER, "DATA:READ:testRegion").statusIsError();
+  }
+
+  @Test
+  @ConnectionConfiguration(user = "clusterManage,dataReadTestRegionA",
+      password = "clusterManage,dataReadTestRegionA")
+  public void dumpDirectoryFileRequiresBoth_dataReadInsufficient() {
+    gfsh.executeAndAssertThat("execute function --region=testRegion --id=" + DumpDirectoryFiles.ID)
+        .tableHasRowCount(RESULT_HEADER, 1)
+        .tableHasColumnWithValuesContaining(RESULT_HEADER, "DATA:READ:testRegion").statusIsError();
+  }
+
+  @Test
+  @ConnectionConfiguration(user = "clusterManage,dataReadTestRegion",
+      password = "clusterManage,dataReadTestRegion")
+  public void dumpDirectoryFileRequiresBoth_validUser() {
+    gfsh.executeAndAssertThat("execute function --region=testRegion --id=" + DumpDirectoryFiles.ID)
+        .tableHasRowCount(RESULT_HEADER, 1).doesNotContainOutput("not authorized").statusIsError();
   }
 }
