@@ -38,11 +38,13 @@ import org.apache.geode.cache.EntryNotFoundException;
 import org.apache.geode.cache.EvictionAttributes;
 import org.apache.geode.cache.Operation;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
+import org.apache.geode.internal.cache.eviction.EvictableEntry;
 import org.apache.geode.internal.cache.eviction.EvictionController;
 import org.apache.geode.internal.cache.eviction.EvictionCounters;
 import org.apache.geode.internal.cache.versions.RegionVersionVector;
 import org.apache.geode.internal.cache.versions.VersionHolder;
 import org.apache.geode.internal.cache.versions.VersionTag;
+import org.apache.geode.internal.util.concurrent.CustomEntryConcurrentHashMap;
 import org.apache.geode.test.junit.categories.UnitTest;
 
 @Category(UnitTest.class)
@@ -229,7 +231,7 @@ public class AbstractRegionMapTest {
   }
 
   @Test
-  public void evictDestroyWithExistingTombstoneInTokenModeDoesNothing() {
+  public void evictDestroyWithExistingTombstoneInTokenModeChangesToDestroyToken() {
     final TestableVMLRURegionMap arm = new TestableVMLRURegionMap(true);
     addEntry(arm, Token.TOMBSTONE);
     final EntryEventImpl event = createEventForDestroy(arm._getOwner());
@@ -247,6 +249,31 @@ public class AbstractRegionMapTest {
         eq(false), eq(duringRI), eq(invokeCallbacks));
     verify(arm._getOwner(), times(1)).basicDestroyPart3(any(), eq(event), eq(inTokenMode),
         eq(duringRI), eq(invokeCallbacks), eq(expectedOldValue));
+  }
+
+  @Test
+  public void evictDestroyWithExistingTombstoneInUseByTransactionInTokenModeDoesNothing()
+      throws RegionClearedException {
+    CustomEntryConcurrentHashMap<String, EvictableEntry> map =
+        mock(CustomEntryConcurrentHashMap.class);
+    EvictableEntry entry = mock(EvictableEntry.class);
+    when(entry.isInUseByTransaction()).thenReturn(true);
+    when(entry.getValue()).thenReturn(Token.TOMBSTONE);
+    when(map.get(KEY)).thenReturn(entry);
+    final TestableVMLRURegionMap arm = new TestableVMLRURegionMap(true, map);
+    final EntryEventImpl event = createEventForDestroy(arm._getOwner());
+    final Object expectedOldValue = null;
+    final boolean inTokenMode = true;
+    final boolean duringRI = false;
+    final boolean evict = true;
+    assertThat(arm.destroy(event, inTokenMode, duringRI, false, evict, expectedOldValue, false))
+        .isFalse();
+    verify(entry, never()).destroy(any(), any(), anyBoolean(), anyBoolean(), any(), anyBoolean(),
+        anyBoolean());
+    verify(arm._getOwner(), never()).basicDestroyPart2(any(), any(), anyBoolean(), anyBoolean(),
+        anyBoolean(), anyBoolean());
+    verify(arm._getOwner(), never()).basicDestroyPart3(any(), any(), anyBoolean(), anyBoolean(),
+        anyBoolean(), any());
   }
 
   @Test
@@ -578,6 +605,12 @@ public class AbstractRegionMapTest {
 
     protected TestableVMLRURegionMap(boolean withConcurrencyChecks) {
       super(createOwner(withConcurrencyChecks), new Attributes(), null, createEvictionController());
+    }
+
+    protected TestableVMLRURegionMap(boolean withConcurrencyChecks,
+        CustomEntryConcurrentHashMap hashMap) {
+      this(withConcurrencyChecks);
+      this._setMap(hashMap);
     }
   }
 
