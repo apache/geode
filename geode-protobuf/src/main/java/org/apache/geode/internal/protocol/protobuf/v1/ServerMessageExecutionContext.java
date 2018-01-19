@@ -17,19 +17,19 @@ package org.apache.geode.internal.protocol.protobuf.v1;
 
 
 import org.apache.geode.annotations.Experimental;
-import org.apache.geode.cache.Cache;
 import org.apache.geode.distributed.Locator;
+import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.exception.InvalidExecutionContextException;
 import org.apache.geode.internal.protocol.protobuf.statistics.ClientStatistics;
 import org.apache.geode.internal.protocol.protobuf.v1.state.ProtobufConnectionStateProcessor;
 
 @Experimental
 public class ServerMessageExecutionContext extends MessageExecutionContext {
-  private final Cache cache;
+  private final InternalCache cache;
 
-  public ServerMessageExecutionContext(Cache cache, ClientStatistics statistics,
-      ProtobufConnectionStateProcessor initialProtobufConnectionStateProcessor) {
-    super(statistics, initialProtobufConnectionStateProcessor);
+  public ServerMessageExecutionContext(InternalCache cache, ClientStatistics statistics,
+      ProtobufConnectionStateProcessor initialConnectionStateProcessor) {
+    super(statistics, initialConnectionStateProcessor);
     this.cache = cache;
   }
 
@@ -40,7 +40,7 @@ public class ServerMessageExecutionContext extends MessageExecutionContext {
    * @throws InvalidExecutionContextException if there is no cache available
    */
   @Override
-  public Cache getCache() throws InvalidExecutionContextException {
+  public InternalCache getCache() throws InvalidExecutionContextException {
     return cache;
   }
 

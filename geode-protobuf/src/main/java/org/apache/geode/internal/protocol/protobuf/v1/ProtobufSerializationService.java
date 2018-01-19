@@ -38,6 +38,9 @@ public class ProtobufSerializationService implements SerializationService<BasicT
   @Override
   public BasicTypes.EncodedValue encode(Object value) throws EncodingException {
     BasicTypes.EncodedValue.Builder builder = BasicTypes.EncodedValue.newBuilder();
+    if (value == null) {
+      return builder.build();
+    }
     try {
       ProtobufEncodingTypes protobufEncodingTypes = ProtobufEncodingTypes.valueOf(value.getClass());
       switch (protobufEncodingTypes) {

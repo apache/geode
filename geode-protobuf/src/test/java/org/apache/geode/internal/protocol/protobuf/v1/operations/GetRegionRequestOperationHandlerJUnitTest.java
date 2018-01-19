@@ -26,11 +26,11 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
-import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.DataPolicy;
 import org.apache.geode.cache.Region;
 import org.apache.geode.cache.RegionAttributes;
 import org.apache.geode.cache.Scope;
+import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.protocol.protobuf.v1.BasicTypes;
 import org.apache.geode.internal.protocol.protobuf.v1.ClientProtocol;
 import org.apache.geode.internal.protocol.protobuf.v1.Failure;
@@ -46,8 +46,6 @@ public class GetRegionRequestOperationHandlerJUnitTest extends OperationHandlerJ
 
   @Before
   public void setUp() throws Exception {
-    super.setUp();
-
     region1Stub = mock(Region.class);
     when(region1Stub.getName()).thenReturn(TEST_REGION1);
 
@@ -87,7 +85,7 @@ public class GetRegionRequestOperationHandlerJUnitTest extends OperationHandlerJ
 
   @Test
   public void processReturnsNoCacheRegions() throws Exception {
-    Cache emptyCache = mock(Cache.class);
+    InternalCache emptyCache = mock(InternalCache.class);
     when(emptyCache.rootRegions())
         .thenReturn(Collections.unmodifiableSet(new HashSet<Region<String, String>>()));
     String unknownRegionName = "UNKNOWN_REGION";
