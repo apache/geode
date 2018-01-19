@@ -104,7 +104,8 @@ public class CompactRangeIndex extends AbstractIndex {
       indexStore = new MapIndexStore(
           ((LocalRegion) region).getIndexMap(indexName, indexedExpression, origFromClause), region);
     } else {
-      indexStore = new MemoryIndexStore(region, internalIndexStats);
+      indexStore =
+          new MemoryIndexStore(region, internalIndexStats, (InternalCache) region.getCache());
     }
   }
 

@@ -58,10 +58,9 @@ public class MemoryIndexStoreJUnitTest {
     subclassPreSetup();
     region = createRegion();
     cache = mock(GemFireCacheImpl.class);
-    actualInstance = GemFireCacheImpl.setInstanceForTests(cache);
     mockStats = mock(AbstractIndex.InternalIndexStatistics.class);
 
-    store = new MemoryIndexStore(region, mockStats);
+    store = new MemoryIndexStore(region, mockStats, cache);
     store.setIndexOnValues(true);
     mockEntries = new RegionEntry[numMockEntries];
     IntStream.range(0, numMockEntries).forEach(i -> {
@@ -70,13 +69,10 @@ public class MemoryIndexStoreJUnitTest {
   }
 
   @After
-  public void teardown() {
-    GemFireCacheImpl.setInstanceForTests(actualInstance);
-  }
+  public void teardown() {}
 
   @Test
   public void createIteratorWhenCacheNulledWhenShuttingDownShouldNotThrowNPE() {
-    GemFireCacheImpl.setInstanceForTests(null);
     store.get("T");
   }
 
