@@ -33,44 +33,51 @@ import org.apache.geode.annotations.Experimental;
  *
  */
 @Experimental
-public class JSONWrapper implements Comparable<JSONWrapper> {
-
-  protected final String jsonDocument;
+public interface JSONWrapper extends Comparable<JSONWrapper> {
 
   public static JSONWrapper wrapJSON(String jsonDocument) {
     if (jsonDocument == null) {
       throw new IllegalArgumentException("wrapped document may not be null");
     }
-    return new JSONWrapper(jsonDocument);
+    return new JSONWrapperImpl(jsonDocument);
   }
 
-  private JSONWrapper(String jsonDocument) {
-    this.jsonDocument = jsonDocument;
-  }
+  public String getJSON();
 
-  public String getJSON() {
-    return jsonDocument;
-  }
 
-  @Override
-  public boolean equals(Object o) {
-    if (this == o) {
-      return true;
+  static class JSONWrapperImpl implements JSONWrapper {
+
+
+    protected final String jsonDocument;
+
+    private JSONWrapperImpl(String jsonDocument) {
+      this.jsonDocument = jsonDocument;
     }
-    if (!(o instanceof JSONWrapper)) {
-      return false;
+
+    public String getJSON() {
+      return jsonDocument;
     }
-    JSONWrapper that = (JSONWrapper) o;
-    return jsonDocument.equals(that.jsonDocument);
-  }
 
-  @Override
-  public int hashCode() {
-    return Objects.hash(jsonDocument);
-  }
+    @Override
+    public boolean equals(Object o) {
+      if (this == o) {
+        return true;
+      }
+      if (!(o instanceof JSONWrapper)) {
+        return false;
+      }
+      JSONWrapper that = (JSONWrapper) o;
+      return jsonDocument.equals(that.getJSON());
+    }
 
-  @Override
-  public int compareTo(JSONWrapper o) {
-    return jsonDocument.compareTo(o.jsonDocument);
+    @Override
+    public int hashCode() {
+      return Objects.hash(jsonDocument);
+    }
+
+    @Override
+    public int compareTo(JSONWrapper o) {
+      return jsonDocument.compareTo(o.getJSON());
+    }
   }
 }
