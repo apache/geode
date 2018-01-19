@@ -16,7 +16,6 @@ package org.apache.geode.distributed.internal.deadlock;
 
 import java.io.Serializable;
 import java.util.HashSet;
-import java.util.LinkedList;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
 
@@ -27,9 +26,9 @@ import org.apache.geode.cache.execute.FunctionException;
 import org.apache.geode.cache.execute.FunctionService;
 import org.apache.geode.cache.execute.ResultCollector;
 import org.apache.geode.distributed.DistributedMember;
-import org.apache.geode.distributed.DistributedSystem;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
+import org.apache.geode.internal.InternalEntity;
 import org.apache.geode.internal.cache.execute.AbstractExecution;
 
 /**
@@ -104,7 +103,7 @@ public class GemFireDeadlockDetector {
     return detector.getDependencyGraph();
   }
 
-  private static class CollectDependencyFunction implements Function {
+  private static class CollectDependencyFunction implements Function, InternalEntity {
 
     private static final long serialVersionUID = 6204378622627095817L;
 

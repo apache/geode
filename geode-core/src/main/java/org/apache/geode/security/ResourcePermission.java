@@ -145,7 +145,6 @@ public class ResourcePermission extends WildcardPermission {
     if (ALL.equals(resource)) {
       return Resource.ALL;
     }
-
     return Resource.valueOf(resource);
   }
 
@@ -153,8 +152,9 @@ public class ResourcePermission extends WildcardPermission {
    * Returns the operation, could be either ALL, NULL, MANAGE, WRITE or READ
    */
   public Operation getOperation() {
-    if (ALL.equals(operation))
+    if (ALL.equals(operation)) {
       return Operation.ALL;
+    }
     return Operation.valueOf(operation);
   }
 

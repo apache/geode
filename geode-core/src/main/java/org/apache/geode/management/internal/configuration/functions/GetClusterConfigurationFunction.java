@@ -34,11 +34,12 @@ import org.apache.geode.cache.execute.Function;
 import org.apache.geode.cache.execute.FunctionContext;
 import org.apache.geode.distributed.internal.ClusterConfigurationService;
 import org.apache.geode.distributed.internal.InternalLocator;
+import org.apache.geode.internal.InternalEntity;
 import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.management.internal.configuration.messages.ConfigurationResponse;
 import org.apache.geode.security.ResourcePermission;
 
-public class GetClusterConfigurationFunction implements Function {
+public class GetClusterConfigurationFunction implements Function, InternalEntity {
   private static final Logger logger = LogService.getLogger();
 
   @Override

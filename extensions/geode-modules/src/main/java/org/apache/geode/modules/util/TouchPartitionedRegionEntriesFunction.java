@@ -24,7 +24,6 @@ import java.util.Set;
 
 import org.apache.geode.DataSerializable;
 import org.apache.geode.cache.Cache;
-import org.apache.geode.cache.CacheFactory;
 import org.apache.geode.cache.Declarable;
 import org.apache.geode.cache.Region;
 import org.apache.geode.cache.execute.Function;
@@ -42,31 +41,22 @@ public class TouchPartitionedRegionEntriesFunction
 
   private static final long serialVersionUID = -3700389655056961153L;
 
-  private final Cache cache;
-
   public static final String ID = "touch-partitioned-region-entries";
-
-  public TouchPartitionedRegionEntriesFunction() {
-    this(CacheFactory.getAnyInstance());
-  }
-
-  public TouchPartitionedRegionEntriesFunction(Cache cache) {
-    this.cache = cache;
-  }
 
   @SuppressWarnings("unchecked")
   public void execute(FunctionContext context) {
     RegionFunctionContext rfc = (RegionFunctionContext) context;
     Set<String> keys = (Set<String>) rfc.getFilter();
 
+    Cache cache = context.getCache();
     // Get local (primary) data for the context
     Region primaryDataSet = PartitionRegionHelper.getLocalDataForContext(rfc);
 
-    if (this.cache.getLogger().fineEnabled()) {
+    if (cache.getLogger().fineEnabled()) {
       StringBuilder builder = new StringBuilder();
       builder.append("Function ").append(ID).append(" received request to touch ")
           .append(primaryDataSet.getFullPath()).append("->").append(keys);
-      this.cache.getLogger().fine(builder.toString());
+      cache.getLogger().fine(builder.toString());
     }
 
     // Retrieve each value to update the lastAccessedTime.

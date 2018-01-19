@@ -20,8 +20,9 @@ import org.apache.geode.cache.AttributesFactory;
 import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.Region;
 import org.apache.geode.cache.RegionAttributes;
-import org.apache.geode.cache.execute.FunctionAdapter;
+import org.apache.geode.cache.execute.Function;
 import org.apache.geode.cache.execute.FunctionContext;
+import org.apache.geode.internal.InternalEntity;
 import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.management.internal.cli.i18n.CliStrings;
 
@@ -29,7 +30,7 @@ import org.apache.geode.management.internal.cli.i18n.CliStrings;
  *
  * @since GemFire 7.0
  */
-public class FetchRegionAttributesFunction extends FunctionAdapter {
+public class FetchRegionAttributesFunction implements Function, InternalEntity {
   private static final Logger logger = LogService.getLogger();
 
   private static final long serialVersionUID = 4366812590788342070L;
