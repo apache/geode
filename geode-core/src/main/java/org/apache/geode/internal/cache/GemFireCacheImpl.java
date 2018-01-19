@@ -3880,6 +3880,9 @@ public class GemFireCacheImpl implements InternalCache, InternalClientCache, Has
         this.allGatewaySenders = Collections.unmodifiableSet(newSenders);
       }
     }
+    if (!(sender.getRemoteDSId() < 0)) {
+      this.system.handleResourceEvent(ResourceEvent.GATEWAYSENDER_REMOVE, sender);
+    }
   }
 
   @Override
