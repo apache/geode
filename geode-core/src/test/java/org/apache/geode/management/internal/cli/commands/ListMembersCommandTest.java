@@ -79,6 +79,15 @@ public class ListMembersCommandTest {
   }
 
   @Test
+  public void noCoordinator() {
+    members.add(member1);
+    doReturn(null).when(command).getCoordinator();
+
+    gfsh.executeAndAssertThat(command, "list members").tableHasRowCount("Name", 1)
+        .tableHasRowWithValues("Name", "Id", "name", "id").statusIsSuccess();
+  }
+
+  @Test
   public void listMembersMultipleItems() {
     members.add(member1);
     members.add(member2);

@@ -65,11 +65,16 @@ public class ListMembersCommand implements GfshCommand {
 
   DistributedMember getCoordinator() {
     InternalDistributedSystem ids = InternalDistributedSystem.getConnectedInstance();
-    if ((ids != null) && (ids.isConnected())) {
-      MembershipManager mmgr = ids.getDistributionManager().getMembershipManager();
-      return mmgr.getCoordinator();
+    if (ids == null || !ids.isConnected()) {
+      return null;
     }
 
-    return null;
+    MembershipManager mmgr = ids.getDistributionManager().getMembershipManager();
+    if (mmgr == null) {
+      return null;
+    }
+
+    return mmgr.getCoordinator();
+
   }
 }
