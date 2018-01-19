@@ -21,13 +21,14 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
+import org.apache.logging.log4j.Logger;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
+import org.apache.geode.internal.Banner;
+import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.test.junit.categories.UnitTest;
 
 /**
@@ -35,6 +36,12 @@ import org.apache.geode.test.junit.categories.UnitTest;
  */
 @Category(UnitTest.class)
 public class ArgumentRedactorJUnitTest {
+  private static final Logger logger = LogService.getLogger();
+  private static final String someProperty = "redactorTest.someProperty";
+  private static final String somePasswordProperty = "redactorTest.aPassword";
+  private static final String someOtherPasswordProperty =
+      "redactorTest.aPassword-withCharactersAfterward";
+
   @Test
   public void testRedactArgList() throws Exception {
     List<String> argList = new ArrayList<>();
@@ -49,34 +56,16 @@ public class ArgumentRedactorJUnitTest {
     argList.add("geode-password= confidential");
     argList.add("some-other-password =shhhh");
     String redacted = redact(argList);
-    assertTrue(redacted.contains("gemfire.security-password=********"));
-    assertTrue(redacted.contains("gemfire.security-properties=./security.properties"));
-    assertTrue(redacted.contains("gemfire.sys.security-value=someValue"));
-    assertTrue(redacted.contains("gemfire.use-cluster-configuration=true"));
-    assertTrue(redacted.contains("someotherstringvalue"));
-    assertTrue(redacted.contains("login-password=********"));
-    assertTrue(redacted.contains("login-name=admin"));
-    assertTrue(redacted.contains("gemfire-password=********"));
-    assertTrue(redacted.contains("geode-password=********"));
-    assertTrue(redacted.contains("some-other-password=********"));
-  }
-
-  @Test
-  public void testRedactMap() throws Exception {
-    Map<String, String> argMap = new HashMap<>();
-    argMap.put("gemfire.security-password", "secret");
-    argMap.put("gemfire.security-properties", "./security.properties");
-    argMap.put("gemfire.sys.security-value", "someValue");
-    argMap.put("gemfire.use-cluster-configuration", "true");
-    argMap.put("login-password", "secret");
-    argMap.put("login-name", "admin");
-    String redacted = redact(argMap);
-    assertTrue(redacted.contains("gemfire.security-password=********"));
-    assertTrue(redacted.contains("gemfire.security-properties=./security.properties"));
-    assertTrue(redacted.contains("gemfire.sys.security-value=someValue"));
-    assertTrue(redacted.contains("gemfire.use-cluster-configuration=true"));
-    assertTrue(redacted.contains("login-password=********"));
-    assertTrue(redacted.contains("login-name=admin"));
+    assertThat(redacted).contains("gemfire.security-password=********");
+    assertThat(redacted).contains("gemfire.security-properties=./security.properties");
+    assertThat(redacted).contains("gemfire.sys.security-value=someValue");
+    assertThat(redacted).contains("gemfire.use-cluster-configuration=true");
+    assertThat(redacted).contains("someotherstringvalue");
+    assertThat(redacted).contains("login-password=********");
+    assertThat(redacted).contains("login-name=admin");
+    assertThat(redacted).contains("gemfire-password = ********");
+    assertThat(redacted).contains("geode-password= ********");
+    assertThat(redacted).contains("some-other-password =********");
   }
 
   @Test
@@ -115,11 +104,11 @@ public class ArgumentRedactorJUnitTest {
     arg =
         "-Dlogin-password=secret -Dlogin-name=admin -Dgemfire-password = super-secret --geode-password= confidential -J-Dsome-other-password =shhhh";
     String redacted = redact(arg);
-    assertTrue(redacted.contains("login-password=********"));
-    assertTrue(redacted.contains("login-name=admin"));
-    assertTrue(redacted.contains("gemfire-password=********"));
-    assertTrue(redacted.contains("geode-password=********"));
-    assertTrue(redacted.contains("some-other-password=********"));
+    assertThat(redacted).contains("login-password=********");
+    assertThat(redacted).contains("login-name=admin");
+    assertThat(redacted).contains("gemfire-password = ********");
+    assertThat(redacted).contains("geode-password= ********");
+    assertThat(redacted).contains("some-other-password =********");
 
     arg = "-Dgemfire.security-properties=\"c:\\Program Files (x86)\\My Folder\"";
     assertEquals(arg, (redact(arg)));
@@ -127,11 +116,28 @@ public class ArgumentRedactorJUnitTest {
 
   @Test
   public void redactScriptLine() throws Exception {
-    assertThat(ArgumentRedactor.redactScriptLine("connect --password=test --user=test"))
+    assertThat(redact("connect --password=test --user=test"))
         .isEqualTo("connect --password=******** --user=test");
 
-    assertThat(
-        ArgumentRedactor.redactScriptLine("connect --test-password=test --product-password=test1"))
-            .isEqualTo("connect --test-password=******** --product-password=********");
+    assertThat(redact("connect --test-password=test --product-password=test1"))
+        .isEqualTo("connect --test-password=******** --product-password=********");
+  }
+
+  @Test
+  public void systemPropertiesGetRedactedInBanner() throws Exception {
+    try {
+      System.setProperty(someProperty, "isNotRedacted");
+      System.setProperty(somePasswordProperty, "isRedacted");
+      System.setProperty(someOtherPasswordProperty, "isRedacted");
+
+      List<String> args = ArrayUtils.asList("--user=me", "--password=isRedacted",
+          "--another-password-for-some-reason =isRedacted", "--yet-another-password = isRedacted");
+      String banner = Banner.getString(args.toArray(new String[0]));
+      assertThat(banner).doesNotContain("isRedacted");
+    } finally {
+      System.clearProperty(someProperty);
+      System.clearProperty(somePasswordProperty);
+      System.clearProperty(someOtherPasswordProperty);
+    }
   }
 }
