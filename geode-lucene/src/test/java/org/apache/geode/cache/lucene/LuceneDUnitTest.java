@@ -61,6 +61,14 @@ public abstract class LuceneDUnitTest extends JUnit4CacheTestCase {
     regionTestType.createAccessor(getCache(), REGION_NAME);
   }
 
+  protected void initDataStore(RegionTestableType regionTestType) throws Exception {
+    regionTestType.createDataStore(getCache(), REGION_NAME);
+  }
+
+  protected void initAccessor(RegionTestableType regionTestType) throws Exception {
+    regionTestType.createAccessor(getCache(), REGION_NAME);
+  }
+
   protected RegionTestableType[] getListOfRegionTestTypes() {
     return new RegionTestableType[] {RegionTestableType.PARTITION,
         RegionTestableType.PARTITION_REDUNDANT, RegionTestableType.PARTITION_OVERFLOW_TO_DISK,

@@ -177,15 +177,16 @@ public class RebalanceWithRedundancyDUnitTest extends LuceneQueriesAccessorBase 
     dataStore1.invoke(() -> initDataStore(createIndex, regionTestType));
     dataStore2.invoke(() -> initDataStore(createIndex, regionTestType));
     accessor.invoke(() -> initAccessor(createIndex, regionTestType));
+
     dataStore1.invoke(() -> LuceneTestUtilities.pauseSender(getCache()));
     dataStore2.invoke(() -> LuceneTestUtilities.pauseSender(getCache()));
     accessor.invoke(() -> LuceneTestUtilities.pauseSender(getCache()));
 
     putEntryInEachBucket();
 
-    dataStore1.invoke(() -> LuceneTestUtilities.resumeSender(getCache()));
-    dataStore2.invoke(() -> LuceneTestUtilities.resumeSender(getCache()));
-    accessor.invoke(() -> LuceneTestUtilities.resumeSender(getCache()));
+    dataStore1.invoke(() -> LuceneTestUtilities.resumeSender(basicGetCache()));
+    dataStore2.invoke(() -> LuceneTestUtilities.resumeSender(basicGetCache()));
+    accessor.invoke(() -> LuceneTestUtilities.resumeSender(basicGetCache()));
 
     assertTrue(waitForFlushBeforeExecuteTextSearch(dataStore2, 60000));
 

@@ -62,6 +62,16 @@ public class LuceneQueriesAccessorBase extends LuceneDUnitTest {
     accessor = Host.getHost(0).getVM(3);
   }
 
+  protected void putDataInRegion(VM vm) {
+    vm.invoke(() -> {
+      final Cache cache = getCache();
+      Region<Object, Object> region = cache.getRegion(REGION_NAME);
+      region.put(1, new TestObject("hello world"));
+      region.put(113, new TestObject("hi world"));
+      region.put(2, new TestObject("goodbye world"));
+    });
+  }
+
   protected boolean waitForFlushBeforeExecuteTextSearch(VM vm, int ms) {
     return vm.invoke(() -> {
       Cache cache = getCache();
