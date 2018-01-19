@@ -229,6 +229,27 @@ public class AbstractRegionMapTest {
   }
 
   @Test
+  public void evictDestroyWithExistingTombstoneInTokenModeDoesNothing() {
+    final TestableVMLRURegionMap arm = new TestableVMLRURegionMap(true);
+    addEntry(arm, Token.TOMBSTONE);
+    final EntryEventImpl event = createEventForDestroy(arm._getOwner());
+    final Object expectedOldValue = null;
+    final boolean inTokenMode = true;
+    final boolean duringRI = false;
+    final boolean evict = true;
+    assertThat(arm.destroy(event, inTokenMode, duringRI, false, evict, expectedOldValue, false))
+        .isTrue();
+    assertThat(arm._getMap().containsKey(event.getKey())).isTrue();
+    RegionEntry re = (RegionEntry) arm._getMap().get(event.getKey());
+    assertThat(re.getValueAsToken()).isEqualTo(Token.DESTROYED);
+    boolean invokeCallbacks = true;
+    verify(arm._getOwner(), times(1)).basicDestroyPart2(any(), eq(event), eq(inTokenMode),
+        eq(false), eq(duringRI), eq(invokeCallbacks));
+    verify(arm._getOwner(), times(1)).basicDestroyPart3(any(), eq(event), eq(inTokenMode),
+        eq(duringRI), eq(invokeCallbacks), eq(expectedOldValue));
+  }
+
+  @Test
   public void destroyOfExistingEntryInTokenModeAddsAToken() {
     final TestableAbstractRegionMap arm = new TestableAbstractRegionMap();
     addEntry(arm);
@@ -295,6 +316,32 @@ public class AbstractRegionMapTest {
     assertThatThrownBy(
         () -> arm.destroy(event, inTokenMode, duringRI, false, false, expectedOldValue, false))
             .isInstanceOf(EntryNotFoundException.class);
+  }
+
+  @Test
+  public void destroyOfExistingTombstoneWithConcurrencyChecksAndRemoveRecoveredEntryDoesRemove() {
+    final TestableAbstractRegionMap arm = new TestableAbstractRegionMap(true);
+    RegionVersionVector<?> versionVector = mock(RegionVersionVector.class);
+    when(arm._getOwner().getVersionVector()).thenReturn(versionVector);
+    CachePerfStats cachePerfStats = mock(CachePerfStats.class);
+    when(arm._getOwner().getCachePerfStats()).thenReturn(cachePerfStats);
+    final EntryEventImpl event = createEventForDestroy(arm._getOwner());
+    VersionTag<?> versionTag = mock(VersionTag.class);
+    when(versionTag.hasValidVersion()).thenReturn(true);
+    event.setVersionTag(versionTag);
+    addEntry(arm, Token.TOMBSTONE);
+    final Object expectedOldValue = null;
+    final boolean inTokenMode = false;
+    final boolean duringRI = false;
+    final boolean removeRecoveredEntry = true;
+    assertThat(arm.destroy(event, inTokenMode, duringRI, false, false, expectedOldValue,
+        removeRecoveredEntry)).isTrue();
+    assertThat(arm._getMap().containsKey(event.getKey())).isFalse();
+    boolean invokeCallbacks = true;
+    verify(arm._getOwner(), times(1)).basicDestroyPart2(any(), eq(event), eq(inTokenMode),
+        eq(false), eq(duringRI), eq(invokeCallbacks));
+    verify(arm._getOwner(), times(1)).basicDestroyPart3(any(), eq(event), eq(inTokenMode),
+        eq(duringRI), eq(invokeCallbacks), eq(expectedOldValue));
   }
 
   @Test
