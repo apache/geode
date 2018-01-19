@@ -28,7 +28,6 @@ import java.util.concurrent.TimeUnit;
 import org.apache.logging.log4j.Logger;
 import org.awaitility.Awaitility;
 
-import org.apache.geode.CancelException;
 import org.apache.geode.cache.AttributesFactory;
 import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.CacheException;
@@ -72,7 +71,7 @@ public abstract class JUnit4CacheTestCase extends JUnit4DistributedTestCase
    * <p>
    * Field is static so it doesn't get serialized with SerializableRunnable inner classes.
    */
-  private static InternalCache cache;
+  protected static InternalCache cache;
 
   private final CacheTestFixture cacheTestFixture;
 
@@ -369,7 +368,6 @@ public abstract class JUnit4CacheTestCase extends JUnit4DistributedTestCase
   private static synchronized void remoteTearDown() {
     try {
       DistributionMessageObserver.setInstance(null);
-      waitForNoRebalancing();
       destroyRegions(cache);
     } finally {
       try {
@@ -381,22 +379,6 @@ public abstract class JUnit4CacheTestCase extends JUnit4DistributedTestCase
           logger.error("Error cleaning disk dirs", e);
         }
       }
-    }
-  }
-
-  /**
-   * Some tests run so quickly that the rebalance operation doesn't even have time to start before
-   * regions are already being destroyed - GEDOE-4312.
-   */
-  private static void waitForNoRebalancing() {
-    if (cache != null) {
-      Awaitility.await().atMost(10, TimeUnit.SECONDS).until(() -> {
-        try {
-          return cache.getResourceManager().getRebalanceOperations().size() == 0;
-        } catch (CancelException ex) {
-          return true;
-        }
-      });
     }
   }
 
