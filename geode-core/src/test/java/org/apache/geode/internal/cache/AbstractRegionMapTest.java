@@ -33,10 +33,12 @@ import static org.mockito.Mockito.when;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
+import org.apache.geode.cache.CacheWriterException;
 import org.apache.geode.cache.DataPolicy;
 import org.apache.geode.cache.EntryNotFoundException;
 import org.apache.geode.cache.EvictionAttributes;
 import org.apache.geode.cache.Operation;
+import org.apache.geode.cache.TimeoutException;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
 import org.apache.geode.internal.cache.eviction.EvictableEntry;
 import org.apache.geode.internal.cache.eviction.EvictionController;
@@ -209,6 +211,31 @@ public class AbstractRegionMapTest {
     boolean invokeCallbacks = true;
     verify(arm._getOwner(), times(1)).basicDestroyPart2(any(), eq(event), eq(inTokenMode),
         eq(false), eq(duringRI), eq(invokeCallbacks));
+    verify(arm._getOwner(), times(1)).basicDestroyPart3(any(), eq(event), eq(inTokenMode),
+        eq(duringRI), eq(invokeCallbacks), eq(expectedOldValue));
+  }
+
+  @Test
+  public void destroyWithEmptyRegionInTokenModeWithRegionClearedExceptionDoesDestroy()
+      throws Exception {
+    CustomEntryConcurrentHashMap<String, EvictableEntry> map =
+        mock(CustomEntryConcurrentHashMap.class);
+    EvictableEntry entry = mock(EvictableEntry.class);
+    when(entry.destroy(any(), any(), anyBoolean(), anyBoolean(), any(), anyBoolean(), anyBoolean()))
+        .thenThrow(RegionClearedException.class);
+    when(map.get(KEY)).thenReturn(null);
+    RegionEntryFactory factory = mock(RegionEntryFactory.class);
+    when(factory.createEntry(any(), any(), any())).thenReturn(entry);
+    final TestableAbstractRegionMap arm = new TestableAbstractRegionMap(false, map, factory);
+    final EntryEventImpl event = createEventForDestroy(arm._getOwner());
+    final Object expectedOldValue = null;
+    final boolean inTokenMode = true;
+    final boolean duringRI = false;
+    assertThat(arm.destroy(event, inTokenMode, duringRI, false, false, expectedOldValue, false))
+        .isTrue();
+    boolean invokeCallbacks = true;
+    verify(arm._getOwner(), times(1)).basicDestroyPart2(any(), eq(event), eq(inTokenMode), eq(true),
+        eq(duringRI), eq(invokeCallbacks));
     verify(arm._getOwner(), times(1)).basicDestroyPart3(any(), eq(event), eq(inTokenMode),
         eq(duringRI), eq(invokeCallbacks), eq(expectedOldValue));
   }
@@ -686,6 +713,11 @@ public class AbstractRegionMapTest {
     }
 
     protected TestableAbstractRegionMap(boolean withConcurrencyChecks) {
+      this(withConcurrencyChecks, null, null);
+    }
+
+    protected TestableAbstractRegionMap(boolean withConcurrencyChecks,
+        CustomEntryConcurrentHashMap map, RegionEntryFactory factory) {
       super(null);
       LocalRegion owner = mock(LocalRegion.class);
       CachePerfStats cachePerfStats = mock(CachePerfStats.class);
@@ -694,6 +726,12 @@ public class AbstractRegionMapTest {
       when(owner.getDataPolicy()).thenReturn(DataPolicy.REPLICATE);
       doThrow(EntryNotFoundException.class).when(owner).checkEntryNotFound(any());
       initialize(owner, new Attributes(), null, false);
+      if (map != null) {
+        this._setMap(map);
+      }
+      if (factory != null) {
+        this.setEntryFactory(factory);
+      }
     }
   }
 
