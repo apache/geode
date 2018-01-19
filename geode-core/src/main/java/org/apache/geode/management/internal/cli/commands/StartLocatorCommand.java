@@ -294,12 +294,12 @@ public class StartLocatorCommand implements GfshCommand {
     // Else, ask the user to use the "connect" command to connect to the Locator.
     if (shouldAutoConnect(connect)) {
       doAutoConnect(locatorHostName, locatorPort, configProperties, infoResultData);
-    }
 
-    // Report on the state of the Shared Configuration service if enabled...
-    if (enableSharedConfiguration) {
-      infoResultData.addLine(ClusterConfigurationStatusRetriever.fromLocator(locatorHostName,
-          locatorPort, configProperties));
+      // Report on the state of the Shared Configuration service if enabled...
+      if (enableSharedConfiguration) {
+        infoResultData.addLine(ClusterConfigurationStatusRetriever.fromLocator(locatorHostName,
+            locatorPort, configProperties));
+      }
     }
 
     return ResultBuilder.buildResult(infoResultData);
