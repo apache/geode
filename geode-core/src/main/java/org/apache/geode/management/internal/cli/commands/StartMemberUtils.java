@@ -126,8 +126,16 @@ public class StartMemberUtils {
   static void addMaxHeap(final List<String> commandLine, final String maxHeap) {
     if (StringUtils.isNotBlank(maxHeap)) {
       commandLine.add("-Xmx" + maxHeap);
-      commandLine.add("-XX:+UseConcMarkSweepGC");
-      commandLine.add("-XX:CMSInitiatingOccupancyFraction=" + CMS_INITIAL_OCCUPANCY_FRACTION);
+
+      String collectorKey = "-XX:+UseConcMarkSweepGC";
+      if (!commandLine.contains(collectorKey)) {
+        commandLine.add(collectorKey);
+      }
+
+      String occupancyFractionKey = "-XX:CMSInitiatingOccupancyFraction=";
+      if (commandLine.stream().noneMatch(s -> s.contains(occupancyFractionKey))) {
+        commandLine.add(occupancyFractionKey + CMS_INITIAL_OCCUPANCY_FRACTION);
+      }
     }
   }
 
