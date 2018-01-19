@@ -277,6 +277,31 @@ public class AbstractRegionMapTest {
   }
 
   @Test
+  public void evictDestroyWithConcurrentChangeFromNullToInUseByTransactionInTokenModeDoesNothing()
+      throws RegionClearedException {
+    CustomEntryConcurrentHashMap<Object, EvictableEntry> map =
+        mock(CustomEntryConcurrentHashMap.class);
+    EvictableEntry entry = mock(EvictableEntry.class);
+    when(entry.isInUseByTransaction()).thenReturn(true);
+    when(map.get(KEY)).thenReturn(null);
+    when(map.putIfAbsent(eq(KEY), any())).thenReturn(entry);
+    final TestableVMLRURegionMap arm = new TestableVMLRURegionMap(true, map);
+    final EntryEventImpl event = createEventForDestroy(arm._getOwner());
+    final Object expectedOldValue = null;
+    final boolean inTokenMode = true;
+    final boolean duringRI = false;
+    final boolean evict = true;
+    assertThat(arm.destroy(event, inTokenMode, duringRI, false, evict, expectedOldValue, false))
+        .isFalse();
+    verify(entry, never()).destroy(any(), any(), anyBoolean(), anyBoolean(), any(), anyBoolean(),
+        anyBoolean());
+    verify(arm._getOwner(), never()).basicDestroyPart2(any(), any(), anyBoolean(), anyBoolean(),
+        anyBoolean(), anyBoolean());
+    verify(arm._getOwner(), never()).basicDestroyPart3(any(), any(), anyBoolean(), anyBoolean(),
+        anyBoolean(), any());
+  }
+
+  @Test
   public void destroyWithConcurrentChangeFromNullToValidRetriesAndDoesDestroy()
       throws RegionClearedException {
     CustomEntryConcurrentHashMap<Object, EvictableEntry> map =
@@ -296,6 +321,36 @@ public class AbstractRegionMapTest {
     assertThat(arm.destroy(event, inTokenMode, duringRI, false, evict, expectedOldValue, false))
         .isTrue();
     verify(entry, times(1)).destroy(eq(arm._getOwner()), eq(event), eq(false), anyBoolean(),
+        eq(expectedOldValue), anyBoolean(), anyBoolean());
+    boolean invokeCallbacks = true;
+    verify(arm._getOwner(), times(1)).basicDestroyPart2(any(), eq(event), eq(inTokenMode),
+        eq(false), eq(duringRI), eq(invokeCallbacks));
+    verify(arm._getOwner(), times(1)).basicDestroyPart3(any(), eq(event), eq(inTokenMode),
+        eq(duringRI), eq(invokeCallbacks), eq(expectedOldValue));
+  }
+
+  @Test
+  public void destroyInTokenModeWithConcurrentChangeFromNullToRemovePhase2RetriesAndDoesDestroy()
+      throws RegionClearedException {
+    CustomEntryConcurrentHashMap<Object, EvictableEntry> map =
+        mock(CustomEntryConcurrentHashMap.class);
+    EvictableEntry entry = mock(EvictableEntry.class);
+    when(entry.isRemovedPhase2()).thenReturn(true);
+    when(entry.destroy(any(), any(), anyBoolean(), anyBoolean(), any(), anyBoolean(), anyBoolean()))
+        .thenReturn(true);
+    when(map.get(KEY)).thenReturn(null);
+    when(map.putIfAbsent(eq(KEY), any())).thenReturn(entry).thenReturn(null);
+    final TestableVMLRURegionMap arm = new TestableVMLRURegionMap(true, map);
+    final EntryEventImpl event = createEventForDestroy(arm._getOwner());
+    final Object expectedOldValue = null;
+    final boolean inTokenMode = true;
+    final boolean duringRI = false;
+    final boolean evict = false;
+    assertThat(arm.destroy(event, inTokenMode, duringRI, false, evict, expectedOldValue, false))
+        .isTrue();
+    verify(map).remove(eq(KEY), eq(entry));
+    verify(map, times(2)).putIfAbsent(eq(KEY), any());
+    verify(entry, never()).destroy(eq(arm._getOwner()), eq(event), eq(false), anyBoolean(),
         eq(expectedOldValue), anyBoolean(), anyBoolean());
     boolean invokeCallbacks = true;
     verify(arm._getOwner(), times(1)).basicDestroyPart2(any(), eq(event), eq(inTokenMode),
@@ -357,8 +412,6 @@ public class AbstractRegionMapTest {
     final TestableAbstractRegionMap arm = new TestableAbstractRegionMap(true);
     RegionVersionVector<?> versionVector = mock(RegionVersionVector.class);
     when(arm._getOwner().getVersionVector()).thenReturn(versionVector);
-    CachePerfStats cachePerfStats = mock(CachePerfStats.class);
-    when(arm._getOwner().getCachePerfStats()).thenReturn(cachePerfStats);
     final EntryEventImpl event = createEventForDestroy(arm._getOwner());
     VersionTag<?> versionTag = mock(VersionTag.class);
     when(versionTag.hasValidVersion()).thenReturn(true);
@@ -386,8 +439,6 @@ public class AbstractRegionMapTest {
     final TestableAbstractRegionMap arm = new TestableAbstractRegionMap(true);
     RegionVersionVector<?> versionVector = mock(RegionVersionVector.class);
     when(arm._getOwner().getVersionVector()).thenReturn(versionVector);
-    CachePerfStats cachePerfStats = mock(CachePerfStats.class);
-    when(arm._getOwner().getCachePerfStats()).thenReturn(cachePerfStats);
     final EntryEventImpl event = createEventForDestroy(arm._getOwner());
     VersionTag<?> versionTag = mock(VersionTag.class);
     when(versionTag.hasValidVersion()).thenReturn(true);
@@ -406,8 +457,6 @@ public class AbstractRegionMapTest {
     final TestableAbstractRegionMap arm = new TestableAbstractRegionMap(true);
     RegionVersionVector<?> versionVector = mock(RegionVersionVector.class);
     when(arm._getOwner().getVersionVector()).thenReturn(versionVector);
-    CachePerfStats cachePerfStats = mock(CachePerfStats.class);
-    when(arm._getOwner().getCachePerfStats()).thenReturn(cachePerfStats);
     final EntryEventImpl event = createEventForDestroy(arm._getOwner());
     VersionTag<?> versionTag = mock(VersionTag.class);
     when(versionTag.hasValidVersion()).thenReturn(true);
@@ -432,8 +481,6 @@ public class AbstractRegionMapTest {
     final TestableAbstractRegionMap arm = new TestableAbstractRegionMap(true);
     RegionVersionVector<?> versionVector = mock(RegionVersionVector.class);
     when(arm._getOwner().getVersionVector()).thenReturn(versionVector);
-    CachePerfStats cachePerfStats = mock(CachePerfStats.class);
-    when(arm._getOwner().getCachePerfStats()).thenReturn(cachePerfStats);
     final EntryEventImpl event = createEventForDestroy(arm._getOwner());
     VersionTag<?> versionTag = mock(VersionTag.class);
     when(versionTag.hasValidVersion()).thenReturn(true);
@@ -490,8 +537,6 @@ public class AbstractRegionMapTest {
     final TestableAbstractRegionMap arm = new TestableAbstractRegionMap(true);
     RegionVersionVector versionVector = mock(RegionVersionVector.class);
     when(arm._getOwner().getVersionVector()).thenReturn(versionVector);
-    CachePerfStats cachePerfStats = mock(CachePerfStats.class);
-    when(arm._getOwner().getCachePerfStats()).thenReturn(cachePerfStats);
     addEntry(arm);
     final EntryEventImpl event = createEventForDestroy(arm._getOwner());
     VersionTag versionTag = mock(VersionTag.class);
@@ -517,8 +562,6 @@ public class AbstractRegionMapTest {
     final TestableVMLRURegionMap arm = new TestableVMLRURegionMap(true);
     RegionVersionVector<?> versionVector = mock(RegionVersionVector.class);
     when(arm._getOwner().getVersionVector()).thenReturn(versionVector);
-    CachePerfStats cachePerfStats = mock(CachePerfStats.class);
-    when(arm._getOwner().getCachePerfStats()).thenReturn(cachePerfStats);
     addEntry(arm);
     final EntryEventImpl event = createEventForDestroy(arm._getOwner());
     VersionTag<?> versionTag = mock(VersionTag.class);
@@ -591,8 +634,6 @@ public class AbstractRegionMapTest {
     final TestableAbstractRegionMap arm = new TestableAbstractRegionMap(true);
     RegionVersionVector versionVector = mock(RegionVersionVector.class);
     when(arm._getOwner().getVersionVector()).thenReturn(versionVector);
-    CachePerfStats cachePerfStats = mock(CachePerfStats.class);
-    when(arm._getOwner().getCachePerfStats()).thenReturn(cachePerfStats);
     final EntryEventImpl event = createEventForDestroy(arm._getOwner());
     VersionTag versionTag = mock(VersionTag.class);
     when(versionTag.hasValidVersion()).thenReturn(true);
@@ -647,6 +688,8 @@ public class AbstractRegionMapTest {
     protected TestableAbstractRegionMap(boolean withConcurrencyChecks) {
       super(null);
       LocalRegion owner = mock(LocalRegion.class);
+      CachePerfStats cachePerfStats = mock(CachePerfStats.class);
+      when(owner.getCachePerfStats()).thenReturn(cachePerfStats);
       when(owner.getConcurrencyChecksEnabled()).thenReturn(withConcurrencyChecks);
       when(owner.getDataPolicy()).thenReturn(DataPolicy.REPLICATE);
       doThrow(EntryNotFoundException.class).when(owner).checkEntryNotFound(any());
@@ -664,6 +707,8 @@ public class AbstractRegionMapTest {
 
     private static LocalRegion createOwner(boolean withConcurrencyChecks) {
       LocalRegion owner = mock(LocalRegion.class);
+      CachePerfStats cachePerfStats = mock(CachePerfStats.class);
+      when(owner.getCachePerfStats()).thenReturn(cachePerfStats);
       when(owner.getEvictionAttributes()).thenReturn(evictionAttributes);
       when(owner.getConcurrencyChecksEnabled()).thenReturn(withConcurrencyChecks);
       when(owner.getDataPolicy()).thenReturn(DataPolicy.REPLICATE);
