@@ -277,6 +277,62 @@ public class AbstractRegionMapTest {
   }
 
   @Test
+  public void destroyWithConcurrentChangeFromNullToValidRetriesAndDoesDestroy()
+      throws RegionClearedException {
+    CustomEntryConcurrentHashMap<Object, EvictableEntry> map =
+        mock(CustomEntryConcurrentHashMap.class);
+    EvictableEntry entry = mock(EvictableEntry.class);
+    when(entry.getValue()).thenReturn("value");
+    when(entry.destroy(any(), any(), anyBoolean(), anyBoolean(), any(), anyBoolean(), anyBoolean()))
+        .thenReturn(true);
+    when(map.get(KEY)).thenReturn(null).thenReturn(entry);
+    when(map.putIfAbsent(eq(KEY), any())).thenReturn(entry);
+    final TestableVMLRURegionMap arm = new TestableVMLRURegionMap(true, map);
+    final EntryEventImpl event = createEventForDestroy(arm._getOwner());
+    final Object expectedOldValue = null;
+    final boolean inTokenMode = false;
+    final boolean duringRI = false;
+    final boolean evict = false;
+    assertThat(arm.destroy(event, inTokenMode, duringRI, false, evict, expectedOldValue, false))
+        .isTrue();
+    verify(entry, times(1)).destroy(eq(arm._getOwner()), eq(event), eq(false), anyBoolean(),
+        eq(expectedOldValue), anyBoolean(), anyBoolean());
+    boolean invokeCallbacks = true;
+    verify(arm._getOwner(), times(1)).basicDestroyPart2(any(), eq(event), eq(inTokenMode),
+        eq(false), eq(duringRI), eq(invokeCallbacks));
+    verify(arm._getOwner(), times(1)).basicDestroyPart3(any(), eq(event), eq(inTokenMode),
+        eq(duringRI), eq(invokeCallbacks), eq(expectedOldValue));
+  }
+
+  @Test
+  public void destroyWithConcurrentChangeFromTombstoneToValidRetriesAndDoesDestroy()
+      throws RegionClearedException {
+    CustomEntryConcurrentHashMap<Object, EvictableEntry> map =
+        mock(CustomEntryConcurrentHashMap.class);
+    EvictableEntry entry = mock(EvictableEntry.class);
+    when(entry.getValue()).thenReturn("value");
+    when(entry.isTombstone()).thenReturn(true).thenReturn(false);
+    when(entry.destroy(any(), any(), anyBoolean(), anyBoolean(), any(), anyBoolean(), anyBoolean()))
+        .thenReturn(true);
+    when(map.get(KEY)).thenReturn(entry);
+    final TestableVMLRURegionMap arm = new TestableVMLRURegionMap(true, map);
+    final EntryEventImpl event = createEventForDestroy(arm._getOwner());
+    final Object expectedOldValue = null;
+    final boolean inTokenMode = false;
+    final boolean duringRI = false;
+    final boolean evict = false;
+    assertThat(arm.destroy(event, inTokenMode, duringRI, false, evict, expectedOldValue, false))
+        .isTrue();
+    verify(entry, times(1)).destroy(eq(arm._getOwner()), eq(event), eq(false), anyBoolean(),
+        eq(expectedOldValue), anyBoolean(), anyBoolean());
+    boolean invokeCallbacks = true;
+    verify(arm._getOwner(), times(1)).basicDestroyPart2(any(), eq(event), eq(inTokenMode),
+        eq(false), eq(duringRI), eq(invokeCallbacks));
+    verify(arm._getOwner(), times(1)).basicDestroyPart3(any(), eq(event), eq(inTokenMode),
+        eq(duringRI), eq(invokeCallbacks), eq(expectedOldValue));
+  }
+
+  @Test
   public void destroyOfExistingEntryInTokenModeAddsAToken() {
     final TestableAbstractRegionMap arm = new TestableAbstractRegionMap();
     addEntry(arm);
@@ -369,6 +425,26 @@ public class AbstractRegionMapTest {
         eq(false), eq(duringRI), eq(invokeCallbacks));
     verify(arm._getOwner(), times(1)).basicDestroyPart3(any(), eq(event), eq(inTokenMode),
         eq(duringRI), eq(invokeCallbacks), eq(expectedOldValue));
+  }
+
+  @Test
+  public void destroyOfExistingRemovePhase2WithConcurrencyChecksAndRemoveRecoveredEntryDoesRetryAndThrowsEntryNotFound() {
+    final TestableAbstractRegionMap arm = new TestableAbstractRegionMap(true);
+    RegionVersionVector<?> versionVector = mock(RegionVersionVector.class);
+    when(arm._getOwner().getVersionVector()).thenReturn(versionVector);
+    CachePerfStats cachePerfStats = mock(CachePerfStats.class);
+    when(arm._getOwner().getCachePerfStats()).thenReturn(cachePerfStats);
+    final EntryEventImpl event = createEventForDestroy(arm._getOwner());
+    VersionTag<?> versionTag = mock(VersionTag.class);
+    when(versionTag.hasValidVersion()).thenReturn(true);
+    event.setVersionTag(versionTag);
+    addEntry(arm, Token.REMOVED_PHASE2);
+    final Object expectedOldValue = null;
+    final boolean inTokenMode = false;
+    final boolean duringRI = false;
+    final boolean removeRecoveredEntry = true;
+    assertThatThrownBy(() -> arm.destroy(event, inTokenMode, duringRI, false, false,
+        expectedOldValue, removeRecoveredEntry)).isInstanceOf(EntryNotFoundException.class);
   }
 
   @Test
