@@ -38,6 +38,7 @@ import org.apache.geode.internal.cache.AbstractRegion;
 import org.apache.geode.internal.cache.xmlcache.CacheXml;
 import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.management.internal.cli.CliUtil;
+import org.apache.geode.management.internal.cli.domain.ClassName;
 import org.apache.geode.management.internal.cli.i18n.CliStrings;
 import org.apache.geode.management.internal.cli.util.RegionPath;
 import org.apache.geode.management.internal.configuration.domain.XmlEntity;
@@ -224,51 +225,34 @@ public class RegionAlterFunction implements Function, InternalEntity {
     }
 
     // Alter Cache Listeners
-    final Set<String> newCacheListenerNames = regionAlterArgs.getCacheListeners();
-    if (newCacheListenerNames != null) {
+    final Set<ClassName<CacheListener>> newCacheListeners = regionAlterArgs.getCacheListeners();
 
-      // Remove old cache listeners that aren't in the new list
+    // user specified a new set of cache listeners
+    if (newCacheListeners != null) {
+      // remove the old ones, even if the new set includes the same class name, the init properties
+      // might be different
       CacheListener[] oldCacheListeners = region.getCacheListeners();
       for (CacheListener oldCacheListener : oldCacheListeners) {
-        if (!newCacheListenerNames.contains(oldCacheListener.getClass().getName())) {
-          mutator.removeCacheListener(oldCacheListener);
-        }
+        mutator.removeCacheListener(oldCacheListener);
       }
 
-      // Add new cache listeners that don't already exist
-      for (String newCacheListenerName : newCacheListenerNames) {
-        if (newCacheListenerName.isEmpty()) {
-          continue;
-        }
-        boolean nameFound = false;
-        for (CacheListener oldCacheListener : oldCacheListeners) {
-          if (oldCacheListener.getClass().getName().equals(newCacheListenerName)) {
-            nameFound = true;
-            break;
-          }
-        }
-
-        if (!nameFound) {
-          Class<CacheListener<K, V>> cacheListenerKlass =
-              forName(newCacheListenerName, CliStrings.ALTER_REGION__CACHELISTENER);
-          mutator.addCacheListener(
-              newInstance(cacheListenerKlass, CliStrings.ALTER_REGION__CACHELISTENER));
+      // Add new cache listeners
+      for (ClassName<CacheListener> newCacheListener : newCacheListeners) {
+        if (!newCacheListener.equals(ClassName.EMPTY)) {
+          mutator.addCacheListener(newCacheListener.newInstance());
         }
       }
-
       if (logger.isDebugEnabled()) {
         logger.debug("Region successfully altered - cache listeners");
       }
     }
 
-    final String cacheLoader = regionAlterArgs.getCacheLoader();
+    final ClassName<CacheLoader> cacheLoader = regionAlterArgs.getCacheLoader();
     if (cacheLoader != null) {
-      if (cacheLoader.isEmpty()) {
+      if (cacheLoader.equals(ClassName.EMPTY)) {
         mutator.setCacheLoader(null);
       } else {
-        Class<CacheLoader<K, V>> cacheLoaderKlass =
-            forName(cacheLoader, CliStrings.ALTER_REGION__CACHELOADER);
-        mutator.setCacheLoader(newInstance(cacheLoaderKlass, CliStrings.ALTER_REGION__CACHELOADER));
+        mutator.setCacheLoader(cacheLoader.newInstance());
       }
 
       if (logger.isDebugEnabled()) {
@@ -276,14 +260,12 @@ public class RegionAlterFunction implements Function, InternalEntity {
       }
     }
 
-    final String cacheWriter = regionAlterArgs.getCacheWriter();
+    final ClassName<CacheWriter> cacheWriter = regionAlterArgs.getCacheWriter();
     if (cacheWriter != null) {
-      if (cacheWriter.isEmpty()) {
+      if (cacheWriter.equals(ClassName.EMPTY)) {
         mutator.setCacheWriter(null);
       } else {
-        Class<CacheWriter<K, V>> cacheWriterKlass =
-            forName(cacheWriter, CliStrings.ALTER_REGION__CACHEWRITER);
-        mutator.setCacheWriter(newInstance(cacheWriterKlass, CliStrings.ALTER_REGION__CACHEWRITER));
+        mutator.setCacheWriter(cacheWriter.newInstance());
       }
 
       if (logger.isDebugEnabled()) {

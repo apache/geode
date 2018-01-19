@@ -50,6 +50,7 @@ import org.apache.geode.internal.i18n.LocalizedStrings;
 import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.management.internal.cli.CliUtil;
 import org.apache.geode.management.internal.cli.commands.RegionCommandsUtils;
+import org.apache.geode.management.internal.cli.domain.ClassName;
 import org.apache.geode.management.internal.cli.i18n.CliStrings;
 import org.apache.geode.management.internal.cli.util.RegionPath;
 import org.apache.geode.management.internal.configuration.domain.XmlEntity;
@@ -281,14 +282,11 @@ public class RegionCreateFunction implements Function, InternalEntity {
     }
 
     // Set plugins
-    final Set<String> cacheListeners = regionCreateArgs.getCacheListeners();
-    if (cacheListeners != null && !cacheListeners.isEmpty()) {
+    final Set<ClassName<CacheListener>> cacheListeners = regionCreateArgs.getCacheListeners();
+    if (cacheListeners != null) {
       List<CacheListener<K, V>> newListeners = new ArrayList<>();
-      for (String cacheListener : cacheListeners) {
-        Class<CacheListener<K, V>> cacheListenerKlass =
-            CliUtil.forName(cacheListener, CliStrings.CREATE_REGION__CACHELISTENER);
-        newListeners
-            .add(CliUtil.newInstance(cacheListenerKlass, CliStrings.CREATE_REGION__CACHELISTENER));
+      for (ClassName<CacheListener> cacheListener : cacheListeners) {
+        newListeners.add(cacheListener.newInstance());
       }
       factory.initCacheListeners(newListeners.toArray(new CacheListener[0]));
     }
@@ -301,20 +299,14 @@ public class RegionCreateFunction implements Function, InternalEntity {
           CliUtil.newInstance(compressorKlass, CliStrings.CREATE_REGION__COMPRESSOR));
     }
 
-    final String cacheLoader = regionCreateArgs.getCacheLoader();
+    final ClassName<CacheLoader> cacheLoader = regionCreateArgs.getCacheLoader();
     if (cacheLoader != null) {
-      Class<CacheLoader<K, V>> cacheLoaderKlass =
-          CliUtil.forName(cacheLoader, CliStrings.CREATE_REGION__CACHELOADER);
-      factory.setCacheLoader(
-          CliUtil.newInstance(cacheLoaderKlass, CliStrings.CREATE_REGION__CACHELOADER));
+      factory.setCacheLoader(cacheLoader.newInstance());
     }
 
-    final String cacheWriter = regionCreateArgs.getCacheWriter();
+    final ClassName<CacheWriter> cacheWriter = regionCreateArgs.getCacheWriter();
     if (cacheWriter != null) {
-      Class<CacheWriter<K, V>> cacheWriterKlass =
-          CliUtil.forName(cacheWriter, CliStrings.CREATE_REGION__CACHEWRITER);
-      factory.setCacheWriter(
-          CliUtil.newInstance(cacheWriterKlass, CliStrings.CREATE_REGION__CACHEWRITER));
+      factory.setCacheWriter(cacheWriter.newInstance());
     }
 
     // If a region path indicates a sub-region,
