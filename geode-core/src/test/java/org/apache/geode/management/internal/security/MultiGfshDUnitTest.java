@@ -18,7 +18,6 @@ import static org.apache.geode.distributed.ConfigurationProperties.SECURITY_MANA
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotEquals;
 
-import java.io.IOException;
 import java.util.List;
 import java.util.Properties;
 import java.util.concurrent.TimeUnit;
@@ -64,7 +63,7 @@ public class MultiGfshDUnitTest {
 
   @Category(FlakyTest.class) // GEODE-1579
   @Test
-  public void testMultiUser() throws IOException, JSONException, InterruptedException {
+  public void testMultiUser() throws JSONException, InterruptedException {
 
     IgnoredException.addIgnoredException("java.util.zip.ZipException: zip file is empty");
     IgnoredException

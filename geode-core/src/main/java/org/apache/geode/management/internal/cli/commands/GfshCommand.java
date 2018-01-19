@@ -138,7 +138,7 @@ public interface GfshCommand extends CommandMarker {
   }
 
   /**
-   * if no members matches these names, an empty set would return
+   * if no members matches these names, an empty set would return, this does not include locators
    */
   default Set<DistributedMember> findMembers(String[] groups, String[] members) {
     return CliUtil.findMembers(groups, members);
