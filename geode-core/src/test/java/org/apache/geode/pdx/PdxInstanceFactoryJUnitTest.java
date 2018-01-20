@@ -60,7 +60,7 @@ public class PdxInstanceFactoryJUnitTest {
 
   @Test
   public void testBasics() throws IOException, ClassNotFoundException {
-    PdxInstanceFactory c = PdxInstanceFactoryImpl.newCreator("basics", false);
+    PdxInstanceFactory c = PdxInstanceFactoryImpl.newCreator("basics", false, cache);
     c.writeInt("intField", 37);
     PdxInstance pi = c.create();
     WritablePdxInstance wpi = pi.createWriter();
@@ -71,7 +71,7 @@ public class PdxInstanceFactoryJUnitTest {
     assertEquals(38, wpi.getField("intField"));
     checkPdxInstance(wpi);
     PdxType t1 = ((PdxInstanceImpl) pi).getPdxType();
-    PdxInstanceFactory c2 = PdxInstanceFactoryImpl.newCreator("basics", false);
+    PdxInstanceFactory c2 = PdxInstanceFactoryImpl.newCreator("basics", false, cache);
     c2.writeInt("intField", 46);
     PdxInstance pi2 = c2.create();
     PdxType t2 = ((PdxInstanceImpl) pi2).getPdxType();
@@ -121,7 +121,7 @@ public class PdxInstanceFactoryJUnitTest {
 
   @Test
   public void testPortableWriteObject() throws IOException, ClassNotFoundException {
-    PdxInstanceFactory c = PdxInstanceFactoryImpl.newCreator("portable", false);
+    PdxInstanceFactory c = PdxInstanceFactoryImpl.newCreator("portable", false, cache);
     c.writeObject("f1", Byte.valueOf((byte) 1), true);
     c.writeObject("f2", Boolean.TRUE, true);
     c.writeObject("f3", Character.CURRENCY_SYMBOL, true);
@@ -163,7 +163,7 @@ public class PdxInstanceFactoryJUnitTest {
 
   @Test
   public void testPortableWriteObjectArray() throws IOException, ClassNotFoundException {
-    PdxInstanceFactory c = PdxInstanceFactoryImpl.newCreator("portable", false);
+    PdxInstanceFactory c = PdxInstanceFactoryImpl.newCreator("portable", false, cache);
     c.writeObjectArray("f1", new Object[] {Byte.valueOf((byte) 1)}, true);
     c.writeObjectArray("f2", new Object[] {Boolean.TRUE}, true);
     c.writeObjectArray("f3", new Object[] {Character.CURRENCY_SYMBOL}, true);
@@ -205,7 +205,7 @@ public class PdxInstanceFactoryJUnitTest {
 
   @Test
   public void testPortableWriteField() throws IOException, ClassNotFoundException {
-    PdxInstanceFactory c = PdxInstanceFactoryImpl.newCreator("portable", false);
+    PdxInstanceFactory c = PdxInstanceFactoryImpl.newCreator("portable", false, cache);
     c.writeField("f1", Byte.valueOf((byte) 1), Object.class, true);
     c.writeField("f2", Boolean.TRUE, Object.class, true);
     c.writeField("f3", Character.CURRENCY_SYMBOL, Object.class, true);
@@ -286,7 +286,7 @@ public class PdxInstanceFactoryJUnitTest {
    */
   @Test
   public void testNestedDS() throws IOException, ClassNotFoundException {
-    PdxInstanceFactory c = PdxInstanceFactoryImpl.newCreator("nestedDS", false);
+    PdxInstanceFactory c = PdxInstanceFactoryImpl.newCreator("nestedDS", false, cache);
     c.writeObject("obj", new MyDS());
     PdxInstance pi = c.create();
     pi.getField("obj");
@@ -307,7 +307,7 @@ public class PdxInstanceFactoryJUnitTest {
   public void testNestedArray() throws IOException, ClassNotFoundException {
     PdxInstance pi;
     {
-      PdxInstanceFactory c = PdxInstanceFactoryImpl.newCreator("nestedArray", false);
+      PdxInstanceFactory c = PdxInstanceFactoryImpl.newCreator("nestedArray", false, cache);
       MyPdx[] array = new MyPdx[] {new MyPdx()};
       c.writeObjectArray("array", array);
       pi = c.create();
@@ -318,7 +318,7 @@ public class PdxInstanceFactoryJUnitTest {
 
   @Test
   public void testSerializable() throws IOException, ClassNotFoundException {
-    PdxInstanceFactory c = PdxInstanceFactoryImpl.newCreator("basics", false);
+    PdxInstanceFactory c = PdxInstanceFactoryImpl.newCreator("basics", false, cache);
     c.writeInt("intField", 37);
     PdxInstance pi = c.create();
     checkSerializable(pi);
@@ -338,7 +338,7 @@ public class PdxInstanceFactoryJUnitTest {
 
   @Test
   public void testMark() throws IOException, ClassNotFoundException {
-    PdxInstanceFactory c = PdxInstanceFactoryImpl.newCreator("markField", false);
+    PdxInstanceFactory c = PdxInstanceFactoryImpl.newCreator("markField", false, cache);
     try {
       c.markIdentityField("intField1");
       throw new RuntimeException("expected exception");
@@ -382,7 +382,7 @@ public class PdxInstanceFactoryJUnitTest {
 
   @Test
   public void testFieldTypes() throws IOException, ClassNotFoundException {
-    PdxInstanceFactory c = PdxInstanceFactoryImpl.newCreator("byteField", false);
+    PdxInstanceFactory c = PdxInstanceFactoryImpl.newCreator("byteField", false, cache);
     c.writeByte("f", (byte) 37);
     WritablePdxInstance pi = c.create().createWriter();
     assertEquals((byte) 37, pi.getField("f"));
@@ -404,7 +404,7 @@ public class PdxInstanceFactoryJUnitTest {
       // expected
     }
 
-    c = PdxInstanceFactoryImpl.newCreator("booleanField", false);
+    c = PdxInstanceFactoryImpl.newCreator("booleanField", false, cache);
     c.writeBoolean("f", true);
     pi = c.create().createWriter();
     assertEquals(true, pi.getField("f"));
@@ -420,7 +420,7 @@ public class PdxInstanceFactoryJUnitTest {
     assertEquals(false, pi.getField("f"));
     checkPdxInstance(pi);
 
-    c = PdxInstanceFactoryImpl.newCreator("charField", false);
+    c = PdxInstanceFactoryImpl.newCreator("charField", false, cache);
     c.writeChar("f", (char) 37);
     pi = c.create().createWriter();
     assertEquals((char) 37, pi.getField("f"));
@@ -436,7 +436,7 @@ public class PdxInstanceFactoryJUnitTest {
     assertEquals((char) 38, pi.getField("f"));
     checkPdxInstance(pi);
 
-    c = PdxInstanceFactoryImpl.newCreator("shortField", false);
+    c = PdxInstanceFactoryImpl.newCreator("shortField", false, cache);
     c.writeShort("f", (short) 37);
     pi = c.create().createWriter();
     assertEquals((short) 37, pi.getField("f"));
@@ -452,7 +452,7 @@ public class PdxInstanceFactoryJUnitTest {
     assertEquals((short) 38, pi.getField("f"));
     checkPdxInstance(pi);
 
-    c = PdxInstanceFactoryImpl.newCreator("intField", false);
+    c = PdxInstanceFactoryImpl.newCreator("intField", false, cache);
     c.writeInt("f", (int) 37);
     pi = c.create().createWriter();
     assertEquals((int) 37, pi.getField("f"));
@@ -468,7 +468,7 @@ public class PdxInstanceFactoryJUnitTest {
     assertEquals((int) 38, pi.getField("f"));
     checkPdxInstance(pi);
 
-    c = PdxInstanceFactoryImpl.newCreator("longField", false);
+    c = PdxInstanceFactoryImpl.newCreator("longField", false, cache);
     c.writeLong("f", (long) 37);
     pi = c.create().createWriter();
     assertEquals((long) 37, pi.getField("f"));
@@ -484,7 +484,7 @@ public class PdxInstanceFactoryJUnitTest {
     assertEquals((long) 38, pi.getField("f"));
     checkPdxInstance(pi);
 
-    c = PdxInstanceFactoryImpl.newCreator("floatField", false);
+    c = PdxInstanceFactoryImpl.newCreator("floatField", false, cache);
     c.writeFloat("f", (float) 37);
     pi = c.create().createWriter();
     assertEquals((float) 37, pi.getField("f"));
@@ -500,7 +500,7 @@ public class PdxInstanceFactoryJUnitTest {
     assertEquals((float) 38, pi.getField("f"));
     checkPdxInstance(pi);
 
-    c = PdxInstanceFactoryImpl.newCreator("doubleField", false);
+    c = PdxInstanceFactoryImpl.newCreator("doubleField", false, cache);
     c.writeDouble("f", (double) 37);
     pi = c.create().createWriter();
     assertEquals((double) 37, pi.getField("f"));
@@ -516,7 +516,7 @@ public class PdxInstanceFactoryJUnitTest {
     assertEquals((double) 38, pi.getField("f"));
     checkPdxInstance(pi);
 
-    c = PdxInstanceFactoryImpl.newCreator("dateField", false);
+    c = PdxInstanceFactoryImpl.newCreator("dateField", false, cache);
     Date d1 = new Date(37);
     c.writeDate("f", d1);
     pi = c.create().createWriter();
@@ -534,7 +534,7 @@ public class PdxInstanceFactoryJUnitTest {
     assertEquals(d2, pi.getField("f"));
     checkPdxInstance(pi);
 
-    c = PdxInstanceFactoryImpl.newCreator("stringField", false);
+    c = PdxInstanceFactoryImpl.newCreator("stringField", false, cache);
     c.writeString("f", "37");
     pi = c.create().createWriter();
     assertEquals("37", pi.getField("f"));
@@ -550,7 +550,7 @@ public class PdxInstanceFactoryJUnitTest {
     assertEquals("38", pi.getField("f"));
     checkPdxInstance(pi);
 
-    c = PdxInstanceFactoryImpl.newCreator("objectField", false);
+    c = PdxInstanceFactoryImpl.newCreator("objectField", false, cache);
     Date o1 = new Date(23);
     c.writeObject("f", o1);
     pi = c.create().createWriter();
@@ -562,7 +562,7 @@ public class PdxInstanceFactoryJUnitTest {
     assertEquals(o2, pi.getField("f"));
     checkPdxInstance(pi);
 
-    c = PdxInstanceFactoryImpl.newCreator("booleanArrayField", false);
+    c = PdxInstanceFactoryImpl.newCreator("booleanArrayField", false, cache);
     c.writeBooleanArray("f", new boolean[] {true, false, true});
     pi = c.create().createWriter();
     assertEquals(true,
@@ -580,7 +580,7 @@ public class PdxInstanceFactoryJUnitTest {
         Arrays.equals(new boolean[] {false, true, false}, (boolean[]) pi.getField("f")));
     checkPdxInstance(pi);
 
-    c = PdxInstanceFactoryImpl.newCreator("charArrayField", false);
+    c = PdxInstanceFactoryImpl.newCreator("charArrayField", false, cache);
     c.writeCharArray("f", new char[] {'1', '2', '3'});
     pi = c.create().createWriter();
     assertEquals(true, Arrays.equals(new char[] {'1', '2', '3'}, (char[]) pi.getField("f")));
@@ -596,7 +596,7 @@ public class PdxInstanceFactoryJUnitTest {
     assertEquals(true, Arrays.equals(new char[] {'a', 'b', 'c'}, (char[]) pi.getField("f")));
     checkPdxInstance(pi);
 
-    c = PdxInstanceFactoryImpl.newCreator("byteArrayField", false);
+    c = PdxInstanceFactoryImpl.newCreator("byteArrayField", false, cache);
     c.writeByteArray("f", new byte[] {(byte) 1});
     pi = c.create().createWriter();
     assertEquals(true, Arrays.equals(new byte[] {(byte) 1}, (byte[]) pi.getField("f")));
@@ -612,7 +612,7 @@ public class PdxInstanceFactoryJUnitTest {
     assertEquals(true, Arrays.equals(new byte[] {(byte) 2}, (byte[]) pi.getField("f")));
     checkPdxInstance(pi);
 
-    c = PdxInstanceFactoryImpl.newCreator("shortArrayField", false);
+    c = PdxInstanceFactoryImpl.newCreator("shortArrayField", false, cache);
     c.writeShortArray("f", new short[] {(short) 1});
     pi = c.create().createWriter();
     assertEquals(true, Arrays.equals(new short[] {(short) 1}, (short[]) pi.getField("f")));
@@ -628,7 +628,7 @@ public class PdxInstanceFactoryJUnitTest {
     assertEquals(true, Arrays.equals(new short[] {(short) 2}, (short[]) pi.getField("f")));
     checkPdxInstance(pi);
 
-    c = PdxInstanceFactoryImpl.newCreator("intArrayField", false);
+    c = PdxInstanceFactoryImpl.newCreator("intArrayField", false, cache);
     c.writeIntArray("f", new int[] {(int) 1});
     pi = c.create().createWriter();
     assertEquals(true, Arrays.equals(new int[] {(int) 1}, (int[]) pi.getField("f")));
@@ -644,7 +644,7 @@ public class PdxInstanceFactoryJUnitTest {
     assertEquals(true, Arrays.equals(new int[] {(int) 2}, (int[]) pi.getField("f")));
     checkPdxInstance(pi);
 
-    c = PdxInstanceFactoryImpl.newCreator("longArrayField", false);
+    c = PdxInstanceFactoryImpl.newCreator("longArrayField", false, cache);
     c.writeLongArray("f", new long[] {(long) 1});
     pi = c.create().createWriter();
     assertEquals(true, Arrays.equals(new long[] {(long) 1}, (long[]) pi.getField("f")));
@@ -660,7 +660,7 @@ public class PdxInstanceFactoryJUnitTest {
     assertEquals(true, Arrays.equals(new long[] {(long) 2}, (long[]) pi.getField("f")));
     checkPdxInstance(pi);
 
-    c = PdxInstanceFactoryImpl.newCreator("floatArrayField", false);
+    c = PdxInstanceFactoryImpl.newCreator("floatArrayField", false, cache);
     c.writeFloatArray("f", new float[] {(float) 1});
     pi = c.create().createWriter();
     assertEquals(true, Arrays.equals(new float[] {(float) 1}, (float[]) pi.getField("f")));
@@ -676,7 +676,7 @@ public class PdxInstanceFactoryJUnitTest {
     assertEquals(true, Arrays.equals(new float[] {(float) 2}, (float[]) pi.getField("f")));
     checkPdxInstance(pi);
 
-    c = PdxInstanceFactoryImpl.newCreator("doubleArrayField", false);
+    c = PdxInstanceFactoryImpl.newCreator("doubleArrayField", false, cache);
     c.writeDoubleArray("f", new double[] {(double) 1});
     pi = c.create().createWriter();
     assertEquals(true, Arrays.equals(new double[] {(double) 1}, (double[]) pi.getField("f")));
@@ -692,7 +692,7 @@ public class PdxInstanceFactoryJUnitTest {
     assertEquals(true, Arrays.equals(new double[] {(double) 2}, (double[]) pi.getField("f")));
     checkPdxInstance(pi);
 
-    c = PdxInstanceFactoryImpl.newCreator("StringArrayField", false);
+    c = PdxInstanceFactoryImpl.newCreator("StringArrayField", false, cache);
     c.writeStringArray("f", new String[] {"1", "2", "3"});
     pi = c.create().createWriter();
     assertEquals(true, Arrays.equals(new String[] {"1", "2", "3"}, (String[]) pi.getField("f")));
@@ -708,7 +708,7 @@ public class PdxInstanceFactoryJUnitTest {
     assertEquals(true, Arrays.equals(new String[] {"a", "b", "c"}, (String[]) pi.getField("f")));
     checkPdxInstance(pi);
 
-    c = PdxInstanceFactoryImpl.newCreator("ObjectArrayField", false);
+    c = PdxInstanceFactoryImpl.newCreator("ObjectArrayField", false, cache);
     c.writeObjectArray("f", new Object[] {"1", "2", "3"});
     pi = c.create().createWriter();
     assertEquals(true, Arrays.equals(new Object[] {"1", "2", "3"}, (Object[]) pi.getField("f")));
@@ -724,7 +724,7 @@ public class PdxInstanceFactoryJUnitTest {
     assertEquals(true, Arrays.equals(new Object[] {"a", "b", "c"}, (Object[]) pi.getField("f")));
     checkPdxInstance(pi);
 
-    c = PdxInstanceFactoryImpl.newCreator("byteArrayOfBAField", false);
+    c = PdxInstanceFactoryImpl.newCreator("byteArrayOfBAField", false, cache);
     c.writeArrayOfByteArrays("f", new byte[][] {new byte[] {(byte) 1}});
     pi = c.create().createWriter();
     assertEquals(true,
@@ -745,7 +745,7 @@ public class PdxInstanceFactoryJUnitTest {
 
   @Test
   public void testWriteField() throws IOException, ClassNotFoundException {
-    PdxInstanceFactory c = PdxInstanceFactoryImpl.newCreator("byteField", false);
+    PdxInstanceFactory c = PdxInstanceFactoryImpl.newCreator("byteField", false, cache);
     c.writeField("f", (byte) 37, Byte.class);
     WritablePdxInstance pi = c.create().createWriter();
     assertEquals((byte) 37, pi.getField("f"));
@@ -753,7 +753,7 @@ public class PdxInstanceFactoryJUnitTest {
     assertEquals((byte) 38, pi.getField("f"));
     checkPdxInstance(pi);
 
-    c = PdxInstanceFactoryImpl.newCreator("booleanField", false);
+    c = PdxInstanceFactoryImpl.newCreator("booleanField", false, cache);
     c.writeField("f", true, Boolean.class);
     pi = c.create().createWriter();
     assertEquals(true, pi.getField("f"));
@@ -761,7 +761,7 @@ public class PdxInstanceFactoryJUnitTest {
     assertEquals(false, pi.getField("f"));
     checkPdxInstance(pi);
 
-    c = PdxInstanceFactoryImpl.newCreator("charField", false);
+    c = PdxInstanceFactoryImpl.newCreator("charField", false, cache);
     c.writeField("f", (char) 37, Character.class);
     pi = c.create().createWriter();
     assertEquals((char) 37, pi.getField("f"));
@@ -769,7 +769,7 @@ public class PdxInstanceFactoryJUnitTest {
     assertEquals((char) 38, pi.getField("f"));
     checkPdxInstance(pi);
 
-    c = PdxInstanceFactoryImpl.newCreator("shortField", false);
+    c = PdxInstanceFactoryImpl.newCreator("shortField", false, cache);
     c.writeField("f", (short) 37, Short.class);
     pi = c.create().createWriter();
     assertEquals((short) 37, pi.getField("f"));
@@ -777,7 +777,7 @@ public class PdxInstanceFactoryJUnitTest {
     assertEquals((short) 38, pi.getField("f"));
     checkPdxInstance(pi);
 
-    c = PdxInstanceFactoryImpl.newCreator("intField", false);
+    c = PdxInstanceFactoryImpl.newCreator("intField", false, cache);
     c.writeField("f", (int) 37, Integer.class);
     pi = c.create().createWriter();
     assertEquals((int) 37, pi.getField("f"));
@@ -785,7 +785,7 @@ public class PdxInstanceFactoryJUnitTest {
     assertEquals((int) 38, pi.getField("f"));
     checkPdxInstance(pi);
 
-    c = PdxInstanceFactoryImpl.newCreator("longField", false);
+    c = PdxInstanceFactoryImpl.newCreator("longField", false, cache);
     c.writeField("f", (long) 37, Long.class);
     pi = c.create().createWriter();
     assertEquals((long) 37, pi.getField("f"));
@@ -793,7 +793,7 @@ public class PdxInstanceFactoryJUnitTest {
     assertEquals((long) 38, pi.getField("f"));
     checkPdxInstance(pi);
 
-    c = PdxInstanceFactoryImpl.newCreator("floatField", false);
+    c = PdxInstanceFactoryImpl.newCreator("floatField", false, cache);
     c.writeField("f", (float) 37, Float.class);
     pi = c.create().createWriter();
     assertEquals((float) 37, pi.getField("f"));
@@ -801,7 +801,7 @@ public class PdxInstanceFactoryJUnitTest {
     assertEquals((float) 38, pi.getField("f"));
     checkPdxInstance(pi);
 
-    c = PdxInstanceFactoryImpl.newCreator("doubleField", false);
+    c = PdxInstanceFactoryImpl.newCreator("doubleField", false, cache);
     c.writeField("f", (double) 37, Double.class);
     pi = c.create().createWriter();
     assertEquals((double) 37, pi.getField("f"));
@@ -809,7 +809,7 @@ public class PdxInstanceFactoryJUnitTest {
     assertEquals((double) 38, pi.getField("f"));
     checkPdxInstance(pi);
 
-    c = PdxInstanceFactoryImpl.newCreator("dateField", false);
+    c = PdxInstanceFactoryImpl.newCreator("dateField", false, cache);
     Date d1 = new Date(37);
     c.writeField("f", d1, Date.class);
     pi = c.create().createWriter();
@@ -819,7 +819,7 @@ public class PdxInstanceFactoryJUnitTest {
     assertEquals(d2, pi.getField("f"));
     checkPdxInstance(pi);
 
-    c = PdxInstanceFactoryImpl.newCreator("stringField", false);
+    c = PdxInstanceFactoryImpl.newCreator("stringField", false, cache);
     c.writeField("f", "37", String.class);
     pi = c.create().createWriter();
     assertEquals("37", pi.getField("f"));
@@ -827,7 +827,7 @@ public class PdxInstanceFactoryJUnitTest {
     assertEquals("38", pi.getField("f"));
     checkPdxInstance(pi);
 
-    c = PdxInstanceFactoryImpl.newCreator("objectField", false);
+    c = PdxInstanceFactoryImpl.newCreator("objectField", false, cache);
     Date o1 = new Date(23);
     c.writeField("f", o1, Object.class);
     pi = c.create().createWriter();
@@ -837,7 +837,7 @@ public class PdxInstanceFactoryJUnitTest {
     assertEquals(o2, pi.getField("f"));
     checkPdxInstance(pi);
 
-    c = PdxInstanceFactoryImpl.newCreator("booleanArrayField", false);
+    c = PdxInstanceFactoryImpl.newCreator("booleanArrayField", false, cache);
     c.writeField("f", new boolean[] {true, false, true}, boolean[].class);
     pi = c.create().createWriter();
     assertEquals(true,
@@ -847,7 +847,7 @@ public class PdxInstanceFactoryJUnitTest {
         Arrays.equals(new boolean[] {false, true, false}, (boolean[]) pi.getField("f")));
     checkPdxInstance(pi);
 
-    c = PdxInstanceFactoryImpl.newCreator("charArrayField", false);
+    c = PdxInstanceFactoryImpl.newCreator("charArrayField", false, cache);
     c.writeField("f", new char[] {'1', '2', '3'}, char[].class);
     pi = c.create().createWriter();
     assertEquals(true, Arrays.equals(new char[] {'1', '2', '3'}, (char[]) pi.getField("f")));
@@ -855,7 +855,7 @@ public class PdxInstanceFactoryJUnitTest {
     assertEquals(true, Arrays.equals(new char[] {'a', 'b', 'c'}, (char[]) pi.getField("f")));
     checkPdxInstance(pi);
 
-    c = PdxInstanceFactoryImpl.newCreator("byteArrayField", false);
+    c = PdxInstanceFactoryImpl.newCreator("byteArrayField", false, cache);
     c.writeField("f", new byte[] {(byte) 1}, byte[].class);
     pi = c.create().createWriter();
     assertEquals(true, Arrays.equals(new byte[] {(byte) 1}, (byte[]) pi.getField("f")));
@@ -863,7 +863,7 @@ public class PdxInstanceFactoryJUnitTest {
     assertEquals(true, Arrays.equals(new byte[] {(byte) 2}, (byte[]) pi.getField("f")));
     checkPdxInstance(pi);
 
-    c = PdxInstanceFactoryImpl.newCreator("shortArrayField", false);
+    c = PdxInstanceFactoryImpl.newCreator("shortArrayField", false, cache);
     c.writeField("f", new short[] {(short) 1}, short[].class);
     pi = c.create().createWriter();
     assertEquals(true, Arrays.equals(new short[] {(short) 1}, (short[]) pi.getField("f")));
@@ -871,7 +871,7 @@ public class PdxInstanceFactoryJUnitTest {
     assertEquals(true, Arrays.equals(new short[] {(short) 2}, (short[]) pi.getField("f")));
     checkPdxInstance(pi);
 
-    c = PdxInstanceFactoryImpl.newCreator("intArrayField", false);
+    c = PdxInstanceFactoryImpl.newCreator("intArrayField", false, cache);
     c.writeField("f", new int[] {(int) 1}, int[].class);
     pi = c.create().createWriter();
     assertEquals(true, Arrays.equals(new int[] {(int) 1}, (int[]) pi.getField("f")));
@@ -879,7 +879,7 @@ public class PdxInstanceFactoryJUnitTest {
     assertEquals(true, Arrays.equals(new int[] {(int) 2}, (int[]) pi.getField("f")));
     checkPdxInstance(pi);
 
-    c = PdxInstanceFactoryImpl.newCreator("longArrayField", false);
+    c = PdxInstanceFactoryImpl.newCreator("longArrayField", false, cache);
     c.writeField("f", new long[] {(long) 1}, long[].class);
     pi = c.create().createWriter();
     assertEquals(true, Arrays.equals(new long[] {(long) 1}, (long[]) pi.getField("f")));
@@ -887,7 +887,7 @@ public class PdxInstanceFactoryJUnitTest {
     assertEquals(true, Arrays.equals(new long[] {(long) 2}, (long[]) pi.getField("f")));
     checkPdxInstance(pi);
 
-    c = PdxInstanceFactoryImpl.newCreator("floatArrayField", false);
+    c = PdxInstanceFactoryImpl.newCreator("floatArrayField", false, cache);
     c.writeField("f", new float[] {(float) 1}, float[].class);
     pi = c.create().createWriter();
     assertEquals(true, Arrays.equals(new float[] {(float) 1}, (float[]) pi.getField("f")));
@@ -895,7 +895,7 @@ public class PdxInstanceFactoryJUnitTest {
     assertEquals(true, Arrays.equals(new float[] {(float) 2}, (float[]) pi.getField("f")));
     checkPdxInstance(pi);
 
-    c = PdxInstanceFactoryImpl.newCreator("doubleArrayField", false);
+    c = PdxInstanceFactoryImpl.newCreator("doubleArrayField", false, cache);
     c.writeField("f", new double[] {(double) 1}, double[].class);
     pi = c.create().createWriter();
     assertEquals(true, Arrays.equals(new double[] {(double) 1}, (double[]) pi.getField("f")));
@@ -903,7 +903,7 @@ public class PdxInstanceFactoryJUnitTest {
     assertEquals(true, Arrays.equals(new double[] {(double) 2}, (double[]) pi.getField("f")));
     checkPdxInstance(pi);
 
-    c = PdxInstanceFactoryImpl.newCreator("StringArrayField", false);
+    c = PdxInstanceFactoryImpl.newCreator("StringArrayField", false, cache);
     c.writeField("f", new String[] {"1", "2", "3"}, String[].class);
     pi = c.create().createWriter();
     assertEquals(true, Arrays.equals(new String[] {"1", "2", "3"}, (String[]) pi.getField("f")));
@@ -911,7 +911,7 @@ public class PdxInstanceFactoryJUnitTest {
     assertEquals(true, Arrays.equals(new String[] {"a", "b", "c"}, (String[]) pi.getField("f")));
     checkPdxInstance(pi);
 
-    c = PdxInstanceFactoryImpl.newCreator("ObjectArrayField", false);
+    c = PdxInstanceFactoryImpl.newCreator("ObjectArrayField", false, cache);
     c.writeField("f", new Object[] {"1", "2", "3"}, Object[].class);
     pi = c.create().createWriter();
     assertEquals(true, Arrays.equals(new Object[] {"1", "2", "3"}, (Object[]) pi.getField("f")));
@@ -919,7 +919,7 @@ public class PdxInstanceFactoryJUnitTest {
     assertEquals(true, Arrays.equals(new Object[] {"a", "b", "c"}, (Object[]) pi.getField("f")));
     checkPdxInstance(pi);
 
-    c = PdxInstanceFactoryImpl.newCreator("byteArrayOfBAField", false);
+    c = PdxInstanceFactoryImpl.newCreator("byteArrayOfBAField", false, cache);
     c.writeField("f", new byte[][] {new byte[] {(byte) 1}}, byte[][].class);
     pi = c.create().createWriter();
     assertEquals(true,
@@ -932,7 +932,7 @@ public class PdxInstanceFactoryJUnitTest {
 
   @Test
   public void testWritePrimitiveField() throws IOException, ClassNotFoundException {
-    PdxInstanceFactory c = PdxInstanceFactoryImpl.newCreator("byteField", false);
+    PdxInstanceFactory c = PdxInstanceFactoryImpl.newCreator("byteField", false, cache);
     c.writeField("f", (byte) 37, byte.class);
     WritablePdxInstance pi = c.create().createWriter();
     assertEquals((byte) 37, pi.getField("f"));
@@ -940,7 +940,7 @@ public class PdxInstanceFactoryJUnitTest {
     assertEquals((byte) 38, pi.getField("f"));
     checkPdxInstance(pi);
 
-    c = PdxInstanceFactoryImpl.newCreator("booleanField", false);
+    c = PdxInstanceFactoryImpl.newCreator("booleanField", false, cache);
     c.writeField("f", true, boolean.class);
     pi = c.create().createWriter();
     assertEquals(true, pi.getField("f"));
@@ -948,7 +948,7 @@ public class PdxInstanceFactoryJUnitTest {
     assertEquals(false, pi.getField("f"));
     checkPdxInstance(pi);
 
-    c = PdxInstanceFactoryImpl.newCreator("charField", false);
+    c = PdxInstanceFactoryImpl.newCreator("charField", false, cache);
     c.writeField("f", (char) 37, char.class);
     pi = c.create().createWriter();
     assertEquals((char) 37, pi.getField("f"));
@@ -956,7 +956,7 @@ public class PdxInstanceFactoryJUnitTest {
     assertEquals((char) 38, pi.getField("f"));
     checkPdxInstance(pi);
 
-    c = PdxInstanceFactoryImpl.newCreator("shortField", false);
+    c = PdxInstanceFactoryImpl.newCreator("shortField", false, cache);
     c.writeField("f", (short) 37, short.class);
     pi = c.create().createWriter();
     assertEquals((short) 37, pi.getField("f"));
@@ -964,7 +964,7 @@ public class PdxInstanceFactoryJUnitTest {
     assertEquals((short) 38, pi.getField("f"));
     checkPdxInstance(pi);
 
-    c = PdxInstanceFactoryImpl.newCreator("intField", false);
+    c = PdxInstanceFactoryImpl.newCreator("intField", false, cache);
     c.writeField("f", (int) 37, int.class);
     pi = c.create().createWriter();
     assertEquals((int) 37, pi.getField("f"));
@@ -972,7 +972,7 @@ public class PdxInstanceFactoryJUnitTest {
     assertEquals((int) 38, pi.getField("f"));
     checkPdxInstance(pi);
 
-    c = PdxInstanceFactoryImpl.newCreator("longField", false);
+    c = PdxInstanceFactoryImpl.newCreator("longField", false, cache);
     c.writeField("f", (long) 37, long.class);
     pi = c.create().createWriter();
     assertEquals((long) 37, pi.getField("f"));
@@ -980,7 +980,7 @@ public class PdxInstanceFactoryJUnitTest {
     assertEquals((long) 38, pi.getField("f"));
     checkPdxInstance(pi);
 
-    c = PdxInstanceFactoryImpl.newCreator("floatField", false);
+    c = PdxInstanceFactoryImpl.newCreator("floatField", false, cache);
     c.writeField("f", (float) 37, float.class);
     pi = c.create().createWriter();
     assertEquals((float) 37, pi.getField("f"));
@@ -988,7 +988,7 @@ public class PdxInstanceFactoryJUnitTest {
     assertEquals((float) 38, pi.getField("f"));
     checkPdxInstance(pi);
 
-    c = PdxInstanceFactoryImpl.newCreator("doubleField", false);
+    c = PdxInstanceFactoryImpl.newCreator("doubleField", false, cache);
     c.writeField("f", (double) 37, double.class);
     pi = c.create().createWriter();
     assertEquals((double) 37, pi.getField("f"));
@@ -1000,7 +1000,7 @@ public class PdxInstanceFactoryJUnitTest {
   @Test
   public void testPdxInstancePut() throws IOException {
     Region r = cache.createRegionFactory(RegionShortcut.LOCAL).create("testPdxInstancePut");
-    PdxInstanceFactory c = PdxInstanceFactoryImpl.newCreator("testPdxInstancePut", false);
+    PdxInstanceFactory c = PdxInstanceFactoryImpl.newCreator("testPdxInstancePut", false, cache);
     c.writeField("f", 37, int.class);
     PdxInstance pi = c.create();
     r.put("key", pi);
@@ -1010,10 +1010,11 @@ public class PdxInstanceFactoryJUnitTest {
 
   @Test
   public void testNestedPdxInstance() throws IOException, ClassNotFoundException {
-    PdxInstanceFactory c = PdxInstanceFactoryImpl.newCreator("testNestedPdxInstanceChild", false);
+    PdxInstanceFactory c =
+        PdxInstanceFactoryImpl.newCreator("testNestedPdxInstanceChild", false, cache);
     c.writeField("f", 37, int.class);
     PdxInstance child = c.create();
-    c = PdxInstanceFactoryImpl.newCreator("testNestedPdxInstanceParent", false);
+    c = PdxInstanceFactoryImpl.newCreator("testNestedPdxInstanceParent", false, cache);
     c.writeObject("f", child);
     WritablePdxInstance parent = c.create().createWriter();
     checkPdxInstance(child);
@@ -1042,154 +1043,154 @@ public class PdxInstanceFactoryJUnitTest {
   @Test
   public void testDefaults() throws IOException, ClassNotFoundException {
     {
-      PdxInstanceFactory c = PdxInstanceFactoryImpl.newCreator("byteField", false);
+      PdxInstanceFactory c = PdxInstanceFactoryImpl.newCreator("byteField", false, cache);
       c.writeField("f", (byte) 0, byte.class);
       PdxInstance pi = c.create();
       assertEquals((byte) 0, pi.getField("f"));
       checkDefaultBytes(pi, "f");
     }
     {
-      PdxInstanceFactory c = PdxInstanceFactoryImpl.newCreator("booleanField", false);
+      PdxInstanceFactory c = PdxInstanceFactoryImpl.newCreator("booleanField", false, cache);
       c.writeField("f", false, boolean.class);
       PdxInstance pi = c.create();
       assertEquals(false, pi.getField("f"));
       checkDefaultBytes(pi, "f");
     }
     {
-      PdxInstanceFactory c = PdxInstanceFactoryImpl.newCreator("charField", false);
+      PdxInstanceFactory c = PdxInstanceFactoryImpl.newCreator("charField", false, cache);
       c.writeField("f", (char) 0, char.class);
       PdxInstance pi = c.create();
       assertEquals((char) 0, pi.getField("f"));
       checkDefaultBytes(pi, "f");
     }
     {
-      PdxInstanceFactory c = PdxInstanceFactoryImpl.newCreator("shortField", false);
+      PdxInstanceFactory c = PdxInstanceFactoryImpl.newCreator("shortField", false, cache);
       c.writeField("f", (short) 0, short.class);
       PdxInstance pi = c.create();
       assertEquals((short) 0, pi.getField("f"));
       checkDefaultBytes(pi, "f");
     }
     {
-      PdxInstanceFactory c = PdxInstanceFactoryImpl.newCreator("intField", false);
+      PdxInstanceFactory c = PdxInstanceFactoryImpl.newCreator("intField", false, cache);
       c.writeField("f", (int) 0, int.class);
       PdxInstance pi = c.create();
       assertEquals((int) 0, pi.getField("f"));
       checkDefaultBytes(pi, "f");
     }
     {
-      PdxInstanceFactory c = PdxInstanceFactoryImpl.newCreator("longField", false);
+      PdxInstanceFactory c = PdxInstanceFactoryImpl.newCreator("longField", false, cache);
       c.writeField("f", (long) 0, long.class);
       PdxInstance pi = c.create();
       assertEquals((long) 0, pi.getField("f"));
       checkDefaultBytes(pi, "f");
     }
     {
-      PdxInstanceFactory c = PdxInstanceFactoryImpl.newCreator("floatField", false);
+      PdxInstanceFactory c = PdxInstanceFactoryImpl.newCreator("floatField", false, cache);
       c.writeField("f", (float) 0.0, float.class);
       PdxInstance pi = c.create();
       assertEquals((float) 0, pi.getField("f"));
       checkDefaultBytes(pi, "f");
     }
     {
-      PdxInstanceFactory c = PdxInstanceFactoryImpl.newCreator("doubleField", false);
+      PdxInstanceFactory c = PdxInstanceFactoryImpl.newCreator("doubleField", false, cache);
       c.writeField("f", (double) 0.0, double.class);
       PdxInstance pi = c.create();
       assertEquals((double) 0, pi.getField("f"));
       checkDefaultBytes(pi, "f");
     }
     {
-      PdxInstanceFactory c = PdxInstanceFactoryImpl.newCreator("dateField", false);
+      PdxInstanceFactory c = PdxInstanceFactoryImpl.newCreator("dateField", false, cache);
       c.writeField("f", null, Date.class);
       PdxInstance pi = c.create();
       assertEquals(null, pi.getField("f"));
       checkDefaultBytes(pi, "f");
     }
     {
-      PdxInstanceFactory c = PdxInstanceFactoryImpl.newCreator("stringField", false);
+      PdxInstanceFactory c = PdxInstanceFactoryImpl.newCreator("stringField", false, cache);
       c.writeField("f", null, String.class);
       PdxInstance pi = c.create();
       assertEquals(null, pi.getField("f"));
       checkDefaultBytes(pi, "f");
     }
     {
-      PdxInstanceFactory c = PdxInstanceFactoryImpl.newCreator("objectField", false);
+      PdxInstanceFactory c = PdxInstanceFactoryImpl.newCreator("objectField", false, cache);
       c.writeField("f", null, Object.class);
       PdxInstance pi = c.create();
       assertEquals(null, pi.getField("f"));
       checkDefaultBytes(pi, "f");
     }
     {
-      PdxInstanceFactory c = PdxInstanceFactoryImpl.newCreator("byteArrayField", false);
+      PdxInstanceFactory c = PdxInstanceFactoryImpl.newCreator("byteArrayField", false, cache);
       c.writeField("f", null, byte[].class);
       PdxInstance pi = c.create();
       assertEquals(null, pi.getField("f"));
       checkDefaultBytes(pi, "f");
     }
     {
-      PdxInstanceFactory c = PdxInstanceFactoryImpl.newCreator("booleanArrayField", false);
+      PdxInstanceFactory c = PdxInstanceFactoryImpl.newCreator("booleanArrayField", false, cache);
       c.writeField("f", null, boolean[].class);
       PdxInstance pi = c.create();
       assertEquals(null, pi.getField("f"));
       checkDefaultBytes(pi, "f");
     }
     {
-      PdxInstanceFactory c = PdxInstanceFactoryImpl.newCreator("charArrayField", false);
+      PdxInstanceFactory c = PdxInstanceFactoryImpl.newCreator("charArrayField", false, cache);
       c.writeField("f", null, char[].class);
       PdxInstance pi = c.create();
       assertEquals(null, pi.getField("f"));
       checkDefaultBytes(pi, "f");
     }
     {
-      PdxInstanceFactory c = PdxInstanceFactoryImpl.newCreator("shortArrayField", false);
+      PdxInstanceFactory c = PdxInstanceFactoryImpl.newCreator("shortArrayField", false, cache);
       c.writeField("f", null, short[].class);
       PdxInstance pi = c.create();
       assertEquals(null, pi.getField("f"));
       checkDefaultBytes(pi, "f");
     }
     {
-      PdxInstanceFactory c = PdxInstanceFactoryImpl.newCreator("intArrayField", false);
+      PdxInstanceFactory c = PdxInstanceFactoryImpl.newCreator("intArrayField", false, cache);
       c.writeField("f", null, int[].class);
       PdxInstance pi = c.create();
       assertEquals(null, pi.getField("f"));
       checkDefaultBytes(pi, "f");
     }
     {
-      PdxInstanceFactory c = PdxInstanceFactoryImpl.newCreator("longArrayField", false);
+      PdxInstanceFactory c = PdxInstanceFactoryImpl.newCreator("longArrayField", false, cache);
       c.writeField("f", null, long[].class);
       PdxInstance pi = c.create();
       assertEquals(null, pi.getField("f"));
       checkDefaultBytes(pi, "f");
     }
     {
-      PdxInstanceFactory c = PdxInstanceFactoryImpl.newCreator("floatArrayField", false);
+      PdxInstanceFactory c = PdxInstanceFactoryImpl.newCreator("floatArrayField", false, cache);
       c.writeField("f", null, float[].class);
       PdxInstance pi = c.create();
       assertEquals(null, pi.getField("f"));
       checkDefaultBytes(pi, "f");
     }
     {
-      PdxInstanceFactory c = PdxInstanceFactoryImpl.newCreator("doubleArrayField", false);
+      PdxInstanceFactory c = PdxInstanceFactoryImpl.newCreator("doubleArrayField", false, cache);
       c.writeField("f", null, double[].class);
       PdxInstance pi = c.create();
       assertEquals(null, pi.getField("f"));
       checkDefaultBytes(pi, "f");
     }
     {
-      PdxInstanceFactory c = PdxInstanceFactoryImpl.newCreator("StringArrayField", false);
+      PdxInstanceFactory c = PdxInstanceFactoryImpl.newCreator("StringArrayField", false, cache);
       c.writeField("f", null, String[].class);
       PdxInstance pi = c.create();
       assertEquals(null, pi.getField("f"));
       checkDefaultBytes(pi, "f");
     }
     {
-      PdxInstanceFactory c = PdxInstanceFactoryImpl.newCreator("ObjectArrayField", false);
+      PdxInstanceFactory c = PdxInstanceFactoryImpl.newCreator("ObjectArrayField", false, cache);
       c.writeField("f", null, Object[].class);
       PdxInstance pi = c.create();
       assertEquals(null, pi.getField("f"));
       checkDefaultBytes(pi, "f");
     }
     {
-      PdxInstanceFactory c = PdxInstanceFactoryImpl.newCreator("byteArrayArrayField", false);
+      PdxInstanceFactory c = PdxInstanceFactoryImpl.newCreator("byteArrayArrayField", false, cache);
       c.writeField("f", null, byte[][].class);
       PdxInstance pi = c.create();
       assertEquals(null, pi.getField("f"));
