@@ -40,17 +40,11 @@ public class StartLocatorAcceptanceTest {
   }
 
   @Test
-  public void startLocatorWithConnectFalseShouldNotBeConnected() throws Exception {
-    GfshExecution execution =
-        GfshScript.of("start locator --name=locator1 --connect=false").execute(gfshRule);
-    assertThat(execution.getOutputText()).doesNotContain("Successfully connected to: JMX Manager");
-  }
-
-  @Test
-  public void startLocatorWithConnectFalseShouldNotRetrieveClusterConfigurationStatus()
+  public void startLocatorWithConnectFalseShouldNotBeConnectedAndNotRetrieveClusterConfigurationStatus()
       throws Exception {
     GfshExecution execution =
         GfshScript.of("start locator --name=locator1 --connect=false").execute(gfshRule);
+    assertThat(execution.getOutputText()).doesNotContain("Successfully connected to: JMX Manager");
     assertThat(execution.getOutputText())
         .doesNotContain("Cluster configuration service is up and running.");
   }
