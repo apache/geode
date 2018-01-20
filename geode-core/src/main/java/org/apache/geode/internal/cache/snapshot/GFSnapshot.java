@@ -112,11 +112,13 @@ public class GFSnapshot {
    *
    * @param snapshot the snapshot file
    * @param region the region name
+   * @param cache
    * @return the callback to allow the invoker to provide the snapshot entries
    * @throws IOException error writing the snapshot file
    */
-  public static SnapshotWriter create(File snapshot, String region) throws IOException {
-    final GFSnapshotExporter out = new GFSnapshotExporter(snapshot, region);
+  public static SnapshotWriter create(File snapshot, String region, InternalCache cache)
+      throws IOException {
+    final GFSnapshotExporter out = new GFSnapshotExporter(snapshot, region, cache);
     return new SnapshotWriter() {
       @Override
       public void snapshotEntry(SnapshotRecord entry) throws IOException {
@@ -217,8 +219,10 @@ public class GFSnapshot {
 
     /** the output stream */
     private final DataOutputStream dos;
+    private final InternalCache cache;
 
-    public GFSnapshotExporter(File out, String region) throws IOException {
+    public GFSnapshotExporter(File out, String region, InternalCache cache) throws IOException {
+      this.cache = cache;
       FileOutputStream fos = new FileOutputStream(out);
       fc = fos.getChannel();
 
@@ -257,8 +261,6 @@ public class GFSnapshot {
 
       // write pdx types
       try {
-        InternalCache cache = GemFireCacheImpl
-            .getForPdx("PDX registry is unavailable because the Cache has been closed.");
         new ExportedRegistry(cache.getPdxRegistry()).toData(dos);
       } catch (CacheClosedException e) {
         // ignore pdx types

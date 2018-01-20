@@ -125,6 +125,8 @@ public interface InternalRegion<K, V>
 
   void addCacheServiceProfile(CacheServiceProfile profile);
 
+  InternalCache getCache();
+
   void setEvictionMaximum(int maximum);
 
   /**
