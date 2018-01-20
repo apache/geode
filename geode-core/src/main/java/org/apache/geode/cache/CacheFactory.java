@@ -310,7 +310,9 @@ public class CacheFactory {
    * <p>
    * WARNING: To avoid risk of deadlock, do not invoke getAnyInstance() from within any
    * CacheCallback including CacheListener, CacheLoader, CacheWriter, TransactionListener,
-   * TransactionWriter.
+   * TransactionWriter. Instead use EntryEvent.getRegion().getCache(),
+   * RegionEvent.getRegion().getCache(), LoaderHelper.getRegion().getCache(), or
+   * TransactionEvent.getCache().
    * </p>
    *
    * @throws CacheClosedException if a cache has not been created or the only created one is
