@@ -1845,12 +1845,12 @@ public class TXEntryState implements Releasable {
    * @param largeModCount true if modCount needs to be represented by an int; false if a byte is
    *        enough
    * @param sendVersionTag true if versionTag should be sent to clients 7.0 and above
-   * @param sendShadowKey true if wan shadowKey should be sent to peers 7.0.1 and above
+   * @param version transaction message reciever version
    *
    * @since GemFire 5.0
    */
-  void toFarSideData(DataOutput out, boolean largeModCount, boolean sendVersionTag,
-      boolean sendShadowKey) throws IOException {
+  void toFarSideData(DataOutput out, boolean largeModCount, boolean sendVersionTag, Version version)
+      throws IOException {
     Operation operation = getFarSideOperation();
     out.writeByte(operation.ordinal);
     if (largeModCount) {
@@ -1866,6 +1866,13 @@ public class TXEntryState implements Releasable {
           || txRegionState.getRegion().getDataPolicy() != DataPolicy.REPLICATE : "tag:"
               + getVersionTag() + " r:" + txRegionState.getRegion() + " op:" + opToString()
               + " key:";
+    }
+    // In GEODE 1.4.0 and above case, shadowKeyFlag is always sent to farside
+    // In GEODE 1.3.0 and below case, shadowKeyFlag is not sent and presence or absence of shadowKey
+    // is judged according to the internal status
+    boolean sendShadowKey = (version == null);
+    if (version == null || Version.GEODE_140.compareTo(version) <= 0) {
+      DataSerializer.writeBoolean(sendShadowKey, out);
     }
     if (sendShadowKey) {
       out.writeLong(this.tailKey);

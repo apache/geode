@@ -1379,8 +1379,9 @@ public class TXCommitMessage extends PooledDistributionMessage
         this.memberId = DataSerializer.readObject(in);
         for (int i = 0; i < size; i++) {
           FarSideEntryOp entryOp = new FarSideEntryOp();
-          // shadowkey is not being sent to clients
-          entryOp.fromData(in, largeModCount, !this.msg.getDM().isLoner());
+          Version txMsgRecieverVersion = this.msg.getDM().getExistingCache()
+              .getInternalDistributedSystem().getDistributedMember().getVersionObject();
+          entryOp.fromData(in, largeModCount, this.msg.getDM().isLoner(), txMsgRecieverVersion);
           if (entryOp.versionTag != null && this.memberId != null) {
             entryOp.versionTag.setMemberID(this.memberId);
           }
@@ -1450,10 +1451,10 @@ public class TXCommitMessage extends PooledDistributionMessage
           if (this.msg.txState != null) {
             /* we are still on tx node and have the entry state */
             ((TXEntryState) this.opEntries.get(i)).toFarSideData(out, largeModCount,
-                sendVersionTags, this.msg.clientVersion == null);
+                sendVersionTags, this.msg.clientVersion);
           } else {
             ((FarSideEntryOp) this.opEntries.get(i)).toData(out, largeModCount, sendVersionTags,
-                this.msg.clientVersion == null);
+                this.msg.clientVersion);
           }
         }
       }
@@ -1504,9 +1505,10 @@ public class TXCommitMessage extends PooledDistributionMessage
        *
        * @param in the data input that is used to read the data for this entry op
        * @param largeModCount true if the mod count is a int instead of a byte.
-       * @param readShadowKey true if a long shadowKey should be read
+       * @param isLoner true if loner
+       * @param version transaction message reciever version
        */
-      public void fromData(DataInput in, boolean largeModCount, boolean readShadowKey)
+      public void fromData(DataInput in, boolean largeModCount, boolean isLoner, Version version)
           throws IOException, ClassNotFoundException {
         this.key = DataSerializer.readObject(in);
         this.op = Operation.fromOrdinal(in.readByte());
@@ -1518,6 +1520,13 @@ public class TXCommitMessage extends PooledDistributionMessage
         this.callbackArg = DataSerializer.readObject(in);
         this.filterRoutingInfo = DataSerializer.readObject(in);
         this.versionTag = DataSerializer.readObject(in);
+        // In GEODE 1.4.0 and above case, shadowKeyFlag is always sent to farside
+        // In GEODE 1.3.0 and below case, shadowKeyFlag is not sent and presence or absence of
+        // shadowKey is judged according to the internal status
+        boolean readShadowKey = !isLoner;
+        if (Version.GEODE_140.compareTo(version) <= 0) {
+          readShadowKey = DataSerializer.readBoolean(in);
+        }
         if (readShadowKey) {
           this.tailKey = in.readLong();
         }
@@ -1537,7 +1546,7 @@ public class TXCommitMessage extends PooledDistributionMessage
       }
 
       public void toData(DataOutput out, boolean largeModCount, boolean sendVersionTag,
-          boolean sendShadowKey) throws IOException {
+          Version version) throws IOException {
         // DataSerializer.writeObject(this.key,out);
         /* Don't serialize key because caller did that already */
 
@@ -1551,6 +1560,13 @@ public class TXCommitMessage extends PooledDistributionMessage
         DataSerializer.writeObject(this.filterRoutingInfo, out);
         if (sendVersionTag) {
           DataSerializer.writeObject(this.versionTag, out);
+        }
+        // In GEODE 1.4.0 and above case, shadowKeyFlag is always sent to farside
+        // In GEODE 1.3.0 and below case, shadowKeyFlag is not sent and presence or absence of
+        // shadowKey is judged according to the internal status
+        boolean sendShadowKey = (version == null);
+        if (version == null || Version.GEODE_140.compareTo(version) <= 0) {
+          DataSerializer.writeBoolean(sendShadowKey, out);
         }
         if (sendShadowKey) {
           out.writeLong(this.tailKey);
