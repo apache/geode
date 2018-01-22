@@ -31,8 +31,6 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 import org.junit.rules.TemporaryFolder;
-import org.junit.runner.RunWith;
-import org.junit.runners.Parameterized;
 
 import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.Region;
@@ -40,18 +38,11 @@ import org.apache.geode.cache.RegionShortcut;
 import org.apache.geode.management.internal.cli.shell.Gfsh;
 import org.apache.geode.test.junit.categories.IntegrationTest;
 import org.apache.geode.test.junit.rules.GfshCommandRule;
+import org.apache.geode.test.junit.rules.Server;
 import org.apache.geode.test.junit.rules.ServerStarterRule;
 
 @Category(IntegrationTest.class)
-@RunWith(Parameterized.class)
 public class QueryCommandTest {
-  @Parameterized.Parameters(name = "Connect via http: {0}")
-  public static Object[] data() {
-    return new Object[] {true, false};
-  }
-
-  @Parameterized.Parameter
-  public boolean useHttp;
 
   private final String DEFAULT_FETCH_SIZE = String.valueOf(Gfsh.DEFAULT_APP_FETCH_SIZE);
 
@@ -81,12 +72,12 @@ public class QueryCommandTest {
   }
 
   @Before
-  public void connect() throws Exception {
-    if (useHttp) {
-      gfsh.connectAndVerify(server.getHttpPort(), GfshCommandRule.PortType.http);
-    } else {
-      gfsh.connectAndVerify(server.getJmxPort(), GfshCommandRule.PortType.jmxManager);
-    }
+  public void before() throws Exception {
+    connect(server);
+  }
+
+  void connect(Server server) throws Exception {
+    gfsh.connectAndVerify(server.getJmxPort(), GfshCommandRule.PortType.jmxManager);
   }
 
   @Test
