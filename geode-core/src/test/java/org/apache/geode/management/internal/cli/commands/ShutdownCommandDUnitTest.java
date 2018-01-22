@@ -17,8 +17,6 @@ package org.apache.geode.management.internal.cli.commands;
 import static org.apache.geode.distributed.ConfigurationProperties.GROUPS;
 import static org.apache.geode.distributed.ConfigurationProperties.LOG_FILE;
 import static org.apache.geode.distributed.ConfigurationProperties.NAME;
-import static org.apache.geode.test.junit.rules.GfshCommandRule.PortType.http;
-import static org.apache.geode.test.junit.rules.GfshCommandRule.PortType.jmxManager;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import java.util.Properties;
@@ -30,8 +28,6 @@ import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
-import org.junit.runner.RunWith;
-import org.junit.runners.Parameterized;
 
 import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.CacheClosedException;
@@ -44,7 +40,6 @@ import org.apache.geode.test.junit.rules.GfshCommandRule;
 
 
 @Category(DistributedTest.class)
-@RunWith(Parameterized.class)
 public class ShutdownCommandDUnitTest {
   private static final String MANAGER_NAME = "Manager";
   private static final String SERVER1_NAME = "Server1";
@@ -56,15 +51,6 @@ public class ShutdownCommandDUnitTest {
   private MemberVM manager;
   private MemberVM server1;
   private MemberVM server2;
-
-
-  @Parameterized.Parameter
-  public static boolean useHttp;
-
-  @Parameterized.Parameters
-  public static Object[] data() {
-    return new Object[] {true, false};
-  }
 
   @Rule
   public ClusterStartupRule clusterStartupRule = new ClusterStartupRule();
@@ -92,11 +78,11 @@ public class ShutdownCommandDUnitTest {
     server2Props.setProperty(GROUPS, GROUP2);
     server2 = clusterStartupRule.startServerVM(2, server2Props, manager.getPort());
 
-    if (useHttp) {
-      gfsh.connectAndVerify(manager.getHttpPort(), http);
-    } else {
-      gfsh.connectAndVerify(manager.getJmxPort(), jmxManager);
-    }
+    connect(manager);
+  }
+
+  void connect(MemberVM server) throws Exception {
+    gfsh.connectAndVerify(server.getJmxPort(), GfshCommandRule.PortType.jmxManager);
   }
 
   @Test
