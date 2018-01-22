@@ -80,8 +80,9 @@ public class JtaAfterCompletionMessage extends TXMessage {
     }
     TXCommitMessage commitMessage = txMgr.getRecentlyCompletedMessage(txId);
     if (commitMessage != null) {
-      TXRemoteCommitReplyMessage.send(getSender(), getProcessorId(), commitMessage,
-          getReplySender(dm));
+      TXCommitMessage message =
+          commitMessage == TXCommitMessage.ROLLBACK_MSG ? null : commitMessage;
+      TXRemoteCommitReplyMessage.send(getSender(), getProcessorId(), message, getReplySender(dm));
       return false;
     }
     TXStateProxy txState = txMgr.getTXState();

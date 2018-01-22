@@ -171,6 +171,9 @@ public class TXRemoteCommitMessage extends TXMessage {
     public static void send(InternalDistributedMember recipient, int processorId,
         TXCommitMessage val, ReplySender replySender) throws RemoteOperationException {
       Assert.assertTrue(recipient != null, "TXRemoteCommitReply NULL reply message");
+      if (val != null) {
+        val.setClientVersion(null);
+      }
       TXRemoteCommitReplyMessage m = new TXRemoteCommitReplyMessage(processorId, val);
       m.setRecipient(recipient);
       replySender.putOutgoing(m);

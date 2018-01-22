@@ -96,7 +96,7 @@ public class TXSynchronizationCommand extends BaseCommand {
 
     final TXId txId = txProxy.getTxId();
     TXCommitMessage commitMessage = txMgr.getRecentlyCompletedMessage(txId);
-    if (commitMessage != null) {
+    if (commitMessage != null && commitMessage != TXCommitMessage.ROLLBACK_MSG) {
       assert type == CompletionType.AFTER_COMPLETION;
       try {
         CommitCommand.writeCommitResponse(commitMessage, clientMessage, serverConnection);

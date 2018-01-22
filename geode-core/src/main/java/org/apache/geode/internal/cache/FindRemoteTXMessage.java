@@ -255,14 +255,12 @@ public class FindRemoteTXMessage extends HighPriorityDistributionMessage
     public void toData(DataOutput out) throws IOException {
       super.toData(out);
       out.writeBoolean(this.isHostingTx);
-      boolean sendTXCommitMessage = this.txCommitMessage != null;
+      // Do not send TxCommitMessage for TXFailover.
+      // FindRemoteTXMessage does not hold the tx lock and should not
+      // modify TXCommitMessage state to cause race condition.
+      // This will force a retry and use the TXRemoteCommitMessage to get the commit message.
+      boolean sendTXCommitMessage = false;
       out.writeBoolean(sendTXCommitMessage);
-      if (sendTXCommitMessage) {
-        out.writeBoolean(this.isPartialCommitMessage);
-        // since this message is going to a peer, reset client version
-        txCommitMessage.setClientVersion(null); // fixes bug 46529
-        InternalDataSerializer.writeDSFID(txCommitMessage, out);
-      }
     }
 
     @Override
