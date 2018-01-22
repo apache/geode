@@ -125,66 +125,6 @@ public class ConflationDUnitTest extends JUnit4DistributedTestCase {
   }
 
   /**
-   * two regions, with two writers (each region will have a unique bridgwriter).
-   *
-   */
-  @Test
-  public void testTwoRegionsTwoWriters() {
-    try {
-      vm0.invoke(() -> ConflationDUnitTest.setIsSlowStart());
-      createClientCache1UniqueWriter(NetworkUtils.getServerHostName(Host.getHost(0)),
-          new Integer(PORT));
-      Host host = Host.getHost(0);
-      vm2.invoke(() -> ConflationDUnitTest
-          .createClientCache2UniqueWriter(NetworkUtils.getServerHostName(host), new Integer(PORT)));
-      vm2.invoke(() -> ConflationDUnitTest.setClientServerObserverForBeforeInterestRecovery());
-      vm2.invoke(() -> ConflationDUnitTest.setAllCountersZero());
-      vm2.invoke(() -> ConflationDUnitTest.assertAllCountersZero());
-      vm2.invoke(() -> ConflationDUnitTest.registerInterest());
-      create();
-      put();
-      createMarker();
-      vm2.invoke(() -> ConflationDUnitTest.waitForMarker());
-      vm2.invoke(() -> ConflationDUnitTest.assertValue());
-      vm2.invoke(() -> ConflationDUnitTest.destroyMarker());
-      destroy();
-      createMarker();
-      vm2.invoke(() -> ConflationDUnitTest.waitForMarker());
-      vm2.invoke(() -> ConflationDUnitTest.assertCounterSizes());
-    } catch (Exception e) {
-      Assert.fail("Test failed due to exception", e);
-    }
-  }
-
-  /**
-   * two regions with a common bridgewriter
-   *
-   */
-  @Test
-  public void testTwoRegionsOneWriter() throws Exception {
-    vm0.invoke(() -> ConflationDUnitTest.setIsSlowStart());
-    Host host = Host.getHost(0);
-    createClientCache1CommonWriter(NetworkUtils.getServerHostName(host), new Integer(PORT));
-    vm2.invoke(() -> ConflationDUnitTest
-        .createClientCache2CommonWriter(NetworkUtils.getServerHostName(host), new Integer(PORT)));
-    vm2.invoke(() -> ConflationDUnitTest.setClientServerObserverForBeforeInterestRecovery());
-    vm2.invoke(() -> ConflationDUnitTest.setAllCountersZero());
-    vm2.invoke(() -> ConflationDUnitTest.assertAllCountersZero());
-    vm2.invoke(() -> ConflationDUnitTest.registerInterest());
-    create();
-    put();
-    createMarker();
-    vm2.invoke(() -> ConflationDUnitTest.waitForMarker());
-    vm2.invoke(() -> ConflationDUnitTest.assertValue());
-    vm2.invoke(() -> ConflationDUnitTest.destroyMarker());
-    destroy();
-    createMarker();
-    vm2.invoke(() -> ConflationDUnitTest.waitForMarker());
-    vm2.invoke(() -> ConflationDUnitTest.assertCounterSizes());
-  }
-
-
-  /**
    * test more messages are not sent to client from server
    *
    */
