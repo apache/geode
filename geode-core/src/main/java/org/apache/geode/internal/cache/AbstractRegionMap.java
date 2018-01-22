@@ -1083,8 +1083,7 @@ public abstract class AbstractRegionMap implements RegionMap {
         // I'm avoiding indenting just to preserve the ability
         // to track diffs since the code is fairly complex.
 
-        RegionEntry re =
-            getOrCreateRegionEntry(owner, event, Token.REMOVED_PHASE1, null, true, true);
+        RegionEntry re = getEntry(event);
         RegionEntry tombstone = null;
         boolean haveTombstone = false;
         /*
