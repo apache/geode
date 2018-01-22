@@ -25,7 +25,7 @@ import org.junit.experimental.categories.Category;
 import org.apache.geode.cache.asyncqueue.AsyncEventQueue;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.cache.wan.MyAsyncEventListener;
-import org.apache.geode.test.dunit.rules.LocatorServerStartupRule;
+import org.apache.geode.test.dunit.rules.ClusterStartupRule;
 import org.apache.geode.test.dunit.rules.MemberVM;
 import org.apache.geode.test.junit.categories.AcceptanceTest;
 import org.apache.geode.test.junit.rules.GfshCommandRule;
@@ -35,7 +35,7 @@ import org.apache.geode.test.junit.rules.GfshCommandRule;
 public class AlterAsyncEventQueueCommandDUnitTest {
 
   @Rule
-  public LocatorServerStartupRule lsRule = new LocatorServerStartupRule();
+  public ClusterStartupRule lsRule = new ClusterStartupRule();
 
   @Rule
   public GfshCommandRule gfsh = new GfshCommandRule();
@@ -60,7 +60,7 @@ public class AlterAsyncEventQueueCommandDUnitTest {
 
     // verify that server1's event queue has the default value
     server1.invoke(() -> {
-      InternalCache cache = LocatorServerStartupRule.getCache();
+      InternalCache cache = ClusterStartupRule.getCache();
       AsyncEventQueue queue = cache.getAsyncEventQueue("queue1");
       assertThat(queue.getBatchSize()).isEqualTo(100);
       assertThat(queue.getBatchTimeInterval()).isEqualTo(1000);
@@ -73,7 +73,7 @@ public class AlterAsyncEventQueueCommandDUnitTest {
     // verify that server1's event queue still has the default value
     // without restart
     server1.invoke(() -> {
-      InternalCache cache = LocatorServerStartupRule.getCache();
+      InternalCache cache = ClusterStartupRule.getCache();
       AsyncEventQueue queue = cache.getAsyncEventQueue("queue1");
       assertThat(queue.getBatchSize()).isEqualTo(100);
       assertThat(queue.getBatchTimeInterval()).isEqualTo(1000);
@@ -89,7 +89,7 @@ public class AlterAsyncEventQueueCommandDUnitTest {
     server1 = lsRule.startServerVM(1, "group1", locator.getPort());
     // verify that server1's queue is updated
     server1.invoke(() -> {
-      InternalCache cache = LocatorServerStartupRule.getCache();
+      InternalCache cache = ClusterStartupRule.getCache();
       AsyncEventQueue queue = cache.getAsyncEventQueue("queue1");
       assertThat(queue.getBatchSize()).isEqualTo(200);
       assertThat(queue.getBatchTimeInterval()).isEqualTo(300);

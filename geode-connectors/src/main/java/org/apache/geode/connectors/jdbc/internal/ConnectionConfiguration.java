@@ -23,9 +23,6 @@ import org.apache.geode.annotations.Experimental;
 
 @Experimental
 public class ConnectionConfiguration implements Serializable {
-  private static final Object USER = "user";
-  private static final Object PASSWORD = "password";
-
   private final String name;
   private final String url;
   private final String user;
@@ -63,15 +60,8 @@ public class ConnectionConfiguration implements Serializable {
 
   public Properties getConnectionProperties() {
     Properties properties = new Properties();
-
     if (parameters != null) {
       properties.putAll(parameters);
-    }
-    if (user != null) {
-      properties.put(USER, user);
-    }
-    if (password != null) {
-      properties.put(PASSWORD, password);
     }
     return properties;
   }

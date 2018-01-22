@@ -32,6 +32,7 @@ import java.util.concurrent.atomic.AtomicLong;
 import org.apache.logging.log4j.Logger;
 
 import org.apache.geode.DataSerializer;
+import org.apache.geode.StatisticsFactory;
 import org.apache.geode.cache.AttributesMutator;
 import org.apache.geode.cache.CacheCallback;
 import org.apache.geode.cache.CacheListener;
@@ -77,9 +78,9 @@ import org.apache.geode.cache.snapshot.RegionSnapshotService;
 import org.apache.geode.cache.wan.GatewaySender;
 import org.apache.geode.compression.Compressor;
 import org.apache.geode.distributed.DistributedMember;
-import org.apache.geode.distributed.internal.DM;
 import org.apache.geode.distributed.internal.DistributionAdvisor;
 import org.apache.geode.distributed.internal.DistributionConfig;
+import org.apache.geode.distributed.internal.DistributionManager;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
 import org.apache.geode.internal.DataSerializableFixedID;
@@ -99,7 +100,7 @@ import org.apache.geode.pdx.internal.PeerTypeRegistration;
  */
 @SuppressWarnings("deprecation")
 public abstract class AbstractRegion implements InternalRegion, AttributesMutator, CacheStatistics,
-    DataSerializableFixedID, Extensible<Region<?, ?>> {
+    DataSerializableFixedID, Extensible<Region<?, ?>>, EvictableRegion {
 
   private static final Logger logger = LogService.getLogger();
 
@@ -127,8 +128,6 @@ public abstract class AbstractRegion implements InternalRegion, AttributesMutato
 
   private volatile CacheWriter cacheWriter;
 
-  private EvictionController evictionController;
-
   protected int entryIdleTimeout;
 
   private ExpirationAction entryIdleTimeoutExpirationAction;
@@ -149,7 +148,7 @@ public abstract class AbstractRegion implements InternalRegion, AttributesMutato
 
   protected float loadFactor;
 
-  protected DataPolicy dataPolicy;
+  private DataPolicy dataPolicy;
 
   protected int regionIdleTimeout;
 
@@ -171,7 +170,7 @@ public abstract class AbstractRegion implements InternalRegion, AttributesMutato
 
   protected int concurrencyLevel;
 
-  protected volatile boolean concurrencyChecksEnabled;
+  private volatile boolean concurrencyChecksEnabled;
 
   protected boolean earlyAck;
 
@@ -225,6 +224,9 @@ public abstract class AbstractRegion implements InternalRegion, AttributesMutato
   protected PartitionAttributes partitionAttributes;
 
   protected EvictionAttributesImpl evictionAttributes = new EvictionAttributesImpl();
+
+  protected EvictionAttributesMutator evictionAttributesMutator =
+      new EvictionAttributesMutatorImpl(this, this.evictionAttributes);
 
   /** The membership attributes defining required roles functionality */
   protected MembershipAttributes membershipAttributes;
@@ -432,8 +434,8 @@ public abstract class AbstractRegion implements InternalRegion, AttributesMutato
     StringBuilder buf = new StringBuilder();
     buf.append(getClass().getName());
     buf.append("[path='").append(getFullPath()).append("';scope=").append(getScope())
-        .append("';dataPolicy=").append(this.dataPolicy);
-    if (this.concurrencyChecksEnabled) {
+        .append("';dataPolicy=").append(this.getDataPolicy());
+    if (this.getConcurrencyChecksEnabled()) {
       buf.append("; concurrencyChecksEnabled");
     }
     return buf;
@@ -544,15 +546,15 @@ public abstract class AbstractRegion implements InternalRegion, AttributesMutato
 
   @Override
   public MirrorType getMirrorType() {
-    if (this.dataPolicy.isNormal() || this.dataPolicy.isPreloaded() || this.dataPolicy.isEmpty()
-        || this.dataPolicy.withPartitioning()) {
+    if (this.getDataPolicy().isNormal() || this.getDataPolicy().isPreloaded()
+        || this.getDataPolicy().isEmpty() || this.getDataPolicy().withPartitioning()) {
       return MirrorType.NONE;
-    } else if (this.dataPolicy.withReplication()) {
+    } else if (this.getDataPolicy().withReplication()) {
       return MirrorType.KEYS_VALUES;
     } else {
       throw new IllegalStateException(
           LocalizedStrings.AbstractRegion_NO_MIRROR_TYPE_CORRESPONDS_TO_DATA_POLICY_0
-              .toLocalizedString(this.dataPolicy));
+              .toLocalizedString(this.getDataPolicy()));
     }
   }
 
@@ -720,6 +722,10 @@ public abstract class AbstractRegion implements InternalRegion, AttributesMutato
   @Override
   public boolean getConcurrencyChecksEnabled() {
     return this.concurrencyChecksEnabled;
+  }
+
+  public void setConcurrencyChecksEnabled(boolean concurrencyChecksEnabled) {
+    this.concurrencyChecksEnabled = concurrencyChecksEnabled;
   }
 
   @Override
@@ -1087,7 +1093,7 @@ public abstract class AbstractRegion implements InternalRegion, AttributesMutato
   }
 
   void checkEntryTimeoutAction(String mode, ExpirationAction ea) {
-    if ((this.dataPolicy.withReplication() || this.dataPolicy.withPartitioning())
+    if ((this.getDataPolicy().withReplication() || this.getDataPolicy().withPartitioning())
         && (ea == ExpirationAction.LOCAL_DESTROY || ea == ExpirationAction.LOCAL_INVALIDATE)) {
       throw new IllegalArgumentException(
           LocalizedStrings.AbstractRegion_0_ACTION_IS_INCOMPATIBLE_WITH_THIS_REGIONS_DATA_POLICY
@@ -1197,7 +1203,7 @@ public abstract class AbstractRegion implements InternalRegion, AttributesMutato
       validatePRRegionExpirationAttributes(idleTimeout);
     }
     if (idleTimeout.getAction() == ExpirationAction.LOCAL_INVALIDATE
-        && this.dataPolicy.withReplication()) {
+        && this.getDataPolicy().withReplication()) {
       throw new IllegalArgumentException(
           LocalizedStrings.AbstractRegion_0_ACTION_IS_INCOMPATIBLE_WITH_THIS_REGIONS_DATA_POLICY
               .toLocalizedString("idleTimeout"));
@@ -1226,7 +1232,7 @@ public abstract class AbstractRegion implements InternalRegion, AttributesMutato
       validatePRRegionExpirationAttributes(timeToLive);
     }
     if (timeToLive.getAction() == ExpirationAction.LOCAL_INVALIDATE
-        && this.dataPolicy.withReplication()) {
+        && this.getDataPolicy().withReplication()) {
       throw new IllegalArgumentException(
           LocalizedStrings.AbstractRegion_0_ACTION_IS_INCOMPATIBLE_WITH_THIS_REGIONS_DATA_POLICY
               .toLocalizedString("timeToLive"));
@@ -1541,7 +1547,7 @@ public abstract class AbstractRegion implements InternalRegion, AttributesMutato
    * Returns true if this region can evict entries.
    */
   public boolean isEntryEvictionPossible() {
-    return this.evictionController != null;
+    return this.evictionAttributes != null && !this.evictionAttributes.getAlgorithm().isNone();
   }
 
   private void setAttributes(RegionAttributes attrs, String regionName,
@@ -1560,8 +1566,7 @@ public abstract class AbstractRegion implements InternalRegion, AttributesMutato
       impl.setOffHeap(true);
     }
 
-    this.evictionAttributes =
-        new EvictionAttributesImpl((EvictionAttributesImpl) attrs.getEvictionAttributes());
+    this.evictionAttributes = new EvictionAttributesImpl(attrs.getEvictionAttributes());
     if (attrs.getPartitionAttributes() != null && this.evictionAttributes != null
         && this.evictionAttributes.getAlgorithm().isLRUMemory()
         && attrs.getPartitionAttributes().getLocalMaxMemory() != 0 && this.evictionAttributes
@@ -1572,10 +1577,6 @@ public abstract class AbstractRegion implements InternalRegion, AttributesMutato
       this.evictionAttributes.setMaximum(attrs.getPartitionAttributes().getLocalMaxMemory());
     }
 
-    if (this.evictionAttributes != null && !this.evictionAttributes.getAlgorithm().isNone()) {
-      setEvictionController(
-          this.evictionAttributes.createEvictionController(this, attrs.getOffHeap()));
-    }
     storeCacheListenersField(attrs.getCacheListeners());
     assignCacheLoader(attrs.getCacheLoader());
     assignCacheWriter(attrs.getCacheWriter());
@@ -1602,8 +1603,8 @@ public abstract class AbstractRegion implements InternalRegion, AttributesMutato
     this.initialCapacity = attrs.getInitialCapacity();
     this.loadFactor = attrs.getLoadFactor();
     this.concurrencyLevel = attrs.getConcurrencyLevel();
-    this.concurrencyChecksEnabled =
-        attrs.getConcurrencyChecksEnabled() && supportsConcurrencyChecks();
+    this.setConcurrencyChecksEnabled(
+        attrs.getConcurrencyChecksEnabled() && supportsConcurrencyChecks());
     this.earlyAck = attrs.getEarlyAck();
     this.gatewaySenderIds = attrs.getGatewaySenderIds();
     this.asyncEventQueueIds = attrs.getAsyncEventQueueIds();
@@ -1627,7 +1628,7 @@ public abstract class AbstractRegion implements InternalRegion, AttributesMutato
                 .toLocalizedString(this.poolName));
       }
       cp.attach();
-      if (cp.getMultiuserAuthentication() && !this.dataPolicy.isEmpty()) {
+      if (cp.getMultiuserAuthentication() && !this.getDataPolicy().isEmpty()) {
         throw new IllegalStateException(
             "Region must have empty data-policy " + "when multiuser-authentication is true.");
       }
@@ -1696,15 +1697,7 @@ public abstract class AbstractRegion implements InternalRegion, AttributesMutato
 
   @Override
   public EvictionAttributesMutator getEvictionAttributesMutator() {
-    return this.evictionAttributes;
-  }
-
-  private void setEvictionController(EvictionController evictionController) {
-    this.evictionController = evictionController;
-  }
-
-  public EvictionController getEvictionController() {
-    return this.evictionController;
+    return this.evictionAttributesMutator;
   }
 
   /**
@@ -1770,12 +1763,17 @@ public abstract class AbstractRegion implements InternalRegion, AttributesMutato
   }
 
   @Override
-  public DM getDistributionManager() {
+  public DistributionManager getDistributionManager() {
     return getSystem().getDistributionManager();
   }
 
   public InternalDistributedSystem getSystem() {
     return getCache().getInternalDistributedSystem();
+  }
+
+  @Override
+  public StatisticsFactory getStatisticsFactory() {
+    return getSystem();
   }
 
   @Override
@@ -1840,11 +1838,6 @@ public abstract class AbstractRegion implements InternalRegion, AttributesMutato
   @Override
   public boolean getOffHeap() {
     return this.offHeap;
-  }
-
-  @Override
-  public boolean isConcurrencyChecksEnabled() {
-    return this.concurrencyChecksEnabled;
   }
 
   @Override

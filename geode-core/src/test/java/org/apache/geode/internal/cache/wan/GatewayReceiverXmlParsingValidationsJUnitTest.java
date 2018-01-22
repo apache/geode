@@ -12,9 +12,6 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
-/**
- *
- */
 package org.apache.geode.internal.cache.wan;
 
 import static org.apache.geode.distributed.ConfigurationProperties.CACHE_XML_FILE;
@@ -49,6 +46,7 @@ import org.apache.geode.cache.CacheXmlException;
 import org.apache.geode.cache.wan.GatewayReceiverFactory;
 import org.apache.geode.test.junit.categories.IntegrationTest;
 import org.apache.geode.test.junit.rules.serializable.SerializableTestName;
+import org.apache.geode.test.junit.runners.CategoryWithParameterizedRunnerFactory;
 import org.apache.geode.util.test.TestUtil;
 
 @RunWith(PowerMockRunner.class)
@@ -56,6 +54,7 @@ import org.apache.geode.util.test.TestUtil;
 @PrepareForTest(WANServiceProvider.class)
 @PowerMockRunnerDelegate(Parameterized.class)
 @PowerMockIgnore({"javax.management.*", "javax.security.*", "*.IntegrationTest"})
+@Parameterized.UseParametersRunnerFactory(CategoryWithParameterizedRunnerFactory.class)
 public class GatewayReceiverXmlParsingValidationsJUnitTest {
   private Cache cache;
   private GatewayReceiverFactory receiverFactory;

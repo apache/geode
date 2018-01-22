@@ -369,7 +369,10 @@ public class PutAllDUnitTest extends JUnit4DistributedTestCase {
     for (int i = 0; i < 5; i++) {
       assertNotNull(eventIds1[i]);
       assertNotNull(eventIds2[i]);
-      assertEquals(eventIds1[i], eventIds2[i]);
+      assertEquals(
+          "Event id mismatch: eventIds1[" + i + "]" + eventIds1[i].expensiveToString()
+              + ": eventIds2[" + i + "]" + eventIds2[i].expensiveToString(),
+          eventIds1[i], eventIds2[i]);
     }
     for (int i = 0; i < 5; i++) {
       assertNotNull(eventIds1[i]);

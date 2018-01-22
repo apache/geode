@@ -32,7 +32,7 @@ import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
 import org.apache.geode.cache.CacheFactory;
-import org.apache.geode.connectors.jdbc.internal.InternalJdbcConnectorService;
+import org.apache.geode.connectors.jdbc.internal.JdbcConnectorService;
 import org.apache.geode.connectors.jdbc.internal.RegionMapping;
 import org.apache.geode.connectors.jdbc.internal.RegionMappingBuilder;
 import org.apache.geode.internal.cache.InternalCache;
@@ -46,7 +46,7 @@ public class DescribeMappingCommandIntegrationTest {
   private static final String REGION_NAME = "testRegion";
 
   private InternalCache cache;
-  private InternalJdbcConnectorService service;
+  private JdbcConnectorService service;
   private RegionMapping regionMapping;
   private DescribeMappingCommand command;
 
@@ -56,7 +56,7 @@ public class DescribeMappingCommandIntegrationTest {
 
     cache = (InternalCache) new CacheFactory().set("locators", "").set("mcast-port", "0")
         .set(ENABLE_CLUSTER_CONFIGURATION, "true").create();
-    service = cache.getService(InternalJdbcConnectorService.class);
+    service = cache.getService(JdbcConnectorService.class);
     regionMapping = new RegionMappingBuilder().withRegionName(REGION_NAME)
         .withConnectionConfigName("connection").withTableName("testTable")
         .withPdxClassName("myPdxClass").withPrimaryKeyInValue(true)
@@ -109,5 +109,36 @@ public class DescribeMappingCommandIntegrationTest {
       assertThat(tableContent.get("Field").toString()).contains(entry.getKey());
       assertThat(tableContent.get("Column").toString()).contains(entry.getValue());
     });
+  }
+
+  @Test
+  public void displaysMappingInformationWhenMappingWithNoFieldToColumnsExists() throws Exception {
+    regionMapping = new RegionMappingBuilder().withRegionName(REGION_NAME)
+        .withConnectionConfigName("connection").withTableName("testTable")
+        .withPdxClassName("myPdxClass").withPrimaryKeyInValue(true).withFieldToColumnMappings(null)
+        .build();
+    service.createRegionMapping(regionMapping);
+    Result result = command.describeMapping(REGION_NAME);
+
+    assertThat(result.getStatus()).isSameAs(Result.Status.OK);
+    CommandResult commandResult = (CommandResult) result;
+    GfJsonObject sectionContent = commandResult.getTableContent()
+        .getJSONObject(SECTION_DATA_ACCESSOR + "-" + RESULT_SECTION_NAME);
+
+    assertThat(sectionContent.get(CREATE_MAPPING__REGION_NAME))
+        .isEqualTo(regionMapping.getRegionName());
+    assertThat(sectionContent.get(CREATE_MAPPING__CONNECTION_NAME))
+        .isEqualTo(regionMapping.getConnectionConfigName());
+    assertThat(sectionContent.get(CREATE_MAPPING__TABLE_NAME))
+        .isEqualTo(regionMapping.getTableName());
+    assertThat(sectionContent.get(CREATE_MAPPING__PDX_CLASS_NAME))
+        .isEqualTo(regionMapping.getPdxClassName());
+    assertThat(sectionContent.get(CREATE_MAPPING__VALUE_CONTAINS_PRIMARY_KEY))
+        .isEqualTo(regionMapping.isPrimaryKeyInValue());
+
+    GfJsonObject tableContent = sectionContent
+        .getJSONObject(TABLE_DATA_ACCESSOR + "-" + FIELD_TO_COLUMN_TABLE).getJSONObject("content");
+    assertThat(tableContent.get("Field")).isNull();
+    assertThat(tableContent.get("Column")).isNull();
   }
 }

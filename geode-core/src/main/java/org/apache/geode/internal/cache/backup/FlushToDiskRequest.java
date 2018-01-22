@@ -16,7 +16,7 @@ package org.apache.geode.internal.cache.backup;
 
 import java.util.Set;
 
-import org.apache.geode.distributed.internal.DM;
+import org.apache.geode.distributed.internal.DistributionManager;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
 import org.apache.geode.internal.admin.remote.AdminResponse;
 import org.apache.geode.internal.admin.remote.CliLegacyMessage;
@@ -49,7 +49,7 @@ public class FlushToDiskRequest extends CliLegacyMessage {
   }
 
   @Override
-  protected AdminResponse createResponse(DM dm) {
+  protected AdminResponse createResponse(DistributionManager dm) {
     flushToDiskFactory.createFlushToDisk(dm.getCache()).run();
     return flushToDiskFactory.createResponse(getSender());
   }

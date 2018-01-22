@@ -1942,7 +1942,7 @@ public class LocalizedStrings {
   public static final StringId AbstractDistributionConfig_UNKNOWN_LOCATOR_HOST_0 =
       new StringId(2177, "Unknown locator host:  {0}");
 
-  public static final StringId AbstractLRURegionMap_UNKNOWN_EVICTION_ACTION_0 =
+  public static final StringId UNKNOWN_EVICTION_ACTION_0 =
       new StringId(2179, "Unknown eviction action:  {0}");
   public static final StringId AbstractPoolCache_ABSTRACTPOOLEDCACHEGETPOOLEDCONNECTIONFROMPOOLLOGIN_TIMEOUT_EXCEEDED =
       new StringId(2180,

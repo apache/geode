@@ -21,6 +21,7 @@ import org.apache.geode.compression.Compressor;
 import org.apache.geode.internal.cache.DiskId;
 import org.apache.geode.internal.cache.DiskInitFile.DiskRegionFlag;
 import org.apache.geode.internal.cache.DiskStoreImpl;
+import org.apache.geode.internal.cache.EvictableRegion;
 import org.apache.geode.internal.cache.LocalRegion;
 import org.apache.geode.internal.cache.RegionEntryContext;
 import org.apache.geode.internal.cache.RegionMap;
@@ -29,7 +30,7 @@ import org.apache.geode.internal.cache.versions.RegionVersionVector;
 /**
  * Contract DiskInitFile needs a DiskRegion to provide.
  */
-public interface DiskRegionView extends PersistentMemberView, RegionEntryContext {
+public interface DiskRegionView extends PersistentMemberView, RegionEntryContext, EvictableRegion {
   public DiskStoreImpl getDiskStore();
 
   public String getName();
@@ -157,8 +158,6 @@ public interface DiskRegionView extends PersistentMemberView, RegionEntryContext
   public String getCompressorClassName();
 
   public void oplogRecovered(long oplogId);
-
-  public boolean getOffHeap();
 
   public void close();
 }

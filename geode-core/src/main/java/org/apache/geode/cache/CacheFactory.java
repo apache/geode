@@ -295,7 +295,7 @@ public class CacheFactory {
             LocalizedStrings.CacheFactory_THE_CACHE_HAS_BEEN_CLOSED.toLocalizedString(), null);
       }
       if (!instance.getDistributedSystem().equals(system)) {
-        throw new CacheClosedException(
+        throw instance.getCacheClosedException(
             LocalizedStrings.CacheFactory_A_CACHE_HAS_NOT_YET_BEEN_CREATED_FOR_THE_GIVEN_DISTRIBUTED_SYSTEM
                 .toLocalizedString());
       }
@@ -306,6 +306,14 @@ public class CacheFactory {
   /**
    * Gets an arbitrary open instance of {@link Cache} produced by an earlier call to
    * {@link #create()}.
+   *
+   * <p>
+   * WARNING: To avoid risk of deadlock, do not invoke getAnyInstance() from within any
+   * CacheCallback including CacheListener, CacheLoader, CacheWriter, TransactionListener,
+   * TransactionWriter. Instead use EntryEvent.getRegion().getCache(),
+   * RegionEvent.getRegion().getCache(), LoaderHelper.getRegion().getCache(), or
+   * TransactionEvent.getCache().
+   * </p>
    *
    * @throws CacheClosedException if a cache has not been created or the only created one is
    *         {@link Cache#isClosed closed}

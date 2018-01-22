@@ -50,7 +50,7 @@ public class DistributedSystemMXBeanSecurityTest {
 
   @Before
   public void setUp() throws Exception {
-    bean = connectionRule.getProxyMBean(DistributedSystemMXBean.class);
+    bean = connectionRule.getProxyMXBean(DistributedSystemMXBean.class);
   }
 
   @Test

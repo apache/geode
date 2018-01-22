@@ -28,12 +28,12 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
-import org.apache.geode.connectors.jdbc.internal.InternalJdbcConnectorService;
+import org.apache.geode.connectors.jdbc.internal.JdbcConnectorService;
 import org.apache.geode.connectors.jdbc.internal.RegionMapping;
 import org.apache.geode.distributed.internal.InternalLocator;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.management.internal.cli.util.CommandStringBuilder;
-import org.apache.geode.test.dunit.rules.LocatorServerStartupRule;
+import org.apache.geode.test.dunit.rules.ClusterStartupRule;
 import org.apache.geode.test.dunit.rules.MemberVM;
 import org.apache.geode.test.junit.categories.DistributedTest;
 import org.apache.geode.test.junit.rules.GfshCommandRule;
@@ -46,7 +46,7 @@ public class CreateMappingCommandDUnitTest {
   public transient GfshCommandRule gfsh = new GfshCommandRule();
 
   @Rule
-  public LocatorServerStartupRule startupRule = new LocatorServerStartupRule();
+  public ClusterStartupRule startupRule = new ClusterStartupRule();
 
   @Rule
   public SerializableTestName testName = new SerializableTestName();
@@ -63,13 +63,13 @@ public class CreateMappingCommandDUnitTest {
   }
 
   @Test
-  public void createsConnection() {
+  public void createsMappingWithAllOptions() {
     CommandStringBuilder csb = new CommandStringBuilder(CREATE_MAPPING);
     csb.addOption(CREATE_MAPPING__REGION_NAME, "testRegion");
     csb.addOption(CREATE_MAPPING__CONNECTION_NAME, "connection");
     csb.addOption(CREATE_MAPPING__TABLE_NAME, "myTable");
     csb.addOption(CREATE_MAPPING__PDX_CLASS_NAME, "myPdxClass");
-    csb.addOption(CREATE_MAPPING__VALUE_CONTAINS_PRIMARY_KEY, "false");
+    csb.addOption(CREATE_MAPPING__VALUE_CONTAINS_PRIMARY_KEY, "true");
     csb.addOption(CREATE_MAPPING__FIELD_MAPPING, "field1:column1,field2:column2");
 
     gfsh.executeAndAssertThat(csb.toString()).statusIsSuccess();
@@ -77,19 +77,71 @@ public class CreateMappingCommandDUnitTest {
     locator.invoke(() -> {
       String xml = InternalLocator.getLocator().getSharedConfiguration().getConfiguration("cluster")
           .getCacheXmlContent();
-      assertThat(xml).isNotNull().contains("jdbc:connector-service");
+      assertThat(xml).isNotNull().contains("jdbc:connector-service")
+          .doesNotContain("jdbc:connection").contains("jdbc:region-mapping")
+          .contains("jdbc:field-mapping");
     });
 
     server.invoke(() -> {
-      InternalCache cache = LocatorServerStartupRule.getCache();
+      InternalCache cache = ClusterStartupRule.getCache();
       RegionMapping mapping =
-          cache.getService(InternalJdbcConnectorService.class).getMappingForRegion("testRegion");
+          cache.getService(JdbcConnectorService.class).getMappingForRegion("testRegion");
+      assertThat(mapping.getConnectionConfigName()).isEqualTo("connection");
+      assertThat(mapping.getTableName()).isEqualTo("myTable");
+      assertThat(mapping.getPdxClassName()).isEqualTo("myPdxClass");
+      assertThat(mapping.isPrimaryKeyInValue()).isEqualTo(true);
+      assertThat(mapping.getFieldToColumnMap()).containsEntry("field1", "column1")
+          .containsEntry("field2", "column2");
+    });
+  }
+
+  @Test
+  public void validateThatPrimaryKeyInValueDefaultsToFalse() {
+    CommandStringBuilder csb = new CommandStringBuilder(CREATE_MAPPING);
+    csb.addOption(CREATE_MAPPING__REGION_NAME, "testRegion");
+    csb.addOption(CREATE_MAPPING__CONNECTION_NAME, "connection");
+    csb.addOption(CREATE_MAPPING__TABLE_NAME, "myTable");
+    csb.addOption(CREATE_MAPPING__PDX_CLASS_NAME, "myPdxClass");
+    csb.addOption(CREATE_MAPPING__FIELD_MAPPING, "field1:column1,field2:column2");
+
+    gfsh.executeAndAssertThat(csb.toString()).statusIsSuccess();
+
+    locator.invoke(() -> {
+      String xml = InternalLocator.getLocator().getSharedConfiguration().getConfiguration("cluster")
+          .getCacheXmlContent();
+      assertThat(xml).isNotNull().contains("primary-key-in-value=\"false\"");
+    });
+
+    server.invoke(() -> {
+      InternalCache cache = ClusterStartupRule.getCache();
+      RegionMapping mapping =
+          cache.getService(JdbcConnectorService.class).getMappingForRegion("testRegion");
       assertThat(mapping.getConnectionConfigName()).isEqualTo("connection");
       assertThat(mapping.getTableName()).isEqualTo("myTable");
       assertThat(mapping.getPdxClassName()).isEqualTo("myPdxClass");
       assertThat(mapping.isPrimaryKeyInValue()).isEqualTo(false);
       assertThat(mapping.getFieldToColumnMap()).containsEntry("field1", "column1")
           .containsEntry("field2", "column2");
+    });
+  }
+
+  @Test
+  public void createsRegionMappingWithoutFieldMap() {
+    CommandStringBuilder csb = new CommandStringBuilder(CREATE_MAPPING);
+    csb.addOption(CREATE_MAPPING__REGION_NAME, "testRegion");
+    csb.addOption(CREATE_MAPPING__CONNECTION_NAME, "connection");
+    csb.addOption(CREATE_MAPPING__TABLE_NAME, "myTable");
+    csb.addOption(CREATE_MAPPING__PDX_CLASS_NAME, "myPdxClass");
+    csb.addOption(CREATE_MAPPING__VALUE_CONTAINS_PRIMARY_KEY, "false");
+
+    gfsh.executeAndAssertThat(csb.toString()).statusIsSuccess();
+
+    locator.invoke(() -> {
+      String xml = InternalLocator.getLocator().getSharedConfiguration().getConfiguration("cluster")
+          .getCacheXmlContent();
+      assertThat(xml).isNotNull().contains("jdbc:connector-service");
+      assertThat(xml).isNotNull().contains("jdbc:region-mapping");
+      assertThat(xml).isNotNull().doesNotContain("jdbc:field-mapping");
     });
   }
 }

@@ -121,7 +121,7 @@ org/apache/geode/cache/client/internal/ContainsKeyOp$MODE,false
 org/apache/geode/cache/client/internal/TXSynchronizationOp$CompletionType,false
 org/apache/geode/cache/client/internal/pooling/ConnectionDestroyedException,true,-6918516787578041316
 org/apache/geode/cache/execute/EmptyRegionFunctionException,true,1
-org/apache/geode/cache/execute/FunctionAdapter,false
+org/apache/geode/cache/execute/FunctionAdapter,true,-4891043890440825485
 org/apache/geode/cache/execute/FunctionException,true,4893171227542647452
 org/apache/geode/cache/execute/FunctionInvocationTargetException,true,1,id:org/apache/geode/distributed/DistributedMember
 org/apache/geode/cache/operations/OperationContext$OperationCode,false
@@ -517,6 +517,8 @@ org/apache/geode/management/internal/cli/functions/CreateIndexFunction,true,1
 org/apache/geode/management/internal/cli/functions/DataCommandFunction,true,1,optimizeForWrite:boolean
 org/apache/geode/management/internal/cli/functions/DeployFunction,true,1
 org/apache/geode/management/internal/cli/functions/DescribeDiskStoreFunction,false
+org/apache/geode/management/internal/cli/functions/DestroyAsyncEventQueueFunction,true,-7754359270344102817
+org/apache/geode/management/internal/cli/functions/DestroyAsyncEventQueueFunctionArgs,true,1755045410754561928,id:java/lang/String,ifExists:boolean
 org/apache/geode/management/internal/cli/functions/DestroyDiskStoreFunction,true,1
 org/apache/geode/management/internal/cli/functions/DestroyDiskStoreFunctionArgs,true,2296397958405313306,id:java/lang/String,ifExists:boolean
 org/apache/geode/management/internal/cli/functions/DestroyIndexFunction,true,-868082551095130315
@@ -585,7 +587,7 @@ org/apache/geode/management/internal/configuration/domain/SharedConfigurationSta
 org/apache/geode/management/internal/configuration/functions/GetClusterConfigurationFunction,false
 org/apache/geode/management/internal/configuration/functions/GetRegionNamesFunction,false
 org/apache/geode/management/internal/configuration/functions/RecreateCacheFunction,false
-org/apache/geode/management/internal/configuration/functions/UploadJarFunction,true,1
+org/apache/geode/management/internal/configuration/functions/DownloadJarFunction,true,1
 org/apache/geode/management/internal/web/domain/QueryParameterSource,true,34131123582155,objectName:javax/management/ObjectName,queryExpression:javax/management/QueryExp
 org/apache/geode/management/internal/web/shell/MBeanAccessException,true,813768898269516238
 org/apache/geode/memcached/GemFireMemcachedServer$Protocol,false

@@ -19,15 +19,12 @@ import java.util.HashSet;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
-import org.junit.runner.RunWith;
-import org.junit.runners.Parameterized;
 
 import org.apache.geode.cache.Region;
 import org.apache.geode.cache.query.internal.index.DummyQRegion;
 import org.apache.geode.security.query.data.QueryTestObject;
 import org.apache.geode.test.junit.categories.DistributedTest;
 import org.apache.geode.test.junit.categories.SecurityTest;
-import org.apache.geode.test.junit.runners.CategoryWithParameterizedRunnerFactory;
 
 @Category({DistributedTest.class, SecurityTest.class})
 public class QuerySecurityUnauthorizedUserBindParameterDUnitTest extends QuerySecurityBase {

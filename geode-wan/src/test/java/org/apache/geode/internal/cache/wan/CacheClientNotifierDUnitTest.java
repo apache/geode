@@ -257,9 +257,8 @@ public class CacheClientNotifierDUnitTest extends WANTestBase {
     Pool p;
     try {
       p = PoolManager.createFactory().addLocator(host, port0).setPingInterval(250)
-          .setSubscriptionEnabled(true).setSubscriptionRedundancy(-1).setReadTimeout(2000)
-          .setSocketBufferSize(1000).setMinConnections(6).setMaxConnections(10).setRetryAttempts(3)
-          .create(regionName);
+          .setSubscriptionEnabled(true).setSubscriptionRedundancy(-1).setSocketBufferSize(1000)
+          .setMinConnections(6).setMaxConnections(10).setRetryAttempts(3).create(regionName);
     } finally {
       CacheServerTestUtil.enableShufflingOfEndpoints();
     }

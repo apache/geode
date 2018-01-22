@@ -30,7 +30,7 @@ import org.apache.geode.cache.execute.ResultCollector;
 import org.apache.geode.cache.execute.ResultSender;
 import org.apache.geode.cache.snapshot.SnapshotOptions;
 import org.apache.geode.distributed.DistributedMember;
-import org.apache.geode.internal.cache.GemFireCacheImpl;
+import org.apache.geode.internal.InternalEntity;
 import org.apache.geode.internal.cache.snapshot.RegionSnapshotServiceImpl.ExportSink;
 import org.apache.geode.internal.cache.snapshot.RegionSnapshotServiceImpl.Exporter;
 import org.apache.geode.internal.cache.snapshot.RegionSnapshotServiceImpl.ResultSenderSink;
@@ -86,7 +86,7 @@ public class ClientExporter<K, V> implements Exporter<K, V> {
    * @param <K> the key type
    * @param <V> the value type
    */
-  private static class ClientArgs<K, V> implements Serializable {
+  static class ClientArgs<K, V> implements Serializable {
     private static final long serialVersionUID = 1;
 
     private final String region;
@@ -118,7 +118,7 @@ public class ClientExporter<K, V> implements Exporter<K, V> {
    * @param <K> the key type
    * @param <V> the value type
    */
-  private static class ProxyExportFunction<K, V> implements Function {
+  static class ProxyExportFunction<K, V> implements Function, InternalEntity {
     private static final long serialVersionUID = 1L;
 
     @Override
@@ -132,8 +132,7 @@ public class ClientExporter<K, V> implements Exporter<K, V> {
       ResultSender rs = context.getResultSender();
       ExportSink sink = new ResultSenderSink(rs);
 
-      Region<K, V> region =
-          GemFireCacheImpl.getExisting("Exporting snapshot").getRegion(args.getRegion());
+      Region<K, V> region = context.getCache().getRegion(args.getRegion());
       Exporter<K, V> exp = args.isPRSingleHop() ? new LocalExporter<K, V>()
           : RegionSnapshotServiceImpl.<K, V>createExporter(region, args.options);
 

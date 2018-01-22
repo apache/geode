@@ -145,7 +145,7 @@ public class HARegion extends DistributedRegion {
           LocalizedStrings.HARegion_TIMETOLIVE_MUST_NOT_BE_NULL.toLocalizedString());
     }
     if ((timeToLive.getAction() == ExpirationAction.LOCAL_DESTROY
-        && this.dataPolicy.withReplication())) {
+        && this.getDataPolicy().withReplication())) {
       throw new IllegalArgumentException(
           LocalizedStrings.HARegion_TIMETOLIVE_ACTION_IS_INCOMPATIBLE_WITH_THIS_REGIONS_MIRROR_TYPE
               .toLocalizedString());

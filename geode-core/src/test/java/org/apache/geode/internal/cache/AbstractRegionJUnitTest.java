@@ -30,6 +30,7 @@ import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
 import org.apache.geode.CancelCriterion;
+import org.apache.geode.Statistics;
 import org.apache.geode.cache.AttributesMutator;
 import org.apache.geode.cache.CacheLoaderException;
 import org.apache.geode.cache.CacheWriterException;
@@ -49,6 +50,7 @@ import org.apache.geode.cache.query.TypeMismatchException;
 import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
 import org.apache.geode.internal.Version;
+import org.apache.geode.internal.cache.eviction.EvictionController;
 import org.apache.geode.internal.cache.extension.ExtensionPoint;
 import org.apache.geode.internal.cache.extension.SimpleExtensionPoint;
 import org.apache.geode.internal.cache.versions.RegionVersionVector;
@@ -560,11 +562,6 @@ public class AbstractRegionJUnitTest {
     }
 
     @Override
-    public boolean isConcurrencyChecksEnabled() {
-      throw new UnsupportedOperationException();
-    }
-
-    @Override
     public boolean isThisRegionBeingClosedOrDestroyed() {
       throw new UnsupportedOperationException();
     }
@@ -639,7 +636,7 @@ public class AbstractRegionJUnitTest {
     }
 
     @Override
-    public long getEvictions() {
+    public long getTotalEvictions() {
       throw new UnsupportedOperationException();
     }
 
@@ -672,6 +669,36 @@ public class AbstractRegionJUnitTest {
 
     @Override
     public void addCacheServiceProfile(CacheServiceProfile profile) {
+      throw new UnsupportedOperationException();
+    }
+
+    @Override
+    public void setEvictionMaximum(int maximum) {
+      throw new UnsupportedOperationException();
+    }
+
+    @Override
+    public Statistics getEvictionStatistics() {
+      throw new UnsupportedOperationException();
+    }
+
+    @Override
+    public long getEvictionCounter() {
+      throw new UnsupportedOperationException();
+    }
+
+    @Override
+    public RegionMap getRegionMap() {
+      throw new UnsupportedOperationException();
+    }
+
+    @Override
+    public EvictionController getExistingController(InternalRegionArguments internalArgs) {
+      throw new UnsupportedOperationException();
+    }
+
+    @Override
+    public String getNameForStats() {
       throw new UnsupportedOperationException();
     }
   }

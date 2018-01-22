@@ -67,6 +67,7 @@ public class JdbcWriterIntegrationTest {
     cache = new CacheFactory().set("locators", "").set("mcast-port", "0")
         .setPdxReadSerialized(false).create();
     employees = createRegionWithJDBCSynchronousWriter(REGION_TABLE_NAME);
+
     connection = DriverManager.getConnection(CONNECTION_URL);
     statement = connection.createStatement();
     statement.execute("Create Table " + REGION_TABLE_NAME
@@ -226,7 +227,8 @@ public class JdbcWriterIntegrationTest {
 
   private SqlHandler createSqlHandler()
       throws ConnectionConfigExistsException, RegionMappingExistsException {
-    return new SqlHandler(new TestableConnectionManager(TestConfigService.getTestConfigService()));
+    return new SqlHandler(new TestableConnectionManager(),
+        TestConfigService.getTestConfigService());
   }
 
   private void assertRecordMatchesEmployee(ResultSet resultSet, String key, Employee employee)

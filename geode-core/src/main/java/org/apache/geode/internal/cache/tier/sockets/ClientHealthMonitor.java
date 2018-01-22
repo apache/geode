@@ -59,18 +59,20 @@ public class ClientHealthMonitor {
 
   /**
    * The map of known clients
+   *
+   * Accesses must be locked by _clientHeartbeatsLock
    */
-  protected volatile Map _clientHeartbeats = Collections.EMPTY_MAP;
+  private Map<ClientProxyMembershipID, Long> _clientHeartbeats = Collections.emptyMap();
 
   /**
    * An object used to lock the map of known clients
    */
-  protected final Object _clientHeartbeatsLock = new Object();
+  private final Object _clientHeartbeatsLock = new Object();
 
   /**
    * The map of known client threads
    */
-  protected final Map _clientThreads;
+  private final Map _clientThreads;
 
   /**
    * An object used to lock the map of client threads
@@ -199,10 +201,10 @@ public class ClientHealthMonitor {
   public void registerClient(ClientProxyMembershipID proxyID) {
     boolean registerClient = false;
     synchronized (_clientHeartbeatsLock) {
-      Map oldClientHeartbeats = this._clientHeartbeats;
+      Map<ClientProxyMembershipID, Long> oldClientHeartbeats = this._clientHeartbeats;
       if (!oldClientHeartbeats.containsKey(proxyID)) {
-        Map newClientHeartbeats = new HashMap(oldClientHeartbeats);
-        newClientHeartbeats.put(proxyID, Long.valueOf(System.currentTimeMillis()));
+        Map<ClientProxyMembershipID, Long> newClientHeartbeats = new HashMap<>(oldClientHeartbeats);
+        newClientHeartbeats.put(proxyID, System.currentTimeMillis());
         this._clientHeartbeats = newClientHeartbeats;
         registerClient = true;
       }
@@ -221,7 +223,7 @@ public class ClientHealthMonitor {
   }
 
   /**
-   * Takes care of unregistering from the _clientHeatBeats map.
+   * Takes care of unregistering from the _clientHeartBeats map.
    *
    * @param proxyID The id of the client to be unregistered
    */
@@ -229,10 +231,10 @@ public class ClientHealthMonitor {
       Throwable clientDisconnectException) {
     boolean unregisterClient = false;
     synchronized (_clientHeartbeatsLock) {
-      Map oldClientHeartbeats = this._clientHeartbeats;
+      Map<ClientProxyMembershipID, Long> oldClientHeartbeats = this._clientHeartbeats;
       if (oldClientHeartbeats.containsKey(proxyID)) {
         unregisterClient = true;
-        Map newClientHeartbeats = new HashMap(oldClientHeartbeats);
+        Map<ClientProxyMembershipID, Long> newClientHeartbeats = new HashMap<>(oldClientHeartbeats);
         newClientHeartbeats.remove(proxyID);
         this._clientHeartbeats = newClientHeartbeats;
       }
@@ -639,9 +641,13 @@ public class ClientHealthMonitor {
    * Returns the map of known clients.
    *
    * @return the map of known clients
+   *
+   *         Test hook only.
    */
-  public Map getClientHeartbeats() {
-    return this._clientHeartbeats;
+  Map<ClientProxyMembershipID, Long> getClientHeartbeats() {
+    synchronized (this._clientHeartbeatsLock) {
+      return new HashMap<>(this._clientHeartbeats);
+    }
   }
 
   /**

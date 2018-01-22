@@ -30,11 +30,8 @@ import org.junit.rules.TestName;
 
 import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.CacheFactory;
-import org.apache.geode.cache.EvictionAlgorithm;
-import org.apache.geode.cache.Region;
 import org.apache.geode.cache.RegionShortcut;
 import org.apache.geode.internal.cache.InternalRegion;
-import org.apache.geode.internal.cache.InternalRegionArguments;
 import org.apache.geode.internal.lang.SystemPropertyHelper;
 import org.apache.geode.test.junit.categories.IntegrationTest;
 
@@ -57,7 +54,7 @@ public class LRUListWithAsyncSortingIntegrationTest {
   @Before
   public void setUp() throws Exception {
     region = createRegion();
-    evictionList = getEvictionList(region, new TestEvictionController());
+    evictionList = getEvictionList(new TestEvictionController());
     nodes = new ArrayList<>();
     IntStream.range(0, 10).forEach(i -> {
       EvictionNode node = new LRUTestEntry(i);
@@ -159,11 +156,9 @@ public class LRUListWithAsyncSortingIntegrationTest {
     assertThat(evictionList.getEvictableEntry()).isSameAs(nodes.get(10));
   }
 
-  private LRUListWithAsyncSorting getEvictionList(Region region, EvictionController eviction) {
+  private LRUListWithAsyncSorting getEvictionList(EvictionController eviction) {
     System.setProperty("geode." + SystemPropertyHelper.EVICTION_SCAN_ASYNC, "true");
-    return (LRUListWithAsyncSorting) new EvictionListBuilder(EvictionAlgorithm.LRU_HEAP)
-        .withRegion(region).withEvictionController(eviction).withArgs(new InternalRegionArguments())
-        .create();
+    return (LRUListWithAsyncSorting) new EvictionListBuilder(eviction).create();
   }
 
   private InternalRegion createRegion() throws Exception {

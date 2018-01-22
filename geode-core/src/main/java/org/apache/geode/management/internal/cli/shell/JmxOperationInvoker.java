@@ -14,10 +14,13 @@
  */
 package org.apache.geode.management.internal.cli.shell;
 
+import java.io.File;
+import java.io.FileInputStream;
 import java.io.IOException;
 import java.text.MessageFormat;
 import java.util.Arrays;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
@@ -41,16 +44,20 @@ import javax.management.remote.JMXConnectorFactory;
 import javax.management.remote.JMXServiceURL;
 import javax.rmi.ssl.SslRMIClientSocketFactory;
 
+import com.healthmarketscience.rmiio.RemoteInputStream;
+import com.healthmarketscience.rmiio.SimpleRemoteInputStream;
+
 import org.apache.geode.internal.admin.SSLConfig;
 import org.apache.geode.internal.net.SSLConfigurationFactory;
 import org.apache.geode.internal.security.SecurableCommunicationChannel;
-import org.apache.geode.internal.util.ArrayUtils;
 import org.apache.geode.management.DistributedSystemMXBean;
 import org.apache.geode.management.MemberMXBean;
 import org.apache.geode.management.internal.MBeanJMXAdapter;
 import org.apache.geode.management.internal.ManagementConstants;
+import org.apache.geode.management.internal.beans.FileUploaderMBean;
 import org.apache.geode.management.internal.cli.CommandRequest;
 import org.apache.geode.management.internal.cli.LogWrapper;
+import org.apache.geode.management.internal.security.ResourceConstants;
 
 /**
  * OperationInvoker JMX Implementation
@@ -80,6 +87,7 @@ public class JmxOperationInvoker implements OperationInvoker {
   // MBean Proxies
   private DistributedSystemMXBean distributedSystemMXBeanProxy;
   private MemberMXBean memberMXBeanProxy;
+  private FileUploaderMBean fileUploadMBeanProxy;
 
   private ObjectName managerMemberObjectName;
 
@@ -100,7 +108,15 @@ public class JmxOperationInvoker implements OperationInvoker {
       final Map<String, Object> env = new HashMap<>();
 
       env.put(JMXConnectionListener.CHECK_PERIOD_PROP, JMXConnectionListener.CHECK_PERIOD);
-      env.put(JMXConnector.CREDENTIALS, gfProperties);
+
+      // when not using JMXShiroAuthenticator in the integrated security, JMX own password file
+      // authentication requires the credentials been sent in String[] format.
+      // Our JMXShiroAuthenticator handles both String[] and Properties format
+      String username = gfProperties.getProperty(ResourceConstants.USER_NAME);
+      String password = gfProperties.getProperty(ResourceConstants.PASSWORD);
+      if (username != null) {
+        env.put(JMXConnector.CREDENTIALS, new String[] {username, password});
+      }
 
       SSLConfig sslConfig = SSLConfigurationFactory.getSSLConfigForComponent(gfProperties,
           SecurableCommunicationChannel.JMX);
@@ -159,6 +175,9 @@ public class JmxOperationInvoker implements OperationInvoker {
         } else {
           this.memberMXBeanProxy =
               JMX.newMXBeanProxy(mbsc, managerMemberObjectName, MemberMXBean.class);
+          this.fileUploadMBeanProxy = JMX.newMBeanProxy(mbsc,
+              new ObjectName(ManagementConstants.OBJECTNAME__FILEUPLOADER_MBEAN),
+              FileUploaderMBean.class);
         }
       }
 
@@ -191,6 +210,10 @@ public class JmxOperationInvoker implements OperationInvoker {
     } catch (NullPointerException e) {
       throw new JMXInvocationException("Given resourceName is null.", e);
     }
+  }
+
+  public String getRemoteVersion() {
+    return memberMXBeanProxy.getReleaseVersion();
   }
 
   @Override
@@ -245,13 +268,33 @@ public class JmxOperationInvoker implements OperationInvoker {
   }
 
   @Override
-  public Object processCommand(final CommandRequest commandRequest) throws JMXInvocationException {
-    Byte[][] binaryData = null;
-    if (commandRequest.hasFileData()) {
-      binaryData = ArrayUtils.toByteArray(commandRequest.getFileData());
+  public Object processCommand(final CommandRequest commandRequest) {
+    // upload the files first
+
+    List<String> stagedFilePaths = null;
+    try {
+      if (commandRequest.hasFileList()) {
+        Map<String, RemoteInputStream> remoteFiles = new HashMap<>();
+
+        for (File file : commandRequest.getFileList()) {
+          RemoteInputStream ris = new SimpleRemoteInputStream(new FileInputStream(file)).export();
+          remoteFiles.put(file.getName(), ris);
+        }
+
+        stagedFilePaths = fileUploadMBeanProxy.uploadFile(remoteFiles);
+      }
+    } catch (IOException e) {
+      throw new JMXInvocationException("Unable to upload file", e);
     }
-    return memberMXBeanProxy.processCommand(commandRequest.getUserInput(),
-        commandRequest.getEnvironment(), binaryData);
+
+    try {
+      return memberMXBeanProxy.processCommand(commandRequest.getUserInput(),
+          commandRequest.getEnvironment(), stagedFilePaths);
+    } finally {
+      if (stagedFilePaths != null) {
+        fileUploadMBeanProxy.deleteFiles(stagedFilePaths);
+      }
+    }
   }
 
   @Override

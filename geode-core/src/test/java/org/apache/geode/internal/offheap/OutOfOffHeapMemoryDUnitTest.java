@@ -34,7 +34,7 @@ import org.apache.geode.cache.Region;
 import org.apache.geode.cache.RegionShortcut;
 import org.apache.geode.distributed.DistributedSystem;
 import org.apache.geode.distributed.DistributedSystemDisconnectedException;
-import org.apache.geode.distributed.internal.DistributionManager;
+import org.apache.geode.distributed.internal.ClusterDistributionManager;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.internal.cache.DistributedRegion;
 import org.apache.geode.internal.cache.GemFireCacheImpl;
@@ -75,7 +75,7 @@ public class OutOfOffHeapMemoryDUnitTest extends JUnit4CacheTestCase {
       @Override
       public void run() {
         if (hasCache()) {
-          OffHeapTestUtil.checkOrphans();
+          OffHeapTestUtil.checkOrphans(getCache());
         }
       }
     };
@@ -125,8 +125,8 @@ public class OutOfOffHeapMemoryDUnitTest extends JUnit4CacheTestCase {
   public void testSimpleOutOfOffHeapMemoryMemberDisconnects() {
     final DistributedSystem system = getSystem();
     final Cache cache = getCache();
-    final DistributionManager dm =
-        (DistributionManager) ((InternalDistributedSystem) system).getDistributionManager();
+    final ClusterDistributionManager dm =
+        (ClusterDistributionManager) ((InternalDistributedSystem) system).getDistributionManager();
 
     Region<Object, Object> region =
         cache.createRegionFactory(getRegionShortcut()).setOffHeap(true).create(getRegionName());

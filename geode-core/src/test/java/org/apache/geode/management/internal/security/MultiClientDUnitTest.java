@@ -39,7 +39,7 @@ import org.apache.geode.security.AuthenticationFailedException;
 import org.apache.geode.test.dunit.AsyncInvocation;
 import org.apache.geode.test.dunit.IgnoredException;
 import org.apache.geode.test.dunit.rules.ClientVM;
-import org.apache.geode.test.dunit.rules.LocatorServerStartupRule;
+import org.apache.geode.test.dunit.rules.ClusterStartupRule;
 import org.apache.geode.test.dunit.rules.MemberVM;
 import org.apache.geode.test.junit.categories.DistributedTest;
 import org.apache.geode.test.junit.rules.VMProvider;
@@ -49,7 +49,7 @@ public class MultiClientDUnitTest {
   private static int KEY_COUNT = 20;
 
   @ClassRule
-  public static LocatorServerStartupRule lsRule = new LocatorServerStartupRule();
+  public static ClusterStartupRule lsRule = new ClusterStartupRule();
 
   private static MemberVM locator, server1, server2;
   private static ClientVM client3, client4, client5, client6;
@@ -68,7 +68,7 @@ public class MultiClientDUnitTest {
     server2 = lsRule.startServerVM(2, serverProps, locator.getPort());
 
     VMProvider.invokeInEveryMember(() -> {
-      Cache cache = LocatorServerStartupRule.getCache();
+      Cache cache = ClusterStartupRule.getCache();
       cache.createRegionFactory(RegionShortcut.PARTITION).create("region");
     }, server1, server2);
 
@@ -86,7 +86,7 @@ public class MultiClientDUnitTest {
     // client 3 keeps logging in, do some successful put, and log out and keep doing it for multiple
     // times
     AsyncInvocation vm3Invoke = client3.invokeAsync("run as data", () -> {
-      ClientCache cache = LocatorServerStartupRule.getClientCache();
+      ClientCache cache = ClusterStartupRule.getClientCache();
       Region region = cache.createClientRegionFactory(ClientRegionShortcut.PROXY).create("region");
       for (int j = 0; j < KEY_COUNT; j++) {
         region.put(j + "", j + "");
@@ -95,7 +95,7 @@ public class MultiClientDUnitTest {
 
     // client 4 keeps logging in, do an unauthorized put, and log out
     AsyncInvocation vm4Invoke = client4.invokeAsync("run as stranger", () -> {
-      ClientCache cache = LocatorServerStartupRule.getClientCache();
+      ClientCache cache = ClusterStartupRule.getClientCache();
       Region region = cache.createClientRegionFactory(ClientRegionShortcut.PROXY).create("region");
       for (int j = 0; j < KEY_COUNT; j++) {
         String value = "" + j;
@@ -106,7 +106,7 @@ public class MultiClientDUnitTest {
 
     // client 5 keeps logging in, do some successful get, and log out
     AsyncInvocation vm5Invoke = client5.invokeAsync("run as data", () -> {
-      ClientCache cache = LocatorServerStartupRule.getClientCache();
+      ClientCache cache = ClusterStartupRule.getClientCache();
       Region region = cache.createClientRegionFactory(ClientRegionShortcut.PROXY).create("region");
       for (int j = 0; j < KEY_COUNT; j++) {
         region.get("" + j);
@@ -115,7 +115,7 @@ public class MultiClientDUnitTest {
 
     // // client 6 keeps logging in with incorrect
     AsyncInvocation vm6Invoke = client6.invokeAsync("run as invalid user", () -> {
-      ClientCache cache = LocatorServerStartupRule.getClientCache();
+      ClientCache cache = ClusterStartupRule.getClientCache();
       Region region = cache.createClientRegionFactory(ClientRegionShortcut.PROXY).create("region");
       for (int j = 0; j < 1; j++) {
         String key = "" + j;

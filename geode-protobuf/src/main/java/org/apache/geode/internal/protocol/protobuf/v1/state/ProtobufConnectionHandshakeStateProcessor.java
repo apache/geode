@@ -40,7 +40,7 @@ public class ProtobufConnectionHandshakeStateProcessor implements ConnectionStat
   @Override
   public void validateOperation(MessageExecutionContext messageContext,
       OperationContext operationContext) throws ConnectionStateException {
-    throw new ConnectionStateException(ProtocolErrorCode.GENERIC_FAILURE,
+    throw new ConnectionStateException(ProtocolErrorCode.INVALID_REQUEST,
         "Connection processing should never be asked to validate an operation");
   }
 

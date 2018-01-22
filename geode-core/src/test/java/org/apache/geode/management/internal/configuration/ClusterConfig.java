@@ -45,7 +45,7 @@ import org.apache.geode.internal.ClassPathLoader;
 import org.apache.geode.internal.DeployedJar;
 import org.apache.geode.internal.cache.GemFireCacheImpl;
 import org.apache.geode.management.internal.configuration.domain.Configuration;
-import org.apache.geode.test.dunit.rules.LocatorServerStartupRule;
+import org.apache.geode.test.dunit.rules.ClusterStartupRule;
 import org.apache.geode.test.dunit.rules.MemberVM;
 
 public class ClusterConfig implements Serializable {
@@ -93,7 +93,7 @@ public class ClusterConfig implements Serializable {
 
     // verify info exists in memory
     locatorVM.invoke(() -> {
-      InternalLocator internalLocator = LocatorServerStartupRule.getLocator();
+      InternalLocator internalLocator = ClusterStartupRule.getLocator();
       ClusterConfigurationService sc = internalLocator.getSharedConfiguration();
 
       // verify no extra configs exist in memory
@@ -160,7 +160,7 @@ public class ClusterConfig implements Serializable {
       }
 
       for (String jar : this.getJarNames()) {
-        DeployedJar deployedJar = ClassPathLoader.getLatest().getJarDeployer().findDeployedJar(jar);
+        DeployedJar deployedJar = ClassPathLoader.getLatest().getJarDeployer().getDeployedJar(jar);
         assertThat(deployedJar).isNotNull();
         assertThat(Class.forName(nameOfClassContainedInJar(jar), true,
             new URLClassLoader(new URL[] {deployedJar.getFileURL()}))).isNotNull();
@@ -172,7 +172,7 @@ public class ClusterConfig implements Serializable {
       for (String jar : undeployedJarNames) {
         System.out.println("Verifying undeployed jar: " + jar);
         DeployedJar undeployedJar =
-            ClassPathLoader.getLatest().getJarDeployer().findDeployedJar(jar);
+            ClassPathLoader.getLatest().getJarDeployer().getDeployedJar(jar);
         assertThat(undeployedJar).isNull();
       }
     });

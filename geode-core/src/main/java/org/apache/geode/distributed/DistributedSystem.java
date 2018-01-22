@@ -35,8 +35,8 @@ import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.CacheFactory;
 import org.apache.geode.cache.client.ClientCache;
 import org.apache.geode.cache.client.ClientCacheFactory;
+import org.apache.geode.distributed.internal.ClusterDistributionManager;
 import org.apache.geode.distributed.internal.DistributionConfig;
-import org.apache.geode.distributed.internal.DistributionManager;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.internal.Assert;
 import org.apache.geode.internal.ClassPathLoader;
@@ -156,7 +156,7 @@ public abstract class DistributedSystem implements StatisticsFactory {
       config = new Properties();
     }
     synchronized (existingSystemsLock) {
-      if (DistributionManager.isDedicatedAdminVM) {
+      if (ClusterDistributionManager.isDedicatedAdminVM()) {
         // For a dedicated admin VM, check to see if there is already
         // a connect that will suit our purposes.
         DistributedSystem existingSystem = getConnection(config);
@@ -323,7 +323,7 @@ public abstract class DistributedSystem implements StatisticsFactory {
             LocalizedStrings.DistributedSystem_THIS_VM_ALREADY_HAS_ONE_OR_MORE_DISTRIBUTED_SYSTEM_CONNECTIONS_0
                 .toLocalizedString(existingSystems));
       }
-      DistributionManager.isDedicatedAdminVM = adminOnly;
+      ClusterDistributionManager.setIsDedicatedAdminVM(adminOnly);
     }
   }
 

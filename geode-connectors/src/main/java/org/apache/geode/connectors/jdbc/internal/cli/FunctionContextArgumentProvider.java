@@ -16,13 +16,14 @@ package org.apache.geode.connectors.jdbc.internal.cli;
 
 import static org.apache.geode.connectors.jdbc.internal.xml.ElementType.CONNECTION_SERVICE;
 import static org.apache.geode.connectors.jdbc.internal.xml.JdbcConnectorServiceXmlGenerator.PREFIX;
+import static org.apache.geode.connectors.jdbc.internal.xml.JdbcConnectorServiceXmlParser.NAME;
 import static org.apache.geode.connectors.jdbc.internal.xml.JdbcConnectorServiceXmlParser.NAMESPACE;
 import static org.apache.geode.internal.cache.xmlcache.CacheXml.CACHE;
 
 import java.io.Serializable;
 
 import org.apache.geode.cache.execute.FunctionContext;
-import org.apache.geode.connectors.jdbc.internal.InternalJdbcConnectorService;
+import org.apache.geode.connectors.jdbc.internal.JdbcConnectorService;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.management.internal.cli.CliUtil;
 import org.apache.geode.management.internal.configuration.domain.XmlEntity;
@@ -44,8 +45,8 @@ class FunctionContextArgumentProvider implements Serializable {
   /**
    * Returns the JdbcConnectorService
    */
-  InternalJdbcConnectorService getJdbcConnectorService(FunctionContext<?> context) {
-    return getCacheFromContext(context).getService(InternalJdbcConnectorService.class);
+  JdbcConnectorService getJdbcConnectorService(FunctionContext<?> context) {
+    return getCacheFromContext(context).getService(JdbcConnectorService.class);
   }
 
   /**
@@ -60,7 +61,7 @@ class FunctionContextArgumentProvider implements Serializable {
    */
   XmlEntity createXmlEntity(FunctionContext<?> context) {
     return new XmlEntity(createCacheProvider(context), CACHE, PREFIX, NAMESPACE,
-        CONNECTION_SERVICE.getTypeName());
+        CONNECTION_SERVICE.getTypeName(), NAME, CONNECTION_SERVICE.getTypeName());
   }
 
   private XmlEntity.CacheProvider createCacheProvider(FunctionContext<?> context) {

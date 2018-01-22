@@ -25,7 +25,7 @@ import org.apache.geode.cache.EntryNotFoundException;
 import org.apache.geode.cache.Operation;
 import org.apache.geode.cache.UnsupportedOperationInTransactionException;
 import org.apache.geode.distributed.DistributedMember;
-import org.apache.geode.distributed.internal.DM;
+import org.apache.geode.distributed.internal.DistributionManager;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
 import org.apache.geode.internal.cache.tier.sockets.VersionedObjectList;
 import org.apache.geode.internal.cache.tx.DistTxEntryEvent;
@@ -44,7 +44,7 @@ public class DistPeerTXStateStub extends PeerTXStateStub implements DistTXCoordi
   private DistTXPrecommitMessage precommitDistTxMsg = null;
   private DistTXCommitMessage commitDistTxMsg = null;
   private DistTXRollbackMessage rollbackDistTxMsg = null;
-  private DM dm = null;
+  private DistributionManager dm = null;
 
   public DistPeerTXStateStub(TXStateProxy stateProxy, DistributedMember target,
       InternalDistributedMember onBehalfOfClient) {
@@ -284,21 +284,21 @@ public class DistPeerTXStateStub extends PeerTXStateStub implements DistTXCoordi
   }
 
   @Override
-  public void setPrecommitMessage(DistTXPrecommitMessage precommitMsg, DM dm)
+  public void setPrecommitMessage(DistTXPrecommitMessage precommitMsg, DistributionManager dm)
       throws UnsupportedOperationInTransactionException {
     this.precommitDistTxMsg = precommitMsg;
     this.dm = dm;
   }
 
   @Override
-  public void setCommitMessage(DistTXCommitMessage commitMsg, DM dm)
+  public void setCommitMessage(DistTXCommitMessage commitMsg, DistributionManager dm)
       throws UnsupportedOperationInTransactionException {
     this.commitDistTxMsg = commitMsg;
     this.dm = dm;
   }
 
   @Override
-  public void setRollbackMessage(DistTXRollbackMessage rollbackMsg, DM dm)
+  public void setRollbackMessage(DistTXRollbackMessage rollbackMsg, DistributionManager dm)
       throws UnsupportedOperationInTransactionException {
     this.rollbackDistTxMsg = rollbackMsg;
     this.dm = dm;

@@ -19,8 +19,6 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.InetSocketAddress;
 import java.net.Socket;
-import java.util.ArrayList;
-import java.util.Collection;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -60,9 +58,11 @@ public class ProtobufDriver implements Driver {
    */
   ProtobufDriver(Set<InetSocketAddress> locators) throws IOException {
     this.locators = locators;
-    Collection<InetSocketAddress> servers = getAvailableServers();
-    InetSocketAddress anyServer = servers.iterator().next();
-    socket = new Socket(anyServer.getAddress(), anyServer.getPort());
+    InetSocketAddress server = findAServer();
+    socket = new Socket(server.getAddress(), server.getPort());
+    socket.setTcpNoDelay(true);
+    socket.setSendBufferSize(65535);
+    socket.setReceiveBufferSize(65535);
 
     final OutputStream outputStream = socket.getOutputStream();
     ProtocolVersion.NewConnectionClientVersion.newBuilder()
@@ -77,13 +77,6 @@ public class ProtobufDriver implements Driver {
     }
   }
 
-  /**
-   * Retrieves a set of unique names of regions in the GemFire server to which this driver is
-   * connected.
-   *
-   * @return Set of strings of names that uniquely identify regions.
-   * @throws IOException
-   */
   @Override
   public Set<String> getRegionNames() throws IOException {
     Set<String> regionNames = new HashSet<>();
@@ -104,28 +97,32 @@ public class ProtobufDriver implements Driver {
     return regionNames;
   }
 
-  /**
-   * Creates an implementation of the region interface for the region with the unique name of
-   * <code>regionName</code>.
-   *
-   * @param regionName String that uniquely identifies the region.
-   * @param <K> Type of region keys.
-   * @param <V> Type of region values.
-   * @return
-   */
   @Override
   public <K, V> Region<K, V> getRegion(String regionName) {
     return new ProtobufRegion(regionName, socket);
   }
 
+  @Override
+  public void close() {
+    try {
+      this.socket.close();
+    } catch (IOException e) {
+      // ignore
+    }
+  }
+
+  @Override
+  public boolean isConnected() {
+    return !this.socket.isClosed();
+  }
+
   /**
-   * Queries a locator for the GemFire servers that have Protobuf enabled.
+   * Queries locators for a Geode server that has Protobuf enabled.
    *
-   * @return Set of Internet-address-or-host-name/port pairs of the GemFire servers that have
-   *         Protobuf enabled.
+   * @return The server chosen by the Locator service for this client
    * @throws IOException
    */
-  private Collection<InetSocketAddress> getAvailableServers() throws IOException {
+  private InetSocketAddress findAServer() throws IOException {
     IOException lastException = null;
 
     for (InetSocketAddress locator : locators) {
@@ -133,37 +130,37 @@ public class ProtobufDriver implements Driver {
         final Socket locatorSocket = new Socket(locator.getAddress(), locator.getPort());
 
         final OutputStream outputStream = locatorSocket.getOutputStream();
+        final InputStream inputStream = locatorSocket.getInputStream();
         ProtocolVersion.NewConnectionClientVersion.newBuilder()
             .setMajorVersion(ProtocolVersion.MajorVersions.CURRENT_MAJOR_VERSION_VALUE)
             .setMinorVersion(ProtocolVersion.MinorVersions.CURRENT_MINOR_VERSION_VALUE).build()
             .writeDelimitedTo(outputStream);
 
         // The locator does not currently send a reply to the ProtocolVersion...
-        // if
-        // (!ProtocolVersion.HandshakeAcknowledgement.parseDelimitedFrom(inputStream).getHandshakePassed())
-        // {
-        // throw new IOException("Failed ProtocolVersion.");
-        // }
+        if (!ProtocolVersion.VersionAcknowledgement.parseDelimitedFrom(inputStream)
+            .getVersionAccepted()) {
+          throw new IOException("Failed ProtocolVersion.");
+        }
 
         ClientProtocol.Message.newBuilder()
             .setRequest(ClientProtocol.Request.newBuilder()
-                .setGetAvailableServersRequest(LocatorAPI.GetAvailableServersRequest.newBuilder()))
+                .setGetServerRequest(LocatorAPI.GetServerRequest.newBuilder()))
             .build().writeDelimitedTo(outputStream);
 
-        final InputStream inputStream = locatorSocket.getInputStream();
-        LocatorAPI.GetAvailableServersResponse getAvailableServersResponse = ClientProtocol.Message
-            .parseDelimitedFrom(inputStream).getResponse().getGetAvailableServersResponse();
-        if (getAvailableServersResponse.getServersCount() < 1) {
-          continue;
+        ClientProtocol.Response response =
+            ClientProtocol.Message.parseDelimitedFrom(inputStream).getResponse();
+        ClientProtocol.ErrorResponse errorResponse = response.getErrorResponse();
+
+        if (errorResponse != null && errorResponse.hasError()) {
+          throw new IOException(
+              "Error finding server: error code= " + errorResponse.getError().getErrorCode()
+                  + "; error message=" + errorResponse.getError().getMessage());
         }
 
-        ArrayList<InetSocketAddress> availableServers =
-            new ArrayList<>(getAvailableServersResponse.getServersCount());
-        for (int i = 0; i < getAvailableServersResponse.getServersCount(); ++i) {
-          final BasicTypes.Server server = getAvailableServersResponse.getServers(i);
-          availableServers.add(new InetSocketAddress(server.getHostname(), server.getPort()));
-        }
-        return availableServers;
+        LocatorAPI.GetServerResponse getServerResponse = response.getGetServerResponse();
+
+        BasicTypes.Server server = getServerResponse.getServer();
+        return new InetSocketAddress(server.getHostname(), server.getPort());
       } catch (IOException e) {
         lastException = e;
       }

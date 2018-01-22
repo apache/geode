@@ -40,7 +40,7 @@ import org.apache.geode.cache.execute.ResultSender;
 import org.apache.geode.connectors.jdbc.internal.ConnectionConfigBuilder;
 import org.apache.geode.connectors.jdbc.internal.ConnectionConfigNotFoundException;
 import org.apache.geode.connectors.jdbc.internal.ConnectionConfiguration;
-import org.apache.geode.connectors.jdbc.internal.InternalJdbcConnectorService;
+import org.apache.geode.connectors.jdbc.internal.JdbcConnectorService;
 import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.distributed.DistributedSystem;
 import org.apache.geode.internal.cache.InternalCache;
@@ -57,7 +57,7 @@ public class AlterConnectionFunctionTest {
   private ConnectionConfiguration configToAlter;
   private FunctionContext<ConnectionConfiguration> context;
   private ResultSender<Object> resultSender;
-  private InternalJdbcConnectorService service;
+  private JdbcConnectorService service;
 
   private AlterConnectionFunction function;
 
@@ -68,7 +68,7 @@ public class AlterConnectionFunctionTest {
     InternalCache cache = mock(InternalCache.class);
     DistributedSystem system = mock(DistributedSystem.class);
     DistributedMember distributedMember = mock(DistributedMember.class);
-    service = mock(InternalJdbcConnectorService.class);
+    service = mock(JdbcConnectorService.class);
 
     connectionConfig = new ConnectionConfigBuilder().withName(CONNECTION_NAME).build();
     existingConfig = new ConnectionConfigBuilder().withName(CONNECTION_NAME).build();
@@ -83,7 +83,7 @@ public class AlterConnectionFunctionTest {
     when(cache.getDistributedSystem()).thenReturn(system);
     when(system.getDistributedMember()).thenReturn(distributedMember);
     when(context.getArguments()).thenReturn(connectionConfig);
-    when(cache.getService(eq(InternalJdbcConnectorService.class))).thenReturn(service);
+    when(cache.getService(eq(JdbcConnectorService.class))).thenReturn(service);
 
     function = new AlterConnectionFunction();
   }

@@ -14,12 +14,17 @@
  */
 package org.apache.geode.connectors.jdbc.internal.cli;
 
+import java.util.Collection;
+import java.util.Collections;
+
 import org.apache.geode.annotations.Experimental;
 import org.apache.geode.cache.execute.Function;
 import org.apache.geode.cache.execute.FunctionContext;
-import org.apache.geode.connectors.jdbc.internal.InternalJdbcConnectorService;
+import org.apache.geode.connectors.jdbc.internal.JdbcConnectorService;
 import org.apache.geode.internal.InternalEntity;
 import org.apache.geode.management.internal.configuration.domain.XmlEntity;
+import org.apache.geode.management.internal.security.ResourcePermissions;
+import org.apache.geode.security.ResourcePermission;
 
 @Experimental
 public abstract class JdbcCliFunction<T1, T2> implements Function<T1>, InternalEntity {
@@ -46,12 +51,17 @@ public abstract class JdbcCliFunction<T1, T2> implements Function<T1>, InternalE
   @Override
   public void execute(FunctionContext<T1> context) {
     try {
-      InternalJdbcConnectorService service = argumentProvider.getJdbcConnectorService(context);
+      JdbcConnectorService service = argumentProvider.getJdbcConnectorService(context);
       T2 result = getFunctionResult(service, context);
       context.getResultSender().lastResult(result);
     } catch (Exception e) {
       exceptionHandler.handleException(context, e);
     }
+  }
+
+  @Override
+  public Collection<ResourcePermission> getRequiredPermissions(String regionName) {
+    return Collections.singletonList(ResourcePermissions.CLUSTER_READ);
   }
 
   String getMember(FunctionContext<T1> context) {
@@ -62,6 +72,6 @@ public abstract class JdbcCliFunction<T1, T2> implements Function<T1>, InternalE
     return argumentProvider.createXmlEntity(context);
   }
 
-  abstract T2 getFunctionResult(InternalJdbcConnectorService service, FunctionContext<T1> context)
+  abstract T2 getFunctionResult(JdbcConnectorService service, FunctionContext<T1> context)
       throws Exception;
 }

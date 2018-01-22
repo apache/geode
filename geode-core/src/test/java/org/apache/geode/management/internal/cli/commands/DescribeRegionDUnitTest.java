@@ -39,7 +39,7 @@ import org.apache.geode.management.internal.cli.util.CommandStringBuilder;
 import org.apache.geode.management.internal.cli.util.RegionAttributesNames;
 import org.apache.geode.test.dunit.Host;
 import org.apache.geode.test.dunit.VM;
-import org.apache.geode.test.dunit.rules.LocatorServerStartupRule;
+import org.apache.geode.test.dunit.rules.ClusterStartupRule;
 import org.apache.geode.test.dunit.rules.MemberVM;
 import org.apache.geode.test.junit.categories.DistributedTest;
 import org.apache.geode.test.junit.rules.GfshCommandRule;
@@ -59,7 +59,7 @@ public class DescribeRegionDUnitTest {
   private static final String PART2_NAME = "Par2";
 
   @ClassRule
-  public static LocatorServerStartupRule lsRule = new LocatorServerStartupRule();
+  public static ClusterStartupRule lsRule = new ClusterStartupRule();
 
   @ClassRule
   public static GfshCommandRule gfsh = new GfshCommandRule();
@@ -71,7 +71,7 @@ public class DescribeRegionDUnitTest {
     MemberVM server2 = lsRule.startServerVM(2, "group2", locator.getPort());
 
     server1.invoke(() -> {
-      final Cache cache = LocatorServerStartupRule.getCache();
+      final Cache cache = ClusterStartupRule.getCache();
       RegionFactory<String, Integer> dataRegionFactory =
           cache.createRegionFactory(RegionShortcut.PARTITION);
       dataRegionFactory.setConcurrencyLevel(4);
@@ -92,7 +92,7 @@ public class DescribeRegionDUnitTest {
     });
 
     server2.invoke(() -> {
-      final Cache cache = LocatorServerStartupRule.getCache();
+      final Cache cache = ClusterStartupRule.getCache();
       RegionFactory<String, Integer> dataRegionFactory =
           cache.createRegionFactory(RegionShortcut.PARTITION);
       dataRegionFactory.setConcurrencyLevel(4);

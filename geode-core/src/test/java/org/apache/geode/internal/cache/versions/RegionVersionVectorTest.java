@@ -33,11 +33,9 @@ import java.io.IOException;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
-import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.Future;
 
-import org.junit.After;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
@@ -47,27 +45,21 @@ import org.apache.geode.DataSerializer;
 import org.apache.geode.InternalGemFireError;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
 import org.apache.geode.internal.HeapDataOutputStream;
-import org.apache.geode.internal.InternalDataSerializer;
 import org.apache.geode.internal.Version;
 import org.apache.geode.internal.cache.LocalRegion;
 import org.apache.geode.internal.cache.persistence.DiskStoreID;
 import org.apache.geode.test.dunit.NetworkUtils;
 import org.apache.geode.test.junit.categories.UnitTest;
+import org.apache.geode.test.junit.rules.ExecutorServiceRule;
 
 @Category(UnitTest.class)
 public class RegionVersionVectorTest {
 
-  private Future<Void> result;
+  @Rule
+  public ExecutorServiceRule executorServiceRule = new ExecutorServiceRule();
 
   @Rule
   public ExpectedException expectedException = ExpectedException.none();
-
-  @After
-  public void tearDown() throws Exception {
-    if (result != null && !result.isDone()) {
-      result.cancel(true);
-    }
-  }
 
   @Test
   public void testExceptionsWithContains() {
@@ -317,11 +309,11 @@ public class RegionVersionVectorTest {
     assertTrue(rvv.sameAs(rvv.getCloneForTransmission()));
 
     HeapDataOutputStream out = new HeapDataOutputStream(Version.CURRENT);
-    InternalDataSerializer.writeObject(rvv.getCloneForTransmission(), out);
+    DataSerializer.writeObject(rvv.getCloneForTransmission(), out);
     byte[] bytes = out.toByteArray();
 
     DataInputStream dis = new DataInputStream(new ByteArrayInputStream(bytes));
-    DiskRegionVersionVector rvv2 = InternalDataSerializer.readObject(dis);
+    DiskRegionVersionVector rvv2 = DataSerializer.readObject(dis);
 
     assertTrue(rvv.sameAs(rvv2));
   }
@@ -622,7 +614,7 @@ public class RegionVersionVectorTest {
     long newVersion = 2;
 
     RegionVersionVector rvv = new VersionRaceConditionRegionVersionVector(ownerId, oldVersion);
-    result = CompletableFuture.runAsync(() -> rvv.updateLocalVersion(newVersion));
+    Future<Void> result = executorServiceRule.runAsync(() -> rvv.updateLocalVersion(newVersion));
 
     assertThatCode(() -> result.get(2, SECONDS)).doesNotThrowAnyException();
     assertThat(rvv.getVersionForMember(ownerId)).isEqualTo(newVersion);
@@ -676,7 +668,7 @@ public class RegionVersionVectorTest {
     assertEquals(0, rvv.getExceptionCount(id));
   }
 
-  private class TestableRegionVersionVector
+  private static class TestableRegionVersionVector
       extends RegionVersionVector<VersionSource<InternalDistributedMember>> {
 
     TestableRegionVersionVector(VersionSource<InternalDistributedMember> ownerId, long version) {
@@ -707,7 +699,7 @@ public class RegionVersionVectorTest {
     }
   }
 
-  private class VersionRaceConditionRegionVersionVector extends TestableRegionVersionVector {
+  private static class VersionRaceConditionRegionVersionVector extends TestableRegionVersionVector {
 
     VersionRaceConditionRegionVersionVector(VersionSource<InternalDistributedMember> ownerId,
         long version) {

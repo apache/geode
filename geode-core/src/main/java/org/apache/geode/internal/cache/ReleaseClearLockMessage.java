@@ -23,7 +23,7 @@ import org.apache.logging.log4j.Logger;
 
 import org.apache.geode.DataSerializer;
 import org.apache.geode.SystemFailure;
-import org.apache.geode.distributed.internal.DM;
+import org.apache.geode.distributed.internal.ClusterDistributionManager;
 import org.apache.geode.distributed.internal.DistributionManager;
 import org.apache.geode.distributed.internal.HighPriorityDistributionMessage;
 import org.apache.geode.distributed.internal.MessageWithReply;
@@ -49,8 +49,8 @@ public class ReleaseClearLockMessage extends HighPriorityDistributionMessage
     this.processorId = processorId;
   }
 
-  public static void send(Set<InternalDistributedMember> members, DM dm, String regionPath)
-      throws ReplyException {
+  public static void send(Set<InternalDistributedMember> members, DistributionManager dm,
+      String regionPath) throws ReplyException {
     ReplyProcessor21 processor = new ReplyProcessor21(dm, members);
     ReleaseClearLockMessage msg =
         new ReleaseClearLockMessage(regionPath, processor.getProcessorId());
@@ -61,7 +61,7 @@ public class ReleaseClearLockMessage extends HighPriorityDistributionMessage
   }
 
   @Override
-  protected void process(DistributionManager dm) {
+  protected void process(ClusterDistributionManager dm) {
     ReplyException exception = null;
     try {
       DistributedRegion region = DistributedClearOperation.regionUnlocked(getSender(), regionPath);

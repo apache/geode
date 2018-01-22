@@ -25,10 +25,9 @@ import org.apache.geode.CancelException;
 import org.apache.geode.DataSerializer;
 import org.apache.geode.SystemFailure;
 import org.apache.geode.cache.Cache;
-import org.apache.geode.cache.CacheFactory;
 import org.apache.geode.cache.Region;
 import org.apache.geode.cache.RegionDestroyedException;
-import org.apache.geode.distributed.internal.DM;
+import org.apache.geode.distributed.internal.ClusterDistributionManager;
 import org.apache.geode.distributed.internal.DistributionManager;
 import org.apache.geode.distributed.internal.HighPriorityDistributionMessage;
 import org.apache.geode.distributed.internal.MessageWithReply;
@@ -38,7 +37,6 @@ import org.apache.geode.distributed.internal.ReplyProcessor21;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
 import org.apache.geode.internal.InternalDataSerializer;
 import org.apache.geode.internal.cache.DistributedRegion;
-import org.apache.geode.internal.cache.GemFireCacheImpl;
 import org.apache.geode.internal.cache.LocalRegion;
 import org.apache.geode.internal.cache.PartitionedRegionHelper;
 import org.apache.geode.internal.cache.partitioned.Bucket;
@@ -69,8 +67,8 @@ public class PrepareNewPersistentMemberMessage extends HighPriorityDistributionM
     this.processorId = processorId;
   }
 
-  public static void send(Set<InternalDistributedMember> members, DM dm, String regionPath,
-      PersistentMemberID oldId, PersistentMemberID newId) throws ReplyException {
+  public static void send(Set<InternalDistributedMember> members, DistributionManager dm,
+      String regionPath, PersistentMemberID oldId, PersistentMemberID newId) throws ReplyException {
     ReplyProcessor21 processor = new ReplyProcessor21(dm, members);
     PrepareNewPersistentMemberMessage msg =
         new PrepareNewPersistentMemberMessage(regionPath, oldId, newId, processor.getProcessorId());
@@ -80,7 +78,7 @@ public class PrepareNewPersistentMemberMessage extends HighPriorityDistributionM
   }
 
   @Override
-  protected void process(DistributionManager dm) {
+  protected void process(ClusterDistributionManager dm) {
     int oldLevel = // Set thread local flag to allow entrance through initialization Latch
         LocalRegion.setThreadInitLevelRequirement(LocalRegion.ANY_INIT);
 

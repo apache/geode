@@ -15,8 +15,20 @@
 package org.apache.geode.cache.client.internal.pooling;
 
 import java.net.SocketException;
-import java.util.*;
-import java.util.concurrent.*;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Set;
+import java.util.SplittableRandom;
+import java.util.concurrent.RejectedExecutionException;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.ScheduledThreadPoolExecutor;
+import java.util.concurrent.ThreadFactory;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.locks.Condition;
 import java.util.concurrent.locks.ReentrantLock;
 
@@ -26,9 +38,18 @@ import org.apache.geode.CancelCriterion;
 import org.apache.geode.CancelException;
 import org.apache.geode.SystemFailure;
 import org.apache.geode.cache.GatewayConfigurationException;
-import org.apache.geode.cache.client.*;
-import org.apache.geode.cache.client.internal.*;
+import org.apache.geode.cache.client.AllConnectionsInUseException;
+import org.apache.geode.cache.client.NoAvailableServersException;
+import org.apache.geode.cache.client.ServerConnectivityException;
+import org.apache.geode.cache.client.ServerOperationException;
+import org.apache.geode.cache.client.ServerRefusedConnectionException;
+import org.apache.geode.cache.client.internal.Connection;
+import org.apache.geode.cache.client.internal.ConnectionFactory;
+import org.apache.geode.cache.client.internal.Endpoint;
+import org.apache.geode.cache.client.internal.EndpointManager;
+import org.apache.geode.cache.client.internal.PoolImpl;
 import org.apache.geode.cache.client.internal.PoolImpl.PoolTask;
+import org.apache.geode.cache.client.internal.QueueConnectionImpl;
 import org.apache.geode.distributed.PoolCancelledException;
 import org.apache.geode.distributed.internal.DistributionConfig;
 import org.apache.geode.distributed.internal.ServerLocation;
@@ -87,6 +108,26 @@ public class ConnectionManagerImpl implements ConnectionManager {
   private static final long NANOS_PER_MS = 1000000L;
 
   /**
+   * Adds an arbitrary variance to a positive temporal interval. Where possible, 10% of the interval
+   * is added or subtracted from the interval. Otherwise, 1 is added or subtracted from the
+   * interval. For all positive intervals, the returned value will <bold>not</bold> equal the
+   * supplied interval.
+   *
+   * @param interval Positive temporal interval.
+   * @return Adjusted interval including the variance for positive intervals; the unmodified
+   *         interval for non-positive intervals.
+   */
+  static int addVarianceToInterval(int interval) {
+    if (1 <= interval) {
+      final SplittableRandom random = new SplittableRandom();
+      final int variance = (interval < 10) ? 1 : (1 + random.nextInt((interval / 10) - 1));
+      final int sign = random.nextBoolean() ? 1 : -1;
+      return interval + (sign * variance);
+    }
+    return interval;
+  }
+
+  /**
    * Create a connection manager
    *
    * @param poolName the name of the pool that owns us
@@ -121,12 +162,12 @@ public class ConnectionManagerImpl implements ConnectionManager {
     this.endpointManager = endpointManager;
     this.maxConnections = maxConnections == -1 ? Integer.MAX_VALUE : maxConnections;
     this.minConnections = minConnections;
-    this.lifetimeTimeout = lifetimeTimeout;
-    this.lifetimeTimeoutNanos = lifetimeTimeout * NANOS_PER_MS;
-    if (lifetimeTimeout != -1) {
-      if (idleTimeout > lifetimeTimeout || idleTimeout == -1) {
+    this.lifetimeTimeout = addVarianceToInterval(lifetimeTimeout);
+    this.lifetimeTimeoutNanos = this.lifetimeTimeout * NANOS_PER_MS;
+    if (this.lifetimeTimeout != -1) {
+      if (idleTimeout > this.lifetimeTimeout || idleTimeout == -1) {
         // lifetimeTimeout takes precedence over longer idle timeouts
-        idleTimeout = lifetimeTimeout;
+        idleTimeout = this.lifetimeTimeout;
       }
     }
     this.idleTimeout = idleTimeout;

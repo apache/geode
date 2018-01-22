@@ -14,15 +14,19 @@
  */
 package org.apache.geode.connectors.jdbc.internal.cli;
 
+import java.util.Collection;
+import java.util.Collections;
 import java.util.Map;
 
 import org.apache.geode.annotations.Experimental;
 import org.apache.geode.cache.execute.FunctionContext;
-import org.apache.geode.connectors.jdbc.internal.InternalJdbcConnectorService;
+import org.apache.geode.connectors.jdbc.internal.JdbcConnectorService;
 import org.apache.geode.connectors.jdbc.internal.RegionMapping;
 import org.apache.geode.connectors.jdbc.internal.RegionMappingNotFoundException;
 import org.apache.geode.management.internal.cli.functions.CliFunctionResult;
 import org.apache.geode.management.internal.configuration.domain.XmlEntity;
+import org.apache.geode.management.internal.security.ResourcePermissions;
+import org.apache.geode.security.ResourcePermission;
 
 @Experimental
 public class AlterMappingFunction extends JdbcCliFunction<RegionMapping, CliFunctionResult> {
@@ -32,7 +36,7 @@ public class AlterMappingFunction extends JdbcCliFunction<RegionMapping, CliFunc
   }
 
   @Override
-  CliFunctionResult getFunctionResult(InternalJdbcConnectorService service,
+  CliFunctionResult getFunctionResult(JdbcConnectorService service,
       FunctionContext<RegionMapping> context) throws Exception {
     RegionMapping mapping = context.getArguments();
     RegionMapping existingMapping = service.getMappingForRegion(mapping.getRegionName());
@@ -83,5 +87,10 @@ public class AlterMappingFunction extends JdbcCliFunction<RegionMapping, CliFunc
       XmlEntity xmlEntity) {
     String message = "Altered JDBC connection " + connectionName + " on " + member;
     return new CliFunctionResult(member, xmlEntity, message);
+  }
+
+  @Override
+  public Collection<ResourcePermission> getRequiredPermissions(String regionName) {
+    return Collections.singletonList(ResourcePermissions.CLUSTER_MANAGE);
   }
 }

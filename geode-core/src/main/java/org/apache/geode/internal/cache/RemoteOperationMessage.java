@@ -27,12 +27,11 @@ import org.apache.geode.DataSerializer;
 import org.apache.geode.SystemFailure;
 import org.apache.geode.cache.CacheClosedException;
 import org.apache.geode.cache.CacheException;
-import org.apache.geode.cache.CacheFactory;
 import org.apache.geode.cache.LowMemoryException;
 import org.apache.geode.cache.Operation;
 import org.apache.geode.cache.RegionDestroyedException;
 import org.apache.geode.distributed.DistributedSystemDisconnectedException;
-import org.apache.geode.distributed.internal.DM;
+import org.apache.geode.distributed.internal.ClusterDistributionManager;
 import org.apache.geode.distributed.internal.DirectReplyProcessor;
 import org.apache.geode.distributed.internal.DistributionManager;
 import org.apache.geode.distributed.internal.DistributionMessage;
@@ -144,7 +143,7 @@ public abstract class RemoteOperationMessage extends DistributionMessage
 
   @Override
   public int getProcessorType() {
-    return DistributionManager.PARTITIONED_REGION_EXECUTOR;
+    return ClusterDistributionManager.PARTITIONED_REGION_EXECUTOR;
   }
 
   /**
@@ -166,7 +165,7 @@ public abstract class RemoteOperationMessage extends DistributionMessage
   /**
    * check to see if the cache is closing
    */
-  public boolean checkCacheClosing(DistributionManager dm) {
+  public boolean checkCacheClosing(ClusterDistributionManager dm) {
     InternalCache cache = dm.getCache();
     return cache == null || cache.isClosed();
   }
@@ -176,7 +175,7 @@ public abstract class RemoteOperationMessage extends DistributionMessage
    *
    * @return true if the distributed system is closing
    */
-  public boolean checkDSClosing(DistributionManager dm) {
+  public boolean checkDSClosing(ClusterDistributionManager dm) {
     InternalDistributedSystem ds = dm.getSystem();
     return (ds == null || ds.isDisconnecting());
   }
@@ -190,18 +189,24 @@ public abstract class RemoteOperationMessage extends DistributionMessage
    *         destroyed)
    */
   @Override
-  public void process(final DistributionManager dm) {
+  public void process(final ClusterDistributionManager dm) {
     Throwable thr = null;
     boolean sendReply = true;
     LocalRegion r = null;
     long startTime = 0;
     try {
+      InternalCache cache = getCache(dm);
       if (checkCacheClosing(dm) || checkDSClosing(dm)) {
-        thr = new CacheClosedException(LocalizedStrings.PartitionMessage_REMOTE_CACHE_IS_CLOSED_0
-            .toLocalizedString(dm.getId()));
+        if (cache == null) {
+          thr = new CacheClosedException(LocalizedStrings.PartitionMessage_REMOTE_CACHE_IS_CLOSED_0
+              .toLocalizedString(dm.getId()));
+        } else {
+          thr = cache
+              .getCacheClosedException(LocalizedStrings.PartitionMessage_REMOTE_CACHE_IS_CLOSED_0
+                  .toLocalizedString(dm.getId()));
+        }
         return;
       }
-      InternalCache cache = getCache(dm);
       r = getRegionByPath(cache);
       if (r == null && failIfRegionMissing()) {
         // if the distributed system is disconnecting, don't send a reply saying
@@ -306,7 +311,7 @@ public abstract class RemoteOperationMessage extends DistributionMessage
     return internalCache.getRegionByPathForProcessing(this.regionPath);
   }
 
-  InternalCache getCache(final DistributionManager dm) {
+  InternalCache getCache(final ClusterDistributionManager dm) {
     return dm.getExistingCache();
   }
 
@@ -318,8 +323,8 @@ public abstract class RemoteOperationMessage extends DistributionMessage
    * @param startTime the start time of the operation in nanoseconds
    * @see PutMessage#sendReply
    */
-  protected void sendReply(InternalDistributedMember member, int procId, DM dm, ReplyException ex,
-      LocalRegion pr, long startTime) {
+  protected void sendReply(InternalDistributedMember member, int procId, DistributionManager dm,
+      ReplyException ex, LocalRegion pr, long startTime) {
     // if (pr != null && startTime > 0) {
     // pr.getPrStats().endRemoteOperationMessagesProcessing(startTime);
     // }
@@ -348,8 +353,8 @@ public abstract class RemoteOperationMessage extends DistributionMessage
   }
 
 
-  protected abstract boolean operateOnRegion(DistributionManager dm, LocalRegion r, long startTime)
-      throws RemoteOperationException;
+  protected abstract boolean operateOnRegion(ClusterDistributionManager dm, LocalRegion r,
+      long startTime) throws RemoteOperationException;
 
   /**
    * Fill out this instance of the message using the <code>DataInput</code> Required to be a

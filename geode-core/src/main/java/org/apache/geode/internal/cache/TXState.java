@@ -1185,8 +1185,8 @@ public class TXState implements TXStateInterface {
    *
    * @see org.apache.geode.internal.cache.TXStateInterface#getCache()
    */
-  public Cache getCache() {
-    return this.proxy.getTxMgr().getCache();
+  public InternalCache getCache() {
+    return this.proxy.getCache();
   }
 
   /*

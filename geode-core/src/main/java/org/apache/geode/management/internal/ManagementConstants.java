@@ -135,6 +135,9 @@ public interface ManagementConstants {
   public static final String OBJECTNAME__CACHESERVICE_MXBEAN =
       OBJECTNAME__PREFIX + "service=CacheService,name={0},type=Member,member={1}";
 
+  public static final String OBJECTNAME__FILEUPLOADER_MBEAN =
+      OBJECTNAME__PREFIX + "service=FileUploader,type=Distributed";
+
   public static final String AGGREGATE_MBEAN_PATTERN = OBJECTNAME__PREFIX + "*,type=Distributed";
   // Object Name keys
 

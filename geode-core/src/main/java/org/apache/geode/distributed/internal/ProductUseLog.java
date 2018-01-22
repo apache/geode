@@ -53,7 +53,8 @@ public class ProductUseLog implements MembershipListener {
   }
 
   public ProductUseLog(File productUseLogFile) {
-    this.productUseLogFile = productUseLogFile;
+    // GEODE-4180, use absolute paths
+    this.productUseLogFile = new File(productUseLogFile.getAbsolutePath());
     this.logLevel = InternalLogWriter.INFO_LEVEL;
     createLogWriter();
   }
@@ -63,7 +64,7 @@ public class ProductUseLog implements MembershipListener {
    */
   public void monitorUse(InternalDistributedSystem system) {
     this.system = system;
-    DM dmgr = system.getDistributionManager();
+    DistributionManager dmgr = system.getDistributionManager();
     dmgr.addMembershipListener(this);
     MembershipManager mmgr = dmgr.getMembershipManager();
     if (mmgr != null) {

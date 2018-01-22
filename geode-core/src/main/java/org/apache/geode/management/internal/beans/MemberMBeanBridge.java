@@ -53,7 +53,7 @@ import org.apache.geode.cache.wan.GatewaySender;
 import org.apache.geode.distributed.Locator;
 import org.apache.geode.distributed.LocatorLauncher;
 import org.apache.geode.distributed.ServerLauncher;
-import org.apache.geode.distributed.internal.DM;
+import org.apache.geode.distributed.internal.ClusterDistributionManager;
 import org.apache.geode.distributed.internal.DistributionConfig;
 import org.apache.geode.distributed.internal.DistributionManager;
 import org.apache.geode.distributed.internal.DistributionStats;
@@ -70,12 +70,13 @@ import org.apache.geode.internal.cache.DiskRegion;
 import org.apache.geode.internal.cache.DiskStoreImpl;
 import org.apache.geode.internal.cache.DiskStoreStats;
 import org.apache.geode.internal.cache.InternalCache;
+import org.apache.geode.internal.cache.InternalRegion;
 import org.apache.geode.internal.cache.LocalRegion;
 import org.apache.geode.internal.cache.PartitionedRegion;
 import org.apache.geode.internal.cache.PartitionedRegionStats;
 import org.apache.geode.internal.cache.backup.BackupManager;
 import org.apache.geode.internal.cache.control.ResourceManagerStats;
-import org.apache.geode.internal.cache.eviction.EvictionStatistics;
+import org.apache.geode.internal.cache.eviction.EvictionCounters;
 import org.apache.geode.internal.cache.execute.FunctionServiceStats;
 import org.apache.geode.internal.i18n.LocalizedStrings;
 import org.apache.geode.internal.logging.LogService;
@@ -157,7 +158,7 @@ public class MemberMBeanBridge {
   /**
    * Distribution manager
    */
-  private DM dm;
+  private DistributionManager dm;
 
   /**
    * Command Service
@@ -328,8 +329,9 @@ public class MemberMBeanBridge {
 
     this.dm = system.getDistributionManager();
 
-    if (dm instanceof DistributionManager) {
-      DistributionManager distManager = (DistributionManager) system.getDistributionManager();
+    if (dm instanceof ClusterDistributionManager) {
+      ClusterDistributionManager distManager =
+          (ClusterDistributionManager) system.getDistributionManager();
       this.redundancyZone = distManager
           .getRedundancyZone(cache.getInternalDistributedSystem().getDistributedMember());
     }
@@ -511,15 +513,9 @@ public class MemberMBeanBridge {
       addPartionRegionStats(((PartitionedRegion) region).getPrStats());
     }
 
-    LocalRegion l = (LocalRegion) region;
-    if (l.getEvictionController() != null) {
-      EvictionStatistics stats = l.getEvictionController().getStatistics();
-      if (stats != null) {
-        addLRUStats(stats);
-      }
-    }
-
-    DiskRegion dr = l.getDiskRegion();
+    InternalRegion<?, ?> internalRegion = (InternalRegion<?, ?>) region;
+    addLRUStats(internalRegion.getEvictionStatistics());
+    DiskRegion dr = internalRegion.getDiskRegion();
     if (dr != null) {
       for (DirectoryHolder dh : dr.getDirectories()) {
         addDirectoryStats(dh.getDiskDirectoryStats());
@@ -531,8 +527,10 @@ public class MemberMBeanBridge {
     regionMonitor.addStatisticsToMonitor(parStats.getStats());
   }
 
-  public void addLRUStats(EvictionStatistics lruStats) {
-    regionMonitor.addStatisticsToMonitor(lruStats.getStats());
+  public void addLRUStats(Statistics lruStats) {
+    if (lruStats != null) {
+      regionMonitor.addStatisticsToMonitor(lruStats);
+    }
   }
 
   public void addDirectoryStats(DiskDirectoryStats diskDirStats) {
@@ -545,12 +543,7 @@ public class MemberMBeanBridge {
     }
 
     LocalRegion l = (LocalRegion) region;
-    if (l.getEvictionController() != null) {
-      EvictionStatistics stats = l.getEvictionController().getStatistics();
-      if (stats != null) {
-        removeLRUStats(stats);
-      }
-    }
+    removeLRUStats(l.getEvictionStatistics());
 
     DiskRegion dr = l.getDiskRegion();
     if (dr != null) {
@@ -564,8 +557,10 @@ public class MemberMBeanBridge {
     regionMonitor.removePartitionStatistics(parStats.getStats());
   }
 
-  public void removeLRUStats(EvictionStatistics lruStats) {
-    regionMonitor.removeLRUStatistics(lruStats.getStats());
+  public void removeLRUStats(Statistics statistics) {
+    if (statistics != null) {
+      regionMonitor.removeLRUStatistics(statistics);
+    }
   }
 
   public void removeDirectoryStats(DiskDirectoryStats diskDirStats) {
@@ -1565,16 +1560,18 @@ public class MemberMBeanBridge {
    *
    * @param commandString command string to be processed
    * @param env environment information to be used for processing the command
+   * @param stagedFilePaths list of local files to be deployed
    * @return result of the processing the given command string.
    */
-  public String processCommand(String commandString, Map<String, String> env, byte[][] binaryData) {
+  public String processCommand(String commandString, Map<String, String> env,
+      List<String> stagedFilePaths) {
     if (commandProcessor == null) {
       throw new JMRuntimeException(
           "Command can not be processed as Command Service did not get initialized. Reason: "
               + commandServiceInitError);
     }
 
-    Result result = commandProcessor.executeCommand(commandString, env, binaryData);
+    Result result = commandProcessor.executeCommand(commandString, env, stagedFilePaths);
     return CommandResponseBuilder.createCommandResponseJson(getMember(), (CommandResult) result);
   }
 
@@ -1782,5 +1779,9 @@ public class MemberMBeanBridge {
 
   public long getUsedMemory() {
     return getVMStatistic(StatsKey.VM_USED_MEMORY).longValue() / MBFactor;
+  }
+
+  public String getReleaseVersion() {
+    return GemFireVersion.getGemFireVersion();
   }
 }

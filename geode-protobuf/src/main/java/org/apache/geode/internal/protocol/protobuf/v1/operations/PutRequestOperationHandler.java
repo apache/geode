@@ -14,9 +14,8 @@
  */
 package org.apache.geode.internal.protocol.protobuf.v1.operations;
 
-import static org.apache.geode.internal.protocol.ProtocolErrorCode.CONSTRAINT_VIOLATION;
-import static org.apache.geode.internal.protocol.ProtocolErrorCode.REGION_NOT_FOUND;
-import static org.apache.geode.internal.protocol.ProtocolErrorCode.VALUE_ENCODING_ERROR;
+import static org.apache.geode.internal.protocol.ProtocolErrorCode.INVALID_REQUEST;
+import static org.apache.geode.internal.protocol.ProtocolErrorCode.SERVER_ERROR;
 
 import org.apache.logging.log4j.Logger;
 
@@ -49,10 +48,11 @@ public class PutRequestOperationHandler
     Region region = messageExecutionContext.getCache().getRegion(regionName);
     if (region == null) {
       logger.warn("Received Put request for non-existing region: {}", regionName);
-      return Failure.of(ProtobufResponseUtilities.makeErrorResponse(REGION_NOT_FOUND,
+      return Failure.of(ProtobufResponseUtilities.makeErrorResponse(SERVER_ERROR,
           "Region passed by client did not exist: " + regionName));
     }
 
+    long startTime = messageExecutionContext.getStatistics().startOperation();
     try {
       BasicTypes.Entry entry = request.getEntry();
 
@@ -63,13 +63,14 @@ public class PutRequestOperationHandler
         return Success.of(RegionAPI.PutResponse.newBuilder().build());
       } catch (ClassCastException ex) {
         logger.error("Received Put request with invalid key type: {}", ex);
-        return Failure.of(ProtobufResponseUtilities.makeErrorResponse(CONSTRAINT_VIOLATION,
-            "invalid key or value type for region " + regionName));
+        return Failure.of(ProtobufResponseUtilities.makeErrorResponse(SERVER_ERROR, ex.toString()));
       }
     } catch (EncodingException ex) {
-      logger.error("Got codec error when decoding Put request: {}", ex);
+      logger.error("Got error when decoding Put request: {}", ex);
       return Failure
-          .of(ProtobufResponseUtilities.makeErrorResponse(VALUE_ENCODING_ERROR, ex.getMessage()));
+          .of(ProtobufResponseUtilities.makeErrorResponse(INVALID_REQUEST, ex.toString()));
+    } finally {
+      messageExecutionContext.getStatistics().endOperation(startTime);
     }
   }
 }

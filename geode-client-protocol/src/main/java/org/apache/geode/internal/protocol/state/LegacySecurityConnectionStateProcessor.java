@@ -23,14 +23,14 @@ public class LegacySecurityConnectionStateProcessor implements ConnectionStatePr
   @Override
   public void validateOperation(MessageExecutionContext messageContext,
       OperationContext operationContext) throws ConnectionStateException {
-    throw new ConnectionStateException(ProtocolErrorCode.UNSUPPORTED_AUTHENTICATION_MODE,
+    throw new ConnectionStateException(ProtocolErrorCode.AUTHENTICATION_FAILED,
         "Attempting to authenticate incoming protobuf message using legacy security implementation. This is not supported. Failing authentication.");
   }
 
   @Override
   public ConnectionAuthenticatingStateProcessor allowAuthentication()
       throws ConnectionStateException {
-    throw new ConnectionStateException(ProtocolErrorCode.UNSUPPORTED_AUTHENTICATION_MODE,
+    throw new ConnectionStateException(ProtocolErrorCode.AUTHENTICATION_FAILED,
         "Attempting to authenticate incoming protobuf message using legacy security implementation. This is not supported. Failing authentication.");
   }
 }

@@ -209,7 +209,8 @@ public class EntryEventImpl
       if (in.readBoolean()) { // newValueSerialized
         this.newValueBytes = DataSerializer.readByteArray(in);
         this.cachedSerializedNewValue = this.newValueBytes;
-        this.newValue = CachedDeserializableFactory.create(this.newValueBytes);
+        this.newValue =
+            CachedDeserializableFactory.create(this.newValueBytes, GemFireCacheImpl.getInstance());
       } else {
         this.newValue = DataSerializer.readObject(in);
       }
@@ -219,7 +220,8 @@ public class EntryEventImpl
     // code needs to change.
     if (in.readBoolean()) { // oldValueSerialized
       this.oldValueBytes = DataSerializer.readByteArray(in);
-      this.oldValue = CachedDeserializableFactory.create(this.oldValueBytes);
+      this.oldValue =
+          CachedDeserializableFactory.create(this.oldValueBytes, GemFireCacheImpl.getInstance());
     } else {
       this.oldValue = DataSerializer.readObject(in);
     }
@@ -514,7 +516,7 @@ public class EntryEventImpl
     setEventFlag(EventFlags.FLAG_LOCAL_INVALID, b);
   }
 
-  void setGenerateCallbacks(boolean b) {
+  public void setGenerateCallbacks(boolean b) {
     setEventFlag(EventFlags.FLAG_GENERATE_CALLBACKS, b);
   }
 
@@ -801,7 +803,7 @@ public class EntryEventImpl
   public Object getRawNewValueAsHeapObject() {
     Object result = basicGetNewValue();
     if (mayHaveOffHeapReferences()) {
-      result = OffHeapHelper.copyIfNeeded(result);
+      result = OffHeapHelper.copyIfNeeded(result, getRegion().getCache());
     }
     return result;
   }
@@ -953,7 +955,7 @@ public class EntryEventImpl
   public Object getRawOldValueAsHeapObject() {
     Object result = basicGetOldValue();
     if (mayHaveOffHeapReferences()) {
-      result = OffHeapHelper.copyIfNeeded(result);
+      result = OffHeapHelper.copyIfNeeded(result, getRegion().getCache());
     }
     return result;
   }
@@ -1440,10 +1442,6 @@ public class EntryEventImpl
     basicSetNewValue(getCachedDeserializable(obj, this));
   }
 
-  public static Object getCachedDeserializable(Object obj) {
-    return getCachedDeserializable(obj, null);
-  }
-
   public static Object getCachedDeserializable(Object obj, EntryEventImpl ev) {
     if (obj instanceof byte[] || obj == null || obj instanceof CachedDeserializable
         || obj == Token.NOT_AVAILABLE || Token.isInvalidOrRemoved(obj)
@@ -1464,10 +1462,10 @@ public class EntryEventImpl
           objSize += Sizeable.PER_OBJECT_OVERHEAD;
         }
       }
-      cd = CachedDeserializableFactory.create(obj, objSize);
+      cd = CachedDeserializableFactory.create(obj, objSize, ev.getRegion().getCache());
     } else {
       final byte[] b = serialize(obj);
-      cd = CachedDeserializableFactory.create(b);
+      cd = CachedDeserializableFactory.create(b, ev.getRegion().getCache());
       if (ev != null) {
         ev.newValueBytes = b;
         ev.cachedSerializedNewValue = b;
@@ -1487,7 +1485,7 @@ public class EntryEventImpl
   public void setSerializedNewValue(byte[] serializedValue) {
     Object newVal = null;
     if (serializedValue != null) {
-      newVal = CachedDeserializableFactory.create(serializedValue);
+      newVal = CachedDeserializableFactory.create(serializedValue, getRegion().getCache());
     }
     this.newValueBytes = serializedValue;
     basicSetNewValue(newVal);
@@ -1498,7 +1496,7 @@ public class EntryEventImpl
     this.oldValueBytes = serializedOldValue;
     final Object ov;
     if (serializedOldValue != null) {
-      ov = CachedDeserializableFactory.create(serializedOldValue);
+      ov = CachedDeserializableFactory.create(serializedOldValue, getRegion().getCache());
     } else {
       ov = null;
     }
@@ -1645,7 +1643,7 @@ public class EntryEventImpl
       } else {
         vSize = CachedDeserializableFactory.calcMemSize(v, region.getObjectSizer(), false);
       }
-      v = CachedDeserializableFactory.create(v, vSize);
+      v = CachedDeserializableFactory.create(v, vSize, region.getCache());
       basicSetNewValue(v);
     }
 
@@ -1784,7 +1782,7 @@ public class EntryEventImpl
         } else {
           valueSize = old.getValueSizeInBytes();
         }
-        value = CachedDeserializableFactory.create(value, valueSize);
+        value = CachedDeserializableFactory.create(value, valueSize, getRegion().getCache());
       }
       setNewValue(value);
       if (this.causedByMessage != null && this.causedByMessage instanceof PutMessage) {
@@ -1828,7 +1826,7 @@ public class EntryEventImpl
       // fix for bug 34387
       Object pv = v;
       if (mayHaveOffHeapReferences()) {
-        pv = OffHeapHelper.copyIfNeeded(v);
+        pv = OffHeapHelper.copyIfNeeded(v, getRegion().getCache());
       }
       tx.setPendingValue(pv);
     }
@@ -2734,8 +2732,8 @@ public class EntryEventImpl
    * returns true if it is okay to process this event even though it has a null version
    */
   public boolean noVersionReceivedFromServer() {
-    return versionTag == null && region.concurrencyChecksEnabled && region.getServerProxy() != null
-        && !op.isLocal() && !isOriginRemote();
+    return versionTag == null && region.getConcurrencyChecksEnabled()
+        && region.getServerProxy() != null && !op.isLocal() && !isOriginRemote();
   }
 
   /** returns a copy of this event with the additional fields for WAN conflict resolution */
@@ -2844,16 +2842,16 @@ public class EntryEventImpl
       if (StoredObject.isOffHeapReference(ov)) {
         if (ReferenceCountHelper.trackReferenceCounts()) {
           ReferenceCountHelper.setReferenceCountOwner(new OldValueOwner());
-          this.oldValue = OffHeapHelper.copyAndReleaseIfNeeded(ov);
+          this.oldValue = OffHeapHelper.copyAndReleaseIfNeeded(ov, getRegion().getCache());
           ReferenceCountHelper.setReferenceCountOwner(null);
         } else {
-          this.oldValue = OffHeapHelper.copyAndReleaseIfNeeded(ov);
+          this.oldValue = OffHeapHelper.copyAndReleaseIfNeeded(ov, getRegion().getCache());
         }
       }
       Object nv = basicGetNewValue();
       if (StoredObject.isOffHeapReference(nv)) {
         ReferenceCountHelper.setReferenceCountOwner(this);
-        this.newValue = OffHeapHelper.copyAndReleaseIfNeeded(nv);
+        this.newValue = OffHeapHelper.copyAndReleaseIfNeeded(nv, getRegion().getCache());
         ReferenceCountHelper.setReferenceCountOwner(null);
       }
       if (StoredObject.isOffHeapReference(this.newValue)

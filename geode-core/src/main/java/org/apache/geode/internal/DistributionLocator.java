@@ -168,7 +168,7 @@ public class DistributionLocator {
       try {
 
         InternalLocator locator = InternalLocator.startLocator(port, new File(DEFAULT_LOG_FILE),
-            null, null, null, address, true, (Properties) null, hostnameForClients);
+            null, null, address, true, (Properties) null, hostnameForClients);
 
         ManagerInfo.setLocatorStarted(directory, port, address);
         locator.waitToStop();

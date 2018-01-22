@@ -17,7 +17,7 @@ package org.apache.geode.admin.internal;
 import static org.apache.geode.distributed.ConfigurationProperties.*;
 
 import org.apache.geode.admin.*;
-import org.apache.geode.distributed.internal.DM;
+import org.apache.geode.distributed.internal.ClusterDistributionManager;
 import org.apache.geode.distributed.internal.DistributionManager;
 import org.apache.geode.internal.admin.GemFireVM;
 import org.apache.geode.internal.admin.remote.RemoteApplicationVM;
@@ -96,7 +96,8 @@ public class CacheServerImpl extends ManagedSystemMemberImpl implements CacheVm,
   }
 
   public boolean isRunning() {
-    DM dm = ((AdminDistributedSystemImpl) getDistributedSystem()).getDistributionManager();
+    DistributionManager dm =
+        ((AdminDistributedSystemImpl) getDistributedSystem()).getDistributionManager();
     if (dm == null) {
       try {
         return this.controller.isRunning(this);
@@ -104,7 +105,7 @@ public class CacheServerImpl extends ManagedSystemMemberImpl implements CacheVm,
         return false;
       }
     }
-    return ((DistributionManager) dm).getDistributionManagerIdsIncludingAdmin()
+    return ((ClusterDistributionManager) dm).getDistributionManagerIdsIncludingAdmin()
         .contains(getDistributedMember());
   }
 

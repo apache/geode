@@ -34,20 +34,13 @@ abstract class AbstractEvictionList implements EvictionList {
   /** The starting point in the LRU list for searching for the LRU node */
   protected final EvictionNode head = new GuardNode();
 
-  /** Description of the Field */
-  protected final InternalEvictionStatistics stats;
-
   /** Counter for the size of the LRU list */
   private final AtomicInteger size = new AtomicInteger();
 
-  private BucketRegion bucketRegion;
+  private final EvictionController controller;
 
-  AbstractEvictionList(InternalEvictionStatistics stats, BucketRegion region) {
-    if (stats == null) {
-      throw new IllegalArgumentException("EvictionStatistics must not be null");
-    }
-    this.stats = stats;
-    this.bucketRegion = region;
+  protected AbstractEvictionList(EvictionController controller) {
+    this.controller = controller;
     initEmptyList();
   }
 
@@ -68,33 +61,26 @@ abstract class AbstractEvictionList implements EvictionList {
 
   @Override
   public void closeStats() {
-    stats.close();
+    getStatistics().close();
   }
 
   @Override
-  public EvictionStatistics getStatistics() {
-    return stats;
+  public EvictionCounters getStatistics() {
+    return this.controller.getCounters();
   }
 
   @Override
-  public void setBucketRegion(Object region) {
-    if (region instanceof BucketRegion) {
-      this.bucketRegion = (BucketRegion) region; // see bug 41388
-    }
-  }
-
-  @Override
-  public void clear(RegionVersionVector regionVersionVector) {
+  public void clear(RegionVersionVector regionVersionVector, BucketRegion bucketRegion) {
     if (regionVersionVector != null) {
       return; // when concurrency checks are enabled the clear operation removes entries iteratively
     }
 
     synchronized (this) {
       if (bucketRegion != null) {
-        stats.decrementCounter(bucketRegion.getCounter());
+        getStatistics().decrementCounter(bucketRegion.getCounter());
         bucketRegion.resetCounter();
       } else {
-        stats.resetCounter();
+        getStatistics().resetCounter();
       }
       initEmptyList();
     }
@@ -207,4 +193,5 @@ abstract class AbstractEvictionList implements EvictionList {
     }
     return true;
   }
+
 }

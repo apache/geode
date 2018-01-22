@@ -41,7 +41,7 @@ import org.apache.geode.InternalGemFireException;
 import org.apache.geode.cache.GemFireCache;
 import org.apache.geode.distributed.DistributedSystem;
 import org.apache.geode.distributed.internal.ClusterConfigurationService;
-import org.apache.geode.distributed.internal.DistributionManager;
+import org.apache.geode.distributed.internal.ClusterDistributionManager;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.distributed.internal.LocatorStats;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
@@ -91,16 +91,14 @@ public class GMSLocator implements Locator, NetLocator {
 
   /**
    * @param bindAddress network address that TcpServer will bind to
-   * @param stateFile the file to persist state to/recover from
    * @param locatorString location of other locators (bootstrapping, failover)
    * @param usePreferredCoordinators true if the membership coordinator should be a Locator
    * @param networkPartitionDetectionEnabled true if network partition detection is enabled
    * @param stats the locator statistics object
    * @param securityUDPDHAlgo DF algorithm
    */
-  public GMSLocator(InetAddress bindAddress, File stateFile, String locatorString,
-      boolean usePreferredCoordinators, boolean networkPartitionDetectionEnabled,
-      LocatorStats stats, String securityUDPDHAlgo) {
+  public GMSLocator(InetAddress bindAddress, String locatorString, boolean usePreferredCoordinators,
+      boolean networkPartitionDetectionEnabled, LocatorStats stats, String securityUDPDHAlgo) {
     this.usePreferredCoordinators = usePreferredCoordinators;
     this.networkPartitionDetectionEnabled = networkPartitionDetectionEnabled;
     this.securityUDPDHAlgo = securityUDPDHAlgo;
@@ -110,7 +108,6 @@ public class GMSLocator implements Locator, NetLocator {
     } else {
       this.locators = GMSUtil.parseLocators(locatorString, bindAddress);
     }
-    this.viewFile = stateFile;
     this.stats = stats;
   }
 
@@ -137,8 +134,21 @@ public class GMSLocator implements Locator, NetLocator {
     return false;
   }
 
+  /**
+   * Test hook - set the persistent view file
+   */
+  public File setViewFile(File file) {
+    this.viewFile = new File(file.getAbsolutePath()); // GEODE-4180, use absolute paths
+    return this.viewFile;
+  }
+
   @Override
   public void init(TcpServer server) throws InternalGemFireException {
+    if (this.viewFile == null) {
+      // GEODE-4180, use absolute paths
+      this.viewFile =
+          new File(new File("locator" + server.getPort() + "view.dat").getAbsolutePath());
+    }
     logger.info(
         "GemFire peer location service starting.  Other locators: {}  Locators preferred as coordinators: {}  Network partition detection enabled: {}  View persistence file: {}",
         locatorString, usePreferredCoordinators, networkPartitionDetectionEnabled, viewFile);
@@ -443,7 +453,7 @@ public class GMSLocator implements Locator, NetLocator {
       // GEODE-3052 - remove locators from the view. Since we couldn't recover from an existing
       // locator we know that all of the locators in the view are defunct
       for (InternalDistributedMember member : members) {
-        if (member.getVmKind() == DistributionManager.LOCATOR_DM_TYPE) {
+        if (member.getVmKind() == ClusterDistributionManager.LOCATOR_DM_TYPE) {
           recoveredView.remove(member);
         }
       }

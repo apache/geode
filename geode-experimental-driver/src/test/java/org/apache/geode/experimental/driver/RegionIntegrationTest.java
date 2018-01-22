@@ -14,7 +14,10 @@
  */
 package org.apache.geode.experimental.driver;
 
+import static org.apache.geode.internal.Assert.assertTrue;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNull;
 
 import java.io.IOException;
 import java.util.Properties;
@@ -32,6 +35,7 @@ import org.apache.geode.cache.RegionShortcut;
 import org.apache.geode.cache.server.CacheServer;
 import org.apache.geode.distributed.ConfigurationProperties;
 import org.apache.geode.distributed.Locator;
+import org.apache.geode.pdx.PdxInstance;
 import org.apache.geode.test.junit.categories.IntegrationTest;
 
 @Category(IntegrationTest.class)
@@ -39,14 +43,22 @@ public class RegionIntegrationTest {
   @Rule
   public RestoreSystemProperties restoreSystemProperties = new RestoreSystemProperties();
 
-  public static final String REGION = "region";
-  private int locatorPort;
+  /** a JSON document */
+  private static final String jsonDocument =
+      "{" + System.lineSeparator() + "  \"name\" : \"Charlemagne\"," + System.lineSeparator()
+          + "  \"age\" : 1276," + System.lineSeparator() + "  \"nationality\" : \"french\","
+          + System.lineSeparator() + "  \"emailAddress\" : \"none\"" + System.lineSeparator() + "}";
+
+
+  private static final String REGION = "region";
   private Locator locator;
-  private CacheServer server;
   private Cache cache;
+  private Driver driver;
+
+  private org.apache.geode.cache.Region<Object, Object> serverRegion;
 
   @Before
-  public void createServer() throws IOException {
+  public void createServerAndDriver() throws Exception {
     System.setProperty("geode.feature-protobuf-protocol", "true");
 
     // Create a cache
@@ -56,15 +68,19 @@ public class RegionIntegrationTest {
 
     // Start a locator
     locator = Locator.startLocatorAndDS(0, null, new Properties());
-    locatorPort = locator.getPort();
+    int locatorPort = locator.getPort();
 
     // Start a server
-    server = cache.addCacheServer();
+    CacheServer server = cache.addCacheServer();
     server.setPort(0);
     server.start();
 
     // Create a region
-    cache.createRegionFactory(RegionShortcut.REPLICATE).create(REGION);
+    serverRegion = cache.createRegionFactory(RegionShortcut.REPLICATE).create(REGION);
+
+    // Create a driver connected to the server
+    driver = new DriverFactory().addLocator("localhost", locatorPort).create();
+
   }
 
   @After
@@ -73,32 +89,60 @@ public class RegionIntegrationTest {
     cache.close();
   }
 
+
+
   @Test
   public void getShouldReturnPutValue() throws Exception {
-    Driver driver = new DriverFactory().addLocator("localhost", locatorPort).create();
-    Region region = driver.getRegion("region");
+    Region<String, String> region = driver.getRegion("region");
 
     region.put("key", "value");
     assertEquals("value", region.get("key"));
 
     region.remove("key");
-    assertEquals(null, region.get("key"));
+    assertFalse(serverRegion.containsKey("key"));
+    assertNull(region.get("key"));
   }
 
   @Test
   public void putWithIntegerKey() throws Exception {
-    Driver driver = new DriverFactory().addLocator("localhost", locatorPort).create();
-    Region region = driver.getRegion("region");
+    Region<Integer, Integer> region = driver.getRegion("region");
     region.put(37, 42);
-    assertEquals(42, region.get(37));
+    assertTrue(serverRegion.containsKey(37));
+    assertEquals(42, region.get(37).intValue());
   }
 
   @Test
   public void removeWithIntegerKey() throws Exception {
-    Driver driver = new DriverFactory().addLocator("localhost", locatorPort).create();
-    Region region = driver.getRegion("region");
+    Region<Integer, Integer> region = driver.getRegion("region");
     region.put(37, 42);
     region.remove(37);
-    assertEquals(null, region.get(37));
+    assertFalse(serverRegion.containsKey(37));
+    assertNull(region.get(37));
   }
+
+  @Test
+  public void putWithJSONKeyAndValue() throws Exception {
+    Region<JSONWrapper, JSONWrapper> region = driver.getRegion("region");
+    JSONWrapper document = JSONWrapper.wrapJSON(jsonDocument);
+    region.put(document, document);
+    JSONWrapper value = region.get(document);
+    assertEquals(document, value);
+
+    assertEquals(1, serverRegion.size());
+    org.apache.geode.cache.Region.Entry entry =
+        (org.apache.geode.cache.Region.Entry) serverRegion.entrySet().iterator().next();
+    assertTrue(PdxInstance.class.isAssignableFrom(entry.getKey().getClass()));
+    assertTrue(PdxInstance.class.isAssignableFrom(entry.getValue().getClass()));
+  }
+
+  @Test
+  public void removeWithJSONKey() throws Exception {
+    Region<JSONWrapper, JSONWrapper> region = driver.getRegion("region");
+    JSONWrapper document = JSONWrapper.wrapJSON(jsonDocument);
+    region.put(document, document);
+    region.remove(document);
+    assertEquals(0, serverRegion.size());
+    assertNull(region.get(document));
+  }
+
 }

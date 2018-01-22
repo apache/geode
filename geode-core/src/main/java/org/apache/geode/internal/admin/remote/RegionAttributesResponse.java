@@ -34,8 +34,8 @@ public class RegionAttributesResponse extends AdminResponse {
    * Returns a <code>RegionAttributesResponse</code> that will be returned to the specified
    * recipient. The message will contains a copy of the local manager's system config.
    */
-  public static RegionAttributesResponse create(DM dm, InternalDistributedMember recipient,
-      Region r) {
+  public static RegionAttributesResponse create(DistributionManager dm,
+      InternalDistributedMember recipient, Region r) {
     RegionAttributesResponse m = new RegionAttributesResponse();
     m.setRecipient(recipient);
     m.attributes = new RemoteRegionAttributes(r.getAttributes());

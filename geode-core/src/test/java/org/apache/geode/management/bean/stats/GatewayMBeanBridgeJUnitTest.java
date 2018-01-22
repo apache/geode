@@ -17,9 +17,9 @@ package org.apache.geode.management.bean.stats;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
-import io.codearte.catchexception.shade.mockito.Mockito;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
+import org.mockito.Mockito;
 
 import org.apache.geode.internal.NanoTimer;
 import org.apache.geode.internal.cache.wan.AbstractGatewaySender;

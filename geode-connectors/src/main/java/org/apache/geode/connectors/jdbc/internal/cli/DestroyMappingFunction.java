@@ -14,12 +14,17 @@
  */
 package org.apache.geode.connectors.jdbc.internal.cli;
 
+import java.util.Collection;
+import java.util.Collections;
+
 import org.apache.geode.annotations.Experimental;
 import org.apache.geode.cache.execute.FunctionContext;
-import org.apache.geode.connectors.jdbc.internal.InternalJdbcConnectorService;
+import org.apache.geode.connectors.jdbc.internal.JdbcConnectorService;
 import org.apache.geode.connectors.jdbc.internal.RegionMapping;
 import org.apache.geode.management.internal.cli.functions.CliFunctionResult;
 import org.apache.geode.management.internal.configuration.domain.XmlEntity;
+import org.apache.geode.management.internal.security.ResourcePermissions;
+import org.apache.geode.security.ResourcePermission;
 
 @Experimental
 public class DestroyMappingFunction extends JdbcCliFunction<String, CliFunctionResult> {
@@ -29,8 +34,8 @@ public class DestroyMappingFunction extends JdbcCliFunction<String, CliFunctionR
   }
 
   @Override
-  CliFunctionResult getFunctionResult(InternalJdbcConnectorService service,
-      FunctionContext<String> context) throws Exception {
+  CliFunctionResult getFunctionResult(JdbcConnectorService service, FunctionContext<String> context)
+      throws Exception {
     // input
     String regionName = context.getArguments();
 
@@ -45,7 +50,7 @@ public class DestroyMappingFunction extends JdbcCliFunction<String, CliFunctionR
   /**
    * Destroys the named region mapping
    */
-  boolean destroyRegionMapping(InternalJdbcConnectorService service, String regionName) {
+  boolean destroyRegionMapping(JdbcConnectorService service, String regionName) {
     RegionMapping mapping = service.getMappingForRegion(regionName);
     if (mapping != null) {
       service.destroyRegionMapping(regionName);
@@ -75,5 +80,10 @@ public class DestroyMappingFunction extends JdbcCliFunction<String, CliFunctionR
   private CliFunctionResult createNotFoundResult(String member, String regionName) {
     String message = "Region mapping for region \"" + regionName + "\" not found";
     return new CliFunctionResult(member, false, message);
+  }
+
+  @Override
+  public Collection<ResourcePermission> getRequiredPermissions(String regionName) {
+    return Collections.singletonList(ResourcePermissions.CLUSTER_MANAGE);
   }
 }

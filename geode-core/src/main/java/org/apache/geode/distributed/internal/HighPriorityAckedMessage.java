@@ -57,7 +57,7 @@ public class HighPriorityAckedMessage extends HighPriorityDistributionMessage
     DRAIN_POOL, DUMP_STACK
   };
 
-  transient DistributionManager originDm;
+  transient ClusterDistributionManager originDm;
   private transient ReplyProcessor21 rp;
   private boolean useNative;
 
@@ -65,7 +65,7 @@ public class HighPriorityAckedMessage extends HighPriorityDistributionMessage
     super();
     InternalDistributedSystem ds = InternalDistributedSystem.getAnyInstance();
     if (ds != null) {
-      this.originDm = (DistributionManager) ds.getDistributionManager();
+      this.originDm = (ClusterDistributionManager) ds.getDistributionManager();
     }
     if (this.originDm != null) {
       this.id = this.originDm.getDistributionManagerId();
@@ -156,7 +156,7 @@ public class HighPriorityAckedMessage extends HighPriorityDistributionMessage
    * This method is invoked on the receiver side
    */
   @Override
-  protected void process(DistributionManager dm) {
+  protected void process(ClusterDistributionManager dm) {
     switch (this.op) {
       case DRAIN_POOL:
         Assert.assertTrue(this.id != null);

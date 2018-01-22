@@ -26,12 +26,12 @@ import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
 
-import io.codearte.catchexception.shade.mockito.Mockito;
 import org.awaitility.Awaitility;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
+import org.mockito.Mockito;
 
 import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.Region;
@@ -133,7 +133,7 @@ public class ClientServerMiscBCDUnitTest extends ClientServerMiscDUnitTest {
     // start servers first
     int server1Port = initServerCache(true);
 
-    int server2Port = initServerCache2(true);
+    int server2Port = initServerCache2();
 
     int server3Port = server3.invoke(() -> createServerCache(true, getMaxThreads(), false));
 

@@ -20,12 +20,15 @@ package org.apache.geode.internal;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
+import java.io.ByteArrayInputStream;
 import java.io.File;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+import org.apache.commons.io.IOUtils;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -62,9 +65,10 @@ public class JarDeployerIntegrationTest {
     String jarName = "JarDeployerIntegrationTest.jar";
 
     byte[] firstJarBytes = createJarWithClass("ClassA");
+    File jarFile1 = writeJarBytes(firstJarBytes);
 
     // First deploy of the JAR file
-    DeployedJar firstDeployedJar = jarDeployer.deployWithoutRegistering(jarName, firstJarBytes);
+    DeployedJar firstDeployedJar = jarDeployer.deployWithoutRegistering(jarName, jarFile1);
 
     assertThat(firstDeployedJar.getFile()).exists().hasBinaryContent(firstJarBytes);
     assertThat(firstDeployedJar.getFile().getName()).contains(".v1.").doesNotContain(".v2.");
@@ -72,8 +76,9 @@ public class JarDeployerIntegrationTest {
     // Now deploy an updated JAR file and make sure that the next version of the JAR file
     // was created
     byte[] secondJarBytes = createJarWithClass("ClassB");
+    File jarFile2 = writeJarBytes(secondJarBytes);
 
-    DeployedJar secondDeployedJar = jarDeployer.deployWithoutRegistering(jarName, secondJarBytes);
+    DeployedJar secondDeployedJar = jarDeployer.deployWithoutRegistering(jarName, jarFile2);
     File secondDeployedJarFile = new File(secondDeployedJar.getFileCanonicalPath());
 
     assertThat(secondDeployedJarFile).exists().hasBinaryContent(secondJarBytes);
@@ -93,10 +98,11 @@ public class JarDeployerIntegrationTest {
 
     final JarDeployer jarDeployer = new JarDeployer(alternateDir);
     final byte[] jarBytes = this.classBuilder.createJarFromName("JarDeployerDUnitDTID");
+    File jarFile = writeJarBytes(jarBytes);
 
     // Test to verify that deployment fails if the directory doesn't exist.
     assertThatThrownBy(() -> {
-      jarDeployer.deployWithoutRegistering("JarDeployerIntegrationTest.jar", jarBytes);
+      jarDeployer.deployWithoutRegistering("JarDeployerIntegrationTest.jar", jarFile);
     }).isInstanceOf(IOException.class).hasMessageContaining("Unable to write to deploy directory:");
   }
 
@@ -106,12 +112,13 @@ public class JarDeployerIntegrationTest {
     assertThat(versionedName.getName()).isEqualTo("myJar.v1.jar");
 
     byte[] jarBytes = this.classBuilder.createJarFromName("ClassA");
-    File deployedJarFile = jarDeployer.deployWithoutRegistering("myJar.jar", jarBytes).getFile();
+    File jarFile = writeJarBytes(jarBytes);
+    File deployedJarFile = jarDeployer.deployWithoutRegistering("myJar.jar", jarFile).getFile();
 
     assertThat(deployedJarFile.getName()).isEqualTo("myJar.v1.jar");
 
     File secondDeployedJarFile =
-        jarDeployer.deployWithoutRegistering("myJar.jar", jarBytes).getFile();
+        jarDeployer.deployWithoutRegistering("myJar.jar", deployedJarFile).getFile();
 
     assertThat(secondDeployedJarFile.getName()).isEqualTo("myJar.v2.jar");
   }
@@ -246,5 +253,10 @@ public class JarDeployerIntegrationTest {
     assertThat(jarBVersion3).exists();
   }
 
+  private File writeJarBytes(byte[] content) throws IOException {
+    File tempJar = temporaryFolder.newFile();
+    IOUtils.copy(new ByteArrayInputStream(content), new FileOutputStream(tempJar));
+    return tempJar;
+  }
 
 }

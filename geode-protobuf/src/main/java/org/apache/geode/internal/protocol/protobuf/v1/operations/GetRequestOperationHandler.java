@@ -14,13 +14,14 @@
  */
 package org.apache.geode.internal.protocol.protobuf.v1.operations;
 
-import static org.apache.geode.internal.protocol.ProtocolErrorCode.REGION_NOT_FOUND;
-import static org.apache.geode.internal.protocol.ProtocolErrorCode.VALUE_ENCODING_ERROR;
+import static org.apache.geode.internal.protocol.ProtocolErrorCode.INVALID_REQUEST;
+import static org.apache.geode.internal.protocol.ProtocolErrorCode.SERVER_ERROR;
 
 import org.apache.logging.log4j.Logger;
 
 import org.apache.geode.annotations.Experimental;
 import org.apache.geode.cache.Region;
+import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.exception.InvalidExecutionContextException;
 import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.internal.protocol.Failure;
@@ -49,10 +50,13 @@ public class GetRequestOperationHandler
     if (region == null) {
       logger.error("Received Get request for non-existing region {}", regionName);
       return Failure
-          .of(ProtobufResponseUtilities.makeErrorResponse(REGION_NOT_FOUND, "Region not found"));
+          .of(ProtobufResponseUtilities.makeErrorResponse(SERVER_ERROR, "Region not found"));
     }
+    long startOperationTime = messageExecutionContext.getStatistics().startOperation();
 
     try {
+      ((InternalCache) messageExecutionContext.getCache()).setReadSerializedForCurrentThread(true);
+
       Object decodedKey = serializationService.decode(request.getKey());
       Object resultValue = region.get(decodedKey);
 
@@ -64,8 +68,11 @@ public class GetRequestOperationHandler
       return Success.of(RegionAPI.GetResponse.newBuilder().setResult(encodedValue).build());
     } catch (EncodingException ex) {
       logger.error("Received Get request with unsupported encoding: {}", ex);
-      return Failure.of(ProtobufResponseUtilities.makeErrorResponse(VALUE_ENCODING_ERROR,
-          "Encoding not supported."));
+      return Failure.of(
+          ProtobufResponseUtilities.makeErrorResponse(INVALID_REQUEST, "Encoding not supported."));
+    } finally {
+      ((InternalCache) messageExecutionContext.getCache()).setReadSerializedForCurrentThread(false);
+      messageExecutionContext.getStatistics().endOperation(startOperationTime);
     }
   }
 }

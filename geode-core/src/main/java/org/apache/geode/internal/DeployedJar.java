@@ -14,6 +14,7 @@
  */
 package org.apache.geode.internal;
 
+import java.io.BufferedInputStream;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
@@ -86,52 +87,44 @@ public class DeployedJar {
     return JarDeployer.extractVersionFromFilename(this.file.getName());
   }
 
-  public DeployedJar(File versionedJarFile, String jarName) throws IOException {
-    this(versionedJarFile, jarName, Files.readAllBytes(versionedJarFile.toPath()));
-  }
-
   /**
    * Writes the given jarBytes to versionedJarFile
    */
-  public DeployedJar(File versionedJarFile, final String jarName, byte[] jarBytes)
-      throws FileNotFoundException {
-    Assert.assertTrue(jarBytes != null, "jarBytes cannot be null");
+  public DeployedJar(File versionedJarFile, final String jarName) {
     Assert.assertTrue(jarName != null, "jarName cannot be null");
     Assert.assertTrue(versionedJarFile != null, "versionedJarFile cannot be null");
 
     this.file = versionedJarFile;
     this.jarName = jarName;
 
-    final byte[] fileContent = getJarContent();
-    if (!Arrays.equals(fileContent, jarBytes)) {
-      throw new IllegalStateException("JAR file: " + versionedJarFile.getAbsolutePath()
-          + ", does not have the expected content.");
-    }
-
-    if (!hasValidJarContent(fileContent)) {
+    if (!hasValidJarContent(versionedJarFile)) {
       throw new IllegalArgumentException(
           "File does not contain valid JAR content: " + versionedJarFile.getAbsolutePath());
     }
 
-    if (messageDigest != null) {
-      this.md5hash = messageDigest.digest(jarBytes);
-    } else {
-      this.md5hash = null;
+    byte[] digest = null;
+    try {
+      if (messageDigest != null) {
+        digest = fileDigest(this.file);
+      }
+    } catch (IOException e) {
+      // Ignored
     }
+    this.md5hash = digest;
   }
 
   /**
    * Peek into the JAR data and make sure that it is valid JAR content.
    *
-   * @param inputStream InputStream containing data to be validated.
+   * @param jarFile Jar containing data to be validated.
    * @return True if the data has JAR content, false otherwise
    */
-  private static boolean hasValidJarContent(final InputStream inputStream) {
+  public static boolean hasValidJarContent(File jarFile) {
     JarInputStream jarInputStream = null;
     boolean valid = false;
 
     try {
-      jarInputStream = new JarInputStream(inputStream);
+      jarInputStream = new JarInputStream(new FileInputStream(jarFile));
       valid = jarInputStream.getNextJarEntry() != null;
     } catch (IOException ignore) {
       // Ignore this exception and just return false
@@ -147,16 +140,6 @@ public class DeployedJar {
   }
 
   /**
-   * Peek into the JAR data and make sure that it is valid JAR content.
-   *
-   * @param jarBytes Bytes of data to be validated.
-   * @return True if the data has JAR content, false otherwise
-   */
-  static boolean hasValidJarContent(final byte[] jarBytes) {
-    return hasValidJarContent(new ByteArrayInputStream(jarBytes));
-  }
-
-  /**
    * Scan the JAR file and attempt to register any function classes found.
    */
 
@@ -166,13 +149,19 @@ public class DeployedJar {
       logger.debug("Registering functions with DeployedJar: {}", this);
     }
 
-    ByteArrayInputStream byteArrayInputStream = new ByteArrayInputStream(this.getJarContent());
+    BufferedInputStream bufferedInputStream;
+    try {
+      bufferedInputStream = new BufferedInputStream(new FileInputStream(this.file));
+    } catch (Exception ex) {
+      logger.error("Unable to scan jar file for functions");
+      return;
+    }
 
     JarInputStream jarInputStream = null;
     try {
       Collection<String> functionClasses = findFunctionsInThisJar();
 
-      jarInputStream = new JarInputStream(byteArrayInputStream);
+      jarInputStream = new JarInputStream(bufferedInputStream);
       JarEntry jarEntry = jarInputStream.getNextJarEntry();
 
       while (jarEntry != null) {
@@ -259,21 +248,38 @@ public class DeployedJar {
    * Uses MD5 hashes to determine if the original byte content of this DeployedJar is the same as
    * that past in.
    *
-   * @param compareToBytes Bytes to compare the original content to
+   * @param stagedFile File to compare the original content to
    * @return True of the MD5 hash is the same o
    */
-  boolean hasSameContentAs(final byte[] compareToBytes) {
+  boolean hasSameContentAs(final File stagedFile) {
     // If the MD5 hash can't be calculated then silently return no match
     if (messageDigest == null || this.md5hash == null) {
-      return Arrays.equals(compareToBytes, getJarContent());
+      return false;
     }
 
-    byte[] compareToMd5 = messageDigest.digest(compareToBytes);
+    byte[] compareToMd5;
+    try {
+      compareToMd5 = fileDigest(stagedFile);
+    } catch (IOException ex) {
+      return false;
+    }
     if (logger.isDebugEnabled()) {
       logger.debug("For JAR file: {}, Comparing MD5 hash {} to {}", this.file.getAbsolutePath(),
           new String(this.md5hash), new String(compareToMd5));
     }
     return Arrays.equals(this.md5hash, compareToMd5);
+  }
+
+  private byte[] fileDigest(File file) throws IOException {
+    BufferedInputStream fis = new BufferedInputStream(new FileInputStream(file));
+    byte[] data = new byte[8192];
+
+    int read;
+    while ((read = fis.read(data)) > 0) {
+      messageDigest.update(data, 0, read);
+    }
+
+    return messageDigest.digest();
   }
 
   /**
@@ -358,26 +364,6 @@ public class DeployedJar {
     }
 
     return null;
-  }
-
-  private byte[] getJarContent() {
-    try {
-      InputStream channelInputStream = new FileInputStream(this.file);
-
-      final ByteArrayOutputStream byteOutStream = new ByteArrayOutputStream();
-      final byte[] bytes = new byte[4096];
-
-      int bytesRead;
-      while ((bytesRead = channelInputStream.read(bytes)) != -1) {
-        byteOutStream.write(bytes, 0, bytesRead);
-      }
-      channelInputStream.close();
-      return byteOutStream.toByteArray();
-    } catch (IOException e) {
-      logger.error("Error when attempting to read jar contents: ", e);
-    }
-
-    return ZERO_BYTES;
   }
 
   /**

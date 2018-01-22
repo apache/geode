@@ -80,6 +80,7 @@ XML schema for JDBC Connector Service in Geode.
                     </xsd:complexType>
                 </xsd:element>
             </xsd:sequence>
+            <xsd:attribute name="name" type="xsd:string" fixed="connector-service"/>
         </xsd:complexType>
     </xsd:element>
 </xsd:schema>

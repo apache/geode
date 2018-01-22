@@ -54,7 +54,7 @@ import org.apache.geode.management.internal.cli.functions.ExportLogsFunction;
 import org.apache.geode.management.internal.cli.util.CommandStringBuilder;
 import org.apache.geode.management.internal.configuration.utils.ZipUtils;
 import org.apache.geode.test.dunit.IgnoredException;
-import org.apache.geode.test.dunit.rules.LocatorServerStartupRule;
+import org.apache.geode.test.dunit.rules.ClusterStartupRule;
 import org.apache.geode.test.dunit.rules.MemberVM;
 import org.apache.geode.test.junit.categories.DistributedTest;
 import org.apache.geode.test.junit.rules.GfshCommandRule;
@@ -65,8 +65,7 @@ public class ExportLogsDUnitTest {
   private static final String ERROR_LOG_PREFIX = "[IGNORE]";
 
   @Rule
-  public LocatorServerStartupRule lsRule =
-      new LocatorServerStartupRule().withTempWorkingDir().withLogFile();
+  public ClusterStartupRule lsRule = new ClusterStartupRule().withLogFile();
 
   @Rule
   public GfshCommandRule gfshConnector = new GfshCommandRule();
@@ -254,7 +253,6 @@ public class ExportLogsDUnitTest {
 
     File logFileForMember = new File(dirForMember, memberName + ".log");
     assertThat(logFileForMember).exists();
-    assertThat(fileNamesInDir).hasSize(1);
 
     String logFileContents = FileUtils.readLines(logFileForMember, Charset.defaultCharset())
         .stream().collect(joining("\n"));
@@ -284,7 +282,7 @@ public class ExportLogsDUnitTest {
         .describedAs(filesInDir.stream().map(File::getAbsolutePath).collect(joining(",")))
         .hasSize(1);
 
-    File unzippedLogFileDir = lsRule.getTempWorkingDir().newFolder("unzippedLogs");
+    File unzippedLogFileDir = new File(locatorWorkingDir, "unzippedLogs");
     ZipUtils.unzip(zipFilesInDir.get(0).getCanonicalPath(), unzippedLogFileDir.getCanonicalPath());
     return unzippedLogFileDir;
   }

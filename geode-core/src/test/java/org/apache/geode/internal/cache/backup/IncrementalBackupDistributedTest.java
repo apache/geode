@@ -21,8 +21,10 @@ import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 
 import java.io.BufferedReader;
+import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.FileFilter;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.nio.file.Files;
@@ -36,6 +38,7 @@ import java.util.Set;
 import java.util.regex.Pattern;
 
 import org.apache.commons.io.FileUtils;
+import org.apache.commons.io.IOUtils;
 import org.apache.commons.io.filefilter.DirectoryFileFilter;
 import org.apache.commons.io.filefilter.RegexFileFilter;
 import org.apache.logging.log4j.Logger;
@@ -56,7 +59,7 @@ import org.apache.geode.cache.RegionShortcut;
 import org.apache.geode.cache.persistence.PersistentID;
 import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.distributed.DistributedSystem;
-import org.apache.geode.distributed.internal.DM;
+import org.apache.geode.distributed.internal.DistributionManager;
 import org.apache.geode.internal.ClassPathLoader;
 import org.apache.geode.internal.DeployedJar;
 import org.apache.geode.internal.cache.DiskStoreImpl;
@@ -204,7 +207,7 @@ public class IncrementalBackupDistributedTest extends JUnit4CacheTestCase {
   }
 
   /**
-   * Invokes {@link BackupUtil#backupAllMembers(DM, File, File)} on a member.
+   * Invokes {@link BackupUtil#backupAllMembers(DistributionManager, File, File)} on a member.
    *
    * @param vm a member of the distributed system
    * @return the status of the backup.
@@ -221,7 +224,7 @@ public class IncrementalBackupDistributedTest extends JUnit4CacheTestCase {
   }
 
   /**
-   * Invokes {@link BackupUtil#backupAllMembers(DM, File, File)} on a member.
+   * Invokes {@link BackupUtil#backupAllMembers(DistributionManager, File, File)} on a member.
    *
    * @param vm a member of the distributed system.
    * @return a status of the backup operation.
@@ -238,7 +241,7 @@ public class IncrementalBackupDistributedTest extends JUnit4CacheTestCase {
   }
 
   /**
-   * Invokes {@link BackupUtil#backupAllMembers(DM, File, File)} on a member.
+   * Invokes {@link BackupUtil#backupAllMembers(DistributionManager, File, File)} on a member.
    *
    * @param vm a member of the distributed system.
    * @return a status of the backup operation.
@@ -1002,6 +1005,9 @@ public class IncrementalBackupDistributedTest extends JUnit4CacheTestCase {
     final ClassBuilder classBuilder = new ClassBuilder();
     final byte[] classBytes = classBuilder.createJarFromName(jarName);
 
+    File jarFile = tempDir.newFile();
+    IOUtils.copyLarge(new ByteArrayInputStream(classBytes), new FileOutputStream(jarFile));
+
     VM vm0 = Host.getHost(0).getVM(0);
 
     /*
@@ -1009,7 +1015,7 @@ public class IncrementalBackupDistributedTest extends JUnit4CacheTestCase {
      */
     File deployedJarFile = vm0.invoke(() -> {
       DeployedJar deployedJar =
-          ClassPathLoader.getLatest().getJarDeployer().deploy(jarName, classBytes);
+          ClassPathLoader.getLatest().getJarDeployer().deploy(jarName, jarFile);
       return deployedJar.getFile();
     });
 

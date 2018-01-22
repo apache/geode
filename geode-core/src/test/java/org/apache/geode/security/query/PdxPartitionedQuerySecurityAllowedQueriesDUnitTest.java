@@ -21,9 +21,11 @@ import org.junit.runners.Parameterized;
 import org.apache.geode.cache.RegionShortcut;
 import org.apache.geode.test.junit.categories.DistributedTest;
 import org.apache.geode.test.junit.categories.SecurityTest;
+import org.apache.geode.test.junit.runners.CategoryWithParameterizedRunnerFactory;
 
 @Category({DistributedTest.class, SecurityTest.class})
 @RunWith(Parameterized.class)
+@Parameterized.UseParametersRunnerFactory(CategoryWithParameterizedRunnerFactory.class)
 public class PdxPartitionedQuerySecurityAllowedQueriesDUnitTest
     extends PdxQuerySecurityAllowedQueriesDUnitTest {
   public RegionShortcut getRegionType() {

@@ -794,7 +794,7 @@ public class DeltaPropagationDUnitTest extends JUnit4DistributedTestCase {
 
     WaitCriterion wc = new WaitCriterion() {
       public boolean done() {
-        return cc.getStatistics().getEvictions() > 0;
+        return cc.getCounters().getEvictions() > 0;
       }
 
       public String description() {
@@ -993,9 +993,9 @@ public class DeltaPropagationDUnitTest extends JUnit4DistributedTestCase {
   private void verifyOverflowOccurred(long evictions, int regionsize) {
     EvictionController cc = ((VMLRURegionMap) ((LocalRegion) cache.getRegion(regionName)).entries)
         .getEvictionController();
-    Assert.assertTrue(cc.getStatistics().getEvictions() == evictions,
+    Assert.assertTrue(cc.getCounters().getEvictions() == evictions,
         "Number of evictions expected to be " + evictions + " but was "
-            + cc.getStatistics().getEvictions());
+            + cc.getCounters().getEvictions());
     int rSize = ((LocalRegion) cache.getRegion(regionName)).getRegionMap().size();
     Assert.assertTrue(rSize == regionsize,
         "Region size expected to be " + regionsize + " but was " + rSize);

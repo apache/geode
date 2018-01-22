@@ -1,1 +1,1 @@
-org.apache.geode.connectors.jdbc.internal.JdbcConnectorService
+org.apache.geode.connectors.jdbc.internal.JdbcConnectorServiceImpl

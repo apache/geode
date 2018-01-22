@@ -17,6 +17,8 @@ package org.apache.geode.modules.util;
 import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
+import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
 import java.util.Set;
 
@@ -28,10 +30,12 @@ import org.apache.geode.cache.execute.Function;
 import org.apache.geode.cache.execute.FunctionContext;
 import org.apache.geode.cache.execute.FunctionService;
 import org.apache.geode.cache.execute.ResultCollector;
-import org.apache.geode.distributed.internal.DM;
+import org.apache.geode.distributed.internal.DistributionManager;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.distributed.internal.MembershipListener;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
+import org.apache.geode.management.internal.security.ResourcePermissions;
+import org.apache.geode.security.ResourcePermission;
 
 public class BootstrappingFunction implements Function, MembershipListener, DataSerializable {
 
@@ -87,8 +91,14 @@ public class BootstrappingFunction implements Function, MembershipListener, Data
     return cache;
   }
 
+  @Override
+  public Collection<ResourcePermission> getRequiredPermissions(String regionName) {
+    return Collections.singletonList(ResourcePermissions.CLUSTER_MANAGE);
+  }
+
   private void registerAsMembershipListener(Cache cache) {
-    DM dm = ((InternalDistributedSystem) cache.getDistributedSystem()).getDistributionManager();
+    DistributionManager dm =
+        ((InternalDistributedSystem) cache.getDistributedSystem()).getDistributionManager();
     dm.addMembershipListener(this);
   }
 

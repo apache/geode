@@ -68,8 +68,8 @@ import org.apache.geode.cache.RegionDestroyedException;
 import org.apache.geode.cache.TimeoutException;
 import org.apache.geode.cache.UnsupportedVersionException;
 import org.apache.geode.distributed.OplogCancelledException;
-import org.apache.geode.distributed.internal.DM;
 import org.apache.geode.distributed.internal.DistributionConfig;
+import org.apache.geode.distributed.internal.DistributionManager;
 import org.apache.geode.internal.Assert;
 import org.apache.geode.internal.ByteArrayDataInput;
 import org.apache.geode.internal.HeapDataOutputStream;
@@ -2360,7 +2360,8 @@ public class Oplog implements CompactableOplog, Flushable {
         value = Token.INVALID;
         valueLength = 0;
       } else if (EntryBits.isSerialized(userBits)) {
-        value = DiskEntry.Helper.readSerializedValue(valueBytes, version, in, false);
+        value = DiskEntry.Helper.readSerializedValue(valueBytes, version, in, false,
+            getParent().getCache());
       } else if (EntryBits.isTombstone(userBits)) {
         value = Token.TOMBSTONE;
       } else {
@@ -2862,7 +2863,8 @@ public class Oplog implements CompactableOplog, Flushable {
         // make sure values are deserializable
         if (!PdxWriterImpl.isPdx(valueBytes)) { // fix bug 43011
           try {
-            DiskEntry.Helper.readSerializedValue(valueBytes, version, in, true);
+            DiskEntry.Helper.readSerializedValue(valueBytes, version, in, true,
+                getParent().getCache());
           } catch (SerializationException ex) {
             if (logger.isDebugEnabled()) {
               logger.debug("Could not deserialize recovered value: {}", ex.getCause(), ex);
@@ -3601,7 +3603,8 @@ public class Oplog implements CompactableOplog, Flushable {
           useNextOplog = true;
         } else {
           if (this.lockedForKRFcreate) {
-            CacheClosedException cce = new CacheClosedException("The disk store is closed.");
+            CacheClosedException cce =
+                getParent().getCache().getCacheClosedException("The disk store is closed.");
             dr.getCancelCriterion().checkCancelInProgress(cce);
             throw cce;
           }
@@ -4631,7 +4634,8 @@ public class Oplog implements CompactableOplog, Flushable {
             useNextOplog = true;
           } else {
             if (this.lockedForKRFcreate) {
-              CacheClosedException cce = new CacheClosedException("The disk store is closed.");
+              CacheClosedException cce =
+                  getParent().getCache().getCacheClosedException("The disk store is closed.");
               dr.getCancelCriterion().checkCancelInProgress(cce);
               throw cce;
             }
@@ -4758,7 +4762,8 @@ public class Oplog implements CompactableOplog, Flushable {
             useNextOplog = true;
           } else {
             if (this.lockedForKRFcreate) {
-              CacheClosedException cce = new CacheClosedException("The disk store is closed.");
+              CacheClosedException cce =
+                  getParent().getCache().getCacheClosedException("The disk store is closed.");
               dr.getCancelCriterion().checkCancelInProgress(cce);
               throw cce;
             }
@@ -5076,7 +5081,8 @@ public class Oplog implements CompactableOplog, Flushable {
           useNextOplog = true;
         } else {
           if (this.lockedForKRFcreate) {
-            CacheClosedException cce = new CacheClosedException("The disk store is closed.");
+            CacheClosedException cce =
+                parent.getCache().getCacheClosedException("The disk store is closed.");
             dr.getCancelCriterion().checkCancelInProgress(cce);
             throw cce;
           }
@@ -7202,7 +7208,7 @@ public class Oplog implements CompactableOplog, Flushable {
 
     @Override
     public boolean fillInValue(InternalRegion region, InitialImageOperation.Entry entry,
-        ByteArrayDataInput in, DM distributionManager, final Version version) {
+        ByteArrayDataInput in, DistributionManager distributionManager, final Version version) {
       return false;
     }
 

@@ -49,10 +49,12 @@ import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.distributed.internal.DistributionConfig;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.internal.DSCODE;
+import org.apache.geode.internal.InternalEntity;
 import org.apache.geode.internal.cache.CachePerfStats;
 import org.apache.geode.internal.cache.CachedDeserializable;
 import org.apache.geode.internal.cache.CachedDeserializableFactory;
 import org.apache.geode.internal.cache.GemFireCacheImpl;
+import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.cache.LocalDataSet;
 import org.apache.geode.internal.cache.LocalRegion;
 import org.apache.geode.internal.cache.Token;
@@ -237,7 +239,7 @@ public class RegionSnapshotServiceImpl<K, V> implements RegionSnapshotService<K,
     // Would be interesting to use a PriorityQueue ordered on isDone()
     // but this is probably close enough in practice.
     LinkedList<Future<?>> puts = new LinkedList<>();
-    GFSnapshotImporter in = new GFSnapshotImporter(snapshot);
+    GFSnapshotImporter in = new GFSnapshotImporter(snapshot, local.getCache().getPdxRegistry());
 
     try {
       int bufferSize = 0;
@@ -265,7 +267,7 @@ public class RegionSnapshotServiceImpl<K, V> implements RegionSnapshotService<K,
             // keep the logic in the InternalDataSerializer.
             val = record.getValueObject();
           } else {
-            val = (V) CachedDeserializableFactory.create(record.getValue());
+            val = (V) CachedDeserializableFactory.create(record.getValue(), local.getCache());
           }
         }
 
@@ -282,9 +284,8 @@ public class RegionSnapshotServiceImpl<K, V> implements RegionSnapshotService<K,
             }
 
             final Map<K, V> copy = new HashMap<>(buffer);
-            Future<?> f = GemFireCacheImpl.getExisting("Importing region from snapshot")
-                .getDistributionManager().getWaitingThreadPool().submit((Runnable) () -> local
-                    .basicImportPutAll(copy, !options.shouldInvokeCallbacks()));
+            Future<?> f = local.getCache().getDistributionManager().getWaitingThreadPool().submit(
+                (Runnable) () -> local.basicImportPutAll(copy, !options.shouldInvokeCallbacks()));
 
             puts.addLast(f);
             buffer.clear();
@@ -348,7 +349,8 @@ public class RegionSnapshotServiceImpl<K, V> implements RegionSnapshotService<K,
 
     long count = 0;
     long start = CachePerfStats.getStatTime();
-    SnapshotWriter writer = GFSnapshot.create(snapshot, region.getFullPath());
+    SnapshotWriter writer =
+        GFSnapshot.create(snapshot, region.getFullPath(), (InternalCache) region.getCache());
     try {
       if (getLoggerI18n().infoEnabled())
         getLoggerI18n().info(LocalizedStrings.Snapshot_EXPORT_BEGIN_0, region.getName());
@@ -502,7 +504,7 @@ public class RegionSnapshotServiceImpl<K, V> implements RegionSnapshotService<K,
     }
   }
 
-  private static class ParallelExportFunction<K, V> implements Function {
+  private static class ParallelExportFunction<K, V> implements Function, InternalEntity {
     @Override
     public boolean hasResult() {
       return true;
@@ -545,7 +547,7 @@ public class RegionSnapshotServiceImpl<K, V> implements RegionSnapshotService<K,
     }
   }
 
-  private static class ParallelImportFunction<K, V> implements Function {
+  private static class ParallelImportFunction<K, V> implements Function, InternalEntity {
     @Override
     public boolean hasResult() {
       return true;

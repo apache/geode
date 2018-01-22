@@ -31,12 +31,14 @@ package org.apache.geode.cache;
  * <p>
  * Rollback and failed commit operations are local.
  *
+ * <p>
+ * WARNING: To avoid risk of deadlock, do not invoke CacheFactory.getAnyInstance() from within any
+ * callback methods. Instead use TransactionEvent.getCache().
  *
  * @see CacheTransactionManager#setListener
  * @see CacheTransactionManager#getListener
  * @since GemFire 4.0
  */
-
 public interface TransactionListener extends CacheCallback {
 
   /**

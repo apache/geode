@@ -14,6 +14,7 @@
  */
 package org.apache.geode.management;
 
+import java.util.List;
 import java.util.Map;
 
 import org.apache.geode.distributed.DistributedMember;
@@ -214,9 +215,26 @@ public interface MemberMXBean {
    *
    * @param commandString Command to be execute.
    * @param env Environmental properties to use during command execution.
-   * @param binaryData Binary data specific to the command being executed.
+   * @param stagedFilePaths Local files (as relevant to the command). May be null.
    * @return Result of the execution in JSON format.
    */
+  @ResourceOperation()
+  String processCommand(String commandString, Map<String, String> env,
+      List<String> stagedFilePaths);
+
+  /**
+   * Executes a command on the member. this is the method that's used by the HttpOperationInvoker
+   * and JmxOperationInvoker
+   *
+   * @param commandString Command to be execute.
+   * @param env Environmental properties to use during command execution.
+   * @param binaryData Binary data specific to the command being executed.
+   * @return Result of the execution in JSON format.
+   *
+   * @deprecated since 1.4 use processCommand(String commandString, Map<String, String> env,
+   *             List<String> stagedFilePaths) instead
+   */
+  @Deprecated
   @ResourceOperation()
   String processCommand(String commandString, Map<String, String> env, Byte[][] binaryData);
 
@@ -268,9 +286,17 @@ public interface MemberMXBean {
   String status();
 
   /**
-   * Returns the GemFire version.
+   * Returns the GemFire version, including build id, jdk version, product name and release version
+   * etc.
    */
+  @ResourceOperation()
   String getVersion();
+
+  /**
+   * returns only the version string
+   */
+  @ResourceOperation()
+  String getReleaseVersion();
 
   /**
    * Returns whether this member is attached to at least one Locator.

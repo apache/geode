@@ -29,7 +29,7 @@ import org.junit.experimental.categories.Category;
 
 import org.apache.geode.internal.ClassPathLoader;
 import org.apache.geode.test.compiler.ClassBuilder;
-import org.apache.geode.test.dunit.rules.LocatorServerStartupRule;
+import org.apache.geode.test.dunit.rules.ClusterStartupRule;
 import org.apache.geode.test.dunit.rules.MemberVM;
 import org.apache.geode.test.junit.categories.DistributedTest;
 import org.apache.geode.test.junit.rules.GfshCommandRule;
@@ -70,7 +70,7 @@ public class DeployWithGroupsDUnitTest implements Serializable {
   public SerializableTemporaryFolder temporaryFolder = new SerializableTemporaryFolder();
 
   @Rule
-  public LocatorServerStartupRule lsRule = new LocatorServerStartupRule();
+  public ClusterStartupRule lsRule = new ClusterStartupRule();
 
   @Rule
   public transient GfshCommandRule gfshConnector = new GfshCommandRule();
@@ -180,7 +180,6 @@ public class DeployWithGroupsDUnitTest implements Serializable {
     });
   }
 
-
   @Test
   public void deployJarToAllServers() throws Exception {
     // Deploy a jar to all servers
@@ -198,6 +197,67 @@ public class DeployWithGroupsDUnitTest implements Serializable {
     gfshConnector.executeAndAssertThat("undeploy --group=" + GROUP1).statusIsSuccess();
     server1.invoke(() -> assertThatCannotLoad(jarName1, class1));
     server2.invoke(() -> assertThatCanLoad(jarName1, class1));
+  }
+
+  @Test
+  public void deployJarToAllServersWithRestart() throws Exception {
+    // Deploy a jar to all servers
+    gfshConnector.executeAndAssertThat("deploy --jar=" + jar1).statusIsSuccess();
+    String resultString = gfshConnector.getGfshOutput();
+
+    assertThat(resultString).contains(server1.getName());
+    assertThat(resultString).contains(server2.getName());
+    assertThat(resultString).contains(jarName1);
+
+    server1.invoke(() -> assertThatCanLoad(jarName1, class1));
+    server2.invoke(() -> assertThatCanLoad(jarName1, class1));
+
+    server1.getVM().bounce();
+    server2.getVM().bounce();
+
+    // Restart the actual cache
+    Properties props = new Properties();
+    props.setProperty(GROUPS, GROUP1);
+    server1 = lsRule.startServerVM(1, props, locator.getPort());
+
+    props.setProperty(GROUPS, GROUP2);
+    server2 = lsRule.startServerVM(2, props, locator.getPort());
+
+    server1.invoke(() -> assertThatCanLoad(jarName1, class1));
+    server2.invoke(() -> assertThatCanLoad(jarName1, class1));
+  }
+
+  @Test
+  public void undeployJarFromAllServersWithRestart() throws Exception {
+    // Deploy a jar to all servers
+    gfshConnector.executeAndAssertThat("deploy --jar=" + jar1).statusIsSuccess();
+    String resultString = gfshConnector.getGfshOutput();
+
+    assertThat(resultString).contains(server1.getName());
+    assertThat(resultString).contains(server2.getName());
+    assertThat(resultString).contains(jarName1);
+
+    server1.invoke(() -> assertThatCanLoad(jarName1, class1));
+    server2.invoke(() -> assertThatCanLoad(jarName1, class1));
+
+    gfshConnector.executeAndAssertThat("undeploy --jar=" + jar1.getName()).statusIsSuccess();
+    // Although the jar is undeployed, we can still access the class
+    server1.invoke(() -> assertThatCannotLoad(jarName1, class1));
+    server2.invoke(() -> assertThatCannotLoad(jarName1, class1));
+
+    server1.getVM().bounce();
+    server2.getVM().bounce();
+
+    // Restart the actual cache
+    Properties props = new Properties();
+    props.setProperty(GROUPS, GROUP1);
+    server1 = lsRule.startServerVM(1, props, locator.getPort());
+
+    props.setProperty(GROUPS, GROUP2);
+    server2 = lsRule.startServerVM(2, props, locator.getPort());
+
+    server1.invoke(() -> assertThatCannotLoad(jarName1, class1));
+    server2.invoke(() -> assertThatCannotLoad(jarName1, class1));
   }
 
   @Test
@@ -253,16 +313,15 @@ public class DeployWithGroupsDUnitTest implements Serializable {
   }
 
   private void assertThatCanLoad(String jarName, String className) throws ClassNotFoundException {
-    assertThat(ClassPathLoader.getLatest().getJarDeployer().findDeployedJar(jarName)).isNotNull();
+    assertThat(ClassPathLoader.getLatest().getJarDeployer().getDeployedJar(jarName)).isNotNull();
     assertThat(ClassPathLoader.getLatest().forName(className)).isNotNull();
   }
 
   private void assertThatCannotLoad(String jarName, String className) {
-    assertThat(ClassPathLoader.getLatest().getJarDeployer().findDeployedJar(jarName)).isNull();
+    assertThat(ClassPathLoader.getLatest().getJarDeployer().getDeployedJar(jarName)).isNull();
     assertThatThrownBy(() -> ClassPathLoader.getLatest().forName(className))
         .isExactlyInstanceOf(ClassNotFoundException.class);
   }
-
 
   @Test
   public void testListDeployed() throws Exception {

@@ -64,8 +64,8 @@ import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.CacheFactory;
 import org.apache.geode.cache.Region;
 import org.apache.geode.cache.RegionShortcut;
+import org.apache.geode.distributed.internal.ClusterDistributionManager;
 import org.apache.geode.distributed.internal.DistributionException;
-import org.apache.geode.distributed.internal.DistributionManager;
 import org.apache.geode.distributed.internal.HighPriorityAckedMessage;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.distributed.internal.InternalLocator;
@@ -79,6 +79,7 @@ import org.apache.geode.distributed.internal.membership.gms.membership.GMSJoinLe
 import org.apache.geode.internal.Assert;
 import org.apache.geode.internal.AvailablePort;
 import org.apache.geode.internal.AvailablePortHelper;
+import org.apache.geode.internal.OSProcess;
 import org.apache.geode.internal.cache.GemFireCacheImpl;
 import org.apache.geode.internal.logging.InternalLogWriter;
 import org.apache.geode.internal.logging.LocalLogWriter;
@@ -197,7 +198,7 @@ public class LocatorDUnitTest extends JUnit4DistributedTestCase {
     addDSProps(properties);
     system = (InternalDistributedSystem) DistributedSystem.connect(properties);
     InternalDistributedMember mbr = system.getDistributedMember();
-    assertEquals("expected the VM to have NORMAL vmKind", DistributionManager.NORMAL_DM_TYPE,
+    assertEquals("expected the VM to have NORMAL vmKind", ClusterDistributionManager.NORMAL_DM_TYPE,
         system.getDistributedMember().getVmKind());
 
     properties.remove(START_LOCATOR);
@@ -830,8 +831,8 @@ public class LocatorDUnitTest extends JUnit4DistributedTestCase {
           vm1.invoke(() -> LocatorDUnitTest.isSystemConnected()));
 
       // ensure quorumLost is properly invoked
-      DistributionManager dm =
-          (DistributionManager) ((InternalDistributedSystem) sys).getDistributionManager();
+      ClusterDistributionManager dm =
+          (ClusterDistributionManager) ((InternalDistributedSystem) sys).getDistributionManager();
       MyMembershipListener listener = new MyMembershipListener();
       dm.addMembershipListener(listener);
       // ensure there is an unordered reader thread for the member
@@ -1869,7 +1870,7 @@ public class LocatorDUnitTest extends JUnit4DistributedTestCase {
         .until(() -> {
           try {
             InternalDistributedMember c = GMSJoinLeaveTestHelper.getCurrentCoordinator();
-            return c.getVmKind() == DistributionManager.LOCATOR_DM_TYPE;
+            return c.getVmKind() == ClusterDistributionManager.LOCATOR_DM_TYPE;
           } catch (Exception e) {
             e.printStackTrace();
             org.apache.geode.test.dunit.Assert.fail("unexpected exception", e);
@@ -2016,6 +2017,55 @@ public class LocatorDUnitTest extends JUnit4DistributedTestCase {
       });
 
     } finally {
+      locator.stop();
+    }
+
+  }
+
+  /**
+   * See GEODE-3588 - a locator is restarted twice with a server and ends up in a split-brain
+   */
+  @Test
+  public void testRestartLocatorMultipleTimes() throws Exception {
+    disconnectAllFromDS();
+    port1 = AvailablePort.getRandomAvailablePort(AvailablePort.SOCKET);
+    DistributedTestUtils.deleteLocatorStateFile(port1);
+    File logFile = new File("");
+    File stateFile = new File("locator" + port1 + "state.dat");
+    VM vm0 = Host.getHost(0).getVM(0);
+    final Properties p = new Properties();
+    p.setProperty(LOCATORS, Host.getHost(0).getHostName() + "[" + port1 + "]");
+    p.setProperty(MCAST_PORT, "0");
+    p.setProperty(ENABLE_CLUSTER_CONFIGURATION, "false");
+    p.setProperty(LOG_LEVEL, "finest");
+    addDSProps(p);
+    if (stateFile.exists()) {
+      stateFile.delete();
+    }
+
+    Locator locator = Locator.startLocatorAndDS(port1, logFile, p);
+
+    vm0.invoke(() -> {
+      DistributedSystem.connect(p);
+      return null;
+    });
+
+    try {
+      locator.stop();
+      locator = Locator.startLocatorAndDS(port1, logFile, p);
+      assertEquals(2, ((InternalDistributedSystem) locator.getDistributedSystem()).getDM()
+          .getViewMembers().size());
+
+      locator.stop();
+      locator = Locator.startLocatorAndDS(port1, logFile, p);
+      assertEquals(2, ((InternalDistributedSystem) locator.getDistributedSystem()).getDM()
+          .getViewMembers().size());
+
+    } finally {
+      vm0.invoke("disconnect", () -> {
+        DistributedSystem.connect(p).disconnect();
+        return null;
+      });
       locator.stop();
     }
 

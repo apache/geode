@@ -34,7 +34,7 @@ import org.apache.geode.compression.SnappyCompressor;
 import org.apache.geode.internal.cache.PartitionedRegion;
 import org.apache.geode.internal.cache.RegionEntryContext;
 import org.apache.geode.test.compiler.JarBuilder;
-import org.apache.geode.test.dunit.rules.LocatorServerStartupRule;
+import org.apache.geode.test.dunit.rules.ClusterStartupRule;
 import org.apache.geode.test.dunit.rules.MemberVM;
 import org.apache.geode.test.junit.categories.DistributedTest;
 import org.apache.geode.test.junit.rules.GfshCommandRule;
@@ -46,7 +46,7 @@ public class CreateRegionCommandDUnitTest {
   private static MemberVM locator, server;
 
   @ClassRule
-  public static LocatorServerStartupRule lsRule = new LocatorServerStartupRule();
+  public static ClusterStartupRule lsRule = new ClusterStartupRule();
 
   @ClassRule
   public static GfshCommandRule gfsh = new GfshCommandRule();
@@ -73,7 +73,7 @@ public class CreateRegionCommandDUnitTest {
         .statusIsSuccess();
 
     server.invoke(() -> {
-      Cache cache = LocatorServerStartupRule.getCache();
+      Cache cache = ClusterStartupRule.getCache();
       Region region = cache.getRegion(regionName);
       assertThat(region).isNotNull();
       assertThat(region.getAttributes().getCompressor())
@@ -89,7 +89,7 @@ public class CreateRegionCommandDUnitTest {
         .statusIsError();
 
     server.invoke(() -> {
-      Cache cache = LocatorServerStartupRule.getCache();
+      Cache cache = ClusterStartupRule.getCache();
       Region region = cache.getRegion(regionName);
       assertThat(region).isNull();
     });
@@ -102,7 +102,7 @@ public class CreateRegionCommandDUnitTest {
         .statusIsSuccess();
 
     server.invoke(() -> {
-      Cache cache = LocatorServerStartupRule.getCache();
+      Cache cache = ClusterStartupRule.getCache();
       Region region = cache.getRegion(regionName);
       assertThat(region).isNotNull();
       assertThat(region.getAttributes().getCompressor()).isNull();
@@ -128,7 +128,7 @@ public class CreateRegionCommandDUnitTest {
         .statusIsSuccess();
 
     server.invoke(() -> {
-      Cache cache = LocatorServerStartupRule.getCache();
+      Cache cache = ClusterStartupRule.getCache();
       PartitionedRegion region = (PartitionedRegion) cache.getRegion(regionName);
       PartitionResolver resolver = region.getPartitionAttributes().getPartitionResolver();
       assertThat(resolver).isNotNull();

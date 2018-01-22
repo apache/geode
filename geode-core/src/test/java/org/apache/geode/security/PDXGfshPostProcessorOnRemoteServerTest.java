@@ -35,7 +35,7 @@ import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.management.ManagementService;
 import org.apache.geode.management.internal.cli.i18n.CliStrings;
 import org.apache.geode.pdx.SimpleClass;
-import org.apache.geode.test.dunit.rules.LocatorServerStartupRule;
+import org.apache.geode.test.dunit.rules.ClusterStartupRule;
 import org.apache.geode.test.dunit.rules.MemberVM;
 import org.apache.geode.test.junit.categories.DistributedTest;
 import org.apache.geode.test.junit.categories.SecurityTest;
@@ -47,7 +47,7 @@ public class PDXGfshPostProcessorOnRemoteServerTest {
   private static final String REGION_NAME = "AuthRegion";
 
   @Rule
-  public LocatorServerStartupRule lsRule = new LocatorServerStartupRule();
+  public ClusterStartupRule lsRule = new ClusterStartupRule();
 
   @Rule
   public GfshCommandRule gfsh = new GfshCommandRule();
@@ -73,7 +73,7 @@ public class PDXGfshPostProcessorOnRemoteServerTest {
     MemberVM serverVM = lsRule.startServerVM(1, serverProps, locatorVM.getPort());
 
     serverVM.invoke(() -> {
-      InternalCache cache = LocatorServerStartupRule.getCache();
+      InternalCache cache = ClusterStartupRule.getCache();
       assertThat(cache.getSecurityService()).isNotNull();
       assertThat(cache.getSecurityService().getSecurityManager()).isNotNull();
       assertThat(cache.getSecurityService().getPostProcessor()).isNotNull();
@@ -106,8 +106,8 @@ public class PDXGfshPostProcessorOnRemoteServerTest {
     gfsh.executeAndAssertThat("query --query=\"select * from /AuthRegion\"").statusIsSuccess();
 
     serverVM.invoke(() -> {
-      PDXPostProcessor pp = (PDXPostProcessor) LocatorServerStartupRule.getCache()
-          .getSecurityService().getPostProcessor();
+      PDXPostProcessor pp =
+          (PDXPostProcessor) ClusterStartupRule.getCache().getSecurityService().getPostProcessor();
       // verify that the post processor is called 6 times. (5 for the query, 1 for the get)
       assertEquals(pp.getCount(), 6);
     });

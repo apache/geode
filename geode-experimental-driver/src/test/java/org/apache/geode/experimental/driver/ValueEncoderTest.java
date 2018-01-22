@@ -25,23 +25,21 @@ import org.apache.geode.test.junit.categories.UnitTest;
 
 @Category(UnitTest.class)
 public class ValueEncoderTest {
+  /** a JSON document */
+  private static final String jsonDocument =
+      "{" + System.lineSeparator() + "  \"name\" : \"Charlemagne\"," + System.lineSeparator()
+          + "  \"age\" : 1276," + System.lineSeparator() + "  \"nationality\" : \"french\","
+          + System.lineSeparator() + "  \"emailAddress\" : \"none\"" + System.lineSeparator() + "}";
+
   @Test
   public void encodeAndDecode() throws Exception {
-    final Object[] objects = {37, (short) 37, (byte) 37, 37L, 37., 37.F, true, "hello, world"};
+    final Object[] objects = {37, (short) 37, (byte) 37, 37L, 37., 37.F, true, "hello, world",
+        JSONWrapper.wrapJSON(jsonDocument)};
     for (Object object : objects) {
       assertEquals(object, ValueEncoder.decodeValue(ValueEncoder.encodeValue(object)));
     }
 
     final byte[] bytes = new byte[] {(byte) 0xDE, (byte) 0xAD, (byte) 0xBE, (byte) 0xEF};
     assertArrayEquals(bytes, (byte[]) ValueEncoder.decodeValue(ValueEncoder.encodeValue(bytes)));
-  }
-
-  @Test(expected = IllegalStateException.class)
-  public void cantDecodeJson() throws Exception {
-    BasicTypes.EncodedValue.Builder builder = BasicTypes.EncodedValue.newBuilder();
-
-    builder.setJsonObjectResult("hello").build();
-
-    ValueEncoder.decodeValue(builder.build());
   }
 }

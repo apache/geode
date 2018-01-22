@@ -14,7 +14,8 @@
  */
 package org.apache.geode.distributed.internal.membership.gms.messenger;
 
-import static org.mockito.Mockito.*;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
 import java.math.BigInteger;
 import java.security.Key;
@@ -25,8 +26,6 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Properties;
 import java.util.concurrent.CountDownLatch;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
 
 import javax.crypto.KeyAgreement;
 import javax.crypto.Mac;
@@ -34,12 +33,13 @@ import javax.crypto.SecretKey;
 import javax.crypto.spec.DHParameterSpec;
 
 import org.junit.Assert;
+import org.junit.Rule;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
 import org.apache.geode.distributed.ConfigurationProperties;
+import org.apache.geode.distributed.internal.ClusterDistributionManager;
 import org.apache.geode.distributed.internal.DistributionConfigImpl;
-import org.apache.geode.distributed.internal.DistributionManager;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
 import org.apache.geode.distributed.internal.membership.NetView;
 import org.apache.geode.distributed.internal.membership.gms.ServiceConfig;
@@ -47,15 +47,22 @@ import org.apache.geode.distributed.internal.membership.gms.Services;
 import org.apache.geode.internal.admin.remote.RemoteTransportConfig;
 import org.apache.geode.test.junit.categories.IntegrationTest;
 import org.apache.geode.test.junit.categories.MembershipTest;
+import org.apache.geode.test.junit.rules.ExecutorServiceRule;
 
 @Category({IntegrationTest.class, MembershipTest.class})
 public class GMSEncryptJUnitTest {
+
+  private static final int THREAD_COUNT = 20;
 
   Services services;
 
   InternalDistributedMember mockMembers[];
 
   NetView netView;
+
+  @Rule
+  public ExecutorServiceRule executorServiceRule =
+      ExecutorServiceRule.builder().threadCount(THREAD_COUNT).build();
 
   private void initMocks() throws Exception {
     initMocks("AES:128");
@@ -66,7 +73,7 @@ public class GMSEncryptJUnitTest {
     nonDefault.put(ConfigurationProperties.SECURITY_UDP_DHALGO, algo);
     DistributionConfigImpl config = new DistributionConfigImpl(nonDefault);
     RemoteTransportConfig tconfig =
-        new RemoteTransportConfig(config, DistributionManager.NORMAL_DM_TYPE);
+        new RemoteTransportConfig(config, ClusterDistributionManager.NORMAL_DM_TYPE);
 
     ServiceConfig serviceConfig = new ServiceConfig(tconfig, config);
 
@@ -148,12 +155,10 @@ public class GMSEncryptJUnitTest {
 
     gmsEncrypt1.installView(netView, mockMembers[1]);
     gmsEncrypt2.installView(netView, mockMembers[2]);
-    int nthreads = 20;
-    ExecutorService executorService = Executors.newFixedThreadPool(nthreads);
-    final CountDownLatch countDownLatch = new CountDownLatch(nthreads);
+    final CountDownLatch countDownLatch = new CountDownLatch(THREAD_COUNT);
 
-    for (int j = 0; j < nthreads; j++)
-      executorService.execute(new Runnable() {
+    for (int j = 0; j < THREAD_COUNT; j++)
+      executorServiceRule.execute(new Runnable() {
         public void run() {
           // sender encrypts a message, so use receiver's public key
           try {
@@ -196,9 +201,6 @@ public class GMSEncryptJUnitTest {
       });
 
     countDownLatch.await();
-    executorService.shutdown();
-
-
   }
 
   @Test
@@ -339,12 +341,10 @@ public class GMSEncryptJUnitTest {
     gmsEncrypt2.installView(netView, mockMembers[1]);
 
     final int runs = 100000;
-    int nthreads = 20;
-    ExecutorService executorService = Executors.newFixedThreadPool(nthreads);
-    final CountDownLatch countDownLatch = new CountDownLatch(nthreads);
+    final CountDownLatch countDownLatch = new CountDownLatch(THREAD_COUNT);
 
-    for (int j = 0; j < nthreads; j++)
-      executorService.execute(new Runnable() {
+    for (int j = 0; j < THREAD_COUNT; j++)
+      executorServiceRule.execute(new Runnable() {
         public void run() {
           // sender encrypts a message, so use receiver's public key
           try {
@@ -388,7 +388,6 @@ public class GMSEncryptJUnitTest {
       });
 
     countDownLatch.await();
-    executorService.shutdown();
   }
 
 

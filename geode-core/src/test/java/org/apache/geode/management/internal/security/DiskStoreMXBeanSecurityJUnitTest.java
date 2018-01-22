@@ -47,7 +47,7 @@ public class DiskStoreMXBeanSecurityJUnitTest {
   @Before
   public void setUp() throws Exception {
     server.getCache().createDiskStoreFactory().create("diskstore");
-    bean = connectionRule.getProxyMBean(DiskStoreMXBean.class);
+    bean = connectionRule.getProxyMXBean(DiskStoreMXBean.class);
   }
 
   @Test

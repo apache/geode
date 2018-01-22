@@ -14,6 +14,8 @@
  */
 package org.apache.geode.management.internal.cli.functions;
 
+import java.util.Collection;
+import java.util.Collections;
 import java.util.Set;
 
 import org.apache.commons.lang.StringUtils;
@@ -49,6 +51,8 @@ import org.apache.geode.management.internal.cli.commands.RegionCommandsUtils;
 import org.apache.geode.management.internal.cli.i18n.CliStrings;
 import org.apache.geode.management.internal.cli.util.RegionPath;
 import org.apache.geode.management.internal.configuration.domain.XmlEntity;
+import org.apache.geode.management.internal.security.ResourcePermissions;
+import org.apache.geode.security.ResourcePermission;
 
 /**
  *
@@ -119,6 +123,11 @@ public class RegionCreateFunction implements Function, InternalEntity {
       }
       resultSender.lastResult(handleException(memberNameOrId, exceptionMsg, e));
     }
+  }
+
+  @Override
+  public Collection<ResourcePermission> getRequiredPermissions(String regionName) {
+    return Collections.singletonList(ResourcePermissions.DATA_MANAGE);
   }
 
   private CliFunctionResult handleException(final String memberNameOrId, final String exceptionMsg,

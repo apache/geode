@@ -172,18 +172,17 @@ public class XmlEntity implements VersionedDataSerializable {
     initializeSearchString(parentKey, parentValue, childPrefix, childKey, childValue);
   }
 
-  public XmlEntity(final String parentType, final String childPrefix, final String childNamespace,
-      final String childType) {
-    this(createDefaultCacheProvider(), parentType, childPrefix, childNamespace, childType);
-  }
-
   public XmlEntity(final CacheProvider cacheProvider, final String parentType,
-      final String childPrefix, final String childNamespace, final String childType) {
+      final String childPrefix, final String childNamespace, final String childType,
+      final String key, final String value) {
     this.cacheProvider = cacheProvider;
     this.parentType = parentType;
     this.type = childType;
+    this.prefix = childPrefix;
+    this.namespace = childNamespace;
     this.childPrefix = childPrefix;
     this.childNamespace = childNamespace;
+    this.attributes.put(key, value);
 
     StringBuilder sb = new StringBuilder();
     sb.append("//").append(this.parentType);

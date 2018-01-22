@@ -66,7 +66,7 @@ import org.apache.geode.cache.control.RebalanceOperation;
 import org.apache.geode.cache.control.RebalanceResults;
 import org.apache.geode.cache.persistence.PartitionOfflineException;
 import org.apache.geode.distributed.DistributedMember;
-import org.apache.geode.distributed.internal.DistributionManager;
+import org.apache.geode.distributed.internal.ClusterDistributionManager;
 import org.apache.geode.distributed.internal.DistributionMessage;
 import org.apache.geode.distributed.internal.DistributionMessageObserver;
 import org.apache.geode.distributed.internal.ReplyMessage;
@@ -457,7 +457,7 @@ public class BackupDistributedTest extends PersistentPartitionedRegionTestBase {
       private volatile int replyId = -0xBAD;
 
       @Override
-      public void beforeSendMessage(DistributionManager dm, DistributionMessage message) {
+      public void beforeSendMessage(ClusterDistributionManager dm, DistributionMessage message) {
         // the bucket move will send a destroy region message.
         if (message instanceof DestroyRegionMessage && !done) {
           this.replyId = message.getProcessorId();
@@ -465,7 +465,7 @@ public class BackupDistributedTest extends PersistentPartitionedRegionTestBase {
       }
 
       @Override
-      public void beforeProcessMessage(DistributionManager dm, DistributionMessage message) {
+      public void beforeProcessMessage(ClusterDistributionManager dm, DistributionMessage message) {
         if (message instanceof ReplyMessage && replyId != -0xBAD
             && replyId == message.getProcessorId() && !done && count.incrementAndGet() == 2) {
           task.run();
@@ -481,7 +481,7 @@ public class BackupDistributedTest extends PersistentPartitionedRegionTestBase {
       private volatile boolean done;
 
       @Override
-      public void beforeSendMessage(DistributionManager dm, DistributionMessage message) {
+      public void beforeSendMessage(ClusterDistributionManager dm, DistributionMessage message) {
         // the bucket move will send a destroy region message.
         if (message instanceof DestroyRegionMessage && !done) {
           task.run();
@@ -505,7 +505,7 @@ public class BackupDistributedTest extends PersistentPartitionedRegionTestBase {
       final String exceptionMessage) {
     return new DistributionMessageObserver() {
       @Override
-      public void beforeProcessMessage(DistributionManager dm, DistributionMessage message) {
+      public void beforeProcessMessage(ClusterDistributionManager dm, DistributionMessage message) {
         if (message instanceof PrepareBackupRequest) {
           DistributionMessageObserver.setInstance(null);
           IOException exception = new IOException(exceptionMessage);

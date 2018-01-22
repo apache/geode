@@ -17,6 +17,7 @@ package org.apache.geode.internal.cache;
 import java.io.IOException;
 
 import org.apache.geode.CancelCriterion;
+import org.apache.geode.Statistics;
 import org.apache.geode.cache.CacheWriterException;
 import org.apache.geode.cache.EntryNotFoundException;
 import org.apache.geode.cache.Region;
@@ -25,7 +26,7 @@ import org.apache.geode.cache.RegionExistsException;
 import org.apache.geode.cache.TimeoutException;
 import org.apache.geode.cache.client.internal.ServerRegionProxy;
 import org.apache.geode.cache.query.internal.index.IndexManager;
-import org.apache.geode.distributed.internal.DM;
+import org.apache.geode.distributed.internal.DistributionManager;
 import org.apache.geode.internal.cache.versions.RegionVersionVector;
 import org.apache.geode.internal.cache.versions.VersionSource;
 import org.apache.geode.internal.cache.versions.VersionTag;
@@ -84,7 +85,7 @@ public interface InternalRegion<K, V>
 
   void addExpiryTaskIfAbsent(RegionEntry entry);
 
-  DM getDistributionManager();
+  DistributionManager getDistributionManager();
 
   void generateAndSetVersionTag(InternalCacheEvent event, RegionEntry entry);
 
@@ -96,8 +97,6 @@ public interface InternalRegion<K, V>
   boolean isProxy();
 
   IndexManager getIndexManager();
-
-  boolean isConcurrencyChecksEnabled();
 
   boolean isThisRegionBeingClosedOrDestroyed();
 
@@ -118,12 +117,26 @@ public interface InternalRegion<K, V>
   void invokeInvalidateCallbacks(final EnumListenerEvent eventType, final EntryEventImpl event,
       final boolean callDispatchListenerEvent);
 
-  long getEvictions();
+  long getTotalEvictions();
 
   Region createSubregion(String subregionName, RegionAttributes attrs,
       InternalRegionArguments internalRegionArgs)
       throws RegionExistsException, TimeoutException, IOException, ClassNotFoundException;
 
   void addCacheServiceProfile(CacheServiceProfile profile);
+
+  InternalCache getCache();
+
+  void setEvictionMaximum(int maximum);
+
+  /**
+   * Returns null if the region is not configured for eviction otherwise returns the Statistics used
+   * to measure eviction activity.
+   */
+  Statistics getEvictionStatistics();
+
+  long getEvictionCounter();
+
+  RegionMap getRegionMap();
 
 }

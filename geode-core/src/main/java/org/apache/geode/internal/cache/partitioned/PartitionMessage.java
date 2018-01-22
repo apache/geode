@@ -35,7 +35,7 @@ import org.apache.geode.cache.RegionDestroyedException;
 import org.apache.geode.cache.query.QueryException;
 import org.apache.geode.cache.query.RegionNotFoundException;
 import org.apache.geode.distributed.DistributedSystemDisconnectedException;
-import org.apache.geode.distributed.internal.DM;
+import org.apache.geode.distributed.internal.ClusterDistributionManager;
 import org.apache.geode.distributed.internal.DirectReplyProcessor;
 import org.apache.geode.distributed.internal.DistributionManager;
 import org.apache.geode.distributed.internal.DistributionMessage;
@@ -211,9 +211,9 @@ public abstract class PartitionMessage extends DistributionMessage
   @Override
   public int getProcessorType() {
     if (this.notificationOnly) {
-      return DistributionManager.SERIAL_EXECUTOR;
+      return ClusterDistributionManager.SERIAL_EXECUTOR;
     } else {
-      return DistributionManager.PARTITIONED_REGION_EXECUTOR;
+      return ClusterDistributionManager.PARTITIONED_REGION_EXECUTOR;
     }
   }
 
@@ -253,7 +253,7 @@ public abstract class PartitionMessage extends DistributionMessage
   /**
    * check to see if the cache is closing
    */
-  public boolean checkCacheClosing(DistributionManager dm) {
+  public boolean checkCacheClosing(ClusterDistributionManager dm) {
     InternalCache cache = getInternalCache();
     // return (cache != null && cache.isClosed());
     return cache == null || cache.isClosed();
@@ -264,7 +264,7 @@ public abstract class PartitionMessage extends DistributionMessage
    *
    * @return true if the distributed system is closing
    */
-  public boolean checkDSClosing(DistributionManager dm) {
+  public boolean checkDSClosing(ClusterDistributionManager dm) {
     InternalDistributedSystem ds = dm.getSystem();
     return (ds == null || ds.isDisconnecting());
   }
@@ -295,16 +295,23 @@ public abstract class PartitionMessage extends DistributionMessage
    *         destroyed)
    */
   @Override
-  public void process(final DistributionManager dm) {
+  public void process(final ClusterDistributionManager dm) {
     Throwable thr = null;
     boolean sendReply = true;
     PartitionedRegion pr = null;
     long startTime = 0;
     EntryLogger.setSource(getSender(), "PR");
     try {
+      InternalCache cache = dm.getCache();
       if (checkCacheClosing(dm) || checkDSClosing(dm)) {
-        thr = new CacheClosedException(LocalizedStrings.PartitionMessage_REMOTE_CACHE_IS_CLOSED_0
-            .toLocalizedString(dm.getId()));
+        if (cache != null) {
+          thr = cache
+              .getCacheClosedException(LocalizedStrings.PartitionMessage_REMOTE_CACHE_IS_CLOSED_0
+                  .toLocalizedString(dm.getId()));
+        } else {
+          thr = new CacheClosedException(LocalizedStrings.PartitionMessage_REMOTE_CACHE_IS_CLOSED_0
+              .toLocalizedString(dm.getId()));
+        }
         return;
       }
       pr = getPartitionedRegion();
@@ -322,7 +329,6 @@ public abstract class PartitionMessage extends DistributionMessage
       }
       thr = UNHANDLED_EXCEPTION;
 
-      InternalCache cache = getInternalCache();
       if (cache == null) {
         throw new ForceReattemptException(
             LocalizedStrings.PartitionMessage_REMOTE_CACHE_IS_CLOSED_0.toLocalizedString());
@@ -426,8 +432,8 @@ public abstract class PartitionMessage extends DistributionMessage
    * @param startTime the start time of the operation in nanoseconds
    * @see PutMessage#sendReply
    */
-  protected void sendReply(InternalDistributedMember member, int procId, DM dm, ReplyException ex,
-      PartitionedRegion pr, long startTime) {
+  protected void sendReply(InternalDistributedMember member, int procId, DistributionManager dm,
+      ReplyException ex, PartitionedRegion pr, long startTime) {
     if (pr != null && startTime > 0) {
       pr.getPrStats().endPartitionMessagesProcessing(startTime);
     }
@@ -486,7 +492,7 @@ public abstract class PartitionMessage extends DistributionMessage
   }
 
 
-  protected boolean operateOnRegion(DistributionManager dm, PartitionedRegion pr) {
+  protected boolean operateOnRegion(ClusterDistributionManager dm, PartitionedRegion pr) {
     throw new InternalGemFireError(
         LocalizedStrings.PartitionMessage_SORRY_USE_OPERATEONPARTITIONEDREGION_FOR_PR_MESSAGES
             .toLocalizedString());
@@ -502,7 +508,7 @@ public abstract class PartitionMessage extends DistributionMessage
    * @throws CacheException if an error is generated in the remote cache
    * @throws DataLocationException if the peer is no longer available
    */
-  protected abstract boolean operateOnPartitionedRegion(DistributionManager dm,
+  protected abstract boolean operateOnPartitionedRegion(ClusterDistributionManager dm,
       PartitionedRegion pr, long startTime) throws CacheException, QueryException,
       DataLocationException, InterruptedException, IOException;
 
@@ -683,7 +689,7 @@ public abstract class PartitionMessage extends DistributionMessage
     return true;
   }
 
-  protected boolean _mayAddToMultipleSerialGateways(DistributionManager dm) {
+  protected boolean _mayAddToMultipleSerialGateways(ClusterDistributionManager dm) {
     try {
       PartitionedRegion pr = PartitionedRegion.getPRFromId(this.regionId);
       if (pr == null) {

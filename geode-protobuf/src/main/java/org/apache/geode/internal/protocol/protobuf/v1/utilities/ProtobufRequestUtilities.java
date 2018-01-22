@@ -110,9 +110,8 @@ public abstract class ProtobufRequestUtilities {
     return ClientProtocol.Request.newBuilder().setPutAllRequest(putAllRequestBuilder).build();
   }
 
-  public static LocatorAPI.GetAvailableServersRequest createGetAvailableServersRequest() {
-    LocatorAPI.GetAvailableServersRequest.Builder builder =
-        LocatorAPI.GetAvailableServersRequest.newBuilder();
+  public static LocatorAPI.GetServerRequest createGetServerRequest() {
+    LocatorAPI.GetServerRequest.Builder builder = LocatorAPI.GetServerRequest.newBuilder();
     return builder.build();
   }
 }

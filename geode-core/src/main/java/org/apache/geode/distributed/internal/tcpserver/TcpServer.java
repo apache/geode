@@ -96,18 +96,13 @@ public class TcpServer {
    * version number
    */
   public static final int GOSSIPVERSION = 1002;
-  public static final int NON_GOSSIP_REQUEST_VERSION = 0;
+
   // Don't change it ever. We did NOT send GemFire version in a Gossip request till 1001 version.
   // This GOSSIPVERSION is used in _getVersionForAddress request for getting GemFire version of a
   // GossipServer.
   public static final int OLDGOSSIPVERSION = 1001;
 
-  private static/* GemStoneAddition */ final Map GOSSIP_TO_GEMFIRE_VERSION_MAP = new HashMap();
-
-  /**
-   * For the new client-server protocol, which ignores the usual handshake mechanism.
-   */
-  public static final byte PROTOBUF_CLIENT_SERVER_PROTOCOL = (byte) 110;
+  private static final Map GOSSIP_TO_GEMFIRE_VERSION_MAP = new HashMap();
 
   // For test purpose only
   public static boolean isTesting = false;
@@ -122,7 +117,7 @@ public class TcpServer {
 
   private static final Logger log = LogService.getLogger();
 
-  protected/* GemStoneAddition */ final/* GemStoneAddition */ static int READ_TIMEOUT =
+  protected static final int READ_TIMEOUT =
       Integer.getInteger(DistributionConfig.GEMFIRE_PREFIX + "TcpServer.READ_TIMEOUT", 60 * 1000);
   // This is for backwards compatibility. The p2p.backlog flag used to be the only way to configure
   // the locator backlog.
@@ -130,11 +125,10 @@ public class TcpServer {
   private static final int BACKLOG =
       Integer.getInteger(DistributionConfig.GEMFIRE_PREFIX + "TcpServer.BACKLOG", P2P_BACKLOG);
 
-  private final int port;
-  private int serverSocketPortAtClose;
+  private int port;
   private ServerSocket srv_sock = null;
   private InetAddress bind_address;
-  private volatile boolean shuttingDown = false; // GemStoneAddition
+  private volatile boolean shuttingDown = false;
   private final PoolStatHelper poolHelper;
   private final InternalLocator internalLocator;
   private final TcpHandler handler;
@@ -149,22 +143,13 @@ public class TcpServer {
   protected SocketCreator socketCreator;
 
   /*
-   * GemStoneAddition - Initialize versions map. Warning: This map must be compatible with all
-   * GemFire versions being handled by this member "With different GOSSIPVERION". If GOSSIPVERIONS
-   * are same for then current GOSSIPVERSION should be used.
-   *
-   * @since GemFire 7.1
+   * Initialize versions map. Warning: This map must be compatible with all GemFire versions being
+   * handled by this member "With different GOSSIPVERION". If GOSSIPVERIONS are same for then
+   * current GOSSIPVERSION should be used.
    */
   static {
     GOSSIP_TO_GEMFIRE_VERSION_MAP.put(GOSSIPVERSION, Version.GFE_71.ordinal());
     GOSSIP_TO_GEMFIRE_VERSION_MAP.put(OLDGOSSIPVERSION, Version.GFE_57.ordinal());
-  }
-
-  /**
-   * returns the message handler used for client/locator communications processing
-   */
-  public ClientProtocolServiceLoader getClientProtocolServiceLoader() {
-    return clientProtocolServiceLoader;
   }
 
   public TcpServer(int port, InetAddress bind_address, Properties sslConfig,
@@ -237,6 +222,20 @@ public class TcpServer {
   }
 
   private void startServerThread() throws IOException {
+    initializeServerSocket();
+    if (serverThread == null || !serverThread.isAlive()) {
+      serverThread = new Thread(threadGroup, threadName) {
+        @Override
+        public void run() {
+          TcpServer.this.run();
+        }
+      };
+      serverThread.setDaemon(true);
+      serverThread.start();
+    }
+  }
+
+  private void initializeServerSocket() throws IOException {
     if (srv_sock == null || srv_sock.isClosed()) {
       if (bind_address == null) {
         srv_sock = getSocketCreator().createServerSocket(port, BACKLOG);
@@ -244,22 +243,16 @@ public class TcpServer {
       } else {
         srv_sock = getSocketCreator().createServerSocket(port, BACKLOG, bind_address);
       }
+      // GEODE-4176 - set the port from a wild-card bind so that handlers know the correct value
+      if (this.port <= 0) {
+        this.port = srv_sock.getLocalPort();
+      }
 
       if (log.isInfoEnabled()) {
         log.info("Locator was created at " + new Date());
         log.info("Listening on port " + getPort() + " bound on address " + bind_address);
       }
-      srv_sock.setReuseAddress(true); // GemStoneAddition
-    }
-    if (serverThread == null || !serverThread.isAlive()) {
-      serverThread = new Thread(threadGroup, threadName) {
-        @Override // GemStoneAddition
-        public void run() {
-          TcpServer.this.run();
-        }
-      };
-      serverThread.setDaemon(true);
-      serverThread.start();
+      srv_sock.setReuseAddress(true);
     }
   }
 
@@ -291,13 +284,10 @@ public class TcpServer {
    * Returns the value of the bound port. If the server was initialized with a port of 0 indicating
    * that any ephemeral port should be used, this method will return the actual bound port.
    *
-   * @return the locator's tcp/ip port. This will be zero if the locator hasn't been started.
+   * @return the locator's tcp/ip port. This will be zero if the TcpServer hasn't been started.
    */
   public int getPort() {
-    if (srv_sock != null && !srv_sock.isClosed()) {
-      return srv_sock.getLocalPort();
-    }
-    return serverSocketPortAtClose;
+    return port;
   }
 
   protected void run() {
@@ -308,10 +298,15 @@ public class TcpServer {
         // Allocate no objects here!
         try {
           srv_sock.close();
+          return;
         } catch (IOException ignore) {
           // ignore
         }
         SystemFailure.checkFailure(); // throws
+      }
+      if (srv_sock.isClosed()) {
+        shuttingDown = true;
+        break;
       }
       try {
         try {
@@ -325,7 +320,6 @@ public class TcpServer {
           continue;
         }
         processRequest(sock);
-        // looping=false; GemStoneAddition change
       } catch (Exception ex) {
         if (!shuttingDown) {
           log.error("exception=", ex);
@@ -334,11 +328,12 @@ public class TcpServer {
       }
     }
 
-    try {
-      srv_sock.close();
-
-    } catch (java.io.IOException ex) {
-      log.warn("exception closing server socket during shutdown", ex);
+    if (!srv_sock.isClosed()) {
+      try {
+        srv_sock.close();
+      } catch (java.io.IOException ex) {
+        log.warn("exception closing server socket during shutdown", ex);
+      }
     }
 
     if (shuttingDown) {
@@ -482,7 +477,6 @@ public class TcpServer {
         shuttingDown = true;
         // Don't call shutdown from within the worker thread, see java bug #6576792.
         // Closing the socket will cause our acceptor thread to shutdown the executor
-        this.serverSocketPortAtClose = srv_sock.getLocalPort();
         srv_sock.close();
         response = new ShutdownResponse();
       } else if (request instanceof InfoRequest) {
@@ -534,9 +528,11 @@ public class TcpServer {
       ClientProtocolService clientProtocolService = clientProtocolServiceLoader.lookupService();
       clientProtocolService.initializeStatistics("LocatorStats",
           internalLocator.getDistributedSystem());
-      try (ClientProtocolProcessor pipeline =
-          clientProtocolService.createProcessorForLocator(internalLocator)) {
-        pipeline.processMessage(input, socket.getOutputStream());
+      try (ClientProtocolProcessor pipeline = clientProtocolService.createProcessorForLocator(
+          internalLocator, internalLocator.getCache().getSecurityService())) {
+        while (!pipeline.socketProcessingIsFinished()) {
+          pipeline.processMessage(input, socket.getOutputStream());
+        }
       } catch (IncompatibleVersionException e) {
         // should not happen on the locator as there is no handshake.
         log.error("Unexpected exception in client message processing", e);
@@ -574,34 +570,6 @@ public class TcpServer {
     VersionResponse response = new VersionResponse();
     response.setVersionOrdinal(Version.CURRENT_ORDINAL);
     return response;
-  }
-
-  /**
-   * Returns GossipVersion for older Gemfire versions.
-   *
-   * @return gossip version
-   */
-  public static int getGossipVersionForOrdinal(short ordinal) {
-
-    // Sanity check
-    short closest = -1;
-    int closestGV = getCurrentGossipVersion();
-
-    if (ordinal < Version.CURRENT_ORDINAL) {
-      Iterator<Map.Entry> itr = TcpServer.GOSSIP_TO_GEMFIRE_VERSION_MAP.entrySet().iterator();
-      while (itr.hasNext()) {
-        Map.Entry entry = itr.next();
-        short o = (Short) entry.getValue();
-        if (o == ordinal) {
-          return (Integer) entry.getKey();
-        } else if (o < ordinal && o > closest) {
-          closest = o;
-          closestGV = (Integer) entry.getKey();
-        }
-      }
-    }
-
-    return closestGV;
   }
 
   public static int getCurrentGossipVersion() {

@@ -41,7 +41,7 @@ public class JdbcConnectorServiceTest {
   private ConnectionConfiguration configToAlter;
   private RegionMapping mapping;
 
-  private JdbcConnectorService service;
+  private JdbcConnectorServiceImpl service;
 
   @Before
   public void setUp() throws Exception {
@@ -60,7 +60,7 @@ public class JdbcConnectorServiceTest {
     when(config2.getName()).thenReturn(TEST_CONFIG_NAME);
     when(mapping.getRegionName()).thenReturn(TEST_REGION_NAME);
 
-    service = new JdbcConnectorService();
+    service = new JdbcConnectorServiceImpl();
     service.init(cache);
   }
 

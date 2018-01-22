@@ -51,7 +51,7 @@ import org.apache.geode.internal.cache.wan.parallel.ParallelGatewaySenderQueue;
 import org.apache.geode.test.dunit.IgnoredException;
 import org.apache.geode.test.dunit.SerializableCallableIF;
 import org.apache.geode.test.dunit.VM;
-import org.apache.geode.test.dunit.rules.LocatorServerStartupRule;
+import org.apache.geode.test.dunit.rules.ClusterStartupRule;
 
 public class WANCommandUtils implements Serializable {
 
@@ -61,7 +61,7 @@ public class WANCommandUtils implements Serializable {
     File persistentDirectory =
         new File(dsName + "_disk_" + System.currentTimeMillis() + "_" + VM.getCurrentVMNum());
     persistentDirectory.mkdir();
-    Cache cache = LocatorServerStartupRule.getCache();
+    Cache cache = ClusterStartupRule.getCache();
     DiskStoreFactory dsf = cache.createDiskStoreFactory();
     File[] dirs1 = new File[] {persistentDirectory};
     if (isParallel) {
@@ -106,7 +106,7 @@ public class WANCommandUtils implements Serializable {
   public static void startSender(String senderId) {
     final IgnoredException exln = IgnoredException.addIgnoredException("Could not connect");
     try {
-      Cache cache = LocatorServerStartupRule.getCache();
+      Cache cache = ClusterStartupRule.getCache();
       Set<GatewaySender> senders = cache.getGatewaySenders();
       AbstractGatewaySender sender = (AbstractGatewaySender) senders.stream()
           .filter(s -> s.getId().equalsIgnoreCase(senderId)).findFirst().orElse(null);
@@ -119,7 +119,7 @@ public class WANCommandUtils implements Serializable {
   public static void pauseSender(String senderId) {
     final IgnoredException exln = IgnoredException.addIgnoredException("Could not connect");
     try {
-      Cache cache = LocatorServerStartupRule.getCache();
+      Cache cache = ClusterStartupRule.getCache();
       Set<GatewaySender> senders = cache.getGatewaySenders();
       AbstractGatewaySender sender = (AbstractGatewaySender) senders.stream()
           .filter(s -> s.getId().equalsIgnoreCase(senderId)).findFirst().orElse(null);
@@ -130,7 +130,7 @@ public class WANCommandUtils implements Serializable {
   }
 
   public static void verifySenderState(String senderId, boolean isRunning, boolean isPaused) {
-    GatewaySender sender = LocatorServerStartupRule.getCache().getGatewaySenders().stream()
+    GatewaySender sender = ClusterStartupRule.getCache().getGatewaySenders().stream()
         .filter(x -> senderId.equals(x.getId())).findFirst().orElse(null);
     assertThat(sender.isRunning()).isEqualTo(isRunning);
     assertThat(sender.isPaused()).isEqualTo(isPaused);
@@ -143,7 +143,7 @@ public class WANCommandUtils implements Serializable {
       int dispatcherThreads, GatewaySender.OrderPolicy orderPolicy,
       List<String> expectedGatewayEventFilters, List<String> expectedGatewayTransportFilters) {
 
-    GatewaySender sender = LocatorServerStartupRule.getCache().getGatewaySenders().stream()
+    GatewaySender sender = ClusterStartupRule.getCache().getGatewaySenders().stream()
         .filter(x -> senderId.equals(x.getId())).findFirst().orElse(null);
 
     assertEquals("remoteDistributedSystemId", remoteDsID, sender.getRemoteDSId());
@@ -204,7 +204,7 @@ public class WANCommandUtils implements Serializable {
   }
 
   public static void verifySenderDoesNotExist(String senderId, boolean isParallel) {
-    Cache cache = LocatorServerStartupRule.getCache();
+    Cache cache = ClusterStartupRule.getCache();
     Set<GatewaySender> senders = cache.getGatewaySenders();
     Set<String> senderIds = senders.stream().map(AbstractGatewaySender.class::cast)
         .map(AbstractGatewaySender::getId).collect(Collectors.toSet());
@@ -223,7 +223,7 @@ public class WANCommandUtils implements Serializable {
 
   public static void startReceiver() {
     try {
-      Cache cache = LocatorServerStartupRule.getCache();
+      Cache cache = ClusterStartupRule.getCache();
       Set<GatewayReceiver> receivers = cache.getGatewayReceivers();
       for (GatewayReceiver receiver : receivers) {
         receiver.start();
@@ -236,7 +236,7 @@ public class WANCommandUtils implements Serializable {
   }
 
   public static void stopReceiver() {
-    Cache cache = LocatorServerStartupRule.getCache();
+    Cache cache = ClusterStartupRule.getCache();
     Set<GatewayReceiver> receivers = cache.getGatewayReceivers();
     for (GatewayReceiver receiver : receivers) {
       receiver.stop();
@@ -249,7 +249,7 @@ public class WANCommandUtils implements Serializable {
   }
 
   public static void createReceiver(int locPort) {
-    Cache cache = LocatorServerStartupRule.getCache();
+    Cache cache = ClusterStartupRule.getCache();
     GatewayReceiverFactory fact = cache.createGatewayReceiverFactory();
     fact.setStartPort(AvailablePort.AVAILABLE_PORTS_LOWER_BOUND);
     fact.setEndPort(AvailablePort.AVAILABLE_PORTS_UPPER_BOUND);
@@ -258,7 +258,7 @@ public class WANCommandUtils implements Serializable {
   }
 
   public static void verifyReceiverState(boolean isRunning) {
-    Set<GatewayReceiver> receivers = LocatorServerStartupRule.getCache().getGatewayReceivers();
+    Set<GatewayReceiver> receivers = ClusterStartupRule.getCache().getGatewayReceivers();
     for (GatewayReceiver receiver : receivers) {
       assertEquals(isRunning, receiver.isRunning());
     }
@@ -277,8 +277,7 @@ public class WANCommandUtils implements Serializable {
   }
 
   public static void verifyGatewayReceiverProfile(String expected) {
-    Set<GatewayReceiver> receivers =
-        ((Cache) LocatorServerStartupRule.getCache()).getGatewayReceivers();
+    Set<GatewayReceiver> receivers = ((Cache) ClusterStartupRule.getCache()).getGatewayReceivers();
     for (GatewayReceiver receiver : receivers) {
       CacheServerImpl server = (CacheServerImpl) receiver.getServer();
       CacheServerAdvisor.CacheServerProfile profile =
@@ -291,8 +290,7 @@ public class WANCommandUtils implements Serializable {
       int endPort, String bindAddress, int maxTimeBetweenPings, int socketBufferSize,
       List<String> expectedGatewayTransportFilters, String hostnameForSenders) {
 
-    Set<GatewayReceiver> receivers =
-        ((Cache) LocatorServerStartupRule.getCache()).getGatewayReceivers();
+    Set<GatewayReceiver> receivers = ((Cache) ClusterStartupRule.getCache()).getGatewayReceivers();
     assertEquals("Number of receivers is incorrect", 1, receivers.size());
     for (GatewayReceiver receiver : receivers) {
       assertEquals("isRunning", isRunning, receiver.isRunning());
@@ -327,6 +325,6 @@ public class WANCommandUtils implements Serializable {
   }
 
   public static SerializableCallableIF<DistributedMember> getMemberIdCallable() {
-    return () -> LocatorServerStartupRule.getCache().getDistributedSystem().getDistributedMember();
+    return () -> ClusterStartupRule.getCache().getDistributedSystem().getDistributedMember();
   }
 }

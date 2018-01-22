@@ -49,8 +49,8 @@ import org.apache.geode.distributed.DistributedLockService;
 import org.apache.geode.distributed.DistributedSystemDisconnectedException;
 import org.apache.geode.distributed.LockNotHeldException;
 import org.apache.geode.distributed.LockServiceDestroyedException;
-import org.apache.geode.distributed.internal.DM;
 import org.apache.geode.distributed.internal.DistributionConfig;
+import org.apache.geode.distributed.internal.DistributionManager;
 import org.apache.geode.distributed.internal.MembershipListener;
 import org.apache.geode.distributed.internal.ReplyProcessor21;
 import org.apache.geode.distributed.internal.locks.DLockService;
@@ -810,7 +810,7 @@ public class BucketAdvisor extends CacheDistributionAdvisor {
    * @return the new primary
    */
   private InternalDistributedMember waitForNewPrimary() {
-    DM dm = this.regionAdvisor.getDistributionManager();
+    DistributionManager dm = this.regionAdvisor.getDistributionManager();
     DistributionConfig config = dm.getConfig();
     // failure detection period
     long timeout = config.getMemberTimeout() * 3;
@@ -1390,7 +1390,7 @@ public class BucketAdvisor extends CacheDistributionAdvisor {
           this.getAdvisee().getCancelCriterion().checkCancelInProgress(null);
           final InternalCache cache = getBucket().getCache();
           if (cache != null && cache.isCacheAtShutdownAll()) {
-            throw new CacheClosedException("Cache is shutting down");
+            throw cache.getCacheClosedException("Cache is shutting down");
           }
 
           if (getBucketRedundancy() == -1) {

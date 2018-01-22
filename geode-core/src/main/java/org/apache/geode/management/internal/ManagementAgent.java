@@ -49,8 +49,8 @@ import org.eclipse.jetty.server.ServerConnector;
 
 import org.apache.geode.GemFireConfigException;
 import org.apache.geode.cache.CacheFactory;
+import org.apache.geode.distributed.internal.ClusterDistributionManager;
 import org.apache.geode.distributed.internal.DistributionConfig;
-import org.apache.geode.distributed.internal.DistributionManager;
 import org.apache.geode.internal.GemFireVersion;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.logging.LogService;
@@ -64,6 +64,7 @@ import org.apache.geode.internal.tcp.TCPConduit;
 import org.apache.geode.management.ManagementException;
 import org.apache.geode.management.ManagementService;
 import org.apache.geode.management.ManagerMXBean;
+import org.apache.geode.management.internal.beans.FileUploader;
 import org.apache.geode.management.internal.security.AccessControlMBean;
 import org.apache.geode.management.internal.security.MBeanServerWrapper;
 import org.apache.geode.management.internal.security.ResourceConstants;
@@ -128,9 +129,9 @@ public class ManagementAgent {
 
   private boolean isServerNode(InternalCache cache) {
     return (cache.getInternalDistributedSystem().getDistributedMember()
-        .getVmKind() != DistributionManager.LOCATOR_DM_TYPE
+        .getVmKind() != ClusterDistributionManager.LOCATOR_DM_TYPE
         && cache.getInternalDistributedSystem().getDistributedMember()
-            .getVmKind() != DistributionManager.ADMIN_ONLY_DM_TYPE
+            .getVmKind() != ClusterDistributionManager.ADMIN_ONLY_DM_TYPE
         && !cache.isClient());
   }
 
@@ -212,8 +213,11 @@ public class ManagementAgent {
         if (logger.isDebugEnabled()) {
           logger.debug(message);
         }
-      } else if (securityService.isIntegratedSecurity()) {
-        System.setProperty("spring.profiles.active", "pulse.authentication.gemfire");
+      } else {
+        String pwFile = this.config.getJmxManagerPasswordFile();
+        if (securityService.isIntegratedSecurity() || StringUtils.isNotBlank(pwFile)) {
+          System.setProperty("spring.profiles.active", "pulse.authentication.gemfire");
+        }
       }
 
       // Find developer REST WAR file
@@ -476,7 +480,6 @@ public class ManagementAgent {
       // should take care of that
       MBeanServerWrapper mBeanServerWrapper = new MBeanServerWrapper(this.securityService);
       jmxConnectorServer.setMBeanServerForwarder(mBeanServerWrapper);
-      registerAccessControlMBean();
     } else {
       /* Disable the old authenticator mechanism */
       String pwFile = this.config.getJmxManagerPasswordFile();
@@ -491,6 +494,8 @@ public class ManagementAgent {
         controller.setMBeanServer(mbs);
       }
     }
+    registerAccessControlMBean();
+    registerFileUploaderMBean();
 
     jmxConnectorServer.start();
     if (logger.isDebugEnabled()) {
@@ -518,6 +523,22 @@ public class ManagementAgent {
     } catch (MalformedObjectNameException e) {
       throw new GemFireConfigException("Error while configuring access control for jmx resource",
           e);
+    }
+  }
+
+  private void registerFileUploaderMBean() {
+    try {
+      ObjectName mbeanON = new ObjectName(ManagementConstants.OBJECTNAME__FILEUPLOADER_MBEAN);
+      MBeanServer platformMBeanServer = ManagementFactory.getPlatformMBeanServer();
+
+      Set<ObjectName> names = platformMBeanServer.queryNames(mbeanON, null);
+      if (names.isEmpty()) {
+        platformMBeanServer.registerMBean(new FileUploader(), mbeanON);
+        logger.info("Registered FileUploaderMBean on " + mbeanON);
+      }
+    } catch (InstanceAlreadyExistsException | MBeanRegistrationException
+        | NotCompliantMBeanException | MalformedObjectNameException e) {
+      throw new GemFireConfigException("Error while configuring FileUploader MBean", e);
     }
   }
 

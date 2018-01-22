@@ -23,6 +23,7 @@ import java.util.Set;
 import org.apache.logging.log4j.Logger;
 
 import org.apache.geode.DataSerializer;
+import org.apache.geode.annotations.TestingOnly;
 import org.apache.geode.cache.CacheClosedException;
 import org.apache.geode.internal.InternalDataSerializer;
 import org.apache.geode.internal.cache.locks.TXRegionLockRequest;
@@ -38,6 +39,8 @@ public class TXRegionLockRequestImpl implements TXRegionLockRequest {
   private static final long serialVersionUID = 5840033961584078082L;
   private static final Logger logger = LogService.getLogger();
 
+  private transient InternalCache cache;
+
   private transient LocalRegion r;
 
   private String regionPath;
@@ -46,9 +49,11 @@ public class TXRegionLockRequestImpl implements TXRegionLockRequest {
 
   public TXRegionLockRequestImpl() {
     // for DataSerializer
+    this.cache = null;
   }
 
-  public TXRegionLockRequestImpl(LocalRegion r) {
+  public TXRegionLockRequestImpl(InternalCache cache, LocalRegion r) {
+    this.cache = cache;
     this.r = r;
     this.regionPath = null;
     this.entryKeys = null;
@@ -57,7 +62,9 @@ public class TXRegionLockRequestImpl implements TXRegionLockRequest {
   /**
    * Used by unit tests
    */
+  @TestingOnly
   public TXRegionLockRequestImpl(String regionPath, Set<Object> entryKeys) {
+    this.cache = null;
     this.regionPath = regionPath;
     this.entryKeys = entryKeys;
   }
@@ -66,6 +73,7 @@ public class TXRegionLockRequestImpl implements TXRegionLockRequest {
     return this.entryKeys == null || this.entryKeys.isEmpty();
   }
 
+  @Override
   public void addEntryKeys(Set<Object> s) {
     if (s == null || s.isEmpty()) {
       return;
@@ -85,6 +93,7 @@ public class TXRegionLockRequestImpl implements TXRegionLockRequest {
     }
   }
 
+  @Override
   public void addEntryKey(Object key) {
     if (this.entryKeys == null) {
       this.entryKeys = new HashSet<Object>();
@@ -92,10 +101,11 @@ public class TXRegionLockRequestImpl implements TXRegionLockRequest {
     this.entryKeys.add(key);
   }
 
+  @Override
   public void fromData(DataInput in) throws IOException, ClassNotFoundException {
     this.regionPath = DataSerializer.readString(in);
 
-    final InternalCache cache = getCache(false);
+    cache = GemFireCacheImpl.getInstance();
     try {
       final int size = InternalDataSerializer.readArrayLength(in);
       if (cache != null && size > 0) {
@@ -129,6 +139,7 @@ public class TXRegionLockRequestImpl implements TXRegionLockRequest {
     return set;
   }
 
+  @Override
   public void toData(DataOutput out) throws IOException {
     DataSerializer.writeString(getRegionFullPath(), out);
     InternalDataSerializer.writeSet(this.entryKeys, out);
@@ -141,6 +152,7 @@ public class TXRegionLockRequestImpl implements TXRegionLockRequest {
     return result;
   }
 
+  @Override
   public String getRegionFullPath() {
     if (this.regionPath == null) {
       this.regionPath = this.r.getFullPath();
@@ -148,26 +160,13 @@ public class TXRegionLockRequestImpl implements TXRegionLockRequest {
     return this.regionPath;
   }
 
+  @Override
   public Set<Object> getKeys() {
     if (this.entryKeys == null) {
       // check for cache closed/closing
-      getCache(true);
+      cache.getCancelCriterion().checkCancelInProgress(null);
     }
     return this.entryKeys;
-  }
-
-  private InternalCache getCache(boolean throwIfClosing) {
-    final InternalCache cache = GemFireCacheImpl.getInstance();
-    if (cache != null && !cache.isClosed()) {
-      if (throwIfClosing) {
-        cache.getCancelCriterion().checkCancelInProgress(null);
-      }
-      return cache;
-    }
-    if (throwIfClosing) {
-      throw cache.getCacheClosedException("The cache is closed.", null);
-    }
-    return null;
   }
 
   /**

@@ -17,8 +17,6 @@ package org.apache.geode.management.internal.cli.commands;
 import static org.apache.geode.distributed.ConfigurationProperties.GROUPS;
 import static org.apache.geode.distributed.ConfigurationProperties.LOG_FILE;
 import static org.apache.geode.distributed.ConfigurationProperties.NAME;
-import static org.apache.geode.test.junit.rules.GfshCommandRule.PortType.http;
-import static org.apache.geode.test.junit.rules.GfshCommandRule.PortType.jmxManager;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import java.util.Properties;
@@ -30,21 +28,18 @@ import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
-import org.junit.runner.RunWith;
-import org.junit.runners.Parameterized;
 
 import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.CacheClosedException;
 import org.apache.geode.cache.CacheFactory;
 import org.apache.geode.test.dunit.SerializableCallableIF;
-import org.apache.geode.test.dunit.rules.LocatorServerStartupRule;
+import org.apache.geode.test.dunit.rules.ClusterStartupRule;
 import org.apache.geode.test.dunit.rules.MemberVM;
 import org.apache.geode.test.junit.categories.DistributedTest;
 import org.apache.geode.test.junit.rules.GfshCommandRule;
 
 
 @Category(DistributedTest.class)
-@RunWith(Parameterized.class)
 public class ShutdownCommandDUnitTest {
   private static final String MANAGER_NAME = "Manager";
   private static final String SERVER1_NAME = "Server1";
@@ -57,17 +52,8 @@ public class ShutdownCommandDUnitTest {
   private MemberVM server1;
   private MemberVM server2;
 
-
-  @Parameterized.Parameter
-  public static boolean useHttp;
-
-  @Parameterized.Parameters
-  public static Object[] data() {
-    return new Object[] {true, false};
-  }
-
   @Rule
-  public LocatorServerStartupRule locatorServerStartupRule = new LocatorServerStartupRule();
+  public ClusterStartupRule clusterStartupRule = new ClusterStartupRule();
 
   @Rule
   public GfshCommandRule gfsh = new GfshCommandRule();
@@ -80,23 +66,23 @@ public class ShutdownCommandDUnitTest {
     managerProps.setProperty(GROUPS, GROUP0);
     managerProps.setProperty(LOG_FILE, "someLog.log");
 
-    manager = locatorServerStartupRule.startLocatorVM(0, managerProps);
+    manager = clusterStartupRule.startLocatorVM(0, managerProps);
 
     Properties server1Props = new Properties();
     server1Props.setProperty(NAME, SERVER1_NAME);
     server1Props.setProperty(GROUPS, GROUP1);
-    server1 = locatorServerStartupRule.startServerVM(1, server1Props, manager.getPort());
+    server1 = clusterStartupRule.startServerVM(1, server1Props, manager.getPort());
 
     Properties server2Props = new Properties();
     server2Props.setProperty(NAME, SERVER2_NAME);
     server2Props.setProperty(GROUPS, GROUP2);
-    server2 = locatorServerStartupRule.startServerVM(2, server2Props, manager.getPort());
+    server2 = clusterStartupRule.startServerVM(2, server2Props, manager.getPort());
 
-    if (useHttp) {
-      gfsh.connectAndVerify(manager.getHttpPort(), http);
-    } else {
-      gfsh.connectAndVerify(manager.getJmxPort(), jmxManager);
-    }
+    connect(manager);
+  }
+
+  void connect(MemberVM server) throws Exception {
+    gfsh.connectAndVerify(server.getJmxPort(), GfshCommandRule.PortType.jmxManager);
   }
 
   @Test

@@ -57,7 +57,7 @@ public class LockServiceMBeanAuthorizationJUnitTest {
 
   @Before
   public void setUp() throws Exception {
-    lockServiceMBean = connectionRule.getProxyMBean(LockServiceMXBean.class);
+    lockServiceMBean = connectionRule.getProxyMXBean(LockServiceMXBean.class);
   }
 
   @AfterClass

@@ -63,7 +63,6 @@ public class LuceneIndexRecoveryHAIntegrationTest {
 
   @After
   public void tearDown() {
-    Cache cache = GemFireCacheImpl.getInstance();
     if (cache != null) {
       cache.close();
     }

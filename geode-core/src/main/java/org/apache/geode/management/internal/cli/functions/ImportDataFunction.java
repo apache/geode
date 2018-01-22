@@ -18,7 +18,7 @@ import java.io.File;
 
 import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.Region;
-import org.apache.geode.cache.execute.FunctionAdapter;
+import org.apache.geode.cache.execute.Function;
 import org.apache.geode.cache.execute.FunctionContext;
 import org.apache.geode.cache.snapshot.RegionSnapshotService;
 import org.apache.geode.cache.snapshot.SnapshotOptions;
@@ -31,7 +31,7 @@ import org.apache.geode.management.internal.cli.i18n.CliStrings;
  * RegionSnapshotService to import the data
  *
  */
-public class ImportDataFunction extends FunctionAdapter implements InternalEntity {
+public class ImportDataFunction implements Function, InternalEntity {
 
   private static final long serialVersionUID = 1L;
 

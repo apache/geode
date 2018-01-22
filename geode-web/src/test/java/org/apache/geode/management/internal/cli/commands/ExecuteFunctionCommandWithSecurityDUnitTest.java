@@ -33,7 +33,7 @@ import org.apache.geode.cache.execute.FunctionService;
 import org.apache.geode.management.internal.security.ResourceConstants;
 import org.apache.geode.management.internal.security.TestFunctions.WriteFunction;
 import org.apache.geode.security.SimpleTestSecurityManager;
-import org.apache.geode.test.dunit.rules.LocatorServerStartupRule;
+import org.apache.geode.test.dunit.rules.ClusterStartupRule;
 import org.apache.geode.test.dunit.rules.MemberVM;
 import org.apache.geode.test.junit.categories.DistributedTest;
 import org.apache.geode.test.junit.rules.GfshCommandRule;
@@ -41,7 +41,7 @@ import org.apache.geode.test.junit.rules.GfshCommandRule;
 @Category(DistributedTest.class)
 public class ExecuteFunctionCommandWithSecurityDUnitTest {
   @ClassRule
-  public static LocatorServerStartupRule lsRule = new LocatorServerStartupRule();
+  public static ClusterStartupRule lsRule = new ClusterStartupRule();
 
   @Rule
   public GfshCommandRule gfsh = new GfshCommandRule();
@@ -101,8 +101,9 @@ public class ExecuteFunctionCommandWithSecurityDUnitTest {
 
   private void executeWriteFunctionThrowsError() {
     gfsh.executeAndAssertThat("execute function --id=" + new WriteFunction().getId())
-        .statusIsSuccess();
-    assertThat(gfsh.getGfshOutput()).contains("dataRead not authorized for DATA:WRITE");
+        .tableHasColumnWithExactValuesInAnyOrder("Function Execution Result",
+            "Exception: dataRead not authorized for DATA:WRITE")
+        .statusIsError();
   }
 
   private void givenReadOnlyConnectionOverHttp() throws Exception {

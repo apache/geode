@@ -24,7 +24,7 @@ import org.junit.experimental.categories.Category;
 
 import org.apache.geode.cache.CacheFactory;
 import org.apache.geode.connectors.jdbc.internal.ConnectionConfiguration;
-import org.apache.geode.connectors.jdbc.internal.InternalJdbcConnectorService;
+import org.apache.geode.connectors.jdbc.internal.JdbcConnectorService;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.management.cli.Result;
 import org.apache.geode.test.junit.categories.IntegrationTest;
@@ -66,7 +66,7 @@ public class CreateConnectionCommandIntegrationTest {
 
     assertThat(result.getStatus()).isSameAs(Result.Status.OK);
 
-    InternalJdbcConnectorService service = cache.getService(InternalJdbcConnectorService.class);
+    JdbcConnectorService service = cache.getService(JdbcConnectorService.class);
     ConnectionConfiguration connectionConfig = service.getConnectionConfig(name);
 
     assertThat(connectionConfig).isNotNull();
@@ -81,7 +81,7 @@ public class CreateConnectionCommandIntegrationTest {
   @Test
   public void createsConnectionOnceOnly() throws Exception {
     createConnectionCommand.createConnection(name, url, user, password, params);
-    InternalJdbcConnectorService service = cache.getService(InternalJdbcConnectorService.class);
+    JdbcConnectorService service = cache.getService(JdbcConnectorService.class);
 
     ConnectionConfiguration connectionConfig = service.getConnectionConfig(name);
 
@@ -97,7 +97,7 @@ public class CreateConnectionCommandIntegrationTest {
 
     assertThat(result.getStatus()).isSameAs(Result.Status.OK);
 
-    InternalJdbcConnectorService service = cache.getService(InternalJdbcConnectorService.class);
+    JdbcConnectorService service = cache.getService(JdbcConnectorService.class);
     ConnectionConfiguration connectionConfig = service.getConnectionConfig(name);
 
     assertThat(connectionConfig).isNotNull();

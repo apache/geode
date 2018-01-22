@@ -25,8 +25,11 @@ import java.util.concurrent.atomic.AtomicLong;
 import joptsimple.internal.Strings;
 import org.apache.logging.log4j.Logger;
 
+import org.apache.geode.StatisticsFactory;
 import org.apache.geode.cache.EvictionAction;
 import org.apache.geode.cache.EvictionAlgorithm;
+import org.apache.geode.cache.EvictionAttributes;
+import org.apache.geode.cache.Region;
 import org.apache.geode.compression.Compressor;
 import org.apache.geode.internal.ClassPathLoader;
 import org.apache.geode.internal.CopyOnWriteHashSet;
@@ -312,9 +315,10 @@ public abstract class AbstractDiskRegion implements DiskRegionView {
     }
   }
 
-  public EvictionAttributesImpl getEvictionAttributes() {
+  @Override
+  public EvictionAttributes getEvictionAttributes() {
     return new EvictionAttributesImpl().setAlgorithm(getActualLruAlgorithm())
-        .setAction(getActualLruAction()).internalSetMaximum(getLruLimit());
+        .setAction(getActualLruAction()).setMaximum(getLruLimit());
   }
 
   public byte getLruAlgorithm() {
@@ -1051,5 +1055,24 @@ public abstract class AbstractDiskRegion implements DiskRegionView {
   @Override
   public void incRecentlyUsed() {
     entries.incRecentlyUsed();
+  }
+
+  @Override
+  public StatisticsFactory getStatisticsFactory() {
+    return this.ds.getStatisticsFactory();
+  }
+
+  @Override
+  public String getNameForStats() {
+    if (isBucket()) {
+      return getPrName();
+    } else {
+      return getName();
+    }
+  }
+
+  @Override
+  public InternalCache getCache() {
+    return getDiskStore().getCache();
   }
 }

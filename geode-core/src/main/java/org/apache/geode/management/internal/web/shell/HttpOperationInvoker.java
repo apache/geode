@@ -14,6 +14,7 @@
  */
 package org.apache.geode.management.internal.web.shell;
 
+import java.io.File;
 import java.io.IOException;
 import java.net.URI;
 import java.util.Properties;
@@ -26,7 +27,7 @@ import javax.management.ObjectName;
 import javax.management.QueryExp;
 
 import org.apache.logging.log4j.Logger;
-import org.springframework.core.io.Resource;
+import org.springframework.core.io.FileSystemResource;
 import org.springframework.http.MediaType;
 import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
@@ -42,7 +43,6 @@ import org.apache.geode.management.internal.cli.shell.OperationInvoker;
 import org.apache.geode.management.internal.web.domain.QueryParameterSource;
 import org.apache.geode.management.internal.web.http.support.HttpRequester;
 import org.apache.geode.management.internal.web.shell.support.HttpMBeanProxyFactory;
-import org.apache.geode.management.internal.web.util.ConvertUtils;
 
 /**
  * The HttpOperationInvoker class is an abstract base class encapsulating common functionality for
@@ -405,6 +405,11 @@ public class HttpOperationInvoker implements OperationInvoker {
     return String.format("GemFire Manager HTTP service @ %1$s", httpRequester);
   }
 
+  public String getRemoteVersion() {
+    final URI link = HttpRequester.createURI(baseUrl, "/version/release");
+    return httpRequester.get(link, String.class);
+  }
+
 
   /**
    * Processes the requested command. Sends the command to the GemFire Manager for remote processing
@@ -417,12 +422,11 @@ public class HttpOperationInvoker implements OperationInvoker {
   public Object processCommand(final CommandRequest command) {
     URI link =
         HttpRequester.createURI(baseUrl, COMMANDS_URI, CMD_QUERY_PARAMETER, command.getUserInput());
-    if (command.hasFileData()) {
+    if (command.hasFileList()) {
       MultiValueMap<String, Object> content = new LinkedMultiValueMap<String, Object>();
 
-      Resource[] resources = ConvertUtils.convert(command.getFileData());
-      for (Resource resource : resources) {
-        content.add(RESOURCES_REQUEST_PARAMETER, resource);
+      for (File file : command.getFileList()) {
+        content.add(RESOURCES_REQUEST_PARAMETER, new FileSystemResource(file));
       }
       return httpRequester.post(link, MediaType.MULTIPART_FORM_DATA, content, String.class);
     }

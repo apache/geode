@@ -14,12 +14,16 @@
  */
 package org.apache.geode.connectors.jdbc.internal.cli;
 
+import java.util.Collection;
+import java.util.Collections;
 import java.util.Set;
 
 import org.apache.geode.annotations.Experimental;
 import org.apache.geode.cache.execute.FunctionContext;
 import org.apache.geode.connectors.jdbc.internal.ConnectionConfiguration;
-import org.apache.geode.connectors.jdbc.internal.InternalJdbcConnectorService;
+import org.apache.geode.connectors.jdbc.internal.JdbcConnectorService;
+import org.apache.geode.management.internal.security.ResourcePermissions;
+import org.apache.geode.security.ResourcePermission;
 
 @Experimental
 public class ListConnectionFunction extends JdbcCliFunction<Void, ConnectionConfiguration[]> {
@@ -29,17 +33,22 @@ public class ListConnectionFunction extends JdbcCliFunction<Void, ConnectionConf
   }
 
   @Override
-  ConnectionConfiguration[] getFunctionResult(InternalJdbcConnectorService service,
+  ConnectionConfiguration[] getFunctionResult(JdbcConnectorService service,
       FunctionContext<Void> context) {
     return getConnectionConfigAsArray(service);
   }
 
-  ConnectionConfiguration[] getConnectionConfigAsArray(InternalJdbcConnectorService service) {
+  ConnectionConfiguration[] getConnectionConfigAsArray(JdbcConnectorService service) {
     Set<ConnectionConfiguration> connectionConfigs = getConnectionConfigs(service);
     return connectionConfigs.toArray(new ConnectionConfiguration[connectionConfigs.size()]);
   }
 
-  private Set<ConnectionConfiguration> getConnectionConfigs(InternalJdbcConnectorService service) {
+  private Set<ConnectionConfiguration> getConnectionConfigs(JdbcConnectorService service) {
     return service.getConnectionConfigs();
+  }
+
+  @Override
+  public Collection<ResourcePermission> getRequiredPermissions(String regionName) {
+    return Collections.singletonList(ResourcePermissions.CLUSTER_READ);
   }
 }

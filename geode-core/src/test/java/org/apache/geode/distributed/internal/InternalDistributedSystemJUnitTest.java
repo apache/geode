@@ -32,7 +32,6 @@ import java.util.logging.Level;
 
 import org.junit.After;
 import org.junit.Assert;
-import org.junit.Ignore;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
@@ -67,7 +66,7 @@ public class InternalDistributedSystemJUnitTest {
    * Creates a <code>DistributedSystem</code> with the given configuration properties.
    */
   protected InternalDistributedSystem createSystem(Properties props) {
-    assertFalse(org.apache.geode.distributed.internal.DistributionManager.isDedicatedAdminVM);
+    assertFalse(ClusterDistributionManager.isDedicatedAdminVM());
     this.system = (InternalDistributedSystem) DistributedSystem.connect(props);
     return this.system;
   }

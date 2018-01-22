@@ -26,7 +26,6 @@ import org.assertj.core.api.Assertions;
 import org.json.JSONArray;
 
 import org.apache.geode.management.cli.Result;
-import org.apache.geode.management.internal.cli.json.GfJsonException;
 import org.apache.geode.management.internal.cli.result.CommandResult;
 
 
@@ -184,8 +183,7 @@ public class CommandResultAssert
 
 
 
-  public CommandResultAssert tableHasRowWithValues(String... headersThenValues)
-      throws GfJsonException {
+  public CommandResultAssert tableHasRowWithValues(String... headersThenValues) {
     assertThat(headersThenValues.length % 2)
         .describedAs("You need to pass even number of parameters.").isEqualTo(0);
 
@@ -243,7 +241,8 @@ public class CommandResultAssert
           Arrays.stream(expectedValues).anyMatch(actualValueString::contains);
 
       if (!actualValueContainsAnExpectedValue) {
-        failWithMessage("Found unexpected value: " + actualValue);
+        failWithMessage(
+            "Expecting: " + Arrays.toString(expectedValues) + ", but found: " + actualValue);
       }
     }
 
