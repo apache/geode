@@ -33,7 +33,7 @@ import org.apache.geode.internal.cache.DirectoryHolder;
 import org.apache.geode.test.junit.categories.UnitTest;
 
 @Category(UnitTest.class)
-public class InProgressBackupFilesTest {
+public class TemporaryBackupFilesTest {
 
   private static final String DISK_STORE_DIR_NAME = "testDiskStores";
 
@@ -41,14 +41,14 @@ public class InProgressBackupFilesTest {
   public TemporaryFolder tempDir = new TemporaryFolder();
 
   private Path baseTempDirectory;
-  private InProgressBackupFiles backupFiles;
+  private TemporaryBackupFiles backupFiles;
   private DiskStore diskStore;
   private DirectoryHolder directoryHolder;
 
   @Before
   public void setup() throws IOException {
     baseTempDirectory = tempDir.newFolder().toPath();
-    backupFiles = new InProgressBackupFiles(baseTempDirectory, DISK_STORE_DIR_NAME);
+    backupFiles = new TemporaryBackupFiles(baseTempDirectory, DISK_STORE_DIR_NAME);
     diskStore = mock(DiskStore.class);
     directoryHolder = mock(DirectoryHolder.class);
     when(directoryHolder.getDir()).thenReturn(baseTempDirectory.resolve("dir1").toFile());
@@ -56,32 +56,32 @@ public class InProgressBackupFilesTest {
 
   @Test
   public void factoryMethodCreatesValidInstance() throws IOException {
-    InProgressBackupFiles backupFiles = InProgressBackupFiles.create();
-    assertThat(backupFiles.getTempDir()).exists();
+    TemporaryBackupFiles backupFiles = TemporaryBackupFiles.create();
+    assertThat(backupFiles.getDirectory()).exists();
   }
 
   @Test
   public void cannotCreateInstanceWithoutDirectoryLocation() {
-    assertThatThrownBy(() -> new InProgressBackupFiles(null, "test"))
+    assertThatThrownBy(() -> new TemporaryBackupFiles(null, "test"))
         .isInstanceOf(IllegalArgumentException.class);
   }
 
   @Test
   public void cannotCreateInstanceWithoutNameForDiskStoreDirectories() {
-    assertThatThrownBy(() -> new InProgressBackupFiles(baseTempDirectory, null))
+    assertThatThrownBy(() -> new TemporaryBackupFiles(baseTempDirectory, null))
         .isInstanceOf(IllegalArgumentException.class);
-    assertThatThrownBy(() -> new InProgressBackupFiles(baseTempDirectory, ""))
+    assertThatThrownBy(() -> new TemporaryBackupFiles(baseTempDirectory, ""))
         .isInstanceOf(IllegalArgumentException.class);
   }
 
   @Test
   public void returnsCorrectTemporaryDirectory() {
-    assertThat(backupFiles.getTempDir()).isEqualTo(baseTempDirectory);
+    assertThat(backupFiles.getDirectory()).isEqualTo(baseTempDirectory);
   }
 
   @Test
   public void returnsCreatedDirectoryForADiskStore() throws IOException {
-    Path diskStoreDir = backupFiles.getDiskStoreTempDir(diskStore, directoryHolder);
+    Path diskStoreDir = backupFiles.getDiskStoreDirectory(diskStore, directoryHolder);
     assertThat(diskStoreDir)
         .isEqualTo(directoryHolder.getDir().toPath().resolve(DISK_STORE_DIR_NAME));
     assertThat(diskStoreDir).exists();
@@ -89,23 +89,19 @@ public class InProgressBackupFilesTest {
 
   @Test
   public void returnsTheSameFileEachTimeForADiskStoreAndDirHolder() throws IOException {
-    Path diskStoreDir = backupFiles.getDiskStoreTempDir(diskStore, directoryHolder);
-    assertThat(backupFiles.getDiskStoreTempDir(diskStore, directoryHolder)).isSameAs(diskStoreDir);
-  }
-
-  @Test
-  public void throwsExceptionIfCannotCreateTempDir() {
-
+    Path diskStoreDir = backupFiles.getDiskStoreDirectory(diskStore, directoryHolder);
+    assertThat(backupFiles.getDiskStoreDirectory(diskStore, directoryHolder))
+        .isSameAs(diskStoreDir);
   }
 
   @Test
   public void cleansUpAllTemporaryDirectories() throws IOException {
     DirectoryHolder directoryHolder2 = mock(DirectoryHolder.class);
     when(directoryHolder2.getDir()).thenReturn(baseTempDirectory.resolve("dir2").toFile());
-    Path diskStoreDir = backupFiles.getDiskStoreTempDir(diskStore, directoryHolder);
-    Path diskStoreDir2 = backupFiles.getDiskStoreTempDir(diskStore, directoryHolder2);
+    Path diskStoreDir = backupFiles.getDiskStoreDirectory(diskStore, directoryHolder);
+    Path diskStoreDir2 = backupFiles.getDiskStoreDirectory(diskStore, directoryHolder2);
 
-    backupFiles.cleanupTemporaryFiles();
+    backupFiles.cleanupFiles();
 
     assertThat(baseTempDirectory).doesNotExist();
     assertThat(diskStoreDir).doesNotExist();

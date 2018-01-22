@@ -75,7 +75,7 @@ public class BackupManager {
   private final BackupDefinition backupDefinition = new BackupDefinition();
   private final String memberId;
   private volatile boolean isCancelled = false;
-  private InProgressBackupFiles temporaryFiles;
+  private TemporaryBackupFiles temporaryFiles;
 
   public BackupManager(InternalDistributedMember sender, InternalCache gemFireCache) {
     this.sender = sender;
@@ -115,7 +115,7 @@ public class BackupManager {
     }
 
     try {
-      temporaryFiles = InProgressBackupFiles.create();
+      temporaryFiles = TemporaryBackupFiles.create();
       File memberBackupDir = new File(targetDir, memberId);
 
       // Make sure our baseline is okay for this member, then create inspector for baseline backup
@@ -200,7 +200,7 @@ public class BackupManager {
     isCancelled = true;
     allowDestroys.countDown();
     if (temporaryFiles != null) {
-      temporaryFiles.cleanupTemporaryFiles();
+      temporaryFiles.cleanupFiles();
     }
     releaseBackupLocks();
     getDistributionManager().removeAllMembershipListener(membershipListener);
@@ -295,7 +295,7 @@ public class BackupManager {
         if (isCancelled()) {
           break;
         }
-        copyOplog(diskStore, temporaryFiles.getTempDir().toFile(), oplog);
+        copyOplog(diskStore, temporaryFiles.getDirectory().toFile(), oplog);
 
         // Allow the oplog to be deleted, and process any pending delete
         backup.backupFinished(oplog);
@@ -376,7 +376,7 @@ public class BackupManager {
           backup = new DiskStoreBackup(allOplogs, targetDir);
           backupByDiskStore.put(diskStore, backup);
 
-          backupDiskInitFile(diskStore, temporaryFiles.getTempDir());
+          backupDiskInitFile(diskStore, temporaryFiles.getDirectory());
           diskStore.getPersistentOplogSet().forceRoll(null);
 
           if (logger.isDebugEnabled()) {
@@ -478,7 +478,7 @@ public class BackupManager {
   }
 
   private void backupConfigFiles() throws IOException {
-    Files.createDirectories(temporaryFiles.getTempDir().resolve(CONFIG_DIRECTORY));
+    Files.createDirectories(temporaryFiles.getDirectory().resolve(CONFIG_DIRECTORY));
     addConfigFileToBackup(cache.getCacheXmlURL());
     addConfigFileToBackup(DistributedSystem.getPropertiesFileURL());
     // TODO: should the gfsecurity.properties file be backed up?
@@ -489,7 +489,7 @@ public class BackupManager {
       try {
         Path source = Paths.get(fileUrl.toURI());
         Path destination =
-            temporaryFiles.getTempDir().resolve(CONFIG_DIRECTORY).resolve(source.getFileName());
+            temporaryFiles.getDirectory().resolve(CONFIG_DIRECTORY).resolve(source.getFileName());
         Files.copy(source, destination, StandardCopyOption.COPY_ATTRIBUTES);
         backupDefinition.addConfigFileToBackup(destination);
       } catch (URISyntaxException e) {
@@ -499,14 +499,14 @@ public class BackupManager {
   }
 
   private void backupUserFiles(File backupDir) throws IOException {
-    Files.createDirectories(temporaryFiles.getTempDir().resolve(USER_FILES));
+    Files.createDirectories(temporaryFiles.getDirectory().resolve(USER_FILES));
     List<File> backupFiles = cache.getBackupFiles();
     File userBackupDir = new File(backupDir, USER_FILES);
     for (File original : backupFiles) {
       if (original.exists()) {
         original = original.getAbsoluteFile();
         Path destination =
-            temporaryFiles.getTempDir().resolve(USER_FILES).resolve(original.getName());
+            temporaryFiles.getDirectory().resolve(USER_FILES).resolve(original.getName());
         if (original.isDirectory()) {
           FileUtils.copyDirectory(original, destination.toFile());
         } else {
@@ -541,7 +541,7 @@ public class BackupManager {
           File source = new File(jar.getFileCanonicalPath());
           String sourceFileName = source.getName();
           Path destination =
-              temporaryFiles.getTempDir().resolve(USER_FILES).resolve(sourceFileName);
+              temporaryFiles.getDirectory().resolve(USER_FILES).resolve(sourceFileName);
           Files.copy(source.toPath(), destination, StandardCopyOption.COPY_ATTRIBUTES);
           backupDefinition.addDeployedJarToBackup(destination);
 
@@ -577,7 +577,7 @@ public class BackupManager {
       throws IOException {
     if (file != null && file.exists()) {
       try {
-        Path tempDiskDir = temporaryFiles.getDiskStoreTempDir(diskStore, dirHolder);
+        Path tempDiskDir = temporaryFiles.getDiskStoreDirectory(diskStore, dirHolder);
         Files.createLink(tempDiskDir.resolve(file.getName()), file.toPath());
         backupDefinition.addOplogFileToBackup(diskStore, tempDiskDir.resolve(file.getName()));
       } catch (IOException | UnsupportedOperationException e) {

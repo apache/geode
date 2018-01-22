@@ -36,48 +36,45 @@ import org.apache.geode.internal.logging.LogService;
  * stored in a shared temporary directory, except for those for DiskStores. For each
  * {@link DiskStore}, a temporary directory is created per disk directory within that disk directory
  * (for enabling creation of hard-links for backing up the files of an {@link Oplog}).
- *
- * @since Geode 1.4
  */
-class InProgressBackupFiles {
+class TemporaryBackupFiles {
   private static final Logger logger = LogService.getLogger();
 
   private final String diskStoreDirectoryName;
-  private final Path temporaryDirectory;
-  private final Map<DiskStore, Map<DirectoryHolder, Path>> diskStoreDirTempDirsByDiskStore =
+  private final Path directory;
+  private final Map<DiskStore, Map<DirectoryHolder, Path>> diskStoreDirDirsByDiskStore =
       new HashMap<>();
 
   /**
    * Creates a new instance with the default structure, where temporary directories are created
    * using the current timestamp in their name for the purpose of uniquification
    *
-   * @return a new InProgressBackupFiles
+   * @return a new TemporaryBackupFiles
    * @throws IOException If unable to create a temporary directory
    */
-  static InProgressBackupFiles create() throws IOException {
+  static TemporaryBackupFiles create() throws IOException {
     long currentTime = System.currentTimeMillis();
     String diskStoreDirectoryName = DATA_STORES_TEMPORARY_DIRECTORY + currentTime;
     Path temporaryDirectory = Files.createTempDirectory("backup_" + currentTime);
-    return new InProgressBackupFiles(temporaryDirectory, diskStoreDirectoryName);
+    return new TemporaryBackupFiles(temporaryDirectory, diskStoreDirectoryName);
   }
 
   /**
-   * Constructs a new InProgressBackupFiles that will use the specified locations for temporary
-   * files
+   * Constructs a new TemporaryBackupFiles that will use the specified locations for temporary files
    *
-   * @param temporaryDirectory the location to create and store temporary files during backup
+   * @param directory the location to create and store temporary files during backup
    * @param diskStoreDirectoryName name of directory to create within each disk store directory for
    *        its temporary files during backup
    */
-  InProgressBackupFiles(Path temporaryDirectory, String diskStoreDirectoryName) {
-    if (temporaryDirectory == null) {
+  TemporaryBackupFiles(Path directory, String diskStoreDirectoryName) {
+    if (directory == null) {
       throw new IllegalArgumentException("Must provide a temporary directory location");
     }
     if (diskStoreDirectoryName == null || diskStoreDirectoryName.isEmpty()) {
       throw new IllegalArgumentException("Must provide a name for temporary DiskStore directories");
     }
 
-    this.temporaryDirectory = temporaryDirectory;
+    this.directory = directory;
     this.diskStoreDirectoryName = diskStoreDirectoryName;
   }
 
@@ -87,8 +84,8 @@ class InProgressBackupFiles {
    *
    * @return The path of the shared temporary directory
    */
-  Path getTempDir() {
-    return temporaryDirectory;
+  Path getDirectory() {
+    return directory;
   }
 
   /**
@@ -100,9 +97,9 @@ class InProgressBackupFiles {
    * @return Path to the temporary directory
    * @throws IOException If the temporary directory did not exist and could not be created
    */
-  Path getDiskStoreTempDir(DiskStore diskStore, DirectoryHolder dirHolder) throws IOException {
+  Path getDiskStoreDirectory(DiskStore diskStore, DirectoryHolder dirHolder) throws IOException {
     Map<DirectoryHolder, Path> tempDirByDirectoryHolder =
-        diskStoreDirTempDirsByDiskStore.computeIfAbsent(diskStore, k -> new HashMap<>());
+        diskStoreDirDirsByDiskStore.computeIfAbsent(diskStore, k -> new HashMap<>());
     Path directory = tempDirByDirectoryHolder.get(dirHolder);
     if (directory != null) {
       return directory;
@@ -119,25 +116,25 @@ class InProgressBackupFiles {
    * Attempts to delete all temporary directories and their contents. An attempt will be made to
    * delete each directory, regardless of the failure to delete any particular one.
    */
-  void cleanupTemporaryFiles() {
-    if (temporaryDirectory != null) {
-      deleteTemporaryDirectory(temporaryDirectory);
+  void cleanupFiles() {
+    if (directory != null) {
+      deleteDirectory(directory);
     }
 
-    for (Map<DirectoryHolder, Path> diskStoreDirToTempDirMap : diskStoreDirTempDirsByDiskStore
+    for (Map<DirectoryHolder, Path> diskStoreDirToTempDirMap : diskStoreDirDirsByDiskStore
         .values()) {
       for (Path tempDir : diskStoreDirToTempDirMap.values()) {
-        deleteTemporaryDirectory(tempDir);
+        deleteDirectory(tempDir);
       }
     }
   }
 
-  private void deleteTemporaryDirectory(Path directory) {
+  private void deleteDirectory(Path directory) {
     try {
       FileUtils.deleteDirectory(directory.toFile());
     } catch (IOException e) {
-      logger.warn(
-          "Unable to delete temporary directory created during backup, " + temporaryDirectory, e);
+      logger.warn("Unable to delete temporary directory created during backup, " + this.directory,
+          e);
     }
   }
 }
