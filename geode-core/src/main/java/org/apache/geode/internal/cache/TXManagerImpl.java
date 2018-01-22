@@ -1226,9 +1226,7 @@ public class TXManagerImpl implements CacheTransactionManager, MembershipListene
    * @see #isExceptionToken(TXCommitMessage)
    */
   public TXCommitMessage getRecentlyCompletedMessage(TXId txId) {
-    synchronized (failoverMap) {
-      return failoverMap.get(txId);
-    }
+    return failoverMap.get(txId);
   }
 
   /**

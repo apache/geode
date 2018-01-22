@@ -85,7 +85,6 @@ public class DistTXCommitMessage extends TXMessage {
           logger.debug(
               "DistTXCommitMessage.operateOnTx: found a previously committed transaction:{}", txId);
         }
-        commitMessage = txMgr.getRecentlyCompletedMessage(txId);
         if (txMgr.isExceptionToken(commitMessage)) {
           throw txMgr.getExceptionForToken(commitMessage, txId);
         }

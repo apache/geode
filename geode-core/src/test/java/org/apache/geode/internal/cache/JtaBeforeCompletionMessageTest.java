@@ -22,6 +22,7 @@ import static org.mockito.Mockito.when;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
+import org.apache.geode.distributed.internal.ClusterDistributionManager;
 import org.apache.geode.distributed.internal.DistributionManager;
 import org.apache.geode.distributed.internal.ReplyProcessor21;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
@@ -33,7 +34,7 @@ public class JtaBeforeCompletionMessageTest {
   public void testBeforeCompletionNotInvokedIfJTACompleted() throws Exception {
     InternalCache cache = mock(InternalCache.class);
     TXManagerImpl txMgr = mock(TXManagerImpl.class);
-    DistributionManager distributionManager = mock(DistributionManager.class);
+    ClusterDistributionManager distributionManager = mock(ClusterDistributionManager.class);
     TXId txId = mock(TXId.class);
 
     when(distributionManager.getCache()).thenReturn(cache);
