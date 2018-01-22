@@ -64,7 +64,7 @@ class InProgressBackupFiles {
   /**
    * Constructs a new InProgressBackupFiles that will use the specified locations for temporary
    * files
-   * 
+   *
    * @param temporaryDirectory the location to create and store temporary files during backup
    * @param diskStoreDirectoryName name of directory to create within each disk store directory for
    *        its temporary files during backup
