@@ -43,13 +43,6 @@ public class DriverConnectionTest {
   @Rule
   public RestoreSystemProperties restoreSystemProperties = new RestoreSystemProperties();
 
-  /** a JSON document */
-  private static final String jsonDocument =
-      "{" + System.lineSeparator() + "  \"name\" : \"Charlemagne\"," + System.lineSeparator()
-          + "  \"age\" : 1276," + System.lineSeparator() + "  \"nationality\" : \"french\","
-          + System.lineSeparator() + "  \"emailAddress\" : \"none\"" + System.lineSeparator() + "}";
-
-
   private Locator locator;
   private Cache cache;
   private Driver driver;

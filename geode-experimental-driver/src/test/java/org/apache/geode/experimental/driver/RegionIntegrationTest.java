@@ -14,13 +14,17 @@
  */
 package org.apache.geode.experimental.driver;
 
-import static org.apache.geode.internal.Assert.assertTrue;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
 
 import java.io.IOException;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Map;
 import java.util.Properties;
+import java.util.Set;
 
 import org.junit.After;
 import org.junit.Before;
@@ -145,4 +149,42 @@ public class RegionIntegrationTest {
     assertNull(region.get(document));
   }
 
+  @Test(expected = IOException.class)
+  public void putWithBadJSONKeyAndValue() throws IOException {
+    Region<JSONWrapper, JSONWrapper> region = driver.getRegion("region");
+    JSONWrapper document = JSONWrapper.wrapJSON("{\"name\":\"Johan\"]");
+    region.put(document, document);
+  }
+
+  @Test(expected = IOException.class)
+  public void putAllWithBadJSONKeyAndValue() throws IOException {
+    Region<JSONWrapper, JSONWrapper> region = driver.getRegion("region");
+    Map<JSONWrapper, JSONWrapper> putAllMap = new HashMap<>();
+    JSONWrapper document = JSONWrapper.wrapJSON("{\"name\":\"Johan\"]");
+    putAllMap.put(document, document);
+    region.putAll(putAllMap);
+  }
+
+  @Test(expected = IOException.class)
+  public void getWithBadJSONKey() throws IOException {
+    Region<JSONWrapper, JSONWrapper> region = driver.getRegion("region");
+    region.get(JSONWrapper.wrapJSON("{\"name\":\"Johan\"]"));
+  }
+
+  @Test(expected = IOException.class)
+  public void getAllWithBadJSONKeyAndValue() throws IOException {
+    Region<JSONWrapper, JSONWrapper> region = driver.getRegion("region");
+    Set<JSONWrapper> getAllKeys = new HashSet<>();
+    JSONWrapper document = JSONWrapper.wrapJSON("{\"name\":\"Johan\"]");
+    getAllKeys.add(document);
+    Map<JSONWrapper, JSONWrapper> result = region.getAll(getAllKeys);
+    assertTrue("missing key " + document + " in " + result, result.containsKey(document));
+    assertNull(result.get(document));
+  }
+
+  @Test(expected = IOException.class)
+  public void removeWithBadJSONKey() throws IOException {
+    Region<JSONWrapper, JSONWrapper> region = driver.getRegion("region");
+    region.remove(JSONWrapper.wrapJSON("{\"name\":\"Johan\"]"));
+  }
 }
