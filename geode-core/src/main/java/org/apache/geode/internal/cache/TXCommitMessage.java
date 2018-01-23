@@ -688,7 +688,7 @@ public class TXCommitMessage extends PooledDistributionMessage
       if (isAckRequired()) {
         ack();
       }
-      if (!GemFireCacheImpl.getExisting("Applying TXCommitMessage").isClient()) {
+      if (!dm.getExistingCache().isClient()) {
         getTracker().saveTXForClientFailover(txIdent, this);
       }
       if (logger.isDebugEnabled()) {
