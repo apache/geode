@@ -37,6 +37,10 @@ package org.apache.geode.cache;
  * initiator of the operation, regardless of whether the initiator is in the same VM as the
  * <code>CacheWriter</code>.
  *
+ * <p>
+ * WARNING: To avoid risk of deadlock, do not invoke CacheFactory.getAnyInstance() from within any
+ * callback methods. Instead use EntryEvent.getRegion().getCache() or
+ * RegionEvent.getRegion().getCache().
  *
  * @see AttributesFactory#setCacheWriter
  * @see RegionAttributes#getCacheWriter

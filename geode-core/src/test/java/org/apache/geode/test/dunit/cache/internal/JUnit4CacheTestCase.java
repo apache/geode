@@ -71,7 +71,7 @@ public abstract class JUnit4CacheTestCase extends JUnit4DistributedTestCase
    * <p>
    * Field is static so it doesn't get serialized with SerializableRunnable inner classes.
    */
-  private static InternalCache cache;
+  protected static InternalCache cache;
 
   private final CacheTestFixture cacheTestFixture;
 

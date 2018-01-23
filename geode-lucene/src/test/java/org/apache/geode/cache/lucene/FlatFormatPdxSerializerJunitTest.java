@@ -38,8 +38,8 @@ public class FlatFormatPdxSerializerJunitTest {
   private PdxInstance createPdxInstance() {
     HashSet positions = new HashSet();
 
-    PdxInstanceFactoryImpl outForPosition1 =
-        (PdxInstanceFactoryImpl) PdxInstanceFactoryImpl.newCreator("dummy.PositionPdx", false);
+    PdxInstanceFactoryImpl outForPosition1 = (PdxInstanceFactoryImpl) PdxInstanceFactoryImpl
+        .newCreator("dummy.PositionPdx", false, localCacheRule.getCache());
     outForPosition1.writeString("country", "USA");
     outForPosition1.writeString("secId", "DELL");
     outForPosition1.writeDouble("sharesOutstanding", 3000);
@@ -49,8 +49,8 @@ public class FlatFormatPdxSerializerJunitTest {
     outForPosition1.markIdentityField("secId");
     PdxInstance position1_pdx = outForPosition1.create();
 
-    PdxInstanceFactoryImpl outForPositions1 =
-        (PdxInstanceFactoryImpl) PdxInstanceFactoryImpl.newCreator("dummy.PositionPdx", false);
+    PdxInstanceFactoryImpl outForPositions1 = (PdxInstanceFactoryImpl) PdxInstanceFactoryImpl
+        .newCreator("dummy.PositionPdx", false, localCacheRule.getCache());
     outForPositions1.writeString("country", "USA");
     outForPositions1.writeString("secId", "AAPL");
     outForPositions1.writeDouble("sharesOutstanding", 5000);
@@ -60,8 +60,8 @@ public class FlatFormatPdxSerializerJunitTest {
     outForPositions1.markIdentityField("secId");
     PdxInstance positions1_pdx = outForPositions1.create();
 
-    PdxInstanceFactoryImpl outForPositions2 =
-        (PdxInstanceFactoryImpl) PdxInstanceFactoryImpl.newCreator("dummy.PositionPdx", false);
+    PdxInstanceFactoryImpl outForPositions2 = (PdxInstanceFactoryImpl) PdxInstanceFactoryImpl
+        .newCreator("dummy.PositionPdx", false, localCacheRule.getCache());
     outForPositions2.writeString("country", "USA");
     outForPositions2.writeString("secId", "IBM");
     outForPositions2.writeDouble("sharesOutstanding", 4000);
@@ -74,8 +74,8 @@ public class FlatFormatPdxSerializerJunitTest {
     positions.add(positions1_pdx);
     positions.add(positions2_pdx);
 
-    PdxInstanceFactoryImpl out =
-        (PdxInstanceFactoryImpl) PdxInstanceFactoryImpl.newCreator("dummy.PortfolioPdx", false);
+    PdxInstanceFactoryImpl out = (PdxInstanceFactoryImpl) PdxInstanceFactoryImpl
+        .newCreator("dummy.PortfolioPdx", false, localCacheRule.getCache());
     out.writeInt("ID", 3);
     out.writeObject("position1", position1_pdx);
     out.writeObject("positions", positions);

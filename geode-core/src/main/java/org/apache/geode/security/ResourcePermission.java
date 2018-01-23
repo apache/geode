@@ -14,7 +14,11 @@
  */
 package org.apache.geode.security;
 
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 import java.util.function.UnaryOperator;
+import java.util.stream.Collectors;
 
 import org.apache.commons.lang.StringUtils;
 import org.apache.shiro.authz.permission.WildcardPermission;
@@ -79,7 +83,9 @@ public class ResourcePermission extends WildcardPermission {
   private String target = ALL;
   private String key = ALL;
 
-  public ResourcePermission() {}
+  public ResourcePermission() {
+    setParts(this.resource + ":" + this.operation + ":" + this.target + ":" + this.key, true);
+  }
 
   public ResourcePermission(Resource resource, Operation operation) {
     this(resource, operation, ALL, ALL);
@@ -196,13 +202,18 @@ public class ResourcePermission extends WildcardPermission {
 
   @Override
   public String toString() {
-    if (ALL.equals(target)) {
-      return resource + ":" + operation;
-    } else if (ALL.equals(key)) {
-      return resource + ":" + operation + ":" + target;
-    } else {
-      return resource + ":" + operation + ":" + target + ":" + key;
+    List<String> parts = new ArrayList<>(Arrays.asList(resource, operation, target, key));
+    if (ALL.equals(key)) {
+      parts.remove(3);
+      if (ALL.equals(target)) {
+        parts.remove(2);
+        if (ALL.equals(operation)) {
+          parts.remove(1);
+        }
+      }
     }
+
+    return parts.stream().collect(Collectors.joining(":"));
   }
 
 }

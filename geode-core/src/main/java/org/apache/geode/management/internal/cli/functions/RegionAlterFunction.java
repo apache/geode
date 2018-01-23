@@ -14,6 +14,8 @@
  */
 package org.apache.geode.management.internal.cli.functions;
 
+import java.util.Collection;
+import java.util.Collections;
 import java.util.Set;
 
 import org.apache.logging.log4j.Logger;
@@ -27,7 +29,7 @@ import org.apache.geode.cache.CacheWriter;
 import org.apache.geode.cache.ExpirationAction;
 import org.apache.geode.cache.ExpirationAttributes;
 import org.apache.geode.cache.Region;
-import org.apache.geode.cache.execute.FunctionAdapter;
+import org.apache.geode.cache.execute.Function;
 import org.apache.geode.cache.execute.FunctionContext;
 import org.apache.geode.cache.execute.ResultSender;
 import org.apache.geode.internal.ClassPathLoader;
@@ -39,13 +41,15 @@ import org.apache.geode.management.internal.cli.CliUtil;
 import org.apache.geode.management.internal.cli.i18n.CliStrings;
 import org.apache.geode.management.internal.cli.util.RegionPath;
 import org.apache.geode.management.internal.configuration.domain.XmlEntity;
+import org.apache.geode.management.internal.security.ResourcePermissions;
+import org.apache.geode.security.ResourcePermission;
 
 /**
  * Function used by the 'alter region' gfsh command to alter a region on each member.
  *
  * @since GemFire 8.0
  */
-public class RegionAlterFunction extends FunctionAdapter implements InternalEntity {
+public class RegionAlterFunction implements Function, InternalEntity {
   private static final Logger logger = LogService.getLogger();
 
   private static final long serialVersionUID = -4846425364943216425L;
@@ -93,6 +97,11 @@ public class RegionAlterFunction extends FunctionAdapter implements InternalEnti
       }
       resultSender.lastResult(new CliFunctionResult(memberNameOrId, false, exceptionMsg));
     }
+  }
+
+  @Override
+  public Collection<ResourcePermission> getRequiredPermissions(String regionName) {
+    return Collections.singleton(ResourcePermissions.DATA_MANAGE);
   }
 
   private <K, V> Region<?, ?> alterRegion(Cache cache, RegionFunctionArgs regionAlterArgs) {

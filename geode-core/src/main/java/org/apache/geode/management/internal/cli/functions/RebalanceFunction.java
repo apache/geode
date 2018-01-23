@@ -14,6 +14,8 @@
  */
 package org.apache.geode.management.internal.cli.functions;
 
+import java.util.Collection;
+import java.util.Collections;
 import java.util.Iterator;
 import java.util.Set;
 import java.util.concurrent.CancellationException;
@@ -30,7 +32,8 @@ import org.apache.geode.cache.execute.FunctionContext;
 import org.apache.geode.cache.partition.PartitionRebalanceInfo;
 import org.apache.geode.internal.InternalEntity;
 import org.apache.geode.internal.logging.LogService;
-
+import org.apache.geode.management.internal.security.ResourcePermissions;
+import org.apache.geode.security.ResourcePermission;
 
 
 public class RebalanceFunction implements Function, InternalEntity {
@@ -89,6 +92,11 @@ public class RebalanceFunction implements Function, InternalEntity {
       logger.info("Starting RebalanceFunction InterruptedException: {}", e.getMessage(), e);
       context.getResultSender().lastResult("InterruptedException2 " + e.getMessage());
     }
+  }
+
+  @Override
+  public Collection<ResourcePermission> getRequiredPermissions(String regionName) {
+    return Collections.singleton(ResourcePermissions.DATA_MANAGE);
   }
 
   @Override

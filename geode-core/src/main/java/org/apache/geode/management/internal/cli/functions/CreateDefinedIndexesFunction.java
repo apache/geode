@@ -15,13 +15,15 @@
 package org.apache.geode.management.internal.cli.functions;
 
 import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
 import org.apache.geode.cache.Cache;
-import org.apache.geode.cache.execute.FunctionAdapter;
+import org.apache.geode.cache.execute.Function;
 import org.apache.geode.cache.execute.FunctionContext;
 import org.apache.geode.cache.execute.ResultSender;
 import org.apache.geode.cache.query.Index;
@@ -33,8 +35,10 @@ import org.apache.geode.internal.cache.xmlcache.CacheXml;
 import org.apache.geode.management.internal.cli.domain.IndexInfo;
 import org.apache.geode.management.internal.cli.i18n.CliStrings;
 import org.apache.geode.management.internal.configuration.domain.XmlEntity;
+import org.apache.geode.management.internal.security.ResourcePermissions;
+import org.apache.geode.security.ResourcePermission;
 
-public class CreateDefinedIndexesFunction extends FunctionAdapter implements InternalEntity {
+public class CreateDefinedIndexesFunction implements Function, InternalEntity {
   private static final long serialVersionUID = 1L;
 
   @Override
@@ -121,5 +125,10 @@ public class CreateDefinedIndexesFunction extends FunctionAdapter implements Int
       context.getResultSender()
           .lastResult(new CliFunctionResult(memberId, exception, exceptionMessage));
     }
+  }
+
+  @Override
+  public Collection<ResourcePermission> getRequiredPermissions(String regionName) {
+    return Collections.singleton(ResourcePermissions.CLUSTER_MANAGE_QUERY);
   }
 }

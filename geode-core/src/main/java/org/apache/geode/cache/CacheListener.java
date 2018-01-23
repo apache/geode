@@ -40,6 +40,12 @@ package org.apache.geode.cache;
  * access the region and must not wait for that thread to complete the task.
  * </p>
  *
+ * <p>
+ * WARNING: To avoid risk of deadlock, do not invoke CacheFactory.getAnyInstance() from within any
+ * callback methods. Instead use EntryEvent.getRegion().getCache() or
+ * RegionEvent.getRegion().getCache().
+ * </p>
+ *
  * <h4>Concurrency</h4>
  * <p>
  * Multiple events, on different entries, can cause concurrent invocation of
@@ -51,7 +57,6 @@ package org.apache.geode.cache;
  * <p>
  * To declare a CacheListener in a Cache XML file, it must also implement {@link Declarable}
  * </p>
- *
  *
  * @see AttributesFactory#addCacheListener
  * @see AttributesFactory#initCacheListeners
