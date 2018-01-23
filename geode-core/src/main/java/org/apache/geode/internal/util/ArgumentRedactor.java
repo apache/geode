@@ -92,9 +92,10 @@ public class ArgumentRedactor {
   }
 
   /**
-   * See {@link org.apache.geode.internal.util.ArgumentRedactor#redact(java.lang.String, boolean)}
    * This alias permits the first key-value pair to be given without a leading hyphen, so that
    * "password=secret" will be properly redacted.
+   *
+   * See {@link org.apache.geode.internal.util.ArgumentRedactor#redact(java.lang.String, boolean)}
    */
   public static String redact(String line) {
     return redact(line, true);

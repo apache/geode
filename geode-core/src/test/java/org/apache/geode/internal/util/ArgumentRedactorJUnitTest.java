@@ -36,7 +36,6 @@ import org.apache.geode.test.junit.categories.UnitTest;
  */
 @Category(UnitTest.class)
 public class ArgumentRedactorJUnitTest {
-  private static final Logger logger = LogService.getLogger();
   private static final String someProperty = "redactorTest.someProperty";
   private static final String somePasswordProperty = "redactorTest.aPassword";
   private static final String someOtherPasswordProperty =
