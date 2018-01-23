@@ -623,7 +623,7 @@ public abstract class DynamicRegionFactory {
     }
 
     if (this.config.getRegisterInterest()) {
-      ServerRegionProxy proxy = ((LocalRegion) newRegion).getServerProxy();
+      ServerRegionProxy proxy = ((InternalRegion) newRegion).getServerProxy();
       if (proxy != null) {
         if (((Pool) proxy.getPool()).getSubscriptionEnabled()) {
           try {
