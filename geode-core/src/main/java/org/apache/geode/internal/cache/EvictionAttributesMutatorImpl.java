@@ -18,10 +18,10 @@ import org.apache.geode.cache.EvictionAttributesMutator;
 
 public class EvictionAttributesMutatorImpl implements EvictionAttributesMutator {
 
-  private final InternalRegion<?, ?> region;
+  private final InternalRegion region;
   private final EvictionAttributesImpl evictionAttributes;
 
-  EvictionAttributesMutatorImpl(InternalRegion<?, ?> region,
+  EvictionAttributesMutatorImpl(InternalRegion region,
       EvictionAttributesImpl evictionAttributes) {
     this.region = region;
     this.evictionAttributes = evictionAttributes;

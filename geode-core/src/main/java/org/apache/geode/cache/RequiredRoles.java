@@ -53,7 +53,7 @@ public class RequiredRoles {
       // This could happen if we were in an interrupted state
       // upon method entry
       Thread.currentThread().interrupt();
-      ((InternalRegion<?,?>) region).getCancelCriterion().checkCancelInProgress(ie);
+      ((InternalRegion) region).getCancelCriterion().checkCancelInProgress(ie);
       Assert.assertTrue(false, "checkForRequiredRoles cannot throw InterruptedException");
       return Collections.emptySet(); // keep compiler happy
     }

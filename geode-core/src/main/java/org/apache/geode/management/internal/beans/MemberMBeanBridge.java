@@ -513,7 +513,7 @@ public class MemberMBeanBridge {
       addPartionRegionStats(((PartitionedRegion) region).getPrStats());
     }
 
-    InternalRegion<?, ?> internalRegion = (InternalRegion<?, ?>) region;
+    InternalRegion internalRegion = (InternalRegion) region;
     addLRUStats(internalRegion.getEvictionStatistics());
     DiskRegion dr = internalRegion.getDiskRegion();
     if (dr != null) {

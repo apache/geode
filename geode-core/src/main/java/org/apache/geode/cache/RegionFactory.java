@@ -777,7 +777,7 @@ public class RegionFactory<K, V> {
       throws RegionExistsException {
     @SuppressWarnings("deprecation")
     RegionAttributes<K, V> ra = this.attrsFactory.create();
-    return ((InternalRegion<?,?>) parent).createSubregion(name, ra);
+    return ((InternalRegion) parent).createSubregion(name, ra);
   }
 
   /**
