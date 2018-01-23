@@ -701,5 +701,10 @@ public class AbstractRegionJUnitTest {
     public String getNameForStats() {
       throw new UnsupportedOperationException();
     }
+
+    @Override
+    public boolean hasServerProxy() {
+      return false;
+    }
   }
 }
