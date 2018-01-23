@@ -103,7 +103,7 @@ import org.apache.geode.pdx.internal.PdxInstanceImpl;
  *
  * @since GemFire 3.5.1
  */
-public abstract class AbstractRegionEntry implements RegionEntry, HashEntry<Object, Object> {
+public abstract class AbstractRegionEntry implements HashRegionEntry<Object, Object> {
   private static final Logger logger = LogService.getLogger();
 
   /**

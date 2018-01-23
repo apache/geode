@@ -1626,7 +1626,7 @@ public class DistributedRegion extends LocalRegion implements InternalDistribute
   }
 
   @Override
-  void basicDestroyPart3(RegionEntry re, EntryEventImpl event, boolean inTokenMode,
+  public void basicDestroyPart3(RegionEntry re, EntryEventImpl event, boolean inTokenMode,
       boolean duringRI, boolean invokeCallbacks, Object expectedOldValue) {
 
     distributeDestroy(event, expectedOldValue);

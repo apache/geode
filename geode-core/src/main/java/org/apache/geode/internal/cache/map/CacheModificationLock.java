@@ -12,26 +12,17 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
-package org.apache.geode.internal.cache;
+package org.apache.geode.internal.cache.map;
 
-import org.apache.geode.StatisticsFactory;
-import org.apache.geode.cache.EvictionAttributes;
-import org.apache.geode.internal.cache.eviction.EvictionController;
+import org.apache.geode.internal.cache.EntryEventImpl;
+import org.apache.geode.internal.cache.InternalRegion;
 
-public interface EvictableRegion extends RegionMapOwner {
+public interface CacheModificationLock {
 
-  EvictionAttributes getEvictionAttributes();
+  /** get version-generation permission from the region's version vector */
+  void lockForCacheModification(InternalRegion owner, EntryEventImpl event);
 
-  boolean getOffHeap();
-
-  /**
-   * If this region represents a bucket then this methods needs to return the existing controller
-   * from the partitioned region that owns this bucket. Otherwise returns null.
-   */
-  EvictionController getExistingController(InternalRegionArguments internalArgs);
-
-  StatisticsFactory getStatisticsFactory();
-
-  String getNameForStats();
+  /** release version-generation permission from the region's version vector */
+  void releaseCacheModificationLock(InternalRegion owner, EntryEventImpl event);
 
 }
