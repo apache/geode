@@ -28,12 +28,10 @@ import org.apache.logging.log4j.Logger;
 
 import org.apache.geode.cache.CacheClosedException;
 import org.apache.geode.cache.Region;
-import org.apache.geode.cache.RegionService;
 import org.apache.geode.distributed.internal.DistributionConfig;
 import org.apache.geode.internal.cache.BucketRegion;
-import org.apache.geode.internal.cache.GemFireCacheImpl;
 import org.apache.geode.internal.cache.InternalCache;
-import org.apache.geode.internal.cache.LocalRegion;
+import org.apache.geode.internal.cache.InternalRegion;
 import org.apache.geode.internal.cache.PartitionedRegion;
 import org.apache.geode.internal.cache.PartitionedRegionDataStore;
 import org.apache.geode.internal.cache.RegionEntry;
@@ -270,16 +268,16 @@ public class MemoryAllocatorImpl implements MemoryAllocator {
           }
         }
       } else {
-        this.basicGetRegionLiveChunks((LocalRegion) r, result);
+        this.basicGetRegionLiveChunks((InternalRegion) r, result);
       }
 
     }
 
   }
 
-  private void basicGetRegionLiveChunks(LocalRegion r, List<OffHeapStoredObject> result) {
+  private void basicGetRegionLiveChunks(InternalRegion r, List<OffHeapStoredObject> result) {
     for (Object key : r.keySet()) {
-      RegionEntry re = ((LocalRegion) r).getRegionEntry(key);
+      RegionEntry re = r.getRegionEntry(key);
       if (re != null) {
         /**
          * value could be GATEWAY_SENDER_EVENT_IMPL_VALUE or region entry value.
