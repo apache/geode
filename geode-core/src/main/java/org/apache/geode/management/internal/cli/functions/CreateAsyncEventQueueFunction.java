@@ -14,6 +14,8 @@
  */
 package org.apache.geode.management.internal.cli.functions;
 
+import java.util.Collection;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Properties;
@@ -38,6 +40,8 @@ import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.cache.xmlcache.CacheXml;
 import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.management.internal.configuration.domain.XmlEntity;
+import org.apache.geode.management.internal.security.ResourcePermissions;
+import org.apache.geode.security.ResourcePermission;
 
 /**
  * Function used by the 'create async-event-queue' gfsh command to create an asynchronous event
@@ -128,6 +132,11 @@ public class CreateAsyncEventQueueFunction implements Function, InternalEntity {
     }
   }
 
+  @Override
+  public Collection<ResourcePermission> getRequiredPermissions(String regionName) {
+    return Collections.singleton(ResourcePermissions.CLUSTER_MANAGE_DEPLOY);
+  }
+
   private Object newInstance(String className)
       throws ClassNotFoundException, IllegalAccessException, InstantiationException {
     if (Strings.isNullOrEmpty(className)) {
@@ -139,6 +148,6 @@ public class CreateAsyncEventQueueFunction implements Function, InternalEntity {
 
   @Override
   public String getId() {
-    return CreateDiskStoreFunction.class.getName();
+    return CreateAsyncEventQueueFunction.class.getName();
   }
 }

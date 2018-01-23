@@ -15,6 +15,7 @@
 package org.apache.geode.management.internal.cli.functions;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
@@ -60,7 +61,9 @@ import org.apache.geode.management.internal.cli.i18n.CliStrings;
 import org.apache.geode.management.internal.cli.json.GfJsonException;
 import org.apache.geode.management.internal.cli.json.GfJsonObject;
 import org.apache.geode.management.internal.cli.util.JsonUtil;
+import org.apache.geode.management.internal.security.ResourcePermissions;
 import org.apache.geode.pdx.PdxInstance;
+import org.apache.geode.security.ResourcePermission;
 
 /**
  * @since GemFire 7.0
@@ -131,6 +134,10 @@ public class DataCommandFunction implements Function, InternalEntity {
       logger.info("Exception occurred:", e);
       functionContext.getResultSender().sendException(e);
     }
+  }
+
+  public Collection<ResourcePermission> getRequiredPermissions(String regionName) {
+    return Collections.singleton(ResourcePermissions.DATA_ALL);
   }
 
 

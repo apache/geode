@@ -14,7 +14,12 @@
  */
 package org.apache.geode.management.internal.cli.functions;
 
-import static org.apache.geode.internal.lang.SystemUtils.*;
+import static org.apache.geode.internal.lang.SystemUtils.getOsArchitecture;
+import static org.apache.geode.internal.lang.SystemUtils.getOsName;
+import static org.apache.geode.internal.lang.SystemUtils.getOsVersion;
+import static org.apache.geode.internal.lang.SystemUtils.isLinux;
+import static org.apache.geode.internal.lang.SystemUtils.isMacOSX;
+import static org.apache.geode.internal.lang.SystemUtils.isSolaris;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -22,6 +27,8 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
 
 import org.apache.logging.log4j.Logger;
@@ -36,6 +43,8 @@ import org.apache.geode.management.internal.cli.CliUtil;
 import org.apache.geode.management.internal.cli.CliUtil.DeflaterInflaterData;
 import org.apache.geode.management.internal.cli.GfshParser;
 import org.apache.geode.management.internal.cli.i18n.CliStrings;
+import org.apache.geode.management.internal.security.ResourcePermissions;
+import org.apache.geode.security.ResourcePermission;
 
 /**
  * Executes 'netstat' OS command & returns the result as compressed bytes.
@@ -82,6 +91,11 @@ public class NetstatFunction implements Function, InternalEntity {
         CliUtil.compressBytes(netstatOutput.getBytes()));
 
     context.getResultSender().lastResult(result);
+  }
+
+  @Override
+  public Collection<ResourcePermission> getRequiredPermissions(String regionName) {
+    return Collections.singleton(ResourcePermissions.CLUSTER_READ);
   }
 
   private static void addMemberHostHeader(final StringBuilder netstatInfo, final String id,

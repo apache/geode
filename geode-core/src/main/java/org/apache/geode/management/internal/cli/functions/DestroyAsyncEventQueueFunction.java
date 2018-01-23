@@ -14,6 +14,9 @@
  */
 package org.apache.geode.management.internal.cli.functions;
 
+import java.util.Collection;
+import java.util.Collections;
+
 import org.apache.geode.cache.asyncqueue.internal.AsyncEventQueueImpl;
 import org.apache.geode.cache.execute.Function;
 import org.apache.geode.cache.execute.FunctionContext;
@@ -21,6 +24,8 @@ import org.apache.geode.internal.InternalEntity;
 import org.apache.geode.internal.cache.xmlcache.CacheXml;
 import org.apache.geode.management.internal.cli.commands.DestroyAsyncEventQueueCommand;
 import org.apache.geode.management.internal.configuration.domain.XmlEntity;
+import org.apache.geode.management.internal.security.ResourcePermissions;
+import org.apache.geode.security.ResourcePermission;
 
 /**
  * Function used by the 'destroy async-event-queue' gfsh command to destroy an asynchronous event
@@ -66,6 +71,11 @@ public class DestroyAsyncEventQueueFunction implements Function, InternalEntity 
     } catch (Exception e) {
       context.getResultSender().lastResult(new CliFunctionResult(memberId, e, e.getMessage()));
     }
+  }
+
+  @Override
+  public Collection<ResourcePermission> getRequiredPermissions(String regionName) {
+    return Collections.singleton(ResourcePermissions.CLUSTER_MANAGE);
   }
 
   XmlEntity getAEQXmlEntity(String key, String value) {
