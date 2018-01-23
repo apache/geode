@@ -53,17 +53,17 @@ import org.apache.geode.internal.size.ReflectionSingleObjectSizer;
  *
  * @since GemFire 3.5.1
  */
-class VMLRURegionMap extends AbstractRegionMap {
+// TODO: change back from public to package-private
+public class VMLRURegionMap extends AbstractRegionMap {
   private static final Logger logger = LogService.getLogger();
 
-  VMLRURegionMap(EvictableRegion owner, Attributes attr,
+  public VMLRURegionMap(EvictableRegion owner, Attributes attr,
       InternalRegionArguments internalRegionArgs) {
     this(owner, attr, internalRegionArgs, createEvictionController(owner, internalRegionArgs));
   }
 
-  /** used by unit tests */
-  VMLRURegionMap(EvictableRegion owner, Attributes attr, InternalRegionArguments internalRegionArgs,
-      EvictionController evictionController) {
+  public VMLRURegionMap(EvictableRegion owner, Attributes attr,
+      InternalRegionArguments internalRegionArgs, EvictionController evictionController) {
     super(internalRegionArgs);
     initialize(owner, attr, internalRegionArgs);
     this.evictionController = evictionController;
@@ -85,9 +85,13 @@ class VMLRURegionMap extends AbstractRegionMap {
     return evictionController;
   }
 
-  protected void initialize(EvictableRegion owner, Attributes attr,
+  protected void initialize(EvictableRegion evictableRegion, Attributes attr,
       InternalRegionArguments internalRegionArgs) {
-    super.initialize(owner, attr, internalRegionArgs, true);
+    if (evictableRegion instanceof InternalRegion) {
+      initialize((InternalRegion) evictableRegion, attr, internalRegionArgs, true);
+    } else {
+      initialize((PlaceHolderDiskRegion) evictableRegion, attr, internalRegionArgs, true);
+    }
   }
 
   @Override
@@ -717,13 +721,13 @@ class VMLRURegionMap extends AbstractRegionMap {
   }
 
   @Override
-  protected void lruEntryDestroy(RegionEntry re) {
-    final EvictableEntry e = (EvictableEntry) re;
+  public void lruEntryDestroy(RegionEntry regionEntry) {
+    final EvictableEntry e = (EvictableEntry) regionEntry;
     if (logger.isTraceEnabled(LogMarker.LRU)) {
       logger.trace(LogMarker.LRU,
           "lruEntryDestroy for key={}; list size is: {}; actual size is: {}; map size is: {}; entry size: {}; in lru clock: {}",
-          re.getKey(), getTotalEntrySize(), this.getEvictionList().size(), size(), e.getEntrySize(),
-          !e.isEvicted());
+          regionEntry.getKey(), getTotalEntrySize(), this.getEvictionList().size(), size(),
+          e.getEntrySize(), !e.isEvicted());
     }
 
     // if (this.lruCreatedKey == re.getKey()) {
@@ -734,7 +738,7 @@ class VMLRURegionMap extends AbstractRegionMap {
     getEvictionList().destroyEntry(e);
     // if (removed || wasEvicted) { // evicted entries have already been removed from the list
     changeTotalEntrySize(-1 * e.getEntrySize());// subtract the size.
-    Token vTok = re.getValueAsToken();
+    Token vTok = regionEntry.getValueAsToken();
     if (vTok == Token.DESTROYED || vTok == Token.TOMBSTONE) {
       // OFFHEAP noop TODO: use re.isDestroyedOrTombstone
       // if in token mode we need to recalculate the size of the entry since it's
@@ -791,9 +795,9 @@ class VMLRURegionMap extends AbstractRegionMap {
   }
 
   @Override
-  boolean confirmEvictionDestroy(RegionEntry re) {
+  public boolean confirmEvictionDestroy(RegionEntry regionEntry) {
     // We assume here that a LRURegionMap contains LRUEntries
-    EvictableEntry lruRe = (EvictableEntry) re;
+    EvictableEntry lruRe = (EvictableEntry) regionEntry;
     if (lruRe.isInUseByTransaction() || lruRe.isDestroyed()) {
       lruRe.unsetEvicted();
       return false;
