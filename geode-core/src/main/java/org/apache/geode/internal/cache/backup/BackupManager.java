@@ -73,16 +73,14 @@ public class BackupManager {
   private final InternalCache cache;
   private final CountDownLatch allowDestroys = new CountDownLatch(1);
   private final BackupDefinition backupDefinition = new BackupDefinition();
-  private final String diskStoreDirectoryName;
+  private final String memberId;
   private volatile boolean isCancelled = false;
-  private Path tempDirectory;
-  private final Map<DiskStore, Map<DirectoryHolder, Path>> diskStoreDirTempDirsByDiskStore =
-      new HashMap<>();
+  private TemporaryBackupFiles temporaryFiles;
 
   public BackupManager(InternalDistributedMember sender, InternalCache gemFireCache) {
     this.sender = sender;
     this.cache = gemFireCache;
-    diskStoreDirectoryName = DATA_STORES_TEMPORARY_DIRECTORY + System.currentTimeMillis();
+    memberId = getCleanedMemberId();
   }
 
   public void validateRequestingAdmin() {
@@ -99,6 +97,7 @@ public class BackupManager {
     HashSet<PersistentID> persistentIds = new HashSet<>();
     for (DiskStore store : cache.listDiskStoresIncludingRegionOwned()) {
       DiskStoreImpl storeImpl = (DiskStoreImpl) store;
+
       storeImpl.lockStoreBeforeBackup();
       if (storeImpl.hasPersistedData()) {
         persistentIds.add(storeImpl.getPersistentID());
@@ -110,18 +109,20 @@ public class BackupManager {
 
   public HashSet<PersistentID> doBackup(File targetDir, File baselineDir, boolean abort)
       throws IOException {
+    if (abort) {
+      cleanup();
+      return new HashSet<>();
+    }
+
     try {
-      if (abort) {
-        return new HashSet<>();
-      }
-      tempDirectory = Files.createTempDirectory("backup_" + System.currentTimeMillis());
-      File backupDir = getBackupDir(targetDir);
+      temporaryFiles = TemporaryBackupFiles.create();
+      File memberBackupDir = new File(targetDir, memberId);
 
       // Make sure our baseline is okay for this member, then create inspector for baseline backup
       baselineDir = checkBaseline(baselineDir);
       BackupInspector inspector =
           (baselineDir == null ? null : BackupInspector.createInspector(baselineDir));
-      File storesDir = new File(backupDir, DATA_STORES_DIRECTORY);
+      File storesDir = new File(memberBackupDir, DATA_STORES_DIRECTORY);
       Collection<DiskStore> diskStores = cache.listDiskStoresIncludingRegionOwned();
 
       Map<DiskStoreImpl, DiskStoreBackup> backupByDiskStores =
@@ -130,18 +131,18 @@ public class BackupManager {
       HashSet<PersistentID> persistentIds = finishDiskStoreBackups(backupByDiskStores);
 
       if (!backupByDiskStores.isEmpty()) {
-        backupAdditionalFiles(backupDir);
+        backupAdditionalFiles(memberBackupDir);
         backupDefinition.setRestoreScript(restoreScript);
       }
 
       if (!backupByDiskStores.isEmpty()) {
         // TODO: allow different stategies...
-        BackupDestination backupDestination = new FileSystemBackupDestination(backupDir.toPath());
+        BackupDestination backupDestination =
+            new FileSystemBackupDestination(memberBackupDir.toPath());
         backupDestination.backupFiles(backupDefinition);
       }
 
       return persistentIds;
-
     } finally {
       cleanup();
     }
@@ -198,32 +199,15 @@ public class BackupManager {
   private void cleanup() {
     isCancelled = true;
     allowDestroys.countDown();
-    cleanupTemporaryFiles();
+    if (temporaryFiles != null) {
+      temporaryFiles.cleanupFiles();
+    }
     releaseBackupLocks();
     getDistributionManager().removeAllMembershipListener(membershipListener);
     cache.clearBackupManager();
   }
 
-  private void cleanupTemporaryFiles() {
-    if (tempDirectory != null) {
-      try {
-        FileUtils.deleteDirectory(tempDirectory.toFile());
-      } catch (IOException e) {
-        logger.warn("Unable to delete temporary directory created during backup, " + tempDirectory,
-            e);
-      }
-    }
-    for (Map<DirectoryHolder, Path> diskStoreDirToTempDirMap : diskStoreDirTempDirsByDiskStore
-        .values()) {
-      for (Path tempDir : diskStoreDirToTempDirMap.values()) {
-        try {
-          FileUtils.deleteDirectory(tempDir.toFile());
-        } catch (IOException e) {
-          logger.warn("Unable to delete temporary directory created during backup, " + tempDir, e);
-        }
-      }
-    }
-  }
+
 
   private void releaseBackupLocks() {
     for (DiskStore store : cache.listDiskStoresIncludingRegionOwned()) {
@@ -263,12 +247,12 @@ public class BackupManager {
    * @return null if the backup is to be a full backup otherwise return the data store directory in
    *         the previous backup for this member (if incremental).
    */
-  private File checkBaseline(File baselineParentDir) throws IOException {
+  private File checkBaseline(File baselineParentDir) {
     File baselineDir = null;
 
     if (null != baselineParentDir) {
       // Start by looking for this memberId
-      baselineDir = getBackupDir(baselineParentDir);
+      baselineDir = new File(baselineParentDir, memberId);
 
       if (!baselineDir.exists()) {
         // hmmm, did this member have a restart?
@@ -311,7 +295,7 @@ public class BackupManager {
         if (isCancelled()) {
           break;
         }
-        copyOplog(diskStore, tempDirectory.toFile(), oplog);
+        copyOplog(diskStore, temporaryFiles.getDirectory().toFile(), oplog);
 
         // Allow the oplog to be deleted, and process any pending delete
         backup.backupFinished(oplog);
@@ -392,13 +376,7 @@ public class BackupManager {
           backup = new DiskStoreBackup(allOplogs, targetDir);
           backupByDiskStore.put(diskStore, backup);
 
-
-          // TODO cleanup new location definition code
-          /*
-           * Path diskstoreDir = getBackupDir(tempDir.toFile(),
-           * diskStore.getInforFileDirIndex()).toPath(); Files.createDirectories(diskstoreDir);
-           */
-          backupDiskInitFile(diskStore, tempDirectory);
+          backupDiskInitFile(diskStore, temporaryFiles.getDirectory());
           diskStore.getPersistentOplogSet().forceRoll(null);
 
           if (logger.isDebugEnabled()) {
@@ -430,7 +408,7 @@ public class BackupManager {
   private void addDiskStoreDirectoriesToRestoreScript(DiskStoreImpl diskStore, File targetDir) {
     DirectoryHolder[] directories = diskStore.getDirectoryHolders();
     for (int i = 0; i < directories.length; i++) {
-      File backupDir = getBackupDir(targetDir, i);
+      File backupDir = getBackupDirForCurrentMember(targetDir, i);
       restoreScript.addFile(directories[i].getDir(), backupDir);
     }
   }
@@ -495,12 +473,12 @@ public class BackupManager {
     return oplogMap;
   }
 
-  private File getBackupDir(File targetDir, int index) {
+  private File getBackupDirForCurrentMember(File targetDir, int index) {
     return new File(targetDir, BACKUP_DIR_PREFIX + index);
   }
 
   private void backupConfigFiles() throws IOException {
-    Files.createDirectories(tempDirectory.resolve(CONFIG_DIRECTORY));
+    Files.createDirectories(temporaryFiles.getDirectory().resolve(CONFIG_DIRECTORY));
     addConfigFileToBackup(cache.getCacheXmlURL());
     addConfigFileToBackup(DistributedSystem.getPropertiesFileURL());
     // TODO: should the gfsecurity.properties file be backed up?
@@ -510,7 +488,8 @@ public class BackupManager {
     if (fileUrl != null) {
       try {
         Path source = Paths.get(fileUrl.toURI());
-        Path destination = tempDirectory.resolve(CONFIG_DIRECTORY).resolve(source.getFileName());
+        Path destination =
+            temporaryFiles.getDirectory().resolve(CONFIG_DIRECTORY).resolve(source.getFileName());
         Files.copy(source, destination, StandardCopyOption.COPY_ATTRIBUTES);
         backupDefinition.addConfigFileToBackup(destination);
       } catch (URISyntaxException e) {
@@ -520,13 +499,14 @@ public class BackupManager {
   }
 
   private void backupUserFiles(File backupDir) throws IOException {
-    Files.createDirectories(tempDirectory.resolve(USER_FILES));
+    Files.createDirectories(temporaryFiles.getDirectory().resolve(USER_FILES));
     List<File> backupFiles = cache.getBackupFiles();
     File userBackupDir = new File(backupDir, USER_FILES);
     for (File original : backupFiles) {
       if (original.exists()) {
         original = original.getAbsoluteFile();
-        Path destination = tempDirectory.resolve(USER_FILES).resolve(original.getName());
+        Path destination =
+            temporaryFiles.getDirectory().resolve(USER_FILES).resolve(original.getName());
         if (original.isDirectory()) {
           FileUtils.copyDirectory(original, destination.toFile());
         } else {
@@ -560,7 +540,8 @@ public class BackupManager {
         for (DeployedJar jar : jarList) {
           File source = new File(jar.getFileCanonicalPath());
           String sourceFileName = source.getName();
-          Path destination = tempDirectory.resolve(USER_FILES).resolve(sourceFileName);
+          Path destination =
+              temporaryFiles.getDirectory().resolve(USER_FILES).resolve(sourceFileName);
           Files.copy(source.toPath(), destination, StandardCopyOption.COPY_ATTRIBUTES);
           backupDefinition.addDeployedJarToBackup(destination);
 
@@ -576,12 +557,11 @@ public class BackupManager {
     }
   }
 
-  private File getBackupDir(File targetDir) {
+  private String getCleanedMemberId() {
     InternalDistributedMember memberId =
         cache.getInternalDistributedSystem().getDistributedMember();
     String vmId = memberId.toString();
-    vmId = cleanSpecialCharacters(vmId);
-    return new File(targetDir, vmId);
+    return cleanSpecialCharacters(vmId);
   }
 
   private void copyOplog(DiskStore diskStore, File targetDir, Oplog oplog) throws IOException {
@@ -597,7 +577,7 @@ public class BackupManager {
       throws IOException {
     if (file != null && file.exists()) {
       try {
-        Path tempDiskDir = getTempDirForDiskStore(diskStore, dirHolder);
+        Path tempDiskDir = temporaryFiles.getDiskStoreDirectory(diskStore, dirHolder);
         Files.createLink(tempDiskDir.resolve(file.getName()), file.toPath());
         backupDefinition.addOplogFileToBackup(diskStore, tempDiskDir.resolve(file.getName()));
       } catch (IOException | UnsupportedOperationException e) {
@@ -605,26 +585,6 @@ public class BackupManager {
         FileUtils.copyFileToDirectory(file, targetDir);
       }
     }
-  }
-
-  private Path getTempDirForDiskStore(DiskStore diskStore, DirectoryHolder dirHolder)
-      throws IOException {
-    Map<DirectoryHolder, Path> tempDirByDirectoryHolder =
-        diskStoreDirTempDirsByDiskStore.get(diskStore);
-    if (tempDirByDirectoryHolder == null) {
-      tempDirByDirectoryHolder = new HashMap<>();
-      diskStoreDirTempDirsByDiskStore.put(diskStore, tempDirByDirectoryHolder);
-    }
-    Path directory = tempDirByDirectoryHolder.get(dirHolder);
-    if (directory != null) {
-      return directory;
-    }
-
-    File diskStoreDir = dirHolder.getDir();
-    directory = diskStoreDir.toPath().resolve(diskStoreDirectoryName);
-    Files.createDirectories(directory);
-    tempDirByDirectoryHolder.put(dirHolder, directory);
-    return directory;
   }
 
   private String cleanSpecialCharacters(String string) {
