@@ -178,7 +178,7 @@ public abstract class ServerConnection implements Runnable {
   private Thread owner;
 
   /**
-   * Handshake reference uniquely identifying a connection
+   * Handshake reference uniquely identifying a client
    */
   protected ClientHandShake handshake;
   private int handShakeTimeout;
@@ -714,11 +714,6 @@ public abstract class ServerConnection implements Runnable {
   protected void doNormalMsg() {
     Message msg = null;
     msg = BaseCommand.readRequest(this);
-    processMessage(msg);
-
-  }
-
-  void processMessage(Message msg) {
     synchronized (serverConnectionCollection) {
       if (serverConnectionCollection.isTerminating) {
         // Client is being disconnected, don't try to process message.
