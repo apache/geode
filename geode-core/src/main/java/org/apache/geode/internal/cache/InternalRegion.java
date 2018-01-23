@@ -75,6 +75,7 @@ public interface InternalRegion<K, V>
 
   FilterProfile getFilterProfile();
 
+  boolean hasServerProxy();
   ServerRegionProxy getServerProxy();
 
   void unscheduleTombstone(RegionEntry entry);

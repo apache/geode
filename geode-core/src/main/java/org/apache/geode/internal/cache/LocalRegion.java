@@ -791,6 +791,7 @@ public class LocalRegion extends AbstractRegion implements LoaderHelperFactory,
     return this.serverRegionProxy;
   }
 
+  @Override
   public boolean hasServerProxy() {
     return this.serverRegionProxy != null;
   }
