@@ -101,7 +101,7 @@ public class VMCachedDeserializable implements CachedDeserializable, DataSeriali
         boolean callFinish = false;
         RegionMap regionMap = null;
         if (r != null) { // fix for bug 44795
-          regionMap = ((InternalRegion<?, ?>) r).getRegionMap();
+          regionMap = ((InternalRegion) r).getRegionMap();
         }
         boolean threadAlreadySynced = Thread.holdsLock(le);
         boolean isCacheListenerInvoked = re.isCacheListenerInvocationInProgress();

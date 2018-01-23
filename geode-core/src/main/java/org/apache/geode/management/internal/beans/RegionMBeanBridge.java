@@ -190,7 +190,7 @@ public class RegionMBeanBridge<K, V> {
   }
 
   private void monitorLRUStatistics() {
-    InternalRegion<?, ?> internalRegion = (InternalRegion<?, ?>) region;
+    InternalRegion internalRegion = (InternalRegion) region;
     Statistics lruStats = internalRegion.getEvictionStatistics();
     if (lruStats != null) {
       regionMonitor.addStatisticsToMonitor(lruStats);
@@ -375,7 +375,7 @@ public class RegionMBeanBridge<K, V> {
 
   public long getEntrySize() {
     if (isMemoryEvictionConfigured()) {
-      return ((InternalRegion<?, ?>) this.region).getEvictionCounter();
+      return ((InternalRegion) this.region).getEvictionCounter();
     }
     return ManagementConstants.NOT_AVAILABLE_LONG;
   }

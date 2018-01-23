@@ -45,7 +45,7 @@ public class LatestLastAccessTimeMessage<K> extends PooledDistributionMessage
   }
 
   public LatestLastAccessTimeMessage(LatestLastAccessTimeReplyProcessor replyProcessor,
-      Set<InternalDistributedMember> recipients, InternalDistributedRegion<K, ?> region, K key) {
+      Set<InternalDistributedMember> recipients, InternalDistributedRegion region, K key) {
     this.setRecipients(recipients);
     this.processorId = replyProcessor.getProcessorId();
     this.key = key;
@@ -60,8 +60,8 @@ public class LatestLastAccessTimeMessage<K> extends PooledDistributionMessage
   @Override
   protected void process(ClusterDistributionManager dm) {
     long latestLastAccessTime = 0L;
-    InternalDistributedRegion<K, ?> region =
-        (InternalDistributedRegion<K, ?>) dm.getCache().getRegion(this.regionName);
+    InternalDistributedRegion region =
+        (InternalDistributedRegion) dm.getCache().getRegion(this.regionName);
     if (region != null) {
       RegionEntry entry = region.getRegionEntry(this.key);
       if (entry != null) {
