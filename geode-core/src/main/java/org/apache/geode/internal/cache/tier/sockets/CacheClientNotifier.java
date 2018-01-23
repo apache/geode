@@ -236,7 +236,7 @@ public class CacheClientNotifier {
    * @param socket The socket over which the server communicates with the client.
    */
   public void registerClient(Socket socket, boolean isPrimary, long acceptorId,
-      boolean notifyBySubscription, AcceptorImpl acceptorImpl) throws IOException {
+      boolean notifyBySubscription) throws IOException {
     // Since no remote ports were specified in the message, wait for them.
     long startTime = this.statistics.startTime();
     DataInputStream dis = new DataInputStream(socket.getInputStream());
@@ -276,7 +276,7 @@ public class CacheClientNotifier {
         dos = new VersionedDataOutputStream(dos, clientVersion);
       }
       registerGFEClient(dis, dos, socket, isPrimary, startTime, clientVersion, acceptorId,
-          notifyBySubscription, acceptorImpl);
+          notifyBySubscription);
     } else {
       Exception e = new UnsupportedVersionException(clientVersionOrdinal);
       throw new IOException(e.toString());
@@ -285,7 +285,7 @@ public class CacheClientNotifier {
 
   protected void registerGFEClient(DataInputStream dis, DataOutputStream dos, Socket socket,
       boolean isPrimary, long startTime, Version clientVersion, long acceptorId,
-      boolean notifyBySubscription, AcceptorImpl acceptorImpl) throws IOException {
+      boolean notifyBySubscription) throws IOException {
     // Read the ports and throw them away. We no longer need them
     int numberOfPorts = dis.readInt();
     for (int i = 0; i < numberOfPorts; i++) {

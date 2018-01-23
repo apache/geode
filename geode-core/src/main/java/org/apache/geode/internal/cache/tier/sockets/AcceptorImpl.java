@@ -1835,7 +1835,7 @@ public class AcceptorImpl implements Acceptor, Runnable, CommBufferPool {
           isPrimaryServerToClient ? "primary" : "secondary", socket);
       try {
         acceptor.getCacheClientNotifier().registerClient(socket, isPrimaryServerToClient,
-            acceptor.getAcceptorId(), acceptor.isNotifyBySubscription(), acceptor);
+            acceptor.getAcceptorId(), acceptor.isNotifyBySubscription());
       } catch (IOException ex) {
         closeSocket(socket);
         if (isRunning()) {
