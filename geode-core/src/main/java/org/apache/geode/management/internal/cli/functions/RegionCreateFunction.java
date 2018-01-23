@@ -82,7 +82,7 @@ public class RegionCreateFunction implements Function, InternalEntity {
 
     RegionFunctionArgs regionCreateArgs = (RegionFunctionArgs) context.getArguments();
 
-    if (regionCreateArgs.isSkipIfExists()) {
+    if (regionCreateArgs.isIfNotExists()) {
       Region<Object, Object> region = cache.getRegion(regionCreateArgs.getRegionPath());
       if (region != null) {
         resultSender.lastResult(new CliFunctionResult(memberNameOrId, true,

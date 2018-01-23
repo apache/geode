@@ -157,7 +157,7 @@ public class CreateRegionCommandTest {
     assertThat(args.getRegionPath()).isEqualTo("/A");
     assertThat(args.getRegionShortcut()).isEqualTo(RegionShortcut.REPLICATE);
     assertThat(args.getTemplateRegion()).isNull();
-    assertThat(args.isSkipIfExists()).isFalse();
+    assertThat(args.isIfNotExists()).isFalse();
     assertThat(args.getKeyConstraint()).isNull();
     assertThat(args.getValueConstraint()).isNull();
     assertThat(args.isStatisticsEnabled()).isNull();

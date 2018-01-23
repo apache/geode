@@ -161,6 +161,23 @@ public class CreateRegionCommandIntegrationTest {
   }
 
   @Test
+  public void ifNotExistsIsIdempotent() throws Exception {
+    gfsh.executeAndAssertThat(
+        "create region --if-not-exists --type=PARTITION --name=/FOO --local-max-memory=0")
+        .statusIsSuccess().containsOutput("Region \"/FOO\" created");
+
+    gfsh.executeAndAssertThat(
+        "create region --skip-if-exists --type=PARTITION --name=/FOO --local-max-memory=0")
+        .statusIsSuccess().containsOutput("Region \"/FOO\" already exists.");
+
+    gfsh.executeAndAssertThat(
+        "create region --if-not-exists --type=PARTITION --name=/FOO --local-max-memory=0")
+        .statusIsSuccess().containsOutput("Region \"/FOO\" already exists.");
+
+    gfsh.executeAndAssertThat("destroy region --name=/FOO").statusIsSuccess();
+  }
+
+  @Test
   public void invalidCacheListener() throws Exception {
     gfsh.executeAndAssertThat("create region --name=/FOO --type=REPLICATE --cache-listener=abc-def")
         .statusIsError().containsOutput("Specify a valid class name for cache-listener");
