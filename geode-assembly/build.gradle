@@ -55,8 +55,7 @@ configurations {
 dependencies {
   provided project(':geode-core')
 
-  archives project(':geode-common')  
-  archives project(':geode-client-protocol')
+  archives project(':geode-common')
   archives project(':geode-json')
   archives project(':geode-core')
   archives project(':geode-connectors')
@@ -382,9 +381,6 @@ distributions {
 
         from project(":geode-protobuf-messages").configurations.runtime
         from project(":geode-protobuf-messages").configurations.archives.allArtifacts.files
-
-        from project(":geode-client-protocol").configurations.runtime
-        from project(":geode-client-protocol").configurations.archives.allArtifacts.files
 
         from project(":geode-rebalancer").configurations.runtime
         from project(":geode-rebalancer").configurations.archives.allArtifacts.files

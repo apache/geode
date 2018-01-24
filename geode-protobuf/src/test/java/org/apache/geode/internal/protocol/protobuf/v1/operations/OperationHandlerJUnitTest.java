@@ -21,7 +21,7 @@ import org.junit.experimental.categories.Category;
 
 import org.apache.geode.cache.Cache;
 import org.apache.geode.internal.cache.InternalCache;
-import org.apache.geode.internal.protocol.operations.OperationHandler;
+import org.apache.geode.internal.protocol.operations.ProtobufOperationHandler;
 import org.apache.geode.internal.protocol.protobuf.v1.ProtobufSerializationService;
 import org.apache.geode.test.junit.categories.UnitTest;
 
@@ -29,7 +29,7 @@ import org.apache.geode.test.junit.categories.UnitTest;
 public class OperationHandlerJUnitTest {
   protected Cache cacheStub;
   protected ProtobufSerializationService serializationService;
-  protected OperationHandler operationHandler;
+  protected ProtobufOperationHandler operationHandler;
 
   @Before
   public void setUp() throws Exception {
