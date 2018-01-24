@@ -557,7 +557,7 @@ public class ClientHealthMonitor {
 
   // This will return true if the proxyID is truly idle (or if no connections are found), or false
   // if there was a active connection.
-  private boolean prepareToTerminateIfNoConnectionProcessing(ClientProxyMembershipID proxyID) {
+  private boolean prepareToTerminateIfNoConnectionIsProcessing(ClientProxyMembershipID proxyID) {
     synchronized (proxyIdConnections) {
       ServerConnectionCollection collection = proxyIdConnections.get(proxyID);
       if (collection == null) {
@@ -828,7 +828,7 @@ public class ClientHealthMonitor {
                 // This client has been idle for too long. Determine whether
                 // any of its ServerConnection threads are currently processing
                 // a message. If so, let it go. If not, disconnect it.
-                if (prepareToTerminateIfNoConnectionProcessing(proxyID)) {
+                if (prepareToTerminateIfNoConnectionIsProcessing(proxyID)) {
                   if (cleanupClientThreads(proxyID, true)) {
                     logger.warn(LocalizedMessage.create(
                         LocalizedStrings.ClientHealthMonitor_MONITORING_CLIENT_WITH_MEMBER_ID_0_IT_HAD_BEEN_1_MS_SINCE_THE_LATEST_HEARTBEAT_MAX_INTERVAL_IS_2_TERMINATED_CLIENT,

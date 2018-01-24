@@ -42,7 +42,6 @@ import org.apache.geode.SystemFailure;
 import org.apache.geode.cache.client.internal.AbstractOp;
 import org.apache.geode.cache.client.internal.Connection;
 import org.apache.geode.distributed.DistributedSystem;
-import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
 import org.apache.geode.internal.Assert;
 import org.apache.geode.internal.HeapDataOutputStream;
 import org.apache.geode.internal.Version;
@@ -712,6 +711,12 @@ public abstract class ServerConnection implements Runnable {
   }
 
   protected void doNormalMsg() {
+    if (serverConnectionCollection == null) {
+      // return here if we haven't successfully completed handshake
+      logger.warn("Continued processing ServerConnection after handshake failed");
+      this.processMessages = false;
+      return;
+    }
     Message msg = null;
     msg = BaseCommand.readRequest(this);
     synchronized (serverConnectionCollection) {
@@ -1492,6 +1497,7 @@ public abstract class ServerConnection implements Runnable {
       logger.debug("{}: Closed connection", this.name);
     }
     releaseCommBuffer();
+    processMessages = false;
     return true;
   }
 

@@ -246,6 +246,12 @@ public class ServerConnectionTest {
     }
   }
 
+  /**
+   * This test sets up a TestConnection which will register with the ClientHealthMonitor and then
+   * block waiting to receive a fake message. This message will arrive just after the health monitor
+   * times out this connection and kills it. The test then makes sure that the connection correctly
+   * handles the terminated state and exits.
+   */
   @Test
   public void terminatingConnectionHandlesNewRequestsGracefully() throws Exception {
     when(cache.getCacheTransactionManager()).thenReturn(mock(TXManagerImpl.class));

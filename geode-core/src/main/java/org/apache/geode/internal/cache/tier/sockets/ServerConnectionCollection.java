@@ -18,7 +18,8 @@ import java.util.HashSet;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicInteger;
 
-// This is used to form of group of connections for a particular client.
+// This is used to form of group of connections for a particular client. Note that these objects are
+// managed by the ClientHealthMonitor, which also manages the synchronization of them.
 public class ServerConnectionCollection {
   private Set<ServerConnection> connectionSet = new HashSet<ServerConnection>();
 
@@ -27,7 +28,7 @@ public class ServerConnectionCollection {
 
   // Indicates that the server is soon to be or already in the process of terminating connections in
   // this collection.
-  boolean isTerminating = false;
+  volatile boolean isTerminating = false;
 
   public void addConnection(ServerConnection connection) {
     connectionSet.add(connection);
