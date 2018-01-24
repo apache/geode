@@ -75,9 +75,6 @@ public class BackupFileCopierIntegrationTest {
   private Path tempFilesLocation;
   private BackupFileCopier fileCopier;
 
-  public BackupFileCopierIntegrationTest() {
-  }
-
   @Before
   public void setup() throws IOException {
     cache = mock(InternalCache.class);
@@ -92,7 +89,8 @@ public class BackupFileCopierIntegrationTest {
     fileCopier.copyConfigFiles();
     Path cacheXmlDestination = tempFilesLocation.resolve(CONFIG_DIRECTORY).resolve(CACHE_XML);
     assertThat(cacheXmlDestination).doesNotExist();
-    Path propertiesFileDestination = tempFilesLocation.resolve(CONFIG_DIRECTORY).resolve(PROPERTIES_FILE);
+    Path propertiesFileDestination =
+        tempFilesLocation.resolve(CONFIG_DIRECTORY).resolve(PROPERTIES_FILE);
     assertThat(propertiesFileDestination).doesNotExist();
     assertThat(fileCopier.getBackupDefinition().getConfigFiles()).isEmpty();
   }
@@ -109,16 +107,19 @@ public class BackupFileCopierIntegrationTest {
   @Test
   public void copiesConfigFilesToCorrectLocation() throws IOException {
     File propertiesFile = tempFolder.newFile(PROPERTIES_FILE);
-    System.setProperty(DistributedSystem.PROPERTIES_FILE_PROPERTY, propertiesFile.getAbsolutePath());
+    System.setProperty(DistributedSystem.PROPERTIES_FILE_PROPERTY,
+        propertiesFile.getAbsolutePath());
 
     File cacheXml = tempFolder.newFile("cache.xml");
     URL cacheXmlURL = cacheXml.toURI().toURL();
     when(cache.getCacheXmlURL()).thenReturn(cacheXmlURL);
 
     fileCopier.copyConfigFiles();
+
     Path cacheXmlDestination = tempFilesLocation.resolve(CONFIG_DIRECTORY).resolve(CACHE_XML);
     assertThat(cacheXmlDestination).exists();
-    Path propertiesFileDestination = tempFilesLocation.resolve(CONFIG_DIRECTORY).resolve(PROPERTIES_FILE);
+    Path propertiesFileDestination =
+        tempFilesLocation.resolve(CONFIG_DIRECTORY).resolve(PROPERTIES_FILE);
     assertThat(propertiesFileDestination).exists();
     assertThat(fileCopier.getBackupDefinition().getConfigFiles())
         .containsExactlyInAnyOrder(cacheXmlDestination, propertiesFileDestination);
@@ -213,17 +214,22 @@ public class BackupFileCopierIntegrationTest {
     when(oplog.getDrfFile()).thenReturn(drfFile);
     when(oplog.getKrfFile()).thenReturn(krfFile);
     DiskStore diskStore = mock(DiskStore.class);
-    when(tempFiles.getDiskStoreDirectory(any(), any())).thenReturn(tempFolder.newFolder("diskstores").toPath());
+    when(tempFiles.getDiskStoreDirectory(any(), any()))
+        .thenReturn(tempFolder.newFolder("diskstores").toPath());
 
     fileCopier.copyOplog(diskStore, oplog);
 
-    Path expectedCrfFile = tempFiles.getDiskStoreDirectory(diskStore, dirHolder).resolve(crfFile.getName());
-    Path expectedDrfFile = tempFiles.getDiskStoreDirectory(diskStore, dirHolder).resolve(drfFile.getName());
-    Path expectedKrfFile = tempFiles.getDiskStoreDirectory(diskStore, dirHolder).resolve(krfFile.getName());
+    Path expectedCrfFile =
+        tempFiles.getDiskStoreDirectory(diskStore, dirHolder).resolve(crfFile.getName());
+    Path expectedDrfFile =
+        tempFiles.getDiskStoreDirectory(diskStore, dirHolder).resolve(drfFile.getName());
+    Path expectedKrfFile =
+        tempFiles.getDiskStoreDirectory(diskStore, dirHolder).resolve(krfFile.getName());
     assertThat(expectedCrfFile).exists();
     assertThat(expectedDrfFile).exists();
     assertThat(expectedKrfFile).exists();
-    assertThat(fileCopier.getBackupDefinition().getOplogFilesByDiskStore()).containsOnlyKeys(diskStore);
+    assertThat(fileCopier.getBackupDefinition().getOplogFilesByDiskStore())
+        .containsOnlyKeys(diskStore);
     assertThat(fileCopier.getBackupDefinition().getOplogFilesByDiskStore().get(diskStore))
         .containsExactlyInAnyOrder(expectedCrfFile, expectedDrfFile, expectedKrfFile);
   }
@@ -255,13 +261,17 @@ public class BackupFileCopierIntegrationTest {
 
     fileCopier.copyOplog(diskStore, oplog);
 
-    Path expectedCrfFile = tempFiles.getDiskStoreDirectory(diskStore, dirHolder).resolve(crfFile.getName());
-    Path expectedDrfFile = tempFiles.getDiskStoreDirectory(diskStore, dirHolder).resolve(drfFile.getName());
-    Path expectedKrfFile = tempFiles.getDiskStoreDirectory(diskStore, dirHolder).resolve(krfFile.getName());
+    Path expectedCrfFile =
+        tempFiles.getDiskStoreDirectory(diskStore, dirHolder).resolve(crfFile.getName());
+    Path expectedDrfFile =
+        tempFiles.getDiskStoreDirectory(diskStore, dirHolder).resolve(drfFile.getName());
+    Path expectedKrfFile =
+        tempFiles.getDiskStoreDirectory(diskStore, dirHolder).resolve(krfFile.getName());
     assertThat(expectedCrfFile).exists();
     assertThat(expectedDrfFile).exists();
     assertThat(expectedKrfFile).exists();
-    assertThat(fileCopier.getBackupDefinition().getOplogFilesByDiskStore()).containsOnlyKeys(diskStore);
+    assertThat(fileCopier.getBackupDefinition().getOplogFilesByDiskStore())
+        .containsOnlyKeys(diskStore);
     assertThat(fileCopier.getBackupDefinition().getOplogFilesByDiskStore().get(diskStore))
         .containsExactlyInAnyOrder(expectedCrfFile, expectedDrfFile, expectedKrfFile);
   }

@@ -46,47 +46,59 @@ public class BackupFileCopier {
   private static final String CONFIG_DIRECTORY = "config";
   private static final String USER_FILES = "user";
 
-  private InternalCache cache;
-  private TemporaryBackupFiles temporaryFiles;
-  private BackupDefinition backupDefinition = new BackupDefinition();
+  private final InternalCache cache;
+  private final TemporaryBackupFiles temporaryFiles;
+  private final BackupDefinition backupDefinition = new BackupDefinition();
+  private final Path userDirectory;
+  private final Path configDirectory;
 
   BackupFileCopier(InternalCache cache, TemporaryBackupFiles temporaryFiles) {
     this.cache = cache;
     this.temporaryFiles = temporaryFiles;
+    userDirectory = temporaryFiles.getDirectory().resolve(USER_FILES);
+    configDirectory = temporaryFiles.getDirectory().resolve(CONFIG_DIRECTORY);
+  }
+
+  BackupDefinition getBackupDefinition() {
+    return backupDefinition;
   }
 
   void copyConfigFiles() throws IOException {
-    Files.createDirectories(
-        temporaryFiles.getDirectory().resolve(CONFIG_DIRECTORY));
+    ensureExistance(configDirectory);
     addConfigFileToBackup(cache.getCacheXmlURL());
     addConfigFileToBackup(DistributedSystem.getPropertiesFileURL());
     // TODO: should the gfsecurity.properties file be backed up?
   }
 
+  private void ensureExistance(Path directory) throws IOException {
+    if (!Files.exists(directory)) {
+      Files.createDirectories(directory);
+    }
+  }
+
   private void addConfigFileToBackup(URL fileUrl) throws IOException {
-    if (fileUrl != null) {
-      try {
-        Path source = Paths.get(fileUrl.toURI());
-        Path destination =
-            temporaryFiles.getDirectory().resolve(CONFIG_DIRECTORY).resolve(source.getFileName());
-        Files.copy(source, destination, StandardCopyOption.COPY_ATTRIBUTES);
-        backupDefinition.addConfigFileToBackup(destination);
-      } catch (URISyntaxException e) {
-        throw new IOException(e);
-      }
+    if (fileUrl == null) {
+      return;
+    }
+
+    try {
+      Path source = Paths.get(fileUrl.toURI());
+      Path destination = configDirectory.resolve(source.getFileName());
+      Files.copy(source, destination, StandardCopyOption.COPY_ATTRIBUTES);
+      backupDefinition.addConfigFileToBackup(destination);
+    } catch (URISyntaxException e) {
+      throw new IOException(e);
     }
   }
 
   Set<File> copyUserFiles() throws IOException {
     Set<File> userFilesBackedUp = new HashSet<>();
-    Files.createDirectories(
-        temporaryFiles.getDirectory().resolve(USER_FILES));
+    ensureExistance(userDirectory);
     List<File> backupFiles = cache.getBackupFiles();
     for (File original : backupFiles) {
       if (original.exists()) {
         original = original.getAbsoluteFile();
-        Path destination =
-            temporaryFiles.getDirectory().resolve(USER_FILES).resolve(original.getName());
+        Path destination = userDirectory.resolve(original.getName());
         if (original.isDirectory()) {
           FileUtils.copyDirectory(original, destination.toFile());
         } else {
@@ -103,9 +115,8 @@ public class BackupFileCopier {
     Set<File> userJars = new HashSet<>();
     JarDeployer deployer = null;
 
+    ensureExistance(userDirectory);
     try {
-      Files.createDirectories(temporaryFiles.getDirectory().resolve(USER_FILES));
-
       // Suspend any user deployed jar file updates during this backup.
       deployer = getJarDeployer();
       deployer.suspendAll();
@@ -114,8 +125,7 @@ public class BackupFileCopier {
       for (DeployedJar jar : jarList) {
         File source = new File(jar.getFileCanonicalPath());
         String sourceFileName = source.getName();
-        Path destination =
-            temporaryFiles.getDirectory().resolve(USER_FILES).resolve(sourceFileName);
+        Path destination = userDirectory.resolve(sourceFileName);
         Files.copy(source.toPath(), destination, StandardCopyOption.COPY_ATTRIBUTES);
         backupDefinition.addDeployedJarToBackup(destination);
         userJars.add(source);
@@ -129,19 +139,14 @@ public class BackupFileCopier {
     return userJars;
   }
 
-  // package access for testing purposes only
-  JarDeployer getJarDeployer() {
-    return ClassPathLoader.getLatest().getJarDeployer();
-  }
-
   void copyDiskInitFile(DiskStoreImpl diskStore) throws IOException {
     File diskInitFile = diskStore.getDiskInitFile().getIFFile();
-    String subDir = Integer.toString(diskStore.getInforFileDirIndex());
-    Files.createDirectories(temporaryFiles.getDirectory().resolve(subDir));
-    Files.copy(diskInitFile.toPath(), temporaryFiles.getDirectory().resolve(subDir).resolve(diskInitFile.getName()),
+    String subDirName = Integer.toString(diskStore.getInforFileDirIndex());
+    Path subDir = temporaryFiles.getDirectory().resolve(subDirName);
+    Files.createDirectories(subDir);
+    Files.copy(diskInitFile.toPath(), subDir.resolve(diskInitFile.getName()),
         StandardCopyOption.COPY_ATTRIBUTES);
-    backupDefinition.addDiskInitFile(diskStore,
-        temporaryFiles.getDirectory().resolve(subDir).resolve(diskInitFile.getName()));
+    backupDefinition.addDiskInitFile(diskStore, subDir.resolve(diskInitFile.getName()));
   }
 
   void copyOplog(DiskStore diskStore, Oplog oplog) throws IOException {
@@ -153,19 +158,24 @@ public class BackupFileCopier {
 
   private void copyOplogFile(DiskStore diskStore, DirectoryHolder dirHolder, File file)
       throws IOException {
-    if (file != null && file.exists()) {
-      Path tempDiskDir = temporaryFiles.getDiskStoreDirectory(diskStore, dirHolder);
-      try {
-        Files.createLink(tempDiskDir.resolve(file.getName()), file.toPath());
-      } catch (IOException e) {
-        logger.warn("Unable to create hard link for {}. Reverting to file copy", tempDiskDir.toString());
-        FileUtils.copyFileToDirectory(file, tempDiskDir.toFile());
-      }
-      backupDefinition.addOplogFileToBackup(diskStore, tempDiskDir.resolve(file.getName()));
+    if (file == null || !file.exists()) {
+      return;
     }
+
+    Path tempDiskDir = temporaryFiles.getDiskStoreDirectory(diskStore, dirHolder);
+    try {
+      Files.createLink(tempDiskDir.resolve(file.getName()), file.toPath());
+    } catch (IOException e) {
+      logger.warn("Unable to create hard link for {}. Reverting to file copy",
+          tempDiskDir.toString());
+      FileUtils.copyFileToDirectory(file, tempDiskDir.toFile());
+    }
+    backupDefinition.addOplogFileToBackup(diskStore, tempDiskDir.resolve(file.getName()));
   }
 
-  public BackupDefinition getBackupDefinition() {
-    return backupDefinition;
+  // package access for testing purposes only
+  JarDeployer getJarDeployer() {
+    return ClassPathLoader.getLatest().getJarDeployer();
   }
+
 }
