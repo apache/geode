@@ -73,7 +73,9 @@ public class QueueConnectionImpl implements Connection {
     try {
       getConnection().close(keepAlive);
     } finally {
-      updater.close();
+      if (updater != null) {
+        updater.close();
+      }
     }
   }
 
