@@ -17,13 +17,15 @@ package org.apache.geode.management.internal.cli.functions;
 import java.lang.management.ManagementFactory;
 import java.lang.management.MemoryMXBean;
 import java.lang.management.MemoryUsage;
+import java.util.Collection;
+import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
 import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.CacheClosedException;
-import org.apache.geode.cache.execute.FunctionAdapter;
+import org.apache.geode.cache.execute.Function;
 import org.apache.geode.cache.execute.FunctionContext;
 import org.apache.geode.cache.server.CacheServer;
 import org.apache.geode.distributed.internal.DistributionConfig;
@@ -35,13 +37,15 @@ import org.apache.geode.internal.cache.tier.sockets.ClientProxyMembershipID;
 import org.apache.geode.management.internal.cli.CliUtil;
 import org.apache.geode.management.internal.cli.domain.CacheServerInfo;
 import org.apache.geode.management.internal.cli.domain.MemberInformation;
+import org.apache.geode.management.internal.security.ResourcePermissions;
+import org.apache.geode.security.ResourcePermission;
 
 /***
  *
  * since 7.0
  */
 
-public class GetMemberInformationFunction extends FunctionAdapter implements InternalEntity {
+public class GetMemberInformationFunction implements Function, InternalEntity {
   /**
    *
    */
@@ -137,6 +141,11 @@ public class GetMemberInformationFunction extends FunctionAdapter implements Int
     } catch (Exception e) {
       functionContext.getResultSender().sendException(e);
     }
+  }
+
+  @Override
+  public Collection<ResourcePermission> getRequiredPermissions(String regionName) {
+    return Collections.singleton(ResourcePermissions.CLUSTER_READ);
   }
 
   private long bytesToMeg(long bytes) {

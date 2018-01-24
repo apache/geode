@@ -15,14 +15,19 @@
 package org.apache.geode.management.internal.cli.functions;
 
 
+import java.util.Collection;
+import java.util.Collections;
+
 import org.apache.geode.cache.Cache;
-import org.apache.geode.cache.execute.FunctionAdapter;
+import org.apache.geode.cache.execute.Function;
 import org.apache.geode.cache.execute.FunctionContext;
 import org.apache.geode.internal.InternalEntity;
 import org.apache.geode.internal.OSProcess;
 import org.apache.geode.management.internal.cli.domain.StackTracesPerMember;
+import org.apache.geode.management.internal.security.ResourcePermissions;
+import org.apache.geode.security.ResourcePermission;
 
-public class GetStackTracesFunction extends FunctionAdapter implements InternalEntity {
+public class GetStackTracesFunction implements Function, InternalEntity {
 
   private static final long serialVersionUID = 1L;
 
@@ -41,6 +46,11 @@ public class GetStackTracesFunction extends FunctionAdapter implements InternalE
     } catch (Exception e) {
       context.getResultSender().sendException(e);
     }
+  }
+
+  @Override
+  public Collection<ResourcePermission> getRequiredPermissions(String regionName) {
+    return Collections.singleton(ResourcePermissions.CLUSTER_READ);
   }
 
   @Override

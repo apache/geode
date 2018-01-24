@@ -14,6 +14,9 @@
  */
 package org.apache.geode.management.internal.cli.functions;
 
+import java.util.Collection;
+import java.util.Collections;
+
 import org.apache.logging.log4j.Logger;
 
 import org.apache.geode.cache.AttributesFactory;
@@ -25,6 +28,8 @@ import org.apache.geode.cache.execute.FunctionContext;
 import org.apache.geode.internal.InternalEntity;
 import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.management.internal.cli.i18n.CliStrings;
+import org.apache.geode.management.internal.security.ResourcePermissions;
+import org.apache.geode.security.ResourcePermission;
 
 /**
  *
@@ -77,6 +82,11 @@ public class FetchRegionAttributesFunction implements Function, InternalEntity {
     // Is there a better way?
     AttributesFactory<K, V> afactory = new AttributesFactory<K, V>(foundRegion.getAttributes());
     return afactory.create();
+  }
+
+  @Override
+  public Collection<ResourcePermission> getRequiredPermissions(String regionName) {
+    return Collections.singleton(ResourcePermissions.CLUSTER_READ);
   }
 
   @Override

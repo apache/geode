@@ -15,6 +15,8 @@
 package org.apache.geode.management.internal.cli.functions;
 
 import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
 
 import org.apache.commons.lang.ArrayUtils;
@@ -31,6 +33,8 @@ import org.apache.geode.internal.InternalEntity;
 import org.apache.geode.internal.JarDeployer;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.logging.LogService;
+import org.apache.geode.management.internal.security.ResourcePermissions;
+import org.apache.geode.security.ResourcePermission;
 
 public class UndeployFunction implements Function, InternalEntity {
   private static final Logger logger = LogService.getLogger();
@@ -105,6 +109,11 @@ public class UndeployFunction implements Function, InternalEntity {
       CliFunctionResult result = new CliFunctionResult(memberId, th, null);
       context.getResultSender().lastResult(result);
     }
+  }
+
+  @Override
+  public Collection<ResourcePermission> getRequiredPermissions(String regionName) {
+    return Collections.singleton(ResourcePermissions.CLUSTER_MANAGE_DEPLOY);
   }
 
   @Override

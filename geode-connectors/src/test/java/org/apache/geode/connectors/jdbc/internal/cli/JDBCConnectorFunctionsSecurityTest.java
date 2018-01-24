@@ -77,7 +77,6 @@ public class JDBCConnectorFunctionsSecurityTest {
     functionStringMap.keySet().forEach(FunctionService::registerFunction);
   }
 
-
   @Test
   @ConnectionConfiguration(user = "user", password = "user")
   public void functionRequireExpectedPermission() throws Exception {
@@ -86,7 +85,8 @@ public class JDBCConnectorFunctionsSecurityTest {
       String permission = entry.getValue();
       gfsh.executeAndAssertThat("execute function --id=" + function.getId())
           .tableHasRowCount("Function Execution Result", 1)
-          .tableHasColumnWithValuesContaining("Function Execution Result", permission)
+          .tableHasRowWithValues("Function Execution Result",
+              "Exception: user not authorized for " + permission)
           .statusIsError();
     });
   }

@@ -61,18 +61,17 @@ public class ProtobufRegion<K, V> implements Region<K, V> {
     this.socket = socket;
   }
 
-  @Override
-  public V get(K key) throws IOException {
-    final OutputStream outputStream = socket.getOutputStream();
-    ClientProtocol.Message.newBuilder()
-        .setRequest(ClientProtocol.Request.newBuilder().setGetRequest(RegionAPI.GetRequest
-            .newBuilder().setRegionName(name).setKey(ValueEncoder.encodeValue(key))))
-        .build().writeDelimitedTo(outputStream);
-
+  private ClientProtocol.Response readResponse() throws IOException {
     final InputStream inputStream = socket.getInputStream();
-    return (V) ValueEncoder.decodeValue(ClientProtocol.Message.parseDelimitedFrom(inputStream)
-        .getResponse().getGetResponse().getResult());
+    ClientProtocol.Response response =
+        ClientProtocol.Message.parseDelimitedFrom(inputStream).getResponse();
+    final ClientProtocol.ErrorResponse errorResponse = response.getErrorResponse();
+    if (errorResponse != null && errorResponse.hasError()) {
+      throw new IOException(errorResponse.getError().getMessage());
+    }
+    return response;
   }
+
 
   @Override
   public RegionAttributes getRegionAttributes() throws IOException {
@@ -82,11 +81,21 @@ public class ProtobufRegion<K, V> implements Region<K, V> {
             .setGetRegionRequest(RegionAPI.GetRegionRequest.newBuilder().setRegionName(name)))
         .build().writeDelimitedTo(outputStream);
 
-    final InputStream inputStream = socket.getInputStream();
-    return new RegionAttributes(ClientProtocol.Message.parseDelimitedFrom(inputStream).getResponse()
-        .getGetRegionResponse().getRegion());
+    return new RegionAttributes(readResponse().getGetRegionResponse().getRegion());
   }
 
+
+  @Override
+  public V get(K key) throws IOException {
+    final OutputStream outputStream = socket.getOutputStream();
+    ClientProtocol.Message.newBuilder()
+        .setRequest(ClientProtocol.Request.newBuilder().setGetRequest(RegionAPI.GetRequest
+            .newBuilder().setRegionName(name).setKey(ValueEncoder.encodeValue(key))))
+        .build().writeDelimitedTo(outputStream);
+
+    final ClientProtocol.Response response = readResponse();
+    return (V) ValueEncoder.decodeValue(response.getGetResponse().getResult());
+  }
 
   @Override
   public Map<K, V> getAll(Collection<K> keys) throws IOException {
@@ -96,15 +105,21 @@ public class ProtobufRegion<K, V> implements Region<K, V> {
     RegionAPI.GetAllRequest.Builder getAllRequest = RegionAPI.GetAllRequest.newBuilder();
     getAllRequest.setRegionName(name);
     for (K key : keys) {
-      getAllRequest.addKey(ValueEncoder.encodeValue(key.toString()));
+      getAllRequest.addKey(ValueEncoder.encodeValue(key));
     }
     ClientProtocol.Message.newBuilder()
         .setRequest(ClientProtocol.Request.newBuilder().setGetAllRequest(getAllRequest)).build()
         .writeDelimitedTo(outputStream);
 
-    final InputStream inputStream = socket.getInputStream();
-    final RegionAPI.GetAllResponse getAllResponse =
-        ClientProtocol.Message.parseDelimitedFrom(inputStream).getResponse().getGetAllResponse();
+    final RegionAPI.GetAllResponse getAllResponse = readResponse().getGetAllResponse();
+    Map<Object, String> failures = new HashMap<>();
+    if (getAllResponse.getFailuresCount() > 0) {
+      for (BasicTypes.KeyedError keyedError : getAllResponse.getFailuresList()) {
+        failures.put(ValueEncoder.decodeValue(keyedError.getKey()),
+            keyedError.getError().getMessage());
+      }
+      throw new IOException("Unable to process the following keys: " + failures);
+    }
     for (BasicTypes.Entry entry : getAllResponse.getEntriesList()) {
       values.put((K) ValueEncoder.decodeValue(entry.getKey()),
           (V) ValueEncoder.decodeValue(entry.getValue()));
@@ -122,8 +137,7 @@ public class ProtobufRegion<K, V> implements Region<K, V> {
                 .setEntry(ValueEncoder.encodeEntry(key, value))))
         .build().writeDelimitedTo(outputStream);
 
-    final InputStream inputStream = socket.getInputStream();
-    ClientProtocol.Message.parseDelimitedFrom(inputStream).getResponse().getPutResponse();
+    readResponse();
   }
 
   @Override
@@ -138,18 +152,14 @@ public class ProtobufRegion<K, V> implements Region<K, V> {
         .setRequest(ClientProtocol.Request.newBuilder().setPutAllRequest(putAllRequest)).build()
         .writeDelimitedTo(outputStream);
 
-    final InputStream inputStream = socket.getInputStream();
-    final RegionAPI.PutAllResponse putAllResponse =
-        ClientProtocol.Message.parseDelimitedFrom(inputStream).getResponse().getPutAllResponse();
+    final RegionAPI.PutAllResponse putAllResponse = readResponse().getPutAllResponse();
     if (0 < putAllResponse.getFailedKeysCount()) {
-      StringBuilder builder = new StringBuilder();
+      Map<Object, String> failures = new HashMap<>();
       for (BasicTypes.KeyedError keyedError : putAllResponse.getFailedKeysList()) {
-        if (0 < builder.length()) {
-          builder.append(", ");
-        }
-        builder.append(ValueEncoder.decodeValue(keyedError.getKey()).toString());
+        failures.put(ValueEncoder.decodeValue(keyedError.getKey()),
+            keyedError.getError().getMessage());
       }
-      throw new IOException("Unable to put the following keys: " + builder.toString());
+      throw new IOException("Unable to put the following keys: " + failures);
     }
   }
 
@@ -162,7 +172,6 @@ public class ProtobufRegion<K, V> implements Region<K, V> {
             .newBuilder().setRegionName(name).setKey(ValueEncoder.encodeValue(key))))
         .build().writeDelimitedTo(outputStream);
 
-    final InputStream inputStream = socket.getInputStream();
-    ClientProtocol.Message.parseDelimitedFrom(inputStream).getResponse().getRemoveResponse();
+    readResponse();
   }
 }

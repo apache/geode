@@ -20,6 +20,10 @@ import static org.apache.geode.security.ResourcePermission.Operation.READ;
 import static org.apache.geode.security.ResourcePermission.Operation.WRITE;
 import static org.apache.geode.security.ResourcePermission.Resource.CLUSTER;
 import static org.apache.geode.security.ResourcePermission.Resource.DATA;
+import static org.apache.geode.security.ResourcePermission.Target.DEPLOY;
+import static org.apache.geode.security.ResourcePermission.Target.DISK;
+import static org.apache.geode.security.ResourcePermission.Target.GATEWAY;
+import static org.apache.geode.security.ResourcePermission.Target.QUERY;
 
 import org.apache.geode.security.ResourcePermission;
 import org.apache.geode.security.ResourcePermission.Operation;
@@ -36,6 +40,16 @@ public final class ResourcePermissions {
   public static final ResourcePermission CLUSTER_READ = new ResourcePermission(CLUSTER, READ);
   public static final ResourcePermission CLUSTER_WRITE = new ResourcePermission(CLUSTER, WRITE);
   public static final ResourcePermission CLUSTER_MANAGE = new ResourcePermission(CLUSTER, MANAGE);
+  public static final ResourcePermission CLUSTER_READ_QUERY =
+      new ResourcePermission(CLUSTER, READ, QUERY);
+  public static final ResourcePermission CLUSTER_MANAGE_QUERY =
+      new ResourcePermission(CLUSTER, MANAGE, QUERY);
+  public static final ResourcePermission CLUSTER_MANAGE_DEPLOY =
+      new ResourcePermission(CLUSTER, MANAGE, DEPLOY);
+  public static final ResourcePermission CLUSTER_MANAGE_DISK =
+      new ResourcePermission(CLUSTER, MANAGE, DISK);
+  public static final ResourcePermission CLUSTER_MANAGE_GATEWAY =
+      new ResourcePermission(CLUSTER, MANAGE, GATEWAY);
 
   private ResourcePermissions() {}
 }

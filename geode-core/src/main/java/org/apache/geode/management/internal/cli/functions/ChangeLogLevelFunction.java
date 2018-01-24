@@ -14,8 +14,10 @@
  */
 package org.apache.geode.management.internal.cli.functions;
 
-import static org.apache.geode.distributed.ConfigurationProperties.*;
+import static org.apache.geode.distributed.ConfigurationProperties.LOG_LEVEL;
 
+import java.util.Collection;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -31,6 +33,8 @@ import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.internal.logging.log4j.LogLevel;
 import org.apache.geode.internal.logging.log4j.LogMarker;
 import org.apache.geode.internal.logging.log4j.LogWriterLogger;
+import org.apache.geode.management.internal.security.ResourcePermissions;
+import org.apache.geode.security.ResourcePermission;
 
 
 /**
@@ -70,6 +74,11 @@ public class ChangeLogLevelFunction implements Function, InternalEntity {
           "ChangeLogLevelFunction exception " + ex.getMessage());
       context.getResultSender().lastResult(result);
     }
+  }
+
+  @Override
+  public Collection<ResourcePermission> getRequiredPermissions(String regionName) {
+    return Collections.singleton(ResourcePermissions.CLUSTER_WRITE);
   }
 
   @Override

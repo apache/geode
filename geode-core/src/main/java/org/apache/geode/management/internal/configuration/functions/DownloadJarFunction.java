@@ -20,8 +20,9 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.rmi.RemoteException;
+import java.util.Collection;
+import java.util.Collections;
 
-import com.healthmarketscience.rmiio.GZIPRemoteInputStream;
 import com.healthmarketscience.rmiio.RemoteInputStream;
 import com.healthmarketscience.rmiio.RemoteInputStreamServer;
 import com.healthmarketscience.rmiio.SimpleRemoteInputStream;
@@ -35,6 +36,8 @@ import org.apache.geode.distributed.internal.ClusterConfigurationService;
 import org.apache.geode.distributed.internal.InternalLocator;
 import org.apache.geode.internal.InternalEntity;
 import org.apache.geode.internal.logging.LogService;
+import org.apache.geode.management.internal.security.ResourcePermissions;
+import org.apache.geode.security.ResourcePermission;
 
 public class DownloadJarFunction implements Function<Object[]>, InternalEntity {
   private static final Logger logger = LogService.getLogger();
@@ -78,6 +81,11 @@ public class DownloadJarFunction implements Function<Object[]>, InternalEntity {
     }
 
     context.getResultSender().lastResult(result);
+  }
+
+  @Override
+  public Collection<ResourcePermission> getRequiredPermissions(String regionName) {
+    return Collections.singleton(ResourcePermissions.CLUSTER_READ);
   }
 
   @Override

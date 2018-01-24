@@ -81,7 +81,8 @@ public class LuceneFunctionSecurityTest {
       String permission = entry.getValue();
       gfsh.executeAndAssertThat("execute function --region=testRegion --id=" + function.getId())
           .tableHasRowCount(RESULT_HEADER, 1)
-          .tableHasColumnWithValuesContaining(RESULT_HEADER, permission).statusIsError();
+          .tableHasRowWithValues(RESULT_HEADER, "Exception: user not authorized for " + permission)
+          .statusIsError();
     });
   }
 
@@ -91,16 +92,18 @@ public class LuceneFunctionSecurityTest {
   @ConnectionConfiguration(user = "clusterManage", password = "clusterManage")
   public void dumpDirectoryFileRequiresBoth_AsClusterManage() {
     gfsh.executeAndAssertThat("execute function --region=testRegion --id=" + DumpDirectoryFiles.ID)
-        .tableHasRowCount(RESULT_HEADER, 1)
-        .tableHasColumnWithValuesContaining(RESULT_HEADER, "DATA:READ:testRegion").statusIsError();
+        .tableHasRowCount(RESULT_HEADER, 1).tableHasRowWithValues(RESULT_HEADER,
+            "Exception: clusterManage not authorized for DATA:READ:testRegion")
+        .statusIsError();
   }
 
   @Test
   @ConnectionConfiguration(user = "dataRead", password = "dataRead")
   public void dumpDirectoryFileRequiresBoth_AsDataRead() {
     gfsh.executeAndAssertThat("execute function --region=testRegion --id=" + DumpDirectoryFiles.ID)
-        .tableHasRowCount(RESULT_HEADER, 1)
-        .tableHasColumnWithValuesContaining(RESULT_HEADER, "CLUSTER:MANAGE").statusIsError();
+        .tableHasRowCount(RESULT_HEADER, 1).tableHasRowWithValues(RESULT_HEADER,
+            "Exception: dataRead not authorized for CLUSTER:MANAGE")
+        .statusIsError();
   }
 
   @Test
@@ -109,7 +112,9 @@ public class LuceneFunctionSecurityTest {
   public void dumpDirectoryFileRequiresBoth_dataReadAnotherRegion() {
     gfsh.executeAndAssertThat("execute function --region=testRegion --id=" + DumpDirectoryFiles.ID)
         .tableHasRowCount(RESULT_HEADER, 1)
-        .tableHasColumnWithValuesContaining(RESULT_HEADER, "DATA:READ:testRegion").statusIsError();
+        .tableHasRowWithValues(RESULT_HEADER,
+            "Exception: clusterManage,dataReadRegionB not authorized for DATA:READ:testRegion")
+        .statusIsError();
   }
 
   @Test
@@ -118,7 +123,9 @@ public class LuceneFunctionSecurityTest {
   public void dumpDirectoryFileRequiresBoth_dataReadInsufficient() {
     gfsh.executeAndAssertThat("execute function --region=testRegion --id=" + DumpDirectoryFiles.ID)
         .tableHasRowCount(RESULT_HEADER, 1)
-        .tableHasColumnWithValuesContaining(RESULT_HEADER, "DATA:READ:testRegion").statusIsError();
+        .tableHasRowWithValues(RESULT_HEADER,
+            "Exception: clusterManage,dataReadTestRegionA not authorized for DATA:READ:testRegion")
+        .statusIsError();
   }
 
   @Test
