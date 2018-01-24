@@ -104,6 +104,9 @@ fi
 DEFAULT_GRADLE_TASK_OPTIONS="--no-daemon -x javadoc -x spotlessCheck"
 
 mkdir -p ${GEODE_BUILD}
+if [ -v CALL_STACK_TIMEOUT ]; then
+  geode-ci/ci/scripts/capture-call-stacks.sh  ${CALL_STACK_TIMEOUT} &
+fi
 
 pushd geode
   tar cf - * | (cd ${GEODE_BUILD}; tar xpf -)

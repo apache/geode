@@ -142,7 +142,7 @@ jobs:
     - task: runtests
       tags: [large]
       privileged: true
-      timeout: 7h
+      timeout: 8h
       config:
         inputs:
           - name: geode
@@ -159,6 +159,7 @@ jobs:
           PUBLIC_BUCKET: ((!public-bucket))
           PARALLEL_DUNIT: true
           DUNIT_PARALLEL_FORKS: 7
+          CALL_STACK_TIMEOUT: 25200
         run:
           args:
           - distributedTest
@@ -207,7 +208,7 @@ jobs:
           rootfs: true
     - task: runtests
       privileged: true
-      timeout: 7h
+      timeout: 8h
       config:
         inputs:
           - name: geode
@@ -224,6 +225,7 @@ jobs:
           PUBLIC_BUCKET: ((!public-bucket))
           PARALLEL_DUNIT: true
           DUNIT_PARALLEL_FORKS: 1
+          CALL_STACK_TIMEOUT: 25200
         run:
           args:
           - :geode-assembly:acceptanceTest
@@ -272,7 +274,7 @@ jobs:
           rootfs: true
     - task: runtests
       privileged: true
-      timeout: 7h
+      timeout: 8h
       config:
         inputs:
           - name: geode
@@ -289,6 +291,7 @@ jobs:
           PUBLIC_BUCKET: ((!public-bucket))
           PARALLEL_DUNIT: true
           DUNIT_PARALLEL_FORKS: 1
+          CALL_STACK_TIMEOUT: 25200
         run:
           args:
           - integrationTest
@@ -337,7 +340,7 @@ jobs:
           rootfs: true
     - task: runtests
       privileged: true
-      timeout: 7h
+      timeout: 8h
       config:
         inputs:
           - name: geode
