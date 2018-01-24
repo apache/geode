@@ -1708,10 +1708,6 @@ public abstract class ServerConnection implements Runnable {
     this.processMessages = false;
   }
 
-  boolean getFlagProcessMessages() {
-    return this.processMessages;
-  }
-
   public InternalLogWriter getLogWriter() {
     return this.logWriter; // TODO:LOG:CONVERT: remove getLogWriter after callers are converted
   }

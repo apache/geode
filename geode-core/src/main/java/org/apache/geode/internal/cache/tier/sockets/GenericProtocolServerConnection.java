@@ -62,8 +62,8 @@ public class GenericProtocolServerConnection extends ServerConnection {
 
   @Override
   protected void doOneMessage() {
+    Socket socket = this.getSocket();
     try {
-      Socket socket = this.getSocket();
       InputStream inputStream = socket.getInputStream();
       OutputStream outputStream = socket.getOutputStream();
 
@@ -77,7 +77,9 @@ public class GenericProtocolServerConnection extends ServerConnection {
       setClientDisconnectedException(e);
       logger.debug("Encountered EOF while processing message: {}", e);
     } catch (IOException | IncompatibleVersionException e) {
-      logger.warn(e);
+      if (!socket.isClosed()) { // GEODE-4300, IOException may be thrown thrown on EOF
+        logger.warn(e);
+      }
       this.setFlagProcessMessagesAsFalse();
       setClientDisconnectedException(e);
     } finally {
