@@ -641,7 +641,7 @@ create index --name=value --expression=value --region=value
 | <span class="keyword parmname">&#8209;&#8209;expression</span> | *Required.* Field of the region values that are referenced by the index.               |         |
 | <span class="keyword parmname">\\-\\-region</span>     | *Required.* Name/Path of the region which corresponds to the "from" clause in a query. |         |
 | <span class="keyword parmname">\\-\\-members</span>     | Name/Id of the member(s) on which index will be created.                                  |         |
-| <span class="keyword parmname">\\-\\-type</span>       | Type of the index. Valid values are: `range`, `key` and `hash`.                        | `range` |
+| <span class="keyword parmname">\\-\\-type</span>       | Type of the index. Valid values are: `range` and `key`. (A third type, `hash`, is still recognized but hash indexes are deprecated.)                       | `range` |
 | <span class="keyword parmname">\\-\\-groups</span>      | The index will be created on all the members in the group(s).                     |         |
 
 
