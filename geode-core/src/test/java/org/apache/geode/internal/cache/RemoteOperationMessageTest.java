@@ -14,18 +14,22 @@
  */
 package org.apache.geode.internal.cache;
 
-import static org.mockito.Mockito.CALLS_REAL_METHODS;
-import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
+
+import java.util.Set;
 
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
 import org.apache.geode.distributed.internal.ClusterDistributionManager;
+import org.apache.geode.distributed.internal.InternalDistributedSystem;
+import org.apache.geode.distributed.internal.ReplyProcessor21;
+import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
 import org.apache.geode.test.fake.Fakes;
 import org.apache.geode.test.junit.categories.UnitTest;
 
@@ -33,8 +37,15 @@ import org.apache.geode.test.junit.categories.UnitTest;
 @Category(UnitTest.class)
 public class RemoteOperationMessageTest {
 
+  private RemoteOperationMessage msg; // the class under test
+
+  private InternalDistributedMember recipient;
+  private InternalDistributedMember sender;
+  private final String regionPath = "regionPath";
+  private ReplyProcessor21 processor;
+
   private GemFireCacheImpl cache;
-  private RemoteOperationMessage msg;
+  private InternalDistributedSystem system;
   private ClusterDistributionManager dm;
   private LocalRegion r;
   private TXManagerImpl txMgr;
@@ -44,24 +55,27 @@ public class RemoteOperationMessageTest {
   @Before
   public void setUp() throws Exception {
     cache = Fakes.cache();
-    dm = mock(ClusterDistributionManager.class);
-    msg = mock(RemoteOperationMessage.class);
+    system = cache.getSystem();
+    dm = (ClusterDistributionManager) system.getDistributionManager();
     r = mock(LocalRegion.class);
     txMgr = mock(TXManagerImpl.class);
     tx = mock(TXStateProxyImpl.class);
+    when(cache.getRegionByPathForProcessing(regionPath)).thenReturn(r);
+    when(cache.getTxManager()).thenReturn(txMgr);
 
-    when(msg.checkCacheClosing(dm)).thenReturn(false);
-    when(msg.checkDSClosing(dm)).thenReturn(false);
-    when(msg.getCache(dm)).thenReturn(cache);
-    when(msg.getRegionByPath(cache)).thenReturn(r);
-    when(msg.getTXManager(cache)).thenReturn(txMgr);
+    sender = mock(InternalDistributedMember.class);
 
-    doAnswer(CALLS_REAL_METHODS).when(msg).process(dm);
+    recipient = mock(InternalDistributedMember.class);
+    processor = mock(ReplyProcessor21.class);
+    // make it a spy to aid verification
+    msg = spy(new TestableRemoteOperationMessage(recipient, regionPath, processor));
   }
 
   @Test
   public void messageWithNoTXPerformsOnRegion() throws Exception {
     when(txMgr.masqueradeAs(msg)).thenReturn(null);
+    msg.setSender(sender);
+
     msg.process(dm);
 
     verify(msg, times(1)).operateOnRegion(dm, r, startTime);
@@ -71,6 +85,8 @@ public class RemoteOperationMessageTest {
   public void messageForNotFinishedTXPerformsOnRegion() throws Exception {
     when(txMgr.masqueradeAs(msg)).thenReturn(tx);
     when(tx.isInProgress()).thenReturn(true);
+    msg.setSender(sender);
+
     msg.process(dm);
 
     verify(msg, times(1)).operateOnRegion(dm, r, startTime);
@@ -80,6 +96,8 @@ public class RemoteOperationMessageTest {
   public void messageForFinishedTXDoesNotPerformOnRegion() throws Exception {
     when(txMgr.masqueradeAs(msg)).thenReturn(tx);
     when(tx.isInProgress()).thenReturn(false);
+    msg.setSender(sender);
+
     msg.process(dm);
 
     verify(msg, times(0)).operateOnRegion(dm, r, startTime);
@@ -87,23 +105,37 @@ public class RemoteOperationMessageTest {
 
   @Test
   public void noNewTxProcessingAfterTXManagerImplClosed() throws Exception {
-    txMgr = new TXManagerImpl(null, cache);
-
-    when(msg.checkCacheClosing(dm)).thenReturn(false);
-    when(msg.checkDSClosing(dm)).thenReturn(false);
-    when(msg.getCache(dm)).thenReturn(cache);
-    when(msg.getRegionByPath(cache)).thenReturn(r);
-    when(msg.getTXManager(cache)).thenReturn(txMgr);
-
-    when(msg.canParticipateInTransaction()).thenReturn(true);
-    when(msg.canStartRemoteTransaction()).thenReturn(true);
+    when(txMgr.masqueradeAs(msg)).thenReturn(tx);
+    when(txMgr.isClosed()).thenReturn(true);
+    msg.setSender(sender);
 
     msg.process(dm);
 
-    txMgr.close();
+    verify(msg, times(0)).operateOnRegion(dm, r, startTime);
+  }
 
-    msg.process(dm);
+  private static class TestableRemoteOperationMessage extends RemoteOperationMessage {
 
-    verify(msg, times(1)).operateOnRegion(dm, r, startTime);
+    public TestableRemoteOperationMessage(InternalDistributedMember recipient, String regionPath,
+        ReplyProcessor21 processor) {
+      super(recipient, regionPath, processor);
+    }
+
+    public TestableRemoteOperationMessage(Set recipients, String regionPath,
+        ReplyProcessor21 processor) {
+      super(recipients, regionPath, processor);
+    }
+
+    @Override
+    public int getDSFID() {
+      return 0;
+    }
+
+    @Override
+    protected boolean operateOnRegion(ClusterDistributionManager dm, LocalRegion r, long startTime)
+        throws RemoteOperationException {
+      return false;
+    }
+
   }
 }
