@@ -26,6 +26,7 @@ import java.util.Collections;
 import com.healthmarketscience.rmiio.RemoteInputStream;
 import com.healthmarketscience.rmiio.RemoteInputStreamServer;
 import com.healthmarketscience.rmiio.SimpleRemoteInputStream;
+import com.healthmarketscience.rmiio.exporter.RemoteStreamExporter;
 import org.apache.logging.log4j.Logger;
 
 import org.apache.geode.cache.execute.Function;
@@ -36,6 +37,7 @@ import org.apache.geode.distributed.internal.ClusterConfigurationService;
 import org.apache.geode.distributed.internal.InternalLocator;
 import org.apache.geode.internal.InternalEntity;
 import org.apache.geode.internal.logging.LogService;
+import org.apache.geode.management.internal.SystemManagementService;
 import org.apache.geode.management.internal.security.ResourcePermissions;
 import org.apache.geode.security.ResourcePermission;
 
@@ -58,11 +60,14 @@ public class DownloadJarFunction implements Function<Object[]>, InternalEntity {
         try {
           File jarFile = sharedConfig.getPathToJarOnThisLocator(group, jarName).toFile();
 
+          RemoteStreamExporter exporter = ((SystemManagementService) SystemManagementService
+              .getExistingManagementService(context.getCache())).getManagementAgent()
+                  .getRemoteStreamExporter();
           RemoteInputStreamServer istream = null;
           try {
             istream =
                 new SimpleRemoteInputStream(new BufferedInputStream(new FileInputStream(jarFile)));
-            result = istream.export();
+            result = exporter.export(istream);
             istream = null;
           } catch (FileNotFoundException | RemoteException ex) {
             throw new FunctionException(ex);
