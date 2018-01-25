@@ -27,6 +27,7 @@ import java.util.Set;
 
 import com.healthmarketscience.rmiio.RemoteInputStream;
 import com.healthmarketscience.rmiio.SimpleRemoteInputStream;
+import com.healthmarketscience.rmiio.exporter.RemoteStreamExporter;
 import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.lang.ArrayUtils;
 import org.apache.commons.lang.StringUtils;
@@ -39,6 +40,8 @@ import org.apache.geode.distributed.internal.ClusterConfigurationService;
 import org.apache.geode.management.cli.CliMetaData;
 import org.apache.geode.management.cli.ConverterHint;
 import org.apache.geode.management.cli.Result;
+import org.apache.geode.management.internal.ManagementAgent;
+import org.apache.geode.management.internal.SystemManagementService;
 import org.apache.geode.management.internal.cli.AbstractCliAroundInterceptor;
 import org.apache.geode.management.internal.cli.CliUtil;
 import org.apache.geode.management.internal.cli.GfshParseResult;
@@ -85,11 +88,15 @@ public class DeployCommand implements GfshCommand {
     targetMembers = CliUtil.findMembers(groups, null);
 
     List results = new ArrayList();
+    ManagementAgent agent = ((SystemManagementService) getManagementService()).getManagementAgent();
+    RemoteStreamExporter exporter = agent.getRemoteStreamExporter();
+
     for (DistributedMember member : targetMembers) {
       List<RemoteInputStream> remoteStreams = new ArrayList<>();
       List<String> jarNames = new ArrayList<>();
       for (String jarFullPath : jarFullPaths) {
-        remoteStreams.add(new SimpleRemoteInputStream(new FileInputStream(jarFullPath)).export());
+        remoteStreams
+            .add(exporter.export(new SimpleRemoteInputStream(new FileInputStream(jarFullPath))));
         jarNames.add(FilenameUtils.getName(jarFullPath));
       }
 
