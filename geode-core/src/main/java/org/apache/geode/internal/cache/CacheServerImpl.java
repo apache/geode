@@ -68,6 +68,8 @@ import org.apache.geode.internal.cache.tier.Acceptor;
 import org.apache.geode.internal.cache.tier.sockets.AcceptorImpl;
 import org.apache.geode.internal.cache.tier.sockets.CacheClientNotifier;
 import org.apache.geode.internal.cache.tier.sockets.ClientProxyMembershipID;
+import org.apache.geode.internal.cache.tier.sockets.OriginalServerConnection;
+import org.apache.geode.internal.cache.tier.sockets.ProtobufServerConnection;
 import org.apache.geode.internal.cache.tier.sockets.ServerConnectionFactory;
 import org.apache.geode.internal.i18n.LocalizedStrings;
 import org.apache.geode.internal.logging.LogService;
@@ -92,9 +94,8 @@ public class CacheServerImpl extends AbstractCacheServer implements Distribution
   private final SecurityService securityService;
 
   /**
-   * The server connection factory, that provides either a
-   * {@link org.apache.geode.internal.cache.tier.sockets.LegacyServerConnection} or a new
-   * {@link org.apache.geode.internal.cache.tier.sockets.GenericProtocolServerConnection}
+   * The server connection factory, that provides either a {@link OriginalServerConnection} or a new
+   * {@link ProtobufServerConnection}
    */
   private final ServerConnectionFactory serverConnectionFactory = new ServerConnectionFactory();
 

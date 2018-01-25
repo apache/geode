@@ -43,7 +43,7 @@ import org.apache.geode.internal.security.SecurityService;
 import org.apache.geode.test.junit.categories.UnitTest;
 
 @Category(UnitTest.class)
-public class GenericProtocolServerConnectionTest {
+public class ProtobufServerConnectionTest {
 
   private ClientHealthMonitor clientHealthMonitorMock;
 
@@ -62,10 +62,10 @@ public class GenericProtocolServerConnectionTest {
 
     AcceptorImpl acceptorStub = mock(AcceptorImpl.class);
     ClientProtocolProcessor clientProtocolProcessorMock = mock(ClientProtocolProcessor.class);
-    GenericProtocolServerConnection genericProtocolServerConnection =
+    ProtobufServerConnection protobufServerConnection =
         getServerConnection(socketMock, clientProtocolProcessorMock, acceptorStub);
 
-    genericProtocolServerConnection.emergencyClose();
+    protobufServerConnection.emergencyClose();
 
     Mockito.verify(socketMock).close();
   }
@@ -108,14 +108,14 @@ public class GenericProtocolServerConnectionTest {
         clientProxyMembershipIDArgumentCaptor.getValue().toString());
   }
 
-  private GenericProtocolServerConnection IOExceptionThrowingServerConnection()
+  private ProtobufServerConnection IOExceptionThrowingServerConnection()
       throws IOException, IncompatibleVersionException {
     ClientProtocolProcessor clientProtocolProcessor = mock(ClientProtocolProcessor.class);
     doThrow(new IOException()).when(clientProtocolProcessor).processMessage(any(), any());
     return getServerConnection(clientProtocolProcessor, mock(AcceptorImpl.class));
   }
 
-  private GenericProtocolServerConnection getServerConnection(Socket socketMock,
+  private ProtobufServerConnection getServerConnection(Socket socketMock,
       ClientProtocolProcessor clientProtocolProcessorMock, AcceptorImpl acceptorStub)
       throws UnknownHostException {
     clientHealthMonitorMock = mock(ClientHealthMonitor.class);
@@ -126,13 +126,13 @@ public class GenericProtocolServerConnectionTest {
     when(socketMock.getRemoteSocketAddress()).thenReturn(inetSocketAddressStub);
     when(socketMock.getInetAddress()).thenReturn(inetAddressStub);
 
-    return new GenericProtocolServerConnection(socketMock, mock(InternalCache.class),
+    return new ProtobufServerConnection(socketMock, mock(InternalCache.class),
         mock(CachedRegionHelper.class), mock(CacheServerStats.class), 0, 0, "",
         CommunicationMode.ProtobufClientServerProtocol.getModeNumber(), acceptorStub,
         clientProtocolProcessorMock, mock(SecurityService.class));
   }
 
-  private GenericProtocolServerConnection getServerConnection(
+  private ProtobufServerConnection getServerConnection(
       ClientProtocolProcessor clientProtocolProcessorMock, AcceptorImpl acceptorStub)
       throws UnknownHostException {
     Socket socketMock = mock(Socket.class);

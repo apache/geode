@@ -74,7 +74,7 @@ public class OutputCapturingServerConnectionTest {
     assertFalse(stdoutCapture.contains(unexpectedMessage));
   }
 
-  private GenericProtocolServerConnection getServerConnection(Socket socketMock,
+  private ProtobufServerConnection getServerConnection(Socket socketMock,
       ClientProtocolProcessor clientProtocolProcessorMock, AcceptorImpl acceptorStub)
       throws UnknownHostException {
     ClientHealthMonitor clientHealthMonitorMock = mock(ClientHealthMonitor.class);
@@ -85,7 +85,7 @@ public class OutputCapturingServerConnectionTest {
     when(socketMock.getRemoteSocketAddress()).thenReturn(inetSocketAddressStub);
     when(socketMock.getInetAddress()).thenReturn(inetAddressStub);
 
-    return new GenericProtocolServerConnection(socketMock, mock(InternalCache.class),
+    return new ProtobufServerConnection(socketMock, mock(InternalCache.class),
         mock(CachedRegionHelper.class), mock(CacheServerStats.class), 0, 0, "",
         CommunicationMode.ProtobufClientServerProtocol.getModeNumber(), acceptorStub,
         clientProtocolProcessorMock, mock(SecurityService.class));
