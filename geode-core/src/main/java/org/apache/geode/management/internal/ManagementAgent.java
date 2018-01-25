@@ -42,6 +42,7 @@ import javax.management.remote.rmi.RMIJRMPServerImpl;
 import javax.management.remote.rmi.RMIServerImpl;
 import javax.rmi.ssl.SslRMIClientSocketFactory;
 
+import com.healthmarketscience.rmiio.exporter.RemoteStreamExporter;
 import org.apache.commons.lang.StringUtils;
 import org.apache.logging.log4j.Logger;
 import org.eclipse.jetty.server.Server;
@@ -96,6 +97,11 @@ public class ManagementAgent {
   private final DistributionConfig config;
   private final SecurityService securityService;
   private boolean isHttpServiceRunning = false;
+  private RMIClientSocketFactory rmiClientSocketFactory;
+  private RMIServerSocketFactory rmiServerSocketFactory;
+  private int port;
+  private RemoteStreamExporter remoteStreamExporter = null;
+
   /**
    * This system property is set to true when the embedded HTTP server is started so that the
    * embedded pulse webapp can use a local MBeanServer instead of a remote JMX connection.
@@ -370,7 +376,7 @@ public class ManagementAgent {
    */
   private void configureAndStart() throws IOException {
     // get the port for RMI Registry and RMI Connector Server
-    final int port = this.config.getJmxManagerPort();
+    port = this.config.getJmxManagerPort();
     final String hostname;
     final InetAddress bindAddr;
     if (StringUtils.isBlank(this.config.getJmxManagerBindAddress())) {
@@ -395,9 +401,8 @@ public class ManagementAgent {
       logger.debug("Starting jmx manager agent on port {}{}", port,
           (bindAddr != null ? (" bound to " + bindAddr) : "") + (ssl ? " using SSL" : ""));
     }
-    RMIClientSocketFactory rmiClientSocketFactory = ssl ? new SslRMIClientSocketFactory() : null;
-    RMIServerSocketFactory rmiServerSocketFactory =
-        new GemFireRMIServerSocketFactory(socketCreator, bindAddr);
+    rmiClientSocketFactory = ssl ? new SslRMIClientSocketFactory() : null;
+    rmiServerSocketFactory = new GemFireRMIServerSocketFactory(socketCreator, bindAddr);
 
     // Following is done to prevent rmi causing stop the world gcs
     System.setProperty("sun.rmi.dgc.server.gcInterval", Long.toString(Long.MAX_VALUE - 1));
@@ -544,6 +549,14 @@ public class ManagementAgent {
 
   public JMXConnectorServer getJmxConnectorServer() {
     return jmxConnectorServer;
+  }
+
+  public synchronized RemoteStreamExporter getRemoteStreamExporter() {
+    if (remoteStreamExporter == null) {
+      remoteStreamExporter =
+          new GeodeRemoteStreamExporter(port, rmiClientSocketFactory, rmiServerSocketFactory);
+    }
+    return remoteStreamExporter;
   }
 
   private static class GemFireRMIServerSocketFactory
