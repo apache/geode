@@ -40,7 +40,7 @@ import org.apache.geode.test.junit.categories.UnitTest;
 public class JdbcAsyncWriterTest {
 
   private SqlHandler sqlHandler;
-  private InternalRegion<Object, Object> region;
+  private InternalRegion region;
 
   private JdbcAsyncWriter writer;
 
