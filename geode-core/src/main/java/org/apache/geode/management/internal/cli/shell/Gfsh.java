@@ -584,7 +584,7 @@ public class Gfsh extends JLineShell {
         expandedPropCommandsMap.put(withPropsExpanded, line);
       }
       if (gfshFileLogger.fineEnabled()) {
-        gfshFileLogger.fine(logMessage + ArgumentRedactor.redactScriptLine(withPropsExpanded));
+        gfshFileLogger.fine(logMessage + ArgumentRedactor.redact(withPropsExpanded));
       }
       success = super.executeScriptLine(withPropsExpanded);
     } catch (Exception e) {

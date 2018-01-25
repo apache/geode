@@ -62,7 +62,6 @@ import javax.net.ssl.KeyManager;
 import javax.net.ssl.KeyManagerFactory;
 import javax.net.ssl.SSLContext;
 import javax.net.ssl.SSLEngine;
-import javax.net.ssl.SSLException;
 import javax.net.ssl.SSLHandshakeException;
 import javax.net.ssl.SSLPeerUnverifiedException;
 import javax.net.ssl.SSLServerSocket;
@@ -1086,8 +1085,9 @@ public class SocketCreator {
       // add other options here....
       for (String key : System.getProperties().stringPropertyNames()) { // fix for 46822
         if (key.startsWith("javax.net.ssl")) {
-          String redactedString = ArgumentRedactor.redact(key, System.getProperty(key));
-          sb.append("  ").append(key).append(" = ").append(redactedString).append("\n");
+          String possiblyRedactedValue =
+              ArgumentRedactor.redactValueIfNecessary(key, System.getProperty(key));
+          sb.append("  ").append(key).append(" = ").append(possiblyRedactedValue).append("\n");
         }
       }
       logger.debug(sb.toString());
