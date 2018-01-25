@@ -538,7 +538,7 @@ public class ManagementAgent {
 
       Set<ObjectName> names = platformMBeanServer.queryNames(mbeanON, null);
       if (names.isEmpty()) {
-        platformMBeanServer.registerMBean(new FileUploader(), mbeanON);
+        platformMBeanServer.registerMBean(new FileUploader(getRemoteStreamExporter()), mbeanON);
         logger.info("Registered FileUploaderMBean on " + mbeanON);
       }
     } catch (InstanceAlreadyExistsException | MBeanRegistrationException

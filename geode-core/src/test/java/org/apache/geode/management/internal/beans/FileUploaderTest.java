@@ -45,7 +45,7 @@ public class FileUploaderTest {
 
   @Before
   public void before() {
-    fileUploader = new FileUploader();
+    fileUploader = new FileUploader(null);
     files = new ArrayList<>();
   }
 
@@ -58,7 +58,7 @@ public class FileUploaderTest {
   }
 
   @Test
-  public void delteFileNotInTheUploadedDir() throws IOException {
+  public void deleteFileNotInTheUploadedDir() throws IOException {
     File file = temporaryFolder.newFile("a.jar");
     files.add(file.getAbsolutePath());
 
