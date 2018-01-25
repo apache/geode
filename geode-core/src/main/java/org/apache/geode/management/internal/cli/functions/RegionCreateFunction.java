@@ -14,8 +14,10 @@
  */
 package org.apache.geode.management.internal.cli.functions;
 
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.List;
 import java.util.Set;
 
 import org.apache.commons.lang.StringUtils;
@@ -281,12 +283,14 @@ public class RegionCreateFunction implements Function, InternalEntity {
     // Set plugins
     final Set<String> cacheListeners = regionCreateArgs.getCacheListeners();
     if (cacheListeners != null && !cacheListeners.isEmpty()) {
+      List<CacheListener<K, V>> newListeners = new ArrayList<>();
       for (String cacheListener : cacheListeners) {
         Class<CacheListener<K, V>> cacheListenerKlass =
             CliUtil.forName(cacheListener, CliStrings.CREATE_REGION__CACHELISTENER);
-        factory.addCacheListener(
-            CliUtil.newInstance(cacheListenerKlass, CliStrings.CREATE_REGION__CACHELISTENER));
+        newListeners
+            .add(CliUtil.newInstance(cacheListenerKlass, CliStrings.CREATE_REGION__CACHELISTENER));
       }
+      factory.initCacheListeners(newListeners.toArray(new CacheListener[0]));
     }
 
     // Compression provider
