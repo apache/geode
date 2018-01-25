@@ -188,7 +188,8 @@ public class BackupIntegrationTest {
 
     BackupManager backup =
         cache.startBackup(cache.getInternalDistributedSystem().getDistributedMember());
-    backup.prepareForBackup();
+    backup.startBackup();
+    backup.getDiskStoreIdsToBackup();
     backup.doBackup(backupDir, null, false);
 
     // Put another key to make sure we restore
@@ -237,7 +238,8 @@ public class BackupIntegrationTest {
 
     BackupManager backup =
         cache.startBackup(cache.getInternalDistributedSystem().getDistributedMember());
-    backup.prepareForBackup();
+    backup.startBackup();
+    backup.getDiskStoreIdsToBackup();
     backup.doBackup(backupDir, null, false);
     assertEquals("No backup files should have been created", Collections.emptyList(),
         Arrays.asList(backupDir.list()));
@@ -253,7 +255,8 @@ public class BackupIntegrationTest {
 
     BackupManager backup =
         cache.startBackup(cache.getInternalDistributedSystem().getDistributedMember());
-    backup.prepareForBackup();
+    backup.startBackup();
+    backup.getDiskStoreIdsToBackup();
     backup.doBackup(backupDir, null, false);
 
 
@@ -282,7 +285,8 @@ public class BackupIntegrationTest {
     BackupManager backupManager =
         cache.startBackup(cache.getInternalDistributedSystem().getDistributedMember());
     backupManager.validateRequestingAdmin();
-    backupManager.prepareForBackup();
+    backupManager.startBackup();
+    backupManager.getDiskStoreIdsToBackup();
     final Region theRegion = region;
     final DiskStore theDiskStore = ds;
     CompletableFuture.runAsync(() -> destroyAndCompact(theRegion, theDiskStore));
@@ -316,7 +320,8 @@ public class BackupIntegrationTest {
 
     BackupManager backup =
         cache.startBackup(cache.getInternalDistributedSystem().getDistributedMember());
-    backup.prepareForBackup();
+    backup.startBackup();
+    backup.getDiskStoreIdsToBackup();
     backup.doBackup(backupDir, null, false);
     Collection<File> fileCollection = FileUtils.listFiles(backupDir,
         new RegexFileFilter("BackupIntegrationTest.cache.xml"), DirectoryFileFilter.DIRECTORY);
