@@ -267,8 +267,7 @@ public abstract class RemoteOperationMessage extends DistributionMessage
       // _still_ a possibility that you are dealing with a cascading
       // error condition, so you also need to check to see if the JVM
       // is still usable:
-      SystemFailure.checkFailure();
-      // log the exception at fine level if there is no reply to the message
+      checkForSystemFailure();
       thr = null;
       if (sendReply) {
         if (!checkDSClosing(dm)) {
@@ -300,6 +299,10 @@ public abstract class RemoteOperationMessage extends DistributionMessage
     }
   }
 
+  protected void checkForSystemFailure() {
+    SystemFailure.checkFailure();
+  }
+
   TXManagerImpl getTXManager(InternalCache cache) {
     return cache.getTxManager();
   }
@@ -315,18 +318,10 @@ public abstract class RemoteOperationMessage extends DistributionMessage
   /**
    * Send a generic ReplyMessage. This is in a method so that subclasses can override the reply
    * message type
-   *
-   * @param pr the Partitioned Region for the message whose statistics are incremented
-   * @param startTime the start time of the operation in nanoseconds
-   * @see PutMessage#sendReply
    */
   protected void sendReply(InternalDistributedMember member, int procId, DistributionManager dm,
-      ReplyException ex, LocalRegion pr, long startTime) {
-    // if (pr != null && startTime > 0) {
-    // pr.getPrStats().endRemoteOperationMessagesProcessing(startTime);
-    // }
-
-    ReplyMessage.send(member, procId, ex, getReplySender(dm), pr != null && pr.isInternalRegion());
+      ReplyException ex, LocalRegion r, long startTime) {
+    ReplyMessage.send(member, procId, ex, getReplySender(dm), r != null && r.isInternalRegion());
   }
 
   /**

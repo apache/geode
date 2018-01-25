@@ -709,10 +709,9 @@ public class RemotePutMessage extends RemoteOperationMessageWithDirectReply
         event);
   }
 
-  // override reply message type from PartitionMessage
   @Override
   protected void sendReply(InternalDistributedMember member, int procId, DistributionManager dm,
-      ReplyException ex, LocalRegion pr, long startTime) {
+      ReplyException ex, LocalRegion r, long startTime) {
     PutReplyMessage.send(member, procId, getReplySender(dm), result, getOperation(), ex, this,
         null);
   }

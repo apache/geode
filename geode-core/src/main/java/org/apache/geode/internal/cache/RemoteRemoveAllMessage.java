@@ -397,18 +397,9 @@ public class RemoteRemoveAllMessage extends RemoteOperationMessageWithDirectRepl
   }
 
 
-  // override reply processor type from PartitionMessage
   RemoteOperationResponse createReplyProcessor(LocalRegion r, Set recipients, Object key) {
     return new RemoveAllResponse(r.getSystem(), recipients);
   }
-
-  // override reply message type from PartitionMessage
-  @Override
-  protected void sendReply(InternalDistributedMember member, int procId, DistributionManager dm,
-      ReplyException ex, LocalRegion r, long startTime) {
-    ReplyMessage.send(member, procId, ex, getReplySender(dm), r != null && r.isInternalRegion());
-  }
-
 
   @Override
   protected void appendFields(StringBuffer buff) {

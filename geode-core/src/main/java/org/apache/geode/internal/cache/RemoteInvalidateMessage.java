@@ -237,7 +237,6 @@ public class RemoteInvalidateMessage extends RemoteDestroyMessage {
     return new InvalidateResponse(r.getSystem(), recipients, key);
   }
 
-  // override reply message type from PartitionMessage
   @Override
   protected void sendReply(InternalDistributedMember member, int procId, DistributionManager dm,
       ReplyException ex, LocalRegion r, long startTime) {
@@ -246,10 +245,6 @@ public class RemoteInvalidateMessage extends RemoteDestroyMessage {
 
   protected void sendReply(InternalDistributedMember member, int procId, DistributionManager dm,
       ReplyException ex, LocalRegion r, VersionTag versionTag, long startTime) {
-    /*
-     * if (pr != null && startTime > 0) { pr.getPrStats().endPartitionMessagesProcessing(startTime);
-     * }
-     */
     InvalidateReplyMessage.send(member, procId, getReplySender(dm), versionTag, ex);
   }
 
