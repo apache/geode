@@ -217,7 +217,7 @@ public class RemotePutMessage extends RemoteOperationMessageWithDirectReply
 
   private RemotePutMessage(Set recipients, String regionPath, DirectReplyProcessor processor,
       EntryEventImpl event, final long lastModified, boolean ifNew, boolean ifOld,
-      Object expectedOldValue, boolean requireOldValue, boolean useOriginRemote, int processorType,
+      Object expectedOldValue, boolean requireOldValue, boolean useOriginRemote,
       boolean possibleDuplicate) {
     super(recipients, regionPath, processor);
     this.processor = processor;
@@ -225,7 +225,6 @@ public class RemotePutMessage extends RemoteOperationMessageWithDirectReply
     this.expectedOldValue = expectedOldValue;
     this.useOriginRemote = useOriginRemote;
     this.key = event.getKey();
-    this.processorType = processorType;
     this.possibleDuplicate = possibleDuplicate;
 
     // useOriginRemote is true for TX single hops only as of now.
@@ -297,9 +296,8 @@ public class RemotePutMessage extends RemoteOperationMessageWithDirectReply
       try {
         attempts++;
         final boolean posDup = (attempts > 1);
-        RemotePutResponse response =
-            send(replicate, event.getRegion(), event, lastModified, ifNew, ifOld, expectedOldValue,
-                requireOldValue, false, ClusterDistributionManager.SERIAL_EXECUTOR, posDup);
+        RemotePutResponse response = send(replicate, event.getRegion(), event, lastModified, ifNew,
+            ifOld, expectedOldValue, requireOldValue, false, posDup);
         PutResult result = response.waitForResult();
         event.setOldValue(result.oldValue, true/* force */);
         event.setOperation(result.op);
@@ -358,7 +356,7 @@ public class RemotePutMessage extends RemoteOperationMessageWithDirectReply
       EntryEventImpl event, final long lastModified, boolean ifNew, boolean ifOld,
       Object expectedOldValue, boolean requireOldValue) throws RemoteOperationException {
     return send(recipient, r, event, lastModified, ifNew, ifOld, expectedOldValue, requireOldValue,
-        true, ClusterDistributionManager.PARTITIONED_REGION_EXECUTOR, false);
+        true, false);
   }
 
   /**
@@ -371,8 +369,6 @@ public class RemotePutMessage extends RemoteOperationMessageWithDirectReply
    * @param ifNew whether a new entry must be created
    * @param ifOld whether an old entry must be updated (no creates)
    * @param useOriginRemote whether the receiver should consider the event local or remote
-   * @param processorType the type of executor to use (e.g.,
-   *        DistributionManager.PARTITIONED_REGION_EXECUTOR)
    * @param possibleDuplicate TODO
    * @return the processor used to await acknowledgement that the update was sent, or null to
    *         indicate that no acknowledgement will be sent
@@ -380,7 +376,7 @@ public class RemotePutMessage extends RemoteOperationMessageWithDirectReply
    */
   public static RemotePutResponse send(DistributedMember recipient, LocalRegion r,
       EntryEventImpl event, final long lastModified, boolean ifNew, boolean ifOld,
-      Object expectedOldValue, boolean requireOldValue, boolean useOriginRemote, int processorType,
+      Object expectedOldValue, boolean requireOldValue, boolean useOriginRemote,
       boolean possibleDuplicate) throws RemoteOperationException {
     // Assert.assertTrue(recipient != null, "RemotePutMessage NULL recipient"); recipient can be
     // null for event notifications
@@ -389,9 +385,9 @@ public class RemotePutMessage extends RemoteOperationMessageWithDirectReply
     RemotePutResponse processor =
         new RemotePutResponse(r.getSystem(), recipients, event.getKey(), false);
 
-    RemotePutMessage m = new RemotePutMessage(recipients, r.getFullPath(), processor, event,
-        lastModified, ifNew, ifOld, expectedOldValue, requireOldValue, useOriginRemote,
-        processorType, possibleDuplicate);
+    RemotePutMessage m =
+        new RemotePutMessage(recipients, r.getFullPath(), processor, event, lastModified, ifNew,
+            ifOld, expectedOldValue, requireOldValue, useOriginRemote, possibleDuplicate);
     m.setInternalDs(r.getSystem());
     m.setSendDelta(true);
     m.setTransactionDistributed(r.getCache().getTxManager().isDistributed());
@@ -530,11 +526,6 @@ public class RemotePutMessage extends RemoteOperationMessageWithDirectReply
   @Override
   public EventID getEventID() {
     return this.eventId;
-  }
-
-  @Override
-  public int getProcessorType() {
-    return this.processorType;
   }
 
   @Override

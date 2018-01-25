@@ -90,11 +90,6 @@ public class RemoteFetchVersionMessage extends RemoteOperationMessage {
   }
 
   @Override
-  public int getProcessorType() {
-    return ClusterDistributionManager.SERIAL_EXECUTOR;
-  }
-
-  @Override
   public void fromData(DataInput in) throws IOException, ClassNotFoundException {
     super.fromData(in);
     this.key = DataSerializer.readObject(in);

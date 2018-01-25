@@ -140,7 +140,7 @@ public class RemoteDestroyMessage extends RemoteOperationMessageWithDirectReply
   public RemoteDestroyMessage() {}
 
   protected RemoteDestroyMessage(Set recipients, String regionPath, DirectReplyProcessor processor,
-      EntryEventImpl event, Object expectedOldValue, int processorType, boolean useOriginRemote,
+      EntryEventImpl event, Object expectedOldValue, boolean useOriginRemote,
       boolean possibleDuplicate) {
     super(recipients, regionPath, processor);
     this.expectedOldValue = expectedOldValue;
@@ -149,7 +149,6 @@ public class RemoteDestroyMessage extends RemoteOperationMessageWithDirectReply
     this.op = event.getOperation();
     this.bridgeContext = event.getContext();
     this.eventId = event.getEventId();
-    this.processorType = processorType;
     this.useOriginRemote = useOriginRemote;
     this.possibleDuplicate = possibleDuplicate;
     this.versionTag = event.getVersionTag();
@@ -248,8 +247,8 @@ public class RemoteDestroyMessage extends RemoteOperationMessageWithDirectReply
       try {
         attempts++;
         final boolean posDup = (attempts > 1);
-        RemoteDestroyReplyProcessor processor = send(replicate, event.getRegion(), event,
-            expectedOldValue, ClusterDistributionManager.SERIAL_EXECUTOR, false, posDup);
+        RemoteDestroyReplyProcessor processor =
+            send(replicate, event.getRegion(), event, expectedOldValue, false, posDup);
         processor.waitForCacheException();
         VersionTag versionTag = processor.getVersionTag();
         if (versionTag != null) {
@@ -294,12 +293,11 @@ public class RemoteDestroyMessage extends RemoteOperationMessageWithDirectReply
    * @param recipient the recipient of the message
    * @param r the ReplicateRegion for which the destroy was performed
    * @param event the event causing this message
-   * @param processorType the type of executor to use in processing the message
    * @param useOriginRemote TODO
    * @return the processor used to await the potential {@link org.apache.geode.cache.CacheException}
    */
   public static RemoteDestroyReplyProcessor send(DistributedMember recipient, LocalRegion r,
-      EntryEventImpl event, Object expectedOldValue, int processorType, boolean useOriginRemote,
+      EntryEventImpl event, Object expectedOldValue, boolean useOriginRemote,
       boolean possibleDuplicate) throws RemoteOperationException {
     // Assert.assertTrue(recipient != null, "RemoteDestroyMessage NULL recipient"); recipient may be
     // null for event notification
@@ -308,7 +306,7 @@ public class RemoteDestroyMessage extends RemoteOperationMessageWithDirectReply
         new RemoteDestroyReplyProcessor(r.getSystem(), recipients, false);
     p.requireResponse();
     RemoteDestroyMessage m = new RemoteDestroyMessage(recipients, r.getFullPath(), p, event,
-        expectedOldValue, processorType, useOriginRemote, possibleDuplicate);
+        expectedOldValue, useOriginRemote, possibleDuplicate);
     m.setTransactionDistributed(r.getCache().getTxManager().isDistributed());
     Set failures = r.getDistributionManager().putOutgoing(m);
     if (failures != null && failures.size() > 0) {
@@ -316,12 +314,6 @@ public class RemoteDestroyMessage extends RemoteOperationMessageWithDirectReply
           LocalizedStrings.RemoteDestroyMessage_FAILED_SENDING_0.toLocalizedString(m));
     }
     return p;
-  }
-
-
-  @Override
-  public int getProcessorType() {
-    return this.processorType;
   }
 
   /**

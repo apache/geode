@@ -143,7 +143,7 @@ public abstract class RemoteOperationMessage extends DistributionMessage
 
   @Override
   public int getProcessorType() {
-    return ClusterDistributionManager.PARTITIONED_REGION_EXECUTOR;
+    return ClusterDistributionManager.SERIAL_EXECUTOR;
   }
 
   /**

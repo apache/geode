@@ -80,11 +80,6 @@ public class RemoteGetMessage extends RemoteOperationMessageWithDirectReply {
   }
 
   @Override
-  public int getProcessorType() {
-    return ClusterDistributionManager.SERIAL_EXECUTOR;
-  }
-
-  @Override
   protected boolean operateOnRegion(final ClusterDistributionManager dm, LocalRegion r,
       long startTime) throws RemoteOperationException {
     if (logger.isTraceEnabled(LogMarker.DM)) {

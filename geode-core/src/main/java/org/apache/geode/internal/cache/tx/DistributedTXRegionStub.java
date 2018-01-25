@@ -65,8 +65,7 @@ public class DistributedTXRegionStub extends AbstractPeerTXRegionStub {
     // this.prStats.incPartitionMessagesSent();
     try {
       RemoteOperationResponse response = RemoteDestroyMessage.send(state.getTarget(),
-          event.getLocalRegion(), event, expectedOldValue,
-          ClusterDistributionManager.PARTITIONED_REGION_EXECUTOR, true, false);
+          event.getLocalRegion(), event, expectedOldValue, true, false);
       response.waitForCacheException();
     } catch (EntryNotFoundException enfe) {
       throw enfe;
@@ -118,8 +117,7 @@ public class DistributedTXRegionStub extends AbstractPeerTXRegionStub {
       boolean forceNewEntry) {
     try {
       RemoteOperationResponse response =
-          RemoteInvalidateMessage.send(state.getTarget(), event.getRegion(), event,
-              ClusterDistributionManager.PARTITIONED_REGION_EXECUTOR, true, false);
+          RemoteInvalidateMessage.send(state.getTarget(), event.getRegion(), event, true, false);
       response.waitForCacheException();
     } catch (RegionDestroyedException rde) {
       throw new TransactionDataNotColocatedException(

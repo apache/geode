@@ -66,8 +66,7 @@ public class RemoteInvalidateMessage extends RemoteDestroyMessage {
 
   private RemoteInvalidateMessage(Set recipients, String regionPath, DirectReplyProcessor processor,
       EntryEventImpl event, boolean useOriginRemote, boolean possibleDuplicate) {
-    super(recipients, regionPath, processor, event, null,
-        ClusterDistributionManager.PARTITIONED_REGION_EXECUTOR, useOriginRemote, possibleDuplicate);
+    super(recipients, regionPath, processor, event, null, useOriginRemote, possibleDuplicate);
   }
 
   public static boolean distribute(EntryEventImpl event, boolean onlyPersistent) {
@@ -90,8 +89,7 @@ public class RemoteInvalidateMessage extends RemoteDestroyMessage {
       try {
         attempts++;
         final boolean posDup = (attempts > 1);
-        InvalidateResponse processor = send(replicate, event.getRegion(), event,
-            ClusterDistributionManager.SERIAL_EXECUTOR, false, posDup);
+        InvalidateResponse processor = send(replicate, event.getRegion(), event, false, posDup);
         processor.waitForCacheException();
         VersionTag versionTag = processor.getVersionTag();
         if (versionTag != null) {
@@ -136,13 +134,12 @@ public class RemoteInvalidateMessage extends RemoteDestroyMessage {
    * @param recipient the recipient of the message
    * @param r the ReplicateRegion for which the invalidate was performed
    * @param event the event causing this message
-   * @param processorType the type of executor to use
    * @param useOriginRemote whether the receiver should use originRemote=true in its event
    * @return the InvalidateResponse processor used to await the potential
    *         {@link org.apache.geode.cache.CacheException}
    */
   public static InvalidateResponse send(DistributedMember recipient, LocalRegion r,
-      EntryEventImpl event, int processorType, boolean useOriginRemote, boolean possibleDuplicate)
+      EntryEventImpl event, boolean useOriginRemote, boolean possibleDuplicate)
       throws RemoteOperationException {
     // Assert.assertTrue(recipient != null, "RemoteInvalidateMessage NULL recipient"); recipient may
     // be null for remote notifications
