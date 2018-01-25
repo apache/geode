@@ -388,6 +388,9 @@ jobs:
   serial: true
   public: true
   plan:
+    - get: geode
+      passed: [AcceptanceTest, DistributedTest, IntegrationTest]
+      trigger: true
     - aggregate:
       - get: geode-ci
       - get: geode-examples
