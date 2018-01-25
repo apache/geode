@@ -15,10 +15,23 @@
 
 package org.apache.geode.internal;
 
-import java.io.*;
+import java.io.DataInput;
+import java.io.DataInputStream;
+import java.io.DataOutput;
+import java.io.DataOutputStream;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.InvalidClassException;
 import java.net.InetAddress;
 
-import org.apache.geode.*;
+import org.apache.geode.DataSerializable;
+import org.apache.geode.DataSerializer;
+import org.apache.geode.GemFireIOException;
+import org.apache.geode.SystemIsRunningException;
+import org.apache.geode.UncreatedSystemException;
+import org.apache.geode.UnstartedSystemException;
 import org.apache.geode.internal.i18n.LocalizedStrings;
 
 /**
@@ -262,9 +275,6 @@ public class ManagerInfo implements DataSerializable {
         return getManagerStatusCode(directory, locator);
       } catch (UnstartedSystemException ignore) {
         return STOPPED_STATUS_CODE;
-      } catch (GemFireIOException ex2) {
-        // give up. The info file is probably corrupt
-        throw ex2;
       }
     } finally {
       if (interrupted) {

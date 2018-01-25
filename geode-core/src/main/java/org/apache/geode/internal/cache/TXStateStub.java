@@ -25,7 +25,6 @@ import org.apache.geode.cache.CommitConflictException;
 import org.apache.geode.cache.EntryNotFoundException;
 import org.apache.geode.cache.Region;
 import org.apache.geode.cache.Region.Entry;
-import org.apache.geode.cache.SynchronizationCommitConflictException;
 import org.apache.geode.cache.TransactionDataNodeHasDepartedException;
 import org.apache.geode.cache.TransactionException;
 import org.apache.geode.cache.TransactionId;
@@ -90,20 +89,12 @@ public abstract class TXStateStub implements TXStateInterface {
     ReliableReplyProcessor21 response = JtaBeforeCompletionMessage.send(proxy.getCache(),
         proxy.getTxId().getUniqId(), getOriginatingMember(), target);
     try {
-      try {
-        response.waitForReliableDelivery();
-      } catch (ReliableReplyException e) {
-        throw new TransactionDataNodeHasDepartedException(e);
-      } catch (ReplyException e) {
-        e.handleAsUnexpected();
-      } catch (InterruptedException e) {
-      }
-    } catch (SynchronizationCommitConflictException e) {
-      throw e;
-    } catch (CommitConflictException cce) {
-      throw cce;
-    } catch (TransactionException te) {
-      throw te;
+      response.waitForReliableDelivery();
+    } catch (ReliableReplyException e) {
+      throw new TransactionDataNodeHasDepartedException(e);
+    } catch (ReplyException e) {
+      e.handleAsUnexpected();
+    } catch (InterruptedException ignored) {
     }
   }
 
