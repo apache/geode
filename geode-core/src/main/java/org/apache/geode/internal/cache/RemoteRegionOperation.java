@@ -36,9 +36,9 @@ import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.internal.logging.log4j.LogMarker;
 
 /**
- * This message is used be a replicate region to perform region-level ops like clear() and
- * invalidateRegion(). It is used when the target region has concurrency control enabled so that
- * region-version-vectors must be used to execute these operations.
+ * This message is used to implement clear. It is only used when a region is not a replica and has
+ * concurrency checks enabled and some other member has a replica. In that case it sends this
+ * message to the replica to ask it to do the clear.
  *
  * @since GemFire 7.0
  */

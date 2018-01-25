@@ -49,11 +49,8 @@ import org.apache.geode.internal.offheap.OffHeapHelper;
 import org.apache.geode.internal.util.BlobHelper;
 
 /**
- * This message is used as the request for a
- * {@link org.apache.geode.cache.Region#get(Object)}operation. The reply is sent in a
- * {@link org.apache.geode.internal.cache.RemoteGetMessage.GetReplyMessage}.
- *
- * Replicate regions can use this message to send a Get request to another peer.
+ * This message is used as the request for a get operation done in a transaction that is hosted on a
+ * remote member. This messsage sends the get to the remote member.
  *
  * @since GemFire 6.5
  */

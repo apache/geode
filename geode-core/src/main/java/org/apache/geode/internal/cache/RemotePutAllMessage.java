@@ -60,7 +60,8 @@ import org.apache.geode.internal.offheap.annotations.Released;
 
 /**
  * A Replicate Region putAll message. Meant to be sent only to the peer who hosts transactional
- * data.
+ * data. It is also used to implement non-transactional putAlls, see:
+ * DistributedPutAllOperation.initMessage
  *
  * @since GemFire 6.5
  */

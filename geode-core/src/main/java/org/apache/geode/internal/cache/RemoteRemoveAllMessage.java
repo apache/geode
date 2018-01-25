@@ -61,7 +61,8 @@ import org.apache.geode.internal.offheap.annotations.Released;
 
 /**
  * A Replicate Region removeAll message. Meant to be sent only to the peer who hosts transactional
- * data.
+ * data. It is also used to implement non-transactional removeAlls, see:
+ * DistributedRemoveAllOperation.initMessage
  *
  * @since GemFire 8.1
  */

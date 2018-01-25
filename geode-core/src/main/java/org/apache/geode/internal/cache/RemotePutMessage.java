@@ -61,8 +61,9 @@ import org.apache.geode.internal.offheap.annotations.Released;
 import org.apache.geode.internal.offheap.annotations.Unretained;
 
 /**
- * A Replicate Region update message. Meant to be sent only to the peer who hosts transactional
- * data.
+ * This message is used by transactions to update an entry on a transaction hosted on a remote
+ * member. It is also used by non-transactional region updates that need to generate a VersionTag on
+ * a remote member.
  *
  * @since GemFire 6.5
  */

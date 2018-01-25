@@ -50,6 +50,11 @@ import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.internal.logging.log4j.LogMarker;
 import org.apache.geode.internal.offheap.annotations.Released;
 
+/**
+ * This message is used by transactions to invalidate an entry on a transaction hosted on a remote
+ * member. It is also used by non-transactional region invalidates that need to generate a
+ * VersionTag on a remote member.
+ */
 public class RemoteInvalidateMessage extends RemoteDestroyMessage {
 
   private static final Logger logger = LogService.getLogger();

@@ -63,7 +63,11 @@ import org.apache.geode.internal.offheap.annotations.Unretained;
  * different classes for Destroy and Invalidate is to prevent sending an extra bit for every
  * RemoteDestroyMessage to differentiate an invalidate versus a destroy. The assumption is that
  * these operations are used frequently, if they are not then it makes sense to fold the destroy and
- * the invalidate into the same message and use an extra bit to differentiate
+ * the invalidate into the same message and use an extra bit to differentiate.
+ *
+ * This message is used by transactions to destroy an entry on a transaction hosted on a remote
+ * member. It is also used by non-transactional region destroys that need to generate a VersionTag
+ * on a remote member.
  *
  * @since GemFire 6.5
  *
