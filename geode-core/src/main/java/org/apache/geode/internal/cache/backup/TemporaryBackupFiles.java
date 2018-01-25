@@ -132,7 +132,7 @@ class TemporaryBackupFiles {
   private void deleteDirectory(Path directory) {
     try {
       FileUtils.deleteDirectory(directory.toFile());
-    } catch (IOException e) {
+    } catch (IOException | IllegalArgumentException e) {
       logger.warn("Unable to delete temporary directory created during backup, " + this.directory,
           e);
     }

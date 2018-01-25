@@ -16,12 +16,6 @@ package org.apache.geode.internal.cache.backup;
 
 import java.io.File;
 import java.io.IOException;
-import java.net.URISyntaxException;
-import java.net.URL;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
-import java.nio.file.StandardCopyOption;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -37,13 +31,9 @@ import org.apache.logging.log4j.Logger;
 import org.apache.geode.InternalGemFireError;
 import org.apache.geode.cache.DiskStore;
 import org.apache.geode.cache.persistence.PersistentID;
-import org.apache.geode.distributed.DistributedSystem;
 import org.apache.geode.distributed.internal.DistributionManager;
 import org.apache.geode.distributed.internal.MembershipListener;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
-import org.apache.geode.internal.ClassPathLoader;
-import org.apache.geode.internal.DeployedJar;
-import org.apache.geode.internal.JarDeployer;
 import org.apache.geode.internal.cache.DirectoryHolder;
 import org.apache.geode.internal.cache.DiskStoreBackup;
 import org.apache.geode.internal.cache.DiskStoreImpl;
@@ -64,7 +54,6 @@ public class BackupManager {
   private static final String DATA_STORES_DIRECTORY = "diskstores";
   public static final String DATA_STORES_TEMPORARY_DIRECTORY = "backupTemp_";
   private static final String USER_FILES = "user";
-  private static final String CONFIG_DIRECTORY = "config";
 
   private final MembershipListener membershipListener = new BackupMembershipListener();
   private final Map<DiskStoreImpl, DiskStoreBackup> backupByDiskStore = new HashMap<>();
@@ -72,10 +61,11 @@ public class BackupManager {
   private final InternalDistributedMember sender;
   private final InternalCache cache;
   private final CountDownLatch allowDestroys = new CountDownLatch(1);
-  private final BackupDefinition backupDefinition = new BackupDefinition();
   private final String memberId;
+
   private volatile boolean isCancelled = false;
   private TemporaryBackupFiles temporaryFiles;
+  private BackupFileCopier fileCopier;
 
   public BackupManager(InternalDistributedMember sender, InternalCache gemFireCache) {
     this.sender = sender;
@@ -116,6 +106,7 @@ public class BackupManager {
 
     try {
       temporaryFiles = TemporaryBackupFiles.create();
+      fileCopier = new BackupFileCopier(cache, temporaryFiles);
       File memberBackupDir = new File(targetDir, memberId);
 
       // Make sure our baseline is okay for this member, then create inspector for baseline backup
@@ -131,12 +122,10 @@ public class BackupManager {
       HashSet<PersistentID> persistentIds = finishDiskStoreBackups(backupByDiskStores);
 
       if (!backupByDiskStores.isEmpty()) {
+        // TODO: allow different strategies...
+        BackupDefinition backupDefinition = fileCopier.getBackupDefinition();
         backupAdditionalFiles(memberBackupDir);
         backupDefinition.setRestoreScript(restoreScript);
-      }
-
-      if (!backupByDiskStores.isEmpty()) {
-        // TODO: allow different stategies...
         BackupDestination backupDestination =
             new FileSystemBackupDestination(memberBackupDir.toPath());
         backupDestination.backupFiles(backupDefinition);
@@ -273,9 +262,20 @@ public class BackupManager {
   }
 
   private void backupAdditionalFiles(File backupDir) throws IOException {
-    backupConfigFiles();
-    backupUserFiles(backupDir);
-    backupDeployedJars(backupDir);
+    fileCopier.copyConfigFiles();
+
+    Set<File> userFiles = fileCopier.copyUserFiles();
+    File userBackupDir = new File(backupDir, USER_FILES);
+    for (File file : userFiles) {
+      File restoreScriptDestination = new File(userBackupDir, file.getName());
+      restoreScript.addUserFile(file, restoreScriptDestination);
+    }
+
+    Set<File> jars = fileCopier.copyDeployedJars();
+    for (File file : jars) {
+      File restoreScriptDestination = new File(userBackupDir, file.getName());
+      restoreScript.addFile(file, restoreScriptDestination);
+    }
   }
 
   /**
@@ -295,7 +295,8 @@ public class BackupManager {
         if (isCancelled()) {
           break;
         }
-        copyOplog(diskStore, temporaryFiles.getDirectory().toFile(), oplog);
+        oplog.finishKrf();
+        fileCopier.copyOplog(diskStore, oplog);
 
         // Allow the oplog to be deleted, and process any pending delete
         backup.backupFinished(oplog);
@@ -376,7 +377,7 @@ public class BackupManager {
           backup = new DiskStoreBackup(allOplogs, targetDir);
           backupByDiskStore.put(diskStore, backup);
 
-          backupDiskInitFile(diskStore, temporaryFiles.getDirectory());
+          fileCopier.copyDiskInitFile(diskStore);
           diskStore.getPersistentOplogSet().forceRoll(null);
 
           if (logger.isDebugEnabled()) {
@@ -395,15 +396,7 @@ public class BackupManager {
     return backup;
   }
 
-  private void backupDiskInitFile(DiskStoreImpl diskStore, Path tempDir) throws IOException {
-    File diskInitFile = diskStore.getDiskInitFile().getIFFile();
-    String subDir = Integer.toString(diskStore.getInforFileDirIndex());
-    Files.createDirectories(tempDir.resolve(subDir));
-    Files.copy(diskInitFile.toPath(), tempDir.resolve(subDir).resolve(diskInitFile.getName()),
-        StandardCopyOption.COPY_ATTRIBUTES);
-    backupDefinition.addDiskInitFile(diskStore,
-        tempDir.resolve(subDir).resolve(diskInitFile.getName()));
-  }
+
 
   private void addDiskStoreDirectoriesToRestoreScript(DiskStoreImpl diskStore, File targetDir) {
     DirectoryHolder[] directories = diskStore.getDirectoryHolders();
@@ -477,86 +470,6 @@ public class BackupManager {
     return new File(targetDir, BACKUP_DIR_PREFIX + index);
   }
 
-  private void backupConfigFiles() throws IOException {
-    Files.createDirectories(temporaryFiles.getDirectory().resolve(CONFIG_DIRECTORY));
-    addConfigFileToBackup(cache.getCacheXmlURL());
-    addConfigFileToBackup(DistributedSystem.getPropertiesFileURL());
-    // TODO: should the gfsecurity.properties file be backed up?
-  }
-
-  private void addConfigFileToBackup(URL fileUrl) throws IOException {
-    if (fileUrl != null) {
-      try {
-        Path source = Paths.get(fileUrl.toURI());
-        Path destination =
-            temporaryFiles.getDirectory().resolve(CONFIG_DIRECTORY).resolve(source.getFileName());
-        Files.copy(source, destination, StandardCopyOption.COPY_ATTRIBUTES);
-        backupDefinition.addConfigFileToBackup(destination);
-      } catch (URISyntaxException e) {
-        throw new IOException(e);
-      }
-    }
-  }
-
-  private void backupUserFiles(File backupDir) throws IOException {
-    Files.createDirectories(temporaryFiles.getDirectory().resolve(USER_FILES));
-    List<File> backupFiles = cache.getBackupFiles();
-    File userBackupDir = new File(backupDir, USER_FILES);
-    for (File original : backupFiles) {
-      if (original.exists()) {
-        original = original.getAbsoluteFile();
-        Path destination =
-            temporaryFiles.getDirectory().resolve(USER_FILES).resolve(original.getName());
-        if (original.isDirectory()) {
-          FileUtils.copyDirectory(original, destination.toFile());
-        } else {
-          Files.copy(original.toPath(), destination, StandardCopyOption.COPY_ATTRIBUTES);
-        }
-        backupDefinition.addUserFilesToBackup(destination);
-        File restoreScriptDestination = new File(userBackupDir, original.getName());
-        restoreScript.addUserFile(original, restoreScriptDestination);
-      }
-    }
-  }
-
-  /**
-   * Copies user deployed jars to the backup directory.
-   *
-   * @param backupDir The backup directory for this member.
-   * @throws IOException one or more of the jars did not successfully copy.
-   */
-  private void backupDeployedJars(File backupDir) throws IOException {
-    JarDeployer deployer = null;
-
-    try {
-      // Suspend any user deployed jar file updates during this backup.
-      deployer = ClassPathLoader.getLatest().getJarDeployer();
-      deployer.suspendAll();
-
-      List<DeployedJar> jarList = deployer.findDeployedJars();
-      if (!jarList.isEmpty()) {
-        File userBackupDir = new File(backupDir, USER_FILES);
-
-        for (DeployedJar jar : jarList) {
-          File source = new File(jar.getFileCanonicalPath());
-          String sourceFileName = source.getName();
-          Path destination =
-              temporaryFiles.getDirectory().resolve(USER_FILES).resolve(sourceFileName);
-          Files.copy(source.toPath(), destination, StandardCopyOption.COPY_ATTRIBUTES);
-          backupDefinition.addDeployedJarToBackup(destination);
-
-          File restoreScriptDestination = new File(userBackupDir, sourceFileName);
-          restoreScript.addFile(source, restoreScriptDestination);
-        }
-      }
-    } finally {
-      // Re-enable user deployed jar file updates.
-      if (deployer != null) {
-        deployer.resumeAll();
-      }
-    }
-  }
-
   private String getCleanedMemberId() {
     InternalDistributedMember memberId =
         cache.getInternalDistributedSystem().getDistributedMember();
@@ -564,28 +477,7 @@ public class BackupManager {
     return cleanSpecialCharacters(vmId);
   }
 
-  private void copyOplog(DiskStore diskStore, File targetDir, Oplog oplog) throws IOException {
-    DirectoryHolder dirHolder = oplog.getDirectoryHolder();
-    backupFile(diskStore, dirHolder, targetDir, oplog.getCrfFile());
-    backupFile(diskStore, dirHolder, targetDir, oplog.getDrfFile());
 
-    oplog.finishKrf();
-    backupFile(diskStore, dirHolder, targetDir, oplog.getKrfFile());
-  }
-
-  private void backupFile(DiskStore diskStore, DirectoryHolder dirHolder, File targetDir, File file)
-      throws IOException {
-    if (file != null && file.exists()) {
-      try {
-        Path tempDiskDir = temporaryFiles.getDiskStoreDirectory(diskStore, dirHolder);
-        Files.createLink(tempDiskDir.resolve(file.getName()), file.toPath());
-        backupDefinition.addOplogFileToBackup(diskStore, tempDiskDir.resolve(file.getName()));
-      } catch (IOException | UnsupportedOperationException e) {
-        logger.warn("Unable to create hard link for + {}. Reverting to file copy", targetDir);
-        FileUtils.copyFileToDirectory(file, targetDir);
-      }
-    }
-  }
 
   private String cleanSpecialCharacters(String string) {
     return string.replaceAll("[^\\w]+", "_");
