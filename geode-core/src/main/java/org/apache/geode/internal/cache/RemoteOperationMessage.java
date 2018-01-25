@@ -49,10 +49,9 @@ import org.apache.geode.internal.logging.log4j.LocalizedMessage;
 import org.apache.geode.internal.logging.log4j.LogMarker;
 
 /**
- * The base message type upon which other messages that need to be sent to a
- * remote member that is hosting a transaction should be based.
- * Note that, currently, some of these message are not used by transactions.
- * This is a misuse of these messages and needs to be corrected.
+ * The base message type upon which other messages that need to be sent to a remote member that is
+ * hosting a transaction should be based. Note that, currently, some of these message are not used
+ * by transactions. This is a misuse of these messages and needs to be corrected.
  *
  * @since GemFire 6.5
  */
