@@ -334,13 +334,6 @@ public class RemotePutMessage extends RemoteOperationMessageWithDirectReply
     return successful;
   }
 
-
-  @Override
-  public boolean isSevereAlertCompatible() {
-    // allow forced-disconnect processing for all cache op messages
-    return true;
-  }
-
   @Override
   protected Object clone() throws CloneNotSupportedException {
     // TODO Auto-generated method stub

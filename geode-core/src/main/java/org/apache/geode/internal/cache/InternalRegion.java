@@ -27,6 +27,7 @@ import org.apache.geode.cache.TimeoutException;
 import org.apache.geode.cache.client.internal.ServerRegionProxy;
 import org.apache.geode.cache.query.internal.index.IndexManager;
 import org.apache.geode.distributed.internal.DistributionManager;
+import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.internal.cache.versions.RegionVersionVector;
 import org.apache.geode.internal.cache.versions.VersionSource;
 import org.apache.geode.internal.cache.versions.VersionTag;
@@ -138,5 +139,7 @@ public interface InternalRegion<K, V>
   long getEvictionCounter();
 
   RegionMap getRegionMap();
+
+  InternalDistributedSystem getSystem();
 
 }

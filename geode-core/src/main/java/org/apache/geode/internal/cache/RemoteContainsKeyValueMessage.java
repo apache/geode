@@ -94,12 +94,6 @@ public class RemoteContainsKeyValueMessage extends RemoteOperationMessageWithDir
   }
 
   @Override
-  public boolean isSevereAlertCompatible() {
-    // allow forced-disconnect processing for all cache op messages
-    return true;
-  }
-
-  @Override
   protected boolean operateOnRegion(ClusterDistributionManager dm, LocalRegion r, long startTime)
       throws CacheException, RemoteOperationException {
     if (logger.isTraceEnabled(LogMarker.DM)) {

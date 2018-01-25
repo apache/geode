@@ -94,12 +94,6 @@ public class RemoteFetchEntryMessage extends RemoteOperationMessage {
   }
 
   @Override
-  public boolean isSevereAlertCompatible() {
-    // allow forced-disconnect processing for all cache op messages
-    return true;
-  }
-
-  @Override
   protected boolean operateOnRegion(ClusterDistributionManager dm, LocalRegion r, long startTime)
       throws RemoteOperationException {
     // RemoteFetchEntryMessage is used in refreshing client caches during interest list recovery,

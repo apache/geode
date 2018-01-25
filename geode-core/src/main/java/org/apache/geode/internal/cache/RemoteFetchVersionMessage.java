@@ -90,12 +90,6 @@ public class RemoteFetchVersionMessage extends RemoteOperationMessage {
   }
 
   @Override
-  public boolean isSevereAlertCompatible() {
-    // allow forced-disconnect processing for all cache op messages
-    return true;
-  }
-
-  @Override
   public int getProcessorType() {
     return ClusterDistributionManager.SERIAL_EXECUTOR;
   }

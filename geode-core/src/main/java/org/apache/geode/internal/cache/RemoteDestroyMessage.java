@@ -159,12 +159,6 @@ public class RemoteDestroyMessage extends RemoteOperationMessageWithDirectReply
 
   }
 
-  @Override
-  public boolean isSevereAlertCompatible() {
-    // allow forced-disconnect processing for all cache op messages
-    return true;
-  }
-
   private void setOldValBytes(byte[] valBytes) {
     this.oldValBytes = valBytes;
   }

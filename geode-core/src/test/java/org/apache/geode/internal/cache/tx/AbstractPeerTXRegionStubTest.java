@@ -35,6 +35,7 @@ import org.apache.geode.cache.TransactionDataNotColocatedException;
 import org.apache.geode.internal.cache.DistributedPutAllOperation;
 import org.apache.geode.internal.cache.DistributedRemoveAllOperation;
 import org.apache.geode.internal.cache.EntryEventImpl;
+import org.apache.geode.internal.cache.InternalRegion;
 import org.apache.geode.internal.cache.KeyInfo;
 import org.apache.geode.internal.cache.LocalRegion;
 import org.apache.geode.internal.cache.TXStateStub;
@@ -111,6 +112,11 @@ public class AbstractPeerTXRegionStubTest {
 
     @Override
     public void cleanup() {}
+
+    @Override
+    protected InternalRegion getRegion() {
+      return null;
+    }
   }
 
   @Rule

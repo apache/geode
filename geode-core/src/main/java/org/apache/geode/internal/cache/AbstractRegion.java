@@ -1767,6 +1767,7 @@ public abstract class AbstractRegion implements InternalRegion, AttributesMutato
     return getSystem().getDistributionManager();
   }
 
+  @Override
   public InternalDistributedSystem getSystem() {
     return getCache().getInternalDistributedSystem();
   }

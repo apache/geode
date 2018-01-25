@@ -93,12 +93,6 @@ public class RemotePutAllMessage extends RemoteOperationMessageWithDirectReply {
     this.putAllData[this.putAllDataCount++] = entry;
   }
 
-  @Override
-  public boolean isSevereAlertCompatible() {
-    // allow forced-disconnect processing for all cache op messages
-    return true;
-  }
-
   public int getSize() {
     return putAllDataCount;
   }

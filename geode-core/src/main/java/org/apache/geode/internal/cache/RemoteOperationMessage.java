@@ -185,8 +185,7 @@ public abstract class RemoteOperationMessage extends DistributionMessage
    * necessarily in that order. Note: Any hang in this message may cause a distributed deadlock for
    * those threads waiting for an acknowledgement.
    *
-   * @throws PartitionedRegionException if the region does not exist (typically, if it has been
-   *         destroyed)
+   * @throws RegionDestroyedException if the region does not exist
    */
   @Override
   public void process(final ClusterDistributionManager dm) {
@@ -197,20 +196,16 @@ public abstract class RemoteOperationMessage extends DistributionMessage
     try {
       InternalCache cache = getCache(dm);
       if (checkCacheClosing(dm) || checkDSClosing(dm)) {
+        String message = "Remote cache is closed: " + dm.getId();
         if (cache == null) {
-          thr = new CacheClosedException(LocalizedStrings.PartitionMessage_REMOTE_CACHE_IS_CLOSED_0
-              .toLocalizedString(dm.getId()));
+          thr = new CacheClosedException(message);
         } else {
-          thr = cache
-              .getCacheClosedException(LocalizedStrings.PartitionMessage_REMOTE_CACHE_IS_CLOSED_0
-                  .toLocalizedString(dm.getId()));
+          thr = cache.getCacheClosedException(message);
         }
         return;
       }
       r = getRegionByPath(cache);
       if (r == null && failIfRegionMissing()) {
-        // if the distributed system is disconnecting, don't send a reply saying
-        // the partitioned region can't be found (bug 36585)
         thr = new RegionDestroyedException(
             LocalizedStrings.RemoteOperationMessage_0_COULD_NOT_FIND_REGION_1
                 .toLocalizedString(dm.getDistributionManagerId(), regionPath),

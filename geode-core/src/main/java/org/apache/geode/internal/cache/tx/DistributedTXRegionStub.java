@@ -27,6 +27,7 @@ import org.apache.geode.internal.cache.DistributedPutAllOperation;
 import org.apache.geode.internal.cache.DistributedRegion;
 import org.apache.geode.internal.cache.DistributedRemoveAllOperation;
 import org.apache.geode.internal.cache.EntryEventImpl;
+import org.apache.geode.internal.cache.InternalRegion;
 import org.apache.geode.internal.cache.KeyInfo;
 import org.apache.geode.internal.cache.LocalRegion;
 import org.apache.geode.internal.cache.PartitionedRegionException;
@@ -221,12 +222,6 @@ public class DistributedTXRegionStub extends AbstractPeerTXRegionStub {
     return retVal;
   }
 
-
-  public int entryCount() {
-    return this.region.getRegionSize(this.state.getTarget());
-  }
-
-
   public void postPutAll(DistributedPutAllOperation putallOp, VersionedObjectList successfulPuts,
       LocalRegion region) {
     try {
@@ -266,4 +261,9 @@ public class DistributedTXRegionStub extends AbstractPeerTXRegionStub {
 
   @Override
   public void cleanup() {}
+
+  @Override
+  protected InternalRegion getRegion() {
+    return this.region;
+  }
 }

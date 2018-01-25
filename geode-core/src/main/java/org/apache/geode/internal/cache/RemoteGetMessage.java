@@ -88,12 +88,6 @@ public class RemoteGetMessage extends RemoteOperationMessageWithDirectReply {
   }
 
   @Override
-  public boolean isSevereAlertCompatible() {
-    // allow forced-disconnect processing for all cache op messages
-    return true;
-  }
-
-  @Override
   protected boolean operateOnRegion(final ClusterDistributionManager dm, LocalRegion r,
       long startTime) throws RemoteOperationException {
     if (logger.isTraceEnabled(LogMarker.DM)) {

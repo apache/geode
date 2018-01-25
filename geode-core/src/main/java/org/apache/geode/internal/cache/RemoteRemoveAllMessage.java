@@ -91,12 +91,6 @@ public class RemoteRemoveAllMessage extends RemoteOperationMessageWithDirectRepl
     this.removeAllData[this.removeAllDataCount++] = entry;
   }
 
-  @Override
-  public boolean isSevereAlertCompatible() {
-    // allow forced-disconnect processing for all cache op messages
-    return true;
-  }
-
   public int getSize() {
     return removeAllDataCount;
   }
