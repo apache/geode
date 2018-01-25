@@ -83,6 +83,10 @@ public class BackupFileCopier {
 
     try {
       Path source = Paths.get(fileUrl.toURI());
+      if (Files.notExists(source)) {
+        return;
+      }
+
       Path destination = configDirectory.resolve(source.getFileName());
       Files.copy(source, destination, StandardCopyOption.COPY_ATTRIBUTES);
       backupDefinition.addConfigFileToBackup(destination);
