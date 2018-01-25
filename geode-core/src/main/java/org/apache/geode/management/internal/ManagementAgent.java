@@ -100,6 +100,7 @@ public class ManagementAgent {
   private RMIClientSocketFactory rmiClientSocketFactory;
   private RMIServerSocketFactory rmiServerSocketFactory;
   private int port;
+  private RemoteStreamExporter remoteStreamExporter = null;
 
   /**
    * This system property is set to true when the embedded HTTP server is started so that the
@@ -550,8 +551,12 @@ public class ManagementAgent {
     return jmxConnectorServer;
   }
 
-  public RemoteStreamExporter getRemoteStreamExporter() {
-    return new GeodeRemoteStreamExporter(port, rmiClientSocketFactory, rmiServerSocketFactory);
+  public synchronized RemoteStreamExporter getRemoteStreamExporter() {
+    if (remoteStreamExporter == null) {
+      remoteStreamExporter =
+          new GeodeRemoteStreamExporter(port, rmiClientSocketFactory, rmiServerSocketFactory);
+    }
+    return remoteStreamExporter;
   }
 
   private static class GemFireRMIServerSocketFactory
