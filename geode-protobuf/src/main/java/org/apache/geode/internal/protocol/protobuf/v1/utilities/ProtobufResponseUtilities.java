@@ -18,11 +18,11 @@ import java.util.Set;
 
 import org.apache.geode.annotations.Experimental;
 import org.apache.geode.cache.Region;
-import org.apache.geode.internal.protocol.ProtocolErrorCode;
 import org.apache.geode.internal.protocol.protobuf.v1.BasicTypes;
 import org.apache.geode.internal.protocol.protobuf.v1.ClientProtocol;
+import org.apache.geode.internal.protocol.protobuf.v1.ProtobufErrorCode;
 import org.apache.geode.internal.protocol.protobuf.v1.RegionAPI;
-import org.apache.geode.internal.protocol.state.exception.ConnectionStateException;
+import org.apache.geode.internal.protocol.protobuf.v1.state.exception.ConnectionStateException;
 
 
 /**
@@ -50,7 +50,7 @@ public abstract class ProtobufResponseUtilities {
     return builder.build();
   }
 
-  public static ClientProtocol.ErrorResponse makeErrorResponse(ProtocolErrorCode errorCode,
+  public static ClientProtocol.ErrorResponse makeErrorResponse(ProtobufErrorCode errorCode,
       String message) {
     return ClientProtocol.ErrorResponse.newBuilder()
         .setError(BasicTypes.Error.newBuilder()
