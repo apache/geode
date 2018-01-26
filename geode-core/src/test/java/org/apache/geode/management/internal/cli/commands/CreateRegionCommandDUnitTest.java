@@ -18,6 +18,9 @@ package org.apache.geode.management.internal.cli.commands;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import java.io.File;
+import java.io.Serializable;
+import java.util.Arrays;
+import java.util.stream.Collectors;
 
 import org.junit.BeforeClass;
 import org.junit.ClassRule;
@@ -30,6 +33,7 @@ import org.junit.rules.TestName;
 import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.PartitionResolver;
 import org.apache.geode.cache.Region;
+import org.apache.geode.cache.util.CacheListenerAdapter;
 import org.apache.geode.compression.SnappyCompressor;
 import org.apache.geode.internal.cache.PartitionedRegion;
 import org.apache.geode.internal.cache.RegionEntryContext;
@@ -43,7 +47,14 @@ import org.apache.geode.test.junit.rules.serializable.SerializableTestName;
 @Category(DistributedTest.class)
 public class CreateRegionCommandDUnitTest {
 
-  private static MemberVM locator, server;
+  private static MemberVM locator, server1, server2;
+
+  public static class TestCacheListener extends CacheListenerAdapter implements Serializable {
+  }
+
+  public static class AnotherTestCacheListener extends CacheListenerAdapter
+      implements Serializable {
+  }
 
   @ClassRule
   public static ClusterStartupRule lsRule = new ClusterStartupRule();
@@ -60,7 +71,8 @@ public class CreateRegionCommandDUnitTest {
   @BeforeClass
   public static void before() throws Exception {
     locator = lsRule.startLocatorVM(0);
-    server = lsRule.startServerVM(1, locator.getPort());
+    server1 = lsRule.startServerVM(1, locator.getPort());
+    server2 = lsRule.startServerVM(2, locator.getPort());
 
     gfsh.connectAndVerify(locator);
   }
@@ -72,7 +84,7 @@ public class CreateRegionCommandDUnitTest {
         + " --type=REPLICATE --compressor=" + RegionEntryContext.DEFAULT_COMPRESSION_PROVIDER)
         .statusIsSuccess();
 
-    server.invoke(() -> {
+    server1.invoke(() -> {
       Cache cache = ClusterStartupRule.getCache();
       Region region = cache.getRegion(regionName);
       assertThat(region).isNotNull();
@@ -88,7 +100,7 @@ public class CreateRegionCommandDUnitTest {
         "create region --name=" + regionName + " --type=REPLICATE --compressor=BAD_COMPRESSOR")
         .statusIsError();
 
-    server.invoke(() -> {
+    server1.invoke(() -> {
       Cache cache = ClusterStartupRule.getCache();
       Region region = cache.getRegion(regionName);
       assertThat(region).isNull();
@@ -101,7 +113,7 @@ public class CreateRegionCommandDUnitTest {
     gfsh.executeAndAssertThat("create region --name=" + regionName + " --type=REPLICATE")
         .statusIsSuccess();
 
-    server.invoke(() -> {
+    server1.invoke(() -> {
       Cache cache = ClusterStartupRule.getCache();
       Region region = cache.getRegion(regionName);
       assertThat(region).isNotNull();
@@ -127,7 +139,7 @@ public class CreateRegionCommandDUnitTest {
         + " --type=PARTITION --partition-resolver=io.pivotal.TestPartitionResolver")
         .statusIsSuccess();
 
-    server.invoke(() -> {
+    server1.invoke(() -> {
       Cache cache = ClusterStartupRule.getCache();
       PartitionedRegion region = (PartitionedRegion) cache.getRegion(regionName);
       PartitionResolver resolver = region.getPartitionAttributes().getPartitionResolver();
@@ -148,5 +160,25 @@ public class CreateRegionCommandDUnitTest {
     gfsh.executeAndAssertThat("create region --name=" + regionName
         + " --type=REPLICATE --partition-resolver=InvalidPartitionResolver")
         .containsOutput("\"/" + regionName + "\" is not a Partitioned Region").statusIsError();
+  }
+
+  @Test
+  public void overrideListenerFromTemplate() throws Exception {
+    gfsh.executeAndAssertThat("create region --name=/TEMPLATE --type=PARTITION_REDUNDANT"
+        + " --cache-listener=" + TestCacheListener.class.getName()).statusIsSuccess();
+
+    gfsh.executeAndAssertThat("create region --name=/COPY --template-region=/TEMPLATE"
+        + " --cache-listener=" + AnotherTestCacheListener.class.getName()).statusIsSuccess();
+
+    server1.getVM().invoke(() -> {
+      Region copy = ClusterStartupRule.getCache().getRegion("/COPY");
+
+      assertThat(Arrays.stream(copy.getAttributes().getCacheListeners())
+          .map(c -> c.getClass().getName()).collect(Collectors.toSet()))
+              .containsExactly(AnotherTestCacheListener.class.getName());
+    });
+
+    gfsh.executeAndAssertThat("destroy region --name=/COPY").statusIsSuccess();
+    gfsh.executeAndAssertThat("destroy region --name=/TEMPLATE").statusIsSuccess();
   }
 }
