@@ -68,9 +68,6 @@ public class MemoryIndexStoreJUnitTest {
     });
   }
 
-  @After
-  public void teardown() {}
-
   @Test
   public void createIteratorWhenCacheNulledWhenShuttingDownShouldNotThrowNPE() {
     store.get("T");
