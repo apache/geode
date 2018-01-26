@@ -137,7 +137,7 @@ public abstract class AbstractBucketRegionQueue extends BucketRegion {
   }
 
   @Override
-  protected void basicDestroyBeforeRemoval(RegionEntry entry, EntryEventImpl event) {
+  public void basicDestroyBeforeRemoval(RegionEntry entry, EntryEventImpl event) {
     /**
      * We are doing local destroy on this bucket. No need to send destroy operation to remote nodes.
      */

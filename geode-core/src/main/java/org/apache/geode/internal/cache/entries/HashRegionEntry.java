@@ -12,26 +12,10 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
-package org.apache.geode.internal.cache;
+package org.apache.geode.internal.cache.entries;
 
-import org.apache.geode.StatisticsFactory;
-import org.apache.geode.cache.EvictionAttributes;
-import org.apache.geode.internal.cache.eviction.EvictionController;
+import org.apache.geode.internal.cache.RegionEntry;
+import org.apache.geode.internal.util.concurrent.CustomEntryConcurrentHashMap.HashEntry;
 
-public interface EvictableRegion extends RegionMapOwner {
-
-  EvictionAttributes getEvictionAttributes();
-
-  boolean getOffHeap();
-
-  /**
-   * If this region represents a bucket then this methods needs to return the existing controller
-   * from the partitioned region that owns this bucket. Otherwise returns null.
-   */
-  EvictionController getExistingController(InternalRegionArguments internalArgs);
-
-  StatisticsFactory getStatisticsFactory();
-
-  String getNameForStats();
-
+public interface HashRegionEntry<K, V> extends RegionEntry, HashEntry<K, V> {
 }

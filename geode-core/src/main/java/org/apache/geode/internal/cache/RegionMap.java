@@ -34,6 +34,7 @@ import org.apache.geode.internal.cache.versions.RegionVersionVector;
 import org.apache.geode.internal.cache.versions.VersionHolder;
 import org.apache.geode.internal.cache.versions.VersionSource;
 import org.apache.geode.internal.cache.versions.VersionTag;
+import org.apache.geode.internal.util.concurrent.ConcurrentMapWithReusableEntries;
 
 /**
  * Internal interface used by {@link LocalRegion} to access the map that holds its entries. Note
@@ -52,19 +53,19 @@ public interface RegionMap extends EvictableMap {
      * The initial capacity. The implementation performs internal sizing to accommodate this many
      * elements.
      */
-    int initialCapacity = 16;
+    public int initialCapacity = 16;
 
     /** the load factor threshold, used to control resizing. */
-    float loadFactor = 0.75f;
+    public float loadFactor = 0.75f;
 
     /**
      * the estimated number of concurrently updating threads. The implementation performs internal
      * sizing to try to accommodate this many threads.
      */
-    int concurrencyLevel = 16;
+    public int concurrencyLevel = 16;
 
     /** whether "api" statistics are enabled */
-    boolean statisticsEnabled = false;
+    public boolean statisticsEnabled = false;
   }
 
   RegionEntryFactory getEntryFactory();
@@ -79,11 +80,6 @@ public interface RegionMap extends EvictableMap {
    * Gets the attributes that this map was created with.
    */
   Attributes getAttributes();
-
-  /**
-   * Tells this map what region owns it.
-   */
-  void setOwner(Object r);
 
   void changeOwner(LocalRegion r);
 
@@ -372,4 +368,7 @@ public interface RegionMap extends EvictableMap {
 
   void updateEvictionCounter();
 
+  ConcurrentMapWithReusableEntries<Object, Object> getCustomEntryConcurrentHashMap();
+
+  void setEntryMap(ConcurrentMapWithReusableEntries<Object, Object> map);
 }

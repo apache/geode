@@ -52,8 +52,6 @@ public interface DiskRecoveryStore {
 
   public int calculateValueSize(Object val);
 
-  public int calculateRegionEntryValueSize(RegionEntry re);
-
   public RegionMap getRegionMap();
 
   public void handleDiskAccessException(DiskAccessException dae);

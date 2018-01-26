@@ -31,7 +31,8 @@ import org.apache.geode.internal.i18n.LocalizedStrings;
  *
  * @since GemFire prPersistSprint2
  */
-public class PlaceHolderDiskRegion extends AbstractDiskRegion implements DiskRecoveryStore {
+public class PlaceHolderDiskRegion extends AbstractDiskRegion
+    implements DiskRecoveryStore, RegionMapOwner {
 
   private final String name;
 
@@ -70,6 +71,7 @@ public class PlaceHolderDiskRegion extends AbstractDiskRegion implements DiskRec
     // nothing needed
   }
 
+  @Override
   public void finishPendingDestroy() {
     // nothing needed
   }
@@ -84,10 +86,12 @@ public class PlaceHolderDiskRegion extends AbstractDiskRegion implements DiskRec
   }
 
   // DiskRecoveryStore methods
+  @Override
   public DiskRegionView getDiskRegionView() {
     return this;
   }
 
+  @Override
   public DiskEntry getDiskEntry(Object key) {
     RegionEntry re = getRecoveredEntryMap().getEntry(key);
     if (re != null && re.isRemoved() && !re.isTombstone()) {
@@ -96,6 +100,7 @@ public class PlaceHolderDiskRegion extends AbstractDiskRegion implements DiskRec
     return (DiskEntry) re;
   }
 
+  @Override
   public DiskEntry initializeRecoveredEntry(Object key, DiskEntry.RecoveredEntry value) {
     RegionEntry re = getRecoveredEntryMap().initRecoveredEntry(key, value);
     if (re == null) {
@@ -105,30 +110,37 @@ public class PlaceHolderDiskRegion extends AbstractDiskRegion implements DiskRec
     return (DiskEntry) re;
   }
 
+  @Override
   public DiskEntry updateRecoveredEntry(Object key, DiskEntry.RecoveredEntry value) {
     return (DiskEntry) getRecoveredEntryMap().updateRecoveredEntry(key, value);
   }
 
+  @Override
   public void destroyRecoveredEntry(Object key) {
     throw new IllegalStateException("destroyRecoveredEntry should not be called during recovery");
   }
 
+  @Override
   public void copyRecoveredEntries(RegionMap rm) {
     throw new IllegalStateException("copyRecoveredEntries should not be called during recovery");
   }
 
+  @Override
   public void foreachRegionEntry(LocalRegion.RegionEntryCallback callback) {
     throw new IllegalStateException("foreachRegionEntry should not be called during recovery");
   }
 
+  @Override
   public boolean lruLimitExceeded() {
     return getRecoveredEntryMap().lruLimitExceeded(this);
   }
 
+  @Override
   public DiskStoreID getDiskStoreID() {
     return getDiskStore().getDiskStoreID();
   }
 
+  @Override
   public void acquireReadLock() {
     // not needed. The only thread
     // using this method is the async recovery thread.
@@ -137,10 +149,12 @@ public class PlaceHolderDiskRegion extends AbstractDiskRegion implements DiskRec
 
   }
 
+  @Override
   public void releaseReadLock() {
     // not needed
   }
 
+  @Override
   public void updateSizeOnFaultIn(Object key, int newSize, int bytesOnDisk) {
     // only used by bucket regions
   }
@@ -151,10 +165,6 @@ public class PlaceHolderDiskRegion extends AbstractDiskRegion implements DiskRec
   }
 
   @Override
-  public int calculateRegionEntryValueSize(RegionEntry re) {
-    return 0;
-  }
-
   public RegionMap getRegionMap() {
     return getRecoveredEntryMap();
   }
@@ -167,6 +177,7 @@ public class PlaceHolderDiskRegion extends AbstractDiskRegion implements DiskRec
     }
   }
 
+  @Override
   public void handleDiskAccessException(DiskAccessException dae) {
     getDiskStore().getCache().getLoggerI18n().error(
         LocalizedStrings.PlaceHolderDiskRegion_A_DISKACCESSEXCEPTION_HAS_OCCURRED_WHILE_RECOVERING_FROM_DISK,
@@ -174,26 +185,32 @@ public class PlaceHolderDiskRegion extends AbstractDiskRegion implements DiskRec
 
   }
 
+  @Override
   public boolean didClearCountChange() {
     return false;
   }
 
+  @Override
   public CancelCriterion getCancelCriterion() {
     return getDiskStore().getCancelCriterion();
   }
 
+  @Override
   public boolean isSync() {
     return true;
   }
 
+  @Override
   public void endRead(long start, long end, long bytesRead) {
     // do nothing
   }
 
+  @Override
   public boolean isRegionClosed() {
     return false;
   }
 
+  @Override
   public void initializeStats(long numEntriesInVM, long numOverflowOnDisk,
       long numOverflowBytesOnDisk) {
     this.numEntriesInVM.set(numEntriesInVM);
