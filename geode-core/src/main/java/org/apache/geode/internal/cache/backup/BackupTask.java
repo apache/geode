@@ -114,8 +114,7 @@ public class BackupTask {
     }
   }
 
-  private HashSet<PersistentID> doBackup(File targetDir, File baselineDir)
-      throws IOException {
+  private HashSet<PersistentID> doBackup(File targetDir, File baselineDir) throws IOException {
     if (isCancelled) {
       cleanup();
       return new HashSet<>();
@@ -424,8 +423,7 @@ public class BackupTask {
    * @return an array of Oplogs to be copied for an incremental backup.
    */
   private Oplog[] filterBaselineOplogs(DiskStoreImpl diskStore, BackupInspector baselineInspector) {
-    File baselineDir =
-        new File(baselineInspector.getBackupDir(), DATA_STORES_DIRECTORY);
+    File baselineDir = new File(baselineInspector.getBackupDir(), DATA_STORES_DIRECTORY);
     baselineDir = new File(baselineDir, getBackupDirName(diskStore));
 
     // Find all of the member's diskstore oplogs in the member's baseline

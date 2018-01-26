@@ -63,7 +63,7 @@ public class BackupManager {
     HashSet<PersistentID> result;
     try {
       result = taskFuture.get();
-    } catch (InterruptedException| ExecutionException e) {
+    } catch (InterruptedException | ExecutionException e) {
       result = new HashSet<>();
     }
     return result;
@@ -76,6 +76,7 @@ public class BackupManager {
   public DiskStoreBackup getBackupForDiskStore(DiskStoreImpl diskStore) {
     return task.getBackupForDiskStore(diskStore);
   }
+
   public void validateRequestingAdmin() {
     // We need to watch for pure admin guys that depart. this allMembershipListener set
     // looks like it should receive those events.
@@ -108,13 +109,13 @@ public class BackupManager {
 
     @Override
     public void quorumLost(Set<InternalDistributedMember> failures,
-                           List<InternalDistributedMember> remaining) {
+        List<InternalDistributedMember> remaining) {
       // unused
     }
 
     @Override
     public void memberSuspect(InternalDistributedMember id, InternalDistributedMember whoSuspected,
-                              String reason) {
+        String reason) {
       // unused
     }
   }

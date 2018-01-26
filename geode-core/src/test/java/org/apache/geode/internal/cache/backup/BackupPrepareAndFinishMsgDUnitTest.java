@@ -141,7 +141,7 @@ public abstract class BackupPrepareAndFinishMsgDUnitTest extends CacheTestCase {
     Future<Void> future = null;
     new PrepareBackupOperation(dm, dm.getId(), dm.getCache(), recipients,
         new PrepareBackupFactory()).send();
-    ReentrantLock backupLock = ((LocalRegion)region).getDiskStore().getBackupLock();
+    ReentrantLock backupLock = ((LocalRegion) region).getDiskStore().getBackupLock();
     future = CompletableFuture.runAsync(function);
     Awaitility.await().atMost(5, TimeUnit.SECONDS)
         .until(() -> assertTrue(backupLock.getQueueLength() > 0));
@@ -155,7 +155,7 @@ public abstract class BackupPrepareAndFinishMsgDUnitTest extends CacheTestCase {
     Set recipients = dm.getOtherDistributionManagerIds();
     new PrepareBackupOperation(dm, dm.getId(), dm.getCache(), recipients,
         new PrepareBackupFactory()).send();
-    ReentrantLock backupLock = ((LocalRegion)region).getDiskStore().getBackupLock();
+    ReentrantLock backupLock = ((LocalRegion) region).getDiskStore().getBackupLock();
     List<CompletableFuture<?>> futureList = doReadActions();
     CompletableFuture.allOf(futureList.toArray(new CompletableFuture<?>[futureList.size()]));
     assertTrue(backupLock.getQueueLength() == 0);
