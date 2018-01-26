@@ -172,12 +172,15 @@ public class BackupTask {
 
     for (DiskStore store : diskStores) {
       DiskStoreImpl diskStore = (DiskStoreImpl) store;
-      if (diskStore.hasPersistedData()) {
-        File diskStoreDir = new File(storesDir, getBackupDirName(diskStore));
-        DiskStoreBackup backup = startDiskStoreBackup(diskStore, diskStoreDir, inspector);
-        backupByDiskStore.put(diskStore, backup);
+      try {
+        if (diskStore.hasPersistedData()) {
+          File diskStoreDir = new File(storesDir, getBackupDirName(diskStore));
+          DiskStoreBackup backup = startDiskStoreBackup(diskStore, diskStoreDir, inspector);
+          backupByDiskStore.put(diskStore, backup);
+        }
+      } finally {
+        diskStore.releaseBackupLock();
       }
-      diskStore.releaseBackupLock();
     }
     return backupByDiskStore;
   }
@@ -337,7 +340,6 @@ public class BackupTask {
    */
   private DiskStoreBackup startDiskStoreBackup(DiskStoreImpl diskStore, File targetDir,
       BackupInspector baselineInspector) throws IOException {
-    diskStore.getBackupLock().setBackupThread();
     DiskStoreBackup backup = null;
     boolean done = false;
     try {
