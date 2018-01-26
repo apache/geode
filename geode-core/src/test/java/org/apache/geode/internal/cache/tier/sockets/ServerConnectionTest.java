@@ -20,6 +20,7 @@ package org.apache.geode.internal.cache.tier.sockets;
 import static org.apache.geode.internal.i18n.LocalizedStrings.HandShake_NO_SECURITY_CREDENTIALS_ARE_PROVIDED;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.junit.Assert.fail;
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.anyLong;
 import static org.mockito.Mockito.mock;
@@ -29,6 +30,10 @@ import java.io.IOException;
 import java.net.InetAddress;
 import java.net.Socket;
 import java.util.Locale;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.locks.Condition;
+import java.util.concurrent.locks.Lock;
+import java.util.concurrent.locks.ReentrantLock;
 
 import org.junit.Before;
 import org.junit.Rule;
@@ -38,10 +43,16 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 
+import org.apache.geode.cache.client.internal.Connection;
+import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
 import org.apache.geode.i18n.StringId;
 import org.apache.geode.internal.Version;
 import org.apache.geode.internal.cache.InternalCache;
+import org.apache.geode.internal.cache.TXManagerImpl;
+import org.apache.geode.internal.cache.tier.Acceptor;
+import org.apache.geode.internal.cache.tier.CachedRegionHelper;
 import org.apache.geode.internal.cache.tier.CommunicationMode;
+import org.apache.geode.internal.cache.tier.MessageType;
 import org.apache.geode.internal.security.SecurityService;
 import org.apache.geode.security.AuthenticationRequiredException;
 import org.apache.geode.test.junit.categories.UnitTest;
@@ -70,21 +81,29 @@ public class ServerConnectionTest {
   @InjectMocks
   private ServerConnection serverConnection;
 
+  private AcceptorImpl acceptor;
+  private Socket socket;
+  private InternalCache cache;
+  private SecurityService securityService;
+  private CacheServerStats stats;
+
   @Before
   public void setUp() throws IOException {
-    AcceptorImpl acceptor = mock(AcceptorImpl.class);
+    acceptor = mock(AcceptorImpl.class);
 
     InetAddress inetAddress = mock(InetAddress.class);
     when(inetAddress.getHostAddress()).thenReturn("localhost");
 
-    Socket socket = mock(Socket.class);
+    socket = mock(Socket.class);
     when(socket.getInetAddress()).thenReturn(inetAddress);
 
-    InternalCache cache = mock(InternalCache.class);
-    SecurityService securityService = mock(SecurityService.class);
+    cache = mock(InternalCache.class);
+    securityService = mock(SecurityService.class);
+
+    stats = mock(CacheServerStats.class);
 
     serverConnection =
-        new ServerConnectionFactory().makeServerConnection(socket, cache, null, null, 0, 0, null,
+        new ServerConnectionFactory().makeServerConnection(socket, cache, null, stats, 0, 0, null,
             CommunicationMode.PrimaryServerToClient.getModeNumber(), acceptor, securityService);
     MockitoAnnotations.initMocks(this);
   }
@@ -139,4 +158,114 @@ public class ServerConnectionTest {
         .hasMessage(HandShake_NO_SECURITY_CREDENTIALS_ARE_PROVIDED.getRawText());
   }
 
+  class TestMessage extends Message {
+    private final Lock lock = new ReentrantLock();
+    private final Condition testGate = lock.newCondition();
+    private boolean signalled = false;
+
+    public TestMessage() {
+      super(3, Version.CURRENT);
+      messageType = MessageType.REQUEST;
+      securePart = new Part();
+    }
+
+    @Override
+    public void recv() throws IOException {
+      try {
+        lock.lock();
+        testGate.await(10, TimeUnit.SECONDS);
+      } catch (InterruptedException e) {
+        throw new RuntimeException(e);
+      } finally {
+        lock.unlock();
+        if (!signalled) {
+          fail("Message never received continueProcessing call");
+        }
+      }
+    }
+
+    public void continueProcessing() {
+      lock.lock();
+      testGate.signal();
+      signalled = true;
+      lock.unlock();
+    }
+  }
+
+  class TestServerConnection extends LegacyServerConnection {
+
+    private TestMessage testMessage;
+
+    /**
+     * Creates a new <code>ServerConnection</code> that processes messages received from an edge
+     * client over a given <code>Socket</code>.
+     */
+    public TestServerConnection(Socket socket, InternalCache internalCache,
+        CachedRegionHelper helper, CacheServerStats stats, int hsTimeout, int socketBufferSize,
+        String communicationModeStr, byte communicationMode, Acceptor acceptor,
+        SecurityService securityService) {
+      super(socket, internalCache, helper, stats, hsTimeout, socketBufferSize, communicationModeStr,
+          communicationMode, acceptor, securityService);
+
+      setClientDisconnectCleanly(); // Not clear where this is supposed to be set in the timeout
+                                    // path
+    }
+
+    @Override
+    protected void doHandshake() {
+      ClientProxyMembershipID proxyID = mock(ClientProxyMembershipID.class);
+      when(proxyID.getDistributedMember()).thenReturn(mock(InternalDistributedMember.class));
+      HandShake handShake = mock(HandShake.class);
+      when(handShake.getMembership()).thenReturn(proxyID);
+      when(handShake.getVersion()).thenReturn(Version.CURRENT);
+
+      setHandshake(handShake);
+      setProxyId(proxyID);
+
+      processHandShake();
+      initializeCommands();
+
+      setFakeRequest();
+
+      long fakeId = -1;
+      MessageIdExtractor extractor = mock(MessageIdExtractor.class);
+      when(extractor.getUniqueIdFromMessage(getRequestMessage(), handShake,
+          Connection.DEFAULT_CONNECTION_ID)).thenReturn(fakeId);
+      setMessageIdExtractor(extractor);
+    }
+
+    @Override
+    void handleTermination(boolean timedOut) {
+      super.handleTermination(timedOut);
+      testMessage.continueProcessing();
+    }
+
+    private void setFakeRequest() {
+      testMessage = new TestMessage();
+      setRequestMsg(testMessage);
+    }
+  }
+
+  /**
+   * This test sets up a TestConnection which will register with the ClientHealthMonitor and then
+   * block waiting to receive a fake message. This message will arrive just after the health monitor
+   * times out this connection and kills it. The test then makes sure that the connection correctly
+   * handles the terminated state and exits.
+   */
+  @Test
+  public void terminatingConnectionHandlesNewRequestsGracefully() throws Exception {
+    when(cache.getCacheTransactionManager()).thenReturn(mock(TXManagerImpl.class));
+    ClientHealthMonitor.createInstance(cache, 100, mock(CacheClientNotifierStats.class));
+    ClientHealthMonitor clientHealthMonitor = ClientHealthMonitor.getInstance();
+    when(acceptor.getClientHealthMonitor()).thenReturn(clientHealthMonitor);
+    when(acceptor.getConnectionListener()).thenReturn(mock(ConnectionListener.class));
+    when(securityService.isIntegratedSecurity()).thenReturn(true);
+
+    TestServerConnection testServerConnection =
+        new TestServerConnection(socket, cache, mock(CachedRegionHelper.class), stats, 0, 0, null,
+            CommunicationMode.PrimaryServerToClient.getModeNumber(), acceptor, securityService);
+    MockitoAnnotations.initMocks(this);
+
+    testServerConnection.run();
+  }
 }
