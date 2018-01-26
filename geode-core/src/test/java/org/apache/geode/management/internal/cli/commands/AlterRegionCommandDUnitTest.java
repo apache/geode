@@ -25,6 +25,8 @@ import java.io.OutputStream;
 import java.util.Arrays;
 import java.util.stream.Collectors;
 
+import org.junit.After;
+import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.ClassRule;
 import org.junit.Rule;
@@ -32,6 +34,9 @@ import org.junit.Test;
 import org.junit.experimental.categories.Category;
 import org.junit.rules.TemporaryFolder;
 
+import org.apache.geode.cache.ExpirationAction;
+import org.apache.geode.cache.ExpirationAttributes;
+import org.apache.geode.cache.Region;
 import org.apache.geode.cache.RegionAttributes;
 import org.apache.geode.test.compiler.ClassBuilder;
 import org.apache.geode.test.dunit.rules.ClusterStartupRule;
@@ -64,10 +69,20 @@ public class AlterRegionCommandDUnitTest {
     gfsh.connectAndVerify(locator);
   }
 
+  @Before
+  public void before() throws Exception {
+    // make sure all tests started with no region defined
+    gfsh.executeAndAssertThat("list regions").statusIsSuccess().containsOutput("No Regions Found");
+  }
+
+  @After
+  public void after() throws Exception {
+    // make sure all tests started with no region defined
+    gfsh.executeAndAssertThat("destroy region --name=regionA --if-exists").statusIsSuccess();
+  }
+
   @Test
   public void testAlterRegionResetCacheListeners() throws IOException {
-    gfsh.executeAndAssertThat("list regions").statusIsSuccess().containsOutput("No Regions Found");
-
     gfsh.executeAndAssertThat("create region --name=regionA --type=PARTITION").statusIsSuccess();
 
     deployJarFilesForRegionAlter();
@@ -97,6 +112,73 @@ public class AlterRegionCommandDUnitTest {
       RegionAttributes attributes =
           ClusterStartupRule.getCache().getRegion("regionA").getAttributes();
       assertEquals(0, attributes.getCacheListeners().length);
+    });
+  }
+
+  @Test
+  public void alterEntryIdleTimeExpiration() {
+    gfsh.executeAndAssertThat(
+        "create region --name=regionA --type=REPLICATE --entry-idle-time-expiration=10 --enable-statistics")
+        .statusIsSuccess();
+
+    server1.invoke(() -> {
+      Region region = ClusterStartupRule.getCache().getRegion("regionA");
+      ExpirationAttributes expiry = region.getAttributes().getEntryIdleTimeout();
+      assertThat(expiry.getTimeout()).isEqualTo(10);
+      assertThat(expiry.getAction()).isEqualTo(ExpirationAction.INVALIDATE);
+    });
+
+    gfsh.executeAndAssertThat(
+        "alter region --name=regionA --entry-idle-time-expiration-action=DESTROY")
+        .statusIsSuccess();
+    server1.invoke(() -> {
+      Region region = ClusterStartupRule.getCache().getRegion("regionA");
+      ExpirationAttributes expiry = region.getAttributes().getEntryIdleTimeout();
+      assertThat(expiry.getTimeout()).isEqualTo(10);
+      assertThat(expiry.getAction()).isEqualTo(ExpirationAction.DESTROY);
+    });
+
+    gfsh.executeAndAssertThat("alter region --name=regionA --entry-idle-time-expiration=5")
+        .statusIsSuccess();
+    server1.invoke(() -> {
+      Region region = ClusterStartupRule.getCache().getRegion("regionA");
+      ExpirationAttributes expiry = region.getAttributes().getEntryIdleTimeout();
+      assertThat(expiry.getTimeout()).isEqualTo(5);
+      assertThat(expiry.getAction()).isEqualTo(ExpirationAction.DESTROY);
+    });
+  }
+
+
+  @Test
+  public void alterEntryIdleTimeExpirationAction() {
+    gfsh.executeAndAssertThat(
+        "create region --name=regionA --type=REPLICATE --entry-idle-time-expiration-action=destroy --enable-statistics")
+        .statusIsSuccess();
+
+    server1.invoke(() -> {
+      Region region = ClusterStartupRule.getCache().getRegion("regionA");
+      ExpirationAttributes expiry = region.getAttributes().getEntryIdleTimeout();
+      assertThat(expiry.getTimeout()).isEqualTo(0);
+      assertThat(expiry.getAction()).isEqualTo(ExpirationAction.DESTROY);
+    });
+
+    gfsh.executeAndAssertThat(
+        "alter region --name=regionA --entry-idle-time-expiration-action=invalidate")
+        .statusIsSuccess();
+    server1.invoke(() -> {
+      Region region = ClusterStartupRule.getCache().getRegion("regionA");
+      ExpirationAttributes expiry = region.getAttributes().getEntryIdleTimeout();
+      assertThat(expiry.getTimeout()).isEqualTo(0);
+      assertThat(expiry.getAction()).isEqualTo(ExpirationAction.INVALIDATE);
+    });
+
+    gfsh.executeAndAssertThat("alter region --name=regionA --entry-idle-time-expiration=5")
+        .statusIsSuccess();
+    server1.invoke(() -> {
+      Region region = ClusterStartupRule.getCache().getRegion("regionA");
+      ExpirationAttributes expiry = region.getAttributes().getEntryIdleTimeout();
+      assertThat(expiry.getTimeout()).isEqualTo(5);
+      assertThat(expiry.getAction()).isEqualTo(ExpirationAction.INVALIDATE);
     });
   }
 
