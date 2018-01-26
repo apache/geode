@@ -99,7 +99,6 @@ public class ParallelQueueRemovalMessageJUnitTest {
   private void createCache() {
     // Mock cache
     this.cache = Fakes.cache();
-    GemFireCacheImpl.setInstanceForTests(this.cache);
   }
 
   private void createQueueRegion() {
@@ -184,11 +183,6 @@ public class ParallelQueueRemovalMessageJUnitTest {
 
     this.bucketRegionQueueHelper =
         new BucketRegionQueueHelper(this.cache, this.queueRegion, this.bucketRegionQueue);
-  }
-
-  @After
-  public void tearDownGemFire() {
-    GemFireCacheImpl.setInstanceForTests(null);
   }
 
   @Test

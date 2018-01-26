@@ -56,12 +56,10 @@ public class DistributedSystemBridgeJUnitTest {
     when(dlock.lock(any(), anyLong(), anyLong())).thenReturn(true);
 
     DLockService.addLockServiceForTests(BackupDataStoreHelper.LOCK_SERVICE_NAME, dlock);
-    GemFireCacheImpl.setInstanceForTests(cache);
   }
 
   @After
   public void clearCache() {
-    GemFireCacheImpl.setInstanceForTests(null);
     DLockService.removeLockServiceForTests(BackupDataStoreHelper.LOCK_SERVICE_NAME);
   }
 
@@ -69,7 +67,7 @@ public class DistributedSystemBridgeJUnitTest {
   public void testSuccessfulBackup() throws Exception {
     DistributionManager dm = cache.getDistributionManager();
 
-    DistributedSystemBridge bridge = new DistributedSystemBridge(null);
+    DistributedSystemBridge bridge = new DistributedSystemBridge(null, cache);
     bridge.backupAllMembers("/tmp", null);
 
     InOrder inOrder = inOrder(dm, backupManager);
@@ -92,7 +90,7 @@ public class DistributedSystemBridgeJUnitTest {
         .thenThrow(new RuntimeException("Fail the prepare"));
 
 
-    DistributedSystemBridge bridge = new DistributedSystemBridge(null);
+    DistributedSystemBridge bridge = new DistributedSystemBridge(null, cache);
     try {
       bridge.backupAllMembers("/tmp", null);
       fail("Should have failed with an exception");

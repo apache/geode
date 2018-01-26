@@ -79,6 +79,9 @@ public class CreateRegionCommand implements GfshCommand {
       @CliOption(key = CliStrings.CREATE_REGION__SKIPIFEXISTS, specifiedDefaultValue = "true",
           unspecifiedDefaultValue = "false",
           help = CliStrings.CREATE_REGION__SKIPIFEXISTS__HELP) boolean skipIfExists,
+      @CliOption(key = CliStrings.CREATE_REGION__IFNOTEXISTS, specifiedDefaultValue = "true",
+          unspecifiedDefaultValue = "false",
+          help = CliStrings.CREATE_REGION__IFNOTEXISTS__HELP) boolean ifNotExists,
 
       // the following should all be in alphabetical order according to
       // their key string
@@ -192,7 +195,7 @@ public class CreateRegionCommand implements GfshCommand {
     // creating the RegionFunctionArgs
     RegionFunctionArgs functionArgs = new RegionFunctionArgs();
     functionArgs.setRegionPath(regionPath);
-    functionArgs.setSkipIfExists(skipIfExists);
+    functionArgs.setIfNotExists(ifNotExists || skipIfExists);
     functionArgs.setKeyConstraint(keyConstraint);
     functionArgs.setValueConstraint(valueConstraint);
     functionArgs.setStatisticsEnabled(statisticsEnabled);

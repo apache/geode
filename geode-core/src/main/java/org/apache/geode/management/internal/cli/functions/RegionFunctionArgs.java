@@ -44,7 +44,7 @@ public class RegionFunctionArgs implements Serializable {
   private String regionPath;
   private RegionShortcut regionShortcut;
   private String templateRegion;
-  private boolean skipIfExists;
+  private boolean ifNotExists;
   private String keyConstraint;
   private String valueConstraint;
   private Boolean statisticsEnabled;
@@ -89,8 +89,8 @@ public class RegionFunctionArgs implements Serializable {
   }
 
 
-  public void setSkipIfExists(boolean skipIfExists) {
-    this.skipIfExists = skipIfExists;
+  public void setIfNotExists(boolean ifNotExists) {
+    this.ifNotExists = ifNotExists;
   }
 
   public void setKeyConstraint(String keyConstraint) {
@@ -251,10 +251,10 @@ public class RegionFunctionArgs implements Serializable {
   }
 
   /**
-   * @return the skipIfExists
+   * @return the ifNotExists
    */
-  public Boolean isSkipIfExists() {
-    return this.skipIfExists;
+  public Boolean isIfNotExists() {
+    return this.ifNotExists;
   }
 
   /**

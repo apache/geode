@@ -60,15 +60,14 @@ import org.apache.geode.internal.cache.CacheServerImpl;
 import org.apache.geode.internal.cache.tier.sockets.AcceptorImpl;
 import org.apache.geode.internal.net.SocketCreator;
 import org.apache.geode.internal.net.SocketCreatorFactory;
-import org.apache.geode.internal.protocol.exception.InvalidProtocolMessageException;
-import org.apache.geode.internal.protocol.protobuf.statistics.ProtobufClientStatisticsImpl;
+import org.apache.geode.internal.protocol.protobuf.statistics.ProtobufClientStatistics;
 import org.apache.geode.internal.protocol.protobuf.v1.BasicTypes;
 import org.apache.geode.internal.protocol.protobuf.v1.ClientProtocol;
 import org.apache.geode.internal.protocol.protobuf.v1.MessageUtil;
 import org.apache.geode.internal.protocol.protobuf.v1.ProtobufSerializationService;
 import org.apache.geode.internal.protocol.protobuf.v1.RegionAPI;
 import org.apache.geode.internal.protocol.protobuf.v1.serializer.ProtobufProtocolSerializer;
-import org.apache.geode.internal.protocol.serialization.SerializationService;
+import org.apache.geode.internal.protocol.protobuf.v1.serializer.exception.InvalidProtocolMessageException;
 import org.apache.geode.test.junit.categories.IntegrationTest;
 import org.apache.geode.test.junit.runners.CategoryWithParameterizedRunnerFactory;
 import org.apache.geode.util.test.TestUtil;
@@ -173,7 +172,7 @@ public class CacheConnectionJUnitTest {
     InternalDistributedSystem distributedSystem =
         (InternalDistributedSystem) cache.getDistributedSystem();
     Statistics[] protobufStats = distributedSystem.findStatisticsByType(
-        distributedSystem.findType(ProtobufClientStatisticsImpl.PROTOBUF_CLIENT_STATISTICS));
+        distributedSystem.findType(ProtobufClientStatistics.PROTOBUF_CLIENT_STATISTICS));
     assertEquals(1, protobufStats.length);
     Statistics statistics = protobufStats[0];
     assertEquals(1, statistics.get("currentClientConnections"));

@@ -24,9 +24,9 @@ import java.net.Socket;
 import com.google.protobuf.MessageLite;
 
 import org.apache.geode.internal.protocol.protobuf.ProtocolVersion;
+import org.apache.geode.internal.protocol.protobuf.v1.serialization.exception.EncodingException;
 import org.apache.geode.internal.protocol.protobuf.v1.utilities.ProtobufRequestUtilities;
 import org.apache.geode.internal.protocol.protobuf.v1.utilities.ProtobufUtilities;
-import org.apache.geode.internal.protocol.serialization.exception.EncodingException;
 
 public class MessageUtil {
 

@@ -19,17 +19,11 @@ import org.apache.logging.log4j.Logger;
 import org.apache.geode.annotations.Experimental;
 import org.apache.geode.internal.exception.InvalidExecutionContextException;
 import org.apache.geode.internal.logging.LogService;
-import org.apache.geode.internal.protocol.Failure;
-import org.apache.geode.internal.protocol.MessageExecutionContext;
-import org.apache.geode.internal.protocol.OperationContext;
-import org.apache.geode.internal.protocol.ProtocolErrorCode;
-import org.apache.geode.internal.protocol.Result;
 import org.apache.geode.internal.protocol.protobuf.v1.registry.ProtobufOperationContextRegistry;
+import org.apache.geode.internal.protocol.protobuf.v1.state.ProtobufConnectionTerminatingStateProcessor;
+import org.apache.geode.internal.protocol.protobuf.v1.state.exception.ConnectionStateException;
+import org.apache.geode.internal.protocol.protobuf.v1.state.exception.OperationNotAuthorizedException;
 import org.apache.geode.internal.protocol.protobuf.v1.utilities.ProtobufResponseUtilities;
-import org.apache.geode.internal.protocol.serialization.SerializationService;
-import org.apache.geode.internal.protocol.state.ConnectionTerminatingStateProcessor;
-import org.apache.geode.internal.protocol.state.exception.ConnectionStateException;
-import org.apache.geode.internal.protocol.state.exception.OperationNotAuthorizedException;
 
 /**
  * This handles protobuf requests by determining the operation type of the request and dispatching
@@ -39,10 +33,10 @@ import org.apache.geode.internal.protocol.state.exception.OperationNotAuthorized
 public class ProtobufOpsProcessor {
 
   private final ProtobufOperationContextRegistry protobufOperationContextRegistry;
-  private final SerializationService serializationService;
+  private final ProtobufSerializationService serializationService;
   private static final Logger logger = LogService.getLogger(ProtobufOpsProcessor.class);
 
-  public ProtobufOpsProcessor(SerializationService serializationService,
+  public ProtobufOpsProcessor(ProtobufSerializationService serializationService,
       ProtobufOperationContextRegistry protobufOperationContextRegistry) {
     this.serializationService = serializationService;
     this.protobufOperationContextRegistry = protobufOperationContextRegistry;
@@ -52,7 +46,7 @@ public class ProtobufOpsProcessor {
       MessageExecutionContext messageExecutionContext) {
     ClientProtocol.Request.RequestAPICase requestType = request.getRequestAPICase();
     logger.debug("Processing request of type {}", requestType);
-    OperationContext operationContext =
+    ProtobufOperationContext operationContext =
         protobufOperationContextRegistry.getOperationContext(requestType);
     Result result;
 
@@ -67,7 +61,7 @@ public class ProtobufOpsProcessor {
     } catch (ConnectionStateException e) {
       logger.warn(e.getMessage());
       messageExecutionContext
-          .setConnectionStateProcessor(new ConnectionTerminatingStateProcessor());
+          .setConnectionStateProcessor(new ProtobufConnectionTerminatingStateProcessor());
       result = Failure.of(ProtobufResponseUtilities.makeErrorResponse(e));
     }
 
@@ -76,7 +70,7 @@ public class ProtobufOpsProcessor {
   }
 
   private Result processOperation(ClientProtocol.Request request, MessageExecutionContext context,
-      ClientProtocol.Request.RequestAPICase requestType, OperationContext operationContext)
+      ClientProtocol.Request.RequestAPICase requestType, ProtobufOperationContext operationContext)
       throws ConnectionStateException {
     try {
       return operationContext.getOperationHandler().process(serializationService,
@@ -84,7 +78,7 @@ public class ProtobufOpsProcessor {
     } catch (InvalidExecutionContextException exception) {
       logger.error("Invalid execution context found for operation {}", requestType);
       return Failure.of(ProtobufResponseUtilities.makeErrorResponse(
-          ProtocolErrorCode.INVALID_REQUEST, "Invalid execution context found for operation."));
+          ProtobufErrorCode.INVALID_REQUEST, "Invalid execution context found for operation."));
     }
   }
 }
