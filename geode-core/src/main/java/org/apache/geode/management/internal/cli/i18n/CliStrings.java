@@ -821,6 +821,9 @@ public class CliStrings {
       "Name/Path of the region whose attributes should be duplicated when creating this region.";
   public static final String CREATE_REGION__SKIPIFEXISTS = "skip-if-exists";
   public static final String CREATE_REGION__SKIPIFEXISTS__HELP =
+      "(Deprecated: Use --if-not-exists) Skip region creation if the region already exists.";
+  public static final String CREATE_REGION__IFNOTEXISTS = "if-not-exists";
+  public static final String CREATE_REGION__IFNOTEXISTS__HELP =
       "Skip region creation if the region already exists.";
   public static final String CREATE_REGION__KEYCONSTRAINT = "key-constraint";
   public static final String CREATE_REGION__KEYCONSTRAINT__HELP =
