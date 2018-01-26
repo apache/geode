@@ -14,6 +14,7 @@
  */
 package org.apache.geode.internal.cache;
 
+import static org.mockito.Mockito.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.times;
@@ -79,6 +80,7 @@ public class RemoteOperationMessageTest {
     msg.process(dm);
 
     verify(msg, times(1)).operateOnRegion(dm, r, startTime);
+    verify(dm, times(1)).putOutgoing(any());
   }
 
   @Test
@@ -90,6 +92,7 @@ public class RemoteOperationMessageTest {
     msg.process(dm);
 
     verify(msg, times(1)).operateOnRegion(dm, r, startTime);
+    verify(dm, times(1)).putOutgoing(any());
   }
 
   @Test
@@ -101,6 +104,8 @@ public class RemoteOperationMessageTest {
     msg.process(dm);
 
     verify(msg, times(0)).operateOnRegion(dm, r, startTime);
+    // A reply is sent even though we do not call operationOnRegion
+    verify(dm, times(1)).putOutgoing(any());
   }
 
   @Test
@@ -112,6 +117,8 @@ public class RemoteOperationMessageTest {
     msg.process(dm);
 
     verify(msg, times(0)).operateOnRegion(dm, r, startTime);
+    // If we do not respond what prevents the sender from waiting forever?
+    verify(dm, times(0)).putOutgoing(any());
   }
 
   private static class TestableRemoteOperationMessage extends RemoteOperationMessage {
@@ -134,7 +141,7 @@ public class RemoteOperationMessageTest {
     @Override
     protected boolean operateOnRegion(ClusterDistributionManager dm, LocalRegion r, long startTime)
         throws RemoteOperationException {
-      return false;
+      return true;
     }
 
   }
