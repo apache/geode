@@ -14,21 +14,20 @@
  */
 package org.apache.geode.internal.cache;
 
-import static org.mockito.Mockito.any;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.spy;
-import static org.mockito.Mockito.times;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.mockito.Mockito.*;
 
 import java.util.Set;
 
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
+import org.mockito.ArgumentCaptor;
 
 import org.apache.geode.distributed.internal.ClusterDistributionManager;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
+import org.apache.geode.distributed.internal.ReplyException;
 import org.apache.geode.distributed.internal.ReplyProcessor21;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
 import org.apache.geode.test.fake.Fakes;
@@ -119,6 +118,53 @@ public class RemoteOperationMessageTest {
     verify(msg, times(0)).operateOnRegion(dm, r, startTime);
     // If we do not respond what prevents the sender from waiting forever?
     verify(dm, times(0)).putOutgoing(any());
+  }
+
+  @Test
+  public void processWithNullPointerExceptionFromOperationOnRegionWithNoSystemFailureSendsReplyWithNPE()
+      throws Exception {
+    when(msg.operateOnRegion(dm, r, startTime)).thenThrow(NullPointerException.class);
+    doNothing().when(msg).checkForSystemFailure();
+    msg.setSender(sender);
+
+    msg.process(dm);
+    verify(dm, times(1)).putOutgoing(any());
+    ArgumentCaptor<ReplyException> captor = ArgumentCaptor.forClass(ReplyException.class);
+    verify(msg, times(1)).sendReply(any(), anyInt(), eq(dm), captor.capture(), eq(r),
+        eq(startTime));
+    assertThat(captor.getValue().getCause()).isInstanceOf(NullPointerException.class);
+  }
+
+  @Test
+  public void processWithNullPointerExceptionFromOperationOnRegionWithNoSystemFailureAndIsDisconnectingSendsReplyWithForceReattemptException()
+      throws Exception {
+    when(msg.operateOnRegion(dm, r, startTime)).thenThrow(NullPointerException.class);
+    doNothing().when(msg).checkForSystemFailure();
+    when(system.isDisconnecting()).thenReturn(false).thenReturn(true);
+    msg.setSender(sender);
+
+    msg.process(dm);
+    verify(dm, times(1)).putOutgoing(any());
+    ArgumentCaptor<ReplyException> captor = ArgumentCaptor.forClass(ReplyException.class);
+    verify(msg, times(1)).sendReply(any(), anyInt(), eq(dm), captor.capture(), eq(r),
+        eq(startTime));
+    assertThat(captor.getValue().getCause()).isInstanceOf(ForceReattemptException.class);
+  }
+
+  @Test
+  public void processWithNullPointerExceptionFromOperationOnRegionWithSystemFailureSendsReplyWithNPE()
+      throws Exception {
+    when(msg.operateOnRegion(dm, r, startTime)).thenThrow(NullPointerException.class);
+    doThrow(new RuntimeException("SystemFailure")).when(msg).checkForSystemFailure();
+    msg.setSender(sender);
+
+    assertThatThrownBy(() -> msg.process(dm)).isInstanceOf(RuntimeException.class)
+        .hasMessage("SystemFailure");
+    verify(dm, times(1)).putOutgoing(any());
+    ArgumentCaptor<ReplyException> captor = ArgumentCaptor.forClass(ReplyException.class);
+    verify(msg, times(1)).sendReply(any(), anyInt(), eq(dm), captor.capture(), eq(r),
+        eq(startTime));
+    assertThat(captor.getValue().getCause()).isInstanceOf(ForceReattemptException.class);
   }
 
   private static class TestableRemoteOperationMessage extends RemoteOperationMessage {

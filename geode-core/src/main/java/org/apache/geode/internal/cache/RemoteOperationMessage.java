@@ -267,6 +267,7 @@ public abstract class RemoteOperationMessage extends DistributionMessage
       // _still_ a possibility that you are dealing with a cascading
       // error condition, so you also need to check to see if the JVM
       // is still usable:
+      // TODO: set thr here so that it will be handled
       checkForSystemFailure();
       thr = null;
       if (sendReply) {
