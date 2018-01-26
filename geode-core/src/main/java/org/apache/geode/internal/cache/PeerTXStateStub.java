@@ -192,7 +192,10 @@ public class PeerTXStateStub extends TXStateStub {
        */
       throw new TransactionException("Can't involve c/s region in peer tx");
     }
-
+    if (region.isUsedForPartitionedRegionBucket()) {
+      throw new InternalGemFireException(
+          "A bucket for a partitioned region should never be involved in peer tx");
+    }
   }
 
 
