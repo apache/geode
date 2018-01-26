@@ -53,19 +53,19 @@ public interface RegionMap extends EvictableMap {
      * The initial capacity. The implementation performs internal sizing to accommodate this many
      * elements.
      */
-    public int initialCapacity = 16;
+    int initialCapacity = 16;
 
     /** the load factor threshold, used to control resizing. */
-    public float loadFactor = 0.75f;
+    float loadFactor = 0.75f;
 
     /**
      * the estimated number of concurrently updating threads. The implementation performs internal
      * sizing to try to accommodate this many threads.
      */
-    public int concurrencyLevel = 16;
+    int concurrencyLevel = 16;
 
     /** whether "api" statistics are enabled */
-    public boolean statisticsEnabled = false;
+    boolean statisticsEnabled = false;
   }
 
   RegionEntryFactory getEntryFactory();
