@@ -17,7 +17,9 @@ package org.apache.geode.management.internal.cli.shell;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
+import java.io.OutputStream;
 import java.text.MessageFormat;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
@@ -45,7 +47,9 @@ import javax.management.remote.JMXServiceURL;
 import javax.rmi.ssl.SslRMIClientSocketFactory;
 
 import com.healthmarketscience.rmiio.RemoteInputStream;
+import com.healthmarketscience.rmiio.RemoteOutputStreamClient;
 import com.healthmarketscience.rmiio.SimpleRemoteInputStream;
+import org.apache.commons.io.IOUtils;
 
 import org.apache.geode.internal.admin.SSLConfig;
 import org.apache.geode.internal.net.SSLConfigurationFactory;
@@ -54,6 +58,7 @@ import org.apache.geode.management.DistributedSystemMXBean;
 import org.apache.geode.management.MemberMXBean;
 import org.apache.geode.management.internal.MBeanJMXAdapter;
 import org.apache.geode.management.internal.ManagementConstants;
+import org.apache.geode.management.internal.beans.FileUploader;
 import org.apache.geode.management.internal.beans.FileUploaderMBean;
 import org.apache.geode.management.internal.cli.CommandRequest;
 import org.apache.geode.management.internal.cli.LogWrapper;
@@ -269,19 +274,21 @@ public class JmxOperationInvoker implements OperationInvoker {
 
   @Override
   public Object processCommand(final CommandRequest commandRequest) {
-    // upload the files first
-
     List<String> stagedFilePaths = null;
+
     try {
       if (commandRequest.hasFileList()) {
-        Map<String, RemoteInputStream> remoteFiles = new HashMap<>();
-
+        stagedFilePaths = new ArrayList<>();
         for (File file : commandRequest.getFileList()) {
-          RemoteInputStream ris = new SimpleRemoteInputStream(new FileInputStream(file)).export();
-          remoteFiles.put(file.getName(), ris);
-        }
+          FileUploader.RemoteFile remote = fileUploadMBeanProxy.uploadFile(file.getName());
+          FileInputStream source = new FileInputStream(file);
 
-        stagedFilePaths = fileUploadMBeanProxy.uploadFile(remoteFiles);
+          OutputStream target = RemoteOutputStreamClient.wrap(remote.getOutputStream());
+          IOUtils.copyLarge(source, target);
+          target.close();
+
+          stagedFilePaths.add(remote.getFilename());
+        }
       }
     } catch (IOException e) {
       throw new JMXInvocationException("Unable to upload file", e);
