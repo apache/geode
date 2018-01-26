@@ -83,12 +83,7 @@ public class MemoryIndexStore implements IndexStore {
   // new collection
   private final Object TRANSITIONING_TOKEN = new IndexElemArray(1);
 
-  MemoryIndexStore(Region region, InternalIndexStatistics internalIndexStats) {
-    this(region, internalIndexStats, GemFireCacheImpl.getInstance());
-  }
-
-  private MemoryIndexStore(Region region, InternalIndexStatistics internalIndexStats,
-      InternalCache cache) {
+  MemoryIndexStore(Region region, InternalIndexStatistics internalIndexStats, InternalCache cache) {
     this.region = region;
     RegionAttributes ra = region.getAttributes();
     // Initialize the reverse-map if in-place modification is set by the

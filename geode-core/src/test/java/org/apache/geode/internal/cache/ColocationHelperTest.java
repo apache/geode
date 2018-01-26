@@ -94,15 +94,6 @@ public class ColocationHelperTest {
     pa = mock(PartitionAttributes.class);
     prc = mock(PartitionRegionConfig.class);
     cache = Fakes.cache();
-    oldCacheInstance = GemFireCacheImpl.setInstanceForTests(cache);
-  }
-
-  /**
-   * @throws java.lang.Exception
-   */
-  @After
-  public void tearDown() throws Exception {
-    GemFireCacheImpl.setInstanceForTests(oldCacheInstance);
   }
 
   /**

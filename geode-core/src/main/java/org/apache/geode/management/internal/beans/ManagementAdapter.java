@@ -200,7 +200,7 @@ public class ManagementAdapter {
     MBeanJMXAdapter jmxAdapter = service.getJMXAdapter();
     Map<ObjectName, Object> registeredMBeans = jmxAdapter.getLocalGemFireMBean();
 
-    DistributedSystemBridge dsBridge = new DistributedSystemBridge(service);
+    DistributedSystemBridge dsBridge = new DistributedSystemBridge(service, internalCache);
     this.aggregator = new MBeanAggregator(dsBridge);
     // register the aggregator for Federation framework to use
     service.addProxyListener(aggregator);
