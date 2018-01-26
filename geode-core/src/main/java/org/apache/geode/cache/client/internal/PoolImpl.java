@@ -37,9 +37,7 @@ import org.apache.geode.CancelCriterion;
 import org.apache.geode.CancelException;
 import org.apache.geode.StatisticsFactory;
 import org.apache.geode.SystemFailure;
-import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.CacheClosedException;
-import org.apache.geode.cache.CacheFactory;
 import org.apache.geode.cache.NoSubscriptionServersAvailableException;
 import org.apache.geode.cache.Region;
 import org.apache.geode.cache.RegionService;
@@ -59,7 +57,6 @@ import org.apache.geode.distributed.internal.membership.gms.membership.HostAddre
 import org.apache.geode.internal.ScheduledThreadPoolExecutorWithKeepAlive;
 import org.apache.geode.internal.admin.ClientStatsManager;
 import org.apache.geode.internal.cache.EventID;
-import org.apache.geode.internal.cache.GemFireCacheImpl;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.cache.PoolFactoryImpl;
 import org.apache.geode.internal.cache.PoolManagerImpl;
@@ -135,6 +132,7 @@ public class PoolImpl implements InternalPool {
   private ScheduledExecutorService backgroundProcessor;
   private final OpExecutorImpl executor;
   private final RegisterInterestTracker riTracker = new RegisterInterestTracker();
+  private final InternalCache cache;
   private final InternalDistributedSystem dsys;
 
   private final ClientProxyMembershipID proxyId;
@@ -153,8 +151,8 @@ public class PoolImpl implements InternalPool {
   private AtomicInteger primaryQueueSize = new AtomicInteger(PRIMARY_QUEUE_NOT_AVAILABLE);
 
   public static PoolImpl create(PoolManagerImpl pm, String name, Pool attributes,
-      List<HostAddress> locatorAddresses) {
-    PoolImpl pool = new PoolImpl(pm, name, attributes, locatorAddresses);
+      List<HostAddress> locatorAddresses, InternalCache cache) {
+    PoolImpl pool = new PoolImpl(pm, name, attributes, locatorAddresses, cache);
     pool.finishCreate(pm);
     return pool;
   }
@@ -181,7 +179,7 @@ public class PoolImpl implements InternalPool {
   }
 
   protected PoolImpl(PoolManagerImpl pm, String name, Pool attributes,
-      List<HostAddress> locAddresses) {
+      List<HostAddress> locAddresses, InternalCache cache) {
     this.pm = pm;
     this.name = name;
     this.socketConnectTimeout = attributes.getSocketConnectTimeout();
@@ -210,46 +208,46 @@ public class PoolImpl implements InternalPool {
         ((PoolFactoryImpl.PoolAttributes) attributes).startDisabled || !pm.isNormal();
     this.usedByGateway = ((PoolFactoryImpl.PoolAttributes) attributes).isGateway();
     this.gatewaySender = ((PoolFactoryImpl.PoolAttributes) attributes).getGatewaySender();
-    // if (this.subscriptionEnabled && this.multiuserSecureModeEnabled) {
-    // throw new IllegalStateException(
-    // "subscription-enabled and multiuser-authentication both cannot be true.");
-    // }
-    InternalDistributedSystem ds = InternalDistributedSystem.getAnyInstance();
-    if (ds == null) {
+    this.cache = cache;
+    if (this.cache == null) {
+      throw new IllegalStateException(
+          LocalizedStrings.PoolImpl_CACHE_MUST_BE_CREATED_BEFORE_CREATING_POOL.toLocalizedString());
+    }
+    this.dsys = cache.getInternalDistributedSystem();
+    if (this.dsys == null) {
       throw new IllegalStateException(
           LocalizedStrings.PoolImpl_DISTRIBUTED_SYSTEM_MUST_BE_CREATED_BEFORE_CREATING_POOL
               .toLocalizedString());
     }
-    this.securityLogWriter = ds.getSecurityInternalLogWriter();
-    if (!ds.getConfig().getStatisticSamplingEnabled() && this.statisticInterval > 0) {
+    this.securityLogWriter = this.dsys.getSecurityInternalLogWriter();
+    if (!this.dsys.getConfig().getStatisticSamplingEnabled() && this.statisticInterval > 0) {
       logger.info(LocalizedMessage.create(
           LocalizedStrings.PoolImpl_STATISTIC_SAMPLING_MUST_BE_ENABLED_FOR_SAMPLING_RATE_OF_0_TO_TAKE_AFFECT,
           this.statisticInterval));
     }
-    this.dsys = ds;
     this.cancelCriterion = new Stopper();
     if (Boolean.getBoolean(DistributionConfig.GEMFIRE_PREFIX + "SPECIAL_DURABLE")) {
       ClientProxyMembershipID.setPoolName(name);
-      this.proxyId = ClientProxyMembershipID.getNewProxyMembership(ds);
+      this.proxyId = ClientProxyMembershipID.getNewProxyMembership(this.dsys);
       ClientProxyMembershipID.setPoolName(null);
     } else {
-      this.proxyId = ClientProxyMembershipID.getNewProxyMembership(ds);
+      this.proxyId = ClientProxyMembershipID.getNewProxyMembership(this.dsys);
     }
     StatisticsFactory statFactory = null;
     if (this.gatewaySender != null) {
       statFactory = new DummyStatisticsFactory();
     } else {
-      statFactory = ds;
+      statFactory = this.dsys;
     }
     this.stats = this.startDisabled ? null
         : new PoolStats(statFactory, getName() + "->"
             + (isEmpty(serverGroup) ? "[any servers]" : "[" + getServerGroup() + "]"));
 
     source = getSourceImpl(((PoolFactoryImpl.PoolAttributes) attributes).locatorCallback);
-    endpointManager = new EndpointManagerImpl(name, ds, this.cancelCriterion, this.stats);
-    connectionFactory = new ConnectionFactoryImpl(source, endpointManager, ds, socketBufferSize,
-        socketConnectTimeout, readTimeout, proxyId, this.cancelCriterion, usedByGateway,
-        gatewaySender, pingInterval, multiuserSecureModeEnabled, this);
+    endpointManager = new EndpointManagerImpl(name, this.dsys, this.cancelCriterion, this.stats);
+    connectionFactory = new ConnectionFactoryImpl(source, endpointManager, this.dsys,
+        socketBufferSize, socketConnectTimeout, readTimeout, proxyId, this.cancelCriterion,
+        usedByGateway, gatewaySender, pingInterval, multiuserSecureModeEnabled, this);
     if (subscriptionEnabled) {
       queueManager = new QueueManagerImpl(this, endpointManager, source, connectionFactory,
           subscriptionRedundancyLevel, pingInterval, securityLogWriter, proxyId);
@@ -510,9 +508,8 @@ public class PoolImpl implements InternalPool {
       if (SPECIAL_DURABLE) {
         synchronized (simpleLock) {
           try {
-            if (!CacheFactory.getAnyInstance().isClosed()
-                && this.getPoolOrCacheCancelInProgress() == null) {
-              Set<Region<?, ?>> regions = CacheFactory.getInstance(dsys).rootRegions();
+            if (!cache.isClosed() && this.getPoolOrCacheCancelInProgress() == null) {
+              Set<Region<?, ?>> regions = cache.rootRegions();
               for (Region<?, ?> roots : regions) {
                 Set<Region<?, ?>> subregions = roots.subregions(true);
                 for (Region<?, ?> subroots : subregions) {
@@ -1005,8 +1002,7 @@ public class PoolImpl implements InternalPool {
 
   public boolean isDurableClient() {
     boolean isDurable = false;
-    InternalDistributedSystem system = InternalDistributedSystem.getAnyInstance();
-    DistributionConfig config = system.getConfig();
+    DistributionConfig config = dsys.getConfig();
     String durableClientId = config.getDurableClientId();
     isDurable = durableClientId != null && durableClientId.length() > 0;
     return isDurable;
@@ -1405,8 +1401,7 @@ public class PoolImpl implements InternalPool {
    * @return the QueryService
    */
   public QueryService getQueryService() {
-    Cache cache = CacheFactory.getInstance(InternalDistributedSystem.getAnyInstance());
-    DefaultQueryService queryService = new DefaultQueryService((InternalCache) cache);
+    DefaultQueryService queryService = new DefaultQueryService(cache);
     queryService.setPool(this);
     return queryService;
   }
@@ -1419,13 +1414,12 @@ public class PoolImpl implements InternalPool {
     if (properties == null || properties.isEmpty()) {
       throw new IllegalArgumentException("Security properties cannot be empty.");
     }
-    Cache cache = CacheFactory.getInstance(InternalDistributedSystem.getAnyInstance());
 
     Properties props = new Properties();
     for (Entry<Object, Object> entry : properties.entrySet()) {
       props.setProperty((String) entry.getKey(), (String) entry.getValue());
     }
-    ProxyCache proxy = new ProxyCache(props, (InternalCache) cache, this);
+    ProxyCache proxy = new ProxyCache(props, cache, this);
     synchronized (this.proxyCacheList) {
       this.proxyCacheList.add(proxy);
     }
@@ -1439,7 +1433,6 @@ public class PoolImpl implements InternalPool {
     if (re != null) {
       return re;
     }
-    InternalCache cache = GemFireCacheImpl.getInstance();
     if (cache == null) {
       if (cacheCriterion != null) {
         return cacheCriterion.generateCancelledException(e);
@@ -1460,7 +1453,6 @@ public class PoolImpl implements InternalPool {
       if (reason != null) {
         return reason;
       }
-      InternalCache cache = GemFireCacheImpl.getInstance();
       if (cache == null) {
         if (cacheCriterion != null) {
           return cacheCriterion.cancelInProgress();
@@ -1489,7 +1481,6 @@ public class PoolImpl implements InternalPool {
   }
 
   public boolean getKeepAlive() {
-    InternalCache cache = GemFireCacheImpl.getInstance();
     if (cache == null) {
       return keepAlive;
     }

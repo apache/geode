@@ -335,7 +335,7 @@ public class PoolFactoryImpl implements PoolFactory {
         registry.creatingPool();
       }
     }
-    return PoolImpl.create(this.pm, name, this.attributes, this.locatorAddresses);
+    return PoolImpl.create(this.pm, name, this.attributes, this.locatorAddresses, cache);
   }
 
   /**
