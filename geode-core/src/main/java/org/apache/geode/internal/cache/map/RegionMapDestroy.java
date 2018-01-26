@@ -49,7 +49,7 @@ public class RegionMapDestroy {
    * This test hook is used to force the conditions during entry destroy. This hook is used by
    * DestroyEntryWithConcurrentOperationJUnitTest.
    */
-  static Runnable testHookRunnableForConcurrentOperation;
+  private static Runnable testHookRunnableForConcurrentOperation;
 
   private final InternalRegion internalRegion;
   private final FocusedRegionMap focusedRegionMap;
@@ -627,7 +627,7 @@ public class RegionMapDestroy {
     }
   }
 
-  boolean destroyEntry(RegionEntry re, EntryEventImpl event, boolean inTokenMode,
+  private boolean destroyEntry(RegionEntry re, EntryEventImpl event, boolean inTokenMode,
       boolean cacheWrite, @Released Object expectedOldValue, boolean forceDestroy,
       boolean removeRecoveredEntry) throws CacheWriterException, TimeoutException,
       EntryNotFoundException, RegionClearedException {
@@ -642,7 +642,7 @@ public class RegionMapDestroy {
     return retVal;
   }
 
-  VersionTag getVersionTagFromStamp(VersionStamp stamp) {
+  private VersionTag getVersionTagFromStamp(VersionStamp stamp) {
     VersionTag tag = VersionTag.create(stamp.getMemberID());
     tag.setEntryVersion(stamp.getEntryVersion());
     tag.setRegionVersion(stamp.getRegionVersion());

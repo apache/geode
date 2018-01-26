@@ -612,11 +612,6 @@ public class RegionMapDestroyTest {
     return EntryEventImpl.create(lr, Operation.DESTROY, KEY, false, null, true, false);
   }
 
-  private void addEntry(AbstractRegionMap arm, Object value) {
-    RegionEntry entry = arm.getEntryFactory().createEntry(arm._getOwner(), KEY, value);
-    arm.getEntryMap().put(KEY, entry);
-  }
-
   /**
    * SimpleRegionMap
    */
@@ -641,7 +636,7 @@ public class RegionMapDestroyTest {
    */
   private class EvictableRegionMapWithMockedEntryMap extends VMLRURegionMap {
 
-    protected EvictableRegionMapWithMockedEntryMap() {
+    EvictableRegionMapWithMockedEntryMap() {
       super(owner, attributes, null, evictionController);
       setEntryMap(entryMap);
     }
@@ -652,7 +647,7 @@ public class RegionMapDestroyTest {
    */
   private class EvictableRegionMap extends VMLRURegionMap {
 
-    protected EvictableRegionMap() {
+    EvictableRegionMap() {
       super(owner, attributes, null, evictionController);
     }
   }
