@@ -35,10 +35,10 @@ import org.apache.geode.cache.RegionFactory;
 import org.apache.geode.cache.RegionShortcut;
 import org.apache.geode.compression.SnappyCompressor;
 import org.apache.geode.internal.cache.RegionEntryContext;
+import org.apache.geode.management.internal.cli.json.GfJsonObject;
+import org.apache.geode.management.internal.cli.result.CommandResult;
 import org.apache.geode.management.internal.cli.util.CommandStringBuilder;
 import org.apache.geode.management.internal.cli.util.RegionAttributesNames;
-import org.apache.geode.test.dunit.Host;
-import org.apache.geode.test.dunit.VM;
 import org.apache.geode.test.dunit.rules.ClusterStartupRule;
 import org.apache.geode.test.dunit.rules.MemberVM;
 import org.apache.geode.test.junit.categories.DistributedTest;
@@ -58,6 +58,13 @@ public class DescribeRegionDUnitTest {
   private static final String PART1_NAME = "Par1";
   private static final String PART2_NAME = "Par2";
 
+  private static MemberVM locator;
+  private static MemberVM server1;
+  private static MemberVM server2;
+  private static MemberVM server3;
+  private static MemberVM server4;
+  private static MemberVM accessor;
+
   @ClassRule
   public static ClusterStartupRule lsRule = new ClusterStartupRule();
 
@@ -66,9 +73,12 @@ public class DescribeRegionDUnitTest {
 
   @BeforeClass
   public static void setupSystem() throws Exception {
-    MemberVM locator = lsRule.startLocatorVM(0);
-    MemberVM server1 = lsRule.startServerVM(1, "group1", locator.getPort());
-    MemberVM server2 = lsRule.startServerVM(2, "group2", locator.getPort());
+    locator = lsRule.startLocatorVM(0);
+    server1 = lsRule.startServerVM(1, "group1", locator.getPort());
+    server2 = lsRule.startServerVM(2, "group2", locator.getPort());
+    server3 = lsRule.startServerVM(3, locator.getPort());
+    server4 = lsRule.startServerVM(4, locator.getPort());
+    accessor = lsRule.startServerVM(5, locator.getPort());
 
     server1.invoke(() -> {
       final Cache cache = ClusterStartupRule.getCache();
@@ -145,10 +155,9 @@ public class DescribeRegionDUnitTest {
   @Test
   public void describeRegionWithCompressionCodec() throws Exception {
     final String regionName = "compressedRegion";
-    VM vm = Host.getHost(0).getVM(1);
 
     // Create compressed region
-    vm.invoke(() -> createCompressedRegion(regionName));
+    server1.invoke(() -> createCompressedRegion(regionName));
 
     // Test the describe command; look for compression
     CommandStringBuilder csb = new CommandStringBuilder(DESCRIBE_REGION);
@@ -158,7 +167,7 @@ public class DescribeRegionDUnitTest {
         RegionAttributesNames.COMPRESSOR, RegionEntryContext.DEFAULT_COMPRESSION_PROVIDER);
 
     // Destroy compressed region
-    vm.invoke(() -> {
+    server1.invoke(() -> {
       final Region region = CacheFactory.getAnyInstance().getRegion(regionName);
       assertThat(region).isNotNull();
       region.destroyRegion();
@@ -169,6 +178,73 @@ public class DescribeRegionDUnitTest {
   public void describeRegionWithAsyncEventQueue() throws Exception {
     gfsh.executeAndAssertThat("describe region --name=region4").statusIsSuccess()
         .containsOutput("async-event-queue-id", "queue1");
+  }
+
+  @Test
+  public void testDescribeRegionReturnsDescriptionFromAllMembers() throws Exception {
+    createHostingAndAccessorRegion();
+    String command = "describe region --name=hostingAndAccessorRegion";
+    CommandResult commandResult =
+        gfsh.executeAndAssertThat(command).statusIsSuccess().getCommandResult();
+
+    GfJsonObject hostingMembersRegionDesc = getMembersRegionDesc(commandResult, "Hosting Members");
+    GfJsonObject hostingMembersTableContent = hostingMembersRegionDesc
+        .getJSONObject("__sections__-0").getJSONObject("__tables__-0").getJSONObject("content");
+
+    GfJsonObject accessorsRegionDesc = getMembersRegionDesc(commandResult, "Accessor Members");
+    GfJsonObject accessorsTableContent = accessorsRegionDesc.getJSONObject("__sections__-0")
+        .getJSONObject("__tables__-0").getJSONObject("content");
+
+    assertThat(hostingMembersRegionDesc.get("Name").toString())
+        .contains("hostingAndAccessorRegion");
+    assertThat(hostingMembersRegionDesc.get("Data Policy").toString()).contains("partition");
+    assertThat(hostingMembersRegionDesc.get("Hosting Members").toString()).contains("server-1",
+        "server-2", "server-3", "server-4");
+    assertThat(hostingMembersTableContent.get("Type").toString()).contains("Region");
+    assertThat(hostingMembersTableContent.get("Name").toString()).contains("data-policy", "size");
+    assertThat(hostingMembersTableContent.get("Value").toString()).contains("PARTITION", "0");
+
+    assertThat(accessorsRegionDesc.get("Name").toString()).contains("hostingAndAccessorRegion");
+    assertThat(accessorsRegionDesc.get("Data Policy").toString()).contains("partition");
+    assertThat(accessorsRegionDesc.get("Accessor Members").toString()).contains("server-5");
+    assertThat(accessorsTableContent.get("Type").toString()).contains("Region", "Partition");
+    assertThat(accessorsTableContent.get("Name").toString()).contains("data-policy", "size",
+        "local-max-memory");
+    assertThat(accessorsTableContent.get("Value").toString()).contains("PARTITION", "0", "0");
+
+  }
+
+  private void createHostingAndAccessorRegion() {
+    final String regionName = "hostingAndAccessorRegion";
+
+    server1.invoke(() -> {
+      Cache cache = ClusterStartupRule.getCache();
+      cache.createRegionFactory(RegionShortcut.PARTITION).create(regionName);
+    });
+    server2.invoke(() -> {
+      Cache cache = ClusterStartupRule.getCache();
+      cache.createRegionFactory(RegionShortcut.PARTITION).create(regionName);
+    });
+    server3.invoke(() -> {
+      Cache cache = ClusterStartupRule.getCache();
+      cache.createRegionFactory(RegionShortcut.PARTITION).create(regionName);
+    });
+    server4.invoke(() -> {
+      Cache cache = ClusterStartupRule.getCache();
+      cache.createRegionFactory(RegionShortcut.PARTITION).create(regionName);
+    });
+
+    accessor.invoke(() -> {
+      Cache cache = ClusterStartupRule.getCache();
+      cache.createRegionFactory(RegionShortcut.PARTITION_PROXY).create(regionName);
+    });
+  }
+
+  private GfJsonObject getMembersRegionDesc(CommandResult commandResult, String memberType) {
+    if (commandResult.getContent().getJSONObject("__sections__-0").has(memberType))
+      return commandResult.getContent().getJSONObject("__sections__-0");
+    else
+      return commandResult.getContent().getJSONObject("__sections__-1");
   }
 
   private static void createLocalRegion(final String regionName) {

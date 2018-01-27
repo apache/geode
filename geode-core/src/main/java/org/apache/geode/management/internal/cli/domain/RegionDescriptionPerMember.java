@@ -63,7 +63,7 @@ public class RegionDescriptionPerMember implements Serializable {
           && this.getDataPolicy().equals(regionDesc.getDataPolicy())
           && this.isAccessor == regionDesc.isAccessor;
     }
-    return true;
+    return false;
   }
 
   public int hashCode() {
