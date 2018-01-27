@@ -21,7 +21,7 @@ import org.apache.geode.test.junit.categories.DistributedTest;
 import org.apache.geode.test.junit.categories.FlakyTest;
 import org.apache.geode.test.junit.rules.GfshCommandRule;
 
-@Category({DistributedTest.class, FlakyTest.class})
+@Category(DistributedTest.class)
 public class ShutdownCommandOverHttpDUnitTest extends ShutdownCommandDUnitTest {
 
   @Override
