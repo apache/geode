@@ -32,7 +32,7 @@ public interface GatewayEventFilter extends CacheCallback {
    * @param event
    * @return true if event should be enqueued otherwise return false.
    */
-  public boolean beforeEnqueue(GatewayQueueEvent event);
+  boolean beforeEnqueue(GatewayQueueEvent event);
 
   /**
    * It will be invoked before dispatching event to remote GatewayReceiver <br>
@@ -44,7 +44,7 @@ public interface GatewayEventFilter extends CacheCallback {
    * @param event
    * @return true if event should be dispatched otherwise return false.
    */
-  public boolean beforeTransmit(GatewayQueueEvent event);
+  boolean beforeTransmit(GatewayQueueEvent event);
 
   /**
    * It will be invoked once GatewaySender receives an ack from remote GatewayReceiver <br>
@@ -53,6 +53,6 @@ public interface GatewayEventFilter extends CacheCallback {
    *
    * @param event
    */
-  public void afterAcknowledgement(GatewayQueueEvent event);
+  void afterAcknowledgement(GatewayQueueEvent event);
 
 }

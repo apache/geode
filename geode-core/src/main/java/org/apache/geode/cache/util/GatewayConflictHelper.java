@@ -22,8 +22,8 @@ package org.apache.geode.cache.util;
  */
 public interface GatewayConflictHelper {
   /** disallow the event */
-  public void disallowEvent();
+  void disallowEvent();
 
   /** modify the value stored in the cache */
-  public void changeEventValue(Object value);
+  void changeEventValue(Object value);
 }

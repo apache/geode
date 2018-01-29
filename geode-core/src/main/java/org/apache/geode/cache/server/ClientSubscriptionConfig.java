@@ -68,17 +68,17 @@ public interface ClientSubscriptionConfig {
   /**
    * The default limit that is assigned to client subscription.
    */
-  public static final int DEFAULT_CAPACITY = 1;
+  int DEFAULT_CAPACITY = 1;
 
   /**
    * The default eviction policy that is assigned to client subscription.
    */
-  public static final String DEFAULT_EVICTION_POLICY = "none";
+  String DEFAULT_EVICTION_POLICY = "none";
 
   /**
    * The default overflow directory that is assigned to client subscription.
    */
-  public static final String DEFAULT_OVERFLOW_DIRECTORY = ".";
+  String DEFAULT_OVERFLOW_DIRECTORY = ".";
 
   /**
    * Returns the capacity of the client queue. will be in MB for eviction-policy <b>mem</b> else
@@ -87,7 +87,7 @@ public interface ClientSubscriptionConfig {
    * @see #DEFAULT_CAPACITY
    * @since GemFire 5.7
    */
-  public int getCapacity();
+  int getCapacity();
 
   /**
    * Sets the capacity of the client queue. will be in MB for eviction-policy <b>mem</b> else number
@@ -96,7 +96,7 @@ public interface ClientSubscriptionConfig {
    * @see #DEFAULT_CAPACITY
    * @since GemFire 5.7
    */
-  public void setCapacity(int capacity);
+  void setCapacity(int capacity);
 
   /**
    * Returns the eviction policy that is executed when capacity of the client queue is reached.
@@ -104,7 +104,7 @@ public interface ClientSubscriptionConfig {
    * @see #DEFAULT_EVICTION_POLICY
    * @since GemFire 5.7
    */
-  public String getEvictionPolicy();
+  String getEvictionPolicy();
 
   /**
    * Sets the eviction policy that is executed when capacity of the client queue is reached.
@@ -112,7 +112,7 @@ public interface ClientSubscriptionConfig {
    * @see #DEFAULT_EVICTION_POLICY
    * @since GemFire 5.7
    */
-  public void setEvictionPolicy(String policy);
+  void setEvictionPolicy(String policy);
 
   /**
    * Sets the overflow directory for a client queue
@@ -121,7 +121,7 @@ public interface ClientSubscriptionConfig {
    * @since GemFire 5.7
    * @deprecated as of 6.5 use {@link #setDiskStoreName(String)} instead
    */
-  public void setOverflowDirectory(String overflowDirectory);
+  void setOverflowDirectory(String overflowDirectory);
 
   /**
    * Answers the overflow directory for a client queue's overflowed client queue entries.
@@ -130,7 +130,7 @@ public interface ClientSubscriptionConfig {
    * @since GemFire 5.7
    * @deprecated as of 6.5 use {@link #getDiskStoreName} instead
    */
-  public String getOverflowDirectory();
+  String getOverflowDirectory();
 
   /**
    * Sets the disk store name for overflow
@@ -138,12 +138,12 @@ public interface ClientSubscriptionConfig {
    * @param diskStoreName
    * @since GemFire 6.5
    */
-  public void setDiskStoreName(String diskStoreName);
+  void setDiskStoreName(String diskStoreName);
 
   /**
    * get the diskStoreName for overflow
    *
    * @since GemFire 6.5
    */
-  public String getDiskStoreName();
+  String getDiskStoreName();
 }

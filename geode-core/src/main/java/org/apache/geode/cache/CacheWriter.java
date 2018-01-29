@@ -62,7 +62,7 @@ public interface CacheWriter<K, V> extends CacheCallback {
    * @see Region#put(Object, Object)
    * @see Region#get(Object)
    */
-  public void beforeUpdate(EntryEvent<K, V> event) throws CacheWriterException;
+  void beforeUpdate(EntryEvent<K, V> event) throws CacheWriterException;
 
   /**
    * Called before an entry is created. Entry creation is initiated by a <code>create</code>, a
@@ -79,7 +79,7 @@ public interface CacheWriter<K, V> extends CacheCallback {
    * @see Region#put(Object, Object)
    * @see Region#get(Object)
    */
-  public void beforeCreate(EntryEvent<K, V> event) throws CacheWriterException;
+  void beforeCreate(EntryEvent<K, V> event) throws CacheWriterException;
 
   /**
    * Called before an entry is destroyed. The entry being destroyed may or may not exist in the
@@ -92,7 +92,7 @@ public interface CacheWriter<K, V> extends CacheCallback {
    *
    * @see Region#destroy(Object)
    */
-  public void beforeDestroy(EntryEvent<K, V> event) throws CacheWriterException;
+  void beforeDestroy(EntryEvent<K, V> event) throws CacheWriterException;
 
   /**
    * Called before a region is destroyed. The <code>CacheWriter</code> will not additionally be
@@ -113,7 +113,7 @@ public interface CacheWriter<K, V> extends CacheCallback {
    *
    * @see Region#destroyRegion()
    */
-  public void beforeRegionDestroy(RegionEvent<K, V> event) throws CacheWriterException;
+  void beforeRegionDestroy(RegionEvent<K, V> event) throws CacheWriterException;
 
   /**
    * Called before a region is cleared. The <code>CacheWriter</code> will not additionally be called
@@ -130,5 +130,5 @@ public interface CacheWriter<K, V> extends CacheCallback {
    *
    * @see Region#clear
    */
-  public void beforeRegionClear(RegionEvent<K, V> event) throws CacheWriterException;
+  void beforeRegionClear(RegionEvent<K, V> event) throws CacheWriterException;
 }

@@ -51,7 +51,7 @@ public interface Execution<IN, OUT, AGG> {
    *         {@link FunctionService#onRegion(org.apache.geode.cache.Region)}
    * @since GemFire 6.0
    */
-  public Execution<IN, OUT, AGG> withFilter(Set<?> filter);
+  Execution<IN, OUT, AGG> withFilter(Set<?> filter);
 
   /**
    * Specifies the user data passed to the function when it is executed. The function can retrieve
@@ -63,7 +63,7 @@ public interface Execution<IN, OUT, AGG> {
    * @since Geode 1.2
    *
    */
-  public Execution<IN, OUT, AGG> setArguments(IN args);
+  Execution<IN, OUT, AGG> setArguments(IN args);
 
   /**
    * Specifies the user data passed to the function when it is executed. The function can retrieve
@@ -76,7 +76,7 @@ public interface Execution<IN, OUT, AGG> {
    * @deprecated use {@link #setArguments(Object)} instead
    *
    */
-  public Execution<IN, OUT, AGG> withArgs(IN args);
+  Execution<IN, OUT, AGG> withArgs(IN args);
 
   /**
    * Specifies the {@link ResultCollector} that will receive the results after the function has been
@@ -88,7 +88,7 @@ public interface Execution<IN, OUT, AGG> {
    * @see ResultCollector
    * @since GemFire 6.0
    */
-  public Execution<IN, OUT, AGG> withCollector(ResultCollector<OUT, AGG> rc);
+  Execution<IN, OUT, AGG> withCollector(ResultCollector<OUT, AGG> rc);
 
   /**
    * Executes the function using its {@linkplain Function#getId() id}
@@ -104,7 +104,7 @@ public interface Execution<IN, OUT, AGG> {
    *
    * @since GemFire 6.0
    */
-  public ResultCollector<OUT, AGG> execute(String functionId) throws FunctionException;
+  ResultCollector<OUT, AGG> execute(String functionId) throws FunctionException;
 
   /**
    * Executes the function instance provided.
@@ -121,5 +121,5 @@ public interface Execution<IN, OUT, AGG> {
    *
    * @since GemFire 6.0
    */
-  public ResultCollector<OUT, AGG> execute(Function function) throws FunctionException;
+  ResultCollector<OUT, AGG> execute(Function function) throws FunctionException;
 }
