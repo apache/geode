@@ -2676,7 +2676,7 @@ public abstract class MultiVMRegionTestCase extends RegionTestCase {
           }, getRepeatTimeoutMs());
 
     } catch (Exception e) {
-      CacheFactory.getInstance(getSystem()).close();
+      getCache().close();
       getSystem().getLogWriter().fine("testDistributedPut: Caused exception in createRegion");
       throw e;
     }
@@ -6232,7 +6232,7 @@ public abstract class MultiVMRegionTestCase extends RegionTestCase {
           }, getRepeatTimeoutMs());
 
     } catch (Exception e) {
-      CacheFactory.getInstance(getSystem()).close();
+      getCache().close();
       getSystem().getLogWriter().fine("testTXSimpleOps: Caused exception in createRegion");
       throw e;
     }
@@ -6489,7 +6489,7 @@ public abstract class MultiVMRegionTestCase extends RegionTestCase {
       txMgr.rollback();
       assertSame(localCmtValue, rgn.getEntry("key").getValue());
     } catch (Exception e) {
-      CacheFactory.getInstance(getSystem()).close();
+      getCache().close();
       getSystem().getLogWriter()
           .fine("testTXUpdateLoadNoConflict: Caused exception in createRegion");
       throw e;
@@ -7248,7 +7248,7 @@ public abstract class MultiVMRegionTestCase extends RegionTestCase {
       rgn2.destroyRegion();
       rgn3.destroyRegion();
     } catch (Exception e) {
-      CacheFactory.getInstance(getSystem()).close();
+      getCache().close();
       getSystem().getLogWriter().fine("testTXMultiRegion: Caused exception in createRegion");
       throw e;
     }
@@ -7386,7 +7386,7 @@ public abstract class MultiVMRegionTestCase extends RegionTestCase {
       // Make sure that a remote put, that modifies an existing entry,
       // done in a tx is dropped in a remote mirror that does not have the entry.
     } catch (Exception e) {
-      CacheFactory.getInstance(getSystem()).close();
+      getCache().close();
       getSystem().getLogWriter().fine("textTXRmtMirror: Caused exception in createRegion");
       throw e;
     }
@@ -7859,7 +7859,7 @@ public abstract class MultiVMRegionTestCase extends RegionTestCase {
 
 
     } catch (Exception e) {
-      CacheFactory.getInstance(getSystem()).close();
+      getCache().close();
       getSystem().getLogWriter().fine("testTXAlgebra: Caused exception in createRegion");
       throw e;
     }
