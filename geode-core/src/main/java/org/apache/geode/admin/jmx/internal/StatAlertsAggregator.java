@@ -38,14 +38,14 @@ public interface StatAlertsAggregator {
    * @param alertDefinition StatAlertDefinition to retrieve
    * @return StatAlertDefinition
    */
-  public StatAlertDefinition getAlertDefinition(StatAlertDefinition alertDefinition);
+  StatAlertDefinition getAlertDefinition(StatAlertDefinition alertDefinition);
 
   /**
    * This method can be used to retrieve all available stat alert definitions.
    *
    * @return An array of all available StatAlertDefinition objects
    */
-  public StatAlertDefinition[] getAllStatAlertDefinitions();
+  StatAlertDefinition[] getAllStatAlertDefinitions();
 
   /**
    * This method can be used to update alert definition for the Stat mentioned. This method should
@@ -56,7 +56,7 @@ public interface StatAlertsAggregator {
    *
    * @param alertDefinition alertDefinition to be updated
    */
-  public void updateAlertDefinition(StatAlertDefinition alertDefinition);
+  void updateAlertDefinition(StatAlertDefinition alertDefinition);
 
   /**
    * This method can be used to remove alert definition for the Stat mentioned.
@@ -66,7 +66,7 @@ public interface StatAlertsAggregator {
    *
    * @param defId id of the alert definition to be removed
    */
-  public void removeAlertDefinition(Integer defId);
+  void removeAlertDefinition(Integer defId);
 
   /**
    * Convenience method to check whether an alert definition is created.
@@ -74,28 +74,28 @@ public interface StatAlertsAggregator {
    * @param alert alert definition to check whether already created
    * @return true if the alert definition is already created, false otherwise
    */
-  public boolean isAlertDefinitionCreated(StatAlertDefinition alert);
+  boolean isAlertDefinitionCreated(StatAlertDefinition alert);
 
   /**
    * This method can be used to set the AlertManager for the newly joined member VM.
    *
    * @param memberVM Member VM to set AlertsManager for
    */
-  public void setAlertsManager(GemFireVM memberVM);
+  void setAlertsManager(GemFireVM memberVM);
 
   /**
    * Returns the refresh interval for the Stats in seconds.
    *
    * @return refresh interval for the Stats(in seconds)
    */
-  public int getRefreshIntervalForStatAlerts();
+  int getRefreshIntervalForStatAlerts();
 
   /**
    * This method is used to set the refresh interval for the Stats Alerts in seconds
    *
    * @param refreshInterval refresh interval for the Stats(in seconds)
    */
-  public void setRefreshIntervalForStatAlerts(int refreshInterval);
+  void setRefreshIntervalForStatAlerts(int refreshInterval);
 
   /**
    * This method can be used to process the notifications sent by the member(s). Actual aggregation
@@ -105,7 +105,7 @@ public interface StatAlertsAggregator {
    * @param alerts array of Alert class(contains alert def. ID & value)
    * @param remoteVM
    */
-  public void processNotifications(StatAlert[] alerts, GemFireVM remoteVM);
+  void processNotifications(StatAlert[] alerts, GemFireVM remoteVM);
 
-  public void processSystemwideNotifications();
+  void processSystemwideNotifications();
 }

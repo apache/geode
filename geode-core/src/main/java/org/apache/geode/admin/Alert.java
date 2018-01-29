@@ -27,27 +27,27 @@ package org.apache.geode.admin;
 public interface Alert {
 
   /** The level at which this alert is issued */
-  public AlertLevel getLevel();
+  AlertLevel getLevel();
 
   /**
    * The member of the distributed system that issued the alert, or null if the issuer is no longer
    * a member of the distributed system.
    */
-  public SystemMember getSystemMember();
+  SystemMember getSystemMember();
 
   /**
    * The name of the {@linkplain org.apache.geode.distributed.DistributedSystem#getName distributed
    * system}) through which the alert was issued.
    */
-  public String getConnectionName();
+  String getConnectionName();
 
   /** The id of the source of the alert (such as a thread in a VM) */
-  public String getSourceId();
+  String getSourceId();
 
   /** The alert's message */
-  public String getMessage();
+  String getMessage();
 
   /** The time at which the alert was issued */
-  public java.util.Date getDate();
+  java.util.Date getDate();
 
 }

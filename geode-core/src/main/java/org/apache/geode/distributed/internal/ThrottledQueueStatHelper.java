@@ -27,12 +27,12 @@ public interface ThrottledQueueStatHelper extends QueueStatHelper {
   /**
    * Called each time a thread was delayed by the throttle.
    */
-  public void incThrottleCount();
+  void incThrottleCount();
 
   /**
    * Called after a throttled operation has completed.
    *
    * @param nanos the amount of time, in nanoseconds, the throttle caused us to wait.
    */
-  public void throttleTime(long nanos);
+  void throttleTime(long nanos);
 }

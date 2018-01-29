@@ -29,7 +29,7 @@ public interface GemFireHealthConfig extends MemberHealthConfig, CacheHealthConf
   /**
    * The default number of seconds between assessments of the health of the GemFire components.
    */
-  public static final int DEFAULT_HEALTH_EVALUATION_INTERVAL = 30;
+  int DEFAULT_HEALTH_EVALUATION_INTERVAL = 30;
 
   ////////////////////// Instance Methods //////////////////////
 
@@ -39,16 +39,16 @@ public interface GemFireHealthConfig extends MemberHealthConfig, CacheHealthConf
    *
    * @see GemFireHealth#getGemFireHealthConfig
    */
-  public String getHostName();
+  String getHostName();
 
   /**
    * Sets the number of seconds between assessments of the health of the GemFire components.
    */
-  public void setHealthEvaluationInterval(int interval);
+  void setHealthEvaluationInterval(int interval);
 
   /**
    * Returns the number of seconds between assessments of the health of the GemFire components.
    */
-  public int getHealthEvaluationInterval();
+  int getHealthEvaluationInterval();
 
 }

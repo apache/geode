@@ -81,148 +81,148 @@ public interface LogWriter {
    * Returns true if "severe" log messages are enabled. Returns false if "severe" log messages are
    * disabled.
    */
-  public boolean severeEnabled();
+  boolean severeEnabled();
 
   /**
    * Writes both a message and exception to this writer. The message level is "severe".
    */
-  public void severe(String msg, Throwable ex);
+  void severe(String msg, Throwable ex);
 
   /**
    * Writes a message to this writer. The message level is "severe".
    */
-  public void severe(String msg);
+  void severe(String msg);
 
   /**
    * Writes an exception to this writer. The exception level is "severe".
    */
-  public void severe(Throwable ex);
+  void severe(Throwable ex);
 
   /**
    * Returns true if "error" log messages are enabled. Returns false if "error" log messages are
    * disabled.
    */
-  public boolean errorEnabled();
+  boolean errorEnabled();
 
   /**
    * Writes both a message and exception to this writer. The message level is "error".
    */
-  public void error(String msg, Throwable ex);
+  void error(String msg, Throwable ex);
 
   /**
    * Writes a message to this writer. The message level is "error".
    */
-  public void error(String msg);
+  void error(String msg);
 
   /**
    * Writes an exception to this writer. The exception level is "error".
    */
-  public void error(Throwable ex);
+  void error(Throwable ex);
 
   /**
    * Returns true if "warning" log messages are enabled. Returns false if "warning" log messages are
    * disabled.
    */
-  public boolean warningEnabled();
+  boolean warningEnabled();
 
   /**
    * Writes both a message and exception to this writer. The message level is "warning".
    */
-  public void warning(String msg, Throwable ex);
+  void warning(String msg, Throwable ex);
 
   /**
    * Writes a message to this writer. The message level is "warning".
    */
-  public void warning(String msg);
+  void warning(String msg);
 
   /**
    * Writes an exception to this writer. The exception level is "warning".
    */
-  public void warning(Throwable ex);
+  void warning(Throwable ex);
 
   /**
    * Returns true if "info" log messages are enabled. Returns false if "info" log messages are
    * disabled.
    */
-  public boolean infoEnabled();
+  boolean infoEnabled();
 
   /**
    * Writes both a message and exception to this writer. The message level is "information".
    */
-  public void info(String msg, Throwable ex);
+  void info(String msg, Throwable ex);
 
   /**
    * Writes a message to this writer. The message level is "information".
    */
-  public void info(String msg);
+  void info(String msg);
 
   /**
    * Writes an exception to this writer. The exception level is "information".
    */
-  public void info(Throwable ex);
+  void info(Throwable ex);
 
   /**
    * Returns true if "config" log messages are enabled. Returns false if "config" log messages are
    * disabled.
    */
-  public boolean configEnabled();
+  boolean configEnabled();
 
   /**
    * Writes both a message and exception to this writer. The message level is "config".
    */
-  public void config(String msg, Throwable ex);
+  void config(String msg, Throwable ex);
 
   /**
    * Writes a message to this writer. The message level is "config".
    */
-  public void config(String msg);
+  void config(String msg);
 
   /**
    * Writes an exception to this writer. The exception level is "config".
    */
-  public void config(Throwable ex);
+  void config(Throwable ex);
 
   /**
    * Returns true if "fine" log messages are enabled. Returns false if "fine" log messages are
    * disabled.
    */
-  public boolean fineEnabled();
+  boolean fineEnabled();
 
   /**
    * Writes both a message and exception to this writer. The message level is "fine".
    */
-  public void fine(String msg, Throwable ex);
+  void fine(String msg, Throwable ex);
 
   /**
    * Writes a message to this writer. The message level is "fine".
    */
-  public void fine(String msg);
+  void fine(String msg);
 
   /**
    * Writes an exception to this writer. The exception level is "fine".
    */
-  public void fine(Throwable ex);
+  void fine(Throwable ex);
 
   /**
    * Returns true if "finer" log messages are enabled. Returns false if "finer" log messages are
    * disabled.
    */
-  public boolean finerEnabled();
+  boolean finerEnabled();
 
   /**
    * Writes both a message and exception to this writer. The message level is "finer".
    */
-  public void finer(String msg, Throwable ex);
+  void finer(String msg, Throwable ex);
 
   /**
    * Writes a message to this writer. The message level is "finer".
    */
-  public void finer(String msg);
+  void finer(String msg);
 
   /**
    * Writes an exception to this writer. The exception level is "finer".
    */
-  public void finer(Throwable ex);
+  void finer(Throwable ex);
 
   /**
    * Log a method entry.
@@ -233,7 +233,7 @@ public interface LogWriter {
    * @param sourceClass Name of class that issued the logging request.
    * @param sourceMethod Name of the method that issued the logging request.
    */
-  public void entering(String sourceClass, String sourceMethod);
+  void entering(String sourceClass, String sourceMethod);
 
   /**
    * Log a method return.
@@ -244,7 +244,7 @@ public interface LogWriter {
    * @param sourceClass Name of class that issued the logging request.
    * @param sourceMethod Name of the method that issued the logging request.
    */
-  public void exiting(String sourceClass, String sourceMethod);
+  void exiting(String sourceClass, String sourceMethod);
 
   /**
    * Log throwing an exception.
@@ -260,40 +260,40 @@ public interface LogWriter {
    * @param sourceMethod Name of the method that issued the logging request.
    * @param thrown The Throwable that is being thrown.
    */
-  public void throwing(String sourceClass, String sourceMethod, Throwable thrown);
+  void throwing(String sourceClass, String sourceMethod, Throwable thrown);
 
   /**
    * Returns true if "finest" log messages are enabled. Returns false if "finest" log messages are
    * disabled.
    */
-  public boolean finestEnabled();
+  boolean finestEnabled();
 
   /**
    * Writes both a message and exception to this writer. The message level is "finest".
    */
-  public void finest(String msg, Throwable ex);
+  void finest(String msg, Throwable ex);
 
   /**
    * Writes a message to this writer. The message level is "finest".
    */
-  public void finest(String msg);
+  void finest(String msg);
 
   /**
    * Writes an exception to this writer. The exception level is "finest".
    */
-  public void finest(Throwable ex);
+  void finest(Throwable ex);
 
   /**
    * Returns a 1.4 logging handler that can be used to direct application output to this GemFire
    * logger using the standard JDK logger APIs. Each time this method is called it creates a new
    * instance of a Handler so care should be taken to not call this method too often.
    */
-  public Handler getHandler();
+  Handler getHandler();
 
   /**
    * A mechanism for accessing the abstraction layer used for internationalization.
    *
    * @return LogWriterI18n
    */
-  public LogWriterI18n convertToLogWriterI18n();
+  LogWriterI18n convertToLogWriterI18n();
 }

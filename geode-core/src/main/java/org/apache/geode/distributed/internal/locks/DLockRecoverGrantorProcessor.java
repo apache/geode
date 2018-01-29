@@ -383,8 +383,8 @@ public class DLockRecoverGrantorProcessor extends ReplyProcessor21 {
     }
   }
 
-  public static interface MessageProcessor {
-    public void process(DistributionManager dm, DLockRecoverGrantorMessage msg);
+  public interface MessageProcessor {
+    void process(DistributionManager dm, DLockRecoverGrantorMessage msg);
   }
 
   static class DefaultMessageProcessor implements MessageProcessor {

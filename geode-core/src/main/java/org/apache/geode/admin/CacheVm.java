@@ -31,5 +31,5 @@ public interface CacheVm extends SystemMember, ManagedEntity {
   /**
    * Returns the configuration of this cache vm
    */
-  public CacheVmConfig getVmConfig();
+  CacheVmConfig getVmConfig();
 }
