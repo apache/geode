@@ -283,7 +283,7 @@ public class RegionCreateFunction implements Function, InternalEntity {
 
     // Set plugins
     final Set<ClassName<CacheListener>> cacheListeners = regionCreateArgs.getCacheListeners();
-    if (cacheListeners != null) {
+    if (cacheListeners != null && !cacheListeners.isEmpty()) {
       List<CacheListener<K, V>> newListeners = new ArrayList<>();
       for (ClassName<CacheListener> cacheListener : cacheListeners) {
         newListeners.add(cacheListener.newInstance());
