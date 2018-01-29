@@ -25,6 +25,9 @@ import javax.management.ObjectName;
 import org.springframework.shell.core.annotation.CliCommand;
 import org.springframework.shell.core.annotation.CliOption;
 
+import org.apache.geode.cache.CacheListener;
+import org.apache.geode.cache.CacheLoader;
+import org.apache.geode.cache.CacheWriter;
 import org.apache.geode.cache.DataPolicy;
 import org.apache.geode.cache.EvictionAction;
 import org.apache.geode.cache.Region;
@@ -46,6 +49,7 @@ import org.apache.geode.management.internal.cli.AbstractCliAroundInterceptor;
 import org.apache.geode.management.internal.cli.CliUtil;
 import org.apache.geode.management.internal.cli.GfshParseResult;
 import org.apache.geode.management.internal.cli.LogWrapper;
+import org.apache.geode.management.internal.cli.domain.ClassName;
 import org.apache.geode.management.internal.cli.functions.CliFunctionResult;
 import org.apache.geode.management.internal.cli.functions.FetchRegionAttributesFunction;
 import org.apache.geode.management.internal.cli.functions.RegionCreateFunction;
@@ -88,11 +92,13 @@ public class CreateRegionCommand implements GfshCommand {
       @CliOption(key = CliStrings.CREATE_REGION__ASYNCEVENTQUEUEID,
           help = CliStrings.CREATE_REGION__ASYNCEVENTQUEUEID__HELP) String[] asyncEventQueueIds,
       @CliOption(key = CliStrings.CREATE_REGION__CACHELISTENER,
-          help = CliStrings.CREATE_REGION__CACHELISTENER__HELP) String[] cacheListener,
+          // split the input only with "," outside of json string
+          optionContext = "splittingRegex=,(?![^{]*\\})",
+          help = CliStrings.CREATE_REGION__CACHELISTENER__HELP) ClassName<CacheListener>[] cacheListener,
       @CliOption(key = CliStrings.CREATE_REGION__CACHELOADER,
-          help = CliStrings.CREATE_REGION__CACHELOADER__HELP) String cacheLoader,
+          help = CliStrings.CREATE_REGION__CACHELOADER__HELP) ClassName<CacheLoader> cacheLoader,
       @CliOption(key = CliStrings.CREATE_REGION__CACHEWRITER,
-          help = CliStrings.CREATE_REGION__CACHEWRITER__HELP) String cacheWriter,
+          help = CliStrings.CREATE_REGION__CACHEWRITER__HELP) ClassName<CacheWriter> cacheWriter,
       @CliOption(key = CliStrings.CREATE_REGION__COLOCATEDWITH,
           optionContext = ConverterHint.REGION_PATH,
           help = CliStrings.CREATE_REGION__COLOCATEDWITH__HELP) String prColocatedWith,
@@ -559,7 +565,7 @@ public class CreateRegionCommand implements GfshCommand {
 
       String keyConstraint =
           parseResult.getParamValueAsString(CliStrings.CREATE_REGION__KEYCONSTRAINT);
-      if (keyConstraint != null && !RegionCommandsUtils.isClassNameValid(keyConstraint)) {
+      if (keyConstraint != null && !ClassName.isClassNameValid(keyConstraint)) {
         return ResultBuilder.createUserErrorResult(CliStrings.format(
             CliStrings.CREATE_REGION__MSG__SPECIFY_VALID_CLASSNAME_FOR_KEYCONSTRAINT_0_IS_INVALID,
             new Object[] {keyConstraint}));
@@ -567,41 +573,14 @@ public class CreateRegionCommand implements GfshCommand {
 
       String valueConstraint =
           parseResult.getParamValueAsString(CliStrings.CREATE_REGION__VALUECONSTRAINT);
-      if (valueConstraint != null && !RegionCommandsUtils.isClassNameValid(valueConstraint)) {
+      if (valueConstraint != null && !ClassName.isClassNameValid(valueConstraint)) {
         return ResultBuilder.createUserErrorResult(CliStrings.format(
             CliStrings.CREATE_REGION__MSG__SPECIFY_VALID_CLASSNAME_FOR_VALUECONSTRAINT_0_IS_INVALID,
             new Object[] {valueConstraint}));
       }
 
-      String cacheListenerList =
-          parseResult.getParamValueAsString(CliStrings.CREATE_REGION__CACHELISTENER);
-      if (cacheListenerList != null) {
-        String[] cacheListeners = cacheListenerList.split(",");
-        for (String cacheListener : cacheListeners) {
-          if (!RegionCommandsUtils.isClassNameValid(cacheListener)) {
-            return ResultBuilder.createUserErrorResult(CliStrings.format(
-                CliStrings.CREATE_REGION__MSG__SPECIFY_VALID_CLASSNAME_FOR_CACHELISTENER_0_IS_INVALID,
-                new Object[] {cacheListener}));
-          }
-        }
-      }
-
-      String cacheLoader = parseResult.getParamValueAsString(CliStrings.CREATE_REGION__CACHELOADER);
-      if (cacheLoader != null && !RegionCommandsUtils.isClassNameValid(cacheLoader)) {
-        return ResultBuilder.createUserErrorResult(CliStrings.format(
-            CliStrings.CREATE_REGION__MSG__SPECIFY_VALID_CLASSNAME_FOR_CACHELOADER_0_IS_INVALID,
-            new Object[] {cacheLoader}));
-      }
-
-      String cacheWriter = parseResult.getParamValueAsString(CliStrings.CREATE_REGION__CACHEWRITER);
-      if (cacheWriter != null && !RegionCommandsUtils.isClassNameValid(cacheWriter)) {
-        return ResultBuilder.createUserErrorResult(CliStrings.format(
-            CliStrings.CREATE_REGION__MSG__SPECIFY_VALID_CLASSNAME_FOR_CACHEWRITER_0_IS_INVALID,
-            new Object[] {cacheWriter}));
-      }
-
       String compressor = parseResult.getParamValueAsString(CliStrings.CREATE_REGION__COMPRESSOR);
-      if (compressor != null && !RegionCommandsUtils.isClassNameValid(compressor)) {
+      if (compressor != null && !ClassName.isClassNameValid(compressor)) {
         return ResultBuilder.createUserErrorResult(CliStrings
             .format(CliStrings.CREATE_REGION__MSG__INVALID_COMPRESSOR, new Object[] {compressor}));
       }

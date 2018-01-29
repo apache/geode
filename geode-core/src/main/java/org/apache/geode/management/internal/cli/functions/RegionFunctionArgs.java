@@ -22,6 +22,9 @@ import java.util.HashSet;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+import org.apache.geode.cache.CacheListener;
+import org.apache.geode.cache.CacheLoader;
+import org.apache.geode.cache.CacheWriter;
 import org.apache.geode.cache.EvictionAction;
 import org.apache.geode.cache.EvictionAttributes;
 import org.apache.geode.cache.ExpirationAction;
@@ -30,6 +33,7 @@ import org.apache.geode.cache.RegionAttributes;
 import org.apache.geode.cache.RegionShortcut;
 import org.apache.geode.cache.util.ObjectSizer;
 import org.apache.geode.internal.ClassPathLoader;
+import org.apache.geode.management.internal.cli.domain.ClassName;
 import org.apache.geode.management.internal.cli.i18n.CliStrings;
 
 /**
@@ -39,7 +43,7 @@ import org.apache.geode.management.internal.cli.i18n.CliStrings;
  * @since GemFire 7.0
  */
 public class RegionFunctionArgs implements Serializable {
-  private static final long serialVersionUID = 2204943186081037301L;
+  private static final long serialVersionUID = 2204943186081037302L;
 
   private String regionPath;
   private RegionShortcut regionShortcut;
@@ -48,18 +52,18 @@ public class RegionFunctionArgs implements Serializable {
   private String keyConstraint;
   private String valueConstraint;
   private Boolean statisticsEnabled;
-  private RegionFunctionArgs.ExpirationAttrs entryExpirationIdleTime;
-  private RegionFunctionArgs.ExpirationAttrs entryExpirationTTL;
-  private RegionFunctionArgs.ExpirationAttrs regionExpirationIdleTime;
-  private RegionFunctionArgs.ExpirationAttrs regionExpirationTTL;
-  private RegionFunctionArgs.EvictionAttrs evictionAttributes;
+  private ExpirationAttrs entryExpirationIdleTime;
+  private ExpirationAttrs entryExpirationTTL;
+  private ExpirationAttrs regionExpirationIdleTime;
+  private ExpirationAttrs regionExpirationTTL;
+  private EvictionAttrs evictionAttributes;
   private String diskStore;
   private Boolean diskSynchronous;
   private Boolean enableAsyncConflation;
   private Boolean enableSubscriptionConflation;
-  private Set<String> cacheListeners = Collections.emptySet();
-  private String cacheLoader;
-  private String cacheWriter;
+  private Set<ClassName<CacheListener>> cacheListeners = Collections.emptySet();
+  private ClassName<CacheLoader> cacheLoader;
+  private ClassName<CacheWriter> cacheWriter;
   private Set<String> asyncEventQueueIds = Collections.emptySet();
   private Set<String> gatewaySenderIds = Collections.emptySet();
   private Boolean concurrencyChecksEnabled;
@@ -107,29 +111,29 @@ public class RegionFunctionArgs implements Serializable {
 
   public void setEntryExpirationIdleTime(Integer timeout, String action) {
     if (timeout != null) {
-      this.entryExpirationIdleTime = new ExpirationAttrs(
-          RegionFunctionArgs.ExpirationAttrs.ExpirationFor.ENTRY_IDLE, timeout, action);
+      this.entryExpirationIdleTime =
+          new ExpirationAttrs(ExpirationAttrs.ExpirationFor.ENTRY_IDLE, timeout, action);
     }
   }
 
   public void setEntryExpirationTTL(Integer timeout, String action) {
     if (timeout != null) {
-      this.entryExpirationTTL = new ExpirationAttrs(
-          RegionFunctionArgs.ExpirationAttrs.ExpirationFor.ENTRY_TTL, timeout, action);
+      this.entryExpirationTTL =
+          new ExpirationAttrs(ExpirationAttrs.ExpirationFor.ENTRY_TTL, timeout, action);
     }
   }
 
   public void setRegionExpirationIdleTime(Integer timeout, String action) {
     if (timeout != null) {
-      this.regionExpirationIdleTime = new ExpirationAttrs(
-          RegionFunctionArgs.ExpirationAttrs.ExpirationFor.REGION_IDLE, timeout, action);
+      this.regionExpirationIdleTime =
+          new ExpirationAttrs(ExpirationAttrs.ExpirationFor.REGION_IDLE, timeout, action);
     }
   }
 
   public void setRegionExpirationTTL(Integer timeout, String action) {
     if (timeout != null) {
-      this.regionExpirationTTL = new ExpirationAttrs(
-          RegionFunctionArgs.ExpirationAttrs.ExpirationFor.REGION_TTL, timeout, action);
+      this.regionExpirationTTL =
+          new ExpirationAttrs(ExpirationAttrs.ExpirationFor.REGION_TTL, timeout, action);
     }
   }
 
@@ -158,17 +162,17 @@ public class RegionFunctionArgs implements Serializable {
     this.enableSubscriptionConflation = enableSubscriptionConflation;
   }
 
-  public void setCacheListeners(String[] cacheListeners) {
+  public void setCacheListeners(ClassName<CacheListener>[] cacheListeners) {
     if (cacheListeners != null) {
       this.cacheListeners = Arrays.stream(cacheListeners).collect(Collectors.toSet());
     }
   }
 
-  public void setCacheLoader(String cacheLoader) {
+  public void setCacheLoader(ClassName<CacheLoader> cacheLoader) {
     this.cacheLoader = cacheLoader;
   }
 
-  public void setCacheWriter(String cacheWriter) {
+  public void setCacheWriter(ClassName<CacheWriter> cacheWriter) {
     this.cacheWriter = cacheWriter;
   }
 
@@ -281,28 +285,28 @@ public class RegionFunctionArgs implements Serializable {
   /**
    * @return the entryExpirationIdleTime
    */
-  public RegionFunctionArgs.ExpirationAttrs getEntryExpirationIdleTime() {
+  public ExpirationAttrs getEntryExpirationIdleTime() {
     return this.entryExpirationIdleTime;
   }
 
   /**
    * @return the entryExpirationTTL
    */
-  public RegionFunctionArgs.ExpirationAttrs getEntryExpirationTTL() {
+  public ExpirationAttrs getEntryExpirationTTL() {
     return this.entryExpirationTTL;
   }
 
   /**
    * @return the regionExpirationIdleTime
    */
-  public RegionFunctionArgs.ExpirationAttrs getRegionExpirationIdleTime() {
+  public ExpirationAttrs getRegionExpirationIdleTime() {
     return this.regionExpirationIdleTime;
   }
 
   /**
    * @return the regionExpirationTTL
    */
-  public RegionFunctionArgs.ExpirationAttrs getRegionExpirationTTL() {
+  public ExpirationAttrs getRegionExpirationTTL() {
     return this.regionExpirationTTL;
   }
 
@@ -341,7 +345,7 @@ public class RegionFunctionArgs implements Serializable {
   /**
    * @return the cacheListeners
    */
-  public Set<String> getCacheListeners() {
+  public Set<ClassName<CacheListener>> getCacheListeners() {
     if (this.cacheListeners == null) {
       return null;
     }
@@ -351,14 +355,14 @@ public class RegionFunctionArgs implements Serializable {
   /**
    * @return the cacheLoader
    */
-  public String getCacheLoader() {
+  public ClassName<CacheLoader> getCacheLoader() {
     return this.cacheLoader;
   }
 
   /**
    * @return the cacheWriter
    */
-  public String getCacheWriter() {
+  public ClassName<CacheWriter> getCacheWriter() {
     return this.cacheWriter;
   }
 
