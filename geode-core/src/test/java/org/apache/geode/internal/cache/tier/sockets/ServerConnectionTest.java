@@ -192,7 +192,7 @@ public class ServerConnectionTest {
     }
   }
 
-  class TestServerConnection extends LegacyServerConnection {
+  class TestServerConnection extends OriginalServerConnection {
 
     private TestMessage testMessage;
 

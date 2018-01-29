@@ -30,7 +30,7 @@ import org.apache.geode.internal.security.SecurityService;
  *
  * Legacy is therefore a bit of a misnomer; do you have a better name?
  */
-public class LegacyServerConnection extends ServerConnection {
+public class OriginalServerConnection extends ServerConnection {
   /**
    * Set to false once handshake has been done
    */
@@ -51,7 +51,7 @@ public class LegacyServerConnection extends ServerConnection {
    * @param acceptor
    * @param securityService
    */
-  public LegacyServerConnection(Socket socket, InternalCache internalCache,
+  public OriginalServerConnection(Socket socket, InternalCache internalCache,
       CachedRegionHelper helper, CacheServerStats stats, int hsTimeout, int socketBufferSize,
       String communicationModeStr, byte communicationMode, Acceptor acceptor,
       SecurityService securityService) {

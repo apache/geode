@@ -37,17 +37,17 @@ import org.apache.geode.internal.security.SecurityService;
 /**
  * Holds the socket and protocol handler for the new client protocol.
  */
-public class GenericProtocolServerConnection extends ServerConnection {
+public class ProtobufServerConnection extends ServerConnection {
   // The new protocol lives in a separate module and gets loaded when this class is instantiated.
   private final ClientProtocolProcessor protocolProcessor;
   private boolean cleanedUp;
   private ClientProxyMembershipID clientProxyMembershipID;
 
   /**
-   * Creates a new <code>GenericProtocolServerConnection</code> that processes messages received
-   * from an edge client over a given <code>Socket</code>.
+   * Creates a new <code>ProtobufServerConnection</code> that processes messages received from an
+   * edge client over a given <code>Socket</code>.
    */
-  public GenericProtocolServerConnection(Socket socket, InternalCache c, CachedRegionHelper helper,
+  public ProtobufServerConnection(Socket socket, InternalCache c, CachedRegionHelper helper,
       CacheServerStats stats, int hsTimeout, int socketBufferSize, String communicationModeStr,
       byte communicationMode, Acceptor acceptor, ClientProtocolProcessor clientProtocolProcessor,
       SecurityService securityService) {

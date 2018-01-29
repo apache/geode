@@ -86,7 +86,7 @@ public class ServerConnectionFactoryTest {
     for (CommunicationMode communicationMode : communicationModes) {
       ServerConnection serverConnection =
           serverConnectionMockedExceptForCommunicationMode(communicationMode.getModeNumber());
-      assertTrue(serverConnection instanceof LegacyServerConnection);
+      assertTrue(serverConnection instanceof OriginalServerConnection);
     }
   }
 
@@ -102,7 +102,7 @@ public class ServerConnectionFactoryTest {
     for (CommunicationMode communicationMode : communicationModes) {
       ServerConnection serverConnection =
           serverConnectionMockedExceptForCommunicationMode(communicationMode.getModeNumber());
-      assertTrue(serverConnection instanceof LegacyServerConnection);
+      assertTrue(serverConnection instanceof OriginalServerConnection);
     }
   }
 
