@@ -14,7 +14,8 @@
  */
 package org.apache.geode.internal.cache.partitioned;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.fail;
 
 import java.util.Properties;
 
@@ -41,13 +42,14 @@ import org.apache.geode.test.dunit.ThreadUtils;
 import org.apache.geode.test.dunit.VM;
 import org.apache.geode.test.dunit.Wait;
 import org.apache.geode.test.junit.categories.DistributedTest;
+import org.apache.geode.test.junit.categories.FlakyTest;
 
 /**
  * Tests the basic use cases for PR persistence.
- *
  */
 @Category(DistributedTest.class)
 public class PersistPRKRFDUnitTest extends PersistentPartitionedRegionTestBase {
+
   private static final int NUM_BUCKETS = 15;
   private static final int MAX_WAIT = 30 * 1000;
   static Object lockObject = new Object();
@@ -59,6 +61,7 @@ public class PersistPRKRFDUnitTest extends PersistentPartitionedRegionTestBase {
    * "-Ddisk.KRF_DEBUG=true";
    */
   @Test
+  @Category(FlakyTest.class)
   public void testCloseDiskStoreWhenPut() {
     final String title = "testCloseDiskStoreWhenPut:";
     Host host = Host.getHost(0);
