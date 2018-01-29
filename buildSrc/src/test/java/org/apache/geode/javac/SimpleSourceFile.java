@@ -12,20 +12,24 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
-package org.apache.geode.management.internal.cli.commands;
 
-import org.junit.experimental.categories.Category;
+package org.apache.geode.javac;
 
-import org.apache.geode.test.dunit.rules.MemberVM;
-import org.apache.geode.test.junit.categories.DistributedTest;
-import org.apache.geode.test.junit.categories.FlakyTest;
-import org.apache.geode.test.junit.rules.GfshCommandRule;
+import java.net.URI;
 
-@Category(DistributedTest.class)
-public class ShutdownCommandOverHttpDUnitTest extends ShutdownCommandDUnitTest {
+import javax.tools.SimpleJavaFileObject;
+
+public class SimpleSourceFile extends SimpleJavaFileObject {
+  private String content;
+
+  public SimpleSourceFile(String qualifiedClassName, String testSource) {
+    super(URI.create(String.format("file://%s%s", qualifiedClassName.replaceAll("\\.", "/"),
+        Kind.SOURCE.extension)), Kind.SOURCE);
+    content = testSource;
+  }
 
   @Override
-  void connect(MemberVM server) throws Exception {
-    gfsh.connectAndVerify(server.getHttpPort(), GfshCommandRule.PortType.http);
+  public CharSequence getCharContent(boolean ignoreEncodingErrors) {
+    return content;
   }
 }
