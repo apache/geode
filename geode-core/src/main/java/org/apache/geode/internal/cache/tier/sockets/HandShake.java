@@ -1683,7 +1683,7 @@ public class HandShake implements ClientHandShake {
 
     Authenticator auth = null;
     try {
-      if (AcceptorImpl.isIntegratedSecurity()) {
+      if (securityService.isIntegratedSecurity()) {
         return securityService.login(credentials);
       } else {
         Method instanceGetter = ClassLoadUtil.methodFromName(authenticatorMethod);

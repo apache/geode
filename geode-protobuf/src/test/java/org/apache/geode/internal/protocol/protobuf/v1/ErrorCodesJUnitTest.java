@@ -19,7 +19,6 @@ import static org.junit.Assert.assertEquals;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
-import org.apache.geode.internal.protocol.ProtocolErrorCode;
 import org.apache.geode.test.junit.categories.UnitTest;
 
 @Category(UnitTest.class)
@@ -27,7 +26,7 @@ public class ErrorCodesJUnitTest {
   @Test
   public void testProtobufErrorCodesMatchProtocolErrorCodes() {
     BasicTypes.ErrorCode[] protobufErrorCodes = BasicTypes.ErrorCode.values();
-    ProtocolErrorCode[] protocolErrorCodes = ProtocolErrorCode.values();
+    ProtobufErrorCode[] protocolErrorCodes = ProtobufErrorCode.values();
 
     // These arrays should identical except the protobuf is required to have a 0 value, and defines
     // an UNRECOGNIZED entry

@@ -18,8 +18,6 @@
 
 package org.apache.geode.gradle;
 
-import org.apache.mina.util.AvailablePortFinder;
-
 public class TestPropertiesWriter {
   public static void writeTestProperties(File parent, String name) {
     Properties props = new Properties();

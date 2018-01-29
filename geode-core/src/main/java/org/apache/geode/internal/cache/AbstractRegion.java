@@ -1819,7 +1819,7 @@ public abstract class AbstractRegion implements InternalRegion, AttributesMutato
   }
 
   @Override
-  public RegionSnapshotService<?, ?> getSnapshotService() {
+  public RegionSnapshotService getSnapshotService() {
     return new RegionSnapshotServiceImpl(this);
   }
 

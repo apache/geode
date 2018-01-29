@@ -1054,8 +1054,9 @@ public class TXState implements TXStateInterface {
         Assert.assertTrue(this.locks != null,
             "Gemfire Transaction afterCompletion called with illegal state.");
         try {
-          this.proxy.getTxMgr().setTXState(null);
+          proxy.getTxMgr().setTXState(null);
           commit();
+          saveTXCommitMessageForClientFailover();
         } catch (CommitConflictException error) {
           Assert.assertTrue(false, "Gemfire Transaction " + getTransactionId()
               + " afterCompletion failed.due to CommitConflictException: " + error);
@@ -1069,6 +1070,7 @@ public class TXState implements TXStateInterface {
         this.jtaLifeTime = opStart - getBeginTime();
         this.proxy.getTxMgr().setTXState(null);
         rollback();
+        saveTXCommitMessageForClientFailover();
         this.proxy.getTxMgr().noteRollbackSuccess(opStart, this.jtaLifeTime, this);
         break;
       default:
@@ -1077,6 +1079,9 @@ public class TXState implements TXStateInterface {
     // System.err.println("end afterCompletion");
   }
 
+  private void saveTXCommitMessageForClientFailover() {
+    proxy.getTxMgr().saveTXStateForClientFailover(proxy);
+  }
 
 
   /**

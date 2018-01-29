@@ -25,7 +25,6 @@ import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicIntegerArray;
 
-import org.apache.commons.lang.StringUtils;
 import org.apache.logging.log4j.Logger;
 
 import org.apache.geode.CancelException;
@@ -70,16 +69,6 @@ public class ClientHealthMonitor {
   private final Object _clientHeartbeatsLock = new Object();
 
   /**
-   * The map of known client threads
-   */
-  private final Map _clientThreads;
-
-  /**
-   * An object used to lock the map of client threads
-   */
-  private final Object _clientThreadsLock = new Object();
-
-  /**
    * THe GemFire <code>Cache</code>
    */
   private final InternalCache _cache;
@@ -122,6 +111,12 @@ public class ClientHealthMonitor {
   private final HashMap cleanupTable = new HashMap();
 
   private final HashMap cleanupProxyIdTable = new HashMap();
+
+  /**
+   * Used to track the connections for a particular client
+   */
+  private final HashMap<ClientProxyMembershipID, ServerConnectionCollection> proxyIdConnections =
+      new HashMap<>();
 
   /**
    * Gives, version-wise, the number of clients connected to the cache servers in this cache, which
@@ -349,18 +344,12 @@ public class ClientHealthMonitor {
    * @param proxyID The membership id of the client to be updated
    * @param connection The thread processing client requests
    */
-  public void addConnection(ClientProxyMembershipID proxyID, ServerConnection connection) {
-    // logger.info("ClientHealthMonitor: Adding " + connection + " to
-    // client with member id " + proxyID);
-    synchronized (_clientThreadsLock) {
-      Set serverConnections = (Set) this._clientThreads.get(proxyID);
-      if (serverConnections == null) {
-        serverConnections = new HashSet();
-        this._clientThreads.put(proxyID, serverConnections);
-      }
-      serverConnections.add(connection);
-      // logger.info("ClientHealthMonitor: The client with member id " +
-      // proxyID + " contains " + serverConnections.size() + " threads");
+  public ServerConnectionCollection addConnection(ClientProxyMembershipID proxyID,
+      ServerConnection connection) {
+    synchronized (proxyIdConnections) {
+      ServerConnectionCollection collection = getProxyIdCollection(proxyID);
+      collection.addConnection(connection);
+      return collection;
     }
   }
 
@@ -371,18 +360,12 @@ public class ClientHealthMonitor {
    * @param connection The thread processing client requests
    */
   public void removeConnection(ClientProxyMembershipID proxyID, ServerConnection connection) {
-    // logger.info("ClientHealthMonitor: Removing " + connection + " from
-    // client with member id " + proxyID);
-    synchronized (_clientThreadsLock) {
-      Set serverConnections = (Set) this._clientThreads.get(proxyID);
-      if (serverConnections != null) { // fix for bug 35343
-        serverConnections.remove(connection);
-        // logger.info("ClientHealthMonitor: The client with member id " +
-        // proxyID + " contains " + serverConnections.size() + " threads");
-        if (serverConnections.isEmpty()) {
-          // logger.info("ClientHealthMonitor: The client with member id "
-          // + proxyID + " is being removed since it contains 0 threads");
-          this._clientThreads.remove(proxyID);
+    synchronized (proxyIdConnections) {
+      ServerConnectionCollection collection = proxyIdConnections.get(proxyID);
+      if (collection != null) {
+        collection.removeConnection(connection);
+        if (collection.getConnections().isEmpty()) {
+          proxyIdConnections.remove(proxyID);
         }
       }
     }
@@ -419,24 +402,21 @@ public class ClientHealthMonitor {
    *        ConnectionProxies may be from same client member or different. If it is null this would
    *        mean to fetch the Connections of all the ConnectionProxy objects.
    */
-  public Map getConnectedClients(Set filterProxies) {
-    Map map = new HashMap(); // KEY=proxyID, VALUE=connectionCount (Integer)
-    synchronized (_clientThreadsLock) {
-      Iterator connectedClients = this._clientThreads.entrySet().iterator();
-      while (connectedClients.hasNext()) {
-        Map.Entry entry = (Map.Entry) connectedClients.next();
-        ClientProxyMembershipID proxyID = (ClientProxyMembershipID) entry.getKey();// proxyID
-                                                                                   // includes FQDN
+  public Map<String, Object[]> getConnectedClients(Set filterProxies) {
+    Map<String, Object[]> map = new HashMap<>(); // KEY=proxyID, VALUE=connectionCount (Integer)
+    synchronized (proxyIdConnections) {
+      for (Map.Entry<ClientProxyMembershipID, ServerConnectionCollection> entry : proxyIdConnections
+          .entrySet()) {
+        ClientProxyMembershipID proxyID = entry.getKey();// proxyID
+        // includes FQDN
         if (filterProxies == null || filterProxies.contains(proxyID)) {
           String membershipID = null;
-          Set connections = (Set) entry.getValue();
+          Set<ServerConnection> connections = entry.getValue().getConnections();
           int socketPort = 0;
           InetAddress socketAddress = null;
           /// *
-          Iterator serverConnections = connections.iterator();
           // Get data from one.
-          while (serverConnections.hasNext()) {
-            ServerConnection sc = (ServerConnection) serverConnections.next();
+          for (ServerConnection sc : connections) {
             socketPort = sc.getSocketPort();
             socketAddress = sc.getSocketAddress();
             membershipID = sc.getMembershipID();
@@ -453,7 +433,7 @@ public class ClientHealthMonitor {
                 + " client member id=" + membershipID;
           }
           Object[] data = null;
-          data = (Object[]) map.get(membershipID);
+          data = map.get(membershipID);
           if (data == null) {
             map.put(membershipID, new Object[] {clientString, Integer.valueOf(connectionCount)});
           } else {
@@ -480,20 +460,17 @@ public class ClientHealthMonitor {
    *
    * @return Map of ClientProxyMembershipID against CacheClientStatus objects.
    */
-  public Map getStatusForAllClients() {
-    Map result = new HashMap();
-    synchronized (_clientThreadsLock) {
-      Iterator connectedClients = this._clientThreads.entrySet().iterator();
-      while (connectedClients.hasNext()) {
-        Map.Entry entry = (Map.Entry) connectedClients.next();
-        ClientProxyMembershipID proxyID = (ClientProxyMembershipID) entry.getKey();
+  public Map<ClientProxyMembershipID, CacheClientStatus> getStatusForAllClients() {
+    Map<ClientProxyMembershipID, CacheClientStatus> result = new HashMap<>();
+    synchronized (proxyIdConnections) {
+      for (Map.Entry<ClientProxyMembershipID, ServerConnectionCollection> entry : proxyIdConnections
+          .entrySet()) {
+        ClientProxyMembershipID proxyID = entry.getKey();
         CacheClientStatus cci = new CacheClientStatus(proxyID);
-        Set connections = (Set) this._clientThreads.get(proxyID);
+        Set<ServerConnection> connections = entry.getValue().getConnections();
         if (connections != null) {
           String memberId = null;
-          Iterator connectionsIterator = connections.iterator();
-          while (connectionsIterator.hasNext()) {
-            ServerConnection sc = (ServerConnection) connectionsIterator.next();
+          for (ServerConnection sc : connections) {
             if (sc.isClientServerConnection()) {
               memberId = sc.getMembershipID(); // each ServerConnection has the same member id
               cci.setMemberId(memberId);
@@ -508,30 +485,27 @@ public class ClientHealthMonitor {
     return result;
   }
 
-  public void fillInClientInfo(Map allClients) {
+  public void fillInClientInfo(Map<ClientProxyMembershipID, CacheClientStatus> allClients) {
     // The allClients parameter includes only actual clients (not remote
     // gateways). This monitor will include remote gateway connections,
     // so weed those out.
-    synchronized (_clientThreadsLock) {
-      Iterator allClientsIterator = allClients.entrySet().iterator();
-      while (allClientsIterator.hasNext()) {
-        Map.Entry entry = (Map.Entry) allClientsIterator.next();
-        ClientProxyMembershipID proxyID = (ClientProxyMembershipID) entry.getKey();// proxyID
-                                                                                   // includes FQDN
-        CacheClientStatus cci = (CacheClientStatus) entry.getValue();
-        Set connections = (Set) this._clientThreads.get(proxyID);
+    synchronized (proxyIdConnections) {
+      for (Map.Entry<ClientProxyMembershipID, CacheClientStatus> entry : allClients.entrySet()) {
+        ClientProxyMembershipID proxyID = entry.getKey();// proxyID
+        // includes FQDN
+        CacheClientStatus cci = entry.getValue();
+        ServerConnectionCollection collection = proxyIdConnections.get(proxyID);
+        Set<ServerConnection> connections = collection != null ? collection.getConnections() : null;
         if (connections != null) {
           String memberId = null;
           cci.setNumberOfConnections(connections.size());
           List socketPorts = new ArrayList();
           List socketAddresses = new ArrayList();
-          Iterator connectionsIterator = connections.iterator();
-          while (connectionsIterator.hasNext()) {
-            ServerConnection sc = (ServerConnection) connectionsIterator.next();
+          for (ServerConnection sc : connections) {
             socketPorts.add(Integer.valueOf(sc.getSocketPort()));
             socketAddresses.add(sc.getSocketAddress());
             memberId = sc.getMembershipID(); // each ServerConnection has the
-                                             // same member id
+            // same member id
           }
           cci.setMemberId(memberId);
           cci.setSocketPorts(socketPorts);
@@ -541,17 +515,14 @@ public class ClientHealthMonitor {
     }
   }
 
-  public Map getConnectedIncomingGateways() {
-    Map connectedIncomingGateways = new HashMap();
-    synchronized (_clientThreadsLock) {
-      Iterator connectedClients = this._clientThreads.entrySet().iterator();
-      while (connectedClients.hasNext()) {
-        Map.Entry entry = (Map.Entry) connectedClients.next();
-        ClientProxyMembershipID proxyID = (ClientProxyMembershipID) entry.getKey();
-        Set connections = (Set) entry.getValue();
-        Iterator connectionsIterator = connections.iterator();
-        while (connectionsIterator.hasNext()) {
-          ServerConnection sc = (ServerConnection) connectionsIterator.next();
+  public Map<String, IncomingGatewayStatus> getConnectedIncomingGateways() {
+    Map<String, IncomingGatewayStatus> connectedIncomingGateways = new HashMap<>();
+    synchronized (proxyIdConnections) {
+      for (Map.Entry<ClientProxyMembershipID, ServerConnectionCollection> entry : proxyIdConnections
+          .entrySet()) {
+        ClientProxyMembershipID proxyID = entry.getKey();
+        Set<ServerConnection> connections = entry.getValue().getConnections();
+        for (ServerConnection sc : connections) {
           if (sc.getCommunicationMode().isWAN()) {
             IncomingGatewayStatus status = new IncomingGatewayStatus(proxyID.getDSMembership(),
                 sc.getSocketAddress(), sc.getSocketPort());
@@ -566,19 +537,17 @@ public class ClientHealthMonitor {
   protected boolean cleanupClientThreads(ClientProxyMembershipID proxyID, boolean timedOut) {
     boolean result = false;
     Set serverConnections = null;
-    synchronized (this._clientThreadsLock) {
-      serverConnections = (Set) this._clientThreads.remove(proxyID);
-      // It is ok to modify the set after releasing the sync
-      // because it has been removed from the map while holding
-      // the sync.
-    } // end sync here to fix bug 37576 and 36740
+    synchronized (proxyIdConnections) {
+      ServerConnectionCollection collection = proxyIdConnections.remove(proxyID);
+      if (collection != null) {
+        serverConnections = collection.getConnections();
+      }
+    }
     {
       if (serverConnections != null) { // fix for bug 35343
         result = true;
-        // logger.warn("Terminating " + serverConnections.size() + " connections");
         for (Iterator it = serverConnections.iterator(); it.hasNext();) {
           ServerConnection serverConnection = (ServerConnection) it.next();
-          // logger.warn("Terminating " + serverConnection);
           serverConnection.handleTermination(timedOut);
         }
       }
@@ -586,54 +555,51 @@ public class ClientHealthMonitor {
     return result;
   }
 
-  protected boolean isAnyThreadProcessingMessage(ClientProxyMembershipID proxyID) {
-    boolean processingMessage = false;
-    synchronized (this._clientThreadsLock) {
-      Set serverConnections = (Set) this._clientThreads.get(proxyID);
-      if (serverConnections != null) {
-        for (Iterator it = serverConnections.iterator(); it.hasNext();) {
-          ServerConnection serverConnection = (ServerConnection) it.next();
-          if (serverConnection.isProcessingMessage()) {
-            processingMessage = true;
-            break;
-          }
-        }
+  // This will return true if the proxyID is truly idle (or if no connections are found), or false
+  // if there was a active connection.
+  private boolean prepareToTerminateIfNoConnectionIsProcessing(ClientProxyMembershipID proxyID) {
+    synchronized (proxyIdConnections) {
+      ServerConnectionCollection collection = proxyIdConnections.get(proxyID);
+      if (collection == null) {
+        return true;
+      }
+      if (collection.connectionsProcessing.get() == 0) {
+        collection.isTerminating = true;
+        return true;
+      } else {
+        return false;
       }
     }
-    return processingMessage;
   }
 
   protected void validateThreads(ClientProxyMembershipID proxyID) {
-    Set serverConnections = null;
-    synchronized (this._clientThreadsLock) {
-      serverConnections = (Set) this._clientThreads.get(proxyID);
-      if (serverConnections != null) {
-        serverConnections = new HashSet(serverConnections);
-      }
+    Set<ServerConnection> serverConnections;
+    synchronized (proxyIdConnections) {
+      ServerConnectionCollection collection = proxyIdConnections.get(proxyID);
+      serverConnections =
+          collection != null ? new HashSet<>(collection.getConnections()) : Collections.emptySet();
     }
     // release sync and operation on copy to fix bug 37675
-    if (serverConnections != null) {
-      for (Iterator it = serverConnections.iterator(); it.hasNext();) {
-        ServerConnection serverConnection = (ServerConnection) it.next();
-        if (serverConnection.hasBeenTimedOutOnClient()) {
-          logger.warn(LocalizedMessage.create(
-              LocalizedStrings.ClientHealtMonitor_0_IS_BEING_TERMINATED_BECAUSE_ITS_CLIENT_TIMEOUT_OF_1_HAS_EXPIRED,
-              new Object[] {serverConnection,
-                  Integer.valueOf(serverConnection.getClientReadTimeout())}));
-          try {
-            serverConnection.handleTermination(true);
-            // Not all the code in a ServerConnection correctly
-            // handles interrupt. In particular it is possible to be doing
-            // p2p distribution and to have sent a message to one peer but
-            // to never send it to another due to interrupt.
-            // serverConnection.interruptOwner();
-          } finally {
-            // Just to be sure we clean it up.
-            // This call probably isn't needed.
-            removeConnection(proxyID, serverConnection);
-          }
+    for (ServerConnection serverConnection : serverConnections) {
+      if (serverConnection.hasBeenTimedOutOnClient()) {
+        logger.warn(LocalizedMessage.create(
+            LocalizedStrings.ClientHealtMonitor_0_IS_BEING_TERMINATED_BECAUSE_ITS_CLIENT_TIMEOUT_OF_1_HAS_EXPIRED,
+            new Object[] {serverConnection,
+                Integer.valueOf(serverConnection.getClientReadTimeout())}));
+        try {
+          serverConnection.handleTermination(true);
+          // Not all the code in a ServerConnection correctly
+          // handles interrupt. In particular it is possible to be doing
+          // p2p distribution and to have sent a message to one peer but
+          // to never send it to another due to interrupt.
+          // serverConnection.interruptOwner();
+        } finally {
+          // Just to be sure we clean it up.
+          // This call probably isn't needed.
+          removeConnection(proxyID, serverConnection);
         }
       }
+
     }
   }
 
@@ -688,9 +654,6 @@ public class ClientHealthMonitor {
     this._cache = cache;
     this.maximumTimeBetweenPings = maximumTimeBetweenPings;
 
-    // Initialize the client threads map
-    this._clientThreads = new HashMap();
-
     this.monitorInterval = Long.getLong(CLIENT_HEALTH_MONITOR_INTERVAL_PROPERTY,
         DEFAULT_CLIENT_MONITOR_INTERVAL_IN_MILLIS);
     logger.debug("Setting monitorInterval to {}", this.monitorInterval);
@@ -720,6 +683,10 @@ public class ClientHealthMonitor {
   @Override
   public String toString() {
     return "ClientHealthMonitor@" + Integer.toHexString(System.identityHashCode(this));
+  }
+
+  public ServerConnectionCollection getProxyIdCollection(ClientProxyMembershipID proxyID) {
+    return proxyIdConnections.computeIfAbsent(proxyID, key -> new ServerConnectionCollection());
   }
 
   public Map getCleanupProxyIdTable() {
@@ -828,8 +795,6 @@ public class ClientHealthMonitor {
           if (logger.isTraceEnabled()) {
             logger.trace("Monitoring {} client(s)", getClientHeartbeats().size());
           }
-          // logger.warning("Monitoring " + getClientHeartbeats().size() +
-          // " client(s).");
 
           // Get the current time
           long currentTime = System.currentTimeMillis();
@@ -863,18 +828,18 @@ public class ClientHealthMonitor {
                 // This client has been idle for too long. Determine whether
                 // any of its ServerConnection threads are currently processing
                 // a message. If so, let it go. If not, disconnect it.
-                if (isAnyThreadProcessingMessage(proxyID)) {
-                  if (logger.isDebugEnabled()) {
-                    logger.debug(
-                        "Monitoring client with member id {}. It has been {} ms since the latest heartbeat. This client would have been terminated but at least one of its threads is processing a message.",
-                        entry.getKey(), (currentTime - latestHeartbeat));
-                  }
-                } else {
+                if (prepareToTerminateIfNoConnectionIsProcessing(proxyID)) {
                   if (cleanupClientThreads(proxyID, true)) {
                     logger.warn(LocalizedMessage.create(
                         LocalizedStrings.ClientHealthMonitor_MONITORING_CLIENT_WITH_MEMBER_ID_0_IT_HAD_BEEN_1_MS_SINCE_THE_LATEST_HEARTBEAT_MAX_INTERVAL_IS_2_TERMINATED_CLIENT,
                         new Object[] {entry.getKey(), currentTime - latestHeartbeat,
                             this._maximumTimeBetweenPings}));
+                  }
+                } else {
+                  if (logger.isDebugEnabled()) {
+                    logger.debug(
+                        "Monitoring client with member id {}. It has been {} ms since the latest heartbeat. This client would have been terminated but at least one of its threads is processing a message.",
+                        entry.getKey(), (currentTime - latestHeartbeat));
                   }
                 }
               } else {
@@ -883,10 +848,6 @@ public class ClientHealthMonitor {
                       "Monitoring client with member id {}. It has been {} ms since the latest heartbeat. This client is healthy.",
                       entry.getKey(), (currentTime - latestHeartbeat));
                 }
-                // logger.warning("Monitoring client with member id " +
-                // entry.getKey() + ". It has been " + (currentTime -
-                // latestHeartbeat) + " ms since the latest heartbeat. This
-                // client is healthy.");
               }
             }
           }

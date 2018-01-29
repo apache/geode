@@ -28,10 +28,10 @@ import org.apache.geode.internal.Version;
  * @since Geode 1.4
  */
 public class LatestLastAccessTimeOperation<K> {
-  private final InternalDistributedRegion<K, ?> region;
+  private final InternalDistributedRegion region;
   private final K key;
 
-  public LatestLastAccessTimeOperation(InternalDistributedRegion<K, ?> region, K key) {
+  public LatestLastAccessTimeOperation(InternalDistributedRegion region, K key) {
     this.region = region;
     this.key = key;
   }

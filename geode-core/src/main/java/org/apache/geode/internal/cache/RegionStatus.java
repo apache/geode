@@ -60,7 +60,7 @@ public class RegionStatus implements Serializable {
 
     EvictionAttributes ea = region.getAttributes().getEvictionAttributes();
     if (ea != null && ea.getAlgorithm().isLRUMemory()) {
-      setHeapSize(((InternalRegion<?, ?>) region).getEvictionCounter());
+      setHeapSize(((InternalRegion) region).getEvictionCounter());
     } else {
       setHeapSize(-1);
     }

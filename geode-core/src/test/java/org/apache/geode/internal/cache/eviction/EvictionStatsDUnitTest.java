@@ -14,7 +14,9 @@
  */
 package org.apache.geode.internal.cache.eviction;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
 
 import java.io.File;
 import java.util.Iterator;
@@ -39,7 +41,6 @@ import org.apache.geode.distributed.DistributedSystem;
 import org.apache.geode.internal.OSProcess;
 import org.apache.geode.internal.cache.BucketRegion;
 import org.apache.geode.internal.cache.PartitionedRegion;
-import org.apache.geode.internal.cache.RegionMap;
 import org.apache.geode.internal.cache.control.HeapMemoryMonitor;
 import org.apache.geode.internal.cache.control.InternalResourceManager;
 import org.apache.geode.test.dunit.Assert;
@@ -48,12 +49,12 @@ import org.apache.geode.test.dunit.IgnoredException;
 import org.apache.geode.test.dunit.LogWriterUtils;
 import org.apache.geode.test.dunit.SerializableRunnable;
 import org.apache.geode.test.dunit.VM;
-import org.apache.geode.test.dunit.cache.internal.JUnit4CacheTestCase;
-import org.apache.geode.test.dunit.internal.JUnit4DistributedTestCase;
+import org.apache.geode.test.dunit.cache.CacheTestCase;
 import org.apache.geode.test.junit.categories.DistributedTest;
+import org.apache.geode.test.junit.categories.FlakyTest;
 
 @Category(DistributedTest.class)
-public class EvictionStatsDUnitTest extends JUnit4CacheTestCase {
+public class EvictionStatsDUnitTest extends CacheTestCase {
 
   protected static Cache cache = null;
 
@@ -68,11 +69,6 @@ public class EvictionStatsDUnitTest extends JUnit4CacheTestCase {
   static int maxSizeInMb = 20;
 
   static int totalNoOfBuckets = 2;
-
-  public EvictionStatsDUnitTest() {
-    super();
-    // TODO Auto-generated constructor stub
-  }
 
   @Override
   public final void postSetUp() throws Exception {
@@ -306,6 +302,7 @@ public class EvictionStatsDUnitTest extends JUnit4CacheTestCase {
   }
 
   @Test
+  @Category(FlakyTest.class)
   public void testMemLRUEvictionNDestroyNNumOverflowOnDiskCount() {
     // Ignore this excetion as this can happen if pool is shutting down
     IgnoredException

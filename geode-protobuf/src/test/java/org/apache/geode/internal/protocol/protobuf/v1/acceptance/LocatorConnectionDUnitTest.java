@@ -16,11 +16,9 @@
 package org.apache.geode.internal.protocol.protobuf.v1.acceptance;
 
 import static org.apache.geode.internal.Assert.assertTrue;
-import static org.apache.geode.internal.cache.tier.CommunicationMode.ProtobufClientServerProtocol;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 
-import java.io.DataOutputStream;
 import java.io.IOException;
 import java.net.Socket;
 import java.util.Properties;
@@ -36,15 +34,13 @@ import org.apache.geode.distributed.ConfigurationProperties;
 import org.apache.geode.distributed.Locator;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.internal.cache.InternalCache;
-import org.apache.geode.internal.protocol.ProtocolErrorCode;
-import org.apache.geode.internal.protocol.exception.InvalidProtocolMessageException;
-import org.apache.geode.internal.protocol.protobuf.statistics.ProtobufClientStatisticsImpl;
+import org.apache.geode.internal.protocol.protobuf.statistics.ProtobufClientStatistics;
 import org.apache.geode.internal.protocol.protobuf.v1.BasicTypes;
 import org.apache.geode.internal.protocol.protobuf.v1.ClientProtocol;
-import org.apache.geode.internal.protocol.protobuf.v1.ConnectionAPI;
 import org.apache.geode.internal.protocol.protobuf.v1.LocatorAPI;
 import org.apache.geode.internal.protocol.protobuf.v1.MessageUtil;
 import org.apache.geode.internal.protocol.protobuf.v1.serializer.ProtobufProtocolSerializer;
+import org.apache.geode.internal.protocol.protobuf.v1.serializer.exception.InvalidProtocolMessageException;
 import org.apache.geode.internal.protocol.protobuf.v1.utilities.ProtobufRequestUtilities;
 import org.apache.geode.internal.protocol.protobuf.v1.utilities.ProtobufUtilities;
 import org.apache.geode.test.dunit.DistributedTestUtils;
@@ -168,7 +164,7 @@ public class LocatorConnectionDUnitTest extends JUnit4CacheTestCase {
         (InternalDistributedSystem) Locator.getLocator().getDistributedSystem();
 
     Statistics[] protobufServerStats = distributedSystem.findStatisticsByType(
-        distributedSystem.findType(ProtobufClientStatisticsImpl.PROTOBUF_CLIENT_STATISTICS));
+        distributedSystem.findType(ProtobufClientStatistics.PROTOBUF_CLIENT_STATISTICS));
     assertEquals(1, protobufServerStats.length);
     return protobufServerStats[0];
   }

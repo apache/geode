@@ -20,17 +20,14 @@ import java.io.OutputStream;
 import java.io.PushbackInputStream;
 
 import org.apache.geode.internal.cache.tier.CommunicationMode;
-import org.apache.geode.internal.protocol.MessageExecutionContext;
-import org.apache.geode.internal.protocol.OperationContext;
-import org.apache.geode.internal.protocol.ProtocolErrorCode;
+import org.apache.geode.internal.protocol.protobuf.v1.MessageExecutionContext;
+import org.apache.geode.internal.protocol.protobuf.v1.ProtobufErrorCode;
+import org.apache.geode.internal.protocol.protobuf.v1.ProtobufOperationContext;
 import org.apache.geode.internal.protocol.protobuf.v1.operations.ProtocolVersionHandler;
-import org.apache.geode.internal.protocol.state.ConnectionStateProcessor;
-import org.apache.geode.internal.protocol.state.LegacySecurityConnectionStateProcessor;
-import org.apache.geode.internal.protocol.state.NoSecurityConnectionStateProcessor;
-import org.apache.geode.internal.protocol.state.exception.ConnectionStateException;
+import org.apache.geode.internal.protocol.protobuf.v1.state.exception.ConnectionStateException;
 import org.apache.geode.internal.security.SecurityService;
 
-public class ProtobufConnectionHandshakeStateProcessor implements ConnectionStateProcessor {
+public class ProtobufConnectionHandshakeStateProcessor implements ProtobufConnectionStateProcessor {
   private final SecurityService securityService;
 
   public ProtobufConnectionHandshakeStateProcessor(SecurityService securityService) {
@@ -39,20 +36,20 @@ public class ProtobufConnectionHandshakeStateProcessor implements ConnectionStat
 
   @Override
   public void validateOperation(MessageExecutionContext messageContext,
-      OperationContext operationContext) throws ConnectionStateException {
-    throw new ConnectionStateException(ProtocolErrorCode.INVALID_REQUEST,
+      ProtobufOperationContext operationContext) throws ConnectionStateException {
+    throw new ConnectionStateException(ProtobufErrorCode.INVALID_REQUEST,
         "Connection processing should never be asked to validate an operation");
   }
 
-  private ConnectionStateProcessor nextConnectionState() {
+  private ProtobufConnectionStateProcessor nextConnectionState() {
     if (securityService.isIntegratedSecurity()) {
-      return new ConnectionShiroAuthenticatingStateProcessor(securityService);
+      return new ProtobufConnectionAuthenticatingStateProcessor(securityService);
     } else if (securityService.isPeerSecurityRequired()
         || securityService.isClientSecurityRequired()) {
-      return new LegacySecurityConnectionStateProcessor();
+      return new LegacySecurityProtobufConnectionStateProcessor();
     } else {
       // Noop authenticator...no security
-      return new NoSecurityConnectionStateProcessor();
+      return new NoSecurityProtobufConnectionStateProcessor();
     }
   }
 

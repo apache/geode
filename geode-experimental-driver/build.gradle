@@ -23,6 +23,5 @@ dependencies {
     testCompile project(':geode-core')
     testCompile project(':geode-junit')
     testCompile project(':geode-protobuf')
-    testCompile project(':geode-client-protocol')
     testCompile files(project(':geode-core').sourceSets.test.output)
 }

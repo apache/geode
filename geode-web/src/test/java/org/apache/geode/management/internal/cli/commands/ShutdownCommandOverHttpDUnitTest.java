@@ -18,6 +18,7 @@ import org.junit.experimental.categories.Category;
 
 import org.apache.geode.test.dunit.rules.MemberVM;
 import org.apache.geode.test.junit.categories.DistributedTest;
+import org.apache.geode.test.junit.categories.FlakyTest;
 import org.apache.geode.test.junit.rules.GfshCommandRule;
 
 @Category(DistributedTest.class)

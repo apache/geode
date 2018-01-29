@@ -72,6 +72,12 @@ public class ShutDownFunction implements Function, InternalEntity {
       throws InterruptedException, ExecutionException {
     ExecutorService exec = Executors.newSingleThreadExecutor();
     Future future = exec.submit(() -> {
+      try {
+        // Allow the function call to exit so we don't get disconnect exceptions in the client
+        // making the call.
+        Thread.sleep(1000);
+      } catch (InterruptedException ignore) {
+      }
       ConnectionTable.threadWantsSharedResources();
       if (ids.isConnected()) {
         ids.disconnect();

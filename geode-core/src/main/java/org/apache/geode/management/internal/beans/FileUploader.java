@@ -15,25 +15,26 @@
 
 package org.apache.geode.management.internal.beans;
 
+import java.io.BufferedOutputStream;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
-import java.io.InputStream;
+import java.io.Serializable;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.attribute.PosixFilePermission;
 import java.nio.file.attribute.PosixFilePermissions;
-import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
 
-import com.healthmarketscience.rmiio.RemoteInputStream;
-import com.healthmarketscience.rmiio.RemoteInputStreamClient;
+import com.healthmarketscience.rmiio.RemoteOutputStream;
+import com.healthmarketscience.rmiio.RemoteOutputStreamMonitor;
+import com.healthmarketscience.rmiio.RemoteOutputStreamServer;
+import com.healthmarketscience.rmiio.SimpleRemoteOutputStream;
+import com.healthmarketscience.rmiio.exporter.RemoteStreamExporter;
 import org.apache.commons.io.FileUtils;
-import org.apache.commons.io.IOUtils;
 import org.apache.logging.log4j.Logger;
 
 import org.apache.geode.internal.logging.LogService;
@@ -42,11 +43,32 @@ import org.apache.geode.security.GemFireSecurityException;
 public class FileUploader implements FileUploaderMBean {
   public static String STAGED_DIR_PREFIX = "uploaded-";
   private static Logger logger = LogService.getLogger();
+  private RemoteStreamExporter exporter;
+
+  public static class RemoteFile implements Serializable {
+    private String filename;
+    private RemoteOutputStream outputStream;
+
+    public RemoteFile(String filename, RemoteOutputStream outputStream) {
+      this.filename = filename;
+      this.outputStream = outputStream;
+    }
+
+    public String getFilename() {
+      return filename;
+    }
+
+    public RemoteOutputStream getOutputStream() {
+      return outputStream;
+    }
+  }
+
+  public FileUploader(RemoteStreamExporter exporter) {
+    this.exporter = exporter;
+  }
 
   @Override
-  public List<String> uploadFile(Map<String, RemoteInputStream> remoteFiles) throws IOException {
-    List<String> stagedFiles = new ArrayList<>();
-
+  public RemoteFile uploadFile(String filename) throws IOException {
     Set<PosixFilePermission> perms = new HashSet<>();
     perms.add(PosixFilePermission.OWNER_READ);
     perms.add(PosixFilePermission.OWNER_WRITE);
@@ -54,20 +76,26 @@ public class FileUploader implements FileUploaderMBean {
     Path tempDir =
         Files.createTempDirectory(STAGED_DIR_PREFIX, PosixFilePermissions.asFileAttribute(perms));
 
-    for (String filename : remoteFiles.keySet()) {
-      File stagedFile = new File(tempDir.toString(), filename);
-      FileOutputStream fos = new FileOutputStream(stagedFile);
+    File stagedFile = new File(tempDir.toString(), filename);
+    BufferedOutputStream bos = new BufferedOutputStream(new FileOutputStream(stagedFile));
 
-      InputStream input = RemoteInputStreamClient.wrap(remoteFiles.get(filename));
-      IOUtils.copyLarge(input, fos);
+    RemoteOutputStreamMonitor monitor = new RemoteOutputStreamMonitor() {
+      @Override
+      public void closed(RemoteOutputStreamServer stream, boolean clean) {
+        try {
+          stream.close(true);
+        } catch (IOException e) {
+          logger.error("error closing RemoteOutputStreamServer", e);
+        }
+      }
+    };
 
-      fos.close();
-      input.close();
+    RemoteOutputStreamServer server = new SimpleRemoteOutputStream(bos, monitor);
+    RemoteOutputStream remoteStream = exporter.export(server);
 
-      stagedFiles.add(stagedFile.getAbsolutePath());
-    }
+    RemoteFile remoteFile = new RemoteFile(stagedFile.getAbsolutePath(), remoteStream);
 
-    return stagedFiles;
+    return remoteFile;
   }
 
   @Override
@@ -76,15 +104,17 @@ public class FileUploader implements FileUploaderMBean {
       return;
     }
 
-    Path parent = Paths.get(files.get(0)).getParent();
-    if (!parent.getFileName().toString().startsWith(STAGED_DIR_PREFIX)) {
-      throw new GemFireSecurityException(
-          String.format("Cannot delete %s, not in the uploaded directory.", files.get(0)));
-    }
-    try {
-      FileUtils.deleteDirectory(parent.toFile());
-    } catch (IOException e) {
-      logger.error(e.getMessage(), e);
+    for (String filename : files) {
+      File file = new File(filename);
+      File parent = file.getParentFile();
+
+      if (!parent.getName().startsWith(STAGED_DIR_PREFIX)) {
+        throw new GemFireSecurityException(
+            String.format("Cannot delete %s, not in the uploaded directory.", filename));
+      }
+
+      FileUtils.deleteQuietly(file);
+      FileUtils.deleteQuietly(parent);
     }
   }
 }

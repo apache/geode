@@ -48,19 +48,22 @@ public class AlterRegionCommandIntegrationTest {
   @Test
   public void invalidCacheListener() throws Exception {
     gfsh.executeAndAssertThat("alter region --name=/REPLICATED --cache-listener=abc-def")
-        .statusIsError().containsOutput("Specify a valid class name for cache-listener");
+        .statusIsError().containsOutput(
+            "java.lang.IllegalArgumentException: Failed to convert 'abc-def' to type ClassName[] for option 'cache-listener'");
   }
 
   @Test
   public void invalidCacheLoader() throws Exception {
     gfsh.executeAndAssertThat("alter region --name=/REPLICATED --cache-loader=abc-def")
-        .statusIsError().containsOutput("Specify a valid class name for cache-loader");
+        .statusIsError().containsOutput(
+            "java.lang.IllegalArgumentException: Failed to convert 'abc-def' to type ClassName for option 'cache-loader'");
   }
 
   @Test
   public void invalidCacheWriter() throws Exception {
     gfsh.executeAndAssertThat("alter region --name=/REPLICATED --cache-writer=abc-def")
-        .statusIsError().containsOutput("Specify a valid class name for cache-writer");
+        .statusIsError().containsOutput(
+            "java.lang.IllegalArgumentException: Failed to convert 'abc-def' to type ClassName for option 'cache-writer'");
   }
 
   @Test

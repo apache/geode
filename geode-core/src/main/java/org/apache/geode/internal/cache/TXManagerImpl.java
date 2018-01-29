@@ -1146,9 +1146,11 @@ public class TXManagerImpl implements CacheTransactionManager, MembershipListene
     }
   }
 
-  private void saveTXStateForClientFailover(TXStateProxy tx) {
+  void saveTXStateForClientFailover(TXStateProxy tx) {
     if (tx.isOnBehalfOfClient() && tx.isRealDealLocal()) {
-      failoverMap.put(tx.getTxId(), tx.getCommitMessage());
+      TXCommitMessage commitMessage =
+          tx.getCommitMessage() == null ? TXCommitMessage.ROLLBACK_MSG : tx.getCommitMessage();
+      failoverMap.put(tx.getTxId(), commitMessage);
       if (logger.isDebugEnabled()) {
         logger.debug(
             "TX: storing client initiated transaction:{}; now there are {} entries in the failoverMap",
