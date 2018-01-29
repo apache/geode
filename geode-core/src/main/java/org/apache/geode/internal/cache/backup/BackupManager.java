@@ -22,6 +22,10 @@ import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
+import java.util.concurrent.ThreadFactory;
+import java.util.concurrent.atomic.AtomicInteger;
+
+import org.apache.logging.log4j.Logger;
 
 import org.apache.geode.cache.persistence.PersistentID;
 import org.apache.geode.distributed.internal.DistributionManager;
@@ -30,11 +34,14 @@ import org.apache.geode.distributed.internal.membership.InternalDistributedMembe
 import org.apache.geode.internal.cache.DiskStoreBackup;
 import org.apache.geode.internal.cache.DiskStoreImpl;
 import org.apache.geode.internal.cache.InternalCache;
+import org.apache.geode.internal.logging.LogService;
+import org.apache.geode.internal.logging.LoggingThreadGroup;
 
 public class BackupManager {
+  Logger logger = LogService.getLogger();
 
   public static final String DATA_STORES_TEMPORARY_DIRECTORY = "backupTemp_";
-  private final ExecutorService executor = Executors.newSingleThreadExecutor();
+  private final ExecutorService executor;
   private final MembershipListener membershipListener = new BackupMembershipListener();
   private final InternalCache cache;
   private final InternalDistributedMember sender;
@@ -46,6 +53,23 @@ public class BackupManager {
   public BackupManager(InternalDistributedMember sender, InternalCache cache) {
     this.cache = cache;
     this.sender = sender;
+    executor = createExecutor();
+  }
+
+  private ExecutorService createExecutor() {
+    LoggingThreadGroup group =
+        LoggingThreadGroup.createThreadGroup("BackupManager Thread", logger);
+    ThreadFactory threadFactory = new ThreadFactory() {
+      private final AtomicInteger threadId = new AtomicInteger();
+
+      public Thread newThread(final Runnable command) {
+        Thread thread = new Thread(group, command,
+            "BackupManagerThread" + this.threadId.incrementAndGet());
+        thread.setDaemon(true);
+        return thread;
+      }
+    };
+    return Executors.newSingleThreadExecutor(threadFactory);
   }
 
   public void startBackup() {
