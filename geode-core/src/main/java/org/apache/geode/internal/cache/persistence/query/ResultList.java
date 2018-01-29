@@ -46,6 +46,6 @@ public interface ResultList {
   /**
    * Close the result list and free up any resources on disk associated with the result set.
    */
-  public void close();
+  void close();
 
 }

@@ -21,16 +21,16 @@ import org.apache.geode.cache.wan.GatewaySenderFactory;
 
 public interface InternalGatewaySenderFactory extends GatewaySenderFactory {
 
-  public GatewaySenderFactory setForInternalUse(boolean b);
+  GatewaySenderFactory setForInternalUse(boolean b);
 
-  public GatewaySenderFactory addAsyncEventListener(AsyncEventListener listener);
+  GatewaySenderFactory addAsyncEventListener(AsyncEventListener listener);
 
-  public GatewaySenderFactory setBucketSorted(boolean bucketSorted);
+  GatewaySenderFactory setBucketSorted(boolean bucketSorted);
 
-  public GatewaySender create(String senderIdFromAsyncEventQueueId);
+  GatewaySender create(String senderIdFromAsyncEventQueueId);
 
-  public void configureGatewaySender(GatewaySender senderCreation);
+  void configureGatewaySender(GatewaySender senderCreation);
 
-  public GatewaySenderFactory setLocatorDiscoveryCallback(
+  GatewaySenderFactory setLocatorDiscoveryCallback(
       LocatorDiscoveryCallback myLocatorCallback);
 }

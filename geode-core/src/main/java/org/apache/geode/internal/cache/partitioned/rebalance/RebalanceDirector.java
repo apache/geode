@@ -35,20 +35,20 @@ public interface RebalanceDirector {
    *
    * @return true if the rebalance should continue.
    */
-  public boolean isRebalanceNecessary(boolean redundancyImpaired, boolean withPersistence);
+  boolean isRebalanceNecessary(boolean redundancyImpaired, boolean withPersistence);
 
   /**
    * Initialize the director with the model of the PR. This model is gathered from the peers and
    * passed to this callback before the rebalancing starts. The director can build any initial state
    * it needs from the model at this point.
    */
-  public void initialize(PartitionedRegionLoadModel model);
+  void initialize(PartitionedRegionLoadModel model);
 
   /**
    * Called when a membership change has invalidated the old model and created a new model. The
    * director should switch to the new model and reinitialize it's state as appropriate.
    */
-  public void membershipChanged(PartitionedRegionLoadModel model);
+  void membershipChanged(PartitionedRegionLoadModel model);
 
   /**
    * Perform one step of the rebalancing process. This step may be to create a redundant bucket,
@@ -65,5 +65,5 @@ public interface RebalanceDirector {
    * @return true we were able to make progress or at least attempt an operation, false if there is
    *         no more rebalancing work to be done.
    */
-  public boolean nextStep();
+  boolean nextStep();
 }

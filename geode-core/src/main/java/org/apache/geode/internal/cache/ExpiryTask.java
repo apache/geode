@@ -537,31 +537,31 @@ public abstract class ExpiryTask extends SystemTimer.SystemTimerTask {
     /**
      * Called after entry is schedule for expiration.
      */
-    public void afterSchedule(ExpiryTask et);
+    void afterSchedule(ExpiryTask et);
 
     /**
      * Called after the given expiry task has run. This means that the time it was originally
      * scheduled to run has elapsed and the scheduler has run the task. While running the task it
      * may decide to expire it or reschedule it.
      */
-    public void afterTaskRan(ExpiryTask et);
+    void afterTaskRan(ExpiryTask et);
 
     /**
      * Called after the given expiry task has been rescheduled. afterTaskRan can still be called on
      * the same task. In some cases a task is rescheduled without expiring it. In others it is
      * expired and rescheduled.
      */
-    public void afterReschedule(ExpiryTask et);
+    void afterReschedule(ExpiryTask et);
 
     /**
      * Called after the given expiry task has expired.
      */
-    public void afterExpire(ExpiryTask et);
+    void afterExpire(ExpiryTask et);
 
     /**
      * Called when task has been canceled
      */
-    public void afterCancel(ExpiryTask et);
+    void afterCancel(ExpiryTask et);
 
   }
 }

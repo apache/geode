@@ -3958,23 +3958,23 @@ public abstract class AbstractRegionMap implements RegionMap {
   public void updateEvictionCounter() {}
 
   public interface ARMLockTestHook {
-    public void beforeBulkLock(LocalRegion region);
+    void beforeBulkLock(LocalRegion region);
 
-    public void afterBulkLock(LocalRegion region);
+    void afterBulkLock(LocalRegion region);
 
-    public void beforeBulkRelease(LocalRegion region);
+    void beforeBulkRelease(LocalRegion region);
 
-    public void afterBulkRelease(LocalRegion region);
+    void afterBulkRelease(LocalRegion region);
 
-    public void beforeLock(LocalRegion region, CacheEvent event);
+    void beforeLock(LocalRegion region, CacheEvent event);
 
-    public void afterLock(LocalRegion region, CacheEvent event);
+    void afterLock(LocalRegion region, CacheEvent event);
 
-    public void beforeRelease(LocalRegion region, CacheEvent event);
+    void beforeRelease(LocalRegion region, CacheEvent event);
 
-    public void afterRelease(LocalRegion region, CacheEvent event);
+    void afterRelease(LocalRegion region, CacheEvent event);
 
-    public void beforeStateFlushWait();
+    void beforeStateFlushWait();
   }
 
   private ARMLockTestHook armLockTestHook;

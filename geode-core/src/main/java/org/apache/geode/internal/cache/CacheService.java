@@ -30,17 +30,17 @@ public interface CacheService {
    * Services are initialized in random order, fairly early on in cache initialization. In
    * particular, the cache.xml has not yet been parsed.
    */
-  public void init(Cache cache);
+  void init(Cache cache);
 
   /**
    * Return the class or interface used to look up this service.
    */
-  public Class<? extends CacheService> getInterface();
+  Class<? extends CacheService> getInterface();
 
   /**
    * Returns the MBean associated with this server
    *
    * @return the MBean associated with this server
    */
-  public CacheServiceMBeanBase getMBean();
+  CacheServiceMBeanBase getMBean();
 }

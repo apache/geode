@@ -85,52 +85,52 @@ public interface DiskEntry extends RegionEntry {
    * @param context the value's context.
    * @param value an entry value.
    */
-  public void setValueWithContext(RegionEntryContext context, Object value);
+  void setValueWithContext(RegionEntryContext context, Object value);
 
   /**
    * In some cases we need to do something just before we drop the value from a DiskEntry that is
    * being moved (i.e. overflowed) to disk.
    */
-  public void handleValueOverflow(RegionEntryContext context);
+  void handleValueOverflow(RegionEntryContext context);
 
   /**
    * Returns true if the DiskEntry value is equal to {@link Token#DESTROYED},
    * {@link Token#REMOVED_PHASE1}, or {@link Token#REMOVED_PHASE2}.
    */
-  public boolean isRemovedFromDisk();
+  boolean isRemovedFromDisk();
 
   /**
    * Returns the id of this {@code DiskEntry}
    */
-  public DiskId getDiskId();
+  DiskId getDiskId();
 
-  public int updateAsyncEntrySize(EvictionController capacityController);
+  int updateAsyncEntrySize(EvictionController capacityController);
 
-  public DiskEntry getPrev();
+  DiskEntry getPrev();
 
-  public DiskEntry getNext();
+  DiskEntry getNext();
 
-  public void setPrev(DiskEntry v);
+  void setPrev(DiskEntry v);
 
-  public void setNext(DiskEntry v);
+  void setNext(DiskEntry v);
 
   /**
    * Used as the entry value if it was invalidated.
    */
-  public static final byte[] INVALID_BYTES = new byte[0];
+  byte[] INVALID_BYTES = new byte[0];
   /**
    * Used as the entry value if it was locally invalidated.
    */
-  public static final byte[] LOCAL_INVALID_BYTES = new byte[0];
+  byte[] LOCAL_INVALID_BYTES = new byte[0];
   /**
    * Used as the entry value if it was tombstone.
    */
-  public static final byte[] TOMBSTONE_BYTES = new byte[0];
+  byte[] TOMBSTONE_BYTES = new byte[0];
 
   /**
    * A Helper class for performing functions common to all {@code DiskEntry}s.
    */
-  public static class Helper {
+  class Helper {
     private static final Logger logger = LogService.getLogger();
 
     /**
@@ -487,21 +487,21 @@ public interface DiskEntry extends RegionEntry {
     private static final ValueWrapper TOMBSTONE_VW =
         new ByteArrayValueWrapper(true, TOMBSTONE_BYTES);
 
-    public static interface ValueWrapper {
-      public boolean isSerialized();
+    public interface ValueWrapper {
+      boolean isSerialized();
 
-      public int getLength();
+      int getLength();
 
-      public byte getUserBits();
+      byte getUserBits();
 
-      public void sendTo(ByteBuffer bb, Flushable flushable) throws IOException;
+      void sendTo(ByteBuffer bb, Flushable flushable) throws IOException;
 
-      public String getBytesAsString();
+      String getBytesAsString();
     }
-    public static interface Flushable {
-      public void flush() throws IOException;
+    public interface Flushable {
+      void flush() throws IOException;
 
-      public void flush(ByteBuffer bb, ByteBuffer chunkbb) throws IOException;
+      void flush(ByteBuffer bb, ByteBuffer chunkbb) throws IOException;
     }
     public static class ByteArrayValueWrapper implements ValueWrapper {
       public final boolean isSerializedObject;
@@ -1630,7 +1630,7 @@ public interface DiskEntry extends RegionEntry {
    * A marker object for an entry that has been recovered from disk. It is handled specially when it
    * is placed in a region.
    */
-  public static class RecoveredEntry {
+  class RecoveredEntry {
 
     /** The disk id of the entry being recovered */
     private final long recoveredKeyId;

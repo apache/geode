@@ -71,14 +71,14 @@ public class ExportDiskRegion extends ValidatingDiskRegion {
     currentOplogEntries.clear();
   }
 
-  public static interface ExportWriter {
+  public interface ExportWriter {
     /**
      * Write a batch of entries to the export system. The value in RecoveredEntry is will not be
      * null, so there is no need to fault in the value in the implementor
      *
      * @throws IOException
      */
-    public void writeBatch(Map<Object, RecoveredEntry> entries) throws IOException;
+    void writeBatch(Map<Object, RecoveredEntry> entries) throws IOException;
   }
 
 }
