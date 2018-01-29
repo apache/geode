@@ -23,7 +23,6 @@ import java.net.SocketException;
 import java.nio.file.FileStore;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
@@ -44,10 +43,8 @@ import com.sun.jna.win32.StdCallLibrary;
 
 import org.apache.geode.SystemFailure;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
-import org.apache.geode.internal.NanoTimer;
 import org.apache.geode.internal.cache.DiskStoreImpl;
 import org.apache.geode.internal.process.signal.Signal;
-import org.apache.geode.internal.shared.NativeCalls.RehashServerOnSIGHUP;
 
 
 /**
@@ -135,7 +132,7 @@ public class NativeCallsJNAImpl {
     static final Map<String, String> javaEnv = getModifiableJavaEnv();
 
     /** Signal callback handler for <code>signal</code> native call. */
-    static interface SignalHandler extends Callback {
+    interface SignalHandler extends Callback {
       void callback(int signum);
     }
 

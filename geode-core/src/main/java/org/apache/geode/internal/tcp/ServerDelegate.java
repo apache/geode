@@ -16,7 +16,7 @@ package org.apache.geode.internal.tcp;
 
 import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.distributed.internal.DistributionMessage;
-import org.apache.geode.distributed.internal.membership.*;
+import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
 import org.apache.geode.i18n.LogWriterI18n;
 
 
@@ -34,12 +34,12 @@ import org.apache.geode.i18n.LogWriterI18n;
  */
 public interface ServerDelegate {
 
-  public void receive(DistributionMessage message, int bytesRead, DistributedMember connId);
+  void receive(DistributionMessage message, int bytesRead, DistributedMember connId);
 
-  public LogWriterI18n getLogger();
+  LogWriterI18n getLogger();
 
   /**
    * Called when a possibly new member is detected by receiving a direct channel message from him.
    */
-  public void newMemberConnected(InternalDistributedMember member);
+  void newMemberConnected(InternalDistributedMember member);
 }

@@ -30,5 +30,5 @@ public interface SnapshotClient {
    * @param responders All of the members ({@link GemFireVM}s) that have responded to the snapshot
    *        request.
    */
-  public void updateSnapshot(CacheSnapshot snapshot, List responders);
+  void updateSnapshot(CacheSnapshot snapshot, List responders);
 }

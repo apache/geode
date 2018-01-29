@@ -38,7 +38,7 @@ public interface StoredObject extends Sendable, CachedDeserializable, Releasable
    * Returns true if the value stored in this memory chunk is compressed. Returns false if it is
    * uncompressed.
    */
-  public boolean isCompressed();
+  boolean isCompressed();
 
   /**
    * Returns the data stored in this object as a deserialized heap object. If it is not serialized
@@ -47,7 +47,7 @@ public interface StoredObject extends Sendable, CachedDeserializable, Releasable
    *
    * @return the data stored in this object as a deserialized heap object.
    */
-  public Object getValueAsDeserializedHeapObject();
+  Object getValueAsDeserializedHeapObject();
 
   /**
    * Returns the data stored in this object as a heap byte array. If it is not serialized then the
@@ -56,7 +56,7 @@ public interface StoredObject extends Sendable, CachedDeserializable, Releasable
    *
    * @return the data stored in this object as a heap byte array.
    */
-  public byte[] getValueAsHeapByteArray();
+  byte[] getValueAsHeapByteArray();
 
   /**
    * Take all the bytes in the object and write them to the data output as a byte array. If the
@@ -90,70 +90,70 @@ public interface StoredObject extends Sendable, CachedDeserializable, Releasable
    * @return true if we are able to retain this chunk; false if we need to retry
    */
   @Retained
-  public boolean retain();
+  boolean retain();
 
   /**
    * Returns true if this type of StoredObject uses a references count; false otherwise.
    */
-  public boolean hasRefCount();
+  boolean hasRefCount();
 
   /**
    * Returns the number of users of this memory. If this type of StoredObject does not have a
    * reference count then -1 is returned.
    */
-  public int getRefCount();
+  int getRefCount();
 
   /**
    * Returns the address of the memory used to store this object. This address may not be to the
    * first byte of stored data since the implementation may store some internal data in the first
    * bytes of the memory. This address can be used with AddressableMemoryManager.
    */
-  public long getAddress();
+  long getAddress();
 
   /**
    * Returns the number of bytes of memory used by this object to store an object. This size
    * includes any bytes used for padding and meta-information.
    */
-  public int getSize();
+  int getSize();
 
   /**
    * Returns the number of bytes of memory used to store the object. This size does not include any
    * bytes used for padding.
    */
-  public int getDataSize();
+  int getDataSize();
 
-  public byte readDataByte(int offset);
+  byte readDataByte(int offset);
 
-  public void writeDataByte(int offset, byte value);
+  void writeDataByte(int offset, byte value);
 
-  public void readDataBytes(int offset, byte[] bytes);
+  void readDataBytes(int offset, byte[] bytes);
 
-  public void writeDataBytes(int offset, byte[] bytes);
+  void writeDataBytes(int offset, byte[] bytes);
 
-  public void readDataBytes(int offset, byte[] bytes, int bytesOffset, int size);
+  void readDataBytes(int offset, byte[] bytes, int bytesOffset, int size);
 
-  public void writeDataBytes(int offset, byte[] bytes, int bytesOffset, int size);
+  void writeDataBytes(int offset, byte[] bytes, int bytesOffset, int size);
 
   /**
    * Returns an address that can read data from this StoredObject at the given offset.
    */
-  public long getAddressForReadingData(int offset, int size);
+  long getAddressForReadingData(int offset, int size);
 
   /**
    * Returns a StoredObject that acts as if its data is our data starting at the given offset and
    * limited to the given number of bytes.
    */
-  public StoredObject slice(int offset, int limit);
+  StoredObject slice(int offset, int limit);
 
   /**
    * Returns true if our data is equal to other's data; false otherwise.
    */
-  public boolean checkDataEquals(StoredObject other);
+  boolean checkDataEquals(StoredObject other);
 
   /**
    * Returns true if the given bytes are equal to our data bytes; false otherwise
    */
-  public boolean checkDataEquals(byte[] serializedObj);
+  boolean checkDataEquals(byte[] serializedObj);
 
   /**
    * Creates and returns a direct ByteBuffer that contains the data of this stored object. Note that
@@ -163,24 +163,24 @@ public interface StoredObject extends Sendable, CachedDeserializable, Releasable
    * @return the created direct byte buffer or null if it could not be created.
    */
   @Unretained
-  public ByteBuffer createDirectByteBuffer();
+  ByteBuffer createDirectByteBuffer();
 
   /**
    * Returns true if the data is serialized with PDX
    */
-  public boolean isSerializedPdxInstance();
+  boolean isSerializedPdxInstance();
 
   /**
    * Returns a StoredObject that does not cache the heap form. If a StoredObject is going to be kept
    * around for a while then it is good to call this so that it will not also keep the heap form in
    * memory.
    */
-  public StoredObject getStoredObjectWithoutHeapForm();
+  StoredObject getStoredObjectWithoutHeapForm();
 
   /**
    * Return true if the given "o" is reference to off-heap memory.
    */
-  public static boolean isOffHeapReference(Object o) {
+  static boolean isOffHeapReference(Object o) {
     return (o instanceof StoredObject) && ((StoredObject) o).hasRefCount();
   }
 }
