@@ -57,14 +57,13 @@ public class BackupManager {
   }
 
   private ExecutorService createExecutor() {
-    LoggingThreadGroup group =
-        LoggingThreadGroup.createThreadGroup("BackupManager Thread", logger);
+    LoggingThreadGroup group = LoggingThreadGroup.createThreadGroup("BackupManager Thread", logger);
     ThreadFactory threadFactory = new ThreadFactory() {
       private final AtomicInteger threadId = new AtomicInteger();
 
       public Thread newThread(final Runnable command) {
-        Thread thread = new Thread(group, command,
-            "BackupManagerThread" + this.threadId.incrementAndGet());
+        Thread thread =
+            new Thread(group, command, "BackupManagerThread" + this.threadId.incrementAndGet());
         thread.setDaemon(true);
         return thread;
       }
