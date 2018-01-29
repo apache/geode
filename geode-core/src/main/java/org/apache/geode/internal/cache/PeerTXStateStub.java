@@ -17,6 +17,7 @@ package org.apache.geode.internal.cache;
 import org.apache.logging.log4j.Logger;
 
 import org.apache.geode.CancelException;
+import org.apache.geode.InternalGemFireException;
 import org.apache.geode.cache.CommitConflictException;
 import org.apache.geode.cache.TransactionDataRebalancedException;
 import org.apache.geode.cache.TransactionException;
@@ -192,7 +193,10 @@ public class PeerTXStateStub extends TXStateStub {
        */
       throw new TransactionException("Can't involve c/s region in peer tx");
     }
-
+    if (region.isUsedForPartitionedRegionBucket()) {
+      throw new InternalGemFireException(
+          "A bucket for a partitioned region should never be involved in peer tx");
+    }
   }
 
 

@@ -23,6 +23,7 @@ import javax.transaction.Status;
 import org.apache.logging.log4j.Logger;
 
 import org.apache.geode.GemFireException;
+import org.apache.geode.InternalGemFireException;
 import org.apache.geode.cache.CommitConflictException;
 import org.apache.geode.cache.TransactionDataNodeHasDepartedException;
 import org.apache.geode.cache.TransactionException;
@@ -197,6 +198,10 @@ public class ClientTXStateStub extends TXStateStub {
         && this.firstProxy.getPool() != region.getServerProxy().getPool()) {
       throw new TransactionException("Region " + region.getName()
           + " is using a different server pool than other regions in this transaction.");
+    }
+    if (region.isUsedForPartitionedRegionBucket()) {
+      throw new InternalGemFireException(
+          "A bucket for a partitioned region should never be involved in client tx");
     }
   }
 
