@@ -18,7 +18,7 @@ package org.apache.geode.test.junit.rules.serializable;
  * Names of member fields in {@link org.junit.rules.TemporaryFolder}.
  */
 interface FieldsOfTemporaryFolder {
-  static final String FIELD_PARENT_FOLDER = "parentFolder"; // java.io.File
-  static final String FIELD_ASSURE_DELETION = "assureDeletion"; // boolean (since JUnit 4.13)
-  static final String FIELD_FOLDER = "folder"; // java.io.File
+  String FIELD_PARENT_FOLDER = "parentFolder"; // java.io.File
+  String FIELD_ASSURE_DELETION = "assureDeletion"; // boolean (since JUnit 4.13)
+  String FIELD_FOLDER = "folder"; // java.io.File
 }
