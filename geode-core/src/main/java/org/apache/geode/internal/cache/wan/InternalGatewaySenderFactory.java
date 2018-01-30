@@ -31,6 +31,5 @@ public interface InternalGatewaySenderFactory extends GatewaySenderFactory {
 
   void configureGatewaySender(GatewaySender senderCreation);
 
-  GatewaySenderFactory setLocatorDiscoveryCallback(
-      LocatorDiscoveryCallback myLocatorCallback);
+  GatewaySenderFactory setLocatorDiscoveryCallback(LocatorDiscoveryCallback myLocatorCallback);
 }

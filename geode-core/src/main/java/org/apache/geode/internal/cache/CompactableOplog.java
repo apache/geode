@@ -30,8 +30,7 @@ public interface CompactableOplog {
 
   int compact(OplogCompactor compactor);
 
-  BytesAndBits getBytesAndBits(DiskRegionView dr, DiskId id, boolean faultIn,
-      boolean bitOnly);
+  BytesAndBits getBytesAndBits(DiskRegionView dr, DiskId id, boolean faultIn, boolean bitOnly);
 
   BytesAndBits getNoBuffer(DiskRegion dr, DiskId id);
 }

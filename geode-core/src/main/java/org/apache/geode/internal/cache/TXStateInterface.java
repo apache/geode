@@ -86,8 +86,7 @@ public interface TXStateInterface extends Synchronization, InternalDataView {
   /*
    * Only applicable for Distributed transaction.
    */
-  void precommit()
-      throws CommitConflictException, UnsupportedOperationInTransactionException;
+  void precommit() throws CommitConflictException, UnsupportedOperationInTransactionException;
 
   void commit() throws CommitConflictException;
 

@@ -45,8 +45,7 @@ public interface PropertyResolver {
 
   int getPropertyOverridden();
 
-  String processUnresolvableString(String stringWithPrefixAndSuffix, String prefix,
-      String suffix);
+  String processUnresolvableString(String stringWithPrefixAndSuffix, String prefix, String suffix);
 
   String processUnresolvableString(String string);
 }

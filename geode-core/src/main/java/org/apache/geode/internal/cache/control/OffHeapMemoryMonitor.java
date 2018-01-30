@@ -165,8 +165,8 @@ public class OffHeapMemoryMonitor implements MemoryMonitor, MemoryUsageListener 
 
     void updateStateAndSendEventBeforeAbnormalProcess(long bytesUsed, MemoryEvent event);
 
-    void updateStateAndSendEventIgnore(long bytesUsed, MemoryState oldState,
-        MemoryState newState, long mostRecentBytesUsed, boolean deliverNextAbnormalEvent);
+    void updateStateAndSendEventIgnore(long bytesUsed, MemoryState oldState, MemoryState newState,
+        long mostRecentBytesUsed, boolean deliverNextAbnormalEvent);
   }
 
   @Override

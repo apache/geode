@@ -92,8 +92,7 @@ public interface PersistenceAdvisor {
    *
    * @param replicate the replicate to initialize from.
    */
-  void updateMembershipView(InternalDistributedMember replicate,
-      boolean targetReinitializing);
+  void updateMembershipView(InternalDistributedMember replicate, boolean targetReinitializing);
 
   /**
    * Indicate that the current member is online.

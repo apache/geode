@@ -1535,8 +1535,7 @@ public class PartitionedRegionLoadModel {
     /**
      * Return true if the two addresses are equivalent
      */
-    boolean areSameZone(InternalDistributedMember member1,
-        InternalDistributedMember member2);
+    boolean areSameZone(InternalDistributedMember member1, InternalDistributedMember member2);
   }
 
   public static enum RefusalReason {

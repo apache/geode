@@ -60,8 +60,7 @@ public interface DiskRecoveryStore {
 
   EvictionAttributes getEvictionAttributes();
 
-  void initializeStats(long numEntriesInVM, long numOverflowOnDisk,
-      long numOverflowBytesOnDisk);
+  void initializeStats(long numEntriesInVM, long numOverflowOnDisk, long numOverflowBytesOnDisk);
 
   void recordRecoveredGCVersion(VersionSource member, long gcVersion);
 
