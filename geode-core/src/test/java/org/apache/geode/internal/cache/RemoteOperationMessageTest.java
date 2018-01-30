@@ -25,6 +25,7 @@ import org.junit.Test;
 import org.junit.experimental.categories.Category;
 import org.mockito.ArgumentCaptor;
 
+import org.apache.geode.cache.CacheClosedException;
 import org.apache.geode.cache.RegionDestroyedException;
 import org.apache.geode.distributed.DistributedSystemDisconnectedException;
 import org.apache.geode.distributed.internal.ClusterDistributionManager;
@@ -39,7 +40,7 @@ import org.apache.geode.test.junit.categories.UnitTest;
 @Category(UnitTest.class)
 public class RemoteOperationMessageTest {
 
-  private RemoteOperationMessage msg; // the class under test
+  private TestableRemoteOperationMessage msg; // the class under test
 
   private InternalDistributedMember recipient;
   private InternalDistributedMember sender;
@@ -123,6 +124,37 @@ public class RemoteOperationMessageTest {
   }
 
   @Test
+  public void processWithNullCacheSendsReplyContainingCacheClosedException() throws Exception {
+    when(dm.getExistingCache()).thenReturn(null);
+    msg.setSender(sender);
+
+    msg.process(dm);
+    verify(msg, times(0)).operateOnRegion(dm, r, startTime);
+    verify(dm, times(1)).putOutgoing(any());
+    ArgumentCaptor<ReplyException> captor = ArgumentCaptor.forClass(ReplyException.class);
+    verify(msg, times(1)).sendReply(any(), anyInt(), eq(dm), captor.capture(), any(),
+        eq(startTime));
+    assertThat(captor.getValue().getCause()).isInstanceOf(CacheClosedException.class);
+  }
+
+  @Test
+  public void processWithDisconnectingDSAndClosedCacheSendsReplyContainingCachesClosedException()
+      throws Exception {
+    CacheClosedException reasonCacheWasClosed = mock(CacheClosedException.class);
+    when(system.isDisconnecting()).thenReturn(true);
+    when(cache.getCacheClosedException(any())).thenReturn(reasonCacheWasClosed);
+    msg.setSender(sender);
+
+    msg.process(dm);
+    verify(msg, times(0)).operateOnRegion(dm, r, startTime);
+    verify(dm, times(1)).putOutgoing(any());
+    ArgumentCaptor<ReplyException> captor = ArgumentCaptor.forClass(ReplyException.class);
+    verify(msg, times(1)).sendReply(any(), anyInt(), eq(dm), captor.capture(), any(),
+        eq(startTime));
+    assertThat(captor.getValue().getCause()).isSameAs(reasonCacheWasClosed);
+  }
+
+  @Test
   public void processWithNullPointerExceptionFromOperationOnRegionWithNoSystemFailureSendsReplyWithNPE()
       throws Exception {
     when(msg.operateOnRegion(dm, r, startTime)).thenThrow(NullPointerException.class);
@@ -194,6 +226,15 @@ public class RemoteOperationMessageTest {
   }
 
   @Test
+  public void processWithOperateOnRegionReturningFalseDoesNotSendReply() throws Exception {
+    msg.setOperationOnRegionResult(false);
+    msg.setSender(sender);
+
+    msg.process(dm);
+    verify(dm, never()).putOutgoing(any());
+  }
+
+  @Test
   public void processWithRemoteOperationExceptionFromOperationOnRegionSendsReplyWithRemoteOperationException()
       throws Exception {
     RemoteOperationException theException = mock(RemoteOperationException.class);
@@ -226,6 +267,8 @@ public class RemoteOperationMessageTest {
 
   private static class TestableRemoteOperationMessage extends RemoteOperationMessage {
 
+    private boolean operationOnRegionResult = true;
+
     public TestableRemoteOperationMessage(InternalDistributedMember recipient, String regionPath,
         ReplyProcessor21 processor) {
       super(recipient, regionPath, processor);
@@ -244,7 +287,11 @@ public class RemoteOperationMessageTest {
     @Override
     protected boolean operateOnRegion(ClusterDistributionManager dm, LocalRegion r, long startTime)
         throws RemoteOperationException {
-      return true;
+      return operationOnRegionResult;
+    }
+
+    public void setOperationOnRegionResult(boolean v) {
+      this.operationOnRegionResult = v;
     }
 
   }

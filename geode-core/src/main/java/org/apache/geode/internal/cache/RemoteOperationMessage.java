@@ -167,8 +167,7 @@ public abstract class RemoteOperationMessage extends DistributionMessage
   /**
    * check to see if the cache is closing
    */
-  public boolean checkCacheClosing(ClusterDistributionManager dm) {
-    InternalCache cache = dm.getCache();
+  public boolean checkCacheClosing(InternalCache cache) {
     return cache == null || cache.isClosed();
   }
 
@@ -197,7 +196,7 @@ public abstract class RemoteOperationMessage extends DistributionMessage
     long startTime = 0;
     try {
       InternalCache cache = getCache(dm);
-      if (checkCacheClosing(dm) || checkDSClosing(dm)) {
+      if (checkCacheClosing(cache) || checkDSClosing(dm)) {
         String message = "Remote cache is closed: " + dm.getId();
         if (cache == null) {
           thr = new CacheClosedException(message);
