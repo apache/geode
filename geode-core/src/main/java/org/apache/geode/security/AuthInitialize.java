@@ -48,8 +48,7 @@ public interface AuthInitialize extends CacheCallback {
    * @deprecated since Geode 1.0, use init()
    */
   @Deprecated
-  void init(LogWriter systemLogger, LogWriter securityLogger)
-      throws AuthenticationFailedException;
+  void init(LogWriter systemLogger, LogWriter securityLogger) throws AuthenticationFailedException;
 
   /**
    * @since Geode 1.0. implement this method instead of init with logwriters. Implementation should

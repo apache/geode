@@ -54,8 +54,8 @@ public interface DistributedMembershipListener extends DirectChannelListener {
    *
    * @param reason TODO
    */
-  void memberSuspect(InternalDistributedMember suspect,
-      InternalDistributedMember whoSuspected, String reason);
+  void memberSuspect(InternalDistributedMember suspect, InternalDistributedMember whoSuspected,
+      String reason);
 
   /**
    * Event indicating a message has been delivered that we need to process.

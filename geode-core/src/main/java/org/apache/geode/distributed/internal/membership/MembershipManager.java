@@ -135,8 +135,8 @@ public interface MembershipManager {
    *         not receive the message because they departed the distributed system.
    * @throws NotSerializableException If content cannot be serialized
    */
-  Set send(InternalDistributedMember[] destinations, DistributionMessage content,
-      DMStats stats) throws NotSerializableException;
+  Set send(InternalDistributedMember[] destinations, DistributionMessage content, DMStats stats)
+      throws NotSerializableException;
 
   /**
    * Indicates to the membership manager that the system is shutting down. Typically speaking, this
@@ -184,8 +184,7 @@ public interface MembershipManager {
    * @throws InterruptedException if interrupted by another thread
    * @throws TimeoutException if we wait too long for the member to go away
    */
-  boolean waitForDeparture(DistributedMember mbr)
-      throws TimeoutException, InterruptedException;
+  boolean waitForDeparture(DistributedMember mbr) throws TimeoutException, InterruptedException;
 
   /**
    * Returns true if remoteId is an existing member, otherwise waits till timeout. Returns false if

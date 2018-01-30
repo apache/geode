@@ -96,11 +96,9 @@ public interface ManagementConstants {
   String OBJECTNAME__DISTRIBUTEDSYSTEM_MXBEAN =
       OBJECTNAME__PREFIX + "service=System,type=Distributed";
 
-  String OBJECTNAME__MEMBER_MXBEAN =
-      OBJECTNAME__PREFIX + "type=Member,member={0}";
+  String OBJECTNAME__MEMBER_MXBEAN = OBJECTNAME__PREFIX + "type=Member,member={0}";
 
-  String OBJECTNAME__MANAGER_MXBEAN =
-      OBJECTNAME__PREFIX + "service=Manager,type=Member,member={0}";
+  String OBJECTNAME__MANAGER_MXBEAN = OBJECTNAME__PREFIX + "service=Manager,type=Member,member={0}";
 
   String OBJECTNAME__DISTRIBUTEDREGION_MXBEAN =
       OBJECTNAME__PREFIX + "service=Region,name={0},type=Distributed";
@@ -129,8 +127,7 @@ public interface ManagementConstants {
   String OBJECTNAME__DISKSTORE_MXBEAN =
       OBJECTNAME__PREFIX + "service=DiskStore,name={0},type=Member,member={1}";
 
-  String OBJECTNAME__LOCATOR_MXBEAN =
-      OBJECTNAME__PREFIX + "service=Locator,type=Member,member={0}";
+  String OBJECTNAME__LOCATOR_MXBEAN = OBJECTNAME__PREFIX + "service=Locator,type=Member,member={0}";
 
   String OBJECTNAME__CACHESERVICE_MXBEAN =
       OBJECTNAME__PREFIX + "service=CacheService,name={0},type=Member,member={1}";
@@ -146,8 +143,7 @@ public interface ManagementConstants {
   int MAX_SHOW_LOG_LINES = 100;
   int DEFAULT_SHOW_LOG_LINES = 30;
 
-  String GATEWAY_SENDER_PATTERN =
-      OBJECTNAME__PREFIX + "service=GatewaySender,*";
+  String GATEWAY_SENDER_PATTERN = OBJECTNAME__PREFIX + "service=GatewaySender,*";
 
   String NOTIFICATION_HUB_LISTENER = "GemFire:service=NotificationHubListener";
 
@@ -189,10 +185,8 @@ public interface ManagementConstants {
   String GATEWAY_RECEIVER_STARTED_PREFIX = "GatewayReceiver Started in the VM ";
   String GATEWAY_RECEIVER_STOPPED_PREFIX = "GatewayReceiver Stopped in the VM ";
 
-  String ASYNC_EVENT_QUEUE_CREATED_PREFIX =
-      "Async Event Queue is Created  in the VM ";
-  String ASYNC_EVENT_QUEUE_CLOSED_PREFIX =
-      "Async Event Queue is Closed in the VM ";
+  String ASYNC_EVENT_QUEUE_CREATED_PREFIX = "Async Event Queue is Created  in the VM ";
+  String ASYNC_EVENT_QUEUE_CLOSED_PREFIX = "Async Event Queue is Closed in the VM ";
 
   String CACHE_SERVICE_CREATED_PREFIX = "Cache Service Created With Name ";
 

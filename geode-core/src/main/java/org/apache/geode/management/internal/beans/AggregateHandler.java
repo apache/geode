@@ -65,7 +65,7 @@ public interface AggregateHandler {
    * @param proxyObject actual reference of the proxy.
    * @param newVal new value of the Proxy
    */
-  void handlePseudoCreateProxy(ObjectName objectName, Class interfaceClass,
-      Object proxyObject, FederationComponent newVal);
+  void handlePseudoCreateProxy(ObjectName objectName, Class interfaceClass, Object proxyObject,
+      FederationComponent newVal);
 
 }

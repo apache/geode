@@ -457,8 +457,7 @@ public interface AgentConfig extends DistributedSystemConfig {
   String DEFAULT_AGENT_SSL_CIPHERS = "any";
 
   /** The name of the "agent-ssl-require-authentication" property */
-  String AGENT_SSL_REQUIRE_AUTHENTICATION_NAME =
-      "agent-ssl-require-authentication";
+  String AGENT_SSL_REQUIRE_AUTHENTICATION_NAME = "agent-ssl-require-authentication";
 
   /**
    * The default value of the "agent-ssl-require-authentication" property
@@ -466,8 +465,7 @@ public interface AgentConfig extends DistributedSystemConfig {
   boolean DEFAULT_AGENT_SSL_REQUIRE_AUTHENTICATION = true;
 
   /** The name of the "http-ssl-require-authentication" property */
-  String HTTP_SSL_REQUIRE_AUTHENTICATION_NAME =
-      "http-ssl-require-authentication";
+  String HTTP_SSL_REQUIRE_AUTHENTICATION_NAME = "http-ssl-require-authentication";
 
   /**
    * The default value of the "http-ssl-require-authentication" property

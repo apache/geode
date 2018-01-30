@@ -110,8 +110,7 @@ public interface OperationInvoker {
    * @param signature an array containing the signature of the operation.
    * @return result of the operation invocation.
    */
-  Object invoke(String resourceName, String operationName, Object[] params,
-      String[] signature);
+  Object invoke(String resourceName, String operationName, Object[] params, String[] signature);
 
   /**
    * This method searches the MBean server, based on the OperationsInvoker's JMX-based or other

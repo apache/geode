@@ -421,8 +421,7 @@ public interface PdxInstanceFactory {
    * @throws PdxSerializationException if serialization of the field fails.
    * @since GemFire 6.6.2
    */
-  PdxInstanceFactory writeObjectArray(String fieldName, Object[] value,
-      boolean checkPortability);
+  PdxInstanceFactory writeObjectArray(String fieldName, Object[] value, boolean checkPortability);
 
   /**
    * Writes the named field with the given value to the serialized form. The fields type is

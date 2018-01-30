@@ -131,8 +131,7 @@ public interface SystemMemberCache {
    * @deprecated as of GemFire 5.0, use {@link #createRegion} instead
    */
   @Deprecated
-  SystemMemberRegion createVMRegion(String name, RegionAttributes attrs)
-      throws AdminException;
+  SystemMemberRegion createVMRegion(String name, RegionAttributes attrs) throws AdminException;
 
   /**
    * Creates a root <code>Region</code> in this cache.

@@ -57,8 +57,7 @@ public interface SystemMemberJmx extends SystemMember, NotificationListener {
   /**
    * Notification type for indicating a cache is closed on a member of this distributed system.
    */
-  String NOTIF_CACHE_CLOSED =
-      DistributionConfig.GEMFIRE_PREFIX + "distributedsystem.cache.closed";
+  String NOTIF_CACHE_CLOSED = DistributionConfig.GEMFIRE_PREFIX + "distributedsystem.cache.closed";
   /**
    * Notification type for indicating a region is created in a cache on a member of this distributed
    * system.

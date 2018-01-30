@@ -475,8 +475,7 @@ public interface PdxWriter {
    * @throws PdxFieldAlreadyExistsException if the named field has already been written
    * @throws PdxSerializationException if serialization of the field fails.
    */
-  <CT, VT extends CT> PdxWriter writeField(String fieldName, VT fieldValue,
-      Class<CT> fieldType);
+  <CT, VT extends CT> PdxWriter writeField(String fieldName, VT fieldValue, Class<CT> fieldType);
 
   /**
    * Writes the named field with the given value and type to the serialized form. This method uses
@@ -526,8 +525,8 @@ public interface PdxWriter {
    * @throws PdxSerializationException if serialization of the field fails.
    * @since GemFire 6.6.2
    */
-  <CT, VT extends CT> PdxWriter writeField(String fieldName, VT fieldValue,
-      Class<CT> fieldType, boolean checkPortability);
+  <CT, VT extends CT> PdxWriter writeField(String fieldName, VT fieldValue, Class<CT> fieldType,
+      boolean checkPortability);
 
   /**
    * Writes the given unread fields to the serialized form. The unread fields are obtained by

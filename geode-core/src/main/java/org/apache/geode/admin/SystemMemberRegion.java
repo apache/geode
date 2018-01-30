@@ -295,8 +295,7 @@ public interface SystemMemberRegion {
    *
    * @since GemFire 4.0
    */
-  SystemMemberRegion createSubregion(String name, RegionAttributes attrs)
-      throws AdminException;
+  SystemMemberRegion createSubregion(String name, RegionAttributes attrs) throws AdminException;
 
   /**
    * Returns the <code>MembershipAttributes</code> that configure required roles for reliable access
