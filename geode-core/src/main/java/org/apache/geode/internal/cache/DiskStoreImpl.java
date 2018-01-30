@@ -56,7 +56,6 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.concurrent.atomic.AtomicReference;
-import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock.ReadLock;
@@ -89,7 +88,7 @@ import org.apache.geode.distributed.internal.membership.InternalDistributedMembe
 import org.apache.geode.i18n.StringId;
 import org.apache.geode.internal.Version;
 import org.apache.geode.internal.cache.ExportDiskRegion.ExportWriter;
-import org.apache.geode.internal.cache.backup.BackupManager;
+import org.apache.geode.internal.cache.backup.BackupService;
 import org.apache.geode.internal.cache.entries.DiskEntry;
 import org.apache.geode.internal.cache.entries.DiskEntry.Helper.ValueWrapper;
 import org.apache.geode.internal.cache.entries.DiskEntry.RecoveredEntry;
@@ -1995,7 +1994,7 @@ public class DiskStoreImpl implements DiskStore {
       try {
         List<Path> backupDirectories = Files.list(directoryHolder.getDir().toPath())
             .filter((path) -> path.getFileName().toString()
-                .startsWith(BackupManager.DATA_STORES_TEMPORARY_DIRECTORY))
+                .startsWith(BackupService.DATA_STORES_TEMPORARY_DIRECTORY))
             .filter(p -> Files.isDirectory(p)).collect(Collectors.toList());
         for (Path backupDirectory : backupDirectories) {
           try {
@@ -4029,8 +4028,8 @@ public class DiskStoreImpl implements DiskStore {
   }
 
   public DiskStoreBackup getInProgressBackup() {
-    BackupManager backupManager = cache.getBackupManager();
-    return backupManager == null ? null : backupManager.getBackupForDiskStore(this);
+    BackupService backupService = cache.getBackupService();
+    return backupService.getBackupForDiskStore(this);
   }
 
   public Collection<DiskRegionView> getKnown() {

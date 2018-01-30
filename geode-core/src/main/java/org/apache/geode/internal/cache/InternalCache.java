@@ -52,7 +52,7 @@ import org.apache.geode.distributed.internal.DistributionManager;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
 import org.apache.geode.internal.SystemTimer;
-import org.apache.geode.internal.cache.backup.BackupManager;
+import org.apache.geode.internal.cache.backup.BackupService;
 import org.apache.geode.internal.cache.control.InternalResourceManager;
 import org.apache.geode.internal.cache.control.ResourceAdvisor;
 import org.apache.geode.internal.cache.event.EventTrackerExpiryTask;
@@ -186,8 +186,6 @@ public interface InternalCache extends Cache, Extensible<Cache>, CacheTime {
 
   long cacheTimeMillis();
 
-  void clearBackupManager();
-
   URL getCacheXmlURL();
 
   List<File> getBackupFiles();
@@ -210,8 +208,6 @@ public interface InternalCache extends Cache, Extensible<Cache>, CacheTime {
 
   boolean getPdxReadSerializedByAnyGemFireServices();
 
-  BackupManager getBackupManager();
-
   void setDeclarativeCacheConfig(CacheConfig cacheConfig);
 
   void initializePdxRegistry();
@@ -233,7 +229,7 @@ public interface InternalCache extends Cache, Extensible<Cache>, CacheTime {
   <K, V> Region<K, V> basicCreateRegion(String name, RegionAttributes<K, V> attrs)
       throws RegionExistsException, TimeoutException;
 
-  BackupManager startBackup(InternalDistributedMember sender) throws IOException;
+  BackupService getBackupService();
 
   Throwable getDisconnectCause();
 

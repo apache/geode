@@ -81,7 +81,7 @@ import org.apache.geode.internal.cache.DiskInitFile.DiskRegionFlag;
 import org.apache.geode.internal.cache.DiskStoreImpl.OplogCompactor;
 import org.apache.geode.internal.cache.DiskStoreImpl.OplogEntryIdSet;
 import org.apache.geode.internal.cache.DistributedRegion.DiskPosition;
-import org.apache.geode.internal.cache.backup.BackupManager;
+import org.apache.geode.internal.cache.backup.BackupService;
 import org.apache.geode.internal.cache.entries.DiskEntry;
 import org.apache.geode.internal.cache.entries.DiskEntry.Helper.Flushable;
 import org.apache.geode.internal.cache.entries.DiskEntry.Helper.ValueWrapper;
@@ -5723,7 +5723,7 @@ public class Oplog implements CompactableOplog, Flushable {
 
   public void deleteCRF() {
     oplogSet.crfDelete(this.oplogId);
-    BackupManager backupManager = getInternalCache().getBackupManager();
+    BackupService backupService = getInternalCache().getBackupService();
     DiskStoreBackup inProgressBackup = getParent().getInProgressBackup();
     if (inProgressBackup == null || !inProgressBackup.deferCrfDelete(this)) {
       deleteCRFFileOnly();

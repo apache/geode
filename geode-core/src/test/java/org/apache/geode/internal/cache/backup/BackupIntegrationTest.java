@@ -186,10 +186,9 @@ public class BackupIntegrationTest {
       assertNull(region.get(i));
     }
 
-    BackupManager backup =
-        cache.startBackup(cache.getInternalDistributedSystem().getDistributedMember());
-    backup.startBackup();
-    backup.getDiskStoreIdsToBackup();
+    BackupService backup =
+        cache.getBackupService();
+    backup.startBackup(cache.getInternalDistributedSystem().getDistributedMember());
     backup.doBackup(backupDir, null, false);
 
     // Put another key to make sure we restore
@@ -236,10 +235,8 @@ public class BackupIntegrationTest {
   public void testBackupEmptyDiskStore() throws Exception {
     createDiskStore();
 
-    BackupManager backup =
-        cache.startBackup(cache.getInternalDistributedSystem().getDistributedMember());
-    backup.startBackup();
-    backup.getDiskStoreIdsToBackup();
+    BackupService backup = cache.getBackupService();
+    backup.startBackup(cache.getInternalDistributedSystem().getDistributedMember());
     backup.doBackup(backupDir, null, false);
     assertEquals("No backup files should have been created", Collections.emptyList(),
         Arrays.asList(backupDir.list()));
@@ -253,10 +250,8 @@ public class BackupIntegrationTest {
     // from a backup that doesn't contain this key
     region.put("A", "A");
 
-    BackupManager backup =
-        cache.startBackup(cache.getInternalDistributedSystem().getDistributedMember());
-    backup.startBackup();
-    backup.getDiskStoreIdsToBackup();
+    BackupService backup = cache.getBackupService();
+    backup.startBackup(cache.getInternalDistributedSystem().getDistributedMember());
     backup.doBackup(backupDir, null, false);
 
 
@@ -282,15 +277,12 @@ public class BackupIntegrationTest {
       region.put(i, getBytes(i));
     }
 
-    BackupManager backupManager =
-        cache.startBackup(cache.getInternalDistributedSystem().getDistributedMember());
-    backupManager.validateRequestingAdmin();
-    backupManager.startBackup();
-    backupManager.getDiskStoreIdsToBackup();
+    BackupService backupService = cache.getBackupService();
+    backupService.startBackup(cache.getInternalDistributedSystem().getDistributedMember());
     final Region theRegion = region;
     final DiskStore theDiskStore = ds;
     CompletableFuture.runAsync(() -> destroyAndCompact(theRegion, theDiskStore));
-    backupManager.doBackup(backupDir, null, false);
+    backupService.doBackup(backupDir, null, false);
 
     cache.close();
     destroyDiskDirs();
@@ -318,11 +310,9 @@ public class BackupIntegrationTest {
     createDiskStore();
     createRegion();
 
-    BackupManager backup =
-        cache.startBackup(cache.getInternalDistributedSystem().getDistributedMember());
-    backup.startBackup();
-    backup.getDiskStoreIdsToBackup();
-    backup.doBackup(backupDir, null, false);
+    BackupService backupService = cache.getBackupService();
+    backupService.startBackup(cache.getInternalDistributedSystem().getDistributedMember());
+    backupService.doBackup(backupDir, null, false);
     Collection<File> fileCollection = FileUtils.listFiles(backupDir,
         new RegexFileFilter("BackupIntegrationTest.cache.xml"), DirectoryFileFilter.DIRECTORY);
     assertEquals(1, fileCollection.size());

@@ -36,9 +36,7 @@ class PrepareBackup {
     if (cache == null) {
       persistentIds = new HashSet<>();
     } else {
-      BackupManager backupManager = cache.startBackup(member);
-      backupManager.startBackup();
-      persistentIds = backupManager.getDiskStoreIdsToBackup();
+      persistentIds = cache.getBackupService().startBackup(member);
     }
     return persistentIds;
   }

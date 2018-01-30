@@ -207,7 +207,6 @@ public class BackupTask {
       temporaryFiles.cleanupFiles();
     }
     releaseBackupLocks();
-    cache.clearBackupManager();
   }
 
   private void releaseBackupLocks() {

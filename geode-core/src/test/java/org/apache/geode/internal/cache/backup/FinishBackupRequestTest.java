@@ -44,7 +44,7 @@ public class FinishBackupRequestTest {
 
   private DistributionManager dm;
   private InternalCache cache;
-  private BackupManager backupManager;
+  private BackupService backupService;
   private int processorId = 79;
   private File targetDir;
   private File baselineDir;
@@ -60,14 +60,14 @@ public class FinishBackupRequestTest {
     // mocks here
     dm = mock(DistributionManager.class);
     cache = mock(InternalCache.class);
-    backupManager = mock(BackupManager.class);
+    backupService = mock(BackupService.class);
     targetDir = mock(File.class);
     baselineDir = mock(File.class);
     abort = false;
 
     when(dm.getCache()).thenReturn(cache);
     when(dm.getDistributionManagerId()).thenReturn(sender);
-    when(cache.getBackupManager()).thenReturn(backupManager);
+    when(cache.getBackupService()).thenReturn(backupService);
 
     sender = mock(InternalDistributedMember.class);
 

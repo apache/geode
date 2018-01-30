@@ -6649,7 +6649,7 @@ public class LocalizedStrings {
       new StringId(5028, "Error deserializing values");
   public static final StringId DistributedRegion_INITIALIZED_FROM_DISK = new StringId(5030,
       "Region {0} recovered from the local disk. Old persistent ID: {1}, new persistent ID {2}");
-  public static final StringId BackupManager_README = new StringId(5031,
+  public static final StringId BackupService_README = new StringId(5031,
       "This directory contains a backup of the persistent data for a single gemfire VM. The layout is:\n\ndiskstores\n\tA backup of the persistent disk stores in the VM\nuser\n\tAny files specified by the backup element in the cache.xml file.\nconfig\n\tThe cache.xml and gemfire.properties for the backed up member.\nrestore.[sh|bat]\n\tA script to restore the backup.\n\nPlease note that the config is not restored, only the diskstores and user files.");
   public static final StringId PartitionedRegion_MULTIPLE_TARGET_NODE_FOUND_FOR =
       new StringId(5032, "Multiple target nodes found for single hop operation");

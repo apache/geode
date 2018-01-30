@@ -15,6 +15,7 @@
 package org.apache.geode.internal.cache.backup;
 
 import java.io.File;
+import java.io.IOException;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -24,6 +25,7 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.atomic.AtomicReference;
 
 import org.apache.logging.log4j.Logger;
 
@@ -37,33 +39,30 @@ import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.internal.logging.LoggingThreadGroup;
 
-public class BackupManager {
+public class BackupService {
   Logger logger = LogService.getLogger();
 
   public static final String DATA_STORES_TEMPORARY_DIRECTORY = "backupTemp_";
   private final ExecutorService executor;
   private final MembershipListener membershipListener = new BackupMembershipListener();
   private final InternalCache cache;
-  private final InternalDistributedMember sender;
 
-  private BackupTask task;
-  private Future<HashSet<PersistentID>> taskFuture;
+  private final AtomicReference<BackupTask> currentTask = new AtomicReference<>();
+  private transient Future<HashSet<PersistentID>> taskFuture;
 
-
-  public BackupManager(InternalDistributedMember sender, InternalCache cache) {
+  public BackupService(InternalCache cache) {
     this.cache = cache;
-    this.sender = sender;
     executor = createExecutor();
   }
 
   private ExecutorService createExecutor() {
-    LoggingThreadGroup group = LoggingThreadGroup.createThreadGroup("BackupManager Thread", logger);
+    LoggingThreadGroup group = LoggingThreadGroup.createThreadGroup("BackupService Thread", logger);
     ThreadFactory threadFactory = new ThreadFactory() {
       private final AtomicInteger threadId = new AtomicInteger();
 
       public Thread newThread(final Runnable command) {
         Thread thread =
-            new Thread(group, command, "BackupManagerThread" + this.threadId.incrementAndGet());
+            new Thread(group, command, "BackupServiceThread" + this.threadId.incrementAndGet());
         thread.setDaemon(true);
         return thread;
       }
@@ -71,16 +70,30 @@ public class BackupManager {
     return Executors.newSingleThreadExecutor(threadFactory);
   }
 
-  public void startBackup() {
-    task = new BackupTask(cache);
-    taskFuture = executor.submit(task::backup);
+  public HashSet<PersistentID> startBackup(InternalDistributedMember sender)
+      throws IOException, InterruptedException {
+    validateRequestingAdmin(sender);
+      if (!currentTask.compareAndSet(null, new BackupTask(cache))) {
+        throw new IOException("Another backup already in progress");
+      }
+      taskFuture = executor.submit(() -> currentTask.get().backup());
+    return getDiskStoreIdsToBackup();
   }
 
-  public HashSet<PersistentID> getDiskStoreIdsToBackup() throws InterruptedException {
-    return task.awaitLockAcquisition();
+  private HashSet<PersistentID> getDiskStoreIdsToBackup() throws InterruptedException {
+    BackupTask task = currentTask.get();
+    return task == null ? new HashSet<>() : task.awaitLockAcquisition();
   }
 
-  public HashSet<PersistentID> doBackup(File targetDir, File baselineDir, boolean abort) {
+  public HashSet<PersistentID> doBackup(File targetDir, File baselineDir, boolean abort)
+      throws IOException {
+    BackupTask task = currentTask.get();
+    if (task == null) {
+      if (abort) {
+        return new HashSet<>();
+      }
+      throw new IOException("No backup currently in progress");
+    }
     task.notifyOtherMembersReady(targetDir, baselineDir, abort);
 
     HashSet<PersistentID> result;
@@ -88,19 +101,25 @@ public class BackupManager {
       result = taskFuture.get();
     } catch (InterruptedException | ExecutionException e) {
       result = new HashSet<>();
+    } finally {
+      cleanup();
     }
     return result;
   }
 
   public void waitForBackup() {
-    task.waitForBackup();
+    BackupTask task = currentTask.get();
+    if (task != null) {
+      task.waitForBackup();
+    }
   }
 
   public DiskStoreBackup getBackupForDiskStore(DiskStoreImpl diskStore) {
-    return task.getBackupForDiskStore(diskStore);
+    BackupTask task = currentTask.get();
+    return task == null ? null : task.getBackupForDiskStore(diskStore);
   }
 
-  public void validateRequestingAdmin() {
+  private void validateRequestingAdmin(InternalDistributedMember sender) {
     // We need to watch for pure admin guys that depart. this allMembershipListener set
     // looks like it should receive those events.
     Set allIds = getDistributionManager().addAllMembershipListenerAndGetAllIds(membershipListener);
@@ -112,7 +131,7 @@ public class BackupManager {
 
   private void cleanup() {
     getDistributionManager().removeAllMembershipListener(membershipListener);
-    cache.clearBackupManager();
+    currentTask.set(null);
   }
 
   private DistributionManager getDistributionManager() {
