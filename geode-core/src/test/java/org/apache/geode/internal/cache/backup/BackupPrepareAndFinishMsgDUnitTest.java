@@ -31,6 +31,7 @@ import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
+import java.util.concurrent.locks.ReentrantLock;
 import java.util.stream.Collectors;
 
 import org.awaitility.Awaitility;
@@ -53,6 +54,8 @@ import org.apache.geode.cache30.CacheTestCase;
 import org.apache.geode.distributed.internal.DistributionManager;
 import org.apache.geode.internal.cache.DiskStoreImpl;
 import org.apache.geode.internal.cache.GemFireCacheImpl;
+import org.apache.geode.internal.cache.InternalRegion;
+import org.apache.geode.internal.cache.LocalRegion;
 import org.apache.geode.test.junit.categories.DistributedTest;
 
 @Category({DistributedTest.class})
@@ -62,7 +65,6 @@ public abstract class BackupPrepareAndFinishMsgDUnitTest extends CacheTestCase {
   // a distributed member (rather than local) because it sends prepare and finish backup messages
   private static final String TEST_REGION_NAME = "TestRegion";
   private File[] diskDirs = null;
-  private int waitingForBackupLockCount = 0;
   private Region<Integer, Integer> region;
 
   protected abstract Region<Integer, Integer> createRegion();
@@ -139,10 +141,10 @@ public abstract class BackupPrepareAndFinishMsgDUnitTest extends CacheTestCase {
     Future<Void> future = null;
     new PrepareBackupOperation(dm, dm.getId(), dm.getCache(), recipients,
         new PrepareBackupFactory()).send();
-    waitingForBackupLockCount = 0;
+    ReentrantLock backupLock = ((LocalRegion) region).getDiskStore().getBackupLock();
     future = CompletableFuture.runAsync(function);
     Awaitility.await().atMost(5, TimeUnit.SECONDS)
-        .until(() -> assertTrue(waitingForBackupLockCount == 1));
+        .until(() -> assertTrue(backupLock.getQueueLength() > 0));
     new FinishBackupOperation(dm, dm.getId(), dm.getCache(), recipients, diskDirs[0], null, false,
         new FinishBackupFactory()).send();
     future.get(5, TimeUnit.SECONDS);
@@ -153,10 +155,10 @@ public abstract class BackupPrepareAndFinishMsgDUnitTest extends CacheTestCase {
     Set recipients = dm.getOtherDistributionManagerIds();
     new PrepareBackupOperation(dm, dm.getId(), dm.getCache(), recipients,
         new PrepareBackupFactory()).send();
-    waitingForBackupLockCount = 0;
+    ReentrantLock backupLock = ((LocalRegion) region).getDiskStore().getBackupLock();
     List<CompletableFuture<?>> futureList = doReadActions();
     CompletableFuture.allOf(futureList.toArray(new CompletableFuture<?>[futureList.size()]));
-    assertTrue(waitingForBackupLockCount == 0);
+    assertTrue(backupLock.getQueueLength() == 0);
     new FinishBackupOperation(dm, dm.getId(), dm.getCache(), recipients, diskDirs[0], null, false,
         new FinishBackupFactory()).send();
   }
@@ -203,16 +205,6 @@ public abstract class BackupPrepareAndFinishMsgDUnitTest extends CacheTestCase {
   }
 
   /**
-   * Implementation of test hook
-   */
-  private class BackupLockHook implements BackupLock.BackupLockTestHook {
-    @Override
-    public void beforeWaitForBackupCompletion() {
-      waitingForBackupLockCount++;
-    }
-  }
-
-  /**
    * Create a region, installing the test hook in the backup lock
    *
    * @param shortcut The region shortcut to use to create the region
@@ -224,7 +216,6 @@ public abstract class BackupPrepareAndFinishMsgDUnitTest extends CacheTestCase {
     diskDirs = getDiskDirs();
     diskStoreFactory.setDiskDirs(diskDirs);
     DiskStore diskStore = diskStoreFactory.create(getUniqueName());
-    ((DiskStoreImpl) diskStore).getBackupLock().setBackupLockTestHook(new BackupLockHook());
 
     RegionFactory<Integer, Integer> regionFactory = cache.createRegionFactory(shortcut);
     regionFactory.setDiskStoreName(diskStore.getName());

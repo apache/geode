@@ -56,6 +56,8 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.concurrent.atomic.AtomicReference;
+import java.util.concurrent.locks.Lock;
+import java.util.concurrent.locks.ReentrantLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock.ReadLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock.WriteLock;
@@ -87,14 +89,12 @@ import org.apache.geode.distributed.internal.membership.InternalDistributedMembe
 import org.apache.geode.i18n.StringId;
 import org.apache.geode.internal.Version;
 import org.apache.geode.internal.cache.ExportDiskRegion.ExportWriter;
-import org.apache.geode.internal.cache.backup.BackupLock;
 import org.apache.geode.internal.cache.backup.BackupManager;
 import org.apache.geode.internal.cache.entries.DiskEntry;
 import org.apache.geode.internal.cache.entries.DiskEntry.Helper.ValueWrapper;
 import org.apache.geode.internal.cache.entries.DiskEntry.RecoveredEntry;
 import org.apache.geode.internal.cache.eviction.AbstractEvictionController;
 import org.apache.geode.internal.cache.eviction.EvictionController;
-import org.apache.geode.internal.cache.eviction.EvictionCounters;
 import org.apache.geode.internal.cache.persistence.BytesAndBits;
 import org.apache.geode.internal.cache.persistence.DiskRecoveryStore;
 import org.apache.geode.internal.cache.persistence.DiskRegionView;
@@ -3954,9 +3954,9 @@ public class DiskStoreImpl implements DiskStore {
    * Lock used to synchronize access to the init file. This is a lock rather than a synchronized
    * block because the backup tool needs to acquire this lock.
    */
-  private final BackupLock backupLock = new BackupLock();
+  private final ReentrantLock backupLock = new ReentrantLock();
 
-  public BackupLock getBackupLock() {
+  public ReentrantLock getBackupLock() {
     return backupLock;
   }
 
@@ -4002,14 +4002,17 @@ public class DiskStoreImpl implements DiskStore {
     // level operations, we will need to be careful
     // to block them *before* they are put in the async
     // queue
-    getBackupLock().lockForBackup();
+    getBackupLock().lock();
   }
 
   /**
    * Release the lock that is preventing operations on this disk store during the backup process.
    */
   public void releaseBackupLock() {
-    getBackupLock().unlockForBackup();
+    ReentrantLock backupLock = getBackupLock();
+    if (backupLock.isHeldByCurrentThread()) {
+      backupLock.unlock();
+    }
   }
 
   private int getArrayIndexOfDirectory(File searchDir) {
