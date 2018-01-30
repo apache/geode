@@ -186,8 +186,7 @@ public class BackupIntegrationTest {
       assertNull(region.get(i));
     }
 
-    BackupService backup =
-        cache.getBackupService();
+    BackupService backup = cache.getBackupService();
     backup.startBackup(cache.getInternalDistributedSystem().getDistributedMember());
     backup.doBackup(backupDir, null, false);
 

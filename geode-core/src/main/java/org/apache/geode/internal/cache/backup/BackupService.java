@@ -73,10 +73,10 @@ public class BackupService {
   public HashSet<PersistentID> startBackup(InternalDistributedMember sender)
       throws IOException, InterruptedException {
     validateRequestingAdmin(sender);
-      if (!currentTask.compareAndSet(null, new BackupTask(cache))) {
-        throw new IOException("Another backup already in progress");
-      }
-      taskFuture = executor.submit(() -> currentTask.get().backup());
+    if (!currentTask.compareAndSet(null, new BackupTask(cache))) {
+      throw new IOException("Another backup already in progress");
+    }
+    taskFuture = executor.submit(() -> currentTask.get().backup());
     return getDiskStoreIdsToBackup();
   }
 

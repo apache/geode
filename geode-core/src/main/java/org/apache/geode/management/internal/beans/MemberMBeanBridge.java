@@ -1013,7 +1013,8 @@ public class MemberMBeanBridge {
         Set<PersistentID> existingDataStores;
         Set<PersistentID> successfulDataStores;
         try {
-          existingDataStores = cache.getBackupService().startBackup(cache.getInternalDistributedSystem().getDistributedMember());
+          existingDataStores = cache.getBackupService()
+              .startBackup(cache.getInternalDistributedSystem().getDistributedMember());
           abort = false;
         } finally {
           successfulDataStores = cache.getBackupService().doBackup(targetDir, null, abort);
