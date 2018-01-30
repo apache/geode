@@ -45,11 +45,7 @@ public class RegionMapDestroy {
 
   private static final Logger logger = LogService.getLogger();
 
-  /**
-   * This test hook is used to force the conditions during entry destroy. This hook is used by
-   * DestroyEntryWithConcurrentOperationJUnitTest.
-   */
-  private static Runnable testHookRunnableForConcurrentOperation;
+  static Runnable testHookRunnableForConcurrentOperation;
 
   private final InternalRegion internalRegion;
   private final FocusedRegionMap focusedRegionMap;
