@@ -42,7 +42,6 @@ import org.apache.geode.distributed.internal.ReplyMessage;
 import org.apache.geode.distributed.internal.ReplyProcessor21;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
 import org.apache.geode.internal.Assert;
-import org.apache.geode.internal.cache.partitioned.PutMessage;
 import org.apache.geode.internal.i18n.LocalizedStrings;
 import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.internal.logging.log4j.LocalizedMessage;
@@ -111,7 +110,7 @@ public abstract class RemoteOperationMessage extends DistributionMessage
     if (txState != null && txState.isMemberIdForwardingRequired()) {
       this.txMemberId = txState.getOriginatingMember();
     }
-    setIfTransactionDistributed();
+    setIfTransactionDistributed(processor.getDistributionManager().getCache());
   }
 
   /**
@@ -636,8 +635,7 @@ public abstract class RemoteOperationMessage extends DistributionMessage
   /*
    * For Distributed Tx
    */
-  private void setIfTransactionDistributed() {
-    InternalCache cache = GemFireCacheImpl.getInstance();
+  private void setIfTransactionDistributed(InternalCache cache) {
     if (cache != null) {
       if (cache.getTxManager() != null) {
         this.isTransactionDistributed = cache.getTxManager().isDistributed();
