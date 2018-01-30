@@ -25,6 +25,8 @@ import org.junit.Test;
 import org.junit.experimental.categories.Category;
 import org.mockito.ArgumentCaptor;
 
+import org.apache.geode.cache.RegionDestroyedException;
+import org.apache.geode.distributed.DistributedSystemDisconnectedException;
 import org.apache.geode.distributed.internal.ClusterDistributionManager;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.distributed.internal.ReplyException;
@@ -149,6 +151,61 @@ public class RemoteOperationMessageTest {
     verify(msg, times(1)).sendReply(any(), anyInt(), eq(dm), captor.capture(), eq(r),
         eq(startTime));
     assertThat(captor.getValue().getCause()).isInstanceOf(ForceReattemptException.class);
+  }
+
+  @Test
+  public void processWithRegionDestroyedExceptionFromOperationOnRegionSendsReplyWithForceReattemptException()
+      throws Exception {
+    when(msg.operateOnRegion(dm, r, startTime)).thenThrow(RegionDestroyedException.class);
+    msg.setSender(sender);
+
+    msg.process(dm);
+    verify(dm, times(1)).putOutgoing(any());
+    ArgumentCaptor<ReplyException> captor = ArgumentCaptor.forClass(ReplyException.class);
+    verify(msg, times(1)).sendReply(any(), anyInt(), eq(dm), captor.capture(), eq(r),
+        eq(startTime));
+    assertThat(captor.getValue().getCause()).isInstanceOf(ForceReattemptException.class);
+  }
+
+  @Test
+  public void processWithRegionDoesNotExistSendsReplyWithRegionDestroyedExceptionReply()
+      throws Exception {
+    when(cache.getRegionByPathForProcessing(regionPath)).thenReturn(null);
+    msg.setSender(sender);
+
+    msg.process(dm);
+    verify(msg, never()).operateOnRegion(any(), any(), anyLong());
+    verify(dm, times(1)).putOutgoing(any());
+    ArgumentCaptor<ReplyException> captor = ArgumentCaptor.forClass(ReplyException.class);
+    verify(msg, times(1)).sendReply(any(), anyInt(), eq(dm), captor.capture(), eq(null),
+        eq(startTime));
+    assertThat(captor.getValue().getCause()).isInstanceOf(RegionDestroyedException.class);
+  }
+
+  @Test
+  public void processWithDistributedSystemDisconnectedExceptionFromOperationOnRegionDoesNotSendReply()
+      throws Exception {
+    when(msg.operateOnRegion(dm, r, startTime))
+        .thenThrow(DistributedSystemDisconnectedException.class);
+    msg.setSender(sender);
+
+    msg.process(dm);
+    verify(dm, never()).putOutgoing(any());
+  }
+
+  @Test
+  public void processWithRemoteOperationExceptionFromOperationOnRegionSendsReplyWithRemoteOperationException()
+      throws Exception {
+    RemoteOperationException theException = mock(RemoteOperationException.class);
+    when(msg.operateOnRegion(dm, r, startTime)).thenThrow(theException);
+    msg.setSender(sender);
+
+    msg.process(dm);
+    verify(dm, times(1)).putOutgoing(any());
+    ArgumentCaptor<ReplyException> captor = ArgumentCaptor.forClass(ReplyException.class);
+    verify(msg, times(1)).sendReply(any(), anyInt(), eq(dm), captor.capture(), eq(r),
+        eq(startTime));
+    assertThat(captor.getValue().getCause()).isSameAs(theException);
   }
 
   @Test
