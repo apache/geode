@@ -7713,6 +7713,8 @@ public class LocalizedStrings {
       new StringId(6664, "{0}: Providing synchronization event for key={1}; timestamp={2}: {3}");
   public static final StringId AbstractGatewaySender_ENQUEUEING_SYNCHRONIZATION_EVENT =
       new StringId(6665, "{0}: Enqueueing synchronization event: {1}");
+  public static final StringId PoolImpl_CACHE_MUST_BE_CREATED_BEFORE_CREATING_POOL =
+      new StringId(6666, "Cache must be created before creating pool");
 
   /** Testing strings, messageId 90000-99999 **/
 
