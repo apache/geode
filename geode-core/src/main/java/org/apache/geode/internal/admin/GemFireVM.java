@@ -101,8 +101,7 @@ public interface GemFireVM {
    * Adds a {@link StatListener} for the given resource and attribute. Changes in value will be
    * streamed back from the vm.
    */
-  void addStatListener(StatListener observer, StatResource observedResource,
-      Stat observedStat);
+  void addStatListener(StatListener observer, StatResource observedResource, Stat observedStat);
 
   /**
    * Removes {@link StatListener}
@@ -220,8 +219,7 @@ public interface GemFireVM {
    *
    * @since GemFire 4.0
    */
-  Region createVMRootRegion(CacheInfo c, String name, RegionAttributes attrs)
-      throws AdminException;
+  Region createVMRootRegion(CacheInfo c, String name, RegionAttributes attrs) throws AdminException;
 
   /**
    * Creates a new root VM region with the given name and attributes in this remote VM. Information
@@ -342,8 +340,7 @@ public interface GemFireVM {
    *
    * @since GemFire 5.7
    */
-  void setAlertsManager(StatAlertDefinition[] alertDefs, long refreshInterval,
-      boolean setRemotely);
+  void setAlertsManager(StatAlertDefinition[] alertDefs, long refreshInterval, boolean setRemotely);
 
   /**
    * This method would be used to set refresh interval for the GemFireVM. This method would mostly

@@ -188,8 +188,7 @@ public interface MapCallback<K, V, C, P> {
    *
    * @return value to be returned as result of operation ignoring failure (or null for failure)
    */
-  V onOperationFailed(K key, Object oldValue, V updatedValue, V newValue, C context,
-      P params);
+  V onOperationFailed(K key, Object oldValue, V updatedValue, V newValue, C context, P params);
 
   /**
    * Invoked by some implementations like ConcurrentTHashSet to in its toArray.

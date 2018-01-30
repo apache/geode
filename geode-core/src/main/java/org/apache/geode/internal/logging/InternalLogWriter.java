@@ -87,11 +87,11 @@ public interface InternalLogWriter extends LogWriter, LogWriterI18n {
    */
   int NONE_LEVEL = Integer.MAX_VALUE;
 
-  String[] levelNames = new String[] {"all", "finest", "finer", "fine",
-      "config", "info", "warning", "error", "severe", "none"};
+  String[] levelNames = new String[] {"all", "finest", "finer", "fine", "config", "info", "warning",
+      "error", "severe", "none"};
 
-  int[] allLevels = new int[] {ALL_LEVEL, FINEST_LEVEL, FINER_LEVEL, FINE_LEVEL,
-      CONFIG_LEVEL, INFO_LEVEL, WARNING_LEVEL, ERROR_LEVEL, SEVERE_LEVEL, NONE_LEVEL};
+  int[] allLevels = new int[] {ALL_LEVEL, FINEST_LEVEL, FINER_LEVEL, FINE_LEVEL, CONFIG_LEVEL,
+      INFO_LEVEL, WARNING_LEVEL, ERROR_LEVEL, SEVERE_LEVEL, NONE_LEVEL};
 
   int getLogWriterLevel();
 

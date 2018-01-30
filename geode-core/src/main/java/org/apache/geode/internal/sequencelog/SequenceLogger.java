@@ -46,8 +46,8 @@ public interface SequenceLogger {
    * @param source the source, for example ("member 1, region 1");
    * @param dest the destination, for example ("member 2, region 1");
    */
-  void logTransition(GraphType type, Object graphName, Object edgeName, Object state,
-      Object source, Object dest);
+  void logTransition(GraphType type, Object graphName, Object edgeName, Object state, Object source,
+      Object dest);
 
   boolean isEnabled(GraphType type);
 

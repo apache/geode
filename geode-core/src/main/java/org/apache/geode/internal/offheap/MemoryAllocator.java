@@ -38,8 +38,7 @@ public interface MemoryAllocator {
    * @param isCompressed true if data is compressed; false if it is uncompressed.
    * @throws IllegalStateException if the heap does not have enough memory to grant the request
    */
-  StoredObject allocateAndInitialize(byte[] data, boolean isSerialized,
-      boolean isCompressed);
+  StoredObject allocateAndInitialize(byte[] data, boolean isSerialized, boolean isCompressed);
 
   /**
    * Allocates off heap memory for the given data and returns a StoredObject that is backed by this

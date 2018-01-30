@@ -23,8 +23,8 @@ import org.apache.geode.internal.sequencelog.GraphType;
  */
 public interface GraphReaderCallback {
 
-  void addEdge(long timestamp, GraphType graphType, String graphName,
-      String edgeName, String state, String source, String dest);
+  void addEdge(long timestamp, GraphType graphType, String graphName, String edgeName, String state,
+      String source, String dest);
 
   void addEdgePattern(long timestamp, GraphType graphType, Pattern graphNamePattern,
       String edgeName, String state, String source, String dest);
