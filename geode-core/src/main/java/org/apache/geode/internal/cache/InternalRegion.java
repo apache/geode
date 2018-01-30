@@ -143,4 +143,6 @@ public interface InternalRegion
 
   InternalDistributedSystem getSystem();
 
+  int getRegionSize();
+
 }

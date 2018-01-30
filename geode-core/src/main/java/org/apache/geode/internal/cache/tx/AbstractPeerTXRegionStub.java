@@ -57,6 +57,7 @@ public abstract class AbstractPeerTXRegionStub implements TXRegionStub {
     }
   }
 
+  @Override
   public int entryCount() {
     try {
       RemoteSizeMessage.SizeResponse response =

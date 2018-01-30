@@ -17,29 +17,40 @@ package org.apache.geode.internal.cache.execute;
 import static org.assertj.core.api.Assertions.*;
 import static org.junit.Assert.assertEquals;
 
+import java.io.IOException;
+import java.util.Properties;
+
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
+import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.PartitionAttributes;
 import org.apache.geode.cache.PartitionAttributesFactory;
 import org.apache.geode.cache.Region;
 import org.apache.geode.cache.RegionFactory;
 import org.apache.geode.cache.RegionShortcut;
 import org.apache.geode.cache.TransactionException;
+import org.apache.geode.cache.client.ClientCache;
+import org.apache.geode.cache.client.ClientCacheFactory;
+import org.apache.geode.cache.client.ClientRegionShortcut;
+import org.apache.geode.cache.server.CacheServer;
+import org.apache.geode.internal.AvailablePortHelper;
 import org.apache.geode.internal.cache.TXManagerImpl;
+import org.apache.geode.test.dunit.Assert;
 import org.apache.geode.test.dunit.Host;
 import org.apache.geode.test.dunit.VM;
 import org.apache.geode.test.dunit.cache.internal.JUnit4CacheTestCase;
 import org.apache.geode.test.junit.categories.DistributedTest;
 
 @Category(DistributedTest.class)
-public class PRTransaction2DUnitTest extends JUnit4CacheTestCase {
+public class PRTransactionWithSizeOperationDUnitTest extends JUnit4CacheTestCase {
   Host host = Host.getHost(0);
   VM dataStore1 = host.getVM(0);
   VM dataStore2 = host.getVM(1);
+  VM client = host.getVM(2);
 
   @Test
-  public void testSizeOpOnLocalRegionInTransaction() {
+  public void testSizeOpOnPRWithLocalRegionInTransaction() {
     String regionName = "region";
     String region2Name = "region2";
     int totalBuckets = 2;
@@ -51,7 +62,7 @@ public class PRTransaction2DUnitTest extends JUnit4CacheTestCase {
   }
 
   @Test
-  public void testSizeOpOnReplicateRegionInTransaction() {
+  public void testSizeOpOnPRWithReplicateRegionInTransaction() {
     String regionName = "region";
     String region2Name = "region2";
     int totalBuckets = 2;
@@ -142,5 +153,44 @@ public class PRTransaction2DUnitTest extends JUnit4CacheTestCase {
       txMgr.rollback();
     }
   }
+
+  @Test
+  public void testClientServerSizeOpOnPRWithReplicateRegionInTransaction() {
+    final Properties properties = getDistributedSystemProperties();
+    final int port = dataStore1.invoke("create cache", () -> {
+      Cache cache = getCache(properties);
+      CacheServer cacheServer = createCacheServer(cache);
+      return cacheServer.getPort();
+    });
+
+    String regionName = "region";
+    String region2Name = "region2";
+    int totalBuckets = 2;
+    boolean isSecondRegionLocal = false;
+    setupRegions(totalBuckets, regionName, isSecondRegionLocal, region2Name);
+
+    client.invoke(() -> createClientRegion(host, port, regionName, region2Name));
+
+    client.invoke(() -> verifySizeOpTransaction(2, regionName, totalBuckets, region2Name,
+        isSecondRegionLocal));
+
+  }
+
+  private CacheServer createCacheServer(Cache cache) throws Exception {
+    CacheServer server = cache.addCacheServer();
+    server.setPort(AvailablePortHelper.getRandomAvailableTCPPort());
+    server.start();
+    return server;
+  }
+
+  private void createClientRegion(final Host host, final int port0, String regionName,
+      String region2Name) {
+    ClientCacheFactory cf = new ClientCacheFactory();
+    cf.addPoolServer(host.getHostName(), port0);
+    ClientCache cache = getClientCache(cf);
+    cache.createClientRegionFactory(ClientRegionShortcut.PROXY).create(regionName);
+    cache.createClientRegionFactory(ClientRegionShortcut.PROXY).create(region2Name);
+  }
+
 
 }

@@ -2035,7 +2035,7 @@ public class LocalRegion extends AbstractRegion implements LoaderHelperFactory,
   /**
    * @return size after considering imageState
    */
-  protected int getRegionSize() {
+  public int getRegionSize() {
     synchronized (getSizeGuard()) {
       int result = getRegionMap().size();
       // if this is a client with no tombstones then we subtract the number
