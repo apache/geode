@@ -90,23 +90,17 @@ public abstract class RemoteOperationMessage extends DistributionMessage
 
   public RemoteOperationMessage(InternalDistributedMember recipient, String regionPath,
       ReplyProcessor21 processor) {
+    this(regionPath, processor);
     Assert.assertTrue(recipient != null, "RemoteMesssage recipient can not be null");
     setRecipient(recipient);
-    this.regionPath = regionPath;
-    this.processorId = processor == null ? 0 : processor.getProcessorId();
-    if (processor != null && isSevereAlertCompatible()) {
-      processor.enableSevereAlertProcessing();
-    }
-    this.txUniqId = TXManagerImpl.getCurrentTXUniqueId();
-    TXStateProxy txState = TXManagerImpl.getCurrentTXState();
-    if (txState != null && txState.isMemberIdForwardingRequired()) {
-      this.txMemberId = txState.getOriginatingMember();
-    }
-    setIfTransactionDistributed();
   }
 
   public RemoteOperationMessage(Set recipients, String regionPath, ReplyProcessor21 processor) {
+    this(regionPath, processor);
     setRecipients(recipients);
+  }
+
+  private RemoteOperationMessage(String regionPath, ReplyProcessor21 processor) {
     this.regionPath = regionPath;
     this.processorId = processor == null ? 0 : processor.getProcessorId();
     if (processor != null && isSevereAlertCompatible()) {
@@ -297,7 +291,7 @@ public abstract class RemoteOperationMessage extends DistributionMessage
   }
 
   LocalRegion getRegionByPath(InternalCache internalCache) {
-    return internalCache.getRegionByPathForProcessing(this.regionPath);
+    return internalCache.getRegionByPathForProcessing(getRegionPath());
   }
 
   InternalCache getCache(final ClusterDistributionManager dm) {
