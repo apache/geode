@@ -1384,7 +1384,11 @@ public class TXCommitMessage extends PooledDistributionMessage
         for (int i = 0; i < size; i++) {
           FarSideEntryOp entryOp = new FarSideEntryOp();
           // shadowkey is not being sent to clients
-          entryOp.fromData(in, largeModCount, !this.msg.getDM().isLoner());
+          LocalRegion region = getRegionByPath(msg.getDM(),
+              parentRegionPath != null ? parentRegionPath : regionPath);
+          boolean readShadowKey =
+              (region != null ? (region.getPoolName() == null) : !msg.getDM().isLoner());
+          entryOp.fromData(in, largeModCount, readShadowKey);
           if (entryOp.versionTag != null && this.memberId != null) {
             entryOp.versionTag.setMemberID(this.memberId);
           }
