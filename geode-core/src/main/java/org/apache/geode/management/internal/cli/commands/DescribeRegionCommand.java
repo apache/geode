@@ -66,12 +66,12 @@ public class DescribeRegionCommand implements GfshCommand {
     resultList.stream().filter(Throwable.class::isInstance).map(Throwable.class::cast)
         .forEach(t -> logger.info(t.getMessage(), t));
 
-    // Group descriptions by region description(name, policy, scope, accessor?)
+    // Region descriptions are grouped on name, scope, data-policy and member-type (accessor vs
+    // hosting member).
     Map<String, List<RegionDescriptionPerMember>> perTypeDescriptions =
         resultList.stream().filter(RegionDescriptionPerMember.class::isInstance)
             .map(RegionDescriptionPerMember.class::cast)
-            .collect(Collectors.groupingBy(perTypeDesc -> perTypeDesc.getName()
-                + perTypeDesc.getScope() + perTypeDesc.getDataPolicy() + perTypeDesc.isAccessor()));
+            .collect(Collectors.groupingBy(this::descriptionGrouper));
 
     List<RegionDescription> regionDescriptions = new ArrayList<>();
 
@@ -94,6 +94,11 @@ public class DescribeRegionCommand implements GfshCommand {
     }
 
     return buildDescriptionResult(regionName, regionDescriptions);
+  }
+
+  private String descriptionGrouper(RegionDescriptionPerMember perTypeDesc) {
+    return perTypeDesc.getName() + perTypeDesc.getScope() + perTypeDesc.getDataPolicy()
+        + perTypeDesc.isAccessor();
   }
 
   List<?> getFunctionResultFromMembers(String regionName) {

@@ -54,6 +54,9 @@ public class DescribeRegionDUnitTest {
   private static final String SUBREGION1C = "subregion1C";
   private static final String PR1 = "PR1";
   private static final String LOCAL_REGION = "LocalRegion";
+  private static final String COMPRESSED_REGION_NAME = "compressedRegion";
+
+  private static final String HOSTING_AND_ACCESSOR_REGION_NAME = "hostingAndAccessorRegion";
 
   private static final String PART1_NAME = "Par1";
   private static final String PART2_NAME = "Par2";
@@ -100,6 +103,8 @@ public class DescribeRegionDUnitTest {
       dataRegionFactory.create(PR1);
       createLocalRegion(LOCAL_REGION);
     });
+    // Create compressed region
+    server1.invoke(() -> createCompressedRegion(COMPRESSED_REGION_NAME));
 
     server2.invoke(() -> {
       final Cache cache = ClusterStartupRule.getCache();
@@ -120,6 +125,10 @@ public class DescribeRegionDUnitTest {
       dataRegionFactory.create(PR1);
       createRegionsWithSubRegions();
     });
+
+    // Create the PR region on 4 members and an accessor region on the 5th.
+    createHostingAndAccessorRegion();
+
 
     gfsh.connectAndVerify(locator);
     gfsh.executeAndAssertThat("create async-event-queue --id=queue1 --group=group1 "
@@ -154,24 +163,13 @@ public class DescribeRegionDUnitTest {
    */
   @Test
   public void describeRegionWithCompressionCodec() throws Exception {
-    final String regionName = "compressedRegion";
-
-    // Create compressed region
-    server1.invoke(() -> createCompressedRegion(regionName));
-
     // Test the describe command; look for compression
     CommandStringBuilder csb = new CommandStringBuilder(DESCRIBE_REGION);
-    csb.addOption(DESCRIBE_REGION__NAME, regionName);
+    csb.addOption(DESCRIBE_REGION__NAME, COMPRESSED_REGION_NAME);
     String commandString = csb.toString();
-    gfsh.executeAndAssertThat(commandString).statusIsSuccess().containsOutput(regionName,
-        RegionAttributesNames.COMPRESSOR, RegionEntryContext.DEFAULT_COMPRESSION_PROVIDER);
-
-    // Destroy compressed region
-    server1.invoke(() -> {
-      final Region region = CacheFactory.getAnyInstance().getRegion(regionName);
-      assertThat(region).isNotNull();
-      region.destroyRegion();
-    });
+    gfsh.executeAndAssertThat(commandString).statusIsSuccess().containsOutput(
+        COMPRESSED_REGION_NAME, RegionAttributesNames.COMPRESSOR,
+        RegionEntryContext.DEFAULT_COMPRESSION_PROVIDER);
   }
 
   @Test
@@ -182,8 +180,11 @@ public class DescribeRegionDUnitTest {
 
   @Test
   public void testDescribeRegionReturnsDescriptionFromAllMembers() throws Exception {
-    createHostingAndAccessorRegion();
-    String command = "describe region --name=hostingAndAccessorRegion";
+    CommandStringBuilder csb = new CommandStringBuilder(DESCRIBE_REGION);
+    csb.addOption(DESCRIBE_REGION__NAME, HOSTING_AND_ACCESSOR_REGION_NAME);
+
+    String command = csb.toString();
+
     CommandResult commandResult =
         gfsh.executeAndAssertThat(command).statusIsSuccess().getCommandResult();
 
@@ -196,7 +197,7 @@ public class DescribeRegionDUnitTest {
         .getJSONObject("__tables__-0").getJSONObject("content");
 
     assertThat(hostingMembersRegionDesc.get("Name").toString())
-        .contains("hostingAndAccessorRegion");
+        .contains(HOSTING_AND_ACCESSOR_REGION_NAME);
     assertThat(hostingMembersRegionDesc.get("Data Policy").toString()).contains("partition");
     assertThat(hostingMembersRegionDesc.get("Hosting Members").toString()).contains("server-1",
         "server-2", "server-3", "server-4");
@@ -204,39 +205,38 @@ public class DescribeRegionDUnitTest {
     assertThat(hostingMembersTableContent.get("Name").toString()).contains("data-policy", "size");
     assertThat(hostingMembersTableContent.get("Value").toString()).contains("PARTITION", "0");
 
-    assertThat(accessorsRegionDesc.get("Name").toString()).contains("hostingAndAccessorRegion");
+    assertThat(accessorsRegionDesc.get("Name").toString())
+        .contains(HOSTING_AND_ACCESSOR_REGION_NAME);
     assertThat(accessorsRegionDesc.get("Data Policy").toString()).contains("partition");
     assertThat(accessorsRegionDesc.get("Accessor Members").toString()).contains("server-5");
     assertThat(accessorsTableContent.get("Type").toString()).contains("Region", "Partition");
     assertThat(accessorsTableContent.get("Name").toString()).contains("data-policy", "size",
         "local-max-memory");
     assertThat(accessorsTableContent.get("Value").toString()).contains("PARTITION", "0", "0");
-
   }
 
-  private void createHostingAndAccessorRegion() {
-    final String regionName = "hostingAndAccessorRegion";
-
+  private static void createHostingAndAccessorRegion() {
     server1.invoke(() -> {
       Cache cache = ClusterStartupRule.getCache();
-      cache.createRegionFactory(RegionShortcut.PARTITION).create(regionName);
+      cache.createRegionFactory(RegionShortcut.PARTITION).create(HOSTING_AND_ACCESSOR_REGION_NAME);
     });
     server2.invoke(() -> {
       Cache cache = ClusterStartupRule.getCache();
-      cache.createRegionFactory(RegionShortcut.PARTITION).create(regionName);
+      cache.createRegionFactory(RegionShortcut.PARTITION).create(HOSTING_AND_ACCESSOR_REGION_NAME);
     });
     server3.invoke(() -> {
       Cache cache = ClusterStartupRule.getCache();
-      cache.createRegionFactory(RegionShortcut.PARTITION).create(regionName);
+      cache.createRegionFactory(RegionShortcut.PARTITION).create(HOSTING_AND_ACCESSOR_REGION_NAME);
     });
     server4.invoke(() -> {
       Cache cache = ClusterStartupRule.getCache();
-      cache.createRegionFactory(RegionShortcut.PARTITION).create(regionName);
+      cache.createRegionFactory(RegionShortcut.PARTITION).create(HOSTING_AND_ACCESSOR_REGION_NAME);
     });
 
     accessor.invoke(() -> {
       Cache cache = ClusterStartupRule.getCache();
-      cache.createRegionFactory(RegionShortcut.PARTITION_PROXY).create(regionName);
+      cache.createRegionFactory(RegionShortcut.PARTITION_PROXY)
+          .create(HOSTING_AND_ACCESSOR_REGION_NAME);
     });
   }
 
