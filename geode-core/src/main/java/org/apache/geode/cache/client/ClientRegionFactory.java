@@ -304,8 +304,7 @@ public interface ClientRegionFactory<K, V> {
    * @throws CacheClosedException if the cache is closed
    * @since GemFire 7.0
    */
-  Region<K, V> createSubregion(Region<?, ?> parent, String name)
-      throws RegionExistsException;
+  Region<K, V> createSubregion(Region<?, ?> parent, String name) throws RegionExistsException;
 
 
 }

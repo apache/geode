@@ -78,8 +78,8 @@ public interface Query {
    * @throws PartitionOfflineException If persistent data recovery is not complete for a partitioned
    *         region referred to in the query.
    */
-  Object execute() throws FunctionDomainException, TypeMismatchException,
-      NameResolutionException, QueryInvocationTargetException;
+  Object execute() throws FunctionDomainException, TypeMismatchException, NameResolutionException,
+      QueryInvocationTargetException;
 
   /**
    * Executes this query with the given parameters and returns an object that represent its result.
@@ -244,9 +244,8 @@ public interface Query {
    * @throws PartitionOfflineException If persistent data recovery is not complete for a partitioned
    *         region referred to in the query.
    */
-  Object execute(RegionFunctionContext context, Object[] params)
-      throws FunctionDomainException, TypeMismatchException, NameResolutionException,
-      QueryInvocationTargetException;
+  Object execute(RegionFunctionContext context, Object[] params) throws FunctionDomainException,
+      TypeMismatchException, NameResolutionException, QueryInvocationTargetException;
 
   /**
    * Compiles this <code>Query</code> to achieve higher performance execution.

@@ -51,9 +51,8 @@ public interface ServerRegionDataAccess {
    * @param callbackArg an optional callback arg to pass to any cache callbacks
    * @param isCreateFwd
    */
-  Object put(Object key, Object value, byte[] deltaBytes,
-      EntryEventImpl clientEvent, Operation op, boolean requireOldValue, Object expectedOldValue,
-      Object callbackArg, boolean isCreateFwd);
+  Object put(Object key, Object value, byte[] deltaBytes, EntryEventImpl clientEvent, Operation op,
+      boolean requireOldValue, Object expectedOldValue, Object callbackArg, boolean isCreateFwd);
 
 
   /**
@@ -114,11 +113,9 @@ public interface ServerRegionDataAccess {
    */
   Set keySet();
 
-  VersionedObjectList putAll(Map map, EventID eventId, boolean skipCallbacks,
-      Object callbackArg);
+  VersionedObjectList putAll(Map map, EventID eventId, boolean skipCallbacks, Object callbackArg);
 
-  VersionedObjectList removeAll(Collection<Object> keys, EventID eventId,
-      Object callbackArg);
+  VersionedObjectList removeAll(Collection<Object> keys, EventID eventId, Object callbackArg);
 
   VersionedObjectList getAll(List keys, Object callback);
 

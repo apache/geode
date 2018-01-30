@@ -39,8 +39,8 @@ public interface ServerCQ extends InternalCqQuery {
    * @param p_ccn
    * @throws CqException
    */
-  void registerCq(ClientProxyMembershipID p_clientProxyId,
-      CacheClientNotifier p_ccn, int p_cqState) throws CqException, RegionNotFoundException;
+  void registerCq(ClientProxyMembershipID p_clientProxyId, CacheClientNotifier p_ccn, int p_cqState)
+      throws CqException, RegionNotFoundException;
 
   /**
    * Adds into the CQ Results key cache.

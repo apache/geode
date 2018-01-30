@@ -179,8 +179,7 @@ public interface GatewaySenderFactory {
    *
    * @param filter The <code>GatewayEventSubstitutionFilter</code>
    */
-  GatewaySenderFactory setGatewayEventSubstitutionFilter(
-      GatewayEventSubstitutionFilter filter);
+  GatewaySenderFactory setGatewayEventSubstitutionFilter(GatewayEventSubstitutionFilter filter);
 
   /**
    * Creates a <code>GatewaySender</code> to communicate with remote distributed system

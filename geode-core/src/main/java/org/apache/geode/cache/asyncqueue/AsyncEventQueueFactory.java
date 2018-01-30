@@ -142,8 +142,7 @@ public interface AsyncEventQueueFactory {
    *
    * @param filter The <code>GatewayEventSubstitutionFilter</code>
    */
-  AsyncEventQueueFactory setGatewayEventSubstitutionListener(
-      GatewayEventSubstitutionFilter filter);
+  AsyncEventQueueFactory setGatewayEventSubstitutionListener(GatewayEventSubstitutionFilter filter);
 
   /**
    * Forwards destroy operations from expiration action to AsyncEventQueue. By default the

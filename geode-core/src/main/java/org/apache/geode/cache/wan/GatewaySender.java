@@ -30,7 +30,8 @@ public interface GatewaySender {
    *
    * @deprecated - Manual start of senders is deprecated and will be removed in a later release.
    */
-  @Deprecated boolean DEFAULT_MANUAL_START = false;
+  @Deprecated
+  boolean DEFAULT_MANUAL_START = false;
 
   /**
    * The default value ( true) for writing to disk synchronously in case of persistence.
@@ -90,9 +91,8 @@ public interface GatewaySender {
    */
   int DEFAULT_ALERT_THRESHOLD = 0;
 
-  int DEFAULT_PARALLELISM_REPLICATED_REGION =
-      Integer.getInteger(DistributionConfig.GEMFIRE_PREFIX
-          + "cache.gatewaySender.defaultParallelismForReplicatedRegion", 113).intValue();
+  int DEFAULT_PARALLELISM_REPLICATED_REGION = Integer.getInteger(DistributionConfig.GEMFIRE_PREFIX
+      + "cache.gatewaySender.defaultParallelismForReplicatedRegion", 113).intValue();
 
   int DEFAULT_DISTRIBUTED_SYSTEM_ID = -1;
 

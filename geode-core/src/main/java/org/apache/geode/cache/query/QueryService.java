@@ -216,8 +216,8 @@ public interface QueryService {
    * @throws UnsupportedOperationException If Index is being created on a region which overflows to
    *         disk
    */
-  void defineIndex(String indexName, String indexedExpression, String regionPath,
-      String imports) throws RegionNotFoundException;
+  void defineIndex(String indexName, String indexedExpression, String regionPath, String imports)
+      throws RegionNotFoundException;
 
   /**
    * Create a hash index that can be used when executing equal and not equal queries. Hash index is
@@ -404,9 +404,9 @@ public interface QueryService {
    * @throws UnsupportedOperationException If Index is being created on a region which overflows to
    *         disk
    */
-  Index createIndex(String indexName, String indexedExpression, String regionPath,
-      String imports) throws IndexInvalidException, IndexNameConflictException,
-      IndexExistsException, RegionNotFoundException, UnsupportedOperationException;
+  Index createIndex(String indexName, String indexedExpression, String regionPath, String imports)
+      throws IndexInvalidException, IndexNameConflictException, IndexExistsException,
+      RegionNotFoundException, UnsupportedOperationException;
 
   /**
    * Create a key index that can be used when executing queries. The key index expression indicates
@@ -527,8 +527,7 @@ public interface QueryService {
    *         supported, and it must be a region path. Bind parameters in the query are not yet
    *         supported.
    */
-  CqQuery newCq(String queryString, CqAttributes cqAttr)
-      throws QueryInvalidException, CqException;
+  CqQuery newCq(String queryString, CqAttributes cqAttr) throws QueryInvalidException, CqException;
 
   /**
    * Constructs a new continuous query, represented by an instance of CqQuery. The CqQuery is not

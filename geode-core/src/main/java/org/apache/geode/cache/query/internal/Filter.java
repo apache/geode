@@ -108,9 +108,9 @@ public interface Filter {
    * @throws NameResolutionException
    * @throws QueryInvocationTargetException
    */
-  SelectResults auxFilterEvaluate(ExecutionContext context,
-      SelectResults intermediateResults) throws FunctionDomainException, TypeMismatchException,
-      NameResolutionException, QueryInvocationTargetException;
+  SelectResults auxFilterEvaluate(ExecutionContext context, SelectResults intermediateResults)
+      throws FunctionDomainException, TypeMismatchException, NameResolutionException,
+      QueryInvocationTargetException;
 
   int getSizeEstimate(ExecutionContext context) throws FunctionDomainException,
       TypeMismatchException, NameResolutionException, QueryInvocationTargetException;
@@ -139,8 +139,8 @@ public interface Filter {
    * @throws TypeMismatchException
    * @throws NameResolutionException
    */
-  boolean isConditioningNeededForIndex(RuntimeIterator independentIter,
-      ExecutionContext context, boolean completeExpnsNeeded)
+  boolean isConditioningNeededForIndex(RuntimeIterator independentIter, ExecutionContext context,
+      boolean completeExpnsNeeded)
       throws AmbiguousNameException, TypeMismatchException, NameResolutionException;
 
   /**
@@ -168,9 +168,8 @@ public interface Filter {
    *
    * @return true if limit can be applied at index level
    */
-  boolean isLimitApplicableAtIndexLevel(ExecutionContext context)
-      throws FunctionDomainException, TypeMismatchException, NameResolutionException,
-      QueryInvocationTargetException;
+  boolean isLimitApplicableAtIndexLevel(ExecutionContext context) throws FunctionDomainException,
+      TypeMismatchException, NameResolutionException, QueryInvocationTargetException;
 
   boolean isOrderByApplicableAtIndexLevel(ExecutionContext context,
       String canonicalizedOrderByClause) throws FunctionDomainException, TypeMismatchException,

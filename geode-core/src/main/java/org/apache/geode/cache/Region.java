@@ -696,8 +696,7 @@ public interface Region<K, V> extends ConcurrentMap<K, V> {
    * @see CacheWriter#beforeCreate
    * @see CacheWriter#beforeUpdate
    */
-  V put(K key, V value, Object aCallbackArgument)
-      throws TimeoutException, CacheWriterException;
+  V put(K key, V value, Object aCallbackArgument) throws TimeoutException, CacheWriterException;
 
   /**
    * Creates a new entry in this region with the specified key and value.
@@ -732,8 +731,7 @@ public interface Region<K, V> extends ConcurrentMap<K, V> {
    * @see CacheWriter#beforeCreate
    * @see CacheWriter#beforeUpdate
    */
-  void create(K key, V value)
-      throws TimeoutException, EntryExistsException, CacheWriterException;
+  void create(K key, V value) throws TimeoutException, EntryExistsException, CacheWriterException;
 
   /**
    * Creates a new entry in this region with the specified key and value, providing a user-defined
@@ -885,8 +883,7 @@ public interface Region<K, V> extends ConcurrentMap<K, V> {
    * @see CacheListener#afterDestroy
    * @see CacheWriter#beforeDestroy
    */
-  V destroy(Object key)
-      throws TimeoutException, EntryNotFoundException, CacheWriterException;
+  V destroy(Object key) throws TimeoutException, EntryNotFoundException, CacheWriterException;
 
 
   /**
@@ -1186,8 +1183,8 @@ public interface Region<K, V> extends ConcurrentMap<K, V> {
    *
    * @since GemFire 4.0
    */
-  boolean existsValue(String queryPredicate) throws FunctionDomainException,
-      TypeMismatchException, NameResolutionException, QueryInvocationTargetException;
+  boolean existsValue(String queryPredicate) throws FunctionDomainException, TypeMismatchException,
+      NameResolutionException, QueryInvocationTargetException;
 
   /**
    * Filters the values of this region using the <code>queryPredicate</code>. The queryPredicate
@@ -1232,8 +1229,8 @@ public interface Region<K, V> extends ConcurrentMap<K, V> {
    * @see QueryService
    * @since GemFire 4.0
    */
-  Object selectValue(String queryPredicate) throws FunctionDomainException,
-      TypeMismatchException, NameResolutionException, QueryInvocationTargetException;
+  Object selectValue(String queryPredicate) throws FunctionDomainException, TypeMismatchException,
+      NameResolutionException, QueryInvocationTargetException;
 
   /**
    * Asks the region to start writing to a new oplog (if persistence/overflow is turned on). The old

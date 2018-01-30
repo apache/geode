@@ -87,8 +87,7 @@ public interface ExecutablePool {
    * @param accessed true if the connection is accessed by this execute
    * @return the result of execution if any; null if not
    */
-  Object executeOn(ServerLocation server, Op op, boolean accessed,
-      boolean onlyUseExistingCnx);
+  Object executeOn(ServerLocation server, Op op, boolean accessed, boolean onlyUseExistingCnx);
 
   /**
    * Execute the given op on the given connection.

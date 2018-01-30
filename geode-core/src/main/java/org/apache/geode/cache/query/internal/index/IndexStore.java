@@ -62,8 +62,8 @@ public interface IndexStore {
   /**
    * Return all of the IndexStoreEntries in the range between start and end.
    */
-  CloseableIterator<IndexStoreEntry> iterator(Object start, boolean startInclusive,
-      Object end, boolean endInclusive, Collection keysToRemove);
+  CloseableIterator<IndexStoreEntry> iterator(Object start, boolean startInclusive, Object end,
+      boolean endInclusive, Collection keysToRemove);
 
   /**
    * Return all of the IndexStorageEntries that from start to the tail of the map.
