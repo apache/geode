@@ -1137,11 +1137,8 @@ public class HandShake implements ClientHandShake {
     dos.writeByte(epType);
     dos.writeInt(qSize);
     if (clientVersion.compareTo(Version.GEODE_150) >= 0) {
-      logger.info("writing ping interval");
       dos.writeInt(pingInterval);
     }
-    // GEODE-3948 - write the server's Ping interval setting if the client will read it (based on
-    // client version)
 
     // Write the server's member
     DistributedMember member = this.system.getDistributedMember();

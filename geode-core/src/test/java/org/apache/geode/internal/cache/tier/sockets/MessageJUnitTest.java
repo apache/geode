@@ -126,7 +126,7 @@ public class MessageJUnitTest {
    * hanging should the server's machine fail, or should the network path to the server have
    * problems. This test ensures that the method Message.receiveWithHeaderReadTimeout correctly
    * times out when trying to read a message header.
-   * 
+   *
    * @See ClientServerMiscDUnitTest#testClientReceivesPingIntervalSetting
    */
   @Test(expected = SocketTimeoutException.class)

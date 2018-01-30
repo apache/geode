@@ -889,7 +889,7 @@ public class Message {
           cb.get(partBytes, 0, alreadyReadBytes);
         }
 
-        // now we need to readHeaderAndBody partLen - alreadyReadBytes off the wire
+        // now we need to read partLen - alreadyReadBytes off the wire
         int off = alreadyReadBytes;
         int remaining = partLen - off;
         while (remaining > 0) {

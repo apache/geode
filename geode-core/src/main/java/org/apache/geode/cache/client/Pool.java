@@ -305,7 +305,7 @@ public interface Pool {
    * <p>
    * A value of two or more will time out the server connection after that many ping intervals have
    * elapsed
-   * 
+   *
    * @return The timeout multiplier
    */
   int getSubscriptionTimeoutMultiplier();
