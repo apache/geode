@@ -110,7 +110,7 @@ public abstract class RemoteOperationMessage extends DistributionMessage
     if (txState != null && txState.isMemberIdForwardingRequired()) {
       this.txMemberId = txState.getOriginatingMember();
     }
-    setIfTransactionDistributed(processor.getDistributionManager().getCache());
+    setIfTransactionDistributed(processor);
   }
 
   /**
@@ -635,10 +635,14 @@ public abstract class RemoteOperationMessage extends DistributionMessage
   /*
    * For Distributed Tx
    */
-  private void setIfTransactionDistributed(InternalCache cache) {
-    if (cache != null) {
-      if (cache.getTxManager() != null) {
-        this.isTransactionDistributed = cache.getTxManager().isDistributed();
+  private void setIfTransactionDistributed(ReplyProcessor21 processor) {
+    if (processor != null) {
+      DistributionManager distributionManager = processor.getDistributionManager();
+      if (distributionManager != null) {
+        InternalCache cache = distributionManager.getCache();
+        if (cache != null && cache.getTxManager() != null) {
+          this.isTransactionDistributed = cache.getTxManager().isDistributed();
+        }
       }
     }
   }
