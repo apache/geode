@@ -132,6 +132,11 @@ public class CacheClientUpdater extends Thread implements ClientUpdater, Disconn
   private final InputStream in;
 
   /**
+   * server-side queue status at the time we connected to it
+   */
+  private ServerQueueStatus serverQueueStatus;
+
+  /**
    * Failed updater from the endpoint previously known as the primary
    */
   private volatile ClientUpdater failedUpdater;
@@ -323,11 +328,11 @@ public class CacheClientUpdater extends Thread implements ClientUpdater, Disconn
             mySock.getInetAddress().getHostAddress(), mySock.getLocalPort(), mySock.getPort());
       }
 
-      ServerQueueStatus sqs = handshake.handshakeWithSubscriptionFeed(mySock, this.isPrimary);
-      if (sqs.isPrimary() || sqs.isNonRedundant()) {
+      this.serverQueueStatus = handshake.handshakeWithSubscriptionFeed(mySock, this.isPrimary);
+      if (serverQueueStatus.isPrimary() || serverQueueStatus.isNonRedundant()) {
         PoolImpl pool = (PoolImpl) this.qManager.getPool();
         if (!pool.getReadyForEventsCalled()) {
-          pool.setPendingEventCount(sqs.getServerQueueSize());
+          pool.setPendingEventCount(serverQueueStatus.getServerQueueSize());
         }
       }
 
@@ -407,14 +412,6 @@ public class CacheClientUpdater extends Thread implements ClientUpdater, Disconn
         this.in = tmpIn;
         this.serverId = sid;
         this.commBuffer = cb;
-
-        // Don't want the timeout after handshake
-        if (mySock != null) {
-          try {
-            mySock.setSoTimeout(0);
-          } catch (SocketException ignore) {
-          }
-        }
 
       } else {
         this.socket = null;
@@ -1598,7 +1595,7 @@ public class CacheClientUpdater extends Thread implements ClientUpdater, Disconn
 
         try {
           // Read the message
-          clientMessage.recv();
+          clientMessage.receiveWithHeaderReadTimeout(serverQueueStatus.getPingInterval() * 2);
 
           // Wait for the previously failed cache client updater
           // to finish. This will avoid out of order messages.

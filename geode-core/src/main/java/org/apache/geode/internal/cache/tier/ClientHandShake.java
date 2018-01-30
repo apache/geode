@@ -39,6 +39,6 @@ public interface ClientHandShake {
 
   public Version getVersion();
 
-  public void accept(OutputStream out, InputStream in, byte epType, int qSize,
-      CommunicationMode communicationMode, Principal principal) throws IOException;
+  public void handshakeWithClient(OutputStream out, InputStream in, byte epType, int pingInterval,
+      int qSize, CommunicationMode communicationMode, Principal principal) throws IOException;
 }

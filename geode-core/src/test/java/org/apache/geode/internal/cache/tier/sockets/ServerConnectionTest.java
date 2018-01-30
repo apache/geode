@@ -170,7 +170,7 @@ public class ServerConnectionTest {
     }
 
     @Override
-    public void recv() throws IOException {
+    public void receive() throws IOException {
       try {
         lock.lock();
         testGate.await(10, TimeUnit.SECONDS);

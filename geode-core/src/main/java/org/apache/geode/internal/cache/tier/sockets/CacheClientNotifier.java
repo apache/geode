@@ -159,20 +159,21 @@ public class CacheClientNotifier {
    */
   private void writeMessage(DataOutputStream dos, byte type, String p_msg, Version clientVersion)
       throws IOException {
-    writeMessage(dos, type, p_msg, clientVersion, (byte) 0x00, 0);
+    writeHandshakeMessage(dos, type, p_msg, clientVersion, (byte) 0x00, 0);
   }
 
-  private void writeMessage(DataOutputStream dos, byte type, String p_msg, Version clientVersion,
-      byte epType, int qSize) throws IOException {
+  private void writeHandshakeMessage(DataOutputStream dos, byte type, String p_msg,
+      Version clientVersion, byte epType, int qSize) throws IOException {
     String msg = p_msg;
 
     // write the message type
     dos.writeByte(type);
 
-    // dummy epType
     dos.writeByte(epType);
-    // dummy qSize
     dos.writeInt(qSize);
+    if (clientVersion.compareTo(Version.GEODE_150) >= 0) {
+      dos.writeInt(CLIENT_PING_TASK_PERIOD);
+    }
 
     if (msg == null) {
       msg = "";
@@ -295,7 +296,7 @@ public class CacheClientNotifier {
     ClientProxyMembershipID proxyID = null;
     CacheClientProxy proxy;
     AccessControl authzCallback = null;
-    byte clientConflation = HandShake.CONFLATION_DEFAULT;
+    byte clientConflation;
     try {
       proxyID = ClientProxyMembershipID.readCanonicalized(dis);
       if (getBlacklistedClient().contains(proxyID)) {
@@ -558,7 +559,7 @@ public class CacheClientNotifier {
       DataOutputStream dos =
           new DataOutputStream(new BufferedOutputStream(socket.getOutputStream()));
       // write the message type, message length and the error message (if any)
-      writeMessage(dos, responseByte, unsuccessfulMsg, clientVersion, epType, qSize);
+      writeHandshakeMessage(dos, responseByte, unsuccessfulMsg, clientVersion, epType, qSize);
     } catch (IOException ioe) {// remove the added proxy if we get IOException.
       if (l_proxy != null) {
         boolean keepProxy = l_proxy.close(false, false); // do not check for queue, just close it
@@ -2193,14 +2194,19 @@ public class CacheClientNotifier {
 
   private final SocketCloser socketCloser;
 
-  private static final long CLIENT_PING_TASK_PERIOD =
-      Long.getLong(DistributionConfig.GEMFIRE_PREFIX + "serverToClientPingPeriod", 60000);
+  private static final int CLIENT_PING_TASK_PERIOD =
+      Integer.getInteger(DistributionConfig.GEMFIRE_PREFIX + "serverToClientPingPeriod", 60000);
 
   private static final long CLIENT_PING_TASK_COUNTER =
       Long.getLong(DistributionConfig.GEMFIRE_PREFIX + "serverToClientPingCounter", 3);
 
   public long getLogFrequency() {
     return this.logFrequency;
+  }
+
+  /** returns the interval between "ping" messages sent to clients on idle connections */
+  public static int getClientPingInterval() {
+    return CLIENT_PING_TASK_PERIOD;
   }
 
   /**

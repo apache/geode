@@ -220,6 +220,12 @@ public class PoolFactoryImpl implements PoolFactory {
     return this;
   }
 
+  @Override
+  public PoolFactory setSubscriptionTimeoutMultiplier(int multiplier) {
+    this.attributes.subscriptionTimeoutMultipler = multiplier;
+    return this;
+  }
+
   private InetSocketAddress getInetSocketAddress(String host, int port) {
     if (port == 0) {
       throw new IllegalArgumentException("port must be greater than 0 but was " + port);
@@ -369,6 +375,7 @@ public class PoolFactoryImpl implements PoolFactory {
     public int queueRedundancyLevel = DEFAULT_SUBSCRIPTION_REDUNDANCY;
     public int queueMessageTrackingTimeout = DEFAULT_SUBSCRIPTION_MESSAGE_TRACKING_TIMEOUT;
     public int queueAckInterval = DEFAULT_SUBSCRIPTION_ACK_INTERVAL;
+    public int subscriptionTimeoutMultipler = DEFAULT_SUBSCRIPTION_TIMEOUT_MULTIPLIER;
     public String serverGroup = DEFAULT_SERVER_GROUP;
     public boolean multiuserSecureModeEnabled = DEFAULT_MULTIUSER_AUTHENTICATION;
     public ArrayList/* <InetSocketAddress> */ locators = new ArrayList();
@@ -381,74 +388,92 @@ public class PoolFactoryImpl implements PoolFactory {
      */
     public boolean gateway = false;
 
+    @Override
     public int getSocketConnectTimeout() {
       return this.socketConnectTimeout;
     }
 
+    @Override
     public int getFreeConnectionTimeout() {
       return this.connectionTimeout;
     }
 
+    @Override
     public int getLoadConditioningInterval() {
       return this.connectionLifetime;
     }
 
+    @Override
     public int getSocketBufferSize() {
       return this.socketBufferSize;
     }
 
+    @Override
     public int getMinConnections() {
       return minConnections;
     }
 
+    @Override
     public int getMaxConnections() {
       return maxConnections;
     }
 
+    @Override
     public long getIdleTimeout() {
       return idleTimeout;
     }
 
+    @Override
     public int getRetryAttempts() {
       return retryAttempts;
     }
 
+    @Override
     public long getPingInterval() {
       return pingInterval;
     }
 
+    @Override
     public int getStatisticInterval() {
       return statisticInterval;
     }
 
+    @Override
     public boolean getThreadLocalConnections() {
       return this.threadLocalConnections;
     }
 
+    @Override
     public int getReadTimeout() {
       return this.readTimeout;
     }
 
+    @Override
     public boolean getSubscriptionEnabled() {
       return this.queueEnabled;
     }
 
+    @Override
     public boolean getPRSingleHopEnabled() {
       return this.prSingleHopEnabled;
     }
 
+    @Override
     public int getSubscriptionRedundancy() {
       return this.queueRedundancyLevel;
     }
 
+    @Override
     public int getSubscriptionMessageTrackingTimeout() {
       return this.queueMessageTrackingTimeout;
     }
 
+    @Override
     public int getSubscriptionAckInterval() {
       return queueAckInterval;
     }
 
+    @Override
     public String getServerGroup() {
       return this.serverGroup;
     }
@@ -469,12 +494,18 @@ public class PoolFactoryImpl implements PoolFactory {
       return this.gatewaySender;
     }
 
+    @Override
     public boolean getMultiuserAuthentication() {
       return this.multiuserSecureModeEnabled;
     }
 
     public void setMultiuserSecureModeEnabled(boolean v) {
       this.multiuserSecureModeEnabled = v;
+    }
+
+    @Override
+    public int getSubscriptionTimeoutMultiplier() {
+      return this.subscriptionTimeoutMultipler;
     }
 
     public List/* <InetSocketAddress> */ getLocators() {
@@ -528,10 +559,8 @@ public class PoolFactoryImpl implements PoolFactory {
       throw new UnsupportedOperationException();
     }
 
-    public RegionService createAuthenticatedCacheView(Properties properties) {
-      throw new UnsupportedOperationException();
-    }
 
+    @Override
     public void toData(DataOutput out) throws IOException {
       DataSerializer.writePrimitiveInt(this.connectionTimeout, out);
       DataSerializer.writePrimitiveInt(this.connectionLifetime, out);
@@ -554,6 +583,7 @@ public class PoolFactoryImpl implements PoolFactory {
       DataSerializer.writePrimitiveInt(this.socketConnectTimeout, out);
     }
 
+    @Override
     public void fromData(DataInput in) throws IOException, ClassNotFoundException {
       this.connectionTimeout = DataSerializer.readPrimitiveInt(in);
       this.connectionLifetime = DataSerializer.readPrimitiveInt(in);

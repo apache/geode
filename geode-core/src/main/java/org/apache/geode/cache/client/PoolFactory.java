@@ -173,6 +173,14 @@ public interface PoolFactory {
   public static final int DEFAULT_SUBSCRIPTION_ACK_INTERVAL = 100;
 
   /**
+   * The default number of server "ping" intervals that can elapse with no activity before a
+   * subscription connection is deemed dead and failover is initiated.
+   * <p>
+   * Current value: 0
+   */
+  public static final int DEFAULT_SUBSCRIPTION_TIMEOUT_MULTIPLIER = 0;
+
+  /**
    * The default server group.
    * <p>
    * Current value: <code>""</code>.
@@ -424,6 +432,21 @@ public interface PoolFactory {
    *         to <code>0</code>.
    */
   public PoolFactory setSubscriptionMessageTrackingTimeout(int messageTrackingTimeout);
+
+  /**
+   * A server has an inactivity monitor that ensures a message is sent to a client at least once a
+   * minute (60,000 milliseconds). If a subscription timeout multipler is set in the client it
+   * enables timing out of the subscription feed with failover to another server.
+   * <p>
+   * A value of zero (the default) disables timeouts
+   * <p>
+   * A value of one will time out the server connection after one of its ping intervals (not
+   * recommended)
+   * <p>
+   * A value of two or more will time out the server connection after that many ping intervals have
+   * elapsed
+   */
+  public PoolFactory setSubscriptionTimeoutMultiplier(int multiplier);
 
   /**
    * Sets the interval in milliseconds to wait before sending acknowledgements to the cache server

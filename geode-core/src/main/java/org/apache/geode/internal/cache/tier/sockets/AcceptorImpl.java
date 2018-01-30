@@ -1831,7 +1831,7 @@ public class AcceptorImpl implements Acceptor, Runnable, CommBufferPool {
 
     @Override
     public void run() {
-      logger.info(":Bridge server: Initializing {} server-to-client communication socket: {}",
+      logger.info(":Cache server: Initializing {} server-to-client communication socket: {}",
           isPrimaryServerToClient ? "primary" : "secondary", socket);
       try {
         acceptor.getCacheClientNotifier().registerClient(socket, isPrimaryServerToClient,
