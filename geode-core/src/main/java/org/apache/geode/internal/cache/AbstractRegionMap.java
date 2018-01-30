@@ -3188,8 +3188,9 @@ public abstract class AbstractRegionMap
   public void lockForCacheModification(InternalRegion owner, EntryEventImpl event) {
     boolean lockedByBulkOp = event.isBulkOpInProgress() && owner.getDataPolicy().withReplication();
 
-    if (armLockTestHook != null)
+    if (armLockTestHook != null) {
       armLockTestHook.beforeLock(owner, event);
+    }
 
     if (!event.isOriginRemote() && !lockedByBulkOp && !owner.hasServerProxy()) {
       RegionVersionVector vector = owner.getVersionVector();
@@ -3198,9 +3199,9 @@ public abstract class AbstractRegionMap
       }
     }
 
-    if (armLockTestHook != null)
+    if (armLockTestHook != null) {
       armLockTestHook.afterLock(owner, event);
-
+    }
   }
 
   /** release version-generation permission from the region's version vector */
