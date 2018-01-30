@@ -307,7 +307,6 @@ public class RemoteDestroyMessage extends RemoteOperationMessageWithDirectReply
     p.requireResponse();
     RemoteDestroyMessage m = new RemoteDestroyMessage(recipients, r.getFullPath(), p, event,
         expectedOldValue, useOriginRemote, possibleDuplicate);
-    m.setTransactionDistributed(r.getCache().getTxManager().isDistributed());
     Set failures = r.getDistributionManager().putOutgoing(m);
     if (failures != null && failures.size() > 0) {
       throw new RemoteOperationException(

@@ -207,7 +207,6 @@ public class RemotePutAllMessage extends RemoteOperationMessageWithDirectReply {
     RemotePutAllMessage msg =
         new RemotePutAllMessage(event, recipients, p, putAllData, putAllDataCount, useOriginRemote,
             processorType, possibleDuplicate, !event.isGenerateCallbacks());
-    msg.setTransactionDistributed(event.getRegion().getCache().getTxManager().isDistributed());
     Set failures = event.getRegion().getDistributionManager().putOutgoing(msg);
     if (failures != null && failures.size() > 0) {
       throw new RemoteOperationException(

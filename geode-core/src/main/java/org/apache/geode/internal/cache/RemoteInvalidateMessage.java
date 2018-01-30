@@ -147,7 +147,6 @@ public class RemoteInvalidateMessage extends RemoteDestroyMessage {
     InvalidateResponse p = new InvalidateResponse(r.getSystem(), recipients, event.getKey());
     RemoteInvalidateMessage m = new RemoteInvalidateMessage(recipients, r.getFullPath(), p, event,
         useOriginRemote, possibleDuplicate);
-    m.setTransactionDistributed(r.getCache().getTxManager().isDistributed());
     Set failures = r.getDistributionManager().putOutgoing(m);
     if (failures != null && failures.size() > 0) {
       throw new RemoteOperationException(

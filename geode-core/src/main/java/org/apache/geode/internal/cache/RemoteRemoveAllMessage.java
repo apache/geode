@@ -201,7 +201,6 @@ public class RemoteRemoveAllMessage extends RemoteOperationMessageWithDirectRepl
     RemoveAllResponse p = new RemoveAllResponse(event.getRegion().getSystem(), recipients);
     RemoteRemoveAllMessage msg = new RemoteRemoveAllMessage(event, recipients, p, removeAllData,
         removeAllDataCount, useOriginRemote, processorType, possibleDuplicate);
-    msg.setTransactionDistributed(event.getRegion().getCache().getTxManager().isDistributed());
     Set failures = event.getRegion().getDistributionManager().putOutgoing(msg);
     if (failures != null && failures.size() > 0) {
       throw new RemoteOperationException(

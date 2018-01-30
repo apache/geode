@@ -628,13 +628,6 @@ public abstract class RemoteOperationMessage extends DistributionMessage
   /*
    * For Distributed Tx
    */
-  public void setTransactionDistributed(boolean isDistTx) {
-    this.isTransactionDistributed = isDistTx;
-  }
-
-  /*
-   * For Distributed Tx
-   */
   private void setIfTransactionDistributed(ReplyProcessor21 processor) {
     if (processor != null) {
       DistributionManager distributionManager = processor.getDistributionManager();

@@ -390,7 +390,6 @@ public class RemotePutMessage extends RemoteOperationMessageWithDirectReply
             ifOld, expectedOldValue, requireOldValue, useOriginRemote, possibleDuplicate);
     m.setInternalDs(r.getSystem());
     m.setSendDelta(true);
-    m.setTransactionDistributed(r.getCache().getTxManager().isDistributed());
 
     processor.setRemotePutMessage(m);
 
