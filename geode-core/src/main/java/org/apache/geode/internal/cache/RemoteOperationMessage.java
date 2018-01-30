@@ -121,17 +121,6 @@ public abstract class RemoteOperationMessage extends DistributionMessage
   }
 
   /**
-   * Copy constructor that initializes the fields declared in this class
-   */
-  public RemoteOperationMessage(RemoteOperationMessage other) {
-    this.regionPath = other.regionPath;
-    this.processorId = other.processorId;
-    this.txUniqId = other.getTXUniqId();
-    this.txMemberId = other.getTXMemberId();
-    this.isTransactionDistributed = other.isTransactionDistributed;
-  }
-
-  /**
    * Severe alert processing enables suspect processing at the ack-wait-threshold and issuing of a
    * severe alert at the end of the ack-severe-alert-threshold. Some messages should not support
    * this type of processing (e.g., GII, or DLockRequests)

@@ -56,15 +56,6 @@ public abstract class RemoteOperationMessageWithDirectReply extends RemoteOperat
     this.processor = processor;
   }
 
-  /**
-   * @param original
-   */
-  public RemoteOperationMessageWithDirectReply(RemoteOperationMessageWithDirectReply original) {
-    super(original);
-    this.processor = original.processor;
-  }
-
-
   public boolean supportsDirectAck() {
     return true;
   }
