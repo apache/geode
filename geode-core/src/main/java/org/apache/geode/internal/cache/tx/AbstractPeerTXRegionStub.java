@@ -40,10 +40,10 @@ public abstract class AbstractPeerTXRegionStub implements TXRegionStub {
   protected abstract InternalRegion getRegion();
 
   @Override
-  public Set getRegionKeysForIteration(LocalRegion currRegion) {
+  public Set getRegionKeysForIteration() {
     try {
       RemoteFetchKeysMessage.FetchKeysResponse response =
-          RemoteFetchKeysMessage.send(currRegion, state.getTarget());
+          RemoteFetchKeysMessage.send((LocalRegion) getRegion(), state.getTarget());
       return response.waitForKeys();
     } catch (RegionDestroyedException e) {
       throw new TransactionDataNotColocatedException(

@@ -684,7 +684,7 @@ public abstract class TXStateStub implements TXStateInterface {
    */
   @Override
   public Set getRegionKeysForIteration(LocalRegion currRegion) {
-    return getTXRegionStub(currRegion).getRegionKeysForIteration(currRegion);
+    return getTXRegionStub(currRegion).getRegionKeysForIteration();
   }
 
 

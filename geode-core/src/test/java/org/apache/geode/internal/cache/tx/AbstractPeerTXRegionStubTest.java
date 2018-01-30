@@ -51,8 +51,11 @@ public class AbstractPeerTXRegionStubTest {
 
   private class TestingAbstractPeerTXRegionStub extends AbstractPeerTXRegionStub {
 
+    private final LocalRegion region;
+
     private TestingAbstractPeerTXRegionStub(TXStateStub txState, LocalRegion r) {
       super(txState);
+      this.region = r;
     }
 
     @Override
@@ -115,7 +118,7 @@ public class AbstractPeerTXRegionStubTest {
 
     @Override
     protected InternalRegion getRegion() {
-      return null;
+      return this.region;
     }
   }
 
@@ -147,7 +150,7 @@ public class AbstractPeerTXRegionStubTest {
     // called from getRegionKeysForIteration
     when((region).getSystem()).thenThrow(CacheClosedException.class);
 
-    txrStub.getRegionKeysForIteration(region);
+    txrStub.getRegionKeysForIteration();
     fail(
         "AbstractPeerTXRegionStub expected to transalate CacheClosedException to TransactionDataNodeHasDepartedException ");
   }
@@ -161,7 +164,7 @@ public class AbstractPeerTXRegionStubTest {
     // called from getRegionKeysForIteration
     when((region).getSystem()).thenThrow(RegionDestroyedException.class);
 
-    txrStub.getRegionKeysForIteration(region);
+    txrStub.getRegionKeysForIteration();
     fail(
         "AbstractPeerTXRegionStub expected to transalate CacheClosedException to TransactionDataNodeHasDepartedException ");
   }
