@@ -296,32 +296,10 @@ public class RemoteFetchEntryMessage extends RemoteOperationMessage {
 
     /**
      * @return Object associated with the key that was sent in the get message
-     * @throws EntryNotFoundException
      * @throws RemoteOperationException if the peer is no longer available
-     * @throws EntryNotFoundException
      */
-    public EntrySnapshot waitForResponse() throws EntryNotFoundException, RemoteOperationException {
-      try {
-        // waitForRepliesUninterruptibly();
-        waitForCacheException();
-      } catch (RemoteOperationException e) {
-        e.checkKey(key);
-        final String msg = "FetchEntryResponse got remote RemoteOperationException; rethrowing";
-        logger.debug(msg, e);
-        throw e;
-      } catch (EntryNotFoundException e) {
-        throw e;
-      } catch (TransactionException e) {
-        throw e;
-      } catch (RegionDestroyedException e) {
-        throw e;
-      } catch (CacheException ce) {
-        logger.debug("FetchEntryResponse got remote CacheException; forcing reattempt.", ce);
-        throw new RemoteOperationException(
-            LocalizedStrings.RemoteFetchEntryMessage_FETCHENTRYRESPONSE_GOT_REMOTE_CACHEEXCEPTION_FORCING_REATTEMPT
-                .toLocalizedString(),
-            ce);
-      }
+    public EntrySnapshot waitForResponse() throws RemoteOperationException {
+      waitForCacheException();
       return this.returnValue;
     }
   }

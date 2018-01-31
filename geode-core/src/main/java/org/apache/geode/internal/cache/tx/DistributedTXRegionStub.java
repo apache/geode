@@ -61,21 +61,10 @@ public class DistributedTXRegionStub extends AbstractPeerTXRegionStub {
 
   public void destroyExistingEntry(EntryEventImpl event, boolean cacheWrite,
       Object expectedOldValue) {
-    // TODO Auto-generated method stub
-    // this.prStats.incPartitionMessagesSent();
     try {
       RemoteOperationResponse response = RemoteDestroyMessage.send(state.getTarget(),
           event.getLocalRegion(), event, expectedOldValue, true, false);
       response.waitForCacheException();
-    } catch (EntryNotFoundException enfe) {
-      throw enfe;
-    } catch (TransactionDataNotColocatedException enfe) {
-      throw enfe;
-    } catch (CacheException ce) {
-      throw new PartitionedRegionException(
-          LocalizedStrings.PartitionedRegion_DESTROY_OF_ENTRY_ON_0_FAILED
-              .toLocalizedString(state.getTarget()),
-          ce);
     } catch (RegionDestroyedException rde) {
       throw new TransactionDataNotColocatedException(
           LocalizedStrings.RemoteMessage_REGION_0_NOT_COLOCATED_WITH_TRANSACTION
@@ -92,7 +81,6 @@ public class DistributedTXRegionStub extends AbstractPeerTXRegionStub {
       // TODO change RemoteFetchEntryMessage to allow tombstones to be returned
       RemoteFetchEntryMessage.FetchEntryResponse res = RemoteFetchEntryMessage
           .send((InternalDistributedMember) state.getTarget(), region, keyInfo.getKey());
-      // this.prStats.incPartitionMessagesSent();
       return res.waitForResponse();
     } catch (EntryNotFoundException enfe) {
       return null;
@@ -107,11 +95,10 @@ public class DistributedTXRegionStub extends AbstractPeerTXRegionStub {
               .toLocalizedString(keyInfo.getKey()));
       re.initCause(e);
       throw re;
-    } catch (RemoteOperationException e) {
+    } catch (CacheException|RemoteOperationException e) {
       throw new TransactionDataNodeHasDepartedException(e);
     }
   }
-
 
   public void invalidateExistingEntry(EntryEventImpl event, boolean invokeCallbacks,
       boolean forceNewEntry) {

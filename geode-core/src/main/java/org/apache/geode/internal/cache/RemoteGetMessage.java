@@ -391,20 +391,9 @@ public class RemoteGetMessage extends RemoteOperationMessageWithDirectReply {
      * @return Object associated with the key that was sent in the get message
      */
     public Object waitForResponse(boolean preferCD) throws RemoteOperationException {
-      try {
-        // waitForRepliesUninterruptibly();
-        waitForCacheException();
-        if (DistributionStats.enableClockStats) {
-          getDistributionManager().getStats().incReplyHandOffTime(this.start);
-        }
-      } catch (RemoteOperationException e) {
-        e.checkKey(key);
-        final String msg = "RemoteGetResponse got RemoteOperationException; rethrowing";
-        logger.debug(msg, e);
-        throw e;
-      } catch (TransactionDataNotColocatedException e) {
-        // Throw this up to user!
-        throw e;
+      waitForCacheException();
+      if (DistributionStats.enableClockStats) {
+        getDistributionManager().getStats().incReplyHandOffTime(this.start);
       }
       if (!this.returnValueReceived) {
         throw new RemoteOperationException(
