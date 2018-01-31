@@ -1010,7 +1010,7 @@ public class RemotePutMessage extends RemoteOperationMessageWithDirectReply
      * @throws CacheException if the peer generates an error
      */
     public PutResult waitForResult() throws CacheException, RemoteOperationException {
-      waitForCacheException();
+      waitForRemoteResponse();
       if (this.op == null) {
         throw new RemoteOperationException(
             LocalizedStrings.RemotePutMessage_DID_NOT_RECEIVE_A_VALID_REPLY.toLocalizedString());

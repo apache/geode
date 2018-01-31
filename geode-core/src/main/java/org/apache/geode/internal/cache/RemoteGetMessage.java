@@ -391,7 +391,7 @@ public class RemoteGetMessage extends RemoteOperationMessageWithDirectReply {
      * @return Object associated with the key that was sent in the get message
      */
     public Object waitForResponse(boolean preferCD) throws RemoteOperationException {
-      waitForCacheException();
+      waitForRemoteResponse();
       if (DistributionStats.enableClockStats) {
         getDistributionManager().getStats().incReplyHandOffTime(this.start);
       }

@@ -479,7 +479,7 @@ public abstract class RemoteOperationMessage extends DistributionMessage
    * capturing any CacheException thrown by the recipient and handle it as an expected exception.
    *
    * @since GemFire 6.5
-   * @see #waitForCacheException()
+   * @see #waitForRemoteResponse()
    */
   public static class RemoteOperationResponse extends DirectReplyProcessor {
     /**
@@ -559,7 +559,7 @@ public abstract class RemoteOperationMessage extends DistributionMessage
      *         RemoteOperationException
      * @throws RemoteOperationException if the remote side's cache was closed
      */
-    public void waitForCacheException() throws RemoteOperationException {
+    public void waitForRemoteResponse() throws RemoteOperationException {
       try {
         waitForRepliesUninterruptibly();
         if (this.prce != null || (this.responseRequired && !this.responseReceived)) {

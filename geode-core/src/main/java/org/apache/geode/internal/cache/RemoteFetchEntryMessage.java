@@ -297,7 +297,7 @@ public class RemoteFetchEntryMessage extends RemoteOperationMessage {
      * @throws RemoteOperationException if the peer is no longer available
      */
     public EntrySnapshot waitForResponse() throws RemoteOperationException {
-      waitForCacheException();
+      waitForRemoteResponse();
       return this.returnValue;
     }
   }

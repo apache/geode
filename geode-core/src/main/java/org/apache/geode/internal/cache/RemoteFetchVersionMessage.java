@@ -223,7 +223,7 @@ public class RemoteFetchVersionMessage extends RemoteOperationMessage {
 
     public VersionTag waitForResponse() throws RemoteOperationException {
       try {
-        waitForCacheException();
+        waitForRemoteResponse();
       } catch (RemoteOperationException e) {
         logger.debug("RemoteFetchVersionMessage threw", e);
         throw e;

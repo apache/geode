@@ -120,7 +120,7 @@ public class RemoteRemoveAllMessage extends RemoteOperationMessageWithDirectRepl
         attempts++;
         final boolean posDup = (attempts > 1);
         RemoveAllResponse response = send(replicate, event, data, dataCount, false, posDup);
-        response.waitForCacheException();
+        response.waitForRemoteResponse();
         VersionedObjectList result = response.getResponse();
 
         // Set successful version tags in RemoveAllEntryData.

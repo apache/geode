@@ -276,7 +276,7 @@ public class RemoteContainsKeyValueMessage extends RemoteOperationMessageWithDir
      */
     public boolean waitForContainsResult() throws PrimaryBucketException, RemoteOperationException {
       try {
-        waitForCacheException();
+        waitForRemoteResponse();
       } catch (CacheException ce) {
         logger.debug("ContainsKeyValueResponse got remote CacheException; forcing reattempt.", ce);
         throw new RemoteOperationException(

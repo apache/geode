@@ -260,7 +260,7 @@ public class DistTXRollbackMessage extends TXMessage {
      * @return Object associated with the key that was sent in the get message
      */
     public Boolean waitForResponse() throws RemoteOperationException {
-      waitForCacheException();
+      waitForRemoteResponse();
       if (DistributionStats.enableClockStats) {
         getDistributionManager().getStats().incReplyHandOffTime(this.start);
       }

@@ -97,32 +97,32 @@ public class RemoteOperationResponseTest {
   }
 
   @Test
-  public void waitForCacheExceptionReturnsNormallyWhenWaitForRepliesUninterruptiblyDoesNothing()
+  public void waitForRemoteResponseReturnsNormallyWhenWaitForRepliesUninterruptiblyDoesNothing()
       throws Exception {
     doNothing().when(replyProcessor).waitForRepliesUninterruptibly();
 
-    replyProcessor.waitForCacheException();
+    replyProcessor.waitForRemoteResponse();
 
     verify(replyProcessor, times(1)).waitForRepliesUninterruptibly();
   }
 
   @Test
-  public void waitForCacheExceptionWithResponseRequiredThrowsException() throws Exception {
+  public void waitForRemoteResponseWithResponseRequiredThrowsException() throws Exception {
     doNothing().when(replyProcessor).waitForRepliesUninterruptibly();
     replyProcessor.requireResponse();
 
-    assertThatThrownBy(() -> replyProcessor.waitForCacheException())
+    assertThatThrownBy(() -> replyProcessor.waitForRemoteResponse())
         .isInstanceOf(RemoteOperationException.class).hasMessage("Attempt failed");
 
     verify(replyProcessor, times(1)).waitForRepliesUninterruptibly();
   }
 
   @Test
-  public void waitForCacheExceptionWithMemberDepartedThrowsException() throws Exception {
+  public void waitForRemoteResponseWithMemberDepartedThrowsException() throws Exception {
     doNothing().when(replyProcessor).waitForRepliesUninterruptibly();
     replyProcessor.memberDeparted(recipient, false);
 
-    assertThatThrownBy(() -> replyProcessor.waitForCacheException())
+    assertThatThrownBy(() -> replyProcessor.waitForRemoteResponse())
         .isInstanceOf(RemoteOperationException.class).hasMessage("Attempt failed")
         .hasCauseInstanceOf(ForceReattemptException.class);
 
@@ -130,49 +130,49 @@ public class RemoteOperationResponseTest {
   }
 
   @Test
-  public void waitForCacheExceptionWithReplyExceptionWithNoCauseCallsHandleCause()
+  public void waitForRemoteResponseWithReplyExceptionWithNoCauseCallsHandleCause()
       throws Exception {
     ReplyException replyException = mock(ReplyException.class);
     doThrow(replyException).when(replyProcessor).waitForRepliesUninterruptibly();
 
-    replyProcessor.waitForCacheException();
+    replyProcessor.waitForRemoteResponse();
 
     verify(replyException, times(1)).handleCause();
   }
 
   @Test
-  public void waitForCacheExceptionWithReplyExceptionWithUnhandledCauseCallsHandleCause()
+  public void waitForRemoteResponseWithReplyExceptionWithUnhandledCauseCallsHandleCause()
       throws Exception {
     ReplyException replyException = mock(ReplyException.class);
     RuntimeException cause = mock(RuntimeException.class);
     when(replyException.getCause()).thenReturn(cause);
     doThrow(replyException).when(replyProcessor).waitForRepliesUninterruptibly();
 
-    replyProcessor.waitForCacheException();
+    replyProcessor.waitForRemoteResponse();
 
     verify(replyException, times(1)).handleCause();
   }
 
   @Test
-  public void waitForCacheExceptionWithReplyExceptionWithRemoteOperationExceptionCauseThrowsThatCause()
+  public void waitForRemoteResponseWithReplyExceptionWithRemoteOperationExceptionCauseThrowsThatCause()
       throws Exception {
     ReplyException replyException = mock(ReplyException.class);
     RemoteOperationException cause = new RemoteOperationException("msg");
     when(replyException.getCause()).thenReturn(cause);
     doThrow(replyException).when(replyProcessor).waitForRepliesUninterruptibly();
 
-    assertThatThrownBy(() -> replyProcessor.waitForCacheException()).isSameAs(cause);
+    assertThatThrownBy(() -> replyProcessor.waitForRemoteResponse()).isSameAs(cause);
   }
 
   @Test
-  public void waitForCacheExceptionWithReplyExceptionWithCancelExceptionnCauseThrowsRemoteOperationException()
+  public void waitForRemoteResponseWithReplyExceptionWithCancelExceptionnCauseThrowsRemoteOperationException()
       throws Exception {
     ReplyException replyException = mock(ReplyException.class);
     CancelException cause = mock(CancelException.class);
     when(replyException.getCause()).thenReturn(cause);
     doThrow(replyException).when(replyProcessor).waitForRepliesUninterruptibly();
 
-    assertThatThrownBy(() -> replyProcessor.waitForCacheException())
+    assertThatThrownBy(() -> replyProcessor.waitForRemoteResponse())
         .isInstanceOf(RemoteOperationException.class).hasMessage("remote cache was closed");
   }
 

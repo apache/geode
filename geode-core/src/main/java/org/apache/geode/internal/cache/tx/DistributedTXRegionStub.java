@@ -62,7 +62,7 @@ public class DistributedTXRegionStub extends AbstractPeerTXRegionStub {
     try {
       RemoteOperationResponse response = RemoteDestroyMessage.send(state.getTarget(),
           event.getLocalRegion(), event, expectedOldValue, true, false);
-      response.waitForCacheException();
+      response.waitForRemoteResponse();
     } catch (RegionDestroyedException rde) {
       throw new TransactionDataNotColocatedException(
           LocalizedStrings.RemoteMessage_REGION_0_NOT_COLOCATED_WITH_TRANSACTION
@@ -99,7 +99,7 @@ public class DistributedTXRegionStub extends AbstractPeerTXRegionStub {
     try {
       RemoteOperationResponse response =
           RemoteInvalidateMessage.send(state.getTarget(), event.getRegion(), event, true, false);
-      response.waitForCacheException();
+      response.waitForRemoteResponse();
     } catch (RegionDestroyedException rde) {
       throw new TransactionDataNotColocatedException(
           LocalizedStrings.RemoteMessage_REGION_0_NOT_COLOCATED_WITH_TRANSACTION
@@ -202,7 +202,7 @@ public class DistributedTXRegionStub extends AbstractPeerTXRegionStub {
       RemotePutAllMessage.PutAllResponse response =
           RemotePutAllMessage.send(state.getTarget(), putallOp.getBaseEvent(),
               putallOp.getPutAllEntryData(), putallOp.getPutAllEntryData().length, true, false);
-      response.waitForCacheException();
+      response.waitForRemoteResponse();
     } catch (RegionDestroyedException rde) {
       throw new TransactionDataNotColocatedException(
           LocalizedStrings.RemoteMessage_REGION_0_NOT_COLOCATED_WITH_TRANSACTION
@@ -220,7 +220,7 @@ public class DistributedTXRegionStub extends AbstractPeerTXRegionStub {
       RemoteRemoveAllMessage.RemoveAllResponse response =
           RemoteRemoveAllMessage.send(state.getTarget(), op.getBaseEvent(),
               op.getRemoveAllEntryData(), op.getRemoveAllEntryData().length, true, false);
-      response.waitForCacheException();
+      response.waitForRemoteResponse();
     } catch (RegionDestroyedException rde) {
       throw new TransactionDataNotColocatedException(
           LocalizedStrings.RemoteMessage_REGION_0_NOT_COLOCATED_WITH_TRANSACTION

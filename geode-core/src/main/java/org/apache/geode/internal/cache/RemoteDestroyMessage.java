@@ -249,7 +249,7 @@ public class RemoteDestroyMessage extends RemoteOperationMessageWithDirectReply
         final boolean posDup = (attempts > 1);
         RemoteDestroyReplyProcessor processor =
             send(replicate, event.getRegion(), event, expectedOldValue, false, posDup);
-        processor.waitForCacheException();
+        processor.waitForRemoteResponse();
         VersionTag versionTag = processor.getVersionTag();
         if (versionTag != null) {
           event.setVersionTag(versionTag);

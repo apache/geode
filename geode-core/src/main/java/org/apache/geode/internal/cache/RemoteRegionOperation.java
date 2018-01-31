@@ -83,7 +83,7 @@ public class RemoteRegionOperation extends RemoteOperationMessageWithDirectReply
       throw new RemoteOperationException(LocalizedStrings.FAILED_SENDING_0.toLocalizedString(this));
     }
 
-    p.waitForCacheException();
+    p.waitForRemoteResponse();
   }
 
   @Override

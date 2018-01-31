@@ -90,7 +90,7 @@ public class RemoteInvalidateMessage extends RemoteDestroyMessage {
         attempts++;
         final boolean posDup = (attempts > 1);
         InvalidateResponse processor = send(replicate, event.getRegion(), event, false, posDup);
-        processor.waitForCacheException();
+        processor.waitForRemoteResponse();
         VersionTag versionTag = processor.getVersionTag();
         if (versionTag != null) {
           event.setVersionTag(versionTag);
@@ -384,7 +384,7 @@ public class RemoteInvalidateMessage extends RemoteDestroyMessage {
      * @throws CacheException if the peer generates an error
      */
     public void waitForResult() throws CacheException, RemoteOperationException {
-      waitForCacheException();
+      waitForRemoteResponse();
       if (!this.returnValueReceived) {
         throw new RemoteOperationException(
             LocalizedStrings.InvalidateMessage_NO_RESPONSE_CODE_RECEIVED.toLocalizedString());
