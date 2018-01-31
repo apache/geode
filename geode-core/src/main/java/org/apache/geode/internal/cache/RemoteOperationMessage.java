@@ -317,16 +317,6 @@ public abstract class RemoteOperationMessage extends DistributionMessage
     return true;
   }
 
-
-  /**
-   * return a new reply processor for this class, for use in relaying a response. This <b>must</b>
-   * be an instance method so subclasses can override it properly.
-   */
-  RemoteOperationResponse createReplyProcessor(PartitionedRegion r, Set recipients) {
-    return new RemoteOperationResponse(r.getSystem(), recipients);
-  }
-
-
   protected abstract boolean operateOnRegion(ClusterDistributionManager dm, LocalRegion r,
       long startTime) throws RemoteOperationException;
 
@@ -495,17 +485,17 @@ public abstract class RemoteOperationMessage extends DistributionMessage
     /**
      * The exception thrown when the recipient does not reply
      */
-    volatile ForceReattemptException prce;
+    private volatile ForceReattemptException prce;
 
     /**
      * Whether a response has been received
      */
-    volatile boolean responseReceived;
+    private volatile boolean responseReceived;
 
     /**
      * whether a response is required
      */
-    boolean responseRequired;
+    private boolean responseRequired;
 
     public RemoteOperationResponse(InternalDistributedSystem dm, Collection initMembers) {
       this(dm, initMembers, true);
@@ -554,6 +544,10 @@ public abstract class RemoteOperationMessage extends DistributionMessage
             LocalizedStrings.PartitionMessage_MEMBERDEPARTED_GOT_NULL_MEMBERID_CRASHED_0, crashed),
             e);
       }
+    }
+
+    public Exception getMemberDepartedException() {
+      return this.prce;
     }
 
     /**
