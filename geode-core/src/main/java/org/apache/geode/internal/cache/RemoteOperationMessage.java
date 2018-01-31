@@ -555,7 +555,8 @@ public abstract class RemoteOperationMessage extends DistributionMessage
      *
      * @throws RemoteOperationException if the member we waited for a response from departed
      * @throws RemoteOperationException if a response was required and not received
-     * @throws RemoteOperationException if the ReplyException was caused by a RemoteOperationException
+     * @throws RemoteOperationException if the ReplyException was caused by a
+     *         RemoteOperationException
      * @throws RemoteOperationException if the remote side's cache was closed
      */
     public void waitForCacheException() throws RemoteOperationException {

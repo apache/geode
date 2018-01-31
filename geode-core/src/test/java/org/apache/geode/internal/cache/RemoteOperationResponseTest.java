@@ -149,7 +149,7 @@ public class RemoteOperationResponseTest {
     doThrow(replyException).when(replyProcessor).waitForRepliesUninterruptibly();
 
     replyProcessor.waitForCacheException();
-    
+
     verify(replyException, times(1)).handleCause();
   }
 
