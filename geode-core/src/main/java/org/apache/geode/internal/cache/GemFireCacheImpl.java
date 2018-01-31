@@ -14,6 +14,9 @@
  */
 package org.apache.geode.internal.cache;
 
+import static org.apache.geode.distributed.internal.InternalDistributedSystem.ALLOW_MULTIPLE_SYSTEMS;
+import static org.apache.geode.distributed.internal.InternalDistributedSystem.getAnyInstance;
+
 import java.io.BufferedReader;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
@@ -259,15 +262,6 @@ public class GemFireCacheImpl implements InternalCache, InternalClientCache, Has
 
   /** The default "copy on read" attribute value */
   public static final boolean DEFAULT_COPY_ON_READ = false;
-
-  /** the last instance of GemFireCache created */
-  private static volatile GemFireCacheImpl instance = null;
-
-  /**
-   * Just like instance but is valid for a bit longer so that pdx can still find the cache during a
-   * close.
-   */
-  private static volatile GemFireCacheImpl pdxInstance = null;
 
   /**
    * The default amount of time to wait for a {@code netSearch} to complete
@@ -684,7 +678,21 @@ public class GemFireCacheImpl implements InternalCache, InternalClientCache, Has
    */
   @Deprecated
   public static GemFireCacheImpl getInstance() {
-    return instance;
+    InternalDistributedSystem system = InternalDistributedSystem.getAnyInstance();
+    if (system == null) {
+      return null;
+    }
+    GemFireCacheImpl cache = (GemFireCacheImpl) system.getCache();
+    if (cache == null) {
+      return null;
+    }
+
+    if (cache.isClosing) {
+      return null;
+    }
+
+    return cache;
+
   }
 
   /**
@@ -696,7 +704,7 @@ public class GemFireCacheImpl implements InternalCache, InternalClientCache, Has
    */
   @Deprecated
   public static GemFireCacheImpl getExisting() {
-    final GemFireCacheImpl result = instance;
+    final GemFireCacheImpl result = getInstance();
     if (result != null && !result.isClosing) {
       return result;
     }
@@ -732,11 +740,17 @@ public class GemFireCacheImpl implements InternalCache, InternalClientCache, Has
    *             in to your method.
    */
   public static GemFireCacheImpl getForPdx(String reason) {
-    GemFireCacheImpl result = pdxInstance;
-    if (result == null) {
+
+    InternalDistributedSystem system = getAnyInstance();
+    if (system == null) {
       throw new CacheClosedException(reason);
     }
-    return result;
+    GemFireCacheImpl cache = (GemFireCacheImpl) system.getCache();
+    if (cache == null) {
+      throw new CacheClosedException(reason);
+    }
+
+    return cache;
   }
 
   public static GemFireCacheImpl createClient(InternalDistributedSystem system, PoolFactory pf,
@@ -764,7 +778,7 @@ public class GemFireCacheImpl implements InternalCache, InternalClientCache, Has
       CacheWriterException, GatewayException, RegionExistsException {
     try {
       synchronized (GemFireCacheImpl.class) {
-        GemFireCacheImpl instance = checkExistingCache(existingOk, cacheConfig);
+        GemFireCacheImpl instance = checkExistingCache(existingOk, cacheConfig, system);
         if (instance == null) {
           instance = new GemFireCacheImpl(isClient, pf, system, cacheConfig, asyncEventListeners,
               typeRegistry);
@@ -784,8 +798,10 @@ public class GemFireCacheImpl implements InternalCache, InternalClientCache, Has
     }
   }
 
-  private static GemFireCacheImpl checkExistingCache(boolean existingOk, CacheConfig cacheConfig) {
-    GemFireCacheImpl instance = getInstance();
+  private static GemFireCacheImpl checkExistingCache(boolean existingOk, CacheConfig cacheConfig,
+      InternalDistributedSystem system) {
+    GemFireCacheImpl instance =
+        ALLOW_MULTIPLE_SYSTEMS ? (GemFireCacheImpl) system.getCache() : getInstance();
 
     if (instance != null && !instance.isClosed()) {
       if (existingOk) {
@@ -1143,13 +1159,6 @@ public class GemFireCacheImpl implements InternalCache, InternalClientCache, Has
    * references to this instance in this method (vs. the constructor).
    */
   private void initialize() {
-    if (GemFireCacheImpl.instance != null) {
-      Assert.assertTrue(GemFireCacheImpl.instance == null,
-          "Cache instance already in place: " + instance);
-    }
-    GemFireCacheImpl.instance = this;
-    GemFireCacheImpl.pdxInstance = this;
-
     for (CacheLifecycleListener listener : cacheLifecycleListeners) {
       listener.cacheCreated(this);
     }
@@ -1631,7 +1640,7 @@ public class GemFireCacheImpl implements InternalCache, InternalClientCache, Has
   public static void emergencyClose() {
     final boolean DEBUG = SystemFailure.TRACE_CLOSE;
 
-    GemFireCacheImpl cache = GemFireCacheImpl.instance;
+    GemFireCacheImpl cache = getInstance();
     if (cache == null) {
       if (DEBUG) {
         System.err.println("GemFireCache#emergencyClose: no instance");
@@ -1639,8 +1648,6 @@ public class GemFireCacheImpl implements InternalCache, InternalClientCache, Has
       return;
     }
 
-    GemFireCacheImpl.instance = null;
-    GemFireCacheImpl.pdxInstance = null;
     // leave the PdxSerializer set if we have one to prevent 43412
 
     // Shut down messaging first
@@ -2130,12 +2137,6 @@ public class GemFireCacheImpl implements InternalCache, InternalClientCache, Has
       this.isClosing = true;
       logger.info(LocalizedMessage.create(LocalizedStrings.GemFireCache_0_NOW_CLOSING, this));
 
-      // Before anything else...make sure that this instance is not
-      // available to anyone "fishing" for a cache...
-      if (GemFireCacheImpl.instance == this) {
-        GemFireCacheImpl.instance = null;
-      }
-
       // we don't clear the prID map if there is a system failure. Other
       // threads may be hung trying to communicate with the map locked
       if (systemFailureCause == null) {
@@ -2213,9 +2214,6 @@ public class GemFireCacheImpl implements InternalCache, InternalClientCache, Has
           }
 
           prepareDiskStoresForClose();
-          if (GemFireCacheImpl.pdxInstance == this) {
-            GemFireCacheImpl.pdxInstance = null;
-          }
 
           List<LocalRegion> rootRegionValues;
           synchronized (this.rootRegions) {
@@ -2523,6 +2521,7 @@ public class GemFireCacheImpl implements InternalCache, InternalClientCache, Has
     }
   }
 
+  @Override
   public void closeDiskStores() {
     Iterator<DiskStoreImpl> it = this.diskStores.values().iterator();
     while (it.hasNext()) {

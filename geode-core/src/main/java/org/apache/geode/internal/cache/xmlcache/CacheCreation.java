@@ -1259,6 +1259,11 @@ public class CacheCreation implements InternalCache {
   }
 
   @Override
+  public void closeDiskStores() {
+    throw new UnsupportedOperationException(LocalizedStrings.SHOULDNT_INVOKE.toLocalizedString());
+  }
+
+  @Override
   public AsyncEventQueue getAsyncEventQueue(String id) {
     for (AsyncEventQueue asyncEventQueue : this.asyncEventQueues) {
       if (asyncEventQueue.getId().equals(id)) {

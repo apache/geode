@@ -1224,7 +1224,7 @@ public class BucketRegion extends DistributedRegion implements Bucket {
   }
 
   @Override
-  protected void basicDestroyBeforeRemoval(RegionEntry entry, EntryEventImpl event) {
+  public void basicDestroyBeforeRemoval(RegionEntry entry, EntryEventImpl event) {
     long token = -1;
     DestroyOperation op = null;
     try {
@@ -2131,7 +2131,7 @@ public class BucketRegion extends DistributedRegion implements Bucket {
   }
 
   @Override
-  void updateSizeOnRemove(Object key, int oldSize) {
+  public void updateSizeOnRemove(Object key, int oldSize) {
     this.partitionedRegion.getPrStats().incDataStoreEntryCount(-1);
     updateBucket2Size(oldSize, 0, SizeOp.DESTROY);
   }

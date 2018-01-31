@@ -36,13 +36,13 @@ public interface MapCallback<K, V, C, P> {
   /**
    * Token to return from {@link #removeValue} to indicate that remove has to be aborted.
    */
-  public static final Object ABORT_REMOVE_TOKEN = new Object();
+  Object ABORT_REMOVE_TOKEN = new Object();
 
   /**
    * Token object to indicate that {@link #removeValue} does not need to compare against provided
    * value before removing from segment.
    */
-  public static final Object NO_OBJECT_TOKEN = new Object();
+  Object NO_OBJECT_TOKEN = new Object();
 
   /**
    * Create a new instance of the value object given the key and provided parameters for
@@ -54,7 +54,7 @@ public interface MapCallback<K, V, C, P> {
    *
    * @return the new value to be inserted in the map
    */
-  public V newValue(K key, C context, P createParams, MapResult result);
+  V newValue(K key, C context, P createParams, MapResult result);
 
   /**
    * Invoked when an existing value in map is read by the <code>create</code> method in custom map
@@ -68,7 +68,7 @@ public interface MapCallback<K, V, C, P> {
    * @return updated value to be put in the map, if non-null; if null then retry the map operation
    *         internally
    */
-  public V updateValue(K key, V oldValue, C context, P params);
+  V updateValue(K key, V oldValue, C context, P params);
 
   /**
    * Invoked after put is successful with the result of {@link #updateValue}.
@@ -78,19 +78,19 @@ public interface MapCallback<K, V, C, P> {
    * @param newValue the new value to be replaced
    * @param context any callback argument passed to put overload
    */
-  public void afterUpdate(K key, K mapKey, V newValue, C context);
+  void afterUpdate(K key, K mapKey, V newValue, C context);
 
   /**
    * Returns true if {@link #updateValue} should be invoked else false.
    */
-  public boolean requiresUpdateValue();
+  boolean requiresUpdateValue();
 
   /**
    * Invoked when an existing value in map is read by read ops.
    *
    * @param oldValue the value read by create that will be returned
    */
-  public void oldValueRead(V oldValue);
+  void oldValueRead(V oldValue);
 
   /**
    * Check if the existing value should be removed by the custom <code>remove</code> methods that
@@ -106,7 +106,7 @@ public interface MapCallback<K, V, C, P> {
    * @param context any context in which this method has been invoked
    * @param removeParams parameters, if any, to be passed for cleanup of the object
    */
-  public Object removeValue(Object key, Object value, V existingValue, C context, P removeParams);
+  Object removeValue(Object key, Object value, V existingValue, C context, P removeParams);
 
   /**
    * Invoked after removal of an entry. Some implementations (CustomEntryConcurrentHashMap) will
@@ -121,7 +121,7 @@ public interface MapCallback<K, V, C, P> {
    * @param context any context in which this method has been invoked
    * @param removeParams parameters, if any, to be passed for cleanup of the object
    */
-  public void postRemove(Object key, Object value, V existingValue, C context, P removeParams);
+  void postRemove(Object key, Object value, V existingValue, C context, P removeParams);
 
   /**
    * Invoked when an existing value in map is read by the <code>replace</code> method in custom map
@@ -137,7 +137,7 @@ public interface MapCallback<K, V, C, P> {
    * @return updated value to be actually put in the map, if non-null; if null then retry the map
    *         operation internally
    */
-  public V replaceValue(K key, V oldValue, V existingValue, V newValue, C context, P params);
+  V replaceValue(K key, V oldValue, V existingValue, V newValue, C context, P params);
 
   /**
    * Invoked after the node is found and just before the replace. The replace may still either
@@ -148,7 +148,7 @@ public interface MapCallback<K, V, C, P> {
    * @param context any context argument passed to replace
    * @param params any callback parameters passed to the replace method
    */
-  public Object beforeReplace(K mapKey, V newValue, C context, P params);
+  Object beforeReplace(K mapKey, V newValue, C context, P params);
 
   /**
    * Invoked after replace is successful and passing it the result of {@link #beforeReplace}.
@@ -159,7 +159,7 @@ public interface MapCallback<K, V, C, P> {
    * @param context any context argument passed to replace overload
    * @param params any callback parameters passed to the replace method
    */
-  public void afterReplace(K mapKey, V newValue, Object beforeResult, C context, P params);
+  void afterReplace(K mapKey, V newValue, Object beforeResult, C context, P params);
 
   /**
    * Invoked after replace fails and passing it the result of {@link #beforeReplace}.
@@ -170,7 +170,7 @@ public interface MapCallback<K, V, C, P> {
    * @param context any context argument passed to replace overload
    * @param params any callback parameters passed to the replace method
    */
-  public void onReplaceFailed(K mapKey, V newValue, Object beforeResult, C context, P params);
+  void onReplaceFailed(K mapKey, V newValue, Object beforeResult, C context, P params);
 
   /**
    * Invoked after replace or delete fails at the end, passing it the intermediate values that were
@@ -188,11 +188,10 @@ public interface MapCallback<K, V, C, P> {
    *
    * @return value to be returned as result of operation ignoring failure (or null for failure)
    */
-  public V onOperationFailed(K key, Object oldValue, V updatedValue, V newValue, C context,
-      P params);
+  V onOperationFailed(K key, Object oldValue, V updatedValue, V newValue, C context, P params);
 
   /**
    * Invoked by some implementations like ConcurrentTHashSet to in its toArray.
    */
-  public void onToArray(C context);
+  void onToArray(C context);
 }

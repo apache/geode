@@ -49,7 +49,7 @@ public interface LuceneIndex {
    *
    * @return Name of the LuceneIndex
    */
-  public String getName();
+  String getName();
 
   /**
    * Returns the path of the region on which the LuceneIndex was created. The region name is
@@ -57,7 +57,7 @@ public interface LuceneIndex {
    *
    * @return Path of the region
    */
-  public String getRegionPath();
+  String getRegionPath();
 
   /**
    * Returns a string array containing the fields on which the LuceneIndex was created. These fields
@@ -66,7 +66,7 @@ public interface LuceneIndex {
    *
    * @return String array containing the field names
    */
-  public String[] getFieldNames();
+  String[] getFieldNames();
 
   /**
    * Returns a map containing the field name and the {@link Analyzer} used to tokenize the field.
@@ -76,11 +76,11 @@ public interface LuceneIndex {
    * @return a map containing pairs of the indexed field name and the corresponding {@link Analyzer}
    *         being used on each indexed field.
    */
-  public Map<String, Analyzer> getFieldAnalyzers();
+  Map<String, Analyzer> getFieldAnalyzers();
 
   /**
    * Return the {@link LuceneSerializer} associated with this index
    */
-  public LuceneSerializer getLuceneSerializer();
+  LuceneSerializer getLuceneSerializer();
 
 }

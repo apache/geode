@@ -64,5 +64,5 @@ public interface Declarable {
    * @throws IllegalArgumentException If one of the configuration options in <code>props</code> is
    *         illegal or malformed.
    */
-  public default void init(Properties props) {};
+  default void init(Properties props) {};
 }

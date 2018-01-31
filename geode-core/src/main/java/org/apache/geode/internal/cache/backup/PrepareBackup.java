@@ -31,12 +31,14 @@ class PrepareBackup {
     this.cache = cache;
   }
 
-  HashSet<PersistentID> run() throws IOException {
+  HashSet<PersistentID> run() throws IOException, InterruptedException {
     HashSet<PersistentID> persistentIds;
     if (cache == null) {
       persistentIds = new HashSet<>();
     } else {
-      persistentIds = cache.startBackup(member).prepareForBackup();
+      BackupManager backupManager = cache.startBackup(member);
+      backupManager.startBackup();
+      persistentIds = backupManager.getDiskStoreIdsToBackup();
     }
     return persistentIds;
   }

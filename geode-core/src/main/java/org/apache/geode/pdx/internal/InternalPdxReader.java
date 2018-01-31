@@ -16,9 +16,7 @@ package org.apache.geode.pdx.internal;
 
 import java.util.Date;
 
-import org.apache.geode.pdx.PdxFieldTypeMismatchException;
 import org.apache.geode.pdx.PdxReader;
-import org.apache.geode.pdx.PdxSerializationException;
 import org.apache.geode.pdx.internal.AutoSerializableManager.AutoClassInfo;
 
 /**
@@ -27,98 +25,98 @@ import org.apache.geode.pdx.internal.AutoSerializableManager.AutoClassInfo;
  * @since GemFire 6.6.2
  */
 public interface InternalPdxReader extends PdxReader {
-  public PdxField getPdxField(String fieldName);
+  PdxField getPdxField(String fieldName);
 
-  public char readChar(PdxField f);
+  char readChar(PdxField f);
 
-  public boolean readBoolean(PdxField f);
+  boolean readBoolean(PdxField f);
 
-  public byte readByte(PdxField f);
+  byte readByte(PdxField f);
 
-  public short readShort(PdxField f);
+  short readShort(PdxField f);
 
-  public int readInt(PdxField f);
+  int readInt(PdxField f);
 
-  public long readLong(PdxField f);
+  long readLong(PdxField f);
 
-  public float readFloat(PdxField f);
+  float readFloat(PdxField f);
 
-  public double readDouble(PdxField f);
+  double readDouble(PdxField f);
 
-  public String readString(PdxField f);
+  String readString(PdxField f);
 
-  public Object readObject(PdxField f);
+  Object readObject(PdxField f);
 
-  public char[] readCharArray(PdxField f);
+  char[] readCharArray(PdxField f);
 
-  public boolean[] readBooleanArray(PdxField f);
+  boolean[] readBooleanArray(PdxField f);
 
-  public byte[] readByteArray(PdxField f);
+  byte[] readByteArray(PdxField f);
 
-  public short[] readShortArray(PdxField f);
+  short[] readShortArray(PdxField f);
 
-  public int[] readIntArray(PdxField f);
+  int[] readIntArray(PdxField f);
 
-  public long[] readLongArray(PdxField f);
+  long[] readLongArray(PdxField f);
 
-  public float[] readFloatArray(PdxField f);
+  float[] readFloatArray(PdxField f);
 
-  public double[] readDoubleArray(PdxField f);
+  double[] readDoubleArray(PdxField f);
 
-  public String[] readStringArray(PdxField f);
+  String[] readStringArray(PdxField f);
 
-  public Object[] readObjectArray(PdxField f);
+  Object[] readObjectArray(PdxField f);
 
-  public byte[][] readArrayOfByteArrays(PdxField f);
+  byte[][] readArrayOfByteArrays(PdxField f);
 
-  public Date readDate(PdxField f);
+  Date readDate(PdxField f);
 
-  public char readChar();
+  char readChar();
 
-  public boolean readBoolean();
+  boolean readBoolean();
 
-  public byte readByte();
+  byte readByte();
 
-  public short readShort();
+  short readShort();
 
-  public int readInt();
+  int readInt();
 
-  public long readLong();
+  long readLong();
 
-  public float readFloat();
+  float readFloat();
 
-  public double readDouble();
+  double readDouble();
 
-  public String readString();
+  String readString();
 
-  public Object readObject();
+  Object readObject();
 
-  public char[] readCharArray();
+  char[] readCharArray();
 
-  public boolean[] readBooleanArray();
+  boolean[] readBooleanArray();
 
-  public byte[] readByteArray();
+  byte[] readByteArray();
 
-  public short[] readShortArray();
+  short[] readShortArray();
 
-  public int[] readIntArray();
+  int[] readIntArray();
 
-  public long[] readLongArray();
+  long[] readLongArray();
 
-  public float[] readFloatArray();
+  float[] readFloatArray();
 
-  public double[] readDoubleArray();
+  double[] readDoubleArray();
 
-  public String[] readStringArray();
+  String[] readStringArray();
 
-  public Object[] readObjectArray();
+  Object[] readObjectArray();
 
-  public byte[][] readArrayOfByteArrays();
+  byte[][] readArrayOfByteArrays();
 
-  public Date readDate();
+  Date readDate();
 
-  public PdxType getPdxType();
+  PdxType getPdxType();
 
-  public void orderedDeserialize(Object obj, AutoClassInfo ci);
+  void orderedDeserialize(Object obj, AutoClassInfo ci);
 
 }

@@ -25,12 +25,12 @@ public interface ServerCQ extends InternalCqQuery {
   /**
    * @return the filterID
    */
-  public abstract Long getFilterID();
+  Long getFilterID();
 
   /**
    * @param filterID the filterID to set
    */
-  public abstract void setFilterID(Long filterID);
+  void setFilterID(Long filterID);
 
   /**
    * Register the Query on server.
@@ -39,15 +39,15 @@ public interface ServerCQ extends InternalCqQuery {
    * @param p_ccn
    * @throws CqException
    */
-  public abstract void registerCq(ClientProxyMembershipID p_clientProxyId,
-      CacheClientNotifier p_ccn, int p_cqState) throws CqException, RegionNotFoundException;
+  void registerCq(ClientProxyMembershipID p_clientProxyId, CacheClientNotifier p_ccn, int p_cqState)
+      throws CqException, RegionNotFoundException;
 
   /**
    * Adds into the CQ Results key cache.
    *
    * @param key
    */
-  public abstract void addToCqResultKeys(Object key);
+  void addToCqResultKeys(Object key);
 
   /**
    * Removes the key from CQ Results key cache.
@@ -56,17 +56,17 @@ public interface ServerCQ extends InternalCqQuery {
    * @param isTokenMode if true removes the key if its in destroy token mode if false removes the
    *        key without any check.
    */
-  public abstract void removeFromCqResultKeys(Object key, boolean isTokenMode);
+  void removeFromCqResultKeys(Object key, boolean isTokenMode);
 
   /**
    * Sets the CQ Results key cache state as initialized.
    */
-  public abstract void setCqResultsCacheInitialized();
+  void setCqResultsCacheInitialized();
 
   /**
    * Returns true if old value is required for query processing.
    */
-  public abstract boolean isOldValueRequiredForQueryProcessing(Object key);
+  boolean isOldValueRequiredForQueryProcessing(Object key);
 
   /**
    * Closes the Query. On Client side, sends the cq close request to server. On Server side, takes
@@ -75,12 +75,12 @@ public interface ServerCQ extends InternalCqQuery {
    * @param sendRequestToServer true to send the request to server.
    * @throws CqException
    */
-  public abstract void close(boolean sendRequestToServer) throws CqClosedException, CqException;
+  void close(boolean sendRequestToServer) throws CqClosedException, CqException;
 
 
-  public abstract boolean isPR();
+  boolean isPR();
 
-  public ClientProxyMembershipID getClientProxyId();
+  ClientProxyMembershipID getClientProxyId();
 
-  public void stop() throws CqClosedException, CqException;
+  void stop() throws CqClosedException, CqException;
 }

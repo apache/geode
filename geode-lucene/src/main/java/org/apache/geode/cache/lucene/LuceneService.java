@@ -101,12 +101,12 @@ public interface LuceneService {
    * only work if the region value is a String or Number, in which case a Lucene document will be
    * created with a single field with this name.
    */
-  public String REGION_VALUE_FIELD = "__REGION_VALUE_FIELD";
+  String REGION_VALUE_FIELD = "__REGION_VALUE_FIELD";
 
   /**
    * Get a factory for creating a Lucene index on this member.
    */
-  public LuceneIndexFactory createIndexFactory();
+  LuceneIndexFactory createIndexFactory();
 
   /**
    * Destroy the Lucene index
@@ -114,14 +114,14 @@ public interface LuceneService {
    * @param indexName the name of the index to destroy
    * @param regionPath the path of the region whose index to destroy
    */
-  public void destroyIndex(String indexName, String regionPath);
+  void destroyIndex(String indexName, String regionPath);
 
   /**
    * Destroy all the Lucene indexes for the region
    *
    * @param regionPath The path of the region on which to destroy the indexes
    */
-  public void destroyIndexes(String regionPath);
+  void destroyIndexes(String regionPath);
 
   /**
    * Get the Lucene index object specified by region name and index name
@@ -130,26 +130,26 @@ public interface LuceneService {
    * @param regionPath region name
    * @return LuceneIndex object
    */
-  public LuceneIndex getIndex(String indexName, String regionPath);
+  LuceneIndex getIndex(String indexName, String regionPath);
 
   /**
    * get all the Lucene indexes.
    *
    * @return all index objects in a Collection
    */
-  public Collection<LuceneIndex> getAllIndexes();
+  Collection<LuceneIndex> getAllIndexes();
 
   /**
    * Create a factory for building a Lucene query.
    */
-  public LuceneQueryFactory createLuceneQueryFactory();
+  LuceneQueryFactory createLuceneQueryFactory();
 
   /**
    * returns the cache to which the LuceneService belongs
    *
    * @return Cache
    */
-  public Cache getCache();
+  Cache getCache();
 
 
   /**
@@ -171,6 +171,6 @@ public interface LuceneService {
    *
    * @return true if entries are flushed within timeout, false if the timeout has elapsed
    */
-  public boolean waitUntilFlushed(String indexName, String regionPath, long timeout, TimeUnit unit)
+  boolean waitUntilFlushed(String indexName, String regionPath, long timeout, TimeUnit unit)
       throws InterruptedException;
 }

@@ -61,71 +61,68 @@ public interface CqService {
    *         parameters in the query are not supported for the initial release.
    *
    */
-  public abstract ClientCQ newCq(String cqName, String queryString, CqAttributes cqAttributes,
-      InternalPool pool, boolean isDurable)
-      throws QueryInvalidException, CqExistsException, CqException;
+  ClientCQ newCq(String cqName, String queryString, CqAttributes cqAttributes, InternalPool pool,
+      boolean isDurable) throws QueryInvalidException, CqExistsException, CqException;
 
   /**
    * Retrieve a cq by client cq name from server
    *
    * @return the CqQuery or null if not found
    */
-  public abstract CqQuery getClientCqFromServer(ClientProxyMembershipID clientProxyId,
-      String clientCqName);
+  CqQuery getClientCqFromServer(ClientProxyMembershipID clientProxyId, String clientCqName);
 
   /**
    * Retrieve a CqQuery by name.
    *
    * @return the CqQuery or null if not found
    */
-  public abstract InternalCqQuery getCq(String cqName);
+  InternalCqQuery getCq(String cqName);
 
   /**
    * Retrieve all registered CQs
    */
-  public abstract Collection<? extends InternalCqQuery> getAllCqs();
+  Collection<? extends InternalCqQuery> getAllCqs();
 
   /**
    * Retruns all the cqs on a given region.
    *
    */
-  public abstract Collection<? extends InternalCqQuery> getAllCqs(String regionName)
-      throws CqException;
+  Collection<? extends InternalCqQuery> getAllCqs(String regionName) throws CqException;
 
   /**
    * Executes all the cqs on this client.
    */
-  public abstract void executeAllClientCqs() throws CqException;
+  void executeAllClientCqs() throws CqException;
 
   /**
    * Executes all the cqs on a given region.
    */
-  public abstract void executeAllRegionCqs(String regionName) throws CqException;
+  void executeAllRegionCqs(String regionName) throws CqException;
 
   /**
    * Executes all the given cqs.
    */
-  public abstract void executeCqs(Collection<? extends InternalCqQuery> cqs) throws CqException;
+  void executeCqs(Collection<? extends InternalCqQuery> cqs) throws CqException;
 
   /**
    * Stops all the cqs on a given region.
    */
-  public abstract void stopAllClientCqs() throws CqException;
+  void stopAllClientCqs() throws CqException;
 
   /**
    * Stops all the cqs on a given region.
    */
-  public abstract void stopAllRegionCqs(String regionName) throws CqException;
+  void stopAllRegionCqs(String regionName) throws CqException;
 
   /**
    * Stops all the specified cqs.
    */
-  public abstract void stopCqs(Collection<? extends InternalCqQuery> cqs) throws CqException;
+  void stopCqs(Collection<? extends InternalCqQuery> cqs) throws CqException;
 
   /**
    * Closes all the cqs on a given region.
    */
-  public abstract void closeCqs(String regionName) throws CqException;
+  void closeCqs(String regionName) throws CqException;
 
   /**
    * Called directly on server side.
@@ -134,20 +131,19 @@ public interface CqService {
    * @param clientProxyId
    * @throws CqException
    */
-  public abstract void closeCq(String cqName, ClientProxyMembershipID clientProxyId)
-      throws CqException;
+  void closeCq(String cqName, ClientProxyMembershipID clientProxyId) throws CqException;
 
-  public abstract void closeAllCqs(boolean clientInitiated);
+  void closeAllCqs(boolean clientInitiated);
 
-  public abstract void closeAllCqs(boolean clientInitiated,
-      Collection<? extends InternalCqQuery> cqs, boolean keepAlive);
+  void closeAllCqs(boolean clientInitiated, Collection<? extends InternalCqQuery> cqs,
+      boolean keepAlive);
 
   /**
    * Get statistics information for all CQs
    *
    * @return the CqServiceStatistics
    */
-  public abstract CqServiceStatistics getCqStatistics();
+  CqServiceStatistics getCqStatistics();
 
   /**
    * Server side method.
@@ -155,7 +151,7 @@ public interface CqService {
    * @param clientProxyId
    * @throws CqException
    */
-  public abstract void closeClientCqs(ClientProxyMembershipID clientProxyId) throws CqException;
+  void closeClientCqs(ClientProxyMembershipID clientProxyId) throws CqException;
 
   /**
    * Returns all the CQs registered by the client.
@@ -163,7 +159,7 @@ public interface CqService {
    * @param clientProxyId
    * @return CQs registered by the client.
    */
-  public abstract List<ServerCQ> getAllClientCqs(ClientProxyMembershipID clientProxyId);
+  List<ServerCQ> getAllClientCqs(ClientProxyMembershipID clientProxyId);
 
   /**
    * Returns all the durable client CQs registered by the client.
@@ -171,8 +167,7 @@ public interface CqService {
    * @param clientProxyId
    * @return CQs registered by the client.
    */
-  public abstract List<String> getAllDurableClientCqs(ClientProxyMembershipID clientProxyId)
-      throws CqException;
+  List<String> getAllDurableClientCqs(ClientProxyMembershipID clientProxyId) throws CqException;
 
   /**
    * Invokes the CqListeners for the given CQs.
@@ -182,30 +177,30 @@ public interface CqService {
    * @param key
    * @param value
    */
-  public abstract void dispatchCqListeners(HashMap<String, Integer> cqs, int messageType,
-      Object key, Object value, byte[] delta, QueueManager qManager, EventID eventId);
+  void dispatchCqListeners(HashMap<String, Integer> cqs, int messageType, Object key, Object value,
+      byte[] delta, QueueManager qManager, EventID eventId);
 
-  public abstract void processEvents(CacheEvent event, Profile localProfile, Profile[] profiles,
+  void processEvents(CacheEvent event, Profile localProfile, Profile[] profiles,
       FilterRoutingInfo frInfo) throws CqException;
 
-  public UserAttributes getUserAttributes(String cqName);
+  UserAttributes getUserAttributes(String cqName);
 
   /**
    * Closes the CqService.
    */
-  public void close();
+  void close();
 
   /**
    * Returns true if the CQ service has not been closed yet.
    */
-  public boolean isRunning();
+  boolean isRunning();
 
-  public void start();
+  void start();
 
   /**
    * @return Returns the serverCqName.
    */
-  public String constructServerCqName(String cqName, ClientProxyMembershipID clientProxyId);
+  String constructServerCqName(String cqName, ClientProxyMembershipID clientProxyId);
 
   /**
    * Called directly on server side.
@@ -214,7 +209,7 @@ public interface CqService {
    * @param clientId
    * @throws CqException
    */
-  public void stopCq(String cqName, ClientProxyMembershipID clientId) throws CqException;
+  void stopCq(String cqName, ClientProxyMembershipID clientId) throws CqException;
 
   /**
    * Called directly on the server side.
@@ -222,11 +217,11 @@ public interface CqService {
    * @param cqState new state
    * @param cQuery
    */
-  public void resumeCQ(int cqState, ServerCQ cQuery);
+  void resumeCQ(int cqState, ServerCQ cQuery);
 
-  public void cqsDisconnected(Pool pool);
+  void cqsDisconnected(Pool pool);
 
-  public void cqsConnected(Pool pool);
+  void cqsConnected(Pool pool);
 
   /**
    * Executes the given CqQuery, if the CqQuery for that name is not there it registers the one and
@@ -244,7 +239,7 @@ public interface CqService {
    * @throws IllegalStateException if this is called at client side.
    * @throws CqException
    */
-  public ServerCQ executeCq(String cqName, String queryString, int cqState,
+  ServerCQ executeCq(String cqName, String queryString, int cqState,
       ClientProxyMembershipID clientProxyId, CacheClientNotifier ccn, boolean isDurable,
       boolean manageEmptyRegions, int regionDataPolicy, Map emptyRegionsMap)
       throws CqException, RegionNotFoundException, CqClosedException;
@@ -255,7 +250,7 @@ public interface CqService {
    * @param clientProxyId
    * @throws CqException
    */
-  public void closeNonDurableClientCqs(ClientProxyMembershipID clientProxyId) throws CqException;
+  void closeNonDurableClientCqs(ClientProxyMembershipID clientProxyId) throws CqException;
 
-  public abstract List<String> getAllDurableCqsFromServer(InternalPool pool);
+  List<String> getAllDurableCqsFromServer(InternalPool pool);
 }

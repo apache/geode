@@ -79,302 +79,302 @@ public interface LogWriterI18n {
   /**
    * @return true if "severe" log messages are enabled.
    */
-  public boolean severeEnabled();
+  boolean severeEnabled();
 
   /**
    * Writes an exception to this writer. The exception level is "severe".
    */
-  public void severe(Throwable ex);
+  void severe(Throwable ex);
 
   /**
    * Writes both a message and exception to this writer. The message level is "severe".
    *
    * @since GemFire 6.0
    */
-  public void severe(StringId msgID, Object[] params, Throwable ex);
+  void severe(StringId msgID, Object[] params, Throwable ex);
 
   /**
    * Writes both a message and exception to this writer. The message level is "severe".
    *
    * @since GemFire 6.0
    */
-  public void severe(StringId msgID, Object param, Throwable ex);
+  void severe(StringId msgID, Object param, Throwable ex);
 
   /**
    * Writes both a message and exception to this writer. The message level is "severe".
    *
    * @since GemFire 6.0
    */
-  public void severe(StringId msgID, Throwable ex);
+  void severe(StringId msgID, Throwable ex);
 
   /**
    * Writes a message to this writer. The message level is "severe".
    *
    * @since GemFire 6.0
    */
-  public void severe(StringId msgID, Object[] params);
+  void severe(StringId msgID, Object[] params);
 
   /**
    * Writes a message to this writer. The message level is "severe".
    *
    * @since GemFire 6.0
    */
-  public void severe(StringId msgID, Object param);
+  void severe(StringId msgID, Object param);
 
   /**
    * Writes a message to this writer. The message level is "severe".
    *
    * @since GemFire 6.0
    */
-  public void severe(StringId msgID);
+  void severe(StringId msgID);
 
   /**
    * @return true if "error" log messages are enabled.
    */
-  public boolean errorEnabled();
+  boolean errorEnabled();
 
   /**
    * Writes an exception to this writer. The exception level is "error".
    */
-  public void error(Throwable ex);
+  void error(Throwable ex);
 
   /**
    * Writes both a message and exception to this writer. The message level is "error".
    *
    * @since GemFire 6.0
    */
-  public void error(StringId msgID, Object[] params, Throwable ex);
+  void error(StringId msgID, Object[] params, Throwable ex);
 
   /**
    * Writes both a message and exception to this writer. The message level is "error".
    *
    * @since GemFire 6.0
    */
-  public void error(StringId msgID, Object param, Throwable ex);
+  void error(StringId msgID, Object param, Throwable ex);
 
   /**
    * Writes both a message and exception to this writer. The message level is "error".
    *
    * @since GemFire 6.0
    */
-  public void error(StringId msgID, Throwable ex);
+  void error(StringId msgID, Throwable ex);
 
   /**
    * Writes a message to this writer. The message level is "error".
    *
    * @since GemFire 6.0
    */
-  public void error(StringId msgID, Object[] params);
+  void error(StringId msgID, Object[] params);
 
   /**
    * Writes a message to this writer. The message level is "error".
    *
    * @since GemFire 6.0
    */
-  public void error(StringId msgID, Object param);
+  void error(StringId msgID, Object param);
 
   /**
    * Writes a message to this writer. The message level is "error".
    *
    * @since GemFire 6.0
    */
-  public void error(StringId msgID);
+  void error(StringId msgID);
 
   /**
    * @return true if "warning" log messages are enabled.
    */
-  public boolean warningEnabled();
+  boolean warningEnabled();
 
   /**
    * Writes an exception to this writer. The exception level is "warning".
    */
-  public void warning(Throwable ex);
+  void warning(Throwable ex);
 
   /**
    * Writes both a message and exception to this writer. The message level is "warning".
    *
    * @since GemFire 6.0
    */
-  public void warning(StringId msgID, Object[] params, Throwable ex);
+  void warning(StringId msgID, Object[] params, Throwable ex);
 
   /**
    * Writes both a message and exception to this writer. The message level is "warning".
    *
    * @since GemFire 6.0
    */
-  public void warning(StringId msgID, Object param, Throwable ex);
+  void warning(StringId msgID, Object param, Throwable ex);
 
   /**
    * Writes both a message and exception to this writer. The message level is "warning".
    *
    * @since GemFire 6.0
    */
-  public void warning(StringId msgID, Throwable ex);
+  void warning(StringId msgID, Throwable ex);
 
   /**
    * Writes a message to this writer. The message level is "warning".
    *
    * @since GemFire 6.0
    */
-  public void warning(StringId msgID, Object[] params);
+  void warning(StringId msgID, Object[] params);
 
   /**
    * Writes a message to this writer. The message level is "warning".
    *
    * @since GemFire 6.0
    */
-  public void warning(StringId msgID, Object param);
+  void warning(StringId msgID, Object param);
 
   /**
    * Writes a message to this writer. The message level is "warning".
    *
    * @since GemFire 6.0
    */
-  public void warning(StringId msgID);
+  void warning(StringId msgID);
 
   /**
    * @return true if "info" log messages are enabled.
    */
-  public boolean infoEnabled();
+  boolean infoEnabled();
 
   /**
    * Writes an exception to this writer. The exception level is "information".
    */
-  public void info(Throwable ex);
+  void info(Throwable ex);
 
   /**
    * Writes both a message and exception to this writer. The message level is "info".
    *
    * @since GemFire 6.0
    */
-  public void info(StringId msgID, Object[] params, Throwable ex);
+  void info(StringId msgID, Object[] params, Throwable ex);
 
   /**
    * Writes both a message and exception to this writer. The message level is "info".
    *
    * @since GemFire 6.0
    */
-  public void info(StringId msgID, Object param, Throwable ex);
+  void info(StringId msgID, Object param, Throwable ex);
 
   /**
    * Writes both a message and exception to this writer. The message level is "info".
    *
    * @since GemFire 6.0
    */
-  public void info(StringId msgID, Throwable ex);
+  void info(StringId msgID, Throwable ex);
 
   /**
    * Writes a message to this writer. The message level is "info".
    *
    * @since GemFire 6.0
    */
-  public void info(StringId msgID, Object[] params);
+  void info(StringId msgID, Object[] params);
 
   /**
    * Writes a message to this writer. The message level is "info".
    *
    * @since GemFire 6.0
    */
-  public void info(StringId msgID, Object param);
+  void info(StringId msgID, Object param);
 
   /**
    * Writes a message to this writer. The message level is "info".
    *
    * @since GemFire 6.0
    */
-  public void info(StringId msgID);
+  void info(StringId msgID);
 
   /**
    * @return true if "config" log messages are enabled.
    */
-  public boolean configEnabled();
+  boolean configEnabled();
 
   /**
    * Writes an exception to this writer. The exception level is "config".
    */
-  public void config(Throwable ex);
+  void config(Throwable ex);
 
   /**
    * Writes both a message and exception to this writer. The message level is "config".
    *
    * @since GemFire 6.0
    */
-  public void config(StringId msgID, Object[] params, Throwable ex);
+  void config(StringId msgID, Object[] params, Throwable ex);
 
   /**
    * Writes both a message and exception to this writer. The message level is "config".
    *
    * @since GemFire 6.0
    */
-  public void config(StringId msgID, Object param, Throwable ex);
+  void config(StringId msgID, Object param, Throwable ex);
 
   /**
    * Writes both a message and exception to this writer. The message level is "config".
    *
    * @since GemFire 6.0
    */
-  public void config(StringId msgID, Throwable ex);
+  void config(StringId msgID, Throwable ex);
 
   /**
    * Writes a message to this writer. The message level is "config".
    *
    * @since GemFire 6.0
    */
-  public void config(StringId msgID, Object[] params);
+  void config(StringId msgID, Object[] params);
 
   /**
    * Writes a message to this writer. The message level is "config".
    *
    * @since GemFire 6.0
    */
-  public void config(StringId msgID, Object param);
+  void config(StringId msgID, Object param);
 
   /**
    * Writes a message to this writer. The message level is "config".
    *
    * @since GemFire 6.0
    */
-  public void config(StringId msgID);
+  void config(StringId msgID);
 
   /**
    * @return true if "fine" log messages are enabled.
    */
-  public boolean fineEnabled();
+  boolean fineEnabled();
 
   /**
    * Writes both a message and exception to this writer. The message level is "fine".
    */
-  public void fine(String msg, Throwable ex);
+  void fine(String msg, Throwable ex);
 
   /**
    * Writes a message to this writer. The message level is "fine".
    */
-  public void fine(String msg);
+  void fine(String msg);
 
   /**
    * Writes an exception to this writer. The exception level is "fine".
    */
-  public void fine(Throwable ex);
+  void fine(Throwable ex);
 
   /**
    * @return true if "finer" log messages are enabled.
    */
-  public boolean finerEnabled();
+  boolean finerEnabled();
 
   /**
    * Writes both a message and exception to this writer. The message level is "finer".
    */
-  public void finer(String msg, Throwable ex);
+  void finer(String msg, Throwable ex);
 
   /**
    * Writes a message to this writer. The message level is "finer".
    */
-  public void finer(String msg);
+  void finer(String msg);
 
   /**
    * Writes an exception to this writer. The exception level is "finer".
    */
-  public void finer(Throwable ex);
+  void finer(Throwable ex);
 
   /**
    * Log a method entry.
@@ -385,7 +385,7 @@ public interface LogWriterI18n {
    * @param sourceClass Name of class that issued the logging request.
    * @param sourceMethod Name of the method that issued the logging request.
    */
-  public void entering(String sourceClass, String sourceMethod);
+  void entering(String sourceClass, String sourceMethod);
 
   /**
    * Log a method return.
@@ -396,7 +396,7 @@ public interface LogWriterI18n {
    * @param sourceClass Name of class that issued the logging request.
    * @param sourceMethod Name of the method that issued the logging request.
    */
-  public void exiting(String sourceClass, String sourceMethod);
+  void exiting(String sourceClass, String sourceMethod);
 
   /**
    * Log throwing an exception.
@@ -412,39 +412,39 @@ public interface LogWriterI18n {
    * @param sourceMethod Name of the method that issued the logging request.
    * @param thrown The Throwable that is being thrown.
    */
-  public void throwing(String sourceClass, String sourceMethod, Throwable thrown);
+  void throwing(String sourceClass, String sourceMethod, Throwable thrown);
 
   /**
    * @return true if "finest" log messages are enabled.
    */
-  public boolean finestEnabled();
+  boolean finestEnabled();
 
   /**
    * Writes both a message and exception to this writer. The message level is "finest".
    */
-  public void finest(String msg, Throwable ex);
+  void finest(String msg, Throwable ex);
 
   /**
    * Writes a message to this writer. The message level is "finest".
    */
-  public void finest(String msg);
+  void finest(String msg);
 
   /**
    * Writes an exception to this writer. The exception level is "finest".
    */
-  public void finest(Throwable ex);
+  void finest(Throwable ex);
 
   /**
    * Returns a 1.4 logging handler that can be used to direct application output to this GemFire
    * logger using the standard JDK logger APIs. Each time this method is called it creates a new
    * instance of a Handler so care should be taken to not call this method too often.
    */
-  public Handler getHandler();
+  Handler getHandler();
 
   /**
    * A mechanism for accessing the abstraction layer used for a plain logger.
    *
    * @return LogWriter
    */
-  public LogWriter convertToLogWriter();
+  LogWriter convertToLogWriter();
 }

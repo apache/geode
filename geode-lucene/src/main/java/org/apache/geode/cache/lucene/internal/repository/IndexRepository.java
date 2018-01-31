@@ -58,7 +58,7 @@ public interface IndexRepository {
    *
    * @throws IOException
    */
-  public void query(Query query, int limit, IndexResultCollector collector) throws IOException;
+  void query(Query query, int limit, IndexResultCollector collector) throws IOException;
 
   /**
    * Commit the changes to all lucene index
@@ -74,7 +74,7 @@ public interface IndexRepository {
    *
    * @return true if this repository is closed.
    */
-  public boolean isClosed();
+  boolean isClosed();
 
   /**
    * For debugging purposes, return the underlying IndexWriter

@@ -16,7 +16,6 @@ org/apache/geode/internal/ExitCode
 org/apache/geode/internal/JarDeployer
 org/apache/geode/internal/ObjIdConcurrentMap
 org/apache/geode/internal/ObjIdConcurrentMap$Segment
-org/apache/geode/internal/cache/backup/BackupLock
 org/apache/geode/internal/cache/DiskStoreMonitor$DiskState
 org/apache/geode/internal/cache/InitialImageOperation$GIITestHook
 org/apache/geode/internal/cache/Oplog$OPLOG_TYPE

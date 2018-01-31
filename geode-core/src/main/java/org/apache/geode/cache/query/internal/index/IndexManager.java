@@ -231,7 +231,7 @@ public class IndexManager {
 
   /** Test Hook */
   public interface TestHook {
-    public void hook(final int spot) throws RuntimeException;
+    void hook(final int spot) throws RuntimeException;
   }
 
   /**

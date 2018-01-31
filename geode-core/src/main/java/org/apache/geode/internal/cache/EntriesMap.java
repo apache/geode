@@ -18,7 +18,7 @@ package org.apache.geode.internal.cache;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ConcurrentMap;
 
-import org.apache.geode.cache.*;
+import org.apache.geode.cache.EntryNotFoundException;
 import org.apache.geode.distributed.internal.DistributionManager;
 import org.apache.geode.internal.InternalStatisticsDisabledException;
 
@@ -33,7 +33,7 @@ public interface EntriesMap extends ConcurrentMap {
    * Parameter object used to facilitate construction of an EntriesMap. Modification of fields after
    * the map is constructed has no effect.
    */
-  static class Attributes {
+  class Attributes {
     /**
      * The initial capacity. The implementation performs internal sizing to accommodate this many
      * elements.
@@ -82,14 +82,14 @@ public interface EntriesMap extends ConcurrentMap {
    *
    * @see LocalRegion#getValueInVM
    */
-  public Object getValueInVM(Object key);
+  Object getValueInVM(Object key);
 
   /**
    * Returns the value of an entry as it resides on disk. For testing purposes only.
    *
    * @see LocalRegion#getValueOnDisk
    */
-  public Object getValueOnDisk(Object key) throws EntryNotFoundException;
+  Object getValueOnDisk(Object key) throws EntryNotFoundException;
 
   /**
    * Fill in value, and isSerialized fields in this entry object (used for getInitialImage and sync
@@ -100,7 +100,7 @@ public interface EntriesMap extends ConcurrentMap {
    * @return false if map entry not found
    * @since GemFire 3.2.1
    */
-  public boolean fillInValue(InitialImageOperation.Entry entry, DistributionManager mgr);
+  boolean fillInValue(InitialImageOperation.Entry entry, DistributionManager mgr);
 
 
   /**

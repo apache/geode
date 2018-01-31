@@ -47,7 +47,7 @@ public interface ObjectSizer {
    *
    * @since GemFire 6.5
    */
-  public static final ObjectSizer SIZE_CLASS_ONCE = SizeClassOnceObjectSizer.getInstance();
+  ObjectSizer SIZE_CLASS_ONCE = SizeClassOnceObjectSizer.getInstance();
 
   /**
    * An implementation of {@link ObjectSizer} that calculates an accurate size for each object that
@@ -61,7 +61,7 @@ public interface ObjectSizer {
    *
    * @since GemFire 6.5
    */
-  public static final ObjectSizer REFLECTION_SIZE = ReflectionObjectSizer.getInstance();
+  ObjectSizer REFLECTION_SIZE = ReflectionObjectSizer.getInstance();
 
 
   /**
@@ -69,8 +69,8 @@ public interface ObjectSizer {
    *
    * @since GemFire 6.5
    */
-  public static final ObjectSizer DEFAULT = SIZE_CLASS_ONCE;
+  ObjectSizer DEFAULT = SIZE_CLASS_ONCE;
 
-  public int sizeof(Object o);
+  int sizeof(Object o);
 
 }

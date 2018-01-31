@@ -30,7 +30,7 @@ public interface LuceneServiceMXBean {
    *
    * @return an array of LuceneIndexMetrics for the LuceneIndexes defined in this member
    */
-  public LuceneIndexMetrics[] listIndexMetrics();
+  LuceneIndexMetrics[] listIndexMetrics();
 
   /**
    * Returns an array of {@link LuceneIndexMetrics} for the
@@ -42,7 +42,7 @@ public interface LuceneServiceMXBean {
    * @return an array of LuceneIndexMetrics for the LuceneIndex instances defined on the input
    *         region in this member
    */
-  public LuceneIndexMetrics[] listIndexMetrics(String regionPath);
+  LuceneIndexMetrics[] listIndexMetrics(String regionPath);
 
   /**
    * Returns a {@link LuceneIndexMetrics} for the {@link org.apache.geode.cache.lucene.LuceneIndex}
@@ -54,5 +54,5 @@ public interface LuceneServiceMXBean {
    * @return a LuceneIndexMetrics for the LuceneIndex with the input index name defined on the input
    *         region in this member.
    */
-  public LuceneIndexMetrics listIndexMetrics(String regionPath, String indexName);
+  LuceneIndexMetrics listIndexMetrics(String regionPath, String indexName);
 }

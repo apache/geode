@@ -38,7 +38,7 @@ public interface AttributesMutator<K, V> {
    *
    * @return the Region this mutator affects
    */
-  public Region<K, V> getRegion();
+  Region<K, V> getRegion();
 
   /**
    * Changes the timeToLive expiration attributes for the region as a whole
@@ -49,7 +49,7 @@ public interface AttributesMutator<K, V> {
    *         LOCAL_INVALIDATE and the region is {@link DataPolicy#withReplication replicated}
    * @throws IllegalStateException if statistics are disabled for this region.
    */
-  public ExpirationAttributes setRegionTimeToLive(ExpirationAttributes timeToLive);
+  ExpirationAttributes setRegionTimeToLive(ExpirationAttributes timeToLive);
 
   /**
    * Changes the idleTimeout expiration attributes for the region as a whole. Resets the
@@ -61,7 +61,7 @@ public interface AttributesMutator<K, V> {
    *         LOCAL_INVALIDATE and the region is {@link DataPolicy#withReplication replicated}
    * @throws IllegalStateException if statistics are disabled for this region.
    */
-  public ExpirationAttributes setRegionIdleTimeout(ExpirationAttributes idleTimeout);
+  ExpirationAttributes setRegionIdleTimeout(ExpirationAttributes idleTimeout);
 
   /**
    * Changes the timeToLive expiration attributes for values in this region.
@@ -74,7 +74,7 @@ public interface AttributesMutator<K, V> {
    *         {@link DataPolicy#withReplication replicated}
    * @throws IllegalStateException if statistics are disabled for this region.
    */
-  public ExpirationAttributes setEntryTimeToLive(ExpirationAttributes timeToLive);
+  ExpirationAttributes setEntryTimeToLive(ExpirationAttributes timeToLive);
 
   /**
    * Changes the custom timeToLive for values in this region
@@ -82,7 +82,7 @@ public interface AttributesMutator<K, V> {
    * @param custom the new CustomExpiry
    * @return the old CustomExpiry
    */
-  public CustomExpiry<K, V> setCustomEntryTimeToLive(CustomExpiry<K, V> custom);
+  CustomExpiry<K, V> setCustomEntryTimeToLive(CustomExpiry<K, V> custom);
 
   /**
    * Changes the idleTimeout expiration attributes for values in the region.
@@ -96,7 +96,7 @@ public interface AttributesMutator<K, V> {
    * @see AttributesFactory#setStatisticsEnabled
    * @throws IllegalStateException if statistics are disabled for this region.
    */
-  public ExpirationAttributes setEntryIdleTimeout(ExpirationAttributes idleTimeout);
+  ExpirationAttributes setEntryIdleTimeout(ExpirationAttributes idleTimeout);
 
   /**
    * Changes the CustomExpiry for idleTimeout for values in the region
@@ -104,7 +104,7 @@ public interface AttributesMutator<K, V> {
    * @param custom the new CustomExpiry
    * @return the old CustomExpiry
    */
-  public CustomExpiry<K, V> setCustomEntryIdleTimeout(CustomExpiry<K, V> custom);
+  CustomExpiry<K, V> setCustomEntryIdleTimeout(CustomExpiry<K, V> custom);
 
   /**
    * Adds a cache listener to the end of the list of cache listeners on this region.
@@ -113,7 +113,7 @@ public interface AttributesMutator<K, V> {
    * @throws IllegalArgumentException if <code>aListener</code> is null
    * @since GemFire 5.0
    */
-  public void addCacheListener(CacheListener<K, V> aListener);
+  void addCacheListener(CacheListener<K, V> aListener);
 
   /**
    * Removes a cache listener from the list of cache listeners on this region. Does nothing if the
@@ -124,7 +124,7 @@ public interface AttributesMutator<K, V> {
    * @throws IllegalArgumentException if <code>aListener</code> is null
    * @since GemFire 5.0
    */
-  public void removeCacheListener(CacheListener<K, V> aListener);
+  void removeCacheListener(CacheListener<K, V> aListener);
 
   /**
    * Removes all cache listeners, calling {@link CacheCallback#close} on each of them, and then adds
@@ -134,7 +134,7 @@ public interface AttributesMutator<K, V> {
    * @throws IllegalArgumentException if the <code>newListeners</code> array has a null element
    * @since GemFire 5.0
    */
-  public void initCacheListeners(CacheListener<K, V>[] newListeners);
+  void initCacheListeners(CacheListener<K, V>[] newListeners);
 
   /**
    * Changes the cache writer for the region.
@@ -142,7 +142,7 @@ public interface AttributesMutator<K, V> {
    * @param cacheWriter the cache writer
    * @return the previous CacheWriter
    */
-  public CacheWriter<K, V> setCacheWriter(CacheWriter<K, V> cacheWriter);
+  CacheWriter<K, V> setCacheWriter(CacheWriter<K, V> cacheWriter);
 
   /**
    * Changes the cache loader for the region.
@@ -154,7 +154,7 @@ public interface AttributesMutator<K, V> {
    * @param cacheLoader the cache loader
    * @return the previous CacheLoader
    */
-  public CacheLoader<K, V> setCacheLoader(CacheLoader<K, V> cacheLoader);
+  CacheLoader<K, V> setCacheLoader(CacheLoader<K, V> cacheLoader);
 
 
   /**
@@ -162,7 +162,7 @@ public interface AttributesMutator<K, V> {
    *
    * @return the {@link EvictionAttributesMutator} used to change the EvictionAttributes
    */
-  public EvictionAttributesMutator getEvictionAttributesMutator();
+  EvictionAttributesMutator getEvictionAttributesMutator();
 
   /**
    * Sets cloning on region Note: off-heap regions always behave as if cloning is enabled.
@@ -170,7 +170,7 @@ public interface AttributesMutator<K, V> {
    * @param cloningEnable
    * @since GemFire 6.1
    */
-  public void setCloningEnabled(boolean cloningEnable);
+  void setCloningEnabled(boolean cloningEnable);
 
   /**
    * Returns whether or not cloning is enabled on region
@@ -179,7 +179,7 @@ public interface AttributesMutator<K, V> {
    *
    * @since GemFire 6.1
    */
-  public boolean getCloningEnabled();
+  boolean getCloningEnabled();
 
   /**
    * Adds GatewaySenderId to the list of GatewaySenderIds of the region. If the GatewaySenderId is
@@ -187,26 +187,26 @@ public interface AttributesMutator<K, V> {
    *
    * @param gatewaySenderId
    */
-  public void addGatewaySenderId(String gatewaySenderId);
+  void addGatewaySenderId(String gatewaySenderId);
 
   /**
    * Removes GatewaySenderId from the list of GatewaySenderIds of the region.
    *
    * @param gatewaySenderId
    */
-  public void removeGatewaySenderId(String gatewaySenderId);
+  void removeGatewaySenderId(String gatewaySenderId);
 
   /**
    * Adds AsyncEventQueueId to the list of AsyncEventQueueId of the region.
    *
    * @param asyncEventQueueId
    */
-  public void addAsyncEventQueueId(String asyncEventQueueId);
+  void addAsyncEventQueueId(String asyncEventQueueId);
 
   /**
    * Removes AsyncEventQueueId from the list of AsyncEventQueuesId of the region.
    *
    * @param asyncEventQueueId
    */
-  public void removeAsyncEventQueueId(String asyncEventQueueId);
+  void removeAsyncEventQueueId(String asyncEventQueueId);
 }

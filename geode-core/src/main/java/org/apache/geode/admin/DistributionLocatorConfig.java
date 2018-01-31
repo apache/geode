@@ -44,38 +44,38 @@ public interface DistributionLocatorConfig extends ManagedEntityConfig {
    * Returns the port on which ths distribution locator listens for members to connect. There is no
    * default locator port, so a non-default port must be specified.
    */
-  public int getPort();
+  int getPort();
 
   /**
    * Sets the port on which the distribution locator listens for members to connect.
    */
-  public void setPort(int port);
+  void setPort(int port);
 
   /**
    * Returns the address to which the distribution locator's port is (or will be) bound. By default,
    * the bind address is <code>null</code> meaning that the port will be bound to all network
    * addresses on the host.
    */
-  public String getBindAddress();
+  String getBindAddress();
 
   /**
    * Sets the address to which the distribution locator's port is (or will be) bound.
    */
-  public void setBindAddress(String bindAddress);
+  void setBindAddress(String bindAddress);
 
   /**
    * Sets the properties used to configure the locator's DistributedSystem.
    *
    * @since GemFire 5.0
    */
-  public void setDistributedSystemProperties(Properties props);
+  void setDistributedSystemProperties(Properties props);
 
   /**
    * Retrieves the properties used to configure the locator's DistributedSystem.
    *
    * @since GemFire 5.0
    */
-  public Properties getDistributedSystemProperties();
+  Properties getDistributedSystemProperties();
 
 
 }

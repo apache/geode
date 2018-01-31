@@ -27,15 +27,15 @@ public interface VMotionObserver {
   /**
    * This callback is called just before CQ registration on the server
    */
-  public void vMotionBeforeCQRegistration();
+  void vMotionBeforeCQRegistration();
 
   /**
    * This callback is called just before register Interest on the server
    */
-  public void vMotionBeforeRegisterInterest();
+  void vMotionBeforeRegisterInterest();
 
   /**
    * This callback is called before a request for GII is sent.
    */
-  public void vMotionDuringGII(Set recipientSet, LocalRegion region);
+  void vMotionDuringGII(Set recipientSet, LocalRegion region);
 }

@@ -45,7 +45,7 @@ public class SuiteRunner extends Suite {
     /**
      * @return the classes to be run
      */
-    public Class<?> value();
+    Class<?> value();
   }
 
   public SuiteRunner(final Class<?> testClass, final RunnerBuilder builder)

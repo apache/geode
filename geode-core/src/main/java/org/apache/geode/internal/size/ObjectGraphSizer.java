@@ -233,7 +233,7 @@ public class ObjectGraphSizer {
 
 
 
-  public static interface ObjectFilter {
+  public interface ObjectFilter {
     boolean accept(Object parent, Object object);
   }
 

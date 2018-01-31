@@ -61,7 +61,7 @@ public class ServerConnectionFactory {
         throw new IOException("Server received unknown communication mode: " + communicationMode);
       } else {
         try {
-          return createGenericProtocolServerConnection(socket, cache, helper, stats, hsTimeout,
+          return createProtobufServerConnection(socket, cache, helper, stats, hsTimeout,
               socketBufferSize, communicationModeStr, communicationMode, acceptor, securityService);
         } catch (ServiceLoadingFailureException ex) {
           throw new IOException("Could not load protobuf client protocol", ex);
@@ -70,12 +70,12 @@ public class ServerConnectionFactory {
         }
       }
     } else {
-      return new LegacyServerConnection(socket, cache, helper, stats, hsTimeout, socketBufferSize,
+      return new OriginalServerConnection(socket, cache, helper, stats, hsTimeout, socketBufferSize,
           communicationModeStr, communicationMode, acceptor, securityService);
     }
   }
 
-  private ServerConnection createGenericProtocolServerConnection(Socket socket, InternalCache cache,
+  private ServerConnection createProtobufServerConnection(Socket socket, InternalCache cache,
       CachedRegionHelper helper, CacheServerStats stats, int hsTimeout, int socketBufferSize,
       String communicationModeStr, byte communicationMode, Acceptor acceptor,
       SecurityService securityService) {
@@ -84,8 +84,7 @@ public class ServerConnectionFactory {
 
     ClientProtocolProcessor processor = service.createProcessorForCache(cache, securityService);
 
-    return new GenericProtocolServerConnection(socket, cache, helper, stats, hsTimeout,
-        socketBufferSize, communicationModeStr, communicationMode, acceptor, processor,
-        securityService);
+    return new ProtobufServerConnection(socket, cache, helper, stats, hsTimeout, socketBufferSize,
+        communicationModeStr, communicationMode, acceptor, processor, securityService);
   }
 }

@@ -26,14 +26,14 @@ public interface AL {
    *
    * @return the current value
    */
-  public long get();
+  long get();
 
   /**
    * Sets to the given value.
    *
    * @param newValue the new value
    */
-  public void set(long newValue);
+  void set(long newValue);
 
   /**
    * Atomically sets to the given value and returns the old value.
@@ -41,7 +41,7 @@ public interface AL {
    * @param newValue the new value
    * @return the previous value
    */
-  public long getAndSet(long newValue);
+  long getAndSet(long newValue);
 
   /**
    * Atomically sets the value to the given updated value if the current value {@code ==} the
@@ -52,7 +52,7 @@ public interface AL {
    * @return true if successful. False return indicates that the actual value was not equal to the
    *         expected value.
    */
-  public boolean compareAndSet(long expect, long update);
+  boolean compareAndSet(long expect, long update);
 
   /**
    * Atomically sets the value to the given updated value if the current value {@code ==} the
@@ -66,21 +66,21 @@ public interface AL {
    * @param update the new value
    * @return true if successful.
    */
-  public boolean weakCompareAndSet(long expect, long update);
+  boolean weakCompareAndSet(long expect, long update);
 
   /**
    * Atomically increments by one the current value.
    *
    * @return the previous value
    */
-  public long getAndIncrement();
+  long getAndIncrement();
 
   /**
    * Atomically decrements by one the current value.
    *
    * @return the previous value
    */
-  public long getAndDecrement();
+  long getAndDecrement();
 
   /**
    * Atomically adds the given value to the current value.
@@ -88,21 +88,21 @@ public interface AL {
    * @param delta the value to add
    * @return the previous value
    */
-  public long getAndAdd(long delta);
+  long getAndAdd(long delta);
 
   /**
    * Atomically increments by one the current value.
    *
    * @return the updated value
    */
-  public long incrementAndGet();
+  long incrementAndGet();
 
   /**
    * Atomically decrements by one the current value.
    *
    * @return the updated value
    */
-  public long decrementAndGet();
+  long decrementAndGet();
 
   /**
    * Atomically adds the given value to the current value.
@@ -110,7 +110,7 @@ public interface AL {
    * @param delta the value to add
    * @return the updated value
    */
-  public long addAndGet(long delta);
+  long addAndGet(long delta);
 
   /**
    * Atomically sets the value to the given updated value if the given value {@code >} the current
@@ -119,5 +119,5 @@ public interface AL {
    *
    * @param update
    */
-  public boolean setIfGreater(long update);
+  boolean setIfGreater(long update);
 }

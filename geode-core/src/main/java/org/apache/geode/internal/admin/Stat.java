@@ -24,16 +24,16 @@ public interface Stat extends GfObject {
   /**
    * @return the value of this stat as a <code>java.lang.Number</code>
    */
-  public Number getValue();
+  Number getValue();
 
   /**
    * @return a display string for the unit of measurement (if any) this stat represents
    */
-  public String getUnits();
+  String getUnits();
 
   /**
    * @return true if this stat represents a numeric value which always increases
    */
-  public boolean isCounter();
+  boolean isCounter();
 
 }

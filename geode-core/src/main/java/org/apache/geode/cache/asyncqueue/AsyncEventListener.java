@@ -69,5 +69,5 @@ public interface AsyncEventListener extends CacheCallback {
    * @return boolean True represents whether the events were successfully processed, false
    *         otherwise.
    */
-  public boolean processEvents(List<AsyncEvent> events);
+  boolean processEvents(List<AsyncEvent> events);
 }

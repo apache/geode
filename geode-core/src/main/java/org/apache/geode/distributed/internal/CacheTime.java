@@ -23,5 +23,5 @@ public interface CacheTime {
    *
    * @return the current time
    */
-  public long cacheTimeMillis();
+  long cacheTimeMillis();
 }

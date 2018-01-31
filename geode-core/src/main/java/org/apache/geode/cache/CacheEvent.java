@@ -16,7 +16,6 @@
 package org.apache.geode.cache;
 
 import org.apache.geode.distributed.DistributedMember;
-import org.apache.geode.internal.cache.EnumListenerEvent;
 
 /**
  * A region- or entry-related event affecting the cache.
@@ -41,7 +40,7 @@ public interface CacheEvent<K, V> {
    *
    * @return the region associated with this object or the region that raised this event.
    */
-  public Region<K, V> getRegion();
+  Region<K, V> getRegion();
 
   /**
    * Return a description of the operation that triggered this event.
@@ -49,7 +48,7 @@ public interface CacheEvent<K, V> {
    * @return the operation that triggered this event.
    * @since GemFire 5.0
    */
-  public Operation getOperation();
+  Operation getOperation();
 
   /**
    * Returns the callbackArgument passed to the method that generated this event. Provided primarily
@@ -61,7 +60,7 @@ public interface CacheEvent<K, V> {
    *         {@link TransactionListener} and to {@link CacheListener} on the remote side of a
    *         transaction commit.
    */
-  public Object getCallbackArgument();
+  Object getCallbackArgument();
 
   /**
    * Returns <code>true</code> if the callback argument is "available". Not available means that the
@@ -71,7 +70,7 @@ public interface CacheEvent<K, V> {
    *
    * @since GemFire 6.0
    */
-  public boolean isCallbackArgumentAvailable();
+  boolean isCallbackArgumentAvailable();
 
   /**
    * Answer true if this event originated in a cache other than this one. Answer false if this event
@@ -80,7 +79,7 @@ public interface CacheEvent<K, V> {
    * @return true if this event originated remotely
    *
    */
-  public boolean isOriginRemote();
+  boolean isOriginRemote();
 
   /**
    * Returns the {@link DistributedMember} that this event originated in.
@@ -88,6 +87,6 @@ public interface CacheEvent<K, V> {
    * @return the member that performed the operation that originated this event.
    * @since GemFire 5.0
    */
-  public DistributedMember getDistributedMember();
+  DistributedMember getDistributedMember();
 
 }

@@ -24,5 +24,5 @@ public interface Releasable {
   /**
    * Release any off-heap data owned by this instance.
    */
-  public void release();
+  void release();
 }

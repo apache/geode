@@ -41,33 +41,33 @@ public interface AdminDistributedSystem {
   /**
    * Retrieves the unique id for this system.
    */
-  public String getId();
+  String getId();
 
   /**
    * Retrieves display friendly name for this system. If this administrative VM defined an optional
    * name for its connection to the distributed system, that name will be returned. Otherwise the
    * returned value will be {@link org.apache.geode.admin.AdminDistributedSystem#getId}.
    */
-  public String getName();
+  String getName();
 
   /**
    * Retrieves the remote command and formatting this system should use to access and/or manipulate
    * resources on remote machines.
    */
-  public String getRemoteCommand();
+  String getRemoteCommand();
 
   /**
    * Sets the remote command and formatting this system should use to access and/or manipulate
    * resources on remote machines.
    */
-  public void setRemoteCommand(String remoteCommand);
+  void setRemoteCommand(String remoteCommand);
 
   /**
    * Sets the lowest level of alert that should be delivered to the {@link AlertListener}s
    * registered on this <code>AdminDistributedSystem</code>. The default level is
    * {@link AlertLevel#WARNING}.
    */
-  public void setAlertLevel(AlertLevel level);
+  void setAlertLevel(AlertLevel level);
 
   /**
    * Returns the lowest level of alerts that should be delivered to the {@link AlertListener}s
@@ -75,14 +75,14 @@ public interface AdminDistributedSystem {
    *
    * @see #setAlertLevel
    */
-  public AlertLevel getAlertLevel();
+  AlertLevel getAlertLevel();
 
   /**
    * Sets the lowest level of alert that should be delivered to the {@link AlertListener}s
    * registered on this <code>AdminDistributedSystem</code>. The default level is
    * {@link AlertLevel#WARNING}.
    */
-  public void setAlertLevelAsString(String level);
+  void setAlertLevelAsString(String level);
 
   /**
    * Returns the lowest level of alerts that should be delivered to the {@link AlertListener}s
@@ -90,75 +90,75 @@ public interface AdminDistributedSystem {
    *
    * @see #setAlertLevelAsString
    */
-  public String getAlertLevelAsString();
+  String getAlertLevelAsString();
 
   /**
    * Registers an <code>AlertListener</code> that will receive all alerts that are at or above the
    * {@linkplain #setAlertLevel alert level}.
    */
-  public void addAlertListener(AlertListener listener);
+  void addAlertListener(AlertListener listener);
 
   /**
    * Unregisters an <code>AlertListener</code>
    */
-  public void removeAlertListener(AlertListener listener);
+  void removeAlertListener(AlertListener listener);
 
   /**
    * Retrieves the multicast address in use by this system.
    */
-  public String getMcastAddress();
+  String getMcastAddress();
 
   /**
    * Retrieves the multicast port in use by this system.
    */
-  public int getMcastPort();
+  int getMcastPort();
 
   /**
    * Retrieves comma-delimited list locators to be used if multi-cast port is zero. Format of each
    * locators must be host[port].
    */
-  public String getLocators();
+  String getLocators();
 
   /**
    * Returns true if this system has enabled the use of multicast for communications
    */
-  public boolean isMcastEnabled();
+  boolean isMcastEnabled();
 
   /**
    * Returns true if any members of this system are currently running.
    */
-  public boolean isRunning();
+  boolean isRunning();
 
   /**
    * Returns <code>true</code> if this is currently connected to the system.
    */
-  public boolean isConnected();
+  boolean isConnected();
 
   /**
    * Starts all managed entities that are not currently running.
    *
    * @throws AdminException If a problem is encountered while starting the managed entities.
    */
-  public void start() throws AdminException;
+  void start() throws AdminException;
 
   /**
    * Stops all managed entities that are currently running.
    *
    * @throws AdminException If a problem is encountered while starting the managed entities.
    */
-  public void stop() throws AdminException;
+  void stop() throws AdminException;
 
   /**
    * Merges and returns all system logs as a single formatted log.
    */
-  public String displayMergedLogs();
+  String displayMergedLogs();
 
   /**
    * Retrieves the license information for this installation of GemFire.
    *
    * @deprecated Removed licensing in 8.0.
    */
-  public java.util.Properties getLicense();
+  java.util.Properties getLicense();
 
   /**
    * Creates a new <code>DistributionLocator</code> that is ready to
@@ -170,30 +170,30 @@ public interface AdminDistributedSystem {
    * system. That is, the host/port of the new locator is appended to the {@link #getLocators
    * locators} attribute of this <code>AdminDistributedSystem</code>.
    */
-  public DistributionLocator addDistributionLocator();
+  DistributionLocator addDistributionLocator();
 
   /**
    * Returns array of <code>DistributionLocator</code>s administered by this
    * <code>AdminDistributedSystem</code>.
    */
-  public DistributionLocator[] getDistributionLocators();
+  DistributionLocator[] getDistributionLocators();
 
   /**
    * Retrieves SystemMember instances for every application that is running and currently connection
    * to this system. Note that this list does not include dedicated {@linkplain #getCacheVms cache
    * server vms}.
    */
-  public SystemMember[] getSystemMemberApplications() throws org.apache.geode.admin.AdminException;
+  SystemMember[] getSystemMemberApplications() throws org.apache.geode.admin.AdminException;
 
   /**
    * Display in readable format the latest Alert in this distributed system.
    */
-  public String getLatestAlert();
+  String getLatestAlert();
 
   /**
    * Returns an object for monitoring the health of GemFire.
    */
-  public GemFireHealth getGemFireHealth();
+  GemFireHealth getGemFireHealth();
 
   /**
    * Connects to the distributed system. This method will return immediately after spawning a
@@ -206,7 +206,7 @@ public interface AdminDistributedSystem {
    * @see #isRunning
    * @see #waitToBeConnected
    */
-  public void connect();
+  void connect();
 
   /**
    * Wait for up to a given number of milliseconds for the connection to the distributed system to
@@ -219,28 +219,28 @@ public interface AdminDistributedSystem {
    * @throws InterruptedException If the thread invoking this method is interrupted while waiting.
    * @throws IllegalStateException If {@link #connect} has not yet been called.
    */
-  public boolean waitToBeConnected(long timeout) throws InterruptedException;
+  boolean waitToBeConnected(long timeout) throws InterruptedException;
 
   /**
    * Disconnects from the distributed system.
    */
-  public void disconnect();
+  void disconnect();
 
   /** Returns this system's configuration . */
-  public DistributedSystemConfig getConfig();
+  DistributedSystemConfig getConfig();
 
   /**
    * Registers a listener that receives callbacks when a member joins or leaves the distributed
    * system.
    */
-  public void addMembershipListener(SystemMembershipListener listener);
+  void addMembershipListener(SystemMembershipListener listener);
 
   /**
    * Unregisters a membership listener
    *
    * @see #addMembershipListener
    */
-  public void removeMembershipListener(SystemMembershipListener listener);
+  void removeMembershipListener(SystemMembershipListener listener);
 
   /**
    * Registers a cache event listener. Does nothing if the listener is already registered. The
@@ -249,7 +249,7 @@ public interface AdminDistributedSystem {
    * @param listener the listener to register.
    * @since GemFire 5.0
    */
-  public void addCacheListener(SystemMemberCacheListener listener);
+  void addCacheListener(SystemMemberCacheListener listener);
 
   /**
    * Unregisters a cache listener. Does nothing if the listener is not registered.
@@ -257,7 +257,7 @@ public interface AdminDistributedSystem {
    * @param listener the listener to unregister.
    * @since GemFire 5.0
    */
-  public void removeCacheListener(SystemMemberCacheListener listener);
+  void removeCacheListener(SystemMemberCacheListener listener);
 
   /**
    * Creates a new cache server that is ready to {@linkplain CacheServerConfig configure} and
@@ -267,7 +267,7 @@ public interface AdminDistributedSystem {
    * @deprecated as of 5.7 use {@link #addCacheVm} instead.
    */
   @Deprecated
-  public CacheServer addCacheServer() throws AdminException;
+  CacheServer addCacheServer() throws AdminException;
 
   /**
    * Returns all of the dedicated cache server members of the distributed system. Because they are
@@ -277,7 +277,7 @@ public interface AdminDistributedSystem {
    * @deprecated as of 5.7 use {@link #getCacheVms} instead.
    */
   @Deprecated
-  public CacheServer[] getCacheServers() throws AdminException;
+  CacheServer[] getCacheServers() throws AdminException;
 
   /**
    * Returns all the cache server members of the distributed system which are hosting a client queue
@@ -289,7 +289,7 @@ public interface AdminDistributedSystem {
    *
    * @since GemFire 5.6
    */
-  public CacheServer[] getCacheServers(String durableClientId) throws AdminException;
+  CacheServer[] getCacheServers(String durableClientId) throws AdminException;
 
   /**
    * Creates a new cache vm that is ready to {@linkplain CacheVmConfig configure} and
@@ -297,7 +297,7 @@ public interface AdminDistributedSystem {
    *
    * @since GemFire 5.7
    */
-  public CacheVm addCacheVm() throws AdminException;
+  CacheVm addCacheVm() throws AdminException;
 
   /**
    * Returns all of the dedicated cache server vm members of the distributed system. Because they
@@ -306,7 +306,7 @@ public interface AdminDistributedSystem {
    *
    * @since GemFire 5.7
    */
-  public CacheVm[] getCacheVms() throws AdminException;
+  CacheVm[] getCacheVms() throws AdminException;
 
   /**
    * Returns the administrative SystemMember specified by the
@@ -316,7 +316,7 @@ public interface AdminDistributedSystem {
    * @return administrative SystemMember for that distributed member
    * @since GemFire 5.0
    */
-  public SystemMember lookupSystemMember(DistributedMember distributedMember) throws AdminException;
+  SystemMember lookupSystemMember(DistributedMember distributedMember) throws AdminException;
 
   /**
    * Indicate to the distributed system that persistent files have been lost. When a member recovers
@@ -329,7 +329,7 @@ public interface AdminDistributedSystem {
    * @since GemFire 6.5
    * @deprecated use {@link #revokePersistentMember(UUID)} instead
    */
-  public void revokePersistentMember(InetAddress host, String directory) throws AdminException;
+  void revokePersistentMember(InetAddress host, String directory) throws AdminException;
 
   /**
    * Indicate to the distributed system that persistent files have been lost. When a member recovers
@@ -342,7 +342,7 @@ public interface AdminDistributedSystem {
    *
    * @since GemFire 7.0
    */
-  public void revokePersistentMember(UUID diskStoreID) throws AdminException;
+  void revokePersistentMember(UUID diskStoreID) throws AdminException;
 
   /**
    * Retrieve the set of persistent files that the existing members are waiting for. See
@@ -354,7 +354,7 @@ public interface AdminDistributedSystem {
    * @since GemFire 6.5
    *
    */
-  public Set<PersistentID> getMissingPersistentMembers() throws AdminException;
+  Set<PersistentID> getMissingPersistentMembers() throws AdminException;
 
   /**
    * Shuts down all the members of the distributed system with a cache that the admin member is
@@ -371,7 +371,7 @@ public interface AdminDistributedSystem {
    * @return The set of members that were shutdown
    * @since GemFire 6.5
    */
-  public Set<DistributedMember> shutDownAllMembers() throws AdminException;
+  Set<DistributedMember> shutDownAllMembers() throws AdminException;
 
   /**
    * Shuts down all the members of the distributed system with a cache that the admin member is
@@ -388,7 +388,7 @@ public interface AdminDistributedSystem {
    *
    * @since GemFire 6.5
    */
-  public Set<DistributedMember> shutDownAllMembers(long timeout) throws AdminException;
+  Set<DistributedMember> shutDownAllMembers(long timeout) throws AdminException;
 
   /**
    * Backup the persistent files for all of the members of the distributed system that the admin
@@ -400,7 +400,7 @@ public interface AdminDistributedSystem {
    *         set of members that were known to be offline at the time of backup.
    * @since GemFire 6.5
    */
-  public BackupStatus backupAllMembers(File targetDir) throws AdminException;
+  BackupStatus backupAllMembers(File targetDir) throws AdminException;
 
   /**
    * Incrementally backup the persistent files for all of the members of the distributed system that
@@ -417,7 +417,7 @@ public interface AdminDistributedSystem {
    *         set of members that were known to be offline at the time of backup.
    * @since GemFire 6.5
    */
-  public BackupStatus backupAllMembers(File targetDir, File baselineDir) throws AdminException;
+  BackupStatus backupAllMembers(File targetDir, File baselineDir) throws AdminException;
 
   /**
    * Compact the persistent files for all of the members of the distributed system that the admin
@@ -428,5 +428,5 @@ public interface AdminDistributedSystem {
    * @return The set of members that compacted their disk stores.
    * @since GemFire 6.5
    */
-  public Map<DistributedMember, Set<PersistentID>> compactAllDiskStores() throws AdminException;
+  Map<DistributedMember, Set<PersistentID>> compactAllDiskStores() throws AdminException;
 }

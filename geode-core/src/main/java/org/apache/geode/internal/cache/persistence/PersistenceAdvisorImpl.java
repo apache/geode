@@ -14,8 +14,14 @@
  */
 package org.apache.geode.internal.cache.persistence;
 
-import java.util.*;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Set;
 import java.util.concurrent.TimeUnit;
 
 import org.apache.logging.log4j.Logger;
@@ -25,8 +31,12 @@ import org.apache.geode.cache.RegionDestroyedException;
 import org.apache.geode.cache.persistence.ConflictingPersistentDataException;
 import org.apache.geode.cache.persistence.RevokedPersistentDataException;
 import org.apache.geode.distributed.DistributedLockService;
-import org.apache.geode.distributed.internal.*;
 import org.apache.geode.distributed.internal.DistributionAdvisor.Profile;
+import org.apache.geode.distributed.internal.DistributionConfig;
+import org.apache.geode.distributed.internal.DistributionManager;
+import org.apache.geode.distributed.internal.MembershipListener;
+import org.apache.geode.distributed.internal.ProfileListener;
+import org.apache.geode.distributed.internal.ReplyException;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
 import org.apache.geode.internal.cache.CacheDistributionAdvisor;
 import org.apache.geode.internal.cache.CacheDistributionAdvisor.CacheProfile;
@@ -1346,8 +1356,8 @@ public class PersistenceAdvisorImpl implements PersistenceAdvisor {
     return online;
   }
 
-  public static interface PersistenceAdvisorObserver {
-    public default void observe(String regionPath) {}
+  public interface PersistenceAdvisorObserver {
+    default void observe(String regionPath) {}
   }
 
   public static void setPersistenceAdvisorObserver(PersistenceAdvisorObserver o) {

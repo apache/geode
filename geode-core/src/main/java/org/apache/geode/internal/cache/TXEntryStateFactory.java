@@ -14,8 +14,6 @@
  */
 package org.apache.geode.internal.cache;
 
-import org.apache.geode.internal.cache.RegionEntry;
-
 /**
  *
  *
@@ -27,9 +25,9 @@ public interface TXEntryStateFactory {
    *
    * @return the created entry
    */
-  public TXEntryState createEntry();
+  TXEntryState createEntry();
 
-  public TXEntryState createEntry(RegionEntry re, Object vId, Object pendingValue, Object entryKey,
+  TXEntryState createEntry(RegionEntry re, Object vId, Object pendingValue, Object entryKey,
       TXRegionState txrs, boolean isDistributed);
 
 }

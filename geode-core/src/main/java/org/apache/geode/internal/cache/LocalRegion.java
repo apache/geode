@@ -791,6 +791,7 @@ public class LocalRegion extends AbstractRegion implements LoaderHelperFactory,
     return this.serverRegionProxy;
   }
 
+  @Override
   public boolean hasServerProxy() {
     return this.serverRegionProxy != null;
   }
@@ -2720,7 +2721,8 @@ public class LocalRegion extends AbstractRegion implements LoaderHelperFactory,
    *
    * @param entryKey the missing entry's key.
    */
-  void checkEntryNotFound(Object entryKey) {
+  @Override
+  public void checkEntryNotFound(Object entryKey) {
     checkReadiness();
     // Localized string for partitioned region is generic enough for general use
     throw new EntryNotFoundException(
@@ -2919,7 +2921,8 @@ public class LocalRegion extends AbstractRegion implements LoaderHelperFactory,
   }
 
   /** @return true if this was a client region; false if not */
-  boolean bridgeWriteBeforeDestroy(EntryEventImpl event, Object expectedOldValue)
+  @Override
+  public boolean bridgeWriteBeforeDestroy(EntryEventImpl event, Object expectedOldValue)
       throws CacheWriterException, EntryNotFoundException, TimeoutException {
     if (hasServerProxy()) {
       serverDestroy(event, expectedOldValue);
@@ -3235,7 +3238,8 @@ public class LocalRegion extends AbstractRegion implements LoaderHelperFactory,
     getGemFireCache().getTombstoneService().scheduleTombstone(this, entry, destroyedVersion);
   }
 
-  void rescheduleTombstone(RegionEntry entry, VersionTag version) {
+  @Override
+  public void rescheduleTombstone(RegionEntry entry, VersionTag version) {
     scheduleTombstone(entry, version, true);
   }
 
@@ -5836,7 +5840,8 @@ public class LocalRegion extends AbstractRegion implements LoaderHelperFactory,
   /**
    * This notifies all WAN sites about updated timestamp on local site.
    */
-  void notifyTimestampsToGateways(EntryEventImpl event) {
+  @Override
+  public void notifyTimestampsToGateways(EntryEventImpl event) {
     // Create updateTimeStampEvent from event.
     VersionTagHolder updateTimeStampEvent = new VersionTagHolder(event.getVersionTag());
     updateTimeStampEvent.setOperation(Operation.UPDATE_VERSION_STAMP);
@@ -6622,7 +6627,8 @@ public class LocalRegion extends AbstractRegion implements LoaderHelperFactory,
    * @param event the event describing the destroy operation
    * @since GemFire 5.1
    */
-  protected void basicDestroyBeforeRemoval(RegionEntry entry, EntryEventImpl event) {
+  @Override
+  public void basicDestroyBeforeRemoval(RegionEntry entry, EntryEventImpl event) {
     // do nothing
   }
 
@@ -6630,7 +6636,8 @@ public class LocalRegion extends AbstractRegion implements LoaderHelperFactory,
    * Called by lower levels, while still holding the write sync lock, and the low level has
    * completed its part of the basic destroy
    */
-  void basicDestroyPart2(RegionEntry re, EntryEventImpl event, boolean inTokenMode,
+  @Override
+  public void basicDestroyPart2(RegionEntry re, EntryEventImpl event, boolean inTokenMode,
       boolean conflictWithClear, boolean duringRI, boolean invokeCallbacks) {
     if (!(this instanceof HARegion)) {
       if (logger.isTraceEnabled()) {
@@ -6697,7 +6704,8 @@ public class LocalRegion extends AbstractRegion implements LoaderHelperFactory,
    * distribution and callback notification are done in part2 inside entry lock for maintaining the
    * order of events.
    */
-  void basicDestroyPart3(RegionEntry re, EntryEventImpl event, boolean inTokenMode,
+  @Override
+  public void basicDestroyPart3(RegionEntry re, EntryEventImpl event, boolean inTokenMode,
       boolean duringRI, boolean invokeCallbacks, Object expectedOldValue) {
 
     if (invokeCallbacks) {
@@ -8118,7 +8126,8 @@ public class LocalRegion extends AbstractRegion implements LoaderHelperFactory,
     }
   }
 
-  void cancelExpiryTask(RegionEntry regionEntry) {
+  @Override
+  public void cancelExpiryTask(RegionEntry regionEntry) {
     cancelExpiryTask(regionEntry, null);
   }
 
@@ -10721,7 +10730,7 @@ public class LocalRegion extends AbstractRegion implements LoaderHelperFactory,
     // Only needed by BucketRegion
   }
 
-  void updateSizeOnRemove(Object key, int oldSize) {
+  public void updateSizeOnRemove(Object key, int oldSize) {
     // Only needed by BucketRegion
   }
 
@@ -10848,6 +10857,7 @@ public class LocalRegion extends AbstractRegion implements LoaderHelperFactory,
   /**
    * @return the wrapped {@link KeyInfo}
    */
+  @Override
   public KeyInfo getKeyInfo(Object key) {
     return new KeyInfo(key, null, null);
   }

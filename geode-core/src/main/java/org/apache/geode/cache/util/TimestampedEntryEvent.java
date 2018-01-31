@@ -29,11 +29,11 @@ public interface TimestampedEntryEvent extends org.apache.geode.cache.EntryEvent
   // getOldValue(), getNewValue()
   // getSerializedOldValue(), getSerializedNewValue()
 
-  public int getNewDistributedSystemID();
+  int getNewDistributedSystemID();
 
-  public int getOldDistributedSystemID();
+  int getOldDistributedSystemID();
 
-  public long getNewTimestamp();
+  long getNewTimestamp();
 
-  public long getOldTimestamp();
+  long getOldTimestamp();
 }
