@@ -112,7 +112,8 @@ public class RemoteOperationResponseTest {
     replyProcessor.requireResponse();
 
     assertThatThrownBy(() -> replyProcessor.waitForRemoteResponse())
-        .isInstanceOf(RemoteOperationException.class).hasMessage("Attempt failed");
+        .isInstanceOf(RemoteOperationException.class)
+        .hasMessage("response required but not received");
 
     verify(replyProcessor, times(1)).waitForRepliesUninterruptibly();
   }
@@ -123,8 +124,7 @@ public class RemoteOperationResponseTest {
     replyProcessor.memberDeparted(recipient, false);
 
     assertThatThrownBy(() -> replyProcessor.waitForRemoteResponse())
-        .isInstanceOf(RemoteOperationException.class).hasMessage("Attempt failed")
-        .hasCauseInstanceOf(ForceReattemptException.class);
+        .isInstanceOf(RemoteOperationException.class).hasMessageContaining("memberDeparted event");
 
     verify(replyProcessor, times(1)).waitForRepliesUninterruptibly();
   }

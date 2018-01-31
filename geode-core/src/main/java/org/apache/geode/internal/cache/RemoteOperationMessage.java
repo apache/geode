@@ -26,8 +26,6 @@ import org.apache.geode.CancelException;
 import org.apache.geode.DataSerializer;
 import org.apache.geode.SystemFailure;
 import org.apache.geode.cache.CacheClosedException;
-import org.apache.geode.cache.CacheException;
-import org.apache.geode.cache.LowMemoryException;
 import org.apache.geode.cache.Operation;
 import org.apache.geode.cache.RegionDestroyedException;
 import org.apache.geode.distributed.DistributedSystemDisconnectedException;
@@ -57,12 +55,6 @@ import org.apache.geode.internal.logging.log4j.LogMarker;
 public abstract class RemoteOperationMessage extends DistributionMessage
     implements MessageWithReply, TransactionMessage {
   private static final Logger logger = LogService.getLogger();
-
-  /** default exception to ensure a false-positive response is never returned */
-  static final ForceReattemptException UNHANDLED_EXCEPTION =
-      (ForceReattemptException) new ForceReattemptException(
-          LocalizedStrings.PartitionMessage_UNKNOWN_EXCEPTION.toLocalizedString())
-              .fillInStackTrace();
 
   protected int processorId;
 
@@ -196,8 +188,6 @@ public abstract class RemoteOperationMessage extends DistributionMessage
         return; // reply sent in finally block below
       }
 
-      thr = UNHANDLED_EXCEPTION;
-
       // [bruce] r might be null here, so we have to go to the cache instance to get the txmgr
       TXManagerImpl txMgr = getTXManager(cache);
       TXStateProxy tx = txMgr.masqueradeAs(this);
@@ -216,8 +206,6 @@ public abstract class RemoteOperationMessage extends DistributionMessage
           txMgr.unmasquerade(tx);
         }
       }
-      thr = null;
-
     } catch (RegionDestroyedException | RemoteOperationException ex) {
       thr = ex;
     } catch (DistributedSystemDisconnectedException se) {
@@ -230,6 +218,7 @@ public abstract class RemoteOperationMessage extends DistributionMessage
         logger.debug("shutdown caught, abandoning message: {}", se.getMessage(), se);
       }
     } catch (VirtualMachineError err) {
+      thr = new RemoteOperationException("VirtualMachineError", err);
       SystemFailure.initiateFailure(err);
       // If this ever returns, rethrow the error. We're poisoned
       // now, so don't let this thread continue.
@@ -240,9 +229,10 @@ public abstract class RemoteOperationMessage extends DistributionMessage
       // _still_ a possibility that you are dealing with a cascading
       // error condition, so you also need to check to see if the JVM
       // is still usable:
-      // TODO: set thr here so that it will be handled
+      if (sendReply) {
+        thr = new RemoteOperationException("system failure", SystemFailure.getFailure());
+      }
       checkForSystemFailure();
-      thr = null;
       if (sendReply) {
         if (!checkDSClosing(dm)) {
           thr = t;
@@ -472,10 +462,8 @@ public abstract class RemoteOperationMessage extends DistributionMessage
    * @see #waitForRemoteResponse()
    */
   public static class RemoteOperationResponse extends DirectReplyProcessor {
-    /**
-     * The exception thrown when the recipient does not reply
-     */
-    private volatile ForceReattemptException prce;
+
+    private volatile RemoteOperationException memberDepartedException;
 
     /**
      * Whether a response has been received
@@ -522,22 +510,18 @@ public abstract class RemoteOperationMessage extends DistributionMessage
     public void memberDeparted(final InternalDistributedMember id, final boolean crashed) {
       if (id != null) {
         if (removeMember(id, true)) {
-          this.prce = new ForceReattemptException(
-              LocalizedStrings.PartitionMessage_PARTITIONRESPONSE_GOT_MEMBERDEPARTED_EVENT_FOR_0_CRASHED_1
-                  .toLocalizedString(id, crashed));
+          this.memberDepartedException = new RemoteOperationException(
+              "memberDeparted event for <" + id + "> crashed = " + crashed);
         }
         checkIfDone();
       } else {
-        Exception e = new Exception(
-            LocalizedStrings.PartitionMessage_MEMBERDEPARTED_GOT_NULL_MEMBERID.toLocalizedString());
-        logger.info(LocalizedMessage.create(
-            LocalizedStrings.PartitionMessage_MEMBERDEPARTED_GOT_NULL_MEMBERID_CRASHED_0, crashed),
-            e);
+        Exception e = new Exception("memberDeparted got null memberId");
+        logger.info("memberDeparted got null memberId crashed=" + crashed, e);
       }
     }
 
-    public Exception getMemberDepartedException() {
-      return this.prce;
+    public RemoteOperationException getMemberDepartedException() {
+      return this.memberDepartedException;
     }
 
     /**
@@ -552,8 +536,12 @@ public abstract class RemoteOperationMessage extends DistributionMessage
     public void waitForRemoteResponse() throws RemoteOperationException {
       try {
         waitForRepliesUninterruptibly();
-        if (this.prce != null || (this.responseRequired && !this.responseReceived)) {
-          throw new RemoteOperationException("Attempt failed", this.prce);
+        RemoteOperationException ex = getMemberDepartedException();
+        if (ex != null) {
+          throw ex;
+        }
+        if (this.responseRequired && !this.responseReceived) {
+          throw new RemoteOperationException("response required but not received");
         }
       } catch (ReplyException e) {
         Throwable t = e.getCause();
