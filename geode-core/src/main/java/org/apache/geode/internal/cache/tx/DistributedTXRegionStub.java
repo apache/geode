@@ -30,7 +30,6 @@ import org.apache.geode.internal.cache.EntryEventImpl;
 import org.apache.geode.internal.cache.InternalRegion;
 import org.apache.geode.internal.cache.KeyInfo;
 import org.apache.geode.internal.cache.LocalRegion;
-import org.apache.geode.internal.cache.PartitionedRegionException;
 import org.apache.geode.internal.cache.RemoteContainsKeyValueMessage;
 import org.apache.geode.internal.cache.RemoteContainsKeyValueMessage.RemoteContainsKeyValueResponse;
 import org.apache.geode.internal.cache.RemoteDestroyMessage;
