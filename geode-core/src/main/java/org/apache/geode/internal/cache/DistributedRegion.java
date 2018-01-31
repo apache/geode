@@ -1869,10 +1869,7 @@ public class DistributedRegion extends LocalRegion implements InternalDistribute
           try {
             op.distribute();
             return;
-          } catch (CancelException e) {
-            this.stopper.checkCancelInProgress(e);
-            retry = true;
-          } catch (RemoteOperationException e) {
+          } catch (CancelException | RegionDestroyedException | RemoteOperationException e) {
             this.stopper.checkCancelInProgress(e);
             retry = true;
           }

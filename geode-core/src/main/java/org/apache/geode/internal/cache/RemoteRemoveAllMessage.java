@@ -32,6 +32,7 @@ import org.apache.geode.cache.CacheException;
 import org.apache.geode.cache.EntryExistsException;
 import org.apache.geode.cache.EntryNotFoundException;
 import org.apache.geode.cache.Operation;
+import org.apache.geode.cache.RegionDestroyedException;
 import org.apache.geode.cache.TransactionDataNotColocatedException;
 import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.distributed.internal.ClusterDistributionManager;
@@ -146,10 +147,11 @@ public class RemoteRemoveAllMessage extends RemoteOperationMessageWithDirectRepl
           logger.debug("RemoteRemoveAllMessage caught CacheException during distribution", e);
         }
         successful = true; // not a cancel-exception, so don't complain any more about it
-      } catch (RemoteOperationException e) {
+      } catch (RegionDestroyedException | RemoteOperationException e) {
         if (logger.isTraceEnabled(LogMarker.DM)) {
           logger.trace(LogMarker.DM,
-              "RemoteRemoveAllMessage caught an unexpected exception during distribution", e);
+              "RemoteRemoveAllMessage caught an exception during distribution; retrying to another member",
+              e);
         }
       }
     }

@@ -186,9 +186,10 @@ public class RemoteOperationMessageTest {
   }
 
   @Test
-  public void processWithRegionDestroyedExceptionFromOperationOnRegionSendsReplyWithForceReattemptException()
+  public void processWithRegionDestroyedExceptionFromOperationOnRegionSendsReplyWithSameRegionDestroyedException()
       throws Exception {
-    when(msg.operateOnRegion(dm, r, startTime)).thenThrow(RegionDestroyedException.class);
+    RegionDestroyedException ex = mock(RegionDestroyedException.class);
+    when(msg.operateOnRegion(dm, r, startTime)).thenThrow(ex);
     msg.setSender(sender);
 
     msg.process(dm);
@@ -196,7 +197,7 @@ public class RemoteOperationMessageTest {
     ArgumentCaptor<ReplyException> captor = ArgumentCaptor.forClass(ReplyException.class);
     verify(msg, times(1)).sendReply(any(), anyInt(), eq(dm), captor.capture(), eq(r),
         eq(startTime));
-    assertThat(captor.getValue().getCause()).isInstanceOf(ForceReattemptException.class);
+    assertThat(captor.getValue().getCause()).isSameAs(ex);
   }
 
   @Test
@@ -235,7 +236,7 @@ public class RemoteOperationMessageTest {
   }
 
   @Test
-  public void processWithRemoteOperationExceptionFromOperationOnRegionSendsReplyWithRemoteOperationException()
+  public void processWithRemoteOperationExceptionFromOperationOnRegionSendsReplyWithSameRemoteOperationException()
       throws Exception {
     RemoteOperationException theException = mock(RemoteOperationException.class);
     when(msg.operateOnRegion(dm, r, startTime)).thenThrow(theException);

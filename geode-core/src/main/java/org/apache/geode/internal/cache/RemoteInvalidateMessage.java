@@ -29,6 +29,7 @@ import org.apache.geode.CancelException;
 import org.apache.geode.cache.CacheException;
 import org.apache.geode.cache.EntryExistsException;
 import org.apache.geode.cache.EntryNotFoundException;
+import org.apache.geode.cache.RegionDestroyedException;
 import org.apache.geode.cache.TransactionDataNotColocatedException;
 import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.distributed.internal.ClusterDistributionManager;
@@ -113,14 +114,15 @@ public class RemoteInvalidateMessage extends RemoteDestroyMessage {
 
       } catch (CacheException e) {
         if (logger.isDebugEnabled()) {
-          logger.debug("RemoteDestroyMessage caught CacheException during distribution", e);
+          logger.debug("RemoteInvalidateMessage caught CacheException during distribution", e);
         }
         successful = true; // not a cancel-exception, so don't complain any more about it
 
-      } catch (RemoteOperationException e) {
+      } catch (RegionDestroyedException | RemoteOperationException e) {
         if (logger.isTraceEnabled(LogMarker.DM)) {
           logger.trace(LogMarker.DM,
-              "RemoteDestroyMessage caught an unexpected exception during distribution", e);
+              "RemoteInvalidateMessage caught an exception during distribution; retrying to another member",
+              e);
         }
       }
     }

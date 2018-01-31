@@ -230,13 +230,7 @@ public abstract class RemoteOperationMessage extends DistributionMessage
         logger.debug("shutdown caught, abandoning message: {}", se.getMessage(), se);
       }
     } catch (RegionDestroyedException rde) {
-      // [bruce] RDE does not always mean that the sender's region is also
-      // destroyed, so we must send back an exception. If the sender's
-      // region is also destroyed, who cares if we send it an exception
-      // if (pr != null && pr.isClosed) {
-      thr = new ForceReattemptException(LocalizedStrings.PartitionMessage_REGION_IS_DESTROYED_IN_0
-          .toLocalizedString(dm.getDistributionManagerId()), rde);
-      // }
+      thr = rde;
     } catch (VirtualMachineError err) {
       SystemFailure.initiateFailure(err);
       // If this ever returns, rethrow the error. We're poisoned
