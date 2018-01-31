@@ -28,6 +28,7 @@ import org.junit.Test;
 import org.junit.experimental.categories.Category;
 import org.mockito.ArgumentCaptor;
 
+import org.apache.geode.CancelException;
 import org.apache.geode.cache.CacheClosedException;
 import org.apache.geode.cache.CacheException;
 import org.apache.geode.cache.CacheExistsException;
@@ -136,7 +137,7 @@ public class RemoteOperationResponseTest {
 
     replyProcessor.waitForCacheException();
 
-    verify(replyException, times(1)).handleAsUnexpected();
+    verify(replyException, times(1)).handleCause();
   }
 
   @Test
@@ -162,14 +163,26 @@ public class RemoteOperationResponseTest {
   }
 
   @Test
-  public void waitForCacheExceptionWithReplyExceptionWithLowMemoryExceptionCauseThrowsThatCause()
+  public void waitForCacheExceptionWithReplyExceptionWithRemoteOperationExceptionCauseThrowsThatCause()
       throws Exception {
     ReplyException replyException = mock(ReplyException.class);
-    LowMemoryException cause = new LowMemoryException();
+    RemoteOperationException cause = new RemoteOperationException("msg");
     when(replyException.getCause()).thenReturn(cause);
     doThrow(replyException).when(replyProcessor).waitForRepliesUninterruptibly();
 
     assertThatThrownBy(() -> replyProcessor.waitForCacheException()).isSameAs(cause);
+  }
+
+  @Test
+  public void waitForCacheExceptionWithReplyExceptionWithCancelExceptionnCauseThrowsRemoteOperationException()
+      throws Exception {
+    ReplyException replyException = mock(ReplyException.class);
+    CancelException cause = mock(CancelException.class);
+    when(replyException.getCause()).thenReturn(cause);
+    doThrow(replyException).when(replyProcessor).waitForRepliesUninterruptibly();
+
+    assertThatThrownBy(() -> replyProcessor.waitForCacheException())
+        .isInstanceOf(RemoteOperationException.class).hasMessage("remote cache was closed");
   }
 
 }
