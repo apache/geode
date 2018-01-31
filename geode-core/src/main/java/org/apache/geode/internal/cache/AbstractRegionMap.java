@@ -184,7 +184,6 @@ public abstract class AbstractRegionMap
     return this.attr;
   }
 
-  // TODO: change back from public to protected
   public LocalRegion _getOwner() {
     return (LocalRegion) this.owner;
   }
