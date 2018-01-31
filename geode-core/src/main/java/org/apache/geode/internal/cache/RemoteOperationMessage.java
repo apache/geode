@@ -218,8 +218,8 @@ public abstract class RemoteOperationMessage extends DistributionMessage
       }
       thr = null;
 
-    } catch (RemoteOperationException fre) {
-      thr = fre;
+    } catch (RegionDestroyedException | RemoteOperationException ex) {
+      thr = ex;
     } catch (DistributedSystemDisconnectedException se) {
       // bug 37026: this is too noisy...
       // throw new CacheClosedException("remote system shutting down");
@@ -229,8 +229,6 @@ public abstract class RemoteOperationMessage extends DistributionMessage
       if (logger.isDebugEnabled()) {
         logger.debug("shutdown caught, abandoning message: {}", se.getMessage(), se);
       }
-    } catch (RegionDestroyedException rde) {
-      thr = rde;
     } catch (VirtualMachineError err) {
       SystemFailure.initiateFailure(err);
       // If this ever returns, rethrow the error. We're poisoned
@@ -251,9 +249,7 @@ public abstract class RemoteOperationMessage extends DistributionMessage
         } else {
           // don't pass arbitrary runtime exceptions and errors back if this
           // cache/vm is closing
-          thr = new ForceReattemptException(
-              LocalizedStrings.PartitionMessage_DISTRIBUTED_SYSTEM_IS_DISCONNECTING
-                  .toLocalizedString());
+          thr = new RemoteOperationException("cache is closing");
         }
       }
       if (logger.isTraceEnabled(LogMarker.DM) && (t instanceof RuntimeException)) {

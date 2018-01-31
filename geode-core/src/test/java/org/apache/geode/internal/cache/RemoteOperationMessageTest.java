@@ -170,7 +170,7 @@ public class RemoteOperationMessageTest {
   }
 
   @Test
-  public void processWithNullPointerExceptionFromOperationOnRegionWithNoSystemFailureAndIsDisconnectingSendsReplyWithForceReattemptException()
+  public void processWithNullPointerExceptionFromOperationOnRegionWithNoSystemFailureAndIsDisconnectingSendsReplyWithRemoteOperationException()
       throws Exception {
     when(msg.operateOnRegion(dm, r, startTime)).thenThrow(NullPointerException.class);
     doNothing().when(msg).checkForSystemFailure();
@@ -182,7 +182,7 @@ public class RemoteOperationMessageTest {
     ArgumentCaptor<ReplyException> captor = ArgumentCaptor.forClass(ReplyException.class);
     verify(msg, times(1)).sendReply(any(), anyInt(), eq(dm), captor.capture(), eq(r),
         eq(startTime));
-    assertThat(captor.getValue().getCause()).isInstanceOf(ForceReattemptException.class);
+    assertThat(captor.getValue().getCause()).isInstanceOf(RemoteOperationException.class);
   }
 
   @Test
