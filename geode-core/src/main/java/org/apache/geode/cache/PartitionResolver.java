@@ -69,12 +69,12 @@ public interface PartitionResolver<K, V> extends CacheCallback {
    * @return object associated with entry operation which allows the Partitioned Region to store
    *         associated data together
    */
-  public Object getRoutingObject(EntryOperation<K, V> opDetails);
+  Object getRoutingObject(EntryOperation<K, V> opDetails);
 
   /**
    * Returns the name of the PartitionResolver
    *
    * @return String name
    */
-  public String getName();
+  String getName();
 }

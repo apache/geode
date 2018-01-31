@@ -30,7 +30,7 @@ public interface EntryOperation<K, V> {
    *
    * @return the region associated with this object or the region that raised this event.
    */
-  public Region<K, V> getRegion();
+  Region<K, V> getRegion();
 
   /**
    * Return a description of the operation that triggered this event. It may return null and should
@@ -41,14 +41,14 @@ public interface EntryOperation<K, V> {
    * @since GemFire 6.0
    * @deprecated
    */
-  public Operation getOperation();
+  Operation getOperation();
 
   /**
    * Returns the key.
    *
    * @return the key
    */
-  public K getKey();
+  K getKey();
 
   /**
    * Returns the callbackArgument passed to the method that generated this event. Provided primarily
@@ -61,7 +61,7 @@ public interface EntryOperation<K, V> {
    *         {@link TransactionListener} and to {@link CacheListener} on the remote side of a
    *         transaction commit.
    */
-  public Object getCallbackArgument();
+  Object getCallbackArgument();
 
   /**
    * Returns <code>true</code> if the callback argument is "available". Not available means that the
@@ -71,7 +71,7 @@ public interface EntryOperation<K, V> {
    *
    * @since GemFire 6.0
    */
-  public boolean isCallbackArgumentAvailable();
+  boolean isCallbackArgumentAvailable();
 
   /**
    * Returns the value but may return null and should not be used to generate routing object in
@@ -81,5 +81,5 @@ public interface EntryOperation<K, V> {
    * @return the value.
    * @deprecated
    */
-  public V getNewValue();
+  V getNewValue();
 }

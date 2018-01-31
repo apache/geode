@@ -65,7 +65,7 @@ public interface ClientRegionFactory<K, V> {
    * @throws IllegalArgumentException if <code>aListener</code> is null
    * @see AttributesFactory#addCacheListener
    */
-  public ClientRegionFactory<K, V> addCacheListener(CacheListener<K, V> aListener);
+  ClientRegionFactory<K, V> addCacheListener(CacheListener<K, V> aListener);
 
   /**
    * Removes all cache listeners and then adds each listener in the specified array. for the next
@@ -76,7 +76,7 @@ public interface ClientRegionFactory<K, V> {
    * @throws IllegalArgumentException if the <code>newListeners</code> array has a null element
    * @see AttributesFactory#initCacheListeners
    */
-  public ClientRegionFactory<K, V> initCacheListeners(CacheListener<K, V>[] newListeners);
+  ClientRegionFactory<K, V> initCacheListeners(CacheListener<K, V>[] newListeners);
 
   /**
    * Sets the eviction attributes that controls growth of the Region to be created.
@@ -84,7 +84,7 @@ public interface ClientRegionFactory<K, V> {
    * @param evictionAttributes for the Region to create
    * @return a reference to this ClientRegionFactory object
    */
-  public ClientRegionFactory<K, V> setEvictionAttributes(EvictionAttributes evictionAttributes);
+  ClientRegionFactory<K, V> setEvictionAttributes(EvictionAttributes evictionAttributes);
 
   /**
    * Sets the idleTimeout expiration attributes for region entries for the next
@@ -95,7 +95,7 @@ public interface ClientRegionFactory<K, V> {
    * @throws IllegalArgumentException if idleTimeout is null
    * @see AttributesFactory#setEntryIdleTimeout
    */
-  public ClientRegionFactory<K, V> setEntryIdleTimeout(ExpirationAttributes idleTimeout);
+  ClientRegionFactory<K, V> setEntryIdleTimeout(ExpirationAttributes idleTimeout);
 
   /**
    * Sets the custom idleTimeout for the next <code>RegionAttributes</code> created.
@@ -104,7 +104,7 @@ public interface ClientRegionFactory<K, V> {
    * @return the receiver
    * @see AttributesFactory#setCustomEntryIdleTimeout(CustomExpiry)
    */
-  public ClientRegionFactory<K, V> setCustomEntryIdleTimeout(CustomExpiry<K, V> custom);
+  ClientRegionFactory<K, V> setCustomEntryIdleTimeout(CustomExpiry<K, V> custom);
 
   /**
    * Sets the timeToLive expiration attributes for region entries for the next
@@ -115,7 +115,7 @@ public interface ClientRegionFactory<K, V> {
    * @throws IllegalArgumentException if timeToLive is null
    * @see AttributesFactory#setEntryTimeToLive
    */
-  public ClientRegionFactory<K, V> setEntryTimeToLive(ExpirationAttributes timeToLive);
+  ClientRegionFactory<K, V> setEntryTimeToLive(ExpirationAttributes timeToLive);
 
   /**
    * Sets the custom timeToLive expiration method for the next <code>RegionAttributes</code>
@@ -125,7 +125,7 @@ public interface ClientRegionFactory<K, V> {
    * @return the receiver
    * @see AttributesFactory#setCustomEntryTimeToLive(CustomExpiry)
    */
-  public ClientRegionFactory<K, V> setCustomEntryTimeToLive(CustomExpiry<K, V> custom);
+  ClientRegionFactory<K, V> setCustomEntryTimeToLive(CustomExpiry<K, V> custom);
 
   /**
    * Sets the idleTimeout expiration attributes for the region itself for the next
@@ -136,7 +136,7 @@ public interface ClientRegionFactory<K, V> {
    * @throws IllegalArgumentException if idleTimeout is null
    * @see AttributesFactory#setRegionIdleTimeout
    */
-  public ClientRegionFactory<K, V> setRegionIdleTimeout(ExpirationAttributes idleTimeout);
+  ClientRegionFactory<K, V> setRegionIdleTimeout(ExpirationAttributes idleTimeout);
 
   /**
    * Sets the timeToLive expiration attributes for the region itself for the next
@@ -147,7 +147,7 @@ public interface ClientRegionFactory<K, V> {
    * @throws IllegalArgumentException if timeToLive is null
    * @see AttributesFactory#setRegionTimeToLive
    */
-  public ClientRegionFactory<K, V> setRegionTimeToLive(ExpirationAttributes timeToLive);
+  ClientRegionFactory<K, V> setRegionTimeToLive(ExpirationAttributes timeToLive);
 
   /**
    * Sets the key constraint for the next <code>RegionAttributes</code> created. Keys in the region
@@ -160,7 +160,7 @@ public interface ClientRegionFactory<K, V> {
    *         type
    * @see AttributesFactory#setKeyConstraint
    */
-  public ClientRegionFactory<K, V> setKeyConstraint(Class<K> keyConstraint);
+  ClientRegionFactory<K, V> setKeyConstraint(Class<K> keyConstraint);
 
   /**
    * Sets the value constraint for the next <code>RegionAttributes</code> created. Values in the
@@ -173,7 +173,7 @@ public interface ClientRegionFactory<K, V> {
    *         primitive type
    * @see AttributesFactory#setValueConstraint
    */
-  public ClientRegionFactory<K, V> setValueConstraint(Class<V> valueConstraint);
+  ClientRegionFactory<K, V> setValueConstraint(Class<V> valueConstraint);
 
   /**
    * Sets the entry initial capacity for the next <code>RegionAttributes</code> created. This value
@@ -185,7 +185,7 @@ public interface ClientRegionFactory<K, V> {
    * @see java.util.HashMap
    * @see AttributesFactory#setInitialCapacity
    */
-  public ClientRegionFactory<K, V> setInitialCapacity(int initialCapacity);
+  ClientRegionFactory<K, V> setInitialCapacity(int initialCapacity);
 
   /**
    * Sets the entry load factor for the next <code>RegionAttributes</code> created. This value is
@@ -197,7 +197,7 @@ public interface ClientRegionFactory<K, V> {
    * @see java.util.HashMap
    * @see AttributesFactory#setLoadFactor
    */
-  public ClientRegionFactory<K, V> setLoadFactor(float loadFactor);
+  ClientRegionFactory<K, V> setLoadFactor(float loadFactor);
 
   /**
    * Sets the concurrency level tof the next <code>RegionAttributes</code> created. This value is
@@ -208,7 +208,7 @@ public interface ClientRegionFactory<K, V> {
    * @throws IllegalArgumentException if concurrencyLevel is nonpositive
    * @see AttributesFactory#setConcurrencyLevel
    */
-  public ClientRegionFactory<K, V> setConcurrencyLevel(int concurrencyLevel);
+  ClientRegionFactory<K, V> setConcurrencyLevel(int concurrencyLevel);
 
   /**
    * Enables or disabled concurrent modification checks
@@ -216,7 +216,7 @@ public interface ClientRegionFactory<K, V> {
    * @since GemFire 7.0
    * @param concurrencyChecksEnabled whether to perform concurrency checks on operations
    */
-  public void setConcurrencyChecksEnabled(boolean concurrencyChecksEnabled);
+  void setConcurrencyChecksEnabled(boolean concurrencyChecksEnabled);
 
   /**
    * Sets the DiskStore name attribute. This causes the region to belong to the DiskStore.
@@ -226,7 +226,7 @@ public interface ClientRegionFactory<K, V> {
    *
    * @see AttributesFactory#setDiskStoreName
    */
-  public ClientRegionFactory<K, V> setDiskStoreName(String name);
+  ClientRegionFactory<K, V> setDiskStoreName(String name);
 
   /**
    * Sets whether or not the writing to the disk is synchronous.
@@ -234,7 +234,7 @@ public interface ClientRegionFactory<K, V> {
    * @param isSynchronous boolean if true indicates synchronous writes
    * @return a reference to this ClientRegionFactory object
    */
-  public ClientRegionFactory<K, V> setDiskSynchronous(boolean isSynchronous);
+  ClientRegionFactory<K, V> setDiskSynchronous(boolean isSynchronous);
 
   /**
    * Sets whether statistics are enabled for this region and its entries.
@@ -243,7 +243,7 @@ public interface ClientRegionFactory<K, V> {
    * @return a reference to this ClientRegionFactory object
    * @see AttributesFactory#setStatisticsEnabled
    */
-  public ClientRegionFactory<K, V> setStatisticsEnabled(boolean statisticsEnabled);
+  ClientRegionFactory<K, V> setStatisticsEnabled(boolean statisticsEnabled);
 
   /**
    * Sets cloning on region Note: off-heap regions always behave as if cloning is enabled.
@@ -252,7 +252,7 @@ public interface ClientRegionFactory<K, V> {
    * @return a reference to this ClientRegionFactory object
    * @see AttributesFactory#setCloningEnabled
    */
-  public ClientRegionFactory<K, V> setCloningEnabled(boolean cloningEnable);
+  ClientRegionFactory<K, V> setCloningEnabled(boolean cloningEnable);
 
   /**
    * Sets the pool name attribute. This causes regions that use these attributes to be a client
@@ -266,7 +266,7 @@ public interface ClientRegionFactory<K, V> {
    * @throws IllegalStateException if a cache loader or cache writer has already been set.
    * @see PoolManager
    */
-  public ClientRegionFactory<K, V> setPoolName(String poolName);
+  ClientRegionFactory<K, V> setPoolName(String poolName);
 
   /**
    * Set the compressor to be used by this region for compressing region entry values.
@@ -275,7 +275,7 @@ public interface ClientRegionFactory<K, V> {
    * @return a reference to this RegionFactory instance
    * @since GemFire 8.0
    */
-  public ClientRegionFactory<K, V> setCompressor(Compressor compressor);
+  ClientRegionFactory<K, V> setCompressor(Compressor compressor);
 
   /**
    * Creates a region in the {@link ClientCache} using the configuration contained in this
@@ -288,7 +288,7 @@ public interface ClientRegionFactory<K, V> {
    * @throws RegionExistsException if a region with the given name already exists in this cache
    * @throws CacheClosedException if the cache is closed
    */
-  public Region<K, V> create(String name) throws RegionExistsException;
+  Region<K, V> create(String name) throws RegionExistsException;
 
   /**
    * Creates a sub-region in the {@link ClientCache} using the configuration contained in this
@@ -304,8 +304,7 @@ public interface ClientRegionFactory<K, V> {
    * @throws CacheClosedException if the cache is closed
    * @since GemFire 7.0
    */
-  public Region<K, V> createSubregion(Region<?, ?> parent, String name)
-      throws RegionExistsException;
+  Region<K, V> createSubregion(Region<?, ?> parent, String name) throws RegionExistsException;
 
 
 }

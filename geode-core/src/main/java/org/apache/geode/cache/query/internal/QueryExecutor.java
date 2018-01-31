@@ -28,9 +28,9 @@ import org.apache.geode.cache.query.TypeMismatchException;
  */
 public interface QueryExecutor {
   // TODO Yogesh , fix this signature
-  public Object executeQuery(DefaultQuery query, Object[] parameters, Set buckets)
+  Object executeQuery(DefaultQuery query, Object[] parameters, Set buckets)
       throws FunctionDomainException, TypeMismatchException, NameResolutionException,
       QueryInvocationTargetException;
 
-  public String getName();
+  String getName();
 }

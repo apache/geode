@@ -48,7 +48,7 @@ public interface CacheStatistics {
    * @see Region#create(Object, Object)
    * @see Region#createSubregion
    */
-  public long getLastModifiedTime();
+  long getLastModifiedTime();
 
   /**
    * For an entry, returns the last time it was accessed via <code>Region.get</code>; for a region,
@@ -67,7 +67,7 @@ public interface CacheStatistics {
    * @see #getLastModifiedTime
    * @throws StatisticsDisabledException if statistics are not available
    */
-  public long getLastAccessedTime() throws StatisticsDisabledException;
+  long getLastAccessedTime() throws StatisticsDisabledException;
 
   /**
    * Returns the number of times that {@link Region#get(Object) Region.get} on the region or the
@@ -78,7 +78,7 @@ public interface CacheStatistics {
    * @return the number of cache misses on the region or the entry.
    * @throws StatisticsDisabledException if statistics are not available
    */
-  public long getMissCount() throws StatisticsDisabledException;
+  long getMissCount() throws StatisticsDisabledException;
 
   /**
    * Returns the number of hits for this region or entry. The number of hits is defined as the
@@ -89,7 +89,7 @@ public interface CacheStatistics {
    * @return the number of hits for this region or entry.
    * @throws StatisticsDisabledException if statistics are not available
    */
-  public long getHitCount() throws StatisticsDisabledException;
+  long getHitCount() throws StatisticsDisabledException;
 
   /**
    * Return the hit ratio, a convenience method defined as the ratio of hits to the number of calls
@@ -107,7 +107,7 @@ public interface CacheStatistics {
    * @throws StatisticsDisabledException if statistics are not available
    * @return the hit ratio as a float
    */
-  public float getHitRatio() throws StatisticsDisabledException;
+  float getHitRatio() throws StatisticsDisabledException;
 
 
   /**
@@ -115,5 +115,5 @@ public interface CacheStatistics {
    *
    * @throws StatisticsDisabledException if statistics are not available
    */
-  public void resetCounts() throws StatisticsDisabledException;
+  void resetCounts() throws StatisticsDisabledException;
 }

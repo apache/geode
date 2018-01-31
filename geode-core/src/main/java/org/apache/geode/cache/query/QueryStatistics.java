@@ -24,11 +24,11 @@ public interface QueryStatistics {
   /**
    * Returns the total number of times the query has been executed.
    */
-  public long getNumExecutions();
+  long getNumExecutions();
 
   /**
    * Returns the total amount of time (in nanoseconds) spent executing the query.
    */
-  public long getTotalExecutionTime();
+  long getTotalExecutionTime();
 
 }

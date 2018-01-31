@@ -47,12 +47,12 @@ public interface RebalanceFactory {
    * used by this member will be rebalanced. Operation may queue as needed for resources in
    * contention by other active rebalance operations.
    */
-  public RebalanceOperation start();
+  RebalanceOperation start();
 
   /**
    * Simulates a rebalance of the GemFire controlled cache resources on this member. This operation
    * will not make any actual changes. It will only produce a report of what the results would have
    * been had this been a real rebalance operation.
    */
-  public RebalanceOperation simulate();
+  RebalanceOperation simulate();
 }

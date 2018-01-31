@@ -49,7 +49,7 @@ public interface RegionFunctionContext extends FunctionContext {
    * @return the objects that caused the function to be routed to this cluster member
    * @since GemFire 6.0
    */
-  public Set<?> getFilter();
+  Set<?> getFilter();
 
   /**
    * Returns the reference to the Region on which the function is executed
@@ -60,6 +60,6 @@ public interface RegionFunctionContext extends FunctionContext {
    *
    * @since GemFire 6.0
    */
-  public <K, V> Region<K, V> getDataSet();
+  <K, V> Region<K, V> getDataSet();
 
 }

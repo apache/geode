@@ -30,51 +30,51 @@ import org.apache.geode.distributed.internal.DistributionConfig;
  */
 public interface GatewayReceiver {
 
-  public static final String RECEIVER_GROUP = "__recv__group";
+  String RECEIVER_GROUP = "__recv__group";
   /**
    * The default maximum amount of time between client pings. This value is used by the
    * <code>ClientHealthMonitor</code> to determine the health of this <code>GatewayReceiver</code>'s
    * clients.
    */
-  public static final int DEFAULT_MAXIMUM_TIME_BETWEEN_PINGS = 60000;
+  int DEFAULT_MAXIMUM_TIME_BETWEEN_PINGS = 60000;
 
   /**
    * Default start value of the port range from which the <code>GatewayReceiver</code>'s port will
    * be chosen
    */
-  public static final int DEFAULT_START_PORT = 5000;
+  int DEFAULT_START_PORT = 5000;
 
   /**
    * Default end value of the port range from which the <code>GatewayReceiver</code>'s port will be
    * chosen
    */
-  public static final int DEFAULT_END_PORT = 5500;
+  int DEFAULT_END_PORT = 5500;
 
   /**
    * The default buffer size for socket buffers for the <code>GatewayReceiver</code>.
    */
-  public static final int DEFAULT_SOCKET_BUFFER_SIZE = 524288;
+  int DEFAULT_SOCKET_BUFFER_SIZE = 524288;
 
   /**
    * The default ip address or host name that the receiver's socket will listen on for client
    * connections. The current default is an empty string.
    */
-  public static final String DEFAULT_BIND_ADDRESS = "";
+  String DEFAULT_BIND_ADDRESS = "";
 
-  public static final String DEFAULT_HOSTNAME_FOR_SENDERS = "";
+  String DEFAULT_HOSTNAME_FOR_SENDERS = "";
 
   /**
    * The default value for manually starting a <code>GatewayReceiver</code>.
    *
    * @since GemFire 8.1
    */
-  public static final boolean DEFAULT_MANUAL_START = false;
+  boolean DEFAULT_MANUAL_START = false;
 
   /**
    * If the batch already seen by this receiver, arrives again then whether it is to be re-applied
    * or not is decided by this attribute.
    */
-  public static final boolean APPLY_RETRIES =
+  boolean APPLY_RETRIES =
       Boolean.getBoolean(DistributionConfig.GEMFIRE_PREFIX + "GatewayReceiver.ApplyRetries");
 
   /**
@@ -82,25 +82,25 @@ public interface GatewayReceiver {
    *
    * @throws IOException If an error occurs while starting the receiver
    */
-  public void start() throws IOException;
+  void start() throws IOException;
 
   /**
    * Stops this receiver. Note that the <code>GatewayReceiver</code> can be reconfigured and
    * restarted if desired.
    */
-  public void stop();
+  void stop();
 
   /**
    * Returns whether or not this receiver is running
    */
-  public boolean isRunning();
+  boolean isRunning();
 
   /**
    * Returns the list of <code>GatewayTransportFilter</code> added to this GatewayReceiver.
    *
    * @return the list of <code>GatewayTransportFilter</code> added to this GatewayReceiver.
    */
-  public List<GatewayTransportFilter> getGatewayTransportFilters();
+  List<GatewayTransportFilter> getGatewayTransportFilters();
 
   /**
    * Returns the maximum amount of time between client pings. This value is used by the
@@ -109,24 +109,24 @@ public interface GatewayReceiver {
    *
    * @return the maximum amount of time between client pings.
    */
-  public int getMaximumTimeBetweenPings();
+  int getMaximumTimeBetweenPings();
 
   /**
    * Returns the port on which this <code>GatewayReceiver</code> listens for clients.
    */
-  public int getPort();
+  int getPort();
 
   /**
    * Returns start value of the port range from which the <code>GatewayReceiver</code>'s port will
    * be chosen.
    */
-  public int getStartPort();
+  int getStartPort();
 
   /**
    * Returns end value of the port range from which the <code>GatewayReceiver</code>'s port will be
    * chosen.
    */
-  public int getEndPort();
+  int getEndPort();
 
   /**
    * Returns a string representing the ip address or host name that server locators will tell
@@ -134,12 +134,12 @@ public interface GatewayReceiver {
    *
    * @return the ip address or host name to give to clients so they can connect to this receiver
    */
-  public String getHost();
+  String getHost();
 
   /**
    * Returns the hostname configured by {@link GatewayReceiverFactory#setHostnameForSenders(String)}
    */
-  public String getHostnameForSenders();
+  String getHostnameForSenders();
 
   /**
    * Returns the configured buffer size of the socket connection for this
@@ -148,7 +148,7 @@ public interface GatewayReceiver {
    * @return the configured buffer size of the socket connection for this
    *         <code>GatewayReceiver</code>
    */
-  public int getSocketBufferSize();
+  int getSocketBufferSize();
 
   /**
    * Returns a string representing the ip address or host name that this server will listen on.
@@ -156,7 +156,7 @@ public interface GatewayReceiver {
    * @return the ip address or host name that this server is to listen on
    * @see #DEFAULT_BIND_ADDRESS
    */
-  public String getBindAddress();
+  String getBindAddress();
 
   /**
    * Returns the manual start boolean property for this GatewayReceiver. Default is true i.e. the
@@ -165,11 +165,11 @@ public interface GatewayReceiver {
    * @return the manual start boolean property for this GatewayReceiver
    *
    */
-  public boolean isManualStart();
+  boolean isManualStart();
 
   /**
    * Return the underlying Cacheserver
    */
-  public CacheServer getServer();
+  CacheServer getServer();
 
 }
