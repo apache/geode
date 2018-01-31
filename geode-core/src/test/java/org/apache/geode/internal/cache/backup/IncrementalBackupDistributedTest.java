@@ -581,7 +581,7 @@ public class IncrementalBackupDistributedTest extends JUnit4CacheTestCase {
     File backupDir = getBackupDirForMember(getBaselineDir(), getMemberId(vm));
     assertTrue(backupDir.exists());
 
-    File incomplete = new File(backupDir, BackupManager.INCOMPLETE_BACKUP_FILE);
+    File incomplete = new File(backupDir, BackupTask.INCOMPLETE_BACKUP_FILE);
     incomplete.createNewFile();
   }
 

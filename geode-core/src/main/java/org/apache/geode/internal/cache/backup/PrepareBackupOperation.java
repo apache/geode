@@ -58,7 +58,7 @@ class PrepareBackupOperation extends BackupOperation {
   void processLocally() {
     try {
       addToResults(member, prepareBackupFactory.createPrepareBackup(member, cache).run());
-    } catch (IOException e) {
+    } catch (IOException | InterruptedException e) {
       logger.fatal("Failed to PrepareBackup in " + member, e);
     }
   }

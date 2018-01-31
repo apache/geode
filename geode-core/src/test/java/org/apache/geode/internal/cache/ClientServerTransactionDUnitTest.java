@@ -1765,8 +1765,6 @@ public class ClientServerTransactionDUnitTest extends RemoteTransactionDUnitTest
 
   /**
    * there is one txState and zero or more txProxyStates
-   *
-   * @throws Exception
    */
   @Test
   public void testConnectionAffinity() throws Exception {
@@ -3909,7 +3907,7 @@ public class ClientServerTransactionDUnitTest extends RemoteTransactionDUnitTest
       AbstractRegionMap arm = (AbstractRegionMap) ((LocalRegion) br).entries;
       arm.setARMLockTestHook(new ARMLockTestHookAdapter() {
         @Override
-        public void beforeLock(LocalRegion owner, CacheEvent event) {
+        public void beforeLock(InternalRegion owner, CacheEvent event) {
           List<Integer> ids =
               ((PartitionedRegion) getCache().getRegion(regionName)).getLocalBucketsListTestOnly();
           assertFalse(ids.isEmpty());

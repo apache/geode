@@ -48,6 +48,7 @@ import org.apache.geode.internal.cache.versions.VersionStamp;
 import org.apache.geode.internal.cache.versions.VersionTag;
 import org.apache.geode.internal.i18n.LocalizedStrings;
 import org.apache.geode.internal.offheap.annotations.Released;
+import org.apache.geode.internal.util.concurrent.ConcurrentMapWithReusableEntries;
 
 /**
  * Internal implementation of {@link RegionMap}for regions whose DataPolicy is proxy. Proxy maps are
@@ -81,11 +82,6 @@ class ProxyRegionMap implements RegionMap {
   }
 
   @Override
-  public void setOwner(Object r) {
-    throw new UnsupportedOperationException();
-  }
-
-  @Override
   public void changeOwner(LocalRegion r) {
     throw new UnsupportedOperationException();
   }
@@ -102,7 +98,7 @@ class ProxyRegionMap implements RegionMap {
 
   @Override
   public Set keySet() {
-    return Collections.EMPTY_SET;
+    return Collections.emptySet();
   }
 
   @Override
@@ -920,4 +916,14 @@ class ProxyRegionMap implements RegionMap {
 
   @Override
   public void updateEvictionCounter() {}
+
+  @Override
+  public ConcurrentMapWithReusableEntries<Object, Object> getCustomEntryConcurrentHashMap() {
+    return null;
+  }
+
+  @Override
+  public void setEntryMap(ConcurrentMapWithReusableEntries<Object, Object> map) {
+
+  }
 }

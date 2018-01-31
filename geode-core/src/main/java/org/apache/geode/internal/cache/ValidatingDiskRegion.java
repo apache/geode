@@ -130,11 +130,6 @@ public class ValidatingDiskRegion extends DiskRegion implements DiskRecoveryStor
   }
 
   @Override
-  public int calculateRegionEntryValueSize(RegionEntry re) {
-    return 0;
-  }
-
-  @Override
   public RegionMap getRegionMap() {
     throw new IllegalStateException("getRegionMap should not be called on ValidatingDiskRegion");
   }

@@ -18,7 +18,6 @@ import org.apache.geode.cache.DiskAccessException;
 import org.apache.geode.cache.EvictionAttributes;
 import org.apache.geode.internal.cache.DiskStoreImpl;
 import org.apache.geode.internal.cache.LocalRegion;
-import org.apache.geode.internal.cache.RegionEntry;
 import org.apache.geode.internal.cache.RegionMap;
 import org.apache.geode.internal.cache.entries.DiskEntry;
 import org.apache.geode.internal.cache.versions.RegionVersionHolder;
@@ -51,8 +50,6 @@ public interface DiskRecoveryStore {
   void updateSizeOnFaultIn(Object key, int newSize, int bytesOnDisk);
 
   int calculateValueSize(Object val);
-
-  int calculateRegionEntryValueSize(RegionEntry re);
 
   RegionMap getRegionMap();
 

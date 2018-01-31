@@ -58,7 +58,7 @@ public class PrepareBackupRequest extends CliLegacyMessage {
     try {
       persistentIds = prepareBackupFactory
           .createPrepareBackup(dm.getDistributionManagerId(), dm.getCache()).run();
-    } catch (IOException e) {
+    } catch (IOException | InterruptedException e) {
       logger.error(LocalizedMessage.create(LocalizedStrings.CliLegacyMessage_ERROR, getClass()), e);
       return AdminFailureResponse.create(getSender(), e);
     }

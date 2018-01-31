@@ -14,6 +14,8 @@
  */
 package org.apache.geode.cache;
 
+import static org.apache.geode.distributed.internal.InternalDistributedSystem.ALLOW_MULTIPLE_SYSTEMS;
+
 import java.util.Properties;
 
 import org.apache.geode.distributed.ConfigurationProperties;
@@ -204,7 +206,7 @@ public class CacheFactory {
       throws TimeoutException, CacheWriterException, GatewayException, RegionExistsException {
     synchronized (CacheFactory.class) {
       DistributedSystem ds = null;
-      if (this.dsProps.isEmpty()) {
+      if (this.dsProps.isEmpty() && !ALLOW_MULTIPLE_SYSTEMS) {
         // any ds will do
         ds = InternalDistributedSystem.getConnectedInstance();
         validateUsabilityOfSecurityCallbacks(ds);
