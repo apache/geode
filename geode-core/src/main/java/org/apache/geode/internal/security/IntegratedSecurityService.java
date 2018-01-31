@@ -186,7 +186,7 @@ public class IntegratedSecurityService implements SecurityService {
   @Override
   public ThreadState bindSubject(final Subject subject) {
     if (subject == null) {
-      throw new GemFireSecurityException("Error: Anonymous User");
+      throw new AuthenticationRequiredException("Failed to find the authenticated user.");
     }
 
     ThreadState threadState = new SubjectThreadState(subject);
