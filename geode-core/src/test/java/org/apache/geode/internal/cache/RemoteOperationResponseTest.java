@@ -130,7 +130,7 @@ public class RemoteOperationResponseTest {
   }
 
   @Test
-  public void waitForCacheExceptionWithReplyExceptionWithNoCauseCallsHandleAsUnexpected()
+  public void waitForCacheExceptionWithReplyExceptionWithNoCauseCallsHandleCause()
       throws Exception {
     ReplyException replyException = mock(ReplyException.class);
     doThrow(replyException).when(replyProcessor).waitForRepliesUninterruptibly();
@@ -141,25 +141,16 @@ public class RemoteOperationResponseTest {
   }
 
   @Test
-  public void waitForCacheExceptionWithReplyExceptionWithCacheExceptionCauseThrowsThatCause()
+  public void waitForCacheExceptionWithReplyExceptionWithUnhandledCauseCallsHandleCause()
       throws Exception {
     ReplyException replyException = mock(ReplyException.class);
-    CacheExistsException cause = new CacheExistsException(cache, "msg");
+    RuntimeException cause = mock(RuntimeException.class);
     when(replyException.getCause()).thenReturn(cause);
     doThrow(replyException).when(replyProcessor).waitForRepliesUninterruptibly();
 
-    assertThatThrownBy(() -> replyProcessor.waitForCacheException()).isSameAs(cause);
-  }
-
-  @Test
-  public void waitForCacheExceptionWithReplyExceptionWithRegionDestroyedExceptionCauseThrowsThatCause()
-      throws Exception {
-    ReplyException replyException = mock(ReplyException.class);
-    RegionDestroyedException cause = new RegionDestroyedException("msg", "regionName");
-    when(replyException.getCause()).thenReturn(cause);
-    doThrow(replyException).when(replyProcessor).waitForRepliesUninterruptibly();
-
-    assertThatThrownBy(() -> replyProcessor.waitForCacheException()).isSameAs(cause);
+    replyProcessor.waitForCacheException();
+    
+    verify(replyException, times(1)).handleCause();
   }
 
   @Test

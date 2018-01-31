@@ -553,37 +553,29 @@ public abstract class RemoteOperationMessage extends DistributionMessage
     /**
      * Waits for the response from the {@link RemoteOperationMessage}'s recipient
      *
-     * @throws CacheException if the recipient threw a cache exception during message processing
+     * @throws RemoteOperationException if the member we waited for a response from departed
+     * @throws RemoteOperationException if a response was required and not received
+     * @throws RemoteOperationException if the ReplyException was caused by a RemoteOperationException
+     * @throws RemoteOperationException if the remote side's cache was closed
      */
-    public void waitForCacheException() throws CacheException, RemoteOperationException {
+    public void waitForCacheException() throws RemoteOperationException {
       try {
         waitForRepliesUninterruptibly();
         if (this.prce != null || (this.responseRequired && !this.responseReceived)) {
-          throw new RemoteOperationException(
-              LocalizedStrings.PartitionMessage_ATTEMPT_FAILED.toLocalizedString(), this.prce);
+          throw new RemoteOperationException("Attempt failed", this.prce);
         }
       } catch (ReplyException e) {
         Throwable t = e.getCause();
-        if (t instanceof CacheException) {
-          throw (CacheException) t;
-        } else if (t instanceof RemoteOperationException) {
+        if (t instanceof RemoteOperationException) {
           // no need to create a local RemoteOperationException to wrap the one from the reply
           throw (RemoteOperationException) t;
-        } else if (t instanceof RegionDestroyedException) {
-          throw (RegionDestroyedException) t;
         } else if (t instanceof CancelException) {
           if (logger.isDebugEnabled()) {
             logger.debug(
-                "RemoteOperationResponse got CacheClosedException from {}, throwing ForceReattemptException",
+                "RemoteOperationResponse got CacheClosedException from {}, throwing RemoteOperationException",
                 e.getSender(), t);
           }
           throw new RemoteOperationException("remote cache was closed", t);
-        } else if (t instanceof LowMemoryException) {
-          if (logger.isDebugEnabled()) {
-            logger.debug("RemoteOperationResponse re-throwing remote LowMemoryException from {}",
-                e.getSender(), t);
-          }
-          throw (LowMemoryException) t;
         }
         e.handleCause();
       }
