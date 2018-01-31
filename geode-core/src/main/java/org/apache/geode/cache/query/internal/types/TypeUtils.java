@@ -45,10 +45,10 @@ import org.apache.geode.pdx.internal.PdxString;
  */
 
 public class TypeUtils implements OQLLexerTokenTypes {
-  private static List _numericPrimitiveClasses = Arrays.asList(
+  protected static List<Class> _numericPrimitiveClasses = Arrays.asList(
       new Class[] {Byte.TYPE, Short.TYPE, Integer.TYPE, Long.TYPE, Float.TYPE, Double.TYPE});
 
-  private static List _numericWrapperClasses = Arrays.asList(
+  protected static List<Class> _numericWrapperClasses = Arrays.asList(
       new Class[] {Byte.class, Short.class, Integer.class, Long.class, Float.class, Double.class});
 
   /* Common Types */
@@ -375,7 +375,7 @@ public class TypeUtils implements OQLLexerTokenTypes {
   }
 
 
-  private static boolean booleanCompare(Object obj1, Object obj2, int compOp)
+  protected static boolean booleanCompare(Object obj1, Object obj2, int compOp)
       throws TypeMismatchException {
     if (!(obj1 instanceof Boolean) || !(obj2 instanceof Boolean))
       throw new TypeMismatchException(
