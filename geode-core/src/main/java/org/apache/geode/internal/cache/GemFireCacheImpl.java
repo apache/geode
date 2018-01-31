@@ -2521,6 +2521,7 @@ public class GemFireCacheImpl implements InternalCache, InternalClientCache, Has
     }
   }
 
+  @Override
   public void closeDiskStores() {
     Iterator<DiskStoreImpl> it = this.diskStores.values().iterator();
     while (it.hasNext()) {
