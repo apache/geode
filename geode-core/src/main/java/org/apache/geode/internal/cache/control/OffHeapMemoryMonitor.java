@@ -142,16 +142,16 @@ public class OffHeapMemoryMonitor implements MemoryMonitor, MemoryUsageListener 
   /**
    * Used by unit tests to be notified when OffHeapMemoryMonitor does something.
    */
-  public static interface OffHeapMemoryMonitorObserver {
+  public interface OffHeapMemoryMonitorObserver {
     /**
      * Called at the beginning of updateMemoryUsed.
      *
      * @param bytesUsed the number of bytes of off-heap memory currently used
      * @param willSendEvent true if an event will be sent to the OffHeapMemoryUsageListener.
      */
-    public void beginUpdateMemoryUsed(long bytesUsed, boolean willSendEvent);
+    void beginUpdateMemoryUsed(long bytesUsed, boolean willSendEvent);
 
-    public void afterNotifyUpdateMemoryUsed(long bytesUsed);
+    void afterNotifyUpdateMemoryUsed(long bytesUsed);
 
     /**
      * Called at the beginning of updateStateAndSendEvent.
@@ -159,14 +159,14 @@ public class OffHeapMemoryMonitor implements MemoryMonitor, MemoryUsageListener 
      * @param bytesUsed the number of bytes of off-heap memory currently used
      * @param willSendEvent true if an event will be sent to the OffHeapMemoryUsageListener.
      */
-    public void beginUpdateStateAndSendEvent(long bytesUsed, boolean willSendEvent);
+    void beginUpdateStateAndSendEvent(long bytesUsed, boolean willSendEvent);
 
-    public void updateStateAndSendEventBeforeProcess(long bytesUsed, MemoryEvent event);
+    void updateStateAndSendEventBeforeProcess(long bytesUsed, MemoryEvent event);
 
-    public void updateStateAndSendEventBeforeAbnormalProcess(long bytesUsed, MemoryEvent event);
+    void updateStateAndSendEventBeforeAbnormalProcess(long bytesUsed, MemoryEvent event);
 
-    public void updateStateAndSendEventIgnore(long bytesUsed, MemoryState oldState,
-        MemoryState newState, long mostRecentBytesUsed, boolean deliverNextAbnormalEvent);
+    void updateStateAndSendEventIgnore(long bytesUsed, MemoryState oldState, MemoryState newState,
+        long mostRecentBytesUsed, boolean deliverNextAbnormalEvent);
   }
 
   @Override

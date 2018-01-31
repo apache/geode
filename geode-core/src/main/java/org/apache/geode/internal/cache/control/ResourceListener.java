@@ -27,5 +27,5 @@ public interface ResourceListener<T extends ResourceEvent> {
    *
    * @param event the resource event
    */
-  public void onEvent(T event);
+  void onEvent(T event);
 }

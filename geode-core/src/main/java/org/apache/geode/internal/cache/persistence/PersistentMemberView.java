@@ -14,9 +14,7 @@
  */
 package org.apache.geode.internal.cache.persistence;
 
-import java.io.IOException;
 import java.util.Set;
-import java.util.UUID;
 
 import org.apache.geode.internal.cache.LocalRegion;
 
@@ -31,22 +29,22 @@ public interface PersistentMemberView {
   /**
    * @return the set of online members.
    */
-  public abstract Set<PersistentMemberID> getOnlineMembers();
+  Set<PersistentMemberID> getOnlineMembers();
 
   /**
    * @return the set of offline members
    */
-  public abstract Set<PersistentMemberID> getOfflineMembers();
+  Set<PersistentMemberID> getOfflineMembers();
 
   /**
    * @return the set of offline and equal members
    */
-  public abstract Set<PersistentMemberID> getOfflineAndEqualMembers();
+  Set<PersistentMemberID> getOfflineAndEqualMembers();
 
   /**
    * Retrieve the persisted ID of the current member.
    */
-  public abstract PersistentMemberID getMyPersistentID();
+  PersistentMemberID getMyPersistentID();
 
   /**
    * Indicate that this member is now online, and initialize it with the list of offline and online
@@ -57,18 +55,18 @@ public interface PersistentMemberView {
   /**
    * Indicate that a member is offline. This is only called after this member is online.
    */
-  public abstract void memberOffline(PersistentMemberID persistentID);
+  void memberOffline(PersistentMemberID persistentID);
 
   /**
    * Indicate that a member is offline, and has the same data on disk as the current member. This is
    * only called after this member is online.
    */
-  public abstract void memberOfflineAndEqual(PersistentMemberID persistentID);
+  void memberOfflineAndEqual(PersistentMemberID persistentID);
 
   /**
    * Indicate that a new member is online. This is only called after this member is online.
    */
-  public abstract void memberOnline(PersistentMemberID persistentID);
+  void memberOnline(PersistentMemberID persistentID);
 
   /**
    * Indicate that the member no longer persists the region and can be removed. This is only called
@@ -76,11 +74,11 @@ public interface PersistentMemberView {
    *
    * @param persistentID
    */
-  public void memberRemoved(PersistentMemberID persistentID);
+  void memberRemoved(PersistentMemberID persistentID);
 
-  public abstract PersistentMemberID generatePersistentID();
+  PersistentMemberID generatePersistentID();
 
-  public abstract void setInitializing(PersistentMemberID newId);
+  void setInitializing(PersistentMemberID newId);
 
   /**
    * Indicate that we are about to destroy this region. This method will be called before
@@ -88,7 +86,7 @@ public interface PersistentMemberView {
    * It will remove all data from disk for this region and remove the membership view. It must keep
    * the PersistentID.
    */
-  public abstract void beginDestroy(LocalRegion region);
+  void beginDestroy(LocalRegion region);
 
   /**
    * Indicate that we are about to partially destroy this region. It is used to stop hosting a
@@ -96,7 +94,7 @@ public interface PersistentMemberView {
    * crash during distribution, we can recover and complete the partial destroy. It will remove all
    * data from disk for this region. It must keep the PersistentID and the membership view.
    */
-  public abstract void beginDestroyDataStorage();
+  void beginDestroyDataStorage();
 
   /**
    * This method is called to finish either setAboutToDestroy or setAboutToPartialDestroy.
@@ -109,23 +107,23 @@ public interface PersistentMemberView {
    *
    * This method should NOT prevent this disk region from being initialized later.
    */
-  public abstract void endDestroy(LocalRegion region);
+  void endDestroy(LocalRegion region);
 
-  public abstract PersistentMemberID getMyInitializingID();
+  PersistentMemberID getMyInitializingID();
 
-  public abstract boolean wasAboutToDestroy();
+  boolean wasAboutToDestroy();
 
-  public abstract boolean wasAboutToDestroyDataStorage();
+  boolean wasAboutToDestroyDataStorage();
 
   /**
    * This method is used to complete a destroy that was pending when a member crashed. This method
    * applies the destroy operation, but it leaves the DiskRegion in a usable (empty) state.
    */
-  public abstract void finishPendingDestroy();
+  void finishPendingDestroy();
 
-  public abstract DiskStoreID getDiskStoreID();
+  DiskStoreID getDiskStoreID();
 
-  public abstract void memberRevoked(PersistentMemberPattern pattern);
+  void memberRevoked(PersistentMemberPattern pattern);
 
-  public abstract Set<PersistentMemberPattern> getRevokedMembers();
+  Set<PersistentMemberPattern> getRevokedMembers();
 }

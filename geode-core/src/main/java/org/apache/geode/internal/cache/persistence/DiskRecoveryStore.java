@@ -18,7 +18,6 @@ import org.apache.geode.cache.DiskAccessException;
 import org.apache.geode.cache.EvictionAttributes;
 import org.apache.geode.internal.cache.DiskStoreImpl;
 import org.apache.geode.internal.cache.LocalRegion;
-import org.apache.geode.internal.cache.RegionEntry;
 import org.apache.geode.internal.cache.RegionMap;
 import org.apache.geode.internal.cache.entries.DiskEntry;
 import org.apache.geode.internal.cache.versions.RegionVersionHolder;
@@ -32,45 +31,44 @@ import org.apache.geode.internal.cache.versions.VersionTag;
  * @since GemFire prPersistSprint3
  */
 public interface DiskRecoveryStore {
-  public DiskRegionView getDiskRegionView();
+  DiskRegionView getDiskRegionView();
 
-  public DiskEntry getDiskEntry(Object key);
+  DiskEntry getDiskEntry(Object key);
 
-  public void foreachRegionEntry(LocalRegion.RegionEntryCallback callback);
+  void foreachRegionEntry(LocalRegion.RegionEntryCallback callback);
 
-  public DiskEntry initializeRecoveredEntry(Object key, DiskEntry.RecoveredEntry re);
+  DiskEntry initializeRecoveredEntry(Object key, DiskEntry.RecoveredEntry re);
 
-  public DiskEntry updateRecoveredEntry(Object key, DiskEntry.RecoveredEntry re);
+  DiskEntry updateRecoveredEntry(Object key, DiskEntry.RecoveredEntry re);
 
-  public void destroyRecoveredEntry(Object key);
+  void destroyRecoveredEntry(Object key);
 
-  public boolean lruLimitExceeded();
+  boolean lruLimitExceeded();
 
-  public void copyRecoveredEntries(RegionMap rm);
+  void copyRecoveredEntries(RegionMap rm);
 
-  public void updateSizeOnFaultIn(Object key, int newSize, int bytesOnDisk);
+  void updateSizeOnFaultIn(Object key, int newSize, int bytesOnDisk);
 
-  public int calculateValueSize(Object val);
+  int calculateValueSize(Object val);
 
-  public RegionMap getRegionMap();
+  RegionMap getRegionMap();
 
-  public void handleDiskAccessException(DiskAccessException dae);
+  void handleDiskAccessException(DiskAccessException dae);
 
-  public EvictionAttributes getEvictionAttributes();
+  EvictionAttributes getEvictionAttributes();
 
-  public void initializeStats(long numEntriesInVM, long numOverflowOnDisk,
-      long numOverflowBytesOnDisk);
+  void initializeStats(long numEntriesInVM, long numOverflowOnDisk, long numOverflowBytesOnDisk);
 
-  public void recordRecoveredGCVersion(VersionSource member, long gcVersion);
+  void recordRecoveredGCVersion(VersionSource member, long gcVersion);
 
-  public void recordRecoveredVersonHolder(VersionSource member, RegionVersionHolder versionHolder,
+  void recordRecoveredVersonHolder(VersionSource member, RegionVersionHolder versionHolder,
       boolean latestOplog);
 
-  public void recordRecoveredVersionTag(VersionTag tag);
+  void recordRecoveredVersionTag(VersionTag tag);
 
-  public long getVersionForMember(VersionSource member);
+  long getVersionForMember(VersionSource member);
 
-  public void setRVVTrusted(boolean rvvTrusted);
+  void setRVVTrusted(boolean rvvTrusted);
 
-  public DiskStoreImpl getDiskStore();
+  DiskStoreImpl getDiskStore();
 }

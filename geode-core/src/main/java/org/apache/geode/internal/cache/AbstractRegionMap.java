@@ -3424,23 +3424,23 @@ public abstract class AbstractRegionMap
   public void updateEvictionCounter() {}
 
   public interface ARMLockTestHook {
-    public void beforeBulkLock(InternalRegion region);
+    void beforeBulkLock(InternalRegion region);
 
-    public void afterBulkLock(InternalRegion region);
+    void afterBulkLock(InternalRegion region);
 
-    public void beforeBulkRelease(InternalRegion region);
+    void beforeBulkRelease(InternalRegion region);
 
-    public void afterBulkRelease(InternalRegion region);
+    void afterBulkRelease(InternalRegion region);
 
-    public void beforeLock(InternalRegion region, CacheEvent event);
+    void beforeLock(InternalRegion region, CacheEvent event);
 
-    public void afterLock(InternalRegion region, CacheEvent event);
+    void afterLock(InternalRegion region, CacheEvent event);
 
-    public void beforeRelease(InternalRegion region, CacheEvent event);
+    void beforeRelease(InternalRegion region, CacheEvent event);
 
-    public void afterRelease(InternalRegion region, CacheEvent event);
+    void afterRelease(InternalRegion region, CacheEvent event);
 
-    public void beforeStateFlushWait();
+    void beforeStateFlushWait();
   }
 
   private ARMLockTestHook armLockTestHook;

@@ -46,9 +46,9 @@ public interface VersionHolder<T extends VersionSource> {
   int getDistributedSystemId();
 
   /** get rvv internal high byte. Used by region entries for transferring to storage */
-  public short getRegionVersionHighBytes();
+  short getRegionVersionHighBytes();
 
   /** get rvv internal low bytes. Used by region entries for transferring to storage */
-  public int getRegionVersionLowBytes();
+  int getRegionVersionLowBytes();
 
 }

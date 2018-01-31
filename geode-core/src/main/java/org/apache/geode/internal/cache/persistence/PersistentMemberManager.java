@@ -207,26 +207,26 @@ public class PersistentMemberManager {
     }
   }
 
-  public static interface MemberRevocationListener {
-    public void revoked(PersistentMemberPattern pattern);
+  public interface MemberRevocationListener {
+    void revoked(PersistentMemberPattern pattern);
 
     /**
      * Add the persistent id(s) of this listener to the passed in set.
      */
-    public void addPersistentIDs(Set<PersistentMemberID> localData);
+    void addPersistentIDs(Set<PersistentMemberID> localData);
 
     /**
      * Return true if this is a listener for a resource that matches the persistent member pattern
      * in question.
      */
-    public boolean matches(PersistentMemberPattern pattern);
+    boolean matches(PersistentMemberPattern pattern);
 
     /**
      * Return the set of member ids which this resource knows are missing
      */
-    public Set<PersistentMemberID> getMissingMemberIds();
+    Set<PersistentMemberID> getMissingMemberIds();
 
-    public String getRegionPath();
+    String getRegionPath();
   }
 
   public class PendingRevokeListener implements MembershipListener {
