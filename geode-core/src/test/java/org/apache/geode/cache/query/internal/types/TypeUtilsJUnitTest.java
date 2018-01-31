@@ -209,6 +209,97 @@ public class TypeUtilsJUnitTest {
     assertThat(customComparableKeyResult).isSameAs(customComparableKey);
   }
 
+  /**
+   * Can't test every possible combination so try the known, relevant ones.
+   */
+  @Test
+  public void isAssignableFromShouldWorkProperlyForKnownTypes() {
+    // Booleans
+    assertThat(TypeUtils.isAssignableFrom(new Boolean(true).getClass(), Comparable.class)).isTrue();
+    assertThat(TypeUtils.isAssignableFrom(new Boolean(false).getClass(), Comparable.class))
+        .isTrue();
+    assertThat(TypeUtils.isAssignableFrom(new AtomicBoolean(false).getClass(), Comparable.class))
+        .isFalse();
+
+    // Dates supported by the TemporalComparator
+    long currentTime = Calendar.getInstance().getTimeInMillis();
+    assertThat(TypeUtils.isAssignableFrom(new Date(currentTime).getClass(), Date.class)).isTrue();
+    assertThat(TypeUtils.isAssignableFrom(new Long(currentTime).getClass(), Date.class)).isFalse();
+    assertThat(TypeUtils.isAssignableFrom(new java.sql.Date(currentTime).getClass(), Date.class))
+        .isTrue();
+    assertThat(TypeUtils.isAssignableFrom(new java.sql.Time(currentTime).getClass(), Date.class))
+        .isTrue();
+    assertThat(
+        TypeUtils.isAssignableFrom(new java.sql.Timestamp(currentTime).getClass(), Date.class))
+            .isTrue();
+
+    // Numbers supported by the NumericComparator
+    Random random = new Random();
+    assertThat(TypeUtils.isAssignableFrom(new Short("0").getClass(), Number.class)).isTrue();
+    assertThat(TypeUtils.isAssignableFrom(new Long(random.nextLong()).getClass(), Number.class))
+        .isTrue();
+    assertThat(TypeUtils.isAssignableFrom(new Float(random.nextLong()).getClass(), Number.class))
+        .isTrue();
+    assertThat(TypeUtils.isAssignableFrom(new Double(random.nextLong()).getClass(), Number.class))
+        .isTrue();
+    assertThat(
+        TypeUtils.isAssignableFrom(new BigDecimal(random.nextLong()).getClass(), Number.class))
+            .isTrue();
+    assertThat(TypeUtils.isAssignableFrom(new Integer(random.nextInt()).getClass(), Number.class))
+        .isTrue();
+    assertThat(TypeUtils.isAssignableFrom(new BigInteger("00").getClass(), Number.class)).isTrue();
+    assertThat(
+        TypeUtils.isAssignableFrom(new AtomicInteger(random.nextInt()).getClass(), Number.class))
+            .isTrue();
+
+    // Comparable Interface
+    assertThat(TypeUtils.isAssignableFrom(new PdxString("").getClass(), Comparable.class)).isTrue();
+    assertThat(TypeUtils.isAssignableFrom(new Long(random.nextLong()).getClass(), Comparable.class))
+        .isTrue();
+    assertThat(
+        TypeUtils.isAssignableFrom(new Integer(random.nextInt()).getClass(), Comparable.class))
+            .isTrue();
+  }
+
+  @Test
+  public void isTypeConvertibleShouldDelegateToIsAssignableFromMethodForNonWrappedTypesAndNullSourceType() {
+    PowerMockito.spy(TypeUtils.class);
+
+    // Special classes (Enum, Object, Class, Interface) and srcType as null.
+    assertThat(TypeUtils.isTypeConvertible(null, Enum.class)).isTrue();
+    PowerMockito.verifyStatic(TypeUtils.class, times(1));
+    TypeUtils.isAssignableFrom(Enum.class, Object.class);
+
+    assertThat(TypeUtils.isTypeConvertible(null, Object.class)).isTrue();
+    PowerMockito.verifyStatic(TypeUtils.class, times(1));
+    TypeUtils.isAssignableFrom(Object.class, Object.class);
+
+    assertThat(TypeUtils.isTypeConvertible(null, Class.class)).isTrue();
+    PowerMockito.verifyStatic(TypeUtils.class, times(1));
+    TypeUtils.isAssignableFrom(Class.class, Object.class);
+
+    assertThat(TypeUtils.isTypeConvertible(null, TimeUnit.class)).isTrue();
+    PowerMockito.verifyStatic(TypeUtils.class, times(1));
+    TypeUtils.isAssignableFrom(TimeUnit.class, Object.class);
+
+    assertThat(TypeUtils.isTypeConvertible(null, Serializable.class)).isTrue();
+    PowerMockito.verifyStatic(TypeUtils.class, times(1));
+    TypeUtils.isAssignableFrom(Serializable.class, Object.class);
+
+    // Regular, non java wrapped classes.
+    assertThat(TypeUtils.isTypeConvertible(AtomicInteger.class, Number.class)).isTrue();
+    PowerMockito.verifyStatic(TypeUtils.class, times(1));
+    TypeUtils.isAssignableFrom(AtomicInteger.class, Number.class);
+
+    assertThat(TypeUtils.isTypeConvertible(NumericComparator.class, Comparator.class)).isTrue();
+    PowerMockito.verifyStatic(TypeUtils.class, times(1));
+    TypeUtils.isAssignableFrom(NumericComparator.class, Comparator.class);
+
+    assertThat(TypeUtils.isTypeConvertible(PartitionedRegion.class, LocalRegion.class)).isTrue();
+    PowerMockito.verifyStatic(TypeUtils.class, times(1));
+    TypeUtils.isAssignableFrom(PartitionedRegion.class, LocalRegion.class);
+  }
+
   @Test
   public void isTypeConvertibleShouldReturnTrueForBooleanPrimitivesAndWrappers() {
     assertThat(TypeUtils.isTypeConvertible(null, Boolean.class)).isTrue();
@@ -1085,8 +1176,7 @@ public class TypeUtilsJUnitTest {
   }
 
   @Test
-  public void comparingArbitraryObjectsUsingAnUnsupportedComparisonOperatorShouldThrowException()
-      throws TypeMismatchException, IllegalAccessException {
+  public void comparingArbitraryObjectsUsingAnUnsupportedComparisonOperatorShouldThrowException() {
     OQLLexerTokenTypes tempInstance = new OQLLexerTokenTypes() {};
     Field[] fields = OQLLexerTokenTypes.class.getDeclaredFields();
 
