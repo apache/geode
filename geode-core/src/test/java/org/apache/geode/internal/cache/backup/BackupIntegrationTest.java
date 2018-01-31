@@ -43,8 +43,10 @@ import org.apache.commons.io.filefilter.DirectoryFileFilter;
 import org.apache.commons.io.filefilter.RegexFileFilter;
 import org.junit.After;
 import org.junit.Before;
+import org.junit.Rule;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
+import org.junit.rules.TemporaryFolder;
 
 import org.apache.geode.cache.CacheFactory;
 import org.apache.geode.cache.DataPolicy;
@@ -62,6 +64,10 @@ import org.apache.geode.test.junit.categories.IntegrationTest;
 public class BackupIntegrationTest {
 
   private static final String DISK_STORE_NAME = "diskStore";
+
+  @Rule
+  public TemporaryFolder temporaryFolder = new TemporaryFolder();
+
   private GemFireCacheImpl cache = null;
   private File tmpDir;
   private File cacheXmlFile;
@@ -81,8 +87,7 @@ public class BackupIntegrationTest {
     if (tmpDir == null) {
       props.setProperty(MCAST_PORT, "0");
       props.setProperty(LOCATORS, "");
-      String tmpDirName = System.getProperty("java.io.tmpdir");
-      tmpDir = new File(tmpDirName == null ? "" : tmpDirName);
+      tmpDir = temporaryFolder.newFolder("temp");
       try {
         URL url = BackupIntegrationTest.class.getResource("BackupIntegrationTest.cache.xml");
         cacheXmlFile = new File(url.toURI().getPath());
