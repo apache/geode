@@ -1110,8 +1110,9 @@ public class HandShake implements ClientHandShake {
     }
   }
 
-  public void accept(OutputStream out, InputStream in, byte epType, int qSize,
-      CommunicationMode communicationMode, Principal principal) throws IOException {
+  @Override
+  public void handshakeWithClient(OutputStream out, InputStream in, byte epType, int pingInterval,
+      int qSize, CommunicationMode communicationMode, Principal principal) throws IOException {
     DataOutputStream dos = new DataOutputStream(out);
     DataInputStream dis;
     if (clientVersion.compareTo(Version.CURRENT) < 0) {
@@ -1135,6 +1136,9 @@ public class HandShake implements ClientHandShake {
 
     dos.writeByte(epType);
     dos.writeInt(qSize);
+    if (clientVersion.compareTo(Version.GEODE_150) >= 0) {
+      dos.writeInt(pingInterval);
+    }
 
     // Write the server's member
     DistributedMember member = this.system.getDistributedMember();
@@ -1241,14 +1245,13 @@ public class HandShake implements ClientHandShake {
         }
       }
 
-      // No need to check for return value since DataInputStream already throws
-      // EOFException in case of EOF
       byte epType = dis.readByte();
       int qSize = dis.readInt();
+      int pingInterval = dis.readInt();
 
       // Read the server member
       member = readServerMember(dis);
-      serverQStatus = new ServerQueueStatus(epType, qSize, member);
+      serverQStatus = new ServerQueueStatus(epType, qSize, member, pingInterval);
 
       // Read the message (if any)
       readMessage(dis, dos, acceptanceCode, member);
@@ -1318,12 +1321,10 @@ public class HandShake implements ClientHandShake {
             LocalizedStrings.HandShake_SERVER_EXPECTING_SSL_CONNECTION.toLocalizedString());
       }
 
-      // No need to check for return value since DataInputStream already throws
-      // EOFException in case of EOF
       byte qType = dis.readByte();
-      // read and ignore qSize flag
       int qSize = dis.readInt();
-      sqs = new ServerQueueStatus(qType, qSize, member);
+      int pingInterval = dis.readInt();
+      sqs = new ServerQueueStatus(qType, qSize, member, pingInterval);
 
       // Read the message (if any)
       readMessage(dis, dos, acceptanceCode, member);

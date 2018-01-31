@@ -26,6 +26,8 @@ import org.apache.geode.distributed.DistributedMember;
  *
  */
 public class ServerQueueStatus {
+  /** interval that server sends pings if connection is idle */
+  private final int pingInterval;
   /** queueSize of HARegionQueue for this client */
   private int qSize = 0;
   /** Endpoint type for this endpoint */
@@ -35,23 +37,17 @@ public class ServerQueueStatus {
   private int pdxSize = 0;
 
   /**
-   * Default constructor Called when connectionsPerServer=0
-   */
-  public ServerQueueStatus(DistributedMember memberId) {
-    this((byte) 0, 0, memberId);
-  }
-
-  /**
    * Constructor Called when connectionsPerServer is nto equal to 0
    *
    * @param epType
    * @param qSize
+   * @param pingInterval
    */
-  public ServerQueueStatus(byte epType, int qSize, DistributedMember memberId) {
+  public ServerQueueStatus(byte epType, int qSize, DistributedMember memberId, int pingInterval) {
     this.qSize = qSize;
     this.epType = epType;
     this.memberId = memberId;
-
+    this.pingInterval = pingInterval;
   }
 
   /**
@@ -90,10 +86,16 @@ public class ServerQueueStatus {
     return this.qSize;
   }
 
+  /** returns the time between server-to-client ping messages on idle subscription connections */
+  public int getPingInterval() {
+    return this.pingInterval;
+  }
+
   public String toString() {
     StringBuffer buffer = new StringBuffer();
     buffer.append("ServerQueueStatus [").append("qSize=").append(this.qSize).append("; epType=")
-        .append(getTypeAsString()).append("]");
+        .append(getTypeAsString()).append("; pingInterval=").append(this.pingInterval)
+        .append(" ms]");
     return buffer.toString();
   }
 

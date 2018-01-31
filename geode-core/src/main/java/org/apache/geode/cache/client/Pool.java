@@ -293,4 +293,20 @@ public interface Pool {
    */
   public int getPendingEventCount();
 
+  /**
+   * A server has an inactivity monitor that ensures a message is sent to a client at least once a
+   * minute (60,000 milliseconds). If a subscription timeout multipler is set in the client it
+   * enables timing out of the subscription feed with failover to another server.
+   * <p>
+   * A value of zero (the default) disables timeouts
+   * <p>
+   * A value of one will time out the server connection after one of its ping intervals (not
+   * recommended)
+   * <p>
+   * A value of two or more will time out the server connection after that many ping intervals have
+   * elapsed
+   *
+   * @return The timeout multiplier
+   */
+  int getSubscriptionTimeoutMultiplier();
 }
