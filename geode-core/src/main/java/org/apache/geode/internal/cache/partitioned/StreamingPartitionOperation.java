@@ -236,7 +236,7 @@ public abstract class StreamingPartitionOperation extends StreamingOperation {
         } else if (t instanceof PrimaryBucketException) {
           throw new PrimaryBucketException("Peer failed primary test", t);
         }
-        e.handleAsUnexpected();
+        e.handleCause();
         // This won't be reached, because of the above,
         // but it makes the compiler happy.
         throw e;

@@ -462,7 +462,7 @@ public class FunctionStreamingResultCollector extends ReplyProcessor21 implement
       if (e.getCause() instanceof FunctionException) {
         throw (FunctionException) e.getCause();
       }
-      e.handleAsUnexpected();
+      e.handleCause();
     }
 
     return timedOut;

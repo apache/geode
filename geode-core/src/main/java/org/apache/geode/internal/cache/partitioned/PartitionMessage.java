@@ -830,7 +830,7 @@ public abstract class PartitionMessage extends DistributionMessage
               e.getSender(), t);
           throw (LowMemoryException) t;
         }
-        e.handleAsUnexpected();
+        e.handleCause();
       }
     }
 

@@ -95,7 +95,7 @@ public abstract class TXStateStub implements TXStateInterface {
       } catch (ReliableReplyException e) {
         throw new TransactionDataNodeHasDepartedException(e);
       } catch (ReplyException e) {
-        e.handleAsUnexpected();
+        e.handleCause();
       } catch (InterruptedException e) {
       }
     } catch (SynchronizationCommitConflictException e) {

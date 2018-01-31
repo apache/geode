@@ -577,10 +577,7 @@ public abstract class RemoteOperationMessage extends DistributionMessage
                 "RemoteOperationResponse got CacheClosedException from {}, throwing ForceReattemptException",
                 e.getSender(), t);
           }
-          throw new RemoteOperationException(
-              LocalizedStrings.PartitionMessage_PARTITIONRESPONSE_GOT_REMOTE_CACHECLOSEDEXCEPTION
-                  .toLocalizedString(),
-              t);
+          throw new RemoteOperationException("remote cache was closed", t);
         } else if (t instanceof LowMemoryException) {
           if (logger.isDebugEnabled()) {
             logger.debug("RemoteOperationResponse re-throwing remote LowMemoryException from {}",
@@ -588,7 +585,7 @@ public abstract class RemoteOperationMessage extends DistributionMessage
           }
           throw (LowMemoryException) t;
         }
-        e.handleAsUnexpected();
+        e.handleCause();
       }
     }
 

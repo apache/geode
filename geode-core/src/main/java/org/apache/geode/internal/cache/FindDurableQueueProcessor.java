@@ -65,7 +65,7 @@ public class FindDurableQueueProcessor extends ReplyProcessor21 {
     try {
       processor.waitForRepliesUninterruptibly();
     } catch (ReplyException e) {
-      e.handleAsUnexpected();
+      e.handleCause();
     }
     ArrayList locations = processor.durableLocations;
     // This will add any local queues to the list

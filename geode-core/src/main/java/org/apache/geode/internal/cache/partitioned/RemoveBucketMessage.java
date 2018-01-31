@@ -278,7 +278,7 @@ public class RemoveBucketMessage extends PartitionMessage {
           logger.debug(msg, t);
           return true;
         }
-        e.handleAsUnexpected();
+        e.handleCause();
       }
       return this.removed;
     }

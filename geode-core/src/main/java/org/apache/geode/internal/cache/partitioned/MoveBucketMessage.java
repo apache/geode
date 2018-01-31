@@ -281,7 +281,7 @@ public class MoveBucketMessage extends PartitionMessage {
           logger.debug(msg, t);
           return false;
         }
-        e.handleAsUnexpected();
+        e.handleCause();
       }
       return this.moved;
     }

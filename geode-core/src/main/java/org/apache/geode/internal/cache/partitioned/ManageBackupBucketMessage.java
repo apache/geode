@@ -413,7 +413,7 @@ public class ManageBackupBucketMessage extends PartitionMessage {
           logger.debug(m, t);
           throw (ForceReattemptException) t;
         }
-        e.handleAsUnexpected();
+        e.handleCause();
       }
       return (this.msg != null) && this.msg.acceptedBucket;
     }

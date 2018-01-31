@@ -765,7 +765,7 @@ public abstract class DistributedCacheOperation {
           logger.fatal(LocalizedMessage
               .create(LocalizedStrings.DistributedCacheOperation_WAITFORACKIFNEEDED_EXCEPTION), e);
         }
-        e.handleAsUnexpected();
+        e.handleCause();
       }
     } finally {
       this.processor = null;

@@ -479,7 +479,7 @@ public class RemoteFetchKeysMessage extends RemoteOperationMessage {
           RegionDestroyedException rde = (RegionDestroyedException) t;
           throw rde;
         }
-        e.handleAsUnexpected();
+        e.handleCause();
         if (!this.lastChunkReceived) {
           throw new TransactionException(e);
         }

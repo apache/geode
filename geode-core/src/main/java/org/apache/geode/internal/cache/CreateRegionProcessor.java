@@ -130,7 +130,7 @@ public class CreateRegionProcessor implements ProfileExchangeProcessor {
             // region is incompatible with region in another cache
             throw (IllegalStateException) t;
           }
-          e.handleAsUnexpected();
+          e.handleCause();
           break;
         }
       } finally {

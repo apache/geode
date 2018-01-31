@@ -385,7 +385,7 @@ public class GrantorRequestProcessor extends ReplyProcessor21 {
             try {
               processor.waitForRepliesUninterruptibly();
             } catch (ReplyException e) {
-              e.handleAsUnexpected();
+              e.handleCause();
             }
             if (processor.result != null) {
               result = processor.result;

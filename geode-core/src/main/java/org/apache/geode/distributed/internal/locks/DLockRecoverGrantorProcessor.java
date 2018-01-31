@@ -97,7 +97,7 @@ public class DLockRecoverGrantorProcessor extends ReplyProcessor21 {
     try {
       processor.waitForRepliesUninterruptibly();
     } catch (ReplyException e) {
-      e.handleAsUnexpected();
+      e.handleCause();
     }
     if (processor.error) {
       return false;

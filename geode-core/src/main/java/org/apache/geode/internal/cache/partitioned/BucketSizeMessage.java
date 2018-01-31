@@ -275,7 +275,7 @@ public class BucketSizeMessage extends PartitionMessage {
                   .toLocalizedString(),
               t);
         }
-        e.handleAsUnexpected();
+        e.handleCause();
       }
       return this.returnValue;
     }

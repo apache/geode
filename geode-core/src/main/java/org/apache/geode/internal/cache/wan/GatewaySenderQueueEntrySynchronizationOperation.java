@@ -86,7 +86,7 @@ public class GatewaySenderQueueEntrySynchronizationOperation {
     try {
       processor.waitForReplies();
     } catch (ReplyException e) {
-      e.handleAsUnexpected();
+      e.handleCause();
     } catch (InterruptedException e) {
       dm.getCancelCriterion().checkCancelInProgress(e);
       Thread.currentThread().interrupt();

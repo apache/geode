@@ -225,7 +225,7 @@ public class PrimaryRequestMessage extends PartitionMessage {
                   .toLocalizedString(),
               t);
         }
-        e.handleAsUnexpected();
+        e.handleCause();
       }
       return this.msg.getSender();
     }
