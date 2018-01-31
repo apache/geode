@@ -42,64 +42,64 @@ public interface InternalLogWriter extends LogWriter, LogWriterI18n {
   /**
    * If the writer's level is <code>ALL_LEVEL</code> then all messages will be logged.
    */
-  public static final int ALL_LEVEL = Integer.MIN_VALUE;
+  int ALL_LEVEL = Integer.MIN_VALUE;
   /**
    * If the writer's level is <code>FINEST_LEVEL</code> then finest, finer, fine, config, info,
    * warning, error, and severe messages will be logged.
    */
-  public static final int FINEST_LEVEL = 300;
+  int FINEST_LEVEL = 300;
   /**
    * If the writer's level is <code>FINER_LEVEL</code> then finer, fine, config, info, warning,
    * error, and severe messages will be logged.
    */
-  public static final int FINER_LEVEL = 400;
+  int FINER_LEVEL = 400;
   /**
    * If the writer's level is <code>FINE_LEVEL</code> then fine, config, info, warning, error, and
    * severe messages will be logged.
    */
-  public static final int FINE_LEVEL = 500;
+  int FINE_LEVEL = 500;
   /**
    * If the writer's level is <code>CONFIG_LEVEL</code> then config, info, warning, error, and
    * severe messages will be logged.
    */
-  public static final int CONFIG_LEVEL = 700;
+  int CONFIG_LEVEL = 700;
   /**
    * If the writer's level is <code>INFO_LEVEL</code> then info, warning, error, and severe messages
    * will be logged.
    */
-  public static final int INFO_LEVEL = 800;
+  int INFO_LEVEL = 800;
   /**
    * If the writer's level is <code>WARNING_LEVEL</code> then warning, error, and severe messages
    * will be logged.
    */
-  public static final int WARNING_LEVEL = 900;
+  int WARNING_LEVEL = 900;
   /**
    * If the writer's level is <code>SEVERE_LEVEL</code> then only severe messages will be logged.
    */
-  public static final int SEVERE_LEVEL = 1000;
+  int SEVERE_LEVEL = 1000;
   /**
    * If the writer's level is <code>ERROR_LEVEL</code> then error and severe messages will be
    * logged.
    */
-  public static final int ERROR_LEVEL = (WARNING_LEVEL + SEVERE_LEVEL) / 2;
+  int ERROR_LEVEL = (WARNING_LEVEL + SEVERE_LEVEL) / 2;
   /**
    * If the writer's level is <code>NONE_LEVEL</code> then no messages will be logged.
    */
-  public static final int NONE_LEVEL = Integer.MAX_VALUE;
+  int NONE_LEVEL = Integer.MAX_VALUE;
 
-  public static final String[] levelNames = new String[] {"all", "finest", "finer", "fine",
-      "config", "info", "warning", "error", "severe", "none"};
+  String[] levelNames = new String[] {"all", "finest", "finer", "fine", "config", "info", "warning",
+      "error", "severe", "none"};
 
-  public static final int[] allLevels = new int[] {ALL_LEVEL, FINEST_LEVEL, FINER_LEVEL, FINE_LEVEL,
-      CONFIG_LEVEL, INFO_LEVEL, WARNING_LEVEL, ERROR_LEVEL, SEVERE_LEVEL, NONE_LEVEL};
+  int[] allLevels = new int[] {ALL_LEVEL, FINEST_LEVEL, FINER_LEVEL, FINE_LEVEL, CONFIG_LEVEL,
+      INFO_LEVEL, WARNING_LEVEL, ERROR_LEVEL, SEVERE_LEVEL, NONE_LEVEL};
 
-  public int getLogWriterLevel();
+  int getLogWriterLevel();
 
-  public void setLogWriterLevel(int LogWriterLevel);
+  void setLogWriterLevel(int LogWriterLevel);
 
-  public boolean isSecure();
+  boolean isSecure();
 
-  public String getConnectionName();
+  String getConnectionName();
 
   /**
    * Logs a message and an exception of the given level.
@@ -108,7 +108,7 @@ public interface InternalLogWriter extends LogWriter, LogWriterI18n {
    * @param msg the actual message to log
    * @param exception the actual Exception to log
    */
-  public void put(int msgLevel, String msg, Throwable exception);
+  void put(int msgLevel, String msg, Throwable exception);
 
   /**
    * Logs a message and an exception of the given level.
@@ -118,5 +118,5 @@ public interface InternalLogWriter extends LogWriter, LogWriterI18n {
    * @param params the Object arguments to plug into the message
    * @param exception the actual Exception to log
    */
-  public void put(int msgLevel, StringId msgId, Object[] params, Throwable exception);
+  void put(int msgLevel, StringId msgId, Object[] params, Throwable exception);
 }

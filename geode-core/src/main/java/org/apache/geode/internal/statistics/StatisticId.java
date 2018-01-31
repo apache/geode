@@ -29,8 +29,8 @@ import org.apache.geode.Statistics;
 public interface StatisticId {
 
   /** Returns the descriptor that this stat is an instance of */
-  public StatisticDescriptor getStatisticDescriptor();
+  StatisticDescriptor getStatisticDescriptor();
 
   /** Returns the statistics instance which owns this stat instance */
-  public Statistics getStatistics();
+  Statistics getStatistics();
 }

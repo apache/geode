@@ -20,5 +20,5 @@ package org.apache.geode.internal.offheap;
  * @since Geode 1.0
  */
 public interface MemoryUsageListener {
-  public void updateMemoryUsed(long bytesUsed);
+  void updateMemoryUsed(long bytesUsed);
 }
