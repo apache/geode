@@ -24,7 +24,7 @@ public interface JMXNotificationUserData {
   /**
    * The level at which this alert is issued.
    */
-  public static final String ALERT_LEVEL = "AlertLevel";
+  String ALERT_LEVEL = "AlertLevel";
 
   /**
    * The member of the distributed system that issued the alert, or null if the issuer is no longer
@@ -32,12 +32,12 @@ public interface JMXNotificationUserData {
    * org.apache.geode.management.UserData
    */
 
-  public static final String MEMBER = "Member";
+  String MEMBER = "Member";
 
   /**
    * The thread causing the alert
    */
 
-  public static final String THREAD = "Thread";
+  String THREAD = "Thread";
 
 }

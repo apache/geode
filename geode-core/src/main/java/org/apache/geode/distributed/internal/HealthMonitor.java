@@ -26,20 +26,20 @@ public interface HealthMonitor {
   /**
    * Returns the id of this monitor instance. Each instance is given a unique id when it is created.
    */
-  public int getId();
+  int getId();
 
   /**
    * Resets the current health status to zero.
    */
-  public void resetStatus();
+  void resetStatus();
 
   /**
    * Returns the diagnosis of the desired status.
    */
-  public String[] getDiagnosis(GemFireHealth.Health healthCode);
+  String[] getDiagnosis(GemFireHealth.Health healthCode);
 
   /**
    * Stops the monitor so it no longer checks for health. Once stopped a monitor can not be started.
    */
-  public void stop();
+  void stop();
 }

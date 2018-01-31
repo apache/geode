@@ -32,5 +32,5 @@ public interface NotificationBroadCasterProxy extends NotificationBroadcaster {
    *
    * @param notification
    */
-  public void sendNotification(Notification notification);
+  void sendNotification(Notification notification);
 }

@@ -27,5 +27,5 @@ public interface SystemMemberRegionEvent extends SystemMemberCacheEvent {
   /**
    * Returns the full path of the region the event was done on.
    */
-  public String getRegionPath();
+  String getRegionPath();
 }

@@ -1329,7 +1329,7 @@ public class DistributionAdvisor {
    * an arbitrary aggregator that has been passed to the {@link #visit} method. In addition this is
    * public for use by other classes.
    */
-  public static interface ProfileVisitor<T> {
+  public interface ProfileVisitor<T> {
 
     /**
      * Visit a given {@link Profile} accumulating the results in the given aggregate. Returns false
@@ -1511,15 +1511,15 @@ public class DistributionAdvisor {
 
 
   /** Filter interface */
-  protected static interface Filter {
-    public boolean include(Profile profile);
+  protected interface Filter {
+    boolean include(Profile profile);
   }
 
   /**
    * Marker interface to designate on object that serves and the unique id that identifies a
    * Profile.
    */
-  public static interface ProfileId {
+  public interface ProfileId {
   }
   /**
    * Profile information for a remote counterpart.

@@ -82,7 +82,7 @@ public interface PdxSerializer {
    * @param out the {@link PdxWriter} to use to serialize the object
    * @return <code>true</code> if the method serialized the object; otherwise <code>false</code>
    */
-  public boolean toData(Object o, PdxWriter out);
+  boolean toData(Object o, PdxWriter out);
 
   /**
    * This method is given an class that should be instantiated and deserialized using the given
@@ -93,5 +93,5 @@ public interface PdxSerializer {
    * @return the deserialized object. <code>null</code> indicates that this PdxSerializer does not
    *         know how to deserialize the given class.
    */
-  public Object fromData(Class<?> clazz, PdxReader in);
+  Object fromData(Class<?> clazz, PdxReader in);
 }

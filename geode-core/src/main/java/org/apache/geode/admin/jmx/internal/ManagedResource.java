@@ -32,7 +32,7 @@ public interface ManagedResource {
    *
    * @see #getMBeanName
    */
-  public static final String MBEAN_NAME_PREFIX = "GemFire:type=";
+  String MBEAN_NAME_PREFIX = "GemFire:type=";
 
   /**
    * Returns the name of the ModelMBean that will manage this resource. They [some] are of the form
@@ -43,31 +43,31 @@ public interface ManagedResource {
    *
    * @see #MBEAN_NAME_PREFIX
    */
-  public String getMBeanName();
+  String getMBeanName();
 
   /** Returns the ModelMBean that is configured to manage this resource */
-  public ModelMBean getModelMBean();
+  ModelMBean getModelMBean();
 
   /** Sets the ModelMBean that is configured to manage this resource */
-  public void setModelMBean(ModelMBean modelMBean);
+  void setModelMBean(ModelMBean modelMBean);
 
   /**
    * Returns the enumerated ManagedResourceType of this resource.
    *
    * @see ManagedResourceType
    */
-  public ManagedResourceType getManagedResourceType();
+  ManagedResourceType getManagedResourceType();
 
   /**
    * Returns the JMX <code>ObjectName</code> of this managed resource.
    *
    * @see #getMBeanName
    */
-  public ObjectName getObjectName();
+  ObjectName getObjectName();
 
   /**
    * Perform any cleanup necessary before stopping management of this resource.
    */
-  public void cleanupResource();
+  void cleanupResource();
 
 }

@@ -14,7 +14,7 @@
  */
 package org.apache.geode.distributed.internal;
 
-import org.apache.geode.distributed.internal.membership.*;
+import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
 
 /**
  * A marker interface that denotes {@link DistributionMessage}s that require a reply. Messages that
@@ -29,10 +29,10 @@ public interface MessageWithReply {
    * Returns the id of the {@link org.apache.geode.distributed.internal.ReplyProcessor21} that is
    * used to handle the reply to this message.
    */
-  public int getProcessorId();
+  int getProcessorId();
 
   /**
    * Returns the id the sender who is waiting for a reply.
    */
-  public InternalDistributedMember getSender();
+  InternalDistributedMember getSender();
 }

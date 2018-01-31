@@ -26,11 +26,11 @@ public interface MembershipTestHook {
   /**
    * test hook invoked prior to shutting down distributed system
    */
-  public void beforeMembershipFailure(String reason, Throwable cause);
+  void beforeMembershipFailure(String reason, Throwable cause);
 
   /**
    * test hook invoked after shutting down distributed system
    */
-  public void afterMembershipFailure(String reason, Throwable cause);
+  void afterMembershipFailure(String reason, Throwable cause);
 
 }

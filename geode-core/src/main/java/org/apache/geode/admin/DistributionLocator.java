@@ -32,13 +32,13 @@ public interface DistributionLocator extends ManagedEntity {
   /**
    * Returns the identity name for this locator.
    */
-  public String getId();
+  String getId();
 
   /**
    * Returns the configuration object for this distribution locator.
    *
    * @since GemFire 4.0
    */
-  public DistributionLocatorConfig getConfig();
+  DistributionLocatorConfig getConfig();
 
 }
