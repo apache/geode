@@ -344,4 +344,6 @@ public interface InternalCache extends Cache, Extensible<Cache>, CacheTime {
   InternalQueryService getQueryService();
 
   Set<AsyncEventQueue> getAsyncEventQueues(boolean visibleOnly);
+
+  void closeDiskStores();
 }
