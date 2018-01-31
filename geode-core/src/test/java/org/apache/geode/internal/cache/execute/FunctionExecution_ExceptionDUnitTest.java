@@ -69,7 +69,8 @@ public class FunctionExecution_ExceptionDUnitTest implements Serializable {
   public static DistributedTestRule distributedTestRule = new DistributedTestRule();
 
   @Rule
-  public CacheRule cacheRule = CacheRule.builder().addConfig(SERIALIZABLE_OBJECT_FILTER, MyFunctionExecutionException.class.getName()).build();
+  public CacheRule cacheRule = CacheRule.builder()
+      .addConfig(SERIALIZABLE_OBJECT_FILTER, MyFunctionExecutionException.class.getName()).build();
 
   @Rule
   public SerializableTestName testName = new SerializableTestName();
@@ -121,7 +122,8 @@ public class FunctionExecution_ExceptionDUnitTest implements Serializable {
     FunctionService.registerFunction(function);
     Execution dataSet = FunctionService.onRegion(region);
 
-    ResultCollector resultCollector = dataSet.withFilter(stringKeys).setArguments(TRUE).execute(function);
+    ResultCollector resultCollector =
+        dataSet.withFilter(stringKeys).setArguments(TRUE).execute(function);
     List results = (List) resultCollector.getResult();
     assertThat(results.get(0) instanceof Exception).isTrue();
 
@@ -151,7 +153,8 @@ public class FunctionExecution_ExceptionDUnitTest implements Serializable {
     FunctionService.registerFunction(function);
     Execution dataSet = FunctionService.onRegion(region);
 
-    ResultCollector resultCollector = dataSet.withFilter(stringKeys).setArguments("Multiple").execute(function);
+    ResultCollector resultCollector =
+        dataSet.withFilter(stringKeys).setArguments("Multiple").execute(function);
     List results = (List) resultCollector.getResult();
     assertThat(results.get(0) instanceof Exception).isTrue();
   }
@@ -167,7 +170,8 @@ public class FunctionExecution_ExceptionDUnitTest implements Serializable {
 
     region.put(stringKey, 1);
 
-    ResultCollector resultCollector = dataSet.withFilter(stringKeys).setArguments(TRUE).execute(function);
+    ResultCollector resultCollector =
+        dataSet.withFilter(stringKeys).setArguments(TRUE).execute(function);
     assertThatThrownBy(() -> resultCollector.getResult()).isInstanceOf(Exception.class);
   }
 
@@ -191,8 +195,8 @@ public class FunctionExecution_ExceptionDUnitTest implements Serializable {
 
     region.put(stringKey, 1);
 
-    ResultCollector resultCollector = dataSet.withFilter(stringKeys).setArguments(stringKeys)
-        .execute(function);
+    ResultCollector resultCollector =
+        dataSet.withFilter(stringKeys).setArguments(stringKeys).execute(function);
     List results = (List) resultCollector.getResult();
     assertThat(results).hasSize(stringKeys.size() + 1);
 
@@ -228,7 +232,8 @@ public class FunctionExecution_ExceptionDUnitTest implements Serializable {
 
     region.put(stringKey, 1);
 
-    ResultCollector resultCollector = dataSet.withFilter(stringKeys).setArguments(TRUE).execute(function);
+    ResultCollector resultCollector =
+        dataSet.withFilter(stringKeys).setArguments(TRUE).execute(function);
     assertThatThrownBy(() -> resultCollector.getResult()).isInstanceOf(Exception.class);
   }
 
@@ -323,7 +328,8 @@ public class FunctionExecution_ExceptionDUnitTest implements Serializable {
       region.put(key, "MyValue_" + key);
     }
 
-    ResultCollector resultCollector = dataSet.withFilter(intKeys).setArguments(intKeys).execute(function.getId());
+    ResultCollector resultCollector =
+        dataSet.withFilter(intKeys).setArguments(intKeys).execute(function.getId());
     assertThatThrownBy(() -> resultCollector.getResult()).isInstanceOf(Exception.class);
   }
 
@@ -346,7 +352,8 @@ public class FunctionExecution_ExceptionDUnitTest implements Serializable {
       region.put(key, "MyValue_" + key);
     }
 
-    ResultCollector resultCollector = dataSet.withFilter(intKeys).setArguments(intKeys).execute(function.getId());
+    ResultCollector resultCollector =
+        dataSet.withFilter(intKeys).setArguments(intKeys).execute(function.getId());
     assertThatThrownBy(() -> resultCollector.getResult()).isInstanceOf(Exception.class);
   }
 }
