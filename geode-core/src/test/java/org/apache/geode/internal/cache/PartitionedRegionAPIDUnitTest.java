@@ -162,10 +162,12 @@ public class PartitionedRegionAPIDUnitTest extends CacheTestCase {
   public void localMaxMemoryShouldDefaultToNonZero() throws Exception {
     vm0.invoke(() -> {
       Cache cache = getCache();
-      RegionFactory<String, String> regionFactory = cache.createRegionFactory(RegionShortcut.PARTITION);
+      RegionFactory<String, String> regionFactory =
+          cache.createRegionFactory(RegionShortcut.PARTITION);
       Region<String, String> region = regionFactory.create(regionName);
 
-      assertThat(region.getAttributes().getPartitionAttributes().getLocalMaxMemory()).isNotEqualTo(0);
+      assertThat(region.getAttributes().getPartitionAttributes().getLocalMaxMemory())
+          .isNotEqualTo(0);
     });
 
     destroyPartitionedRegion(vm0);
@@ -179,11 +181,13 @@ public class PartitionedRegionAPIDUnitTest extends CacheTestCase {
     // create a "pure" accessor, no data storage
     Cache cache = getCache();
 
-    PartitionAttributesFactory<String, String> partitionAttributesFactory = new PartitionAttributesFactory<>();
+    PartitionAttributesFactory<String, String> partitionAttributesFactory =
+        new PartitionAttributesFactory<>();
     partitionAttributesFactory.setRedundantCopies(1);
     partitionAttributesFactory.setLocalMaxMemory(0);
 
-    RegionFactory<String, String> regionFactory = cache.createRegionFactory(RegionShortcut.PARTITION);
+    RegionFactory<String, String> regionFactory =
+        cache.createRegionFactory(RegionShortcut.PARTITION);
     regionFactory.setPartitionAttributes(partitionAttributesFactory.create());
 
     Region<String, String> region = regionFactory.create(regionName);
@@ -194,7 +198,8 @@ public class PartitionedRegionAPIDUnitTest extends CacheTestCase {
   private void createPartitionedRegion() {
     Cache cache = getCache();
 
-    PartitionAttributesFactory<String, String> partitionAttributesFactory = new PartitionAttributesFactory<>();
+    PartitionAttributesFactory<String, String> partitionAttributesFactory =
+        new PartitionAttributesFactory<>();
     partitionAttributesFactory.setTotalNumBuckets(totalNumBuckets);
 
     RegionFactory<String, String> regionFactory = cache.createRegionFactory(PARTITION);
@@ -206,7 +211,8 @@ public class PartitionedRegionAPIDUnitTest extends CacheTestCase {
   private void createAccessor() {
     Cache cache = getCache();
 
-    PartitionAttributesFactory<String, String> partitionAttributesFactory = new PartitionAttributesFactory<>();
+    PartitionAttributesFactory<String, String> partitionAttributesFactory =
+        new PartitionAttributesFactory<>();
     partitionAttributesFactory.setTotalNumBuckets(totalNumBuckets);
     partitionAttributesFactory.setLocalMaxMemory(0);
 
@@ -230,7 +236,8 @@ public class PartitionedRegionAPIDUnitTest extends CacheTestCase {
       }
     };
 
-    PartitionAttributesFactory<String, String> partitionAttributesFactory = new PartitionAttributesFactory();
+    PartitionAttributesFactory<String, String> partitionAttributesFactory =
+        new PartitionAttributesFactory<>();
     partitionAttributesFactory.setLocalMaxMemory(localMaxMemory);
     partitionAttributesFactory.setRedundantCopies(1);
 
@@ -419,8 +426,8 @@ public class PartitionedRegionAPIDUnitTest extends CacheTestCase {
         String value = Integer.toString(i);
 
         // invalidate op throws EntryNotFoundException
-        try (IgnoredException ignored = addIgnoredException(
-            EntryNotFoundException.class.getName())) {
+        try (IgnoredException ignored =
+            addIgnoredException(EntryNotFoundException.class.getName())) {
           assertThatThrownBy(() -> region.invalidate(key))
               .isInstanceOf(EntryNotFoundException.class);
         }
@@ -485,23 +492,25 @@ public class PartitionedRegionAPIDUnitTest extends CacheTestCase {
 
       // create throws EntryExistsException
       try (IgnoredException ignored1 = addIgnoredException(EntryExistsException.class.getName());
-           IgnoredException ignored2 = addIgnoredException(ReplyException.class.getName())) {
+          IgnoredException ignored2 = addIgnoredException(ReplyException.class.getName())) {
         for (int i = createRange_2Start; i <= createRange_2End; i++) {
           String key = "" + i;
           String value = i % 2 == 0 ? "" + i : null;
 
-          assertThatThrownBy(() -> region.create(key, value)).isInstanceOf(EntryExistsException.class);
+          assertThatThrownBy(() -> region.create(key, value))
+              .isInstanceOf(EntryExistsException.class);
         }
       }
 
       // invalidate throws EntryNotFoundException THEN repopulate region
       try (IgnoredException ignored1 = addIgnoredException(EntryNotFoundException.class.getName());
-           IgnoredException ignored2 = addIgnoredException(ReplyException.class.getName())) {
+          IgnoredException ignored2 = addIgnoredException(ReplyException.class.getName())) {
         for (int i = invalidateRange_2Start; i <= invalidateRange_2End; i++) {
           String key = Integer.toString(i);
           String value = Integer.toString(i);
 
-          assertThatThrownBy(() -> region.invalidate(key)).isInstanceOf(EntryNotFoundException.class);
+          assertThatThrownBy(() -> region.invalidate(key))
+              .isInstanceOf(EntryNotFoundException.class);
 
           region.create(key, value);
         }
@@ -536,11 +545,12 @@ public class PartitionedRegionAPIDUnitTest extends CacheTestCase {
 
       // invalidate throws EntryNotFoundException
       try (IgnoredException ignored1 = addIgnoredException(EntryNotFoundException.class.getName());
-           IgnoredException ignored2 = addIgnoredException(ReplyException.class.getName())) {
+          IgnoredException ignored2 = addIgnoredException(ReplyException.class.getName())) {
         for (int i = invalidateRange_2Start; i <= invalidateRange_2End; i++) {
           String key = Integer.toString(i);
 
-          assertThatThrownBy(() -> region.invalidate(key)).isInstanceOf(EntryNotFoundException.class);
+          assertThatThrownBy(() -> region.invalidate(key))
+              .isInstanceOf(EntryNotFoundException.class);
         }
       }
     });
@@ -589,7 +599,7 @@ public class PartitionedRegionAPIDUnitTest extends CacheTestCase {
 
       // destroy
       try (IgnoredException ignored1 = addIgnoredException(EntryNotFoundException.class.getName());
-           IgnoredException ignored2 = addIgnoredException(ReplyException.class.getName())) {
+          IgnoredException ignored2 = addIgnoredException(ReplyException.class.getName())) {
         for (int i = putRange_1Start; i <= putRange_1End; i++) {
           region.destroy(Integer.toString(i));
         }
@@ -617,7 +627,7 @@ public class PartitionedRegionAPIDUnitTest extends CacheTestCase {
 
       // create throws EntryExistsException
       try (IgnoredException ignored1 = addIgnoredException(EntryExistsException.class.getName());
-           IgnoredException ignored2 = addIgnoredException(ReplyException.class.getName())) {
+          IgnoredException ignored2 = addIgnoredException(ReplyException.class.getName())) {
         for (int i = createRange_1Start; i <= createRange_1End; i++) {
           String key = Integer.toString(i);
           String value = i % 2 == 0 ? Integer.toString(i) : null;
@@ -652,7 +662,7 @@ public class PartitionedRegionAPIDUnitTest extends CacheTestCase {
 
       // create throws EntryExistsException
       try (IgnoredException ignored1 = addIgnoredException(EntryExistsException.class.getName());
-           IgnoredException ignored2 = addIgnoredException(ReplyException.class.getName())) {
+          IgnoredException ignored2 = addIgnoredException(ReplyException.class.getName())) {
         for (int i = createRange_2Start; i <= createRange_2End; i++) {
           String key = Integer.toString(i);
           String value = i % 2 == 0 ? Integer.toString(i) : null;
@@ -678,7 +688,7 @@ public class PartitionedRegionAPIDUnitTest extends CacheTestCase {
 
       // destroy throws EntryNotFoundException
       try (IgnoredException ignored1 = addIgnoredException(EntryNotFoundException.class.getName());
-           IgnoredException ignored2 = addIgnoredException(ReplyException.class.getName())) {
+          IgnoredException ignored2 = addIgnoredException(ReplyException.class.getName())) {
         for (int i = removeRange_1Start; i <= removeRange_1End; i++) {
           String key = Integer.toString(i);
 
@@ -711,7 +721,7 @@ public class PartitionedRegionAPIDUnitTest extends CacheTestCase {
 
       // create throws EntryExistsException
       try (IgnoredException ignored1 = addIgnoredException(EntryExistsException.class.getName());
-           IgnoredException ignored2 = addIgnoredException(ReplyException.class.getName())) {
+          IgnoredException ignored2 = addIgnoredException(ReplyException.class.getName())) {
         for (int i = createRange_3Start; i <= createRange_3End; i++) {
           String key = Integer.toString(i);
           String value = i % 2 == 0 ? Integer.toString(i) : null;
@@ -737,7 +747,7 @@ public class PartitionedRegionAPIDUnitTest extends CacheTestCase {
 
       // destroy throws EntryNotFoundException
       try (IgnoredException ignored1 = addIgnoredException(EntryNotFoundException.class.getName());
-           IgnoredException ignored2 = addIgnoredException(ReplyException.class.getName())) {
+          IgnoredException ignored2 = addIgnoredException(ReplyException.class.getName())) {
         for (int i = removeRange_2Start; i <= removeRange_2End; i++) {
           String key = Integer.toString(i);
 
@@ -770,7 +780,7 @@ public class PartitionedRegionAPIDUnitTest extends CacheTestCase {
 
       // create throws EntryExistsException
       try (IgnoredException ignored1 = addIgnoredException(EntryExistsException.class.getName());
-           IgnoredException ignored2 = addIgnoredException(ReplyException.class.getName())) {
+          IgnoredException ignored2 = addIgnoredException(ReplyException.class.getName())) {
         for (int i = createRange_4Start; i <= createRange_4End; i++) {
           String key = Integer.toString(i);
           String value = i % 2 == 0 ? Integer.toString(i) : null;
