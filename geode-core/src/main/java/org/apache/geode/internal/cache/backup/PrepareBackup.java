@@ -36,7 +36,7 @@ class PrepareBackup {
     if (cache == null) {
       persistentIds = new HashSet<>();
     } else {
-      persistentIds = cache.getBackupService().startBackup(member);
+      persistentIds = cache.getBackupService().prepareBackup(member);
     }
     return persistentIds;
   }

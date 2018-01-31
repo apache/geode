@@ -30,7 +30,6 @@ import java.util.concurrent.atomic.AtomicReference;
 import org.apache.logging.log4j.Logger;
 
 import org.apache.geode.cache.persistence.PersistentID;
-import org.apache.geode.distributed.internal.DistributionManager;
 import org.apache.geode.distributed.internal.MembershipListener;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
 import org.apache.geode.internal.cache.DiskStoreBackup;
@@ -47,8 +46,9 @@ public class BackupService {
   private final MembershipListener membershipListener = new BackupMembershipListener();
   private final InternalCache cache;
 
-  private final AtomicReference<BackupTask> currentTask = new AtomicReference<>();
   private transient Future<HashSet<PersistentID>> taskFuture;
+
+  final AtomicReference<BackupTask> currentTask = new AtomicReference<>();
 
   public BackupService(InternalCache cache) {
     this.cache = cache;
@@ -70,19 +70,15 @@ public class BackupService {
     return Executors.newSingleThreadExecutor(threadFactory);
   }
 
-  public HashSet<PersistentID> startBackup(InternalDistributedMember sender)
+  public HashSet<PersistentID> prepareBackup(InternalDistributedMember sender)
       throws IOException, InterruptedException {
     validateRequestingAdmin(sender);
-    if (!currentTask.compareAndSet(null, new BackupTask(cache))) {
+    BackupTask backupTask = new BackupTask(cache);
+    if (!currentTask.compareAndSet(null, backupTask)) {
       throw new IOException("Another backup already in progress");
     }
-    taskFuture = executor.submit(() -> currentTask.get().backup());
-    return getDiskStoreIdsToBackup();
-  }
-
-  private HashSet<PersistentID> getDiskStoreIdsToBackup() throws InterruptedException {
-    BackupTask task = currentTask.get();
-    return task == null ? new HashSet<>() : task.awaitLockAcquisition();
+    taskFuture = executor.submit(() -> backupTask.backup());
+    return backupTask.awaitLockAcquisition();
   }
 
   public HashSet<PersistentID> doBackup(File targetDir, File baselineDir, boolean abort)
@@ -110,7 +106,7 @@ public class BackupService {
   public void waitForBackup() {
     BackupTask task = currentTask.get();
     if (task != null) {
-      task.waitForBackup();
+      task.waitTillBackupFilesAreCopiedToTemporaryLocation();
     }
   }
 
@@ -119,23 +115,20 @@ public class BackupService {
     return task == null ? null : task.getBackupForDiskStore(diskStore);
   }
 
-  private void validateRequestingAdmin(InternalDistributedMember sender) {
+  void validateRequestingAdmin(InternalDistributedMember sender) {
     // We need to watch for pure admin guys that depart. this allMembershipListener set
     // looks like it should receive those events.
-    Set allIds = getDistributionManager().addAllMembershipListenerAndGetAllIds(membershipListener);
+    Set allIds =
+        cache.getDistributionManager().addAllMembershipListenerAndGetAllIds(membershipListener);
     if (!allIds.contains(sender)) {
       cleanup();
       throw new IllegalStateException("The admin member requesting a backup has already departed");
     }
   }
 
-  private void cleanup() {
-    getDistributionManager().removeAllMembershipListener(membershipListener);
+  void cleanup() {
+    cache.getDistributionManager().removeAllMembershipListener(membershipListener);
     currentTask.set(null);
-  }
-
-  private DistributionManager getDistributionManager() {
-    return cache.getInternalDistributedSystem().getDistributionManager();
   }
 
   private class BackupMembershipListener implements MembershipListener {

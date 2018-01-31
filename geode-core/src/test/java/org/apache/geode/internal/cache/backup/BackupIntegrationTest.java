@@ -187,7 +187,7 @@ public class BackupIntegrationTest {
     }
 
     BackupService backup = cache.getBackupService();
-    backup.startBackup(cache.getInternalDistributedSystem().getDistributedMember());
+    backup.prepareBackup(cache.getInternalDistributedSystem().getDistributedMember());
     backup.doBackup(backupDir, null, false);
 
     // Put another key to make sure we restore
@@ -235,7 +235,7 @@ public class BackupIntegrationTest {
     createDiskStore();
 
     BackupService backup = cache.getBackupService();
-    backup.startBackup(cache.getInternalDistributedSystem().getDistributedMember());
+    backup.prepareBackup(cache.getInternalDistributedSystem().getDistributedMember());
     backup.doBackup(backupDir, null, false);
     assertEquals("No backup files should have been created", Collections.emptyList(),
         Arrays.asList(backupDir.list()));
@@ -250,7 +250,7 @@ public class BackupIntegrationTest {
     region.put("A", "A");
 
     BackupService backup = cache.getBackupService();
-    backup.startBackup(cache.getInternalDistributedSystem().getDistributedMember());
+    backup.prepareBackup(cache.getInternalDistributedSystem().getDistributedMember());
     backup.doBackup(backupDir, null, false);
 
 
@@ -277,7 +277,7 @@ public class BackupIntegrationTest {
     }
 
     BackupService backupService = cache.getBackupService();
-    backupService.startBackup(cache.getInternalDistributedSystem().getDistributedMember());
+    backupService.prepareBackup(cache.getInternalDistributedSystem().getDistributedMember());
     final Region theRegion = region;
     final DiskStore theDiskStore = ds;
     CompletableFuture.runAsync(() -> destroyAndCompact(theRegion, theDiskStore));
@@ -310,7 +310,7 @@ public class BackupIntegrationTest {
     createRegion();
 
     BackupService backupService = cache.getBackupService();
-    backupService.startBackup(cache.getInternalDistributedSystem().getDistributedMember());
+    backupService.prepareBackup(cache.getInternalDistributedSystem().getDistributedMember());
     backupService.doBackup(backupDir, null, false);
     Collection<File> fileCollection = FileUtils.listFiles(backupDir,
         new RegexFileFilter("BackupIntegrationTest.cache.xml"), DirectoryFileFilter.DIRECTORY);

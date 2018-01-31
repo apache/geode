@@ -1014,7 +1014,7 @@ public class MemberMBeanBridge {
         Set<PersistentID> successfulDataStores;
         try {
           existingDataStores = cache.getBackupService()
-              .startBackup(cache.getInternalDistributedSystem().getDistributedMember());
+              .prepareBackup(cache.getInternalDistributedSystem().getDistributedMember());
           abort = false;
         } finally {
           successfulDataStores = cache.getBackupService().doBackup(targetDir, null, abort);
