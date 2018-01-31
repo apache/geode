@@ -119,8 +119,7 @@ public class RemoteRemoveAllMessage extends RemoteOperationMessageWithDirectRepl
       try {
         attempts++;
         final boolean posDup = (attempts > 1);
-        RemoveAllResponse response = send(replicate, event, data, dataCount, false,
-            ClusterDistributionManager.SERIAL_EXECUTOR, posDup);
+        RemoveAllResponse response = send(replicate, event, data, dataCount, false, posDup);
         response.waitForCacheException();
         VersionedObjectList result = response.getResponse();
 
@@ -159,7 +158,7 @@ public class RemoteRemoveAllMessage extends RemoteOperationMessageWithDirectRepl
 
   RemoteRemoveAllMessage(EntryEventImpl event, Set recipients, DirectReplyProcessor p,
       RemoveAllEntryData[] removeAllData, int removeAllDataCount, boolean useOriginRemote,
-      int processorType, boolean possibleDuplicate) {
+      boolean possibleDuplicate) {
     super(recipients, event.getRegion().getFullPath(), p);
     this.resetRecipients();
     if (recipients != null) {
@@ -194,13 +193,13 @@ public class RemoteRemoveAllMessage extends RemoteOperationMessageWithDirectRepl
    */
   public static RemoveAllResponse send(DistributedMember recipient, EntryEventImpl event,
       RemoveAllEntryData[] removeAllData, int removeAllDataCount, boolean useOriginRemote,
-      int processorType, boolean possibleDuplicate) throws RemoteOperationException {
+      boolean possibleDuplicate) throws RemoteOperationException {
     // Assert.assertTrue(recipient != null, "RemoteRemoveAllMessage NULL recipient"); recipient can
     // be null for event notifications
     Set recipients = Collections.singleton(recipient);
     RemoveAllResponse p = new RemoveAllResponse(event.getRegion().getSystem(), recipients);
     RemoteRemoveAllMessage msg = new RemoteRemoveAllMessage(event, recipients, p, removeAllData,
-        removeAllDataCount, useOriginRemote, processorType, possibleDuplicate);
+        removeAllDataCount, useOriginRemote, possibleDuplicate);
     Set failures = event.getRegion().getDistributionManager().putOutgoing(msg);
     if (failures != null && failures.size() > 0) {
       throw new RemoteOperationException(

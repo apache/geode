@@ -21,7 +21,6 @@ import org.apache.geode.cache.RegionDestroyedException;
 import org.apache.geode.cache.TransactionDataNodeHasDepartedException;
 import org.apache.geode.cache.TransactionDataNotColocatedException;
 import org.apache.geode.cache.TransactionException;
-import org.apache.geode.distributed.internal.ClusterDistributionManager;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
 import org.apache.geode.internal.cache.DistributedPutAllOperation;
 import org.apache.geode.internal.cache.DistributedRegion;
@@ -89,11 +88,7 @@ public class DistributedTXRegionStub extends AbstractPeerTXRegionStub {
               .toLocalizedString(rde.getRegionFullPath()),
           rde);
     } catch (TransactionException e) {
-      RuntimeException re = new TransactionDataNotColocatedException(
-          LocalizedStrings.PartitionedRegion_KEY_0_NOT_COLOCATED_WITH_TRANSACTION
-              .toLocalizedString(keyInfo.getKey()));
-      re.initCause(e);
-      throw re;
+      throw e;
     } catch (CacheException | RemoteOperationException e) {
       throw new TransactionDataNodeHasDepartedException(e);
     }
@@ -206,8 +201,7 @@ public class DistributedTXRegionStub extends AbstractPeerTXRegionStub {
     try {
       RemotePutAllMessage.PutAllResponse response =
           RemotePutAllMessage.send(state.getTarget(), putallOp.getBaseEvent(),
-              putallOp.getPutAllEntryData(), putallOp.getPutAllEntryData().length, true,
-              ClusterDistributionManager.PARTITIONED_REGION_EXECUTOR, false);
+              putallOp.getPutAllEntryData(), putallOp.getPutAllEntryData().length, true, false);
       response.waitForCacheException();
     } catch (RegionDestroyedException rde) {
       throw new TransactionDataNotColocatedException(
@@ -225,8 +219,7 @@ public class DistributedTXRegionStub extends AbstractPeerTXRegionStub {
     try {
       RemoteRemoveAllMessage.RemoveAllResponse response =
           RemoteRemoveAllMessage.send(state.getTarget(), op.getBaseEvent(),
-              op.getRemoveAllEntryData(), op.getRemoveAllEntryData().length, true,
-              ClusterDistributionManager.PARTITIONED_REGION_EXECUTOR, false);
+              op.getRemoveAllEntryData(), op.getRemoveAllEntryData().length, true, false);
       response.waitForCacheException();
     } catch (RegionDestroyedException rde) {
       throw new TransactionDataNotColocatedException(

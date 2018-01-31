@@ -121,8 +121,7 @@ public class RemotePutAllMessage extends RemoteOperationMessageWithDirectReply {
       try {
         attempts++;
         final boolean posDup = (attempts > 1);
-        PutAllResponse response = send(replicate, event, data, dataCount, false,
-            ClusterDistributionManager.SERIAL_EXECUTOR, posDup);
+        PutAllResponse response = send(replicate, event, data, dataCount, false, posDup);
         response.waitForCacheException();
         VersionedObjectList result = response.getResponse();
 
@@ -160,7 +159,7 @@ public class RemotePutAllMessage extends RemoteOperationMessageWithDirectReply {
   }
 
   RemotePutAllMessage(EntryEventImpl event, Set recipients, DirectReplyProcessor p,
-      PutAllEntryData[] putAllData, int putAllDataCount, boolean useOriginRemote, int processorType,
+      PutAllEntryData[] putAllData, int putAllDataCount, boolean useOriginRemote,
       boolean possibleDuplicate, boolean skipCallbacks) {
     super(recipients, event.getRegion().getFullPath(), p);
     this.resetRecipients();
@@ -175,7 +174,6 @@ public class RemotePutAllMessage extends RemoteOperationMessageWithDirectReply {
     this.putAllData = putAllData;
     this.putAllDataCount = putAllDataCount;
     // this.useOriginRemote = useOriginRemote;
-    // this.processorType = processorType;
     this.posDup = possibleDuplicate;
     this.eventId = event.getEventId();
     this.skipCallbacks = skipCallbacks;
@@ -198,15 +196,14 @@ public class RemotePutAllMessage extends RemoteOperationMessageWithDirectReply {
    * @throws RemoteOperationException if the peer is no longer available
    */
   public static PutAllResponse send(DistributedMember recipient, EntryEventImpl event,
-      PutAllEntryData[] putAllData, int putAllDataCount, boolean useOriginRemote, int processorType,
+      PutAllEntryData[] putAllData, int putAllDataCount, boolean useOriginRemote,
       boolean possibleDuplicate) throws RemoteOperationException {
     // Assert.assertTrue(recipient != null, "RemotePutAllMessage NULL recipient"); recipient can be
     // null for event notifications
     Set recipients = Collections.singleton(recipient);
     PutAllResponse p = new PutAllResponse(event.getRegion().getSystem(), recipients);
-    RemotePutAllMessage msg =
-        new RemotePutAllMessage(event, recipients, p, putAllData, putAllDataCount, useOriginRemote,
-            processorType, possibleDuplicate, !event.isGenerateCallbacks());
+    RemotePutAllMessage msg = new RemotePutAllMessage(event, recipients, p, putAllData,
+        putAllDataCount, useOriginRemote, possibleDuplicate, !event.isGenerateCallbacks());
     Set failures = event.getRegion().getDistributionManager().putOutgoing(msg);
     if (failures != null && failures.size() > 0) {
       throw new RemoteOperationException(
