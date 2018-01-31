@@ -95,7 +95,7 @@ public class DistributedTXRegionStub extends AbstractPeerTXRegionStub {
               .toLocalizedString(keyInfo.getKey()));
       re.initCause(e);
       throw re;
-    } catch (CacheException|RemoteOperationException e) {
+    } catch (CacheException | RemoteOperationException e) {
       throw new TransactionDataNodeHasDepartedException(e);
     }
   }
