@@ -191,17 +191,12 @@ public class DistributedTXRegionStub extends AbstractPeerTXRegionStub {
       retVal = result.returnValue;
     } catch (TransactionDataNotColocatedException enfe) {
       throw enfe;
-    } catch (CacheException ce) {
-      throw new PartitionedRegionException(
-          LocalizedStrings.PartitionedRegion_DESTROY_OF_ENTRY_ON_0_FAILED
-              .toLocalizedString(state.getTarget()),
-          ce);
     } catch (RegionDestroyedException rde) {
       throw new TransactionDataNotColocatedException(
           LocalizedStrings.RemoteMessage_REGION_0_NOT_COLOCATED_WITH_TRANSACTION
               .toLocalizedString(rde.getRegionFullPath()),
           rde);
-    } catch (RemoteOperationException roe) {
+    } catch (CacheException | RemoteOperationException roe) {
       throw new TransactionDataNodeHasDepartedException(roe);
     }
     return retVal;
