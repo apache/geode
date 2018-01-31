@@ -27,7 +27,7 @@ public interface LuceneResultStruct<K, V> {
    * @return The region key of the entry matching the query
    *
    */
-  public K getKey();
+  K getKey();
 
   /**
    * Returns the Apache Geode region key of the result matching the Lucene Query
@@ -35,7 +35,7 @@ public interface LuceneResultStruct<K, V> {
    * @return the region value of the entry matching the query.
    *
    */
-  public V getValue();
+  V getValue();
 
   /**
    * Return score the score of the entry matching the query. Scores are computed by Lucene based on
@@ -44,5 +44,5 @@ public interface LuceneResultStruct<K, V> {
    * @return float value representing the score of the entry obtained as a result of executing the
    *         Lucene query.
    */
-  public float getScore();
+  float getScore();
 }

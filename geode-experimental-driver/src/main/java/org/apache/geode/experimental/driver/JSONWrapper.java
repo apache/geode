@@ -35,17 +35,17 @@ import org.apache.geode.annotations.Experimental;
 @Experimental
 public interface JSONWrapper extends Comparable<JSONWrapper> {
 
-  public static JSONWrapper wrapJSON(String jsonDocument) {
+  static JSONWrapper wrapJSON(String jsonDocument) {
     if (jsonDocument == null) {
       throw new IllegalArgumentException("wrapped document may not be null");
     }
     return new JSONWrapperImpl(jsonDocument);
   }
 
-  public String getJSON();
+  String getJSON();
 
 
-  static class JSONWrapperImpl implements JSONWrapper {
+  class JSONWrapperImpl implements JSONWrapper {
 
 
     protected final String jsonDocument;
