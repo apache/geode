@@ -280,9 +280,6 @@ public class RemoteContainsKeyValueMessage extends RemoteOperationMessageWithDir
       } catch (RemoteOperationException rce) {
         rce.checkKey(key);
         throw rce;
-      } catch (PrimaryBucketException pbe) {
-        // Is this necessary?
-        throw pbe;
       } catch (RegionDestroyedException e) {
         throw e;
       } catch (CacheException ce) {

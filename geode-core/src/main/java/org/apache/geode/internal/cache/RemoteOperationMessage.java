@@ -555,8 +555,7 @@ public abstract class RemoteOperationMessage extends DistributionMessage
      *
      * @throws CacheException if the recipient threw a cache exception during message processing
      */
-    public void waitForCacheException()
-        throws CacheException, RemoteOperationException, PrimaryBucketException {
+    public void waitForCacheException() throws CacheException, RemoteOperationException {
       try {
         waitForRepliesUninterruptibly();
         if (this.prce != null || (this.responseRequired && !this.responseReceived)) {
@@ -568,21 +567,8 @@ public abstract class RemoteOperationMessage extends DistributionMessage
         if (t instanceof CacheException) {
           throw (CacheException) t;
         } else if (t instanceof RemoteOperationException) {
-          RemoteOperationException ft = (RemoteOperationException) t;
-          // See FetchEntriesMessage, which can marshal a ForceReattempt
-          // across to the sender
-          RemoteOperationException fre = new RemoteOperationException(
-              LocalizedStrings.PartitionMessage_PEER_REQUESTS_REATTEMPT.toLocalizedString(), t);
-          if (ft.hasHash()) {
-            fre.setHash(ft.getHash());
-          }
-          throw fre;
-        } else if (t instanceof PrimaryBucketException) {
-          // See FetchEntryMessage, GetMessage, InvalidateMessage,
-          // PutMessage
-          // which can marshal a ForceReattemptacross to the sender
-          throw new PrimaryBucketException(
-              LocalizedStrings.PartitionMessage_PEER_FAILED_PRIMARY_TEST.toLocalizedString(), t);
+          // no need to create a local RemoteOperationException to wrap the one from the reply
+          throw (RemoteOperationException) t;
         } else if (t instanceof RegionDestroyedException) {
           throw (RegionDestroyedException) t;
         } else if (t instanceof CancelException) {

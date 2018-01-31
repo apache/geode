@@ -31,6 +31,7 @@ import org.mockito.ArgumentCaptor;
 import org.apache.geode.cache.CacheClosedException;
 import org.apache.geode.cache.CacheException;
 import org.apache.geode.cache.CacheExistsException;
+import org.apache.geode.cache.LowMemoryException;
 import org.apache.geode.cache.RegionDestroyedException;
 import org.apache.geode.distributed.DistributedSystemDisconnectedException;
 import org.apache.geode.distributed.internal.ClusterDistributionManager;
@@ -148,4 +149,27 @@ public class RemoteOperationResponseTest {
 
     assertThatThrownBy(() -> replyProcessor.waitForCacheException()).isSameAs(cause);
   }
+
+  @Test
+  public void waitForCacheExceptionWithReplyExceptionWithRegionDestroyedExceptionCauseThrowsThatCause()
+      throws Exception {
+    ReplyException replyException = mock(ReplyException.class);
+    RegionDestroyedException cause = new RegionDestroyedException("msg", "regionName");
+    when(replyException.getCause()).thenReturn(cause);
+    doThrow(replyException).when(replyProcessor).waitForRepliesUninterruptibly();
+
+    assertThatThrownBy(() -> replyProcessor.waitForCacheException()).isSameAs(cause);
+  }
+
+  @Test
+  public void waitForCacheExceptionWithReplyExceptionWithLowMemoryExceptionCauseThrowsThatCause()
+      throws Exception {
+    ReplyException replyException = mock(ReplyException.class);
+    LowMemoryException cause = new LowMemoryException();
+    when(replyException.getCause()).thenReturn(cause);
+    doThrow(replyException).when(replyProcessor).waitForRepliesUninterruptibly();
+
+    assertThatThrownBy(() -> replyProcessor.waitForCacheException()).isSameAs(cause);
+  }
+
 }
