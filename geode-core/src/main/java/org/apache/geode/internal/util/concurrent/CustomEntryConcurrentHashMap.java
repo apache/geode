@@ -118,7 +118,7 @@ import org.apache.geode.internal.util.ArrayUtils;
  * @param <V> the type of mapped values
  */
 public class CustomEntryConcurrentHashMap<K, V> extends AbstractMap<K, V>
-    implements ConcurrentMap<K, V>, Serializable {
+    implements ConcurrentMapWithReusableEntries<K, V>, Serializable {
 
   private static final long serialVersionUID = -7056732555635108300L;
 
@@ -1892,23 +1892,7 @@ public class CustomEntryConcurrentHashMap<K, V> extends AbstractMap<K, V>
 
   // GemStone addition
 
-  /**
-   * Returns a {@link Set} view of the mappings contained in this map. The set is backed by the map,
-   * so changes to the map are reflected in the set, and vice-versa. The set supports element
-   * removal, which removes the corresponding mapping from the map, via the
-   * <tt>Iterator.remove</tt>, <tt>Set.remove</tt>, <tt>removeAll</tt>, <tt>retainAll</tt>, and
-   * <tt>clear</tt> operations. It does not support the <tt>add</tt> or <tt>addAll</tt> operations.
-   *
-   * <p>
-   * The view's <tt>iterator</tt> is a "weakly consistent" iterator that will never throw
-   * {@link java.util.ConcurrentModificationException}, and guarantees to traverse elements as they
-   * existed upon construction of the iterator, and may (but is not guaranteed to) reflect any
-   * modifications subsequent to construction.
-   *
-   * <p>
-   * This set provides entries that are reused during iteration so caller cannot store the returned
-   * <code>Map.Entry</code> objects.
-   */
+  @Override
   public Set<Map.Entry<K, V>> entrySetWithReusableEntries() {
     final Set<Map.Entry<K, V>> es = this.reusableEntrySet;
     return (es != null) ? es : (this.reusableEntrySet = new EntrySet(true));

@@ -386,7 +386,7 @@ public class ClearTXLockingDUnitTest extends JUnit4CacheTestCase {
    */
   public class ArmLockHook extends ARMLockTestHookAdapter {
     @Override
-    public void beforeLock(LocalRegion owner, CacheEvent event) {
+    public void beforeLock(InternalRegion owner, CacheEvent event) {
       if (event != null) {
         if (event.getOperation().isClear() || event.getOperation().isRegionDestroy()
             || event.getOperation().isClose()) {

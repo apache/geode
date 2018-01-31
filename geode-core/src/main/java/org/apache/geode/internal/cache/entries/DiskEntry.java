@@ -1314,7 +1314,7 @@ public interface DiskEntry extends RegionEntry {
     public static int overflowToDisk(DiskEntry entry, InternalRegion region,
         EvictionController ccHelper) throws RegionClearedException {
       DiskRegion dr = region.getDiskRegion();
-      final int oldSize = ((DiskRecoveryStore) region).calculateRegionEntryValueSize(entry);
+      final int oldSize = region.calculateRegionEntryValueSize(entry);
       // Get diskID . If it is null, it implies it is overflow only mode.
       DiskId did = entry.getDiskId();
       if (did == null) {
@@ -1440,8 +1440,7 @@ public interface DiskEntry extends RegionEntry {
               if (did.isPendingAsync()) {
                 did.setPendingAsync(false);
                 final Token entryVal = entry.getValueAsToken();
-                final int entryValSize =
-                    ((DiskRecoveryStore) region).calculateRegionEntryValueSize(entry);
+                final int entryValSize = region.calculateRegionEntryValueSize(entry);
                 try {
                   if (Token.isRemovedFromDisk(entryVal)) {
                     if (region.isThisRegionBeingClosedOrDestroyed())

@@ -14,24 +14,12 @@
  */
 package org.apache.geode.internal.cache;
 
-import org.apache.geode.StatisticsFactory;
-import org.apache.geode.cache.EvictionAttributes;
-import org.apache.geode.internal.cache.eviction.EvictionController;
+import org.apache.geode.cache.EntryEvent;
 
-public interface EvictableRegion extends RegionMapOwner {
+/**
+ * All of the API methods not exposed to User in EntryEvent.
+ */
+public interface InternalEntryEvent extends EntryEvent {
 
-  EvictionAttributes getEvictionAttributes();
-
-  boolean getOffHeap();
-
-  /**
-   * If this region represents a bucket then this methods needs to return the existing controller
-   * from the partitioned region that owns this bucket. Otherwise returns null.
-   */
-  EvictionController getExistingController(InternalRegionArguments internalArgs);
-
-  StatisticsFactory getStatisticsFactory();
-
-  String getNameForStats();
-
+  void setRegionEntry(RegionEntry re);
 }
