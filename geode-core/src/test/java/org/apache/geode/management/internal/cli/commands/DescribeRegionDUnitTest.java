@@ -43,6 +43,7 @@ import org.apache.geode.test.dunit.rules.ClusterStartupRule;
 import org.apache.geode.test.dunit.rules.MemberVM;
 import org.apache.geode.test.junit.categories.DistributedTest;
 import org.apache.geode.test.junit.rules.GfshCommandRule;
+import org.apache.geode.test.junit.rules.VMProvider;
 
 @Category(DistributedTest.class)
 public class DescribeRegionDUnitTest {
@@ -216,22 +217,10 @@ public class DescribeRegionDUnitTest {
   }
 
   private static void createHostingAndAccessorRegion() {
-    server1.invoke(() -> {
+    VMProvider.invokeInEveryMember(() -> {
       Cache cache = ClusterStartupRule.getCache();
       cache.createRegionFactory(RegionShortcut.PARTITION).create(HOSTING_AND_ACCESSOR_REGION_NAME);
-    });
-    server2.invoke(() -> {
-      Cache cache = ClusterStartupRule.getCache();
-      cache.createRegionFactory(RegionShortcut.PARTITION).create(HOSTING_AND_ACCESSOR_REGION_NAME);
-    });
-    server3.invoke(() -> {
-      Cache cache = ClusterStartupRule.getCache();
-      cache.createRegionFactory(RegionShortcut.PARTITION).create(HOSTING_AND_ACCESSOR_REGION_NAME);
-    });
-    server4.invoke(() -> {
-      Cache cache = ClusterStartupRule.getCache();
-      cache.createRegionFactory(RegionShortcut.PARTITION).create(HOSTING_AND_ACCESSOR_REGION_NAME);
-    });
+    }, server1, server2, server3, server4);
 
     accessor.invoke(() -> {
       Cache cache = ClusterStartupRule.getCache();
