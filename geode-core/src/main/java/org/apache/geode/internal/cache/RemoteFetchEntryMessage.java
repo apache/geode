@@ -25,10 +25,8 @@ import org.apache.logging.log4j.Logger;
 import org.apache.geode.DataSerializable;
 import org.apache.geode.DataSerializer;
 import org.apache.geode.admin.OperationCancelledException;
-import org.apache.geode.cache.CacheException;
 import org.apache.geode.cache.EntryNotFoundException;
 import org.apache.geode.cache.Region;
-import org.apache.geode.cache.RegionDestroyedException;
 import org.apache.geode.cache.TransactionException;
 import org.apache.geode.distributed.internal.ClusterDistributionManager;
 import org.apache.geode.distributed.internal.DistributionManager;
@@ -73,7 +71,7 @@ public class RemoteFetchEntryMessage extends RemoteOperationMessage {
    *
    * @param recipient the member that the getEntry message is sent to
    * @param r the Region for which getEntry was performed upon
-   * @param key the object to which the value should be feteched
+   * @param key the object to which the value should be fetched
    * @return the processor used to fetch the returned value associated with the key
    * @throws RemoteOperationException if the peer is no longer available
    */

@@ -384,12 +384,7 @@ public class RemoteInvalidateMessage extends RemoteDestroyMessage {
      * @throws CacheException if the peer generates an error
      */
     public void waitForResult() throws CacheException, RemoteOperationException {
-      try {
-        waitForCacheException();
-      } catch (RemoteOperationException e) {
-        e.checkKey(key);
-        throw e;
-      }
+      waitForCacheException();
       if (!this.returnValueReceived) {
         throw new RemoteOperationException(
             LocalizedStrings.InvalidateMessage_NO_RESPONSE_CODE_RECEIVED.toLocalizedString());

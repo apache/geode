@@ -260,16 +260,9 @@ public class DistTXRollbackMessage extends TXMessage {
      * @return Object associated with the key that was sent in the get message
      */
     public Boolean waitForResponse() throws RemoteOperationException {
-      try {
-        // waitForRepliesUninterruptibly();
-        waitForCacheException();
-        if (DistributionStats.enableClockStats) {
-          getDistributionManager().getStats().incReplyHandOffTime(this.start);
-        }
-      } catch (RemoteOperationException e) {
-        final String msg = "DistTXRollbackResponse got RemoteOperationException; rethrowing";
-        logger.debug(msg, e);
-        throw e;
+      waitForCacheException();
+      if (DistributionStats.enableClockStats) {
+        getDistributionManager().getStats().incReplyHandOffTime(this.start);
       }
       return rollbackState;
     }
