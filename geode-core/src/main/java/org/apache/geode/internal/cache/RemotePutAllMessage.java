@@ -195,7 +195,7 @@ public class RemotePutAllMessage extends RemoteOperationMessageWithDirectReply {
    * @return the processor used to await acknowledgement that the update was sent, or null to
    * indicate that no acknowledgement will be sent
    *
-   * @throws ForceReattemptException if the peer is no longer available
+   * @throws RemoteOperationException if the peer is no longer available
    */
   public static PutAllResponse send(DistributedMember recipient, EntryEventImpl event,
       PutAllEntryData[] putAllData, int putAllDataCount, boolean useOriginRemote, int processorType,
