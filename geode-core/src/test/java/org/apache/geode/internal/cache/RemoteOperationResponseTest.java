@@ -18,27 +18,15 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.Mockito.*;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Set;
-
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
-import org.mockito.ArgumentCaptor;
 
 import org.apache.geode.CancelException;
-import org.apache.geode.cache.CacheClosedException;
-import org.apache.geode.cache.CacheException;
-import org.apache.geode.cache.CacheExistsException;
-import org.apache.geode.cache.LowMemoryException;
-import org.apache.geode.cache.RegionDestroyedException;
-import org.apache.geode.distributed.DistributedSystemDisconnectedException;
 import org.apache.geode.distributed.internal.ClusterDistributionManager;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.distributed.internal.ReplyException;
-import org.apache.geode.distributed.internal.ReplyProcessor21;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
 import org.apache.geode.internal.cache.RemoteOperationMessage.RemoteOperationResponse;
 import org.apache.geode.test.fake.Fakes;
@@ -51,31 +39,23 @@ public class RemoteOperationResponseTest {
   private RemoteOperationResponse replyProcessor; // the class under test
 
   private InternalDistributedMember recipient;
-  private InternalDistributedMember sender;
   private final String regionPath = "regionPath";
 
   private GemFireCacheImpl cache;
   private InternalDistributedSystem system;
-  private ClusterDistributionManager dm;
   private LocalRegion r;
-  private Collection<InternalDistributedMember> initialMembers;
 
   @Before
   public void setUp() throws Exception {
     cache = Fakes.cache();
     system = cache.getSystem();
-    dm = (ClusterDistributionManager) system.getDistributionManager();
     r = mock(LocalRegion.class);
     when(cache.getRegionByPathForProcessing(regionPath)).thenReturn(r);
 
-    sender = mock(InternalDistributedMember.class);
-
     recipient = mock(InternalDistributedMember.class);
-    initialMembers = new ArrayList<>();
-    initialMembers.add(recipient);
 
     // make it a spy to aid verification
-    replyProcessor = spy(new RemoteOperationResponse(system, initialMembers, true));
+    replyProcessor = spy(new RemoteOperationResponse(system, recipient, true));
   }
 
   @After

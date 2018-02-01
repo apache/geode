@@ -40,13 +40,6 @@ public abstract class RemoteOperationMessageWithDirectReply extends RemoteOperat
     super();
   }
 
-
-  public RemoteOperationMessageWithDirectReply(Set recipients, String regionPath,
-      DirectReplyProcessor processor) {
-    super(recipients, regionPath, processor);
-    this.processor = processor;
-  }
-
   public RemoteOperationMessageWithDirectReply(InternalDistributedMember recipient,
       String regionPath, DirectReplyProcessor processor) {
     super(recipient, regionPath, processor);

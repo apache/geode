@@ -78,8 +78,7 @@ public class RemoteFetchEntryMessage extends RemoteOperationMessage {
   public static FetchEntryResponse send(InternalDistributedMember recipient, LocalRegion r,
       final Object key) throws RemoteOperationException {
     Assert.assertTrue(recipient != null, "RemoteFetchEntryMessage NULL recipient");
-    FetchEntryResponse p =
-        new FetchEntryResponse(r.getSystem(), Collections.singleton(recipient), r, key);
+    FetchEntryResponse p = new FetchEntryResponse(r.getSystem(), recipient, r, key);
     RemoteFetchEntryMessage m = new RemoteFetchEntryMessage(recipient, r.getFullPath(), p, key);
 
     Set failures = r.getDistributionManager().putOutgoing(m);
@@ -255,9 +254,9 @@ public class RemoteFetchEntryMessage extends RemoteOperationMessage {
     final LocalRegion region;
     final Object key;
 
-    public FetchEntryResponse(InternalDistributedSystem ds, Set recipients, LocalRegion theRegion,
-        Object key) {
-      super(ds, recipients);
+    public FetchEntryResponse(InternalDistributedSystem ds, InternalDistributedMember recipient,
+        LocalRegion theRegion, Object key) {
+      super(ds, recipient);
       this.region = theRegion;
       this.key = key;
     }

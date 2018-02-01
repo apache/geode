@@ -276,11 +276,6 @@ public class RemoteOperationMessageTest {
       super(recipient, regionPath, processor);
     }
 
-    public TestableRemoteOperationMessage(Set recipients, String regionPath,
-        ReplyProcessor21 processor) {
-      super(recipients, regionPath, processor);
-    }
-
     @Override
     public int getDSFID() {
       return 0;

@@ -18,7 +18,6 @@ import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
 import java.util.Collection;
-import java.util.Set;
 
 import org.apache.logging.log4j.Logger;
 
@@ -83,11 +82,6 @@ public abstract class RemoteOperationMessage extends DistributionMessage
     this(regionPath, processor);
     Assert.assertTrue(recipient != null, "RemoteMesssage recipient can not be null");
     setRecipient(recipient);
-  }
-
-  public RemoteOperationMessage(Set recipients, String regionPath, ReplyProcessor21 processor) {
-    this(regionPath, processor);
-    setRecipients(recipients);
   }
 
   private RemoteOperationMessage(String regionPath, ReplyProcessor21 processor) {
@@ -474,11 +468,7 @@ public abstract class RemoteOperationMessage extends DistributionMessage
      */
     private boolean responseRequired;
 
-    public RemoteOperationResponse(InternalDistributedSystem dm, Collection initMembers) {
-      this(dm, initMembers, true);
-    }
-
-    public RemoteOperationResponse(InternalDistributedSystem dm, Collection initMembers,
+    public RemoteOperationResponse(InternalDistributedSystem dm, Collection<?> initMembers,
         boolean register) {
       super(dm, initMembers);
       if (register) {
