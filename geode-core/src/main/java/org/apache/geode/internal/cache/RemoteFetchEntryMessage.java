@@ -268,7 +268,9 @@ public class RemoteFetchEntryMessage extends RemoteOperationMessage {
         if (msg instanceof FetchEntryReplyMessage) {
           FetchEntryReplyMessage reply = (FetchEntryReplyMessage) msg;
           this.returnValue = reply.getValue();
-          this.returnValue.setRegion(this.region);
+          if (this.returnValue != null) {
+            this.returnValue.setRegion(this.region);
+          }
           if (logger.isTraceEnabled(LogMarker.DM)) {
             logger.trace(LogMarker.DM, "FetchEntryResponse return value is {}", this.returnValue);
           }
