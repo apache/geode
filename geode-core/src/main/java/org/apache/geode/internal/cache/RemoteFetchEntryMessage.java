@@ -94,12 +94,7 @@ public class RemoteFetchEntryMessage extends RemoteOperationMessage {
   @Override
   protected boolean operateOnRegion(ClusterDistributionManager dm, LocalRegion r, long startTime)
       throws RemoteOperationException {
-    // RemoteFetchEntryMessage is used in refreshing client caches during interest list recovery,
-    // so don't be too verbose or hydra tasks may time out
-
-    if (!(r instanceof PartitionedRegion)) {
-      r.waitOnInitialization(); // bug #43371 - accessing a region before it's initialized
-    }
+    r.waitOnInitialization(); // bug #43371 - accessing a region before it's initialized
     EntrySnapshot val;
     try {
       final KeyInfo keyInfo = r.getKeyInfo(key);
@@ -110,15 +105,12 @@ public class RemoteFetchEntryMessage extends RemoteOperationMessage {
       NonLocalRegionEntry nlre = new NonLocalRegionEntry(re, r);
       LocalRegion dataReg = r.getDataRegionForRead(keyInfo);
       val = new EntrySnapshot(nlre, dataReg, r, false);
-      // r.getPrStats().endRemoteOperationMessagesProcessing(startTime);
       FetchEntryReplyMessage.send(getSender(), getProcessorId(), val, dm, null);
     } catch (TransactionException tex) {
       FetchEntryReplyMessage.send(getSender(), getProcessorId(), null, dm, new ReplyException(tex));
     } catch (EntryNotFoundException enfe) {
       FetchEntryReplyMessage.send(getSender(), getProcessorId(), null, dm, new ReplyException(
           LocalizedStrings.RemoteFetchEntryMessage_ENTRY_NOT_FOUND.toLocalizedString(), enfe));
-    } catch (PrimaryBucketException pbe) {
-      FetchEntryReplyMessage.send(getSender(), getProcessorId(), null, dm, new ReplyException(pbe));
     }
 
     // Unless there was an exception thrown, this message handles sending the
@@ -237,15 +229,8 @@ public class RemoteFetchEntryMessage extends RemoteOperationMessage {
       super.fromData(in);
       boolean nullEntry = in.readBoolean();
       if (!nullEntry) {
-        // since the Entry object shares state with the PartitionedRegion,
-        // we have to find the region and ask it to create a new Entry instance
-        // to be populated from the DataInput
-        FetchEntryResponse processor =
-            (FetchEntryResponse) ReplyProcessor21.getProcessor(this.processorId);
-        if (processor == null) {
-          throw new OperationCancelledException("This operation was cancelled (null processor)");
-        }
-        this.value = new EntrySnapshot(in, processor.region);
+        // EntrySnapshot.setRegion is called later
+        this.value = new EntrySnapshot(in, null);
       }
     }
 
@@ -283,6 +268,7 @@ public class RemoteFetchEntryMessage extends RemoteOperationMessage {
         if (msg instanceof FetchEntryReplyMessage) {
           FetchEntryReplyMessage reply = (FetchEntryReplyMessage) msg;
           this.returnValue = reply.getValue();
+          this.returnValue.setRegion(this.region);
           if (logger.isTraceEnabled(LogMarker.DM)) {
             logger.trace(LogMarker.DM, "FetchEntryResponse return value is {}", this.returnValue);
           }
