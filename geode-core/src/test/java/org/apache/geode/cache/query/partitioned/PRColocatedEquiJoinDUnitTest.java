@@ -17,11 +17,8 @@
  */
 package org.apache.geode.cache.query.partitioned;
 
-import static org.apache.geode.cache.query.Utils.createNewPortfoliosAndPositions;
-import static org.apache.geode.cache.query.Utils.createPortfoliosAndPositions;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
+import static org.apache.geode.cache.query.Utils.*;
+import static org.junit.Assert.*;
 
 import java.io.DataInput;
 import java.io.DataOutput;
@@ -29,6 +26,8 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Properties;
 
+import org.junit.AfterClass;
+import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 import parReg.query.unittest.NewPortfolio;
@@ -39,6 +38,7 @@ import org.apache.geode.cache.AttributesFactory;
 import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.CacheClosedException;
 import org.apache.geode.cache.CacheException;
+import org.apache.geode.cache.CacheFactory;
 import org.apache.geode.cache.PartitionAttributes;
 import org.apache.geode.cache.PartitionAttributesFactory;
 import org.apache.geode.cache.Region;
@@ -61,13 +61,15 @@ import org.apache.geode.distributed.ConfigurationProperties;
 import org.apache.geode.distributed.internal.ReplyException;
 import org.apache.geode.internal.cache.ForceReattemptException;
 import org.apache.geode.internal.cache.PartitionedRegion;
-import org.apache.geode.internal.cache.PartitionedRegionDUnitTestCase;
 import org.apache.geode.internal.i18n.LocalizedStrings;
 import org.apache.geode.test.dunit.Host;
 import org.apache.geode.test.dunit.IgnoredException;
+import org.apache.geode.test.dunit.Invoke;
 import org.apache.geode.test.dunit.LogWriterUtils;
 import org.apache.geode.test.dunit.VM;
 import org.apache.geode.test.dunit.Wait;
+import org.apache.geode.test.dunit.cache.CacheTestCase;
+import org.apache.geode.test.dunit.standalone.DUnitLauncher;
 import org.apache.geode.test.junit.categories.DistributedTest;
 import org.apache.geode.test.junit.categories.FlakyTest;
 
@@ -75,7 +77,33 @@ import org.apache.geode.test.junit.categories.FlakyTest;
  *
  */
 @Category(DistributedTest.class)
-public class PRColocatedEquiJoinDUnitTest extends PartitionedRegionDUnitTestCase {
+public class PRColocatedEquiJoinDUnitTest extends CacheTestCase {
+
+  /**
+   * Tear down a PartitionedRegionTestCase by cleaning up the existing cache (mainly because we want
+   * to destroy any existing PartitionedRegions)
+   */
+  @Override
+  public final void preTearDownCacheTestCase() throws Exception {
+    preTearDownPartitionedRegionDUnitTest();
+    closeCache();
+    Invoke.invokeInEveryVM(org.apache.geode.cache30.CacheTestCase.class, "closeCache");
+  }
+
+  protected void preTearDownPartitionedRegionDUnitTest() throws Exception {}
+
+  @BeforeClass
+  public static void caseSetUp() {
+    DUnitLauncher.launchIfNeeded();
+    // this makes sure we don't have any connection left over from previous tests
+    disconnectAllFromDS();
+  }
+
+  @AfterClass
+  public static void caseTearDown() {
+    // this makes sure we don't leave anything for the next tests
+    disconnectAllFromDS();
+  }
 
   int totalNumBuckets = 100;
 
@@ -1574,7 +1602,7 @@ public class PRColocatedEquiJoinDUnitTest extends PartitionedRegionDUnitTestCase
 
     @Override
     public void execute(FunctionContext context) {
-      Cache cache = context.getCache();
+      Cache cache = CacheFactory.getAnyInstance();
       QueryService queryService = cache.getQueryService();
       ArrayList allQueryResults = new ArrayList();
       String qstr = (String) context.getArguments();

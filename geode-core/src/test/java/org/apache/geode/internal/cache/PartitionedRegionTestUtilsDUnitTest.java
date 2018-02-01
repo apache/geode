@@ -27,6 +27,8 @@ import java.util.Properties;
 import java.util.Random;
 import java.util.Set;
 
+import org.junit.AfterClass;
+import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
@@ -41,8 +43,11 @@ import org.apache.geode.distributed.ConfigurationProperties;
 import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.test.dunit.Assert;
 import org.apache.geode.test.dunit.Host;
+import org.apache.geode.test.dunit.Invoke;
 import org.apache.geode.test.dunit.LogWriterUtils;
 import org.apache.geode.test.dunit.VM;
+import org.apache.geode.test.dunit.cache.CacheTestCase;
+import org.apache.geode.test.dunit.standalone.DUnitLauncher;
 import org.apache.geode.test.junit.categories.DistributedTest;
 
 /**
@@ -51,7 +56,33 @@ import org.apache.geode.test.junit.categories.DistributedTest;
  * @since GemFire 5.0
  */
 @Category(DistributedTest.class)
-public class PartitionedRegionTestUtilsDUnitTest extends PartitionedRegionDUnitTestCase {
+public class PartitionedRegionTestUtilsDUnitTest extends CacheTestCase {
+
+  /**
+   * Tear down a PartitionedRegionTestCase by cleaning up the existing cache (mainly because we want
+   * to destroy any existing PartitionedRegions)
+   */
+  @Override
+  public final void preTearDownCacheTestCase() throws Exception {
+    preTearDownPartitionedRegionDUnitTest();
+    closeCache();
+    Invoke.invokeInEveryVM(org.apache.geode.cache30.CacheTestCase.class, "closeCache");
+  }
+
+  protected void preTearDownPartitionedRegionDUnitTest() throws Exception {}
+
+  @BeforeClass
+  public static void caseSetUp() {
+    DUnitLauncher.launchIfNeeded();
+    // this makes sure we don't have any connection left over from previous tests
+    disconnectAllFromDS();
+  }
+
+  @AfterClass
+  public static void caseTearDown() {
+    // this makes sure we don't leave anything for the next tests
+    disconnectAllFromDS();
+  }
 
   final int totalNumBuckets = 5;
 

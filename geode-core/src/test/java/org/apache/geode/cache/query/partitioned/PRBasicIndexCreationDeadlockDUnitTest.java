@@ -18,7 +18,8 @@ import static org.apache.geode.cache.query.Utils.createPortfoliosAndPositions;
 
 import java.io.File;
 
-import org.apache.logging.log4j.Logger;
+import org.junit.AfterClass;
+import org.junit.BeforeClass;
 import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
@@ -28,23 +29,58 @@ import org.apache.geode.cache.query.data.Portfolio;
 import org.apache.geode.cache.query.internal.index.IndexManager.TestHook;
 import org.apache.geode.cache.query.internal.index.IndexUtils;
 import org.apache.geode.cache30.CacheSerializableRunnable;
+import org.apache.geode.cache30.CacheTestCase;
 import org.apache.geode.internal.cache.GemFireCacheImpl;
-import org.apache.geode.internal.cache.PartitionedRegionDUnitTestCase;
-import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.test.dunit.AsyncInvocation;
 import org.apache.geode.test.dunit.Host;
+import org.apache.geode.test.dunit.Invoke;
 import org.apache.geode.test.dunit.ThreadUtils;
 import org.apache.geode.test.dunit.VM;
 import org.apache.geode.test.dunit.Wait;
+import org.apache.geode.test.dunit.standalone.DUnitLauncher;
 import org.apache.geode.test.junit.categories.DistributedTest;
 
 /**
  *
  */
 @Category(DistributedTest.class)
-public class PRBasicIndexCreationDeadlockDUnitTest extends PartitionedRegionDUnitTestCase
+public class PRBasicIndexCreationDeadlockDUnitTest
+    extends org.apache.geode.test.dunit.cache.CacheTestCase
 
 {
+
+  /**
+   * Tear down a PartitionedRegionTestCase by cleaning up the existing cache (mainly because we want
+   * to destroy any existing PartitionedRegions)
+   */
+  @Override
+  public final void preTearDownCacheTestCase() throws Exception {
+    preTearDownPartitionedRegionDUnitTest();
+    closeCache();
+    Invoke.invokeInEveryVM(CacheTestCase.class, "closeCache");
+  }
+
+  protected void preTearDownPartitionedRegionDUnitTest() throws Exception {}
+
+  @BeforeClass
+  public static void caseSetUp() {
+    DUnitLauncher.launchIfNeeded();
+    // this makes sure we don't have any connection left over from previous tests
+    disconnectAllFromDS();
+  }
+
+  @AfterClass
+  public static void caseTearDown() {
+    // this makes sure we don't leave anything for the next tests
+    disconnectAllFromDS();
+  }
+
+  /**
+   * constructor
+   *
+   * @param name
+   */
+
   public PRBasicIndexCreationDeadlockDUnitTest() {
     super();
   }
@@ -61,8 +97,6 @@ public class PRBasicIndexCreationDeadlockDUnitTest extends PartitionedRegionDUni
       vm.invoke(() -> PRQueryDUnitHelper.setCache(getCache()));
     }
   }
-
-  private static final Logger logger = LogService.getLogger();
 
   PRQueryDUnitHelper PRQHelp = new PRQueryDUnitHelper();
 
@@ -116,7 +150,7 @@ public class PRBasicIndexCreationDeadlockDUnitTest extends PartitionedRegionDUni
 
         @Override
         public void run2() throws CacheException {
-          PRQueryDUnitHelper.getCache().close();
+          GemFireCacheImpl.getInstance().close();
         }
       });
 
@@ -124,7 +158,7 @@ public class PRBasicIndexCreationDeadlockDUnitTest extends PartitionedRegionDUni
 
         @Override
         public void run2() throws CacheException {
-          PRQueryDUnitHelper.getCache().close();
+          GemFireCacheImpl.getInstance().close();
         }
       });
 
@@ -223,7 +257,7 @@ public class PRBasicIndexCreationDeadlockDUnitTest extends PartitionedRegionDUni
 
     @Override
     public synchronized void hook(int spot) throws RuntimeException {
-      logger.debug("IndexUtilTestHook is set");
+      GemFireCacheImpl.getInstance().getLogger().fine("IndexUtilTestHook is set");
       switch (spot) {
         case 0:
           hooked = true;

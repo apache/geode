@@ -21,20 +21,30 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 
+import org.junit.AfterClass;
+import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
 import org.apache.geode.cache.Cache;
+import org.apache.geode.cache.CacheException;
+import org.apache.geode.cache.EvictionAction;
+import org.apache.geode.cache.EvictionAttributes;
+import org.apache.geode.cache.PartitionAttributesFactory;
 import org.apache.geode.cache.Region;
+import org.apache.geode.cache.RegionAttributes;
 import org.apache.geode.cache30.*;
 import org.apache.geode.test.dunit.Assert;
 import org.apache.geode.test.dunit.AsyncInvocation;
 import org.apache.geode.test.dunit.Host;
+import org.apache.geode.test.dunit.Invoke;
 import org.apache.geode.test.dunit.LogWriterUtils;
 import org.apache.geode.test.dunit.ThreadUtils;
 import org.apache.geode.test.dunit.VM;
+import org.apache.geode.test.dunit.cache.CacheTestCase;
 import org.apache.geode.test.dunit.cache.internal.JUnit4CacheTestCase;
 import org.apache.geode.test.dunit.internal.JUnit4DistributedTestCase;
+import org.apache.geode.test.dunit.standalone.DUnitLauncher;
 import org.apache.geode.test.junit.categories.DistributedTest;
 
 /**
@@ -42,7 +52,33 @@ import org.apache.geode.test.junit.categories.DistributedTest;
  * This class tests PRID generation in multiple partiton regions on 4 VMs
  */
 @Category(DistributedTest.class)
-public class PartitionedRegionPRIDDUnitTest extends PartitionedRegionDUnitTestCase {
+public class PartitionedRegionPRIDDUnitTest extends CacheTestCase {
+
+  /**
+   * Tear down a PartitionedRegionTestCase by cleaning up the existing cache (mainly because we want
+   * to destroy any existing PartitionedRegions)
+   */
+  @Override
+  public final void preTearDownCacheTestCase() throws Exception {
+    preTearDownPartitionedRegionDUnitTest();
+    closeCache();
+    Invoke.invokeInEveryVM(org.apache.geode.cache30.CacheTestCase.class, "closeCache");
+  }
+
+  protected void preTearDownPartitionedRegionDUnitTest() throws Exception {}
+
+  @BeforeClass
+  public static void caseSetUp() {
+    DUnitLauncher.launchIfNeeded();
+    // this makes sure we don't have any connection left over from previous tests
+    disconnectAllFromDS();
+  }
+
+  @AfterClass
+  public static void caseTearDown() {
+    // this makes sure we don't leave anything for the next tests
+    disconnectAllFromDS();
+  }
 
   /** Maximum number of regions * */
   public static final int MAX_REGIONS = 1;
@@ -252,5 +288,67 @@ public class PartitionedRegionPRIDDUnitTest extends PartitionedRegionDUnitTestCa
     for (int i = 0; i < 4; i++) {
       vm[i] = host.getVM(i);
     }
+  }
+
+  /**
+   * This function creates multiple partition regions in a VM. The name of the Partition Region will
+   * be PRPrefix+index (index starts from startIndexForRegion and ends to endIndexForRegion)
+   *
+   * @param PRPrefix : Used in the name of the Partition Region
+   *
+   *        These indices Represents range of the Partition Region
+   */
+  CacheSerializableRunnable createMultiplePartitionRegion(final String PRPrefix,
+      final int startIndexForRegion, final int endIndexForRegion, final int redundancy,
+      final int localmaxMemory) {
+    return createMultiplePartitionRegion(PRPrefix, startIndexForRegion, endIndexForRegion,
+        redundancy, localmaxMemory, false);
+  }
+
+  /**
+   * This function creates multiple partition regions in a VM. The name of the Partition Region will
+   * be PRPrefix+index (index starts from startIndexForRegion and ends to endIndexForRegion)
+   *
+   * @param PRPrefix : Used in the name of the Partition Region
+   *
+   *        These indices Represents range of the Partition Region
+   */
+  CacheSerializableRunnable createMultiplePartitionRegion(final String PRPrefix,
+      final int startIndexForRegion, final int endIndexForRegion, final int redundancy,
+      final int localmaxMemory, final boolean evict) {
+    return new CacheSerializableRunnable("createPrRegions_" + PRPrefix) {
+      String innerPRPrefix = PRPrefix;
+
+      int innerStartIndexForRegion = startIndexForRegion;
+
+      int innerEndIndexForRegion = endIndexForRegion;
+
+      int innerRedundancy = redundancy;
+
+      int innerlocalmaxMemory = localmaxMemory;
+
+      public void run2() throws CacheException {
+        System.setProperty(PartitionedRegion.RETRY_TIMEOUT_PROPERTY, "20000");
+        EvictionAttributes evictionAttrs = evict ? EvictionAttributes
+            .createLRUEntryAttributes(Integer.MAX_VALUE, EvictionAction.LOCAL_DESTROY) : null;
+        for (int i = startIndexForRegion; i < endIndexForRegion; i++) {
+          Region partitionedregion = getCache().createRegion(innerPRPrefix + i,
+              createRegionAttrsForPR(innerRedundancy, innerlocalmaxMemory,
+                  PartitionAttributesFactory.RECOVERY_DELAY_DEFAULT, evictionAttrs));
+          getCache().getLogger()
+              .info("Successfully created PartitionedRegion = " + partitionedregion);
+        }
+        System.setProperty(PartitionedRegion.RETRY_TIMEOUT_PROPERTY,
+            Integer.toString(PartitionedRegionHelper.DEFAULT_TOTAL_WAIT_RETRY_ITERATION));
+        getCache().getLogger()
+            .info("createMultiplePartitionRegion() - Partition Regions Successfully Completed ");
+      }
+    };
+  }
+
+  protected RegionAttributes<?, ?> createRegionAttrsForPR(int red, int localMaxMem,
+      long recoveryDelay, EvictionAttributes evictionAttrs) {
+    return PartitionedRegionTestHelper.createRegionAttrsForPR(red, localMaxMem, recoveryDelay,
+        evictionAttrs, null);
   }
 }

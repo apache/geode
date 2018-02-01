@@ -19,6 +19,8 @@ import static org.junit.Assert.*;
 
 import java.util.Properties;
 
+import org.junit.AfterClass;
+import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
@@ -27,7 +29,10 @@ import org.apache.geode.cache.CacheException;
 import org.apache.geode.cache.Region;
 import org.apache.geode.cache30.CacheSerializableRunnable;
 import org.apache.geode.test.dunit.Host;
+import org.apache.geode.test.dunit.Invoke;
 import org.apache.geode.test.dunit.VM;
+import org.apache.geode.test.dunit.cache.CacheTestCase;
+import org.apache.geode.test.dunit.standalone.DUnitLauncher;
 import org.apache.geode.test.junit.categories.DistributedTest;
 import org.apache.geode.util.test.TestUtil;
 
@@ -35,7 +40,17 @@ import org.apache.geode.util.test.TestUtil;
  * This class tests regions created by xml files
  */
 @Category(DistributedTest.class)
-public class PartitionedRegionCacheXMLExampleDUnitTest extends PartitionedRegionDUnitTestCase {
+public class PartitionedRegionCacheXMLExampleDUnitTest extends CacheTestCase {
+
+  /**
+   * Tear down a PartitionedRegionTestCase by cleaning up the existing cache (mainly because we want
+   * to destroy any existing PartitionedRegions)
+   */
+  @Override
+  public final void preTearDownCacheTestCase() throws Exception {
+    closeAllCache();
+    disconnectAllFromDS();
+  }
 
   protected static Cache cache;
 

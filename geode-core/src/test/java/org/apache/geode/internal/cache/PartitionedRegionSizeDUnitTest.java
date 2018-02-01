@@ -18,9 +18,12 @@ import static org.junit.Assert.*;
 
 import java.io.File;
 
+import org.junit.AfterClass;
+import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
+import org.apache.geode.LogWriter;
 import org.apache.geode.cache.AttributesFactory;
 import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.CacheException;
@@ -34,16 +37,19 @@ import org.apache.geode.cache30.CacheSerializableRunnable;
 import org.apache.geode.distributed.DistributedSystem;
 import org.apache.geode.internal.OSProcess;
 import org.apache.geode.internal.logging.InternalLogWriter;
+import org.apache.geode.internal.logging.LogWriterImpl;
+import org.apache.geode.internal.logging.PureLogWriter;
 import org.apache.geode.test.dunit.Assert;
 import org.apache.geode.test.dunit.AsyncInvocation;
 import org.apache.geode.test.dunit.Host;
+import org.apache.geode.test.dunit.Invoke;
 import org.apache.geode.test.dunit.LogWriterUtils;
 import org.apache.geode.test.dunit.SerializableCallable;
 import org.apache.geode.test.dunit.SerializableRunnable;
 import org.apache.geode.test.dunit.ThreadUtils;
 import org.apache.geode.test.dunit.VM;
-import org.apache.geode.test.dunit.cache.internal.JUnit4CacheTestCase;
-import org.apache.geode.test.dunit.internal.JUnit4DistributedTestCase;
+import org.apache.geode.test.dunit.cache.CacheTestCase;
+import org.apache.geode.test.dunit.standalone.DUnitLauncher;
 import org.apache.geode.test.junit.categories.DistributedTest;
 
 /**
@@ -54,7 +60,33 @@ import org.apache.geode.test.junit.categories.DistributedTest;
  *
  */
 @Category(DistributedTest.class)
-public class PartitionedRegionSizeDUnitTest extends PartitionedRegionDUnitTestCase {
+public class PartitionedRegionSizeDUnitTest extends CacheTestCase {
+
+  /**
+   * Tear down a PartitionedRegionTestCase by cleaning up the existing cache (mainly because we want
+   * to destroy any existing PartitionedRegions)
+   */
+  @Override
+  public final void preTearDownCacheTestCase() throws Exception {
+    preTearDownPartitionedRegionDUnitTest();
+    closeCache();
+    Invoke.invokeInEveryVM(org.apache.geode.cache30.CacheTestCase.class, "closeCache");
+  }
+
+  protected void preTearDownPartitionedRegionDUnitTest() throws Exception {}
+
+  @BeforeClass
+  public static void caseSetUp() {
+    DUnitLauncher.launchIfNeeded();
+    // this makes sure we don't have any connection left over from previous tests
+    disconnectAllFromDS();
+  }
+
+  @AfterClass
+  public static void caseTearDown() {
+    // this makes sure we don't leave anything for the next tests
+    disconnectAllFromDS();
+  }
 
   public PartitionedRegionSizeDUnitTest() {
     super();
@@ -69,6 +101,28 @@ public class PartitionedRegionSizeDUnitTest extends PartitionedRegionDUnitTestCa
   static final int cnt = 100;
 
   final int totalNumBuckets = 5;
+
+  /**
+   * Sets the loglevel for the provided log writer
+   *
+   * @param l the {@link LogWriter}
+   * @param logLevl the new log level as specified in {@link LogWriterImpl}
+   * @return the old log level
+   */
+  public static int setLogLevel(LogWriter l, int logLevl) {
+    int ret = -1;
+    l.config("PartitionedRegionDUnitTest attempting to set log level on LogWriter instance class:"
+        + l.getClass().getName());
+    if (l instanceof PureLogWriter) {
+
+      PureLogWriter pl = (PureLogWriter) l;
+      ret = pl.getLogWriterLevel();
+      l.config("PartitiionedRegionDUnitTest forcing log level to "
+          + LogWriterImpl.levelToString(logLevl) + " from " + LogWriterImpl.levelToString(ret));
+      pl.setLevel(logLevl);
+    }
+    return ret;
+  }
 
   /**
    * This method creates Partitioned Region (Scope DIST_ACK, Redundancy = 1) with DataStores on 3

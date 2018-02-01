@@ -14,398 +14,502 @@
  */
 package org.apache.geode.internal.cache;
 
-import static org.apache.geode.distributed.ConfigurationProperties.*;
+import static org.apache.geode.test.dunit.Host.getHost;
+import static org.apache.geode.test.dunit.Invoke.invokeInEveryVM;
 import static org.junit.Assert.*;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Iterator;
 import java.util.List;
 import java.util.NoSuchElementException;
-import java.util.Properties;
 import java.util.Set;
+import java.util.concurrent.ExecutionException;
 
-import org.junit.Ignore;
+import org.junit.After;
+import org.junit.Before;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
 import org.apache.geode.cache.AttributesFactory;
 import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.CacheException;
-import org.apache.geode.cache.CacheExistsException;
-import org.apache.geode.cache.CacheFactory;
 import org.apache.geode.cache.MirrorType;
 import org.apache.geode.cache.PartitionAttributes;
 import org.apache.geode.cache.PartitionAttributesFactory;
-import org.apache.geode.cache.PartitionedRegionStorageException;
 import org.apache.geode.cache.Region;
 import org.apache.geode.cache.RegionAttributes;
+import org.apache.geode.cache.RegionFactory;
+import org.apache.geode.cache.RegionShortcut;
 import org.apache.geode.cache.Scope;
 import org.apache.geode.cache30.CacheSerializableRunnable;
-import org.apache.geode.distributed.internal.DistributionConfig;
-import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.internal.cache.PartitionedRegionDataStore.BucketVisitor;
-import org.apache.geode.test.dunit.Assert;
 import org.apache.geode.test.dunit.AsyncInvocation;
-import org.apache.geode.test.dunit.Host;
-import org.apache.geode.test.dunit.Invoke;
 import org.apache.geode.test.dunit.LogWriterUtils;
-import org.apache.geode.test.dunit.SerializableRunnable;
-import org.apache.geode.test.dunit.ThreadUtils;
+import org.apache.geode.test.dunit.SerializableRunnableIF;
 import org.apache.geode.test.dunit.VM;
+import org.apache.geode.test.dunit.cache.CacheTestCase;
 import org.apache.geode.test.junit.categories.DistributedTest;
 
 /**
  * This class tests bucket Creation and distribution for the multiple Partition regions.
  */
 @Category(DistributedTest.class)
-public class PartitionedRegionBucketCreationDistributionDUnitTest
-    extends PartitionedRegionDUnitTestCase {
+public class PartitionedRegionBucketCreationDistributionDUnitTest extends CacheTestCase {
 
-  /** Prefix is used in name of Partition Region */
-  protected static String prPrefix = null;
+  private static final int MAX_NUMBER_OF_REGIONS = 2;
 
-  /** Maximum number of regions * */
-  static final int MAX_REGIONS = 2;
+  private String regionName;
+  private String regionOne;
+  private String regionTwo;
 
-  /** redundancy used for the creation of the partition region */
-  final int redundancy = 0;
+  private int redundancy;
+  private int numberOfBuckets;
+  private int localMaxMemory;
 
-  /** local maxmemory used for the creation of the partition region */
-  int localMaxMemory = 200;
+  private int firstRegion;
+  private int lastRegion;
 
-  /** max number of buckets */
-  int totalBucketNumProperty = 11;
+  private int firstKey;
+  private int lastKey;
 
-  /** to store references of 4 vms */
-  VM vm[] = new VM[4];
+  private VM vm0;
+  private VM vm1;
+  private VM vm2;
+  private VM vm3;
+
+  private transient List<AsyncInvocation> asyncInvocations;
+
+  @Before
+  public void setUp() {
+    regionName = getUniqueName();
+    regionOne = getUniqueName() + "0";
+    regionTwo = getUniqueName() + "1";
+
+    vm0 = getHost(0).getVM(0);
+    vm1 = getHost(0).getVM(1);
+    vm2 = getHost(0).getVM(2);
+    vm3 = getHost(0).getVM(3);
+
+    localMaxMemory = 200;
+    numberOfBuckets = 11;
+    redundancy = 0;
+
+    firstRegion = 0;
+    lastRegion = MAX_NUMBER_OF_REGIONS;
+
+    firstKey = 0;
+    lastKey = 50;
+
+    asyncInvocations = new ArrayList<>();
+  }
+
+  @After
+  public void tearDown() throws Exception {
+    disconnectAllFromDS();
+  }
 
   /**
-   * This test performs following operations <br>
-   * 1. Validate bucket2Node region of the partition regions.</br>
-   * <br>
-   * (a) bucket2Node Region should not be null.</br>
-   * <br>
-   * (b) Scope of the bucket2Node region should be DISTRIBUTED_ACK.</br>
-   * <br>
-   * (c) Size of bucket2Node region should be 0 before any put() operation. </br>
-   * <br>
-   * (d) Parent region of the bucket2Node region should be root i.e. region with name "PRRoot".</br>
-   * <br>
-   * 2. Do put() operation from the different VMs so that buckets gets generated.</br>
-   * <br>
-   * 3. Validate bucket regions of multiple partition Regions</br>
-   * <br>
-   * (a) Size of bucket2Node region should be > 0.</br>
-   * <br>
+   * This test performs following operations
+   *
+   * <p>
+   * 1. Validate bucket2Node region of the partition regions.
+   *
+   * <p>
+   * (a) bucket2Node Region should not be null.
+   *
+   * <p>
+   * (b) Scope of the bucket2Node region should be DISTRIBUTED_ACK.
+   *
+   * <p>
+   * (c) Size of bucket2Node region should be 0 before any put() operation.
+   *
+   * <p>
+   * (d) Parent region of the bucket2Node region should be root i.e. region with name "PRRoot".
+   *
+   * <p>
+   * 2. Do put() operation from the different VMs so that buckets gets generated.
+   *
+   * <p>
+   * 3. Validate bucket regions of multiple partition Regions
+   *
+   * <p>
+   * (a) Size of bucket2Node region should be > 0.
+   *
+   * <p>
    * (b) In case of the partition regions with redundancy > 0 scope of the bucket regions should be
-   * scope of the partition regions.</br>
-   * <br>
+   * scope of the partition regions.
+   *
+   * <p>
    * (c) In case of the partition regions with redundancy > 0 no two bucket regions with same
-   * bucketId should not be present on the same node.</br>
+   * bucketId should not be present on the same node.
    */
   @Test
-  public void testBucketCreationInMultiplePartitionRegion() throws Throwable {
-    Host host = Host.getHost(0);
-    /** creating 4 VMs */
-    createVMs(host);
+  public void testBucketCreationInMultiplePartitionRegion() throws Exception {
+    firstKey = 0;
+    lastKey = 50;
 
-    /** Prefix will be used for naming the partititon Region */
-    prPrefix = getUniqueName();
+    // creating regionOne
+    vm0.invoke(() -> createPartitionRegion(regionOne, 200, 0, numberOfBuckets));
+    vm1.invoke(() -> createPartitionRegion(regionOne, 200, 0, numberOfBuckets));
+    vm2.invoke(() -> createPartitionRegion(regionOne, 200, 0, numberOfBuckets));
+    vm3.invoke(() -> createPartitionRegion(regionOne, 0, 0, numberOfBuckets));
 
-    /** these indices represents range of partition regions present in each VM */
-    int startIndexForRegion = 0;
-    int endIndexForRegion = MAX_REGIONS;
-    /** Start index for key */
-    int startIndexForKey = 0;
-    /** End index for key */
-    int endIndexForKey = 50;
+    // creating regionTwo
+    vm0.invoke(() -> createPartitionRegion(regionTwo, 200, 1, numberOfBuckets));
+    vm1.invoke(() -> createPartitionRegion(regionTwo, 200, 1, numberOfBuckets));
+    vm2.invoke(() -> createPartitionRegion(regionTwo, 200, 1, numberOfBuckets));
+    vm3.invoke(() -> createPartitionRegion(regionTwo, 0, 1, numberOfBuckets));
 
-    // creating partition regions
-    createMultiplePR(startIndexForRegion, endIndexForRegion);
-    // validating bucket2Node of multiple partition regions before doing any
-    // put().
-    validateBucket2NodeBeforePutInMultiplePartitionedRegion(startIndexForRegion, endIndexForRegion);
-    LogWriterUtils.getLogWriter().info(
-        "testBucketCerationInMultiPlePartitionRegion() - Bucket2Node region of partition regions before any put() successfully validated ");
+    // validating bucket2Node of multiple partition regions before doing any put().
+    vm0.invoke(validateBucket2NodeBeforePut(regionOne));
+    vm1.invoke(validateBucket2NodeBeforePut(regionOne));
+    vm2.invoke(validateBucket2NodeBeforePut(regionOne));
+    vm3.invoke(validateBucket2NodeBeforePut(regionOne));
+
+    vm0.invoke(validateBucket2NodeBeforePut(regionTwo));
+    vm1.invoke(validateBucket2NodeBeforePut(regionTwo));
+    vm2.invoke(validateBucket2NodeBeforePut(regionTwo));
+    vm3.invoke(validateBucket2NodeBeforePut(regionTwo));
+
     // doing put() operation on multiple partition region
-    putInMultiplePartitionedRegion(startIndexForRegion, endIndexForRegion, startIndexForKey,
-        endIndexForKey);
-    LogWriterUtils.getLogWriter().info(
-        "testBucketCerationInMultiPlePartitionRegion() - Put() operation successfully in partition regions");
+    asyncInvocations.clear();
+
+    invokeAsync(vm0, putInMultiplePartitionRegion(regionOne, firstKey, lastKey));
+    invokeAsync(vm1, putInMultiplePartitionRegion(regionOne, firstKey, lastKey));
+    invokeAsync(vm2, putInMultiplePartitionRegion(regionOne, firstKey, lastKey));
+    invokeAsync(vm3, putInMultiplePartitionRegion(regionOne, firstKey, lastKey));
+
+    invokeAsync(vm0, putInMultiplePartitionRegion(regionTwo, firstKey, lastKey));
+    invokeAsync(vm1, putInMultiplePartitionRegion(regionTwo, firstKey, lastKey));
+    invokeAsync(vm2, putInMultiplePartitionRegion(regionTwo, firstKey, lastKey));
+    invokeAsync(vm3, putInMultiplePartitionRegion(regionTwo, firstKey, lastKey));
+
+    awaitAllAsyncInvocations();
+
     // validating bucket regions of multiple partition regions.
-    validateBucketsAfterPutInMultiplePartitionRegion(startIndexForRegion, endIndexForRegion);
-    LogWriterUtils.getLogWriter().info(
-        "testBucketCerationInMultiPlePartitionRegion() - Bucket regions of partition regions successfully validated");
-    LogWriterUtils.getLogWriter()
-        .info("testBucketCerationInMultiPlePartitionRegion() Successfully completed");
+    vm0.invoke(validateBucketCreationAfterPut(regionOne));
+    vm1.invoke(validateBucketCreationAfterPut(regionOne));
+    vm2.invoke(validateBucketCreationAfterPut(regionOne));
+    vm3.invoke(validateBucketCreationAfterPutForNode3(regionOne));
+
+    vm0.invoke(validateBucketCreationAfterPut(regionTwo));
+    vm1.invoke(validateBucketCreationAfterPut(regionTwo));
+    vm2.invoke(validateBucketCreationAfterPut(regionTwo));
+    vm3.invoke(validateBucketCreationAfterPutForNode3(regionTwo));
+
+    // validateBucketScopesAfterPutInMultiplePartitionRegion
+    vm0.invoke(validateBucketScopeAfterPut(regionOne));
+    vm1.invoke(validateBucketScopeAfterPut(regionOne));
+    vm2.invoke(validateBucketScopeAfterPut(regionOne));
+    vm3.invoke(validateBucketCreationAfterPutForNode3(regionOne));
+
+    vm0.invoke(validateBucketScopeAfterPut(regionTwo));
+    vm1.invoke(validateBucketScopeAfterPut(regionTwo));
+    vm2.invoke(validateBucketScopeAfterPut(regionTwo));
+    vm3.invoke(validateBucketCreationAfterPutForNode3(regionTwo));
   }
 
   /**
-   * This test performs following operations <br>
-   * 1.Creates multiple partition regions in 4 vms</br>
-   * <br>
-   * 2. Performs Put() operation from vm0 for the keys 0 to 111.</br>
-   * <br>
-   * 3. Validates bucket distribution over all the nodes for multiple partition regions.</br>
+   * This test performs following operations
+   *
+   * <p>
+   * 1.Creates multiple partition regions in 4 vms
+   *
+   * <p>
+   * 2. Performs Put() operation from vm0 for the keys 0 to 111.
+   *
+   * <p>
+   * 3. Validates bucket distribution over all the nodes for multiple partition regions.
    */
   @Test
-  public void testBucketCreationInPRPutFromOneNode() throws Throwable {
-    Host host = Host.getHost(0);
-    /** creating 4 VMs */
-    createVMs(host);
+  public void testBucketCreationInPRPutFromOneNode() throws Exception {
+    firstKey = 0;
+    lastKey = numberOfBuckets;
 
-    /** Prefix will be used for naming the partititon Region */
-    prPrefix = "testBucketCreationInPRFromOneNode";
-    /** these indices represents range of partition regions present in each VM */
-    final int startIndexForRegion = 0;
-    final int endIndexForRegion = MAX_REGIONS;
-    /** Start index for key */
-    final long startIndexForKey = 0;
-    /** End index for key */
-    final long endIndexForKey = totalBucketNumProperty;
+    vm0.invoke(() -> createPartitionRegion(regionOne, localMaxMemory, redundancy, numberOfBuckets));
+    vm1.invoke(() -> createPartitionRegion(regionOne, localMaxMemory, redundancy, numberOfBuckets));
+    vm2.invoke(() -> createPartitionRegion(regionOne, localMaxMemory, redundancy, numberOfBuckets));
+    vm3.invoke(() -> createPartitionRegion(regionOne, localMaxMemory, redundancy, numberOfBuckets));
 
-    final int startIndexForNode = 0;
-    final int endIndexForNode = 4;
-    List vmList;
-    // creating multiple partition regions on 3 nodes localMaxMemory=200 redundancy = 0
-    // int midIndexForRegion = (endIndexForRegion - startIndexForRegion) / 2;
-    vmList = addNodeToList(startIndexForNode, endIndexForNode);
-    localMaxMemory = 200;
-    // redundancy = 0;
-    createPartitionRegion(vmList, startIndexForRegion, endIndexForRegion, localMaxMemory,
-        redundancy);
+    vm0.invoke(() -> createPartitionRegion(regionTwo, localMaxMemory, redundancy, numberOfBuckets));
+    vm1.invoke(() -> createPartitionRegion(regionTwo, localMaxMemory, redundancy, numberOfBuckets));
+    vm2.invoke(() -> createPartitionRegion(regionTwo, localMaxMemory, redundancy, numberOfBuckets));
+    vm3.invoke(() -> createPartitionRegion(regionTwo, localMaxMemory, redundancy, numberOfBuckets));
 
-    LogWriterUtils.getLogWriter().info(
-        "testBucketCerationInMultiPlePartitionRegion() - Partition Regions successfully created ");
     // doing put() operation from vm0 only
-    putInMultiplePartitionRegionFromOneVm(vm[0], startIndexForRegion, endIndexForRegion,
-        startIndexForKey, endIndexForKey);
-    LogWriterUtils.getLogWriter().info(
-        "testBucketCerationInMultiPlePartitionRegion() - Put() Opereration done only from one VM ");
-    // validating bucket distribution ovar all the nodes
-    int noBucketsExpectedOnEachNode = getNoBucketsExpectedOnEachNode();
-    validateBucketsDistributionInMultiplePartitionRegion(startIndexForRegion, endIndexForRegion,
-        noBucketsExpectedOnEachNode);
-    LogWriterUtils.getLogWriter().info(
-        "testBucketCerationInMultiPlePartitionRegion() - Bucket regions are equally distributed");
-    LogWriterUtils.getLogWriter()
-        .info("testBucketCerationInMultiPlePartitionRegion() successfully completed");
+    asyncInvocations.clear();
+
+    invokeAsync(vm0, putFromOneVm(regionOne, firstKey, lastKey));
+    invokeAsync(vm0, putFromOneVm(regionOne, firstKey + numberOfBuckets, lastKey + numberOfBuckets));
+    invokeAsync(vm0, putFromOneVm(regionOne, firstKey + 2 * numberOfBuckets, lastKey + 2 * numberOfBuckets));
+
+    invokeAsync(vm0, putFromOneVm(regionTwo, firstKey, lastKey));
+    invokeAsync(vm0, putFromOneVm(regionTwo, firstKey + numberOfBuckets, lastKey + numberOfBuckets));
+    invokeAsync(vm0, putFromOneVm(regionTwo, firstKey + 2 * numberOfBuckets, lastKey + 2 * numberOfBuckets));
+
+    awaitAllAsyncInvocations();
+
+    // validating bucket distribution over all the nodes
+    int numberOfBucketsExpectedOnEachNode = getNumberOfBucketsExpectedOnEachNode();
+
+    vm0.invoke(validateBucketsDistribution(regionOne, numberOfBucketsExpectedOnEachNode));
+    vm1.invoke(validateBucketsDistribution(regionOne, numberOfBucketsExpectedOnEachNode));
+    vm2.invoke(validateBucketsDistribution(regionOne, numberOfBucketsExpectedOnEachNode));
+    vm3.invoke(validateBucketsDistribution(regionOne, numberOfBucketsExpectedOnEachNode));
+
+    vm0.invoke(validateBucketsDistribution(regionTwo, numberOfBucketsExpectedOnEachNode));
+    vm1.invoke(validateBucketsDistribution(regionTwo, numberOfBucketsExpectedOnEachNode));
+    vm2.invoke(validateBucketsDistribution(regionTwo, numberOfBucketsExpectedOnEachNode));
+    vm3.invoke(validateBucketsDistribution(regionTwo, numberOfBucketsExpectedOnEachNode));
   }
 
   /**
-   * This test performs following operations <br>
+   * This test performs following operations
+   *
+   * <p>
    * 1. Creates multiple partition regions in 4 vms with scope DISTRIBUTED_ACK and
-   * DISTRIBUTED_NO_ACK.</br>
-   * <br>
-   * 2. Performs Put() operation from all the vms for the keys 0 to 111.</br>
-   * <br>
-   * 3. Validates bucket distribution over all the nodes for multiple partition regions.</br>
+   * DISTRIBUTED_NO_ACK.
+   *
+   * <p>
+   * 2. Performs Put() operation from all the vms for the keys 0 to 111.
+   *
+   * <p>
+   * 3. Validates bucket distribution over all the nodes for multiple partition regions.
    */
   @Test
-  public void testBucketCreationInMultiplePartitionRegionFromAllNodes() throws Throwable {
-    Host host = Host.getHost(0);
-    /** creating 4 VMs */
-    createVMs(host);
+  public void testBucketCreationInMultiplePartitionRegionFromAllNodes() throws Exception {
+    // start/end indexes for keys
+    firstKey = 0;
+    lastKey = numberOfBuckets;
 
-    /** Prefix will be used for naming the partititon Region */
-    prPrefix = "testBucketCreationInMultiplePartitionRegionFromAllNodes";
+    vm0.invoke(() -> createPartitionRegion(regionOne, localMaxMemory, redundancy, numberOfBuckets));
+    vm1.invoke(() -> createPartitionRegion(regionOne, localMaxMemory, redundancy, numberOfBuckets));
+    vm2.invoke(() -> createPartitionRegion(regionOne, localMaxMemory, redundancy, numberOfBuckets));
+    vm3.invoke(() -> createPartitionRegion(regionOne, localMaxMemory, redundancy, numberOfBuckets));
 
-    /** these indices represents range of partition regions present in each VM */
-    int startIndexForRegion = 0;
-    int endIndexForRegion = MAX_REGIONS;
-    /** Start index for key */
-    long startIndexForKey = 0;
-    /** End index for key */
-    long endIndexForKey = totalBucketNumProperty;
+    vm0.invoke(() -> createPartitionRegion(regionTwo, localMaxMemory, redundancy, numberOfBuckets));
+    vm1.invoke(() -> createPartitionRegion(regionTwo, localMaxMemory, redundancy, numberOfBuckets));
+    vm2.invoke(() -> createPartitionRegion(regionTwo, localMaxMemory, redundancy, numberOfBuckets));
+    vm3.invoke(() -> createPartitionRegion(regionTwo, localMaxMemory, redundancy, numberOfBuckets));
 
-    int startIndexForNode = 0;
-    int endIndexForNode = 4;
-    List vmList;
-    // creating multiple partition regions on 3 nodes with scope =
-    // DISTRIBUTED_ACK localMaxMemory=200 redundancy = 0
-    vmList = addNodeToList(startIndexForNode, endIndexForNode);
-    localMaxMemory = 200;
-    // redundancy = 0;
-    // creating multiple partition regions on 3 nodes with localMaxMemory=200 redundancy = 0
-    createPartitionRegion(vmList, startIndexForRegion, endIndexForRegion, localMaxMemory,
-        redundancy);
-    LogWriterUtils.getLogWriter().info(
-        "testBucketCerationInMultiPlePartitionRegion() - Partition Regions successfully created ");
     // doing put() operation from all vms
-    putInMultiplePartitionedRegionFromAllVms(startIndexForRegion, endIndexForRegion,
-        startIndexForKey, endIndexForKey);
-    LogWriterUtils.getLogWriter().info(
-        "testBucketCerationInMultiPlePartitionRegion() - Put() Opereration done only from one VM ");
-    // validating bucket distribution ovar all the nodes
-    int noBucketsExpectedOnEachNode = getNoBucketsExpectedOnEachNode() - 4;
-    validateBucketsDistributionInMultiplePartitionRegion(startIndexForRegion, endIndexForRegion,
-        noBucketsExpectedOnEachNode);
-    LogWriterUtils.getLogWriter().info(
-        "testBucketCerationInMultiPlePartitionRegion() - Bucket regions are equally distributed");
-    LogWriterUtils.getLogWriter()
-        .info("testBucketCerationInMultiPlePartitionRegion() successfully created");
+    asyncInvocations.clear();
+
+    invokeAsync(vm0, putFromOneVm(regionOne, firstKey, lastKey));
+    invokeAsync(vm0, putFromOneVm(regionOne, firstKey + numberOfBuckets, lastKey + numberOfBuckets));
+    invokeAsync(vm0, putFromOneVm(regionOne, firstKey + 2 * numberOfBuckets, lastKey + 2 * numberOfBuckets));
+
+    invokeAsync(vm1, putFromOneVm(regionOne, firstKey, lastKey));
+    invokeAsync(vm1, putFromOneVm(regionOne, firstKey + numberOfBuckets, lastKey + numberOfBuckets));
+    invokeAsync(vm1, putFromOneVm(regionOne, firstKey + 2 * numberOfBuckets, lastKey + 2 * numberOfBuckets));
+
+    invokeAsync(vm2, putFromOneVm(regionOne, firstKey, lastKey));
+    invokeAsync(vm2, putFromOneVm(regionOne, firstKey + numberOfBuckets, lastKey + numberOfBuckets));
+    invokeAsync(vm2, putFromOneVm(regionOne, firstKey + 2 * numberOfBuckets, lastKey + 2 * numberOfBuckets));
+
+    invokeAsync(vm3, putFromOneVm(regionOne, firstKey, lastKey));
+    invokeAsync(vm3, putFromOneVm(regionOne, firstKey + numberOfBuckets, lastKey + numberOfBuckets));
+    invokeAsync(vm3, putFromOneVm(regionOne, firstKey + 2 * numberOfBuckets, lastKey + 2 * numberOfBuckets));
+
+    invokeAsync(vm0, putFromOneVm(regionTwo, firstKey, lastKey));
+    invokeAsync(vm0, putFromOneVm(regionTwo, firstKey + numberOfBuckets, lastKey + numberOfBuckets));
+    invokeAsync(vm0, putFromOneVm(regionTwo, firstKey + 2 * numberOfBuckets, lastKey + 2 * numberOfBuckets));
+
+    invokeAsync(vm1, putFromOneVm(regionTwo, firstKey, lastKey));
+    invokeAsync(vm1, putFromOneVm(regionTwo, firstKey + numberOfBuckets, lastKey + numberOfBuckets));
+    invokeAsync(vm1, putFromOneVm(regionTwo, firstKey + 2 * numberOfBuckets, lastKey + 2 * numberOfBuckets));
+
+    invokeAsync(vm2, putFromOneVm(regionTwo, firstKey, lastKey));
+    invokeAsync(vm2, putFromOneVm(regionTwo, firstKey + numberOfBuckets, lastKey + numberOfBuckets));
+    invokeAsync(vm2, putFromOneVm(regionTwo, firstKey + 2 * numberOfBuckets, lastKey + 2 * numberOfBuckets));
+
+    invokeAsync(vm3, putFromOneVm(regionTwo, firstKey, lastKey));
+    invokeAsync(vm3, putFromOneVm(regionTwo, firstKey + numberOfBuckets, lastKey + numberOfBuckets));
+    invokeAsync(vm3, putFromOneVm(regionTwo, firstKey + 2 * numberOfBuckets, lastKey + 2 * numberOfBuckets));
+
+    awaitAllAsyncInvocations();
+
+    // validating bucket distribution over all the nodes
+    int numberOfBucketsExpectedOnEachNode = getNumberOfBucketsExpectedOnEachNode() - 4;
+
+    vm0.invoke(validateBucketsDistribution(regionOne, numberOfBucketsExpectedOnEachNode));
+    vm1.invoke(validateBucketsDistribution(regionOne, numberOfBucketsExpectedOnEachNode));
+    vm2.invoke(validateBucketsDistribution(regionOne, numberOfBucketsExpectedOnEachNode));
+    vm2.invoke(validateBucketsDistribution(regionOne, numberOfBucketsExpectedOnEachNode));
+
+    vm0.invoke(validateBucketsDistribution(regionTwo, numberOfBucketsExpectedOnEachNode));
+    vm1.invoke(validateBucketsDistribution(regionTwo, numberOfBucketsExpectedOnEachNode));
+    vm2.invoke(validateBucketsDistribution(regionTwo, numberOfBucketsExpectedOnEachNode));
+    vm2.invoke(validateBucketsDistribution(regionTwo, numberOfBucketsExpectedOnEachNode));
   }
 
   /**
-   * This test performs following operations <br>
+   * This test performs following operations
+   *
+   * <p>
    * 1. Creates multiple partition regions in 3 vms with scope DISTRIBUTED_ACK and
-   * DISTRIBUTED_NO_ACK.</br>
-   * <br>
+   * DISTRIBUTED_NO_ACK
+   *
+   * <p>
    * 2. Performs Put() operation from 3 the vms for the keys startIndexForRgion to
-   * enIndexForRegion.</br>
-   * <br>
-   * 3. Creates partition region on new node</br>
-   * <br>
-   * 4. Performs Put() operation from 3 the vms for the keys startIndexForRgion to
-   * enIndexForRegion.</br>
-   * <br>
-   * 5. Validate bucket creation on new node.</br>
+   * enIndexForRegion
+   *
+   * <p>
+   * 3. Creates partition region on new node
+   *
+   * <p>
+   * 4. Performs Put() operation from 3 the vms for the keys firstRegion to
+   * enIndexForRegion.
+   *
+   * <p>
+   * 5. Validate bucket creation on new node.
    */
   @Test
-  public void testBucketDistributionAfterNodeAdditionInPR() throws Throwable {
-    Host host = Host.getHost(0);
-    /** creating 4 VMs */
-    createVMs(host);
-    /** Prefix will be used for naming the partititon Region */
-    prPrefix = "testBucketDistributionAfterNodeAdditionInPR";
+  public void testBucketDistributionAfterNodeAdditionInPR() throws Exception {
+    // start/end indexes for keys
+    firstKey = 0;
+    lastKey = 5;
 
-    /** these indices represents range of partition regions present in each VM */
-    int startIndexForRegion = 0;
-    int endIndexForRegion = MAX_REGIONS;
-    /** Start index for key */
-    int startIndexForKey = 0;
-    /** End index for key */
-    int endIndexForKey = 5;
+    vm0.invoke(() -> createPartitionRegion(regionOne, localMaxMemory, redundancy, numberOfBuckets));
+    vm1.invoke(() -> createPartitionRegion(regionOne, localMaxMemory, redundancy, numberOfBuckets));
+    vm2.invoke(() -> createPartitionRegion(regionOne, localMaxMemory, redundancy, numberOfBuckets));
 
-    int startIndexForNode = 0;
-    int endIndexForNode = 4;
-    // creating partition regions on 4 nodes out of which partition regions on
-    // one node are only accessors.
-    // partition regions on vm3 are only accessors.
-    List vmList = new ArrayList();
-    // creating multiple partition regions on 3 nodes with scope =
-    // DISTRIBUTED_ACK localMaxMemory=200 redundancy = 0
-    startIndexForNode = 0;
-    endIndexForNode = 3;
-    vmList = addNodeToList(startIndexForNode, endIndexForNode);
-    localMaxMemory = 200;
-    // redundancy = 0;
-    createPartitionRegion(vmList, startIndexForRegion, endIndexForRegion, localMaxMemory,
-        redundancy);
+    vm0.invoke(() -> createPartitionRegion(regionTwo, localMaxMemory, redundancy, numberOfBuckets));
+    vm1.invoke(() -> createPartitionRegion(regionTwo, localMaxMemory, redundancy, numberOfBuckets));
+    vm2.invoke(() -> createPartitionRegion(regionTwo, localMaxMemory, redundancy, numberOfBuckets));
 
-    startIndexForNode = 0;
-    endIndexForNode = 3;
-    vmList = addNodeToList(startIndexForNode, endIndexForNode);
     // doing put() in multiple partition regions from 3 nodes.
-    putInMultiplePartitionedRegionFrom3Nodes(startIndexForRegion, endIndexForRegion,
-        startIndexForKey, endIndexForKey);
-    LogWriterUtils.getLogWriter().info(
-        "testBucketDistributionAfterNodeAdditionInPR() - Put() operation successfully in partition regions on 3 Nodes");
+    putInMultiplePartitionedRegionFrom3Nodes(firstRegion, lastRegion,
+        firstKey, lastKey);
 
-    // creating multiple partition regions on 3 nodes with localMaxMemory=200 redundancy = 0
-    startIndexForNode = 3;
-    endIndexForNode = 4;
-    vmList = addNodeToList(startIndexForNode, endIndexForNode);
-    localMaxMemory = 200;
-    // redundancy = 0;
-    createPartitionRegion(vmList, startIndexForRegion, endIndexForKey, localMaxMemory, redundancy);
+    vm3.invoke(() -> createPartitionRegion(regionOne, localMaxMemory, redundancy, numberOfBuckets));
+    vm3.invoke(() -> createPartitionRegion(regionTwo, localMaxMemory, redundancy, numberOfBuckets));
 
-    startIndexForKey = 5;
-    endIndexForKey = totalBucketNumProperty;
+    firstKey = 5;
+    lastKey = numberOfBuckets;
+
     // doing put() in multiple partition regions from 3 nodes.
-    putInMultiplePartitionedRegionFrom3Nodes(startIndexForRegion, endIndexForRegion,
-        startIndexForKey, endIndexForKey);
-    LogWriterUtils.getLogWriter().info(
-        "testBucketDistributionAfterNodeAdditionInPR() - Put() operation successfully in partition regions on 4th node");
+    putInMultiplePartitionedRegionFrom3Nodes(firstRegion, lastRegion,
+        firstKey, lastKey);
+
+    int delta = (lastKey - firstKey) / 3;
+
+    asyncInvocations.clear();
+
+    invokeAsync(vm0, putInMultiplePartitionRegion(regionOne, firstKey, firstKey + 1 * delta));
+    invokeAsync(vm1, putInMultiplePartitionRegion(regionOne, firstKey + 1 * delta, firstKey + 2 * delta));
+    invokeAsync(vm2, putInMultiplePartitionRegion(regionOne, firstKey + 2 * delta, lastKey));
+
+    invokeAsync(vm0, putInMultiplePartitionRegion(regionTwo, firstKey, firstKey + 1 * delta));
+    invokeAsync(vm1, putInMultiplePartitionRegion(regionTwo, firstKey + 1 * delta, firstKey + 2 * delta));
+    invokeAsync(vm2, putInMultiplePartitionRegion(regionTwo, firstKey + 2 * delta, lastKey));
+
+    awaitAllAsyncInvocations();
+
     // validating bucket creation in the 4th node
-    validateBucketsOnAllNodes(startIndexForRegion, endIndexForRegion);
-    LogWriterUtils.getLogWriter().info(
-        "testBucketDistributionAfterNodeAdditionInPR() - buckets on all the nodes are validated");
-    LogWriterUtils.getLogWriter()
-        .info("testBucketDistributionAfterNodeAdditionInPR() successfully created");
+    vm0.invoke(() -> validateBuckets(regionOne));
+    vm1.invoke(() -> validateBuckets(regionOne));
+    vm2.invoke(() -> validateBuckets(regionOne));
+    vm3.invoke(() -> validateBuckets(regionOne));
+
+    vm0.invoke(() -> validateBuckets(regionTwo));
+    vm1.invoke(() -> validateBuckets(regionTwo));
+    vm2.invoke(() -> validateBuckets(regionTwo));
+    vm3.invoke(() -> validateBuckets(regionTwo));
   }
 
   /**
-   * this is to test global property TOTAL_BUCKETS_NUM_PROPERTY. 1.create partition region with
-   * scope = DISTRIBUTED_ACK redundancy = 3 on 4 vms 2.set global property
-   * TOTAL_BUCKETS_NUM_PROPERTY = 11 3.perform put() operation for the keys in the range 0 to 100
+   * this is to test global property TOTAL_BUCKETS_NUM_PROPERTY.
+   *
+   * <p>
+   * 1.create partition region with scope = DISTRIBUTED_ACK redundancy = 3 on 4 vms
+   *
+   * <p>
+   * 2.set global property TOTAL_BUCKETS_NUM_PROPERTY = 11
+   *
+   * <p>
+   * 3.perform put() operation for the keys in the range 0 to 100
+   *
+   * <p>
    * 4.test number of buckets created. It should be = 11
    */
   @Test
-  public void testTotalNumBucketProperty() throws Throwable {
-    Host host = Host.getHost(0);
-    /** creating 4 VMs */
-    createVMs(host);
+  public void testTotalNumBucketProperty() throws Exception {
+    lastRegion = 1;
 
-    /** Prefix will be used for naming the partititon Region */
-    prPrefix = "testTotalNumBucketProperty";
+    redundancy = 1;
 
-    /** these indices represents range of partition regions present in each VM */
-    int startIndexForRegion = 0;
-    int endIndexForRegion = 1;
-    /** Start index for key */
-    int startIndexForKey = 0;
-    /** End index for key */
-    int endIndexForKey = 20;
+    vm0.invoke(() -> createPartitionRegion(regionOne, localMaxMemory, redundancy, numberOfBuckets));
+    vm1.invoke(() -> createPartitionRegion(regionOne, localMaxMemory, redundancy, numberOfBuckets));
+    vm2.invoke(() -> createPartitionRegion(regionOne, localMaxMemory, redundancy, numberOfBuckets));
+    vm3.invoke(() -> createPartitionRegion(regionOne, localMaxMemory, redundancy, numberOfBuckets));
 
-    int startIndexForNode = 0;
-    int endIndexForNode = 4;
-    List vmList = addNodeToList(startIndexForNode, endIndexForNode);
-    localMaxMemory = 200;
-    final int localRedundancy = 1;
-    createPRWithTotalNumPropSetList(vmList, startIndexForRegion, endIndexForRegion, localMaxMemory,
-        localRedundancy);
-    putInMultiplePartitionRegionFromOneVm(vm[0], startIndexForRegion, endIndexForRegion,
-        startIndexForKey, endIndexForKey);
-    int expectedNumBuckets = 11;
-    validateTotalNumBuckets(prPrefix, vmList, startIndexForRegion, endIndexForRegion,
-        expectedNumBuckets);
-    startIndexForKey = 200;
-    endIndexForKey = 400;
-    putInMultiplePartitionedRegionFromAllVms(startIndexForRegion, endIndexForRegion,
-        startIndexForKey, endIndexForKey);
-    validateTotalNumBuckets(prPrefix, vmList, startIndexForRegion, endIndexForRegion,
-        expectedNumBuckets);
-    LogWriterUtils.getLogWriter().info("testTotalNumBucketProperty() completed successfully");
+    vm0.invoke(() -> createPartitionRegion(regionTwo, localMaxMemory, redundancy, numberOfBuckets));
+    vm1.invoke(() -> createPartitionRegion(regionTwo, localMaxMemory, redundancy, numberOfBuckets));
+    vm2.invoke(() -> createPartitionRegion(regionTwo, localMaxMemory, redundancy, numberOfBuckets));
+    vm3.invoke(() -> createPartitionRegion(regionTwo, localMaxMemory, redundancy, numberOfBuckets));
 
+    firstKey = 0;
+    lastKey = 20;
+    putInMultiplePartitionRegionFromOneVm(vm0, firstRegion, lastRegion, firstKey, lastKey);
+
+    asyncInvocations.clear();
+
+    invokeAsync(vm0, putFromOneVm(regionOne, firstKey, lastKey));
+    invokeAsync(vm0, putFromOneVm(regionOne, firstKey + numberOfBuckets, lastKey + numberOfBuckets));
+    invokeAsync(vm0, putFromOneVm(regionOne, firstKey + 2 * numberOfBuckets, lastKey + 2 * numberOfBuckets));
+
+    invokeAsync(vm0, putFromOneVm(regionTwo, firstKey, lastKey));
+    invokeAsync(vm0, putFromOneVm(regionTwo, firstKey + numberOfBuckets, lastKey + numberOfBuckets));
+    invokeAsync(vm0, putFromOneVm(regionTwo, firstKey + 2 * numberOfBuckets, lastKey + 2 * numberOfBuckets));
+
+    awaitAllAsyncInvocations();
+
+    int expectedNumberOfBuckets = 11;
+
+    vm0.invoke(validateTotalNumberOfBuckets(regionOne, expectedNumberOfBuckets));
+    vm1.invoke(validateTotalNumberOfBuckets(regionOne, expectedNumberOfBuckets));
+    vm2.invoke(validateTotalNumberOfBuckets(regionOne, expectedNumberOfBuckets));
+    vm3.invoke(validateTotalNumberOfBuckets(regionOne, expectedNumberOfBuckets));
+
+    vm0.invoke(validateTotalNumberOfBuckets(regionTwo, expectedNumberOfBuckets));
+    vm1.invoke(validateTotalNumberOfBuckets(regionTwo, expectedNumberOfBuckets));
+    vm2.invoke(validateTotalNumberOfBuckets(regionTwo, expectedNumberOfBuckets));
+    vm3.invoke(validateTotalNumberOfBuckets(regionTwo, expectedNumberOfBuckets));
+
+    firstKey = 200;
+    lastKey = 400;
+
+    asyncInvocations.clear();
+
+    long delta = (lastKey - firstKey) / 4;
+
+    invokeAsync(vm0, putFromOneVm(firstKey, firstKey + 1 * delta, firstRegion, lastRegion));
+    invokeAsync(vm1, putFromOneVm(firstKey + 1 * delta, firstKey + 2 * delta, firstRegion, lastRegion));
+    invokeAsync(vm2, putFromOneVm(firstKey + 2 * delta, firstKey + 3 * delta, firstRegion, lastRegion));
+    invokeAsync(vm3, putFromOneVm(firstKey + 3 * delta, lastKey, firstRegion, lastRegion));
+
+    firstKey += numberOfBuckets;
+    lastKey += numberOfBuckets;
+    delta = (lastKey - firstKey) / 4;
+
+    invokeAsync(vm0, putFromOneVm(firstKey, firstKey + 1 * delta, firstRegion, lastRegion));
+    invokeAsync(vm1, putFromOneVm(firstKey + 1 * delta, firstKey + 2 * delta, firstRegion, lastRegion));
+    invokeAsync(vm2, putFromOneVm(firstKey + 2 * delta, firstKey + 3 * delta, firstRegion, lastRegion));
+    invokeAsync(vm3, putFromOneVm(firstKey + 3 * delta, lastKey, firstRegion, lastRegion));
+
+    awaitAllAsyncInvocations();
+    
+    vm0.invoke(validateTotalNumberOfBuckets(regionOne, expectedNumberOfBuckets));
+    vm1.invoke(validateTotalNumberOfBuckets(regionOne, expectedNumberOfBuckets));
+    vm2.invoke(validateTotalNumberOfBuckets(regionOne, expectedNumberOfBuckets));
+    vm3.invoke(validateTotalNumberOfBuckets(regionOne, expectedNumberOfBuckets));
+
+    vm0.invoke(validateTotalNumberOfBuckets(regionTwo, expectedNumberOfBuckets));
+    vm1.invoke(validateTotalNumberOfBuckets(regionTwo, expectedNumberOfBuckets));
+    vm2.invoke(validateTotalNumberOfBuckets(regionTwo, expectedNumberOfBuckets));
+    vm3.invoke(validateTotalNumberOfBuckets(regionTwo, expectedNumberOfBuckets));
   }
-
-  /**
-   * This is to test LOCAL_MAX_MEMORY property 1. create partitione region with scope =
-   * DISTRIBUTED_ACK localMaxMemory = 1MB and redundancy = 0 on all vms 2. do put() operations so
-   * that size of the objects that were put > localMaxMemory of partition region
-   */
-  @Ignore("TODO")
-  @Test
-  public void testLocalMaxMemoryInPartitionedRegion() throws Throwable {
-    Host host = Host.getHost(0);
-    /** creating 4 VMs */
-    createVMs(host);
-
-    /** Prefix will be used for naming the partititon Region */
-    prPrefix = getUniqueName();
-
-    /** these indices represents range of partition regions present in each VM */
-    int startIndexForRegion = 0;
-    int endIndexForRegion = 1;
-    /** Start index for key */
-    // int startIndexForKey = 0;
-    /** End index for key */
-    // int endIndexForKey = 4000000;
-
-    int startIndexForNode = 0;
-    int endIndexForNode = 4;
-    List vmList = addNodeToList(startIndexForNode, endIndexForNode);
-    localMaxMemory = 1;
-    // redundancy = 0;
-    createPartitionRegion(vmList, startIndexForRegion, endIndexForRegion, localMaxMemory,
-        redundancy);
-    // doing put() operation on multiple partition region
-    putForLocalMaxMemoryInMultiplePR(prPrefix + 0);
-
-  }
-
 
   /**
    * Ensure that all buckets can be allocated for a PR with different levels of redundancy. This is
@@ -414,287 +518,116 @@ public class PartitionedRegionBucketCreationDistributionDUnitTest
    */
   @Test
   public void testCompleteBucketAllocation() throws Exception {
-    final String regionName = getUniqueName();
-    final int maxBuckets = 23;
+    invokeInEveryVM(() -> {
+      PartitionAttributesFactory partitionAttributesFactory = new PartitionAttributesFactory();
+      partitionAttributesFactory.setRedundantCopies(0).setLocalMaxMemory(10)
+          .setTotalNumBuckets(23);
 
+      RegionFactory regionFactory = getCache().createRegionFactory(RegionShortcut.PARTITION);
+      regionFactory.setPartitionAttributes(partitionAttributesFactory.create());
 
-    Host host = Host.getHost(0);
-    createVMs(host);
-    Invoke.invokeInEveryVM(new SerializableRunnable("Create PR") {
-      public void run() {
-        getCache().createRegion(regionName, createRegionAttrs(0, 10, maxBuckets));
+      regionFactory.create(regionName);
+    });
 
+    vm0.invoke(() -> {
+      Cache cache = getCache();
+      Region region = cache.getRegion(regionName);
+      // create all the buckets
+      for (int i = 0; i < numberOfBuckets; i++) {
+        region.put(i, "value-" + i);
       }
     });
 
-    this.vm[0].invoke(new SerializableRunnable("Create keys") {
-      public void run() {
-        Cache c = getCache();
-        PartitionedRegion r = (PartitionedRegion) c.getRegion(regionName);
-        int i = 0;
-        // Create all the buckets
-        for (;;) {
-          r.put(new Integer(i), "v-" + Integer.toString(i));
-          i++;
-          if (((i % 10) == 0) && r.getRegionAdvisor().getBucketSet().size() >= maxBuckets) {
-            break;
-          }
-        }
-      }
-    });
-
-    // final int bucketPerHost = (int) Math.ceil(((double) maxBuckets / Host.getHostCount()));
-
-    // invokeInEveryVM(new SerializableRunnable("") {
-    //
-    // }
-
-  }
-
-  /**
-   * Added for defect #47181. Use below combination to reproduce the issue: mcast-port = 0 Locators
-   * should be empty enforce-unique-host = true redundancy-zone = "zone"
-   */
-  @Test
-  public void testEnforceUniqueHostForLonerDistributedSystem() {
-    Cache myCache = createLonerCacheWithEnforceUniqueHost();
-    try {
-      AttributesFactory attr = new AttributesFactory();
-      PartitionAttributesFactory paf = new PartitionAttributesFactory();
-      PartitionAttributes prAttr = paf.create();
-      attr.setPartitionAttributes(prAttr);
-      RegionAttributes regionAttribs = attr.create();
-      Region region = myCache.createRegion("PR1", regionAttribs);
-
-      for (int i = 0; i < 113; i++) {
-        region.put("Key_" + i, new Integer(i));
-      }
-      // verify region size
-      assertEquals(113, region.size());
-    } finally {
-      myCache.close();
-      myCache.getDistributedSystem().disconnect();
-    }
-  }
-
-  /**
-   * Creates the <code>Cache</code> for this test that is not connected to other members.
-   *
-   * <p>
-   * Used by test {@link #testEnforceUniqueHostForLonerDistributedSystem()}. Moved from
-   * DistributedTestCase to this test is the exclusive caller.
-   *
-   * <p>
-   * Added specifically to test scenario of defect #47181.
-   */
-  private Cache createLonerCacheWithEnforceUniqueHost() {
-    Cache myCache = null;
-    try {
-      System.setProperty(DistributionConfig.GEMFIRE_PREFIX + "DISABLE_DISCONNECT_DS_ON_CACHE_CLOSE",
-          "true");
-      myCache = CacheFactory.create(getLonerSystemWithEnforceUniqueHost());
-    } catch (CacheExistsException e) {
-      Assert.fail("the cache already exists", e);
-
-    } catch (RuntimeException ex) {
-      throw ex;
-
-    } catch (Exception ex) {
-      Assert.fail("Checked exception while initializing cache??", ex);
-    } finally {
-      System.clearProperty(
-          DistributionConfig.GEMFIRE_PREFIX + "DISABLE_DISCONNECT_DS_ON_CACHE_CLOSE");
-    }
-    return myCache;
-  }
-
-  /**
-   * Returns a loner distributed system in combination with enforceUniqueHost and redundancyZone
-   * properties.
-   *
-   * <p>
-   * Used by test {@link #testEnforceUniqueHostForLonerDistributedSystem()}. Moved from
-   * DistributedTestCase to this test is the exclusive caller.
-   *
-   * <p>
-   * Added specifically to test scenario of defect #47181.
-   */
-  private InternalDistributedSystem getLonerSystemWithEnforceUniqueHost() {
-    Properties props = getDistributedSystemProperties();
-    props.put(MCAST_PORT, "0");
-    props.put(LOCATORS, "");
-    props.put(ENFORCE_UNIQUE_HOST, "true");
-    props.put(REDUNDANCY_ZONE, "zone1");
-    return getSystem(props);
-  }
-
-  /**
-   * This function performs destroy(key) operations in multiple Partiton Regions. The range of keys
-   * to be destroyed is from 100 to 200. Each Vm destroys different set of the keys.
-   *
-   * @param startIndexForRegion
-   * @param endIndexForRegion
-   * @param startIndexForDestroy
-   * @param endIndexForDestroy
-   * @throws Throwable
-   */
-  private void destroyInMultiplePartitionedRegion(int startIndexForRegion, int endIndexForRegion,
-      int startIndexForDestroy, int endIndexForDestroy) throws Throwable {
-    prPrefix = "testMemoryOfPartitionRegion";
-    int AsyncInvocationArrSize = 4;
-    AsyncInvocation[] async = new AsyncInvocation[AsyncInvocationArrSize];
-    int delta = (endIndexForDestroy - startIndexForDestroy) / 4;
-    async[0] = vm[0].invokeAsync(destroyInMultiplePartitionRegion(prPrefix, startIndexForDestroy,
-        startIndexForDestroy + 1 * delta, startIndexForRegion, endIndexForRegion));
-    async[1] = vm[1]
-        .invokeAsync(destroyInMultiplePartitionRegion(prPrefix, startIndexForDestroy + 1 * delta,
-            startIndexForDestroy + 2 * delta, startIndexForRegion, endIndexForRegion));
-    async[2] = vm[2]
-        .invokeAsync(destroyInMultiplePartitionRegion(prPrefix, startIndexForDestroy + 2 * delta,
-            startIndexForDestroy + 3 * delta, startIndexForRegion, endIndexForRegion));
-    async[3] = vm[3]
-        .invokeAsync(destroyInMultiplePartitionRegion(prPrefix, startIndexForDestroy + 3 * delta,
-            endIndexForDestroy, startIndexForRegion, endIndexForRegion));
-
-    /** main thread is waiting for the other threads to complete */
-    for (int count = 0; count < AsyncInvocationArrSize; count++) {
-      ThreadUtils.join(async[count], 30 * 1000);
-    }
-
-    for (int count = 0; count < AsyncInvocationArrSize; count++) {
-      if (async[count].exceptionOccurred()) {
-        Assert.fail("Exception during " + count, async[count].getException());
-      }
-    }
-  }
-
-  /**
-   * This function performs destroy(key) operations in multiple Partiton Regions. The range of keys
-   * to be destroyed is from 100 to 200. Each Vm destroys different set of the keys.
-   *
-   * @param startIndexForRegion
-   * @param endIndexForRegion
-   * @param startIndexForInvalidate
-   * @param endIndexForInvalidate
-   */
-  private void invalidateInMultiplePartitionedRegion(int startIndexForRegion, int endIndexForRegion,
-      int startIndexForInvalidate, int endIndexForInvalidate) throws Throwable {
-    prPrefix = "testMemoryOfPartitionRegion";
-    int AsyncInvocationArrSize = 4;
-    AsyncInvocation[] async = new AsyncInvocation[AsyncInvocationArrSize];
-    int delta = (endIndexForInvalidate - startIndexForInvalidate) / 4;
-    async[0] =
-        vm[0].invokeAsync(invalidatesInMultiplePartitionRegion(prPrefix, startIndexForInvalidate,
-            startIndexForInvalidate + 1 * delta, startIndexForRegion, endIndexForRegion));
-    async[1] = vm[1].invokeAsync(
-        invalidatesInMultiplePartitionRegion(prPrefix, startIndexForInvalidate + 1 * delta,
-            startIndexForInvalidate + 2 * delta, startIndexForRegion, endIndexForRegion));
-    async[2] = vm[2].invokeAsync(
-        invalidatesInMultiplePartitionRegion(prPrefix, startIndexForInvalidate + 2 * delta,
-            startIndexForInvalidate + 3 * delta, startIndexForRegion, endIndexForRegion));
-    async[3] = vm[3].invokeAsync(
-        invalidatesInMultiplePartitionRegion(prPrefix, startIndexForInvalidate + 3 * delta,
-            endIndexForInvalidate, startIndexForRegion, endIndexForRegion));
-
-    /** main thread is waiting for the other threads to complete */
-    for (int count = 0; count < AsyncInvocationArrSize; count++) {
-      ThreadUtils.join(async[count], 30 * 1000);
-    }
-    for (int count = 0; count < AsyncInvocationArrSize; count++) {
-      if (async[count].exceptionOccurred()) {
-        Assert.fail("Exception during " + count, async[count].getException());
-      }
-    }
+    // TODO: there is no validation!!
   }
 
   /**
    * This function performs put() operations in multiple Partition Regions. Range of the keys which
-   * are put is startIndexForKey to endIndexForKey. Each Vm puts different set of keys.
+   * are put is firstKey to lastKey. Each Vm puts different set of keys.
    */
-  private void putInMultiplePartitionedRegionFrom3Nodes(int startIndexForRegion,
-      int endIndexForRegion, int startIndexForKey, int endIndexForKey) throws Throwable {
-    int AsyncInvocationArrSize = 3;
-    AsyncInvocation[] async = new AsyncInvocation[AsyncInvocationArrSize];
-    int delta = (endIndexForKey - startIndexForKey) / 3;
+  private void putInMultiplePartitionedRegionFrom3Nodes(int firstRegion,
+      int lastRegion, int firstKey, int lastKey)
+      throws ExecutionException, InterruptedException {
 
-    async[0] = vm[0].invokeAsync(putInMultiplePartitionRegion(prPrefix, startIndexForKey,
-        startIndexForKey + 1 * delta, startIndexForRegion, endIndexForRegion));
-    async[1] =
-        vm[1].invokeAsync(putInMultiplePartitionRegion(prPrefix, startIndexForKey + 1 * delta,
-            startIndexForKey + 2 * delta, startIndexForRegion, endIndexForRegion));
-    async[2] = vm[2].invokeAsync(putInMultiplePartitionRegion(prPrefix,
-        startIndexForKey + 2 * delta, endIndexForKey, startIndexForRegion, endIndexForRegion));
+    int delta = (lastKey - firstKey) / 3;
 
-    /** main thread is waiting for the other threads to complete */
-    for (int count = 0; count < AsyncInvocationArrSize; count++) {
-      ThreadUtils.join(async[count], 30 * 1000);
-    }
+    asyncInvocations.clear();
 
-    for (int count = 0; count < AsyncInvocationArrSize; count++) {
-      if (async[count].exceptionOccurred()) {
-        Assert.fail("exception during" + count, async[count].getException());
-      }
-    }
+    invokeAsync(vm0, putInMultiplePartitionRegion(regionName, firstKey,
+        firstKey + 1 * delta, firstRegion, lastRegion));
+    invokeAsync(vm1, putInMultiplePartitionRegion(regionName, firstKey + 1 * delta,
+            firstKey + 2 * delta, firstRegion, lastRegion));
+    invokeAsync(vm2, putInMultiplePartitionRegion(regionName,
+        firstKey + 2 * delta, lastKey, firstRegion, lastRegion));
+
+    awaitAllAsyncInvocations();
   }
 
   /**
    * This function performs put() operation from the single vm in multiple partition regions.
-   *
-   * @param vm0
-   * @param startIndexForRegion
-   * @param endIndexForRegion
-   * @param startIndexForKey
-   * @param endIndexForKey
    */
+  private void putInMultiplePartitionRegionFromOneVm(final VM vm, final int firstRegion,
+      final int lastRegion, final long firstKey, final long lastKey)
+      throws ExecutionException, InterruptedException {
 
-  private void putInMultiplePartitionRegionFromOneVm(VM vm0, final int startIndexForRegion,
-      final int endIndexForRegion, final long startIndexForKey, final long endIndexForKey)
-      throws Throwable {
-    int AsyncInvocationArrSize = 3;
-    AsyncInvocation[] async = new AsyncInvocation[AsyncInvocationArrSize];
-    async[0] = vm0.invokeAsync(
-        putFromOneVm(startIndexForKey, endIndexForKey, startIndexForRegion, endIndexForRegion));
-    async[1] = vm0.invokeAsync(putFromOneVm(startIndexForKey + totalBucketNumProperty,
-        endIndexForKey + totalBucketNumProperty, startIndexForRegion, endIndexForRegion));
-    async[2] = vm0.invokeAsync(putFromOneVm(startIndexForKey + 2 * totalBucketNumProperty,
-        endIndexForKey + 2 * totalBucketNumProperty, startIndexForRegion, endIndexForRegion));
+    asyncInvocations.clear();
 
-    /** main thread is waiting for the other threads to complete */
-    for (int count = 0; count < AsyncInvocationArrSize; count++) {
-      ThreadUtils.join(async[count], 30 * 1000);
-    }
+    invokeAsync(vm, putFromOneVm(firstKey, lastKey, firstRegion, lastRegion));
+    invokeAsync(vm, putFromOneVm(firstKey + numberOfBuckets,
+        lastKey + numberOfBuckets, firstRegion, lastRegion));
+    invokeAsync(vm, putFromOneVm(firstKey + 2 * numberOfBuckets,
+        lastKey + 2 * numberOfBuckets, firstRegion, lastRegion));
 
-    for (int count = 0; count < AsyncInvocationArrSize; count++) {
-      if (async[count].exceptionOccurred()) {
-        Assert.fail("exception during " + count, async[count].getException());
+    awaitAllAsyncInvocations();
+  }
+
+  private void putInMultiplePartitionRegionFromOneVm(final VM vm, final String regionName, final int firstKey, final int lastKey)
+      throws ExecutionException, InterruptedException {
+
+    asyncInvocations.clear();
+
+    invokeAsync(vm, putFromOneVm(regionName, firstKey, lastKey));
+    invokeAsync(vm, putFromOneVm(regionName, firstKey + numberOfBuckets, lastKey + numberOfBuckets));
+    invokeAsync(vm, putFromOneVm(regionName, firstKey + 2 * numberOfBuckets, lastKey + 2 * numberOfBuckets));
+
+    awaitAllAsyncInvocations();
+  }
+
+  private CacheSerializableRunnable putFromOneVm(final String regionName, final int firstKey,
+                                                 final int lastKey) {
+
+    CacheSerializableRunnable putFromVm = new CacheSerializableRunnable("putFromOneVm") {
+
+      @Override
+      public void run2() {
+        Cache cache = getCache();
+          Region region = cache.getRegion(Region.SEPARATOR + regionName);
+          for (int i = firstKey; i < lastKey; i++) {
+            region.put(i, regionName + i);
+          }
       }
-    }
+    };
+    return putFromVm;
   }
 
   /**
    * This function performs put() in multiple partition regions for the given node.
-   *
-   * @param startIndexForKey
-   * @param endIndexForKey
-   * @param startIndexForRegion
-   * @param endIndexForRegion
-   * @return
    */
-  private CacheSerializableRunnable putFromOneVm(final long startIndexForKey,
-      final long endIndexForKey, final int startIndexForRegion, final int endIndexForRegion) {
+  private CacheSerializableRunnable putFromOneVm(final long firstKey,
+      final long lastKey, final int firstRegion, final int lastRegion) {
+
     CacheSerializableRunnable putFromVm = new CacheSerializableRunnable("putFromOneVm") {
 
-      String innerPrPrefix = prPrefix;
-
+      @Override
       public void run2() {
         Cache cache = getCache();
-        for (int i = startIndexForRegion; i < endIndexForRegion; i++) {
+        for (int i = firstRegion; i < lastRegion; i++) {
           PartitionedRegion pr =
-              (PartitionedRegion) cache.getRegion(Region.SEPARATOR + innerPrPrefix + (i));
+              (PartitionedRegion) cache.getRegion(Region.SEPARATOR + regionName + (i));
           assertNotNull(pr);
-          for (long k = startIndexForKey; k < endIndexForKey; k++) {
+          for (long k = firstKey; k < lastKey; k++) {
             Long key = new Long(k);
-            pr.put(key, innerPrPrefix + k);
+            pr.put(key, regionName + k);
           }
         }
       }
@@ -702,211 +635,167 @@ public class PartitionedRegionBucketCreationDistributionDUnitTest
     return putFromVm;
   }
 
-  /**
-   * This function performs put() operations in multiple Partition Regions. Range of the keys which
-   * are put is startIndexForKey to endIndexForKey. Each Vm puts different set of keys.
-   */
-  private void putInMultiplePartitionedRegion(int startIndexForRegion, int endIndexForRegion,
-      int startIndexForKey, int endIndexForKey) throws Throwable {
-    int AsyncInvocationArrSize = 4;
-    AsyncInvocation[] async = new AsyncInvocation[AsyncInvocationArrSize];
-    int delta = (endIndexForKey - startIndexForKey) / 4;
-    async[0] = vm[0].invokeAsync(putInMultiplePartitionRegion(prPrefix, startIndexForKey,
-        startIndexForKey + 1 * delta, startIndexForRegion, endIndexForRegion));
-    async[1] =
-        vm[1].invokeAsync(putInMultiplePartitionRegion(prPrefix, startIndexForKey + 1 * delta,
-            startIndexForKey + 2 * delta, startIndexForRegion, endIndexForRegion));
-    async[2] =
-        vm[2].invokeAsync(putInMultiplePartitionRegion(prPrefix, startIndexForKey + 2 * delta,
-            startIndexForKey + 3 * delta, startIndexForRegion, endIndexForRegion));
-    async[3] = vm[3].invokeAsync(putInMultiplePartitionRegion(prPrefix,
-        startIndexForKey + 3 * delta, endIndexForKey, startIndexForRegion, endIndexForRegion));
+  private CacheSerializableRunnable putFromOneVm(final String regionName, final long firstKey,
+                                                 final long lastKey) {
 
-    /** main thread is waiting for the other threads to complete */
-    for (int count = 0; count < AsyncInvocationArrSize; count++) {
-      ThreadUtils.join(async[count], 30 * 1000);
-    }
+    CacheSerializableRunnable putFromVm = new CacheSerializableRunnable("putFromOneVm") {
 
-    for (int count = 0; count < AsyncInvocationArrSize; count++) {
-      if (async[count].exceptionOccurred()) {
-        Assert.fail("exception during " + count, async[count].getException());
+      @Override
+      public void run2() {
+        Cache cache = getCache();
+          PartitionedRegion pr =
+              (PartitionedRegion) cache.getRegion(Region.SEPARATOR + regionName);
+          assertNotNull(pr);
+          for (long k = firstKey; k < lastKey; k++) {
+            Long key = new Long(k);
+            pr.put(key, regionName + k);
+          }
       }
-    }
+    };
+    return putFromVm;
   }
 
   /**
    * This function performs put() operations in multiple Partition Regions. Range of the keys which
-   * are put is startIndexForKey to edIndexForKey. Each Vm puts different set of keys
+   * are put is firstKey to lastKey. Each Vm puts different set of keys.
    */
-  private void putInMultiplePartitionedRegionFromAllVms(int startIndexForRegion,
-      int endIndexForRegion, long startIndexForKey, long endIndexForKey) throws Throwable {
-    int AsyncInvocationArrSize = 8;
-    AsyncInvocation[] async = new AsyncInvocation[AsyncInvocationArrSize];
-    long delta = (endIndexForKey - startIndexForKey) / 4;
-    async[0] = vm[0].invokeAsync(putFromOneVm(startIndexForKey, startIndexForKey + 1 * delta,
-        startIndexForRegion, endIndexForRegion));
-    async[1] = vm[1].invokeAsync(putFromOneVm(startIndexForKey + 1 * delta,
-        startIndexForKey + 2 * delta, startIndexForRegion, endIndexForRegion));
-    async[2] = vm[2].invokeAsync(putFromOneVm(startIndexForKey + 2 * delta,
-        startIndexForKey + 3 * delta, startIndexForRegion, endIndexForRegion));
-    async[3] = vm[3].invokeAsync(putFromOneVm(startIndexForKey + 3 * delta, endIndexForKey,
-        startIndexForRegion, endIndexForRegion));
+  private void putInMultiplePartitionedRegion(int firstRegion, int lastRegion,
+      int firstKey, int lastKey) throws ExecutionException, InterruptedException {
 
-    startIndexForKey += totalBucketNumProperty;
-    endIndexForKey += totalBucketNumProperty;
-    delta = (endIndexForKey - startIndexForKey) / 4;
-    async[4] = vm[0].invokeAsync(putFromOneVm(startIndexForKey, startIndexForKey + 1 * delta,
-        startIndexForRegion, endIndexForRegion));
-    async[5] = vm[1].invokeAsync(putFromOneVm(startIndexForKey + 1 * delta,
-        startIndexForKey + 2 * delta, startIndexForRegion, endIndexForRegion));
-    async[6] = vm[2].invokeAsync(putFromOneVm(startIndexForKey + 2 * delta,
-        startIndexForKey + 3 * delta, startIndexForRegion, endIndexForRegion));
-    async[7] = vm[3].invokeAsync(putFromOneVm(startIndexForKey + 3 * delta, endIndexForKey,
-        startIndexForRegion, endIndexForRegion));
+    int delta = (lastKey - firstKey) / 4;
 
-    /** main thread is waiting for the other threads to complete */
-    for (int count = 0; count < AsyncInvocationArrSize; count++) {
-      ThreadUtils.join(async[count], 30 * 1000);
-    }
+    asyncInvocations.clear();
 
-    for (int count = 0; count < AsyncInvocationArrSize; count++) {
-      if (async[count].exceptionOccurred()) {
-        Assert.fail("exception during " + count, async[count].getException());
-      }
-    }
+    invokeAsync(vm0, putInMultiplePartitionRegion(regionName, firstKey,
+        firstKey + 1 * delta, firstRegion, lastRegion));
+    invokeAsync(vm1, putInMultiplePartitionRegion(regionName, firstKey + 1 * delta,
+            firstKey + 2 * delta, firstRegion, lastRegion));
+    invokeAsync(vm2, putInMultiplePartitionRegion(regionName, firstKey + 2 * delta,
+            firstKey + 3 * delta, firstRegion, lastRegion));
+    invokeAsync(vm3, putInMultiplePartitionRegion(regionName,
+        firstKey + 3 * delta, lastKey, firstRegion, lastRegion));
+
+    awaitAllAsyncInvocations();
+  }
+
+  private void putInMultiplePartitionedRegion(final String regionName, final int firstKey, final int lastKey) throws ExecutionException, InterruptedException {
+
+    int delta = (lastKey - firstKey) / 4;
+
+    asyncInvocations.clear();
+
+    invokeAsync(vm0, putInMultiplePartitionRegion(regionName, firstKey, firstKey + 1 * delta));
+    invokeAsync(vm1, putInMultiplePartitionRegion(regionName, firstKey + 1 * delta, firstKey + 2 * delta));
+    invokeAsync(vm2, putInMultiplePartitionRegion(regionName, firstKey + 2 * delta, firstKey + 3 * delta));
+    invokeAsync(vm3, putInMultiplePartitionRegion(regionName, firstKey + 3 * delta, lastKey));
+
+    awaitAllAsyncInvocations();
   }
 
   /**
-   * This function performs validation of bucket2Node region of multiple partition regions on 4 VMs.
+   * This function performs put() operations in multiple Partition Regions. Range of the keys which
+   * are put is firstKey to edIndexForKey. Each Vm puts different set of keys
    */
-  private void validateBucket2NodeBeforePutInMultiplePartitionedRegion(int startIndexForRegion,
-      int endIndexForRegion) throws Throwable {
-    int AsyncInvocationArrSize = 4;
-    AsyncInvocation[] async = new AsyncInvocation[AsyncInvocationArrSize];
-    async[0] =
-        vm[0].invokeAsync(validateBucket2NodeBeforePut(startIndexForRegion, endIndexForRegion));
-    async[1] =
-        vm[1].invokeAsync(validateBucket2NodeBeforePut(startIndexForRegion, endIndexForRegion));
-    async[2] =
-        vm[2].invokeAsync(validateBucket2NodeBeforePut(startIndexForRegion, endIndexForRegion));
-    async[3] =
-        vm[3].invokeAsync(validateBucket2NodeBeforePut(startIndexForRegion, endIndexForRegion));
-    /** main thread is waiting for the other threads to complete */
-    for (int count = 0; count < AsyncInvocationArrSize; count++) {
-      ThreadUtils.join(async[count], 30 * 1000);
-    }
+  private void putInMultiplePartitionedRegionFromAllVms(int firstRegion,
+      int lastRegion, long firstKey, long lastKey)
+      throws ExecutionException, InterruptedException {
 
-    for (int count = 0; count < AsyncInvocationArrSize; count++) {
-      if (async[count].exceptionOccurred()) {
-        LogWriterUtils.getLogWriter().warning("Failure in async invocation on vm " + vm[count]
-            + " with exception " + async[count].getException());
-        throw async[count].getException();
-        // fail("exception during " + count, async[count].getException());
-      }
-    }
+    asyncInvocations.clear();
+
+    long delta = (lastKey - firstKey) / 4;
+
+    invokeAsync(vm0, putFromOneVm(firstKey, firstKey + 1 * delta,
+        firstRegion, lastRegion));
+    invokeAsync(vm1, putFromOneVm(firstKey + 1 * delta,
+        firstKey + 2 * delta, firstRegion, lastRegion));
+    invokeAsync(vm2, putFromOneVm(firstKey + 2 * delta,
+        firstKey + 3 * delta, firstRegion, lastRegion));
+    invokeAsync(vm3, putFromOneVm(firstKey + 3 * delta, lastKey,
+        firstRegion, lastRegion));
+
+    firstKey += numberOfBuckets;
+    lastKey += numberOfBuckets;
+    delta = (lastKey - firstKey) / 4;
+
+    invokeAsync(vm0, putFromOneVm(firstKey, firstKey + 1 * delta,
+        firstRegion, lastRegion));
+    invokeAsync(vm1, putFromOneVm(firstKey + 1 * delta,
+        firstKey + 2 * delta, firstRegion, lastRegion));
+    invokeAsync(vm2, putFromOneVm(firstKey + 2 * delta,
+        firstKey + 3 * delta, firstRegion, lastRegion));
+    invokeAsync(vm3, putFromOneVm(firstKey + 3 * delta, lastKey,
+        firstRegion, lastRegion));
+
+    awaitAllAsyncInvocations();
   }
 
   /**
    * This function performs validation of bucket regions of multiple partition regions on 4 VMs.
    */
-  private void validateBucketsAfterPutInMultiplePartitionRegion(final int startIndexForRegion,
-      final int endIndexForRegion) throws Throwable {
-    int AsyncInvocationArrSize = 8;
-    AsyncInvocation[] async = new AsyncInvocation[AsyncInvocationArrSize];
+  private void validateBucketsAfterPutInMultiplePartitionRegion(final int firstRegion,
+      final int lastRegion) throws ExecutionException, InterruptedException {
+
     // validation of bucket regions creation
-    async[0] =
-        vm[0].invokeAsync(validateBucketCreationAfterPut(startIndexForRegion, endIndexForRegion));
-    async[1] =
-        vm[1].invokeAsync(validateBucketCreationAfterPut(startIndexForRegion, endIndexForRegion));
-    async[2] =
-        vm[2].invokeAsync(validateBucketCreationAfterPut(startIndexForRegion, endIndexForRegion));
-    async[3] = vm[3].invokeAsync(
-        validateBucketCreationAfterPutForNode3(startIndexForRegion, endIndexForRegion));
+    asyncInvocations.clear();
 
-    /** main thread is waiting for the other threads to complete */
-    for (int count = 0; count < 4; count++) {
-      ThreadUtils.join(async[count], 30 * 1000);
-    }
+    invokeAsync(vm0, validateBucketCreationAfterPut(firstRegion, lastRegion));
+    invokeAsync(vm1, validateBucketCreationAfterPut(firstRegion, lastRegion));
+    invokeAsync(vm2, validateBucketCreationAfterPut(firstRegion, lastRegion));
+    invokeAsync(vm3, validateBucketCreationAfterPutForNode3(firstRegion, lastRegion));
 
-    for (int count = 0; count < 4; count++) {
-      if (async[count].exceptionOccurred()) {
-        Assert.fail("got exception on " + count, async[count].getException());
-      }
-    }
+    awaitAllAsyncInvocations();
 
+  }
+
+  private void validateBucketScopesAfterPutInMultiplePartitionRegion(final int firstRegion,
+                                                                final int lastRegion) throws ExecutionException, InterruptedException {
     // validating scope of buckets
-    async[4] =
-        vm[0].invokeAsync(validateBucketScopeAfterPut(startIndexForRegion, endIndexForRegion));
-    async[5] =
-        vm[1].invokeAsync(validateBucketScopeAfterPut(startIndexForRegion, endIndexForRegion));
-    async[6] =
-        vm[2].invokeAsync(validateBucketScopeAfterPut(startIndexForRegion, endIndexForRegion));
-    async[7] = vm[3].invokeAsync(
-        validateBucketCreationAfterPutForNode3(startIndexForRegion, endIndexForRegion));
+    asyncInvocations.clear();
 
-    /** main thread is waiting for the other threads to complete */
-    for (int count = 4; count < AsyncInvocationArrSize; count++) {
-      ThreadUtils.join(async[count], 30 * 1000);
-    }
+    invokeAsync(vm0, validateBucketScopeAfterPut(firstRegion, lastRegion));
+    invokeAsync(vm1, validateBucketScopeAfterPut(firstRegion, lastRegion));
+    invokeAsync(vm2, validateBucketScopeAfterPut(firstRegion, lastRegion));
+    invokeAsync(vm3, validateBucketCreationAfterPutForNode3(firstRegion, lastRegion));
 
-    for (int count = 4; count < AsyncInvocationArrSize; count++) {
-      if (async[count].exceptionOccurred()) {
-        LogWriterUtils.getLogWriter().warning("Failure of async invocation on VM " + this.vm[count]
-            + " exception thrown " + async[count].getException());
-        throw async[count].getException();
-      }
-    }
-
+    awaitAllAsyncInvocations();
   }
 
   /**
    * This function performs validation of bucket regions of multiple partition regions on 4 VMs.
    */
-  private void validateBucketsDistributionInMultiplePartitionRegion(final int startIndexForRegion,
-      final int endIndexForRegion, int noBucketsExpectedOnEachNode) throws Throwable {
-    int AsyncInvocationArrSize = 4;
-    AsyncInvocation[] async = new AsyncInvocation[AsyncInvocationArrSize];
-    async[0] = vm[0].invokeAsync(validateBucketsDistribution(startIndexForRegion, endIndexForRegion,
+  private void validateBucketsDistributionInMultiplePartitionRegion(final int firstRegion,
+      final int lastRegion, int noBucketsExpectedOnEachNode)
+      throws ExecutionException, InterruptedException {
+
+    asyncInvocations.clear();
+
+    invokeAsync(vm0, validateBucketsDistribution(firstRegion, lastRegion,
         noBucketsExpectedOnEachNode));
-    async[1] = vm[1].invokeAsync(validateBucketsDistribution(startIndexForRegion, endIndexForRegion,
+    invokeAsync(vm1, validateBucketsDistribution(firstRegion, lastRegion,
         noBucketsExpectedOnEachNode));
-    async[2] = vm[2].invokeAsync(validateBucketsDistribution(startIndexForRegion, endIndexForRegion,
+    invokeAsync(vm2, validateBucketsDistribution(firstRegion, lastRegion,
         noBucketsExpectedOnEachNode));
-    async[3] = vm[3].invokeAsync(validateBucketsDistribution(startIndexForRegion, endIndexForRegion,
+    invokeAsync(vm3, validateBucketsDistribution(firstRegion, lastRegion,
         noBucketsExpectedOnEachNode));
 
-    /** main thread is waiting for the other threads to complete */
-    for (int count = 0; count < AsyncInvocationArrSize; count++) {
-      ThreadUtils.join(async[count], 30 * 1000);
-    }
-
-    for (int count = 0; count < AsyncInvocationArrSize; count++) {
-      if (async[count].exceptionOccurred()) {
-        Assert.fail("Validation of bucket distribution failed on " + count,
-            async[count].getException());
-      }
-    }
+    awaitAllAsyncInvocations();
   }
 
   /**
    * This function is used for the validation of bucket on all the region.
    */
-  private void validateBucketsOnAllNodes(final int startIndexForRegion,
-      final int endIndexForRegion) {
+  private void validateBucketsOnAllNodes(final int firstRegion,
+      final int lastRegion) {
     CacheSerializableRunnable validateAllNodes =
         new CacheSerializableRunnable("validateBucketsOnAllNodes") {
-          int innerStartIndexForRegion = startIndexForRegion;
 
-          int innerEndIndexForRegion = endIndexForRegion;
-
-          String innerPrPrefix = prPrefix;
-
+          @Override
           public void run2() {
             Cache cache = getCache();
             int threshold = 0;
-            for (int i = innerStartIndexForRegion; i < innerEndIndexForRegion; i++) {
+            for (int i = firstRegion; i < lastRegion; i++) {
               PartitionedRegion pr =
-                  (PartitionedRegion) cache.getRegion(Region.SEPARATOR + innerPrPrefix + i);
+                  (PartitionedRegion) cache.getRegion(Region.SEPARATOR + regionName + i);
               assertNotNull(pr);
               assertNotNull(pr.getDataStore());
               assertTrue(pr.getDataStore().localBucket2RegionMap.size() > threshold);
@@ -914,97 +803,82 @@ public class PartitionedRegionBucketCreationDistributionDUnitTest
           }
         };
 
-    vm[0].invoke(validateAllNodes);
-    vm[1].invoke(validateAllNodes);
-    vm[2].invoke(validateAllNodes);
-    vm[3].invoke(validateAllNodes);
+    vm0.invoke(validateAllNodes);
+    vm1.invoke(validateAllNodes);
+    vm2.invoke(validateAllNodes);
+    vm3.invoke(validateAllNodes);
   }
 
-  private void validateRedundancy(VM vm0, final int startIndexForRegion,
-      final int endIndexForRegion, final int redundancyManageFlag) {
-    vm0.invoke(new CacheSerializableRunnable("validateRedundancy") {
-      int innerStartIndexForRegion = startIndexForRegion;
+  private void validateBuckets(final VM vm, final int firstRegion,
+                                         final int lastRegion) {
+    vm.invoke(new CacheSerializableRunnable("validateBucketsOnAllNodes") {
 
-      int innerEndIndexForRegion = endIndexForRegion;
-
-      String innerPrPrefix = prPrefix;
-
+      @Override
       public void run2() {
         Cache cache = getCache();
-        for (int i = innerStartIndexForRegion; i < endIndexForRegion; i++) {
+        int threshold = 0;
+        for (int i = firstRegion; i < lastRegion; i++) {
           PartitionedRegion pr =
-              (PartitionedRegion) cache.getRegion(Region.SEPARATOR + innerPrPrefix + i);
+              (PartitionedRegion) cache.getRegion(Region.SEPARATOR + regionName + i);
           assertNotNull(pr);
-          Set bucketIds = pr.getDataStore().localBucket2RegionMap.keySet();
-          Iterator buckteIdItr = bucketIds.iterator();
-          while (buckteIdItr.hasNext()) {
-            Integer bucketId = (Integer) buckteIdItr.next();
-
-
-
-            if (redundancyManageFlag == 0) {
-              // checking redundancy
-              if (pr.getRegionAdvisor().getBucketRedundancy(bucketId.intValue()) >= redundancy) {
-                fail("Redundancy satisfied for the partition region " + pr.getName());
-              }
-            } else {
-              if (pr.getRegionAdvisor().getBucketRedundancy(bucketId.intValue()) < redundancy) {
-                fail("Redundancy not satisfied for the partition region " + pr.getName());
-              }
-            }
-
-
-          }
-          if (redundancyManageFlag == 0) {
-            LogWriterUtils.getLogWriter()
-                .info("validateRedundancy() - Redundancy not satisfied for the partition region  : "
-                    + pr.getName());
-          } else {
-            LogWriterUtils.getLogWriter()
-                .info("validateRedundancy() - Redundancy satisfied for the partition region  : "
-                    + pr.getName());
-          }
+          assertNotNull(pr.getDataStore());
+          assertTrue(pr.getDataStore().localBucket2RegionMap.size() > threshold);
         }
       }
     });
   }
 
+  private void validateBuckets(final VM vm, final String regionName) {
+    vm.invoke(new CacheSerializableRunnable("validateBucketsOnAllNodes") {
+
+      @Override
+      public void run2() {
+        Cache cache = getCache();
+        int threshold = 0;
+        PartitionedRegion region =
+            (PartitionedRegion) cache.getRegion(Region.SEPARATOR + regionName);
+        assertNotNull(region.getDataStore());
+        assertTrue(region.getDataStore().localBucket2RegionMap.size() > threshold);
+      }
+    });
+  }
+
+  private void validateBuckets(final String regionName) {
+    Cache cache = getCache();
+    int threshold = 0;
+    PartitionedRegion region =
+        (PartitionedRegion) cache.getRegion(Region.SEPARATOR + regionName);
+    assertNotNull(region.getDataStore());
+    assertTrue(region.getDataStore().localBucket2RegionMap.size() > threshold);
+  }
+
   /**
-   * This functions performs following validations on the partitions regiions <br>
-   * (1) Size of bucket2Node region should be > 0.</br>
-   * <br>
-   * (3) In case of the partition regions with redundancy > 0 scope of the bucket regions should be
-   * scope of the partition regions.</br>
-   * <br>
-   * (4) In case of the partition regions with redundancy > 0 no two bucket regions with same
-   * bucketId should be generated on the same node.</br>
+   * This functions performs following validations on the partitions regions
    *
-   * @param startIndexForRegion
-   * @param endIndexForRegion
-   * @return
+   * <p>
+   * (1) Size of bucket2Node region should be > 0.
+   *
+   * <p>
+   * (3) In case of the partition regions with redundancy > 0 scope of the bucket regions should be
+   * scope of the partition regions.
+   *
+   * <p>
+   * (4) In case of the partition regions with redundancy > 0 no two bucket regions with same
+   * bucketId should be generated on the same node.
    */
-  private CacheSerializableRunnable validateBucketCreationAfterPut(final int startIndexForRegion,
-      final int endIndexForRegion) {
+  private CacheSerializableRunnable validateBucketCreationAfterPut(final int firstRegion,
+      final int lastRegion) {
+
     CacheSerializableRunnable validateAfterPut = new CacheSerializableRunnable("validateAfterPut") {
-      int innerStartIndexForRegion = startIndexForRegion;
 
-      int innerEndIndexForRegion = endIndexForRegion;
-
-      String innerPrPrefix = prPrefix;
-
-      int innerMidIndexForRegion =
-          innerStartIndexForRegion + (endIndexForRegion - startIndexForRegion) / 2;
-
-      int innerQuarterIndex =
-          innerStartIndexForRegion + (endIndexForRegion - startIndexForRegion) / 4;
-
+      @Override
       public void run2() {
         Cache cache = getCache();
         Region root = cache.getRegion(PartitionedRegionHelper.PR_ROOT_REGION_NAME);
         assertNotNull("Root regions is null", root);
-        for (int i = innerStartIndexForRegion; i < innerEndIndexForRegion; i++) {
+        for (int i = firstRegion; i < lastRegion; i++) {
           PartitionedRegion pr =
-              (PartitionedRegion) cache.getRegion(Region.SEPARATOR + innerPrPrefix + i);
+              (PartitionedRegion) cache.getRegion(Region.SEPARATOR + regionName + i);
 
           assertTrue(pr.getRegionAdvisor().getBucketSet().size() > 0);
           assertTrue("Size of local region map should be > 0 for region: " + pr.getFullPath(),
@@ -1030,21 +904,53 @@ public class PartitionedRegionBucketCreationDistributionDUnitTest
     return validateAfterPut;
   }
 
+  private CacheSerializableRunnable validateBucketCreationAfterPut(final String regionName) {
+
+    CacheSerializableRunnable validateAfterPut = new CacheSerializableRunnable("validateAfterPut") {
+
+      @Override
+      public void run2() {
+        Cache cache = getCache();
+        Region root = cache.getRegion(PartitionedRegionHelper.PR_ROOT_REGION_NAME);
+        assertNotNull("Root regions is null", root);
+        PartitionedRegion pr =
+            (PartitionedRegion) cache.getRegion(Region.SEPARATOR + regionName);
+
+        assertTrue(pr.getRegionAdvisor().getBucketSet().size() > 0);
+        assertTrue("Size of local region map should be > 0 for region: " + pr.getFullPath(),
+            pr.getDataStore().localBucket2RegionMap.size() > 0);
+        // taking the buckets which are local to the node and not all the
+        // available buckets.
+        Set bucketIds = pr.getDataStore().localBucket2RegionMap.keySet();
+        Iterator buckteIdItr = bucketIds.iterator();
+        while (buckteIdItr.hasNext()) {
+          Integer key = (Integer) buckteIdItr.next();
+          BucketRegion val = (BucketRegion) pr.getDataStore().localBucket2RegionMap.get(key);
+
+          Region bucketRegion = root.getSubregion(pr.getBucketName(key.intValue()));
+          assertTrue(bucketRegion.getFullPath().equals(val.getFullPath()));
+          // Bucket region should not be null
+          assertNotNull("Bucket region cannot be null", bucketRegion);
+          // Parent region of the bucket region should be root
+          assertEquals("Parent region is not root", root, bucketRegion.getParentRegion());
+        }
+      }
+    };
+    return validateAfterPut;
+  }
+
   private CacheSerializableRunnable validateBucketCreationAfterPutForNode3(
-      final int startIndexForRegion, final int endIndexForRegion) {
+      final int firstRegion, final int lastRegion) {
+
     CacheSerializableRunnable validateAfterPut =
         new CacheSerializableRunnable("validateBucketCreationAfterPutForNode3") {
-          int innerStartIndexForRegion = startIndexForRegion;
 
-          int innerEndIndexForRegion = endIndexForRegion;
-
-          String innerPrPrefix = prPrefix;
-
+          @Override
           public void run2() {
             Cache cache = getCache();
-            for (int i = innerStartIndexForRegion; i < innerEndIndexForRegion; i++) {
+            for (int i = firstRegion; i < lastRegion; i++) {
               PartitionedRegion pr =
-                  (PartitionedRegion) cache.getRegion(Region.SEPARATOR + innerPrPrefix + i);
+                  (PartitionedRegion) cache.getRegion(Region.SEPARATOR + regionName + i);
               assertNotNull("This Partition Region is null " + pr.getName(), pr);
               assertNull("DataStore should be null", pr.getDataStore());
             }
@@ -1053,38 +959,43 @@ public class PartitionedRegionBucketCreationDistributionDUnitTest
     return validateAfterPut;
   }
 
-  private CacheSerializableRunnable validateBucketScopeAfterPut(final int startIndexForRegion,
-      final int endIndexForRegion) {
+  private CacheSerializableRunnable validateBucketCreationAfterPutForNode3(final String regionName) {
+
+    CacheSerializableRunnable validateAfterPut =
+        new CacheSerializableRunnable("validateBucketCreationAfterPutForNode3") {
+
+          @Override
+          public void run2() {
+            Cache cache = getCache();
+            PartitionedRegion pr =
+                (PartitionedRegion) cache.getRegion(Region.SEPARATOR + regionName);
+            assertNotNull("This Partition Region is null " + pr.getName(), pr);
+            assertNull("DataStore should be null", pr.getDataStore());
+          }
+        };
+    return validateAfterPut;
+  }
+
+  private CacheSerializableRunnable validateBucketScopeAfterPut(final int firstRegion,
+      final int lastRegion) {
+
     CacheSerializableRunnable validateAfterPut =
         new CacheSerializableRunnable("validateBucketScopeAfterPut") {
-          int innerStartIndexForRegion = startIndexForRegion;
 
-          int innerEndIndexForRegion = endIndexForRegion;
-
-          String innerPrPrefix = prPrefix;
-
-          int innerMidIndexForRegion =
-              innerStartIndexForRegion + (endIndexForRegion - startIndexForRegion) / 2;
-
-          int innerQuarterIndex =
-              innerStartIndexForRegion + (endIndexForRegion - startIndexForRegion) / 4;
-
+          @Override
           public void run2() {
             Cache cache = getCache();
             Region root = cache.getRegion(PartitionedRegionHelper.PR_ROOT_REGION_NAME);
-            assertNotNull("Root regions is null", root);
-            for (int i = innerStartIndexForRegion; i < innerEndIndexForRegion; i++) {
-              PartitionedRegion pr =
-                  (PartitionedRegion) cache.getRegion(Region.SEPARATOR + innerPrPrefix + i);
 
-              assertTrue(pr.getRegionAdvisor().getBucketSet().size() > 0);
-              // taking the buckets which are local to the node and not all the
-              // available buckets.
-              Set bucketIds = pr.getDataStore().localBucket2RegionMap.keySet();
-              Iterator buckteIdItr = bucketIds.iterator();
-              while (buckteIdItr.hasNext()) {
-                Integer key = (Integer) buckteIdItr.next();
-                Region bucketRegion = root.getSubregion(pr.getBucketName(key.intValue()));
+            for (int i = firstRegion; i < lastRegion; i++) {
+              PartitionedRegion region =
+                  (PartitionedRegion) cache.getRegion(Region.SEPARATOR + regionName + i);
+
+              assertTrue(region.getRegionAdvisor().getBucketSet().size() > 0);
+              // taking the buckets which are local to the node and not all the available buckets.
+              Set <Integer> bucketIds = region.getDataStore().localBucket2RegionMap.keySet();
+              for (Integer key : bucketIds) {
+                Region bucketRegion = root.getSubregion(region.getBucketName(key));
                 assertNotNull("Bucket region cannot be null", bucketRegion);
                 assertEquals(Scope.DISTRIBUTED_ACK, bucketRegion.getAttributes().getScope());
               } // while
@@ -1094,59 +1005,82 @@ public class PartitionedRegionBucketCreationDistributionDUnitTest
     return validateAfterPut;
   }
 
-  /**
-   * <br>
-   * This function validates bucket2Node region of the Partition regiion before any put()
-   * operations.</br>
-   * <br>
-   * It performs following validatioons <br>
-   * (1) bucket2Node Region should not be null.</br>
-   * <br>
-   * (2) Scope of the bucket2Node region should be DISTRIBUTED_ACK.</br>
-   * <br>
-   * (3) Size of bucket2Node region should be 0.</br>
-   * <br>
-   * (4) Parent region of the bucket2Node region shoud be root i.e. region with name "PRRoot".</br>
-   *
-   * @param startIndexForRegion
-   * @param endIndexForRegion
-   * @return
-   */
+  private CacheSerializableRunnable validateBucketScopeAfterPut(final String regionName) {
 
-  private CacheSerializableRunnable validateBucket2NodeBeforePut(final int startIndexForRegion,
-      final int endIndexForRegion) {
+    CacheSerializableRunnable validateAfterPut =
+        new CacheSerializableRunnable("validateBucketScopeAfterPut") {
+
+          @Override
+          public void run2() {
+            Cache cache = getCache();
+            Region root = cache.getRegion(PartitionedRegionHelper.PR_ROOT_REGION_NAME);
+
+            PartitionedRegion region =
+                (PartitionedRegion) cache.getRegion(Region.SEPARATOR + regionName);
+
+            assertTrue(region.getRegionAdvisor().getBucketSet().size() > 0);
+            // taking the buckets which are local to the node and not all the available buckets.
+            Set <Integer> bucketIds = region.getDataStore().localBucket2RegionMap.keySet();
+            for (Integer key : bucketIds) {
+              Region bucketRegion = root.getSubregion(region.getBucketName(key));
+              assertNotNull("Bucket region cannot be null", bucketRegion);
+              assertEquals(Scope.DISTRIBUTED_ACK, bucketRegion.getAttributes().getScope());
+            } // while
+          }
+        };
+    return validateAfterPut;
+  }
+
+  /**
+   * This function validates bucket2Node region of the Partition regiion before any put()
+   * operations.
+   *
+   * <p>
+   * It performs following validations:
+   *
+   * <p>
+   * (1) bucket2Node Region should not be null.
+   *
+   * <p>
+   * (2) Scope of the bucket2Node region should be DISTRIBUTED_ACK.
+   *
+   * <p>
+   * (3) Size of bucket2Node region should be 0.
+   *
+   * <p>
+   * (4) Parent region of the bucket2Node region shoud be root i.e. region with name "PRRoot".
+   */
+  private CacheSerializableRunnable validateBucket2NodeBeforePut(final int firstRegion,
+      final int lastRegion) {
 
     CacheSerializableRunnable validateBucketBeforePut =
         new CacheSerializableRunnable("Bucket2NodeValidation") {
-          int innerStartIndexForRegion = startIndexForRegion;
 
-          int innerEndIndexForRegion = endIndexForRegion;
-
-          String innerPrPrefix = prPrefix;
-
+          @Override
           public void run2() {
             Cache cache = getCache();
             Region root = cache.getRegion(PartitionedRegionHelper.PR_ROOT_REGION_NAME);
             assertNotNull("Root regions is null", root);
-            for (int i = innerStartIndexForRegion; i < innerEndIndexForRegion; i++) {
-              PartitionedRegion pr =
-                  (PartitionedRegion) cache.getRegion(Region.SEPARATOR + innerPrPrefix + i);
-              assertNotNull(pr);
 
-              assertTrue(pr.getRegionAdvisor().getNumProfiles() > 0);
-              assertTrue(pr.getRegionAdvisor().getNumDataStores() > 0);
-              final int bucketSetSize = pr.getRegionAdvisor().getCreatedBucketsCount();
-              LogWriterUtils.getLogWriter().info("BucketSet size " + bucketSetSize);
+            for (int i = firstRegion; i < lastRegion; i++) {
+              PartitionedRegion region =
+                  (PartitionedRegion) cache.getRegion(Region.SEPARATOR + regionName + i);
+              assertNotNull(region);
+
+              assertTrue(region.getRegionAdvisor().getNumProfiles() > 0);
+              assertTrue(region.getRegionAdvisor().getNumDataStores() > 0);
+              int bucketSetSize = region.getRegionAdvisor().getCreatedBucketsCount();
+
               if (bucketSetSize != 0) {
-                Set buckets = pr.getRegionAdvisor().getBucketSet();
+                Set buckets = region.getRegionAdvisor().getBucketSet();
                 Iterator it = buckets.iterator();
                 int numBucketsWithStorage = 0;
                 try {
                   while (true) {
                     Integer bucketId = (Integer) it.next();
-                    pr.getRegionAdvisor().getBucket(bucketId.intValue()).getBucketAdvisor()
+                    region.getRegionAdvisor().getBucket(bucketId.intValue()).getBucketAdvisor()
                         .dumpProfiles("Bucket owners for bucket "
-                            + pr.bucketStringForLogs(bucketId.intValue()));
+                            + region.bucketStringForLogs(bucketId.intValue()));
                     numBucketsWithStorage++;
                   }
                 } catch (NoSuchElementException end) {
@@ -1161,36 +1095,75 @@ public class PartitionedRegionBucketCreationDistributionDUnitTest
     return validateBucketBeforePut;
   }
 
-  private CacheSerializableRunnable validateBucketsDistribution(final int startIndexForRegion,
-      final int endIndexForRegion, final int noBucketsExpectedOnEachNode) {
+  private CacheSerializableRunnable validateBucket2NodeBeforePut(final String regionName) {
+
+    CacheSerializableRunnable validateBucketBeforePut =
+        new CacheSerializableRunnable("Bucket2NodeValidation") {
+
+          @Override
+          public void run2() {
+            Cache cache = getCache();
+            Region root = cache.getRegion(PartitionedRegionHelper.PR_ROOT_REGION_NAME);
+            assertNotNull("Root regions is null", root);
+
+            PartitionedRegion region =
+                (PartitionedRegion) cache.getRegion(Region.SEPARATOR + regionName);
+            assertNotNull(region);
+
+            assertTrue(region.getRegionAdvisor().getNumProfiles() > 0);
+            assertTrue(region.getRegionAdvisor().getNumDataStores() > 0);
+            int bucketSetSize = region.getRegionAdvisor().getCreatedBucketsCount();
+
+            if (bucketSetSize != 0) {
+              Set buckets = region.getRegionAdvisor().getBucketSet();
+              Iterator it = buckets.iterator();
+              int numBucketsWithStorage = 0;
+              try {
+                while (true) {
+                  Integer bucketId = (Integer) it.next();
+                  region.getRegionAdvisor().getBucket(bucketId.intValue()).getBucketAdvisor()
+                      .dumpProfiles("Bucket owners for bucket "
+                          + region.bucketStringForLogs(bucketId.intValue()));
+                  numBucketsWithStorage++;
+                }
+              } catch (NoSuchElementException end) {
+                LogWriterUtils.getLogWriter()
+                    .info("BucketSet iterations " + numBucketsWithStorage);
+              }
+              fail("There should be no buckets assigned");
+            }
+          }
+        };
+    return validateBucketBeforePut;
+  }
+
+  private CacheSerializableRunnable validateBucketsDistribution(final int firstRegion,
+      final int lastRegion, final int numberOfBucketsExpectedOnEachNode) {
+
     CacheSerializableRunnable validateBucketDist =
         new CacheSerializableRunnable("validateBucketsDistribution") {
 
-          String innerPrPrefix = prPrefix;
-
+          @Override
           public void run2() {
             Cache cache = getCache();
-            final Region root = cache.getRegion(PartitionedRegionHelper.PR_ROOT_REGION_NAME);
-            assertNotNull("Root regions is null", root);
-            for (int i = startIndexForRegion; i < endIndexForRegion; i++) {
-              final PartitionedRegion pr =
-                  (PartitionedRegion) cache.getRegion(Region.SEPARATOR + innerPrPrefix + i);
-              assertNotNull("This region can not be null" + pr.getName(), pr);
+            Region root = cache.getRegion(PartitionedRegionHelper.PR_ROOT_REGION_NAME);
 
-              assertNotNull(pr.getDataStore());
-              final int localBSize = pr.getDataStore().getBucketsManaged();
-              LogWriterUtils.getLogWriter()
-                  .info("validateBucketsDistribution() - Number of bukctes for " + pr.getName()
-                      + " : " + localBSize);
+            for (int i = firstRegion; i < lastRegion; i++) {
+              PartitionedRegion region =
+                  (PartitionedRegion) cache.getRegion(Region.SEPARATOR + regionName + i);
 
-              assertTrue("Bucket Distribution for region = " + pr.getFullPath()
-                  + " is not correct for member " + pr.getDistributionManager().getId()
+              assertNotNull(region.getDataStore());
+              int localBSize = region.getDataStore().getBucketsManaged();
+
+              assertTrue("Bucket Distribution for region = " + region.getFullPath()
+                  + " is not correct for member " + region.getDistributionManager().getId()
                   + " existing size " + localBSize + " smaller than expected "
-                  + noBucketsExpectedOnEachNode, localBSize >= noBucketsExpectedOnEachNode);
+                  + numberOfBucketsExpectedOnEachNode, localBSize >= numberOfBucketsExpectedOnEachNode);
 
-              pr.getDataStore().visitBuckets(new BucketVisitor() {
+              region.getDataStore().visitBuckets(new BucketVisitor() {
+                @Override
                 public void visit(Integer bucketId, Region r) {
-                  Region bucketRegion = root.getSubregion(pr.getBucketName(bucketId.intValue()));
+                  Region bucketRegion = root.getSubregion(region.getBucketName(bucketId.intValue()));
                   assertEquals(bucketRegion.getFullPath(), r.getFullPath());
                 }
               });
@@ -1200,85 +1173,98 @@ public class PartitionedRegionBucketCreationDistributionDUnitTest
     return validateBucketDist;
   }
 
-  /** this function creates vms in given host */
-  private void createVMs(Host host) {
-    for (int i = 0; i < 4; i++) {
-      vm[i] = host.getVM(i);
-    }
+  private CacheSerializableRunnable validateBucketsDistribution(final String regionName, final int numberOfBucketsExpectedOnEachNode) {
+
+    CacheSerializableRunnable validateBucketDist =
+        new CacheSerializableRunnable("validateBucketsDistribution") {
+
+          @Override
+          public void run2() {
+            Cache cache = getCache();
+            Region root = cache.getRegion(PartitionedRegionHelper.PR_ROOT_REGION_NAME);
+
+            PartitionedRegion region =
+                (PartitionedRegion) cache.getRegion(Region.SEPARATOR + regionName);
+
+            assertNotNull(region.getDataStore());
+            int localBSize = region.getDataStore().getBucketsManaged();
+
+            assertTrue("Bucket Distribution for region = " + region.getFullPath()
+                + " is not correct for member " + region.getDistributionManager().getId()
+                + " existing size " + localBSize + " smaller than expected "
+                + numberOfBucketsExpectedOnEachNode, localBSize >= numberOfBucketsExpectedOnEachNode);
+
+            region.getDataStore().visitBuckets(new BucketVisitor() {
+              @Override
+              public void visit(Integer bucketId, Region r) {
+                Region bucketRegion = root.getSubregion(region.getBucketName(bucketId.intValue()));
+                assertEquals(bucketRegion.getFullPath(), r.getFullPath());
+              }
+            });
+          }
+        };
+    return validateBucketDist;
   }
 
-  /**
-   * This function createas multiple partition regions on nodes specified in the vmList
-   */
-  private void createPartitionRegion(List vmList, int startIndexForRegion, int endIndexForRegion,
-      int localMaxMemory, int redundancy) {
-    Iterator nodeIterator = vmList.iterator();
-    while (nodeIterator.hasNext()) {
-      VM vm = (VM) nodeIterator.next();
-      vm.invoke(createMultiplePRWithTotalNumBucketPropSet(prPrefix, startIndexForRegion,
-          endIndexForRegion, redundancy, localMaxMemory, 11));
-    }
+  private void createPartitionRegion(final VM vm, final int firstRegion, final int lastRegion,
+                                     final int localMaxMemory, final int redundancy) {
+    vm.invoke(createMultiplePRWithTotalNumBucketPropSet(regionName, firstRegion,
+        lastRegion, redundancy, localMaxMemory, 11));
   }
 
-  /**
-   * This function creates a partition region with TOTAL_BUCKETS_NUM_PROPERTY set to 11.
-   */
-  private void createPRWithTotalNumPropSetList(List vmList, int startIndexForRegion,
-      int endIndexForRegion, int localMaxMemory, int redundancy) {
-    Iterator nodeIterator = vmList.iterator();
-    while (nodeIterator.hasNext()) {
-      VM vm = (VM) nodeIterator.next();
-      vm.invoke(createMultiplePRWithTotalNumBucketPropSet(prPrefix, startIndexForRegion,
-          endIndexForRegion, redundancy, localMaxMemory, 11));
-    }
+  private void createPartitionRegion(final String regionName, final int localMaxMemory, final int redundancy, final int numberOfBuckets) {
+    Cache cache = getCache();
+    cache.createRegion(regionName, createRegionAttrs(redundancy, localMaxMemory, numberOfBuckets));
   }
 
-  CacheSerializableRunnable createMultiplePRWithTotalNumBucketPropSet(final String prPrefix,
-      final int startIndexForRegion, final int endIndexForRegion, final int redundancy,
-      final int localMaxMem, final int numBuckets) {
+  private void createPRWithTotalNumPropSetList(final VM vm, final int firstRegion,
+                                               final int lastRegion, final int localMaxMemory, final int redundancy) {
+    vm.invoke(createMultiplePRWithTotalNumBucketPropSet(regionName, firstRegion,
+        lastRegion, redundancy, localMaxMemory, 11));
+  }
+
+  private CacheSerializableRunnable createMultiplePRWithTotalNumBucketPropSet(final String regionName,
+                                                                              final int firstRegion,
+                                                                              final int lastRegion,
+                                                                              final int redundancy,
+                                                                              final int localMaxMemory,
+                                                                              final int numberOfBuckets) {
     CacheSerializableRunnable createPRWithTotalNumBucketPropSet =
         new CacheSerializableRunnable("createPRWithTotalNumBucketPropSet") {
+
+          @Override
           public void run2() throws CacheException {
             Cache cache = getCache();
-            for (int i = startIndexForRegion; i < endIndexForRegion; i++) {
-              cache.createRegion(prPrefix + i,
-                  createRegionAttrs(redundancy, localMaxMem, numBuckets));
+            for (int i = firstRegion; i < lastRegion; i++) {
+              cache.createRegion(regionName + i,
+                  createRegionAttrs(redundancy, localMaxMemory, numberOfBuckets));
             }
-            LogWriterUtils.getLogWriter().info(
-                "createMultiplePartitionRegion() - Partition Regions Successfully Completed ");
           }
         };
     return createPRWithTotalNumBucketPropSet;
   }
 
-  private void validateTotalNumBuckets(String prPrefix, List vmList, int startIndexForRegion,
-      int endIndexForRegion, int expectedNumBuckets) {
-    Iterator nodeIterator = vmList.iterator();
-    while (nodeIterator.hasNext()) {
-      VM vm = (VM) nodeIterator.next();
-      vm.invoke(validateTotalNumberOfBuckets(prPrefix, expectedNumBuckets, startIndexForRegion,
-          endIndexForRegion));
-    }
+  private void validateTotalNumBuckets(final VM vm, final String regionName, final int firstRegion,
+                                       final int lastRegion, final int expectedNumberOfBuckets) {
+    vm.invoke(validateTotalNumberOfBuckets(regionName, expectedNumberOfBuckets, firstRegion, lastRegion));
   }
 
   /**
    * This function validates total number of buckets from bucket2NodeRegion of partition region.
    */
-  CacheSerializableRunnable validateTotalNumberOfBuckets(final String prPrefix,
-      final int expectedNumBuckets, final int startIndexForRegion, final int endIndexForRegion) {
+  private CacheSerializableRunnable validateTotalNumberOfBuckets(final String regionName,
+                                                                 final int expectedNumBuckets,
+                                                                 final int firstRegion,
+                                                                 final int lastRegion) {
     CacheSerializableRunnable validateTotNumBuckets =
         new CacheSerializableRunnable("validateTotNumBuckets") {
-          String innerPrPrefix = prPrefix;
 
-          int innerStartIndexForRegion = startIndexForRegion;
-
-          int innerEndIndexForRegion = endIndexForRegion;
-
+          @Override
           public void run2() throws CacheException {
             Cache cache = getCache();
-            for (int i = innerStartIndexForRegion; i < innerEndIndexForRegion; i++) {
+            for (int i = firstRegion; i < lastRegion; i++) {
               PartitionedRegion pr =
-                  (PartitionedRegion) cache.getRegion(Region.SEPARATOR + innerPrPrefix + i);
+                  (PartitionedRegion) cache.getRegion(Region.SEPARATOR + regionName + i);
               assertNotNull("This region is null " + pr.getName(), pr);
 
               Set bucketsWithStorage = pr.getRegionAdvisor().getBucketSet();
@@ -1291,209 +1277,85 @@ public class PartitionedRegionBucketCreationDistributionDUnitTest
     return validateTotNumBuckets;
   }
 
-  /** This function adds nodes to node list */
-  private List addNodeToList(int startIndexForNode, int endIndexForNode) {
-    List localvmList = new ArrayList();
-    for (int i = startIndexForNode; i < endIndexForNode; i++) {
-      localvmList.add(vm[i]);
-    }
-    return localvmList;
-  }
+  private CacheSerializableRunnable validateTotalNumberOfBuckets(final String regionName,
+                                                                 final int expectedNumBuckets) {
+    CacheSerializableRunnable validateTotNumBuckets =
+        new CacheSerializableRunnable("validateTotNumBuckets") {
 
-  /**
-   * This function performs following 1. creates multiplePartition regions on different nodes with
-   * vm3 node as accessor. 2. range of partition regions is specified by startIndexForRegion and
-   * endIndexForRegion. 3. first quarter of total partition regions are of scope = DISTRIBUTED_ACK
-   * and redundancy=0. 4. second quarter of total partition regions are of scope = DISTRIBUTED_ACK
-   * and redundancy=2. 5. third quarter of total partition regions are of scope = DISTRIBUTED_NO_ACK
-   * and redundancy=0. 4. fourth quarter of total partition regions are of scope =
-   * DISTRIBUTED_NO_ACK and redundancy=2.
-   *
-   * @param startIndexForRegion
-   * @param endIndexForRegion
-   */
-  void createMultiplePR(int startIndexForRegion, int endIndexForRegion) {
-    int startIndexForNode = 0;
-    int endIndexForNode = 4;
-    // creating partition regions on 4 nodes out of which partition regions on
-    // one node are only accessors.
-    // partition regions on vm3 are only accessors.
-    int midIndexForRegion = (endIndexForRegion - startIndexForRegion) / 2;
-    // creating multiple partition regions on 3 nodes with scope =
-    // DISTRIBUTED_ACK localMaxMemory=200 redundancy = 0
-    startIndexForNode = 0;
-    endIndexForNode = 3;
-    List vmList = addNodeToList(startIndexForNode, endIndexForNode);
-    localMaxMemory = 200;
-    // redundancy = 0;
-    createPartitionRegion(vmList, startIndexForRegion, midIndexForRegion, localMaxMemory,
-        redundancy);
-
-    // creating multiple partition regions on VM3 as only accessor
-    startIndexForNode = 3;
-    endIndexForNode = 4;
-    vmList = addNodeToList(startIndexForNode, endIndexForNode);
-    localMaxMemory = 0;
-    createPartitionRegion(vmList, startIndexForRegion, midIndexForRegion, localMaxMemory,
-        redundancy);
-
-    // creating multiple partition regions on 3 nodes localMaxMemory=200 redundancy = 1
-    startIndexForNode = 0;
-    endIndexForNode = 3;
-    vmList = addNodeToList(startIndexForNode, endIndexForNode);
-    localMaxMemory = 200;
-    final int redundancyTwo = 1;
-    createPartitionRegion(vmList, midIndexForRegion, endIndexForNode, localMaxMemory,
-        redundancyTwo);
-
-    // creating multiple partition regions on VM3 as only accessor
-    startIndexForNode = 3;
-    endIndexForNode = 4;
-    vmList = addNodeToList(startIndexForNode, endIndexForNode);
-    localMaxMemory = 0;
-    createPartitionRegion(vmList, midIndexForRegion, endIndexForNode, localMaxMemory,
-        redundancyTwo);
-
-    LogWriterUtils.getLogWriter().info(
-        "testBucketCerationInMultiPlePartitionRegion() - Partition Regions successfully created ");
-  }
-
-  /**
-   * This function is used to calculate memory of partiton region at each node
-   */
-  private void calculateTotalMemoryOfPartitionRegion() {
-    for (int i = 0; i < 4; i++) {
-      if (vm[i] == null)
-        LogWriterUtils.getLogWriter().fine("VM is null" + vm[i]);
-      vm[i].invoke(calculateMemoryOfPartitionRegion(i, i + 1));
-    }
-  }
-
-  /**
-   * This function verifies memory of partition region calculated at each node.
-   */
-  private void checkTotalMemoryOfPartitionRegion() {
-
-    CacheSerializableRunnable testTotalMemory = new CacheSerializableRunnable("testTotalMemory") {
-      int innerStartIndexForKey = 0;
-
-      int innerEndIndexForKey = 4;
-
-      String innerPrPrefix = prPrefix;
-
-      List sizeList = new ArrayList();
-
-      public void run2() {
-        Cache cache = getCache();
-        innerPrPrefix = "createPRForStrorage";
-        PartitionedRegion prForStorage =
-            (PartitionedRegion) cache.getRegion(Region.SEPARATOR + innerPrPrefix + 0);
-        for (int i = innerStartIndexForKey; i < innerEndIndexForKey; i++) {
-          Object obj = prForStorage.get(new Long(i));
-          sizeList.add(obj);
-        }
-        Iterator sizeItr = sizeList.iterator();
-        Object objSize = sizeItr.next();
-        while (sizeItr.hasNext()) {
-          assertEquals(sizeItr.next(), objSize);
-        }
-        LogWriterUtils.getLogWriter().info("Size of partition region on each node is equal");
-      }
-    };
-    vm[0].invoke(testTotalMemory);
-  }
-
-  /**
-   * This function calculates memory of partition region at each node and puts it in storage region.
-   *
-   * @param startIndexForKey
-   * @param endIndexForKey
-   * @return
-   */
-  private CacheSerializableRunnable calculateMemoryOfPartitionRegion(final int startIndexForKey,
-      final int endIndexForKey) {
-    CacheSerializableRunnable calulateTotalMemory =
-        new CacheSerializableRunnable("calulateTotalMemory") {
-          int innerStartIndexForKey = startIndexForKey;
-
-          int innerEndIndexForKey = endIndexForKey;
-
-          String innerPrPrefix = prPrefix;
-
-          public void run2() {
+          @Override
+          public void run2() throws CacheException {
             Cache cache = getCache();
-            PartitionedRegion pr = (PartitionedRegion) cache
-                .getRegion(Region.SEPARATOR + "testMemoryOfPartitionRegion" + 0);
-            assertNotNull("pr can not be null", pr);
-            assertNotNull("DataStore cannot be null", pr.getDataStore());
-            long prMemory = pr.getDataStore().currentAllocatedMemory();
-            innerPrPrefix = "createPRForStrorage";
-            PartitionedRegion prForStorage =
-                (PartitionedRegion) cache.getRegion(Region.SEPARATOR + innerPrPrefix + 0);
-            for (int i = innerStartIndexForKey; i < innerEndIndexForKey; i++) {
-              prForStorage.put(new Long(i), new Long(prMemory));
+            PartitionedRegion region =
+                (PartitionedRegion) cache.getRegion(regionName);
 
-            }
-
+            Set bucketsWithStorage = region.getRegionAdvisor().getBucketSet();
+            assertEquals(expectedNumBuckets, bucketsWithStorage.size());
           }
         };
-
-    return calulateTotalMemory;
+    return validateTotNumBuckets;
   }
 
-  private int getNoBucketsExpectedOnEachNode() {
-    int noBucketsExpectedOnEachNode = (totalBucketNumProperty / 4) - 1;
-    return noBucketsExpectedOnEachNode;
+  private int getNumberOfBucketsExpectedOnEachNode() {
+    return (numberOfBuckets / 4) - 1;
   }
 
-  protected RegionAttributes createRegionAttrs(int red, int localMaxMem, int numBuckets) {
+  private RegionAttributes createRegionAttrs(final int redundancy, final int loclMaxMemory, final int numberOfBuckets) {
     AttributesFactory attr = new AttributesFactory();
     attr.setMirrorType(MirrorType.NONE);
     PartitionAttributesFactory paf = new PartitionAttributesFactory();
-    PartitionAttributes prAttr = paf.setRedundantCopies(red).setLocalMaxMemory(localMaxMem)
-        .setTotalNumBuckets(numBuckets).create();
+    PartitionAttributes prAttr = paf.setRedundantCopies(redundancy).setLocalMaxMemory(loclMaxMemory)
+        .setTotalNumBuckets(numberOfBuckets).create();
     attr.setPartitionAttributes(prAttr);
     return attr.create();
   }
 
-  private void putForLocalMaxMemoryInMultiplePR(String regionName) throws Throwable {
-    final int AsyncInvocationArrSize = 4;
-    AsyncInvocation[] async = new AsyncInvocation[AsyncInvocationArrSize];
-    async[0] = vm[0].invokeAsync(doPutForLocalMaxMemory(regionName, "vm0"));
-    async[1] = vm[1].invokeAsync(doPutForLocalMaxMemory(regionName, "vm1"));
-    async[2] = vm[2].invokeAsync(doPutForLocalMaxMemory(regionName, "vm2"));
-    async[3] = vm[3].invokeAsync(doPutForLocalMaxMemory(regionName, "vm3"));
+  /**
+   * This function performs put() operations in multiple Partition Regions
+   */
+  private CacheSerializableRunnable putInMultiplePartitionRegion(final String regionName,
+                                                                 final int firstKey,
+                                                                 final int lastKey,
+                                                                 final int startIndexNumOfRegions,
+                                                                 final int endIndexNumOfRegions) {
+    CacheSerializableRunnable putInPRs = new CacheSerializableRunnable("doPutOperations") {
 
-    /** main thread is waiting for the other threads to complete */
-    for (int count = 0; count < AsyncInvocationArrSize; count++) {
-      ThreadUtils.join(async[count], 30 * 1000);
-    }
-    /** testing whether exception occurred */
-    for (int count = 0; count < AsyncInvocationArrSize; count++) {
-      assertTrue(async[count].exceptionOccurred());
-      assertTrue(async[count].getException() instanceof PartitionedRegionStorageException);
-    }
-  }
-
-  private CacheSerializableRunnable doPutForLocalMaxMemory(final String regionName,
-      final String key) throws Exception {
-
-    CacheSerializableRunnable putForLocalMaxMemory =
-        new CacheSerializableRunnable("putForLocalMaxMemory") {
-          public void run2() {
-            final int MAX_SIZE = 1024;
-            Cache cache = getCache();
-            byte Obj[] = new byte[MAX_SIZE];
-            Arrays.fill(Obj, (byte) 'A');
-            PartitionedRegion pr =
-                (PartitionedRegion) cache.getRegion(Region.SEPARATOR + regionName);
-            for (int i = 0; i < MAX_SIZE * 2; i++) {
-              pr.put(key + i, Obj);
-              LogWriterUtils.getLogWriter().info("MAXSIZE : " + i);
-            }
-            LogWriterUtils.getLogWriter().info("Put successfully done for vm" + key);
+      @Override
+      public void run2() throws CacheException {
+        for (int i = startIndexNumOfRegions; i < endIndexNumOfRegions; i++) {
+          Region<String, String> region = getCache().getRegion(Region.SEPARATOR + regionName + i);
+          for (int j = firstKey; j < lastKey; j++) {
+            region.put(i + regionName + j, regionName + j);
           }
-        };
-    return putForLocalMaxMemory;
+        }
+      }
+    };
+    return putInPRs;
   }
+
+  private CacheSerializableRunnable putInMultiplePartitionRegion(final String regionName,
+                                                                 final int firstKey,
+                                                                 final int lastKey) {
+    CacheSerializableRunnable putInPRs = new CacheSerializableRunnable("doPutOperations") {
+
+      @Override
+      public void run2() throws CacheException {
+        Region<String, String> region = getCache().getRegion(regionName);
+        for (int i = firstKey; i < lastKey; i++) {
+          region.put(i + regionName + i, regionName + i);
+        }
+      }
+    };
+    return putInPRs;
+  }
+
+  private void invokeAsync(final VM vm, final SerializableRunnableIF runnable) {
+    asyncInvocations.add(vm.invokeAsync(runnable));
+  }
+
+  private void awaitAllAsyncInvocations() throws ExecutionException, InterruptedException {
+    for (AsyncInvocation async : asyncInvocations) {
+      async.await();
+    }
+  }
+
 }

@@ -24,28 +24,64 @@ import java.util.Arrays;
 import java.util.List;
 
 import org.junit.After;
+import org.junit.AfterClass;
 import org.junit.Before;
+import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
 import org.apache.geode.DataSerializable;
 import org.apache.geode.DataSerializer;
 import org.apache.geode.cache.Cache;
+import org.apache.geode.cache.CacheException;
+import org.apache.geode.cache.EvictionAction;
+import org.apache.geode.cache.EvictionAttributes;
+import org.apache.geode.cache.PartitionAttributesFactory;
 import org.apache.geode.cache.Region;
+import org.apache.geode.cache.RegionAttributes;
 import org.apache.geode.cache.util.ObjectSizer;
 import org.apache.geode.cache30.CacheSerializableRunnable;
 import org.apache.geode.internal.size.Sizeable;
 import org.apache.geode.test.dunit.Host;
+import org.apache.geode.test.dunit.Invoke;
 import org.apache.geode.test.dunit.LogWriterUtils;
 import org.apache.geode.test.dunit.SerializableRunnable;
 import org.apache.geode.test.dunit.VM;
+import org.apache.geode.test.dunit.cache.CacheTestCase;
+import org.apache.geode.test.dunit.standalone.DUnitLauncher;
 import org.apache.geode.test.junit.categories.DistributedTest;
 
 /**
  * This class is to test LOCAL_MAX_MEMORY property of partition region while creation of bucket.
  */
 @Category(DistributedTest.class)
-public class PartitionedRegionLocalMaxMemoryDUnitTest extends PartitionedRegionDUnitTestCase {
+public class PartitionedRegionLocalMaxMemoryDUnitTest extends CacheTestCase {
+
+  /**
+   * Tear down a PartitionedRegionTestCase by cleaning up the existing cache (mainly because we want
+   * to destroy any existing PartitionedRegions)
+   */
+  @Override
+  public final void preTearDownCacheTestCase() throws Exception {
+    preTearDownPartitionedRegionDUnitTest();
+    closeCache();
+    Invoke.invokeInEveryVM(org.apache.geode.cache30.CacheTestCase.class, "closeCache");
+  }
+
+  protected void preTearDownPartitionedRegionDUnitTest() throws Exception {}
+
+  @BeforeClass
+  public static void caseSetUp() {
+    DUnitLauncher.launchIfNeeded();
+    // this makes sure we don't have any connection left over from previous tests
+    disconnectAllFromDS();
+  }
+
+  @AfterClass
+  public static void caseTearDown() {
+    // this makes sure we don't leave anything for the next tests
+    disconnectAllFromDS();
+  }
 
   private static final int LOCAL_MAX_MEMORY = 1;
   private static int MAX_REGIONS = 1;
@@ -168,6 +204,53 @@ public class PartitionedRegionLocalMaxMemoryDUnitTest extends PartitionedRegionD
       }
     };
     vm.invoke(destroyObj);
+  }
+
+  /**
+   * This function creates multiple partition regions in a VM. The name of the Partition Region will
+   * be PRPrefix+index (index starts from startIndexForRegion and ends to endIndexForRegion)
+   *
+   * @param PRPrefix : Used in the name of the Partition Region
+   *
+   *        These indices Represents range of the Partition Region
+   */
+  CacheSerializableRunnable createMultiplePartitionRegion(final String PRPrefix,
+      final int startIndexForRegion, final int endIndexForRegion, final int redundancy,
+      final int localmaxMemory, final boolean evict) {
+    return new CacheSerializableRunnable("createPrRegions_" + PRPrefix) {
+      String innerPRPrefix = PRPrefix;
+
+      int innerStartIndexForRegion = startIndexForRegion;
+
+      int innerEndIndexForRegion = endIndexForRegion;
+
+      int innerRedundancy = redundancy;
+
+      int innerlocalmaxMemory = localmaxMemory;
+
+      public void run2() throws CacheException {
+        System.setProperty(PartitionedRegion.RETRY_TIMEOUT_PROPERTY, "20000");
+        EvictionAttributes evictionAttrs = evict ? EvictionAttributes
+            .createLRUEntryAttributes(Integer.MAX_VALUE, EvictionAction.LOCAL_DESTROY) : null;
+        for (int i = startIndexForRegion; i < endIndexForRegion; i++) {
+          Region partitionedregion = getCache().createRegion(innerPRPrefix + i,
+              createRegionAttrsForPR(innerRedundancy, innerlocalmaxMemory,
+                  PartitionAttributesFactory.RECOVERY_DELAY_DEFAULT, evictionAttrs));
+          getCache().getLogger()
+              .info("Successfully created PartitionedRegion = " + partitionedregion);
+        }
+        System.setProperty(PartitionedRegion.RETRY_TIMEOUT_PROPERTY,
+            Integer.toString(PartitionedRegionHelper.DEFAULT_TOTAL_WAIT_RETRY_ITERATION));
+        getCache().getLogger()
+            .info("createMultiplePartitionRegion() - Partition Regions Successfully Completed ");
+      }
+    };
+  }
+
+  protected RegionAttributes<?, ?> createRegionAttrsForPR(int red, int localMaxMem,
+      long recoveryDelay, EvictionAttributes evictionAttrs) {
+    return PartitionedRegionTestHelper.createRegionAttrsForPR(red, localMaxMem, recoveryDelay,
+        evictionAttrs, null);
   }
 
   /**

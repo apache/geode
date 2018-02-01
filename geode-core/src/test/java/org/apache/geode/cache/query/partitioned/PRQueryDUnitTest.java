@@ -18,14 +18,13 @@ package org.apache.geode.cache.query.partitioned;
 import static org.apache.geode.cache.query.Utils.*;
 import static org.junit.Assert.*;
 
-import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Properties;
-import java.util.Set;
 
+import org.junit.After;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
@@ -41,23 +40,21 @@ import org.apache.geode.cache.query.internal.DefaultQuery;
 import org.apache.geode.cache30.CacheSerializableRunnable;
 import org.apache.geode.distributed.ConfigurationProperties;
 import org.apache.geode.internal.cache.PartitionedRegion;
-import org.apache.geode.internal.cache.PartitionedRegionDUnitTestCase;
 import org.apache.geode.internal.cache.PartitionedRegionQueryEvaluator;
 import org.apache.geode.test.dunit.Host;
 import org.apache.geode.test.dunit.IgnoredException;
 import org.apache.geode.test.dunit.LogWriterUtils;
 import org.apache.geode.test.dunit.SerializableCallable;
 import org.apache.geode.test.dunit.VM;
-import org.apache.geode.test.dunit.cache.internal.JUnit4CacheTestCase;
-import org.apache.geode.test.dunit.internal.JUnit4DistributedTestCase;
+import org.apache.geode.test.dunit.cache.CacheTestCase;
 import org.apache.geode.test.junit.categories.DistributedTest;
 
 @Category(DistributedTest.class)
-public class PRQueryDUnitTest extends PartitionedRegionDUnitTestCase
+public class PRQueryDUnitTest extends CacheTestCase {
 
-{
-  public PRQueryDUnitTest() {
-    super();
+  @After
+  public void tearDown() throws Exception {
+    disconnectAllFromDS();
   }
 
   public void setCacheInVMs(VM... vms) {
@@ -1116,5 +1113,18 @@ public class PRQueryDUnitTest extends PartitionedRegionDUnitTestCase
     vm0.invoke(PRQHelp.getCacheSerializableRunnableForPRQueryAndCompareResults(name, localName));
     LogWriterUtils.getLogWriter().info(
         "PRQueryDUnitTest#testPRAccessorCreationAndQueryingWithNoData : Querying PR's Test No Data ENDED*****");
+  }
+
+  public CacheSerializableRunnable disconnectVM() {
+    CacheSerializableRunnable csr = new CacheSerializableRunnable("disconnectVM") {
+      public void run2() throws CacheException {
+        getCache();
+        // DistributedMember dsMember = ((InternalDistributedSystem)getCache()
+        // .getDistributedSystem()).getDistributionManager().getId();
+        getCache().getDistributedSystem().disconnect();
+        getCache().getLogger().info("disconnectVM() completed ..");
+      }
+    };
+    return csr;
   }
 }

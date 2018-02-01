@@ -193,8 +193,8 @@ public class CacheRule extends DistributedExternalResource {
     }
 
     /**
-     * Disconnect all VMs from DistributedSystem after each test. Cache is always closed
-     * regardless. Default is false.
+     * Disconnect all VMs from DistributedSystem after each test. Cache is always closed regardless.
+     * Default is false.
      */
     public Builder disconnectAfter() {
       disconnectAfter = true;

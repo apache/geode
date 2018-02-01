@@ -22,6 +22,8 @@ import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
 
+import org.junit.AfterClass;
+import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
@@ -30,6 +32,7 @@ import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.CacheException;
 import org.apache.geode.cache.CacheListener;
 import org.apache.geode.cache.Region;
+import org.apache.geode.cache.RegionExistsException;
 import org.apache.geode.cache30.CacheSerializableRunnable;
 import org.apache.geode.cache30.CertifiableTestCacheListener;
 import org.apache.geode.distributed.DistributedMember;
@@ -44,6 +47,8 @@ import org.apache.geode.test.dunit.SerializableCallable;
 import org.apache.geode.test.dunit.SerializableRunnable;
 import org.apache.geode.test.dunit.ThreadUtils;
 import org.apache.geode.test.dunit.VM;
+import org.apache.geode.test.dunit.cache.CacheTestCase;
+import org.apache.geode.test.dunit.standalone.DUnitLauncher;
 import org.apache.geode.test.junit.categories.DistributedTest;
 
 /**
@@ -55,7 +60,33 @@ import org.apache.geode.test.junit.categories.DistributedTest;
  * multiple failed nodes.</br>
  */
 @Category(DistributedTest.class)
-public class PartitionedRegionHAFailureAndRecoveryDUnitTest extends PartitionedRegionDUnitTestCase {
+public class PartitionedRegionHAFailureAndRecoveryDUnitTest extends CacheTestCase {
+
+  /**
+   * Tear down a PartitionedRegionTestCase by cleaning up the existing cache (mainly because we want
+   * to destroy any existing PartitionedRegions)
+   */
+  @Override
+  public final void preTearDownCacheTestCase() throws Exception {
+    preTearDownPartitionedRegionDUnitTest();
+    closeCache();
+    Invoke.invokeInEveryVM(org.apache.geode.cache30.CacheTestCase.class, "closeCache");
+  }
+
+  protected void preTearDownPartitionedRegionDUnitTest() throws Exception {}
+
+  @BeforeClass
+  public static void caseSetUp() {
+    DUnitLauncher.launchIfNeeded();
+    // this makes sure we don't have any connection left over from previous tests
+    disconnectAllFromDS();
+  }
+
+  @AfterClass
+  public static void caseTearDown() {
+    // this makes sure we don't leave anything for the next tests
+    disconnectAllFromDS();
+  }
 
   /**
    * to store references of 4 vms
@@ -505,4 +536,26 @@ public class PartitionedRegionHAFailureAndRecoveryDUnitTest extends PartitionedR
       }
     } // VM loop
   } // end redundancy recovery test
+
+  CacheSerializableRunnable getCreateMultiplePRregion(final String prPrefix, final int maxIndex,
+      final int redundancy, final int localmaxMemory, final long recoveryDelay) {
+    return new CacheSerializableRunnable("getCreateMultiplePRregion") {
+      public void run2() throws CacheException {
+        // final Random regionAttributes = new Random();
+        for (int i = 0; i < maxIndex; i++) {
+          // final int rind = regionAttributes.nextInt(maxIndex);
+          try {
+            getCache().createRegion(prPrefix + i, PartitionedRegionTestHelper
+                .createRegionAttrsForPR(redundancy, localmaxMemory, recoveryDelay));
+            org.apache.geode.test.dunit.LogWriterUtils.getLogWriter()
+                .info("Created Region  new  --- " + prPrefix + i);
+          } catch (RegionExistsException ignore) {
+          }
+        }
+        org.apache.geode.test.dunit.LogWriterUtils.getLogWriter()
+            .info("getCreateMultiplePRregion() - Partition Regions Successfully Completed ");
+      }
+    };
+  }
+
 }
