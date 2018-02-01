@@ -22,7 +22,6 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.Iterator;
 import java.util.Set;
 
 import org.apache.logging.log4j.Logger;
@@ -78,14 +77,6 @@ public class RemoteDestroyMessage extends RemoteOperationMessageWithDirectReply
 
   private static final Logger logger = LogService.getLogger();
 
-  private static final short FLAG_USEORIGINREMOTE = 0x01;
-
-  private static final short FLAG_HASOLDVALUE = 0x02;
-
-  private static final short FLAG_OLDVALUEISSERIALIZED = 0x04;
-
-  private static final short FLAG_POSSIBLEDUPLICATE = 0x08;
-
   /** The key associated with the value that must be sent */
   private Object key;
 
@@ -112,7 +103,6 @@ public class RemoteDestroyMessage extends RemoteOperationMessageWithDirectReply
   /** whether old value is serialized */
   private boolean oldValueIsSerialized = false;
 
-  /** expectedOldValue used for PartitionedRegion#remove(key, value) */
   private Object expectedOldValue;
 
   private byte[] oldValBytes;
@@ -140,10 +130,10 @@ public class RemoteDestroyMessage extends RemoteOperationMessageWithDirectReply
    */
   public RemoteDestroyMessage() {}
 
-  protected RemoteDestroyMessage(Set recipients, String regionPath, DirectReplyProcessor processor,
-      EntryEventImpl event, Object expectedOldValue, boolean useOriginRemote,
-      boolean possibleDuplicate) {
-    super(recipients, regionPath, processor);
+  protected RemoteDestroyMessage(DistributedMember recipient, String regionPath,
+      DirectReplyProcessor processor, EntryEventImpl event, Object expectedOldValue,
+      boolean useOriginRemote, boolean possibleDuplicate) {
+    super((InternalDistributedMember) recipient, regionPath, processor);
     this.expectedOldValue = expectedOldValue;
     this.key = event.getKey();
     this.cbArg = event.getRawCallbackArgument();
@@ -160,7 +150,6 @@ public class RemoteDestroyMessage extends RemoteOperationMessageWithDirectReply
       this.hasOldValue = true;
       event.exportOldValue(this);
     }
-
   }
 
   private void setOldValBytes(byte[] valBytes) {
@@ -231,20 +220,19 @@ public class RemoteDestroyMessage extends RemoteOperationMessageWithDirectReply
       boolean onlyPersistent) {
     boolean successful = false;
     DistributedRegion r = (DistributedRegion) event.getRegion();
-    Collection replicates = onlyPersistent
+    Collection<InternalDistributedMember> replicates = onlyPersistent
         ? r.getCacheDistributionAdvisor().adviseInitializedPersistentMembers().keySet()
         : r.getCacheDistributionAdvisor().adviseInitializedReplicates();
     if (replicates.isEmpty()) {
       return false;
     }
     if (replicates.size() > 1) {
-      ArrayList l = new ArrayList(replicates);
+      ArrayList<InternalDistributedMember> l = new ArrayList<>(replicates);
       Collections.shuffle(l);
       replicates = l;
     }
     int attempts = 0;
-    for (Iterator<InternalDistributedMember> it = replicates.iterator(); it.hasNext();) {
-      InternalDistributedMember replicate = it.next();
+    for (InternalDistributedMember replicate : replicates) {
       try {
         attempts++;
         final boolean posDup = (attempts > 1);
@@ -301,15 +289,12 @@ public class RemoteDestroyMessage extends RemoteOperationMessageWithDirectReply
   public static RemoteDestroyReplyProcessor send(DistributedMember recipient, LocalRegion r,
       EntryEventImpl event, Object expectedOldValue, boolean useOriginRemote,
       boolean possibleDuplicate) throws RemoteOperationException {
-    // Assert.assertTrue(recipient != null, "RemoteDestroyMessage NULL recipient"); recipient may be
-    // null for event notification
-    Set recipients = Collections.singleton(recipient);
     RemoteDestroyReplyProcessor p =
-        new RemoteDestroyReplyProcessor(r.getSystem(), recipients, false);
+        new RemoteDestroyReplyProcessor(r.getSystem(), recipient, false);
     p.requireResponse();
-    RemoteDestroyMessage m = new RemoteDestroyMessage(recipients, r.getFullPath(), p, event,
+    RemoteDestroyMessage m = new RemoteDestroyMessage(recipient, r.getFullPath(), p, event,
         expectedOldValue, useOriginRemote, possibleDuplicate);
-    Set failures = r.getDistributionManager().putOutgoing(m);
+    Set<?> failures = r.getDistributionManager().putOutgoing(m);
     if (failures != null && failures.size() > 0) {
       throw new RemoteOperationException(
           LocalizedStrings.RemoteDestroyMessage_FAILED_SENDING_0.toLocalizedString(m));
@@ -318,9 +303,9 @@ public class RemoteDestroyMessage extends RemoteOperationMessageWithDirectReply
   }
 
   /**
-   * This method is called upon receipt and make the desired changes to the PartitionedRegion Note:
-   * It is very important that this message does NOT cause any deadlocks as the sender will wait
-   * indefinitely for the acknowledgement
+   * This method is called upon receipt and make the desired changes to the region. Note: It is very
+   * important that this message does NOT cause any deadlocks as the sender will wait indefinitely
+   * for the acknowledgement
    */
   @Override
   protected boolean operateOnRegion(ClusterDistributionManager dm, LocalRegion r, long startTime)
@@ -588,7 +573,6 @@ public class RemoteDestroyMessage extends RemoteOperationMessageWithDirectReply
 
     @Override
     public boolean getInlineProcess() {
-      // TODO Auto-generated method stub
       return true;
     }
 
@@ -676,8 +660,9 @@ public class RemoteDestroyMessage extends RemoteOperationMessageWithDirectReply
   static class RemoteDestroyReplyProcessor extends RemoteOperationResponse {
     VersionTag versionTag;
 
-    RemoteDestroyReplyProcessor(InternalDistributedSystem ds, Set recipients, Object key) {
-      super(ds, recipients, false);
+    RemoteDestroyReplyProcessor(InternalDistributedSystem ds, DistributedMember recipient,
+        Object key) {
+      super(ds, (InternalDistributedMember) recipient, false);
     }
 
     void setResponse(VersionTag versionTag) {
