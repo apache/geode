@@ -16,7 +16,6 @@ package org.apache.geode.internal.cache.backup;
 
 import java.io.DataInput;
 import java.io.DataOutput;
-import java.io.File;
 import java.io.IOException;
 import java.util.HashSet;
 import java.util.Set;
@@ -43,8 +42,6 @@ public class FinishBackupRequest extends CliLegacyMessage {
 
   private final transient FinishBackupFactory finishBackupFactory;
 
-  private File targetDir;
-  private File baselineDir;
   private boolean abort;
 
   public FinishBackupRequest() {
@@ -52,14 +49,11 @@ public class FinishBackupRequest extends CliLegacyMessage {
   }
 
   FinishBackupRequest(InternalDistributedMember sender, Set<InternalDistributedMember> recipients,
-      int processorId, File targetDir, File baselineDir, boolean abort,
-      FinishBackupFactory finishBackupFactory) {
+      int processorId, boolean abort, FinishBackupFactory finishBackupFactory) {
     setSender(sender);
     setRecipients(recipients);
     this.msgId = processorId;
     this.finishBackupFactory = finishBackupFactory;
-    this.targetDir = targetDir;
-    this.baselineDir = baselineDir;
     this.abort = abort;
   }
 
@@ -67,8 +61,7 @@ public class FinishBackupRequest extends CliLegacyMessage {
   protected AdminResponse createResponse(DistributionManager dm) {
     HashSet<PersistentID> persistentIds;
     try {
-      persistentIds = finishBackupFactory
-          .createFinishBackup(dm.getCache(), this.targetDir, this.baselineDir, this.abort).run();
+      persistentIds = finishBackupFactory.createFinishBackup(dm.getCache(), this.abort).run();
     } catch (IOException e) {
       logger.error(LocalizedMessage.create(LocalizedStrings.CliLegacyMessage_ERROR, getClass()), e);
       return AdminFailureResponse.create(getSender(), e);
@@ -84,16 +77,12 @@ public class FinishBackupRequest extends CliLegacyMessage {
   @Override
   public void fromData(DataInput in) throws IOException, ClassNotFoundException {
     super.fromData(in);
-    targetDir = DataSerializer.readFile(in);
-    baselineDir = DataSerializer.readFile(in);
     abort = DataSerializer.readBoolean(in);
   }
 
   @Override
   public void toData(DataOutput out) throws IOException {
     super.toData(out);
-    DataSerializer.writeFile(targetDir, out);
-    DataSerializer.writeFile(baselineDir, out);
     DataSerializer.writeBoolean(abort, out);
   }
 

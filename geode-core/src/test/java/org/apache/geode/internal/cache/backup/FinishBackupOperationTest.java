@@ -54,8 +54,6 @@ public class FinishBackupOperationTest {
   private InternalDistributedMember member1;
   private InternalDistributedMember member2;
 
-  private File targetDir = new File("targetDir");
-  private File baselineDir = new File("baselineDir");
   private boolean abort = false;
 
   private FinishBackupFactory finishBackupFactory;
@@ -81,18 +79,17 @@ public class FinishBackupOperationTest {
     member2 = mock(InternalDistributedMember.class, "member2");
     recipients = new HashSet<>();
 
-    finishBackupOperation = new FinishBackupOperation(dm, sender, cache, recipients, targetDir,
-        baselineDir, abort, finishBackupFactory);
+    finishBackupOperation =
+        new FinishBackupOperation(dm, sender, cache, recipients, abort, finishBackupFactory);
 
     when(finishBackupReplyProcessor.getProcessorId()).thenReturn(42);
 
     when(
         finishBackupFactory.createReplyProcessor(eq(finishBackupOperation), eq(dm), eq(recipients)))
             .thenReturn(finishBackupReplyProcessor);
-    when(finishBackupFactory.createRequest(eq(sender), eq(recipients), eq(42), eq(targetDir),
-        eq(baselineDir), eq(abort))).thenReturn(finishBackupRequest);
-    when(finishBackupFactory.createFinishBackup(eq(cache), eq(targetDir), eq(baselineDir),
-        eq(abort))).thenReturn(finishBackup);
+    when(finishBackupFactory.createRequest(eq(sender), eq(recipients), eq(42), eq(abort)))
+        .thenReturn(finishBackupRequest);
+    when(finishBackupFactory.createFinishBackup(eq(cache), eq(abort))).thenReturn(finishBackup);
   }
 
   @Test

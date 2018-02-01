@@ -43,11 +43,11 @@ public class BackupDataStoreHelper {
     Map<DistributedMember, Set<PersistentID>> existingDataStores;
     try {
       existingDataStores = new PrepareBackupOperation(dm, dm.getId(), dm.getCache(), recipients,
-          prepareBackupFactory).send();
+          prepareBackupFactory, targetDir, baselineDir).send();
       abort = false;
     } finally {
       successfulMembers = new FinishBackupOperation(dm, dm.getId(), dm.getCache(), recipients,
-          targetDir, baselineDir, abort, finishBackupFactory).send();
+          abort, finishBackupFactory).send();
     }
     return new BackupDataStoreResult(existingDataStores, successfulMembers);
   }

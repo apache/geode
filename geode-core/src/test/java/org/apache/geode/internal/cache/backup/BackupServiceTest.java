@@ -37,13 +37,13 @@ import org.apache.geode.test.junit.categories.UnitTest;
 @Category(UnitTest.class)
 public class BackupServiceTest {
 
-  BackupService backupService;
+  private BackupService backupService;
 
-  DistributionManager distributionManager;
+  private DistributionManager distributionManager;
 
-  InternalDistributedMember sender = new InternalDistributedMember("localhost", 5555);
+  private InternalDistributedMember sender = new InternalDistributedMember("localhost", 5555);
 
-  InternalCache cache;
+  private InternalCache cache;
 
   @Before
   public void setUp() throws Exception {
@@ -73,23 +73,23 @@ public class BackupServiceTest {
   public void startBackupThrowsExceptionWhenAnotherBackupInProgress() throws Exception {
     BackupTask backupTask = mock(BackupTask.class);
     backupService.currentTask.set(backupTask);
-    assertThatThrownBy(() -> backupService.prepareBackup(sender)).isInstanceOf(IOException.class);
-  }
-
-  @Test
-  public void doBackupThrowsExceptionWhenNoBackupInProgress() throws Exception {
-    assertThatThrownBy(() -> backupService.doBackup(null, null, false))
+    assertThatThrownBy(() -> backupService.prepareBackup(sender, null, null))
         .isInstanceOf(IOException.class);
   }
 
   @Test
+  public void doBackupThrowsExceptionWhenNoBackupInProgress() throws Exception {
+    assertThatThrownBy(() -> backupService.doBackup(false)).isInstanceOf(IOException.class);
+  }
+
+  @Test
   public void doBackupAbortsWithEmptyPersistentIds() throws Exception {
-    assertThat(backupService.doBackup(null, null, true).size()).isEqualTo(0);
+    assertThat(backupService.doBackup(true).size()).isEqualTo(0);
   }
 
   @Test
   public void prepareBackupReturnsEmptyPersistentIdsWhenBackupNotInProgress() throws Exception {
-    assertThat(backupService.prepareBackup(sender).size()).isEqualTo(0);
+    assertThat(backupService.prepareBackup(sender, null, null).size()).isEqualTo(0);
   }
 
 }

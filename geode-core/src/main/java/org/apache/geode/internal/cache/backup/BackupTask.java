@@ -60,16 +60,18 @@ public class BackupTask {
   private final CountDownLatch locksAcquired = new CountDownLatch(1);
   private final CountDownLatch otherMembersReady = new CountDownLatch(1);
   private final HashSet<PersistentID> diskStoresWithData = new HashSet<>();
+  private final File targetDir;
+  private final File baselineDir;
 
-  private volatile File targetDir;
-  private volatile File baselineDir;
   private volatile boolean isCancelled = false;
 
   private TemporaryBackupFiles temporaryFiles;
   private BackupFileCopier fileCopier;
 
-  BackupTask(InternalCache gemFireCache) {
+  BackupTask(InternalCache gemFireCache, File targetDir, File baselineDir) {
     this.cache = gemFireCache;
+    this.targetDir = targetDir;
+    this.baselineDir = baselineDir;
     memberId = getCleanedMemberId();
   }
 
@@ -78,9 +80,7 @@ public class BackupTask {
     return diskStoresWithData;
   }
 
-  void notifyOtherMembersReady(File targetDir, File baselineDir, boolean abort) {
-    this.targetDir = targetDir;
-    this.baselineDir = baselineDir;
+  void notifyOtherMembersReady(boolean abort) {
     this.isCancelled = abort;
     otherMembersReady.countDown();
   }
@@ -99,7 +99,7 @@ public class BackupTask {
       return new HashSet<>();
     }
 
-    return doBackup(targetDir, baselineDir);
+    return doBackup();
   }
 
   private void prepareForBackup() {
@@ -114,7 +114,7 @@ public class BackupTask {
     }
   }
 
-  private HashSet<PersistentID> doBackup(File targetDir, File baselineDir) throws IOException {
+  private HashSet<PersistentID> doBackup() throws IOException {
     if (isCancelled) {
       cleanup();
       return new HashSet<>();
@@ -126,9 +126,9 @@ public class BackupTask {
       File memberBackupDir = new File(targetDir, memberId);
 
       // Make sure our baseline is okay for this member, then create inspector for baseline backup
-      baselineDir = checkBaseline(baselineDir);
+      File checkedBaselineDir = checkBaseline(baselineDir);
       BackupInspector inspector =
-          (baselineDir == null ? null : BackupInspector.createInspector(baselineDir));
+          (checkedBaselineDir == null ? null : BackupInspector.createInspector(checkedBaselineDir));
       File storesDir = new File(memberBackupDir, DATA_STORES_DIRECTORY);
       Collection<DiskStore> diskStores = cache.listDiskStoresIncludingRegionOwned();
 
