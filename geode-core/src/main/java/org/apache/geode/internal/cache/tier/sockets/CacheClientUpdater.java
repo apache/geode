@@ -1561,6 +1561,10 @@ public class CacheClientUpdater extends Thread implements ClientUpdater, Disconn
    */
   private void processMessages() {
     final boolean isDebugEnabled = logger.isDebugEnabled();
+
+    final int headerReadTimeout = (int) Math.round(serverQueueStatus.getPingInterval()
+        * qManager.getPool().getSubscriptionTimeoutMultiplier() * 1.25);
+
     try {
       Message clientMessage = initializeMessage();
 
@@ -1595,7 +1599,7 @@ public class CacheClientUpdater extends Thread implements ClientUpdater, Disconn
 
         try {
           // Read the message
-          clientMessage.receiveWithHeaderReadTimeout(serverQueueStatus.getPingInterval() * 2);
+          clientMessage.receiveWithHeaderReadTimeout(headerReadTimeout);
 
           // Wait for the previously failed cache client updater
           // to finish. This will avoid out of order messages.

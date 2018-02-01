@@ -440,11 +440,8 @@ public interface PoolFactory {
    * <p>
    * A value of zero (the default) disables timeouts
    * <p>
-   * A value of one will time out the server connection after one of its ping intervals (not
-   * recommended)
-   * <p>
-   * A value of two or more will time out the server connection after that many ping intervals have
-   * elapsed
+   * The resulting timeout will be multiplied by 1.25 in order to avoid race conditions with the
+   * server sending its "ping" message.
    */
   public PoolFactory setSubscriptionTimeoutMultiplier(int multiplier);
 
