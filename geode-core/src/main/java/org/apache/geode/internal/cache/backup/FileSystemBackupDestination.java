@@ -61,7 +61,7 @@ public class FileSystemBackupDestination implements BackupDestination {
   }
 
   private void writeReadMe() throws IOException {
-    String text = LocalizedStrings.BackupManager_README.toLocalizedString();
+    String text = LocalizedStrings.BackupService_README.toLocalizedString();
     Files.write(backupDir.resolve(README_FILE), text.getBytes());
   }
 

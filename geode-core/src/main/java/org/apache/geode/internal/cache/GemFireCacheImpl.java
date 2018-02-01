@@ -69,7 +69,6 @@ import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
-import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.BiPredicate;
 import java.util.function.Supplier;
 import java.util.regex.Pattern;
@@ -175,7 +174,7 @@ import org.apache.geode.i18n.LogWriterI18n;
 import org.apache.geode.internal.Assert;
 import org.apache.geode.internal.ClassPathLoader;
 import org.apache.geode.internal.SystemTimer;
-import org.apache.geode.internal.cache.backup.BackupManager;
+import org.apache.geode.internal.cache.backup.BackupService;
 import org.apache.geode.internal.cache.control.InternalResourceManager;
 import org.apache.geode.internal.cache.control.InternalResourceManager.ResourceType;
 import org.apache.geode.internal.cache.control.ResourceAdvisor;
@@ -504,7 +503,7 @@ public class GemFireCacheImpl implements InternalCache, InternalClientCache, Has
 
   private final InternalResourceManager resourceManager;
 
-  private final AtomicReference<BackupManager> backupManager = new AtomicReference<>();
+  private final BackupService backupService;
 
   private HeapEvictor heapEvictor = null;
 
@@ -970,6 +969,7 @@ public class GemFireCacheImpl implements InternalCache, InternalClientCache, Has
       this.diskMonitor = new DiskStoreMonitor(system.getConfig().getLogFile());
 
       addRegionEntrySynchronizationListener(new GatewaySenderQueueEntrySynchronizationListener());
+      backupService = new BackupService(this);
     } // synchronized
   }
 
@@ -4366,22 +4366,9 @@ public class GemFireCacheImpl implements InternalCache, InternalClientCache, Has
     return Collections.unmodifiableList(this.backupFiles);
   }
 
-  public BackupManager startBackup(InternalDistributedMember sender) throws IOException {
-    BackupManager manager = new BackupManager(sender, this);
-    if (!this.backupManager.compareAndSet(null, manager)) {
-      throw new IOException("Backup already in progress");
-    }
-    manager.validateRequestingAdmin();
-    return manager;
-  }
-
   @Override
-  public void clearBackupManager() {
-    this.backupManager.set(null);
-  }
-
-  public BackupManager getBackupManager() {
-    return this.backupManager.get();
+  public BackupService getBackupService() {
+    return backupService;
   }
 
   // TODO make this a simple int guarded by riWaiters and get rid of the double-check

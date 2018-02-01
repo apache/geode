@@ -127,7 +127,7 @@ import org.apache.geode.internal.cache.RegionListener;
 import org.apache.geode.internal.cache.TXEntryStateFactory;
 import org.apache.geode.internal.cache.TXManagerImpl;
 import org.apache.geode.internal.cache.TombstoneService;
-import org.apache.geode.internal.cache.backup.BackupManager;
+import org.apache.geode.internal.cache.backup.BackupService;
 import org.apache.geode.internal.cache.control.InternalResourceManager;
 import org.apache.geode.internal.cache.control.ResourceAdvisor;
 import org.apache.geode.internal.cache.event.EventTrackerExpiryTask;
@@ -1573,11 +1573,6 @@ public class CacheCreation implements InternalCache {
   }
 
   @Override
-  public BackupManager getBackupManager() {
-    throw new UnsupportedOperationException(LocalizedStrings.SHOULDNT_INVOKE.toLocalizedString());
-  }
-
-  @Override
   public void setDeclarativeCacheConfig(final CacheConfig cacheConfig) {
     throw new UnsupportedOperationException(LocalizedStrings.SHOULDNT_INVOKE.toLocalizedString());
   }
@@ -1659,7 +1654,7 @@ public class CacheCreation implements InternalCache {
   }
 
   @Override
-  public BackupManager startBackup(final InternalDistributedMember sender) throws IOException {
+  public BackupService getBackupService() {
     throw new UnsupportedOperationException(LocalizedStrings.SHOULDNT_INVOKE.toLocalizedString());
   }
 
@@ -2230,11 +2225,6 @@ public class CacheCreation implements InternalCache {
 
   @Override
   public long cacheTimeMillis() {
-    throw new UnsupportedOperationException(LocalizedStrings.SHOULDNT_INVOKE.toLocalizedString());
-  }
-
-  @Override
-  public void clearBackupManager() {
     throw new UnsupportedOperationException(LocalizedStrings.SHOULDNT_INVOKE.toLocalizedString());
   }
 

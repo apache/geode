@@ -192,7 +192,7 @@ public class BackupTask {
     return isCancelled;
   }
 
-  void waitForBackup() {
+  void waitTillBackupFilesAreCopiedToTemporaryLocation() {
     try {
       allowDestroys.await();
     } catch (InterruptedException e) {
@@ -207,7 +207,6 @@ public class BackupTask {
       temporaryFiles.cleanupFiles();
     }
     releaseBackupLocks();
-    cache.clearBackupManager();
   }
 
   private void releaseBackupLocks() {

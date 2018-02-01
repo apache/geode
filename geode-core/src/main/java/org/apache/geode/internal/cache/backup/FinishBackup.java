@@ -37,10 +37,10 @@ class FinishBackup {
 
   HashSet<PersistentID> run() throws IOException {
     HashSet<PersistentID> persistentIds;
-    if (cache == null || cache.getBackupManager() == null) {
+    if (cache == null) {
       persistentIds = new HashSet<>();
     } else {
-      persistentIds = cache.getBackupManager().doBackup(targetDir, baselineDir, abort);
+      persistentIds = cache.getBackupService().doBackup(targetDir, baselineDir, abort);
     }
     return persistentIds;
   }
