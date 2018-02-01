@@ -52,8 +52,7 @@ public class ProtobufOperationContextRegistry {
         new ProtobufOperationContext<>(ClientProtocol.Request::getAuthenticationRequest,
             new AuthenticationRequestOperationHandler(),
             opsResp -> ClientProtocol.Response.newBuilder().setAuthenticationResponse(opsResp),
-            new ResourcePermission(ResourcePermission.Resource.DATA,
-                ResourcePermission.Operation.READ)));
+            new ResourcePermission(ResourcePermission.NULL, ResourcePermission.NULL)));
 
     operationContexts.put(RequestAPICase.GETREQUEST,
         new ProtobufOperationContext<>(ClientProtocol.Request::getGetRequest,
