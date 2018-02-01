@@ -19,6 +19,7 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
 import java.io.File;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -36,8 +37,10 @@ import java.util.stream.Collectors;
 
 import org.awaitility.Awaitility;
 import org.junit.Before;
+import org.junit.Rule;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
+import org.junit.rules.TemporaryFolder;
 
 import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.DiskStore;
@@ -64,13 +67,17 @@ public abstract class BackupPrepareAndFinishMsgDUnitTest extends CacheTestCase {
   // Although this test does not make use of other members, the current member needs to be
   // a distributed member (rather than local) because it sends prepare and finish backup messages
   private static final String TEST_REGION_NAME = "TestRegion";
+
+  @Rule
+  public TemporaryFolder tempDir = new TemporaryFolder();
+
   private File[] diskDirs = null;
   private Region<Integer, Integer> region;
 
-  protected abstract Region<Integer, Integer> createRegion();
+  protected abstract Region<Integer, Integer> createRegion() throws IOException;
 
   @Before
-  public void setup() {
+  public void setup() throws IOException {
     region = createRegion();
   }
 
@@ -210,10 +217,10 @@ public abstract class BackupPrepareAndFinishMsgDUnitTest extends CacheTestCase {
    * @param shortcut The region shortcut to use to create the region
    * @return The newly created region.
    */
-  protected Region<Integer, Integer> createRegion(RegionShortcut shortcut) {
+  protected Region<Integer, Integer> createRegion(RegionShortcut shortcut) throws IOException {
     Cache cache = getCache();
     DiskStoreFactory diskStoreFactory = cache.createDiskStoreFactory();
-    diskDirs = getDiskDirs();
+    diskDirs = new File[] {tempDir.newFolder()};
     diskStoreFactory.setDiskDirs(diskDirs);
     DiskStore diskStore = diskStoreFactory.create(getUniqueName());
 
