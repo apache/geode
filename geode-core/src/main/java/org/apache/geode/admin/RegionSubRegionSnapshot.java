@@ -30,8 +30,8 @@ import org.apache.geode.internal.cache.PartitionedRegion;
 /**
  * Class <code>RegionSubRegionSnapshot</code> provides information about <code>Region</code>s. This
  * also provides the information about sub regions This class is used by the monitoring tool.
- * 
- * 
+ *
+ *
  * @since GemFire 5.7
  * @deprecated as of 7.0 use the <code><a href=
  *             "{@docRoot}/org/apache/geode/management/package-summary.html">management</a></code>
@@ -63,7 +63,7 @@ public class RegionSubRegionSnapshot implements DataSerializable {
 
   /**
    * add the snapshot of sub region
-   * 
+   *
    * @param snap snapshot of sub region
    * @return true if operation is successful
    */
@@ -137,7 +137,7 @@ public class RegionSubRegionSnapshot implements DataSerializable {
   }
 
   /**
-   * 
+   *
    * @return full path of region
    */
   public String getFullPath() {

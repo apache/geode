@@ -14,11 +14,11 @@
  */
 package org.apache.geode.sequence;
 
+import static java.lang.Math.random;
+
 import java.awt.*;
 import java.util.HashMap;
 import java.util.Map;
-
-import static java.lang.Math.random;
 
 /**
  * Created by IntelliJ IDEA. User: dsmith Date: Nov 12, 2010 Time: 5:05:49 PM To change this

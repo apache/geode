@@ -28,38 +28,38 @@ import org.apache.geode.internal.statistics.platform.ProcessStats;
  * using a GemFire system.
  */
 public class SolarisProcessStats {
-  private final static int allOtherSleepTimeINT = 0;
-  private final static int characterIoINT = 1;
-  private final static int dataFaultSleepTimeINT = 2;
-  private final static int heapSizeINT = 3;
-  private final static int imageSizeINT = 4;
-  private final static int involContextSwitchesINT = 5;
-  private final static int kernelFaultSleepTimeINT = 6;
-  private final static int lockWaitSleepTimeINT = 7;
-  private final static int lwpCurCountINT = 8;
-  private final static int lwpTotalCountINT = 9;
-  private final static int majorFaultsINT = 10;
-  private final static int messagesRecvINT = 11;
-  private final static int messagesSentINT = 12;
-  private final static int minorFaultsINT = 13;
-  private final static int rssSizeINT = 14;
-  private final static int signalsReceivedINT = 15;
-  private final static int systemCallsINT = 16;
-  private final static int stackSizeINT = 17;
-  private final static int stoppedTimeINT = 18;
-  private final static int systemTimeINT = 19;
-  private final static int textFaultSleepTimeINT = 20;
-  private final static int trapTimeINT = 21;
-  private final static int userTimeINT = 22;
-  private final static int volContextSwitchesINT = 23;
-  private final static int waitCpuTimeINT = 24;
+  private static final int allOtherSleepTimeINT = 0;
+  private static final int characterIoINT = 1;
+  private static final int dataFaultSleepTimeINT = 2;
+  private static final int heapSizeINT = 3;
+  private static final int imageSizeINT = 4;
+  private static final int involContextSwitchesINT = 5;
+  private static final int kernelFaultSleepTimeINT = 6;
+  private static final int lockWaitSleepTimeINT = 7;
+  private static final int lwpCurCountINT = 8;
+  private static final int lwpTotalCountINT = 9;
+  private static final int majorFaultsINT = 10;
+  private static final int messagesRecvINT = 11;
+  private static final int messagesSentINT = 12;
+  private static final int minorFaultsINT = 13;
+  private static final int rssSizeINT = 14;
+  private static final int signalsReceivedINT = 15;
+  private static final int systemCallsINT = 16;
+  private static final int stackSizeINT = 17;
+  private static final int stoppedTimeINT = 18;
+  private static final int systemTimeINT = 19;
+  private static final int textFaultSleepTimeINT = 20;
+  private static final int trapTimeINT = 21;
+  private static final int userTimeINT = 22;
+  private static final int volContextSwitchesINT = 23;
+  private static final int waitCpuTimeINT = 24;
 
-  private final static int activeTimeLONG = 0;
+  private static final int activeTimeLONG = 0;
 
-  private final static int cpuUsedDOUBLE = 0;
-  private final static int memoryUsedDOUBLE = 1;
+  private static final int cpuUsedDOUBLE = 0;
+  private static final int memoryUsedDOUBLE = 1;
 
-  private final static StatisticsType myType;
+  private static final StatisticsType myType;
 
   private static void checkOffset(String name, int offset) {
     int id = myType.nameToId(name);

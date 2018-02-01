@@ -14,12 +14,11 @@
  */
 package org.apache.geode.test.junit.rules;
 
-import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.server.CacheServer;
+import org.apache.geode.internal.cache.InternalCache;
 
 public interface Server extends Member {
-
-  Cache getCache();
+  InternalCache getCache();
 
   CacheServer getServer();
 

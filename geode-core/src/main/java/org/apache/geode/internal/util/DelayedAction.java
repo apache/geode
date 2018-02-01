@@ -20,7 +20,7 @@ import java.util.concurrent.CountDownLatch;
  * Coordinates thread scheduling to simplify multi-threaded testing. Ensures that two threads have
  * both reached expected code before proceeding. Unlike a barrier pattern, the threads can be
  * allowed to proceed independently.
- * 
+ *
  */
 public class DelayedAction implements Runnable {
   private final CountDownLatch hit = new CountDownLatch(1);
@@ -47,7 +47,7 @@ public class DelayedAction implements Runnable {
 
   /**
    * Blocks until the delayed action is ready to be executed.
-   * 
+   *
    * @throws InterruptedException interrupted while waiting
    */
   public void waitForArrival() throws InterruptedException {

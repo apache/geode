@@ -503,7 +503,7 @@ public class PartitionedRegionLoadModelJUnitTest {
   /**
    * Test which illustrates the problem with our greedy algorithm. It doesn't necessarily end up
    * with a balanced result.
-   * 
+   *
    * TODO rebalance - change this test or fix the algorithm?
    */
   @Ignore
@@ -767,9 +767,9 @@ public class PartitionedRegionLoadModelJUnitTest {
   /**
    * This is a more complicated test of primary moving where moving primaries for some buckets then
    * forces other primaries to move.
-   * 
+   *
    * P = primary R = redundant X = not hosting
-   * 
+   *
    * Bucket 0 1 2 3 4 5 6 7 8 Member1 P P P P P P X X X Member2 R R R R R R P P R Member3 X X X X X
    * X R R P
    */
@@ -1594,7 +1594,7 @@ public class PartitionedRegionLoadModelJUnitTest {
 
     /*
      * (non-Javadoc)
-     * 
+     *
      * @see java.lang.Object#hashCode()
      */
     @Override
@@ -1608,7 +1608,7 @@ public class PartitionedRegionLoadModelJUnitTest {
 
     /*
      * (non-Javadoc)
-     * 
+     *
      * @see java.lang.Object#equals(java.lang.Object)
      */
     @Override
@@ -1648,7 +1648,7 @@ public class PartitionedRegionLoadModelJUnitTest {
 
     /*
      * (non-Javadoc)
-     * 
+     *
      * @see java.lang.Object#hashCode()
      */
     @Override
@@ -1662,7 +1662,7 @@ public class PartitionedRegionLoadModelJUnitTest {
 
     /*
      * (non-Javadoc)
-     * 
+     *
      * @see java.lang.Object#equals(java.lang.Object)
      */
     @Override

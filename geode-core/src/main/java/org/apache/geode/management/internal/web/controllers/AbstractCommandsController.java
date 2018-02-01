@@ -14,11 +14,20 @@
  */
 package org.apache.geode.management.internal.web.controllers;
 
+import java.io.File;
+import java.io.IOException;
 import java.io.PrintWriter;
 import java.io.StringWriter;
-import java.lang.management.ManagementFactory;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.attribute.PosixFilePermission;
+import java.nio.file.attribute.PosixFilePermissions;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import javax.management.InstanceNotFoundException;
 import javax.management.JMX;
@@ -26,6 +35,7 @@ import javax.management.MBeanServer;
 import javax.management.MalformedObjectNameException;
 import javax.management.ObjectName;
 
+import org.apache.commons.io.FileUtils;
 import org.apache.logging.log4j.Logger;
 import org.springframework.beans.propertyeditors.StringArrayPropertyEditor;
 import org.springframework.http.HttpStatus;
@@ -33,14 +43,11 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.WebDataBinder;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.InitBinder;
-import org.springframework.web.bind.annotation.ResponseBody;
+import org.springframework.web.multipart.MultipartFile;
 
 import org.apache.geode.internal.cache.GemFireCacheImpl;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.logging.LogService;
-import org.apache.geode.internal.logging.log4j.LogMarker;
-import org.apache.geode.internal.security.SecurityService;
-import org.apache.geode.internal.util.ArrayUtils;
 import org.apache.geode.management.DistributedSystemMXBean;
 import org.apache.geode.management.ManagementService;
 import org.apache.geode.management.MemberMXBean;
@@ -48,18 +55,16 @@ import org.apache.geode.management.internal.MBeanJMXAdapter;
 import org.apache.geode.management.internal.ManagementAgent;
 import org.apache.geode.management.internal.SystemManagementService;
 import org.apache.geode.management.internal.cli.shell.Gfsh;
-import org.apache.geode.management.internal.security.MBeanServerWrapper;
 import org.apache.geode.management.internal.web.controllers.support.LoginHandlerInterceptor;
 import org.apache.geode.management.internal.web.util.UriUtils;
 import org.apache.geode.security.AuthenticationFailedException;
-import org.apache.geode.security.GemFireSecurityException;
 import org.apache.geode.security.NotAuthorizedException;
 
 /**
  * The AbstractCommandsController class is the abstract base class encapsulating common
  * functionality across all Management Controller classes that expose REST API web service endpoints
  * (URLs/URIs) for GemFire shell (Gfsh) commands.
- * 
+ *
  * @see org.apache.geode.management.MemberMXBean
  * @see org.apache.geode.management.internal.cli.shell.Gfsh
  * @see org.springframework.http.ResponseEntity
@@ -142,7 +147,7 @@ public abstract class AbstractCommandsController {
    * Gets a reference to the platform MBeanServer running in this JVM process. The MBeanServer
    * instance constitutes a connection to the MBeanServer. This method returns a security-wrapped
    * MBean if integrated security is active.
-   * 
+   *
    * @return a reference to the platform MBeanServer for this JVM process.
    * @see java.lang.management.ManagementFactory#getPlatformMBeanServer()
    * @see javax.management.MBeanServer
@@ -160,7 +165,7 @@ public abstract class AbstractCommandsController {
    * method gets an instance of the Platform MBeanServer for this JVM process and uses it to lookup
    * the MemberMXBean for the GemFire Manager based on the ObjectName declared in the
    * DistributedSystemMXBean.getManagerObjectName() operation.
-   * 
+   *
    * @return a proxy instance to the MemberMXBean of the GemFire Manager.
    * @see #getMBeanServer()
    * @see #createMemberMXBeanForManagerUsingProxy(javax.management.MBeanServer,
@@ -190,7 +195,7 @@ public abstract class AbstractCommandsController {
   /**
    * Creates a Proxy using the Platform MBeanServer and ObjectName in order to access attributes and
    * invoke operations on the GemFire Manager's MemberMXBean.
-   * 
+   *
    * @param server a reference to this JVM's Platform MBeanServer.
    * @param managingMemberObjectName the ObjectName of the GemFire Manager's MemberMXBean registered
    *        in the Platform MBeanServer.
@@ -207,7 +212,7 @@ public abstract class AbstractCommandsController {
   /**
    * Gets the environment setup during this HTTP/command request for the current command process
    * execution.
-   * 
+   *
    * @return a mapping of environment variables to values.
    * @see LoginHandlerInterceptor#getEnvironment()
    */
@@ -224,7 +229,7 @@ public abstract class AbstractCommandsController {
    * Executes the specified command as entered by the user using the GemFire Shell (Gfsh). Note,
    * Gfsh performs validation of the command during parsing before sending the command to the
    * Manager for processing.
-   * 
+   *
    * @param command a String value containing a valid command String as would be entered by the user
    *        in Gfsh.
    * @param environment a Map containing any environment configuration settings to be used by the
@@ -232,18 +237,36 @@ public abstract class AbstractCommandsController {
    *        Gfsh, the key/value pair (APP_NAME=gfsh) is a specified mapping in the "environment.
    *        Note, it is common for the REST API to act as a bridge, or an adapter between Gfsh and
    *        the Manager, and thus need to specify this key/value pair mapping.
-   * @param fileData is a two-dimensional byte array containing the pathnames and contents of file
-   *        data streamed to the Manager, usually for the 'deploy' Gfsh command.
+   * @param multipartFiles uploaded files
    * @return a result of the command execution as a String, typically marshalled in JSON to be
    *         serialized back to Gfsh.
-   * @see org.apache.geode.management.MemberMXBean#processCommand(String, java.util.Map, Byte[][])
    */
   protected String processCommand(final String command, final Map<String, String> environment,
-      final byte[][] fileData) {
-    logger.debug(LogMarker.CONFIG,
-        "Processing Command ({}) with Environment ({}) having File Data ({})...", command,
-        environment, (fileData != null && fileData.length > 0));
+      final MultipartFile[] multipartFiles) throws IOException {
+    List<String> filePaths = null;
+    Path tempDir = null;
+    if (multipartFiles != null) {
+      Set<PosixFilePermission> perms = new HashSet<>();
+      perms.add(PosixFilePermission.OWNER_READ);
+      perms.add(PosixFilePermission.OWNER_WRITE);
+      perms.add(PosixFilePermission.OWNER_EXECUTE);
+      tempDir = Files.createTempDirectory("uploaded-", PosixFilePermissions.asFileAttribute(perms));
+      // staging the files to local
+      filePaths = new ArrayList<>();
+      for (MultipartFile multipartFile : multipartFiles) {
+        File dest = new File(tempDir.toFile(), multipartFile.getOriginalFilename());
+        multipartFile.transferTo(dest);
+        filePaths.add(dest.getAbsolutePath());
+      }
+    }
+
     MemberMXBean manager = getManagingMemberMXBean();
-    return manager.processCommand(command, environment, ArrayUtils.toByteArray(fileData));
+    try {
+      return manager.processCommand(command, environment, filePaths);
+    } finally {
+      if (tempDir != null) {
+        FileUtils.deleteDirectory(tempDir.toFile());
+      }
+    }
   }
 }

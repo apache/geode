@@ -107,6 +107,8 @@ Start the gateway sender on a member or members.
 
 For information on how to configure a gateway sender, see [Configure Gateway Senders](../../../topologies_and_comm/multi_site_configuration/setting_up_a_multisite_system.html#setting_up_a_multisite_system__section_1500299A8F9A4C2385680E337F5D3DEC).
 
+Note: By default, gateway senders are configured to start automatically. Manual restart introduces a risk of data loss; it is not intended for production systems.
+
 **Availability:** Online. You must be connected in `gfsh` to a JMX Manager member to use this command.
 
 **Syntax:**
@@ -267,7 +269,7 @@ start locator --name=value [--bind-address=value] [--force(=value)]
  [--groups=value(,value)*] [--hostname-for-clients=value]
  [--locators=value] [--log-level=value] [--mcast-address=value] [--mcast-port=value] [--port=value] [--dir=value]
  [--properties-file=value] [--security-properties-file=value] [--initial-heap=value] [--max-heap=value]
- [--connect(=value)] [--enable-cluster-configuration(=value)] [--load-from-cluster-configuration-dir(=value)]
+ [--connect(=value)] [--enable-cluster-configuration(=value)] [--load-cluster-configuration-from-dir(=value)]
  [--cluster-config-dir=value]
  [--http-service-port=value] [--http-service-bind-address=value] 
  [--J=value(,value)*]
@@ -380,7 +382,7 @@ See <a href="../../../configuring/cluster_config/gfsh_persist.html">Overview of 
 <td>true</td>
 </tr>
 <tr class="even">
-<td><span class="keyword parmname">\-\-load-from-cluster-configuration-dir</span></td>
+<td><span class="keyword parmname">\-\-load-cluster-configuration-from-dir</span></td>
 <td>Loads the cluster configuration from the <span class="ph filepath">shared-config</span> directory. (When set to false, the configuration is loaded from the disk store of the internal, persistent region used by the locator to persist the configuration.)</td>
 <td>false</td>
 </tr>
@@ -455,7 +457,7 @@ start pulse --url=http://gemfire.example.com:7070/pulse
 
 Start a <%=vars.product_name%> cache server process.
 
-**Note:** When both <span class="keyword parmname">\\-\\-max-heap</span> and <span class="keyword parmname">\\-\\-initial-heap</span> are specified during locator startup, additional GC parameters are specified internally by <%=vars.product_name%>'s Resource Manager. If you do not want the additional default GC properties set by the Resource Manager, then use the `-Xms` and `-Xmx` JVM options. See [Controlling Heap Use with the Resource Manager](../../../managing/heap_use/heap_management.html#configuring_resource_manager) for more information.
+**Note:** When both <span class="keyword parmname">\\-\\-max-heap</span> and <span class="keyword parmname">\\-\\-initial-heap</span> are specified during server startup, additional GC parameters are specified on your behalf. If you do not want the additional default GC properties set, then use the `-Xms` and `-Xmx` JVM options to set just these parameters. See [Controlling Heap Use with the Resource Manager](../../../managing/heap_use/heap_management.html#configuring_resource_manager) for more information.
 
 **Availability:** Online or offline.
 

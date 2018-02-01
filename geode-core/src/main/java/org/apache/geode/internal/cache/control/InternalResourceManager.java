@@ -233,7 +233,7 @@ public class InternalResourceManager implements ResourceManager {
 
   /**
    * Deliver an event received from remote resource managers to the local listeners.
-   * 
+   *
    * @param event Event to deliver.
    */
   public void deliverEventFromRemote(final ResourceEvent event) {
@@ -286,7 +286,7 @@ public class InternalResourceManager implements ResourceManager {
 
   /**
    * Use threshold event processor to execute the event embedded in the runnable.
-   * 
+   *
    * @param runnable Runnable to execute.
    */
   void runWithNotifyExecutor(Runnable runnable) {
@@ -393,7 +393,7 @@ public class InternalResourceManager implements ResourceManager {
    * For testing only, an observer which is called when rebalancing is started and finished for a
    * particular region. This observer is called even the "rebalancing" is actually redundancy
    * recovery for a particular region.
-   * 
+   *
    * @param observer
    */
   public static void setResourceObserver(ResourceObserver observer) {
@@ -417,28 +417,28 @@ public class InternalResourceManager implements ResourceManager {
   public static interface ResourceObserver {
     /**
      * Indicates that rebalancing has started on a given region.
-     * 
+     *
      * @param region
      */
     public void rebalancingStarted(Region region);
 
     /**
      * Indicates that rebalancing has finished on a given region.
-     * 
+     *
      * @param region
      */
     public void rebalancingFinished(Region region);
 
     /**
      * Indicates that recovery has started on a given region.
-     * 
+     *
      * @param region
      */
     public void recoveryStarted(Region region);
 
     /**
      * Indicates that recovery has finished on a given region.
-     * 
+     *
      * @param region
      */
     public void recoveryFinished(Region region);
@@ -447,14 +447,14 @@ public class InternalResourceManager implements ResourceManager {
      * Indicated that a membership event triggered a recovery operation, but the recovery operation
      * will not be executed because there is already an existing recovery operation waiting to
      * happen on this region.
-     * 
+     *
      * @param region
      */
     public void recoveryConflated(PartitionedRegion region);
 
     /**
      * Indicates that a bucket is being moved from the source member to the target member.
-     * 
+     *
      * @param region the region
      * @param bucketId the bucket being moved
      * @param source the member the bucket is moving from
@@ -465,7 +465,7 @@ public class InternalResourceManager implements ResourceManager {
 
     /**
      * Indicates that a bucket primary is being moved from the source member to the target member.
-     * 
+     *
      * @param region the region
      * @param bucketId the bucket primary being moved
      * @param source the member the bucket primary is moving from
@@ -537,7 +537,7 @@ public class InternalResourceManager implements ResourceManager {
 
   /*
    * (non-Javadoc)
-   * 
+   *
    * @see org.apache.geode.distributed.internal.DistributionAdvisee#getCancelCriterion()
    */
   public CancelCriterion getCancelCriterion() {
@@ -563,7 +563,7 @@ public class InternalResourceManager implements ResourceManager {
 
   /*
    * (non-Javadoc)
-   * 
+   *
    * @see org.apache.geode.cache.control.ResourceManager#setEvictionHeapPercentage(int)
    */
   @Override

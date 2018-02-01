@@ -14,14 +14,14 @@
  */
 package org.apache.geode.modules.gatewaydelta;
 
+import java.io.DataInput;
+import java.io.DataOutput;
+import java.io.IOException;
+
 import org.apache.geode.DataSerializable;
 import org.apache.geode.DataSerializer;
 import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.Region;
-
-import java.io.DataInput;
-import java.io.DataOutput;
-import java.io.IOException;
 
 @SuppressWarnings("serial")
 public abstract class AbstractGatewayDeltaEvent implements GatewayDeltaEvent, DataSerializable {

@@ -14,6 +14,19 @@
  */
 package org.apache.geode.security;
 
+import static org.apache.geode.security.SecurityTestUtils.NO_EXCEPTION;
+import static org.apache.geode.test.dunit.Assert.fail;
+import static org.apache.geode.test.dunit.LogWriterUtils.getLogWriter;
+
+import java.io.IOException;
+import java.util.Properties;
+
+import javax.net.ssl.SSLException;
+import javax.net.ssl.SSLHandshakeException;
+
+import org.junit.Test;
+import org.junit.experimental.categories.Category;
+
 import org.apache.geode.cache.Region;
 import org.apache.geode.cache.client.Pool;
 import org.apache.geode.cache.execute.FunctionService;
@@ -28,17 +41,6 @@ import org.apache.geode.security.generator.CredentialGenerator;
 import org.apache.geode.security.generator.DummyCredentialGenerator;
 import org.apache.geode.test.junit.categories.DistributedTest;
 import org.apache.geode.test.junit.categories.SecurityTest;
-import org.junit.Test;
-import org.junit.experimental.categories.Category;
-
-import javax.net.ssl.SSLException;
-import javax.net.ssl.SSLHandshakeException;
-import java.io.IOException;
-import java.util.Properties;
-
-import static org.apache.geode.security.SecurityTestUtils.NO_EXCEPTION;
-import static org.apache.geode.test.dunit.Assert.fail;
-import static org.apache.geode.test.dunit.LogWriterUtils.getLogWriter;
 
 @Category({DistributedTest.class, SecurityTest.class})
 public class MultiUserAPIDUnitTest extends ClientAuthorizationTestCase {

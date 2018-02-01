@@ -47,6 +47,7 @@ public class LuceneIndexStats {
   private static final int commitTimeId;
   private static final int commitsInProgressId;
   private static final int documentsId;
+  private static final int failedEntriesId;
 
   private final Statistics stats;
   private final CopyOnWriteHashSet<IntSupplier> documentsSuppliers = new CopyOnWriteHashSet<>();
@@ -75,6 +76,7 @@ public class LuceneIndexStats {
         f.createLongCounter("updateTime",
             "Amount of time spent adding or removing documents from the index", "nanoseconds"),
         f.createIntGauge("updatesInProgress", "Number of index updates in progress", "operations"),
+        f.createIntCounter("failedEntries", "Number of entries failed to index", "entries"),
         f.createIntCounter("commits", "Number of lucene index commits on this member",
             "operations"),
         f.createLongCounter("commitTime", "Amount of time spent in lucene index commits",
@@ -99,6 +101,7 @@ public class LuceneIndexStats {
     commitTimeId = statsType.nameToId("commitTime");
     commitsInProgressId = statsType.nameToId("commitsInProgress");
     documentsId = statsType.nameToId("documents");
+    failedEntriesId = statsType.nameToId("failedEntries");
   }
 
   public LuceneIndexStats(StatisticsFactory f, String name) {
@@ -173,6 +176,14 @@ public class LuceneIndexStats {
     stats.incLong(commitTimeId, getStatTime() - start);
     stats.incInt(commitsInProgressId, -1);
     stats.incInt(commitsId, 1);
+  }
+
+  public void incFailedEntries() {
+    stats.incInt(failedEntriesId, 1);
+  }
+
+  public int getFailedEntries() {
+    return stats.getInt(failedEntriesId);
   }
 
   public void addDocumentsSupplier(IntSupplier supplier) {

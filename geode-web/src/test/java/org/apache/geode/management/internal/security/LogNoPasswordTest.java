@@ -30,20 +30,20 @@ import org.junit.experimental.categories.Category;
 
 import org.apache.geode.security.AuthenticationFailedException;
 import org.apache.geode.security.SecurityManager;
-import org.apache.geode.test.junit.rules.GfshShellConnectionRule;
-import org.apache.geode.test.dunit.rules.LocatorServerStartupRule;
+import org.apache.geode.test.dunit.rules.ClusterStartupRule;
 import org.apache.geode.test.dunit.rules.MemberVM;
 import org.apache.geode.test.junit.categories.IntegrationTest;
+import org.apache.geode.test.junit.rules.GfshCommandRule;
 
 @Category(IntegrationTest.class)
 public class LogNoPasswordTest {
 
   private static String PASSWORD = "abcdefghijklmn";
   @Rule
-  public LocatorServerStartupRule lsRule = new LocatorServerStartupRule().withLogFile();
+  public ClusterStartupRule lsRule = new ClusterStartupRule().withLogFile();
 
   @Rule
-  public GfshShellConnectionRule gfsh = new GfshShellConnectionRule();
+  public GfshCommandRule gfsh = new GfshCommandRule();
 
   @Test
   public void testPasswordInLogs() throws Exception {
@@ -51,9 +51,9 @@ public class LogNoPasswordTest {
     properties.setProperty(LOG_LEVEL, "debug");
     properties.setProperty(SECURITY_MANAGER, MySecurityManager.class.getName());
     MemberVM locator = lsRule.startLocatorVM(0, properties);
-    gfsh.secureConnectAndVerify(locator.getHttpPort(), GfshShellConnectionRule.PortType.http, "any",
+    gfsh.secureConnectAndVerify(locator.getHttpPort(), GfshCommandRule.PortType.http, "any",
         PASSWORD);
-    gfsh.executeAndVerifyCommand("list members");
+    gfsh.executeAndAssertThat("list members").statusIsSuccess();
 
     // scan all locator log files to find any occurrences of password
     File[] serverLogFiles =

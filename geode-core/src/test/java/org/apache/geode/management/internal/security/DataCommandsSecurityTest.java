@@ -28,11 +28,11 @@ import org.apache.geode.cache.Cache;
 import org.apache.geode.management.MemberMXBean;
 import org.apache.geode.security.GemFireSecurityException;
 import org.apache.geode.security.TestSecurityManager;
+import org.apache.geode.test.junit.categories.IntegrationTest;
+import org.apache.geode.test.junit.categories.SecurityTest;
 import org.apache.geode.test.junit.rules.ConnectionConfiguration;
 import org.apache.geode.test.junit.rules.MBeanServerConnectionRule;
 import org.apache.geode.test.junit.rules.ServerStarterRule;
-import org.apache.geode.test.junit.categories.IntegrationTest;
-import org.apache.geode.test.junit.categories.SecurityTest;
 
 @Category({IntegrationTest.class, SecurityTest.class})
 public class DataCommandsSecurityTest {
@@ -59,7 +59,7 @@ public class DataCommandsSecurityTest {
 
   @Before
   public void setUp() throws Exception {
-    bean = connectionRule.getProxyMBean(MemberMXBean.class);
+    bean = connectionRule.getProxyMXBean(MemberMXBean.class);
   }
 
   @Test

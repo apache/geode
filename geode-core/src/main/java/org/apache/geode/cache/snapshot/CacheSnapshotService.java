@@ -30,19 +30,19 @@ import org.apache.geode.pdx.PdxSerializer;
  * <pre>
  * // obtain a snapshot
  * CacheSnapshotService snapshot = cache.getSnapshotService();
- * 
+ *
  * // export the snapshot, every region in the cache will be exported
  * snapshot.save(new File("."), SnapshotFormat.GEMFIRE);
- * 
+ *
  * // import the snapshot files, updates any existing entries in the cache
  * snapshot.load(new File("."), SnapshotFormat.GEMFIRE);
  * </pre>
- * 
+ *
  * The default behavior is to perform all I/O operations on the node where the snapshot operations
  * are invoked. This will involve either collecting or dispersing data over the network if the cache
  * contains a partitioned region. The snapshot behavior can be changed using
  * {@link SnapshotOptions}. For example:
- * 
+ *
  * <pre>
  * CacheSnapshotService snapshot = cache.getSnapshotService();
  * SnapshotFilter filter = new SnapshotFilter() {
@@ -53,23 +53,23 @@ import org.apache.geode.pdx.PdxSerializer;
  *
  * SnapshotOptions<Object, Object> options = snapshot.createOptions();
  * options.setFilter(filter);
- * 
+ *
  * snapshot.save(new File("."), SnapshotFormat.GEMFIRE, options);
  * </pre>
- * 
+ *
  * Note that the snapshot does not provide a consistency guarantee. Updates to data during the
  * course of import/export operations could result data inconsistencies.
- * 
+ *
  * @see Cache#getSnapshotService()
  * @see SnapshotOptions
- * 
+ *
  * @since GemFire 7.0
  */
 public interface CacheSnapshotService {
   /**
    * Creates a <code>SnapshotOptions</code> object configured with default settings. The options can
    * be used to configure snapshot behavior.
-   * 
+   *
    * @return the default options
    */
   SnapshotOptions<Object, Object> createOptions();
@@ -77,10 +77,10 @@ public interface CacheSnapshotService {
   /**
    * Exports all regions in the cache to the specified directory. The cache entries in each region
    * will be written to a separate file.
-   * 
+   *
    * @param dir the directory for writing the snapshots, will be created if necessary
    * @param format the snapshot format
-   * 
+   *
    * @throws IOException error writing snapshot
    */
   void save(File dir, SnapshotFormat format) throws IOException;
@@ -88,11 +88,11 @@ public interface CacheSnapshotService {
   /**
    * Exports all regions in the cache to the specified directory by applying user-configured
    * options. The cache entries in each region will be written to a separate file.
-   * 
+   *
    * @param dir the directory for writing the snapshots, will be created if necessary
    * @param format the snapshot format
    * @param options the snapshot options
-   * 
+   *
    * @throws IOException error writing snapshot
    */
   void save(File dir, SnapshotFormat format, SnapshotOptions<Object, Object> options)
@@ -107,10 +107,10 @@ public interface CacheSnapshotService {
    * Prior to loading data, all regions should have been created and any necessary serializers
    * (either {@link DataSerializer} or {@link PdxSerializer}) and {@link Instantiator}s should have
    * been registered.
-   * 
+   *
    * @param dir the directory containing the snapshot files
    * @param format the snapshot file format
-   * 
+   *
    * @throws IOException Unable to import data
    * @throws ClassNotFoundException Unable to import data
    */
@@ -125,7 +125,7 @@ public interface CacheSnapshotService {
    * Prior to loading data, all regions should have been created and any necessary serializers
    * (either {@link DataSerializer} or {@link PdxSerializer}) and {@link Instantiator}s should have
    * been registered.
-   * 
+   *
    * @param snapshots the snapshot files
    * @param format the snapshot file format
    * @param options the snapshot options

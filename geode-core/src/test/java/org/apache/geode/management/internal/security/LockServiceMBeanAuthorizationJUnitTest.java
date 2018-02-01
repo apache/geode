@@ -30,11 +30,11 @@ import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.distributed.internal.locks.DLockService;
 import org.apache.geode.management.LockServiceMXBean;
 import org.apache.geode.security.SimpleTestSecurityManager;
+import org.apache.geode.test.junit.categories.IntegrationTest;
+import org.apache.geode.test.junit.categories.SecurityTest;
 import org.apache.geode.test.junit.rules.ConnectionConfiguration;
 import org.apache.geode.test.junit.rules.MBeanServerConnectionRule;
 import org.apache.geode.test.junit.rules.ServerStarterRule;
-import org.apache.geode.test.junit.categories.IntegrationTest;
-import org.apache.geode.test.junit.categories.SecurityTest;
 
 @Category({IntegrationTest.class, SecurityTest.class})
 public class LockServiceMBeanAuthorizationJUnitTest {
@@ -57,7 +57,7 @@ public class LockServiceMBeanAuthorizationJUnitTest {
 
   @Before
   public void setUp() throws Exception {
-    lockServiceMBean = connectionRule.getProxyMBean(LockServiceMXBean.class);
+    lockServiceMBean = connectionRule.getProxyMXBean(LockServiceMXBean.class);
   }
 
   @AfterClass

@@ -47,7 +47,7 @@ import org.apache.geode.internal.logging.log4j.LogMarker;
 
 /**
  * This message class sends tombstone GC information to other PR holders
- * 
+ *
  * @since GemFire 7.0
  */
 public class PRTombstoneMessage extends PartitionMessageWithDirectReply

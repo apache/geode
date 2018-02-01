@@ -14,33 +14,29 @@
  */
 package org.apache.geode.management.internal.cli.result;
 
-import java.io.FileNotFoundException;
+import java.io.File;
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.stream.Collectors;
 
 import org.apache.geode.management.cli.Result;
-import org.apache.geode.management.internal.cli.CliUtil;
 
 /**
- * 
- * 
+ *
+ *
  * @since GemFire 7.0
  */
 public class FileResult implements Result {
-  private String[] filePaths;
-  private int fileIndex;
-  private Status status = Status.ERROR;
-  private byte[][] localFileData = null;
-  private boolean failedToPersist = false;
+  private List<File> files = new ArrayList<>();
 
-  public FileResult(String[] filePathsToRead) throws FileNotFoundException, IOException {
-    this.filePaths = filePathsToRead;
-    this.localFileData = CliUtil.filesToBytes(filePathsToRead);
-    this.status = Status.OK;
+  public void addFile(File file) {
+    files.add(file);
   }
 
   @Override
   public Status getStatus() {
-    return status;
+    return Status.OK;
   }
 
   @Override
@@ -48,45 +44,38 @@ public class FileResult implements Result {
 
   @Override
   public boolean hasNextLine() {
-    return fileIndex < filePaths.length;
+    return false;
   }
 
   @Override
   public String nextLine() {
-    return filePaths[fileIndex++];
+    return "";
   }
 
-  public byte[][] toBytes() {
-    return localFileData;
+  public List<File> getFiles() {
+    return files;
   }
 
   /**
    * Calculates the total file size of all files associated with this result.
-   * 
+   *
    * @return Total file size.
    */
   public long computeFileSizeTotal() {
     long byteCount = 0;
-    for (int i = 1; i < this.localFileData.length; i += 2) {
-      byteCount += localFileData[i].length;
+    for (File file : files) {
+      byteCount += file.length();
     }
     return byteCount;
   }
 
   /**
    * Get a comma separated list of all files associated with this result.
-   * 
+   *
    * @return Comma separated list of files.
    */
   public String getFormattedFileList() {
-    StringBuffer formattedFileList = new StringBuffer();
-    for (int i = 0; i < this.localFileData.length; i += 2) {
-      formattedFileList.append(new String(this.localFileData[i]));
-      if (i < this.localFileData.length - 2) {
-        formattedFileList.append(", ");
-      }
-    }
-    return formattedFileList.toString();
+    return files.stream().map(File::getName).collect(Collectors.joining(", "));
   }
 
   @Override
@@ -97,17 +86,16 @@ public class FileResult implements Result {
   @Override
   public void saveIncomingFiles(String directory)
       throws UnsupportedOperationException, IOException {
-    // dump file data if any
-    CliUtil.bytesToFiles(localFileData, directory, true);
+    throw new UnsupportedOperationException("not supported");
   }
 
   @Override
   public boolean failedToPersist() {
-    return this.failedToPersist;
+    return false;
   }
 
   @Override
   public void setCommandPersisted(boolean commandPersisted) {
-    this.failedToPersist = !commandPersisted;
+    throw new UnsupportedOperationException("not supported");
   }
 }

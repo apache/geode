@@ -39,10 +39,10 @@ import org.apache.geode.internal.logging.LogService;
 
 /**
  * Stores the information such as partition attributes and meta data details
- * 
- * 
+ *
+ *
  * @since GemFire 6.5
- * 
+ *
  */
 public class ClientPartitionAdvisor {
 
@@ -210,7 +210,7 @@ public class ClientPartitionAdvisor {
 
   /**
    * This method returns total number of buckets for a PartitionedRegion.
-   * 
+   *
    * @return total number of buckets for a PartitionedRegion.
    */
 
@@ -239,7 +239,7 @@ public class ClientPartitionAdvisor {
 
   /**
    * Returns the PartitionResolver set for custom partitioning
-   * 
+   *
    * @return <code>PartitionResolver</code> for the PartitionedRegion
    */
   public PartitionResolver getPartitionResolver() {

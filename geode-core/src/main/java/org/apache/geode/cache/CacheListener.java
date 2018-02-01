@@ -18,12 +18,12 @@ package org.apache.geode.cache;
  * <p>
  * A listener to handle region or entry related events.
  * </p>
- * 
+ *
  * <p>
  * Instead of implementing this interface it is recommended that you extend the
  * {@link org.apache.geode.cache.util.CacheListenerAdapter} class.
  * </p>
- * 
+ *
  * <h4>Avoiding the risk of deadlock</h4>
  * <p>
  * The methods on a <code>CacheListener</code> are invoked while holding a lock on the entry
@@ -39,20 +39,20 @@ package org.apache.geode.cache;
  * configuration. To be assured of no deadlocks, listener code should cause some other thread to
  * access the region and must not wait for that thread to complete the task.
  * </p>
- * 
+ *
  * <h4>Concurrency</h4>
  * <p>
  * Multiple events, on different entries, can cause concurrent invocation of
  * <code>CacheListener</code> methods. Any exceptions thrown by the listener are caught by GemFire
  * and logged.
  * </p>
- * 
+ *
  * <h4>Declaring instances in Cache XML files</h4>
  * <p>
  * To declare a CacheListener in a Cache XML file, it must also implement {@link Declarable}
  * </p>
- * 
- * 
+ *
+ *
  * @see AttributesFactory#addCacheListener
  * @see AttributesFactory#initCacheListeners
  * @see RegionAttributes#getCacheListeners
@@ -66,7 +66,7 @@ public interface CacheListener<K, V> extends CacheCallback {
   /**
    * Handles the event of new key being added to a region. The entry did not previously exist in
    * this region in the local cache (even with a null value).
-   * 
+   *
    * @param event the EntryEvent
    * @see Region#create(Object, Object)
    * @see Region#put(Object, Object)
@@ -77,7 +77,7 @@ public interface CacheListener<K, V> extends CacheCallback {
   /**
    * Handles the event of an entry's value being modified in a region. This entry previously existed
    * in this region in the local cache, but its previous value may have been null.
-   * 
+   *
    * @param event the EntryEvent
    * @see Region#put(Object, Object)
    */
@@ -85,7 +85,7 @@ public interface CacheListener<K, V> extends CacheCallback {
 
   /**
    * Handles the event of an entry's value being invalidated.
-   * 
+   *
    * @param event the EntryEvent
    * @see Region#invalidate(Object)
    */
@@ -93,7 +93,7 @@ public interface CacheListener<K, V> extends CacheCallback {
 
   /**
    * Handles the event of an entry being destroyed.
-   * 
+   *
    * @param event the EntryEvent
    * @see Region#destroy(Object)
    */
@@ -103,7 +103,7 @@ public interface CacheListener<K, V> extends CacheCallback {
    * Handles the event of a region being invalidated. Events are not invoked for each individual
    * value that is invalidated as a result of the region being invalidated. Each subregion, however,
    * gets its own <code>regionInvalidated</code> event invoked on its listener.
-   * 
+   *
    * @param event the RegionEvent
    * @see Region#invalidateRegion()
    * @see Region#localInvalidateRegion()
@@ -114,7 +114,7 @@ public interface CacheListener<K, V> extends CacheCallback {
    * Handles the event of a region being destroyed. Events are not invoked for each individual entry
    * that is destroyed as a result of the region being destroyed. Each subregion, however, gets its
    * own <code>afterRegionDestroyed</code> event invoked on its listener.
-   * 
+   *
    * @param event the RegionEvent
    * @see Region#destroyRegion()
    * @see Region#localDestroyRegion()
@@ -126,7 +126,7 @@ public interface CacheListener<K, V> extends CacheCallback {
   /**
    * Handles the event of a region being cleared. Events are not invoked for each individual entry
    * that is removed as a result of the region being cleared.
-   * 
+   *
    * @param event the RegionEvent
    *
    * @see Region#clear
@@ -140,7 +140,7 @@ public interface CacheListener<K, V> extends CacheCallback {
    * <p>
    * Note that this method is only called for creates done in the local vm. To be notified of
    * creates done in remote vms use {@link RegionMembershipListener#afterRemoteRegionCreate}.
-   * 
+   *
    * @param event the RegionEvent
    *
    * @see Cache#createRegion
@@ -153,7 +153,7 @@ public interface CacheListener<K, V> extends CacheCallback {
    * Handles the event of a region being live after receiving the marker from the server.
    *
    * @param event the RegionEvent
-   * 
+   *
    * @see Cache#readyForEvents
    * @since GemFire 5.5
    */

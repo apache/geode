@@ -33,7 +33,7 @@ import org.apache.geode.internal.i18n.LocalizedStrings;
 import org.apache.geode.internal.logging.LogService;
 
 /**
- * 
+ *
  *
  */
 public class FunctionExecutionNodePruner {
@@ -90,11 +90,11 @@ public class FunctionExecutionNodePruner {
      * First Logic: Just implement the Greedy algorithm where you keep adding nodes which has the
      * biggest set of non-currentBucketSet. // Deterministic but it (almost)always chooses minimum
      * no of nodes to execute the function on.
-     * 
+     *
      * Second Logic: Give highest preference to the local node and after that use First Logic. //
      * Local Node gets preference but still its deterministic for all the execution taking // place
      * at that node which require same set of buckets.
-     * 
+     *
      * Third Logic: After including local node, choose random nodes among the remaining nodes in
      * step until your curentBucketSet has all the required buckets. // No optimization for number
      * of nodes to execute the function

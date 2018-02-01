@@ -45,19 +45,19 @@ import org.apache.geode.internal.AvailablePortHelper;
 import org.apache.geode.management.cli.Result;
 import org.apache.geode.management.internal.cli.result.CommandResult;
 import org.apache.geode.management.internal.cli.util.CommandStringBuilder;
-import org.apache.geode.test.junit.rules.GfshShellConnectionRule;
-import org.apache.geode.test.dunit.rules.LocatorServerStartupRule;
+import org.apache.geode.test.dunit.rules.ClusterStartupRule;
 import org.apache.geode.test.dunit.rules.MemberVM;
 import org.apache.geode.test.junit.categories.DistributedTest;
+import org.apache.geode.test.junit.rules.GfshCommandRule;
 
 @Category(DistributedTest.class)
 public class ExportLogsStatsDUnitTest {
   @ClassRule
-  public static LocatorServerStartupRule lsRule =
-      new LocatorServerStartupRule().withTempWorkingDir().withLogFile();
+  public static ClusterStartupRule lsRule =
+      new ClusterStartupRule().withTempWorkingDir().withLogFile();
 
   @ClassRule
-  public static GfshShellConnectionRule connector = new GfshShellConnectionRule();
+  public static GfshCommandRule connector = new GfshCommandRule();
 
   protected static int jmxPort, httpPort;
   protected static Set<String> expectedZipEntries = new HashSet<>();
@@ -94,7 +94,7 @@ public class ExportLogsStatsDUnitTest {
   @Test
   public void testExportLogsAndStats() throws Exception {
     connectIfNeeded();
-    connector.executeAndVerifyCommand("export logs");
+    connector.executeAndAssertThat("export logs").statusIsSuccess();
     String zipPath = getZipPathFromCommandResult(connector.getGfshOutput());
     Set<String> actualZipEnries = getZipEntries(zipPath);
 
@@ -106,7 +106,7 @@ public class ExportLogsStatsDUnitTest {
   @Test
   public void testExportLogsOnly() throws Exception {
     connectIfNeeded();
-    connector.executeAndVerifyCommand("export logs --logs-only");
+    connector.executeAndAssertThat("export logs --logs-only").statusIsSuccess();
     String zipPath = getZipPathFromCommandResult(connector.getGfshOutput());
     Set<String> actualZipEnries = getZipEntries(zipPath);
 
@@ -117,7 +117,7 @@ public class ExportLogsStatsDUnitTest {
   @Test
   public void testExportStatsOnly() throws Exception {
     connectIfNeeded();
-    connector.executeAndVerifyCommand("export logs --stats-only");
+    connector.executeAndAssertThat("export logs --stats-only").statusIsSuccess();
     String zipPath = getZipPathFromCommandResult(connector.getGfshOutput());
     Set<String> actualZipEnries = getZipEntries(zipPath);
 
@@ -137,8 +137,8 @@ public class ExportLogsStatsDUnitTest {
     commandStringBuilder.addOption("start-time", dateTimeFormatter.format(tomorrow));
     commandStringBuilder.addOption("log-level", "debug");
 
-    String output = connector.execute(commandStringBuilder.toString());
-    assertThat(output).contains("No files to be exported");
+    connector.executeAndAssertThat(commandStringBuilder.toString()).statusIsError()
+        .containsOutput("No files to be exported");
   }
 
   @Test

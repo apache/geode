@@ -27,7 +27,7 @@ import org.apache.geode.cache.DiskStore;
 import org.apache.geode.cache.EntryNotFoundException;
 import org.apache.geode.cache.Region;
 import org.apache.geode.cache.Scope;
-import org.apache.geode.internal.cache.lru.LRUStatistics;
+import org.apache.geode.internal.cache.eviction.EvictionStatistics;
 import org.apache.geode.test.junit.categories.IntegrationTest;
 
 /**
@@ -331,7 +331,7 @@ public class DiskRegOplogSwtchingAndRollerJUnitTest extends DiskRegionTestingBas
 
   /**
    * DiskRegOplog1OverridingOplog2JUnitTest: Disk Region test : oplog1 flush overriding oplog2 flush
-   * 
+   *
    * This test will hold the flush of oplog1 and flush oplog2 before it. After that oplog1 is
    * allowed to flush. A get of an entry which was first put in oplog1 and then in oplog2 should
    * result in the get being done from oplog2.
@@ -617,8 +617,8 @@ public class DiskRegOplogSwtchingAndRollerJUnitTest extends DiskRegionTestingBas
     // region.close();
   }// end of testEntryDeletedinCurrentOplog
 
-  private LRUStatistics getLRUStats(Region region) {
-    return ((LocalRegion) region).getEvictionController().getLRUHelper().getStats();
+  private EvictionStatistics getLRUStats(Region region) {
+    return ((LocalRegion) region).getEvictionController().getStatistics();
   }
 
   /**

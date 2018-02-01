@@ -79,9 +79,12 @@ public class CliStrings {
   public static final String GROUPS = "groups";
   public static final String MEMBER = "member";
   public static final String MEMBERS = "members";
+  public static final String IFEXISTS = "if-exists";
   public static final String JAR = "jar";
   public static final String JARS = "jars";
 
+  public static final String IFEXISTS_HELP =
+      "If true, the command will be a no-op if the entity does not exist.";
   private static final String LOG_LEVEL_VALUES =
       "Possible values for log-level include: ALL, TRACE, DEBUG, INFO, WARN, ERROR, FATAL, OFF.";
 
@@ -210,7 +213,7 @@ public class CliStrings {
   public static final String SHARED_CONFIGURATION_NO_LOCATORS_WITH_SHARED_CONFIGURATION =
       "No locators with cluster configuration enabled.";
   public static final String SHARED_CONFIGURATION_FAILED_TO_PERSIST_COMMAND_CHANGES =
-      "Failed to persist the configuration changes due to this command, Revert the command to maintain consistency.\nPlease use \"status cluster-config-service\" to determine whether Cluster configuration service is RUNNING.";
+      "This change is not persisted in the cluster configuration, either because the cluster configuration service is not running or the command is operating on targeted members.";
   /* Other Constants */
   public static final String GFSH__MSG__NO_LONGER_CONNECTED_TO_0 = "No longer connected to {0}.";
   public static final String GFSHPARSER__MSG__REQUIRED_ARGUMENT_0 = "Required Argument: \"{0}\"";
@@ -731,11 +734,11 @@ public class CliStrings {
       "Name/Id of the member in which the index will be created.";
   public static final String CREATE_INDEX__TYPE = "type";
   public static final String CREATE_INDEX__TYPE__HELP =
-      "Type of the index. Valid values are: range, key and hash.";
+      "Type of the index. Valid values are: range and key. Deprecated : hash has been deprecated since Apache Geode 1.4.0";
   public static final String CREATE_INDEX__GROUP__HELP =
       "Group of members in which the index will be created.";
   public static final String CREATE_INDEX__INVALID__INDEX__TYPE__MESSAGE =
-      "Invalid index type,value must be one of the following: range, key or hash.";
+      "Invalid index type,value must be one of the following: range, key and hash. Deprecated : hash has been deprecated since Apache Geode 1.4.0";
   public static final String CREATE_INDEX__SUCCESS__MSG =
       "Index successfully created with following details";
   public static final String CREATE_INDEX__FAILURE__MSG =
@@ -858,6 +861,18 @@ public class CliStrings {
       "region-time-to-live-expiration-action";
   public static final String CREATE_REGION__REGIONEXPIRATIONTTLACTION__HELP =
       "Action to be taken on a region that has exceeded the TTL expiration.";
+  public static final String CREATE_REGION__EVICTION_ACTION = "eviction-action";
+  public static final String CREATE_REGION__EVICTION_ACTION__HELP =
+      "The eviction action to apply. Must be either 'local-destroy' or 'overflow-to-disk'";
+  public static final String CREATE_REGION__EVICTION_MAX_MEMORY = "eviction-max-memory";
+  public static final String CREATE_REGION__EVICTION_MAX_MEMORY__HELP =
+      "Activates LRU eviction based on the region's memory usage specified by this value (in megabytes).";
+  public static final String CREATE_REGION__EVICTION_ENTRY_COUNT = "eviction-entry-count";
+  public static final String CREATE_REGION__EVICTION_ENTRY_COUNT__HELP =
+      "Activates LRU eviction based on the region's entry count specified by this value.";
+  public static final String CREATE_REGION__EVICTION_OBJECT_SIZER = "eviction-object-sizer";
+  public static final String CREATE_REGION__EVICTION_OBJECT_SIZER__HELP =
+      "A custom class which implements ObjectSizer in order to perform max memory eviction.";
   public static final String CREATE_REGION__DISKSTORE = "disk-store";
   public static final String CREATE_REGION__DISKSTORE__HELP =
       "Disk Store to be used by this region. \"list disk-store\" can be used to display existing disk stores.";
@@ -1037,6 +1052,24 @@ public class CliStrings {
 
   public static final String CREATE_REGION__MSG__INVALID_PARTITION_RESOLVER =
       "{0} is an invalid Partition Resolver.";
+
+  public static final String CREATE_REGION__MSG__BOTH_EVICTION_VALUES =
+      "eviction-max-memory and eviction-entry-count cannot both be specified.";
+
+  public static final String CREATE_REGION__MSG__MISSING_EVICTION_ACTION =
+      "eviction-action must be specified.";
+
+  public static final String CREATE_REGION__MSG__INVALID_EVICTION_ACTION =
+      "eviction-action must be 'local-destroy' or 'overflow-to-disk'";
+
+  public static final String CREATE_REGION__MSG__INVALID_EVICTION_OBJECT_SIZER_AND_ENTRY_COUNT =
+      "eviction-object-sizer cannot be specified with eviction-entry-count";
+
+  public static final String CREATE_REGION__MSG__INVALID_EVICTION_OBJECT_SIZER_WITHOUT_MAX_MEMORY =
+      "eviction-object-sizer cannot be specified without eviction-max-memory";
+
+  public static final String CREATE_REGION__MSG__OBJECT_SIZER_MUST_BE_OBJECTSIZER_AND_DECLARABLE =
+      "eviction-object-sizer must implement both ObjectSizer and Declarable interfaces";
 
   /* debug command */
   public static final String DEBUG = "debug";
@@ -2003,9 +2036,10 @@ public class CliStrings {
   public static final String SHOW_METRICS__CATEGORY__HELP =
       "Categories available based upon the parameters specified are:\n"
           + "- no parameters specified: cluster, cache, diskstore, query\n"
-          + "- region specified: cluster, region, partition, diskstore, callback, eviction\n"
-          + "- member specified: member, jvm, region, serialization, communication, function, transaction, diskstore, lock, eviction, distribution, offheap\n"
-          + "- member and region specified: region, partition, diskstore, callback, eviction";
+          + "- region specified: callback, cluster, diskstore, eviction, partition, region\n"
+          + "- member specified: communication, diskstore, distribution, eviction, function, jvm, lock, member, offheap, region, serialization, transaction\n"
+          + "- member and port specified: cacheserver, communication, diskstore, distribution, eviction, function, jvm, lock, member, notification, offheap, query, region, serialization, transaction\n"
+          + "- member and region specified: callback, diskstore, eviction, partition, region";
   public static final String SHOW_METRICS__FILE = "file";
   public static final String SHOW_METRICS__FILE__HELP =
       "Name of the file to which metrics will be written.";

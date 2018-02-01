@@ -14,9 +14,9 @@
  */
 package org.apache.geode.internal.io;
 
-import org.apache.geode.i18n.LogWriterI18n;
-
 import java.io.File;
+
+import org.apache.geode.i18n.LogWriterI18n;
 
 /**
  * Defines the constants and methods for rolling files (logs and stat archives).

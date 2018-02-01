@@ -17,7 +17,7 @@ package org.apache.geode.cache.query;
 
 /**
  * @deprecated As of 6.6.1. Check {@link QueryService} for changes.
- * 
+ *
  *             Enumerated type for types of {@linkplain Index indexes}
  *
  * @since GemFire 4.0
@@ -50,7 +50,11 @@ public enum IndexType {
    * <code>long int short byte char float double</code>
    *
    * @see QueryService#createIndex(String, IndexType, String, String)
+   * @deprecated Due to the overhead caused by rehashing while expanding the backing array, hash
+   *             index has been deprecated since Apache Geode 1.4.0. Use
+   *             {@link IndexType#FUNCTIONAL} instead.
    */
+  @Deprecated
   HASH("HASH"),
 
 

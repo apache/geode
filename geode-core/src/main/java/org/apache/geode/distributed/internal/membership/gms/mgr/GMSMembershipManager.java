@@ -37,7 +37,6 @@ import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReadWriteLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 
-import org.apache.geode.distributed.internal.ShutdownMessage;
 import org.apache.logging.log4j.Logger;
 
 import org.apache.geode.CancelException;
@@ -61,6 +60,7 @@ import org.apache.geode.distributed.internal.DistributionMessage;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.distributed.internal.InternalLocator;
 import org.apache.geode.distributed.internal.OverflowQueueWithDMStats;
+import org.apache.geode.distributed.internal.ShutdownMessage;
 import org.apache.geode.distributed.internal.SizeableRunnable;
 import org.apache.geode.distributed.internal.StartupMessage;
 import org.apache.geode.distributed.internal.direct.DirectChannel;
@@ -348,7 +348,7 @@ public class GMSMembershipManager implements MembershipManager, Manager {
    *
    * @see #shunnedMembers
    */
-  static private final int SHUNNED_SUNSET = Integer
+  private static final int SHUNNED_SUNSET = Integer
       .getInteger(DistributionConfig.GEMFIRE_PREFIX + "shunned-member-timeout", 300).intValue();
 
   /**
@@ -377,7 +377,7 @@ public class GMSMembershipManager implements MembershipManager, Manager {
   /**
    * ARB: the map of latches is used to block peer handshakes till authentication is confirmed.
    */
-  final private HashMap<DistributedMember, CountDownLatch> memberLatch = new HashMap<>();
+  private final HashMap<DistributedMember, CountDownLatch> memberLatch = new HashMap<>();
 
   /**
    * Insert our own MessageReceiver between us and the direct channel, in order to correctly filter
@@ -1401,6 +1401,7 @@ public class GMSMembershipManager implements MembershipManager, Manager {
    *
    * @return the current membership view coordinator
    */
+  @Override
   public DistributedMember getCoordinator() {
     latestViewReadLock.lock();
     try {
@@ -1668,11 +1669,11 @@ public class GMSMembershipManager implements MembershipManager, Manager {
    * like memberExists() this checks to see if the given ID is in the current membership view. If it
    * is in the view though we try to contact it to see if it's still around. If we can't contact it
    * then suspect messages are sent to initiate final checks
-   * 
+   *
    * @param mbr the member to verify
-   * 
+   *
    * @param reason why the check is being done (must not be blank/null)
-   * 
+   *
    * @return true if the member checks out
    */
   public boolean verifyMember(DistributedMember mbr, String reason) {
@@ -1796,7 +1797,7 @@ public class GMSMembershipManager implements MembershipManager, Manager {
 
   /*
    * (non-Javadoc)
-   * 
+   *
    * @see org.apache.geode.distributed.internal.membership.MembershipManager#isConnected()
    */
   public boolean isConnected() {
@@ -2243,7 +2244,7 @@ public class GMSMembershipManager implements MembershipManager, Manager {
   /*
    * (non-Javadoc) MembershipManager method: wait for the given member to be gone. Throws
    * TimeoutException if the wait goes too long
-   * 
+   *
    * @see
    * org.apache.geode.distributed.internal.membership.MembershipManager#waitForDeparture(org.apache.
    * geode.distributed.DistributedMember)
@@ -2635,5 +2636,14 @@ public class GMSMembershipManager implements MembershipManager, Manager {
     DistributionManager dm = listener.getDM();
     return shutdownInProgress || (dm != null && dm.isShutdownStarted());
   }
+
+  public void disconnect(boolean beforeJoined) {
+    if (beforeJoined) {
+      uncleanShutdown("Failed to start distribution", null);
+    } else {
+      shutdown();
+    }
+  }
+
 
 }

@@ -14,6 +14,11 @@
  */
 package org.apache.geode.internal.cache.functions;
 
+import java.io.DataInput;
+import java.io.DataOutput;
+import java.io.IOException;
+
+import org.apache.geode.DataSerializable;
 import org.apache.geode.LogWriter;
 import org.apache.geode.cache.*;
 import org.apache.geode.cache.execute.Function;
@@ -25,7 +30,9 @@ import org.apache.geode.distributed.internal.InternalDistributedSystem;
  * Function for Executing a fire-and-forget function on all servers as opposed to only executing on
  * the ones the client is currently connected to.
  */
-public class FireAndForgetFunctionOnAllServers implements Function {
+public class FireAndForgetFunctionOnAllServers implements Function, DataSerializable {
+
+  public FireAndForgetFunctionOnAllServers() {}
 
   public static final String ID = FireAndForgetFunctionOnAllServers.class.getName();
 
@@ -69,5 +76,15 @@ public class FireAndForgetFunctionOnAllServers implements Function {
   @Override
   public boolean isHA() {
     return false;
+  }
+
+  @Override
+  public void toData(DataOutput out) throws IOException {
+
+  }
+
+  @Override
+  public void fromData(DataInput in) throws IOException, ClassNotFoundException {
+
   }
 }

@@ -14,7 +14,6 @@
  */
 package org.apache.geode.distributed.internal.membership.gms;
 
-import java.io.File;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
 
@@ -40,14 +39,14 @@ import org.apache.geode.security.GemFireSecurityException;
 
 /**
  * Create a new Member based on the given inputs.
- * 
+ *
  * @see org.apache.geode.distributed.internal.membership.NetMember
  */
 public class GMSMemberFactory implements MemberServices {
 
   /**
    * Return a new NetMember, possibly for a different host
-   * 
+   *
    * @param i the name of the host for the specified NetMember, the current host (hopefully) if
    *        there are any problems.
    * @param splitBrainEnabled whether the member has this feature enabled
@@ -67,7 +66,7 @@ public class GMSMemberFactory implements MemberServices {
   /**
    * Return a new NetMember representing current host. This assumes that the member does not have
    * network partition detection enabled and can be group coordinator
-   * 
+   *
    * @param i an InetAddress referring to the current host
    * @param p the membership port being used
    * @return the new NetMember
@@ -81,7 +80,7 @@ public class GMSMemberFactory implements MemberServices {
   /**
    * Return a new NetMember representing current host. This is used for testing, so we ignore
    * host-name lookup localhost inetAddress
-   * 
+   *
    * @param s a String referring to a host - ignored
    * @param p the membership port being used
    * @return the new member
@@ -119,11 +118,11 @@ public class GMSMemberFactory implements MemberServices {
   }
 
   @Override
-  public NetLocator newLocatorHandler(InetAddress bindAddress, File stateFile, String locatorString,
+  public NetLocator newLocatorHandler(InetAddress bindAddress, String locatorString,
       boolean usePreferredCoordinators, boolean networkPartitionDetectionEnabled,
       LocatorStats stats, String securityUDPDHAlgo) {
 
-    return new GMSLocator(bindAddress, stateFile, locatorString, usePreferredCoordinators,
+    return new GMSLocator(bindAddress, locatorString, usePreferredCoordinators,
         networkPartitionDetectionEnabled, stats, securityUDPDHAlgo);
   }
 

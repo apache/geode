@@ -14,7 +14,7 @@
  */
 /*
  * ClearGlobalDUnitTest.java
- * 
+ *
  * Created on September 13, 2005, 1:47 PM
  */
 

@@ -123,4 +123,3 @@ public class RefreshNotificationType implements java.io.Serializable {
   }
 
 }
-

@@ -43,7 +43,7 @@ public class Transport extends UDP {
   /*
    * (non-Javadoc) copied from JGroups to perform Geode-specific error handling when there is a
    * network partition
-   * 
+   *
    * @see org.jgroups.protocols.TP#_send(org.jgroups.Message, org.jgroups.Address)
    */
   @Override
@@ -104,7 +104,7 @@ public class Transport extends UDP {
   /*
    * (non-Javadoc) JGroups does not currently (3.6.6) allow you to specify that threads should be
    * daemon, so we override the init() method here and create the factories before initializing UDP
-   * 
+   *
    * @see org.jgroups.protocols.UDP#init()
    */
   @Override
@@ -121,7 +121,7 @@ public class Transport extends UDP {
 
   /*
    * (non-Javadoc)
-   * 
+   *
    * @see org.jgroups.protocols.UDP#stop() JGroups is not terminating its timer. I contacted the
    * jgroups-users email list about this.
    */

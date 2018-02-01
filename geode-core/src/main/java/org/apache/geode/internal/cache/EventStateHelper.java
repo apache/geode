@@ -14,16 +14,6 @@
  */
 package org.apache.geode.internal.cache;
 
-import org.apache.geode.DataSerializer;
-import org.apache.geode.distributed.internal.InternalDistributedSystem;
-import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
-import org.apache.geode.internal.InternalDataSerializer;
-import org.apache.geode.internal.cache.CreateRegionProcessor.CreateRegionReplyMessage;
-import org.apache.geode.internal.cache.event.EventSequenceNumberHolder;
-import org.apache.geode.internal.cache.InitialImageOperation.RegionStateMessage;
-import org.apache.geode.internal.cache.ha.HARegionQueue.DispatchedAndCurrentEvents;
-import org.apache.geode.internal.cache.ha.ThreadIdentifier;
-
 import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
@@ -33,9 +23,19 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 
+import org.apache.geode.DataSerializer;
+import org.apache.geode.distributed.internal.InternalDistributedSystem;
+import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
+import org.apache.geode.internal.InternalDataSerializer;
+import org.apache.geode.internal.cache.CreateRegionProcessor.CreateRegionReplyMessage;
+import org.apache.geode.internal.cache.InitialImageOperation.RegionStateMessage;
+import org.apache.geode.internal.cache.event.EventSequenceNumberHolder;
+import org.apache.geode.internal.cache.ha.HARegionQueue.DispatchedAndCurrentEvents;
+import org.apache.geode.internal.cache.ha.ThreadIdentifier;
+
 /**
  * A helper class for serializing the event state map.
- * 
+ *
  * TODO - Store the event state map in DataSerializable object that keeps the map in this compressed
  * format in memory.
  *
@@ -50,7 +50,8 @@ public class EventStateHelper {
    * {@link RegionStateMessage#toData(DataOutput)} <br>
    */
   @SuppressWarnings("synthetic-access")
-  public static void toData(DataOutput dop, Map eventState, boolean isHARegion) throws IOException {
+  public static void dataSerialize(DataOutput dop, Map eventState, boolean isHARegion)
+      throws IOException {
     // For HARegionQueues, the event state map is uses different values
     // than a regular region :(
     InternalDistributedMember myId =
@@ -105,7 +106,7 @@ public class EventStateHelper {
    * {@link CreateRegionReplyMessage#fromData(DataInput)} <br>
    * {@link RegionStateMessage#fromData(DataInput)} <br>
    */
-  public static Map fromData(DataInput dip, boolean isHARegion)
+  public static Map deDataSerialize(DataInput dip, boolean isHARegion)
       throws IOException, ClassNotFoundException {
 
     InternalDistributedMember senderId = InternalDistributedMember.readEssentialData(dip);

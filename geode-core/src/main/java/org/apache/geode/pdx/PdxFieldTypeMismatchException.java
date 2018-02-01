@@ -13,7 +13,7 @@
  * the License.
  */
 /**
- * 
+ *
  */
 package org.apache.geode.pdx;
 
@@ -26,7 +26,7 @@ import org.apache.geode.GemFireException;
  * <p>
  * This exception can also be caused by {@link WritablePdxInstance#setField(String, Object)
  * setField} trying to set a value whose type is not compatible with the field.
- * 
+ *
  * @since GemFire 6.6
  *
  */
@@ -35,7 +35,7 @@ public class PdxFieldTypeMismatchException extends GemFireException {
 
   /**
    * Constructs a new exception with the given message
-   * 
+   *
    * @param message the message of the new exception
    */
   public PdxFieldTypeMismatchException(String message) {

@@ -14,12 +14,13 @@
  */
 package org.apache.geode.internal.logging.log4j.custom;
 
-import org.apache.geode.LogWriter;
-import org.apache.geode.cache.Cache;
-import org.apache.geode.cache.CacheFactory;
-import org.apache.geode.internal.logging.LogService;
-import org.apache.geode.internal.logging.log4j.Configurator;
-import org.apache.geode.test.junit.categories.IntegrationTest;
+import static org.apache.geode.distributed.ConfigurationProperties.*;
+import static org.apache.geode.internal.logging.log4j.custom.CustomConfiguration.*;
+import static org.assertj.core.api.Assertions.assertThat;
+
+import java.io.File;
+import java.util.Properties;
+
 import org.apache.logging.log4j.Level;
 import org.apache.logging.log4j.core.LogEvent;
 import org.apache.logging.log4j.core.config.ConfigurationFactory;
@@ -34,12 +35,12 @@ import org.junit.experimental.categories.Category;
 import org.junit.rules.TemporaryFolder;
 import org.junit.rules.TestName;
 
-import java.io.File;
-import java.util.Properties;
-
-import static org.apache.geode.distributed.ConfigurationProperties.*;
-import static org.apache.geode.internal.logging.log4j.custom.CustomConfiguration.*;
-import static org.assertj.core.api.Assertions.assertThat;
+import org.apache.geode.LogWriter;
+import org.apache.geode.cache.Cache;
+import org.apache.geode.cache.CacheFactory;
+import org.apache.geode.internal.logging.LogService;
+import org.apache.geode.internal.logging.log4j.Configurator;
+import org.apache.geode.test.junit.categories.IntegrationTest;
 
 /**
  * Integration tests with custom log4j2 configuration.

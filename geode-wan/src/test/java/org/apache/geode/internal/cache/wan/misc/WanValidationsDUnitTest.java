@@ -14,19 +14,13 @@
  */
 package org.apache.geode.internal.cache.wan.misc;
 
-import org.junit.Ignore;
-import org.junit.experimental.categories.Category;
-import org.junit.Test;
-
 import static org.junit.Assert.*;
-
-import org.apache.geode.test.dunit.cache.internal.JUnit4CacheTestCase;
-import org.apache.geode.test.dunit.internal.JUnit4DistributedTestCase;
-import org.apache.geode.test.junit.categories.DistributedTest;
 
 import java.util.ArrayList;
 import java.util.Map;
 
+import org.junit.Ignore;
+import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
 import org.apache.geode.cache.wan.GatewayEventFilter;
@@ -43,6 +37,9 @@ import org.apache.geode.internal.cache.wan.WANTestBase;
 import org.apache.geode.test.dunit.Assert;
 import org.apache.geode.test.dunit.IgnoredException;
 import org.apache.geode.test.dunit.SerializableRunnableIF;
+import org.apache.geode.test.dunit.cache.internal.JUnit4CacheTestCase;
+import org.apache.geode.test.dunit.internal.JUnit4DistributedTestCase;
+import org.apache.geode.test.junit.categories.DistributedTest;
 import org.apache.geode.test.junit.categories.FlakyTest;
 
 @Category(DistributedTest.class)
@@ -99,14 +96,14 @@ public class WanValidationsDUnitTest extends WANTestBase {
 
   /**
    * Validate that ParallelGatewaySender can be added to Distributed region
-   * 
+   *
    * @throws Exception
-   * 
-   * 
+   *
+   *
    *         Below test is disabled intentionally Replicated region with Parallel Async Event queue
    *         is not supported. Test is added for the same
    *         ReplicatedRegion_ParallelWANPropagationDUnitTest#test_DR_PGS_1Nodes_Put_Receiver
-   * 
+   *
    *         We are gone support this configuration in upcoming releases
    */
 
@@ -231,7 +228,7 @@ public class WanValidationsDUnitTest extends WANTestBase {
 
   /**
    * Test to make sure that same parallel gateway sender id can be used by 2 different PRs
-   * 
+   *
    * @throws Exception
    */
   @Ignore
@@ -294,7 +291,7 @@ public class WanValidationsDUnitTest extends WANTestBase {
   /**
    * Validate that if Colocated partitioned region doesn't want to add a PGS even if its parent has
    * one then it is fine
-   * 
+   *
    * @throws Exception
    */
 
@@ -322,7 +319,7 @@ public class WanValidationsDUnitTest extends WANTestBase {
 
   /**
    * Validate that if Colocated partitioned region has a subset of PGS then it is fine.
-   * 
+   *
    * @throws Exception
    */
 
@@ -351,7 +348,7 @@ public class WanValidationsDUnitTest extends WANTestBase {
 
   /**
    * Validate that if Colocated partitioned region has a superset of PGS then Exception is thrown.
-   * 
+   *
    * @throws Exception
    */
 
@@ -1209,10 +1206,9 @@ public class WanValidationsDUnitTest extends WANTestBase {
     }
   }
 
-  @Category(FlakyTest.class) // GEODE-1019: random ports, time sensitive, waitForCriterion, suspect
-                             // string: loss of quorum
   @Test
-  public void testBug50434_PR_Parallel_pass() throws Exception {
+  public void whenSendersAreAddedUsingAttributesMutatorThenEventsMustBeSuccessfullyReceviedByRemoteSite()
+      throws Exception {
     Integer lnPort = (Integer) vm0.invoke(() -> WANTestBase.createFirstLocatorWithDSId(1));
     Integer nyPort = (Integer) vm1.invoke(() -> WANTestBase.createFirstRemoteLocator(2, lnPort));
 
@@ -1347,7 +1343,7 @@ public class WanValidationsDUnitTest extends WANTestBase {
 
   /**
    * Test configuration::
-   * 
+   *
    * Region: Replicated WAN: Serial Number of WAN sites: 2 Region persistence enabled: false Async
    * channel persistence enabled: false
    */

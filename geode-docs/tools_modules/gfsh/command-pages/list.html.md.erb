@@ -445,6 +445,12 @@ personIndex   | /Person     | [name, email, address, revenue]                   
 
 Display all or a subset of members.
 
+Within the output, the membership coordinator is listed.
+`<vN>` identifies which view the member currently has;
+`N` will be zero or a positive integer.
+`<ec>` indicates which members are eligible to be a membership
+coordinator.
+
 **Availability:** Online. You must be connected in `gfsh` to a JMX Manager member to use this command.
 
 **Syntax:**
@@ -471,11 +477,12 @@ list members --group=Group1
 
 ``` pre
 gfsh>list members
-  Name   | Id
--------- | -------------------------------------
-server1  | 192.0.2.0(server1:888)<v7>:10839
-server2  | 192.0.2.0(server2:3260)<v8>:16721
-locator1 | 192.0.2.0(locator1:216:locator):33368
+  Name       | Id
+------------ | -------------------------------------
+Coordinator: | 192.0.2.0(locator1:216:locator)<ec><v6>:33368
+locator1     | 192.0.2.0(locator1:216:locator)<ec><v6>:33368
+server1      | 192.0.2.0(server1:888)<v7>:10839
+server2      | 192.0.2.0(server2:3260)<v8>:16721
 ```
 
 ## <a id="topic_F0ECEFF26086474498598035DD83C588" class="no-quick-link"></a>list regions

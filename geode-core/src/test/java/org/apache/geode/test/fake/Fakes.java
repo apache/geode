@@ -35,21 +35,22 @@ import org.apache.geode.distributed.internal.membership.InternalDistributedMembe
 import org.apache.geode.internal.cache.CachePerfStats;
 import org.apache.geode.internal.cache.GemFireCacheImpl;
 import org.apache.geode.internal.security.SecurityService;
+import org.apache.geode.pdx.PdxInstanceFactory;
 
 /**
  * Factory methods for fake objects for use in test.
- * 
+ *
  * These fakes are essentially mock objects with some limited functionality. For example the fake
  * cache can return a fake distributed system.
- * 
+ *
  * All of the fakes returned by this class are Mockito.mocks, so they can be modified by using
  * Mockito stubbing, ie
- * 
+ *
  * <pre>
  * cache = Fakes.cache(); Mockito.when(cache.getName()).thenReturn(...)
- * 
+ *
  * <pre>
- * 
+ *
  * Please help extend this class by adding other commonly used objects to this collection of fakes.
  */
 public class Fakes {
@@ -62,6 +63,7 @@ public class Fakes {
     InternalDistributedSystem system = mock(InternalDistributedSystem.class);
     DistributionConfig config = mock(DistributionConfig.class);
     DistributionManager distributionManager = mock(DistributionManager.class);
+    PdxInstanceFactory pdxInstanceFactory = mock(PdxInstanceFactory.class);
     CancelCriterion systemCancelCriterion = mock(CancelCriterion.class);
     DSClock clock = mock(DSClock.class);
     LogWriter logger = mock(LogWriter.class);
@@ -81,6 +83,7 @@ public class Fakes {
     when(cache.getCancelCriterion()).thenReturn(systemCancelCriterion);
     when(cache.getCachePerfStats()).thenReturn(mock(CachePerfStats.class));
     when(cache.getSecurityService()).thenReturn(mock(SecurityService.class));
+    when(cache.createPdxInstanceFactory(any())).thenReturn(pdxInstanceFactory);
 
     when(system.getDistributedMember()).thenReturn(member);
     when(system.getConfig()).thenReturn(config);
@@ -98,6 +101,7 @@ public class Fakes {
     when(distributionManager.getSystem()).thenReturn(system);
     when(distributionManager.getCancelCriterion()).thenReturn(systemCancelCriterion);
     when(distributionManager.getCache()).thenReturn(cache);
+    when(distributionManager.getExistingCache()).thenReturn(cache);
 
     return cache;
   }
@@ -120,13 +124,15 @@ public class Fakes {
     when(attributes.getDataPolicy()).thenReturn(policy);
     when(region.getCache()).thenReturn(cache);
     when(region.getRegionService()).thenReturn(cache);
+    when(region.getName()).thenReturn(name);
+    when(region.getFullPath()).thenReturn("/" + name);
     return region;
   }
 
   /**
    * Add real map behavior to a mock region. Useful for tests where you want to mock region that
    * just behaves like a map.
-   * 
+   *
    * @param mock the mockito mock to add behavior too.
    */
   public static void addMapBehavior(Region mock) {

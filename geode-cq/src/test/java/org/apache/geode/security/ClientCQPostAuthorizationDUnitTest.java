@@ -27,7 +27,6 @@ import java.util.Map;
 import java.util.Properties;
 import java.util.Random;
 
-import org.apache.geode.internal.AvailablePortHelper;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
@@ -46,6 +45,7 @@ import org.apache.geode.cache.query.cq.dunit.CqQueryTestListener;
 import org.apache.geode.cache.query.internal.cq.ClientCQImpl;
 import org.apache.geode.cache.query.internal.cq.CqService;
 import org.apache.geode.cache.query.internal.cq.InternalCqQuery;
+import org.apache.geode.internal.AvailablePortHelper;
 import org.apache.geode.internal.cache.GemFireCacheImpl;
 import org.apache.geode.security.generator.AuthzCredentialGenerator;
 import org.apache.geode.security.generator.CredentialGenerator;

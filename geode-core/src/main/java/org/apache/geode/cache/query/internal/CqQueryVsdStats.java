@@ -20,12 +20,12 @@ import org.apache.geode.StatisticsFactory;
 import org.apache.geode.StatisticsType;
 import org.apache.geode.StatisticsTypeFactory;
 import org.apache.geode.cache.query.CqEvent;
-import org.apache.geode.internal.statistics.StatisticsTypeFactoryImpl;
 import org.apache.geode.internal.cache.tier.MessageType;
+import org.apache.geode.internal.statistics.StatisticsTypeFactoryImpl;
 
 /**
  * This class tracks GemFire statistics related to a {@link org.apache.geode.cache.query.CqQuery}.
- * 
+ *
  * @since GemFire 5.5
  */
 public class CqQueryVsdStats {
@@ -130,7 +130,7 @@ public class CqQueryVsdStats {
 
   /**
    * Constructor.
-   * 
+   *
    * @param factory The <code>StatisticsFactory</code> which creates the <code>Statistics</code>
    *        instance
    * @param name The name of the <code>Statistics</code>
@@ -150,7 +150,7 @@ public class CqQueryVsdStats {
 
   /**
    * Returns the current value of the "cqInitialResultsTime" stat.
-   * 
+   *
    * @return the current value of the "cqInitialResultsTime" stat
    */
   public long getCqInitialResultsTime() {
@@ -166,7 +166,7 @@ public class CqQueryVsdStats {
 
   /**
    * Returns the current value of the "numInserts" stat.
-   * 
+   *
    * @return the current value of the "numInserts" stat
    */
   public long getNumInserts() {
@@ -182,7 +182,7 @@ public class CqQueryVsdStats {
 
   /**
    * Returns the current value of the "numUpdates" stat.
-   * 
+   *
    * @return the current value of the "numUpdates" stat
    */
   public long getNumUpdates() {
@@ -198,7 +198,7 @@ public class CqQueryVsdStats {
 
   /**
    * Returns the current value of the "numDeletes" stat.
-   * 
+   *
    * @return the current value of the "numDeletes" stat
    */
   public long getNumDeletes() {
@@ -214,7 +214,7 @@ public class CqQueryVsdStats {
 
   /**
    * Returns the current value of the "numEvents" stat.
-   * 
+   *
    * @return the current value of the "numEvents" stat
    */
   public long getNumEvents() {
@@ -230,7 +230,7 @@ public class CqQueryVsdStats {
 
   /**
    * Returns the current value of the "numQueuedEvents" stat.
-   * 
+   *
    * @return the current value of the "numQueuedEvents" stat
    */
   public long getNumHAQueuedEvents() {
@@ -246,7 +246,7 @@ public class CqQueryVsdStats {
 
   /**
    * Returns the current value of the "numCqListenerInvocations" stat.
-   * 
+   *
    * @return the current value of the "numCqListenerInvocations" stat
    */
   public long getNumCqListenerInvocations() {
@@ -274,7 +274,7 @@ public class CqQueryVsdStats {
 
   /**
    * Update stats for a CQ for VSD
-   * 
+   *
    * @param cqEvent object containing info on the newly qualified CQ event
    */
   public void updateStats(CqEvent cqEvent) {
@@ -294,7 +294,7 @@ public class CqQueryVsdStats {
 
   /**
    * Update stats for a CQ for VSD
-   * 
+   *
    * @param cqEvent object the type of CQ event
    */
   public void updateStats(Integer cqEvent) {

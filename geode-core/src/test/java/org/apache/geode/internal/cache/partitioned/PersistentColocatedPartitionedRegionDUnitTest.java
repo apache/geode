@@ -27,7 +27,25 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoMoreInteractions;
 import static org.mockito.Mockito.when;
 
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+import java.util.Set;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicBoolean;
+
 import org.apache.commons.io.FileUtils;
+import org.apache.logging.log4j.Level;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.core.Appender;
+import org.apache.logging.log4j.core.LogEvent;
+import org.apache.logging.log4j.core.Logger;
+import org.junit.Test;
+import org.junit.experimental.categories.Category;
+import org.mockito.ArgumentCaptor;
+
 import org.apache.geode.admin.internal.AdminDistributedSystemImpl;
 import org.apache.geode.cache.AttributesFactory;
 import org.apache.geode.cache.Cache;
@@ -46,6 +64,7 @@ import org.apache.geode.distributed.internal.DistributionMessage;
 import org.apache.geode.distributed.internal.DistributionMessageObserver;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.internal.cache.ColocationLogger;
+import org.apache.geode.internal.cache.DiskRegion;
 import org.apache.geode.internal.cache.InitialImageOperation.RequestImageMessage;
 import org.apache.geode.internal.cache.PartitionedRegion;
 import org.apache.geode.internal.cache.PartitionedRegionHelper;
@@ -64,23 +83,6 @@ import org.apache.geode.test.dunit.Wait;
 import org.apache.geode.test.dunit.WaitCriterion;
 import org.apache.geode.test.junit.categories.DistributedTest;
 import org.apache.geode.test.junit.categories.FlakyTest;
-import org.apache.logging.log4j.Level;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.core.Appender;
-import org.apache.logging.log4j.core.LogEvent;
-import org.apache.logging.log4j.core.Logger;
-import org.junit.Test;
-import org.junit.experimental.categories.Category;
-import org.mockito.ArgumentCaptor;
-
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-import java.util.Set;
-import java.util.concurrent.CountDownLatch;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.atomic.AtomicBoolean;
 
 @Category(DistributedTest.class)
 public class PersistentColocatedPartitionedRegionDUnitTest
@@ -191,9 +193,9 @@ public class PersistentColocatedPartitionedRegionDUnitTest
         af.setPartitionAttributes(paf.create());
         af.setDataPolicy(DataPolicy.PERSISTENT_PARTITION);
         af.setDiskStoreName("disk");
-        cache.createRegion(PR_REGION_NAME, af.create());
+        cache.createRegion(getPartitionedRegionName(), af.create());
 
-        paf.setColocatedWith(PR_REGION_NAME);
+        paf.setColocatedWith(getPartitionedRegionName());
         af.setPartitionAttributes(paf.create());
         cache.createRegion("region2", af.create());
         paf.setColocatedWith("region2");
@@ -211,13 +213,13 @@ public class PersistentColocatedPartitionedRegionDUnitTest
     createData(vm0, 0, NUM_BUCKETS, "b", "region2");
     createData(vm0, 0, NUM_BUCKETS, "c", "region3");
 
-    Set<Integer> vm0Buckets = getBucketList(vm0, PR_REGION_NAME);
+    Set<Integer> vm0Buckets = getBucketList(vm0, getPartitionedRegionName());
     assertEquals(vm0Buckets, getBucketList(vm0, "region2"));
     assertEquals(vm0Buckets, getBucketList(vm0, "region3"));
-    Set<Integer> vm1Buckets = getBucketList(vm1, PR_REGION_NAME);
+    Set<Integer> vm1Buckets = getBucketList(vm1, getPartitionedRegionName());
     assertEquals(vm1Buckets, getBucketList(vm1, "region2"));
     assertEquals(vm1Buckets, getBucketList(vm1, "region3"));
-    Set<Integer> vm2Buckets = getBucketList(vm2, PR_REGION_NAME);
+    Set<Integer> vm2Buckets = getBucketList(vm2, getPartitionedRegionName());
     assertEquals(vm2Buckets, getBucketList(vm2, "region2"));
     assertEquals(vm2Buckets, getBucketList(vm2, "region3"));
 
@@ -235,9 +237,9 @@ public class PersistentColocatedPartitionedRegionDUnitTest
 
     // The secondary buckets can be recovered asynchronously,
     // so wait for them to come back.
-    waitForBuckets(vm0, vm0Buckets, PR_REGION_NAME);
+    waitForBuckets(vm0, vm0Buckets, getPartitionedRegionName());
     waitForBuckets(vm0, vm0Buckets, "region2");
-    waitForBuckets(vm1, vm1Buckets, PR_REGION_NAME);
+    waitForBuckets(vm1, vm1Buckets, getPartitionedRegionName());
     waitForBuckets(vm1, vm1Buckets, "region2");
 
     checkData(vm0, 0, NUM_BUCKETS, "a");
@@ -293,8 +295,8 @@ public class PersistentColocatedPartitionedRegionDUnitTest
   private SerializableRunnable createPRsColocatedPairThread =
       new SerializableRunnable("create2PRs") {
         public void run() {
-          createPR(PR_REGION_NAME, true);
-          createPR("region2", PR_REGION_NAME, true);
+          createPR(getPartitionedRegionName(), true);
+          createPR("region2", getPartitionedRegionName(), true);
         }
       };
 
@@ -302,9 +304,9 @@ public class PersistentColocatedPartitionedRegionDUnitTest
       new SerializableRunnable("create multiple child PRs") {
         @Override
         public void run() throws Exception {
-          createPR(PR_REGION_NAME, true);
+          createPR(getPartitionedRegionName(), true);
           for (int i = 2; i < numChildPRs + 2; ++i) {
-            createPR("region" + i, PR_REGION_NAME, true);
+            createPR("region" + i, getPartitionedRegionName(), true);
           }
         }
       };
@@ -313,8 +315,8 @@ public class PersistentColocatedPartitionedRegionDUnitTest
       new SerializableRunnable("create PR colocation hierarchy") {
         @Override
         public void run() throws Exception {
-          createPR(PR_REGION_NAME, true);
-          createPR("region2", PR_REGION_NAME, true);
+          createPR(getPartitionedRegionName(), true);
+          createPR("region2", getPartitionedRegionName(), true);
           for (int i = 3; i < numChildPRGenerations + 2; ++i) {
             createPR("region" + i, "region" + (i - 1), true);
           }
@@ -329,7 +331,7 @@ public class PersistentColocatedPartitionedRegionDUnitTest
           try {
             // Skip creation of first region - expect region2 creation to fail
             // createPR(PR_REGION_NAME, true);
-            createPR("region2", PR_REGION_NAME, true);
+            createPR("region2", getPartitionedRegionName(), true);
           } catch (Exception e) {
             ex = e;
             exClass = e.getClass().toString();
@@ -361,7 +363,7 @@ public class PersistentColocatedPartitionedRegionDUnitTest
           try {
             // Skip creation of first region - expect region2 creation to fail
             // createPR(PR_REGION_NAME, true);
-            createPR("region2", PR_REGION_NAME, true);
+            createPR("region2", getPartitionedRegionName(), true);
           } catch (Exception e) {
             ex = e;
             exClass = e.getClass().toString();
@@ -393,7 +395,7 @@ public class PersistentColocatedPartitionedRegionDUnitTest
 
           AtomicBoolean isDone = new AtomicBoolean(false);
           try {
-            createPR(PR_REGION_NAME, true);
+            createPR(getPartitionedRegionName(), true);
             // Let this thread continue running long enough for the missing region to be logged a
             // couple times.
             // Child regions do not get created by this thread.
@@ -436,14 +438,14 @@ public class PersistentColocatedPartitionedRegionDUnitTest
           List<LogEvent> logEvents = Collections.emptyList();
 
           try {
-            createPR(PR_REGION_NAME, true);
+            createPR(getPartitionedRegionName(), true);
             // Delay creation of second (i.e child) region to see missing colocated region log
             // message (logInterval/2 < delay < logInterval)
             await().atMost(MAX_WAIT, TimeUnit.MILLISECONDS).until(() -> {
               verify(mockAppender, times(1)).append(loggingEventCaptor.capture());
             });
             logEvents = loggingEventCaptor.getAllValues();
-            createPR("region2", PR_REGION_NAME, true);
+            createPR("region2", getPartitionedRegionName(), true);
             // Another delay before exiting the thread to make sure that missing region logging
             // doesn't continue after missing region is created (delay > logInterval)
             await().atMost(logInterval * 2, TimeUnit.MILLISECONDS).until(() -> {
@@ -484,13 +486,13 @@ public class PersistentColocatedPartitionedRegionDUnitTest
           List<LogEvent> logEvents = Collections.emptyList();
           int numLogEvents = 0;
 
-          createPR(PR_REGION_NAME, true);
+          createPR(getPartitionedRegionName(), true);
           // Delay creation of child generation regions to see missing colocated region log message
           // parent region is generation 1, child region is generation 2, grandchild is 3, etc.
           for (int generation = 2; generation < (numChildPRGenerations + 2); ++generation) {
             String childPRName = "region" + generation;
             String colocatedWithRegionName =
-                generation == 2 ? PR_REGION_NAME : "region" + (generation - 1);
+                generation == 2 ? getPartitionedRegionName() : "region" + (generation - 1);
             loggingEventCaptor = ArgumentCaptor.forClass(LogEvent.class);
 
             // delay between starting generations of child regions until the expected missing
@@ -550,7 +552,7 @@ public class PersistentColocatedPartitionedRegionDUnitTest
           List<LogEvent> logEvents = Collections.emptyList();
           int numLogEvents = 0;
 
-          createPR(PR_REGION_NAME, true);
+          createPR(getPartitionedRegionName(), true);
           // Delay creation of child generation regions to see missing colocated region log message
           for (int regionNum = 2; regionNum < (numChildPRs + 2); ++regionNum) {
             String childPRName = "region" + regionNum;
@@ -569,7 +571,7 @@ public class PersistentColocatedPartitionedRegionDUnitTest
             assertEquals("Expected warning messages to be logged.", regionNum - 1, numLogEvents);
 
             // Start the child region
-            createPR(childPRName, PR_REGION_NAME, true);
+            createPR(childPRName, getPartitionedRegionName(), true);
           }
           String logMsg = "";
           logEvents = loggingEventCaptor.getAllValues();
@@ -615,8 +617,9 @@ public class PersistentColocatedPartitionedRegionDUnitTest
           List<LogEvent> logEvents = Collections.emptyList();
 
           try {
-            createPR(PR_REGION_NAME, true);
-            createPR("region2", PR_REGION_NAME, true); // This child region is never created
+            createPR(getPartitionedRegionName(), true);
+            createPR("region2", getPartitionedRegionName(), true); // This child region is never
+                                                                   // created
             // Let this thread continue running long enough for the missing region to be logged a
             // couple times.
             // Grandchild region does not get created by this thread. (1.5*logInterval < delay <
@@ -638,6 +641,24 @@ public class PersistentColocatedPartitionedRegionDUnitTest
           }
         }
       };
+
+  void checkRecoveredFromDisk(VM vm, final int bucketId, final boolean recoveredLocally) {
+    vm.invoke(new SerializableRunnable("check recovered from disk") {
+      @Override
+      public void run() {
+        Cache cache = getCache();
+        PartitionedRegion region = (PartitionedRegion) cache.getRegion(getPartitionedRegionName());
+        DiskRegion disk = region.getRegionAdvisor().getBucket(bucketId).getDiskRegion();
+        if (recoveredLocally) {
+          assertEquals(0, disk.getStats().getRemoteInitializations());
+          assertEquals(1, disk.getStats().getLocalInitializations());
+        } else {
+          assertEquals(1, disk.getStats().getRemoteInitializations());
+          assertEquals(0, disk.getStats().getLocalInitializations());
+        }
+      }
+    });
+  }
 
   private class ColocationLoggerIntervalSetter extends SerializableRunnable {
     private int logInterval;
@@ -741,10 +762,10 @@ public class PersistentColocatedPartitionedRegionDUnitTest
     createData(vm0, 0, NUM_BUCKETS, "a");
     createData(vm0, 0, NUM_BUCKETS, "b", "region2");
 
-    Set<Integer> vm0Buckets = getBucketList(vm0, PR_REGION_NAME);
+    Set<Integer> vm0Buckets = getBucketList(vm0, getPartitionedRegionName());
     assertFalse(vm0Buckets.isEmpty());
     assertEquals(vm0Buckets, getBucketList(vm0, "region2"));
-    Set<Integer> vm1Buckets = getBucketList(vm1, PR_REGION_NAME);
+    Set<Integer> vm1Buckets = getBucketList(vm1, getPartitionedRegionName());
     assertEquals(vm1Buckets, getBucketList(vm1, "region2"));
 
     closeCache(vm0);
@@ -777,10 +798,10 @@ public class PersistentColocatedPartitionedRegionDUnitTest
     createData(vm0, 0, NUM_BUCKETS, "a");
     createData(vm0, 0, NUM_BUCKETS, "b", "region2");
 
-    Set<Integer> vm0Buckets = getBucketList(vm0, PR_REGION_NAME);
+    Set<Integer> vm0Buckets = getBucketList(vm0, getPartitionedRegionName());
     assertFalse(vm0Buckets.isEmpty());
     assertEquals(vm0Buckets, getBucketList(vm0, "region2"));
-    Set<Integer> vm1Buckets = getBucketList(vm1, PR_REGION_NAME);
+    Set<Integer> vm1Buckets = getBucketList(vm1, getPartitionedRegionName());
     assertEquals(vm1Buckets, getBucketList(vm1, "region2"));
 
     closeCache(vm0);
@@ -835,10 +856,10 @@ public class PersistentColocatedPartitionedRegionDUnitTest
     createData(vm0, 0, NUM_BUCKETS, "a");
     createData(vm0, 0, NUM_BUCKETS, "b", "region2");
 
-    Set<Integer> vm0Buckets = getBucketList(vm0, PR_REGION_NAME);
+    Set<Integer> vm0Buckets = getBucketList(vm0, getPartitionedRegionName());
     assertFalse(vm0Buckets.isEmpty());
     assertEquals(vm0Buckets, getBucketList(vm0, "region2"));
-    Set<Integer> vm1Buckets = getBucketList(vm1, PR_REGION_NAME);
+    Set<Integer> vm1Buckets = getBucketList(vm1, getPartitionedRegionName());
     assertEquals(vm1Buckets, getBucketList(vm1, "region2"));
 
     closeCache(vm0);
@@ -880,10 +901,10 @@ public class PersistentColocatedPartitionedRegionDUnitTest
     createData(vm0, 0, NUM_BUCKETS, "a");
     createData(vm0, 0, NUM_BUCKETS, "b", "region2");
 
-    Set<Integer> vm0Buckets = getBucketList(vm0, PR_REGION_NAME);
+    Set<Integer> vm0Buckets = getBucketList(vm0, getPartitionedRegionName());
     assertFalse(vm0Buckets.isEmpty());
     assertEquals(vm0Buckets, getBucketList(vm0, "region2"));
-    Set<Integer> vm1Buckets = getBucketList(vm1, PR_REGION_NAME);
+    Set<Integer> vm1Buckets = getBucketList(vm1, getPartitionedRegionName());
     assertEquals(vm1Buckets, getBucketList(vm1, "region2"));
 
     closeCache(vm0);
@@ -930,9 +951,9 @@ public class PersistentColocatedPartitionedRegionDUnitTest
     createData(vm0, 0, NUM_BUCKETS, "b", "region2");
     createData(vm0, 0, NUM_BUCKETS, "c", "region2");
 
-    Set<Integer> vm0Buckets = getBucketList(vm0, PR_REGION_NAME);
+    Set<Integer> vm0Buckets = getBucketList(vm0, getPartitionedRegionName());
     assertFalse(vm0Buckets.isEmpty());
-    Set<Integer> vm1Buckets = getBucketList(vm1, PR_REGION_NAME);
+    Set<Integer> vm1Buckets = getBucketList(vm1, getPartitionedRegionName());
     assertFalse(vm1Buckets.isEmpty());
     for (int i = 2; i < numChildPRs + 2; ++i) {
       String childName = "region" + i;
@@ -985,9 +1006,9 @@ public class PersistentColocatedPartitionedRegionDUnitTest
     createData(vm0, 0, NUM_BUCKETS, "b", "region2");
     createData(vm0, 0, NUM_BUCKETS, "c", "region2");
 
-    Set<Integer> vm0Buckets = getBucketList(vm0, PR_REGION_NAME);
+    Set<Integer> vm0Buckets = getBucketList(vm0, getPartitionedRegionName());
     assertFalse(vm0Buckets.isEmpty());
-    Set<Integer> vm1Buckets = getBucketList(vm1, PR_REGION_NAME);
+    Set<Integer> vm1Buckets = getBucketList(vm1, getPartitionedRegionName());
     assertFalse(vm1Buckets.isEmpty());
     for (int i = 2; i < numChildPRs + 2; ++i) {
       String childName = "region" + i;
@@ -1040,9 +1061,9 @@ public class PersistentColocatedPartitionedRegionDUnitTest
     createData(vm0, 0, NUM_BUCKETS, "b", "region2");
     createData(vm0, 0, NUM_BUCKETS, "c", "region3");
 
-    Set<Integer> vm0Buckets = getBucketList(vm0, PR_REGION_NAME);
+    Set<Integer> vm0Buckets = getBucketList(vm0, getPartitionedRegionName());
     assertFalse(vm0Buckets.isEmpty());
-    Set<Integer> vm1Buckets = getBucketList(vm1, PR_REGION_NAME);
+    Set<Integer> vm1Buckets = getBucketList(vm1, getPartitionedRegionName());
     assertFalse(vm1Buckets.isEmpty());
     for (int i = 2; i < numChildGenerations + 2; ++i) {
       String childName = "region" + i;
@@ -1095,9 +1116,9 @@ public class PersistentColocatedPartitionedRegionDUnitTest
     createData(vm0, 0, NUM_BUCKETS, "b", "region2");
     createData(vm0, 0, NUM_BUCKETS, "c", "region3");
 
-    Set<Integer> vm0Buckets = getBucketList(vm0, PR_REGION_NAME);
+    Set<Integer> vm0Buckets = getBucketList(vm0, getPartitionedRegionName());
     assertFalse(vm0Buckets.isEmpty());
-    Set<Integer> vm1Buckets = getBucketList(vm1, PR_REGION_NAME);
+    Set<Integer> vm1Buckets = getBucketList(vm1, getPartitionedRegionName());
     assertFalse(vm1Buckets.isEmpty());
     for (int i = 2; i < numChildGenerations + 2; ++i) {
       String childName = "region" + i;
@@ -1151,9 +1172,9 @@ public class PersistentColocatedPartitionedRegionDUnitTest
   /**
    * The colocation tree has the regions started in a specific order so that the logging is
    * predictable. For each entry in the list, the array values are:
-   * 
+   *
    * <pre>
-   *  
+   *
    *   [0] - the region name
    *   [1] - the name of that region's parent
    *   [2] - the number of warnings that will be logged after the region is created (1 warning for
@@ -1243,7 +1264,7 @@ public class PersistentColocatedPartitionedRegionDUnitTest
    * Testing that all missing persistent PRs in a colocation tree hierarchy are logged as warnings.
    * This test is a combines the "multiple children" and "hierarchy of children" tests. This is the
    * colocation tree for this test
-   * 
+   *
    * <pre>
    *                  Parent
    *                /         \
@@ -1331,7 +1352,7 @@ public class PersistentColocatedPartitionedRegionDUnitTest
         af.setPartitionAttributes(paf.create());
         af.setDataPolicy(DataPolicy.PERSISTENT_PARTITION);
         af.setDiskStoreName("disk");
-        cache.createRegion(PR_REGION_NAME, af.create());
+        cache.createRegion(getPartitionedRegionName(), af.create());
       }
     };
     SerializableRunnable createChildPR = getCreateChildPRRunnable();
@@ -1345,18 +1366,18 @@ public class PersistentColocatedPartitionedRegionDUnitTest
     createData(vm0, 0, NUM_BUCKETS, "a");
     createData(vm0, 0, NUM_BUCKETS, "b", "region2");
 
-    Set<Integer> vm0Buckets = getBucketList(vm0, PR_REGION_NAME);
+    Set<Integer> vm0Buckets = getBucketList(vm0, getPartitionedRegionName());
     assertEquals(vm0Buckets, getBucketList(vm0, "region2"));
-    Set<Integer> vm1Buckets = getBucketList(vm1, PR_REGION_NAME);
+    Set<Integer> vm1Buckets = getBucketList(vm1, getPartitionedRegionName());
     assertEquals(vm1Buckets, getBucketList(vm1, "region2"));
-    Set<Integer> vm2Buckets = getBucketList(vm2, PR_REGION_NAME);
+    Set<Integer> vm2Buckets = getBucketList(vm2, getPartitionedRegionName());
     assertEquals(vm2Buckets, getBucketList(vm2, "region2"));
 
-    Set<Integer> vm0PrimaryBuckets = getPrimaryBucketList(vm0, PR_REGION_NAME);
+    Set<Integer> vm0PrimaryBuckets = getPrimaryBucketList(vm0, getPartitionedRegionName());
     assertEquals(vm0PrimaryBuckets, getPrimaryBucketList(vm0, "region2"));
-    Set<Integer> vm1PrimaryBuckets = getPrimaryBucketList(vm1, PR_REGION_NAME);
+    Set<Integer> vm1PrimaryBuckets = getPrimaryBucketList(vm1, getPartitionedRegionName());
     assertEquals(vm1PrimaryBuckets, getPrimaryBucketList(vm1, "region2"));
-    Set<Integer> vm2PrimaryBuckets = getPrimaryBucketList(vm2, PR_REGION_NAME);
+    Set<Integer> vm2PrimaryBuckets = getPrimaryBucketList(vm2, getPartitionedRegionName());
     assertEquals(vm2PrimaryBuckets, getPrimaryBucketList(vm2, "region2"));
 
     closeCache(vm0);
@@ -1376,19 +1397,19 @@ public class PersistentColocatedPartitionedRegionDUnitTest
 
     Wait.pause(4000);
 
-    assertEquals(vm0Buckets, getBucketList(vm0, PR_REGION_NAME));
+    assertEquals(vm0Buckets, getBucketList(vm0, getPartitionedRegionName()));
     assertEquals(vm0Buckets, getBucketList(vm0, "region2"));
-    assertEquals(vm1Buckets, getBucketList(vm1, PR_REGION_NAME));
+    assertEquals(vm1Buckets, getBucketList(vm1, getPartitionedRegionName()));
     assertEquals(vm1Buckets, getBucketList(vm1, "region2"));
-    assertEquals(vm2Buckets, getBucketList(vm2, PR_REGION_NAME));
+    assertEquals(vm2Buckets, getBucketList(vm2, getPartitionedRegionName()));
     assertEquals(vm2Buckets, getBucketList(vm2, "region2"));
 
     // primary can differ
-    vm0PrimaryBuckets = getPrimaryBucketList(vm0, PR_REGION_NAME);
+    vm0PrimaryBuckets = getPrimaryBucketList(vm0, getPartitionedRegionName());
     assertEquals(vm0PrimaryBuckets, getPrimaryBucketList(vm0, "region2"));
-    vm1PrimaryBuckets = getPrimaryBucketList(vm1, PR_REGION_NAME);
+    vm1PrimaryBuckets = getPrimaryBucketList(vm1, getPartitionedRegionName());
     assertEquals(vm1PrimaryBuckets, getPrimaryBucketList(vm1, "region2"));
-    vm2PrimaryBuckets = getPrimaryBucketList(vm2, PR_REGION_NAME);
+    vm2PrimaryBuckets = getPrimaryBucketList(vm2, getPartitionedRegionName());
     assertEquals(vm2PrimaryBuckets, getPrimaryBucketList(vm2, "region2"));
 
 
@@ -1428,7 +1449,7 @@ public class PersistentColocatedPartitionedRegionDUnitTest
         AttributesFactory af = new AttributesFactory();
         PartitionAttributesFactory paf = new PartitionAttributesFactory();
         paf.setRedundantCopies(1);
-        paf.setColocatedWith(PR_REGION_NAME);
+        paf.setColocatedWith(getPartitionedRegionName());
         af.setPartitionAttributes(paf.create());
         cache.createRegion("region2", af.create());
 
@@ -1462,7 +1483,7 @@ public class PersistentColocatedPartitionedRegionDUnitTest
         af.setPartitionAttributes(paf.create());
         af.setDataPolicy(DataPolicy.PERSISTENT_PARTITION);
         af.setDiskStoreName("disk");
-        cache.createRegion(PR_REGION_NAME, af.create());
+        cache.createRegion(getPartitionedRegionName(), af.create());
       }
     };
     SerializableRunnable createChildPR = getCreateChildPRRunnable();
@@ -1477,18 +1498,18 @@ public class PersistentColocatedPartitionedRegionDUnitTest
     createData(vm0, 0, NUM_BUCKETS, "a");
     createData(vm0, 0, NUM_BUCKETS, "b", "region2");
 
-    Set<Integer> vm0Buckets = getBucketList(vm0, PR_REGION_NAME);
+    Set<Integer> vm0Buckets = getBucketList(vm0, getPartitionedRegionName());
     assertEquals(vm0Buckets, getBucketList(vm0, "region2"));
-    Set<Integer> vm1Buckets = getBucketList(vm1, PR_REGION_NAME);
+    Set<Integer> vm1Buckets = getBucketList(vm1, getPartitionedRegionName());
     assertEquals(vm1Buckets, getBucketList(vm1, "region2"));
-    Set<Integer> vm2Buckets = getBucketList(vm2, PR_REGION_NAME);
+    Set<Integer> vm2Buckets = getBucketList(vm2, getPartitionedRegionName());
     assertEquals(vm2Buckets, getBucketList(vm2, "region2"));
 
-    Set<Integer> vm0PrimaryBuckets = getPrimaryBucketList(vm0, PR_REGION_NAME);
+    Set<Integer> vm0PrimaryBuckets = getPrimaryBucketList(vm0, getPartitionedRegionName());
     assertEquals(vm0PrimaryBuckets, getPrimaryBucketList(vm0, "region2"));
-    Set<Integer> vm1PrimaryBuckets = getPrimaryBucketList(vm1, PR_REGION_NAME);
+    Set<Integer> vm1PrimaryBuckets = getPrimaryBucketList(vm1, getPartitionedRegionName());
     assertEquals(vm1PrimaryBuckets, getPrimaryBucketList(vm1, "region2"));
-    Set<Integer> vm2PrimaryBuckets = getPrimaryBucketList(vm2, PR_REGION_NAME);
+    Set<Integer> vm2PrimaryBuckets = getPrimaryBucketList(vm2, getPartitionedRegionName());
     assertEquals(vm2PrimaryBuckets, getPrimaryBucketList(vm2, "region2"));
 
     closeCache(vm2);
@@ -1526,18 +1547,18 @@ public class PersistentColocatedPartitionedRegionDUnitTest
     vm2.invoke(createParentPR);
     // Make sure vm2 hasn't created any buckets in the parent PR yet
     // We don't want any buckets until the child PR is created
-    assertEquals(Collections.emptySet(), getBucketList(vm2, PR_REGION_NAME));
+    assertEquals(Collections.emptySet(), getBucketList(vm2, getPartitionedRegionName()));
     vm2.invoke(createChildPR);
 
     // Now vm2 should have created all of the appropriate buckets.
-    assertEquals(vm2Buckets, getBucketList(vm2, PR_REGION_NAME));
+    assertEquals(vm2Buckets, getBucketList(vm2, getPartitionedRegionName()));
     assertEquals(vm2Buckets, getBucketList(vm2, "region2"));
 
-    vm0PrimaryBuckets = getPrimaryBucketList(vm0, PR_REGION_NAME);
+    vm0PrimaryBuckets = getPrimaryBucketList(vm0, getPartitionedRegionName());
     assertEquals(vm0PrimaryBuckets, getPrimaryBucketList(vm0, "region2"));
-    vm1PrimaryBuckets = getPrimaryBucketList(vm1, PR_REGION_NAME);
+    vm1PrimaryBuckets = getPrimaryBucketList(vm1, getPartitionedRegionName());
     assertEquals(vm1PrimaryBuckets, getPrimaryBucketList(vm1, "region2"));
-    vm2PrimaryBuckets = getPrimaryBucketList(vm2, PR_REGION_NAME);
+    vm2PrimaryBuckets = getPrimaryBucketList(vm2, getPartitionedRegionName());
     assertEquals(vm2PrimaryBuckets, getPrimaryBucketList(vm2, "region2"));
   }
 
@@ -1568,9 +1589,9 @@ public class PersistentColocatedPartitionedRegionDUnitTest
         af.setPartitionAttributes(paf.create());
         af.setDataPolicy(DataPolicy.PERSISTENT_PARTITION);
         af.setDiskStoreName("disk");
-        cache.createRegion(PR_REGION_NAME, af.create());
+        cache.createRegion(getPartitionedRegionName(), af.create());
 
-        paf.setColocatedWith(PR_REGION_NAME);
+        paf.setColocatedWith(getPartitionedRegionName());
         af.setPartitionAttributes(paf.create());
         cache.createRegion("region2", af.create());
 
@@ -1590,7 +1611,7 @@ public class PersistentColocatedPartitionedRegionDUnitTest
   /**
    * Test that if we replace an offline member, even if colocated regions are in different disk
    * stores, we still keep our metadata consistent.
-   * 
+   *
    * @throws Throwable
    */
   @Test
@@ -1620,14 +1641,14 @@ public class PersistentColocatedPartitionedRegionDUnitTest
         af.setPartitionAttributes(paf.create());
         af.setDataPolicy(DataPolicy.PERSISTENT_PARTITION);
         af.setDiskStoreName("disk");
-        cache.createRegion(PR_REGION_NAME, af.create());
+        cache.createRegion(getPartitionedRegionName(), af.create());
 
         DiskStore ds2 = cache.findDiskStore("disk2");
         if (ds2 == null) {
           ds2 = cache.createDiskStoreFactory().setDiskDirs(getDiskDirs()).create("disk2");
         }
 
-        paf.setColocatedWith(PR_REGION_NAME);
+        paf.setColocatedWith(getPartitionedRegionName());
         af.setPartitionAttributes(paf.create());
         af.setDiskStoreName("disk2");
         cache.createRegion("region2", af.create());
@@ -1648,11 +1669,11 @@ public class PersistentColocatedPartitionedRegionDUnitTest
   /**
    * Test for support issue 7870. 1. Run three members with redundancy 1 and recovery delay 0 2.
    * Kill one of the members, to trigger replacement of buckets 3. Shutdown all members and restart.
-   * 
+   *
    * What was happening is that in the parent PR, we discarded our offline data in one member, but
    * in the child PR the other members ended up waiting for the child bucket to be created in the
    * member that discarded it's offline data.
-   * 
+   *
    * @throws Throwable
    */
   public void replaceOfflineMemberAndRestart(SerializableRunnable createPRs) throws Throwable {
@@ -1675,7 +1696,7 @@ public class PersistentColocatedPartitionedRegionDUnitTest
     closeCache(vm2);
 
     // Wait until redundancy is recovered.
-    waitForRedundancyRecovery(vm0, 1, PR_REGION_NAME);
+    waitForRedundancyRecovery(vm0, 1, getPartitionedRegionName());
     waitForRedundancyRecovery(vm0, 1, "region2");
 
     createData(vm0, 0, NUM_BUCKETS, "b");
@@ -1718,11 +1739,11 @@ public class PersistentColocatedPartitionedRegionDUnitTest
       checkData(vm0, 0, NUM_BUCKETS, "b");
       checkData(vm0, 0, NUM_BUCKETS, "b", "region2");
 
-      waitForRedundancyRecovery(vm0, 1, PR_REGION_NAME);
+      waitForRedundancyRecovery(vm0, 1, getPartitionedRegionName());
       waitForRedundancyRecovery(vm0, 1, "region2");
-      waitForRedundancyRecovery(vm1, 1, PR_REGION_NAME);
+      waitForRedundancyRecovery(vm1, 1, getPartitionedRegionName());
       waitForRedundancyRecovery(vm1, 1, "region2");
-      waitForRedundancyRecovery(vm2, 1, PR_REGION_NAME);
+      waitForRedundancyRecovery(vm2, 1, getPartitionedRegionName());
       waitForRedundancyRecovery(vm2, 1, "region2");
 
       // Make sure we don't have any extra buckets after the restart
@@ -1759,7 +1780,7 @@ public class PersistentColocatedPartitionedRegionDUnitTest
         af.setPartitionAttributes(paf.create());
         af.setDataPolicy(DataPolicy.PERSISTENT_PARTITION);
         af.setDiskStoreName("disk");
-        cache.createRegion(PR_REGION_NAME, af.create());
+        cache.createRegion(getPartitionedRegionName(), af.create());
       }
     };
 
@@ -1782,7 +1803,7 @@ public class PersistentColocatedPartitionedRegionDUnitTest
         PartitionAttributesFactory paf = new PartitionAttributesFactory();
         paf.setRedundantCopies(1);
         paf.setRecoveryDelay(0);
-        paf.setColocatedWith(PR_REGION_NAME);
+        paf.setColocatedWith(getPartitionedRegionName());
         af.setDataPolicy(DataPolicy.PERSISTENT_PARTITION);
         af.setDiskStoreName("disk");
         af.setPartitionAttributes(paf.create());
@@ -1819,7 +1840,7 @@ public class PersistentColocatedPartitionedRegionDUnitTest
         af.setPartitionAttributes(paf.create());
         af.setDataPolicy(DataPolicy.PERSISTENT_PARTITION);
         af.setDiskStoreName("disk");
-        cache.createRegion(PR_REGION_NAME, af.create());
+        cache.createRegion(getPartitionedRegionName(), af.create());
       }
     };
 
@@ -1847,7 +1868,7 @@ public class PersistentColocatedPartitionedRegionDUnitTest
         PartitionAttributesFactory paf = new PartitionAttributesFactory();
         paf.setRedundantCopies(1);
         paf.setRecoveryDelay(0);
-        paf.setColocatedWith(PR_REGION_NAME);
+        paf.setColocatedWith(getPartitionedRegionName());
         af.setDataPolicy(DataPolicy.PERSISTENT_PARTITION);
         af.setDiskStoreName("disk2");
         af.setPartitionAttributes(paf.create());
@@ -1869,14 +1890,14 @@ public class PersistentColocatedPartitionedRegionDUnitTest
   /**
    * Test for support issue 7870. 1. Run three members with redundancy 1 and recovery delay 0 2.
    * Kill one of the members, to trigger replacement of buckets 3. Shutdown all members and restart.
-   * 
+   *
    * What was happening is that in the parent PR, we discarded our offline data in one member, but
    * in the child PR the other members ended up waiting for the child bucket to be created in the
    * member that discarded it's offline data.
-   * 
+   *
    * In this test case, we're creating the child PR later, after the parent buckets have already
    * been completely created.
-   * 
+   *
    * @throws Throwable
    */
   public void replaceOfflineMemberAndRestartCreateColocatedPRLate(
@@ -1906,7 +1927,7 @@ public class PersistentColocatedPartitionedRegionDUnitTest
     closeCache(vm2);
 
     // Wait until redundancy is recovered.
-    waitForRedundancyRecovery(vm0, 1, PR_REGION_NAME);
+    waitForRedundancyRecovery(vm0, 1, getPartitionedRegionName());
     waitForRedundancyRecovery(vm0, 1, "region2");
 
     createData(vm0, 0, NUM_BUCKETS, "b");
@@ -1962,7 +1983,7 @@ public class PersistentColocatedPartitionedRegionDUnitTest
     // Make sure we can actually use the buckets in the child region.
     createData(vm0, 0, NUM_BUCKETS, "c", "region2");
 
-    waitForRedundancyRecovery(vm0, 1, PR_REGION_NAME);
+    waitForRedundancyRecovery(vm0, 1, getPartitionedRegionName());
     waitForRedundancyRecovery(vm0, 1, "region2");
 
     // Make sure we don't have any extra buckets after the restart
@@ -1981,7 +2002,7 @@ public class PersistentColocatedPartitionedRegionDUnitTest
 
   /**
    * Test what happens when we crash in the middle of satisfying redundancy for a colocated bucket.
-   * 
+   *
    * @throws Throwable
    */
   // This test method is disabled because it is failing
@@ -2011,9 +2032,9 @@ public class PersistentColocatedPartitionedRegionDUnitTest
         af.setPartitionAttributes(paf.create());
         af.setDataPolicy(DataPolicy.PERSISTENT_PARTITION);
         af.setDiskStoreName("disk");
-        cache.createRegion(PR_REGION_NAME, af.create());
+        cache.createRegion(getPartitionedRegionName(), af.create());
 
-        paf.setColocatedWith(PR_REGION_NAME);
+        paf.setColocatedWith(getPartitionedRegionName());
         af.setPartitionAttributes(paf.create());
         cache.createRegion("region2", af.create());
       }
@@ -2117,148 +2138,6 @@ public class PersistentColocatedPartitionedRegionDUnitTest
     checkData(vm0, 0, NUM_BUCKETS, "a", "region2");
   }
 
-  /**
-   * Test what happens when we restart persistent members while there is an accessor concurrently
-   * performing puts. This is for bug 43899
-   */
-  @Test
-  public void testRecoverySystemWithConcurrentPutter() throws Throwable {
-    Host host = Host.getHost(0);
-    VM vm0 = host.getVM(0);
-    VM vm1 = host.getVM(1);
-    VM vm2 = host.getVM(2);
-    VM vm3 = host.getVM(3);
-
-    // Define all of the runnables used in this test
-
-    // runnable to create accessors
-    SerializableRunnable createAccessor = new SerializableRunnable("createAccessor") {
-      public void run() {
-        Cache cache = getCache();
-
-        AttributesFactory af = new AttributesFactory();
-        PartitionAttributesFactory paf = new PartitionAttributesFactory();
-        paf.setRedundantCopies(1);
-        paf.setLocalMaxMemory(0);
-        af.setPartitionAttributes(paf.create());
-        af.setDataPolicy(DataPolicy.PARTITION);
-        cache.createRegion(PR_REGION_NAME, af.create());
-
-        paf.setColocatedWith(PR_REGION_NAME);
-        af.setPartitionAttributes(paf.create());
-        cache.createRegion("region2", af.create());
-      }
-    };
-
-    // runnable to create PRs
-    SerializableRunnable createPRs = new SerializableRunnable("createPRs") {
-      public void run() {
-        Cache cache = getCache();
-
-        DiskStore ds = cache.findDiskStore("disk");
-        if (ds == null) {
-          ds = cache.createDiskStoreFactory().setDiskDirs(getDiskDirs()).create("disk");
-        }
-        AttributesFactory af = new AttributesFactory();
-        PartitionAttributesFactory paf = new PartitionAttributesFactory();
-        paf.setRedundantCopies(1);
-        af.setPartitionAttributes(paf.create());
-        af.setDataPolicy(DataPolicy.PERSISTENT_PARTITION);
-        af.setDiskStoreName("disk");
-        cache.createRegion(PR_REGION_NAME, af.create());
-
-        paf.setColocatedWith(PR_REGION_NAME);
-        af.setPartitionAttributes(paf.create());
-        cache.createRegion("region2", af.create());
-      }
-    };
-
-    // runnable to close the cache.
-    SerializableRunnable closeCache = new SerializableRunnable("closeCache") {
-      public void run() {
-        closeCache();
-      }
-    };
-
-    // Runnable to do a bunch of puts handle exceptions
-    // due to the fact that member is offline.
-    SerializableRunnable doABunchOfPuts = new SerializableRunnable("doABunchOfPuts") {
-      public void run() {
-        Cache cache = getCache();
-        Region region = cache.getRegion(PR_REGION_NAME);
-        try {
-          for (int i = 0;; i++) {
-            try {
-              region.get(i % NUM_BUCKETS);
-            } catch (PartitionOfflineException expected) {
-              // do nothing.
-            } catch (PartitionedRegionStorageException expected) {
-              // do nothing.
-            }
-            Thread.yield();
-          }
-        } catch (CacheClosedException expected) {
-          // ok, we're done.
-        }
-      }
-    };
-
-
-    // Runnable to clean up disk dirs on a members
-    SerializableRunnable cleanDiskDirs = new SerializableRunnable("Clean disk dirs") {
-      public void run() {
-        try {
-          cleanDiskDirs();
-        } catch (IOException e) {
-          throw new RuntimeException(e);
-        }
-      }
-    };
-
-    // Create the PR two members
-    vm1.invoke(createPRs);
-    vm2.invoke(createPRs);
-
-    // create the accessor.
-    vm0.invoke(createAccessor);
-
-
-    // Create some buckets.
-    createData(vm0, 0, NUM_BUCKETS, "a");
-    createData(vm0, 0, NUM_BUCKETS, "a", "region2");
-
-
-    // backup the system. We use this to get a snapshot of vm1 and vm2
-    // when they both are online. Recovering from this backup simulates
-    // a simulataneous kill and recovery.
-    backup(vm3);
-
-    // close vm1 and vm2.
-    vm1.invoke(closeCache);
-    vm2.invoke(closeCache);
-
-    // restore the backup
-    vm1.invoke(cleanDiskDirs);
-    vm2.invoke(cleanDiskDirs);
-    restoreBackup(2);
-
-    // in vm0, start doing a bunch of concurrent puts.
-    AsyncInvocation async0 = vm0.invokeAsync(doABunchOfPuts);
-
-    // This recovery should not hang (that's what we're testing for
-    // here.
-    AsyncInvocation async1 = vm1.invokeAsync(createPRs);
-    AsyncInvocation async2 = vm2.invokeAsync(createPRs);
-    async1.getResult(MAX_WAIT);
-    async2.getResult(MAX_WAIT);
-
-    // close the cache in vm0 to stop the async puts.
-    vm0.invoke(closeCache);
-
-    // make sure we didn't get an exception
-    async0.getResult(MAX_WAIT);
-  }
-
   @Category(FlakyTest.class) // GEODE-506: time sensitive, async actions with 30 sec max
   @Test
   public void testRebalanceWithOfflineChildRegion() throws Throwable {
@@ -2277,7 +2156,7 @@ public class PersistentColocatedPartitionedRegionDUnitTest
         af.setPartitionAttributes(paf.create());
         af.setDataPolicy(DataPolicy.PERSISTENT_PARTITION);
         af.setDiskStoreName("disk");
-        cache.createRegion(PR_REGION_NAME, af.create());
+        cache.createRegion(getPartitionedRegionName(), af.create());
       }
     };
 
@@ -2289,7 +2168,7 @@ public class PersistentColocatedPartitionedRegionDUnitTest
         PartitionAttributesFactory paf = new PartitionAttributesFactory();
         paf.setRedundantCopies(0);
         paf.setRecoveryDelay(0);
-        paf.setColocatedWith(PR_REGION_NAME);
+        paf.setColocatedWith(getPartitionedRegionName());
         af.setDataPolicy(DataPolicy.PERSISTENT_PARTITION);
         af.setDiskStoreName("disk");
         af.setPartitionAttributes(paf.create());
@@ -2303,7 +2182,7 @@ public class PersistentColocatedPartitionedRegionDUnitTest
 
   /**
    * Test that a rebalance will regions are in the middle of recovery doesn't cause issues.
-   * 
+   *
    * This is slightly different than {{@link #testRebalanceWithOfflineChildRegion()} because in this
    * case all of the regions have been created, but they are in the middle of actually recovering
    * buckets from disk.
@@ -2330,11 +2209,11 @@ public class PersistentColocatedPartitionedRegionDUnitTest
         af.setPartitionAttributes(paf.create());
         af.setDataPolicy(DataPolicy.PERSISTENT_PARTITION);
         af.setDiskStoreName("disk");
-        cache.createRegion(PR_REGION_NAME, af.create());
+        cache.createRegion(getPartitionedRegionName(), af.create());
 
         paf.setRedundantCopies(1);
         paf.setRecoveryDelay(-1);
-        paf.setColocatedWith(PR_REGION_NAME);
+        paf.setColocatedWith(getPartitionedRegionName());
         af.setDataPolicy(DataPolicy.PERSISTENT_PARTITION);
         af.setDiskStoreName("disk");
         af.setPartitionAttributes(paf.create());
@@ -2448,7 +2327,7 @@ public class PersistentColocatedPartitionedRegionDUnitTest
         af.setPartitionAttributes(paf.create());
         af.setDataPolicy(DataPolicy.PERSISTENT_PARTITION);
         af.setDiskStoreName("disk");
-        cache.createRegion(PR_REGION_NAME, af.create());
+        cache.createRegion(getPartitionedRegionName(), af.create());
       }
     };
 
@@ -2465,7 +2344,7 @@ public class PersistentColocatedPartitionedRegionDUnitTest
         PartitionAttributesFactory paf = new PartitionAttributesFactory();
         paf.setRedundantCopies(0);
         paf.setRecoveryDelay(0);
-        paf.setColocatedWith(PR_REGION_NAME);
+        paf.setColocatedWith(getPartitionedRegionName());
         af.setDataPolicy(DataPolicy.PERSISTENT_PARTITION);
         af.setDiskStoreName("disk2");
         af.setPartitionAttributes(paf.create());
@@ -2478,7 +2357,7 @@ public class PersistentColocatedPartitionedRegionDUnitTest
 
   /**
    * Test that a user is not allowed to change the colocation of a PR with persistent data.
-   * 
+   *
    * @throws Throwable
    */
   @Category(FlakyTest.class) // GEODE-900: disk dependency, filesystem sensitive
@@ -2548,7 +2427,7 @@ public class PersistentColocatedPartitionedRegionDUnitTest
           af.setPartitionAttributes(paf.create());
           af.setDataPolicy(DataPolicy.PERSISTENT_PARTITION);
           af.setDiskStoreName("disk");
-          cache.createRegion(PR_REGION_NAME, af.create());
+          cache.createRegion(getPartitionedRegionName(), af.create());
         } finally {
           System.setProperty(DistributionConfig.GEMFIRE_PREFIX + "partitionedRegionRetryTimeout",
               String.valueOf(PartitionedRegionHelper.DEFAULT_TOTAL_WAIT_RETRY_ITERATION));
@@ -2566,7 +2445,7 @@ public class PersistentColocatedPartitionedRegionDUnitTest
           PartitionAttributesFactory paf = new PartitionAttributesFactory();
           paf.setRedundantCopies(0);
           paf.setRecoveryDelay(0);
-          paf.setColocatedWith(PR_REGION_NAME);
+          paf.setColocatedWith(getPartitionedRegionName());
           af.setDataPolicy(DataPolicy.PERSISTENT_PARTITION);
           af.setDiskStoreName("disk");
           af.setPartitionAttributes(paf.create());
@@ -2613,7 +2492,7 @@ public class PersistentColocatedPartitionedRegionDUnitTest
           af.setPartitionAttributes(paf.create());
           af.setDataPolicy(DataPolicy.PERSISTENT_PARTITION);
           af.setDiskStoreName("disk");
-          cache.createRegion(PR_REGION_NAME, af.create());
+          cache.createRegion(getPartitionedRegionName(), af.create());
         } finally {
           System.setProperty(DistributionConfig.GEMFIRE_PREFIX + "partitionedRegionRetryTimeout",
               String.valueOf(PartitionedRegionHelper.DEFAULT_TOTAL_WAIT_RETRY_ITERATION));
@@ -2632,7 +2511,7 @@ public class PersistentColocatedPartitionedRegionDUnitTest
           PartitionAttributesFactory paf = new PartitionAttributesFactory();
           paf.setRedundantCopies(0);
           paf.setRecoveryDelay(0);
-          paf.setColocatedWith(PR_REGION_NAME);
+          paf.setColocatedWith(getPartitionedRegionName());
           af.setDataPolicy(DataPolicy.PERSISTENT_PARTITION);
           af.setDiskStoreName("disk");
           af.setPartitionAttributes(paf.create());
@@ -2678,7 +2557,7 @@ public class PersistentColocatedPartitionedRegionDUnitTest
           af.setPartitionAttributes(paf.create());
           af.setDataPolicy(DataPolicy.PERSISTENT_PARTITION);
           af.setDiskStoreName("disk");
-          cache.createRegion(PR_REGION_NAME, af.create());
+          cache.createRegion(getPartitionedRegionName(), af.create());
         } finally {
           System.setProperty(DistributionConfig.GEMFIRE_PREFIX + "partitionedRegionRetryTimeout",
               String.valueOf(PartitionedRegionHelper.DEFAULT_TOTAL_WAIT_RETRY_ITERATION));
@@ -2696,7 +2575,7 @@ public class PersistentColocatedPartitionedRegionDUnitTest
           PartitionAttributesFactory paf = new PartitionAttributesFactory();
           paf.setRedundantCopies(0);
           paf.setRecoveryDelay(0);
-          paf.setColocatedWith(PR_REGION_NAME);
+          paf.setColocatedWith(getPartitionedRegionName());
           af.setDataPolicy(DataPolicy.PERSISTENT_PARTITION);
           af.setDiskStoreName("disk");
           af.setPartitionAttributes(paf.create());
@@ -2726,7 +2605,7 @@ public class PersistentColocatedPartitionedRegionDUnitTest
   /**
    * Create three PRs on a VM, named region1, region2, and region3. The colocated with attribute
    * describes which region region3 should be colocated with.
-   * 
+   *
    * @param colocatedWith
    */
   private void createColocatedPRs(final String colocatedWith) {
@@ -2756,7 +2635,7 @@ public class PersistentColocatedPartitionedRegionDUnitTest
   /**
    * Test for bug 43570. Rebalance a persistent parent PR before we recover the persistent child PR
    * from disk.
-   * 
+   *
    * @throws Throwable
    */
   public void rebalanceWithOfflineChildRegion(SerializableRunnable createParentPR,
@@ -2855,7 +2734,7 @@ public class PersistentColocatedPartitionedRegionDUnitTest
       @Override
       public void run() {
         Cache cache = getCache();
-        Region region = cache.getRegion(PR_REGION_NAME);
+        Region region = cache.getRegion(getPartitionedRegionName());
 
         for (int i = 0; i < NUM_BUCKETS; i++) {
           assertEquals("For key " + i, "a", region.get(i));
@@ -2936,7 +2815,7 @@ public class PersistentColocatedPartitionedRegionDUnitTest
       @Override
       public void run() {
         Cache cache = getCache();
-        Region region = cache.getRegion(PR_REGION_NAME);
+        Region region = cache.getRegion(getPartitionedRegionName());
 
         for (int i = 0; i < NUM_BUCKETS; i++) {
           assertEquals("For key " + i, "a", region.get(i));
@@ -2948,8 +2827,8 @@ public class PersistentColocatedPartitionedRegionDUnitTest
 
       public void run() {
         Cache cache = getCache();
-        LogWriterUtils.getLogWriter().info("creating data in " + PR_REGION_NAME);
-        Region region = cache.getRegion(PR_REGION_NAME);
+        LogWriterUtils.getLogWriter().info("creating data in " + getPartitionedRegionName());
+        Region region = cache.getRegion(getPartitionedRegionName());
 
         for (int i = 0; i < NUM_BUCKETS; i++) {
           region.put(i, "c");

@@ -20,7 +20,7 @@ import org.apache.geode.pdx.PdxInstance;
 
 /**
  * Data class for testing snapshots, cannot be located in org.apache.*.
- * 
+ *
  */
 public class MyObject implements Serializable {
   protected long f1;

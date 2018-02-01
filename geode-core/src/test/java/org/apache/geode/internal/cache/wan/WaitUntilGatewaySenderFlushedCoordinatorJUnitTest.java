@@ -14,15 +14,16 @@
  */
 package org.apache.geode.internal.cache.wan;
 
-import org.apache.geode.cache.CacheFactory;
-import org.apache.geode.internal.cache.GemFireCacheImpl;
-import org.apache.geode.internal.cache.RegionQueue;
-import org.junit.After;
-import org.junit.Before;
-
 import static org.apache.geode.distributed.ConfigurationProperties.LOG_LEVEL;
 import static org.apache.geode.distributed.ConfigurationProperties.MCAST_PORT;
 import static org.mockito.Mockito.*;
+
+import org.junit.After;
+import org.junit.Before;
+
+import org.apache.geode.cache.CacheFactory;
+import org.apache.geode.internal.cache.GemFireCacheImpl;
+import org.apache.geode.internal.cache.RegionQueue;
 
 public abstract class WaitUntilGatewaySenderFlushedCoordinatorJUnitTest {
 

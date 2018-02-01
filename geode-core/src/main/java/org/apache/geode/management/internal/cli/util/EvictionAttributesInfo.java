@@ -25,7 +25,7 @@ import org.apache.geode.cache.EvictionAttributes;
 public class EvictionAttributesInfo implements Serializable {
 
   /**
-   * 
+   *
    */
   private static final long serialVersionUID = 1L;
   private String evictionAction = "";

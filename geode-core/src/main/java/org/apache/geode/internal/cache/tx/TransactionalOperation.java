@@ -23,7 +23,7 @@ import java.util.Set;
  *
  */
 public class TransactionalOperation {
-  static public enum ServerRegionOperation {
+  public static enum ServerRegionOperation {
     CONTAINS_KEY,
     CONTAINS_VALUE,
     CONTAINS_VALUE_FOR_KEY,

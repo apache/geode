@@ -14,14 +14,13 @@
  */
 package org.apache.geode.internal.cache;
 
+import static org.apache.geode.distributed.ConfigurationProperties.*;
 import static org.junit.Assert.*;
 
 import java.io.File;
 import java.util.Properties;
 import java.util.Set;
 
-import org.apache.geode.distributed.DistributedSystem;
-import org.apache.geode.test.junit.categories.IntegrationTest;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -35,8 +34,8 @@ import org.apache.geode.cache.DiskWriteAttributesFactory;
 import org.apache.geode.cache.EvictionAction;
 import org.apache.geode.cache.EvictionAttributes;
 import org.apache.geode.cache.Region;
-
-import static org.apache.geode.distributed.ConfigurationProperties.*;
+import org.apache.geode.distributed.DistributedSystem;
+import org.apache.geode.test.junit.categories.IntegrationTest;
 
 /**
  * Tests the old disk apis to make sure they do the correct thing. Once we drop these old deprecated

@@ -30,10 +30,8 @@ import java.util.Enumeration;
 import java.util.Properties;
 import java.util.logging.Level;
 
-import org.apache.geode.test.junit.categories.MembershipTest;
 import org.junit.After;
 import org.junit.Assert;
-import org.junit.Ignore;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
@@ -48,11 +46,12 @@ import org.apache.geode.internal.ConfigSource;
 import org.apache.geode.internal.i18n.LocalizedStrings;
 import org.apache.geode.internal.logging.InternalLogWriter;
 import org.apache.geode.test.junit.categories.IntegrationTest;
+import org.apache.geode.test.junit.categories.MembershipTest;
 
 /**
  * Tests the functionality of the {@link InternalDistributedSystem} class. Mostly checks
  * configuration error checking.
- * 
+ *
  * @since GemFire 2.1
  */
 @Category({IntegrationTest.class, MembershipTest.class})
@@ -67,14 +66,14 @@ public class InternalDistributedSystemJUnitTest {
    * Creates a <code>DistributedSystem</code> with the given configuration properties.
    */
   protected InternalDistributedSystem createSystem(Properties props) {
-    assertFalse(org.apache.geode.distributed.internal.DistributionManager.isDedicatedAdminVM);
+    assertFalse(DistributionManager.isDedicatedAdminVM());
     this.system = (InternalDistributedSystem) DistributedSystem.connect(props);
     return this.system;
   }
 
   /**
    * Disconnects any distributed system that was created by this test
-   * 
+   *
    * @see DistributedSystem#disconnect
    */
   @After
@@ -243,7 +242,7 @@ public class InternalDistributedSystemJUnitTest {
 
   /**
    * Creates a new <code>DistributionConfigImpl</code> with the given locators string.
-   * 
+   *
    * @throws IllegalArgumentException If <code>locators</code> is malformed
    * @since GemFire 4.0
    */
@@ -256,7 +255,7 @@ public class InternalDistributedSystemJUnitTest {
   /**
    * Tests that both the traditional syntax ("host[port]") and post bug-32306 syntax ("host:port")
    * can be used with locators.
-   * 
+   *
    * @since GemFire 4.0
    */
   @Test
@@ -813,7 +812,7 @@ public class InternalDistributedSystemJUnitTest {
 
   /**
    * Detect LinkLocal IPv6 address where the interface is missing, ie %[0-9].
-   * 
+   *
    * @see InetAddress#isLinkLocalAddress()
    */
   private static boolean isIPv6LinkLocalAddress(Inet6Address addr) {

@@ -22,11 +22,9 @@ import java.io.IOException;
 import java.io.UncheckedIOException;
 import java.nio.file.Path;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
-import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
 import org.junit.rules.ExternalResource;
@@ -62,8 +60,7 @@ public class GfshRule extends ExternalResource {
    */
   @Override
   protected void after() {
-    gfshExecutions.stream().map(GfshExecution::getWorkingDir).collect(Collectors.toList())
-        .forEach(this::stopMembersQuietly);
+    gfshExecutions.stream().collect(Collectors.toList()).forEach(this::stopMembersQuietly);
 
     gfshExecutions.stream().map(GfshExecution::getProcess).map(Process::destroyForcibly)
         .forEach((Process process) -> {
@@ -82,6 +79,10 @@ public class GfshRule extends ExternalResource {
     return temporaryFolder;
   }
 
+  public Path getGfshPath() {
+    return gfsh;
+  }
+
   public GfshExecution execute(String... commands) {
     return execute(GfshScript.of(commands));
   }
@@ -94,7 +95,7 @@ public class GfshRule extends ExternalResource {
       Process process = toProcessBuilder(gfshScript, gfsh, workingDir).start();
       gfshExecution = new GfshExecution(process, workingDir);
       gfshExecutions.add(gfshExecution);
-      gfshScript.awaitIfNecessary(process);
+      gfshScript.awaitIfNecessary(gfshExecution);
     } catch (IOException e) {
       throw new UncheckedIOException(e);
     }
@@ -127,17 +128,9 @@ public class GfshRule extends ExternalResource {
     return processBuilder;
   }
 
-  private void stopMembersQuietly(File parentDirectory) {
-    File[] potentialMemberDirectories = parentDirectory.listFiles(File::isDirectory);
-
-    Predicate<File> isServerDir = (File directory) -> Arrays.stream(directory.list())
-        .anyMatch(filename -> filename.endsWith("server.pid"));
-
-    Predicate<File> isLocatorDir = (File directory) -> Arrays.stream(directory.list())
-        .anyMatch(filename -> filename.endsWith("locator.pid"));
-
-    Arrays.stream(potentialMemberDirectories).filter(isServerDir).forEach(this::stopServerInDir);
-    Arrays.stream(potentialMemberDirectories).filter(isLocatorDir).forEach(this::stopLocatorInDir);
+  private void stopMembersQuietly(GfshExecution gfshExecution) {
+    gfshExecution.getServerDirs().forEach(this::stopServerInDir);
+    gfshExecution.getLocatorDirs().forEach(this::stopLocatorInDir);
   }
 
   private void stopServerInDir(File dir) {

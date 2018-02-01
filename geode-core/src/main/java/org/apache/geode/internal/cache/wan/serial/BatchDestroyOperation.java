@@ -46,10 +46,10 @@ import org.apache.geode.internal.offheap.annotations.Retained;
 /**
  * Handles distribution messaging for destroying a batch of entry in a queue region. In this message
  * key represents the lastDestroyedKey and tailKey represent the last dispatched key.
- * 
+ *
  * We iterate from key to tailKey and destroy all the keys.
- * 
- * 
+ *
+ *
  */
 public class BatchDestroyOperation extends DistributedCacheOperation {
 

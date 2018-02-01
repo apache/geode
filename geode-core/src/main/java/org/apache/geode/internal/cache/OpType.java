@@ -16,11 +16,11 @@ package org.apache.geode.internal.cache;
 
 /**
  * Enumerated type for an event operation.
- * 
- * 
- * 
+ *
+ *
+ *
  * @see org.apache.geode.cache.Operation
- * 
+ *
  * @since GemFire 6.6
  */
 public class OpType {

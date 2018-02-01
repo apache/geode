@@ -16,12 +16,13 @@ package org.apache.geode.management;
 
 import java.beans.ConstructorProperties;
 import java.util.Arrays;
+import java.util.Set;
 
 import org.apache.geode.cache.Region;
 
 /**
  * Composite data type used to distribute attributes for a {@link Region}.
- * 
+ *
  * @since GemFire 7.0
  */
 public class RegionAttributesData {
@@ -56,9 +57,11 @@ public class RegionAttributesData {
   private boolean diskSynchronous;
   private String compressorClassName;
   private boolean offHeap;
+  private Set<String> asyncEventQueueIds;
+  private Set<String> gatewaySenderIds;
 
   /**
-   * 
+   *
    * This constructor is to be used by internal JMX framework only. User should not try to create an
    * instance of this class.
    */
@@ -69,7 +72,7 @@ public class RegionAttributesData {
       "concurrencyLevel", "indexMaintenanceSynchronous", "statisticsEnabled",
       "subscriptionConflationEnabled", "asyncConflationEnabled", "poolName", "cloningEnabled",
       "diskStoreName", "interestPolicy", "diskSynchronous", "cacheListeners", "compressorClassName",
-      "offHeap"})
+      "offHeap", "asyncEventQueueIds", "gatewaySenderIds"})
 
 
   public RegionAttributesData(String cacheLoaderClassName, String cacheWriterClassName,
@@ -81,9 +84,8 @@ public class RegionAttributesData {
       boolean statisticsEnabled, boolean subscriptionConflationEnabled,
       boolean asyncConflationEnabled, String poolName, boolean cloningEnabled, String diskStoreName,
       String interestPolicy, boolean diskSynchronous, String[] cacheListeners,
-      String compressorClassName, boolean offHeap) {
-
-
+      String compressorClassName, boolean offHeap, Set<String> asyncEventQueueIds,
+      Set<String> gatewaySenderIds) {
 
     this.cacheLoaderClassName = cacheLoaderClassName;
     this.cacheWriterClassName = cacheWriterClassName;
@@ -115,6 +117,8 @@ public class RegionAttributesData {
     this.cacheListeners = cacheListeners;
     this.compressorClassName = compressorClassName;
     this.offHeap = offHeap;
+    this.asyncEventQueueIds = asyncEventQueueIds;
+    this.gatewaySenderIds = gatewaySenderIds;
   }
 
   /**
@@ -189,7 +193,7 @@ public class RegionAttributesData {
 
   /**
    * Returns whether JTA transactions are being ignored.
-   * 
+   *
    * @return True if JTA transactions are being ignored, false otherwise.
    */
   public boolean isIgnoreJTA() {
@@ -227,7 +231,7 @@ public class RegionAttributesData {
   /**
    * Returns whether this member is configured to become the lock granter when the Region is
    * created. It does not indicate whether this member is currently the lock granter for the Region.
-   * 
+   *
    * @return True if this member is configured to start the Region as the lock granter, false
    *         otherwise. Always returns false if the scope of the Region is not
    *         <code>Scope.GLOBAL</code>
@@ -238,7 +242,7 @@ public class RegionAttributesData {
 
   /**
    * Returns whether multicast communication is enabled for the Region.
-   * 
+   *
    * @return True if multicast communication is enabled, false otherwise.
    */
   public boolean isMulticastEnabled() {
@@ -254,7 +258,7 @@ public class RegionAttributesData {
 
   /**
    * Returns whether query service index maintenance will be done synchronously.
-   * 
+   *
    * @return True if query service index maintenance will be done synchronously or false if it will
    *         be done asynchronously.
    */
@@ -264,7 +268,7 @@ public class RegionAttributesData {
 
   /**
    * Returns whether statistic collection is enabled for the Region and its entries.
-   * 
+   *
    * @return True if statistic collection is enabled, false otherwise.
    */
   public boolean isStatisticsEnabled() {
@@ -293,7 +297,7 @@ public class RegionAttributesData {
 
   /**
    * Returns the name of the Pool that this Region will use to communicate with servers, if any.
-   * 
+   *
    * @return The name of the Pool used to communicate with servers or null if the host member
    *         communicates with peers.
    */
@@ -326,7 +330,7 @@ public class RegionAttributesData {
 
   /**
    * Returns whether disk writes are synchronous.
-   * 
+   *
    * @return True if disk writes are synchronous, false otherwise.
    */
   public boolean isDiskSynchronous() {
@@ -342,7 +346,7 @@ public class RegionAttributesData {
 
   /**
    * Returns the compressor class name used by the region.
-   * 
+   *
    * @return null if no compression is used.
    */
   public String getCompressorClassName() {
@@ -351,11 +355,29 @@ public class RegionAttributesData {
 
   /**
    * Returns true if the region uses off-heap memory.
-   * 
+   *
    * @return false if the region does not use off-heap memory.
    */
   public boolean getOffHeap() {
     return this.offHeap;
+  }
+
+  /**
+   * Returns the set of async event queue IDs.
+   *
+   * @return a set of ids.
+   */
+  public Set<String> getAsyncEventQueueIds() {
+    return asyncEventQueueIds;
+  }
+
+  /**
+   * Returns the set of gateway sender IDs.
+   *
+   * @return a set of ids.
+   */
+  public Set<String> getGatewaySenderIds() {
+    return gatewaySenderIds;
   }
 
   /**
@@ -364,14 +386,15 @@ public class RegionAttributesData {
   @Override
   public String toString() {
     return "RegionAttributesData [asyncConflationEnabled=" + asyncConflationEnabled
-        + ", cacheListeners=" + Arrays.toString(cacheListeners) + ", cacheLoaderClassName="
-        + cacheLoaderClassName + ", cacheWriterClassName=" + cacheWriterClassName
-        + ", cloningEnabled=" + cloningEnabled + ", compressorClassName=" + compressorClassName
-        + ", concurrencyLevel=" + concurrencyLevel + ", customEntryIdleTimeout="
-        + customEntryIdleTimeout + ", customEntryTimeToLive=" + customEntryTimeToLive
-        + ", dataPolicy=" + dataPolicy + ", diskStoreName=" + diskStoreName + ", diskSynchronous="
-        + diskSynchronous + ", entryIdleTimeout=" + entryIdleTimeout + ", entryTimeToLive="
-        + entryTimeToLive + ", ignoreJTA=" + ignoreJTA + ", indexMaintenanceSynchronous="
+        + ", asyncEventQueueIds=" + asyncEventQueueIds + ", cacheListeners="
+        + Arrays.toString(cacheListeners) + ", cacheLoaderClassName=" + cacheLoaderClassName
+        + ", cacheWriterClassName=" + cacheWriterClassName + ", cloningEnabled=" + cloningEnabled
+        + ", compressorClassName=" + compressorClassName + ", concurrencyLevel=" + concurrencyLevel
+        + ", customEntryIdleTimeout=" + customEntryIdleTimeout + ", customEntryTimeToLive="
+        + customEntryTimeToLive + ", dataPolicy=" + dataPolicy + ", diskStoreName=" + diskStoreName
+        + ", diskSynchronous=" + diskSynchronous + ", entryIdleTimeout=" + entryIdleTimeout
+        + ", entryTimeToLive=" + entryTimeToLive + ", gatewaySenderIds=" + gatewaySenderIds
+        + ", ignoreJTA=" + ignoreJTA + ", indexMaintenanceSynchronous="
         + indexMaintenanceSynchronous + ", initialCapacity=" + initialCapacity + ", interestPolicy="
         + interestPolicy + ", keyConstraintClassName=" + keyConstraintClassName + ", loadFactor="
         + loadFactor + ", lockGrantor=" + lockGrantor + ", multicastEnabled=" + multicastEnabled
@@ -382,7 +405,4 @@ public class RegionAttributesData {
         + "]";
   }
 
-
-
 }
-

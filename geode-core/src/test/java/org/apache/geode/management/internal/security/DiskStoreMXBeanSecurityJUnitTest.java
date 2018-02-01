@@ -25,11 +25,11 @@ import org.junit.rules.RuleChain;
 
 import org.apache.geode.management.DiskStoreMXBean;
 import org.apache.geode.security.SimpleTestSecurityManager;
+import org.apache.geode.test.junit.categories.IntegrationTest;
+import org.apache.geode.test.junit.categories.SecurityTest;
 import org.apache.geode.test.junit.rules.ConnectionConfiguration;
 import org.apache.geode.test.junit.rules.MBeanServerConnectionRule;
 import org.apache.geode.test.junit.rules.ServerStarterRule;
-import org.apache.geode.test.junit.categories.IntegrationTest;
-import org.apache.geode.test.junit.categories.SecurityTest;
 
 @Category({IntegrationTest.class, SecurityTest.class})
 public class DiskStoreMXBeanSecurityJUnitTest {
@@ -47,7 +47,7 @@ public class DiskStoreMXBeanSecurityJUnitTest {
   @Before
   public void setUp() throws Exception {
     server.getCache().createDiskStoreFactory().create("diskstore");
-    bean = connectionRule.getProxyMBean(DiskStoreMXBean.class);
+    bean = connectionRule.getProxyMXBean(DiskStoreMXBean.class);
   }
 
   @Test

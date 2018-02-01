@@ -14,14 +14,6 @@
  */
 package org.apache.geode.internal;
 
-import org.apache.geode.DataSerializer;
-import org.apache.geode.distributed.internal.DistributionConfig;
-import org.apache.geode.internal.cache.BytesAndBitsForCompactor;
-import org.apache.geode.internal.i18n.LocalizedStrings;
-import org.apache.geode.internal.logging.LogService;
-import org.apache.geode.internal.tcp.ByteBufferInputStream.ByteSource;
-import org.apache.logging.log4j.Logger;
-
 import java.io.DataOutput;
 import java.io.IOException;
 import java.io.InputStream;
@@ -32,6 +24,15 @@ import java.nio.ByteBuffer;
 import java.nio.channels.SocketChannel;
 import java.util.Iterator;
 import java.util.LinkedList;
+
+import org.apache.logging.log4j.Logger;
+
+import org.apache.geode.DataSerializer;
+import org.apache.geode.distributed.internal.DistributionConfig;
+import org.apache.geode.internal.cache.BytesAndBitsForCompactor;
+import org.apache.geode.internal.i18n.LocalizedStrings;
+import org.apache.geode.internal.logging.LogService;
+import org.apache.geode.internal.tcp.ByteBufferInputStream.ByteSource;
 
 /**
  * HeapDataOutputStream is an OutputStream that also implements DataOutput and stores all data
@@ -134,7 +135,7 @@ public class HeapDataOutputStream extends OutputStream
   /**
    * Construct a HeapDataOutputStream which uses the byte array provided as its underlying
    * ByteBuffer
-   * 
+   *
    * @param bytes
    */
   public HeapDataOutputStream(byte[] bytes) {
@@ -175,7 +176,7 @@ public class HeapDataOutputStream extends OutputStream
    * throw an exception instead of allocating a new buffer. The exception is a
    * BufferOverflowException thrown from expand, and will restore the position to the point at which
    * the flag was set with the disallowExpansion method.
-   * 
+   *
    * @param ee the exception to throw if expansion is needed
    */
   public void disallowExpansion(Error ee) {
@@ -461,7 +462,7 @@ public class HeapDataOutputStream extends OutputStream
    * assumed that the HeapDataOutputStream is appropriately seeded with a byte array from the
    * wrapper. However the filled byte array may or may not be the same as that used for seeding ,
    * depending upon whether the data got accommodated in the original byte buffer or not.
-   * 
+   *
    * @param wrapper
    */
   // Asif
@@ -484,7 +485,7 @@ public class HeapDataOutputStream extends OutputStream
   /**
    * Write this stream to the specified channel. Call multiple times until size returns zero to make
    * sure all bytes in the stream have been written.
-   * 
+   *
    * @return the number of bytes written, possibly zero.
    * @throws IOException if channel is closed, not yet connected, or some other I/O error occurs.
    */
@@ -570,7 +571,7 @@ public class HeapDataOutputStream extends OutputStream
 
   /**
    * Write the contents of this stream to the byte buffer.
-   * 
+   *
    * @throws BufferOverflowException if out is not large enough to contain all of our data.
    */
   public void sendTo(ByteBuffer out) {
@@ -871,7 +872,7 @@ public class HeapDataOutputStream extends OutputStream
    * Writes two bytes to the output stream to represent the value of the argument. The byte values
    * to be written, in the order shown, are:
    * <p>
-   * 
+   *
    * <pre>
    * <code>
    * (byte)(0xff &amp; (v &gt;&gt; 8))
@@ -897,7 +898,7 @@ public class HeapDataOutputStream extends OutputStream
    * Writes a <code>char</code> value, wich is comprised of two bytes, to the output stream. The
    * byte values to be written, in the order shown, are:
    * <p>
-   * 
+   *
    * <pre>
    * <code>
    * (byte)(0xff &amp; (v &gt;&gt; 8))
@@ -923,7 +924,7 @@ public class HeapDataOutputStream extends OutputStream
    * Writes an <code>int</code> value, which is comprised of four bytes, to the output stream. The
    * byte values to be written, in the order shown, are:
    * <p>
-   * 
+   *
    * <pre>
    * <code>
    * (byte)(0xff &amp; (v &gt;&gt; 24))
@@ -950,7 +951,7 @@ public class HeapDataOutputStream extends OutputStream
    * Writes a <code>long</code> value, which is comprised of eight bytes, to the output stream. The
    * byte values to be written, in the order shown, are:
    * <p>
-   * 
+   *
    * <pre>
    * <code>
    * (byte)(0xff &amp; (v &gt;&gt; 56))
@@ -980,7 +981,7 @@ public class HeapDataOutputStream extends OutputStream
   /**
    * Reserves space in the output for a long and returns a LongUpdater than can be used to update
    * this particular long.
-   * 
+   *
    * @return the LongUpdater that allows the long to be updated
    */
   public LongUpdater reserveLong() {
@@ -1120,7 +1121,7 @@ public class HeapDataOutputStream extends OutputStream
    * If a character <code>c</code> is in the range <code>&#92;u0001</code> through
    * <code>&#92;u007f</code>, it is represented by one byte:
    * <p>
-   * 
+   *
    * <pre>
    * (byte) c
    * </pre>
@@ -1129,7 +1130,7 @@ public class HeapDataOutputStream extends OutputStream
    * <code>&#92;u0080</code> through <code>&#92;u07ff</code>, then it is represented by two bytes,
    * to be written in the order shown:
    * <p>
-   * 
+   *
    * <pre>
    * <code>
    * (byte)(0xc0 | (0x1f &amp; (c &gt;&gt; 6)))
@@ -1140,7 +1141,7 @@ public class HeapDataOutputStream extends OutputStream
    * If a character <code>c</code> is in the range <code>&#92;u0800</code> through
    * <code>uffff</code>, then it is represented by three bytes, to be written in the order shown:
    * <p>
-   * 
+   *
    * <pre>
    * <code>
    * (byte)(0xe0 | (0x0f &amp; (c &gt;&gt; 12)))
@@ -1316,7 +1317,7 @@ public class HeapDataOutputStream extends OutputStream
 
   /**
    * Write a byte buffer to this HeapDataOutputStream,
-   * 
+   *
    * the contents of the buffer between the position and the limit are copied to the output stream.
    */
   @Override
@@ -1345,7 +1346,7 @@ public class HeapDataOutputStream extends OutputStream
 
   /**
    * Write a byte source to this HeapDataOutputStream,
-   * 
+   *
    * the contents of the buffer between the position and the limit are copied to the output stream.
    */
   public void write(ByteSource source) {

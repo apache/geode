@@ -43,9 +43,19 @@ import static org.junit.Assert.assertNotSame;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
-import org.apache.geode.distributed.internal.HighPriorityAckedMessage;
-import org.apache.geode.test.dunit.AsyncInvocation;
+import java.io.File;
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+import java.util.Properties;
+import java.util.Set;
+import java.util.concurrent.TimeUnit;
+
 import org.awaitility.Awaitility;
+import org.junit.Test;
+import org.junit.experimental.categories.Category;
+
 import org.apache.geode.ForcedDisconnectException;
 import org.apache.geode.GemFireConfigException;
 import org.apache.geode.LogWriter;
@@ -56,6 +66,7 @@ import org.apache.geode.cache.Region;
 import org.apache.geode.cache.RegionShortcut;
 import org.apache.geode.distributed.internal.DistributionException;
 import org.apache.geode.distributed.internal.DistributionManager;
+import org.apache.geode.distributed.internal.HighPriorityAckedMessage;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.distributed.internal.InternalLocator;
 import org.apache.geode.distributed.internal.MembershipListener;
@@ -68,11 +79,13 @@ import org.apache.geode.distributed.internal.membership.gms.membership.GMSJoinLe
 import org.apache.geode.internal.Assert;
 import org.apache.geode.internal.AvailablePort;
 import org.apache.geode.internal.AvailablePortHelper;
+import org.apache.geode.internal.OSProcess;
 import org.apache.geode.internal.cache.GemFireCacheImpl;
 import org.apache.geode.internal.logging.InternalLogWriter;
 import org.apache.geode.internal.logging.LocalLogWriter;
 import org.apache.geode.internal.security.SecurableCommunicationChannel;
 import org.apache.geode.internal.tcp.Connection;
+import org.apache.geode.test.dunit.AsyncInvocation;
 import org.apache.geode.test.dunit.DistributedTestUtils;
 import org.apache.geode.test.dunit.Host;
 import org.apache.geode.test.dunit.IgnoredException;
@@ -86,21 +99,10 @@ import org.apache.geode.test.dunit.standalone.DUnitLauncher;
 import org.apache.geode.test.junit.categories.DistributedTest;
 import org.apache.geode.test.junit.categories.MembershipTest;
 import org.apache.geode.util.test.TestUtil;
-import org.junit.Test;
-import org.junit.experimental.categories.Category;
-
-import java.io.File;
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-import java.util.Properties;
-import java.util.Set;
-import java.util.concurrent.TimeUnit;
 
 /**
  * Tests the ability of the {@link Locator} API to start and stop locators running in remote VMs.
- * 
+ *
  * @since GemFire 4.0
  */
 @Category({DistributedTest.class, MembershipTest.class})
@@ -1973,7 +1975,7 @@ public class LocatorDUnitTest extends JUnit4DistributedTestCase {
 
   /**
    * Tests starting, stopping, and restarting a locator. See bug 32856.
-   * 
+   *
    * @since GemFire 4.1
    */
   @Test
@@ -2015,6 +2017,55 @@ public class LocatorDUnitTest extends JUnit4DistributedTestCase {
       });
 
     } finally {
+      locator.stop();
+    }
+
+  }
+
+  /**
+   * See GEODE-3588 - a locator is restarted twice with a server and ends up in a split-brain
+   */
+  @Test
+  public void testRestartLocatorMultipleTimes() throws Exception {
+    disconnectAllFromDS();
+    port1 = AvailablePort.getRandomAvailablePort(AvailablePort.SOCKET);
+    DistributedTestUtils.deleteLocatorStateFile(port1);
+    File logFile = new File("");
+    File stateFile = new File("locator" + port1 + "state.dat");
+    VM vm0 = Host.getHost(0).getVM(0);
+    final Properties p = new Properties();
+    p.setProperty(LOCATORS, Host.getHost(0).getHostName() + "[" + port1 + "]");
+    p.setProperty(MCAST_PORT, "0");
+    p.setProperty(ENABLE_CLUSTER_CONFIGURATION, "false");
+    p.setProperty(LOG_LEVEL, "finest");
+    addDSProps(p);
+    if (stateFile.exists()) {
+      stateFile.delete();
+    }
+
+    Locator locator = Locator.startLocatorAndDS(port1, logFile, p);
+
+    vm0.invoke(() -> {
+      DistributedSystem.connect(p);
+      return null;
+    });
+
+    try {
+      locator.stop();
+      locator = Locator.startLocatorAndDS(port1, logFile, p);
+      assertEquals(2, ((InternalDistributedSystem) locator.getDistributedSystem()).getDM()
+          .getViewMembers().size());
+
+      locator.stop();
+      locator = Locator.startLocatorAndDS(port1, logFile, p);
+      assertEquals(2, ((InternalDistributedSystem) locator.getDistributedSystem()).getDM()
+          .getViewMembers().size());
+
+    } finally {
+      vm0.invoke("disconnect", () -> {
+        DistributedSystem.connect(p).disconnect();
+        return null;
+      });
       locator.stop();
     }
 

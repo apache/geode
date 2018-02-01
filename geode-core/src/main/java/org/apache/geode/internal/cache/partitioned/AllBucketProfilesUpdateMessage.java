@@ -39,7 +39,7 @@ import org.apache.geode.internal.logging.LogService;
 /**
  * A Partitioned Region meta-data update message. This is used to send all local bucket's meta-data
  * to other members with the same Partitioned Region.
- * 
+ *
  * @since GemFire 6.6
  */
 public class AllBucketProfilesUpdateMessage extends DistributionMessage
@@ -108,7 +108,7 @@ public class AllBucketProfilesUpdateMessage extends DistributionMessage
 
   /**
    * Send a profile update to a set of members.
-   * 
+   *
    * @param recipients the set of members to be notified
    * @param dm the distribution manager used to send the message
    * @param prId the unique partitioned region identifier
@@ -155,4 +155,3 @@ public class AllBucketProfilesUpdateMessage extends DistributionMessage
   }
 
 }
-

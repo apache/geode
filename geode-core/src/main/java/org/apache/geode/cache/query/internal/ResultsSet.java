@@ -20,14 +20,14 @@ import java.io.DataOutput;
 import java.io.IOException;
 import java.util.*;
 
+import org.apache.geode.DataSerializer;
+import org.apache.geode.cache.query.*;
+import org.apache.geode.cache.query.internal.types.*;
+import org.apache.geode.cache.query.types.*;
+import org.apache.geode.internal.Assert;
 import org.apache.geode.internal.DataSerializableFixedID;
 import org.apache.geode.internal.InternalDataSerializer;
 import org.apache.geode.internal.Version;
-import org.apache.geode.DataSerializer;
-import org.apache.geode.cache.query.*;
-import org.apache.geode.cache.query.types.*;
-import org.apache.geode.cache.query.internal.types.*;
-import org.apache.geode.internal.Assert;
 import org.apache.geode.internal.i18n.LocalizedStrings;
 
 // @todo probably should assert element type when elements added

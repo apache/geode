@@ -16,7 +16,7 @@
 /**
  * Test various distributed aspects of transactions, e.g. locking/reservation symantics that do not
  * need multiple Region configurations. For those tests see <code>MultiVMRegionTestCase</code>.
- * 
+ *
  *
  * @since GemFire 4.0
  * @see MultiVMRegionTestCase
@@ -1016,7 +1016,7 @@ public class TXDistributedDUnitTest extends JUnit4CacheTestCase {
    * A class used in testLockBatchParticipantsUpdate to pause a transaction in the afterResrvation
    * and afterSend states.
    */
-  static public class PausibleTX implements Runnable {
+  public static class PausibleTX implements Runnable {
     public boolean isRunning = false;
     public String rgnName = null;
     public Cache myCache = null;
@@ -1557,4 +1557,3 @@ public class TXDistributedDUnitTest extends JUnit4CacheTestCase {
     }
   }
 }
-

@@ -15,6 +15,7 @@
 package org.apache.geode.management.internal.cli.remote;
 
 import java.util.Collections;
+import java.util.List;
 import java.util.Map;
 
 import org.apache.geode.management.internal.cli.CommandResponseWriter;
@@ -22,14 +23,14 @@ import org.apache.geode.management.internal.cli.GfshParser;
 import org.apache.geode.management.internal.cli.shell.Gfsh;
 
 /**
- * 
+ *
  * @since GemFire 7.0
  */
 public class CommandExecutionContext {
   // ThreadLocal variables that can be uses by commands
   private static final ThreadLocal<Map<String, String>> ENV = new ThreadLocal<>();
   private static final ThreadLocal<Boolean> FROM_SHELL = new ThreadLocal<>();
-  private static final ThreadLocal<byte[][]> SHELL_BYTES_DATA = new ThreadLocal<>();
+  private static final ThreadLocal<List<String>> SHELL_FILEPATH = new ThreadLocal<>();
 
   private static final WrapperThreadLocal<CommandResponseWriter> WRITER_WRAPPER =
       new WrapperThreadLocal<CommandResponseWriter>() {
@@ -74,12 +75,12 @@ public class CommandExecutionContext {
     ENV.set(env);
   }
 
-  public static byte[][] getBytesFromShell() {
-    return SHELL_BYTES_DATA.get();
+  public static List<String> getFilePathFromShell() {
+    return SHELL_FILEPATH.get();
   }
 
-  public static void setBytesFromShell(byte[][] data) {
-    SHELL_BYTES_DATA.set(data);
+  public static void setFilePathToShell(List<String> data) {
+    SHELL_FILEPATH.set(data);
   }
 
   public static boolean isShellRequest() {
@@ -110,7 +111,7 @@ public class CommandExecutionContext {
     ENV.set(null);
 
     FROM_SHELL.set(false);
-    SHELL_BYTES_DATA.set(null);
+    SHELL_FILEPATH.set(null);
     WRITER_WRAPPER.set(null);
   }
 }

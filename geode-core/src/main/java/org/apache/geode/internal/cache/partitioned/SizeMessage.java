@@ -47,7 +47,7 @@ import org.apache.geode.internal.logging.log4j.LogMarker;
 
 /**
  * This message is used to determine the number of Entries in a Region, or its size.
- * 
+ *
  * @since GemFire 5.0
  */
 public class SizeMessage extends PartitionMessage {
@@ -70,7 +70,7 @@ public class SizeMessage extends PartitionMessage {
   /**
    * The message sent to a set of {@link InternalDistributedMember}s to caculate the number of
    * Entries in each of their buckets
-   * 
+   *
    * @param recipients members to receive the message
    * @param regionId the <code>PartitionedRegion<code> regionId
    * @param processor the reply processor used to wait on the response
@@ -90,7 +90,7 @@ public class SizeMessage extends PartitionMessage {
   /**
    * sends a message to the given recipients asking for the size of either their primary bucket
    * entries or the values sets of their primary buckets
-   * 
+   *
    * @param recipients recipients of the message
    * @param r the local PartitionedRegion instance
    * @param bucketIds the buckets to look for, or null for all buckets
@@ -106,7 +106,7 @@ public class SizeMessage extends PartitionMessage {
 
   /**
    * This message may be sent to nodes before the PartitionedRegion is completely initialized due to
-   * the RegionAdvisor(s) knowing about the existance of a partitioned region at a very early part
+   * the RegionAdvisor(s) knowing about the existence of a partitioned region at a very early part
    * of the initialization
    */
   @Override
@@ -166,8 +166,12 @@ public class SizeMessage extends PartitionMessage {
             dm, r.isInternalRegion());
       }
     } else {
-      logger.warn(LocalizedMessage.create(
-          LocalizedStrings.SizeMessage_SIZEMESSAGE_REGION_NOT_FOUND_FOR_THIS_MEMBER, regionId));
+      if (logger.isDebugEnabled()) {
+        // Note that this is more likely to happen with this message
+        // because of it returning false from failIfRegionMissing.
+        logger.debug(LocalizedMessage.create(
+            LocalizedStrings.SizeMessage_SIZEMESSAGE_REGION_NOT_FOUND_FOR_THIS_MEMBER, regionId));
+      }
       ReplyMessage.send(getSender(), getProcessorId(),
           new ReplyException(new ForceReattemptException(
               LocalizedStrings.SizeMessage_0_COULD_NOT_FIND_PARTITIONED_REGION_WITH_ID_1
@@ -227,7 +231,7 @@ public class SizeMessage extends PartitionMessage {
 
     /**
      * Processes this message. This method is invoked by the receiver of the message.
-     * 
+     *
      * @param dm the distribution manager that is processing the message.
      */
     @Override
@@ -286,7 +290,7 @@ public class SizeMessage extends PartitionMessage {
   /**
    * A processor to capture the value returned by
    * {@link org.apache.geode.internal.cache.partitioned.GetMessage.GetReplyMessage}
-   * 
+   *
    * @since GemFire 5.0
    */
   public static class SizeResponse extends ReplyProcessor21 {

@@ -27,17 +27,17 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
-import org.apache.geode.test.compiler.ClassBuilder;
 import org.apache.geode.internal.ClassPathLoader;
-import org.apache.geode.test.junit.rules.GfshShellConnectionRule;
-import org.apache.geode.test.dunit.rules.LocatorServerStartupRule;
+import org.apache.geode.test.compiler.ClassBuilder;
+import org.apache.geode.test.dunit.rules.ClusterStartupRule;
 import org.apache.geode.test.dunit.rules.MemberVM;
 import org.apache.geode.test.junit.categories.DistributedTest;
+import org.apache.geode.test.junit.rules.GfshCommandRule;
 import org.apache.geode.test.junit.rules.serializable.SerializableTemporaryFolder;
 
 /**
  * Unit tests for DeployCommand, UndeployCommand, ListDeployedCommand
- * 
+ *
  * @since GemFire 7.0
  */
 @SuppressWarnings("serial")
@@ -70,10 +70,10 @@ public class DeployWithGroupsDUnitTest implements Serializable {
   public SerializableTemporaryFolder temporaryFolder = new SerializableTemporaryFolder();
 
   @Rule
-  public LocatorServerStartupRule lsRule = new LocatorServerStartupRule();
+  public ClusterStartupRule lsRule = new ClusterStartupRule();
 
   @Rule
-  public transient GfshShellConnectionRule gfshConnector = new GfshShellConnectionRule();
+  public transient GfshCommandRule gfshConnector = new GfshCommandRule();
 
   @Before
   public void setup() throws Exception {
@@ -107,7 +107,8 @@ public class DeployWithGroupsDUnitTest implements Serializable {
   @Test
   public void deployJarToOneGroup() throws Exception {
     // Deploy a jar to a single group
-    gfshConnector.executeAndVerifyCommand("deploy --jar=" + jar2 + " --group=" + GROUP1);
+    gfshConnector.executeAndAssertThat("deploy --jar=" + jar2 + " --group=" + GROUP1)
+        .statusIsSuccess();
     String resultString = gfshConnector.getGfshOutput();
 
     assertThat(resultString).contains(server1.getName());
@@ -121,14 +122,11 @@ public class DeployWithGroupsDUnitTest implements Serializable {
   @Test
   public void deployJarsInDirToOneGroup() throws Exception {
     // Deploy of multiple JARs to a single group
-    gfshConnector.executeAndVerifyCommand(
-        "deploy --group=" + GROUP1 + " --dir=" + subdirWithJars3and4.getCanonicalPath());
-    String resultString = gfshConnector.getGfshOutput();
-
-    assertThat(resultString).describedAs(resultString).contains(server1.getName());
-    assertThat(resultString).doesNotContain(server2.getName());
-    assertThat(resultString).contains(jarName3);
-    assertThat(resultString).contains(jarName4);
+    gfshConnector
+        .executeAndAssertThat(
+            "deploy --group=" + GROUP1 + " --dir=" + subdirWithJars3and4.getCanonicalPath())
+        .statusIsSuccess().containsOutput(server1.getName()).doesNotContainOutput(server2.getName())
+        .containsOutput(jarName3).containsOutput(jarName4);
 
     server1.invoke(() -> {
       assertThatCanLoad(jarName3, class3);
@@ -140,7 +138,7 @@ public class DeployWithGroupsDUnitTest implements Serializable {
     });
 
     // Undeploy of multiple jars by specifying group
-    gfshConnector.executeAndVerifyCommand("undeploy --group=" + GROUP1);
+    gfshConnector.executeAndAssertThat("undeploy --group=" + GROUP1).statusIsSuccess();
     server1.invoke(() -> {
       assertThatCannotLoad(jarName3, class3);
       assertThatCannotLoad(jarName4, class4);
@@ -154,14 +152,11 @@ public class DeployWithGroupsDUnitTest implements Serializable {
   @Test
   public void deployMultipleJarsToOneGroup() throws Exception {
     // Deploy of multiple JARs to a single group
-    gfshConnector.executeAndVerifyCommand("deploy --group=" + GROUP1 + " --jars="
-        + jar3.getAbsolutePath() + "," + jar4.getAbsolutePath());
-    String resultString = gfshConnector.getGfshOutput();
-
-    assertThat(resultString).describedAs(resultString).contains(server1.getName());
-    assertThat(resultString).doesNotContain(server2.getName());
-    assertThat(resultString).contains(jarName3);
-    assertThat(resultString).contains(jarName4);
+    gfshConnector
+        .executeAndAssertThat("deploy --group=" + GROUP1 + " --jars=" + jar3.getAbsolutePath() + ","
+            + jar4.getAbsolutePath())
+        .statusIsSuccess().containsOutput(server1.getName()).doesNotContainOutput(server2.getName())
+        .containsOutput(jarName3).containsOutput(jarName4);
 
     server1.invoke(() -> {
       assertThatCanLoad(jarName3, class3);
@@ -173,7 +168,8 @@ public class DeployWithGroupsDUnitTest implements Serializable {
     });
 
     // Undeploy of multiple jars by specifying group
-    gfshConnector.executeAndVerifyCommand("undeploy --jars=" + jarName3 + "," + jarName4);
+    gfshConnector.executeAndAssertThat("undeploy --jars=" + jarName3 + "," + jarName4)
+        .statusIsSuccess();
     server1.invoke(() -> {
       assertThatCannotLoad(jarName3, class3);
       assertThatCannotLoad(jarName4, class4);
@@ -188,7 +184,7 @@ public class DeployWithGroupsDUnitTest implements Serializable {
   @Test
   public void deployJarToAllServers() throws Exception {
     // Deploy a jar to all servers
-    gfshConnector.executeAndVerifyCommand("deploy --jar=" + jar1);
+    gfshConnector.executeAndAssertThat("deploy --jar=" + jar1).statusIsSuccess();
     String resultString = gfshConnector.getGfshOutput();
 
     assertThat(resultString).contains(server1.getName());
@@ -199,14 +195,15 @@ public class DeployWithGroupsDUnitTest implements Serializable {
     server2.invoke(() -> assertThatCanLoad(jarName1, class1));
 
     // Undeploy of jar by specifying group
-    gfshConnector.executeAndVerifyCommand("undeploy --group=" + GROUP1);
+    gfshConnector.executeAndAssertThat("undeploy --group=" + GROUP1).statusIsSuccess();
     server1.invoke(() -> assertThatCannotLoad(jarName1, class1));
     server2.invoke(() -> assertThatCanLoad(jarName1, class1));
   }
 
   @Test
   public void deployMultipleJarsToAllServers() throws Exception {
-    gfshConnector.executeAndVerifyCommand("deploy --dir=" + subdirWithJars3and4.getCanonicalPath());
+    gfshConnector.executeAndAssertThat("deploy --dir=" + subdirWithJars3and4.getCanonicalPath())
+        .statusIsSuccess();
 
     server1.invoke(() -> {
       assertThatCanLoad(jarName3, class3);
@@ -217,7 +214,7 @@ public class DeployWithGroupsDUnitTest implements Serializable {
       assertThatCanLoad(jarName4, class4);
     });
 
-    gfshConnector.executeAndVerifyCommand("undeploy");
+    gfshConnector.executeAndAssertThat("undeploy").statusIsSuccess();
 
     server1.invoke(() -> {
       assertThatCannotLoad(jarName3, class3);
@@ -231,7 +228,8 @@ public class DeployWithGroupsDUnitTest implements Serializable {
 
   @Test
   public void undeployOfMultipleJars() throws Exception {
-    gfshConnector.executeAndVerifyCommand("deploy --dir=" + subdirWithJars3and4.getCanonicalPath());
+    gfshConnector.executeAndAssertThat("deploy --dir=" + subdirWithJars3and4.getCanonicalPath())
+        .statusIsSuccess();
 
     server1.invoke(() -> {
       assertThatCanLoad(jarName3, class3);
@@ -242,8 +240,8 @@ public class DeployWithGroupsDUnitTest implements Serializable {
       assertThatCanLoad(jarName4, class4);
     });
 
-    gfshConnector
-        .executeAndVerifyCommand("undeploy --jar=" + jar3.getName() + "," + jar4.getName());
+    gfshConnector.executeAndAssertThat("undeploy --jar=" + jar3.getName() + "," + jar4.getName())
+        .statusIsSuccess();
     server1.invoke(() -> {
       assertThatCannotLoad(jarName3, class3);
       assertThatCannotLoad(jarName4, class4);
@@ -255,12 +253,12 @@ public class DeployWithGroupsDUnitTest implements Serializable {
   }
 
   private void assertThatCanLoad(String jarName, String className) throws ClassNotFoundException {
-    assertThat(ClassPathLoader.getLatest().getJarDeployer().findDeployedJar(jarName)).isNotNull();
+    assertThat(ClassPathLoader.getLatest().getJarDeployer().getDeployedJar(jarName)).isNotNull();
     assertThat(ClassPathLoader.getLatest().forName(className)).isNotNull();
   }
 
   private void assertThatCannotLoad(String jarName, String className) {
-    assertThat(ClassPathLoader.getLatest().getJarDeployer().findDeployedJar(jarName)).isNull();
+    assertThat(ClassPathLoader.getLatest().getJarDeployer().getDeployedJar(jarName)).isNull();
     assertThatThrownBy(() -> ClassPathLoader.getLatest().forName(className))
         .isExactlyInstanceOf(ClassNotFoundException.class);
   }
@@ -270,12 +268,14 @@ public class DeployWithGroupsDUnitTest implements Serializable {
   public void testListDeployed() throws Exception {
     // Deploy a couple of JAR files which can be listed
     gfshConnector
-        .executeAndVerifyCommand("deploy --group=" + GROUP1 + " --jar=" + jar1.getCanonicalPath());
+        .executeAndAssertThat("deploy --group=" + GROUP1 + " --jar=" + jar1.getCanonicalPath())
+        .statusIsSuccess();
     gfshConnector
-        .executeAndVerifyCommand("deploy --group=" + GROUP2 + " --jar=" + jar2.getCanonicalPath());
+        .executeAndAssertThat("deploy --group=" + GROUP2 + " --jar=" + jar2.getCanonicalPath())
+        .statusIsSuccess();
 
     // List for all members
-    gfshConnector.executeAndVerifyCommand("list deployed");
+    gfshConnector.executeAndAssertThat("list deployed").statusIsSuccess();
     String resultString = gfshConnector.getGfshOutput();
     assertThat(resultString).contains(server1.getName());
     assertThat(resultString).contains(server2.getName());
@@ -283,7 +283,7 @@ public class DeployWithGroupsDUnitTest implements Serializable {
     assertThat(resultString).contains(jarName2);
 
     // List for members in Group1
-    gfshConnector.executeAndVerifyCommand("list deployed --group=" + GROUP1);
+    gfshConnector.executeAndAssertThat("list deployed --group=" + GROUP1).statusIsSuccess();
     resultString = gfshConnector.getGfshOutput();
     assertThat(resultString).contains(server1.getName());
     assertThat(resultString).doesNotContain(server2.getName());
@@ -292,7 +292,7 @@ public class DeployWithGroupsDUnitTest implements Serializable {
     assertThat(resultString).doesNotContain(jarName2);
 
     // List for members in Group2
-    gfshConnector.executeAndVerifyCommand("list deployed --group=" + GROUP2);
+    gfshConnector.executeAndAssertThat("list deployed --group=" + GROUP2).statusIsSuccess();
     resultString = gfshConnector.getGfshOutput();
     assertThat(resultString).doesNotContain(server1.getName());
     assertThat(resultString).contains(server2.getName());

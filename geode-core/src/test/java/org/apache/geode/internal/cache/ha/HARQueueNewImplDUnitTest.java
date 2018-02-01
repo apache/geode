@@ -27,7 +27,6 @@ import java.util.Properties;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
 
-import org.apache.geode.test.junit.categories.ClientSubscriptionTest;
 import org.awaitility.Awaitility;
 import org.junit.Ignore;
 import org.junit.Test;
@@ -58,12 +57,13 @@ import org.apache.geode.test.dunit.Host;
 import org.apache.geode.test.dunit.VM;
 import org.apache.geode.test.dunit.WaitCriterion;
 import org.apache.geode.test.dunit.internal.JUnit4DistributedTestCase;
+import org.apache.geode.test.junit.categories.ClientSubscriptionTest;
 import org.apache.geode.test.junit.categories.DistributedTest;
 
 /**
  * This DUnit contains various tests to ensure new implementation of ha region queues works as
  * expected.
- * 
+ *
  * @since GemFire 5.7
  */
 @Category({DistributedTest.class, ClientSubscriptionTest.class})

@@ -16,7 +16,9 @@ package org.apache.geode.cache.lucene;
 
 import static org.apache.geode.cache.lucene.test.LuceneTestUtilities.REGION_NAME;
 
+import junitparams.JUnitParamsRunner;
 import org.junit.experimental.categories.Category;
+import org.junit.runner.RunWith;
 
 import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.client.ClientCache;
@@ -26,9 +28,6 @@ import org.apache.geode.cache.server.CacheServer;
 import org.apache.geode.test.dunit.SerializableCallableIF;
 import org.apache.geode.test.dunit.SerializableRunnableIF;
 import org.apache.geode.test.junit.categories.DistributedTest;
-import org.junit.runner.RunWith;
-
-import junitparams.JUnitParamsRunner;
 
 @Category(DistributedTest.class)
 @RunWith(JUnitParamsRunner.class)

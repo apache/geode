@@ -14,10 +14,10 @@
  */
 package org.apache.geode.internal.cache;
 
+import java.io.IOException;
+
 import org.apache.geode.internal.cache.tier.sockets.CacheServerHelper;
 import org.apache.geode.internal.i18n.LocalizedStrings;
-
-import java.io.IOException;
 
 public class InterestEvent {
 
@@ -35,7 +35,7 @@ public class InterestEvent {
 
   /**
    * Returns the key.
-   * 
+   *
    * @return the key
    */
   public Object getKey() {

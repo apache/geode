@@ -15,25 +15,25 @@
 
 package org.apache.geode.internal.cache;
 
+import java.io.DataInput;
+import java.io.DataOutput;
+import java.io.IOException;
+
 import org.apache.geode.DataSerializable;
 import org.apache.geode.DataSerializer;
 import org.apache.geode.cache.FixedPartitionAttributes;
 import org.apache.geode.distributed.internal.DistributionConfig;
 
-import java.io.DataInput;
-import java.io.DataOutput;
-import java.io.IOException;
-
 /**
  * Internal implementation of {@link FixedPartitionAttributes}.
- * 
+ *
  * @since GemFire 6.6
  */
 
 public class FixedPartitionAttributesImpl extends FixedPartitionAttributes
     implements DataSerializable {
   /**
-   * 
+   *
    */
   private static final long serialVersionUID = 7435010874879693776L;
 

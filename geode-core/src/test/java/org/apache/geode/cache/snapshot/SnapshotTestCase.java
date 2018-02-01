@@ -15,23 +15,22 @@
 package org.apache.geode.cache.snapshot;
 
 import static org.apache.geode.distributed.ConfigurationProperties.*;
-
-import com.examples.snapshot.MyObject;
-import org.apache.geode.cache.Cache;
-import org.apache.geode.cache.CacheFactory;
-import org.apache.geode.cache.DiskStore;
-import org.apache.geode.cache.snapshot.RegionGenerator.SerializationType;
-
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Rule;
-import org.junit.rules.TemporaryFolder;
+import static org.apache.geode.distributed.ConfigurationProperties.MCAST_PORT;
 
 import java.io.File;
 import java.util.HashMap;
 import java.util.Map;
 
-import static org.apache.geode.distributed.ConfigurationProperties.MCAST_PORT;
+import com.examples.snapshot.MyObject;
+import org.junit.After;
+import org.junit.Before;
+import org.junit.Rule;
+import org.junit.rules.TemporaryFolder;
+
+import org.apache.geode.cache.Cache;
+import org.apache.geode.cache.CacheFactory;
+import org.apache.geode.cache.DiskStore;
+import org.apache.geode.cache.snapshot.RegionGenerator.SerializationType;
 
 public class SnapshotTestCase {
   private File snapshotDirectory;

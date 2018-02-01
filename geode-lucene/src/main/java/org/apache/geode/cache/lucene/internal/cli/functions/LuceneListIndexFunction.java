@@ -19,8 +19,7 @@ import java.util.HashSet;
 import java.util.Set;
 
 import org.apache.geode.cache.Cache;
-import org.apache.geode.cache.CacheFactory;
-import org.apache.geode.cache.execute.FunctionAdapter;
+import org.apache.geode.cache.execute.Function;
 import org.apache.geode.cache.execute.FunctionContext;
 import org.apache.geode.cache.lucene.LuceneIndex;
 import org.apache.geode.cache.lucene.LuceneServiceProvider;
@@ -34,16 +33,18 @@ import org.apache.geode.internal.InternalEntity;
  * The LuceneListIndexFunction class is a function used to collect the information on all lucene
  * indexes in the entire Cache.
  * </p>
- * 
+ *
  * @see Cache
  * @see org.apache.geode.cache.execute.Function
- * @see FunctionAdapter
+ * @see Function
  * @see FunctionContext
  * @see InternalEntity
  * @see LuceneIndexDetails
  */
 @SuppressWarnings("unused")
-public class LuceneListIndexFunction extends FunctionAdapter implements InternalEntity {
+public class LuceneListIndexFunction implements InternalEntity, Function {
+
+  private static final long serialVersionUID = -2320432506763893879L;
 
   public String getId() {
     return LuceneListIndexFunction.class.getName();

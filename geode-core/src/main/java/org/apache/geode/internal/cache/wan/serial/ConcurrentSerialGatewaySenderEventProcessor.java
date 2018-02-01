@@ -13,7 +13,7 @@
  * the License.
  */
 /**
- * 
+ *
  */
 package org.apache.geode.internal.cache.wan.serial;
 
@@ -56,8 +56,8 @@ import org.apache.geode.internal.logging.log4j.LocalizedMessage;
 import org.apache.geode.internal.offheap.annotations.Released;
 
 /**
- * 
- * 
+ *
+ *
  */
 public class ConcurrentSerialGatewaySenderEventProcessor
     extends AbstractGatewaySenderEventProcessor {

@@ -59,23 +59,25 @@ public class ClientHealthMonitor {
 
   /**
    * The map of known clients
+   *
+   * Accesses must be locked by _clientHeartbeatsLock
    */
-  protected volatile Map _clientHeartbeats = Collections.EMPTY_MAP;
+  private Map<ClientProxyMembershipID, Long> _clientHeartbeats = Collections.emptyMap();
 
   /**
    * An object used to lock the map of known clients
    */
-  final protected Object _clientHeartbeatsLock = new Object();
+  private final Object _clientHeartbeatsLock = new Object();
 
   /**
    * The map of known client threads
    */
-  final protected Map _clientThreads;
+  private final Map _clientThreads;
 
   /**
    * An object used to lock the map of client threads
    */
-  final private Object _clientThreadsLock = new Object();
+  private final Object _clientThreadsLock = new Object();
 
   /**
    * THe GemFire <code>Cache</code>
@@ -91,7 +93,7 @@ public class ClientHealthMonitor {
   /**
    * A thread that validates client connections
    */
-  final private ClientHealthMonitorThread _clientMonitor;
+  private final ClientHealthMonitorThread _clientMonitor;
 
   /**
    * The singleton <code>CacheClientNotifier</code> instance
@@ -107,7 +109,7 @@ public class ClientHealthMonitor {
   /**
    * The interval between client monitor iterations
    */
-  private final static long DEFAULT_CLIENT_MONITOR_INTERVAL_IN_MILLIS = 1000;
+  private static final long DEFAULT_CLIENT_MONITOR_INTERVAL_IN_MILLIS = 1000;
 
   private final CacheClientNotifierStats stats;
 
@@ -124,10 +126,10 @@ public class ClientHealthMonitor {
   /**
    * Gives, version-wise, the number of clients connected to the cache servers in this cache, which
    * are capable of processing recieved deltas.
-   * 
+   *
    * NOTE: It does not necessarily give the actual number of clients per version connected to the
    * cache servers in this cache.
-   * 
+   *
    * @see CacheClientNotifier#addClientProxy(CacheClientProxy)
    */
   AtomicIntegerArray numOfClientsPerVersion = new AtomicIntegerArray(Version.HIGHEST_VERSION + 1);
@@ -140,7 +142,7 @@ public class ClientHealthMonitor {
 
   /**
    * Factory method to construct or return the singleton <code>ClientHealthMonitor</code> instance.
-   * 
+   *
    * @param cache The GemFire <code>Cache</code>
    * @param maximumTimeBetweenPings The maximum time allowed between pings before determining the
    *        client has died and interrupting its sockets.
@@ -154,7 +156,7 @@ public class ClientHealthMonitor {
 
   /**
    * Factory method to return the singleton <code>ClientHealthMonitor</code> instance.
-   * 
+   *
    * @return the singleton <code>ClientHealthMonitor</code> instance
    */
   public static ClientHealthMonitor getInstance() {
@@ -164,7 +166,7 @@ public class ClientHealthMonitor {
   /**
    * Shuts down the singleton <code>ClientHealthMonitor</code> instance.
    */
-  public synchronized static void shutdownInstance() {
+  public static synchronized void shutdownInstance() {
     refCount--;
     if (_instance == null)
       return;
@@ -193,16 +195,16 @@ public class ClientHealthMonitor {
 
   /**
    * Registers a new client to be monitored.
-   * 
+   *
    * @param proxyID The id of the client to be registered
    */
   public void registerClient(ClientProxyMembershipID proxyID) {
     boolean registerClient = false;
     synchronized (_clientHeartbeatsLock) {
-      Map oldClientHeartbeats = this._clientHeartbeats;
+      Map<ClientProxyMembershipID, Long> oldClientHeartbeats = this._clientHeartbeats;
       if (!oldClientHeartbeats.containsKey(proxyID)) {
-        Map newClientHeartbeats = new HashMap(oldClientHeartbeats);
-        newClientHeartbeats.put(proxyID, Long.valueOf(System.currentTimeMillis()));
+        Map<ClientProxyMembershipID, Long> newClientHeartbeats = new HashMap<>(oldClientHeartbeats);
+        newClientHeartbeats.put(proxyID, System.currentTimeMillis());
         this._clientHeartbeats = newClientHeartbeats;
         registerClient = true;
       }
@@ -221,18 +223,18 @@ public class ClientHealthMonitor {
   }
 
   /**
-   * Takes care of unregistering from the _clientHeatBeats map.
-   * 
+   * Takes care of unregistering from the _clientHeartBeats map.
+   *
    * @param proxyID The id of the client to be unregistered
    */
   private void unregisterClient(ClientProxyMembershipID proxyID, boolean clientDisconnectedCleanly,
       Throwable clientDisconnectException) {
     boolean unregisterClient = false;
     synchronized (_clientHeartbeatsLock) {
-      Map oldClientHeartbeats = this._clientHeartbeats;
+      Map<ClientProxyMembershipID, Long> oldClientHeartbeats = this._clientHeartbeats;
       if (oldClientHeartbeats.containsKey(proxyID)) {
         unregisterClient = true;
-        Map newClientHeartbeats = new HashMap(oldClientHeartbeats);
+        Map<ClientProxyMembershipID, Long> newClientHeartbeats = new HashMap<>(oldClientHeartbeats);
         newClientHeartbeats.remove(proxyID);
         this._clientHeartbeats = newClientHeartbeats;
       }
@@ -260,7 +262,7 @@ public class ClientHealthMonitor {
 
   /**
    * Unregisters a client to be monitored.
-   * 
+   *
    * @param proxyID The id of the client to be unregistered
    * @param acceptor non-null if the call is from a <code>ServerConnection</code> (as opposed to a
    *        <code>CacheClientProxy</code>).
@@ -298,7 +300,7 @@ public class ClientHealthMonitor {
    * expire the transaction states for the given client. This uses the transactionTimeToLive setting
    * that is inherited from the TXManagerImpl. If that setting is non-positive we expire the states
    * immediately
-   * 
+   *
    * @param proxyID
    */
   private void expireTXStates(ClientProxyMembershipID proxyID) {
@@ -343,7 +345,7 @@ public class ClientHealthMonitor {
 
   /**
    * Adds a <code>ServerConnection</code> to the client's processing threads
-   * 
+   *
    * @param proxyID The membership id of the client to be updated
    * @param connection The thread processing client requests
    */
@@ -364,7 +366,7 @@ public class ClientHealthMonitor {
 
   /**
    * Removes a <code>ServerConnection</code> from the client's processing threads
-   * 
+   *
    * @param proxyID The id of the client to be updated
    * @param connection The thread processing client requests
    */
@@ -388,7 +390,7 @@ public class ClientHealthMonitor {
 
   /**
    * Processes a received ping for a client.
-   * 
+   *
    * @param proxyID The id of the client from which the ping was received
    */
   public void receivedPing(ClientProxyMembershipID proxyID) {
@@ -412,7 +414,7 @@ public class ClientHealthMonitor {
    * count. This is different from the map contained in this class as here the key is client
    * membershipID & not the the proxyID. It is to be noted that a given client can have multiple
    * proxies.
-   * 
+   *
    * @param filterProxies Set identifying the Connection proxies which should be fetched. These
    *        ConnectionProxies may be from same client member or different. If it is null this would
    *        mean to fetch the Connections of all the ConnectionProxy objects.
@@ -475,7 +477,7 @@ public class ClientHealthMonitor {
   /**
    * This method returns the CacheClientStatus for all the clients that are connected to this
    * server. This method returns all clients irrespective of whether subscription is enabled or not.
-   * 
+   *
    * @return Map of ClientProxyMembershipID against CacheClientStatus objects.
    */
   public Map getStatusForAllClients() {
@@ -637,11 +639,15 @@ public class ClientHealthMonitor {
 
   /**
    * Returns the map of known clients.
-   * 
+   *
    * @return the map of known clients
+   *
+   *         Test hook only.
    */
-  public Map getClientHeartbeats() {
-    return this._clientHeartbeats;
+  Map<ClientProxyMembershipID, Long> getClientHeartbeats() {
+    synchronized (this._clientHeartbeatsLock) {
+      return new HashMap<>(this._clientHeartbeats);
+    }
   }
 
   /**
@@ -656,7 +662,7 @@ public class ClientHealthMonitor {
 
   /**
    * Creates the singleton <code>CacheClientNotifier</code> instance.
-   * 
+   *
    * @param cache The GemFire <code>Cache</code>
    * @param maximumTimeBetweenPings The maximum time allowed between pings before determining the
    */
@@ -672,7 +678,7 @@ public class ClientHealthMonitor {
   /**
    *
    * Constructor.
-   * 
+   *
    * @param cache The GemFire <code>Cache</code>
    * @param maximumTimeBetweenPings The maximum time allowed between pings before determining the
    */
@@ -750,7 +756,7 @@ public class ClientHealthMonitor {
      * The maximum time allowed between pings before determining the client has died and
      * interrupting its sockets.
      */
-    final protected int _maximumTimeBetweenPings;
+    protected final int _maximumTimeBetweenPings;
 
     /**
      * Whether the monitor is stopped
@@ -759,7 +765,7 @@ public class ClientHealthMonitor {
 
     /**
      * Constructor.
-     * 
+     *
      * @param maximumTimeBetweenPings The maximum time allowed between pings before determining the
      *        client has died and interrupting its sockets
      */
@@ -798,7 +804,7 @@ public class ClientHealthMonitor {
 
     /**
      * Returns whether the dispatcher is stopped
-     * 
+     *
      * @return whether the dispatcher is stopped
      */
     protected boolean isStopped() {

@@ -14,14 +14,15 @@
  */
 package org.apache.geode.cache.lucene;
 
-import org.apache.geode.test.dunit.SerializableRunnableIF;
-import org.apache.geode.test.junit.categories.DistributedTest;
-import org.junit.experimental.categories.Category;
-import org.junit.runner.RunWith;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.fail;
 
 import junitparams.JUnitParamsRunner;
+import org.junit.experimental.categories.Category;
+import org.junit.runner.RunWith;
+
+import org.apache.geode.test.dunit.SerializableRunnableIF;
+import org.apache.geode.test.junit.categories.DistributedTest;
 
 @Category(DistributedTest.class)
 @RunWith(JUnitParamsRunner.class)

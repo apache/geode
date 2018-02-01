@@ -14,11 +14,12 @@
  */
 package org.apache.geode.management.internal;
 
-import org.apache.geode.distributed.internal.DistributionConfig;
-import org.apache.geode.management.internal.beans.QueryDataFunction;
+import java.util.concurrent.TimeUnit;
 
 import javax.management.ObjectName;
-import java.util.concurrent.TimeUnit;
+
+import org.apache.geode.distributed.internal.DistributionConfig;
+import org.apache.geode.management.internal.beans.QueryDataFunction;
 
 
 /**
@@ -133,6 +134,9 @@ public interface ManagementConstants {
 
   public static final String OBJECTNAME__CACHESERVICE_MXBEAN =
       OBJECTNAME__PREFIX + "service=CacheService,name={0},type=Member,member={1}";
+
+  public static final String OBJECTNAME__FILEUPLOADER_MBEAN =
+      OBJECTNAME__PREFIX + "service=FileUploader,type=Distributed";
 
   public static final String AGGREGATE_MBEAN_PATTERN = OBJECTNAME__PREFIX + "*,type=Distributed";
   // Object Name keys

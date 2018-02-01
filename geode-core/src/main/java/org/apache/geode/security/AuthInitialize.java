@@ -39,10 +39,10 @@ public interface AuthInitialize extends CacheCallback {
   /**
    * Initialize the callback for a client/peer. This is invoked when a new connection from a
    * client/peer is created with the host.
-   * 
+   *
    * @param systemLogger {@link LogWriter} for system logs
    * @param securityLogger {@link LogWriter} for security logs
-   * 
+   *
    * @throws AuthenticationFailedException if some exception occurs during the initialization
    *
    * @deprecated since Geode 1.0, use init()
@@ -63,13 +63,13 @@ public interface AuthInitialize extends CacheCallback {
   /**
    * Initialize with the given set of security properties and return the credentials for the
    * peer/client as properties.
-   * 
+   *
    * This method can modify the given set of properties. For example it may invoke external agents
    * or even interact with the user.
-   * 
+   *
    * Normally it is expected that implementations will filter out <i>security-*</i> properties that
    * are needed for credentials and return only those.
-   * 
+   *
    * @param securityProps the security properties obtained using a call to
    *        {@link DistributedSystem#getSecurityProperties} that will be used for obtaining the
    *        credentials
@@ -77,9 +77,9 @@ public interface AuthInitialize extends CacheCallback {
    *        connection is being attempted
    * @param isPeer true when this is invoked for peer initialization and false when invoked for
    *        client initialization
-   * 
+   *
    * @throws AuthenticationFailedException in case of failure to obtain the credentials
-   * 
+   *
    * @return the credentials to be used for the given <code>server</code>
    *
    *         When using Integrated security, all members, peer/client will use the same credentials.

@@ -18,20 +18,22 @@ import static java.util.stream.Collectors.joining;
 import static java.util.stream.Collectors.toSet;
 
 import java.io.File;
-import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Collection;
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
+
+import javax.xml.parsers.ParserConfigurationException;
+import javax.xml.transform.TransformerException;
 
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.logging.log4j.Logger;
 import org.springframework.shell.core.annotation.CliCommand;
 import org.springframework.shell.core.annotation.CliOption;
+import org.xml.sax.SAXException;
 
 import org.apache.geode.cache.execute.ResultCollector;
 import org.apache.geode.distributed.DistributedMember;
@@ -97,7 +99,7 @@ public class ExportImportClusterConfigurationCommands implements GfshCommand {
 
     Result result;
     try {
-      for (Configuration config : sc.getEntireConfiguration().values()) {
+      for (Configuration config : sc.getConfigurationRegion().values()) {
         sc.writeConfigToFile(config);
       }
       ZipUtils.zipDirectory(sc.getSharedConfigurationDirPath(), zipFile.getCanonicalPath());
@@ -128,8 +130,10 @@ public class ExportImportClusterConfigurationCommands implements GfshCommand {
       isFileUploaded = true, relatedTopic = {CliStrings.TOPIC_GEODE_CONFIG})
   @ResourceOperation(resource = Resource.CLUSTER, operation = Operation.MANAGE)
   @SuppressWarnings("unchecked")
-  public Result importSharedConfig(@CliOption(key = {CliStrings.IMPORT_SHARED_CONFIG__ZIP},
-      mandatory = true, help = CliStrings.IMPORT_SHARED_CONFIG__ZIP__HELP) String zip) {
+  public Result importSharedConfig(
+      @CliOption(key = {CliStrings.IMPORT_SHARED_CONFIG__ZIP}, mandatory = true,
+          help = CliStrings.IMPORT_SHARED_CONFIG__ZIP__HELP) String zip)
+      throws IOException, TransformerException, SAXException, ParserConfigurationException {
 
     InternalLocator locator = InternalLocator.getLocator();
 
@@ -152,41 +156,25 @@ public class ExportImportClusterConfigurationCommands implements GfshCommand {
               + regionsWithData.stream().collect(joining(",")));
     }
 
-    byte[][] shellBytesData = CommandExecutionContext.getBytesFromShell();
-    String zipFileName = CliUtil.bytesToNames(shellBytesData)[0];
-    byte[] zipBytes = CliUtil.bytesToData(shellBytesData)[0];
+    List<String> filePathFromShell = CommandExecutionContext.getFilePathFromShell();
 
     Result result;
     InfoResultData infoData = ResultBuilder.createInfoResultData();
-    File zipFile = new File(zipFileName);
-    try {
-      ClusterConfigurationService sc = locator.getSharedConfiguration();
+    String zipFilePath = filePathFromShell.get(0);
 
-      // backup the old config
-      for (Configuration config : sc.getEntireConfiguration().values()) {
-        sc.writeConfigToFile(config);
-      }
-      sc.renameExistingSharedConfigDirectory();
+    ClusterConfigurationService sc = locator.getSharedConfiguration();
 
-      FileUtils.writeByteArrayToFile(zipFile, zipBytes);
-      ZipUtils.unzip(zipFileName, sc.getSharedConfigurationDirPath());
-
-      // load it from the disk
-      sc.loadSharedConfigurationFromDisk();
-      infoData.addLine(CliStrings.IMPORT_SHARED_CONFIG__SUCCESS__MSG);
-
-    } catch (Exception e) {
-      ErrorResultData errorData = ResultBuilder.createErrorResultData();
-      errorData.addLine("Import failed");
-      if (Gfsh.getCurrentInstance() != null) {
-        Gfsh.getCurrentInstance().logSevere(e.getMessage(), e);
-      }
-      result = ResultBuilder.buildResult(errorData);
-      // if import is unsuccessful, don't need to bounce the server.
-      return result;
-    } finally {
-      FileUtils.deleteQuietly(zipFile);
+    // backup the old config
+    for (Configuration config : sc.getConfigurationRegion().values()) {
+      sc.writeConfigToFile(config);
     }
+    sc.renameExistingSharedConfigDirectory();
+
+    ZipUtils.unzip(zipFilePath, sc.getSharedConfigurationDirPath());
+
+    // load it from the disk
+    sc.loadSharedConfigurationFromDisk();
+    infoData.addLine(CliStrings.IMPORT_SHARED_CONFIG__SUCCESS__MSG);
 
     // Bounce the cache of each member
     Set<CliFunctionResult> functionResults =
@@ -207,14 +195,14 @@ public class ExportImportClusterConfigurationCommands implements GfshCommand {
   }
 
   private Set<String> getRegionNamesOnServer(DistributedMember server) {
-    ResultCollector rc = CliUtil.executeFunction(new GetRegionNamesFunction(), null, server);
+    ResultCollector rc = executeFunction(new GetRegionNamesFunction(), null, server);
     List<Set<String>> results = (List<Set<String>>) rc.getResult();
 
     return results.get(0);
   }
 
   private CliFunctionResult reCreateCache(DistributedMember server) {
-    ResultCollector rc = CliUtil.executeFunction(new RecreateCacheFunction(), null, server);
+    ResultCollector rc = executeFunction(new RecreateCacheFunction(), null, server);
     List<CliFunctionResult> results = (List<CliFunctionResult>) rc.getResult();
 
     return results.get(0);
@@ -229,8 +217,7 @@ public class ExportImportClusterConfigurationCommands implements GfshCommand {
 
     @Override
     public Result preExecution(GfshParseResult parseResult) {
-      Map<String, String> paramValueMap = parseResult.getParamValueStrings();
-      String zip = paramValueMap.get(CliStrings.EXPORT_SHARED_CONFIG__FILE);
+      String zip = parseResult.getParamValueAsString(CliStrings.EXPORT_SHARED_CONFIG__FILE);
 
       if (!zip.endsWith(".zip")) {
         return ResultBuilder
@@ -259,9 +246,7 @@ public class ExportImportClusterConfigurationCommands implements GfshCommand {
   public static class ImportInterceptor extends AbstractCliAroundInterceptor {
 
     public Result preExecution(GfshParseResult parseResult) {
-      Map<String, String> paramValueMap = parseResult.getParamValueStrings();
-
-      String zip = paramValueMap.get(CliStrings.IMPORT_SHARED_CONFIG__ZIP);
+      String zip = parseResult.getParamValueAsString(CliStrings.IMPORT_SHARED_CONFIG__ZIP);
 
       zip = StringUtils.trim(zip);
 
@@ -274,16 +259,14 @@ public class ExportImportClusterConfigurationCommands implements GfshCommand {
             CliStrings.format(CliStrings.INVALID_FILE_EXTENSION, CliStrings.ZIP_FILE_EXTENSION));
       }
 
-      FileResult fileResult;
+      FileResult fileResult = new FileResult();
 
-      try {
-        fileResult = new FileResult(new String[] {zip});
-      } catch (FileNotFoundException fnfex) {
-        return ResultBuilder.createUserErrorResult("'" + zip + "' not found.");
-      } catch (IOException ioex) {
-        return ResultBuilder
-            .createGemFireErrorResult(ioex.getClass().getName() + ": " + ioex.getMessage());
+      File zipFile = new File(zip);
+      if (!zipFile.exists()) {
+        return ResultBuilder.createUserErrorResult(zip + " not found");
       }
+
+      fileResult.addFile(zipFile);
 
       return fileResult;
     }

@@ -19,7 +19,7 @@ import java.util.Set;
 
 /**
  * Encapsulates a cache query operation for both the pre-operation and post-operation cases.
- * 
+ *
  * @since GemFire 5.5
  * @deprecated since Geode1.0, use {@link org.apache.geode.security.ResourcePermission} instead
  */
@@ -42,7 +42,7 @@ public class QueryOperationContext extends OperationContext {
 
   /**
    * Constructor for the query operation.
-   * 
+   *
    * @param queryString the query string for this operation
    * @param regionNames names of regions that are part of the query string
    * @param postOperation true to set the post-operation flag
@@ -56,7 +56,7 @@ public class QueryOperationContext extends OperationContext {
 
   /**
    * Constructor for the query operation.
-   * 
+   *
    * @param queryString the query string for this operation
    * @param regionNames names of regions that are part of the query string
    * @param postOperation true to set the post-operation flag
@@ -70,7 +70,7 @@ public class QueryOperationContext extends OperationContext {
 
   /**
    * Return the operation associated with the <code>OperationContext</code> object.
-   * 
+   *
    * @return the <code>OperationCode</code> of this operation
    */
   @Override
@@ -100,7 +100,7 @@ public class QueryOperationContext extends OperationContext {
 
   /**
    * Modify the query string.
-   * 
+   *
    * @param query the new query string for this query.
    */
   public void modifyQuery(String query) {
@@ -110,7 +110,7 @@ public class QueryOperationContext extends OperationContext {
 
   /**
    * Get the names of regions that are part of the query string.
-   * 
+   *
    * @return names of regions being queried.
    */
   public Set getRegionNames() {
@@ -119,7 +119,7 @@ public class QueryOperationContext extends OperationContext {
 
   /**
    * Set the names of regions that are part of the query string.
-   * 
+   *
    * @param regionNames names of regions being queried
    */
   public void setRegionNames(Set regionNames) {
@@ -128,7 +128,7 @@ public class QueryOperationContext extends OperationContext {
 
   /**
    * Get the result of the query execution.
-   * 
+   *
    * @return result of the query.
    */
   public Object getQueryResult() {
@@ -137,7 +137,7 @@ public class QueryOperationContext extends OperationContext {
 
   /**
    * Set the result of query operation.
-   * 
+   *
    * @param queryResult the new result of the query operation.
    */
   public void setQueryResult(Object queryResult) {
@@ -146,7 +146,7 @@ public class QueryOperationContext extends OperationContext {
 
   /**
    * Get the bind parameters for the query
-   * 
+   *
    * @return bind parameters for the query
    */
   public Object[] getQueryParams() {

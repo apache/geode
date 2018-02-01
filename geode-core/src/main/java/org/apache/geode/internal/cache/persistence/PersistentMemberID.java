@@ -63,7 +63,7 @@ public class PersistentMemberID implements DataSerializable {
   /**
    * Indicate that this persistent member id is from the same disk store, and is older than, or
    * equal to, the passed in disk store.
-   * 
+   *
    * This is an older version if it has an older timestamp, or the same timestamp and an older
    * version
    */

@@ -4,9 +4,9 @@
  * copyright ownership. The ASF licenses this file to you under the Apache License, Version 2.0 (the
  * "License"); you may not use this file except in compliance with the License. You may obtain a
  * copy of the License at
- * 
+ *
  * http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software distributed under the License
  * is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
  * or implied. See the License for the specific language governing permissions and limitations under
@@ -21,31 +21,31 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.Optional;
 
-import org.apache.geode.cache.CacheClosedException;
-import org.apache.geode.cache.execute.Function;
-import org.apache.geode.cache.lucene.LuceneIndexNotFoundException;
-import org.apache.geode.cache.lucene.internal.LuceneIndexImpl;
-import org.apache.geode.cache.lucene.internal.LuceneIndexStats;
-import org.apache.geode.cache.lucene.internal.LuceneServiceImpl;
-import org.apache.geode.internal.cache.PrimaryBucketException;
-import org.apache.geode.internal.cache.execute.InternalFunctionInvocationTargetException;
 import org.apache.logging.log4j.Logger;
 import org.apache.lucene.search.Query;
 
+import org.apache.geode.cache.CacheClosedException;
 import org.apache.geode.cache.Region;
+import org.apache.geode.cache.execute.Function;
 import org.apache.geode.cache.execute.FunctionContext;
 import org.apache.geode.cache.execute.FunctionException;
 import org.apache.geode.cache.execute.RegionFunctionContext;
 import org.apache.geode.cache.execute.ResultSender;
+import org.apache.geode.cache.lucene.LuceneIndexNotFoundException;
 import org.apache.geode.cache.lucene.LuceneQueryException;
 import org.apache.geode.cache.lucene.LuceneQueryProvider;
 import org.apache.geode.cache.lucene.LuceneService;
 import org.apache.geode.cache.lucene.LuceneServiceProvider;
+import org.apache.geode.cache.lucene.internal.LuceneIndexImpl;
+import org.apache.geode.cache.lucene.internal.LuceneIndexStats;
+import org.apache.geode.cache.lucene.internal.LuceneServiceImpl;
 import org.apache.geode.cache.lucene.internal.repository.IndexRepository;
 import org.apache.geode.cache.lucene.internal.repository.IndexResultCollector;
 import org.apache.geode.cache.lucene.internal.repository.RepositoryManager;
 import org.apache.geode.internal.InternalEntity;
 import org.apache.geode.internal.cache.BucketNotFoundException;
+import org.apache.geode.internal.cache.PrimaryBucketException;
+import org.apache.geode.internal.cache.execute.InternalFunctionInvocationTargetException;
 import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.security.ResourcePermission;
 
@@ -185,4 +185,3 @@ public class LuceneQueryFunction implements Function<LuceneFunctionContext>, Int
     return Collections.singleton(read);
   }
 }
-

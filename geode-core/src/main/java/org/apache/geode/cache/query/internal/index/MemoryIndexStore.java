@@ -47,7 +47,7 @@ import org.apache.geode.internal.cache.persistence.query.CloseableIterator;
 
 /**
  * The in-memory index storage
- * 
+ *
  * @since GemFire 8.0
  */
 public class MemoryIndexStore implements IndexStore {
@@ -251,7 +251,7 @@ public class MemoryIndexStore implements IndexStore {
   /**
    * Find the old key by traversing the forward map in case of in-place update modification If not
    * found it means the value object was modified with same value. So oldKey is same as newKey.
-   * 
+   *
    * @return oldKey
    */
   private Object getOldKey(Object newKey, RegionEntry entry) throws TypeMismatchException {
@@ -420,6 +420,10 @@ public class MemoryIndexStore implements IndexStore {
         keysToRemove);
   }
 
+  public Iterator<IndexStoreEntry> getKeysIterator() {
+    return new MemoryIndexStoreKeyIterator(this.valueToEntriesMap);
+  }
+
   @Override
   public CloseableIterator<IndexStoreEntry> iterator(Collection keysToRemove) {
     return new MemoryIndexStoreIterator(this.valueToEntriesMap, null, keysToRemove);
@@ -560,6 +564,38 @@ public class MemoryIndexStore implements IndexStore {
     return numIndexKeys.get();
   }
 
+  private class MemoryIndexStoreKeyIterator implements Iterator<IndexStoreEntry> {
+
+    private final Map valuesToEntriesMap;
+    private Object currKey;
+    private Iterator<Map.Entry> mapIterator;
+
+    public MemoryIndexStoreKeyIterator(Map valuesToEntriesMap) {
+      this.valuesToEntriesMap = valuesToEntriesMap;
+    }
+
+    @Override
+    public boolean hasNext() {
+      if (mapIterator == null) {
+        mapIterator = this.valuesToEntriesMap.entrySet().iterator();
+      }
+      if (mapIterator.hasNext()) {
+        Map.Entry currentEntry = mapIterator.next();
+        currKey = currentEntry.getKey();
+        if (currKey == IndexManager.NULL || currKey == QueryService.UNDEFINED) {
+          return hasNext();
+        }
+        return currKey != null;
+      }
+      return false;
+    }
+
+    @Override
+    public MemoryIndexStoreKey next() {
+      return new MemoryIndexStoreKey(currKey);
+    }
+  }
+
   /**
    * A bi-directional iterator over the CSL. Iterates over the entries of CSL where entry is a
    * mapping (value -> Collection) as well as over the Collection.
@@ -576,7 +612,7 @@ public class MemoryIndexStore implements IndexStore {
     MemoryIndexStoreEntry currentEntry;
 
     MemoryIndexStoreIterator(Map submap, Object indexKey, Collection keysToRemove) {
-      this(submap, indexKey, keysToRemove, GemFireCacheImpl.getInstance().cacheTimeMillis());
+      this(submap, indexKey, keysToRemove, cache.cacheTimeMillis());
     }
 
     private MemoryIndexStoreIterator(Map submap, Object indexKey, Collection keysToRemove,
@@ -704,6 +740,34 @@ public class MemoryIndexStore implements IndexStore {
     return sb.toString();
   }
 
+  class MemoryIndexStoreKey implements IndexStoreEntry {
+    private Object indexKey;
+
+    public MemoryIndexStoreKey(Object indexKey) {
+      this.indexKey = indexKey;
+    }
+
+    @Override
+
+    public Object getDeserializedKey() {
+      return indexKey;
+    }
+
+    @Override
+    public Object getDeserializedValue() {
+      throw new UnsupportedOperationException();
+    }
+
+    @Override
+    public Object getDeserializedRegionKey() {
+      throw new UnsupportedOperationException();
+    }
+
+    @Override
+    public boolean isUpdateInProgress() {
+      throw new UnsupportedOperationException();
+    }
+  }
   /**
    * A wrapper over the entry in the CSL index map. It maps IndexKey -> RegionEntry
    */
@@ -781,4 +845,3 @@ public class MemoryIndexStore implements IndexStore {
   }
 
 }
-

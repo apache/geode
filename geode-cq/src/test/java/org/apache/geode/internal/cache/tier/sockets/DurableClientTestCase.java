@@ -1608,10 +1608,10 @@ public class DurableClientTestCase extends JUnit4DistributedTestCase {
          * String result = ""; if(ClientHealthMonitor._instance != null &&
          * ClientHealthMonitor._instance.getCleanupProxyIdTable() != null) result =
          * ClientHealthMonitor._instance.getCleanupProxyIdTable().toString();
-         * 
-         * 
+         *
+         *
          * CacheClientProxy ccp = getClientProxy();
-         * 
+         *
          * if(ccp != null) result += " ccp: " + ccp.toString();
          */
         return getAllClientProxyState() + " CHM state: "
@@ -1658,7 +1658,7 @@ public class DurableClientTestCase extends JUnit4DistributedTestCase {
   /**
    * Returns the durable client proxy's HARegionQueue region name. This method is accessed via
    * reflection on a server VM.
-   * 
+   *
    * @return the durable client proxy's HARegionQueue region name
    */
   protected static String getHARegionQueueName() {
@@ -1688,7 +1688,7 @@ public class DurableClientTestCase extends JUnit4DistributedTestCase {
    * messages map is <b> static<b> map, which has region queue names for keys and MapWrappers (an
    * protected class) as values. All this is testing is to see that this queue has an entry in the
    * dispatchedMessages map, which means it got at least one periodic ack.
-   * 
+   *
    * @return true if there was an ack
    */
   protected static boolean checkForAck(CacheClientProxy proxy) {
@@ -1913,15 +1913,15 @@ public class DurableClientTestCase extends JUnit4DistributedTestCase {
 
   /*
    * @param vm
-   * 
+   *
    * @param cqName
-   * 
+   *
    * @param numEvents
-   * 
+   *
    * @param numEventsToWaitFor most times will be the same as numEvents, but there are times where
    * we want to wait for an event we know is not coming just to be sure an event actually isnt
    * received
-   * 
+   *
    * @param secondsToWait
    */
   protected void checkCqListenerEvents(VM vm, final String cqName, final int numEvents,

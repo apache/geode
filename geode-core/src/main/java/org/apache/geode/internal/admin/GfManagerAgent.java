@@ -16,7 +16,6 @@ package org.apache.geode.internal.admin;
 
 import org.apache.geode.distributed.internal.DM;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
-// import java.util.*;
 
 /**
  * This interface is the point of entry into a GemFire distributed system for the admin API. It
@@ -28,7 +27,7 @@ public interface GfManagerAgent {
 
   /**
    * Disconnects this agent from the distributed system.
-   * 
+   *
    * @return true if this call resulted in being disconnected
    */
   public boolean disconnect();

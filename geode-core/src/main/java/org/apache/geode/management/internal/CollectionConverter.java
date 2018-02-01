@@ -32,8 +32,8 @@ import javax.management.openmbean.OpenDataException;
 
 /**
  * Open type converter for Collections
- * 
- * 
+ *
+ *
  */
 public class CollectionConverter extends OpenTypeConverter {
   CollectionConverter(Type targetType, ArrayType openArrayType, Class openArrayClass,

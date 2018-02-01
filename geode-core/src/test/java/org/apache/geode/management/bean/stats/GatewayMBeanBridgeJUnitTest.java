@@ -19,14 +19,13 @@ import static org.junit.Assert.assertTrue;
 
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
+import org.mockito.Mockito;
 
 import org.apache.geode.internal.NanoTimer;
 import org.apache.geode.internal.cache.wan.AbstractGatewaySender;
 import org.apache.geode.internal.cache.wan.GatewaySenderStats;
 import org.apache.geode.management.internal.beans.GatewaySenderMBeanBridge;
 import org.apache.geode.test.junit.categories.IntegrationTest;
-
-import io.codearte.catchexception.shade.mockito.Mockito;
 
 /**
  */

@@ -14,13 +14,13 @@
  */
 package org.apache.geode.cache.lucene.internal.results;
 
-import org.apache.geode.internal.DataSerializableFixedID;
-import org.apache.geode.internal.Version;
-
 import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
 import java.util.ArrayList;
+
+import org.apache.geode.internal.DataSerializableFixedID;
+import org.apache.geode.internal.Version;
 
 public class PageResults extends ArrayList<PageEntry> implements DataSerializableFixedID {
 

@@ -33,15 +33,15 @@ import org.apache.geode.security.ResourcePermission.Target;
  *
  * It also provides an API for navigating the other MBeans exposed by the GemFire distributed
  * system.
- * 
+ *
  * There will be one DistributedSystemMBean per GemFire cluster.
- * 
+ *
  * <p>
  * ObjectName : GemFire:service=System,type=Distributed
- * 
+ *
  * <p>
  * List of notifications emitted by this MBean.
- * 
+ *
  * <p>
  * <table border="1">
  * <tr>
@@ -254,7 +254,7 @@ public interface DistributedSystemMXBean {
   /**
    * Returns a list of names for all cache servers which are able to serve requests from GemFire
    * clients.
-   * 
+   *
    */
   String[] listCacheServers();
 
@@ -311,7 +311,7 @@ public interface DistributedSystemMXBean {
   String[] listRegions();
 
   /**
-   * Returns a list of full paths for all regions.
+   * Returns a list of full paths for all regions. Returns an empty array if no region exists
    */
   String[] listAllRegionPaths();
 
@@ -525,26 +525,26 @@ public interface DistributedSystemMXBean {
   /**
    * This API is used to query data from GemFire system. This returns a JSON formatted String having
    * data and it's type. Type and value of data makes an array , type preceding the value.
-   * 
+   *
    * e.g. {"result":[["java.lang.String","v"],["java.lang.String","b"]]}
-   * 
+   *
    * GemFire PDXInstances are also supported. The type of PDXInstance is PDXInstance and value will
    * be key value pair. There is no marker to know the "IdentityField" of the PDXInstance.
-   * 
+   *
    * If the query is executed on the cluster and no member list is given in input first key of the
    * JSON string will be "result" followed by the result set in JSON format.
-   * 
+   *
    * If the query is executed on one or more specific members then returned string will have an
    * array of "member" and "result" keys.
-   * 
+   *
    * For query on replicated region data from a random node which have the region is shown, if no
    * member input is given. For PR regions data from all the nodes are collected and shown. User
    * must be careful to query on a PR if the region is big and hosted on a lot of nodes
-   * 
+   *
    * Join queries on PR mandates that user provide one member as input. If the member does not host
    * the regions or the regions are not co-located error string will be returned.
-   * 
-   * 
+   *
+   *
    * @param queryString GemFire supported OQL query
    * @param members comma separated list of members on which the query is to be executed. It is not
    *        mandatory to give this input barring join queries on PR. If member list is not provided
@@ -556,19 +556,19 @@ public interface DistributedSystemMXBean {
   String queryData(String queryString, String members, int limit) throws Exception;
 
   /**
-   * 
+   *
    * Functionality is same as queryData() method. Only difference being the resultant JSON string is
    * compressed with Java GZIP with UTF-8 encoding. Any client application can de compress the
    * byte[] using GZIP.
-   * 
+   *
    * e.g.
-   * 
+   *
    * GZIPInputStream gis = new GZIPInputStream(new ByteArrayInputStream(bytes));
-   * 
+   *
    * BufferedReader bf = new BufferedReader(new InputStreamReader(gis,"UTF-8"));
-   * 
+   *
    * String outStr = ""; String line; while ((line = bf.readLine()) != null) { outStr += line; }
-   * 
+   *
    * @param queryString GemFire supported OQL query
    * @param members comma separated list of members on which the query is to be executed. It is not
    *        mandatory to give this input barring join queries on PR. If member list is not provided
@@ -607,7 +607,7 @@ public interface DistributedSystemMXBean {
   /**
    * Number of elements in a collection to be shown in queryData operation if query results contain
    * collections like Map, List etc.
-   * 
+   *
    */
   int getQueryCollectionsDepth();
 

@@ -20,7 +20,7 @@ package org.apache.geode.internal.util;
  * components could not be found, which is most likely the case when we are not running a Sun JVM
  * (like HotSpot).
  * </p>
- * 
+ *
  * @see java.lang.RuntimeException
  * @since GemFire 7.0
  */

@@ -14,10 +14,15 @@
  */
 package org.apache.geode.management.internal.cli.shell;
 
+import java.io.File;
+import java.io.FileInputStream;
 import java.io.IOException;
+import java.io.OutputStream;
 import java.text.MessageFormat;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
@@ -41,20 +46,27 @@ import javax.management.remote.JMXConnectorFactory;
 import javax.management.remote.JMXServiceURL;
 import javax.rmi.ssl.SslRMIClientSocketFactory;
 
+import com.healthmarketscience.rmiio.RemoteInputStream;
+import com.healthmarketscience.rmiio.RemoteOutputStreamClient;
+import com.healthmarketscience.rmiio.SimpleRemoteInputStream;
+import org.apache.commons.io.IOUtils;
+
 import org.apache.geode.internal.admin.SSLConfig;
 import org.apache.geode.internal.net.SSLConfigurationFactory;
 import org.apache.geode.internal.security.SecurableCommunicationChannel;
-import org.apache.geode.internal.util.ArrayUtils;
 import org.apache.geode.management.DistributedSystemMXBean;
 import org.apache.geode.management.MemberMXBean;
 import org.apache.geode.management.internal.MBeanJMXAdapter;
 import org.apache.geode.management.internal.ManagementConstants;
+import org.apache.geode.management.internal.beans.FileUploader;
+import org.apache.geode.management.internal.beans.FileUploaderMBean;
 import org.apache.geode.management.internal.cli.CommandRequest;
 import org.apache.geode.management.internal.cli.LogWrapper;
+import org.apache.geode.management.internal.security.ResourceConstants;
 
 /**
  * OperationInvoker JMX Implementation
- * 
+ *
  * @since GemFire 7.0
  */
 public class JmxOperationInvoker implements OperationInvoker {
@@ -80,6 +92,7 @@ public class JmxOperationInvoker implements OperationInvoker {
   // MBean Proxies
   private DistributedSystemMXBean distributedSystemMXBeanProxy;
   private MemberMXBean memberMXBeanProxy;
+  private FileUploaderMBean fileUploadMBeanProxy;
 
   private ObjectName managerMemberObjectName;
 
@@ -100,7 +113,15 @@ public class JmxOperationInvoker implements OperationInvoker {
       final Map<String, Object> env = new HashMap<>();
 
       env.put(JMXConnectionListener.CHECK_PERIOD_PROP, JMXConnectionListener.CHECK_PERIOD);
-      env.put(JMXConnector.CREDENTIALS, gfProperties);
+
+      // when not using JMXShiroAuthenticator in the integrated security, JMX own password file
+      // authentication requires the credentials been sent in String[] format.
+      // Our JMXShiroAuthenticator handles both String[] and Properties format
+      String username = gfProperties.getProperty(ResourceConstants.USER_NAME);
+      String password = gfProperties.getProperty(ResourceConstants.PASSWORD);
+      if (username != null) {
+        env.put(JMXConnector.CREDENTIALS, new String[] {username, password});
+      }
 
       SSLConfig sslConfig = SSLConfigurationFactory.getSSLConfigForComponent(gfProperties,
           SecurableCommunicationChannel.JMX);
@@ -159,6 +180,9 @@ public class JmxOperationInvoker implements OperationInvoker {
         } else {
           this.memberMXBeanProxy =
               JMX.newMXBeanProxy(mbsc, managerMemberObjectName, MemberMXBean.class);
+          this.fileUploadMBeanProxy = JMX.newMBeanProxy(mbsc,
+              new ObjectName(ManagementConstants.OBJECTNAME__FILEUPLOADER_MBEAN),
+              FileUploaderMBean.class);
         }
       }
 
@@ -207,7 +231,7 @@ public class JmxOperationInvoker implements OperationInvoker {
 
   /**
    * JMX Specific operation invoke caller.
-   * 
+   *
    * @param resource
    * @param operationName
    * @param params
@@ -245,13 +269,35 @@ public class JmxOperationInvoker implements OperationInvoker {
   }
 
   @Override
-  public Object processCommand(final CommandRequest commandRequest) throws JMXInvocationException {
-    Byte[][] binaryData = null;
-    if (commandRequest.hasFileData()) {
-      binaryData = ArrayUtils.toByteArray(commandRequest.getFileData());
+  public Object processCommand(final CommandRequest commandRequest) {
+    List<String> stagedFilePaths = null;
+
+    try {
+      if (commandRequest.hasFileList()) {
+        stagedFilePaths = new ArrayList<>();
+        for (File file : commandRequest.getFileList()) {
+          FileUploader.RemoteFile remote = fileUploadMBeanProxy.uploadFile(file.getName());
+          FileInputStream source = new FileInputStream(file);
+
+          OutputStream target = RemoteOutputStreamClient.wrap(remote.getOutputStream());
+          IOUtils.copyLarge(source, target);
+          target.close();
+
+          stagedFilePaths.add(remote.getFilename());
+        }
+      }
+    } catch (IOException e) {
+      throw new JMXInvocationException("Unable to upload file", e);
     }
-    return memberMXBeanProxy.processCommand(commandRequest.getUserInput(),
-        commandRequest.getEnvironment(), binaryData);
+
+    try {
+      return memberMXBeanProxy.processCommand(commandRequest.getUserInput(),
+          commandRequest.getEnvironment(), stagedFilePaths);
+    } finally {
+      if (stagedFilePaths != null) {
+        fileUploadMBeanProxy.deleteFiles(stagedFilePaths);
+      }
+    }
   }
 
   @Override
@@ -325,7 +371,7 @@ public class JmxOperationInvoker implements OperationInvoker {
    * If the given host address contains a ":", considers it as an IPv6 address & returns the host
    * based on RFC2732 requirements i.e. surrounds the given host address string with square
    * brackets. If ":" is not found in the given string, simply returns the same string.
-   * 
+   *
    * @param hostAddress host address to check if it's an IPv6 address
    *
    * @return for an IPv6 address returns compatible host address otherwise returns the same string
@@ -350,7 +396,7 @@ public class JmxOperationInvoker implements OperationInvoker {
 
 /**
  * A Connection Notification Listener. Notifies Gfsh when a connection gets terminated abruptly.
- * 
+ *
  * @since GemFire 7.0
  */
 class JMXConnectionListener implements NotificationListener {

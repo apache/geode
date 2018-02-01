@@ -148,7 +148,7 @@ public class StatisticResourceJmxImpl extends org.apache.geode.admin.internal.St
    * Attempt to set refreshInterval on StatisticResourceJmx MBean would result in an
    * OperationNotSupportedException Auto-refresh is enabled on demand when a call to getStatistics
    * is made
-   * 
+   *
    * @param refreshInterval the new refresh interval in seconds
    * @deprecated since 6.0 use DistributedSystemConfig.refreshInterval instead
    */
@@ -169,7 +169,7 @@ public class StatisticResourceJmxImpl extends org.apache.geode.admin.internal.St
    * if there is any JMX client connected to the system.
    * <p>
    * TODO: investigate use of NotificationFilter instead of explicit check...
-   * 
+   *
    * @param notification the JMX notification being received
    * @param hb handback object is unused
    */
@@ -315,7 +315,7 @@ public class StatisticResourceJmxImpl extends org.apache.geode.admin.internal.St
   /**
    * Checks equality of the given object with <code>this</code> based on the type (Class) and the
    * MBean Name returned by <code>getMBeanName()</code> methods.
-   * 
+   *
    * @param obj object to check equality with
    * @return true if the given object is if the same type and its MBean Name is same as
    *         <code>this</code> object's MBean Name, false otherwise
@@ -333,7 +333,7 @@ public class StatisticResourceJmxImpl extends org.apache.geode.admin.internal.St
 
   /**
    * Returns hash code for <code>this</code> object which is based on the MBean Name generated.
-   * 
+   *
    * @return hash code for <code>this</code> object
    */
   @Override
@@ -341,4 +341,3 @@ public class StatisticResourceJmxImpl extends org.apache.geode.admin.internal.St
     return this.getMBeanName().hashCode();
   }
 }
-

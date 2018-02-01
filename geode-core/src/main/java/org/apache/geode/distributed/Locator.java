@@ -14,10 +14,6 @@
  */
 package org.apache.geode.distributed;
 
-import org.apache.geode.distributed.internal.InternalLocator;
-import org.apache.geode.internal.i18n.LocalizedStrings;
-import org.apache.geode.internal.net.SocketCreator;
-
 import java.io.File;
 import java.io.IOException;
 import java.net.InetAddress;
@@ -25,26 +21,30 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Properties;
 
+import org.apache.geode.distributed.internal.InternalLocator;
+import org.apache.geode.internal.i18n.LocalizedStrings;
+import org.apache.geode.internal.net.SocketCreator;
+
 /**
  * Represents a distribution locator server that provides discovery information to members and
  * clients of a GemFire distributed system. In most GemFire distributed cache architectures,
  * distribution locators are run in their own process. A stand-alone locator process is managed
  * using gfsh command line utility.
- * 
+ *
  * The stand-alone locator configuration provides high-availability of membership information.
- * 
+ *
  * <P>
- * 
+ *
  * This class allows a GemFire application VM to host a distribution locator. Such a configuration
  * minimizes the number of processes that are required to run GemFire. However, hosting distribution
  * locators is not generally recommended because if the application VM exits it would not be
  * possible for new applications to connect to the distributed system until it is restarted.
- * 
+ *
  * <P>
  * Locators persist membership information in a locatorXXXview.dat file. This file is used to
  * recover information about the cluster when a locator starts if there are no other currently
  * running locators. It allows the restarted locator to rejoin the cluster.
- * 
+ *
  * <P>
  * <b>NOTE:</b> In this release of the product locators log membership views and cache server status
  * in a locatorXXXviews.log file, where XXX is the locator's port. This is a rolling log capped in
@@ -53,8 +53,8 @@ import java.util.Properties;
  * DistributedSystem. This means that it is not possible in this release to use APIs to start a
  * locator and <i>then</i> start a DistributedSystem.
  * <P>
- * 
- * 
+ *
+ *
  * @since GemFire 4.0
  */
 public abstract class Locator {
@@ -69,7 +69,7 @@ public abstract class Locator {
 
   /**
    * the hostname to give to clients so they can connect to this locator.
-   * 
+   *
    * @since GemFire 5.7
    */
   protected String hostnameForClients;
@@ -114,9 +114,9 @@ public abstract class Locator {
    * The locator starts a AdminDistributedSystem configured with the given properties to provide the
    * system with a long-running process that can be relied on for stable membership information. The
    * locator will provide provide peer and cache server location services.
-   * 
+   *
    * @since GemFire 5.0
-   * 
+   *
    * @param port The port on which the locator will listen for membership information requests from
    *        new members
    * @param logFile The file to which the locator logs information. The directory that contains the
@@ -126,7 +126,7 @@ public abstract class Locator {
    *        system. If there are multiple locators in the system, this should note them in the
    *        "locators" setting. If The distributed system is using multicast, the "mcast-port"
    *        should also be set.
-   * 
+   *
    * @throws IllegalArgumentException If <code>port</code> is not in the range 0 to 65536
    * @throws org.apache.geode.SystemIsRunningException If another locator is already running in
    *         <code>outputDir</code>
@@ -234,7 +234,7 @@ public abstract class Locator {
    * @throws org.apache.geode.GemFireIOException If the directory containing the
    *         <code>logFile</code> does not exist or cannot be written to
    * @throws IOException If the locator cannot be started
-   * 
+   *
    * @since GemFire 5.7
    */
   public static Locator startLocatorAndDS(int port, File logFile, InetAddress bindAddress,
@@ -250,8 +250,8 @@ public abstract class Locator {
   private static Locator startLocator(int port, File logFile, InetAddress bindAddress,
       java.util.Properties dsProperties, boolean peerLocator, boolean serverLocator,
       String hostnameForClients) throws IOException {
-    return InternalLocator.startLocator(port, logFile, null, null, null, bindAddress, true,
-        dsProperties, hostnameForClients);
+    return InternalLocator.startLocator(port, logFile, null, null, bindAddress, true, dsProperties,
+        hostnameForClients);
   }
 
   /**
@@ -261,14 +261,14 @@ public abstract class Locator {
   private static Locator startLocator(int port, File logFile, boolean startDistributedSystem,
       InetAddress bindAddress, java.util.Properties dsProperties, boolean peerLocator,
       boolean serverLocator, String hostnameForClients) throws IOException {
-    return InternalLocator.startLocator(port, logFile, null, null, null, bindAddress,
+    return InternalLocator.startLocator(port, logFile, null, null, bindAddress,
         startDistributedSystem, dsProperties, hostnameForClients);
   }
 
   /**
    * Returns an unmodifiable <code>List</code> of all of the <code>Locator</code>s that are hosted
    * by this VM.
-   * 
+   *
    * @deprecated as of 7.0 use {@link #getLocator} instead
    */
   public static List<Locator> getLocators() {
@@ -282,7 +282,7 @@ public abstract class Locator {
 
   /**
    * Returns the locator if it exists in this JVM. Otherwise returns null.
-   * 
+   *
    * @return the locator that exists in this JVM; null if no locator.
    * @since GemFire 7.0
    */
@@ -292,7 +292,7 @@ public abstract class Locator {
 
   /**
    * Examine the size of the collection of locators running in this VM
-   * 
+   *
    * @return the number of locators running in this VM
    * @deprecated as of 7.0 use {@link #hasLocator} instead.
    */
@@ -302,7 +302,7 @@ public abstract class Locator {
 
   /**
    * Returns true if a locator exists in this JVM.
-   * 
+   *
    * @return true if a locator exists in this JVM.
    * @since GemFire 7.0
    */
@@ -339,7 +339,7 @@ public abstract class Locator {
   /**
    * Returns the hostname that will be given to clients so that they can connect to this locator.
    * Returns <code>null</code> if clients should use the bind address.
-   * 
+   *
    * @since GemFire 5.7
    */
   public String getHostnameForClients() {
@@ -352,14 +352,14 @@ public abstract class Locator {
 
   /**
    * Indicates whether the locator provides peer location services to members
-   * 
+   *
    * @return if peer location is enabled
    */
   public abstract boolean isPeerLocator();
 
   /**
    * Indicates whether the locator provides server location services to clients
-   * 
+   *
    * @return if server location is enabled
    */
   public abstract boolean isServerLocator();
@@ -430,7 +430,8 @@ public abstract class Locator {
    * hostname-for-clients - the ip address or host name that clients will be told to use to connect
    * to this locator. If unspecified, defaults to the bind-address.
    *
-   * @since GemFire 5.0
+   * @deprecated as of Geode 1.4 use {@link org.apache.geode.distributed.LocatorLauncher
+   *             "LocatorLauncher" to start a locator}
    */
   public static void main(String args[]) {
     org.apache.geode.internal.DistributionLocator.main(args);

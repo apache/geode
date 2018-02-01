@@ -20,8 +20,8 @@ import org.apache.geode.management.DistributedLockServiceMXBean;
 
 /**
  * It represents a distributed view of a LockService
- * 
- * 
+ *
+ *
  */
 public class DistributedLockServiceMBean implements DistributedLockServiceMXBean {
 

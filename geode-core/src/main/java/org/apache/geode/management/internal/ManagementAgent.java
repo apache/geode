@@ -42,6 +42,7 @@ import javax.management.remote.rmi.RMIJRMPServerImpl;
 import javax.management.remote.rmi.RMIServerImpl;
 import javax.rmi.ssl.SslRMIClientSocketFactory;
 
+import com.healthmarketscience.rmiio.exporter.RemoteStreamExporter;
 import org.apache.commons.lang.StringUtils;
 import org.apache.logging.log4j.Logger;
 import org.eclipse.jetty.server.Server;
@@ -64,6 +65,7 @@ import org.apache.geode.internal.tcp.TCPConduit;
 import org.apache.geode.management.ManagementException;
 import org.apache.geode.management.ManagementService;
 import org.apache.geode.management.ManagerMXBean;
+import org.apache.geode.management.internal.beans.FileUploader;
 import org.apache.geode.management.internal.security.AccessControlMBean;
 import org.apache.geode.management.internal.security.MBeanServerWrapper;
 import org.apache.geode.management.internal.security.ResourceConstants;
@@ -95,6 +97,11 @@ public class ManagementAgent {
   private final DistributionConfig config;
   private final SecurityService securityService;
   private boolean isHttpServiceRunning = false;
+  private RMIClientSocketFactory rmiClientSocketFactory;
+  private RMIServerSocketFactory rmiServerSocketFactory;
+  private int port;
+  private RemoteStreamExporter remoteStreamExporter = null;
+
   /**
    * This system property is set to true when the embedded HTTP server is started so that the
    * embedded pulse webapp can use a local MBeanServer instead of a remote JMX connection.
@@ -212,8 +219,11 @@ public class ManagementAgent {
         if (logger.isDebugEnabled()) {
           logger.debug(message);
         }
-      } else if (securityService.isIntegratedSecurity()) {
-        System.setProperty("spring.profiles.active", "pulse.authentication.gemfire");
+      } else {
+        String pwFile = this.config.getJmxManagerPasswordFile();
+        if (securityService.isIntegratedSecurity() || StringUtils.isNotBlank(pwFile)) {
+          System.setProperty("spring.profiles.active", "pulse.authentication.gemfire");
+        }
       }
 
       // Find developer REST WAR file
@@ -366,7 +376,7 @@ public class ManagementAgent {
    */
   private void configureAndStart() throws IOException {
     // get the port for RMI Registry and RMI Connector Server
-    final int port = this.config.getJmxManagerPort();
+    port = this.config.getJmxManagerPort();
     final String hostname;
     final InetAddress bindAddr;
     if (StringUtils.isBlank(this.config.getJmxManagerBindAddress())) {
@@ -391,9 +401,8 @@ public class ManagementAgent {
       logger.debug("Starting jmx manager agent on port {}{}", port,
           (bindAddr != null ? (" bound to " + bindAddr) : "") + (ssl ? " using SSL" : ""));
     }
-    RMIClientSocketFactory rmiClientSocketFactory = ssl ? new SslRMIClientSocketFactory() : null;
-    RMIServerSocketFactory rmiServerSocketFactory =
-        new GemFireRMIServerSocketFactory(socketCreator, bindAddr);
+    rmiClientSocketFactory = ssl ? new SslRMIClientSocketFactory() : null;
+    rmiServerSocketFactory = new GemFireRMIServerSocketFactory(socketCreator, bindAddr);
 
     // Following is done to prevent rmi causing stop the world gcs
     System.setProperty("sun.rmi.dgc.server.gcInterval", Long.toString(Long.MAX_VALUE - 1));
@@ -476,7 +485,6 @@ public class ManagementAgent {
       // should take care of that
       MBeanServerWrapper mBeanServerWrapper = new MBeanServerWrapper(this.securityService);
       jmxConnectorServer.setMBeanServerForwarder(mBeanServerWrapper);
-      registerAccessControlMBean();
     } else {
       /* Disable the old authenticator mechanism */
       String pwFile = this.config.getJmxManagerPasswordFile();
@@ -491,6 +499,8 @@ public class ManagementAgent {
         controller.setMBeanServer(mbs);
       }
     }
+    registerAccessControlMBean();
+    registerFileUploaderMBean();
 
     jmxConnectorServer.start();
     if (logger.isDebugEnabled()) {
@@ -521,8 +531,32 @@ public class ManagementAgent {
     }
   }
 
+  private void registerFileUploaderMBean() {
+    try {
+      ObjectName mbeanON = new ObjectName(ManagementConstants.OBJECTNAME__FILEUPLOADER_MBEAN);
+      MBeanServer platformMBeanServer = ManagementFactory.getPlatformMBeanServer();
+
+      Set<ObjectName> names = platformMBeanServer.queryNames(mbeanON, null);
+      if (names.isEmpty()) {
+        platformMBeanServer.registerMBean(new FileUploader(getRemoteStreamExporter()), mbeanON);
+        logger.info("Registered FileUploaderMBean on " + mbeanON);
+      }
+    } catch (InstanceAlreadyExistsException | MBeanRegistrationException
+        | NotCompliantMBeanException | MalformedObjectNameException e) {
+      throw new GemFireConfigException("Error while configuring FileUploader MBean", e);
+    }
+  }
+
   public JMXConnectorServer getJmxConnectorServer() {
     return jmxConnectorServer;
+  }
+
+  public synchronized RemoteStreamExporter getRemoteStreamExporter() {
+    if (remoteStreamExporter == null) {
+      remoteStreamExporter =
+          new GeodeRemoteStreamExporter(port, rmiClientSocketFactory, rmiServerSocketFactory);
+    }
+    return remoteStreamExporter;
   }
 
   private static class GemFireRMIServerSocketFactory

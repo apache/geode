@@ -15,26 +15,27 @@
 
 package org.apache.geode.management.internal.cli.commands;
 
-import org.apache.geode.test.dunit.AsyncInvocation;
-import org.apache.geode.test.dunit.VM;
-import org.apache.geode.test.junit.rules.GfshShellConnectionRule;
-import org.apache.geode.test.junit.rules.JarFileRule;
-import org.apache.geode.test.dunit.rules.LocatorServerStartupRule;
-import org.apache.geode.test.junit.rules.LocatorStarterRule;
-import org.apache.geode.test.junit.categories.DistributedTest;
+import java.io.File;
+import java.util.concurrent.TimeUnit;
+
 import org.junit.After;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
-import java.io.File;
-import java.util.concurrent.TimeUnit;
+import org.apache.geode.test.dunit.AsyncInvocation;
+import org.apache.geode.test.dunit.VM;
+import org.apache.geode.test.dunit.rules.ClusterStartupRule;
+import org.apache.geode.test.junit.categories.DistributedTest;
+import org.apache.geode.test.junit.rules.GfshCommandRule;
+import org.apache.geode.test.junit.rules.JarFileRule;
+import org.apache.geode.test.junit.rules.LocatorStarterRule;
 
 @Category(DistributedTest.class)
 public class ConcurrentDeployDUnitTest {
 
   @Rule
-  public LocatorServerStartupRule lsRule = new LocatorServerStartupRule();
+  public ClusterStartupRule lsRule = new ClusterStartupRule();
 
   @Rule
   public LocatorStarterRule locator = new LocatorStarterRule().withAutoStart();
@@ -43,7 +44,7 @@ public class ConcurrentDeployDUnitTest {
   public JarFileRule jar1Rule = new JarFileRule("classOne", "jar1.jar", true);
 
   // This is a reference used to refer to connections in VM 2 and VM 3
-  private static GfshShellConnectionRule gfsh;
+  private static GfshCommandRule gfsh;
 
   private VM gfsh1, gfsh2, gfsh3;
 
@@ -78,8 +79,8 @@ public class ConcurrentDeployDUnitTest {
   }
 
   public static void connectToLocator(int locatorPort) throws Exception {
-    gfsh = new GfshShellConnectionRule();
-    gfsh.connectAndVerify(locatorPort, GfshShellConnectionRule.PortType.locator);
+    gfsh = new GfshCommandRule();
+    gfsh.connectAndVerify(locatorPort, GfshCommandRule.PortType.locator);
   }
 
   public static void loopThroughDeployAndUndeploys(File jar1) throws Exception {
@@ -88,13 +89,13 @@ public class ConcurrentDeployDUnitTest {
 
     for (int i = 1; i <= numTimesToExecute; i++) {
       command = "deploy --jar=" + jar1.getAbsolutePath();
-      gfsh.executeAndVerifyCommand(command);
+      gfsh.executeAndAssertThat(command).statusIsSuccess();
 
       command = "list deployed";
-      gfsh.executeAndVerifyCommand(command);
+      gfsh.executeAndAssertThat(command).statusIsSuccess();
 
       command = "undeploy --jar=" + jar1.getName();
-      gfsh.executeAndVerifyCommand(command);
+      gfsh.executeAndAssertThat(command).statusIsSuccess();
 
     }
   }

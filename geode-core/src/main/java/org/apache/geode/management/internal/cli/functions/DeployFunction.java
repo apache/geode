@@ -14,9 +14,26 @@
  */
 package org.apache.geode.management.internal.cli.functions;
 
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.nio.file.attribute.PosixFilePermission;
+import java.nio.file.attribute.PosixFilePermissions;
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
+import com.healthmarketscience.rmiio.RemoteInputStream;
+import com.healthmarketscience.rmiio.RemoteInputStreamClient;
+import org.apache.commons.io.FileUtils;
+import org.apache.commons.io.IOUtils;
 import org.apache.logging.log4j.Logger;
 
 import org.apache.geode.SystemFailure;
@@ -41,13 +58,14 @@ public class DeployFunction implements Function, InternalEntity {
   public void execute(FunctionContext context) {
     // Declared here so that it's available when returning a Throwable
     String memberId = "";
+    File stagingDir = null;
 
     try {
       final Object[] args = (Object[]) context.getArguments();
-      final String[] jarFilenames = (String[]) args[0];
-      final byte[][] jarBytes = (byte[][]) args[1];
-      InternalCache cache = (InternalCache) context.getCache();
+      final List<String> jarFilenames = (List<String>) args[0];
+      final List<RemoteInputStream> jarStreams = (List<RemoteInputStream>) args[1];
 
+      InternalCache cache = (InternalCache) context.getCache();
       DistributedMember member = cache.getDistributedSystem().getDistributedMember();
 
       memberId = member.getId();
@@ -56,11 +74,16 @@ public class DeployFunction implements Function, InternalEntity {
         memberId = member.getName();
       }
 
-      List<String> deployedList = new ArrayList<String>();
+      Map<String, File> stagedFiles;
+
+      stagedFiles = stageJarContent(jarFilenames, jarStreams);
+      stagingDir = stagedFiles.values().stream().findFirst().get().getParentFile();
+
+      List<String> deployedList = new ArrayList<>();
       List<DeployedJar> jarClassLoaders =
-          ClassPathLoader.getLatest().getJarDeployer().deploy(jarFilenames, jarBytes);
-      for (int i = 0; i < jarFilenames.length; i++) {
-        deployedList.add(jarFilenames[i]);
+          ClassPathLoader.getLatest().getJarDeployer().deploy(stagedFiles);
+      for (int i = 0; i < jarFilenames.size(); i++) {
+        deployedList.add(jarFilenames.get(i));
         if (jarClassLoaders.get(i) != null) {
           deployedList.add(jarClassLoaders.get(i).getFileCanonicalPath());
         } else {
@@ -72,6 +95,10 @@ public class DeployFunction implements Function, InternalEntity {
           new CliFunctionResult(memberId, deployedList.toArray(new String[0]));
       context.getResultSender().lastResult(result);
 
+    } catch (IOException ex) {
+      CliFunctionResult result =
+          new CliFunctionResult(memberId, ex, "error staging jars for deployment");
+      context.getResultSender().lastResult(result);
     } catch (CacheClosedException cce) {
       CliFunctionResult result = new CliFunctionResult(memberId, false, null);
       context.getResultSender().lastResult(result);
@@ -86,6 +113,8 @@ public class DeployFunction implements Function, InternalEntity {
 
       CliFunctionResult result = new CliFunctionResult(memberId, th, null);
       context.getResultSender().lastResult(result);
+    } finally {
+      deleteStagingDir(stagingDir);
     }
   }
 
@@ -107,5 +136,56 @@ public class DeployFunction implements Function, InternalEntity {
   @Override
   public boolean isHA() {
     return false;
+  }
+
+  private void deleteStagingDir(File stagingDir) {
+    if (stagingDir == null) {
+      return;
+    }
+
+    try {
+      FileUtils.deleteDirectory(stagingDir);
+    } catch (IOException iox) {
+      logger.error("Unable to delete staging directory: {}", iox.getMessage());
+    }
+  }
+
+  private Map<String, File> stageJarContent(List<String> jarNames,
+      List<RemoteInputStream> jarStreams) throws IOException {
+    Map<String, File> stagedJars = new HashMap<>();
+
+    try {
+      Set<PosixFilePermission> perms = new HashSet<>();
+      perms.add(PosixFilePermission.OWNER_READ);
+      perms.add(PosixFilePermission.OWNER_WRITE);
+      perms.add(PosixFilePermission.OWNER_EXECUTE);
+      Path tempDir =
+          Files.createTempDirectory("deploy-", PosixFilePermissions.asFileAttribute(perms));
+
+      for (int i = 0; i < jarNames.size(); i++) {
+        Path tempJar = Paths.get(tempDir.toString(), jarNames.get(i));
+        FileOutputStream fos = new FileOutputStream(tempJar.toString());
+
+        InputStream input = RemoteInputStreamClient.wrap(jarStreams.get(i));
+
+        IOUtils.copyLarge(input, fos);
+
+        fos.close();
+        input.close();
+
+        stagedJars.put(jarNames.get(i), tempJar.toFile());
+      }
+    } catch (IOException iox) {
+      for (int i = 0; i < jarStreams.size(); i++) {
+        try {
+          jarStreams.get(i).close(true);
+        } catch (IOException ex) {
+          // Ignored
+        }
+      }
+      throw iox;
+    }
+
+    return stagedJars;
   }
 }

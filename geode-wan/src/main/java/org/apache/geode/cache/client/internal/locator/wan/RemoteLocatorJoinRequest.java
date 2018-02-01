@@ -26,10 +26,10 @@ import org.apache.geode.internal.admin.remote.DistributionLocatorId;
 
 /**
  * Requests remote locators of a remote WAN site
- * 
- * 
+ *
+ *
  * @since GemFire 6.6
- * 
+ *
  */
 public class RemoteLocatorJoinRequest implements DataSerializableFixedID {
 

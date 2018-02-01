@@ -21,11 +21,11 @@ import org.apache.logging.log4j.Level;
 
 /**
  * Class PulseConfig
- * 
+ *
  * PulseConfig is used for configuring Pulse application.
- * 
+ *
  * @since GemFire 7.0.1
- * 
+ *
  */
 public class PulseConfig {
 

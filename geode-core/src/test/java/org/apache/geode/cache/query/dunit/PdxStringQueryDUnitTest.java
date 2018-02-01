@@ -80,8 +80,8 @@ public class PdxStringQueryDUnitTest extends JUnit4CacheTestCase {
   final String regName = "/" + rootRegionName + "/" + regionName;
   private static int bridgeServerPort;
 
-  private final static int orderByQueryIndex = 11;
-  private final static int[] groupByQueryIndex = new int[] {7, 8, 9, 10};
+  private static final int orderByQueryIndex = 11;
+  private static final int[] groupByQueryIndex = new int[] {7, 8, 9, 10};
 
   private final String[] queryString = new String[] {
       "SELECT pos.secId FROM " + regName + " p, p.positions.values pos WHERE pos.secId LIKE '%L'", // 0
@@ -362,7 +362,7 @@ public class PdxStringQueryDUnitTest extends JUnit4CacheTestCase {
     server0.invoke(new CacheSerializableRunnable("Create Bridge Server") {
       public void run2() throws CacheException {
         GemFireCacheImpl cache = (GemFireCacheImpl) getCache();
-        cache.setReadSerialized(true);
+        cache.setReadSerializedForTest(true);
         QueryService localQueryService = getCache().getQueryService();
 
         // Query server1 locally to check if PdxString is not being returned
@@ -387,7 +387,7 @@ public class PdxStringQueryDUnitTest extends JUnit4CacheTestCase {
     client.invoke(new CacheSerializableRunnable("Create client") {
       public void run2() throws CacheException {
         GemFireCacheImpl cache = (GemFireCacheImpl) getCache();
-        cache.setReadSerialized(true);
+        cache.setReadSerializedForTest(true);
         QueryService remoteQueryService = (PoolManager.find(poolName)).getQueryService();
 
         // Query server1 remotely to check if PdxString is not being returned
@@ -594,7 +594,7 @@ public class PdxStringQueryDUnitTest extends JUnit4CacheTestCase {
     server0.invoke(new CacheSerializableRunnable("Create Bridge Server") {
       public void run2() throws CacheException {
         GemFireCacheImpl cache = (GemFireCacheImpl) getCache();
-        cache.setReadSerialized(true);
+        cache.setReadSerializedForTest(true);
         QueryService localQueryService = getCache().getQueryService();
         // Query server1 locally to check if PdxString is not being returned
         for (int i = 0; i < queryString.length; i++) {
@@ -618,7 +618,7 @@ public class PdxStringQueryDUnitTest extends JUnit4CacheTestCase {
     client.invoke(new CacheSerializableRunnable("Create client") {
       public void run2() throws CacheException {
         GemFireCacheImpl cache = (GemFireCacheImpl) getCache();
-        cache.setReadSerialized(true);
+        cache.setReadSerializedForTest(true);
         QueryService remoteQueryService = (PoolManager.find(poolName)).getQueryService();
 
         // Query server1 remotely to check if PdxString is not being returned
@@ -817,7 +817,7 @@ public class PdxStringQueryDUnitTest extends JUnit4CacheTestCase {
     server0.invoke(new CacheSerializableRunnable("Create Bridge Server") {
       public void run2() throws CacheException {
         GemFireCacheImpl cache = (GemFireCacheImpl) getCache();
-        cache.setReadSerialized(true);
+        cache.setReadSerializedForTest(true);
         QueryService localQueryService = getCache().getQueryService();
         // Query server1 locally to check if PdxString is not being returned
         for (int i = 0; i < queryString.length; i++) {
@@ -840,7 +840,7 @@ public class PdxStringQueryDUnitTest extends JUnit4CacheTestCase {
     client.invoke(new CacheSerializableRunnable("Create client") {
       public void run2() throws CacheException {
         GemFireCacheImpl cache = (GemFireCacheImpl) getCache();
-        cache.setReadSerialized(true);
+        cache.setReadSerializedForTest(true);
         QueryService remoteQueryService = (PoolManager.find(poolName)).getQueryService();
         // Query server1 remotely to check if PdxString is not being returned
         for (int i = 0; i < queryString.length; i++) {
@@ -1102,7 +1102,7 @@ public class PdxStringQueryDUnitTest extends JUnit4CacheTestCase {
     server0.invoke(new CacheSerializableRunnable("Create Bridge Server") {
       public void run2() throws CacheException {
         GemFireCacheImpl cache = (GemFireCacheImpl) getCache();
-        cache.setReadSerialized(true);
+        cache.setReadSerializedForTest(true);
         QueryService localQueryService = getCache().getQueryService();
         // Query server1 locally to check if PdxString is not being returned
         for (int i = 0; i < queryString.length; i++) {
@@ -1127,7 +1127,7 @@ public class PdxStringQueryDUnitTest extends JUnit4CacheTestCase {
     client.invoke(new CacheSerializableRunnable("Create client") {
       public void run2() throws CacheException {
         GemFireCacheImpl cache = (GemFireCacheImpl) getCache();
-        cache.setReadSerialized(true);
+        cache.setReadSerializedForTest(true);
         QueryService remoteQueryService = (PoolManager.find(poolName)).getQueryService();
         // Query server1 remotely to check if PdxString is not being returned
         for (int i = 0; i < queryString.length; i++) {
@@ -1345,7 +1345,7 @@ public class PdxStringQueryDUnitTest extends JUnit4CacheTestCase {
     server0.invoke(new CacheSerializableRunnable("Create Bridge Server") {
       public void run2() throws CacheException {
         GemFireCacheImpl cache = (GemFireCacheImpl) getCache();
-        cache.setReadSerialized(true);
+        cache.setReadSerializedForTest(true);
         QueryService localQueryService = getCache().getQueryService();
 
         // Query server1 locally to check if PdxString is not being returned
@@ -1371,7 +1371,7 @@ public class PdxStringQueryDUnitTest extends JUnit4CacheTestCase {
     client.invoke(new CacheSerializableRunnable("Create client") {
       public void run2() throws CacheException {
         GemFireCacheImpl cache = (GemFireCacheImpl) getCache();
-        cache.setReadSerialized(true);
+        cache.setReadSerializedForTest(true);
         QueryService remoteQueryService = (PoolManager.find(poolName)).getQueryService();
 
         // Query server1 remotely to check if PdxString is not being returned
@@ -1590,7 +1590,7 @@ public class PdxStringQueryDUnitTest extends JUnit4CacheTestCase {
     server0.invoke(new CacheSerializableRunnable("Create Bridge Server") {
       public void run2() throws CacheException {
         GemFireCacheImpl cache = (GemFireCacheImpl) getCache();
-        cache.setReadSerialized(true);
+        cache.setReadSerializedForTest(true);
         QueryService localQueryService = getCache().getQueryService();
 
         // Query server1 locally to check if PdxString is not being returned
@@ -1616,7 +1616,7 @@ public class PdxStringQueryDUnitTest extends JUnit4CacheTestCase {
     client.invoke(new CacheSerializableRunnable("Create client") {
       public void run2() throws CacheException {
         GemFireCacheImpl cache = (GemFireCacheImpl) getCache();
-        cache.setReadSerialized(true);
+        cache.setReadSerializedForTest(true);
         QueryService remoteQueryService = (PoolManager.find(poolName)).getQueryService();
 
         // Query server1 remotely to check if PdxString is not being returned
@@ -1926,7 +1926,7 @@ public class PdxStringQueryDUnitTest extends JUnit4CacheTestCase {
   /**
    * Test to verify if duplicate results are not being accumulated when PdxString is used in PR
    * query
-   * 
+   *
    * @throws CacheException
    */
   @Test

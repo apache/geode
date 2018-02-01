@@ -14,16 +14,7 @@
  */
 package org.apache.geode.modules.session.bootstrap;
 
-import org.apache.geode.cache.GemFireCache;
-import org.apache.geode.cache.control.ResourceManager;
-import org.apache.geode.distributed.internal.AbstractDistributionConfig;
-import org.apache.geode.distributed.internal.DistributionConfig;
-import org.apache.geode.internal.cache.LocalRegion;
-import org.apache.geode.modules.util.Banner;
-import org.apache.geode.modules.util.RegionHelper;
-import org.apache.geode.modules.util.ResourceManagerValidator;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import static org.apache.geode.distributed.ConfigurationProperties.*;
 
 import java.io.File;
 import java.text.DateFormat;
@@ -34,7 +25,17 @@ import java.util.Properties;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicBoolean;
 
-import static org.apache.geode.distributed.ConfigurationProperties.*;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import org.apache.geode.cache.GemFireCache;
+import org.apache.geode.cache.control.ResourceManager;
+import org.apache.geode.distributed.internal.AbstractDistributionConfig;
+import org.apache.geode.distributed.internal.DistributionConfig;
+import org.apache.geode.internal.cache.LocalRegion;
+import org.apache.geode.modules.util.Banner;
+import org.apache.geode.modules.util.RegionHelper;
+import org.apache.geode.modules.util.ResourceManagerValidator;
 
 public abstract class AbstractCache {
 

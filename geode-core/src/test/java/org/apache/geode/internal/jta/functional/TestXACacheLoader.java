@@ -98,7 +98,7 @@ public class TestXACacheLoader implements CacheLoader {
 
   /*
    * (non-Javadoc)
-   * 
+   *
    * @see org.apache.geode.cache.CacheCallback#close()
    */
   public void close() {

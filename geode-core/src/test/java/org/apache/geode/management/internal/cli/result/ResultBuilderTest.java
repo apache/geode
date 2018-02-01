@@ -128,4 +128,13 @@ public class ResultBuilderTest {
     result.addSection();
 
   }
+
+  @Test
+  public void errorCodeCorrectlyUpdated() throws Exception {
+    String json =
+        "{\"contentType\":\"table\",\"data\":{\"content\":{\"Member\":[\"server\"],\"Status\":[\"ERROR: Bad.\"]},\"footer\":\"\",\"header\":\"\",\"type-class\":\"org.apache.geode.management.internal.cli.CommandResponse.Data\"},\"debugInfo\":\"\",\"failedToPersist\":false,\"fileToDownload\":null,\"page\":\"1/1\",\"sender\":\"server\",\"status\":-1,\"tokenAccessor\":\"__NULL__\",\"type-class\":\"org.apache.geode.management.internal.cli.CommandResponse\",\"version\":\"1.3.0-SNAPSHOT\",\"when\":\"10/17/17 8:17 AM\"}";
+
+    CommandResult result = ResultBuilder.fromJson(json);
+    assertThat(result.getStatus().getCode()).isEqualTo(-1);
+  }
 }

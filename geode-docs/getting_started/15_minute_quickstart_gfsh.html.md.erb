@@ -127,10 +127,11 @@ In this step you create a region with the `gfsh` command line utility. Regions a
 
     ``` pre
     gfsh>list members
-      Name   | Id
-    -------- | ---------------------------------------
-    locator1 | 192.0.2.0(locator1:3529:locator)<v0>:59926
-    server1  | 192.0.2.0(server1:3883)<v1>:65390
+      Name       | Id
+    ------------ | ---------------------------------------
+    Coordinator: | 192.0.2.0(locator1:3529:locator)<ec><v0>:59926
+    locator1     | 192.0.2.0(locator1:3529:locator)<ec><v0>:59926
+    server1      | 192.0.2.0(server1:3883)<v1>:65390
     ```
 
 4.  To view specifics about a region, type the following:
@@ -425,11 +426,12 @@ In this step you restart the cache servers in parallel. Because the data is pers
 
     ``` pre
     gfsh>list members
-      Name   | Id
-    -------- | ---------------------------------------
-    server2  | ubuntu(server2:3992)<v8>:21507
-    server1  | ubuntu(server1:3402)<v7>:36532
-    locator1 | ubuntu(locator1:2813:locator)<v0>:46644
+      Name       | Id
+    ------------ | ---------------------------------------
+    Coordinator: | ubuntu(locator1:2813:locator)<ec><v0>:46644
+    locator1     | ubuntu(locator1:2813:locator)<ec><v0>:46644
+    server2      | ubuntu(server2:3992)<v8>:21507
+    server1      | ubuntu(server1:3402)<v7>:36532
     ```
 
 6.  Run a query to verify that all the data you entered with the `put` commands is available:

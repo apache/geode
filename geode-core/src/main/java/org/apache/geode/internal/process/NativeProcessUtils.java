@@ -21,7 +21,7 @@ import org.apache.geode.internal.shared.NativeCalls;
 
 /**
  * Implementation of the {@link ProcessUtils} SPI that uses {@link NativeCalls}.
- * 
+ *
  * @since GemFire 8.0
  */
 class NativeProcessUtils implements InternalProcessUtils {

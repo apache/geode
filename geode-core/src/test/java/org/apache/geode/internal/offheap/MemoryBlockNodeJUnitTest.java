@@ -14,12 +14,13 @@
  */
 package org.apache.geode.internal.offheap;
 
-import org.apache.geode.cache.CacheClosedException;
-import org.apache.geode.distributed.internal.DistributionConfig;
-import org.apache.geode.internal.DSCODE;
-import org.apache.geode.internal.cache.EntryEventImpl;
-import org.apache.geode.internal.offheap.MemoryBlock.State;
-import org.apache.geode.test.junit.categories.UnitTest;
+import static org.junit.Assert.fail;
+import static org.mockito.Mockito.*;
+
+import java.io.ByteArrayOutputStream;
+import java.io.PrintStream;
+import java.nio.ByteBuffer;
+
 import org.assertj.core.api.JUnitSoftAssertions;
 import org.junit.After;
 import org.junit.Before;
@@ -30,12 +31,12 @@ import org.junit.contrib.java.lang.system.RestoreSystemProperties;
 import org.junit.experimental.categories.Category;
 import org.junit.rules.ExpectedException;
 
-import java.io.ByteArrayOutputStream;
-import java.io.PrintStream;
-import java.nio.ByteBuffer;
-
-import static org.junit.Assert.fail;
-import static org.mockito.Mockito.*;
+import org.apache.geode.cache.CacheClosedException;
+import org.apache.geode.distributed.internal.DistributionConfig;
+import org.apache.geode.internal.DSCODE;
+import org.apache.geode.internal.cache.EntryEventImpl;
+import org.apache.geode.internal.offheap.MemoryBlock.State;
+import org.apache.geode.test.junit.categories.UnitTest;
 
 @Category(UnitTest.class)
 public class MemoryBlockNodeJUnitTest {

@@ -87,7 +87,10 @@ dependencies {
   runtime ('org.fusesource.jansi:jansi:' + project.'jansi.version') {
     ext.optional = true
   }
+  runtime 'org.slf4j:slf4j-api:' + project.'slf4j-api.version'
+
   runtime ('org.apache.logging.log4j:log4j-slf4j-impl:' + project.'log4j.version') {
+    exclude module: 'slf4j-api'
     ext.optional = true
   }
   runtime ('org.apache.logging.log4j:log4j-jcl:' + project.'log4j.version') {
@@ -129,6 +132,7 @@ dependencies {
   // https://mvnrepository.com/artifact/io.github.lukehutch/fast-classpath-scanner
   compile 'io.github.lukehutch:fast-classpath-scanner:' + project.'fast-classpath-scanner.version'
 
+  compile 'com.healthmarketscience.rmiio:rmiio:' + project.'rmiio.version'
 
   compile project(':geode-common')
   compile project(':geode-json')

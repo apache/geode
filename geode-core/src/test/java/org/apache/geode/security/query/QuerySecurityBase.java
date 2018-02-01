@@ -20,7 +20,6 @@ import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
-import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
 
@@ -39,6 +38,7 @@ import org.apache.geode.cache.query.Query;
 import org.apache.geode.cache.query.QueryInvocationTargetException;
 import org.apache.geode.cache.query.QueryService;
 import org.apache.geode.cache.query.TypeMismatchException;
+import org.apache.geode.internal.cache.GemFireCacheImpl;
 import org.apache.geode.security.SecurityTestUtil;
 import org.apache.geode.security.TestSecurityManager;
 import org.apache.geode.test.dunit.Host;
@@ -81,6 +81,12 @@ public class QuerySecurityBase extends JUnit4DistributedTestCase {
     createProxyRegion(superUserClient, regionName);
   }
 
+  public void closeAnyPollutedCache() {
+    if (GemFireCacheImpl.getInstance() != null) {
+      GemFireCacheImpl.getInstance().close();
+    }
+  }
+
   public void setClientCache(ClientCache cache) {
     clientCache = cache;
   }
@@ -91,6 +97,7 @@ public class QuerySecurityBase extends JUnit4DistributedTestCase {
 
   public void createClientCache(VM vm, String userName, String password) {
     vm.invoke(() -> {
+      closeAnyPollutedCache();
       ClientCache cache = SecurityTestUtil.createClientCache(userName, password, server.getPort());
       setClientCache(cache);
     });

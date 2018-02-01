@@ -15,16 +15,12 @@
 
 package org.apache.geode.internal.compression;
 
-import org.junit.experimental.categories.Category;
-import org.junit.Test;
-
 import static org.junit.Assert.*;
 
-import org.apache.geode.test.dunit.cache.internal.JUnit4CacheTestCase;
-import org.apache.geode.test.dunit.internal.JUnit4DistributedTestCase;
-import org.apache.geode.test.junit.categories.DistributedTest;
-
 import java.io.Serializable;
+
+import org.junit.Test;
+import org.junit.experimental.categories.Category;
 
 import org.apache.geode.cache.DataPolicy;
 import org.apache.geode.cache.Region;
@@ -37,10 +33,13 @@ import org.apache.geode.test.dunit.Host;
 import org.apache.geode.test.dunit.SerializableCallable;
 import org.apache.geode.test.dunit.SerializableRunnable;
 import org.apache.geode.test.dunit.VM;
+import org.apache.geode.test.dunit.cache.internal.JUnit4CacheTestCase;
+import org.apache.geode.test.dunit.internal.JUnit4DistributedTestCase;
+import org.apache.geode.test.junit.categories.DistributedTest;
 
 /**
  * Tests compression statistics.
- * 
+ *
  * @since GemFire 8.0
  */
 @Category(DistributedTest.class)
@@ -71,7 +70,7 @@ public class CompressionStatsDUnitTest extends JUnit4CacheTestCase {
 
   /**
    * Creates a new CompressionStatsDUnitTest.
-   * 
+   *
    * @param name test name.
    */
   public CompressionStatsDUnitTest() {
@@ -80,7 +79,7 @@ public class CompressionStatsDUnitTest extends JUnit4CacheTestCase {
 
   /**
    * Asserts that all compression statistics start with zero values.
-   * 
+   *
    * @param vm the virtual machine to gather statistics on.
    */
   private void assertStartingValues(final VM vm) {
@@ -112,7 +111,7 @@ public class CompressionStatsDUnitTest extends JUnit4CacheTestCase {
   /**
    * Performs puts on region one and asserts that the second region's stats are unaffected and that
    * the region stats have rolled up to the cache stats.
-   * 
+   *
    * @param vm the virtual machine to perform puts on.
    * @param stats holder for stat values.
    */
@@ -176,7 +175,7 @@ public class CompressionStatsDUnitTest extends JUnit4CacheTestCase {
 
   /**
    * Performs puts on the second region and asserts that the compression stats are recorded.
-   * 
+   *
    * @param vm a virtual machine to peform puts on.
    * @param stats a compression stats holder.
    */
@@ -271,7 +270,7 @@ public class CompressionStatsDUnitTest extends JUnit4CacheTestCase {
 
   /**
    * Asserts that the cache stats are totals of the region one and region two stats.
-   * 
+   *
    * @param stats a compression stats container.
    */
   private void assertStatTotals(final CompressionStats stats) {
@@ -329,7 +328,7 @@ public class CompressionStatsDUnitTest extends JUnit4CacheTestCase {
 
   /**
    * Does put operations on a designated virtual machine.
-   * 
+   *
    * @param vm a virtual machine.
    * @param regionName a region for the puts.
    * @param puts the number of puts to perform.
@@ -349,7 +348,7 @@ public class CompressionStatsDUnitTest extends JUnit4CacheTestCase {
 
   /**
    * Returns the total number of post-compressed bytes stat for a virtual machine.
-   * 
+   *
    * @param vm a virtual machine.
    * @param regionName designates a region on which to collect the number of decompressed bytes.
    *        Null indicates the whole cache.
@@ -377,7 +376,7 @@ public class CompressionStatsDUnitTest extends JUnit4CacheTestCase {
 
   /**
    * Returns the number of post-decompressed bytes stat for a region.
-   * 
+   *
    * @param regionName a region.
    */
   private long getTotalPostCompressedBytes(String regionName) {
@@ -389,7 +388,7 @@ public class CompressionStatsDUnitTest extends JUnit4CacheTestCase {
 
   /**
    * Returns the number of pre-compressed bytes stat on a virtual machine.
-   * 
+   *
    * @param vm a virtual machine.
    * @param regionName a region. Indicates whole cache if null.
    */
@@ -416,7 +415,7 @@ public class CompressionStatsDUnitTest extends JUnit4CacheTestCase {
 
   /**
    * Returns the number of pre-compressed bytes stat for a region.
-   * 
+   *
    * @param regionName a region.
    */
   private long getTotalPreCompressedBytes(String regionName) {
@@ -428,7 +427,7 @@ public class CompressionStatsDUnitTest extends JUnit4CacheTestCase {
 
   /**
    * Returns the number of decompressions stat for a virtual machine.
-   * 
+   *
    * @param vm a virtual machine.
    * @param regionName a region. Indicates the whole cache when null.
    */
@@ -455,7 +454,7 @@ public class CompressionStatsDUnitTest extends JUnit4CacheTestCase {
 
   /**
    * Returns the number of decompressions stat for a region.
-   * 
+   *
    * @param regionName a region.
    */
   private long getTotalDecompressions(String regionName) {
@@ -467,7 +466,7 @@ public class CompressionStatsDUnitTest extends JUnit4CacheTestCase {
 
   /**
    * Returns the total number of compressions stat for a virtual machine.
-   * 
+   *
    * @param vm a virtual machine.
    * @param regionName a region. Indicates the entire cache when null.
    */
@@ -494,7 +493,7 @@ public class CompressionStatsDUnitTest extends JUnit4CacheTestCase {
 
   /**
    * Returns the total number of compressions stat for a region.
-   * 
+   *
    * @param regionName a region.
    */
   private long getTotalCompressions(String regionName) {
@@ -506,7 +505,7 @@ public class CompressionStatsDUnitTest extends JUnit4CacheTestCase {
 
   /**
    * Returns the total decompression time stat for a virtual machine.
-   * 
+   *
    * @param vm a virtual machine.
    * @param regionName a region. Indicates the whole cache when null.
    */
@@ -533,7 +532,7 @@ public class CompressionStatsDUnitTest extends JUnit4CacheTestCase {
 
   /**
    * Returns the total decompression time stat for a region.
-   * 
+   *
    * @param regionName a region.
    */
   private long getTotalDecompressionTime(String regionName) {
@@ -545,7 +544,7 @@ public class CompressionStatsDUnitTest extends JUnit4CacheTestCase {
 
   /**
    * Returns the total compression time stat for a virtual machine.
-   * 
+   *
    * @param vm a virtual machine.
    * @param regionName a region.
    */
@@ -572,7 +571,7 @@ public class CompressionStatsDUnitTest extends JUnit4CacheTestCase {
 
   /**
    * Returns the total compression time stat for a region.
-   * 
+   *
    * @param regionName a region.
    */
   private long getTotalCompressionTime(String regionName) {
@@ -584,7 +583,7 @@ public class CompressionStatsDUnitTest extends JUnit4CacheTestCase {
 
   /**
    * Destroys a region.
-   * 
+   *
    * @param vm a virtual machine.
    * @param regionName the region to destroy.
    */
@@ -599,7 +598,7 @@ public class CompressionStatsDUnitTest extends JUnit4CacheTestCase {
 
   /**
    * Destroys a region.
-   * 
+   *
    * @param regionName the region to destroy.
    */
   private void destroyRegion(String regionName) {
@@ -611,7 +610,7 @@ public class CompressionStatsDUnitTest extends JUnit4CacheTestCase {
 
   /**
    * Creates a region and assigns a compressor.
-   * 
+   *
    * @param vm a virtual machine to create the region on.
    * @param name a region name.
    * @param compressor a compressor.
@@ -655,7 +654,7 @@ public class CompressionStatsDUnitTest extends JUnit4CacheTestCase {
 
   /**
    * Creates a region and assigns a compressor.
-   * 
+   *
    * @param name a region name.
    * @param compressor a compressor.
    */
@@ -666,7 +665,7 @@ public class CompressionStatsDUnitTest extends JUnit4CacheTestCase {
 
   /**
    * Enables clock stats on a VM.
-   * 
+   *
    * @param vm a virtual machine
    * @param clockStatsEnabled enables clock stats if true, disables if false
    * @return previous clock stats value
@@ -682,7 +681,7 @@ public class CompressionStatsDUnitTest extends JUnit4CacheTestCase {
 
   /**
    * Enables clock stats.
-   * 
+   *
    * @param clockStatsEnabled enables clock stats if true, disables if false
    * @return previous clock stats value
    */

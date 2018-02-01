@@ -43,7 +43,7 @@ public class ClientStatsManager {
 
   /**
    * Last cache that was initialized
-   * 
+   *
    * GuardedBy ClientStatsManager.class
    */
   private static InternalCache lastInitializedCache = null;
@@ -60,7 +60,7 @@ public class ClientStatsManager {
 
   /**
    * This method publishes the client stats using the admin region.
-   * 
+   *
    * @param pool Connection pool which may be used for admin region.
    */
   public static synchronized void publishClientStats(PoolImpl pool) {
@@ -180,7 +180,7 @@ public class ClientStatsManager {
   /**
    * This method queries the client stats & prepares the client health stats object to be published
    * to the server.
-   * 
+   *
    * @return the client health stats object to be published to the server.
    */
   private static ClientHealthStats getClientHealthStats(InternalCache currentCache, PoolImpl pool) {

@@ -14,15 +14,6 @@
  */
 package org.apache.geode.management.internal.configuration.messages;
 
-import org.apache.commons.lang.StringUtils;
-import org.apache.geode.DataSerializer;
-import org.apache.geode.InternalGemFireError;
-import org.apache.geode.internal.DataSerializableFixedID;
-import org.apache.geode.internal.Version;
-import org.apache.geode.management.internal.configuration.domain.Configuration;
-import org.apache.geode.management.internal.configuration.utils.XmlUtils;
-import org.xml.sax.SAXException;
-
 import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
@@ -31,27 +22,30 @@ import java.util.Iterator;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
+
 import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.transform.TransformerException;
 import javax.xml.transform.TransformerFactoryConfigurationError;
 
-/***
- * Response containing the configuration requested by the {@link ConfigurationRequest}
- */
+import org.apache.commons.lang.StringUtils;
+import org.xml.sax.SAXException;
+
+import org.apache.geode.DataSerializer;
+import org.apache.geode.InternalGemFireError;
+import org.apache.geode.distributed.DistributedMember;
+import org.apache.geode.internal.DataSerializableFixedID;
+import org.apache.geode.internal.Version;
+import org.apache.geode.management.internal.configuration.domain.Configuration;
+import org.apache.geode.management.internal.configuration.utils.XmlUtils;
+
 public class ConfigurationResponse implements DataSerializableFixedID {
 
-  private Map<String, Configuration> requestedConfiguration = new HashMap<String, Configuration>();
-  private byte[][] jarBytes;
-  private String[] jarNames;
+  private Map<String, Configuration> requestedConfiguration = new HashMap<>();
+  private Map<String, Set<String>> jarNames = new HashMap<>();
   private boolean failedToGetSharedConfig = false;
 
-  public ConfigurationResponse() {
-
-  }
-
-  public ConfigurationResponse(Map<String, Configuration> requestedConfiguration) {
-    this.requestedConfiguration.putAll(requestedConfiguration);
-  }
+  // This is set to the member from which this object was received
+  private transient DistributedMember member;
 
   @Override
   public int getDSFID() {
@@ -60,26 +54,20 @@ public class ConfigurationResponse implements DataSerializableFixedID {
 
   @Override
   public void toData(DataOutput out) throws IOException {
-    DataSerializer.writeHashMap((HashMap<?, ?>) requestedConfiguration, out);
-    DataSerializer.writeStringArray(jarNames, out);
-    DataSerializer.writeArrayOfByteArrays(jarBytes, out);
+    DataSerializer.writeHashMap(requestedConfiguration, out);
+    DataSerializer.writeHashMap(jarNames, out);
     DataSerializer.writeBoolean(Boolean.valueOf(failedToGetSharedConfig), out);
   }
 
   @Override
   public void fromData(DataInput in) throws IOException, ClassNotFoundException {
     this.requestedConfiguration = DataSerializer.readHashMap(in);
-    this.jarNames = DataSerializer.readStringArray(in);
-    this.jarBytes = DataSerializer.readArrayOfByteArrays(in);
+    this.jarNames = DataSerializer.readHashMap(in);
     this.failedToGetSharedConfig = DataSerializer.readBoolean(in);
   }
 
   public Map<String, Configuration> getRequestedConfiguration() {
     return this.requestedConfiguration;
-  }
-
-  public void setRequestedConfiguration(Map<String, Configuration> requestedConfiguration) {
-    this.requestedConfiguration = requestedConfiguration;
   }
 
   public void addConfiguration(Configuration configuration) {
@@ -139,32 +127,23 @@ public class ConfigurationResponse implements DataSerializableFixedID {
     return sb.toString();
   }
 
-
-  public String[] getJarNames() {
-    return this.jarNames;
+  public void addJar(String group, Set<String> jarNames) {
+    this.jarNames.put(group, jarNames);
   }
 
-  public byte[][] getJars() {
-    return this.jarBytes;
+  public Map<String, Set<String>> getJarNames() {
+    return jarNames;
   }
 
-  public void addJarsToBeDeployed(String[] jarNames, byte[][] jarBytes) {
-    this.jarNames = jarNames;
-    this.jarBytes = jarBytes;
+  public DistributedMember getMember() {
+    return member;
   }
 
-  // TODO Sourabh, please review for correctness
+  public void setMember(DistributedMember member) {
+    this.member = member;
+  }
+
   public Version[] getSerializationVersions() {
     return new Version[] {Version.CURRENT};
   }
-
-  public boolean failedToGetSharedConfig() {
-    return failedToGetSharedConfig;
-  }
-
-  public void setFailedToGetSharedConfig(boolean failedToGetSharedConfig) {
-    this.failedToGetSharedConfig = failedToGetSharedConfig;
-  }
 }
-
-

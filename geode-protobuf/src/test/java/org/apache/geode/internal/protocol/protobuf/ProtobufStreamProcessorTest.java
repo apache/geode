@@ -26,9 +26,8 @@ import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
 import org.apache.geode.internal.cache.InternalCache;
-import org.apache.geode.internal.cache.tier.sockets.MessageExecutionContext;
-import org.apache.geode.internal.protocol.protobuf.statistics.NoOpProtobufStatistics;
-import org.apache.geode.security.internal.server.NoOpAuthorizer;
+import org.apache.geode.internal.protocol.TestExecutionContext;
+import org.apache.geode.internal.protocol.protobuf.v1.ProtobufStreamProcessor;
 import org.apache.geode.test.junit.categories.UnitTest;
 
 @Category(UnitTest.class)
@@ -40,7 +39,7 @@ public class ProtobufStreamProcessorTest {
 
     ProtobufStreamProcessor protobufStreamProcessor = new ProtobufStreamProcessor();
     InternalCache mockInternalCache = mock(InternalCache.class);
-    protobufStreamProcessor.receiveMessage(inputStream, outputStream, new MessageExecutionContext(
-        mockInternalCache, new NoOpAuthorizer(), new NoOpProtobufStatistics()));
+    protobufStreamProcessor.receiveMessage(inputStream, outputStream,
+        TestExecutionContext.getNoAuthCacheExecutionContext(mockInternalCache));
   }
 }

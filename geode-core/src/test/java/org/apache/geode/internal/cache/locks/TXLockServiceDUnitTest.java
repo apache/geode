@@ -14,13 +14,25 @@
  */
 package org.apache.geode.internal.cache.locks;
 
-import static org.awaitility.Awaitility.await;
 import static org.apache.geode.distributed.ConfigurationProperties.LOG_LEVEL;
+import static org.awaitility.Awaitility.await;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.fail;
+
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Properties;
+import java.util.Set;
+import java.util.concurrent.TimeUnit;
+
+import org.junit.Test;
+import org.junit.experimental.categories.Category;
 
 import org.apache.geode.cache.CommitConflictException;
 import org.apache.geode.distributed.DistributedLockService;
@@ -43,17 +55,6 @@ import org.apache.geode.test.dunit.SerializableRunnable;
 import org.apache.geode.test.dunit.internal.JUnit4DistributedTestCase;
 import org.apache.geode.test.junit.categories.DLockTest;
 import org.apache.geode.test.junit.categories.DistributedTest;
-import org.junit.Test;
-import org.junit.experimental.categories.Category;
-
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Properties;
-import java.util.Set;
-import java.util.concurrent.TimeUnit;
 
 /**
  * This class tests distributed ownership via the DistributedLockService api.
@@ -576,7 +577,7 @@ public class TXLockServiceDUnitTest extends JUnit4DistributedTestCase {
 
   /**
    * Creates a new DistributedLockService in a remote VM.
-   * 
+   *
    * @param name The name of the newly-created DistributedLockService. It is recommended that the
    *        name of the Region be the {@link #getUniqueName()} of the test, or at least derive from
    *        it.
@@ -826,4 +827,3 @@ public class TXLockServiceDUnitTest extends JUnit4DistributedTestCase {
   }
 
 }
-

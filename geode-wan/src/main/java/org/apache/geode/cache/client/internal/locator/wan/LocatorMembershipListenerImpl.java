@@ -14,15 +14,6 @@
  */
 package org.apache.geode.cache.client.internal.locator.wan;
 
-import org.apache.geode.distributed.internal.DistributionConfig;
-import org.apache.geode.distributed.internal.tcpserver.TcpClient;
-import org.apache.geode.internal.CopyOnWriteHashSet;
-import org.apache.geode.internal.admin.remote.DistributionLocatorId;
-import org.apache.geode.internal.i18n.LocalizedStrings;
-import org.apache.geode.internal.logging.LogService;
-import org.apache.geode.internal.logging.log4j.LocalizedMessage;
-import org.apache.logging.log4j.Logger;
-
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
@@ -30,11 +21,21 @@ import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 
+import org.apache.logging.log4j.Logger;
+
+import org.apache.geode.distributed.internal.DistributionConfig;
+import org.apache.geode.distributed.internal.tcpserver.TcpClient;
+import org.apache.geode.internal.CopyOnWriteHashSet;
+import org.apache.geode.internal.admin.remote.DistributionLocatorId;
+import org.apache.geode.internal.i18n.LocalizedStrings;
+import org.apache.geode.internal.logging.LogService;
+import org.apache.geode.internal.logging.log4j.LocalizedMessage;
+
 /**
  * An implementation of
  * {@link org.apache.geode.cache.client.internal.locator.wan.LocatorMembershipListener}
- * 
- * 
+ *
+ *
  */
 public class LocatorMembershipListenerImpl implements LocatorMembershipListener {
 
@@ -67,7 +68,7 @@ public class LocatorMembershipListenerImpl implements LocatorMembershipListener 
   /**
    * When the new locator is added to remote locator metadata, inform all other locators in remote
    * locator metadata about the new locator so that they can update their remote locator metadata.
-   * 
+   *
    * @param locator
    */
 
@@ -153,7 +154,7 @@ public class LocatorMembershipListenerImpl implements LocatorMembershipListener 
    * not available then added to existing remote locator metadata and LocatorMembershipListener is
    * invoked to inform about the this newly added locator to all other locators available in remote
    * locator metadata. As a response, remote locator metadata is sent.
-   * 
+   *
    * @param request
    */
   private synchronized Object updateAllLocatorInfo(RemoteLocatorJoinRequest request) {

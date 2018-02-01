@@ -34,7 +34,7 @@ import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.Region;
 import org.apache.geode.cache.util.ObjectSizer;
 import org.apache.geode.cache30.CacheSerializableRunnable;
-import org.apache.geode.internal.cache.lru.Sizeable;
+import org.apache.geode.internal.size.Sizeable;
 import org.apache.geode.test.dunit.Host;
 import org.apache.geode.test.dunit.LogWriterUtils;
 import org.apache.geode.test.dunit.SerializableRunnable;
@@ -174,7 +174,7 @@ public class PartitionedRegionLocalMaxMemoryDUnitTest extends PartitionedRegionD
    * Object used for the put() operation as key and object. The objectIdentifier is used to provide
    * a predetermined hashcode for the object.
    */
-  static public class TestObject1 implements DataSerializable, Sizeable {
+  public static class TestObject1 implements DataSerializable, Sizeable {
     String name;
 
     byte arr[] = new byte[1024 * 4];

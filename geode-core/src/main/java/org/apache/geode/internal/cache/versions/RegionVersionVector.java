@@ -14,7 +14,27 @@
  */
 package org.apache.geode.internal.cache.versions;
 
+import java.io.DataInput;
+import java.io.DataOutput;
+import java.io.IOException;
+import java.util.Collections;
+import java.util.ConcurrentModificationException;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicLong;
+import java.util.concurrent.locks.ReentrantReadWriteLock;
+
+import org.apache.logging.log4j.Logger;
+
 import org.apache.geode.CancelCriterion;
+import org.apache.geode.annotations.TestingOnly;
 import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.distributed.internal.DM;
 import org.apache.geode.distributed.internal.DistributionConfig;
@@ -31,17 +51,6 @@ import org.apache.geode.internal.i18n.LocalizedStrings;
 import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.internal.logging.log4j.LocalizedMessage;
 import org.apache.geode.internal.logging.log4j.LogMarker;
-import org.apache.logging.log4j.Logger;
-
-import java.io.DataInput;
-import java.io.DataOutput;
-import java.io.IOException;
-import java.util.*;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.CountDownLatch;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.atomic.AtomicLong;
-import java.util.concurrent.locks.ReentrantReadWriteLock;
 
 /**
  * RegionVersionVector tracks the highest region-level version number of operations applied to a
@@ -88,7 +97,7 @@ public abstract class RegionVersionVector<T extends VersionSource<?>>
    * The list of exceptions for the local member. The version held in this RegionVersionHolder may
    * not be accurate, but the exception list is. We can have exceptions for our own id if we recover
    * from disk or GII from a peer that has exceptions from us.
-   * 
+   *
    * The version held in this object can lag behind the localVersion atomic long, because that long
    * is incremented without obtaining a lock. Operations that use the localException list are
    * responsible for updating the version of the local exceptions under lock.
@@ -134,31 +143,65 @@ public abstract class RegionVersionVector<T extends VersionSource<?>>
    * operation is allowed at a time on a region across the distributed system. If that changes then
    * the locking scheme here may need additional work.
    */
-  private transient final ReentrantReadWriteLock versionLock = new ReentrantReadWriteLock();
+  private final transient ReentrantReadWriteLock versionLock = new ReentrantReadWriteLock();
   private transient volatile boolean locked; // this is only modified by the version locking thread
   private transient volatile boolean doUnlock; // this is only modified by the version locking
                                                // thread
   private transient InternalDistributedMember lockOwner; // guarded by lockWaitSync
 
-  private transient final Object clearLockSync = new Object(); // sync for coordinating thread
+  private final transient Object clearLockSync = new Object(); // sync for coordinating thread
                                                                // startup and lockOwner setting
 
-  /** create a live version vector for a region */
-  public RegionVersionVector(T ownerId) {
-    this(ownerId, null);
+  /**
+   * constructor used to create a cloned vector
+   */
+  protected RegionVersionVector(T ownerId, ConcurrentHashMap<T, RegionVersionHolder<T>> vector,
+      long version, ConcurrentHashMap<T, Long> gcVersions, long gcVersion, boolean singleMember,
+      RegionVersionHolder<T> localExceptions) {
+    this.myId = ownerId;
+    this.memberToVersion = vector;
+    this.memberToGCVersion = gcVersions;
+    this.localGCVersion.set(gcVersion);
+    this.localVersion.set(version);
+    this.singleMember = singleMember;
+    this.localExceptions = localExceptions;
   }
 
-  /** create a live version vector for a region */
-  public RegionVersionVector(T ownerId, LocalRegion owner) {
-    this.myId = ownerId;
-    this.isLiveVector = true;
-    this.region = owner;
-
-    this.localExceptions = new RegionVersionHolder<T>(0);
+  /**
+   * deserialize a cloned vector
+   */
+  public RegionVersionVector() {
     this.memberToVersion = new ConcurrentHashMap<T, RegionVersionHolder<T>>(INITIAL_CAPACITY,
         LOAD_FACTOR, CONCURRENCY_LEVEL);
     this.memberToGCVersion =
         new ConcurrentHashMap<T, Long>(INITIAL_CAPACITY, LOAD_FACTOR, CONCURRENCY_LEVEL);
+  }
+
+  /**
+   * create a live version vector for a region
+   */
+  public RegionVersionVector(T ownerId) {
+    this(ownerId, null);
+  }
+
+  /**
+   * create a live version vector for a region
+   */
+  public RegionVersionVector(T ownerId, LocalRegion owner) {
+    this(ownerId, owner, 0);
+  }
+
+  @TestingOnly
+  RegionVersionVector(T ownerId, LocalRegion owner, long version) {
+    this.myId = ownerId;
+    this.isLiveVector = true;
+    this.region = owner;
+    this.localExceptions = new RegionVersionHolder<T>(0);
+    this.memberToVersion =
+        new ConcurrentHashMap<>(INITIAL_CAPACITY, LOAD_FACTOR, CONCURRENCY_LEVEL);
+    this.memberToGCVersion =
+        new ConcurrentHashMap<>(INITIAL_CAPACITY, LOAD_FACTOR, CONCURRENCY_LEVEL);
+    this.localVersion.set(version);
   }
 
   /**
@@ -249,7 +292,7 @@ public abstract class RegionVersionVector<T extends VersionSource<?>>
 
   /**
    * locks against new version generation and returns the current region version number
-   * 
+   *
    * @param regionPath
    */
   public long lockForClear(String regionPath, DM dm, InternalDistributedMember locker) {
@@ -279,7 +322,7 @@ public abstract class RegionVersionVector<T extends VersionSource<?>>
   /**
    * This schedules a thread that owns the version-generation write-lock for this vector. The method
    * unlockVersionGeneration notifies the thread to release the lock and terminate its run.
-   * 
+   *
    * @param regionPath
    * @param dm the distribution manager - used to obtain an executor to hold the thread
    * @param locker the member requesting the lock (currently not used)
@@ -573,22 +616,25 @@ public abstract class RegionVersionVector<T extends VersionSource<?>>
     }
   }
 
-  private void updateLocalVersion(long version) {
-    boolean repeat = false;
+  void updateLocalVersion(long newVersion) {
+    boolean needToTrySetAgain;
     do {
-      long myVersion = this.localVersion.get();
-      if (myVersion < version) {
-        repeat = !this.localVersion.compareAndSet(myVersion, version);
+      needToTrySetAgain = false;
+      long currentVersion = this.localVersion.get();
+      if (currentVersion < newVersion) {
+        needToTrySetAgain = !compareAndSetVersion(currentVersion, newVersion);
       }
-    } while (repeat);
+    } while (needToTrySetAgain);
   }
 
-
+  boolean compareAndSetVersion(long currentVersion, long newVersion) {
+    return this.localVersion.compareAndSet(currentVersion, newVersion);
+  }
 
   /**
    * Records a received region-version. These are transmitted in VersionTags in messages between
    * peers and from servers to clients.
-   * 
+   *
    * @param tag the version information
    */
   public void recordVersion(T mbr, VersionTag<T> tag) {
@@ -622,9 +668,9 @@ public abstract class RegionVersionVector<T extends VersionSource<?>>
    * peers and from servers to clients. In general you should use recordVersion(mbr, versionTag) so
    * that the tag is marked as having been recorded. This will keep
    * DistributedCacheOperation.basicProcess() from trying to record it again.
-   * 
+   *
    * This method is also called for versions which have been recovered from disk.
-   * 
+   *
    * @param member the peer that performed the operation
    * @param version the version of the peers region that reflects the operation
    */
@@ -678,7 +724,7 @@ public abstract class RegionVersionVector<T extends VersionSource<?>>
    * Records a version holder that we have recovered from disk. This version holder replaces the
    * current version holder if it dominates the version holder we already have. This method will
    * called once for each oplog we recover.
-   * 
+   *
    * @param latestOplog
    */
   @edu.umd.cs.findbugs.annotations.SuppressWarnings(
@@ -758,7 +804,7 @@ public abstract class RegionVersionVector<T extends VersionSource<?>>
 
   /**
    * Test to see if this vector has seen the given version.
-   * 
+   *
    * @return true if this vector has seen the given version
    */
   public boolean contains(T id, long version) {
@@ -785,7 +831,7 @@ public abstract class RegionVersionVector<T extends VersionSource<?>>
 
   /**
    * Removes departed members not in the given collection of IDs from the version vector
-   * 
+   *
    * @param idsToKeep collection of the kind of IDs appropriate for this vector
    */
   public void removeOldMembers(Set<VersionSource<T>> idsToKeep) {
@@ -824,7 +870,7 @@ public abstract class RegionVersionVector<T extends VersionSource<?>>
   /**
    * This marks the given entry as departed, making it eligible to be removed during an operation
    * like DistributedRegion.synchronizeWith()
-   * 
+   *
    * @param id
    */
   protected void markDepartedMember(T id) {
@@ -840,7 +886,7 @@ public abstract class RegionVersionVector<T extends VersionSource<?>>
    * check to see if tombstone removal in this RVV indicates that tombstones have been removed from
    * its Region that have not been removed from the argument's Region. If this is the case, then a
    * delta GII may leave entries in the other RVV's Region that should be deleted.
-   * 
+   *
    * @param other
    * @return true if there have been tombstone removals in this vector's Region that were not done
    *         in the argument's region
@@ -986,7 +1032,7 @@ public abstract class RegionVersionVector<T extends VersionSource<?>>
   /**
    * wait for this vector to dominate the given vector. This means that the receiver has seen all
    * version changes that the given vector has seen.
-   * 
+   *
    * @param otherVector the vector, usually from another member, that we want to dominate
    * @param region the region owning this vector
    * @return true if dominance was achieved
@@ -1042,7 +1088,7 @@ public abstract class RegionVersionVector<T extends VersionSource<?>>
   /**
    * Remove any exceptions for the given member that are older than the given version. This is used
    * after a synchronization operation to get rid of unneeded history.
-   * 
+   *
    * @param mbr
    * @param version
    */
@@ -1092,35 +1138,9 @@ public abstract class RegionVersionVector<T extends VersionSource<?>>
   }
 
   /**
-   * constructor used to create a cloned vector
-   * 
-   * @param localExceptions
-   */
-  protected RegionVersionVector(T ownerId, ConcurrentHashMap<T, RegionVersionHolder<T>> vector,
-      long version, ConcurrentHashMap<T, Long> gcVersions, long gcVersion, boolean singleMember,
-      RegionVersionHolder<T> localExceptions) {
-    this.myId = ownerId;
-    this.memberToVersion = vector;
-    this.memberToGCVersion = gcVersions;
-    this.localGCVersion.set(gcVersion);
-    this.localVersion.set(version);
-    this.singleMember = singleMember;
-    this.localExceptions = localExceptions;
-  }
-
-
-  /** deserialize a cloned vector */
-  public RegionVersionVector() {
-    this.memberToVersion = new ConcurrentHashMap<T, RegionVersionHolder<T>>(INITIAL_CAPACITY,
-        LOAD_FACTOR, CONCURRENCY_LEVEL);
-    this.memberToGCVersion =
-        new ConcurrentHashMap<T, Long>(INITIAL_CAPACITY, LOAD_FACTOR, CONCURRENCY_LEVEL);
-  }
-
-  /**
    * after deserializing a version tag or RVV the IDs in it should be replaced with references to
    * IDs returned by this method. This vastly reduces the memory footprint of tags/stamps/rvvs
-   * 
+   *
    * @param id
    * @return the canonical reference
    */
@@ -1152,7 +1172,7 @@ public abstract class RegionVersionVector<T extends VersionSource<?>>
 
   /*
    * (non-Javadoc)
-   * 
+   *
    * @see org.apache.geode.internal.DataSerializableFixedID#toData(java.io.DataOutput)
    */
   public void toData(DataOutput out) throws IOException {
@@ -1182,7 +1202,7 @@ public abstract class RegionVersionVector<T extends VersionSource<?>>
 
   /*
    * (non-Javadoc)
-   * 
+   *
    * @see org.apache.geode.internal.DataSerializableFixedID#fromData(java.io.DataInput)
    */
   public void fromData(DataInput in) throws IOException, ClassNotFoundException {
@@ -1219,7 +1239,7 @@ public abstract class RegionVersionVector<T extends VersionSource<?>>
    * When a tombstone is removed from the entry map this method must be called to record the max
    * region-version of any tombstone reaped. Any older versions are then immediately eligible for
    * reaping.
-   * 
+   *
    * @param mbr
    * @param regionVersion
    */
@@ -1254,7 +1274,7 @@ public abstract class RegionVersionVector<T extends VersionSource<?>>
 
   /**
    * record all of the GC versions in the given vector
-   * 
+   *
    * @param other
    */
   public void recordGCVersions(RegionVersionVector<T> other) {
@@ -1269,7 +1289,7 @@ public abstract class RegionVersionVector<T extends VersionSource<?>>
    * returns true if tombstones newer than the given version have already been reaped. This means
    * that a clear or GC has been received that should have wiped out the operation this version
    * stamp represents, but this operation had not yet been received
-   * 
+   *
    * @param mbr
    * @param gcVersion
    * @return true if the given version should be rejected
@@ -1406,7 +1426,7 @@ public abstract class RegionVersionVector<T extends VersionSource<?>>
 
   /*
    * (non-Javadoc) this ensures that the version generation lock is released
-   * 
+   *
    * @see org.apache.geode.distributed.internal.MembershipListener#memberDeparted(org.apache.geode.
    * distributed.internal.membership.InternalDistributedMember, boolean)
    */
@@ -1447,7 +1467,7 @@ public abstract class RegionVersionVector<T extends VersionSource<?>>
 
   /**
    * For test purposes, see if two RVVs have seen the same events and GC version vectors
-   * 
+   *
    * @return true if the RVVs are the same.
    */
   public boolean sameAs(RegionVersionVector<T> other) {
@@ -1479,7 +1499,7 @@ public abstract class RegionVersionVector<T extends VersionSource<?>>
    * Note: test only. If put in production will cause ConcurrentModificationException see if two
    * RVVs have seen the same events and GC version vectors This will treat member with null version
    * the same as member with version=0
-   * 
+   *
    * @return true if the RVVs are the same logically.
    */
   public boolean logicallySameAs(RegionVersionVector<T> other) {

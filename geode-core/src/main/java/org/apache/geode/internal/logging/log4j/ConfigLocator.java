@@ -22,7 +22,7 @@ import org.apache.logging.log4j.util.LoaderUtil;
 
 /**
  * Utility methods for finding the Log4J 2 configuration file.
- * 
+ *
  */
 public class ConfigLocator {
 
@@ -47,7 +47,7 @@ public class ConfigLocator {
   /**
    * Finds a Log4j configuration file in the current working directory. The names of the files to
    * look for are the same as those that Log4j would look for on the classpath.
-   * 
+   *
    * @return configuration file or null if not found.
    */
   public static File findConfigInWorkingDirectory() {

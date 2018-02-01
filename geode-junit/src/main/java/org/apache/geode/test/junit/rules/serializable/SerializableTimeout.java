@@ -17,12 +17,12 @@ package org.apache.geode.test.junit.rules.serializable;
 import static org.apache.geode.test.junit.rules.serializable.FieldSerializationUtils.*;
 import static org.apache.geode.test.junit.rules.serializable.FieldsOfTimeout.*;
 
-import org.junit.rules.Timeout;
-
 import java.io.InvalidObjectException;
 import java.io.ObjectInputStream;
 import java.io.Serializable;
 import java.util.concurrent.TimeUnit;
+
+import org.junit.rules.Timeout;
 
 /**
  * Serializable subclass of {@link org.junit.rules.Timeout Timeout}. All instance variables of

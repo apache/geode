@@ -32,8 +32,8 @@ import org.apache.geode.internal.logging.InternalLogWriter;
  * <p>
  *
  * Note that it is imperative to send a new manager a postConnect message after instantiation.
- * 
- * 
+ *
+ *
  */
 public interface MembershipManager {
 
@@ -45,7 +45,7 @@ public interface MembershipManager {
 
   /**
    * Fetch the current view of memberships in th distributed system, as an ordered list.
-   * 
+   *
    * @return list of members
    */
   public NetView getView();
@@ -53,21 +53,21 @@ public interface MembershipManager {
   /**
    * Returns an object that is used to sync access to the view. While this lock is held the view
    * can't change.
-   * 
+   *
    * @since GemFire 5.7
    */
   public ReadWriteLock getViewLock();
 
   /**
    * Return a {@link InternalDistributedMember} representing the current system
-   * 
+   *
    * @return an address corresponding to the current system
    */
   public InternalDistributedMember getLocalMember();
 
   /**
    * Sanity checking, esp. for elder processing. Does the existing member (still) exist in our view?
-   * 
+   *
    * @param m the member
    * @return true if it still exists
    */
@@ -76,7 +76,7 @@ public interface MembershipManager {
   /**
    * Is this manager still connected? If it has not been initialized, this method will return true;
    * otherwise it indicates whether the connection is stil valid
-   * 
+   *
    * @return true if the manager is still connected.
    */
   public boolean isConnected();
@@ -86,6 +86,13 @@ public interface MembershipManager {
    * A test hook for healthiness tests
    */
   public boolean isBeingSick();
+
+  /**
+   * Instructs this manager to shut down
+   *
+   * @param beforeJoined whether we've joined the cluster or not
+   */
+  public void disconnect(boolean beforeJoined);
 
   /**
    * Instruct this manager to release resources
@@ -104,7 +111,7 @@ public interface MembershipManager {
 
   /**
    * Stall the current thread until we are ready to accept view events
-   * 
+   *
    * @throws InterruptedException if the thread is interrupted while waiting
    * @see #startEventProcessing()
    */
@@ -112,7 +119,7 @@ public interface MembershipManager {
 
   /**
    * Commence delivering events to my listener.
-   * 
+   *
    * @see #waitForEventProcessing()
    */
   public void startEventProcessing();
@@ -143,14 +150,14 @@ public interface MembershipManager {
 
   /**
    * Determine whether GCS shutdown has commenced
-   * 
+   *
    * @return true if it is shutting down
    */
   public boolean shutdownInProgress();
 
   /**
    * Returns a serializable map of communications state for use in state stabilization.
-   * 
+   *
    * @param member the member whose message state is to be captured
    * @param includeMulticast whether the state of the mcast messaging should be included
    * @return the current state of the communication channels between this process and the given
@@ -161,7 +168,7 @@ public interface MembershipManager {
 
   /**
    * Waits for the given communications to reach the associated state
-   * 
+   *
    * @param member The member whose messaging state we're waiting for
    * @param state The message states to wait for. This should come from getMessageStates
    * @throws InterruptedException Thrown if the thread is interrupted
@@ -172,7 +179,7 @@ public interface MembershipManager {
   /**
    * Wait for the given member to not be in the membership view and for all direct-channel receivers
    * for this member to be closed.
-   * 
+   *
    * @param mbr the member
    * @return for testing purposes this returns true if the serial queue for the member was flushed
    * @throws InterruptedException if interrupted by another thread
@@ -184,7 +191,7 @@ public interface MembershipManager {
   /**
    * Returns true if remoteId is an existing member, otherwise waits till timeout. Returns false if
    * remoteId is not confirmed to be a member.
-   * 
+   *
    * @param remoteId
    * @return true if membership is confirmed, else timeout and false
    */
@@ -192,7 +199,7 @@ public interface MembershipManager {
 
   /**
    * Release critical resources, avoiding any possibility of deadlock
-   * 
+   *
    * @see SystemFailure#emergencyClose()
    */
   public void emergencyClose();
@@ -207,7 +214,7 @@ public interface MembershipManager {
    * is in the view though we try to connect to its failure-detection port to see if it's still
    * around. If we can't then suspect processing is initiated on the member with the given reason
    * string.
-   * 
+   *
    * @param mbr the member to verify
    * @param reason why the check is being done (must not be blank/null)
    * @return true if the member checks out
@@ -230,14 +237,14 @@ public interface MembershipManager {
   /**
    * if the manager initiated shutdown, this will return the cause of abnormal termination of
    * membership management in this member
-   * 
+   *
    * @return the exception causing shutdown
    */
   public Throwable getShutdownCause();
 
   /**
    * register a test hook for membership events
-   * 
+   *
    * @see MembershipTestHook
    */
   public void registerTestHook(MembershipTestHook mth);
@@ -249,7 +256,7 @@ public interface MembershipManager {
 
   /**
    * If this member is shunned, ensure that a warning is generated at least once.
-   * 
+   *
    * @param mbr the member that may be shunned
    */
   public void warnShun(DistributedMember mbr);
@@ -259,7 +266,7 @@ public interface MembershipManager {
   /**
    * if a StartupMessage is going to reject a new member, this should be used to make sure we don't
    * keep that member on as a "surprise member"
-   * 
+   *
    * @param mbr the failed member
    * @param failureMessage the reason for the failure (e.g., license limitation)
    */
@@ -300,7 +307,7 @@ public interface MembershipManager {
   /**
    * After a forced-disconnect this method should be used once before attempting to use
    * quorumCheckForAutoReconnect().
-   * 
+   *
    * @return the quorum checker to be used in reconnecting the system
    */
   public QuorumChecker getQuorumChecker();
@@ -309,9 +316,14 @@ public interface MembershipManager {
   /**
    * Frees resources used for quorum checks during auto-reconnect polling. Invoke this method when
    * you're all done using the quorum checker.
-   * 
+   *
    * @param checker the QuorumChecker instance
    */
   public void releaseQuorumChecker(QuorumChecker checker);
+
+  /**
+   * return the coordinator for the view.
+   */
+  public DistributedMember getCoordinator();
 
 }

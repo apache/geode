@@ -22,23 +22,8 @@ import static org.apache.geode.distributed.ConfigurationProperties.MCAST_PORT;
 import static org.apache.geode.internal.security.SecurableCommunicationChannel.CLUSTER;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.awaitility.Awaitility.await;
-
-import org.apache.commons.io.FileUtils;
-import org.apache.geode.distributed.internal.DistributionConfig;
-import org.apache.geode.distributed.internal.DistributionConfigImpl;
-import org.apache.geode.internal.security.SecurableCommunicationChannel;
-import org.apache.geode.test.junit.categories.IntegrationTest;
-import org.apache.geode.test.junit.categories.MembershipTest;
-import org.awaitility.Awaitility;
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.contrib.java.lang.system.RestoreSystemProperties;
-import org.junit.experimental.categories.Category;
-import org.junit.rules.ErrorCollector;
-import org.junit.rules.TemporaryFolder;
-import org.junit.rules.TestName;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotEquals;
 
 import java.io.File;
 import java.io.IOException;
@@ -55,12 +40,32 @@ import java.util.concurrent.Semaphore;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicReference;
 
+import javax.net.ssl.SSLContext;
+
+import org.apache.commons.io.FileUtils;
+import org.awaitility.Awaitility;
+import org.junit.After;
+import org.junit.Before;
+import org.junit.Rule;
+import org.junit.Test;
+import org.junit.contrib.java.lang.system.RestoreSystemProperties;
+import org.junit.experimental.categories.Category;
+import org.junit.rules.ErrorCollector;
+import org.junit.rules.TemporaryFolder;
+import org.junit.rules.TestName;
+
+import org.apache.geode.distributed.internal.DistributionConfig;
+import org.apache.geode.distributed.internal.DistributionConfigImpl;
+import org.apache.geode.internal.security.SecurableCommunicationChannel;
+import org.apache.geode.test.junit.categories.IntegrationTest;
+import org.apache.geode.test.junit.categories.MembershipTest;
+
 /**
  * Integration tests for SocketCreatorFactory with SSL.
  * <p>
  * <p>
  * Renamed from {@code JSSESocketJUnitTest}.
- * 
+ *
  * @see ClientSocketFactoryIntegrationTest
  */
 @Category({IntegrationTest.class, MembershipTest.class})
@@ -124,6 +129,20 @@ public class SSLSocketIntegrationTest {
       this.serverThread.interrupt();
     }
     SocketCreatorFactory.close();
+  }
+
+  @Test
+  /**
+   * see GEODE-4087. Geode should not establish a default SSLContext, preventing apps from using
+   * different ssl settings via standard system properties. Since this test class sets these system
+   * properties to establish a default context we merely need to perform an equality check between
+   * the cluster's context and the default context and assert that they aren't the same.
+   */
+  public void ensureSocketCreatorDoesNotOverrideDefaultSSLContext() throws Exception {
+    SSLContext defaultContext = SSLContext.getDefault();
+    SSLContext clusterContext = SocketCreatorFactory
+        .getSocketCreatorForComponent(SecurableCommunicationChannel.CLUSTER).getSslContext();
+    assertNotEquals(clusterContext, defaultContext);
   }
 
   @Test

@@ -44,7 +44,7 @@ public class AvailablePortHelper {
 
   /**
    * Returns an array of unique randomly available tcp ports
-   * 
+   *
    * @param count number of desired ports
    * @param useMembershipPortRange whether to use the configured membership-port-range
    * @return the ports
@@ -207,4 +207,3 @@ public class AvailablePortHelper {
   }
 
 }
-

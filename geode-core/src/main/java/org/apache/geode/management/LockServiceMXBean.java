@@ -27,7 +27,7 @@ import org.apache.geode.security.ResourcePermission.Resource;
  * may be 0 or more instances of this MBean available.
  *
  * @since GemFire 7.0
- * 
+ *
  */
 @ResourceOperation(resource = Resource.CLUSTER, operation = Operation.READ)
 public interface LockServiceMXBean {
@@ -61,7 +61,7 @@ public interface LockServiceMXBean {
 
   /**
    * Returns whether this member is the granter.
-   * 
+   *
    * @return True if this member is the granter, false otherwise.
    */
   boolean isLockGrantor();

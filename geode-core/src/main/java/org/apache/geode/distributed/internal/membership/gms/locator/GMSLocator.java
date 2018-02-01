@@ -14,6 +14,8 @@
  */
 package org.apache.geode.distributed.internal.membership.gms.locator;
 
+import static org.apache.geode.internal.i18n.LocalizedStrings.LOCATOR_UNABLE_TO_RECOVER_VIEW;
+
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
@@ -32,21 +34,20 @@ import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
-import org.apache.geode.InternalGemFireException;
-
-import org.apache.geode.distributed.internal.ClusterConfigurationService;
-import org.apache.geode.distributed.internal.DistributionManager;
 import org.apache.logging.log4j.Logger;
 
 import org.apache.geode.DataSerializer;
+import org.apache.geode.InternalGemFireException;
 import org.apache.geode.cache.GemFireCache;
 import org.apache.geode.distributed.DistributedSystem;
+import org.apache.geode.distributed.internal.ClusterConfigurationService;
+import org.apache.geode.distributed.internal.DistributionManager;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.distributed.internal.LocatorStats;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
+import org.apache.geode.distributed.internal.membership.InternalDistributedMember.InternalDistributedMemberWrapper;
 import org.apache.geode.distributed.internal.membership.MembershipManager;
 import org.apache.geode.distributed.internal.membership.NetView;
-import org.apache.geode.distributed.internal.membership.InternalDistributedMember.InternalDistributedMemberWrapper;
 import org.apache.geode.distributed.internal.membership.gms.GMSUtil;
 import org.apache.geode.distributed.internal.membership.gms.NetLocator;
 import org.apache.geode.distributed.internal.membership.gms.Services;
@@ -58,8 +59,6 @@ import org.apache.geode.distributed.internal.tcpserver.TcpServer;
 import org.apache.geode.internal.Version;
 import org.apache.geode.internal.VersionedObjectInput;
 import org.apache.geode.internal.logging.LogService;
-
-import static org.apache.geode.internal.i18n.LocalizedStrings.LOCATOR_UNABLE_TO_RECOVER_VIEW;
 
 public class GMSLocator implements Locator, NetLocator {
 
@@ -92,16 +91,14 @@ public class GMSLocator implements Locator, NetLocator {
 
   /**
    * @param bindAddress network address that TcpServer will bind to
-   * @param stateFile the file to persist state to/recover from
    * @param locatorString location of other locators (bootstrapping, failover)
    * @param usePreferredCoordinators true if the membership coordinator should be a Locator
    * @param networkPartitionDetectionEnabled true if network partition detection is enabled
    * @param stats the locator statistics object
    * @param securityUDPDHAlgo DF algorithm
    */
-  public GMSLocator(InetAddress bindAddress, File stateFile, String locatorString,
-      boolean usePreferredCoordinators, boolean networkPartitionDetectionEnabled,
-      LocatorStats stats, String securityUDPDHAlgo) {
+  public GMSLocator(InetAddress bindAddress, String locatorString, boolean usePreferredCoordinators,
+      boolean networkPartitionDetectionEnabled, LocatorStats stats, String securityUDPDHAlgo) {
     this.usePreferredCoordinators = usePreferredCoordinators;
     this.networkPartitionDetectionEnabled = networkPartitionDetectionEnabled;
     this.securityUDPDHAlgo = securityUDPDHAlgo;
@@ -111,7 +108,6 @@ public class GMSLocator implements Locator, NetLocator {
     } else {
       this.locators = GMSUtil.parseLocators(locatorString, bindAddress);
     }
-    this.viewFile = stateFile;
     this.stats = stats;
   }
 
@@ -138,8 +134,18 @@ public class GMSLocator implements Locator, NetLocator {
     return false;
   }
 
+  /**
+   * Test hook - set the persistent view file
+   */
+  public void setViewFile(File file) {
+    this.viewFile = file;
+  }
+
   @Override
   public void init(TcpServer server) throws InternalGemFireException {
+    if (this.viewFile == null) {
+      this.viewFile = new File("locator" + server.getPort() + "view.dat");
+    }
     logger.info(
         "GemFire peer location service starting.  Other locators: {}  Locators preferred as coordinators: {}  Network partition detection enabled: {}  View persistence file: {}",
         locatorString, usePreferredCoordinators, networkPartitionDetectionEnabled, viewFile);

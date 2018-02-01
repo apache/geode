@@ -14,12 +14,6 @@
  */
 package org.apache.geode.cache.client.internal;
 
-import org.apache.geode.cache.client.internal.PoolImpl.PoolTask;
-import org.apache.geode.distributed.internal.DistributionConfig;
-import org.apache.geode.distributed.internal.ServerLocation;
-import org.apache.geode.internal.logging.LogService;
-import org.apache.logging.log4j.Logger;
-
 import java.util.*;
 import java.util.concurrent.CopyOnWriteArraySet;
 import java.util.concurrent.RejectedExecutionException;
@@ -27,17 +21,24 @@ import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 
+import org.apache.logging.log4j.Logger;
+
+import org.apache.geode.cache.client.internal.PoolImpl.PoolTask;
+import org.apache.geode.distributed.internal.DistributionConfig;
+import org.apache.geode.distributed.internal.ServerLocation;
+import org.apache.geode.internal.logging.LogService;
+
 /**
  * This class is designed to prevent the client from spinning and reconnected to the same failed
  * server over and over. We've removed the old dead server monitor code because the locator is
  * supposed to keep track of what servers are alive or dead. However, there is still the possibility
  * that the locator may tell us a server is alive but we are unable to reach it.
- * 
+ *
  * This class keeps track of the number of consecutive failures that happen to on each server. If
  * the number of failures exceeds the limit, the server is added to a blacklist for a certain period
  * of time. After the time is expired, the server comes off the blacklist, but the next failure will
  * put the server back on the list for a longer period of time.
- * 
+ *
  *
  */
 public class ServerBlackList {

@@ -17,20 +17,20 @@
 
 package org.apache.geode.tools.pulse.internal.data;
 
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
-import org.springframework.security.core.Authentication;
-import org.springframework.security.core.context.SecurityContextHolder;
-
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Locale;
 import java.util.Map;
 import java.util.ResourceBundle;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
+
 /**
  * A Singleton instance of the memory cache for clusters.
- * 
+ *
  * @since GemFire version 7.0.Beta 2012-09-23
  */
 public class Repository {
@@ -136,6 +136,16 @@ public class Repository {
     }
   }
 
+  public void logoutUser(String username) {
+    Cluster data = clusterMap.remove(username);
+    if (data != null) {
+      try {
+        data.getJMXConnector().close();
+      } catch (Exception e) {
+        // We're logging out so this can be ignored
+      }
+    }
+  }
 
   // This method is used to remove all cluster threads
   public void removeAllClusters() {

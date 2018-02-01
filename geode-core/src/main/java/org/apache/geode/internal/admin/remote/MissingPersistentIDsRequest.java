@@ -30,7 +30,6 @@ import org.apache.geode.distributed.internal.DM;
 import org.apache.geode.distributed.internal.DistributionManager;
 import org.apache.geode.distributed.internal.DistributionMessage;
 import org.apache.geode.distributed.internal.ReplyException;
-import org.apache.geode.internal.cache.GemFireCacheImpl;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.cache.persistence.PersistentMemberID;
 import org.apache.geode.internal.cache.persistence.PersistentMemberManager;
@@ -78,7 +77,7 @@ public class MissingPersistentIDsRequest extends CliLegacyMessage {
   }
 
   @Override
-  protected AdminResponse createResponse(DistributionManager dm) {
+  protected AdminResponse createResponse(DM dm) {
     Set<PersistentID> missingIds = new HashSet<>();
     Set<PersistentID> localPatterns = new HashSet<>();
     InternalCache cache = dm.getCache();
@@ -124,12 +123,12 @@ public class MissingPersistentIDsRequest extends CliLegacyMessage {
     }
 
     @Override
-    protected void process(DistributionMessage msg, boolean warn) {
-      if (msg instanceof MissingPersistentIDsResponse) {
-        this.missing.addAll(((MissingPersistentIDsResponse) msg).getMissingIds());
-        this.existing.addAll(((MissingPersistentIDsResponse) msg).getLocalIds());
+    protected void process(DistributionMessage message, boolean warn) {
+      if (message instanceof MissingPersistentIDsResponse) {
+        this.missing.addAll(((MissingPersistentIDsResponse) message).getMissingIds());
+        this.existing.addAll(((MissingPersistentIDsResponse) message).getLocalIds());
       }
-      super.process(msg, warn);
+      super.process(message, warn);
     }
   }
 }

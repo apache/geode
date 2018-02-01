@@ -14,13 +14,14 @@
  */
 package org.apache.geode.internal.statistics;
 
-// import org.apache.geode.distributed.DistributedSystem;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 import java.util.function.DoubleSupplier;
 import java.util.function.IntSupplier;
 import java.util.function.LongSupplier;
+
+import org.apache.logging.log4j.Logger;
 
 import org.apache.geode.StatisticDescriptor;
 import org.apache.geode.Statistics;
@@ -29,8 +30,6 @@ import org.apache.geode.internal.concurrent.Atomics;
 import org.apache.geode.internal.i18n.LocalizedStrings;
 import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.internal.util.concurrent.CopyOnWriteHashMap;
-
-import org.apache.logging.log4j.Logger;
 
 // @todo darrel Add statistics instances to archive when they are created.
 /**
@@ -403,7 +402,7 @@ public abstract class StatisticsImpl implements Statistics {
   /**
    * For internal use only. Tells the implementation to prepare the data in this instance for
    * sampling.
-   * 
+   *
    * @since GemFire 5.1
    */
   public void prepareForSample() {
@@ -413,7 +412,7 @@ public abstract class StatisticsImpl implements Statistics {
   /**
    * Invoke sample suppliers to retrieve the current value for the suppler controlled sets and
    * update the stats to reflect the supplied values.
-   * 
+   *
    * @return the number of callback errors that occurred while sampling stats
    */
   public int invokeSuppliers() {

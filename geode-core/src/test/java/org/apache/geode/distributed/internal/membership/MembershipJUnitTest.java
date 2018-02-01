@@ -29,6 +29,14 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import java.io.File;
+import java.net.InetAddress;
+import java.util.List;
+import java.util.Properties;
+
+import org.junit.Test;
+import org.junit.experimental.categories.Category;
+
 import org.apache.geode.GemFireConfigException;
 import org.apache.geode.distributed.ConfigurationProperties;
 import org.apache.geode.distributed.Locator;
@@ -58,13 +66,6 @@ import org.apache.geode.internal.admin.remote.RemoteTransportConfig;
 import org.apache.geode.internal.net.SocketCreator;
 import org.apache.geode.internal.security.SecurityServiceFactory;
 import org.apache.geode.test.junit.categories.IntegrationTest;
-import org.junit.Test;
-import org.junit.experimental.categories.Category;
-
-import java.io.File;
-import java.net.InetAddress;
-import java.util.List;
-import java.util.Properties;
 
 @Category({IntegrationTest.class, MembershipJUnitTest.class})
 public class MembershipJUnitTest {
@@ -125,7 +126,7 @@ public class MembershipJUnitTest {
 
       // this locator will hook itself up with the first MembershipManager
       // to be created
-      l = InternalLocator.startLocator(port, new File(""), null, null, null, localHost, false,
+      l = InternalLocator.startLocator(port, new File(""), null, null, localHost, false,
           new Properties(), null);
 
       // create configuration objects
@@ -221,7 +222,7 @@ public class MembershipJUnitTest {
       // let the managers idle for a while and get used to each other
       // Thread.sleep(4000l);
 
-      m2.shutdown();
+      m2.disconnect(false);
       assertTrue(!m2.isConnected());
 
       assertTrue(m1.getView().size() == 1);
@@ -266,8 +267,7 @@ public class MembershipJUnitTest {
       p.setProperty(ConfigurationProperties.SECURITY_UDP_DHALGO, "AES:128");
       // this locator will hook itself up with the first MembershipManager
       // to be created
-      l = InternalLocator.startLocator(port, new File(""), null, null, null, localHost, false, p,
-          null);
+      l = InternalLocator.startLocator(port, new File(""), null, null, localHost, false, p, null);
 
       // create configuration objects
       Properties nonDefault = new Properties();
@@ -356,7 +356,7 @@ public class MembershipJUnitTest {
       // let the managers idle for a while and get used to each other
       Thread.sleep(4000l);
 
-      m2.shutdown();
+      m2.disconnect(false);
       assertTrue(!m2.isConnected());
 
       assertTrue(m1.getView().size() == 1);
@@ -364,10 +364,10 @@ public class MembershipJUnitTest {
     } finally {
 
       if (m2 != null) {
-        m2.shutdown();
+        m2.disconnect(false);
       }
       if (m1 != null) {
-        m1.shutdown();
+        m1.disconnect(false);
       }
       if (l != null) {
         l.stop();

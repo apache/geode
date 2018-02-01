@@ -25,7 +25,7 @@ public class LocalLogWriter extends PureLogWriter {
   // Constructors
   /**
    * Creates a writer that logs to <code>System.out</code>.
-   * 
+   *
    * @param level only messages greater than or equal to this value will be logged.
    * @throws IllegalArgumentException if level is not in legal range
    */
@@ -35,7 +35,7 @@ public class LocalLogWriter extends PureLogWriter {
 
   /**
    * Creates a writer that logs to <code>logWriter</code>.
-   * 
+   *
    * @param level only messages greater than or equal to this value will be logged.
    * @param logWriter is the stream that message will be printed to.
    * @throws IllegalArgumentException if level is not in legal range
@@ -59,7 +59,7 @@ public class LocalLogWriter extends PureLogWriter {
 
   /**
    * Creates a writer that logs to <code>logWriter</code>.
-   * 
+   *
    * @param level only messages greater than or equal to this value will be logged.
    * @param logWriter is the stream that message will be printed to.
    * @throws IllegalArgumentException if level is not in legal range

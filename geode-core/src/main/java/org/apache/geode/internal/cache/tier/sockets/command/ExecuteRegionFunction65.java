@@ -53,7 +53,7 @@ import org.apache.geode.internal.security.SecurityService;
  */
 public class ExecuteRegionFunction65 extends BaseCommand {
 
-  private final static ExecuteRegionFunction65 singleton = new ExecuteRegionFunction65();
+  private static final ExecuteRegionFunction65 singleton = new ExecuteRegionFunction65();
 
   public static Command getCommand() {
     return singleton;
@@ -394,4 +394,3 @@ public class ExecuteRegionFunction65 extends BaseCommand {
     }
   }
 }
-

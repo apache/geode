@@ -25,6 +25,7 @@ import org.awaitility.Awaitility;
 
 import org.apache.geode.distributed.internal.DistributionConfig;
 import org.apache.geode.distributed.internal.InternalLocator;
+import org.apache.geode.internal.cache.InternalCache;
 
 /**
  * This is a rule to start up a locator in your current VM. It's useful for your Integration Tests.
@@ -45,7 +46,6 @@ import org.apache.geode.distributed.internal.InternalLocator;
  * use {@code LocatorServerStartupRule}.
  */
 public class LocatorStarterRule extends MemberStarterRule<LocatorStarterRule> implements Locator {
-
   private transient InternalLocator locator;
 
   @Override
@@ -83,11 +83,15 @@ public class LocatorStarterRule extends MemberStarterRule<LocatorStarterRule> im
     DistributionConfig config = locator.getConfig();
     jmxPort = config.getJmxManagerPort();
     httpPort = config.getHttpServicePort();
-    locator.resetInternalLocatorFileNamesWithCorrectPortNumber(memberPort);
 
     if (config.getEnableClusterConfiguration()) {
       Awaitility.await().atMost(65, TimeUnit.SECONDS)
           .until(() -> assertTrue(locator.isSharedConfigurationRunning()));
     }
+  }
+
+  @Override
+  public InternalCache getCache() {
+    return locator.getCache();
   }
 }

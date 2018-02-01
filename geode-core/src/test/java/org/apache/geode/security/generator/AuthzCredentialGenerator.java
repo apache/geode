@@ -34,7 +34,7 @@ import org.apache.geode.security.templates.XmlAuthorization;
  * Encapsulates obtaining authorized and unauthorized credentials for a given operation in a region.
  * Implementations will be for different kinds of authorization scheme and authentication scheme
  * combos.
- * 
+ *
  * @since GemFire 5.5
  */
 public abstract class AuthzCredentialGenerator {
@@ -56,9 +56,9 @@ public abstract class AuthzCredentialGenerator {
    * A factory method to create a new instance of an {@link AuthzCredentialGenerator} for the given
    * {@link ClassCode}. Caller is supposed to invoke {@link AuthzCredentialGenerator#init}
    * immediately after obtaining the instance.
-   * 
+   *
    * @param classCode the {@code ClassCode} of the {@code AuthzCredentialGenerator} implementation
-   * 
+   *
    * @return an instance of {@code AuthzCredentialGenerator} for the given class code
    */
   public static AuthzCredentialGenerator create(final ClassCode classCode) {
@@ -74,10 +74,10 @@ public abstract class AuthzCredentialGenerator {
 
   /**
    * Initialize the authorized credential generator.
-   * 
+   *
    * @param generator an instance of {@link CredentialGenerator} of the credential implementation
    *        for which to obtain authorized/unauthorized credentials.
-   * 
+   *
    * @return false when the given {@link CredentialGenerator} is incompatible with this
    *         authorization module.
    */
@@ -92,7 +92,7 @@ public abstract class AuthzCredentialGenerator {
   }
 
   /**
-   * 
+   *
    * @return A set of extra properties that should be added to Gemfire system properties when not
    *         null.
    */
@@ -122,7 +122,7 @@ public abstract class AuthzCredentialGenerator {
 
   /**
    * The {@link ClassCode} of the particular implementation.
-   * 
+   *
    * @return the {@code ClassCode}
    */
   public abstract ClassCode classCode();
@@ -130,7 +130,7 @@ public abstract class AuthzCredentialGenerator {
   /**
    * The name of the {@link AccessControl} factory function that should be used as the authorization
    * module on the server side.
-   * 
+   *
    * @return name of the {@code AccessControl} factory function
    */
   public abstract String getAuthorizationCallback();
@@ -138,13 +138,13 @@ public abstract class AuthzCredentialGenerator {
   /**
    * Get a set of credentials generated using the given index allowed to perform the given
    * {@link OperationCode}s for the given regions.
-   * 
+   *
    * @param opCodes the list of {@link OperationCode}s of the operations requiring authorization;
    *        should not be null
    * @param regionNames list of the region names requiring authorization; a value of null indicates
    *        all regions
    * @param index used to generate multiple such credentials by passing different values for this
-   * 
+   *
    * @return the set of credentials authorized to perform the given operation in the given regions
    */
   public Properties getAllowedCredentials(final OperationCode[] opCodes, final String[] regionNames,
@@ -169,13 +169,13 @@ public abstract class AuthzCredentialGenerator {
    * Get a set of credentials generated using the given index not allowed to perform the given
    * {@link OperationCode}s for the given regions. The credentials are required to be valid for
    * authentication.
-   * 
+   *
    * @param opCodes the {@link OperationCode}s of the operations requiring authorization failure;
    *        should not be null
    * @param regionNames list of the region names requiring authorization failure; a value of null
    *        indicates all regions
    * @param index used to generate multiple such credentials by passing different values for this
-   * 
+   *
    * @return the set of credentials that are not authorized to perform the given operation in the
    *         given region
    */
@@ -209,16 +209,16 @@ public abstract class AuthzCredentialGenerator {
    * principals for values of {@code index} from 0 through (n-1) where {@code n} is the value
    * returned by this method. It is recommended that the principals so returned be unique for
    * efficiency.
-   * 
+   *
    * This will be used by {@link #getAllowedCredentials} to step through different principals and
    * obtain a set of valid credentials.
-   * 
+   *
    * Required to be implemented by concrete classes that implement this abstract class.
-   * 
+   *
    * @param opCodes the {@link OperationCode}s of the operations requiring authorization
    * @param regionNames list of the region names requiring authorization; a value of null indicates
    *        all regions
-   * 
+   *
    * @return the number of principals allowed to perform the given operation in the given region
    */
   protected abstract int getNumPrincipalTries(final OperationCode[] opCodes,
@@ -227,14 +227,14 @@ public abstract class AuthzCredentialGenerator {
   /**
    * Get a {@link Principal} generated using the given index allowed to perform the given
    * {@link OperationCode}s for the given region.
-   * 
+   *
    * Required to be implemented by concrete classes that implement this abstract class.
-   * 
+   *
    * @param opCodes the {@link OperationCode}s of the operations requiring authorization
    * @param regionNames list of the region names requiring authorization; a value of null indicates
    *        all regions
    * @param index used to generate multiple such principals by passing different values for this
-   * 
+   *
    * @return the {@link Principal} authorized to perform the given operation in the given region
    */
   protected abstract Principal getAllowedPrincipal(final OperationCode[] opCodes,
@@ -243,14 +243,14 @@ public abstract class AuthzCredentialGenerator {
   /**
    * Get a {@link Principal} generated using the given index not allowed to perform the given
    * {@link OperationCode}s for the given region.
-   * 
+   *
    * Required to be implemented by concrete classes that implement this abstract class.
-   * 
+   *
    * @param opCodes the {@link OperationCode}s of the operations requiring authorization failure
    * @param regionNames list of the region names requiring authorization failure; a value of null
    *        indicates all regions
    * @param index used to generate multiple such principals by passing different values for this
-   * 
+   *
    * @return a {@link Principal} not authorized to perform the given operation in the given region
    */
   protected abstract Principal getDisallowedPrincipal(final OperationCode[] opCodes,

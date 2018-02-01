@@ -15,21 +15,21 @@
 
 package org.apache.geode.internal.cache;
 
+import java.io.IOException;
+
 import org.apache.geode.DataSerializer;
 import org.apache.geode.cache.util.ObjectSizer;
 import org.apache.geode.distributed.internal.DistributionConfig;
 import org.apache.geode.internal.DSCODE;
 import org.apache.geode.internal.HeapDataOutputStream;
 import org.apache.geode.internal.NullDataOutputStream;
-import org.apache.geode.internal.cache.lru.Sizeable;
 import org.apache.geode.internal.i18n.LocalizedStrings;
+import org.apache.geode.internal.size.Sizeable;
 import org.apache.geode.pdx.PdxInstance;
-
-import java.io.IOException;
 
 /**
  * Produces instances that implement CachedDeserializable.
- * 
+ *
  * @since GemFire 5.0.2
  *
  */
@@ -258,7 +258,7 @@ public class CachedDeserializableFactory {
 
   /**
    * Return how much memory this object will consume if it is in serialized form
-   * 
+   *
    * @since GemFire 6.1.2.9
    */
   public static int calcSerializedMemSize(Object o) {

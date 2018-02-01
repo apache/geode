@@ -46,7 +46,7 @@ import org.apache.geode.internal.logging.log4j.LocalizedMessage;
  * and non-transactional resource connection. Implements ConnectionManager interface. QoS
  * (Transaction, Security etc is taken into account while allocating a connection). Security related
  * features are remaining.
- * 
+ *
  */
 public class FacetsJCAConnectionManagerImpl
     implements ConnectionManager, ConnectionEventListener, Synchronization {
@@ -70,7 +70,7 @@ public class FacetsJCAConnectionManagerImpl
 
   /*
    * Constructor.
-   * 
+   *
    */
   public FacetsJCAConnectionManagerImpl(ManagedConnectionFactory mcf,
       ConfiguredDataSourceProperties configs) {
@@ -89,9 +89,9 @@ public class FacetsJCAConnectionManagerImpl
   /*
    * allocates a ManagedConnection from the ConnectionPool or creates a new
    * ManagedConnection. @param javax.resource.spi.ManagedConnectionFactory
-   * 
+   *
    * @param javax.resource.spi.ConnectionRequestInfo
-   * 
+   *
    * @throws ResourceException
    */
   public Object allocateConnection(ManagedConnectionFactory mcf, ConnectionRequestInfo reqInfo)
@@ -156,7 +156,7 @@ public class FacetsJCAConnectionManagerImpl
 
   /**
    * CallBack for Connection Error.
-   * 
+   *
    * @param event ConnectionEvent
    */
   public void connectionErrorOccurred(ConnectionEvent event) {
@@ -192,7 +192,7 @@ public class FacetsJCAConnectionManagerImpl
 
   /**
    * Callback for Connection Closed.
-   * 
+   *
    * @param event ConnectionEvent Object.
    */
   public void connectionClosed(ConnectionEvent event) {
@@ -243,7 +243,7 @@ public class FacetsJCAConnectionManagerImpl
 
   /*
    * (non-Javadoc)
-   * 
+   *
    * @see javax.transaction.Synchronization#afterCompletion(int)
    */
   public void afterCompletion(int arg0) {
@@ -261,7 +261,7 @@ public class FacetsJCAConnectionManagerImpl
 
   /*
    * (non-Javadoc)
-   * 
+   *
    * @see javax.transaction.Synchronization#beforeCompletion()
    */
   public void beforeCompletion() {

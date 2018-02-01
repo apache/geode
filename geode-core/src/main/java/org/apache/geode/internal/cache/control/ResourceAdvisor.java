@@ -47,7 +47,7 @@ import org.apache.geode.internal.logging.log4j.LocalizedMessage;
 /**
  * The advisor associated with a {@link ResourceManager}. Allows knowledge of remote
  * {@link ResourceManager} state and distribution of local {@link ResourceManager} state.
- * 
+ *
  * @since GemFire 6.0
  */
 public class ResourceAdvisor extends DistributionAdvisor {
@@ -71,7 +71,7 @@ public class ResourceAdvisor extends DistributionAdvisor {
 
     /**
      * Constructor used to send profiles to other members.
-     * 
+     *
      * @param recips Members to send the profile to.
      * @param profile Profile to send.
      */
@@ -169,7 +169,7 @@ public class ResourceAdvisor extends DistributionAdvisor {
 
     /**
      * Send profiles to the provided members
-     * 
+     *
      * @param irm The resource manager which is requesting distribution
      * @param recips The recipients of the message
      * @param profile Profile to send in this message
@@ -283,7 +283,7 @@ public class ResourceAdvisor extends DistributionAdvisor {
   /**
    * Profile which shares state with other ResourceManagers. The data available in this profile
    * should be enough to deliver a {@link MemoryEvent} for any of the CRITICAL {@link MemoryState}s
-   * 
+   *
    * @since GemFire 6.0
    */
   public static class ResourceManagerProfile extends Profile {
@@ -333,7 +333,7 @@ public class ResourceAdvisor extends DistributionAdvisor {
     /**
      * Used to process incoming Resource Manager profiles. A reply is expected to contain a profile
      * with state of the local Resource Manager.
-     * 
+     *
      * @since GemFire 6.0
      */
     @Override
@@ -424,7 +424,7 @@ public class ResourceAdvisor extends DistributionAdvisor {
    * Get set of members whose {@linkplain ResourceManager#setCriticalHeapPercentage(float) critical
    * heap threshold} has been met or exceeded. The set does not include the local VM. The mutability
    * of this set only effects the elements in the set, not the state of the members.
-   * 
+   *
    * @return a mutable set of members in the critical state otherwise {@link Collections#EMPTY_SET}
    */
   public Set<InternalDistributedMember> adviseCritialMembers() {

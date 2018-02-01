@@ -608,10 +608,10 @@ public abstract class RemoteGemFireVM implements GemFireVM {
   /**
    * Checks whether a durable-queue for a given client is present on the system member represented
    * by this RemoteGemFireVM
-   * 
+   *
    * @param durableClientId - the 'durable-client-id' for the client
    * @return - true if the member contains a durable-queue for the given client
-   * 
+   *
    * @since GemFire 5.6
    */
   public boolean hasDurableClient(String durableClientId) {
@@ -625,10 +625,10 @@ public abstract class RemoteGemFireVM implements GemFireVM {
   /**
    * Checks whether the system member represented by this RemoteGemFireVM is hosting a primary
    * durable-queue for the client
-   * 
+   *
    * @param durableClientId - the 'durable-client-id' for the client
    * @return - true if the member contains a primary durable-queue for the given client
-   * 
+   *
    * @since GemFire 5.6
    */
   public boolean isPrimaryForDurableClient(String durableClientId) {
@@ -845,7 +845,7 @@ public abstract class RemoteGemFireVM implements GemFireVM {
   /**
    * Encapsulates an update to several statistics
    */
-  static private class DispatchArgs {
+  private static class DispatchArgs {
     protected final long timestamp;
     protected final int[] listenerIds;
     protected final double[] values;
@@ -901,7 +901,7 @@ public abstract class RemoteGemFireVM implements GemFireVM {
    * This method should be used to set the Alerts Manager for the member agent. Stat Alerts
    * Aggregator would use this method to set stat Alerts Manager with the available alert
    * definitions and the refresh interval set for each member joining the distributed system.
-   * 
+   *
    * @param alertDefs Stat Alert Definitions to set for the Alerts Manager
    * @param refreshInterval refresh interval to be used by the Alerts Manager
    * @param setRemotely whether to be set on remote VM
@@ -917,7 +917,7 @@ public abstract class RemoteGemFireVM implements GemFireVM {
   /**
    * This method would be used to set refresh interval for the GemFireVM. This method would mostly
    * be called on each member after initial set up whenever the refresh interval is changed.
-   * 
+   *
    * @param refreshInterval refresh interval to set (in milliseconds)
    */
   public void setRefreshInterval(long refreshInterval) {
@@ -928,7 +928,7 @@ public abstract class RemoteGemFireVM implements GemFireVM {
    * This method would be used to set Sta Alert Definitions for the GemFireVM. This method would
    * mostly be called on each member after initial set up whenever one or more Stat Alert
    * Definitions get added/updated/removed.
-   * 
+   *
    * @param alertDefs an array of StaAlertDefinition objects
    * @param actionCode one of UpdateAlertDefinitionRequest.ADD_ALERT_DEFINITION,
    *        UpdateAlertDefinitionRequestUPDATE_ALERT_DEFINITION,

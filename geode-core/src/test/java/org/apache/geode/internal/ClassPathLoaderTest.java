@@ -19,28 +19,34 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import java.io.BufferedInputStream;
+import java.io.ByteArrayInputStream;
 import java.io.File;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URL;
 import java.util.Enumeration;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Vector;
 
 import org.apache.bcel.Constants;
 import org.apache.bcel.classfile.JavaClass;
 import org.apache.bcel.generic.ClassGen;
+import org.apache.commons.io.IOUtils;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.contrib.java.lang.system.RestoreSystemProperties;
 import org.junit.experimental.categories.Category;
+import org.junit.rules.TemporaryFolder;
 
 import org.apache.geode.test.compiler.ClassBuilder;
 import org.apache.geode.test.junit.categories.UnitTest;
 
 /**
  * Unit tests for {@link ClassPathLoader}.
- * 
+ *
  * @since GemFire 6.5.1.4
  */
 @Category(UnitTest.class)
@@ -50,6 +56,9 @@ public class ClassPathLoaderTest {
 
   @Rule
   public RestoreSystemProperties restoreSystemProperties = new RestoreSystemProperties();
+
+  @Rule
+  public TemporaryFolder tempFolder = new TemporaryFolder();
 
   @Before
   public void setUp() throws Exception {
@@ -68,17 +77,28 @@ public class ClassPathLoaderTest {
   }
 
   @Test
-  public void testZeroLengthFile() throws IOException, ClassNotFoundException {
+  public void testZeroLengthFile() throws IOException {
+    File zeroFile = tempFolder.newFile();
+    zeroFile.createNewFile();
+
+    Map<String, File> jarFiles = new HashMap<>();
+    jarFiles.put("JarDeployerDUnitZLF.jar", zeroFile);
+
     assertThatThrownBy(() -> {
-      ClassPathLoader.getLatest().getJarDeployer().deploy(new String[] {"JarDeployerDUnitZLF.jar"},
-          new byte[][] {new byte[0]});
+      ClassPathLoader.getLatest().getJarDeployer().deploy(jarFiles);
     }).isInstanceOf(IllegalArgumentException.class);
 
-    assertThatThrownBy(() -> {
-      ClassPathLoader.getLatest().getJarDeployer().deploy(
-          new String[] {"JarDeployerDUnitZLF1.jar", "JarDeployerDUnitZLF2.jar"},
-          new byte[][] {new ClassBuilder().createJarFromName("JarDeployerDUnitZLF1"), new byte[0]});
+    byte[] validBytes = new ClassBuilder().createJarFromName("JarDeployerDUnitZLF1");
+    File validFile = tempFolder.newFile();
 
+    IOUtils.copy(new ByteArrayInputStream(validBytes), new FileOutputStream(validFile));
+
+    jarFiles.put("JarDeployerDUnitZLF1.jar", validFile);
+
+    jarFiles.put("JarDeployerDUnitZLF2.jar", zeroFile);
+
+    assertThatThrownBy(() -> {
+      ClassPathLoader.getLatest().getJarDeployer().deploy(jarFiles);
     }).isInstanceOf(IllegalArgumentException.class);
   }
 
@@ -559,7 +579,7 @@ public class ClassPathLoaderTest {
     /**
      * Currently unused but potentially useful for some future test. This causes this loader to only
      * generate a class that the parent could not find.
-     * 
+     *
      * @param parent the parent class loader to check with first
      */
     @SuppressWarnings("unused")

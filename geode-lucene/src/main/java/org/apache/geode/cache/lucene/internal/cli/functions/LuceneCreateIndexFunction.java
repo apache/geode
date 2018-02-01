@@ -23,12 +23,13 @@ import org.apache.lucene.analysis.Analyzer;
 import org.apache.lucene.analysis.standard.StandardAnalyzer;
 
 import org.apache.geode.cache.Cache;
-import org.apache.geode.cache.CacheFactory;
-import org.apache.geode.cache.execute.FunctionAdapter;
+import org.apache.geode.cache.execute.Function;
 import org.apache.geode.cache.execute.FunctionContext;
-import org.apache.geode.cache.lucene.LuceneIndexFactory;
+import org.apache.geode.cache.lucene.LuceneSerializer;
 import org.apache.geode.cache.lucene.LuceneService;
 import org.apache.geode.cache.lucene.LuceneServiceProvider;
+import org.apache.geode.cache.lucene.internal.LuceneIndexFactoryImpl;
+import org.apache.geode.cache.lucene.internal.LuceneServiceImpl;
 import org.apache.geode.cache.lucene.internal.cli.LuceneCliStrings;
 import org.apache.geode.cache.lucene.internal.cli.LuceneIndexDetails;
 import org.apache.geode.cache.lucene.internal.cli.LuceneIndexInfo;
@@ -42,16 +43,18 @@ import org.apache.geode.management.internal.configuration.domain.XmlEntity;
 /**
  * The LuceneCreateIndexFunction class is a function used to create Lucene indexes.
  * </p>
- * 
+ *
  * @see Cache
  * @see org.apache.geode.cache.execute.Function
- * @see FunctionAdapter
+ * @see Function
  * @see FunctionContext
  * @see InternalEntity
  * @see LuceneIndexDetails
  */
 @SuppressWarnings("unused")
-public class LuceneCreateIndexFunction extends FunctionAdapter implements InternalEntity {
+public class LuceneCreateIndexFunction implements InternalEntity, Function {
+
+  private static final long serialVersionUID = 3061443846664615818L;
 
   public String getId() {
     return LuceneCreateIndexFunction.class.getName();
@@ -69,8 +72,10 @@ public class LuceneCreateIndexFunction extends FunctionAdapter implements Intern
 
       String[] fields = indexInfo.getSearchableFieldNames();
       String[] analyzerName = indexInfo.getFieldAnalyzers();
+      String serializerName = indexInfo.getSerializer();
 
-      final LuceneIndexFactory indexFactory = service.createIndexFactory();
+      final LuceneIndexFactoryImpl indexFactory =
+          (LuceneIndexFactoryImpl) service.createIndexFactory();
       if (analyzerName == null || analyzerName.length == 0) {
         for (String field : fields) {
           indexFactory.addField(field);
@@ -84,9 +89,16 @@ public class LuceneCreateIndexFunction extends FunctionAdapter implements Intern
         }
       }
 
-      REGION_PATH.validateName(indexInfo.getRegionPath());
+      if (serializerName != null && !serializerName.equals("")) {
+        indexFactory.setLuceneSerializer(toSerializer(serializerName));
+      }
 
-      indexFactory.create(indexInfo.getIndexName(), indexInfo.getRegionPath());
+      REGION_PATH.validateName(indexInfo.getRegionPath());
+      if (LuceneServiceImpl.LUCENE_REINDEX) {
+        indexFactory.create(indexInfo.getIndexName(), indexInfo.getRegionPath(), true);
+      } else {
+        indexFactory.create(indexInfo.getIndexName(), indexInfo.getRegionPath(), false);
+      }
 
       // TODO - update cluster configuration by returning a valid XmlEntity
       XmlEntity xmlEntity = null;
@@ -96,6 +108,17 @@ public class LuceneCreateIndexFunction extends FunctionAdapter implements Intern
           e.getClass().getName(), e.getMessage());
       context.getResultSender().lastResult(new CliFunctionResult(memberId, e, e.getMessage()));
     }
+  }
+
+  private LuceneSerializer toSerializer(String serializerName)
+      throws InstantiationException, IllegalAccessException, ClassNotFoundException {
+    String trimmedName = StringUtils.trim(serializerName);
+    if (trimmedName == "") {
+      return null;
+    }
+    Class<? extends LuceneSerializer> clazz =
+        CliUtil.forName(serializerName, LuceneCliStrings.LUCENE_CREATE_INDEX__SERIALIZER);
+    return CliUtil.newInstance(clazz, LuceneCliStrings.LUCENE_CREATE_INDEX__SERIALIZER);
   }
 
   private Analyzer toAnalyzer(String className) {

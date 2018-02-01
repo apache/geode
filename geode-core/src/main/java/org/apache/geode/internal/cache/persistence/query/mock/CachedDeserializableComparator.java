@@ -20,7 +20,7 @@ import org.apache.geode.internal.cache.CachedDeserializable;
 
 /**
  * Compare two cached deserializable objects by unwrapping the underlying object.
- * 
+ *
  * If either object is not a cached deserializable, just use the object directly.
  *
  */

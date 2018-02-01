@@ -18,7 +18,7 @@ import org.apache.geode.cache.query.QueryService;
 
 /**
  * Computes the sum for replicated & PR based queries.
- * 
+ *
  *
  */
 public class Sum extends AbstractAggregator {

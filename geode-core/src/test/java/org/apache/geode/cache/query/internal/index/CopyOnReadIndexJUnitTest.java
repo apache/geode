@@ -14,23 +14,24 @@
  */
 package org.apache.geode.cache.query.internal.index;
 
-import org.apache.geode.cache.Region;
-import org.apache.geode.cache.query.*;
-import org.apache.geode.cache.query.data.Portfolio;
-import org.apache.geode.cache.query.data.Position;
-import org.apache.geode.test.junit.categories.IntegrationTest;
+import static org.apache.geode.distributed.ConfigurationProperties.MCAST_PORT;
+import static org.junit.Assert.assertEquals;
+
+import java.util.HashMap;
+
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
-import java.util.HashMap;
-
-import static org.apache.geode.distributed.ConfigurationProperties.MCAST_PORT;
-import static org.junit.Assert.assertEquals;
+import org.apache.geode.cache.Region;
+import org.apache.geode.cache.query.*;
+import org.apache.geode.cache.query.data.Portfolio;
+import org.apache.geode.cache.query.data.Position;
+import org.apache.geode.test.junit.categories.IntegrationTest;
 
 /**
- * 
+ *
  *
  */
 @Category(IntegrationTest.class)
@@ -76,7 +77,7 @@ public class CopyOnReadIndexJUnitTest {
   }
 
   /**
-   * 
+   *
    * @param region
    * @param numObjects
    * @param objectsAndResultsMultiplier number of similar objects to put into the cache so that
@@ -302,7 +303,7 @@ public class CopyOnReadIndexJUnitTest {
   }
 
   /**
-   * 
+   *
    * @param queries
    * @param expectedResults
    * @param numObjects
@@ -326,7 +327,7 @@ public class CopyOnReadIndexJUnitTest {
   }
 
   /**
-   * 
+   *
    * @param queries
    * @param expectedResults
    * @param numObjects
@@ -488,4 +489,3 @@ public class CopyOnReadIndexJUnitTest {
 
 
 }
-

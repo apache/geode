@@ -35,7 +35,7 @@ import org.apache.geode.internal.logging.PureLogWriter;
  * when it gets too large. The size of the log file is limited to 5mb by default and can be adjusted
  * with the system property <b>gemfire.max_product_use_file_size</b>, though the size is not allowed
  * to be less than 1mb.
- * 
+ *
  * @since GemFire 2013
  */
 public class ProductUseLog implements MembershipListener {
@@ -119,7 +119,7 @@ public class ProductUseLog implements MembershipListener {
       fos = new FileOutputStream(productUseLogFile, true);
     } catch (FileNotFoundException ex) {
       String s = LocalizedStrings.InternalDistributedSystem_COULD_NOT_OPEN_LOG_FILE_0
-          .toLocalizedString(productUseLogFile);
+          .toLocalizedString(productUseLogFile.getAbsolutePath());
       throw new GemFireIOException(s, ex);
     }
     PrintStream out = new PrintStream(fos);

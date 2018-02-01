@@ -16,15 +16,15 @@ package org.apache.geode;
 
 /**
  * Abstract cancellation proxy for cancelling an operation, esp. a thread.
- * 
+ *
  * Creators of services or threads should implement a subclass of CancelCriterion, and implement the
  * two methods - cancelInProgress, and generateCancelledException(e).
- * 
+ *
  * Code inside the service can check to see if the service is cancelled by calling
  * {@link #checkCancelInProgress(Throwable)}. Generally the pattern is to check before performing an
  * operation, check if the service is canceled before propagating an exception further up the stack,
  * and check for cancellation inside a long loop. Eg.
- * 
+ *
  * <pre>
  * while (true) {
  *   c.checkCancelInProgress(null);
@@ -36,7 +36,7 @@ package org.apache.geode;
  *   }
  * }
  * </pre>
- * 
+ *
  * @see CancelException
  * @since GemFire 5.1
  */
@@ -46,7 +46,7 @@ public abstract class CancelCriterion {
    * Indicate if the service is in the progress of being cancelled. The typical use of this is to
    * indicate, in the case of an {@link InterruptedException}, that the current operation should be
    * cancelled.
-   * 
+   *
    * @return null if the service is not shutting down, or a message that can be used to construct an
    *         exception indicating the service is shut down.
    */
@@ -55,7 +55,7 @@ public abstract class CancelCriterion {
   /**
    * Use this utility function in your implementation of cancelInProgress() and cancelled() to
    * indicate a system failure
-   * 
+   *
    * @return failure string if system failure has occurred
    */
   protected String checkFailure() {
@@ -70,7 +70,7 @@ public abstract class CancelCriterion {
   /**
    * See if the current operation is being cancelled. If so, it either throws a
    * {@link RuntimeException} (usually a {@link CancelException}).
-   * 
+   *
    * @param e an underlying exception or null if there is no exception that triggered this check
    * @see #cancelInProgress()
    */
@@ -87,10 +87,10 @@ public abstract class CancelCriterion {
    * Template factory method for generating the exception to be thrown by
    * {@link #checkCancelInProgress(Throwable)}. Override this to specify different exception for
    * checkCancelInProgress() to throw.
-   * 
+   *
    * This method should wrap the exception in a service specific CancelationException (eg
    * CacheClosedException). or return null if the service is not being canceled.
-   * 
+   *
    * @param throwable an underlying exception, if any
    * @return RuntimeException to be thrown by checkCancelInProgress(), null if the receiver has not
    *         been cancelled.
@@ -100,7 +100,7 @@ public abstract class CancelCriterion {
   /**
    * Checks to see if a cancellation is in progress. This is equivalent to the expression
    * (cancelInProgress() != null).
-   * 
+   *
    * @return true if a cancellation is in progress, false if not
    */
   public boolean isCancelInProgress() {

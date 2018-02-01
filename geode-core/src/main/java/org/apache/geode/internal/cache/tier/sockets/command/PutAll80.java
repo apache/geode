@@ -54,7 +54,7 @@ import org.apache.geode.security.ResourcePermission.Resource;
 
 public class PutAll80 extends BaseCommand {
 
-  private final static PutAll80 singleton = new PutAll80();
+  private static final PutAll80 singleton = new PutAll80();
 
   public static Command getCommand() {
     return singleton;

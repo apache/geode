@@ -42,7 +42,7 @@ import org.apache.geode.pdx.internal.PdxString;
 
 /**
  * Comparison value: <, >, <=, >=, <>, =
- * 
+ *
  */
 public class CompiledComparison extends AbstractCompiledValue
     implements Negatable, OQLLexerTokenTypes, Indexable {
@@ -144,7 +144,7 @@ public class CompiledComparison extends AbstractCompiledValue
    * passed will be null except if a GroupJunction has only one filter evaluatable condition & rest
    * are iter operands. In such cases , the iter operands will be evaluated while expanding/cutting
    * down the index resultset
-   * 
+   *
    * @return SelectResults
    */
   @Override
@@ -179,7 +179,7 @@ public class CompiledComparison extends AbstractCompiledValue
    * is no index available. Asif :The booelan true implies that CompiledComparsion when existing on
    * its own always requires a Completeexpansion to top level iterators. This flag can get toggled
    * to false only from inside a GroupJunction
-   * 
+   *
    * @param intermediateResults if this parameter is provided, and we have to iterate, then iterate
    *        over this result set instead of the entire base collection.
    */
@@ -353,7 +353,7 @@ public class CompiledComparison extends AbstractCompiledValue
      * is a StructBag). If the match level is zero & expand to to top level flag is true & iff the
      * total no. of iterators in current scope is greater than the no. of fields in StructBag , then
      * only we need to do any expansion.
-     * 
+     *
      */
 
     try {
@@ -515,7 +515,7 @@ public class CompiledComparison extends AbstractCompiledValue
      * empty or null, in such cases , we have to definitely use indexes on both conditions & go for
      * complete expansion or CompsoiteGroupJunction expansion as be the case. ( ie retaining the old
      * logic of expanding the index result to top or compositeGroupJunction level)
-     * 
+     *
      * The condition in which we sure are to use indexes on both LHS & RHS & the the resultset
      * expanded to CGJ or top level are 1) A stand alone filterable composite condition : In such
      * cases the independent group of itr is passed as null , the intermediate resultset is empty &
@@ -523,23 +523,23 @@ public class CompiledComparison extends AbstractCompiledValue
      * Multiple filterable composite condition in OR junction: In such cases the independent grp of
      * its passed is not null but the intermediate resultset is null . This means that indexes on
      * both LHS & RHS to be used & expanded to top or CGJ level ( same as above)
-     * 
+     *
      * The case which is different from above is AND condition evaluation In such cases, till the
      * last but one filerable condition we pass complete expn flag as false & group of indpndt itrs
      * as null. Only last filterabel condn is passed genuine value of expn flag & the not null grp
      * of independent itrs . The intermedaite set is not null & not empty for such cases which wil
      * help us distinguish the case from OR junction
-     * 
+     *
      * IndependentGroup Iterators being null or not null is not a definitive & exclusive * criteria
      * for knowing whether the CC result needs to be expanded to Top or CGJ level as for independent
      * grp not null will happen in OR junction implying expn to CGJ level & ignoring intermediate
      * resultset as well as in evalaution of last filterable condition of AND junction implying
      * usage of intermediate resultset for cartesian.
-     * 
+     *
      * Similarly grp of indpendent itrs can be null for stand alone condition implying expn to top
      * level & ignoring intermediate set & also for evaluating all the conditions except last in AND
      * junction( which means using intermediate resultset for cartesian)
-     * 
+     *
      */
     if ((intermediateResults == null || intermediateResults.isEmpty())
         && (indpdntItrs != null || completeExpansionNeeded)) {
@@ -549,7 +549,7 @@ public class CompiledComparison extends AbstractCompiledValue
        * resultset is a StructBag). If the match level is zero & expand to to top level flag is true
        * & iff the total no. of iterators in current scope is greater than the no. of fields in
        * StructBag , then only we need to do any expansion.
-       * 
+       *
        */
       Support.Assert(this._operator == TOK_EQ,
           "A relationship index is not usable for any condition other than equality");

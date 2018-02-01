@@ -24,10 +24,10 @@ import org.junit.experimental.categories.Category;
 
 import org.apache.geode.management.CacheServerMXBean;
 import org.apache.geode.security.SimpleTestSecurityManager;
+import org.apache.geode.test.junit.categories.IntegrationTest;
 import org.apache.geode.test.junit.rules.ConnectionConfiguration;
 import org.apache.geode.test.junit.rules.MBeanServerConnectionRule;
 import org.apache.geode.test.junit.rules.ServerStarterRule;
-import org.apache.geode.test.junit.categories.IntegrationTest;
 
 @Category(IntegrationTest.class)
 public class CacheServerMBeanAuthenticationJUnitTest {
@@ -43,7 +43,7 @@ public class CacheServerMBeanAuthenticationJUnitTest {
 
   @Before
   public void setUp() throws Exception {
-    bean = connectionRule.getProxyMBean(CacheServerMXBean.class, "GemFire:service=CacheServer,*");
+    bean = connectionRule.getProxyMXBean(CacheServerMXBean.class, "GemFire:service=CacheServer,*");
   }
 
   @Test

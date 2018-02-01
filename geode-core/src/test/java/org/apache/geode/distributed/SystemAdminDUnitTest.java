@@ -86,8 +86,7 @@ public class SystemAdminDUnitTest extends JUnit4DistributedTestCase {
 
     } finally {
       // SystemAdmin calls methods that set these static variables
-      DistributionManager.isDedicatedAdminVM = false;
-      DistributionManager.isCommandLineAdminVM = false;
+      DistributionManager.setIsDedicatedAdminVM(false);
       SystemAdmin.setDistributedSystemProperties(null);
     }
   }

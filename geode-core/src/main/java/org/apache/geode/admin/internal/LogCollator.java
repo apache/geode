@@ -15,17 +15,17 @@
 
 package org.apache.geode.admin.internal;
 
-import org.apache.geode.internal.admin.GfManagerAgent;
-import org.apache.geode.internal.admin.GemFireVM;
-import org.apache.geode.internal.admin.ApplicationVM;
-import org.apache.geode.internal.logging.MergeLogFiles;
-
 import java.io.ByteArrayInputStream;
 import java.io.InputStream;
 import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.util.ArrayList;
 import java.util.List;
+
+import org.apache.geode.internal.admin.ApplicationVM;
+import org.apache.geode.internal.admin.GemFireVM;
+import org.apache.geode.internal.admin.GfManagerAgent;
+import org.apache.geode.internal.logging.MergeLogFiles;
 
 public class LogCollator {
 
@@ -118,4 +118,3 @@ public class LogCollator {
   }
 
 }
-

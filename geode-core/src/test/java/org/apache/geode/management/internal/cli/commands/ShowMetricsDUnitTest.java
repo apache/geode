@@ -4,9 +4,9 @@
  * copyright ownership. The ASF licenses this file to you under the Apache License, Version 2.0 (the
  * "License"); you may not use this file except in compliance with the License. You may obtain a
  * copy of the License at
- * 
+ *
  * http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software distributed under the License
  * is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
  * or implied. See the License for the specific language governing permissions and limitations under
@@ -20,6 +20,16 @@ import static java.util.concurrent.TimeUnit.SECONDS;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.awaitility.Awaitility.await;
 
+import java.io.File;
+
+import javax.management.ObjectName;
+
+import org.junit.Before;
+import org.junit.Rule;
+import org.junit.Test;
+import org.junit.experimental.categories.Category;
+import org.junit.rules.TemporaryFolder;
+
 import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.RegionFactory;
 import org.apache.geode.cache.RegionShortcut;
@@ -28,18 +38,10 @@ import org.apache.geode.management.CacheServerMXBean;
 import org.apache.geode.management.ManagementService;
 import org.apache.geode.management.MemberMXBean;
 import org.apache.geode.management.RegionMXBean;
-import org.apache.geode.test.dunit.rules.LocatorServerStartupRule;
+import org.apache.geode.test.dunit.rules.ClusterStartupRule;
 import org.apache.geode.test.dunit.rules.MemberVM;
 import org.apache.geode.test.junit.categories.DistributedTest;
-import org.apache.geode.test.junit.rules.GfshShellConnectionRule;
-import org.junit.Before;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.experimental.categories.Category;
-import org.junit.rules.TemporaryFolder;
-
-import java.io.File;
-import javax.management.ObjectName;
+import org.apache.geode.test.junit.rules.GfshCommandRule;
 
 @Category(DistributedTest.class)
 public class ShowMetricsDUnitTest {
@@ -47,10 +49,10 @@ public class ShowMetricsDUnitTest {
   private MemberVM locator, server;
 
   @Rule
-  public LocatorServerStartupRule lsRule = new LocatorServerStartupRule();
+  public ClusterStartupRule lsRule = new ClusterStartupRule();
 
   @Rule
-  public GfshShellConnectionRule gfsh = new GfshShellConnectionRule();
+  public GfshCommandRule gfsh = new GfshCommandRule();
 
   @Rule
   public TemporaryFolder tempFolder = new TemporaryFolder();
@@ -61,7 +63,7 @@ public class ShowMetricsDUnitTest {
     server = lsRule.startServerVM(1, locator.getPort());
     int serverPort = server.getPort();
     server.invoke(() -> {
-      Cache cache = LocatorServerStartupRule.serverStarter.getCache();
+      Cache cache = ClusterStartupRule.getCache();
       RegionFactory<Integer, Integer> dataRegionFactory =
           cache.createRegionFactory(RegionShortcut.REPLICATE);
       dataRegionFactory.create("REGION1");
@@ -71,7 +73,7 @@ public class ShowMetricsDUnitTest {
     });
 
     locator.invoke(() -> {
-      Cache cache = LocatorServerStartupRule.locatorStarter.getLocator().getCache();
+      Cache cache = ClusterStartupRule.getCache();
       // Wait for all of the relevant beans to be ready
       await().atMost(120, SECONDS).until(() -> isBeanReady(cache, 1, "", null, 0));
       await().atMost(120, SECONDS).until(() -> isBeanReady(cache, 2, "REGION1", null, 0));
@@ -116,21 +118,20 @@ public class ShowMetricsDUnitTest {
 
   @Test
   public void testShowMetricsDefault() throws Exception {
-    gfsh.executeAndVerifyCommand("show metrics");
+    gfsh.executeAndAssertThat("show metrics").statusIsSuccess();
   }
 
   @Test
   public void testShowMetricsRegion() throws Exception {
-    gfsh.executeAndVerifyCommand("show metrics --region=REGION1");
+    gfsh.executeAndAssertThat("show metrics --region=REGION1").statusIsSuccess();
     assertThat(gfsh.getGfshOutput()).contains("Cluster-wide Region Metrics");
   }
 
   @Test
   public void testShowMetricsMember() throws Exception {
-    gfsh.executeAndVerifyCommand(
-        "show metrics --member=" + server.getName() + " --port=" + server.getPort());
-    assertThat(gfsh.getGfshOutput()).contains("Member Metrics");
-    assertThat(gfsh.getGfshOutput()).contains("cache-server");
+    gfsh.executeAndAssertThat(
+        "show metrics --member=" + server.getName() + " --port=" + server.getPort())
+        .statusIsSuccess().containsOutput("Member Metrics").containsOutput("cacheserver");
   }
 
   @Test
@@ -138,18 +139,18 @@ public class ShowMetricsDUnitTest {
     File output = tempFolder.newFile("memberMetricReport.csv");
     output.delete();
 
-    gfsh.executeAndVerifyCommand("show metrics --member=" + server.getName() + " --port="
-        + server.getPort() + " --file=" + output.getAbsolutePath());
-    assertThat(gfsh.getGfshOutput()).contains("Member Metrics");
-    assertThat(gfsh.getGfshOutput()).contains("cache-server");
-    assertThat(gfsh.getGfshOutput())
-        .contains("Member metrics exported to " + output.getAbsolutePath());
+    gfsh.executeAndAssertThat("show metrics --member=" + server.getName() + " --port="
+        + server.getPort() + " --file=" + output.getAbsolutePath()).statusIsSuccess()
+        .containsOutput("Member Metrics").containsOutput("cacheserver")
+        .containsOutput("Member metrics exported to " + output.getAbsolutePath());
+
     assertThat(output).exists();
   }
 
   @Test
   public void testShowMetricsRegionFromMember() throws Exception {
-    gfsh.executeAndVerifyCommand("show metrics --member=" + server.getName() + " --region=REGION1");
+    gfsh.executeAndAssertThat("show metrics --member=" + server.getName() + " --region=REGION1")
+        .statusIsSuccess();
     assertThat(gfsh.getGfshOutput()).contains("Metrics for region:/REGION1 On Member server-1");
   }
 }

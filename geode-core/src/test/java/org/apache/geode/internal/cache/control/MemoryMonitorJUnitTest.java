@@ -21,6 +21,7 @@ import java.lang.management.ManagementFactory;
 import java.lang.management.MemoryPoolMXBean;
 import java.util.Properties;
 import java.util.Set;
+
 import javax.management.ListenerNotFoundException;
 import javax.management.NotificationEmitter;
 
@@ -78,17 +79,17 @@ public class MemoryMonitorJUnitTest {
     }
   }
 
-  final static String expectedEx = LocalizedStrings.MemoryMonitor_MEMBER_ABOVE_CRITICAL_THRESHOLD
+  static final String expectedEx = LocalizedStrings.MemoryMonitor_MEMBER_ABOVE_CRITICAL_THRESHOLD
       .getRawText().replaceAll("\\{[0-9]+\\}", ".*?");
   public static final String addExpectedAbove =
       "<ExpectedException action=add>" + expectedEx + "</ExpectedException>";
   public static final String removeExpectedAbove =
       "<ExpectedException action=remove>" + expectedEx + "</ExpectedException>";
-  final static String expectedBelow = LocalizedStrings.MemoryMonitor_MEMBER_BELOW_CRITICAL_THRESHOLD
+  static final String expectedBelow = LocalizedStrings.MemoryMonitor_MEMBER_BELOW_CRITICAL_THRESHOLD
       .getRawText().replaceAll("\\{[0-9]+\\}", ".*?");
-  public final static String addExpectedBelow =
+  public static final String addExpectedBelow =
       "<ExpectedException action=add>" + expectedBelow + "</ExpectedException>";
-  public final static String removeExpectedBelow =
+  public static final String removeExpectedBelow =
       "<ExpectedException action=remove>" + expectedBelow + "</ExpectedException>";
 
   /**

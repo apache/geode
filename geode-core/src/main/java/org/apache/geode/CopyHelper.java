@@ -37,10 +37,10 @@ import org.apache.geode.pdx.internal.PdxUnreadData;
  * A static helper for optimally creating copies. Creating copies of cache values provides improved
  * concurrency as well as isolation. For transactions, creating a copy is the guaranteed way to
  * enforce "Read Committed" isolation on changes to cache <code>Entries</code>.
- * 
+ *
  * <p>
  * Here is a simple example of how to use <code>CopyHelper.copy</code>
- * 
+ *
  * <pre>
  * Object o = r.get("stringBuf");
  * StringBuffer s = (StringBuffer) CopyHelper.copy(o);
@@ -79,7 +79,7 @@ public final class CopyHelper {
    * <li>UUID
    * <li>PdxInstance but not WritablePdxInstance
    * </ul>
-   * 
+   *
    * @param o the object to check
    * @return true if o is an instance of a well known immutable class.
    * @since GemFire 6.6.2
@@ -122,25 +122,25 @@ public final class CopyHelper {
    * <p>
    * Makes a copy of the specified object. The object returned is not guaranteed to be a deep copy
    * of the original object, as explained below.
-   * 
+   *
    * <p>
    * Copies can only be made if the original is a <tt>Cloneable</tt> or serializable by GemFire. If
    * o is a {@link #isWellKnownImmutableInstance(Object) well known immutable instance} then it will
    * be returned without copying it.
-   * 
+   *
    * <p>
    * If the argument o is an instance of {@link java.lang.Cloneable}, a copy is made by invoking
    * <tt>clone</tt> on it. Note that not all implementations of <tt>clone</tt> make deep copies
    * (e.g. {@link java.util.HashMap#clone HashMap.clone}). Otherwise, if the argument is not an
    * instance of <tt>Cloneable</tt>, a copy is made using serialization: if GemFire serialization is
    * implemented, it is used; otherwise, java serialization is used.
-   * 
+   *
    * <p>
    * The difference between this method and {@link #deepCopy(Object) deepCopy}, is that this method
    * uses <tt>clone</tt> if available, whereas <tt>deepCopy</tt> does not. As a result, for
    * <tt>Cloneable</tt> objects copied using this method, how deep a copy the returned object is
    * depends on its implementation of <tt>clone</tt>.
-   * 
+   *
    * @param o the original object that a copy is needed of
    * @return the new instance that is a copy of of the original
    * @throws CopyException if copying fails because a class could not be found or could not be
@@ -233,16 +233,16 @@ public final class CopyHelper {
   /**
    * Makes a deep copy of the specified object o using serialization, so the object has to be
    * serializable by GemFire.
-   * 
+   *
    * <p>
    * If o is a {@link #isWellKnownImmutableInstance(Object) well known immutable instance} then it
    * will be returned without copying it.
-   * 
+   *
    * <p>
    * The passed in object is serialized in memory, and then deserialized into a new instance, which
    * is returned. If GemFire serialization is implemented for the object, it is used; otherwise,
    * java serialization is used.
-   * 
+   *
    * @param o the original object to be copied
    * @return the new instance that is a copy of the original
    * @throws CopyException if copying fails because a class could not be found or could not be

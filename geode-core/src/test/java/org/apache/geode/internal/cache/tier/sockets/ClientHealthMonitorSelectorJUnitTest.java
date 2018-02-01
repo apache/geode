@@ -14,19 +14,22 @@
  */
 package org.apache.geode.internal.cache.tier.sockets;
 
-import org.apache.geode.test.junit.categories.ClientServerTest;
+import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
+import org.apache.geode.test.junit.categories.ClientServerTest;
+import org.apache.geode.test.junit.categories.FlakyTest;
 import org.apache.geode.test.junit.categories.IntegrationTest;
 
 /**
  * Just like its parent but enables the server thread pool (aka selector).
- * 
- * 
+ *
+ *
  */
 @Category({IntegrationTest.class, ClientServerTest.class})
 public class ClientHealthMonitorSelectorJUnitTest extends ClientHealthMonitorJUnitTest {
   protected int getMaxThreads() {
     return 2;
   }
+
 }

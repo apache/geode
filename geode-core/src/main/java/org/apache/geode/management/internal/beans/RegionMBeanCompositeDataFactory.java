@@ -34,7 +34,7 @@ import org.apache.geode.management.internal.ManagementConstants;
 
 /**
  * Utility class to create CompositeDataTypes for RegionMXBean
- * 
+ *
  *
  */
 public class RegionMBeanCompositeDataFactory {
@@ -131,7 +131,7 @@ public class RegionMBeanCompositeDataFactory {
     return fixedPartitionAttributesTable;
   }
 
-  public static RegionAttributesData getRegionAttributesData(RegionAttributes regAttrs) {
+  public static RegionAttributesData getRegionAttributesData(RegionAttributes<?, ?> regAttrs) {
 
     String cacheLoaderClassName = null;
     if (regAttrs.getCacheLoader() != null) {
@@ -214,16 +214,17 @@ public class RegionMBeanCompositeDataFactory {
     boolean diskSynchronus = regAttrs.isDiskSynchronous();
     boolean offheap = regAttrs.getOffHeap();
 
+    Set<String> eventQueueIds = regAttrs.getAsyncEventQueueIds();
+    Set<String> gatewaySenderIds = regAttrs.getGatewaySenderIds();
 
-    RegionAttributesData regionAttributesData =
-        new RegionAttributesData(cacheLoaderClassName, cacheWriteClassName, keyConstraintClassName,
-            valueContstraintClassName, regionTimeToLive, regionIdleTimeout, entryTimeToLive,
-            entryIdleTimeout, customEntryTimeToLive, customEntryIdleTimeout, ignoreJTA, dataPolicy,
-            scope, initialCapacity, loadFactor, lockGrantor, multicastEnabled, concurrencyLevel,
-            indexMaintenanceSynchronous, statisticsEnabled, subsciptionConflationEnabled,
-            asyncConflationEnabled, poolName, isCloningEnabled, diskStoreName, interestPolicy,
-            diskSynchronus, cacheListeners, compressorClassName, offheap);
-
+    RegionAttributesData regionAttributesData = new RegionAttributesData(cacheLoaderClassName,
+        cacheWriteClassName, keyConstraintClassName, valueContstraintClassName, regionTimeToLive,
+        regionIdleTimeout, entryTimeToLive, entryIdleTimeout, customEntryTimeToLive,
+        customEntryIdleTimeout, ignoreJTA, dataPolicy, scope, initialCapacity, loadFactor,
+        lockGrantor, multicastEnabled, concurrencyLevel, indexMaintenanceSynchronous,
+        statisticsEnabled, subsciptionConflationEnabled, asyncConflationEnabled, poolName,
+        isCloningEnabled, diskStoreName, interestPolicy, diskSynchronus, cacheListeners,
+        compressorClassName, offheap, eventQueueIds, gatewaySenderIds);
 
     return regionAttributesData;
   }

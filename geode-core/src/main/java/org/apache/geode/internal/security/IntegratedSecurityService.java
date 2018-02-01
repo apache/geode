@@ -61,7 +61,7 @@ public class IntegratedSecurityService implements SecurityService {
 
   /**
    * this creates a security service using a SecurityManager
-   * 
+   *
    * @param provider this provides shiro security manager
    * @param postProcessor this can be null
    */
@@ -114,7 +114,7 @@ public class IntegratedSecurityService implements SecurityService {
     currentUser = SecurityUtils.getSubject();
 
     if (currentUser == null || currentUser.getPrincipal() == null) {
-      throw new GemFireSecurityException("Error: Anonymous User");
+      throw new AuthenticationRequiredException("Failed to find the authenticated user.");
     }
 
     return currentUser;
@@ -138,7 +138,7 @@ public class IntegratedSecurityService implements SecurityService {
       logger.debug("Logging in " + token.getPrincipal());
       currentUser.login(token);
     } catch (ShiroException e) {
-      logger.info(e.getMessage(), e);
+      logger.info("error logging in: " + token.getPrincipal());
       throw new AuthenticationFailedException(
           "Authentication error. Please check your credentials.", e);
     }
@@ -155,7 +155,7 @@ public class IntegratedSecurityService implements SecurityService {
       logger.debug("Logging out " + currentUser.getPrincipal());
       currentUser.logout();
     } catch (ShiroException e) {
-      logger.info(e.getMessage(), e);
+      logger.info("error logging out: " + currentUser.getPrincipal());
       throw new GemFireSecurityException(e.getMessage(), e);
     }
 
@@ -233,7 +233,7 @@ public class IntegratedSecurityService implements SecurityService {
       currentUser.checkPermission(context);
     } catch (ShiroException e) {
       String msg = currentUser.getPrincipal() + " not authorized for " + context;
-      logger.info(msg);
+      logger.info("NotAuthorizedException: {}", msg);
       throw new NotAuthorizedException(msg, e);
     }
   }

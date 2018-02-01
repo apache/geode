@@ -34,13 +34,13 @@ import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.Region;
 import org.apache.geode.cache.asyncqueue.AsyncEventQueue;
 import org.apache.geode.cache.query.Index;
-import org.apache.geode.test.compiler.ClassBuilder;
 import org.apache.geode.management.internal.cli.i18n.CliStrings;
 import org.apache.geode.management.internal.cli.util.CommandStringBuilder;
-import org.apache.geode.test.junit.rules.GfshShellConnectionRule;
-import org.apache.geode.test.dunit.rules.LocatorServerStartupRule;
+import org.apache.geode.test.compiler.ClassBuilder;
+import org.apache.geode.test.dunit.rules.ClusterStartupRule;
 import org.apache.geode.test.dunit.rules.MemberVM;
 import org.apache.geode.test.junit.categories.DistributedTest;
+import org.apache.geode.test.junit.rules.GfshCommandRule;
 import org.apache.geode.test.junit.rules.serializable.SerializableTemporaryFolder;
 
 @Category(DistributedTest.class)
@@ -58,9 +58,9 @@ public class ClusterConfigDistributionDUnitTest {
   public SerializableTemporaryFolder temporaryFolder = new SerializableTemporaryFolder();
 
   @Rule
-  public LocatorServerStartupRule lsRule = new LocatorServerStartupRule();
+  public ClusterStartupRule lsRule = new ClusterStartupRule();
   @Rule
-  public GfshShellConnectionRule gfshConnector = new GfshShellConnectionRule();
+  public GfshCommandRule gfshConnector = new GfshCommandRule();
 
   @Before
   public void before() throws Exception {
@@ -77,20 +77,26 @@ public class ClusterConfigDistributionDUnitTest {
     final String DESTROY_REGION = "regionToBeDestroyed";
 
     gfshConnector
-        .executeAndVerifyCommand("create region --name=" + REPLICATE_REGION + " --type=REPLICATE");
+        .executeAndAssertThat("create region --name=" + REPLICATE_REGION + " --type=REPLICATE")
+        .statusIsSuccess();
     gfshConnector
-        .executeAndVerifyCommand("create region --name=" + PARTITION_REGION + " --type=PARTITION");
+        .executeAndAssertThat("create region --name=" + PARTITION_REGION + " --type=PARTITION")
+        .statusIsSuccess();
     gfshConnector
-        .executeAndVerifyCommand("create region --name=" + DESTROY_REGION + " --type=REPLICATE");
+        .executeAndAssertThat("create region --name=" + DESTROY_REGION + " --type=REPLICATE")
+        .statusIsSuccess();
 
-    gfshConnector.executeAndVerifyCommand(
-        "create index --name=" + INDEX1 + " --expression=AAPL --region=" + REPLICATE_REGION);
-    gfshConnector.executeAndVerifyCommand(
-        "create index --name=" + INDEX2 + " --expression=VMW --region=" + PARTITION_REGION);
-
+    gfshConnector
+        .executeAndAssertThat(
+            "create index --name=" + INDEX1 + " --expression=AAPL --region=" + REPLICATE_REGION)
+        .statusIsSuccess();
+    gfshConnector
+        .executeAndAssertThat(
+            "create index --name=" + INDEX2 + " --expression=VMW --region=" + PARTITION_REGION)
+        .statusIsSuccess();
 
     String asyncEventQueueJarPath = createAsyncEventQueueJar();
-    gfshConnector.executeAndVerifyCommand("deploy --jar=" + asyncEventQueueJarPath);
+    gfshConnector.executeAndAssertThat("deploy --jar=" + asyncEventQueueJarPath).statusIsSuccess();
 
     CommandStringBuilder csb = new CommandStringBuilder(CliStrings.CREATE_ASYNC_EVENT_QUEUE);
     csb.addOptionWithValueCheck(CliStrings.CREATE_ASYNC_EVENT_QUEUE__ID, AsyncEventQueue1);
@@ -101,13 +107,14 @@ public class ClusterConfigDistributionDUnitTest {
     csb.addOptionWithValueCheck(CliStrings.GROUP, null);
     csb.addOptionWithValueCheck(CliStrings.CREATE_ASYNC_EVENT_QUEUE__PERSISTENT, "false");
     csb.addOptionWithValueCheck(CliStrings.CREATE_ASYNC_EVENT_QUEUE__MAXIMUM_QUEUE_MEMORY, "1000");
-    gfshConnector.executeAndVerifyCommand(csb.getCommandString());
+    gfshConnector.executeAndAssertThat(csb.getCommandString()).statusIsSuccess();
 
-    gfshConnector.executeAndVerifyCommand("destroy region --name=" + DESTROY_REGION);
+    gfshConnector.executeAndAssertThat("destroy region --name=" + DESTROY_REGION).statusIsSuccess();
 
-    gfshConnector.executeAndVerifyCommand(
-        "destroy index --name=" + INDEX2 + " --region=" + PARTITION_REGION);
-    gfshConnector.executeAndVerifyCommand("alter runtime --copy-on-read=true");
+    gfshConnector
+        .executeAndAssertThat("destroy index --name=" + INDEX2 + " --region=" + PARTITION_REGION)
+        .statusIsSuccess();
+    gfshConnector.executeAndAssertThat("alter runtime --copy-on-read=true").statusIsSuccess();
 
     // Start a new member which receives the shared configuration
     // Verify the config creation on this member
@@ -115,7 +122,7 @@ public class ClusterConfigDistributionDUnitTest {
     MemberVM server = lsRule.startServerVM(2, new Properties(), locator.getPort());
 
     server.invoke(() -> {
-      Cache cache = LocatorServerStartupRule.serverStarter.getCache();
+      Cache cache = ClusterStartupRule.getCache();
       assertNotNull(cache);
       assertTrue(cache.getCopyOnRead());
 
@@ -170,7 +177,7 @@ public class ClusterConfigDistributionDUnitTest {
     csb.addOptionWithValueCheck(CliStrings.CONFIGURE_PDX__IGNORE__UNREAD_FIELDS, "true");
     csb.addOptionWithValueCheck(CliStrings.CONFIGURE_PDX__READ__SERIALIZED, "true");
 
-    String message = gfshConnector.execute(csb.getCommandString());
-    assertThat(message).contains(CliStrings.CONFIGURE_PDX__NORMAL__MEMBERS__WARNING);
+    gfshConnector.executeAndAssertThat(csb.getCommandString())
+        .containsOutput(CliStrings.CONFIGURE_PDX__NORMAL__MEMBERS__WARNING);
   }
 }

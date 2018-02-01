@@ -32,6 +32,7 @@ import java.io.IOException;
  * specific code outside of the {@link GenericAppServerVersion}.
  */
 public class GenericAppServerInstall extends ContainerInstall {
+  private static final String JETTY_VERSION = "9.4.8.v20171121";
 
   /**
    * Get the version number, download URL, and container name of a generic app server using
@@ -40,9 +41,8 @@ public class GenericAppServerInstall extends ContainerInstall {
    * Currently the only supported keyword instance is JETTY9.
    */
   public enum GenericAppServerVersion {
-    JETTY9(9,
-        "http://central.maven.org/maven2/org/eclipse/jetty/jetty-distribution/9.4.5.v20170502/jetty-distribution-9.4.5.v20170502.zip",
-        "jetty");
+    JETTY9(9, "http://central.maven.org/maven2/org/eclipse/jetty/jetty-distribution/"
+        + JETTY_VERSION + "/jetty-distribution-" + JETTY_VERSION + ".zip", "jetty");
 
     private final int version;
     private final String downloadURL;

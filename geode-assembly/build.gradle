@@ -56,11 +56,14 @@ dependencies {
   provided project(':geode-core')
 
   archives project(':geode-common')  
-  archives project(':geode-json')  
+  archives project(':geode-client-protocol')
+  archives project(':geode-json')
   archives project(':geode-core')
+  archives project(':geode-connectors')
   archives project(':geode-lucene')
   archives project(':geode-old-client-support')
   archives project(':geode-protobuf')
+  archives project(':geode-protobuf-messages')
   archives project(':geode-web')
   archives project(':geode-web-api')
   archives project(':geode-wan')
@@ -163,6 +166,8 @@ def cp = {
         it.contains('commons-lang') ||
         it.contains('commons-logging') ||
         it.contains('commons-validator') ||
+        it.contains('commons-beanutils') ||
+        it.contains('commons-codec') ||
         it.contains('fast-classpath-scanner') ||
         it.contains('fastutil') ||
         it.contains('jackson-annotations') ||
@@ -188,6 +193,7 @@ def cp = {
         it.contains('log4j-jcl') ||
         it.contains('log4j-jul') ||
         it.contains('log4j-slf4j-impl') ||
+        it.contains('rmiio') ||
         it.contains('shiro') ||
         it.contains('slf4j-api') ||
         it.contains('spring-core') ||
@@ -204,7 +210,10 @@ def cp = {
         it.contains('lucene-analyzers-phonetic') ||
 
         // dependencies from geode-protobuf
-        it.contains('protobuf-java')
+        it.contains('protobuf-java') ||
+
+        // dependencies from geode-connectors
+        it.contains('HikariCP')
       }
     }
   }.flatten().unique().join(' ')
@@ -361,12 +370,21 @@ distributions {
 
         from project(":geode-lucene").configurations.runtime
         from project(":geode-lucene").configurations.archives.allArtifacts.files
-        
+       
+        from project(":geode-connectors").configurations.runtime
+        from project(":geode-connectors").configurations.archives.allArtifacts.files
+ 
         from project(":geode-old-client-support").configurations.runtime
         from project(":geode-old-client-support").configurations.archives.allArtifacts.files
 
         from project(":geode-protobuf").configurations.runtime
         from project(":geode-protobuf").configurations.archives.allArtifacts.files
+
+        from project(":geode-protobuf-messages").configurations.runtime
+        from project(":geode-protobuf-messages").configurations.archives.allArtifacts.files
+
+        from project(":geode-client-protocol").configurations.runtime
+        from project(":geode-client-protocol").configurations.archives.allArtifacts.files
 
         from project(":geode-rebalancer").configurations.runtime
         from project(":geode-rebalancer").configurations.archives.allArtifacts.files
@@ -392,6 +410,10 @@ distributions {
         from (project(":geode-web-api").configurations.archives.allArtifacts.files) {
           exclude '*.jar'
         }
+      }
+
+      into('tools/ClientProtocol') {
+        from {project(":geode-protobuf-messages").zip.outputs.files}
       }
 
       into ('javadoc') {

@@ -13,9 +13,15 @@
  * the License.
  */
 /**
- * 
+ *
  */
 package org.apache.geode.cache.client.internal;
+
+import static org.apache.geode.distributed.ConfigurationProperties.*;
+
+import java.io.ByteArrayInputStream;
+import java.io.DataInputStream;
+import java.util.Properties;
 
 import org.apache.geode.DataSerializer;
 import org.apache.geode.InternalGemFireError;
@@ -38,22 +44,16 @@ import org.apache.geode.security.AuthenticationFailedException;
 import org.apache.geode.security.AuthenticationRequiredException;
 import org.apache.geode.security.NotAuthorizedException;
 
-import java.io.ByteArrayInputStream;
-import java.io.DataInputStream;
-import java.util.Properties;
-
-import static org.apache.geode.distributed.ConfigurationProperties.*;
-
 /**
  * Authenticates this client (or a user) on a server. This op ideally should get executed
  * once-per-server.
- * 
+ *
  * When multiuser-authentication is set to false, this op gets executed immedialtely after a
  * client-to-server connection is established.
- * 
+ *
  * When multiuser-authentication is set to true, this op gets executed before the user attempts to
  * perform an op whose {@link AbstractOp#needsUserId()} returns true.
- * 
+ *
  * @see PutUserCredentials
  * @see ProxyCache
  * @since GemFire 6.5
@@ -62,7 +62,7 @@ public class AuthenticateUserOp {
 
   /**
    * Sends the auth credentials to the server. Used in single user mode of authentication.
-   * 
+   *
    * @param con The connection to use for this operation.
    * @param pool The connection pool to use for this operation.
    * @return Object unique user-id.
@@ -75,7 +75,7 @@ public class AuthenticateUserOp {
   /**
    * Sends the auth credentials to the server for a particular user. Used in multiple user mode of
    * authentication.
-   * 
+   *
    * @param location The ServerLocation instance whose connection instance will be used to perform
    *        the operation.
    * @param pool The connection pool to use for this operation.

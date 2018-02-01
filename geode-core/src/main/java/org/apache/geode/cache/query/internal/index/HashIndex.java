@@ -86,7 +86,12 @@ import org.apache.geode.internal.offheap.StoredObject;
  * This index does not support the storage of projection attributes.
  * <p>
  * Currently this implementation only supports an index on a region path.
+ *
+ * @deprecated Due to the overhead caused by rehashing while expanding the backing array, Hash Index
+ *             has been deprecated since Apache Geode 1.4.0. Instead the use of
+ *             {@link CompactRangeIndex} is recommended
  */
+@Deprecated
 public class HashIndex extends AbstractIndex {
   private static final Logger logger = LogService.getLogger();
 
@@ -1142,7 +1147,7 @@ public class HashIndex extends AbstractIndex {
      * the additional projection attribute. If the boolean isFirstItrOnEntry is tru e& additional
      * projection attribute is null, then teh 0th iterator itself will evaluate to Region.Entry
      * Object.
-     * 
+     *
      * The 2nd element of Object Array contains the Struct object ( tuple) created. If the boolean
      * isFirstItrOnEntry is false, then the first attribute of the Struct object is obtained by
      * evaluating the additional projection attribute.

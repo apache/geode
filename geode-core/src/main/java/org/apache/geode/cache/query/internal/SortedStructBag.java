@@ -31,7 +31,7 @@ import org.apache.geode.internal.cache.CachePerfStats;
 import org.apache.geode.internal.i18n.LocalizedStrings;
 
 /**
- * 
+ *
  *
  */
 public class SortedStructBag extends SortedResultsBag<Object[]> implements StructFields {
@@ -39,7 +39,7 @@ public class SortedStructBag extends SortedResultsBag<Object[]> implements Struc
 
   /**
    * Constructor for unordered input
-   * 
+   *
    * @param comparator
    * @param nullAtStart
    */
@@ -50,7 +50,7 @@ public class SortedStructBag extends SortedResultsBag<Object[]> implements Struc
 
   /**
    * Constructor for unordered input
-   * 
+   *
    * @param comparator
    * @param elementType
    * @param nullAtStart
@@ -62,7 +62,7 @@ public class SortedStructBag extends SortedResultsBag<Object[]> implements Struc
 
   /**
    * Constructor for unordered input
-   * 
+   *
    * @param comparator
    * @param elementType
    * @param stats
@@ -76,7 +76,7 @@ public class SortedStructBag extends SortedResultsBag<Object[]> implements Struc
 
   /**
    * Constructor for unordered input
-   * 
+   *
    * @param comparator
    * @param stats
    * @param nullAtStart
@@ -321,7 +321,7 @@ public class SortedStructBag extends SortedResultsBag<Object[]> implements Struc
 
   /**
    * Getter for property modifiable.
-   * 
+   *
    * @return Value of property modifiable.
    */
   @Override

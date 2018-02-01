@@ -14,27 +14,30 @@
  */
 package org.apache.geode.distributed;
 
-import org.apache.geode.SystemConnectException;
-import org.apache.geode.cache.client.internal.locator.ClientConnectionRequest;
-import org.apache.geode.cache.client.internal.locator.ClientConnectionResponse;
-import org.apache.geode.cache.client.internal.locator.QueueConnectionRequest;
-import org.apache.geode.cache.client.internal.locator.QueueConnectionResponse;
-import org.apache.geode.distributed.internal.DistributionConfig;
-import org.apache.geode.distributed.internal.InternalDistributedSystem;
-import org.apache.geode.distributed.internal.InternalLocator;
-import org.apache.geode.distributed.internal.ServerLocation;
-import org.apache.geode.distributed.internal.membership.gms.messenger.JGroupsMessenger;
-import org.apache.geode.distributed.internal.tcpserver.TcpClient;
-import org.apache.geode.internal.AvailablePortHelper;
-import org.apache.geode.internal.OSProcess;
-import org.apache.geode.internal.cache.GemFireCacheImpl;
-import org.apache.geode.internal.cache.tier.sockets.ClientProxyMembershipID;
-import org.apache.geode.management.internal.JmxManagerAdvisor.JmxManagerProfile;
-import org.apache.geode.management.internal.configuration.messages.ConfigurationRequest;
-import org.apache.geode.management.internal.configuration.messages.SharedConfigurationStatusRequest;
-import org.apache.geode.test.junit.categories.IntegrationTest;
-import org.apache.geode.test.junit.categories.MembershipTest;
-import org.apache.geode.test.junit.runners.CategoryWithParameterizedRunnerFactory;
+import static org.apache.geode.distributed.ConfigurationProperties.ENABLE_CLUSTER_CONFIGURATION;
+import static org.apache.geode.distributed.ConfigurationProperties.JMX_MANAGER_HTTP_PORT;
+import static org.apache.geode.distributed.ConfigurationProperties.JMX_MANAGER_PORT;
+import static org.apache.geode.distributed.ConfigurationProperties.JMX_MANAGER_START;
+import static org.apache.geode.distributed.ConfigurationProperties.LOCATOR_WAIT_TIME;
+import static org.apache.geode.distributed.ConfigurationProperties.LOG_FILE;
+import static org.apache.geode.distributed.ConfigurationProperties.MCAST_PORT;
+import static org.apache.geode.internal.AvailablePort.SOCKET;
+import static org.apache.geode.internal.AvailablePort.getRandomAvailablePort;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
+
+import java.io.File;
+import java.io.IOException;
+import java.net.InetAddress;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.List;
+import java.util.Properties;
+import java.util.function.IntSupplier;
+
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Rule;
@@ -44,19 +47,20 @@ import org.junit.rules.TemporaryFolder;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
 
-import java.io.File;
-import java.io.IOException;
-import java.net.InetAddress;
-import java.util.*;
-import java.util.concurrent.TimeUnit;
-import java.util.function.IntSupplier;
-
-import static org.apache.geode.distributed.ConfigurationProperties.*;
-import static org.apache.geode.internal.AvailablePort.SOCKET;
-import static org.apache.geode.internal.AvailablePort.getRandomAvailablePort;
-import static org.junit.Assert.*;
-
-import org.awaitility.Awaitility;
+import org.apache.geode.SystemConnectException;
+import org.apache.geode.distributed.internal.DistributionConfig;
+import org.apache.geode.distributed.internal.InternalLocator;
+import org.apache.geode.distributed.internal.ServerLocation;
+import org.apache.geode.distributed.internal.membership.gms.messenger.JGroupsMessenger;
+import org.apache.geode.distributed.internal.tcpserver.TcpClient;
+import org.apache.geode.internal.AvailablePortHelper;
+import org.apache.geode.internal.OSProcess;
+import org.apache.geode.internal.cache.GemFireCacheImpl;
+import org.apache.geode.management.internal.JmxManagerAdvisor.JmxManagerProfile;
+import org.apache.geode.management.internal.configuration.messages.SharedConfigurationStatusRequest;
+import org.apache.geode.test.junit.categories.IntegrationTest;
+import org.apache.geode.test.junit.categories.MembershipTest;
+import org.apache.geode.test.junit.runners.CategoryWithParameterizedRunnerFactory;
 
 @Category({IntegrationTest.class, MembershipTest.class})
 @RunWith(Parameterized.class)
@@ -85,7 +89,11 @@ public class LocatorJUnitTest {
   public void setUp() throws IOException {
     tmpFile = File.createTempFile("locator", ".log");
     this.port = portSupplier.getAsInt();
-    File locatorFile = new File("locator" + this.port + ".dat");
+    deleteLocatorViewFile(port);
+  }
+
+  private void deleteLocatorViewFile(int portNumber) {
+    File locatorFile = new File("locator" + portNumber + "view.dat");
     if (locatorFile.exists()) {
       locatorFile.delete();
     }
@@ -97,6 +105,24 @@ public class LocatorJUnitTest {
       locator.stop();
     }
     assertEquals(false, Locator.hasLocator());
+  }
+
+  /**
+   * GEODE-4176: locator creates "locator0view.dat" file when started with port 0
+   *
+   * @throws Exception
+   */
+  @Test
+  public void testThatLocatorDoesNotCreateFileWithZeroPort() throws Exception {
+    deleteLocatorViewFile(0);
+    Properties dsprops = new Properties();
+    dsprops.setProperty(MCAST_PORT, "0");
+    dsprops.setProperty(ENABLE_CLUSTER_CONFIGURATION, "false");
+    dsprops.setProperty(LOCATOR_WAIT_TIME, "1"); // seconds
+    dsprops.setProperty(LOG_FILE, "");
+    locator = Locator.startLocatorAndDS(port, null, dsprops);
+    File viewFile = new File("locator0view.dat");
+    assertFalse("file should not exist: " + viewFile.getAbsolutePath(), viewFile.exists());
   }
 
   /**
@@ -126,10 +152,7 @@ public class LocatorJUnitTest {
     }
   }
 
-  /**
-   * GEODE-2253 - a locator should handle a SharedConfigurationStatusRequest regardless of whether
-   * it has the service or not
-   */
+
   @Test
   public void testHandlersAreWaitedOn() throws Exception {
     Properties dsprops = new Properties();
@@ -142,12 +165,6 @@ public class LocatorJUnitTest {
     InternalLocator internalLocator = (InternalLocator) locator;
     // the locator should always install a SharedConfigurationStatusRequest handler
     assertTrue(internalLocator.hasHandlerForClass(SharedConfigurationStatusRequest.class));
-    // the locator should wait if a handler isn't installed
-    assertFalse(internalLocator.hasHandlerForClass(ConfigurationRequest.class));
-    ConfigurationRequest request = new ConfigurationRequest();
-    Object result = internalLocator.getPrimaryHandler().processRequest(request);
-    assertNull(result);
-    assertTrue(internalLocator.getPrimaryHandler().hasWaitedForHandlerInitialization());
   }
 
 

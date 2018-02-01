@@ -23,8 +23,8 @@ import org.apache.geode.distributed.DistributedMember;
  * Utility class that implements all methods in <code>RegionMembershipListener</code> with empty
  * implementations. Applications can subclass this class and only override the methods for the
  * events of interest.
- * 
- * 
+ *
+ *
  * @since GemFire 5.0
  */
 public abstract class RegionMembershipListenerAdapter<K, V> extends CacheListenerAdapter<K, V>

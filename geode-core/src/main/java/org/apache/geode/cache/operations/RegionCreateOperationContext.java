@@ -19,7 +19,7 @@ package org.apache.geode.cache.operations;
  * Encapsulates a
  * {@link org.apache.geode.cache.operations.OperationContext.OperationCode#REGION_CREATE} operation
  * for both the pre-operation and post-operation cases.
- * 
+ *
  * @since GemFire 5.5
  * @deprecated since Geode1.0, use {@link org.apache.geode.security.ResourcePermission} instead
  */
@@ -30,7 +30,7 @@ public class RegionCreateOperationContext extends OperationContext {
 
   /**
    * Constructor for the region creation operation.
-   * 
+   *
    * @param postOperation true to set the post-operation flag
    */
   public RegionCreateOperationContext(boolean postOperation) {
@@ -39,7 +39,7 @@ public class RegionCreateOperationContext extends OperationContext {
 
   /**
    * Return the operation associated with the <code>OperationContext</code> object.
-   * 
+   *
    * @return <code>OperationCode.REGION_CREATE</code>.
    */
   @Override

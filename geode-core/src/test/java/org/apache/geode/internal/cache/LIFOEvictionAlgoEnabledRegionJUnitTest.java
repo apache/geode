@@ -14,27 +14,29 @@
  */
 package org.apache.geode.internal.cache;
 
-import org.apache.geode.cache.*;
-import org.apache.geode.distributed.DistributedSystem;
-import org.apache.geode.internal.cache.lru.LRUStatistics;
-import org.apache.geode.internal.cache.lru.NewLRUClockHand;
-import org.apache.geode.test.junit.categories.IntegrationTest;
+import static org.apache.geode.distributed.ConfigurationProperties.*;
+import static org.junit.Assert.*;
+import static org.junit.Assert.assertNotNull;
+
+import java.io.File;
+import java.util.Properties;
+
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
-import java.io.File;
-import java.util.Properties;
-
-import static org.apache.geode.distributed.ConfigurationProperties.*;
-import static org.junit.Assert.*;
+import org.apache.geode.cache.*;
+import org.apache.geode.distributed.DistributedSystem;
+import org.apache.geode.internal.cache.eviction.EvictionList;
+import org.apache.geode.internal.cache.eviction.EvictionStatistics;
+import org.apache.geode.test.junit.categories.IntegrationTest;
 
 /**
  * This is a test verifies region is LIFO enabled by ENTRY COUNT verifies correct stats updating and
  * faultin is not evicting another entry - not strict LIFO
- * 
+ *
  * @since GemFire 5.7
  */
 @Category(IntegrationTest.class)
@@ -44,7 +46,7 @@ public class LIFOEvictionAlgoEnabledRegionJUnitTest {
   private static Cache cache = null;
 
   /** Stores LIFO Related Statistics */
-  private static LRUStatistics lifoStats = null;
+  private static EvictionStatistics lifoStats = null;
 
   /** The distributedSystem instance */
   private static DistributedSystem distributedSystem = null;
@@ -53,7 +55,7 @@ public class LIFOEvictionAlgoEnabledRegionJUnitTest {
 
   private static int capacity = 5;
 
-  private static NewLRUClockHand lifoClockHand = null;
+  private static EvictionList lifoClockHand = null;
 
   @Before
   public void setUp() throws Exception {
@@ -72,7 +74,7 @@ public class LIFOEvictionAlgoEnabledRegionJUnitTest {
 
   /**
    * Method for intializing the VM and create region with LIFO attached
-   * 
+   *
    * @throws Exception
    */
   private static void initializeVM() throws Exception {
@@ -106,15 +108,12 @@ public class LIFOEvictionAlgoEnabledRegionJUnitTest {
     RegionAttributes attr = factory.create();
 
     ((GemFireCacheImpl) cache).createRegion(regionName, attr);
-    /*
-     * NewLIFOClockHand extends NewLRUClockHand to hold on to the list reference
-     */
     lifoClockHand =
         ((VMLRURegionMap) ((LocalRegion) cache.getRegion(Region.SEPARATOR + regionName)).entries)
-            ._getLruList();
+            .getEvictionList();
 
     /* storing stats reference */
-    lifoStats = lifoClockHand.stats();
+    lifoStats = lifoClockHand.getStatistics();
 
   }
 
@@ -310,4 +309,3 @@ public class LIFOEvictionAlgoEnabledRegionJUnitTest {
     }
   }
 }
-

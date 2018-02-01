@@ -15,7 +15,7 @@
 /*
  * Created on Nov 18, 2005
  *
- * 
+ *
  */
 package org.apache.geode.cache.query.internal;
 
@@ -26,9 +26,9 @@ package org.apache.geode.cache.query.internal;
  * also be a CompiledJunction, if there exists a filter evaluatable subtree of CompiledJunction
  * along with any of the above mentioned three structures . The iterateOperand refers to a single or
  * group of conditions which are not filter evaluatable.
- * 
- * 
- * 
+ *
+ *
+ *
  */
 class OrganizedOperands {
 

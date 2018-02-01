@@ -20,8 +20,7 @@ import java.io.IOException;
 
 import org.apache.geode.DataSerializer;
 import org.apache.geode.cache.Region;
-import org.apache.geode.internal.DataSerializableFixedID;
-import org.apache.geode.internal.cache.lru.Sizeable;
+import org.apache.geode.internal.size.Sizeable;
 import org.apache.geode.internal.util.BlobHelper;
 
 /**
@@ -33,7 +32,7 @@ public interface CachedDeserializable extends Sizeable {
 
   /**
    * Returns the raw byte[] that represents this cache value.
-   * 
+   *
    * @return the raw byte[] that represents this cache value
    */
   public byte[] getSerializedValue();
@@ -41,7 +40,7 @@ public interface CachedDeserializable extends Sizeable {
   /**
    * Gets a deserialized value for reading. Differs from getDeserializedValue by leaving the value
    * in a form that will optimize future calls.
-   * 
+   *
    * @since GemFire 4.0
    */
   public Object getDeserializedForReading();
@@ -49,7 +48,7 @@ public interface CachedDeserializable extends Sizeable {
   /**
    * Gets the string form of the cached object. If an exception is thrown while converting to a
    * string then the exception will be caught and put in the returned string.
-   * 
+   *
    * @return a string that represents the cached object.
    * @since GemFire 6.6
    */
@@ -58,7 +57,7 @@ public interface CachedDeserializable extends Sizeable {
   /**
    * Always makes a copy of the deserialized object and returns it. Leaves the value in a form that
    * will optimize future calls.
-   * 
+   *
    * @param r the region that owns this object or null if no owner
    * @param re the region entry that owns this object or null if no owner
    * @return the deserialized object for this cache value
@@ -67,7 +66,7 @@ public interface CachedDeserializable extends Sizeable {
 
   /**
    * Returns the deserialized object for this cache value.
-   * 
+   *
    * @param r the region that owns this object or null if no owner
    * @param re the region entry that owns this object or null if no owner
    * @return the deserialized object for this cache value
@@ -87,7 +86,7 @@ public interface CachedDeserializable extends Sizeable {
    * {@link DataSerializer#readByteArray(java.io.DataInput)} 2) de-serialize the byte array using
    * {@link BlobHelper#deserializeBlob(byte[])} into an object. The idea is to delay
    * de-serialization until the last possible moment to provide better parallelism
-   * 
+   *
    * @param out the stream to write on
    * @throws IOException
    */
@@ -97,7 +96,7 @@ public interface CachedDeserializable extends Sizeable {
    * Sets the serialized value of the Object in the wrapper along with appropriate user bit & valid
    * length. If the Object is already in a serialized form then the byte array is set in the wrapper
    * along with boolean reusable as false
-   * 
+   *
    * @param wrapper object of type BytesAndBitsForCompactor
    */
   public void fillSerializedValue(BytesAndBitsForCompactor wrapper, byte userBits);

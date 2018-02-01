@@ -31,12 +31,10 @@ import org.apache.geode.internal.i18n.LocalizedStrings;
 import org.apache.geode.internal.logging.log4j.LocalizedMessage;
 import org.apache.geode.internal.security.SecurityService;
 import org.apache.geode.security.GemFireSecurityException;
-import org.apache.geode.security.ResourcePermission.Operation;
-import org.apache.geode.security.ResourcePermission.Resource;
 
 public class Size extends BaseCommand {
 
-  private final static Size singleton = new Size();
+  private static final Size singleton = new Size();
 
   private Size() {}
 
@@ -92,7 +90,9 @@ public class Size extends BaseCommand {
 
     // Size the entry
     try {
-      securityService.authorize(Resource.DATA, Operation.READ, regionName);
+      // GEODE-4102
+      // securityService.authorize(Resource.DATA, Operation.READ, regionName);
+
       writeSizeResponse(region.size(), clientMessage, serverConnection);
     } catch (RegionDestroyedException rde) {
       writeException(clientMessage, rde, false, serverConnection);

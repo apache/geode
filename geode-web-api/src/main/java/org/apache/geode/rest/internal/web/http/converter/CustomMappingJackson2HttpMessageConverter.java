@@ -27,7 +27,7 @@ import org.springframework.util.Assert;
 
 /**
  * The CustomMappingJackson2HttpMessageConverter class...
- * 
+ *
  * @see org.springframework.http.converter.json.MappingJackson2HttpMessageConverter
  * @since GemFire 0.0.1
  */

@@ -18,7 +18,7 @@ package org.apache.geode.cache.operations;
 
 /**
  * Encapsulates registration/unregistration of interest in a region.
- * 
+ *
  * @since GemFire 5.5
  * @deprecated since Geode1.0, use {@link org.apache.geode.security.ResourcePermission} instead
  */
@@ -51,7 +51,7 @@ public abstract class InterestOperationContext extends OperationContext {
 
   /**
    * Get the key for this register/unregister interest operation.
-   * 
+   *
    * @return the key to be registered/unregistered.
    */
   public Object getKey() {
@@ -60,7 +60,7 @@ public abstract class InterestOperationContext extends OperationContext {
 
   /**
    * Set the key for this register/unregister interest operation.
-   * 
+   *
    * @param key the new key
    */
   public void setKey(Object key) {

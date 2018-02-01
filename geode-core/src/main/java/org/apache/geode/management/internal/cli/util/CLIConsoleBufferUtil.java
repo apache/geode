@@ -15,6 +15,7 @@
 package org.apache.geode.management.internal.cli.util;
 
 import jline.console.ConsoleReader;
+
 import org.apache.geode.management.internal.cli.shell.Gfsh;
 
 public class CLIConsoleBufferUtil {

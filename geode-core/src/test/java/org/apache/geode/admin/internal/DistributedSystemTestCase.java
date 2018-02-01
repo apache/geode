@@ -14,13 +14,14 @@
  */
 package org.apache.geode.admin.internal;
 
-import org.apache.geode.distributed.DistributedSystem;
-import org.junit.After;
-import org.junit.Before;
+import static org.apache.geode.distributed.ConfigurationProperties.*;
 
 import java.util.Properties;
 
-import static org.apache.geode.distributed.ConfigurationProperties.*;
+import org.junit.After;
+import org.junit.Before;
+
+import org.apache.geode.distributed.DistributedSystem;
 
 /**
  * Provides common setUp and tearDown for testing the Admin API.

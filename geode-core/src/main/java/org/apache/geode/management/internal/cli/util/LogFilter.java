@@ -16,16 +16,17 @@
 
 package org.apache.geode.management.internal.cli.util;
 
-import org.apache.geode.internal.logging.LogService;
-import org.apache.logging.log4j.Level;
-import org.apache.logging.log4j.Logger;
-
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.attribute.BasicFileAttributes;
 import java.time.Instant;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
+
+import org.apache.logging.log4j.Level;
+import org.apache.logging.log4j.Logger;
+
+import org.apache.geode.internal.logging.LogService;
 
 public class LogFilter {
   public enum LineFilterResult {

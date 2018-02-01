@@ -25,7 +25,7 @@ public class FunctionDomainException extends QueryException {
 
   /**
    * Constructs and instance of FunctionDomainException.
-   * 
+   *
    * @param msg error message
    */
   public FunctionDomainException(String msg) {

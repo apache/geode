@@ -641,6 +641,9 @@ limitations under the License.
                         <a href="/docs/guide/<%=vars.product_version_nodot%>/managing/monitor_tune/chapter_overview.html">Performance Tuning and Configuration</a>
                         <ul>
                             <li>
+                                <a href="/docs/guide/<%=vars.product_version_nodot%>/managing/monitor_tune/disabling_tcp_syn_cookies.html">Disabling TCP SYN Cookies</a>
+                            </li>
+                            <li>
                                 <a href="/docs/guide/<%=vars.product_version_nodot%>/managing/monitor_tune/performance_on_vsphere.html">Improving Performance on vSphere</a>
                             </li>
                             <li class="has_submenu">
@@ -865,7 +868,10 @@ limitations under the License.
                                         <a href="/docs/guide/<%=vars.product_version_nodot%>/developing/partitioned_regions/custom_partitioning_and_data_colocation.html">Understanding Custom Partitioning and Data Colocation</a>
                                     </li>
                                     <li>
-                                        <a href="/docs/guide/<%=vars.product_version_nodot%>/developing/partitioned_regions/using_custom_partition_resolvers.html">Custom-Partition Your Region Data</a>
+                                        <a href="/docs/guide/<%=vars.product_version_nodot%>/developing/partitioned_regions/standard_custom_partitioning.html">Standard Custom Partitioning</a>
+                                    </li>
+                                    <li>
+                                        <a href="/docs/guide/<%=vars.product_version_nodot%>/developing/partitioned_regions/fixed_custom_partitioning.html">Fixed Custom Partitioning</a>
                                     </li>
                                     <li>
                                         <a href="/docs/guide/<%=vars.product_version_nodot%>/developing/partitioned_regions/colocating_partitioned_region_data.html">Colocate Data from Different Partitioned Regions</a>
@@ -1200,7 +1206,7 @@ limitations under the License.
                                 <a href="/docs/guide/<%=vars.product_version_nodot%>/getting_started/querying_quick_reference.html">Geode Querying FAQ and Examples</a>
                             </li>
                             <li class="has_submenu">
-                                <a href="/docs/guide/<%=vars.product_version_nodot%>/developing/querying_basics/query_basics.html">Basic Querying</a>
+                                <a href="/docs/guide/<%=vars.product_version_nodot%>/developing/querying_basics/query_basics.html">Querying with OQL</a>
                                 <ul>
                                     <li>
                                         <a href="/docs/guide/<%=vars.product_version_nodot%>/developing/querying_basics/oql_compared_to_sql.html">Advantages of OQL</a>
@@ -1275,50 +1281,6 @@ limitations under the License.
                                         <a href="/docs/guide/<%=vars.product_version_nodot%>/developing/query_additional/using_query_bind_parameters.html">Using Query Bind Parameters</a>
                                     </li>
                                     <li class="has_submenu">
-                                        <a href="/docs/guide/<%=vars.product_version_nodot%>/developing/query_index/query_index.html">Working with Indexes</a>
-                                        <ul>
-                                            <li>
-                                                <a href="/docs/guide/<%=vars.product_version_nodot%>/developing/query_index/indexing_guidelines.html">Tips and Guidelines on Using Indexes</a>
-                                            </li>
-                                            <li>
-                                                <a href="/docs/guide/<%=vars.product_version_nodot%>/developing/query_index/creating_an_index.html">Creating, Listing and Removing Indexes</a>
-                                            </li>
-                                            <li>
-                                                <a href="/docs/guide/<%=vars.product_version_nodot%>/developing/query_index/creating_key_indexes.html">Creating Key Indexes</a>
-                                            </li>
-                                            <li>
-                                                <a href="/docs/guide/<%=vars.product_version_nodot%>/developing/query_index/creating_hash_indexes.html">Creating Hash Indexes</a>
-                                            </li>
-                                            <li>
-                                                <a href="/docs/guide/<%=vars.product_version_nodot%>/developing/query_index/creating_map_indexes.html">Creating Indexes on Map Fields ("Map Indexes")</a>
-                                            </li>
-                                            <li>
-                                                <a href="/docs/guide/<%=vars.product_version_nodot%>/developing/query_index/create_multiple_indexes.html">Creating Multiple Indexes at Once</a>
-                                            </li>
-                                            <li>
-                                                <a href="/docs/guide/<%=vars.product_version_nodot%>/developing/query_index/maintaining_indexes.html">Maintaining Indexes (Synchronously or Asynchronously) and Index Storage</a>
-                                            </li>
-                                            <li>
-                                                <a href="/docs/guide/<%=vars.product_version_nodot%>/developing/query_index/query_index_hints.html">Using Query Index Hints</a>
-                                            </li>
-                                            <li>
-                                                <a href="/docs/guide/<%=vars.product_version_nodot%>/developing/query_index/indexes_on_single_region_queries.html">Using Indexes on Single Region Queries</a>
-                                            </li>
-                                            <li>
-                                                <a href="/docs/guide/<%=vars.product_version_nodot%>/developing/query_index/using_indexes_with_equijoin_queries.html">Using Indexes with Equi-Join Queries</a>
-                                            </li>
-                                            <li>
-                                                <a href="/docs/guide/<%=vars.product_version_nodot%>/developing/query_index/indexes_with_overflow_regions.html">Using Indexes with Overflow Regions</a>
-                                            </li>
-                                            <li>
-                                                <a href="/docs/guide/<%=vars.product_version_nodot%>/developing/query_index/using_indexes_with_equijoin_queries_multiple_regions.html">Using Indexes on Equi-Join Queries using Multiple Regions</a>
-                                            </li>
-                                            <li>
-                                                <a href="/docs/guide/<%=vars.product_version_nodot%>/developing/query_index/index_samples.html">Index Samples</a>
-                                            </li>
-                                        </ul>
-                                    </li>
-                                    <li class="has_submenu">
                                         <a href="/docs/guide/<%=vars.product_version_nodot%>/developing/querying_basics/querying_partitioned_regions.html">
                                             Querying Partitioned Regions</a>
                                         <ul>
@@ -1341,6 +1303,50 @@ limitations under the License.
                                     </li>
                                     <li>
                                         <a href="/docs/guide/<%=vars.product_version_nodot%>/developing/query_additional/query_debugging.html">Query Debugging</a>
+                                    </li>
+                                </ul>
+                            </li>
+                            <li class="has_submenu">
+                                <a href="/docs/guide/<%=vars.product_version_nodot%>/developing/query_index/query_index.html">Working with Indexes</a>
+                                <ul>
+                                    <li>
+                                        <a href="/docs/guide/<%=vars.product_version_nodot%>/developing/query_index/indexing_guidelines.html">Tips and Guidelines on Using Indexes</a>
+                                    </li>
+                                    <li>
+                                        <a href="/docs/guide/<%=vars.product_version_nodot%>/developing/query_index/creating_an_index.html">Creating, Listing and Removing Indexes</a>
+                                    </li>
+                                    <li>
+                                        <a href="/docs/guide/<%=vars.product_version_nodot%>/developing/query_index/creating_key_indexes.html">Creating Key Indexes</a>
+                                    </li>
+                                    <li>
+                                        <a href="/docs/guide/<%=vars.product_version_nodot%>/developing/query_index/creating_hash_indexes.html">Creating Hash Indexes</a>
+                                    </li>
+                                    <li>
+                                        <a href="/docs/guide/<%=vars.product_version_nodot%>/developing/query_index/creating_map_indexes.html">Creating Indexes on Map Fields ("Map Indexes")</a>
+                                    </li>
+                                    <li>
+                                        <a href="/docs/guide/<%=vars.product_version_nodot%>/developing/query_index/create_multiple_indexes.html">Creating Multiple Indexes at Once</a>
+                                    </li>
+                                    <li>
+                                        <a href="/docs/guide/<%=vars.product_version_nodot%>/developing/query_index/maintaining_indexes.html">Maintaining Indexes (Synchronously or Asynchronously) and Index Storage</a>
+                                    </li>
+                                    <li>
+                                        <a href="/docs/guide/<%=vars.product_version_nodot%>/developing/query_index/query_index_hints.html">Using Query Index Hints</a>
+                                    </li>
+                                    <li>
+                                        <a href="/docs/guide/<%=vars.product_version_nodot%>/developing/query_index/indexes_on_single_region_queries.html">Using Indexes on Single Region Queries</a>
+                                    </li>
+                                    <li>
+                                        <a href="/docs/guide/<%=vars.product_version_nodot%>/developing/query_index/using_indexes_with_equijoin_queries.html">Using Indexes with Equi-Join Queries</a>
+                                    </li>
+                                    <li>
+                                        <a href="/docs/guide/<%=vars.product_version_nodot%>/developing/query_index/indexes_with_overflow_regions.html">Using Indexes with Overflow Regions</a>
+                                    </li>
+                                    <li>
+                                        <a href="/docs/guide/<%=vars.product_version_nodot%>/developing/query_index/using_indexes_with_equijoin_queries_multiple_regions.html">Using Indexes on Equi-Join Queries using Multiple Regions</a>
+                                    </li>
+                                    <li>
+                                        <a href="/docs/guide/<%=vars.product_version_nodot%>/developing/query_index/index_samples.html">Index Samples</a>
                                     </li>
                                 </ul>
                             </li>
@@ -1788,6 +1794,9 @@ gfsh</a>
                                     <li class="has_submenu">
                                         <a href="/docs/guide/<%=vars.product_version_nodot%>/tools_modules/gfsh/command-pages/alter.html">alter</a>
                                         <ul>
+                                            <li>
+                                                <a href="/docs/guide/<%=vars.product_version_nodot%>/tools_modules/gfsh/command-pages/alter.html#topic_alter_async_event_queue">alter async-event-queue</a>
+                                            </li>
                                             <li>
                                                 <a href="/docs/guide/<%=vars.product_version_nodot%>/tools_modules/gfsh/command-pages/alter.html#topic_99BCAD98BDB5470189662D2F308B68EB">alter disk-store</a>
                                             </li>
@@ -2342,7 +2351,7 @@ gfsh</a>
                                 <a href="/docs/guide/<%=vars.product_version_nodot%>/reference/topics/cache-elements-list.html">&lt;cache&gt; Element Hierarchy</a>
                             </li>
                             <li class="has_submenu">
-                                <a href="/docs/guide/<%=vars.product_version_nodot%>/reference/topics/cache_xml.html#cache_xml_cache">&lt;cache&gt; Element Reference</a>
+                                <a href="/docs/guide/<%=vars.product_version_nodot%>/reference/topics/cache_xml.html">&lt;cache&gt; Element Reference</a>
                                 <ul>
                                     <li class="has_submenu">
                                         <a href="/docs/guide/<%=vars.product_version_nodot%>/reference/topics/cache_xml.html#cache-transaction-manager">&lt;cache-transaction-manager&gt;</a>
@@ -2358,49 +2367,30 @@ gfsh</a>
                                     <li>
                                         <a href="/docs/guide/<%=vars.product_version_nodot%>/reference/topics/cache_xml.html#dynamic-region-factory">&lt;dynamic-region-factory&gt;</a>
                                     </li>
-                                    <li>
-                                        <a href="/docs/guide/<%=vars.product_version_nodot%>/reference/topics/gfe_cache_xml.html#gateway-hub">&lt;gateway-hub&gt;</a>
-                                    </li>
-
                                     <li class="has_submenu">
-                                        <a href="/docs/guide/<%=vars.product_version_nodot%>/reference/topics/gfe_cache_xml.html#gateway">&lt;gateway&gt;</a>
+                                        <a href="/docs/guide/<%=vars.product_version_nodot%>/reference/topics/cache_xml.html#gateway-sender">&lt;gateway-sender&gt;</a>
                                         <ul>
                                             <li>
-                                                <a href="/docs/guide/<%=vars.product_version_nodot%>/reference/topics/gfe_cache_xml.html#topic_99006504F94C4666BE33D3B5E7C90FB2">&lt;gateway-endpoint&gt;</a>
+                                                <a href="/docs/guide/<%=vars.product_version_nodot%>/reference/topics/cache_xml.html#gateway-event-filter">&lt;gateway-event-filter&gt;</a>
                                             </li>
                                             <li>
-                                                <a href="/docs/guide/<%=vars.product_version_nodot%>/reference/topics/gfe_cache_xml.html#topic_EEA017734DFF438AB8C08034C813D594">&lt;gateway-listener&gt;</a>
+                                                <a href="/docs/guide/<%=vars.product_version_nodot%>/reference/topics/cache_xml.html#gateway-event-substitution-filter">&lt;gateway-event-substitution-filter&gt;</a>
                                             </li>
                                             <li>
-                                                <a href="/docs/guide/<%=vars.product_version_nodot%>/reference/topics/gfe_cache_xml.html#topic_4939576D40C74BF28F4BE5EDB9607D8D">&lt;gateway-queue&gt;</a>
-                                            </li>
-                                        </ul>
-                                    </li>
-
-                                    <li class="has_submenu">
-                                        <a href="/docs/guide/<%=vars.product_version_nodot%>/reference/topics/gfe_cache_xml.html#gateway-sender">&lt;gateway-sender&gt;</a>
-                                        <ul>
-                                            <li>
-                                                <a href="/docs/guide/<%=vars.product_version_nodot%>/reference/topics/gfe_cache_xml.html#gateway-event-filter">&lt;gateway-event-filter&gt;</a>
-                                            </li>
-                                            <li>
-                                                <a href="/docs/guide/<%=vars.product_version_nodot%>/reference/topics/gfe_cache_xml.html#gateway-event-substitution-filter">&lt;gateway-event-substitution-filter&gt;</a>
-                                            </li>
-                                            <li>
-                                                <a href="/docs/guide/<%=vars.product_version_nodot%>/reference/topics/gfe_cache_xml.html#gateway-transport-filter">&lt;gateway-transport-filter&gt;</a>
+                                                <a href="/docs/guide/<%=vars.product_version_nodot%>/reference/topics/cache_xml.html#gateway-transport-filter">&lt;gateway-transport-filter&gt;</a>
                                             </li>
                                         </ul>
                                     </li>
                                     <li class="has_submenu">
-                                        <a href="/docs/guide/<%=vars.product_version_nodot%>/reference/topics/gfe_cache_xml.html#gateway-receiver">&lt;gateway-receiver&gt;</a>
+                                        <a href="/docs/guide/<%=vars.product_version_nodot%>/reference/topics/cache_xml.html#gateway-receiver">&lt;gateway-receiver&gt;</a>
                                         <ul>
                                             <li>
-                                                <a href="/docs/guide/<%=vars.product_version_nodot%>/reference/topics/gfe_cache_xml.html#gateway-receiver_gateway-transport-filter">&lt;gateway-transport-filter&gt;</a>
+                                                <a href="/docs/guide/<%=vars.product_version_nodot%>/reference/topics/cache_xml.html#gateway-receiver_gateway-transport-filter">&lt;gateway-transport-filter&gt;</a>
                                             </li>
                                         </ul>
                                     </li>
                                     <li>
-                                        <a href="/docs/guide/<%=vars.product_version_nodot%>/reference/topics/gfe_cache_xml.html#gateway-conflict-resolver">&lt;gateway-conflict-resolver&gt;</a>
+                                        <a href="/docs/guide/<%=vars.product_version_nodot%>/reference/topics/cache_xml.html#gateway-conflict-resolver">&lt;gateway-conflict-resolver&gt;</a>
                                     </li>
                                     <li class="has_submenu">
                                         <a href="/docs/guide/<%=vars.product_version_nodot%>/reference/topics/cache_xml.html#async-event-queue">&lt;async-event-queue&gt;</a>
@@ -2413,9 +2403,6 @@ gfsh</a>
                                     <li class="has_submenu">
                                         <a href="/docs/guide/<%=vars.product_version_nodot%>/reference/topics/cache_xml.html#cache-server">&lt;cache-server&gt;</a>
                                         <ul>
-                                            <li>
-                                                <a href="/docs/guide/<%=vars.product_version_nodot%>/reference/topics/cache_xml.html#group">&lt;group&gt;</a>
-                                            </li>
                                             <li>
                                                 <a href="/docs/guide/<%=vars.product_version_nodot%>/reference/topics/cache_xml.html#client-subscription">&lt;client-subscription&gt;</a>
                                             </li>

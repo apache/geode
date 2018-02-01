@@ -17,25 +17,26 @@
 
 package org.apache.geode.tools.pulse.internal.service;
 
+import javax.servlet.http.HttpServletRequest;
+
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import org.apache.commons.lang.StringUtils;
-import org.apache.geode.tools.pulse.internal.data.Cluster;
-import org.apache.geode.tools.pulse.internal.data.Repository;
 import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
 import org.springframework.stereotype.Service;
 
-import javax.servlet.http.HttpServletRequest;
+import org.apache.geode.tools.pulse.internal.data.Cluster;
+import org.apache.geode.tools.pulse.internal.data.Repository;
 
 /**
  * Class SystemAlertsService
- * 
+ *
  * This class contains implementations of getting system's alerts details (like errors, warnings and
  * severe errors).
- * 
+ *
  * @since GemFire version 7.5
  */
 
@@ -77,7 +78,7 @@ public class SystemAlertsService implements PulseService {
   /**
    * function used for getting all members details in format of JSON Object array defined under a
    * cluster
-   * 
+   *
    * @param cluster
    * @return JSONObject Array list
    */

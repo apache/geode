@@ -17,8 +17,8 @@ package org.apache.geode.management.internal.cli.commands;
 
 import static org.apache.geode.distributed.ConfigurationProperties.SECURITY_MANAGER;
 import static org.apache.geode.management.internal.security.TestFunctions.ReadFunction;
-import static org.apache.geode.test.junit.rules.GfshShellConnectionRule.PortType.http;
-import static org.apache.geode.test.junit.rules.GfshShellConnectionRule.PortType.jmxManager;
+import static org.apache.geode.test.junit.rules.GfshCommandRule.PortType.http;
+import static org.apache.geode.test.junit.rules.GfshCommandRule.PortType.jmxManager;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import java.util.Properties;
@@ -33,18 +33,18 @@ import org.apache.geode.cache.execute.FunctionService;
 import org.apache.geode.management.internal.security.ResourceConstants;
 import org.apache.geode.management.internal.security.TestFunctions.WriteFunction;
 import org.apache.geode.security.SimpleTestSecurityManager;
-import org.apache.geode.test.junit.rules.GfshShellConnectionRule;
-import org.apache.geode.test.dunit.rules.LocatorServerStartupRule;
+import org.apache.geode.test.dunit.rules.ClusterStartupRule;
 import org.apache.geode.test.dunit.rules.MemberVM;
 import org.apache.geode.test.junit.categories.DistributedTest;
+import org.apache.geode.test.junit.rules.GfshCommandRule;
 
 @Category(DistributedTest.class)
 public class ExecuteFunctionCommandWithSecurityDUnitTest {
   @ClassRule
-  public static LocatorServerStartupRule lsRule = new LocatorServerStartupRule();
+  public static ClusterStartupRule lsRule = new ClusterStartupRule();
 
   @Rule
-  public GfshShellConnectionRule gfsh = new GfshShellConnectionRule();
+  public GfshCommandRule gfsh = new GfshCommandRule();
 
   private static MemberVM locator;
 
@@ -94,12 +94,14 @@ public class ExecuteFunctionCommandWithSecurityDUnitTest {
   }
 
   private void executeReadFunctionIsSuccessful() {
-    gfsh.executeAndVerifyCommand("execute function --id=" + new ReadFunction().getId());
+    gfsh.executeAndAssertThat("execute function --id=" + new ReadFunction().getId())
+        .statusIsSuccess();
     assertThat(gfsh.getGfshOutput()).contains(ReadFunction.SUCCESS_OUTPUT);
   }
 
   private void executeWriteFunctionThrowsError() {
-    gfsh.executeAndVerifyCommand("execute function --id=" + new WriteFunction().getId());
+    gfsh.executeAndAssertThat("execute function --id=" + new WriteFunction().getId())
+        .statusIsSuccess();
     assertThat(gfsh.getGfshOutput()).contains("dataRead not authorized for DATA:WRITE");
   }
 

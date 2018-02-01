@@ -64,7 +64,7 @@ public class InternalClientMembership {
 
   /**
    * The membership listeners registered on this InternalClientMembership
-   * 
+   *
    * This list is never modified in place, and a new list is installed only under the control of
    * (@link #membershipLock}.
    */
@@ -92,7 +92,7 @@ public class InternalClientMembership {
 
   /**
    * True if class is monitoring systems
-   * 
+   *
    * guarded.By InternalClientMembership.class
    */
   private static boolean isMonitoring = false;
@@ -139,7 +139,7 @@ public class InternalClientMembership {
   /**
    * Registers a {@link ClientMembershipListener} for notification of connection changes for
    * CacheServer and clients.
-   * 
+   *
    * @param listener a ClientMembershipListener to be registered
    */
   public static void registerClientMembershipListener(ClientMembershipListener listener) {
@@ -157,7 +157,7 @@ public class InternalClientMembership {
 
   /**
    * Removes registration of a previously registered {@link ClientMembershipListener}.
-   * 
+   *
    * @param listener a ClientMembershipListener to be unregistered
    */
   public static void unregisterClientMembershipListener(ClientMembershipListener listener) {
@@ -177,7 +177,7 @@ public class InternalClientMembership {
   /**
    * Returns an array of all the currently registered <code>ClientMembershipListener</code>s.
    * Modifications to the returned array will not effect the registration of these listeners.
-   * 
+   *
    * @return the registered <code>ClientMembershipListener</code>s; an empty array if no listeners
    */
   public static ClientMembershipListener[] getClientMembershipListeners() {
@@ -210,12 +210,12 @@ public class InternalClientMembership {
    * a String representation of the client memberId, and the map entry value is an Integer count of
    * connections to that client. Since a single client can have multiple ConnectionProxy objects,
    * this map will contain all the Connection objects across the ConnectionProxies
-   * 
+   *
    * @param onlyClientsNotifiedByThisServer true will return only those clients that are actively
    *        being updated by this server
    * @return map of client memberIds to count of connections to that client
-   * 
-   * 
+   *
+   *
    */
   public static Map getConnectedClients(boolean onlyClientsNotifiedByThisServer) {
     ClientHealthMonitor chMon = ClientHealthMonitor.getInstance();
@@ -242,7 +242,7 @@ public class InternalClientMembership {
     Map map = chMon.getConnectedClients(filterProxyIDs);
     /*
      * if (onlyClientsNotifiedByThisServer) { Map notifyMap = new HashMap();
-     * 
+     *
      * for (Iterator iter = map.keySet().iterator(); iter.hasNext();) { String memberId = (String)
      * iter.next(); if (notifierClients.contains(memberId)) { // found memberId that is notified by
      * this server notifyMap.put(memberId, map.get(memberId)); } } map = notifyMap; }
@@ -253,7 +253,7 @@ public class InternalClientMembership {
   /**
    * This method returns the CacheClientStatus for all the clients that are connected to this
    * server. This method returns all clients irrespective of whether subscription is enabled or not.
-   * 
+   *
    * @return Map of ClientProxyMembershipID against CacheClientStatus objects.
    */
   public static Map getStatusForAllClientsIgnoreSubscriptionStatus() {
@@ -266,7 +266,7 @@ public class InternalClientMembership {
 
   /**
    * Caller must synchronize on cache.allClientServersLock
-   * 
+   *
    * @return all the clients
    */
   public static Map getConnectedClients() {
@@ -312,7 +312,7 @@ public class InternalClientMembership {
   /**
    * Returns a map of servers to count of pools connected to that server. The map entry key is a
    * String representation of the server,
-   * 
+   *
    * @return map of servers to count of pools using that server
    */
   public static Map getConnectedServers() {
@@ -418,7 +418,7 @@ public class InternalClientMembership {
   /**
    * Notifies registered listeners that a Client member has joined. The new member may be a client
    * connecting to this process or a server that this process has just connected to.
-   * 
+   *
    * @param member the <code>DistributedMember</code>
    * @param client true if the member is a client; false if server
    * @param typeOfEvent joined/left/crashed
@@ -609,4 +609,3 @@ public class InternalClientMembership {
     JOINED, LEFT, CRASHED
   }
 }
-

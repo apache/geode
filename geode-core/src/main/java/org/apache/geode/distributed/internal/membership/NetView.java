@@ -14,14 +14,6 @@
  */
 package org.apache.geode.distributed.internal.membership;
 
-import org.apache.geode.DataSerializer;
-import org.apache.geode.distributed.DistributedMember;
-import org.apache.geode.distributed.internal.DistributionManager;
-import org.apache.geode.internal.DataSerializableFixedID;
-import org.apache.geode.internal.InternalDataSerializer;
-import org.apache.geode.internal.Version;
-import org.apache.logging.log4j.Logger;
-
 import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
@@ -38,10 +30,19 @@ import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Collectors;
 
+import org.apache.logging.log4j.Logger;
+
+import org.apache.geode.DataSerializer;
+import org.apache.geode.distributed.DistributedMember;
+import org.apache.geode.distributed.internal.DistributionManager;
+import org.apache.geode.internal.DataSerializableFixedID;
+import org.apache.geode.internal.InternalDataSerializer;
+import org.apache.geode.internal.Version;
+
 /**
  * The NetView class represents a membership view. Note that this class is not synchronized, so take
  * that under advisement if you decide to modify a view with add() or remove().
- * 
+ *
  * @since GemFire 5.5
  */
 public class NetView implements DataSerializableFixedID {
@@ -56,7 +57,7 @@ public class NetView implements DataSerializableFixedID {
   private InternalDistributedMember creator;
   private Set<InternalDistributedMember> hashedMembers;
   private final Object membersLock = new Object();
-  static public final Random RANDOM = new Random();
+  public static final Random RANDOM = new Random();
 
 
   public NetView() {
@@ -94,7 +95,7 @@ public class NetView implements DataSerializableFixedID {
 
   /**
    * Test method
-   * 
+   *
    * @param size size of the view, used for presizing collections
    * @param viewId the ID of the view
    */
@@ -344,7 +345,7 @@ public class NetView implements DataSerializableFixedID {
    * This functions returns the list of preferred coordinators. One random member from list of
    * non-preferred member list. It make sure that random member is not in suspected Set. And local
    * member.
-   * 
+   *
    * @param filter Suspect member set.
    * @param localAddress the address of this member
    * @param maxNumberDesired number of preferred coordinators to return

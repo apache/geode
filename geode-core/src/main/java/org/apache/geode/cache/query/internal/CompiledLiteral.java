@@ -15,10 +15,8 @@
 
 package org.apache.geode.cache.query.internal;
 
-// import java.util.*;
 import org.apache.geode.cache.query.*;
 import org.apache.geode.pdx.internal.PdxString;
-// import org.apache.geode.internal.Assert;
 
 /**
  * Class Description

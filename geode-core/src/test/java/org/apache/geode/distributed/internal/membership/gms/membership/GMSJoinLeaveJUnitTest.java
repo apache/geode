@@ -29,10 +29,31 @@ import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
-import org.apache.geode.distributed.internal.DistributionManager;
+import java.io.IOException;
+import java.net.InetSocketAddress;
+import java.net.UnknownHostException;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Properties;
+import java.util.Set;
+import java.util.Timer;
+import java.util.concurrent.TimeUnit;
+
 import org.awaitility.Awaitility;
+import org.junit.After;
+import org.junit.Assert;
+import org.junit.Test;
+import org.junit.experimental.categories.Category;
+import org.mockito.internal.verification.Times;
+import org.mockito.verification.Timeout;
+
 import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.distributed.internal.DistributionConfig;
+import org.apache.geode.distributed.internal.DistributionManager;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
 import org.apache.geode.distributed.internal.membership.NetView;
 import org.apache.geode.distributed.internal.membership.gms.GMSMember;
@@ -62,26 +83,6 @@ import org.apache.geode.security.AuthenticationFailedException;
 import org.apache.geode.test.junit.categories.FlakyTest;
 import org.apache.geode.test.junit.categories.IntegrationTest;
 import org.apache.geode.test.junit.categories.MembershipTest;
-import org.junit.After;
-import org.junit.Assert;
-import org.junit.Test;
-import org.junit.experimental.categories.Category;
-import org.mockito.internal.verification.Times;
-import org.mockito.verification.Timeout;
-
-import java.io.IOException;
-import java.net.InetSocketAddress;
-import java.net.UnknownHostException;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.HashSet;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Properties;
-import java.util.Set;
-import java.util.Timer;
-import java.util.concurrent.TimeUnit;
 
 @Category({IntegrationTest.class, MembershipTest.class})
 public class GMSJoinLeaveJUnitTest {
@@ -321,7 +322,7 @@ public class GMSJoinLeaveJUnitTest {
 
   /**
    * prepares and install a view
-   * 
+   *
    * @throws IOException
    */
   private void prepareAndInstallView(InternalDistributedMember coordinator,
@@ -865,7 +866,7 @@ public class GMSJoinLeaveJUnitTest {
   /**
    * If a locator is started and sends out a view to take control of the cluster another member that
    * is also in the process of sending out a view should relinquish control to the new locator.
-   * 
+   *
    * @throws Exception
    */
   @Test
@@ -1330,7 +1331,7 @@ public class GMSJoinLeaveJUnitTest {
     this.removeMember = null;
 
     assertTrue("testFlagForRemovalRequest should be true",
-        gmsJoinLeave.getViewCreator().getTestFlageForRemovalRequest());
+        gmsJoinLeave.getViewCreator().getTestFlagForRemovalRequest());
   }
 
   @Test
@@ -1353,7 +1354,7 @@ public class GMSJoinLeaveJUnitTest {
     this.leaveMember = null;
 
     assertTrue("testFlagForRemovalRequest should be true",
-        gmsJoinLeave.getViewCreator().getTestFlageForRemovalRequest());
+        gmsJoinLeave.getViewCreator().getTestFlagForRemovalRequest());
   }
 
   private void installView() throws Exception {
@@ -1395,4 +1396,3 @@ public class GMSJoinLeaveJUnitTest {
     gmsJoinLeave.processMessage(msg);
   }
 }
-

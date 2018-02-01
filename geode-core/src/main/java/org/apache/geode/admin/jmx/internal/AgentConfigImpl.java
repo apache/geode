@@ -50,7 +50,7 @@ import org.apache.geode.internal.util.IOUtils;
  * properties for further information.
  * <p>
  * Extends and implements DistributedSystemConfig.
- * 
+ *
  * @since GemFire 3.5 (in which it was named AgentConfig)
  */
 public class AgentConfigImpl extends DistributedSystemConfigImpl implements AgentConfig {
@@ -184,7 +184,7 @@ public class AgentConfigImpl extends DistributedSystemConfigImpl implements Agen
 
   /**
    * Returns default values for all valid agent properties as a Properties object.
-   * 
+   *
    * @return default values for all valid agent properties
    */
   static Properties getDefaultValuesForAllProperties() {
@@ -441,7 +441,7 @@ public class AgentConfigImpl extends DistributedSystemConfigImpl implements Agen
   /**
    * Constructs new instance of AgentConfig. Supplied command-line arguments are used to create a
    * set of non-default properties for initializing this AgentConfig.
-   * 
+   *
    * @param args array of non-default configuration arguments
    */
   public AgentConfigImpl(String[] args) {
@@ -451,7 +451,7 @@ public class AgentConfigImpl extends DistributedSystemConfigImpl implements Agen
 
   /**
    * Creates a new <code>AgentConfig</code> with the given non-default configuration properties.
-   * 
+   *
    * @param props overriding non-default configuration properties
    */
   public AgentConfigImpl(Properties props) {
@@ -467,7 +467,7 @@ public class AgentConfigImpl extends DistributedSystemConfigImpl implements Agen
 
   /**
    * Constructs new instance of AgentConfig using the specified property file.
-   * 
+   *
    * @param propFile the file to load configuration properties from
    */
   public AgentConfigImpl(File propFile) {
@@ -505,7 +505,7 @@ public class AgentConfigImpl extends DistributedSystemConfigImpl implements Agen
   /**
    * Checks to see if this config object is "read only". If it is, then an
    * {@link IllegalStateException} is thrown.
-   * 
+   *
    * @since GemFire 4.0
    */
   @Override
@@ -560,7 +560,7 @@ public class AgentConfigImpl extends DistributedSystemConfigImpl implements Agen
 
   /**
    * Converts the contents of this config to a property instance and Stringifies it
-   * 
+   *
    * @return contents of this config as String
    */
   public String toPropertiesAsString() {
@@ -582,7 +582,7 @@ public class AgentConfigImpl extends DistributedSystemConfigImpl implements Agen
 
   /**
    * Converts the contents of this config to a property instance.
-   * 
+   *
    * @return contents of this config as java.util.Properties
    */
   public Properties toProperties() {
@@ -591,7 +591,7 @@ public class AgentConfigImpl extends DistributedSystemConfigImpl implements Agen
 
   /**
    * Converts the contents of this config to a property instance.
-   * 
+   *
    * @param includeDSProperties Should distributed system properties be included in the
    *        <code>Properties</code> object? See bug 32682.
    *
@@ -877,7 +877,7 @@ public class AgentConfigImpl extends DistributedSystemConfigImpl implements Agen
    * Returns the port of the RMI Connector Server.
    * <p>
    * See <a href="#rmi-server-port">description</a> above.
-   * 
+   *
    * @return the value set for rmi-server-port
    *
    * @since GemFire 6.5
@@ -888,7 +888,7 @@ public class AgentConfigImpl extends DistributedSystemConfigImpl implements Agen
 
   /**
    * Sets the port of the RMI Connector Server.
-   * 
+   *
    * @param port rmi-server-port to set.
    *
    * @since GemFire 6.5
@@ -951,7 +951,7 @@ public class AgentConfigImpl extends DistributedSystemConfigImpl implements Agen
 
   /**
    * Initialize the values of this AgentConfig.
-   * 
+   *
    * @param props the configuration values to use
    */
   private void initialize(Properties props) {
@@ -1067,7 +1067,7 @@ public class AgentConfigImpl extends DistributedSystemConfigImpl implements Agen
   /**
    * Filter all agent configuration attributes out of the given <code>Properties</code> object.
    * <p/>
-   * 
+   *
    * @param props the <code>Properties</code> object of filter agent configuration attributes out
    *        of.
    *
@@ -1094,7 +1094,7 @@ public class AgentConfigImpl extends DistributedSystemConfigImpl implements Agen
    * Appends the log-file property to the Properties object if set of properties does not already
    * define the log-file property or the gemfire.agent.log-file property.
    * <p/>
-   * 
+   *
    * @param props the <code>Properties</code> to append the log-file property to if the property
    *        does not exist.
    */
@@ -1109,7 +1109,7 @@ public class AgentConfigImpl extends DistributedSystemConfigImpl implements Agen
    * Appends any additional property-file specified properties to the supplied Properties. If the
    * supplied property overrides the property in the property-file, then property-file value is
    * ignored. System Properties always override the supplied properties
-   * 
+   *
    * @return appendedProps Properties appened to from the property-file if any
    */
   private static Properties appendOptionalPropertyFileProperties(final Properties props) {
@@ -1160,7 +1160,7 @@ public class AgentConfigImpl extends DistributedSystemConfigImpl implements Agen
 
   /**
    * Returns a description of the given agent config property
-   * 
+   *
    * @throws IllegalArgumentException If <code>prop</code> is not a recognized agent configuration
    *         property
    */
@@ -1377,7 +1377,7 @@ public class AgentConfigImpl extends DistributedSystemConfigImpl implements Agen
 
   /**
    * Parses the array of command-line arguments (format: key=value) into an instance of Properties.
-   * 
+   *
    * @param args the command-line arguments to convert into a Properties
    */
   private static Properties toProperties(String[] args) {
@@ -1422,7 +1422,7 @@ public class AgentConfigImpl extends DistributedSystemConfigImpl implements Agen
 
   /**
    * Makes sure that the mcast port and locators are correct and consistent.
-   * 
+   *
    * @throws IllegalArgumentException If configuration is not valid
    */
   @Override
@@ -1686,7 +1686,7 @@ public class AgentConfigImpl extends DistributedSystemConfigImpl implements Agen
    * <li>the class path
    * </ol>
    * Only the first file found will be used.
-   * 
+   *
    * @return a <code>URL</code> that names the property file; otherwise Null if no property file was
    *         found.
    */
@@ -1745,7 +1745,7 @@ public class AgentConfigImpl extends DistributedSystemConfigImpl implements Agen
 
   /**
    * Returns string representation of the specified object with special handling for InetAddress.
-   * 
+   *
    * @param obj the object to convert to string
    *
    * @return string representation of the specified object
@@ -1912,4 +1912,3 @@ public class AgentConfigImpl extends DistributedSystemConfigImpl implements Agen
     return super.clone();
   }
 }
-

@@ -21,7 +21,7 @@ import org.apache.geode.cache.query.*;
 /**
  * This class provides 'do-nothing' implementations of all of the methods of interface
  * QueryObserver. See the documentation for class QueryObserverHolder for details.
- * 
+ *
  * @version $Revision: 1.2 $
  */
 public class QueryObserverAdapter implements QueryObserver {
@@ -34,7 +34,7 @@ public class QueryObserverAdapter implements QueryObserver {
 
   /**
    * Called immediately before the query expression is evaluated. (After it was compiled)
-   * 
+   *
    * @param expression The query Expression
    * @param context The execution context that will be used to evaluate the expression.
    */
@@ -42,7 +42,7 @@ public class QueryObserverAdapter implements QueryObserver {
 
   /**
    * Called once right before iteration of a 'select' statement begins.
-   * 
+   *
    * @param collection The collection being iterated over
    * @param whereClause The 'where' clause of the select statement
    */
@@ -52,7 +52,7 @@ public class QueryObserverAdapter implements QueryObserver {
    * Called once before the evaluation of an expression for a single iteration of a 'select'
    * statment. The RuntimeIterator that was passed to startIteration should already be referencing
    * the current iteration value.
-   * 
+   *
    * @param executer the object performing the iteration.
    * @param currentObject The current object in the iteration.
    */
@@ -61,7 +61,7 @@ public class QueryObserverAdapter implements QueryObserver {
   /**
    * Called once after the evaluation of an expression for a single iteration of a 'select'
    * statment.
-   * 
+   *
    * @param result The result of evaluating the where clause. Should be either a Boolean, NULL, or
    *        UNDEFINED. If evaluating the where clause threw an exception, should be NULL.
    */
@@ -69,7 +69,7 @@ public class QueryObserverAdapter implements QueryObserver {
 
   /**
    * Called once right before iteration of a 'select' statement ends.
-   * 
+   *
    * @param results The set of results returned so far by the iteration.
    */
   public void endIteration(SelectResults results) {}
@@ -77,7 +77,7 @@ public class QueryObserverAdapter implements QueryObserver {
   /**
    * Called once right before the query subsystem has requested that the indexing subsystem attempt
    * an index lookup.
-   * 
+   *
    * @param index The index being used for the lookup
    * @param oper The operation being attemped on the index. AbstractIndex
    */
@@ -86,14 +86,14 @@ public class QueryObserverAdapter implements QueryObserver {
   /**
    * Called once right after the query subsystem has requested that the indexing subsystem attempt
    * an index lookup.
-   * 
+   *
    * @param results The results of the index lookup, or null if an exception was thrown.
    */
   public void afterIndexLookup(Collection results) {}
 
   /**
    * Called immediately after the query expression is evaluated.
-   * 
+   *
    * @param result The results of the evaluation, or null if an exception was thrown.
    */
   public void afterQueryEvaluation(Object result) {}
@@ -116,10 +116,10 @@ public class QueryObserverAdapter implements QueryObserver {
    * Asif : Invoked just before the cartesian of the SelectResults obtained from GroupJunctions, is
    * done so as to expand the final resultset to the level of iterators in the query. This function
    * will get invoked from AllGroupJunction during the evaluation of AND condition
-   * 
+   *
    * @param grpResults An array of intermediate SelectResults obtained by evaluation of
    *        GroupJunctions
-   * 
+   *
    */
   public void beforeCartesianOfGroupJunctionsInAnAllGroupJunctionOfType_AND(
       Collection[] grpResults) {};
@@ -128,8 +128,8 @@ public class QueryObserverAdapter implements QueryObserver {
    * Asif : Invoked just after the cartesian of the SelectResults obtained from GroupJunctions, is
    * done so as to expand the final resultset to the level of iterators in the query. This function
    * will get invoked from AllGroupJunction during the evaluation of AND condition
-   * 
-   * 
+   *
+   *
    */
   public void afterCartesianOfGroupJunctionsInAnAllGroupJunctionOfType_AND() {};
 
@@ -139,10 +139,10 @@ public class QueryObserverAdapter implements QueryObserver {
    * CompositeGroupJunction. This function will get invoked from CompositeGroupJunction during the
    * evaluation of AND condition and only if there exists more than one GroupJunction objects in the
    * CompositeGroupJunction
-   * 
+   *
    * @param grpResults An array of intermediate SelectResults obtained by evaluation of
    *        GroupJunctions
-   * 
+   *
    */
   public void beforeCartesianOfGroupJunctionsInCompositeGroupJunctionOfType_AND(
       Collection[] grpResults) {};
@@ -159,19 +159,19 @@ public class QueryObserverAdapter implements QueryObserver {
   /**
    * Asif : Invoked just before doing expansion or cutdown of results obtained from index usage for
    * a filter evaluatable , non composite condition i.e for a single base collection.
-   * 
+   *
    * @param index The index used by the filter evaluatable condition
    * @param initialResult The raw resultset obtained for the condition
-   * 
+   *
    */
   public void beforeCutDownAndExpansionOfSingleIndexResult(Index index, Collection initialResult) {}
 
   /**
    * Asif :Invoked just after doing expansion or cutdown of results obtained from index usage for a
    * filter evaluatable , non composite condition i.e for a single base collection.
-   * 
+   *
    * @param finalResult The final conditioned resultset obtained from use of index on the condition
-   * 
+   *
    */
   public void afterCutDownAndExpansionOfSingleIndexResult(Collection finalResult) {}
 
@@ -181,7 +181,7 @@ public class QueryObserverAdapter implements QueryObserver {
    * merging the appropriate expansion & cutdown of the individual index results to the final query
    * level or CompositeGroupJunction level also occurs. Also for AND conditions, the cartesian with
    * the intermediate resultset will also occur.
-   * 
+   *
    * @param index1 Range Index identified for one of the operand, to be used in equi join condition
    * @param index2 Range Index identified for the other operand , to be used in equi join condition
    * @param initialResult A list in which each element contains a TWO dimensional Object array
@@ -190,7 +190,7 @@ public class QueryObserverAdapter implements QueryObserver {
    *        represents an equi join satisfying value ( i.e something like 1 = 1, 2 = 2 , 3 = 3 )
    *        etc. Since multiple objects of a region can have same value , so there exits rows of
    *        Object Array for each Index.
-   * 
+   *
    */
   public void beforeMergeJoinOfDoubleIndexResults(Index index1, Index index2,
       Collection initialResult) {}
@@ -201,14 +201,14 @@ public class QueryObserverAdapter implements QueryObserver {
    * merging the appropriate expansion & cutdown of the individual index results to the final query
    * level or CompositeGroupJunction level also occurs. Also for AND conditions, the cartesian with
    * the intermediate resultset will also occur.
-   * 
+   *
    * @param finalResult A SelectResults object created after expansion cutdown of two index results
    *        for a filter evaluatable CompositeCondition ( which may have been cartesianed with the
    *        intermediate Results. The Results obtained may or may not be to the Top Level/
    *        CompositeGroupJunction level. The number & positions of iterators present will depend on
    *        whether it is invoked for an OR Junction or if Complete Expansion is true or not & the
    *        stage of evaluation it is in for an AND junction.
-   * 
+   *
    */
   public void afterMergeJoinOfDoubleIndexResults(Collection finalResult) {}
 
@@ -222,12 +222,12 @@ public class QueryObserverAdapter implements QueryObserver {
    * the respective RuntimeIterators. The operand without usable index is evaluated & the Index on
    * the other operand is used to get resultset for that value. Thus for each tuple we query the
    * index on other operand .
-   * 
+   *
    * @param usedIndex : The Index which will be used to obtain the ResultSet
    * @param unusedIndex : The Index which does not get used as the relevant iterators are present in
    *        the intermediate resultset
-   * 
-   * 
+   *
+   *
    */
   public void beforeIterJoinOfSingleIndexResults(Index usedIndex, Index unusedIndex) {}
 
@@ -241,14 +241,14 @@ public class QueryObserverAdapter implements QueryObserver {
    * the respective RuntimeIterators. The operand without usable index is evaluated & the Index on
    * the other operand is used to get resultset for that value. Thus for each tuple we query the
    * index on other operand .
-   * 
+   *
    * @param finalResult : A SelectResults object created after expansion / cutdown of mergred
    *        results where one operand uses Index Results & other operand though has an Index
    *        available but cannot be used. The value of that operand is calculated by iteration of
    *        intermediate resultset for each tuple. This function gets invoked only for an AND
    *        junction. The resultset may or may not be up to the level of top level query iterators
    *        or CompositeGroupJunction iterators level.
-   * 
+   *
    */
   public void afterIterJoinOfSingleIndexResults(Collection finalResult) {}
 

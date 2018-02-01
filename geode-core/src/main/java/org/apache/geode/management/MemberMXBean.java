@@ -14,6 +14,7 @@
  */
 package org.apache.geode.management;
 
+import java.util.List;
 import java.util.Map;
 
 import org.apache.geode.distributed.DistributedMember;
@@ -25,16 +26,16 @@ import org.apache.geode.security.ResourcePermission.Target;
 /**
  * MBean that provides access to information and management functionality for a
  * {@link DistributedMember} of the GemFire distributed system.
- * 
+ *
  * <p>
  * ObjectName of the MBean :GemFire:type=Member,member=&ltname-or-dist-member-id&gt
- * 
+ *
  * <p>
  * There will be one instance of this MBean per GemFire node.
- * 
+ *
  * <p>
  * List of notification emitted by MemberMXBean.
- * 
+ *
  * <p>
  * <table border="1">
  * <tr>
@@ -141,7 +142,7 @@ public interface MemberMXBean {
 
   /**
    * Returns the most recent log entries for the member.
-   * 
+   *
    * @param numberOfLines Number of lines to return, up to a maximum of 100.
    */
   String showLog(int numberOfLines);
@@ -156,7 +157,7 @@ public interface MemberMXBean {
 
   /**
    * Performs compaction on all of the member's disk stores.
-   * 
+   *
    * @return A list of names of the disk stores that were compacted.
    */
   @ResourceOperation(resource = Resource.CLUSTER, operation = Operation.MANAGE,
@@ -165,7 +166,7 @@ public interface MemberMXBean {
 
   /**
    * Creates a Manager MBean on this member.
-   * 
+   *
    * @return True if the Manager MBean was successfully created, false otherwise.
    */
   @ResourceOperation(resource = Resource.CLUSTER, operation = Operation.MANAGE)
@@ -190,9 +191,9 @@ public interface MemberMXBean {
 
   /**
    * Executes a command on the member.
-   * 
+   *
    * @param commandString Command to be executed.
-   * 
+   *
    * @return Result of the execution in JSON format.
    */
   @ResourceOperation()
@@ -200,7 +201,7 @@ public interface MemberMXBean {
 
   /**
    * Executes a command on the member.
-   * 
+   *
    * @param commandString Command to be execute.
    * @param env Environmental properties to use during command execution.
    * @return Result of the execution in JSON format.
@@ -211,18 +212,35 @@ public interface MemberMXBean {
   /**
    * Executes a command on the member. this is the method that's used by the HttpOperationInvoker
    * and JmxOperationInvoker
-   * 
+   *
+   * @param commandString Command to be execute.
+   * @param env Environmental properties to use during command execution.
+   * @param stagedFilePaths Local files (as relevant to the command). May be null.
+   * @return Result of the execution in JSON format.
+   */
+  @ResourceOperation()
+  String processCommand(String commandString, Map<String, String> env,
+      List<String> stagedFilePaths);
+
+  /**
+   * Executes a command on the member. this is the method that's used by the HttpOperationInvoker
+   * and JmxOperationInvoker
+   *
    * @param commandString Command to be execute.
    * @param env Environmental properties to use during command execution.
    * @param binaryData Binary data specific to the command being executed.
    * @return Result of the execution in JSON format.
+   *
+   * @deprecated since 1.4 use processCommand(String commandString, Map<String, String> env,
+   *             List<String> stagedFilePaths) instead
    */
+  @Deprecated
   @ResourceOperation()
   String processCommand(String commandString, Map<String, String> env, Byte[][] binaryData);
 
   /**
    * Returns the name of all disk stores in use by this member.
-   * 
+   *
    * @param includeRegionOwned Whether to include disk stores owned by a region.
    */
   String[] listDiskStores(boolean includeRegionOwned);
@@ -274,7 +292,7 @@ public interface MemberMXBean {
 
   /**
    * Returns whether this member is attached to at least one Locator.
-   * 
+   *
    * @return True if this member is attached to a Locator, false otherwise.
    */
   boolean isLocator();
@@ -297,14 +315,14 @@ public interface MemberMXBean {
 
   /**
    * Returns whether this member has at least one GatewaySender.
-   * 
+   *
    * @return True if this member has at least one GatewaySender, false otherwise.
    */
   boolean hasGatewaySender();
 
   /**
    * Returns whether this member is running the Manager service.
-   * 
+   *
    * @return True if this member is running the Manager service, false otherwise.
    */
   boolean isManager();
@@ -312,14 +330,14 @@ public interface MemberMXBean {
   /**
    * Returns whether this member has created the Manager service (it may be created, but not
    * running).
-   * 
+   *
    * @return True if this member has created the Manager service, false otherwise.
    */
   boolean isManagerCreated();
 
   /**
    * Returns whether this member has at least one GatewayReceiver.
-   * 
+   *
    * @return True if this member has at least one GatewayReceiver, false otherwise.
    */
   boolean hasGatewayReceiver();
@@ -343,37 +361,37 @@ public interface MemberMXBean {
    * Returns the time (as a percentage) that this member's process time with respect to Statistics
    * sample time interval. If process time between two sample time t1 & t2 is p1 and p2 cpuUsage =
    * ((p2-p1) * 100) / ((t2-t1))
-   * 
+   *
    * ProcessCpuTime is obtained from OperatingSystemMXBean. If process CPU time is not available in
    * the platform it will be shown as -1
-   * 
+   *
    */
   float getCpuUsage();
 
   /**
    * Returns the current size of the heap in megabytes.
-   * 
+   *
    * @deprecated Please use {@link #getUsedMemory()} instead.
    */
   long getCurrentHeapSize();
 
   /**
    * Returns the maximum size of the heap in megabytes.
-   * 
+   *
    * @deprecated Please use {@link #getMaxMemory()} instead.
    */
   long getMaximumHeapSize();
 
   /**
    * Returns the free heap size in megabytes.
-   * 
+   *
    * @deprecated Please use {@link #getFreeMemory()} instead.
    */
   long getFreeHeapSize();
 
   /**
    * Returns the maximum size of the heap in megabytes.
-   * 
+   *
    */
   long getMaxMemory();
 
@@ -665,7 +683,7 @@ public interface MemberMXBean {
 
   /**
    * Returns the number of initial images in progress.
-   * 
+   *
    * @deprecated as typo in name has been corrected: use
    *             {@link MemberMXBean#getInitialImagesInProgress} instead.
    */
@@ -749,9 +767,9 @@ public interface MemberMXBean {
    * Returns the system load average for the last minute. The system load average is the sum of the
    * number of runnable entities queued to the available processors and the number of runnable
    * entities running on the available processors averaged over a period of time.
-   * 
+   *
    * Pulse Attribute
-   * 
+   *
    * @return The load average or a negative value if one is not available.
    */
   double getLoadAverage();
@@ -789,7 +807,7 @@ public interface MemberMXBean {
   int getHostCpuUsage();
 
   /**
-   * 
+   *
    * Returns true if a cache server is running on this member and able server requests from GemFire
    * clients
    */

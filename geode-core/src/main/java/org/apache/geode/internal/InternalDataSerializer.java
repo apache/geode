@@ -14,66 +14,14 @@
  */
 package org.apache.geode.internal;
 
-import org.apache.commons.lang.StringUtils;
-import org.apache.geode.CancelException;
-import org.apache.geode.CanonicalInstantiator;
-import org.apache.geode.DataSerializable;
-import org.apache.geode.DataSerializer;
-import org.apache.geode.GemFireIOException;
-import org.apache.geode.GemFireRethrowable;
-import org.apache.geode.Instantiator;
-import org.apache.geode.InternalGemFireError;
-import org.apache.geode.SerializationException;
-import org.apache.geode.SystemFailure;
-import org.apache.geode.ToDataException;
-import org.apache.geode.cache.CacheClosedException;
-import org.apache.geode.cache.execute.Function;
-import org.apache.geode.distributed.internal.DMStats;
-import org.apache.geode.distributed.internal.DistributionConfig;
-import org.apache.geode.distributed.internal.DistributionManager;
-import org.apache.geode.distributed.internal.InternalDistributedSystem;
-import org.apache.geode.distributed.internal.LonerDistributionManager;
-import org.apache.geode.distributed.internal.SerialDistributionMessage;
-import org.apache.geode.i18n.StringId;
-import org.apache.geode.internal.cache.EnumListenerEvent;
-import org.apache.geode.internal.cache.EventID;
-import org.apache.geode.internal.cache.GemFireCacheImpl;
-import org.apache.geode.internal.cache.InternalCache;
-import org.apache.geode.internal.cache.PoolManagerImpl;
-import org.apache.geode.internal.cache.tier.sockets.CacheClientNotifier;
-import org.apache.geode.internal.cache.tier.sockets.CacheServerHelper;
-import org.apache.geode.internal.cache.tier.sockets.ClientDataSerializerMessage;
-import org.apache.geode.internal.cache.tier.sockets.ClientProxyMembershipID;
-import org.apache.geode.internal.cache.tier.sockets.OldClientSupportService;
-import org.apache.geode.internal.cache.tier.sockets.Part;
-import org.apache.geode.internal.i18n.LocalizedStrings;
-import org.apache.geode.internal.logging.LogService;
-import org.apache.geode.internal.logging.log4j.LocalizedMessage;
-import org.apache.geode.internal.logging.log4j.LogMarker;
-import org.apache.geode.internal.util.concurrent.CopyOnWriteHashMap;
-import org.apache.geode.pdx.NonPortableClassException;
-import org.apache.geode.pdx.PdxInstance;
-import org.apache.geode.pdx.PdxSerializable;
-import org.apache.geode.pdx.PdxSerializer;
-import org.apache.geode.pdx.internal.AutoSerializableManager;
-import org.apache.geode.pdx.internal.AutoSerializableManager.AutoClassInfo;
-import org.apache.geode.pdx.internal.EnumInfo;
-import org.apache.geode.pdx.internal.PdxInputStream;
-import org.apache.geode.pdx.internal.PdxInstanceEnum;
-import org.apache.geode.pdx.internal.PdxInstanceImpl;
-import org.apache.geode.pdx.internal.PdxOutputStream;
-import org.apache.geode.pdx.internal.PdxReaderImpl;
-import org.apache.geode.pdx.internal.PdxType;
-import org.apache.geode.pdx.internal.PdxWriterImpl;
-import org.apache.geode.pdx.internal.TypeRegistry;
-import org.apache.logging.log4j.Logger;
-
+import java.io.BufferedReader;
 import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.EOFException;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.io.NotSerializableException;
 import java.io.ObjectInput;
 import java.io.ObjectInputStream;
@@ -91,6 +39,7 @@ import java.lang.reflect.Proxy;
 import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.net.InetAddress;
+import java.net.URL;
 import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -116,6 +65,64 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.TimeUnit;
 
+import org.apache.commons.lang.StringUtils;
+import org.apache.logging.log4j.Logger;
+
+import org.apache.geode.CancelException;
+import org.apache.geode.CanonicalInstantiator;
+import org.apache.geode.DataSerializable;
+import org.apache.geode.DataSerializer;
+import org.apache.geode.GemFireConfigException;
+import org.apache.geode.GemFireIOException;
+import org.apache.geode.GemFireRethrowable;
+import org.apache.geode.Instantiator;
+import org.apache.geode.InternalGemFireError;
+import org.apache.geode.SerializationException;
+import org.apache.geode.SystemFailure;
+import org.apache.geode.ToDataException;
+import org.apache.geode.cache.CacheClosedException;
+import org.apache.geode.cache.execute.Function;
+import org.apache.geode.distributed.internal.DMStats;
+import org.apache.geode.distributed.internal.DistributedSystemService;
+import org.apache.geode.distributed.internal.DistributionConfig;
+import org.apache.geode.distributed.internal.DistributionManager;
+import org.apache.geode.distributed.internal.InternalDistributedSystem;
+import org.apache.geode.distributed.internal.LonerDistributionManager;
+import org.apache.geode.distributed.internal.SerialDistributionMessage;
+import org.apache.geode.i18n.StringId;
+import org.apache.geode.internal.cache.EnumListenerEvent;
+import org.apache.geode.internal.cache.EventID;
+import org.apache.geode.internal.cache.GemFireCacheImpl;
+import org.apache.geode.internal.cache.InternalCache;
+import org.apache.geode.internal.cache.PoolManagerImpl;
+import org.apache.geode.internal.cache.tier.sockets.CacheClientNotifier;
+import org.apache.geode.internal.cache.tier.sockets.CacheServerHelper;
+import org.apache.geode.internal.cache.tier.sockets.ClientDataSerializerMessage;
+import org.apache.geode.internal.cache.tier.sockets.ClientProxyMembershipID;
+import org.apache.geode.internal.cache.tier.sockets.OldClientSupportService;
+import org.apache.geode.internal.cache.tier.sockets.Part;
+import org.apache.geode.internal.i18n.LocalizedStrings;
+import org.apache.geode.internal.lang.ClassUtils;
+import org.apache.geode.internal.logging.LogService;
+import org.apache.geode.internal.logging.log4j.LocalizedMessage;
+import org.apache.geode.internal.logging.log4j.LogMarker;
+import org.apache.geode.internal.util.concurrent.CopyOnWriteHashMap;
+import org.apache.geode.pdx.NonPortableClassException;
+import org.apache.geode.pdx.PdxInstance;
+import org.apache.geode.pdx.PdxSerializable;
+import org.apache.geode.pdx.PdxSerializer;
+import org.apache.geode.pdx.internal.AutoSerializableManager;
+import org.apache.geode.pdx.internal.AutoSerializableManager.AutoClassInfo;
+import org.apache.geode.pdx.internal.EnumInfo;
+import org.apache.geode.pdx.internal.PdxInputStream;
+import org.apache.geode.pdx.internal.PdxInstanceEnum;
+import org.apache.geode.pdx.internal.PdxInstanceImpl;
+import org.apache.geode.pdx.internal.PdxOutputStream;
+import org.apache.geode.pdx.internal.PdxReaderImpl;
+import org.apache.geode.pdx.internal.PdxType;
+import org.apache.geode.pdx.internal.PdxWriterImpl;
+import org.apache.geode.pdx.internal.TypeRegistry;
+
 /**
  * Contains static methods for data serializing instances of internal GemFire classes. It also
  * contains the implementation of the distribution messaging (and shared memory management) needed
@@ -131,6 +138,34 @@ public abstract class InternalDataSerializer extends DataSerializer implements D
    * serialization.
    */
   private static final Map<String, DataSerializer> classesToSerializers = new ConcurrentHashMap<>();
+  private static final String SANCTIONED_SERIALIZABLES_DEPENDENCIES_PATTERN =
+      "java.**;javax.management.**" + ";javax.print.attribute.EnumSyntax" // used for some old enums
+          + ";antlr.**" // query AST objects
+          + ";org.apache.commons.modeler.AttributeInfo" // old Admin API
+          + ";org.apache.commons.modeler.FeatureInfo" // old Admin API
+          + ";org.apache.commons.modeler.ManagedBean" // old Admin API
+          + ";org.apache.geode.distributed.internal.DistributionConfigSnapshot" // old Admin API
+          + ";org.apache.geode.distributed.internal.RuntimeDistributionConfigImpl" // old Admin API
+          + ";org.apache.geode.distributed.internal.DistributionConfigImpl" // old Admin API
+          + ";org.apache.geode.distributed.internal.membership.InternalDistributedMember" // RegionSnapshotService
+                                                                                          // function
+                                                                                          // WindowedExportFunction
+          + ";org.apache.geode.internal.cache.persistence.PersistentMemberID" // putAll
+          + ";org.apache.geode.internal.cache.persistence.DiskStoreID" // putAll
+          + ";org.apache.geode.internal.cache.tier.sockets.VersionedObjectList" // putAll
+          + ";org.apache.shiro.*;org.apache.shiro.authz.*;org.apache.shiro.authc.*" // security
+                                                                                    // services
+          + ";org.apache.geode.modules.util.SessionCustomExpiry" // geode-modules
+          + ";com.healthmarketscience.rmiio.*;com.sun.proxy.*" // Jar deployment
+          + ";";
+
+
+  private static InputStreamFilter defaultSerializationFilter = new EmptyInputStreamFilter();
+
+  /**
+   * A deserialization filter for ObjectInputStreams
+   */
+  private static InputStreamFilter serializationFilter = defaultSerializationFilter;
 
   private static final String serializationVersionTxt =
       System.getProperty(DistributionConfig.GEMFIRE_PREFIX + "serializationVersion");
@@ -143,7 +178,7 @@ public abstract class InternalDataSerializer extends DataSerializer implements D
   /**
    * For backward compatibility we must swizzle the package of some classes that had to be moved
    * when GemFire was open- sourced. This preserves backward-compatibility.
-   * 
+   *
    * @param name the fully qualified class name
    * @return the name of the class in this implementation
    */
@@ -165,7 +200,7 @@ public abstract class InternalDataSerializer extends DataSerializer implements D
   /**
    * For backward compatibility we must swizzle the package of some classes that had to be moved
    * when GemFire was open- sourced. This preserves backward-compatibility.
-   * 
+   *
    * @param name the fully qualified class name
    * @param out the consumer of the serialized object
    * @return the name of the class in this implementation
@@ -186,8 +221,66 @@ public abstract class InternalDataSerializer extends DataSerializer implements D
   }
 
   /**
+   * Initializes the optional serialization "white list" if the user has requested it in the
+   * DistributionConfig
+   *
+   * @param distributionConfig the DistributedSystem configuration
+   * @param services DistributedSystem services that might have classes to white-list
+   */
+  public static void initialize(DistributionConfig distributionConfig,
+      Collection<DistributedSystemService> services) {
+    logger.info("initializing InternalDataSerializer with {} services", services.size());
+    if (distributionConfig.getValidateSerializableObjects()) {
+      if (!ClassUtils.isClassAvailable("sun.misc.ObjectInputFilter")) {
+        throw new GemFireConfigException(
+            "A serialization filter has been specified but this version of Java does not support serialization filters - sun.misc.ObjectInputFilter is not available");
+      }
+      serializationFilter =
+          new ObjectInputStreamFilterWrapper(SANCTIONED_SERIALIZABLES_DEPENDENCIES_PATTERN
+              + distributionConfig.getSerializableObjectFilter() + ";!*", services);
+    } else {
+      clearSerializationFilter();
+    }
+  }
+
+  private static void clearSerializationFilter() {
+    serializationFilter = defaultSerializationFilter;
+  }
+
+
+  /**
+   * {@link DistributedSystemService}s that need to whitelist Serializable objects can use this to
+   * read them from a file and then return them via
+   * {@link DistributedSystemService#getSerializationWhitelist}
+   */
+  public static Collection<String> loadClassNames(URL sanctionedSerializables) throws IOException {
+    Collection<String> result = new ArrayList(1000);
+    InputStream inputStream = sanctionedSerializables.openStream();
+    InputStreamReader reader = new InputStreamReader(inputStream);
+    BufferedReader in = new BufferedReader(reader);
+    try {
+      String line;
+      while ((line = in.readLine()) != null) {
+        line = line.trim();
+        if (line.startsWith("#") || line.startsWith("//")) {
+          // comment line
+        } else {
+          line = line.replaceAll("/", ".");
+          result.add(line.substring(0, line.indexOf(',')));
+        }
+      }
+    } finally {
+      inputStream.close();
+    }
+    // logger.info("loaded {} class names from {}", result.size(), sanctionedSerializables);
+    return result;
+
+  }
+
+
+  /**
    * Any time new serialization format is added then a new enum needs to be added here.
-   * 
+   *
    * @since GemFire 6.6.2
    */
   private enum SERIALIZATION_VERSION {
@@ -892,7 +985,7 @@ public abstract class InternalDataSerializer extends DataSerializer implements D
   /**
    * Marks a {@code DataSerializer} className for registration with the data serialization
    * framework. Does not necessarily load the classes into this VM.
-   * 
+   *
    * @param className Name of the DataSerializer class.
    * @param distribute If true, distribute this data serializer.
    * @param eventId Event id
@@ -908,7 +1001,7 @@ public abstract class InternalDataSerializer extends DataSerializer implements D
   /**
    * Marks a {@code DataSerializer} className for registration with the data serialization
    * framework. Does not necessarily load the classes into this VM.
-   * 
+   *
    * @param distribute If true, distribute this data serializer.
    * @see DataSerializer#register(Class)
    */
@@ -973,7 +1066,7 @@ public abstract class InternalDataSerializer extends DataSerializer implements D
     }
 
     /**
-     * 
+     *
      * @return String the classname of the data serializer this instance represents.
      */
     public String getClassName() {
@@ -1209,7 +1302,7 @@ public abstract class InternalDataSerializer extends DataSerializer implements D
   /**
    * Returns all the data serializers in this vm. This method, unlike {@link #getSerializers()},
    * does not force loading of the data serializers which were not loaded in the vm earlier.
-   * 
+   *
    * @return Array of {@link SerializerAttributesHolder}
    */
   public static SerializerAttributesHolder[] getSerializersForDistribution() {
@@ -1283,7 +1376,7 @@ public abstract class InternalDataSerializer extends DataSerializer implements D
 
   /**
    * Read the data from in and register it with this class. TODO: loadRegistrations is unused
-   * 
+   *
    * @throws IllegalArgumentException if a registration fails
    */
   public static void loadRegistrations(DataInput in) throws IOException {
@@ -1712,10 +1805,10 @@ public abstract class InternalDataSerializer extends DataSerializer implements D
   /**
    * Reads a {@code Set} from a {@code DataInput} into the given non-null collection. Returns true
    * if collection read is non-null else returns false. TODO: readCollection is unused
-   * 
+   *
    * @throws IOException A problem occurs while reading from {@code in}
    * @throws ClassNotFoundException The class of one of the {@code Set}'s elements cannot be found.
-   * 
+   *
    * @see #writeSet
    */
   public static <E> boolean readCollection(DataInput in, Collection<E> c)
@@ -1740,7 +1833,7 @@ public abstract class InternalDataSerializer extends DataSerializer implements D
 
   /**
    * write a set of Long objects
-   * 
+   *
    * @param set the set of Long objects
    * @param hasLongIDs if false, write only ints, not longs
    * @param out the output stream
@@ -1781,7 +1874,7 @@ public abstract class InternalDataSerializer extends DataSerializer implements D
 
   /**
    * write a set of Long objects TODO: writeListOfLongs is unused
-   * 
+   *
    * @param list the set of Long objects
    * @param hasLongIDs if false, write only ints, not longs
    * @param out the output stream
@@ -2016,9 +2109,9 @@ public abstract class InternalDataSerializer extends DataSerializer implements D
 
   /**
    * Writes given number of characters from array of {@code char}s to a {@code DataOutput}.
-   * 
+   *
    * @throws IOException A problem occurs while writing to {@code out}
-   * 
+   *
    * @see DataSerializer#readCharArray
    * @since GemFire 6.6
    */
@@ -2041,7 +2134,7 @@ public abstract class InternalDataSerializer extends DataSerializer implements D
 
   /**
    * returns true if the byte array is the serialized form of a null reference
-   * 
+   *
    * @param serializedForm the serialized byte array
    */
   public static boolean isSerializedNull(byte[] serializedForm) {
@@ -2207,7 +2300,7 @@ public abstract class InternalDataSerializer extends DataSerializer implements D
   /**
    * write an object in java Serializable form with a SERIALIZABLE DSCODE so that it can be
    * deserialized with DataSerializer.readObject()
-   * 
+   *
    * @param o the object to serialize
    * @param out the data output to serialize to
    */
@@ -2262,7 +2355,7 @@ public abstract class InternalDataSerializer extends DataSerializer implements D
    * DataSerializable. It will invoke the correct toData method based on the class's version
    * information. This method does not write information about the class of the object. When
    * deserializing use the method invokeFromData to read the contents of the object.
-   * 
+   *
    * @param ds the object to write
    * @param out the output stream.
    */
@@ -2335,7 +2428,7 @@ public abstract class InternalDataSerializer extends DataSerializer implements D
    * DataSerializable. It will invoke the correct fromData method based on the class's version
    * information. This method does not read information about the class of the object. When
    * serializing use the method invokeToData to write the contents of the object.
-   * 
+   *
    * @param ds the object to write
    * @param in the input stream.
    */
@@ -2659,7 +2752,7 @@ public abstract class InternalDataSerializer extends DataSerializer implements D
 
   /**
    * Just like readObject but make sure and pdx deserialized is not a PdxInstance.
-   * 
+   *
    * @since GemFire 6.6.2
    */
   public static <T> T readNonPdxInstanceObject(final DataInput in)
@@ -2836,6 +2929,7 @@ public abstract class InternalDataSerializer extends DataSerializer implements D
           }
 
           ObjectInput ois = new DSObjectInputStream(stream);
+          serializationFilter.setFilterOn((ObjectInputStream) ois);
           if (stream instanceof VersionedDataStream) {
             Version v = ((VersionedDataStream) stream).getVersion();
             if (v != null && v != Version.CURRENT) {
@@ -3147,7 +3241,7 @@ public abstract class InternalDataSerializer extends DataSerializer implements D
    * serialized bytes arrive at a VM before the registration message does, the deserializer will
    * wait an amount of time for the registration message to arrive. Made public for unit test
    * access.
-   * 
+   *
    * @since GemFire 5.7
    */
   public static class GetMarker extends Marker {
@@ -3197,7 +3291,7 @@ public abstract class InternalDataSerializer extends DataSerializer implements D
   /**
    * A marker object for {@code DataSerializer}s that is in the process of being registered. It is
    * possible for getSerializer to return {@code null}
-   * 
+   *
    * @since GemFire 5.7
    */
   static class InitMarker extends Marker {
@@ -3408,6 +3502,7 @@ public abstract class InternalDataSerializer extends DataSerializer implements D
         throws IOException, ClassNotFoundException {
 
       String className = desc.getName();
+
       OldClientSupportService svc = getOldClientSupportService();
       if (svc != null) {
         className = svc.processIncomingClassName(className);
@@ -3460,7 +3555,7 @@ public abstract class InternalDataSerializer extends DataSerializer implements D
 
   /**
    * Used to implement serialization code for the well known classes we support in DataSerializer.
-   * 
+   *
    * @since GemFire 5.7
    */
   protected abstract static class WellKnownDS extends DataSerializer {
@@ -3571,10 +3666,10 @@ public abstract class InternalDataSerializer extends DataSerializer implements D
 
   /**
    * Encode a long as a variable length array.
-   * 
+   *
    * This method is appropriate for unsigned integers. For signed integers, negative values will
    * always consume 10 bytes, so it is recommended to use writeSignedVL instead.
-   * 
+   *
    * This is taken from the varint encoding in protobufs (BSD licensed). See
    * https://developers.google.com/protocol-buffers/docs/encoding
    */
@@ -3592,7 +3687,7 @@ public abstract class InternalDataSerializer extends DataSerializer implements D
 
   /**
    * Decode a long as a variable length array.
-   * 
+   *
    * This is taken from the varint encoding in protobufs (BSD licensed). See
    * https://developers.google.com/protocol-buffers/docs/encoding
    */
@@ -3612,7 +3707,7 @@ public abstract class InternalDataSerializer extends DataSerializer implements D
 
   /**
    * Encode a signed long as a variable length array.
-   * 
+   *
    * This method is appropriate for signed integers. It uses zig zag encoding to so that negative
    * numbers will be represented more compactly. For unsigned values, writeUnsignedVL will be more
    * efficient.
@@ -3623,7 +3718,7 @@ public abstract class InternalDataSerializer extends DataSerializer implements D
 
   /**
    * Decode a signed long as a variable length array.
-   * 
+   *
    * This method is appropriate for signed integers. It uses zig zag encoding to so that negative
    * numbers will be represented more compactly. For unsigned values, writeUnsignedVL will be more
    * efficient.
@@ -3640,7 +3735,7 @@ public abstract class InternalDataSerializer extends DataSerializer implements D
    * @param n An unsigned 64-bit integer, stored in a signed int because Java has no explicit
    *        unsigned support.
    * @return A signed 64-bit integer.
-   * 
+   *
    *         This is taken from the varint encoding in protobufs (BSD licensed). See
    *         https://developers.google.com/protocol-buffers/docs/encoding
    */
@@ -3656,7 +3751,7 @@ public abstract class InternalDataSerializer extends DataSerializer implements D
    * @param n A signed 64-bit integer.
    * @return An unsigned 64-bit integer, stored in a signed int because Java has no explicit
    *         unsigned support.
-   * 
+   *
    *         This is taken from the varint encoding in protobufs (BSD licensed). See
    *         https://developers.google.com/protocol-buffers/docs/encoding
    */

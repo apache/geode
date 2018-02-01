@@ -523,7 +523,7 @@ create gateway-sender --id=value --remote-distributed-system-id=value
 </tr>
 <tr class="odd">
 <td><span class="keyword parmname">\-\-manual-start</span></td>
-<td><b>Deprecated.</b> Boolean value that specifies whether you need to manually start the gateway sender. If you supply a null value, the default value of false is used, and the gateway sender starts automatically. <em>A manual start is likely to cause data loss, so manual start should never be used.</em></td>
+<td><b>Deprecated.</b> Boolean value that specifies whether you need to manually start the gateway sender. If you supply a null value, the default value of false is used, and the gateway sender starts automatically. <em>A manual start is likely to cause data loss, so manual start should never be used in a production system.</em></td>
 <td>false</td>
 </tr>
 <tr class="even">
@@ -633,7 +633,7 @@ create index --name=value --expression=value --region=value
 [--members=value(,value)*] [--type=value] [--groups=value(,value)*]
 ```
 
-**Parameters: create index:**
+**Parameters, create index:**
 
 | Name                                               | Description                                                                            | Default |
 |----------------------------------------------------|----------------------------------------------------------------------------------------|---------|
@@ -641,7 +641,7 @@ create index --name=value --expression=value --region=value
 | <span class="keyword parmname">&#8209;&#8209;expression</span> | *Required.* Field of the region values that are referenced by the index.               |         |
 | <span class="keyword parmname">\\-\\-region</span>     | *Required.* Name/Path of the region which corresponds to the "from" clause in a query. |         |
 | <span class="keyword parmname">\\-\\-members</span>     | Name/Id of the member(s) on which index will be created.                                  |         |
-| <span class="keyword parmname">\\-\\-type</span>       | Type of the index. Valid values are: `range`, `key` and `hash`.                        | `range` |
+| <span class="keyword parmname">\\-\\-type</span>       | Type of the index. Valid values are: `range` and `key`. (A third type, `hash`, is still recognized but hash indexes are deprecated.)                       | `range` |
 | <span class="keyword parmname">\\-\\-groups</span>      | The index will be created on all the members in the group(s).                     |         |
 
 
@@ -671,9 +671,9 @@ Occurred on following members
 
 ## <a id="create_lucene_index" class="no-quick-link"></a>create lucene index
 
-Create a Lucene index.
+Create a Lucene index. For details on Lucene index creation, see [Apache Lucene Integration](../../../tools_modules/lucene_integration.html).
 
-See also [describe lucene index](describe.html#describe_lucene_index), [destroy lucene index](destroy.html#destroy_lucene_index), [list lucene indexes](list.html#list_lucene_indexes) and [search lucene](search.html#search_lucene).
+For additional Lucene-related gfsh commands, see [describe lucene index](describe.html#describe_lucene_index), [destroy lucene index](destroy.html#destroy_lucene_index), [list lucene indexes](list.html#list_lucene_indexes) and [search lucene](search.html#search_lucene).
 
 **Availability:** Online. You must be connected in <span class="keyword parmname">gfsh</span> to a JMX Manager member to use this command.
 
@@ -681,7 +681,7 @@ See also [describe lucene index](describe.html#describe_lucene_index), [destroy 
 
 ``` pre
 create lucene index --name=value --region=value --field=value(,value)*
-  [--analyzer=value(,value)*] [--group=value(,value)*]
+  [--analyzer=value(,value)*] [--serializer=value] [--group=value(,value)*]
 ```
 
 **Parameters, create lucene index:**
@@ -689,9 +689,10 @@ create lucene index --name=value --region=value --field=value(,value)*
 | Name                                               | Description                                                                            | Default |
 |----------------------------------------------------|----------------------------------------------------------------------------------------|---------|
 | <span class="keyword parmname">\\-\\-name</span>       | *Required.* Name of the index to create.                                               |         |
-| <span class="keyword parmname">\\-\\-region</span>     | *Required.* Name/Path of the region which corresponds to the "from" clause in a query. |         |
-| <span class="keyword parmname">\\-\\-field</span>      | *Required.* Field of the region values that are referenced by the index. To treat the entire value as a single field, specify `__REGION_VALUE_FIELD`. |         |
-| <span class="keyword parmname">&#8209;&#8209;analyzer</span>   | Analyzer to extract terms from text. Use `DEFAULT` to specify the default analyzer.                                  |         |
+| <span class="keyword parmname">\\-\\-region</span>     | *Required.* Name/Path of the region on which to define the index. |         |
+| <span class="keyword parmname">\\-\\-field</span>      | *Required.* Field(s) of the region values that are referenced by the index, specified as a comma-separated list. To treat the entire value as a single field, specify `__REGION_VALUE_FIELD`. |         |
+| <span class="keyword parmname">&#8209;&#8209;analyzer</span>   | Analyzer(s) to extract terms from text, specified as a comma-separated list. If not specified, the default analyzer is used for all fields. If specified, the number of analyzers must exactly match the number of fields specified. When listing analyzers, use the keyword `DEFAULT` for any field that will use the default analyzer.                                  | Lucene `StandardAnalyzer`        |
+| <span class="keyword parmname">&#8209;&#8209;serializer</span>   | Fully qualified class name of the serializer to be used with this index. The serializer must implement the `LuceneSerializer` interface. You can use the built-in `org.apache.geode.cache.lucene.FlatFormatSerializer` to index and search collections and nested fields. If not specified, the simple default serializer is used, which indexes and searches only the top level fields of the region objects.   | simple serializer        |
 | <span class="keyword parmname">\\-\\-group</span>      | The index will be created on all the members in the specified member groups.                     |         |
 
 
@@ -751,7 +752,8 @@ See [Region Data Storage and Distribution](../../../developing/region_options/ch
     [--recovery-delay=value] [--redundant-copies=value]
     [--startup-recovery-delay=value] [--total-max-memory=value]
     [--total-num-buckets=value] [--compressor=value] [--off-heap(=value)]
-    [--partition-resolver=value]
+    [--partition-resolver=value] [--eviction-entry-count=value]
+    [--eviction-max-memory=value] [--eviction-action=value] [--eviction-object-sizer=value]
 ```
 
 **Parameters, create region:**
@@ -923,7 +925,7 @@ See [Region Data Storage and Distribution](../../../developing/region_options/ch
 </tr>
 <tr class="odd">
 <td><span class="keyword parmname">\-\-recovery-delay </span></td>
-<td>Delay in milliseconds that existing members will wait before satisfying redundancy after another member crashes. The default (value of -1) indicates that redundancy will not be recovered after a a failure.</td>
+<td>Delay in milliseconds that existing members will wait after a member crashes before restoring this region's redundancy on the remaining members. The default value (-1) indicates that redundancy will not be recovered after a failure.</td>
 <td> </td>
 </tr>
 <tr class="even">
@@ -933,7 +935,7 @@ See [Region Data Storage and Distribution](../../../developing/region_options/ch
 </tr>
 <tr class="odd">
 <td><span class="keyword parmname">\-\-startup-recovery-delay </span></td>
-<td>Delay in milliseconds that new members will wait before satisfying redundancy. -1 indicates that adding new members will not trigger redundancy recovery.</td>
+<td>Delay in milliseconds that new members will wait before assuming their share of cluster-level redundancy. This allows time for multiple regions to start before the redundancy workload is parceled out to the new members. A value of -1 indicates that adding new members will not trigger redundancy recovery.</td>
 <td>The default is to recover redundancy immediately when a new member is added.</td>
 </tr>
 <tr class="even">
@@ -958,8 +960,45 @@ See [Region Data Storage and Distribution](../../../developing/region_options/ch
 </tr>
 <tr class="even">
 <td><span class="keyword parmname">\-\-partition-resolver</span></td>
-<td>Specifies the full path to a custom partition resolver. To use the provided default partition resolver, specify <code class="ph codeph">org.apache.geode.cache.util.StringPrefixPartitionResolver</code>.</td>
+<td>Specifies the full path to a custom partition resolver. Specify <code class="ph codeph">org.apache.geode.cache.util.StringPrefixPartitionResolver</code> to use the included string prefix partition resolver.</td>
 <td></td>
+</tr>
+<tr>
+<td><span class="keyword parmname">\-\-eviction-entry-count</span></td>
+<td>Enables eviction, where the eviction policy is based on the number of entries in the region.</td>
+<td></td>
+</tr>
+<tr>
+<td><span class="keyword parmname">\-\-eviction-max-memory</span></td>
+<td>Enables eviction, where the eviction policy is based on the amount of memory consumed by the region, specified in megabytes.</td>
+<td></td>
+</tr>
+<tr>
+<td><span class="keyword parmname">\-\-eviction-action</span></td>
+<td>Action to take when the eviction threshold is reached.
+<div class="p">
+<table>
+<tbody>
+<tr class="odd">
+<td>local-destroy</td>
+<td>Entry is destroyed locally. Use with caution - may lead to inconsistencies.</td>
+</tr>
+<tr class="even">
+<td>overflow-to-disk</td>
+<td>Entry is overflowed to disk. For partitioned regions, this provides the most reliable read behavior across the region.</td>
+</tr>
+</tbody>
+</table>
+</div>
+</td>
+<td></td>
+</tr>
+<tr>
+<td><span class="keyword parmname">\-\-eviction-object-sizer</span></td>
+<td>Specifies your implementation of the ObjectSizer interface to measure the size of objects in the region.
+The sizer applies only to heap and memory based eviction.</td>
+<td></td>
+</tr>
 </tbody>
 </table>
 
@@ -977,13 +1016,17 @@ create region --name=region2 --type=REPLICATE \
 org.apache.geode.examples.MyCacheListener2 \
 --group=Group1,Group2
 
-create region --name=region3 --type=PARTITION_PERSISTENT --redundant-copies=2 --total-max-memory=1000 \
---startup-recovery-delay=5 --total-num-buckets=100 --disk-store=DiskStore2 \
---cache-listener=org.apache.geode.examples.MyCacheListener3 \
+create region --name=region3 --type=PARTITION_PERSISTENT --redundant-copies=2 \
+--total-max-memory=1000 --startup-recovery-delay=5 --total-num-buckets=100 \
+--disk-store=DiskStore2 --cache-listener=org.apache.geode.examples.MyCacheListener3 \
 --group=Group2 
 
-create region --name=region4 --type=REPLICATE_PROXY --cache-listener=org.apache.geode.examples.MyCacheListener1 
---group=Group1,Group2
+create region --name=region4 --type=REPLICATE_PROXY \
+--cache-listener=org.apache.geode.examples.MyCacheListener1 --group=Group1,Group2
+
+create region --name=myRegion --type=REPLICATE --eviction-max-memory=100 \
+--eviction-action=overflow-to-disk --eviction-object-sizer=my.company.geode.MySizer
+
 ```
 
 **Sample Output:**

@@ -311,11 +311,9 @@ public class StateFlushOperation {
       if (region != null) {
         return region;
       }
-      // set the init level requirement so that we don't hang in CacheFactory.getInstance() (bug
-      // 36175)
       int oldLevel = LocalRegion.setThreadInitLevelRequirement(LocalRegion.BEFORE_INITIAL_IMAGE);
       try {
-        InternalCache gfc = (InternalCache) CacheFactory.getInstance(dm.getSystem());
+        InternalCache gfc = dm.getExistingCache();
         Region r = gfc.getRegionByPathForProcessing(this.regionPath);
         if (r instanceof DistributedRegion) {
           region = (DistributedRegion) r;
@@ -328,11 +326,9 @@ public class StateFlushOperation {
 
     /** returns a set of all DistributedRegions for allRegions processing */
     private Set<DistributedRegion> getAllRegions(DistributionManager dm) {
-      // set the init level requirement so that we don't hang in CacheFactory.getInstance() (bug
-      // 36175)
       int oldLevel = LocalRegion.setThreadInitLevelRequirement(LocalRegion.BEFORE_INITIAL_IMAGE);
       try {
-        InternalCache cache = (InternalCache) CacheFactory.getInstance(dm.getSystem());
+        InternalCache cache = dm.getExistingCache();
         Set<DistributedRegion> result = new HashSet();
         for (LocalRegion r : cache.getAllRegions()) {
           // it's important not to check if the cache is closing, so access
@@ -351,24 +347,37 @@ public class StateFlushOperation {
     protected void process(DistributionManager dm) {
       logger.trace(LogMarker.STATE_FLUSH_OP, "Processing {}", this);
       if (dm.getDistributionManagerId().equals(relayRecipient)) {
-        // wait for inflight operations to the aeqs even if the recipient is the primary
-        Set<DistributedRegion> regions = getRegions(dm);
-        for (DistributedRegion r : regions) {
-          if (r != null) {
-            if (this.allRegions && r.doesNotDistribute()) {
-              // no need to flush a region that does no distribution
-              continue;
+        try {
+          // wait for inflight operations to the aeqs even if the recipient is the primary
+          Set<DistributedRegion> regions = getRegions(dm);
+          for (DistributedRegion r : regions) {
+            if (r != null) {
+              if (this.allRegions && r.doesNotDistribute()) {
+                // no need to flush a region that does no distribution
+                continue;
+              }
+              waitForCurrentOperations(r, r.isInitialized());
             }
-            waitForCurrentOperations(r, r.isInitialized());
           }
+        } catch (CancelException ignore) {
+          // cache is closed - no distribution advisor available for the region so nothing to do but
+          // send the stabilization message
+        } catch (Exception e) {
+          logger.fatal(LocalizedMessage.create(
+              LocalizedStrings.StateFlushOperation_0__EXCEPTION_CAUGHT_WHILE_DETERMINING_CHANNEL_STATE,
+              this), e);
+        } finally {
+          // no need to send a relay request to this process - just send the
+          // ack back to the sender
+          StateStabilizedMessage ga = new StateStabilizedMessage();
+          ga.sendingMember = relayRecipient;
+          ga.setRecipient(this.getSender());
+          ga.setProcessorId(processorId);
+          if (logger.isTraceEnabled(LogMarker.STATE_FLUSH_OP)) {
+            logger.trace(LogMarker.STATE_FLUSH_OP, "Sending {}", ga);
+          }
+          dm.putOutgoing(ga);
         }
-        // no need to send a relay request to this process - just send the
-        // ack back to the sender
-        StateStabilizedMessage ga = new StateStabilizedMessage();
-        ga.sendingMember = relayRecipient;
-        ga.setRecipient(this.getSender());
-        ga.setProcessorId(processorId);
-        dm.putOutgoing(ga);
       } else {
         // 1) wait for all messages based on the membership version (or older)
         // at which the sender "joined" this region to be put on the pipe
@@ -420,23 +429,6 @@ public class StateFlushOperation {
           logger.fatal(LocalizedMessage.create(
               LocalizedStrings.StateFlushOperation_0__EXCEPTION_CAUGHT_WHILE_DETERMINING_CHANNEL_STATE,
               this), e);
-        } catch (ThreadDeath td) {
-          throw td;
-        } catch (VirtualMachineError err) {
-          SystemFailure.initiateFailure(err);
-          // If this ever returns, rethrow the error. We're poisoned
-          // now, so don't let this thread continue.
-          throw err;
-        } catch (Throwable t) {
-          // Whenever you catch Error or Throwable, you must also
-          // catch VirtualMachineError (see above). However, there is
-          // _still_ a possibility that you are dealing with a cascading
-          // error condition, so you also need to check to see if the JVM
-          // is still usable:
-          SystemFailure.checkFailure();
-          logger.fatal(LocalizedMessage.create(
-              LocalizedStrings.StateFlushOperation_0__THROWABLE_CAUGHT_WHILE_DETERMINING_CHANNEL_STATE,
-              this), t);
         } finally {
           if (logger.isTraceEnabled(LogMarker.STATE_FLUSH_OP)) {
             logger.trace(LogMarker.STATE_FLUSH_OP, "Sending {}", gr);
@@ -796,4 +788,3 @@ public class StateFlushOperation {
     }
   }
 }
-

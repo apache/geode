@@ -14,6 +14,15 @@
  */
 package org.apache.geode.internal.offheap;
 
+import static org.junit.Assert.*;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.verify;
+
+import org.junit.Rule;
+import org.junit.Test;
+import org.junit.contrib.java.lang.system.RestoreSystemProperties;
+import org.junit.experimental.categories.Category;
+
 import org.apache.geode.OutOfOffHeapMemoryException;
 import org.apache.geode.StatisticsFactory;
 import org.apache.geode.distributed.DistributedSystem;
@@ -23,20 +32,12 @@ import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.distributed.internal.InternalLocator;
 import org.apache.geode.internal.statistics.LocalStatisticsFactory;
 import org.apache.geode.test.junit.categories.UnitTest;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.contrib.java.lang.system.RestoreSystemProperties;
-import org.junit.experimental.categories.Category;
-
-import static org.junit.Assert.*;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.verify;
 
 @Category(UnitTest.class)
 public class OffHeapStorageJUnitTest {
 
-  private final static long MEGABYTE = 1024 * 1024;
-  private final static long GIGABYTE = 1024 * 1024 * 1024;
+  private static final long MEGABYTE = 1024 * 1024;
+  private static final long GIGABYTE = 1024 * 1024 * 1024;
 
   @Rule
   public final RestoreSystemProperties restoreSystemProperties = new RestoreSystemProperties();

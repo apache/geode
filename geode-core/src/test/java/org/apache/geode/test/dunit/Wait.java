@@ -25,7 +25,7 @@ import org.apache.geode.internal.logging.LogService;
 /**
  * <code>Wait</code> provides static utility methods to wait for some asynchronous action with
  * intermittent polling.
- * 
+ *
  * These methods can be used directly: <code>Wait.waitForCriterion(...)</code>, however, they are
  * intended to be referenced through static import:
  *
@@ -42,7 +42,7 @@ import org.apache.geode.internal.logging.LogService;
  *
  * <p>
  * Examples of using Awaitility:
- * 
+ *
  * <pre>
  *
  * import static org.awaitility.Awaitility.*;
@@ -77,7 +77,7 @@ import org.apache.geode.internal.logging.LogService;
  *
  * <p>
  * Example of detailed conversion to Awaitility:
- * 
+ *
  * <pre>
  * From:
  *
@@ -122,7 +122,7 @@ public class Wait {
 
   /**
    * Pause for a default interval (250 milliseconds).
-   * 
+   *
    * @deprecated Please use {@link org.awaitility.Awaitility} instead.
    */
   public static void pause() {
@@ -132,7 +132,7 @@ public class Wait {
   /**
    * Pause for the specified milliseconds. Make sure system clock has advanced by the specified
    * number of millis before returning.
-   * 
+   *
    * @deprecated Please use {@link org.awaitility.Awaitility} instead.
    */
   public static void pause(final int milliseconds) {
@@ -155,7 +155,7 @@ public class Wait {
 
   /**
    * Wait until given criterion is met
-   * 
+   *
    * @param waitCriterion criterion to wait on
    * @param timeoutMillis total time to wait, in milliseconds
    * @param pollingInterval pause interval between waits
@@ -206,7 +206,7 @@ public class Wait {
 
   /**
    * Blocks until the clock used for expiration moves forward.
-   * 
+   *
    * @param cacheTimeMillisSource region that provides cacheTimeMillis
    * @return the last time stamp observed
    * @deprecated Please use {@link org.awaitility.Awaitility} instead.
@@ -218,7 +218,7 @@ public class Wait {
 
   /**
    * Blocks until the clock used for expiration moves forward.
-   * 
+   *
    * @param cacheTimeMillisSource region that provides cacheTimeMillis
    * @param baseTime the timestamp that the clock must exceed
    * @return the last time stamp observed
@@ -237,7 +237,7 @@ public class Wait {
   /**
    * Wait on a mutex. This is done in a loop in order to address the "spurious wakeup" "feature" in
    * Java.
-   * 
+   *
    * @param waitCriterion condition to test
    * @param mutex object to lock and wait on
    * @param milliseconds total amount of time to wait

@@ -30,8 +30,8 @@ import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.operations.*;
 import org.apache.geode.cache.operations.OperationContext.OperationCode;
 import org.apache.geode.cache.query.SelectResults;
-import org.apache.geode.cache.query.internal.ResultsCollectionWrapper;
 import org.apache.geode.cache.query.internal.CqEntry;
+import org.apache.geode.cache.query.internal.ResultsCollectionWrapper;
 import org.apache.geode.cache.query.types.ObjectType;
 import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.i18n.LogWriterI18n;
@@ -45,7 +45,7 @@ import org.apache.geode.security.NotAuthorizedException;
  * An authorization implementation for testing that checks for authorization information in
  * post-operation filtering, removes that field and allows the operation only if the authorization
  * field in {@link ObjectWithAuthz} object allows the current principal.
- * 
+ *
  * @since GemFire 5.5
  */
 public class FilterPostAuthorization implements AccessControl {

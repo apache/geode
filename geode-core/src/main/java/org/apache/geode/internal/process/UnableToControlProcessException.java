@@ -17,7 +17,7 @@ package org.apache.geode.internal.process;
 /**
  * Exception indicating that an attempt to control a {@link ControllableProcess} has failed for some
  * reason.
- * 
+ *
  * @since GemFire 8.0
  */
 public class UnableToControlProcessException extends Exception {

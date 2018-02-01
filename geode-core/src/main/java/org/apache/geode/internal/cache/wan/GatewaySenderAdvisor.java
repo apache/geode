@@ -332,7 +332,7 @@ public class GatewaySenderAdvisor extends DistributionAdvisor {
    * Find out if this sender is the eldest in the DS. Returns true if: 1. No other sender is running
    * 2. At least one sender is running in the system apart from this sender AND this sender's start
    * time is lesser of all (i.e. this sender is oldest)
-   * 
+   *
    * @return boolean true if this eldest sender; false otherwise
    */
   private boolean adviseEldestGatewaySender() {
@@ -673,7 +673,7 @@ public class GatewaySenderAdvisor extends DistributionAdvisor {
       }
     }
 
-    private final static Version[] serializationVersions = new Version[] {Version.GFE_80};
+    private static final Version[] serializationVersions = new Version[] {Version.GFE_80};
 
     @Override
     public Version[] getSerializationVersions() {

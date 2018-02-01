@@ -35,7 +35,6 @@ import org.xml.sax.helpers.DefaultHandler;
 import org.apache.geode.internal.ClassPathLoader;
 import org.apache.geode.internal.ExitCode;
 import org.apache.geode.internal.i18n.LocalizedStrings;
-// import java.util.*;
 
 /**
  * A tool that reads the XML description of MBeans used with the Jakarta Commons Modeler and

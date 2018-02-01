@@ -15,16 +15,17 @@
 
 package org.apache.geode.distributed.internal;
 
+import java.util.Collection;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.TimeUnit;
-import java.util.Collection;
 
 /**
  * A LinkedBlockingQueue that supports stats. Named OverflowQueue for historical reasons.
  *
  */
-public class OverflowQueueWithDMStats extends LinkedBlockingQueue {
+public class OverflowQueueWithDMStats<E> extends LinkedBlockingQueue {
   private static final long serialVersionUID = -1846248853494394996L;
+
   protected final QueueStatHelper stats;
 
   /** Creates new OverflowQueueWithDMStats */

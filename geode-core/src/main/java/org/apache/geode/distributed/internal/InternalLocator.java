@@ -62,7 +62,6 @@ import org.apache.geode.distributed.internal.tcpserver.TcpServer;
 import org.apache.geode.internal.admin.remote.DistributionLocatorId;
 import org.apache.geode.internal.cache.GemFireCacheImpl;
 import org.apache.geode.internal.cache.InternalCache;
-import org.apache.geode.internal.cache.tier.sockets.ClientProtocolService;
 import org.apache.geode.internal.cache.tier.sockets.TcpServerFactory;
 import org.apache.geode.internal.cache.wan.WANServiceProvider;
 import org.apache.geode.internal.i18n.LocalizedStrings;
@@ -78,9 +77,7 @@ import org.apache.geode.management.internal.JmxManagerLocator;
 import org.apache.geode.management.internal.JmxManagerLocatorRequest;
 import org.apache.geode.management.internal.cli.CliUtil;
 import org.apache.geode.management.internal.configuration.domain.SharedConfigurationStatus;
-import org.apache.geode.management.internal.configuration.handlers.ConfigurationRequestHandler;
 import org.apache.geode.management.internal.configuration.handlers.SharedConfigurationStatusRequestHandler;
-import org.apache.geode.management.internal.configuration.messages.ConfigurationRequest;
 import org.apache.geode.management.internal.configuration.messages.SharedConfigurationStatusRequest;
 import org.apache.geode.management.internal.configuration.messages.SharedConfigurationStatusResponse;
 
@@ -97,7 +94,7 @@ import org.apache.geode.management.internal.configuration.messages.SharedConfigu
  * The startLocator() methods provide a way to start all three services in one call. Otherwise, the
  * services can be started independently {@code  locator = createLocator();
  * locator.startPeerLocation(); locator.startDistributeSystem();}
- * 
+ *
  * @since GemFire 4.0
  */
 public class InternalLocator extends Locator implements ConnectListener {
@@ -139,11 +136,6 @@ public class InternalLocator extends Locator implements ConnectListener {
    * locator is being colocated in a normal member this field will be null.
    */
   private InternalCache myCache;
-
-  /**
-   * locator state file
-   */
-  private File stateFile;
 
   /**
    * product use logging
@@ -224,21 +216,18 @@ public class InternalLocator extends Locator implements ConnectListener {
     }
   }
 
-  // TODO: return value of removeLocator is never used
-  private static boolean removeLocator(InternalLocator locator) {
+  private static void removeLocator(InternalLocator locator) {
     if (locator == null) {
-      return false;
+      return;
     }
     synchronized (locatorLock) {
       LogWriterAppenders.stop(LogWriterAppenders.Identifier.MAIN);
       LogWriterAppenders.stop(LogWriterAppenders.Identifier.SECURITY);
       LogWriterAppenders.destroy(LogWriterAppenders.Identifier.MAIN);
       LogWriterAppenders.destroy(LogWriterAppenders.Identifier.SECURITY);
-      if (locator != null && locator.equals(InternalLocator.locator)) {
+      if (locator.equals(InternalLocator.locator)) {
         InternalLocator.locator = null;
-        return true;
       }
-      return false;
     }
   }
 
@@ -250,27 +239,25 @@ public class InternalLocator extends Locator implements ConnectListener {
    * Create a locator that listens on a given port. This locator will not have peer or server
    * location services available until they are started by calling startServerLocation or
    * startPeerLocation on the locator object.
-   * 
+   *
    * @param port the tcp/ip port to listen on
    * @param logFile the file that log messages should be written to
-   * @param stateFile the file that state should be read from / written to for recovery
    * @param logger a log writer that should be used (logFile parameter is ignored)
    * @param securityLogger the logger to be used for security related log messages
    * @param distributedSystemProperties optional properties to configure the distributed system
    *        (e.g., mcast addr/port, other locators)
    * @param startDistributedSystem if true then this locator will also start its own ds
    */
-  public static InternalLocator createLocator(int port, File logFile, File stateFile,
-      InternalLogWriter logger, InternalLogWriter securityLogger, InetAddress bindAddress,
-      String hostnameForClients, Properties distributedSystemProperties,
-      boolean startDistributedSystem) {
+  public static InternalLocator createLocator(int port, File logFile, InternalLogWriter logger,
+      InternalLogWriter securityLogger, InetAddress bindAddress, String hostnameForClients,
+      Properties distributedSystemProperties, boolean startDistributedSystem) {
     synchronized (locatorLock) {
       if (hasLocator()) {
         throw new IllegalStateException(
             "A locator can not be created because one already exists in this JVM.");
       }
       InternalLocator locator =
-          new InternalLocator(port, logFile, stateFile, logger, securityLogger, bindAddress,
+          new InternalLocator(port, logFile, logger, securityLogger, bindAddress,
               hostnameForClients, distributedSystemProperties, null, startDistributedSystem);
       InternalLocator.locator = locator;
       return locator;
@@ -291,7 +278,7 @@ public class InternalLocator extends Locator implements ConnectListener {
    * Creates a distribution locator that runs in this VM on the given port and bind address.
    * <p>
    * This is for internal use only as it does not create a distributed system unless told to do so.
-   * 
+   *
    * @param port the tcp/ip port to listen on
    * @param logFile the file that log messages should be written to
    * @param logger a log writer that should be used (logFile parameter is ignored)
@@ -301,10 +288,9 @@ public class InternalLocator extends Locator implements ConnectListener {
    *        addr/port, other locators)
    * @param hostnameForClients the name to give to clients for connecting to this locator
    */
-  public static InternalLocator startLocator(int port, File logFile, File stateFile,
-      InternalLogWriter logger, InternalLogWriter securityLogger, InetAddress bindAddress,
-      boolean startDistributedSystem, Properties dsProperties, String hostnameForClients)
-      throws IOException {
+  public static InternalLocator startLocator(int port, File logFile, InternalLogWriter logger,
+      InternalLogWriter securityLogger, InetAddress bindAddress, boolean startDistributedSystem,
+      Properties dsProperties, String hostnameForClients) throws IOException {
 
     System.setProperty(FORCE_LOCATOR_DM_TYPE, "true");
     InternalLocator newLocator = null;
@@ -312,16 +298,14 @@ public class InternalLocator extends Locator implements ConnectListener {
     boolean startedLocator = false;
     try {
 
-      newLocator = createLocator(port, logFile, stateFile, logger, securityLogger, bindAddress,
+      newLocator = createLocator(port, logFile, logger, securityLogger, bindAddress,
           hostnameForClients, dsProperties, startDistributedSystem);
 
-      // TODO:GEODE-1243: this.server is now a TcpServer and it should store or return its non-zero
-      // port in a variable to use here
       try {
-        newLocator.startPeerLocation(startDistributedSystem);
+        newLocator.startPeerLocation();
+
         if (startDistributedSystem) {
           try {
-            // TODO:GEODE-1243: throws Exception if TcpServer still has zero for its locator port
             newLocator.startDistributedSystem();
           } catch (RuntimeException e) {
             newLocator.stop();
@@ -363,7 +347,7 @@ public class InternalLocator extends Locator implements ConnectListener {
 
   /***
    * Determines if this VM is a locator which must ignore a shutdown.
-   * 
+   *
    * @return true if this VM is a locator which should ignore a shutdown , false if it is a normal
    *         member.
    */
@@ -387,10 +371,9 @@ public class InternalLocator extends Locator implements ConnectListener {
 
   /**
    * Creates a new {@code Locator} with the given port, log file, logger, and bind address.
-   * 
+   *
    * @param port the tcp/ip port to listen on
    * @param logF the file that log messages should be written to
-   * @param stateF the file that state should be read from / written to for recovery
    * @param logWriter a log writer that should be used (logFile parameter is ignored)
    * @param securityLogWriter the log writer to be used for security related log messages
    * @param hostnameForClients the name to give to clients for connecting to this locator
@@ -399,7 +382,7 @@ public class InternalLocator extends Locator implements ConnectListener {
    * @param cfg the config if being called from a distributed system; otherwise null.
    * @param startDistributedSystem if true locator will start its own distributed system
    */
-  private InternalLocator(int port, File logF, File stateF, InternalLogWriter logWriter,
+  private InternalLocator(int port, File logF, InternalLogWriter logWriter,
       // LOG: 3 non-null sources: GemFireDistributionLocator, InternalDistributedSystem,
       // LocatorLauncher
       InternalLogWriter securityLogWriter,
@@ -413,13 +396,6 @@ public class InternalLocator extends Locator implements ConnectListener {
     this.bindAddress = bindAddress;
     this.hostnameForClients = hostnameForClients;
 
-    if (stateF == null) {
-      this.stateFile = new File("locator" + port + "view.dat");
-    } else {
-      this.stateFile = stateF;
-    }
-    File productUseFile = new File("locator" + port + "views.log");
-    this.productUseLog = new ProductUseLog(productUseFile);
     this.config = cfg;
 
     this.env = new Properties();
@@ -504,14 +480,6 @@ public class InternalLocator extends Locator implements ConnectListener {
         this.handler, new DelayedPoolStatHelper(), group, this.toString(), this);
   }
 
-  // Reset the file names with the correct port number if startLocatorAndDS was called with port
-  // number 0
-  public void resetInternalLocatorFileNamesWithCorrectPortNumber(int port) {
-    this.stateFile = new File("locator" + port + "view.dat");
-    File productUseFile = new File("locator" + port + "views.log");
-    this.productUseLog = new ProductUseLog(productUseFile);
-  }
-
   private void startTcpServer() throws IOException {
     logger.info(LocalizedMessage.create(LocalizedStrings.InternalLocator_STARTING_0, this));
     this.server.start();
@@ -526,20 +494,20 @@ public class InternalLocator extends Locator implements ConnectListener {
   }
 
   public InternalCache getCache() {
+    if (myCache == null) {
+      return GemFireCacheImpl.getInstance();
+    }
     return myCache;
   }
 
   /**
    * Start peer location in this locator. If you plan on starting a distributed system later, this
    * method should be called first so that the distributed system can use this locator.
-   * <p>
-   * TODO: parameter withDS is never used
    *
-   * @param withDS true if a distributed system has been or will be started
-   *
+   * @return returns the port that the locator to which the locator is bound
    * @since GemFire 5.7
    */
-  void startPeerLocation(boolean withDS) throws IOException {
+  int startPeerLocation() throws IOException {
     if (isPeerLocator()) {
       throw new IllegalStateException(
           LocalizedStrings.InternalLocator_PEER_LOCATION_IS_ALREADY_RUNNING_FOR_0
@@ -552,7 +520,7 @@ public class InternalLocator extends Locator implements ConnectListener {
 
     // check for settings that would require only locators to hold the
     // coordinator - e.g., security and network-partition detection
-    boolean locatorsAreCoordinators = false;
+    boolean locatorsAreCoordinators;
     boolean networkPartitionDetectionEnabled = this.config.getEnableNetworkPartitionDetection();
     String securityUDPDHAlgo = this.config.getSecurityUDPDHAlgo();
     if (networkPartitionDetectionEnabled) {
@@ -566,14 +534,18 @@ public class InternalLocator extends Locator implements ConnectListener {
       }
     }
 
-    this.locatorImpl = MemberFactory.newLocatorHandler(this.bindAddress, this.stateFile,
-        locatorsProp, locatorsAreCoordinators, networkPartitionDetectionEnabled, this.stats,
-        securityUDPDHAlgo);
+    this.locatorImpl = MemberFactory.newLocatorHandler(this.bindAddress, locatorsProp,
+        locatorsAreCoordinators, networkPartitionDetectionEnabled, this.stats, securityUDPDHAlgo);
     this.handler.addHandler(PeerLocatorRequest.class, this.locatorImpl);
     this.peerLocator = true;
     if (!this.server.isAlive()) {
       startTcpServer();
     }
+    int boundPort = this.server.getPort();
+    File productUseFile = new File("locator" + boundPort + "views.log");
+    productUseLog = new ProductUseLog(productUseFile);
+
+    return boundPort;
   }
 
   /**
@@ -583,56 +555,26 @@ public class InternalLocator extends Locator implements ConnectListener {
     return this.locatorImpl;
   }
 
-  public PrimaryHandler getPrimaryHandler() {
-    return this.handler;
-  }
-
   /**
    * For backward-compatibility we retain this method
    * <p>
    * TODO: parameters peerLocator and serverLocator and b1 are never used
-   * 
+   *
    * @deprecated use a form of the method that does not have peerLocator/serverLocator parameters
    */
   @Deprecated
-  public static InternalLocator startLocator(int locatorPort, File logFile, File stateFile,
+  public static InternalLocator startLocator(int locatorPort, File logFile,
       InternalLogWriter logger, InternalLogWriter logger1, InetAddress addr,
       Properties dsProperties, boolean peerLocator, boolean serverLocator, String s, boolean b1)
       throws IOException {
-    return startLocator(locatorPort, logFile, stateFile, logger, logger1, addr, true, dsProperties,
-        s);
-  }
-
-  class SharedConfigurationRunnable implements Runnable {
-
-    private final InternalLocator locator = InternalLocator.this;
-
-    @Override
-    public void run() {
-      try {
-        if (this.locator.sharedConfig == null) {
-          // locator.sharedConfig will already be created in case of auto-reconnect
-          this.locator.sharedConfig = new ClusterConfigurationService(locator.myCache);
-        }
-        this.locator.sharedConfig.initSharedConfiguration(this.locator.loadFromSharedConfigDir());
-        this.locator.installSharedConfigDistribution();
-        logger.info(
-            "Cluster configuration service start up completed successfully and is now running ....");
-      } catch (CancelException | LockServiceDestroyedException e) {
-        if (logger.isDebugEnabled()) {
-          logger.debug("Cluster configuration start up was cancelled", e);
-        }
-      } catch (Exception e) {
-        logger.error(e.getMessage(), e);
-      }
-    }
+    return startLocator(locatorPort, logFile, logger, logger1, addr, true, dsProperties, s);
   }
 
   /**
    * Start a distributed system whose life cycle is managed by this locator. When the locator is
    * stopped, this distributed system will be disconnected. If a distributed system already exists,
    * this method will have no affect.
-   * 
+   *
    * @since GemFire 5.7
    */
   private void startDistributedSystem() throws UnknownHostException {
@@ -723,13 +665,13 @@ public class InternalLocator extends Locator implements ConnectListener {
     }
     startJmxManagerLocationService(internalCache);
 
-    startSharedConfigurationService(internalCache);
+    startSharedConfigurationService();
   }
 
   /**
    * End the initialization of the locator. This method should be called once the location services
    * and distributed system are started.
-   * 
+   *
    * @param distributedSystem The distributed system to use for the statistics.
    *
    * @since GemFire 5.7
@@ -755,7 +697,7 @@ public class InternalLocator extends Locator implements ConnectListener {
   /**
    * Start server location services in this locator. Server location can only be started once there
    * is a running distributed system.
-   * 
+   *
    * @param distributedSystem The distributed system which the server location services should use.
    *        If null, the method will try to find an already connected distributed system.
    *
@@ -779,8 +721,6 @@ public class InternalLocator extends Locator implements ConnectListener {
       }
     }
 
-    this.productUseLog.monitorUse(distributedSystem);
-
     ServerLocator serverLocator =
         new ServerLocator(getPort(), this.bindAddress, this.hostnameForClients, this.logFile,
             this.productUseLog, getConfig().getName(), distributedSystem, this.stats);
@@ -794,6 +734,9 @@ public class InternalLocator extends Locator implements ConnectListener {
     if (!this.server.isAlive()) {
       startTcpServer();
     }
+    // the product use is not guaranteed to be initialized until the server is started, so
+    // the last thing we do is tell it to start logging
+    this.productUseLog.monitorUse(distributedSystem);
   }
 
   /**
@@ -806,7 +749,7 @@ public class InternalLocator extends Locator implements ConnectListener {
 
   /**
    * Stop this locator
-   * 
+   *
    * @param stopForReconnect - stopping for distributed system reconnect
    * @param waitForDisconnect - wait up to 60 seconds for the locator to completely stop
    */
@@ -904,7 +847,9 @@ public class InternalLocator extends Locator implements ConnectListener {
     if (!this.shutdownHandled.compareAndSet(false, true)) {
       return; // already shutdown
     }
-    this.productUseLog.close();
+    if (this.productUseLog != null) {
+      this.productUseLog.close();
+    }
     if (this.myDs != null) {
       this.myDs.setDependentLocator(null);
     }
@@ -937,7 +882,7 @@ public class InternalLocator extends Locator implements ConnectListener {
 
   /**
    * Waits for a locator to be told to stop.
-   * 
+   *
    * @throws InterruptedException thrown if the thread is interrupted
    */
   public void waitToStop() throws InterruptedException {
@@ -1005,7 +950,7 @@ public class InternalLocator extends Locator implements ConnectListener {
    * succeeds. It will then wait for the system to finish reconnecting before returning. If quorum
    * checks are not being done this merely waits for the distributed system to reconnect and then
    * starts location services.
-   * 
+   *
    * @return true if able to reconnect the locator to the new distributed system
    */
   private boolean attemptReconnect() throws InterruptedException, IOException {
@@ -1090,19 +1035,13 @@ public class InternalLocator extends Locator implements ConnectListener {
       this.myCache = newCache;
       this.myDs.setDependentLocator(this);
       logger.info("Locator restart: initializing TcpServer");
-      if (isSharedConfigurationEnabled()) {
-        this.sharedConfig = new ClusterConfigurationService(newCache);
-      }
+
       this.server.restarting(newSystem, newCache, this.sharedConfig);
       if (this.productUseLog.isClosed()) {
         this.productUseLog.reopen();
       }
       this.productUseLog.monitorUse(newSystem);
-      this.isSharedConfigurationStarted = true;
-      if (isSharedConfigurationEnabled()) {
-        ExecutorService es = newCache.getDistributionManager().getThreadPool();
-        es.execute(new SharedConfigurationRunnable());
-      }
+      startSharedConfigurationService();
       if (!this.server.isAlive()) {
         logger.info("Locator restart: starting TcpServer");
         startTcpServer();
@@ -1116,7 +1055,11 @@ public class InternalLocator extends Locator implements ConnectListener {
 
   @Override
   public DistributedSystem getDistributedSystem() {
-    return this.myDs;
+    if (myDs == null) {
+      return InternalDistributedSystem.getAnyInstance();
+    }
+
+    return myDs;
   }
 
   @Override
@@ -1140,7 +1083,7 @@ public class InternalLocator extends Locator implements ConnectListener {
   /**
    * Return the port on which the locator is actually listening. If called before the locator has
    * actually started, this method will return null.
-   * 
+   *
    * @return the port the locator is listening on or null if it has not yet been started
    */
   @Override
@@ -1159,17 +1102,7 @@ public class InternalLocator extends Locator implements ConnectListener {
     @Override
     public SharedConfigurationStatusResponse call() throws InterruptedException {
       final InternalLocator locator = InternalLocator.this;
-      // TODO: this for-loop is probably not necessary as the if to break is always true
-      for (int i = 0; i < MAX_RETRIES; i++) {
-        if (locator.sharedConfig != null) {
-          SharedConfigurationStatus status = locator.sharedConfig.getStatus();
-          if (status != SharedConfigurationStatus.STARTED
-              || status != SharedConfigurationStatus.NOT_STARTED) {
-            break;
-          }
-        }
-        Thread.sleep(SLEEPTIME);
-      }
+
       SharedConfigurationStatusResponse response;
       if (locator.sharedConfig != null) {
         response = locator.sharedConfig.createStatusResponse();
@@ -1204,8 +1137,6 @@ public class InternalLocator extends Locator implements ConnectListener {
     private TcpServer tcpServer;
     private final LocatorMembershipListener locatorListener;
     private final InternalLocator internalLocator;
-    // GEODE-2253 test condition
-    private boolean hasWaitedForHandlerInitialization = false;
 
     PrimaryHandler(InternalLocator locator, LocatorMembershipListener listener) {
       this.locatorListener = listener;
@@ -1260,7 +1191,6 @@ public class InternalLocator extends Locator implements ConnectListener {
                 // always retry some number of times
                 locatorWaitTime = 30;
               }
-              this.hasWaitedForHandlerInitialization = true;
               giveup = System.currentTimeMillis() + locatorWaitTime * 1000;
               try {
                 Thread.sleep(1000);
@@ -1277,14 +1207,6 @@ public class InternalLocator extends Locator implements ConnectListener {
               + "either not enabled or is not ready to process requests",
           request.getClass().getSimpleName());
       return null;
-    }
-
-    /**
-     * GEODE-2253 test condition - has this handler waited for a subordinate handler to be
-     * installed?
-     */
-    public boolean hasWaitedForHandlerInitialization() {
-      return this.hasWaitedForHandlerInitialization;
     }
 
     @Override
@@ -1335,11 +1257,6 @@ public class InternalLocator extends Locator implements ConnectListener {
     try {
       this.stats.hookupStats(sys,
           SocketCreator.getLocalHost().getCanonicalHostName() + '-' + this.server.getBindAddress());
-
-      ClientProtocolService clientProtocolService = this.server.getClientProtocolService();
-      if (clientProtocolService != null) {
-        clientProtocolService.initializeStatistics("LocatorStats", sys);
-      }
     } catch (UnknownHostException e) {
       logger.warn(e);
     }
@@ -1348,7 +1265,7 @@ public class InternalLocator extends Locator implements ConnectListener {
   /**
    * Returns collection of locator strings representing every locator instance hosted by this
    * member.
-   * 
+   *
    * @see #getLocators()
    */
   public static Collection<String> getLocatorStrings() {
@@ -1384,20 +1301,40 @@ public class InternalLocator extends Locator implements ConnectListener {
     }
   }
 
-  private void startSharedConfigurationService(InternalCache internalCache) {
+  private void startSharedConfigurationService() {
     installSharedConfigHandler();
 
-    if (this.config.getEnableClusterConfiguration() && !this.isSharedConfigurationStarted) {
-      if (!isDedicatedLocator()) {
-        logger.info("Cluster configuration service not enabled as it is only supported "
-            + "in dedicated locators");
-        return;
-      }
-
-      ExecutorService es = internalCache.getDistributionManager().getThreadPool();
-      es.execute(new SharedConfigurationRunnable());
-    } else {
+    if (!config.getEnableClusterConfiguration()) {
       logger.info("Cluster configuration service is disabled");
+      return;
+    }
+
+    if (isSharedConfigurationStarted) {
+      logger.info("Cluster configuration service is already started.");
+      return;
+    }
+
+    if (!isDedicatedLocator()) {
+      logger.info("Cluster configuration service not enabled as it is only supported "
+          + "in dedicated locators");
+      return;
+    }
+
+    try {
+      if (locator.sharedConfig == null) {
+        // locator.sharedConfig will already be created in case of auto-reconnect
+        locator.sharedConfig = new ClusterConfigurationService(locator.myCache);
+      }
+      locator.sharedConfig.initSharedConfiguration(locator.loadFromSharedConfigDir());
+      logger.info(
+          "Cluster configuration service start up completed successfully and is now running ....");
+      isSharedConfigurationStarted = true;
+    } catch (CancelException | LockServiceDestroyedException e) {
+      if (logger.isDebugEnabled()) {
+        logger.debug("Cluster configuration start up was cancelled", e);
+      }
+    } catch (Exception e) {
+      logger.error(e.getMessage(), e);
     }
   }
 
@@ -1407,17 +1344,6 @@ public class InternalLocator extends Locator implements ConnectListener {
         this.handler.addHandler(JmxManagerLocatorRequest.class,
             new JmxManagerLocator(internalCache));
       }
-    }
-  }
-
-  /**
-   * Creates and installs the handler {@link ConfigurationRequestHandler}
-   */
-  private void installSharedConfigDistribution() {
-    if (!this.handler.isHandled(ConfigurationRequest.class)) {
-      this.handler.addHandler(ConfigurationRequest.class,
-          new ConfigurationRequestHandler(this.sharedConfig));
-      logger.info("ConfigRequestHandler installed");
     }
   }
 

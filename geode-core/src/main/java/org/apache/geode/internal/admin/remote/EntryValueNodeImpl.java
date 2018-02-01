@@ -15,13 +15,13 @@
 
 package org.apache.geode.internal.admin.remote;
 
+import java.io.*;
+import java.lang.reflect.*;
+import java.util.*;
+
 import org.apache.geode.*;
 import org.apache.geode.internal.admin.*;
 import org.apache.geode.internal.i18n.LocalizedStrings;
-
-import java.lang.reflect.*;
-import java.io.*;
-import java.util.*;
 
 /**
  * This class holds the metadata for a single object field in a value stored in the cache. They are
@@ -384,5 +384,3 @@ public class EntryValueNodeImpl implements EntryValueNode, Externalizable/* , Da
   // }
 
 }
-
-

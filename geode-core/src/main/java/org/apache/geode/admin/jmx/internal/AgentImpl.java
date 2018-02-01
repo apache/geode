@@ -411,7 +411,7 @@ public class AgentImpl implements org.apache.geode.admin.jmx.Agent,
           return ((AdminDistributedSystemJmxImpl) this.system).getObjectName();
         }
 
-        DistributionManager.isDedicatedAdminVM = true;
+        DistributionManager.setIsDedicatedAdminVM(true);
 
         AdminDistributedSystemJmxImpl systemJmx = (AdminDistributedSystemJmxImpl) this.system;
         if (systemJmx == null) {
@@ -477,7 +477,7 @@ public class AgentImpl implements org.apache.geode.admin.jmx.Agent,
         logger.warn(e.getMessage(), e);
         throw e;
       } finally {
-        DistributionManager.isDedicatedAdminVM = false;
+        DistributionManager.setIsDedicatedAdminVM(false);
       }
     }
   }
@@ -530,7 +530,7 @@ public class AgentImpl implements org.apache.geode.admin.jmx.Agent,
   /**
    * Gets the agent's property file. This is the file it will use when saving its configuration. It
    * was also used when the agent started to initialize its configuration.
-   * 
+   *
    * @return the agent's property file
    */
   public String getPropertyFile() {
@@ -1540,7 +1540,7 @@ public class AgentImpl implements org.apache.geode.admin.jmx.Agent,
   /**
    * Process the String form of a hostname to make it comply with Jmx URL restrictions. Namely wrap
    * IPv6 literal address with "[", "]"
-   * 
+   *
    * @param hostname the name to safeguard.
    * @return a string representation suitable for use in a Jmx connection URL
    */
@@ -1621,4 +1621,3 @@ class ConnectionNotificationFilterImpl implements NotificationFilter {
     return isThisNotificationEnabled;
   }
 }
-

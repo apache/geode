@@ -57,9 +57,9 @@ import org.junit.rules.RuleChain;
 import org.apache.geode.internal.AvailablePortHelper;
 import org.apache.geode.internal.security.SecurableCommunicationChannel;
 import org.apache.geode.test.dunit.rules.CleanupDUnitVMsRule;
-import org.apache.geode.test.dunit.rules.LocatorServerStartupRule;
-import org.apache.geode.test.junit.rules.MBeanServerConnectionRule;
+import org.apache.geode.test.dunit.rules.ClusterStartupRule;
 import org.apache.geode.test.junit.categories.DistributedTest;
+import org.apache.geode.test.junit.rules.MBeanServerConnectionRule;
 import org.apache.geode.util.test.TestUtil;
 
 /**
@@ -71,7 +71,7 @@ import org.apache.geode.util.test.TestUtil;
 @SuppressWarnings({"serial", "unused"})
 public class JMXMBeanDUnitTest implements Serializable {
 
-  private LocatorServerStartupRule lsRule = new LocatorServerStartupRule();
+  private ClusterStartupRule lsRule = new ClusterStartupRule();
   private transient MBeanServerConnectionRule jmxConnector = new MBeanServerConnectionRule();
   private transient RestoreSystemProperties restoreSystemProperties = new RestoreSystemProperties();
   private transient CleanupDUnitVMsRule cleanupDUnitVMsRule = new CleanupDUnitVMsRule();
@@ -197,7 +197,7 @@ public class JMXMBeanDUnitTest implements Serializable {
       throws Exception {
     // Get MBean proxy instance that will be used to make calls to registered MBean
     DistributedSystemMXBean distributedSystemMXBean =
-        mBeanServerConnectionRule.getProxyMBean(DistributedSystemMXBean.class);
+        mBeanServerConnectionRule.getProxyMXBean(DistributedSystemMXBean.class);
     assertEquals(1, distributedSystemMXBean.getMemberCount());
     assertEquals(1, distributedSystemMXBean.getLocatorCount());
   }

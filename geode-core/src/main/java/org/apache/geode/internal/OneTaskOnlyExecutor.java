@@ -23,22 +23,22 @@ import java.util.concurrent.TimeUnit;
 /**
  * A decorator for a ScheduledExecutorService which tries to make sure that there is only one task
  * in the queue for the executor service that has been submitted through this decorator.
- * 
+ *
  * This class is useful if you have a task that you want to make sure runs at least once after an
  * event, but if the event happens repeatedly before the task runs, the task should still only run
  * once.
- * 
+ *
  * In many cases it might make sense to have multiple decorators, or to submit one kind of task
  * through the decorator and other tasks directly through the executor.
- * 
+ *
  * For example, a task that recovers redundancy for all buckets of a PR when a member crashes only
  * needs to be run once, no matter how many members crash before the task starts. But after the task
  * has started, we want to make sure we schedule another execution for the next crash.
- * 
+ *
  * If the a new task is scheduled to run sooner than the task that is currently in the queue, the
  * currently queued task will be canceled and the new task will be submitted to the queue with the
  * new time.
- * 
+ *
  * @since GemFire 6.0
  */
 @SuppressWarnings("synthetic-access")
@@ -61,7 +61,7 @@ public class OneTaskOnlyExecutor {
    * Schedule an execution of a task. This will either add the task to the execution service, or if
    * a task has already been scheduled through this decorator and is still pending execution it will
    * return the future associated with the previously scheduled task.
-   * 
+   *
    * @param runnable a runnable to execution
    * @param delay the time to delay before execution
    * @param unit the time unit
@@ -89,7 +89,7 @@ public class OneTaskOnlyExecutor {
    * Schedule an execution of a task. This will either add the task to the execution service, or if
    * a task has already been scheduled through this decorator and is still pending execution it will
    * return the future associated with the previously scheduled task.
-   * 
+   *
    * @param callable a callable to execute
    * @param delay the time to delay before execution
    * @param unit the time unit

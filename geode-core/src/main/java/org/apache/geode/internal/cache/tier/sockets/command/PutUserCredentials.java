@@ -26,7 +26,7 @@ import org.apache.geode.security.GemFireSecurityException;
 
 public class PutUserCredentials extends BaseCommand {
 
-  private final static PutUserCredentials singleton = new PutUserCredentials();
+  private static final PutUserCredentials singleton = new PutUserCredentials();
 
   public static Command getCommand() {
     return singleton;

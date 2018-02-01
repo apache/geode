@@ -15,7 +15,7 @@
 package org.apache.geode.internal.memcached.commands;
 
 /**
- * 
+ *
  *
  */
 public class AddQCommand extends AddCommand {

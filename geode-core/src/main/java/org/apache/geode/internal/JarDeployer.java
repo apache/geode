@@ -18,14 +18,11 @@ import static java.util.stream.Collectors.joining;
 import static java.util.stream.Collectors.toList;
 import static java.util.stream.Collectors.toSet;
 
-import java.io.BufferedInputStream;
 import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
 import java.io.IOException;
-import java.io.OutputStream;
 import java.io.Serializable;
 import java.net.URL;
+import java.nio.file.Files;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -46,6 +43,7 @@ import java.util.stream.Stream;
 import org.apache.commons.io.FileUtils;
 import org.apache.logging.log4j.Logger;
 
+import org.apache.geode.annotations.TestingOnly;
 import org.apache.geode.internal.logging.LogService;
 
 public class JarDeployer implements Serializable {
@@ -78,16 +76,16 @@ public class JarDeployer implements Serializable {
   /**
    * Writes the jarBytes for the given jarName to the next version of that jar file (if the bytes do
    * not match the latest deployed version)
-   * 
+   *
    * @return the DeployedJar that was written from jarBytes, or null if those bytes matched the
    *         latest deployed version
    */
-  public DeployedJar deployWithoutRegistering(final String jarName, final byte[] jarBytes)
+  public DeployedJar deployWithoutRegistering(final String jarName, final File stagedJar)
       throws IOException {
     lock.lock();
 
     try {
-      boolean shouldDeployNewVersion = shouldDeployNewVersion(jarName, jarBytes);
+      boolean shouldDeployNewVersion = shouldDeployNewVersion(jarName, stagedJar);
       if (!shouldDeployNewVersion) {
         logger.debug("No need to deploy a new version of {}", jarName);
         return null;
@@ -96,9 +94,9 @@ public class JarDeployer implements Serializable {
       verifyWritableDeployDirectory();
 
       File newVersionedJarFile = getNextVersionedJarFile(jarName);
-      writeJarBytesToFile(newVersionedJarFile, jarBytes);
+      Files.copy(stagedJar.toPath(), newVersionedJarFile.toPath());
 
-      return new DeployedJar(newVersionedJarFile, jarName, jarBytes);
+      return new DeployedJar(newVersionedJarFile, jarName);
     } finally {
       lock.unlock();
     }
@@ -106,7 +104,7 @@ public class JarDeployer implements Serializable {
 
   /**
    * Get a list of all currently deployed jars.
-   * 
+   *
    * @return The list of DeployedJars
    */
   public List<DeployedJar> findDeployedJars() {
@@ -152,95 +150,8 @@ public class JarDeployer implements Serializable {
   }
 
   /**
-   * Attempt to write the given bytes to the given file. If this VM is able to successfully write
-   * the contents to the file, or another VM writes the exact same contents, then the write is
-   * considered to be successful.
-   * 
-   * @param file File of the JAR file to deploy.
-   * @param jarBytes Contents of the JAR file to deploy.
-   * @return True if the file was successfully written, false otherwise
-   */
-  private boolean writeJarBytesToFile(final File file, final byte[] jarBytes) throws IOException {
-    final boolean isDebugEnabled = logger.isDebugEnabled();
-    if (file.createNewFile()) {
-      if (isDebugEnabled) {
-        logger.debug("Successfully created new JAR file: {}", file.getAbsolutePath());
-      }
-      final OutputStream outStream = new FileOutputStream(file);
-      outStream.write(jarBytes);
-      outStream.close();
-      return true;
-    }
-    return doesFileMatchBytes(file, jarBytes);
-  }
-
-  /**
-   * Determine if the contents of the file referenced is an exact match for the bytes provided. The
-   * method first checks to see if the file is actively being written by checking the length over
-   * time. If it appears that the file is actively being written, then it loops waiting for that to
-   * complete before doing the comparison.
-   * 
-   * @param file File to compare
-   * @param bytes Bytes to compare
-   * @return True if there's an exact match, false otherwise
-   * @throws IOException If there's a problem reading the file
-   */
-  private boolean doesFileMatchBytes(final File file, final byte[] bytes) throws IOException {
-    // First check to see if the file is actively being written (if it's not big enough)
-    final String absolutePath = file.getAbsolutePath();
-    boolean keepTrying = true;
-    final boolean isDebugEnabled = logger.isDebugEnabled();
-    while (file.length() < bytes.length && keepTrying) {
-      if (isDebugEnabled) {
-        logger.debug("Loop waiting for another to write file: {}", absolutePath);
-      }
-      long startingFileLength = file.length();
-      try {
-        Thread.sleep(500);
-      } catch (InterruptedException iex) {
-        // Just keep looping
-      }
-      if (startingFileLength == file.length()) {
-        if (isDebugEnabled) {
-          logger.debug("Done waiting for another to write file: {}", absolutePath);
-        }
-        // Assume the other process has finished writing
-        keepTrying = false;
-      }
-    }
-
-    // If they don't have the same number of bytes then nothing to do
-    if (file.length() != bytes.length) {
-      if (isDebugEnabled) {
-        logger.debug("Unmatching file length when waiting for another to write file: {}",
-            absolutePath);
-      }
-      return false;
-    }
-
-    // Open the file then loop comparing each byte
-    BufferedInputStream inStream = new BufferedInputStream(new FileInputStream(file));
-    int index = 0;
-    try {
-      for (; index < bytes.length; index++) {
-        if (((byte) inStream.read()) != bytes[index]) {
-          if (isDebugEnabled) {
-            logger.debug("Did not find a match when waiting for another to write file: {}",
-                absolutePath);
-          }
-          return false;
-        }
-      }
-    } finally {
-      inStream.close();
-    }
-
-    return true;
-  }
-
-  /**
    * Find the version number that's embedded in the name of this file
-   * 
+   *
    * @param filename Filename to get the version number from
    * @return The version number embedded in the filename
    */
@@ -271,7 +182,7 @@ public class JarDeployer implements Serializable {
   /**
    * Find all versions of the JAR file that are currently on disk and return them sorted from newest
    * (highest version) to oldest
-   * 
+   *
    * @param unversionedJarName Name of the JAR file that we want old versions of
    * @return Sorted array of files that are older versions of the given JAR
    */
@@ -305,7 +216,7 @@ public class JarDeployer implements Serializable {
 
   /**
    * Make sure that the deploy directory is writable.
-   * 
+   *
    * @throws IOException If the directory isn't writable
    */
   public void verifyWritableDeployDirectory() throws IOException {
@@ -420,14 +331,8 @@ public class JarDeployer implements Serializable {
       throws IOException {
     final File[] jarFiles = findSortedOldVersionsOfJar(unversionedJarName);
 
-    Optional<File> latestValidDeployedJarOptional =
-        Arrays.stream(jarFiles).filter(Objects::nonNull).filter(jarFile -> {
-          try {
-            return DeployedJar.hasValidJarContent(FileUtils.readFileToByteArray(jarFile));
-          } catch (IOException e) {
-            return false;
-          }
-        }).findFirst();
+    Optional<File> latestValidDeployedJarOptional = Arrays.stream(jarFiles).filter(Objects::nonNull)
+        .filter(jarFile -> DeployedJar.hasValidJarContent(jarFile)).findFirst();
 
     if (!latestValidDeployedJarOptional.isPresent()) {
       // No valid version of this jar
@@ -481,47 +386,44 @@ public class JarDeployer implements Serializable {
 
   /**
    * Deploy the given JAR files.
-   * 
-   * @param jarNames Array of names of the JAR files to deploy.
-   * @param jarBytes Array of contents of the JAR files to deploy.
+   *
+   * @param stagedJarFiles A map of Files which have been staged in another location and are ready
+   *        to be deployed as a unit.
    * @return An array of newly created JAR class loaders. Entries will be null for an JARs that were
    *         already deployed.
    * @throws IOException When there's an error saving the JAR file to disk
    */
-  public List<DeployedJar> deploy(final String jarNames[], final byte[][] jarBytes)
+  public List<DeployedJar> deploy(final Map<String, File> stagedJarFiles)
       throws IOException, ClassNotFoundException {
-    DeployedJar[] deployedJars = new DeployedJar[jarNames.length];
+    List<DeployedJar> deployedJars = new ArrayList<>(stagedJarFiles.size());
 
-    for (int i = 0; i < jarNames.length; i++) {
-      if (!DeployedJar.hasValidJarContent(jarBytes[i])) {
+    for (File jar : stagedJarFiles.values()) {
+      if (!DeployedJar.hasValidJarContent(jar)) {
         throw new IllegalArgumentException(
-            "File does not contain valid JAR content: " + jarNames[i]);
+            "File does not contain valid JAR content: " + jar.getName());
       }
     }
 
     lock.lock();
     try {
-      for (int i = 0; i < jarNames.length; i++) {
-        String jarName = jarNames[i];
-        byte[] newJarBytes = jarBytes[i];
-
-        deployedJars[i] = deployWithoutRegistering(jarName, newJarBytes);
+      for (String fileName : stagedJarFiles.keySet()) {
+        deployedJars.add(deployWithoutRegistering(fileName, stagedJarFiles.get(fileName)));
       }
 
-      return registerNewVersions(Arrays.asList(deployedJars));
+      return registerNewVersions(deployedJars);
     } finally {
       lock.unlock();
     }
   }
 
-  private boolean shouldDeployNewVersion(String jarName, byte[] newJarBytes) throws IOException {
+  private boolean shouldDeployNewVersion(String jarName, File stagedJar) throws IOException {
     DeployedJar oldDeployedJar = this.deployedJars.get(jarName);
 
     if (oldDeployedJar == null) {
       return true;
     }
 
-    if (oldDeployedJar.hasSameContentAs(newJarBytes)) {
+    if (oldDeployedJar.hasSameContentAs(stagedJar)) {
       logger.warn("Jar is identical to the latest deployed version: {}",
           oldDeployedJar.getFileCanonicalPath());
 
@@ -533,19 +435,23 @@ public class JarDeployer implements Serializable {
 
   /**
    * Returns the latest registered {@link DeployedJar} for the given JarName
-   * 
+   *
    * @param jarName - the unversioned jar name, e.g. myJar.jar
    */
-  public DeployedJar findDeployedJar(String jarName) {
+  public DeployedJar getDeployedJar(String jarName) {
     return this.deployedJars.get(jarName);
   }
 
-  public DeployedJar deploy(final String jarName, final byte[] jarBytes)
+  @TestingOnly
+  public DeployedJar deploy(final String jarName, final File stagedJarFile)
       throws IOException, ClassNotFoundException {
     lock.lock();
 
+    Map<String, File> jarFiles = new HashMap<>();
+    jarFiles.put(jarName, stagedJarFile);
+
     try {
-      List<DeployedJar> deployedJars = deploy(new String[] {jarName}, new byte[][] {jarBytes});
+      List<DeployedJar> deployedJars = deploy(jarFiles);
       if (deployedJars == null || deployedJars.size() == 0) {
         return null;
       }
@@ -563,7 +469,7 @@ public class JarDeployer implements Serializable {
 
   /**
    * Undeploy the given JAR file.
-   * 
+   *
    * @param jarName The name of the JAR file to undeploy
    * @return The path to the location on disk where the JAR file had been deployed
    * @throws IOException If there's a problem deleting the file

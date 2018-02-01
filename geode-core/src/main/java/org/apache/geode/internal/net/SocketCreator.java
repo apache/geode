@@ -350,7 +350,6 @@ public class SocketCreator {
       try {
         if (this.sslConfig.isEnabled() && sslContext == null) {
           sslContext = createAndConfigureSSLContext();
-          SSLContext.setDefault(sslContext);
         }
       } catch (Exception e) {
         throw new GemFireConfigException("Error configuring GemFire ssl ", e);
@@ -604,6 +603,10 @@ public class SocketCreator {
     }
 
     return extendedKeyManagers;
+  }
+
+  public SSLContext getSslContext() {
+    return sslContext;
   }
 
   private static class ExtendedAliasKeyManager extends X509ExtendedKeyManager {
@@ -1301,4 +1304,3 @@ public class SocketCreator {
     }
   }
 }
-

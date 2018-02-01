@@ -21,7 +21,7 @@ import sun.misc.Unsafe;
 /**
  * This class wraps the sun.misc.Unsafe class which is only available on Sun JVMs. It is also
  * available on other JVMs (like IBM).
- * 
+ *
  *
  */
 public class UnsafeWrapper {

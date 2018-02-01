@@ -20,14 +20,14 @@ import org.apache.geode.pdx.internal.EnumInfo;
 
 /**
  * Push a PDX Enum id to other servers.
- * 
+ *
  * @since GemFire 6.6.2
  */
 public class AddPDXEnumOp {
   /**
    * Register a bunch of instantiators on a server using connections from the given pool to
    * communicate with the server.
-   * 
+   *
    * @param pool the pool to use to communicate with the server.
    */
   public static void execute(ExecutablePool pool, int id, EnumInfo ei) {

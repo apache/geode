@@ -39,10 +39,10 @@ import java.lang.annotation.Target;
  * count during the lifetime of the containing object. Typically, these fields will have their
  * reference counts decremented in release method.</li>
  * </ul>
- * 
+ *
  * One or more OffHeapIdentifiers may be supplied if the developer wishes to link this annotation
  * with other off-heap annotations.
- * 
+ *
  */
 @Retention(RetentionPolicy.SOURCE)
 @Target({ElementType.PARAMETER, ElementType.METHOD, ElementType.CONSTRUCTOR, ElementType.FIELD,

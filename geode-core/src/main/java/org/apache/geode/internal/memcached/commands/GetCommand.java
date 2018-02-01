@@ -32,7 +32,7 @@ import org.apache.geode.internal.memcached.ValueWrapper;
 import org.apache.geode.memcached.GemFireMemcachedServer.Protocol;
 
 /**
- * 
+ *
  * The retrieval commands "get" and "gets" operates like this:<br/>
  * <code>
  * get &lt;key&gt;*\r\n<br/>
@@ -44,7 +44,7 @@ import org.apache.geode.memcached.GemFireMemcachedServer.Protocol;
  * VALUE &lt;key&gt; &lt;flags&gt; &lt;bytes&gt; [&lt;cas unique&gt;]\r\n<br/>
  * &lt;data block&gt;\r\n
  * </code>
- * 
+ *
  *
  */
 public class GetCommand extends AbstractCommand {

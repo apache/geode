@@ -32,8 +32,6 @@ import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
 
-import org.apache.geode.test.junit.categories.ClientServerTest;
-import org.apache.geode.test.junit.categories.ClientSubscriptionTest;
 import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
@@ -94,12 +92,14 @@ import org.apache.geode.test.dunit.ThreadUtils;
 import org.apache.geode.test.dunit.VM;
 import org.apache.geode.test.dunit.Wait;
 import org.apache.geode.test.dunit.WaitCriterion;
+import org.apache.geode.test.junit.categories.ClientServerTest;
+import org.apache.geode.test.junit.categories.ClientSubscriptionTest;
 import org.apache.geode.test.junit.categories.DistributedTest;
 import org.apache.geode.test.junit.categories.FlakyTest;
 
 /**
  * Tests putAll for c/s. Also tests removeAll
- * 
+ *
  * @since GemFire 5.0.23
  */
 @Category({DistributedTest.class, ClientServerTest.class, ClientSubscriptionTest.class})
@@ -374,7 +374,7 @@ public class PutAllCSDUnitTest extends ClientServerTestCase {
      * ads = AdminDistributedSystemFactory.getDistributedSystem(config); ads.connect();
      * DistributedMember distributedMember = system.getDistributedMember(); SystemMember member =
      * ads.lookupSystemMember(distributedMember);
-     * 
+     *
      * StatisticResource[] resources = member.getStats(); for (int i=0; i<resources.length; i++) {
      * System.out.println("GGG:"+resources[i].getType()); if
      * (resources[i].getType().equals("CacheServerClientStats")) { Statistic[] stats =

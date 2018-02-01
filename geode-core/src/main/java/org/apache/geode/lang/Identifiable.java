@@ -21,7 +21,7 @@ import java.io.Serializable;
  * The Identifiable interface defines a contract for classes whose Object instances can be uniquely
  * identified relative to other Object instances within the same class type hierarchy.
  * <p/>
- * 
+ *
  * @param <T> the class type of the identifier.
  * @see java.lang.Comparable
  * @since GemFire 7.0
@@ -31,7 +31,7 @@ public interface Identifiable<T extends Comparable<T>> extends Serializable {
   /**
    * Gets the identifier uniquely identifying this Object instance.
    * <p/>
-   * 
+   *
    * @return an identifier uniquely identifying this Object.
    */
   public T getId();

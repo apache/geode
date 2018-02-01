@@ -29,7 +29,7 @@ import org.apache.geode.internal.logging.log4j.LogMarker;
  * A message used for debugging purposes. For example if a test fails it can call
  * {@link org.apache.geode.internal.cache.PartitionedRegion#sendDumpAllPartitionedRegions()} which
  * sends this message to all VMs that have that PartitionedRegion defined.
- * 
+ *
  * @see org.apache.geode.internal.cache.PartitionedRegion#sendDumpAllPartitionedRegions()
  */
 public class DumpAllPRConfigMessage extends PartitionMessage {

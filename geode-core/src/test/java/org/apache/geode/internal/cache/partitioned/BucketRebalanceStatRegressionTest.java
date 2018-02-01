@@ -4,9 +4,9 @@
  * copyright ownership. The ASF licenses this file to you under the Apache License, Version 2.0 (the
  * "License"); you may not use this file except in compliance with the License. You may obtain a
  * copy of the License at
- * 
+ *
  * http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software distributed under the License
  * is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
  * or implied. See the License for the specific language governing permissions and limitations under
@@ -20,6 +20,11 @@ import java.io.File;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
+
+import org.junit.After;
+import org.junit.Before;
+import org.junit.Test;
+import org.junit.experimental.categories.Category;
 
 import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.DiskStore;
@@ -40,10 +45,6 @@ import org.apache.geode.internal.cache.PartitionedRegion;
 import org.apache.geode.test.dunit.Host;
 import org.apache.geode.test.dunit.VM;
 import org.apache.geode.test.junit.categories.DistributedTest;
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.experimental.categories.Category;
 
 @Category({DistributedTest.class})
 public class BucketRebalanceStatRegressionTest extends CacheTestCase {
@@ -91,7 +92,7 @@ public class BucketRebalanceStatRegressionTest extends CacheTestCase {
 
   /**
    * Verify that overflow stats are updated when a bucket moves due to rebalancing.
-   * 
+   *
    * @param shortcut The region shortcut to use to create the region.
    * @param overflow If true the region is configured for overflow to disk, false otherwise.
    * @throws Exception
@@ -112,7 +113,7 @@ public class BucketRebalanceStatRegressionTest extends CacheTestCase {
 
   /**
    * Initialize region on the distributed members.
-   * 
+   *
    * @param shortcut The region shortcut to use to create the region.
    * @param overflow If true, use overflow on the region, false otherwise.
    */
@@ -130,7 +131,7 @@ public class BucketRebalanceStatRegressionTest extends CacheTestCase {
   /**
    * Do validation on the initial region before rebalancing. It is expected that all buckets and
    * data live on vm0; vm1 does not host any buckets.
-   * 
+   *
    * @param overflow If true the region is set for overflow to disk, false otherwise.
    * @param vm0 One of the members hosting the partitioned region under test.
    * @param vm1 Another member hosting the partitioned region under test.
@@ -148,7 +149,7 @@ public class BucketRebalanceStatRegressionTest extends CacheTestCase {
 
   /**
    * Do validation the initial region for the member containing all the data
-   * 
+   *
    */
   private void validateInitialOverflowStats() {
     assertThat(vm0.invoke(() -> ((PartitionedRegion) (getCache().getRegion(REGION_NAME)))
@@ -160,7 +161,7 @@ public class BucketRebalanceStatRegressionTest extends CacheTestCase {
 
   /**
    * Validate that the overflow stats are as expected on the given member.
-   * 
+   *
    * @param vm The member to check stats on.
    * @param vmName The name of the member.
    */
@@ -179,7 +180,7 @@ public class BucketRebalanceStatRegressionTest extends CacheTestCase {
 
   /**
    * Rebalance the region, waiting for the rebalance operation to complete
-   * 
+   *
    * @throws Exception
    */
   private void rebalance() throws Exception {
@@ -191,7 +192,7 @@ public class BucketRebalanceStatRegressionTest extends CacheTestCase {
 
   /**
    * Load the region with some data
-   * 
+   *
    */
   private void loadRegion() {
     Region aRegion = getCache().getRegion(REGION_NAME);
@@ -203,7 +204,7 @@ public class BucketRebalanceStatRegressionTest extends CacheTestCase {
   /**
    * Return stats from the region's disk statistics, specifically the numEntriesInVM stat and the
    * numOverflowOnDisk stat.
-   * 
+   *
    * @return [0] numEntriesInVM stat [1] numOverflowOnDisk stat
    */
   private long[] getOverflowStats() {
@@ -217,7 +218,7 @@ public class BucketRebalanceStatRegressionTest extends CacheTestCase {
   /**
    * Return the actual values for entries in the jvm (in memory) and entries on disk. These values
    * are the sum of all buckets in the current member.
-   * 
+   *
    * @return [0] total entries in VM [1] total entries on disk
    */
   private long[] getActualOverflowEntries() {
@@ -264,4 +265,3 @@ public class BucketRebalanceStatRegressionTest extends CacheTestCase {
   }
 
 }
-

@@ -35,9 +35,8 @@ import javax.xml.XMLConstants;
 import javax.xml.parsers.SAXParser;
 import javax.xml.parsers.SAXParserFactory;
 
-import org.apache.geode.cache.util.GatewayConflictResolver;
-import org.apache.logging.log4j.Logger;
 import org.apache.commons.lang.StringUtils;
+import org.apache.logging.log4j.Logger;
 import org.xml.sax.Attributes;
 import org.xml.sax.ContentHandler;
 import org.xml.sax.InputSource;
@@ -93,6 +92,7 @@ import org.apache.geode.cache.query.internal.index.IndexCreationData;
 import org.apache.geode.cache.server.CacheServer;
 import org.apache.geode.cache.server.ClientSubscriptionConfig;
 import org.apache.geode.cache.server.ServerLoadProbe;
+import org.apache.geode.cache.util.GatewayConflictResolver;
 import org.apache.geode.cache.util.ObjectSizer;
 import org.apache.geode.cache.wan.GatewayEventFilter;
 import org.apache.geode.cache.wan.GatewayEventSubstitutionFilter;
@@ -112,8 +112,7 @@ import org.apache.geode.internal.cache.FixedPartitionAttributesImpl;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.cache.PartitionAttributesImpl;
 import org.apache.geode.internal.cache.PartitionedRegionHelper;
-import org.apache.geode.internal.cache.lru.LRUCapacityController;
-import org.apache.geode.internal.cache.lru.MemLRUCapacityController;
+import org.apache.geode.internal.cache.eviction.CountLRUEviction;
 import org.apache.geode.internal.datasource.ConfigProperty;
 import org.apache.geode.internal.i18n.LocalizedStrings;
 import org.apache.geode.internal.jndi.JNDIInvoker;
@@ -161,14 +160,14 @@ public class CacheXmlParser extends CacheXml implements ContentHandler {
 
   /**
    * Delegate {@link XmlParser}s mapped by namespace URI.
-   * 
+   *
    * @since GemFire 8.1
    */
   private HashMap<String, XmlParser> delegates = new HashMap<>();
 
   /**
    * Document {@link Locator} used for {@link SAXParseException}.
-   * 
+   *
    * @since GemFire 8.2
    */
   protected Locator documentLocator;
@@ -197,7 +196,7 @@ public class CacheXmlParser extends CacheXml implements ContentHandler {
      *
      * In order to block the parser from closing the stream, we wrap the InputStream in a filter,
      * i.e., UnclosableInputStream, whose close() function does nothing.
-     * 
+     *
      */
     class UnclosableInputStream extends BufferedInputStream {
       public UnclosableInputStream(InputStream stream) {
@@ -1296,7 +1295,7 @@ public class CacheXmlParser extends CacheXml implements ContentHandler {
 
   /**
    * finish parsing a "group" element which is just a string
-   * 
+   *
    * @since GemFire 5.7
    */
   private void endGroup() {
@@ -1777,7 +1776,7 @@ public class CacheXmlParser extends CacheXml implements ContentHandler {
   /**
    * When index element is ending we need to verify all attributes because of new index tag
    * definition since 6.6.1 and support previous definition also.
-   * 
+   *
    * if <code>functional</code> element was not there then we need to validate expression and
    * fromClause as not null.
    */
@@ -1919,6 +1918,18 @@ public class CacheXmlParser extends CacheXml implements ContentHandler {
    *         declarable
    */
   private Declarable createDeclarable() {
+    return createDeclarable(cache, stack);
+  }
+
+  /**
+   * Creates and initializes an instance of {@link Declarable} from the contents of the stack.
+   *
+   * @throws CacheXmlException Something goes wrong while instantiating or initializing the
+   *         declarable
+   * @param cache
+   * @param stack
+   */
+  public static Declarable createDeclarable(CacheCreation cache, Stack<Object> stack) {
     Properties props = new Properties();
     Object top = stack.pop();
     while (top instanceof Parameter) {
@@ -1948,7 +1959,7 @@ public class CacheXmlParser extends CacheXml implements ContentHandler {
     Declarable d = (Declarable) o;
     d.init(props);
 
-    this.cache.addDeclarableProperties(d, props);
+    cache.addDeclarableProperties(d, props);
 
     return d;
   }
@@ -2090,7 +2101,7 @@ public class CacheXmlParser extends CacheXml implements ContentHandler {
    * Create an <code>lru-entry-count</code> eviction controller, assigning it to the enclosed
    * <code>region-attributes</code>. Allow any combination of attributes to be provided. Use the
    * default values for any attribute that is not provided.
-   * 
+   *
    * @param atts
    */
   /**
@@ -2098,7 +2109,7 @@ public class CacheXmlParser extends CacheXml implements ContentHandler {
    */
   private void startLRUEntryCount(Attributes atts) {
     final String maximum = atts.getValue(MAXIMUM);
-    int max = LRUCapacityController.DEFAULT_MAXIMUM_ENTRIES;
+    int max = CountLRUEviction.DEFAULT_MAXIMUM_ENTRIES;
     if (maximum != null) {
       max = parseInt(maximum);
     }
@@ -2115,7 +2126,7 @@ public class CacheXmlParser extends CacheXml implements ContentHandler {
    * Start the configuration of a <code>lru-memory-size</code> eviction controller. Allow for any of
    * the attributes to be missing. Store the attributes on the stack anticipating the declaration of
    * an {@link ObjectSizer}.
-   * 
+   *
    * @param atts
    */
   private void startLRUMemorySize(Attributes atts) {
@@ -2125,7 +2136,7 @@ public class CacheXmlParser extends CacheXml implements ContentHandler {
       action = EvictionAction.parseAction(lruAction);
     }
     String maximum = atts.getValue(MAXIMUM);
-    int max = MemLRUCapacityController.DEFAULT_MAXIMUM_MEGABYTES;
+    int max = EvictionAttributes.DEFAULT_MEMORY_MAXIMUM;
     if (maximum != null) {
       max = parseInt(maximum);
     }
@@ -2160,7 +2171,7 @@ public class CacheXmlParser extends CacheXml implements ContentHandler {
   /**
    * Create an <code>lru-heap-percentage</code> eviction controller, assigning it to the enclosed
    * <code>region-attributes</code>
-   * 
+   *
    * @param atts
    */
   private void startLRUHeapPercentage(Attributes atts) {
@@ -2412,7 +2423,7 @@ public class CacheXmlParser extends CacheXml implements ContentHandler {
 
   /**
    * Start the Resource Manager element configuration
-   * 
+   *
    * @param atts XML attributes for the resource-manager
    */
   private void startResourceManager(final Attributes atts) {
@@ -2767,7 +2778,7 @@ public class CacheXmlParser extends CacheXml implements ContentHandler {
 
   /**
    * Get delegate {@link XmlParser} for the given <code>namespaceUri</code>
-   * 
+   *
    * @param namespaceUri to find {@link XmlParser} for.
    * @return {@link XmlParser} if found, otherwise null.
    * @since GemFire 8.1
@@ -2820,7 +2831,7 @@ public class CacheXmlParser extends CacheXml implements ContentHandler {
    * <p>
    * <code>capacity</code> and <code>overflow-directory</code>, then pass these values to Bridge
    * Server
-   * 
+   *
    * @since GemFire 5.7
    */
   private void startClientHaQueue(Attributes atts) {
@@ -2847,7 +2858,7 @@ public class CacheXmlParser extends CacheXml implements ContentHandler {
 
   /**
    * Add a marker string to look for when in endPartitionProperties
-   * 
+   *
    * @param atts
    * @param localOrGlobal either the string LOCAL_PROPERTIES or GLOBAL_PROPERTIES
    */
@@ -3185,7 +3196,7 @@ public class CacheXmlParser extends CacheXml implements ContentHandler {
   }
 
   /**
-   * 
+   *
    */
   private void endPdxSerializer() {
     Declarable d = createDeclarable();
@@ -3231,7 +3242,7 @@ public class CacheXmlParser extends CacheXml implements ContentHandler {
 
   /**
    * Do nothing
-   * 
+   *
    * @since GemFire 5.7
    */
   private void endClientHaQueue() {}
@@ -3239,7 +3250,7 @@ public class CacheXmlParser extends CacheXml implements ContentHandler {
   /**
    * Process either the <code>local-properties</code> or <code>global-properties</code> for a
    * {@link org.apache.geode.internal.cache.PartitionedRegion}
-   * 
+   *
    * @param globalOrLocal either the string {@link CacheXml#LOCAL_PROPERTIES} or
    *        {@link CacheXml#GLOBAL_PROPERTIES}
    */

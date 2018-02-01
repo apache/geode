@@ -13,9 +13,15 @@
  * the License.
  */
 /**
- * 
+ *
  */
 package org.apache.geode.cache.query.internal.index;
+
+import static org.apache.geode.distributed.ConfigurationProperties.MCAST_PORT;
+import static org.junit.Assert.*;
+
+import org.junit.Test;
+import org.junit.experimental.categories.Category;
 
 import org.apache.geode.cache.*;
 import org.apache.geode.cache.query.data.Portfolio;
@@ -23,19 +29,14 @@ import org.apache.geode.cache.query.internal.index.IndexManager.IndexUpdaterThre
 import org.apache.geode.internal.cache.GemFireCacheImpl;
 import org.apache.geode.internal.logging.LoggingThreadGroup;
 import org.apache.geode.test.junit.categories.IntegrationTest;
-import org.junit.Test;
-import org.junit.experimental.categories.Category;
-
-import static org.apache.geode.distributed.ConfigurationProperties.MCAST_PORT;
-import static org.junit.Assert.*;
 
 /**
  * Test create a region (Replicated OR Partitioned) and sets index maintenance Asynchronous so that
  * {@link IndexManager} starts a new thread for index maintenance when region is populated. This
  * test verifies that after cache close {@link IndexUpdaterThread} is shutdown for each region
  * (Replicated/Bucket).
- * 
- * 
+ *
+ *
  */
 @Category(IntegrationTest.class)
 public class AsyncIndexUpdaterThreadShutdownJUnitTest {

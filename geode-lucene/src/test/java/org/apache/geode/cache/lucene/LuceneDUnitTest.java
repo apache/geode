@@ -14,6 +14,10 @@
  */
 package org.apache.geode.cache.lucene;
 
+import static org.apache.geode.cache.lucene.test.LuceneTestUtilities.*;
+
+import java.util.Properties;
+
 import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.EvictionAction;
 import org.apache.geode.cache.EvictionAttributes;
@@ -24,14 +28,11 @@ import org.apache.geode.cache.PartitionAttributesFactory;
 import org.apache.geode.cache.Region;
 import org.apache.geode.cache.RegionShortcut;
 import org.apache.geode.cache.lucene.test.LuceneTestUtilities;
+import org.apache.geode.distributed.ConfigurationProperties;
 import org.apache.geode.test.dunit.Host;
 import org.apache.geode.test.dunit.SerializableRunnableIF;
 import org.apache.geode.test.dunit.VM;
-
 import org.apache.geode.test.dunit.cache.internal.JUnit4CacheTestCase;
-
-import static org.apache.geode.cache.lucene.test.LuceneTestUtilities.*;
-
 
 public abstract class LuceneDUnitTest extends JUnit4CacheTestCase {
   protected VM dataStore1;
@@ -76,6 +77,17 @@ public abstract class LuceneDUnitTest extends JUnit4CacheTestCase {
     return parameters;
   }
 
+  @Override
+  public Properties getDistributedSystemProperties() {
+    Properties result = super.getDistributedSystemProperties();
+    result.put(ConfigurationProperties.SERIALIZABLE_OBJECT_FILTER,
+        "org.apache.geode.cache.lucene.test.TestObject;org.apache.geode.cache.lucene.LuceneQueriesAccessorBase$TestObject"
+            + ";org.apache.geode.cache.lucene.LuceneDUnitTest"
+            + ";org.apache.geode.cache.lucene.LuceneQueriesAccessorBase"
+            + ";org.apache.geode.test.dunit.**");
+    return result;
+  }
+
   public enum RegionTestableType {
     PARTITION(RegionShortcut.PARTITION_PROXY, RegionShortcut.PARTITION),
     PARTITION_REDUNDANT_PERSISTENT(RegionShortcut.PARTITION_PROXY_REDUNDANT,
@@ -108,12 +120,15 @@ public abstract class LuceneDUnitTest extends JUnit4CacheTestCase {
         EXPIRATION_TIMEOUT_SEC, ExpirationAction.DESTROY),
     PARTITION_REDUNDANT_PERSISTENT_WITH_EXPIRATION_DESTROY(RegionShortcut.PARTITION_PROXY_REDUNDANT,
         RegionShortcut.PARTITION_REDUNDANT_PERSISTENT, EXPIRATION_TIMEOUT_SEC,
-        ExpirationAction.DESTROY);
+        ExpirationAction.DESTROY),
+    PARTITION_WITH_DOUBLE_BUCKETS(RegionShortcut.PARTITION_PROXY, RegionShortcut.PARTITION, null,
+        null, NUM_BUCKETS * 2);
 
     ExpirationAttributes expirationAttributes = null;
     EvictionAttributes evictionAttributes = null;
     private RegionShortcut serverRegionShortcut;
     private RegionShortcut clientRegionShortcut;
+    private int numBuckets;
 
     RegionTestableType(RegionShortcut clientRegionShortcut, RegionShortcut serverRegionShortcut) {
       this(clientRegionShortcut, serverRegionShortcut, null);
@@ -121,18 +136,23 @@ public abstract class LuceneDUnitTest extends JUnit4CacheTestCase {
 
     RegionTestableType(RegionShortcut clientRegionShortcut, RegionShortcut serverRegionShortcut,
         EvictionAttributes evictionAttributes) {
-      this.clientRegionShortcut = clientRegionShortcut;
-      this.serverRegionShortcut = serverRegionShortcut;
-      this.evictionAttributes = evictionAttributes;
-      this.expirationAttributes = null;
+      this(clientRegionShortcut, serverRegionShortcut, evictionAttributes, null, NUM_BUCKETS);
     }
 
     RegionTestableType(RegionShortcut clientRegionShortcut, RegionShortcut serverRegionShortcut,
         int timeout, ExpirationAction expirationAction) {
+      this(clientRegionShortcut, serverRegionShortcut, null,
+          new ExpirationAttributes(timeout, expirationAction), NUM_BUCKETS);
+    }
+
+    RegionTestableType(RegionShortcut clientRegionShortcut, RegionShortcut serverRegionShortcut,
+        EvictionAttributes evictionAttributes, ExpirationAttributes expirationAttributes,
+        int numBuckets) {
       this.clientRegionShortcut = clientRegionShortcut;
       this.serverRegionShortcut = serverRegionShortcut;
-      this.evictionAttributes = null;
-      this.expirationAttributes = new ExpirationAttributes(timeout, expirationAction);
+      this.evictionAttributes = evictionAttributes;
+      this.expirationAttributes = expirationAttributes;
+      this.numBuckets = numBuckets;
     }
 
     public Region createDataStore(Cache cache, String regionName) {
@@ -147,13 +167,13 @@ public abstract class LuceneDUnitTest extends JUnit4CacheTestCase {
       if (expirationAttributes != null) {
         return cache.createRegionFactory(serverRegionShortcut)
             .setEntryTimeToLive(expirationAttributes)
-            .setPartitionAttributes(getPartitionAttributes(false)).create(regionName);
+            .setPartitionAttributes(getPartitionAttributes(false, numBuckets)).create(regionName);
       } else if (evictionAttributes == null) {
         return cache.createRegionFactory(serverRegionShortcut)
-            .setPartitionAttributes(getPartitionAttributes(false)).create(regionName);
+            .setPartitionAttributes(getPartitionAttributes(false, numBuckets)).create(regionName);
       } else {
         return cache.createRegionFactory(serverRegionShortcut)
-            .setPartitionAttributes(getPartitionAttributes(false))
+            .setPartitionAttributes(getPartitionAttributes(false, numBuckets))
             .setEvictionAttributes(evictionAttributes).create(regionName);
       }
     }
@@ -167,23 +187,24 @@ public abstract class LuceneDUnitTest extends JUnit4CacheTestCase {
       }
       if (evictionAttributes == null) {
         return cache.createRegionFactory(clientRegionShortcut)
-            .setPartitionAttributes(getPartitionAttributes(true)).create(regionName);
+            .setPartitionAttributes(getPartitionAttributes(true, numBuckets)).create(regionName);
       } else {
         return cache.createRegionFactory(clientRegionShortcut)
-            .setPartitionAttributes(getPartitionAttributes(true))
+            .setPartitionAttributes(getPartitionAttributes(true, numBuckets))
             .setEvictionAttributes(evictionAttributes).create(regionName);
       }
     }
   }
 
-  protected static PartitionAttributes getPartitionAttributes(final boolean isAccessor) {
+  protected static PartitionAttributes getPartitionAttributes(final boolean isAccessor,
+      final int numBuckets) {
     PartitionAttributesFactory factory = new PartitionAttributesFactory();
     if (isAccessor) {
       factory.setLocalMaxMemory(0);
     } else {
       factory.setLocalMaxMemory(100);
     }
-    factory.setTotalNumBuckets(NUM_BUCKETS);
+    factory.setTotalNumBuckets(numBuckets);
     return factory.create();
   }
 

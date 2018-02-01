@@ -52,6 +52,7 @@ import org.apache.geode.distributed.internal.DistributionAdvisor;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
 import org.apache.geode.internal.SystemTimer;
+import org.apache.geode.internal.cache.backup.BackupManager;
 import org.apache.geode.internal.cache.control.InternalResourceManager;
 import org.apache.geode.internal.cache.control.ResourceAdvisor;
 import org.apache.geode.internal.cache.event.EventTrackerExpiryTask;
@@ -130,6 +131,10 @@ public interface InternalCache extends Cache, Extensible<Cache>, CacheTime {
       RegionAttributes<K, V> attrs, InternalRegionArguments internalRegionArgs);
 
   void invokeRegionAfter(LocalRegion region);
+
+  void invokeBeforeDestroyed(LocalRegion region);
+
+  void invokeCleanupFailedInitialization(LocalRegion region);
 
   TXManagerImpl getTXMgr();
 
@@ -306,7 +311,19 @@ public interface InternalCache extends Cache, Extensible<Cache>, CacheTime {
 
   CacheServer addCacheServer(boolean isGatewayReceiver);
 
-  void setReadSerialized(boolean value);
+  /**
+   * A test-hook allowing you to alter the cache setting established by
+   * CacheFactory.setPdxReadSerialized()
+   *
+   * @deprecated tests using this method should be refactored to not require it
+   */
+  void setReadSerializedForTest(boolean value);
+
+  /**
+   * Enables or disables the reading of PdxInstances from all cache Regions for the thread that
+   * invokes this method.
+   */
+  void setReadSerializedForCurrentThread(boolean value);
 
   PdxInstanceFactory createPdxInstanceFactory(String className, boolean expectDomainClass);
 
@@ -323,4 +340,6 @@ public interface InternalCache extends Cache, Extensible<Cache>, CacheTime {
       List<InitialImageOperation.Entry> entriesToSynchronize);
 
   InternalQueryService getQueryService();
+
+  Set<AsyncEventQueue> getAsyncEventQueues(boolean visibleOnly);
 }

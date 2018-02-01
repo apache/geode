@@ -30,18 +30,18 @@ import org.junit.rules.TemporaryFolder;
 import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.Region;
 import org.apache.geode.management.internal.configuration.utils.ZipUtils;
-import org.apache.geode.test.dunit.rules.LocatorServerStartupRule;
+import org.apache.geode.test.dunit.rules.ClusterStartupRule;
 import org.apache.geode.test.dunit.rules.MemberVM;
 import org.apache.geode.test.junit.categories.DistributedTest;
-import org.apache.geode.test.junit.rules.GfshShellConnectionRule;
+import org.apache.geode.test.junit.rules.GfshCommandRule;
 
 @Category(DistributedTest.class)
 public class ImportOldClusterConfigDUnitTest {
   @Rule
-  public LocatorServerStartupRule lsRule = new LocatorServerStartupRule();
+  public ClusterStartupRule lsRule = new ClusterStartupRule();
 
   @Rule
-  public GfshShellConnectionRule gfsh = new GfshShellConnectionRule();
+  public GfshCommandRule gfsh = new GfshCommandRule();
 
   @Rule
   public TemporaryFolder tempFolder = new TemporaryFolder();
@@ -69,14 +69,14 @@ public class ImportOldClusterConfigDUnitTest {
 
     gfsh.connectAndVerify(locator);
 
-    gfsh.executeAndVerifyCommand(
-        "import cluster-configuration --zip-file-name=" + zipFile.toString());
+    gfsh.executeAndAssertThat("import cluster-configuration --zip-file-name=" + zipFile.toString())
+        .statusIsSuccess();
 
     server = lsRule.startServerVM(1, locator.getPort());
 
     server.invoke(ImportOldClusterConfigDUnitTest::regionOneExists);
 
-    gfsh.executeAndVerifyCommand("create region --name=two --type=REPLICATE");
+    gfsh.executeAndAssertThat("create region --name=two --type=REPLICATE").statusIsSuccess();
     server.invoke(ImportOldClusterConfigDUnitTest::regionOneExists);
     server.invoke(ImportOldClusterConfigDUnitTest::regionTwoExists);
 
@@ -96,7 +96,7 @@ public class ImportOldClusterConfigDUnitTest {
   }
 
   private static void regionExists(String regionName) {
-    Cache cache = LocatorServerStartupRule.serverStarter.getCache();
+    Cache cache = ClusterStartupRule.getCache();
     assertThat(cache).isNotNull();
     Region<Object, Object> one = cache.getRegion(regionName);
     assertThat(one).isNotNull();

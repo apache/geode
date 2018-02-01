@@ -23,7 +23,7 @@ import java.util.concurrent.locks.ReadWriteLock;
 /**
  * This ReadWriteLock is useful when different threads need to lock and unlock the read lock. This
  * is <b>NOT</b> a reentrant lock.
- * 
+ *
  */
 public class SemaphoreReadWriteLock implements ReadWriteLock {
 

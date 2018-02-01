@@ -556,4 +556,3 @@ public class P2PDeltaPropagationDUnitTest extends JUnit4DistributedTestCase {
     check = false;
   }
 }
-

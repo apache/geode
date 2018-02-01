@@ -25,6 +25,17 @@ import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 import static org.mockito.Mockito.mock;
 
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.ObjectOutputStream;
+import java.net.InetAddress;
+import java.util.Properties;
+
+import org.junit.After;
+import org.junit.Before;
+import org.junit.Test;
+import org.junit.experimental.categories.Category;
+
 import org.apache.geode.DataSerializer;
 import org.apache.geode.InternalGemFireException;
 import org.apache.geode.distributed.Locator;
@@ -44,16 +55,6 @@ import org.apache.geode.internal.net.SocketCreator;
 import org.apache.geode.internal.security.SecurityServiceFactory;
 import org.apache.geode.test.junit.categories.IntegrationTest;
 import org.apache.geode.test.junit.categories.MembershipTest;
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.experimental.categories.Category;
-
-import java.io.File;
-import java.io.FileOutputStream;
-import java.io.ObjectOutputStream;
-import java.net.InetAddress;
-import java.util.Properties;
 
 @Category({IntegrationTest.class, MembershipTest.class})
 public class GMSLocatorRecoveryJUnitTest {
@@ -67,8 +68,8 @@ public class GMSLocatorRecoveryJUnitTest {
     if (this.tempStateFile.exists()) {
       this.tempStateFile.delete();
     }
-    this.locator =
-        new GMSLocator(null, this.tempStateFile, null, false, false, new LocatorStats(), "");
+    this.locator = new GMSLocator(null, null, false, false, new LocatorStats(), "");
+    locator.setViewFile(tempStateFile);
     // System.out.println("temp state file: " + tempStateFile);
   }
 
@@ -152,7 +153,7 @@ public class GMSLocatorRecoveryJUnitTest {
       // this locator will hook itself up with the first MembershipManager
       // to be created
       // l = Locator.startLocator(port, new File(""), localHost);
-      l = InternalLocator.startLocator(port, new File(""), null, null, null, localHost, false,
+      l = InternalLocator.startLocator(port, new File(""), null, null, localHost, false,
           new Properties(), null);
 
       // create configuration objects
@@ -176,15 +177,16 @@ public class GMSLocatorRecoveryJUnitTest {
       // hook up the locator to the membership manager
       ((InternalLocator) l).getLocatorHandler().setMembershipManager(m1);
 
-      GMSLocator l2 = new GMSLocator(SocketCreator.getLocalHost(), new File("l2.dat"),
+      GMSLocator l2 = new GMSLocator(SocketCreator.getLocalHost(),
           m1.getLocalMember().getHost() + "[" + port + "]", true, true, new LocatorStats(), "");
+      l2.setViewFile(new File("l2.dat"));
       l2.init(null);
 
       assertTrue("expected view to contain " + m1.getLocalMember() + ": " + l2.getMembers(),
           l2.getMembers().contains(m1.getLocalMember()));
     } finally {
       if (m1 != null) {
-        m1.shutdown();
+        m1.disconnect(false);
       }
       if (l != null) {
         l.stop();
@@ -192,4 +194,3 @@ public class GMSLocatorRecoveryJUnitTest {
     }
   }
 }
-

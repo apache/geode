@@ -20,7 +20,7 @@ import org.apache.geode.internal.cache.tier.sockets.Message;
 /**
  * Indicates to the server that a transaction is failing over to this server. The server then
  * performs the necessary bootstrapping for the tx.
- * 
+ *
  * @since GemFire 6.6
  */
 public class TXFailoverOp {

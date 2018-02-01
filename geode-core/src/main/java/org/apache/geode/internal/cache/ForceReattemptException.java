@@ -22,7 +22,7 @@ import org.apache.geode.internal.Assert;
 /**
  * Indicates that the current partitioned region operation failed. It is only thrown in a context
  * where the higher level operation needs to instigate a retry of some sort.
- * 
+ *
  * @see org.apache.geode.internal.cache.partitioned.PartitionMessage
  * @since GemFire 5.0
  */
@@ -40,7 +40,7 @@ public class ForceReattemptException extends DataLocationException {
 
   /**
    * Used when constructing the error: sets the expected hash.
-   * 
+   *
    * @param h the hash to use
    */
   public void setHash(int h) {
@@ -51,7 +51,7 @@ public class ForceReattemptException extends DataLocationException {
 
   /**
    * Fetch the hash for this exception
-   * 
+   *
    * @return the expected hash
    */
   public boolean hasHash() {
@@ -67,7 +67,7 @@ public class ForceReattemptException extends DataLocationException {
 
   /**
    * If possible, validate the given key's hashCode against any that was returned by the peer.
-   * 
+   *
    * @param key the key on the current host. If null, no check is done.
    * @throws PartitionedRegionException if the keys disagree.
    */
@@ -89,7 +89,7 @@ public class ForceReattemptException extends DataLocationException {
 
   /**
    * Reattempt required due to an underlying error
-   * 
+   *
    * @param message describes the context
    * @param cause the underlying cause
    */
@@ -99,7 +99,7 @@ public class ForceReattemptException extends DataLocationException {
 
   /**
    * Reattempt required due to detected condition
-   * 
+   *
    * @param message describes the condition
    */
   public ForceReattemptException(String message) {

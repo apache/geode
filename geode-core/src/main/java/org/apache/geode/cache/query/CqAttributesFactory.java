@@ -61,7 +61,7 @@ public class CqAttributesFactory {
 
   /**
    * Adds a CQ listener to the end of the list of cq listeners on this factory.
-   * 
+   *
    * @param cqListener the CqListener to add to the factory.
    * @throws IllegalArgumentException if <code>cqListener</code> is null
    */
@@ -76,7 +76,7 @@ public class CqAttributesFactory {
 
   /**
    * Removes all Cq listeners and then adds each listener in the specified array.
-   * 
+   *
    * @param cqListeners a possibly null or empty array of listeners to add to this factory.
    * @throws IllegalArgumentException if the <code>cqListeners</code> array has a null element
    */
@@ -96,7 +96,7 @@ public class CqAttributesFactory {
 
   /**
    * Creates a <code>CqAttributes</code> with the current settings.
-   * 
+   *
    * @return the newly created <code>CqAttributes</code>
    */
   public CqAttributes create() {

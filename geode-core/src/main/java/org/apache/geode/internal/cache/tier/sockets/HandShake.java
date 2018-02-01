@@ -18,7 +18,51 @@ import static org.apache.geode.distributed.ConfigurationProperties.CONFLATE_EVEN
 import static org.apache.geode.distributed.ConfigurationProperties.SECURITY_CLIENT_AUTHENTICATOR;
 import static org.apache.geode.distributed.ConfigurationProperties.SECURITY_CLIENT_AUTH_INIT;
 
+import java.io.ByteArrayInputStream;
+import java.io.DataInputStream;
+import java.io.DataOutput;
+import java.io.DataOutputStream;
+import java.io.EOFException;
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
+import java.lang.reflect.Method;
+import java.math.BigInteger;
+import java.net.Socket;
+import java.security.Key;
+import java.security.KeyFactory;
+import java.security.KeyPair;
+import java.security.KeyPairGenerator;
+import java.security.KeyStore;
+import java.security.Principal;
+import java.security.PrivateKey;
+import java.security.PublicKey;
+import java.security.SecureRandom;
+import java.security.Signature;
+import java.security.cert.Certificate;
+import java.security.cert.X509Certificate;
+import java.security.spec.X509EncodedKeySpec;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Enumeration;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+import java.util.Properties;
+
+import javax.crypto.Cipher;
+import javax.crypto.KeyAgreement;
+import javax.crypto.SecretKey;
+import javax.crypto.spec.DHParameterSpec;
+import javax.crypto.spec.IvParameterSpec;
+import javax.crypto.spec.SecretKeySpec;
+import javax.net.ssl.SSLSocket;
+
 import org.apache.commons.lang.StringUtils;
+import org.apache.logging.log4j.Logger;
+
 import org.apache.geode.CancelCriterion;
 import org.apache.geode.DataSerializer;
 import org.apache.geode.GemFireConfigException;
@@ -59,48 +103,6 @@ import org.apache.geode.security.AuthenticationFailedException;
 import org.apache.geode.security.AuthenticationRequiredException;
 import org.apache.geode.security.Authenticator;
 import org.apache.geode.security.GemFireSecurityException;
-import org.apache.logging.log4j.Logger;
-
-import java.io.ByteArrayInputStream;
-import java.io.DataInputStream;
-import java.io.DataOutput;
-import java.io.DataOutputStream;
-import java.io.EOFException;
-import java.io.FileInputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
-import java.lang.reflect.Method;
-import java.math.BigInteger;
-import java.net.Socket;
-import java.security.Key;
-import java.security.KeyFactory;
-import java.security.KeyPair;
-import java.security.KeyPairGenerator;
-import java.security.KeyStore;
-import java.security.Principal;
-import java.security.PrivateKey;
-import java.security.PublicKey;
-import java.security.SecureRandom;
-import java.security.Signature;
-import java.security.cert.Certificate;
-import java.security.cert.X509Certificate;
-import java.security.spec.X509EncodedKeySpec;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Enumeration;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-import java.util.Properties;
-import javax.crypto.Cipher;
-import javax.crypto.KeyAgreement;
-import javax.crypto.SecretKey;
-import javax.crypto.spec.DHParameterSpec;
-import javax.crypto.spec.IvParameterSpec;
-import javax.crypto.spec.SecretKeySpec;
-import javax.net.ssl.SSLSocket;
 
 public class HandShake implements ClientHandShake {
   private static final Logger logger = LogService.getLogger();
@@ -131,7 +133,7 @@ public class HandShake implements ClientHandShake {
   private boolean isRead = false;
   protected final DistributedSystem system;
 
-  final protected ClientProxyMembershipID id;
+  protected final ClientProxyMembershipID id;
 
   private Properties credentials;
 
@@ -230,7 +232,7 @@ public class HandShake implements ClientHandShake {
 
   /**
    * Test hooks for per client conflation
-   * 
+   *
    * @since GemFire 5.7
    */
   public static byte clientConflationForTesting = 0;
@@ -238,7 +240,7 @@ public class HandShake implements ClientHandShake {
 
   /**
    * Test hook for client version support
-   * 
+   *
    * @since GemFire 5.7
    */
   private static Version currentClientVersion = ConnectionProxy.VERSION;
@@ -789,7 +791,7 @@ public class HandShake implements ClientHandShake {
     }
   }
 
-  static public byte[] encryptBytes(byte[] data, Cipher encrypt) throws Exception {
+  public static byte[] encryptBytes(byte[] data, Cipher encrypt) throws Exception {
 
 
     try {
@@ -972,7 +974,7 @@ public class HandShake implements ClientHandShake {
 
 
 
-  static public byte[] decryptBytes(byte[] data, Cipher decrypt) throws Exception {
+  public static byte[] decryptBytes(byte[] data, Cipher decrypt) throws Exception {
     try {
       byte[] decrptBytes = decrypt.doFinal(data);
       return decrptBytes;
@@ -1173,7 +1175,7 @@ public class HandShake implements ClientHandShake {
 
   /**
    * Return fake, temporary DistributedMember to represent the other vm this vm is connecting to
-   * 
+   *
    * @param sock the socket this handshake is operating on
    * @return temporary id to reprent the other vm
    */

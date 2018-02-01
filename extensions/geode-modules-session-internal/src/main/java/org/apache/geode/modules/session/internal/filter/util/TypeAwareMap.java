@@ -15,9 +15,9 @@
 
 package org.apache.geode.modules.session.internal.filter.util;
 
-import org.apache.geode.modules.session.internal.common.CacheProperty;
-
 import java.util.HashMap;
+
+import org.apache.geode.modules.session.internal.common.CacheProperty;
 
 /**
  *

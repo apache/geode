@@ -14,17 +14,12 @@
  */
 package org.apache.geode.pdx;
 
-import org.apache.geode.test.junit.categories.SerializationTest;
-import org.junit.experimental.categories.Category;
-import org.junit.Test;
-
 import static org.junit.Assert.*;
 
-import org.apache.geode.test.dunit.cache.internal.JUnit4CacheTestCase;
-import org.apache.geode.test.dunit.internal.JUnit4DistributedTestCase;
-import org.apache.geode.test.junit.categories.DistributedTest;
-
 import java.io.IOException;
+
+import org.junit.Test;
+import org.junit.experimental.categories.Category;
 
 import org.apache.geode.SerializationException;
 import org.apache.geode.cache.Cache;
@@ -53,12 +48,16 @@ import org.apache.geode.test.dunit.SerializableRunnable;
 import org.apache.geode.test.dunit.VM;
 import org.apache.geode.test.dunit.Wait;
 import org.apache.geode.test.dunit.WaitCriterion;
+import org.apache.geode.test.dunit.cache.internal.JUnit4CacheTestCase;
+import org.apache.geode.test.dunit.internal.JUnit4DistributedTestCase;
+import org.apache.geode.test.junit.categories.DistributedTest;
+import org.apache.geode.test.junit.categories.SerializationTest;
 
 /**
  * A test to ensure that we do not deserialize PDX objects when we shouldn't
- * 
+ *
  * This test is trying to cover all of the possible access paths.
- * 
+ *
  *
  */
 @Category({DistributedTest.class, SerializationTest.class})
@@ -120,15 +119,15 @@ public class PdxDeserializationDUnitTest extends JUnit4CacheTestCase {
 
   /**
    * This test creates the following topology
-   * 
+   *
    * vm0 a peer accessor for both a PR and a replicate region vm1 a peer data store for a replicate
    * region and a PR vm2 a client of vm0 vm3 a client vm1
-   * 
+   *
    * The test then performs all region operations in operationVM, while deserialization is prevented
    * in disallowDeserializationVM.
-   * 
+   *
    * If an operation causes a deserialization in the disallow VM, this test will fail.
-   * 
+   *
    * @param operationVM
    * @param disallowDeserializationVM
    */

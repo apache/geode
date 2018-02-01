@@ -89,7 +89,7 @@ public class PortfolioData implements Declarable, Serializable {
 
   /**
    * Getter for property type.S
-   * 
+   *
    * @return Value of property type.
    */
   public String getType() {

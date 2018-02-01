@@ -14,17 +14,6 @@
  */
 package org.apache.geode.internal.statistics;
 
-import org.apache.geode.GemFireIOException;
-import org.apache.geode.InternalGemFireException;
-import org.apache.geode.StatisticDescriptor;
-import org.apache.geode.distributed.internal.DistributionConfig;
-import org.apache.geode.internal.NanoTimer;
-import org.apache.geode.internal.i18n.LocalizedStrings;
-import org.apache.geode.internal.logging.LogService;
-import org.apache.geode.internal.logging.log4j.LogMarker;
-import org.apache.geode.internal.net.SocketCreator;
-import org.apache.logging.log4j.Logger;
-
 import java.io.BufferedOutputStream;
 import java.io.DataInput;
 import java.io.DataOutput;
@@ -42,6 +31,18 @@ import java.util.List;
 import java.util.Set;
 import java.util.TimeZone;
 import java.util.zip.GZIPOutputStream;
+
+import org.apache.logging.log4j.Logger;
+
+import org.apache.geode.GemFireIOException;
+import org.apache.geode.InternalGemFireException;
+import org.apache.geode.StatisticDescriptor;
+import org.apache.geode.distributed.internal.DistributionConfig;
+import org.apache.geode.internal.NanoTimer;
+import org.apache.geode.internal.i18n.LocalizedStrings;
+import org.apache.geode.internal.logging.LogService;
+import org.apache.geode.internal.logging.log4j.LogMarker;
+import org.apache.geode.internal.net.SocketCreator;
 
 /**
  * StatArchiveWriter provides APIs to write statistic snapshots to an archive file.
@@ -71,7 +72,7 @@ public class StatArchiveWriter implements StatArchiveFormat, SampleHandler {
 
   /**
    * Opens a StatArchiveWriter that will archive to the specified file.
-   * 
+   *
    * @throws GemFireIOException if <code>archiveName</code> can not be written to
    */
   public StatArchiveWriter(StatArchiveDescriptor archiveDescriptor) {
@@ -137,7 +138,7 @@ public class StatArchiveWriter implements StatArchiveFormat, SampleHandler {
 
   /**
    * Closes the statArchiver by flushing its data to disk a closing its output stream.
-   * 
+   *
    * @throws GemFireIOException if the archive file could not be closed.
    */
   public void close() {

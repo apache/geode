@@ -145,7 +145,7 @@ public class LocatorLauncher extends AbstractLauncher<String> {
 
   private static final AtomicReference<LocatorLauncher> INSTANCE = new AtomicReference<>();
 
-  // private volatile transient boolean debug;
+  // private transient volatile boolean debug;
 
   private final transient ControlNotificationHandler controlHandler;
 
@@ -167,7 +167,7 @@ public class LocatorLauncher extends AbstractLauncher<String> {
   private final Integer pid;
   private final Integer port;
 
-  private volatile transient InternalLocator locator;
+  private transient volatile InternalLocator locator;
 
   private final Properties distributedSystemProperties;
 
@@ -176,9 +176,9 @@ public class LocatorLauncher extends AbstractLauncher<String> {
   private final String workingDirectory;
 
   // NOTE in addition to debug and locator, the other shared, mutable state
-  private volatile transient String statusMessage;
+  private transient volatile String statusMessage;
 
-  private volatile transient ControllableProcess process;
+  private transient volatile ControllableProcess process;
 
   private final transient LocatorControllerParameters controllerParameters;
 
@@ -638,7 +638,7 @@ public class LocatorLauncher extends AbstractLauncher<String> {
             statusMessage -> LocatorLauncher.this.statusMessage = statusMessage);
 
         try {
-          this.locator = InternalLocator.startLocator(getPort(), getLogFile(), null, null, null,
+          this.locator = InternalLocator.startLocator(getPort(), getLogFile(), null, null,
               getBindAddress(), true, getDistributedSystemProperties(), getHostnameForClients());
         } finally {
           ProcessLauncherContext.remove();

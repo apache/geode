@@ -14,6 +14,7 @@
  */
 package org.apache.geode.internal.cache.tier.sockets;
 
+import static org.apache.geode.distributed.ConfigurationProperties.*;
 import static org.junit.Assert.*;
 
 import java.util.Iterator;
@@ -21,7 +22,6 @@ import java.util.Properties;
 import java.util.concurrent.TimeUnit;
 
 import org.awaitility.Awaitility;
-import org.apache.geode.test.junit.categories.ClientServerTest;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
@@ -52,9 +52,8 @@ import org.apache.geode.test.dunit.VM;
 import org.apache.geode.test.dunit.Wait;
 import org.apache.geode.test.dunit.WaitCriterion;
 import org.apache.geode.test.dunit.internal.JUnit4DistributedTestCase;
+import org.apache.geode.test.junit.categories.ClientServerTest;
 import org.apache.geode.test.junit.categories.DistributedTest;
-
-import static org.apache.geode.distributed.ConfigurationProperties.*;
 
 /**
  * This test verifies the per-client notify-by-subscription (NBS) override functionality along with
@@ -296,7 +295,7 @@ public class ClientInterestNotifyDUnitTest extends JUnit4DistributedTestCase {
 
   /**
    * create client with 3 regions each with a unique listener
-   * 
+   *
    * @throws Exception
    */
   public static void createClientCache(String host, Integer port, /* String nbs, */
@@ -567,4 +566,3 @@ public class ClientInterestNotifyDUnitTest extends JUnit4DistributedTestCase {
     closeCacheServer();
   }
 }
-

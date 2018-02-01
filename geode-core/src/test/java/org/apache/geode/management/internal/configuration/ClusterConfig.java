@@ -21,19 +21,6 @@ import static java.util.stream.Collectors.toSet;
 import static org.apache.geode.distributed.ConfigurationProperties.LOG_FILE_SIZE_LIMIT;
 import static org.assertj.core.api.Assertions.assertThat;
 
-import org.apache.commons.lang.StringUtils;
-import org.apache.geode.cache.Cache;
-import org.apache.geode.distributed.internal.ClusterConfigurationService;
-import org.apache.geode.distributed.internal.InternalLocator;
-import org.apache.geode.internal.ClassPathLoader;
-import org.apache.geode.internal.DeployedJar;
-import org.apache.geode.internal.cache.GemFireCacheImpl;
-import org.apache.geode.management.internal.configuration.domain.Configuration;
-import org.apache.geode.test.junit.rules.Locator;
-import org.apache.geode.test.dunit.rules.LocatorServerStartupRule;
-import org.apache.geode.test.dunit.rules.MemberVM;
-import org.apache.geode.test.junit.rules.Server;
-
 import java.io.File;
 import java.io.Serializable;
 import java.net.URL;
@@ -43,10 +30,23 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Objects;
 import java.util.Properties;
 import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
+
+import org.apache.commons.lang.StringUtils;
+
+import org.apache.geode.cache.Cache;
+import org.apache.geode.distributed.internal.ClusterConfigurationService;
+import org.apache.geode.distributed.internal.InternalLocator;
+import org.apache.geode.internal.ClassPathLoader;
+import org.apache.geode.internal.DeployedJar;
+import org.apache.geode.internal.cache.GemFireCacheImpl;
+import org.apache.geode.management.internal.configuration.domain.Configuration;
+import org.apache.geode.test.dunit.rules.ClusterStartupRule;
+import org.apache.geode.test.dunit.rules.MemberVM;
 
 public class ClusterConfig implements Serializable {
   private List<ConfigGroup> groups;
@@ -57,12 +57,12 @@ public class ClusterConfig implements Serializable {
     Collections.addAll(this.groups, configGroups);
   }
 
-  public String getMaxLogFileSize() {
+  public Set<String> getMaxLogFileSizes() {
     if (this.groups.size() == 0) {
-      return null;
+      return Collections.emptySet();
     }
-    ConfigGroup lastGroupAdded = this.groups.get(this.groups.size() - 1);
-    return lastGroupAdded.getMaxLogFileSize();
+    return this.groups.stream().map(ConfigGroup::getMaxLogFileSize).filter(Objects::nonNull)
+        .collect(toSet());
   }
 
   public List<String> getJarNames() {
@@ -87,17 +87,17 @@ public class ClusterConfig implements Serializable {
       verifyServer(memberVM);
   }
 
-  public void verifyLocator(MemberVM<Locator> locatorVM) {
+  public void verifyLocator(MemberVM locatorVM) {
     Set<String> expectedGroupConfigs =
         this.getGroups().stream().map(ConfigGroup::getName).collect(toSet());
 
     // verify info exists in memory
     locatorVM.invoke(() -> {
-      InternalLocator internalLocator = LocatorServerStartupRule.locatorStarter.getLocator();
+      InternalLocator internalLocator = ClusterStartupRule.getLocator();
       ClusterConfigurationService sc = internalLocator.getSharedConfiguration();
 
       // verify no extra configs exist in memory
-      Set<String> actualGroupConfigs = sc.getEntireConfiguration().keySet();
+      Set<String> actualGroupConfigs = sc.getConfigurationRegion().keySet();
       assertThat(actualGroupConfigs).isEqualTo(expectedGroupConfigs);
 
       for (ConfigGroup configGroup : this.getGroups()) {
@@ -133,7 +133,7 @@ public class ClusterConfig implements Serializable {
     }
   }
 
-  public void verifyServer(MemberVM<Server> serverVM) {
+  public void verifyServer(MemberVM serverVM) {
     // verify files exist in filesystem
     Set<String> expectedJarNames = this.getJarNames().stream().collect(toSet());
 
@@ -154,13 +154,13 @@ public class ClusterConfig implements Serializable {
         assertThat(cache.getRegion(region)).isNotNull();
       }
 
-      if (StringUtils.isNotBlank(this.getMaxLogFileSize())) {
+      if (this.getMaxLogFileSizes().size() > 0) {
         Properties props = cache.getDistributedSystem().getProperties();
-        assertThat(props.getProperty(LOG_FILE_SIZE_LIMIT)).isEqualTo(this.getMaxLogFileSize());
+        assertThat(this.getMaxLogFileSizes()).contains(props.getProperty(LOG_FILE_SIZE_LIMIT));
       }
 
       for (String jar : this.getJarNames()) {
-        DeployedJar deployedJar = ClassPathLoader.getLatest().getJarDeployer().findDeployedJar(jar);
+        DeployedJar deployedJar = ClassPathLoader.getLatest().getJarDeployer().getDeployedJar(jar);
         assertThat(deployedJar).isNotNull();
         assertThat(Class.forName(nameOfClassContainedInJar(jar), true,
             new URLClassLoader(new URL[] {deployedJar.getFileURL()}))).isNotNull();
@@ -172,7 +172,7 @@ public class ClusterConfig implements Serializable {
       for (String jar : undeployedJarNames) {
         System.out.println("Verifying undeployed jar: " + jar);
         DeployedJar undeployedJar =
-            ClassPathLoader.getLatest().getJarDeployer().findDeployedJar(jar);
+            ClassPathLoader.getLatest().getJarDeployer().getDeployedJar(jar);
         assertThat(undeployedJar).isNull();
       }
     });

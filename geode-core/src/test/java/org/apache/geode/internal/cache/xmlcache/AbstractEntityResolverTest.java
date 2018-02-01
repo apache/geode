@@ -37,7 +37,7 @@ public abstract class AbstractEntityResolverTest {
 
   /**
    * Assert that {@link PivotalEntityResolver} extends {@link DefaultEntityResolver2}.
-   * 
+   *
    * @since GemFire 8.1
    */
   @Test
@@ -48,7 +48,7 @@ public abstract class AbstractEntityResolverTest {
   /**
    * Find the {@link PivotalEntityResolver} in the {@link ClassPathLoader}. Verifies that the
    * META-INF/services file is correctly found and the the implementation class is loadable.
-   * 
+   *
    * @since GemFire 8.1
    */
   @Test
@@ -68,7 +68,7 @@ public abstract class AbstractEntityResolverTest {
   /**
    * Resolve the cache.xml XSD using the {@link PivotalEntityResolver}. Verifies that the
    * META-INF/schemas files are correctly found.
-   * 
+   *
    * @since GemFire 8.1
    */
   @Test
@@ -81,7 +81,7 @@ public abstract class AbstractEntityResolverTest {
   /**
    * Test {@link PivotalEntityResolver#resolveEntity(String, String)} with <code>null</code>
    * <code>systemId</code>. Asserts that returns to <code>null<code>.
-   * 
+   *
    * @since GemFire 8.1
    */
   @Test
@@ -95,7 +95,7 @@ public abstract class AbstractEntityResolverTest {
    * Test {@link PivotalEntityResolver#resolveEntity(String, String)} with
    * <code>"--not-a-valid-system-id--"</code> <code>systemId</code>, which is not in the Pivotal
    * namespace.. Asserts that returns to <code>null<code>.
-   * 
+   *
    * @since GemFire 8.1
    */
   @Test
@@ -109,7 +109,7 @@ public abstract class AbstractEntityResolverTest {
    * Test {@link PivotalEntityResolver#resolveEntity(String, String)} with
    * <code>"http://schema.pivotal.io/this/should/be/not/found.xsd"</code> <code>systemId</code>,
    * which should not be found. Asserts that returns to <code>null<code>.
-   * 
+   *
    * @since GemFire 8.1
    */
   @Test

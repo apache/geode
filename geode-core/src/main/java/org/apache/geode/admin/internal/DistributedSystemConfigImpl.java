@@ -26,6 +26,20 @@ import static org.apache.geode.distributed.ConfigurationProperties.MCAST_ADDRESS
 import static org.apache.geode.distributed.ConfigurationProperties.MCAST_PORT;
 import static org.apache.geode.distributed.ConfigurationProperties.TCP_PORT;
 
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.util.ArrayList;
+import java.util.Enumeration;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.Properties;
+import java.util.Set;
+import java.util.StringTokenizer;
+
+import org.apache.logging.log4j.Logger;
+
 import org.apache.geode.admin.AdminXmlException;
 import org.apache.geode.admin.CacheServerConfig;
 import org.apache.geode.admin.CacheVmConfig;
@@ -40,19 +54,6 @@ import org.apache.geode.internal.logging.LogConfig;
 import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.internal.logging.LogWriterImpl;
 import org.apache.geode.internal.logging.log4j.LogLevel;
-import org.apache.logging.log4j.Logger;
-
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.util.ArrayList;
-import java.util.Enumeration;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.Properties;
-import java.util.Set;
-import java.util.StringTokenizer;
 
 /**
  * An implementation of the configuration object for an <code>AdminDistributedSystem</code>. After a
@@ -211,11 +212,11 @@ public class DistributedSystemConfigImpl implements DistributedSystemConfig {
   /**
    * Creates a new <code>DistributedSystemConifgImpl</code> whose configuration is specified by the
    * given <code>Properties</code> object.
-   * 
+   *
    * @param props The configuration properties specified by the caller
    * @param ignoreGemFirePropsFile whether to skip loading distributed system properties from
    *        gemfire.properties file
-   * 
+   *
    * @since GemFire 6.5
    */
   protected DistributedSystemConfigImpl(Properties props, boolean ignoreGemFirePropsFile) {
@@ -1128,4 +1129,3 @@ public class DistributedSystemConfigImpl implements DistributedSystemConfig {
     return buf.toString();
   }
 }
-

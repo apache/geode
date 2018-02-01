@@ -16,7 +16,7 @@ package org.apache.geode.internal.cache;
 
 /**
  * Defines callbacks that are invoked when an {@code InternalCache} is created or closed.
- * 
+ *
  * @see GemFireCacheImpl#addCacheLifecycleListener(CacheLifecycleListener)
  * @see GemFireCacheImpl#removeCacheLifecycleListener(CacheLifecycleListener)
  */

@@ -185,7 +185,7 @@ public class ColocationHelper {
   /**
    * Returns true if there are regions that are persisted on this member and were previously
    * colocated with the given region, but have not yet been created.
-   * 
+   *
    * @param region The parent region
    * @return true if there are any child regions that are persisted on this member, but have not yet
    *         been created.
@@ -276,7 +276,7 @@ public class ColocationHelper {
    * getAllColocationRegions(customerPR) --> List{orderPR, shipmentPR}<br>
    * getAllColocationRegions(orderPR) --> List{customerPR, shipmentPR}<br>
    * getAllColocationRegions(shipmentPR) --> List{customerPR, orderPR}<br>
-   * 
+   *
    * @return List of all partitioned regions (excluding self) in a colocated chain
    * @since GemFire 5.8Beta
    */
@@ -309,7 +309,7 @@ public class ColocationHelper {
 
   /**
    * gets local data of colocated regions on a particular data store
-   * 
+   *
    * @return map of region name to local colocated regions
    * @since GemFire 5.8Beta
    */
@@ -366,7 +366,7 @@ public class ColocationHelper {
    * getColocatedChildRegions(customerPR) will return List{orderPR}<br>
    * getColocatedChildRegions(orderPR) will return List{shipmentPR}<br>
    * getColocatedChildRegions(shipmentPR) will return empty List{}<br>
-   * 
+   *
    * @return list of all child partitioned regions colocated with the region
    * @since GemFire 5.8Beta
    */

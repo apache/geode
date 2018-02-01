@@ -20,9 +20,10 @@ import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
-import org.apache.geode.test.junit.categories.UnitTest;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
+
+import org.apache.geode.test.junit.categories.UnitTest;
 
 @Category(UnitTest.class)
 public class AbstractLRURegionMapTest {
@@ -33,10 +34,8 @@ public class AbstractLRURegionMapTest {
 
     when(mockAbstractLRURegionMap.centralizedLruUpdateCallback()).thenReturn(1);
 
-    mockAbstractLRURegionMap.audit();
     mockAbstractLRURegionMap.changeTotalEntrySize(1);
 
-    verify(mockAbstractLRURegionMap, times(1)).audit();
     verify(mockAbstractLRURegionMap, times(1)).changeTotalEntrySize(1);
 
     assertThat(mockAbstractLRURegionMap.centralizedLruUpdateCallback()).isEqualTo(1);

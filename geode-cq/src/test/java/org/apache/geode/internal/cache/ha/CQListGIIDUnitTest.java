@@ -26,7 +26,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 
-import org.apache.geode.test.junit.categories.ClientSubscriptionTest;
 import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
@@ -67,6 +66,7 @@ import org.apache.geode.test.dunit.Host;
 import org.apache.geode.test.dunit.NetworkUtils;
 import org.apache.geode.test.dunit.VM;
 import org.apache.geode.test.dunit.internal.JUnit4DistributedTestCase;
+import org.apache.geode.test.junit.categories.ClientSubscriptionTest;
 import org.apache.geode.test.junit.categories.DistributedTest;
 
 /**
@@ -75,13 +75,13 @@ import org.apache.geode.test.junit.categories.DistributedTest;
 @Category({DistributedTest.class, ClientSubscriptionTest.class})
 public class CQListGIIDUnitTest extends JUnit4DistributedTestCase {
 
-  private final static int CREATE = 0;
-  private final static int UPDATE = 1;
-  private final static int DESTROY = 2;
-  private final static int INVALIDATE = 3;
-  private final static int CLOSE = 4;
-  private final static int REGION_CLEAR = 5;
-  private final static int REGION_INVALIDATE = 6;
+  private static final int CREATE = 0;
+  private static final int UPDATE = 1;
+  private static final int DESTROY = 2;
+  private static final int INVALIDATE = 3;
+  private static final int CLOSE = 4;
+  private static final int REGION_CLEAR = 5;
+  private static final int REGION_INVALIDATE = 6;
 
   protected static Cache cache = null;
 
@@ -252,7 +252,7 @@ public class CQListGIIDUnitTest extends JUnit4DistributedTestCase {
 
   /**
    * A helper for creating a subregion, potentially using a package protected method to do so.
-   * 
+   *
    * @param root the parent region
    * @param name the name of the subregion to create
    * @param attrs the attributes used to create the subregion

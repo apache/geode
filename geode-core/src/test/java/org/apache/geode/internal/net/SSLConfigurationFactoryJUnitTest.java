@@ -35,6 +35,7 @@ import static org.apache.geode.distributed.ConfigurationProperties.SSL_WEB_SERVI
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertEquals;
 
+import java.security.KeyStore;
 import java.util.Properties;
 
 import org.apache.commons.lang.StringUtils;
@@ -50,8 +51,6 @@ import org.apache.geode.internal.admin.SSLConfig;
 import org.apache.geode.internal.security.SecurableCommunicationChannel;
 import org.apache.geode.test.junit.categories.MembershipTest;
 import org.apache.geode.test.junit.categories.UnitTest;
-
-import java.security.KeyStore;
 
 @Category({UnitTest.class, MembershipTest.class})
 public class SSLConfigurationFactoryJUnitTest {

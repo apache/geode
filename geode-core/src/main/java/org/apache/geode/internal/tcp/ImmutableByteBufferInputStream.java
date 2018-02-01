@@ -23,7 +23,7 @@ import org.apache.geode.internal.offheap.StoredObject;
  * change. If you want a buffer than can be refilled with other bytes then create an instance of
  * ByteBufferInputStream instead. Note that even though this class is immutable the position on its
  * ByteBuffer can change.
- * 
+ *
  * @since GemFire 6.6
  */
 public class ImmutableByteBufferInputStream extends ByteBufferInputStream {
@@ -31,7 +31,7 @@ public class ImmutableByteBufferInputStream extends ByteBufferInputStream {
   /**
    * Create an immutable input stream by whose contents are the first length bytes from the given
    * input stream.
-   * 
+   *
    * @param existing the input stream whose content will go into this stream. Note that this
    *        existing stream will be read by this class (a copy is not made) so it should not be
    *        changed externally.
@@ -43,7 +43,7 @@ public class ImmutableByteBufferInputStream extends ByteBufferInputStream {
 
   /**
    * Create an immutable input stream whose contents are the given bytes
-   * 
+   *
    * @param bytes the content of this stream. Note that this byte array will be read by this class
    *        (a copy is not made) so it should not be changed externally.
    */
@@ -53,7 +53,7 @@ public class ImmutableByteBufferInputStream extends ByteBufferInputStream {
 
   /**
    * Create an immutable input stream whose contents are the given bytes
-   * 
+   *
    * @param bb the content of this stream. Note that bb will be read by this class (a copy is not
    *        made) so it should not be changed externally.
    */
@@ -63,7 +63,7 @@ public class ImmutableByteBufferInputStream extends ByteBufferInputStream {
 
   /**
    * Create an immutable input stream by copying another. A somewhat shallow copy is made.
-   * 
+   *
    * @param copy the input stream to copy. Note that this copy stream will be read by this class (a
    *        copy is not made) so it should not be changed externally.
    */

@@ -40,7 +40,6 @@ import java.util.Random;
 import java.util.Set;
 import java.util.concurrent.LinkedBlockingQueue;
 
-import org.apache.geode.cache.util.TxEventTestUtil;
 import org.apache.logging.log4j.Logger;
 import org.junit.AfterClass;
 import org.junit.Ignore;
@@ -87,6 +86,8 @@ import org.apache.geode.cache.TransactionListener;
 import org.apache.geode.cache.partition.PartitionRegionHelper;
 import org.apache.geode.cache.server.CacheServer;
 import org.apache.geode.cache.util.CacheListenerAdapter;
+import org.apache.geode.cache.util.TxEventTestUtil;
+import org.apache.geode.distributed.ConfigurationProperties;
 import org.apache.geode.distributed.internal.DMStats;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
@@ -153,6 +154,14 @@ public abstract class MultiVMRegionTestCase extends RegionTestCase {
   @Override
   protected final void postTearDownRegionTestCase() throws Exception {
     CCRegion = null;
+  }
+
+  @Override
+  public Properties getDistributedSystemProperties() {
+    Properties properties = super.getDistributedSystemProperties();
+    properties.put(ConfigurationProperties.SERIALIZABLE_OBJECT_FILTER,
+        "org.apache.geode.cache30.MultiVMRegionTestCase$DeltaValue");
+    return properties;
   }
 
   /**
@@ -366,103 +375,74 @@ public abstract class MultiVMRegionTestCase extends RegionTestCase {
   }
 
   /**
-   * Tests that distributed updates are delivered in order
+   * Verifies that distributed updates are delivered in order.
    *
-   * <P>
-   *
+   * <p>
    * Note that this test does not make sense for regions that are {@link Scope#DISTRIBUTED_NO_ACK}
    * for which we do not guarantee the ordering of updates for a single producer/single consumer.
-   *
-   * DISABLED 4-16-04 - the current implementation assumes events are processed synchronously, which
-   * is no longer true.
    */
-  @Ignore("TODO: test is DISABLED 4-16-04 - the current implementation assumes events are processed synchronously, which is no longer true")
   @Test
   public void testOrderedUpdates() throws Exception {
     assumeFalse(getRegionAttributes().getScope() == Scope.DISTRIBUTED_NO_ACK);
 
-    final String name = this.getUniqueName();
-    final Object key = "KEY";
-    final int lastNumber = 10;
+    final String regionName = getUniqueName();
+    final String key = "KEY";
+    final int lastValue = 10;
 
-    Host host = Host.getHost(0);
-    VM vm0 = host.getVM(0);
-    VM vm1 = host.getVM(1);
+    VM vm0 = Host.getHost(0).getVM(0);
+    VM vm1 = Host.getHost(0).getVM(1);
 
-    SerializableRunnable create = new CacheSerializableRunnable("Create region entry") {
-      @Override
-      public void run2() throws CacheException {
-        Region region = createRegion(name);
-        region.create(key, null);
-      }
-    };
-
-    vm0.invoke(create);
-    vm1.invoke(create);
-
-    vm1.invoke(new CacheSerializableRunnable("Set listener") {
-      @Override
-      public void run2() throws CacheException {
-        Region region = getRootRegion().getSubregion(name);
-        region.setUserAttribute(new LinkedBlockingQueue());
-        region.getAttributesMutator().addCacheListener(new CacheListenerAdapter() {
-          @Override
-          public void afterUpdate(EntryEvent e) {
-            Region region2 = e.getRegion();
-            LinkedBlockingQueue queue = (LinkedBlockingQueue) region2.getUserAttribute();
-            Object value = e.getNewValue();
-            assertNotNull(value);
-            try {
-              org.apache.geode.test.dunit.LogWriterUtils.getLogWriter().info("++ Adding " + value);
-              queue.put(value);
-
-            } catch (InterruptedException ex) {
-              fail("Why was I interrupted?", ex);
-            }
-          }
-        });
-        flushIfNecessary(region);
-      }
+    vm0.invoke("Create region", () -> {
+      createRegion(regionName);
     });
-    AsyncInvocation ai1 = vm1.invokeAsync(new CacheSerializableRunnable("Verify") {
-      @Override
-      public void run2() throws CacheException {
-        Region region = getRootRegion().getSubregion(name);
-        LinkedBlockingQueue queue = (LinkedBlockingQueue) region.getUserAttribute();
-        for (int i = 0; i <= lastNumber; i++) {
+
+    vm1.invoke("Create region and region entry", () -> {
+      Region<String, Integer> region = createRegion(regionName);
+      region.create(key, null);
+    });
+
+    vm1.invoke("Set listener", () -> {
+      Region<String, Integer> region = getRootRegion().getSubregion(regionName);
+      region.setUserAttribute(new LinkedBlockingQueue());
+
+      region.getAttributesMutator().addCacheListener(new CacheListenerAdapter<String, Integer>() {
+        @Override
+        public void afterUpdate(EntryEvent<String, Integer> event) {
+          Region<String, Integer> region = event.getRegion();
+          LinkedBlockingQueue<Integer> queue = (LinkedBlockingQueue) region.getUserAttribute();
+          int value = event.getNewValue();
           try {
-            org.apache.geode.test.dunit.LogWriterUtils.getLogWriter().info("++ Waiting for " + i);
-            Integer value = (Integer) queue.take();
-            org.apache.geode.test.dunit.LogWriterUtils.getLogWriter().info("++ Got " + value);
-            assertEquals(i, value.intValue());
-
-          } catch (InterruptedException ex) {
-            fail("Why was I interrupted?", ex);
+            queue.put(value);
+          } catch (InterruptedException e) {
+            throw new RuntimeException(e);
           }
         }
-      }
+      });
+      flushIfNecessary(region);
     });
 
-    AsyncInvocation ai0 = vm0.invokeAsync(new CacheSerializableRunnable("Populate") {
-      @Override
-      public void run2() throws CacheException {
-        Region region = getRootRegion().getSubregion(name);
-        for (int i = 0; i <= lastNumber; i++) {
-          // org.apache.geode.internal.GemFireVersion.waitForJavaDebugger(getLogWriter());
-          region.put(key, new Integer(i));
+    AsyncInvocation verify = vm1.invokeAsync("Verify", () -> {
+      Region<String, Integer> region = getRootRegion().getSubregion(regionName);
+      LinkedBlockingQueue<Integer> queue = (LinkedBlockingQueue) region.getUserAttribute();
+      for (int i = 0; i <= lastValue; i++) {
+        try {
+          int value = queue.take();
+          assertEquals(i, value);
+        } catch (InterruptedException e) {
+          throw new RuntimeException(e);
         }
       }
     });
 
-    ThreadUtils.join(ai0, 30 * 1000);
-    ThreadUtils.join(ai1, 30 * 1000);
+    AsyncInvocation populate = vm0.invokeAsync("Populate", () -> {
+      Region<String, Integer> region = getRootRegion().getSubregion(regionName);
+      for (int i = 0; i <= lastValue; i++) {
+        region.put(key, i);
+      }
+    });
 
-    if (ai0.exceptionOccurred()) {
-      fail("ai0 failed", ai0.getException());
-
-    } else if (ai1.exceptionOccurred()) {
-      fail("ai1 failed", ai1.getException());
-    }
+    populate.await();
+    verify.await();
   }
 
   /**
@@ -1442,7 +1422,7 @@ public abstract class MultiVMRegionTestCase extends RegionTestCase {
 
   /**
    * Indicate whether this region supports netload
-   * 
+   *
    * @return true if it supports netload
    */
   protected boolean supportsNetLoad() {
@@ -1941,7 +1921,7 @@ public abstract class MultiVMRegionTestCase extends RegionTestCase {
           LocalRegion reRegion;
           reRegion = (LocalRegion) region;
           RegionEntry re = reRegion.getRegionEntry(key2);
-          StoredObject so = (StoredObject) re._getValue();
+          StoredObject so = (StoredObject) re.getValue();
           assertEquals(1, so.getRefCount());
           assertEquals(1, ma.getStats().getObjects());
         }
@@ -2029,7 +2009,7 @@ public abstract class MultiVMRegionTestCase extends RegionTestCase {
           assertEquals(2, ma.getStats().getObjects());
           LocalRegion reRegion;
           reRegion = (LocalRegion) region;
-          StoredObject so = (StoredObject) reRegion.getRegionEntry(key)._getValue();
+          StoredObject so = (StoredObject) reRegion.getRegionEntry(key).getValue();
           assertEquals(1, so.getRefCount());
         }
       }
@@ -2096,7 +2076,7 @@ public abstract class MultiVMRegionTestCase extends RegionTestCase {
             assertEquals(2, ma.getStats().getObjects());
             LocalRegion reRegion;
             reRegion = (LocalRegion) region;
-            StoredObject so = (StoredObject) reRegion.getRegionEntry(key)._getValue();
+            StoredObject so = (StoredObject) reRegion.getRegionEntry(key).getValue();
             assertEquals(1, so.getRefCount());
           }
         }
@@ -2806,7 +2786,7 @@ public abstract class MultiVMRegionTestCase extends RegionTestCase {
 
   /**
    * Indicate whether replication/GII supported
-   * 
+   *
    * @return true if replication is supported
    */
   protected boolean supportsReplication() {
@@ -6261,7 +6241,7 @@ public abstract class MultiVMRegionTestCase extends RegionTestCase {
 
   /**
    * Indicate whether this region supports transactions
-   * 
+   *
    * @return true if it supports transactions
    */
   protected boolean supportsTransactions() {
@@ -6277,7 +6257,7 @@ public abstract class MultiVMRegionTestCase extends RegionTestCase {
   public void testTXUpdateLoadNoConflict() throws Exception {
     /*
      * this no longer holds true - we have load conflicts now
-     * 
+     *
      */
     if (true) {
       return;
@@ -6343,10 +6323,10 @@ public abstract class MultiVMRegionTestCase extends RegionTestCase {
       vm0.invoke(create);
 
       {
-        TXStateProxy tx = ((TXManagerImpl) txMgr).internalSuspend();
+        TXStateProxy tx = ((TXManagerImpl) txMgr).pauseTransaction();
         assertTrue(rgn.containsKey("key"));
         assertEquals("LV 1", rgn.getEntry("key").getValue());
-        ((TXManagerImpl) txMgr).internalResume(tx);
+        ((TXManagerImpl) txMgr).unpauseTransaction(tx);
       }
       // make sure transactional view is still correct
       assertEquals("txValue", rgn.getEntry("key").getValue());
@@ -6391,11 +6371,11 @@ public abstract class MultiVMRegionTestCase extends RegionTestCase {
       rgn.create("key3", "txValue3");
 
       {
-        TXStateProxy tx = ((TXManagerImpl) txMgr).internalSuspend();
+        TXStateProxy tx = ((TXManagerImpl) txMgr).pauseTransaction();
         // do a get outside of the transaction to force a net load
         Object v3 = rgn.get("key3");
         assertEquals("LV 3", v3);
-        ((TXManagerImpl) txMgr).internalResume(tx);
+        ((TXManagerImpl) txMgr).unpauseTransaction(tx);
       }
       // make sure transactional view is still correct
       assertEquals("txValue3", rgn.getEntry("key3").getValue());
@@ -6449,11 +6429,11 @@ public abstract class MultiVMRegionTestCase extends RegionTestCase {
       rgn.put("key", "new txValue");
 
       {
-        TXStateProxy tx = ((TXManagerImpl) txMgr).internalSuspend();
+        TXStateProxy tx = ((TXManagerImpl) txMgr).pauseTransaction();
         // do a get outside of the transaction to force a netsearch
         assertEquals("txValue", rgn.get("key")); // does a netsearch
         assertEquals("txValue", rgn.getEntry("key").getValue());
-        ((TXManagerImpl) txMgr).internalResume(tx);
+        ((TXManagerImpl) txMgr).unpauseTransaction(tx);
       }
       // make sure transactional view is still correct
       assertEquals("new txValue", rgn.getEntry("key").getValue());

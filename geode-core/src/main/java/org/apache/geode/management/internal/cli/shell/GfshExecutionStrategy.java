@@ -14,8 +14,10 @@
  */
 package org.apache.geode.management.internal.cli.shell;
 
+import java.io.File;
 import java.lang.reflect.Method;
 import java.nio.file.Path;
+import java.util.List;
 import java.util.Map;
 
 import org.apache.commons.lang.StringUtils;
@@ -42,7 +44,7 @@ import org.apache.geode.security.NotAuthorizedException;
 
 /**
  * Defines the {@link ExecutionStrategy} for commands that are executed in GemFire Shell (gfsh).
- * 
+ *
  * @since GemFire 7.0
  */
 public class GfshExecutionStrategy implements ExecutionStrategy {
@@ -60,7 +62,7 @@ public class GfshExecutionStrategy implements ExecutionStrategy {
    * {@link GfshParseResult} for GemFire defined commands. If the command Method is decorated with
    * {@link CliMetaData#shellOnly()} set to <code>false</code>, {@link OperationInvoker} is used to
    * send the command for processing on a remote GemFire node.
-   * 
+   *
    * @param parseResult that should be executed (never presented as null)
    * @return an object which will be rendered by the {@link Shell} implementation (may return null)
    * @throws RuntimeException which is handled by the {@link Shell} implementation
@@ -91,7 +93,7 @@ public class GfshExecutionStrategy implements ExecutionStrategy {
 
   /**
    * Whether the command is available only at the shell or on GemFire member too.
-   * 
+   *
    * @param method the method to check the associated annotation
    * @return true if CliMetaData is added to the method & CliMetaData.shellOnly is set to true,
    *         false otherwise
@@ -148,7 +150,7 @@ public class GfshExecutionStrategy implements ExecutionStrategy {
       return null;
     }
 
-    byte[][] fileData = null;
+    List<File> fileData = null;
     CliAroundInterceptor interceptor = null;
 
     String interceptorClass = getInterceptor(parseResult.getMethod());
@@ -174,7 +176,7 @@ public class GfshExecutionStrategy implements ExecutionStrategy {
       // when the preExecution yields a FileResult, we will get the fileData out of it
       if (preExecResult instanceof FileResult) {
         FileResult fileResult = (FileResult) preExecResult;
-        fileData = fileResult.toBytes();
+        fileData = fileResult.getFiles();
       }
     }
 

@@ -19,8 +19,6 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 
-import io.codearte.catchexception.shade.mockito.Mockito;
-
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
@@ -28,21 +26,22 @@ import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
 
-import org.apache.geode.cache.query.CqAttributesFactory;
-import org.apache.geode.cache.query.CqListener;
-import org.apache.geode.cache.query.CqQuery;
-import org.apache.geode.cache.server.CacheServer;
 import org.awaitility.Awaitility;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
+import org.mockito.Mockito;
 
 import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.Region;
 import org.apache.geode.cache.client.Pool;
 import org.apache.geode.cache.client.PoolManager;
 import org.apache.geode.cache.client.internal.PoolImpl;
+import org.apache.geode.cache.query.CqAttributesFactory;
+import org.apache.geode.cache.query.CqListener;
+import org.apache.geode.cache.query.CqQuery;
+import org.apache.geode.cache.server.CacheServer;
 import org.apache.geode.distributed.DistributedSystem;
 import org.apache.geode.internal.cache.EventID;
 import org.apache.geode.internal.cache.LocalRegion;
@@ -126,15 +125,15 @@ public class ClientServerMiscBCDUnitTest extends ClientServerMiscDUnitTest {
   private void doTestSubscriptionWithMixedServersAndPeerFeed(String version,
       boolean usePeerForFeed) {
     server1 = Host.getHost(0).getVM(testVersion, 2);
-    server2 = Host.getHost(0).getVM(3);
-    VM server3 = Host.getHost(0).getVM(4);
+    server2 = Host.getHost(0).getVM(VersionManager.CURRENT_VERSION, 3);
+    VM server3 = Host.getHost(0).getVM(VersionManager.CURRENT_VERSION, 4);
     VM interestClient = Host.getHost(0).getVM(testVersion, 0);
     VM feeder = Host.getHost(0).getVM(version, 1);
 
     // start servers first
     int server1Port = initServerCache(true);
 
-    int server2Port = initServerCache2(true);
+    int server2Port = initServerCache2();
 
     int server3Port = server3.invoke(() -> createServerCache(true, getMaxThreads(), false));
 
@@ -228,8 +227,7 @@ public class ClientServerMiscBCDUnitTest extends ClientServerMiscDUnitTest {
   public void giiEventQueueShouldSucceedWithMixedVersions(String server1Version,
       String server2Version) {
     VM interestClient = Host.getHost(0).getVM(testVersion, 0);
-    // VM interestClient = Host.getHost(0).getVM(0);
-    VM feeder = Host.getHost(0).getVM(1);
+    VM feeder = Host.getHost(0).getVM(VersionManager.CURRENT_VERSION, 1);
     server1 = Host.getHost(0).getVM(server1Version, 2);
     server2 = Host.getHost(0).getVM(server2Version, 3);
 

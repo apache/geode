@@ -805,7 +805,7 @@ public class SearchLoadAndWriteProcessor implements MembershipListener {
    * Returns an event for listener notification. The event's operation may be altered to conform to
    * the ConcurrentMap implementation specification. If the returned value is not == to the event
    * parameter then the caller is responsible for releasing it.
-   * 
+   *
    * @param event the original event
    * @return the original event or a new event having a change in operation
    */
@@ -863,6 +863,9 @@ public class SearchLoadAndWriteProcessor implements MembershipListener {
     if (event.getOperation().isCreate() && action == BEFOREUPDATE) {
       action = BEFORECREATE;
     }
+    if (event instanceof EntryEventImpl) {
+      ((EntryEventImpl) event).setReadOldValueFromDisk(true);
+    }
     try {
       switch (action) {
         case BEFORECREATE:
@@ -885,6 +888,9 @@ public class SearchLoadAndWriteProcessor implements MembershipListener {
 
       }
     } finally {
+      if (event instanceof EntryEventImpl) {
+        ((EntryEventImpl) event).setReadOldValueFromDisk(false);
+      }
       if (event != pevent) {
         if (event instanceof EntryEventImpl) {
           ((Releasable) event).release();
@@ -953,7 +959,7 @@ public class SearchLoadAndWriteProcessor implements MembershipListener {
 
   /**
    * process a QueryMessage netsearch response
-   * 
+   *
    * @param versionTag TODO
    */
   protected synchronized void incomingResponse(Object obj, long lastModifiedTime, boolean isPresent,
@@ -1271,7 +1277,7 @@ public class SearchLoadAndWriteProcessor implements MembershipListener {
   }
 
   private int getSearchTimeout() {
-    return region.getCache().getSearchTimeout(); // CacheFactory.getInstance(((DistributedRegion)this.region).getSystem()).getSearchTimeout();
+    return region.getCache().getSearchTimeout();
   }
 
   private void resetResults() {
@@ -1504,7 +1510,7 @@ public class SearchLoadAndWriteProcessor implements MembershipListener {
       try {
         // check to see if we would have to wait on initialization latch (if global)
         // if so abort and reply with null
-        InternalCache cache = (InternalCache) CacheFactory.getInstance(dm.getSystem());
+        InternalCache cache = dm.getExistingCache();
         if (cache.isGlobalRegionInitializing(this.regionName)) {
           replyWithNull(dm);
           if (logger.isDebugEnabled()) {
@@ -1513,8 +1519,7 @@ public class SearchLoadAndWriteProcessor implements MembershipListener {
           return;
         }
 
-        LocalRegion region =
-            (LocalRegion) CacheFactory.getInstance(dm.getSystem()).getRegion(this.regionName);
+        LocalRegion region = (LocalRegion) dm.getExistingCache().getRegion(this.regionName);
         Object o = null;
 
         if (region != null) {
@@ -1850,8 +1855,7 @@ public class SearchLoadAndWriteProcessor implements MembershipListener {
 
       int oldLevel = LocalRegion.setThreadInitLevelRequirement(LocalRegion.BEFORE_INITIAL_IMAGE);
       try {
-        LocalRegion region =
-            (LocalRegion) CacheFactory.getInstance(dm.getSystem()).getRegion(this.regionName);
+        LocalRegion region = (LocalRegion) dm.getExistingCache().getRegion(this.regionName);
         if (region != null) {
           setClearCountReference(region);
           try {
@@ -2145,8 +2149,8 @@ public class SearchLoadAndWriteProcessor implements MembershipListener {
       msg.setRecipient(recipient);
 
       try {
-        processor.distributionManager.putOutgoingUserData(msg);
-      } catch (NotSerializableException ignore) {
+        processor.distributionManager.putOutgoing(msg);
+      } catch (InternalGemFireException e) {
         throw new IllegalArgumentException(
             LocalizedStrings.SearchLoadAndWriteProcessor_MESSAGE_NOT_SERIALIZABLE
                 .toLocalizedString());
@@ -2210,7 +2214,7 @@ public class SearchLoadAndWriteProcessor implements MembershipListener {
       long startTime = dm.cacheTimeMillis();
       int oldLevel = LocalRegion.setThreadInitLevelRequirement(LocalRegion.BEFORE_INITIAL_IMAGE);
       try {
-        InternalCache gfc = (InternalCache) CacheFactory.getInstance(dm.getSystem());
+        InternalCache gfc = dm.getExistingCache();
         LocalRegion region = (LocalRegion) gfc.getRegion(this.regionName);
         if (region != null && region.isInitialized()
             && (dm.cacheTimeMillis() - startTime < timeoutMs)) {
@@ -2467,7 +2471,7 @@ public class SearchLoadAndWriteProcessor implements MembershipListener {
       long startTime = dm.cacheTimeMillis();
       int oldLevel = LocalRegion.setThreadInitLevelRequirement(LocalRegion.BEFORE_INITIAL_IMAGE);
       try {
-        InternalCache gfc = (InternalCache) CacheFactory.getInstance(dm.getSystem());
+        InternalCache gfc = dm.getExistingCache();
         LocalRegion region = (LocalRegion) gfc.getRegion(this.regionName);
         if (region != null && region.isInitialized()
             && (dm.cacheTimeMillis() - startTime < timeoutMs)) {
@@ -2497,6 +2501,9 @@ public class SearchLoadAndWriteProcessor implements MembershipListener {
           }
 
           if (writer != null) {
+            if (entryEvtImpl != null) {
+              entryEvtImpl.setReadOldValueFromDisk(true);
+            }
             try {
               switch (action) {
                 case BEFORECREATE:
@@ -2526,6 +2533,10 @@ public class SearchLoadAndWriteProcessor implements MembershipListener {
             } catch (Exception e) {
               NetWriteReplyMessage.sendMessage(NetWriteRequestMessage.this.getSender(), processorId,
                   dm, false, e, false);
+            } finally {
+              if (entryEvtImpl != null) {
+                entryEvtImpl.setReadOldValueFromDisk(false);
+              }
             }
 
           } else {

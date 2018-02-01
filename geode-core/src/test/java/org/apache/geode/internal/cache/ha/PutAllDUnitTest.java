@@ -22,7 +22,6 @@ import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Properties;
 
-import org.apache.geode.test.junit.categories.ClientSubscriptionTest;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
@@ -52,6 +51,7 @@ import org.apache.geode.test.dunit.LogWriterUtils;
 import org.apache.geode.test.dunit.NetworkUtils;
 import org.apache.geode.test.dunit.VM;
 import org.apache.geode.test.dunit.internal.JUnit4DistributedTestCase;
+import org.apache.geode.test.junit.categories.ClientSubscriptionTest;
 import org.apache.geode.test.junit.categories.DistributedTest;
 
 /**
@@ -305,22 +305,22 @@ public class PutAllDUnitTest extends JUnit4DistributedTestCase {
 
   /** EventId * */
   protected static EventID eventId = null;
-  protected volatile static EventID putAlleventId1 = null;
-  protected volatile static EventID putAlleventId2 = null;
-  protected volatile static EventID putAlleventId3 = null;
-  protected volatile static EventID putAlleventId4 = null;
-  protected volatile static EventID putAlleventId5 = null;
-  protected volatile static EntryEvent putAllevent1 = null;
-  protected volatile static EntryEvent putAllevent2 = null;
-  protected volatile static EntryEvent putAllevent3 = null;
-  protected volatile static EntryEvent putAllevent4 = null;
-  protected volatile static EntryEvent putAllevent5 = null;
+  protected static volatile EventID putAlleventId1 = null;
+  protected static volatile EventID putAlleventId2 = null;
+  protected static volatile EventID putAlleventId3 = null;
+  protected static volatile EventID putAlleventId4 = null;
+  protected static volatile EventID putAlleventId5 = null;
+  protected static volatile EntryEvent putAllevent1 = null;
+  protected static volatile EntryEvent putAllevent2 = null;
+  protected static volatile EntryEvent putAllevent3 = null;
+  protected static volatile EntryEvent putAllevent4 = null;
+  protected static volatile EntryEvent putAllevent5 = null;
 
-  protected final static String PUTALL_KEY1 = "putAllKey1";
-  protected final static String PUTALL_KEY2 = "putAllKey2";
-  protected final static String PUTALL_KEY3 = "putAllKey3";
-  protected final static String PUTALL_KEY4 = "putAllKey4";
-  protected final static String PUTALL_KEY5 = "putAllKey5";
+  protected static final String PUTALL_KEY1 = "putAllKey1";
+  protected static final String PUTALL_KEY2 = "putAllKey2";
+  protected static final String PUTALL_KEY3 = "putAllKey3";
+  protected static final String PUTALL_KEY4 = "putAllKey4";
+  protected static final String PUTALL_KEY5 = "putAllKey5";
 
   private static String PUTALL_VALUE1 = "putAllValue1";
   private static String PUTALL_VALUE2 = "putAllValue2";
@@ -369,7 +369,10 @@ public class PutAllDUnitTest extends JUnit4DistributedTestCase {
     for (int i = 0; i < 5; i++) {
       assertNotNull(eventIds1[i]);
       assertNotNull(eventIds2[i]);
-      assertEquals(eventIds1[i], eventIds2[i]);
+      assertEquals(
+          "Event id mismatch: eventIds1[" + i + "]" + eventIds1[i].expensiveToString()
+              + ": eventIds2[" + i + "]" + eventIds2[i].expensiveToString(),
+          eventIds1[i], eventIds2[i]);
     }
     for (int i = 0; i < 5; i++) {
       assertNotNull(eventIds1[i]);

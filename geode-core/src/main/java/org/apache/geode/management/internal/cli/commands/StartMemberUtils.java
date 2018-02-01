@@ -41,7 +41,7 @@ import org.apache.geode.management.internal.cli.util.ThreePhraseGenerator;
 /**
  * Encapsulates methods used by StartServerCommand and StartLocatorCommand and their associated
  * tests.
- * 
+ *
  * @see StartLocatorCommand
  * @see StartServerCommand
  */
@@ -237,7 +237,7 @@ public class StartMemberUtils {
     String classpath = getSystemClasspath();
     String gemfireJarPath = GEODE_JAR_PATHNAME;
     for (String classpathElement : classpath.split(File.pathSeparator)) {
-      if (classpathElement.endsWith("gemfire-core-8.2.0.0-SNAPSHOT.jar")) {
+      if (classpathElement.endsWith("geode-core-" + GemFireVersion.getGemFireVersion() + ".jar")) {
         gemfireJarPath = classpathElement;
         break;
       }

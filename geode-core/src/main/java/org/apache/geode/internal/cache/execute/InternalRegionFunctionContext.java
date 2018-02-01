@@ -37,9 +37,9 @@ public interface InternalRegionFunctionContext extends RegionFunctionContext {
    * given partitioned region.
    * <p>
    * Writes using this Region have no constraints and behave the same as the partitioned region.
-   * 
+   *
    * @param r region to get the local data set for
-   * 
+   *
    * @return a region for efficient reads or null if the region is not a partitioned region
    */
   public <K, V> Region<K, V> getLocalDataSet(Region<K, V> r);
@@ -52,7 +52,7 @@ public interface InternalRegionFunctionContext extends RegionFunctionContext {
    * Writes using these Region have no constraints and behave the same as a partitioned Region.
    * <p>
    * If there are no colocated regions, return an empty map.
-   * 
+   *
    * @return an unmodifiable map of {@linkplain Region#getFullPath() region name} to {@link Region}
    */
   public Map<String, LocalDataSet> getColocatedLocalDataSets();
@@ -60,9 +60,9 @@ public interface InternalRegionFunctionContext extends RegionFunctionContext {
   /**
    * Get the set of bucket IDs for this node as specified by the {@link #getFilter()} method of the
    * function context for the given region.
-   * 
+   *
    * @param region region to get the local bucket IDs for
-   * 
+   *
    * @return the set of bucket IDs for this node in this function context for the given region
    */
   public <K, V> Set<Integer> getLocalBucketSet(Region<K, V> region);

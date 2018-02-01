@@ -28,10 +28,10 @@ import org.apache.geode.test.dunit.Wait;
 import org.apache.geode.test.dunit.WaitCriterion;
 
 public class CertifiableTestCacheListener extends TestCacheListener implements Declarable2 {
-  final public Set destroys = Collections.synchronizedSet(new HashSet());
-  final public Set creates = Collections.synchronizedSet(new HashSet());
-  final public Set invalidates = Collections.synchronizedSet(new HashSet());
-  final public Set updates = Collections.synchronizedSet(new HashSet());
+  public final Set destroys = Collections.synchronizedSet(new HashSet());
+  public final Set creates = Collections.synchronizedSet(new HashSet());
+  public final Set invalidates = Collections.synchronizedSet(new HashSet());
+  public final Set updates = Collections.synchronizedSet(new HashSet());
 
   final LogWriter logger;
 
@@ -76,8 +76,8 @@ public class CertifiableTestCacheListener extends TestCacheListener implements D
     this.updates.add(event.getKey());
   }
 
-  static private final String WAIT_PROPERTY = "CertifiableTestCacheListener.maxWaitTime";
-  static private final int WAIT_DEFAULT = 30000;
+  private static final String WAIT_PROPERTY = "CertifiableTestCacheListener.maxWaitTime";
+  private static final int WAIT_DEFAULT = 30000;
 
   public static final long MAX_TIME = Integer.getInteger(WAIT_PROPERTY, WAIT_DEFAULT).intValue();;
 

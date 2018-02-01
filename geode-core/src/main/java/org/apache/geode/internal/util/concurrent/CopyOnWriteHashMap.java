@@ -25,10 +25,10 @@ import java.util.concurrent.ConcurrentMap;
 
 /**
  * A copy on write hash map.
- * 
+ *
  * Note that the entryKey and keySet of this map are unmodifable. Should be easy to make them
  * modifiable at a future time.
- * 
+ *
  *
  */
 public class CopyOnWriteHashMap<K, V> extends AbstractMap<K, V>

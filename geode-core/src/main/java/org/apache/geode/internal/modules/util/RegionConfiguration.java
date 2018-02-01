@@ -87,7 +87,7 @@ public class RegionConfiguration implements DataSerializable {
 
   /**
    * Sets the name of the <code>Region</code> to be created
-   * 
+   *
    * @param regionName The name of the <code>Region</code> to be created
    */
   public void setRegionName(String regionName) {
@@ -96,7 +96,7 @@ public class RegionConfiguration implements DataSerializable {
 
   /**
    * Returns the name of the <code>Region</code> to be created
-   * 
+   *
    * @return the name of the <code>Region</code> to be created
    */
   public String getRegionName() {
@@ -105,7 +105,7 @@ public class RegionConfiguration implements DataSerializable {
 
   /**
    * Sets the id of the <code>RegionAttributes</code> to be used
-   * 
+   *
    * @param regionAttributesId The id of the <code>RegionAttributes</code> to be used
    */
   public void setRegionAttributesId(String regionAttributesId) {
@@ -114,7 +114,7 @@ public class RegionConfiguration implements DataSerializable {
 
   /**
    * Returns the id of the <code>RegionAttributes</code> to be used
-   * 
+   *
    * @return the id of the <code>RegionAttributes</code> to be used
    */
   public String getRegionAttributesId() {
@@ -123,7 +123,7 @@ public class RegionConfiguration implements DataSerializable {
 
   /**
    * Sets the maximum time interval in seconds before entries are expired
-   * 
+   *
    * @param maxInactiveInterval The maximum time interval in seconds before entries are expired
    */
   public void setMaxInactiveInterval(int maxInactiveInterval) {
@@ -132,7 +132,7 @@ public class RegionConfiguration implements DataSerializable {
 
   /**
    * Returns the maximum time interval in seconds entries are expired
-   * 
+   *
    * @return the maximum time interval in seconds before entries are expired
    */
   public int getMaxInactiveInterval() {
@@ -141,7 +141,7 @@ public class RegionConfiguration implements DataSerializable {
 
   /**
    * Sets the <code>CustomExpiry</code> to be used
-   * 
+   *
    * @param customExpiry The <code>CustomExpiry</code> to be used
    */
   public void setCustomExpiry(CustomExpiry customExpiry) {
@@ -150,7 +150,7 @@ public class RegionConfiguration implements DataSerializable {
 
   /**
    * Returns the <code>CustomExpiry</code> to be used
-   * 
+   *
    * @return the <code>CustomExpiry</code> to be used
    */
   public CustomExpiry getCustomExpiry() {
@@ -159,7 +159,7 @@ public class RegionConfiguration implements DataSerializable {
 
   /**
    * Enables/disables delta replication across a <code>Gateway</code>.
-   * 
+   *
    * @param enableGatewayDeltaReplication true to enable, false to disable gateway delta
    *        replication.
    */
@@ -178,7 +178,7 @@ public class RegionConfiguration implements DataSerializable {
 
   /**
    * Enables/disables replication across a <code>Gateway</code>.
-   * 
+   *
    * @param enableGatewayReplication true to enable, false to disable gateway replication.
    */
   public void setEnableGatewayReplication(boolean enableGatewayReplication) {
@@ -196,7 +196,7 @@ public class RegionConfiguration implements DataSerializable {
 
   /**
    * Enables/disables a debug <code>CacheListener</code>.
-   * 
+   *
    * @param enableDebugListener true to enable, false to disable debug <code>CacheListener</code>.
    */
   public void setEnableDebugListener(boolean enableDebugListener) {
@@ -205,7 +205,7 @@ public class RegionConfiguration implements DataSerializable {
 
   /**
    * Returns whether a debug <code>CacheListener</code> is enabled.
-   * 
+   *
    * @return whether a debug <code>CacheListener</code> is enabled
    */
   public boolean getEnableDebugListener() {
@@ -259,7 +259,7 @@ public class RegionConfiguration implements DataSerializable {
    * set the fully qualified name of the {@link CacheWriter} to be created on the server. The
    * cacheWriter must have a zero arg constructor, and must be present on the classpath on the
    * server.
-   * 
+   *
    * @param cacheWriterName fully qualified class name of the cacheWriter
    */
   public void setCacheWriterName(String cacheWriterName) {
@@ -270,4 +270,3 @@ public class RegionConfiguration implements DataSerializable {
     return cacheWriterName;
   }
 }
-

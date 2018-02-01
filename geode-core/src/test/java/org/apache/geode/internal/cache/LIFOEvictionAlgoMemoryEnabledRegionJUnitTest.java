@@ -14,13 +14,13 @@
  */
 package org.apache.geode.internal.cache;
 
-import org.apache.geode.cache.*;
-import org.apache.geode.distributed.DistributedSystem;
-import org.apache.geode.internal.cache.lru.EnableLRU;
-import org.apache.geode.internal.cache.lru.LRUClockNode;
-import org.apache.geode.internal.cache.lru.LRUStatistics;
-import org.apache.geode.internal.cache.lru.NewLRUClockHand;
-import org.apache.geode.test.junit.categories.IntegrationTest;
+import static org.apache.geode.distributed.ConfigurationProperties.*;
+import static org.junit.Assert.*;
+
+import java.io.File;
+import java.util.Arrays;
+import java.util.Properties;
+
 import org.junit.After;
 import org.junit.Before;
 import org.junit.FixMethodOrder;
@@ -28,17 +28,29 @@ import org.junit.Test;
 import org.junit.experimental.categories.Category;
 import org.junit.runners.MethodSorters;
 
-import java.io.File;
-import java.util.Arrays;
-import java.util.Properties;
-
-import static org.apache.geode.distributed.ConfigurationProperties.*;
-import static org.junit.Assert.*;
+import org.apache.geode.cache.*;
+import org.apache.geode.distributed.DistributedSystem;
+import org.apache.geode.distributed.internal.DM;
+import org.apache.geode.internal.ByteArrayDataInput;
+import org.apache.geode.internal.InternalStatisticsDisabledException;
+import org.apache.geode.internal.Version;
+import org.apache.geode.internal.cache.DistributedRegion.DiskPosition;
+import org.apache.geode.internal.cache.InitialImageOperation.Entry;
+import org.apache.geode.internal.cache.eviction.EvictableEntry;
+import org.apache.geode.internal.cache.eviction.EvictionController;
+import org.apache.geode.internal.cache.eviction.EvictionList;
+import org.apache.geode.internal.cache.eviction.EvictionNode;
+import org.apache.geode.internal.cache.eviction.EvictionStatistics;
+import org.apache.geode.internal.cache.persistence.DiskRecoveryStore;
+import org.apache.geode.internal.cache.versions.VersionSource;
+import org.apache.geode.internal.cache.versions.VersionStamp;
+import org.apache.geode.internal.cache.versions.VersionTag;
+import org.apache.geode.test.junit.categories.IntegrationTest;
 
 /**
  * This is a test verifies region is LIFO enabled by MEMORY verifies correct stats updating and
  * faultin is not evicting another entry - not strict LIFO
- * 
+ *
  * @since GemFire 5.7
  */
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
@@ -49,7 +61,7 @@ public class LIFOEvictionAlgoMemoryEnabledRegionJUnitTest {
   private static Cache cache = null;
 
   /** Stores LIFO Related Statistics */
-  private static LRUStatistics lifoStats = null;
+  private static EvictionStatistics lifoStats = null;
 
   /** The distributedSystem instance */
   private static DistributedSystem distributedSystem = null;
@@ -64,7 +76,7 @@ public class LIFOEvictionAlgoMemoryEnabledRegionJUnitTest {
 
   private int deltaSize = 20738;
 
-  private static NewLRUClockHand lifoClockHand = null;
+  private static EvictionList lifoClockHand = null;
 
 
   @Before
@@ -84,8 +96,6 @@ public class LIFOEvictionAlgoMemoryEnabledRegionJUnitTest {
 
   /**
    * Method for intializing the VM and create region with LIFO attached
-   * 
-   * @throws Exception
    */
   private static void initializeVM() throws Exception {
     Properties props = new Properties();
@@ -117,20 +127,17 @@ public class LIFOEvictionAlgoMemoryEnabledRegionJUnitTest {
 
     /* setting LIFO MEMORY related eviction attributes */
 
-    factory.setEvictionAttributes(EvictionAttributesImpl
-        .createLIFOMemoryAttributes(maximumMegabytes, EvictionAction.OVERFLOW_TO_DISK));
+    factory.setEvictionAttributes(EvictionAttributes.createLIFOMemoryAttributes(maximumMegabytes,
+        EvictionAction.OVERFLOW_TO_DISK));
     RegionAttributes attr = factory.create();
 
     ((GemFireCacheImpl) cache).createRegion(regionName, attr);
-    /*
-     * NewLIFOClockHand extends NewLRUClockHand to hold on to the list reference
-     */
     lifoClockHand =
         ((VMLRURegionMap) ((LocalRegion) cache.getRegion(Region.SEPARATOR + regionName)).entries)
-            ._getLruList();
+            .getEvictionList();
 
     /* storing stats reference */
-    lifoStats = lifoClockHand.stats();
+    lifoStats = lifoClockHand.getStatistics();
 
   }
 
@@ -294,16 +301,16 @@ public class LIFOEvictionAlgoMemoryEnabledRegionJUnitTest {
       lifoClockHand.appendEntry(new TestLRUNode(3));
       assertTrue(lifoClockHand.size() == 3);
       // make sure data is removed in LIFO fashion
-      TestLRUNode tailValue = (TestLRUNode) lifoClockHand.getLRUEntry();
-      assertTrue("Value = " + tailValue.getValue(), tailValue.getValue() == 3);
+      TestLRUNode tailValue = (TestLRUNode) lifoClockHand.getEvictableEntry();
+      assertTrue("Value = " + tailValue.getValue(), tailValue.value == 3);
       assertTrue("LIFO Queue Size = " + lifoClockHand.size(), lifoClockHand.size() == 2);
-      tailValue = (TestLRUNode) lifoClockHand.getLRUEntry();
-      assertTrue("Value = " + tailValue.getValue(), tailValue.getValue() == 2);
+      tailValue = (TestLRUNode) lifoClockHand.getEvictableEntry();
+      assertTrue("Value = " + tailValue.getValue(), tailValue.value == 2);
       assertTrue("LIFO Queue Size = " + lifoClockHand.size(), lifoClockHand.size() == 1);
-      tailValue = (TestLRUNode) lifoClockHand.getLRUEntry();
-      assertTrue("Value = " + tailValue.getValue(), tailValue.getValue() == 1);
+      tailValue = (TestLRUNode) lifoClockHand.getEvictableEntry();
+      assertTrue("Value = " + tailValue.getValue(), tailValue.value == 1);
       assertTrue("LIFO Queue Size = " + lifoClockHand.size(), lifoClockHand.size() == 0);
-      tailValue = (TestLRUNode) lifoClockHand.getLRUEntry();
+      tailValue = (TestLRUNode) lifoClockHand.getEvictableEntry();
       assertTrue("No Value - null", tailValue == null);
       assertTrue("LIFO Queue Size = " + lifoClockHand.size(), lifoClockHand.size() == 0);
       // check that entries not available or already evicted are skipped and removed
@@ -315,10 +322,10 @@ public class LIFOEvictionAlgoMemoryEnabledRegionJUnitTest {
       testlrunode = new TestLRUNode(3);
       testlrunode.setEvicted();
       lifoClockHand.appendEntry(testlrunode);
-      tailValue = (TestLRUNode) lifoClockHand.getLRUEntry();
-      assertTrue("Value = " + tailValue.getValue(), tailValue.getValue() == 1);
+      tailValue = (TestLRUNode) lifoClockHand.getEvictableEntry();
+      assertTrue("Value = " + tailValue.getValue(), tailValue.value == 1);
       assertTrue("LIFO Queue Size = " + lifoClockHand.size(), lifoClockHand.size() == 0);
-      tailValue = (TestLRUNode) lifoClockHand.getLRUEntry();
+      tailValue = (TestLRUNode) lifoClockHand.getEvictableEntry();
       assertTrue("No Value - null", tailValue == null);
       assertTrue("LIFO Queue Size = " + lifoClockHand.size(), lifoClockHand.size() == 0);
       // TODO : need tests for data still part of transaction
@@ -328,83 +335,413 @@ public class LIFOEvictionAlgoMemoryEnabledRegionJUnitTest {
     }
   }
 
-
   // purpose to create object ,size of byteArraySize
   private Object newDummyObject(long i) {
     byte[] value = new byte[byteArraySize];
     Arrays.fill(value, (byte) i);
     return value;
   }
+
+  // test class for validating LIFO queue
+  static class TestLRUNode implements EvictableEntry {
+
+    EvictionNode next = null;
+    EvictionNode prev = null;
+    boolean evicted = false;
+    boolean recentlyUsed = false;
+    int value = 0;
+
+    public TestLRUNode(int value) {
+      this.value = value;
+    }
+
+    @Override
+    public Token getValueAsToken() {
+      return null;
+    }
+
+    @Override
+    public void setValueWithTombstoneCheck(final Object value, final EntryEvent event)
+        throws RegionClearedException {
+
+    }
+
+    @Override
+    public Object getTransformedValue() {
+      return null;
+    }
+
+    @Override
+    public Object getValueInVM(final RegionEntryContext context) {
+      return null;
+    }
+
+    @Override
+    public Object getValueOnDisk(final InternalRegion region) throws EntryNotFoundException {
+      return null;
+    }
+
+    @Override
+    public Object getValueOnDiskOrBuffer(final InternalRegion region)
+        throws EntryNotFoundException {
+      return null;
+    }
+
+    @Override
+    public boolean initialImagePut(final InternalRegion region, final long lastModified,
+        final Object newValue, final boolean wasRecovered, final boolean acceptedVersionTag)
+        throws RegionClearedException {
+      return false;
+    }
+
+    @Override
+    public boolean initialImageInit(final InternalRegion region, final long lastModified,
+        final Object newValue, final boolean create, final boolean wasRecovered,
+        final boolean acceptedVersionTag) throws RegionClearedException {
+      return false;
+    }
+
+    @Override
+    public boolean destroy(final InternalRegion region, final EntryEventImpl event,
+        final boolean inTokenMode, final boolean cacheWrite, final Object expectedOldValue,
+        final boolean forceDestroy, final boolean removeRecoveredEntry) throws CacheWriterException,
+        EntryNotFoundException, TimeoutException, RegionClearedException {
+      return false;
+    }
+
+    @Override
+    public boolean getValueWasResultOfSearch() {
+      return false;
+    }
+
+    @Override
+    public void setValueResultOfSearch(final boolean value) {
+
+    }
+
+    @Override
+    public Object getSerializedValueOnDisk(final InternalRegion region) {
+      return null;
+    }
+
+    @Override
+    public Object getValueInVMOrDiskWithoutFaultIn(final InternalRegion region) {
+      return null;
+    }
+
+    @Override
+    public Object getValueOffHeapOrDiskWithoutFaultIn(final InternalRegion region) {
+      return null;
+    }
+
+    @Override
+    public boolean isUpdateInProgress() {
+      return false;
+    }
+
+    @Override
+    public void setUpdateInProgress(final boolean underUpdate) {
+
+    }
+
+    @Override
+    public boolean isCacheListenerInvocationInProgress() {
+      return false;
+    }
+
+    @Override
+    public void setCacheListenerInvocationInProgress(final boolean isListenerInvoked) {
+
+    }
+
+    @Override
+    public boolean isValueNull() {
+      return false;
+    }
+
+    @Override
+    public boolean isInvalid() {
+      return false;
+    }
+
+    @Override
+    public boolean isDestroyed() {
+      return false;
+    }
+
+    @Override
+    public boolean isDestroyedOrRemoved() {
+      return false;
+    }
+
+    @Override
+    public boolean isDestroyedOrRemovedButNotTombstone() {
+      return false;
+    }
+
+    @Override
+    public boolean isInvalidOrRemoved() {
+      return false;
+    }
+
+    @Override
+    public void setValueToNull() {
+
+    }
+
+    @Override
+    public void returnToPool() {
+
+    }
+
+    @Override
+    public void setNext(EvictionNode next) {
+      this.next = next;
+    }
+
+    @Override
+    public void setPrevious(EvictionNode previous) {
+      this.prev = previous;
+    }
+
+    @Override
+    public EvictionNode next() {
+      return next;
+    }
+
+    @Override
+    public EvictionNode previous() {
+      return prev;
+    }
+
+    @Override
+    public int updateEntrySize(EvictionController ccHelper) {
+      return 0;
+    }
+
+    @Override
+    public int updateEntrySize(EvictionController ccHelper, Object value) {
+      return 0;
+    }
+
+    @Override
+    public int getEntrySize() {
+      return 0;
+    }
+
+    @Override
+    public boolean isRecentlyUsed() {
+      return recentlyUsed;
+    }
+
+    @Override
+    public void setRecentlyUsed(final RegionEntryContext context) {
+      recentlyUsed = true;
+      context.incRecentlyUsed();
+    }
+
+    @Override
+    public long getLastModified() {
+      return 0;
+    }
+
+    @Override
+    public boolean hasStats() {
+      return false;
+    }
+
+    @Override
+    public long getLastAccessed() throws InternalStatisticsDisabledException {
+      return 0;
+    }
+
+    @Override
+    public long getHitCount() throws InternalStatisticsDisabledException {
+      return 0;
+    }
+
+    @Override
+    public long getMissCount() throws InternalStatisticsDisabledException {
+      return 0;
+    }
+
+    @Override
+    public void updateStatsForPut(final long lastModifiedTime, final long lastAccessedTime) {
+
+    }
+
+    @Override
+    public VersionStamp getVersionStamp() {
+      return null;
+    }
+
+    @Override
+    public VersionTag generateVersionTag(final VersionSource member, final boolean withDelta,
+        final InternalRegion region, final EntryEventImpl event) {
+      return null;
+    }
+
+    @Override
+    public boolean dispatchListenerEvents(final EntryEventImpl event) throws InterruptedException {
+      return false;
+    }
+
+    @Override
+    public void updateStatsForGet(final boolean hit, final long time) {
+
+    }
+
+    @Override
+    public void txDidDestroy(final long currentTime) {
+
+    }
+
+    @Override
+    public void resetCounts() throws InternalStatisticsDisabledException {
+
+    }
+
+    @Override
+    public void makeTombstone(final InternalRegion region, final VersionTag version)
+        throws RegionClearedException {
+
+    }
+
+    @Override
+    public void removePhase1(final InternalRegion region, final boolean clear)
+        throws RegionClearedException {
+
+    }
+
+    @Override
+    public void removePhase2() {
+
+    }
+
+    @Override
+    public boolean isRemoved() {
+      return false;
+    }
+
+    @Override
+    public boolean isRemovedPhase2() {
+      return false;
+    }
+
+    @Override
+    public boolean isTombstone() {
+      return false;
+    }
+
+    @Override
+    public boolean fillInValue(final InternalRegion region, final Entry entry,
+        final ByteArrayDataInput in, final DM distributionManager, final Version version) {
+      return false;
+    }
+
+    @Override
+    public boolean isOverflowedToDisk(final InternalRegion region,
+        final DiskPosition diskPosition) {
+      return false;
+    }
+
+    @Override
+    public Object getKey() {
+      return null;
+    }
+
+    @Override
+    public Object getValue(final RegionEntryContext context) {
+      return null;
+    }
+
+    @Override
+    public Object getValueRetain(final RegionEntryContext context) {
+      return null;
+    }
+
+    @Override
+    public void setValue(final RegionEntryContext context, final Object value)
+        throws RegionClearedException {
+
+    }
+
+    @Override
+    public void setValue(final RegionEntryContext context, final Object value,
+        final EntryEventImpl event) throws RegionClearedException {
+
+    }
+
+    @Override
+    public Object getValueRetain(final RegionEntryContext context, final boolean decompress) {
+      return null;
+    }
+
+    @Override
+    public Object getValue() {
+      return null;
+    }
+
+    @Override
+    public void unsetRecentlyUsed() {
+      recentlyUsed = false;
+    }
+
+    @Override
+    public void setEvicted() {
+      evicted = true;
+    }
+
+    @Override
+    public void unsetEvicted() {
+      evicted = false;
+    }
+
+    @Override
+    public boolean isEvicted() {
+      return evicted;
+    }
+
+    @Override
+    public boolean isInUseByTransaction() {
+      return false;
+    }
+
+    @Override
+    public void incRefCount() {
+
+    }
+
+    @Override
+    public void decRefCount(final EvictionList lruList, final InternalRegion region) {
+
+    }
+
+    @Override
+    public void resetRefCount(final EvictionList lruList) {
+
+    }
+
+    @Override
+    public Object prepareValueForCache(final RegionEntryContext context, final Object value,
+        final boolean isEntryUpdate) {
+      return null;
+    }
+
+    @Override
+    public Object prepareValueForCache(final RegionEntryContext context, final Object value,
+        final EntryEventImpl event, final boolean isEntryUpdate) {
+      return null;
+    }
+
+    @Override
+    public Object getKeyForSizing() {
+      return null;
+    }
+
+    @Override
+    public void setDelayedDiskId(final DiskRecoveryStore diskRecoveryStore) {
+
+    }
+  }
 }
-
-
-// test class for validating LIFO queue
-class TestLRUNode implements LRUClockNode {
-
-  LRUClockNode next = null;
-  LRUClockNode prev = null;
-  boolean evicted = false;
-  boolean recentlyUsed = false;
-  int value = 0;
-
-  public TestLRUNode(int value) {
-    this.value = value;
-  }
-
-  public int getValue() {
-    return value;
-  }
-
-  public void setNextLRUNode(LRUClockNode next) {
-    this.next = next;
-  }
-
-  public void setPrevLRUNode(LRUClockNode prev) {
-    this.prev = prev;
-  }
-
-  public LRUClockNode nextLRUNode() {
-    return next;
-  }
-
-  public LRUClockNode prevLRUNode() {
-    return prev;
-  }
-
-  public int updateEntrySize(EnableLRU ccHelper) {
-    return 0;
-  }
-
-  public int updateEntrySize(EnableLRU ccHelper, Object value) {
-    return 0;
-  }
-
-  public int getEntrySize() {
-    return 0;
-  }
-
-  public boolean testRecentlyUsed() {
-    return recentlyUsed;
-  }
-
-  public void setRecentlyUsed() {
-    recentlyUsed = true;
-  }
-
-  public void unsetRecentlyUsed() {
-    recentlyUsed = false;
-  }
-
-  public void setEvicted() {
-    evicted = true;
-  }
-
-  public void unsetEvicted() {
-    evicted = false;
-  }
-
-  public boolean testEvicted() {
-    return evicted;
-  }
-}
-

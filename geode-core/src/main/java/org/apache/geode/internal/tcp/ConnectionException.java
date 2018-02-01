@@ -18,7 +18,7 @@ import org.apache.geode.GemFireException;
 
 /**
  * @since GemFire 3.0
- * 
+ *
  */
 public class ConnectionException extends GemFireException {
   private static final long serialVersionUID = -1977443644277412122L;

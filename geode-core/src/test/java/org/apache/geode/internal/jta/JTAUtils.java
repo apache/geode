@@ -24,25 +24,14 @@ package org.apache.geode.internal.jta;
  *
  */
 
-// import java.io.*;
-import java.util.*;
-// import java.net.*;
-import org.apache.geode.cache.*;
-// import org.apache.geode.distributed.*;
-// import org.apache.geode.util.concurrent.locks.*;
-// import java.util.Hashtable;
-// import javax.naming.InitialContext;
-import javax.naming.Context;
 import java.sql.*;
-import javax.sql.*;
-// import javax.transaction.*;
-// import java.lang.Exception.*;
-// import java.lang.RuntimeException;
-// import java.sql.SQLException.*;
+import java.util.*;
+
+import javax.naming.Context;
 import javax.naming.NamingException;
-// import javax.naming.NoInitialContextException;
-// import javax.transaction.SystemException;
-// import org.apache.geode.internal.jta.CacheUtils;
+import javax.sql.*;
+
+import org.apache.geode.cache.*;
 
 public class JTAUtils {
 
@@ -143,7 +132,7 @@ public class JTAUtils {
   /**
    * Gets the value of the key entry into the current region. Returns the value and prints the pair
    * with help of printEntry() to stdout
-   * 
+   *
    * @see Region#put Modified to return string value
    */
 
@@ -345,5 +334,3 @@ public class JTAUtils {
 
 
 } // end of class
-
-

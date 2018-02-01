@@ -18,11 +18,11 @@ import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
 
-import org.apache.geode.distributed.internal.DistributionManager;
+import org.apache.geode.distributed.internal.DM;
 
 /**
  * Admin request to transfer region info for a member
- * 
+ *
  */
 public class RegionSubRegionSizeRequest extends AdminRequest implements Cancellable {
   public RegionSubRegionSizeRequest() {
@@ -38,7 +38,7 @@ public class RegionSubRegionSizeRequest extends AdminRequest implements Cancella
   }
 
   @Override
-  protected AdminResponse createResponse(DistributionManager dm) {
+  protected AdminResponse createResponse(DM dm) {
     CancellationRegistry.getInstance().registerMessage(this);
 
     resp = RegionSubRegionsSizeResponse.create(dm, this.getSender());

@@ -18,20 +18,22 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Random;
 import java.util.concurrent.TimeUnit;
 
 public class GfshScript {
   private final String[] commands;
   private String name;
   private TimeUnit timeoutTimeUnit = TimeUnit.MINUTES;
-  private int timeout = 1;
+  private int timeout = 2;
   private boolean awaitQuietly = false;
   private int expectedExitValue = 0;
   private List<String> extendedClasspath = new ArrayList<>();
+  private Random random = new Random();
 
   public GfshScript(String... commands) {
     this.commands = commands;
-    this.name = defaultName(commands);
+    this.name = defaultName();
   }
 
   /**
@@ -61,7 +63,7 @@ public class GfshScript {
    * Will cause the thread that executes {@link GfshScript#awaitIfNecessary} to wait, if necessary,
    * until the subprocess executing this Gfsh script has terminated, or the specified waiting time
    * elapses.
-   * 
+   *
    * @throws RuntimeException if the current thread is interrupted while waiting.
    * @throws AssertionError if the specified waiting time elapses before the process exits.
    */
@@ -103,32 +105,44 @@ public class GfshScript {
     return gfshRule.execute(this);
   }
 
-  protected void awaitIfNecessary(Process process) {
+  protected void awaitIfNecessary(GfshExecution gfshExecution) {
     if (shouldAwaitQuietly()) {
-      awaitQuietly(process);
+      awaitQuietly(gfshExecution);
     } else if (shouldAwaitLoudly()) {
-      awaitLoudly(process);
+      awaitLoudly(gfshExecution);
     }
 
-    assertThat(process.exitValue()).isEqualTo(expectedExitValue);
+    try {
+      assertThat(gfshExecution.getProcess().exitValue()).isEqualTo(expectedExitValue);
+    } catch (AssertionError e) {
+      gfshExecution.printLogFiles();
+      throw e;
+    }
+
   }
 
-  private void awaitQuietly(Process process) {
+  private void awaitQuietly(GfshExecution gfshExecution) {
     try {
-      process.waitFor(timeout, timeoutTimeUnit);
+      gfshExecution.getProcess().waitFor(timeout, timeoutTimeUnit);
     } catch (InterruptedException ignore) {
       // ignore since we are waiting *quietly*
     }
   }
 
-  private void awaitLoudly(Process process) {
+  private void awaitLoudly(GfshExecution gfshExecution) {
     boolean exited;
     try {
-      exited = process.waitFor(timeout, timeoutTimeUnit);
+      exited = gfshExecution.getProcess().waitFor(timeout, timeoutTimeUnit);
     } catch (InterruptedException e) {
       throw new RuntimeException(e);
     }
-    assertThat(exited).isTrue();
+
+    try {
+      assertThat(exited).isTrue();
+    } catch (AssertionError e) {
+      gfshExecution.printLogFiles();
+      throw e;
+    }
   }
 
   private boolean shouldAwait() {
@@ -151,11 +165,10 @@ public class GfshScript {
     return name;
   }
 
-  private String defaultName(String... commands) {
-    try {
-      return commands[0].substring(0, commands[0].indexOf("-")).trim();
-    } catch (Exception handled) {
-      return commands[0];
-    }
+  private String defaultName() {
+    return Long.toHexString(random.nextLong());
   }
+
+
+
 }

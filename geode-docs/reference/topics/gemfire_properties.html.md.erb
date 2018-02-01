@@ -572,6 +572,13 @@ Any security-related (properties that begin with <code class="ph codeph">securit
 <td><em>not set</em></td>
 </tr>
 <tr class="even">
+<td>serializable-object-filter</td>
+<td>A semicolon-separated list of items that become full class names of objects that the system will serialize when the property validate-serializable-objects is set to true. The list is expanded using the patterns specified in the <code>createFilter</code> method at
+<a href="https://docs.oracle.com/javase/9/docs/api/java/io/ObjectInputFilter.Config.html">https://docs.oracle.com/javase/9/docs/api/java/io/ObjectInputFilter.Config.html</a>.</td>
+<td>S, C</td>
+<td>"!*"</td>
+</tr>
+<tr class="even">
 <td>server-bind-address</td>
 <td>Relevant only for multi-homed hosts - machines with multiple network interface cards. Network adapter card a <%=vars.product_name%> server binds to for client/server communication. You can use this to separate the server’s client/server communication from its peer-to-peer communication, spreading the traffic load.
 <p>This is a machine-wide attribute used for communication with clients in client/server and multi-site installations. This setting has no effect on locator configuration.</p>
@@ -752,6 +759,12 @@ See <a href="../../developing/distributed_regions/how_region_versioning_works.ht
 <td>A comma separated list of Java packages that contain classes implementing the <code class="ph codeph">CommandMarker</code> interface. Matching classes will be loaded when the VM starts and will be available in the GFSH command-line utility.</td>
 <td>S</td>
 <td><em>not set</em></td>
+</tr>
+<tr class="even">
+<td>validate-serializable-objects</td>
+<td>A boolean that defaults to false. When true, instances of classes that are not internal to <%=vars.product_name%> and whose class name is not allowed by the list defined in the serializable-object-filter property will not be permitted to be deserialized. An <code>IncompatibleClassException</code> is thrown for objects not listed. JDK 8 build 121 or a later build must be installed to use this property. Servers and clients that do not meet this requirement will throw an exception upon startup.</td>
+<td>S, C</td>
+<td>false</td>
 </tr>
 </tbody>
 </table>

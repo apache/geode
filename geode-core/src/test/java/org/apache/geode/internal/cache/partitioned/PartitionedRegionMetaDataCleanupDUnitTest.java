@@ -14,14 +14,10 @@
  */
 package org.apache.geode.internal.cache.partitioned;
 
-import org.junit.experimental.categories.Category;
-import org.junit.Test;
-
 import static org.junit.Assert.*;
 
-import org.apache.geode.test.dunit.cache.internal.JUnit4CacheTestCase;
-import org.apache.geode.test.dunit.internal.JUnit4DistributedTestCase;
-import org.apache.geode.test.junit.categories.DistributedTest;
+import org.junit.Test;
+import org.junit.experimental.categories.Category;
 
 import org.apache.geode.cache.ExpirationAttributes;
 import org.apache.geode.cache.RegionFactory;
@@ -29,12 +25,15 @@ import org.apache.geode.cache.RegionShortcut;
 import org.apache.geode.cache30.CacheTestCase;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.test.dunit.Assert;
-import org.apache.geode.test.dunit.IgnoredException;
 import org.apache.geode.test.dunit.Host;
+import org.apache.geode.test.dunit.IgnoredException;
 import org.apache.geode.test.dunit.RMIException;
 import org.apache.geode.test.dunit.SerializableRunnable;
 import org.apache.geode.test.dunit.VM;
 import org.apache.geode.test.dunit.Wait;
+import org.apache.geode.test.dunit.cache.internal.JUnit4CacheTestCase;
+import org.apache.geode.test.dunit.internal.JUnit4DistributedTestCase;
+import org.apache.geode.test.junit.categories.DistributedTest;
 
 /**
  *
@@ -162,7 +161,7 @@ public class PartitionedRegionMetaDataCleanupDUnitTest extends JUnit4CacheTestCa
   /**
    * Try to create the region with the given attributes. This will try 20 times to create the region
    * until the region can be successfully created without an illegal state exception.
-   * 
+   *
    * This is a workaround for bug 47125, because the metadata cleanup happens asynchronously.
    */
   private void waitForCreate(VM vm0, final String regionName, final int expirationTime) {

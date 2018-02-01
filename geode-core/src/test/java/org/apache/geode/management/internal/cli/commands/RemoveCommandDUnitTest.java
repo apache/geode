@@ -14,8 +14,7 @@
  */
 package org.apache.geode.management.internal.cli.commands;
 
-import static org.apache.geode.management.internal.cli.commands.DataCommandsUtils.getRegionAssociatedMembers;
-import static org.apache.geode.management.internal.cli.commands.RemoveCommand.*;
+import static org.apache.geode.management.internal.cli.commands.RemoveCommand.REGION_NOT_FOUND;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import java.io.Serializable;
@@ -35,11 +34,12 @@ import org.apache.geode.cache.Region;
 import org.apache.geode.cache.RegionShortcut;
 import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.internal.cache.InternalCache;
+import org.apache.geode.management.internal.cli.CliUtil;
 import org.apache.geode.test.dunit.SerializableCallableIF;
-import org.apache.geode.test.dunit.rules.LocatorServerStartupRule;
+import org.apache.geode.test.dunit.rules.ClusterStartupRule;
 import org.apache.geode.test.dunit.rules.MemberVM;
 import org.apache.geode.test.junit.categories.DistributedTest;
-import org.apache.geode.test.junit.rules.GfshShellConnectionRule;
+import org.apache.geode.test.junit.rules.GfshCommandRule;
 
 @Category(DistributedTest.class)
 public class RemoveCommandDUnitTest implements Serializable {
@@ -48,10 +48,10 @@ public class RemoveCommandDUnitTest implements Serializable {
   private static final String EMPTY_STRING = "";
 
   @Rule
-  public LocatorServerStartupRule locatorServerStartupRule = new LocatorServerStartupRule();
+  public ClusterStartupRule clusterStartupRule = new ClusterStartupRule();
 
   @Rule
-  public transient GfshShellConnectionRule gfsh = new GfshShellConnectionRule();
+  public transient GfshCommandRule gfsh = new GfshCommandRule();
 
   private transient MemberVM locator;
   private transient MemberVM server1;
@@ -59,10 +59,10 @@ public class RemoveCommandDUnitTest implements Serializable {
 
   @Before
   public void setup() throws Exception {
-    locator = locatorServerStartupRule.startLocatorVM(0);
+    locator = clusterStartupRule.startLocatorVM(0);
 
-    server1 = locatorServerStartupRule.startServerVM(1, locator.getPort());
-    server2 = locatorServerStartupRule.startServerVM(2, locator.getPort());
+    server1 = clusterStartupRule.startServerVM(1, locator.getPort());
+    server2 = clusterStartupRule.startServerVM(2, locator.getPort());
 
     server1.invoke(this::populateTestRegions);
     server2.invoke(this::populateTestRegions);
@@ -94,28 +94,23 @@ public class RemoveCommandDUnitTest implements Serializable {
   public void removeFromInvalidRegion() throws Exception {
     String command = "remove --all --region=NotAValidRegion";
 
-    gfsh.executeAndVerifyCommandError(command);
-    assertThat(gfsh.getGfshOutput()).contains(String.format(REGION_NOT_FOUND, "NotAValidRegion"));
+    gfsh.executeAndAssertThat(command).statusIsError()
+        .containsOutput(String.format(REGION_NOT_FOUND, "/NotAValidRegion"));
   }
 
   @Test
   public void removeWithNoKeyOrAllSpecified() throws Exception {
     String command = "remove --region=" + REPLICATE_REGION_NAME;
 
-    gfsh.executeAndVerifyCommandError(command);
-    assertThat(gfsh.getGfshOutput()).contains("Key is Null");
+    gfsh.executeAndAssertThat(command).statusIsError().containsOutput("Key is Null");
   }
 
   @Test
   public void removeKeyFromReplicateRegion() {
     String command = "remove --key=key1 --region=" + REPLICATE_REGION_NAME;
 
-    gfsh.executeAndVerifyCommand(command);
-
-    String output = gfsh.getGfshOutput();
-    assertThat(output).containsPattern("Result\\s+:\\s+true");
-    assertThat(output).containsPattern("Key Class\\s+:\\s+java.lang.String");
-    assertThat(output).containsPattern("Key\\s+:\\s+key1");
+    gfsh.executeAndAssertThat(command).statusIsSuccess().containsKeyValuePair("Result", "true")
+        .containsKeyValuePair("Key Class", "java.lang.String").containsKeyValuePair("Key", "key1");
 
     server1.invoke(() -> verifyKeyIsRemoved(REPLICATE_REGION_NAME, "key1"));
     server2.invoke(() -> verifyKeyIsRemoved(REPLICATE_REGION_NAME, "key1"));
@@ -128,7 +123,7 @@ public class RemoveCommandDUnitTest implements Serializable {
   public void removeKeyFromPartitionedRegion() {
     String command = "remove --key=key1 --region=" + PARTITIONED_REGION_NAME;
 
-    gfsh.executeAndVerifyCommand(command);
+    gfsh.executeAndAssertThat(command).statusIsSuccess();
 
     String output = gfsh.getGfshOutput();
     assertThat(output).containsPattern("Result\\s+:\\s+true");
@@ -146,8 +141,8 @@ public class RemoveCommandDUnitTest implements Serializable {
   public void removeAllFromReplicateRegion() {
     String command = "remove --all --region=" + REPLICATE_REGION_NAME;
 
-    gfsh.executeAndVerifyCommand("list regions");
-    gfsh.executeAndVerifyCommand(command);
+    gfsh.executeAndAssertThat("list regions").statusIsSuccess();
+    gfsh.executeAndAssertThat(command).statusIsSuccess();
 
     assertThat(gfsh.getGfshOutput()).contains("Cleared all keys in the region");
 
@@ -161,7 +156,7 @@ public class RemoveCommandDUnitTest implements Serializable {
     String command = "remove --all --region=" + PARTITIONED_REGION_NAME;
 
     // Maybe this should return an "error" status, but the current behavior is status "OK"
-    gfsh.executeAndVerifyCommand(command);
+    gfsh.executeAndAssertThat(command).statusIsSuccess();
 
     assertThat(gfsh.getGfshOutput())
         .contains("Option --all is not supported on partitioned region");
@@ -176,14 +171,14 @@ public class RemoveCommandDUnitTest implements Serializable {
     server2.invoke(() -> verifyKeyIsPresent(REPLICATE_REGION_NAME, EMPTY_STRING));
 
     String command = "remove --key=\"\" --region=" + REPLICATE_REGION_NAME;
-    gfsh.executeAndVerifyCommand(command);
+    gfsh.executeAndAssertThat(command).statusIsSuccess();
 
     server1.invoke(() -> verifyKeyIsRemoved(REPLICATE_REGION_NAME, EMPTY_STRING));
     server2.invoke(() -> verifyKeyIsRemoved(REPLICATE_REGION_NAME, EMPTY_STRING));
   }
 
   private boolean regionMBeansAreInitialized() {
-    Set<DistributedMember> members = getRegionAssociatedMembers(REPLICATE_REGION_NAME,
+    Set<DistributedMember> members = CliUtil.getRegionAssociatedMembers(REPLICATE_REGION_NAME,
         (InternalCache) CacheFactory.getAnyInstance(), false);
 
     return CollectionUtils.isNotEmpty(members);

@@ -38,7 +38,7 @@ import org.apache.geode.internal.logging.LogService;
 
 /**
  * Executes Function with FunctionService#onRegion(Region region) in client server mode.
- * 
+ *
  * @see FunctionService#onRegion(Region) *
  * @since GemFire 5.8 LA
  */

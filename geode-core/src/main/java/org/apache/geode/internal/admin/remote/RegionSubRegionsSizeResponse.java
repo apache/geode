@@ -26,7 +26,7 @@ import org.apache.geode.admin.RegionSubRegionSnapshot;
 import org.apache.geode.cache.CacheFactory;
 import org.apache.geode.cache.Region;
 import org.apache.geode.distributed.DistributedSystem;
-import org.apache.geode.distributed.internal.DistributionManager;
+import org.apache.geode.distributed.internal.DM;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.logging.LogService;
@@ -54,8 +54,7 @@ public class RegionSubRegionsSizeResponse extends AdminResponse implements Cance
    * Returns a {@code RegionSubRegionsSizeResponse} that will be returned to the specified
    * recipient. The message will contains a copy of the region snapshot
    */
-  public static RegionSubRegionsSizeResponse create(DistributionManager dm,
-      InternalDistributedMember recipient) {
+  public static RegionSubRegionsSizeResponse create(DM dm, InternalDistributedMember recipient) {
     RegionSubRegionsSizeResponse m = new RegionSubRegionsSizeResponse();
     m.setRecipient(recipient);
     m.snapshot = null;
@@ -64,7 +63,7 @@ public class RegionSubRegionsSizeResponse extends AdminResponse implements Cance
     return m;
   }
 
-  void populateSnapshot(DistributionManager dm) {
+  void populateSnapshot(DM dm) {
     if (this.cancelled) {
       return;
     }
@@ -94,7 +93,7 @@ public class RegionSubRegionsSizeResponse extends AdminResponse implements Cance
   /**
    * Populates the collection of sub-region snapshots for the parentSnapShot with snapshots for the
    * regions given.
-   * 
+   *
    * @param parentSnapShot RegionSubRegionSnapshot of a parent region
    * @param regions collection of sub-regions of the region represented by parentSnapShot
    * @param cache cache instance is used for to get the LogWriter instance to log exceptions if any

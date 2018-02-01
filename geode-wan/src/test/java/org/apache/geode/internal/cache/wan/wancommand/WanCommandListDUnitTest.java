@@ -15,8 +15,10 @@
 package org.apache.geode.internal.cache.wan.wancommand;
 
 import static org.apache.geode.distributed.ConfigurationProperties.DISTRIBUTED_SYSTEM_ID;
-import static org.apache.geode.distributed.ConfigurationProperties.LOCATORS;
-import static org.apache.geode.distributed.ConfigurationProperties.MCAST_PORT;
+import static org.apache.geode.distributed.ConfigurationProperties.GROUPS;
+import static org.apache.geode.distributed.ConfigurationProperties.REMOTE_LOCATORS;
+import static org.apache.geode.internal.cache.wan.wancommand.WANCommandUtils.createAndStartReceiver;
+import static org.apache.geode.internal.cache.wan.wancommand.WANCommandUtils.createSender;
 import static org.apache.geode.test.dunit.Assert.assertEquals;
 import static org.apache.geode.test.dunit.Assert.assertTrue;
 import static org.apache.geode.test.dunit.Assert.fail;
@@ -26,44 +28,69 @@ import static org.apache.geode.test.dunit.Wait.pause;
 import java.util.List;
 import java.util.Properties;
 
+import org.junit.Before;
+import org.junit.Rule;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
 import org.apache.geode.management.cli.Result;
 import org.apache.geode.management.internal.cli.i18n.CliStrings;
-import org.apache.geode.management.internal.cli.json.GfJsonException;
 import org.apache.geode.management.internal.cli.result.CommandResult;
 import org.apache.geode.management.internal.cli.result.CompositeResultData;
 import org.apache.geode.management.internal.cli.result.TabularResultData;
+import org.apache.geode.test.dunit.rules.ClusterStartupRule;
+import org.apache.geode.test.dunit.rules.MemberVM;
 import org.apache.geode.test.junit.categories.DistributedTest;
+import org.apache.geode.test.junit.rules.GfshCommandRule;
 
 @Category(DistributedTest.class)
-public class WanCommandListDUnitTest extends WANCommandTestBase {
+public class WanCommandListDUnitTest {
 
   private static final long serialVersionUID = 1L;
 
+  @Rule
+  public ClusterStartupRule clusterStartupRule = new ClusterStartupRule();
+
+  @Rule
+  public GfshCommandRule gfsh = new GfshCommandRule();
+
+  private MemberVM locatorSite1;
+  private MemberVM locatorSite2;
+  private MemberVM server1;
+  private MemberVM server2;
+  private MemberVM server3;
+  private MemberVM server4;
+  private MemberVM server5;
+
+  @Before
+  public void before() throws Exception {
+    Properties props = new Properties();
+
+    props.setProperty(DISTRIBUTED_SYSTEM_ID, "" + 1);
+    locatorSite1 = clusterStartupRule.startLocatorVM(1, props);
+
+    props.setProperty(DISTRIBUTED_SYSTEM_ID, "" + 2);
+    props.setProperty(REMOTE_LOCATORS, "localhost[" + locatorSite1.getPort() + "]");
+    locatorSite2 = clusterStartupRule.startLocatorVM(2, props);
+
+    gfsh.connectAndVerify(locatorSite1);
+
+  }
+
   @Test
-  public void testListGatewayWithNoSenderReceiver() {
+  public void testListGatewayWithNoSenderReceiver() throws Exception {
+    Integer lnPort = locatorSite1.getPort();
 
-    Integer dsIdPort = vm1.invoke(() -> createFirstLocatorWithDSId(1));
-
-    Properties props = getDistributedSystemProperties();
-    props.setProperty(MCAST_PORT, "0");
-    props.setProperty(DISTRIBUTED_SYSTEM_ID, "1");
-    props.setProperty(LOCATORS, "localhost[" + dsIdPort + "]");
-    setUpJmxManagerOnVm0ThenConnect(props);
-
-    Integer nyPort = vm2.invoke(() -> createFirstRemoteLocator(2, dsIdPort));
-
-    vm3.invoke(() -> createCache(dsIdPort));
-    vm4.invoke(() -> createCache(dsIdPort));
-    vm5.invoke(() -> createCache(dsIdPort));
+    // setup servers in Site #1 (London)
+    server1 = clusterStartupRule.startServerVM(3, lnPort);
+    server2 = clusterStartupRule.startServerVM(4, lnPort);
+    server3 = clusterStartupRule.startServerVM(5, lnPort);
 
     pause(10000);
     String command = CliStrings.LIST_GATEWAY;
-    CommandResult cmdResult = executeCommand(command);
+    CommandResult cmdResult = gfsh.executeCommand(command);
     if (cmdResult != null) {
-      String strCmdResult = commandResultToString(cmdResult);
+      String strCmdResult = cmdResult.toString();
       getLogWriter().info("testListGatewaySender : : " + strCmdResult);
       assertEquals(Result.Status.ERROR, cmdResult.getStatus());
     } else {
@@ -72,37 +99,37 @@ public class WanCommandListDUnitTest extends WANCommandTestBase {
   }
 
   @Test
-  public void testListGatewaySender() {
+  public void testListGatewaySender() throws Exception {
+    Integer lnPort = locatorSite1.getPort();
+    Integer nyPort = locatorSite2.getPort();
 
-    Integer dsIdPort = vm1.invoke(() -> createFirstLocatorWithDSId(1));
+    // setup servers in Site #1 (London)
+    server1 = clusterStartupRule.startServerVM(3, lnPort);
+    server2 = clusterStartupRule.startServerVM(4, lnPort);
+    server3 = clusterStartupRule.startServerVM(5, lnPort);
 
-    Properties props = getDistributedSystemProperties();
-    props.setProperty(MCAST_PORT, "0");
-    props.setProperty(DISTRIBUTED_SYSTEM_ID, "1");
-    props.setProperty(LOCATORS, "localhost[" + dsIdPort + "]");
-    setUpJmxManagerOnVm0ThenConnect(props);
+    // servers in Site 2 (New York)
+    server4 = clusterStartupRule.startServerVM(6, nyPort);
+    server5 = clusterStartupRule.startServerVM(7, nyPort);
 
-    Integer nyPort = vm2.invoke(() -> createFirstRemoteLocator(2, dsIdPort));
+    // Site 2 Receivers
+    server4.invoke(() -> createAndStartReceiver(nyPort));
+    server5.invoke(() -> createAndStartReceiver(nyPort));
 
-    vm6.invoke(() -> createAndStartReceiver(nyPort));
-    vm7.invoke(() -> createAndStartReceiver(nyPort));
+    // Site 1 Senders
+    server1.invoke(() -> createSender("ln_Serial", 2, false, 100, 400, false, false, null, false));
+    server1.invoke(() -> createSender("ln_Parallel", 2, true, 100, 400, false, false, null, false));
 
-    vm3.invoke(() -> createCache(dsIdPort));
-    vm3.invoke(() -> createSender("ln_Serial", 2, false, 100, 400, false, false, null, false));
-    vm3.invoke(() -> createSender("ln_Parallel", 2, true, 100, 400, false, false, null, false));
+    server2.invoke(() -> createSender("ln_Parallel", 2, true, 100, 400, false, false, null, false));
+    server2.invoke(() -> createSender("ln_Serial", 2, false, 100, 400, false, false, null, false));
 
-    vm4.invoke(() -> createCache(dsIdPort));
-    vm4.invoke(() -> createSender("ln_Parallel", 2, true, 100, 400, false, false, null, false));
-    vm4.invoke(() -> createSender("ln_Serial", 2, false, 100, 400, false, false, null, false));
-
-    vm5.invoke(() -> createCache(dsIdPort));
-    vm5.invoke(() -> createSender("ln_Serial", 2, false, 100, 400, false, false, null, false));
+    server3.invoke(() -> createSender("ln_Serial", 2, false, 100, 400, false, false, null, false));
 
     pause(10000);
     String command = CliStrings.LIST_GATEWAY;
-    CommandResult cmdResult = executeCommand(command);
+    CommandResult cmdResult = gfsh.executeCommand(command);
     if (cmdResult != null) {
-      String strCmdResult = commandResultToString(cmdResult);
+      String strCmdResult = cmdResult.toString();
       getLogWriter().info("testListGatewaySender" + strCmdResult);
       assertEquals(Result.Status.OK, cmdResult.getStatus());
 
@@ -123,32 +150,30 @@ public class WanCommandListDUnitTest extends WANCommandTestBase {
   }
 
   @Test
-  public void testListGatewayReceiver() {
+  public void testListGatewayReceiver() throws Exception {
+    Integer lnPort = locatorSite1.getPort();
+    Integer nyPort = locatorSite2.getPort();
 
-    Integer lnPort = vm1.invoke(() -> createFirstLocatorWithDSId(1));
+    // setup servers in Site #1 (London)
+    server1 = clusterStartupRule.startServerVM(3, lnPort);
+    server2 = clusterStartupRule.startServerVM(4, lnPort);
 
-    Properties props = getDistributedSystemProperties();
-    props.setProperty(MCAST_PORT, "0");
-    props.setProperty(DISTRIBUTED_SYSTEM_ID, "1");
-    props.setProperty(LOCATORS, "localhost[" + lnPort + "]");
-    setUpJmxManagerOnVm0ThenConnect(props);
+    // servers in Site 2 (New York)
+    server3 = clusterStartupRule.startServerVM(5, nyPort);
+    server4 = clusterStartupRule.startServerVM(6, nyPort);
 
-    Integer nyPort = vm2.invoke(() -> createFirstRemoteLocator(2, lnPort));
+    server1.invoke(() -> createAndStartReceiver(lnPort));
+    server2.invoke(() -> createAndStartReceiver(lnPort));
 
-    vm3.invoke(() -> createAndStartReceiver(lnPort));
-    vm4.invoke(() -> createAndStartReceiver(lnPort));
-
-    vm5.invoke(() -> createCache(nyPort));
-    vm5.invoke(() -> createSender("ln_Serial", 1, false, 100, 400, false, false, null, false));
-    vm6.invoke(() -> createCache(nyPort));
-    vm6.invoke(() -> createSender("ln_Serial", 1, false, 100, 400, false, false, null, false));
-    vm6.invoke(() -> createSender("ln_Parallel", 1, true, 100, 400, false, false, null, false));
+    server3.invoke(() -> createSender("ln_Serial", 1, false, 100, 400, false, false, null, false));
+    server4.invoke(() -> createSender("ln_Serial", 1, false, 100, 400, false, false, null, false));
+    server4.invoke(() -> createSender("ln_Parallel", 1, true, 100, 400, false, false, null, false));
 
     pause(10000);
     String command = CliStrings.LIST_GATEWAY;
-    CommandResult cmdResult = executeCommand(command);
+    CommandResult cmdResult = gfsh.executeCommand(command);
     if (cmdResult != null) {
-      String strCmdResult = commandResultToString(cmdResult);
+      String strCmdResult = cmdResult.toString();
       getLogWriter().info("testListGatewayReceiver" + strCmdResult);
       assertEquals(Result.Status.OK, cmdResult.getStatus());
 
@@ -162,48 +187,44 @@ public class WanCommandListDUnitTest extends WANCommandTestBase {
 
       assertEquals(null, ((CompositeResultData) cmdResult.getResultData())
           .retrieveSection(CliStrings.SECTION_GATEWAY_SENDER));
-
-
     } else {
       fail("testListGatewayReceiver failed as did not get CommandResult");
     }
   }
 
   @Test
-  public void testListGatewaySenderGatewayReceiver() throws GfJsonException {
+  public void testListGatewaySenderGatewayReceiver() throws Exception {
+    Integer lnPort = locatorSite1.getPort();
+    Integer nyPort = locatorSite2.getPort();
 
-    Integer lnPort = vm1.invoke(() -> createFirstLocatorWithDSId(1));
+    // setup servers in Site #1 (London)
+    server1 = clusterStartupRule.startServerVM(3, lnPort);
+    server2 = clusterStartupRule.startServerVM(4, lnPort);
+    server3 = clusterStartupRule.startServerVM(5, lnPort);
 
-    Properties props = getDistributedSystemProperties();
-    props.setProperty(MCAST_PORT, "0");
-    props.setProperty(DISTRIBUTED_SYSTEM_ID, "1");
-    props.setProperty(LOCATORS, "localhost[" + lnPort + "]");
-    setUpJmxManagerOnVm0ThenConnect(props);
+    // servers in Site 2 (New York)
+    server4 = clusterStartupRule.startServerVM(6, nyPort);
+    server5 = clusterStartupRule.startServerVM(7, nyPort);
 
-    Integer nyPort = vm2.invoke(() -> createFirstRemoteLocator(2, lnPort));
+    server4.invoke(() -> createAndStartReceiver(nyPort));
 
-    vm6.invoke(() -> createAndStartReceiver(nyPort));
+    server1.invoke(() -> createSender("ln_Serial", 2, false, 100, 400, false, false, null, false));
+    server1.invoke(() -> createSender("ln_Parallel", 2, true, 100, 400, false, false, null, false));
 
-    vm3.invoke(() -> createCache(lnPort));
-    vm3.invoke(() -> createSender("ln_Serial", 2, false, 100, 400, false, false, null, false));
-    vm3.invoke(() -> createSender("ln_Parallel", 2, true, 100, 400, false, false, null, false));
+    server2.invoke(() -> createSender("ln_Parallel", 2, true, 100, 400, false, false, null, false));
+    server2.invoke(() -> createSender("ln_Serial", 2, false, 100, 400, false, false, null, false));
 
-    vm4.invoke(() -> createCache(lnPort));
-    vm4.invoke(() -> createSender("ln_Parallel", 2, true, 100, 400, false, false, null, false));
-    vm4.invoke(() -> createSender("ln_Serial", 2, false, 100, 400, false, false, null, false));
+    server3.invoke(() -> createAndStartReceiver(lnPort));
 
-    vm5.invoke(() -> createAndStartReceiver(lnPort));
-
-    vm7.invoke(() -> createCache(nyPort));
-    vm7.invoke(() -> createSender("ln_Serial", 1, false, 100, 400, false, false, null, false));
-    vm7.invoke(() -> createSender("ln_Parallel", 1, true, 100, 400, false, false, null, false));
+    server5.invoke(() -> createSender("ln_Serial", 1, false, 100, 400, false, false, null, false));
+    server5.invoke(() -> createSender("ln_Parallel", 1, true, 100, 400, false, false, null, false));
 
     pause(10000);
     String command = CliStrings.LIST_GATEWAY;
-    CommandResult cmdResult = executeCommand(command);
+    CommandResult cmdResult = gfsh.executeCommand(command);
 
     if (cmdResult != null) {
-      String strCmdResult = commandResultToString(cmdResult);
+      String strCmdResult = cmdResult.toString();
       getLogWriter().info("testListGatewaySenderGatewayReceiver : " + strCmdResult);
       assertEquals(Result.Status.OK, cmdResult.getStatus());
 
@@ -230,41 +251,39 @@ public class WanCommandListDUnitTest extends WANCommandTestBase {
   }
 
   @Test
-  public void testListGatewaySenderGatewayReceiver_group() {
+  public void testListGatewaySenderGatewayReceiver_group() throws Exception {
 
-    Integer lnPort = vm1.invoke(() -> createFirstLocatorWithDSId(1));
+    Integer lnPort = locatorSite1.getPort();
+    Integer nyPort = locatorSite2.getPort();
 
-    Properties props = getDistributedSystemProperties();
-    props.setProperty(MCAST_PORT, "0");
-    props.setProperty(DISTRIBUTED_SYSTEM_ID, "1");
-    props.setProperty(LOCATORS, "localhost[" + lnPort + "]");
-    setUpJmxManagerOnVm0ThenConnect(props);
+    // setup servers in Site #1 (London)
+    server1 = startServerWithGroups(3, "Serial_Sender, Parallel_Sender", lnPort);
+    server2 = startServerWithGroups(4, "Serial_Sender, Parallel_Sender", lnPort);
+    server3 = startServerWithGroups(5, "Parallel_Sender, Receiver_Group", lnPort);
 
-    Integer nyPort = vm2.invoke(() -> createFirstRemoteLocator(2, lnPort));
+    // server in Site 2 (New York)
+    server4 = clusterStartupRule.startServerVM(6, nyPort);
+    server5 = clusterStartupRule.startServerVM(7, nyPort);
 
-    vm6.invoke(() -> createAndStartReceiver(nyPort));
+    server4.invoke(() -> createAndStartReceiver(nyPort));
 
-    vm3.invoke(() -> createCacheWithGroups(lnPort, "Serial_Sender, Parallel_Sender"));
-    vm3.invoke(() -> createSender("ln_Serial", 2, false, 100, 400, false, false, null, false));
-    vm3.invoke(() -> createSender("ln_Parallel", 2, true, 100, 400, false, false, null, false));
+    server1.invoke(() -> createSender("ln_Serial", 2, false, 100, 400, false, false, null, false));
+    server1.invoke(() -> createSender("ln_Parallel", 2, true, 100, 400, false, false, null, false));
 
-    vm4.invoke(() -> createCacheWithGroups(lnPort, "Serial_Sender, Parallel_Sender"));
-    vm4.invoke(() -> createSender("ln_Parallel", 2, true, 100, 400, false, false, null, false));
-    vm4.invoke(() -> createSender("ln_Serial", 2, false, 100, 400, false, false, null, false));
+    server2.invoke(() -> createSender("ln_Parallel", 2, true, 100, 400, false, false, null, false));
+    server2.invoke(() -> createSender("ln_Serial", 2, false, 100, 400, false, false, null, false));
 
-    vm5.invoke(() -> createAndStartReceiverWithGroup(lnPort, "Parallel_Sender,Receiver_Group"));
-    vm5.invoke(() -> createSender("ln_Parallel", 2, true, 100, 400, false, false, null, false));
+    server3.invoke(() -> createAndStartReceiver(lnPort));
+    server3.invoke(() -> createSender("ln_Parallel", 2, true, 100, 400, false, false, null, false));
 
-
-    vm7.invoke(() -> createCache(nyPort));
-    vm7.invoke(() -> createSender("ln_Serial", 1, false, 100, 400, false, false, null, false));
-    vm7.invoke(() -> createSender("ln_Parallel", 1, true, 100, 400, false, false, null, false));
+    server5.invoke(() -> createSender("ln_Serial", 1, false, 100, 400, false, false, null, false));
+    server5.invoke(() -> createSender("ln_Parallel", 1, true, 100, 400, false, false, null, false));
 
     pause(10000);
     String command = CliStrings.LIST_GATEWAY + " --" + CliStrings.GROUP + "=Serial_Sender";
-    CommandResult cmdResult = executeCommand(command);
+    CommandResult cmdResult = gfsh.executeCommand(command);
     if (cmdResult != null) {
-      String strCmdResult = commandResultToString(cmdResult);
+      String strCmdResult = cmdResult.toString();
       getLogWriter().info("testListGatewaySenderGatewayReceiver_group : " + strCmdResult);
       assertEquals(Result.Status.OK, cmdResult.getStatus());
 
@@ -282,7 +301,7 @@ public class WanCommandListDUnitTest extends WANCommandTestBase {
     }
 
     command = CliStrings.LIST_GATEWAY + " --" + CliStrings.GROUP + "=Parallel_Sender";
-    cmdResult = executeCommand(command);
+    cmdResult = gfsh.executeCommand(command);
     if (cmdResult != null) {
       TabularResultData tableSenderResultData = ((CompositeResultData) cmdResult.getResultData())
           .retrieveSection(CliStrings.SECTION_GATEWAY_SENDER)
@@ -297,7 +316,7 @@ public class WanCommandListDUnitTest extends WANCommandTestBase {
       List<String> ports = tableReceiverResultData.retrieveAllValues(CliStrings.RESULT_PORT);
       assertEquals(1, ports.size());
 
-      String strCmdResult = commandResultToString(cmdResult);
+      String strCmdResult = cmdResult.toString();
       getLogWriter().info("testListGatewaySenderGatewayReceiver_group : " + strCmdResult);
       assertEquals(Result.Status.OK, cmdResult.getStatus());
     } else {
@@ -305,9 +324,9 @@ public class WanCommandListDUnitTest extends WANCommandTestBase {
     }
 
     command = CliStrings.LIST_GATEWAY + " --" + CliStrings.GROUP + "=Receiver_Group";
-    cmdResult = executeCommand(command);
+    cmdResult = gfsh.executeCommand(command);
     if (cmdResult != null) {
-      String strCmdResult = commandResultToString(cmdResult);
+      String strCmdResult = cmdResult.toString();
       getLogWriter().info("testListGatewaySenderGatewayReceiver_group : " + strCmdResult);
       assertEquals(Result.Status.OK, cmdResult.getStatus());
 
@@ -329,9 +348,9 @@ public class WanCommandListDUnitTest extends WANCommandTestBase {
     }
 
     command = CliStrings.LIST_GATEWAY + " --" + CliStrings.GROUP + "=Serial_Sender,Parallel_Sender";
-    cmdResult = executeCommand(command);
+    cmdResult = gfsh.executeCommand(command);
     if (cmdResult != null) {
-      String strCmdResult = commandResultToString(cmdResult);
+      String strCmdResult = cmdResult.toString();
       getLogWriter().info("testListGatewaySenderGatewayReceiver_group : " + strCmdResult);
       assertEquals(Result.Status.OK, cmdResult.getStatus());
 
@@ -353,9 +372,9 @@ public class WanCommandListDUnitTest extends WANCommandTestBase {
 
     command = CliStrings.LIST_GATEWAY + " --" + CliStrings.GROUP
         + "=Serial_Sender,Parallel_Sender,Receiver_Group";
-    cmdResult = executeCommand(command);
+    cmdResult = gfsh.executeCommand(command);
     if (cmdResult != null) {
-      String strCmdResult = commandResultToString(cmdResult);
+      String strCmdResult = cmdResult.toString();
       getLogWriter().info("testListGatewaySenderGatewayReceiver_group : " + strCmdResult);
       assertEquals(Result.Status.OK, cmdResult.getStatus());
 
@@ -375,6 +394,11 @@ public class WanCommandListDUnitTest extends WANCommandTestBase {
     } else {
       fail("testListGatewaySenderGatewayReceiver_group failed as did not get CommandResult");
     }
+  }
 
+  private MemberVM startServerWithGroups(int index, String groups, int locPort) throws Exception {
+    Properties props = new Properties();
+    props.setProperty(GROUPS, groups);
+    return clusterStartupRule.startServerVM(index, props, locPort);
   }
 }

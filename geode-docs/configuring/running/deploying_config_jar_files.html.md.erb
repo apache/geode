@@ -43,10 +43,8 @@ myConfig/myCache.xml
 
 In this example, you would perform the following steps to deploy the configuration jar file:
 
-1.  Set the system property, `gemfire.cache-xml-file`, to `myConfig/myCache.xml`
+1.  Set the system property `gemfire.cache-xml-file` to `myConfig/myCache.xml`.
 2.  Set your `CLASSPATH` to include `my.jar`.
-3.  Verify there is no file named `myCache.xml` in `./myConfig/myCache.xml`, the current directory location of the file
+3.  Verify there is no file already  in the filesystem named `./myConfig/myCache.xml`, so <%=vars.product_name%> will be forced to search the jar file to find it.
 
 When you start your application, the configuration file is loaded from the jar file.
-
-
