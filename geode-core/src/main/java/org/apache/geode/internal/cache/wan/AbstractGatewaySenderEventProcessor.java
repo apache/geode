@@ -71,8 +71,6 @@ public abstract class AbstractGatewaySenderEventProcessor extends Thread {
 
   private static final Logger logger = LogService.getLogger();
 
-  public static boolean TEST_HOOK = false;
-
   protected RegionQueue queue;
 
   protected GatewaySenderEventDispatcher dispatcher;
@@ -133,6 +131,9 @@ public abstract class AbstractGatewaySenderEventProcessor extends Thread {
 
   private volatile boolean resetLastPeekedEvents;
 
+  /**
+   * Cumulative count of events dispatched by this event processor.
+   */
   private long numEventsDispatched;
 
   /**
@@ -640,9 +641,8 @@ public abstract class AbstractGatewaySenderEventProcessor extends Thread {
             for (GatewaySenderEventImpl pdxGatewaySenderEvent : pdxEventsToBeDispatched) {
               pdxGatewaySenderEvent.isDispatched = true;
             }
-            if (TEST_HOOK) {
-              this.numEventsDispatched += conflatedEventsToBeDispatched.size();
-            }
+
+            increaseNumEventsDispatched(conflatedEventsToBeDispatched.size());
           } // successful batch
           else { // The batch was unsuccessful.
             if (this.dispatcher instanceof GatewaySenderEventCallbackDispatcher) {
@@ -1255,8 +1255,13 @@ public abstract class AbstractGatewaySenderEventProcessor extends Thread {
     }
   }
 
+
   public long getNumEventsDispatched() {
     return numEventsDispatched;
+  }
+
+  public void increaseNumEventsDispatched(long newEventsDispatched) {
+    this.numEventsDispatched += newEventsDispatched;
   }
 
   public void clear(PartitionedRegion pr, int bucketId) {
