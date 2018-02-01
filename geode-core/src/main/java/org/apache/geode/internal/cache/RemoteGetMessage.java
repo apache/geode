@@ -171,7 +171,7 @@ public class RemoteGetMessage extends RemoteOperationMessageWithDirectReply {
     RemoteGetResponse p = new RemoteGetResponse(r.getSystem(), recipient);
     RemoteGetMessage m = new RemoteGetMessage(recipient, r.getFullPath(), p, key, aCallbackArgument,
         requestingClient);
-    Set failures = r.getDistributionManager().putOutgoing(m);
+    Set<?> failures = r.getDistributionManager().putOutgoing(m);
     if (failures != null && failures.size() > 0) {
       throw new RemoteOperationException(
           LocalizedStrings.GetMessage_FAILED_SENDING_0.toLocalizedString(m));

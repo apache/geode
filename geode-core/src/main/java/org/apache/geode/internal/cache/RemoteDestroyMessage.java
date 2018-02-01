@@ -216,6 +216,7 @@ public class RemoteDestroyMessage extends RemoteOperationMessageWithDirectReply
   }
 
 
+  @SuppressWarnings("unchecked")
   public static boolean distribute(EntryEventImpl event, Object expectedOldValue,
       boolean onlyPersistent) {
     boolean successful = false;
@@ -239,7 +240,7 @@ public class RemoteDestroyMessage extends RemoteOperationMessageWithDirectReply
         RemoteDestroyReplyProcessor processor =
             send(replicate, event.getRegion(), event, expectedOldValue, false, posDup);
         processor.waitForRemoteResponse();
-        VersionTag versionTag = processor.getVersionTag();
+        VersionTag<?> versionTag = processor.getVersionTag();
         if (versionTag != null) {
           event.setVersionTag(versionTag);
           if (event.getRegion().getVersionVector() != null) {
@@ -283,7 +284,6 @@ public class RemoteDestroyMessage extends RemoteOperationMessageWithDirectReply
    * @param recipient the recipient of the message
    * @param r the ReplicateRegion for which the destroy was performed
    * @param event the event causing this message
-   * @param useOriginRemote TODO
    * @return the processor used to await the potential {@link org.apache.geode.cache.CacheException}
    */
   public static RemoteDestroyReplyProcessor send(DistributedMember recipient, LocalRegion r,
@@ -388,7 +388,7 @@ public class RemoteDestroyMessage extends RemoteOperationMessageWithDirectReply
     return R_DESTROY_MESSAGE;
   }
 
-  private void sendReply(DistributionManager dm, VersionTag versionTag) {
+  private void sendReply(DistributionManager dm, VersionTag<?> versionTag) {
     DestroyReplyMessage.send(this.getSender(), getReplySender(dm), this.processorId, versionTag);
   }
 
@@ -553,19 +553,19 @@ public class RemoteDestroyMessage extends RemoteOperationMessageWithDirectReply
     private static final byte HAS_VERSION = 0x01;
     private static final byte PERSISTENT = 0x02;
 
-    private VersionTag versionTag;
+    private VersionTag<?> versionTag;
 
     /** DSFIDFactory constructor */
     public DestroyReplyMessage() {}
 
     static void send(InternalDistributedMember recipient, ReplySender dm, int procId,
-        VersionTag versionTag) {
+        VersionTag<?> versionTag) {
       Assert.assertTrue(recipient != null, "DestroyReplyMessage NULL recipient");
       DestroyReplyMessage m = new DestroyReplyMessage(recipient, procId, versionTag);
       dm.putOutgoing(m);
     }
 
-    DestroyReplyMessage(InternalDistributedMember recipient, int procId, VersionTag versionTag) {
+    DestroyReplyMessage(InternalDistributedMember recipient, int procId, VersionTag<?> versionTag) {
       this.setProcessorId(procId);
       this.setRecipient(recipient);
       this.versionTag = versionTag;
@@ -658,18 +658,18 @@ public class RemoteDestroyMessage extends RemoteOperationMessageWithDirectReply
 
   }
   static class RemoteDestroyReplyProcessor extends RemoteOperationResponse {
-    VersionTag versionTag;
+    VersionTag<?> versionTag;
 
     RemoteDestroyReplyProcessor(InternalDistributedSystem ds, DistributedMember recipient,
         Object key) {
       super(ds, (InternalDistributedMember) recipient, false);
     }
 
-    void setResponse(VersionTag versionTag) {
+    void setResponse(VersionTag<?> versionTag) {
       this.versionTag = versionTag;
     }
 
-    VersionTag getVersionTag() {
+    VersionTag<?> getVersionTag() {
       return this.versionTag;
     }
   }

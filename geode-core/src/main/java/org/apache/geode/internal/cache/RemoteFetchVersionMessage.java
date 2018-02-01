@@ -105,7 +105,7 @@ public class RemoteFetchVersionMessage extends RemoteOperationMessage {
   protected boolean operateOnRegion(ClusterDistributionManager dm, LocalRegion r, long startTime)
       throws RemoteOperationException {
     r.waitOnInitialization();
-    VersionTag tag;
+    VersionTag<?> tag;
     try {
       RegionEntry re = r.getRegionEntry(key);
       if (re == null) {
@@ -132,17 +132,17 @@ public class RemoteFetchVersionMessage extends RemoteOperationMessage {
    *
    */
   public static class FetchVersionReplyMessage extends ReplyMessage {
-    private VersionTag tag;
+    private VersionTag<?> tag;
 
     /** for deserialization */
     public FetchVersionReplyMessage() {}
 
-    private FetchVersionReplyMessage(int processorId, VersionTag tag) {
+    private FetchVersionReplyMessage(int processorId, VersionTag<?> tag) {
       setProcessorId(processorId);
       this.tag = tag;
     }
 
-    public static void send(InternalDistributedMember recipient, int processorId, VersionTag tag,
+    public static void send(InternalDistributedMember recipient, int processorId, VersionTag<?> tag,
         DistributionManager dm) {
       FetchVersionReplyMessage reply = new FetchVersionReplyMessage(processorId, tag);
       reply.setRecipient(recipient);
@@ -198,7 +198,7 @@ public class RemoteFetchVersionMessage extends RemoteOperationMessage {
    */
   public static class FetchVersionResponse extends RemoteOperationResponse {
 
-    private volatile VersionTag tag;
+    private volatile VersionTag<?> tag;
 
     public FetchVersionResponse(InternalDistributedSystem dm, InternalDistributedMember member) {
       super(dm, member, true);
@@ -219,7 +219,7 @@ public class RemoteFetchVersionMessage extends RemoteOperationMessage {
       }
     }
 
-    public VersionTag waitForResponse() throws RemoteOperationException {
+    public VersionTag<?> waitForResponse() throws RemoteOperationException {
       try {
         waitForRemoteResponse();
       } catch (RemoteOperationException e) {

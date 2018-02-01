@@ -121,8 +121,8 @@ public class RemoteRemoveAllMessage extends RemoteOperationMessageWithDirectRepl
         VersionedObjectList result = response.getResponse();
 
         // Set successful version tags in RemoveAllEntryData.
-        List successfulKeys = result.getKeys();
-        List<VersionTag> versions = result.getVersionTags();
+        List<Object> successfulKeys = result.getKeys();
+        List<VersionTag<?>> versions = result.getVersionTags();
         for (RemoveAllEntryData removeAllEntry : data) {
           Object key = removeAllEntry.getKey();
           if (successfulKeys.contains(key)) {

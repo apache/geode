@@ -23,7 +23,6 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.Iterator;
 import java.util.Set;
 
 import org.apache.logging.log4j.Logger;
@@ -145,7 +144,7 @@ public class RemotePutMessage extends RemoteOperationMessageWithDirectReply
    */
   private Object expectedOldValue;
 
-  private VersionTag versionTag;
+  private VersionTag<?> versionTag;
 
   private transient InternalDistributedSystem internalDs;
 
@@ -252,18 +251,19 @@ public class RemotePutMessage extends RemoteOperationMessageWithDirectReply
    * @param onlyPersistent send message to persistent members only
    * @return whether the message was successfully distributed to another member
    */
+  @SuppressWarnings("unchecked")
   public static boolean distribute(EntryEventImpl event, long lastModified, boolean ifNew,
       boolean ifOld, Object expectedOldValue, boolean requireOldValue, boolean onlyPersistent) {
     boolean successful = false;
     DistributedRegion r = (DistributedRegion) event.getRegion();
-    Collection replicates = onlyPersistent
+    Collection<InternalDistributedMember> replicates = onlyPersistent
         ? r.getCacheDistributionAdvisor().adviseInitializedPersistentMembers().keySet()
         : r.getCacheDistributionAdvisor().adviseInitializedReplicates();
     if (replicates.isEmpty()) {
       return false;
     }
     if (replicates.size() > 1) {
-      ArrayList l = new ArrayList(replicates);
+      ArrayList<InternalDistributedMember> l = new ArrayList<>(replicates);
       Collections.shuffle(l);
       replicates = l;
     }
@@ -271,8 +271,7 @@ public class RemotePutMessage extends RemoteOperationMessageWithDirectReply
     if (logger.isDebugEnabled()) {
       logger.debug("performing remote put messaging for {}", event);
     }
-    for (Iterator<InternalDistributedMember> it = replicates.iterator(); it.hasNext();) {
-      InternalDistributedMember replicate = it.next();
+    for (InternalDistributedMember replicate : replicates) {
       try {
         attempts++;
         final boolean posDup = (attempts > 1);
@@ -315,7 +314,6 @@ public class RemotePutMessage extends RemoteOperationMessageWithDirectReply
 
   @Override
   protected Object clone() throws CloneNotSupportedException {
-    // TODO Auto-generated method stub
     return super.clone();
   }
 
@@ -349,7 +347,6 @@ public class RemotePutMessage extends RemoteOperationMessageWithDirectReply
    * @param ifNew whether a new entry must be created
    * @param ifOld whether an old entry must be updated (no creates)
    * @param useOriginRemote whether the receiver should consider the event local or remote
-   * @param possibleDuplicate TODO
    * @return the processor used to await acknowledgement that the update was sent, or null to
    *         indicate that no acknowledgement will be sent
    * @throws RemoteOperationException if the peer is no longer available
@@ -369,7 +366,7 @@ public class RemotePutMessage extends RemoteOperationMessageWithDirectReply
 
     processor.setRemotePutMessage(m);
 
-    Set failures = r.getDistributionManager().putOutgoing(m);
+    Set<?> failures = r.getDistributionManager().putOutgoing(m);
     if (failures != null && failures.size() > 0) {
       throw new RemoteOperationException(
           LocalizedStrings.RemotePutMessage_FAILED_SENDING_0.toLocalizedString(m));
@@ -737,7 +734,7 @@ public class RemotePutMessage extends RemoteOperationMessageWithDirectReply
     /**
      * version tag for concurrency control
      */
-    VersionTag versionTag;
+    VersionTag<?> versionTag;
 
     @Override
     public boolean getInlineProcess() {
@@ -751,7 +748,7 @@ public class RemotePutMessage extends RemoteOperationMessageWithDirectReply
 
     // unit tests may call this constructor
     PutReplyMessage(int processorId, boolean result, Operation op, ReplyException ex,
-        Object oldValue, VersionTag versionTag) {
+        Object oldValue, VersionTag<?> versionTag) {
       super();
       this.op = op;
       this.result = result;
@@ -930,7 +927,7 @@ public class RemotePutMessage extends RemoteOperationMessageWithDirectReply
     private volatile Operation op;
     private volatile Object oldValue;
     private RemotePutMessage putMessage;
-    private VersionTag versionTag;
+    private VersionTag<?> versionTag;
 
     public RemotePutResponse(InternalDistributedSystem ds, DistributedMember recipient,
         boolean register) {
@@ -979,10 +976,10 @@ public class RemotePutMessage extends RemoteOperationMessageWithDirectReply
     public Object oldValue;
 
     /** the concurrency control version tag */
-    public VersionTag versionTag;
+    public VersionTag<?> versionTag;
 
     public PutResult(boolean flag, Operation actualOperation, Object oldValue,
-        VersionTag versionTag) {
+        VersionTag<?> versionTag) {
       this.returnValue = flag;
       this.op = actualOperation;
       this.oldValue = oldValue;

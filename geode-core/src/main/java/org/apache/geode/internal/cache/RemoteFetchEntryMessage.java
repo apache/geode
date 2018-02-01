@@ -17,14 +17,12 @@ package org.apache.geode.internal.cache;
 import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
-import java.util.Collections;
 import java.util.Set;
 
 import org.apache.logging.log4j.Logger;
 
 import org.apache.geode.DataSerializable;
 import org.apache.geode.DataSerializer;
-import org.apache.geode.admin.OperationCancelledException;
 import org.apache.geode.cache.EntryNotFoundException;
 import org.apache.geode.cache.Region;
 import org.apache.geode.cache.TransactionException;
@@ -81,7 +79,7 @@ public class RemoteFetchEntryMessage extends RemoteOperationMessage {
     FetchEntryResponse p = new FetchEntryResponse(r.getSystem(), recipient, r, key);
     RemoteFetchEntryMessage m = new RemoteFetchEntryMessage(recipient, r.getFullPath(), p, key);
 
-    Set failures = r.getDistributionManager().putOutgoing(m);
+    Set<?> failures = r.getDistributionManager().putOutgoing(m);
     if (failures != null && failures.size() > 0) {
       throw new RemoteOperationException(
           LocalizedStrings.RemoteFetchEntryMessage_FAILED_SENDING_0.toLocalizedString(m));
@@ -97,7 +95,7 @@ public class RemoteFetchEntryMessage extends RemoteOperationMessage {
     EntrySnapshot val;
     try {
       final KeyInfo keyInfo = r.getKeyInfo(key);
-      Region.Entry re = r.getDataView().getEntry(keyInfo, r, true);
+      Region.Entry<?, ?> re = r.getDataView().getEntry(keyInfo, r, true);
       if (re == null) {
         r.checkEntryNotFound(key);
       }

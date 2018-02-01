@@ -14,8 +14,6 @@
  */
 package org.apache.geode.internal.cache;
 
-import java.util.Set;
-
 import org.apache.geode.distributed.internal.DirectReplyProcessor;
 import org.apache.geode.distributed.internal.DistributionManager;
 import org.apache.geode.distributed.internal.DistributionMessage;

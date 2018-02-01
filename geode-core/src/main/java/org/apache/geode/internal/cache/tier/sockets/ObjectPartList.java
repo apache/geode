@@ -134,7 +134,7 @@ public class ObjectPartList implements DataSerializableFixedID, Releasable {
     this.objects.addAll(other.objects);
   }
 
-  public List getKeys() {
+  public List<Object> getKeys() {
     if (this.keys == null) {
       return Collections.emptyList();
     } else {

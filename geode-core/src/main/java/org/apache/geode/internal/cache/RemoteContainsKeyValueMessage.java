@@ -83,7 +83,7 @@ public class RemoteContainsKeyValueMessage extends RemoteOperationMessageWithDir
     RemoteContainsKeyValueMessage m =
         new RemoteContainsKeyValueMessage(recipient, r.getFullPath(), p, key, valueCheck);
 
-    Set failures = r.getDistributionManager().putOutgoing(m);
+    Set<?> failures = r.getDistributionManager().putOutgoing(m);
     if (failures != null && failures.size() > 0) {
       throw new RemoteOperationException(LocalizedStrings.FAILED_SENDING_0.toLocalizedString(m));
     }

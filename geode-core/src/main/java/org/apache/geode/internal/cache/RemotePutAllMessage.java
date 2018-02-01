@@ -124,8 +124,8 @@ public class RemotePutAllMessage extends RemoteOperationMessageWithDirectReply {
         VersionedObjectList result = response.getResponse();
 
         // Set successful version tags in PutAllEntryData.
-        List successfulKeys = result.getKeys();
-        List<VersionTag> versions = result.getVersionTags();
+        List<Object> successfulKeys = result.getKeys();
+        List<VersionTag<?>> versions = result.getVersionTags();
         for (PutAllEntryData putAllEntry : data) {
           Object key = putAllEntry.getKey();
           if (successfulKeys.contains(key)) {

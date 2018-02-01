@@ -70,6 +70,7 @@ public class RemoteInvalidateMessage extends RemoteDestroyMessage {
     super(recipient, regionPath, processor, event, null, useOriginRemote, possibleDuplicate);
   }
 
+  @SuppressWarnings("unchecked")
   public static boolean distribute(EntryEventImpl event, boolean onlyPersistent) {
     boolean successful = false;
     DistributedRegion r = (DistributedRegion) event.getRegion();
@@ -91,7 +92,7 @@ public class RemoteInvalidateMessage extends RemoteDestroyMessage {
         final boolean posDup = (attempts > 1);
         InvalidateResponse processor = send(replicate, event.getRegion(), event, false, posDup);
         processor.waitForRemoteResponse();
-        VersionTag versionTag = processor.getVersionTag();
+        VersionTag<?> versionTag = processor.getVersionTag();
         if (versionTag != null) {
           event.setVersionTag(versionTag);
           if (event.getRegion().getVersionVector() != null) {
@@ -230,7 +231,7 @@ public class RemoteInvalidateMessage extends RemoteDestroyMessage {
   }
 
   protected void sendReply(InternalDistributedMember member, int procId, DistributionManager dm,
-      ReplyException ex, LocalRegion r, VersionTag versionTag, long startTime) {
+      ReplyException ex, LocalRegion r, VersionTag<?> versionTag, long startTime) {
     InvalidateReplyMessage.send(member, procId, getReplySender(dm), versionTag, ex);
   }
 
@@ -241,7 +242,7 @@ public class RemoteInvalidateMessage extends RemoteDestroyMessage {
 
 
   public static class InvalidateReplyMessage extends ReplyMessage {
-    private VersionTag versionTag;
+    private VersionTag<?> versionTag;
 
     private static final byte HAS_VERSION = 0x01;
     private static final byte PERSISTENT = 0x02;
@@ -251,7 +252,7 @@ public class RemoteInvalidateMessage extends RemoteDestroyMessage {
      */
     public InvalidateReplyMessage() {}
 
-    private InvalidateReplyMessage(int processorId, VersionTag versionTag, ReplyException ex) {
+    private InvalidateReplyMessage(int processorId, VersionTag<?> versionTag, ReplyException ex) {
       super();
       setProcessorId(processorId);
       this.versionTag = versionTag;
@@ -260,7 +261,7 @@ public class RemoteInvalidateMessage extends RemoteDestroyMessage {
 
     /** Send an ack */
     public static void send(InternalDistributedMember recipient, int processorId,
-        ReplySender replySender, VersionTag versionTag, ReplyException ex) {
+        ReplySender replySender, VersionTag<?> versionTag, ReplyException ex) {
       Assert.assertTrue(recipient != null, "InvalidateReplyMessage NULL reply message");
       InvalidateReplyMessage m = new InvalidateReplyMessage(processorId, versionTag, ex);
       m.setRecipient(recipient);
@@ -355,7 +356,7 @@ public class RemoteInvalidateMessage extends RemoteDestroyMessage {
   public static class InvalidateResponse extends RemoteOperationResponse {
     private volatile boolean returnValueReceived;
     final Object key;
-    VersionTag versionTag;
+    VersionTag<?> versionTag;
 
     public InvalidateResponse(InternalDistributedSystem ds, DistributedMember recipient,
         Object key) {
@@ -363,7 +364,7 @@ public class RemoteInvalidateMessage extends RemoteDestroyMessage {
       this.key = key;
     }
 
-    public void setResponse(VersionTag versionTag) {
+    public void setResponse(VersionTag<?> versionTag) {
       this.returnValueReceived = true;
       this.versionTag = versionTag;
     }
@@ -380,7 +381,7 @@ public class RemoteInvalidateMessage extends RemoteDestroyMessage {
       return;
     }
 
-    public VersionTag getVersionTag() {
+    public VersionTag<?> getVersionTag() {
       return this.versionTag;
     }
   }
