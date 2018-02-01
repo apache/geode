@@ -42,8 +42,8 @@ import org.apache.geode.internal.logging.log4j.LogMarker;
 /**
  * This message is used to request a VersionTag from a remote member.
  *
- * DistributedRegions with DataPolicy EMPTY, NORMAL, PRELOADED, can use this message to fetch
- * VersionTag for a key.
+ * DistributedRegions with DataPolicy NORMAL, PRELOADED, use this message to fetch VersionTag for a
+ * key when a tx is in progress (see TXEntryState.fetchRemoteVersionTag).
  *
  * @since GemFire 7.0
  */
@@ -104,9 +104,7 @@ public class RemoteFetchVersionMessage extends RemoteOperationMessage {
   @Override
   protected boolean operateOnRegion(ClusterDistributionManager dm, LocalRegion r, long startTime)
       throws RemoteOperationException {
-    if (!(r instanceof PartitionedRegion)) {
-      r.waitOnInitialization();
-    }
+    r.waitOnInitialization();
     VersionTag tag;
     try {
       RegionEntry re = r.getRegionEntry(key);
