@@ -23,6 +23,7 @@ import org.apache.logging.log4j.Logger;
 
 import org.apache.geode.DataSerializer;
 import org.apache.geode.cache.RegionDestroyedException;
+import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.distributed.internal.ClusterDistributionManager;
 import org.apache.geode.distributed.internal.DistributionManager;
 import org.apache.geode.distributed.internal.DistributionMessage;
@@ -54,22 +55,17 @@ public class RemoteSizeMessage extends RemoteOperationMessage {
   public RemoteSizeMessage() {}
 
   /**
-   * The message sent to a set of {@link InternalDistributedMember}s to calculate the number of
-   * Entries in each of their buckets
+   * The message sent to a member to get the size of their region
    *
-   * @param recipients members to receive the message
+   * @param recipient member to send the message to
    * @param regionPath the path to the region
    * @param processor the reply processor used to wait on the response
    */
-  private RemoteSizeMessage(Set recipients, String regionPath, ReplyProcessor21 processor) {
-    super(recipients, regionPath, processor);
+  private RemoteSizeMessage(DistributedMember recipient, String regionPath,
+      ReplyProcessor21 processor) {
+    super((InternalDistributedMember) recipient, regionPath, processor);
   }
 
-  /**
-   * @param in
-   * @throws ClassNotFoundException
-   * @throws IOException
-   */
   public RemoteSizeMessage(DataInput in) throws IOException, ClassNotFoundException {
     fromData(in);
   }
@@ -77,14 +73,14 @@ public class RemoteSizeMessage extends RemoteOperationMessage {
   /**
    * Sends a message for {@link java.util.Map#size()} ignoring any errors on send
    *
-   * @param recipients the set of members that the size message is sent to
-   * @param r the Region that contains the bucket
+   * @param distributedMember the set of members that the size message is sent to
+   * @param r the Region to get the size of
    * @return the processor used to read the returned size
    */
-  public static SizeResponse send(Set recipients, InternalRegion r) {
-    Assert.assertTrue(recipients != null, "RemoteSizeMessage NULL recipients set");
-    SizeResponse p = new SizeResponse(r.getSystem(), recipients);
-    RemoteSizeMessage m = new RemoteSizeMessage(recipients, r.getFullPath(), p);
+  public static SizeResponse send(DistributedMember distributedMember, InternalRegion r) {
+    Assert.assertTrue(distributedMember != null, "RemoteSizeMessage NULL recipients set");
+    SizeResponse p = new SizeResponse(r.getSystem(), distributedMember);
+    RemoteSizeMessage m = new RemoteSizeMessage(distributedMember, r.getFullPath(), p);
     r.getDistributionManager().putOutgoing(m);
     return p;
   }
@@ -126,7 +122,6 @@ public class RemoteSizeMessage extends RemoteOperationMessage {
   }
 
   public static class SizeReplyMessage extends ReplyMessage {
-    /** Propagated exception from remote node to operation initiator */
     private int size;
 
     /**
@@ -139,11 +134,6 @@ public class RemoteSizeMessage extends RemoteOperationMessage {
       this.size = size;
     }
 
-    /**
-     * @param in
-     * @throws ClassNotFoundException
-     * @throws IOException
-     */
     public SizeReplyMessage(DataInput in) throws IOException, ClassNotFoundException {
       fromData(in);
     }
@@ -223,8 +213,8 @@ public class RemoteSizeMessage extends RemoteOperationMessage {
   public static class SizeResponse extends ReplyProcessor21 {
     private int returnValue;
 
-    public SizeResponse(InternalDistributedSystem ds, Set recipients) {
-      super(ds, recipients);
+    public SizeResponse(InternalDistributedSystem ds, DistributedMember recipient) {
+      super(ds, (InternalDistributedMember) recipient);
     }
 
     @Override

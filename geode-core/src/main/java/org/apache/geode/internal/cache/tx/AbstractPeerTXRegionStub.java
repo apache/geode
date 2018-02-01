@@ -61,7 +61,7 @@ public abstract class AbstractPeerTXRegionStub implements TXRegionStub {
   public int entryCount() {
     try {
       RemoteSizeMessage.SizeResponse response =
-          RemoteSizeMessage.send(Collections.singleton(this.state.getTarget()), getRegion());
+          RemoteSizeMessage.send(this.state.getTarget(), getRegion());
       return response.waitForSize();
     } catch (RegionDestroyedException rde) {
       throw new TransactionDataNotColocatedException(
