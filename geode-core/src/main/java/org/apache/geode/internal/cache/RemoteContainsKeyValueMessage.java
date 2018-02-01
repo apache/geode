@@ -24,7 +24,6 @@ import org.apache.logging.log4j.Logger;
 
 import org.apache.geode.DataSerializer;
 import org.apache.geode.cache.CacheException;
-import org.apache.geode.cache.RegionDestroyedException;
 import org.apache.geode.distributed.internal.ClusterDistributionManager;
 import org.apache.geode.distributed.internal.DirectReplyProcessor;
 import org.apache.geode.distributed.internal.DistributionManager;
@@ -78,11 +77,10 @@ public class RemoteContainsKeyValueMessage extends RemoteOperationMessageWithDir
    */
   public static RemoteContainsKeyValueResponse send(InternalDistributedMember recipient,
       LocalRegion r, Object key, boolean valueCheck) throws RemoteOperationException {
-    Assert.assertTrue(recipient != null,
-        "PRDistribuedRemoteContainsKeyValueMessage NULL reply message");
+    Assert.assertTrue(recipient != null, "recipient can not be NULL");
 
     RemoteContainsKeyValueResponse p =
-        new RemoteContainsKeyValueResponse(r.getSystem(), Collections.singleton(recipient), key);
+        new RemoteContainsKeyValueResponse(r.getSystem(), recipient, key);
     RemoteContainsKeyValueMessage m =
         new RemoteContainsKeyValueMessage(recipient, r.getFullPath(), p, key, valueCheck);
 
@@ -245,9 +243,9 @@ public class RemoteContainsKeyValueMessage extends RemoteOperationMessageWithDir
     private volatile boolean returnValueReceived;
     final Object key;
 
-    public RemoteContainsKeyValueResponse(InternalDistributedSystem ds, Set recipients,
-        Object key) {
-      super(ds, recipients, false);
+    public RemoteContainsKeyValueResponse(InternalDistributedSystem ds,
+        InternalDistributedMember recipient, Object key) {
+      super(ds, recipient, false);
       this.key = key;
     }
 
@@ -271,14 +269,12 @@ public class RemoteContainsKeyValueMessage extends RemoteOperationMessageWithDir
     /**
      * @return Set the keys associated with the ReplicateRegion of the
      *         {@link RemoteContainsKeyValueMessage}
-     * @throws PrimaryBucketException if the instance of the bucket that received this operation was
-     *         not primary
      */
-    public boolean waitForContainsResult() throws PrimaryBucketException, RemoteOperationException {
+    public boolean waitForContainsResult() throws RemoteOperationException {
       try {
         waitForRemoteResponse();
       } catch (CacheException ce) {
-        logger.debug("ContainsKeyValueResponse got remote CacheException; forcing reattempt.", ce);
+        logger.debug("ContainsKeyValueResponse got remote CacheException", ce);
         throw new RemoteOperationException(
             LocalizedStrings.RemoteContainsKeyValueMessage_CONTAINSKEYVALUERESPONSE_GOT_REMOTE_CACHEEXCEPTION
                 .toLocalizedString(),
