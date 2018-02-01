@@ -13,14 +13,13 @@
  * the License.
  */
 
-package org.apache.geode.internal.cache.tx;
-
-import org.apache.geode.internal.cache.DataLocationException;
+package org.apache.geode.internal.cache;
 
 /**
  * Indicates that the current non-partitioned remote operation failed. Note that even though this
  * exception extends DataLocationException it should not have since that exception has to do with
- * data partitioning.
+ * data partitioning. Note: this exception should be in org.apache.geode.internal.cache.tx but for
+ * backwards compatibility needs to stay in org.apache.geode.internal.cache.
  *
  * @since GemFire 6.5
  */

@@ -30,7 +30,6 @@ import org.apache.geode.distributed.internal.ReplyProcessor21;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
 import org.apache.geode.internal.cache.TXRemoteCommitMessage.RemoteCommitResponse;
 import org.apache.geode.internal.cache.TXRemoteCommitMessage.TXRemoteCommitReplyMessage;
-import org.apache.geode.internal.cache.tx.RemoteOperationException;
 import org.apache.geode.internal.logging.LogService;
 
 public class JtaAfterCompletionMessage extends TXMessage {

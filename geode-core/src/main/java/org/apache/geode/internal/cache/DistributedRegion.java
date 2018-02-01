@@ -112,7 +112,6 @@ import org.apache.geode.internal.cache.tx.RemoteDestroyMessage;
 import org.apache.geode.internal.cache.tx.RemoteFetchVersionMessage;
 import org.apache.geode.internal.cache.tx.RemoteFetchVersionMessage.FetchVersionResponse;
 import org.apache.geode.internal.cache.tx.RemoteInvalidateMessage;
-import org.apache.geode.internal.cache.tx.RemoteOperationException;
 import org.apache.geode.internal.cache.tx.RemotePutMessage;
 import org.apache.geode.internal.cache.versions.ConcurrentCacheModificationException;
 import org.apache.geode.internal.cache.versions.RegionVersionVector;
