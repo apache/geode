@@ -110,10 +110,10 @@ import org.apache.geode.internal.cache.tier.sockets.VersionedObjectList;
 import org.apache.geode.internal.cache.tx.RemoteClearMessage;
 import org.apache.geode.internal.cache.tx.RemoteDestroyMessage;
 import org.apache.geode.internal.cache.tx.RemoteFetchVersionMessage;
+import org.apache.geode.internal.cache.tx.RemoteFetchVersionMessage.FetchVersionResponse;
 import org.apache.geode.internal.cache.tx.RemoteInvalidateMessage;
 import org.apache.geode.internal.cache.tx.RemoteOperationException;
 import org.apache.geode.internal.cache.tx.RemotePutMessage;
-import org.apache.geode.internal.cache.tx.RemoteFetchVersionMessage.FetchVersionResponse;
 import org.apache.geode.internal.cache.versions.ConcurrentCacheModificationException;
 import org.apache.geode.internal.cache.versions.RegionVersionVector;
 import org.apache.geode.internal.cache.versions.VersionSource;
@@ -1746,8 +1746,7 @@ public class DistributedRegion extends LocalRegion implements InternalDistribute
    * invalidated
    */
   @Override
-  public
-  void basicInvalidate(EntryEventImpl event) throws EntryNotFoundException {
+  public void basicInvalidate(EntryEventImpl event) throws EntryNotFoundException {
     boolean hasSeen = false;
     if (hasSeenEvent(event)) {
       hasSeen = true;

@@ -379,6 +379,7 @@ import org.apache.geode.internal.cache.tier.sockets.ServerInterestRegistrationMe
 import org.apache.geode.internal.cache.tier.sockets.VersionedObjectList;
 import org.apache.geode.internal.cache.tx.DistTxEntryEvent;
 import org.apache.geode.internal.cache.tx.RemoteClearMessage;
+import org.apache.geode.internal.cache.tx.RemoteClearMessage.RemoteClearReplyMessage;
 import org.apache.geode.internal.cache.tx.RemoteContainsKeyValueMessage;
 import org.apache.geode.internal.cache.tx.RemoteDestroyMessage;
 import org.apache.geode.internal.cache.tx.RemoteFetchEntryMessage;
@@ -390,7 +391,6 @@ import org.apache.geode.internal.cache.tx.RemotePutAllMessage;
 import org.apache.geode.internal.cache.tx.RemotePutMessage;
 import org.apache.geode.internal.cache.tx.RemoteRemoveAllMessage;
 import org.apache.geode.internal.cache.tx.RemoteSizeMessage;
-import org.apache.geode.internal.cache.tx.RemoteClearMessage.RemoteClearReplyMessage;
 import org.apache.geode.internal.cache.versions.DiskRegionVersionVector;
 import org.apache.geode.internal.cache.versions.DiskVersionTag;
 import org.apache.geode.internal.cache.versions.VMRegionVersionVector;

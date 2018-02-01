@@ -69,7 +69,7 @@ public class RemoteFetchKeysMessage extends RemoteOperationMessage {
     if (!(r instanceof PartitionedRegion)) { // prs already wait on initialization
       r.waitOnInitialization(); // bug #43371 - accessing a region before it's initialized
     }
-    Set keys = r.keySet();
+    Set<?> keys = r.keySet();
     try {
       RemoteFetchKeysReplyMessage.send(getSender(), processorId, dm, keys);
     } catch (IOException io) {
@@ -94,8 +94,8 @@ public class RemoteFetchKeysMessage extends RemoteOperationMessage {
    * @return the response
    */
   public static FetchKeysResponse send(LocalRegion currRegion, DistributedMember target) {
-    FetchKeysResponse response = new FetchKeysResponse(currRegion.getSystem(), currRegion,
-        (InternalDistributedMember) target);
+    FetchKeysResponse response =
+        new FetchKeysResponse(currRegion.getSystem(), (InternalDistributedMember) target);
     RemoteFetchKeysMessage msg = new RemoteFetchKeysMessage((InternalDistributedMember) target,
         currRegion.getFullPath(), response);
     currRegion.getSystem().getDistributionManager().putOutgoing(msg);
@@ -150,7 +150,7 @@ public class RemoteFetchKeysMessage extends RemoteOperationMessage {
      * @throws IOException if the peer is no longer available
      */
     public static void send(final InternalDistributedMember recipient, final int processorId,
-        final DistributionManager dm, Set keys) throws IOException {
+        final DistributionManager dm, Set<?> keys) throws IOException {
 
       Assert.assertTrue(recipient != null, "FetchKeysReplyMessage NULL reply message");
 
@@ -197,7 +197,7 @@ public class RemoteFetchKeysMessage extends RemoteOperationMessage {
         int numSeries, boolean lastInSeries) {
       RemoteFetchKeysReplyMessage reply = new RemoteFetchKeysReplyMessage(recipient, processorId,
           chunk, seriesNum, msgNum, numSeries, lastInSeries);
-      Set failures = dm.putOutgoing(reply);
+      Set<?> failures = dm.putOutgoing(reply);
       return (failures == null) || (failures.size() == 0);
     }
 
@@ -209,8 +209,10 @@ public class RemoteFetchKeysMessage extends RemoteOperationMessage {
      *
      * @return true if finished all chunks, false if stopped early
      */
-    static boolean chunkSet(InternalDistributedMember recipient, Set set, int CHUNK_SIZE_IN_BYTES,
-        boolean includeValues, ObjectIntProcedure proc) throws IOException {
+    static boolean chunkSet(InternalDistributedMember recipient, Set<?> set,
+        int CHUNK_SIZE_IN_BYTES, boolean includeValues, ObjectIntProcedure proc)
+        throws IOException {
+      @SuppressWarnings("rawtypes")
       Iterator it = set.iterator();
 
       boolean keepGoing = true;
@@ -331,9 +333,7 @@ public class RemoteFetchKeysMessage extends RemoteOperationMessage {
 
   public static class FetchKeysResponse extends ReplyProcessor21 {
 
-    private final LocalRegion region;
-
-    private final Set returnValue;
+    private final Set<Object> returnValue;
 
     /** lock used to synchronize chunk processing */
     private final Object endLock = new Object();
@@ -347,11 +347,9 @@ public class RemoteFetchKeysMessage extends RemoteOperationMessage {
     private volatile boolean lastChunkReceived;
 
 
-    public FetchKeysResponse(InternalDistributedSystem system, LocalRegion region,
-        InternalDistributedMember member) {
+    public FetchKeysResponse(InternalDistributedSystem system, InternalDistributedMember member) {
       super(system, member);
-      this.region = region;
-      returnValue = new HashSet();
+      returnValue = new HashSet<>();
     }
 
     @Override
@@ -426,6 +424,7 @@ public class RemoteFetchKeysMessage extends RemoteOperationMessage {
       return doneProcessing;
     }
 
+    @SuppressWarnings("rawtypes")
     public Set waitForKeys() {
       try {
         waitForRepliesUninterruptibly();

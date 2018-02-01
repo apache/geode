@@ -873,8 +873,7 @@ public class BucketRegion extends DistributedRegion implements Bucket {
   // 1) apply op locally
   // 2) update local bs, gateway
   @Override
-  public
-  void basicInvalidate(EntryEventImpl event) throws EntryNotFoundException {
+  public void basicInvalidate(EntryEventImpl event) throws EntryNotFoundException {
     basicInvalidate(event, isInitialized(), false);
   }
 

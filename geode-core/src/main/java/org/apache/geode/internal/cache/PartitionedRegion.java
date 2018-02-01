@@ -5620,8 +5620,7 @@ public class PartitionedRegion extends LocalRegion
   }
 
   @Override
-  public
-  void basicInvalidate(EntryEventImpl event) throws EntryNotFoundException {
+  public void basicInvalidate(EntryEventImpl event) throws EntryNotFoundException {
     final long startTime = PartitionedRegionStats.startTime();
     try {
       if (event.getEventId() == null) {
