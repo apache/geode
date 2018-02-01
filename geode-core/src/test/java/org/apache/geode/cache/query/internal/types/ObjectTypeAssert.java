@@ -23,27 +23,14 @@ import org.apache.geode.cache.query.types.ObjectType;
  */
 public class ObjectTypeAssert extends AbstractAssert<ObjectTypeAssert, ObjectType> {
 
-  /**
-   *
-   * @param actual
-   */
   public ObjectTypeAssert(ObjectType actual) {
     super(actual, ObjectTypeAssert.class);
   }
 
-  /**
-   *
-   * @param actual
-   * @return
-   */
   public static ObjectTypeAssert assertThat(ObjectType actual) {
     return new ObjectTypeAssert(actual);
   }
 
-  /**
-   *
-   * @return
-   */
   public ObjectTypeAssert resolves(Class clazz) {
     isNotNull();
     org.assertj.core.api.Assertions.assertThat(actual.resolveClass()).isEqualTo(clazz);
@@ -51,10 +38,6 @@ public class ObjectTypeAssert extends AbstractAssert<ObjectTypeAssert, ObjectTyp
     return this;
   }
 
-  /**
-   *
-   * @return
-   */
   public ObjectTypeAssert isObject() {
     isNotNull();
     isExactlyInstanceOf(ObjectTypeImpl.class);
@@ -62,11 +45,6 @@ public class ObjectTypeAssert extends AbstractAssert<ObjectTypeAssert, ObjectTyp
     return this;
   }
 
-  /**
-   *
-   * @param componentType
-   * @return
-   */
   public ObjectTypeAssert isCollectionOf(Class componentType) {
     isNotNull();
     isExactlyInstanceOf(CollectionTypeImpl.class);
@@ -76,12 +54,6 @@ public class ObjectTypeAssert extends AbstractAssert<ObjectTypeAssert, ObjectTyp
     return this;
   }
 
-  /**
-   *
-   * @param keyType
-   * @param valueType
-   * @return
-   */
   public ObjectTypeAssert isMapOf(Class keyType, Class valueType) {
     isNotNull();
     isExactlyInstanceOf(MapTypeImpl.class);

@@ -370,7 +370,7 @@ public class TypeUtils implements OQLLexerTokenTypes {
    * Class.
    *
    * @param cls
-   * @return
+   * @return the internal ObjectType implementation that represents the specified class.
    */
   public static ObjectType getObjectType(Class cls) {
     if (cls == Object.class) {
@@ -404,7 +404,7 @@ public class TypeUtils implements OQLLexerTokenTypes {
    * Entry.
    *
    * @param rgn
-   * @return
+   * @return the internal ObjectType implementation that represents a the region entry class.
    */
   public static ObjectType getRegionEntryType(Region rgn) {
     // just use an ObjectType for now
@@ -417,7 +417,7 @@ public class TypeUtils implements OQLLexerTokenTypes {
    * @param obj1
    * @param obj2
    * @param compOp
-   * @return
+   * @return a boolean indicating the result of applying the comparison operator on the arguments.
    * @throws TypeMismatchException When either one of the arguments is not a Boolean, or the
    *         comparison operator is not supported.
    */
