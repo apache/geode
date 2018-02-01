@@ -18,13 +18,11 @@ package org.apache.geode.internal.cache;
 import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
-import java.util.Collections;
 import java.util.Set;
 
 import org.apache.logging.log4j.Logger;
 
 import org.apache.geode.DataSerializer;
-import org.apache.geode.cache.TransactionDataNotColocatedException;
 import org.apache.geode.distributed.DistributedSystemDisconnectedException;
 import org.apache.geode.distributed.internal.ClusterDistributionManager;
 import org.apache.geode.distributed.internal.DirectReplyProcessor;
@@ -90,9 +88,7 @@ public class RemoteGetMessage extends RemoteOperationMessageWithDirectReply {
       assert r.getDataView() instanceof TXStateProxy;
     }
 
-    if (!(r instanceof PartitionedRegion)) { // prs already wait on initialization
-      r.waitOnInitialization(); // bug #43371 - accessing a region before it's initialized
-    }
+    r.waitOnInitialization(); // bug #43371 - accessing a region before it's initialized
 
     RawValue valueBytes;
     Object val = null;
@@ -108,11 +104,9 @@ public class RemoteGetMessage extends RemoteOperationMessageWithDirectReply {
             valueBytes, getProcessorId());
       }
 
-      // r.getPrStats().endPartitionMessagesProcessing(startTime);
       GetReplyMessage.send(getSender(), getProcessorId(), valueBytes, getReplySender(dm));
 
-      // Unless there was an exception thrown, this message handles sending the
-      // response
+      // Unless an exception was thrown, this message handles sending the response
       return false;
     } catch (DistributedSystemDisconnectedException sde) {
       sendReply(getSender(), this.processorId, dm,
@@ -121,9 +115,6 @@ public class RemoteGetMessage extends RemoteOperationMessageWithDirectReply {
                   .toLocalizedString(),
               sde)),
           r, startTime);
-      return false;
-    } catch (PrimaryBucketException pbe) {
-      sendReply(getSender(), getProcessorId(), dm, new ReplyException(pbe), r, startTime);
       return false;
     } catch (DataLocationException e) {
       sendReply(getSender(), getProcessorId(), dm, new ReplyException(e), r, startTime);
@@ -176,9 +167,8 @@ public class RemoteGetMessage extends RemoteOperationMessageWithDirectReply {
   public static RemoteGetResponse send(InternalDistributedMember recipient, LocalRegion r,
       final Object key, final Object aCallbackArgument, ClientProxyMembershipID requestingClient)
       throws RemoteOperationException {
-    Assert.assertTrue(recipient != null, "PRDistribuedGetReplyMessage NULL reply message");
-    RemoteGetResponse p =
-        new RemoteGetResponse(r.getSystem(), Collections.singleton(recipient), key);
+    Assert.assertTrue(recipient != null, "RemoteGetMessage NULL recipient");
+    RemoteGetResponse p = new RemoteGetResponse(r.getSystem(), recipient);
     RemoteGetMessage m = new RemoteGetMessage(recipient, r.getFullPath(), p, key, aCallbackArgument,
         requestingClient);
     Set failures = r.getDistributionManager().putOutgoing(m);
@@ -328,11 +318,9 @@ public class RemoteGetMessage extends RemoteOperationMessageWithDirectReply {
     private volatile GetReplyMessage getReply;
     private volatile boolean returnValueReceived;
     private volatile long start;
-    final Object key;
 
-    public RemoteGetResponse(InternalDistributedSystem ds, Set recipients, Object key) {
-      super(ds, recipients, false);
-      this.key = key;
+    public RemoteGetResponse(InternalDistributedSystem ds, InternalDistributedMember recipient) {
+      super(ds, recipient, false);
     }
 
     @Override
