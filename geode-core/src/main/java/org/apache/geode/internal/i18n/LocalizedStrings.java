@@ -1594,8 +1594,6 @@ public class LocalizedStrings {
   public static final StringId ServerConnection_0_HANDSHAKE_ACCEPT_FAILED_ON_SOCKET_1_2 =
       new StringId(1988, "{0}: Handshake accept failed on socket {1}: {2}");
 
-  public static final StringId ServerConnection_0_RECEIVED_UNKNOWN_HANDSHAKE_REPLY_CODE_1 =
-      new StringId(1991, "{0}: Received Unknown handshake reply code: {1}");
   public static final StringId ServerConnection_RECEIVED_UNKNOWN_HANDSHAKE_REPLY_CODE =
       new StringId(1992, "Received Unknown handshake reply code.");
   public static final StringId ServerConnection_0_UNEXPECTED_CANCELLATION =

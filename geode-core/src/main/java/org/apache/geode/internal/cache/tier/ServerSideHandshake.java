@@ -22,23 +22,29 @@ import java.security.Principal;
 
 import org.apache.geode.internal.Version;
 import org.apache.geode.internal.cache.tier.sockets.ClientProxyMembershipID;
+import org.apache.geode.security.AuthenticationFailedException;
+import org.apache.geode.security.AuthenticationRequiredException;
 
 /**
  * <code>ClientHandShake</code> represents a handshake from the client.
  *
- * @since GemFire 5.7
  */
-public interface ClientHandShake {
+public interface ServerSideHandshake {
   boolean isOK();
 
-  byte getCode();
-
-  ClientProxyMembershipID getMembership();
+  ClientProxyMembershipID getMembershipId();
 
   int getClientReadTimeout();
 
   Version getVersion();
 
+  Object verifyCredentials() throws AuthenticationRequiredException, AuthenticationFailedException;
+
+  void setClientReadTimeout(int clientReadTimeout);
+
   void accept(OutputStream out, InputStream in, byte epType, int qSize,
       CommunicationMode communicationMode, Principal principal) throws IOException;
+
+  Encryptor getEncryptor();
+
 }

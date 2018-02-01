@@ -32,7 +32,7 @@ import org.apache.geode.distributed.internal.membership.InternalDistributedMembe
 import org.apache.geode.distributed.internal.membership.NetView;
 import org.apache.geode.distributed.internal.membership.gms.Services;
 import org.apache.geode.distributed.internal.membership.gms.interfaces.Authenticator;
-import org.apache.geode.internal.cache.tier.sockets.HandShake;
+import org.apache.geode.internal.cache.tier.sockets.Handshake;
 import org.apache.geode.internal.i18n.LocalizedStrings;
 import org.apache.geode.internal.logging.InternalLogWriter;
 import org.apache.geode.internal.security.CallbackInstantiator;
@@ -195,7 +195,7 @@ public class GMSAuthenticator implements Authenticator {
    */
   Properties getCredentials(DistributedMember member, Properties secProps) {
     String authMethod = secProps.getProperty(SECURITY_PEER_AUTH_INIT);
-    return HandShake.getCredentials(authMethod, secProps, member, true, services.getLogWriter(),
+    return Handshake.getCredentials(authMethod, secProps, member, true, services.getLogWriter(),
         services.getSecurityLogWriter());
   }
 

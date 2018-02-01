@@ -21,6 +21,7 @@ import static org.apache.geode.internal.i18n.LocalizedStrings.HandShake_NO_SECUR
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.junit.Assert.fail;
+import static org.mockito.ArgumentMatchers.isA;
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.anyLong;
 import static org.mockito.Mockito.mock;
@@ -52,7 +53,9 @@ import org.apache.geode.internal.cache.TXManagerImpl;
 import org.apache.geode.internal.cache.tier.Acceptor;
 import org.apache.geode.internal.cache.tier.CachedRegionHelper;
 import org.apache.geode.internal.cache.tier.CommunicationMode;
+import org.apache.geode.internal.cache.tier.Encryptor;
 import org.apache.geode.internal.cache.tier.MessageType;
+import org.apache.geode.internal.cache.tier.ServerSideHandshake;
 import org.apache.geode.internal.security.SecurityService;
 import org.apache.geode.security.AuthenticationRequiredException;
 import org.apache.geode.test.junit.categories.UnitTest;
@@ -73,9 +76,6 @@ public class ServerConnectionTest {
   private Message requestMsg;
 
   @Mock
-  private HandShake handshake;
-
-  @Mock
   private MessageIdExtractor messageIdExtractor;
 
   @InjectMocks
@@ -83,6 +83,7 @@ public class ServerConnectionTest {
 
   private AcceptorImpl acceptor;
   private Socket socket;
+  private ServerSideHandshake handshake;
   private InternalCache cache;
   private SecurityService securityService;
   private CacheServerStats stats;
@@ -101,6 +102,9 @@ public class ServerConnectionTest {
     securityService = mock(SecurityService.class);
 
     stats = mock(CacheServerStats.class);
+
+    handshake = mock(ServerSideHandshake.class);
+    when(handshake.getEncryptor()).thenReturn(mock(Encryptor.class));
 
     serverConnection =
         new ServerConnectionFactory().makeServerConnection(socket, cache, null, stats, 0, 0, null,
@@ -141,7 +145,7 @@ public class ServerConnectionTest {
     assertThat(serverConnection.getRequestMessage()).isSameAs(requestMsg);
     when(requestMsg.isSecureMode()).thenReturn(true);
 
-    when(messageIdExtractor.getUniqueIdFromMessage(any(Message.class), any(HandShake.class),
+    when(messageIdExtractor.getUniqueIdFromMessage(any(Message.class), any(Encryptor.class),
         anyLong())).thenReturn(uniqueIdFromMessage);
     serverConnection.setMessageIdExtractor(messageIdExtractor);
 
@@ -215,11 +219,11 @@ public class ServerConnectionTest {
     protected void doHandshake() {
       ClientProxyMembershipID proxyID = mock(ClientProxyMembershipID.class);
       when(proxyID.getDistributedMember()).thenReturn(mock(InternalDistributedMember.class));
-      HandShake handShake = mock(HandShake.class);
-      when(handShake.getMembership()).thenReturn(proxyID);
-      when(handShake.getVersion()).thenReturn(Version.CURRENT);
+      ServerSideHandshake handshake = mock(ServerSideHandshake.class);
+      when(handshake.getMembershipId()).thenReturn(proxyID);
+      when(handshake.getVersion()).thenReturn(Version.CURRENT);
 
-      setHandshake(handShake);
+      setHandshake(handshake);
       setProxyId(proxyID);
 
       processHandShake();
@@ -229,7 +233,7 @@ public class ServerConnectionTest {
 
       long fakeId = -1;
       MessageIdExtractor extractor = mock(MessageIdExtractor.class);
-      when(extractor.getUniqueIdFromMessage(getRequestMessage(), handShake,
+      when(extractor.getUniqueIdFromMessage(getRequestMessage(), handshake.getEncryptor(),
           Connection.DEFAULT_CONNECTION_ID)).thenReturn(fakeId);
       setMessageIdExtractor(extractor);
     }

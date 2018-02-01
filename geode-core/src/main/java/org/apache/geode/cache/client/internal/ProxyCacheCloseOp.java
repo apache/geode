@@ -64,7 +64,7 @@ public class ProxyCacheCloseOp {
       }
       hdos.writeLong((Long) userId);
       try {
-        secureBytes = ((ConnectionImpl) cnx).getHandShake().encryptBytes(hdos.toByteArray());
+        secureBytes = ((ConnectionImpl) cnx).encryptBytes(hdos.toByteArray());
       } finally {
         hdos.close();
       }

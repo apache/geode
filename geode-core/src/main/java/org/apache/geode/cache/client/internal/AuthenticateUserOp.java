@@ -35,7 +35,7 @@ import org.apache.geode.internal.HeapDataOutputStream;
 import org.apache.geode.internal.Version;
 import org.apache.geode.internal.cache.tier.MessageType;
 import org.apache.geode.internal.cache.tier.sockets.ChunkedMessage;
-import org.apache.geode.internal.cache.tier.sockets.HandShake;
+import org.apache.geode.internal.cache.tier.sockets.Handshake;
 import org.apache.geode.internal.cache.tier.sockets.Message;
 import org.apache.geode.internal.cache.tier.sockets.Part;
 import org.apache.geode.internal.cache.tier.sockets.command.PutUserCredentials;
@@ -107,7 +107,7 @@ public class AuthenticateUserOp {
       Properties tmpSecurityProperties = sys.getSecurityProperties();
 
       // LOG: following passes the DS API LogWriters into the security API
-      Properties credentials = HandShake.getCredentials(authInitMethod, tmpSecurityProperties,
+      Properties credentials = Handshake.getCredentials(authInitMethod, tmpSecurityProperties,
           server, false, (InternalLogWriter) sys.getLogWriter(),
           (InternalLogWriter) sys.getSecurityLogWriter());
 
@@ -115,7 +115,7 @@ public class AuthenticateUserOp {
       HeapDataOutputStream heapdos = new HeapDataOutputStream(Version.CURRENT);
       try {
         DataSerializer.writeProperties(credentials, heapdos);
-        credentialBytes = ((ConnectionImpl) con).getHandShake().encryptBytes(heapdos.toByteArray());
+        credentialBytes = ((ConnectionImpl) con).encryptBytes(heapdos.toByteArray());
       } catch (Exception e) {
         throw new ServerOperationException(e);
       } finally {
@@ -149,21 +149,20 @@ public class AuthenticateUserOp {
         DistributedSystem sys = InternalDistributedSystem.getConnectedInstance();
         String authInitMethod = sys.getProperties().getProperty(SECURITY_CLIENT_AUTH_INIT);
 
-        Properties credentials = HandShake.getCredentials(authInitMethod, this.securityProperties,
+        Properties credentials = Handshake.getCredentials(authInitMethod, this.securityProperties,
             server, false, (InternalLogWriter) sys.getLogWriter(),
             (InternalLogWriter) sys.getSecurityLogWriter());
         HeapDataOutputStream heapdos = new HeapDataOutputStream(Version.CURRENT);
         try {
           DataSerializer.writeProperties(credentials, heapdos);
-          credentialBytes =
-              ((ConnectionImpl) cnx).getHandShake().encryptBytes(heapdos.toByteArray());
+          credentialBytes = ((ConnectionImpl) cnx).encryptBytes(heapdos.toByteArray());
         } finally {
           heapdos.close();
         }
         getMessage().addBytesPart(credentialBytes);
       }
       try {
-        secureBytes = ((ConnectionImpl) cnx).getHandShake().encryptBytes(hdos.toByteArray());
+        secureBytes = ((ConnectionImpl) cnx).encryptBytes(hdos.toByteArray());
       } finally {
         hdos.close();
       }
@@ -218,7 +217,7 @@ public class AuthenticateUserOp {
           cnx.getServer().setRequiresCredentials(false);
         } else {
           cnx.getServer().setRequiresCredentials(true);
-          byte[] decrypted = ((ConnectionImpl) cnx).getHandShake().decryptBytes(bytes);
+          byte[] decrypted = ((ConnectionImpl) cnx).decryptBytes(bytes);
           DataInputStream dis = new DataInputStream(new ByteArrayInputStream(decrypted));
           userId = dis.readLong();
         }

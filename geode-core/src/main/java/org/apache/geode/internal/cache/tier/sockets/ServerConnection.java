@@ -49,11 +49,11 @@ import org.apache.geode.internal.cache.EventID;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.cache.tier.Acceptor;
 import org.apache.geode.internal.cache.tier.CachedRegionHelper;
-import org.apache.geode.internal.cache.tier.ClientHandShake;
 import org.apache.geode.internal.cache.tier.Command;
 import org.apache.geode.internal.cache.tier.CommunicationMode;
 import org.apache.geode.internal.cache.tier.InternalClientMembership;
 import org.apache.geode.internal.cache.tier.MessageType;
+import org.apache.geode.internal.cache.tier.ServerSideHandshake;
 import org.apache.geode.internal.cache.tier.sockets.command.Default;
 import org.apache.geode.internal.i18n.LocalizedStrings;
 import org.apache.geode.internal.logging.InternalLogWriter;
@@ -179,9 +179,9 @@ public abstract class ServerConnection implements Runnable {
   /**
    * Handshake reference uniquely identifying a client
    */
-  protected ClientHandShake handshake;
-  private int handShakeTimeout;
-  private final Object handShakeMonitor = new Object();
+  protected ServerSideHandshake handshake;
+  private int handshakeTimeout;
+  private final Object handshakeMonitor = new Object();
 
   /*
    * This timeout is request specific which come with message itself Otherwise, timeout which comes
@@ -292,7 +292,7 @@ public abstract class ServerConnection implements Runnable {
             getName(), communicationModeStr, socket.getInetAddress().getCanonicalHostName(),
             socket.getInetAddress().getHostAddress(), socket.getPort());
       }
-      this.handShakeTimeout = hsTimeout;
+      this.handshakeTimeout = hsTimeout;
     } catch (Exception e) {
       if (isDebugEnabled) {
         logger.debug("While creating server connection", e);
@@ -321,12 +321,13 @@ public abstract class ServerConnection implements Runnable {
   }
 
   private boolean verifyClientConnection() {
-    synchronized (this.handShakeMonitor) {
+    synchronized (this.handshakeMonitor) {
       if (this.handshake == null) {
         // synchronized (getCleanupTable()) {
-        boolean readHandShake =
-            ServerHandShakeProcessor.readHandShake(this, getSecurityService(), acceptor);
-        if (readHandShake) {
+        boolean readHandshake =
+            ServerHandshakeProcessor.readHandshake(this, getSecurityService(), acceptor);
+        if (readHandshake) {
+          // readHandshake will establish a handshake object in this ServerConnection
           if (this.handshake.isOK()) {
             try {
               return processHandShake();
@@ -339,12 +340,12 @@ public abstract class ServerConnection implements Runnable {
               return false;
             }
           } else {
+            // is this branch ever taken?
             this.crHelper.checkCancelInProgress(null); // bug 37113?
-            logger.warn(LocalizedMessage.create(
-                LocalizedStrings.ServerConnection_0_RECEIVED_UNKNOWN_HANDSHAKE_REPLY_CODE_1,
-                new Object[] {this.name, new Byte(this.handshake.getCode())}));
+            logger.warn(LocalizedMessage
+                .create(LocalizedStrings.ServerConnection_RECEIVED_UNKNOWN_HANDSHAKE_REPLY_CODE));
             refuseHandshake(LocalizedStrings.ServerConnection_RECEIVED_UNKNOWN_HANDSHAKE_REPLY_CODE
-                .toLocalizedString(), ServerHandShakeProcessor.REPLY_INVALID);
+                .toLocalizedString(), ServerHandshakeProcessor.REPLY_INVALID);
             return false;
           }
         } else {
@@ -352,7 +353,6 @@ public abstract class ServerConnection implements Runnable {
           cleanup();
           return false;
         }
-        // }
       }
     }
     return true;
@@ -367,7 +367,7 @@ public abstract class ServerConnection implements Runnable {
   }
 
   protected int getHandShakeTimeout() {
-    return this.handShakeTimeout;
+    return this.handshakeTimeout;
   }
 
   protected DistributedSystem getDistributedSystem() {
@@ -378,11 +378,11 @@ public abstract class ServerConnection implements Runnable {
     return this.crHelper.getCache();
   }
 
-  public ClientHandShake getHandshake() {
+  public ServerSideHandshake getHandshake() {
     return this.handshake;
   }
 
-  public void setHandshake(ClientHandShake handshake) {
+  public void setHandshake(ServerSideHandshake handshake) {
     this.handshake = handshake;
     Version v = handshake.getVersion();
 
@@ -508,7 +508,7 @@ public abstract class ServerConnection implements Runnable {
               logger.warn(LocalizedMessage.create(LocalizedStrings.TWO_ARG_COLON,
                   new Object[] {this.name, handshakeRefusalMessage}));
               refuseHandshake(handshakeRefusalMessage,
-                  HandShake.REPLY_EXCEPTION_DUPLICATE_DURABLE_CLIENT);
+                  Handshake.REPLY_EXCEPTION_DUPLICATE_DURABLE_CLIENT);
               return result;
             }
           }
@@ -583,7 +583,7 @@ public abstract class ServerConnection implements Runnable {
 
   protected void refuseHandshake(String msg, byte exception) {
     try {
-      ServerHandShakeProcessor.refuse(this.theSocket.getOutputStream(), msg, exception);
+      ServerHandshakeProcessor.refuse(this.theSocket.getOutputStream(), msg, exception);
     } catch (IOException ignore) {
     } finally {
       this.stats.incFailedConnectionAttempts();
@@ -620,7 +620,7 @@ public abstract class ServerConnection implements Runnable {
       try {
         byte[] secureBytes = this.requestMsg.getSecureBytes();
 
-        secureBytes = ((HandShake) this.handshake).decryptBytes(secureBytes);
+        secureBytes = this.handshake.getEncryptor().decryptBytes(secureBytes);
         AuthIds aIds = new AuthIds(secureBytes);
 
         long uniqueId = aIds.getUniqueId();
@@ -951,7 +951,7 @@ public abstract class ServerConnection implements Runnable {
     try {
       byte[] secureBytes = msg.getSecureBytes();
 
-      secureBytes = ((HandShake) this.handshake).decryptBytes(secureBytes);
+      secureBytes = this.handshake.getEncryptor().decryptBytes(secureBytes);
 
       // need to decrypt it first then get connectionid
       AuthIds aIds = new AuthIds(secureBytes);
@@ -1013,7 +1013,7 @@ public abstract class ServerConnection implements Runnable {
 
       byte[] secureBytes = msg.getSecureBytes();
 
-      secureBytes = ((HandShake) this.handshake).decryptBytes(secureBytes);
+      secureBytes = this.handshake.getEncryptor().decryptBytes(secureBytes);
 
       // need to decrypt it first then get connectionid
       AuthIds aIds = new AuthIds(secureBytes);
@@ -1026,7 +1026,7 @@ public abstract class ServerConnection implements Runnable {
 
       byte[] credBytes = msg.getPart(0).getSerializedForm();
 
-      credBytes = ((HandShake) this.handshake).decryptBytes(credBytes);
+      credBytes = this.handshake.getEncryptor().decryptBytes(credBytes);
 
       ByteArrayInputStream bis = new ByteArrayInputStream(credBytes);
       DataInputStream dinp = new DataInputStream(bis);
@@ -1039,7 +1039,7 @@ public abstract class ServerConnection implements Runnable {
       DistributedSystem system = this.getDistributedSystem();
       String methodName = system.getProperties().getProperty(SECURITY_CLIENT_AUTHENTICATOR);
 
-      Object principal = HandShake.verifyCredentials(methodName, credentials,
+      Object principal = Handshake.verifyCredentials(methodName, credentials,
           system.getSecurityProperties(), (InternalLogWriter) system.getLogWriter(),
           (InternalLogWriter) system.getSecurityLogWriter(), this.proxyId.getDistributedMember(),
           this.securityService);
@@ -1048,7 +1048,7 @@ public abstract class ServerConnection implements Runnable {
         uniqueId = this.clientUserAuths.putSubject(subject);
       } else {
         // this sets principal in map as well....
-        uniqueId = ServerHandShakeProcessor.getUniqueId(this, (Principal) principal);
+        uniqueId = ServerHandshakeProcessor.getUniqueId(this, (Principal) principal);
       }
 
       // create secure part which will be send in respones
@@ -1727,7 +1727,7 @@ public abstract class ServerConnection implements Runnable {
 
       hdos.writeLong(id);
 
-      return ((HandShake) this.handshake).encryptBytes(hdos.toByteArray());
+      return this.handshake.getEncryptor().encryptBytes(hdos.toByteArray());
     } finally {
       hdos.close();
     }
@@ -1740,7 +1740,7 @@ public abstract class ServerConnection implements Runnable {
       uniqueId = this.userAuthId;
     } else if (this.requestMsg.isSecureMode()) {
       uniqueId = messageIdExtractor.getUniqueIdFromMessage(this.requestMsg,
-          (HandShake) this.handshake, this.connectionId);
+          this.handshake.getEncryptor(), this.connectionId);
     } else {
       throw new AuthenticationRequiredException(
           LocalizedStrings.HandShake_NO_SECURITY_CREDENTIALS_ARE_PROVIDED.toLocalizedString());

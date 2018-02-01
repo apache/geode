@@ -16,7 +16,6 @@ package org.apache.geode.internal.cache.tier.sockets.command;
 
 import java.io.IOException;
 import java.util.HashSet;
-import java.util.Optional;
 import java.util.Set;
 
 import org.apache.geode.cache.Region;
@@ -41,9 +40,9 @@ import org.apache.geode.internal.cache.execute.ServerToClientFunctionResultSende
 import org.apache.geode.internal.cache.tier.CachedRegionHelper;
 import org.apache.geode.internal.cache.tier.Command;
 import org.apache.geode.internal.cache.tier.MessageType;
+import org.apache.geode.internal.cache.tier.ServerSideHandshake;
 import org.apache.geode.internal.cache.tier.sockets.BaseCommand;
 import org.apache.geode.internal.cache.tier.sockets.ChunkedMessage;
-import org.apache.geode.internal.cache.tier.sockets.HandShake;
 import org.apache.geode.internal.cache.tier.sockets.Message;
 import org.apache.geode.internal.cache.tier.sockets.Part;
 import org.apache.geode.internal.cache.tier.sockets.ServerConnection;
@@ -175,9 +174,9 @@ public class ExecuteRegionFunction66 extends BaseCommand {
       sendError(hasResult, clientMessage, message, serverConnection);
       return;
     }
-    HandShake handShake = (HandShake) serverConnection.getHandshake();
-    int earlierClientReadTimeout = handShake.getClientReadTimeout();
-    handShake.setClientReadTimeout(functionTimeout);
+    ServerSideHandshake handshake = serverConnection.getHandshake();
+    int earlierClientReadTimeout = handshake.getClientReadTimeout();
+    handshake.setClientReadTimeout(functionTimeout);
     ServerToClientFunctionResultSender resultSender = null;
     Function<?> functionObject = null;
     try {
@@ -335,7 +334,7 @@ public class ExecuteRegionFunction66 extends BaseCommand {
       String message = e.getMessage();
       sendException(hasResult, clientMessage, message, serverConnection, e);
     } finally {
-      handShake.setClientReadTimeout(earlierClientReadTimeout);
+      handshake.setClientReadTimeout(earlierClientReadTimeout);
       ServerConnection.executeFunctionOnLocalNodeOnly((byte) 0);
     }
   }

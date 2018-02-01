@@ -295,11 +295,11 @@ public class CacheClientNotifier {
     ClientProxyMembershipID proxyID = null;
     CacheClientProxy proxy;
     AccessControl authzCallback = null;
-    byte clientConflation = HandShake.CONFLATION_DEFAULT;
+    byte clientConflation = Handshake.CONFLATION_DEFAULT;
     try {
       proxyID = ClientProxyMembershipID.readCanonicalized(dis);
       if (getBlacklistedClient().contains(proxyID)) {
-        writeException(dos, HandShake.REPLY_INVALID,
+        writeException(dos, Handshake.REPLY_INVALID,
             new Exception("This client is blacklisted by server"), clientVersion);
         return;
       }
@@ -311,19 +311,19 @@ public class CacheClientNotifier {
       String authenticator = sysProps.getProperty(SECURITY_CLIENT_AUTHENTICATOR);
 
       if (clientVersion.compareTo(Version.GFE_603) >= 0) {
-        byte[] overrides = HandShake.extractOverrides(new byte[] {(byte) dis.read()});
+        byte[] overrides = Handshake.extractOverrides(new byte[] {(byte) dis.read()});
         clientConflation = overrides[0];
       } else {
         clientConflation = (byte) dis.read();
       }
 
       switch (clientConflation) {
-        case HandShake.CONFLATION_DEFAULT:
-        case HandShake.CONFLATION_OFF:
-        case HandShake.CONFLATION_ON:
+        case Handshake.CONFLATION_DEFAULT:
+        case Handshake.CONFLATION_OFF:
+        case Handshake.CONFLATION_ON:
           break;
         default:
-          writeException(dos, HandShake.REPLY_INVALID,
+          writeException(dos, Handshake.REPLY_INVALID,
               new IllegalArgumentException("Invalid conflation byte"), clientVersion);
           return;
       }
@@ -332,14 +332,14 @@ public class CacheClientNotifier {
           acceptorId, notifyBySubscription);
 
       Properties credentials =
-          HandShake.readCredentials(dis, dos, system, this.cache.getSecurityService());
+          Handshake.readCredentials(dis, dos, system, this.cache.getSecurityService());
       if (credentials != null && proxy != null) {
         if (securityLogWriter.fineEnabled()) {
           securityLogWriter
               .fine("CacheClientNotifier: verifying credentials for proxyID: " + proxyID);
         }
         Object subject =
-            HandShake.verifyCredentials(authenticator, credentials, system.getSecurityProperties(),
+            Handshake.verifyCredentials(authenticator, credentials, system.getSecurityProperties(),
                 this.logWriter, this.securityLogWriter, member, this.cache.getSecurityService());
         if (subject instanceof Principal) {
           Principal principal = (Principal) subject;
@@ -373,13 +373,13 @@ public class CacheClientNotifier {
       securityLogWriter.warning(
           LocalizedStrings.CacheClientNotifier_AN_EXCEPTION_WAS_THROWN_FOR_CLIENT_0_1,
           new Object[] {proxyID, ex});
-      writeException(dos, HandShake.REPLY_EXCEPTION_AUTHENTICATION_REQUIRED, ex, clientVersion);
+      writeException(dos, Handshake.REPLY_EXCEPTION_AUTHENTICATION_REQUIRED, ex, clientVersion);
       return;
     } catch (AuthenticationFailedException ex) {
       securityLogWriter.warning(
           LocalizedStrings.CacheClientNotifier_AN_EXCEPTION_WAS_THROWN_FOR_CLIENT_0_1,
           new Object[] {proxyID, ex});
-      writeException(dos, HandShake.REPLY_EXCEPTION_AUTHENTICATION_FAILED, ex, clientVersion);
+      writeException(dos, Handshake.REPLY_EXCEPTION_AUTHENTICATION_FAILED, ex, clientVersion);
       return;
     } catch (CacheException e) {
       logger.warn(LocalizedMessage.create(
@@ -494,7 +494,7 @@ public class CacheClientNotifier {
                 LocalizedStrings.CacheClientNotifier_COULD_NOT_CONNECT_DUE_TO_CQ_BEING_DRAINED
                     .toLocalizedString();
             logger.warn(unsuccessfulMsg);
-            responseByte = HandShake.REPLY_REFUSED;
+            responseByte = Handshake.REPLY_REFUSED;
             if (CacheClientProxy.testHook != null) {
               CacheClientProxy.testHook.doTestHook("CLIENT_REJECTED_DUE_TO_CQ_BEING_DRAINED");
             }
@@ -507,7 +507,7 @@ public class CacheClientNotifier {
                   .toLocalizedString(new Object[] {proxyId.getDurableId(), proxy});
           logger.warn(unsuccessfulMsg);
           // Set the unsuccessful response byte.
-          responseByte = HandShake.REPLY_EXCEPTION_DUPLICATE_DURABLE_CLIENT;
+          responseByte = Handshake.REPLY_EXCEPTION_DUPLICATE_DURABLE_CLIENT;
         }
       }
     } else {
@@ -542,7 +542,7 @@ public class CacheClientNotifier {
 
     if (!successful) {
       l_proxy = null;
-      responseByte = HandShake.REPLY_REFUSED;
+      responseByte = Handshake.REPLY_REFUSED;
       unsuccessfulMsg =
           LocalizedStrings.CacheClientNotifier_CACHECLIENTNOTIFIER_A_PREVIOUS_CONNECTION_ATTEMPT_FROM_THIS_CLIENT_IS_STILL_BEING_PROCESSED__0
               .toLocalizedString(new Object[] {proxyId});
@@ -1516,7 +1516,7 @@ public class CacheClientNotifier {
     // Remove this proxy from the init proxy list.
     removeClientInitProxy(proxy);
     this._connectionListener.queueAdded(proxy.getProxyID());
-    if (!(proxy.clientConflation == HandShake.CONFLATION_ON)) {
+    if (!(proxy.clientConflation == Handshake.CONFLATION_ON)) {
       // Delta not supported with conflation ON
       ClientHealthMonitor chm = ClientHealthMonitor.getInstance();
       /*
@@ -1661,7 +1661,7 @@ public class CacheClientNotifier {
     this._clientProxies.remove(client);
     this._connectionListener.queueRemoved();
     this.getCache().cleanupForClient(this, client);
-    if (!(proxy.clientConflation == HandShake.CONFLATION_ON)) {
+    if (!(proxy.clientConflation == Handshake.CONFLATION_ON)) {
       ClientHealthMonitor chm = ClientHealthMonitor.getInstance();
       if (chm != null) {
         chm.numOfClientsPerVersion.decrementAndGet(proxy.getVersion().ordinal());

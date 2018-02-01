@@ -74,6 +74,7 @@ import org.apache.geode.internal.cache.GemFireCacheImpl;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.cache.LocalRegion;
 import org.apache.geode.internal.cache.tier.CachedRegionHelper;
+import org.apache.geode.internal.cache.tier.ClientSideHandshake;
 import org.apache.geode.internal.cache.tier.MessageType;
 import org.apache.geode.internal.cache.versions.ConcurrentCacheModificationException;
 import org.apache.geode.internal.cache.versions.VersionSource;
@@ -263,15 +264,15 @@ public class CacheClientUpdater extends Thread implements ClientUpdater, Disconn
    *         exception while reading handshake/verifying credentials
    */
   public CacheClientUpdater(String name, ServerLocation location, boolean primary,
-      DistributedSystem ids, HandShake handshake, QueueManager qManager, EndpointManager eManager,
-      Endpoint endpoint, int handshakeTimeout, SocketCreator socketCreator)
-      throws AuthenticationRequiredException, AuthenticationFailedException,
-      ServerRefusedConnectionException {
+      DistributedSystem ids, ClientSideHandshake handshake, QueueManager qManager,
+      EndpointManager eManager, Endpoint endpoint, int handshakeTimeout,
+      SocketCreator socketCreator) throws AuthenticationRequiredException,
+      AuthenticationFailedException, ServerRefusedConnectionException {
 
     super(LoggingThreadGroup.createThreadGroup("Client update thread"), name);
     this.setDaemon(true);
     this.system = (InternalDistributedSystem) ids;
-    this.isDurableClient = handshake.getMembership().isDurable();
+    this.isDurableClient = handshake.getMembershipId().isDurable();
     this.isPrimary = primary;
     this.location = location;
     this.qManager = qManager;

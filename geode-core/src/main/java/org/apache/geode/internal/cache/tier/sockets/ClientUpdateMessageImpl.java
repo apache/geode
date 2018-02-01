@@ -345,8 +345,8 @@ public class ClientUpdateMessageImpl implements ClientUpdateMessage, Sizeable, N
     byte[] serializedValue = null;
     Message message = null;
     boolean conflation = false;
-    conflation = (proxy.clientConflation == HandShake.CONFLATION_ON)
-        || (proxy.clientConflation == HandShake.CONFLATION_DEFAULT && this.shouldBeConflated());
+    conflation = (proxy.clientConflation == Handshake.CONFLATION_ON)
+        || (proxy.clientConflation == Handshake.CONFLATION_DEFAULT && this.shouldBeConflated());
 
     if (latestValue != null) {
       serializedValue = latestValue;
