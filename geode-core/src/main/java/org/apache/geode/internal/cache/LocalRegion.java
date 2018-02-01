@@ -4748,7 +4748,7 @@ public class LocalRegion extends AbstractRegion implements LoaderHelperFactory,
    *
    * @see DistributedRegion#basicInvalidate(EntryEventImpl)
    */
-  void basicInvalidate(EntryEventImpl event) throws EntryNotFoundException {
+  public void basicInvalidate(EntryEventImpl event) throws EntryNotFoundException {
     basicInvalidate(event, isInitialized()/* for bug 35214 */);
   }
 
@@ -5036,7 +5036,7 @@ public class LocalRegion extends AbstractRegion implements LoaderHelperFactory,
    * @return false if ifNew is true and there is an existing key or if ifOld is true and
    *         expectedOldValue does not match the current value in the cache. Otherwise return true.
    */
-  protected boolean basicPut(EntryEventImpl event, boolean ifNew, boolean ifOld,
+  public boolean basicPut(EntryEventImpl event, boolean ifNew, boolean ifOld,
       Object expectedOldValue, boolean requireOldValue)
       throws TimeoutException, CacheWriterException {
     return getDataView().putEntry(event, ifNew, ifOld, expectedOldValue, requireOldValue, 0L,
@@ -6015,7 +6015,7 @@ public class LocalRegion extends AbstractRegion implements LoaderHelperFactory,
    *
    * @since GemFire 5.7
    */
-  void syncBulkOp(Runnable task, EventID eventId) {
+  public void syncBulkOp(Runnable task, EventID eventId) {
     getEventTracker().syncBulkOp(task, eventId, isTX());
   }
 

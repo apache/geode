@@ -12,7 +12,7 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
-package org.apache.geode.internal.cache;
+package org.apache.geode.internal.cache.tx;
 
 import java.io.DataInput;
 import java.io.DataOutput;
@@ -37,6 +37,10 @@ import org.apache.geode.distributed.internal.membership.InternalDistributedMembe
 import org.apache.geode.internal.Assert;
 import org.apache.geode.internal.InternalDataSerializer;
 import org.apache.geode.internal.NanoTimer;
+import org.apache.geode.internal.cache.EntrySnapshot;
+import org.apache.geode.internal.cache.KeyInfo;
+import org.apache.geode.internal.cache.LocalRegion;
+import org.apache.geode.internal.cache.NonLocalRegionEntry;
 import org.apache.geode.internal.i18n.LocalizedStrings;
 import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.internal.logging.log4j.LogMarker;
@@ -44,7 +48,7 @@ import org.apache.geode.internal.logging.log4j.LogMarker;
 /**
  * This message is used as the request for a
  * {@link org.apache.geode.cache.Region#getEntry(Object)}operation. The reply is sent in a
- * {@link org.apache.geode.internal.cache.RemoteFetchEntryMessage.FetchEntryReplyMessage}.
+ * {@link org.apache.geode.internal.cache.tx.RemoteFetchEntryMessage.FetchEntryReplyMessage}.
  *
  * @since GemFire 5.1
  */
@@ -243,7 +247,7 @@ public class RemoteFetchEntryMessage extends RemoteOperationMessage {
 
   /**
    * A processor to capture the value returned by
-   * {@link org.apache.geode.internal.cache.RemoteFetchEntryMessage.FetchEntryReplyMessage}
+   * {@link org.apache.geode.internal.cache.tx.RemoteFetchEntryMessage.FetchEntryReplyMessage}
    *
    */
   public static class FetchEntryResponse extends RemoteOperationResponse {

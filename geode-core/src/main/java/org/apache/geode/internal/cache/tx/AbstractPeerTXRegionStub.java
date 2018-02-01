@@ -25,8 +25,6 @@ import org.apache.geode.cache.TransactionException;
 import org.apache.geode.internal.cache.InternalRegion;
 import org.apache.geode.internal.cache.LocalRegion;
 import org.apache.geode.internal.cache.TXStateStub;
-import org.apache.geode.internal.cache.partitioned.RemoteFetchKeysMessage;
-import org.apache.geode.internal.cache.partitioned.RemoteSizeMessage;
 import org.apache.geode.internal.i18n.LocalizedStrings;
 
 public abstract class AbstractPeerTXRegionStub implements TXRegionStub {

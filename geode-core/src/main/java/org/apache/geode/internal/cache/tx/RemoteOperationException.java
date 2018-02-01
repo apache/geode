@@ -13,7 +13,9 @@
  * the License.
  */
 
-package org.apache.geode.internal.cache;
+package org.apache.geode.internal.cache.tx;
+
+import org.apache.geode.internal.cache.DataLocationException;
 
 /**
  * Indicates that the current non-partitioned remote operation failed. Note that even though this

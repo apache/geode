@@ -12,7 +12,7 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
-package org.apache.geode.internal.cache;
+package org.apache.geode.internal.cache.tx;
 
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.times;
@@ -23,18 +23,19 @@ import java.io.DataInput;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
+import org.apache.geode.internal.cache.tx.RemoteRemoveAllMessage;
 import org.apache.geode.test.junit.categories.UnitTest;
 
 @Category(UnitTest.class)
-public class RemotePutAllMessageTest {
+public class RemoteRemoveAllMessageTest {
 
   @Test
   public void shouldBeMockable() throws Exception {
-    RemotePutAllMessage mockRemotePutAllMessage = mock(RemotePutAllMessage.class);
+    RemoteRemoveAllMessage mockRemoteRemoveAllMessage = mock(RemoteRemoveAllMessage.class);
     DataInput mockDataInput = mock(DataInput.class);
 
-    mockRemotePutAllMessage.fromData(mockDataInput);
+    mockRemoteRemoveAllMessage.fromData(mockDataInput);
 
-    verify(mockRemotePutAllMessage, times(1)).fromData(mockDataInput);
+    verify(mockRemoteRemoveAllMessage, times(1)).fromData(mockDataInput);
   }
 }

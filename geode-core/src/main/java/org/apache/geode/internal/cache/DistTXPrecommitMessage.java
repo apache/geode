@@ -49,6 +49,7 @@ import org.apache.geode.internal.Version;
 import org.apache.geode.internal.cache.TXEntryState.DistTxThinEntryState;
 import org.apache.geode.internal.cache.locks.TXLockService;
 import org.apache.geode.internal.cache.tx.DistTxEntryEvent;
+import org.apache.geode.internal.cache.tx.RemoteOperationException;
 import org.apache.geode.internal.i18n.LocalizedStrings;
 import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.internal.logging.log4j.LogMarker;

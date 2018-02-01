@@ -12,33 +12,30 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
-package org.apache.geode.internal.cache;
+package org.apache.geode.internal.cache.tx;
 
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
+
+import java.io.DataInput;
 
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
-import org.apache.geode.distributed.internal.ClusterDistributionManager;
+import org.apache.geode.internal.cache.tx.RemotePutAllMessage;
 import org.apache.geode.test.junit.categories.UnitTest;
 
 @Category(UnitTest.class)
-public class RemoteFetchEntryMessageTest {
+public class RemotePutAllMessageTest {
 
   @Test
   public void shouldBeMockable() throws Exception {
-    RemoteFetchEntryMessage mockRemoteFetchEntryMessage = mock(RemoteFetchEntryMessage.class);
-    ClusterDistributionManager mockDistributionManager = mock(ClusterDistributionManager.class);
-    LocalRegion mockLocalRegion = mock(LocalRegion.class);
-    long startTime = System.currentTimeMillis();
+    RemotePutAllMessage mockRemotePutAllMessage = mock(RemotePutAllMessage.class);
+    DataInput mockDataInput = mock(DataInput.class);
 
-    when(mockRemoteFetchEntryMessage.operateOnRegion(eq(mockDistributionManager),
-        eq(mockLocalRegion), eq(startTime))).thenReturn(true);
+    mockRemotePutAllMessage.fromData(mockDataInput);
 
-    assertThat(mockRemoteFetchEntryMessage.operateOnRegion(mockDistributionManager, mockLocalRegion,
-        startTime)).isTrue();
+    verify(mockRemotePutAllMessage, times(1)).fromData(mockDataInput);
   }
 }

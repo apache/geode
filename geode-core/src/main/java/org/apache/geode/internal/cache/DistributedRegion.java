@@ -87,7 +87,6 @@ import org.apache.geode.internal.Assert;
 import org.apache.geode.internal.cache.AbstractRegionMap.ARMLockTestHook;
 import org.apache.geode.internal.cache.CacheDistributionAdvisor.CacheProfile;
 import org.apache.geode.internal.cache.InitialImageOperation.GIIStatus;
-import org.apache.geode.internal.cache.RemoteFetchVersionMessage.FetchVersionResponse;
 import org.apache.geode.internal.cache.control.InternalResourceManager.ResourceType;
 import org.apache.geode.internal.cache.control.MemoryEvent;
 import org.apache.geode.internal.cache.event.DistributedEventTracker;
@@ -108,6 +107,13 @@ import org.apache.geode.internal.cache.persistence.PersistentMemberManager;
 import org.apache.geode.internal.cache.persistence.PersistentMemberView;
 import org.apache.geode.internal.cache.tier.sockets.ClientProxyMembershipID;
 import org.apache.geode.internal.cache.tier.sockets.VersionedObjectList;
+import org.apache.geode.internal.cache.tx.RemoteClearMessage;
+import org.apache.geode.internal.cache.tx.RemoteDestroyMessage;
+import org.apache.geode.internal.cache.tx.RemoteFetchVersionMessage;
+import org.apache.geode.internal.cache.tx.RemoteInvalidateMessage;
+import org.apache.geode.internal.cache.tx.RemoteOperationException;
+import org.apache.geode.internal.cache.tx.RemotePutMessage;
+import org.apache.geode.internal.cache.tx.RemoteFetchVersionMessage.FetchVersionResponse;
 import org.apache.geode.internal.cache.versions.ConcurrentCacheModificationException;
 import org.apache.geode.internal.cache.versions.RegionVersionVector;
 import org.apache.geode.internal.cache.versions.VersionSource;
@@ -607,7 +613,7 @@ public class DistributedRegion extends LocalRegion implements InternalDistribute
    *         NO_ACCESS or LIMITED_ACCESS
    */
   @Override
-  protected void checkForLimitedOrNoAccess() {
+  public void checkForLimitedOrNoAccess() {
     if (this.requiresReliabilityCheck && this.isMissingRequiredRoles) {
       if (getMembershipAttributes().getLossAction().isNoAccess()
           || getMembershipAttributes().getLossAction().isLimitedAccess()) {
@@ -1549,7 +1555,7 @@ public class DistributedRegion extends LocalRegion implements InternalDistribute
   }
 
   @Override
-  protected void basicDestroy(EntryEventImpl event, boolean cacheWrite, Object expectedOldValue)
+  public void basicDestroy(EntryEventImpl event, boolean cacheWrite, Object expectedOldValue)
       throws EntryNotFoundException, CacheWriterException, TimeoutException {
     // disallow local destruction for mirrored keysvalues regions
     boolean hasSeen = false;
@@ -1740,6 +1746,7 @@ public class DistributedRegion extends LocalRegion implements InternalDistribute
    * invalidated
    */
   @Override
+  public
   void basicInvalidate(EntryEventImpl event) throws EntryNotFoundException {
     boolean hasSeen = false;
     if (hasSeenEvent(event)) {

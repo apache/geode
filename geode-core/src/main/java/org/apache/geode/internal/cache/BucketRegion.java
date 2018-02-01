@@ -873,6 +873,7 @@ public class BucketRegion extends DistributedRegion implements Bucket {
   // 1) apply op locally
   // 2) update local bs, gateway
   @Override
+  public
   void basicInvalidate(EntryEventImpl event) throws EntryNotFoundException {
     basicInvalidate(event, isInitialized(), false);
   }
@@ -1142,7 +1143,7 @@ public class BucketRegion extends DistributedRegion implements Bucket {
   // 1) apply op locally
   // 2) update local bs, gateway
   @Override
-  protected void basicDestroy(final EntryEventImpl event, final boolean cacheWrite,
+  public void basicDestroy(final EntryEventImpl event, final boolean cacheWrite,
       Object expectedOldValue)
       throws EntryNotFoundException, CacheWriterException, TimeoutException {
 

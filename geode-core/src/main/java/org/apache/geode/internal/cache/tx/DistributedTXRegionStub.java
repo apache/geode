@@ -29,22 +29,13 @@ import org.apache.geode.internal.cache.EntryEventImpl;
 import org.apache.geode.internal.cache.InternalRegion;
 import org.apache.geode.internal.cache.KeyInfo;
 import org.apache.geode.internal.cache.LocalRegion;
-import org.apache.geode.internal.cache.RemoteContainsKeyValueMessage;
-import org.apache.geode.internal.cache.RemoteContainsKeyValueMessage.RemoteContainsKeyValueResponse;
-import org.apache.geode.internal.cache.RemoteDestroyMessage;
-import org.apache.geode.internal.cache.RemoteFetchEntryMessage;
-import org.apache.geode.internal.cache.RemoteGetMessage;
-import org.apache.geode.internal.cache.RemoteInvalidateMessage;
-import org.apache.geode.internal.cache.RemoteOperationException;
-import org.apache.geode.internal.cache.RemoteOperationMessage.RemoteOperationResponse;
-import org.apache.geode.internal.cache.RemotePutAllMessage;
-import org.apache.geode.internal.cache.RemotePutMessage;
-import org.apache.geode.internal.cache.RemotePutMessage.PutResult;
-import org.apache.geode.internal.cache.RemotePutMessage.RemotePutResponse;
-import org.apache.geode.internal.cache.RemoteRemoveAllMessage;
 import org.apache.geode.internal.cache.TXStateStub;
 import org.apache.geode.internal.cache.tier.sockets.ClientProxyMembershipID;
 import org.apache.geode.internal.cache.tier.sockets.VersionedObjectList;
+import org.apache.geode.internal.cache.tx.RemoteContainsKeyValueMessage.RemoteContainsKeyValueResponse;
+import org.apache.geode.internal.cache.tx.RemoteOperationMessage.RemoteOperationResponse;
+import org.apache.geode.internal.cache.tx.RemotePutMessage.PutResult;
+import org.apache.geode.internal.cache.tx.RemotePutMessage.RemotePutResponse;
 import org.apache.geode.internal.i18n.LocalizedStrings;
 
 public class DistributedTXRegionStub extends AbstractPeerTXRegionStub {

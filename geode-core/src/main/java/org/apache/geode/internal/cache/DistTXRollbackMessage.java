@@ -44,7 +44,8 @@ import org.apache.geode.distributed.internal.ReplyProcessor21;
 import org.apache.geode.distributed.internal.ReplySender;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
 import org.apache.geode.internal.Assert;
-import org.apache.geode.internal.cache.RemoteOperationMessage.RemoteOperationResponse;
+import org.apache.geode.internal.cache.tx.RemoteOperationException;
+import org.apache.geode.internal.cache.tx.RemoteOperationMessage.RemoteOperationResponse;
 import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.internal.logging.log4j.LogMarker;
 

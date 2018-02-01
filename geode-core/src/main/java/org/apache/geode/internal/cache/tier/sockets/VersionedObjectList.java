@@ -214,7 +214,7 @@ public class VersionedObjectList extends ObjectPartList implements Externalizabl
     }
   }
 
-  public List<VersionTag<?>> getVersionTags() {
+  public List<VersionTag> getVersionTags() {
     return Collections.unmodifiableList(this.versionTags);
   }
 

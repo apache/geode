@@ -13,7 +13,7 @@
  * the License.
  */
 
-package org.apache.geode.internal.cache;
+package org.apache.geode.internal.cache.tx;
 
 import java.io.DataInput;
 import java.io.DataOutput;
@@ -38,6 +38,14 @@ import org.apache.geode.distributed.internal.membership.InternalDistributedMembe
 import org.apache.geode.internal.Assert;
 import org.apache.geode.internal.InternalDataSerializer;
 import org.apache.geode.internal.Version;
+import org.apache.geode.internal.cache.BucketRegion;
+import org.apache.geode.internal.cache.CachedDeserializableFactory;
+import org.apache.geode.internal.cache.DataLocationException;
+import org.apache.geode.internal.cache.EntryEventImpl;
+import org.apache.geode.internal.cache.KeyInfo;
+import org.apache.geode.internal.cache.LocalRegion;
+import org.apache.geode.internal.cache.TXManagerImpl;
+import org.apache.geode.internal.cache.TXStateProxy;
 import org.apache.geode.internal.cache.BucketRegion.RawValue;
 import org.apache.geode.internal.cache.tier.sockets.ClientProxyMembershipID;
 import org.apache.geode.internal.i18n.LocalizedStrings;
@@ -309,7 +317,7 @@ public class RemoteGetMessage extends RemoteOperationMessageWithDirectReply {
 
   /**
    * A processor to capture the value returned by
-   * {@link org.apache.geode.internal.cache.RemoteGetMessage.GetReplyMessage}
+   * {@link org.apache.geode.internal.cache.tx.RemoteGetMessage.GetReplyMessage}
    *
    * @since GemFire 5.0
    */

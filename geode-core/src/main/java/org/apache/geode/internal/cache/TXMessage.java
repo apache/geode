@@ -36,6 +36,7 @@ import org.apache.geode.distributed.internal.ReplySender;
 import org.apache.geode.distributed.internal.SerialDistributionMessage;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
 import org.apache.geode.internal.cache.partitioned.PartitionMessage;
+import org.apache.geode.internal.cache.tx.RemoteOperationException;
 import org.apache.geode.internal.i18n.LocalizedStrings;
 import org.apache.geode.internal.logging.LogService;
 
