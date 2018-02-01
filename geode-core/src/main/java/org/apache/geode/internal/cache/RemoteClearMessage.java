@@ -17,7 +17,6 @@ package org.apache.geode.internal.cache;
 import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
-import java.util.Collections;
 import java.util.Set;
 
 import org.apache.logging.log4j.Logger;
@@ -42,43 +41,33 @@ import org.apache.geode.internal.logging.log4j.LogMarker;
  *
  * @since GemFire 7.0
  */
-public class RemoteRegionOperation extends RemoteOperationMessageWithDirectReply {
+public class RemoteClearMessage extends RemoteOperationMessageWithDirectReply {
   private static final Logger logger = LogService.getLogger();
 
   private enum Operation {
     CLEAR,
-    // INVALIDATE
   }
 
   private transient DistributedRegion region;
-  private Operation op;
 
-  public RemoteRegionOperation() {}
+  public RemoteClearMessage() {}
 
-  public static RemoteRegionOperation clear(InternalDistributedMember recipient,
+  public static RemoteClearMessage create(InternalDistributedMember recipient,
       DistributedRegion region) {
-    return new RemoteRegionOperation(recipient, region, Operation.CLEAR);
+    return new RemoteClearMessage(recipient, region, Operation.CLEAR);
   }
 
-  // public static RemoteRegionOperation invalidate(InternalDistributedMember recipient,
-  // DistributedRegion region) {
-  // return new RemoteRegionOperation(recipient, region, Operation.INVALIDATE);
-  // }
-
-  private RemoteRegionOperation(InternalDistributedMember recipient, DistributedRegion region,
+  private RemoteClearMessage(InternalDistributedMember recipient, DistributedRegion region,
       Operation op) {
     super(recipient, region.getFullPath(),
-        new RemoteOperationResponse(region.getSystem(), Collections.singleton(recipient)));
-    this.op = op;
+        new RemoteOperationResponse(region.getSystem(), recipient));
     this.region = region;
   }
 
-  /**
-   */
   public void distribute() throws RemoteOperationException {
     RemoteOperationResponse p = (RemoteOperationResponse) this.processor;
 
-    Set failures = region.getDistributionManager().putOutgoing(this);
+    Set<?> failures = region.getDistributionManager().putOutgoing(this);
     if (failures != null && failures.size() > 0) {
       throw new RemoteOperationException(LocalizedStrings.FAILED_SENDING_0.toLocalizedString(this));
     }
@@ -90,67 +79,56 @@ public class RemoteRegionOperation extends RemoteOperationMessageWithDirectReply
   protected boolean operateOnRegion(ClusterDistributionManager dm, LocalRegion r, long startTime)
       throws CacheException, RemoteOperationException {
     if (logger.isTraceEnabled(LogMarker.DM)) {
-      logger.trace(LogMarker.DM, "DistributedRemoteRegionOperation operateOnRegion: {}",
-          r.getFullPath());
+      logger.trace(LogMarker.DM, "RemoteClearMessage operateOnRegion: {}", r.getFullPath());
     }
 
+    r.waitOnInitialization(); // bug #43371 - accessing a region before it's initialized
 
-    if (!(r instanceof PartitionedRegion)) {
-      r.waitOnInitialization(); // bug #43371 - accessing a region before it's initialized
-    }
+    r.clear();
 
-    if (op.equals(Operation.CLEAR)) {
-      r.clear();
-      // } else {
-      // r.invalidateRegion();
-    }
+    RemoteClearReplyMessage.send(getSender(), getProcessorId(), getReplySender(dm));
 
-    // r.getPrStats().endPartitionMessagesProcessing(startTime);
-    RemoteRegionOperationReplyMessage.send(getSender(), getProcessorId(), getReplySender(dm));
-
-    // Unless there was an exception thrown, this message handles sending the
-    // response
+    // Unless there was an exception thrown, this message handles sending the response
     return false;
   }
 
   @Override
   protected void appendFields(StringBuffer buff) {
     super.appendFields(buff);
-    buff.append("; operation=").append(this.op);
   }
 
   public int getDSFID() {
-    return R_REGION_OP;
+    return R_CLEAR_MSG;
   }
 
   @Override
   public void fromData(DataInput in) throws IOException, ClassNotFoundException {
     super.fromData(in);
-    this.op = Operation.values()[in.readByte()];
+    in.readByte(); // for backwards compatibility
   }
 
   @Override
   public void toData(DataOutput out) throws IOException {
     super.toData(out);
-    out.writeByte(this.op.ordinal());
+    out.writeByte(Operation.CLEAR.ordinal()); // for backwards compatibility
   }
 
-  public static class RemoteRegionOperationReplyMessage extends ReplyMessage {
+  public static class RemoteClearReplyMessage extends ReplyMessage {
 
     /**
      * Empty constructor to conform to DataSerializable interface
      */
-    public RemoteRegionOperationReplyMessage() {}
+    public RemoteClearReplyMessage() {}
 
-    private RemoteRegionOperationReplyMessage(int processorId) {
+    private RemoteClearReplyMessage(int processorId) {
       this.processorId = processorId;
     }
 
     /** Send an ack */
     public static void send(InternalDistributedMember recipient, int processorId,
         ReplySender replySender) {
-      Assert.assertTrue(recipient != null, "RemoteRegionOperationReplyMessage NULL reply message");
-      RemoteRegionOperationReplyMessage m = new RemoteRegionOperationReplyMessage(processorId);
+      Assert.assertTrue(recipient != null, "RemoteClearReplyMessage NULL recipient");
+      RemoteClearReplyMessage m = new RemoteClearReplyMessage(processorId);
       m.setRecipient(recipient);
       replySender.putOutgoing(m);
     }
@@ -166,7 +144,7 @@ public class RemoteRegionOperation extends RemoteOperationMessageWithDirectReply
 
       if (processor == null) {
         if (logger.isTraceEnabled(LogMarker.DM)) {
-          logger.trace(LogMarker.DM, "RemoteRegionOperationReplyMessage processor not found");
+          logger.trace(LogMarker.DM, "RemoteClearReplyMessage processor not found");
         }
         return;
       }
@@ -177,7 +155,7 @@ public class RemoteRegionOperation extends RemoteOperationMessageWithDirectReply
 
     @Override
     public int getDSFID() {
-      return R_REGION_OP_REPLY;
+      return R_CLEAR_MSG_REPLY;
     }
 
     @Override
@@ -193,12 +171,9 @@ public class RemoteRegionOperation extends RemoteOperationMessageWithDirectReply
     @Override
     public String toString() {
       StringBuffer sb = new StringBuffer();
-      sb.append("RemoteRegionOperationReplyMessage ").append("processorid=")
-          .append(this.processorId).append(" reply to sender ").append(this.getSender());
+      sb.append("RemoteClearReplyMessage ").append("processorid=").append(this.processorId)
+          .append(" reply to sender ").append(this.getSender());
       return sb.toString();
     }
-
   }
-
-
 }

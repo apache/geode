@@ -1865,7 +1865,7 @@ public class DistributedRegion extends LocalRegion implements InternalDistribute
         Set<InternalDistributedMember> repls = this.distAdvisor.adviseReplicates();
         if (!repls.isEmpty()) {
           InternalDistributedMember mbr = repls.iterator().next();
-          RemoteRegionOperation op = RemoteRegionOperation.clear(mbr, this);
+          RemoteClearMessage op = RemoteClearMessage.create(mbr, this);
           try {
             op.distribute();
             return;
