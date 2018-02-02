@@ -22,6 +22,7 @@ import org.apache.geode.annotations.Experimental;
 import org.apache.geode.internal.protocol.protobuf.v1.ClientProtocol;
 import org.apache.geode.internal.protocol.protobuf.v1.ClientProtocol.Request.RequestAPICase;
 import org.apache.geode.internal.protocol.protobuf.v1.ProtobufOperationContext;
+import org.apache.geode.internal.protocol.protobuf.v1.operations.ExecuteFunctionOnRegionRequestOperationHandler;
 import org.apache.geode.internal.protocol.protobuf.v1.operations.GetAllRequestOperationHandler;
 import org.apache.geode.internal.protocol.protobuf.v1.operations.GetRegionNamesRequestOperationHandler;
 import org.apache.geode.internal.protocol.protobuf.v1.operations.GetRegionRequestOperationHandler;
@@ -51,8 +52,7 @@ public class ProtobufOperationContextRegistry {
         new ProtobufOperationContext<>(ClientProtocol.Request::getAuthenticationRequest,
             new AuthenticationRequestOperationHandler(),
             opsResp -> ClientProtocol.Response.newBuilder().setAuthenticationResponse(opsResp),
-            new ResourcePermission(ResourcePermission.Resource.DATA,
-                ResourcePermission.Operation.READ)));
+            new ResourcePermission(ResourcePermission.NULL, ResourcePermission.NULL)));
 
     operationContexts.put(RequestAPICase.GETREQUEST,
         new ProtobufOperationContext<>(ClientProtocol.Request::getGetRequest,
@@ -109,5 +109,14 @@ public class ProtobufOperationContextRegistry {
             opsResp -> ClientProtocol.Response.newBuilder().setGetServerResponse(opsResp),
             new ResourcePermission(ResourcePermission.Resource.CLUSTER,
                 ResourcePermission.Operation.READ)));
+
+    operationContexts.put(RequestAPICase.EXECUTEFUNCTIONONREGIONREQUEST,
+        new ProtobufOperationContext<>(ClientProtocol.Request::getExecuteFunctionOnRegionRequest,
+            new ExecuteFunctionOnRegionRequestOperationHandler(),
+            opsResp -> ClientProtocol.Response.newBuilder()
+                .setExecuteFunctionOnRegionResponse(opsResp),
+            // Resource permissions get handled per-function, since they have varying permission
+            // requirements.
+            new ResourcePermission(ResourcePermission.NULL, ResourcePermission.NULL)));
   }
 }

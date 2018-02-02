@@ -57,8 +57,6 @@ public class GetAllRequestOperationHandlerJUnitTest extends OperationHandlerJUni
 
   @Before
   public void setUp() throws Exception {
-    super.setUp();
-
     regionStub = mock(Region.class);
     when(regionStub.get(TEST_KEY1)).thenReturn(TEST_VALUE1);
     when(regionStub.get(TEST_KEY2)).thenReturn(TEST_VALUE2);

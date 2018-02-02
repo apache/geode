@@ -49,8 +49,6 @@ public class RemoveRequestOperationHandlerJUnitTest extends OperationHandlerJUni
 
   @Before
   public void setUp() throws Exception {
-    super.setUp();
-
     regionStub = mock(Region.class);
     when(regionStub.remove(TEST_KEY)).thenReturn(TEST_VALUE);
     when(regionStub.containsKey(TEST_KEY)).thenReturn(true);

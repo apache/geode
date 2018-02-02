@@ -16,8 +16,8 @@
 package org.apache.geode.internal.cache.client.protocol;
 
 import org.apache.geode.StatisticsFactory;
-import org.apache.geode.cache.Cache;
 import org.apache.geode.distributed.internal.InternalLocator;
+import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.security.SecurityService;
 
 /**
@@ -32,7 +32,8 @@ public interface ClientProtocolService {
    * handshake has happened.
    *
    */
-  ClientProtocolProcessor createProcessorForCache(Cache cache, SecurityService securityService);
+  ClientProtocolProcessor createProcessorForCache(InternalCache cache,
+      SecurityService securityService);
 
   /**
    * Create a locator processor. The locator does not currently provide any authentication.

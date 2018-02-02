@@ -57,7 +57,6 @@ public class PutAllRequestOperationHandlerJUnitTest extends OperationHandlerJUni
 
   @Before
   public void setUp() throws Exception {
-    super.setUp();
     regionMock = mock(Region.class);
     when(regionMock.put(TEST_INVALID_KEY, TEST_INVALID_VALUE))
         .thenThrow(new ClassCastException(EXCEPTION_TEXT));

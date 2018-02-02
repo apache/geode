@@ -14,8 +14,8 @@
  */
 package org.apache.geode.internal.protocol;
 
-import org.apache.geode.cache.Cache;
 import org.apache.geode.distributed.internal.InternalLocator;
+import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.protocol.protobuf.statistics.NoOpStatistics;
 import org.apache.geode.internal.protocol.protobuf.v1.LocatorMessageExecutionContext;
 import org.apache.geode.internal.protocol.protobuf.v1.MessageExecutionContext;
@@ -23,7 +23,7 @@ import org.apache.geode.internal.protocol.protobuf.v1.ServerMessageExecutionCont
 import org.apache.geode.internal.protocol.protobuf.v1.state.NoSecurityProtobufConnectionStateProcessor;
 
 public class TestExecutionContext {
-  public static MessageExecutionContext getNoAuthCacheExecutionContext(Cache cache) {
+  public static MessageExecutionContext getNoAuthCacheExecutionContext(InternalCache cache) {
     return new ServerMessageExecutionContext(cache, new NoOpStatistics(),
         new NoSecurityProtobufConnectionStateProcessor());
   }

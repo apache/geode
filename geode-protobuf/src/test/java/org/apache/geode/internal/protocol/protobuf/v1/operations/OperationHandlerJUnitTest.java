@@ -27,12 +27,13 @@ import org.apache.geode.test.junit.categories.UnitTest;
 
 @Category(UnitTest.class)
 public class OperationHandlerJUnitTest {
-  protected Cache cacheStub;
+  protected InternalCache cacheStub;
   protected ProtobufSerializationService serializationService;
   protected ProtobufOperationHandler operationHandler;
 
+  // if we name this setUp, then our children override, which is all kinds of annoying.
   @Before
-  public void setUp() throws Exception {
+  public void setUpForChildJUnitTests() throws Exception {
     cacheStub = mock(InternalCache.class);
     serializationService = new ProtobufSerializationService();
   }

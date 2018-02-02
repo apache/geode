@@ -50,8 +50,6 @@ public class PutRequestOperationHandlerJUnitTest extends OperationHandlerJUnitTe
 
   @Before
   public void setUp() throws Exception {
-    super.setUp();
-
     regionMock = mock(Region.class);
     when(regionMock.put(TEST_KEY, TEST_VALUE)).thenReturn(1);
 
