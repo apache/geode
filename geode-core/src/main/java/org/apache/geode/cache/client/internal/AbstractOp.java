@@ -130,8 +130,7 @@ public abstract class AbstractOp implements Op {
       try {
         hdos.writeLong(cnx.getConnectionID());
         hdos.writeLong(userId);
-        getMessage()
-            .setSecurePart(((ConnectionImpl) cnx).getHandShake().encryptBytes(hdos.toByteArray()));
+        getMessage().setSecurePart(((ConnectionImpl) cnx).encryptBytes(hdos.toByteArray()));
       } finally {
         hdos.close();
       }
@@ -162,7 +161,7 @@ public abstract class AbstractOp implements Op {
         }
         return;
       }
-      byte[] bytes = ((ConnectionImpl) cnx).getHandShake().decryptBytes(partBytes);
+      byte[] bytes = ((ConnectionImpl) cnx).decryptBytes(partBytes);
       DataInputStream dis = new DataInputStream(new ByteArrayInputStream(bytes));
       cnx.setConnectionID(dis.readLong());
     }

@@ -176,7 +176,7 @@ public class AcceptorImpl implements Acceptor, Runnable, CommBufferPool {
    * The name of a system property that sets the hand shake timeout (in milliseconds). This is how
    * long a client will wait to hear back from a server.
    */
-  public static final String HANDSHAKE_TIMEOUT_PROPERTY_NAME = "BridgeServer.handShakeTimeout";
+  public static final String HANDSHAKE_TIMEOUT_PROPERTY_NAME = "BridgeServer.handshakeTimeout";
 
   /**
    * The default value of the {@link #HANDSHAKE_TIMEOUT_PROPERTY_NAME} system property.
@@ -186,7 +186,7 @@ public class AcceptorImpl implements Acceptor, Runnable, CommBufferPool {
   /**
    * Test value for handshake timeout
    */
-  protected static final int handShakeTimeout =
+  protected static final int handshakeTimeout =
       Integer.getInteger(HANDSHAKE_TIMEOUT_PROPERTY_NAME, DEFAULT_HANDSHAKE_TIMEOUT_MS).intValue();
 
   /**
@@ -1442,7 +1442,7 @@ public class AcceptorImpl implements Acceptor, Runnable, CommBufferPool {
                 Integer.valueOf(this.maxConnections)}));
         if (communicationMode.expectsConnectionRefusalMessage()) {
           try {
-            ServerHandShakeProcessor.refuse(socket.getOutputStream(),
+            ServerHandshakeProcessor.refuse(socket.getOutputStream(),
                 LocalizedStrings.AcceptorImpl_EXCEEDED_MAX_CONNECTIONS_0
                     .toLocalizedString(Integer.valueOf(this.maxConnections)));
           } catch (Exception ex) {
@@ -1456,7 +1456,7 @@ public class AcceptorImpl implements Acceptor, Runnable, CommBufferPool {
 
     ServerConnection serverConn =
         serverConnectionFactory.makeServerConnection(socket, this.cache, this.crHelper, this.stats,
-            AcceptorImpl.handShakeTimeout, this.socketBufferSize, communicationMode.toString(),
+            AcceptorImpl.handshakeTimeout, this.socketBufferSize, communicationMode.toString(),
             communicationMode.getModeNumber(), this, this.securityService);
 
     synchronized (this.allSCsLock) {
@@ -1480,7 +1480,7 @@ public class AcceptorImpl implements Acceptor, Runnable, CommBufferPool {
             LocalizedStrings.AcceptorImpl_REJECTED_CONNECTION_FROM_0_BECAUSE_REQUEST_REJECTED_BY_POOL,
             new Object[] {serverConn}));
         try {
-          ServerHandShakeProcessor.refuse(socket.getOutputStream(),
+          ServerHandshakeProcessor.refuse(socket.getOutputStream(),
               LocalizedStrings.AcceptorImpl_EXCEEDED_MAX_CONNECTIONS_0
                   .toLocalizedString(Integer.valueOf(this.maxConnections)));
 
@@ -1817,7 +1817,7 @@ public class AcceptorImpl implements Acceptor, Runnable, CommBufferPool {
     releaseCommBuffer(Message.setTLCommBuffer(null));
   }
 
-  private class ClientQueueInitializerTask implements Runnable {
+  private static class ClientQueueInitializerTask implements Runnable {
     private final Socket socket;
     private final boolean isPrimaryServerToClient;
     private final AcceptorImpl acceptor;
@@ -1838,7 +1838,7 @@ public class AcceptorImpl implements Acceptor, Runnable, CommBufferPool {
             acceptor.getAcceptorId(), acceptor.isNotifyBySubscription());
       } catch (IOException ex) {
         closeSocket(socket);
-        if (isRunning()) {
+        if (acceptor.isRunning()) {
           if (!acceptor.loggedAcceptError) {
             acceptor.loggedAcceptError = true;
             if (ex instanceof SocketTimeoutException) {

@@ -87,7 +87,7 @@ import org.apache.geode.internal.cache.tier.sockets.ClientUpdateMessage;
 import org.apache.geode.internal.cache.tier.sockets.ClientUpdateMessageImpl;
 import org.apache.geode.internal.cache.tier.sockets.ClientUpdateMessageImpl.CqNameToOp;
 import org.apache.geode.internal.cache.tier.sockets.HAEventWrapper;
-import org.apache.geode.internal.cache.tier.sockets.HandShake;
+import org.apache.geode.internal.cache.tier.sockets.Handshake;
 import org.apache.geode.internal.i18n.LocalizedStrings;
 import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.internal.logging.log4j.LocalizedMessage;
@@ -276,7 +276,7 @@ public class HARegionQueue implements RegionQueue {
   private CancelCriterion stopper;
 
   /** @since GemFire 5.7 */
-  protected byte clientConflation = HandShake.CONFLATION_DEFAULT;
+  protected byte clientConflation = Handshake.CONFLATION_DEFAULT;
 
   /**
    * Boolean to indicate whether client is a slow receiver
@@ -567,9 +567,9 @@ public class HARegionQueue implements RegionQueue {
       return retVal;
     }
     switch (this.clientConflation) {
-      case HandShake.CONFLATION_OFF:
+      case Handshake.CONFLATION_OFF:
         return false; // always disable
-      case HandShake.CONFLATION_ON:
+      case Handshake.CONFLATION_ON:
         if (event instanceof HAEventWrapper) {
           ClientUpdateMessage cum = (ClientUpdateMessage) this.haContainer.get(event);
           if (cum != null) {
@@ -584,7 +584,7 @@ public class HARegionQueue implements RegionQueue {
         }
         // Oddness
         break;
-      case HandShake.CONFLATION_DEFAULT:
+      case Handshake.CONFLATION_DEFAULT:
         return retVal;
       default:
         throw new InternalGemFireError("Invalid clientConflation");
@@ -1949,7 +1949,7 @@ public class HARegionQueue implements RegionQueue {
 
     return getHARegionQueueInstance(regionName, cache,
         HARegionQueueAttributes.DEFAULT_HARQ_ATTRIBUTES, haRgnQType, isDurable, container, null,
-        HandShake.CONFLATION_DEFAULT, false, Boolean.FALSE);
+        Handshake.CONFLATION_DEFAULT, false, Boolean.FALSE);
   }
 
   /**
@@ -2019,7 +2019,7 @@ public class HARegionQueue implements RegionQueue {
     }
 
     return getHARegionQueueInstance(regionName, cache, hrqa, haRgnQType, isDurable, container, null,
-        HandShake.CONFLATION_DEFAULT, false, Boolean.FALSE);
+        Handshake.CONFLATION_DEFAULT, false, Boolean.FALSE);
   }
 
   public boolean isEmptyAckList() {
@@ -2593,14 +2593,14 @@ public class HARegionQueue implements RegionQueue {
     TestOnlyHARegionQueue(String regionName, InternalCache cache, Map haContainer)
         throws IOException, ClassNotFoundException, CacheException, InterruptedException {
       this(regionName, cache, HARegionQueueAttributes.DEFAULT_HARQ_ATTRIBUTES, haContainer,
-          HandShake.CONFLATION_DEFAULT, false);
+          Handshake.CONFLATION_DEFAULT, false);
       this.initialized.set(true);
     }
 
     TestOnlyHARegionQueue(String regionName, InternalCache cache)
         throws IOException, ClassNotFoundException, CacheException, InterruptedException {
       this(regionName, cache, HARegionQueueAttributes.DEFAULT_HARQ_ATTRIBUTES, new HashMap(),
-          HandShake.CONFLATION_DEFAULT, false);
+          Handshake.CONFLATION_DEFAULT, false);
     }
 
     TestOnlyHARegionQueue(String regionName, InternalCache cache, HARegionQueueAttributes hrqa,
@@ -2621,7 +2621,7 @@ public class HARegionQueue implements RegionQueue {
      */
     TestOnlyHARegionQueue(String regionName, InternalCache cache, HARegionQueueAttributes hrqa)
         throws IOException, ClassNotFoundException, CacheException, InterruptedException {
-      this(regionName, cache, hrqa, new HashMap(), HandShake.CONFLATION_DEFAULT, false);
+      this(regionName, cache, hrqa, new HashMap(), Handshake.CONFLATION_DEFAULT, false);
     }
   }
 
@@ -3699,8 +3699,8 @@ public class HARegionQueue implements RegionQueue {
    * @since GemFire 5.7
    */
   public void setClientConflation(byte value) {
-    if (value != HandShake.CONFLATION_OFF && value != HandShake.CONFLATION_ON
-        && value != HandShake.CONFLATION_DEFAULT) {
+    if (value != Handshake.CONFLATION_OFF && value != Handshake.CONFLATION_ON
+        && value != Handshake.CONFLATION_DEFAULT) {
       throw new IllegalArgumentException("illegal conflation value");
     }
     this.clientConflation = value;

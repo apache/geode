@@ -241,7 +241,7 @@ public class CacheClientProxy implements ClientSession {
   private boolean isPrimary;
 
   /** @since GemFire 5.7 */
-  protected byte clientConflation = HandShake.CONFLATION_DEFAULT;
+  protected byte clientConflation = Handshake.CONFLATION_DEFAULT;
 
   /**
    * Flag to indicate whether to keep a durable client's queue alive
@@ -2271,7 +2271,7 @@ public class CacheClientProxy implements ClientSession {
         boolean createDurableQueue = proxy.proxyID.isDurable();
         boolean canHandleDelta = (proxy.clientVersion.compareTo(Version.GFE_61) >= 0)
             && InternalDistributedSystem.getAnyInstance().getConfig().getDeltaPropagation()
-            && !(this._proxy.clientConflation == HandShake.CONFLATION_ON);
+            && !(this._proxy.clientConflation == Handshake.CONFLATION_ON);
         if ((createDurableQueue || canHandleDelta) && logger.isDebugEnabled()) {
           logger.debug("Creating a durable HA queue");
         }

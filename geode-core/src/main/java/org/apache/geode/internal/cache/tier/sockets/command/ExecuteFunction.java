@@ -16,7 +16,6 @@ package org.apache.geode.internal.cache.tier.sockets.command;
 
 import java.io.IOException;
 import java.util.Collections;
-import java.util.Optional;
 import java.util.Set;
 
 import org.apache.geode.cache.LowMemoryException;
@@ -39,9 +38,9 @@ import org.apache.geode.internal.cache.execute.MemberMappedArgument;
 import org.apache.geode.internal.cache.execute.ServerToClientFunctionResultSender;
 import org.apache.geode.internal.cache.tier.Command;
 import org.apache.geode.internal.cache.tier.MessageType;
+import org.apache.geode.internal.cache.tier.ServerSideHandshake;
 import org.apache.geode.internal.cache.tier.sockets.BaseCommand;
 import org.apache.geode.internal.cache.tier.sockets.ChunkedMessage;
-import org.apache.geode.internal.cache.tier.sockets.HandShake;
 import org.apache.geode.internal.cache.tier.sockets.Message;
 import org.apache.geode.internal.cache.tier.sockets.Part;
 import org.apache.geode.internal.cache.tier.sockets.ServerConnection;
@@ -149,9 +148,9 @@ public class ExecuteFunction extends BaseCommand {
         context = new FunctionContextImpl(cache, functionObject.getId(), args, resultSender);
       }
 
-      HandShake handShake = (HandShake) serverConnection.getHandshake();
-      int earlierClientReadTimeout = handShake.getClientReadTimeout();
-      handShake.setClientReadTimeout(0);
+      ServerSideHandshake handshake = serverConnection.getHandshake();
+      int earlierClientReadTimeout = handshake.getClientReadTimeout();
+      handshake.setClientReadTimeout(0);
       try {
         long startExecution = stats.startTime();
         stats.startFunctionExecution(functionObject.hasResult());
@@ -179,7 +178,7 @@ public class ExecuteFunction extends BaseCommand {
         stats.endFunctionExecutionWithException(functionObject.hasResult());
         throw new FunctionException(exception);
       } finally {
-        handShake.setClientReadTimeout(earlierClientReadTimeout);
+        handshake.setClientReadTimeout(earlierClientReadTimeout);
       }
     } catch (IOException ioException) {
       logger.warn(LocalizedMessage.create(

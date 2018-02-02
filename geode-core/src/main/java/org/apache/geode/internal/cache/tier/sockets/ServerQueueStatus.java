@@ -29,7 +29,7 @@ public class ServerQueueStatus {
   /** queueSize of HARegionQueue for this client */
   private int qSize = 0;
   /** Endpoint type for this endpoint */
-  private byte epType = (byte) 0;
+  private byte endpointType = (byte) 0;
   private DistributedMember memberId = null;
   /** size of the PDX registry on the server. Currently only set for gateways */
   private int pdxSize = 0;
@@ -44,47 +44,39 @@ public class ServerQueueStatus {
   /**
    * Constructor Called when connectionsPerServer is nto equal to 0
    *
-   * @param epType
-   * @param qSize
+   * @param endpointType
+   * @param queueSize
    */
-  public ServerQueueStatus(byte epType, int qSize, DistributedMember memberId) {
-    this.qSize = qSize;
-    this.epType = epType;
+  public ServerQueueStatus(byte endpointType, int queueSize, DistributedMember memberId) {
+    this.qSize = queueSize;
+    this.endpointType = endpointType;
     this.memberId = memberId;
 
   }
 
   /**
    * returns true if the endpoint is primary
-   *
-   * @return epType
    */
   public boolean isPrimary() {
-    return this.epType == (byte) 2;
+    return this.endpointType == (byte) 2;
   }
 
   /**
    * returns true if the endpoint is redundant
-   *
-   * @return epType
    */
   public boolean isRedundant() {
-    return this.epType == (byte) 1;
+    return this.endpointType == (byte) 1;
   }
 
   /**
    * returns true if the endpoint is Non redundant
-   *
-   * @return epType
    */
   public boolean isNonRedundant() {
-    return this.epType == (byte) 0;
+    return this.endpointType == (byte) 0;
   }
 
   /**
-   * returns qSize of the HARegionQueue for this client
-   *
-   * @return qSize
+   * returns size of the HARegionQueue for this client
    */
   public int getServerQueueSize() {
     return this.qSize;
@@ -92,8 +84,8 @@ public class ServerQueueStatus {
 
   public String toString() {
     StringBuffer buffer = new StringBuffer();
-    buffer.append("ServerQueueStatus [").append("qSize=").append(this.qSize).append("; epType=")
-        .append(getTypeAsString()).append("]");
+    buffer.append("ServerQueueStatus [").append("queueSize=").append(this.qSize)
+        .append("; endpointType=").append(getTypeAsString()).append("]");
     return buffer.toString();
   }
 
