@@ -476,7 +476,7 @@ public class LocalRegion extends AbstractRegion implements LoaderHelperFactory,
    * <p>
    * TODO: move this to ClientMetadataService into {@code Map<Region, Lock>}
    */
-  public final Lock clientMetaDataLock = new ReentrantLock();
+  private final Lock clientMetaDataLock = new ReentrantLock();
 
   /**
    * There seem to be cases where a region can be created and yet the distributed system is not yet
@@ -12162,4 +12162,8 @@ public class LocalRegion extends AbstractRegion implements LoaderHelperFactory,
     return getFullPath();
   }
 
+  @Override
+  public Lock getClientMetaDataLock() {
+    return clientMetaDataLock;
+  }
 }

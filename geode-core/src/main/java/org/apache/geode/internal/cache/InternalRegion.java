@@ -15,6 +15,7 @@
 package org.apache.geode.internal.cache;
 
 import java.io.IOException;
+import java.util.concurrent.locks.Lock;
 
 import org.apache.geode.CancelCriterion;
 import org.apache.geode.Statistics;
@@ -96,6 +97,8 @@ public interface InternalRegion extends Region, HasCachePerfStats, RegionEntryCo
   void recordEvent(InternalCacheEvent event);
 
   boolean isProxy();
+
+  Lock getClientMetaDataLock();
 
   IndexManager getIndexManager();
 
