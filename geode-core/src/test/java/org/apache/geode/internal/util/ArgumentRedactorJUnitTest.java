@@ -15,11 +15,18 @@
 
 package org.apache.geode.internal.util;
 
+import static org.apache.geode.distributed.ConfigurationProperties.CLUSTER_SSL_ENABLED;
+import static org.apache.geode.distributed.ConfigurationProperties.CLUSTER_SSL_TRUSTSTORE_PASSWORD;
+import static org.apache.geode.distributed.ConfigurationProperties.CONSERVE_SOCKETS;
+import static org.apache.geode.distributed.ConfigurationProperties.GATEWAY_SSL_TRUSTSTORE_PASSWORD;
+import static org.apache.geode.distributed.ConfigurationProperties.SERVER_SSL_KEYSTORE_PASSWORD;
+import static org.apache.geode.internal.util.ArgumentRedactor.isTaboo;
 import static org.apache.geode.internal.util.ArgumentRedactor.redact;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertEquals;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 import org.junit.Test;
@@ -37,6 +44,28 @@ public class ArgumentRedactorJUnitTest {
   private static final String somePasswordProperty = "redactorTest.aPassword";
   private static final String someOtherPasswordProperty =
       "redactorTest.aPassword-withCharactersAfterward";
+
+  @Test
+  public void redactorWillIdentifySampleTabooProperties() {
+    List<String> shouldBeRedacted = Arrays.asList("password", "security-username",
+        "security-manager", CLUSTER_SSL_TRUSTSTORE_PASSWORD, GATEWAY_SSL_TRUSTSTORE_PASSWORD,
+        SERVER_SSL_KEYSTORE_PASSWORD, "javax.net.ssl.keyStorePassword",
+        "javax.net.ssl.keyStoreType", "sysprop-value");
+    for (String key : shouldBeRedacted) {
+      assertThat(isTaboo(key)).describedAs("This key should be identified as taboo: " + key)
+          .isTrue();
+    }
+  }
+
+  @Test
+  public void redactorWillAllowSampleMiscProperties() {
+    List<String> shouldNotBeRedacted =
+        Arrays.asList("gemfire.security-manager", CLUSTER_SSL_ENABLED, CONSERVE_SOCKETS);
+    for (String key : shouldNotBeRedacted) {
+      assertThat(isTaboo(key)).describedAs("This key should not be identified as taboo: " + key)
+          .isFalse();
+    }
+  }
 
   @Test
   public void argListOfPasswordsAllRedact() {

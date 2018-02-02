@@ -137,7 +137,7 @@ public class ArgumentRedactor {
    *
    * @return true if the value should be redacted, otherwise false.
    */
-  private static boolean isTaboo(String key) {
+  static boolean isTaboo(String key) {
     if (key == null) {
       return false;
     }
