@@ -118,6 +118,7 @@ import org.apache.geode.internal.cache.FilterProfile;
 import org.apache.geode.internal.cache.GemFireCacheImpl;
 import org.apache.geode.internal.cache.InitialImageOperation;
 import org.apache.geode.internal.cache.InternalCache;
+import org.apache.geode.internal.cache.InternalRegion;
 import org.apache.geode.internal.cache.InternalRegionArguments;
 import org.apache.geode.internal.cache.LocalRegion;
 import org.apache.geode.internal.cache.PartitionedRegion;
@@ -1110,7 +1111,7 @@ public class CacheCreation implements InternalCache {
   }
 
   @Override
-  public Set<LocalRegion> getAllRegions() {
+  public Set<InternalRegion> getAllRegions() {
     throw new UnsupportedOperationException(LocalizedStrings.SHOULDNT_INVOKE.toLocalizedString());
   }
 
@@ -1180,7 +1181,7 @@ public class CacheCreation implements InternalCache {
   }
 
   @Override
-  public Set<LocalRegion> getApplicationRegions() {
+  public Set<InternalRegion> getApplicationRegions() {
     throw new UnsupportedOperationException(LocalizedStrings.SHOULDNT_INVOKE.toLocalizedString());
   }
 
@@ -2061,7 +2062,7 @@ public class CacheCreation implements InternalCache {
   }
 
   @Override
-  public void setRegionByPath(final String path, final LocalRegion r) {
+  public void setRegionByPath(final String path, final InternalRegion r) {
     throw new UnsupportedOperationException(LocalizedStrings.SHOULDNT_INVOKE.toLocalizedString());
   }
 
@@ -2086,24 +2087,24 @@ public class CacheCreation implements InternalCache {
   }
 
   @Override
-  public <K, V> RegionAttributes<K, V> invokeRegionBefore(final LocalRegion parent,
+  public <K, V> RegionAttributes<K, V> invokeRegionBefore(final InternalRegion parent,
       final String name, final RegionAttributes<K, V> attrs,
       final InternalRegionArguments internalRegionArgs) {
     throw new UnsupportedOperationException(LocalizedStrings.SHOULDNT_INVOKE.toLocalizedString());
   }
 
   @Override
-  public void invokeRegionAfter(final LocalRegion region) {
+  public void invokeRegionAfter(final InternalRegion region) {
     throw new UnsupportedOperationException(LocalizedStrings.SHOULDNT_INVOKE.toLocalizedString());
   }
 
   @Override
-  public void invokeBeforeDestroyed(final LocalRegion region) {
+  public void invokeBeforeDestroyed(final InternalRegion region) {
     throw new UnsupportedOperationException(LocalizedStrings.SHOULDNT_INVOKE.toLocalizedString());
   }
 
   @Override
-  public void invokeCleanupFailedInitialization(final LocalRegion region) {
+  public void invokeCleanupFailedInitialization(final InternalRegion region) {
     throw new UnsupportedOperationException(LocalizedStrings.SHOULDNT_INVOKE.toLocalizedString());
   }
 
@@ -2159,7 +2160,7 @@ public class CacheCreation implements InternalCache {
   }
 
   @Override
-  public boolean removeRoot(final LocalRegion rootRgn) {
+  public boolean removeRoot(final InternalRegion rootRgn) {
     throw new UnsupportedOperationException(LocalizedStrings.SHOULDNT_INVOKE.toLocalizedString());
   }
 
@@ -2255,7 +2256,7 @@ public class CacheCreation implements InternalCache {
 
   @Override
   public void invokeRegionEntrySynchronizationListenersAfterSynchronization(
-      InternalDistributedMember sender, LocalRegion region,
+      InternalDistributedMember sender, InternalRegion region,
       List<InitialImageOperation.Entry> entriesToSynchronize) {
     throw new UnsupportedOperationException(LocalizedStrings.SHOULDNT_INVOKE.toLocalizedString());
   }

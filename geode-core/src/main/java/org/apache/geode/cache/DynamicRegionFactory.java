@@ -872,7 +872,7 @@ public abstract class DynamicRegionFactory {
 
     // This is an internal uses only region
     @Override
-    protected boolean isSecret() {
+    public boolean isSecret() {
       return true;
     }
 
@@ -981,7 +981,7 @@ public abstract class DynamicRegionFactory {
 
     // This is an internal uses only region
     @Override
-    protected boolean isSecret() {
+    public boolean isSecret() {
       return true;
     }
 

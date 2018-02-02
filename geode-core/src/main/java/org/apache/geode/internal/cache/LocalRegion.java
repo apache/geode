@@ -1836,7 +1836,8 @@ public class LocalRegion extends AbstractRegion implements LoaderHelperFactory,
   }
 
   /** a variant of subregions() that does not perform a readiness check */
-  Set basicSubregions(boolean recursive) {
+  @Override
+  public Set basicSubregions(boolean recursive) {
     return new SubregionsSet(recursive);
   }
 
@@ -2275,7 +2276,8 @@ public class LocalRegion extends AbstractRegion implements LoaderHelperFactory,
    * @see DistributedRegion#initialize(InputStream, InternalDistributedMember,
    *      InternalRegionArguments)
    */
-  protected void initialize(InputStream snapshotInputStream, InternalDistributedMember imageTarget,
+  @Override
+  public void initialize(InputStream snapshotInputStream, InternalDistributedMember imageTarget,
       InternalRegionArguments internalRegionArgs)
       throws TimeoutException, IOException, ClassNotFoundException {
     if (!isInternalRegion()) {
@@ -4553,7 +4555,8 @@ public class LocalRegion extends AbstractRegion implements LoaderHelperFactory,
    * @param destroyedRegionOk true if it is okay to return a region that isDestroyed
    * @see DestroyRegionOperation
    */
-  Region getSubregion(String path, boolean destroyedRegionOk) {
+  @Override
+  public Region getSubregion(String path, boolean destroyedRegionOk) {
     if (destroyedRegionOk) {
       checkCacheClosed();
     } else if (isDestroyed()) {
@@ -4657,7 +4660,8 @@ public class LocalRegion extends AbstractRegion implements LoaderHelperFactory,
     return initLevel;
   }
 
-  boolean checkForInitialization() {
+  @Override
+  public boolean checkForInitialization() {
     if (this.initialized) {
       return true;
     }
@@ -4679,6 +4683,7 @@ public class LocalRegion extends AbstractRegion implements LoaderHelperFactory,
   }
 
   /** wait on the initialization Latch based on thread requirements */
+  @Override
   public void waitOnInitialization() {
     if (this.initialized) {
       return;
@@ -6296,7 +6301,8 @@ public class LocalRegion extends AbstractRegion implements LoaderHelperFactory,
    *
    * @see DistributedRegion#postDestroyRegion(boolean, RegionEventImpl)
    */
-  protected void postCreateRegion() {
+  @Override
+  public void postCreateRegion() {
     if (getEvictionAttributes().getAlgorithm().isLRUHeap()) {
       final LogWriter logWriter = this.cache.getLogger();
       float evictionPercentage = DEFAULT_HEAPLRU_EVICTION_HEAP_PERCENTAGE;
@@ -6968,6 +6974,7 @@ public class LocalRegion extends AbstractRegion implements LoaderHelperFactory,
   }
 
   /** @return true if initialization is complete */
+  @Override
   public boolean isInitialized() {
     if (this.initialized) {
       return true;
@@ -7028,7 +7035,8 @@ public class LocalRegion extends AbstractRegion implements LoaderHelperFactory,
   /**
    * Cleans up any resources that may have been allocated for this region during its initialization.
    */
-  void cleanupFailedInitialization() {
+  @Override
+  public void cleanupFailedInitialization() {
     // mark as destroyed fixes 49555.
     this.isDestroyed = true;
 
@@ -7130,7 +7138,7 @@ public class LocalRegion extends AbstractRegion implements LoaderHelperFactory,
       if (logger.isDebugEnabled()) {
         logger.debug("Trying reinitializing region, fullPath={}", thePath);
       }
-      region = this.cache.getReinitializingRegion(thePath);
+      region = (LocalRegion) this.cache.getReinitializingRegion(thePath);
       if (logger.isDebugEnabled()) {
         logger.debug("Reinitialized region is {}", region);
       }
@@ -7260,7 +7268,8 @@ public class LocalRegion extends AbstractRegion implements LoaderHelperFactory,
    * Called when the cache is closed. Behaves just like a Region.close except the operation is
    * CACHE_CLOSE
    */
-  void handleCacheClose(Operation operation) {
+  @Override
+  public void handleCacheClose(Operation operation) {
     RegionEventImpl event =
         new RegionEventImpl(this, operation, null, false, getMyId(), generateEventID());
     if (!this.isDestroyed) { // don't destroy if already destroyed
@@ -10346,6 +10355,7 @@ public class LocalRegion extends AbstractRegion implements LoaderHelperFactory,
   /**
    * @return Returns the isUsedForPartitionedRegionBucket.
    */
+  @Override
   public boolean isUsedForPartitionedRegionBucket() {
     return this.isUsedForPartitionedRegionBucket;
   }
@@ -10392,6 +10402,7 @@ public class LocalRegion extends AbstractRegion implements LoaderHelperFactory,
   /**
    * @return Returns the isUsedForMetaRegion.
    */
+  @Override
   public boolean isUsedForMetaRegion() {
     return this.isUsedForMetaRegion;
   }
@@ -10403,6 +10414,7 @@ public class LocalRegion extends AbstractRegion implements LoaderHelperFactory,
   /**
    * @return true if this is not a user visible region
    */
+  @Override
   public boolean isInternalRegion() {
     return isSecret() || isUsedForMetaRegion() || isUsedForPartitionedRegionAdmin()
         || isUsedForPartitionedRegionBucket();
@@ -10472,7 +10484,8 @@ public class LocalRegion extends AbstractRegion implements LoaderHelperFactory,
   /**
    * Used to indicate that this region is used for internal purposes
    */
-  protected boolean isSecret() {
+  @Override
+  public boolean isSecret() {
     return false;
   }
 
@@ -10509,7 +10522,8 @@ public class LocalRegion extends AbstractRegion implements LoaderHelperFactory,
    *
    * @since GemFire 5.7
    */
-  void cleanupForClient(CacheClientNotifier clientNotifier, ClientProxyMembershipID client) {
+  @Override
+  public void cleanupForClient(CacheClientNotifier clientNotifier, ClientProxyMembershipID client) {
     if (this.cache.isClosed() || this.isDestroyed) {
       return;
     }
@@ -10877,7 +10891,8 @@ public class LocalRegion extends AbstractRegion implements LoaderHelperFactory,
     return basicGetEntry(keyInfo.getKey());
   }
 
-  void senderCreated() {
+  @Override
+  public void senderCreated() {
     distributeUpdatedProfileOnSenderCreation();
   }
 

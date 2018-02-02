@@ -749,7 +749,7 @@ public class CacheDistributionAdvisor extends DistributionAdvisor {
       try {
         Assert.assertTrue(adviseePath != null, "adviseePath was null");
 
-        LocalRegion lclRgn;
+        InternalRegion lclRgn;
         int oldLevel = LocalRegion.setThreadInitLevelRequirement(LocalRegion.ANY_INIT);
         try {
           InternalCache cache = dm.getCache();

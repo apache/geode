@@ -121,7 +121,7 @@ public class FindVersionTagOperation {
     protected void process(ClusterDistributionManager dm) {
       VersionTag result = null;
       try {
-        LocalRegion r = findRegion(dm);
+        LocalRegion r = (LocalRegion) findRegion(dm);
         if (r == null) {
           if (logger.isDebugEnabled()) {
             logger.debug("Region not found, so ignoring version tag request: {}", this);
@@ -155,7 +155,7 @@ public class FindVersionTagOperation {
       }
     }
 
-    private LocalRegion findRegion(ClusterDistributionManager dm) {
+    private InternalRegion findRegion(ClusterDistributionManager dm) {
       try {
         InternalCache cache = dm.getCache();
         if (cache != null) {

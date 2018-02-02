@@ -25,7 +25,7 @@ import org.apache.geode.cache.execute.FunctionContext;
 import org.apache.geode.internal.InternalEntity;
 import org.apache.geode.internal.cache.GemFireCacheImpl;
 import org.apache.geode.internal.cache.InternalCache;
-import org.apache.geode.internal.cache.LocalRegion;
+import org.apache.geode.internal.cache.InternalRegion;
 import org.apache.geode.management.internal.security.ResourcePermissions;
 import org.apache.geode.security.ResourcePermission;
 
@@ -35,7 +35,7 @@ public class GetRegionNamesFunction implements Function, InternalEntity {
     InternalCache cache = GemFireCacheImpl.getInstance();
 
     Set<String> regions =
-        cache.getApplicationRegions().stream().map(LocalRegion::getName).collect(toSet());
+        cache.getApplicationRegions().stream().map(InternalRegion::getName).collect(toSet());
 
     context.getResultSender().lastResult(regions);
   }

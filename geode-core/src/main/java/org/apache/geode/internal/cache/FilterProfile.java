@@ -1932,7 +1932,7 @@ public class FilterProfile implements DataSerializableFixedID {
       try {
         InternalCache cache = dm.getCache();
         if (cache != null) {
-          LocalRegion lr = cache.getRegionByPathForProcessing(regionName);
+          LocalRegion lr = (LocalRegion) cache.getRegionByPathForProcessing(regionName);
           if (lr instanceof CacheDistributionAdvisee) {
             result = (CacheDistributionAdvisee) lr;
           }
