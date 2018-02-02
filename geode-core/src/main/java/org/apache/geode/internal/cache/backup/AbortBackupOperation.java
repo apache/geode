@@ -31,8 +31,8 @@ class AbortBackupOperation extends BackupOperation {
   private final AbortBackupFactory abortBackupFactory;
 
   AbortBackupOperation(DistributionManager dm, InternalDistributedMember member,
-                       InternalCache cache, Set<InternalDistributedMember> recipients,
-                       AbortBackupFactory abortBackupFactory) {
+      InternalCache cache, Set<InternalDistributedMember> recipients,
+      AbortBackupFactory abortBackupFactory) {
     super(dm);
     this.member = member;
     this.cache = cache;

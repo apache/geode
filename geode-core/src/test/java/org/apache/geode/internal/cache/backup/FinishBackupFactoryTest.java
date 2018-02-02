@@ -74,8 +74,7 @@ public class FinishBackupFactoryTest {
 
   @Test
   public void createFinishBackupReturnsFinishBackup() throws Exception {
-    assertThat(finishBackupFactory.createFinishBackup(cache))
-        .isInstanceOf(FinishBackup.class);
+    assertThat(finishBackupFactory.createFinishBackup(cache)).isInstanceOf(FinishBackup.class);
   }
 
   @Test

@@ -34,7 +34,7 @@ public class AbortBackupRequest extends CliLegacyMessage {
   }
 
   AbortBackupRequest(InternalDistributedMember sender, Set<InternalDistributedMember> recipients,
-                     int processorId, AbortBackupFactory abortBackupFactory) {
+      int processorId, AbortBackupFactory abortBackupFactory) {
     setSender(sender);
     setRecipients(recipients);
     this.msgId = processorId;

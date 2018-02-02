@@ -74,8 +74,7 @@ public class AbortBackupFactoryTest {
 
   @Test
   public void createFinishBackupReturnsFinishBackup() {
-    assertThat(abortBackupFactory.createAbortBackup(cache))
-        .isInstanceOf(AbortBackup.class);
+    assertThat(abortBackupFactory.createAbortBackup(cache)).isInstanceOf(AbortBackup.class);
   }
 
   @Test

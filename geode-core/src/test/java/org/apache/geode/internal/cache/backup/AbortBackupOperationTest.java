@@ -77,9 +77,8 @@ public class AbortBackupOperationTest {
 
     when(backupReplyProcessor.getProcessorId()).thenReturn(42);
 
-    when(
-        abortBackupFactory.createReplyProcessor(eq(abortBackupOperation), eq(dm), eq(recipients)))
-            .thenReturn(backupReplyProcessor);
+    when(abortBackupFactory.createReplyProcessor(eq(abortBackupOperation), eq(dm), eq(recipients)))
+        .thenReturn(backupReplyProcessor);
     when(abortBackupFactory.createRequest(eq(sender), eq(recipients), eq(42)))
         .thenReturn(abortBackupRequest);
     when(abortBackupFactory.createAbortBackup(eq(cache))).thenReturn(abortBackup);
@@ -99,9 +98,9 @@ public class AbortBackupOperationTest {
 
   @Test
   public void sendReturnsResultsForAllMembers() throws Exception {
-    MemberWithPersistentIds[] ids = new MemberWithPersistentIds[] {
-        new MemberWithPersistentIds(member1, new HashSet<>()),
-        new MemberWithPersistentIds(member2, new HashSet<>())};
+    MemberWithPersistentIds[] ids =
+        new MemberWithPersistentIds[] {new MemberWithPersistentIds(member1, new HashSet<>()),
+            new MemberWithPersistentIds(member2, new HashSet<>())};
 
     doAnswer(invokeAddToResults(ids)).when(backupReplyProcessor).waitForReplies();
 
@@ -142,8 +141,7 @@ public class AbortBackupOperationTest {
 
   @Test(expected = ReplyException.class)
   public void sendShouldThrowReplyExceptionWithNoCauseFromWaitForReplies() throws Exception {
-    doThrow(new ReplyException("expected exception")).when(backupReplyProcessor)
-        .waitForReplies();
+    doThrow(new ReplyException("expected exception")).when(backupReplyProcessor).waitForReplies();
     abortBackupOperation.send();
   }
 

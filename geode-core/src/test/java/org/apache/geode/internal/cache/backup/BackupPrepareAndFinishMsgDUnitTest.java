@@ -150,8 +150,8 @@ public abstract class BackupPrepareAndFinishMsgDUnitTest extends CacheTestCase {
     future = CompletableFuture.runAsync(function);
     Awaitility.await().atMost(5, TimeUnit.SECONDS)
         .until(() -> assertTrue(backupLock.getQueueLength() > 0));
-    new FinishBackupOperation(dm, dm.getId(), dm.getCache(), recipients,
-        new FinishBackupFactory()).send();
+    new FinishBackupOperation(dm, dm.getId(), dm.getCache(), recipients, new FinishBackupFactory())
+        .send();
     future.get(5, TimeUnit.SECONDS);
   }
 
@@ -164,8 +164,8 @@ public abstract class BackupPrepareAndFinishMsgDUnitTest extends CacheTestCase {
     List<CompletableFuture<?>> futureList = doReadActions();
     CompletableFuture.allOf(futureList.toArray(new CompletableFuture<?>[futureList.size()]));
     assertTrue(backupLock.getQueueLength() == 0);
-    new FinishBackupOperation(dm, dm.getId(), dm.getCache(), recipients,
-        new FinishBackupFactory()).send();
+    new FinishBackupOperation(dm, dm.getId(), dm.getCache(), recipients, new FinishBackupFactory())
+        .send();
   }
 
   private void verifyKeyValuePair(Integer key, Integer expectedValue) {
