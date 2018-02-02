@@ -14,7 +14,8 @@
  */
 package org.apache.geode.internal.cache.tier.sockets;
 
-import static org.apache.geode.distributed.ConfigurationProperties.*;
+import static org.apache.geode.distributed.ConfigurationProperties.SECURITY_CLIENT_ACCESSOR_PP;
+import static org.apache.geode.distributed.ConfigurationProperties.SECURITY_CLIENT_AUTHENTICATOR;
 
 import java.io.BufferedOutputStream;
 import java.io.DataInputStream;
@@ -327,20 +328,25 @@ public class CacheClientNotifier {
               new IllegalArgumentException("Invalid conflation byte"), clientVersion);
           return;
       }
-
-      proxy = registerClient(socket, proxyID, proxy, isPrimary, clientConflation, clientVersion,
-          acceptorId, notifyBySubscription);
-
+      Object subject = null;
       Properties credentials =
           HandShake.readCredentials(dis, dos, system, this.cache.getSecurityService());
-      if (credentials != null && proxy != null) {
+      if (credentials != null) {
         if (securityLogWriter.fineEnabled()) {
           securityLogWriter
               .fine("CacheClientNotifier: verifying credentials for proxyID: " + proxyID);
         }
-        Object subject =
+        subject =
             HandShake.verifyCredentials(authenticator, credentials, system.getSecurityProperties(),
                 this.logWriter, this.securityLogWriter, member, this.cache.getSecurityService());
+      }
+
+      Subject shiroSubject =
+          subject != null && subject instanceof Subject ? (Subject) subject : null;
+      proxy = registerClient(socket, proxyID, proxy, isPrimary, clientConflation, clientVersion,
+          acceptorId, notifyBySubscription, shiroSubject);
+
+      if (proxy != null && subject != null) {
         if (subject instanceof Principal) {
           Principal principal = (Principal) subject;
           if (securityLogWriter.fineEnabled()) {
@@ -361,8 +367,6 @@ public class CacheClientNotifier {
             authzCallback.init(principal, member, this.getCache());
           }
           proxy.setPostAuthzCallback(authzCallback);
-        } else if (subject instanceof Subject) {
-          proxy.setSubject((Subject) subject);
         }
       }
     } catch (ClassNotFoundException e) {
@@ -413,7 +417,8 @@ public class CacheClientNotifier {
    */
   private CacheClientProxy registerClient(Socket socket, ClientProxyMembershipID proxyId,
       CacheClientProxy proxy, boolean isPrimary, byte clientConflation, Version clientVersion,
-      long acceptorId, boolean notifyBySubscription) throws IOException, CacheException {
+      long acceptorId, boolean notifyBySubscription, Subject subject)
+      throws IOException, CacheException {
     CacheClientProxy l_proxy = proxy;
 
     // Initialize the socket
@@ -456,10 +461,12 @@ public class CacheClientNotifier {
               "CacheClientNotifier: No proxy exists for durable client with id {}. It must be created.",
               proxyId.getDurableId());
         }
-        l_proxy = new CacheClientProxy(this, socket, proxyId, isPrimary, clientConflation,
-            clientVersion, acceptorId, notifyBySubscription, this.cache.getSecurityService());
+        l_proxy =
+            new CacheClientProxy(this, socket, proxyId, isPrimary, clientConflation, clientVersion,
+                acceptorId, notifyBySubscription, this.cache.getSecurityService(), subject);
         successful = this.initializeProxy(l_proxy);
       } else {
+        l_proxy.setSubject(subject);
         if (proxy.isPrimary()) {
           epType = (byte) 2;
         } else {
@@ -534,8 +541,9 @@ public class CacheClientNotifier {
 
       if (toCreateNewProxy) {
         // Create the new proxy for this non-durable client
-        l_proxy = new CacheClientProxy(this, socket, proxyId, isPrimary, clientConflation,
-            clientVersion, acceptorId, notifyBySubscription, this.cache.getSecurityService());
+        l_proxy =
+            new CacheClientProxy(this, socket, proxyId, isPrimary, clientConflation, clientVersion,
+                acceptorId, notifyBySubscription, this.cache.getSecurityService(), subject);
         successful = this.initializeProxy(l_proxy);
       }
     }
