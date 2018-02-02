@@ -14,7 +14,6 @@
  */
 package org.apache.geode.internal.cache.backup;
 
-import java.io.File;
 import java.io.IOException;
 import java.util.HashSet;
 
@@ -24,14 +23,10 @@ import org.apache.geode.internal.cache.InternalCache;
 class FinishBackup {
 
   private final InternalCache cache;
-  private final File targetDir;
-  private final File baselineDir;
   private final boolean abort;
 
-  FinishBackup(InternalCache cache, File targetDir, File baselineDir, boolean abort) {
+  FinishBackup(InternalCache cache, boolean abort) {
     this.cache = cache;
-    this.targetDir = targetDir;
-    this.baselineDir = baselineDir;
     this.abort = abort;
   }
 
@@ -40,7 +35,7 @@ class FinishBackup {
     if (cache == null) {
       persistentIds = new HashSet<>();
     } else {
-      persistentIds = cache.getBackupService().doBackup(targetDir, baselineDir, abort);
+      persistentIds = cache.getBackupService().doBackup(abort);
     }
     return persistentIds;
   }

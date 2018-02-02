@@ -55,9 +55,7 @@ import org.apache.geode.cache.query.QueryInvocationTargetException;
 import org.apache.geode.cache.query.TypeMismatchException;
 import org.apache.geode.cache30.CacheTestCase;
 import org.apache.geode.distributed.internal.DistributionManager;
-import org.apache.geode.internal.cache.DiskStoreImpl;
 import org.apache.geode.internal.cache.GemFireCacheImpl;
-import org.apache.geode.internal.cache.InternalRegion;
 import org.apache.geode.internal.cache.LocalRegion;
 import org.apache.geode.test.junit.categories.DistributedTest;
 
@@ -147,12 +145,12 @@ public abstract class BackupPrepareAndFinishMsgDUnitTest extends CacheTestCase {
     Set recipients = dm.getOtherDistributionManagerIds();
     Future<Void> future = null;
     new PrepareBackupOperation(dm, dm.getId(), dm.getCache(), recipients,
-        new PrepareBackupFactory()).send();
+        new PrepareBackupFactory(), diskDirs[0], null).send();
     ReentrantLock backupLock = ((LocalRegion) region).getDiskStore().getBackupLock();
     future = CompletableFuture.runAsync(function);
     Awaitility.await().atMost(5, TimeUnit.SECONDS)
         .until(() -> assertTrue(backupLock.getQueueLength() > 0));
-    new FinishBackupOperation(dm, dm.getId(), dm.getCache(), recipients, diskDirs[0], null, false,
+    new FinishBackupOperation(dm, dm.getId(), dm.getCache(), recipients, false,
         new FinishBackupFactory()).send();
     future.get(5, TimeUnit.SECONDS);
   }
@@ -161,12 +159,12 @@ public abstract class BackupPrepareAndFinishMsgDUnitTest extends CacheTestCase {
     DistributionManager dm = GemFireCacheImpl.getInstance().getDistributionManager();
     Set recipients = dm.getOtherDistributionManagerIds();
     new PrepareBackupOperation(dm, dm.getId(), dm.getCache(), recipients,
-        new PrepareBackupFactory()).send();
+        new PrepareBackupFactory(), diskDirs[0], null).send();
     ReentrantLock backupLock = ((LocalRegion) region).getDiskStore().getBackupLock();
     List<CompletableFuture<?>> futureList = doReadActions();
     CompletableFuture.allOf(futureList.toArray(new CompletableFuture<?>[futureList.size()]));
     assertTrue(backupLock.getQueueLength() == 0);
-    new FinishBackupOperation(dm, dm.getId(), dm.getCache(), recipients, diskDirs[0], null, false,
+    new FinishBackupOperation(dm, dm.getId(), dm.getCache(), recipients, false,
         new FinishBackupFactory()).send();
   }
 

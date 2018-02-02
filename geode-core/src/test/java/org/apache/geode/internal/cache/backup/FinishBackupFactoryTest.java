@@ -18,7 +18,6 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
-import java.io.File;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -69,14 +68,14 @@ public class FinishBackupFactoryTest {
 
   @Test
   public void createRequestReturnsFinishBackupRequest() throws Exception {
-    assertThat(finishBackupFactory.createRequest(sender, recipients, 1, new File("targetDir"),
-        new File("baselineDir"), false)).isInstanceOf(FinishBackupRequest.class);
+    assertThat(finishBackupFactory.createRequest(sender, recipients, 1, false))
+        .isInstanceOf(FinishBackupRequest.class);
   }
 
   @Test
   public void createFinishBackupReturnsFinishBackup() throws Exception {
-    assertThat(finishBackupFactory.createFinishBackup(cache, new File("targetDir"),
-        new File("baselineDir"), false)).isInstanceOf(FinishBackup.class);
+    assertThat(finishBackupFactory.createFinishBackup(cache, false))
+        .isInstanceOf(FinishBackup.class);
   }
 
   @Test

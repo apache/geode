@@ -70,10 +70,10 @@ public class BackupService {
     return Executors.newSingleThreadExecutor(threadFactory);
   }
 
-  public HashSet<PersistentID> prepareBackup(InternalDistributedMember sender)
-      throws IOException, InterruptedException {
+  public HashSet<PersistentID> prepareBackup(InternalDistributedMember sender, File targetDir,
+      File baselineDir) throws IOException, InterruptedException {
     validateRequestingAdmin(sender);
-    BackupTask backupTask = new BackupTask(cache);
+    BackupTask backupTask = new BackupTask(cache, targetDir, baselineDir);
     if (!currentTask.compareAndSet(null, backupTask)) {
       throw new IOException("Another backup already in progress");
     }
@@ -81,8 +81,7 @@ public class BackupService {
     return backupTask.awaitLockAcquisition();
   }
 
-  public HashSet<PersistentID> doBackup(File targetDir, File baselineDir, boolean abort)
-      throws IOException {
+  public HashSet<PersistentID> doBackup(boolean abort) throws IOException {
     BackupTask task = currentTask.get();
     if (task == null) {
       if (abort) {
@@ -90,7 +89,7 @@ public class BackupService {
       }
       throw new IOException("No backup currently in progress");
     }
-    task.notifyOtherMembersReady(targetDir, baselineDir, abort);
+    task.notifyOtherMembersReady(abort);
 
     HashSet<PersistentID> result;
     try {

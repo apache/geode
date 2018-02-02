@@ -18,6 +18,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
+import java.io.File;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -43,6 +44,7 @@ public class PrepareBackupFactoryTest {
   private Set<InternalDistributedMember> recipients;
   private InternalDistributedMember member;
   private InternalCache cache;
+  private File targetDir;
 
   @Before
   public void setUp() throws Exception {
@@ -51,6 +53,7 @@ public class PrepareBackupFactoryTest {
     sender = mock(InternalDistributedMember.class);
     member = mock(InternalDistributedMember.class);
     cache = mock(InternalCache.class);
+    targetDir = mock(File.class);
 
     recipients = new HashSet<>();
 
@@ -68,13 +71,13 @@ public class PrepareBackupFactoryTest {
 
   @Test
   public void createRequestReturnsPrepareBackupRequest() throws Exception {
-    assertThat(prepareBackupFactory.createRequest(sender, recipients, 1))
+    assertThat(prepareBackupFactory.createRequest(sender, recipients, 1, targetDir, null))
         .isInstanceOf(PrepareBackupRequest.class);
   }
 
   @Test
   public void createPrepareBackupReturnsPrepareBackup() throws Exception {
-    assertThat(prepareBackupFactory.createPrepareBackup(member, cache))
+    assertThat(prepareBackupFactory.createPrepareBackup(member, cache, targetDir, null))
         .isInstanceOf(PrepareBackup.class);
   }
 

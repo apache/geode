@@ -14,7 +14,6 @@
  */
 package org.apache.geode.internal.cache.backup;
 
-import java.io.File;
 import java.io.IOException;
 import java.util.Set;
 
@@ -33,20 +32,16 @@ class FinishBackupOperation extends BackupOperation {
   private final InternalDistributedMember member;
   private final InternalCache cache;
   private final Set<InternalDistributedMember> recipients;
-  private final File targetDir;
-  private final File baselineDir;
   private final boolean abort;
   private final FinishBackupFactory finishBackupFactory;
 
   FinishBackupOperation(DistributionManager dm, InternalDistributedMember member,
-      InternalCache cache, Set<InternalDistributedMember> recipients, File targetDir,
-      File baselineDir, boolean abort, FinishBackupFactory FinishBackupFactory) {
+      InternalCache cache, Set<InternalDistributedMember> recipients, boolean abort,
+      FinishBackupFactory FinishBackupFactory) {
     super(dm);
     this.member = member;
     this.cache = cache;
     this.recipients = recipients;
-    this.targetDir = targetDir;
-    this.baselineDir = baselineDir;
     this.abort = abort;
     this.finishBackupFactory = FinishBackupFactory;
   }
@@ -59,14 +54,13 @@ class FinishBackupOperation extends BackupOperation {
   @Override
   DistributionMessage createDistributionMessage(ReplyProcessor21 replyProcessor) {
     return finishBackupFactory.createRequest(member, recipients, replyProcessor.getProcessorId(),
-        targetDir, baselineDir, abort);
+        abort);
   }
 
   @Override
   void processLocally() {
     try {
-      addToResults(member,
-          finishBackupFactory.createFinishBackup(cache, targetDir, baselineDir, abort).run());
+      addToResults(member, finishBackupFactory.createFinishBackup(cache, abort).run());
     } catch (IOException e) {
       logger.fatal("Failed to FinishBackup in " + member, e);
     }
