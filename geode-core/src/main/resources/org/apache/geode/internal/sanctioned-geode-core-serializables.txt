@@ -288,7 +288,6 @@ org/apache/geode/internal/cache/RegionClearedException,true,1266503771775907997
 org/apache/geode/internal/cache/RegionQueueException,true,4159307586325821105
 org/apache/geode/internal/cache/RegionStatus,true,3442040750396350302,heapSize:long,numberOfEntries:int
 org/apache/geode/internal/cache/RemoteOperationException,true,-595988965679204903,hasHash:boolean,keyHash:int
-org/apache/geode/internal/cache/RemoteRegionOperation$Operation,false
 org/apache/geode/internal/cache/SearchLoadAndWriteProcessor$TryAgainException,false
 org/apache/geode/internal/cache/TXCommitMessage$CommitExceptionCollectingException,true,589384721273797822,cacheExceptions:java/util/Set,fatalExceptions:java/util/Map,id:org/apache/geode/internal/cache/TXId,regionExceptions:java/util/Map
 org/apache/geode/internal/cache/TXCommitMessage$RegionCommitList,true,-8910813949027683641
