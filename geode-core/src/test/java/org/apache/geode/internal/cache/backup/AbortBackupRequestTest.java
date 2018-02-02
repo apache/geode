@@ -21,7 +21,6 @@ import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
-import java.io.IOException;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -29,36 +28,26 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
-import org.apache.geode.cache.persistence.PersistentID;
 import org.apache.geode.distributed.internal.DistributionManager;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
-import org.apache.geode.internal.admin.remote.AdminFailureResponse;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.test.junit.categories.UnitTest;
 
 @Category(UnitTest.class)
-public class FinishBackupRequestTest {
+public class AbortBackupRequestTest {
 
-  private FinishBackupRequest finishBackupRequest;
-
+  private AbortBackupRequest abortBackupRequest;
   private DistributionManager dm;
   private InternalCache cache;
-  private BackupService backupService;
-  private int processorId = 79;
-  private boolean abort;
-  private FinishBackupFactory finishBackupFactory;
+  private AbortBackupFactory abortBackupFactory;
   private InternalDistributedMember sender;
-  private Set<InternalDistributedMember> recipients;
-  private HashSet<PersistentID> persistentIds;
-  private FinishBackup finishBackup;
 
   @Before
   public void setUp() throws Exception {
     // mocks here
     dm = mock(DistributionManager.class);
     cache = mock(InternalCache.class);
-    backupService = mock(BackupService.class);
-    abort = false;
+    BackupService backupService = mock(BackupService.class);
 
     when(dm.getCache()).thenReturn(cache);
     when(dm.getDistributionManagerId()).thenReturn(sender);
@@ -66,45 +55,25 @@ public class FinishBackupRequestTest {
 
     sender = mock(InternalDistributedMember.class);
 
-    recipients = new HashSet<>();
-    persistentIds = new HashSet<>();
+    Set<InternalDistributedMember> recipients = new HashSet<>();
 
-    finishBackup = mock(FinishBackup.class);
-    when(finishBackup.run()).thenReturn(persistentIds);
+    AbortBackup abortBackup = mock(AbortBackup.class);
 
-    finishBackupFactory = mock(FinishBackupFactory.class);
-    when(finishBackupFactory.createFinishBackup(eq(cache))).thenReturn(finishBackup);
-    when(finishBackupFactory.createBackupResponse(eq(sender), eq(persistentIds)))
+    abortBackupFactory = mock(AbortBackupFactory.class);
+    when(abortBackupFactory.createAbortBackup(eq(cache))).thenReturn(abortBackup);
+    when(abortBackupFactory.createBackupResponse(eq(sender), eq(new HashSet<>())))
         .thenReturn(mock(BackupResponse.class));
 
-
-    finishBackupRequest =
-        new FinishBackupRequest(sender, recipients, processorId, finishBackupFactory);
+    int processorId = 79;
+    abortBackupRequest =
+        new AbortBackupRequest(sender, recipients, processorId, abortBackupFactory);
   }
 
   @Test
-  public void usesFactoryToCreateFinishBackup() throws Exception {
-    finishBackupRequest.createResponse(dm);
+  public void usesFactoryToCreateAbortBackupAndResponse() {
+    assertThat(abortBackupRequest.createResponse(dm)).isInstanceOf(BackupResponse.class);
 
-    verify(finishBackupFactory, times(1)).createFinishBackup(eq(cache));
-  }
-
-  @Test
-  public void usesFactoryToCreateBackupResponse() throws Exception {
-    finishBackupRequest.createResponse(dm);
-
-    verify(finishBackupFactory, times(1)).createBackupResponse(eq(sender), eq(persistentIds));
-  }
-
-  @Test
-  public void returnsBackupResponse() throws Exception {
-    assertThat(finishBackupRequest.createResponse(dm)).isInstanceOf(BackupResponse.class);
-  }
-
-  @Test
-  public void returnsAdminFailureResponseWhenFinishBackupThrowsIOException() throws Exception {
-    when(finishBackup.run()).thenThrow(new IOException());
-
-    assertThat(finishBackupRequest.createResponse(dm)).isInstanceOf(AdminFailureResponse.class);
+    verify(abortBackupFactory, times(1)).createAbortBackup(eq(cache));
+    verify(abortBackupFactory, times(1)).createBackupResponse(eq(sender), eq(new HashSet<>()));
   }
 }

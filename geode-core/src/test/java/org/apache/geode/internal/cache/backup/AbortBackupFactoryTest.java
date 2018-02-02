@@ -33,9 +33,9 @@ import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.test.junit.categories.UnitTest;
 
 @Category(UnitTest.class)
-public class FinishBackupFactoryTest {
+public class AbortBackupFactoryTest {
 
-  private FinishBackupFactory finishBackupFactory;
+  private AbortBackupFactory abortBackupFactory;
 
   private BackupResultCollector resultCollector;
   private DistributionManager dm;
@@ -57,30 +57,30 @@ public class FinishBackupFactoryTest {
     when(dm.getSystem()).thenReturn(mock(InternalDistributedSystem.class));
     when(dm.getCancelCriterion()).thenReturn(mock(CancelCriterion.class));
 
-    finishBackupFactory = new FinishBackupFactory();
+    abortBackupFactory = new AbortBackupFactory();
   }
 
   @Test
-  public void createReplyProcessorReturnsBackupReplyProcessor() throws Exception {
-    assertThat(finishBackupFactory.createReplyProcessor(resultCollector, dm, recipients))
+  public void createReplyProcessorReturnsBackupReplyProcessor() {
+    assertThat(abortBackupFactory.createReplyProcessor(resultCollector, dm, recipients))
         .isInstanceOf(BackupReplyProcessor.class);
   }
 
   @Test
-  public void createRequestReturnsFinishBackupRequest() throws Exception {
-    assertThat(finishBackupFactory.createRequest(sender, recipients, 1))
-        .isInstanceOf(FinishBackupRequest.class);
+  public void createRequestReturnsAbortBackupRequest() {
+    assertThat(abortBackupFactory.createRequest(sender, recipients, 1))
+        .isInstanceOf(AbortBackupRequest.class);
   }
 
   @Test
-  public void createFinishBackupReturnsFinishBackup() throws Exception {
-    assertThat(finishBackupFactory.createFinishBackup(cache))
-        .isInstanceOf(FinishBackup.class);
+  public void createFinishBackupReturnsFinishBackup() {
+    assertThat(abortBackupFactory.createAbortBackup(cache))
+        .isInstanceOf(AbortBackup.class);
   }
 
   @Test
   public void createBackupResponseReturnsBackupResponse() {
-    assertThat(finishBackupFactory.createBackupResponse(member, null))
+    assertThat(abortBackupFactory.createBackupResponse(member, null))
         .isInstanceOf(BackupResponse.class);
   }
 }

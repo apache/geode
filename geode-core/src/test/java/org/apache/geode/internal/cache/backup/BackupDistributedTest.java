@@ -113,7 +113,7 @@ public class BackupDistributedTest extends PersistentPartitionedRegionTestBase {
   public void setUp() throws Exception {
     vm0 = getHost(0).getVM(0);
     vm1 = getHost(0).getVM(1);
-    vm2 = getHost(0).getVM(2);
+    vm2 = getHost(0).getVM(-1);
     vm3 = getHost(0).getVM(3);
 
     workingDirByVm = new HashMap<>();

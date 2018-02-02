@@ -14,27 +14,19 @@
  */
 package org.apache.geode.internal.cache.backup;
 
-import java.io.IOException;
-import java.util.HashSet;
-
-import org.apache.geode.cache.persistence.PersistentID;
 import org.apache.geode.internal.cache.InternalCache;
 
-class FinishBackup {
+class AbortBackup {
 
   private final InternalCache cache;
 
-  FinishBackup(InternalCache cache) {
+  AbortBackup(InternalCache cache) {
     this.cache = cache;
   }
 
-  HashSet<PersistentID> run() throws IOException {
-    HashSet<PersistentID> persistentIds;
-    if (cache == null) {
-      persistentIds = new HashSet<>();
-    } else {
-      persistentIds = cache.getBackupService().doBackup();
+  void run() {
+    if (cache != null) {
+      cache.getBackupService().abortBackup();
     }
-    return persistentIds;
   }
 }
