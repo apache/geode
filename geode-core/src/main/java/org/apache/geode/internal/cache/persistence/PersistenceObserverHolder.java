@@ -14,8 +14,6 @@
  */
 package org.apache.geode.internal.cache.persistence;
 
-import org.apache.geode.cache.Region;
-
 /**
  * Used for test hooks to during the persistence process.
  *
@@ -39,39 +37,39 @@ public class PersistenceObserverHolder {
 
   }
 
-  public static interface PersistenceObserver {
+  public interface PersistenceObserver {
     /**
      * Fired just before we persist that a member is offline. Returning false indicates that we
      * should not persist the change.
      */
-    public boolean memberOffline(String regionName, PersistentMemberID persistentID);
+    boolean memberOffline(String regionName, PersistentMemberID persistentID);
 
     /**
      * Fired after we persist that a member is offline.
      */
-    public void afterPersistedOffline(String fullPath, PersistentMemberID persistentID);
+    void afterPersistedOffline(String fullPath, PersistentMemberID persistentID);
 
     /**
      * Fired just before we persist that a member is online. Returning false indicates that we
      * should not persist the change.
      */
-    public boolean memberOnline(String regionName, PersistentMemberID persistentID);
+    boolean memberOnline(String regionName, PersistentMemberID persistentID);
 
     /**
      * Fired after we persist that a member is online.
      */
-    public void afterPersistedOnline(String fullPath, PersistentMemberID persistentID);
+    void afterPersistedOnline(String fullPath, PersistentMemberID persistentID);
 
     /**
      * Fired just before we persist that a member no longer hosts a region. Returning false
      * indicates that we should not persist the change.
      */
-    public boolean memberRemoved(String regionName, PersistentMemberID persistentID);
+    boolean memberRemoved(String regionName, PersistentMemberID persistentID);
 
     /**
      * Fired after we persist that a member no longer hosts the region.
      */
-    public void afterRemovePersisted(String fullPath, PersistentMemberID persistentID);
+    void afterRemovePersisted(String fullPath, PersistentMemberID persistentID);
 
   }
 

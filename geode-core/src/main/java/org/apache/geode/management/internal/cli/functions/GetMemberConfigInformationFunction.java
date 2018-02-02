@@ -14,14 +14,21 @@
  */
 package org.apache.geode.management.internal.cli.functions;
 
-import static org.apache.geode.distributed.ConfigurationProperties.*;
+import static org.apache.geode.distributed.ConfigurationProperties.SOCKET_BUFFER_SIZE;
 
 import java.lang.management.ManagementFactory;
 import java.lang.management.RuntimeMXBean;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
 import org.apache.geode.cache.Cache;
-import org.apache.geode.cache.execute.FunctionAdapter;
+import org.apache.geode.cache.execute.Function;
 import org.apache.geode.cache.execute.FunctionContext;
 import org.apache.geode.cache.server.CacheServer;
 import org.apache.geode.distributed.internal.DistributionConfig;
@@ -33,16 +40,14 @@ import org.apache.geode.internal.cache.CacheConfig;
 import org.apache.geode.internal.cache.GemFireCacheImpl;
 import org.apache.geode.internal.cache.ha.HARegionQueue;
 import org.apache.geode.management.internal.cli.domain.MemberConfigurationInfo;
+import org.apache.geode.management.internal.security.ResourcePermissions;
+import org.apache.geode.security.ResourcePermission;
 
 /****
  *
  *
  */
-public class GetMemberConfigInformationFunction extends FunctionAdapter implements InternalEntity {
-
-  /**
-   *
-   */
+public class GetMemberConfigInformationFunction implements Function, InternalEntity {
   private static final long serialVersionUID = 1L;
 
 
@@ -133,6 +138,11 @@ public class GetMemberConfigInformationFunction extends FunctionAdapter implemen
     context.getResultSender().lastResult(memberConfigInfo);
   }
 
+  @Override
+  public Collection<ResourcePermission> getRequiredPermissions(String regionName) {
+    return Collections.singleton(ResourcePermissions.CLUSTER_READ);
+  }
+
   /****
    * Gets the default values for the cache attributes
    *
@@ -218,12 +228,6 @@ public class GetMemberConfigInformationFunction extends FunctionAdapter implemen
         }
       }
     }
-  }
-
-  @Override
-  public String getId() {
-    // TODO Auto-generated method stub
-    return GetMemberConfigInformationFunction.class.toString();
   }
 
   private List<String> getJvmInputArguments() {

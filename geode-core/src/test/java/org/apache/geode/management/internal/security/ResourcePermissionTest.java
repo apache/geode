@@ -186,14 +186,29 @@ public class ResourcePermissionTest {
     ResourcePermission context = new ResourcePermission();
     assertThat("NULL:NULL").isEqualTo(context.toString());
 
-    context = new ResourcePermission(Resource.DATA, Operation.MANAGE);
+    context = new ResourcePermission("data", "manage");
     assertThat("DATA:MANAGE").isEqualTo(context.toString());
+
+    context = new ResourcePermission("data", "read", "regionA");
+    assertThat("DATA:READ:regionA").isEqualTo(context.toString());
+
+    context = new ResourcePermission("DATA", "READ", "/regionA", "key");
+    assertThat("DATA:READ:regionA:key").isEqualTo(context.toString());
 
     context = new ResourcePermission(Resource.DATA, Operation.MANAGE, "REGIONA");
     assertThat("DATA:MANAGE:REGIONA").isEqualTo(context.toString());
 
     context = new ResourcePermission(Resource.DATA, Operation.MANAGE);
     assertThat("DATA:MANAGE").isEqualTo(context.toString());
+
+    context = new ResourcePermission("ALL", "READ");
+    assertThat(context.toString()).isEqualTo("*:READ");
+
+    context = new ResourcePermission("DATA", "ALL");
+    assertThat(context.toString()).isEqualTo("DATA");
+
+    context = new ResourcePermission("ALL", "ALL", "regionA", "*");
+    assertThat(context.toString()).isEqualTo("*:*:regionA");
   }
 
   @Test

@@ -56,12 +56,12 @@ public interface PdxSerializable {
    *
    * @param writer the {@link PdxWriter} to use to write the PDX fields.
    */
-  public void toData(PdxWriter writer);
+  void toData(PdxWriter writer);
 
   /**
    * Deserializes the PDX fields using the given reader.
    *
    * @param reader the {@link PdxReader} to use to read the PDX fields.
    */
-  public void fromData(PdxReader reader);
+  void fromData(PdxReader reader);
 }

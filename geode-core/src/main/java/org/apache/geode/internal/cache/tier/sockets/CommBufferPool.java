@@ -26,11 +26,11 @@ public interface CommBufferPool {
    * Set a comm buffer in a ThreadLocal.
    *
    */
-  public void setTLCommBuffer();
+  void setTLCommBuffer();
 
   /**
    * Release the ThreadLocal comm buffer back to the queue.
    *
    */
-  public void releaseTLCommBuffer();
+  void releaseTLCommBuffer();
 }

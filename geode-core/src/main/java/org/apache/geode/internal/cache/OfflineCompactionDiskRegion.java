@@ -45,40 +45,49 @@ public class OfflineCompactionDiskRegion extends DiskRegion implements DiskRecov
   }
 
   ///////////// DiskRecoveryStore methods ////////////////
+  @Override
   public DiskRegionView getDiskRegionView() {
     return this;
   }
 
+  @Override
   public DiskEntry getDiskEntry(Object key) {
     return null;
   }
 
+  @Override
   public DiskEntry initializeRecoveredEntry(Object key, DiskEntry.RecoveredEntry re) {
     throw new IllegalStateException(
         "updateRecoveredEntry should not be called when offline compacting");
   }
 
+  @Override
   public DiskEntry updateRecoveredEntry(Object key, DiskEntry.RecoveredEntry re) {
     throw new IllegalStateException(
         "updateRecoveredEntry should not be called when offline compacting");
   }
 
+  @Override
   public void destroyRecoveredEntry(Object key) {}
 
+  @Override
   public void foreachRegionEntry(LocalRegion.RegionEntryCallback callback) {
     throw new IllegalStateException(
         "foreachRegionEntry should not be called when offline compacting");
   }
 
+  @Override
   public boolean lruLimitExceeded() {
     return false;
   }
 
+  @Override
   public void copyRecoveredEntries(RegionMap rm) {
     throw new IllegalStateException(
         "copyRecoveredEntries should not be called on OfflineCompactionDiskRegion");
   }
 
+  @Override
   public void updateSizeOnFaultIn(Object key, int newSize, int bytesOnDisk) {
     throw new IllegalStateException(
         "updateSizeOnFaultIn should not be called on OfflineCompactionDiskRegion");
@@ -90,20 +99,18 @@ public class OfflineCompactionDiskRegion extends DiskRegion implements DiskRecov
   }
 
   @Override
-  public int calculateRegionEntryValueSize(RegionEntry re) {
-    return 0;
-  }
-
   public RegionMap getRegionMap() {
     throw new IllegalStateException(
         "getRegionMap should not be called on OfflineCompactionDiskRegion");
   }
 
+  @Override
   public void handleDiskAccessException(DiskAccessException dae) {
     throw new IllegalStateException(
         "handleDiskAccessException should not be called on OfflineCompactionDiskRegion");
   }
 
+  @Override
   public void initializeStats(long numEntriesInVM, long numOverflowOnDisk,
       long numOverflowBytesOnDisk) {
     throw new IllegalStateException(
@@ -113,6 +120,7 @@ public class OfflineCompactionDiskRegion extends DiskRegion implements DiskRecov
 
 
   public static class DummyDiskExceptionHandler implements DiskExceptionHandler {
+    @Override
     public void handleDiskAccessException(DiskAccessException dae) {
       // nothing needed
     }

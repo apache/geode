@@ -37,26 +37,26 @@ public interface SampleHandler {
    * @param nanosTimeStamp an arbitrary nanoseconds time stamp for this sample
    * @param resourceInstances the statistics resource instances captured in this sample
    */
-  public void sampled(long nanosTimeStamp, List<ResourceInstance> resourceInstances);
+  void sampled(long nanosTimeStamp, List<ResourceInstance> resourceInstances);
 
   /**
    * Notification that a new statistics {@link ResourceType} has been created.
    *
    * @param resourceType the new statistics ResourceType that was created
    */
-  public void allocatedResourceType(ResourceType resourceType);
+  void allocatedResourceType(ResourceType resourceType);
 
   /**
    * Notification that a new statistics {@link ResourceInstance} has been created.
    *
    * @param resourceInstance the new statistics ResourceInstance that was created
    */
-  public void allocatedResourceInstance(ResourceInstance resourceInstance);
+  void allocatedResourceInstance(ResourceInstance resourceInstance);
 
   /**
    * Notification that an existing statistics {@link ResourceInstance} has been destroyed.
    *
    * @param resourceInstance the existing statistics ResourceInstance that was destroyed
    */
-  public void destroyedResourceInstance(ResourceInstance resourceInstance);
+  void destroyedResourceInstance(ResourceInstance resourceInstance);
 }

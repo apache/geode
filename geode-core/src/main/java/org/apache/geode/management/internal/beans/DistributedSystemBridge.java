@@ -240,7 +240,7 @@ public class DistributedSystemBridge {
    *
    * @param service Management service
    */
-  public DistributedSystemBridge(SystemManagementService service) {
+  public DistributedSystemBridge(SystemManagementService service, InternalCache cache) {
     this.distrLockServiceMap = new ConcurrentHashMap<>();
     this.distrRegionMap = new ConcurrentHashMap<>();
     this.mapOfMembers = new ConcurrentHashMap<>();
@@ -248,7 +248,7 @@ public class DistributedSystemBridge {
     this.mapOfGatewayReceivers = new ConcurrentHashMap<>();
     this.mapOfGatewaySenders = new ConcurrentHashMap<>();
     this.service = service;
-    this.cache = GemFireCacheImpl.getInstance();
+    this.cache = cache;
     this.system = cache.getInternalDistributedSystem();
     this.dm = system.getDistributionManager();
     this.alertLevel = ManagementConstants.DEFAULT_ALERT_LEVEL;

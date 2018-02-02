@@ -16,6 +16,8 @@
 package org.apache.geode.management.internal.cli.functions;
 
 import java.io.File;
+import java.util.Collection;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.Properties;
 import java.util.Set;
@@ -29,7 +31,7 @@ import org.apache.geode.cache.DiskStore;
 import org.apache.geode.cache.EvictionAction;
 import org.apache.geode.cache.Region;
 import org.apache.geode.cache.asyncqueue.AsyncEventQueue;
-import org.apache.geode.cache.execute.FunctionAdapter;
+import org.apache.geode.cache.execute.Function;
 import org.apache.geode.cache.execute.FunctionContext;
 import org.apache.geode.cache.server.CacheServer;
 import org.apache.geode.cache.wan.GatewaySender;
@@ -41,6 +43,8 @@ import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.internal.util.ArrayUtils;
 import org.apache.geode.management.internal.cli.domain.DiskStoreDetails;
 import org.apache.geode.management.internal.cli.exceptions.EntityNotFoundException;
+import org.apache.geode.management.internal.security.ResourcePermissions;
+import org.apache.geode.security.ResourcePermission;
 
 /**
  * The DescribeDiskStoreFunction class is an implementation of a GemFire Function used to collect
@@ -55,7 +59,7 @@ import org.apache.geode.management.internal.cli.exceptions.EntityNotFoundExcepti
  * @see org.apache.geode.management.internal.cli.domain.DiskStoreDetails
  * @since GemFire 7.0
  */
-public class DescribeDiskStoreFunction extends FunctionAdapter implements InternalEntity {
+public class DescribeDiskStoreFunction implements Function, InternalEntity {
 
   private static final Logger logger = LogService.getLogger();
 
@@ -129,6 +133,11 @@ public class DescribeDiskStoreFunction extends FunctionAdapter implements Intern
       logger.error("Error occurred while executing 'describe disk-store': {}!", e.getMessage(), e);
       context.getResultSender().sendException(e);
     }
+  }
+
+  @Override
+  public Collection<ResourcePermission> getRequiredPermissions(String regionName) {
+    return Collections.singleton(ResourcePermissions.CLUSTER_READ);
   }
 
   private void setDiskDirDetails(final DiskStore diskStore,

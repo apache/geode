@@ -50,7 +50,7 @@ import org.apache.geode.management.internal.configuration.domain.XmlEntity;
 @SuppressWarnings("unused")
 public interface GfshCommand extends CommandMarker {
 
-  static final String EXPERIMENTAL = "(Experimental) ";
+  String EXPERIMENTAL = "(Experimental) ";
 
   default boolean isConnectedAndReady() {
     return getGfsh() != null && getGfsh().isConnectedAndReady();

@@ -21,7 +21,6 @@ package org.apache.geode.cache.query.internal.index;
 
 import java.util.List;
 
-import org.apache.geode.cache.query.internal.ExecutionContext;
 import org.apache.geode.cache.query.types.ObjectType;
 import org.apache.geode.internal.cache.RegionEntry;
 
@@ -30,21 +29,21 @@ import org.apache.geode.internal.cache.RegionEntry;
  */
 public interface IndexedExpressionEvaluator {
 
-  public String getIndexedExpression();
+  String getIndexedExpression();
 
-  public String getFromClause();
+  String getFromClause();
 
-  public String getProjectionAttributes();
+  String getProjectionAttributes();
 
   /** @param add true if adding to index, false if removing */
-  public void evaluate(RegionEntry target, boolean add) throws IMQException;
+  void evaluate(RegionEntry target, boolean add) throws IMQException;
 
-  public void initializeIndex(boolean loadEntries) throws IMQException;
+  void initializeIndex(boolean loadEntries) throws IMQException;
 
-  public ObjectType getIndexResultSetType();
+  ObjectType getIndexResultSetType();
 
-  public void expansion(List expandedResults, Object lowerBoundKey, Object upperBoundKey,
+  void expansion(List expandedResults, Object lowerBoundKey, Object upperBoundKey,
       int lowerBoundOperator, int upperBoundOperator, Object value) throws IMQException;
 
-  public List getAllDependentIterators();
+  List getAllDependentIterators();
 }

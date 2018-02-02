@@ -137,6 +137,12 @@ public class InternalDistributedSystem extends DistributedSystem
       DistributionConfig.GEMFIRE_PREFIX + "disableManagement";
 
   /**
+   * Feature flag to enable multiple caches within a JVM.
+   */
+  public static boolean ALLOW_MULTIPLE_SYSTEMS =
+      Boolean.getBoolean(DistributionConfig.GEMFIRE_PREFIX + "ALLOW_MULTIPLE_SYSTEMS");
+
+  /**
    * If auto-reconnect is going on this will hold a reference to it
    */
   public static volatile DistributedSystem systemAttemptingReconnect;
@@ -1348,7 +1354,7 @@ public class InternalDistributedSystem extends DistributedSystem
           //
           // However, make sure cache is completely closed before starting
           // the distributed system close.
-          InternalCache currentCache = GemFireCacheImpl.getInstance();
+          InternalCache currentCache = getCache();
           if (currentCache != null && !currentCache.isClosed()) {
             disconnectListenerThread.set(Boolean.TRUE); // bug #42663 - this must be set while
                                                         // closing the cache
@@ -3090,5 +3096,9 @@ public class InternalDistributedSystem extends DistributedSystem
 
   public void setCache(InternalCache instance) {
     this.dm.setCache(instance);
+  }
+
+  public InternalCache getCache() {
+    return this.dm == null ? null : this.dm.getCache();
   }
 }

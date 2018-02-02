@@ -641,7 +641,7 @@ create index --name=value --expression=value --region=value
 | <span class="keyword parmname">&#8209;&#8209;expression</span> | *Required.* Field of the region values that are referenced by the index.               |         |
 | <span class="keyword parmname">\\-\\-region</span>     | *Required.* Name/Path of the region which corresponds to the "from" clause in a query. |         |
 | <span class="keyword parmname">\\-\\-members</span>     | Name/Id of the member(s) on which index will be created.                                  |         |
-| <span class="keyword parmname">\\-\\-type</span>       | Type of the index. Valid values are: `range`, `key` and `hash`.                        | `range` |
+| <span class="keyword parmname">\\-\\-type</span>       | Type of the index. Valid values are: `range` and `key`. (A third type, `hash`, is still recognized but hash indexes are deprecated.)                       | `range` |
 | <span class="keyword parmname">\\-\\-groups</span>      | The index will be created on all the members in the group(s).                     |         |
 
 
@@ -752,7 +752,7 @@ See [Region Data Storage and Distribution](../../../developing/region_options/ch
     [--recovery-delay=value] [--redundant-copies=value]
     [--startup-recovery-delay=value] [--total-max-memory=value]
     [--total-num-buckets=value] [--compressor=value] [--off-heap(=value)]
-    [--partition-resolver=value] [--eviction-enabled] [--eviction-entry-count=value]
+    [--partition-resolver=value] [--eviction-entry-count=value]
     [--eviction-max-memory=value] [--eviction-action=value] [--eviction-object-sizer=value]
 ```
 
@@ -961,11 +961,6 @@ See [Region Data Storage and Distribution](../../../developing/region_options/ch
 <tr class="even">
 <td><span class="keyword parmname">\-\-partition-resolver</span></td>
 <td>Specifies the full path to a custom partition resolver. Specify <code class="ph codeph">org.apache.geode.cache.util.StringPrefixPartitionResolver</code> to use the included string prefix partition resolver.</td>
-<td></td>
-</tr>
-<tr>
-<td><span class="keyword parmname">\-\-eviction-enabled</span></td>
-<td>Enables eviction, where the eviction policy is controlled by the resource manager based on heap percentage.</td>
 <td></td>
 </tr>
 <tr>

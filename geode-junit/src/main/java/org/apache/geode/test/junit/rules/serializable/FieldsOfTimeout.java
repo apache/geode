@@ -18,7 +18,7 @@ package org.apache.geode.test.junit.rules.serializable;
  * Names of member fields in {@link org.junit.rules.Timeout}.
  */
 interface FieldsOfTimeout {
-  static final String FIELD_TIMEOUT = "timeout"; // long
-  static final String FIELD_TIME_UNIT = "timeUnit"; // java.util.concurrent.TimeUnit
-  static final String FIELD_LOOK_FOR_STUCK_THREAD = "lookForStuckThread"; // boolean
+  String FIELD_TIMEOUT = "timeout"; // long
+  String FIELD_TIME_UNIT = "timeUnit"; // java.util.concurrent.TimeUnit
+  String FIELD_LOOK_FOR_STUCK_THREAD = "lookForStuckThread"; // boolean
 }

@@ -47,8 +47,8 @@ import org.apache.geode.internal.cache.versions.VersionTag;
  * </ul>
  */
 @SuppressWarnings("rawtypes")
-public interface InternalRegion
-    extends Region, HasCachePerfStats, RegionEntryContext, RegionAttributes, HasDiskRegion {
+public interface InternalRegion extends Region, HasCachePerfStats, RegionEntryContext,
+    RegionAttributes, HasDiskRegion, RegionMapOwner {
 
   CachePerfStats getCachePerfStats();
 
@@ -76,7 +76,6 @@ public interface InternalRegion
 
   FilterProfile getFilterProfile();
 
-  boolean hasServerProxy();
   ServerRegionProxy getServerProxy();
 
   void unscheduleTombstone(RegionEntry entry);
@@ -141,4 +140,35 @@ public interface InternalRegion
 
   RegionMap getRegionMap();
 
+  void basicDestroyBeforeRemoval(RegionEntry entry, EntryEventImpl event);
+
+  void basicDestroyPart2(RegionEntry re, EntryEventImpl event, boolean inTokenMode,
+      boolean conflictWithClear, boolean duringRI, boolean invokeCallbacks);
+
+  void notifyTimestampsToGateways(EntryEventImpl event);
+
+  boolean bridgeWriteBeforeDestroy(EntryEventImpl event, Object expectedOldValue)
+      throws CacheWriterException, EntryNotFoundException, TimeoutException;
+
+  void checkEntryNotFound(Object entryKey);
+
+  void rescheduleTombstone(RegionEntry entry, VersionTag version);
+
+  /** Throws CacheClosedException or RegionDestroyedException */
+  void checkReadiness();
+
+  void basicDestroyPart3(RegionEntry re, EntryEventImpl event, boolean inTokenMode,
+      boolean duringRI, boolean invokeCallbacks, Object expectedOldValue);
+
+  void cancelExpiryTask(RegionEntry regionEntry);
+
+  boolean hasServerProxy();
+
+  int calculateRegionEntryValueSize(RegionEntry re);
+
+  void updateSizeOnRemove(Object key, int oldSize);
+
+  boolean isEntryEvictionPossible();
+
+  KeyInfo getKeyInfo(Object key);
 }

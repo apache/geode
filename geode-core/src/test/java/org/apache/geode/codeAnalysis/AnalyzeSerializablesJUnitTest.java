@@ -425,14 +425,17 @@ public class AnalyzeSerializablesJUnitTest {
     System.out.println("java classpath is " + classpath);
 
     String[] entries = classpath.split(File.pathSeparator);
-    String buildDirName = getModuleName() + File.separatorChar + "build" + File.separatorChar
+    String gradleBuildDirName = getModuleName() + File.separatorChar + "build" + File.separatorChar
         + "classes" + File.separatorChar + "main";
+    String ideaBuildDirName = getModuleName() + File.separatorChar + "out" + File.separatorChar
+        + "production" + File.separatorChar + "classes";
     String buildDir = null;
 
-    for (int i = 0; i < entries.length && buildDir == null; i++) {
-      System.out.println("examining '" + entries[i] + "'");
-      if (entries[i].endsWith(buildDirName)) {
-        buildDir = entries[i];
+    for (String entry : entries) {
+      System.out.println("examining '" + entry + "'");
+      if (entry.endsWith(gradleBuildDirName) || entry.endsWith(ideaBuildDirName)) {
+        buildDir = entry;
+        break;
       }
     }
 

@@ -15,16 +15,20 @@
 
 package org.apache.geode.management.internal.cli.functions;
 
+import java.util.Collection;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
 
 import org.apache.geode.cache.Cache;
-import org.apache.geode.cache.execute.FunctionAdapter;
+import org.apache.geode.cache.execute.Function;
 import org.apache.geode.cache.execute.FunctionContext;
 import org.apache.geode.cache.query.Index;
 import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.internal.InternalEntity;
 import org.apache.geode.management.internal.cli.domain.IndexDetails;
+import org.apache.geode.management.internal.security.ResourcePermissions;
+import org.apache.geode.security.ResourcePermission;
 
 /**
  * The ListIndexFunction class is a GemFire function used to collect all the index information on
@@ -40,7 +44,7 @@ import org.apache.geode.management.internal.cli.domain.IndexDetails;
  * @since GemFire 7.0
  */
 @SuppressWarnings("unused")
-public class ListIndexFunction extends FunctionAdapter implements InternalEntity {
+public class ListIndexFunction implements Function, InternalEntity {
 
   public String getId() {
     return ListIndexFunction.class.getName();
@@ -63,4 +67,8 @@ public class ListIndexFunction extends FunctionAdapter implements InternalEntity
     }
   }
 
+  @Override
+  public Collection<ResourcePermission> getRequiredPermissions(String regionName) {
+    return Collections.singleton(ResourcePermissions.CLUSTER_READ_QUERY);
+  }
 }

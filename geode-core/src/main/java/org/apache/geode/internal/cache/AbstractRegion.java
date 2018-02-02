@@ -33,6 +33,7 @@ import org.apache.logging.log4j.Logger;
 
 import org.apache.geode.DataSerializer;
 import org.apache.geode.StatisticsFactory;
+import org.apache.geode.annotations.TestingOnly;
 import org.apache.geode.cache.AttributesMutator;
 import org.apache.geode.cache.CacheCallback;
 import org.apache.geode.cache.CacheListener;
@@ -275,22 +276,13 @@ public abstract class AbstractRegion implements InternalRegion, AttributesMutato
     setAttributes(attrs, regionName, internalRegionArgs);
   }
 
-  /**
-   * Unit test constructor. DO NOT USE!
-   *
-   * @since GemFire 8.1
-   * @deprecated For unit testing only. Use
-   *             {@link #AbstractRegion(InternalCache, RegionAttributes, String, InternalRegionArguments)}
-   *             .
-   */
-  @Deprecated
-  AbstractRegion(InternalCache cache, int serialNumber, boolean isPdxTypeRegion,
-      long lastAccessedTime, long lastModifiedTime) {
-    this.cache = cache;
-    this.serialNumber = serialNumber;
-    this.isPdxTypesRegion = isPdxTypeRegion;
-    this.lastAccessedTime = new AtomicLong(lastAccessedTime);
-    this.lastModifiedTime = new AtomicLong(lastModifiedTime);
+  @TestingOnly
+  AbstractRegion() {
+    this.cache = null;
+    this.serialNumber = 0;
+    this.isPdxTypesRegion = false;
+    this.lastAccessedTime = new AtomicLong(0);
+    this.lastModifiedTime = new AtomicLong(0);
   }
 
   /**
@@ -1477,9 +1469,6 @@ public abstract class AbstractRegion implements InternalRegion, AttributesMutato
     // nothing
   }
 
-  /** Throws CacheClosedException or RegionDestroyedException */
-  abstract void checkReadiness();
-
   /**
    * Returns true if this region has no storage
    *
@@ -1546,6 +1535,7 @@ public abstract class AbstractRegion implements InternalRegion, AttributesMutato
   /**
    * Returns true if this region can evict entries.
    */
+  @Override
   public boolean isEntryEvictionPossible() {
     return this.evictionAttributes != null && !this.evictionAttributes.getAlgorithm().isNone();
   }
@@ -1818,8 +1808,8 @@ public abstract class AbstractRegion implements InternalRegion, AttributesMutato
   }
 
   @Override
-  public RegionSnapshotService<Object, Object> getSnapshotService() {
-    return new RegionSnapshotServiceImpl<Object, Object>(this);
+  public RegionSnapshotService getSnapshotService() {
+    return new RegionSnapshotServiceImpl(this);
   }
 
   @Override

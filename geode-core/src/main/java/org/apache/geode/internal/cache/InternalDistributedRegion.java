@@ -14,6 +14,5 @@
  */
 package org.apache.geode.internal.cache;
 
-public interface InternalDistributedRegion
-    extends InternalRegion, CacheDistributionAdvisee {
+public interface InternalDistributedRegion extends InternalRegion, CacheDistributionAdvisee {
 }

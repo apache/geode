@@ -15,6 +15,8 @@
 package org.apache.geode.management.internal.cli.functions;
 
 import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Properties;
@@ -38,6 +40,7 @@ import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.internal.security.SecurityService;
 import org.apache.geode.management.internal.cli.i18n.CliStrings;
 import org.apache.geode.security.AuthenticationRequiredException;
+import org.apache.geode.security.ResourcePermission;
 
 /**
  * @since GemFire 7.0
@@ -180,6 +183,11 @@ public class UserFunctionExecution implements Function<Object[]>, InternalEntity
         securityService.logout();
       }
     }
+  }
+
+  @Override
+  public Collection<ResourcePermission> getRequiredPermissions(String regionName) {
+    return Collections.emptySet();
   }
 
   @Override

@@ -21,7 +21,6 @@ import java.net.InetAddress;
 
 import org.apache.geode.distributed.DurableClientAttributes;
 import org.apache.geode.internal.Version;
-import org.apache.geode.internal.shared.StringPrintWriter;
 
 /**
  * This is the SPI for the basic element of membership provided in the GemFire system.
@@ -30,35 +29,35 @@ import org.apache.geode.internal.shared.StringPrintWriter;
  */
 public interface NetMember extends Comparable<NetMember> {
 
-  public void setAttributes(MemberAttributes args);
+  void setAttributes(MemberAttributes args);
 
-  public MemberAttributes getAttributes();
+  MemberAttributes getAttributes();
 
-  public InetAddress getInetAddress();
+  InetAddress getInetAddress();
 
-  public int getPort();
+  int getPort();
 
-  public void setPort(int p);
+  void setPort(int p);
 
-  public boolean isMulticastAddress();
+  boolean isMulticastAddress();
 
-  public short getVersionOrdinal();
+  short getVersionOrdinal();
 
   /**
    * return a flag stating whether the member has network partition detection enabled
    *
    * @since GemFire 5.6
    */
-  public boolean isNetworkPartitionDetectionEnabled();
+  boolean isNetworkPartitionDetectionEnabled();
 
-  public void setNetworkPartitionDetectionEnabled(boolean enabled);
+  void setNetworkPartitionDetectionEnabled(boolean enabled);
 
   /**
    * return a flag stating whether the member can be the membership coordinator
    *
    * @since GemFire 5.6
    */
-  public boolean preferredForCoordinator();
+  boolean preferredForCoordinator();
 
   /**
    * Set whether this member ID is preferred for coordinator. This is mostly useful for unit tests
@@ -66,50 +65,50 @@ public interface NetMember extends Comparable<NetMember> {
    *
    * @param preferred
    */
-  public void setPreferredForCoordinator(boolean preferred);
+  void setPreferredForCoordinator(boolean preferred);
 
-  public byte getMemberWeight();
+  byte getMemberWeight();
 
-  public void setVersion(Version v);
+  void setVersion(Version v);
 
-  public int getProcessId();
+  int getProcessId();
 
-  public void setProcessId(int id);
+  void setProcessId(int id);
 
-  public byte getVmKind();
+  byte getVmKind();
 
-  public void setVmKind(int kind);
+  void setVmKind(int kind);
 
-  public int getVmViewId();
+  int getVmViewId();
 
-  public void setVmViewId(int id);
+  void setVmViewId(int id);
 
-  public int getDirectPort();
+  int getDirectPort();
 
-  public void setDirectPort(int port);
+  void setDirectPort(int port);
 
-  public String getName();
+  String getName();
 
-  public void setName(String name);
+  void setName(String name);
 
-  public DurableClientAttributes getDurableClientAttributes();
+  DurableClientAttributes getDurableClientAttributes();
 
-  public void setDurableClientAttributes(DurableClientAttributes attributes);
+  void setDurableClientAttributes(DurableClientAttributes attributes);
 
-  public String[] getGroups();
+  String[] getGroups();
 
-  public void setGroups(String[] groups);
+  void setGroups(String[] groups);
 
   /** whether this NetMember has additional data to be serialized as part of a DistributedMember */
-  public boolean hasAdditionalData();
+  boolean hasAdditionalData();
 
   /** write identity information not known by DistributedMember instances */
-  public void writeAdditionalData(DataOutput out) throws IOException;
+  void writeAdditionalData(DataOutput out) throws IOException;
 
   /** read identity information not known by DistributedMember instances */
-  public void readAdditionalData(DataInput in) throws ClassNotFoundException, IOException;
+  void readAdditionalData(DataInput in) throws ClassNotFoundException, IOException;
 
   /** compare data that is not known to DistributedMember instances */
-  public int compareAdditionalData(NetMember other);
+  int compareAdditionalData(NetMember other);
 
 }

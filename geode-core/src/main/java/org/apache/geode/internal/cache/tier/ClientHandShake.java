@@ -29,16 +29,16 @@ import org.apache.geode.internal.cache.tier.sockets.ClientProxyMembershipID;
  * @since GemFire 5.7
  */
 public interface ClientHandShake {
-  public boolean isOK();
+  boolean isOK();
 
-  public byte getCode();
+  byte getCode();
 
-  public ClientProxyMembershipID getMembership();
+  ClientProxyMembershipID getMembership();
 
-  public int getClientReadTimeout();
+  int getClientReadTimeout();
 
-  public Version getVersion();
+  Version getVersion();
 
-  public void accept(OutputStream out, InputStream in, byte epType, int qSize,
+  void accept(OutputStream out, InputStream in, byte epType, int qSize,
       CommunicationMode communicationMode, Principal principal) throws IOException;
 }

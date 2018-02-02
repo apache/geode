@@ -48,13 +48,13 @@ public interface GemFireCache extends RegionService {
    *
    * @return the String name of this cache
    */
-  public String getName();
+  String getName();
 
   /**
    * Returns the distributed system used by this cache. This method does not throw
    * {@code CacheClosedException} if the cache is closed.
    */
-  public DistributedSystem getDistributedSystem();
+  DistributedSystem getDistributedSystem();
 
   /**
    * Returns the {@code ResourceManager} for managing this cache's resources.
@@ -62,14 +62,14 @@ public interface GemFireCache extends RegionService {
    * @return {@code ResourceManager} for managing this cache's resources
    * @since GemFire 6.0
    */
-  public ResourceManager getResourceManager();
+  ResourceManager getResourceManager();
 
   /**
    * Sets the "copy on read" feature for cache read operations.
    *
    * @since GemFire 4.0
    */
-  public void setCopyOnRead(boolean copyOnRead);
+  void setCopyOnRead(boolean copyOnRead);
 
   /**
    * Indicates whether the "copy on read" is enabled for this cache.
@@ -78,7 +78,7 @@ public interface GemFireCache extends RegionService {
    *
    * @since GemFire 4.0
    */
-  public boolean getCopyOnRead();
+  boolean getCopyOnRead();
 
   /**
    * Returns the {@code RegionAttributes} with the given {@code id} or {@code null} if no
@@ -88,7 +88,7 @@ public interface GemFireCache extends RegionService {
    *
    * @since GemFire 4.1
    */
-  public <K, V> RegionAttributes<K, V> getRegionAttributes(String id);
+  <K, V> RegionAttributes<K, V> getRegionAttributes(String id);
 
   /**
    * Sets the {@code id} of the given {@code RegionAttributes}. If a region attributes named
@@ -103,7 +103,7 @@ public interface GemFireCache extends RegionService {
    *
    * @since GemFire 4.1
    */
-  public <K, V> void setRegionAttributes(String id, RegionAttributes<K, V> attrs);
+  <K, V> void setRegionAttributes(String id, RegionAttributes<K, V> attrs);
 
   /**
    * Returns an unmodifiable mapping of ids to region attributes. The keys of the map are
@@ -111,7 +111,7 @@ public interface GemFireCache extends RegionService {
    *
    * @since GemFire 4.1
    */
-  public <K, V> Map<String, RegionAttributes<K, V>> listRegionAttributes();
+  <K, V> Map<String, RegionAttributes<K, V>> listRegionAttributes();
 
   /**
    * Loads the cache configuration described in a
@@ -130,7 +130,7 @@ public interface GemFireCache extends RegionService {
    *
    * @since GemFire 4.1
    */
-  public void loadCacheXml(InputStream is)
+  void loadCacheXml(InputStream is)
       throws TimeoutException, CacheWriterException, GatewayException, RegionExistsException;
 
   /**
@@ -139,7 +139,7 @@ public interface GemFireCache extends RegionService {
    *
    * @return the logging object
    */
-  public LogWriter getLogger();
+  LogWriter getLogger();
 
   /**
    * Gets the security logging object for GemFire. This method does not throw
@@ -147,7 +147,7 @@ public interface GemFireCache extends RegionService {
    *
    * @return the security logging object
    */
-  public LogWriter getSecurityLogger();
+  LogWriter getSecurityLogger();
 
   /**
    * Returns the DiskStore by name or {@code null} if no disk store is found.
@@ -156,16 +156,16 @@ public interface GemFireCache extends RegionService {
    *        it exists, is returned.
    * @since GemFire 6.5
    */
-  public DiskStore findDiskStore(String name);
+  DiskStore findDiskStore(String name);
 
   /**
    * create diskstore factory
    *
    * @since GemFire 6.5
    */
-  public DiskStoreFactory createDiskStoreFactory();
+  DiskStoreFactory createDiskStoreFactory();
 
-  public GatewaySenderFactory createGatewaySenderFactory();
+  GatewaySenderFactory createGatewaySenderFactory();
 
   /**
    * Returns whether { @link PdxInstance} is preferred for PDX types instead of Java object.
@@ -175,7 +175,7 @@ public interface GemFireCache extends RegionService {
    *
    * @since GemFire 6.6
    */
-  public boolean getPdxReadSerialized();
+  boolean getPdxReadSerialized();
 
   /**
    * Returns the PdxSerializer used by this cache, or null if no PDX serializer is defined.
@@ -184,7 +184,7 @@ public interface GemFireCache extends RegionService {
    * @see CacheFactory#setPdxSerializer(PdxSerializer)
    * @see ClientCacheFactory#setPdxSerializer(PdxSerializer)
    */
-  public PdxSerializer getPdxSerializer();
+  PdxSerializer getPdxSerializer();
 
   /**
    * Returns the disk store used for PDX meta data
@@ -193,7 +193,7 @@ public interface GemFireCache extends RegionService {
    * @see CacheFactory#setPdxDiskStore(String)
    * @see ClientCacheFactory#setPdxDiskStore(String)
    */
-  public String getPdxDiskStore();
+  String getPdxDiskStore();
 
   /**
    * Returns true if the PDX metadata for this cache is persistent
@@ -202,7 +202,7 @@ public interface GemFireCache extends RegionService {
    * @see CacheFactory#setPdxPersistent(boolean)
    * @see ClientCacheFactory#setPdxPersistent(boolean)
    */
-  public boolean getPdxPersistent();
+  boolean getPdxPersistent();
 
   /**
    * Returns true if fields that are not read during PDX deserialization should be ignored during
@@ -212,7 +212,7 @@ public interface GemFireCache extends RegionService {
    * @see CacheFactory#setPdxIgnoreUnreadFields(boolean)
    * @see ClientCacheFactory#setPdxIgnoreUnreadFields(boolean)
    */
-  public boolean getPdxIgnoreUnreadFields();
+  boolean getPdxIgnoreUnreadFields();
 
   /**
    * Get the CacheTransactionManager instance for this Cache.
@@ -223,7 +223,7 @@ public interface GemFireCache extends RegionService {
    *
    * @since GemFire 4.0
    */
-  public CacheTransactionManager getCacheTransactionManager();
+  CacheTransactionManager getCacheTransactionManager();
 
   /**
    * Returns the JNDI context associated with the Cache.
@@ -232,7 +232,7 @@ public interface GemFireCache extends RegionService {
    *
    * @since GemFire 4.0
    */
-  public Context getJNDIContext();
+  Context getJNDIContext();
 
   /**
    * Returns the Declarable used to initialize this cache or {@code null} if it does not have an
@@ -240,7 +240,7 @@ public interface GemFireCache extends RegionService {
    *
    * @since GemFire 6.6
    */
-  public Declarable getInitializer();
+  Declarable getInitializer();
 
   /**
    * Returns the Properties used to initialize the cache initializer or {@code null} if no
@@ -248,5 +248,5 @@ public interface GemFireCache extends RegionService {
    *
    * @since GemFire 6.6
    */
-  public Properties getInitializerProps();
+  Properties getInitializerProps();
 }

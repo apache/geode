@@ -25,24 +25,24 @@ import org.apache.geode.internal.logging.InternalLogWriter;
  */
 public interface Alert {
   /** The level at which this alert is issued */
-  public int getLevel();
+  int getLevel();
 
   /** The member of the distributed system that issued the alert */
-  public GemFireVM getGemFireVM();
+  GemFireVM getGemFireVM();
 
   /**
    * The name of the <code>GemFireConnection</code> through which the alert was issued.
    */
-  public String getConnectionName();
+  String getConnectionName();
 
   /** The id of the source of the alert (such as a thread in a VM) */
-  public String getSourceId();
+  String getSourceId();
 
   /** The alert's message */
-  public String getMessage();
+  String getMessage();
 
   /** The time at which the alert was issued */
-  public java.util.Date getDate();
+  java.util.Date getDate();
 
   /**
    * Returns a InternalDistributedMember instance representing a member that is sending (or has
@@ -53,16 +53,16 @@ public interface Alert {
    *
    * @since GemFire 6.5
    */
-  public InternalDistributedMember getSender();
+  InternalDistributedMember getSender();
 
-  public static final int ALL = InternalLogWriter.ALL_LEVEL;
-  public static final int OFF = InternalLogWriter.NONE_LEVEL;
-  public static final int FINEST = InternalLogWriter.FINEST_LEVEL;
-  public static final int FINER = InternalLogWriter.FINER_LEVEL;
-  public static final int FINE = InternalLogWriter.FINE_LEVEL;
-  public static final int CONFIG = InternalLogWriter.CONFIG_LEVEL;
-  public static final int INFO = InternalLogWriter.INFO_LEVEL;
-  public static final int WARNING = InternalLogWriter.WARNING_LEVEL;
-  public static final int ERROR = InternalLogWriter.ERROR_LEVEL;
-  public static final int SEVERE = InternalLogWriter.SEVERE_LEVEL;
+  int ALL = InternalLogWriter.ALL_LEVEL;
+  int OFF = InternalLogWriter.NONE_LEVEL;
+  int FINEST = InternalLogWriter.FINEST_LEVEL;
+  int FINER = InternalLogWriter.FINER_LEVEL;
+  int FINE = InternalLogWriter.FINE_LEVEL;
+  int CONFIG = InternalLogWriter.CONFIG_LEVEL;
+  int INFO = InternalLogWriter.INFO_LEVEL;
+  int WARNING = InternalLogWriter.WARNING_LEVEL;
+  int ERROR = InternalLogWriter.ERROR_LEVEL;
+  int SEVERE = InternalLogWriter.SEVERE_LEVEL;
 }

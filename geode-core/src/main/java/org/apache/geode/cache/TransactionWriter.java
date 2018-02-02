@@ -45,6 +45,6 @@ public interface TransactionWriter extends CacheCallback {
    * @see CacheTransactionManager#commit
    * @throws TransactionWriterException in the event that the transaction should be rolled back
    */
-  public void beforeCommit(TransactionEvent event) throws TransactionWriterException;
+  void beforeCommit(TransactionEvent event) throws TransactionWriterException;
 
 }

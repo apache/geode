@@ -14,6 +14,8 @@
  */
 package org.apache.geode.management.internal.cli.functions;
 
+import java.util.Collection;
+import java.util.Collections;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -27,6 +29,8 @@ import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.internal.InternalEntity;
 import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.internal.tcp.ConnectionTable;
+import org.apache.geode.management.internal.security.ResourcePermissions;
+import org.apache.geode.security.ResourcePermission;
 
 /**
  *
@@ -68,6 +72,12 @@ public class ShutDownFunction implements Function, InternalEntity {
       throws InterruptedException, ExecutionException {
     ExecutorService exec = Executors.newSingleThreadExecutor();
     Future future = exec.submit(() -> {
+      try {
+        // Allow the function call to exit so we don't get disconnect exceptions in the client
+        // making the call.
+        Thread.sleep(1000);
+      } catch (InterruptedException ignore) {
+      }
       ConnectionTable.threadWantsSharedResources();
       if (ids.isConnected()) {
         ids.disconnect();
@@ -84,6 +94,11 @@ public class ShutDownFunction implements Function, InternalEntity {
   public String getId() {
     return ShutDownFunction.ID;
 
+  }
+
+  @Override
+  public Collection<ResourcePermission> getRequiredPermissions(String regionName) {
+    return Collections.singleton(ResourcePermissions.CLUSTER_MANAGE);
   }
 
   @Override

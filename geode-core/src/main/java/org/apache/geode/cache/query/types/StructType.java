@@ -44,6 +44,6 @@ public interface StructType extends ObjectType {
    * @throws IllegalArgumentException If this <code>StructType</code> does not contain a field named
    *         <code>fieldName</code>.
    */
-  public int getFieldIndex(String fieldName);
+  int getFieldIndex(String fieldName);
 
 }

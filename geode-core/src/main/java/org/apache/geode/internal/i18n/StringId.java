@@ -27,13 +27,13 @@ public interface StringId {
    *
    * @return unformated text
    **/
-  public String getRawText();
+  String getRawText();
 
   /**
    * @return the English translation of this StringId
    **/
   @Override
-  public String toString();
+  String toString();
 
 
   /**
@@ -42,12 +42,12 @@ public interface StringId {
    * @see java.text.MessageFormat
    * @return the English translation of this StringId
    **/
-  public String toString(Object... params);
+  String toString(Object... params);
 
   /**
    * @return the translation of this StringId based on the current {@link java.util.Locale}
    **/
-  public String toLocalizedString();
+  String toLocalizedString();
 
   /**
    * Substitutes parameter Objects into the text
@@ -55,5 +55,5 @@ public interface StringId {
    * @see java.text.MessageFormat
    * @return the translation of this StringId based on the current {@link java.util.Locale}
    **/
-  public String toLocalizedString(Object... params);
+  String toLocalizedString(Object... params);
 }

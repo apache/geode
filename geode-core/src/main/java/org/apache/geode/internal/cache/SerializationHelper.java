@@ -16,8 +16,8 @@ package org.apache.geode.internal.cache;
 
 public interface SerializationHelper {
 
-  public byte[] convertObject2Bytes(Object obj);
+  byte[] convertObject2Bytes(Object obj);
 
-  public Object convertBytes2Object(byte[] objBytes);
+  Object convertBytes2Object(byte[] objBytes);
 
 }

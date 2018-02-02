@@ -91,8 +91,8 @@ import org.apache.geode.pdx.internal.PeerTypeRegistration;
  *
  * must be public for DataSerializableFixedID
  */
-public class EntryEventImpl
-    implements EntryEvent, InternalCacheEvent, DataSerializableFixedID, EntryOperation, Releasable {
+public class EntryEventImpl implements InternalEntryEvent, InternalCacheEvent,
+    DataSerializableFixedID, EntryOperation, Releasable {
   private static final Logger logger = LogService.getLogger();
 
   // PACKAGE FIELDS //
@@ -1594,7 +1594,7 @@ public class EntryEventImpl
     setNewValueInRegion(owner, reentry, null);
   }
 
-  void setRegionEntry(RegionEntry re) {
+  public void setRegionEntry(RegionEntry re) {
     this.re = re;
   }
 
@@ -2546,7 +2546,7 @@ public class EntryEventImpl
    */
   public long getEventTime(long suggestedTime) {
     long result = suggestedTime;
-    if (this.versionTag != null) {
+    if (this.versionTag != null && getRegion().getConcurrencyChecksEnabled()) {
       if (suggestedTime != 0) {
         this.versionTag.setVersionTimeStamp(suggestedTime);
       } else {

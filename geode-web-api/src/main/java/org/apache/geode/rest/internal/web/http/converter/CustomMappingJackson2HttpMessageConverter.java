@@ -118,9 +118,9 @@ public class CustomMappingJackson2HttpMessageConverter extends MappingJackson2Ht
 
   protected interface HttpOutputMessageWrapper extends HttpOutputMessage {
 
-    public long getContentLength();
+    long getContentLength();
 
-    public void flush() throws IOException;
+    void flush() throws IOException;
 
   }
 

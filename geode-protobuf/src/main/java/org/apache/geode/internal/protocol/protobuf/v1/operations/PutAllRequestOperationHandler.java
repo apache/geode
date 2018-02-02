@@ -14,8 +14,8 @@
  */
 package org.apache.geode.internal.protocol.protobuf.v1.operations;
 
-import static org.apache.geode.internal.protocol.ProtocolErrorCode.INVALID_REQUEST;
-import static org.apache.geode.internal.protocol.ProtocolErrorCode.SERVER_ERROR;
+import static org.apache.geode.internal.protocol.protobuf.v1.ProtobufErrorCode.INVALID_REQUEST;
+import static org.apache.geode.internal.protocol.protobuf.v1.ProtobufErrorCode.SERVER_ERROR;
 
 import java.util.Objects;
 import java.util.stream.Collectors;
@@ -26,20 +26,20 @@ import org.apache.logging.log4j.Logger;
 import org.apache.geode.annotations.Experimental;
 import org.apache.geode.cache.Region;
 import org.apache.geode.internal.exception.InvalidExecutionContextException;
-import org.apache.geode.internal.protocol.Failure;
-import org.apache.geode.internal.protocol.MessageExecutionContext;
-import org.apache.geode.internal.protocol.ProtocolErrorCode;
-import org.apache.geode.internal.protocol.Result;
-import org.apache.geode.internal.protocol.Success;
 import org.apache.geode.internal.protocol.operations.ProtobufOperationHandler;
 import org.apache.geode.internal.protocol.protobuf.v1.BasicTypes;
 import org.apache.geode.internal.protocol.protobuf.v1.ClientProtocol;
+import org.apache.geode.internal.protocol.protobuf.v1.Failure;
+import org.apache.geode.internal.protocol.protobuf.v1.MessageExecutionContext;
+import org.apache.geode.internal.protocol.protobuf.v1.ProtobufErrorCode;
 import org.apache.geode.internal.protocol.protobuf.v1.ProtobufSerializationService;
 import org.apache.geode.internal.protocol.protobuf.v1.RegionAPI;
+import org.apache.geode.internal.protocol.protobuf.v1.Result;
+import org.apache.geode.internal.protocol.protobuf.v1.Success;
+import org.apache.geode.internal.protocol.protobuf.v1.serialization.SerializationService;
+import org.apache.geode.internal.protocol.protobuf.v1.serialization.exception.EncodingException;
 import org.apache.geode.internal.protocol.protobuf.v1.utilities.ProtobufResponseUtilities;
 import org.apache.geode.internal.protocol.protobuf.v1.utilities.ProtobufUtilities;
-import org.apache.geode.internal.protocol.serialization.SerializationService;
-import org.apache.geode.internal.protocol.serialization.exception.EncodingException;
 
 @Experimental
 public class PutAllRequestOperationHandler
@@ -84,7 +84,7 @@ public class PutAllRequestOperationHandler
   }
 
   private BasicTypes.KeyedError buildAndLogKeyedError(BasicTypes.Entry entry,
-      ProtocolErrorCode errorCode, String message, Exception ex) {
+      ProtobufErrorCode errorCode, String message, Exception ex) {
     logger.error(message, ex);
 
     return BasicTypes.KeyedError.newBuilder().setKey(entry.getKey())

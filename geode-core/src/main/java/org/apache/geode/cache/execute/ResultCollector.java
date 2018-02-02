@@ -68,7 +68,7 @@ public interface ResultCollector<T, S> {
    * @throws FunctionException if result retrieval fails
    * @since GemFire 6.0
    */
-  public S getResult() throws FunctionException;
+  S getResult() throws FunctionException;
 
   /**
    * Method used to pull results from the ResultCollector. It returns the result of function
@@ -83,7 +83,7 @@ public interface ResultCollector<T, S> {
    * @since GemFire 6.0
    *
    */
-  public S getResult(long timeout, TimeUnit unit) throws FunctionException, InterruptedException;
+  S getResult(long timeout, TimeUnit unit) throws FunctionException, InterruptedException;
 
   /**
    * Method used to feed result to the ResultCollector. It adds a single function execution result
@@ -93,7 +93,7 @@ public interface ResultCollector<T, S> {
    * @since GemFire 6.0
    * @param memberID DistributedMember ID to which result belongs
    */
-  public void addResult(DistributedMember memberID, T resultOfSingleExecution);
+  void addResult(DistributedMember memberID, T resultOfSingleExecution);
 
   /**
    * GemFire will invoke this method when function execution has completed and all results for the
@@ -106,7 +106,7 @@ public interface ResultCollector<T, S> {
    *
    * @see ResultSender#lastResult(Object)
    */
-  public void endResults();
+  void endResults();
 
   /**
    * GemFire will invoke this method before re-executing function (in case of Function Execution
@@ -114,6 +114,6 @@ public interface ResultCollector<T, S> {
    *
    * @since GemFire 6.5
    */
-  public void clearResults();
+  void clearResults();
 
 }

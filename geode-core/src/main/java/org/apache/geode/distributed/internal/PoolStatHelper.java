@@ -27,10 +27,10 @@ public interface PoolStatHelper {
   /**
    * Called each time the pool starts working on a job.
    */
-  public void startJob();
+  void startJob();
 
   /**
    * Called each time the pool finishes a job it started.
    */
-  public void endJob();
+  void endJob();
 }

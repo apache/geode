@@ -31,14 +31,14 @@ public interface RMIRegistryServiceMBean {
    *
    * @return the host on which rmiregistry listens for incoming connections
    */
-  public String getHost();
+  String getHost();
 
   /**
    * Returns the port on which rmiregistry listens for incoming connections
    *
    * @return the port on which rmiregistry listens for incoming connections
    */
-  public int getPort();
+  int getPort();
 
   /**
    * Returns whether this MBean has been started and not yet stopped.
@@ -46,7 +46,7 @@ public interface RMIRegistryServiceMBean {
    * @return whether this MBean has been started and not yet stopped.
    * @see #start
    */
-  public boolean isRunning();
+  boolean isRunning();
 
   /**
    * Starts this MBean: rmiregistry can now accept incoming calls
@@ -54,14 +54,14 @@ public interface RMIRegistryServiceMBean {
    * @see #stop
    * @see #isRunning
    */
-  public void start() throws RemoteException;
+  void start() throws RemoteException;
 
   /**
    * Stops this MBean: rmiregistry cannot accept anymore incoming calls
    *
    * @see #start
    */
-  public void stop() throws NoSuchObjectException;
+  void stop() throws NoSuchObjectException;
 
   /**
    * Returns an array of the names bound in the rmiregistry
@@ -69,12 +69,12 @@ public interface RMIRegistryServiceMBean {
    * @return an array of the names bound in the rmiregistry
    * @see java.rmi.registry.Registry#list()
    */
-  public String[] list() throws RemoteException;
+  String[] list() throws RemoteException;
 
   /**
    * Removes the binding for the specified <code>name</code> in the rmiregistry
    *
    * @see java.rmi.registry.Registry#unbind(String)
    */
-  public void unbind(String name) throws RemoteException, NotBoundException;
+  void unbind(String name) throws RemoteException, NotBoundException;
 }

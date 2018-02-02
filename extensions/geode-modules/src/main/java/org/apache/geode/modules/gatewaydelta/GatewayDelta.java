@@ -16,9 +16,9 @@ package org.apache.geode.modules.gatewaydelta;
 
 public interface GatewayDelta {
 
-  public static final String GATEWAY_DELTA_REGION_NAME = "__gatewayDelta";
+  String GATEWAY_DELTA_REGION_NAME = "__gatewayDelta";
 
-  public GatewayDeltaEvent getCurrentGatewayDeltaEvent();
+  GatewayDeltaEvent getCurrentGatewayDeltaEvent();
 
-  public void setCurrentGatewayDeltaEvent(GatewayDeltaEvent currentGatewayDeltaEvent);
+  void setCurrentGatewayDeltaEvent(GatewayDeltaEvent currentGatewayDeltaEvent);
 }

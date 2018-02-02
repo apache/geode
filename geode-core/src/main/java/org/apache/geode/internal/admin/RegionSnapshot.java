@@ -25,5 +25,5 @@ public interface RegionSnapshot extends CacheSnapshot {
   /**
    * Returns the attributes of the <code>Region</code>
    */
-  public RegionAttributes getAttributes();
+  RegionAttributes getAttributes();
 }

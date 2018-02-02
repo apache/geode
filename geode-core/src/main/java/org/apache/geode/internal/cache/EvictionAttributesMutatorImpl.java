@@ -21,8 +21,7 @@ public class EvictionAttributesMutatorImpl implements EvictionAttributesMutator 
   private final InternalRegion region;
   private final EvictionAttributesImpl evictionAttributes;
 
-  EvictionAttributesMutatorImpl(InternalRegion region,
-      EvictionAttributesImpl evictionAttributes) {
+  EvictionAttributesMutatorImpl(InternalRegion region, EvictionAttributesImpl evictionAttributes) {
     this.region = region;
     this.evictionAttributes = evictionAttributes;
   }

@@ -14,19 +14,15 @@
  */
 package org.apache.geode.management.internal.cli.functions;
 
+import java.util.Collection;
+import java.util.Collections;
+
 import org.apache.geode.cache.execute.Function;
 import org.apache.geode.cache.execute.FunctionContext;
 import org.apache.geode.cache.execute.FunctionService;
 import org.apache.geode.internal.InternalEntity;
-
-/**
- *
- * Class for Unregister function
- *
- *
- *
- */
-
+import org.apache.geode.management.internal.security.ResourcePermissions;
+import org.apache.geode.security.ResourcePermission;
 
 public class UnregisterFunction implements Function, InternalEntity {
   public static final String ID = UnregisterFunction.class.getName();
@@ -47,7 +43,11 @@ public class UnregisterFunction implements Function, InternalEntity {
   @Override
   public String getId() {
     return UnregisterFunction.ID;
+  }
 
+  @Override
+  public Collection<ResourcePermission> getRequiredPermissions(String regionName) {
+    return Collections.singleton(ResourcePermissions.CLUSTER_MANAGE_DEPLOY);
   }
 
   @Override

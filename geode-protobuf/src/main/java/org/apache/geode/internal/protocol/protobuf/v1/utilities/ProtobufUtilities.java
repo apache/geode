@@ -17,12 +17,12 @@ package org.apache.geode.internal.protocol.protobuf.v1.utilities;
 import org.apache.geode.annotations.Experimental;
 import org.apache.geode.cache.Region;
 import org.apache.geode.cache.RegionAttributes;
-import org.apache.geode.internal.protocol.ProtocolErrorCode;
 import org.apache.geode.internal.protocol.protobuf.v1.BasicTypes;
 import org.apache.geode.internal.protocol.protobuf.v1.ClientProtocol;
+import org.apache.geode.internal.protocol.protobuf.v1.ProtobufErrorCode;
 import org.apache.geode.internal.protocol.protobuf.v1.ProtobufSerializationService;
 import org.apache.geode.internal.protocol.protobuf.v1.RegionAPI;
-import org.apache.geode.internal.protocol.serialization.exception.EncodingException;
+import org.apache.geode.internal.protocol.protobuf.v1.serialization.exception.EncodingException;
 
 /**
  * This class contains helper functions for assistance in creating protobuf objects. This class is
@@ -103,12 +103,12 @@ public abstract class ProtobufUtilities {
   }
 
   /**
-   * This will convert a ProtocolErrorCode to a BasicTypes.ErrorCode for protobuf
+   * This will convert a ProtobufErrorCode to a BasicTypes.ErrorCode for protobuf
    *
-   * @param errorCode - incoming ProtocolErrorCode
+   * @param errorCode - incoming ProtobufErrorCode
    * @return matching protobuf error code
    */
-  public static BasicTypes.ErrorCode getProtobufErrorCode(ProtocolErrorCode errorCode) {
+  public static BasicTypes.ErrorCode getProtobufErrorCode(ProtobufErrorCode errorCode) {
     return BasicTypes.ErrorCode.forNumber(errorCode.codeValue);
   }
 

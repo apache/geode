@@ -79,8 +79,8 @@ public class ServerHandShakeProcessor {
     currentServerVersion = Version.fromOrdinalOrCurrent(ver);
   }
 
-  public static boolean readHandShake(ServerConnection connection,
-      SecurityService securityService) {
+  public static boolean readHandShake(ServerConnection connection, SecurityService securityService,
+      AcceptorImpl acceptorImpl) {
     boolean validHandShake = false;
     Version clientVersion = null;
     try {
@@ -123,7 +123,7 @@ public class ServerHandShakeProcessor {
 
       // Read the appropriate handshake
       if (clientVersion.compareTo(Version.GFE_57) >= 0) {
-        validHandShake = readGFEHandshake(connection, clientVersion, securityService);
+        validHandShake = readGFEHandshake(connection, clientVersion, securityService, acceptorImpl);
       } else {
         connection.refuseHandshake(
             "Unsupported version " + clientVersion + "Server's current version " + Acceptor.VERSION,
@@ -200,7 +200,7 @@ public class ServerHandShakeProcessor {
   }
 
   private static boolean readGFEHandshake(ServerConnection connection, Version clientVersion,
-      SecurityService securityService) {
+      SecurityService securityService, AcceptorImpl acceptorImpl) {
     int handShakeTimeout = connection.getHandShakeTimeout();
     InternalLogWriter securityLogWriter = connection.getSecurityLogWriter();
     try {

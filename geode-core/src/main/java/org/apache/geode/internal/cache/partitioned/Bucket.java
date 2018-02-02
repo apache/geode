@@ -30,31 +30,31 @@ public interface Bucket extends CacheDistributionAdvisee, HasDiskRegion {
   /**
    * Returns the distribution and metadata <code>BucketAdvisor</code> for this bucket.
    */
-  public BucketAdvisor getBucketAdvisor();
+  BucketAdvisor getBucketAdvisor();
 
   /**
    * Returns the serial number which identifies the static order in which this bucket was created in
    * relation to other regions or other instances of this bucket during the life of this JVM.
    */
-  public int getSerialNumber();
+  int getSerialNumber();
 
   /**
    * Returns true if this member is the primary for this bucket.
    */
-  public boolean isPrimary();
+  boolean isPrimary();
 
   /**
    * Returns true if this bucket is currently backed by a
    * {@link org.apache.geode.internal.cache.BucketRegion}.
    */
-  public boolean isHosting();
+  boolean isHosting();
 
   /**
    * Returns the bucket id used to uniquely identify the bucket in its partitioned region
    *
    * @return the unique identity of the bucket
    */
-  public int getId();
+  int getId();
 
   /**
    * Report members that are currently hosting the bucket
@@ -62,12 +62,12 @@ public interface Bucket extends CacheDistributionAdvisee, HasDiskRegion {
    * @return set of members
    * @since GemFire 5.9
    */
-  public Set/* InternalDistributedMembers */ getBucketOwners();
+  Set/* InternalDistributedMembers */ getBucketOwners();
 
-  public PersistenceAdvisor getPersistenceAdvisor();
+  PersistenceAdvisor getPersistenceAdvisor();
 
   /**
    * Returns the parent {@link PartitionedRegion} of this bucket.
    */
-  public PartitionedRegion getPartitionedRegion();
+  PartitionedRegion getPartitionedRegion();
 }

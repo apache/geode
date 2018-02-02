@@ -17,10 +17,10 @@ package org.apache.geode.internal.protocol.protobuf.v1;
 import com.google.protobuf.ByteString;
 
 import org.apache.geode.annotations.Experimental;
+import org.apache.geode.internal.protocol.protobuf.v1.serialization.JsonPdxConverter;
+import org.apache.geode.internal.protocol.protobuf.v1.serialization.SerializationService;
+import org.apache.geode.internal.protocol.protobuf.v1.serialization.exception.EncodingException;
 import org.apache.geode.internal.protocol.protobuf.v1.utilities.exception.UnknownProtobufEncodingType;
-import org.apache.geode.internal.protocol.serialization.JsonPdxConverter;
-import org.apache.geode.internal.protocol.serialization.SerializationService;
-import org.apache.geode.internal.protocol.serialization.exception.EncodingException;
 import org.apache.geode.pdx.PdxInstance;
 
 @Experimental

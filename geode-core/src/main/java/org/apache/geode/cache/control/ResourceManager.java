@@ -48,7 +48,7 @@ public interface ResourceManager {
    * @see ResourceManager#setCriticalHeapPercentage(float)
    * @see ResourceManager#getCriticalHeapPercentage()
    */
-  public static final float DEFAULT_CRITICAL_PERCENTAGE = 0.0f;
+  float DEFAULT_CRITICAL_PERCENTAGE = 0.0f;
 
   /**
    * The default percent of heap memory at which the VM should begin evicting data. Current value is
@@ -60,14 +60,14 @@ public interface ResourceManager {
    * @see ResourceManager#setEvictionHeapPercentage(float)
    * @see ResourceManager#getEvictionHeapPercentage()
    */
-  public static final float DEFAULT_EVICTION_PERCENTAGE = 0.0f;
+  float DEFAULT_EVICTION_PERCENTAGE = 0.0f;
 
   /**
    * Creates a factory for defining and starting {@link RebalanceOperation RebalanceOperations}.
    *
    * @return a factory for defining and starting RebalanceOperations
    */
-  public RebalanceFactory createRebalanceFactory();
+  RebalanceFactory createRebalanceFactory();
 
   /**
    * Returns a set of all active {@link RebalanceOperation RebalanceOperations} that were started
@@ -75,7 +75,7 @@ public interface ResourceManager {
    *
    * @return a set of all active RebalanceOperations started locally
    */
-  public Set<RebalanceOperation> getRebalanceOperations();
+  Set<RebalanceOperation> getRebalanceOperations();
 
   /**
    * Set the percentage of heap at or above which the cache is considered in danger of becoming
@@ -128,7 +128,7 @@ public interface ResourceManager {
    * @see #getEvictionHeapPercentage()
    * @since GemFire 6.0
    */
-  public void setCriticalHeapPercentage(float heapPercentage);
+  void setCriticalHeapPercentage(float heapPercentage);
 
   /**
    * Get the percentage of heap at or above which the cache is considered in danger of becoming
@@ -138,7 +138,7 @@ public interface ResourceManager {
    * @see #setCriticalHeapPercentage(float)
    * @since GemFire 6.0
    */
-  public float getCriticalHeapPercentage();
+  float getCriticalHeapPercentage();
 
   /**
    * Set the percentage of off-heap at or above which the cache is considered in danger of becoming
@@ -169,7 +169,7 @@ public interface ResourceManager {
    * @see #getEvictionOffHeapPercentage()
    * @since Geode 1.0
    */
-  public void setCriticalOffHeapPercentage(float offHeapPercentage);
+  void setCriticalOffHeapPercentage(float offHeapPercentage);
 
   /**
    * Get the percentage of off-heap at or above which the cache is considered in danger of becoming
@@ -179,7 +179,7 @@ public interface ResourceManager {
    * @see #setCriticalOffHeapPercentage(float)
    * @since Geode 1.0
    */
-  public float getCriticalOffHeapPercentage();
+  float getCriticalOffHeapPercentage();
 
   /**
    * Set the percentage of heap at or above which the eviction should begin on Regions configured
@@ -203,7 +203,7 @@ public interface ResourceManager {
    * @see #getCriticalHeapPercentage()
    * @since GemFire 6.0
    */
-  public void setEvictionHeapPercentage(float heapPercentage);
+  void setEvictionHeapPercentage(float heapPercentage);
 
   /**
    * Get the percentage of heap at or above which the eviction should begin on Regions configured
@@ -213,7 +213,7 @@ public interface ResourceManager {
    * @see #setEvictionHeapPercentage(float)
    * @since GemFire 6.0
    */
-  public float getEvictionHeapPercentage();
+  float getEvictionHeapPercentage();
 
   /**
    * Set the percentage of off-heap at or above which the eviction should begin on Regions
@@ -233,7 +233,7 @@ public interface ResourceManager {
    * @see #getCriticalOffHeapPercentage()
    * @since Geode 1.0
    */
-  public void setEvictionOffHeapPercentage(float offHeapPercentage);
+  void setEvictionOffHeapPercentage(float offHeapPercentage);
 
   /**
    * Get the percentage of off-heap at or above which the eviction should begin on Regions
@@ -243,5 +243,5 @@ public interface ResourceManager {
    * @see #setEvictionOffHeapPercentage(float)
    * @since Geode 1.0
    */
-  public float getEvictionOffHeapPercentage();
+  float getEvictionOffHeapPercentage();
 }

@@ -144,6 +144,10 @@ public class TXCommitMessage extends PooledDistributionMessage
    * transaction
    */
   public static final TXCommitMessage EXCEPTION_MSG = new TXCommitMessage();
+  /**
+   * A token to be put in TXManagerImpl#failoverMap to represent a rolled back transaction
+   */
+  public static final TXCommitMessage ROLLBACK_MSG = new TXCommitMessage();
 
   public TXCommitMessage(TXId txIdent, DistributionManager dm, TXState txState) {
     this.dm = dm;
@@ -688,7 +692,7 @@ public class TXCommitMessage extends PooledDistributionMessage
       if (isAckRequired()) {
         ack();
       }
-      if (!GemFireCacheImpl.getExisting("Applying TXCommitMessage").isClient()) {
+      if (!dm.getExistingCache().isClient()) {
         getTracker().saveTXForClientFailover(txIdent, this);
       }
       if (logger.isDebugEnabled()) {
@@ -1380,7 +1384,7 @@ public class TXCommitMessage extends PooledDistributionMessage
         for (int i = 0; i < size; i++) {
           FarSideEntryOp entryOp = new FarSideEntryOp();
           // shadowkey is not being sent to clients
-          entryOp.fromData(in, largeModCount, !this.msg.getDM().isLoner());
+          entryOp.fromData(in, largeModCount, hasShadowKey(regionPath, parentRegionPath));
           if (entryOp.versionTag != null && this.memberId != null) {
             entryOp.versionTag.setMemberID(this.memberId);
           }
@@ -1389,6 +1393,20 @@ public class TXCommitMessage extends PooledDistributionMessage
           this.opEntries.add(entryOp);
         }
       }
+    }
+
+    private boolean hasShadowKey(String regionPath, String parentRegionPath) {
+      // in bucket region, regionPath is bucket name, use parentRegionPath
+      String path = parentRegionPath != null ? parentRegionPath : regionPath;
+      LocalRegion region = getRegionByPath(msg.getDM(), path);
+
+      // default value is whether loner or not, region is null if destroyRegion executed
+      boolean readShadowKey = !msg.getDM().isLoner();
+      if (region != null) {
+        // shadowkey is not being sent to clients
+        readShadowKey = region.getPoolName() == null;
+      }
+      return readShadowKey;
     }
 
     @Override

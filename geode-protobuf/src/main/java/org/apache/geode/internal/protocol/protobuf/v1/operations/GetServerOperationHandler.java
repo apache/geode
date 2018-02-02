@@ -14,7 +14,7 @@
  */
 package org.apache.geode.internal.protocol.protobuf.v1.operations;
 
-import static org.apache.geode.internal.protocol.ProtocolErrorCode.NO_AVAILABLE_SERVER;
+import static org.apache.geode.internal.protocol.protobuf.v1.ProtobufErrorCode.NO_AVAILABLE_SERVER;
 
 import java.util.HashSet;
 import java.util.List;
@@ -26,17 +26,17 @@ import org.apache.geode.cache.client.internal.locator.ClientConnectionResponse;
 import org.apache.geode.distributed.internal.InternalLocator;
 import org.apache.geode.distributed.internal.ServerLocation;
 import org.apache.geode.internal.exception.InvalidExecutionContextException;
-import org.apache.geode.internal.protocol.Failure;
-import org.apache.geode.internal.protocol.MessageExecutionContext;
-import org.apache.geode.internal.protocol.Result;
-import org.apache.geode.internal.protocol.Success;
 import org.apache.geode.internal.protocol.operations.ProtobufOperationHandler;
 import org.apache.geode.internal.protocol.protobuf.v1.BasicTypes;
 import org.apache.geode.internal.protocol.protobuf.v1.ClientProtocol;
+import org.apache.geode.internal.protocol.protobuf.v1.Failure;
 import org.apache.geode.internal.protocol.protobuf.v1.LocatorAPI;
+import org.apache.geode.internal.protocol.protobuf.v1.MessageExecutionContext;
 import org.apache.geode.internal.protocol.protobuf.v1.ProtobufSerializationService;
+import org.apache.geode.internal.protocol.protobuf.v1.Result;
+import org.apache.geode.internal.protocol.protobuf.v1.Success;
+import org.apache.geode.internal.protocol.protobuf.v1.state.ProtobufConnectionTerminatingStateProcessor;
 import org.apache.geode.internal.protocol.protobuf.v1.utilities.ProtobufResponseUtilities;
-import org.apache.geode.internal.protocol.state.ConnectionTerminatingStateProcessor;
 
 @Experimental
 public class GetServerOperationHandler
@@ -57,7 +57,8 @@ public class GetServerOperationHandler
     // note: an empty string is okay - the ServerLocator code checks for this
     String serverGroup = request.getServerGroup();
 
-    messageExecutionContext.setConnectionStateProcessor(new ConnectionTerminatingStateProcessor());
+    messageExecutionContext
+        .setConnectionStateProcessor(new ProtobufConnectionTerminatingStateProcessor());
     InternalLocator internalLocator = (InternalLocator) messageExecutionContext.getLocator();
 
     // In order to ensure that proper checks are performed on the request we will use

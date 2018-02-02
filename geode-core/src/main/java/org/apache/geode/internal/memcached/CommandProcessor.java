@@ -33,6 +33,6 @@ public interface CommandProcessor {
    * @param protocol
    * @param cache
    */
-  public ByteBuffer processCommand(RequestReader reader, Protocol protocol, Cache cache);
+  ByteBuffer processCommand(RequestReader reader, Protocol protocol, Cache cache);
 
 }

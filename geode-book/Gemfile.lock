@@ -10,7 +10,7 @@ GEM
       public_suffix (>= 2.0.2, < 4.0)
     ansi (1.5.0)
     backports (3.11.0)
-    bookbindery (10.1.7)
+    bookbindery (10.1.12)
       ansi (~> 1.4)
       css_parser
       elasticsearch
@@ -21,8 +21,8 @@ GEM
       middleman-compass
       middleman-livereload
       middleman-sprockets
-      middleman-syntax
-      nokogiri (= 1.6.7.2)
+      middleman-syntax (= 2.1.0)
+      nokogiri (= 1.8.1)
       puma
       rack-rewrite
       redcarpet (~> 3.2.3)
@@ -30,7 +30,7 @@ GEM
       therubyracer
       thor (= 0.19.1)
     builder (3.2.3)
-    chunky_png (1.3.8)
+    chunky_png (1.3.10)
     coffee-script (2.4.1)
       coffee-script-source
       execjs
@@ -67,7 +67,7 @@ GEM
     eventmachine (1.2.5)
     excon (0.60.0)
     execjs (2.7.0)
-    faraday (0.13.1)
+    faraday (0.14.0)
       multipart-post (>= 1.2, < 3)
     fast_blank (1.0.0)
     fastimage (2.1.1)
@@ -149,15 +149,15 @@ GEM
     middleman-sprockets (4.1.1)
       middleman-core (~> 4.0)
       sprockets (>= 3.0)
-    middleman-syntax (3.0.0)
+    middleman-syntax (2.1.0)
       middleman-core (>= 3.2)
-      rouge (~> 2.0)
-    mini_portile2 (2.0.0)
+      rouge (~> 1.0)
+    mini_portile2 (2.3.0)
     minitest (5.11.1)
     multi_json (1.13.1)
     multipart-post (2.0.0)
-    nokogiri (1.6.7.2)
-      mini_portile2 (~> 2.0.0.rc2)
+    nokogiri (1.8.1)
+      mini_portile2 (~> 2.3.0)
     padrino-helpers (0.13.3.4)
       i18n (~> 0.6, >= 0.6.7)
       padrino-support (= 0.13.3.4)
@@ -166,7 +166,7 @@ GEM
       activesupport (>= 3.1)
     parallel (1.12.1)
     public_suffix (3.0.1)
-    puma (3.11.0)
+    puma (3.11.2)
     rack (1.6.8)
     rack-livereload (0.3.16)
       rack
@@ -176,7 +176,7 @@ GEM
       ffi (>= 0.5.0, < 2)
     redcarpet (3.2.3)
     ref (2.0.0)
-    rouge (2.2.1)
+    rouge (1.11.1)
     sass (3.4.25)
     servolux (0.13.0)
     sprockets (3.7.1)
@@ -198,8 +198,8 @@ PLATFORMS
   ruby
 
 DEPENDENCIES
-  bookbindery (= 10.1.7)
+  bookbindery (= 10.1.12)
   libv8 (= 3.16.14.7)
 
 BUNDLED WITH
-   1.13.6
+   1.16.1
