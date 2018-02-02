@@ -47,6 +47,7 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Objects;
 import java.util.Properties;
 import java.util.ServiceLoader;
 import java.util.Set;
@@ -278,6 +279,11 @@ public class GemFireCacheImpl implements InternalCache, InternalClientCache, Has
    */
   private static final boolean ASYNC_EVENT_LISTENERS =
       Boolean.getBoolean(DistributionConfig.GEMFIRE_PREFIX + "Cache.ASYNC_EVENT_LISTENERS");
+
+  /**
+   * Name of the default pool.
+   */
+  public static final String DEFAULT_POOL_NAME = "DEFAULT";
 
   /**
    * If true then when a delta is applied the size of the entry value will be recalculated. If false
@@ -1146,12 +1152,11 @@ public class GemFireCacheImpl implements InternalCache, InternalClientCache, Has
    * May return null (even on a client).
    */
   @Override
-  public Pool getDefaultPool() {
+  public synchronized Pool getDefaultPool() {
+    if (this.defaultPool == null) {
+      determineDefaultPool();
+    }
     return this.defaultPool;
-  }
-
-  private void setDefaultPool(Pool value) {
-    this.defaultPool = value;
   }
 
   /**
@@ -1220,8 +1225,6 @@ public class GemFireCacheImpl implements InternalCache, InternalClientCache, Has
         this.configurationResponse = null;
       }
     }
-
-    this.poolFactory = null;
 
     startColocatedJmxManagerLocator();
 
@@ -1384,7 +1387,6 @@ public class GemFireCacheImpl implements InternalCache, InternalClientCache, Has
     String cacheXmlDescription = this.cacheConfig.getCacheXMLDescription();
     if (url == null && cacheXmlDescription == null) {
       if (isClient()) {
-        determineDefaultPool();
         initializeClientRegionShortcuts(this);
       } else {
         initializeRegionShortcuts(this);
@@ -2843,32 +2845,51 @@ public class GemFireCacheImpl implements InternalCache, InternalClientCache, Has
     return defaultPoolFactory;
   }
 
+  private Pool findFirstCompatiblePool(Map<String, Pool> pools) {
+    // act as if the default pool was configured
+    // and see if we can find an existing one that is compatible
+    PoolFactoryImpl pfi = (PoolFactoryImpl) createDefaultPF();
+    for (Pool p : pools.values()) {
+      if (((PoolImpl) p).isCompatible(pfi.getPoolAttributes())) {
+        return p;
+      }
+    }
+    return null;
+  }
+
+  private void addLocalHostAsServer(PoolFactory poolFactory) {
+    PoolFactoryImpl poolFactoryImpl = (PoolFactoryImpl) poolFactory;
+    if (poolFactoryImpl.getPoolAttributes().locators.isEmpty()
+        && poolFactoryImpl.getPoolAttributes().servers.isEmpty()) {
+      try {
+        String localHostName = SocketCreator.getHostName(SocketCreator.getLocalHost());
+        poolFactoryImpl.addServer(localHostName, CacheServer.DEFAULT_PORT);
+      } catch (UnknownHostException ex) {
+        throw new IllegalStateException("Could not determine local host name", ex);
+      }
+    }
+  }
+
   /**
    * Used to set the default pool on a new GemFireCache.
    */
-  public void determineDefaultPool() {
+  public synchronized void determineDefaultPool() {
     if (!isClient()) {
       throw new UnsupportedOperationException();
     }
+    PoolFactory poolFactory = this.poolFactory;
+
     Pool pool = null;
     // create the pool if it does not already exist
-    if (this.poolFactory == null) {
+    if (poolFactory == null) {
       Map<String, Pool> pools = PoolManager.getAll();
       if (pools.isEmpty()) {
-        this.poolFactory = createDefaultPF();
+        poolFactory = createDefaultPF();
       } else if (pools.size() == 1) {
         // otherwise use a singleton.
         pool = pools.values().iterator().next();
       } else {
-        // act as if the default pool was configured
-        // and see if we can find an existing one that is compatible
-        PoolFactoryImpl pfi = (PoolFactoryImpl) createDefaultPF();
-        for (Pool p : pools.values()) {
-          if (((PoolImpl) p).isCompatible(pfi.getPoolAttributes())) {
-            pool = p;
-            break;
-          }
-        }
+        pool = findFirstCompatiblePool(pools);
         if (pool == null) {
           // if pool is still null then we will not have a default pool for this ClientCache
           this.defaultPool = null;
@@ -2876,21 +2897,14 @@ public class GemFireCacheImpl implements InternalCache, InternalClientCache, Has
         }
       }
     } else {
-      PoolFactoryImpl pfi = (PoolFactoryImpl) this.poolFactory;
-      if (pfi.getPoolAttributes().locators.isEmpty() && pfi.getPoolAttributes().servers.isEmpty()) {
-        try {
-          String localHostName = SocketCreator.getHostName(SocketCreator.getLocalHost());
-          pfi.addServer(localHostName, CacheServer.DEFAULT_PORT);
-        } catch (UnknownHostException ex) {
-          throw new IllegalStateException("Could not determine local host name", ex);
-        }
-      }
+      addLocalHostAsServer(poolFactory);
+
       // look for a pool that already exists that is compatible with
       // our PoolFactory.
       // If we don't find one we will create a new one that meets our needs.
       Map<String, Pool> pools = PoolManager.getAll();
       for (Pool p : pools.values()) {
-        if (((PoolImpl) p).isCompatible(pfi.getPoolAttributes())) {
+        if (((PoolImpl) p).isCompatible(((PoolFactoryImpl) poolFactory).getPoolAttributes())) {
           pool = p;
           break;
         }
@@ -2898,75 +2912,29 @@ public class GemFireCacheImpl implements InternalCache, InternalClientCache, Has
     }
     if (pool == null) {
       // create our pool with a unique name
-      String poolName = "DEFAULT";
+      String poolName = DEFAULT_POOL_NAME;
       int count = 1;
       Map<String, Pool> pools = PoolManager.getAll();
       while (pools.containsKey(poolName)) {
-        poolName = "DEFAULT" + count;
+        poolName = DEFAULT_POOL_NAME + count;
         count++;
       }
-      pool = this.poolFactory.create(poolName);
+      pool = poolFactory.create(poolName);
     }
     this.defaultPool = pool;
   }
 
   /**
-   * Used to see if a existing cache's pool is compatible with us.
+   * Determine whether the specified pool factory matches the pool factory used by this cache.
    *
-   * @return the default pool that is right for us
+   * @param poolFactory Prospective pool factory.
+   * @throws IllegalStateException When the specified pool factory does not match.
    */
-  public Pool determineDefaultPool(PoolFactory poolFactory) {
-    Pool pool;
-    // create the pool if it does not already exist
-    if (poolFactory == null) {
-      Map<String, Pool> pools = PoolManager.getAll();
-      if (pools.isEmpty()) {
-        throw new IllegalStateException("Since a cache already existed a pool should also exist.");
-      } else if (pools.size() == 1) {
-        // otherwise use a singleton.
-        pool = pools.values().iterator().next();
-        if (getDefaultPool() != pool) {
-          throw new IllegalStateException(
-              "Existing cache's default pool was not the same as the only existing pool");
-        }
-      } else {
-        // just use the current default pool if one exists
-        pool = getDefaultPool();
-        if (pool == null) {
-          // act as if the default pool was configured
-          // and see if we can find an existing one that is compatible
-          PoolFactoryImpl pfi = (PoolFactoryImpl) createDefaultPF();
-          for (Pool p : pools.values()) {
-            if (((PoolImpl) p).isCompatible(pfi.getPoolAttributes())) {
-              pool = p;
-              break;
-            }
-          }
-          if (pool == null) {
-            // if pool is still null then we will not have a default pool for this ClientCache
-            return null;
-          }
-        }
-      }
-    } else {
-      PoolFactoryImpl poolFactoryImpl = (PoolFactoryImpl) poolFactory;
-      if (poolFactoryImpl.getPoolAttributes().locators.isEmpty()
-          && poolFactoryImpl.getPoolAttributes().servers.isEmpty()) {
-        try {
-          String localHostName = SocketCreator.getHostName(SocketCreator.getLocalHost());
-          poolFactoryImpl.addServer(localHostName, CacheServer.DEFAULT_PORT);
-        } catch (UnknownHostException ex) {
-          throw new IllegalStateException("Could not determine local host name", ex);
-        }
-      }
-      PoolImpl defaultPool = (PoolImpl) getDefaultPool();
-      if (defaultPool != null && defaultPool.isCompatible(poolFactoryImpl.getPoolAttributes())) {
-        pool = defaultPool;
-      } else {
-        throw new IllegalStateException("Existing cache's default pool was not compatible");
-      }
+  public void validatePoolFactory(PoolFactory poolFactory) {
+    // If the specified pool factory is null, by definition there is no pool factory to validate.
+    if (poolFactory != null && !Objects.equals(this.poolFactory, poolFactory)) {
+      throw new IllegalStateException("Existing cache's default pool was not compatible");
     }
-    return pool;
   }
 
   @Override
@@ -3048,6 +3016,11 @@ public class GemFireCacheImpl implements InternalCache, InternalClientCache, Has
             } else if (isPartitionedRegion) {
               region = new PartitionedRegion(name, attrs, null, this, internalRegionArgs);
             } else {
+              // Abstract region depends on the default pool existing so lazily initialize it
+              // if necessary.
+              if (Objects.equals(attrs.getPoolName(), DEFAULT_POOL_NAME)) {
+                determineDefaultPool();
+              }
               if (attrs.getScope().isLocal()) {
                 region = new LocalRegion(name, attrs, null, this, internalRegionArgs);
               } else {

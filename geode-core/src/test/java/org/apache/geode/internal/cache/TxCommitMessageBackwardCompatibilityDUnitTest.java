@@ -109,7 +109,7 @@ public class TxCommitMessageBackwardCompatibilityDUnitTest extends JUnit4Distrib
     testVersion = version;
   }
 
-  private TxCommitMessageBackwardCompatibilityDUnitTest() { }
+  private TxCommitMessageBackwardCompatibilityDUnitTest() {}
 
   @Override
   public final void postSetUp() throws Exception {
@@ -121,12 +121,14 @@ public class TxCommitMessageBackwardCompatibilityDUnitTest extends JUnit4Distrib
     client = host.getVM(testVersion, 3); // client
     oldClient = host.getVM(4); // client old version
 
-    int port1 = server1.invoke(() -> TxCommitMessageBackwardCompatibilityDUnitTest.createServerCache());
-    int port2 = server2.invoke(() -> TxCommitMessageBackwardCompatibilityDUnitTest.createServerCache());
+    int port1 =
+        server1.invoke(() -> TxCommitMessageBackwardCompatibilityDUnitTest.createServerCache());
+    int port2 =
+        server2.invoke(() -> TxCommitMessageBackwardCompatibilityDUnitTest.createServerCache());
     server3.invoke(() -> TxCommitMessageBackwardCompatibilityDUnitTest
         .createServerCacheWithPool(host.getHostName(), new Integer[] {port1, port2}));
-    client.invoke(() -> TxCommitMessageBackwardCompatibilityDUnitTest.createClientCache(host.getHostName(),
-        new Integer[] {port1, port2}));
+    client.invoke(() -> TxCommitMessageBackwardCompatibilityDUnitTest
+        .createClientCache(host.getHostName(), new Integer[] {port1, port2}));
     oldClient.invoke(() -> TxCommitMessageBackwardCompatibilityDUnitTest
         .createClientCache(host.getHostName(), new Integer[] {port1, port2}));
   }
@@ -151,8 +153,8 @@ public class TxCommitMessageBackwardCompatibilityDUnitTest extends JUnit4Distrib
   @SuppressWarnings("deprecation")
   public static int createServerCache() throws Exception {
     Properties props = new Properties();
-    TxCommitMessageBackwardCompatibilityDUnitTest
-        test = new TxCommitMessageBackwardCompatibilityDUnitTest();
+    TxCommitMessageBackwardCompatibilityDUnitTest test =
+        new TxCommitMessageBackwardCompatibilityDUnitTest();
     DistributedSystem ds = test.getSystem(props);
     ds.disconnect();
     cache = (GemFireCacheImpl) CacheFactory.create(test.getSystem());
@@ -190,8 +192,8 @@ public class TxCommitMessageBackwardCompatibilityDUnitTest extends JUnit4Distrib
   @SuppressWarnings("deprecation")
   public static void createServerCacheWithPool(String hostName, Integer[] ports) throws Exception {
     Properties props = new Properties();
-    TxCommitMessageBackwardCompatibilityDUnitTest
-        test = new TxCommitMessageBackwardCompatibilityDUnitTest();
+    TxCommitMessageBackwardCompatibilityDUnitTest test =
+        new TxCommitMessageBackwardCompatibilityDUnitTest();
     DistributedSystem ds = test.getSystem(props);
     ds.disconnect();
     cache = (GemFireCacheImpl) CacheFactory.create(test.getSystem());
@@ -217,8 +219,7 @@ public class TxCommitMessageBackwardCompatibilityDUnitTest extends JUnit4Distrib
   }
 
   @SuppressWarnings("deprecation")
-  public static void createClientCache(String hostName, Integer[] ports)
-      throws Exception {
+  public static void createClientCache(String hostName, Integer[] ports) throws Exception {
     Properties props = new Properties();
     DistributedSystem ds = new TxCommitMessageBackwardCompatibilityDUnitTest().getSystem(props);
     ds.disconnect();
@@ -504,9 +505,8 @@ public class TxCommitMessageBackwardCompatibilityDUnitTest extends JUnit4Distrib
         server1.invoke(() -> TxCommitMessageBackwardCompatibilityDUnitTest.doGets(regionNameRepl));
     List<Integer> beforeValuesPart =
         server1.invoke(() -> TxCommitMessageBackwardCompatibilityDUnitTest.doGets(regionNamePart));
-    server1.invoke(
-        () -> TxCommitMessageBackwardCompatibilityDUnitTest
-            .doTxPutsBoth(regionNameRepl, regionNamePart));
+    server1.invoke(() -> TxCommitMessageBackwardCompatibilityDUnitTest.doTxPutsBoth(regionNameRepl,
+        regionNamePart));
     List<Integer> afterValuesRepl1 =
         server1.invoke(() -> TxCommitMessageBackwardCompatibilityDUnitTest.doGets(regionNameRepl));
     List<Integer> afterValuesRepl2 =
@@ -536,9 +536,8 @@ public class TxCommitMessageBackwardCompatibilityDUnitTest extends JUnit4Distrib
         client.invoke(() -> TxCommitMessageBackwardCompatibilityDUnitTest.doGets(regionNameRepl));
     List<Integer> beforeValuesPart =
         client.invoke(() -> TxCommitMessageBackwardCompatibilityDUnitTest.doGets(regionNamePart));
-    client.invoke(
-        () -> TxCommitMessageBackwardCompatibilityDUnitTest
-            .doTxPutsBoth(regionNameRepl, regionNamePart));
+    client.invoke(() -> TxCommitMessageBackwardCompatibilityDUnitTest.doTxPutsBoth(regionNameRepl,
+        regionNamePart));
     List<Integer> afterValuesRepl1 =
         client.invoke(() -> TxCommitMessageBackwardCompatibilityDUnitTest.doGets(regionNameRepl));
     List<Integer> afterValuesPart1 =
@@ -570,17 +569,16 @@ public class TxCommitMessageBackwardCompatibilityDUnitTest extends JUnit4Distrib
     String regionNameRepl = REPLICATE_REGION_NAME;
     String regionNamePart = PARTITION_REGION_NAME;
 
-    List<Integer> beforeValuesRepl =
-        oldClient.invoke(() -> TxCommitMessageBackwardCompatibilityDUnitTest.doGets(regionNameRepl));
-    List<Integer> beforeValuesPart =
-        oldClient.invoke(() -> TxCommitMessageBackwardCompatibilityDUnitTest.doGets(regionNamePart));
-    oldClient.invoke(
-        () -> TxCommitMessageBackwardCompatibilityDUnitTest
-            .doTxPutsBoth(regionNameRepl, regionNamePart));
-    List<Integer> afterValuesRepl1 =
-        oldClient.invoke(() -> TxCommitMessageBackwardCompatibilityDUnitTest.doGets(regionNameRepl));
-    List<Integer> afterValuesPart1 =
-        oldClient.invoke(() -> TxCommitMessageBackwardCompatibilityDUnitTest.doGets(regionNamePart));
+    List<Integer> beforeValuesRepl = oldClient
+        .invoke(() -> TxCommitMessageBackwardCompatibilityDUnitTest.doGets(regionNameRepl));
+    List<Integer> beforeValuesPart = oldClient
+        .invoke(() -> TxCommitMessageBackwardCompatibilityDUnitTest.doGets(regionNamePart));
+    oldClient.invoke(() -> TxCommitMessageBackwardCompatibilityDUnitTest
+        .doTxPutsBoth(regionNameRepl, regionNamePart));
+    List<Integer> afterValuesRepl1 = oldClient
+        .invoke(() -> TxCommitMessageBackwardCompatibilityDUnitTest.doGets(regionNameRepl));
+    List<Integer> afterValuesPart1 = oldClient
+        .invoke(() -> TxCommitMessageBackwardCompatibilityDUnitTest.doGets(regionNamePart));
     List<Integer> afterValuesRepl2 =
         server1.invoke(() -> TxCommitMessageBackwardCompatibilityDUnitTest.doGets(regionNameRepl));
     List<Integer> afterValuesPart2 =
@@ -612,9 +610,8 @@ public class TxCommitMessageBackwardCompatibilityDUnitTest extends JUnit4Distrib
         server3.invoke(() -> TxCommitMessageBackwardCompatibilityDUnitTest.doGets(regionNameRepl));
     List<Integer> beforeValuesPart =
         server3.invoke(() -> TxCommitMessageBackwardCompatibilityDUnitTest.doGets(regionNamePart));
-    server3.invoke(
-        () -> TxCommitMessageBackwardCompatibilityDUnitTest
-            .doTxPutsBoth(regionNameRepl, regionNamePart));
+    server3.invoke(() -> TxCommitMessageBackwardCompatibilityDUnitTest.doTxPutsBoth(regionNameRepl,
+        regionNamePart));
     List<Integer> afterValuesRepl1 =
         server3.invoke(() -> TxCommitMessageBackwardCompatibilityDUnitTest.doGets(regionNameRepl));
     List<Integer> afterValuesPart1 =
