@@ -120,8 +120,8 @@ public interface InternalRegion extends Region, HasCachePerfStats, RegionEntryCo
 
   long getTotalEvictions();
 
-  Region<Object, Object> createSubregion(String subregionName, RegionAttributes<Object, Object> attrs,
-      InternalRegionArguments internalRegionArgs)
+  Region<Object, Object> createSubregion(String subregionName,
+      RegionAttributes<Object, Object> attrs, InternalRegionArguments internalRegionArgs)
       throws RegionExistsException, TimeoutException, IOException, ClassNotFoundException;
 
   void addCacheServiceProfile(CacheServiceProfile profile);
