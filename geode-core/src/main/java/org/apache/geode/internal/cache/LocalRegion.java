@@ -113,6 +113,7 @@ import org.apache.geode.cache.TransactionId;
 import org.apache.geode.cache.client.PoolManager;
 import org.apache.geode.cache.client.ServerOperationException;
 import org.apache.geode.cache.client.SubscriptionNotEnabledException;
+import org.apache.geode.cache.client.internal.ClientSideHandshakeImpl;
 import org.apache.geode.cache.client.internal.Connection;
 import org.apache.geode.cache.client.internal.Endpoint;
 import org.apache.geode.cache.client.internal.PoolImpl;
@@ -196,7 +197,6 @@ import org.apache.geode.internal.cache.tier.sockets.ClientHealthMonitor;
 import org.apache.geode.internal.cache.tier.sockets.ClientProxyMembershipID;
 import org.apache.geode.internal.cache.tier.sockets.ClientTombstoneMessage;
 import org.apache.geode.internal.cache.tier.sockets.ClientUpdateMessage;
-import org.apache.geode.internal.cache.tier.sockets.HandShake;
 import org.apache.geode.internal.cache.tier.sockets.VersionedObjectList;
 import org.apache.geode.internal.cache.versions.ConcurrentCacheModificationException;
 import org.apache.geode.internal.cache.versions.RegionVersionHolder;
@@ -1671,7 +1671,7 @@ public class LocalRegion extends AbstractRegion implements LoaderHelperFactory,
           if (!extractDelta && ClientHealthMonitor.getInstance() != null) {
             extractDelta = ClientHealthMonitor.getInstance().hasDeltaClients();
           }
-        } else if (HandShake.isDeltaEnabledOnServer()) {
+        } else if (ClientSideHandshakeImpl.isDeltaEnabledOnServer()) {
           // This is a client region
           extractDelta = true;
         }

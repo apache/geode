@@ -2301,12 +2301,12 @@ public class Connection implements Runnable {
                     LocalizedStrings.Connection_DETECTED_OLD_VERSION_PRE_5_0_1_OF_GEMFIRE_OR_NONGEMFIRE_DURING_HANDSHAKE_DUE_TO_INITIAL_BYTE_BEING_0
                         .toLocalizedString(new Byte(b)));
               }
-              byte handShakeByte = dis.readByte();
-              if (handShakeByte != HANDSHAKE_VERSION) {
+              byte handshakeByte = dis.readByte();
+              if (handshakeByte != HANDSHAKE_VERSION) {
                 throw new IllegalStateException(
                     LocalizedStrings.Connection_DETECTED_WRONG_VERSION_OF_GEMFIRE_PRODUCT_DURING_HANDSHAKE_EXPECTED_0_BUT_FOUND_1
                         .toLocalizedString(
-                            new Object[] {new Byte(HANDSHAKE_VERSION), new Byte(handShakeByte)}));
+                            new Object[] {new Byte(HANDSHAKE_VERSION), new Byte(handshakeByte)}));
               }
               InternalDistributedMember remote = DSFIDFactory.readInternalDistributedMember(dis);
               setRemoteAddr(remote);
@@ -3796,12 +3796,12 @@ public class Connection implements Runnable {
                       LocalizedStrings.Connection_DETECTED_OLD_VERSION_PRE_501_OF_GEMFIRE_OR_NONGEMFIRE_DURING_HANDSHAKE_DUE_TO_INITIAL_BYTE_BEING_0
                           .toLocalizedString(new Byte(b)));
                 }
-                byte handShakeByte = dis.readByte();
-                if (handShakeByte != HANDSHAKE_VERSION) {
+                byte handshakeByte = dis.readByte();
+                if (handshakeByte != HANDSHAKE_VERSION) {
                   throw new IllegalStateException(
                       LocalizedStrings.Connection_DETECTED_WRONG_VERSION_OF_GEMFIRE_PRODUCT_DURING_HANDSHAKE_EXPECTED_0_BUT_FOUND_1
                           .toLocalizedString(
-                              new Object[] {new Byte(HANDSHAKE_VERSION), new Byte(handShakeByte)}));
+                              new Object[] {new Byte(HANDSHAKE_VERSION), new Byte(handshakeByte)}));
                 }
                 InternalDistributedMember remote = DSFIDFactory.readInternalDistributedMember(dis);
                 setRemoteAddr(remote);

@@ -26,28 +26,28 @@ import org.apache.geode.security.AuthenticationRequiredException;
 import org.apache.geode.test.junit.categories.UnitTest;
 
 @Category(UnitTest.class)
-public class HandShakeTest {
+public class HandshakeTest {
 
   @Test
   public void authRequiredHasCredentials() throws Exception {
-    HandShake.throwIfMissingRequiredCredentials(true, true);
+    Handshake.throwIfMissingRequiredCredentials(true, true);
   }
 
   @Test
   public void authRequiredHasNoCredentials() throws Exception {
-    assertThatThrownBy(() -> HandShake.throwIfMissingRequiredCredentials(true, false))
+    assertThatThrownBy(() -> Handshake.throwIfMissingRequiredCredentials(true, false))
         .isExactlyInstanceOf(AuthenticationRequiredException.class)
         .hasMessage(HandShake_NO_SECURITY_CREDENTIALS_ARE_PROVIDED.toLocalizedString());
   }
 
   @Test
   public void authNotRequiredHasCredentials() throws Exception {
-    HandShake.throwIfMissingRequiredCredentials(false, true);
+    Handshake.throwIfMissingRequiredCredentials(false, true);
   }
 
   @Test
   public void authNotRequiredHasNoCredentials() throws Exception {
-    HandShake.throwIfMissingRequiredCredentials(false, false);
+    Handshake.throwIfMissingRequiredCredentials(false, false);
   }
 
 }
