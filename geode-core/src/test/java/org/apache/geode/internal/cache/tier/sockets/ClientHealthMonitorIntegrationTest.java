@@ -103,18 +103,13 @@ public class ClientHealthMonitorIntegrationTest {
   /**
    * Initializes proxy object and creates region for client
    */
-  private void createProxyAndRegionForClient() {
-    try {
-      PoolFactory pf = PoolManager.createFactory();
-      proxy = (PoolImpl) pf.addServer("localhost", PORT).setThreadLocalConnections(true)
-          .setReadTimeout(10000).setPingInterval(10000).setMinConnections(0).create("junitPool");
-      AttributesFactory factory = new AttributesFactory();
-      factory.setScope(Scope.DISTRIBUTED_ACK);
-      cache.createVMRegion(regionName, factory.createRegionAttributes());
-    } catch (Exception ex) {
-      ex.printStackTrace();
-      fail("Failed to initialize client");
-    }
+  private void createProxyAndRegionForClient() throws Exception {
+    PoolFactory pf = PoolManager.createFactory();
+    proxy = (PoolImpl) pf.addServer("localhost", PORT).setThreadLocalConnections(true)
+        .setReadTimeout(10000).setPingInterval(10000).setMinConnections(0).create("junitPool");
+    AttributesFactory factory = new AttributesFactory();
+    factory.setScope(Scope.DISTRIBUTED_ACK);
+    cache.createVMRegion(regionName, factory.createRegionAttributes());
   }
 
   private static final int TIME_BETWEEN_PINGS = 2500;
@@ -122,26 +117,21 @@ public class ClientHealthMonitorIntegrationTest {
   /**
    * Creates and starts the server instance
    */
-  private int createServer() {
+  private int createServer() throws Exception {
     CacheServer server = null;
-    try {
-      Properties p = new Properties();
-      // make it a loner
-      p.put(MCAST_PORT, "0");
-      p.put(LOCATORS, "");
+    Properties p = new Properties();
+    // make it a loner
+    p.put(MCAST_PORT, "0");
+    p.put(LOCATORS, "");
 
-      this.system = DistributedSystem.connect(p);
-      this.cache = CacheFactory.create(system);
-      server = this.cache.addCacheServer();
-      int port = AvailablePort.getRandomAvailablePort(AvailablePort.SOCKET);
-      server.setMaximumTimeBetweenPings(TIME_BETWEEN_PINGS);
-      server.setMaxThreads(getMaxThreads());
-      server.setPort(port);
-      server.start();
-    } catch (Exception e) {
-      e.printStackTrace();
-      fail("Failed to create server");
-    }
+    this.system = DistributedSystem.connect(p);
+    this.cache = CacheFactory.create(system);
+    server = this.cache.addCacheServer();
+    int port = AvailablePort.getRandomAvailablePort(AvailablePort.SOCKET);
+    server.setMaximumTimeBetweenPings(TIME_BETWEEN_PINGS);
+    server.setMaxThreads(getMaxThreads());
+    server.setPort(port);
+    server.start();
     return server.getPort();
   }
 
