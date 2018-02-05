@@ -48,6 +48,7 @@ import org.apache.geode.distributed.internal.membership.InternalDistributedMembe
 import org.apache.geode.internal.cache.GemFireCacheImpl;
 import org.apache.geode.internal.cache.InitialImageOperation;
 import org.apache.geode.internal.cache.InternalCache;
+import org.apache.geode.internal.cache.InternalRegion;
 import org.apache.geode.internal.cache.LocalRegion;
 import org.apache.geode.internal.cache.PoolFactoryImpl;
 import org.apache.geode.internal.i18n.LocalizedStrings;
@@ -289,7 +290,7 @@ public class ClientCacheCreation extends CacheCreation implements ClientCache {
 
   @Override
   public void invokeRegionEntrySynchronizationListenersAfterSynchronization(
-      InternalDistributedMember sender, LocalRegion region,
+      InternalDistributedMember sender, InternalRegion region,
       List<InitialImageOperation.Entry> entriesToSynchronize) {
     throw new UnsupportedOperationException(LocalizedStrings.SHOULDNT_INVOKE.toLocalizedString());
   }

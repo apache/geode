@@ -1192,7 +1192,7 @@ public class TXCommitMessage extends PooledDistributionMessage
 
     LocalRegion getRegionByPath(DistributionManager dm, String regionPath) {
       InternalCache cache = dm.getCache();
-      return cache == null ? null : cache.getRegionByPath(regionPath);
+      return cache == null ? null : (LocalRegion) cache.getRegionByPath(regionPath);
     }
 
     /**

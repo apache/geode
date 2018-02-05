@@ -241,7 +241,7 @@ public class CacheClientProxy implements ClientSession {
   private boolean isPrimary;
 
   /** @since GemFire 5.7 */
-  protected byte clientConflation = HandShake.CONFLATION_DEFAULT;
+  protected byte clientConflation = Handshake.CONFLATION_DEFAULT;
 
   /**
    * Flag to indicate whether to keep a durable client's queue alive
@@ -337,7 +337,7 @@ public class CacheClientProxy implements ClientSession {
   protected CacheClientProxy(CacheClientNotifier ccn, Socket socket,
       ClientProxyMembershipID proxyID, boolean isPrimary, byte clientConflation,
       Version clientVersion, long acceptorId, boolean notifyBySubscription,
-      SecurityService securityService) throws CacheException {
+      SecurityService securityService, Subject subject) throws CacheException {
 
     initializeTransientFields(socket, proxyID, isPrimary, clientConflation, clientVersion);
     this._cacheClientNotifier = ccn;
@@ -351,6 +351,7 @@ public class CacheClientProxy implements ClientSession {
     this._statistics =
         new CacheClientProxyStats(factory, "id_" + this.proxyID.getDistributedMember().getId()
             + "_at_" + this._remoteHostAddress + ":" + this._socket.getPort());
+    this.subject = subject;
 
     // Create the interest list
     this.cils[RegisterInterestTracker.interestListIndex] =
@@ -392,7 +393,7 @@ public class CacheClientProxy implements ClientSession {
     // TODO:hitesh synchronization
     synchronized (this.clientUserAuthsLock) {
       if (this.subject != null) {
-        subject.logout();
+        this.subject.logout();
       }
       this.subject = subject;
     }
@@ -2270,7 +2271,7 @@ public class CacheClientProxy implements ClientSession {
         boolean createDurableQueue = proxy.proxyID.isDurable();
         boolean canHandleDelta = (proxy.clientVersion.compareTo(Version.GFE_61) >= 0)
             && InternalDistributedSystem.getAnyInstance().getConfig().getDeltaPropagation()
-            && !(this._proxy.clientConflation == HandShake.CONFLATION_ON);
+            && !(this._proxy.clientConflation == Handshake.CONFLATION_ON);
         if ((createDurableQueue || canHandleDelta) && logger.isDebugEnabled()) {
           logger.debug("Creating a durable HA queue");
         }

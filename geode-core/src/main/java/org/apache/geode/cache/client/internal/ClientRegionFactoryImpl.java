@@ -31,7 +31,7 @@ import org.apache.geode.cache.client.ClientRegionFactory;
 import org.apache.geode.cache.client.ClientRegionShortcut;
 import org.apache.geode.cache.client.Pool;
 import org.apache.geode.compression.Compressor;
-import org.apache.geode.internal.cache.LocalRegion;
+import org.apache.geode.internal.cache.InternalRegion;
 import org.apache.geode.internal.cache.UserSpecifiedRegionAttributes;
 
 /**
@@ -214,7 +214,7 @@ public class ClientRegionFactoryImpl<K, V> implements ClientRegionFactory<K, V> 
   @Override
   public Region<K, V> createSubregion(Region<?, ?> parent, String name)
       throws RegionExistsException {
-    return ((LocalRegion) parent).createSubregion(name, createRegionAttributes());
+    return ((InternalRegion) parent).createSubregion(name, createRegionAttributes());
   }
 
   @SuppressWarnings("deprecation")

@@ -23,10 +23,10 @@ import org.apache.geode.internal.InternalStatisticsDisabledException;
  *
  */
 class CacheStatisticsImpl implements CacheStatistics {
-  private final LocalRegion region;
+  private final InternalRegion region;
   private final RegionEntry regionEntry;
 
-  CacheStatisticsImpl(RegionEntry regionEntry, LocalRegion region) {
+  CacheStatisticsImpl(RegionEntry regionEntry, InternalRegion region) {
     this.region = region;
     // entry stats are all on commited state so ok to ignore tx state
     this.regionEntry = regionEntry;

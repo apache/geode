@@ -269,7 +269,7 @@ public abstract class RemoteOperationMessage extends DistributionMessage
   }
 
   LocalRegion getRegionByPath(InternalCache internalCache) {
-    return internalCache.getRegionByPathForProcessing(getRegionPath());
+    return (LocalRegion) internalCache.getRegionByPathForProcessing(getRegionPath());
   }
 
   InternalCache getCache(final ClusterDistributionManager dm) {

@@ -21,6 +21,7 @@ import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import java.io.File;
 import java.io.IOException;
 import java.util.HashSet;
 import java.util.Set;
@@ -49,6 +50,8 @@ public class PrepareBackupRequestTest {
   private InternalCache cache;
   private HashSet<PersistentID> persistentIds;
   private PrepareBackup prepareBackup;
+  private File targetDir;
+  private File baselineDir;
 
   @Before
   public void setUp() throws Exception {
@@ -57,6 +60,8 @@ public class PrepareBackupRequestTest {
     cache = mock(InternalCache.class);
     prepareBackupFactory = mock(PrepareBackupFactory.class);
     prepareBackup = mock(PrepareBackup.class);
+    targetDir = mock(File.class);
+    baselineDir = mock(File.class);
 
     msgId = 42;
     recipients = new HashSet<>();
@@ -64,20 +69,22 @@ public class PrepareBackupRequestTest {
 
     when(dm.getCache()).thenReturn(cache);
     when(dm.getDistributionManagerId()).thenReturn(sender);
-    when(prepareBackupFactory.createPrepareBackup(eq(sender), eq(cache))).thenReturn(prepareBackup);
+    when(prepareBackupFactory.createPrepareBackup(eq(sender), eq(cache), eq(targetDir),
+        eq(baselineDir))).thenReturn(prepareBackup);
     when(prepareBackupFactory.createBackupResponse(eq(sender), eq(persistentIds)))
         .thenReturn(mock(BackupResponse.class));
     when(prepareBackup.run()).thenReturn(persistentIds);
 
-    prepareBackupRequest =
-        new PrepareBackupRequest(sender, recipients, msgId, prepareBackupFactory);
+    prepareBackupRequest = new PrepareBackupRequest(sender, recipients, msgId, prepareBackupFactory,
+        targetDir, baselineDir);
   }
 
   @Test
   public void usesFactoryToCreatePrepareBackup() throws Exception {
     prepareBackupRequest.createResponse(dm);
 
-    verify(prepareBackupFactory, times(1)).createPrepareBackup(eq(sender), eq(cache));
+    verify(prepareBackupFactory, times(1)).createPrepareBackup(eq(sender), eq(cache), eq(targetDir),
+        eq(baselineDir));
   }
 
   @Test

@@ -523,8 +523,9 @@ public class QueueManagerJUnitTest {
       nextConnections.add(null);
     }
 
-    public void addConnection(int epType, int queueSize, int port) throws UnknownHostException {
-      nextConnections.add(new DummyConnection(epType, queueSize, port));
+    public void addConnection(int endpointType, int queueSize, int port)
+        throws UnknownHostException {
+      nextConnections.add(new DummyConnection(endpointType, queueSize, port));
     }
 
     public ServerLocation findBestServer(ServerLocation currentServer, Set excludedServers) {
@@ -620,9 +621,9 @@ public class QueueManagerJUnitTest {
     private ServerLocation location;
     private Endpoint endpoint;
 
-    public DummyConnection(int epType, int queueSize, int port) throws UnknownHostException {
+    public DummyConnection(int endpointType, int queueSize, int port) throws UnknownHostException {
       InternalDistributedMember member = new InternalDistributedMember("localhost", 555);
-      ServerQueueStatus status = new ServerQueueStatus((byte) epType, queueSize, member);
+      ServerQueueStatus status = new ServerQueueStatus((byte) endpointType, queueSize, member);
       this.status = status;
       this.location = new ServerLocation("localhost", port);
       this.endpoint = endpoints.referenceEndpoint(location, member);

@@ -24,6 +24,7 @@ import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import java.io.File;
 import java.io.IOException;
 import java.util.HashSet;
 import java.util.Set;
@@ -71,21 +72,25 @@ public class PrepareBackupOperationTest {
 
     prepareBackupFactory = mock(PrepareBackupFactory.class);
 
+    File targetDir = mock(File.class);
+    File baselineDir = mock(File.class);
+
     sender = mock(InternalDistributedMember.class, "sender");
     member1 = mock(InternalDistributedMember.class, "member1");
     member2 = mock(InternalDistributedMember.class, "member2");
     recipients = new HashSet<>();
 
-    prepareBackupOperation =
-        new PrepareBackupOperation(dm, sender, cache, recipients, prepareBackupFactory);
+    prepareBackupOperation = new PrepareBackupOperation(dm, sender, cache, recipients,
+        prepareBackupFactory, targetDir, baselineDir);
 
     when(prepareBackupReplyProcessor.getProcessorId()).thenReturn(42);
 
     when(prepareBackupFactory.createReplyProcessor(eq(prepareBackupOperation), eq(dm),
         eq(recipients))).thenReturn(prepareBackupReplyProcessor);
-    when(prepareBackupFactory.createRequest(eq(sender), eq(recipients), eq(42)))
-        .thenReturn(prepareBackupRequest);
-    when(prepareBackupFactory.createPrepareBackup(eq(sender), eq(cache))).thenReturn(prepareBackup);
+    when(prepareBackupFactory.createRequest(eq(sender), eq(recipients), eq(42), eq(targetDir),
+        eq(baselineDir))).thenReturn(prepareBackupRequest);
+    when(prepareBackupFactory.createPrepareBackup(eq(sender), eq(cache), eq(targetDir),
+        eq(baselineDir))).thenReturn(prepareBackup);
   }
 
   @Test

@@ -33,11 +33,15 @@ public class ProtobufSerializationService implements SerializationService<BasicT
    * @param value the value to be encoded
    *
    * @return EncodedValue message with the serialized value
-   * @throws EncodingException
    */
   @Override
   public BasicTypes.EncodedValue encode(Object value) throws EncodingException {
+    if (value == null) {
+      return BasicTypes.EncodedValue.getDefaultInstance();
+    }
+
     BasicTypes.EncodedValue.Builder builder = BasicTypes.EncodedValue.newBuilder();
+
     try {
       ProtobufEncodingTypes protobufEncodingTypes = ProtobufEncodingTypes.valueOf(value.getClass());
       switch (protobufEncodingTypes) {

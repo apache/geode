@@ -39,6 +39,7 @@ import org.apache.geode.cache.Operation;
 import org.apache.geode.internal.cache.AbstractRegionMap;
 import org.apache.geode.internal.cache.CachePerfStats;
 import org.apache.geode.internal.cache.EntryEventImpl;
+import org.apache.geode.internal.cache.InternalRegion;
 import org.apache.geode.internal.cache.KeyInfo;
 import org.apache.geode.internal.cache.LocalRegion;
 import org.apache.geode.internal.cache.RegionClearedException;
@@ -58,9 +59,9 @@ import org.apache.geode.test.junit.categories.UnitTest;
 @Category(UnitTest.class)
 public class RegionMapDestroyTest {
 
-  private static EvictionAttributes evictionAttributes =
+  private static final EvictionAttributes evictionAttributes =
       EvictionAttributes.createLRUEntryAttributes();
-  private static Object KEY = "key";
+  private static final Object KEY = "key";
 
   private AbstractRegionMap arm;
   private boolean withConcurrencyChecks;
@@ -370,6 +371,8 @@ public class RegionMapDestroyTest {
     givenConcurrencyChecks(true);
     givenEvictionWithMockedEntryMap();
     givenExistingEvictableEntryWithMockedIsTombstone();
+
+    isEviction = false;
 
     assertThat(arm.destroy(event, inTokenMode, duringRI, cacheWrite, isEviction, expectedOldValue,
         removeRecoveredEntry)).isTrue();

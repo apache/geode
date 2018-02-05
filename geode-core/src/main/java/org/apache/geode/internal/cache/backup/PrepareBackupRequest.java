@@ -14,12 +14,16 @@
  */
 package org.apache.geode.internal.cache.backup;
 
+import java.io.DataInput;
+import java.io.DataOutput;
+import java.io.File;
 import java.io.IOException;
 import java.util.HashSet;
 import java.util.Set;
 
 import org.apache.logging.log4j.Logger;
 
+import org.apache.geode.DataSerializer;
 import org.apache.geode.cache.persistence.PersistentID;
 import org.apache.geode.distributed.internal.DistributionManager;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
@@ -39,17 +43,21 @@ public class PrepareBackupRequest extends CliLegacyMessage {
   private static final Logger logger = LogService.getLogger();
 
   private final transient PrepareBackupFactory prepareBackupFactory;
+  private File targetDir;
+  private File baselineDir;
 
   public PrepareBackupRequest() {
     this.prepareBackupFactory = new PrepareBackupFactory();
   }
 
   PrepareBackupRequest(InternalDistributedMember sender, Set<InternalDistributedMember> recipients,
-      int msgId, PrepareBackupFactory prepareBackupFactory) {
+      int msgId, PrepareBackupFactory prepareBackupFactory, File targetDir, File baselineDir) {
     setSender(sender);
     setRecipients(recipients);
     this.msgId = msgId;
     this.prepareBackupFactory = prepareBackupFactory;
+    this.targetDir = targetDir;
+    this.baselineDir = baselineDir;
   }
 
   @Override
@@ -57,7 +65,8 @@ public class PrepareBackupRequest extends CliLegacyMessage {
     HashSet<PersistentID> persistentIds;
     try {
       persistentIds = prepareBackupFactory
-          .createPrepareBackup(dm.getDistributionManagerId(), dm.getCache()).run();
+          .createPrepareBackup(dm.getDistributionManagerId(), dm.getCache(), targetDir, baselineDir)
+          .run();
     } catch (IOException | InterruptedException e) {
       logger.error(LocalizedMessage.create(LocalizedStrings.CliLegacyMessage_ERROR, getClass()), e);
       return AdminFailureResponse.create(getSender(), e);
@@ -70,4 +79,17 @@ public class PrepareBackupRequest extends CliLegacyMessage {
     return PREPARE_BACKUP_REQUEST;
   }
 
+  @Override
+  public void fromData(DataInput in) throws IOException, ClassNotFoundException {
+    super.fromData(in);
+    targetDir = DataSerializer.readFile(in);
+    baselineDir = DataSerializer.readFile(in);
+  }
+
+  @Override
+  public void toData(DataOutput out) throws IOException {
+    super.toData(out);
+    DataSerializer.writeFile(targetDir, out);
+    DataSerializer.writeFile(baselineDir, out);
+  }
 }

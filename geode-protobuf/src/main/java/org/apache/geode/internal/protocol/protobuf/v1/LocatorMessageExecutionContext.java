@@ -17,8 +17,8 @@ package org.apache.geode.internal.protocol.protobuf.v1;
 
 
 import org.apache.geode.annotations.Experimental;
-import org.apache.geode.cache.Cache;
 import org.apache.geode.distributed.Locator;
+import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.exception.InvalidExecutionContextException;
 import org.apache.geode.internal.protocol.protobuf.statistics.ClientStatistics;
 import org.apache.geode.internal.protocol.protobuf.v1.state.ProtobufConnectionStateProcessor;
@@ -41,7 +41,7 @@ public class LocatorMessageExecutionContext extends MessageExecutionContext {
    * @throws InvalidExecutionContextException if there is no cache available
    */
   @Override
-  public Cache getCache() throws InvalidExecutionContextException {
+  public InternalCache getCache() throws InvalidExecutionContextException {
     setConnectionStateProcessor(new ProtobufConnectionTerminatingStateProcessor());
     throw new InvalidExecutionContextException(
         "Operations on the locator should not to try to operate on a server");

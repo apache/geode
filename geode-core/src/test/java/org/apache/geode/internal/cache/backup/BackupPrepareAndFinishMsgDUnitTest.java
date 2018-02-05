@@ -19,6 +19,7 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
 import java.io.File;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -36,8 +37,10 @@ import java.util.stream.Collectors;
 
 import org.awaitility.Awaitility;
 import org.junit.Before;
+import org.junit.Rule;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
+import org.junit.rules.TemporaryFolder;
 
 import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.DiskStore;
@@ -52,9 +55,7 @@ import org.apache.geode.cache.query.QueryInvocationTargetException;
 import org.apache.geode.cache.query.TypeMismatchException;
 import org.apache.geode.cache30.CacheTestCase;
 import org.apache.geode.distributed.internal.DistributionManager;
-import org.apache.geode.internal.cache.DiskStoreImpl;
 import org.apache.geode.internal.cache.GemFireCacheImpl;
-import org.apache.geode.internal.cache.InternalRegion;
 import org.apache.geode.internal.cache.LocalRegion;
 import org.apache.geode.test.junit.categories.DistributedTest;
 
@@ -64,13 +65,17 @@ public abstract class BackupPrepareAndFinishMsgDUnitTest extends CacheTestCase {
   // Although this test does not make use of other members, the current member needs to be
   // a distributed member (rather than local) because it sends prepare and finish backup messages
   private static final String TEST_REGION_NAME = "TestRegion";
+
+  @Rule
+  public TemporaryFolder tempDir = new TemporaryFolder();
+
   private File[] diskDirs = null;
   private Region<Integer, Integer> region;
 
-  protected abstract Region<Integer, Integer> createRegion();
+  protected abstract Region<Integer, Integer> createRegion() throws IOException;
 
   @Before
-  public void setup() {
+  public void setup() throws IOException {
     region = createRegion();
   }
 
@@ -140,12 +145,12 @@ public abstract class BackupPrepareAndFinishMsgDUnitTest extends CacheTestCase {
     Set recipients = dm.getOtherDistributionManagerIds();
     Future<Void> future = null;
     new PrepareBackupOperation(dm, dm.getId(), dm.getCache(), recipients,
-        new PrepareBackupFactory()).send();
+        new PrepareBackupFactory(), diskDirs[0], null).send();
     ReentrantLock backupLock = ((LocalRegion) region).getDiskStore().getBackupLock();
     future = CompletableFuture.runAsync(function);
     Awaitility.await().atMost(5, TimeUnit.SECONDS)
         .until(() -> assertTrue(backupLock.getQueueLength() > 0));
-    new FinishBackupOperation(dm, dm.getId(), dm.getCache(), recipients, diskDirs[0], null, false,
+    new FinishBackupOperation(dm, dm.getId(), dm.getCache(), recipients, false,
         new FinishBackupFactory()).send();
     future.get(5, TimeUnit.SECONDS);
   }
@@ -154,12 +159,12 @@ public abstract class BackupPrepareAndFinishMsgDUnitTest extends CacheTestCase {
     DistributionManager dm = GemFireCacheImpl.getInstance().getDistributionManager();
     Set recipients = dm.getOtherDistributionManagerIds();
     new PrepareBackupOperation(dm, dm.getId(), dm.getCache(), recipients,
-        new PrepareBackupFactory()).send();
+        new PrepareBackupFactory(), diskDirs[0], null).send();
     ReentrantLock backupLock = ((LocalRegion) region).getDiskStore().getBackupLock();
     List<CompletableFuture<?>> futureList = doReadActions();
     CompletableFuture.allOf(futureList.toArray(new CompletableFuture<?>[futureList.size()]));
     assertTrue(backupLock.getQueueLength() == 0);
-    new FinishBackupOperation(dm, dm.getId(), dm.getCache(), recipients, diskDirs[0], null, false,
+    new FinishBackupOperation(dm, dm.getId(), dm.getCache(), recipients, false,
         new FinishBackupFactory()).send();
   }
 
@@ -210,10 +215,10 @@ public abstract class BackupPrepareAndFinishMsgDUnitTest extends CacheTestCase {
    * @param shortcut The region shortcut to use to create the region
    * @return The newly created region.
    */
-  protected Region<Integer, Integer> createRegion(RegionShortcut shortcut) {
+  protected Region<Integer, Integer> createRegion(RegionShortcut shortcut) throws IOException {
     Cache cache = getCache();
     DiskStoreFactory diskStoreFactory = cache.createDiskStoreFactory();
-    diskDirs = getDiskDirs();
+    diskDirs = new File[] {tempDir.newFolder()};
     diskStoreFactory.setDiskDirs(diskDirs);
     DiskStore diskStore = diskStoreFactory.create(getUniqueName());
 

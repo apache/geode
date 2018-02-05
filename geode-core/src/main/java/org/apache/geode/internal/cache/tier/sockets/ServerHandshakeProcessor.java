@@ -15,7 +15,9 @@
 
 package org.apache.geode.internal.cache.tier.sockets;
 
-import static org.apache.geode.distributed.ConfigurationProperties.*;
+import static org.apache.geode.distributed.ConfigurationProperties.SECURITY_CLIENT_ACCESSOR;
+import static org.apache.geode.distributed.ConfigurationProperties.SECURITY_CLIENT_ACCESSOR_PP;
+import static org.apache.geode.distributed.ConfigurationProperties.SECURITY_CLIENT_AUTHENTICATOR;
 
 import java.io.DataOutputStream;
 import java.io.EOFException;
@@ -43,7 +45,7 @@ import org.apache.geode.internal.HeapDataOutputStream;
 import org.apache.geode.internal.Version;
 import org.apache.geode.internal.VersionedDataStream;
 import org.apache.geode.internal.cache.tier.Acceptor;
-import org.apache.geode.internal.cache.tier.CommunicationMode;
+import org.apache.geode.internal.cache.tier.ServerSideHandshake;
 import org.apache.geode.internal.i18n.LocalizedStrings;
 import org.apache.geode.internal.logging.InternalLogWriter;
 import org.apache.geode.internal.logging.LogService;
@@ -61,7 +63,7 @@ import org.apache.geode.security.AuthenticationRequiredException;
  */
 
 
-public class ServerHandShakeProcessor {
+public class ServerHandshakeProcessor {
   private static final Logger logger = LogService.getLogger();
 
   protected static final byte REPLY_REFUSED = (byte) 60;
@@ -70,22 +72,25 @@ public class ServerHandShakeProcessor {
 
   public static Version currentServerVersion = Acceptor.VERSION;
 
-  /**
-   * Test hook for server version support
-   *
-   * @since GemFire 5.7
-   */
-  public static void setSeverVersionForTesting(short ver) {
-    currentServerVersion = Version.fromOrdinalOrCurrent(ver);
-  }
-
-  public static boolean readHandShake(ServerConnection connection, SecurityService securityService,
+  public static boolean readHandshake(ServerConnection connection, SecurityService securityService,
       AcceptorImpl acceptorImpl) {
-    boolean validHandShake = false;
-    Version clientVersion = null;
     try {
       // Read the version byte from the socket
-      clientVersion = readClientVersion(connection);
+      Version clientVersion = readClientVersion(connection);
+
+      if (logger.isDebugEnabled()) {
+        logger.debug("Client version: {}", clientVersion);
+      }
+
+      // Read the appropriate handshake
+      if (clientVersion.compareTo(Version.GFE_57) >= 0) {
+        return readGFEHandshake(connection, clientVersion, securityService, acceptorImpl);
+      } else {
+        connection.refuseHandshake(
+            "Unsupported version " + clientVersion + "Server's current version " + Acceptor.VERSION,
+            REPLY_REFUSED);
+        return false;
+      }
     } catch (IOException e) {
       // Only log an exception if the server is still running.
       if (connection.getAcceptor().isRunning()) {
@@ -94,7 +99,6 @@ public class ServerHandShakeProcessor {
       }
       connection.stats.incFailedConnectionAttempts();
       connection.cleanup();
-      validHandShake = false;
     } catch (UnsupportedVersionException uve) {
       // Server logging
       logger.warn("{} {}", connection.getName(), uve.getMessage(), uve);
@@ -102,7 +106,6 @@ public class ServerHandShakeProcessor {
       connection.refuseHandshake(uve.getMessage(), REPLY_REFUSED);
       connection.stats.incFailedConnectionAttempts();
       connection.cleanup();
-      validHandShake = false;
     } catch (Exception e) {
       // Server logging
       logger.warn("{} {}", connection.getName(), e.getMessage(), e);
@@ -113,25 +116,9 @@ public class ServerHandShakeProcessor {
           REPLY_REFUSED);
       connection.stats.incFailedConnectionAttempts();
       connection.cleanup();
-      validHandShake = false;
     }
 
-    if (clientVersion != null) {
-
-      if (logger.isDebugEnabled())
-        logger.debug("Client version: {}", clientVersion);
-
-      // Read the appropriate handshake
-      if (clientVersion.compareTo(Version.GFE_57) >= 0) {
-        validHandShake = readGFEHandshake(connection, clientVersion, securityService, acceptorImpl);
-      } else {
-        connection.refuseHandshake(
-            "Unsupported version " + clientVersion + "Server's current version " + Acceptor.VERSION,
-            REPLY_REFUSED);
-      }
-    }
-
-    return validHandShake;
+    return false;
   }
 
   /**
@@ -160,9 +147,9 @@ public class ServerHandShakeProcessor {
     // Write refused reply
     dos.writeByte(exception);
 
-    // write dummy epType
+    // write dummy endpointType
     dos.writeByte(0);
-    // write dummy qSize
+    // write dummy queueSize
     dos.writeInt(0);
 
     // Write the server's member
@@ -201,16 +188,16 @@ public class ServerHandShakeProcessor {
 
   private static boolean readGFEHandshake(ServerConnection connection, Version clientVersion,
       SecurityService securityService, AcceptorImpl acceptorImpl) {
-    int handShakeTimeout = connection.getHandShakeTimeout();
+    int handshakeTimeout = connection.getHandShakeTimeout();
     InternalLogWriter securityLogWriter = connection.getSecurityLogWriter();
     try {
       Socket socket = connection.getSocket();
       DistributedSystem system = connection.getDistributedSystem();
       // hitesh:it will set credentials and principals
-      HandShake handshake = new HandShake(socket, handShakeTimeout, system, clientVersion,
-          connection.getCommunicationMode(), securityService);
+      ServerSideHandshake handshake = new ServerSideHandshakeImpl(socket, handshakeTimeout, system,
+          clientVersion, connection.getCommunicationMode(), securityService);
       connection.setHandshake(handshake);
-      ClientProxyMembershipID proxyId = handshake.getMembership();
+      ClientProxyMembershipID proxyId = handshake.getMembershipId();
       connection.setProxyId(proxyId);
       // hitesh: it gets principals
       // Hitesh:for older version we should set this
@@ -222,19 +209,13 @@ public class ServerHandShakeProcessor {
     } catch (SocketTimeoutException timeout) {
       logger.warn(LocalizedMessage.create(
           LocalizedStrings.ServerHandShakeProcessor_0_HANDSHAKE_REPLY_CODE_TIMEOUT_NOT_RECEIVED_WITH_IN_1_MS,
-          new Object[] {connection.getName(), Integer.valueOf(handShakeTimeout)}));
+          new Object[] {connection.getName(), Integer.valueOf(handshakeTimeout)}));
       connection.stats.incFailedConnectionAttempts();
       connection.cleanup();
       return false;
-    } catch (EOFException e) {
+    } catch (EOFException | SocketException e) {
       // no need to warn client just gave up on this server before we could
       // handshake
-      logger.info("{} {}", connection.getName(), e);
-      connection.stats.incFailedConnectionAttempts();
-      connection.cleanup();
-      return false;
-    } catch (SocketException e) { // no need to warn client just gave up on this
-      // server before we could handshake
       logger.info("{} {}", connection.getName(), e);
       connection.stats.incFailedConnectionAttempts();
       connection.cleanup();
@@ -257,7 +238,7 @@ public class ServerHandShakeProcessor {
       }
       connection.stats.incFailedConnectionAttempts();
       connection.refuseHandshake(noauth.getMessage(),
-          HandShake.REPLY_EXCEPTION_AUTHENTICATION_REQUIRED);
+          Handshake.REPLY_EXCEPTION_AUTHENTICATION_REQUIRED);
       connection.cleanup();
       return false;
     } catch (AuthenticationFailedException failed) {
@@ -271,7 +252,7 @@ public class ServerHandShakeProcessor {
       }
       connection.stats.incFailedConnectionAttempts();
       connection.refuseHandshake(failed.getMessage(),
-          HandShake.REPLY_EXCEPTION_AUTHENTICATION_FAILED);
+          Handshake.REPLY_EXCEPTION_AUTHENTICATION_FAILED);
       connection.cleanup();
       return false;
     } catch (Exception ex) {
@@ -287,7 +268,7 @@ public class ServerHandShakeProcessor {
   public static long setAuthAttributes(ServerConnection connection) throws Exception {
     try {
       logger.debug("setAttributes()");
-      Object principal = ((HandShake) connection.getHandshake()).verifyCredentials();
+      Object principal = connection.getHandshake().verifyCredentials();
 
       long uniqueId;
       if (principal instanceof Subject) {

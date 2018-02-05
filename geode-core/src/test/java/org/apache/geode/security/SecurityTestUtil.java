@@ -18,6 +18,7 @@ package org.apache.geode.security;
 import static org.apache.geode.distributed.ConfigurationProperties.LOCATORS;
 import static org.apache.geode.distributed.ConfigurationProperties.MCAST_PORT;
 import static org.apache.geode.distributed.ConfigurationProperties.SECURITY_CLIENT_AUTH_INIT;
+import static org.apache.geode.distributed.ConfigurationProperties.SECURITY_CLIENT_DHALGO;
 import static org.apache.geode.distributed.ConfigurationProperties.SERIALIZABLE_OBJECT_FILTER;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
@@ -36,11 +37,18 @@ public class SecurityTestUtil {
 
   public static ClientCache createClientCache(String username, String password, int serverPort) {
     Properties props = new Properties();
+    return createClientCache(username, password, serverPort, props);
+  }
+
+  public static ClientCache createClientCache(String username, String password, int serverPort,
+      Properties extraProperties) {
+    Properties props = new Properties();
     props.setProperty(UserPasswordAuthInit.USER_NAME, username);
     props.setProperty(UserPasswordAuthInit.PASSWORD, password);
     props.setProperty(SECURITY_CLIENT_AUTH_INIT, UserPasswordAuthInit.class.getName());
     props.setProperty(LOCATORS, "");
     props.setProperty(MCAST_PORT, "0");
+    props.putAll(extraProperties);
     if (Version.CURRENT.ordinal() >= 75) {
       props.setProperty(SERIALIZABLE_OBJECT_FILTER, "org.apache.geode.security.query.data.*");
     }

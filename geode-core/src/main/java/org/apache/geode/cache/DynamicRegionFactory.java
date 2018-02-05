@@ -41,6 +41,7 @@ import org.apache.geode.internal.cache.EnumListenerEvent;
 import org.apache.geode.internal.cache.EvictionAttributesImpl;
 import org.apache.geode.internal.cache.InitialImageOperation;
 import org.apache.geode.internal.cache.InternalCache;
+import org.apache.geode.internal.cache.InternalRegion;
 import org.apache.geode.internal.cache.InternalRegionArguments;
 import org.apache.geode.internal.cache.LocalRegion;
 import org.apache.geode.internal.cache.RegionEntry;
@@ -623,7 +624,7 @@ public abstract class DynamicRegionFactory {
     }
 
     if (this.config.getRegisterInterest()) {
-      ServerRegionProxy proxy = ((LocalRegion) newRegion).getServerProxy();
+      ServerRegionProxy proxy = ((InternalRegion) newRegion).getServerProxy();
       if (proxy != null) {
         if (((Pool) proxy.getPool()).getSubscriptionEnabled()) {
           try {
@@ -871,7 +872,7 @@ public abstract class DynamicRegionFactory {
 
     // This is an internal uses only region
     @Override
-    protected boolean isSecret() {
+    public boolean isSecret() {
       return true;
     }
 
@@ -980,7 +981,7 @@ public abstract class DynamicRegionFactory {
 
     // This is an internal uses only region
     @Override
-    protected boolean isSecret() {
+    public boolean isSecret() {
       return true;
     }
 

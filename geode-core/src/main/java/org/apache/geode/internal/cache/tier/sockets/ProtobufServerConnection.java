@@ -108,7 +108,7 @@ public class ProtobufServerConnection extends ServerConnection {
   }
 
   @Override
-  protected boolean doHandShake(byte epType, int qSize) {
+  protected boolean doHandShake(byte endpointType, int queueSize) {
     ClientHealthMonitor clientHealthMonitor = getAcceptor().getClientHealthMonitor();
     clientHealthMonitor.registerClient(clientProxyMembershipID);
     clientHealthMonitor.addConnection(clientProxyMembershipID, this);

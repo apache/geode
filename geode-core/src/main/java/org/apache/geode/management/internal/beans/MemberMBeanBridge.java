@@ -74,7 +74,6 @@ import org.apache.geode.internal.cache.InternalRegion;
 import org.apache.geode.internal.cache.LocalRegion;
 import org.apache.geode.internal.cache.PartitionedRegion;
 import org.apache.geode.internal.cache.PartitionedRegionStats;
-import org.apache.geode.internal.cache.backup.BackupManager;
 import org.apache.geode.internal.cache.control.ResourceManagerStats;
 import org.apache.geode.internal.cache.execute.FunctionServiceStats;
 import org.apache.geode.internal.i18n.LocalizedStrings;
@@ -1010,17 +1009,15 @@ public class MemberMBeanBridge {
 
     } else {
       try {
-        BackupManager manager =
-            cache.startBackup(cache.getInternalDistributedSystem().getDistributedMember());
         boolean abort = true;
         Set<PersistentID> existingDataStores;
         Set<PersistentID> successfulDataStores;
         try {
-          manager.startBackup();
-          existingDataStores = manager.getDiskStoreIdsToBackup();
+          existingDataStores = cache.getBackupService().prepareBackup(
+              cache.getInternalDistributedSystem().getDistributedMember(), targetDir, null);
           abort = false;
         } finally {
-          successfulDataStores = manager.doBackup(targetDir, null/* TODO rishi */, abort);
+          successfulDataStores = cache.getBackupService().doBackup(abort);
         }
         diskBackUpResult = new DiskBackupResult[existingDataStores.size()];
         int j = 0;
@@ -1196,11 +1193,11 @@ public class MemberMBeanBridge {
    * @return list of regions
    */
   public String[] getListOfRegions() {
-    Set<LocalRegion> listOfAppRegions = cache.getApplicationRegions();
+    Set<InternalRegion> listOfAppRegions = cache.getApplicationRegions();
     if (listOfAppRegions != null && listOfAppRegions.size() > 0) {
       String[] regionStr = new String[listOfAppRegions.size()];
       int j = 0;
-      for (LocalRegion rg : listOfAppRegions) {
+      for (InternalRegion rg : listOfAppRegions) {
         regionStr[j] = rg.getFullPath();
         j++;
       }

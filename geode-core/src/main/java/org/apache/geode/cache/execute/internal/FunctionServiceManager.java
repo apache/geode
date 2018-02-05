@@ -44,7 +44,7 @@ import org.apache.geode.distributed.DistributedSystem;
 import org.apache.geode.distributed.internal.DistributionConfig;
 import org.apache.geode.internal.InternalEntity;
 import org.apache.geode.internal.cache.GemFireCacheImpl;
-import org.apache.geode.internal.cache.LocalRegion;
+import org.apache.geode.internal.cache.InternalRegion;
 import org.apache.geode.internal.cache.execute.DistributedRegionFunctionExecutor;
 import org.apache.geode.internal.cache.execute.MemberFunctionExecutor;
 import org.apache.geode.internal.cache.execute.PartitionedRegionFunctionExecutor;
@@ -427,8 +427,7 @@ public class FunctionServiceManager {
    * @since GemFire 6.0
    */
   private boolean isClientRegion(Region region) {
-    LocalRegion localRegion = (LocalRegion) region;
-    return localRegion.hasServerProxy();
+    return ((InternalRegion) region).hasServerProxy();
   }
 
   public Execution onMember(DistributedSystem system, String... groups) {

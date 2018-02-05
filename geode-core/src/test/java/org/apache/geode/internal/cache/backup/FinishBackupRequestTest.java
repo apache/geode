@@ -44,10 +44,8 @@ public class FinishBackupRequestTest {
 
   private DistributionManager dm;
   private InternalCache cache;
-  private BackupManager backupManager;
+  private BackupService backupService;
   private int processorId = 79;
-  private File targetDir;
-  private File baselineDir;
   private boolean abort;
   private FinishBackupFactory finishBackupFactory;
   private InternalDistributedMember sender;
@@ -60,14 +58,12 @@ public class FinishBackupRequestTest {
     // mocks here
     dm = mock(DistributionManager.class);
     cache = mock(InternalCache.class);
-    backupManager = mock(BackupManager.class);
-    targetDir = mock(File.class);
-    baselineDir = mock(File.class);
+    backupService = mock(BackupService.class);
     abort = false;
 
     when(dm.getCache()).thenReturn(cache);
     when(dm.getDistributionManagerId()).thenReturn(sender);
-    when(cache.getBackupManager()).thenReturn(backupManager);
+    when(cache.getBackupService()).thenReturn(backupService);
 
     sender = mock(InternalDistributedMember.class);
 
@@ -78,22 +74,20 @@ public class FinishBackupRequestTest {
     when(finishBackup.run()).thenReturn(persistentIds);
 
     finishBackupFactory = mock(FinishBackupFactory.class);
-    when(finishBackupFactory.createFinishBackup(eq(cache), eq(targetDir), eq(baselineDir),
-        eq(abort))).thenReturn(finishBackup);
+    when(finishBackupFactory.createFinishBackup(eq(cache), eq(abort))).thenReturn(finishBackup);
     when(finishBackupFactory.createBackupResponse(eq(sender), eq(persistentIds)))
         .thenReturn(mock(BackupResponse.class));
 
 
-    finishBackupRequest = new FinishBackupRequest(sender, recipients, processorId, targetDir,
-        baselineDir, false, finishBackupFactory);
+    finishBackupRequest =
+        new FinishBackupRequest(sender, recipients, processorId, false, finishBackupFactory);
   }
 
   @Test
   public void usesFactoryToCreateFinishBackup() throws Exception {
     finishBackupRequest.createResponse(dm);
 
-    verify(finishBackupFactory, times(1)).createFinishBackup(eq(cache), eq(targetDir),
-        eq(baselineDir), eq(abort));
+    verify(finishBackupFactory, times(1)).createFinishBackup(eq(cache), eq(abort));
   }
 
   @Test

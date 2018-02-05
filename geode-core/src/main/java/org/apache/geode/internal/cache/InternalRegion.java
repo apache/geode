@@ -15,11 +15,15 @@
 package org.apache.geode.internal.cache;
 
 import java.io.IOException;
+import java.io.InputStream;
+import java.util.Set;
+import java.util.concurrent.locks.Lock;
 
 import org.apache.geode.CancelCriterion;
 import org.apache.geode.Statistics;
 import org.apache.geode.cache.CacheWriterException;
 import org.apache.geode.cache.EntryNotFoundException;
+import org.apache.geode.cache.Operation;
 import org.apache.geode.cache.Region;
 import org.apache.geode.cache.RegionAttributes;
 import org.apache.geode.cache.RegionExistsException;
@@ -28,6 +32,9 @@ import org.apache.geode.cache.client.internal.ServerRegionProxy;
 import org.apache.geode.cache.query.internal.index.IndexManager;
 import org.apache.geode.distributed.internal.DistributionManager;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
+import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
+import org.apache.geode.internal.cache.tier.sockets.CacheClientNotifier;
+import org.apache.geode.internal.cache.tier.sockets.ClientProxyMembershipID;
 import org.apache.geode.internal.cache.versions.RegionVersionVector;
 import org.apache.geode.internal.cache.versions.VersionSource;
 import org.apache.geode.internal.cache.versions.VersionTag;
@@ -97,6 +104,8 @@ public interface InternalRegion extends Region, HasCachePerfStats, RegionEntryCo
   void recordEvent(InternalCacheEvent event);
 
   boolean isProxy();
+
+  Lock getClientMetaDataLock();
 
   IndexManager getIndexManager();
 
@@ -176,4 +185,38 @@ public interface InternalRegion extends Region, HasCachePerfStats, RegionEntryCo
   boolean isEntryEvictionPossible();
 
   KeyInfo getKeyInfo(Object key);
+
+  void waitOnInitialization();
+
+  Set basicSubregions(boolean recursive);
+
+  boolean isSecret();
+
+  boolean isUsedForMetaRegion();
+
+  boolean isInternalRegion();
+
+  void handleCacheClose(Operation op);
+
+  void initialize(InputStream snapshotInputStream, InternalDistributedMember imageTarget,
+      InternalRegionArguments internalRegionArgs)
+      throws TimeoutException, IOException, ClassNotFoundException;
+
+  void cleanupFailedInitialization();
+
+  void postCreateRegion();
+
+  Region getSubregion(String string, boolean b);
+
+  boolean checkForInitialization();
+
+  boolean isUsedForPartitionedRegionBucket();
+
+  Set<String> getAllGatewaySenderIds();
+
+  void senderCreated();
+
+  boolean isInitialized();
+
+  void cleanupForClient(CacheClientNotifier ccn, ClientProxyMembershipID client);
 }

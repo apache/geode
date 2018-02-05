@@ -14,7 +14,6 @@
  */
 package org.apache.geode.internal.cache.backup;
 
-import java.io.File;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -31,15 +30,12 @@ class FinishBackupFactory {
   }
 
   FinishBackupRequest createRequest(InternalDistributedMember sender,
-      Set<InternalDistributedMember> recipients, int processorId, File targetDir, File baselineDir,
-      boolean abort) {
-    return new FinishBackupRequest(sender, recipients, processorId, targetDir, baselineDir, abort,
-        this);
+      Set<InternalDistributedMember> recipients, int processorId, boolean abort) {
+    return new FinishBackupRequest(sender, recipients, processorId, abort, this);
   }
 
-  FinishBackup createFinishBackup(InternalCache cache, File targetDir, File baselineDir,
-      boolean abort) {
-    return new FinishBackup(cache, targetDir, baselineDir, abort);
+  FinishBackup createFinishBackup(InternalCache cache, boolean abort) {
+    return new FinishBackup(cache, abort);
   }
 
   BackupResponse createBackupResponse(InternalDistributedMember sender,

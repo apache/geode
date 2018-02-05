@@ -25,6 +25,7 @@ import "v1/region_API.proto";
 import "v1/locator_API.proto";
 import "v1/basicTypes.proto";
 import "v1/connection_API.proto";
+import "v1/function_API.proto";
 
 message Message {
     oneof messageType {
@@ -46,6 +47,8 @@ message Request {
         GetRegionNamesRequest getRegionNamesRequest = 41;
         GetRegionRequest getRegionRequest = 42;
 
+        ExecuteFunctionOnRegionRequest executeFunctionOnRegionRequest = 43;
+
         AuthenticationRequest authenticationRequest = 100;
     }
 }
@@ -62,6 +65,8 @@ message Response {
 
         GetRegionNamesResponse getRegionNamesResponse = 41;
         GetRegionResponse getRegionResponse = 42;
+
+        ExecuteFunctionOnRegionResponse executeFunctionOnRegionResponse= 43;
 
         AuthenticationResponse authenticationResponse = 100;
 

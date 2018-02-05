@@ -1081,7 +1081,7 @@ public class PartitionedRegion extends LocalRegion
   }
 
   @Override
-  protected void postCreateRegion() {
+  public void postCreateRegion() {
     super.postCreateRegion();
     CacheListener[] listeners = fetchCacheListenersField();
     if (listeners != null && listeners.length > 0) {
@@ -1146,7 +1146,7 @@ public class PartitionedRegion extends LocalRegion
    * Initializes the PartitionedRegion. OVERRIDES
    */
   @Override
-  protected void initialize(InputStream snapshotInputStream, InternalDistributedMember imageTarget,
+  public void initialize(InputStream snapshotInputStream, InternalDistributedMember imageTarget,
       InternalRegionArguments internalRegionArgs) throws TimeoutException, ClassNotFoundException {
     if (logger.isDebugEnabled()) {
       logger.debug("PartitionedRegion#initialize {}", getName());

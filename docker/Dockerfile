@@ -18,21 +18,19 @@ FROM centos:7
 MAINTAINER Apache Geode Community <dev@geode.apache.org>
 
 LABEL Vendor="Apache Geode"
-LABEL version=1.3.0
+LABEL version=1.4.0
+ENV GEODE_VERSION 1.4.0
 
-RUN	yum install -y wget which tar git java-1.8.0-openjdk-devel \
-	&& git clone https://github.com/apache/geode.git \
-	&& cd geode \
-	&& git checkout rel/v1.3.0 \
-	&& ./gradlew build -Dskip.tests=true -xjavadoc \
-	&& ls /geode | grep -v geode-assembly | xargs rm -rf \
-	&& rm -rf /root/.gradle/ \
-	&& rm -rf /geode/geode-assembly/build/distributions/ \
+RUN	yum install -y wget which tar java-1.8.0-openjdk-devel \
+	&& wget https://dist.apache.org/repos/dist/release/geode/$GEODE_VERSION/apache-geode-$GEODE_VERSION.tgz \
+        && tar -xvzf apache-geode-$GEODE_VERSION.tgz \
+        && rm -rf apache-geode-$GEODE_VERSION.tgz \
+	&& cd apache-geode-$GEODE_VERSION \
 	&& rm -rf /usr/share/locale/* \
 	&& yum remove -y perl \
 	&& yum clean all
 
-ENV GEODE_HOME /geode/geode-assembly/build/install/apache-geode
+ENV GEODE_HOME /apache-geode-$GEODE_VERSION
 ENV PATH $PATH:$GEODE_HOME/bin
 
 # Default ports:

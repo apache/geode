@@ -77,7 +77,7 @@ import org.apache.geode.internal.cache.BucketRegion.RawValue;
 import org.apache.geode.internal.cache.LocalRegion.RegionPerfStats;
 import org.apache.geode.internal.cache.PartitionedRegion.BucketLock;
 import org.apache.geode.internal.cache.PartitionedRegion.SizeEntry;
-import org.apache.geode.internal.cache.backup.BackupManager;
+import org.apache.geode.internal.cache.backup.BackupService;
 import org.apache.geode.internal.cache.execute.BucketMovedException;
 import org.apache.geode.internal.cache.execute.FunctionStats;
 import org.apache.geode.internal.cache.execute.PartitionedRegionFunctionResultSender;
@@ -1676,9 +1676,9 @@ public class PartitionedRegionDataStore implements HasCachePerfStats {
    * target member.
    */
   private void waitForInProgressBackup() {
-    BackupManager backupManager = getPartitionedRegion().getGemFireCache().getBackupManager();
-    if (getPartitionedRegion().getDataPolicy().withPersistence() && backupManager != null) {
-      backupManager.waitForBackup();
+    BackupService backupService = getPartitionedRegion().getGemFireCache().getBackupService();
+    if (getPartitionedRegion().getDataPolicy().withPersistence()) {
+      backupService.waitForBackup();
     }
 
   }

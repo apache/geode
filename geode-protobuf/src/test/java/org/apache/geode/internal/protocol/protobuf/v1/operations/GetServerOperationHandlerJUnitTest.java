@@ -54,8 +54,6 @@ public class GetServerOperationHandlerJUnitTest extends OperationHandlerJUnitTes
 
   @Before
   public void setUp() throws Exception {
-    super.setUp();
-
     operationHandler = new GetServerOperationHandler();
     internalLocatorMock = mock(InternalLocator.class);
     serverLocatorAdviseeMock = mock(ServerLocator.class);

@@ -34,7 +34,7 @@ import org.apache.geode.cache.CacheFactory;
 import org.apache.geode.cache.DiskStore;
 import org.apache.geode.cache.RegionShortcut;
 import org.apache.geode.distributed.ConfigurationProperties;
-import org.apache.geode.internal.cache.backup.BackupManager;
+import org.apache.geode.internal.cache.backup.BackupService;
 import org.apache.geode.test.junit.categories.IntegrationTest;
 
 @Category(IntegrationTest.class)
@@ -68,7 +68,7 @@ public class DiskStoreImplIntegrationTest {
     List<Path> tempDirs = new ArrayList<>();
     for (File diskDir : diskStore.getDiskDirs()) {
       Path tempDir =
-          diskDir.toPath().resolve(BackupManager.DATA_STORES_TEMPORARY_DIRECTORY + "testing");
+          diskDir.toPath().resolve(BackupService.DATA_STORES_TEMPORARY_DIRECTORY + "testing");
       Files.createDirectories(tempDir);
       tempDirs.add(tempDir);
     }

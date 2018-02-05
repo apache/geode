@@ -15,8 +15,8 @@
 package org.apache.geode.internal.protocol.protobuf.v1;
 
 import org.apache.geode.StatisticsFactory;
-import org.apache.geode.cache.Cache;
 import org.apache.geode.distributed.internal.InternalLocator;
+import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.cache.client.protocol.ClientProtocolProcessor;
 import org.apache.geode.internal.cache.client.protocol.ClientProtocolService;
 import org.apache.geode.internal.protocol.protobuf.ProtocolVersion;
@@ -38,7 +38,7 @@ public class ProtobufProtocolService implements ClientProtocolService {
   }
 
   @Override
-  public ClientProtocolProcessor createProcessorForCache(Cache cache,
+  public ClientProtocolProcessor createProcessorForCache(InternalCache cache,
       SecurityService securityService) {
     assert (statistics != null);
 

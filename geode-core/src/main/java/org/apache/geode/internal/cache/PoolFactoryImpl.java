@@ -37,6 +37,7 @@ import org.apache.geode.cache.client.internal.LocatorDiscoveryCallback;
 import org.apache.geode.cache.client.internal.PoolImpl;
 import org.apache.geode.cache.query.QueryService;
 import org.apache.geode.cache.wan.GatewaySender;
+import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.distributed.internal.membership.gms.membership.HostAddress;
 import org.apache.geode.internal.i18n.LocalizedStrings;
 import org.apache.geode.internal.logging.LogService;
@@ -328,6 +329,7 @@ public class PoolFactoryImpl implements PoolFactory {
    * @since GemFire 5.7
    */
   public Pool create(String name) throws CacheException {
+    InternalDistributedSystem distributedSystem = InternalDistributedSystem.getAnyInstance();
     InternalCache cache = GemFireCacheImpl.getInstance();
     if (cache != null) {
       TypeRegistry registry = cache.getPdxRegistry();
@@ -335,7 +337,8 @@ public class PoolFactoryImpl implements PoolFactory {
         registry.creatingPool();
       }
     }
-    return PoolImpl.create(this.pm, name, this.attributes, this.locatorAddresses);
+    return PoolImpl.create(this.pm, name, this.attributes, this.locatorAddresses, distributedSystem,
+        cache);
   }
 
   /**

@@ -43,6 +43,7 @@ import org.apache.geode.internal.DataSerializableFixedID;
 import org.apache.geode.internal.Version;
 import org.apache.geode.internal.cache.GemFireCacheImpl;
 import org.apache.geode.internal.cache.InitialImageOperation;
+import org.apache.geode.internal.cache.InternalRegion;
 import org.apache.geode.internal.cache.LocalRegion;
 import org.apache.geode.internal.cache.versions.VersionTag;
 import org.apache.geode.internal.i18n.LocalizedStrings;
@@ -53,16 +54,16 @@ public class GatewaySenderQueueEntrySynchronizationOperation {
 
   private InternalDistributedMember recipient;
 
-  private LocalRegion region;
+  private InternalRegion region;
 
   private List<GatewaySenderQueueEntrySynchronizationEntry> entriesToSynchronize;
 
   private static final Logger logger = LogService.getLogger();
 
   protected GatewaySenderQueueEntrySynchronizationOperation(InternalDistributedMember recipient,
-      LocalRegion region, List<InitialImageOperation.Entry> giiEntriesToSynchronize) {
+      InternalRegion internalRegion, List<InitialImageOperation.Entry> giiEntriesToSynchronize) {
     this.recipient = recipient;
-    this.region = region;
+    this.region = internalRegion;
     initializeEntriesToSynchronize(giiEntriesToSynchronize);
   }
 

@@ -60,10 +60,10 @@ public class OriginalServerConnection extends ServerConnection {
   }
 
   @Override
-  protected boolean doHandShake(byte epType, int qSize) {
+  protected boolean doHandShake(byte endpointType, int queueSize) {
     try {
-      this.handshake.accept(theSocket.getOutputStream(), theSocket.getInputStream(), epType, qSize,
-          this.communicationMode, this.principal);
+      this.handshake.accept(theSocket.getOutputStream(), theSocket.getInputStream(), endpointType,
+          queueSize, this.communicationMode, this.principal);
     } catch (IOException ioe) {
       if (!crHelper.isShutdown() && !isTerminated()) {
         logger.warn(LocalizedMessage.create(

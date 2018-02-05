@@ -16,7 +16,7 @@ docker build -t apachegeode/geode:latest .
 Once it's tagged, push to DockerHub:
 
 ```
-docker push apachegeode/geode:1.0.0-incubating
+docker push apachegeode/geode:{version}
 ```
 
 * You need to be authenticated in DockerHub and be an administrator of the project.  Ask for permissions at *dev@geode.apache.org*.
@@ -27,7 +27,7 @@ docker push apachegeode/geode:1.0.0-incubating
 1. Execute the following command to run the container and start `gfsh`:
 
 ```
-docker run -it -p 10334:10334 -p 7575:7575 -p 1099:1099  apachegeode/geode:1.0.0-incubating
+docker run -it -p 10334:10334 -p 7575:7575 -p 1099:1099  apachegeode/geode
 ```
 
 From this point you can pretty much follow [Apache Geode in 5 minutes](https://cwiki.apache.org/confluence/display/GEODE/Index#Index-Geodein5minutes) for example:
