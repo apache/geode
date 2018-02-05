@@ -129,6 +129,14 @@ public class ServerStarterRule extends MemberStarterRule<ServerStarterRule> impl
     return this;
   }
 
+  @Override
+  protected void normalizeProperties() {
+    super.normalizeProperties();
+    if (httpPort < 0 && "true".equalsIgnoreCase(properties.getProperty(START_DEV_REST_API))) {
+      withRestService();
+    }
+  }
+
   public ServerStarterRule withRegion(RegionShortcut type, String name) {
     this.autoStart = true;
     regions.put(name, type);
