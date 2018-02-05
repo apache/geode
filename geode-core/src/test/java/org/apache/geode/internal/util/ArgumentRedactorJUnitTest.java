@@ -121,22 +121,22 @@ public class ArgumentRedactorJUnitTest {
     String arg;
 
     arg = "-Dgemfire.security-properties=./security-properties";
-    assertThat(arg).isEqualTo(redact(arg));
+    assertThat(redact(arg)).isEqualTo(arg);
 
     arg = "-J-Dgemfire.sys.security-value=someValue";
-    assertThat(arg).isEqualTo(redact(arg));
+    assertThat(redact(arg)).isEqualTo(arg);
 
     arg = "-Dgemfire.sys.value=printable";
-    assertThat(arg).isEqualTo(redact(arg));
+    assertThat(redact(arg)).isEqualTo(arg);
 
     arg = "-Dgemfire.use-cluster-configuration=true";
-    assertThat(arg).isEqualTo(redact(arg));
+    assertThat(redact(arg)).isEqualTo(arg);
 
     arg = "someotherstringvalue";
-    assertThat(arg).isEqualTo(redact(arg));
+    assertThat(redact(arg)).isEqualTo(arg);
 
     arg = "--classpath=.";
-    assertThat(arg).isEqualTo(redact(arg));
+    assertThat(redact(arg)).isEqualTo(arg);
   }
 
   @Test
