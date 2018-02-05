@@ -35,7 +35,7 @@ import org.apache.geode.test.junit.categories.UnitTest;
 @Category(UnitTest.class)
 public class ClientHealthMonitorJUnitTest {
   public RestoreSystemProperties restoreSystemProperties = new RestoreSystemProperties();
-  private int pingIntervalMillis = 100;
+  private int pingIntervalMillis = 200;
   private int monitorIntervalMillis = 20;
   private ClientHealthMonitor clientHealthMonitor;
 
@@ -71,7 +71,7 @@ public class ClientHealthMonitorJUnitTest {
     clientHealthMonitor.addConnection(mockId, mockConnection);
     clientHealthMonitor.receivedPing(mockId);
 
-    for (int i = 0; i < 10; ++i) {
+    for (int i = 0; i < 5; ++i) {
       Thread.sleep(pingIntervalMillis / 2);
       verify(mockConnection, times(0)).handleTermination(true);
       clientHealthMonitor.receivedPing(mockId);
