@@ -24,7 +24,6 @@ import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
-import java.io.File;
 import java.io.IOException;
 import java.util.HashSet;
 import java.util.Set;
@@ -80,16 +79,16 @@ public class FinishBackupOperationTest {
     recipients = new HashSet<>();
 
     finishBackupOperation =
-        new FinishBackupOperation(dm, sender, cache, recipients, abort, finishBackupFactory);
+        new FinishBackupOperation(dm, sender, cache, recipients, finishBackupFactory);
 
     when(finishBackupReplyProcessor.getProcessorId()).thenReturn(42);
 
     when(
         finishBackupFactory.createReplyProcessor(eq(finishBackupOperation), eq(dm), eq(recipients)))
             .thenReturn(finishBackupReplyProcessor);
-    when(finishBackupFactory.createRequest(eq(sender), eq(recipients), eq(42), eq(abort)))
+    when(finishBackupFactory.createRequest(eq(sender), eq(recipients), eq(42)))
         .thenReturn(finishBackupRequest);
-    when(finishBackupFactory.createFinishBackup(eq(cache), eq(abort))).thenReturn(finishBackup);
+    when(finishBackupFactory.createFinishBackup(eq(cache))).thenReturn(finishBackup);
   }
 
   @Test

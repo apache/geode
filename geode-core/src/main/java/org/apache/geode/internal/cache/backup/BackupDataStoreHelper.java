@@ -15,6 +15,7 @@
 package org.apache.geode.internal.cache.backup;
 
 import java.io.File;
+import java.util.Collections;
 import java.util.Map;
 import java.util.Set;
 
@@ -31,6 +32,7 @@ public class BackupDataStoreHelper {
   private static final Object LOCK_SYNC = new Object();
   private static final FlushToDiskFactory flushToDiskFactory = new FlushToDiskFactory();
   private static final PrepareBackupFactory prepareBackupFactory = new PrepareBackupFactory();
+  private static final AbortBackupFactory abortBackupFactory = new AbortBackupFactory();
   private static final FinishBackupFactory finishBackupFactory = new FinishBackupFactory();
 
   @SuppressWarnings("rawtypes")
@@ -46,8 +48,14 @@ public class BackupDataStoreHelper {
           prepareBackupFactory, targetDir, baselineDir).send();
       abort = false;
     } finally {
-      successfulMembers = new FinishBackupOperation(dm, dm.getId(), dm.getCache(), recipients,
-          abort, finishBackupFactory).send();
+      if (abort) {
+        new AbortBackupOperation(dm, dm.getId(), dm.getCache(), recipients, abortBackupFactory)
+            .send();
+        successfulMembers = Collections.emptyMap();
+      } else {
+        successfulMembers = new FinishBackupOperation(dm, dm.getId(), dm.getCache(), recipients,
+            finishBackupFactory).send();
+      }
     }
     return new BackupDataStoreResult(existingDataStores, successfulMembers);
   }

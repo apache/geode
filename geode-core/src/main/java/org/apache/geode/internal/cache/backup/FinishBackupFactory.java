@@ -30,12 +30,12 @@ class FinishBackupFactory {
   }
 
   FinishBackupRequest createRequest(InternalDistributedMember sender,
-      Set<InternalDistributedMember> recipients, int processorId, boolean abort) {
-    return new FinishBackupRequest(sender, recipients, processorId, abort, this);
+      Set<InternalDistributedMember> recipients, int processorId) {
+    return new FinishBackupRequest(sender, recipients, processorId, this);
   }
 
-  FinishBackup createFinishBackup(InternalCache cache, boolean abort) {
-    return new FinishBackup(cache, abort);
+  FinishBackup createFinishBackup(InternalCache cache) {
+    return new FinishBackup(cache);
   }
 
   BackupResponse createBackupResponse(InternalDistributedMember sender,

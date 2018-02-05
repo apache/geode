@@ -79,12 +79,7 @@ public class BackupServiceTest {
 
   @Test
   public void doBackupThrowsExceptionWhenNoBackupInProgress() throws Exception {
-    assertThatThrownBy(() -> backupService.doBackup(false)).isInstanceOf(IOException.class);
-  }
-
-  @Test
-  public void doBackupAbortsWithEmptyPersistentIds() throws Exception {
-    assertThat(backupService.doBackup(true).size()).isEqualTo(0);
+    assertThatThrownBy(() -> backupService.doBackup()).isInstanceOf(IOException.class);
   }
 
   @Test

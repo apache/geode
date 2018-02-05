@@ -81,15 +81,12 @@ public class BackupService {
     return backupTask.awaitLockAcquisition();
   }
 
-  public HashSet<PersistentID> doBackup(boolean abort) throws IOException {
+  public HashSet<PersistentID> doBackup() throws IOException {
     BackupTask task = currentTask.get();
     if (task == null) {
-      if (abort) {
-        return new HashSet<>();
-      }
       throw new IOException("No backup currently in progress");
     }
-    task.notifyOtherMembersReady(abort);
+    task.notifyOtherMembersReady();
 
     HashSet<PersistentID> result;
     try {
@@ -128,6 +125,14 @@ public class BackupService {
   void cleanup() {
     cache.getDistributionManager().removeAllMembershipListener(membershipListener);
     currentTask.set(null);
+  }
+
+  public void abortBackup() {
+    BackupTask task = currentTask.get();
+    cleanup();
+    if (task != null) {
+      task.abort();
+    }
   }
 
   private class BackupMembershipListener implements MembershipListener {

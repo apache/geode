@@ -1425,10 +1425,6 @@ org/apache/geode/internal/cache/backup/BackupResponse,2
 fromData,14,2a2bb700042a2bb80005b50003b1
 toData,14,2a2bb700062ab400032bb80007b1
 
-org/apache/geode/internal/cache/backup/FinishBackupRequest,2
-fromData,17,2a2bb700162a2bb80017b60018b50008b1
-toData,17,2a2bb700192ab40008b8001a2bb8001bb1
-
 org/apache/geode/internal/cache/backup/PrepareBackupRequest,2
 fromData,22,2a2bb700192a2bb8001ab500082a2bb8001ab50009b1
 toData,22,2a2bb7001b2ab400082bb8001c2ab400092bb8001cb1

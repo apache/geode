@@ -14,27 +14,32 @@
  */
 package org.apache.geode.internal.cache.backup;
 
-import java.io.IOException;
 import java.util.HashSet;
+import java.util.Set;
 
 import org.apache.geode.cache.persistence.PersistentID;
+import org.apache.geode.distributed.internal.DistributionManager;
+import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
 import org.apache.geode.internal.cache.InternalCache;
 
-class FinishBackup {
+class AbortBackupFactory {
 
-  private final InternalCache cache;
-
-  FinishBackup(InternalCache cache) {
-    this.cache = cache;
+  BackupReplyProcessor createReplyProcessor(BackupResultCollector resultCollector,
+      DistributionManager dm, Set<InternalDistributedMember> recipients) {
+    return new BackupReplyProcessor(resultCollector, dm, recipients);
   }
 
-  HashSet<PersistentID> run() throws IOException {
-    HashSet<PersistentID> persistentIds;
-    if (cache == null) {
-      persistentIds = new HashSet<>();
-    } else {
-      persistentIds = cache.getBackupService().doBackup();
-    }
-    return persistentIds;
+  AbortBackupRequest createRequest(InternalDistributedMember sender,
+      Set<InternalDistributedMember> recipients, int processorId) {
+    return new AbortBackupRequest(sender, recipients, processorId, this);
+  }
+
+  AbortBackup createAbortBackup(InternalCache cache) {
+    return new AbortBackup(cache);
+  }
+
+  BackupResponse createBackupResponse(InternalDistributedMember sender,
+      HashSet<PersistentID> persistentIds) {
+    return new BackupResponse(sender, persistentIds);
   }
 }
