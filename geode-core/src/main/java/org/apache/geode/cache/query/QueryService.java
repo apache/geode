@@ -25,9 +25,16 @@ import org.apache.geode.cache.query.internal.Undefined;
  * Interface for the query service, which is used for instantiating queries, creating and destroying
  * indexes, creating CQs and operating on CQs.
  *
- * Creating an index on an employee's age using QueryService in region "employeeRegion",
- * QueryService queryService = cache.getQueryService(); queryService.createIndex ("SampleIndex",
- * //IndexName "e.age" //indexExpression "/employeeRegion e", //regionPath );
+ * Creating an index on an employee's age using QueryService in region "employeeRegion":
+ *
+ * <pre>
+ *   <code>
+ *     QueryService queryService = cache.getQueryService();
+ *     queryService.createIndex ("SampleIndex",        // indexName
+ *                               "e.age",              // indexedExpression
+ *                               "/employeeRegion e"); //regionPath
+ *   </code>
+ * </pre>
  *
  * The CQs work on the server regions, the client can use the CQ methods supported in this class to
  * create/operate CQs on the server. The CQ obtains the Server connection from the corresponding
