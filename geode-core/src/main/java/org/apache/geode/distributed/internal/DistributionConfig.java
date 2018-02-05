@@ -2056,9 +2056,8 @@ public interface DistributionConfig extends Config, LogConfig {
   String SECURITY_CLIENT_DHALGO_NAME = SECURITY_CLIENT_DHALGO;
 
   /**
-   * The name of the Diffie-Hellman symmetric algorithm "security-client-dhalgo" property.
+   * The name of the Diffie-Hellman symmetric algorithm "security-udp-dhalgo" property.
    *
-   * @deprecated since Geode 1.5. Use SSL instead. See {@link #SSL_ENABLED_COMPONENTS_NAME}
    */
   @ConfigAttribute(type = String.class)
   String SECURITY_UDP_DHALGO_NAME = SECURITY_UDP_DHALGO;
