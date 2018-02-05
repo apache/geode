@@ -29,6 +29,7 @@ import org.mockito.InOrder;
 import org.apache.geode.distributed.internal.DistributionManager;
 import org.apache.geode.distributed.internal.locks.DLockService;
 import org.apache.geode.internal.cache.GemFireCacheImpl;
+import org.apache.geode.internal.cache.backup.AbortBackupRequest;
 import org.apache.geode.internal.cache.backup.BackupDataStoreHelper;
 import org.apache.geode.internal.cache.backup.BackupService;
 import org.apache.geode.internal.cache.backup.FinishBackupRequest;
@@ -74,7 +75,7 @@ public class DistributedSystemBridgeJUnitTest {
     inOrder.verify(dm).putOutgoing(isA(PrepareBackupRequest.class));
     inOrder.verify(backupService).prepareBackup(any(), any(), any());
     inOrder.verify(dm).putOutgoing(isA(FinishBackupRequest.class));
-    inOrder.verify(backupService).doBackup(eq(false));
+    inOrder.verify(backupService).doBackup();
   }
 
   @Test
@@ -96,7 +97,7 @@ public class DistributedSystemBridgeJUnitTest {
     } catch (RuntimeException expected) {
     }
 
-    verify(dm).putOutgoing(isA(FinishBackupRequest.class));
-    verify(backupService).doBackup(eq(true));
+    verify(dm).putOutgoing(isA(AbortBackupRequest.class));
+    verify(backupService).abortBackup();
   }
 }

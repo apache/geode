@@ -80,8 +80,7 @@ public class BackupTask {
     return diskStoresWithData;
   }
 
-  void notifyOtherMembersReady(boolean abort) {
-    this.isCancelled = abort;
+  void notifyOtherMembersReady() {
     otherMembersReady.countDown();
   }
 
@@ -185,7 +184,8 @@ public class BackupTask {
   }
 
   void abort() {
-    cleanup();
+    isCancelled = true;
+    otherMembersReady.countDown();
   }
 
   boolean isCancelled() {

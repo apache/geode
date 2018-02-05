@@ -14,52 +14,52 @@
  */
 package org.apache.geode.internal.cache.backup;
 
-import java.io.IOException;
+import java.util.Collections;
 import java.util.Set;
 
-import org.apache.logging.log4j.Logger;
-
+import org.apache.geode.cache.persistence.PersistentID;
 import org.apache.geode.distributed.internal.DistributionManager;
 import org.apache.geode.distributed.internal.DistributionMessage;
 import org.apache.geode.distributed.internal.ReplyProcessor21;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
 import org.apache.geode.internal.cache.InternalCache;
-import org.apache.geode.internal.logging.LogService;
 
-class FinishBackupOperation extends BackupOperation {
-  private static final Logger logger = LogService.getLogger();
-
+class AbortBackupOperation extends BackupOperation {
   private final InternalDistributedMember member;
   private final InternalCache cache;
   private final Set<InternalDistributedMember> recipients;
-  private final FinishBackupFactory finishBackupFactory;
+  private final AbortBackupFactory abortBackupFactory;
 
-  FinishBackupOperation(DistributionManager dm, InternalDistributedMember member,
+  AbortBackupOperation(DistributionManager dm, InternalDistributedMember member,
       InternalCache cache, Set<InternalDistributedMember> recipients,
-      FinishBackupFactory FinishBackupFactory) {
+      AbortBackupFactory abortBackupFactory) {
     super(dm);
     this.member = member;
     this.cache = cache;
     this.recipients = recipients;
-    this.finishBackupFactory = FinishBackupFactory;
+    this.abortBackupFactory = abortBackupFactory;
   }
 
   @Override
   ReplyProcessor21 createReplyProcessor() {
-    return finishBackupFactory.createReplyProcessor(this, getDistributionManager(), recipients);
+    return abortBackupFactory.createReplyProcessor(this, getDistributionManager(), recipients);
   }
 
   @Override
   DistributionMessage createDistributionMessage(ReplyProcessor21 replyProcessor) {
-    return finishBackupFactory.createRequest(member, recipients, replyProcessor.getProcessorId());
+    return abortBackupFactory.createRequest(member, recipients, replyProcessor.getProcessorId());
   }
 
   @Override
   void processLocally() {
-    try {
-      addToResults(member, finishBackupFactory.createFinishBackup(cache).run());
-    } catch (IOException e) {
-      logger.fatal("Failed to FinishBackup in " + member, e);
+    abortBackupFactory.createAbortBackup(cache).run();
+    addToResults(member, Collections.emptySet());
+  }
+
+  @Override
+  public void addToResults(InternalDistributedMember member, Set<PersistentID> persistentIds) {
+    if (persistentIds != null) {
+      getResults().put(member, persistentIds);
     }
   }
 

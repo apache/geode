@@ -819,6 +819,7 @@ public interface DataSerializableFixedID extends SerializationVersions {
   short LUCENE_RESULT_STRUCT = 2180;
   short GATEWAY_SENDER_QUEUE_ENTRY_SYNCHRONIZATION_MESSAGE = 2181;
   short GATEWAY_SENDER_QUEUE_ENTRY_SYNCHRONIZATION_ENTRY = 2182;
+  short ABORT_BACKUP_REQUEST = 2183;
 
   // NOTE, codes > 65535 will take 4 bytes to serialize
 
