@@ -39,6 +39,7 @@ import org.apache.geode.cache.ExpirationAttributes;
 import org.apache.geode.cache.Region;
 import org.apache.geode.cache.RegionAttributes;
 import org.apache.geode.test.compiler.ClassBuilder;
+import org.apache.geode.test.dunit.IgnoredException;
 import org.apache.geode.test.dunit.rules.ClusterStartupRule;
 import org.apache.geode.test.dunit.rules.MemberVM;
 import org.apache.geode.test.junit.categories.DistributedTest;
@@ -82,7 +83,7 @@ public class AlterRegionCommandDUnitTest {
   }
 
   @Test
-  public void testAlterRegionResetCacheListeners() throws IOException {
+  public void alterRegionResetCacheListeners() throws IOException {
     gfsh.executeAndAssertThat("create region --name=regionA --type=PARTITION").statusIsSuccess();
 
     deployJarFilesForRegionAlter();
@@ -180,6 +181,26 @@ public class AlterRegionCommandDUnitTest {
       assertThat(expiry.getTimeout()).isEqualTo(5);
       assertThat(expiry.getAction()).isEqualTo(ExpirationAction.INVALIDATE);
     });
+  }
+
+  @Test
+  public void alterRegionStatisticsNotEnabled() {
+    IgnoredException.addIgnoredException(
+        "java.lang.IllegalStateException: Cannot set idle timeout when statistics are disabled");
+    gfsh.executeAndAssertThat("create region --name=regionA --type=REPLICATE").statusIsSuccess();
+    gfsh.executeAndAssertThat(
+        "alter region --name=regionA --entry-idle-time-expiration-action=invalidate")
+        .statusIsError()
+        .containsOutput("ERROR: Cannot set idle timeout when statistics are disabled.");
+  }
+
+  @Test
+  public void alterRegionStatisticsEnabled() {
+    gfsh.executeAndAssertThat("create region --name=regionA --type=REPLICATE --enable-statistics")
+        .statusIsSuccess();
+    gfsh.executeAndAssertThat(
+        "alter region --name=regionA --entry-idle-time-expiration-action=invalidate")
+        .statusIsSuccess();
   }
 
   private void deployJarFilesForRegionAlter() throws IOException {
