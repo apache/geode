@@ -19,7 +19,7 @@ import java.util.*;
 import org.apache.geode.distributed.Role;
 import org.apache.geode.internal.Assert;
 import org.apache.geode.internal.cache.DistributedRegion;
-import org.apache.geode.internal.cache.LocalRegion;
+import org.apache.geode.internal.cache.InternalRegion;
 import org.apache.geode.internal.i18n.LocalizedStrings;
 
 /**
@@ -53,7 +53,7 @@ public class RequiredRoles {
       // This could happen if we were in an interrupted state
       // upon method entry
       Thread.currentThread().interrupt();
-      ((LocalRegion) region).getCancelCriterion().checkCancelInProgress(ie);
+      ((InternalRegion) region).getCancelCriterion().checkCancelInProgress(ie);
       Assert.assertTrue(false, "checkForRequiredRoles cannot throw InterruptedException");
       return Collections.emptySet(); // keep compiler happy
     }

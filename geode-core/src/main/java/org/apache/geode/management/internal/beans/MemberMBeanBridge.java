@@ -1193,11 +1193,11 @@ public class MemberMBeanBridge {
    * @return list of regions
    */
   public String[] getListOfRegions() {
-    Set<LocalRegion> listOfAppRegions = cache.getApplicationRegions();
+    Set<InternalRegion> listOfAppRegions = cache.getApplicationRegions();
     if (listOfAppRegions != null && listOfAppRegions.size() > 0) {
       String[] regionStr = new String[listOfAppRegions.size()];
       int j = 0;
-      for (LocalRegion rg : listOfAppRegions) {
+      for (InternalRegion rg : listOfAppRegions) {
         regionStr[j] = rg.getFullPath();
         j++;
       }

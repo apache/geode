@@ -137,7 +137,8 @@ public class ClientTXStateStub extends TXStateStub {
       if (ServerRegionOperation.lockKeyForTx(txOp.getOperation())) {
         TXRegionLockRequest rlr = lockReq.getRegionLockRequest(txOp.getRegionName());
         if (rlr == null) {
-          rlr = createTXRegionLockRequestImpl(cache, cache.getRegionByPath(txOp.getRegionName()));
+          rlr = createTXRegionLockRequestImpl(cache,
+              (LocalRegion) cache.getRegionByPath(txOp.getRegionName()));
           lockReq.addLocalRequest(rlr);
         }
         if (txOp.getOperation() == ServerRegionOperation.PUT_ALL

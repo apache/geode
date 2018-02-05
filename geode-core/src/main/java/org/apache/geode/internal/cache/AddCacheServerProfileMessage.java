@@ -95,7 +95,7 @@ public class AddCacheServerProfileMessage extends SerialDistributionMessage
   public void operateOnLocalCache(InternalCache cache) {
     int oldLevel = LocalRegion.setThreadInitLevelRequirement(LocalRegion.BEFORE_INITIAL_IMAGE);
     try {
-      for (LocalRegion r : getAllRegions(cache)) {
+      for (InternalRegion r : getAllRegions(cache)) {
         FilterProfile fp = r.getFilterProfile();
         if (fp != null) {
           fp.getLocalProfile().hasCacheServer = true;
@@ -113,13 +113,13 @@ public class AddCacheServerProfileMessage extends SerialDistributionMessage
   }
 
 
-  private Set<LocalRegion> getAllRegions(InternalCache internalCache) {
+  private Set<InternalRegion> getAllRegions(InternalCache internalCache) {
     return internalCache.getAllRegions();
   }
 
   private Set<DistributedRegion> getDistributedRegions(InternalCache internalCache) {
     Set<DistributedRegion> result = new HashSet<>();
-    for (LocalRegion r : internalCache.getAllRegions()) {
+    for (InternalRegion r : internalCache.getAllRegions()) {
       if (r instanceof DistributedRegion) {
         result.add((DistributedRegion) r);
       }

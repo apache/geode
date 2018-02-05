@@ -117,7 +117,7 @@ public interface InternalCache extends Cache, Extensible<Cache>, CacheTime {
 
   void regionReinitialized(Region region);
 
-  void setRegionByPath(String path, LocalRegion r);
+  void setRegionByPath(String path, InternalRegion r);
 
   InternalResourceManager getInternalResourceManager();
 
@@ -127,14 +127,14 @@ public interface InternalCache extends Cache, Extensible<Cache>, CacheTime {
 
   boolean requiresNotificationFromPR(PartitionedRegion r);
 
-  <K, V> RegionAttributes<K, V> invokeRegionBefore(LocalRegion parent, String name,
+  <K, V> RegionAttributes<K, V> invokeRegionBefore(InternalRegion parent, String name,
       RegionAttributes<K, V> attrs, InternalRegionArguments internalRegionArgs);
 
-  void invokeRegionAfter(LocalRegion region);
+  void invokeRegionAfter(InternalRegion region);
 
-  void invokeBeforeDestroyed(LocalRegion region);
+  void invokeBeforeDestroyed(InternalRegion region);
 
-  void invokeCleanupFailedInitialization(LocalRegion region);
+  void invokeCleanupFailedInitialization(InternalRegion region);
 
   TXManagerImpl getTXMgr();
 
@@ -156,11 +156,11 @@ public interface InternalCache extends Cache, Extensible<Cache>, CacheTime {
 
   void unregisterReinitializingRegion(String fullPath);
 
-  boolean removeRoot(LocalRegion rootRgn);
+  boolean removeRoot(InternalRegion rootRgn);
 
   Executor getEventThreadPool();
 
-  LocalRegion getReinitializingRegion(String fullPath);
+  InternalRegion getReinitializingRegion(String fullPath);
 
   boolean keepDurableSubscriptionsAlive();
 
@@ -190,7 +190,7 @@ public interface InternalCache extends Cache, Extensible<Cache>, CacheTime {
 
   List<File> getBackupFiles();
 
-  LocalRegion getRegionByPath(String path);
+  InternalRegion getRegionByPath(String path);
 
   boolean isClient();
 
@@ -263,7 +263,7 @@ public interface InternalCache extends Cache, Extensible<Cache>, CacheTime {
 
   Set<Region<?, ?>> rootRegions(boolean includePRAdminRegions);
 
-  Set<LocalRegion> getAllRegions();
+  Set<InternalRegion> getAllRegions();
 
   DistributedRegion getRegionInDestroy(String path);
 
@@ -273,7 +273,7 @@ public interface InternalCache extends Cache, Extensible<Cache>, CacheTime {
 
   void close(String reason, Throwable optionalCause);
 
-  LocalRegion getRegionByPathForProcessing(String path);
+  InternalRegion getRegionByPathForProcessing(String path);
 
   List getCacheServersAndGatewayReceiver();
 
@@ -291,7 +291,7 @@ public interface InternalCache extends Cache, Extensible<Cache>, CacheTime {
 
   InternalLogWriter getSecurityInternalLogWriter();
 
-  Set<LocalRegion> getApplicationRegions();
+  Set<InternalRegion> getApplicationRegions();
 
   void removeGatewaySender(GatewaySender sender);
 
@@ -334,7 +334,7 @@ public interface InternalCache extends Cache, Extensible<Cache>, CacheTime {
   void shutDownAll();
 
   void invokeRegionEntrySynchronizationListenersAfterSynchronization(
-      InternalDistributedMember sender, LocalRegion region,
+      InternalDistributedMember sender, InternalRegion region,
       List<InitialImageOperation.Entry> entriesToSynchronize);
 
   InternalQueryService getQueryService();

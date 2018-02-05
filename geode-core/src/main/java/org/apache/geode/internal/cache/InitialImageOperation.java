@@ -1479,7 +1479,7 @@ public class InitialImageOperation {
             regionPath, initLevel);
       }
       InternalCache cache = dm.getCache();
-      lclRgn = cache == null ? null : cache.getRegionByPath(regionPath);
+      lclRgn = cache == null ? null : (LocalRegion) cache.getRegionByPath(regionPath);
       // if this is a targeted getInitialImage after a region was initialized,
       // make sure this is the region that was reinitialized.
       if (lclRgn != null && !lclRgn.isUsedForPartitionedRegionBucket() && targetReinitialized
@@ -2231,7 +2231,7 @@ public class InitialImageOperation {
     protected void process(final ClusterDistributionManager dm) {
       Throwable thr = null;
       boolean sendFailureMessage = true;
-      LocalRegion lclRgn = null;
+      InternalRegion lclRgn = null;
       ReplyException rex = null;
       try {
         Assert.assertTrue(this.regionPath != null, "Region path is null.");
@@ -2284,7 +2284,7 @@ public class InitialImageOperation {
           if (rex == null) {
             rex = new ReplyException("Failed to process filter info request.");
           }
-          FilterInfoMessage.send(dm, getSender(), this.processorId, lclRgn, rex);
+          FilterInfoMessage.send(dm, getSender(), this.processorId, (LocalRegion) lclRgn, rex);
         } // !success
       }
     }
