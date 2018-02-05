@@ -721,15 +721,7 @@ public class ClientHealthMonitor {
     boolean timedOut(long current, long lastHeartbeat, long interval);
   }
 
-  public void testFailAllHeartbeats() {
-    _clientMonitor.overrideHeartbeatTimeoutCheck((a, b, c) -> true);
-  }
-
-  public void testPassAllHeartbeats() {
-    _clientMonitor.overrideHeartbeatTimeoutCheck((a, b, c) -> false);
-  }
-
-  public void testUseCustomHeartbeatCheck(HeartbeatTimeoutCheck check) {
+  void testUseCustomHeartbeatCheck(HeartbeatTimeoutCheck check) {
     _clientMonitor.overrideHeartbeatTimeoutCheck(check);
   }
 

@@ -56,7 +56,7 @@ public class ClientHealthMonitorJUnitTest {
 
     clientHealthMonitor.addConnection(mockId, mockConnection);
     clientHealthMonitor.receivedPing(mockId);
-    clientHealthMonitor.testFailAllHeartbeats();
+    clientHealthMonitor.testUseCustomHeartbeatCheck((a, b, c) -> true); // Fail all heartbeats
 
     Awaitility.await().atMost(10, TimeUnit.SECONDS)
         .until(() -> verify(mockConnection).handleTermination(true));
