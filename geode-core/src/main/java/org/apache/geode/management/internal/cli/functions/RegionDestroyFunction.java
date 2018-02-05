@@ -14,26 +14,20 @@
  */
 package org.apache.geode.management.internal.cli.functions;
 
-import java.util.Collection;
-import java.util.Collections;
-
 import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.Region;
 import org.apache.geode.cache.RegionDestroyedException;
-import org.apache.geode.cache.execute.Function;
 import org.apache.geode.cache.execute.FunctionContext;
-import org.apache.geode.internal.InternalEntity;
+import org.apache.geode.internal.cache.execute.InternalFunction;
 import org.apache.geode.internal.cache.xmlcache.CacheXml;
 import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.management.internal.configuration.domain.XmlEntity;
-import org.apache.geode.management.internal.security.ResourcePermissions;
-import org.apache.geode.security.ResourcePermission;
 
 /**
  *
  * @since GemFire 7.0
  */
-public class RegionDestroyFunction implements Function, InternalEntity {
+public class RegionDestroyFunction implements InternalFunction {
   private static final long serialVersionUID = 9172773671865750685L;
 
   public static final RegionDestroyFunction INSTANCE = new RegionDestroyFunction();
@@ -89,11 +83,6 @@ public class RegionDestroyFunction implements Function, InternalEntity {
       LogService.getLogger().error(ex.getMessage(), ex);
       context.getResultSender().lastResult(new CliFunctionResult(memberName, ex, ex.getMessage()));
     }
-  }
-
-  @Override
-  public Collection<ResourcePermission> getRequiredPermissions(String regionName) {
-    return Collections.singleton(ResourcePermissions.DATA_MANAGE);
   }
 
   @Override

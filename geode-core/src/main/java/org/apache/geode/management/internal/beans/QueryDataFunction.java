@@ -53,6 +53,7 @@ import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.cache.LocalDataSet;
 import org.apache.geode.internal.cache.PartitionedRegion;
 import org.apache.geode.internal.cache.PartitionedRegionHelper;
+import org.apache.geode.internal.cache.execute.InternalFunction;
 import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.management.DistributedRegionMXBean;
 import org.apache.geode.management.ManagementService;
@@ -486,7 +487,7 @@ public class QueryDataFunction implements Function, InternalEntity {
   /**
    * Function to gather data locally. This function is required to execute query with region context
    */
-  private class LocalQueryFunction implements Function, InternalEntity {
+  private class LocalQueryFunction implements InternalFunction {
 
     private static final long serialVersionUID = 1L;
 

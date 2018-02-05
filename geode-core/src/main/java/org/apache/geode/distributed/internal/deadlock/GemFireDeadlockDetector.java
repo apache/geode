@@ -20,7 +20,6 @@ import java.util.Set;
 import java.util.concurrent.TimeUnit;
 
 import org.apache.geode.cache.execute.Execution;
-import org.apache.geode.cache.execute.Function;
 import org.apache.geode.cache.execute.FunctionContext;
 import org.apache.geode.cache.execute.FunctionException;
 import org.apache.geode.cache.execute.FunctionService;
@@ -28,8 +27,8 @@ import org.apache.geode.cache.execute.ResultCollector;
 import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
-import org.apache.geode.internal.InternalEntity;
 import org.apache.geode.internal.cache.execute.AbstractExecution;
+import org.apache.geode.internal.cache.execute.InternalFunction;
 
 /**
  * This class uses gemfire function execution to get the dependencies between threads present in
@@ -103,7 +102,7 @@ public class GemFireDeadlockDetector {
     return detector.getDependencyGraph();
   }
 
-  private static class CollectDependencyFunction implements Function, InternalEntity {
+  private static class CollectDependencyFunction implements InternalFunction {
 
     private static final long serialVersionUID = 6204378622627095817L;
 

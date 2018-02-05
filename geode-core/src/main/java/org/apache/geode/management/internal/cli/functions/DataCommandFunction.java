@@ -15,7 +15,6 @@
 package org.apache.geode.management.internal.cli.functions;
 
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
@@ -29,7 +28,6 @@ import org.json.JSONArray;
 
 import org.apache.geode.cache.DataPolicy;
 import org.apache.geode.cache.Region;
-import org.apache.geode.cache.execute.Function;
 import org.apache.geode.cache.execute.FunctionContext;
 import org.apache.geode.cache.partition.PartitionRegionHelper;
 import org.apache.geode.cache.query.FunctionDomainException;
@@ -48,10 +46,10 @@ import org.apache.geode.cache.query.internal.StructImpl;
 import org.apache.geode.cache.query.internal.Undefined;
 import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.internal.ClassPathLoader;
-import org.apache.geode.internal.InternalEntity;
 import org.apache.geode.internal.NanoTimer;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.cache.PartitionedRegion;
+import org.apache.geode.internal.cache.execute.InternalFunction;
 import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.internal.security.SecurityService;
 import org.apache.geode.management.internal.cli.domain.DataCommandRequest;
@@ -61,14 +59,12 @@ import org.apache.geode.management.internal.cli.i18n.CliStrings;
 import org.apache.geode.management.internal.cli.json.GfJsonException;
 import org.apache.geode.management.internal.cli.json.GfJsonObject;
 import org.apache.geode.management.internal.cli.util.JsonUtil;
-import org.apache.geode.management.internal.security.ResourcePermissions;
 import org.apache.geode.pdx.PdxInstance;
-import org.apache.geode.security.ResourcePermission;
 
 /**
  * @since GemFire 7.0
  */
-public class DataCommandFunction implements Function, InternalEntity {
+public class DataCommandFunction implements InternalFunction {
   private static final Logger logger = LogService.getLogger();
 
   private static final long serialVersionUID = 1L;
@@ -135,11 +131,6 @@ public class DataCommandFunction implements Function, InternalEntity {
       functionContext.getResultSender().sendException(e);
     }
   }
-
-  public Collection<ResourcePermission> getRequiredPermissions(String regionName) {
-    return Collections.singleton(ResourcePermissions.DATA_ALL);
-  }
-
 
   public DataCommandResult remove(DataCommandRequest request, InternalCache cache) {
     String key = request.getKey();
