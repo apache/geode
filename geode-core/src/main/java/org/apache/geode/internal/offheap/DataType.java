@@ -21,15 +21,10 @@ import java.io.IOException;
 
 import org.apache.geode.DataSerializer;
 import org.apache.geode.Instantiator;
-import org.apache.geode.cache.CacheClosedException;
 import org.apache.geode.internal.DSCODE;
 import org.apache.geode.internal.DSFIDFactory;
 import org.apache.geode.internal.InternalDataSerializer;
 import org.apache.geode.internal.InternalInstantiator;
-import org.apache.geode.internal.cache.GemFireCacheImpl;
-import org.apache.geode.internal.cache.InternalCache;
-import org.apache.geode.pdx.internal.EnumInfo;
-import org.apache.geode.pdx.internal.PdxType;
 
 /**
  * Determines the data type of the bytes in an off-heap MemoryBlock. This is used by the tests for
@@ -200,30 +195,12 @@ public class DataType implements DSCODE {
         }
         case PDX: {
           int typeId = in.readInt();
-          try {
-            InternalCache gfc = GemFireCacheImpl
-                .getForPdx("PDX registry is unavailable because the Cache has been closed.");
-            PdxType pdxType = gfc.getPdxRegistry().getType(typeId);
-            if (pdxType == null) { // fix 52164
-              return "org.apache.geode.pdx.PdxInstance: unknown id=" + typeId;
-            }
-            return "org.apache.geode.pdx.PdxInstance:" + pdxType.getClassName();
-          } catch (CacheClosedException e) {
-            return "org.apache.geode.pdx.PdxInstance:PdxRegistryClosed";
-          }
+          return "pdxType:" + typeId;
         }
         case PDX_ENUM: {
-          int dsId = in.readByte();
-          int tmp = InternalDataSerializer.readArrayLength(in);
-          int enumId = (dsId << 24) | (tmp & 0xFFFFFF);
-          try {
-            InternalCache gfc = GemFireCacheImpl
-                .getForPdx("PDX registry is unavailable because the Cache has been closed.");
-            EnumInfo enumInfo = gfc.getPdxRegistry().getEnumInfoById(enumId);
-            return "PdxRegistry/java.lang.Enum:" + enumInfo.getClassName();
-          } catch (CacheClosedException e) {
-            return "PdxRegistry/java.lang.Enum:PdxRegistryClosed";
-          }
+          in.readByte(); // dsId is not needed
+          int enumId = InternalDataSerializer.readArrayLength(in);
+          return "pdxEnum:" + enumId;
         }
         case GEMFIRE_ENUM: {
           String name = DataSerializer.readString(in);
