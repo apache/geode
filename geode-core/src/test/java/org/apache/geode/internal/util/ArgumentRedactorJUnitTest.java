@@ -110,10 +110,10 @@ public class ArgumentRedactorJUnitTest {
     assertThat(redact(arg)).endsWith("password=********");
 
     arg = "--password=foo";
-    assertThat("--password=********").isEqualToIgnoringWhitespace(redact(arg));
+    assertThat(redact(arg)).isEqualToIgnoringWhitespace("--password=********");
 
     arg = "-Dgemfire.security-properties=\"c:\\Program Files (x86)\\My Folder\"";
-    assertEquals(arg, (redact(arg)));
+    assertThat(redact(arg)).isEqualTo(arg);
   }
 
   @Test
@@ -143,11 +143,11 @@ public class ArgumentRedactorJUnitTest {
   public void wholeLinesAreProperlyRedacted() {
     String arg;
     arg = "-DmyArg -Duser-password=foo --classpath=.";
-    assertEquals("-DmyArg -Duser-password=******** --classpath=.", redact(arg));
+    assertThat(redact(arg)).isEqualTo("-DmyArg -Duser-password=******** --classpath=.");
 
     arg = "-DmyArg -Duser-password=foo -DOtherArg -Dsystem-password=bar";
-    assertEquals("-DmyArg -Duser-password=******** -DOtherArg -Dsystem-password=********",
-        redact(arg));
+    assertThat(redact(arg))
+        .isEqualTo("-DmyArg -Duser-password=******** -DOtherArg -Dsystem-password=********");
 
     arg =
         "-Dlogin-password=secret -Dlogin-name=admin -Dgemfire-password = super-secret --geode-password= confidential -J-Dsome-other-password =shhhh";
