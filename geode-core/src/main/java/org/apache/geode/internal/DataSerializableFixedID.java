@@ -37,9 +37,9 @@ import org.apache.geode.Instantiator;
  * To add a new DataSerializableFixedID do this following:
  * <ol>
  * <li>Define a constant with an id that is free and put it in <code>DataSerializableFixedID</code>
- * as a "byte". Make sure and update the "unused" comments to no longer mention
- * your new id. If implementing a class used only for tests then there is no need to consume a fixed
- * id and you should use {@link #NO_FIXED_ID}. In this case you can skip steps 3 and 4.
+ * as a "byte". Make sure and update the "unused" comments to no longer mention your new id. If
+ * implementing a class used only for tests then there is no need to consume a fixed id and you
+ * should use {@link #NO_FIXED_ID}. In this case you can skip steps 3 and 4.
  * <li>Define a method in the class that implements <code>DataSerializableFixedID</code> named
  * {@link #getDSFID} that returns the constant from step 1.
  * <li>Define a private static method in {@link DSFIDFactory} that returns an instance of the class
@@ -835,7 +835,7 @@ public interface DataSerializableFixedID extends SerializationVersions {
   /**
    * Returns the DataSerializer fixed id for the class that implements this method.
    */
-  public int getDSFID();
+  int getDSFID();
 
   /**
    * Writes the state of this object as primitive data to the given <code>DataOutput</code>.<br>
@@ -848,7 +848,7 @@ public interface DataSerializableFixedID extends SerializationVersions {
    *
    * @throws IOException A problem occurs while writing to <code>out</code>
    */
-  public void toData(DataOutput out) throws IOException;
+  void toData(DataOutput out) throws IOException;
 
   /**
    * Reads the state of this object as primitive data from the given <code>DataInput</code>. <br>
@@ -863,7 +863,7 @@ public interface DataSerializableFixedID extends SerializationVersions {
    * @throws IOException A problem occurs while reading from <code>in</code>
    * @throws ClassNotFoundException A class could not be loaded while reading from <code>in</code>
    */
-  public void fromData(DataInput in) throws IOException, ClassNotFoundException;
+  void fromData(DataInput in) throws IOException, ClassNotFoundException;
 
 
 }
