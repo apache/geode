@@ -216,12 +216,16 @@ public class PartitionedRegionBucketCreationDistributionDUnitTest extends CacheT
     asyncInvocations.clear();
 
     invokeAsync(vm0, () -> putFromOneVm(regionOne, firstKey, lastKey));
-    invokeAsync(vm0, () -> putFromOneVm(regionOne, firstKey + numberOfBuckets, lastKey + numberOfBuckets));
-    invokeAsync(vm0, () -> putFromOneVm(regionOne, firstKey + 2 * numberOfBuckets, lastKey + 2 * numberOfBuckets));
+    invokeAsync(vm0,
+        () -> putFromOneVm(regionOne, firstKey + numberOfBuckets, lastKey + numberOfBuckets));
+    invokeAsync(vm0, () -> putFromOneVm(regionOne, firstKey + 2 * numberOfBuckets,
+        lastKey + 2 * numberOfBuckets));
 
     invokeAsync(vm0, () -> putFromOneVm(regionTwo, firstKey, lastKey));
-    invokeAsync(vm0, () -> putFromOneVm(regionTwo, firstKey + numberOfBuckets, lastKey + numberOfBuckets));
-    invokeAsync(vm0, () -> putFromOneVm(regionTwo, firstKey + 2 * numberOfBuckets, lastKey + 2 * numberOfBuckets));
+    invokeAsync(vm0,
+        () -> putFromOneVm(regionTwo, firstKey + numberOfBuckets, lastKey + numberOfBuckets));
+    invokeAsync(vm0, () -> putFromOneVm(regionTwo, firstKey + 2 * numberOfBuckets,
+        lastKey + 2 * numberOfBuckets));
 
     awaitAllAsyncInvocations();
 
@@ -270,36 +274,52 @@ public class PartitionedRegionBucketCreationDistributionDUnitTest extends CacheT
     asyncInvocations.clear();
 
     invokeAsync(vm0, () -> putFromOneVm(regionOne, firstKey, lastKey));
-    invokeAsync(vm0, () -> putFromOneVm(regionOne, firstKey + numberOfBuckets, lastKey + numberOfBuckets));
-    invokeAsync(vm0, () -> putFromOneVm(regionOne, firstKey + 2 * numberOfBuckets, lastKey + 2 * numberOfBuckets));
+    invokeAsync(vm0,
+        () -> putFromOneVm(regionOne, firstKey + numberOfBuckets, lastKey + numberOfBuckets));
+    invokeAsync(vm0, () -> putFromOneVm(regionOne, firstKey + 2 * numberOfBuckets,
+        lastKey + 2 * numberOfBuckets));
 
     invokeAsync(vm1, () -> putFromOneVm(regionOne, firstKey, lastKey));
-    invokeAsync(vm1, () -> putFromOneVm(regionOne, firstKey + numberOfBuckets, lastKey + numberOfBuckets));
-    invokeAsync(vm1, () -> putFromOneVm(regionOne, firstKey + 2 * numberOfBuckets, lastKey + 2 * numberOfBuckets));
+    invokeAsync(vm1,
+        () -> putFromOneVm(regionOne, firstKey + numberOfBuckets, lastKey + numberOfBuckets));
+    invokeAsync(vm1, () -> putFromOneVm(regionOne, firstKey + 2 * numberOfBuckets,
+        lastKey + 2 * numberOfBuckets));
 
     invokeAsync(vm2, () -> putFromOneVm(regionOne, firstKey, lastKey));
-    invokeAsync(vm2, () -> putFromOneVm(regionOne, firstKey + numberOfBuckets, lastKey + numberOfBuckets));
-    invokeAsync(vm2, () -> putFromOneVm(regionOne, firstKey + 2 * numberOfBuckets, lastKey + 2 * numberOfBuckets));
+    invokeAsync(vm2,
+        () -> putFromOneVm(regionOne, firstKey + numberOfBuckets, lastKey + numberOfBuckets));
+    invokeAsync(vm2, () -> putFromOneVm(regionOne, firstKey + 2 * numberOfBuckets,
+        lastKey + 2 * numberOfBuckets));
 
     invokeAsync(vm3, () -> putFromOneVm(regionOne, firstKey, lastKey));
-    invokeAsync(vm3, () -> putFromOneVm(regionOne, firstKey + numberOfBuckets, lastKey + numberOfBuckets));
-    invokeAsync(vm3, () -> putFromOneVm(regionOne, firstKey + 2 * numberOfBuckets, lastKey + 2 * numberOfBuckets));
+    invokeAsync(vm3,
+        () -> putFromOneVm(regionOne, firstKey + numberOfBuckets, lastKey + numberOfBuckets));
+    invokeAsync(vm3, () -> putFromOneVm(regionOne, firstKey + 2 * numberOfBuckets,
+        lastKey + 2 * numberOfBuckets));
 
     invokeAsync(vm0, () -> putFromOneVm(regionTwo, firstKey, lastKey));
-    invokeAsync(vm0, () -> putFromOneVm(regionTwo, firstKey + numberOfBuckets, lastKey + numberOfBuckets));
-    invokeAsync(vm0, () -> putFromOneVm(regionTwo, firstKey + 2 * numberOfBuckets, lastKey + 2 * numberOfBuckets));
+    invokeAsync(vm0,
+        () -> putFromOneVm(regionTwo, firstKey + numberOfBuckets, lastKey + numberOfBuckets));
+    invokeAsync(vm0, () -> putFromOneVm(regionTwo, firstKey + 2 * numberOfBuckets,
+        lastKey + 2 * numberOfBuckets));
 
     invokeAsync(vm1, () -> putFromOneVm(regionTwo, firstKey, lastKey));
-    invokeAsync(vm1, () -> putFromOneVm(regionTwo, firstKey + numberOfBuckets, lastKey + numberOfBuckets));
-    invokeAsync(vm1, () -> putFromOneVm(regionTwo, firstKey + 2 * numberOfBuckets, lastKey + 2 * numberOfBuckets));
+    invokeAsync(vm1,
+        () -> putFromOneVm(regionTwo, firstKey + numberOfBuckets, lastKey + numberOfBuckets));
+    invokeAsync(vm1, () -> putFromOneVm(regionTwo, firstKey + 2 * numberOfBuckets,
+        lastKey + 2 * numberOfBuckets));
 
     invokeAsync(vm2, () -> putFromOneVm(regionTwo, firstKey, lastKey));
-    invokeAsync(vm2, () -> putFromOneVm(regionTwo, firstKey + numberOfBuckets, lastKey + numberOfBuckets));
-    invokeAsync(vm2, () -> putFromOneVm(regionTwo, firstKey + 2 * numberOfBuckets, lastKey + 2 * numberOfBuckets));
+    invokeAsync(vm2,
+        () -> putFromOneVm(regionTwo, firstKey + numberOfBuckets, lastKey + numberOfBuckets));
+    invokeAsync(vm2, () -> putFromOneVm(regionTwo, firstKey + 2 * numberOfBuckets,
+        lastKey + 2 * numberOfBuckets));
 
     invokeAsync(vm3, () -> putFromOneVm(regionTwo, firstKey, lastKey));
-    invokeAsync(vm3, () -> putFromOneVm(regionTwo, firstKey + numberOfBuckets, lastKey + numberOfBuckets));
-    invokeAsync(vm3, () -> putFromOneVm(regionTwo, firstKey + 2 * numberOfBuckets, lastKey + 2 * numberOfBuckets));
+    invokeAsync(vm3,
+        () -> putFromOneVm(regionTwo, firstKey + numberOfBuckets, lastKey + numberOfBuckets));
+    invokeAsync(vm3, () -> putFromOneVm(regionTwo, firstKey + 2 * numberOfBuckets,
+        lastKey + 2 * numberOfBuckets));
 
     awaitAllAsyncInvocations();
 
@@ -325,15 +345,13 @@ public class PartitionedRegionBucketCreationDistributionDUnitTest extends CacheT
    * DISTRIBUTED_NO_ACK
    *
    * <p>
-   * 2. Performs Put() operation from 3 the vms for the keys startIndexForRgion to
-   * enIndexForRegion
+   * 2. Performs Put() operation from 3 the vms for the keys startIndexForRgion to enIndexForRegion
    *
    * <p>
    * 3. Creates partition region on new node
    *
    * <p>
-   * 4. Performs Put() operation from 3 the vms for the keys firstRegion to
-   * enIndexForRegion.
+   * 4. Performs Put() operation from 3 the vms for the keys firstRegion to enIndexForRegion.
    *
    * <p>
    * 5. Validate bucket creation on new node.
@@ -356,11 +374,13 @@ public class PartitionedRegionBucketCreationDistributionDUnitTest extends CacheT
     asyncInvocations.clear();
 
     invokeAsync(vm0, () -> putInMultiplePartitionRegion(regionOne, firstKey, firstKey + 1 * delta));
-    invokeAsync(vm1, () -> putInMultiplePartitionRegion(regionOne, firstKey + 1 * delta, firstKey + 2 * delta));
+    invokeAsync(vm1,
+        () -> putInMultiplePartitionRegion(regionOne, firstKey + 1 * delta, firstKey + 2 * delta));
     invokeAsync(vm2, () -> putInMultiplePartitionRegion(regionOne, firstKey + 2 * delta, lastKey));
 
     invokeAsync(vm0, () -> putInMultiplePartitionRegion(regionTwo, firstKey, firstKey + 1 * delta));
-    invokeAsync(vm1, () -> putInMultiplePartitionRegion(regionTwo, firstKey + 1 * delta, firstKey + 2 * delta));
+    invokeAsync(vm1,
+        () -> putInMultiplePartitionRegion(regionTwo, firstKey + 1 * delta, firstKey + 2 * delta));
     invokeAsync(vm2, () -> putInMultiplePartitionRegion(regionTwo, firstKey + 2 * delta, lastKey));
 
     awaitAllAsyncInvocations();
@@ -375,11 +395,13 @@ public class PartitionedRegionBucketCreationDistributionDUnitTest extends CacheT
     asyncInvocations.clear();
 
     invokeAsync(vm0, () -> putInMultiplePartitionRegion(regionOne, firstKey, firstKey + 1 * delta));
-    invokeAsync(vm1, () -> putInMultiplePartitionRegion(regionOne, firstKey + 1 * delta, firstKey + 2 * delta));
+    invokeAsync(vm1,
+        () -> putInMultiplePartitionRegion(regionOne, firstKey + 1 * delta, firstKey + 2 * delta));
     invokeAsync(vm2, () -> putInMultiplePartitionRegion(regionOne, firstKey + 2 * delta, lastKey));
 
     invokeAsync(vm0, () -> putInMultiplePartitionRegion(regionTwo, firstKey, firstKey + 1 * delta));
-    invokeAsync(vm1, () -> putInMultiplePartitionRegion(regionTwo, firstKey + 1 * delta, firstKey + 2 * delta));
+    invokeAsync(vm1,
+        () -> putInMultiplePartitionRegion(regionTwo, firstKey + 1 * delta, firstKey + 2 * delta));
     invokeAsync(vm2, () -> putInMultiplePartitionRegion(regionTwo, firstKey + 2 * delta, lastKey));
 
     awaitAllAsyncInvocations();
@@ -429,12 +451,16 @@ public class PartitionedRegionBucketCreationDistributionDUnitTest extends CacheT
     asyncInvocations.clear();
 
     invokeAsync(vm0, () -> putFromOneVm(regionOne, firstKey, lastKey));
-    invokeAsync(vm0, () -> putFromOneVm(regionOne, firstKey + numberOfBuckets, lastKey + numberOfBuckets));
-    invokeAsync(vm0, () -> putFromOneVm(regionOne, firstKey + 2 * numberOfBuckets, lastKey + 2 * numberOfBuckets));
+    invokeAsync(vm0,
+        () -> putFromOneVm(regionOne, firstKey + numberOfBuckets, lastKey + numberOfBuckets));
+    invokeAsync(vm0, () -> putFromOneVm(regionOne, firstKey + 2 * numberOfBuckets,
+        lastKey + 2 * numberOfBuckets));
 
     invokeAsync(vm0, () -> putFromOneVm(regionTwo, firstKey, lastKey));
-    invokeAsync(vm0, () -> putFromOneVm(regionTwo, firstKey + numberOfBuckets, lastKey + numberOfBuckets));
-    invokeAsync(vm0, () -> putFromOneVm(regionTwo, firstKey + 2 * numberOfBuckets, lastKey + 2 * numberOfBuckets));
+    invokeAsync(vm0,
+        () -> putFromOneVm(regionTwo, firstKey + numberOfBuckets, lastKey + numberOfBuckets));
+    invokeAsync(vm0, () -> putFromOneVm(regionTwo, firstKey + 2 * numberOfBuckets,
+        lastKey + 2 * numberOfBuckets));
 
     awaitAllAsyncInvocations();
 
@@ -482,7 +508,7 @@ public class PartitionedRegionBucketCreationDistributionDUnitTest extends CacheT
     invokeAsync(vm3, () -> putFromOneVm(regionTwo, firstKey + 3 * delta2, lastKey));
 
     awaitAllAsyncInvocations();
-    
+
     vm0.invoke(() -> validateTotalNumberOfBuckets(regionOne, expectedNumberOfBuckets));
     vm1.invoke(() -> validateTotalNumberOfBuckets(regionOne, expectedNumberOfBuckets));
     vm2.invoke(() -> validateTotalNumberOfBuckets(regionOne, expectedNumberOfBuckets));
@@ -544,14 +570,15 @@ public class PartitionedRegionBucketCreationDistributionDUnitTest extends CacheT
   private void validateBucketCreationAfterPut(final String regionName) {
     Cache cache = getCache();
     Region prRoot = cache.getRegion(PR_ROOT_REGION_NAME);
-    Region region =  cache.getRegion(regionName);
+    Region region = cache.getRegion(regionName);
     PartitionedRegion partitionedRegion = (PartitionedRegion) region;
 
     RegionAdvisor regionAdvisor = partitionedRegion.getRegionAdvisor();
     assertThat(regionAdvisor.getBucketSet().size()).isGreaterThan(0);
 
     PartitionedRegionDataStore dataStore = partitionedRegion.getDataStore();
-    ConcurrentMap<Integer, BucketRegion> localBucket2RegionMap = dataStore.getLocalBucket2RegionMap();
+    ConcurrentMap<Integer, BucketRegion> localBucket2RegionMap =
+        dataStore.getLocalBucket2RegionMap();
     assertThat(localBucket2RegionMap.size()).isGreaterThan(0);
 
     // taking the buckets which are local to the node and not all the available buckets.
@@ -601,7 +628,8 @@ public class PartitionedRegionBucketCreationDistributionDUnitTest extends CacheT
     assertThat(bucketSetSize).isEqualTo(0);
   }
 
-  private void validateBucketsDistribution(final String regionName, final int expectedNumberOfBuckets) {
+  private void validateBucketsDistribution(final String regionName,
+      final int expectedNumberOfBuckets) {
     InternalCache cache = getCache();
     Region prRoot = cache.getRegion(PR_ROOT_REGION_NAME);
 
@@ -620,7 +648,8 @@ public class PartitionedRegionBucketCreationDistributionDUnitTest extends CacheT
     });
   }
 
-  private void createPartitionRegion(final String regionName, final int localMaxMemory, final int redundancy, final int numberOfBuckets) {
+  private void createPartitionRegion(final String regionName, final int localMaxMemory,
+      final int redundancy, final int numberOfBuckets) {
     Cache cache = getCache();
 
     PartitionAttributesFactory partitionAttributesFactory = new PartitionAttributesFactory();
@@ -634,7 +663,8 @@ public class PartitionedRegionBucketCreationDistributionDUnitTest extends CacheT
     regionFactory.create(regionName);
   }
 
-  private void validateTotalNumberOfBuckets(final String regionName, final int expectedNumberOfBuckets) {
+  private void validateTotalNumberOfBuckets(final String regionName,
+      final int expectedNumberOfBuckets) {
     Cache cache = getCache();
     Region region = cache.getRegion(regionName);
     PartitionedRegion partitionedRegion = (PartitionedRegion) region;
@@ -647,7 +677,8 @@ public class PartitionedRegionBucketCreationDistributionDUnitTest extends CacheT
     return (numberOfBuckets / 4) - 1;
   }
 
-  private void putInMultiplePartitionRegion(final String regionName, final int firstKey, final int lastKey) {
+  private void putInMultiplePartitionRegion(final String regionName, final int firstKey,
+      final int lastKey) {
     Region<String, String> region = getCache().getRegion(regionName);
     for (int i = firstKey; i < lastKey; i++) {
       region.put(i + regionName + i, regionName + i);

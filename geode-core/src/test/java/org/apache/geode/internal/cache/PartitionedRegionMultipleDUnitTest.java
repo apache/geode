@@ -124,8 +124,7 @@ public class PartitionedRegionMultipleDUnitTest extends CacheTestCase {
         assertTrue(region.containsValue(TEST_REGION + i));
         // pass
       } else {
-        fail("Validation failed for key = " + TEST_REGION + i + "Value got = "
-            + val);
+        fail("Validation failed for key = " + TEST_REGION + i + "Value got = " + val);
       }
     }
 
@@ -162,14 +161,13 @@ public class PartitionedRegionMultipleDUnitTest extends CacheTestCase {
 
   private void createPartitionRegion() {
     System.setProperty(PartitionedRegion.RETRY_TIMEOUT_PROPERTY, RETRY_TIMEOUT_VALUE);
-    getCache().createRegion(TEST_REGION,
-        createRegionAttrsForPR(REDUNDANCY, LOCAL_MAX_MEMORY,
-            PartitionAttributesFactory.RECOVERY_DELAY_DEFAULT));
+    getCache().createRegion(TEST_REGION, createRegionAttrsForPR(REDUNDANCY, LOCAL_MAX_MEMORY,
+        PartitionAttributesFactory.RECOVERY_DELAY_DEFAULT));
   }
 
   protected RegionAttributes<?, ?> createRegionAttrsForPR(int red, int localMaxMem,
       long recoveryDelay) {
-    return PartitionedRegionTestHelper.createRegionAttrsForPR(red, localMaxMem, recoveryDelay,
-        null, null);
+    return PartitionedRegionTestHelper.createRegionAttrsForPR(red, localMaxMem, recoveryDelay, null,
+        null);
   }
 }
