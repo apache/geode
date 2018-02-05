@@ -15,8 +15,6 @@
 package org.apache.geode.internal.lang;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
 
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
@@ -24,24 +22,24 @@ import org.junit.experimental.categories.Category;
 import org.apache.geode.test.junit.categories.UnitTest;
 
 @Category(UnitTest.class)
-public class SystemPropertyHelperJUnitTest {
+public class SystemPropertyHelperTest {
   private String restoreSetOperationTransactionBehavior = "restoreSetOperationTransactionBehavior";
 
   @Test
   public void testRestoreSetOperationTransactionBehaviorDefaultToFalse() {
-    assertFalse(SystemPropertyHelper.restoreSetOperationTransactionBehavior());
+    assertThat(SystemPropertyHelper.restoreSetOperationTransactionBehavior()).isFalse();
   }
 
   @Test
   public void testRestoreSetOperationTransactionBehaviorSystemProperty() {
     String gemfirePrefixProperty = "gemfire." + restoreSetOperationTransactionBehavior;
     System.setProperty(gemfirePrefixProperty, "true");
-    assertTrue(SystemPropertyHelper.restoreSetOperationTransactionBehavior());
+    assertThat(SystemPropertyHelper.restoreSetOperationTransactionBehavior()).isTrue();
     System.clearProperty(gemfirePrefixProperty);
 
     String geodePrefixProperty = "geode." + restoreSetOperationTransactionBehavior;
     System.setProperty(geodePrefixProperty, "true");
-    assertTrue(SystemPropertyHelper.restoreSetOperationTransactionBehavior());
+    assertThat(SystemPropertyHelper.restoreSetOperationTransactionBehavior()).isTrue();
     System.clearProperty(geodePrefixProperty);
   }
 
@@ -51,7 +49,7 @@ public class SystemPropertyHelperJUnitTest {
     String geodePrefixProperty = "geode." + restoreSetOperationTransactionBehavior;
     System.setProperty(geodePrefixProperty, "false");
     System.setProperty(gemfirePrefixProperty, "true");
-    assertFalse(SystemPropertyHelper.restoreSetOperationTransactionBehavior());
+    assertThat(SystemPropertyHelper.restoreSetOperationTransactionBehavior()).isFalse();
     System.clearProperty(geodePrefixProperty);
     System.clearProperty(gemfirePrefixProperty);
   }
@@ -78,8 +76,35 @@ public class SystemPropertyHelperJUnitTest {
   }
 
   @Test
-  public void getIntegerPropertyReturnsNullIfPropertiesMissing() {
-    String testProperty = "testIntegerProperty";
+  public void getIntegerPropertyReturnsEmptyOptionalIfPropertiesMissing() {
+    String testProperty = "notSetProperty";
     assertThat(SystemPropertyHelper.getProductIntegerProperty(testProperty).isPresent()).isFalse();
+  }
+
+  @Test
+  public void getBooleanPropertyReturnsEmptyOptionalIfProperiesMissing() {
+    String testProperty = "notSetProperty";
+    assertThat(SystemPropertyHelper.getProductBooleanProperty(testProperty).isPresent()).isFalse();
+  }
+
+  @Test
+  public void getBooleanPropertyPrefersGeodePrefix() {
+    String testProperty = "testBooleanProperty";
+    String gemfirePrefixProperty = "gemfire." + testProperty;
+    String geodePrefixProperty = "geode." + testProperty;
+    System.setProperty(geodePrefixProperty, "true");
+    System.setProperty(gemfirePrefixProperty, "false");
+    assertThat(SystemPropertyHelper.getProductBooleanProperty(testProperty).get()).isTrue();
+    System.clearProperty(geodePrefixProperty);
+    System.clearProperty(gemfirePrefixProperty);
+  }
+
+  @Test
+  public void getBooleanPropertyReturnsGemfirePrefixIfGeodeMissing() {
+    String testProperty = "testBooleanProperty";
+    String gemfirePrefixProperty = "gemfire." + testProperty;
+    System.setProperty(gemfirePrefixProperty, "true");
+    assertThat(SystemPropertyHelper.getProductBooleanProperty(testProperty).get()).isTrue();
+    System.clearProperty(gemfirePrefixProperty);
   }
 }
