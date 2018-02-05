@@ -56,12 +56,21 @@ public class ClientHealthMonitorJUnitTest {
 
     clientHealthMonitor.addConnection(mockId, mockConnection);
     clientHealthMonitor.receivedPing(mockId);
+    clientHealthMonitor.testFailAllHeartbeats();
 
-    Awaitility.await()
-        .atMost(2 * (monitorIntervalMillis + pingIntervalMillis), TimeUnit.MILLISECONDS)
+    Awaitility.await().atMost(10, TimeUnit.SECONDS)
         .until(() -> verify(mockConnection).handleTermination(true));
   }
 
+  class HeartbeatOverride implements ClientHealthMonitor.HeartbeatTimeoutCheck {
+    public int numHeartbeats = 0;
+
+    @Override
+    public boolean timedOut(long current, long lastHeartbeat, long interval) {
+      ++numHeartbeats;
+      return false;
+    }
+  }
 
   @Test
   public void activeServerConnectionNotTerminatedByHealthMonitor() throws Exception {
@@ -71,10 +80,13 @@ public class ClientHealthMonitorJUnitTest {
     clientHealthMonitor.addConnection(mockId, mockConnection);
     clientHealthMonitor.receivedPing(mockId);
 
-    for (int i = 0; i < 5; ++i) {
-      Thread.sleep(pingIntervalMillis / 2);
-      verify(mockConnection, times(0)).handleTermination(true);
-      clientHealthMonitor.receivedPing(mockId);
-    }
+    HeartbeatOverride heartbeater = new HeartbeatOverride();
+    clientHealthMonitor.testUseCustomHeartbeatCheck(heartbeater);
+
+    Awaitility.await().atMost(10, TimeUnit.SECONDS).until(() -> heartbeater.numHeartbeats >= 5);
+
+    // Check that we never tried to terminate the connection
+    verify(mockConnection, times(0)).handleTermination(true);
   }
+
 }

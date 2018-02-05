@@ -714,10 +714,36 @@ public class ClientHealthMonitor {
   }
 
   /**
+   * Interface for changing the heartbeat timeout behavior in the ClientHealthMonitorThread, should
+   * only be used for testing
+   */
+  interface HeartbeatTimeoutCheck {
+    boolean timedOut(long current, long lastHeartbeat, long interval);
+  }
+
+  public void testFailAllHeartbeats() {
+    _clientMonitor.overrideHeartbeatTimeoutCheck((a, b, c) -> true);
+  }
+
+  public void testPassAllHeartbeats() {
+    _clientMonitor.overrideHeartbeatTimeoutCheck((a, b, c) -> false);
+  }
+
+  public void testUseCustomHeartbeatCheck(HeartbeatTimeoutCheck check) {
+    _clientMonitor.overrideHeartbeatTimeoutCheck(check);
+  }
+
+  /**
    * Class <code>ClientHealthMonitorThread</code> is a <code>Thread</code> that verifies all clients
    * are still alive.
    */
   class ClientHealthMonitorThread extends Thread {
+    private HeartbeatTimeoutCheck checkHeartbeat = (long currentTime, long lastHeartbeat,
+        long allowedInterval) -> currentTime - lastHeartbeat > allowedInterval;
+
+    protected void overrideHeartbeatTimeoutCheck(HeartbeatTimeoutCheck newCheck) {
+      checkHeartbeat = newCheck;
+    }
 
     /**
      * The maximum time allowed between pings before determining the client has died and
@@ -824,7 +850,8 @@ public class ClientHealthMonitor {
                     (currentTime - latestHeartbeat), proxyID);
               }
 
-              if ((currentTime - latestHeartbeat) > this._maximumTimeBetweenPings) {
+              if (checkHeartbeat.timedOut(currentTime, latestHeartbeat,
+                  this._maximumTimeBetweenPings)) {
                 // This client has been idle for too long. Determine whether
                 // any of its ServerConnection threads are currently processing
                 // a message. If so, let it go. If not, disconnect it.
