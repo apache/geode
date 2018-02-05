@@ -20,11 +20,14 @@ import static org.hamcrest.Matchers.*;
 import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.List;
 import java.util.Properties;
 
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
+import org.junit.runner.RunWith;
+import org.junit.runners.Parameterized;
 
 import org.apache.geode.cache.CacheFactory;
 import org.apache.geode.cache.CacheTransactionManager;
@@ -49,7 +52,11 @@ import org.apache.geode.internal.Version;
 import org.apache.geode.test.dunit.Host;
 import org.apache.geode.test.dunit.VM;
 import org.apache.geode.test.dunit.internal.JUnit4DistributedTestCase;
+import org.apache.geode.test.dunit.standalone.VersionManager;
+import org.apache.geode.test.junit.categories.BackwardCompatibilityTest;
+import org.apache.geode.test.junit.categories.ClientServerTest;
 import org.apache.geode.test.junit.categories.DistributedTest;
+import org.apache.geode.test.junit.runners.CategoryWithParameterizedRunnerFactory;
 
 /**
  * This test class tests the communication pattern of a transaction for replicate and partition
@@ -63,9 +70,23 @@ import org.apache.geode.test.junit.categories.DistributedTest;
  * <li>CacheServer via Pool (transaction)-> CacheServer</li>
  * </ol>
  */
-@Category(DistributedTest.class)
+@Category({DistributedTest.class, BackwardCompatibilityTest.class})
+@RunWith(Parameterized.class)
+@Parameterized.UseParametersRunnerFactory(CategoryWithParameterizedRunnerFactory.class)
 @SuppressWarnings("serial")
-public class BugTxCommitMessageDesiralizeDUnitTest extends JUnit4DistributedTestCase {
+public class TxCommitMessageBackwardCompatibilityDUnitTest extends JUnit4DistributedTestCase {
+  private String testVersion;
+
+  @Parameterized.Parameters
+  public static Collection<String> data() {
+    List<String> result = VersionManager.getInstance().getVersionsWithoutCurrent();
+    if (result.size() < 1) {
+      throw new RuntimeException("No older versions of Geode were found to test against");
+    } else {
+      System.out.println("running against these versions: " + result);
+    }
+    return result;
+  }
 
   private static VM server1 = null;
   private static VM server2 = null;
@@ -76,12 +97,19 @@ public class BugTxCommitMessageDesiralizeDUnitTest extends JUnit4DistributedTest
   private static GemFireCacheImpl cache;
 
   private static final String REPLICATE_REGION_NAME =
-      BugTxCommitMessageDesiralizeDUnitTest.class.getSimpleName() + "_ReplicateRegion";
+      TxCommitMessageBackwardCompatibilityDUnitTest.class.getSimpleName() + "_ReplicateRegion";
   private static final String PARTITION_REGION_NAME =
-      BugTxCommitMessageDesiralizeDUnitTest.class.getSimpleName() + "_PartitionRegion";
+      TxCommitMessageBackwardCompatibilityDUnitTest.class.getSimpleName() + "_PartitionRegion";
 
   private static String KEY1 = "KEY1";
   private static String KEY2 = "KEY2";
+
+  public TxCommitMessageBackwardCompatibilityDUnitTest(String version) {
+    super();
+    testVersion = version;
+  }
+
+  private TxCommitMessageBackwardCompatibilityDUnitTest() { }
 
   @Override
   public final void postSetUp() throws Exception {
@@ -90,28 +118,28 @@ public class BugTxCommitMessageDesiralizeDUnitTest extends JUnit4DistributedTest
     server1 = host.getVM(0); // server
     server2 = host.getVM(1); // server
     server3 = host.getVM(2); // server with pool
-    client = host.getVM(3); // client
+    client = host.getVM(testVersion, 3); // client
     oldClient = host.getVM(4); // client old version
 
-    int port1 = server1.invoke(() -> BugTxCommitMessageDesiralizeDUnitTest.createServerCache());
-    int port2 = server2.invoke(() -> BugTxCommitMessageDesiralizeDUnitTest.createServerCache());
-    server3.invoke(() -> BugTxCommitMessageDesiralizeDUnitTest
+    int port1 = server1.invoke(() -> TxCommitMessageBackwardCompatibilityDUnitTest.createServerCache());
+    int port2 = server2.invoke(() -> TxCommitMessageBackwardCompatibilityDUnitTest.createServerCache());
+    server3.invoke(() -> TxCommitMessageBackwardCompatibilityDUnitTest
         .createServerCacheWithPool(host.getHostName(), new Integer[] {port1, port2}));
-    client.invoke(() -> BugTxCommitMessageDesiralizeDUnitTest.createClientCache(host.getHostName(),
-        new Integer[] {port1, port2}, false));
-    oldClient.invoke(() -> BugTxCommitMessageDesiralizeDUnitTest
-        .createClientCache(host.getHostName(), new Integer[] {port1, port2}, true));
+    client.invoke(() -> TxCommitMessageBackwardCompatibilityDUnitTest.createClientCache(host.getHostName(),
+        new Integer[] {port1, port2}));
+    oldClient.invoke(() -> TxCommitMessageBackwardCompatibilityDUnitTest
+        .createClientCache(host.getHostName(), new Integer[] {port1, port2}));
   }
 
   @Override
   public final void preTearDown() throws Exception {
     closeCache();
 
-    server1.invoke(() -> BugTxCommitMessageDesiralizeDUnitTest.closeCache());
-    server2.invoke(() -> BugTxCommitMessageDesiralizeDUnitTest.closeCache());
-    server3.invoke(() -> BugTxCommitMessageDesiralizeDUnitTest.closeCache());
-    client.invoke(() -> BugTxCommitMessageDesiralizeDUnitTest.closeCache());
-    oldClient.invoke(() -> BugTxCommitMessageDesiralizeDUnitTest.closeCache());
+    server1.invoke(() -> TxCommitMessageBackwardCompatibilityDUnitTest.closeCache());
+    server2.invoke(() -> TxCommitMessageBackwardCompatibilityDUnitTest.closeCache());
+    server3.invoke(() -> TxCommitMessageBackwardCompatibilityDUnitTest.closeCache());
+    client.invoke(() -> TxCommitMessageBackwardCompatibilityDUnitTest.closeCache());
+    oldClient.invoke(() -> TxCommitMessageBackwardCompatibilityDUnitTest.closeCache());
   }
 
   public static void closeCache() throws Exception {
@@ -123,7 +151,8 @@ public class BugTxCommitMessageDesiralizeDUnitTest extends JUnit4DistributedTest
   @SuppressWarnings("deprecation")
   public static int createServerCache() throws Exception {
     Properties props = new Properties();
-    BugTxCommitMessageDesiralizeDUnitTest test = new BugTxCommitMessageDesiralizeDUnitTest();
+    TxCommitMessageBackwardCompatibilityDUnitTest
+        test = new TxCommitMessageBackwardCompatibilityDUnitTest();
     DistributedSystem ds = test.getSystem(props);
     ds.disconnect();
     cache = (GemFireCacheImpl) CacheFactory.create(test.getSystem());
@@ -161,7 +190,8 @@ public class BugTxCommitMessageDesiralizeDUnitTest extends JUnit4DistributedTest
   @SuppressWarnings("deprecation")
   public static void createServerCacheWithPool(String hostName, Integer[] ports) throws Exception {
     Properties props = new Properties();
-    BugTxCommitMessageDesiralizeDUnitTest test = new BugTxCommitMessageDesiralizeDUnitTest();
+    TxCommitMessageBackwardCompatibilityDUnitTest
+        test = new TxCommitMessageBackwardCompatibilityDUnitTest();
     DistributedSystem ds = test.getSystem(props);
     ds.disconnect();
     cache = (GemFireCacheImpl) CacheFactory.create(test.getSystem());
@@ -187,16 +217,10 @@ public class BugTxCommitMessageDesiralizeDUnitTest extends JUnit4DistributedTest
   }
 
   @SuppressWarnings("deprecation")
-  public static void createClientCache(String hostName, Integer[] ports, boolean isOldVersion)
+  public static void createClientCache(String hostName, Integer[] ports)
       throws Exception {
-    Version version = null;
-    if (isOldVersion) {
-      version = Version.CURRENT;
-      setVersion("CURRENT", Version.GEODE_130);
-    }
-
     Properties props = new Properties();
-    DistributedSystem ds = new BugTxCommitMessageDesiralizeDUnitTest().getSystem(props);
+    DistributedSystem ds = new TxCommitMessageBackwardCompatibilityDUnitTest().getSystem(props);
     ds.disconnect();
     ClientCacheFactory ccf = new ClientCacheFactory(props);
     ccf.setPoolSubscriptionEnabled(true);
@@ -214,10 +238,6 @@ public class BugTxCommitMessageDesiralizeDUnitTest extends JUnit4DistributedTest
         cache.createClientRegionFactory(ClientRegionShortcut.CACHING_PROXY);
     Region<String, Integer> region2 = crf2.create(PARTITION_REGION_NAME);
     region2.registerInterest("ALL_KEYS");
-
-    if (isOldVersion) {
-      setVersion("CURRENT", version);
-    }
   }
 
   @SuppressWarnings("unchecked")
@@ -310,12 +330,12 @@ public class BugTxCommitMessageDesiralizeDUnitTest extends JUnit4DistributedTest
     String regionName = REPLICATE_REGION_NAME;
 
     List<Integer> beforeValues =
-        server1.invoke(() -> BugTxCommitMessageDesiralizeDUnitTest.doGets(regionName));
-    server1.invoke(() -> BugTxCommitMessageDesiralizeDUnitTest.doTxPuts(regionName));
+        server1.invoke(() -> TxCommitMessageBackwardCompatibilityDUnitTest.doGets(regionName));
+    server1.invoke(() -> TxCommitMessageBackwardCompatibilityDUnitTest.doTxPuts(regionName));
     List<Integer> afterValues1 =
-        server1.invoke(() -> BugTxCommitMessageDesiralizeDUnitTest.doGets(regionName));
+        server1.invoke(() -> TxCommitMessageBackwardCompatibilityDUnitTest.doGets(regionName));
     List<Integer> afterValues2 =
-        server2.invoke(() -> BugTxCommitMessageDesiralizeDUnitTest.doGets(regionName));
+        server2.invoke(() -> TxCommitMessageBackwardCompatibilityDUnitTest.doGets(regionName));
 
     Integer expected1 = beforeValues.get(0) == null ? 1 : beforeValues.get(0) + 1;
     Integer expected2 = beforeValues.get(1) == null ? 1000 : beforeValues.get(1) + 1000;
@@ -329,14 +349,14 @@ public class BugTxCommitMessageDesiralizeDUnitTest extends JUnit4DistributedTest
     String regionName = REPLICATE_REGION_NAME;
 
     List<Integer> beforeValues =
-        client.invoke(() -> BugTxCommitMessageDesiralizeDUnitTest.doGets(regionName));
-    client.invoke(() -> BugTxCommitMessageDesiralizeDUnitTest.doTxPuts(regionName));
+        client.invoke(() -> TxCommitMessageBackwardCompatibilityDUnitTest.doGets(regionName));
+    client.invoke(() -> TxCommitMessageBackwardCompatibilityDUnitTest.doTxPuts(regionName));
     List<Integer> afterValues1 =
-        client.invoke(() -> BugTxCommitMessageDesiralizeDUnitTest.doGets(regionName));
+        client.invoke(() -> TxCommitMessageBackwardCompatibilityDUnitTest.doGets(regionName));
     List<Integer> afterValues2 =
-        server1.invoke(() -> BugTxCommitMessageDesiralizeDUnitTest.doGets(regionName));
+        server1.invoke(() -> TxCommitMessageBackwardCompatibilityDUnitTest.doGets(regionName));
     List<Integer> afterValues3 =
-        server2.invoke(() -> BugTxCommitMessageDesiralizeDUnitTest.doGets(regionName));
+        server2.invoke(() -> TxCommitMessageBackwardCompatibilityDUnitTest.doGets(regionName));
 
     Integer expected1 = beforeValues.get(0) == null ? 1 : beforeValues.get(0) + 1;
     Integer expected2 = beforeValues.get(1) == null ? 1000 : beforeValues.get(1) + 1000;
@@ -351,14 +371,14 @@ public class BugTxCommitMessageDesiralizeDUnitTest extends JUnit4DistributedTest
     String regionName = REPLICATE_REGION_NAME;
 
     List<Integer> beforeValues =
-        oldClient.invoke(() -> BugTxCommitMessageDesiralizeDUnitTest.doGets(regionName));
-    oldClient.invoke(() -> BugTxCommitMessageDesiralizeDUnitTest.doTxPuts(regionName));
+        oldClient.invoke(() -> TxCommitMessageBackwardCompatibilityDUnitTest.doGets(regionName));
+    oldClient.invoke(() -> TxCommitMessageBackwardCompatibilityDUnitTest.doTxPuts(regionName));
     List<Integer> afterValues1 =
-        oldClient.invoke(() -> BugTxCommitMessageDesiralizeDUnitTest.doGets(regionName));
+        oldClient.invoke(() -> TxCommitMessageBackwardCompatibilityDUnitTest.doGets(regionName));
     List<Integer> afterValues2 =
-        server1.invoke(() -> BugTxCommitMessageDesiralizeDUnitTest.doGets(regionName));
+        server1.invoke(() -> TxCommitMessageBackwardCompatibilityDUnitTest.doGets(regionName));
     List<Integer> afterValues3 =
-        server2.invoke(() -> BugTxCommitMessageDesiralizeDUnitTest.doGets(regionName));
+        server2.invoke(() -> TxCommitMessageBackwardCompatibilityDUnitTest.doGets(regionName));
 
     Integer expected1 = beforeValues.get(0) == null ? 1 : beforeValues.get(0) + 1;
     Integer expected2 = beforeValues.get(1) == null ? 1000 : beforeValues.get(1) + 1000;
@@ -373,14 +393,14 @@ public class BugTxCommitMessageDesiralizeDUnitTest extends JUnit4DistributedTest
     String regionName = REPLICATE_REGION_NAME;
 
     List<Integer> beforeValues =
-        server3.invoke(() -> BugTxCommitMessageDesiralizeDUnitTest.doGets(regionName));
-    server3.invoke(() -> BugTxCommitMessageDesiralizeDUnitTest.doTxPuts(regionName));
+        server3.invoke(() -> TxCommitMessageBackwardCompatibilityDUnitTest.doGets(regionName));
+    server3.invoke(() -> TxCommitMessageBackwardCompatibilityDUnitTest.doTxPuts(regionName));
     List<Integer> afterValues1 =
-        server3.invoke(() -> BugTxCommitMessageDesiralizeDUnitTest.doGets(regionName));
+        server3.invoke(() -> TxCommitMessageBackwardCompatibilityDUnitTest.doGets(regionName));
     List<Integer> afterValues2 =
-        server1.invoke(() -> BugTxCommitMessageDesiralizeDUnitTest.doGets(regionName));
+        server1.invoke(() -> TxCommitMessageBackwardCompatibilityDUnitTest.doGets(regionName));
     List<Integer> afterValues3 =
-        server2.invoke(() -> BugTxCommitMessageDesiralizeDUnitTest.doGets(regionName));
+        server2.invoke(() -> TxCommitMessageBackwardCompatibilityDUnitTest.doGets(regionName));
 
     Integer expected1 = beforeValues.get(0) == null ? 1 : beforeValues.get(0) + 1;
     Integer expected2 = beforeValues.get(1) == null ? 1000 : beforeValues.get(1) + 1000;
@@ -395,12 +415,12 @@ public class BugTxCommitMessageDesiralizeDUnitTest extends JUnit4DistributedTest
     String regionName = PARTITION_REGION_NAME;
 
     List<Integer> beforeValues =
-        server1.invoke(() -> BugTxCommitMessageDesiralizeDUnitTest.doGets(regionName));
-    server1.invoke(() -> BugTxCommitMessageDesiralizeDUnitTest.doTxPuts(regionName));
+        server1.invoke(() -> TxCommitMessageBackwardCompatibilityDUnitTest.doGets(regionName));
+    server1.invoke(() -> TxCommitMessageBackwardCompatibilityDUnitTest.doTxPuts(regionName));
     List<Integer> afterValues1 =
-        server1.invoke(() -> BugTxCommitMessageDesiralizeDUnitTest.doGets(regionName));
+        server1.invoke(() -> TxCommitMessageBackwardCompatibilityDUnitTest.doGets(regionName));
     List<Integer> afterValues2 =
-        server2.invoke(() -> BugTxCommitMessageDesiralizeDUnitTest.doGets(regionName));
+        server2.invoke(() -> TxCommitMessageBackwardCompatibilityDUnitTest.doGets(regionName));
 
     Integer expected1 = beforeValues.get(0) == null ? 1 : beforeValues.get(0) + 1;
     Integer expected2 = beforeValues.get(1) == null ? 1000 : beforeValues.get(1) + 1000;
@@ -414,14 +434,14 @@ public class BugTxCommitMessageDesiralizeDUnitTest extends JUnit4DistributedTest
     String regionName = PARTITION_REGION_NAME;
 
     List<Integer> beforeValues =
-        client.invoke(() -> BugTxCommitMessageDesiralizeDUnitTest.doGets(regionName));
-    client.invoke(() -> BugTxCommitMessageDesiralizeDUnitTest.doTxPuts(regionName));
+        client.invoke(() -> TxCommitMessageBackwardCompatibilityDUnitTest.doGets(regionName));
+    client.invoke(() -> TxCommitMessageBackwardCompatibilityDUnitTest.doTxPuts(regionName));
     List<Integer> afterValues1 =
-        client.invoke(() -> BugTxCommitMessageDesiralizeDUnitTest.doGets(regionName));
+        client.invoke(() -> TxCommitMessageBackwardCompatibilityDUnitTest.doGets(regionName));
     List<Integer> afterValues2 =
-        server1.invoke(() -> BugTxCommitMessageDesiralizeDUnitTest.doGets(regionName));
+        server1.invoke(() -> TxCommitMessageBackwardCompatibilityDUnitTest.doGets(regionName));
     List<Integer> afterValues3 =
-        server2.invoke(() -> BugTxCommitMessageDesiralizeDUnitTest.doGets(regionName));
+        server2.invoke(() -> TxCommitMessageBackwardCompatibilityDUnitTest.doGets(regionName));
 
     Integer expected1 = beforeValues.get(0) == null ? 1 : beforeValues.get(0) + 1;
     Integer expected2 = beforeValues.get(1) == null ? 1000 : beforeValues.get(1) + 1000;
@@ -436,14 +456,14 @@ public class BugTxCommitMessageDesiralizeDUnitTest extends JUnit4DistributedTest
     String regionName = PARTITION_REGION_NAME;
 
     List<Integer> beforeValues =
-        oldClient.invoke(() -> BugTxCommitMessageDesiralizeDUnitTest.doGets(regionName));
-    oldClient.invoke(() -> BugTxCommitMessageDesiralizeDUnitTest.doTxPuts(regionName));
+        oldClient.invoke(() -> TxCommitMessageBackwardCompatibilityDUnitTest.doGets(regionName));
+    oldClient.invoke(() -> TxCommitMessageBackwardCompatibilityDUnitTest.doTxPuts(regionName));
     List<Integer> afterValues1 =
-        oldClient.invoke(() -> BugTxCommitMessageDesiralizeDUnitTest.doGets(regionName));
+        oldClient.invoke(() -> TxCommitMessageBackwardCompatibilityDUnitTest.doGets(regionName));
     List<Integer> afterValues2 =
-        server1.invoke(() -> BugTxCommitMessageDesiralizeDUnitTest.doGets(regionName));
+        server1.invoke(() -> TxCommitMessageBackwardCompatibilityDUnitTest.doGets(regionName));
     List<Integer> afterValues3 =
-        server2.invoke(() -> BugTxCommitMessageDesiralizeDUnitTest.doGets(regionName));
+        server2.invoke(() -> TxCommitMessageBackwardCompatibilityDUnitTest.doGets(regionName));
 
     Integer expected1 = beforeValues.get(0) == null ? 1 : beforeValues.get(0) + 1;
     Integer expected2 = beforeValues.get(1) == null ? 1000 : beforeValues.get(1) + 1000;
@@ -458,14 +478,14 @@ public class BugTxCommitMessageDesiralizeDUnitTest extends JUnit4DistributedTest
     String regionName = PARTITION_REGION_NAME;
 
     List<Integer> beforeValues =
-        server3.invoke(() -> BugTxCommitMessageDesiralizeDUnitTest.doGets(regionName));
-    server3.invoke(() -> BugTxCommitMessageDesiralizeDUnitTest.doTxPuts(regionName));
+        server3.invoke(() -> TxCommitMessageBackwardCompatibilityDUnitTest.doGets(regionName));
+    server3.invoke(() -> TxCommitMessageBackwardCompatibilityDUnitTest.doTxPuts(regionName));
     List<Integer> afterValues1 =
-        server3.invoke(() -> BugTxCommitMessageDesiralizeDUnitTest.doGets(regionName));
+        server3.invoke(() -> TxCommitMessageBackwardCompatibilityDUnitTest.doGets(regionName));
     List<Integer> afterValues2 =
-        server1.invoke(() -> BugTxCommitMessageDesiralizeDUnitTest.doGets(regionName));
+        server1.invoke(() -> TxCommitMessageBackwardCompatibilityDUnitTest.doGets(regionName));
     List<Integer> afterValues3 =
-        server2.invoke(() -> BugTxCommitMessageDesiralizeDUnitTest.doGets(regionName));
+        server2.invoke(() -> TxCommitMessageBackwardCompatibilityDUnitTest.doGets(regionName));
 
     Integer expected1 = beforeValues.get(0) == null ? 1 : beforeValues.get(0) + 1;
     Integer expected2 = beforeValues.get(1) == null ? 1000 : beforeValues.get(1) + 1000;
@@ -481,19 +501,20 @@ public class BugTxCommitMessageDesiralizeDUnitTest extends JUnit4DistributedTest
     String regionNamePart = PARTITION_REGION_NAME;
 
     List<Integer> beforeValuesRepl =
-        server1.invoke(() -> BugTxCommitMessageDesiralizeDUnitTest.doGets(regionNameRepl));
+        server1.invoke(() -> TxCommitMessageBackwardCompatibilityDUnitTest.doGets(regionNameRepl));
     List<Integer> beforeValuesPart =
-        server1.invoke(() -> BugTxCommitMessageDesiralizeDUnitTest.doGets(regionNamePart));
+        server1.invoke(() -> TxCommitMessageBackwardCompatibilityDUnitTest.doGets(regionNamePart));
     server1.invoke(
-        () -> BugTxCommitMessageDesiralizeDUnitTest.doTxPutsBoth(regionNameRepl, regionNamePart));
+        () -> TxCommitMessageBackwardCompatibilityDUnitTest
+            .doTxPutsBoth(regionNameRepl, regionNamePart));
     List<Integer> afterValuesRepl1 =
-        server1.invoke(() -> BugTxCommitMessageDesiralizeDUnitTest.doGets(regionNameRepl));
+        server1.invoke(() -> TxCommitMessageBackwardCompatibilityDUnitTest.doGets(regionNameRepl));
     List<Integer> afterValuesRepl2 =
-        server2.invoke(() -> BugTxCommitMessageDesiralizeDUnitTest.doGets(regionNameRepl));
+        server2.invoke(() -> TxCommitMessageBackwardCompatibilityDUnitTest.doGets(regionNameRepl));
     List<Integer> afterValuesPart1 =
-        server1.invoke(() -> BugTxCommitMessageDesiralizeDUnitTest.doGets(regionNamePart));
+        server1.invoke(() -> TxCommitMessageBackwardCompatibilityDUnitTest.doGets(regionNamePart));
     List<Integer> afterValuesPart2 =
-        server2.invoke(() -> BugTxCommitMessageDesiralizeDUnitTest.doGets(regionNamePart));
+        server2.invoke(() -> TxCommitMessageBackwardCompatibilityDUnitTest.doGets(regionNamePart));
 
     Integer expectedRepl1 = beforeValuesRepl.get(0) == null ? 500 : beforeValuesRepl.get(0) + 500;
     Integer expectedRepl2 = beforeValuesRepl.get(1) == null ? 1000 : beforeValuesRepl.get(1) + 1000;
@@ -512,23 +533,24 @@ public class BugTxCommitMessageDesiralizeDUnitTest extends JUnit4DistributedTest
     String regionNamePart = PARTITION_REGION_NAME;
 
     List<Integer> beforeValuesRepl =
-        client.invoke(() -> BugTxCommitMessageDesiralizeDUnitTest.doGets(regionNameRepl));
+        client.invoke(() -> TxCommitMessageBackwardCompatibilityDUnitTest.doGets(regionNameRepl));
     List<Integer> beforeValuesPart =
-        client.invoke(() -> BugTxCommitMessageDesiralizeDUnitTest.doGets(regionNamePart));
+        client.invoke(() -> TxCommitMessageBackwardCompatibilityDUnitTest.doGets(regionNamePart));
     client.invoke(
-        () -> BugTxCommitMessageDesiralizeDUnitTest.doTxPutsBoth(regionNameRepl, regionNamePart));
+        () -> TxCommitMessageBackwardCompatibilityDUnitTest
+            .doTxPutsBoth(regionNameRepl, regionNamePart));
     List<Integer> afterValuesRepl1 =
-        client.invoke(() -> BugTxCommitMessageDesiralizeDUnitTest.doGets(regionNameRepl));
+        client.invoke(() -> TxCommitMessageBackwardCompatibilityDUnitTest.doGets(regionNameRepl));
     List<Integer> afterValuesPart1 =
-        client.invoke(() -> BugTxCommitMessageDesiralizeDUnitTest.doGets(regionNamePart));
+        client.invoke(() -> TxCommitMessageBackwardCompatibilityDUnitTest.doGets(regionNamePart));
     List<Integer> afterValuesRepl2 =
-        server1.invoke(() -> BugTxCommitMessageDesiralizeDUnitTest.doGets(regionNameRepl));
+        server1.invoke(() -> TxCommitMessageBackwardCompatibilityDUnitTest.doGets(regionNameRepl));
     List<Integer> afterValuesPart2 =
-        server1.invoke(() -> BugTxCommitMessageDesiralizeDUnitTest.doGets(regionNamePart));
+        server1.invoke(() -> TxCommitMessageBackwardCompatibilityDUnitTest.doGets(regionNamePart));
     List<Integer> afterValuesRepl3 =
-        server2.invoke(() -> BugTxCommitMessageDesiralizeDUnitTest.doGets(regionNameRepl));
+        server2.invoke(() -> TxCommitMessageBackwardCompatibilityDUnitTest.doGets(regionNameRepl));
     List<Integer> afterValuesPart3 =
-        server2.invoke(() -> BugTxCommitMessageDesiralizeDUnitTest.doGets(regionNamePart));
+        server2.invoke(() -> TxCommitMessageBackwardCompatibilityDUnitTest.doGets(regionNamePart));
 
     Integer expectedRepl1 = beforeValuesRepl.get(0) == null ? 500 : beforeValuesRepl.get(0) + 500;
     Integer expectedRepl2 = beforeValuesRepl.get(1) == null ? 1000 : beforeValuesRepl.get(1) + 1000;
@@ -549,23 +571,24 @@ public class BugTxCommitMessageDesiralizeDUnitTest extends JUnit4DistributedTest
     String regionNamePart = PARTITION_REGION_NAME;
 
     List<Integer> beforeValuesRepl =
-        oldClient.invoke(() -> BugTxCommitMessageDesiralizeDUnitTest.doGets(regionNameRepl));
+        oldClient.invoke(() -> TxCommitMessageBackwardCompatibilityDUnitTest.doGets(regionNameRepl));
     List<Integer> beforeValuesPart =
-        oldClient.invoke(() -> BugTxCommitMessageDesiralizeDUnitTest.doGets(regionNamePart));
+        oldClient.invoke(() -> TxCommitMessageBackwardCompatibilityDUnitTest.doGets(regionNamePart));
     oldClient.invoke(
-        () -> BugTxCommitMessageDesiralizeDUnitTest.doTxPutsBoth(regionNameRepl, regionNamePart));
+        () -> TxCommitMessageBackwardCompatibilityDUnitTest
+            .doTxPutsBoth(regionNameRepl, regionNamePart));
     List<Integer> afterValuesRepl1 =
-        oldClient.invoke(() -> BugTxCommitMessageDesiralizeDUnitTest.doGets(regionNameRepl));
+        oldClient.invoke(() -> TxCommitMessageBackwardCompatibilityDUnitTest.doGets(regionNameRepl));
     List<Integer> afterValuesPart1 =
-        oldClient.invoke(() -> BugTxCommitMessageDesiralizeDUnitTest.doGets(regionNamePart));
+        oldClient.invoke(() -> TxCommitMessageBackwardCompatibilityDUnitTest.doGets(regionNamePart));
     List<Integer> afterValuesRepl2 =
-        server1.invoke(() -> BugTxCommitMessageDesiralizeDUnitTest.doGets(regionNameRepl));
+        server1.invoke(() -> TxCommitMessageBackwardCompatibilityDUnitTest.doGets(regionNameRepl));
     List<Integer> afterValuesPart2 =
-        server1.invoke(() -> BugTxCommitMessageDesiralizeDUnitTest.doGets(regionNamePart));
+        server1.invoke(() -> TxCommitMessageBackwardCompatibilityDUnitTest.doGets(regionNamePart));
     List<Integer> afterValuesRepl3 =
-        server2.invoke(() -> BugTxCommitMessageDesiralizeDUnitTest.doGets(regionNameRepl));
+        server2.invoke(() -> TxCommitMessageBackwardCompatibilityDUnitTest.doGets(regionNameRepl));
     List<Integer> afterValuesPart3 =
-        server2.invoke(() -> BugTxCommitMessageDesiralizeDUnitTest.doGets(regionNamePart));
+        server2.invoke(() -> TxCommitMessageBackwardCompatibilityDUnitTest.doGets(regionNamePart));
 
     Integer expectedRepl1 = beforeValuesRepl.get(0) == null ? 500 : beforeValuesRepl.get(0) + 500;
     Integer expectedRepl2 = beforeValuesRepl.get(1) == null ? 1000 : beforeValuesRepl.get(1) + 1000;
@@ -586,23 +609,24 @@ public class BugTxCommitMessageDesiralizeDUnitTest extends JUnit4DistributedTest
     String regionNamePart = PARTITION_REGION_NAME;
 
     List<Integer> beforeValuesRepl =
-        server3.invoke(() -> BugTxCommitMessageDesiralizeDUnitTest.doGets(regionNameRepl));
+        server3.invoke(() -> TxCommitMessageBackwardCompatibilityDUnitTest.doGets(regionNameRepl));
     List<Integer> beforeValuesPart =
-        server3.invoke(() -> BugTxCommitMessageDesiralizeDUnitTest.doGets(regionNamePart));
+        server3.invoke(() -> TxCommitMessageBackwardCompatibilityDUnitTest.doGets(regionNamePart));
     server3.invoke(
-        () -> BugTxCommitMessageDesiralizeDUnitTest.doTxPutsBoth(regionNameRepl, regionNamePart));
+        () -> TxCommitMessageBackwardCompatibilityDUnitTest
+            .doTxPutsBoth(regionNameRepl, regionNamePart));
     List<Integer> afterValuesRepl1 =
-        server3.invoke(() -> BugTxCommitMessageDesiralizeDUnitTest.doGets(regionNameRepl));
+        server3.invoke(() -> TxCommitMessageBackwardCompatibilityDUnitTest.doGets(regionNameRepl));
     List<Integer> afterValuesPart1 =
-        server3.invoke(() -> BugTxCommitMessageDesiralizeDUnitTest.doGets(regionNamePart));
+        server3.invoke(() -> TxCommitMessageBackwardCompatibilityDUnitTest.doGets(regionNamePart));
     List<Integer> afterValuesRepl2 =
-        server1.invoke(() -> BugTxCommitMessageDesiralizeDUnitTest.doGets(regionNameRepl));
+        server1.invoke(() -> TxCommitMessageBackwardCompatibilityDUnitTest.doGets(regionNameRepl));
     List<Integer> afterValuesPart2 =
-        server1.invoke(() -> BugTxCommitMessageDesiralizeDUnitTest.doGets(regionNamePart));
+        server1.invoke(() -> TxCommitMessageBackwardCompatibilityDUnitTest.doGets(regionNamePart));
     List<Integer> afterValuesRepl3 =
-        server2.invoke(() -> BugTxCommitMessageDesiralizeDUnitTest.doGets(regionNameRepl));
+        server2.invoke(() -> TxCommitMessageBackwardCompatibilityDUnitTest.doGets(regionNameRepl));
     List<Integer> afterValuesPart3 =
-        server2.invoke(() -> BugTxCommitMessageDesiralizeDUnitTest.doGets(regionNamePart));
+        server2.invoke(() -> TxCommitMessageBackwardCompatibilityDUnitTest.doGets(regionNamePart));
 
     Integer expectedRepl1 = beforeValuesRepl.get(0) == null ? 500 : beforeValuesRepl.get(0) + 500;
     Integer expectedRepl2 = beforeValuesRepl.get(1) == null ? 1000 : beforeValuesRepl.get(1) + 1000;
