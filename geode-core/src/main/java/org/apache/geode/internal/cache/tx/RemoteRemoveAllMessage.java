@@ -356,7 +356,6 @@ public class RemoteRemoveAllMessage extends RemoteOperationMessageWithDirectRepl
           public void run() {
             InternalDistributedMember myId = r.getDistributionManager().getDistributionManagerId();
             for (int i = 0; i < removeAllDataCount; ++i) {
-              // TODO: refactor RemoveAllPRMessage since it is being used for non-pr regions
               @Released
               EntryEventImpl ev = RemoveAllPRMessage.getEventFromEntry(r, myId, eventSender, i,
                   removeAllData, false, bridgeContext, posDup, false);

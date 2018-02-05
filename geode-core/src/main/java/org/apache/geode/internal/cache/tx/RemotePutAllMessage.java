@@ -365,7 +365,6 @@ public class RemotePutAllMessage extends RemoteOperationMessageWithDirectReply {
           public void run() {
             InternalDistributedMember myId = r.getDistributionManager().getDistributionManagerId();
             for (int i = 0; i < putAllDataCount; ++i) {
-              // TODO: refactor PutAllPRMessage since it is being used for non-pr regions
               @Released
               EntryEventImpl ev = PutAllPRMessage.getEventFromEntry(r, myId, eventSender, i,
                   putAllData, false, bridgeContext, posDup, !skipCallbacks);
