@@ -215,6 +215,12 @@ public class RemoteSizeMessage extends RemoteOperationMessage {
       super(ds, (InternalDistributedMember) recipient);
     }
 
+    // Note that this causes GEODE-4612 and should be removed
+    @Override
+    protected void processException(ReplyException ex) {
+      logger.debug("SizeResponse ignoring exception: {}", ex.getMessage(), ex);
+    }
+
     @Override
     public void process(DistributionMessage msg) {
       try {
