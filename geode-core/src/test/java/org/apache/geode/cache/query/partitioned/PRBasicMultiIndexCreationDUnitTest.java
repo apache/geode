@@ -17,6 +17,7 @@ package org.apache.geode.cache.query.partitioned;
 import static org.apache.geode.cache.query.Utils.createPortfolioData;
 import static org.apache.geode.cache.query.Utils.createPortfoliosAndPositions;
 import static org.apache.geode.distributed.ConfigurationProperties.SERIALIZABLE_OBJECT_FILTER;
+import static org.apache.geode.test.dunit.Invoke.invokeInEveryVM;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 
@@ -24,6 +25,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Properties;
 
+import org.junit.After;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
@@ -52,17 +54,17 @@ public class PRBasicMultiIndexCreationDUnitTest extends CacheTestCase {
   private static final int cntDest = 1003;
   private static final int redundancy = 0;
 
+  @After
+  public void tearDown() {
+    disconnectAllFromDS();
+    invokeInEveryVM(() -> PRQueryDUnitHelper.setCache(null));
+  }
+
   @Override
   public Properties getDistributedSystemProperties() {
     Properties config = new Properties();
     config.put(SERIALIZABLE_OBJECT_FILTER, "org.apache.geode.cache.query.data.*");
     return config;
-  }
-
-  private void setCacheInVMs(VM... vms) {
-    for (VM vm : vms) {
-      vm.invoke(() -> PRQueryDUnitHelper.setCache(getCache()));
-    }
   }
 
   /**
@@ -818,5 +820,11 @@ public class PRBasicMultiIndexCreationDUnitTest extends CacheTestCase {
 
     // querying the VM for data
     vm0.invoke(PRQHelp.getCacheSerializableRunnableForPROrderByQueryWithLimit(name, localName));
+  }
+
+  private void setCacheInVMs(VM... vms) {
+    for (VM vm : vms) {
+      vm.invoke(() -> PRQueryDUnitHelper.setCache(getCache()));
+    }
   }
 }
