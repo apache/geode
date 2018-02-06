@@ -125,6 +125,8 @@ public class ServerStarterRule extends MemberStarterRule<ServerStarterRule> impl
     if (!useDefaultPort) {
       httpPort = AvailablePortHelper.getRandomAvailableTCPPort();
       properties.setProperty(HTTP_SERVICE_PORT, httpPort + "");
+    } else {
+      httpPort = 0;
     }
     return this;
   }

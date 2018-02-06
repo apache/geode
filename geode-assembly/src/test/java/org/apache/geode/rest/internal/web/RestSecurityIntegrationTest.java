@@ -71,7 +71,7 @@ public class RestSecurityIntegrationTest {
   }
 
   @Test
-  public void executeFunction() throws Exception {
+  public void executeNotRegisteredFunction() throws Exception {
     HttpResponse response =
         restClient.doPost("/functions/invalid-function-id", "user", "wrongPswd", "");
     assertEquals(401, GeodeRestClient.getCode(response));
