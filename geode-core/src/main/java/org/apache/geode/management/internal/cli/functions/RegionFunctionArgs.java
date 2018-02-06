@@ -25,6 +25,7 @@ import java.util.stream.Collectors;
 import org.apache.geode.cache.CacheListener;
 import org.apache.geode.cache.CacheLoader;
 import org.apache.geode.cache.CacheWriter;
+import org.apache.geode.cache.CustomExpiry;
 import org.apache.geode.cache.EvictionAction;
 import org.apache.geode.cache.EvictionAttributes;
 import org.apache.geode.cache.ExpirationAction;
@@ -54,6 +55,8 @@ public class RegionFunctionArgs implements Serializable {
   private Boolean statisticsEnabled;
   private ExpirationAttrs entryExpirationIdleTime;
   private ExpirationAttrs entryExpirationTTL;
+  private ClassName<CustomExpiry> entryIdleTimeCustomExpiry;
+  private ClassName<CustomExpiry> entryTTLCustomExpiry;
   private ExpirationAttrs regionExpirationIdleTime;
   private ExpirationAttrs regionExpirationTTL;
   private EvictionAttrs evictionAttributes;
@@ -445,6 +448,22 @@ public class RegionFunctionArgs implements Serializable {
   @SuppressWarnings("unchecked")
   public <K, V> RegionAttributes<K, V> getRegionAttributes() {
     return (RegionAttributes<K, V>) this.regionAttributes;
+  }
+
+  public ClassName<CustomExpiry> getEntryIdleTimeCustomExpiry() {
+    return entryIdleTimeCustomExpiry;
+  }
+
+  public void setEntryIdleTimeCustomExpiry(ClassName<CustomExpiry> entryIdleTimeCustomExpiry) {
+    this.entryIdleTimeCustomExpiry = entryIdleTimeCustomExpiry;
+  }
+
+  public ClassName<CustomExpiry> getEntryTTLCustomExpiry() {
+    return entryTTLCustomExpiry;
+  }
+
+  public void setEntryTTLCustomExpiry(ClassName<CustomExpiry> entryTTLCustomExpiry) {
+    this.entryTTLCustomExpiry = entryTTLCustomExpiry;
   }
 
   /**

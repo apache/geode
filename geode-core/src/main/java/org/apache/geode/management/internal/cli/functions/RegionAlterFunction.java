@@ -24,6 +24,7 @@ import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.CacheListener;
 import org.apache.geode.cache.CacheLoader;
 import org.apache.geode.cache.CacheWriter;
+import org.apache.geode.cache.CustomExpiry;
 import org.apache.geode.cache.Region;
 import org.apache.geode.cache.execute.FunctionContext;
 import org.apache.geode.cache.execute.ResultSender;
@@ -137,6 +138,25 @@ public class RegionAlterFunction implements InternalFunction {
           newEntryExpirationTTL.getExpirationAttributes(region.getEntryTimeToLive()));
       if (logger.isDebugEnabled()) {
         logger.debug("Region successfully altered - entry TTL");
+      }
+    }
+
+    final ClassName<CustomExpiry> entryIdleCustomExpiry =
+        regionAlterArgs.getEntryIdleTimeCustomExpiry();
+    if (entryIdleCustomExpiry != null) {
+      if (entryIdleCustomExpiry.equals(ClassName.EMPTY)) {
+        mutator.setCustomEntryIdleTimeout(null);
+      } else {
+        mutator.setCustomEntryIdleTimeout(entryIdleCustomExpiry.newInstance());
+      }
+    }
+
+    final ClassName<CustomExpiry> entryTTLCustomExpiry = regionAlterArgs.getEntryTTLCustomExpiry();
+    if (entryTTLCustomExpiry != null) {
+      if (entryTTLCustomExpiry.equals(ClassName.EMPTY)) {
+        mutator.setCustomEntryTimeToLive(null);
+      } else {
+        mutator.setCustomEntryTimeToLive(entryTTLCustomExpiry.newInstance());
       }
     }
 

@@ -365,5 +365,11 @@ public class CreateRegionCommandTest {
     parser
         .executeAndAssertThat(command, COMMAND + "--region-time-to-live-expiration-action=destroy")
         .statusIsError().containsOutput("Statistics must be enabled for expiration");
+
+    parser.executeAndAssertThat(command, COMMAND + "--entry-time-to-live-custom-expiry=abc")
+        .statusIsError().containsOutput("Statistics must be enabled for expiration");
+
+    parser.executeAndAssertThat(command, COMMAND + "--entry-idle-time-custom-expiry=abc")
+        .statusIsError().containsOutput("Statistics must be enabled for expiration");
   }
 }

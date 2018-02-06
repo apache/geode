@@ -28,6 +28,7 @@ import org.springframework.shell.core.annotation.CliOption;
 import org.apache.geode.cache.CacheListener;
 import org.apache.geode.cache.CacheLoader;
 import org.apache.geode.cache.CacheWriter;
+import org.apache.geode.cache.CustomExpiry;
 import org.apache.geode.cache.DataPolicy;
 import org.apache.geode.cache.EvictionAction;
 import org.apache.geode.cache.ExpirationAction;
@@ -64,6 +65,9 @@ import org.apache.geode.management.internal.security.ResourceOperation;
 import org.apache.geode.security.ResourcePermission;
 
 public class CreateRegionCommand implements GfshCommand {
+  public static final String ENTRY_IDLE_TIME_CUSTOM_EXPIRY = "entry-idle-time-custom-expiry";
+  public static final String ENTRY_TTL_CUSTOM_EXPIRY = "entry-time-to-live-custom-expiry";
+
 
   @CliCommand(value = CliStrings.CREATE_REGION, help = CliStrings.CREATE_REGION__HELP)
   @CliMetaData(relatedTopic = CliStrings.TOPIC_GEODE_REGION,
@@ -135,6 +139,10 @@ public class CreateRegionCommand implements GfshCommand {
           help = CliStrings.CREATE_REGION__ENTRYEXPIRATIONTIMETOLIVE__HELP) Integer entryExpirationTTL,
       @CliOption(key = CliStrings.CREATE_REGION__ENTRYEXPIRATIONTTLACTION,
           help = CliStrings.CREATE_REGION__ENTRYEXPIRATIONTTLACTION__HELP) ExpirationAction entryExpirationTTLAction,
+      @CliOption(key = CreateRegionCommand.ENTRY_IDLE_TIME_CUSTOM_EXPIRY,
+          help = "The name of the class implementing CustomExpiry for entry idle time. Append json string for initialization properties.") ClassName<CustomExpiry> entryIdleTimeCustomExpiry,
+      @CliOption(key = CreateRegionCommand.ENTRY_TTL_CUSTOM_EXPIRY,
+          help = "The name of the class implementing CustomExpiry for entry time to live. Append json string for initialization properties.") ClassName<CustomExpiry> entryTTLCustomExpiry,
       @CliOption(key = CliStrings.CREATE_REGION__EVICTION_ACTION,
           help = CliStrings.CREATE_REGION__EVICTION_ACTION__HELP) String evictionAction,
       @CliOption(key = CliStrings.CREATE_REGION__EVICTION_ENTRY_COUNT,
@@ -210,6 +218,8 @@ public class CreateRegionCommand implements GfshCommand {
     functionArgs.setRegionExpirationIdleTime(regionExpirationIdleTime,
         regionExpirationIdleTimeAction);
     functionArgs.setRegionExpirationTTL(regionExpirationTTL, regionExpirationTTLAction);
+    functionArgs.setEntryIdleTimeCustomExpiry(entryIdleTimeCustomExpiry);
+    functionArgs.setEntryTTLCustomExpiry(entryTTLCustomExpiry);
     functionArgs.setEvictionAttributes(evictionAction, evictionMaxMemory, evictionEntryCount,
         evictionObjectSizer);
     functionArgs.setDiskStore(diskStore);
@@ -649,10 +659,14 @@ public class CreateRegionCommand implements GfshCommand {
           .getParamValue(CliStrings.CREATE_REGION__REGIONEXPIRATIONIDLETIMEACTION);
       ExpirationAction regionTtlAction = (ExpirationAction) parseResult
           .getParamValue(CliStrings.CREATE_REGION__REGIONEXPIRATIONTTLACTION);
+      ClassName entryIdleExpiry =
+          (ClassName) parseResult.getParamValue(ENTRY_IDLE_TIME_CUSTOM_EXPIRY);
+      ClassName entryTTTLExpiry = (ClassName) parseResult.getParamValue(ENTRY_TTL_CUSTOM_EXPIRY);
 
       if ((entryIdle != null || entryTtl != null || regionIdle != null || regionTtl != null
           || entryIdleAction != null || entryTtlAction != null || regionIdleAction != null
-          || regionTtlAction != null) && (statisticsEnabled == null || !statisticsEnabled)) {
+          || regionTtlAction != null || entryIdleExpiry != null || entryTTTLExpiry != null)
+          && (statisticsEnabled == null || !statisticsEnabled)) {
         String message =
             LocalizedStrings.AttributesFactory_STATISTICS_MUST_BE_ENABLED_FOR_EXPIRATION
                 .toLocalizedString();

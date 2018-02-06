@@ -891,13 +891,13 @@ public class CliStrings {
       "Whether the server should conflate its messages to the client. A false value causes all server-client messages to be sent individually.";
   public static final String CREATE_REGION__CACHELISTENER = "cache-listener";
   public static final String CREATE_REGION__CACHELISTENER__HELP =
-      "Fully qualified class name of a plug-in to be instantiated for receiving after-event notification of changes to the region and its entries. Any number of cache listeners can be configured.";
+      "Fully qualified class name of a plug-in to be instantiated for receiving after-event notification of changes to the region and its entries. Append json string for initialization properties. Any number of cache listeners can be configured.";
   public static final String CREATE_REGION__CACHELOADER = "cache-loader";
   public static final String CREATE_REGION__CACHELOADER__HELP =
-      "Fully qualified class name of a plug-in to be instantiated for receiving notification of cache misses in the region. At most, one cache loader can be defined in each member for the region. For distributed regions, a cache loader may be invoked remotely from other members that have the region defined.";
+      "Fully qualified class name of a plug-in to be instantiated for receiving notification of cache misses in the region. Append json string for initialization properties. At most, one cache loader can be defined in each member for the region. For distributed regions, a cache loader may be invoked remotely from other members that have the region defined.";
   public static final String CREATE_REGION__CACHEWRITER = "cache-writer";
   public static final String CREATE_REGION__CACHEWRITER__HELP =
-      "Fully qualified class name of a plug-in to be instantiated for receiving before-event notification of changes to the region and its entries. The plug-in may cancel the event. At most, one cache writer can be defined in each member for the region.";
+      "Fully qualified class name of a plug-in to be instantiated for receiving before-event notification of changes to the region and its entries. Append json string for initialization properties. The plug-in may cancel the event. At most, one cache writer can be defined in each member for the region.";
   public static final String CREATE_REGION__ASYNCEVENTQUEUEID = "async-event-queue-id";
   public static final String CREATE_REGION__ASYNCEVENTQUEUEID__HELP =
       "IDs of the Async Event Queues that will be used for write-behind operations.";
