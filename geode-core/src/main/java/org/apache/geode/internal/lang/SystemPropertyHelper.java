@@ -29,8 +29,8 @@ public class SystemPropertyHelper {
 
 
   /**
-   * Setting this to "true" enables a new asynchronous eviction algorithm. For more details see
-   * {@link org.apache.geode.internal.cache.eviction.LRUListWithAsyncSorting}.
+   * When set to "true" enables asynchronous eviction algorithm (defaults to true). For more details
+   * see {@link org.apache.geode.internal.cache.eviction.LRUListWithAsyncSorting}.
    *
    * @since Geode 1.4.0
    */
@@ -63,7 +63,7 @@ public class SystemPropertyHelper {
    * will check and prefer "geode." setting first, then try to check "gemfire." setting.
    *
    * @param name system property name set in Geode
-   * @return a boolean value of the system property
+   * @return an Optional containing the Boolean value of the system property
    */
   public static Optional<Boolean> getProductBooleanProperty(String name) {
     String property = getProperty(name);
