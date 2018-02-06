@@ -141,6 +141,8 @@ public class FunctionAccessController extends AbstractBaseController {
       @RequestBody(required = false) final String argsInBody) {
 
     Function function = FunctionService.getFunction(functionId);
+
+    // this exception will be handled by BaseControllerAdvice to eventually return a 404
     if (function == null) {
       throw new EntityNotFoundException(
           String.format("The function %s is not registered.", functionId));

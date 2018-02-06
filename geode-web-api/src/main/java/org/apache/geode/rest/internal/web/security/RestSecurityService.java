@@ -47,11 +47,17 @@ public class RestSecurityService {
     return authorize(resource, operation, region, null);
   }
 
+  /**
+   * this does not need to return a boolean since it's not used in the @PreAuthorize tag
+   */
   public void authorize(ResourcePermission permission) {
     securityService.authorize(permission);
   }
 
 
+  /**
+   * calls used in @PreAuthorize tag needs to return a boolean
+   */
   public boolean authorize(String resource, String operation, String region, String key) {
     try {
       securityService.authorize(Resource.valueOf(resource), Operation.valueOf(operation), region,
