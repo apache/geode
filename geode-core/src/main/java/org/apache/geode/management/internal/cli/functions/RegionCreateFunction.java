@@ -194,23 +194,23 @@ public class RegionCreateFunction implements Function, InternalEntity {
     // Expiration attributes
     final RegionFunctionArgs.ExpirationAttrs entryExpirationIdleTime =
         regionCreateArgs.getEntryExpirationIdleTime();
-    if (entryExpirationIdleTime != null) {
-      factory.setEntryIdleTimeout(entryExpirationIdleTime.convertToExpirationAttributes());
+    if (entryExpirationIdleTime.isTimeOrActionSet()) {
+      factory.setEntryIdleTimeout(entryExpirationIdleTime.getExpirationAttributes());
     }
     final RegionFunctionArgs.ExpirationAttrs entryExpirationTTL =
         regionCreateArgs.getEntryExpirationTTL();
-    if (entryExpirationTTL != null) {
-      factory.setEntryTimeToLive(entryExpirationTTL.convertToExpirationAttributes());
+    if (entryExpirationTTL.isTimeOrActionSet()) {
+      factory.setEntryTimeToLive(entryExpirationTTL.getExpirationAttributes());
     }
     final RegionFunctionArgs.ExpirationAttrs regionExpirationIdleTime =
         regionCreateArgs.getRegionExpirationIdleTime();
-    if (regionExpirationIdleTime != null) {
-      factory.setRegionIdleTimeout(regionExpirationIdleTime.convertToExpirationAttributes());
+    if (regionExpirationIdleTime.isTimeOrActionSet()) {
+      factory.setRegionIdleTimeout(regionExpirationIdleTime.getExpirationAttributes());
     }
     final RegionFunctionArgs.ExpirationAttrs regionExpirationTTL =
         regionCreateArgs.getRegionExpirationTTL();
-    if (regionExpirationTTL != null) {
-      factory.setRegionTimeToLive(regionExpirationTTL.convertToExpirationAttributes());
+    if (regionExpirationTTL.isTimeOrActionSet()) {
+      factory.setRegionTimeToLive(regionExpirationTTL.getExpirationAttributes());
     }
 
     EvictionAttributes evictionAttributes = regionCreateArgs.getEvictionAttributes();

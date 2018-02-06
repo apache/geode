@@ -30,6 +30,7 @@ import org.apache.geode.cache.CacheLoader;
 import org.apache.geode.cache.CacheWriter;
 import org.apache.geode.cache.DataPolicy;
 import org.apache.geode.cache.EvictionAction;
+import org.apache.geode.cache.ExpirationAction;
 import org.apache.geode.cache.Region;
 import org.apache.geode.cache.RegionAttributes;
 import org.apache.geode.cache.RegionShortcut;
@@ -128,11 +129,11 @@ public class CreateRegionCommand implements GfshCommand {
       @CliOption(key = CliStrings.CREATE_REGION__ENTRYEXPIRATIONIDLETIME,
           help = CliStrings.CREATE_REGION__ENTRYEXPIRATIONIDLETIME__HELP) Integer entryExpirationIdleTime,
       @CliOption(key = CliStrings.CREATE_REGION__ENTRYEXPIRATIONIDLETIMEACTION,
-          help = CliStrings.CREATE_REGION__ENTRYEXPIRATIONIDLETIMEACTION__HELP) String entryExpirationIdleTimeAction,
+          help = CliStrings.CREATE_REGION__ENTRYEXPIRATIONIDLETIMEACTION__HELP) ExpirationAction entryExpirationIdleTimeAction,
       @CliOption(key = CliStrings.CREATE_REGION__ENTRYEXPIRATIONTIMETOLIVE,
           help = CliStrings.CREATE_REGION__ENTRYEXPIRATIONTIMETOLIVE__HELP) Integer entryExpirationTTL,
       @CliOption(key = CliStrings.CREATE_REGION__ENTRYEXPIRATIONTTLACTION,
-          help = CliStrings.CREATE_REGION__ENTRYEXPIRATIONTTLACTION__HELP) String entryExpirationTTLAction,
+          help = CliStrings.CREATE_REGION__ENTRYEXPIRATIONTTLACTION__HELP) ExpirationAction entryExpirationTTLAction,
       @CliOption(key = CliStrings.CREATE_REGION__EVICTION_ACTION,
           help = CliStrings.CREATE_REGION__EVICTION_ACTION__HELP) String evictionAction,
       @CliOption(key = CliStrings.CREATE_REGION__EVICTION_ENTRY_COUNT,
@@ -154,11 +155,11 @@ public class CreateRegionCommand implements GfshCommand {
       @CliOption(key = CliStrings.CREATE_REGION__REGIONEXPIRATIONIDLETIME,
           help = CliStrings.CREATE_REGION__REGIONEXPIRATIONIDLETIME__HELP) Integer regionExpirationIdleTime,
       @CliOption(key = CliStrings.CREATE_REGION__REGIONEXPIRATIONIDLETIMEACTION,
-          help = CliStrings.CREATE_REGION__REGIONEXPIRATIONIDLETIMEACTION__HELP) String regionExpirationIdleTimeAction,
+          help = CliStrings.CREATE_REGION__REGIONEXPIRATIONIDLETIMEACTION__HELP) ExpirationAction regionExpirationIdleTimeAction,
       @CliOption(key = CliStrings.CREATE_REGION__REGIONEXPIRATIONTTL,
           help = CliStrings.CREATE_REGION__REGIONEXPIRATIONTTL__HELP) Integer regionExpirationTTL,
       @CliOption(key = CliStrings.CREATE_REGION__REGIONEXPIRATIONTTLACTION,
-          help = CliStrings.CREATE_REGION__REGIONEXPIRATIONTTLACTION__HELP) String regionExpirationTTLAction,
+          help = CliStrings.CREATE_REGION__REGIONEXPIRATIONTTLACTION__HELP) ExpirationAction regionExpirationTTLAction,
       @CliOption(key = CliStrings.CREATE_REGION__RECOVERYDELAY,
           help = CliStrings.CREATE_REGION__RECOVERYDELAY__HELP) Long prRecoveryDelay,
       @CliOption(key = CliStrings.CREATE_REGION__REDUNDANTCOPIES,
@@ -601,24 +602,35 @@ public class CreateRegionCommand implements GfshCommand {
         }
       }
 
-      String statisticsEnabled =
-          parseResult.getParamValueAsString(CliStrings.CREATE_REGION__STATISTICSENABLED);
-      if (!Boolean.parseBoolean(statisticsEnabled)) {
-        String entryIdle =
-            parseResult.getParamValueAsString(CliStrings.CREATE_REGION__ENTRYEXPIRATIONIDLETIME);
-        String entryTtl =
-            parseResult.getParamValueAsString(CliStrings.CREATE_REGION__ENTRYEXPIRATIONTIMETOLIVE);
-        String regionIdle =
-            parseResult.getParamValueAsString(CliStrings.CREATE_REGION__REGIONEXPIRATIONIDLETIME);
-        String regionTtl =
-            parseResult.getParamValueAsString(CliStrings.CREATE_REGION__REGIONEXPIRATIONTTL);
-        if (entryIdle != null || entryTtl != null || regionIdle != null || regionTtl != null) {
-          String message =
-              LocalizedStrings.AttributesFactory_STATISTICS_MUST_BE_ENABLED_FOR_EXPIRATION
-                  .toLocalizedString();
-          return ResultBuilder.createUserErrorResult(message + ".");
-        }
+      // if any expiration value is set, statistics must be enabled
+      Boolean statisticsEnabled =
+          (Boolean) parseResult.getParamValue(CliStrings.CREATE_REGION__STATISTICSENABLED);
+      Integer entryIdle =
+          (Integer) parseResult.getParamValue(CliStrings.CREATE_REGION__ENTRYEXPIRATIONIDLETIME);
+      Integer entryTtl =
+          (Integer) parseResult.getParamValue(CliStrings.CREATE_REGION__ENTRYEXPIRATIONTIMETOLIVE);
+      Integer regionIdle =
+          (Integer) parseResult.getParamValue(CliStrings.CREATE_REGION__REGIONEXPIRATIONIDLETIME);
+      Integer regionTtl =
+          (Integer) parseResult.getParamValue(CliStrings.CREATE_REGION__REGIONEXPIRATIONTTL);
+      ExpirationAction entryIdleAction = (ExpirationAction) parseResult
+          .getParamValue(CliStrings.CREATE_REGION__ENTRYEXPIRATIONIDLETIMEACTION);
+      ExpirationAction entryTtlAction = (ExpirationAction) parseResult
+          .getParamValue(CliStrings.CREATE_REGION__ENTRYEXPIRATIONTTLACTION);
+      ExpirationAction regionIdleAction = (ExpirationAction) parseResult
+          .getParamValue(CliStrings.CREATE_REGION__REGIONEXPIRATIONIDLETIMEACTION);
+      ExpirationAction regionTtlAction = (ExpirationAction) parseResult
+          .getParamValue(CliStrings.CREATE_REGION__REGIONEXPIRATIONTTLACTION);
+
+      if ((entryIdle != null || entryTtl != null || regionIdle != null || regionTtl != null
+          || entryIdleAction != null || entryTtlAction != null || regionIdleAction != null
+          || regionTtlAction != null) && (statisticsEnabled == null || !statisticsEnabled)) {
+        String message =
+            LocalizedStrings.AttributesFactory_STATISTICS_MUST_BE_ENABLED_FOR_EXPIRATION
+                .toLocalizedString();
+        return ResultBuilder.createUserErrorResult(message + ".");
       }
+
 
       String maxMemory =
           parseResult.getParamValueAsString(CliStrings.CREATE_REGION__EVICTION_MAX_MEMORY);
