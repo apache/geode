@@ -181,4 +181,159 @@ public class CreateRegionCommandDUnitTest {
     gfsh.executeAndAssertThat("destroy region --name=/COPY").statusIsSuccess();
     gfsh.executeAndAssertThat("destroy region --name=/TEMPLATE").statusIsSuccess();
   }
+
+  @Test
+  public void ensureOverridingCallbacksFromTemplateDoNotRequireClassesOnLocator() throws Exception {
+    final File prJarFile = new File(tmpDir.getRoot(), "myCacheListener.jar");
+    new JarBuilder().buildJar(prJarFile, getUniversalClassCode("MyCallback"),
+        getUniversalClassCode("MyNewCallback"));
+    gfsh.executeAndAssertThat("deploy --jar=" + prJarFile.getAbsolutePath()).statusIsSuccess();
+
+    String myCallback = "io.pivotal.MyCallback";
+    gfsh.executeAndAssertThat(
+        String
+            .format(
+                "create region --name=/TEMPLATE --type=PARTITION_REDUNDANT "
+                    + "--cache-listener=%1$s " + "--cache-loader=%1$s " + "--cache-writer=%1$s "
+                    + "--compressor=%1$s " + "--key-constraint=%1$s " + "--value-constraint=%1$s",
+                myCallback))
+        .statusIsSuccess();
+
+    String myNewCallback = "io.pivotal.MyNewCallback";
+    gfsh.executeAndAssertThat(String
+        .format("create region --name=/COPY --template-region=/TEMPLATE " + "--cache-listener=%1$s "
+            + "--cache-loader=%1$s " + "--cache-writer=%1$s " + "--compressor=%1$s "
+            + "--key-constraint=%1$s " + "--value-constraint=%1$s", myNewCallback))
+        .statusIsSuccess();
+
+    server1.getVM().invoke(() -> {
+      Region copy = ClusterStartupRule.getCache().getRegion("/COPY");
+
+      assertThat(Arrays.stream(copy.getAttributes().getCacheListeners())
+          .map(c -> c.getClass().getName()).collect(Collectors.toSet()))
+              .containsExactly(myNewCallback);
+
+      assertThat(copy.getAttributes().getCacheLoader().getClass().getName())
+          .isEqualTo(myNewCallback);
+
+      assertThat(copy.getAttributes().getCacheWriter().getClass().getName())
+          .isEqualTo(myNewCallback);
+
+      assertThat(copy.getAttributes().getCompressor().getClass().getName())
+          .isEqualTo(myNewCallback);
+
+      assertThat(copy.getAttributes().getKeyConstraint().getName()).isEqualTo(myNewCallback);
+
+      assertThat(copy.getAttributes().getValueConstraint().getName()).isEqualTo(myNewCallback);
+    });
+
+    gfsh.executeAndAssertThat("destroy region --name=/COPY").statusIsSuccess();
+    gfsh.executeAndAssertThat("destroy region --name=/TEMPLATE").statusIsSuccess();
+  }
+
+  @Test
+  public void ensureNewCallbacksFromTemplateDoNotRequireClassesOnLocator() throws Exception {
+    final File prJarFile = new File(tmpDir.getRoot(), "myCacheListener.jar");
+    new JarBuilder().buildJar(prJarFile, getUniversalClassCode("MyNewCallback"));
+    gfsh.executeAndAssertThat("deploy --jar=" + prJarFile.getAbsolutePath()).statusIsSuccess();
+
+    gfsh.executeAndAssertThat("create region --name=/TEMPLATE --type=PARTITION_REDUNDANT")
+        .statusIsSuccess();
+
+    String myNewCallback = "io.pivotal.MyNewCallback";
+    gfsh.executeAndAssertThat(String
+        .format("create region --name=/COPY --template-region=/TEMPLATE " + "--cache-listener=%1$s "
+            + "--cache-loader=%1$s " + "--cache-writer=%1$s " + "--compressor=%1$s "
+            + "--key-constraint=%1$s " + "--value-constraint=%1$s", myNewCallback))
+        .statusIsSuccess();
+
+    server1.getVM().invoke(() -> {
+      Region copy = ClusterStartupRule.getCache().getRegion("/COPY");
+
+      assertThat(Arrays.stream(copy.getAttributes().getCacheListeners())
+          .map(c -> c.getClass().getName()).collect(Collectors.toSet()))
+              .containsExactly(myNewCallback);
+
+      assertThat(copy.getAttributes().getCacheLoader().getClass().getName())
+          .isEqualTo(myNewCallback);
+
+      assertThat(copy.getAttributes().getCacheWriter().getClass().getName())
+          .isEqualTo(myNewCallback);
+
+      assertThat(copy.getAttributes().getCompressor().getClass().getName())
+          .isEqualTo(myNewCallback);
+
+      assertThat(copy.getAttributes().getKeyConstraint().getName()).isEqualTo(myNewCallback);
+
+      assertThat(copy.getAttributes().getValueConstraint().getName()).isEqualTo(myNewCallback);
+    });
+
+    gfsh.executeAndAssertThat("destroy region --name=/COPY").statusIsSuccess();
+    gfsh.executeAndAssertThat("destroy region --name=/TEMPLATE").statusIsSuccess();
+  }
+
+  @Test
+  public void ensureOriginalCallbacksFromTemplateDoNotRequireClassesOnLocator() throws Exception {
+    final File prJarFile = new File(tmpDir.getRoot(), "myCacheListener.jar");
+    new JarBuilder().buildJar(prJarFile, getUniversalClassCode("MyCallback"));
+    gfsh.executeAndAssertThat("deploy --jar=" + prJarFile.getAbsolutePath()).statusIsSuccess();
+
+    String myCallback = "io.pivotal.MyCallback";
+    gfsh.executeAndAssertThat(
+        String
+            .format(
+                "create region --name=/TEMPLATE --type=PARTITION_REDUNDANT "
+                    + "--cache-listener=%1$s " + "--cache-loader=%1$s " + "--cache-writer=%1$s "
+                    + "--compressor=%1$s " + "--key-constraint=%1$s " + "--value-constraint=%1$s",
+                myCallback))
+        .statusIsSuccess();
+
+    gfsh.executeAndAssertThat("create region --name=/COPY --template-region=/TEMPLATE")
+        .statusIsSuccess();
+
+    server1.getVM().invoke(() -> {
+      Region copy = ClusterStartupRule.getCache().getRegion("/COPY");
+
+      assertThat(Arrays.stream(copy.getAttributes().getCacheListeners())
+          .map(c -> c.getClass().getName()).collect(Collectors.toSet()))
+              .containsExactly(myCallback);
+
+      assertThat(copy.getAttributes().getCacheLoader().getClass().getName()).isEqualTo(myCallback);
+
+      assertThat(copy.getAttributes().getCacheWriter().getClass().getName()).isEqualTo(myCallback);
+
+      assertThat(copy.getAttributes().getCompressor().getClass().getName()).isEqualTo(myCallback);
+
+      assertThat(copy.getAttributes().getKeyConstraint().getName()).isEqualTo(myCallback);
+
+      assertThat(copy.getAttributes().getValueConstraint().getName()).isEqualTo(myCallback);
+    });
+
+    gfsh.executeAndAssertThat("destroy region --name=/COPY").statusIsSuccess();
+    gfsh.executeAndAssertThat("destroy region --name=/TEMPLATE").statusIsSuccess();
+  }
+
+  private String getUniversalClassCode(String classname) {
+    String code = "package io.pivotal;" + "import org.apache.geode.cache.CacheLoader;"
+        + "import org.apache.geode.cache.CacheLoaderException;"
+        + "import org.apache.geode.cache.CacheWriter;"
+        + "import org.apache.geode.cache.CacheWriterException;"
+        + "import org.apache.geode.cache.EntryEvent;"
+        + "import org.apache.geode.cache.LoaderHelper;"
+        + "import org.apache.geode.cache.RegionEvent;"
+        + "import org.apache.geode.cache.util.CacheListenerAdapter;"
+        + "import org.apache.geode.compression.Compressor;" + "public class " + classname
+        + " extends CacheListenerAdapter "
+        + "implements CacheWriter, CacheLoader, Compressor, java.io.Serializable {"
+        + "public void beforeUpdate(EntryEvent event) throws CacheWriterException {}"
+        + "public void beforeCreate(EntryEvent event) throws CacheWriterException {}"
+        + "public void beforeDestroy(EntryEvent event) throws CacheWriterException {}"
+        + "public void beforeRegionDestroy(RegionEvent event) throws CacheWriterException {}"
+        + "public void beforeRegionClear(RegionEvent event) throws CacheWriterException {}"
+        + "public Object load(LoaderHelper helper) throws CacheLoaderException { return null; }"
+        + "public byte[] compress(byte[] input) { return new byte[0]; }"
+        + "public byte[] decompress(byte[] input) { return new byte[0]; }" + "}";
+    return code;
+  }
+
 }
