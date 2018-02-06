@@ -28,14 +28,12 @@ import java.util.Scanner;
 
 import org.apache.commons.io.FileUtils;
 import org.assertj.core.api.SoftAssertions;
-import org.junit.AfterClass;
 import org.junit.Before;
-import org.junit.BeforeClass;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
-import org.apache.geode.examples.SimpleSecurityManager;
+import org.apache.geode.examples.security.ExampleSecurityManager;
 import org.apache.geode.management.internal.cli.util.CommandStringBuilder;
 import org.apache.geode.test.junit.categories.AcceptanceTest;
 import org.apache.geode.test.junit.rules.gfsh.GfshRule;
@@ -43,19 +41,22 @@ import org.apache.geode.test.junit.rules.gfsh.GfshRule;
 @Category(AcceptanceTest.class)
 public class LogsAreFullyRedactedAcceptanceTest {
 
-  private static String PASSWORD = "abcdefghijklmn";
+  private static String sharedPasswordString = "abcdefg";
 
-  // Don't put "password" in all the key names, since that is one of our taboo words.
-  private static final String gfshSysEnvUsername = "log-no-test.security-username";
-  private static final String gfshSysEnvUsernameValue = "test.sysenv-username";
-  private static final String gfshSysEnvPassword = "log-no-test.security-password";
-  private static final String gfshSysEnvPasswordValue = PASSWORD + "-sysenv";
+  private static final String propertyFileUsername = "security-username";
+  private static final String propertyFileUsernameValue = "propertyFileUser";
+  private static final String propertyFilePassword = "security-password";
+  private static final String propertyFilePasswordValue = sharedPasswordString + "-propertyFile";
 
-  private static final String gfshSysEnvUsernamePost = "security-username.log-no-test";
-  private static final String gfshSysEnvUsernameValuePost = "sysenv-username.test";
-  private static final String gfshSysEnvPasswordPost = "security-password.log-no-test";
-  private static final String gfshSysEnvPasswordValuePost = PASSWORD + "-post";
+  private static final String securityPropertyFileUsername = "security-file-username";
+  private static final String securityPropertyFileUsernameValue = "securityPropertyFileUser";
+  private static final String securityPropertyFilePassword = "security-file-password";
+  private static final String securityPropertyFilePasswordValue =
+      sharedPasswordString + "-securityPropertyFile";
 
+  private static final String commandLineOptionUsername = "viaStartMemberOptions";
+  private static final String commandLineOptionPassword =
+      sharedPasswordString + "-viaStartMemberOptions";
 
 
   private File propertyFile;
@@ -64,54 +65,49 @@ public class LogsAreFullyRedactedAcceptanceTest {
   @Rule
   public GfshRule gfsh = new GfshRule();
 
-  @BeforeClass
-  public static void addSecuritySystemProperties() {
-    System.setProperty(gfshSysEnvUsername, gfshSysEnvUsernameValue);
-    System.setProperty(gfshSysEnvPassword, gfshSysEnvPasswordValue);
-    System.setProperty(gfshSysEnvUsernamePost, gfshSysEnvUsernameValuePost);
-    System.setProperty(gfshSysEnvPasswordPost, gfshSysEnvPasswordValuePost);
-  }
+  public LogsAreFullyRedactedAcceptanceTest() {}
 
   @Before
-  public void createPropertyFiles() throws IOException {
+  public void createDirectoriesAndFiles() throws IOException {
     propertyFile = gfsh.getTemporaryFolder().newFile("geode.properties");
     securityPropertyFile = gfsh.getTemporaryFolder().newFile("security.properties");
 
     Properties properties = new Properties();
     properties.setProperty(LOG_LEVEL, "debug");
+    properties.setProperty(propertyFileUsername, propertyFileUsernameValue);
+    properties.setProperty(propertyFilePassword, propertyFilePasswordValue);
     try (FileOutputStream fileOutputStream = new FileOutputStream(propertyFile)) {
       properties.store(fileOutputStream, null);
     }
 
     Properties securityProperties = new Properties();
-    securityProperties.setProperty(SECURITY_MANAGER, SimpleSecurityManager.class.getName());
+    securityProperties.setProperty(SECURITY_MANAGER, ExampleSecurityManager.class.getName());
+    securityProperties.setProperty(ExampleSecurityManager.SECURITY_JSON, "security.json");
+    securityProperties.setProperty(securityPropertyFileUsername, securityPropertyFileUsernameValue);
+    securityProperties.setProperty(securityPropertyFilePassword, securityPropertyFilePasswordValue);
     try (FileOutputStream fileOutputStream = new FileOutputStream(securityPropertyFile)) {
       securityProperties.store(fileOutputStream, null);
     }
   }
 
-  @AfterClass
-  public static void removeSecuritySystemProperties() {
-    System.clearProperty(gfshSysEnvUsername);
-    System.clearProperty(gfshSysEnvPassword);
-    System.clearProperty(gfshSysEnvUsernamePost);
-    System.clearProperty(gfshSysEnvPasswordPost);
-  }
-
   @Test
   public void logsDoNotContainStringThatShouldBeRedacted() throws FileNotFoundException {
-    String startLocatorCmd = new CommandStringBuilder("start locator")
-        .addOption("properties-file", propertyFile.getAbsolutePath())
-        .addOption("security-properties-file", securityPropertyFile.getAbsolutePath())
-        .addOption("name", "test-locator").getCommandString();
+    // The json is in the root resource directory.
+    String securityJson = getClass().getResource("/").getFile();
+    String startLocatorCmd =
+        new CommandStringBuilder("start locator").addOption("name", "test-locator")
+            .addOption("properties-file", propertyFile.getAbsolutePath())
+            .addOption("security-properties-file", securityPropertyFile.getAbsolutePath())
+            .addOption("classpath", securityJson).getCommandString();
 
     // Since we're in geode-assembly and rely on the SimpleSecurityManager, we'll need to also
     // make sure no --password=cluster winds up in our logs, since that's what we need to use here.
     String startServerCmd = new CommandStringBuilder("start server")
+        .addOption("name", "test-server").addOption("user", commandLineOptionUsername)
+        .addOption("password", commandLineOptionPassword)
         .addOption("properties-file", propertyFile.getAbsolutePath())
         .addOption("security-properties-file", securityPropertyFile.getAbsolutePath())
-        .addOption("user", "cluster").addOption("password", "cluster")
-        .addOption("name", "test-server").getCommandString();
+        .addOption("classpath", securityJson).getCommandString();
 
 
     gfsh.execute(startLocatorCmd, startServerCmd);
@@ -125,11 +121,11 @@ public class LogsAreFullyRedactedAcceptanceTest {
       Scanner scanner = new Scanner(logFile);
       while (scanner.hasNextLine()) {
         String line = scanner.nextLine();
-        System.out.println(line);
         softly.assertThat(line).describedAs("File: %s, Line: %s", logFile.getAbsolutePath(), line)
-            .doesNotContain(PASSWORD).doesNotContainPattern("password.*cluster");
+            .doesNotContain(sharedPasswordString);
       }
     }
+
     softly.assertAll();
   }
 }
