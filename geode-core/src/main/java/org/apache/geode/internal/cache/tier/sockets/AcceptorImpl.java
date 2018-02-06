@@ -72,6 +72,7 @@ import org.apache.geode.distributed.internal.LonerDistributionManager;
 import org.apache.geode.distributed.internal.PooledExecutorWithDMStats;
 import org.apache.geode.distributed.internal.ReplyProcessor21;
 import org.apache.geode.internal.SystemTimer;
+import org.apache.geode.internal.Version;
 import org.apache.geode.internal.cache.BucketAdvisor;
 import org.apache.geode.internal.cache.BucketAdvisor.BucketProfile;
 import org.apache.geode.internal.cache.InternalCache;
@@ -176,7 +177,7 @@ public class AcceptorImpl implements Acceptor, Runnable, CommBufferPool {
    * The name of a system property that sets the hand shake timeout (in milliseconds). This is how
    * long a client will wait to hear back from a server.
    */
-  public static final String HANDSHAKE_TIMEOUT_PROPERTY_NAME = "BridgeServer.handshakeTimeout";
+  public static final String HANDSHAKE_TIMEOUT_PROPERTY_NAME = "BridgeServer.handShakeTimeout";
 
   /**
    * The default value of the {@link #HANDSHAKE_TIMEOUT_PROPERTY_NAME} system property.
@@ -1831,7 +1832,7 @@ public class AcceptorImpl implements Acceptor, Runnable, CommBufferPool {
 
     @Override
     public void run() {
-      logger.info(":Bridge server: Initializing {} server-to-client communication socket: {}",
+      logger.info(":Cache server: Initializing {} server-to-client communication socket: {}",
           isPrimaryServerToClient ? "primary" : "secondary", socket);
       try {
         acceptor.getCacheClientNotifier().registerClient(socket, isPrimaryServerToClient,

@@ -107,6 +107,7 @@ public class PoolImpl implements InternalPool {
   private final int subscriptionRedundancyLevel;
   private final int subscriptionMessageTrackingTimeout;
   private final int subscriptionAckInterval;
+  private final int subscriptionTimeoutMultiplier;
   private final String serverGroup;
   private final List<HostAddress> locatorAddresses;
   private final List<InetSocketAddress> locators;
@@ -201,6 +202,10 @@ public class PoolImpl implements InternalPool {
     this.subscriptionRedundancyLevel = attributes.getSubscriptionRedundancy();
     this.subscriptionMessageTrackingTimeout = attributes.getSubscriptionMessageTrackingTimeout();
     this.subscriptionAckInterval = attributes.getSubscriptionAckInterval();
+    this.subscriptionTimeoutMultiplier = attributes.getSubscriptionTimeoutMultiplier();
+    if (this.subscriptionTimeoutMultiplier < 0) {
+      throw new IllegalArgumentException("The subscription timeout multipler must not be negative");
+    }
     this.serverGroup = attributes.getServerGroup();
     this.multiuserSecureModeEnabled = attributes.getMultiuserAuthentication();
     this.locatorAddresses = locAddresses;
@@ -1607,5 +1612,10 @@ public class PoolImpl implements InternalPool {
               .toLocalizedString());
     }
     return this.primaryQueueSize.get();
+  }
+
+  @Override
+  public int getSubscriptionTimeoutMultiplier() {
+    return subscriptionTimeoutMultiplier;
   }
 }
