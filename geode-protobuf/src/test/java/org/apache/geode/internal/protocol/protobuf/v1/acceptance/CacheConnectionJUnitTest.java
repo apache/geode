@@ -211,31 +211,28 @@ public class CacheConnectionJUnitTest {
 
   private void validatePutResponse(Socket socket,
       ProtobufProtocolSerializer protobufProtocolSerializer) throws Exception {
-    ClientProtocol.Response response = deserializeResponse(socket, protobufProtocolSerializer);
-    assertEquals(ClientProtocol.Response.ResponseAPICase.PUTRESPONSE,
-        response.getResponseAPICase());
+    ClientProtocol.Message response = deserializeResponse(socket, protobufProtocolSerializer);
+    assertEquals(ClientProtocol.Message.MessageTypeCase.PUTRESPONSE, response.getMessageTypeCase());
   }
 
   private void validateGetResponse(Socket socket,
       ProtobufProtocolSerializer protobufProtocolSerializer, Object expectedValue)
       throws InvalidProtocolMessageException, IOException {
-    ClientProtocol.Response response = deserializeResponse(socket, protobufProtocolSerializer);
+    ClientProtocol.Message response = deserializeResponse(socket, protobufProtocolSerializer);
 
-    assertEquals(ClientProtocol.Response.ResponseAPICase.GETRESPONSE,
-        response.getResponseAPICase());
+    assertEquals(ClientProtocol.Message.MessageTypeCase.GETRESPONSE, response.getMessageTypeCase());
     RegionAPI.GetResponse getResponse = response.getGetResponse();
     BasicTypes.EncodedValue result = getResponse.getResult();
     assertEquals(BasicTypes.EncodedValue.ValueCase.STRINGRESULT, result.getValueCase());
     assertEquals(expectedValue, result.getStringResult());
   }
 
-  private ClientProtocol.Response deserializeResponse(Socket socket,
+  private ClientProtocol.Message deserializeResponse(Socket socket,
       ProtobufProtocolSerializer protobufProtocolSerializer)
       throws InvalidProtocolMessageException, IOException {
     ClientProtocol.Message message =
         protobufProtocolSerializer.deserialize(socket.getInputStream());
-    assertEquals(ClientProtocol.Message.MessageTypeCase.RESPONSE, message.getMessageTypeCase());
-    return message.getResponse();
+    return message;
   }
 
   private void updatePropertiesForSSLCache(Properties properties) {

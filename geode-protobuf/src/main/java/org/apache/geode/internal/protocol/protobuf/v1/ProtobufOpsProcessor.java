@@ -42,9 +42,9 @@ public class ProtobufOpsProcessor {
     this.protobufOperationContextRegistry = protobufOperationContextRegistry;
   }
 
-  public ClientProtocol.Response process(ClientProtocol.Request request,
+  public ClientProtocol.Message process(ClientProtocol.Message request,
       MessageExecutionContext messageExecutionContext) {
-    ClientProtocol.Request.RequestAPICase requestType = request.getRequestAPICase();
+    ClientProtocol.Message.MessageTypeCase requestType = request.getMessageTypeCase();
     logger.debug("Processing request of type {}", requestType);
     ProtobufOperationContext operationContext =
         protobufOperationContextRegistry.getOperationContext(requestType);
@@ -65,12 +65,12 @@ public class ProtobufOpsProcessor {
       result = Failure.of(ProtobufResponseUtilities.makeErrorResponse(e));
     }
 
-    return ((ClientProtocol.Response.Builder) result.map(operationContext.getToResponse(),
+    return ((ClientProtocol.Message.Builder) result.map(operationContext.getToResponse(),
         operationContext.getToErrorResponse())).build();
   }
 
-  private Result processOperation(ClientProtocol.Request request, MessageExecutionContext context,
-      ClientProtocol.Request.RequestAPICase requestType, ProtobufOperationContext operationContext)
+  private Result processOperation(ClientProtocol.Message request, MessageExecutionContext context,
+      ClientProtocol.Message.MessageTypeCase requestType, ProtobufOperationContext operationContext)
       throws ConnectionStateException {
     try {
       return operationContext.getOperationHandler().process(serializationService,

@@ -83,13 +83,12 @@ public class ProtobufDriver implements Driver {
 
     final OutputStream outputStream = socket.getOutputStream();
     ClientProtocol.Message.newBuilder()
-        .setRequest(ClientProtocol.Request.newBuilder()
-            .setGetRegionNamesRequest(RegionAPI.GetRegionNamesRequest.newBuilder()))
-        .build().writeDelimitedTo(outputStream);
+        .setGetRegionNamesRequest(RegionAPI.GetRegionNamesRequest.newBuilder()).build()
+        .writeDelimitedTo(outputStream);
 
     final InputStream inputStream = socket.getInputStream();
-    final RegionAPI.GetRegionNamesResponse getRegionNamesResponse = ClientProtocol.Message
-        .parseDelimitedFrom(inputStream).getResponse().getGetRegionNamesResponse();
+    final RegionAPI.GetRegionNamesResponse getRegionNamesResponse =
+        ClientProtocol.Message.parseDelimitedFrom(inputStream).getGetRegionNamesResponse();
     for (int i = 0; i < getRegionNamesResponse.getRegionsCount(); ++i) {
       regionNames.add(getRegionNamesResponse.getRegions(i));
     }
@@ -143,12 +142,10 @@ public class ProtobufDriver implements Driver {
         }
 
         ClientProtocol.Message.newBuilder()
-            .setRequest(ClientProtocol.Request.newBuilder()
-                .setGetServerRequest(LocatorAPI.GetServerRequest.newBuilder()))
-            .build().writeDelimitedTo(outputStream);
+            .setGetServerRequest(LocatorAPI.GetServerRequest.newBuilder()).build()
+            .writeDelimitedTo(outputStream);
 
-        ClientProtocol.Response response =
-            ClientProtocol.Message.parseDelimitedFrom(inputStream).getResponse();
+        ClientProtocol.Message response = ClientProtocol.Message.parseDelimitedFrom(inputStream);
         ClientProtocol.ErrorResponse errorResponse = response.getErrorResponse();
 
         if (errorResponse != null && errorResponse.hasError()) {
