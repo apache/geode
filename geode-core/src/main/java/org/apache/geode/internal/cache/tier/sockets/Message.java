@@ -109,6 +109,8 @@ public class Message {
   private static final byte[] TRUE = defineTrue();
   private static final byte[] FALSE = defineFalse();
 
+  private static final int NO_HEADER_READ_TIMEOUT = 0;
+
   private static byte[] defineTrue() {
     try (HeapDataOutputStream hdos = new HeapDataOutputStream(10, null)) {
       BlobHelper.serializeTo(Boolean.TRUE, hdos);
@@ -647,61 +649,18 @@ public class Message {
     cb.clear();
   }
 
-  private void read() throws IOException {
+  private void readHeaderAndBody(int headerReadTimeoutMillis) throws IOException {
     clearParts();
     // TODO: for server changes make sure sc is not null as this class also used by client
-    readHeaderAndPayload();
-  }
 
-  /**
-   * Read the actual bytes of the header off the socket
-   */
-  void fetchHeader() throws IOException {
-    final ByteBuffer cb = getCommBuffer();
-    cb.clear();
-
-    // messageType is invalidated here and can be used as an indicator
-    // of problems reading the message
-    this.messageType = MessageType.INVALID;
-
-    final int headerLength = getHeaderLength();
-    if (this.socketChannel != null) {
-      cb.limit(headerLength);
-      do {
-        int bytesRead = this.socketChannel.read(cb);
-        if (bytesRead == -1) {
-          throw new EOFException(
-              LocalizedStrings.Message_THE_CONNECTION_HAS_BEEN_RESET_WHILE_READING_THE_HEADER
-                  .toLocalizedString());
-        }
-        if (this.messageStats != null) {
-          this.messageStats.incReceivedBytes(bytesRead);
-        }
-      } while (cb.remaining() > 0);
-      cb.flip();
-
-    } else {
-      int hdr = 0;
-      do {
-        int bytesRead = this.inputStream.read(cb.array(), hdr, headerLength - hdr);
-        if (bytesRead == -1) {
-          throw new EOFException(
-              LocalizedStrings.Message_THE_CONNECTION_HAS_BEEN_RESET_WHILE_READING_THE_HEADER
-                  .toLocalizedString());
-        }
-        hdr += bytesRead;
-        if (this.messageStats != null) {
-          this.messageStats.incReceivedBytes(bytesRead);
-        }
-      } while (hdr < headerLength);
-
-      // now setup the commBuffer for the caller to parse it
-      cb.rewind();
+    int timeout = socket.getSoTimeout();
+    try {
+      socket.setSoTimeout(headerReadTimeoutMillis);
+      fetchHeader();
+    } finally {
+      socket.setSoTimeout(timeout);
     }
-  }
 
-  private void readHeaderAndPayload() throws IOException {
-    fetchHeader();
     final ByteBuffer cb = getCommBuffer();
     final int type = cb.getInt();
     final int len = cb.getInt();
@@ -814,6 +773,53 @@ public class Message {
     if (this.serverConnection != null) {
       // Keep track of the fact that a message is being processed.
       this.serverConnection.updateProcessingMessage();
+    }
+  }
+
+  /**
+   * Read the actual bytes of the header off the socket
+   */
+  void fetchHeader() throws IOException {
+    final ByteBuffer cb = getCommBuffer();
+    cb.clear();
+
+    // messageType is invalidated here and can be used as an indicator
+    // of problems reading the message
+    this.messageType = MessageType.INVALID;
+
+    final int headerLength = getHeaderLength();
+    if (this.socketChannel != null) {
+      cb.limit(headerLength);
+      do {
+        int bytesRead = this.socketChannel.read(cb);
+        if (bytesRead == -1) {
+          throw new EOFException(
+              LocalizedStrings.Message_THE_CONNECTION_HAS_BEEN_RESET_WHILE_READING_THE_HEADER
+                  .toLocalizedString());
+        }
+        if (this.messageStats != null) {
+          this.messageStats.incReceivedBytes(bytesRead);
+        }
+      } while (cb.remaining() > 0);
+      cb.flip();
+
+    } else {
+      int hdr = 0;
+      do {
+        int bytesRead = this.inputStream.read(cb.array(), hdr, headerLength - hdr);
+        if (bytesRead == -1) {
+          throw new EOFException(
+              LocalizedStrings.Message_THE_CONNECTION_HAS_BEEN_RESET_WHILE_READING_THE_HEADER
+                  .toLocalizedString());
+        }
+        hdr += bytesRead;
+        if (this.messageStats != null) {
+          this.messageStats.incReceivedBytes(bytesRead);
+        }
+      } while (hdr < headerLength);
+
+      // now setup the commBuffer for the caller to parse it
+      cb.rewind();
     }
   }
 
@@ -1043,12 +1049,14 @@ public class Message {
     return sb.toString();
   }
 
+  // Set up a message on the server side.
   void setComms(ServerConnection sc, Socket socket, ByteBuffer bb, MessageStats msgStats)
       throws IOException {
     this.serverConnection = sc;
     setComms(socket, bb, msgStats);
   }
 
+  // Set up a message on the client side.
   void setComms(Socket socket, ByteBuffer bb, MessageStats msgStats) throws IOException {
     this.socketChannel = socket.getChannel();
     if (this.socketChannel == null) {
@@ -1058,6 +1066,7 @@ public class Message {
     }
   }
 
+  // Set up a message on the client side.
   public void setComms(Socket socket, InputStream is, OutputStream os, ByteBuffer bb,
       MessageStats msgStats) {
     Assert.assertTrue(socket != null);
@@ -1104,25 +1113,36 @@ public class Message {
   }
 
   /**
-   * Populates the stats of this {@code Message} with information received via its socket
+   * Read a message, populating the state of this {@code Message} with information received via its
+   * socket
+   *
+   * @param timeoutMillis timeout setting for reading the header (0 = no timeout)
+   * @throws IOException
    */
-  public void recv() throws IOException {
+  public void receiveWithHeaderReadTimeout(int timeoutMillis) throws IOException {
     if (this.socket != null) {
       synchronized (getCommBuffer()) {
-        read();
+        readHeaderAndBody(timeoutMillis);
       }
     } else {
       throw new IOException(LocalizedStrings.Message_DEAD_CONNECTION.toLocalizedString());
     }
   }
 
-  public void recv(ServerConnection sc, int maxMessageLength, Semaphore dataLimiter,
+  /**
+   * Populates the state of this {@code Message} with information received via its socket
+   */
+  public void receive() throws IOException {
+    receiveWithHeaderReadTimeout(NO_HEADER_READ_TIMEOUT);
+  }
+
+  public void receive(ServerConnection sc, int maxMessageLength, Semaphore dataLimiter,
       Semaphore msgLimiter) throws IOException {
     this.serverConnection = sc;
     this.maxIncomingMessageLength = maxMessageLength;
     this.dataLimiter = dataLimiter;
     this.messageLimiter = msgLimiter;
-    recv();
+    receive();
   }
 
 }

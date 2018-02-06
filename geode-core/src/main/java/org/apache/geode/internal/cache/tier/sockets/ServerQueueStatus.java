@@ -26,6 +26,11 @@ import org.apache.geode.distributed.DistributedMember;
  *
  */
 public class ServerQueueStatus {
+  /**
+   * interval that server sends pings if connection is idle. This is only known for
+   * CacheClientUpdater subscription feed status objects
+   */
+  private final int pingInterval;
   /** queueSize of HARegionQueue for this client */
   private int qSize = 0;
   /** Endpoint type for this endpoint */
@@ -35,23 +40,26 @@ public class ServerQueueStatus {
   private int pdxSize = 0;
 
   /**
-   * Default constructor Called when connectionsPerServer=0
+   * Constructor Called when connectionsPerServer is nto equal to 0
+   *
    */
-  public ServerQueueStatus(DistributedMember memberId) {
-    this((byte) 0, 0, memberId);
+  public ServerQueueStatus(byte endpointType, int queueSize, DistributedMember memberId,
+      int pingInterval) {
+    this.qSize = queueSize;
+    this.endpointType = endpointType;
+    this.memberId = memberId;
+    this.pingInterval = pingInterval;
   }
 
   /**
    * Constructor Called when connectionsPerServer is nto equal to 0
    *
-   * @param endpointType
-   * @param queueSize
    */
   public ServerQueueStatus(byte endpointType, int queueSize, DistributedMember memberId) {
     this.qSize = queueSize;
     this.endpointType = endpointType;
     this.memberId = memberId;
-
+    this.pingInterval = -1;
   }
 
   /**
@@ -82,10 +90,20 @@ public class ServerQueueStatus {
     return this.qSize;
   }
 
+  /** returns the time between server-to-client ping messages on idle subscription connections */
+  public int getPingInterval() {
+    if (this.pingInterval < 0) {
+      throw new IllegalStateException(
+          "ping interval is only known for a subscription feed connection");
+    }
+    return this.pingInterval;
+  }
+
   public String toString() {
     StringBuffer buffer = new StringBuffer();
     buffer.append("ServerQueueStatus [").append("queueSize=").append(this.qSize)
-        .append("; endpointType=").append(getTypeAsString()).append("]");
+        .append("; endpointType=").append(getTypeAsString()).append("; pingInterval=")
+        .append(this.pingInterval).append("ms]");
     return buffer.toString();
   }
 

@@ -34,6 +34,8 @@ import java.util.Properties;
 
 import javax.net.ssl.SSLSocket;
 
+import org.apache.logging.log4j.Logger;
+
 import org.apache.geode.CancelCriterion;
 import org.apache.geode.DataSerializer;
 import org.apache.geode.GemFireConfigException;
@@ -61,12 +63,15 @@ import org.apache.geode.internal.cache.tier.sockets.EncryptorImpl;
 import org.apache.geode.internal.cache.tier.sockets.Handshake;
 import org.apache.geode.internal.cache.tier.sockets.ServerQueueStatus;
 import org.apache.geode.internal.i18n.LocalizedStrings;
+import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.internal.security.SecurityService;
 import org.apache.geode.security.AuthenticationFailedException;
 import org.apache.geode.security.AuthenticationRequiredException;
 import org.apache.geode.security.GemFireSecurityException;
 
 public class ClientSideHandshakeImpl extends Handshake implements ClientSideHandshake {
+  private static final Logger logger = LogService.getLogger();
+
   /**
    * Used at client side, indicates whether the 'delta-propagation' property is enabled on the DS
    * this client is connected to. This variable is used to decide whether to send delta bytes or
@@ -155,7 +160,7 @@ public class ClientSideHandshakeImpl extends Handshake implements ClientSideHand
    * @param sock the socket this handshake is operating on
    * @return temporary id to reprent the other vm
    */
-  private DistributedMember getIDForSocket(Socket sock) {
+  private InternalDistributedMember getIDForSocket(Socket sock) {
     return new InternalDistributedMember(sock.getInetAddress(), sock.getPort(), false);
   }
 
@@ -172,7 +177,7 @@ public class ClientSideHandshakeImpl extends Handshake implements ClientSideHand
       DataOutputStream dos = new DataOutputStream(sock.getOutputStream());
       final InputStream in = sock.getInputStream();
       DataInputStream dis = new DataInputStream(in);
-      DistributedMember member = getIDForSocket(sock);
+      InternalDistributedMember member = getIDForSocket(sock);
       // if running in a loner system, use the new port number in the ID to
       // help differentiate from other clients
       DistributionManager dm = ((InternalDistributedSystem) this.system).getDistributionManager();
@@ -225,6 +230,7 @@ public class ClientSideHandshakeImpl extends Handshake implements ClientSideHand
       int queueSize = dis.readInt();
 
       member = readServerMember(dis);
+
       serverQStatus = new ServerQueueStatus(endpointType, queueSize, member);
 
       // Read the message (if any)
@@ -265,7 +271,7 @@ public class ClientSideHandshakeImpl extends Handshake implements ClientSideHand
     }
   }
 
-  private DistributedMember readServerMember(DataInputStream p_dis) throws IOException {
+  private InternalDistributedMember readServerMember(DataInputStream p_dis) throws IOException {
 
     byte[] memberBytes = DataSerializer.readByteArray(p_dis);
     ByteArrayInputStream bais = new ByteArrayInputStream(memberBytes);
@@ -293,7 +299,7 @@ public class ClientSideHandshakeImpl extends Handshake implements ClientSideHand
   public ServerQueueStatus handshakeWithSubscriptionFeed(Socket sock, boolean isPrimary)
       throws IOException, AuthenticationRequiredException, AuthenticationFailedException,
       ServerRefusedConnectionException, ClassNotFoundException {
-    ServerQueueStatus sqs = null;
+    ServerQueueStatus serverQueueStatus = null;
     try {
       DataOutputStream dos = new DataOutputStream(sock.getOutputStream());
       final InputStream in = sock.getInputStream();
@@ -316,12 +322,8 @@ public class ClientSideHandshakeImpl extends Handshake implements ClientSideHand
             LocalizedStrings.HandShake_SERVER_EXPECTING_SSL_CONNECTION.toLocalizedString());
       }
 
-      // No need to check for return value since DataInputStream already throws
-      // EOFException in case of EOF
-      byte qType = dis.readByte();
-      // read and ignore qSize flag
-      int qSize = dis.readInt();
-      sqs = new ServerQueueStatus(qType, qSize, member);
+      byte endpointType = dis.readByte();
+      int queueSize = dis.readInt();
 
       // Read the message (if any)
       readMessage(dis, dos, acceptanceCode, member);
@@ -330,7 +332,7 @@ public class ClientSideHandshakeImpl extends Handshake implements ClientSideHand
       // there is a difference in serializer map registration for >= 6.5.1.6
       // clients but that is not used in tests
       if (currentClientVersion.compareTo(Version.GFE_61) < 0) {
-        return sqs;
+        return new ServerQueueStatus(endpointType, queueSize, member);
       }
       HashMap instantiatorMap = DataSerializer.readHashMap(dis);
       for (Iterator itr = instantiatorMap.entrySet().iterator(); itr.hasNext();) {
@@ -349,6 +351,12 @@ public class ClientSideHandshakeImpl extends Handshake implements ClientSideHand
       }
       HashMap<Integer, ArrayList<String>> dsToSupportedClassNames = DataSerializer.readHashMap(dis);
       InternalDataSerializer.updateSupportedClassesMap(dsToSupportedClassNames);
+
+      // the server's ping interval is only sent to subscription feeds so we can't read it as
+      // part of a "standard" server response along with the other status data.
+      int pingInterval = dis.readInt();
+      serverQueueStatus = new ServerQueueStatus(endpointType, queueSize, member, pingInterval);
+
     } catch (IOException ex) {
       CancelCriterion stopper = this.system.getCancelCriterion();
       stopper.checkCancelInProgress(null);
@@ -358,7 +366,7 @@ public class ClientSideHandshakeImpl extends Handshake implements ClientSideHand
       stopper.checkCancelInProgress(null);
       throw ex;
     }
-    return sqs;
+    return serverQueueStatus;
   }
 
   /**
