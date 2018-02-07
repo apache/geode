@@ -153,7 +153,7 @@ public class ClientTXStateStub extends TXStateStub {
       logger.debug("TX: client localLockRequest: {}", lockReq);
     }
     try {
-      lockReq.obtain();
+      lockReq.obtain(cache.getInternalDistributedSystem());
     } catch (CommitConflictException e) {
       rollback(); // cleanup tx artifacts on server
       throw e;

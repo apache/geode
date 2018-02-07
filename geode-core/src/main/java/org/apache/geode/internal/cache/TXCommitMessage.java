@@ -536,7 +536,7 @@ public class TXCommitMessage extends PooledDistributionMessage
     }
 
     if (this.processorId != 0) {
-      TXLockService.createDTLS(); // fix bug 38843; no-op if already created
+      TXLockService.createDTLS(this.dm.getSystem()); // fix bug 38843; no-op if already created
       synchronized (this) {
         // Handle potential origin departure
         this.dm.addMembershipListener(this);
@@ -2078,7 +2078,8 @@ public class TXCommitMessage extends PooledDistributionMessage
    */
   private void updateLockMembers() {
     if (this.lockNeedsUpdate && this.lockId != null) {
-      TXLockService.createDTLS().updateParticipants(this.lockId, this.msgMap.keySet());
+      TXLockService.createDTLS(this.dm.getSystem()).updateParticipants(this.lockId,
+          this.msgMap.keySet());
     }
   }
 
