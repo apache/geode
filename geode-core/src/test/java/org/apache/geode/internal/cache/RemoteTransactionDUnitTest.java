@@ -3204,8 +3204,8 @@ public class RemoteTransactionDUnitTest extends JUnit4CacheTestCase {
 
     accessor.invoke(new SerializableCallable() {
       public Object call() throws Exception {
-        Region cust = getGemfireCache().getRegion(CUSTOMER);
-        TXManagerImpl mgr = getGemfireCache().getTxManager();
+        Region cust = getCache().getRegion(CUSTOMER);
+        TXManagerImpl mgr = getCache().getTxManager();
         mgr.begin();
         cust.put(new CustId(6), new Customer("customer6", "address6"));
         return null;
@@ -3214,14 +3214,14 @@ public class RemoteTransactionDUnitTest extends JUnit4CacheTestCase {
     final InternalDistributedMember member =
         (InternalDistributedMember) accessor.invoke(new SerializableCallable() {
           public Object call() throws Exception {
-            return getGemfireCache().getMyId();
+            return getCache().getMyId();
           }
         });
     datastore.invoke(new SerializableCallable() {
       public Object call() throws Exception {
-        TXManagerImpl mgr = getGemfireCache().getTxManager();
+        TXManagerImpl mgr = getCache().getTxManager();
         assertEquals(1, mgr.hostedTransactionsInProgressForTest());
-        mgr.memberDeparted(member, true);
+        mgr.memberDeparted(getCache().getDistributionManager(), member, true);
         assertEquals(0, mgr.hostedTransactionsInProgressForTest());
         return null;
       }

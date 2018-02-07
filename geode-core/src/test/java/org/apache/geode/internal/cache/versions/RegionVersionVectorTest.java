@@ -215,8 +215,8 @@ public class RegionVersionVectorTest {
     rv1.recordVersion(server3, 1);
     rv1.recordVersion(server4, 1);
     rv1.recordVersion(server5, 1);
-    rv1.memberDeparted(server2, false);
-    rv1.memberDeparted(server4, true);
+    rv1.memberDeparted(null, server2, false);
+    rv1.memberDeparted(null, server4, true);
     assertTrue(rv1.containsMember(server2));
     assertTrue(rv1.containsMember(server3));
     assertTrue(rv1.containsMember(server4));
@@ -228,7 +228,7 @@ public class RegionVersionVectorTest {
     rv1.removeOldMembers(retain);
     assertFalse(rv1.containsMember(server4));
 
-    rv1.memberDeparted(server3, false); // {server2, server3(departed), server5}
+    rv1.memberDeparted(null, server3, false); // {server2, server3(departed), server5}
 
     // Now test that departed members are transferred with GII. We simulate
     // a new server, server6, doing a GII from server1

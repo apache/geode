@@ -58,7 +58,8 @@ public class ReliableReplyProcessor21 extends ReplyProcessor21 {
    * Note: race condition exists between membershipListener and processing of replies.
    */
   @Override
-  public void memberDeparted(final InternalDistributedMember id, final boolean crashed) {
+  public void memberDeparted(DistributionManager distributionManager,
+      final InternalDistributedMember id, final boolean crashed) {
     if (removeMember(id, true)) {
       synchronized (this) {
         if (this.departedMembers == null) {

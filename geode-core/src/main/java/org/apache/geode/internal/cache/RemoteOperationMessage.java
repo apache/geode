@@ -565,7 +565,8 @@ public abstract class RemoteOperationMessage extends DistributionMessage
     }
 
     @Override
-    public void memberDeparted(final InternalDistributedMember id, final boolean crashed) {
+    public void memberDeparted(DistributionManager distributionManager,
+        final InternalDistributedMember id, final boolean crashed) {
       if (id != null) {
         if (removeMember(id, true)) {
           this.prce = new ForceReattemptException(

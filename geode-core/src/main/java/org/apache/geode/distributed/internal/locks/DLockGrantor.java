@@ -3636,17 +3636,18 @@ public class DLockGrantor {
 
   /** Detects loss of the lock grantor and initiates grantor recovery. */
   private MembershipListener membershipListener = new MembershipListener() {
-    public void memberJoined(InternalDistributedMember id) {}
+    public void memberJoined(DistributionManager distributionManager,
+        InternalDistributedMember id) {}
 
-    public void quorumLost(Set<InternalDistributedMember> failures,
-        List<InternalDistributedMember> remaining) {}
+    public void quorumLost(DistributionManager distributionManager,
+        Set<InternalDistributedMember> failures, List<InternalDistributedMember> remaining) {}
 
-    public void memberSuspect(InternalDistributedMember id, InternalDistributedMember whoSuspected,
-        String reason) {}
+    public void memberSuspect(DistributionManager distributionManager, InternalDistributedMember id,
+        InternalDistributedMember whoSuspected, String reason) {}
 
-    public void memberDeparted(final InternalDistributedMember id, final boolean crashed) {
+    public void memberDeparted(DistributionManager distMgr, final InternalDistributedMember id,
+        final boolean crashed) {
       final DLockGrantor me = DLockGrantor.this;
-      final DistributionManager distMgr = me.dlock.getDistributionManager();
       // if the VM is being forcibly disconnected, we shouldn't release locks as it
       // will take longer than the time allowed by the InternalDistributedSystem
       // shutdown mechanism.

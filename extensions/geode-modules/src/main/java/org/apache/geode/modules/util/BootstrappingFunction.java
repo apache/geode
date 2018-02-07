@@ -184,19 +184,21 @@ public class BootstrappingFunction implements Function, MembershipListener, Data
   }
 
   @Override
-  public void memberDeparted(InternalDistributedMember id, boolean crashed) {}
+  public void memberDeparted(DistributionManager distributionManager, InternalDistributedMember id,
+      boolean crashed) {}
 
   @Override
-  public void memberJoined(InternalDistributedMember id) {
+  public void memberJoined(DistributionManager distributionManager, InternalDistributedMember id) {
     bootstrapMember(id);
   }
 
   @Override
-  public void memberSuspect(InternalDistributedMember id, InternalDistributedMember whoSuspected,
-      String reason) {}
+  public void memberSuspect(DistributionManager distributionManager, InternalDistributedMember id,
+      InternalDistributedMember whoSuspected, String reason) {}
 
   @Override
-  public void quorumLost(Set<InternalDistributedMember> internalDistributedMembers,
+  public void quorumLost(DistributionManager distributionManager,
+      Set<InternalDistributedMember> internalDistributedMembers,
       List<InternalDistributedMember> internalDistributedMembers2) {}
 
   @Override

@@ -755,13 +755,14 @@ public class StateFlushOperation {
     /** process the failure set from sending the message */
     public void messageNotSentTo(Set failures) {
       for (Iterator it = failures.iterator(); it.hasNext();) {
-        this.memberDeparted((InternalDistributedMember) it.next(), true);
+        this.memberDeparted(null, (InternalDistributedMember) it.next(), true);
       }
     }
 
     @Override
-    public void memberDeparted(final InternalDistributedMember id, final boolean crashed) {
-      super.memberDeparted(id, crashed);
+    public void memberDeparted(DistributionManager distributionManager,
+        final InternalDistributedMember id, final boolean crashed) {
+      super.memberDeparted(distributionManager, id, crashed);
     }
 
     @Override

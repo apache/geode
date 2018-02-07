@@ -666,27 +666,27 @@ public class SystemManagementService extends BaseManagementService {
 
   public void memberJoined(InternalDistributedMember id) {
     for (ProxyListener listener : proxyListeners) {
-      listener.memberJoined(id);
+      listener.memberJoined(system.getDistributionManager(), id);
     }
   }
 
   public void memberDeparted(InternalDistributedMember id, boolean crashed) {
     for (ProxyListener listener : proxyListeners) {
-      listener.memberDeparted(id, crashed);
+      listener.memberDeparted(system.getDistributionManager(), id, crashed);
     }
   }
 
   public void memberSuspect(InternalDistributedMember id, InternalDistributedMember whoSuspected,
       String reason) {
     for (ProxyListener listener : proxyListeners) {
-      listener.memberSuspect(id, whoSuspected, reason);
+      listener.memberSuspect(system.getDistributionManager(), id, whoSuspected, reason);
     }
   }
 
   public void quorumLost(Set<InternalDistributedMember> failures,
       List<InternalDistributedMember> remaining) {
     for (ProxyListener listener : proxyListeners) {
-      listener.quorumLost(failures, remaining);
+      listener.quorumLost(system.getDistributionManager(), failures, remaining);
     }
   }
 
