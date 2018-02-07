@@ -292,9 +292,6 @@ public class ContainsKeyValueMessage extends PartitionMessageWithDirectReply {
       } catch (ForceReattemptException rce) {
         rce.checkKey(key);
         throw rce;
-      } catch (PrimaryBucketException pbe) {
-        // Is this necessary?
-        throw pbe;
       } catch (CacheException ce) {
         logger.debug("ContainsKeyValueResponse got remote CacheException; forcing reattempt. {}",
             ce.getMessage(), ce);

@@ -24,7 +24,6 @@ import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
-import java.util.concurrent.RejectedExecutionException;
 import java.util.concurrent.ThreadFactory;
 
 import org.apache.logging.log4j.Logger;
@@ -243,8 +242,6 @@ public class ConcurrentParallelGatewaySenderEventProcessor
       }
     } catch (InterruptedException e) {
       throw new InternalGemFireException(e);
-    } catch (RejectedExecutionException rejectedExecutionEx) {
-      throw rejectedExecutionEx;
     }
 
     stopperService.shutdown();

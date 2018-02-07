@@ -27,7 +27,6 @@ import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
-import java.util.concurrent.RejectedExecutionException;
 import java.util.concurrent.ThreadFactory;
 
 import org.apache.logging.log4j.Logger;
@@ -312,8 +311,6 @@ public class ConcurrentSerialGatewaySenderEventProcessor
       }
     } catch (InterruptedException e) {
       throw new InternalGemFireException(e.getMessage());
-    } catch (RejectedExecutionException rejectedExecutionEx) {
-      throw rejectedExecutionEx;
     }
     // shutdown the stopperService. This will release all the stopper threads
     stopperService.shutdown();

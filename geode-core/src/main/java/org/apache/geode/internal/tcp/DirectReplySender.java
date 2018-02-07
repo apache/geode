@@ -23,7 +23,6 @@ import java.util.Set;
 import org.apache.logging.log4j.Logger;
 
 import org.apache.geode.InternalGemFireException;
-import org.apache.geode.ToDataException;
 import org.apache.geode.distributed.internal.DMStats;
 import org.apache.geode.distributed.internal.DistributionMessage;
 import org.apache.geode.distributed.internal.LonerDistributionManager.DummyDMStats;
@@ -78,9 +77,6 @@ class DirectReplySender implements ReplySender {
       return Collections.emptySet();
     } catch (NotSerializableException e) {
       throw new InternalGemFireException(e);
-    } catch (ToDataException e) {
-      // exception from user code
-      throw e;
     } catch (IOException ex) {
       throw new InternalGemFireException(
           LocalizedStrings.DirectChannel_UNKNOWN_ERROR_SERIALIZING_MESSAGE.toLocalizedString(), ex);
