@@ -38,7 +38,6 @@ import org.apache.geode.test.junit.categories.DistributedTest;
 public class PartitionedRegionCacheCloseDUnitTest extends CacheTestCase {
 
   private static final int TOTAL_NUM_BUCKETS = 5;
-
   private static final String REGION_NAME = "REGION";
 
   @Test
