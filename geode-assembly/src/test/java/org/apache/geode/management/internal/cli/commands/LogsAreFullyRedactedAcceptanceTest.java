@@ -38,26 +38,18 @@ import org.apache.geode.management.internal.cli.util.CommandStringBuilder;
 import org.apache.geode.test.junit.categories.AcceptanceTest;
 import org.apache.geode.test.junit.rules.gfsh.GfshRule;
 
+/**
+ * This test class expects a "security.json" file to be visible on the member classpaths. The
+ * security.json is consumed by {@link org.apache.geode.examples.security.ExampleSecurityManager}
+ * and should contain each username/password combination present (even though not all will actually
+ * be consumed by the Security Manager).
+ *
+ * Each password shares the string below for easier log scanning.
+ */
 @Category(AcceptanceTest.class)
 public class LogsAreFullyRedactedAcceptanceTest {
 
   private static String sharedPasswordString = "abcdefg";
-
-  private static final String propertyFileUsername = "security-username";
-  private static final String propertyFileUsernameValue = "propertyFileUser";
-  private static final String propertyFilePassword = "security-password";
-  private static final String propertyFilePasswordValue = sharedPasswordString + "-propertyFile";
-
-  private static final String securityPropertyFileUsername = "security-file-username";
-  private static final String securityPropertyFileUsernameValue = "securityPropertyFileUser";
-  private static final String securityPropertyFilePassword = "security-file-password";
-  private static final String securityPropertyFilePasswordValue =
-      sharedPasswordString + "-securityPropertyFile";
-
-  private static final String commandLineOptionUsername = "viaStartMemberOptions";
-  private static final String commandLineOptionPassword =
-      sharedPasswordString + "-viaStartMemberOptions";
-
 
   private File propertyFile;
   private File securityPropertyFile;
@@ -74,8 +66,8 @@ public class LogsAreFullyRedactedAcceptanceTest {
 
     Properties properties = new Properties();
     properties.setProperty(LOG_LEVEL, "debug");
-    properties.setProperty(propertyFileUsername, propertyFileUsernameValue);
-    properties.setProperty(propertyFilePassword, propertyFilePasswordValue);
+    properties.setProperty("security-username", "propertyFileUser");
+    properties.setProperty("security-password", sharedPasswordString + "-propertyFile");
     try (FileOutputStream fileOutputStream = new FileOutputStream(propertyFile)) {
       properties.store(fileOutputStream, null);
     }
@@ -83,8 +75,9 @@ public class LogsAreFullyRedactedAcceptanceTest {
     Properties securityProperties = new Properties();
     securityProperties.setProperty(SECURITY_MANAGER, ExampleSecurityManager.class.getName());
     securityProperties.setProperty(ExampleSecurityManager.SECURITY_JSON, "security.json");
-    securityProperties.setProperty(securityPropertyFileUsername, securityPropertyFileUsernameValue);
-    securityProperties.setProperty(securityPropertyFilePassword, securityPropertyFilePasswordValue);
+    securityProperties.setProperty("security-file-username", "securityPropertyFileUser");
+    securityProperties.setProperty("security-file-password",
+        sharedPasswordString + "-securityPropertyFile");
     try (FileOutputStream fileOutputStream = new FileOutputStream(securityPropertyFile)) {
       securityProperties.store(fileOutputStream, null);
     }
@@ -98,15 +91,19 @@ public class LogsAreFullyRedactedAcceptanceTest {
         new CommandStringBuilder("start locator").addOption("name", "test-locator")
             .addOption("properties-file", propertyFile.getAbsolutePath())
             .addOption("security-properties-file", securityPropertyFile.getAbsolutePath())
-            .addOption("classpath", securityJson).getCommandString();
+            .addOption("J", "-Dsecure-username-jd=user-jd")
+            .addOption("J", "-Dsecure-password-jd=password-jd").addOption("classpath", securityJson)
+            .getCommandString();
 
     // Since we're in geode-assembly and rely on the SimpleSecurityManager, we'll need to also
     // make sure no --password=cluster winds up in our logs, since that's what we need to use here.
     String startServerCmd = new CommandStringBuilder("start server")
-        .addOption("name", "test-server").addOption("user", commandLineOptionUsername)
-        .addOption("password", commandLineOptionPassword)
+        .addOption("name", "test-server").addOption("user", "viaStartMemberOptions")
+        .addOption("password", sharedPasswordString + "-viaStartMemberOptions")
         .addOption("properties-file", propertyFile.getAbsolutePath())
         .addOption("security-properties-file", securityPropertyFile.getAbsolutePath())
+        .addOption("J", "-Dsecure-username-jd=user-jd")
+        .addOption("J", "-Dsecure-password-jd=" + sharedPasswordString + "-password-jd")
         .addOption("classpath", securityJson).getCommandString();
 
 
