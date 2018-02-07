@@ -37,6 +37,7 @@ import org.apache.logging.log4j.Logger;
 import org.apache.geode.CancelCriterion;
 import org.apache.geode.CancelException;
 import org.apache.geode.SystemFailure;
+import org.apache.geode.cache.CacheClosedException;
 import org.apache.geode.cache.GatewayConfigurationException;
 import org.apache.geode.cache.client.AllConnectionsInUseException;
 import org.apache.geode.cache.client.NoAvailableServersException;
@@ -72,13 +73,9 @@ import org.apache.geode.security.GemFireSecurityException;
 public class ConnectionManagerImpl implements ConnectionManager {
   private static final Logger logger = LogService.getLogger();
 
-  static long AQUIRE_TIMEOUT = Long
-      .getLong(DistributionConfig.GEMFIRE_PREFIX + "ConnectionManager.AQUIRE_TIMEOUT", 10 * 1000)
-      .longValue();
   private final String poolName;
   private final PoolStats poolStats;
-  protected final long prefillRetry; // ms // make this an int
-  // private final long pingInterval; // ms // make this an int
+  protected final long prefillRetry; // ms
   private final LinkedList/* <PooledConnection> */ availableConnections =
       new LinkedList/* <PooledConnection> */();
   protected final ConnectionMap allConnectionsMap = new ConnectionMap();
@@ -1030,6 +1027,7 @@ public class ConnectionManagerImpl implements ConnectionManager {
     private final LinkedList/* <PooledConnection> */ allConnections =
         new LinkedList/* <PooledConnection> */(); // in the order they were created
     private boolean haveLifetimeExpireConnectionsTask;
+    volatile boolean closing;
 
     public synchronized boolean isIdleExpirePossible() {
       return this.allConnections.size() > minConnections;
@@ -1058,25 +1056,30 @@ public class ConnectionManagerImpl implements ConnectionManager {
       return sb.toString();
     }
 
-    public synchronized void addConnection(PooledConnection connection) {
-      addToEndpointMap(connection);
-
-      // we want the smallest birthDate (e.g. oldest cnx) at the front of the list
-      getPoolStats().incPoolConnections(1);
-      // logger.info("DEBUG: addConnection incPoolConnections(1)->" +
-      // getPoolStats().getPoolConnections() + " con="+connection,
-      // new RuntimeException("STACK"));
-      this.allConnections.addLast(connection);
-      if (isIdleExpirePossible()) {
-        startBackgroundExpiration();
+    public void addConnection(PooledConnection connection) {
+      if (this.closing) {
+        throw new CacheClosedException("This pool is closing");
       }
-      if (lifetimeTimeout != -1 && !haveLifetimeExpireConnectionsTask) {
-        if (checkForReschedule(true)) {
-          // something has already expired so start processing with no delay
-          // logger.info("DEBUG: rescheduling lifetime expire to be now");
-          startBackgroundLifetimeExpiration(0);
-        } else {
-          // either no possible lifetime expires or we scheduled one
+      synchronized (this) {
+        addToEndpointMap(connection);
+
+        // we want the smallest birthDate (e.g. oldest cnx) at the front of the list
+        getPoolStats().incPoolConnections(1);
+        // logger.info("DEBUG: addConnection incPoolConnections(1)->" +
+        // getPoolStats().getPoolConnections() + " con="+connection,
+        // new RuntimeException("STACK"));
+        this.allConnections.addLast(connection);
+        if (isIdleExpirePossible()) {
+          startBackgroundExpiration();
+        }
+        if (lifetimeTimeout != -1 && !haveLifetimeExpireConnectionsTask) {
+          if (checkForReschedule(true)) {
+            // something has already expired so start processing with no delay
+            // logger.info("DEBUG: rescheduling lifetime expire to be now");
+            startBackgroundLifetimeExpiration(0);
+          } else {
+            // either no possible lifetime expires or we scheduled one
+          }
         }
       }
     }
@@ -1156,6 +1159,7 @@ public class ConnectionManagerImpl implements ConnectionManager {
     }
 
     public synchronized void close(boolean keepAlive) {
+      closing = true;
       map.clear();
       int count = 0;
       while (!this.allConnections.isEmpty()) {
@@ -1183,6 +1187,7 @@ public class ConnectionManagerImpl implements ConnectionManager {
     }
 
     public synchronized void emergencyClose() {
+      closing = true;
       map.clear();
       while (!this.allConnections.isEmpty()) {
         PooledConnection pc = (PooledConnection) this.allConnections.removeFirst();
@@ -1529,6 +1534,10 @@ public class ConnectionManagerImpl implements ConnectionManager {
       // schedule one that will do a check in our configured lifetimeExpire.
       // this should not be needed but seems to currently help.
       startBackgroundLifetimeExpiration(lifetimeTimeoutNanos);
+    }
+
+    public synchronized int size() {
+      return this.allConnections.size();
     }
   }
 
