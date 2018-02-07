@@ -170,8 +170,6 @@ public class GatewaySenderBatchOp {
         this.failed = false;
         this.timedOut = true;
         throw ste;
-      } catch (Exception e) {
-        throw e;
       }
     }
 

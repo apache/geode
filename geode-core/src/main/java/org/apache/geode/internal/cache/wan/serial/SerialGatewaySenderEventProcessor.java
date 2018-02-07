@@ -23,7 +23,6 @@ import java.util.Random;
 import java.util.concurrent.Executor;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.LinkedBlockingQueue;
-import java.util.concurrent.RejectedExecutionException;
 import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
@@ -42,7 +41,6 @@ import org.apache.geode.cache.wan.GatewaySender;
 import org.apache.geode.distributed.DistributedSystem;
 import org.apache.geode.internal.Assert;
 import org.apache.geode.internal.cache.DistributedRegion;
-import org.apache.geode.internal.cache.EntryEventImpl;
 import org.apache.geode.internal.cache.EnumListenerEvent;
 import org.apache.geode.internal.cache.EventID;
 import org.apache.geode.internal.cache.wan.AbstractGatewaySender;
@@ -582,15 +580,11 @@ public class SerialGatewaySenderEventProcessor extends AbstractGatewaySenderEven
         // should mean we are now primary
         return;
       }
-      try {
-        my_executor.execute(new Runnable() {
-          public void run() {
-            basicHandlePrimaryEvent(gatewayEvent);
-          }
-        });
-      } catch (RejectedExecutionException ex) {
-        throw ex;
-      }
+      my_executor.execute(new Runnable() {
+        public void run() {
+          basicHandlePrimaryEvent(gatewayEvent);
+        }
+      });
     }
   }
 
@@ -604,15 +598,11 @@ public class SerialGatewaySenderEventProcessor extends AbstractGatewaySenderEven
         // should mean we are now primary
         return;
       }
-      try {
-        my_executor.execute(new Runnable() {
-          public void run() {
-            basicHandlePrimaryDestroy(gatewayEvent);
-          }
-        });
-      } catch (RejectedExecutionException ex) {
-        throw ex;
-      }
+      my_executor.execute(new Runnable() {
+        public void run() {
+          basicHandlePrimaryDestroy(gatewayEvent);
+        }
+      });
     }
   }
 
