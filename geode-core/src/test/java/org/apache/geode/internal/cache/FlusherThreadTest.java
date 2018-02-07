@@ -36,6 +36,8 @@ public class FlusherThreadTest {
 
   private DiskStoreImpl diskStoreImpl;
   private DiskStoreStats diskStoreStats;
+  private DiskStoreImpl.FlusherThread flusherThread;
+
   private final int DRAIN_LIST_SIZE = 5;
 
   @Before
@@ -52,12 +54,12 @@ public class FlusherThreadTest {
     when(diskStoreImpl.getStats()).thenReturn(diskStoreStats);
     when(diskStoreImpl.checkAndClearForceFlush()).thenReturn(true);
     when(diskStoreImpl.isStopFlusher()).thenReturn(false).thenReturn(true);
+
+    flusherThread = new DiskStoreImpl.FlusherThread(diskStoreImpl);
   }
 
   @Test
   public void asyncFlushIncrementsQueueSizeStat() {
-    DiskStoreImpl.FlusherThread flusherThread = new DiskStoreImpl.FlusherThread(diskStoreImpl);
-
     flusherThread.doAsyncFlush();
 
     verify(diskStoreStats, times(1)).incQueueSize(-DRAIN_LIST_SIZE);
@@ -65,7 +67,6 @@ public class FlusherThreadTest {
 
   @Test
   public void asyncFlushDoesNotIncrementQueueSizeWhenExceptionThrown() {
-    DiskStoreImpl.FlusherThread flusherThread = new DiskStoreImpl.FlusherThread(diskStoreImpl);
     when(diskStoreImpl.getDrainList()).thenThrow(DiskAccessException.class);
 
     flusherThread.doAsyncFlush();

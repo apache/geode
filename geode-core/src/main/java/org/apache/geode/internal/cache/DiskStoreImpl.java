@@ -695,7 +695,7 @@ public class DiskStoreImpl implements DiskStore {
       throws RegionClearedException {
     DiskRegion dr = region.getDiskRegion();
     DiskId id = entry.getDiskId();
-    long start = async ? this.getStats().startFlush() : this.getStats().startWrite();
+    long start = async ? getStats().startFlush() : getStats().startWrite();
     if (!async) {
       dr.getStats().startWrite();
     }
@@ -751,9 +751,9 @@ public class DiskStoreImpl implements DiskStore {
       }
     } finally {
       if (async) {
-        this.getStats().endFlush(start);
+        getStats().endFlush(start);
       } else {
-        dr.getStats().endWrite(start, this.getStats().endWrite(start));
+        dr.getStats().endWrite(start, getStats().endWrite(start));
         dr.getStats().incWrittenBytes(id.getValueLength());
       }
     }
@@ -1079,10 +1079,10 @@ public class DiskStoreImpl implements DiskStore {
       // Entry will not be found in diskRegion.
       // So if reference has changed, do nothing.
       if (!dr.didClearCountChange()) {
-        long start = this.getStats().startRemove();
+        long start = getStats().startRemove();
         OplogSet oplogSet = getOplogSet(dr);
         oplogSet.remove(region, entry, async, isClear);
-        dr.getStats().endRemove(start, this.getStats().endRemove(start));
+        dr.getStats().endRemove(start, getStats().endRemove(start));
       } else {
         throw new RegionClearedException(
             LocalizedStrings.DiskRegion_CLEAR_OPERATION_ABORTING_THE_ONGOING_ENTRY_DESTRUCTION_OPERATION_FOR_ENTRY_WITH_DISKID_0
@@ -1290,29 +1290,29 @@ public class DiskStoreImpl implements DiskStore {
       }
       checkForFlusherThreadTermination();
       if (forceAsync) {
-        this.getAsyncQueue().forcePut(item);
+        getAsyncQueue().forcePut(item);
       } else {
-        if (!this.getAsyncQueue().offer(item)) {
+        if (!getAsyncQueue().offer(item)) {
           // queue is full so do a sync write to prevent deadlock
           handleFullAsyncQueue(item);
           // return early since we didn't add it to the queue
           return;
         }
       }
-      this.getStats().incQueueSize(1);
+      getStats().incQueueSize(1);
     }
     if (this.maxAsyncItems > 0) {
       if (checkAsyncItemLimit()) {
-        synchronized (this.getAsyncMonitor()) {
-          this.getAsyncMonitor().notifyAll();
+        synchronized (getAsyncMonitor()) {
+          getAsyncMonitor().notifyAll();
         }
       }
     }
   }
 
   private void rmAsyncItem(Object item) {
-    if (this.getAsyncQueue().remove(item)) {
-      this.getStats().incQueueSize(-1);
+    if (getAsyncQueue().remove(item)) {
+      getStats().incQueueSize(-1);
     }
   }
 
@@ -1330,12 +1330,12 @@ public class DiskStoreImpl implements DiskStore {
       this.pendingAsyncEnqueue.incrementAndGet();
     }
     dr.getStats().startWrite();
-    return this.getStats().startWrite();
+    return getStats().startWrite();
   }
 
   private void endAsyncWrite(AsyncDiskEntry ade, DiskRegion dr, long start) {
     this.pendingAsyncEnqueue.decrementAndGet();
-    dr.getStats().endWrite(start, this.getStats().endWrite(start));
+    dr.getStats().endWrite(start, getStats().endWrite(start));
 
     if (!ade.versionOnly) { // for versionOnly = true ade.de will be null
       long bytesWritten = ade.de.getDiskId().getValueLength();
@@ -1384,7 +1384,7 @@ public class DiskStoreImpl implements DiskStore {
   private ArrayList drainList = null;
 
   int fillDrainList() {
-    synchronized (this.getDrainSync()) {
+    synchronized (getDrainSync()) {
       ForceableLinkedBlockingQueue<Object> queue = getAsyncQueue();
       this.drainList = new ArrayList(queue.size());
       return queue.drainTo(this.drainList);
@@ -1401,7 +1401,7 @@ public class DiskStoreImpl implements DiskStore {
    * clearing the isPendingAsync bit on each entry in this list.
    */
   void clearDrainList(LocalRegion r, RegionVersionVector rvv) {
-    synchronized (this.getDrainSync()) {
+    synchronized (getDrainSync()) {
       if (this.drainList == null)
         return;
       Iterator it = this.drainList.iterator();
@@ -1487,7 +1487,7 @@ public class DiskStoreImpl implements DiskStore {
     } while (this.pendingAsyncEnqueue.get() > 0);
     synchronized (getAsyncMonitor()) {
       this.stopFlusher = true;
-      this.getAsyncMonitor().notifyAll();
+      getAsyncMonitor().notifyAll();
     }
     while (!this.flusherThreadTerminated) {
       try {
@@ -1537,7 +1537,7 @@ public class DiskStoreImpl implements DiskStore {
   }
 
   private boolean isFlusherTerminated() {
-    return this.isStopFlusher() || this.flusherThreadTerminated || this.flusherThread == null
+    return isStopFlusher() || this.flusherThreadTerminated || this.flusherThread == null
         || !this.flusherThread.isAlive();
   }
 
@@ -1557,9 +1557,9 @@ public class DiskStoreImpl implements DiskStore {
   }
 
   private void incForceFlush() {
-    Object monitor = this.getAsyncMonitor();
+    Object monitor = getAsyncMonitor();
     synchronized (monitor) {
-      this.getForceFlushCount().incrementAndGet(); // moved inside sync to fix bug
+      getForceFlushCount().incrementAndGet(); // moved inside sync to fix bug
       // 41654
       monitor.notifyAll();
     }
@@ -1575,10 +1575,10 @@ public class DiskStoreImpl implements DiskStore {
     boolean done = false;
     boolean result;
     do {
-      int v = this.getForceFlushCount().get();
+      int v = getForceFlushCount().get();
       result = v > 0;
       if (result) {
-        done = this.getForceFlushCount().compareAndSet(v, 0);
+        done = getForceFlushCount().compareAndSet(v, 0);
       }
     } while (result && !done);
     return result;
@@ -1652,7 +1652,7 @@ public class DiskStoreImpl implements DiskStore {
    * Return true if we have enough async items to do a flush
    */
   private boolean checkAsyncItemLimit() {
-    return this.getAsyncQueue().size() >= this.maxAsyncItems;
+    return getAsyncQueue().size() >= this.maxAsyncItems;
   }
 
   protected static class FlusherThread implements Runnable {
@@ -2053,7 +2053,7 @@ public class DiskStoreImpl implements DiskStore {
    * removed from the stats .
    */
   private void statsClose() {
-    this.getStats().close();
+    getStats().close();
     if (this.directories != null) {
       for (final DirectoryHolder directory : this.directories) {
         directory.close();
@@ -2193,7 +2193,7 @@ public class DiskStoreImpl implements DiskStore {
     try {
       // Now while holding the write lock remove any elements from the queue
       // for this region.
-      for (final Object o : this.getAsyncQueue()) {
+      for (final Object o : getAsyncQueue()) {
         if (o instanceof AsyncDiskEntry) {
           AsyncDiskEntry ade = (AsyncDiskEntry) o;
           if (shouldClear(region, rvv, ade)) {

@@ -21,7 +21,6 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.concurrent.Callable;
 import java.util.concurrent.TimeUnit;
 
 import org.awaitility.Awaitility;
@@ -48,6 +47,7 @@ import org.apache.geode.test.junit.categories.IntegrationTest;
 public class DiskStoreImplIntegrationTest {
   private static final String DISK_STORE_NAME = "testDiskStore";
   private static final String REGION_NAME = "testRegion";
+  private final int TIME_INTERVAL = 300000;
 
   @Rule
   public TemporaryFolder temporaryDirectory = new TemporaryFolder();
@@ -117,7 +117,7 @@ public class DiskStoreImplIntegrationTest {
   }
 
   private void createRegionWithDiskStoreAndAsyncQueue(File baseDir, int queueSize) {
-    createDiskStoreWithQueue(baseDir, queueSize);
+    createDiskStoreWithQueue(baseDir, queueSize, TIME_INTERVAL);
 
     RegionFactory regionFactory =
         cache.<String, String>createRegionFactory(RegionShortcut.PARTITION_PERSISTENT);
@@ -126,12 +126,11 @@ public class DiskStoreImplIntegrationTest {
     aRegion = regionFactory.create(REGION_NAME);
   }
 
-  private void createDiskStoreWithQueue(File baseDir, int queueSize) {
-    final int TIME_INTERVAL = 300000;
+  private void createDiskStoreWithQueue(File baseDir, int queueSize, long timeInterval) {
     DiskStoreFactory diskStoreFactory = cache.createDiskStoreFactory();
     diskStoreFactory.setDiskDirs(new File[] {baseDir});
     diskStoreFactory.setQueueSize(queueSize);
-    diskStoreFactory.setTimeInterval(TIME_INTERVAL);
+    diskStoreFactory.setTimeInterval(timeInterval);
     DiskStore diskStore = diskStoreFactory.create(DISK_STORE_NAME);
     diskStoreStats = ((DiskStoreImpl) diskStore).getStats();
   }
