@@ -136,6 +136,19 @@ public class LonerDistributionManager implements DistributionManager {
     return iid;
   }
 
+  @Override
+  public DistributedMember getMemberWithName(String name) {
+    for (DistributedMember id : canonicalIds.values()) {
+      if (id.getName() != null && id.getName().equals(name)) {
+        return id;
+      }
+    }
+    if (id.getName() != null && id.getName().equals(name)) {
+      return id;
+    }
+    return null;
+  }
+
   public Set getOtherDistributionManagerIds() {
     return Collections.EMPTY_SET;
   }

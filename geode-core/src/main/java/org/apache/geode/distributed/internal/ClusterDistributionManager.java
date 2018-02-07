@@ -1451,6 +1451,18 @@ public class ClusterDistributionManager implements DistributionManager {
   }
 
 
+  @Override
+  public DistributedMember getMemberWithName(String name) {
+    for (DistributedMember id : members.values()) {
+      if (id.getName() != null && id.getName().equals(name)) {
+        return id;
+      }
+    }
+    if (localAddress.getName() != null && localAddress.getName().equals(name)) {
+      return localAddress;
+    }
+    return null;
+  }
 
   /**
    * Returns the id of this distribution manager.

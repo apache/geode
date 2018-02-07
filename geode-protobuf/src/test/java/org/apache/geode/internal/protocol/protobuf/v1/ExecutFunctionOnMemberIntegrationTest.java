@@ -26,6 +26,7 @@ import static org.mockito.Mockito.when;
 
 import java.io.IOException;
 import java.net.Socket;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashSet;
@@ -37,7 +38,9 @@ import java.util.concurrent.atomic.AtomicReference;
 import org.awaitility.Awaitility;
 import org.junit.After;
 import org.junit.Before;
+import org.junit.Rule;
 import org.junit.Test;
+import org.junit.contrib.java.lang.system.RestoreSystemProperties;
 import org.junit.experimental.categories.Category;
 
 import org.apache.geode.cache.Cache;
@@ -59,14 +62,18 @@ import org.apache.geode.security.SecurityManager;
 import org.apache.geode.test.junit.categories.IntegrationTest;
 
 @Category(IntegrationTest.class)
-public class FunctionExecutionIntegrationTest {
+public class ExecutFunctionOnMemberIntegrationTest {
   private static final String TEST_REGION = "testRegion";
   private static final String TEST_FUNCTION_ID = "testFunction";
-  public static final String SECURITY_PRINCIPAL = "principle";
+  private static final String SECURITY_PRINCIPAL = "principle";
+  private static final String SERVER_NAME = "pericles";
   private ProtobufSerializationService serializationService;
   private Socket socket;
   private Cache cache;
   private SecurityManager securityManager;
+
+  @Rule
+  public RestoreSystemProperties restoreSystemProperties = new RestoreSystemProperties();
 
   @Before
   public void setUp() throws Exception {
@@ -74,6 +81,7 @@ public class FunctionExecutionIntegrationTest {
     cacheFactory.set(ConfigurationProperties.MCAST_PORT, "0");
     cacheFactory.set(ConfigurationProperties.ENABLE_CLUSTER_CONFIGURATION, "false");
     cacheFactory.set(ConfigurationProperties.USE_CLUSTER_CONFIGURATION, "false");
+    cacheFactory.set(ConfigurationProperties.NAME, SERVER_NAME);
 
     securityManager = mock(SecurityManager.class);
     cacheFactory.setSecurityManager(securityManager);
@@ -89,7 +97,7 @@ public class FunctionExecutionIntegrationTest {
 
     RegionFactory<Object, Object> regionFactory = cache.createRegionFactory();
     regionFactory.setDataPolicy(DataPolicy.PARTITION);
-    Region<Object, Object> testRegion = regionFactory.create(TEST_REGION);
+    regionFactory.create(TEST_REGION);
 
 
     System.setProperty("geode.feature-protobuf-protocol", "true");
@@ -168,12 +176,12 @@ public class FunctionExecutionIntegrationTest {
     assertEquals(ClientProtocol.Message.MessageTypeCase.RESPONSE,
         responseMessage.getMessageTypeCase());
     final ClientProtocol.Response response = responseMessage.getResponse();
-    assertEquals(ClientProtocol.Response.ResponseAPICase.EXECUTEFUNCTIONONREGIONRESPONSE,
+    assertEquals(ClientProtocol.Response.ResponseAPICase.EXECUTEFUNCTIONONMEMBERRESPONSE,
         response.getResponseAPICase());
-    final FunctionAPI.ExecuteFunctionOnRegionResponse executeFunctionOnRegionResponse =
-        response.getExecuteFunctionOnRegionResponse();
+    final FunctionAPI.ExecuteFunctionOnMemberResponse executeFunctionOnMemberResponse =
+        response.getExecuteFunctionOnMemberResponse();
 
-    assertEquals(0, executeFunctionOnRegionResponse.getResultsCount());
+    assertEquals(0, executeFunctionOnMemberResponse.getResultsCount());
 
     Awaitility.await().atMost(5, TimeUnit.SECONDS).until(() -> testFunction.getContext() != null);
   }
@@ -185,13 +193,13 @@ public class FunctionExecutionIntegrationTest {
     FunctionService.registerFunction(testFunction);
     final ClientProtocol.Message responseMessage = authenticateAndSendMessage();
 
-    final FunctionAPI.ExecuteFunctionOnRegionResponse executeFunctionOnRegionResponse =
+    final FunctionAPI.ExecuteFunctionOnMemberResponse executeFunctionOnMemberResponse =
         getFunctionResponse(responseMessage);
 
-    assertEquals(1, executeFunctionOnRegionResponse.getResultsCount());
+    assertEquals(1, executeFunctionOnMemberResponse.getResultsCount());
 
     final Object responseValue =
-        serializationService.decode(executeFunctionOnRegionResponse.getResults(0));
+        serializationService.decode(executeFunctionOnMemberResponse.getResults(0));
     assertTrue(responseValue instanceof Integer);
     assertEquals(22, responseValue);
   }
@@ -237,13 +245,13 @@ public class FunctionExecutionIntegrationTest {
     FunctionService.registerFunction(testFunction);
     final ClientProtocol.Message responseMessage = authenticateAndSendMessage();
 
-    final FunctionAPI.ExecuteFunctionOnRegionResponse executeFunctionOnRegionResponse =
+    final FunctionAPI.ExecuteFunctionOnMemberResponse executeFunctionOnMemberResponse =
         getFunctionResponse(responseMessage);
 
-    assertEquals(1, executeFunctionOnRegionResponse.getResultsCount());
+    assertEquals(1, executeFunctionOnMemberResponse.getResultsCount());
 
     final Object responseValue =
-        serializationService.decode(executeFunctionOnRegionResponse.getResults(0));
+        serializationService.decode(executeFunctionOnMemberResponse.getResults(0));
     assertNull(responseValue);
   }
 
@@ -253,40 +261,15 @@ public class FunctionExecutionIntegrationTest {
         new TestFunction<>(functionContext -> functionContext.getArguments(), true);
     FunctionService.registerFunction(testFunction);
     ClientProtocol.Message.Builder message = createRequestMessageBuilder(
-        FunctionAPI.ExecuteFunctionOnRegionRequest.newBuilder().setFunctionID(TEST_FUNCTION_ID)
-            .setRegion(TEST_REGION).setArguments(serializationService.encode("hello")));
+        FunctionAPI.ExecuteFunctionOnMemberRequest.newBuilder().setFunctionID(TEST_FUNCTION_ID)
+            .addMemberName(SERVER_NAME).setArguments(serializationService.encode("hello")));
 
     authenticateWithServer();
     final ClientProtocol.Message responseMessage = writeMessage(message.build());
 
-    FunctionAPI.ExecuteFunctionOnRegionResponse response = getFunctionResponse(responseMessage);
+    FunctionAPI.ExecuteFunctionOnMemberResponse response = getFunctionResponse(responseMessage);
 
     assertEquals("hello", serializationService.decode(response.getResults(0)));
-  }
-
-  @Test
-  public void filterIsPassedToFunction() throws Exception {
-    final TestFunction<Object> testFunction = new TestFunction<>(context -> "result", true);
-    FunctionService.registerFunction(testFunction);
-    Set<Object> expectedFilter = new HashSet<>(Arrays.asList("key1", "key2"));
-
-    final ClientProtocol.Message.Builder message = createRequestMessageBuilder(
-        FunctionAPI.ExecuteFunctionOnRegionRequest.newBuilder().setFunctionID(TEST_FUNCTION_ID)
-            .setRegion(TEST_REGION).addKeyFilter(serializationService.encode("key1"))
-            .addKeyFilter(serializationService.encode("key2")));
-
-    authenticateWithServer();
-    final ClientProtocol.Message responseMessage = writeMessage(message.build());
-
-    FunctionAPI.ExecuteFunctionOnRegionResponse response = getFunctionResponse(responseMessage);
-    assertEquals("result", serializationService.decode(response.getResults(0)));
-
-    final RegionFunctionContext context = (RegionFunctionContext) testFunction.getContext();
-
-    final Set<?> filter = context.getFilter();
-
-    assertEquals(expectedFilter, filter);
-
   }
 
   @Test
@@ -300,10 +283,10 @@ public class FunctionExecutionIntegrationTest {
         return Arrays.asList(requiredPermission);
       }
     };
+
     FunctionService.registerFunction(testFunction);
 
     when(securityManager.authenticate(any())).thenReturn(SECURITY_PRINCIPAL);
-
     when(securityManager.authorize(eq(SECURITY_PRINCIPAL), eq(requiredPermission)))
         .thenReturn(false);
 
@@ -314,12 +297,12 @@ public class FunctionExecutionIntegrationTest {
     verify(securityManager).authorize(eq(SECURITY_PRINCIPAL), eq(requiredPermission));
   }
 
-  private FunctionAPI.ExecuteFunctionOnRegionResponse getFunctionResponse(
+  private FunctionAPI.ExecuteFunctionOnMemberResponse getFunctionResponse(
       ClientProtocol.Message responseMessage) {
     assertEquals(responseMessage.getResponse().toString(),
-        ClientProtocol.Response.ResponseAPICase.EXECUTEFUNCTIONONREGIONRESPONSE,
+        ClientProtocol.Response.ResponseAPICase.EXECUTEFUNCTIONONMEMBERRESPONSE,
         responseMessage.getResponse().getResponseAPICase());
-    return responseMessage.getResponse().getExecuteFunctionOnRegionResponse();
+    return responseMessage.getResponse().getExecuteFunctionOnMemberResponse();
   }
 
   private void authenticateWithServer() throws IOException {
@@ -338,17 +321,17 @@ public class FunctionExecutionIntegrationTest {
     authenticateWithServer();
 
     final ClientProtocol.Message request =
-        createRequestMessageBuilder(FunctionAPI.ExecuteFunctionOnRegionRequest.newBuilder()
-            .setFunctionID(TEST_FUNCTION_ID).setRegion(TEST_REGION)).build();
+        createRequestMessageBuilder(FunctionAPI.ExecuteFunctionOnMemberRequest.newBuilder()
+            .setFunctionID(TEST_FUNCTION_ID).addMemberName(SERVER_NAME)).build();
 
     return writeMessage(request);
   }
 
 
   private ClientProtocol.Message.Builder createRequestMessageBuilder(
-      FunctionAPI.ExecuteFunctionOnRegionRequest.Builder functionRequest) {
+      FunctionAPI.ExecuteFunctionOnMemberRequest.Builder functionRequest) {
     return ClientProtocol.Message.newBuilder().setRequest(
-        ClientProtocol.Request.newBuilder().setExecuteFunctionOnRegionRequest(functionRequest));
+        ClientProtocol.Request.newBuilder().setExecuteFunctionOnMemberRequest(functionRequest));
   }
 
   private ClientProtocol.Message writeMessage(ClientProtocol.Message request) throws IOException {
