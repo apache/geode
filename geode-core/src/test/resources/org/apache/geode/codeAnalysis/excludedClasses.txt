@@ -81,3 +81,9 @@ org/apache/geode/distributed/internal/RuntimeDistributionConfigImpl
 org/apache/geode/pdx/internal/PdxInstanceEnum
 org/apache/geode/pdx/internal/PdxInstanceImpl
 org/apache/geode/pdx/internal/WritablePdxInstanceImpl
+org/apache/geode/cache/query/internal/types/TypeUtils$ComparisonStrategy
+org/apache/geode/cache/query/internal/types/TypeUtils$ComparisonStrategy$1
+org/apache/geode/cache/query/internal/types/TypeUtils$ComparisonStrategy$2
+org/apache/geode/cache/query/internal/types/TypeUtils$ComparisonStrategy$3
+org/apache/geode/cache/query/internal/types/TypeUtils$ComparisonStrategy$4
+org/apache/geode/cache/query/internal/types/TypeUtils$ComparisonStrategy$5
