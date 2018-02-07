@@ -205,4 +205,8 @@ public class IgnoredException implements Serializable, AutoCloseable {
   public static IgnoredException addIgnoredException(final String suspectString) {
     return addIgnoredException(suspectString, null);
   }
+
+  public static IgnoredException addIgnoredException(final Class exceptionClass) {
+    return addIgnoredException(exceptionClass.getName(), null);
+  }
 }
