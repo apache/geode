@@ -25,8 +25,6 @@ import java.text.SimpleDateFormat;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.util.Arrays;
-import java.util.Collection;
-import java.util.Collections;
 
 import org.apache.commons.lang.StringUtils;
 import org.apache.logging.log4j.Level;
@@ -36,12 +34,11 @@ import org.apache.geode.cache.AttributesFactory;
 import org.apache.geode.cache.DataPolicy;
 import org.apache.geode.cache.Region;
 import org.apache.geode.cache.Scope;
-import org.apache.geode.cache.execute.Function;
 import org.apache.geode.cache.execute.FunctionContext;
 import org.apache.geode.distributed.internal.DistributionConfig;
-import org.apache.geode.internal.InternalEntity;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.cache.InternalRegionArguments;
+import org.apache.geode.internal.cache.execute.InternalFunction;
 import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.internal.logging.log4j.LogLevel;
 import org.apache.geode.management.internal.cli.commands.ExportLogsCommand;
@@ -49,8 +46,6 @@ import org.apache.geode.management.internal.cli.util.ExportLogsCacheWriter;
 import org.apache.geode.management.internal.cli.util.LogExporter;
 import org.apache.geode.management.internal.cli.util.LogFilter;
 import org.apache.geode.management.internal.configuration.domain.Configuration;
-import org.apache.geode.management.internal.security.ResourcePermissions;
-import org.apache.geode.security.ResourcePermission;
 
 /**
  * this function extracts the logs using a LogExporter which creates a zip file, and then writes the
@@ -59,7 +54,7 @@ import org.apache.geode.security.ResourcePermission;
  *
  * The function only extracts .log and .gfs files under server's working directory
  */
-public class ExportLogsFunction implements Function, InternalEntity {
+public class ExportLogsFunction implements InternalFunction {
   private static final Logger logger = LogService.getLogger();
 
   public static final String EXPORT_LOGS_REGION = "__exportLogsRegion";
@@ -121,11 +116,6 @@ public class ExportLogsFunction implements Function, InternalEntity {
       logger.error(e);
       context.getResultSender().sendException(e);
     }
-  }
-
-  @Override
-  public Collection<ResourcePermission> getRequiredPermissions(String regionName) {
-    return Collections.singleton(ResourcePermissions.CLUSTER_READ);
   }
 
   public static Region createOrGetExistingExportLogsRegion(boolean isInitiatingMember,

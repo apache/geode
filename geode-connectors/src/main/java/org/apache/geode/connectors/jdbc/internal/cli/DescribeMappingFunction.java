@@ -14,15 +14,10 @@
  */
 package org.apache.geode.connectors.jdbc.internal.cli;
 
-import java.util.Collection;
-import java.util.Collections;
-
 import org.apache.geode.annotations.Experimental;
 import org.apache.geode.cache.execute.FunctionContext;
 import org.apache.geode.connectors.jdbc.internal.JdbcConnectorService;
 import org.apache.geode.connectors.jdbc.internal.RegionMapping;
-import org.apache.geode.management.internal.security.ResourcePermissions;
-import org.apache.geode.security.ResourcePermission;
 
 @Experimental
 public class DescribeMappingFunction extends JdbcCliFunction<String, RegionMapping> {
@@ -34,10 +29,5 @@ public class DescribeMappingFunction extends JdbcCliFunction<String, RegionMappi
   @Override
   RegionMapping getFunctionResult(JdbcConnectorService service, FunctionContext<String> context) {
     return service.getMappingForRegion(context.getArguments());
-  }
-
-  @Override
-  public Collection<ResourcePermission> getRequiredPermissions(String regionName) {
-    return Collections.singletonList(ResourcePermissions.CLUSTER_READ);
   }
 }

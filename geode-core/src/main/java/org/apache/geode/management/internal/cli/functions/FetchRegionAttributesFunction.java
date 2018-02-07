@@ -15,8 +15,6 @@
 package org.apache.geode.management.internal.cli.functions;
 
 import java.util.Arrays;
-import java.util.Collection;
-import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -25,21 +23,18 @@ import org.apache.logging.log4j.Logger;
 import org.apache.geode.cache.AttributesFactory;
 import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.CacheListener;
-import org.apache.geode.cache.execute.Function;
 import org.apache.geode.cache.execute.FunctionContext;
-import org.apache.geode.internal.InternalEntity;
 import org.apache.geode.internal.cache.AbstractRegion;
+import org.apache.geode.internal.cache.execute.InternalFunction;
 import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.management.internal.cli.domain.ClassName;
 import org.apache.geode.management.internal.cli.i18n.CliStrings;
-import org.apache.geode.management.internal.security.ResourcePermissions;
-import org.apache.geode.security.ResourcePermission;
 
 /**
  *
  * @since GemFire 7.0
  */
-public class FetchRegionAttributesFunction implements Function, InternalEntity {
+public class FetchRegionAttributesFunction implements InternalFunction {
   private static final Logger logger = LogService.getLogger();
 
   private static final long serialVersionUID = 4366812590788342070L;
@@ -121,11 +116,6 @@ public class FetchRegionAttributesFunction implements Function, InternalEntity {
 
     result.setRegionAttributes(afactory.create());
     return result;
-  }
-
-  @Override
-  public Collection<ResourcePermission> getRequiredPermissions(String regionName) {
-    return Collections.singleton(ResourcePermissions.CLUSTER_READ);
   }
 
   @Override

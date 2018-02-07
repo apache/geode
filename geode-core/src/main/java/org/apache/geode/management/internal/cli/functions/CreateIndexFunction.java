@@ -14,30 +14,24 @@
  */
 package org.apache.geode.management.internal.cli.functions;
 
-import java.util.Collection;
-import java.util.Collections;
-
 import org.apache.geode.cache.Cache;
-import org.apache.geode.cache.execute.Function;
 import org.apache.geode.cache.execute.FunctionContext;
 import org.apache.geode.cache.query.IndexExistsException;
 import org.apache.geode.cache.query.IndexInvalidException;
 import org.apache.geode.cache.query.IndexNameConflictException;
 import org.apache.geode.cache.query.QueryService;
 import org.apache.geode.cache.query.RegionNotFoundException;
-import org.apache.geode.internal.InternalEntity;
+import org.apache.geode.internal.cache.execute.InternalFunction;
 import org.apache.geode.internal.cache.xmlcache.CacheXml;
 import org.apache.geode.management.internal.cli.domain.IndexInfo;
 import org.apache.geode.management.internal.cli.i18n.CliStrings;
 import org.apache.geode.management.internal.configuration.domain.XmlEntity;
-import org.apache.geode.management.internal.security.ResourcePermissions;
-import org.apache.geode.security.ResourcePermission;
 
 /***
  * Function to create index in a member, based on different arguments passed to it
  *
  */
-public class CreateIndexFunction implements Function, InternalEntity {
+public class CreateIndexFunction implements InternalFunction {
 
 
   private static final long serialVersionUID = 1L;
@@ -107,11 +101,6 @@ public class CreateIndexFunction implements Function, InternalEntity {
       context.getResultSender()
           .lastResult(new CliFunctionResult(memberId, xmlEntity, "Index successfully created"));
     }
-  }
-
-  @Override
-  public Collection<ResourcePermission> getRequiredPermissions(String regionName) {
-    return Collections.singleton(ResourcePermissions.CLUSTER_MANAGE_QUERY);
   }
 
   private String getValidRegionName(Cache cache, String regionPath) {

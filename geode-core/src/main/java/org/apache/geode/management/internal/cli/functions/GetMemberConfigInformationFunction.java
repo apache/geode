@@ -19,8 +19,6 @@ import static org.apache.geode.distributed.ConfigurationProperties.SOCKET_BUFFER
 import java.lang.management.ManagementFactory;
 import java.lang.management.RuntimeMXBean;
 import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -28,26 +26,23 @@ import java.util.Map;
 import java.util.Set;
 
 import org.apache.geode.cache.Cache;
-import org.apache.geode.cache.execute.Function;
 import org.apache.geode.cache.execute.FunctionContext;
 import org.apache.geode.cache.server.CacheServer;
 import org.apache.geode.distributed.internal.DistributionConfig;
 import org.apache.geode.distributed.internal.DistributionConfigImpl;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.internal.ConfigSource;
-import org.apache.geode.internal.InternalEntity;
 import org.apache.geode.internal.cache.CacheConfig;
 import org.apache.geode.internal.cache.GemFireCacheImpl;
+import org.apache.geode.internal.cache.execute.InternalFunction;
 import org.apache.geode.internal.cache.ha.HARegionQueue;
 import org.apache.geode.management.internal.cli.domain.MemberConfigurationInfo;
-import org.apache.geode.management.internal.security.ResourcePermissions;
-import org.apache.geode.security.ResourcePermission;
 
 /****
  *
  *
  */
-public class GetMemberConfigInformationFunction implements Function, InternalEntity {
+public class GetMemberConfigInformationFunction implements InternalFunction {
   private static final long serialVersionUID = 1L;
 
 
@@ -136,11 +131,6 @@ public class GetMemberConfigInformationFunction implements Function, InternalEnt
     memberConfigInfo.setCacheServerAttributes(cacheServerAttributesList);
 
     context.getResultSender().lastResult(memberConfigInfo);
-  }
-
-  @Override
-  public Collection<ResourcePermission> getRequiredPermissions(String regionName) {
-    return Collections.singleton(ResourcePermissions.CLUSTER_READ);
   }
 
   /****

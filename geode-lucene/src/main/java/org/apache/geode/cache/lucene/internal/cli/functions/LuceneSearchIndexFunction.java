@@ -15,8 +15,6 @@
 
 package org.apache.geode.cache.lucene.internal.cli.functions;
 
-import java.util.Collection;
-import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -24,20 +22,13 @@ import java.util.Set;
 import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.execute.Function;
 import org.apache.geode.cache.execute.FunctionContext;
-import org.apache.geode.cache.lucene.LuceneQuery;
-import org.apache.geode.cache.lucene.LuceneQueryException;
-import org.apache.geode.cache.lucene.LuceneResultStruct;
-import org.apache.geode.cache.lucene.LuceneService;
-import org.apache.geode.cache.lucene.LuceneServiceProvider;
-import org.apache.geode.cache.lucene.PageableLuceneQueryResults;
+import org.apache.geode.cache.lucene.*;
 import org.apache.geode.cache.lucene.internal.cli.LuceneIndexDetails;
 import org.apache.geode.cache.lucene.internal.cli.LuceneIndexInfo;
 import org.apache.geode.cache.lucene.internal.cli.LuceneQueryInfo;
 import org.apache.geode.cache.lucene.internal.cli.LuceneSearchResults;
 import org.apache.geode.internal.InternalEntity;
-import org.apache.geode.security.ResourcePermission;
-import org.apache.geode.security.ResourcePermission.Operation;
-import org.apache.geode.security.ResourcePermission.Resource;
+import org.apache.geode.internal.cache.execute.InternalFunction;
 
 /**
  * The LuceneSearchIndexFunction class is a function used to collect the information on a particular
@@ -53,7 +44,7 @@ import org.apache.geode.security.ResourcePermission.Resource;
  * @see LuceneIndexInfo
  */
 @SuppressWarnings("unused")
-public class LuceneSearchIndexFunction<K, V> implements InternalEntity, Function {
+public class LuceneSearchIndexFunction<K, V> implements InternalFunction {
 
   private static final long serialVersionUID = 163818919780803222L;
 
@@ -97,10 +88,5 @@ public class LuceneSearchIndexFunction<K, V> implements InternalEntity, Function
       result.add(new LuceneSearchResults(true, e.getMessage()));
       context.getResultSender().lastResult(result);
     }
-  }
-
-  @Override
-  public Collection<ResourcePermission> getRequiredPermissions(String regionName) {
-    return Collections.singleton(new ResourcePermission(Resource.DATA, Operation.READ, regionName));
   }
 }
