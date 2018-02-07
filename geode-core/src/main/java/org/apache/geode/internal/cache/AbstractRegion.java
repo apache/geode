@@ -85,7 +85,6 @@ import org.apache.geode.distributed.internal.DistributionManager;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
 import org.apache.geode.internal.DataSerializableFixedID;
-import org.apache.geode.internal.cache.eviction.EvictionController;
 import org.apache.geode.internal.cache.extension.Extensible;
 import org.apache.geode.internal.cache.extension.ExtensionPoint;
 import org.apache.geode.internal.cache.extension.SimpleExtensionPoint;
@@ -597,6 +596,7 @@ public abstract class AbstractRegion implements InternalRegion, AttributesMutato
     return this.visibleAsyncEventQueueIds;
   }
 
+  @Override
   public Set<String> getAllGatewaySenderIds() {
     return Collections.unmodifiableSet(this.allGatewaySenderIds);
   }

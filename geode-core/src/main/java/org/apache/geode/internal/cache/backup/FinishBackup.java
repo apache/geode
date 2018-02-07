@@ -23,11 +23,9 @@ import org.apache.geode.internal.cache.InternalCache;
 class FinishBackup {
 
   private final InternalCache cache;
-  private final boolean abort;
 
-  FinishBackup(InternalCache cache, boolean abort) {
+  FinishBackup(InternalCache cache) {
     this.cache = cache;
-    this.abort = abort;
   }
 
   HashSet<PersistentID> run() throws IOException {
@@ -35,7 +33,7 @@ class FinishBackup {
     if (cache == null) {
       persistentIds = new HashSet<>();
     } else {
-      persistentIds = cache.getBackupService().doBackup(abort);
+      persistentIds = cache.getBackupService().doBackup();
     }
     return persistentIds;
   }

@@ -32,17 +32,15 @@ class FinishBackupOperation extends BackupOperation {
   private final InternalDistributedMember member;
   private final InternalCache cache;
   private final Set<InternalDistributedMember> recipients;
-  private final boolean abort;
   private final FinishBackupFactory finishBackupFactory;
 
   FinishBackupOperation(DistributionManager dm, InternalDistributedMember member,
-      InternalCache cache, Set<InternalDistributedMember> recipients, boolean abort,
+      InternalCache cache, Set<InternalDistributedMember> recipients,
       FinishBackupFactory FinishBackupFactory) {
     super(dm);
     this.member = member;
     this.cache = cache;
     this.recipients = recipients;
-    this.abort = abort;
     this.finishBackupFactory = FinishBackupFactory;
   }
 
@@ -53,14 +51,13 @@ class FinishBackupOperation extends BackupOperation {
 
   @Override
   DistributionMessage createDistributionMessage(ReplyProcessor21 replyProcessor) {
-    return finishBackupFactory.createRequest(member, recipients, replyProcessor.getProcessorId(),
-        abort);
+    return finishBackupFactory.createRequest(member, recipients, replyProcessor.getProcessorId());
   }
 
   @Override
   void processLocally() {
     try {
-      addToResults(member, finishBackupFactory.createFinishBackup(cache, abort).run());
+      addToResults(member, finishBackupFactory.createFinishBackup(cache).run());
     } catch (IOException e) {
       logger.fatal("Failed to FinishBackup in " + member, e);
     }

@@ -41,6 +41,7 @@ import org.apache.geode.cache.VersionException;
 import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.distributed.DistributedSystem;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
+import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
 import org.apache.geode.internal.HeapDataOutputStream;
 import org.apache.geode.internal.Version;
 import org.apache.geode.internal.VersionedDataStream;
@@ -154,6 +155,7 @@ public class ServerHandshakeProcessor {
 
     // Write the server's member
     DistributedMember member = InternalDistributedSystem.getAnyInstance().getDistributedMember();
+
     writeServerMember(member, dos);
 
     // Write the refusal message

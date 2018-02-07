@@ -68,14 +68,13 @@ public class FinishBackupFactoryTest {
 
   @Test
   public void createRequestReturnsFinishBackupRequest() throws Exception {
-    assertThat(finishBackupFactory.createRequest(sender, recipients, 1, false))
+    assertThat(finishBackupFactory.createRequest(sender, recipients, 1))
         .isInstanceOf(FinishBackupRequest.class);
   }
 
   @Test
   public void createFinishBackupReturnsFinishBackup() throws Exception {
-    assertThat(finishBackupFactory.createFinishBackup(cache, false))
-        .isInstanceOf(FinishBackup.class);
+    assertThat(finishBackupFactory.createFinishBackup(cache)).isInstanceOf(FinishBackup.class);
   }
 
   @Test

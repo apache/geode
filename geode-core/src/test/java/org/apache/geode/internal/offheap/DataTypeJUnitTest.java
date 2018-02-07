@@ -56,7 +56,6 @@ import org.powermock.modules.junit4.PowerMockRunner;
 
 import org.apache.geode.DataSerializer;
 import org.apache.geode.Instantiator;
-import org.apache.geode.cache.CacheClosedException;
 import org.apache.geode.distributed.internal.ReplyMessage;
 import org.apache.geode.internal.DSCODE;
 import org.apache.geode.internal.DSFIDFactory;
@@ -65,11 +64,7 @@ import org.apache.geode.internal.DataSerializableJUnitTest.DataSerializableImpl;
 import org.apache.geode.internal.InternalDataSerializer;
 import org.apache.geode.internal.InternalInstantiator;
 import org.apache.geode.internal.admin.remote.ShutdownAllResponse;
-import org.apache.geode.internal.cache.GemFireCacheImpl;
 import org.apache.geode.internal.cache.execute.data.CustId;
-import org.apache.geode.pdx.internal.EnumInfo;
-import org.apache.geode.pdx.internal.PdxType;
-import org.apache.geode.pdx.internal.TypeRegistry;
 import org.apache.geode.test.junit.categories.UnitTest;
 
 /**
@@ -79,7 +74,7 @@ import org.apache.geode.test.junit.categories.UnitTest;
 @RunWith(PowerMockRunner.class)
 @PowerMockIgnore("*.UnitTest")
 @PrepareForTest({InternalInstantiator.class, Instantiator.class, DataSerializer.class,
-    GemFireCacheImpl.class, DSFIDFactory.class})
+    DSFIDFactory.class})
 public class DataTypeJUnitTest {
 
   @Test
@@ -816,18 +811,6 @@ public class DataTypeJUnitTest {
   @Test
   public void getDataTypeShouldReturnPDXType() throws IOException {
     int somePdxTypeInt = 1;
-    PdxType somePdxType = mock(PdxType.class);
-    doReturn("PDXType").when(somePdxType).getClassName();
-
-    TypeRegistry mockTypeRegistry = mock(TypeRegistry.class);
-    when(mockTypeRegistry.getType(somePdxTypeInt)).thenReturn(somePdxType);
-
-    GemFireCacheImpl pdxInstance = mock(GemFireCacheImpl.class);
-    when(pdxInstance.getPdxRegistry()).thenReturn(mockTypeRegistry);
-
-    PowerMockito.mockStatic(GemFireCacheImpl.class);
-    when(GemFireCacheImpl.getForPdx(anyString())).thenReturn(pdxInstance);
-
     ByteArrayOutputStream baos = new ByteArrayOutputStream();
     DataOutputStream out = new DataOutputStream(baos);
     out.writeByte(DSCODE.PDX);
@@ -835,100 +818,19 @@ public class DataTypeJUnitTest {
     byte[] bytes = baos.toByteArray();
     String type = DataType.getDataType(bytes);
 
-    assertThat(type).isEqualTo("org.apache.geode.pdx.PdxInstance:PDXType");
-  }
-
-  @Test
-  public void getDataTypeShouldReturnUnknownIfPDXTypeIsNull() throws IOException {
-    int somePdxTypeInt = 1;
-    PdxType somePdxType = null;
-
-    TypeRegistry mockTypeRegistry = mock(TypeRegistry.class);
-    when(mockTypeRegistry.getType(somePdxTypeInt)).thenReturn(somePdxType);
-
-    GemFireCacheImpl pdxInstance = mock(GemFireCacheImpl.class);
-    when(pdxInstance.getPdxRegistry()).thenReturn(mockTypeRegistry);
-
-    PowerMockito.mockStatic(GemFireCacheImpl.class);
-    when(GemFireCacheImpl
-        .getForPdx("PDX registry is unavailable because the Cache has been closed."))
-            .thenReturn(pdxInstance);
-
-    ByteArrayOutputStream baos = new ByteArrayOutputStream();
-    DataOutputStream out = new DataOutputStream(baos);
-    out.writeByte(DSCODE.PDX);
-    out.writeInt(somePdxTypeInt);
-    byte[] bytes = baos.toByteArray();
-    String type = DataType.getDataType(bytes);
-
-    assertThat(type).isEqualTo("org.apache.geode.pdx.PdxInstance: unknown id=" + somePdxTypeInt);
-  }
-
-  @Test
-  public void getDataTypeShouldReturnPDXRegistryClosedForPDXTypeWhenCacheIsClosed()
-      throws IOException {
-    int somePdxTypeInt = 1;
-
-    PowerMockito.mockStatic(GemFireCacheImpl.class);
-    when(GemFireCacheImpl
-        .getForPdx("PDX registry is unavailable because the Cache has been closed."))
-            .thenThrow(CacheClosedException.class);
-
-    ByteArrayOutputStream baos = new ByteArrayOutputStream();
-    DataOutputStream out = new DataOutputStream(baos);
-    out.writeByte(DSCODE.PDX);
-    out.writeInt(somePdxTypeInt);
-    byte[] bytes = baos.toByteArray();
-    String type = DataType.getDataType(bytes);
-
-    assertThat(type).isEqualTo("org.apache.geode.pdx.PdxInstance:PdxRegistryClosed");
+    assertThat(type).isEqualTo("pdxType:1");
   }
 
   @Test
   public void getDataTypeShouldReturnPDXEnumType() throws IOException {
     int somePdxEnumId = 1;
-    EnumInfo somePdxEnumInfo = mock(EnumInfo.class);
-    doReturn("PDXENUM").when(somePdxEnumInfo).getClassName();
-
-    TypeRegistry mockTypeRegistry = mock(TypeRegistry.class);
-    when(mockTypeRegistry.getEnumInfoById(0)).thenReturn(somePdxEnumInfo);
-
-    GemFireCacheImpl pdxInstance = mock(GemFireCacheImpl.class);
-    when(pdxInstance.getPdxRegistry()).thenReturn(mockTypeRegistry);
-
-    PowerMockito.mockStatic(GemFireCacheImpl.class);
-    when(GemFireCacheImpl
-        .getForPdx("PDX registry is unavailable because the Cache has been closed."))
-            .thenReturn(pdxInstance);
-
     ByteArrayOutputStream baos = new ByteArrayOutputStream();
     DataOutputStream out = new DataOutputStream(baos);
-    out.writeByte(DSCODE.PDX_ENUM);
-    out.writeInt(somePdxEnumId);
+    InternalDataSerializer.writePdxEnumId(somePdxEnumId, out);
     byte[] bytes = baos.toByteArray();
     String type = DataType.getDataType(bytes);
 
-    assertThat(type).isEqualTo("PdxRegistry/java.lang.Enum:PDXENUM");
-  }
-
-  @Test
-  public void getDataTypeShouldReturnPDXRegistryClosedForEnumTypeWhenCacheIsClosed()
-      throws IOException {
-    int someArrayLength = 1;
-
-    PowerMockito.mockStatic(GemFireCacheImpl.class);
-    when(GemFireCacheImpl
-        .getForPdx("PDX registry is unavailable because the Cache has been closed."))
-            .thenThrow(CacheClosedException.class);
-
-    ByteArrayOutputStream baos = new ByteArrayOutputStream();
-    DataOutputStream out = new DataOutputStream(baos);
-    out.writeByte(DSCODE.PDX_ENUM);
-    out.writeInt(someArrayLength);
-    byte[] bytes = baos.toByteArray();
-    String type = DataType.getDataType(bytes);
-
-    assertThat(type).isEqualTo("PdxRegistry/java.lang.Enum:PdxRegistryClosed");
+    assertThat(type).isEqualTo("pdxEnum:1");
   }
 
   @Test

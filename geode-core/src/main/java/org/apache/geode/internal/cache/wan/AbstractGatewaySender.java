@@ -58,6 +58,7 @@ import org.apache.geode.internal.cache.EntryEventImpl;
 import org.apache.geode.internal.cache.EnumListenerEvent;
 import org.apache.geode.internal.cache.HasCachePerfStats;
 import org.apache.geode.internal.cache.InternalCache;
+import org.apache.geode.internal.cache.InternalRegion;
 import org.apache.geode.internal.cache.InternalRegionArguments;
 import org.apache.geode.internal.cache.LocalRegion;
 import org.apache.geode.internal.cache.PartitionedRegion;
@@ -518,7 +519,7 @@ public abstract class AbstractGatewaySender implements GatewaySender, Distributi
       this.getLifeCycleLock().writeLock().lock();
       // first, check if this sender is attached to any region. If so, throw
       // GatewaySenderException
-      Set<LocalRegion> regions = this.cache.getApplicationRegions();
+      Set<InternalRegion> regions = this.cache.getApplicationRegions();
       Iterator regionItr = regions.iterator();
       while (regionItr.hasNext()) {
         LocalRegion region = (LocalRegion) regionItr.next();

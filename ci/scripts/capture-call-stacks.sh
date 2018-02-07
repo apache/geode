@@ -54,7 +54,7 @@ for (( h=0; h<${COUNT}; h++)); do
 done
 
 echo "Checking progress files:"
-mapfile -t progressfiles < <(find /tmp/gemfire-build -name test-progress.txt)
+mapfile -t progressfiles < <(find ${GEODE_BUILD} -name "*-progress.txt")
 for (( i=0; i<${#progressfiles[@]}; i++)); do
     echo "Checking progress file: ${progressfiles[i]}"
     /usr/local/bin/dunit-progress hang ${progressfiles[i]} | tee -a ${CALLSTACKS_DIR}/dunit-hangs.txt

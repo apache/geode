@@ -29,6 +29,7 @@ import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
@@ -1017,7 +1018,12 @@ public class MemberMBeanBridge {
               cache.getInternalDistributedSystem().getDistributedMember(), targetDir, null);
           abort = false;
         } finally {
-          successfulDataStores = cache.getBackupService().doBackup(abort);
+          if (abort) {
+            cache.getBackupService().abortBackup();
+            successfulDataStores = Collections.emptySet();
+          } else {
+            successfulDataStores = cache.getBackupService().doBackup();
+          }
         }
         diskBackUpResult = new DiskBackupResult[existingDataStores.size()];
         int j = 0;
@@ -1193,11 +1199,11 @@ public class MemberMBeanBridge {
    * @return list of regions
    */
   public String[] getListOfRegions() {
-    Set<LocalRegion> listOfAppRegions = cache.getApplicationRegions();
+    Set<InternalRegion> listOfAppRegions = cache.getApplicationRegions();
     if (listOfAppRegions != null && listOfAppRegions.size() > 0) {
       String[] regionStr = new String[listOfAppRegions.size()];
       int j = 0;
-      for (LocalRegion rg : listOfAppRegions) {
+      for (InternalRegion rg : listOfAppRegions) {
         regionStr[j] = rg.getFullPath();
         j++;
       }

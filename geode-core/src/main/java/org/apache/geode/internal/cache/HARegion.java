@@ -63,7 +63,7 @@ public class HARegion extends DistributedRegion {
 
   // Prevent this region from participating in a TX, bug 38709
   @Override
-  protected boolean isSecret() {
+  public boolean isSecret() {
     return true;
   }
 
@@ -331,7 +331,7 @@ public class HARegion extends DistributedRegion {
   }
 
   @Override
-  protected void initialize(InputStream snapshotInputStream, InternalDistributedMember imageTarget,
+  public void initialize(InputStream snapshotInputStream, InternalDistributedMember imageTarget,
       InternalRegionArguments internalRegionArgs)
       throws TimeoutException, IOException, ClassNotFoundException {
     // Set this region in the ProxyBucketRegion early so that profile exchange will

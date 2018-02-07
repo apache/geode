@@ -129,6 +129,7 @@ import org.apache.geode.internal.cache.CacheServerImpl;
 import org.apache.geode.internal.cache.CustomerIDPartitionResolver;
 import org.apache.geode.internal.cache.ForceReattemptException;
 import org.apache.geode.internal.cache.GemFireCacheImpl;
+import org.apache.geode.internal.cache.InternalRegion;
 import org.apache.geode.internal.cache.LocalRegion;
 import org.apache.geode.internal.cache.PartitionedRegion;
 import org.apache.geode.internal.cache.RegionQueue;
@@ -3436,8 +3437,8 @@ public class WANTestBase extends JUnit4DistributedTestCase {
       queueRegionNameSuffix = "_SERIAL_GATEWAY_SENDER_QUEUE";
     }
 
-    Set<LocalRegion> allRegions = ((GemFireCacheImpl) cache).getAllRegions();
-    for (LocalRegion region : allRegions) {
+    Set<InternalRegion> allRegions = ((GemFireCacheImpl) cache).getAllRegions();
+    for (InternalRegion region : allRegions) {
       if (region.getName().indexOf(senderId + queueRegionNameSuffix) != -1) {
         fail("Region underlying the sender is not destroyed.");
       }

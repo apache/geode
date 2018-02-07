@@ -42,6 +42,7 @@ import org.apache.geode.management.cli.Result;
 import org.apache.geode.management.internal.cli.GfshParseResult;
 import org.apache.geode.management.internal.cli.domain.ClassName;
 import org.apache.geode.management.internal.cli.functions.RegionFunctionArgs;
+import org.apache.geode.management.internal.cli.functions.RegionFunctionArgs.ExpirationAttrs;
 import org.apache.geode.management.internal.cli.result.CommandResult;
 import org.apache.geode.test.junit.categories.UnitTest;
 import org.apache.geode.test.junit.rules.GfshParserRule;
@@ -53,6 +54,8 @@ public class CreateRegionCommandTest {
 
   private CreateRegionCommand command;
   private InternalCache cache;
+
+  private static String COMMAND = "create region --name=region --type=REPLICATE ";
 
   @Before
   public void before() throws Exception {
@@ -164,10 +167,11 @@ public class CreateRegionCommandTest {
     assertThat(args.getValueConstraint()).isNull();
     assertThat(args.isStatisticsEnabled()).isNull();
 
-    assertThat(args.getEntryExpirationIdleTime()).isNull();
-    assertThat(args.getEntryExpirationTTL()).isNull();
-    assertThat(args.getRegionExpirationIdleTime()).isNull();
-    assertThat(args.getRegionExpirationTTL()).isNull();
+    ExpirationAttrs empty = new ExpirationAttrs(null, null);
+    assertThat(args.getEntryExpirationIdleTime()).isEqualTo(empty);
+    assertThat(args.getEntryExpirationTTL()).isEqualTo(empty);
+    assertThat(args.getRegionExpirationIdleTime()).isEqualTo(empty);
+    assertThat(args.getRegionExpirationTTL()).isEqualTo(empty);
 
     assertThat(args.getDiskStore()).isNull();
     assertThat(args.isDiskSynchronous()).isNull();
@@ -333,5 +337,33 @@ public class CreateRegionCommandTest {
         "create region --name=region --type=REPLICATE --value-type=abc-def");
     assertThat(result.getStatus()).isEqualTo(Result.Status.ERROR);
     assertThat(result.getContent().toString()).contains("Invalid command");
+  }
+
+  @Test
+  public void statisticsMustBeEnabledForExpiration() {
+    parser.executeAndAssertThat(command, COMMAND + "--entry-idle-time-expiration=10")
+        .statusIsError().containsOutput("Statistics must be enabled for expiration");
+
+    parser.executeAndAssertThat(command, COMMAND + "--entry-time-to-live-expiration=10")
+        .statusIsError().containsOutput("Statistics must be enabled for expiration");
+
+    parser.executeAndAssertThat(command, COMMAND + "--region-idle-time-expiration=10")
+        .statusIsError().containsOutput("Statistics must be enabled for expiration");
+
+    parser.executeAndAssertThat(command, COMMAND + "--region-time-to-live-expiration=10")
+        .statusIsError().containsOutput("Statistics must be enabled for expiration");
+
+    parser.executeAndAssertThat(command, COMMAND + "--entry-idle-time-expiration-action=destroy")
+        .statusIsError().containsOutput("Statistics must be enabled for expiration");
+
+    parser.executeAndAssertThat(command, COMMAND + "--entry-time-to-live-expiration-action=destroy")
+        .statusIsError().containsOutput("Statistics must be enabled for expiration");
+
+    parser.executeAndAssertThat(command, COMMAND + "--region-idle-time-expiration-action=destroy")
+        .statusIsError().containsOutput("Statistics must be enabled for expiration");
+
+    parser
+        .executeAndAssertThat(command, COMMAND + "--region-time-to-live-expiration-action=destroy")
+        .statusIsError().containsOutput("Statistics must be enabled for expiration");
   }
 }

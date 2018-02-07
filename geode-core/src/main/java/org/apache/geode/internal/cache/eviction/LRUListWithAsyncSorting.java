@@ -87,7 +87,6 @@ public class LRUListWithAsyncSorting extends AbstractEvictionList {
 
   LRUListWithAsyncSorting(EvictionController controller) {
     this(controller, SINGLETON_EXECUTOR);
-    logger.info("Using experimental LRUListWithAsyncSorting");
   }
 
   LRUListWithAsyncSorting(EvictionController controller, ExecutorService executor) {

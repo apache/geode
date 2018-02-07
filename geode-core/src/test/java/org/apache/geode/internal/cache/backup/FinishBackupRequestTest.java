@@ -21,7 +21,6 @@ import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
-import java.io.File;
 import java.io.IOException;
 import java.util.HashSet;
 import java.util.Set;
@@ -74,20 +73,20 @@ public class FinishBackupRequestTest {
     when(finishBackup.run()).thenReturn(persistentIds);
 
     finishBackupFactory = mock(FinishBackupFactory.class);
-    when(finishBackupFactory.createFinishBackup(eq(cache), eq(abort))).thenReturn(finishBackup);
+    when(finishBackupFactory.createFinishBackup(eq(cache))).thenReturn(finishBackup);
     when(finishBackupFactory.createBackupResponse(eq(sender), eq(persistentIds)))
         .thenReturn(mock(BackupResponse.class));
 
 
     finishBackupRequest =
-        new FinishBackupRequest(sender, recipients, processorId, false, finishBackupFactory);
+        new FinishBackupRequest(sender, recipients, processorId, finishBackupFactory);
   }
 
   @Test
   public void usesFactoryToCreateFinishBackup() throws Exception {
     finishBackupRequest.createResponse(dm);
 
-    verify(finishBackupFactory, times(1)).createFinishBackup(eq(cache), eq(abort));
+    verify(finishBackupFactory, times(1)).createFinishBackup(eq(cache));
   }
 
   @Test

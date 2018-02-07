@@ -14,15 +14,12 @@
  */
 package org.apache.geode.internal.cache.backup;
 
-import java.io.DataInput;
-import java.io.DataOutput;
 import java.io.IOException;
 import java.util.HashSet;
 import java.util.Set;
 
 import org.apache.logging.log4j.Logger;
 
-import org.apache.geode.DataSerializer;
 import org.apache.geode.cache.persistence.PersistentID;
 import org.apache.geode.distributed.internal.DistributionManager;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
@@ -42,26 +39,23 @@ public class FinishBackupRequest extends CliLegacyMessage {
 
   private final transient FinishBackupFactory finishBackupFactory;
 
-  private boolean abort;
-
   public FinishBackupRequest() {
     this.finishBackupFactory = new FinishBackupFactory();
   }
 
   FinishBackupRequest(InternalDistributedMember sender, Set<InternalDistributedMember> recipients,
-      int processorId, boolean abort, FinishBackupFactory finishBackupFactory) {
+      int processorId, FinishBackupFactory finishBackupFactory) {
     setSender(sender);
     setRecipients(recipients);
     this.msgId = processorId;
     this.finishBackupFactory = finishBackupFactory;
-    this.abort = abort;
   }
 
   @Override
   protected AdminResponse createResponse(DistributionManager dm) {
     HashSet<PersistentID> persistentIds;
     try {
-      persistentIds = finishBackupFactory.createFinishBackup(dm.getCache(), this.abort).run();
+      persistentIds = finishBackupFactory.createFinishBackup(dm.getCache()).run();
     } catch (IOException e) {
       logger.error(LocalizedMessage.create(LocalizedStrings.CliLegacyMessage_ERROR, getClass()), e);
       return AdminFailureResponse.create(getSender(), e);
@@ -73,17 +67,4 @@ public class FinishBackupRequest extends CliLegacyMessage {
   public int getDSFID() {
     return FINISH_BACKUP_REQUEST;
   }
-
-  @Override
-  public void fromData(DataInput in) throws IOException, ClassNotFoundException {
-    super.fromData(in);
-    abort = DataSerializer.readBoolean(in);
-  }
-
-  @Override
-  public void toData(DataOutput out) throws IOException {
-    super.toData(out);
-    DataSerializer.writeBoolean(abort, out);
-  }
-
 }

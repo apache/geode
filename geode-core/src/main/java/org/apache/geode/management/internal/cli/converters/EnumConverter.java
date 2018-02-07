@@ -30,6 +30,9 @@ import org.apache.geode.management.cli.ConverterHint;
  *
  * This needs to implement the interface, instead of extend the EnumConverter directly because the
  * FastPathScanner can only find classes directly implement an interface
+ *
+ * Our EnumConverter also has the extra functionality of converting dash into underscore and auto
+ * upper-case to try to match the Enum defined.
  */
 public class EnumConverter implements Converter<Enum<?>> {
   private org.springframework.shell.converters.EnumConverter delegate;
@@ -46,7 +49,17 @@ public class EnumConverter implements Converter<Enum<?>> {
 
   @Override
   public Enum<?> convertFromText(String value, Class<?> targetType, String optionContext) {
-    return delegate.convertFromText(value, targetType, optionContext);
+    // defined enum value can not have "-" in them, but the values passed in from gfsh command
+    // would usually use "-" instead of "_";
+    value = value.replace("-", "_");
+    Enum<?> result = null;
+    try {
+      result = delegate.convertFromText(value, targetType, optionContext);
+    } catch (Exception e) {
+      // try using upper case again
+      result = delegate.convertFromText(value.toUpperCase(), targetType, optionContext);
+    }
+    return result;
   }
 
   @Override

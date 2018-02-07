@@ -329,10 +329,10 @@ public class StateFlushOperation {
       try {
         InternalCache cache = dm.getExistingCache();
         Set<DistributedRegion> result = new HashSet();
-        for (LocalRegion r : cache.getAllRegions()) {
+        for (InternalRegion r : cache.getAllRegions()) {
           // it's important not to check if the cache is closing, so access
           // the isDestroyed boolean directly
-          if (r instanceof DistributedRegion && !r.isDestroyed) {
+          if (r instanceof DistributedRegion && !((LocalRegion) r).isDestroyed) {
             result.add((DistributedRegion) r);
           }
         }

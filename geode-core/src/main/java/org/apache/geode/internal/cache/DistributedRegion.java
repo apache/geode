@@ -1019,7 +1019,7 @@ public class DistributedRegion extends LocalRegion implements InternalDistribute
    * @throws IllegalStateException if region is not compatible with a region in another VM.
    */
   @Override
-  protected void initialize(InputStream snapshotInputStream, InternalDistributedMember imageTarget,
+  public void initialize(InputStream snapshotInputStream, InternalDistributedMember imageTarget,
       InternalRegionArguments internalRegionArgs)
       throws TimeoutException, IOException, ClassNotFoundException {
     Assert.assertTrue(!isInitialized());
@@ -2481,7 +2481,7 @@ public class DistributedRegion extends LocalRegion implements InternalDistribute
    * In addition to inherited code this method also invokes RegionMembershipListeners
    */
   @Override
-  protected void postCreateRegion() {
+  public void postCreateRegion() {
     super.postCreateRegion();
     // should we sync on this.distAdvisor first to prevent bug 44369?
     synchronized (this.advisorListener) {
@@ -2554,7 +2554,7 @@ public class DistributedRegion extends LocalRegion implements InternalDistribute
   }
 
   @Override
-  void cleanupFailedInitialization() {
+  public void cleanupFailedInitialization() {
     super.cleanupFailedInitialization();
     try {
       RegionEventImpl ev = new RegionEventImpl(this, Operation.REGION_CLOSE, null, false, getMyId(),
@@ -2575,7 +2575,7 @@ public class DistributedRegion extends LocalRegion implements InternalDistribute
   }
 
   @Override
-  void handleCacheClose(Operation operation) {
+  public void handleCacheClose(Operation operation) {
     try {
       super.handleCacheClose(operation);
     } finally {

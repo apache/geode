@@ -26,8 +26,6 @@ import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.CacheListener;
 import org.apache.geode.cache.CacheLoader;
 import org.apache.geode.cache.CacheWriter;
-import org.apache.geode.cache.ExpirationAction;
-import org.apache.geode.cache.ExpirationAttributes;
 import org.apache.geode.cache.Region;
 import org.apache.geode.cache.execute.Function;
 import org.apache.geode.cache.execute.FunctionContext;
@@ -134,9 +132,9 @@ public class RegionAlterFunction implements Function, InternalEntity {
     // Alter expiration attributes
     final RegionFunctionArgs.ExpirationAttrs newEntryExpirationIdleTime =
         regionAlterArgs.getEntryExpirationIdleTime();
-    if (newEntryExpirationIdleTime != null) {
+    if (newEntryExpirationIdleTime.isTimeOrActionSet()) {
       mutator.setEntryIdleTimeout(
-          parseExpirationAttributes(newEntryExpirationIdleTime, region.getEntryIdleTimeout()));
+          newEntryExpirationIdleTime.getExpirationAttributes(region.getEntryIdleTimeout()));
       if (logger.isDebugEnabled()) {
         logger.debug("Region successfully altered - entry idle timeout");
       }
@@ -144,9 +142,9 @@ public class RegionAlterFunction implements Function, InternalEntity {
 
     final RegionFunctionArgs.ExpirationAttrs newEntryExpirationTTL =
         regionAlterArgs.getEntryExpirationTTL();
-    if (newEntryExpirationTTL != null) {
+    if (newEntryExpirationTTL.isTimeOrActionSet()) {
       mutator.setEntryTimeToLive(
-          parseExpirationAttributes(newEntryExpirationTTL, region.getEntryTimeToLive()));
+          newEntryExpirationTTL.getExpirationAttributes(region.getEntryTimeToLive()));
       if (logger.isDebugEnabled()) {
         logger.debug("Region successfully altered - entry TTL");
       }
@@ -154,9 +152,9 @@ public class RegionAlterFunction implements Function, InternalEntity {
 
     final RegionFunctionArgs.ExpirationAttrs newRegionExpirationIdleTime =
         regionAlterArgs.getRegionExpirationIdleTime();
-    if (newRegionExpirationIdleTime != null) {
+    if (newRegionExpirationIdleTime.isTimeOrActionSet()) {
       mutator.setRegionIdleTimeout(
-          parseExpirationAttributes(newRegionExpirationIdleTime, region.getRegionIdleTimeout()));
+          newRegionExpirationIdleTime.getExpirationAttributes(region.getRegionIdleTimeout()));
       if (logger.isDebugEnabled()) {
         logger.debug("Region successfully altered - region idle timeout");
       }
@@ -164,9 +162,9 @@ public class RegionAlterFunction implements Function, InternalEntity {
 
     final RegionFunctionArgs.ExpirationAttrs newRegionExpirationTTL =
         regionAlterArgs.getRegionExpirationTTL();
-    if (newRegionExpirationTTL != null) {
+    if (newRegionExpirationTTL.isTimeOrActionSet()) {
       mutator.setRegionTimeToLive(
-          parseExpirationAttributes(newRegionExpirationTTL, region.getRegionTimeToLive()));
+          newRegionExpirationTTL.getExpirationAttributes(region.getRegionTimeToLive()));
       if (logger.isDebugEnabled()) {
         logger.debug("Region successfully altered - region TTL");
       }
@@ -274,33 +272,6 @@ public class RegionAlterFunction implements Function, InternalEntity {
     }
 
     return region;
-  }
-
-  /**
-   * Converts the expiration attributes passed as arguments from the command to the function into a
-   * type suitable for applying to a Region.
-   *
-   * @param newExpirationAttrs Attributes supplied by the command
-   * @param oldExpirationAttributes Attributes currently applied to the Region.
-   *
-   * @return A new pair of expiration attributes taken from the command if it was given or the
-   *         current value from the Region if it was not.
-   */
-  private ExpirationAttributes parseExpirationAttributes(
-      RegionFunctionArgs.ExpirationAttrs newExpirationAttrs,
-      ExpirationAttributes oldExpirationAttributes) {
-
-    ExpirationAction action = oldExpirationAttributes.getAction();
-    int timeout = oldExpirationAttributes.getTimeout();
-
-    if (newExpirationAttrs.getTime() != null) {
-      timeout = newExpirationAttrs.getTime();
-    }
-    if (newExpirationAttrs.getAction() != null) {
-      action = newExpirationAttrs.getAction();
-    }
-
-    return new ExpirationAttributes(timeout, action);
   }
 
   @SuppressWarnings("unchecked")
