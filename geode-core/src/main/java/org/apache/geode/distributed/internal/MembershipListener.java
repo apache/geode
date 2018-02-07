@@ -65,7 +65,7 @@ public interface MembershipListener {
    * This is notification that more than 50% of member weight has been lost in a single view change.
    * Notification is performed before the view has been installed.
    *
-   * @param distributionManager TODO
+   * @param distributionManager that is calling this listener
    * @param failures members that have been lost
    * @param remaining members that remain
    */
