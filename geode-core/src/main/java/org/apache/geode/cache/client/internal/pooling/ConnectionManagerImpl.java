@@ -174,7 +174,6 @@ public class ConnectionManagerImpl implements ConnectionManager {
     this.idleTimeoutNanos = this.idleTimeout * NANOS_PER_MS;
     this.securityLogWriter = securityLogger;
     this.prefillRetry = pingInterval;
-    // this.pingInterval = pingInterval;
     this.cancelCriterion = cancelCriterion;
     this.endpointListener = new EndpointManager.EndpointListenerAdapter() {
       @Override

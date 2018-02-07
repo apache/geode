@@ -99,7 +99,7 @@ public abstract class AbstractBaseController {
   private static final AtomicLong ID_SEQUENCE = new AtomicLong(0l);
 
   @Autowired
-  private RestSecurityService securityService;
+  protected RestSecurityService securityService;
   @Autowired
   private ObjectMapper objectMapper;
   @Autowired

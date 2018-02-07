@@ -123,8 +123,9 @@ public class ServerSideHandshakeImpl extends Handshake implements ServerSideHand
     return this.clientVersion;
   }
 
-  public void accept(OutputStream out, InputStream in, byte endpointType, int queueSize,
-      CommunicationMode communicationMode, Principal principal) throws IOException {
+  @Override
+  public void handshakeWithClient(OutputStream out, InputStream in, byte endpointType,
+      int queueSize, CommunicationMode communicationMode, Principal principal) throws IOException {
     DataOutputStream dos = new DataOutputStream(out);
     DataInputStream dis;
     if (clientVersion.compareTo(Version.CURRENT) < 0) {

@@ -204,7 +204,7 @@ public abstract class AbstractOp implements Op {
         }
       } else {
         try {
-          msg.recv();
+          msg.receive();
         } finally {
           msg.unsetComms();
           processSecureBytes(cnx, msg);

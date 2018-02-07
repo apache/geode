@@ -12,30 +12,28 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
-package org.apache.geode.management.internal.deployment;
 
-import java.util.Collection;
-import java.util.Collections;
+package org.apache.geode.management.internal.cli.commands;
 
-import org.apache.geode.cache.execute.Function;
-import org.apache.geode.cache.execute.FunctionContext;
-import org.apache.geode.management.internal.security.ResourcePermissions;
-import org.apache.geode.security.ResourcePermission;
+import org.apache.geode.compression.Compressor;
 
-public class ImplementsFunction implements Function {
-  public static String ID = "myTestFunction";
+public class TestCompressor1 implements Compressor {
+  private static final String prefix = "compressed";
+  private static final byte[] prefixBytes = prefix.getBytes();
 
-  public void execute(FunctionContext context) {
-    context.getResultSender().lastResult("ImplementsFunctionResult");
+  @Override
+  public byte[] compress(byte[] input) {
+    byte[] returnBytes = new byte[prefixBytes.length + input.length];
+    System.arraycopy(prefixBytes, 0, returnBytes, 0, prefixBytes.length);
+    System.arraycopy(input, 0, returnBytes, prefixBytes.length, input.length);
+    return returnBytes;
   }
 
   @Override
-  public Collection<ResourcePermission> getRequiredPermissions(String regionName) {
-    return Collections.singletonList(ResourcePermissions.DATA_MANAGE);
-  }
-
-  @Override
-  public String getId() {
-    return ID;
+  public byte[] decompress(byte[] input) {
+    int numReturnBytes = input.length - prefixBytes.length;
+    byte[] returnBytes = new byte[numReturnBytes];
+    System.arraycopy(input, prefixBytes.length, returnBytes, 0, numReturnBytes);
+    return returnBytes;
   }
 }

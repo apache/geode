@@ -23,6 +23,7 @@ import org.apache.logging.log4j.Logger;
 
 import org.apache.geode.DataSerializable;
 import org.apache.geode.DataSerializer;
+import org.apache.geode.cache.CacheException;
 import org.apache.geode.cache.EntryNotFoundException;
 import org.apache.geode.cache.Region;
 import org.apache.geode.cache.TransactionException;
@@ -286,8 +287,20 @@ public class RemoteFetchEntryMessage extends RemoteOperationMessage {
      * @return Object associated with the key that was sent in the get message
      * @throws RemoteOperationException if the peer is no longer available
      */
-    public EntrySnapshot waitForResponse() throws RemoteOperationException {
-      waitForRemoteResponse();
+    public EntrySnapshot waitForResponse() throws EntryNotFoundException, RemoteOperationException {
+      try {
+        waitForRemoteResponse();
+      } catch (EntryNotFoundException | TransactionException e) {
+        throw e;
+      } catch (CacheException ce) {
+        logger.debug(
+            "FetchEntryResponse got remote CacheException; wrapping in RemoteOperationException.",
+            ce);
+        throw new RemoteOperationException(
+            LocalizedStrings.RemoteFetchEntryMessage_FETCHENTRYRESPONSE_GOT_REMOTE_CACHEEXCEPTION_FORCING_REATTEMPT
+                .toLocalizedString(),
+            ce);
+      }
       return this.returnValue;
     }
   }

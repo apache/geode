@@ -1113,8 +1113,6 @@ public class Connection implements Runnable {
             } else {
               success = true;
             }
-          } catch (DistributedSystemDisconnectedException e) {
-            throw e;
           } catch (ConnectionException e) {
             if (giveUpOnMember(mgr, remoteAddr)) {
               IOException ioe =

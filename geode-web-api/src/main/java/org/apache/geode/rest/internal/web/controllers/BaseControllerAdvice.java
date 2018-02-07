@@ -27,6 +27,7 @@ import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.ResponseStatus;
 
 import org.apache.geode.internal.logging.LogService;
+import org.apache.geode.management.internal.cli.exceptions.EntityNotFoundException;
 import org.apache.geode.rest.internal.web.exception.DataTypeNotSupportedException;
 import org.apache.geode.rest.internal.web.exception.GemfireRestException;
 import org.apache.geode.rest.internal.web.exception.MalformedJsonException;
@@ -156,6 +157,20 @@ public class BaseControllerAdvice extends AbstractBaseController {
   @ResponseBody
   @ResponseStatus(HttpStatus.FORBIDDEN)
   public String handleException(final NotAuthorizedException cause) {
+    return convertErrorAsJson(cause.getMessage());
+  }
+
+  /**
+   * Handles an EntityNotFound Exception thrown by web service endpoint
+   * <p/>
+   *
+   * @param cause the Exception causing the error.
+   * @return a ResponseEntity with an appropriate HTTP status code (403 - Forbidden)
+   */
+  @ExceptionHandler(EntityNotFoundException.class)
+  @ResponseBody
+  @ResponseStatus(HttpStatus.NOT_FOUND)
+  public String handleException(final EntityNotFoundException cause) {
     return convertErrorAsJson(cause.getMessage());
   }
 
