@@ -91,37 +91,23 @@ public class PartitionedRegionBucketCreationDistributionDUnitTest extends CacheT
   }
 
   /**
-   * This test performs following operations
+   * This test performs following operations:
    *
    * <p>
-   * 1. Validate bucket2Node region of the partition regions.
-   *
-   * <p>
-   * (a) bucket2Node Region should not be null.
-   *
-   * <p>
-   * (b) Scope of the bucket2Node region should be DISTRIBUTED_ACK.
-   *
-   * <p>
-   * (c) Size of bucket2Node region should be 0 before any put() operation.
-   *
-   * <p>
+   * 1. Validate bucket2Node region of the partition regions.<br>
+   * (a) bucket2Node Region should not be null.<br>
+   * (b) Scope of the bucket2Node region should be DISTRIBUTED_ACK.<br>
+   * (c) Size of bucket2Node region should be 0 before any put() operation.<br>
    * (d) Parent region of the bucket2Node region should be root i.e. region with name "PRRoot".
    *
    * <p>
    * 2. Do put() operation from the different VMs so that buckets gets generated.
    *
    * <p>
-   * 3. Validate bucket regions of multiple partition Regions
-   *
-   * <p>
-   * (a) Size of bucket2Node region should be > 0.
-   *
-   * <p>
+   * 3. Validate bucket regions of multiple partition Regions<br>
+   * (a) Size of bucket2Node region should be > 0.<br>
    * (b) In case of the partition regions with redundancy > 0 scope of the bucket regions should be
-   * scope of the partition regions.
-   *
-   * <p>
+   * scope of the partition regions.<br>
    * (c) In case of the partition regions with redundancy > 0 no two bucket regions with same
    * bucketId should not be present on the same node.
    */
@@ -548,7 +534,7 @@ public class PartitionedRegionBucketCreationDistributionDUnitTest extends CacheT
       }
     });
 
-    // TODO: there is no validation!!
+    // TODO: add some validation
   }
 
   private void putFromOneVm(final String regionName, final int firstKey, final int lastKey) {
@@ -674,7 +660,7 @@ public class PartitionedRegionBucketCreationDistributionDUnitTest extends CacheT
   }
 
   private int getNumberOfBucketsExpectedOnEachNode() {
-    return (numberOfBuckets / 4) - 1;
+    return numberOfBuckets / 4 - 1;
   }
 
   private void putInMultiplePartitionRegion(final String regionName, final int firstKey,
