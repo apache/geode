@@ -254,8 +254,10 @@ public abstract class PartitionMessage extends DistributionMessage
    * check to see if the cache is closing
    */
   public boolean checkCacheClosing(ClusterDistributionManager dm) {
-    InternalCache cache = getInternalCache();
-    // return (cache != null && cache.isClosed());
+    if (dm == null) {
+      return true;
+    }
+    InternalCache cache = dm.getCache();
     return cache == null || cache.isClosed();
   }
 
@@ -271,10 +273,6 @@ public abstract class PartitionMessage extends DistributionMessage
 
   PartitionedRegion getPartitionedRegion() throws PRLocallyDestroyedException {
     return PartitionedRegion.getPRFromId(this.regionId);
-  }
-
-  InternalCache getInternalCache() {
-    return GemFireCacheImpl.getInstance();
   }
 
   TXManagerImpl getTXManagerImpl(InternalCache cache) {
