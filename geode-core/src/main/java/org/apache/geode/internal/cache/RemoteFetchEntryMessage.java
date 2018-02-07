@@ -28,7 +28,6 @@ import org.apache.geode.admin.OperationCancelledException;
 import org.apache.geode.cache.CacheException;
 import org.apache.geode.cache.EntryNotFoundException;
 import org.apache.geode.cache.Region;
-import org.apache.geode.cache.RegionDestroyedException;
 import org.apache.geode.cache.TransactionException;
 import org.apache.geode.distributed.internal.ClusterDistributionManager;
 import org.apache.geode.distributed.internal.DistributionManager;
@@ -315,11 +314,7 @@ public class RemoteFetchEntryMessage extends RemoteOperationMessage {
         final String msg = "FetchEntryResponse got remote RemoteOperationException; rethrowing";
         logger.debug(msg, e);
         throw e;
-      } catch (EntryNotFoundException e) {
-        throw e;
-      } catch (TransactionException e) {
-        throw e;
-      } catch (RegionDestroyedException e) {
+      } catch (EntryNotFoundException | TransactionException e) {
         throw e;
       } catch (CacheException ce) {
         logger.debug("FetchEntryResponse got remote CacheException; forcing reattempt.", ce);

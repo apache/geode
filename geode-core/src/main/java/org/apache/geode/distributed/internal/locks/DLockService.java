@@ -2230,44 +2230,7 @@ public class DLockService extends DistributedLockService {
           logger.trace(LogMarker.DLS, "destroyAndRemove of {} terminated due to cancellation: ",
               svc, e);
         }
-      } catch (RuntimeException e) {
-        throw e;
       }
-      // catch (VirtualMachineError err) {
-      // SystemFailure.initiateFailure(err);
-      // // If this ever returns, rethrow the error. We're poisoned
-      // // now, so don't let this thread continue.
-      // throw err;
-      // }
-      // catch (Throwable t) {
-      // // Whenever you catch Error or Throwable, you must also
-      // // catch VirtualMachineError (see above). However, there is
-      // // _still_ a possibility that you are dealing with a cascading
-      // // error condition, so you also need to check to see if the JVM
-      // // is still usable:
-      // SystemFailure.checkFailure();
-      // try {
-      // logger.warn(new
-      // LocalizedMessage(LocalizedStrings.DLockService_DESTROYANDREMOVE_OF_0_MAY_HAVE_FAILED,
-      // svc), t);
-      // }
-      // catch (VirtualMachineError err) {
-      // SystemFailure.initiateFailure(err);
-      // // If this ever returns, rethrow the error. We're poisoned
-      // // now, so don't let this thread continue.
-      // throw err;
-      // }
-      // catch (Throwable t2) {
-      // // Whenever you catch Error or Throwable, you must also
-      // // catch VirtualMachineError (see above). However, there is
-      // // _still_ a possibility that you are dealing with a cascading
-      // // error condition, so you also need to check to see if the JVM
-      // // is still usable:
-      // SystemFailure.checkFailure();
-      // t.printStackTrace();
-      // t2.printStackTrace();
-      // }
-      // }
     }
   }
 

@@ -24,7 +24,6 @@ import org.apache.logging.log4j.Logger;
 
 import org.apache.geode.DataSerializer;
 import org.apache.geode.cache.CacheException;
-import org.apache.geode.cache.RegionDestroyedException;
 import org.apache.geode.distributed.internal.ClusterDistributionManager;
 import org.apache.geode.distributed.internal.DirectReplyProcessor;
 import org.apache.geode.distributed.internal.DistributionManager;
@@ -286,11 +285,6 @@ public class RemoteContainsKeyValueMessage extends RemoteOperationMessageWithDir
       } catch (RemoteOperationException rce) {
         rce.checkKey(key);
         throw rce;
-      } catch (PrimaryBucketException pbe) {
-        // Is this necessary?
-        throw pbe;
-      } catch (RegionDestroyedException e) {
-        throw e;
       } catch (CacheException ce) {
         logger.debug("ContainsKeyValueResponse got remote CacheException; forcing reattempt.", ce);
         throw new RemoteOperationException(

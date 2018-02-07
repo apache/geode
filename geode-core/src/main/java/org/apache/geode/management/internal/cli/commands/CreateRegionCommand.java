@@ -53,6 +53,7 @@ import org.apache.geode.management.internal.cli.LogWrapper;
 import org.apache.geode.management.internal.cli.domain.ClassName;
 import org.apache.geode.management.internal.cli.functions.CliFunctionResult;
 import org.apache.geode.management.internal.cli.functions.FetchRegionAttributesFunction;
+import org.apache.geode.management.internal.cli.functions.RegionAttributesWrapper;
 import org.apache.geode.management.internal.cli.functions.RegionCreateFunction;
 import org.apache.geode.management.internal.cli.functions.RegionFunctionArgs;
 import org.apache.geode.management.internal.cli.i18n.CliStrings;
@@ -203,8 +204,6 @@ public class CreateRegionCommand implements GfshCommand {
     RegionFunctionArgs functionArgs = new RegionFunctionArgs();
     functionArgs.setRegionPath(regionPath);
     functionArgs.setIfNotExists(ifNotExists || skipIfExists);
-    functionArgs.setKeyConstraint(keyConstraint);
-    functionArgs.setValueConstraint(valueConstraint);
     functionArgs.setStatisticsEnabled(statisticsEnabled);
     functionArgs.setEntryExpirationIdleTime(entryExpirationIdleTime, entryExpirationIdleTimeAction);
     functionArgs.setEntryExpirationTTL(entryExpirationTTL, entryExpirationTTLAction);
@@ -238,22 +237,22 @@ public class CreateRegionCommand implements GfshCommand {
                 regionPath));
       }
       functionArgs.setRegionShortcut(regionShortcut);
-    } else if (templateRegion != null) {
+    } else { // templateRegion != null
       if (!regionExists(cache, templateRegion)) {
         return ResultBuilder.createUserErrorResult(CliStrings.format(
             CliStrings.CREATE_REGION__MSG__SPECIFY_VALID_REGION_PATH_FOR_0_REGIONPATH_1_NOT_FOUND,
             CliStrings.CREATE_REGION__USEATTRIBUTESFROM, templateRegion));
       }
 
-      regionAttributes = getRegionAttributes(cache, templateRegion);
+      RegionAttributesWrapper<?, ?> wrappedAttributes = getRegionAttributes(cache, templateRegion);
 
-      if (regionAttributes == null) {
+      if (wrappedAttributes == null) {
         return ResultBuilder.createGemFireErrorResult(CliStrings.format(
             CliStrings.CREATE_REGION__MSG__COULD_NOT_RETRIEVE_REGION_ATTRS_FOR_PATH_0_VERIFY_REGION_EXISTS,
             templateRegion));
       }
 
-      if (regionAttributes.getPartitionAttributes() == null
+      if (wrappedAttributes.getRegionAttributes().getPartitionAttributes() == null
           && functionArgs.hasPartitionAttributes()) {
         return ResultBuilder.createUserErrorResult(CliStrings.format(
             CliStrings.CREATE_REGION__MSG__OPTION_0_CAN_BE_USED_ONLY_FOR_PARTITIONEDREGION,
@@ -262,13 +261,42 @@ public class CreateRegionCommand implements GfshCommand {
                 templateRegion));
       }
       functionArgs.setTemplateRegion(templateRegion);
-      functionArgs.setRegionAttributes(regionAttributes);
+
+      // These attributes will have the actual callback fields (if previously present) nulled out.
+      functionArgs.setRegionAttributes(wrappedAttributes.getRegionAttributes());
+
+      functionArgs
+          .setCacheListeners(wrappedAttributes.getCacheListenerClasses().toArray(new ClassName[0]));
+      functionArgs.setCacheWriter(wrappedAttributes.getCacheWriterClass());
+      functionArgs.setCacheLoader(wrappedAttributes.getCacheLoaderClass());
+      functionArgs.setCompressor(wrappedAttributes.getCompressorClass());
+      functionArgs.setKeyConstraint(wrappedAttributes.getKeyConstraintClass());
+      functionArgs.setValueConstraint(wrappedAttributes.getValueConstraintClass());
     }
 
-    functionArgs.setCacheListeners(cacheListener);
-    functionArgs.setCacheLoader(cacheLoader);
-    functionArgs.setCacheWriter(cacheWriter);
-    functionArgs.setCompressor(compressor);
+    if (cacheListener != null) {
+      functionArgs.setCacheListeners(cacheListener);
+    }
+
+    if (cacheLoader != null) {
+      functionArgs.setCacheLoader(cacheLoader);
+    }
+
+    if (cacheWriter != null) {
+      functionArgs.setCacheWriter(cacheWriter);
+    }
+
+    if (compressor != null) {
+      functionArgs.setCompressor(compressor);
+    }
+
+    if (keyConstraint != null) {
+      functionArgs.setKeyConstraint(keyConstraint);
+    }
+
+    if (valueConstraint != null) {
+      functionArgs.setValueConstraint(valueConstraint);
+    }
 
     DistributedSystemMXBean dsMBean = getDSMBean(cache);
     // validating colocation
@@ -388,13 +416,13 @@ public class CreateRegionCommand implements GfshCommand {
     return false;
   }
 
-  RegionAttributes getRegionAttributes(InternalCache cache, String regionPath) {
+  RegionAttributesWrapper getRegionAttributes(InternalCache cache, String regionPath) {
     if (!isClusterWideSameConfig(cache, regionPath)) {
       throw new IllegalStateException(CliStrings.format(
           CliStrings.CREATE_REGION__MSG__USE_ATTRIBUTES_FORM_REGIONS_EXISTS_BUT_DIFFERENT_SCOPE_OR_DATAPOLICY_USE_DESCRIBE_REGION_FOR_0,
           regionPath));
     }
-    RegionAttributes attributes = null;
+    RegionAttributesWrapper attributes = null;
 
     // First check whether the region exists on a this manager, if yes then no
     // need to use FetchRegionAttributesFunction to fetch RegionAttributes
@@ -425,7 +453,7 @@ public class CreateRegionCommand implements GfshCommand {
                   regionPath, th.getMessage()));
             } else { // has to be RegionAttributes
               @SuppressWarnings("unchecked") // to avoid warning :(
-              RegionAttributes regAttr = ((RegionAttributes) object);
+              RegionAttributesWrapper regAttr = ((RegionAttributesWrapper) object);
               if (attributes == null) {
                 attributes = regAttr;
                 break;

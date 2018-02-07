@@ -26,7 +26,6 @@ import org.apache.logging.log4j.Logger;
 import org.apache.geode.DataSerializer;
 import org.apache.geode.cache.CacheException;
 import org.apache.geode.cache.EntryNotFoundException;
-import org.apache.geode.cache.TransactionDataNotColocatedException;
 import org.apache.geode.cache.wan.GatewayEventFilter;
 import org.apache.geode.cache.wan.GatewayQueueEvent;
 import org.apache.geode.distributed.internal.ClusterDistributionManager;
@@ -244,14 +243,9 @@ public class ParallelQueueBatchRemovalMessage extends PartitionMessage {
     public void waitForResponse() throws ForceReattemptException {
       try {
         waitForCacheException();
-      } catch (EntryNotFoundException enfe) {
-        throw enfe;
       } catch (ForceReattemptException e) {
         final String msg = "GetResponse got ForceReattemptException; rethrowing";
         logger.debug(msg, e);
-        throw e;
-      } catch (TransactionDataNotColocatedException e) {
-        // Throw this up to user!
         throw e;
       }
     }

@@ -24,7 +24,6 @@ import org.apache.logging.log4j.Logger;
 
 import org.apache.geode.DataSerializer;
 import org.apache.geode.cache.Cache;
-import org.apache.geode.cache.TransactionDataNotColocatedException;
 import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.distributed.internal.ClusterDistributionManager;
 import org.apache.geode.distributed.internal.DistributionManager;
@@ -280,9 +279,6 @@ public class TXRemoteCommitMessage extends TXMessage {
       } catch (RemoteOperationException e) {
         final String msg = "RemoteCommitResponse got RemoteOperationException; rethrowing";
         logger.debug(msg, e);
-        throw e;
-      } catch (TransactionDataNotColocatedException e) {
-        // Throw this up to user!
         throw e;
       }
       return commitMessage;

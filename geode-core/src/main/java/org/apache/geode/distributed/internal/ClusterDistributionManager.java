@@ -1706,9 +1706,6 @@ public class ClusterDistributionManager implements DistributionManager {
       return sendMessage(msg);
     } catch (NotSerializableException e) {
       throw new InternalGemFireException(e);
-    } catch (ToDataException e) {
-      // exception from user code
-      throw e;
     }
   }
 

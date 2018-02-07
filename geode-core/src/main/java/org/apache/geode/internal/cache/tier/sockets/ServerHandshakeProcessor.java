@@ -41,6 +41,7 @@ import org.apache.geode.cache.VersionException;
 import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.distributed.DistributedSystem;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
+import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
 import org.apache.geode.internal.HeapDataOutputStream;
 import org.apache.geode.internal.Version;
 import org.apache.geode.internal.VersionedDataStream;
@@ -154,6 +155,7 @@ public class ServerHandshakeProcessor {
 
     // Write the server's member
     DistributedMember member = InternalDistributedSystem.getAnyInstance().getDistributedMember();
+
     writeServerMember(member, dos);
 
     // Write the refusal message
@@ -266,72 +268,61 @@ public class ServerHandshakeProcessor {
   }
 
   public static long setAuthAttributes(ServerConnection connection) throws Exception {
-    try {
-      logger.debug("setAttributes()");
-      Object principal = connection.getHandshake().verifyCredentials();
+    logger.debug("setAttributes()");
+    Object principal = connection.getHandshake().verifyCredentials();
 
-      long uniqueId;
-      if (principal instanceof Subject) {
-        uniqueId =
-            connection.getClientUserAuths(connection.getProxyID()).putSubject((Subject) principal);
-      } else {
-        // this sets principal in map as well....
-        uniqueId = getUniqueId(connection, (Principal) principal);
-        connection.setPrincipal((Principal) principal);// TODO:hitesh is this require now ???
-      }
-      return uniqueId;
-    } catch (Exception ex) {
-      throw ex;
+    long uniqueId;
+    if (principal instanceof Subject) {
+      uniqueId =
+          connection.getClientUserAuths(connection.getProxyID()).putSubject((Subject) principal);
+    } else {
+      // this sets principal in map as well....
+      uniqueId = getUniqueId(connection, (Principal) principal);
+      connection.setPrincipal((Principal) principal);
     }
+    return uniqueId;
   }
 
   public static long getUniqueId(ServerConnection connection, Principal principal)
       throws Exception {
-    try {
-      InternalLogWriter securityLogWriter = connection.getSecurityLogWriter();
-      DistributedSystem system = connection.getDistributedSystem();
-      Properties systemProperties = system.getProperties();
-      // hitesh:auth callbacks
-      String authzFactoryName = systemProperties.getProperty(SECURITY_CLIENT_ACCESSOR);
-      String postAuthzFactoryName = systemProperties.getProperty(SECURITY_CLIENT_ACCESSOR_PP);
-      AuthorizeRequest authzRequest = null;
-      AuthorizeRequestPP postAuthzRequest = null;
+    InternalLogWriter securityLogWriter = connection.getSecurityLogWriter();
+    DistributedSystem system = connection.getDistributedSystem();
+    Properties systemProperties = system.getProperties();
+    String authzFactoryName = systemProperties.getProperty(SECURITY_CLIENT_ACCESSOR);
+    String postAuthzFactoryName = systemProperties.getProperty(SECURITY_CLIENT_ACCESSOR_PP);
+    AuthorizeRequest authzRequest = null;
+    AuthorizeRequestPP postAuthzRequest = null;
 
-      if (authzFactoryName != null && authzFactoryName.length() > 0) {
-        if (securityLogWriter.fineEnabled())
-          securityLogWriter.fine(connection.getName()
-              + ": Setting pre-process authorization callback to: " + authzFactoryName);
-        if (principal == null) {
-          if (securityLogWriter.warningEnabled()) {
-            securityLogWriter.warning(
-                LocalizedStrings.ServerHandShakeProcessor_0_AUTHORIZATION_ENABLED_BUT_AUTHENTICATION_CALLBACK_1_RETURNED_WITH_NULL_CREDENTIALS_FOR_PROXYID_2,
-                new Object[] {connection.getName(), SECURITY_CLIENT_AUTHENTICATOR,
-                    connection.getProxyID()});
-          }
+    if (authzFactoryName != null && authzFactoryName.length() > 0) {
+      if (securityLogWriter.fineEnabled())
+        securityLogWriter.fine(connection.getName()
+            + ": Setting pre-process authorization callback to: " + authzFactoryName);
+      if (principal == null) {
+        if (securityLogWriter.warningEnabled()) {
+          securityLogWriter.warning(
+              LocalizedStrings.ServerHandShakeProcessor_0_AUTHORIZATION_ENABLED_BUT_AUTHENTICATION_CALLBACK_1_RETURNED_WITH_NULL_CREDENTIALS_FOR_PROXYID_2,
+              new Object[] {connection.getName(), SECURITY_CLIENT_AUTHENTICATOR,
+                  connection.getProxyID()});
         }
-        authzRequest = new AuthorizeRequest(authzFactoryName, connection.getProxyID(), principal,
-            connection.getCache());
-        // connection.setAuthorizeRequest(authzRequest);
       }
-      if (postAuthzFactoryName != null && postAuthzFactoryName.length() > 0) {
-        if (securityLogWriter.fineEnabled())
-          securityLogWriter.fine(connection.getName()
-              + ": Setting post-process authorization callback to: " + postAuthzFactoryName);
-        if (principal == null) {
-          if (securityLogWriter.warningEnabled()) {
-            securityLogWriter.warning(
-                LocalizedStrings.ServerHandShakeProcessor_0_POSTPROCESS_AUTHORIZATION_ENABLED_BUT_NO_AUTHENTICATION_CALLBACK_2_IS_CONFIGURED,
-                new Object[] {connection.getName(), SECURITY_CLIENT_AUTHENTICATOR});
-          }
-        }
-        postAuthzRequest = new AuthorizeRequestPP(postAuthzFactoryName, connection.getProxyID(),
-            principal, connection.getCache());
-        // connection.setPostAuthorizeRequest(postAuthzRequest);
-      }
-      return connection.setUserAuthorizeAndPostAuthorizeRequest(authzRequest, postAuthzRequest);
-    } catch (Exception ex) {
-      throw ex;
+      authzRequest = new AuthorizeRequest(authzFactoryName, connection.getProxyID(), principal,
+          connection.getCache());
     }
+    if (postAuthzFactoryName != null && postAuthzFactoryName.length() > 0) {
+      if (securityLogWriter.fineEnabled())
+        securityLogWriter.fine(connection.getName()
+            + ": Setting post-process authorization callback to: " + postAuthzFactoryName);
+      if (principal == null) {
+        if (securityLogWriter.warningEnabled()) {
+          securityLogWriter.warning(
+              LocalizedStrings.ServerHandShakeProcessor_0_POSTPROCESS_AUTHORIZATION_ENABLED_BUT_NO_AUTHENTICATION_CALLBACK_2_IS_CONFIGURED,
+              new Object[] {connection.getName(), SECURITY_CLIENT_AUTHENTICATOR});
+        }
+      }
+      postAuthzRequest = new AuthorizeRequestPP(postAuthzFactoryName, connection.getProxyID(),
+          principal, connection.getCache());
+    }
+    return connection.setUserAuthorizeAndPostAuthorizeRequest(authzRequest, postAuthzRequest);
   }
 
   private static Version readClientVersion(ServerConnection connection)

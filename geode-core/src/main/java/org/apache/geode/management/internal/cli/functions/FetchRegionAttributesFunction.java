@@ -14,19 +14,23 @@
  */
 package org.apache.geode.management.internal.cli.functions;
 
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.List;
+import java.util.stream.Collectors;
 
 import org.apache.logging.log4j.Logger;
 
 import org.apache.geode.cache.AttributesFactory;
 import org.apache.geode.cache.Cache;
-import org.apache.geode.cache.Region;
-import org.apache.geode.cache.RegionAttributes;
+import org.apache.geode.cache.CacheListener;
 import org.apache.geode.cache.execute.Function;
 import org.apache.geode.cache.execute.FunctionContext;
 import org.apache.geode.internal.InternalEntity;
+import org.apache.geode.internal.cache.AbstractRegion;
 import org.apache.geode.internal.logging.LogService;
+import org.apache.geode.management.internal.cli.domain.ClassName;
 import org.apache.geode.management.internal.cli.i18n.CliStrings;
 import org.apache.geode.management.internal.security.ResourcePermissions;
 import org.apache.geode.security.ResourcePermission;
@@ -58,8 +62,8 @@ public class FetchRegionAttributesFunction implements Function, InternalEntity {
         throw new IllegalArgumentException(
             CliStrings.CREATE_REGION__MSG__SPECIFY_VALID_REGION_PATH);
       }
-      RegionAttributes<?, ?> result = getRegionAttributes(cache, regionPath);
-      context.getResultSender().lastResult(result);
+      RegionAttributesWrapper regionAttributesWrapper = getRegionAttributes(cache, regionPath);
+      context.getResultSender().lastResult(regionAttributesWrapper);
     } catch (IllegalArgumentException e) {
       if (logger.isDebugEnabled()) {
         logger.debug(e.getMessage(), e);
@@ -69,19 +73,54 @@ public class FetchRegionAttributesFunction implements Function, InternalEntity {
   }
 
   @SuppressWarnings("deprecation")
-  public static <K, V> RegionAttributes<K, V> getRegionAttributes(Cache cache, String regionPath) {
-    Region<K, V> foundRegion = cache.getRegion(regionPath);
+  public static RegionAttributesWrapper getRegionAttributes(Cache cache, String regionPath) {
+    AbstractRegion foundRegion = (AbstractRegion) cache.getRegion(regionPath);
 
     if (foundRegion == null) {
       throw new IllegalArgumentException(CliStrings.format(
           CliStrings.CREATE_REGION__MSG__SPECIFY_VALID_REGION_PATH_FOR_0_REGIONPATH_1_NOT_FOUND,
-          new Object[] {CliStrings.CREATE_REGION__USEATTRIBUTESFROM, regionPath}));
+          CliStrings.CREATE_REGION__USEATTRIBUTESFROM, regionPath));
     }
 
-    // Using AttributesFactory to get the serializable RegionAttributes
-    // Is there a better way?
-    AttributesFactory<K, V> afactory = new AttributesFactory<K, V>(foundRegion.getAttributes());
-    return afactory.create();
+    AttributesFactory afactory = new AttributesFactory(foundRegion.getAttributes());
+    RegionAttributesWrapper result = new RegionAttributesWrapper();
+
+    CacheListener[] cacheListeners = foundRegion.getCacheListeners();
+    List existingCacheListeners = Arrays.stream(cacheListeners)
+        .map((c) -> new ClassName(c.getClass().getName())).collect(Collectors.toList());
+
+    result.setCacheListenerClasses(existingCacheListeners);
+    afactory.initCacheListeners(null);
+
+    if (foundRegion.getCacheLoader() != null) {
+      result
+          .setCacheLoaderClass(new ClassName<>(foundRegion.getCacheLoader().getClass().getName()));
+      afactory.setCacheLoader(null);
+    }
+
+    if (foundRegion.getCacheWriter() != null) {
+      result
+          .setCacheWriterClass(new ClassName<>(foundRegion.getCacheWriter().getClass().getName()));
+      afactory.setCacheWriter(null);
+    }
+
+    if (foundRegion.getCompressor() != null) {
+      result.setCompressorClass(foundRegion.getCompressor().getClass().getName());
+      afactory.setCompressor(null);
+    }
+
+    if (foundRegion.getKeyConstraint() != null) {
+      result.setKeyConstraintClass(foundRegion.getKeyConstraint().getName());
+      afactory.setKeyConstraint(null);
+    }
+
+    if (foundRegion.getValueConstraint() != null) {
+      result.setValueConstraintClass(foundRegion.getValueConstraint().getName());
+      afactory.setValueConstraint(null);
+    }
+
+    result.setRegionAttributes(afactory.create());
+    return result;
   }
 
   @Override

@@ -32,7 +32,6 @@ import org.apache.logging.log4j.Logger;
 
 import org.apache.geode.CancelException;
 import org.apache.geode.SystemFailure;
-import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.CommitConflictException;
 import org.apache.geode.cache.DiskAccessException;
 import org.apache.geode.cache.EntryNotFoundException;
@@ -324,20 +323,16 @@ public class TXState implements TXStateInterface {
 
     final long conflictStart = CachePerfStats.getStatTime();
     this.locks = createLockRequest();
-    try {
-      this.locks.obtain(getCache().getInternalDistributedSystem());
-      // for now check account the dlock service time
-      // later this stat end should be moved to a finally block
-      if (CachePerfStats.enableClockStats)
-        this.proxy.getTxMgr().getCachePerfStats()
-            .incTxConflictCheckTime(CachePerfStats.getStatTime() - conflictStart);
-      if (this.internalAfterReservation != null) {
-        this.internalAfterReservation.run();
-      }
-      checkForConflicts();
-    } catch (CommitConflictException conflict) {
-      throw conflict;
+    this.locks.obtain(getCache().getInternalDistributedSystem());
+    // for now check account the dlock service time
+    // later this stat end should be moved to a finally block
+    if (CachePerfStats.enableClockStats)
+      this.proxy.getTxMgr().getCachePerfStats()
+          .incTxConflictCheckTime(CachePerfStats.getStatTime() - conflictStart);
+    if (this.internalAfterReservation != null) {
+      this.internalAfterReservation.run();
     }
+    checkForConflicts();
   }
 
   byte[] getBaseMembershipId() {
