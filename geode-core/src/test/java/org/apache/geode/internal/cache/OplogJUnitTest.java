@@ -58,6 +58,7 @@ import org.apache.geode.internal.cache.Oplog.OPLOG_TYPE;
 import org.apache.geode.internal.cache.entries.AbstractDiskLRURegionEntry;
 import org.apache.geode.internal.cache.entries.DiskEntry;
 import org.apache.geode.test.dunit.ThreadUtils;
+import org.apache.geode.test.junit.categories.FlakyTest;
 import org.apache.geode.test.junit.categories.IntegrationTest;
 
 /**
@@ -1131,6 +1132,7 @@ public class OplogJUnitTest extends DiskRegionTestingBase {
    * An entry which is evicted to disk will have the flag already written to disk, appropriately set
    *
    */
+  @Category(FlakyTest.class)
   @Test
   public void testEntryAlreadyWrittenIsCorrectlyUnmarkedForOverflowOnly() throws Exception {
     diskProps.setPersistBackup(false);
