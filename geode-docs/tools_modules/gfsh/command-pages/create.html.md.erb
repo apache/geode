@@ -795,8 +795,9 @@ See [Region Data Storage and Distribution](../../../developing/region_options/ch
 </tr>
 <tr class="odd">
 <td><span class="keyword parmname">\-\-skip-if-exists</span></td>
-<td>Skip region creation if the region already exists. If the parameter is specified without a value, the value is set to true. If the parameter is not specified, the value (default) is false.</td>
-<td><code class="ph codeph">true</code></td>
+<td>A new region will not be created if a region with the same name already exists. By default, an attempt to create a duplicate region is reported as an error.
+If this parameter is specified without a value or is specified with a value of `true`, then gfsh displays a "Skipping..." acknowledgement, but does not throw an error.</td>
+<td>false</td>
 </tr>
 <tr class="even">
 <td><span class="keyword parmname">\-\-key-constraint</span></td>
