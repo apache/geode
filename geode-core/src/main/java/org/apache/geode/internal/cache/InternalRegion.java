@@ -135,8 +135,6 @@ public interface InternalRegion extends Region, HasCachePerfStats, RegionEntryCo
 
   void addCacheServiceProfile(CacheServiceProfile profile);
 
-  InternalCache getCache();
-
   void setEvictionMaximum(int maximum);
 
   /**

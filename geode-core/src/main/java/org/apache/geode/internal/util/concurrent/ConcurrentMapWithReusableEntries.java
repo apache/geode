@@ -17,6 +17,7 @@ package org.apache.geode.internal.util.concurrent;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentMap;
+import java.util.concurrent.Executor;
 
 public interface ConcurrentMapWithReusableEntries<K, V> extends ConcurrentMap<K, V> {
 
@@ -38,4 +39,12 @@ public interface ConcurrentMapWithReusableEntries<K, V> extends ConcurrentMap<K,
    * <code>Map.Entry</code> objects.
    */
   Set<Map.Entry<K, V>> entrySetWithReusableEntries();
+
+  /**
+   * Clear the map. If any work needs to be done asynchronously then use the given executor.
+   *
+   * @param executor possibly null. If it is null and asynchronous work needs to be done then a new
+   *        Thread is created.
+   */
+  void clearWithExecutor(Executor executor);
 }
