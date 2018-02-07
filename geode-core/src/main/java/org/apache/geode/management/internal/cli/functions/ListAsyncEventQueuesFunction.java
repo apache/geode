@@ -14,8 +14,6 @@
  */
 package org.apache.geode.management.internal.cli.functions;
 
-import java.util.Collection;
-import java.util.Collections;
 import java.util.Properties;
 import java.util.Set;
 
@@ -26,15 +24,12 @@ import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.CacheClosedException;
 import org.apache.geode.cache.asyncqueue.AsyncEventListener;
 import org.apache.geode.cache.asyncqueue.AsyncEventQueue;
-import org.apache.geode.cache.execute.Function;
 import org.apache.geode.cache.execute.FunctionContext;
 import org.apache.geode.distributed.DistributedMember;
-import org.apache.geode.internal.InternalEntity;
+import org.apache.geode.internal.cache.execute.InternalFunction;
 import org.apache.geode.internal.cache.xmlcache.Declarable2;
 import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.management.internal.cli.domain.AsyncEventQueueDetails;
-import org.apache.geode.management.internal.security.ResourcePermissions;
-import org.apache.geode.security.ResourcePermission;
 
 /**
  * An implementation of GemFire Function interface used to determine all the async event queues that
@@ -43,7 +38,7 @@ import org.apache.geode.security.ResourcePermission;
  *
  * @since GemFire 8.0
  */
-public class ListAsyncEventQueuesFunction implements Function, InternalEntity {
+public class ListAsyncEventQueuesFunction implements InternalFunction {
   private static final Logger logger = LogService.getLogger();
 
   private static final long serialVersionUID = 1L;
@@ -102,10 +97,5 @@ public class ListAsyncEventQueuesFunction implements Function, InternalEntity {
       CliFunctionResult result = new CliFunctionResult(memberId, th, null);
       context.getResultSender().lastResult(result);
     }
-  }
-
-  @Override
-  public Collection<ResourcePermission> getRequiredPermissions(String regionName) {
-    return Collections.singleton(ResourcePermissions.CLUSTER_READ);
   }
 }

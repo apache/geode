@@ -14,26 +14,20 @@
  */
 package org.apache.geode.management.internal.cli.functions;
 
-import java.util.Collection;
-import java.util.Collections;
-
 import org.apache.geode.cache.Cache;
-import org.apache.geode.cache.execute.Function;
 import org.apache.geode.cache.execute.FunctionContext;
-import org.apache.geode.internal.InternalEntity;
+import org.apache.geode.internal.cache.execute.InternalFunction;
 import org.apache.geode.internal.cache.tier.sockets.CacheClientNotifier;
 import org.apache.geode.internal.cache.tier.sockets.CacheClientProxy;
 import org.apache.geode.management.internal.cli.CliUtil;
 import org.apache.geode.management.internal.cli.domain.MemberResult;
 import org.apache.geode.management.internal.cli.i18n.CliStrings;
-import org.apache.geode.management.internal.security.ResourcePermissions;
-import org.apache.geode.security.ResourcePermission;
 
 /***
  * Function to close a durable cq
  *
  */
-public class CloseDurableCqFunction implements Function, InternalEntity {
+public class CloseDurableCqFunction implements InternalFunction {
 
   private static final long serialVersionUID = 1L;
 
@@ -73,11 +67,6 @@ public class CloseDurableCqFunction implements Function, InternalEntity {
     } finally {
       context.getResultSender().lastResult(memberResult);
     }
-  }
-
-  @Override
-  public Collection<ResourcePermission> getRequiredPermissions(String regionName) {
-    return Collections.singleton(ResourcePermissions.CLUSTER_MANAGE_QUERY);
   }
 
   @Override

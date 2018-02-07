@@ -60,14 +60,14 @@ public class LuceneFunctionSecurityTest {
 
   @BeforeClass
   public static void setupClass() {
-    functionStringMap.put(new LuceneCreateIndexFunction(), "CLUSTER:MANAGE:LUCENE");
-    functionStringMap.put(new LuceneDescribeIndexFunction(), "CLUSTER:READ:LUCENE");
-    functionStringMap.put(new LuceneDestroyIndexFunction(), "CLUSTER:MANAGE:LUCENE");
-    functionStringMap.put(new LuceneListIndexFunction(), "CLUSTER:READ:LUCENE");
-    functionStringMap.put(new LuceneSearchIndexFunction(), "DATA:READ:testRegion");
-    functionStringMap.put(new LuceneQueryFunction(), "DATA:READ:testRegion");
-    functionStringMap.put(new WaitUntilFlushedFunction(), "DATA:READ:testRegion");
-    functionStringMap.put(new LuceneGetPageFunction(), "DATA:READ:testRegion");
+    functionStringMap.put(new LuceneCreateIndexFunction(), "*");
+    functionStringMap.put(new LuceneDescribeIndexFunction(), "*");
+    functionStringMap.put(new LuceneDestroyIndexFunction(), "*");
+    functionStringMap.put(new LuceneListIndexFunction(), "*");
+    functionStringMap.put(new LuceneSearchIndexFunction(), "*");
+    functionStringMap.put(new LuceneQueryFunction(), "*");
+    functionStringMap.put(new WaitUntilFlushedFunction(), "*");
+    functionStringMap.put(new LuceneGetPageFunction(), "*");
 
     functionStringMap.keySet().forEach(FunctionService::registerFunction);
     FunctionService.registerFunction(new DumpDirectoryFiles());
@@ -90,48 +90,16 @@ public class LuceneFunctionSecurityTest {
   // getRequiredPermission are all enforced before trying to execute
   @Test
   @ConnectionConfiguration(user = "clusterManage", password = "clusterManage")
-  public void dumpDirectoryFileRequiresBoth_AsClusterManage() {
-    gfsh.executeAndAssertThat("execute function --region=testRegion --id=" + DumpDirectoryFiles.ID)
-        .tableHasRowCount(RESULT_HEADER, 1).tableHasRowWithValues(RESULT_HEADER,
-            "Exception: clusterManage not authorized for DATA:READ:testRegion")
-        .statusIsError();
-  }
-
-  @Test
-  @ConnectionConfiguration(user = "dataRead", password = "dataRead")
-  public void dumpDirectoryFileRequiresBoth_AsDataRead() {
-    gfsh.executeAndAssertThat("execute function --region=testRegion --id=" + DumpDirectoryFiles.ID)
-        .tableHasRowCount(RESULT_HEADER, 1).tableHasRowWithValues(RESULT_HEADER,
-            "Exception: dataRead not authorized for CLUSTER:MANAGE")
-        .statusIsError();
-  }
-
-  @Test
-  @ConnectionConfiguration(user = "clusterManage,dataReadRegionB",
-      password = "clusterManage,dataReadRegionB")
-  public void dumpDirectoryFileRequiresBoth_dataReadAnotherRegion() {
+  public void dumpDirectoryFileRequiresAll_insufficientUser() {
     gfsh.executeAndAssertThat("execute function --region=testRegion --id=" + DumpDirectoryFiles.ID)
         .tableHasRowCount(RESULT_HEADER, 1)
-        .tableHasRowWithValues(RESULT_HEADER,
-            "Exception: clusterManage,dataReadRegionB not authorized for DATA:READ:testRegion")
+        .tableHasRowWithValues(RESULT_HEADER, "Exception: clusterManage not authorized for *")
         .statusIsError();
   }
 
   @Test
-  @ConnectionConfiguration(user = "clusterManage,dataReadTestRegionA",
-      password = "clusterManage,dataReadTestRegionA")
-  public void dumpDirectoryFileRequiresBoth_dataReadInsufficient() {
-    gfsh.executeAndAssertThat("execute function --region=testRegion --id=" + DumpDirectoryFiles.ID)
-        .tableHasRowCount(RESULT_HEADER, 1)
-        .tableHasRowWithValues(RESULT_HEADER,
-            "Exception: clusterManage,dataReadTestRegionA not authorized for DATA:READ:testRegion")
-        .statusIsError();
-  }
-
-  @Test
-  @ConnectionConfiguration(user = "clusterManage,dataReadTestRegion",
-      password = "clusterManage,dataReadTestRegion")
-  public void dumpDirectoryFileRequiresBoth_validUser() {
+  @ConnectionConfiguration(user = "*", password = "*")
+  public void dumpDirectoryFileRequiresAll_validUser() {
     gfsh.executeAndAssertThat("execute function --region=testRegion --id=" + DumpDirectoryFiles.ID)
         .tableHasRowCount(RESULT_HEADER, 1).doesNotContainOutput("not authorized").statusIsError();
   }

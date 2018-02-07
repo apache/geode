@@ -27,24 +27,19 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.Serializable;
 import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
 import java.util.List;
 
 import org.apache.logging.log4j.Logger;
 
-import org.apache.geode.cache.execute.Function;
 import org.apache.geode.cache.execute.FunctionContext;
 import org.apache.geode.distributed.DistributedSystem;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
-import org.apache.geode.internal.InternalEntity;
+import org.apache.geode.internal.cache.execute.InternalFunction;
 import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.management.internal.cli.CliUtil;
 import org.apache.geode.management.internal.cli.CliUtil.DeflaterInflaterData;
 import org.apache.geode.management.internal.cli.GfshParser;
 import org.apache.geode.management.internal.cli.i18n.CliStrings;
-import org.apache.geode.management.internal.security.ResourcePermissions;
-import org.apache.geode.security.ResourcePermission;
 
 /**
  * Executes 'netstat' OS command & returns the result as compressed bytes.
@@ -52,7 +47,7 @@ import org.apache.geode.security.ResourcePermission;
  * @since GemFire 7.0
  */
 @SuppressWarnings({"serial"})
-public class NetstatFunction implements Function, InternalEntity {
+public class NetstatFunction implements InternalFunction {
   private static final Logger logger = LogService.getLogger();
   private static final long serialVersionUID = 1L;
 
@@ -91,11 +86,6 @@ public class NetstatFunction implements Function, InternalEntity {
         CliUtil.compressBytes(netstatOutput.getBytes()));
 
     context.getResultSender().lastResult(result);
-  }
-
-  @Override
-  public Collection<ResourcePermission> getRequiredPermissions(String regionName) {
-    return Collections.singleton(ResourcePermissions.CLUSTER_READ);
   }
 
   private static void addMemberHostHeader(final StringBuilder netstatInfo, final String id,

@@ -53,11 +53,11 @@ import org.apache.geode.internal.InternalEntity;
 import org.apache.geode.internal.cache.CachePerfStats;
 import org.apache.geode.internal.cache.CachedDeserializable;
 import org.apache.geode.internal.cache.CachedDeserializableFactory;
-import org.apache.geode.internal.cache.GemFireCacheImpl;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.cache.LocalDataSet;
 import org.apache.geode.internal.cache.LocalRegion;
 import org.apache.geode.internal.cache.Token;
+import org.apache.geode.internal.cache.execute.InternalFunction;
 import org.apache.geode.internal.cache.snapshot.GFSnapshot.GFSnapshotImporter;
 import org.apache.geode.internal.cache.snapshot.GFSnapshot.SnapshotWriter;
 import org.apache.geode.internal.cache.snapshot.SnapshotPacket.SnapshotRecord;
@@ -504,7 +504,7 @@ public class RegionSnapshotServiceImpl<K, V> implements RegionSnapshotService<K,
     }
   }
 
-  private static class ParallelExportFunction<K, V> implements Function, InternalEntity {
+  private static class ParallelExportFunction<K, V> implements InternalFunction {
     @Override
     public boolean hasResult() {
       return true;
