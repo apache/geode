@@ -732,7 +732,7 @@ See [Region Data Storage and Distribution](../../../developing/region_options/ch
 
 ``` pre
  create region --name=value [--type=value] [--template-region=value]
-    [--groups=value(,value)*] [--skip-if-exists(=value)?]
+    [--groups=value(,value)*] [--if-not-exists(=value)?]
     [--key-constraint=value] [--value-constraint=value]
     [--enable-statistics=value] [--entry-idle-time-expiration=value]
     [--entry-idle-time-expiration-action=value]
@@ -794,9 +794,9 @@ See [Region Data Storage and Distribution](../../../developing/region_options/ch
 <td> </td>
 </tr>
 <tr class="odd">
-<td><span class="keyword parmname">\-\-skip-if-exists</span></td>
+<td><span class="keyword parmname">\-\-if-not-exists</span></td>
 <td>A new region will not be created if a region with the same name already exists. By default, an attempt to create a duplicate region is reported as an error.
-If this parameter is specified without a value or is specified with a value of `true`, then gfsh displays a "Skipping..." acknowledgement, but does not throw an error.</td>
+If this option is specified without a value or is specified with a value of `true`, then gfsh displays a "Skipping..." acknowledgement, but does not throw an error.</td>
 <td>false</td>
 </tr>
 <tr class="even">
