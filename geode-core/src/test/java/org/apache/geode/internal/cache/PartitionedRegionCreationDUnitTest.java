@@ -133,15 +133,15 @@ public class PartitionedRegionCreationDUnitTest extends CacheTestCase {
   @Test
   public void testBetterConcurrentCreation() throws Exception {
     numberOfRegions = 3;
-    
+
     createReplicateRegion(signalRegionName);
     vm0.invoke(() -> createReplicateRegion(signalRegionName));
     vm1.invoke(() -> createReplicateRegion(signalRegionName));
     vm2.invoke(() -> createReplicateRegion(signalRegionName));
     vm3.invoke(() -> createReplicateRegion(signalRegionName));
 
-    CompletableFuture<Void> createdAccessor = executorServiceRule.runAsync(() ->
-        createPRAccessorConcurrently(signalRegionName, prNamePrefix, numberOfRegions));
+    CompletableFuture<Void> createdAccessor = executorServiceRule.runAsync(
+        () -> createPRAccessorConcurrently(signalRegionName, prNamePrefix, numberOfRegions));
 
     invokeAsync(vm0, () -> createPRConcurrently(signalRegionName, prNamePrefix, numberOfRegions));
     invokeAsync(vm1, () -> createPRConcurrently(signalRegionName, prNamePrefix, numberOfRegions));
@@ -258,8 +258,8 @@ public class PartitionedRegionCreationDUnitTest extends CacheTestCase {
     addIgnoredException("IllegalStateException");
 
     accessor0.invoke(() -> createPersistentPR(partitionedRegionName, 0, false));
-    accessor1.invoke(
-        () -> createPersistentPRThrowsIfLocalMaxMemoryIsZero(partitionedRegionName, true));
+    accessor1
+        .invoke(() -> createPersistentPRThrowsIfLocalMaxMemoryIsZero(partitionedRegionName, true));
     dataStore0.invoke(() -> createPersistentPR(partitionedRegionName, 100, true));
     dataStore1.invoke(
         () -> createPersistentPRThrowsIfDataPolicyConflict(partitionedRegionName, 100, false));
@@ -312,7 +312,7 @@ public class PartitionedRegionCreationDUnitTest extends CacheTestCase {
   }
 
   private void createPersistentPR(final String regionName, final int localMaxMemory,
-                                  final boolean isPersistent) {
+      final boolean isPersistent) {
     Cache cache = getCache();
 
     RegionFactory regionFactory = cache.createRegionFactory(RegionShortcut.PARTITION);
@@ -334,19 +334,21 @@ public class PartitionedRegionCreationDUnitTest extends CacheTestCase {
     assertThat(cache.getRegion(regionName)).isNotNull();
   }
 
-  private void createPersistentPRThrowsIfLocalMaxMemoryIsZero(
-      final String regionName, final boolean isPersistent) {
+  private void createPersistentPRThrowsIfLocalMaxMemoryIsZero(final String regionName,
+      final boolean isPersistent) {
     String message = "Persistence is not allowed when local-max-memory is zero.";
     createPersistentPRThrows(regionName, 0, isPersistent, message);
   }
 
-  private void createPersistentPRThrowsIfDataPolicyConflict(final String regionName, final int localMaxMemory, final boolean isPersistent) {
+  private void createPersistentPRThrowsIfDataPolicyConflict(final String regionName,
+      final int localMaxMemory, final boolean isPersistent) {
     assertThat(localMaxMemory).isGreaterThan(0);
     String message = "DataPolicy for Datastore members should all be persistent or not.";
     createPersistentPRThrows(regionName, localMaxMemory, isPersistent, message);
   }
 
-  private void createPersistentPRThrows(final String regionName, final int localMaxMemory, final boolean isPersistent, final String message) {
+  private void createPersistentPRThrows(final String regionName, final int localMaxMemory,
+      final boolean isPersistent, final String message) {
     Cache cache = getCache();
 
     RegionFactory regionFactory = cache.createRegionFactory(RegionShortcut.PARTITION);
@@ -362,8 +364,7 @@ public class PartitionedRegionCreationDUnitTest extends CacheTestCase {
     regionFactory.setPartitionAttributes(partitionAttributesFactory.create());
 
     assertThatThrownBy(() -> regionFactory.create(regionName))
-        .isInstanceOf(IllegalStateException.class)
-        .hasMessageContaining(message);
+        .isInstanceOf(IllegalStateException.class).hasMessageContaining(message);
   }
 
   private void validatePR(final String regionName, final int count) {
@@ -379,15 +380,18 @@ public class PartitionedRegionCreationDUnitTest extends CacheTestCase {
     regionFactory.create(regionName);
   }
 
-  private void createPRConcurrently(final String regionName, final String prPrefixName, final int count) {
+  private void createPRConcurrently(final String regionName, final String prPrefixName,
+      final int count) {
     createPRConcurrently(regionName, prPrefixName, count, false);
   }
 
-  private void createPRAccessorConcurrently(final String regionName, final String prPrefixName, final int count) {
+  private void createPRAccessorConcurrently(final String regionName, final String prPrefixName,
+      final int count) {
     createPRConcurrently(regionName, prPrefixName, count, true);
   }
 
-  private void createPRConcurrently(final String regionName, final String prPrefixName, final int count, final boolean accessor) {
+  private void createPRConcurrently(final String regionName, final String prPrefixName,
+      final int count, final boolean accessor) {
     Cache cache = getCache();
 
     PartitionAttributesFactory partitionAttributesFactory = new PartitionAttributesFactory();
