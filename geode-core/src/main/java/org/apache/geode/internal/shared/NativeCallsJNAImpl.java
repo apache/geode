@@ -897,7 +897,7 @@ public class NativeCallsJNAImpl {
       public int keepaliveinterval;
 
       @Override
-      protected List<?> getFieldOrder() {
+      protected List<String> getFieldOrder() {
         return Arrays.asList(new String[] {"onoff", "keepalivetime", "keepaliveinterval"});
       }
     }

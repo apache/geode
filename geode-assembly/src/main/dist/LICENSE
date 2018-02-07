@@ -596,6 +596,26 @@ of the State of California, with venue lying in Santa Clara County,
 California.
 
 ---------------------------------------------------------------------------
+The WTF Public License (http://www.wtfpl.net/about/)
+---------------------------------------------------------------------------
+
+Apache Geode bundles the following files under the WTF license:
+
+  - Reflections v0.9.11 (https://github.com/ronmamo/reflections)
+
+  DO WHAT THE FUCK YOU WANT TO PUBLIC LICENSE
+          Version 2, December 2004
+
+Everyone is permitted to copy and distribute verbatim or modified
+copies of this license document, and changing it is allowed as long
+as the name is changed.
+
+  DO WHAT THE FUCK YOU WANT TO PUBLIC LICENSE
+TERMS AND CONDITIONS FOR COPYING, DISTRIBUTION AND MODIFICATION
+
+0. You just DO WHAT THE FUCK YOU WANT TO.
+
+---------------------------------------------------------------------------
 The MIT License (http://opensource.org/licenses/mit-license.html)
 ---------------------------------------------------------------------------
 
@@ -626,7 +646,7 @@ Apache Geode bundles the following files under the MIT license:
     Kelvin Luck
   - matchMedia() polyfill (https://github.com/paulirish/matchMedia.js),
     Copyright (c) 2012 Scott Jehl
-  - MooTools (http://mootools.net), Copyright (c) 2006-2015 Valerio 
+  - MooTools (http://mootools.net), Copyright (c) 2006-2015 Valerio
     Proietti, <http://mad4milk.net/>
   - Normalize.css v2.1.0 (https://necolas.github.io/normalize.css/),
     Copyright (c) Nicolas Gallagher and Jonathan Neal
