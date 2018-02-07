@@ -37,6 +37,7 @@ import org.apache.geode.examples.security.ExampleSecurityManager;
 import org.apache.geode.management.internal.cli.util.CommandStringBuilder;
 import org.apache.geode.test.junit.categories.AcceptanceTest;
 import org.apache.geode.test.junit.rules.gfsh.GfshRule;
+import org.apache.geode.util.test.TestUtil;
 
 /**
  * This test class expects a "security.json" file to be visible on the member classpaths. The
@@ -48,7 +49,6 @@ import org.apache.geode.test.junit.rules.gfsh.GfshRule;
  */
 @Category(AcceptanceTest.class)
 public class LogsAreFullyRedactedAcceptanceTest {
-
   private static String sharedPasswordString = "abcdefg";
 
   private File propertyFile;
@@ -56,8 +56,6 @@ public class LogsAreFullyRedactedAcceptanceTest {
 
   @Rule
   public GfshRule gfsh = new GfshRule();
-
-  public LogsAreFullyRedactedAcceptanceTest() {}
 
   @Before
   public void createDirectoriesAndFiles() throws IOException {
@@ -86,7 +84,10 @@ public class LogsAreFullyRedactedAcceptanceTest {
   @Test
   public void logsDoNotContainStringThatShouldBeRedacted() throws FileNotFoundException {
     // The json is in the root resource directory.
-    String securityJson = getClass().getResource("/").getFile();
+    String securityJson =
+        TestUtil.getResourcePath(LogsAreFullyRedactedAcceptanceTest.class, "/security.json");
+    // We want to add the folder to the classpath, so we strip off the filename.
+    securityJson = securityJson.substring(0, securityJson.length() - "security.json".length());
     String startLocatorCmd =
         new CommandStringBuilder("start locator").addOption("name", "test-locator")
             .addOption("properties-file", propertyFile.getAbsolutePath())
