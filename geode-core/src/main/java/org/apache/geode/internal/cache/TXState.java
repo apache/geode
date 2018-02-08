@@ -323,7 +323,7 @@ public class TXState implements TXStateInterface {
 
     final long conflictStart = CachePerfStats.getStatTime();
     this.locks = createLockRequest();
-    this.locks.obtain();
+    this.locks.obtain(getCache().getInternalDistributedSystem());
     // for now check account the dlock service time
     // later this stat end should be moved to a finally block
     if (CachePerfStats.enableClockStats)
@@ -845,7 +845,7 @@ public class TXState implements TXStateInterface {
       if (this.locks != null) {
         final long conflictStart = CachePerfStats.getStatTime();
         try {
-          this.locks.cleanup();
+          this.locks.cleanup(getCache().getInternalDistributedSystem());
         } catch (IllegalArgumentException e) {
           iae = e;
         }

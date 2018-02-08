@@ -88,7 +88,8 @@ public class DistTXPrecommitMessage extends TXMessage {
     // should not be commited before
     assert (!txMgr.isHostedTxRecentlyCompleted(txId));
     // @see TXCommitMessage.process(DistributionManager)
-    TXLockService.createDTLS(); // fix bug 38843; no-op if already created
+    TXLockService.createDTLS(cache.getInternalDistributedSystem()); // fix bug 38843; no-op if
+                                                                    // already created
     final TXStateProxy txStateProxy = txMgr.getTXState();
     boolean precommitSuccess = true;
     TreeMap<String, ArrayList<DistTxThinEntryState>> entryStateSortedMap =
