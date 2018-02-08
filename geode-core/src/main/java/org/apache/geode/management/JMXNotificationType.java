@@ -159,6 +159,13 @@ public interface JMXNotificationType {
       DistributionConfig.GEMFIRE_PREFIX + "distributedsystem.gateway.sender.resumed";
 
   /**
+   * Notification type which indicates that a gateway sender is removed <BR>
+   * The value of this type string is <CODE>gemfire.distributedsystem.gateway.sender.removed</CODE>.
+   */
+  public static final String GATEWAY_SENDER_REMOVED =
+      DistributionConfig.GEMFIRE_PREFIX + "distributedsystem.gateway.sender.removed";
+
+  /**
    * Notification type which indicates that an async queue is created <BR>
    * The value of this type string is
    * <CODE>ggemfire.distributedsystem.asycn.event.queue.created</CODE>.

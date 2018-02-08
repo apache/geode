@@ -157,6 +157,10 @@ public class ManagementListener implements ResourceEventsListener {
         GatewaySender resumedSender = (GatewaySender) resource;
         adapter.handleGatewaySenderResumed(resumedSender);
         break;
+      case GATEWAYSENDER_REMOVE:
+        GatewaySender removedSender = (GatewaySender) resource;
+        adapter.handleGatewaySenderRemoved(removedSender);
+        break;
       case LOCKSERVICE_CREATE:
         DLockService createdLockService = (DLockService) resource;
         adapter.handleLockServiceCreation(createdLockService);
