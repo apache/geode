@@ -30,6 +30,7 @@ import org.apache.geode.internal.lang.ObjectUtils;
 import org.apache.geode.internal.lang.StringUtils;
 import org.apache.geode.internal.process.PidUnavailableException;
 import org.apache.geode.internal.process.ProcessUtils;
+import org.apache.geode.internal.util.ArgumentRedactor;
 
 /**
  * The LocatorStatusResponse class...
@@ -306,7 +307,7 @@ public class LocatorStatusResponse extends ServerLocationResponse {
     buffer.append("{ pid = ").append(getPid());
     buffer.append(", uptime = ").append(getUptime());
     buffer.append(", workingDirectory = ").append(getWorkingDirectory());
-    buffer.append(", jvmArgs = ").append(getJvmArgs());
+    buffer.append(", jvmArgs = ").append(ArgumentRedactor.redact(getJvmArgs()));
     buffer.append(", classpath = ").append(getClasspath());
     buffer.append(", gemfireVersion = ").append(getGemFireVersion());
     buffer.append(", javaVersion = ").append(getJavaVersion());
