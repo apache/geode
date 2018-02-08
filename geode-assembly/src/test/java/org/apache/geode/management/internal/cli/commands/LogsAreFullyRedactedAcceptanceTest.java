@@ -40,7 +40,7 @@ import org.apache.geode.test.junit.rules.gfsh.GfshRule;
 import org.apache.geode.util.test.TestUtil;
 
 /**
- * This test class expects a "security.json" file to be visible on the member classpaths. The
+ * This test class expects a "security.json" file to be visible on the member classpath. The
  * security.json is consumed by {@link org.apache.geode.examples.security.ExampleSecurityManager}
  * and should contain each username/password combination present (even though not all will actually
  * be consumed by the Security Manager).
@@ -96,8 +96,6 @@ public class LogsAreFullyRedactedAcceptanceTest {
             .addOption("J", "-Dsecure-password-jd=password-jd").addOption("classpath", securityJson)
             .getCommandString();
 
-    // Since we're in geode-assembly and rely on the SimpleSecurityManager, we'll need to also
-    // make sure no --password=cluster winds up in our logs, since that's what we need to use here.
     String startServerCmd = new CommandStringBuilder("start server")
         .addOption("name", "test-server").addOption("user", "viaStartMemberOptions")
         .addOption("password", sharedPasswordString + "-viaStartMemberOptions")
@@ -123,7 +121,6 @@ public class LogsAreFullyRedactedAcceptanceTest {
             .doesNotContain(sharedPasswordString);
       }
     }
-
     softly.assertAll();
   }
 }
