@@ -178,10 +178,13 @@ public class RemoveCommandDUnitTest implements Serializable {
   }
 
   private boolean regionMBeansAreInitialized() {
-    Set<DistributedMember> members = CliUtil.getRegionAssociatedMembers(REPLICATE_REGION_NAME,
-        (InternalCache) CacheFactory.getAnyInstance(), false);
+    Set<DistributedMember> replicateMembers = CliUtil.getRegionAssociatedMembers(
+        REPLICATE_REGION_NAME, (InternalCache) CacheFactory.getAnyInstance(), false);
+    Set<DistributedMember> partitionMembers = CliUtil.getRegionAssociatedMembers(
+        PARTITIONED_REGION_NAME, (InternalCache) CacheFactory.getAnyInstance(), false);
 
-    return CollectionUtils.isNotEmpty(members);
+    return CollectionUtils.isNotEmpty(replicateMembers)
+        && CollectionUtils.isNotEmpty(partitionMembers);
   }
 
   private void verifyAllKeysAreRemoved(String regionName) {
