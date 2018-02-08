@@ -40,10 +40,11 @@ import com.sun.jna.Pointer;
 import com.sun.jna.Structure;
 import com.sun.jna.ptr.IntByReference;
 import com.sun.jna.win32.StdCallLibrary;
+import org.apache.logging.log4j.Logger;
 
 import org.apache.geode.SystemFailure;
-import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.internal.cache.DiskStoreImpl;
+import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.internal.process.signal.Signal;
 
 
@@ -58,6 +59,8 @@ import org.apache.geode.internal.process.signal.Signal;
  * @since GemFire 8.0
  */
 public class NativeCallsJNAImpl {
+
+  private static final Logger logger = LogService.getLogger();
 
   // no instance allowed
   private NativeCallsJNAImpl() {}
@@ -281,20 +284,13 @@ public class NativeCallsJNAImpl {
 
     @Override
     public void preBlow(String path, long maxSize, boolean preAllocate) throws IOException {
-      final org.apache.geode.LogWriter logger;
-      if (InternalDistributedSystem.getAnyInstance() != null) {
-        logger = InternalDistributedSystem.getAnyInstance().getLogWriter();
-      } else {
-        logger = null;
-      }
-
-      if (logger != null && logger.fineEnabled()) {
-        logger.fine("DEBUG preBlow called for path = " + path);
+      if (logger.isDebugEnabled()) {
+        logger.debug("DEBUG preBlow called for path = " + path);
       }
       if (!preAllocate || !hasFallocate(path)) {
         super.preBlow(path, maxSize, preAllocate);
-        if (logger != null && logger.fineEnabled()) {
-          logger.fine("DEBUG preBlow super.preBlow 1 called for path = " + path);
+        if (logger.isDebugEnabled()) {
+          logger.debug("DEBUG preBlow super.preBlow 1 called for path = " + path);
         }
         return;
       }
@@ -304,8 +300,8 @@ public class NativeCallsJNAImpl {
         fd = createFD(path, 00644);
         if (!isOnLocalFileSystem(path)) {
           super.preBlow(path, maxSize, preAllocate);
-          if (logger != null && logger.fineEnabled()) {
-            logger.fine("DEBUG preBlow super.preBlow 2 called as path = " + path
+          if (logger.isDebugEnabled()) {
+            logger.debug("DEBUG preBlow super.preBlow 2 called as path = " + path
                 + " not on local file system");
           }
           if (DiskStoreImpl.TEST_NO_FALLOC_DIRS != null) {
@@ -317,13 +313,13 @@ public class NativeCallsJNAImpl {
         if (DiskStoreImpl.TEST_CHK_FALLOC_DIRS != null) {
           DiskStoreImpl.TEST_CHK_FALLOC_DIRS.add(path);
         }
-        if (logger != null && logger.fineEnabled()) {
-          logger.fine("DEBUG preBlow posix_fallocate called for path = " + path
+        if (logger.isDebugEnabled()) {
+          logger.debug("DEBUG preBlow posix_fallocate called for path = " + path
               + " and ret = 0 maxsize = " + maxSize);
         }
       } catch (LastErrorException le) {
-        if (logger != null && logger.fineEnabled()) {
-          logger.fine("DEBUG preBlow posix_fallocate called for path = " + path + " and ret = "
+        if (logger.isDebugEnabled()) {
+          logger.debug("DEBUG preBlow posix_fallocate called for path = " + path + " and ret = "
               + le.getErrorCode() + " maxsize = " + maxSize);
         }
         // check for no space left on device
@@ -343,8 +339,8 @@ public class NativeCallsJNAImpl {
         }
         if (unknownError) {
           super.preBlow(path, maxSize, preAllocate);
-          if (logger != null && logger.infoEnabled()) {
-            logger.fine("DEBUG preBlow super.preBlow 3 called for path = " + path);
+          if (logger.isDebugEnabled()) {
+            logger.debug("DEBUG preBlow super.preBlow 3 called for path = " + path);
           }
         }
       }
@@ -675,12 +671,6 @@ public class NativeCallsJNAImpl {
      * even if it on local file system for now.
      */
     public boolean isOnLocalFileSystem(final String path) {
-      final org.apache.geode.LogWriter logger;
-      if (InternalDistributedSystem.getAnyInstance() != null) {
-        logger = InternalDistributedSystem.getAnyInstance().getLogWriter();
-      } else {
-        logger = null;
-      }
       if (!isStatFSEnabled) {
         // if (logger != null && logger.fineEnabled()) {
         // logger.info("DEBUG isOnLocalFileSystem returning false 1 for path = " + path);
@@ -710,8 +700,8 @@ public class NativeCallsJNAImpl {
         } catch (LastErrorException le) {
           // ignoring it as NFS mounted can give this exception
           // and we just want to retry to remove transient problem.
-          if (logger != null && logger.fineEnabled()) {
-            logger.fine("DEBUG isOnLocalFileSystem got ex = " + le + " msg = " + le.getMessage());
+          if (logger.isDebugEnabled()) {
+            logger.debug("DEBUG isOnLocalFileSystem got ex = " + le + " msg = " + le.getMessage());
           }
         }
       }
