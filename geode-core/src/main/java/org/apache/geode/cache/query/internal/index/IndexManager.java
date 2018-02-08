@@ -429,11 +429,8 @@ public class IndexManager {
 
     } finally {
       DefaultQuery.setPdxReadSerialized(this.region.getCache(), oldReadSerialized);
+      ((TXManagerImpl) this.region.getCache().getCacheTransactionManager()).unpauseTransaction(tx);
 
-      if (tx != null) {
-        ((TXManagerImpl) this.region.getCache().getCacheTransactionManager())
-            .unpauseTransaction(tx);
-      }
     }
   }
 
@@ -1149,10 +1146,8 @@ public class IndexManager {
       }
     } finally {
       DefaultQuery.setPdxReadSerialized(this.region.getCache(), false);
-      if (tx != null) {
-        ((TXManagerImpl) this.region.getCache().getCacheTransactionManager())
-            .unpauseTransaction(tx);
-      }
+      ((TXManagerImpl) this.region.getCache().getCacheTransactionManager()).unpauseTransaction(tx);
+
       getCachePerfStats().endIndexUpdate(startPA);
     }
   }

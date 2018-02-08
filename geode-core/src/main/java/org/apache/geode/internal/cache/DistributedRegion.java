@@ -3856,9 +3856,7 @@ public class DistributedRegion extends LocalRegion implements InternalDistribute
         }
       }
     } finally {
-      if (tx != null) {
-        cache.getTXMgr().unpauseTransaction(tx);
-      }
+      cache.getTXMgr().unpauseTransaction(tx);
     }
     return tag;
   }
