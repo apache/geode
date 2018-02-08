@@ -28,7 +28,7 @@ public interface InternalClientCache extends ClientCache {
 
   void determineDefaultPool();
 
-  Pool determineDefaultPool(PoolFactory poolFactory);
+  void validatePoolFactory(PoolFactory poolFactory);
 
   <K, V> Region<K, V> basicCreateRegion(String name, RegionAttributes<K, V> attrs)
       throws RegionExistsException, TimeoutException;

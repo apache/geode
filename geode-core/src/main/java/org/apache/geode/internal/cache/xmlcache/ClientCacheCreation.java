@@ -196,8 +196,6 @@ public class ClientCacheCreation extends CacheCreation implements ClientCache {
       }
     }
 
-    cache.determineDefaultPool();
-
     if (hasResourceManager()) {
       // moved this up to fix bug 42128
       getResourceManager().configure(cache.getResourceManager());
