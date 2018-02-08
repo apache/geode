@@ -981,12 +981,6 @@ public class DistributionConfigImpl extends AbstractDistributionConfig implement
           securityPeerAuthenticator);
     }
 
-    Iterator iter = security.entrySet().iterator();
-    while (iter.hasNext()) {
-      Map.Entry entry = (Map.Entry) iter.next();
-      System.setProperty(SECURITY_SYSTEM_PREFIX + (String) entry.getKey(),
-          (String) entry.getValue());
-    }
     if (!isConnected) {
       copySSLPropsToServerSSLProps();
       copySSLPropsToJMXSSLProps();
