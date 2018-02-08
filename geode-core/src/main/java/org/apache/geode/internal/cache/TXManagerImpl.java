@@ -89,6 +89,8 @@ public class TXManagerImpl implements CacheTransactionManager, MembershipListene
   // Thread specific context container
   private final ThreadLocal<TXStateProxy> txContext;
 
+  private final ThreadLocal<Boolean> pauseJTA;
+
   private static TXManagerImpl currentInstance = null;
 
   // The unique transaction ID for this Manager
@@ -186,6 +188,7 @@ public class TXManagerImpl implements CacheTransactionManager, MembershipListene
     this.cachePerfStats = cachePerfStats;
     this.hostedTXStates = new HashMap<>();
     this.txContext = new ThreadLocal<>();
+    this.pauseJTA = new ThreadLocal<Boolean>();
     this.isTXDistributed = new ThreadLocal<>();
     this.transactionTimeToLive = Integer
         .getInteger(DistributionConfig.GEMFIRE_PREFIX + "cacheServer.transactionTimeToLive", 180);
@@ -728,6 +731,11 @@ public class TXManagerImpl implements CacheTransactionManager, MembershipListene
       } else {
         setTXState(null);
       }
+    } else {
+      if (needToResumeBySameThread) {
+        // pausedJTA is set to true when JTA is not yet bootstrapped.
+        pauseJTA.set(true);
+      }
     }
     return result;
   }
@@ -781,11 +789,23 @@ public class TXManagerImpl implements CacheTransactionManager, MembershipListene
       setTXState(tx);
 
       tx.resume();
+    } else {
+      if (needToResumeBySameThread) {
+        pauseJTA.set(false);
+      }
     }
   }
 
   public boolean isTransactionPaused() {
     return txContext.get() == PAUSED;
+  }
+
+  public boolean isJTAPaused() {
+    Boolean jtaPaused = pauseJTA.get();
+    if (jtaPaused == null) {
+      return false;
+    }
+    return jtaPaused;
   }
 
   /**
