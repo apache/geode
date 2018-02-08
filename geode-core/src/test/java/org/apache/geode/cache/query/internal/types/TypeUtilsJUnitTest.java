@@ -14,7 +14,12 @@
  */
 package org.apache.geode.cache.query.internal.types;
 
-import static org.apache.geode.cache.query.internal.parse.OQLLexerTokenTypes.*;
+import static org.apache.geode.cache.query.internal.parse.OQLLexerTokenTypes.TOK_EQ;
+import static org.apache.geode.cache.query.internal.parse.OQLLexerTokenTypes.TOK_GE;
+import static org.apache.geode.cache.query.internal.parse.OQLLexerTokenTypes.TOK_GT;
+import static org.apache.geode.cache.query.internal.parse.OQLLexerTokenTypes.TOK_LE;
+import static org.apache.geode.cache.query.internal.parse.OQLLexerTokenTypes.TOK_LT;
+import static org.apache.geode.cache.query.internal.parse.OQLLexerTokenTypes.TOK_NE;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
@@ -42,7 +47,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.PriorityQueue;
-import java.util.Random;
 import java.util.Vector;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.LinkedBlockingQueue;
@@ -79,9 +83,9 @@ import org.apache.geode.test.junit.categories.UnitTest;
 @RunWith(PowerMockRunner.class)
 @PrepareForTest(TypeUtils.class)
 public class TypeUtilsJUnitTest {
-  private List<Integer> equalityOperators =
+  private final List<Integer> equalityOperators =
       Arrays.stream(new int[] {TOK_EQ, TOK_NE}).boxed().collect(Collectors.toList());
-  private List<Integer> comparisonOperators =
+  private final List<Integer> comparisonOperators =
       Arrays.stream(new int[] {TOK_EQ, TOK_LT, TOK_LE, TOK_GT, TOK_GE, TOK_NE}).boxed()
           .collect(Collectors.toList());
 
@@ -114,23 +118,23 @@ public class TypeUtilsJUnitTest {
 
   @Test
   public void checkCastShouldThrowExceptionWhenTargetObjectCanNotBeTypeCasted() {
-    assertThatThrownBy(() -> TypeUtils.checkCast(new String("SomeCharacters"), Integer.class))
+    assertThatThrownBy(() -> TypeUtils.checkCast("SomeCharacters", Integer.class))
         .isInstanceOf(InternalGemFireError.class)
         .hasMessageMatching("^expected instance of (.*) but was (.*)$");
   }
 
-  @Test
   /**
    * Can't test every possible combination, so try a few ones.
    */
+  @Test
   public void checkCastShouldReturnCorrectlyWhenTargetObjectIsNotNullAndCanBeTypeCasted() {
-    Object stringCastTarget = new String("SomeCharacters");
+    Object stringCastTarget = "SomeCharacters";
     Object stringCastResult = TypeUtils.checkCast(stringCastTarget, String.class);
     assertThat(stringCastResult).isNotNull();
     assertThat(stringCastResult).isInstanceOf(String.class);
     assertThat(stringCastResult).isSameAs(stringCastTarget);
 
-    Object integerCastTarget = new Integer(20);
+    Object integerCastTarget = 20;
     Object integerCastResult = TypeUtils.checkCast(integerCastTarget, Integer.class);
     assertThat(integerCastResult).isNotNull();
     assertThat(integerCastResult).isInstanceOf(Integer.class);
@@ -192,17 +196,12 @@ public class TypeUtilsJUnitTest {
   @Test
   public void indexKeyForShouldReturnIdentityWhenObjectIsInstanceOfComparable()
       throws TypeMismatchException {
-    Object keyComparable = new String("myKey");
+    Object keyComparable = "myKey";
     Object keyComparableResult = TypeUtils.indexKeyFor(keyComparable);
     assertThat(keyComparableResult).isNotNull();
     assertThat(keyComparableResult).isSameAs(keyComparable);
 
-    Object customComparableKey = new Comparable() {
-      @Override
-      public int compareTo(Object o) {
-        return 0;
-      }
-    };
+    Object customComparableKey = (Comparable) o -> 0;
 
     Object customComparableKeyResult = TypeUtils.indexKeyFor(customComparableKey);
     assertThat(customComparableKeyResult).isNotNull();
@@ -215,50 +214,31 @@ public class TypeUtilsJUnitTest {
   @Test
   public void isAssignableFromShouldWorkProperlyForKnownTypes() {
     // Booleans
-    assertThat(TypeUtils.isAssignableFrom(new Boolean(true).getClass(), Comparable.class)).isTrue();
-    assertThat(TypeUtils.isAssignableFrom(new Boolean(false).getClass(), Comparable.class))
-        .isTrue();
-    assertThat(TypeUtils.isAssignableFrom(new AtomicBoolean(false).getClass(), Comparable.class))
-        .isFalse();
+    assertThat(TypeUtils.isAssignableFrom(Boolean.class, Comparable.class)).isTrue();
+    assertThat(TypeUtils.isAssignableFrom(Boolean.class, Comparable.class)).isTrue();
+    assertThat(TypeUtils.isAssignableFrom(AtomicBoolean.class, Comparable.class)).isFalse();
 
     // Dates supported by the TemporalComparator
-    long currentTime = Calendar.getInstance().getTimeInMillis();
-    assertThat(TypeUtils.isAssignableFrom(new Date(currentTime).getClass(), Date.class)).isTrue();
-    assertThat(TypeUtils.isAssignableFrom(new Long(currentTime).getClass(), Date.class)).isFalse();
-    assertThat(TypeUtils.isAssignableFrom(new java.sql.Date(currentTime).getClass(), Date.class))
-        .isTrue();
-    assertThat(TypeUtils.isAssignableFrom(new java.sql.Time(currentTime).getClass(), Date.class))
-        .isTrue();
-    assertThat(
-        TypeUtils.isAssignableFrom(new java.sql.Timestamp(currentTime).getClass(), Date.class))
-            .isTrue();
+    assertThat(TypeUtils.isAssignableFrom(Date.class, Date.class)).isTrue();
+    assertThat(TypeUtils.isAssignableFrom(Long.class, Date.class)).isFalse();
+    assertThat(TypeUtils.isAssignableFrom(java.sql.Date.class, Date.class)).isTrue();
+    assertThat(TypeUtils.isAssignableFrom(java.sql.Time.class, Date.class)).isTrue();
+    assertThat(TypeUtils.isAssignableFrom(java.sql.Timestamp.class, Date.class)).isTrue();
 
     // Numbers supported by the NumericComparator
-    Random random = new Random();
-    assertThat(TypeUtils.isAssignableFrom(new Short("0").getClass(), Number.class)).isTrue();
-    assertThat(TypeUtils.isAssignableFrom(new Long(random.nextLong()).getClass(), Number.class))
-        .isTrue();
-    assertThat(TypeUtils.isAssignableFrom(new Float(random.nextLong()).getClass(), Number.class))
-        .isTrue();
-    assertThat(TypeUtils.isAssignableFrom(new Double(random.nextLong()).getClass(), Number.class))
-        .isTrue();
-    assertThat(
-        TypeUtils.isAssignableFrom(new BigDecimal(random.nextLong()).getClass(), Number.class))
-            .isTrue();
-    assertThat(TypeUtils.isAssignableFrom(new Integer(random.nextInt()).getClass(), Number.class))
-        .isTrue();
-    assertThat(TypeUtils.isAssignableFrom(new BigInteger("00").getClass(), Number.class)).isTrue();
-    assertThat(
-        TypeUtils.isAssignableFrom(new AtomicInteger(random.nextInt()).getClass(), Number.class))
-            .isTrue();
+    assertThat(TypeUtils.isAssignableFrom(Short.class, Number.class)).isTrue();
+    assertThat(TypeUtils.isAssignableFrom(Long.class, Number.class)).isTrue();
+    assertThat(TypeUtils.isAssignableFrom(Float.class, Number.class)).isTrue();
+    assertThat(TypeUtils.isAssignableFrom(Double.class, Number.class)).isTrue();
+    assertThat(TypeUtils.isAssignableFrom(BigDecimal.class, Number.class)).isTrue();
+    assertThat(TypeUtils.isAssignableFrom(Integer.class, Number.class)).isTrue();
+    assertThat(TypeUtils.isAssignableFrom(BigInteger.class, Number.class)).isTrue();
+    assertThat(TypeUtils.isAssignableFrom(AtomicInteger.class, Number.class)).isTrue();
 
     // Comparable Interface
-    assertThat(TypeUtils.isAssignableFrom(new PdxString("").getClass(), Comparable.class)).isTrue();
-    assertThat(TypeUtils.isAssignableFrom(new Long(random.nextLong()).getClass(), Comparable.class))
-        .isTrue();
-    assertThat(
-        TypeUtils.isAssignableFrom(new Integer(random.nextInt()).getClass(), Comparable.class))
-            .isTrue();
+    assertThat(TypeUtils.isAssignableFrom(PdxString.class, Comparable.class)).isTrue();
+    assertThat(TypeUtils.isAssignableFrom(Long.class, Comparable.class)).isTrue();
+    assertThat(TypeUtils.isAssignableFrom(Integer.class, Comparable.class)).isTrue();
   }
 
   @Test
@@ -549,7 +529,7 @@ public class TypeUtilsJUnitTest {
   }
 
   @Test
-  public void comparingUnequivalentPdxStringToStringShouldNotMatch() throws Exception {
+  public void comparingUnequalPdxStringToStringShouldNotMatch() throws Exception {
     String theString = "MyString";
     PdxString pdxString = new PdxString("AnotherString");
 
@@ -595,88 +575,81 @@ public class TypeUtilsJUnitTest {
         Arrays.asList(new Object[] {currentCalendarTimeAsDate, currentCalendarTimeAsSqlDate,
             currentCalendarTimeAsSqlTime, currentCalendarTimeAsSqlTimestamp});
 
-    originDates.forEach(originDate -> {
-      originDates.forEach(originDate2 -> {
-        try {
-          assertThat(TypeUtils.compare(originDate, originDate2, OQLLexerTokenTypes.TOK_EQ))
-              .isEqualTo(Boolean.TRUE);
-          assertThat(TypeUtils.compare(originDate, originDate2, OQLLexerTokenTypes.TOK_LT))
-              .isEqualTo(Boolean.FALSE);
-          assertThat(TypeUtils.compare(originDate, originDate2, OQLLexerTokenTypes.TOK_LE))
-              .isEqualTo(Boolean.TRUE);
-          assertThat(TypeUtils.compare(originDate, originDate2, OQLLexerTokenTypes.TOK_GT))
-              .isEqualTo(Boolean.FALSE);
-          assertThat(TypeUtils.compare(originDate, originDate2, OQLLexerTokenTypes.TOK_GE))
-              .isEqualTo(Boolean.TRUE);
-          assertThat(TypeUtils.compare(originDate, originDate2, OQLLexerTokenTypes.TOK_NE))
-              .isEqualTo(Boolean.FALSE);
-          verify((Comparable) originDate, times(0)).compareTo(any());
-          verify((Comparable) originDate2, times(0)).compareTo(any());
-          verify(temporalComparator, times(6)).compare(any(), any());
-          reset(temporalComparator);
-        } catch (TypeMismatchException typeMismatchException) {
-          throw new RuntimeException(typeMismatchException);
-        }
-      });
-    });
+    originDates.forEach(originDate -> originDates.forEach(originDate2 -> {
+      try {
+        assertThat(TypeUtils.compare(originDate, originDate2, OQLLexerTokenTypes.TOK_EQ))
+            .isEqualTo(Boolean.TRUE);
+        assertThat(TypeUtils.compare(originDate, originDate2, OQLLexerTokenTypes.TOK_LT))
+            .isEqualTo(Boolean.FALSE);
+        assertThat(TypeUtils.compare(originDate, originDate2, OQLLexerTokenTypes.TOK_LE))
+            .isEqualTo(Boolean.TRUE);
+        assertThat(TypeUtils.compare(originDate, originDate2, OQLLexerTokenTypes.TOK_GT))
+            .isEqualTo(Boolean.FALSE);
+        assertThat(TypeUtils.compare(originDate, originDate2, OQLLexerTokenTypes.TOK_GE))
+            .isEqualTo(Boolean.TRUE);
+        assertThat(TypeUtils.compare(originDate, originDate2, OQLLexerTokenTypes.TOK_NE))
+            .isEqualTo(Boolean.FALSE);
+        verify((Comparable) originDate, times(0)).compareTo(any());
+        verify((Comparable) originDate2, times(0)).compareTo(any());
+        verify(temporalComparator, times(6)).compare(any(), any());
+        reset(temporalComparator);
+      } catch (TypeMismatchException typeMismatchException) {
+        throw new RuntimeException(typeMismatchException);
+      }
+    }));
 
-    originDates.forEach(originDate -> {
-      currentDates.forEach(currentTime -> {
-        try {
-          assertThat(TypeUtils.compare(originDate, currentTime, OQLLexerTokenTypes.TOK_EQ))
-              .isEqualTo(Boolean.FALSE);
-          assertThat(TypeUtils.compare(originDate, currentTime, OQLLexerTokenTypes.TOK_LT))
-              .isEqualTo(Boolean.TRUE);
-          assertThat(TypeUtils.compare(originDate, currentTime, OQLLexerTokenTypes.TOK_LE))
-              .isEqualTo(Boolean.TRUE);
-          assertThat(TypeUtils.compare(originDate, currentTime, OQLLexerTokenTypes.TOK_GT))
-              .isEqualTo(Boolean.FALSE);
-          assertThat(TypeUtils.compare(originDate, currentTime, OQLLexerTokenTypes.TOK_GE))
-              .isEqualTo(Boolean.FALSE);
-          assertThat(TypeUtils.compare(originDate, currentTime, OQLLexerTokenTypes.TOK_NE))
-              .isEqualTo(Boolean.TRUE);
-          verify((Comparable) originDate, times(0)).compareTo(any());
-          verify((Comparable) currentTime, times(0)).compareTo(any());
-          verify(temporalComparator, times(6)).compare(any(), any());
-          reset(temporalComparator);
-        } catch (TypeMismatchException typeMismatchException) {
-          throw new RuntimeException(typeMismatchException);
-        }
-      });
-    });
+    originDates.forEach(originDate -> currentDates.forEach(currentTime -> {
+      try {
+        assertThat(TypeUtils.compare(originDate, currentTime, OQLLexerTokenTypes.TOK_EQ))
+            .isEqualTo(Boolean.FALSE);
+        assertThat(TypeUtils.compare(originDate, currentTime, OQLLexerTokenTypes.TOK_LT))
+            .isEqualTo(Boolean.TRUE);
+        assertThat(TypeUtils.compare(originDate, currentTime, OQLLexerTokenTypes.TOK_LE))
+            .isEqualTo(Boolean.TRUE);
+        assertThat(TypeUtils.compare(originDate, currentTime, OQLLexerTokenTypes.TOK_GT))
+            .isEqualTo(Boolean.FALSE);
+        assertThat(TypeUtils.compare(originDate, currentTime, OQLLexerTokenTypes.TOK_GE))
+            .isEqualTo(Boolean.FALSE);
+        assertThat(TypeUtils.compare(originDate, currentTime, OQLLexerTokenTypes.TOK_NE))
+            .isEqualTo(Boolean.TRUE);
+        verify((Comparable) originDate, times(0)).compareTo(any());
+        verify((Comparable) currentTime, times(0)).compareTo(any());
+        verify(temporalComparator, times(6)).compare(any(), any());
+        reset(temporalComparator);
+      } catch (TypeMismatchException typeMismatchException) {
+        throw new RuntimeException(typeMismatchException);
+      }
+    }));
 
-    currentDates.forEach(currentTime -> {
-      originDates.forEach(originDate -> {
-        try {
-          assertThat(TypeUtils.compare(currentTime, originDate, OQLLexerTokenTypes.TOK_EQ))
-              .isEqualTo(Boolean.FALSE);
-          assertThat(TypeUtils.compare(currentTime, originDate, OQLLexerTokenTypes.TOK_LT))
-              .isEqualTo(Boolean.FALSE);
-          assertThat(TypeUtils.compare(currentTime, originDate, OQLLexerTokenTypes.TOK_LE))
-              .isEqualTo(Boolean.FALSE);
-          assertThat(TypeUtils.compare(currentTime, originDate, OQLLexerTokenTypes.TOK_GT))
-              .isEqualTo(Boolean.TRUE);
-          assertThat(TypeUtils.compare(currentTime, originDate, OQLLexerTokenTypes.TOK_GE))
-              .isEqualTo(Boolean.TRUE);
-          assertThat(TypeUtils.compare(currentTime, originDate, OQLLexerTokenTypes.TOK_NE))
-              .isEqualTo(Boolean.TRUE);
-          verify((Comparable) originDate, times(0)).compareTo(any());
-          verify((Comparable) currentTime, times(0)).compareTo(any());
-          verify(temporalComparator, times(6)).compare(any(), any());
-          reset(temporalComparator);
-        } catch (TypeMismatchException typeMismatchException) {
-          throw new RuntimeException(typeMismatchException);
-        }
-      });
-    });
+    currentDates.forEach(currentTime -> originDates.forEach(originDate -> {
+      try {
+        assertThat(TypeUtils.compare(currentTime, originDate, OQLLexerTokenTypes.TOK_EQ))
+            .isEqualTo(Boolean.FALSE);
+        assertThat(TypeUtils.compare(currentTime, originDate, OQLLexerTokenTypes.TOK_LT))
+            .isEqualTo(Boolean.FALSE);
+        assertThat(TypeUtils.compare(currentTime, originDate, OQLLexerTokenTypes.TOK_LE))
+            .isEqualTo(Boolean.FALSE);
+        assertThat(TypeUtils.compare(currentTime, originDate, OQLLexerTokenTypes.TOK_GT))
+            .isEqualTo(Boolean.TRUE);
+        assertThat(TypeUtils.compare(currentTime, originDate, OQLLexerTokenTypes.TOK_GE))
+            .isEqualTo(Boolean.TRUE);
+        assertThat(TypeUtils.compare(currentTime, originDate, OQLLexerTokenTypes.TOK_NE))
+            .isEqualTo(Boolean.TRUE);
+        verify((Comparable) originDate, times(0)).compareTo(any());
+        verify((Comparable) currentTime, times(0)).compareTo(any());
+        verify(temporalComparator, times(6)).compare(any(), any());
+        reset(temporalComparator);
+      } catch (TypeMismatchException typeMismatchException) {
+        throw new RuntimeException(typeMismatchException);
+      }
+    }));
 
     // Extra check to verify that no other comparison methods were called.
     verify(numericComparator, times(0)).compare(any(), any());
   }
 
   @Test
-  public void comparingTemporalValuesShouldThrowExceptionWhenTheComparisonOperatorIsNotSupported()
-      throws TypeMismatchException {
+  public void comparingTemporalValuesShouldThrowExceptionWhenTheComparisonOperatorIsNotSupported() {
     // We use spies to track the execution of wanted and unwanted methods.
     PowerMockito.spy(TypeUtils.class);
     TemporalComparator temporalComparator = spy(TemporalComparator.class);
@@ -753,16 +726,16 @@ public class TypeUtilsJUnitTest {
     short hShort = Short.MAX_VALUE;
     double lDouble = Short.MIN_VALUE;
     double hDouble = Short.MAX_VALUE;
-    Long lowestLong = new Long(Short.MIN_VALUE);
-    Long highestLong = new Long(Short.MAX_VALUE);
-    Float lowestFloat = new Float(Short.MIN_VALUE);
-    Float highestFloat = new Float(Short.MAX_VALUE);
-    Short lowestShort = new Short(Short.MIN_VALUE);
-    Short highestShort = new Short(Short.MAX_VALUE);
-    Double lowestDouble = new Double(Short.MIN_VALUE);
-    Double highestDouble = new Double(Short.MAX_VALUE);
-    Integer lowestInteger = new Integer(Short.MIN_VALUE);
-    Integer highestInteger = new Integer(Short.MAX_VALUE);
+    Long lowestLong = (long) Short.MIN_VALUE;
+    Long highestLong = (long) Short.MAX_VALUE;
+    Float lowestFloat = (float) Short.MIN_VALUE;
+    Float highestFloat = (float) Short.MAX_VALUE;
+    Short lowestShort = Short.MIN_VALUE;
+    Short highestShort = Short.MAX_VALUE;
+    Double lowestDouble = (double) Short.MIN_VALUE;
+    Double highestDouble = (double) Short.MAX_VALUE;
+    Integer lowestInteger = (int) Short.MIN_VALUE;
+    Integer highestInteger = (int) Short.MAX_VALUE;
     AtomicLong lowestAtomicLong = new AtomicLong(Short.MIN_VALUE);
     AtomicLong highestAtomicLong = new AtomicLong(Short.MAX_VALUE);
     BigDecimal lowestBigDecimal = BigDecimal.valueOf(Short.MIN_VALUE);
@@ -772,92 +745,85 @@ public class TypeUtilsJUnitTest {
     AtomicInteger lowestAtomicInteger = new AtomicInteger(Short.MIN_VALUE);
     AtomicInteger highestAtomicInteger = new AtomicInteger(Short.MAX_VALUE);
 
-    List<Number> lowestNumbers = Arrays.asList(new Number[] {lInteger, lLong, lFloat, lShort,
-        lDouble, lowestLong, lowestFloat, lowestShort, lowestDouble, lowestInteger,
-        lowestAtomicLong, lowestBigDecimal, lowestBigInteger, lowestAtomicInteger});
-    List<Number> highestNumbers = Arrays.asList(new Number[] {hInteger, hLong, hFloat, hShort,
-        hDouble, highestLong, highestFloat, highestShort, highestDouble, highestInteger,
-        highestAtomicLong, highestBigDecimal, highestBigInteger, highestAtomicInteger});
+    List<Number> lowestNumbers = Arrays.asList(lInteger, lLong, lFloat, lShort, lDouble, lowestLong,
+        lowestFloat, lowestShort, lowestDouble, lowestInteger, lowestAtomicLong, lowestBigDecimal,
+        lowestBigInteger, lowestAtomicInteger);
+    List<Number> highestNumbers = Arrays.asList(hInteger, hLong, hFloat, hShort, hDouble,
+        highestLong, highestFloat, highestShort, highestDouble, highestInteger, highestAtomicLong,
+        highestBigDecimal, highestBigInteger, highestAtomicInteger);
 
-    lowestNumbers.forEach(lowest -> {
-      lowestNumbers.stream().filter(number -> number.getClass() != lowest.getClass())
-          .forEach((lowest2) -> {
-            try {
-              assertThat(TypeUtils.compare(lowest, lowest2, OQLLexerTokenTypes.TOK_EQ))
-                  .isEqualTo(Boolean.TRUE);
-              assertThat(TypeUtils.compare(lowest, lowest2, OQLLexerTokenTypes.TOK_LT))
-                  .isEqualTo(Boolean.FALSE);
-              assertThat(TypeUtils.compare(lowest, lowest2, OQLLexerTokenTypes.TOK_NE))
-                  .isEqualTo(Boolean.FALSE);
-              assertThat(TypeUtils.compare(lowest, lowest2, OQLLexerTokenTypes.TOK_LE))
-                  .isEqualTo(Boolean.TRUE);
-              assertThat(TypeUtils.compare(lowest, lowest2, OQLLexerTokenTypes.TOK_GT))
-                  .isEqualTo(Boolean.FALSE);
-              assertThat(TypeUtils.compare(lowest, lowest2, OQLLexerTokenTypes.TOK_GE))
-                  .isEqualTo(Boolean.TRUE);
-              verify(numericComparator, times(6)).compare(any(), any());
-              reset(numericComparator);
-            } catch (TypeMismatchException typeMismatchException) {
-              throw new RuntimeException(typeMismatchException);
-            }
-          });
-    });
+    lowestNumbers.forEach(lowest -> lowestNumbers.stream()
+        .filter(number -> number.getClass() != lowest.getClass()).forEach((lowest2) -> {
+          try {
+            assertThat(TypeUtils.compare(lowest, lowest2, OQLLexerTokenTypes.TOK_EQ))
+                .isEqualTo(Boolean.TRUE);
+            assertThat(TypeUtils.compare(lowest, lowest2, OQLLexerTokenTypes.TOK_LT))
+                .isEqualTo(Boolean.FALSE);
+            assertThat(TypeUtils.compare(lowest, lowest2, OQLLexerTokenTypes.TOK_NE))
+                .isEqualTo(Boolean.FALSE);
+            assertThat(TypeUtils.compare(lowest, lowest2, OQLLexerTokenTypes.TOK_LE))
+                .isEqualTo(Boolean.TRUE);
+            assertThat(TypeUtils.compare(lowest, lowest2, OQLLexerTokenTypes.TOK_GT))
+                .isEqualTo(Boolean.FALSE);
+            assertThat(TypeUtils.compare(lowest, lowest2, OQLLexerTokenTypes.TOK_GE))
+                .isEqualTo(Boolean.TRUE);
+            verify(numericComparator, times(6)).compare(any(), any());
+            reset(numericComparator);
+          } catch (TypeMismatchException typeMismatchException) {
+            throw new RuntimeException(typeMismatchException);
+          }
+        }));
 
-    lowestNumbers.forEach(lowestNumber -> {
-      highestNumbers.stream().filter(number -> number.getClass() != lowestNumber.getClass())
-          .forEach((highestNumber) -> {
-            try {
-              assertThat(TypeUtils.compare(lowestNumber, highestNumber, OQLLexerTokenTypes.TOK_EQ))
-                  .isEqualTo(Boolean.FALSE);
-              assertThat(TypeUtils.compare(lowestNumber, highestNumber, OQLLexerTokenTypes.TOK_LT))
-                  .isEqualTo(Boolean.TRUE);
-              assertThat(TypeUtils.compare(lowestNumber, highestNumber, OQLLexerTokenTypes.TOK_GT))
-                  .isEqualTo(Boolean.FALSE);
-              assertThat(TypeUtils.compare(lowestNumber, highestNumber, OQLLexerTokenTypes.TOK_LE))
-                  .isEqualTo(Boolean.TRUE);
-              assertThat(TypeUtils.compare(lowestNumber, highestNumber, OQLLexerTokenTypes.TOK_GE))
-                  .isEqualTo(Boolean.FALSE);
-              assertThat(TypeUtils.compare(lowestNumber, highestNumber, OQLLexerTokenTypes.TOK_NE))
-                  .isEqualTo(Boolean.TRUE);
-              verify(numericComparator, times(6)).compare(any(), any());
-              reset(numericComparator);
-            } catch (TypeMismatchException typeMismatchException) {
-              throw new RuntimeException(typeMismatchException);
-            }
-          });
-    });
+    lowestNumbers.forEach(lowestNumber -> highestNumbers.stream()
+        .filter(number -> number.getClass() != lowestNumber.getClass()).forEach((highestNumber) -> {
+          try {
+            assertThat(TypeUtils.compare(lowestNumber, highestNumber, OQLLexerTokenTypes.TOK_EQ))
+                .isEqualTo(Boolean.FALSE);
+            assertThat(TypeUtils.compare(lowestNumber, highestNumber, OQLLexerTokenTypes.TOK_LT))
+                .isEqualTo(Boolean.TRUE);
+            assertThat(TypeUtils.compare(lowestNumber, highestNumber, OQLLexerTokenTypes.TOK_GT))
+                .isEqualTo(Boolean.FALSE);
+            assertThat(TypeUtils.compare(lowestNumber, highestNumber, OQLLexerTokenTypes.TOK_LE))
+                .isEqualTo(Boolean.TRUE);
+            assertThat(TypeUtils.compare(lowestNumber, highestNumber, OQLLexerTokenTypes.TOK_GE))
+                .isEqualTo(Boolean.FALSE);
+            assertThat(TypeUtils.compare(lowestNumber, highestNumber, OQLLexerTokenTypes.TOK_NE))
+                .isEqualTo(Boolean.TRUE);
+            verify(numericComparator, times(6)).compare(any(), any());
+            reset(numericComparator);
+          } catch (TypeMismatchException typeMismatchException) {
+            throw new RuntimeException(typeMismatchException);
+          }
+        }));
 
-    highestNumbers.forEach(highestNumer -> {
-      lowestNumbers.stream().filter(number -> number.getClass() != highestNumer.getClass())
-          .forEach((lowestNumber) -> {
-            try {
-              assertThat(TypeUtils.compare(highestNumer, lowestNumber, OQLLexerTokenTypes.TOK_EQ))
-                  .isEqualTo(Boolean.FALSE);
-              assertThat(TypeUtils.compare(highestNumer, lowestNumber, OQLLexerTokenTypes.TOK_LT))
-                  .isEqualTo(Boolean.FALSE);
-              assertThat(TypeUtils.compare(highestNumer, lowestNumber, OQLLexerTokenTypes.TOK_LE))
-                  .isEqualTo(Boolean.FALSE);
-              assertThat(TypeUtils.compare(highestNumer, lowestNumber, OQLLexerTokenTypes.TOK_NE))
-                  .isEqualTo(Boolean.TRUE);
-              assertThat(TypeUtils.compare(highestNumer, lowestNumber, OQLLexerTokenTypes.TOK_GT))
-                  .isEqualTo(Boolean.TRUE);
-              assertThat(TypeUtils.compare(highestNumer, lowestNumber, OQLLexerTokenTypes.TOK_GE))
-                  .isEqualTo(Boolean.TRUE);
-              verify(numericComparator, times(6)).compare(any(), any());
-              reset(numericComparator);
-            } catch (TypeMismatchException typeMismatchException) {
-              throw new RuntimeException(typeMismatchException);
-            }
-          });
-    });
+    highestNumbers.forEach(highestNumber -> lowestNumbers.stream()
+        .filter(number -> number.getClass() != highestNumber.getClass()).forEach((lowestNumber) -> {
+          try {
+            assertThat(TypeUtils.compare(highestNumber, lowestNumber, OQLLexerTokenTypes.TOK_EQ))
+                .isEqualTo(Boolean.FALSE);
+            assertThat(TypeUtils.compare(highestNumber, lowestNumber, OQLLexerTokenTypes.TOK_LT))
+                .isEqualTo(Boolean.FALSE);
+            assertThat(TypeUtils.compare(highestNumber, lowestNumber, OQLLexerTokenTypes.TOK_LE))
+                .isEqualTo(Boolean.FALSE);
+            assertThat(TypeUtils.compare(highestNumber, lowestNumber, OQLLexerTokenTypes.TOK_NE))
+                .isEqualTo(Boolean.TRUE);
+            assertThat(TypeUtils.compare(highestNumber, lowestNumber, OQLLexerTokenTypes.TOK_GT))
+                .isEqualTo(Boolean.TRUE);
+            assertThat(TypeUtils.compare(highestNumber, lowestNumber, OQLLexerTokenTypes.TOK_GE))
+                .isEqualTo(Boolean.TRUE);
+            verify(numericComparator, times(6)).compare(any(), any());
+            reset(numericComparator);
+          } catch (TypeMismatchException typeMismatchException) {
+            throw new RuntimeException(typeMismatchException);
+          }
+        }));
 
     // Extra check to verify that no other comparison methods were called.
     verify(temporalComparator, times(0)).compare(any(), any());
   }
 
   @Test
-  public void comparingNumericValuesShouldThrowExceptionWhenTheComparisonOperatorIsNotSupported()
-      throws TypeMismatchException {
+  public void comparingNumericValuesShouldThrowExceptionWhenTheComparisonOperatorIsNotSupported() {
     // We use spies to track the execution of wanted and unwanted methods.
     PowerMockito.spy(TypeUtils.class);
     NumericComparator numericComparator = spy(NumericComparator.class);
@@ -952,22 +918,6 @@ public class TypeUtilsJUnitTest {
     verify(temporalComparator, times(0)).compare(any(), any());
   }
 
-  /**
-   * Test class that implements the Comparable interface.
-   */
-  public class ComparableObject implements Comparable {
-    Integer id;
-
-    public ComparableObject(Integer id) {
-      this.id = id;
-    }
-
-    @Override
-    public int compareTo(Object o) {
-      return this.id.compareTo(((ComparableObject) o).id);
-    }
-  }
-
   @Test
   public void comparingComparableInstancesShouldDelegateToDefaultCompareToMethod()
       throws TypeMismatchException {
@@ -1045,8 +995,7 @@ public class TypeUtilsJUnitTest {
   }
 
   @Test
-  public void comparingComparableValuesShouldThrowExceptionWhenTheComparisonOperatorIsNotSupported()
-      throws TypeMismatchException {
+  public void comparingComparableValuesShouldThrowExceptionWhenTheComparisonOperatorIsNotSupported() {
     OQLLexerTokenTypes tempInstance = new OQLLexerTokenTypes() {};
     Field[] fields = OQLLexerTokenTypes.class.getDeclaredFields();
 
@@ -1094,49 +1043,6 @@ public class TypeUtilsJUnitTest {
         throw new RuntimeException(exception);
       }
     });
-  }
-
-  /**
-   * Arbitrary Test class (equals method can not be mocked).
-   */
-  public class ArbitraryObject {
-    String id;
-    AtomicInteger equalsInvocations;
-
-    public ArbitraryObject(String id) {
-      this.id = id;
-      this.equalsInvocations = new AtomicInteger(0);
-    }
-
-    public Integer getInvocationsAmount() {
-      return this.equalsInvocations.get();
-    }
-
-    public void resetInvocationsAmount() {
-      this.equalsInvocations.set(0);
-    }
-
-    @Override
-    public boolean equals(Object o) {
-      this.equalsInvocations.incrementAndGet();
-
-      if (this == o) {
-        return true;
-      }
-
-      if (!(o instanceof ArbitraryObject)) {
-        return false;
-      }
-
-      ArbitraryObject that = (ArbitraryObject) o;
-
-      return Objects.equals(id, that.id);
-    }
-
-    @Override
-    public int hashCode() {
-      return Objects.hash(id);
-    }
   }
 
   @Test
@@ -1193,5 +1099,64 @@ public class TypeUtilsJUnitTest {
         throw new RuntimeException(exception);
       }
     });
+  }
+
+  /**
+   * Test class that implements the Comparable interface.
+   */
+  public class ComparableObject implements Comparable {
+    final Integer id;
+
+    ComparableObject(Integer id) {
+      this.id = id;
+    }
+
+    @Override
+    public int compareTo(Object o) {
+      return this.id.compareTo(((ComparableObject) o).id);
+    }
+  }
+
+  /**
+   * Arbitrary Test class (equals method can not be mocked).
+   */
+  public class ArbitraryObject {
+    final String id;
+    final AtomicInteger equalsInvocations;
+
+    ArbitraryObject(String id) {
+      this.id = id;
+      this.equalsInvocations = new AtomicInteger(0);
+    }
+
+    Integer getInvocationsAmount() {
+      return this.equalsInvocations.get();
+    }
+
+    void resetInvocationsAmount() {
+      this.equalsInvocations.set(0);
+    }
+
+    @Override
+    public boolean equals(Object o) {
+      this.equalsInvocations.incrementAndGet();
+
+      if (this == o) {
+        return true;
+      }
+
+      if (!(o instanceof ArbitraryObject)) {
+        return false;
+      }
+
+      ArbitraryObject that = (ArbitraryObject) o;
+
+      return Objects.equals(id, that.id);
+    }
+
+    @Override
+    public int hashCode() {
+      return Objects.hash(id);
+    }
   }
 }
