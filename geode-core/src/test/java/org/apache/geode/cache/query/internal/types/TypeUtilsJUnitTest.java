@@ -418,13 +418,14 @@ public class TypeUtilsJUnitTest {
 
   @Test
   public void booleanCompareShouldThrowExceptionIfValuesAreNotInstancesOfBoolean() {
-    assertThatThrownBy(() -> TypeUtils.booleanCompare(true, new Object(), anyInt()))
+    Integer arbitraryInput = 10;
+    assertThatThrownBy(() -> TypeUtils.booleanCompare(true, new Object(), arbitraryInput))
         .isInstanceOf(TypeMismatchException.class)
         .hasMessageMatching("^Booleans can only be compared with booleans$");
-    assertThatThrownBy(() -> TypeUtils.booleanCompare(new Object(), false, anyInt()))
+    assertThatThrownBy(() -> TypeUtils.booleanCompare(new Object(), false, arbitraryInput))
         .isInstanceOf(TypeMismatchException.class)
         .hasMessageMatching("^Booleans can only be compared with booleans$");
-    assertThatThrownBy(() -> TypeUtils.booleanCompare(new Object(), new Object(), anyInt()))
+    assertThatThrownBy(() -> TypeUtils.booleanCompare(new Object(), new Object(), arbitraryInput))
         .isInstanceOf(TypeMismatchException.class)
         .hasMessageMatching("^Booleans can only be compared with booleans$");
   }
