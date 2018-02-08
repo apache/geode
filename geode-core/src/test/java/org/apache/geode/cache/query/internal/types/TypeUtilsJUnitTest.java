@@ -955,7 +955,7 @@ public class TypeUtilsJUnitTest {
   /**
    * Test class that implements the Comparable interface.
    */
-  class ComparableObject implements Comparable {
+  public class ComparableObject implements Comparable {
     Integer id;
 
     public ComparableObject(Integer id) {
