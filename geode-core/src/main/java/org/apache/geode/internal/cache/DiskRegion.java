@@ -535,7 +535,7 @@ public class DiskRegion extends AbstractDiskRegion {
    * returns the active child
    */
   Oplog testHook_getChild() {
-    return getDiskStore().persistentOplogs.getChild();
+    return getDiskStore().getPersistentOplogs().getChild();
   }
 
   /** For Testing * */
