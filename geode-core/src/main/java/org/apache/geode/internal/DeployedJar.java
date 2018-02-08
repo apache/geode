@@ -298,8 +298,8 @@ public class DeployedJar {
         boolean registerUninitializedFunction = true;
         if (Declarable.class.isAssignableFrom(clazz)) {
           try {
-            final List<Properties> propertiesList = ((InternalCache) CacheFactory.getAnyInstance())
-                .getDeclarableProperties(clazz.getName());
+            InternalCache cache = (InternalCache) CacheFactory.getAnyInstance();
+            final List<Properties> propertiesList = cache.getDeclarableProperties(clazz.getName());
 
             if (!propertiesList.isEmpty()) {
               registerUninitializedFunction = false;
@@ -310,6 +310,7 @@ public class DeployedJar {
                 @SuppressWarnings("unchecked")
                 Function function = newFunction((Class<Function>) clazz, true);
                 if (function != null) {
+                  ((Declarable) function).setCache(cache);
                   ((Declarable) function).init(properties);
                   if (function.getId() != null) {
                     registerableFunctions.add(function);

@@ -237,7 +237,7 @@ public class RegionAlterFunction implements Function, InternalEntity {
       // Add new cache listeners
       for (ClassName<CacheListener> newCacheListener : newCacheListeners) {
         if (!newCacheListener.equals(ClassName.EMPTY)) {
-          mutator.addCacheListener(newCacheListener.newInstance());
+          mutator.addCacheListener(newCacheListener.newInstance(cache));
         }
       }
       if (logger.isDebugEnabled()) {
@@ -250,7 +250,7 @@ public class RegionAlterFunction implements Function, InternalEntity {
       if (cacheLoader.equals(ClassName.EMPTY)) {
         mutator.setCacheLoader(null);
       } else {
-        mutator.setCacheLoader(cacheLoader.newInstance());
+        mutator.setCacheLoader(cacheLoader.newInstance(cache));
       }
 
       if (logger.isDebugEnabled()) {
@@ -263,7 +263,7 @@ public class RegionAlterFunction implements Function, InternalEntity {
       if (cacheWriter.equals(ClassName.EMPTY)) {
         mutator.setCacheWriter(null);
       } else {
-        mutator.setCacheWriter(cacheWriter.newInstance());
+        mutator.setCacheWriter(cacheWriter.newInstance(cache));
       }
 
       if (logger.isDebugEnabled()) {

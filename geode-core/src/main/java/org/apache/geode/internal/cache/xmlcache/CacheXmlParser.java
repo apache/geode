@@ -1956,8 +1956,7 @@ public class CacheXmlParser extends CacheXml implements ContentHandler {
               .toLocalizedString(className));
     }
     Declarable d = (Declarable) o;
-    d.init(props);
-
+    // init call done later in GemFireCacheImpl.addDeclarableProperties
     cache.addDeclarableProperties(d, props);
 
     return d;

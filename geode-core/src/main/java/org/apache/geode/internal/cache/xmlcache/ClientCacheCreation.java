@@ -258,7 +258,7 @@ public class ClientCacheCreation extends CacheCreation implements ClientCache {
     }
 
     cache.readyDynamicRegionFactory();
-    runInitializer();
+    runInitializer(cache);
   }
 
   public String getDefaultPoolName() {

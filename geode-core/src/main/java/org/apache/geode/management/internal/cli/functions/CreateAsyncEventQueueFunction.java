@@ -110,6 +110,7 @@ public class CreateAsyncEventQueueFunction implements Function, InternalEntity {
               "Listener properties were provided, but the listener specified does not implement Declarable.");
         }
 
+        ((Declarable) listenerInstance).setCache(cache);
         ((Declarable) listenerInstance).init(listenerProperties);
 
         Map<Declarable, Properties> declarablesMap = new HashMap<Declarable, Properties>();

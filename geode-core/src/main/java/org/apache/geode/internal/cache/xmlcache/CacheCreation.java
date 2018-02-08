@@ -551,7 +551,7 @@ public class CacheCreation implements InternalCache {
 
     cache.setBackupFiles(this.backups);
     cache.addDeclarableProperties(this.declarablePropertiesMap);
-    runInitializer();
+    runInitializer(cache);
     cache.setInitializer(getInitializer(), getInitializerProps());
 
     // Create all extensions
@@ -1694,7 +1694,7 @@ public class CacheCreation implements InternalCache {
     throw new UnsupportedOperationException(LocalizedStrings.SHOULDNT_INVOKE.toLocalizedString());
   }
 
-  void runInitializer() {
+  void runInitializer(InternalCache cache) {
     if (getInitializer() != null) {
       getInitializer().init(getInitializerProps());
     }

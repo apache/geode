@@ -65,4 +65,13 @@ public interface Declarable {
    *         illegal or malformed.
    */
   default void init(Properties props) {};
+
+  /**
+   * setCache will be called, before init, with the cache that this declarable belongs to. Any
+   * exception thrown by this method will cause the cache initialization to fail.
+   *
+   * @since Geode 1.5
+   * @param cache the cache that owns this declarable
+   */
+  default void setCache(Cache cache) {};
 }

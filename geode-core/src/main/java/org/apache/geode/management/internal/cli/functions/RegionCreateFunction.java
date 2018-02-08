@@ -286,7 +286,7 @@ public class RegionCreateFunction implements Function, InternalEntity {
     if (cacheListeners != null && !cacheListeners.isEmpty()) {
       List<CacheListener<K, V>> newListeners = new ArrayList<>();
       for (ClassName<CacheListener> cacheListener : cacheListeners) {
-        newListeners.add(cacheListener.newInstance());
+        newListeners.add(cacheListener.newInstance(cache));
       }
       factory.initCacheListeners(newListeners.toArray(new CacheListener[0]));
     }
@@ -301,12 +301,12 @@ public class RegionCreateFunction implements Function, InternalEntity {
 
     final ClassName<CacheLoader> cacheLoader = regionCreateArgs.getCacheLoader();
     if (cacheLoader != null) {
-      factory.setCacheLoader(cacheLoader.newInstance());
+      factory.setCacheLoader(cacheLoader.newInstance(cache));
     }
 
     final ClassName<CacheWriter> cacheWriter = regionCreateArgs.getCacheWriter();
     if (cacheWriter != null) {
-      factory.setCacheWriter(cacheWriter.newInstance());
+      factory.setCacheWriter(cacheWriter.newInstance(cache));
     }
 
     // If a region path indicates a sub-region,
