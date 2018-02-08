@@ -255,11 +255,11 @@ public abstract class AbstractGatewaySender implements GatewaySender, Distributi
     // if dispatcherThreads is 1 then maxMemoryPerDispatcherQueue will be same as maximumQueueMemory
     // of sender
     this.maxMemoryPerDispatcherQueue = this.queueMemory / this.dispatcherThreads;
-    this.myDSId =
-        this.cache.getInternalDistributedSystem().getDistributionManager().getDistributedSystemId();
     this.serialNumber = DistributionAdvisor.createSerialNumber();
     this.isMetaQueue = attrs.isMetaQueue();
     if (!(this.cache instanceof CacheCreation)) {
+      this.myDSId = this.cache.getInternalDistributedSystem().getDistributionManager()
+          .getDistributedSystemId();
       this.stopper = new Stopper(cache.getCancelCriterion());
       this.senderAdvisor = GatewaySenderAdvisor.createGatewaySenderAdvisor(this);
       if (!this.isForInternalUse()) {
