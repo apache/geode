@@ -143,7 +143,7 @@ public class LonerDistributionManager implements DistributionManager {
         return id;
       }
     }
-    if (Objects.equals(localAddress.getName(), localAddress)) {
+    if (Objects.equals(localAddress.getName(), name)) {
       return localAddress;
     }
     return null;
