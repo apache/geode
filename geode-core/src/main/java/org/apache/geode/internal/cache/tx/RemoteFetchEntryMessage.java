@@ -293,12 +293,8 @@ public class RemoteFetchEntryMessage extends RemoteOperationMessage {
       } catch (EntryNotFoundException | TransactionException e) {
         throw e;
       } catch (CacheException ce) {
-        logger.debug(
-            "FetchEntryResponse got remote CacheException; wrapping in RemoteOperationException.",
-            ce);
-        throw new RemoteOperationException(
-            LocalizedStrings.RemoteFetchEntryMessage_FETCHENTRYRESPONSE_GOT_REMOTE_CACHEEXCEPTION_FORCING_REATTEMPT
-                .toLocalizedString(),
+        logger.debug("FetchEntryResponse failed with remote CacheException", ce);
+        throw new RemoteOperationException("FetchEntryResponse failed with remote CacheException",
             ce);
       }
       return this.returnValue;

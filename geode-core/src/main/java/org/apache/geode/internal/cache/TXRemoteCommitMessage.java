@@ -270,15 +270,9 @@ public class TXRemoteCommitMessage extends TXMessage {
      * @return Object associated with the key that was sent in the get message
      */
     public TXCommitMessage waitForResponse() throws RemoteOperationException {
-      try {
-        waitForRemoteResponse();
-        if (DistributionStats.enableClockStats) {
-          getDistributionManager().getStats().incReplyHandOffTime(this.start);
-        }
-      } catch (RemoteOperationException e) {
-        final String msg = "RemoteCommitResponse got RemoteOperationException; rethrowing";
-        logger.debug(msg, e);
-        throw e;
+      waitForRemoteResponse();
+      if (DistributionStats.enableClockStats) {
+        getDistributionManager().getStats().incReplyHandOffTime(this.start);
       }
       return commitMessage;
     }
