@@ -77,6 +77,7 @@ public class DeposePrimaryBucketMessage extends PartitionMessage {
         new DeposePrimaryBucketResponse(region.getSystem(), recipient, region);
     DeposePrimaryBucketMessage msg =
         new DeposePrimaryBucketMessage(recipient, region.getPRId(), response, bucketId);
+    msg.setTransactionDistributed(region.getCache().getTxManager().isDistributed());
 
     Set<InternalDistributedMember> failures = region.getDistributionManager().putOutgoing(msg);
     if (failures != null && failures.size() > 0) {

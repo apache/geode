@@ -44,6 +44,7 @@ public class DumpAllPRConfigMessage extends PartitionMessage {
   public static PartitionResponse send(Set recipients, PartitionedRegion r) {
     PartitionResponse p = new PartitionResponse(r.getSystem(), recipients);
     DumpAllPRConfigMessage m = new DumpAllPRConfigMessage(recipients, r.getPRId(), p);
+    m.setTransactionDistributed(r.getCache().getTxManager().isDistributed());
 
     /* Set failures = */r.getDistributionManager().putOutgoing(m);
     // if (failures != null && failures.size() > 0) {

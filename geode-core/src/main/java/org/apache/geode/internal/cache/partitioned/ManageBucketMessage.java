@@ -101,6 +101,7 @@ public class ManageBucketMessage extends PartitionMessage {
     NodeResponse p = new NodeResponse(r.getSystem(), recipient);
     ManageBucketMessage m =
         new ManageBucketMessage(recipient, r.getPRId(), p, bucketId, bucketSize, forceCreation);
+    m.setTransactionDistributed(r.getCache().getTxManager().isDistributed());
 
     p.enableSevereAlertProcessing();
 

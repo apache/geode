@@ -68,6 +68,7 @@ public class EndBucketCreationMessage extends PartitionMessage {
     ReplyProcessor21 response = new ReplyProcessor21(pr.getSystem(), acceptedMembers);
     EndBucketCreationMessage msg =
         new EndBucketCreationMessage(acceptedMembers, pr.getPRId(), response, bid, newPrimary);
+    msg.setTransactionDistributed(pr.getCache().getTxManager().isDistributed());
 
     pr.getDistributionManager().putOutgoing(msg);
   }

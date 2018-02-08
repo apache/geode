@@ -177,6 +177,7 @@ public class DestroyMessage extends PartitionMessageWithDirectReply {
       DirectReplyProcessor processor) {
     DestroyMessage msg =
         new DestroyMessage(Collections.EMPTY_SET, true, r.getPRId(), processor, event, null);
+    msg.setTransactionDistributed(r.getCache().getTxManager().isDistributed());
     msg.versionTag = event.getVersionTag();
     return msg.relayToListeners(cacheOpReceivers, adjunctRecipients, filterRoutingInfo, event, r,
         processor);

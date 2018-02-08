@@ -268,6 +268,7 @@ public class PRUpdateEntryVersionMessage extends PartitionMessageWithDirectReply
         new UpdateEntryVersionResponse(r.getSystem(), recipient, event.getKey());
     PRUpdateEntryVersionMessage m =
         new PRUpdateEntryVersionMessage(recipients, r.getPRId(), p, event);
+    m.setTransactionDistributed(r.getCache().getTxManager().isDistributed());
 
     Set failures = r.getDistributionManager().putOutgoing(m);
     if (failures != null && failures.size() > 0) {

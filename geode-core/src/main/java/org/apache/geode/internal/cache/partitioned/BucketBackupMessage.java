@@ -64,6 +64,7 @@ public class BucketBackupMessage extends PartitionMessage {
   public static void send(Set recipients, PartitionedRegion r, int bucketId) {
     Assert.assertTrue(recipients != null, "BucketBackupMessage NULL sender list");
     BucketBackupMessage m = new BucketBackupMessage(recipients, r.getPRId(), bucketId);
+    m.setTransactionDistributed(r.getCache().getTxManager().isDistributed());
     r.getDistributionManager().putOutgoing(m);
   }
 

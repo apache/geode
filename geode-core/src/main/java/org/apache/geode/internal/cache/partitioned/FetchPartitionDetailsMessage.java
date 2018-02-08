@@ -80,6 +80,7 @@ public class FetchPartitionDetailsMessage extends PartitionMessage {
         new FetchPartitionDetailsResponse(region.getSystem(), recipients, region);
     FetchPartitionDetailsMessage msg = new FetchPartitionDetailsMessage(recipients,
         region.getPRId(), response, internal, fetchOfflineMembers, probe);
+    msg.setTransactionDistributed(region.getCache().getTxManager().isDistributed());
 
     /* Set<InternalDistributedMember> failures = */
     region.getDistributionManager().putOutgoing(msg);
