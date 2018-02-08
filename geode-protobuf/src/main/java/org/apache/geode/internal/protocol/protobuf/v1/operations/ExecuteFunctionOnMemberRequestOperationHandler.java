@@ -49,11 +49,9 @@ public class ExecuteFunctionOnMemberRequestOperationHandler implements
   public Result<FunctionAPI.ExecuteFunctionOnMemberResponse, ClientProtocol.ErrorResponse> process(
       ProtobufSerializationService serializationService,
       FunctionAPI.ExecuteFunctionOnMemberRequest request,
-      MessageExecutionContext messageExecutionContext)
-      throws InvalidExecutionContextException, ConnectionStateException {
+      MessageExecutionContext messageExecutionContext) throws InvalidExecutionContextException {
 
     final String functionID = request.getFunctionID();
-    ProtocolStringList memberNameList = request.getMemberNameList();
 
     final Function<?> function = FunctionService.getFunction(functionID);
     if (function == null) {
@@ -78,6 +76,8 @@ public class ExecuteFunctionOnMemberRequestOperationHandler implements
               .setErrorCode(BasicTypes.ErrorCode.AUTHORIZATION_FAILED))
           .build());
     }
+
+    ProtocolStringList memberNameList = request.getMemberNameList();
 
     Set<DistributedMember> memberIds = new HashSet<>(memberNameList.size());
     DistributionManager distributionManager =

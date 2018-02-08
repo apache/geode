@@ -18,8 +18,6 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
-import org.apache.logging.log4j.Logger;
-
 import org.apache.geode.cache.Region;
 import org.apache.geode.cache.execute.Execution;
 import org.apache.geode.cache.execute.Function;
@@ -28,7 +26,6 @@ import org.apache.geode.cache.execute.FunctionService;
 import org.apache.geode.cache.execute.ResultCollector;
 import org.apache.geode.internal.exception.InvalidExecutionContextException;
 import org.apache.geode.internal.i18n.LocalizedStrings;
-import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.internal.protocol.operations.ProtobufOperationHandler;
 import org.apache.geode.internal.protocol.protobuf.v1.BasicTypes;
 import org.apache.geode.internal.protocol.protobuf.v1.ClientProtocol;
@@ -39,7 +36,6 @@ import org.apache.geode.internal.protocol.protobuf.v1.ProtobufSerializationServi
 import org.apache.geode.internal.protocol.protobuf.v1.Result;
 import org.apache.geode.internal.protocol.protobuf.v1.Success;
 import org.apache.geode.internal.protocol.protobuf.v1.serialization.exception.EncodingException;
-import org.apache.geode.internal.protocol.protobuf.v1.state.exception.ConnectionStateException;
 import org.apache.geode.internal.security.SecurityService;
 import org.apache.geode.security.NotAuthorizedException;
 
@@ -49,8 +45,7 @@ public class ExecuteFunctionOnRegionRequestOperationHandler implements
   public Result<FunctionAPI.ExecuteFunctionOnRegionResponse, ClientProtocol.ErrorResponse> process(
       ProtobufSerializationService serializationService,
       FunctionAPI.ExecuteFunctionOnRegionRequest request,
-      MessageExecutionContext messageExecutionContext)
-      throws InvalidExecutionContextException, ConnectionStateException {
+      MessageExecutionContext messageExecutionContext) throws InvalidExecutionContextException {
 
     final String functionID = request.getFunctionID();
     final String regionName = request.getRegion();

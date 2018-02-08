@@ -104,15 +104,23 @@ public class ExecuteFunctionOnMemberRequestOperationHandlerJUnitTest {
   }
 
   @Test
-  public void noopTest() {
-
-  }
-
-  @Test
   public void failsOnUnknownMember() throws Exception {
     final FunctionAPI.ExecuteFunctionOnMemberRequest request =
         FunctionAPI.ExecuteFunctionOnMemberRequest.newBuilder().setFunctionID(TEST_FUNCTION_ID)
             .addMemberName(NOT_A_MEMBER).build();
+
+    final Result<FunctionAPI.ExecuteFunctionOnMemberResponse, ClientProtocol.ErrorResponse> result =
+        operationHandler.process(serializationService, request, mockedMessageExecutionContext());
+
+    assertTrue(result instanceof Failure);
+    assertEquals(NO_AVAILABLE_SERVER, result.getErrorMessage().getError().getErrorCode());
+  }
+
+  @Test
+  public void failsIfNoMemberSpecified() throws Exception {
+    final FunctionAPI.ExecuteFunctionOnMemberRequest request =
+        FunctionAPI.ExecuteFunctionOnMemberRequest.newBuilder().setFunctionID(TEST_FUNCTION_ID)
+            .build();
 
     final Result<FunctionAPI.ExecuteFunctionOnMemberResponse, ClientProtocol.ErrorResponse> result =
         operationHandler.process(serializationService, request, mockedMessageExecutionContext());
