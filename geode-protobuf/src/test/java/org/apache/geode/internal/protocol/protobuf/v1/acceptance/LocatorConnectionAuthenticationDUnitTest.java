@@ -83,18 +83,13 @@ public class LocatorConnectionAuthenticationDUnitTest extends JUnit4CacheTestCas
    */
   @Test
   public void authorizedClientCanGetServersIfSecurityIsEnabled() throws Throwable {
-    ClientProtocol.Request.Builder protobufRequestBuilder =
-        ProtobufUtilities.createProtobufRequestBuilder();
-
-    ClientProtocol.Message authorization =
-        ProtobufUtilities.createProtobufMessage(ProtobufUtilities.createProtobufRequestBuilder()
-            .setAuthenticationRequest(ConnectionAPI.AuthenticationRequest.newBuilder()
-                .putCredentials("security-username", "cluster").putCredentials("security-password",
-                    "cluster"))
-            .build());
-    ClientProtocol.Message GetServerRequestMessage =
-        ProtobufUtilities.createProtobufMessage(protobufRequestBuilder
-            .setGetServerRequest(ProtobufRequestUtilities.createGetServerRequest()).build());
+    ClientProtocol.Message authorization = ClientProtocol.Message.newBuilder()
+        .setAuthenticationRequest(ConnectionAPI.AuthenticationRequest.newBuilder()
+            .putCredentials("security-username", "cluster").putCredentials("security-password",
+                "cluster"))
+        .build();
+    ClientProtocol.Message GetServerRequestMessage = ClientProtocol.Message.newBuilder()
+        .setGetServerRequest(ProtobufRequestUtilities.createGetServerRequest()).build();
 
     ProtobufProtocolSerializer protobufProtocolSerializer = new ProtobufProtocolSerializer();
 
@@ -103,14 +98,13 @@ public class LocatorConnectionAuthenticationDUnitTest extends JUnit4CacheTestCas
 
       ClientProtocol.Message authorizationResponse =
           protobufProtocolSerializer.deserialize(socket.getInputStream());
-      assertEquals(true,
-          authorizationResponse.getResponse().getAuthenticationResponse().getAuthenticated());
+      assertEquals(true, authorizationResponse.getAuthenticationResponse().getAuthenticated());
       protobufProtocolSerializer.serialize(GetServerRequestMessage, socket.getOutputStream());
 
       ClientProtocol.Message GetServerResponseMessage =
           protobufProtocolSerializer.deserialize(socket.getInputStream());
       assertTrue("Got response: " + GetServerResponseMessage,
-          GetServerResponseMessage.getResponse().getGetServerResponse().hasServer());
+          GetServerResponseMessage.getGetServerResponse().hasServer());
     }
   }
 
@@ -120,11 +114,8 @@ public class LocatorConnectionAuthenticationDUnitTest extends JUnit4CacheTestCas
    */
   @Test
   public void unauthorizedClientCannotGetServersIfSecurityIsEnabled() throws Throwable {
-    ClientProtocol.Request.Builder protobufRequestBuilder =
-        ProtobufUtilities.createProtobufRequestBuilder();
-    ClientProtocol.Message getServerRequestMessage =
-        ProtobufUtilities.createProtobufMessage(protobufRequestBuilder
-            .setGetServerRequest(ProtobufRequestUtilities.createGetServerRequest()).build());
+    ClientProtocol.Message getServerRequestMessage = ClientProtocol.Message.newBuilder()
+        .setGetServerRequest(ProtobufRequestUtilities.createGetServerRequest()).build();
 
     ProtobufProtocolSerializer protobufProtocolSerializer = new ProtobufProtocolSerializer();
 
@@ -134,7 +125,7 @@ public class LocatorConnectionAuthenticationDUnitTest extends JUnit4CacheTestCas
       ClientProtocol.Message getServerResponseMessage =
           protobufProtocolSerializer.deserialize(socket.getInputStream());
       assertNotNull("Got response: " + getServerResponseMessage,
-          getServerRequestMessage.getResponse().getErrorResponse());
+          getServerRequestMessage.getErrorResponse());
     }
   }
 

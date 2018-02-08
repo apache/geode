@@ -29,8 +29,8 @@ import org.apache.geode.internal.protocol.protobuf.v1.serialization.exception.En
  * mainly focused on helper functions which can be used in building BasicTypes for use in other
  * messages or those used to create the top level Message objects.
  * <p>
- * Helper functions specific to creating ClientProtocol.Responses can be found at
- * {@link ProtobufResponseUtilities} Helper functions specific to creating ClientProtocol.Requests
+ * Helper functions specific to creating ClientProtocol.Messages can be found at
+ * {@link ProtobufResponseUtilities} Helper functions specific to creating ClientProtocol.Messages
  * can be found at {@link ProtobufRequestUtilities}
  */
 @Experimental
@@ -72,34 +72,14 @@ public abstract class ProtobufUtilities {
   }
 
   /**
-   * This creates a protobuf message containing a ClientProtocol.Response
-   *
-   * @param response - The response for the message
-   * @return a protobuf Message containing the above parameters
-   */
-  public static ClientProtocol.Message createProtobufResponse(ClientProtocol.Response response) {
-    return ClientProtocol.Message.newBuilder().setResponse(response).build();
-  }
-
-  /**
-   * This creates a protobuf message containing a ClientProtocol.Request
-   *
-   * @param request - The request for the message
-   * @return a protobuf Message containing the above parameters
-   */
-  public static ClientProtocol.Message createProtobufMessage(ClientProtocol.Request request) {
-    return ClientProtocol.Message.newBuilder().setRequest(request).build();
-  }
-
-  /**
-   * This creates a protobuf message containing a ClientProtocol.Request
+   * This creates a protobuf message containing a ClientProtocol.Message
    *
    * @param getAllRequest - The request for the message
    * @return a protobuf Message containing the above parameters
    */
-  public static ClientProtocol.Request createProtobufRequestWithGetAllRequest(
+  public static ClientProtocol.Message createProtobufRequestWithGetAllRequest(
       RegionAPI.GetAllRequest getAllRequest) {
-    return ClientProtocol.Request.newBuilder().setGetAllRequest(getAllRequest).build();
+    return ClientProtocol.Message.newBuilder().setGetAllRequest(getAllRequest).build();
   }
 
   /**
@@ -136,7 +116,4 @@ public abstract class ProtobufUtilities {
     return protoRegionBuilder.build();
   }
 
-  public static ClientProtocol.Request.Builder createProtobufRequestBuilder() {
-    return ClientProtocol.Request.newBuilder();
-  }
 }

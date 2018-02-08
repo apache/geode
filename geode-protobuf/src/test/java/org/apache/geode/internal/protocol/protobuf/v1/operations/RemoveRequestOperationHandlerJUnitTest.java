@@ -111,7 +111,7 @@ public class RemoveRequestOperationHandlerJUnitTest extends OperationHandlerJUni
     assertEquals(BasicTypes.ErrorCode.INVALID_REQUEST, errorMessage.getError().getErrorCode());
   }
 
-  private ClientProtocol.Request generateTestRequest(boolean missingRegion, boolean missingKey)
+  private ClientProtocol.Message generateTestRequest(boolean missingRegion, boolean missingKey)
       throws EncodingException {
     String region = missingRegion ? MISSING_REGION : TEST_REGION;
     String key = missingKey ? MISSING_KEY : TEST_KEY;
