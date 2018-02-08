@@ -48,6 +48,7 @@ message Request {
         GetRegionRequest getRegionRequest = 42;
 
         ExecuteFunctionOnRegionRequest executeFunctionOnRegionRequest = 43;
+        ExecuteFunctionOnMemberRequest executeFunctionOnMemberRequest = 44;
 
         AuthenticationRequest authenticationRequest = 100;
     }
@@ -67,6 +68,7 @@ message Response {
         GetRegionResponse getRegionResponse = 42;
 
         ExecuteFunctionOnRegionResponse executeFunctionOnRegionResponse= 43;
+        ExecuteFunctionOnMemberResponse executeFunctionOnMemberResponse= 44;
 
         AuthenticationResponse authenticationResponse = 100;
 
