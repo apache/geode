@@ -94,6 +94,8 @@ public abstract class AbstractIndex implements IndexProtocol {
   static final AtomicIntegerFieldUpdater<RegionEntryToValuesMap> atomicUpdater =
       AtomicIntegerFieldUpdater.newUpdater(RegionEntryToValuesMap.class, "numValues");
 
+  final InternalCache cache;
+
   final String indexName;
 
   final Region region;
@@ -139,10 +141,10 @@ public abstract class AbstractIndex implements IndexProtocol {
   /** Flag to indicate if the index is populated with data */
   volatile boolean isPopulated = false;
 
-  AbstractIndex(String indexName, Region region, String fromClause, String indexedExpression,
-      String projectionAttributes, String originalFromClause, String originalIndexedExpression,
-      String[] defintions, IndexStatistics stats) {
-
+  AbstractIndex(InternalCache cache, String indexName, Region region, String fromClause,
+      String indexedExpression, String projectionAttributes, String originalFromClause,
+      String originalIndexedExpression, String[] defintions, IndexStatistics stats) {
+    this.cache = cache;
     this.indexName = indexName;
     this.region = region;
     this.indexedExpression = indexedExpression;

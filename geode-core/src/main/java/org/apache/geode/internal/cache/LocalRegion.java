@@ -2373,7 +2373,7 @@ public class LocalRegion extends AbstractRegion implements LoaderHelperFactory,
     List oqlIndexes = internalRegionArgs.getIndexes();
 
     if (this.indexManager == null) {
-      this.indexManager = IndexUtils.getIndexManager(this, true);
+      this.indexManager = IndexUtils.getIndexManager(cache, this, true);
     }
     DiskRegion dr = this.getDiskRegion();
     boolean isOverflowToDisk = false;

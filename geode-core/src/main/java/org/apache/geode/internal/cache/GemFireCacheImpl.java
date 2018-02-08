@@ -307,7 +307,7 @@ public class GemFireCacheImpl implements InternalCache, InternalClientCache, Has
    * System property to limit the max query-execution time. By default its turned off (-1), the time
    * is set in milliseconds.
    */
-  public static final int MAX_QUERY_EXECUTION_TIME =
+  public static int MAX_QUERY_EXECUTION_TIME =
       Integer.getInteger(DistributionConfig.GEMFIRE_PREFIX + "Cache.MAX_QUERY_EXECUTION_TIME", -1);
 
   /**
@@ -327,9 +327,6 @@ public class GemFireCacheImpl implements InternalCache, InternalClientCache, Has
   private static final Pattern DOUBLE_BACKSLASH = Pattern.compile("\\\\");
 
   private volatile ConfigurationResponse configurationResponse;
-
-  /** To test MAX_QUERY_EXECUTION_TIME option. */
-  public int testMaxQueryExecutionTime = -1;
 
   private final InternalDistributedSystem system;
 
@@ -4466,7 +4463,7 @@ public class GemFireCacheImpl implements InternalCache, InternalClientCache, Has
     boolean monitorRequired =
         !this.queryMonitorDisabledForLowMem && queryMonitorRequiredForResourceManager;
     // Added for DUnit test purpose, which turns-on and off the this.testMaxQueryExecutionTime.
-    if (!(MAX_QUERY_EXECUTION_TIME > 0 || this.testMaxQueryExecutionTime > 0 || monitorRequired)) {
+    if (!(MAX_QUERY_EXECUTION_TIME > 0 || monitorRequired)) {
       // if this.testMaxQueryExecutionTime is set, send the QueryMonitor.
       // Else send null, so that the QueryMonitor is turned-off.
       return null;
@@ -4474,13 +4471,11 @@ public class GemFireCacheImpl implements InternalCache, InternalClientCache, Has
 
     // Return the QueryMonitor service if MAX_QUERY_EXECUTION_TIME is set or it is required by the
     // ResourceManager and not overridden by system property.
-    boolean needQueryMonitor =
-        MAX_QUERY_EXECUTION_TIME > 0 || this.testMaxQueryExecutionTime > 0 || monitorRequired;
+    boolean needQueryMonitor = MAX_QUERY_EXECUTION_TIME > 0 || monitorRequired;
     if (needQueryMonitor && this.queryMonitor == null) {
       synchronized (this.queryMonitorLock) {
         if (this.queryMonitor == null) {
-          int maxTime = MAX_QUERY_EXECUTION_TIME > this.testMaxQueryExecutionTime
-              ? MAX_QUERY_EXECUTION_TIME : this.testMaxQueryExecutionTime;
+          int maxTime = MAX_QUERY_EXECUTION_TIME;
 
           if (monitorRequired && maxTime < 0) {
             // this means that the resource manager is being used and we need to monitor query
@@ -4489,7 +4484,7 @@ public class GemFireCacheImpl implements InternalCache, InternalClientCache, Has
             maxTime = FIVE_HOURS;
           }
 
-          this.queryMonitor = new QueryMonitor(maxTime);
+          this.queryMonitor = new QueryMonitor(this, maxTime);
           final LoggingThreadGroup group =
               LoggingThreadGroup.createThreadGroup("QueryMonitor Thread Group", logger);
           Thread qmThread = new Thread(group, this.queryMonitor, "QueryMonitor Thread");
