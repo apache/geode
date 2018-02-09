@@ -81,8 +81,7 @@ public class PutCommand implements GfshCommand {
             false);
       }
     } else {
-      dataResult = putfn.put(key, value, putIfNotExists, keyClass, valueClass,
-          regionPath, cache);
+      dataResult = putfn.put(key, value, putIfNotExists, keyClass, valueClass, regionPath, cache);
     }
     dataResult.setKeyClass(keyClass);
     if (valueClass != null) {
