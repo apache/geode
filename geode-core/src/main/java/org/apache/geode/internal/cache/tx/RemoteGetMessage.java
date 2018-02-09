@@ -13,12 +13,11 @@
  * the License.
  */
 
-package org.apache.geode.internal.cache;
+package org.apache.geode.internal.cache.tx;
 
 import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
-import java.util.Collections;
 import java.util.Set;
 
 import org.apache.logging.log4j.Logger;
@@ -40,6 +39,14 @@ import org.apache.geode.internal.Assert;
 import org.apache.geode.internal.InternalDataSerializer;
 import org.apache.geode.internal.Version;
 import org.apache.geode.internal.cache.BucketRegion.RawValue;
+import org.apache.geode.internal.cache.CachedDeserializableFactory;
+import org.apache.geode.internal.cache.DataLocationException;
+import org.apache.geode.internal.cache.EntryEventImpl;
+import org.apache.geode.internal.cache.KeyInfo;
+import org.apache.geode.internal.cache.LocalRegion;
+import org.apache.geode.internal.cache.RemoteOperationException;
+import org.apache.geode.internal.cache.TXManagerImpl;
+import org.apache.geode.internal.cache.TXStateProxy;
 import org.apache.geode.internal.cache.tier.sockets.ClientProxyMembershipID;
 import org.apache.geode.internal.i18n.LocalizedStrings;
 import org.apache.geode.internal.logging.LogService;
@@ -48,11 +55,8 @@ import org.apache.geode.internal.offheap.OffHeapHelper;
 import org.apache.geode.internal.util.BlobHelper;
 
 /**
- * This message is used as the request for a
- * {@link org.apache.geode.cache.Region#get(Object)}operation. The reply is sent in a
- * {@link org.apache.geode.internal.cache.RemoteGetMessage.GetReplyMessage}.
- *
- * Replicate regions can use this message to send a Get request to another peer.
+ * This message is used as the request for a get operation done in a transaction that is hosted on a
+ * remote member. This messsage sends the get to the remote member.
  *
  * @since GemFire 6.5
  */
@@ -82,17 +86,6 @@ public class RemoteGetMessage extends RemoteOperationMessageWithDirectReply {
   }
 
   @Override
-  public int getProcessorType() {
-    return ClusterDistributionManager.SERIAL_EXECUTOR;
-  }
-
-  @Override
-  public boolean isSevereAlertCompatible() {
-    // allow forced-disconnect processing for all cache op messages
-    return true;
-  }
-
-  @Override
   protected boolean operateOnRegion(final ClusterDistributionManager dm, LocalRegion r,
       long startTime) throws RemoteOperationException {
     if (logger.isTraceEnabled(LogMarker.DM)) {
@@ -103,9 +96,7 @@ public class RemoteGetMessage extends RemoteOperationMessageWithDirectReply {
       assert r.getDataView() instanceof TXStateProxy;
     }
 
-    if (!(r instanceof PartitionedRegion)) { // prs already wait on initialization
-      r.waitOnInitialization(); // bug #43371 - accessing a region before it's initialized
-    }
+    r.waitOnInitialization(); // bug #43371 - accessing a region before it's initialized
 
     RawValue valueBytes;
     Object val = null;
@@ -121,11 +112,9 @@ public class RemoteGetMessage extends RemoteOperationMessageWithDirectReply {
             valueBytes, getProcessorId());
       }
 
-      // r.getPrStats().endPartitionMessagesProcessing(startTime);
       GetReplyMessage.send(getSender(), getProcessorId(), valueBytes, getReplySender(dm));
 
-      // Unless there was an exception thrown, this message handles sending the
-      // response
+      // Unless an exception was thrown, this message handles sending the response
       return false;
     } catch (DistributedSystemDisconnectedException sde) {
       sendReply(getSender(), this.processorId, dm,
@@ -134,9 +123,6 @@ public class RemoteGetMessage extends RemoteOperationMessageWithDirectReply {
                   .toLocalizedString(),
               sde)),
           r, startTime);
-      return false;
-    } catch (PrimaryBucketException pbe) {
-      sendReply(getSender(), getProcessorId(), dm, new ReplyException(pbe), r, startTime);
       return false;
     } catch (DataLocationException e) {
       sendReply(getSender(), getProcessorId(), dm, new ReplyException(e), r, startTime);
@@ -189,12 +175,11 @@ public class RemoteGetMessage extends RemoteOperationMessageWithDirectReply {
   public static RemoteGetResponse send(InternalDistributedMember recipient, LocalRegion r,
       final Object key, final Object aCallbackArgument, ClientProxyMembershipID requestingClient)
       throws RemoteOperationException {
-    Assert.assertTrue(recipient != null, "PRDistribuedGetReplyMessage NULL reply message");
-    RemoteGetResponse p =
-        new RemoteGetResponse(r.getSystem(), Collections.singleton(recipient), key);
+    Assert.assertTrue(recipient != null, "RemoteGetMessage NULL recipient");
+    RemoteGetResponse p = new RemoteGetResponse(r.getSystem(), recipient);
     RemoteGetMessage m = new RemoteGetMessage(recipient, r.getFullPath(), p, key, aCallbackArgument,
         requestingClient);
-    Set failures = r.getDistributionManager().putOutgoing(m);
+    Set<?> failures = r.getDistributionManager().putOutgoing(m);
     if (failures != null && failures.size() > 0) {
       throw new RemoteOperationException(
           LocalizedStrings.GetMessage_FAILED_SENDING_0.toLocalizedString(m));
@@ -332,7 +317,7 @@ public class RemoteGetMessage extends RemoteOperationMessageWithDirectReply {
 
   /**
    * A processor to capture the value returned by
-   * {@link org.apache.geode.internal.cache.RemoteGetMessage.GetReplyMessage}
+   * {@link org.apache.geode.internal.cache.tx.RemoteGetMessage.GetReplyMessage}
    *
    * @since GemFire 5.0
    */
@@ -341,11 +326,9 @@ public class RemoteGetMessage extends RemoteOperationMessageWithDirectReply {
     private volatile GetReplyMessage getReply;
     private volatile boolean returnValueReceived;
     private volatile long start;
-    final Object key;
 
-    public RemoteGetResponse(InternalDistributedSystem ds, Set recipients, Object key) {
-      super(ds, recipients, false);
-      this.key = key;
+    public RemoteGetResponse(InternalDistributedSystem ds, InternalDistributedMember recipient) {
+      super(ds, recipient, false);
     }
 
     @Override
@@ -404,17 +387,9 @@ public class RemoteGetMessage extends RemoteOperationMessageWithDirectReply {
      * @return Object associated with the key that was sent in the get message
      */
     public Object waitForResponse(boolean preferCD) throws RemoteOperationException {
-      try {
-        // waitForRepliesUninterruptibly();
-        waitForCacheException();
-        if (DistributionStats.enableClockStats) {
-          getDistributionManager().getStats().incReplyHandOffTime(this.start);
-        }
-      } catch (RemoteOperationException e) {
-        e.checkKey(key);
-        final String msg = "RemoteGetResponse got RemoteOperationException; rethrowing";
-        logger.debug(msg, e);
-        throw e;
+      waitForRemoteResponse();
+      if (DistributionStats.enableClockStats) {
+        getDistributionManager().getStats().incReplyHandOffTime(this.start);
       }
       if (!this.returnValueReceived) {
         throw new RemoteOperationException(

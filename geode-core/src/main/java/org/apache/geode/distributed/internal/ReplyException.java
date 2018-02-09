@@ -69,11 +69,13 @@ public class ReplyException extends GemFireException {
   }
 
   /**
-   * After expected reply exceptions have already been handled, call this method to handle this
-   * exception as unexpected, i.e. converts to an appropriate runtime exception and throws it. If
-   * there is a a causal exception, then this method will throw that instead of the ReplyException.
+   * Before calling this method any expected "checked" causes should be handled by the caller. If
+   * cause is null or a checked exception (that is not ClassNotFound) then throw an
+   * InternalGemFireException because those should have already been handled. Otherwise
+   * ClassNotFoundException will be handled by throwing SerializationException. RuntimeException and
+   * Error will have their stack fixed up and then are thrown.
    */
-  public void handleAsUnexpected() {
+  public void handleCause() {
     Throwable c = getCause();
     if (c == null) {
       throw new InternalGemFireException(

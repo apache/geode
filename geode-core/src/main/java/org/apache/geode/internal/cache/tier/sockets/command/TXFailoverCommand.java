@@ -86,7 +86,7 @@ public class TXFailoverCommand extends BaseCommand {
       try {
         processor.waitForRepliesUninterruptibly();
       } catch (ReplyException e) {
-        e.handleAsUnexpected();
+        e.handleCause();
       }
       // if hosting member is not null, bootstrap PeerTXStateStub to that member
       // if hosting member is null, rebuild TXCommitMessage from partial TXCommitMessages

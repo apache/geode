@@ -12,7 +12,7 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
-package org.apache.geode.internal.cache;
+package org.apache.geode.internal.cache.tx;
 
 import static org.apache.geode.internal.offheap.annotations.OffHeapIdentifier.ENTRY_EVENT_NEW_VALUE;
 import static org.apache.geode.internal.offheap.annotations.OffHeapIdentifier.ENTRY_EVENT_OLD_VALUE;
@@ -23,7 +23,6 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.Iterator;
 import java.util.Set;
 
 import org.apache.logging.log4j.Logger;
@@ -48,8 +47,17 @@ import org.apache.geode.distributed.internal.membership.InternalDistributedMembe
 import org.apache.geode.internal.Assert;
 import org.apache.geode.internal.InternalDataSerializer;
 import org.apache.geode.internal.NanoTimer;
+import org.apache.geode.internal.cache.CachedDeserializable;
+import org.apache.geode.internal.cache.DistributedCacheOperation;
+import org.apache.geode.internal.cache.DistributedRegion;
+import org.apache.geode.internal.cache.EntryEventImpl;
 import org.apache.geode.internal.cache.EntryEventImpl.NewValueImporter;
 import org.apache.geode.internal.cache.EntryEventImpl.OldValueImporter;
+import org.apache.geode.internal.cache.EventID;
+import org.apache.geode.internal.cache.LocalRegion;
+import org.apache.geode.internal.cache.PartitionedRegion;
+import org.apache.geode.internal.cache.RemoteOperationException;
+import org.apache.geode.internal.cache.VMCachedDeserializable;
 import org.apache.geode.internal.cache.tier.sockets.ClientProxyMembershipID;
 import org.apache.geode.internal.cache.versions.DiskVersionTag;
 import org.apache.geode.internal.cache.versions.VersionTag;
@@ -61,32 +69,15 @@ import org.apache.geode.internal.offheap.annotations.Released;
 import org.apache.geode.internal.offheap.annotations.Unretained;
 
 /**
- * A Replicate Region update message. Meant to be sent only to the peer who hosts transactional
- * data.
+ * This message is used by transactions to update an entry on a transaction hosted on a remote
+ * member. It is also used by non-transactional region updates that need to generate a VersionTag on
+ * a remote member.
  *
  * @since GemFire 6.5
  */
 public class RemotePutMessage extends RemoteOperationMessageWithDirectReply
     implements NewValueImporter, OldValueImporter {
   private static final Logger logger = LogService.getLogger();
-
-  private static final short FLAG_IFNEW = 0x1;
-
-  private static final short FLAG_IFOLD = 0x2;
-
-  private static final short FLAG_REQUIREOLDVALUE = 0x4;
-
-  private static final short FLAG_HASOLDVALUE = 0x8;
-
-  private static final short FLAG_HASDELTA = 0x10;
-
-  private static final short FLAG_HASDELTABYTES = 0x20;
-
-  private static final short FLAG_OLDVALUEISSERIALIZED = 0x40;
-
-  private static final short FLAG_USEORIGINREMOTE = 0x80;
-
-  private static final short FLAG_POSSIBLEDUPLICATE = 0x100;
 
   /** The key associated with the value that must be sent */
   private Object key;
@@ -162,7 +153,7 @@ public class RemotePutMessage extends RemoteOperationMessageWithDirectReply
    */
   private Object expectedOldValue;
 
-  private VersionTag versionTag;
+  private VersionTag<?> versionTag;
 
   private transient InternalDistributedSystem internalDs;
 
@@ -191,8 +182,6 @@ public class RemotePutMessage extends RemoteOperationMessageWithDirectReply
 
   private boolean possibleDuplicate;
 
-  private Collection cacheOpRecipients;
-
   protected static final short IF_NEW = UNRESERVED_FLAGS_START;
   protected static final short IF_OLD = (IF_NEW << 1);
   protected static final short REQUIRED_OLD_VAL = (IF_OLD << 1);
@@ -214,17 +203,16 @@ public class RemotePutMessage extends RemoteOperationMessageWithDirectReply
    */
   public RemotePutMessage() {}
 
-  private RemotePutMessage(Set recipients, String regionPath, DirectReplyProcessor processor,
-      EntryEventImpl event, final long lastModified, boolean ifNew, boolean ifOld,
-      Object expectedOldValue, boolean requireOldValue, boolean useOriginRemote, int processorType,
+  private RemotePutMessage(DistributedMember recipient, String regionPath,
+      DirectReplyProcessor processor, EntryEventImpl event, final long lastModified, boolean ifNew,
+      boolean ifOld, Object expectedOldValue, boolean requireOldValue, boolean useOriginRemote,
       boolean possibleDuplicate) {
-    super(recipients, regionPath, processor);
+    super((InternalDistributedMember) recipient, regionPath, processor);
     this.processor = processor;
     this.requireOldValue = requireOldValue;
     this.expectedOldValue = expectedOldValue;
     this.useOriginRemote = useOriginRemote;
     this.key = event.getKey();
-    this.processorType = processorType;
     this.possibleDuplicate = possibleDuplicate;
 
     // useOriginRemote is true for TX single hops only as of now.
@@ -272,18 +260,19 @@ public class RemotePutMessage extends RemoteOperationMessageWithDirectReply
    * @param onlyPersistent send message to persistent members only
    * @return whether the message was successfully distributed to another member
    */
+  @SuppressWarnings("unchecked")
   public static boolean distribute(EntryEventImpl event, long lastModified, boolean ifNew,
       boolean ifOld, Object expectedOldValue, boolean requireOldValue, boolean onlyPersistent) {
     boolean successful = false;
     DistributedRegion r = (DistributedRegion) event.getRegion();
-    Collection replicates = onlyPersistent
+    Collection<InternalDistributedMember> replicates = onlyPersistent
         ? r.getCacheDistributionAdvisor().adviseInitializedPersistentMembers().keySet()
         : r.getCacheDistributionAdvisor().adviseInitializedReplicates();
     if (replicates.isEmpty()) {
       return false;
     }
     if (replicates.size() > 1) {
-      ArrayList l = new ArrayList(replicates);
+      ArrayList<InternalDistributedMember> l = new ArrayList<>(replicates);
       Collections.shuffle(l);
       replicates = l;
     }
@@ -291,14 +280,12 @@ public class RemotePutMessage extends RemoteOperationMessageWithDirectReply
     if (logger.isDebugEnabled()) {
       logger.debug("performing remote put messaging for {}", event);
     }
-    for (Iterator<InternalDistributedMember> it = replicates.iterator(); it.hasNext();) {
-      InternalDistributedMember replicate = it.next();
+    for (InternalDistributedMember replicate : replicates) {
       try {
         attempts++;
         final boolean posDup = (attempts > 1);
-        RemotePutResponse response =
-            send(replicate, event.getRegion(), event, lastModified, ifNew, ifOld, expectedOldValue,
-                requireOldValue, false, ClusterDistributionManager.SERIAL_EXECUTOR, posDup);
+        RemotePutResponse response = send(replicate, event.getRegion(), event, lastModified, ifNew,
+            ifOld, expectedOldValue, requireOldValue, false, posDup);
         PutResult result = response.waitForResult();
         event.setOldValue(result.oldValue, true/* force */);
         event.setOperation(result.op);
@@ -334,16 +321,8 @@ public class RemotePutMessage extends RemoteOperationMessageWithDirectReply
     return successful;
   }
 
-
-  @Override
-  public boolean isSevereAlertCompatible() {
-    // allow forced-disconnect processing for all cache op messages
-    return true;
-  }
-
   @Override
   protected Object clone() throws CloneNotSupportedException {
-    // TODO Auto-generated method stub
     return super.clone();
   }
 
@@ -364,7 +343,7 @@ public class RemotePutMessage extends RemoteOperationMessageWithDirectReply
       EntryEventImpl event, final long lastModified, boolean ifNew, boolean ifOld,
       Object expectedOldValue, boolean requireOldValue) throws RemoteOperationException {
     return send(recipient, r, event, lastModified, ifNew, ifOld, expectedOldValue, requireOldValue,
-        true, ClusterDistributionManager.PARTITIONED_REGION_EXECUTOR, false);
+        true, false);
   }
 
   /**
@@ -372,56 +351,37 @@ public class RemotePutMessage extends RemoteOperationMessageWithDirectReply
    * the recipient
    *
    * @param recipient the member to which the put message is sent
-   * @param r the PartitionedRegion for which the put was performed
+   * @param r the region for which the put was performed
    * @param event the event prompting this message
    * @param ifNew whether a new entry must be created
    * @param ifOld whether an old entry must be updated (no creates)
    * @param useOriginRemote whether the receiver should consider the event local or remote
-   * @param processorType the type of executor to use (e.g.,
-   *        DistributionManager.PARTITIONED_REGION_EXECUTOR)
-   * @param possibleDuplicate TODO
    * @return the processor used to await acknowledgement that the update was sent, or null to
    *         indicate that no acknowledgement will be sent
    * @throws RemoteOperationException if the peer is no longer available
    */
   public static RemotePutResponse send(DistributedMember recipient, LocalRegion r,
       EntryEventImpl event, final long lastModified, boolean ifNew, boolean ifOld,
-      Object expectedOldValue, boolean requireOldValue, boolean useOriginRemote, int processorType,
+      Object expectedOldValue, boolean requireOldValue, boolean useOriginRemote,
       boolean possibleDuplicate) throws RemoteOperationException {
-    // Assert.assertTrue(recipient != null, "RemotePutMessage NULL recipient"); recipient can be
-    // null for event notifications
-    Set recipients = Collections.singleton(recipient);
 
-    RemotePutResponse processor =
-        new RemotePutResponse(r.getSystem(), recipients, event.getKey(), false);
+    RemotePutResponse processor = new RemotePutResponse(r.getSystem(), recipient, false);
 
-    RemotePutMessage m = new RemotePutMessage(recipients, r.getFullPath(), processor, event,
-        lastModified, ifNew, ifOld, expectedOldValue, requireOldValue, useOriginRemote,
-        processorType, possibleDuplicate);
+    RemotePutMessage m =
+        new RemotePutMessage(recipient, r.getFullPath(), processor, event, lastModified, ifNew,
+            ifOld, expectedOldValue, requireOldValue, useOriginRemote, possibleDuplicate);
     m.setInternalDs(r.getSystem());
     m.setSendDelta(true);
-    m.setTransactionDistributed(r.getCache().getTxManager().isDistributed());
 
     processor.setRemotePutMessage(m);
 
-    Set failures = r.getDistributionManager().putOutgoing(m);
+    Set<?> failures = r.getDistributionManager().putOutgoing(m);
     if (failures != null && failures.size() > 0) {
       throw new RemoteOperationException(
           LocalizedStrings.RemotePutMessage_FAILED_SENDING_0.toLocalizedString(m));
     }
     return processor;
   }
-
-  // public boolean needsDirectAck()
-  // {
-  // return this.directAck;
-  // }
-
-  // public int getProcessorType() {
-  // return DistributionManager.PARTITIONED_REGION_EXECUTOR;
-  // }
-
-
 
   public Object getKey() {
     return this.key;
@@ -536,11 +496,6 @@ public class RemotePutMessage extends RemoteOperationMessageWithDirectReply
   @Override
   public EventID getEventID() {
     return this.eventId;
-  }
-
-  @Override
-  public int getProcessorType() {
-    return this.processorType;
   }
 
   @Override
@@ -674,9 +629,6 @@ public class RemotePutMessage extends RemoteOperationMessageWithDirectReply
       }
 
       try {
-        // the event must show it's true origin for cachewriter invocation
-        // event.setOriginRemote(true);
-        // this.op = r.doCacheWriteBeforePut(event, ifNew); // TODO fix this for bug 37072
         result = r.getDataView().putEntry(event, this.ifNew, this.ifOld, this.expectedOldValue,
             this.requireOldValue, this.lastModified, true);
 
@@ -684,18 +636,14 @@ public class RemotePutMessage extends RemoteOperationMessageWithDirectReply
           r.checkReadiness();
           if (!this.ifNew && !this.ifOld) {
             // no reason to be throwing an exception, so let's retry
-            RemoteOperationException fre = new RemoteOperationException(
+            RemoteOperationException ex = new RemoteOperationException(
                 LocalizedStrings.RemotePutMessage_UNABLE_TO_PERFORM_PUT_BUT_OPERATION_SHOULD_NOT_FAIL_0
                     .toLocalizedString());
-            fre.setHash(key.hashCode());
-            sendReply(getSender(), getProcessorId(), dm, new ReplyException(fre), r, startTime);
+            sendReply(getSender(), getProcessorId(), dm, new ReplyException(ex), r, startTime);
           }
         }
       } catch (CacheWriterException cwe) {
         sendReply(getSender(), getProcessorId(), dm, new ReplyException(cwe), r, startTime);
-        return false;
-      } catch (PrimaryBucketException pbe) {
-        sendReply(getSender(), getProcessorId(), dm, new ReplyException(pbe), r, startTime);
         return false;
       }
 
@@ -713,21 +661,13 @@ public class RemotePutMessage extends RemoteOperationMessageWithDirectReply
 
   protected void sendReply(InternalDistributedMember member, int procId, DistributionManager dm,
       ReplyException ex, LocalRegion pr, long startTime, EntryEventImpl event) {
-    Collection distributedTo = null;
-    if (this.processorId != 0) {
-      // if the sender is waiting for responses from the cache-op message
-      // we have to send it the actual recipients in case it has a different
-      // membership view than this VM
-      distributedTo = this.cacheOpRecipients;
-    }
     PutReplyMessage.send(member, procId, getReplySender(dm), result, getOperation(), ex, this,
         event);
   }
 
-  // override reply message type from PartitionMessage
   @Override
   protected void sendReply(InternalDistributedMember member, int procId, DistributionManager dm,
-      ReplyException ex, LocalRegion pr, long startTime) {
+      ReplyException ex, LocalRegion r, long startTime) {
     PutReplyMessage.send(member, procId, getReplySender(dm), result, getOperation(), ex, this,
         null);
   }
@@ -803,7 +743,7 @@ public class RemotePutMessage extends RemoteOperationMessageWithDirectReply
     /**
      * version tag for concurrency control
      */
-    VersionTag versionTag;
+    VersionTag<?> versionTag;
 
     @Override
     public boolean getInlineProcess() {
@@ -817,7 +757,7 @@ public class RemotePutMessage extends RemoteOperationMessageWithDirectReply
 
     // unit tests may call this constructor
     PutReplyMessage(int processorId, boolean result, Operation op, ReplyException ex,
-        Object oldValue, VersionTag versionTag) {
+        Object oldValue, VersionTag<?> versionTag) {
       super();
       this.op = op;
       this.result = result;
@@ -995,14 +935,12 @@ public class RemotePutMessage extends RemoteOperationMessageWithDirectReply
     private volatile boolean returnValue;
     private volatile Operation op;
     private volatile Object oldValue;
-    private final Object key;
     private RemotePutMessage putMessage;
-    private VersionTag versionTag;
+    private VersionTag<?> versionTag;
 
-    public RemotePutResponse(InternalDistributedSystem ds, Collection recipients, Object key,
+    public RemotePutResponse(InternalDistributedSystem ds, DistributedMember recipient,
         boolean register) {
-      super(ds, recipients, register);
-      this.key = key;
+      super(ds, (InternalDistributedMember) recipient, register);
     }
 
 
@@ -1027,12 +965,7 @@ public class RemotePutMessage extends RemoteOperationMessageWithDirectReply
      * @throws CacheException if the peer generates an error
      */
     public PutResult waitForResult() throws CacheException, RemoteOperationException {
-      try {
-        waitForCacheException();
-      } catch (RemoteOperationException e) {
-        e.checkKey(key);
-        throw e;
-      }
+      waitForRemoteResponse();
       if (this.op == null) {
         throw new RemoteOperationException(
             LocalizedStrings.RemotePutMessage_DID_NOT_RECEIVE_A_VALID_REPLY.toLocalizedString());
@@ -1052,10 +985,10 @@ public class RemotePutMessage extends RemoteOperationMessageWithDirectReply
     public Object oldValue;
 
     /** the concurrency control version tag */
-    public VersionTag versionTag;
+    public VersionTag<?> versionTag;
 
     public PutResult(boolean flag, Operation actualOperation, Object oldValue,
-        VersionTag versionTag) {
+        VersionTag<?> versionTag) {
       this.returnValue = flag;
       this.op = actualOperation;
       this.oldValue = oldValue;

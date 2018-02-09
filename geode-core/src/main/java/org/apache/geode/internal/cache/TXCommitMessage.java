@@ -2000,7 +2000,7 @@ public class TXCommitMessage extends PooledDistributionMessage
           try {
             replProc.waitForRepliesUninterruptibly();
           } catch (ReplyException e) {
-            e.handleAsUnexpected();
+            e.handleCause();
           }
           if (replProc.receivedACommitProcessMessage()) {
             if (logger.isDebugEnabled()) {

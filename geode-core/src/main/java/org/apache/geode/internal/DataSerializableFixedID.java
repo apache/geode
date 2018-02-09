@@ -37,9 +37,9 @@ import org.apache.geode.Instantiator;
  * To add a new DataSerializableFixedID do this following:
  * <ol>
  * <li>Define a constant with an id that is free and put it in <code>DataSerializableFixedID</code>
- * as a "public static final byte". Make sure and update the "unused" comments to no longer mention
- * your new id. If implementing a class used only for tests then there is no need to consume a fixed
- * id and you should use {@link #NO_FIXED_ID}. In this case you can skip steps 3 and 4.
+ * as a "byte". Make sure and update the "unused" comments to no longer mention your new id. If
+ * implementing a class used only for tests then there is no need to consume a fixed id and you
+ * should use {@link #NO_FIXED_ID}. In this case you can skip steps 3 and 4.
  * <li>Define a method in the class that implements <code>DataSerializableFixedID</code> named
  * {@link #getDSFID} that returns the constant from step 1.
  * <li>Define a private static method in {@link DSFIDFactory} that returns an instance of the class
@@ -67,7 +67,7 @@ public interface DataSerializableFixedID extends SerializationVersions {
    *
    * public int getDSFID() { return FOO; }
    *
-   * In DataSerializableFixedId, allocate an ID for the class public static final byte FOO = -54;
+   * In DataSerializableFixedId, allocate an ID for the class byte FOO = -54;
    *
    * In DSFIDFactory, add a case for the new class case FOO: return new FOO(in);
    */
@@ -102,8 +102,8 @@ public interface DataSerializableFixedID extends SerializationVersions {
 
   short CLIENT_TOMBSTONE_MESSAGE = -133;
 
-  short R_REGION_OP_REPLY = -132;
-  short R_REGION_OP = -131;
+  short R_CLEAR_MSG_REPLY = -132;
+  short R_CLEAR_MSG = -131;
 
   short WAIT_FOR_VIEW_INSTALLATION = -130;
 
@@ -270,10 +270,10 @@ public interface DataSerializableFixedID extends SerializationVersions {
   byte ILLEGAL = 0;
 
   // 1 available for reuse. Retired in Geode v1.0
-  // public static final byte JGROUPS_VIEW = 1;
+  // byte JGROUPS_VIEW = 1;
 
   // 2 available for reuse. Retired in Geode v1.0
-  // public static final byte JGROUPS_JOIN_RESP = 2;
+  // byte JGROUPS_JOIN_RESP = 2;
 
   byte PUTALL_VERSIONS_LIST = 3;
 
@@ -403,7 +403,7 @@ public interface DataSerializableFixedID extends SerializationVersions {
   byte PR_MANAGE_BUCKET_REPLY_MESSAGE = 69;
 
   // 70 available for reuse - retired in Geode v1.0
-  // public static final byte IP_ADDRESS = 70;
+  // byte IP_ADDRESS = 70;
 
   /**
    * A header byte meaning that the next element in the stream is a

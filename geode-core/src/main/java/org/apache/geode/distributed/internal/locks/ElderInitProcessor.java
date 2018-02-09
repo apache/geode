@@ -71,7 +71,7 @@ public class ElderInitProcessor extends ReplyProcessor21 {
         try {
           processor.waitForRepliesUninterruptibly();
         } catch (ReplyException e) {
-          e.handleAsUnexpected();
+          e.handleCause();
         }
       }
     }

@@ -13,7 +13,7 @@
  * the License.
  */
 
-package org.apache.geode.internal.cache;
+package org.apache.geode.internal.cache.tx;
 
 import java.io.DataInput;
 import java.io.DataOutput;
@@ -34,6 +34,9 @@ import org.apache.geode.distributed.internal.ReplyMessage;
 import org.apache.geode.distributed.internal.ReplyProcessor21;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
 import org.apache.geode.internal.NanoTimer;
+import org.apache.geode.internal.cache.LocalRegion;
+import org.apache.geode.internal.cache.RegionEntry;
+import org.apache.geode.internal.cache.RemoteOperationException;
 import org.apache.geode.internal.cache.versions.VersionTag;
 import org.apache.geode.internal.i18n.LocalizedStrings;
 import org.apache.geode.internal.logging.LogService;
@@ -42,8 +45,8 @@ import org.apache.geode.internal.logging.log4j.LogMarker;
 /**
  * This message is used to request a VersionTag from a remote member.
  *
- * DistributedRegions with DataPolicy EMPTY, NORMAL, PRELOADED, can use this message to fetch
- * VersionTag for a key.
+ * DistributedRegions with DataPolicy NORMAL, PRELOADED, use this message to fetch VersionTag for a
+ * key when a tx is in progress (see TXEntryState.fetchRemoteVersionTag).
  *
  * @since GemFire 7.0
  */
@@ -90,17 +93,6 @@ public class RemoteFetchVersionMessage extends RemoteOperationMessage {
   }
 
   @Override
-  public boolean isSevereAlertCompatible() {
-    // allow forced-disconnect processing for all cache op messages
-    return true;
-  }
-
-  @Override
-  public int getProcessorType() {
-    return ClusterDistributionManager.SERIAL_EXECUTOR;
-  }
-
-  @Override
   public void fromData(DataInput in) throws IOException, ClassNotFoundException {
     super.fromData(in);
     this.key = DataSerializer.readObject(in);
@@ -115,10 +107,8 @@ public class RemoteFetchVersionMessage extends RemoteOperationMessage {
   @Override
   protected boolean operateOnRegion(ClusterDistributionManager dm, LocalRegion r, long startTime)
       throws RemoteOperationException {
-    if (!(r instanceof PartitionedRegion)) {
-      r.waitOnInitialization();
-    }
-    VersionTag tag;
+    r.waitOnInitialization();
+    VersionTag<?> tag;
     try {
       RegionEntry re = r.getRegionEntry(key);
       if (re == null) {
@@ -145,17 +135,17 @@ public class RemoteFetchVersionMessage extends RemoteOperationMessage {
    *
    */
   public static class FetchVersionReplyMessage extends ReplyMessage {
-    private VersionTag tag;
+    private VersionTag<?> tag;
 
     /** for deserialization */
     public FetchVersionReplyMessage() {}
 
-    private FetchVersionReplyMessage(int processorId, VersionTag tag) {
+    private FetchVersionReplyMessage(int processorId, VersionTag<?> tag) {
       setProcessorId(processorId);
       this.tag = tag;
     }
 
-    public static void send(InternalDistributedMember recipient, int processorId, VersionTag tag,
+    public static void send(InternalDistributedMember recipient, int processorId, VersionTag<?> tag,
         DistributionManager dm) {
       FetchVersionReplyMessage reply = new FetchVersionReplyMessage(processorId, tag);
       reply.setRecipient(recipient);
@@ -211,7 +201,7 @@ public class RemoteFetchVersionMessage extends RemoteOperationMessage {
    */
   public static class FetchVersionResponse extends RemoteOperationResponse {
 
-    private volatile VersionTag tag;
+    private volatile VersionTag<?> tag;
 
     public FetchVersionResponse(InternalDistributedSystem dm, InternalDistributedMember member) {
       super(dm, member, true);
@@ -232,9 +222,9 @@ public class RemoteFetchVersionMessage extends RemoteOperationMessage {
       }
     }
 
-    public VersionTag waitForResponse() throws RemoteOperationException {
+    public VersionTag<?> waitForResponse() throws RemoteOperationException {
       try {
-        waitForCacheException();
+        waitForRemoteResponse();
       } catch (RemoteOperationException e) {
         logger.debug("RemoteFetchVersionMessage threw", e);
         throw e;

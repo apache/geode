@@ -552,7 +552,7 @@ public class FetchKeysMessage extends PartitionMessage {
           throw new ForceReattemptException(
               LocalizedStrings.FetchKeysMessage_PEER_REQUESTS_REATTEMPT.toLocalizedString(), t);
         }
-        e.handleAsUnexpected();
+        e.handleCause();
       }
       if (!this.lastChunkReceived) {
         throw new ForceReattemptException(

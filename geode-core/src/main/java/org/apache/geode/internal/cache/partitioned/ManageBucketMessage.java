@@ -408,7 +408,7 @@ public class ManageBucketMessage extends PartitionMessage {
           logger.debug(msg, t);
           throw (ForceReattemptException) t;
         }
-        e.handleAsUnexpected();
+        e.handleCause();
       }
       return (this.msg != null) && this.msg.acceptedBucket;
     }

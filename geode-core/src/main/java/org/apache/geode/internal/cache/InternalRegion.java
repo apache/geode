@@ -31,6 +31,7 @@ import org.apache.geode.cache.TimeoutException;
 import org.apache.geode.cache.client.internal.ServerRegionProxy;
 import org.apache.geode.cache.query.internal.index.IndexManager;
 import org.apache.geode.distributed.internal.DistributionManager;
+import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
 import org.apache.geode.internal.cache.tier.sockets.CacheClientNotifier;
 import org.apache.geode.internal.cache.tier.sockets.ClientProxyMembershipID;
@@ -146,6 +147,10 @@ public interface InternalRegion extends Region, HasCachePerfStats, RegionEntryCo
   long getEvictionCounter();
 
   RegionMap getRegionMap();
+
+  InternalDistributedSystem getSystem();
+
+  int getRegionSize();
 
   void basicDestroyBeforeRemoval(RegionEntry entry, EntryEventImpl event);
 

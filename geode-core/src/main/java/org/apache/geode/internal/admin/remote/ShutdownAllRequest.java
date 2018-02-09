@@ -102,7 +102,7 @@ public class ShutdownAllRequest extends AdminRequest {
       }
     } catch (ReplyException e) {
       if (!(e.getCause() instanceof CancelException)) {
-        e.handleAsUnexpected();
+        e.handleCause();
       }
     } catch (CancelException ignore) {
       // expected

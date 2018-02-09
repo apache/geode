@@ -12,7 +12,7 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
-package org.apache.geode.internal.cache;
+package org.apache.geode.internal.cache.tx;
 
 import static org.apache.geode.internal.offheap.annotations.OffHeapIdentifier.ENTRY_EVENT_OLD_VALUE;
 
@@ -22,7 +22,6 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.Iterator;
 import java.util.Set;
 
 import org.apache.logging.log4j.Logger;
@@ -34,6 +33,7 @@ import org.apache.geode.cache.CacheWriterException;
 import org.apache.geode.cache.EntryExistsException;
 import org.apache.geode.cache.EntryNotFoundException;
 import org.apache.geode.cache.Operation;
+import org.apache.geode.cache.RegionDestroyedException;
 import org.apache.geode.cache.TransactionDataNotColocatedException;
 import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.distributed.internal.ClusterDistributionManager;
@@ -48,7 +48,16 @@ import org.apache.geode.distributed.internal.membership.InternalDistributedMembe
 import org.apache.geode.internal.Assert;
 import org.apache.geode.internal.InternalDataSerializer;
 import org.apache.geode.internal.NanoTimer;
+import org.apache.geode.internal.cache.AbstractRegion;
+import org.apache.geode.internal.cache.CachedDeserializable;
+import org.apache.geode.internal.cache.DataLocationException;
+import org.apache.geode.internal.cache.DistributedCacheOperation;
+import org.apache.geode.internal.cache.DistributedRegion;
+import org.apache.geode.internal.cache.EntryEventImpl;
 import org.apache.geode.internal.cache.EntryEventImpl.OldValueImporter;
+import org.apache.geode.internal.cache.EventID;
+import org.apache.geode.internal.cache.LocalRegion;
+import org.apache.geode.internal.cache.RemoteOperationException;
 import org.apache.geode.internal.cache.tier.sockets.ClientProxyMembershipID;
 import org.apache.geode.internal.cache.versions.DiskVersionTag;
 import org.apache.geode.internal.cache.versions.VersionTag;
@@ -63,7 +72,11 @@ import org.apache.geode.internal.offheap.annotations.Unretained;
  * different classes for Destroy and Invalidate is to prevent sending an extra bit for every
  * RemoteDestroyMessage to differentiate an invalidate versus a destroy. The assumption is that
  * these operations are used frequently, if they are not then it makes sense to fold the destroy and
- * the invalidate into the same message and use an extra bit to differentiate
+ * the invalidate into the same message and use an extra bit to differentiate.
+ *
+ * This message is used by transactions to destroy an entry on a transaction hosted on a remote
+ * member. It is also used by non-transactional region destroys that need to generate a VersionTag
+ * on a remote member.
  *
  * @since GemFire 6.5
  *
@@ -72,14 +85,6 @@ public class RemoteDestroyMessage extends RemoteOperationMessageWithDirectReply
     implements OldValueImporter {
 
   private static final Logger logger = LogService.getLogger();
-
-  private static final short FLAG_USEORIGINREMOTE = 0x01;
-
-  private static final short FLAG_HASOLDVALUE = 0x02;
-
-  private static final short FLAG_OLDVALUEISSERIALIZED = 0x04;
-
-  private static final short FLAG_POSSIBLEDUPLICATE = 0x08;
 
   /** The key associated with the value that must be sent */
   private Object key;
@@ -107,7 +112,6 @@ public class RemoteDestroyMessage extends RemoteOperationMessageWithDirectReply
   /** whether old value is serialized */
   private boolean oldValueIsSerialized = false;
 
-  /** expectedOldValue used for PartitionedRegion#remove(key, value) */
   private Object expectedOldValue;
 
   private byte[] oldValBytes;
@@ -135,17 +139,16 @@ public class RemoteDestroyMessage extends RemoteOperationMessageWithDirectReply
    */
   public RemoteDestroyMessage() {}
 
-  protected RemoteDestroyMessage(Set recipients, String regionPath, DirectReplyProcessor processor,
-      EntryEventImpl event, Object expectedOldValue, int processorType, boolean useOriginRemote,
-      boolean possibleDuplicate) {
-    super(recipients, regionPath, processor);
+  protected RemoteDestroyMessage(DistributedMember recipient, String regionPath,
+      DirectReplyProcessor processor, EntryEventImpl event, Object expectedOldValue,
+      boolean useOriginRemote, boolean possibleDuplicate) {
+    super((InternalDistributedMember) recipient, regionPath, processor);
     this.expectedOldValue = expectedOldValue;
     this.key = event.getKey();
     this.cbArg = event.getRawCallbackArgument();
     this.op = event.getOperation();
     this.bridgeContext = event.getContext();
     this.eventId = event.getEventId();
-    this.processorType = processorType;
     this.useOriginRemote = useOriginRemote;
     this.possibleDuplicate = possibleDuplicate;
     this.versionTag = event.getVersionTag();
@@ -156,13 +159,6 @@ public class RemoteDestroyMessage extends RemoteOperationMessageWithDirectReply
       this.hasOldValue = true;
       event.exportOldValue(this);
     }
-
-  }
-
-  @Override
-  public boolean isSevereAlertCompatible() {
-    // allow forced-disconnect processing for all cache op messages
-    return true;
   }
 
   private void setOldValBytes(byte[] valBytes) {
@@ -229,31 +225,31 @@ public class RemoteDestroyMessage extends RemoteOperationMessageWithDirectReply
   }
 
 
+  @SuppressWarnings("unchecked")
   public static boolean distribute(EntryEventImpl event, Object expectedOldValue,
       boolean onlyPersistent) {
     boolean successful = false;
     DistributedRegion r = (DistributedRegion) event.getRegion();
-    Collection replicates = onlyPersistent
+    Collection<InternalDistributedMember> replicates = onlyPersistent
         ? r.getCacheDistributionAdvisor().adviseInitializedPersistentMembers().keySet()
         : r.getCacheDistributionAdvisor().adviseInitializedReplicates();
     if (replicates.isEmpty()) {
       return false;
     }
     if (replicates.size() > 1) {
-      ArrayList l = new ArrayList(replicates);
+      ArrayList<InternalDistributedMember> l = new ArrayList<>(replicates);
       Collections.shuffle(l);
       replicates = l;
     }
     int attempts = 0;
-    for (Iterator<InternalDistributedMember> it = replicates.iterator(); it.hasNext();) {
-      InternalDistributedMember replicate = it.next();
+    for (InternalDistributedMember replicate : replicates) {
       try {
         attempts++;
         final boolean posDup = (attempts > 1);
-        RemoteDestroyReplyProcessor processor = send(replicate, event.getRegion(), event,
-            expectedOldValue, ClusterDistributionManager.SERIAL_EXECUTOR, false, posDup);
-        processor.waitForCacheException();
-        VersionTag versionTag = processor.getVersionTag();
+        RemoteDestroyReplyProcessor processor =
+            send(replicate, event.getRegion(), event, expectedOldValue, false, posDup);
+        processor.waitForRemoteResponse();
+        VersionTag<?> versionTag = processor.getVersionTag();
         if (versionTag != null) {
           event.setVersionTag(versionTag);
           if (event.getRegion().getVersionVector() != null) {
@@ -279,10 +275,11 @@ public class RemoteDestroyMessage extends RemoteOperationMessageWithDirectReply
         }
         successful = true; // not a cancel-exception, so don't complain any more about it
 
-      } catch (RemoteOperationException e) {
+      } catch (RegionDestroyedException | RemoteOperationException e) {
         if (logger.isTraceEnabled(LogMarker.DM)) {
           logger.trace(LogMarker.DM,
-              "RemoteDestroyMessage caught an unexpected exception during distribution", e);
+              "RemoteDestroyMessage caught an exception during distribution; retrying to another member",
+              e);
         }
       }
     }
@@ -296,23 +293,17 @@ public class RemoteDestroyMessage extends RemoteOperationMessageWithDirectReply
    * @param recipient the recipient of the message
    * @param r the ReplicateRegion for which the destroy was performed
    * @param event the event causing this message
-   * @param processorType the type of executor to use in processing the message
-   * @param useOriginRemote TODO
    * @return the processor used to await the potential {@link org.apache.geode.cache.CacheException}
    */
   public static RemoteDestroyReplyProcessor send(DistributedMember recipient, LocalRegion r,
-      EntryEventImpl event, Object expectedOldValue, int processorType, boolean useOriginRemote,
+      EntryEventImpl event, Object expectedOldValue, boolean useOriginRemote,
       boolean possibleDuplicate) throws RemoteOperationException {
-    // Assert.assertTrue(recipient != null, "RemoteDestroyMessage NULL recipient"); recipient may be
-    // null for event notification
-    Set recipients = Collections.singleton(recipient);
     RemoteDestroyReplyProcessor p =
-        new RemoteDestroyReplyProcessor(r.getSystem(), recipients, false);
+        new RemoteDestroyReplyProcessor(r.getSystem(), recipient, false);
     p.requireResponse();
-    RemoteDestroyMessage m = new RemoteDestroyMessage(recipients, r.getFullPath(), p, event,
-        expectedOldValue, processorType, useOriginRemote, possibleDuplicate);
-    m.setTransactionDistributed(r.getCache().getTxManager().isDistributed());
-    Set failures = r.getDistributionManager().putOutgoing(m);
+    RemoteDestroyMessage m = new RemoteDestroyMessage(recipient, r.getFullPath(), p, event,
+        expectedOldValue, useOriginRemote, possibleDuplicate);
+    Set<?> failures = r.getDistributionManager().putOutgoing(m);
     if (failures != null && failures.size() > 0) {
       throw new RemoteOperationException(
           LocalizedStrings.RemoteDestroyMessage_FAILED_SENDING_0.toLocalizedString(m));
@@ -320,16 +311,10 @@ public class RemoteDestroyMessage extends RemoteOperationMessageWithDirectReply
     return p;
   }
 
-
-  @Override
-  public int getProcessorType() {
-    return this.processorType;
-  }
-
   /**
-   * This method is called upon receipt and make the desired changes to the PartitionedRegion Note:
-   * It is very important that this message does NOT cause any deadlocks as the sender will wait
-   * indefinitely for the acknowledgement
+   * This method is called upon receipt and make the desired changes to the region. Note: It is very
+   * important that this message does NOT cause any deadlocks as the sender will wait indefinitely
+   * for the acknowledgement
    */
   @Override
   protected boolean operateOnRegion(ClusterDistributionManager dm, LocalRegion r, long startTime)
@@ -412,7 +397,7 @@ public class RemoteDestroyMessage extends RemoteOperationMessageWithDirectReply
     return R_DESTROY_MESSAGE;
   }
 
-  private void sendReply(DistributionManager dm, VersionTag versionTag) {
+  private void sendReply(DistributionManager dm, VersionTag<?> versionTag) {
     DestroyReplyMessage.send(this.getSender(), getReplySender(dm), this.processorId, versionTag);
   }
 
@@ -577,19 +562,19 @@ public class RemoteDestroyMessage extends RemoteOperationMessageWithDirectReply
     private static final byte HAS_VERSION = 0x01;
     private static final byte PERSISTENT = 0x02;
 
-    private VersionTag versionTag;
+    private VersionTag<?> versionTag;
 
     /** DSFIDFactory constructor */
     public DestroyReplyMessage() {}
 
     static void send(InternalDistributedMember recipient, ReplySender dm, int procId,
-        VersionTag versionTag) {
+        VersionTag<?> versionTag) {
       Assert.assertTrue(recipient != null, "DestroyReplyMessage NULL recipient");
       DestroyReplyMessage m = new DestroyReplyMessage(recipient, procId, versionTag);
       dm.putOutgoing(m);
     }
 
-    DestroyReplyMessage(InternalDistributedMember recipient, int procId, VersionTag versionTag) {
+    DestroyReplyMessage(InternalDistributedMember recipient, int procId, VersionTag<?> versionTag) {
       this.setProcessorId(procId);
       this.setRecipient(recipient);
       this.versionTag = versionTag;
@@ -597,7 +582,6 @@ public class RemoteDestroyMessage extends RemoteOperationMessageWithDirectReply
 
     @Override
     public boolean getInlineProcess() {
-      // TODO Auto-generated method stub
       return true;
     }
 
@@ -683,17 +667,18 @@ public class RemoteDestroyMessage extends RemoteOperationMessageWithDirectReply
 
   }
   static class RemoteDestroyReplyProcessor extends RemoteOperationResponse {
-    VersionTag versionTag;
+    VersionTag<?> versionTag;
 
-    RemoteDestroyReplyProcessor(InternalDistributedSystem ds, Set recipients, Object key) {
-      super(ds, recipients, false);
+    RemoteDestroyReplyProcessor(InternalDistributedSystem ds, DistributedMember recipient,
+        Object key) {
+      super(ds, (InternalDistributedMember) recipient, false);
     }
 
-    void setResponse(VersionTag versionTag) {
+    void setResponse(VersionTag<?> versionTag) {
       this.versionTag = versionTag;
     }
 
-    VersionTag getVersionTag() {
+    VersionTag<?> getVersionTag() {
       return this.versionTag;
     }
   }

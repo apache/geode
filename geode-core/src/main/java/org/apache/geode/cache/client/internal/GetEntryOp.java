@@ -54,7 +54,7 @@ public class GetEntryOp {
     protected Object processResponse(Message msg) throws Exception {
       EntrySnapshot snap = (EntrySnapshot) processObjResponse(msg, "getEntry");
       if (snap != null) {
-        snap.region = region;
+        snap.setRegion(region);
       }
       return snap;
     }

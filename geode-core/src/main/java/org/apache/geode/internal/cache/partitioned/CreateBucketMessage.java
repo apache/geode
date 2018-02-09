@@ -352,7 +352,7 @@ public class CreateBucketMessage extends PartitionMessage {
         if (t instanceof PartitionedRegionStorageException) {
           throw new PartitionedRegionStorageException(t.getMessage(), t);
         }
-        e.handleAsUnexpected();
+        e.handleCause();
       }
       CreateBucketReplyMessage message = this.msg;
       if (message == null) {

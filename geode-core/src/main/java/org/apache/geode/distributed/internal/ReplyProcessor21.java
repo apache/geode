@@ -346,7 +346,7 @@ public class ReplyProcessor21 implements MembershipListener {
    * manager, it is used. Otherwise, we expect a distribution manager has been set with
    * setDistributionManager and we'll use that
    */
-  protected DistributionManager getDistributionManager() {
+  public DistributionManager getDistributionManager() {
     try {
       DistributionManager result = this.system.getDistributionManager();
       if (result == null) {

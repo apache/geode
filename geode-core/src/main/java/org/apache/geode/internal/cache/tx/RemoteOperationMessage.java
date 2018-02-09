@@ -12,13 +12,12 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
-package org.apache.geode.internal.cache;
+package org.apache.geode.internal.cache.tx;
 
 import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
 import java.util.Collection;
-import java.util.Set;
 
 import org.apache.logging.log4j.Logger;
 
@@ -26,8 +25,6 @@ import org.apache.geode.CancelException;
 import org.apache.geode.DataSerializer;
 import org.apache.geode.SystemFailure;
 import org.apache.geode.cache.CacheClosedException;
-import org.apache.geode.cache.CacheException;
-import org.apache.geode.cache.LowMemoryException;
 import org.apache.geode.cache.Operation;
 import org.apache.geode.cache.RegionDestroyedException;
 import org.apache.geode.distributed.DistributedSystemDisconnectedException;
@@ -42,26 +39,26 @@ import org.apache.geode.distributed.internal.ReplyMessage;
 import org.apache.geode.distributed.internal.ReplyProcessor21;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
 import org.apache.geode.internal.Assert;
-import org.apache.geode.internal.cache.partitioned.PutMessage;
+import org.apache.geode.internal.cache.InternalCache;
+import org.apache.geode.internal.cache.LocalRegion;
+import org.apache.geode.internal.cache.RemoteOperationException;
+import org.apache.geode.internal.cache.TXManagerImpl;
+import org.apache.geode.internal.cache.TXStateProxy;
+import org.apache.geode.internal.cache.TransactionMessage;
 import org.apache.geode.internal.i18n.LocalizedStrings;
 import org.apache.geode.internal.logging.LogService;
-import org.apache.geode.internal.logging.log4j.LocalizedMessage;
 import org.apache.geode.internal.logging.log4j.LogMarker;
 
 /**
- * The base PartitionedRegion message type upon which other messages should be based.
+ * The base message type upon which other messages that need to be sent to a remote member that is
+ * hosting a transaction should be based. Note that, currently, some of these message are not used
+ * by transactions. This is a misuse of these messages and needs to be corrected.
  *
  * @since GemFire 6.5
  */
 public abstract class RemoteOperationMessage extends DistributionMessage
     implements MessageWithReply, TransactionMessage {
   private static final Logger logger = LogService.getLogger();
-
-  /** default exception to ensure a false-positive response is never returned */
-  static final ForceReattemptException UNHANDLED_EXCEPTION =
-      (ForceReattemptException) new ForceReattemptException(
-          LocalizedStrings.PartitionMessage_UNKNOWN_EXCEPTION.toLocalizedString())
-              .fillInStackTrace();
 
   protected int processorId;
 
@@ -88,8 +85,12 @@ public abstract class RemoteOperationMessage extends DistributionMessage
 
   public RemoteOperationMessage(InternalDistributedMember recipient, String regionPath,
       ReplyProcessor21 processor) {
+    this(regionPath, processor);
     Assert.assertTrue(recipient != null, "RemoteMesssage recipient can not be null");
     setRecipient(recipient);
+  }
+
+  private RemoteOperationMessage(String regionPath, ReplyProcessor21 processor) {
     this.regionPath = regionPath;
     this.processorId = processor == null ? 0 : processor.getProcessorId();
     if (processor != null && isSevereAlertCompatible()) {
@@ -100,33 +101,7 @@ public abstract class RemoteOperationMessage extends DistributionMessage
     if (txState != null && txState.isMemberIdForwardingRequired()) {
       this.txMemberId = txState.getOriginatingMember();
     }
-    setIfTransactionDistributed();
-  }
-
-  public RemoteOperationMessage(Set recipients, String regionPath, ReplyProcessor21 processor) {
-    setRecipients(recipients);
-    this.regionPath = regionPath;
-    this.processorId = processor == null ? 0 : processor.getProcessorId();
-    if (processor != null && isSevereAlertCompatible()) {
-      processor.enableSevereAlertProcessing();
-    }
-    this.txUniqId = TXManagerImpl.getCurrentTXUniqueId();
-    TXStateProxy txState = TXManagerImpl.getCurrentTXState();
-    if (txState != null && txState.isMemberIdForwardingRequired()) {
-      this.txMemberId = txState.getOriginatingMember();
-    }
-    setIfTransactionDistributed();
-  }
-
-  /**
-   * Copy constructor that initializes the fields declared in this class
-   */
-  public RemoteOperationMessage(RemoteOperationMessage other) {
-    this.regionPath = other.regionPath;
-    this.processorId = other.processorId;
-    this.txUniqId = other.getTXUniqId();
-    this.txMemberId = other.getTXMemberId();
-    this.isTransactionDistributed = other.isTransactionDistributed;
+    setIfTransactionDistributed(processor);
   }
 
   /**
@@ -143,7 +118,7 @@ public abstract class RemoteOperationMessage extends DistributionMessage
 
   @Override
   public int getProcessorType() {
-    return ClusterDistributionManager.PARTITIONED_REGION_EXECUTOR;
+    return ClusterDistributionManager.SERIAL_EXECUTOR;
   }
 
   /**
@@ -165,8 +140,7 @@ public abstract class RemoteOperationMessage extends DistributionMessage
   /**
    * check to see if the cache is closing
    */
-  public boolean checkCacheClosing(ClusterDistributionManager dm) {
-    InternalCache cache = dm.getCache();
+  public boolean checkCacheClosing(InternalCache cache) {
     return cache == null || cache.isClosed();
   }
 
@@ -185,8 +159,7 @@ public abstract class RemoteOperationMessage extends DistributionMessage
    * necessarily in that order. Note: Any hang in this message may cause a distributed deadlock for
    * those threads waiting for an acknowledgement.
    *
-   * @throws PartitionedRegionException if the region does not exist (typically, if it has been
-   *         destroyed)
+   * @throws RegionDestroyedException if the region does not exist
    */
   @Override
   public void process(final ClusterDistributionManager dm) {
@@ -196,29 +169,23 @@ public abstract class RemoteOperationMessage extends DistributionMessage
     long startTime = 0;
     try {
       InternalCache cache = getCache(dm);
-      if (checkCacheClosing(dm) || checkDSClosing(dm)) {
+      if (checkCacheClosing(cache) || checkDSClosing(dm)) {
+        String message = "Remote cache is closed: " + dm.getId();
         if (cache == null) {
-          thr = new CacheClosedException(LocalizedStrings.PartitionMessage_REMOTE_CACHE_IS_CLOSED_0
-              .toLocalizedString(dm.getId()));
+          thr = new CacheClosedException(message);
         } else {
-          thr = cache
-              .getCacheClosedException(LocalizedStrings.PartitionMessage_REMOTE_CACHE_IS_CLOSED_0
-                  .toLocalizedString(dm.getId()));
+          thr = cache.getCacheClosedException(message);
         }
         return;
       }
       r = getRegionByPath(cache);
       if (r == null && failIfRegionMissing()) {
-        // if the distributed system is disconnecting, don't send a reply saying
-        // the partitioned region can't be found (bug 36585)
         thr = new RegionDestroyedException(
             LocalizedStrings.RemoteOperationMessage_0_COULD_NOT_FIND_REGION_1
                 .toLocalizedString(dm.getDistributionManagerId(), regionPath),
             regionPath);
         return; // reply sent in finally block below
       }
-
-      thr = UNHANDLED_EXCEPTION;
 
       // [bruce] r might be null here, so we have to go to the cache instance to get the txmgr
       TXManagerImpl txMgr = getTXManager(cache);
@@ -238,10 +205,8 @@ public abstract class RemoteOperationMessage extends DistributionMessage
           txMgr.unmasquerade(tx);
         }
       }
-      thr = null;
-
-    } catch (RemoteOperationException fre) {
-      thr = fre;
+    } catch (RegionDestroyedException | RemoteOperationException ex) {
+      thr = ex;
     } catch (DistributedSystemDisconnectedException se) {
       // bug 37026: this is too noisy...
       // throw new CacheClosedException("remote system shutting down");
@@ -251,15 +216,8 @@ public abstract class RemoteOperationMessage extends DistributionMessage
       if (logger.isDebugEnabled()) {
         logger.debug("shutdown caught, abandoning message: {}", se.getMessage(), se);
       }
-    } catch (RegionDestroyedException rde) {
-      // [bruce] RDE does not always mean that the sender's region is also
-      // destroyed, so we must send back an exception. If the sender's
-      // region is also destroyed, who cares if we send it an exception
-      // if (pr != null && pr.isClosed) {
-      thr = new ForceReattemptException(LocalizedStrings.PartitionMessage_REGION_IS_DESTROYED_IN_0
-          .toLocalizedString(dm.getDistributionManagerId()), rde);
-      // }
     } catch (VirtualMachineError err) {
+      thr = new RemoteOperationException("VirtualMachineError", err);
       SystemFailure.initiateFailure(err);
       // If this ever returns, rethrow the error. We're poisoned
       // now, so don't let this thread continue.
@@ -270,18 +228,17 @@ public abstract class RemoteOperationMessage extends DistributionMessage
       // _still_ a possibility that you are dealing with a cascading
       // error condition, so you also need to check to see if the JVM
       // is still usable:
-      SystemFailure.checkFailure();
-      // log the exception at fine level if there is no reply to the message
-      thr = null;
+      if (sendReply) {
+        thr = new RemoteOperationException("system failure", SystemFailure.getFailure());
+      }
+      checkForSystemFailure();
       if (sendReply) {
         if (!checkDSClosing(dm)) {
           thr = t;
         } else {
           // don't pass arbitrary runtime exceptions and errors back if this
           // cache/vm is closing
-          thr = new ForceReattemptException(
-              LocalizedStrings.PartitionMessage_DISTRIBUTED_SYSTEM_IS_DISCONNECTING
-                  .toLocalizedString());
+          thr = new RemoteOperationException("cache is closing");
         }
       }
       if (logger.isTraceEnabled(LogMarker.DM) && (t instanceof RuntimeException)) {
@@ -303,12 +260,16 @@ public abstract class RemoteOperationMessage extends DistributionMessage
     }
   }
 
+  protected void checkForSystemFailure() {
+    SystemFailure.checkFailure();
+  }
+
   TXManagerImpl getTXManager(InternalCache cache) {
     return cache.getTxManager();
   }
 
   LocalRegion getRegionByPath(InternalCache internalCache) {
-    return (LocalRegion) internalCache.getRegionByPathForProcessing(this.regionPath);
+    return (LocalRegion) internalCache.getRegionByPathForProcessing(getRegionPath());
   }
 
   InternalCache getCache(final ClusterDistributionManager dm) {
@@ -318,18 +279,10 @@ public abstract class RemoteOperationMessage extends DistributionMessage
   /**
    * Send a generic ReplyMessage. This is in a method so that subclasses can override the reply
    * message type
-   *
-   * @param pr the Partitioned Region for the message whose statistics are incremented
-   * @param startTime the start time of the operation in nanoseconds
-   * @see PutMessage#sendReply
    */
   protected void sendReply(InternalDistributedMember member, int procId, DistributionManager dm,
-      ReplyException ex, LocalRegion pr, long startTime) {
-    // if (pr != null && startTime > 0) {
-    // pr.getPrStats().endRemoteOperationMessagesProcessing(startTime);
-    // }
-
-    ReplyMessage.send(member, procId, ex, getReplySender(dm), pr != null && pr.isInternalRegion());
+      ReplyException ex, LocalRegion r, long startTime) {
+    ReplyMessage.send(member, procId, ex, getReplySender(dm), r != null && r.isInternalRegion());
   }
 
   /**
@@ -342,16 +295,6 @@ public abstract class RemoteOperationMessage extends DistributionMessage
   protected boolean failIfRegionMissing() {
     return true;
   }
-
-
-  /**
-   * return a new reply processor for this class, for use in relaying a response. This <b>must</b>
-   * be an instance method so subclasses can override it properly.
-   */
-  RemoteOperationResponse createReplyProcessor(PartitionedRegion r, Set recipients) {
-    return new RemoteOperationResponse(r.getSystem(), recipients);
-  }
-
 
   protected abstract boolean operateOnRegion(ClusterDistributionManager dm, LocalRegion r,
       long startTime) throws RemoteOperationException;
@@ -515,29 +458,23 @@ public abstract class RemoteOperationMessage extends DistributionMessage
    * capturing any CacheException thrown by the recipient and handle it as an expected exception.
    *
    * @since GemFire 6.5
-   * @see #waitForCacheException()
+   * @see #waitForRemoteResponse()
    */
   public static class RemoteOperationResponse extends DirectReplyProcessor {
-    /**
-     * The exception thrown when the recipient does not reply
-     */
-    volatile ForceReattemptException prce;
+
+    private volatile RemoteOperationException memberDepartedException;
 
     /**
      * Whether a response has been received
      */
-    volatile boolean responseReceived;
+    private volatile boolean responseReceived;
 
     /**
      * whether a response is required
      */
-    boolean responseRequired;
+    private boolean responseRequired;
 
-    public RemoteOperationResponse(InternalDistributedSystem dm, Collection initMembers) {
-      this(dm, initMembers, true);
-    }
-
-    public RemoteOperationResponse(InternalDistributedSystem dm, Collection initMembers,
+    public RemoteOperationResponse(InternalDistributedSystem dm, Collection<?> initMembers,
         boolean register) {
       super(dm, initMembers);
       if (register) {
@@ -569,73 +506,53 @@ public abstract class RemoteOperationMessage extends DistributionMessage
         final InternalDistributedMember id, final boolean crashed) {
       if (id != null) {
         if (removeMember(id, true)) {
-          this.prce = new ForceReattemptException(
-              LocalizedStrings.PartitionMessage_PARTITIONRESPONSE_GOT_MEMBERDEPARTED_EVENT_FOR_0_CRASHED_1
-                  .toLocalizedString(id, crashed));
+          this.memberDepartedException = new RemoteOperationException(
+              "memberDeparted event for <" + id + "> crashed = " + crashed);
         }
         checkIfDone();
       } else {
-        Exception e = new Exception(
-            LocalizedStrings.PartitionMessage_MEMBERDEPARTED_GOT_NULL_MEMBERID.toLocalizedString());
-        logger.info(LocalizedMessage.create(
-            LocalizedStrings.PartitionMessage_MEMBERDEPARTED_GOT_NULL_MEMBERID_CRASHED_0, crashed),
-            e);
+        Exception e = new Exception("memberDeparted got null memberId");
+        logger.info("memberDeparted got null memberId crashed=" + crashed, e);
       }
+    }
+
+    public RemoteOperationException getMemberDepartedException() {
+      return this.memberDepartedException;
     }
 
     /**
      * Waits for the response from the {@link RemoteOperationMessage}'s recipient
      *
-     * @throws CacheException if the recipient threw a cache exception during message processing
+     * @throws RemoteOperationException if the member we waited for a response from departed
+     * @throws RemoteOperationException if a response was required and not received
+     * @throws RemoteOperationException if the ReplyException was caused by a
+     *         RemoteOperationException
+     * @throws RemoteOperationException if the remote side's cache was closed
      */
-    public void waitForCacheException()
-        throws CacheException, RemoteOperationException, PrimaryBucketException {
+    public void waitForRemoteResponse() throws RemoteOperationException {
       try {
         waitForRepliesUninterruptibly();
-        if (this.prce != null || (this.responseRequired && !this.responseReceived)) {
-          throw new RemoteOperationException(
-              LocalizedStrings.PartitionMessage_ATTEMPT_FAILED.toLocalizedString(), this.prce);
+        RemoteOperationException ex = getMemberDepartedException();
+        if (ex != null) {
+          throw ex;
+        }
+        if (this.responseRequired && !this.responseReceived) {
+          throw new RemoteOperationException("response required but not received");
         }
       } catch (ReplyException e) {
         Throwable t = e.getCause();
-        if (t instanceof CacheException) {
-          throw (CacheException) t;
-        } else if (t instanceof RemoteOperationException) {
-          RemoteOperationException ft = (RemoteOperationException) t;
-          // See FetchEntriesMessage, which can marshal a ForceReattempt
-          // across to the sender
-          RemoteOperationException fre = new RemoteOperationException(
-              LocalizedStrings.PartitionMessage_PEER_REQUESTS_REATTEMPT.toLocalizedString(), t);
-          if (ft.hasHash()) {
-            fre.setHash(ft.getHash());
-          }
-          throw fre;
-        } else if (t instanceof PrimaryBucketException) {
-          // See FetchEntryMessage, GetMessage, InvalidateMessage,
-          // PutMessage
-          // which can marshal a ForceReattemptacross to the sender
-          throw new PrimaryBucketException(
-              LocalizedStrings.PartitionMessage_PEER_FAILED_PRIMARY_TEST.toLocalizedString(), t);
-        } else if (t instanceof RegionDestroyedException) {
-          throw (RegionDestroyedException) t;
+        if (t instanceof RemoteOperationException) {
+          // no need to create a local RemoteOperationException to wrap the one from the reply
+          throw (RemoteOperationException) t;
         } else if (t instanceof CancelException) {
           if (logger.isDebugEnabled()) {
             logger.debug(
-                "RemoteOperationResponse got CacheClosedException from {}, throwing ForceReattemptException",
+                "RemoteOperationResponse got CacheClosedException from {}, throwing RemoteOperationException",
                 e.getSender(), t);
           }
-          throw new RemoteOperationException(
-              LocalizedStrings.PartitionMessage_PARTITIONRESPONSE_GOT_REMOTE_CACHECLOSEDEXCEPTION
-                  .toLocalizedString(),
-              t);
-        } else if (t instanceof LowMemoryException) {
-          if (logger.isDebugEnabled()) {
-            logger.debug("RemoteOperationResponse re-throwing remote LowMemoryException from {}",
-                e.getSender(), t);
-          }
-          throw (LowMemoryException) t;
+          throw new RemoteOperationException("remote cache was closed", t);
         }
-        e.handleAsUnexpected();
+        e.handleCause();
       }
     }
 
@@ -655,18 +572,14 @@ public abstract class RemoteOperationMessage extends DistributionMessage
   /*
    * For Distributed Tx
    */
-  public void setTransactionDistributed(boolean isDistTx) {
-    this.isTransactionDistributed = isDistTx;
-  }
-
-  /*
-   * For Distributed Tx
-   */
-  private void setIfTransactionDistributed() {
-    InternalCache cache = GemFireCacheImpl.getInstance();
-    if (cache != null) {
-      if (cache.getTxManager() != null) {
-        this.isTransactionDistributed = cache.getTxManager().isDistributed();
+  private void setIfTransactionDistributed(ReplyProcessor21 processor) {
+    if (processor != null) {
+      DistributionManager distributionManager = processor.getDistributionManager();
+      if (distributionManager != null) {
+        InternalCache cache = distributionManager.getCache();
+        if (cache != null && cache.getTxManager() != null) {
+          this.isTransactionDistributed = cache.getTxManager().isDistributed();
+        }
       }
     }
   }

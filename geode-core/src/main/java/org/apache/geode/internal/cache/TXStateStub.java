@@ -93,7 +93,7 @@ public abstract class TXStateStub implements TXStateInterface {
     } catch (ReliableReplyException e) {
       throw new TransactionDataNodeHasDepartedException(e);
     } catch (ReplyException e) {
-      e.handleAsUnexpected();
+      e.handleCause();
     } catch (InterruptedException ignored) {
     }
   }
@@ -675,7 +675,7 @@ public abstract class TXStateStub implements TXStateInterface {
    */
   @Override
   public Set getRegionKeysForIteration(LocalRegion currRegion) {
-    return getTXRegionStub(currRegion).getRegionKeysForIteration(currRegion);
+    return getTXRegionStub(currRegion).getRegionKeysForIteration();
   }
 
 

@@ -28,6 +28,7 @@ import org.apache.geode.distributed.internal.ReliableReplyProcessor21;
 import org.apache.geode.distributed.internal.ReplyException;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
 import org.apache.geode.internal.cache.TXRemoteCommitMessage.RemoteCommitResponse;
+import org.apache.geode.internal.cache.tx.BucketTXRegionStub;
 import org.apache.geode.internal.cache.tx.DistributedTXRegionStub;
 import org.apache.geode.internal.cache.tx.PartitionedTXRegionStub;
 import org.apache.geode.internal.cache.tx.TXRegionStub;
@@ -174,6 +175,8 @@ public class PeerTXStateStub extends TXStateStub {
       // GEODE-3744 Local region should not be involved in a transaction on a PeerTXStateStub
       throw new TransactionException(
           "Local region " + region + " should not participate in a transaction not hosted locally");
+    } else if (region.isUsedForPartitionedRegionBucket()) {
+      stub = new BucketTXRegionStub(this, (BucketRegion) region);
     } else {
       // This is a dist region
       stub = new DistributedTXRegionStub(this, (DistributedRegion) region);

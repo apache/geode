@@ -634,7 +634,7 @@ public class FetchBulkEntriesMessage extends PartitionMessage {
           throw new ForceReattemptException(
               LocalizedStrings.FetchEntriesMessage_PEER_REQUESTS_REATTEMPT.toLocalizedString(), t);
         }
-        e.handleAsUnexpected();
+        e.handleCause();
       }
       if (!this.lastChunkReceived) {
         throw new ForceReattemptException(

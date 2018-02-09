@@ -12,7 +12,7 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
-package org.apache.geode.internal.cache;
+package org.apache.geode.internal.cache.tx;
 
 import java.io.ByteArrayInputStream;
 import java.io.DataInputStream;
@@ -23,7 +23,8 @@ import org.junit.experimental.categories.Category;
 import org.apache.geode.cache.Operation;
 import org.apache.geode.internal.HeapDataOutputStream;
 import org.apache.geode.internal.cache.EntryEventImpl.OldValueImporter;
-import org.apache.geode.internal.cache.RemotePutMessage.PutReplyMessage;
+import org.apache.geode.internal.cache.OldValueImporterTestBase;
+import org.apache.geode.internal.cache.tx.RemotePutMessage.PutReplyMessage;
 import org.apache.geode.test.junit.categories.UnitTest;
 
 @Category(UnitTest.class)

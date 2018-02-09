@@ -12,24 +12,20 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
-package org.apache.geode.internal.cache;
-
-import java.util.Set;
+package org.apache.geode.internal.cache.tx;
 
 import org.apache.geode.distributed.internal.DirectReplyProcessor;
 import org.apache.geode.distributed.internal.DistributionManager;
 import org.apache.geode.distributed.internal.DistributionMessage;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
+import org.apache.geode.internal.cache.DirectReplyMessage;
 
 /**
- * Used for partitioned region messages which support direct ack responses. Direct ack should be
- * used for message with a response from a single member, or responses which are small.
+ * Used for remote operation messages which support direct ack responses. Direct ack should be used
+ * for message with a response from a single member, or responses which are small.
  *
  * Messages that extend this class *must* reply using the ReplySender returned by
  * {@link DistributionMessage#getReplySender(DistributionManager)}
- *
- * Additionally, if the ReplyProcessor used for this message extends PartitionResponse, it should
- * pass false for the register parameter of the PartitionResponse.
  *
  */
 public abstract class RemoteOperationMessageWithDirectReply extends RemoteOperationMessage
@@ -43,27 +39,11 @@ public abstract class RemoteOperationMessageWithDirectReply extends RemoteOperat
     super();
   }
 
-
-  public RemoteOperationMessageWithDirectReply(Set recipients, String regionPath,
-      DirectReplyProcessor processor) {
-    super(recipients, regionPath, processor);
-    this.processor = processor;
-  }
-
   public RemoteOperationMessageWithDirectReply(InternalDistributedMember recipient,
       String regionPath, DirectReplyProcessor processor) {
     super(recipient, regionPath, processor);
     this.processor = processor;
   }
-
-  /**
-   * @param original
-   */
-  public RemoteOperationMessageWithDirectReply(RemoteOperationMessageWithDirectReply original) {
-    super(original);
-    this.processor = original.processor;
-  }
-
 
   public boolean supportsDirectAck() {
     return true;

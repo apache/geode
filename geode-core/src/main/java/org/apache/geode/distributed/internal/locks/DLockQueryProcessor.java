@@ -82,7 +82,7 @@ public class DLockQueryProcessor extends ReplyProcessor21 {
     try {
       processor.waitForRepliesUninterruptibly();
     } catch (ReplyException e) {
-      e.handleAsUnexpected();
+      e.handleCause();
     }
 
     if (processor.reply == null) {

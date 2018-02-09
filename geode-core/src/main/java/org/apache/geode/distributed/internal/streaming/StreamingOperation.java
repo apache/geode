@@ -106,7 +106,7 @@ public abstract class StreamingOperation {
       }
       throw ex;
     } catch (ReplyException e) {
-      e.handleAsUnexpected();
+      e.handleCause();
       // throws exception
     }
   }

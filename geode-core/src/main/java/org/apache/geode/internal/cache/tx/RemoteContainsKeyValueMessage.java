@@ -12,12 +12,11 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
-package org.apache.geode.internal.cache;
+package org.apache.geode.internal.cache.tx;
 
 import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
-import java.util.Collections;
 import java.util.Set;
 
 import org.apache.logging.log4j.Logger;
@@ -35,6 +34,9 @@ import org.apache.geode.distributed.internal.ReplyProcessor21;
 import org.apache.geode.distributed.internal.ReplySender;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
 import org.apache.geode.internal.Assert;
+import org.apache.geode.internal.cache.LocalRegion;
+import org.apache.geode.internal.cache.PartitionedRegion;
+import org.apache.geode.internal.cache.RemoteOperationException;
 import org.apache.geode.internal.i18n.LocalizedStrings;
 import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.internal.logging.log4j.LogMarker;
@@ -77,25 +79,18 @@ public class RemoteContainsKeyValueMessage extends RemoteOperationMessageWithDir
    */
   public static RemoteContainsKeyValueResponse send(InternalDistributedMember recipient,
       LocalRegion r, Object key, boolean valueCheck) throws RemoteOperationException {
-    Assert.assertTrue(recipient != null,
-        "PRDistribuedRemoteContainsKeyValueMessage NULL reply message");
+    Assert.assertTrue(recipient != null, "recipient can not be NULL");
 
     RemoteContainsKeyValueResponse p =
-        new RemoteContainsKeyValueResponse(r.getSystem(), Collections.singleton(recipient), key);
+        new RemoteContainsKeyValueResponse(r.getSystem(), recipient, key);
     RemoteContainsKeyValueMessage m =
         new RemoteContainsKeyValueMessage(recipient, r.getFullPath(), p, key, valueCheck);
 
-    Set failures = r.getDistributionManager().putOutgoing(m);
+    Set<?> failures = r.getDistributionManager().putOutgoing(m);
     if (failures != null && failures.size() > 0) {
       throw new RemoteOperationException(LocalizedStrings.FAILED_SENDING_0.toLocalizedString(m));
     }
     return p;
-  }
-
-  @Override
-  public boolean isSevereAlertCompatible() {
-    // allow forced-disconnect processing for all cache op messages
-    return true;
   }
 
   @Override
@@ -241,7 +236,7 @@ public class RemoteContainsKeyValueMessage extends RemoteOperationMessageWithDir
 
   /**
    * A processor to capture the value returned by
-   * {@link org.apache.geode.internal.cache.RemoteContainsKeyValueMessage.RemoteContainsKeyValueReplyMessage}
+   * {@link org.apache.geode.internal.cache.tx.RemoteContainsKeyValueMessage.RemoteContainsKeyValueReplyMessage}
    *
    * @since GemFire 6.5
    */
@@ -250,9 +245,9 @@ public class RemoteContainsKeyValueMessage extends RemoteOperationMessageWithDir
     private volatile boolean returnValueReceived;
     final Object key;
 
-    public RemoteContainsKeyValueResponse(InternalDistributedSystem ds, Set recipients,
-        Object key) {
-      super(ds, recipients, false);
+    public RemoteContainsKeyValueResponse(InternalDistributedSystem ds,
+        InternalDistributedMember recipient, Object key) {
+      super(ds, recipient, false);
       this.key = key;
     }
 
@@ -276,17 +271,12 @@ public class RemoteContainsKeyValueMessage extends RemoteOperationMessageWithDir
     /**
      * @return Set the keys associated with the ReplicateRegion of the
      *         {@link RemoteContainsKeyValueMessage}
-     * @throws PrimaryBucketException if the instance of the bucket that received this operation was
-     *         not primary
      */
-    public boolean waitForContainsResult() throws PrimaryBucketException, RemoteOperationException {
+    public boolean waitForContainsResult() throws RemoteOperationException {
       try {
-        waitForCacheException();
-      } catch (RemoteOperationException rce) {
-        rce.checkKey(key);
-        throw rce;
+        waitForRemoteResponse();
       } catch (CacheException ce) {
-        logger.debug("ContainsKeyValueResponse got remote CacheException; forcing reattempt.", ce);
+        logger.debug("ContainsKeyValueResponse got remote CacheException", ce);
         throw new RemoteOperationException(
             LocalizedStrings.RemoteContainsKeyValueMessage_CONTAINSKEYVALUERESPONSE_GOT_REMOTE_CACHEEXCEPTION
                 .toLocalizedString(),

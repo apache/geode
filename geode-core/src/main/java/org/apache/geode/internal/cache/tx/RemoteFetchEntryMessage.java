@@ -12,19 +12,17 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
-package org.apache.geode.internal.cache;
+package org.apache.geode.internal.cache.tx;
 
 import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
-import java.util.Collections;
 import java.util.Set;
 
 import org.apache.logging.log4j.Logger;
 
 import org.apache.geode.DataSerializable;
 import org.apache.geode.DataSerializer;
-import org.apache.geode.admin.OperationCancelledException;
 import org.apache.geode.cache.CacheException;
 import org.apache.geode.cache.EntryNotFoundException;
 import org.apache.geode.cache.Region;
@@ -40,6 +38,11 @@ import org.apache.geode.distributed.internal.membership.InternalDistributedMembe
 import org.apache.geode.internal.Assert;
 import org.apache.geode.internal.InternalDataSerializer;
 import org.apache.geode.internal.NanoTimer;
+import org.apache.geode.internal.cache.EntrySnapshot;
+import org.apache.geode.internal.cache.KeyInfo;
+import org.apache.geode.internal.cache.LocalRegion;
+import org.apache.geode.internal.cache.NonLocalRegionEntry;
+import org.apache.geode.internal.cache.RemoteOperationException;
 import org.apache.geode.internal.i18n.LocalizedStrings;
 import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.internal.logging.log4j.LogMarker;
@@ -47,7 +50,7 @@ import org.apache.geode.internal.logging.log4j.LogMarker;
 /**
  * This message is used as the request for a
  * {@link org.apache.geode.cache.Region#getEntry(Object)}operation. The reply is sent in a
- * {@link org.apache.geode.internal.cache.RemoteFetchEntryMessage.FetchEntryReplyMessage}.
+ * {@link org.apache.geode.internal.cache.tx.RemoteFetchEntryMessage.FetchEntryReplyMessage}.
  *
  * @since GemFire 5.1
  */
@@ -72,18 +75,17 @@ public class RemoteFetchEntryMessage extends RemoteOperationMessage {
    *
    * @param recipient the member that the getEntry message is sent to
    * @param r the Region for which getEntry was performed upon
-   * @param key the object to which the value should be feteched
+   * @param key the object to which the value should be fetched
    * @return the processor used to fetch the returned value associated with the key
    * @throws RemoteOperationException if the peer is no longer available
    */
   public static FetchEntryResponse send(InternalDistributedMember recipient, LocalRegion r,
       final Object key) throws RemoteOperationException {
     Assert.assertTrue(recipient != null, "RemoteFetchEntryMessage NULL recipient");
-    FetchEntryResponse p =
-        new FetchEntryResponse(r.getSystem(), Collections.singleton(recipient), r, key);
+    FetchEntryResponse p = new FetchEntryResponse(r.getSystem(), recipient, r, key);
     RemoteFetchEntryMessage m = new RemoteFetchEntryMessage(recipient, r.getFullPath(), p, key);
 
-    Set failures = r.getDistributionManager().putOutgoing(m);
+    Set<?> failures = r.getDistributionManager().putOutgoing(m);
     if (failures != null && failures.size() > 0) {
       throw new RemoteOperationException(
           LocalizedStrings.RemoteFetchEntryMessage_FAILED_SENDING_0.toLocalizedString(m));
@@ -93,39 +95,25 @@ public class RemoteFetchEntryMessage extends RemoteOperationMessage {
   }
 
   @Override
-  public boolean isSevereAlertCompatible() {
-    // allow forced-disconnect processing for all cache op messages
-    return true;
-  }
-
-  @Override
   protected boolean operateOnRegion(ClusterDistributionManager dm, LocalRegion r, long startTime)
       throws RemoteOperationException {
-    // RemoteFetchEntryMessage is used in refreshing client caches during interest list recovery,
-    // so don't be too verbose or hydra tasks may time out
-
-    if (!(r instanceof PartitionedRegion)) {
-      r.waitOnInitialization(); // bug #43371 - accessing a region before it's initialized
-    }
+    r.waitOnInitialization(); // bug #43371 - accessing a region before it's initialized
     EntrySnapshot val;
     try {
       final KeyInfo keyInfo = r.getKeyInfo(key);
-      Region.Entry re = r.getDataView().getEntry(keyInfo, r, true);
+      Region.Entry<?, ?> re = r.getDataView().getEntry(keyInfo, r, true);
       if (re == null) {
         r.checkEntryNotFound(key);
       }
       NonLocalRegionEntry nlre = new NonLocalRegionEntry(re, r);
       LocalRegion dataReg = r.getDataRegionForRead(keyInfo);
       val = new EntrySnapshot(nlre, dataReg, r, false);
-      // r.getPrStats().endRemoteOperationMessagesProcessing(startTime);
       FetchEntryReplyMessage.send(getSender(), getProcessorId(), val, dm, null);
     } catch (TransactionException tex) {
       FetchEntryReplyMessage.send(getSender(), getProcessorId(), null, dm, new ReplyException(tex));
     } catch (EntryNotFoundException enfe) {
       FetchEntryReplyMessage.send(getSender(), getProcessorId(), null, dm, new ReplyException(
           LocalizedStrings.RemoteFetchEntryMessage_ENTRY_NOT_FOUND.toLocalizedString(), enfe));
-    } catch (PrimaryBucketException pbe) {
-      FetchEntryReplyMessage.send(getSender(), getProcessorId(), null, dm, new ReplyException(pbe));
     }
 
     // Unless there was an exception thrown, this message handles sending the
@@ -244,15 +232,8 @@ public class RemoteFetchEntryMessage extends RemoteOperationMessage {
       super.fromData(in);
       boolean nullEntry = in.readBoolean();
       if (!nullEntry) {
-        // since the Entry object shares state with the PartitionedRegion,
-        // we have to find the region and ask it to create a new Entry instance
-        // to be populated from the DataInput
-        FetchEntryResponse processor =
-            (FetchEntryResponse) ReplyProcessor21.getProcessor(this.processorId);
-        if (processor == null) {
-          throw new OperationCancelledException("This operation was cancelled (null processor)");
-        }
-        this.value = new EntrySnapshot(in, processor.region);
+        // EntrySnapshot.setRegion is called later
+        this.value = new EntrySnapshot(in, null);
       }
     }
 
@@ -268,7 +249,7 @@ public class RemoteFetchEntryMessage extends RemoteOperationMessage {
 
   /**
    * A processor to capture the value returned by
-   * {@link org.apache.geode.internal.cache.RemoteFetchEntryMessage.FetchEntryReplyMessage}
+   * {@link org.apache.geode.internal.cache.tx.RemoteFetchEntryMessage.FetchEntryReplyMessage}
    *
    */
   public static class FetchEntryResponse extends RemoteOperationResponse {
@@ -277,9 +258,9 @@ public class RemoteFetchEntryMessage extends RemoteOperationMessage {
     final LocalRegion region;
     final Object key;
 
-    public FetchEntryResponse(InternalDistributedSystem ds, Set recipients, LocalRegion theRegion,
-        Object key) {
-      super(ds, recipients);
+    public FetchEntryResponse(InternalDistributedSystem ds, InternalDistributedMember recipient,
+        LocalRegion theRegion, Object key) {
+      super(ds, recipient);
       this.region = theRegion;
       this.key = key;
     }
@@ -290,6 +271,9 @@ public class RemoteFetchEntryMessage extends RemoteOperationMessage {
         if (msg instanceof FetchEntryReplyMessage) {
           FetchEntryReplyMessage reply = (FetchEntryReplyMessage) msg;
           this.returnValue = reply.getValue();
+          if (this.returnValue != null) {
+            this.returnValue.setRegion(this.region);
+          }
           if (logger.isTraceEnabled(LogMarker.DM)) {
             logger.trace(LogMarker.DM, "FetchEntryResponse return value is {}", this.returnValue);
           }
@@ -301,26 +285,16 @@ public class RemoteFetchEntryMessage extends RemoteOperationMessage {
 
     /**
      * @return Object associated with the key that was sent in the get message
-     * @throws EntryNotFoundException
      * @throws RemoteOperationException if the peer is no longer available
-     * @throws EntryNotFoundException
      */
     public EntrySnapshot waitForResponse() throws EntryNotFoundException, RemoteOperationException {
       try {
-        // waitForRepliesUninterruptibly();
-        waitForCacheException();
-      } catch (RemoteOperationException e) {
-        e.checkKey(key);
-        final String msg = "FetchEntryResponse got remote RemoteOperationException; rethrowing";
-        logger.debug(msg, e);
-        throw e;
+        waitForRemoteResponse();
       } catch (EntryNotFoundException | TransactionException e) {
         throw e;
       } catch (CacheException ce) {
-        logger.debug("FetchEntryResponse got remote CacheException; forcing reattempt.", ce);
-        throw new RemoteOperationException(
-            LocalizedStrings.RemoteFetchEntryMessage_FETCHENTRYRESPONSE_GOT_REMOTE_CACHEEXCEPTION_FORCING_REATTEMPT
-                .toLocalizedString(),
+        logger.debug("FetchEntryResponse failed with remote CacheException", ce);
+        throw new RemoteOperationException("FetchEntryResponse failed with remote CacheException",
             ce);
       }
       return this.returnValue;
