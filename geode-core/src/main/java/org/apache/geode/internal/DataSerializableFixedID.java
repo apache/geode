@@ -239,7 +239,9 @@ public interface DataSerializableFixedID extends SerializationVersions {
 
   byte LATEST_LAST_ACCESS_TIME_MESSAGE = -20;
 
-  // IDs -19 .. -16 are not used
+  public static final byte REMOVE_CACHESERVER_PROFILE_UPDATE = -19;
+
+  // IDs -18 .. -16 are not used
 
   /**
    * A header byte meaning that the next element in the stream is a <code>VMIdProfile</code>.

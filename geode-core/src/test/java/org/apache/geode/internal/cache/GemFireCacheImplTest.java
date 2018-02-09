@@ -30,6 +30,8 @@ import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
 import org.apache.geode.cache.CacheClosedException;
+import org.apache.geode.cache.server.CacheServer;
+import org.apache.geode.cache.wan.GatewayReceiver;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.internal.SystemTimer;
 import org.apache.geode.internal.cache.control.InternalResourceManager;
@@ -214,6 +216,27 @@ public class GemFireCacheImplTest {
     assertThat(e.getMessage()).isEqualTo("message");
     assertThat(e.getCause()).isEqualTo(disconnectCause);
   }
+
+  @Test
+  public void removeGatewayReceiverShouldRemoveFromReceiversList() {
+    GatewayReceiver receiver = mock(GatewayReceiver.class);
+    cache = GemFireCacheImpl.create(distributedSystem, cacheConfig);
+    cache.addGatewayReceiver(receiver);
+    assertEquals(1, cache.getGatewayReceivers().size());
+    cache.removeGatewayReceiver(receiver);
+    assertEquals(0, cache.getGatewayReceivers().size());
+  }
+
+
+  @Test
+  public void removeFromCacheServerShouldRemoveFromCacheServersList() {
+    cache = GemFireCacheImpl.create(distributedSystem, cacheConfig);
+    CacheServer cacheServer = cache.addCacheServer(false);
+    assertEquals(1, cache.getCacheServers().size());
+    cache.removeCacheServer(cacheServer);
+    assertEquals(0, cache.getCacheServers().size());
+  }
+
 
   @Test
   public void testIsMisConfigured() {

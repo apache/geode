@@ -307,7 +307,11 @@ public interface InternalCache extends Cache, Extensible<Cache>, CacheTime {
 
   void addGatewayReceiver(GatewayReceiver receiver);
 
+  void removeGatewayReceiver(GatewayReceiver receiver);
+
   CacheServer addCacheServer(boolean isGatewayReceiver);
+
+  boolean removeCacheServer(CacheServer cacheServer);
 
   /**
    * A test-hook allowing you to alter the cache setting established by

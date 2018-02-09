@@ -3812,6 +3812,12 @@ public class GemFireCacheImpl implements InternalCache, InternalClientCache, Has
     return cacheServer;
   }
 
+  public boolean removeCacheServer(CacheServer cacheServer) {
+    boolean removed = this.allCacheServers.remove(cacheServer);
+    sendRemoveCacheServerProfileMessage();
+    return removed;
+  }
+
   @Override
   public void addGatewaySender(GatewaySender sender) {
     if (isClient()) {
@@ -3897,6 +3903,21 @@ public class GemFireCacheImpl implements InternalCache, InternalClientCache, Has
         newReceivers.addAll(this.allGatewayReceivers);
       }
       newReceivers.add(receiver);
+      this.allGatewayReceivers = Collections.unmodifiableSet(newReceivers);
+    }
+  }
+
+  public void removeGatewayReceiver(GatewayReceiver receiver) {
+    if (isClient()) {
+      throw new UnsupportedOperationException("operation is not supported on a client cache");
+    }
+    this.stopper.checkCancelInProgress(null);
+    synchronized (this.allGatewayReceiversLock) {
+      Set<GatewayReceiver> newReceivers = new HashSet<>(this.allGatewayReceivers.size() + 1);
+      if (!this.allGatewayReceivers.isEmpty()) {
+        newReceivers.addAll(this.allGatewayReceivers);
+      }
+      newReceivers.remove(receiver);
       this.allGatewayReceivers = Collections.unmodifiableSet(newReceivers);
     }
   }
@@ -4549,6 +4570,29 @@ public class GemFireCacheImpl implements InternalCache, InternalClientCache, Has
   private void sendAddCacheServerProfileMessage() {
     Set otherMembers = this.dm.getOtherDistributionManagerIds();
     AddCacheServerProfileMessage message = new AddCacheServerProfileMessage();
+    message.operateOnLocalCache(this);
+    if (!otherMembers.isEmpty()) {
+      if (logger.isDebugEnabled()) {
+        logger.debug("Sending add cache server profile message to other members.");
+      }
+      ReplyProcessor21 replyProcessor = new ReplyProcessor21(this.dm, otherMembers);
+      message.setRecipients(otherMembers);
+      message.processorId = replyProcessor.getProcessorId();
+      this.dm.putOutgoing(message);
+
+      // Wait for replies.
+      try {
+        replyProcessor.waitForReplies();
+      } catch (InterruptedException ignore) {
+        Thread.currentThread().interrupt();
+      }
+    }
+  }
+
+
+  private void sendRemoveCacheServerProfileMessage() {
+    Set otherMembers = this.dm.getOtherDistributionManagerIds();
+    RemoveCacheServerProfileMessage message = new RemoveCacheServerProfileMessage();
     message.operateOnLocalCache(this);
     if (!otherMembers.isEmpty()) {
       if (logger.isDebugEnabled()) {

@@ -129,6 +129,10 @@ public class ManagementListener implements ResourceEventsListener {
         GatewayReceiver createdRecv = (GatewayReceiver) resource;
         adapter.handleGatewayReceiverCreate(createdRecv);
         break;
+      case GATEWAYRECEIVER_DESTROY:
+        GatewayReceiver destroyedRecv = (GatewayReceiver) resource;
+        adapter.handleGatewayReceiverDestroy(destroyedRecv);
+        break;
       case GATEWAYRECEIVER_START:
         GatewayReceiver startedRecv = (GatewayReceiver) resource;
         adapter.handleGatewayReceiverStart(startedRecv);
