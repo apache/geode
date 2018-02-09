@@ -31,6 +31,7 @@ import org.springframework.scheduling.support.CronSequenceGenerator;
 
 import org.apache.geode.GemFireConfigException;
 import org.apache.geode.annotations.Experimental;
+import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.CacheClosedException;
 import org.apache.geode.cache.Declarable;
 import org.apache.geode.cache.GemFireCache;
@@ -39,7 +40,6 @@ import org.apache.geode.cache.control.RebalanceResults;
 import org.apache.geode.cache.partition.PartitionMemberInfo;
 import org.apache.geode.distributed.DistributedLockService;
 import org.apache.geode.distributed.internal.locks.DLockService;
-import org.apache.geode.internal.cache.GemFireCacheImpl;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.cache.PartitionedRegion;
 import org.apache.geode.internal.cache.partitioned.InternalPRInfo;
@@ -144,6 +144,11 @@ public class AutoBalancer implements Declarable {
     this.scheduler = scheduler == null ? new CronScheduler() : scheduler;
     this.auditor = auditor == null ? new SizeBasedOOBAuditor(this.cacheFacade) : auditor;
     this.clock = clock == null ? new SystemClockTimeProvider() : clock;
+  }
+
+  @Override
+  public void setCache(Cache cache) {
+    this.cacheFacade.setCache(cache);
   }
 
   @Override
@@ -443,21 +448,14 @@ public class AutoBalancer implements Declarable {
     }
 
     InternalCache getCache() {
-      // TODO: delete this double-checking
-      if (cache == null) {
-        synchronized (this) {
-          if (cache == null) {
-            cache = GemFireCacheImpl.getInstance();
-            if (cache == null) {
-              throw new IllegalStateException("Missing cache instance.");
-            }
-          }
-        }
+      InternalCache result = cache;
+      if (result == null) {
+        throw new IllegalStateException("Missing cache instance.");
       }
-      if (cache.isClosed()) {
+      if (result.isClosed()) {
         throw new CacheClosedException();
       }
-      return cache;
+      return result;
     }
 
     @Override
@@ -501,6 +499,11 @@ public class AutoBalancer implements Declarable {
 
       return dls;
     }
+
+    @Override
+    public void setCache(Cache cache) {
+      this.cache = (InternalCache) cache;
+    }
   }
 
   private static class SystemClockTimeProvider implements TimeProvider {
@@ -528,6 +531,8 @@ public class AutoBalancer implements Declarable {
 
   interface CacheOperationFacade {
     boolean acquireAutoBalanceLock();
+
+    void setCache(Cache cache);
 
     DistributedLockService getDLS();
 

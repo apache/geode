@@ -86,6 +86,7 @@ public class AutoBalancerIntegrationJUnitTest {
   public void testAutoRebalaceStatsOnLockSuccess() throws InterruptedException {
     assertEquals(0, cache.getInternalResourceManager().getStats().getAutoRebalanceAttempts());
     AutoBalancer balancer = new AutoBalancer();
+    balancer.setCache(cache);
     balancer.getOOBAuditor().execute();
     assertEquals(1, cache.getInternalResourceManager().getStats().getAutoRebalanceAttempts());
   }
@@ -95,6 +96,7 @@ public class AutoBalancerIntegrationJUnitTest {
     acquireLockInDifferentThread(1);
     assertEquals(0, cache.getInternalResourceManager().getStats().getAutoRebalanceAttempts());
     AutoBalancer balancer = new AutoBalancer();
+    balancer.setCache(cache);
     balancer.getOOBAuditor().execute();
     assertEquals(0, cache.getInternalResourceManager().getStats().getAutoRebalanceAttempts());
   }
@@ -102,27 +104,27 @@ public class AutoBalancerIntegrationJUnitTest {
   @Test
   public void testAutoBalanceStatUpdate() {
     assertEquals(0, cache.getInternalResourceManager().getStats().getAutoRebalanceAttempts());
-    new GeodeCacheFacade().incrementAttemptCounter();
+    new GeodeCacheFacade(cache).incrementAttemptCounter();
     assertEquals(1, cache.getInternalResourceManager().getStats().getAutoRebalanceAttempts());
   }
 
   @Test
   public void testLockSuccess() throws InterruptedException {
     acquireLockInDifferentThread(1);
-    DistributedLockService dls = new GeodeCacheFacade().getDLS();
+    DistributedLockService dls = new GeodeCacheFacade(cache).getDLS();
     assertFalse(dls.lock(AutoBalancer.AUTO_BALANCER_LOCK, 0, -1));
   }
 
   @Test
   public void canReacquireLock() throws InterruptedException {
     acquireLockInDifferentThread(2);
-    DistributedLockService dls = new GeodeCacheFacade().getDLS();
+    DistributedLockService dls = new GeodeCacheFacade(cache).getDLS();
     assertFalse(dls.lock(AutoBalancer.AUTO_BALANCER_LOCK, 0, -1));
   }
 
   @Test
   public void testLockAlreadyTakenElsewhere() throws InterruptedException {
-    DistributedLockService dls = new GeodeCacheFacade().getDLS();
+    DistributedLockService dls = new GeodeCacheFacade(cache).getDLS();
     assertTrue(dls.lock(AutoBalancer.AUTO_BALANCER_LOCK, 0, -1));
 
     final AtomicBoolean success = new AtomicBoolean(true);
@@ -130,7 +132,7 @@ public class AutoBalancerIntegrationJUnitTest {
     Thread thread = new Thread(new Runnable() {
       @Override
       public void run() {
-        CacheOperationFacade cacheFacade = new GeodeCacheFacade();
+        CacheOperationFacade cacheFacade = new GeodeCacheFacade(cache);
         success.set(cacheFacade.acquireAutoBalanceLock());
       }
     });
@@ -191,7 +193,7 @@ public class AutoBalancerIntegrationJUnitTest {
     Thread thread = new Thread(new Runnable() {
       @Override
       public void run() {
-        CacheOperationFacade cacheFacade = new GeodeCacheFacade();
+        CacheOperationFacade cacheFacade = new GeodeCacheFacade(cache);
         for (int i = 0; i < num; i++) {
           boolean result = cacheFacade.acquireAutoBalanceLock();
           if (result) {
