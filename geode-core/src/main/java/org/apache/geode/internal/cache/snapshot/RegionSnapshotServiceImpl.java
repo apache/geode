@@ -47,13 +47,13 @@ import org.apache.geode.cache.snapshot.SnapshotOptions;
 import org.apache.geode.cache.snapshot.SnapshotOptions.SnapshotFormat;
 import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.distributed.internal.DistributionConfig;
-import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.internal.DSCODE;
 import org.apache.geode.internal.InternalEntity;
 import org.apache.geode.internal.cache.CachePerfStats;
 import org.apache.geode.internal.cache.CachedDeserializable;
 import org.apache.geode.internal.cache.CachedDeserializableFactory;
 import org.apache.geode.internal.cache.InternalCache;
+import org.apache.geode.internal.cache.InternalRegion;
 import org.apache.geode.internal.cache.LocalDataSet;
 import org.apache.geode.internal.cache.LocalRegion;
 import org.apache.geode.internal.cache.Token;
@@ -401,7 +401,7 @@ public class RegionSnapshotServiceImpl<K, V> implements RegionSnapshotService<K,
     if (pool != null) {
       return new ClientExporter<>(PoolManager.find(pool));
 
-    } else if (InternalDistributedSystem.getAnyInstance().isLoner()
+    } else if (((InternalRegion) region).getCache().getInternalDistributedSystem().isLoner()
         || region.getAttributes().getDataPolicy().equals(DataPolicy.NORMAL)
         || region.getAttributes().getDataPolicy().equals(DataPolicy.PRELOADED)
         || region instanceof LocalDataSet || (options.isParallelMode()
