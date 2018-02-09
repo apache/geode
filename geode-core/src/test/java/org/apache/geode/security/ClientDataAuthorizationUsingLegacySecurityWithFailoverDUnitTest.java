@@ -409,7 +409,12 @@ public class ClientDataAuthorizationUsingLegacySecurityWithFailoverDUnitTest {
     props.setProperty(UserPasswordAuthInit.PASSWORD, permission);
     props.setProperty(SECURITY_CLIENT_AUTH_INIT,
         UserPasswordAuthInit.class.getCanonicalName() + ".create");
-    props.setProperty(SERIALIZABLE_OBJECT_FILTER, UsernamePrincipal.class.getCanonicalName());
+    // We can't sent the object filter property versions before 1.4.0 because
+    // it's not a valid property, but we must set it in 140 and above to allow
+    // serialization of UsernamePrincipal
+    if (clientVersion.compareTo("140") >= 0) {
+      props.setProperty(SERIALIZABLE_OBJECT_FILTER, UsernamePrincipal.class.getCanonicalName());
+    }
     return props;
   }
 
