@@ -1473,7 +1473,7 @@ public class CacheCreation implements InternalCache {
 
   @Override
   public InternalDistributedSystem getInternalDistributedSystem() {
-    return InternalDistributedSystem.getAnyInstance();
+    throw new UnsupportedOperationException(LocalizedStrings.SHOULDNT_INVOKE.toLocalizedString());
   }
 
   @Override
