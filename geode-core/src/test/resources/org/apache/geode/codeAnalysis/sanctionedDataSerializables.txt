@@ -2136,3 +2136,8 @@ org/apache/geode/redis/internal/DoubleWrapper,2
 fromData,9,2a2bb80004b50002b1
 toData,9,2ab400022bb80003b1
 
+org/apache/geode/internal/cache/RemoveCacheServerProfileMessage,2
+fromData,16,2a2bb700322a2bb900330100b50008b1
+toData,16,2a2bb700302b2ab40008b900310200b1
+
+

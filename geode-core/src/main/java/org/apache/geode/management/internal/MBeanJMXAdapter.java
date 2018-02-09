@@ -176,7 +176,6 @@ public class MBeanJMXAdapter implements ManagementConstants {
   public void unregisterMBean(ObjectName objectName) {
 
     try {
-
       if (!isRegistered(objectName)) {
         return;
       }

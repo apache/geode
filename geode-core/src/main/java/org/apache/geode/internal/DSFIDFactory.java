@@ -241,6 +241,7 @@ import org.apache.geode.internal.cache.PartitionRegionConfig;
 import org.apache.geode.internal.cache.PreferBytesCachedDeserializable;
 import org.apache.geode.internal.cache.RegionEventImpl;
 import org.apache.geode.internal.cache.ReleaseClearLockMessage;
+import org.apache.geode.internal.cache.RemoveCacheServerProfileMessage;
 import org.apache.geode.internal.cache.RoleEventImpl;
 import org.apache.geode.internal.cache.SearchLoadAndWriteProcessor;
 import org.apache.geode.internal.cache.ServerPingMessage;
@@ -576,6 +577,7 @@ public class DSFIDFactory implements DataSerializableFixedID {
     registerDSFID(REMOTE_PUTALL_MESSAGE, RemotePutAllMessage.class);
     registerDSFID(VERSION_TAG, VMVersionTag.class);
     registerDSFID(ADD_CACHESERVER_PROFILE_UPDATE, AddCacheServerProfileMessage.class);
+    registerDSFID(REMOVE_CACHESERVER_PROFILE_UPDATE, RemoveCacheServerProfileMessage.class);
     registerDSFID(SERVER_INTEREST_REGISTRATION_MESSAGE, ServerInterestRegistrationMessage.class);
     registerDSFID(FILTER_PROFILE_UPDATE, FilterProfile.OperationMessage.class);
     registerDSFID(PR_GET_MESSAGE, GetMessage.class);

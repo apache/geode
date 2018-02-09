@@ -479,6 +479,31 @@ public class ManagementAdapter {
   }
 
   /**
+   * Handles Gateway receiver destroy
+   *
+   * @param recv specific gateway receiver
+   * @throws ManagementException
+   */
+  public void handleGatewayReceiverDestroy(GatewayReceiver recv) throws ManagementException {
+    if (!isServiceInitialised("handleGatewayReceiverDestroy")) {
+      return;
+    }
+
+    GatewayReceiverMBean mbean = (GatewayReceiverMBean) service.getLocalGatewayReceiverMXBean();
+    GatewayReceiverMBeanBridge bridge = mbean.getBridge();
+
+    bridge.destroyServer();
+    ObjectName objectName = (MBeanJMXAdapter
+        .getGatewayReceiverMBeanName(internalCache.getDistributedSystem().getDistributedMember()));
+
+    service.unregisterMBean(objectName);
+    Notification notification = new Notification(JMXNotificationType.GATEWAY_RECEIVER_DESTROYED,
+        memberSource, SequenceNumber.next(), System.currentTimeMillis(),
+        ManagementConstants.GATEWAY_RECEIVER_DESTROYED_PREFIX);
+    memberLevelNotifEmitter.sendNotification(notification);
+  }
+
+  /**
    * Handles Gateway receiver creation
    *
    * @param recv specific gateway receiver

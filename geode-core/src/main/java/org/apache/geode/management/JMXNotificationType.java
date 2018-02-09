@@ -218,6 +218,15 @@ public interface JMXNotificationType {
       DistributionConfig.GEMFIRE_PREFIX + "distributedsystem.gateway.receiver.stopped";
 
   /**
+   * Notification type which indicates that a gateway receiver is destroyed <BR>
+   * The value of this type string is
+   * <CODE>gemfire.distributedsystem.gateway.receiver.destroyed</CODE>.
+   */
+  public static final String GATEWAY_RECEIVER_DESTROYED =
+      DistributionConfig.GEMFIRE_PREFIX + "distributedsystem.gateway.receiver.destroyed";
+
+
+  /**
    * Notification type which indicates that locator is started <BR>
    * The value of this type string is <CODE>gemfire.distributedsystem.locator.started</CODE>.
    */
