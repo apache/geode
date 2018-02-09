@@ -2877,14 +2877,14 @@ public class GemFireCacheImpl implements InternalCache, InternalClientCache, Has
     if (!isClient()) {
       throw new UnsupportedOperationException();
     }
-    PoolFactory poolFactory = this.poolFactory;
+    PoolFactory defaultPoolFactory = this.poolFactory;
 
     Pool pool = null;
     // create the pool if it does not already exist
-    if (poolFactory == null) {
+    if (defaultPoolFactory == null) {
       Map<String, Pool> pools = PoolManager.getAll();
       if (pools.isEmpty()) {
-        poolFactory = createDefaultPF();
+        defaultPoolFactory = createDefaultPF();
       } else if (pools.size() == 1) {
         // otherwise use a singleton.
         pool = pools.values().iterator().next();
@@ -2897,14 +2897,15 @@ public class GemFireCacheImpl implements InternalCache, InternalClientCache, Has
         }
       }
     } else {
-      addLocalHostAsServer(poolFactory);
+      addLocalHostAsServer(defaultPoolFactory);
 
       // look for a pool that already exists that is compatible with
       // our PoolFactory.
       // If we don't find one we will create a new one that meets our needs.
       Map<String, Pool> pools = PoolManager.getAll();
       for (Pool p : pools.values()) {
-        if (((PoolImpl) p).isCompatible(((PoolFactoryImpl) poolFactory).getPoolAttributes())) {
+        if (((PoolImpl) p)
+            .isCompatible(((PoolFactoryImpl) defaultPoolFactory).getPoolAttributes())) {
           pool = p;
           break;
         }
@@ -2919,7 +2920,7 @@ public class GemFireCacheImpl implements InternalCache, InternalClientCache, Has
         poolName = DEFAULT_POOL_NAME + count;
         count++;
       }
-      pool = poolFactory.create(poolName);
+      pool = defaultPoolFactory.create(poolName);
     }
     this.defaultPool = pool;
   }

@@ -22,16 +22,15 @@ import java.net.InetSocketAddress;
 import java.net.UnknownHostException;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Objects;
-import java.util.Properties;
 
 import org.apache.logging.log4j.Logger;
 
 import org.apache.geode.DataSerializable;
 import org.apache.geode.DataSerializer;
 import org.apache.geode.cache.CacheException;
-import org.apache.geode.cache.RegionService;
 import org.apache.geode.cache.client.Pool;
 import org.apache.geode.cache.client.PoolFactory;
 import org.apache.geode.cache.client.internal.LocatorDiscoveryCallback;
@@ -365,7 +364,7 @@ public class PoolFactoryImpl implements PoolFactory {
     }
     PoolFactoryImpl that = (PoolFactoryImpl) o;
     return Objects.equals(attributes, that.attributes)
-        && Objects.equals(locatorAddresses, that.locatorAddresses);
+        && Objects.equals(new HashSet(locatorAddresses), new HashSet(that.locatorAddresses));
   }
 
   /**
@@ -648,7 +647,8 @@ public class PoolFactoryImpl implements PoolFactory {
           && multiuserSecureModeEnabled == that.multiuserSecureModeEnabled
           && startDisabled == that.startDisabled && gateway == that.gateway
           && Objects.equals(serverGroup, that.serverGroup)
-          && Objects.equals(locators, that.locators) && Objects.equals(servers, that.servers)
+          && Objects.equals(new HashSet(locators), new HashSet(that.locators))
+          && Objects.equals(new HashSet(servers), new HashSet(that.servers))
           && Objects.equals(locatorCallback, that.locatorCallback)
           && Objects.equals(gatewaySender, that.gatewaySender);
     }
