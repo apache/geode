@@ -106,6 +106,7 @@ public class DestroyPartitionedRegionMessage extends PartitionMessage {
         new DestroyPartitionedRegionResponse(r.getSystem(), recipients);
     DestroyPartitionedRegionMessage m =
         new DestroyPartitionedRegionMessage(recipients, r, resp, event, serials);
+    m.setTransactionDistributed(r.getCache().getTxManager().isDistributed());
     r.getDistributionManager().putOutgoing(m);
     return resp;
   }

@@ -110,6 +110,7 @@ public class ManageBackupBucketMessage extends PartitionMessage {
     NodeResponse p = new NodeResponse(r.getSystem(), recipient);
     ManageBackupBucketMessage m = new ManageBackupBucketMessage(recipient, r.getPRId(), p, bucketId,
         isRebalance, replaceOfflineData, moveSource, forceCreation);
+    m.setTransactionDistributed(r.getCache().getTxManager().isDistributed());
 
     p.enableSevereAlertProcessing();
 

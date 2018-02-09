@@ -34,6 +34,7 @@ import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
 import org.apache.geode.internal.cache.CachePerfStats;
 import org.apache.geode.internal.cache.GemFireCacheImpl;
+import org.apache.geode.internal.cache.TXManagerImpl;
 import org.apache.geode.internal.security.SecurityService;
 import org.apache.geode.pdx.PdxInstanceFactory;
 
@@ -68,6 +69,7 @@ public class Fakes {
     DSClock clock = mock(DSClock.class);
     LogWriter logger = mock(LogWriter.class);
     Statistics stats = mock(Statistics.class);
+    TXManagerImpl txManager = mock(TXManagerImpl.class);
 
     InternalDistributedMember member;
     member = new InternalDistributedMember("localhost", 5555);
@@ -84,6 +86,7 @@ public class Fakes {
     when(cache.getCachePerfStats()).thenReturn(mock(CachePerfStats.class));
     when(cache.getSecurityService()).thenReturn(mock(SecurityService.class));
     when(cache.createPdxInstanceFactory(any())).thenReturn(pdxInstanceFactory);
+    when(cache.getTxManager()).thenReturn(txManager);
 
     when(system.getDistributedMember()).thenReturn(member);
     when(system.getConfig()).thenReturn(config);
@@ -94,6 +97,7 @@ public class Fakes {
     when(system.getSecurityService()).thenReturn(mock(SecurityService.class));
     when(system.createAtomicStatistics(any(), any(), anyLong())).thenReturn(stats);
     when(system.createAtomicStatistics(any(), any())).thenReturn(stats);
+    when(system.getCache()).thenReturn(cache);
 
     when(distributionManager.getId()).thenReturn(member);
     when(distributionManager.getDistributionManagerId()).thenReturn(member);

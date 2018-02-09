@@ -59,7 +59,6 @@ public class PartitionMessageTest {
     when(msg.checkCacheClosing(dm)).thenReturn(false);
     when(msg.checkDSClosing(dm)).thenReturn(false);
     when(msg.getPartitionedRegion()).thenReturn(pr);
-    when(msg.getInternalCache()).thenReturn(cache);
     when(msg.getStartPartitionMessageProcessingTime(pr)).thenReturn(startTime);
     when(msg.getTXManagerImpl(cache)).thenReturn(txMgr);
     when(dm.getCache()).thenReturn(cache);
@@ -108,7 +107,6 @@ public class PartitionMessageTest {
   public void noNewTxProcessingAfterTXManagerImplClosed() throws Exception {
     txMgr = new TXManagerImpl(null, cache);
     when(msg.getPartitionedRegion()).thenReturn(pr);
-    when(msg.getInternalCache()).thenReturn(cache);
     when(msg.getStartPartitionMessageProcessingTime(pr)).thenReturn(startTime);
     when(msg.getTXManagerImpl(cache)).thenReturn(txMgr);
     when(msg.canParticipateInTransaction()).thenReturn(true);

@@ -52,7 +52,6 @@ import org.apache.geode.internal.cache.DataLocationException;
 import org.apache.geode.internal.cache.EntryEventImpl;
 import org.apache.geode.internal.cache.FilterRoutingInfo;
 import org.apache.geode.internal.cache.ForceReattemptException;
-import org.apache.geode.internal.cache.GemFireCacheImpl;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.cache.PartitionedRegion;
 import org.apache.geode.internal.cache.PartitionedRegionException;
@@ -138,7 +137,6 @@ public abstract class PartitionMessage extends DistributionMessage
       processor.enableSevereAlertProcessing();
     }
     initTxMemberId();
-    setIfTransactionDistributed();
   }
 
   public PartitionMessage(Collection<InternalDistributedMember> recipients, int regionId,
@@ -150,7 +148,6 @@ public abstract class PartitionMessage extends DistributionMessage
       processor.enableSevereAlertProcessing();
     }
     initTxMemberId();
-    setIfTransactionDistributed();
   }
 
 
@@ -254,8 +251,10 @@ public abstract class PartitionMessage extends DistributionMessage
    * check to see if the cache is closing
    */
   public boolean checkCacheClosing(ClusterDistributionManager dm) {
-    InternalCache cache = getInternalCache();
-    // return (cache != null && cache.isClosed());
+    if (dm == null) {
+      return true;
+    }
+    InternalCache cache = dm.getCache();
     return cache == null || cache.isClosed();
   }
 
@@ -271,10 +270,6 @@ public abstract class PartitionMessage extends DistributionMessage
 
   PartitionedRegion getPartitionedRegion() throws PRLocallyDestroyedException {
     return PartitionedRegion.getPRFromId(this.regionId);
-  }
-
-  InternalCache getInternalCache() {
-    return GemFireCacheImpl.getInstance();
   }
 
   TXManagerImpl getTXManagerImpl(InternalCache cache) {
@@ -852,17 +847,5 @@ public abstract class PartitionMessage extends DistributionMessage
    */
   public void setTransactionDistributed(boolean isDistTx) {
     this.isTransactionDistributed = isDistTx;
-  }
-
-  /*
-   * For Distributed Tx
-   */
-  private void setIfTransactionDistributed() {
-    InternalCache cache = GemFireCacheImpl.getInstance();
-    if (cache != null) {
-      if (cache.getTxManager() != null) {
-        this.isTransactionDistributed = cache.getTxManager().isDistributed();
-      }
-    }
   }
 }

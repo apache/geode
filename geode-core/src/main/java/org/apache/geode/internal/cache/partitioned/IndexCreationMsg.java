@@ -374,6 +374,7 @@ public class IndexCreationMsg extends PartitionMessage {
 
     IndexCreationMsg indMsg =
         new IndexCreationMsg(recipients, pr.getPRId(), processor, indexDefinitions);
+    indMsg.setTransactionDistributed(pr.getCache().getTxManager().isDistributed());
     if (logger.isDebugEnabled()) {
       logger.debug("Sending index creation message: {}, to member(s) {}.", indMsg, recipients);
     }
