@@ -19,15 +19,21 @@ import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import org.apache.geode.distributed.ConfigurationProperties;
+import org.apache.geode.distributed.internal.DistributionConfig;
+
 public class ArgumentRedactor {
-  private static final String redacted = "********";
+  public static final String redacted = "********";
 
   // All taboo words should be entirely lowercase.
-  private static final List<String> tabooWords = ArrayUtils.asList("password");
+  private static final List<String> tabooToContain = ArrayUtils.asList("password");
+  private static final List<String> tabooForKeyToStartWith =
+      ArrayUtils.asList(DistributionConfig.SYS_PROP_NAME, DistributionConfig.SSL_SYSTEM_PROPS_NAME,
+          ConfigurationProperties.SECURITY_PREFIX);
 
   // This pattern consists of three capture groups:
   // The option, consisting of
-  // (a) one or two hyphens
+  // (a) A leading space or starting string boundary, followed by one or two hyphens
   // (b) one or more non-whitespace, non-"=" characters, matching greedily
   // The option-value separator, consisting of: any amount of whitespace surrounding at most 1 "="
   // The value, consisting of:
@@ -37,7 +43,7 @@ public class ArgumentRedactor {
   // Positive lookahead between groups 1 and 2 to require space or "=", while * and ? match empty.
   // Negative lookahead between groups 2 and 3 to avoid "--boolFlag --newOption" matching as a pair.
   private static final Pattern optionWithValuePattern =
-      Pattern.compile("(--?[^\\s=]+)(?=[ =])( *=? *)(?!-)((?:\"[^\"]*\"|\\S+))");
+      Pattern.compile("([^ ]--?[^\\s=]+)(?=[ =])( *=? *)(?!-)((?:\"[^\"]*\"|\\S+))");
 
   private ArgumentRedactor() {}
 
@@ -76,7 +82,7 @@ public class ArgumentRedactor {
     Matcher matcher = optionWithValuePattern.matcher(line);
     while (matcher.find()) {
       String option = matcher.group(1);
-      if (!containsTabooWord(option)) {
+      if (!isTaboo(option)) {
         continue;
       }
 
@@ -117,7 +123,7 @@ public class ArgumentRedactor {
    *         unchanged.
    */
   public static String redactValueIfNecessary(String key, String value) {
-    if (containsTabooWord(key)) {
+    if (isTaboo(key)) {
       return redacted;
     }
     return value;
@@ -131,11 +137,16 @@ public class ArgumentRedactor {
    *
    * @return true if the value should be redacted, otherwise false.
    */
-  private static boolean containsTabooWord(String key) {
+  static boolean isTaboo(String key) {
     if (key == null) {
       return false;
     }
-    for (String taboo : tabooWords) {
+    for (String taboo : tabooForKeyToStartWith) {
+      if (key.toLowerCase().startsWith(taboo)) {
+        return true;
+      }
+    }
+    for (String taboo : tabooToContain) {
       if (key.toLowerCase().contains(taboo)) {
         return true;
       }

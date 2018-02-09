@@ -84,6 +84,7 @@ public class MoveBucketMessage extends PartitionMessage {
     MoveBucketResponse response = new MoveBucketResponse(region.getSystem(), recipient, region);
     MoveBucketMessage msg =
         new MoveBucketMessage(recipient, region.getPRId(), response, bucketId, source);
+    msg.setTransactionDistributed(region.getCache().getTxManager().isDistributed());
 
     Set<InternalDistributedMember> failures = region.getDistributionManager().putOutgoing(msg);
     if (failures != null && failures.size() > 0) {

@@ -16,20 +16,15 @@ package org.apache.geode.management.internal.configuration.functions;
 
 import static java.util.stream.Collectors.toSet;
 
-import java.util.Collection;
-import java.util.Collections;
 import java.util.Set;
 
-import org.apache.geode.cache.execute.Function;
 import org.apache.geode.cache.execute.FunctionContext;
-import org.apache.geode.internal.InternalEntity;
 import org.apache.geode.internal.cache.GemFireCacheImpl;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.cache.InternalRegion;
-import org.apache.geode.management.internal.security.ResourcePermissions;
-import org.apache.geode.security.ResourcePermission;
+import org.apache.geode.internal.cache.execute.InternalFunction;
 
-public class GetRegionNamesFunction implements Function, InternalEntity {
+public class GetRegionNamesFunction implements InternalFunction {
   @Override
   public void execute(FunctionContext context) {
     InternalCache cache = GemFireCacheImpl.getInstance();
@@ -38,11 +33,6 @@ public class GetRegionNamesFunction implements Function, InternalEntity {
         cache.getApplicationRegions().stream().map(InternalRegion::getName).collect(toSet());
 
     context.getResultSender().lastResult(regions);
-  }
-
-  @Override
-  public Collection<ResourcePermission> getRequiredPermissions(String regionName) {
-    return Collections.singleton(ResourcePermissions.CLUSTER_READ);
   }
 
   @Override

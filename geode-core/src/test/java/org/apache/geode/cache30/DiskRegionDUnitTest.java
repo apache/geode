@@ -23,6 +23,7 @@ import java.util.Collection;
 import java.util.Iterator;
 import java.util.Set;
 
+import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
@@ -67,6 +68,7 @@ import org.apache.geode.test.junit.categories.DistributedTest;
  *
  * @since GemFire 3.2
  */
+@Ignore
 @Category(DistributedTest.class)
 public class DiskRegionDUnitTest extends JUnit4CacheTestCase {
 

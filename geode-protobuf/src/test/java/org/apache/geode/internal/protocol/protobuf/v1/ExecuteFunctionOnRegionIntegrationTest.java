@@ -37,7 +37,9 @@ import java.util.concurrent.atomic.AtomicReference;
 import org.awaitility.Awaitility;
 import org.junit.After;
 import org.junit.Before;
+import org.junit.Rule;
 import org.junit.Test;
+import org.junit.contrib.java.lang.system.RestoreSystemProperties;
 import org.junit.experimental.categories.Category;
 
 import org.apache.geode.cache.Cache;
@@ -59,7 +61,7 @@ import org.apache.geode.security.SecurityManager;
 import org.apache.geode.test.junit.categories.IntegrationTest;
 
 @Category(IntegrationTest.class)
-public class FunctionExecutionIntegrationTest {
+public class ExecuteFunctionOnRegionIntegrationTest {
   private static final String TEST_REGION = "testRegion";
   private static final String TEST_FUNCTION_ID = "testFunction";
   public static final String SECURITY_PRINCIPAL = "principle";
@@ -67,6 +69,9 @@ public class FunctionExecutionIntegrationTest {
   private Socket socket;
   private Cache cache;
   private SecurityManager securityManager;
+
+  @Rule
+  public RestoreSystemProperties restoreSystemProperties = new RestoreSystemProperties();
 
   @Before
   public void setUp() throws Exception {
@@ -165,13 +170,10 @@ public class FunctionExecutionIntegrationTest {
     final ClientProtocol.Message responseMessage = authenticateAndSendMessage();
 
     assertNotNull(responseMessage);
-    assertEquals(ClientProtocol.Message.MessageTypeCase.RESPONSE,
+    assertEquals(ClientProtocol.Message.MessageTypeCase.EXECUTEFUNCTIONONREGIONRESPONSE,
         responseMessage.getMessageTypeCase());
-    final ClientProtocol.Response response = responseMessage.getResponse();
-    assertEquals(ClientProtocol.Response.ResponseAPICase.EXECUTEFUNCTIONONREGIONRESPONSE,
-        response.getResponseAPICase());
     final FunctionAPI.ExecuteFunctionOnRegionResponse executeFunctionOnRegionResponse =
-        response.getExecuteFunctionOnRegionResponse();
+        responseMessage.getExecuteFunctionOnRegionResponse();
 
     assertEquals(0, executeFunctionOnRegionResponse.getResultsCount());
 
@@ -205,10 +207,9 @@ public class FunctionExecutionIntegrationTest {
 
     final ClientProtocol.Message message = authenticateAndSendMessage();
 
-    assertEquals(ClientProtocol.Message.MessageTypeCase.RESPONSE, message.getMessageTypeCase());
-    assertEquals(ClientProtocol.Response.ResponseAPICase.ERRORRESPONSE,
-        message.getResponse().getResponseAPICase());
-    final BasicTypes.Error error = message.getResponse().getErrorResponse().getError();
+    assertEquals(ClientProtocol.Message.MessageTypeCase.ERRORRESPONSE,
+        message.getMessageTypeCase());
+    final BasicTypes.Error error = message.getErrorResponse().getError();
     assertEquals(BasicTypes.ErrorCode.SERVER_ERROR, error.getErrorCode());
   }
 
@@ -221,11 +222,9 @@ public class FunctionExecutionIntegrationTest {
 
     final ClientProtocol.Message message = authenticateAndSendMessage();
 
-
-    assertEquals(ClientProtocol.Message.MessageTypeCase.RESPONSE, message.getMessageTypeCase());
-    assertEquals(ClientProtocol.Response.ResponseAPICase.ERRORRESPONSE,
-        message.getResponse().getResponseAPICase());
-    final BasicTypes.Error error = message.getResponse().getErrorResponse().getError();
+    assertEquals(ClientProtocol.Message.MessageTypeCase.ERRORRESPONSE,
+        message.getMessageTypeCase());
+    final BasicTypes.Error error = message.getErrorResponse().getError();
 
     assertEquals(BasicTypes.ErrorCode.SERVER_ERROR, error.getErrorCode());
 
@@ -309,29 +308,28 @@ public class FunctionExecutionIntegrationTest {
 
     final ClientProtocol.Message message = authenticateAndSendMessage();
     assertEquals("message=" + message, BasicTypes.ErrorCode.AUTHORIZATION_FAILED,
-        message.getResponse().getErrorResponse().getError().getErrorCode());
+        message.getErrorResponse().getError().getErrorCode());
 
     verify(securityManager).authorize(eq(SECURITY_PRINCIPAL), eq(requiredPermission));
   }
 
   private FunctionAPI.ExecuteFunctionOnRegionResponse getFunctionResponse(
       ClientProtocol.Message responseMessage) {
-    assertEquals(responseMessage.getResponse().toString(),
-        ClientProtocol.Response.ResponseAPICase.EXECUTEFUNCTIONONREGIONRESPONSE,
-        responseMessage.getResponse().getResponseAPICase());
-    return responseMessage.getResponse().getExecuteFunctionOnRegionResponse();
+    assertEquals(responseMessage.toString(),
+        ClientProtocol.Message.MessageTypeCase.EXECUTEFUNCTIONONREGIONRESPONSE,
+        responseMessage.getMessageTypeCase());
+    return responseMessage.getExecuteFunctionOnRegionResponse();
   }
 
   private void authenticateWithServer() throws IOException {
     ClientProtocol.Message.Builder request = ClientProtocol.Message.newBuilder()
-        .setRequest(ClientProtocol.Request.newBuilder()
-            .setAuthenticationRequest(ConnectionAPI.AuthenticationRequest.newBuilder()
-                .putCredentials(ResourceConstants.USER_NAME, "someuser")
-                .putCredentials(ResourceConstants.PASSWORD, "somepassword")));
+        .setAuthenticationRequest(ConnectionAPI.AuthenticationRequest.newBuilder()
+            .putCredentials(ResourceConstants.USER_NAME, "someuser")
+            .putCredentials(ResourceConstants.PASSWORD, "somepassword"));
 
     ClientProtocol.Message response = writeMessage(request.build());
     assertEquals(response.toString(), true,
-        response.getResponse().getAuthenticationResponse().getAuthenticated());
+        response.getAuthenticationResponse().getAuthenticated());
   }
 
   private ClientProtocol.Message authenticateAndSendMessage() throws IOException {
@@ -347,8 +345,7 @@ public class FunctionExecutionIntegrationTest {
 
   private ClientProtocol.Message.Builder createRequestMessageBuilder(
       FunctionAPI.ExecuteFunctionOnRegionRequest.Builder functionRequest) {
-    return ClientProtocol.Message.newBuilder().setRequest(
-        ClientProtocol.Request.newBuilder().setExecuteFunctionOnRegionRequest(functionRequest));
+    return ClientProtocol.Message.newBuilder().setExecuteFunctionOnRegionRequest(functionRequest);
   }
 
   private ClientProtocol.Message writeMessage(ClientProtocol.Message request) throws IOException {

@@ -202,14 +202,15 @@ public abstract class StreamingPartitionOperation extends StreamingOperation {
     }
 
     @Override
-    public void memberDeparted(InternalDistributedMember id, boolean crashed) {
+    public void memberDeparted(DistributionManager distributionManager,
+        InternalDistributedMember id, boolean crashed) {
       if (id != null && waitingOnMember(id)) {
         this.failedMembers.add(id);
         this.memberDepartedMessage =
             LocalizedStrings.StreamingPartitionOperation_GOT_MEMBERDEPARTED_EVENT_FOR_0_CRASHED_1
                 .toLocalizedString(new Object[] {id, Boolean.valueOf(crashed)});
       }
-      super.memberDeparted(id, crashed);
+      super.memberDeparted(distributionManager, id, crashed);
     }
 
     /**

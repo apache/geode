@@ -58,7 +58,6 @@ import org.apache.geode.internal.cache.Oplog.OPLOG_TYPE;
 import org.apache.geode.internal.cache.entries.AbstractDiskLRURegionEntry;
 import org.apache.geode.internal.cache.entries.DiskEntry;
 import org.apache.geode.test.dunit.ThreadUtils;
-import org.apache.geode.test.junit.categories.FlakyTest;
 import org.apache.geode.test.junit.categories.IntegrationTest;
 
 /**
@@ -421,7 +420,7 @@ public class OplogJUnitTest extends DiskRegionTestingBase {
     region.put(2, val);
     Oplog switched = dr.testHook_getChild();
     assertTrue(old != switched);
-    assertEquals(dr.getDiskStore().persistentOplogs.getChild(2), switched);
+    assertEquals(dr.getDiskStore().getPersistentOplogs().getChild(2), switched);
     assertEquals(oldWriteBuf, switched.getWriteBuf());
     assertEquals(null, old.getWriteBuf());
     closeDown();
@@ -1132,7 +1131,6 @@ public class OplogJUnitTest extends DiskRegionTestingBase {
    * An entry which is evicted to disk will have the flag already written to disk, appropriately set
    *
    */
-  @Category(FlakyTest.class)
   @Test
   public void testEntryAlreadyWrittenIsCorrectlyUnmarkedForOverflowOnly() throws Exception {
     diskProps.setPersistBackup(false);
@@ -1927,7 +1925,7 @@ public class OplogJUnitTest extends DiskRegionTestingBase {
   private long oplogSize() {
     long size = ((LocalRegion) region).getDiskRegion().getDiskStore().undeletedOplogSize.get();
     Oplog[] opArray =
-        ((LocalRegion) region).getDiskRegion().getDiskStore().persistentOplogs.getAllOplogs();
+        ((LocalRegion) region).getDiskRegion().getDiskStore().getPersistentOplogs().getAllOplogs();
     if (opArray != null) {
       for (Oplog log : opArray) {
         size += log.getOplogSize();

@@ -303,6 +303,7 @@ public class PutMessage extends PartitionMessageWithDirectReply implements NewVa
       boolean ifOld, DirectReplyProcessor processor, boolean sendDeltaWithFullValue) {
     PutMessage msg = new PutMessage(Collections.EMPTY_SET, true, r.getPRId(), processor, event, 0,
         ifNew, ifOld, null, false);
+    msg.setTransactionDistributed(r.getCache().getTxManager().isDistributed());
     msg.setInternalDs(r.getSystem());
     msg.versionTag = event.getVersionTag();
     msg.setSendDeltaWithFullValue(sendDeltaWithFullValue);

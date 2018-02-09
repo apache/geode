@@ -14,20 +14,15 @@
  */
 package org.apache.geode.management.internal.cli.functions;
 
-import java.util.Collection;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 
 import org.apache.geode.cache.Cache;
-import org.apache.geode.cache.execute.Function;
 import org.apache.geode.cache.execute.FunctionContext;
 import org.apache.geode.distributed.DistributedMember;
-import org.apache.geode.internal.InternalEntity;
+import org.apache.geode.internal.cache.execute.InternalFunction;
 import org.apache.geode.management.internal.cli.CliUtil;
 import org.apache.geode.management.internal.cli.util.BytesToString;
-import org.apache.geode.management.internal.security.ResourcePermissions;
-import org.apache.geode.security.ResourcePermission;
 
 /**
  *
@@ -36,7 +31,7 @@ import org.apache.geode.security.ResourcePermission;
  *
  *
  */
-public class GarbageCollectionFunction implements Function, InternalEntity {
+public class GarbageCollectionFunction implements InternalFunction {
   public static final String ID = GarbageCollectionFunction.class.getName();
 
   private static final long serialVersionUID = 1L;
@@ -69,12 +64,6 @@ public class GarbageCollectionFunction implements Function, InternalEntity {
       context.getResultSender().lastResult(message);
     }
     context.getResultSender().lastResult(resultMap);
-  }
-
-
-  @Override
-  public Collection<ResourcePermission> getRequiredPermissions(String regionName) {
-    return Collections.singleton(ResourcePermissions.CLUSTER_MANAGE);
   }
 
   @Override

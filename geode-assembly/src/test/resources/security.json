@@ -1,0 +1,45 @@
+{
+  "_comments" : ["This file to be consumed by test class LogsAreFullyRedactedAcceptanceTest",
+    "Each user will have the same 'admin' roll / permissions.",
+    "Each username and password will be distinct for identification but contain 'abcdefg',",
+    "making each line immediately identifiable but still easily parsable for an offending log.",
+    "",
+    "Most of these username-password combinations will not actually be consumed, but are listed.",
+    "here for completion.",
+    "Take care to not accidentally use 'password' in any username."
+  ],
+  "roles": [
+    {
+      "name": "superuser",
+      "operationsAllowed": [
+        "CLUSTER:READ", "CLUSTER:MANAGE", "CLUSTER:WRITE",
+        "DATA:READ", "DATA:MANAGE", "DATA:WRITE"
+      ]
+    }
+  ],
+  "users": [
+    {
+      "name": "propertyFileUser",
+      "password": "abcdefg-propertyFile",
+      "roles": ["superuser"]
+    },
+    {
+      "name": "securityPropertyFileUser",
+      "password": "abcdefg-securityPropertyFile",
+      "roles": ["superuser"]
+    },
+    {
+      "name": "viaStartMemberOptions",
+      "password": "abcdefg-viaStartMemberOptions",
+      "roles": ["superuser"]
+    },
+    {
+      "name": "user-jd",
+      "password": "abcdefg-password-jd",
+      "roles": ["superuser"]
+    }
+  ]
+}
+
+
+

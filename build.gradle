@@ -27,7 +27,6 @@ buildscript {
     classpath "com.diffplug.gradle.spotless:spotless:2.2.0"
     classpath "me.champeau.gradle:jmh-gradle-plugin:0.3.1"
     classpath "com.pedjak.gradle.plugins:dockerized-test:0.5.4"
-    classpath "gradle.plugin.com.github.upthewaterspout.jpfgradle:jpfgradle:0.3"
   }
 }
 

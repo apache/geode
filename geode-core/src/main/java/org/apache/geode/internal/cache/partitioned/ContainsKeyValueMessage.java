@@ -89,6 +89,7 @@ public class ContainsKeyValueMessage extends PartitionMessageWithDirectReply {
         new ContainsKeyValueResponse(r.getSystem(), Collections.singleton(recipient), key);
     ContainsKeyValueMessage m =
         new ContainsKeyValueMessage(recipient, r.getPRId(), p, key, bucketId, valueCheck);
+    m.setTransactionDistributed(r.getCache().getTxManager().isDistributed());
 
     Set failures = r.getDistributionManager().putOutgoing(m);
     if (failures != null && failures.size() > 0) {

@@ -109,6 +109,7 @@ public class InvalidateMessage extends DestroyMessage {
       DirectReplyProcessor processor) {
     InvalidateMessage msg =
         new InvalidateMessage(Collections.EMPTY_SET, true, r.getPRId(), processor, event);
+    msg.setTransactionDistributed(r.getCache().getTxManager().isDistributed());
     msg.versionTag = event.getVersionTag();
     return msg.relayToListeners(cacheOpReceivers, adjunctRecipients, filterRoutingInfo, event, r,
         processor);
@@ -133,6 +134,7 @@ public class InvalidateMessage extends DestroyMessage {
     Set recipients = Collections.singleton(recipient);
     InvalidateResponse p = new InvalidateResponse(r.getSystem(), recipients, event.getKey());
     InvalidateMessage m = new InvalidateMessage(recipients, false, r.getPRId(), p, event);
+    m.setTransactionDistributed(r.getCache().getTxManager().isDistributed());
     Set failures = r.getDistributionManager().putOutgoing(m);
     if (failures != null && failures.size() > 0) {
       throw new ForceReattemptException(

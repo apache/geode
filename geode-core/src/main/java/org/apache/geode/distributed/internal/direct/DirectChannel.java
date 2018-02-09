@@ -719,7 +719,7 @@ public class DirectChannel {
       logger.warn(LocalizedMessage.create(
           LocalizedStrings.DirectChannel_VIEW_NO_LONGER_HAS_0_AS_AN_ACTIVE_MEMBER_SO_WE_WILL_NO_LONGER_WAIT_FOR_IT,
           c.getRemoteAddress()));
-      processor.memberDeparted(c.getRemoteAddress(), true);
+      processor.memberDeparted(getDM(), c.getRemoteAddress(), true);
     }
   }
 

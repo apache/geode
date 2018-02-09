@@ -2131,7 +2131,8 @@ public class PRHARedundancyProvider {
       this.bucketToMonitor.getBucketAdvisor().removeMembershipListener(this);
     }
 
-    public void memberJoined(InternalDistributedMember id) {
+    public void memberJoined(DistributionManager distributionManager,
+        InternalDistributedMember id) {
       if (logger.isDebugEnabled()) {
         logger.debug("Observer for bucket {} member joined {}", this.bucketToMonitor, id);
       }
@@ -2142,10 +2143,11 @@ public class PRHARedundancyProvider {
       }
     }
 
-    public void memberSuspect(InternalDistributedMember id, InternalDistributedMember whoSuspected,
-        String reason) {}
+    public void memberSuspect(DistributionManager distributionManager, InternalDistributedMember id,
+        InternalDistributedMember whoSuspected, String reason) {}
 
-    public void memberDeparted(InternalDistributedMember id, boolean crashed) {
+    public void memberDeparted(DistributionManager distributionManager,
+        InternalDistributedMember id, boolean crashed) {
       if (logger.isDebugEnabled()) {
         logger.debug("Observer for bucket {} member departed {}", this.bucketToMonitor, id);
       }
@@ -2231,8 +2233,8 @@ public class PRHARedundancyProvider {
     }
 
     @Override
-    public void quorumLost(Set<InternalDistributedMember> failures,
-        List<InternalDistributedMember> remaining) {}
+    public void quorumLost(DistributionManager distributionManager,
+        Set<InternalDistributedMember> failures, List<InternalDistributedMember> remaining) {}
   }
 
   /**
@@ -2240,7 +2242,8 @@ public class PRHARedundancyProvider {
    *
    */
   protected class PRMembershipListener implements MembershipListener {
-    public void memberDeparted(final InternalDistributedMember id, final boolean crashed) {
+    public void memberDeparted(DistributionManager distributionManager,
+        final InternalDistributedMember id, final boolean crashed) {
       try {
         DistributedMember dmem = prRegion.getSystem().getDistributedMember();
         if (logger.isDebugEnabled()) {
@@ -2271,15 +2274,16 @@ public class PRHARedundancyProvider {
       }
     }
 
-    public void memberSuspect(InternalDistributedMember id, InternalDistributedMember whoSuspected,
-        String reason) {}
+    public void memberSuspect(DistributionManager distributionManager, InternalDistributedMember id,
+        InternalDistributedMember whoSuspected, String reason) {}
 
-    public void memberJoined(InternalDistributedMember id) {
+    public void memberJoined(DistributionManager distributionManager,
+        InternalDistributedMember id) {
       // no action required
     }
 
-    public void quorumLost(Set<InternalDistributedMember> failures,
-        List<InternalDistributedMember> remaining) {}
+    public void quorumLost(DistributionManager distributionManager,
+        Set<InternalDistributedMember> failures, List<InternalDistributedMember> remaining) {}
   }
 
   /**

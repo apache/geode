@@ -34,8 +34,8 @@ import org.apache.geode.cache.execute.FunctionService;
 import org.apache.geode.cache.execute.ResultCollector;
 import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.internal.ClassPathLoader;
-import org.apache.geode.internal.InternalEntity;
 import org.apache.geode.internal.cache.InternalCache;
+import org.apache.geode.internal.cache.execute.InternalFunction;
 import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.internal.security.SecurityService;
 import org.apache.geode.management.internal.cli.i18n.CliStrings;
@@ -45,7 +45,7 @@ import org.apache.geode.security.ResourcePermission;
 /**
  * @since GemFire 7.0
  */
-public class UserFunctionExecution implements Function<Object[]>, InternalEntity {
+public class UserFunctionExecution implements InternalFunction<Object[]> {
   public static final String ID = UserFunctionExecution.class.getName();
 
   private static Logger logger = LogService.getLogger();

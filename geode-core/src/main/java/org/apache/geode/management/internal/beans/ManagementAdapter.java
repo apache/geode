@@ -963,6 +963,28 @@ public class ManagementAdapter {
     memberLevelNotifEmitter.sendNotification(notification);
   }
 
+  public void handleGatewaySenderRemoved(GatewaySender sender) throws ManagementException {
+    if (!isServiceInitialised("handleGatewaySenderRemoved")) {
+      return;
+    }
+    if ((sender.getRemoteDSId() < 0)) {
+      return;
+    }
+
+    GatewaySenderMBean bean =
+        (GatewaySenderMBean) service.getLocalGatewaySenderMXBean(sender.getId());
+    bean.stopMonitor();
+
+    ObjectName gatewaySenderName = MBeanJMXAdapter.getGatewaySenderMBeanName(
+        internalCache.getDistributedSystem().getDistributedMember(), sender.getId());
+    service.unregisterMBean(gatewaySenderName);
+
+    Notification notification = new Notification(JMXNotificationType.GATEWAY_SENDER_REMOVED,
+        memberSource, SequenceNumber.next(), System.currentTimeMillis(),
+        ManagementConstants.GATEWAY_SENDER_REMOVED_PREFIX + sender.getId());
+    memberLevelNotifEmitter.sendNotification(notification);
+  }
+
   public void handleCacheServiceCreation(CacheService cacheService) throws ManagementException {
     if (!isServiceInitialised("handleCacheServiceCreation")) {
       return;
