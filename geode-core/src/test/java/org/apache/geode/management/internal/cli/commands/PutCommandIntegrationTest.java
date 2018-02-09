@@ -87,7 +87,7 @@ public class PutCommandIntegrationTest {
 
     // skip-if-exists is deprecated and honored
     gfsh.executeAndAssertThat("help put").statusIsSuccess()
-        .containsOutput("(Deprecated: Use --if-not-exists)");
+        .containsOutput("Synonym skip-if-exists is deprecated.");
     gfsh.executeAndAssertThat("put --region=/testRegion --key=key1 --value=value3 --skip-if-exists")
         .statusIsSuccess().containsKeyValuePair("Result", "true");
     assertThat(server.getCache().getRegion("testRegion").get("key1")).isEqualTo("value2");

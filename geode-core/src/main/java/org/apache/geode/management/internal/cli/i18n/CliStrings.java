@@ -80,11 +80,14 @@ public class CliStrings {
   public static final String MEMBER = "member";
   public static final String MEMBERS = "members";
   public static final String IFEXISTS = "if-exists";
+  public static final String IFNOTEXISTS = "if-not-exists";
   public static final String JAR = "jar";
   public static final String JARS = "jars";
 
   public static final String IFEXISTS_HELP =
       "If true, the command will be a no-op if the entity does not exist.";
+  public static final String IFNOTEXISTS_HELP =
+      "If true, the command will be a no-op if the entity does exist.";
   public static final String ENTRY_IDLE_TIME_CUSTOM_EXPIRY = "entry-idle-time-custom-expiry";
   public static final String ENTRY_TTL_CUSTOM_EXPIRY = "entry-time-to-live-custom-expiry";
   public static final String ENTRY_IDLE_TIME_CUSTOM_EXPIRY_HELP =
@@ -1806,11 +1809,9 @@ public class CliStrings {
   public static final String PUT__VALUE__HELP =
       "String or JSON text from which to create the value.  Examples include: \"manager\", \"100L\" and \"('value': 'widget')\".";
   public static final String PUT__PUTIFABSENT = "skip-if-exists";
-  public static final String PUT__PUTIFABSENT__HELP =
-      "(Deprecated: Use --if-not-exists) Skip the put operation when an entry with the same key already exists. The default is to overwrite the entry (false).";
   public static final String PUT__PUTIFNOTEXISTS = "if-not-exists";
   public static final String PUT__PUTIFNOTEXISTS__HELP =
-      "Skip the put operation when an entry with the same key already exists. The default is to overwrite the entry (false).";
+      "Skip the put operation when an entry with the same key already exists. The default is to overwrite the entry (false). Synonym skip-if-exists is deprecated.";
   public static final String PUT__KEYCLASS = "key-class";
   public static final String PUT__KEYCLASS__HELP =
       "Fully qualified class name of the key's type. The default is java.lang.String.";
