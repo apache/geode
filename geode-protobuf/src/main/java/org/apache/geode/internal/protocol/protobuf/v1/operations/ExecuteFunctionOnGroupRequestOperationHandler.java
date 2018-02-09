@@ -14,92 +14,109 @@
  */
 package org.apache.geode.internal.protocol.protobuf.v1.operations;
 
-import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
 import com.google.protobuf.AbstractMessage;
+import com.google.protobuf.ProtocolStringList;
 
-import org.apache.geode.cache.Region;
 import org.apache.geode.cache.execute.Execution;
 import org.apache.geode.cache.execute.FunctionService;
+import org.apache.geode.distributed.DistributedSystem;
 import org.apache.geode.internal.exception.InvalidExecutionContextException;
 import org.apache.geode.internal.protocol.operations.ProtobufOperationHandler;
 import org.apache.geode.internal.protocol.protobuf.v1.BasicTypes;
 import org.apache.geode.internal.protocol.protobuf.v1.ClientProtocol;
 import org.apache.geode.internal.protocol.protobuf.v1.Failure;
-import org.apache.geode.internal.protocol.protobuf.v1.FunctionAPI.ExecuteFunctionOnRegionRequest;
-import org.apache.geode.internal.protocol.protobuf.v1.FunctionAPI.ExecuteFunctionOnRegionResponse;
+import org.apache.geode.internal.protocol.protobuf.v1.FunctionAPI.ExecuteFunctionOnGroupRequest;
+import org.apache.geode.internal.protocol.protobuf.v1.FunctionAPI.ExecuteFunctionOnGroupResponse;
 import org.apache.geode.internal.protocol.protobuf.v1.MessageExecutionContext;
 import org.apache.geode.internal.protocol.protobuf.v1.ProtobufSerializationService;
 import org.apache.geode.internal.protocol.protobuf.v1.Result;
 import org.apache.geode.internal.protocol.protobuf.v1.Success;
 import org.apache.geode.internal.protocol.protobuf.v1.serialization.exception.EncodingException;
 
-public class ExecuteFunctionOnRegionRequestOperationHandler
+public class ExecuteFunctionOnGroupRequestOperationHandler
     extends AbstractFunctionRequestOperationHandler implements
-    ProtobufOperationHandler<ExecuteFunctionOnRegionRequest, ExecuteFunctionOnRegionResponse> {
+    ProtobufOperationHandler<ExecuteFunctionOnGroupRequest, ExecuteFunctionOnGroupResponse> {
+
 
   @Override
-  public Result<ExecuteFunctionOnRegionResponse, ClientProtocol.ErrorResponse> process(
-      ProtobufSerializationService serializationService, ExecuteFunctionOnRegionRequest request,
+  public Result<ExecuteFunctionOnGroupResponse, ClientProtocol.ErrorResponse> process(
+      ProtobufSerializationService serializationService, ExecuteFunctionOnGroupRequest request,
       MessageExecutionContext messageExecutionContext) throws InvalidExecutionContextException {
 
-    return (Result<ExecuteFunctionOnRegionResponse, ClientProtocol.ErrorResponse>) super.process(
+    return (Result<ExecuteFunctionOnGroupResponse, ClientProtocol.ErrorResponse>) super.process(
         serializationService, request, messageExecutionContext);
   }
 
-  protected Set<Object> parseFilter(ProtobufSerializationService serializationService,
+  @Override
+  protected Set<?> parseFilter(ProtobufSerializationService serializationService,
       AbstractMessage request) throws EncodingException {
-    List<BasicTypes.EncodedValue> encodedFilter =
-        ((ExecuteFunctionOnRegionRequest) request).getKeyFilterList();
-    Set<Object> filter = new HashSet<>();
-
-    for (BasicTypes.EncodedValue filterKey : encodedFilter) {
-      filter.add(serializationService.decode(filterKey));
-    }
-    return filter;
+    // filters are not allowed on functions not associated with regions
+    return null;
   }
 
   @Override
   protected String getFunctionID(AbstractMessage request) {
-    return ((ExecuteFunctionOnRegionRequest) request).getFunctionID();
+    return ((ExecuteFunctionOnGroupRequest) request).getFunctionID();
   }
 
   @Override
   protected String getRegionName(AbstractMessage request) {
-    return ((ExecuteFunctionOnRegionRequest) request).getRegion();
+    // region name is not allowed in onMember invocation
+    return null;
   }
 
   @Override
-  protected Object getExecutionTarget(AbstractMessage request, String regionName,
+  protected Object getExecutionTarget(AbstractMessage abstractRequest, String regionName,
       MessageExecutionContext executionContext) throws InvalidExecutionContextException {
-    final Region<Object, Object> region = executionContext.getCache().getRegion(regionName);
-    if (region == null) {
+
+    ExecuteFunctionOnGroupRequest request = ((ExecuteFunctionOnGroupRequest) abstractRequest);
+    ProtocolStringList groupList = request.getGroupNameList();
+
+    // unfortunately FunctionServiceManager throws a FunctionException if there are no
+    // servers matching any of the given groups. In order to distinguish between
+    // function execution failure and this condition we have to preprocess the groups
+    // and ensure that there is at least one server that has one of the given groups
+    DistributedSystem distributedSystem =
+        executionContext.getCache().getDistributionManager().getSystem();
+    boolean foundMatch = false;
+    for (String group : groupList) {
+      if (distributedSystem.getGroupMembers(group).size() > 0) {
+        foundMatch = true;
+        break;
+      }
+    }
+    if (!foundMatch) {
       return Failure.of(ClientProtocol.ErrorResponse.newBuilder()
-          .setError(BasicTypes.Error.newBuilder().setErrorCode(BasicTypes.ErrorCode.INVALID_REQUEST)
-              .setMessage("Region \"" + regionName + "\" not found"))
+          .setError(BasicTypes.Error.newBuilder()
+              .setMessage("No server  in groups " + groupList + " could be found to execute \""
+                  + request.getFunctionID() + "\"")
+              .setErrorCode(BasicTypes.ErrorCode.NO_AVAILABLE_SERVER))
           .build());
     }
-    return region;
+    return groupList;
   }
 
   @Override
   protected Object getFunctionArguments(AbstractMessage request,
       ProtobufSerializationService serializationService) throws EncodingException {
-    return serializationService.decode(((ExecuteFunctionOnRegionRequest) request).getArguments());
+    return serializationService.decode(((ExecuteFunctionOnGroupRequest) request).getArguments());
   }
 
   @Override
-  protected Execution getFunctionExecutionObject(Object executionTarget) {
-    return FunctionService.onRegion((Region) executionTarget);
+  protected Execution getFunctionExecutionObject(Object executionTarget)
+      throws InvalidExecutionContextException {
+    ProtocolStringList groupList = (ProtocolStringList) executionTarget;
+    return FunctionService.onMember(groupList.toArray(new String[0]));
   }
 
   @Override
   protected Result buildResultMessage(ProtobufSerializationService serializationService,
       List<Object> results) throws EncodingException {
-    final ExecuteFunctionOnRegionResponse.Builder responseMessage =
-        ExecuteFunctionOnRegionResponse.newBuilder();
+    final ExecuteFunctionOnGroupResponse.Builder responseMessage =
+        ExecuteFunctionOnGroupResponse.newBuilder();
     for (Object result : results) {
       responseMessage.addResults(serializationService.encode(result));
     }
@@ -109,7 +126,7 @@ public class ExecuteFunctionOnRegionRequestOperationHandler
   @Override
   protected Result buildResultMessage(ProtobufSerializationService serializationService)
       throws EncodingException {
-    return Success.of(ExecuteFunctionOnRegionResponse.newBuilder().build());
+    return Success.of(ExecuteFunctionOnGroupResponse.newBuilder().build());
   }
 
 }
