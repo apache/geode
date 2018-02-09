@@ -88,3 +88,4 @@ org/apache/geode/cache/query/internal/types/TypeUtils$ComparisonStrategy$2
 org/apache/geode/cache/query/internal/types/TypeUtils$ComparisonStrategy$3
 org/apache/geode/cache/query/internal/types/TypeUtils$ComparisonStrategy$4
 org/apache/geode/cache/query/internal/types/TypeUtils$ComparisonStrategy$5
+org/apache/geode/cache/client/internal/pooling/ConnectionManagerImpl$ClosedPoolConnectionList

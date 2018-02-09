@@ -348,6 +348,10 @@ class PooledConnection implements Connection {
     getConnection().setWanSiteVersion(wanSiteVersion);
   }
 
+  public void setConnection(Connection newConnection) {
+    this.connection = newConnection;
+  }
+
   public void setConnectionID(long id) {
     this.connection.setConnectionID(id);
   }
