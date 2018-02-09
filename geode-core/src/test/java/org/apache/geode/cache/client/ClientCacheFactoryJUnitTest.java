@@ -318,13 +318,19 @@ public class ClientCacheFactoryJUnitTest {
         Collections.singletonList(new InetSocketAddress(InetAddress.getLocalHost(), 55555)),
         defPool.getServers());
 
-    try {
-      ClientCache cc2 = new ClientCacheFactory().create();
-      // This should fail because specifying no pool attributes
-      // is different than the pool attributes specified above.
-      fail("expected create to fail");
-    } catch (IllegalStateException expected) {
-    }
+    ClientCache cc2 = new ClientCacheFactory().create();
+    gfc = (GemFireCacheImpl) this.cc;
+    assertEquals(true, gfc.isClient());
+    dsProps = this.cc.getDistributedSystem().getProperties();
+    assertEquals("0", dsProps.getProperty(MCAST_PORT));
+    assertEquals("", dsProps.getProperty(LOCATORS));
+    defPool = gfc.getDefaultPool();
+    assertEquals("DEFAULT", defPool.getName());
+    assertEquals(new ArrayList(), defPool.getLocators());
+    assertEquals(
+        Collections.singletonList(new InetSocketAddress(InetAddress.getLocalHost(), 55555)),
+        defPool.getServers());
+
     try {
       new ClientCacheFactory().addPoolServer(InetAddress.getLocalHost().getHostName(), 44444)
           .create();
