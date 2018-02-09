@@ -67,14 +67,15 @@ public class RemoteOperationResponseTest {
 
   @Test
   public void whenMemberDepartedThatWeAreWaitingForExceptionIsSet() {
-    replyProcessor.memberDeparted(recipient, false);
+    replyProcessor.memberDeparted(system.getDistributionManager(), recipient, false);
     assertThat(replyProcessor.getMemberDepartedException())
         .hasMessageContaining("memberDeparted event");
   }
 
   @Test
   public void whenMemberDepartedThatWeAreNotWaitingForExceptionIsNotSet() {
-    replyProcessor.memberDeparted(mock(InternalDistributedMember.class), false);
+    replyProcessor.memberDeparted(system.getDistributionManager(),
+        mock(InternalDistributedMember.class), false);
     assertThat(replyProcessor.getMemberDepartedException()).isNull();
   }
 
@@ -103,7 +104,7 @@ public class RemoteOperationResponseTest {
   @Test
   public void waitForRemoteResponseWithMemberDepartedThrowsException() throws Exception {
     doNothing().when(replyProcessor).waitForRepliesUninterruptibly();
-    replyProcessor.memberDeparted(recipient, false);
+    replyProcessor.memberDeparted(system.getDistributionManager(), recipient, false);
 
     assertThatThrownBy(() -> replyProcessor.waitForRemoteResponse())
         .isInstanceOf(RemoteOperationException.class).hasMessageContaining("memberDeparted event");
