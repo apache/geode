@@ -19,7 +19,6 @@ import static java.util.concurrent.TimeUnit.SECONDS;
 import static org.hamcrest.core.IsEqual.equalTo;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.Matchers.isA;
 import static org.mockito.Mockito.mock;
@@ -31,7 +30,6 @@ import static org.mockito.Mockito.when;
 
 import java.io.IOException;
 import java.net.InetSocketAddress;
-import java.net.UnknownHostException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -102,16 +100,15 @@ public class GMSJoinLeaveJUnitTest {
   private InternalDistributedMember removeMember = null;
   private InternalDistributedMember leaveMember = null;
 
-  public void initMocks() throws IOException {
+  public void initMocks() {
     initMocks(false);
   }
 
-  public void initMocks(boolean enableNetworkPartition) throws UnknownHostException {
+  public void initMocks(boolean enableNetworkPartition) {
     initMocks(enableNetworkPartition, false);
   }
 
-  public void initMocks(boolean enableNetworkPartition, boolean useTestGMSJoinLeave)
-      throws UnknownHostException {
+  public void initMocks(boolean enableNetworkPartition, boolean useTestGMSJoinLeave) {
     mockDistConfig = mock(DistributionConfig.class);
     when(mockDistConfig.getEnableNetworkPartitionDetection()).thenReturn(enableNetworkPartition);
     when(mockDistConfig.getLocators()).thenReturn("localhost[8888]");
@@ -290,7 +287,7 @@ public class GMSJoinLeaveJUnitTest {
     verify(messenger).send(isA(JoinResponseMessage.class));
   }
 
-  // This test does not test the actual join process but rather that the join response gets loggedß
+  // This test does not test the actual join process but rather that the join response gets logged
   @Test
   public void testProcessJoinResponseIsRecorded() throws IOException {
     initMocks();
@@ -1280,7 +1277,7 @@ public class GMSJoinLeaveJUnitTest {
   }
 
   class GMSJoinLeaveTest extends GMSJoinLeave {
-    public GMSJoinLeaveTest() {
+    GMSJoinLeaveTest() {
       super();
     }
 
@@ -1292,7 +1289,7 @@ public class GMSJoinLeaveJUnitTest {
             GMSJoinLeaveJUnitTest.this.processRemoveMessage(fmbr);
             Thread.sleep(1000000);
           }
-        } catch (InterruptedException e) {
+        } catch (InterruptedException ignore) {
         }
         return true;
       } else if (leaveMember != null) {
@@ -1301,7 +1298,7 @@ public class GMSJoinLeaveJUnitTest {
             GMSJoinLeaveJUnitTest.this.processLeaveMessage(fmbr);
             Thread.sleep(1000000);
           }
-        } catch (InterruptedException e) {
+        } catch (InterruptedException ignore) {
         }
         return true;
       } else {
