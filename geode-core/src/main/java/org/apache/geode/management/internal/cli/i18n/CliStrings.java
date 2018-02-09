@@ -1807,6 +1807,9 @@ public class CliStrings {
       "String or JSON text from which to create the value.  Examples include: \"manager\", \"100L\" and \"('value': 'widget')\".";
   public static final String PUT__PUTIFABSENT = "skip-if-exists";
   public static final String PUT__PUTIFABSENT__HELP =
+      "(Deprecated: Use --if-not-exists) Skip the put operation when an entry with the same key already exists. The default is to overwrite the entry (false).";
+  public static final String PUT__PUTIFNOTEXISTS = "if-not-exists";
+  public static final String PUT__PUTIFNOTEXISTS__HELP =
       "Skip the put operation when an entry with the same key already exists. The default is to overwrite the entry (false).";
   public static final String PUT__KEYCLASS = "key-class";
   public static final String PUT__KEYCLASS__HELP =
