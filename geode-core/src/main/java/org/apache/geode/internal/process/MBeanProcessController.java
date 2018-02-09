@@ -15,7 +15,6 @@
 package org.apache.geode.internal.process;
 
 import static org.apache.commons.lang.Validate.isTrue;
-import static org.apache.commons.lang.Validate.notNull;
 
 import java.io.File;
 import java.io.IOException;
@@ -37,6 +36,7 @@ import com.sun.tools.attach.AgentInitializationException;
 import com.sun.tools.attach.AgentLoadException;
 import com.sun.tools.attach.AttachNotSupportedException;
 import com.sun.tools.attach.VirtualMachine;
+import edu.umd.cs.findbugs.annotations.NonNull;
 
 /**
  * Controls a {@link ControllableProcess} using the Attach API to manipulate MBeans.
@@ -65,8 +65,7 @@ class MBeanProcessController implements ProcessController {
    *
    * @throws IllegalArgumentException if pid is not a positive integer
    */
-  MBeanProcessController(final MBeanControllerParameters arguments, final int pid) {
-    notNull(arguments, "Invalid arguments '" + arguments + "' specified");
+  MBeanProcessController(@NonNull final MBeanControllerParameters arguments, final int pid) {
     isTrue(pid > 0, "Invalid pid '" + pid + "' specified");
 
     this.pid = pid;

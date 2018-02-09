@@ -15,11 +15,11 @@
 package org.apache.geode.internal.process;
 
 import static org.apache.commons.lang.Validate.notEmpty;
-import static org.apache.commons.lang.Validate.notNull;
 
 import java.io.File;
 import java.io.IOException;
 
+import edu.umd.cs.findbugs.annotations.NonNull;
 import org.apache.logging.log4j.Logger;
 
 import org.apache.geode.internal.logging.LogService;
@@ -43,11 +43,9 @@ class ControlFileWatchdog implements Runnable {
   private Thread thread;
   private boolean alive;
 
-  ControlFileWatchdog(final File directory, final String fileName,
-      final ControlRequestHandler requestHandler, final boolean stopAfterRequest) {
-    notNull(directory, "Invalid directory '" + directory + "' specified");
+  ControlFileWatchdog(@NonNull final File directory, final String fileName,
+      @NonNull final ControlRequestHandler requestHandler, final boolean stopAfterRequest) {
     notEmpty(fileName, "Invalid fileName '" + fileName + "' specified");
-    notNull(requestHandler, "Invalid requestHandler '" + requestHandler + "' specified");
 
     this.directory = directory;
     this.file = new File(directory, fileName);
