@@ -198,12 +198,14 @@ public class TXFarSideCMTracker {
     final Object lock = new Object();
     final MembershipListener memEar = new MembershipListener() {
       // MembershipListener implementation
-      public void memberJoined(InternalDistributedMember id) {}
+      public void memberJoined(DistributionManager distributionManager,
+          InternalDistributedMember id) {}
 
-      public void memberSuspect(InternalDistributedMember id,
-          InternalDistributedMember whoSuspected, String reason) {}
+      public void memberSuspect(DistributionManager distributionManager,
+          InternalDistributedMember id, InternalDistributedMember whoSuspected, String reason) {}
 
-      public void memberDeparted(InternalDistributedMember id, boolean crashed) {
+      public void memberDeparted(DistributionManager distributionManager,
+          InternalDistributedMember id, boolean crashed) {
         if (memberId.equals(id)) {
           synchronized (lock) {
             lock.notifyAll();
@@ -211,8 +213,8 @@ public class TXFarSideCMTracker {
         }
       }
 
-      public void quorumLost(Set<InternalDistributedMember> failures,
-          List<InternalDistributedMember> remaining) {}
+      public void quorumLost(DistributionManager distributionManager,
+          Set<InternalDistributedMember> failures, List<InternalDistributedMember> remaining) {}
     };
     try {
       Set memberSet = dm.addMembershipListenerAndGetDistributionManagerIds(memEar);

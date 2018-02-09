@@ -2885,7 +2885,7 @@ public class ClusterDistributionManager implements DistributionManager {
 
     for (Iterator iter = allMembershipListeners.iterator(); iter.hasNext();) {
       MembershipListener listener = (MembershipListener) iter.next();
-      listener.memberJoined(theId);
+      listener.memberJoined(this, theId);
     }
     logger.info(LocalizedMessage.create(
         LocalizedStrings.DistributionManager_DMMEMBERSHIP_ADMITTING_NEW_ADMINISTRATION_MEMBER__0_,
@@ -2965,7 +2965,7 @@ public class ClusterDistributionManager implements DistributionManager {
     if (removedMember) {
       for (Iterator iter = allMembershipListeners.iterator(); iter.hasNext();) {
         MembershipListener listener = (MembershipListener) iter.next();
-        listener.memberDeparted(theId, crashed);
+        listener.memberDeparted(this, theId, crashed);
       }
     }
     if (removedConsole) {
@@ -3398,25 +3398,29 @@ public class ClusterDistributionManager implements DistributionManager {
           if (l == null) {
             l = new MembershipListener() {
               @Override
-              public void memberJoined(InternalDistributedMember theId) {
+              public void memberJoined(DistributionManager distributionManager,
+                  InternalDistributedMember theId) {
                 // nothing needed
               }
 
               @Override
-              public void memberDeparted(InternalDistributedMember theId, boolean crashed) {
+              public void memberDeparted(DistributionManager distributionManager,
+                  InternalDistributedMember theId, boolean crashed) {
                 if (desiredElder.equals(theId)) {
                   notifyElderChangeWaiters();
                 }
               }
 
               @Override
-              public void memberSuspect(InternalDistributedMember id,
-                  InternalDistributedMember whoSuspected, String reason) {}
+              public void memberSuspect(DistributionManager distributionManager,
+                  InternalDistributedMember id, InternalDistributedMember whoSuspected,
+                  String reason) {}
 
               public void viewInstalled(NetView view) {}
 
               @Override
-              public void quorumLost(Set<InternalDistributedMember> failures,
+              public void quorumLost(DistributionManager distributionManager,
+                  Set<InternalDistributedMember> failures,
                   List<InternalDistributedMember> remaining) {}
             };
             addMembershipListener(l);
@@ -4113,13 +4117,14 @@ public class ClusterDistributionManager implements DistributionManager {
       handleEvent(manager, manager.allMembershipListeners);
     }
 
-    protected abstract void handleEvent(MembershipListener listener);
+    protected abstract void handleEvent(ClusterDistributionManager manager,
+        MembershipListener listener);
 
     private void handleEvent(ClusterDistributionManager manager,
         Set<MembershipListener> membershipListeners) {
       for (MembershipListener listener : membershipListeners) {
         try {
-          handleEvent(listener);
+          handleEvent(manager, listener);
         } catch (CancelException e) {
           if (manager.isCloseInProgress()) {
             if (logger.isTraceEnabled()) {
@@ -4166,8 +4171,8 @@ public class ClusterDistributionManager implements DistributionManager {
     }
 
     @Override
-    protected void handleEvent(MembershipListener listener) {
-      listener.memberJoined(getId());
+    protected void handleEvent(ClusterDistributionManager manager, MembershipListener listener) {
+      listener.memberJoined(manager, getId());
     }
   }
 
@@ -4189,8 +4194,8 @@ public class ClusterDistributionManager implements DistributionManager {
     }
 
     @Override
-    protected void handleEvent(MembershipListener listener) {
-      listener.memberDeparted(getId(), false);
+    protected void handleEvent(ClusterDistributionManager manager, MembershipListener listener) {
+      listener.memberDeparted(manager, getId(), false);
     }
   }
 
@@ -4214,8 +4219,8 @@ public class ClusterDistributionManager implements DistributionManager {
     }
 
     @Override
-    protected void handleEvent(MembershipListener listener) {
-      listener.memberDeparted(getId(), true/* crashed */);
+    protected void handleEvent(ClusterDistributionManager manager, MembershipListener listener) {
+      listener.memberDeparted(manager, getId(), true/* crashed */);
     }
   }
 
@@ -4248,8 +4253,8 @@ public class ClusterDistributionManager implements DistributionManager {
     }
 
     @Override
-    protected void handleEvent(MembershipListener listener) {
-      listener.memberSuspect(getId(), whoSuspected(), reason);
+    protected void handleEvent(ClusterDistributionManager manager, MembershipListener listener) {
+      listener.memberSuspect(manager, getId(), whoSuspected(), reason);
     }
   }
 
@@ -4276,7 +4281,7 @@ public class ClusterDistributionManager implements DistributionManager {
     }
 
     @Override
-    protected void handleEvent(MembershipListener listener) {
+    protected void handleEvent(ClusterDistributionManager manager, MembershipListener listener) {
       throw new UnsupportedOperationException();
     }
   }
@@ -4306,8 +4311,8 @@ public class ClusterDistributionManager implements DistributionManager {
     }
 
     @Override
-    protected void handleEvent(MembershipListener listener) {
-      listener.quorumLost(getFailures(), getRemaining());
+    protected void handleEvent(ClusterDistributionManager manager, MembershipListener listener) {
+      listener.quorumLost(manager, getFailures(), getRemaining());
     }
   }
 

@@ -3399,14 +3399,14 @@ public class DistributedRegion extends LocalRegion implements InternalDistribute
     }
 
     @Override
-    public void quorumLost(Set<InternalDistributedMember> failures,
-        List<InternalDistributedMember> remaining) {
+    public void quorumLost(DistributionManager distributionManager,
+        Set<InternalDistributedMember> failures, List<InternalDistributedMember> remaining) {
       // do nothing
     }
 
     @Override
-    public void memberSuspect(InternalDistributedMember id, InternalDistributedMember whoSuspected,
-        String reason) {
+    public void memberSuspect(DistributionManager distributionManager, InternalDistributedMember id,
+        InternalDistributedMember whoSuspected, String reason) {
       // do nothing
     }
 
@@ -3418,7 +3418,8 @@ public class DistributedRegion extends LocalRegion implements InternalDistribute
     }
 
     @Override
-    public synchronized void memberJoined(InternalDistributedMember id) {
+    public synchronized void memberJoined(DistributionManager distributionManager,
+        InternalDistributedMember id) {
       if (this.destroyed) {
         return;
       }
@@ -3469,7 +3470,8 @@ public class DistributedRegion extends LocalRegion implements InternalDistribute
       }
     }
 
-    public synchronized void memberDeparted(InternalDistributedMember id, boolean crashed) {
+    public synchronized void memberDeparted(DistributionManager distributionManager,
+        InternalDistributedMember id, boolean crashed) {
       if (this.destroyed) {
         return;
       }
