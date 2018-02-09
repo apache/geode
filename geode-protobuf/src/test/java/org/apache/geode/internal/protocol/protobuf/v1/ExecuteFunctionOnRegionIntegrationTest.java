@@ -37,7 +37,9 @@ import java.util.concurrent.atomic.AtomicReference;
 import org.awaitility.Awaitility;
 import org.junit.After;
 import org.junit.Before;
+import org.junit.Rule;
 import org.junit.Test;
+import org.junit.contrib.java.lang.system.RestoreSystemProperties;
 import org.junit.experimental.categories.Category;
 
 import org.apache.geode.cache.Cache;
@@ -59,7 +61,7 @@ import org.apache.geode.security.SecurityManager;
 import org.apache.geode.test.junit.categories.IntegrationTest;
 
 @Category(IntegrationTest.class)
-public class FunctionExecutionIntegrationTest {
+public class ExecuteFunctionOnRegionIntegrationTest {
   private static final String TEST_REGION = "testRegion";
   private static final String TEST_FUNCTION_ID = "testFunction";
   public static final String SECURITY_PRINCIPAL = "principle";
@@ -67,6 +69,9 @@ public class FunctionExecutionIntegrationTest {
   private Socket socket;
   private Cache cache;
   private SecurityManager securityManager;
+
+  @Rule
+  public RestoreSystemProperties restoreSystemProperties = new RestoreSystemProperties();
 
   @Before
   public void setUp() throws Exception {

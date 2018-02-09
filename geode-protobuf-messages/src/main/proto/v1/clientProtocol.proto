@@ -58,8 +58,11 @@ message Message {
         ExecuteFunctionOnRegionRequest executeFunctionOnRegionRequest = 18;
         ExecuteFunctionOnRegionResponse executeFunctionOnRegionResponse= 19;
 
-        AuthenticationRequest authenticationRequest = 20;
-        AuthenticationResponse authenticationResponse = 21;
+        ExecuteFunctionOnMemberRequest executeFunctionOnMemberRequest = 20;
+        ExecuteFunctionOnMemberResponse executeFunctionOnMemberResponse= 21;
+
+        AuthenticationRequest authenticationRequest = 22;
+        AuthenticationResponse authenticationResponse = 23;
     }
 }
 

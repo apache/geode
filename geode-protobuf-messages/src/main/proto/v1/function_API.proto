@@ -25,5 +25,16 @@ message ExecuteFunctionOnRegionRequest {
 }
 
 message ExecuteFunctionOnRegionResponse {
-    repeated EncodedValue results = 1; // some functions don't return arguments.
+    repeated EncodedValue results = 1; // some functions don't return results.
 }
+
+message ExecuteFunctionOnMemberRequest {
+    string functionID = 1;
+    repeated string memberName = 2;
+    EncodedValue arguments = 3;
+}
+
+message ExecuteFunctionOnMemberResponse {
+    repeated EncodedValue results = 1; // some functions don't return results.
+}
+

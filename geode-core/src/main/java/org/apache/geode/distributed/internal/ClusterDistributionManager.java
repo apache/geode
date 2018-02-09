@@ -27,6 +27,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.NoSuchElementException;
+import java.util.Objects;
 import java.util.Set;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.ConcurrentHashMap;
@@ -1451,6 +1452,18 @@ public class ClusterDistributionManager implements DistributionManager {
   }
 
 
+  @Override
+  public DistributedMember getMemberWithName(String name) {
+    for (DistributedMember id : members.values()) {
+      if (Objects.equals(id.getName(), name)) {
+        return id;
+      }
+    }
+    if (Objects.equals(localAddress, name)) {
+      return localAddress;
+    }
+    return null;
+  }
 
   /**
    * Returns the id of this distribution manager.
