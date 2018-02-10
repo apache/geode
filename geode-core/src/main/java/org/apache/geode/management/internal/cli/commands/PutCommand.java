@@ -52,7 +52,7 @@ public class PutCommand implements GfshCommand {
           help = CliStrings.PUT__KEYCLASS__HELP) String keyClass,
       @CliOption(key = {CliStrings.PUT__VALUEKLASS},
           help = CliStrings.PUT__VALUEKLASS__HELP) String valueClass,
-      @CliOption(key = {CliStrings.PUT__PUTIFNOTEXISTS, CliStrings.PUT__PUTIFABSENT},
+      @CliOption(key = {CliStrings.IFNOTEXISTS, CliStrings.PUT__PUTIFABSENT},
           help = CliStrings.PUT__PUTIFNOTEXISTS__HELP, specifiedDefaultValue = "true",
           unspecifiedDefaultValue = "false") boolean putIfNotExists) {
 
