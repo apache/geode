@@ -65,10 +65,6 @@ import org.apache.geode.management.internal.security.ResourceOperation;
 import org.apache.geode.security.ResourcePermission;
 
 public class CreateRegionCommand implements GfshCommand {
-  public static final String ENTRY_IDLE_TIME_CUSTOM_EXPIRY = "entry-idle-time-custom-expiry";
-  public static final String ENTRY_TTL_CUSTOM_EXPIRY = "entry-time-to-live-custom-expiry";
-
-
   @CliCommand(value = CliStrings.CREATE_REGION, help = CliStrings.CREATE_REGION__HELP)
   @CliMetaData(relatedTopic = CliStrings.TOPIC_GEODE_REGION,
       interceptor = "org.apache.geode.management.internal.cli.commands.CreateRegionCommand$Interceptor")
@@ -139,10 +135,10 @@ public class CreateRegionCommand implements GfshCommand {
           help = CliStrings.CREATE_REGION__ENTRYEXPIRATIONTIMETOLIVE__HELP) Integer entryExpirationTTL,
       @CliOption(key = CliStrings.CREATE_REGION__ENTRYEXPIRATIONTTLACTION,
           help = CliStrings.CREATE_REGION__ENTRYEXPIRATIONTTLACTION__HELP) ExpirationAction entryExpirationTTLAction,
-      @CliOption(key = CreateRegionCommand.ENTRY_IDLE_TIME_CUSTOM_EXPIRY,
-          help = "The name of the class implementing CustomExpiry for entry idle time. Append json string for initialization properties.") ClassName<CustomExpiry> entryIdleTimeCustomExpiry,
-      @CliOption(key = CreateRegionCommand.ENTRY_TTL_CUSTOM_EXPIRY,
-          help = "The name of the class implementing CustomExpiry for entry time to live. Append json string for initialization properties.") ClassName<CustomExpiry> entryTTLCustomExpiry,
+      @CliOption(key = CliStrings.ENTRY_IDLE_TIME_CUSTOM_EXPIRY,
+          help = CliStrings.ENTRY_IDLE_TIME_CUSTOM_EXPIRY_HELP) ClassName<CustomExpiry> entryIdleTimeCustomExpiry,
+      @CliOption(key = CliStrings.ENTRY_TTL_CUSTOM_EXPIRY,
+          help = CliStrings.ENTRY_TTL_CUSTOM_EXPIRY_HELP) ClassName<CustomExpiry> entryTTLCustomExpiry,
       @CliOption(key = CliStrings.CREATE_REGION__EVICTION_ACTION,
           help = CliStrings.CREATE_REGION__EVICTION_ACTION__HELP) String evictionAction,
       @CliOption(key = CliStrings.CREATE_REGION__EVICTION_ENTRY_COUNT,
@@ -660,8 +656,9 @@ public class CreateRegionCommand implements GfshCommand {
       ExpirationAction regionTtlAction = (ExpirationAction) parseResult
           .getParamValue(CliStrings.CREATE_REGION__REGIONEXPIRATIONTTLACTION);
       ClassName entryIdleExpiry =
-          (ClassName) parseResult.getParamValue(ENTRY_IDLE_TIME_CUSTOM_EXPIRY);
-      ClassName entryTTTLExpiry = (ClassName) parseResult.getParamValue(ENTRY_TTL_CUSTOM_EXPIRY);
+          (ClassName) parseResult.getParamValue(CliStrings.ENTRY_IDLE_TIME_CUSTOM_EXPIRY);
+      ClassName entryTTTLExpiry =
+          (ClassName) parseResult.getParamValue(CliStrings.ENTRY_TTL_CUSTOM_EXPIRY);
 
       if ((entryIdle != null || entryTtl != null || regionIdle != null || regionTtl != null
           || entryIdleAction != null || entryTtlAction != null || regionIdleAction != null

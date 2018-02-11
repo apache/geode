@@ -85,6 +85,12 @@ public class CliStrings {
 
   public static final String IFEXISTS_HELP =
       "If true, the command will be a no-op if the entity does not exist.";
+  public static final String ENTRY_IDLE_TIME_CUSTOM_EXPIRY = "entry-idle-time-custom-expiry";
+  public static final String ENTRY_TTL_CUSTOM_EXPIRY = "entry-time-to-live-custom-expiry";
+  public static final String ENTRY_IDLE_TIME_CUSTOM_EXPIRY_HELP =
+      "The name of the class implementing CustomExpiry for entry idle time. Append json string for initialization properties.";
+  public static final String ENTRY_TTL_CUSTOM_EXPIRY_HELP =
+      "The name of the class implementing CustomExpiry for entry time to live. Append json string for initialization properties.";
   private static final String LOG_LEVEL_VALUES =
       "Possible values for log-level include: ALL, TRACE, DEBUG, INFO, WARN, ERROR, FATAL, OFF.";
 
@@ -3166,8 +3172,6 @@ public class CliStrings {
   public static final String START_SERVER__REDIRECT_OUTPUT = "redirect-output";
   public static final String START_SERVER__REDIRECT_OUTPUT__HELP =
       "Causes the member to redirect standard out and standard error to its own log file.";
-
-
 
   /**
    * Creates a MessageFormat with the given pattern and uses it to format the given argument.
