@@ -14,8 +14,6 @@
  */
 package org.apache.geode.internal.protocol.protobuf.v1.operations;
 
-import static org.apache.geode.internal.protocol.protobuf.v1.ProtobufErrorCode.SERVER_ERROR;
-
 import org.apache.logging.log4j.Logger;
 
 import org.apache.geode.annotations.Experimental;
@@ -48,8 +46,8 @@ public class GetRegionRequestOperationHandler
     Region region = messageExecutionContext.getCache().getRegion(regionName);
     if (region == null) {
       logger.error("Received GetRegion request for non-existing region {}", regionName);
-      return Failure.of(ProtobufResponseUtilities.makeErrorResponse(SERVER_ERROR,
-          "No region exists for name: " + regionName));
+      return Failure.of(ProtobufResponseUtilities.makeErrorResponse(
+          BasicTypes.ErrorCode.SERVER_ERROR, "No region exists for name: " + regionName));
     }
 
     BasicTypes.Region protoRegion = ProtobufUtilities.createRegionMessageFromRegion(region);

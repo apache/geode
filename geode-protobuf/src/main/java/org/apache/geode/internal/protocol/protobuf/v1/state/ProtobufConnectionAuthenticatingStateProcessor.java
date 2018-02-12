@@ -18,8 +18,8 @@ import java.util.Properties;
 
 import org.apache.shiro.subject.Subject;
 
+import org.apache.geode.internal.protocol.protobuf.v1.BasicTypes;
 import org.apache.geode.internal.protocol.protobuf.v1.MessageExecutionContext;
-import org.apache.geode.internal.protocol.protobuf.v1.ProtobufErrorCode;
 import org.apache.geode.internal.protocol.protobuf.v1.ProtobufOperationContext;
 import org.apache.geode.internal.protocol.protobuf.v1.operations.security.AuthenticationRequestOperationHandler;
 import org.apache.geode.internal.protocol.protobuf.v1.state.exception.ConnectionStateException;
@@ -39,7 +39,7 @@ public class ProtobufConnectionAuthenticatingStateProcessor
       ProtobufOperationContext operationContext) throws ConnectionStateException {
     if (!(operationContext
         .getOperationHandler() instanceof AuthenticationRequestOperationHandler)) {
-      throw new ConnectionStateException(ProtobufErrorCode.AUTHENTICATION_FAILED,
+      throw new ConnectionStateException(BasicTypes.ErrorCode.AUTHENTICATION_FAILED,
           "User has not yet authenticated");
     }
   }

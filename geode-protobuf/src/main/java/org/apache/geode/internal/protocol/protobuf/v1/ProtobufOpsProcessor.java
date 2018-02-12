@@ -78,7 +78,7 @@ public class ProtobufOpsProcessor {
     } catch (InvalidExecutionContextException exception) {
       logger.error("Invalid execution context found for operation {}", requestType);
       return Failure.of(ProtobufResponseUtilities.makeErrorResponse(
-          ProtobufErrorCode.INVALID_REQUEST, "Invalid execution context found for operation."));
+          BasicTypes.ErrorCode.INVALID_REQUEST, "Invalid execution context found for operation."));
     }
   }
 }

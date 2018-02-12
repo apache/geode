@@ -14,10 +14,11 @@
  */
 package org.apache.geode.internal.protocol.protobuf.v1.state.exception;
 
-import org.apache.geode.internal.protocol.protobuf.v1.ProtobufErrorCode;
+
+import org.apache.geode.internal.protocol.protobuf.v1.BasicTypes;
 
 public class OperationNotAuthorizedException extends ConnectionStateException {
-  public OperationNotAuthorizedException(ProtobufErrorCode errorCode, String errorMessage) {
+  public OperationNotAuthorizedException(BasicTypes.ErrorCode errorCode, String errorMessage) {
     super(errorCode, errorMessage);
   }
 }
