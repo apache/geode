@@ -319,8 +319,18 @@ public class CacheOperationsJUnitTest {
     RegionAPI.GetAllResponse getAllResponse = response.getGetAllResponse();
     assertEquals(3, getAllResponse.getEntriesCount());
     for (BasicTypes.Entry result : getAllResponse.getEntriesList()) {
-      String key = (String) serializationService.decode(result.getKey());
-      String value = (String) serializationService.decode(result.getValue());
+      String key = null;
+      try {
+        key = (String) serializationService.decode(result.getKey());
+      } catch (org.apache.geode.internal.protocol.protobuf.v1.serialization.exception.DecodingException e) {
+        e.printStackTrace();
+      }
+      String value = null;
+      try {
+        value = (String) serializationService.decode(result.getValue());
+      } catch (org.apache.geode.internal.protocol.protobuf.v1.serialization.exception.DecodingException e) {
+        e.printStackTrace();
+      }
       switch (key) {
         case TEST_MULTIOP_KEY1:
           assertEquals(TEST_MULTIOP_VALUE1, value);

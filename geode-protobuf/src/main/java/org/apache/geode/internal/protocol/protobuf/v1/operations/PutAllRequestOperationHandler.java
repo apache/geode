@@ -14,11 +14,7 @@
  */
 package org.apache.geode.internal.protocol.protobuf.v1.operations;
 
-import static org.apache.geode.internal.protocol.protobuf.v1.ProtobufErrorCode.INVALID_REQUEST;
 import static org.apache.geode.internal.protocol.protobuf.v1.ProtobufErrorCode.SERVER_ERROR;
-
-import java.util.Objects;
-import java.util.stream.Collectors;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -37,6 +33,7 @@ import org.apache.geode.internal.protocol.protobuf.v1.RegionAPI;
 import org.apache.geode.internal.protocol.protobuf.v1.Result;
 import org.apache.geode.internal.protocol.protobuf.v1.Success;
 import org.apache.geode.internal.protocol.protobuf.v1.serialization.SerializationService;
+import org.apache.geode.internal.protocol.protobuf.v1.serialization.exception.DecodingException;
 import org.apache.geode.internal.protocol.protobuf.v1.serialization.exception.EncodingException;
 import org.apache.geode.internal.protocol.protobuf.v1.utilities.ProtobufResponseUtilities;
 import org.apache.geode.internal.protocol.protobuf.v1.utilities.ProtobufUtilities;
@@ -49,7 +46,8 @@ public class PutAllRequestOperationHandler
   @Override
   public Result<RegionAPI.PutAllResponse, ClientProtocol.ErrorResponse> process(
       ProtobufSerializationService serializationService, RegionAPI.PutAllRequest putAllRequest,
-      MessageExecutionContext messageExecutionContext) throws InvalidExecutionContextException {
+      MessageExecutionContext messageExecutionContext)
+      throws InvalidExecutionContextException, DecodingException {
     String regionName = putAllRequest.getRegionName();
     Region region = messageExecutionContext.getCache().getRegion(regionName);
 
@@ -60,23 +58,31 @@ public class PutAllRequestOperationHandler
     }
 
     long startTime = messageExecutionContext.getStatistics().startOperation();
-    RegionAPI.PutAllResponse.Builder builder = RegionAPI.PutAllResponse.newBuilder()
-        .addAllFailedKeys(putAllRequest.getEntryList().stream()
-            .map((entry) -> singlePut(serializationService, region, entry)).filter(Objects::nonNull)
-            .collect(Collectors.toList()));
-    messageExecutionContext.getStatistics().endOperation(startTime);
+    RegionAPI.PutAllResponse.Builder builder = RegionAPI.PutAllResponse.newBuilder();
+    try {
+      messageExecutionContext.getCache().setReadSerializedForCurrentThread(true);
+
+      for (BasicTypes.Entry entry : putAllRequest.getEntryList()) {
+        BasicTypes.KeyedError error = singlePut(serializationService, region, entry);
+        if (error != null) {
+          builder.addFailedKeys(error);
+        }
+      }
+
+    } finally {
+      messageExecutionContext.getStatistics().endOperation(startTime);
+      messageExecutionContext.getCache().setReadSerializedForCurrentThread(false);
+    }
     return Success.of(builder.build());
   }
 
   private BasicTypes.KeyedError singlePut(SerializationService serializationService, Region region,
-      BasicTypes.Entry entry) {
+      BasicTypes.Entry entry) throws DecodingException {
     try {
       Object decodedValue = serializationService.decode(entry.getValue());
       Object decodedKey = serializationService.decode(entry.getKey());
 
       region.put(decodedKey, decodedValue);
-    } catch (EncodingException ex) {
-      return buildAndLogKeyedError(entry, INVALID_REQUEST, "Encoding not supported", ex);
     } catch (ClassCastException ex) {
       return buildAndLogKeyedError(entry, SERVER_ERROR, ex.toString(), ex);
     }

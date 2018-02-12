@@ -20,6 +20,8 @@ import org.apache.geode.annotations.Experimental;
 import org.apache.geode.internal.exception.InvalidExecutionContextException;
 import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.internal.protocol.protobuf.v1.registry.ProtobufOperationContextRegistry;
+import org.apache.geode.internal.protocol.protobuf.v1.serialization.exception.DecodingException;
+import org.apache.geode.internal.protocol.protobuf.v1.serialization.exception.EncodingException;
 import org.apache.geode.internal.protocol.protobuf.v1.state.ProtobufConnectionTerminatingStateProcessor;
 import org.apache.geode.internal.protocol.protobuf.v1.state.exception.ConnectionStateException;
 import org.apache.geode.internal.protocol.protobuf.v1.state.exception.OperationNotAuthorizedException;
@@ -58,7 +60,7 @@ public class ProtobufOpsProcessor {
       // Don't move to a terminating state for authorization state failures
       logger.warn(e.getMessage());
       result = Failure.of(ProtobufResponseUtilities.makeErrorResponse(e));
-    } catch (ConnectionStateException e) {
+    } catch (EncodingException | DecodingException | ConnectionStateException e) {
       logger.warn(e.getMessage());
       messageExecutionContext
           .setConnectionStateProcessor(new ProtobufConnectionTerminatingStateProcessor());
@@ -71,7 +73,7 @@ public class ProtobufOpsProcessor {
 
   private Result processOperation(ClientProtocol.Message request, MessageExecutionContext context,
       ClientProtocol.Message.MessageTypeCase requestType, ProtobufOperationContext operationContext)
-      throws ConnectionStateException {
+      throws ConnectionStateException, EncodingException, DecodingException {
     try {
       return operationContext.getOperationHandler().process(serializationService,
           operationContext.getFromRequest().apply(request), context);

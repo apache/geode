@@ -18,15 +18,10 @@ package org.apache.geode.internal.protocol.protobuf.v1.operations;
 import static org.apache.geode.internal.protocol.protobuf.v1.ProtobufErrorCode.INVALID_REQUEST;
 import static org.apache.geode.internal.protocol.protobuf.v1.ProtobufErrorCode.SERVER_ERROR;
 
-import java.util.List;
-import java.util.Map;
-import java.util.stream.Collectors;
-
 import org.apache.logging.log4j.Logger;
 
 import org.apache.geode.annotations.Experimental;
 import org.apache.geode.cache.Region;
-import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.exception.InvalidExecutionContextException;
 import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.internal.protocol.operations.ProtobufOperationHandler;
@@ -39,6 +34,7 @@ import org.apache.geode.internal.protocol.protobuf.v1.ProtobufSerializationServi
 import org.apache.geode.internal.protocol.protobuf.v1.RegionAPI;
 import org.apache.geode.internal.protocol.protobuf.v1.Result;
 import org.apache.geode.internal.protocol.protobuf.v1.Success;
+import org.apache.geode.internal.protocol.protobuf.v1.serialization.exception.DecodingException;
 import org.apache.geode.internal.protocol.protobuf.v1.serialization.exception.EncodingException;
 import org.apache.geode.internal.protocol.protobuf.v1.utilities.ProtobufResponseUtilities;
 import org.apache.geode.internal.protocol.protobuf.v1.utilities.ProtobufUtilities;
@@ -51,7 +47,8 @@ public class GetAllRequestOperationHandler
   @Override
   public Result<RegionAPI.GetAllResponse, ClientProtocol.ErrorResponse> process(
       ProtobufSerializationService serializationService, RegionAPI.GetAllRequest request,
-      MessageExecutionContext messageExecutionContext) throws InvalidExecutionContextException {
+      MessageExecutionContext messageExecutionContext)
+      throws InvalidExecutionContextException, DecodingException {
     String regionName = request.getRegionName();
     Region region = messageExecutionContext.getCache().getRegion(regionName);
     if (region == null) {
@@ -61,32 +58,29 @@ public class GetAllRequestOperationHandler
     }
 
     long startTime = messageExecutionContext.getStatistics().startOperation();
-    Map<Boolean, List<Object>> resultsCollection;
-    try {
-      ((InternalCache) messageExecutionContext.getCache()).setReadSerializedForCurrentThread(true);
-
-      resultsCollection = request.getKeyList().stream()
-          .map((key) -> processOneMessage(serializationService, region, key))
-          .collect(Collectors.partitioningBy(x -> x instanceof BasicTypes.Entry));
-    } finally {
-      ((InternalCache) messageExecutionContext.getCache()).setReadSerializedForCurrentThread(false);
-      messageExecutionContext.getStatistics().endOperation(startTime);
-    }
     RegionAPI.GetAllResponse.Builder responseBuilder = RegionAPI.GetAllResponse.newBuilder();
+    try {
+      messageExecutionContext.getCache().setReadSerializedForCurrentThread(true);
 
-    for (Object entry : resultsCollection.get(true)) {
-      responseBuilder.addEntries((BasicTypes.Entry) entry);
-    }
+      for (BasicTypes.EncodedValue key : request.getKeyList()) {
+        Object entry = processOneMessage(serializationService, region, key);
+        if (entry instanceof BasicTypes.Entry) {
+          responseBuilder.addEntries((BasicTypes.Entry) entry);
+        } else {
+          responseBuilder.addFailures((BasicTypes.KeyedError) entry);
+        }
+      }
 
-    for (Object entry : resultsCollection.get(false)) {
-      responseBuilder.addFailures((BasicTypes.KeyedError) entry);
+    } finally {
+      messageExecutionContext.getCache().setReadSerializedForCurrentThread(false);
+      messageExecutionContext.getStatistics().endOperation(startTime);
     }
 
     return Success.of(responseBuilder.build());
   }
 
   private Object processOneMessage(ProtobufSerializationService serializationService, Region region,
-      BasicTypes.EncodedValue key) {
+      BasicTypes.EncodedValue key) throws DecodingException {
     try {
       Object decodedKey = serializationService.decode(key);
       Object value = region.get(decodedKey);
@@ -94,8 +88,10 @@ public class GetAllRequestOperationHandler
     } catch (EncodingException ex) {
       logger.error("Encoding not supported: {}", ex);
       return createKeyedError(key, "Encoding not supported.", INVALID_REQUEST);
+    } catch (DecodingException ex) {
+      throw ex;
     } catch (Exception ex) {
-      logger.error("Failure in protobuf getAll operation for key: " + key, ex);
+      logger.info("Failure in protobuf getAll operation for key: " + key, ex);
       return createKeyedError(key, ex.toString(), SERVER_ERROR);
     }
   }

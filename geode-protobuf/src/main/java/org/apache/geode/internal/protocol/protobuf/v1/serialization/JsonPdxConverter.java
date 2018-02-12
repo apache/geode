@@ -15,6 +15,7 @@
 package org.apache.geode.internal.protocol.protobuf.v1.serialization;
 
 import org.apache.geode.annotations.Experimental;
+import org.apache.geode.internal.protocol.protobuf.v1.serialization.exception.DecodingException;
 import org.apache.geode.internal.protocol.protobuf.v1.serialization.exception.EncodingException;
 import org.apache.geode.pdx.JSONFormatter;
 import org.apache.geode.pdx.JSONFormatterException;
@@ -23,11 +24,11 @@ import org.apache.geode.pdx.PdxInstance;
 @Experimental
 public class JsonPdxConverter implements TypeConverter<String, PdxInstance> {
   @Override
-  public PdxInstance decode(String incoming) throws EncodingException {
+  public PdxInstance decode(String incoming) throws DecodingException {
     try {
       return JSONFormatter.fromJSON(incoming);
     } catch (JSONFormatterException ex) {
-      throw new EncodingException("Could not decode JSON-encoded object ", ex);
+      throw new DecodingException("Could not decode JSON-encoded object ", ex);
     }
   }
 

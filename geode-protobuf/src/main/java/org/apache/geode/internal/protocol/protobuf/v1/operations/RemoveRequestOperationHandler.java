@@ -14,7 +14,6 @@
  */
 package org.apache.geode.internal.protocol.protobuf.v1.operations;
 
-import static org.apache.geode.internal.protocol.protobuf.v1.ProtobufErrorCode.INVALID_REQUEST;
 import static org.apache.geode.internal.protocol.protobuf.v1.ProtobufErrorCode.SERVER_ERROR;
 
 import org.apache.logging.log4j.LogManager;
@@ -31,6 +30,7 @@ import org.apache.geode.internal.protocol.protobuf.v1.ProtobufSerializationServi
 import org.apache.geode.internal.protocol.protobuf.v1.RegionAPI;
 import org.apache.geode.internal.protocol.protobuf.v1.Result;
 import org.apache.geode.internal.protocol.protobuf.v1.Success;
+import org.apache.geode.internal.protocol.protobuf.v1.serialization.exception.DecodingException;
 import org.apache.geode.internal.protocol.protobuf.v1.serialization.exception.EncodingException;
 import org.apache.geode.internal.protocol.protobuf.v1.utilities.ProtobufResponseUtilities;
 
@@ -42,7 +42,8 @@ public class RemoveRequestOperationHandler
   @Override
   public Result<RegionAPI.RemoveResponse, ClientProtocol.ErrorResponse> process(
       ProtobufSerializationService serializationService, RegionAPI.RemoveRequest request,
-      MessageExecutionContext messageExecutionContext) throws InvalidExecutionContextException {
+      MessageExecutionContext messageExecutionContext)
+      throws InvalidExecutionContextException, DecodingException {
 
     String regionName = request.getRegionName();
     Region region = messageExecutionContext.getCache().getRegion(regionName);
@@ -58,11 +59,6 @@ public class RemoveRequestOperationHandler
       region.remove(decodedKey);
 
       return Success.of(RegionAPI.RemoveResponse.newBuilder().build());
-    } catch (EncodingException ex) {
-      // can be thrown by encoding or decoding.
-      logger.error("Received Remove request with unsupported encoding: {}", ex);
-      return Failure.of(ProtobufResponseUtilities.makeErrorResponse(INVALID_REQUEST,
-          "Encoding not supported: " + ex.getMessage()));
     } finally {
       messageExecutionContext.getStatistics().endOperation(startTime);
     }

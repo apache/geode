@@ -35,6 +35,7 @@ import org.apache.geode.internal.protocol.protobuf.v1.MessageExecutionContext;
 import org.apache.geode.internal.protocol.protobuf.v1.ProtobufSerializationService;
 import org.apache.geode.internal.protocol.protobuf.v1.Result;
 import org.apache.geode.internal.protocol.protobuf.v1.Success;
+import org.apache.geode.internal.protocol.protobuf.v1.serialization.exception.DecodingException;
 import org.apache.geode.internal.protocol.protobuf.v1.serialization.exception.EncodingException;
 import org.apache.geode.internal.security.SecurityService;
 import org.apache.geode.security.NotAuthorizedException;
@@ -45,7 +46,8 @@ public class ExecuteFunctionOnRegionRequestOperationHandler implements
   public Result<FunctionAPI.ExecuteFunctionOnRegionResponse, ClientProtocol.ErrorResponse> process(
       ProtobufSerializationService serializationService,
       FunctionAPI.ExecuteFunctionOnRegionRequest request,
-      MessageExecutionContext messageExecutionContext) throws InvalidExecutionContextException {
+      MessageExecutionContext messageExecutionContext)
+      throws InvalidExecutionContextException, EncodingException, DecodingException {
 
     final String functionID = request.getFunctionID();
     final String regionName = request.getRegion();
@@ -112,16 +114,11 @@ public class ExecuteFunctionOnRegionRequestOperationHandler implements
           .setError(BasicTypes.Error.newBuilder().setErrorCode(BasicTypes.ErrorCode.SERVER_ERROR)
               .setMessage("Function execution failed: " + ex.toString()))
           .build());
-    } catch (EncodingException ex) {
-      return Failure.of(ClientProtocol.ErrorResponse.newBuilder()
-          .setError(BasicTypes.Error.newBuilder().setErrorCode(BasicTypes.ErrorCode.SERVER_ERROR)
-              .setMessage("Encoding failed: " + ex.toString()))
-          .build());
     }
   }
 
   private Set<Object> parseFilter(ProtobufSerializationService serializationService,
-      FunctionAPI.ExecuteFunctionOnRegionRequest request) throws EncodingException {
+      FunctionAPI.ExecuteFunctionOnRegionRequest request) throws DecodingException {
     List<BasicTypes.EncodedValue> encodedFilter = request.getKeyFilterList();
     Set<Object> filter = new HashSet<>();
 
