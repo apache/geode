@@ -21,13 +21,10 @@ import org.apache.geode.LogWriter;
 import org.apache.geode.cache.CacheCallback;
 import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.distributed.DistributedSystem;
-import org.apache.geode.internal.cache.GemFireCacheImpl;
-import org.apache.geode.internal.cache.InternalCache;
 
-// TODO Add example usage of this interface and configuration details
 /**
  * Specifies the mechanism to obtain credentials for a client or peer. It is mandatory for clients
- * and peers when running in secure mode and an {@link Authenticator} has been configured on the
+ * and peers when running in secure mode and an {@link SecurityManager} has been configured on the
  * server/locator side respectively. Implementations should register name of the static creation
  * function (that returns an object of the class) as the <i>security-peer-auth-init</i> system
  * property on peers and as the <i>security-client-auth-init</i> system property on clients.
@@ -36,28 +33,31 @@ import org.apache.geode.internal.cache.InternalCache;
  */
 public interface AuthInitialize extends CacheCallback {
 
+  public static String SECURITY_USERNAME = "security-username";
+  public static String SECURITY_PASSWORD = "security-password";
+
   /**
    * Initialize the callback for a client/peer. This is invoked when a new connection from a
    * client/peer is created with the host.
+   *
+   * Do not use these loggers, use log4j logger directly
    *
    * @param systemLogger {@link LogWriter} for system logs
    * @param securityLogger {@link LogWriter} for security logs
    *
    * @throws AuthenticationFailedException if some exception occurs during the initialization
    *
-   * @deprecated since Geode 1.0, use init()
    */
-  @Deprecated
-  void init(LogWriter systemLogger, LogWriter securityLogger) throws AuthenticationFailedException;
+  default void init(LogWriter systemLogger, LogWriter securityLogger)
+      throws AuthenticationFailedException {};
 
   /**
-   * @since Geode 1.0. implement this method instead of init with logwriters. Implementation should
-   *        use log4j instead of these loggers.
+   *
+   * @since Geode 1.0.
+   * @deprecated in Geode 1.5, never called by the product, use init(LogWriter systemLogger,
+   *             LogWriter securityLogger)
    */
-  default void init() {
-    InternalCache cache = GemFireCacheImpl.getInstance();
-    init(cache.getLogger(), cache.getSecurityLogger());
-  }
+  default void init() {}
 
   /**
    * Initialize with the given set of security properties and return the credentials for the
@@ -92,8 +92,8 @@ public interface AuthInitialize extends CacheCallback {
    * @param securityProps
    * @return the credentials to be used. It needs to contain "security-username" and
    *         "security-password"
-   * @deprecated As of Geode 1.3, please implement getCredentials(Properties, DistributedMember,
-   *             boolean)
+   * @deprecated in Geode 1.3. never called by the product. use getCredentials(Properties
+   *             securityProps, DistributedMember server, boolean isPeer)
    */
   default Properties getCredentials(Properties securityProps) {
     return getCredentials(securityProps, null, true);
