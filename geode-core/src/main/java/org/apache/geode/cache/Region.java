@@ -1510,28 +1510,21 @@ public interface Region<K, V> extends ConcurrentMap<K, V> {
    * cleared from the client and current value for this key is inserted into the local cache before
    * this call returns.
    *
-   * @param key The key on which to register interest.
-   *
-   *        The following <code>List</code> and 'ALL_KEYS' behavior is now deprecated. As an
-   *        alternative, please use {@link #registerInterestForKeys(Iterable)} and
-   *        {@link #registerInterestForAllKeys()}
-   *
-   *        Deprecated behavior: If the key is a <code>List</code>, then all the keys in the
-   *        <code>List</code> will be registered. The key can also be the special token 'ALL_KEYS',
-   *        which will register interest in all keys in the region. In effect, this will cause an
-   *        update to any key in this region in the CacheServer to be pushed to the client.
+   * @param key The key on which to register interest. If the key is a <code>List</code>, then all
+   *        the keys in the <code>List</code> will be registered. The key can also be the special
+   *        token 'ALL_KEYS', which will register interest in all keys in the region. In effect,
+   *        this will cause an update to any key in this region in the CacheServer to be pushed to
+   *        the client.
    *
    *        <p>
    *        This method uses the default <code>InterestResultPolicy</code>.
    *        </p>
    *
    *        <p>
-   *        <i> Using 'ALL_KEYS' is the same as calling {@link #registerInterestRegex(String)} with
+   *        <i>Using 'ALL_KEYS' is the same as calling {@link #registerInterestRegex(String)} with
    *        ".*" as the argument. This means that all keys any type are pushed to the client and
    *        inserted into the local cache.</i>
    *        </p>
-   *
-   *        End of deprecation
    *
    *        <p>
    *        If you locally-destroy a key and your region has concurrency-checks-enabled turned off
@@ -1565,22 +1558,17 @@ public interface Region<K, V> extends ConcurrentMap<K, V> {
    * events to your client cache.
    * </p>
    *
-   * @param key The key on which to register interest. The following <code>List</code> and
-   *        'ALL_KEYS' behavior is now deprecated. As an alternative, please use
-   *        {@link #registerInterestForKeys(Iterable, InterestResultPolicy)} and
-   *        {@link #registerInterestForAllKeys(InterestResultPolicy)}
-   *
-   *        Deprecated behavior: If the key is a <code>List</code>, then all the keys in the
-   *        <code>List</code> will be registered. The key can also be the special token 'ALL_KEYS',
-   *        which will register interest in all keys in the region. In effect, this will cause an
-   *        update to any key in this region in the CacheServer to be pushed to the client.
+   * @param key The key on which to register interest. If the key is a <code>List</code>, then all
+   *        the keys in the <code>List</code> will be registered. The key can also be the special
+   *        token 'ALL_KEYS', which will register interest in all keys in the region. In effect,
+   *        this will cause an update to any key in this region in the CacheServer to be pushed to
+   *        the client.
    *
    *        <p>
    *        <i>Using 'ALL_KEYS' is the same as calling {@link #registerInterestRegex(String)} with
    *        ".*" as the argument. This means that all keys of any type are pushed to the client and
    *        inserted into the local cache.</i>
    *        </p>
-   *        End of deprecation
    *
    * @param policy The interest result policy. This can be one of:
    *        <ul>
@@ -1600,271 +1588,6 @@ public interface Region<K, V> extends ConcurrentMap<K, V> {
    * @since GemFire 4.2.3
    */
   void registerInterest(K key, InterestResultPolicy policy);
-
-
-  /**
-   * Sends a request to the CacheServer to register interest in all keys for this client. Updates to
-   * any key by other clients will be pushed to this client by the CacheServer. This method is
-   * currently supported only on clients in a client server topology. The keys are first locally
-   * cleared from the client and current value for the keys are inserted into the local cache before
-   * this call returns.
-   *
-   * @since Geode 1.5
-   *
-   * @throws UnsupportedOperationException if the region is not configured with a pool name.
-   * @throws SubscriptionNotEnabledException if the region's pool does not have subscriptions
-   *         enabled.
-   * @throws UnsupportedOperationException if the region is a replicate with distributed scope.
-   */
-  default void registerInterestForAllKeys() {
-    registerInterestRegex(".*");
-  }
-
-
-  /**
-   * Sends a request to the CacheServer to register interest in for all keys for this client.
-   * Updates to any key by other clients will be pushed to this client by the CacheServer. This
-   * method is currently supported only on clients in a client server topology. The keys are first
-   * locally cleared from the client and current value for the keys are inserted into the local
-   * cache before this call returns. (if requested).
-   *
-   * <p>
-   * If you locally-destroy a key and your region has concurrency-checks-enabled turned off you will
-   * not receive invalidation events from your interest subscription for that key. When
-   * concurrency-checks-enabled is turned on GemFire will accept invalidation and deliver these
-   * events to your client cache.
-   * </p>
-   *
-   * @param policy The interest result policy. This can be one of:
-   *        <ul>
-   *        <li>InterestResultPolicy.NONE - does not initialize the local cache</li>
-   *        <li>InterestResultPolicy.KEYS - initializes the local cache with the keys satisfying the
-   *        request</li>
-   *        <li>InterestResultPolicy.KEYS_VALUES - initializes the local cache with the keys and
-   *        current values satisfying the request</li>
-   *        </ul>
-   * @throws UnsupportedOperationException if the region is not configured with a pool name.
-   * @throws SubscriptionNotEnabledException if the region's pool does not have subcriptions
-   *         enabled.
-   * @throws UnsupportedOperationException if the region is a replicate with distributed scope.
-   *
-   * @see InterestResultPolicy
-   *
-   * @since Geode 1.5
-   */
-  default void registerInterestForAllKeys(InterestResultPolicy policy) {
-    registerInterestRegex(".*", policy);
-  }
-
-  /**
-   * Sends a request to the CacheServer to register interest in all keys for this client. Updates to
-   * any key by other clients will be pushed to this client by the CacheServer. This method is
-   * currently supported only on clients in a client server topology. The keys are first locally
-   * cleared from the client and the current value for the keys are inserted into the local cache
-   * before this call returns (if requested).
-   *
-   * @param policy The interest result policy. This can be one of:
-   *        <ul>
-   *        <li>InterestResultPolicy.NONE - does not initialize the local cache</li>
-   *        <li>InterestResultPolicy.KEYS - initializes the local cache with the keys satisfying the
-   *        request</li>
-   *        <li>InterestResultPolicy.KEYS_VALUES - initializes the local cache with the keys and
-   *        current values satisfying the request</li>
-   *        </ul>
-   * @param isDurable true if the register interest is durable
-   * @throws UnsupportedOperationException if the region is not configured with a pool name.
-   * @throws SubscriptionNotEnabledException if the region's pool does not have subscriptions
-   *         enabled.
-   * @throws UnsupportedOperationException if the region is a replicate with distributed scope.
-   *
-   * @see InterestResultPolicy
-   *
-   * @since Geode 1.5
-   */
-  default void registerInterestForAllKeys(InterestResultPolicy policy, boolean isDurable) {
-    registerInterestRegex(".*", policy, isDurable);
-  }
-
-
-  /**
-   * Sends a request to the CacheServer to register interest in all keys for this client. Updates to
-   * any key by other clients will be pushed to this client by the CacheServer. This method is
-   * currently supported only on clients in a client server topology. The keys are first locally
-   * cleared from the client and the current value for the keys are inserted into the local cache
-   * before this call returns (if requested).
-   *
-   * <p>
-   * If you locally-destroy a key and your region has concurrency-checks-enabled turned off you will
-   * not receive invalidation events from your interest subscription for that key. When
-   * concurrency-checks-enabled is turned on GemFire will accept invalidation and deliver these
-   * events to your client cache.
-   * </p>
-   *
-   * @param policy The interest result policy. This can be one of:
-   *        <ul>
-   *        <li>InterestResultPolicy.NONE - does not initialize the local cache</li>
-   *        <li>InterestResultPolicy.KEYS - initializes the local cache with the keys satisfying the
-   *        request</li>
-   *        <li>InterestResultPolicy.KEYS_VALUES - initializes the local cache with the keys and
-   *        current values satisfying the request</li>
-   *        </ul>
-   * @param isDurable true if the register interest is durable
-   * @param receiveValues defaults to true. set to false to receive create or update events as
-   *        invalidates similar to notify-by-subscription false.
-   * @throws UnsupportedOperationException if the region is not configured with a pool name.
-   * @throws SubscriptionNotEnabledException if the region's pool does not have subscriptions
-   *         enabled.
-   * @throws UnsupportedOperationException if the region is a replicate with distributed scope.
-   *
-   * @see InterestResultPolicy
-   *
-   * @since Geode 1.5
-   */
-  default void registerInterestForAllKeys(InterestResultPolicy policy, boolean isDurable,
-      boolean receiveValues) {
-    registerInterestRegex(".*", policy, isDurable, receiveValues);
-  }
-
-  /**
-   * Sends a request to the CacheServer to register interest for all key in the iterable for this
-   * client. Updates to any of the keys in the iterable by other clients will be pushed to this
-   * client by the CacheServer. This method is currently supported only on clients in a client
-   * server topology. The keys are first locally cleared from the client and current value for the
-   * keys are inserted into the local cache before this call returns. (if requested).
-   *
-   * <p>
-   * If you locally-destroy a key and your region has concurrency-checks-enabled turned off you will
-   * not receive invalidation events from your interest subscription for that key. When
-   * concurrency-checks-enabled is turned on GemFire will accept invalidation and deliver these
-   * events to your client cache.
-   * </p>
-   *
-   * @param iterable The <code>Iterable</code> of keys on which to register interest.
-   * @throws UnsupportedOperationException if the region is not configured with a pool name.
-   * @throws SubscriptionNotEnabledException if the region's pool does not have subcriptions
-   *         enabled.
-   * @throws UnsupportedOperationException if the region is a replicate with distributed scope.
-   **
-   * @since Geode 1.5
-   */
-  default void registerInterestForKeys(Iterable<K> iterable) {
-    iterable.forEach(k -> registerInterest(k));
-  }
-
-  /**
-   * Sends a request to the CacheServer to register interest for all key in the iterable for this
-   * client. Updates to any of the keys in the iterable by other clients will be pushed to this
-   * client by the CacheServer. This method is currently supported only on clients in a client
-   * server topology. The keys are first locally cleared from the client and current value for the
-   * keys are inserted into the local cache before this call returns. (if requested).
-   *
-   * <p>
-   * If you locally-destroy a key and your region has concurrency-checks-enabled turned off you will
-   * not receive invalidation events from your interest subscription for that key. When
-   * concurrency-checks-enabled is turned on GemFire will accept invalidation and deliver these
-   * events to your client cache.
-   * </p>
-   *
-   * @param iterable The <code>Iterable</code> of keys on which to register interest.
-   * @param policy The interest result policy. This can be one of:
-   *        <ul>
-   *        <li>InterestResultPolicy.NONE - does not initialize the local cache</li>
-   *        <li>InterestResultPolicy.KEYS - initializes the local cache with the keys satisfying the
-   *        request</li>
-   *        <li>InterestResultPolicy.KEYS_VALUES - initializes the local cache with the keys and
-   *        current values satisfying the request</li>
-   *        </ul>
-   * @throws UnsupportedOperationException if the region is not configured with a pool name.
-   * @throws SubscriptionNotEnabledException if the region's pool does not have subcriptions
-   *         enabled.
-   * @throws UnsupportedOperationException if the region is a replicate with distributed scope.
-   *
-   * @see InterestResultPolicy
-   *
-   * @since Geode 1.5
-   */
-  default void registerInterestForKeys(Iterable<K> iterable, InterestResultPolicy policy) {
-    iterable.forEach(k -> registerInterest(k, policy));
-  }
-
-  /**
-   * Sends a request to the CacheServer to register interest for all key in the iterable for this
-   * client. Updates to any of the keys in the iterable by other clients will be pushed to this
-   * client by the CacheServer. This method is currently supported only on clients in a client
-   * server topology. The keys are first locally cleared from the client and current value for the
-   * keys are inserted into the local cache before this call returns. (if requested).
-   *
-   * <p>
-   * If you locally-destroy a key and your region has concurrency-checks-enabled turned off you will
-   * not receive invalidation events from your interest subscription for that key. When
-   * concurrency-checks-enabled is turned on GemFire will accept invalidation and deliver these
-   * events to your client cache.
-   * </p>
-   *
-   * @param iterable The <code>Iterable</code> of keys on which to register interest.
-   * @param policy The interest result policy. This can be one of:
-   *        <ul>
-   *        <li>InterestResultPolicy.NONE - does not initialize the local cache</li>
-   *        <li>InterestResultPolicy.KEYS - initializes the local cache with the keys satisfying the
-   *        request</li>
-   *        <li>InterestResultPolicy.KEYS_VALUES - initializes the local cache with the keys and
-   *        current values satisfying the request</li>
-   *        </ul>
-   * @param isDurable true if the register interest is durable
-   * @throws UnsupportedOperationException if the region is not configured with a pool name.
-   * @throws SubscriptionNotEnabledException if the region's pool does not have subcriptions
-   *         enabled.
-   * @throws UnsupportedOperationException if the region is a replicate with distributed scope.
-   *
-   * @see InterestResultPolicy
-   *
-   * @since Geode 1.5
-   */
-  default void registerInterestForKeys(Iterable<K> iterable, InterestResultPolicy policy,
-      boolean isDurable) {
-    iterable.forEach(k -> registerInterest(k, policy, isDurable));
-  }
-
-  /**
-   * Sends a request to the CacheServer to register interest for all key in the iterable for this
-   * client. Updates to any of the keys in the iterable by other clients will be pushed to this
-   * client by the CacheServer. This method is currently supported only on clients in a client
-   * server topology. The keys are first locally cleared from the client and current value for the
-   * keys are inserted into the local cache before this call returns. (if requested).
-   *
-   * <p>
-   * If you locally-destroy a key and your region has concurrency-checks-enabled turned off you will
-   * not receive invalidation events from your interest subscription for that key. When
-   * concurrency-checks-enabled is turned on GemFire will accept invalidation and deliver these
-   * events to your client cache.
-   * </p>
-   *
-   * @param iterable The <code>Iterable</code> of keys on which to register interest.
-   * @param policy The interest result policy. This can be one of:
-   *        <ul>
-   *        <li>InterestResultPolicy.NONE - does not initialize the local cache</li>
-   *        <li>InterestResultPolicy.KEYS - initializes the local cache with the keys satisfying the
-   *        request</li>
-   *        <li>InterestResultPolicy.KEYS_VALUES - initializes the local cache with the keys and
-   *        current values satisfying the request</li>
-   *        </ul>
-   * @param isDurable true if the register interest is durable
-   * @param receiveValues defaults to true. set to false to receive create or update events as
-   *        invalidates similar to notify-by-subscription false.
-   * @throws UnsupportedOperationException if the region is not configured with a pool name.
-   * @throws SubscriptionNotEnabledException if the region's pool does not have subcriptions
-   *         enabled.
-   * @throws UnsupportedOperationException if the region is a replicate with distributed scope.
-   *
-   * @see InterestResultPolicy
-   *
-   * @since Geode 1.5
-   */
-  default void registerInterestForKeys(Iterable<K> iterable, InterestResultPolicy policy,
-      boolean isDurable, boolean receiveValues) {
-    iterable.forEach(k -> registerInterest(k, policy, isDurable, receiveValues));
-  }
-
 
   /**
    * Sends a request to the CacheServer to register interest in a regular expression pattern for
@@ -2086,28 +1809,17 @@ public interface Region<K, V> extends ConcurrentMap<K, V> {
    * events to your client cache.
    * </p>
    *
-   * @param key The key on which to register interest.
-   *
-   *        The following <code>List</code> and 'ALL_KEYS' behavior is now deprecated. As an
-   *        alternative, please use
-   *        {@link #registerInterestForKeys(Iterable, InterestResultPolicy, boolean, boolean)} and
-   *        {@link #registerInterestForAllKeys(InterestResultPolicy, boolean, boolean)}
-   *
-   *        Deprecated behavior: If the key is a <code>List</code>, then all the keys in the
-   *        <code>List</code> will be registered. The key can also be the special token 'ALL_KEYS',
-   *        which will register interest in all keys in the region. In effect, this will cause an
-   *        update to any key in this region in the CacheServer to be pushed to the client.
-   *
-   *        <p>
-   *        This method uses the default <code>InterestResultPolicy</code>.
-   *        </p>
+   * @param key The key on which to register interest. If the key is a <code>List</code>, then all
+   *        the keys in the <code>List</code> will be registered. The key can also be the special
+   *        token 'ALL_KEYS', which will register interest in all keys in the region. In effect,
+   *        this will cause an update to any key in this region in the CacheServer to be pushed to
+   *        the client.
    *
    *        <p>
    *        <i>Using 'ALL_KEYS' is the same as calling {@link #registerInterestRegex(String)} with
    *        ".*" as the argument. This means that all keys of any type are pushed to the client and
    *        inserted into the local cache.</i>
    *        </p>
-   *        End of deprecation.
    *
    * @param policy The interest result policy. This can be one of:
    *        <ul>
@@ -2139,29 +1851,17 @@ public interface Region<K, V> extends ConcurrentMap<K, V> {
    * cleared from the client and the current value for this key is inserted into the local cache
    * before this call returns (if requested).
    *
-   * @param key The key on which to register interest.
-   *
-   *        The following <code>List</code> and 'ALL_KEYS' behavior is now deprecated. As an
-   *        alternative, please use
-   *        {@link #registerInterestForKeys(Iterable, InterestResultPolicy, boolean)} and
-   *        {@link #registerInterestForAllKeys(InterestResultPolicy, boolean)}
-   *
-   *        Deprecated behavior: If the key is a <code>List</code>, then all the keys in the
-   *        <code>List</code> will be registered. The key can also be the special token 'ALL_KEYS',
-   *        which will register interest in all keys in the region. In effect, this will cause an
-   *        update to any key in this region in the CacheServer to be pushed to the client.
-   *
-   *        <p>
-   *        This method uses the default <code>InterestResultPolicy</code>.
-   *        </p>
+   * @param key The key on which to register interest. If the key is a <code>List</code>, then all
+   *        the keys in the <code>List</code> will be registered. The key can also be the special
+   *        token 'ALL_KEYS', which will register interest in all keys in the region. In effect,
+   *        this will cause an update to any key in this region in the CacheServer to be pushed to
+   *        the client.
    *
    *        <p>
    *        <i>Using 'ALL_KEYS' is the same as calling {@link #registerInterestRegex(String)} with
    *        ".*" as the argument. This means that all keys of any type are pushed to the client and
    *        inserted into the local cache.</i>
    *        </p>
-   *
-   *        End of deprecation.
    *
    *        <p>
    *        If you locally-destroy a key and your region has concurrency-checks-enabled turned off

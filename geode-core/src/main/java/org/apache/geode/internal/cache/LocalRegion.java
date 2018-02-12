@@ -3747,14 +3747,10 @@ public class LocalRegion extends AbstractRegion implements LoaderHelperFactory,
 
         case InterestType.KEY:
           if (key instanceof String && key.equals("ALL_KEYS")) {
-            logger.warn(
-                "Usage of registerInterest('ALL_KEYS') has been deprecated.  Please use registerInterestForAllKeys()");
             serverKeys = proxy.registerInterest(".*", InterestType.REGULAR_EXPRESSION,
                 interestResultPolicy, isDurable, receiveUpdatesAsInvalidates, regionDataPolicy);
           } else {
             if (key instanceof List) {
-              logger.warn(
-                  "Usage of registerInterest(List) has been deprecated. Please use registerInterestForKeys(Iterable)");
               serverKeys = proxy.registerInterestList((List) key, interestResultPolicy, isDurable,
                   receiveUpdatesAsInvalidates, regionDataPolicy);
             } else {
