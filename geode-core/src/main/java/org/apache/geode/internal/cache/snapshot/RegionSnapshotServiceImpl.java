@@ -341,7 +341,7 @@ public class RegionSnapshotServiceImpl<K, V> implements RegionSnapshotService<K,
     }
     directory.mkdirs();
     LocalRegion local = getLocalRegion(region);
-    Exporter<K, V> exp = createExporter(region, options);
+    Exporter<K, V> exp = createExporter(local.getCache(), region, options);
 
     if (getLoggerI18n().fineEnabled()) {
       getLoggerI18n().fine("Writing to snapshot " + snapshot.getAbsolutePath());
@@ -396,12 +396,13 @@ public class RegionSnapshotServiceImpl<K, V> implements RegionSnapshotService<K,
     return true;
   }
 
-  static <K, V> Exporter<K, V> createExporter(Region<?, ?> region, SnapshotOptions<K, V> options) {
+  static <K, V> Exporter<K, V> createExporter(InternalCache cache, Region<?, ?> region,
+      SnapshotOptions<K, V> options) {
     String pool = region.getAttributes().getPoolName();
     if (pool != null) {
       return new ClientExporter<>(PoolManager.find(pool));
 
-    } else if (((InternalRegion) region).getCache().getInternalDistributedSystem().isLoner()
+    } else if (cache.getInternalDistributedSystem().isLoner()
         || region.getAttributes().getDataPolicy().equals(DataPolicy.NORMAL)
         || region.getAttributes().getDataPolicy().equals(DataPolicy.PRELOADED)
         || region instanceof LocalDataSet || (options.isParallelMode()
