@@ -533,6 +533,7 @@ org/apache/geode/management/internal/cli/functions/DestroyAsyncEventQueueFunctio
 org/apache/geode/management/internal/cli/functions/DestroyAsyncEventQueueFunctionArgs,true,1755045410754561928,id:java/lang/String,ifExists:boolean
 org/apache/geode/management/internal/cli/functions/DestroyDiskStoreFunction,true,1
 org/apache/geode/management/internal/cli/functions/DestroyDiskStoreFunctionArgs,true,2296397958405313306,id:java/lang/String,ifExists:boolean
+org/apache/geode/management/internal/cli/functions/DestroyGatewayReceiverFunction,true,1490927519860899562
 org/apache/geode/management/internal/cli/functions/DestroyIndexFunction,true,-868082551095130315
 org/apache/geode/management/internal/cli/functions/DestroyJndiBindingFunction,false
 org/apache/geode/management/internal/cli/functions/ExportConfigFunction,true,1
