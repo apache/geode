@@ -33,12 +33,13 @@ import org.apache.geode.cache.DiskStore;
 import org.apache.geode.cache.persistence.PersistentID;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
 import org.apache.geode.internal.cache.DirectoryHolder;
-import org.apache.geode.internal.cache.DiskStoreBackup;
 import org.apache.geode.internal.cache.DiskStoreImpl;
 import org.apache.geode.internal.cache.GemFireCacheImpl;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.cache.Oplog;
 import org.apache.geode.internal.logging.LogService;
+import org.apache.geode.internal.util.IOUtils;
+import org.apache.geode.internal.util.TransformUtils;
 
 /**
  * This class manages the state an logic to backup a single cache.
@@ -75,7 +76,7 @@ public class BackupTask {
     memberId = getCleanedMemberId();
   }
 
-  HashSet<PersistentID> awaitLockAcquisition() throws InterruptedException {
+  HashSet<PersistentID> getPreparedDiskStores() throws InterruptedException {
     locksAcquired.await();
     return diskStoresWithData;
   }
@@ -120,20 +121,30 @@ public class BackupTask {
     }
 
     try {
+      File memberBackupDir = new File(targetDir, memberId);
+      FileSystemBackupWriter backupWriter;
+      FileSystemBackupLocation targetBackupDestination =
+          new FileSystemBackupLocation(targetDir, memberId);
+
+      if (baselineDir == null) {
+        backupWriter = new FileSystemBackupWriter(targetBackupDestination);
+      } else {
+        FileSystemBackupLocation incrementalBaselineLocation =
+            new FileSystemBackupLocation(baselineDir, memberId);
+        backupWriter =
+            new FileSystemBackupWriter(targetBackupDestination, incrementalBaselineLocation);
+      }
+
+      Collection<DiskStore> diskStores = cache.listDiskStoresIncludingRegionOwned();
       temporaryFiles = TemporaryBackupFiles.create();
       fileCopier = new BackupFileCopier(cache, temporaryFiles);
-      File memberBackupDir = new File(targetDir, memberId);
 
-      // Make sure our baseline is okay for this member, then create inspector for baseline backup
-      File checkedBaselineDir = checkBaseline(baselineDir);
-      BackupInspector inspector =
-          (checkedBaselineDir == null ? null : BackupInspector.createInspector(checkedBaselineDir));
       File storesDir = new File(memberBackupDir, DATA_STORES_DIRECTORY);
-      Collection<DiskStore> diskStores = cache.listDiskStoresIncludingRegionOwned();
-
       Map<DiskStoreImpl, DiskStoreBackup> backupByDiskStores =
-          startDiskStoreBackups(inspector, storesDir, diskStores);
+          startDiskStoreBackups(storesDir, diskStores);
+
       allowDestroys.countDown();
+
       HashSet<PersistentID> persistentIds = finishDiskStoreBackups(backupByDiskStores);
 
       if (!backupByDiskStores.isEmpty()) {
@@ -141,9 +152,7 @@ public class BackupTask {
         BackupDefinition backupDefinition = fileCopier.getBackupDefinition();
         backupAdditionalFiles(memberBackupDir);
         backupDefinition.setRestoreScript(restoreScript);
-        BackupDestination backupDestination =
-            new FileSystemBackupDestination(memberBackupDir.toPath());
-        backupDestination.backupFiles(backupDefinition);
+        backupWriter.backupFiles(backupDefinition);
       }
 
       return persistentIds;
@@ -164,8 +173,8 @@ public class BackupTask {
     return persistentIds;
   }
 
-  private Map<DiskStoreImpl, DiskStoreBackup> startDiskStoreBackups(BackupInspector inspector,
-      File storesDir, Collection<DiskStore> diskStores) throws IOException {
+  private Map<DiskStoreImpl, DiskStoreBackup> startDiskStoreBackups(File storesDir,
+      Collection<DiskStore> diskStores) throws IOException {
     Map<DiskStoreImpl, DiskStoreBackup> backupByDiskStore = new HashMap<>();
 
     for (DiskStore store : diskStores) {
@@ -173,7 +182,7 @@ public class BackupTask {
       try {
         if (diskStore.hasPersistedData()) {
           File diskStoreDir = new File(storesDir, getBackupDirName(diskStore));
-          DiskStoreBackup backup = startDiskStoreBackup(diskStore, diskStoreDir, inspector);
+          DiskStoreBackup backup = startDiskStoreBackup(diskStore, diskStoreDir);
           backupByDiskStore.put(diskStore, backup);
         }
       } finally {
@@ -213,63 +222,6 @@ public class BackupTask {
     for (DiskStore store : cache.listDiskStoresIncludingRegionOwned()) {
       ((DiskStoreImpl) store).releaseBackupLock();
     }
-  }
-
-  /**
-   * Returns the memberId directory for this member in the baseline. The memberId may have changed
-   * if this member has been restarted since the last backup.
-   *
-   * @param baselineParentDir parent directory of last backup.
-   * @return null if the baseline for this member could not be located.
-   */
-  private File findBaselineForThisMember(File baselineParentDir) {
-    File baselineDir = null;
-
-    // Find the first matching DiskStoreId directory for this member.
-    for (DiskStore diskStore : cache.listDiskStoresIncludingRegionOwned()) {
-      File[] matchingFiles = baselineParentDir
-          .listFiles((file, name) -> name.endsWith(getBackupDirName((DiskStoreImpl) diskStore)));
-      // We found it? Good. Set this member's baseline to the backed up disk store's member dir (two
-      // levels up).
-      if (null != matchingFiles && matchingFiles.length > 0)
-        baselineDir = matchingFiles[0].getParentFile().getParentFile();
-    }
-    return baselineDir;
-  }
-
-  /**
-   * Performs a sanity check on the baseline directory for incremental backups. If a baseline
-   * directory exists for the member and there is no INCOMPLETE_BACKUP_FILE file then return the
-   * data stores directory for this member.
-   *
-   * @param baselineParentDir a previous backup directory. This is used with the incremental backup
-   *        option. May be null if the user specified a full backup.
-   * @return null if the backup is to be a full backup otherwise return the data store directory in
-   *         the previous backup for this member (if incremental).
-   */
-  private File checkBaseline(File baselineParentDir) {
-    File baselineDir = null;
-
-    if (null != baselineParentDir) {
-      // Start by looking for this memberId
-      baselineDir = new File(baselineParentDir, memberId);
-
-      if (!baselineDir.exists()) {
-        // hmmm, did this member have a restart?
-        // Determine which member dir might be a match for us
-        baselineDir = findBaselineForThisMember(baselineParentDir);
-      }
-
-      if (null != baselineDir) {
-        // check for existence of INCOMPLETE_BACKUP_FILE file
-        File incompleteBackup = new File(baselineDir, INCOMPLETE_BACKUP_FILE);
-        if (incompleteBackup.exists()) {
-          baselineDir = null;
-        }
-      }
-    }
-
-    return baselineDir;
   }
 
   private void backupAdditionalFiles(File backupDir) throws IOException {
@@ -336,8 +288,8 @@ public class BackupTask {
    * define the data we're backing up by copying the init file and rolling to the next file. After
    * this method returns operations can proceed as normal, except that we don't remove oplogs.
    */
-  private DiskStoreBackup startDiskStoreBackup(DiskStoreImpl diskStore, File targetDir,
-      BackupInspector baselineInspector) throws IOException {
+  private DiskStoreBackup startDiskStoreBackup(DiskStoreImpl diskStore, File targetDir)
+      throws IOException {
     DiskStoreBackup backup = null;
     boolean done = false;
     try {
@@ -372,18 +324,7 @@ public class BackupTask {
           restoreScript.addExistenceTest(diskStore.getDiskInitFile().getIFFile());
 
           // Contains all oplogs that will backed up
-
-          // Incremental backup so filter out oplogs that have already been
-          // backed up
-          Oplog[] allOplogs;
-          if (null != baselineInspector) {
-            allOplogs = filterBaselineOplogs(diskStore, baselineInspector);
-          } else {
-            allOplogs = diskStore.getAllOplogsForBackup();
-          }
-
-          // mark all oplogs as being backed up. This will
-          // prevent the oplogs from being deleted
+          Oplog[] allOplogs = diskStore.getAllOplogsForBackup();
           backup = new DiskStoreBackup(allOplogs, targetDir);
           backupByDiskStore.put(diskStore, backup);
 
@@ -438,7 +379,7 @@ public class BackupTask {
     // Loop through operation logs and see if they are already part of the baseline backup.
     for (Oplog log : allOplogs) {
       // See if they are backed up in the current baseline
-      Map<File, File> oplogMap = log.mapBaseline(baselineOplogFiles);
+      Map<File, File> oplogMap = mapBaseline(log, baselineOplogFiles);
 
       // No? Then see if they were backed up in previous baselines
       if (oplogMap.isEmpty() && baselineInspector.isIncremental()) {
@@ -491,4 +432,30 @@ public class BackupTask {
   DiskStoreBackup getBackupForDiskStore(DiskStoreImpl diskStore) {
     return backupByDiskStore.get(diskStore);
   }
+
+  public Map<File, File> mapBaseline(Oplog oplog, Collection<File> baselineOplogFiles) {
+    // Map of baseline oplog file name to oplog file
+    Map<String, File> baselineOplogMap =
+        TransformUtils.transformAndMap(baselineOplogFiles, TransformUtils.fileNameTransformer);
+    // Returned Map of baseline file to current oplog file
+    Map<File, File> baselineToOplogMap = new HashMap<>();
+
+    addToBaseLineToOplogMap(oplog.getCrfFile(), baselineOplogMap, baselineToOplogMap);
+    addToBaseLineToOplogMap(oplog.getDrfFile(), baselineOplogMap, baselineToOplogMap);
+    if (oplog.hasKrf()) {
+      addToBaseLineToOplogMap(oplog.getKrfFile(), baselineOplogMap, baselineToOplogMap);
+    }
+
+    return baselineToOplogMap;
+  }
+
+  private void addToBaseLineToOplogMap(File oplogFile, Map baselineOplogMap,
+      Map baselineToOplogMap) {
+    if ((null != oplogFile) && oplogFile.exists()
+        && baselineOplogMap.containsKey(oplogFile.getName())) {
+      baselineToOplogMap.put(baselineOplogMap.get(oplogFile.getName()),
+          IOUtils.tryGetCanonicalFileElseGetAbsoluteFile(oplogFile));
+    }
+  }
+
 }

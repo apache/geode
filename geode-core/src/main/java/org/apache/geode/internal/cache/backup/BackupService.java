@@ -32,9 +32,9 @@ import org.apache.logging.log4j.Logger;
 import org.apache.geode.cache.persistence.PersistentID;
 import org.apache.geode.distributed.internal.MembershipListener;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
-import org.apache.geode.internal.cache.DiskStoreBackup;
 import org.apache.geode.internal.cache.DiskStoreImpl;
 import org.apache.geode.internal.cache.InternalCache;
+import org.apache.geode.internal.cache.Oplog;
 import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.internal.logging.LoggingThreadGroup;
 
@@ -78,7 +78,7 @@ public class BackupService {
       throw new IOException("Another backup already in progress");
     }
     taskFuture = executor.submit(() -> backupTask.backup());
-    return backupTask.awaitLockAcquisition();
+    return backupTask.getPreparedDiskStores();
   }
 
   public HashSet<PersistentID> doBackup() throws IOException {
@@ -120,6 +120,22 @@ public class BackupService {
       cleanup();
       throw new IllegalStateException("The admin member requesting a backup has already departed");
     }
+  }
+
+  public boolean deferDrfDelete(DiskStoreImpl diskStore, Oplog oplog) {
+    DiskStoreBackup diskStoreBackup = getBackupForDiskStore(diskStore);
+    if (diskStoreBackup != null) {
+      return diskStoreBackup.deferDrfDelete(oplog);
+    }
+    return false;
+  }
+
+  public boolean deferCrfDelete(DiskStoreImpl diskStore, Oplog oplog) {
+    DiskStoreBackup diskStoreBackup = getBackupForDiskStore(diskStore);
+    if (diskStoreBackup != null) {
+      return diskStoreBackup.deferCrfDelete(oplog);
+    }
+    return false;
   }
 
   void cleanup() {

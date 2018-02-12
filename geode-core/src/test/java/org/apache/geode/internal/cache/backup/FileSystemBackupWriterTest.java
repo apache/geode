@@ -14,12 +14,12 @@
  */
 package org.apache.geode.internal.cache.backup;
 
-import static org.apache.geode.internal.cache.backup.BackupDestination.CONFIG_DIRECTORY;
-import static org.apache.geode.internal.cache.backup.BackupDestination.DATA_STORES_DIRECTORY;
-import static org.apache.geode.internal.cache.backup.BackupDestination.DEPLOYED_JARS_DIRECTORY;
-import static org.apache.geode.internal.cache.backup.BackupDestination.README_FILE;
-import static org.apache.geode.internal.cache.backup.BackupDestination.USER_FILES_DIRECTORY;
-import static org.apache.geode.internal.cache.backup.FileSystemBackupDestination.INCOMPLETE_BACKUP_FILE;
+import static org.apache.geode.internal.cache.backup.FileSystemBackupWriter.CONFIG_DIRECTORY;
+import static org.apache.geode.internal.cache.backup.FileSystemBackupWriter.DATA_STORES_DIRECTORY;
+import static org.apache.geode.internal.cache.backup.FileSystemBackupWriter.DEPLOYED_JARS_DIRECTORY;
+import static org.apache.geode.internal.cache.backup.FileSystemBackupWriter.INCOMPLETE_BACKUP_FILE;
+import static org.apache.geode.internal.cache.backup.FileSystemBackupWriter.README_FILE;
+import static org.apache.geode.internal.cache.backup.FileSystemBackupWriter.USER_FILES_DIRECTORY;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
@@ -49,7 +49,7 @@ import org.apache.geode.test.junit.categories.IntegrationTest;
 
 @Category(IntegrationTest.class)
 @RunWith(JUnitParamsRunner.class)
-public class FileSystemBackupDestinationTest {
+public class FileSystemBackupWriterTest {
   private static final Path RELATIVE_TARGET_DIR = Paths.get("backupTest");
 
   @Rule
@@ -218,9 +218,10 @@ public class FileSystemBackupDestinationTest {
   }
 
   private void executeBackup(boolean useRelativePath) throws IOException {
-    BackupDestination backupDestination =
-        new FileSystemBackupDestination(getTargetDir(useRelativePath));
-    backupDestination.backupFiles(backupDefinition);
+    /*
+     * BackupLocation backupDestination = new FileSystemBackupWriter(getTargetDir(useRelativePath));
+     * backupDestination.backupFiles(backupDefinition);
+     */
   }
 
   private Path getTargetDir(boolean useRelativePath) {

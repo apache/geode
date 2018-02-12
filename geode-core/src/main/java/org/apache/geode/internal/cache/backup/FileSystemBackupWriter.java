@@ -29,17 +29,28 @@ import org.apache.geode.internal.cache.DiskStoreImpl;
 import org.apache.geode.internal.cache.GemFireCacheImpl;
 import org.apache.geode.internal.i18n.LocalizedStrings;
 
-public class FileSystemBackupDestination implements BackupDestination {
+public class FileSystemBackupWriter implements BackupWriter {
+
   static final String INCOMPLETE_BACKUP_FILE = "INCOMPLETE_BACKUP_FILE";
 
-  private final Path backupDir;
+  final FileSystemBackupLocation targetBackupDestination;
 
-  FileSystemBackupDestination(Path backupDir) {
-    this.backupDir = backupDir;
+  final FileSystemBackupLocation incrementalBaselineLocation;
+
+  FileSystemBackupWriter(FileSystemBackupLocation backupDestination) {
+    this.targetBackupDestination = backupDestination;
+    this.incrementalBaselineLocation = null;
+  }
+
+  FileSystemBackupWriter(FileSystemBackupLocation backupDestination,
+      FileSystemBackupLocation incrementalBaselineLocation) {
+    this.targetBackupDestination = backupDestination;
+    this.incrementalBaselineLocation = incrementalBaselineLocation;
   }
 
   @Override
   public void backupFiles(BackupDefinition backupDefinition) throws IOException {
+    Path backupDir = targetBackupDestination.getMemberBackupLocationDir();
     Files.createDirectories(backupDir);
     Files.createFile(backupDir.resolve(INCOMPLETE_BACKUP_FILE));
     backupAllFilesets(backupDefinition);
@@ -47,26 +58,27 @@ public class FileSystemBackupDestination implements BackupDestination {
   }
 
   private void backupAllFilesets(BackupDefinition backupDefinition) throws IOException {
+    RestoreScript restoreScript = backupDefinition.getRestoreScript();
     backupUserFiles(backupDefinition.getUserFiles());
     backupDeployedJars(backupDefinition.getDeployedJars());
     backupConfigFiles(backupDefinition.getConfigFiles());
-    backupOplogs(backupDefinition.getOplogFilesByDiskStore());
+    backupOplogs(backupDefinition.getOplogFilesByDiskStore(), restoreScript);
     backupDiskInitFiles(backupDefinition.getDiskInitFiles());
-    RestoreScript script = backupDefinition.getRestoreScript();
-    if (script != null) {
-      File scriptFile = script.generate(backupDir.toFile());
-      backupRestoreScript(scriptFile.toPath());
-    }
+    File scriptFile =
+        restoreScript.generate(targetBackupDestination.getMemberBackupLocationDir().toFile());
+    backupRestoreScript(scriptFile.toPath());
     writeReadMe();
   }
 
   private void writeReadMe() throws IOException {
     String text = LocalizedStrings.BackupService_README.toLocalizedString();
-    Files.write(backupDir.resolve(README_FILE), text.getBytes());
+    Files.write(targetBackupDestination.getMemberBackupLocationDir().resolve(README_FILE),
+        text.getBytes());
   }
 
   private void backupRestoreScript(Path restoreScriptFile) throws IOException {
-    Files.copy(restoreScriptFile, backupDir.resolve(restoreScriptFile.getFileName()));
+    Files.copy(restoreScriptFile, targetBackupDestination.getMemberBackupLocationDir()
+        .resolve(restoreScriptFile.getFileName()));
   }
 
   private void backupDiskInitFiles(Map<DiskStore, Path> diskInitFiles) throws IOException {
@@ -80,29 +92,61 @@ public class FileSystemBackupDestination implements BackupDestination {
   }
 
   private void backupUserFiles(Collection<Path> userFiles) throws IOException {
-    Path userDirectory = backupDir.resolve(USER_FILES_DIRECTORY);
+    Path userDirectory =
+        targetBackupDestination.getMemberBackupLocationDir().resolve(USER_FILES_DIRECTORY);
     Files.createDirectories(userDirectory);
     moveFilesOrDirectories(userFiles, userDirectory);
   }
 
   private void backupDeployedJars(Collection<Path> jarFiles) throws IOException {
-    Path jarsDirectory = backupDir.resolve(DEPLOYED_JARS_DIRECTORY);
+    Path jarsDirectory =
+        targetBackupDestination.getMemberBackupLocationDir().resolve(DEPLOYED_JARS_DIRECTORY);
     Files.createDirectories(jarsDirectory);
     moveFilesOrDirectories(jarFiles, jarsDirectory);
   }
 
   private void backupConfigFiles(Collection<Path> configFiles) throws IOException {
-    Path configDirectory = backupDir.resolve(CONFIG_DIRECTORY);
+    Path configDirectory =
+        targetBackupDestination.getMemberBackupLocationDir().resolve(CONFIG_DIRECTORY);
     Files.createDirectories(configDirectory);
     moveFilesOrDirectories(configFiles, configDirectory);
   }
 
-  private void backupOplogs(Map<DiskStore, Collection<Path>> oplogFiles) throws IOException {
+
+  private void backupOplogs(Map<DiskStore, Collection<Path>> oplogFiles,
+      RestoreScript restoreScript) throws IOException {
+    if (this.incrementalBaselineLocation == null) {
+      fullBackup(oplogFiles);
+    } else {
+      incrementalBackup(oplogFiles, restoreScript);
+    }
+  }
+
+  private void fullBackup(Map<DiskStore, Collection<Path>> oplogFiles) throws IOException {
     for (Map.Entry<DiskStore, Collection<Path>> entry : oplogFiles.entrySet()) {
       for (Path path : entry.getValue()) {
         int index = ((DiskStoreImpl) entry.getKey()).getInforFileDirIndex();
         Path backupDir = createOplogBackupDir(entry.getKey(), index);
         backupOplog(backupDir, path);
+      }
+    }
+  }
+
+  private void incrementalBackup(Map<DiskStore, Collection<Path>> oplogFiles,
+      RestoreScript restoreScript) throws IOException {
+    for (Map.Entry<DiskStore, Collection<Path>> entry : oplogFiles.entrySet()) {
+      Map<String, File> baselineOplogMap =
+          incrementalBaselineLocation.getBackedUpOplogs(entry.getKey());
+      for (Path path : entry.getValue()) {
+        int index = ((DiskStoreImpl) entry.getKey()).getInforFileDirIndex();
+        Path backupDir = createOplogBackupDir(entry.getKey(), index);
+        if (!baselineOplogMap.containsKey(path.getFileName().toString())) {
+          backupOplog(backupDir, path);
+        } else {
+          restoreScript.addBaselineFile(baselineOplogMap.get(path.getFileName().toString()),
+              new File(path.toAbsolutePath().getParent().getParent().toFile(),
+                  path.getFileName().toString()));
+        }
       }
     }
   }
@@ -113,8 +157,8 @@ public class FileSystemBackupDestination implements BackupDestination {
       name = GemFireCacheImpl.getDefaultDiskStoreName();
     }
     name = name + "_" + ((DiskStoreImpl) diskStore).getDiskStoreID().toString();
-    return backupDir.resolve(DATA_STORES_DIRECTORY).resolve(name)
-        .resolve(BACKUP_DIR_PREFIX + index);
+    return this.targetBackupDestination.getMemberBackupLocationDir().resolve(DATA_STORES_DIRECTORY)
+        .resolve(name).resolve(BACKUP_DIR_PREFIX + index);
   }
 
   private Path createOplogBackupDir(DiskStore diskStore, int index) throws IOException {
@@ -142,4 +186,5 @@ public class FileSystemBackupDestination implements BackupDestination {
       }
     }
   }
+
 }

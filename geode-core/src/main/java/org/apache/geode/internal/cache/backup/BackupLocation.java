@@ -14,15 +14,14 @@
  */
 package org.apache.geode.internal.cache.backup;
 
+import java.io.File;
 import java.io.IOException;
+import java.util.Map;
 
-public interface BackupDestination {
-  String USER_FILES_DIRECTORY = "user";
-  String DEPLOYED_JARS_DIRECTORY = "user";
-  String CONFIG_DIRECTORY = "config";
-  String BACKUP_DIR_PREFIX = "dir";
-  String README_FILE = "README_FILE.txt";
-  String DATA_STORES_DIRECTORY = "diskstores";
+import org.apache.geode.cache.DiskStore;
 
-  void backupFiles(BackupDefinition backupDefinition) throws IOException;
+public interface BackupLocation {
+
+  Map<String, File> getBackedUpOplogs(DiskStore diskStore) throws IOException;
+
 }

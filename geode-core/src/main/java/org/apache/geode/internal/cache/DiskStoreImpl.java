@@ -89,6 +89,7 @@ import org.apache.geode.i18n.StringId;
 import org.apache.geode.internal.Version;
 import org.apache.geode.internal.cache.ExportDiskRegion.ExportWriter;
 import org.apache.geode.internal.cache.backup.BackupService;
+import org.apache.geode.internal.cache.backup.DiskStoreBackup;
 import org.apache.geode.internal.cache.entries.DiskEntry;
 import org.apache.geode.internal.cache.entries.DiskEntry.Helper.ValueWrapper;
 import org.apache.geode.internal.cache.entries.DiskEntry.RecoveredEntry;
