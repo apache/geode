@@ -17,7 +17,6 @@ package org.apache.geode.internal.protocol.protobuf.v1.operations;
 import java.util.List;
 import java.util.Set;
 
-import com.google.protobuf.AbstractMessage;
 import com.google.protobuf.ProtocolStringList;
 
 import org.apache.geode.cache.execute.Execution;
@@ -36,9 +35,8 @@ import org.apache.geode.internal.protocol.protobuf.v1.Result;
 import org.apache.geode.internal.protocol.protobuf.v1.Success;
 import org.apache.geode.internal.protocol.protobuf.v1.serialization.exception.EncodingException;
 
-public class ExecuteFunctionOnGroupRequestOperationHandler
-    extends AbstractFunctionRequestOperationHandler implements
-    ProtobufOperationHandler<ExecuteFunctionOnGroupRequest, ExecuteFunctionOnGroupResponse> {
+public class ExecuteFunctionOnGroupRequestOperationHandler extends
+    AbstractFunctionRequestOperationHandler<ExecuteFunctionOnGroupRequest, ExecuteFunctionOnGroupResponse> {
 
 
   @Override
@@ -52,27 +50,26 @@ public class ExecuteFunctionOnGroupRequestOperationHandler
 
   @Override
   protected Set<?> parseFilter(ProtobufSerializationService serializationService,
-      AbstractMessage request) throws EncodingException {
+      ExecuteFunctionOnGroupRequest request) throws EncodingException {
     // filters are not allowed on functions not associated with regions
     return null;
   }
 
   @Override
-  protected String getFunctionID(AbstractMessage request) {
-    return ((ExecuteFunctionOnGroupRequest) request).getFunctionID();
+  protected String getFunctionID(ExecuteFunctionOnGroupRequest request) {
+    return (request).getFunctionID();
   }
 
   @Override
-  protected String getRegionName(AbstractMessage request) {
+  protected String getRegionName(ExecuteFunctionOnGroupRequest request) {
     // region name is not allowed in onMember invocation
     return null;
   }
 
   @Override
-  protected Object getExecutionTarget(AbstractMessage abstractRequest, String regionName,
+  protected Object getExecutionTarget(ExecuteFunctionOnGroupRequest request, String regionName,
       MessageExecutionContext executionContext) throws InvalidExecutionContextException {
 
-    ExecuteFunctionOnGroupRequest request = ((ExecuteFunctionOnGroupRequest) abstractRequest);
     ProtocolStringList groupList = request.getGroupNameList();
 
     // unfortunately FunctionServiceManager throws a FunctionException if there are no
@@ -100,9 +97,9 @@ public class ExecuteFunctionOnGroupRequestOperationHandler
   }
 
   @Override
-  protected Object getFunctionArguments(AbstractMessage request,
+  protected Object getFunctionArguments(ExecuteFunctionOnGroupRequest request,
       ProtobufSerializationService serializationService) throws EncodingException {
-    return serializationService.decode(((ExecuteFunctionOnGroupRequest) request).getArguments());
+    return serializationService.decode((request).getArguments());
   }
 
   @Override

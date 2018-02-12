@@ -18,13 +18,10 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
-import com.google.protobuf.AbstractMessage;
-
 import org.apache.geode.cache.Region;
 import org.apache.geode.cache.execute.Execution;
 import org.apache.geode.cache.execute.FunctionService;
 import org.apache.geode.internal.exception.InvalidExecutionContextException;
-import org.apache.geode.internal.protocol.operations.ProtobufOperationHandler;
 import org.apache.geode.internal.protocol.protobuf.v1.BasicTypes;
 import org.apache.geode.internal.protocol.protobuf.v1.ClientProtocol;
 import org.apache.geode.internal.protocol.protobuf.v1.Failure;
@@ -36,23 +33,12 @@ import org.apache.geode.internal.protocol.protobuf.v1.Result;
 import org.apache.geode.internal.protocol.protobuf.v1.Success;
 import org.apache.geode.internal.protocol.protobuf.v1.serialization.exception.EncodingException;
 
-public class ExecuteFunctionOnRegionRequestOperationHandler
-    extends AbstractFunctionRequestOperationHandler implements
-    ProtobufOperationHandler<ExecuteFunctionOnRegionRequest, ExecuteFunctionOnRegionResponse> {
-
-  @Override
-  public Result<ExecuteFunctionOnRegionResponse, ClientProtocol.ErrorResponse> process(
-      ProtobufSerializationService serializationService, ExecuteFunctionOnRegionRequest request,
-      MessageExecutionContext messageExecutionContext) throws InvalidExecutionContextException {
-
-    return (Result<ExecuteFunctionOnRegionResponse, ClientProtocol.ErrorResponse>) super.process(
-        serializationService, request, messageExecutionContext);
-  }
+public class ExecuteFunctionOnRegionRequestOperationHandler extends
+    AbstractFunctionRequestOperationHandler<ExecuteFunctionOnRegionRequest, ExecuteFunctionOnRegionResponse> {
 
   protected Set<Object> parseFilter(ProtobufSerializationService serializationService,
-      AbstractMessage request) throws EncodingException {
-    List<BasicTypes.EncodedValue> encodedFilter =
-        ((ExecuteFunctionOnRegionRequest) request).getKeyFilterList();
+      ExecuteFunctionOnRegionRequest request) throws EncodingException {
+    List<BasicTypes.EncodedValue> encodedFilter = (request).getKeyFilterList();
     Set<Object> filter = new HashSet<>();
 
     for (BasicTypes.EncodedValue filterKey : encodedFilter) {
@@ -62,17 +48,17 @@ public class ExecuteFunctionOnRegionRequestOperationHandler
   }
 
   @Override
-  protected String getFunctionID(AbstractMessage request) {
-    return ((ExecuteFunctionOnRegionRequest) request).getFunctionID();
+  protected String getFunctionID(ExecuteFunctionOnRegionRequest request) {
+    return (request).getFunctionID();
   }
 
   @Override
-  protected String getRegionName(AbstractMessage request) {
-    return ((ExecuteFunctionOnRegionRequest) request).getRegion();
+  protected String getRegionName(ExecuteFunctionOnRegionRequest request) {
+    return (request).getRegion();
   }
 
   @Override
-  protected Object getExecutionTarget(AbstractMessage request, String regionName,
+  protected Object getExecutionTarget(ExecuteFunctionOnRegionRequest request, String regionName,
       MessageExecutionContext executionContext) throws InvalidExecutionContextException {
     final Region<Object, Object> region = executionContext.getCache().getRegion(regionName);
     if (region == null) {
@@ -85,9 +71,9 @@ public class ExecuteFunctionOnRegionRequestOperationHandler
   }
 
   @Override
-  protected Object getFunctionArguments(AbstractMessage request,
+  protected Object getFunctionArguments(ExecuteFunctionOnRegionRequest request,
       ProtobufSerializationService serializationService) throws EncodingException {
-    return serializationService.decode(((ExecuteFunctionOnRegionRequest) request).getArguments());
+    return serializationService.decode((request).getArguments());
   }
 
   @Override

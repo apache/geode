@@ -26,6 +26,7 @@ import org.apache.geode.cache.execute.FunctionService;
 import org.apache.geode.cache.execute.ResultCollector;
 import org.apache.geode.internal.exception.InvalidExecutionContextException;
 import org.apache.geode.internal.i18n.LocalizedStrings;
+import org.apache.geode.internal.protocol.operations.ProtobufOperationHandler;
 import org.apache.geode.internal.protocol.protobuf.v1.BasicTypes;
 import org.apache.geode.internal.protocol.protobuf.v1.ClientProtocol;
 import org.apache.geode.internal.protocol.protobuf.v1.Failure;
@@ -36,10 +37,13 @@ import org.apache.geode.internal.protocol.protobuf.v1.serialization.exception.En
 import org.apache.geode.internal.security.SecurityService;
 import org.apache.geode.security.NotAuthorizedException;
 
-public abstract class AbstractFunctionRequestOperationHandler {
+public abstract class AbstractFunctionRequestOperationHandler<Req, Resp>
+    implements ProtobufOperationHandler<Req, Resp> {
 
 
-  public Result process(ProtobufSerializationService serializationService, AbstractMessage request,
+  @Override
+  public Result<Resp, ClientProtocol.ErrorResponse> process(
+      ProtobufSerializationService serializationService, Req request,
       MessageExecutionContext messageExecutionContext) throws InvalidExecutionContextException {
 
     final String functionID = getFunctionID(request);
@@ -111,19 +115,19 @@ public abstract class AbstractFunctionRequestOperationHandler {
   }
 
   protected abstract Set<?> parseFilter(ProtobufSerializationService serializationService,
-      AbstractMessage request) throws EncodingException;
+      Req request) throws EncodingException;
 
-  protected abstract String getFunctionID(AbstractMessage request);
+  protected abstract String getFunctionID(Req request);
 
   /** the result of this may be null, which is used by the security service to mean "no region" */
-  protected abstract String getRegionName(AbstractMessage request);
+  protected abstract String getRegionName(Req request);
 
   /** region, list of members, etc */
-  protected abstract Object getExecutionTarget(AbstractMessage request, String regionName,
+  protected abstract Object getExecutionTarget(Req request, String regionName,
       MessageExecutionContext executionContext) throws InvalidExecutionContextException;
 
   /** arguments for the function */
-  protected abstract Object getFunctionArguments(AbstractMessage request,
+  protected abstract Object getFunctionArguments(Req request,
       ProtobufSerializationService serializationService) throws EncodingException;
 
   protected abstract Execution getFunctionExecutionObject(Object executionTarget)

@@ -18,7 +18,6 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
-import com.google.protobuf.AbstractMessage;
 import com.google.protobuf.ProtocolStringList;
 
 import org.apache.geode.cache.execute.Execution;
@@ -26,7 +25,6 @@ import org.apache.geode.cache.execute.FunctionService;
 import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.distributed.internal.DistributionManager;
 import org.apache.geode.internal.exception.InvalidExecutionContextException;
-import org.apache.geode.internal.protocol.operations.ProtobufOperationHandler;
 import org.apache.geode.internal.protocol.protobuf.v1.BasicTypes;
 import org.apache.geode.internal.protocol.protobuf.v1.ClientProtocol;
 import org.apache.geode.internal.protocol.protobuf.v1.Failure;
@@ -38,42 +36,40 @@ import org.apache.geode.internal.protocol.protobuf.v1.Result;
 import org.apache.geode.internal.protocol.protobuf.v1.Success;
 import org.apache.geode.internal.protocol.protobuf.v1.serialization.exception.EncodingException;
 
-public class ExecuteFunctionOnMemberRequestOperationHandler
-    extends AbstractFunctionRequestOperationHandler implements
-    ProtobufOperationHandler<ExecuteFunctionOnMemberRequest, ExecuteFunctionOnMemberResponse> {
+public class ExecuteFunctionOnMemberRequestOperationHandler extends
+    AbstractFunctionRequestOperationHandler<ExecuteFunctionOnMemberRequest, ExecuteFunctionOnMemberResponse> {
 
 
-  @Override
-  public Result<ExecuteFunctionOnMemberResponse, ClientProtocol.ErrorResponse> process(
-      ProtobufSerializationService serializationService, ExecuteFunctionOnMemberRequest request,
-      MessageExecutionContext messageExecutionContext) throws InvalidExecutionContextException {
-
-    return (Result<ExecuteFunctionOnMemberResponse, ClientProtocol.ErrorResponse>) super.process(
-        serializationService, request, messageExecutionContext);
-  }
+  // @Override
+  // public Result<ExecuteFunctionOnMemberResponse, ClientProtocol.ErrorResponse> process(
+  // ProtobufSerializationService serializationService, ExecuteFunctionOnMemberRequest request,
+  // MessageExecutionContext messageExecutionContext) throws InvalidExecutionContextException {
+  //
+  // return (Result<ExecuteFunctionOnMemberResponse, ClientProtocol.ErrorResponse>) super.process(
+  // serializationService, request, messageExecutionContext);
+  // }
 
   @Override
   protected Set<?> parseFilter(ProtobufSerializationService serializationService,
-      AbstractMessage request) throws EncodingException {
+      ExecuteFunctionOnMemberRequest request) throws EncodingException {
     // filters are not allowed on functions not associated with regions
     return null;
   }
 
   @Override
-  protected String getFunctionID(AbstractMessage request) {
-    return ((ExecuteFunctionOnMemberRequest) request).getFunctionID();
+  protected String getFunctionID(ExecuteFunctionOnMemberRequest request) {
+    return (request).getFunctionID();
   }
 
   @Override
-  protected String getRegionName(AbstractMessage request) {
+  protected String getRegionName(ExecuteFunctionOnMemberRequest request) {
     // region name is not allowed in onMember invocation
     return null;
   }
 
   @Override
-  protected Object getExecutionTarget(AbstractMessage abstractRequest, String regionName,
+  protected Object getExecutionTarget(ExecuteFunctionOnMemberRequest request, String regionName,
       MessageExecutionContext executionContext) throws InvalidExecutionContextException {
-    ExecuteFunctionOnMemberRequest request = (ExecuteFunctionOnMemberRequest) abstractRequest;
 
     ProtocolStringList memberNameList = request.getMemberNameList();
 
@@ -102,9 +98,9 @@ public class ExecuteFunctionOnMemberRequestOperationHandler
   }
 
   @Override
-  protected Object getFunctionArguments(AbstractMessage request,
+  protected Object getFunctionArguments(ExecuteFunctionOnMemberRequest request,
       ProtobufSerializationService serializationService) throws EncodingException {
-    return serializationService.decode(((ExecuteFunctionOnMemberRequest) request).getArguments());
+    return serializationService.decode((request).getArguments());
   }
 
   @Override
