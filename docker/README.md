@@ -1,6 +1,6 @@
 # Building the container image
 
-The current Dockerfile is based on a CentOS 7 image, downloads JDK 8, clone the Apache Geode git repository, starts a build and execute the basic tests.
+The current Dockerfile is based on the [OpenJDK image](https://hub.docker.com/_/openjdk/) and includes the officially released Apache Geode binaries which are verified via GPG _and_ SHA256.
 
 ```
 docker build .
