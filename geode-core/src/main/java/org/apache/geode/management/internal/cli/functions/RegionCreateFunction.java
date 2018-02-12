@@ -187,6 +187,16 @@ public class RegionCreateFunction implements InternalFunction {
     if (entryExpirationIdleTime.isTimeOrActionSet()) {
       factory.setEntryIdleTimeout(entryExpirationIdleTime.getExpirationAttributes());
     }
+
+    if (regionCreateArgs.getEntryIdleTimeCustomExpiry() != null) {
+      factory
+          .setCustomEntryIdleTimeout(regionCreateArgs.getEntryIdleTimeCustomExpiry().newInstance());
+    }
+
+    if (regionCreateArgs.getEntryTTLCustomExpiry() != null) {
+      factory.setCustomEntryTimeToLive(regionCreateArgs.getEntryTTLCustomExpiry().newInstance());
+    }
+
     final RegionFunctionArgs.ExpirationAttrs entryExpirationTTL =
         regionCreateArgs.getEntryExpirationTTL();
     if (entryExpirationTTL.isTimeOrActionSet()) {

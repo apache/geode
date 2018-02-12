@@ -55,6 +55,7 @@ public class AlterRegionCommandTest {
     assertThat(result.getParamValue("cache-writer")).isEqualTo(ClassName.EMPTY);
     assertThat(result.getParamValue("cache-listener")).isNull();
     assertThat(result.getParamValue("cache-loader")).isEqualTo(ClassName.EMPTY);
+    assertThat(result.getParamValue("entry-idle-time-custom-expiry")).isNull();
   }
 
   @Test
@@ -62,5 +63,12 @@ public class AlterRegionCommandTest {
     String command = "alter region --name=/Person --cache-writer='1abc'";
     GfshParseResult result = parser.parse(command);
     assertThat(result).isNull();
+  }
+
+  @Test
+  public void emptyCustomExpiry() {
+    String command = "alter region --name=/Person --entry-idle-time-custom-expiry=''";
+    GfshParseResult result = parser.parse(command);
+    assertThat(result.getParamValue("entry-idle-time-custom-expiry")).isEqualTo(ClassName.EMPTY);
   }
 }
