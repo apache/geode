@@ -94,6 +94,14 @@ public interface InternalRegion extends Region, HasCachePerfStats, RegionEntryCo
 
   void addExpiryTaskIfAbsent(RegionEntry entry);
 
+  /**
+   * Used by unit tests to get access to the EntryExpiryTask of the given key. Returns null if the
+   * entry exists but does not have an expiry task.
+   *
+   * @throws EntryNotFoundException if no entry exists key.
+   */
+  EntryExpiryTask getEntryExpiryTask(Object key);
+
   DistributionManager getDistributionManager();
 
   void generateAndSetVersionTag(InternalCacheEvent event, RegionEntry entry);
