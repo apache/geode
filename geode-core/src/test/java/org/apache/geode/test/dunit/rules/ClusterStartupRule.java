@@ -36,8 +36,10 @@ import java.util.stream.Collectors;
 import org.junit.rules.ExternalResource;
 import org.junit.rules.TemporaryFolder;
 
+import org.apache.geode.cache.Region;
 import org.apache.geode.cache.client.ClientCache;
 import org.apache.geode.cache.client.ClientCacheFactory;
+import org.apache.geode.cache.client.ClientRegionShortcut;
 import org.apache.geode.cache.server.CacheServer;
 import org.apache.geode.distributed.internal.InternalLocator;
 import org.apache.geode.internal.AvailablePortHelper;
@@ -325,12 +327,21 @@ public class ClusterStartupRule extends ExternalResource implements Serializable
    */
   public ClientVM startClientVM(int index, Properties properties,
       Consumer<ClientCacheFactory> cacheFactorySetup, String clientVersion) throws Exception {
+    return startClientVM(index, properties, cacheFactorySetup, clientVersion,
+        (Runnable & Serializable) () -> {
+        });
+  }
+
+  public ClientVM startClientVM(int index, Properties properties,
+      Consumer<ClientCacheFactory> cacheFactorySetup, String clientVersion,
+      Runnable clientCacheHook) throws Exception {
     VM client = getVM(index, clientVersion);
     Exception error = client.invoke(() -> {
       clientCacheRule =
           new ClientCacheRule().withProperties(properties).withCacheSetup(cacheFactorySetup);
       try {
         clientCacheRule.before();
+        clientCacheHook.run();
         return null;
       } catch (Exception e) {
         return e;
@@ -366,6 +377,20 @@ public class ClusterStartupRule extends ExternalResource implements Serializable
     return startClientVM(index, props, consumer);
   }
 
+  public ClientVM startClientVM(int index, String username, String password,
+      boolean subscriptionEnabled, int serverPort, Runnable clientCacheHook) throws Exception {
+    Properties props = new Properties();
+    props.setProperty(UserPasswordAuthInit.USER_NAME, username);
+    props.setProperty(UserPasswordAuthInit.PASSWORD, password);
+    props.setProperty(SECURITY_CLIENT_AUTH_INIT, UserPasswordAuthInit.class.getName());
+
+    Consumer<ClientCacheFactory> consumer =
+        (Serializable & Consumer<ClientCacheFactory>) ((cacheFactory) -> {
+          cacheFactory.setPoolSubscriptionEnabled(subscriptionEnabled);
+          cacheFactory.addPoolServer("localhost", serverPort);
+        });
+    return startClientVM(index, props, consumer, VersionManager.CURRENT_VERSION, clientCacheHook);
+  }
 
   /**
    * Returns the {@link Member} running inside the VM with the specified {@code index}
