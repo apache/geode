@@ -40,7 +40,7 @@ import org.apache.geode.test.junit.categories.DistributedTest;
 @Category(DistributedTest.class)
 public class MergeLogsDUnitTest {
   @Rule
-  public ClusterStartupRule lsRule = new ClusterStartupRule().withTempWorkingDir().withLogFile();
+  public ClusterStartupRule lsRule = new ClusterStartupRule().withLogFile();
   private MemberVM locator;
 
   private static final String MESSAGE_1 = "MergeLogsMessage1";
@@ -73,18 +73,18 @@ public class MergeLogsDUnitTest {
 
   @Test
   public void testExportInProcess() throws Exception {
-    assertThat(MergeLogs.findLogFilesToMerge(lsRule.getTempWorkingDir().getRoot())).hasSize(4);
+    assertThat(MergeLogs.findLogFilesToMerge(lsRule.getWorkingDirRoot())).hasSize(6);
 
-    File result = MergeLogs.mergeLogFile(lsRule.getTempWorkingDir().getRoot().getCanonicalPath());
+    File result = MergeLogs.mergeLogFile(lsRule.getWorkingDirRoot().getCanonicalPath());
     assertOnLogContents(result);
   }
 
   @Test
   public void testExportInNewProcess() throws Throwable {
-    assertThat(MergeLogs.findLogFilesToMerge(lsRule.getTempWorkingDir().getRoot())).hasSize(4);
+    assertThat(MergeLogs.findLogFilesToMerge(lsRule.getWorkingDirRoot())).hasSize(6);
 
-    MergeLogs.mergeLogsInNewProcess(lsRule.getTempWorkingDir().getRoot().toPath());
-    File result = Arrays.stream(lsRule.getTempWorkingDir().getRoot().listFiles())
+    MergeLogs.mergeLogsInNewProcess(lsRule.getWorkingDirRoot().toPath());
+    File result = Arrays.stream(lsRule.getWorkingDirRoot().listFiles())
         .filter((File f) -> f.getName().startsWith("merge")).findFirst().orElseThrow(() -> {
           throw new AssertionError("No merged log file found");
         });

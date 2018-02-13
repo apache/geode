@@ -26,7 +26,6 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Properties;
 import java.util.concurrent.TimeUnit;
 
 import junitparams.JUnitParamsRunner;
@@ -82,8 +81,7 @@ public class LuceneIndexCommandsDUnitTest implements Serializable {
 
   @Before
   public void before() throws Exception {
-    Properties props = new Properties();
-    serverVM = startupRule.startServerAsJmxManager(0, props);
+    serverVM = startupRule.startServerVM(0, x->x.withJMXManager());
     connect(serverVM);
   }
 

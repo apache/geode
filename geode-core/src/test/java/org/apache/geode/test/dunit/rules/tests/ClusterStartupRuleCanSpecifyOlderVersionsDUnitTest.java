@@ -54,7 +54,7 @@ public class ClusterStartupRuleCanSpecifyOlderVersionsDUnitTest {
 
   @Test
   public void locatorVersioningTest() throws Exception {
-    MemberVM locator = csRule.startLocatorVM(0, new Properties(), version);
+    MemberVM locator = csRule.startLocatorVM(0, version);
     String locatorVMVersion = locator.getVM().getVersion();
     String locatorActualVersion = locator.invoke(GemFireVersion::getGemFireVersion);
     assertThat(locatorVMVersion).isEqualTo(version);
@@ -63,7 +63,7 @@ public class ClusterStartupRuleCanSpecifyOlderVersionsDUnitTest {
 
   @Test
   public void serverVersioningTest() throws Exception {
-    MemberVM locator = csRule.startLocatorVM(0, new Properties(), version);
+    MemberVM locator = csRule.startLocatorVM(0, version);
     String locatorVMVersion = locator.getVM().getVersion();
     String locatorActualVersion = locator.invoke(GemFireVersion::getGemFireVersion);
     assertThat(locatorVMVersion).isEqualTo(version);
@@ -72,7 +72,7 @@ public class ClusterStartupRuleCanSpecifyOlderVersionsDUnitTest {
 
   @Test
   public void serverWithEmbeddedLocatorVersioningTest() throws Exception {
-    MemberVM locator = csRule.startServerAsEmbeddedLocator(0, new Properties(), version);
+    MemberVM locator = csRule.startServerVM(0, version, x -> x.withEmbeddedLocator());
     String locatorVMVersion = locator.getVM().getVersion();
     String locatorActualVersion = locator.invoke(GemFireVersion::getGemFireVersion);
     assertThat(locatorVMVersion).isEqualTo(version);

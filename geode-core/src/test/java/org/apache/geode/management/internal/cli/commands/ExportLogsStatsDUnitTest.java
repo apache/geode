@@ -54,8 +54,7 @@ import org.apache.geode.test.junit.rules.GfshCommandRule;
 @Category(DistributedTest.class)
 public class ExportLogsStatsDUnitTest {
   @ClassRule
-  public static ClusterStartupRule lsRule =
-      new ClusterStartupRule().withTempWorkingDir().withLogFile();
+  public static ClusterStartupRule lsRule = new ClusterStartupRule().withLogFile();
 
   @ClassRule
   public static GfshCommandRule connector = new GfshCommandRule();
@@ -65,7 +64,7 @@ public class ExportLogsStatsDUnitTest {
   protected static MemberVM locator;
 
   @BeforeClass
-  public static void beforeClass() throws Exception {
+  public static void beforeClass() {
     int[] ports = AvailablePortHelper.getRandomAvailableTCPPorts(2);
     httpPort = ports[0];
     jmxPort = ports[1];
@@ -156,6 +155,7 @@ public class ExportLogsStatsDUnitTest {
   }
 
   private static Set<String> getZipEntries(String zipFilePath) throws IOException {
-    return new ZipFile(zipFilePath).stream().map(ZipEntry::getName).collect(Collectors.toSet());
+    return new ZipFile(zipFilePath).stream().map(ZipEntry::getName)
+        .filter(x -> !x.endsWith("views.log")).collect(Collectors.toSet());
   }
 }
