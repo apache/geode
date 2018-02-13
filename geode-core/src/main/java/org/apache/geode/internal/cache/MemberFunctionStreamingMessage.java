@@ -215,9 +215,10 @@ public class MemberFunctionStreamingMessage extends DistributionMessage
       rex = new ReplyException(thr);
       replyWithException(dm, rex);
     } catch (Exception exception) {
-      logger.error("Exception occurred on remote member while executing Function: {}",
-          this.functionObject.getId(), exception);
-
+      if (logger.isDebugEnabled()) {
+        logger.debug("Exception occurred on remote member while executing Function: {}",
+            this.functionObject.getId(), exception);
+      }
       stats.endFunctionExecutionWithException(this.functionObject.hasResult());
       rex = new ReplyException(exception);
       replyWithException(dm, rex);
