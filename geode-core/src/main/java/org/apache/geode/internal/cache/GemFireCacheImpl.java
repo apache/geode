@@ -4329,14 +4329,16 @@ public class GemFireCacheImpl implements InternalCache, InternalClientCache, Has
 
   @Override
   public void readyForEvents() {
-    // If a durable client has been configured...
-    if (Objects.nonNull(system) && Objects.nonNull(system.getConfig())
-        && !Objects.equals(DistributionConfig.DEFAULT_DURABLE_CLIENT_ID,
-            Objects.toString(system.getConfig().getDurableClientId(),
-                DistributionConfig.DEFAULT_DURABLE_CLIENT_ID))) {
-      // Ensure that there is a pool to use for readyForEvents().
-      if (Objects.isNull(defaultPool)) {
-        determineDefaultPool();
+    if (isClient()) {
+      // If a durable client has been configured...
+      if (Objects.nonNull(system) && Objects.nonNull(system.getConfig())
+          && !Objects.equals(DistributionConfig.DEFAULT_DURABLE_CLIENT_ID,
+              Objects.toString(system.getConfig().getDurableClientId(),
+                  DistributionConfig.DEFAULT_DURABLE_CLIENT_ID))) {
+        // Ensure that there is a pool to use for readyForEvents().
+        if (Objects.isNull(defaultPool)) {
+          determineDefaultPool();
+        }
       }
     }
     PoolManagerImpl.readyForEvents(this.system, false);
