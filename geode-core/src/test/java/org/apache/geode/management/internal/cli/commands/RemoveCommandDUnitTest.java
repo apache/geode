@@ -17,7 +17,6 @@ package org.apache.geode.management.internal.cli.commands;
 import static org.apache.geode.management.internal.cli.commands.RemoveCommand.REGION_NOT_FOUND;
 import static org.assertj.core.api.Assertions.assertThat;
 
-import java.io.Serializable;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
 
@@ -42,7 +41,7 @@ import org.apache.geode.test.junit.categories.DistributedTest;
 import org.apache.geode.test.junit.rules.GfshCommandRule;
 
 @Category(DistributedTest.class)
-public class RemoveCommandDUnitTest implements Serializable {
+public class RemoveCommandDUnitTest {
   private static final String REPLICATE_REGION_NAME = "replicateRegion";
   private static final String PARTITIONED_REGION_NAME = "partitionedRegion";
   private static final String EMPTY_STRING = "";
@@ -51,29 +50,28 @@ public class RemoveCommandDUnitTest implements Serializable {
   public ClusterStartupRule clusterStartupRule = new ClusterStartupRule();
 
   @Rule
-  public transient GfshCommandRule gfsh = new GfshCommandRule();
+  public GfshCommandRule gfsh = new GfshCommandRule();
 
-  private transient MemberVM locator;
-  private transient MemberVM server1;
-  private transient MemberVM server2;
+  private MemberVM locator;
+  private MemberVM server1;
+  private MemberVM server2;
 
   @Before
   public void setup() throws Exception {
     locator = clusterStartupRule.startLocatorVM(0);
-
     server1 = clusterStartupRule.startServerVM(1, locator.getPort());
     server2 = clusterStartupRule.startServerVM(2, locator.getPort());
 
-    server1.invoke(this::populateTestRegions);
-    server2.invoke(this::populateTestRegions);
+    server1.invoke(RemoveCommandDUnitTest::populateTestRegions);
+    server2.invoke(RemoveCommandDUnitTest::populateTestRegions);
 
     gfsh.connectAndVerify(locator);
 
-    Awaitility.await().atMost(2, TimeUnit.MINUTES).until(() -> locator.getVM()
-        .invoke((SerializableCallableIF<Boolean>) this::regionMBeansAreInitialized));
+    Awaitility.await().atMost(2, TimeUnit.MINUTES).until(() -> locator.getVM().invoke(
+        (SerializableCallableIF<Boolean>) RemoveCommandDUnitTest::regionMBeansAreInitialized));
   }
 
-  private void populateTestRegions() {
+  private static void populateTestRegions() {
     Cache cache = CacheFactory.getAnyInstance();
     Region<String, String> replicateRegion =
         cache.<String, String>createRegionFactory(RegionShortcut.REPLICATE)
@@ -91,7 +89,7 @@ public class RemoveCommandDUnitTest implements Serializable {
   }
 
   @Test
-  public void removeFromInvalidRegion() throws Exception {
+  public void removeFromInvalidRegion() {
     String command = "remove --all --region=NotAValidRegion";
 
     gfsh.executeAndAssertThat(command).statusIsError()
@@ -99,7 +97,7 @@ public class RemoveCommandDUnitTest implements Serializable {
   }
 
   @Test
-  public void removeWithNoKeyOrAllSpecified() throws Exception {
+  public void removeWithNoKeyOrAllSpecified() {
     String command = "remove --region=" + REPLICATE_REGION_NAME;
 
     gfsh.executeAndAssertThat(command).statusIsError().containsOutput("Key is Null");
@@ -177,7 +175,7 @@ public class RemoveCommandDUnitTest implements Serializable {
     server2.invoke(() -> verifyKeyIsRemoved(REPLICATE_REGION_NAME, EMPTY_STRING));
   }
 
-  private boolean regionMBeansAreInitialized() {
+  private static boolean regionMBeansAreInitialized() {
     Set<DistributedMember> replicateMembers = CliUtil.getRegionAssociatedMembers(
         REPLICATE_REGION_NAME, (InternalCache) CacheFactory.getAnyInstance(), false);
     Set<DistributedMember> partitionMembers = CliUtil.getRegionAssociatedMembers(
@@ -187,22 +185,22 @@ public class RemoveCommandDUnitTest implements Serializable {
         && CollectionUtils.isNotEmpty(partitionMembers);
   }
 
-  private void verifyAllKeysAreRemoved(String regionName) {
+  private static void verifyAllKeysAreRemoved(String regionName) {
     Region region = getRegion(regionName);
     assertThat(region.size()).isEqualTo(0);
   }
 
-  private void verifyKeyIsRemoved(String regionName, String key) {
+  private static void verifyKeyIsRemoved(String regionName, String key) {
     Region region = getRegion(regionName);
     assertThat(region.get(key)).isNull();
   }
 
-  private void verifyKeyIsPresent(String regionName, String key) {
+  private static void verifyKeyIsPresent(String regionName, String key) {
     Region region = getRegion(regionName);
     assertThat(region.get(key)).isNotNull();
   }
 
-  private Region getRegion(String regionName) {
+  private static Region getRegion(String regionName) {
     return CacheFactory.getAnyInstance().getRegion(regionName);
   }
 }
