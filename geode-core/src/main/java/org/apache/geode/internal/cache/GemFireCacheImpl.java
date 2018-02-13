@@ -5159,8 +5159,6 @@ public class GemFireCacheImpl implements InternalCache, InternalClientCache, Has
         }
 
         // Now add the new/replacement properties to the map
-        newEntry.getKey().setCache(this);
-        newEntry.getKey().init(newEntry.getValue());
         this.declarablePropertiesMap.put(newEntry.getKey(), newEntry.getValue());
       }
     }

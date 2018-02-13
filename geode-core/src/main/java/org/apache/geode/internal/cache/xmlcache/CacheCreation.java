@@ -196,6 +196,25 @@ public class CacheCreation implements InternalCache {
 
   // Stores the properties used to initialize declarables.
   private final Map<Declarable, Properties> declarablePropertiesMap = new HashMap<>();
+  private final List<DeclarableAndProperties> declarablePropertiesList = new ArrayList<>();
+
+  private static class DeclarableAndProperties {
+    private final Declarable declarable;
+    private final Properties properties;
+
+    public DeclarableAndProperties(Declarable d, Properties p) {
+      declarable = d;
+      properties = p;
+    }
+
+    public Declarable getDeclarable() {
+      return declarable;
+    }
+
+    public Properties getProperties() {
+      return properties;
+    }
+  }
 
   private final Set<GatewaySender> gatewaySenders = new HashSet<>();
 
@@ -550,12 +569,25 @@ public class CacheCreation implements InternalCache {
     }
 
     cache.setBackupFiles(this.backups);
-    cache.addDeclarableProperties(this.declarablePropertiesMap);
+
+    initializeDeclarablesMap(cache);
     runInitializer(cache);
     cache.setInitializer(getInitializer(), getInitializerProps());
 
     // Create all extensions
     this.extensionPoint.fireCreate(cache);
+  }
+
+  public void initializeDeclarablesMap(InternalCache cache) {
+    for (DeclarableAndProperties struct : this.declarablePropertiesList) {
+      Declarable declarable = struct.getDeclarable();
+      Properties properties = struct.getProperties();
+      declarable.setCache(cache);
+      declarable.init(properties);
+      this.declarablePropertiesMap.put(declarable, properties);
+    }
+    this.declarablePropertiesList.clear();
+    cache.addDeclarableProperties(this.declarablePropertiesMap);
   }
 
   void initializeRegions(Map<String, Region<?, ?>> declarativeRegions, Cache cache) {
@@ -1056,7 +1088,7 @@ public class CacheCreation implements InternalCache {
   }
 
   void addDeclarableProperties(final Declarable declarable, final Properties properties) {
-    this.declarablePropertiesMap.put(declarable, properties);
+    this.declarablePropertiesList.add(new DeclarableAndProperties(declarable, properties));
   }
 
   @Override
@@ -1202,7 +1234,12 @@ public class CacheCreation implements InternalCache {
 
   @Override
   public Properties getDeclarableProperties(final Declarable declarable) {
-    throw new UnsupportedOperationException(LocalizedStrings.SHOULDNT_INVOKE.toLocalizedString());
+    for (DeclarableAndProperties struct : this.declarablePropertiesList) {
+      if (declarable.equals(struct.getDeclarable())) {
+        return struct.getProperties();
+      }
+    }
+    return null;
   }
 
   @Override
