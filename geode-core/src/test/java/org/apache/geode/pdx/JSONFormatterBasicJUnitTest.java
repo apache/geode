@@ -14,8 +14,8 @@
  */
 package org.apache.geode.pdx;
 
-import org.junit.After;
-import org.junit.Before;
+import org.junit.AfterClass;
+import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
@@ -29,15 +29,16 @@ import org.apache.geode.test.junit.categories.IntegrationTest;
  */
 @Category(IntegrationTest.class)
 public class JSONFormatterBasicJUnitTest {
-  private Cache cache;
+  // This is needed because the JsonFormatter needs to access the PDX region, which requires a running Cache.
+  private static Cache cache;
 
-  @Before
-  public void setUp() throws Exception {
+  @BeforeClass
+  public static void setUp() throws Exception {
     cache = new CacheFactory().create();
   }
 
-  @After
-  public void tearDown() {
+  @AfterClass
+  public static void tearDown() {
     cache.close();
   }
 
