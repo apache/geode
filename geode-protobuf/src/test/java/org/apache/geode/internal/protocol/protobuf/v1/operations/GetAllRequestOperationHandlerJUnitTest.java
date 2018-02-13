@@ -17,15 +17,18 @@ package org.apache.geode.internal.protocol.protobuf.v1.operations;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import org.junit.Before;
 import org.junit.Test;
@@ -35,9 +38,11 @@ import org.apache.geode.cache.CacheLoaderException;
 import org.apache.geode.cache.Region;
 import org.apache.geode.internal.protocol.TestExecutionContext;
 import org.apache.geode.internal.protocol.protobuf.v1.BasicTypes;
+import org.apache.geode.internal.protocol.protobuf.v1.ProtobufSerializationService;
 import org.apache.geode.internal.protocol.protobuf.v1.RegionAPI;
 import org.apache.geode.internal.protocol.protobuf.v1.Result;
 import org.apache.geode.internal.protocol.protobuf.v1.Success;
+import org.apache.geode.internal.protocol.protobuf.v1.serialization.exception.DecodingException;
 import org.apache.geode.internal.protocol.protobuf.v1.serialization.exception.EncodingException;
 import org.apache.geode.internal.protocol.protobuf.v1.utilities.ProtobufRequestUtilities;
 import org.apache.geode.test.junit.categories.UnitTest;
@@ -68,6 +73,34 @@ public class GetAllRequestOperationHandlerJUnitTest extends OperationHandlerJUni
     when(cacheStub.getRegion(TEST_REGION)).thenReturn(regionStub);
     operationHandler = new GetAllRequestOperationHandler();
   }
+
+  @Test
+  public void processReturnsErrorUnableToDecodeRequest() throws Exception {
+    Exception exception = new DecodingException("error finding codec for type");
+    ProtobufSerializationService serializationServiceStub =
+        mock(ProtobufSerializationService.class);
+    when(serializationServiceStub.decode(any())).thenThrow(exception);
+
+    BasicTypes.EncodedValue encodedKey = BasicTypes.EncodedValue.newBuilder()
+        .setJsonObjectResult("{\"someKey\":\"someValue\"}").build();
+    Set<BasicTypes.EncodedValue> keys = Collections.<BasicTypes.EncodedValue>singleton(encodedKey);
+    RegionAPI.GetAllRequest getRequest =
+        ProtobufRequestUtilities.createGetAllRequest(TEST_REGION, keys);
+
+    Result response = operationHandler.process(serializationServiceStub, getRequest,
+        TestExecutionContext.getNoAuthCacheExecutionContext(cacheStub));
+
+    assertTrue("response was " + response, response instanceof Success);
+
+    RegionAPI.GetAllResponse message = (RegionAPI.GetAllResponse) response.getMessage();
+    assertEquals(1, message.getFailuresCount());
+
+    BasicTypes.KeyedError error = message.getFailures(0);
+    assertEquals(BasicTypes.ErrorCode.INVALID_REQUEST, error.getError().getErrorCode());
+    assertTrue(error.getError().getMessage().contains("encoding not supported"));
+  }
+
+
 
   @Test
   public void processReturnsExpectedValuesForValidKeys() throws Exception {

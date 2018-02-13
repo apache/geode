@@ -38,8 +38,8 @@ import org.apache.geode.internal.protocol.protobuf.v1.MessageExecutionContext;
 import org.apache.geode.internal.protocol.protobuf.v1.ProtobufSerializationService;
 import org.apache.geode.internal.protocol.protobuf.v1.Result;
 import org.apache.geode.internal.protocol.protobuf.v1.Success;
+import org.apache.geode.internal.protocol.protobuf.v1.serialization.exception.DecodingException;
 import org.apache.geode.internal.protocol.protobuf.v1.serialization.exception.EncodingException;
-import org.apache.geode.internal.protocol.protobuf.v1.state.exception.ConnectionStateException;
 import org.apache.geode.internal.security.SecurityService;
 import org.apache.geode.security.NotAuthorizedException;
 
@@ -49,7 +49,8 @@ public class ExecuteFunctionOnMemberRequestOperationHandler implements
   public Result<FunctionAPI.ExecuteFunctionOnMemberResponse, ClientProtocol.ErrorResponse> process(
       ProtobufSerializationService serializationService,
       FunctionAPI.ExecuteFunctionOnMemberRequest request,
-      MessageExecutionContext messageExecutionContext) throws InvalidExecutionContextException {
+      MessageExecutionContext messageExecutionContext)
+      throws InvalidExecutionContextException, EncodingException, DecodingException {
 
     final String functionID = request.getFunctionID();
 
@@ -135,11 +136,6 @@ public class ExecuteFunctionOnMemberRequestOperationHandler implements
       return Failure.of(ClientProtocol.ErrorResponse.newBuilder()
           .setError(BasicTypes.Error.newBuilder().setErrorCode(BasicTypes.ErrorCode.SERVER_ERROR)
               .setMessage("Function execution failed: " + ex.toString()))
-          .build());
-    } catch (EncodingException ex) {
-      return Failure.of(ClientProtocol.ErrorResponse.newBuilder()
-          .setError(BasicTypes.Error.newBuilder().setErrorCode(BasicTypes.ErrorCode.SERVER_ERROR)
-              .setMessage("Encoding failed: " + ex.toString()))
           .build());
     }
   }
