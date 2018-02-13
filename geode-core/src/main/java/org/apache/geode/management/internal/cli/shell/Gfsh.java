@@ -235,12 +235,11 @@ public class Gfsh extends JLineShell {
       // disable jline terminal
       System.setProperty("jline.terminal", GfshUnsupportedTerminal.class.getName());
       env.put(ENV_APP_QUIET_EXECUTION, String.valueOf(true));
-      // redirect Internal Java Loggers Now
-      // When run with shell, this is done on connection. See 'connect' command.
-      redirectInternalJavaLoggers();
-      // AbstractShell.logger - we don't want it to log on screen
+      // Only in headless mode, we do not want Gfsh's logger logs on screen
       LogWrapper.getInstance().setParentFor(logger);
     }
+    // we want to direct internal JDK logging to file in either mode
+    redirectInternalJavaLoggers();
   }
 
   public static Gfsh getInstance(boolean launchShell, String[] args, GfshConfig gfshConfig) {
@@ -304,6 +303,13 @@ public class Gfsh extends JLineShell {
     return result;
   }
 
+  /**
+   * This method sets the parent of all loggers whose name starts with "java" or "javax" to
+   * LogWrapper.
+   *
+   * logWrapper disables any parents's log handler, and only logs to the file if specified. This
+   * would prevent JDK's logging show up in the console
+   */
   public static void redirectInternalJavaLoggers() {
     // Do we need to this on re-connect?
     LogManager logManager = LogManager.getLogManager();

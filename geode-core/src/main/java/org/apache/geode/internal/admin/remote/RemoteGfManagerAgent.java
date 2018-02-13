@@ -1355,7 +1355,8 @@ class RemoteGfManagerAgent implements GfManagerAgent {
      *
      * @see JoinLeaveListener#nodeJoined
      */
-    public void memberJoined(final InternalDistributedMember id) {
+    public void memberJoined(DistributionManager distributionManager,
+        final InternalDistributedMember id) {
       if (!isListening()) {
         return;
       }
@@ -1368,11 +1369,11 @@ class RemoteGfManagerAgent implements GfManagerAgent {
       }
     }
 
-    public void memberSuspect(InternalDistributedMember id, InternalDistributedMember whoSuspected,
-        String reason) {}
+    public void memberSuspect(DistributionManager distributionManager, InternalDistributedMember id,
+        InternalDistributedMember whoSuspected, String reason) {}
 
-    public void quorumLost(Set<InternalDistributedMember> failures,
-        List<InternalDistributedMember> remaining) {}
+    public void quorumLost(DistributionManager distributionManager,
+        Set<InternalDistributedMember> failures, List<InternalDistributedMember> remaining) {}
 
     /**
      * This method is invoked after a member has explicitly left the system. It may not get invoked
@@ -1381,7 +1382,8 @@ class RemoteGfManagerAgent implements GfManagerAgent {
      * @see JoinLeaveListener#nodeCrashed
      * @see JoinLeaveListener#nodeLeft
      */
-    public void memberDeparted(InternalDistributedMember id, boolean crashed) {
+    public void memberDeparted(DistributionManager distributionManager,
+        InternalDistributedMember id, boolean crashed) {
       synchronized (this) {
         if (!this.distributedMembers.remove(id)) {
           return;

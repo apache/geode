@@ -5620,7 +5620,7 @@ public class PartitionedRegion extends LocalRegion
   }
 
   @Override
-  void basicInvalidate(EntryEventImpl event) throws EntryNotFoundException {
+  public void basicInvalidate(EntryEventImpl event) throws EntryNotFoundException {
     final long startTime = PartitionedRegionStats.startTime();
     try {
       if (event.getEventId() == null) {
@@ -8960,7 +8960,8 @@ public class PartitionedRegion extends LocalRegion
     }
 
     @Override
-    public synchronized void memberJoined(InternalDistributedMember id) {
+    public synchronized void memberJoined(DistributionManager distributionManager,
+        InternalDistributedMember id) {
       // bug #44684 - this notification has been moved to a point AFTER the
       // other member has finished initializing its region
 
@@ -8969,15 +8970,16 @@ public class PartitionedRegion extends LocalRegion
     }
 
     @Override
-    public void quorumLost(Set<InternalDistributedMember> failures,
-        List<InternalDistributedMember> remaining) {}
+    public void quorumLost(DistributionManager distributionManager,
+        Set<InternalDistributedMember> failures, List<InternalDistributedMember> remaining) {}
 
     @Override
-    public void memberSuspect(InternalDistributedMember id, InternalDistributedMember whoSuspected,
-        String reason) {}
+    public void memberSuspect(DistributionManager distributionManager, InternalDistributedMember id,
+        InternalDistributedMember whoSuspected, String reason) {}
 
     @Override
-    public synchronized void memberDeparted(InternalDistributedMember id, boolean crashed) {
+    public synchronized void memberDeparted(DistributionManager distributionManager,
+        InternalDistributedMember id, boolean crashed) {
       if (PartitionedRegion.this.isInitialized() && hasListener()) {
         RegionEventImpl event =
             new RegionEventImpl(PartitionedRegion.this, Operation.REGION_CLOSE, null, true, id);

@@ -17,6 +17,7 @@ package org.apache.geode.security;
 import static org.apache.geode.distributed.ConfigurationProperties.SECURITY_CLIENT_ACCESSOR;
 import static org.apache.geode.distributed.ConfigurationProperties.SECURITY_CLIENT_AUTHENTICATOR;
 import static org.apache.geode.distributed.ConfigurationProperties.SECURITY_CLIENT_AUTH_INIT;
+import static org.apache.geode.distributed.ConfigurationProperties.SERIALIZABLE_OBJECT_FILTER;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
@@ -45,6 +46,7 @@ import org.apache.geode.cache.client.ClientRegionShortcut;
 import org.apache.geode.security.templates.SimpleAccessController;
 import org.apache.geode.security.templates.SimpleAuthenticator;
 import org.apache.geode.security.templates.UserPasswordAuthInit;
+import org.apache.geode.security.templates.UsernamePrincipal;
 import org.apache.geode.test.dunit.rules.ClientVM;
 import org.apache.geode.test.dunit.rules.ClusterStartupRule;
 import org.apache.geode.test.dunit.rules.MemberVM;
@@ -241,6 +243,13 @@ public class ClientDataAuthorizationUsingLegacySecurityDUnitTest {
     props.setProperty(UserPasswordAuthInit.PASSWORD, permission);
     props.setProperty(SECURITY_CLIENT_AUTH_INIT,
         UserPasswordAuthInit.class.getCanonicalName() + ".create");
+
+    // We can't sent the object filter property versions before 1.4.0 because
+    // it's not a valid property, but we must set it in 140 and above to allow
+    // serialization of UsernamePrincipal
+    if (clientVersion.compareTo("140") >= 0) {
+      props.setProperty(SERIALIZABLE_OBJECT_FILTER, UsernamePrincipal.class.getCanonicalName());
+    }
     return props;
   }
 }

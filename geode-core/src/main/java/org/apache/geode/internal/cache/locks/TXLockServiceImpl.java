@@ -205,7 +205,7 @@ public class TXLockServiceImpl extends TXLockService {
         try {
           processor.waitForRepliesUninterruptibly();
         } catch (ReplyException e) {
-          e.handleAsUnexpected();
+          e.handleCause();
         }
       } // not lock grantor
     } // not recovering

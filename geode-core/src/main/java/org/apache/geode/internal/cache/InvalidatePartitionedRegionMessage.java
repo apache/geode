@@ -52,6 +52,7 @@ public class InvalidatePartitionedRegionMessage extends PartitionMessage {
     ReplyProcessor21 response = new ReplyProcessor21(r.getSystem(), recipients);
     InvalidatePartitionedRegionMessage msg = new InvalidatePartitionedRegionMessage(recipients,
         event.getCallbackArgument(), r, response);
+    msg.setTransactionDistributed(r.getCache().getTxManager().isDistributed());
     r.getSystem().getDistributionManager().putOutgoing(msg);
     return response;
   }

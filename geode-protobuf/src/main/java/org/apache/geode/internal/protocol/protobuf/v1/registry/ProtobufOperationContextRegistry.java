@@ -21,6 +21,8 @@ import java.util.concurrent.ConcurrentHashMap;
 import org.apache.geode.annotations.Experimental;
 import org.apache.geode.internal.protocol.protobuf.v1.ClientProtocol;
 import org.apache.geode.internal.protocol.protobuf.v1.ProtobufOperationContext;
+import org.apache.geode.internal.protocol.protobuf.v1.operations.ExecuteFunctionOnGroupRequestOperationHandler;
+import org.apache.geode.internal.protocol.protobuf.v1.operations.ExecuteFunctionOnMemberRequestOperationHandler;
 import org.apache.geode.internal.protocol.protobuf.v1.operations.ExecuteFunctionOnRegionRequestOperationHandler;
 import org.apache.geode.internal.protocol.protobuf.v1.operations.GetAllRequestOperationHandler;
 import org.apache.geode.internal.protocol.protobuf.v1.operations.GetRegionNamesRequestOperationHandler;
@@ -115,6 +117,24 @@ public class ProtobufOperationContextRegistry {
             new ExecuteFunctionOnRegionRequestOperationHandler(),
             opsResp -> ClientProtocol.Message.newBuilder()
                 .setExecuteFunctionOnRegionResponse(opsResp),
+            // Resource permissions get handled per-function, since they have varying permission
+            // requirements.
+            new ResourcePermission(ResourcePermission.NULL, ResourcePermission.NULL)));
+
+    operationContexts.put(ClientProtocol.Message.MessageTypeCase.EXECUTEFUNCTIONONMEMBERREQUEST,
+        new ProtobufOperationContext<>(ClientProtocol.Message::getExecuteFunctionOnMemberRequest,
+            new ExecuteFunctionOnMemberRequestOperationHandler(),
+            opsResp -> ClientProtocol.Message.newBuilder()
+                .setExecuteFunctionOnMemberResponse(opsResp),
+            // Resource permissions get handled per-function, since they have varying permission
+            // requirements.
+            new ResourcePermission(ResourcePermission.NULL, ResourcePermission.NULL)));
+
+    operationContexts.put(ClientProtocol.Message.MessageTypeCase.EXECUTEFUNCTIONONGROUPREQUEST,
+        new ProtobufOperationContext<>(ClientProtocol.Message::getExecuteFunctionOnGroupRequest,
+            new ExecuteFunctionOnGroupRequestOperationHandler(),
+            opsResp -> ClientProtocol.Message.newBuilder()
+                .setExecuteFunctionOnGroupResponse(opsResp),
             // Resource permissions get handled per-function, since they have varying permission
             // requirements.
             new ResourcePermission(ResourcePermission.NULL, ResourcePermission.NULL)));

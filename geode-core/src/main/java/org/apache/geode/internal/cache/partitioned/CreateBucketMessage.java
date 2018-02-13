@@ -101,6 +101,7 @@ public class CreateBucketMessage extends PartitionMessage {
     NodeResponse p = new NodeResponse(r.getSystem(), recipient);
     CreateBucketMessage m =
         new CreateBucketMessage(recipient, r.getPRId(), p, bucketId, bucketSize);
+    m.setTransactionDistributed(r.getCache().getTxManager().isDistributed());
 
     p.enableSevereAlertProcessing();
 
@@ -351,7 +352,7 @@ public class CreateBucketMessage extends PartitionMessage {
         if (t instanceof PartitionedRegionStorageException) {
           throw new PartitionedRegionStorageException(t.getMessage(), t);
         }
-        e.handleAsUnexpected();
+        e.handleCause();
       }
       CreateBucketReplyMessage message = this.msg;
       if (message == null) {

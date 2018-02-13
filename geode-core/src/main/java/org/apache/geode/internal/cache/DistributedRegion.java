@@ -60,8 +60,6 @@ import org.apache.geode.cache.RegionMembershipListener;
 import org.apache.geode.cache.ResumptionAction;
 import org.apache.geode.cache.RoleException;
 import org.apache.geode.cache.TimeoutException;
-import org.apache.geode.cache.TransactionDataNotColocatedException;
-import org.apache.geode.cache.TransactionException;
 import org.apache.geode.cache.asyncqueue.internal.AsyncEventQueueImpl;
 import org.apache.geode.cache.execute.Function;
 import org.apache.geode.cache.execute.FunctionException;
@@ -89,7 +87,6 @@ import org.apache.geode.internal.Assert;
 import org.apache.geode.internal.cache.AbstractRegionMap.ARMLockTestHook;
 import org.apache.geode.internal.cache.CacheDistributionAdvisor.CacheProfile;
 import org.apache.geode.internal.cache.InitialImageOperation.GIIStatus;
-import org.apache.geode.internal.cache.RemoteFetchVersionMessage.FetchVersionResponse;
 import org.apache.geode.internal.cache.control.InternalResourceManager.ResourceType;
 import org.apache.geode.internal.cache.control.MemoryEvent;
 import org.apache.geode.internal.cache.event.DistributedEventTracker;
@@ -102,7 +99,6 @@ import org.apache.geode.internal.cache.execute.FunctionStats;
 import org.apache.geode.internal.cache.execute.LocalResultCollector;
 import org.apache.geode.internal.cache.execute.RegionFunctionContextImpl;
 import org.apache.geode.internal.cache.execute.ServerToClientFunctionResultSender;
-import org.apache.geode.internal.cache.partitioned.RemoteSizeMessage;
 import org.apache.geode.internal.cache.persistence.CreatePersistentRegionProcessor;
 import org.apache.geode.internal.cache.persistence.PersistenceAdvisor;
 import org.apache.geode.internal.cache.persistence.PersistenceAdvisorImpl;
@@ -111,6 +107,12 @@ import org.apache.geode.internal.cache.persistence.PersistentMemberManager;
 import org.apache.geode.internal.cache.persistence.PersistentMemberView;
 import org.apache.geode.internal.cache.tier.sockets.ClientProxyMembershipID;
 import org.apache.geode.internal.cache.tier.sockets.VersionedObjectList;
+import org.apache.geode.internal.cache.tx.RemoteClearMessage;
+import org.apache.geode.internal.cache.tx.RemoteDestroyMessage;
+import org.apache.geode.internal.cache.tx.RemoteFetchVersionMessage;
+import org.apache.geode.internal.cache.tx.RemoteFetchVersionMessage.FetchVersionResponse;
+import org.apache.geode.internal.cache.tx.RemoteInvalidateMessage;
+import org.apache.geode.internal.cache.tx.RemotePutMessage;
 import org.apache.geode.internal.cache.versions.ConcurrentCacheModificationException;
 import org.apache.geode.internal.cache.versions.RegionVersionVector;
 import org.apache.geode.internal.cache.versions.VersionSource;
@@ -610,7 +612,7 @@ public class DistributedRegion extends LocalRegion implements InternalDistribute
    *         NO_ACCESS or LIMITED_ACCESS
    */
   @Override
-  protected void checkForLimitedOrNoAccess() {
+  public void checkForLimitedOrNoAccess() {
     if (this.requiresReliabilityCheck && this.isMissingRequiredRoles) {
       if (getMembershipAttributes().getLossAction().isNoAccess()
           || getMembershipAttributes().getLossAction().isLimitedAccess()) {
@@ -1552,7 +1554,7 @@ public class DistributedRegion extends LocalRegion implements InternalDistribute
   }
 
   @Override
-  protected void basicDestroy(EntryEventImpl event, boolean cacheWrite, Object expectedOldValue)
+  public void basicDestroy(EntryEventImpl event, boolean cacheWrite, Object expectedOldValue)
       throws EntryNotFoundException, CacheWriterException, TimeoutException {
     // disallow local destruction for mirrored keysvalues regions
     boolean hasSeen = false;
@@ -1743,7 +1745,7 @@ public class DistributedRegion extends LocalRegion implements InternalDistribute
    * invalidated
    */
   @Override
-  void basicInvalidate(EntryEventImpl event) throws EntryNotFoundException {
+  public void basicInvalidate(EntryEventImpl event) throws EntryNotFoundException {
     boolean hasSeen = false;
     if (hasSeenEvent(event)) {
       hasSeen = true;
@@ -1868,14 +1870,11 @@ public class DistributedRegion extends LocalRegion implements InternalDistribute
         Set<InternalDistributedMember> repls = this.distAdvisor.adviseReplicates();
         if (!repls.isEmpty()) {
           InternalDistributedMember mbr = repls.iterator().next();
-          RemoteRegionOperation op = RemoteRegionOperation.clear(mbr, this);
+          RemoteClearMessage op = RemoteClearMessage.create(mbr, this);
           try {
             op.distribute();
             return;
-          } catch (CancelException e) {
-            this.stopper.checkCancelInProgress(e);
-            retry = true;
-          } catch (RemoteOperationException e) {
+          } catch (CancelException | RegionDestroyedException | RemoteOperationException e) {
             this.stopper.checkCancelInProgress(e);
             retry = true;
           }
@@ -3399,14 +3398,14 @@ public class DistributedRegion extends LocalRegion implements InternalDistribute
     }
 
     @Override
-    public void quorumLost(Set<InternalDistributedMember> failures,
-        List<InternalDistributedMember> remaining) {
+    public void quorumLost(DistributionManager distributionManager,
+        Set<InternalDistributedMember> failures, List<InternalDistributedMember> remaining) {
       // do nothing
     }
 
     @Override
-    public void memberSuspect(InternalDistributedMember id, InternalDistributedMember whoSuspected,
-        String reason) {
+    public void memberSuspect(DistributionManager distributionManager, InternalDistributedMember id,
+        InternalDistributedMember whoSuspected, String reason) {
       // do nothing
     }
 
@@ -3418,7 +3417,8 @@ public class DistributedRegion extends LocalRegion implements InternalDistribute
     }
 
     @Override
-    public synchronized void memberJoined(InternalDistributedMember id) {
+    public synchronized void memberJoined(DistributionManager distributionManager,
+        InternalDistributedMember id) {
       if (this.destroyed) {
         return;
       }
@@ -3469,7 +3469,8 @@ public class DistributedRegion extends LocalRegion implements InternalDistribute
       }
     }
 
-    public synchronized void memberDeparted(InternalDistributedMember id, boolean crashed) {
+    public synchronized void memberDeparted(DistributionManager distributionManager,
+        InternalDistributedMember id, boolean crashed) {
       if (this.destroyed) {
         return;
       }
@@ -3555,30 +3556,6 @@ public class DistributedRegion extends LocalRegion implements InternalDistribute
       return getRandomPersistentReplicate();
     }
     return super.getOwnerForKey(key);
-  }
-
-
-  /**
-   * Returns the size in this region.
-   *
-   * This is used in a transaction to find the size of the region on the transaction hosting node.
-   *
-   * @param target the host of the transaction TXState
-   * @return the number of entries in this region
-   */
-  public int getRegionSize(DistributedMember target) {
-    try {
-      RemoteSizeMessage.SizeResponse response =
-          RemoteSizeMessage.send(Collections.singleton(target), this);
-      return response.waitForSize();
-    } catch (RegionDestroyedException rde) {
-      throw new TransactionDataNotColocatedException(
-          LocalizedStrings.RemoteMessage_REGION_0_NOT_COLOCATED_WITH_TRANSACTION
-              .toLocalizedString(rde.getRegionFullPath()),
-          rde);
-    } catch (Exception e) {
-      throw new TransactionException(e);
-    }
   }
 
   /**

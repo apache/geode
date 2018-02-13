@@ -215,15 +215,17 @@ public class DistributionAdvisor {
     this.advisee = advisee;
     this.ml = new MembershipListener() {
 
-      public void memberJoined(InternalDistributedMember id) {
+      public void memberJoined(DistributionManager distributionManager,
+          InternalDistributedMember id) {
         // Ignore
       }
 
-      public void quorumLost(Set<InternalDistributedMember> failures,
-          List<InternalDistributedMember> remaining) {}
+      public void quorumLost(DistributionManager distributionManager,
+          Set<InternalDistributedMember> failures, List<InternalDistributedMember> remaining) {}
 
       @SuppressWarnings("synthetic-access")
-      public void memberDeparted(final InternalDistributedMember id, boolean crashed) {
+      public void memberDeparted(DistributionManager distributionManager,
+          final InternalDistributedMember id, boolean crashed) {
         boolean shouldSync = crashed && shouldSyncForCrashedMember(id);
         final Profile profile = getProfile(id);
         boolean removed =
@@ -236,8 +238,8 @@ public class DistributionAdvisor {
         }
       }
 
-      public void memberSuspect(InternalDistributedMember id,
-          InternalDistributedMember whoSuspected, String reason) {}
+      public void memberSuspect(DistributionManager distributionManager,
+          InternalDistributedMember id, InternalDistributedMember whoSuspected, String reason) {}
 
     };
   }
@@ -1208,7 +1210,7 @@ public class DistributionAdvisor {
     Iterator it = membershipListeners.keySet().iterator();
     while (it.hasNext()) {
       try {
-        ((MembershipListener) it.next()).memberJoined(member);
+        ((MembershipListener) it.next()).memberJoined(getDistributionManager(), member);
       } catch (Exception e) {
         logger.fatal(
             LocalizedMessage.create(LocalizedStrings.DistributionAdvisor_UNEXPECTED_EXCEPTION), e);
@@ -1220,7 +1222,7 @@ public class DistributionAdvisor {
     Iterator it = membershipListeners.keySet().iterator();
     while (it.hasNext()) {
       try {
-        ((MembershipListener) it.next()).memberDeparted(member, crashed);
+        ((MembershipListener) it.next()).memberDeparted(getDistributionManager(), member, crashed);
       } catch (Exception e) {
         logger.fatal(
             LocalizedMessage.create(LocalizedStrings.DistributionAdvisor_UNEXPECTED_EXCEPTION), e);

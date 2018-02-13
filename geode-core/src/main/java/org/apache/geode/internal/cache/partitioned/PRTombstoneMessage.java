@@ -75,6 +75,7 @@ public class PRTombstoneMessage extends PartitionMessageWithDirectReply
     PartitionResponse p = new Response(r.getSystem(), recipients);
     PRTombstoneMessage m =
         new PRTombstoneMessage(recipients, r.getPartitionedRegion().getPRId(), p, keys, eventID);
+    m.setTransactionDistributed(r.getCache().getTxManager().isDistributed());
     r.getDistributionManager().putOutgoing(m);
 
     try {

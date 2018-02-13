@@ -66,6 +66,7 @@ import org.apache.geode.cache.Region;
 import org.apache.geode.cache.RegionShortcut;
 import org.apache.geode.distributed.internal.ClusterDistributionManager;
 import org.apache.geode.distributed.internal.DistributionException;
+import org.apache.geode.distributed.internal.DistributionManager;
 import org.apache.geode.distributed.internal.HighPriorityAckedMessage;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.distributed.internal.InternalLocator;
@@ -2177,17 +2178,19 @@ public class LocatorDUnitTest extends JUnit4DistributedTestCase {
     boolean quorumLostInvoked;
     List<String> suspectReasons = new ArrayList<>(50);
 
-    public void memberJoined(InternalDistributedMember id) {}
+    public void memberJoined(DistributionManager distributionManager,
+        InternalDistributedMember id) {}
 
-    public void memberDeparted(InternalDistributedMember id, boolean crashed) {}
+    public void memberDeparted(DistributionManager distributionManager,
+        InternalDistributedMember id, boolean crashed) {}
 
-    public void memberSuspect(InternalDistributedMember id, InternalDistributedMember whoSuspected,
-        String reason) {
+    public void memberSuspect(DistributionManager distributionManager, InternalDistributedMember id,
+        InternalDistributedMember whoSuspected, String reason) {
       suspectReasons.add(reason);
     }
 
-    public void quorumLost(Set<InternalDistributedMember> failures,
-        List<InternalDistributedMember> remaining) {
+    public void quorumLost(DistributionManager distributionManager,
+        Set<InternalDistributedMember> failures, List<InternalDistributedMember> remaining) {
       quorumLostInvoked = true;
       org.apache.geode.test.dunit.LogWriterUtils.getLogWriter()
           .info("quorumLost invoked in test code");

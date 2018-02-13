@@ -69,6 +69,7 @@ public class PrimaryRequestMessage extends PartitionMessage {
     Assert.assertTrue(recipients != null, "PrimaryRequestMessage NULL recipient");
     PrimaryResponse p = new PrimaryResponse(r.getSystem(), recipients);
     PrimaryRequestMessage m = new PrimaryRequestMessage(recipients, r.getPRId(), p, bucketId);
+    m.setTransactionDistributed(r.getCache().getTxManager().isDistributed());
 
     Set failures = r.getDistributionManager().putOutgoing(m);
     if (failures != null && failures.size() > 0) {
@@ -225,7 +226,7 @@ public class PrimaryRequestMessage extends PartitionMessage {
                   .toLocalizedString(),
               t);
         }
-        e.handleAsUnexpected();
+        e.handleCause();
       }
       return this.msg.getSender();
     }

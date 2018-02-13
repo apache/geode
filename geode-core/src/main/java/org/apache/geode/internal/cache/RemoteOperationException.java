@@ -15,102 +15,27 @@
 
 package org.apache.geode.internal.cache;
 
-
-import org.apache.geode.InternalGemFireError;
-import org.apache.geode.internal.Assert;
-
 /**
- * Indicates that the current non-partitioned region operation failed fatally.
+ * Indicates that the current non-partitioned remote operation failed. Note that even though this
+ * exception extends DataLocationException it should not have since that exception has to do with
+ * data partitioning. Note: this exception should be in org.apache.geode.internal.cache.tx but for
+ * backwards compatibility needs to stay in org.apache.geode.internal.cache.
  *
- * @see org.apache.geode.internal.cache.RemoteOperationMessage
  * @since GemFire 6.5
  */
 public class RemoteOperationException extends DataLocationException {
   private static final long serialVersionUID = -595988965679204903L;
-  /**
-   * If true, this exception includes a hashCode for specified key
-   */
-  private boolean hasHash = false;
 
-  /**
-   * The hashCode for a specified key, if {@link #hasHash()} is true
-   */
-  private int keyHash = 0;
+  @SuppressWarnings("unused")
+  private boolean hasHash = false; // kept for serialization backwards compatibility
+  @SuppressWarnings("unused")
+  private int keyHash = 0; // kept for serialization backwards compatibility
 
-  /**
-   * Used when constructing the error: sets the expected hash.
-   *
-   * @param h the hash to use
-   */
-  public void setHash(int h) {
-    Assert.assertTrue(!this.hasHash, "setHash already called");
-    this.hasHash = true;
-    this.keyHash = h;
-  }
-
-  /**
-   * Fetch the hash for this exception
-   *
-   * @return the expected hash
-   */
-  public boolean hasHash() {
-    return this.hasHash;
-  }
-
-  public int getHash() {
-    if (!hasHash) {
-      throw new InternalGemFireError("getHash when no hash");
-    }
-    return this.keyHash;
-  }
-
-  /**
-   * If possible, validate the given key's hashCode against any that was returned by the peer.
-   *
-   * @param key the key on the current host. If null, no check is done.
-   * @throws PartitionedRegionException if the keys disagree.
-   */
-  public void checkKey(Object key) throws PartitionedRegionException {
-    if (!hasHash) {
-      return; // none provided
-    }
-    if (key == null) {
-      return; // ???
-    }
-
-    int expected = key.hashCode();
-    if (expected == keyHash) {
-      return;
-    }
-    throw new PartitionedRegionException("Object hashCode inconsistent between cache peers. Here = "
-        + expected + "; peer calculated = " + keyHash);
-  }
-
-  /**
-   * Reattempt required due to an underlying error
-   *
-   * @param message describes the context
-   * @param cause the underlying cause
-   */
   public RemoteOperationException(String message, Throwable cause) {
     super(message, cause);
   }
 
-  /**
-   * Reattempt required due to detected condition
-   *
-   * @param message describes the condition
-   */
   public RemoteOperationException(String message) {
     super(message);
-  }
-
-  @Override
-  public String toString() {
-    String result = super.toString();
-    if (hasHash()) {
-      result = result + " (hash = " + keyHash + ")";
-    }
-    return result;
   }
 }

@@ -57,7 +57,7 @@ public class VMCachedDeserializable implements CachedDeserializable, DataSeriali
    * Note that, in general, instances of this class should be obtained via
    * {@link CachedDeserializableFactory}.
    */
-  VMCachedDeserializable(byte[] serializedValue) {
+  public VMCachedDeserializable(byte[] serializedValue) {
     if (serializedValue == null)
       throw new NullPointerException(
           LocalizedStrings.VMCachedDeserializable_VALUE_MUST_NOT_BE_NULL.toLocalizedString());

@@ -1255,9 +1255,11 @@ public class ConnectionTable {
         long now = System.currentTimeMillis();
         if (!severeAlertIssued && ackSATimeout > 0 && startTime + ackTimeout < now) {
           if (startTime + ackTimeout + ackSATimeout < now) {
-            logger.fatal(LocalizedMessage.create(
-                LocalizedStrings.ConnectionTable_UNABLE_TO_FORM_A_TCPIP_CONNECTION_TO_0_IN_OVER_1_SECONDS,
-                new Object[] {targetMember, (ackSATimeout + ackTimeout) / 1000}));
+            if (targetMember != null) {
+              logger.fatal(LocalizedMessage.create(
+                  LocalizedStrings.ConnectionTable_UNABLE_TO_FORM_A_TCPIP_CONNECTION_TO_0_IN_OVER_1_SECONDS,
+                  new Object[] {targetMember, (ackSATimeout + ackTimeout) / 1000}));
+            }
             severeAlertIssued = true;
           } else if (!suspected) {
             logger.warn(LocalizedMessage.create(

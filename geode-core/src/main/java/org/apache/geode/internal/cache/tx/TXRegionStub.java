@@ -48,7 +48,7 @@ public interface TXRegionStub {
 
   int entryCount();
 
-  Set getRegionKeysForIteration(LocalRegion currRegion);
+  Set getRegionKeysForIteration();
 
   void postPutAll(DistributedPutAllOperation putallOp, VersionedObjectList successfulPuts,
       LocalRegion region);

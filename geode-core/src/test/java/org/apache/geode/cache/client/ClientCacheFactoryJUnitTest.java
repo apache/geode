@@ -330,6 +330,7 @@ public class ClientCacheFactoryJUnitTest {
     assertEquals(
         Collections.singletonList(new InetSocketAddress(InetAddress.getLocalHost(), 55555)),
         defPool.getServers());
+
     try {
       new ClientCacheFactory().addPoolServer(InetAddress.getLocalHost().getHostName(), 44444)
           .create();

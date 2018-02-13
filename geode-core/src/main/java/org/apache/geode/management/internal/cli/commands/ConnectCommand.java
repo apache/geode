@@ -301,8 +301,6 @@ public class ConnectCommand implements GfshCommand {
     } catch (Exception e) {
       // all other exceptions, just logs it and returns a connection error
       return handleException(e);
-    } finally {
-      Gfsh.redirectInternalJavaLoggers();
     }
   }
 
@@ -377,8 +375,6 @@ public class ConnectCommand implements GfshCommand {
     } catch (Exception e) {
       // all other exceptions, just logs it and returns a connection error
       return handleException(e, jmxHostPortToConnect);
-    } finally {
-      Gfsh.redirectInternalJavaLoggers();
     }
   }
 

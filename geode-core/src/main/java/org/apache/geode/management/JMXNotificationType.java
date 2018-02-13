@@ -159,6 +159,13 @@ public interface JMXNotificationType {
       DistributionConfig.GEMFIRE_PREFIX + "distributedsystem.gateway.sender.resumed";
 
   /**
+   * Notification type which indicates that a gateway sender is removed <BR>
+   * The value of this type string is <CODE>gemfire.distributedsystem.gateway.sender.removed</CODE>.
+   */
+  public static final String GATEWAY_SENDER_REMOVED =
+      DistributionConfig.GEMFIRE_PREFIX + "distributedsystem.gateway.sender.removed";
+
+  /**
    * Notification type which indicates that an async queue is created <BR>
    * The value of this type string is
    * <CODE>ggemfire.distributedsystem.asycn.event.queue.created</CODE>.
@@ -209,6 +216,15 @@ public interface JMXNotificationType {
    */
   String GATEWAY_RECEIVER_STOPPED =
       DistributionConfig.GEMFIRE_PREFIX + "distributedsystem.gateway.receiver.stopped";
+
+  /**
+   * Notification type which indicates that a gateway receiver is destroyed <BR>
+   * The value of this type string is
+   * <CODE>gemfire.distributedsystem.gateway.receiver.destroyed</CODE>.
+   */
+  public static final String GATEWAY_RECEIVER_DESTROYED =
+      DistributionConfig.GEMFIRE_PREFIX + "distributedsystem.gateway.receiver.destroyed";
+
 
   /**
    * Notification type which indicates that locator is started <BR>

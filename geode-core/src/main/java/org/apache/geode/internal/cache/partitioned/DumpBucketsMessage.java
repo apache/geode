@@ -56,6 +56,7 @@ public class DumpBucketsMessage extends PartitionMessage {
     PartitionResponse p = new PartitionResponse(r.getSystem(), recipients);
     DumpBucketsMessage m =
         new DumpBucketsMessage(recipients, r.getPRId(), p, validateOnly, onlyBuckets);
+    m.setTransactionDistributed(r.getCache().getTxManager().isDistributed());
 
     /* Set failures = */ r.getDistributionManager().putOutgoing(m);
     // if (failures != null && failures.size() > 0) {

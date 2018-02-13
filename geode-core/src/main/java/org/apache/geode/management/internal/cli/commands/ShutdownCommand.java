@@ -123,7 +123,7 @@ public class ShutdownCommand implements GfshCommand {
     } catch (TimeoutException tex) {
       return ResultBuilder.createInfoResult(CliStrings.SHUTDOWN_TIMEDOUT);
     } catch (Exception ex) {
-      ex.printStackTrace();
+      logger.error(ex.getMessage(), ex);
       return ResultBuilder.createUserErrorResult(ex.getMessage());
     }
     // @TODO. List all the nodes which could be successfully shutdown

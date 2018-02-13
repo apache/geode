@@ -55,8 +55,8 @@ public class AlterRegionCommandDUnitTest {
   @ClassRule
   public static GfshCommandRule gfsh = new GfshCommandRule();
 
-  @Rule
-  public TemporaryFolder temporaryFolder = new TemporaryFolder();
+  @ClassRule
+  public static TemporaryFolder temporaryFolder = new TemporaryFolder();
 
   private static MemberVM locator, server1, server2, server3;
 
@@ -68,6 +68,8 @@ public class AlterRegionCommandDUnitTest {
     server3 = cluster.startServerVM(3, locator.getPort());
 
     gfsh.connectAndVerify(locator);
+
+    deployJarFilesForRegionAlter();
   }
 
   @Before
@@ -85,8 +87,6 @@ public class AlterRegionCommandDUnitTest {
   @Test
   public void alterRegionResetCacheListeners() throws IOException {
     gfsh.executeAndAssertThat("create region --name=regionA --type=PARTITION").statusIsSuccess();
-
-    deployJarFilesForRegionAlter();
 
     String listenerABC =
         "com.cadrdunit.RegionAlterCacheListenerA,com.cadrdunit.RegionAlterCacheListenerB,com.cadrdunit.RegionAlterCacheListenerC";
@@ -192,24 +192,55 @@ public class AlterRegionCommandDUnitTest {
         "alter region --name=regionA --entry-idle-time-expiration-action=invalidate")
         .statusIsError()
         .containsOutput("ERROR: Cannot set idle timeout when statistics are disabled.");
+
+    gfsh.executeAndAssertThat(
+        "alter region --name=regionA --entry-idle-time-custom-expiry=com.cadrdunit.RegionAlterCustomExpiry")
+        .statusIsError()
+        .containsOutput("ERROR: Cannot set idle timeout when statistics are disabled.");
   }
 
   @Test
-  public void alterRegionStatisticsEnabled() {
+  public void alterExpirationAttributesWithStatisticsEnabled() {
     gfsh.executeAndAssertThat("create region --name=regionA --type=REPLICATE --enable-statistics")
         .statusIsSuccess();
     gfsh.executeAndAssertThat(
         "alter region --name=regionA --entry-idle-time-expiration-action=invalidate")
         .statusIsSuccess();
+
+    gfsh.executeAndAssertThat(
+        "alter region --name=regionA --entry-idle-time-custom-expiry=com.cadrdunit.RegionAlterCustomExpiry")
+        .statusIsSuccess();
+
+    server1.invoke(() -> {
+      Region region = ClusterStartupRule.getCache().getRegion("regionA");
+      ExpirationAttributes expiry = region.getAttributes().getEntryIdleTimeout();
+      assertThat(expiry.getTimeout()).isEqualTo(0);
+      assertThat(expiry.getAction()).isEqualTo(ExpirationAction.INVALIDATE);
+      assertThat(region.getAttributes().getCustomEntryIdleTimeout().getClass().getName())
+          .isEqualTo("com.cadrdunit.RegionAlterCustomExpiry");
+    });
+
+    gfsh.executeAndAssertThat("alter region --name=regionA --entry-idle-time-custom-expiry=''")
+        .statusIsSuccess();
+
+    server1.invoke(() -> {
+      Region region = ClusterStartupRule.getCache().getRegion("regionA");
+      ExpirationAttributes expiry = region.getAttributes().getEntryIdleTimeout();
+      assertThat(expiry.getTimeout()).isEqualTo(0);
+      assertThat(expiry.getAction()).isEqualTo(ExpirationAction.INVALIDATE);
+      assertThat(region.getAttributes().getCustomEntryIdleTimeout()).isNull();
+    });
   }
 
-  private void deployJarFilesForRegionAlter() throws IOException {
+  private static void deployJarFilesForRegionAlter() throws IOException {
     ClassBuilder classBuilder = new ClassBuilder();
     final File jarFile1 = new File(temporaryFolder.getRoot(), "testAlterRegion1.jar");
     final File jarFile2 = new File(temporaryFolder.getRoot(), "testAlterRegion2.jar");
     final File jarFile3 = new File(temporaryFolder.getRoot(), "testAlterRegion3.jar");
     final File jarFile4 = new File(temporaryFolder.getRoot(), "testAlterRegion4.jar");
     final File jarFile5 = new File(temporaryFolder.getRoot(), "testAlterRegion5.jar");
+    final File jarFile6 = new File(temporaryFolder.getRoot(), "testAlterRegion6.jar");
+
 
     byte[] jarBytes =
         classBuilder.createJarFromClassContent("com/cadrdunit/RegionAlterCacheListenerA",
@@ -245,9 +276,19 @@ public class AlterRegionCommandDUnitTest {
             + "public class RegionAlterCacheWriter extends CacheWriterAdapter {}");
     writeJarBytesToFile(jarFile5, jarBytes);
     gfsh.executeAndAssertThat("deploy --jar=" + jarFile5.getAbsolutePath()).statusIsSuccess();
+
+    jarBytes = classBuilder.createJarFromClassContent("com/cadrdunit/RegionAlterCustomExpiry",
+        "package com.cadrdunit;" + "import org.apache.geode.cache.CustomExpiry;"
+            + "import org.apache.geode.cache.Region.Entry;"
+            + "import org.apache.geode.cache.ExpirationAttributes;"
+            + "public class RegionAlterCustomExpiry implements CustomExpiry {"
+            + "public void close() {}"
+            + "public ExpirationAttributes getExpiry(Entry entry) {return null;}" + "}");
+    writeJarBytesToFile(jarFile6, jarBytes);
+    gfsh.executeAndAssertThat("deploy --jar=" + jarFile6.getAbsolutePath()).statusIsSuccess();
   }
 
-  private void writeJarBytesToFile(File jarFile, byte[] jarBytes) throws IOException {
+  private static void writeJarBytesToFile(File jarFile, byte[] jarBytes) throws IOException {
     final OutputStream outStream = new FileOutputStream(jarFile);
     outStream.write(jarBytes);
     outStream.flush();

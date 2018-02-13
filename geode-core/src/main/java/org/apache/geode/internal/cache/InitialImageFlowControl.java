@@ -161,11 +161,11 @@ public class InitialImageFlowControl implements MembershipListener {
     return id;
   }
 
-  public void memberDeparted(InternalDistributedMember id, boolean crashed) {
+  public void memberDeparted(DistributionManager distributionManager, InternalDistributedMember id,
+      boolean crashed) {
     if (id.equals(target)) {
       abort();
     }
-
   }
 
   private void abort() {
@@ -177,15 +177,15 @@ public class InitialImageFlowControl implements MembershipListener {
     }
   }
 
-  public void memberJoined(InternalDistributedMember id) {
+  public void memberJoined(DistributionManager distributionManager, InternalDistributedMember id) {
     // Do nothing
   }
 
-  public void quorumLost(Set<InternalDistributedMember> failures,
-      List<InternalDistributedMember> remaining) {}
+  public void quorumLost(DistributionManager distributionManager,
+      Set<InternalDistributedMember> failures, List<InternalDistributedMember> remaining) {}
 
-  public void memberSuspect(InternalDistributedMember id, InternalDistributedMember whoSuspected,
-      String reason) {
+  public void memberSuspect(DistributionManager distributionManager, InternalDistributedMember id,
+      InternalDistributedMember whoSuspected, String reason) {
     // Do nothing
   }
 

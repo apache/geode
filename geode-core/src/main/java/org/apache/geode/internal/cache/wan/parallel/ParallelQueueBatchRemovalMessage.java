@@ -130,6 +130,7 @@ public class ParallelQueueBatchRemovalMessage extends PartitionMessage {
         new ParallelQueueBatchRemovalResponse(pr.getSystem(), recipients, pr);
     ParallelQueueBatchRemovalMessage msg =
         new ParallelQueueBatchRemovalMessage(recipients, pr.getPRId(), response, bucketToTailKey);
+    msg.setTransactionDistributed(pr.getCache().getTxManager().isDistributed());
 
     Set<InternalDistributedMember> failures = pr.getDistributionManager().putOutgoing(msg);
 

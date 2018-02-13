@@ -2037,7 +2037,7 @@ public class LocalRegion extends AbstractRegion implements LoaderHelperFactory,
   /**
    * @return size after considering imageState
    */
-  protected int getRegionSize() {
+  public int getRegionSize() {
     synchronized (getSizeGuard()) {
       int result = getRegionMap().size();
       // if this is a client with no tombstones then we subtract the number
@@ -3747,10 +3747,14 @@ public class LocalRegion extends AbstractRegion implements LoaderHelperFactory,
 
         case InterestType.KEY:
           if (key instanceof String && key.equals("ALL_KEYS")) {
+            logger.warn(
+                "Usage of registerInterest('ALL_KEYS') has been deprecated.  Please use registerInterestForAllKeys()");
             serverKeys = proxy.registerInterest(".*", InterestType.REGULAR_EXPRESSION,
                 interestResultPolicy, isDurable, receiveUpdatesAsInvalidates, regionDataPolicy);
           } else {
             if (key instanceof List) {
+              logger.warn(
+                  "Usage of registerInterest(List) has been deprecated. Please use registerInterestForKeys(Iterable)");
               serverKeys = proxy.registerInterestList((List) key, interestResultPolicy, isDurable,
                   receiveUpdatesAsInvalidates, regionDataPolicy);
             } else {
@@ -4753,7 +4757,7 @@ public class LocalRegion extends AbstractRegion implements LoaderHelperFactory,
    *
    * @see DistributedRegion#basicInvalidate(EntryEventImpl)
    */
-  void basicInvalidate(EntryEventImpl event) throws EntryNotFoundException {
+  public void basicInvalidate(EntryEventImpl event) throws EntryNotFoundException {
     basicInvalidate(event, isInitialized()/* for bug 35214 */);
   }
 
@@ -5041,7 +5045,7 @@ public class LocalRegion extends AbstractRegion implements LoaderHelperFactory,
    * @return false if ifNew is true and there is an existing key or if ifOld is true and
    *         expectedOldValue does not match the current value in the cache. Otherwise return true.
    */
-  protected boolean basicPut(EntryEventImpl event, boolean ifNew, boolean ifOld,
+  public boolean basicPut(EntryEventImpl event, boolean ifNew, boolean ifOld,
       Object expectedOldValue, boolean requireOldValue)
       throws TimeoutException, CacheWriterException {
     return getDataView().putEntry(event, ifNew, ifOld, expectedOldValue, requireOldValue, 0L,
@@ -6020,7 +6024,7 @@ public class LocalRegion extends AbstractRegion implements LoaderHelperFactory,
    *
    * @since GemFire 5.7
    */
-  void syncBulkOp(Runnable task, EventID eventId) {
+  public void syncBulkOp(Runnable task, EventID eventId) {
     getEventTracker().syncBulkOp(task, eventId, isTX());
   }
 

@@ -29,6 +29,7 @@ org/apache/geode/internal/cache/tier/CommunicationMode
 org/apache/geode/internal/cache/tier/InternalClientMembership$EventType
 org/apache/geode/internal/cache/tier/sockets/ClientUpdateMessageImpl$ClientCqConcurrentMap
 org/apache/geode/internal/cache/tier/sockets/ClientUpdateMessageImpl$CqNameToOpHashMap
+org/apache/geode/internal/cache/tx/RemoteClearMessage$Operation
 org/apache/geode/internal/cache/xmlcache/DiskStoreAttributesCreation
 org/apache/geode/internal/cache/xmlcache/RegionAttributesCreation
 org/apache/geode/internal/datasource/FacetsJCAConnectionManagerImpl
@@ -87,3 +88,4 @@ org/apache/geode/cache/query/internal/types/TypeUtils$ComparisonStrategy$2
 org/apache/geode/cache/query/internal/types/TypeUtils$ComparisonStrategy$3
 org/apache/geode/cache/query/internal/types/TypeUtils$ComparisonStrategy$4
 org/apache/geode/cache/query/internal/types/TypeUtils$ComparisonStrategy$5
+org/apache/geode/cache/client/internal/pooling/ConnectionManagerImpl$ClosedPoolConnectionList

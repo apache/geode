@@ -91,6 +91,11 @@ public interface GatewayReceiver {
   void stop();
 
   /**
+   * Destroy this receiver. Stop should be called before calling destroy
+   */
+  void destroy();
+
+  /**
    * Returns whether or not this receiver is running
    */
   boolean isRunning();

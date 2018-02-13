@@ -288,6 +288,7 @@ public class GetMessage extends PartitionMessageWithDirectReply {
     GetResponse p = new GetResponse(r.getSystem(), Collections.singleton(recipient), key);
     GetMessage m = new GetMessage(recipient, r.getPRId(), p, key, aCallbackArgument,
         requestingClient, returnTombstones);
+    m.setTransactionDistributed(r.getCache().getTxManager().isDistributed());
     Set failures = r.getDistributionManager().putOutgoing(m);
     if (failures != null && failures.size() > 0) {
       throw new ForceReattemptException(

@@ -59,8 +59,8 @@ import org.apache.geode.internal.cache.ForceReattemptException;
 import org.apache.geode.internal.cache.PartitionedRegion;
 import org.apache.geode.internal.cache.PartitionedRegionDataStore;
 import org.apache.geode.internal.cache.PrimaryBucketException;
-import org.apache.geode.internal.cache.RemotePutMessage;
 import org.apache.geode.internal.cache.tier.sockets.ClientProxyMembershipID;
+import org.apache.geode.internal.cache.tx.RemotePutMessage;
 import org.apache.geode.internal.cache.versions.VersionTag;
 import org.apache.geode.internal.i18n.LocalizedStrings;
 import org.apache.geode.internal.logging.LogService;
@@ -303,6 +303,7 @@ public class PutMessage extends PartitionMessageWithDirectReply implements NewVa
       boolean ifOld, DirectReplyProcessor processor, boolean sendDeltaWithFullValue) {
     PutMessage msg = new PutMessage(Collections.EMPTY_SET, true, r.getPRId(), processor, event, 0,
         ifNew, ifOld, null, false);
+    msg.setTransactionDistributed(r.getCache().getTxManager().isDistributed());
     msg.setInternalDs(r.getSystem());
     msg.versionTag = event.getVersionTag();
     msg.setSendDeltaWithFullValue(sendDeltaWithFullValue);
