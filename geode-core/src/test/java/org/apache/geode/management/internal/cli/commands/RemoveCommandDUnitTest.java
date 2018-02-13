@@ -17,11 +17,6 @@ package org.apache.geode.management.internal.cli.commands;
 import static org.apache.geode.management.internal.cli.commands.RemoveCommand.REGION_NOT_FOUND;
 import static org.assertj.core.api.Assertions.assertThat;
 
-import java.util.Set;
-import java.util.concurrent.TimeUnit;
-
-import org.apache.commons.collections.CollectionUtils;
-import org.awaitility.Awaitility;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -30,15 +25,11 @@ import org.junit.experimental.categories.Category;
 import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.CacheFactory;
 import org.apache.geode.cache.Region;
-import org.apache.geode.cache.RegionShortcut;
-import org.apache.geode.distributed.DistributedMember;
-import org.apache.geode.internal.cache.InternalCache;
-import org.apache.geode.management.internal.cli.CliUtil;
-import org.apache.geode.test.dunit.SerializableCallableIF;
 import org.apache.geode.test.dunit.rules.ClusterStartupRule;
 import org.apache.geode.test.dunit.rules.MemberVM;
 import org.apache.geode.test.junit.categories.DistributedTest;
 import org.apache.geode.test.junit.rules.GfshCommandRule;
+import org.apache.geode.test.junit.rules.VMProvider;
 
 @Category(DistributedTest.class)
 public class RemoveCommandDUnitTest {
@@ -62,28 +53,27 @@ public class RemoveCommandDUnitTest {
     server1 = clusterStartupRule.startServerVM(1, locator.getPort());
     server2 = clusterStartupRule.startServerVM(2, locator.getPort());
 
-    server1.invoke(RemoveCommandDUnitTest::populateTestRegions);
-    server2.invoke(RemoveCommandDUnitTest::populateTestRegions);
-
     gfsh.connectAndVerify(locator);
+    gfsh.executeAndAssertThat("create region --name=" + REPLICATE_REGION_NAME + " --type=REPLICATE")
+        .statusIsSuccess();
+    gfsh.executeAndAssertThat(
+        "create region --name=" + PARTITIONED_REGION_NAME + " --type=PARTITION").statusIsSuccess();
 
-    Awaitility.await().atMost(2, TimeUnit.MINUTES).until(() -> locator.getVM().invoke(
-        (SerializableCallableIF<Boolean>) RemoveCommandDUnitTest::regionMBeansAreInitialized));
+    locator.waitTillRegionsAreReadyOnServers("/" + REPLICATE_REGION_NAME, 2);
+    locator.waitTillRegionsAreReadyOnServers("/" + PARTITIONED_REGION_NAME, 2);
+
+    VMProvider.invokeInEveryMember(RemoveCommandDUnitTest::populateTestRegions, server1, server2);
   }
 
   private static void populateTestRegions() {
     Cache cache = CacheFactory.getAnyInstance();
-    Region<String, String> replicateRegion =
-        cache.<String, String>createRegionFactory(RegionShortcut.REPLICATE)
-            .create(REPLICATE_REGION_NAME);
-    Region<String, String> partitionedRegion =
-        cache.<String, String>createRegionFactory(RegionShortcut.PARTITION)
-            .create(PARTITIONED_REGION_NAME);
 
+    Region<String, String> replicateRegion = cache.getRegion(REPLICATE_REGION_NAME);
     replicateRegion.put(EMPTY_STRING, "valueForEmptyKey");
     replicateRegion.put("key1", "value1");
     replicateRegion.put("key2", "value2");
 
+    Region<String, String> partitionedRegion = cache.getRegion(PARTITIONED_REGION_NAME);
     partitionedRegion.put("key1", "value1");
     partitionedRegion.put("key2", "value2");
   }
@@ -173,16 +163,6 @@ public class RemoveCommandDUnitTest {
 
     server1.invoke(() -> verifyKeyIsRemoved(REPLICATE_REGION_NAME, EMPTY_STRING));
     server2.invoke(() -> verifyKeyIsRemoved(REPLICATE_REGION_NAME, EMPTY_STRING));
-  }
-
-  private static boolean regionMBeansAreInitialized() {
-    Set<DistributedMember> replicateMembers = CliUtil.getRegionAssociatedMembers(
-        REPLICATE_REGION_NAME, (InternalCache) CacheFactory.getAnyInstance(), false);
-    Set<DistributedMember> partitionMembers = CliUtil.getRegionAssociatedMembers(
-        PARTITIONED_REGION_NAME, (InternalCache) CacheFactory.getAnyInstance(), false);
-
-    return CollectionUtils.isNotEmpty(replicateMembers)
-        && CollectionUtils.isNotEmpty(partitionMembers);
   }
 
   private static void verifyAllKeysAreRemoved(String regionName) {
