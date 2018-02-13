@@ -29,7 +29,8 @@ import org.apache.geode.test.junit.categories.IntegrationTest;
  */
 @Category(IntegrationTest.class)
 public class JSONFormatterBasicJUnitTest {
-  // This is needed because the JsonFormatter needs to access the PDX region, which requires a running Cache.
+  // This is needed because the JsonFormatter needs to access the PDX region, which requires a
+  // running Cache.
   private static Cache cache;
 
   @BeforeClass
