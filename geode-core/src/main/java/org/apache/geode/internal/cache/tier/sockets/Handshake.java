@@ -352,7 +352,6 @@ public abstract class Handshake {
   public boolean equals(Object other) {
     if (other == this)
       return true;
-    // if (other == null) return false;
     if (!(other instanceof Handshake))
       return false;
     final Handshake that = (Handshake) other;
@@ -366,10 +365,9 @@ public abstract class Handshake {
 
   @Override
   public int hashCode() {
-    int result = 17;
     final int mult = 37;
 
-    result = this.id.hashCode();
+    int result = this.id.hashCode();
     result = mult * result + this.replyCode;
 
     return result;
