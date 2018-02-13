@@ -116,12 +116,8 @@ public class IntegratedSecurityPeerAuthDUnitTest {
 
     @Override
     public boolean authorize(Object principal, ResourcePermission permission) {
-      // only server-1 and server-2 are authenticated, but only server-1 is authorized
-      if ("server-1".equals(principal)) {
-        return true;
-      } else {
-        return false;
-      }
+      // server-1 and server-2 are authenticated, but only server-1 is authorized
+      return ("server-1".equals(principal));
     }
   }
 }

@@ -24,7 +24,7 @@ import org.apache.geode.distributed.DistributedSystem;
 
 /**
  * Specifies the mechanism to obtain credentials for a client or peer. It is mandatory for clients
- * and peers when running in secure mode and an {@link SecurityManager} has been configured on the
+ * and peers when running in secure mode and a {@link SecurityManager} has been configured on the
  * server/locator side respectively. Implementations should register name of the static creation
  * function (that returns an object of the class) as the <i>security-peer-auth-init</i> system
  * property on peers and as the <i>security-client-auth-init</i> system property on clients.
@@ -54,8 +54,8 @@ public interface AuthInitialize extends CacheCallback {
   /**
    *
    * @since Geode 1.0.
-   * @deprecated in Geode 1.5, never called by the product, use init(LogWriter systemLogger,
-   *             LogWriter securityLogger)
+   * @deprecated in Geode 1.5. Never called by the product. Use {link #init(LogWriter systemLogger,
+   *             LogWriter securityLogger)}
    */
   default void init() {}
 
@@ -92,8 +92,8 @@ public interface AuthInitialize extends CacheCallback {
    * @param securityProps
    * @return the credentials to be used. It needs to contain "security-username" and
    *         "security-password"
-   * @deprecated in Geode 1.3. never called by the product. use getCredentials(Properties
-   *             securityProps, DistributedMember server, boolean isPeer)
+   * @deprecated in Geode 1.3. Never called by the product. Use {link #getCredentials(Properties
+   *             securityProps, DistributedMember server, boolean isPeer)}
    */
   default Properties getCredentials(Properties securityProps) {
     return getCredentials(securityProps, null, true);

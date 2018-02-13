@@ -41,7 +41,7 @@ public interface SecurityManager {
    * Your security manager needs to validate credentials coming from all communication channels.
    * If you use AuthInitialize to generate your client/peer credentials, then the input of this
    * method is the output of your AuthInitialize.getCredentials method. But remember that this
-   * method will also needs to validate credentials coming from gfsh/jmx/rest client, the framework
+   * method will also need to validate credentials coming from gfsh/jmx/rest client, the framework
    * is putting the username/password under security-username and security-password keys in the
    * property, so your securityManager implementation needs to validate these kind of properties
    * as well.
