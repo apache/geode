@@ -436,6 +436,13 @@ public class CacheCreation implements InternalCache {
       throw new IllegalStateException(
           "You must use client-cache in the cache.xml when ClientCacheFactory is used.");
     }
+
+    initializeDeclarablesMap(cache);
+
+    if (hasFunctionService()) {
+      getFunctionServiceCreation().create();
+    }
+
     if (this.hasLockLease()) {
       cache.setLockLease(this.lockLease);
     }
@@ -570,7 +577,6 @@ public class CacheCreation implements InternalCache {
 
     cache.setBackupFiles(this.backups);
 
-    initializeDeclarablesMap(cache);
     runInitializer(cache);
     cache.setInitializer(getInitializer(), getInitializerProps());
 
@@ -1457,8 +1463,19 @@ public class CacheCreation implements InternalCache {
     return new PoolFactoryImpl(this.poolManager).setStartDisabled(true);
   }
 
+  private volatile boolean hasFunctionService = false;
+
+  boolean hasFunctionService() {
+    return this.hasFunctionService;
+  }
+
   public void setFunctionServiceCreation(FunctionServiceCreation functionServiceCreation) {
+    this.hasFunctionService = true;
     this.functionServiceCreation = functionServiceCreation;
+  }
+
+  public FunctionServiceCreation getFunctionServiceCreation() {
+    return this.functionServiceCreation;
   }
 
   private volatile boolean hasResourceManager = false;

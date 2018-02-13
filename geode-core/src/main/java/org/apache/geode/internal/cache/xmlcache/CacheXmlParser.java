@@ -2416,7 +2416,7 @@ public class CacheXmlParser extends CacheXml implements ContentHandler {
               .toLocalizedString());
     }
     FunctionServiceCreation fsc = (FunctionServiceCreation) top;
-    fsc.create();
+    this.cache.setFunctionServiceCreation(fsc);
   }
 
   /**
