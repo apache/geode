@@ -15,10 +15,10 @@
 package org.apache.geode.cache.query.partitioned;
 
 import static org.apache.geode.cache.query.Utils.createPortfoliosAndPositions;
-import static org.junit.Assert.*;
 
 import java.io.File;
 
+import org.apache.logging.log4j.Logger;
 import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
@@ -30,13 +30,12 @@ import org.apache.geode.cache.query.internal.index.IndexUtils;
 import org.apache.geode.cache30.CacheSerializableRunnable;
 import org.apache.geode.internal.cache.GemFireCacheImpl;
 import org.apache.geode.internal.cache.PartitionedRegionDUnitTestCase;
+import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.test.dunit.AsyncInvocation;
 import org.apache.geode.test.dunit.Host;
 import org.apache.geode.test.dunit.ThreadUtils;
 import org.apache.geode.test.dunit.VM;
 import org.apache.geode.test.dunit.Wait;
-import org.apache.geode.test.dunit.cache.internal.JUnit4CacheTestCase;
-import org.apache.geode.test.dunit.internal.JUnit4DistributedTestCase;
 import org.apache.geode.test.junit.categories.DistributedTest;
 
 /**
@@ -46,12 +45,6 @@ import org.apache.geode.test.junit.categories.DistributedTest;
 public class PRBasicIndexCreationDeadlockDUnitTest extends PartitionedRegionDUnitTestCase
 
 {
-  /**
-   * constructor
-   *
-   * @param name
-   */
-
   public PRBasicIndexCreationDeadlockDUnitTest() {
     super();
   }
@@ -68,6 +61,8 @@ public class PRBasicIndexCreationDeadlockDUnitTest extends PartitionedRegionDUni
       vm.invoke(() -> PRQueryDUnitHelper.setCache(getCache()));
     }
   }
+
+  private static final Logger logger = LogService.getLogger();
 
   PRQueryDUnitHelper PRQHelp = new PRQueryDUnitHelper();
 
@@ -121,7 +116,7 @@ public class PRBasicIndexCreationDeadlockDUnitTest extends PartitionedRegionDUni
 
         @Override
         public void run2() throws CacheException {
-          GemFireCacheImpl.getInstance().close();
+          PRQueryDUnitHelper.getCache().close();
         }
       });
 
@@ -129,7 +124,7 @@ public class PRBasicIndexCreationDeadlockDUnitTest extends PartitionedRegionDUni
 
         @Override
         public void run2() throws CacheException {
-          GemFireCacheImpl.getInstance().close();
+          PRQueryDUnitHelper.getCache().close();
         }
       });
 
@@ -228,7 +223,7 @@ public class PRBasicIndexCreationDeadlockDUnitTest extends PartitionedRegionDUni
 
     @Override
     public synchronized void hook(int spot) throws RuntimeException {
-      GemFireCacheImpl.getInstance().getLogger().fine("IndexUtilTestHook is set");
+      logger.debug("IndexUtilTestHook is set");
       switch (spot) {
         case 0:
           hooked = true;
