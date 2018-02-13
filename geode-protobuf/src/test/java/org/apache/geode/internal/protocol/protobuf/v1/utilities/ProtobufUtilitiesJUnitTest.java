@@ -144,6 +144,11 @@ public class ProtobufUtilitiesJUnitTest {
     createAndVerifyEncodedValue("Some String text to test");
   }
 
+  @Test
+  public void doesANullValueSuccessfullyEncodeIntoEncodedValues() throws Exception {
+    createAndVerifyEncodedValue(null);
+  }
+
   private <T> void createAndVerifyEncodedValue(T testObj) throws EncodingException {
     BasicTypes.EncodedValue encodedValue = protobufSerializationService.encode(testObj);
     if (testObj instanceof byte[]) {

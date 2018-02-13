@@ -61,9 +61,13 @@ public class PutRequestOperationHandler
       try {
         region.put(decodedKey, decodedValue);
         return Success.of(RegionAPI.PutResponse.newBuilder().build());
+      } catch (NullPointerException ex) {
+        return Failure.of(ProtobufResponseUtilities.makeErrorResponse(INVALID_REQUEST,
+            "Key and value must both be non-NULL"));
       } catch (ClassCastException ex) {
         logger.error("Received Put request with invalid key type: {}", ex);
-        return Failure.of(ProtobufResponseUtilities.makeErrorResponse(SERVER_ERROR, ex.toString()));
+        return Failure.of(ProtobufResponseUtilities.makeErrorResponse(SERVER_ERROR,
+            "Received Put request with invalid key type."));
       }
     } catch (EncodingException ex) {
       logger.error("Got error when decoding Put request: {}", ex);

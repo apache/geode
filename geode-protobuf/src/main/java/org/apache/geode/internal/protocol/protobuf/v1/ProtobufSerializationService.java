@@ -15,6 +15,7 @@
 package org.apache.geode.internal.protocol.protobuf.v1;
 
 import com.google.protobuf.ByteString;
+import com.google.protobuf.NullValue;
 
 import org.apache.geode.annotations.Experimental;
 import org.apache.geode.internal.protocol.protobuf.v1.serialization.JsonPdxConverter;
@@ -36,58 +37,59 @@ public class ProtobufSerializationService implements SerializationService<BasicT
    */
   @Override
   public BasicTypes.EncodedValue encode(Object value) throws EncodingException {
-    if (value == null) {
-      return BasicTypes.EncodedValue.getDefaultInstance();
-    }
-
     BasicTypes.EncodedValue.Builder builder = BasicTypes.EncodedValue.newBuilder();
 
-    try {
-      ProtobufEncodingTypes protobufEncodingTypes = ProtobufEncodingTypes.valueOf(value.getClass());
-      switch (protobufEncodingTypes) {
-        case INT: {
-          builder.setIntResult((Integer) value);
-          break;
+    if (value == null) {
+      builder.setNullResult(NullValue.NULL_VALUE);
+    } else {
+      try {
+        ProtobufEncodingTypes protobufEncodingTypes =
+            ProtobufEncodingTypes.valueOf(value.getClass());
+        switch (protobufEncodingTypes) {
+          case INT: {
+            builder.setIntResult((Integer) value);
+            break;
+          }
+          case LONG: {
+            builder.setLongResult((Long) value);
+            break;
+          }
+          case SHORT: {
+            builder.setShortResult((Short) value);
+            break;
+          }
+          case BYTE: {
+            builder.setByteResult((Byte) value);
+            break;
+          }
+          case DOUBLE: {
+            builder.setDoubleResult((Double) value);
+            break;
+          }
+          case FLOAT: {
+            builder.setFloatResult((Float) value);
+            break;
+          }
+          case BINARY: {
+            builder.setBinaryResult(ByteString.copyFrom((byte[]) value));
+            break;
+          }
+          case BOOLEAN: {
+            builder.setBooleanResult((Boolean) value);
+            break;
+          }
+          case STRING: {
+            builder.setStringResult((String) value);
+            break;
+          }
+          case PDX_OBJECT: {
+            builder.setJsonObjectResult(jsonPdxConverter.encode((PdxInstance) value));
+            break;
+          }
         }
-        case LONG: {
-          builder.setLongResult((Long) value);
-          break;
-        }
-        case SHORT: {
-          builder.setShortResult((Short) value);
-          break;
-        }
-        case BYTE: {
-          builder.setByteResult((Byte) value);
-          break;
-        }
-        case DOUBLE: {
-          builder.setDoubleResult((Double) value);
-          break;
-        }
-        case FLOAT: {
-          builder.setFloatResult((Float) value);
-          break;
-        }
-        case BINARY: {
-          builder.setBinaryResult(ByteString.copyFrom((byte[]) value));
-          break;
-        }
-        case BOOLEAN: {
-          builder.setBooleanResult((Boolean) value);
-          break;
-        }
-        case STRING: {
-          builder.setStringResult((String) value);
-          break;
-        }
-        case PDX_OBJECT: {
-          builder.setJsonObjectResult(jsonPdxConverter.encode((PdxInstance) value));
-          break;
-        }
+      } catch (UnknownProtobufEncodingType unknownProtobufEncodingType) {
+        throw new EncodingException("No protobuf encoding for type " + value.getClass().getName());
       }
-    } catch (UnknownProtobufEncodingType unknownProtobufEncodingType) {
-      throw new EncodingException("No protobuf encoding for type " + value.getClass().getName());
     }
     return builder.build();
   }
@@ -120,7 +122,7 @@ public class ProtobufSerializationService implements SerializationService<BasicT
         return encodedValue.getStringResult();
       case JSONOBJECTRESULT:
         return jsonPdxConverter.decode(encodedValue.getJsonObjectResult());
-      case VALUE_NOT_SET:
+      case NULLRESULT:
         return null;
       default:
         throw new EncodingException(

@@ -75,6 +75,9 @@ public class PutAllRequestOperationHandler
       Object decodedKey = serializationService.decode(entry.getKey());
 
       region.put(decodedKey, decodedValue);
+    } catch (NullPointerException ex) {
+      return buildAndLogKeyedError(entry, INVALID_REQUEST, "Key and value must both be non-NULL",
+          ex);
     } catch (EncodingException ex) {
       return buildAndLogKeyedError(entry, INVALID_REQUEST, "Encoding not supported", ex);
     } catch (ClassCastException ex) {
