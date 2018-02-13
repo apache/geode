@@ -558,7 +558,7 @@ public class CliStrings {
           + CONNECT__DEFAULT_BASE_URL + "'";
   public static final String CONNECT__USE_HTTP = "use-http";
   public static final String CONNECT__USE_HTTP__HELP =
-      "Connects to Manager by sending HTTP requests to HTTP service hosting the Management REST API.  You must first 'disconnect' in order to reconnect to the Manager via locator or jmx-manager using JMX.";
+      "[Deprecated: inferred by the presence of --url]. Connects to Manager by sending HTTP requests to HTTP service hosting the Management REST API. You must first 'disconnect' in order to reconnect to the Manager via locator or jmx-manager using JMX.";
   public static final String CONNECT__USERNAME = "user";
   public static final String CONNECT__USERNAME__HELP =
       "User name to securely connect to the jmx-manager. If the --password parameter is not specified then it will be prompted for.";
@@ -590,7 +590,7 @@ public class CliStrings {
       "The gfsecurity.properties file for configuring gfsh to connect to the Locator/Manager. The file's path can be absolute or relative to gfsh directory.";
   public static final String CONNECT__USE_SSL = "use-ssl";
   public static final String CONNECT__USE_SSL__HELP =
-      "Whether to use SSL for communication with Locator and/or JMX Manager. If set to \"true\", \"gfsecurity.properties\" will also be read. SSL Options take precedence over the properties file. If none are specified, defaults will be used. The default value for this options is \"false\".";
+      "Whether to use SSL for communication with Locator and/or JMX Manager. If set to \"true\", \"gfsecurity.properties\" will also be read. SSL Options take precedence over the properties file. If none are specified, defaults will be used. The default value for this options is \"false\". This option is only required if JMX is to be used over SSL. For http, the protocol is inferred from the URL.";
   public static final String CONNECT__MSG__CONNECTING_TO_MANAGER_AT_0 =
       "Connecting to Manager at {0} ..";
   public static final String CONNECT__MSG__CONNECTING_TO_MANAGER_HTTP_SERVICE_AT_0 =
