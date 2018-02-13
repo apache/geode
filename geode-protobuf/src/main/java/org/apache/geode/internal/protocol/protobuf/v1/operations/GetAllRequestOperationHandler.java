@@ -61,16 +61,8 @@ public class GetAllRequestOperationHandler
     RegionAPI.GetAllResponse.Builder responseBuilder = RegionAPI.GetAllResponse.newBuilder();
     try {
       messageExecutionContext.getCache().setReadSerializedForCurrentThread(true);
-
-      for (BasicTypes.EncodedValue key : request.getKeyList()) {
-        Object entry = processOneMessage(serializationService, region, key);
-        if (entry instanceof BasicTypes.Entry) {
-          responseBuilder.addEntries((BasicTypes.Entry) entry);
-        } else {
-          responseBuilder.addFailures((BasicTypes.KeyedError) entry);
-        }
-      }
-
+      request.getKeyList().stream()
+          .forEach((key) -> processSingleKey(responseBuilder, serializationService, region, key));
     } finally {
       messageExecutionContext.getCache().setReadSerializedForCurrentThread(false);
       messageExecutionContext.getStatistics().endOperation(startTime);
@@ -79,27 +71,36 @@ public class GetAllRequestOperationHandler
     return Success.of(responseBuilder.build());
   }
 
-  private Object processOneMessage(ProtobufSerializationService serializationService, Region region,
-      BasicTypes.EncodedValue key) throws DecodingException {
+  private void processSingleKey(RegionAPI.GetAllResponse.Builder responseBuilder,
+      ProtobufSerializationService serializationService, Region region,
+      BasicTypes.EncodedValue key) {
     try {
+
       Object decodedKey = serializationService.decode(key);
       Object value = region.get(decodedKey);
-      return ProtobufUtilities.createEntry(serializationService, decodedKey, value);
-    } catch (EncodingException ex) {
-      logger.error("Encoding not supported: {}", ex);
-      return createKeyedError(key, "Encoding not supported.", INVALID_REQUEST);
+      BasicTypes.Entry entry =
+          ProtobufUtilities.createEntry(serializationService, decodedKey, value);
+      responseBuilder.addEntries(entry);
+
     } catch (DecodingException ex) {
-      throw ex;
+      logger.info("Key encoding not supported: {}", ex);
+      responseBuilder
+          .addFailures(buildKeyedError(key, "Key encoding not supported.", INVALID_REQUEST));
+    } catch (EncodingException ex) {
+      logger.info("Value encoding not supported: {}", ex);
+      responseBuilder
+          .addFailures(buildKeyedError(key, "Value encoding not supported.", INVALID_REQUEST));
     } catch (Exception ex) {
-      logger.info("Failure in protobuf getAll operation for key: " + key, ex);
-      return createKeyedError(key, ex.toString(), SERVER_ERROR);
+      logger.warn("Failure in protobuf getAll operation for key: " + key, ex);
+      responseBuilder.addFailures(buildKeyedError(key, ex.toString(), SERVER_ERROR));
     }
   }
 
-  private Object createKeyedError(BasicTypes.EncodedValue key, String errorMessage,
+  private BasicTypes.KeyedError buildKeyedError(BasicTypes.EncodedValue key, String errorMessage,
       ProtobufErrorCode errorCode) {
     return BasicTypes.KeyedError.newBuilder().setKey(key).setError(BasicTypes.Error.newBuilder()
         .setErrorCode(ProtobufUtilities.getProtobufErrorCode(errorCode)).setMessage(errorMessage))
         .build();
   }
+
 }

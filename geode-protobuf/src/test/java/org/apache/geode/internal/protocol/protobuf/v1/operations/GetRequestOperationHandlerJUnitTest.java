@@ -120,15 +120,6 @@ public class GetRequestOperationHandlerJUnitTest extends OperationHandlerJUnitTe
 
     operationHandler.process(serializationServiceStub, getRequest,
         TestExecutionContext.getNoAuthCacheExecutionContext(cacheStub));
-
-    // Result response = operationHandler.process(serializationServiceStub, getRequest,
-    // TestExecutionContext.getNoAuthCacheExecutionContext(cacheStub));
-
-    // Assert.assertTrue(response instanceof Failure);
-    // ClientProtocol.ErrorResponse errorMessage =
-    // (ClientProtocol.ErrorResponse) response.getErrorMessage();
-    // Assert.assertEquals(BasicTypes.ErrorCode.INVALID_REQUEST,
-    // errorMessage.getError().getErrorCode());
   }
 
   private RegionAPI.GetRequest generateTestRequest(boolean missingRegion, boolean missingKey,

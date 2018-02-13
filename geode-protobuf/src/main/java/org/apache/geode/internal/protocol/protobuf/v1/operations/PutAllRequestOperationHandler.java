@@ -14,6 +14,7 @@
  */
 package org.apache.geode.internal.protocol.protobuf.v1.operations;
 
+import static org.apache.geode.internal.protocol.protobuf.v1.ProtobufErrorCode.INVALID_REQUEST;
 import static org.apache.geode.internal.protocol.protobuf.v1.ProtobufErrorCode.SERVER_ERROR;
 
 import org.apache.logging.log4j.LogManager;
@@ -34,7 +35,6 @@ import org.apache.geode.internal.protocol.protobuf.v1.Result;
 import org.apache.geode.internal.protocol.protobuf.v1.Success;
 import org.apache.geode.internal.protocol.protobuf.v1.serialization.SerializationService;
 import org.apache.geode.internal.protocol.protobuf.v1.serialization.exception.DecodingException;
-import org.apache.geode.internal.protocol.protobuf.v1.serialization.exception.EncodingException;
 import org.apache.geode.internal.protocol.protobuf.v1.utilities.ProtobufResponseUtilities;
 import org.apache.geode.internal.protocol.protobuf.v1.utilities.ProtobufUtilities;
 
@@ -62,12 +62,8 @@ public class PutAllRequestOperationHandler
     try {
       messageExecutionContext.getCache().setReadSerializedForCurrentThread(true);
 
-      for (BasicTypes.Entry entry : putAllRequest.getEntryList()) {
-        BasicTypes.KeyedError error = singlePut(serializationService, region, entry);
-        if (error != null) {
-          builder.addFailedKeys(error);
-        }
-      }
+      putAllRequest.getEntryList().stream()
+          .forEach((entry) -> processSinglePut(builder, serializationService, region, entry));
 
     } finally {
       messageExecutionContext.getStatistics().endOperation(startTime);
@@ -76,23 +72,27 @@ public class PutAllRequestOperationHandler
     return Success.of(builder.build());
   }
 
-  private BasicTypes.KeyedError singlePut(SerializationService serializationService, Region region,
-      BasicTypes.Entry entry) throws DecodingException {
+  private void processSinglePut(RegionAPI.PutAllResponse.Builder builder,
+      SerializationService serializationService, Region region, BasicTypes.Entry entry) {
     try {
-      Object decodedValue = serializationService.decode(entry.getValue());
-      Object decodedKey = serializationService.decode(entry.getKey());
 
+      Object decodedKey = serializationService.decode(entry.getKey());
+      Object decodedValue = serializationService.decode(entry.getValue());
       region.put(decodedKey, decodedValue);
+
+    } catch (DecodingException ex) {
+      logger.info("Encoding not supported: " + ex);
+      builder.addFailedKeys(this.buildKeyedError(entry, INVALID_REQUEST, "Encoding not supported"));
     } catch (ClassCastException ex) {
-      return buildAndLogKeyedError(entry, SERVER_ERROR, ex.toString(), ex);
+      builder.addFailedKeys(buildKeyedError(entry, SERVER_ERROR, ex.toString()));
+    } catch (Exception ex) {
+      logger.warn("Error processing putAll entry", ex);
+      builder.addFailedKeys(buildKeyedError(entry, SERVER_ERROR, ex.toString()));
     }
-    return null;
   }
 
-  private BasicTypes.KeyedError buildAndLogKeyedError(BasicTypes.Entry entry,
-      ProtobufErrorCode errorCode, String message, Exception ex) {
-    logger.error(message, ex);
-
+  private BasicTypes.KeyedError buildKeyedError(BasicTypes.Entry entry, ProtobufErrorCode errorCode,
+      String message) {
     return BasicTypes.KeyedError.newBuilder().setKey(entry.getKey())
         .setError(BasicTypes.Error.newBuilder()
             .setErrorCode(ProtobufUtilities.getProtobufErrorCode(errorCode)).setMessage(message))

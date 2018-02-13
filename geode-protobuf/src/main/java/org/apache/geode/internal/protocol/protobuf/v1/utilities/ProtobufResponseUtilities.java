@@ -68,9 +68,9 @@ public abstract class ProtobufResponseUtilities {
     if (exception instanceof ConnectionStateException) {
       return makeErrorResponse((ConnectionStateException) exception);
     }
-    return ClientProtocol.ErrorResponse.newBuilder()
-        .setError(BasicTypes.Error.newBuilder().setErrorCode(BasicTypes.ErrorCode.SERVER_ERROR)
-            .setMessage(exception.getClass().getSimpleName() + exception.getMessage()))
+    return ClientProtocol.ErrorResponse
+        .newBuilder().setError(BasicTypes.Error.newBuilder()
+            .setErrorCode(BasicTypes.ErrorCode.SERVER_ERROR).setMessage(exception.toString()))
         .build();
   }
 
