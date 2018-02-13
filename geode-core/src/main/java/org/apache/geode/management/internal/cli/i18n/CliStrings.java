@@ -830,7 +830,7 @@ public class CliStrings {
       "(Deprecated: Use --if-not-exists) Skip region creation if the region already exists.";
   public static final String CREATE_REGION__IFNOTEXISTS = "if-not-exists";
   public static final String CREATE_REGION__IFNOTEXISTS__HELP =
-      "Skip region creation if the region already exists.";
+      "By default, an attempt to create a duplicate region is reported as an error. If this option is specified without a value or is specified with a value of true, then gfsh displays a \"Skipping...\" acknowledgement, but does not throw an error.";
   public static final String CREATE_REGION__KEYCONSTRAINT = "key-constraint";
   public static final String CREATE_REGION__KEYCONSTRAINT__HELP =
       "Fully qualified class name of the objects allowed as region keys. Ensures that keys for region entries are all of the same class.";
