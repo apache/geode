@@ -15,13 +15,9 @@
 
 package org.apache.geode.management.internal.cli.commands;
 
-import static org.apache.geode.distributed.ConfigurationProperties.HTTP_SERVICE_BIND_ADDRESS;
-import static org.apache.geode.distributed.ConfigurationProperties.HTTP_SERVICE_PORT;
-import static org.apache.geode.distributed.ConfigurationProperties.JMX_MANAGER_PORT;
 import static org.apache.geode.distributed.ConfigurationProperties.STATISTIC_ARCHIVE_FILE;
 import static org.apache.geode.management.internal.cli.commands.ExportLogsCommand.ONLY_DATE_FORMAT;
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.junit.Assert.assertEquals;
 
 import java.io.IOException;
 import java.time.LocalDateTime;
@@ -42,7 +38,6 @@ import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
 import org.apache.geode.distributed.ConfigurationProperties;
-import org.apache.geode.internal.AvailablePortHelper;
 import org.apache.geode.management.cli.Result;
 import org.apache.geode.management.internal.cli.result.CommandResult;
 import org.apache.geode.management.internal.cli.util.CommandStringBuilder;
@@ -59,22 +54,13 @@ public class ExportLogsStatsDUnitTest {
   @ClassRule
   public static GfshCommandRule connector = new GfshCommandRule();
 
-  protected static int jmxPort, httpPort;
   protected static Set<String> expectedZipEntries = new HashSet<>();
   protected static MemberVM locator;
 
   @BeforeClass
   public static void beforeClass() {
-    int[] ports = AvailablePortHelper.getRandomAvailableTCPPorts(2);
-    httpPort = ports[0];
-    jmxPort = ports[1];
-    Properties locatorProperties = new Properties();
-    locatorProperties.setProperty(HTTP_SERVICE_BIND_ADDRESS, "localhost");
-    locatorProperties.setProperty(HTTP_SERVICE_PORT, httpPort + "");
-    locatorProperties.setProperty(JMX_MANAGER_PORT, jmxPort + "");
-
     // start the locator in vm0 and then connect to it over http
-    locator = lsRule.startLocatorVM(0, locatorProperties);
+    locator = lsRule.startLocatorVM(0);
 
     Properties serverProperties = new Properties();
     serverProperties.setProperty(ConfigurationProperties.STATISTIC_SAMPLING_ENABLED, "true");
@@ -101,7 +87,7 @@ public class ExportLogsStatsDUnitTest {
     Set<String> expectedFiles = Sets.newHashSet("locator-0/locator-0.log", "server-1/server-1.log",
         "server-1/statistics.gfs");
     assertThat(actualZipEnries).containsAll(expectedFiles);
-    assertEquals(actualZipEnries.size(), 4);
+    assertThat(actualZipEnries).hasSize(4);
   }
 
   @Test
@@ -113,7 +99,7 @@ public class ExportLogsStatsDUnitTest {
 
     Set<String> expectedFiles = Sets.newHashSet("locator-0/locator-0.log", "server-1/server-1.log");
     assertThat(actualZipEnries).containsAll(expectedFiles);
-    assertEquals(actualZipEnries.size(), 3);
+    assertThat(actualZipEnries).hasSize(3);
   }
 
   @Test

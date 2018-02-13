@@ -24,6 +24,7 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 import junitparams.JUnitParamsRunner;
+import junitparams.Parameters;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
@@ -48,12 +49,16 @@ public class ExportConfigCommandDUnitTest {
   public TemporaryFolder temporaryFolder = new TemporaryFolder();
 
   @Test
-  public void testExportConfig() throws Exception {
-    MemberVM server0 =
-        startupRule.startServerVM(0, x -> x.withEmbeddedLocator().withProperty(GROUPS, "Group1"));
+  @Parameters({"true", "false"})
+  public void testExportConfig(final boolean connectOverHttp) throws Exception {
+    MemberVM server0 = startupRule.startServerVM(0,
+        x -> x.withProperty(GROUPS, "Group1").withJMXManager().withEmbeddedLocator());
 
-    gfsh.connectAndVerify(server0.getJmxPort(), GfshCommandRule.PortType.jmxManager);
-
+    if (connectOverHttp) {
+      gfsh.connectAndVerify(server0.getHttpPort(), GfshCommandRule.PortType.http);
+    } else {
+      gfsh.connectAndVerify(server0.getJmxPort(), GfshCommandRule.PortType.jmxManager);
+    }
 
     // start server1 and server2 in group2
     startupRule.startServerVM(1, "Group2", server0.getEmbeddedLocatorPort());

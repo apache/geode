@@ -56,11 +56,8 @@ public class MergeLogsDUnitTest {
     properties.setProperty(DistributionConfig.LOG_LEVEL_NAME, "info");
     locator = lsRule.startLocatorVM(0, properties);
 
-    properties.setProperty(DistributionConfig.LOCATORS_NAME,
-        "localhost[" + locator.getPort() + "]");
-
-    MemberVM server = lsRule.startServerVM(1, properties);
-    MemberVM server2 = lsRule.startServerVM(2, properties);
+    MemberVM server = lsRule.startServerVM(1, properties, locator.getPort());
+    MemberVM server2 = lsRule.startServerVM(2, properties, locator.getPort());
 
     locator.invoke(() -> LogService.getLogger().info(MESSAGE_1));
     server.invoke(() -> LogService.getLogger().info(MESSAGE_2));

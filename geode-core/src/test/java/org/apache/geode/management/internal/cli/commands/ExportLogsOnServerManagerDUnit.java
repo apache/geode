@@ -61,7 +61,7 @@ public class ExportLogsOnServerManagerDUnit {
 
   @Test
   public void testExportWithPeerLocator() throws Exception {
-    MemberVM server0 = lsRule.startServerVM(0, x -> x.withEmbeddedLocator());
+    MemberVM server0 = lsRule.startServerVM(0, x -> x.withEmbeddedLocator().withJMXManager());
     lsRule.startServerVM(1, server0.getEmbeddedLocatorPort());
     gfshConnector.connect(server0.getEmbeddedLocatorPort(), GfshCommandRule.PortType.locator);
     gfshConnector.executeAndAssertThat("export logs").statusIsSuccess();

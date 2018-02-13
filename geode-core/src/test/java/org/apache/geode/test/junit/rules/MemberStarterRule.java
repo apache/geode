@@ -167,10 +167,8 @@ public abstract class MemberStarterRule<T> extends SerializableExternalResource 
 
   public T withConnectionToLocator(int... locatorPorts) {
     if (locatorPorts.length == 0) {
-      properties.setProperty(LOCATORS, "");
       return (T) this;
     }
-
     String locators = Arrays.stream(locatorPorts).mapToObj(i -> "localhost[" + i + "]")
         .collect(Collectors.joining(","));
     properties.setProperty(LOCATORS, locators);

@@ -72,7 +72,8 @@ public class ClusterStartupRuleCanSpecifyOlderVersionsDUnitTest {
 
   @Test
   public void serverWithEmbeddedLocatorVersioningTest() throws Exception {
-    MemberVM locator = csRule.startServerVM(0, version, x -> x.withEmbeddedLocator());
+    MemberVM locator =
+        csRule.startServerVM(0, version, x -> x.withEmbeddedLocator().withJMXManager());
     String locatorVMVersion = locator.getVM().getVersion();
     String locatorActualVersion = locator.invoke(GemFireVersion::getGemFireVersion);
     assertThat(locatorVMVersion).isEqualTo(version);

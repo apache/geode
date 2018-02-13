@@ -81,7 +81,7 @@ public class LuceneIndexCommandsDUnitTest implements Serializable {
 
   @Before
   public void before() throws Exception {
-    serverVM = startupRule.startServerVM(0, x->x.withJMXManager());
+    serverVM = startupRule.startServerVM(0, x -> x.withJMXManager());
     connect(serverVM);
   }
 
