@@ -14,8 +14,10 @@
  */
 package org.apache.geode.pdx;
 
-import static org.apache.geode.distributed.ConfigurationProperties.*;
-import static org.junit.Assert.*;
+import static org.apache.geode.distributed.ConfigurationProperties.MCAST_PORT;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 
 import java.text.SimpleDateFormat;
 import java.util.List;
@@ -30,50 +32,37 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
-import org.apache.geode.cache.AttributesFactory;
 import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.CacheFactory;
 import org.apache.geode.cache.DataPolicy;
 import org.apache.geode.cache.Region;
-import org.apache.geode.cache.RegionAttributes;
-import org.apache.geode.cache.server.CacheServer;
 import org.apache.geode.internal.Assert;
-import org.apache.geode.internal.cache.GemFireCacheImpl;
 import org.apache.geode.pdx.internal.PdxInstanceImpl;
 import org.apache.geode.pdx.internal.PeerTypeRegistration;
-import org.apache.geode.test.junit.categories.FlakyTest;
 import org.apache.geode.test.junit.categories.IntegrationTest;
 import org.apache.geode.test.junit.categories.SerializationTest;
 
 @Category({IntegrationTest.class, SerializationTest.class})
 public class JSONFormatterJUnitTest {
-
-  private GemFireCacheImpl c;
-  private final String PRIMITIVE_KV_STORE_REGION = "primitiveKVStore";
+  public static final String REGION_NAME = "primitiveKVStore";
+  private Cache cache;
+  private Region<Object, Object> region;
 
   @Before
   public void setUp() throws Exception {
-    this.c = (GemFireCacheImpl) new CacheFactory().set(MCAST_PORT, "0").setPdxReadSerialized(true)
+    this.cache = new CacheFactory().set(MCAST_PORT, "0").setPdxReadSerialized(true)
         .create();
 
-    // Create region, primitiveKVStore
-    final AttributesFactory<Object, Object> af1 = new AttributesFactory<Object, Object>();
-    af1.setDataPolicy(DataPolicy.PARTITION);
-    final RegionAttributes<Object, Object> rAttributes = af1.create();
-    c.createRegion(PRIMITIVE_KV_STORE_REGION, rAttributes);
+    region = cache.createRegionFactory().setDataPolicy(DataPolicy.PARTITION).create(REGION_NAME);
+
   }
 
   @After
   public void tearDown() {
-    // shutdown and clean up the manager node.
-    this.c.close();
+    this.cache.close();
   }
 
   private void ValidatePdxInstanceToJsonConversion() {
-
-    Cache c = CacheFactory.getAnyInstance();
-    Region region = c.getRegion("primitiveKVStore");
-
     TestObjectForJSONFormatter actualTestObject = new TestObjectForJSONFormatter();
     actualTestObject.defaultInitialization();
 
@@ -82,30 +71,24 @@ public class JSONFormatterJUnitTest {
     region.put("201", actualTestObject);
     Object receivedObject = region.get("201");
 
+      assertTrue("receivedObject is expected to be of type PdxInstance", receivedObject instanceof  PdxInstance);
+
     // PdxInstance->Json conversion
-    if (receivedObject instanceof PdxInstance) {
       PdxInstance pi = (PdxInstance) receivedObject;
       String json = JSONFormatter.toJSON(pi);
 
       verifyJsonWithJavaObject(json, actualTestObject);
-    } else {
-      fail("receivedObject is expected to be of type PdxInstance");
-    }
-
   }
 
   // Testcase-2: validate Json->PdxInstance-->Java conversion
   private void verifyJsonToPdxInstanceConversion() {
     TestObjectForJSONFormatter expectedTestObject = new TestObjectForJSONFormatter();
     expectedTestObject.defaultInitialization();
-    Cache c = CacheFactory.getAnyInstance();
-    Region region = c.getRegion("primitiveKVStore");
 
-    // 1.gets pdxInstance using R.put() and R.get()
+    // 1.gets pdxInstance using region.put() and region.get()
     region.put("501", expectedTestObject);
     Object receivedObject = region.get("501");
-    if (receivedObject instanceof PdxInstance) {
-      PdxInstance expectedPI = (PdxInstance) receivedObject;
+    assertTrue("receivedObject is expected to be of type PdxInstance", receivedObject instanceof  PdxInstance);
 
       // 2. Get the JSON string from actualTestObject using jackson ObjectMapper.
       ObjectMapper objectMapper = new ObjectMapper();
@@ -140,17 +123,13 @@ public class JSONFormatterJUnitTest {
       } catch (JSONException e) {
         fail("JSONException occurred:" + e.getMessage());
       }
-    } else {
-      fail("receivedObject is expected to be of type PdxInstance");
-    }
+
   }
 
   // Testcase-2: validate Json->PdxInstance-->Java conversion
   private void verifyJsonToPdxInstanceConversionWithJSONFormatter() {
     TestObjectForJSONFormatter expectedTestObject = new TestObjectForJSONFormatter();
     expectedTestObject.defaultInitialization();
-    Cache c = CacheFactory.getAnyInstance();
-    Region region = c.getRegion("primitiveKVStore");
 
     // 1.gets pdxInstance using R.put() and R.get()
     region.put("501", expectedTestObject);
@@ -160,9 +139,7 @@ public class JSONFormatterJUnitTest {
 
     PdxInstance expectedPI = (PdxInstance) receivedObject;
 
-    String json;
-    try {
-      json = JSONFormatter.toJSON(expectedPI);
+    String json = JSONFormatter.toJSON(expectedPI);
 
       String jsonWithClassType = expectedTestObject.addClassTypeToJson(json);
 
@@ -181,13 +158,9 @@ public class JSONFormatterJUnitTest {
 
       assertEquals("actualTestObject and expectedTestObject should be equal", expectedTestObject,
           actualTestObject);
-    } catch (JSONException e) {
-      fail("JSONException occurred:" + e.getMessage());
-    }
   }
 
-  private void verifyJsonWithJavaObject(String json, TestObjectForJSONFormatter testObject) {
-    try {
+  private static void verifyJsonWithJavaObject(String json, TestObjectForJSONFormatter testObject) {
       JSONObject jsonObject = new JSONObject(json);
 
       // Testcase-1: Validate json string against the pdxInstance.
@@ -235,11 +208,6 @@ public class JSONFormatterJUnitTest {
       // validation Enum
       assertEquals("VerifyPdxInstanceToJson: Enum type values are not matched",
           testObject.getDay().toString(), jsonObject.getString(testObject.getDayFN()));
-
-    } catch (JSONException e) {
-      throw new AssertionError(
-          "Error in VerifyPdxInstanceToJson, Malformed json, can not create JSONArray from it", e);
-    }
   }
 
   @Test
@@ -255,16 +223,11 @@ public class JSONFormatterJUnitTest {
    */
   @Test
   public void testJSONStringAsPdxObject() {
-
-    Cache c = CacheFactory.getAnyInstance();
-
     int pdxTypes = 0;
 
-    if (c.getRegion(PeerTypeRegistration.REGION_FULL_PATH) != null) {
-      pdxTypes = c.getRegion(PeerTypeRegistration.REGION_FULL_PATH).keySet().size();
+    if (cache.getRegion(PeerTypeRegistration.REGION_FULL_PATH) != null) {
+      pdxTypes = cache.getRegion(PeerTypeRegistration.REGION_FULL_PATH).keySet().size();
     }
-
-    Region region = c.getRegion("primitiveKVStore");
 
     String js = "{name:\"ValueExist\", age:14}";
 
@@ -274,7 +237,7 @@ public class JSONFormatterJUnitTest {
 
     region.put(2, JSONFormatter.fromJSON(js2));
 
-    assertEquals(pdxTypes + 1, c.getRegion(PeerTypeRegistration.REGION_FULL_PATH).keySet().size());
+    assertEquals(pdxTypes + 1, cache.getRegion(PeerTypeRegistration.REGION_FULL_PATH).keySet().size());
   }
 
   @Test
@@ -282,10 +245,6 @@ public class JSONFormatterJUnitTest {
 
     try {
       System.setProperty(JSONFormatter.SORT_JSON_FIELD_NAMES_PROPERTY, "true");
-
-      Cache c = CacheFactory.getAnyInstance();
-
-      Region region = c.getRegion("primitiveKVStore");
 
       String js = "{b:\"b\", age:14, c:\"c' go\", bb:23}";
 
@@ -310,14 +269,14 @@ public class JSONFormatterJUnitTest {
 
       int pdxTypes = 0;
 
-      if (c.getRegion(PeerTypeRegistration.REGION_FULL_PATH) != null) {
-        pdxTypes = c.getRegion(PeerTypeRegistration.REGION_FULL_PATH).keySet().size();
+      if (cache.getRegion(PeerTypeRegistration.REGION_FULL_PATH) != null) {
+        pdxTypes = cache.getRegion(PeerTypeRegistration.REGION_FULL_PATH).keySet().size();
       }
 
       String js2 = "{c:\"c' go\", bb:23, b:\"b\", age:14 }";
       region.put(2, JSONFormatter.fromJSON(js2));
 
-      assertEquals(pdxTypes, c.getRegion(PeerTypeRegistration.REGION_FULL_PATH).keySet().size());
+      assertEquals(pdxTypes, cache.getRegion(PeerTypeRegistration.REGION_FULL_PATH).keySet().size());
 
     } finally {
       System.setProperty(JSONFormatter.SORT_JSON_FIELD_NAMES_PROPERTY, "false");
