@@ -126,7 +126,7 @@ public class SearchLoadAndWriteProcessorTest {
             .until(() -> processor.getSelectedNode() != null);
         departedMember = processor.getSelectedNode();
         // Simulate member departed event
-        processor.memberDeparted(departedMember, true);
+        processor.memberDeparted(dm, departedMember, true);
       }
     });
     t1.start();

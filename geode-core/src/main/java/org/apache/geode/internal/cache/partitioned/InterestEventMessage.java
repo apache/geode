@@ -127,6 +127,7 @@ public class InterestEventMessage extends PartitionMessage {
     InterestEventResponse response = new InterestEventResponse(region.getSystem(), recipients);
     InterestEventMessage m = new InterestEventMessage(recipients, region.getPRId(),
         response.getProcessorId(), event, response);
+    m.setTransactionDistributed(region.getCache().getTxManager().isDistributed());
 
     Set failures = region.getDistributionManager().putOutgoing(m);
     if (failures != null && failures.size() > 0) {

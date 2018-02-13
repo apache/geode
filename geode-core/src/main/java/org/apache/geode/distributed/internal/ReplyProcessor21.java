@@ -346,7 +346,7 @@ public class ReplyProcessor21 implements MembershipListener {
    * manager, it is used. Otherwise, we expect a distribution manager has been set with
    * setDistributionManager and we'll use that
    */
-  protected DistributionManager getDistributionManager() {
+  public DistributionManager getDistributionManager() {
     try {
       DistributionManager result = this.system.getDistributionManager();
       if (result == null) {
@@ -472,15 +472,15 @@ public class ReplyProcessor21 implements MembershipListener {
         new Object[] {ex.getUnknownDSFID(), msg.getSender(), versionStr}), ex);
   }
 
-  public void memberJoined(InternalDistributedMember id) {
+  public void memberJoined(DistributionManager distributionManager, InternalDistributedMember id) {
     // Nothing to do - member wasn't sent the operation, anyway.
   }
 
-  public void quorumLost(Set<InternalDistributedMember> failures,
-      List<InternalDistributedMember> remaining) {}
+  public void quorumLost(DistributionManager distributionManager,
+      Set<InternalDistributedMember> failures, List<InternalDistributedMember> remaining) {}
 
-  public void memberSuspect(InternalDistributedMember id, InternalDistributedMember whoSuspected,
-      String reason) {
+  public void memberSuspect(DistributionManager distributionManager, InternalDistributedMember id,
+      InternalDistributedMember whoSuspected, String reason) {
     if (isSevereAlertProcessingEnabled()) {
       // if we're waiting for the member that initiated suspicion, we don't
       // want to be hasty about kicking it out of the distributed system
@@ -496,7 +496,8 @@ public class ReplyProcessor21 implements MembershipListener {
     }
   }
 
-  public void memberDeparted(final InternalDistributedMember id, final boolean crashed) {
+  public void memberDeparted(DistributionManager distributionManager,
+      final InternalDistributedMember id, final boolean crashed) {
     removeMember(id, true);
     checkIfDone();
   }
@@ -570,7 +571,7 @@ public class ReplyProcessor21 implements MembershipListener {
     for (int i = 0; i < this.members.length; i++) {
       if (this.members[i] != null) {
         if (!activeMembers.contains(this.members[i])) {
-          memberDeparted(this.members[i], false);
+          memberDeparted(getDistributionManager(), this.members[i], false);
         }
       }
     }
@@ -1084,7 +1085,7 @@ public class ReplyProcessor21 implements MembershipListener {
             logger.warn(LocalizedMessage.create(
                 LocalizedStrings.ReplyProcessor21_VIEW_NO_LONGER_HAS_0_AS_AN_ACTIVE_MEMBER_SO_WE_WILL_NO_LONGER_WAIT_FOR_IT,
                 this.members[i]));
-            memberDeparted(this.members[i], false);
+            memberDeparted(getDistributionManager(), this.members[i], false);
           } else {
             if (suspectMembers != null) {
               suspectMembers.add(this.members[i]);

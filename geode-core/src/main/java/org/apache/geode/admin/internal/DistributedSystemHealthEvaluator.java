@@ -135,14 +135,16 @@ class DistributedSystemHealthEvaluator extends AbstractHealthEvaluator
     this.dm.removeMembershipListener(this);
   }
 
-  public void memberJoined(InternalDistributedMember id) {
+  public void memberJoined(DistributionManager distributionManager, InternalDistributedMember id) {
 
   }
 
   /**
    * Keeps track of which members depart unexpectedly
    */
-  public void memberDeparted(InternalDistributedMember id, boolean crashed) {
+  @Override
+  public void memberDeparted(DistributionManager distributionManager, InternalDistributedMember id,
+      boolean crashed) {
     if (!crashed)
       return;
     synchronized (this) {
@@ -158,10 +160,10 @@ class DistributedSystemHealthEvaluator extends AbstractHealthEvaluator
     } // synchronized
   }
 
-  public void quorumLost(Set<InternalDistributedMember> failures,
-      List<InternalDistributedMember> remaining) {}
+  public void quorumLost(DistributionManager distributionManager,
+      Set<InternalDistributedMember> failures, List<InternalDistributedMember> remaining) {}
 
-  public void memberSuspect(InternalDistributedMember id, InternalDistributedMember whoSuspected,
-      String reason) {}
+  public void memberSuspect(DistributionManager distributionManager, InternalDistributedMember id,
+      InternalDistributedMember whoSuspected, String reason) {}
 
 }

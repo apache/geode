@@ -53,6 +53,7 @@ import org.apache.geode.cache.RegionAttributes;
 import org.apache.geode.cache.RegionEvent;
 import org.apache.geode.cache.RegionShortcut;
 import org.apache.geode.cache.Scope;
+import org.apache.geode.cache.client.ClientCache;
 import org.apache.geode.cache.client.ClientCacheFactory;
 import org.apache.geode.cache.client.ClientRegionShortcut;
 import org.apache.geode.cache.client.NoAvailableServersException;
@@ -800,6 +801,9 @@ public class ClientServerMiscDUnitTest extends JUnit4CacheTestCase {
     clientCacheFactory.addPoolServer("localhost", DistributedTestUtils.getDUnitLocatorPort());
     clientCacheFactory.setPoolSubscriptionEnabled(true);
     getClientCache(clientCacheFactory);
+    Region region = ((ClientCache) cache).createClientRegionFactory(ClientRegionShortcut.PROXY)
+        .create(REGION_NAME1);
+    region.registerInterest(k1);
   }
 
 

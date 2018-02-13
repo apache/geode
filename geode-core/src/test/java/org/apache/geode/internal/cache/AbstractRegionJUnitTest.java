@@ -41,6 +41,7 @@ public class AbstractRegionJUnitTest {
    * rest.
    */
   @Test
+
   public void extensionPointIsSimpleExtensionPointByDefault() {
     AbstractRegion region = spy(AbstractRegion.class);
     ExtensionPoint<Region<?, ?>> extensionPoint = region.getExtensionPoint();

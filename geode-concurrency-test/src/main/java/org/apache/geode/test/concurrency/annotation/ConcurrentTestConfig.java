@@ -20,7 +20,7 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
 import org.apache.geode.test.concurrency.Runner;
-import org.apache.geode.test.concurrency.jpf.JpfRunner;
+import org.apache.geode.test.concurrency.loop.LoopRunner;
 
 /**
  * Configuration options for the ConcurrentTestRunner
@@ -28,5 +28,5 @@ import org.apache.geode.test.concurrency.jpf.JpfRunner;
 @Retention(RetentionPolicy.RUNTIME)
 @Target(ElementType.TYPE)
 public @interface ConcurrentTestConfig {
-  Class<? extends Runner> runner() default JpfRunner.class;
+  Class<? extends Runner> runner() default LoopRunner.class;
 }

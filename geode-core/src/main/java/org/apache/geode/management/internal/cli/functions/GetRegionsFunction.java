@@ -14,24 +14,19 @@
  */
 package org.apache.geode.management.internal.cli.functions;
 
-import java.util.Collection;
-import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
 
 import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.Region;
-import org.apache.geode.cache.execute.Function;
 import org.apache.geode.cache.execute.FunctionContext;
-import org.apache.geode.internal.InternalEntity;
+import org.apache.geode.internal.cache.execute.InternalFunction;
 import org.apache.geode.management.internal.cli.domain.RegionInformation;
-import org.apache.geode.management.internal.security.ResourcePermissions;
-import org.apache.geode.security.ResourcePermission;
 
 /**
  * Function that retrieves regions hosted on every member
  */
-public class GetRegionsFunction implements Function, InternalEntity {
+public class GetRegionsFunction implements InternalFunction {
 
   private static final long serialVersionUID = 1L;
 
@@ -55,10 +50,5 @@ public class GetRegionsFunction implements Function, InternalEntity {
     } catch (Exception e) {
       functionContext.getResultSender().sendException(e);
     }
-  }
-
-  @Override
-  public Collection<ResourcePermission> getRequiredPermissions(String regionName) {
-    return Collections.singleton(ResourcePermissions.CLUSTER_READ);
   }
 }

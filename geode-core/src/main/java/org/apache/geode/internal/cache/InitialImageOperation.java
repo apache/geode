@@ -539,7 +539,7 @@ public class InitialImageOperation {
           throw ex;
         } catch (ReplyException e) {
           if (!region.isDestroyed()) {
-            e.handleAsUnexpected();
+            e.handleCause();
           }
         } finally {
           ImageState imgState = region.getImageState();
@@ -654,7 +654,7 @@ public class InitialImageOperation {
         throw ex;
       } catch (ReplyException e) {
         if (!region.isDestroyed()) {
-          e.handleAsUnexpected();
+          e.handleCause();
         }
       } finally {
         if (this.gotImage) {
@@ -785,7 +785,7 @@ public class InitialImageOperation {
       throw ex;
     } catch (ReplyException e) {
       if (!region.isDestroyed()) {
-        e.handleAsUnexpected();
+        e.handleCause();
       }
     }
     return false;
@@ -1044,7 +1044,7 @@ public class InitialImageOperation {
       throw ex;
     } catch (ReplyException e) {
       if (!region.isDestroyed()) {
-        e.handleAsUnexpected();
+        e.handleCause();
       }
     }
     return received_rvv;

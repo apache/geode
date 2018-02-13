@@ -79,10 +79,6 @@ public class GetRegionRequestOperationHandlerJUnitTest extends OperationHandlerJ
     Assert.assertEquals(10, region.getSize());
   }
 
-  private ClientProtocol.Request createRequestMessage(RegionAPI.GetRegionRequest getRegionRequest) {
-    return ClientProtocol.Request.newBuilder().setGetRegionRequest(getRegionRequest).build();
-  }
-
   @Test
   public void processReturnsNoCacheRegions() throws Exception {
     InternalCache emptyCache = mock(InternalCache.class);

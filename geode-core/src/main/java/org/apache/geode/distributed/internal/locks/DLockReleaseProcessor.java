@@ -82,7 +82,7 @@ public class DLockReleaseProcessor extends ReplyProcessor21 {
     try {
       waitForRepliesUninterruptibly();
     } catch (ReplyException e) {
-      e.handleAsUnexpected();
+      e.handleCause();
     }
 
     if (this.reply == null)

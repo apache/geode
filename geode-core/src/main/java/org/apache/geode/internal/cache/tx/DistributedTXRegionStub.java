@@ -21,31 +21,22 @@ import org.apache.geode.cache.RegionDestroyedException;
 import org.apache.geode.cache.TransactionDataNodeHasDepartedException;
 import org.apache.geode.cache.TransactionDataNotColocatedException;
 import org.apache.geode.cache.TransactionException;
-import org.apache.geode.distributed.internal.ClusterDistributionManager;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
 import org.apache.geode.internal.cache.DistributedPutAllOperation;
 import org.apache.geode.internal.cache.DistributedRegion;
 import org.apache.geode.internal.cache.DistributedRemoveAllOperation;
 import org.apache.geode.internal.cache.EntryEventImpl;
+import org.apache.geode.internal.cache.InternalRegion;
 import org.apache.geode.internal.cache.KeyInfo;
 import org.apache.geode.internal.cache.LocalRegion;
-import org.apache.geode.internal.cache.PartitionedRegionException;
-import org.apache.geode.internal.cache.RemoteContainsKeyValueMessage;
-import org.apache.geode.internal.cache.RemoteContainsKeyValueMessage.RemoteContainsKeyValueResponse;
-import org.apache.geode.internal.cache.RemoteDestroyMessage;
-import org.apache.geode.internal.cache.RemoteFetchEntryMessage;
-import org.apache.geode.internal.cache.RemoteGetMessage;
-import org.apache.geode.internal.cache.RemoteInvalidateMessage;
 import org.apache.geode.internal.cache.RemoteOperationException;
-import org.apache.geode.internal.cache.RemoteOperationMessage.RemoteOperationResponse;
-import org.apache.geode.internal.cache.RemotePutAllMessage;
-import org.apache.geode.internal.cache.RemotePutMessage;
-import org.apache.geode.internal.cache.RemotePutMessage.PutResult;
-import org.apache.geode.internal.cache.RemotePutMessage.RemotePutResponse;
-import org.apache.geode.internal.cache.RemoteRemoveAllMessage;
 import org.apache.geode.internal.cache.TXStateStub;
 import org.apache.geode.internal.cache.tier.sockets.ClientProxyMembershipID;
 import org.apache.geode.internal.cache.tier.sockets.VersionedObjectList;
+import org.apache.geode.internal.cache.tx.RemoteContainsKeyValueMessage.RemoteContainsKeyValueResponse;
+import org.apache.geode.internal.cache.tx.RemoteOperationMessage.RemoteOperationResponse;
+import org.apache.geode.internal.cache.tx.RemotePutMessage.PutResult;
+import org.apache.geode.internal.cache.tx.RemotePutMessage.RemotePutResponse;
 import org.apache.geode.internal.i18n.LocalizedStrings;
 
 public class DistributedTXRegionStub extends AbstractPeerTXRegionStub {
@@ -60,22 +51,10 @@ public class DistributedTXRegionStub extends AbstractPeerTXRegionStub {
 
   public void destroyExistingEntry(EntryEventImpl event, boolean cacheWrite,
       Object expectedOldValue) {
-    // TODO Auto-generated method stub
-    // this.prStats.incPartitionMessagesSent();
     try {
       RemoteOperationResponse response = RemoteDestroyMessage.send(state.getTarget(),
-          event.getLocalRegion(), event, expectedOldValue,
-          ClusterDistributionManager.PARTITIONED_REGION_EXECUTOR, true, false);
-      response.waitForCacheException();
-    } catch (EntryNotFoundException enfe) {
-      throw enfe;
-    } catch (TransactionDataNotColocatedException enfe) {
-      throw enfe;
-    } catch (CacheException ce) {
-      throw new PartitionedRegionException(
-          LocalizedStrings.PartitionedRegion_DESTROY_OF_ENTRY_ON_0_FAILED
-              .toLocalizedString(state.getTarget()),
-          ce);
+          event.getLocalRegion(), event, expectedOldValue, true, false);
+      response.waitForRemoteResponse();
     } catch (RegionDestroyedException rde) {
       throw new TransactionDataNotColocatedException(
           LocalizedStrings.RemoteMessage_REGION_0_NOT_COLOCATED_WITH_TRANSACTION
@@ -92,7 +71,6 @@ public class DistributedTXRegionStub extends AbstractPeerTXRegionStub {
       // TODO change RemoteFetchEntryMessage to allow tombstones to be returned
       RemoteFetchEntryMessage.FetchEntryResponse res = RemoteFetchEntryMessage
           .send((InternalDistributedMember) state.getTarget(), region, keyInfo.getKey());
-      // this.prStats.incPartitionMessagesSent();
       return res.waitForResponse();
     } catch (EntryNotFoundException enfe) {
       return null;
@@ -102,24 +80,18 @@ public class DistributedTXRegionStub extends AbstractPeerTXRegionStub {
               .toLocalizedString(rde.getRegionFullPath()),
           rde);
     } catch (TransactionException e) {
-      RuntimeException re = new TransactionDataNotColocatedException(
-          LocalizedStrings.PartitionedRegion_KEY_0_NOT_COLOCATED_WITH_TRANSACTION
-              .toLocalizedString(keyInfo.getKey()));
-      re.initCause(e);
-      throw re;
-    } catch (RemoteOperationException e) {
+      throw e;
+    } catch (CacheException | RemoteOperationException e) {
       throw new TransactionDataNodeHasDepartedException(e);
     }
   }
-
 
   public void invalidateExistingEntry(EntryEventImpl event, boolean invokeCallbacks,
       boolean forceNewEntry) {
     try {
       RemoteOperationResponse response =
-          RemoteInvalidateMessage.send(state.getTarget(), event.getRegion(), event,
-              ClusterDistributionManager.PARTITIONED_REGION_EXECUTOR, true, false);
-      response.waitForCacheException();
+          RemoteInvalidateMessage.send(state.getTarget(), event.getRegion(), event, true, false);
+      response.waitForRemoteResponse();
     } catch (RegionDestroyedException rde) {
       throw new TransactionDataNotColocatedException(
           LocalizedStrings.RemoteMessage_REGION_0_NOT_COLOCATED_WITH_TRANSACTION
@@ -205,36 +177,24 @@ public class DistributedTXRegionStub extends AbstractPeerTXRegionStub {
       retVal = result.returnValue;
     } catch (TransactionDataNotColocatedException enfe) {
       throw enfe;
-    } catch (CacheException ce) {
-      throw new PartitionedRegionException(
-          LocalizedStrings.PartitionedRegion_DESTROY_OF_ENTRY_ON_0_FAILED
-              .toLocalizedString(state.getTarget()),
-          ce);
     } catch (RegionDestroyedException rde) {
       throw new TransactionDataNotColocatedException(
           LocalizedStrings.RemoteMessage_REGION_0_NOT_COLOCATED_WITH_TRANSACTION
               .toLocalizedString(rde.getRegionFullPath()),
           rde);
-    } catch (RemoteOperationException roe) {
+    } catch (CacheException | RemoteOperationException roe) {
       throw new TransactionDataNodeHasDepartedException(roe);
     }
     return retVal;
   }
-
-
-  public int entryCount() {
-    return this.region.getRegionSize(this.state.getTarget());
-  }
-
 
   public void postPutAll(DistributedPutAllOperation putallOp, VersionedObjectList successfulPuts,
       LocalRegion region) {
     try {
       RemotePutAllMessage.PutAllResponse response =
           RemotePutAllMessage.send(state.getTarget(), putallOp.getBaseEvent(),
-              putallOp.getPutAllEntryData(), putallOp.getPutAllEntryData().length, true,
-              ClusterDistributionManager.PARTITIONED_REGION_EXECUTOR, false);
-      response.waitForCacheException();
+              putallOp.getPutAllEntryData(), putallOp.getPutAllEntryData().length, true, false);
+      response.waitForRemoteResponse();
     } catch (RegionDestroyedException rde) {
       throw new TransactionDataNotColocatedException(
           LocalizedStrings.RemoteMessage_REGION_0_NOT_COLOCATED_WITH_TRANSACTION
@@ -251,9 +211,8 @@ public class DistributedTXRegionStub extends AbstractPeerTXRegionStub {
     try {
       RemoteRemoveAllMessage.RemoveAllResponse response =
           RemoteRemoveAllMessage.send(state.getTarget(), op.getBaseEvent(),
-              op.getRemoveAllEntryData(), op.getRemoveAllEntryData().length, true,
-              ClusterDistributionManager.PARTITIONED_REGION_EXECUTOR, false);
-      response.waitForCacheException();
+              op.getRemoveAllEntryData(), op.getRemoveAllEntryData().length, true, false);
+      response.waitForRemoteResponse();
     } catch (RegionDestroyedException rde) {
       throw new TransactionDataNotColocatedException(
           LocalizedStrings.RemoteMessage_REGION_0_NOT_COLOCATED_WITH_TRANSACTION
@@ -266,4 +225,9 @@ public class DistributedTXRegionStub extends AbstractPeerTXRegionStub {
 
   @Override
   public void cleanup() {}
+
+  @Override
+  protected InternalRegion getRegion() {
+    return this.region;
+  }
 }

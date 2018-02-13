@@ -61,6 +61,7 @@ public class DestroyRegionOnDataStoreMessage extends PartitionMessage {
     int procId = rp.getProcessorId();
     DestroyRegionOnDataStoreMessage m =
         new DestroyRegionOnDataStoreMessage(recipient, r.getPRId(), rp, callbackArg);
+    m.setTransactionDistributed(r.getCache().getTxManager().isDistributed());
     r.getDistributionManager().putOutgoing(m);
     rp.waitForRepliesUninterruptibly();
   }

@@ -85,6 +85,12 @@ public class CliStrings {
 
   public static final String IFEXISTS_HELP =
       "If true, the command will be a no-op if the entity does not exist.";
+  public static final String ENTRY_IDLE_TIME_CUSTOM_EXPIRY = "entry-idle-time-custom-expiry";
+  public static final String ENTRY_TTL_CUSTOM_EXPIRY = "entry-time-to-live-custom-expiry";
+  public static final String ENTRY_IDLE_TIME_CUSTOM_EXPIRY_HELP =
+      "The name of the class implementing CustomExpiry for entry idle time. Append json string for initialization properties.";
+  public static final String ENTRY_TTL_CUSTOM_EXPIRY_HELP =
+      "The name of the class implementing CustomExpiry for entry time to live. Append json string for initialization properties.";
   private static final String LOG_LEVEL_VALUES =
       "Possible values for log-level include: ALL, TRACE, DEBUG, INFO, WARN, ERROR, FATAL, OFF.";
 
@@ -824,7 +830,7 @@ public class CliStrings {
       "(Deprecated: Use --if-not-exists) Skip region creation if the region already exists.";
   public static final String CREATE_REGION__IFNOTEXISTS = "if-not-exists";
   public static final String CREATE_REGION__IFNOTEXISTS__HELP =
-      "Skip region creation if the region already exists.";
+      "By default, an attempt to create a duplicate region is reported as an error. If this option is specified without a value or is specified with a value of true, then gfsh displays a \"Skipping...\" acknowledgement, but does not throw an error.";
   public static final String CREATE_REGION__KEYCONSTRAINT = "key-constraint";
   public static final String CREATE_REGION__KEYCONSTRAINT__HELP =
       "Fully qualified class name of the objects allowed as region keys. Ensures that keys for region entries are all of the same class.";
@@ -891,13 +897,13 @@ public class CliStrings {
       "Whether the server should conflate its messages to the client. A false value causes all server-client messages to be sent individually.";
   public static final String CREATE_REGION__CACHELISTENER = "cache-listener";
   public static final String CREATE_REGION__CACHELISTENER__HELP =
-      "Fully qualified class name of a plug-in to be instantiated for receiving after-event notification of changes to the region and its entries. Any number of cache listeners can be configured.";
+      "Fully qualified class name of a plug-in to be instantiated for receiving after-event notification of changes to the region and its entries. Append json string for initialization properties. Any number of cache listeners can be configured.";
   public static final String CREATE_REGION__CACHELOADER = "cache-loader";
   public static final String CREATE_REGION__CACHELOADER__HELP =
-      "Fully qualified class name of a plug-in to be instantiated for receiving notification of cache misses in the region. At most, one cache loader can be defined in each member for the region. For distributed regions, a cache loader may be invoked remotely from other members that have the region defined.";
+      "Fully qualified class name of a plug-in to be instantiated for receiving notification of cache misses in the region. Append json string for initialization properties. At most, one cache loader can be defined in each member for the region. For distributed regions, a cache loader may be invoked remotely from other members that have the region defined.";
   public static final String CREATE_REGION__CACHEWRITER = "cache-writer";
   public static final String CREATE_REGION__CACHEWRITER__HELP =
-      "Fully qualified class name of a plug-in to be instantiated for receiving before-event notification of changes to the region and its entries. The plug-in may cancel the event. At most, one cache writer can be defined in each member for the region.";
+      "Fully qualified class name of a plug-in to be instantiated for receiving before-event notification of changes to the region and its entries. Append json string for initialization properties. The plug-in may cancel the event. At most, one cache writer can be defined in each member for the region.";
   public static final String CREATE_REGION__ASYNCEVENTQUEUEID = "async-event-queue-id";
   public static final String CREATE_REGION__ASYNCEVENTQUEUEID__HELP =
       "IDs of the Async Event Queues that will be used for write-behind operations.";
@@ -3166,8 +3172,6 @@ public class CliStrings {
   public static final String START_SERVER__REDIRECT_OUTPUT = "redirect-output";
   public static final String START_SERVER__REDIRECT_OUTPUT__HELP =
       "Causes the member to redirect standard out and standard error to its own log file.";
-
-
 
   /**
    * Creates a MessageFormat with the given pattern and uses it to format the given argument.

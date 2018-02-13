@@ -25,6 +25,6 @@ import org.apache.geode.internal.cache.LRUClearWithDiskRegionOpRegressionTest;
 public class TestLRUListWithAsyncSorting extends LRUListWithAsyncSorting {
 
   public TestLRUListWithAsyncSorting(EvictionController controller) {
-    super(controller, Executors.newSingleThreadExecutor());
+    super(controller, Executors.newSingleThreadExecutor(), 1);
   }
 }

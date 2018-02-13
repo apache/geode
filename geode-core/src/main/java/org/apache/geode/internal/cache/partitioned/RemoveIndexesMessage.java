@@ -199,11 +199,13 @@ public class RemoveIndexesMessage extends PartitionMessage {
     }
     if (removeAllIndex) {
       RemoveIndexesMessage rm = new RemoveIndexesMessage(recipients, pr.getPRId(), processor);
+      rm.setTransactionDistributed(pr.getCache().getTxManager().isDistributed());
       /* Set failures = */ pr.getDistributionManager().putOutgoing(rm);
     } else {
       // remove a single index.
       RemoveIndexesMessage rm =
           new RemoveIndexesMessage(recipients, pr.getPRId(), processor, true, ind.getName());
+      rm.setTransactionDistributed(pr.getCache().getTxManager().isDistributed());
       /* Set failures = */ pr.getDistributionManager().putOutgoing(rm);
     }
     return processor;

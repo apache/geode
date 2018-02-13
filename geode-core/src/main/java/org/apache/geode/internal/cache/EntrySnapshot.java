@@ -43,12 +43,12 @@ public class EntrySnapshot implements Region.Entry, DataSerializable {
   private boolean startedLocal;
   /** whether this entry has been destroyed */
   private boolean entryDestroyed;
-  public transient LocalRegion region = null;
+  private transient LocalRegion region = null;
   /**
    * the internal entry for this Entry's key
    */
-  public transient NonLocalRegionEntry regionEntry; // would be final except for serialization
-                                                    // needing default constructor
+  private transient NonLocalRegionEntry regionEntry; // would be final except for serialization
+                                                     // needing default constructor
 
   /**
    * creates a new Entry that wraps the given RegionEntry object for the given storage Region
@@ -264,8 +264,7 @@ public class EntrySnapshot implements Region.Entry, DataSerializable {
   }
 
   // when externalized, we write the state of a non-local RegionEntry so it
-  // can
-  // be reconstituted anywhere
+  // can be reconstituted anywhere
   public void toData(DataOutput out) throws IOException {
     out.writeBoolean(this.regionEntry instanceof NonLocalRegionEntryWithStats);
     this.regionEntry.toData(out);

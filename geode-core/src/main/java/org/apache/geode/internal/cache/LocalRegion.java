@@ -2037,7 +2037,7 @@ public class LocalRegion extends AbstractRegion implements LoaderHelperFactory,
   /**
    * @return size after considering imageState
    */
-  protected int getRegionSize() {
+  public int getRegionSize() {
     synchronized (getSizeGuard()) {
       int result = getRegionMap().size();
       // if this is a client with no tombstones then we subtract the number
@@ -3747,10 +3747,14 @@ public class LocalRegion extends AbstractRegion implements LoaderHelperFactory,
 
         case InterestType.KEY:
           if (key instanceof String && key.equals("ALL_KEYS")) {
+            logger.warn(
+                "Usage of registerInterest('ALL_KEYS') has been deprecated.  Please use registerInterestForAllKeys()");
             serverKeys = proxy.registerInterest(".*", InterestType.REGULAR_EXPRESSION,
                 interestResultPolicy, isDurable, receiveUpdatesAsInvalidates, regionDataPolicy);
           } else {
             if (key instanceof List) {
+              logger.warn(
+                  "Usage of registerInterest(List) has been deprecated. Please use registerInterestForKeys(Iterable)");
               serverKeys = proxy.registerInterestList((List) key, interestResultPolicy, isDurable,
                   receiveUpdatesAsInvalidates, regionDataPolicy);
             } else {
@@ -4753,7 +4757,7 @@ public class LocalRegion extends AbstractRegion implements LoaderHelperFactory,
    *
    * @see DistributedRegion#basicInvalidate(EntryEventImpl)
    */
-  void basicInvalidate(EntryEventImpl event) throws EntryNotFoundException {
+  public void basicInvalidate(EntryEventImpl event) throws EntryNotFoundException {
     basicInvalidate(event, isInitialized()/* for bug 35214 */);
   }
 
@@ -5041,7 +5045,7 @@ public class LocalRegion extends AbstractRegion implements LoaderHelperFactory,
    * @return false if ifNew is true and there is an existing key or if ifOld is true and
    *         expectedOldValue does not match the current value in the cache. Otherwise return true.
    */
-  protected boolean basicPut(EntryEventImpl event, boolean ifNew, boolean ifOld,
+  public boolean basicPut(EntryEventImpl event, boolean ifNew, boolean ifOld,
       Object expectedOldValue, boolean requireOldValue)
       throws TimeoutException, CacheWriterException {
     return getDataView().putEntry(event, ifNew, ifOld, expectedOldValue, requireOldValue, 0L,
@@ -6020,7 +6024,7 @@ public class LocalRegion extends AbstractRegion implements LoaderHelperFactory,
    *
    * @since GemFire 5.7
    */
-  void syncBulkOp(Runnable task, EventID eventId) {
+  public void syncBulkOp(Runnable task, EventID eventId) {
     getEventTracker().syncBulkOp(task, eventId, isTX());
   }
 
@@ -6436,6 +6440,11 @@ public class LocalRegion extends AbstractRegion implements LoaderHelperFactory,
   private boolean isTransactionPaused() {
     TXManagerImpl txMgr = (TXManagerImpl) getCache().getCacheTransactionManager();
     return txMgr.isTransactionPaused();
+  }
+
+  private boolean isJTAPaused() {
+    TXManagerImpl txMgr = (TXManagerImpl) getCache().getCacheTransactionManager();
+    return txMgr.isJTAPaused();
   }
 
   /**
@@ -8036,12 +8045,7 @@ public class LocalRegion extends AbstractRegion implements LoaderHelperFactory,
     }
   }
 
-  /**
-   * Used by unit tests to get access to the EntryExpiryTask of the given key. Returns null if the
-   * entry exists but does not have an expiry task.
-   *
-   * @throws EntryNotFoundException if no entry exists key.
-   */
+  @Override
   public EntryExpiryTask getEntryExpiryTask(Object key) {
     RegionEntry re = this.getRegionEntry(key);
     if (re == null) {
@@ -8333,7 +8337,7 @@ public class LocalRegion extends AbstractRegion implements LoaderHelperFactory,
               || jtaTransaction.getStatus() == Status.STATUS_NO_TRANSACTION) {
             return null;
           }
-          if (isTransactionPaused()) {
+          if (isTransactionPaused() || isJTAPaused()) {
             // Do not bootstrap JTA again, if the transaction has been paused.
             return null;
           }

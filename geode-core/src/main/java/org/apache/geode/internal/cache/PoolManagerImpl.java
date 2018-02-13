@@ -206,6 +206,9 @@ public class PoolManagerImpl {
         }
       }
     }
+    if (pools.size() == 0) {
+      throw new IllegalStateException("Ready for Events called, but no pool to execute on");
+    }
     if (pools.size() > 0 && !foundDurablePool) {
       throw new IllegalStateException(
           LocalizedStrings.PoolManagerImpl_ONLY_DURABLE_CLIENTS_SHOULD_CALL_READYFOREVENTS

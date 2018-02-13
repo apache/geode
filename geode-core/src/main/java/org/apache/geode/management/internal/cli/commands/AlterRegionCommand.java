@@ -23,6 +23,7 @@ import org.springframework.shell.core.annotation.CliOption;
 import org.apache.geode.cache.CacheListener;
 import org.apache.geode.cache.CacheLoader;
 import org.apache.geode.cache.CacheWriter;
+import org.apache.geode.cache.CustomExpiry;
 import org.apache.geode.cache.ExpirationAction;
 import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.internal.cache.InternalCache;
@@ -58,6 +59,10 @@ public class AlterRegionCommand implements GfshCommand {
       @CliOption(key = CliStrings.ALTER_REGION__ENTRYEXPIRATIONTTLACTION,
           specifiedDefaultValue = "INVALIDATE",
           help = CliStrings.ALTER_REGION__ENTRYEXPIRATIONTTLACTION__HELP) ExpirationAction entryExpirationTTLAction,
+      @CliOption(key = CliStrings.ENTRY_IDLE_TIME_CUSTOM_EXPIRY, specifiedDefaultValue = "",
+          help = CliStrings.ENTRY_IDLE_TIME_CUSTOM_EXPIRY_HELP) ClassName<CustomExpiry> entryIdleTimeCustomExpiry,
+      @CliOption(key = CliStrings.ENTRY_TTL_CUSTOM_EXPIRY, specifiedDefaultValue = "",
+          help = CliStrings.ENTRY_TTL_CUSTOM_EXPIRY_HELP) ClassName<CustomExpiry> entryTTLCustomExpiry,
       @CliOption(key = CliStrings.ALTER_REGION__REGIONEXPIRATIONIDLETIME,
           help = CliStrings.ALTER_REGION__REGIONEXPIRATIONIDLETIME__HELP) Integer regionExpirationIdleTime,
       @CliOption(key = CliStrings.ALTER_REGION__REGIONEXPIRATIONIDLETIMEACTION,
@@ -99,6 +104,8 @@ public class AlterRegionCommand implements GfshCommand {
     regionFunctionArgs.setEntryExpirationIdleTime(entryExpirationIdleTime,
         entryExpirationIdleTimeAction);
     regionFunctionArgs.setEntryExpirationTTL(entryExpirationTTL, entryExpirationTTLAction);
+    regionFunctionArgs.setEntryIdleTimeCustomExpiry(entryIdleTimeCustomExpiry);
+    regionFunctionArgs.setEntryTTLCustomExpiry(entryTTLCustomExpiry);
     regionFunctionArgs.setRegionExpirationIdleTime(regionExpirationIdleTime,
         regionExpirationIdleTimeAction);
     regionFunctionArgs.setRegionExpirationTTL(regionExpirationTTL, regionExpirationTTLAction);

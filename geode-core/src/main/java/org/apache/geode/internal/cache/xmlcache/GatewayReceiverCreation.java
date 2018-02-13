@@ -137,6 +137,10 @@ public class GatewayReceiverCreation implements GatewayReceiver {
 
   }
 
+  public void destroy() {
+
+  }
+
   public boolean isRunning() {
     return false;
   }

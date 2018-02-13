@@ -108,7 +108,7 @@ public class UpdateAttributesProcessor {
       try {
         processor.waitForRepliesUninterruptibly();
       } catch (ReplyException e) {
-        e.handleAsUnexpected();
+        e.handleCause();
       }
     } finally {
       processor.cleanup();

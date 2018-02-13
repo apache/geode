@@ -72,6 +72,7 @@ import org.apache.geode.distributed.internal.membership.InternalDistributedMembe
 import org.apache.geode.internal.Assert;
 import org.apache.geode.internal.NanoTimer;
 import org.apache.geode.internal.Version;
+import org.apache.geode.internal.cache.partitioned.PartitionMessage;
 import org.apache.geode.internal.cache.partitioned.QueryMessage;
 import org.apache.geode.internal.cache.partitioned.RegionAdvisor;
 import org.apache.geode.internal.cache.partitioned.StreamingPartitionOperation;
@@ -165,7 +166,7 @@ public class PartitionedRegionQueryEvaluator extends StreamingPartitionOperation
     throw new UnsupportedOperationException();
   }
 
-  protected DistributionMessage createRequestMessage(InternalDistributedMember recipient,
+  protected PartitionMessage createRequestMessage(InternalDistributedMember recipient,
       ReplyProcessor21 processor, List bucketIds) {
     return new QueryMessage(recipient, this.pr.getPRId(), processor, this.query, this.parameters,
         bucketIds);
@@ -333,7 +334,8 @@ public class PartitionedRegionQueryEvaluator extends StreamingPartitionOperation
         Map.Entry<InternalDistributedMember, List<Integer>> me = itr.next();
         final InternalDistributedMember rcp = me.getKey();
         final List<Integer> bucketIds = me.getValue();
-        DistributionMessage m = createRequestMessage(rcp, processor, bucketIds);
+        PartitionMessage m = createRequestMessage(rcp, processor, bucketIds);
+        m.setTransactionDistributed(this.sys.getCache().getTxManager().isDistributed());
         Set notReceivedMembers = sendMessage(m);
         if (th != null) {
           th.hook(4);

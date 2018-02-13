@@ -16,6 +16,7 @@ package org.apache.geode.cache.client.internal.pooling;
 
 import java.net.SocketException;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -37,6 +38,7 @@ import org.apache.logging.log4j.Logger;
 import org.apache.geode.CancelCriterion;
 import org.apache.geode.CancelException;
 import org.apache.geode.SystemFailure;
+import org.apache.geode.cache.CacheClosedException;
 import org.apache.geode.cache.GatewayConfigurationException;
 import org.apache.geode.cache.client.AllConnectionsInUseException;
 import org.apache.geode.cache.client.NoAvailableServersException;
@@ -51,7 +53,6 @@ import org.apache.geode.cache.client.internal.PoolImpl;
 import org.apache.geode.cache.client.internal.PoolImpl.PoolTask;
 import org.apache.geode.cache.client.internal.QueueConnectionImpl;
 import org.apache.geode.distributed.PoolCancelledException;
-import org.apache.geode.distributed.internal.DistributionConfig;
 import org.apache.geode.distributed.internal.ServerLocation;
 import org.apache.geode.i18n.StringId;
 import org.apache.geode.internal.cache.PoolManagerImpl;
@@ -72,13 +73,9 @@ import org.apache.geode.security.GemFireSecurityException;
 public class ConnectionManagerImpl implements ConnectionManager {
   private static final Logger logger = LogService.getLogger();
 
-  static long AQUIRE_TIMEOUT = Long
-      .getLong(DistributionConfig.GEMFIRE_PREFIX + "ConnectionManager.AQUIRE_TIMEOUT", 10 * 1000)
-      .longValue();
   private final String poolName;
   private final PoolStats poolStats;
-  protected final long prefillRetry; // ms // make this an int
-  // private final long pingInterval; // ms // make this an int
+  protected final long prefillRetry; // ms
   private final LinkedList/* <PooledConnection> */ availableConnections =
       new LinkedList/* <PooledConnection> */();
   protected final ConnectionMap allConnectionsMap = new ConnectionMap();
@@ -1027,9 +1024,14 @@ public class ConnectionManagerImpl implements ConnectionManager {
 
   protected class ConnectionMap {
     private final HashMap/* <Endpoint, HashSet<PooledConnection> */ map = new HashMap();
-    private final LinkedList/* <PooledConnection> */ allConnections =
-        new LinkedList/* <PooledConnection> */(); // in the order they were created
+    private List/* <PooledConnection> */ allConnections = new LinkedList/* <PooledConnection> */(); // in
+                                                                                                    // the
+                                                                                                    // order
+                                                                                                    // they
+                                                                                                    // were
+                                                                                                    // created
     private boolean haveLifetimeExpireConnectionsTask;
+    volatile boolean closing;
 
     public synchronized boolean isIdleExpirePossible() {
       return this.allConnections.size() > minConnections;
@@ -1059,14 +1061,17 @@ public class ConnectionManagerImpl implements ConnectionManager {
     }
 
     public synchronized void addConnection(PooledConnection connection) {
-      addToEndpointMap(connection);
+      if (this.closing) {
+        throw new CacheClosedException("This pool is closing");
+      }
+
+      getPoolStats().incPoolConnections(1);
 
       // we want the smallest birthDate (e.g. oldest cnx) at the front of the list
-      getPoolStats().incPoolConnections(1);
-      // logger.info("DEBUG: addConnection incPoolConnections(1)->" +
-      // getPoolStats().getPoolConnections() + " con="+connection,
-      // new RuntimeException("STACK"));
-      this.allConnections.addLast(connection);
+      this.allConnections.add(connection);
+
+      addToEndpointMap(connection);
+
       if (isIdleExpirePossible()) {
         startBackgroundExpiration();
       }
@@ -1082,11 +1087,14 @@ public class ConnectionManagerImpl implements ConnectionManager {
     }
 
     public synchronized void addReplacedCnx(PooledConnection con, Endpoint oldEndpoint) {
+      if (this.closing) {
+        throw new CacheClosedException("This pool is closing");
+      }
       if (this.allConnections.remove(con)) {
         // otherwise someone else has removed it and closed it
         removeFromEndpointMap(oldEndpoint, con);
         addToEndpointMap(con);
-        this.allConnections.addLast(con);
+        this.allConnections.add(con);
         if (isIdleExpirePossible()) {
           startBackgroundExpiration();
         }
@@ -1155,11 +1163,21 @@ public class ConnectionManagerImpl implements ConnectionManager {
       }
     }
 
-    public synchronized void close(boolean keepAlive) {
-      map.clear();
+    public void close(boolean keepAlive) {
+      List<PooledConnection> connections;
       int count = 0;
-      while (!this.allConnections.isEmpty()) {
-        PooledConnection pc = (PooledConnection) this.allConnections.removeFirst();
+
+      synchronized (this) {
+        if (closing) {
+          return;
+        }
+        closing = true;
+        map.clear();
+        connections = allConnections;
+        allConnections = new ClosedPoolConnectionList();
+      }
+
+      for (PooledConnection pc : connections) {
         count++;
         if (!pc.isDestroyed()) {
           try {
@@ -1183,9 +1201,10 @@ public class ConnectionManagerImpl implements ConnectionManager {
     }
 
     public synchronized void emergencyClose() {
+      closing = true;
       map.clear();
       while (!this.allConnections.isEmpty()) {
-        PooledConnection pc = (PooledConnection) this.allConnections.removeFirst();
+        PooledConnection pc = (PooledConnection) this.allConnections.remove(0);
         pc.emergencyClose();
       }
     }
@@ -1275,56 +1294,6 @@ public class ConnectionManagerImpl implements ConnectionManager {
     }
 
     /**
-     * See if any of the expired connections (that have not idle expired) are already connected to
-     * this sl and have not idle expired. If so then just update them in-place to simulate a
-     * replace.
-     *
-     * @param sl the location of the server we should see if we are connected to
-     * @return true if we were able to extend an existing connection's lifetime or if we have no
-     *         connection's whose lifetime has expired. false if we need to create a replacement
-     *         connection.
-     */
-    public synchronized boolean tryToExtendLifeTime(ServerLocation sl) {
-      // a better approach might be to get the most loaded server
-      // (if they are not balanced) and then scan through and extend the lifetime
-      // of everyone not connected to that server and do a replace on just one
-      // of the guys who has lifetime expired to the most loaded server
-      boolean result = true;
-      if (!this.allConnections.isEmpty()) {
-        final long now = System.nanoTime();
-        for (Iterator it = this.allConnections.iterator(); it.hasNext();) {
-          PooledConnection pc = (PooledConnection) it.next();
-          if (pc.remainingLife(now, lifetimeTimeoutNanos) > 0) {
-            // no more connections whose lifetime could have expired
-            break;
-            // note don't ignore idle guys because they are still connected
-            // } else if (pc.remainingIdle(now, idleTimeoutNanos) <= 0) {
-            // // this con has already idle expired so ignore it
-          } else if (pc.shouldDestroy()) {
-            // this con has already been destroyed so ignore it
-          } else if (sl.equals(pc.getEndpoint().getLocation())) {
-            // we found a guy to whose lifetime we can extend
-            it.remove();
-            // logger.fine("DEBUG: tryToExtendLifeTime extending life of: " + pc);
-            pc.setBirthDate(now);
-            getPoolStats().incLoadConditioningExtensions();
-            this.allConnections.addLast(pc);
-            return true;
-          } else {
-            // the current pc is a candidate for reconnection to another server
-            // so set result to false which will stick unless we find another con
-            // whose life can be extended.
-            result = false;
-          }
-        }
-      }
-      // if (result) {
-      // logger.fine("DEBUG: tryToExtendLifeTime found no one to extend");
-      // }
-      return result;
-    }
-
-    /**
      * Extend the life of the first expired connection to sl.
      */
     public synchronized void extendLifeOfCnxToServer(ServerLocation sl) {
@@ -1346,7 +1315,7 @@ public class ConnectionManagerImpl implements ConnectionManager {
             // logger.fine("DEBUG: tryToExtendLifeTime extending life of: " + pc);
             pc.setBirthDate(now);
             getPoolStats().incLoadConditioningExtensions();
-            this.allConnections.addLast(pc);
+            this.allConnections.add(pc);
             // break so we only do this to the oldest guy
             break;
           }
@@ -1530,6 +1499,7 @@ public class ConnectionManagerImpl implements ConnectionManager {
       // this should not be needed but seems to currently help.
       startBackgroundLifetimeExpiration(lifetimeTimeoutNanos);
     }
+
   }
 
   private void logInfo(StringId message, Throwable t) {
@@ -1558,5 +1528,37 @@ public class ConnectionManagerImpl implements ConnectionManager {
   public void passivate(Connection conn, boolean accessed) {
     assert conn instanceof PooledConnection;
     ((PooledConnection) conn).passivate(accessed);
+  }
+
+  private static class ClosedPoolConnectionList extends ArrayList {
+    @Override
+    public Object set(int index, Object element) {
+      throw new CacheClosedException("This pool has been closed");
+    }
+
+    @Override
+    public boolean add(Object element) {
+      throw new CacheClosedException("This pool has been closed");
+    }
+
+    @Override
+    public void add(int index, Object element) {
+      throw new CacheClosedException("This pool has been closed");
+    }
+
+    @Override
+    public Object remove(int index) {
+      throw new CacheClosedException("This pool has been closed");
+    }
+
+    @Override
+    public boolean addAll(Collection c) {
+      throw new CacheClosedException("This pool has been closed");
+    }
+
+    @Override
+    public boolean addAll(int index, Collection c) {
+      throw new CacheClosedException("This pool has been closed");
+    }
   }
 }

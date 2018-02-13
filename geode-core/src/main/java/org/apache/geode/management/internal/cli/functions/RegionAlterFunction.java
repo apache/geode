@@ -14,8 +14,6 @@
  */
 package org.apache.geode.management.internal.cli.functions;
 
-import java.util.Collection;
-import java.util.Collections;
 import java.util.Set;
 
 import org.apache.logging.log4j.Logger;
@@ -26,13 +24,13 @@ import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.CacheListener;
 import org.apache.geode.cache.CacheLoader;
 import org.apache.geode.cache.CacheWriter;
+import org.apache.geode.cache.CustomExpiry;
 import org.apache.geode.cache.Region;
-import org.apache.geode.cache.execute.Function;
 import org.apache.geode.cache.execute.FunctionContext;
 import org.apache.geode.cache.execute.ResultSender;
 import org.apache.geode.internal.ClassPathLoader;
-import org.apache.geode.internal.InternalEntity;
 import org.apache.geode.internal.cache.AbstractRegion;
+import org.apache.geode.internal.cache.execute.InternalFunction;
 import org.apache.geode.internal.cache.xmlcache.CacheXml;
 import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.management.internal.cli.CliUtil;
@@ -40,15 +38,13 @@ import org.apache.geode.management.internal.cli.domain.ClassName;
 import org.apache.geode.management.internal.cli.i18n.CliStrings;
 import org.apache.geode.management.internal.cli.util.RegionPath;
 import org.apache.geode.management.internal.configuration.domain.XmlEntity;
-import org.apache.geode.management.internal.security.ResourcePermissions;
-import org.apache.geode.security.ResourcePermission;
 
 /**
  * Function used by the 'alter region' gfsh command to alter a region on each member.
  *
  * @since GemFire 8.0
  */
-public class RegionAlterFunction implements Function, InternalEntity {
+public class RegionAlterFunction implements InternalFunction {
   private static final Logger logger = LogService.getLogger();
 
   private static final long serialVersionUID = -4846425364943216425L;
@@ -98,11 +94,6 @@ public class RegionAlterFunction implements Function, InternalEntity {
     }
   }
 
-  @Override
-  public Collection<ResourcePermission> getRequiredPermissions(String regionName) {
-    return Collections.singleton(ResourcePermissions.DATA_MANAGE);
-  }
-
   private <K, V> Region<?, ?> alterRegion(Cache cache, RegionFunctionArgs regionAlterArgs) {
     final String regionPathString = regionAlterArgs.getRegionPath();
 
@@ -147,6 +138,25 @@ public class RegionAlterFunction implements Function, InternalEntity {
           newEntryExpirationTTL.getExpirationAttributes(region.getEntryTimeToLive()));
       if (logger.isDebugEnabled()) {
         logger.debug("Region successfully altered - entry TTL");
+      }
+    }
+
+    final ClassName<CustomExpiry> entryIdleCustomExpiry =
+        regionAlterArgs.getEntryIdleTimeCustomExpiry();
+    if (entryIdleCustomExpiry != null) {
+      if (entryIdleCustomExpiry.equals(ClassName.EMPTY)) {
+        mutator.setCustomEntryIdleTimeout(null);
+      } else {
+        mutator.setCustomEntryIdleTimeout(entryIdleCustomExpiry.newInstance());
+      }
+    }
+
+    final ClassName<CustomExpiry> entryTTLCustomExpiry = regionAlterArgs.getEntryTTLCustomExpiry();
+    if (entryTTLCustomExpiry != null) {
+      if (entryTTLCustomExpiry.equals(ClassName.EMPTY)) {
+        mutator.setCustomEntryTimeToLive(null);
+      } else {
+        mutator.setCustomEntryTimeToLive(entryTTLCustomExpiry.newInstance());
       }
     }
 

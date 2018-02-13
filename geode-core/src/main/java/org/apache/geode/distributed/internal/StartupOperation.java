@@ -81,7 +81,7 @@ public class StartupOperation {
         InternalDistributedMember id = (InternalDistributedMember) it.next();
         this.dm.handleManagerDeparture(id, false,
             LocalizedStrings.StartupOperation_LEFT_THE_MEMBERSHIP_VIEW.toLocalizedString());
-        proc.memberDeparted(id, true);
+        proc.memberDeparted(this.dm, id, true);
       }
     }
 

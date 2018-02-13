@@ -22,15 +22,15 @@ import java.net.InetSocketAddress;
 import java.net.UnknownHostException;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
-import java.util.Properties;
+import java.util.Objects;
 
 import org.apache.logging.log4j.Logger;
 
 import org.apache.geode.DataSerializable;
 import org.apache.geode.DataSerializer;
 import org.apache.geode.cache.CacheException;
-import org.apache.geode.cache.RegionService;
 import org.apache.geode.cache.client.Pool;
 import org.apache.geode.cache.client.PoolFactory;
 import org.apache.geode.cache.client.internal.LocatorDiscoveryCallback;
@@ -354,6 +354,19 @@ public class PoolFactoryImpl implements PoolFactory {
     return this.attributes;
   }
 
+  @Override
+  public boolean equals(Object o) {
+    if (this == o) {
+      return true;
+    }
+    if (!(o instanceof PoolFactoryImpl)) {
+      return false;
+    }
+    PoolFactoryImpl that = (PoolFactoryImpl) o;
+    return Objects.equals(attributes, that.attributes)
+        && Objects.equals(new HashSet(locatorAddresses), new HashSet(that.locatorAddresses));
+  }
+
   /**
    * Not a true pool just the attributes. Serialization is used by unit tests
    */
@@ -607,6 +620,37 @@ public class PoolFactoryImpl implements PoolFactory {
       this.statisticInterval = DataSerializer.readPrimitiveInt(in);
       this.multiuserSecureModeEnabled = DataSerializer.readPrimitiveBoolean(in);
       this.socketConnectTimeout = DataSerializer.readPrimitiveInt(in);
+    }
+
+    @Override
+    public boolean equals(Object o) {
+      if (this == o) {
+        return true;
+      }
+      if (!(o instanceof PoolAttributes)) {
+        return false;
+      }
+      PoolAttributes that = (PoolAttributes) o;
+      return socketConnectTimeout == that.socketConnectTimeout
+          && connectionTimeout == that.connectionTimeout
+          && connectionLifetime == that.connectionLifetime
+          && socketBufferSize == that.socketBufferSize
+          && threadLocalConnections == that.threadLocalConnections
+          && readTimeout == that.readTimeout && minConnections == that.minConnections
+          && maxConnections == that.maxConnections && idleTimeout == that.idleTimeout
+          && retryAttempts == that.retryAttempts && pingInterval == that.pingInterval
+          && statisticInterval == that.statisticInterval && queueEnabled == that.queueEnabled
+          && prSingleHopEnabled == that.prSingleHopEnabled
+          && queueRedundancyLevel == that.queueRedundancyLevel
+          && queueMessageTrackingTimeout == that.queueMessageTrackingTimeout
+          && queueAckInterval == that.queueAckInterval
+          && multiuserSecureModeEnabled == that.multiuserSecureModeEnabled
+          && startDisabled == that.startDisabled && gateway == that.gateway
+          && Objects.equals(serverGroup, that.serverGroup)
+          && Objects.equals(new HashSet(locators), new HashSet(that.locators))
+          && Objects.equals(new HashSet(servers), new HashSet(that.servers))
+          && Objects.equals(locatorCallback, that.locatorCallback)
+          && Objects.equals(gatewaySender, that.gatewaySender);
     }
   }
 }

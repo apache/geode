@@ -15,22 +15,17 @@
 
 package org.apache.geode.management.internal.cli.functions;
 
-import java.util.Collection;
-import java.util.Collections;
 import java.util.HashSet;
 import java.util.Properties;
 import java.util.Set;
 
 import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.DiskStore;
-import org.apache.geode.cache.execute.Function;
 import org.apache.geode.cache.execute.FunctionContext;
 import org.apache.geode.distributed.DistributedMember;
-import org.apache.geode.internal.InternalEntity;
 import org.apache.geode.internal.cache.InternalCache;
+import org.apache.geode.internal.cache.execute.InternalFunction;
 import org.apache.geode.management.internal.cli.domain.DiskStoreDetails;
-import org.apache.geode.management.internal.security.ResourcePermissions;
-import org.apache.geode.security.ResourcePermission;
 
 /**
  * The ListDiskStoresFunction class is an implementation of GemFire Function interface used to
@@ -46,7 +41,7 @@ import org.apache.geode.security.ResourcePermission;
  * @see org.apache.geode.management.internal.cli.domain.DiskStoreDetails
  * @since GemFire 7.0
  */
-public class ListDiskStoresFunction implements Function, InternalEntity {
+public class ListDiskStoresFunction implements InternalFunction {
 
   @SuppressWarnings("unused")
   public void init(final Properties props) {}
@@ -76,10 +71,5 @@ public class ListDiskStoresFunction implements Function, InternalEntity {
     } catch (Exception e) {
       context.getResultSender().sendException(e);
     }
-  }
-
-  @Override
-  public Collection<ResourcePermission> getRequiredPermissions(String regionName) {
-    return Collections.singleton(ResourcePermissions.CLUSTER_READ);
   }
 }

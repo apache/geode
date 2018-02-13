@@ -46,9 +46,7 @@ import javax.management.remote.JMXConnectorFactory;
 import javax.management.remote.JMXServiceURL;
 import javax.rmi.ssl.SslRMIClientSocketFactory;
 
-import com.healthmarketscience.rmiio.RemoteInputStream;
 import com.healthmarketscience.rmiio.RemoteOutputStreamClient;
-import com.healthmarketscience.rmiio.SimpleRemoteInputStream;
 import org.apache.commons.io.IOUtils;
 
 import org.apache.geode.internal.admin.SSLConfig;
@@ -85,10 +83,6 @@ public class JmxOperationInvoker implements OperationInvoker {
   // String representation of the GemFire JMX Manager endpoint, including host and port
   private String endpoints;
 
-  // the host and port of the GemFire Manager
-  private String managerHost;
-  private int managerPort;
-
   // MBean Proxies
   private DistributedSystemMXBean distributedSystemMXBeanProxy;
   private MemberMXBean memberMXBeanProxy;
@@ -105,8 +99,6 @@ public class JmxOperationInvoker implements OperationInvoker {
       throws Exception {
     final Set<String> propsToClear = new TreeSet<>();
     try {
-      this.managerHost = host;
-      this.managerPort = port;
       this.endpoints = host + "[" + port + "]"; // Use the same syntax as the "connect" command.
 
       // Modify check period from default (60 sec) to 1 sec

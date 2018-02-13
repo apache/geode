@@ -62,8 +62,8 @@ public class LonerDistributionManager implements DistributionManager {
   public LonerDistributionManager(InternalDistributedSystem system, InternalLogWriter logger) {
     this.system = system;
     this.logger = logger;
-    this.id = generateMemberId();
-    this.allIds = Collections.singleton(id);
+    this.localAddress = generateMemberId();
+    this.allIds = Collections.singleton(localAddress);
     this.viewMembers = new ArrayList<InternalDistributedMember>(allIds);
     DistributionStats.enableClockStats = this.system.getConfig().getEnableTimeStatistics();
   }
@@ -83,7 +83,7 @@ public class LonerDistributionManager implements DistributionManager {
     }
   }
 
-  private final InternalDistributedMember id;
+  private final InternalDistributedMember localAddress;
 
   /*
    * static { // Make the id a little unique String host; try { host =
@@ -112,7 +112,7 @@ public class LonerDistributionManager implements DistributionManager {
   }
 
   public InternalDistributedMember getDistributionManagerId() {
-    return id;
+    return localAddress;
   }
 
   public Set getDistributionManagerIds() {
@@ -134,6 +134,19 @@ public class LonerDistributionManager implements DistributionManager {
       return result;
     }
     return iid;
+  }
+
+  @Override
+  public DistributedMember getMemberWithName(String name) {
+    for (DistributedMember id : canonicalIds.values()) {
+      if (Objects.equals(id.getName(), name)) {
+        return id;
+      }
+    }
+    if (Objects.equals(localAddress.getName(), name)) {
+      return localAddress;
+    }
+    return null;
   }
 
   public Set getOtherDistributionManagerIds() {
@@ -1154,17 +1167,17 @@ public class LonerDistributionManager implements DistributionManager {
 
   /** Returns count of members filling the specified role */
   public int getRoleCount(Role role) {
-    return id.getRoles().contains(role) ? 1 : 0;
+    return localAddress.getRoles().contains(role) ? 1 : 0;
   }
 
   /** Returns true if at least one member is filling the specified role */
   public boolean isRolePresent(Role role) {
-    return id.getRoles().contains(role);
+    return localAddress.getRoles().contains(role);
   }
 
   /** Returns a set of all roles currently in the distributed system. */
   public Set getAllRoles() {
-    return id.getRoles();
+    return localAddress.getRoles();
   }
 
   private int lonerPort = 0;

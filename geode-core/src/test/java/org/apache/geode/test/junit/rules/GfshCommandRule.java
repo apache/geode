@@ -67,7 +67,8 @@ import org.apache.geode.test.junit.assertions.CommandResultAssert;
  * </pre>
  *
  * When using as a ClassRule, if you call connect in a test, you will need to call disconnect after
- * the test as well. See NetstatDUnitTest for example.
+ * the test as well. See {@link org.apache.geode.management.internal.cli.NetstatDUnitTest} for
+ * example.
  */
 public class GfshCommandRule extends DescribedExternalResource {
 

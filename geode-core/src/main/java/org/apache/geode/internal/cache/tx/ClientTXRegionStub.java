@@ -135,7 +135,7 @@ public class ClientTXRegionStub implements TXRegionStub {
   }
 
 
-  public Set getRegionKeysForIteration(LocalRegion currRegion) {
+  public Set getRegionKeysForIteration() {
     return proxy.keySet();
   }
 

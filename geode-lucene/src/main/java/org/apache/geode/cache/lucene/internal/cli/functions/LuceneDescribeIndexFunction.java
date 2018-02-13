@@ -15,9 +15,6 @@
 
 package org.apache.geode.cache.lucene.internal.cli.functions;
 
-import java.util.Collection;
-import java.util.Collections;
-
 import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.execute.Function;
 import org.apache.geode.cache.execute.FunctionContext;
@@ -28,11 +25,8 @@ import org.apache.geode.cache.lucene.internal.LuceneIndexImpl;
 import org.apache.geode.cache.lucene.internal.LuceneServiceImpl;
 import org.apache.geode.cache.lucene.internal.cli.LuceneIndexDetails;
 import org.apache.geode.cache.lucene.internal.cli.LuceneIndexInfo;
-import org.apache.geode.cache.lucene.internal.security.LucenePermission;
 import org.apache.geode.internal.InternalEntity;
-import org.apache.geode.security.ResourcePermission;
-import org.apache.geode.security.ResourcePermission.Operation;
-import org.apache.geode.security.ResourcePermission.Resource;
+import org.apache.geode.internal.cache.execute.InternalFunction;
 
 /**
  * The LuceneDescribeIndexFunction class is a function used to collect the information on a
@@ -48,7 +42,7 @@ import org.apache.geode.security.ResourcePermission.Resource;
  * @see LuceneIndexInfo
  */
 @SuppressWarnings("unused")
-public class LuceneDescribeIndexFunction implements InternalEntity, Function {
+public class LuceneDescribeIndexFunction implements InternalFunction {
 
   private static final long serialVersionUID = 1776072528558670172L;
 
@@ -72,11 +66,5 @@ public class LuceneDescribeIndexFunction implements InternalEntity, Function {
       result = new LuceneIndexDetails(profile, serverName);
     }
     context.getResultSender().lastResult(result);
-  }
-
-  @Override
-  public Collection<ResourcePermission> getRequiredPermissions(String regionName) {
-    return Collections.singleton(
-        new ResourcePermission(Resource.CLUSTER, Operation.READ, LucenePermission.TARGET));
   }
 }

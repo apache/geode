@@ -14,20 +14,14 @@
  */
 package org.apache.geode.connectors.jdbc.internal.cli;
 
-import java.util.Collection;
-import java.util.Collections;
-
 import org.apache.geode.annotations.Experimental;
-import org.apache.geode.cache.execute.Function;
 import org.apache.geode.cache.execute.FunctionContext;
 import org.apache.geode.connectors.jdbc.internal.JdbcConnectorService;
-import org.apache.geode.internal.InternalEntity;
+import org.apache.geode.internal.cache.execute.InternalFunction;
 import org.apache.geode.management.internal.configuration.domain.XmlEntity;
-import org.apache.geode.management.internal.security.ResourcePermissions;
-import org.apache.geode.security.ResourcePermission;
 
 @Experimental
-public abstract class JdbcCliFunction<T1, T2> implements Function<T1>, InternalEntity {
+public abstract class JdbcCliFunction<T1, T2> implements InternalFunction<T1> {
 
   private final FunctionContextArgumentProvider argumentProvider;
   private final ExceptionHandler exceptionHandler;
@@ -57,11 +51,6 @@ public abstract class JdbcCliFunction<T1, T2> implements Function<T1>, InternalE
     } catch (Exception e) {
       exceptionHandler.handleException(context, e);
     }
-  }
-
-  @Override
-  public Collection<ResourcePermission> getRequiredPermissions(String regionName) {
-    return Collections.singletonList(ResourcePermissions.CLUSTER_READ);
   }
 
   String getMember(FunctionContext<T1> context) {

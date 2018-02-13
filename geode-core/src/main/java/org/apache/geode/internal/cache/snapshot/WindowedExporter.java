@@ -32,7 +32,6 @@ import java.util.concurrent.atomic.AtomicBoolean;
 
 import org.apache.geode.cache.EntryDestroyedException;
 import org.apache.geode.cache.Region;
-import org.apache.geode.cache.execute.Function;
 import org.apache.geode.cache.execute.FunctionContext;
 import org.apache.geode.cache.execute.FunctionException;
 import org.apache.geode.cache.execute.FunctionService;
@@ -44,9 +43,9 @@ import org.apache.geode.cache.snapshot.SnapshotOptions;
 import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.distributed.internal.DistributionConfig;
 import org.apache.geode.distributed.internal.ReplyProcessor21;
-import org.apache.geode.internal.InternalEntity;
 import org.apache.geode.internal.cache.LocalRegion;
 import org.apache.geode.internal.cache.execute.InternalExecution;
+import org.apache.geode.internal.cache.execute.InternalFunction;
 import org.apache.geode.internal.cache.execute.LocalResultCollector;
 import org.apache.geode.internal.cache.snapshot.FlowController.Window;
 import org.apache.geode.internal.cache.snapshot.RegionSnapshotServiceImpl.ExportSink;
@@ -157,7 +156,7 @@ public class WindowedExporter<K, V> implements Exporter<K, V> {
    *
    * @see FlowController
    */
-  private static class WindowedExportFunction<K, V> implements Function, InternalEntity {
+  private static class WindowedExportFunction<K, V> implements InternalFunction {
     private static final long serialVersionUID = 1L;
 
     // We must keep a ref here since the ProcessorKeeper only has a weak ref. If

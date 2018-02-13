@@ -489,4 +489,9 @@ public interface DistributionManager extends ReplySender {
   boolean exceptionInThreads();
 
   void clearExceptionInThreads();
+
+  /**
+   * returns the ID of a member having the given name, or null if no such member exists
+   */
+  DistributedMember getMemberWithName(String name);
 }

@@ -34,8 +34,6 @@ import org.apache.geode.security.AuthenticationFailedException;
 
 public class AuthenticationRequestOperationHandler implements
     ProtobufOperationHandler<ConnectionAPI.AuthenticationRequest, ConnectionAPI.AuthenticationResponse> {
-  private static final Logger logger = LogManager.getLogger();
-
   @Override
   public Result<ConnectionAPI.AuthenticationResponse, ClientProtocol.ErrorResponse> process(
       ProtobufSerializationService serializationService,

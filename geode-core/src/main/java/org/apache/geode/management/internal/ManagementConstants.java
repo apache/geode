@@ -180,8 +180,10 @@ public interface ManagementConstants {
   String GATEWAY_SENDER_STOPPED_PREFIX = "GatewaySender Stopped in the VM ";
   String GATEWAY_SENDER_PAUSED_PREFIX = "GatewaySender Paused in the VM ";
   String GATEWAY_SENDER_RESUMED_PREFIX = "GatewaySender Resumed in the VM ";
+  String GATEWAY_SENDER_REMOVED_PREFIX = "GatewaySender Removed in the VM ";
 
   String GATEWAY_RECEIVER_CREATED_PREFIX = "GatewayReceiver Created in the VM ";
+  String GATEWAY_RECEIVER_DESTROYED_PREFIX = "GatewayReceiver Destroyed in the VM ";
   String GATEWAY_RECEIVER_STARTED_PREFIX = "GatewayReceiver Started in the VM ";
   String GATEWAY_RECEIVER_STOPPED_PREFIX = "GatewayReceiver Stopped in the VM ";
 
