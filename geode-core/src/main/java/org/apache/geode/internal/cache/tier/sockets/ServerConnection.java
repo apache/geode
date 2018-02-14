@@ -1814,7 +1814,18 @@ public abstract class ServerConnection implements Runnable {
     this.messageIdExtractor = messageIdExtractor;
   }
 
-  public MessageIdExtractor getMessageIdExtractor() {
-    return this.messageIdExtractor;
+  public void setAuthAttributes() throws Exception {
+    logger.debug("setAttributes()");
+    Object principal = getHandshake().verifyCredentials();
+
+    long uniqueId;
+    if (principal instanceof Subject) {
+      uniqueId = getClientUserAuths(getProxyID()).putSubject((Subject) principal);
+    } else {
+      // this sets principal in map as well....
+      uniqueId = ServerHandshakeProcessor.getUniqueId(this, (Principal) principal);
+      setPrincipal((Principal) principal);
+    }
+    setUserAuthId(uniqueId);
   }
 }

@@ -71,7 +71,7 @@ public class ServerHandshakeProcessor {
 
   protected static final byte REPLY_INVALID = (byte) 61;
 
-  public static Version currentServerVersion = Acceptor.VERSION;
+  public static final Version currentServerVersion = Acceptor.VERSION;
 
   public static boolean readHandshake(ServerConnection connection, SecurityService securityService,
       AcceptorImpl acceptorImpl) {
@@ -87,9 +87,8 @@ public class ServerHandshakeProcessor {
       if (clientVersion.compareTo(Version.GFE_57) >= 0) {
         return readGFEHandshake(connection, clientVersion, securityService, acceptorImpl);
       } else {
-        connection.refuseHandshake(
-            "Unsupported version " + clientVersion + "Server's current version " + Acceptor.VERSION,
-            REPLY_REFUSED);
+        connection.refuseHandshake("Unsupported version " + clientVersion
+            + "Server's current version " + currentServerVersion, REPLY_REFUSED);
         return false;
       }
     } catch (IOException e) {
@@ -113,7 +112,7 @@ public class ServerHandshakeProcessor {
       // Client logging
       connection.refuseHandshake(
           LocalizedStrings.ServerHandShakeProcessor_0_SERVERS_CURRENT_VERSION_IS_1
-              .toLocalizedString(new Object[] {e.getMessage(), Acceptor.VERSION.toString()}),
+              .toLocalizedString(new Object[] {e.getMessage(), currentServerVersion.toString()}),
           REPLY_REFUSED);
       connection.stats.incFailedConnectionAttempts();
       connection.cleanup();
@@ -205,8 +204,7 @@ public class ServerHandshakeProcessor {
       // Hitesh:for older version we should set this
       if (clientVersion.compareTo(Version.GFE_65) < 0
           || connection.getCommunicationMode().isWAN()) {
-        long uniqueId = setAuthAttributes(connection);
-        connection.setUserAuthId(uniqueId);// for older clients < 6.5
+        connection.setAuthAttributes();
       }
     } catch (SocketTimeoutException timeout) {
       logger.warn(LocalizedMessage.create(
@@ -267,21 +265,6 @@ public class ServerHandshakeProcessor {
     return true;
   }
 
-  public static long setAuthAttributes(ServerConnection connection) throws Exception {
-    logger.debug("setAttributes()");
-    Object principal = connection.getHandshake().verifyCredentials();
-
-    long uniqueId;
-    if (principal instanceof Subject) {
-      uniqueId =
-          connection.getClientUserAuths(connection.getProxyID()).putSubject((Subject) principal);
-    } else {
-      // this sets principal in map as well....
-      uniqueId = getUniqueId(connection, (Principal) principal);
-      connection.setPrincipal((Principal) principal);
-    }
-    return uniqueId;
-  }
 
   public static long getUniqueId(ServerConnection connection, Principal principal)
       throws Exception {
@@ -348,7 +331,7 @@ public class ServerHandshakeProcessor {
       } catch (UnsupportedVersionException uve) {
         // Allows higher version of wan site to connect to server
         if (connection.getCommunicationMode().isWAN()) {
-          return Acceptor.VERSION;
+          return currentServerVersion;
         } else {
           SocketAddress sa = socket.getRemoteSocketAddress();
           String sInfo = "";
@@ -359,10 +342,9 @@ public class ServerHandshakeProcessor {
         }
       }
 
-      if (!clientVersion.compatibleWith(Acceptor.VERSION)) {
-        throw new IncompatibleVersionException(clientVersion, Acceptor.VERSION);// we can throw this
-                                                                                // to restrict
-      } // Backward Compatibilty Support to limited no of versions
+      if (!clientVersion.compatibleWith(currentServerVersion)) {
+        throw new IncompatibleVersionException(clientVersion, currentServerVersion);
+      }
       return clientVersion;
     } finally {
       if (soTimeout != -1) {
