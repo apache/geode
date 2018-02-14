@@ -54,7 +54,7 @@ public interface AuthInitialize extends CacheCallback {
   /**
    *
    * @since Geode 1.0.
-   * @deprecated in Geode 1.5. Never called by the product. Use {link #init(LogWriter systemLogger,
+   * @deprecated in Geode 1.5. Never called by the product. Use {@link #init(LogWriter systemLogger,
    *             LogWriter securityLogger)}
    */
   default void init() {}
@@ -81,7 +81,7 @@ public interface AuthInitialize extends CacheCallback {
    *
    * @return the credentials to be used for the given <code>server</code>
    *
-   *         When using Integrated security, all members, peer/client will use the same credentials.
+   *         When using Integrated security, all members, per/client will use the same credentials.
    *         but we still need to use these params to support the old authenticator
    */
   Properties getCredentials(Properties securityProps, DistributedMember server, boolean isPeer)
@@ -92,7 +92,7 @@ public interface AuthInitialize extends CacheCallback {
    * @param securityProps
    * @return the credentials to be used. It needs to contain "security-username" and
    *         "security-password"
-   * @deprecated in Geode 1.3. Never called by the product. Use {link #getCredentials(Properties
+   * @deprecated in Geode 1.3. Never called by the product. Use {@link #getCredentials(Properties
    *             securityProps, DistributedMember server, boolean isPeer)}
    */
   default Properties getCredentials(Properties securityProps) {
