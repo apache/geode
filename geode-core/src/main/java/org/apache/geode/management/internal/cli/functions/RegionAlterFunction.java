@@ -147,7 +147,7 @@ public class RegionAlterFunction implements InternalFunction {
       if (entryIdleCustomExpiry.equals(ClassName.EMPTY)) {
         mutator.setCustomEntryIdleTimeout(null);
       } else {
-        mutator.setCustomEntryIdleTimeout(entryIdleCustomExpiry.newInstance());
+        mutator.setCustomEntryIdleTimeout(entryIdleCustomExpiry.newInstance(cache));
       }
     }
 
@@ -156,7 +156,7 @@ public class RegionAlterFunction implements InternalFunction {
       if (entryTTLCustomExpiry.equals(ClassName.EMPTY)) {
         mutator.setCustomEntryTimeToLive(null);
       } else {
-        mutator.setCustomEntryTimeToLive(entryTTLCustomExpiry.newInstance());
+        mutator.setCustomEntryTimeToLive(entryTTLCustomExpiry.newInstance(cache));
       }
     }
 

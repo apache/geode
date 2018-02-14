@@ -189,12 +189,13 @@ public class RegionCreateFunction implements InternalFunction {
     }
 
     if (regionCreateArgs.getEntryIdleTimeCustomExpiry() != null) {
-      factory
-          .setCustomEntryIdleTimeout(regionCreateArgs.getEntryIdleTimeCustomExpiry().newInstance());
+      factory.setCustomEntryIdleTimeout(
+          regionCreateArgs.getEntryIdleTimeCustomExpiry().newInstance(cache));
     }
 
     if (regionCreateArgs.getEntryTTLCustomExpiry() != null) {
-      factory.setCustomEntryTimeToLive(regionCreateArgs.getEntryTTLCustomExpiry().newInstance());
+      factory
+          .setCustomEntryTimeToLive(regionCreateArgs.getEntryTTLCustomExpiry().newInstance(cache));
     }
 
     final RegionFunctionArgs.ExpirationAttrs entryExpirationTTL =
