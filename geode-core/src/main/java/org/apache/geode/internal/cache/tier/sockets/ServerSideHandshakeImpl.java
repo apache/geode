@@ -24,12 +24,15 @@ import java.net.Socket;
 import java.security.Principal;
 import java.util.Properties;
 
+import org.apache.geode.DataSerializer;
 import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.distributed.DistributedSystem;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
+import org.apache.geode.internal.HeapDataOutputStream;
 import org.apache.geode.internal.Version;
 import org.apache.geode.internal.VersionedDataInputStream;
 import org.apache.geode.internal.VersionedDataOutputStream;
+import org.apache.geode.internal.VersionedDataStream;
 import org.apache.geode.internal.cache.tier.CommunicationMode;
 import org.apache.geode.internal.cache.tier.Encryptor;
 import org.apache.geode.internal.cache.tier.ServerSideHandshake;
@@ -151,7 +154,15 @@ public class ServerSideHandshakeImpl extends Handshake implements ServerSideHand
 
     // Write the server's member
     DistributedMember member = this.system.getDistributedMember();
-    ServerHandshakeProcessor.writeServerMember(member, dos);
+
+    Version v = Version.CURRENT;
+    if (dos instanceof VersionedDataStream) {
+      v = ((VersionedDataStream) dos).getVersion();
+    }
+    HeapDataOutputStream hdos = new HeapDataOutputStream(v);
+    DataSerializer.writeObject(member, hdos);
+    DataSerializer.writeByteArray(hdos.toByteArray(), dos);
+    hdos.close();
 
     // Write no message
     dos.writeUTF("");

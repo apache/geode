@@ -16,28 +16,16 @@
 package org.apache.geode.internal.cache.tier.sockets;
 
 import java.io.DataOutputStream;
-import java.io.EOFException;
 import java.io.IOException;
-import java.io.InputStream;
 import java.io.OutputStream;
-import java.net.Socket;
-import java.net.SocketAddress;
-
-import org.apache.logging.log4j.Logger;
 
 import org.apache.geode.DataSerializer;
-import org.apache.geode.cache.IncompatibleVersionException;
-import org.apache.geode.cache.UnsupportedVersionException;
-import org.apache.geode.cache.VersionException;
 import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.internal.HeapDataOutputStream;
 import org.apache.geode.internal.Version;
 import org.apache.geode.internal.VersionedDataStream;
 import org.apache.geode.internal.cache.tier.Acceptor;
-import org.apache.geode.internal.i18n.LocalizedStrings;
-import org.apache.geode.internal.logging.LogService;
-import org.apache.geode.internal.security.SecurityService;
 
 /**
  * A <code>ServerHandShakeProcessor</code> verifies the client's version compatibility with server.
@@ -86,8 +74,10 @@ public class ServerHandshakeProcessor {
 
     // Write the server's member
     DistributedMember member = InternalDistributedSystem.getAnyInstance().getDistributedMember();
-
-    writeServerMember(member, dos);
+    HeapDataOutputStream memberDos = new HeapDataOutputStream(Version.CURRENT);
+    DataSerializer.writeObject(member, memberDos);
+    DataSerializer.writeByteArray(memberDos.toByteArray(), dos);
+    memberDos.close();
 
     // Write the refusal message
     if (message == null) {
@@ -104,18 +94,4 @@ public class ServerHandshakeProcessor {
     out.flush();
   }
 
-  // Keep the writeServerMember/readServerMember compatible with C++ native
-  // client
-  protected static void writeServerMember(DistributedMember member, DataOutputStream dos)
-      throws IOException {
-
-    Version v = Version.CURRENT;
-    if (dos instanceof VersionedDataStream) {
-      v = ((VersionedDataStream) dos).getVersion();
-    }
-    HeapDataOutputStream hdos = new HeapDataOutputStream(v);
-    DataSerializer.writeObject(member, hdos);
-    DataSerializer.writeByteArray(hdos.toByteArray(), dos);
-    hdos.close();
-  }
 }
