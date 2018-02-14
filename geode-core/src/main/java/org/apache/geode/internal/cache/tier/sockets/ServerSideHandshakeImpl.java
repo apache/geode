@@ -42,6 +42,8 @@ import org.apache.geode.pdx.internal.PeerTypeRegistration;
 import org.apache.geode.security.AuthenticationRequiredException;
 
 public class ServerSideHandshakeImpl extends Handshake implements ServerSideHandshake {
+  private static final Version currentServerVersion =
+      ServerSideHandshakeFactory.currentServerVersion;
   private Version clientVersion;
 
   private final byte replyCode;
@@ -146,7 +148,7 @@ public class ServerSideHandshakeImpl extends Handshake implements ServerSideHand
 
     // additional byte of wan site needs to send for Gateway BC
     if (communicationMode.isWAN()) {
-      Version.writeOrdinal(dos, ServerHandshakeProcessor.currentServerVersion.ordinal(), true);
+      Version.writeOrdinal(dos, currentServerVersion.ordinal(), true);
     }
 
     dos.writeByte(endpointType);
@@ -181,13 +183,13 @@ public class ServerSideHandshakeImpl extends Handshake implements ServerSideHand
     // Write the distributed system id if this is a 6.6 or greater client
     // on the remote side of the gateway
     if (communicationMode.isWAN() && this.clientVersion.compareTo(Version.GFE_66) >= 0
-        && ServerHandshakeProcessor.currentServerVersion.compareTo(Version.GFE_66) >= 0) {
+        && currentServerVersion.compareTo(Version.GFE_66) >= 0) {
       dos.writeByte(((InternalDistributedSystem) this.system).getDistributionManager()
           .getDistributedSystemId());
     }
 
     if ((communicationMode.isWAN()) && this.clientVersion.compareTo(Version.GFE_80) >= 0
-        && ServerHandshakeProcessor.currentServerVersion.compareTo(Version.GFE_80) >= 0) {
+        && currentServerVersion.compareTo(Version.GFE_80) >= 0) {
       int pdxSize = PeerTypeRegistration.getPdxRegistrySize();
       dos.writeInt(pdxSize);
     }

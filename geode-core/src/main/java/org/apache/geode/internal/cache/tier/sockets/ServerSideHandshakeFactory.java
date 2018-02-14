@@ -40,8 +40,10 @@ import org.apache.geode.security.AuthenticationFailedException;
 import org.apache.geode.security.AuthenticationRequiredException;
 
 class ServerSideHandshakeFactory {
+  private static byte REPLY_REFUSED = AcceptorImpl.REPLY_REFUSED;
+
   private static final Logger logger = LogService.getLogger();
-  private static final Version currentServerVersion = Acceptor.VERSION;
+  static final Version currentServerVersion = Acceptor.VERSION;
 
   static boolean readHandshake(ServerConnection connection, SecurityService securityService,
       AcceptorImpl acceptorImpl) {
@@ -58,8 +60,7 @@ class ServerSideHandshakeFactory {
         return readGFEHandshake(connection, clientVersion, securityService, acceptorImpl);
       } else {
         connection.refuseHandshake("Unsupported version " + clientVersion
-            + "Server's current version " + currentServerVersion,
-            ServerHandshakeProcessor.REPLY_REFUSED);
+            + "Server's current version " + currentServerVersion, REPLY_REFUSED);
         return false;
       }
     } catch (IOException e) {
@@ -74,7 +75,7 @@ class ServerSideHandshakeFactory {
       // Server logging
       logger.warn("{} {}", connection.getName(), uve.getMessage(), uve);
       // Client logging
-      connection.refuseHandshake(uve.getMessage(), ServerHandshakeProcessor.REPLY_REFUSED);
+      connection.refuseHandshake(uve.getMessage(), REPLY_REFUSED);
       connection.stats.incFailedConnectionAttempts();
       connection.cleanup();
     } catch (Exception e) {
@@ -84,7 +85,7 @@ class ServerSideHandshakeFactory {
       connection.refuseHandshake(
           LocalizedStrings.ServerHandShakeProcessor_0_SERVERS_CURRENT_VERSION_IS_1
               .toLocalizedString(new Object[] {e.getMessage(), currentServerVersion.toString()}),
-          ServerHandshakeProcessor.REPLY_REFUSED);
+          REPLY_REFUSED);
       connection.stats.incFailedConnectionAttempts();
       connection.cleanup();
     }
@@ -163,7 +164,7 @@ class ServerSideHandshakeFactory {
     } catch (Exception ex) {
       logger.warn("{} {}", connection.getName(), ex.getLocalizedMessage());
       connection.stats.incFailedConnectionAttempts();
-      connection.refuseHandshake(ex.getMessage(), ServerHandshakeProcessor.REPLY_REFUSED);
+      connection.refuseHandshake(ex.getMessage(), REPLY_REFUSED);
       connection.cleanup();
       return false;
     }

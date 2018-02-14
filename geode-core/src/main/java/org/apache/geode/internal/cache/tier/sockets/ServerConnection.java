@@ -348,7 +348,7 @@ public abstract class ServerConnection implements Runnable {
             logger.warn(LocalizedMessage
                 .create(LocalizedStrings.ServerConnection_RECEIVED_UNKNOWN_HANDSHAKE_REPLY_CODE));
             refuseHandshake(LocalizedStrings.ServerConnection_RECEIVED_UNKNOWN_HANDSHAKE_REPLY_CODE
-                .toLocalizedString(), ServerHandshakeProcessor.REPLY_INVALID);
+                .toLocalizedString(), AcceptorImpl.REPLY_INVALID);
             return false;
           }
         } else {
@@ -578,7 +578,7 @@ public abstract class ServerConnection implements Runnable {
 
   protected void refuseHandshake(String msg, byte exception) {
     try {
-      ServerHandshakeProcessor.refuse(this.theSocket.getOutputStream(), msg, exception);
+      acceptor.refuseHandshake(this.theSocket.getOutputStream(), msg, exception);
     } catch (IOException ignore) {
     } finally {
       this.stats.incFailedConnectionAttempts();
