@@ -14,6 +14,8 @@
  */
 package org.apache.geode.internal.cache.tier.sockets;
 
+import static org.apache.geode.distributed.ConfigurationProperties.SECURITY_CLIENT_ACCESSOR;
+import static org.apache.geode.distributed.ConfigurationProperties.SECURITY_CLIENT_ACCESSOR_PP;
 import static org.apache.geode.distributed.ConfigurationProperties.SECURITY_CLIENT_AUTHENTICATOR;
 
 import java.io.ByteArrayInputStream;
@@ -39,6 +41,7 @@ import org.apache.shiro.util.ThreadState;
 import org.apache.geode.CancelException;
 import org.apache.geode.DataSerializer;
 import org.apache.geode.SystemFailure;
+import org.apache.geode.cache.UnsupportedVersionException;
 import org.apache.geode.cache.client.internal.AbstractOp;
 import org.apache.geode.cache.client.internal.Connection;
 import org.apache.geode.distributed.DistributedSystem;
@@ -357,6 +360,7 @@ public abstract class ServerConnection implements Runnable {
     }
     return true;
   }
+
 
   protected Map getCommands() {
     return this.commands;
@@ -1023,7 +1027,7 @@ public abstract class ServerConnection implements Runnable {
         uniqueId = this.clientUserAuths.putSubject(subject);
       } else {
         // this sets principal in map as well....
-        uniqueId = ServerHandshakeProcessor.getUniqueId(this, (Principal) principal);
+        uniqueId = getUniqueId((Principal) principal);
       }
 
       // create secure part which will be send in respones
@@ -1814,7 +1818,7 @@ public abstract class ServerConnection implements Runnable {
     this.messageIdExtractor = messageIdExtractor;
   }
 
-  public void setAuthAttributes() throws Exception {
+  void setAuthAttributes() throws Exception {
     logger.debug("setAttributes()");
     Object principal = getHandshake().verifyCredentials();
 
@@ -1823,9 +1827,51 @@ public abstract class ServerConnection implements Runnable {
       uniqueId = getClientUserAuths(getProxyID()).putSubject((Subject) principal);
     } else {
       // this sets principal in map as well....
-      uniqueId = ServerHandshakeProcessor.getUniqueId(this, (Principal) principal);
+      uniqueId = getUniqueId((Principal) principal);
       setPrincipal((Principal) principal);
     }
     setUserAuthId(uniqueId);
+  }
+
+  /**
+   * For legacy auth?
+   */
+  private long getUniqueId(Principal principal) throws Exception {
+    InternalLogWriter securityLogWriter = getSecurityLogWriter();
+    DistributedSystem system = getDistributedSystem();
+    Properties systemProperties = system.getProperties();
+    String authzFactoryName = systemProperties.getProperty(SECURITY_CLIENT_ACCESSOR);
+    String postAuthzFactoryName = systemProperties.getProperty(SECURITY_CLIENT_ACCESSOR_PP);
+    AuthorizeRequest authzRequest = null;
+    AuthorizeRequestPP postAuthzRequest = null;
+
+    if (authzFactoryName != null && authzFactoryName.length() > 0) {
+      if (securityLogWriter.fineEnabled())
+        securityLogWriter.fine(
+            getName() + ": Setting pre-process authorization callback to: " + authzFactoryName);
+      if (principal == null) {
+        if (securityLogWriter.warningEnabled()) {
+          securityLogWriter.warning(
+              LocalizedStrings.ServerHandShakeProcessor_0_AUTHORIZATION_ENABLED_BUT_AUTHENTICATION_CALLBACK_1_RETURNED_WITH_NULL_CREDENTIALS_FOR_PROXYID_2,
+              new Object[] {getName(), SECURITY_CLIENT_AUTHENTICATOR, getProxyID()});
+        }
+      }
+      authzRequest = new AuthorizeRequest(authzFactoryName, getProxyID(), principal, getCache());
+    }
+    if (postAuthzFactoryName != null && postAuthzFactoryName.length() > 0) {
+      if (securityLogWriter.fineEnabled())
+        securityLogWriter.fine(getName() + ": Setting post-process authorization callback to: "
+            + postAuthzFactoryName);
+      if (principal == null) {
+        if (securityLogWriter.warningEnabled()) {
+          securityLogWriter.warning(
+              LocalizedStrings.ServerHandShakeProcessor_0_POSTPROCESS_AUTHORIZATION_ENABLED_BUT_NO_AUTHENTICATION_CALLBACK_2_IS_CONFIGURED,
+              new Object[] {getName(), SECURITY_CLIENT_AUTHENTICATOR});
+        }
+      }
+      postAuthzRequest =
+          new AuthorizeRequestPP(postAuthzFactoryName, getProxyID(), principal, getCache());
+    }
+    return setUserAuthorizeAndPostAuthorizeRequest(authzRequest, postAuthzRequest);
   }
 }
