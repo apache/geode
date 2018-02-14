@@ -33,8 +33,8 @@ import org.apache.geode.distributed.DistributedSystem;
  */
 public interface AuthInitialize extends CacheCallback {
 
-  public static String SECURITY_USERNAME = "security-username";
-  public static String SECURITY_PASSWORD = "security-password";
+  String SECURITY_USERNAME = "security-username";
+  String SECURITY_PASSWORD = "security-password";
 
   /**
    * Initialize the callback for a client/peer. This is invoked when a new connection from a
@@ -80,7 +80,7 @@ public interface AuthInitialize extends CacheCallback {
    * @throws AuthenticationFailedException in case of failure to obtain the credentials
    *
    * @return the credentials to be used for the given <code>server</code>
-   *
+   *         It needs to contain "security-username" and "security-password"
    *         When using Integrated security, all members, peer/client will use the same credentials.
    *         but we still need to use these params to support the old authenticator
    */
