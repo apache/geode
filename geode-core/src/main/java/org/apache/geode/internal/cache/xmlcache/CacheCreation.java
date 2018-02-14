@@ -2265,4 +2265,9 @@ public class CacheCreation implements InternalCache {
       List<InitialImageOperation.Entry> entriesToSynchronize) {
     throw new UnsupportedOperationException(LocalizedStrings.SHOULDNT_INVOKE.toLocalizedString());
   }
+
+  @Override
+  public Object convertPdxInstanceIfNeeded(Object obj) {
+    throw new UnsupportedOperationException(LocalizedStrings.SHOULDNT_INVOKE.toLocalizedString());
+  }
 }
