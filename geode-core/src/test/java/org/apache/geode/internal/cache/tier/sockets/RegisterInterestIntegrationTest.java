@@ -300,18 +300,13 @@ public class RegisterInterestIntegrationTest {
   }
 
   @Test
-  public void readyForEventsBeforeAnyPoolsAreCreatedShouldResultInIllegalStateException()
+  public void readyForEventsBeforeAnyPoolsAreCreatedShouldNotResultInIllegalStateException()
       throws Exception {
 
     ClientCache clientCache = createClientCache(locatorPort, true);
 
-    try {
-      clientCache.readyForEvents();
-      fail();
-    } catch (IllegalStateException e) {
-      assertEquals("Ready for Events called, but no pool to execute on", e.getMessage());
-    }
-
+    clientCache.readyForEvents();
+    // No exception should be thrown.
   }
 
   private ClientCache createClientCache(Integer locatorPort) {
