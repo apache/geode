@@ -106,8 +106,7 @@ public abstract class ServerConnection implements Runnable {
 
   protected final CacheServerStats stats;
 
-  // private static boolean useDataStream =
-  // System.getProperty("hct.useDataStream", "false").equals("true");
+  private final ServerSideHandshakeFactory handshakeFactory = new ServerSideHandshakeFactory();
 
   // The key is the size of each ByteBuffer. The value is a queue of byte buffers all of that size.
   private static final ConcurrentHashMap<Integer, LinkedBlockingQueue<ByteBuffer>> commBufferMap =
@@ -332,9 +331,8 @@ public abstract class ServerConnection implements Runnable {
         ServerSideHandshake readHandshake;
         try {
 
-          readHandshake =
-              ServerSideHandshakeFactory.readHandshake(getSocket(), getHandShakeTimeout(),
-                  getCommunicationMode(), getDistributedSystem(), getSecurityService());
+          readHandshake = handshakeFactory.readHandshake(getSocket(), getHandShakeTimeout(),
+              getCommunicationMode(), getDistributedSystem(), getSecurityService());
 
         } catch (SocketTimeoutException timeout) {
           logger.warn(LocalizedMessage.create(

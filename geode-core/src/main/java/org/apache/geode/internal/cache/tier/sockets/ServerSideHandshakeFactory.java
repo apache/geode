@@ -38,9 +38,8 @@ class ServerSideHandshakeFactory {
   private static final Logger logger = LogService.getLogger();
   static final Version currentServerVersion = Acceptor.VERSION;
 
-  static ServerSideHandshake readHandshake(Socket socket, int timeout,
-      CommunicationMode communicationMode, DistributedSystem system,
-      SecurityService securityService) throws Exception {
+  ServerSideHandshake readHandshake(Socket socket, int timeout, CommunicationMode communicationMode,
+      DistributedSystem system, SecurityService securityService) throws Exception {
     // Read the version byte from the socket
     Version clientVersion = readClientVersion(socket, timeout, communicationMode.isWAN());
 
@@ -57,7 +56,7 @@ class ServerSideHandshakeFactory {
         securityService);
   }
 
-  private static Version readClientVersion(Socket socket, int timeout, boolean isWan)
+  private Version readClientVersion(Socket socket, int timeout, boolean isWan)
       throws IOException, VersionException {
     int soTimeout = -1;
     try {
