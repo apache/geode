@@ -17,8 +17,8 @@ package org.apache.geode.internal.datasource;
 /**
  * JavaBean for datasource and poold properties.
  *
- * This class now contains only those paramaters which are needed by the Gemfire DataSource
- * configuration. This maps to those paramaters which are specified as attributes of
+ * This class now contains only those parameters which are needed by the Gemfire DataSource
+ * configuration. This maps to those parameters which are specified as attributes of
  * <jndi-binding>tag. Those parameters which are specified as attributes of <property>tag are not
  * stored.
  *

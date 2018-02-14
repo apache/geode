@@ -14,12 +14,7 @@
  */
 package org.apache.geode.management.internal.configuration.domain;
 
-import java.io.DataInput;
-import java.io.DataOutput;
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-import java.io.IOException;
+import java.io.*;
 import java.util.HashSet;
 import java.util.Properties;
 import java.util.Set;
@@ -34,7 +29,7 @@ import org.xml.sax.SAXException;
 
 import org.apache.geode.DataSerializable;
 import org.apache.geode.DataSerializer;
-import org.apache.geode.internal.util.CollectionUtils;
+import org.apache.geode.internal.cache.xmlcache.CacheXmlGenerator;
 import org.apache.geode.management.internal.configuration.utils.XmlUtils;
 
 /**
@@ -72,6 +67,14 @@ public class Configuration implements DataSerializable {
     this.propertiesFileName = configName + ".properties";
     this.gemfireProperties = new Properties();
     this.jarNames = new HashSet<String>();
+    this.cacheXmlContent = generateInitialXmlContent();
+  }
+
+  private String generateInitialXmlContent() {
+    StringWriter sw = new StringWriter();
+    PrintWriter pw = new PrintWriter(sw);
+    CacheXmlGenerator.generateDefault(pw);
+    return sw.toString();
   }
 
   public String getCacheXmlContent() {
