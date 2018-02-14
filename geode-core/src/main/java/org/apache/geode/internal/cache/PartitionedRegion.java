@@ -391,7 +391,7 @@ public class PartitionedRegion extends LocalRegion
   /**
    * Maps each PR to a prId. This prId will uniquely identify the PR.
    */
-  static final PRIdMap prIdToPR = new PRIdMap();
+  private static final PRIdMap prIdToPR = new PRIdMap();
 
   /**
    * Flag to indicate whether region is closed
@@ -462,6 +462,10 @@ public class PartitionedRegion extends LocalRegion
   private boolean enableConflation;
 
   private final Object indexLock = new Object();
+
+  static PRIdMap getPrIdToPR() {
+    return prIdToPR;
+  }
 
   /**
    * Byte 0 = no NWHOP Byte 1 = NWHOP to servers in same server-grp Byte 2 = NWHOP tp servers in

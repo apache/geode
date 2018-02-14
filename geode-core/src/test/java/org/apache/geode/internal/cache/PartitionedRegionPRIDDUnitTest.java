@@ -229,12 +229,12 @@ public class PartitionedRegionPRIDDUnitTest extends CacheTestCase {
           fail("Different PRID generated equal to " + prIdSet.size());
 
         // no of PRID generated in prIdToPR should be equal to number of partition region
-        if (PartitionedRegion.prIdToPR.size() != noPartitionRegions)
-          fail("number of entries in the prIdToPR is " + PartitionedRegion.prIdToPR.size());
+        if (PartitionedRegion.getPrIdToPR().size() != noPartitionRegions)
+          fail("number of entries in the prIdToPR is " + PartitionedRegion.getPrIdToPR().size());
 
         // checking uniqueness of prId in prIdToPR
-        SortedSet prIdPRSet = new TreeSet(PartitionedRegion.prIdToPR.keySet());
-        if (prIdPRSet.size() != PartitionedRegion.prIdToPR.size())
+        SortedSet prIdPRSet = new TreeSet(PartitionedRegion.getPrIdToPR().keySet());
+        if (prIdPRSet.size() != PartitionedRegion.getPrIdToPR().size())
           fail("Duplicate PRID are generated in prIdToPR");
 
         LogWriterUtils.getLogWriter().info("Size of allPartition region : " + prIdSet.size());
