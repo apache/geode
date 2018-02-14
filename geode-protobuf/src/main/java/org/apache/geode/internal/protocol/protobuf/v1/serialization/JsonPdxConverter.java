@@ -14,6 +14,8 @@
  */
 package org.apache.geode.internal.protocol.protobuf.v1.serialization;
 
+import org.apache.logging.log4j.Logger;
+
 import org.apache.geode.annotations.Experimental;
 import org.apache.geode.internal.protocol.protobuf.v1.serialization.exception.DecodingException;
 import org.apache.geode.internal.protocol.protobuf.v1.serialization.exception.EncodingException;
@@ -23,6 +25,8 @@ import org.apache.geode.pdx.PdxInstance;
 
 @Experimental
 public class JsonPdxConverter implements TypeConverter<String, PdxInstance> {
+  private static final Logger logger = LogService.getLogger();
+
   @Override
   public PdxInstance decode(String incoming) throws DecodingException {
     try {
@@ -37,6 +41,7 @@ public class JsonPdxConverter implements TypeConverter<String, PdxInstance> {
     try {
       return JSONFormatter.toJSON(incoming);
     } catch (JSONFormatterException ex) {
+      logger.info(ex);
       throw new EncodingException("Could not encode PDX object as JSON", ex);
     }
   }

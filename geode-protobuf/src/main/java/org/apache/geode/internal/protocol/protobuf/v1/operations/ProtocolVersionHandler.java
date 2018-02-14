@@ -47,7 +47,9 @@ public class ProtocolVersionHandler {
     handshakeResponse.writeDelimitedTo(outputStream);
     statistics.messageSent(handshakeResponse.getSerializedSize());
     if (!versionAccepted) {
-      throw new IOException("Incompatible protobuf version.");
+      final String message = "Incompatible protobuf version.";
+      logger.info(message);
+      throw new IOException(message);
     }
 
     return versionAccepted;

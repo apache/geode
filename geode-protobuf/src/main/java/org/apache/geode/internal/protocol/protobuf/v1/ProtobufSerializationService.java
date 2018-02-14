@@ -15,8 +15,10 @@
 package org.apache.geode.internal.protocol.protobuf.v1;
 
 import com.google.protobuf.ByteString;
+import org.apache.logging.log4j.Logger;
 
 import org.apache.geode.annotations.Experimental;
+import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.internal.protocol.protobuf.v1.serialization.JsonPdxConverter;
 import org.apache.geode.internal.protocol.protobuf.v1.serialization.SerializationService;
 import org.apache.geode.internal.protocol.protobuf.v1.serialization.exception.DecodingException;
@@ -26,6 +28,7 @@ import org.apache.geode.pdx.PdxInstance;
 
 @Experimental
 public class ProtobufSerializationService implements SerializationService<BasicTypes.EncodedValue> {
+  private static final Logger logger = LogService.getLogger();
   private final JsonPdxConverter jsonPdxConverter = new JsonPdxConverter();
 
   public ProtobufSerializationService() {}
@@ -88,7 +91,9 @@ public class ProtobufSerializationService implements SerializationService<BasicT
         }
       }
     } catch (UnknownProtobufEncodingType unknownProtobufEncodingType) {
-      throw new EncodingException("No protobuf encoding for type " + value.getClass().getName());
+      final String message = "No protobuf encoding for type " + value.getClass().getName();
+      logger.info(message);
+      throw new EncodingException(message);
     }
     return builder.build();
   }
@@ -163,8 +168,10 @@ public class ProtobufSerializationService implements SerializationService<BasicT
           return protobufEncodingTypes;
         }
       }
-      throw new UnknownProtobufEncodingType(
-          "There is no primitive protobuf type mapping for class:" + unencodedValueClass);
+      final String message =
+          "There is no primitive protobuf type mapping for class:" + unencodedValueClass;
+      logger.info(message);
+      throw new UnknownProtobufEncodingType(message);
     }
   }
 

@@ -17,6 +17,8 @@ package org.apache.geode.internal.protocol.protobuf.v1.operations;
 import java.util.List;
 import java.util.Set;
 
+import org.apache.logging.log4j.Logger;
+
 import org.apache.geode.cache.execute.Execution;
 import org.apache.geode.cache.execute.Function;
 import org.apache.geode.cache.execute.FunctionException;
@@ -24,6 +26,7 @@ import org.apache.geode.cache.execute.FunctionService;
 import org.apache.geode.cache.execute.ResultCollector;
 import org.apache.geode.internal.exception.InvalidExecutionContextException;
 import org.apache.geode.internal.i18n.LocalizedStrings;
+import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.internal.protocol.operations.ProtobufOperationHandler;
 import org.apache.geode.internal.protocol.protobuf.v1.BasicTypes;
 import org.apache.geode.internal.protocol.protobuf.v1.ClientProtocol;
@@ -38,7 +41,7 @@ import org.apache.geode.security.NotAuthorizedException;
 
 public abstract class AbstractFunctionRequestOperationHandler<Req, Resp>
     implements ProtobufOperationHandler<Req, Resp> {
-
+  private static final Logger logger = LogService.getLogger();
 
   @Override
   public Result<Resp, ClientProtocol.ErrorResponse> process(
@@ -65,10 +68,10 @@ public abstract class AbstractFunctionRequestOperationHandler<Req, Resp>
       // check security for function.
       function.getRequiredPermissions(regionName).forEach(securityService::authorize);
     } catch (NotAuthorizedException ex) {
-      return Failure.of(ClientProtocol.ErrorResponse.newBuilder()
-          .setError(BasicTypes.Error.newBuilder()
-              .setMessage("Authorization failed for function \"" + functionID + "\"")
-              .setErrorCode(BasicTypes.ErrorCode.AUTHORIZATION_FAILED))
+      final String message = "Authorization failed for function \"" + functionID + "\"";
+      logger.warn(message, ex);
+      return Failure.of(ClientProtocol.ErrorResponse.newBuilder().setError(BasicTypes.Error
+          .newBuilder().setMessage(message).setErrorCode(BasicTypes.ErrorCode.AUTHORIZATION_FAILED))
           .build());
     }
 
@@ -102,15 +105,17 @@ public abstract class AbstractFunctionRequestOperationHandler<Req, Resp>
         return buildResultMessage(serializationService);
       }
     } catch (FunctionException ex) {
-      return Failure.of(ClientProtocol.ErrorResponse.newBuilder()
-          .setError(BasicTypes.Error.newBuilder().setErrorCode(BasicTypes.ErrorCode.SERVER_ERROR)
-              .setMessage("Function execution failed: " + ex.toString()))
-          .build());
+      final String message = "Function execution failed: " + ex.toString();
+      logger.info(message, ex);
+      return Failure
+          .of(ClientProtocol.ErrorResponse.newBuilder().setError(BasicTypes.Error.newBuilder()
+              .setErrorCode(BasicTypes.ErrorCode.SERVER_ERROR).setMessage(message)).build());
     } catch (EncodingException ex) {
-      return Failure.of(ClientProtocol.ErrorResponse.newBuilder()
-          .setError(BasicTypes.Error.newBuilder().setErrorCode(BasicTypes.ErrorCode.SERVER_ERROR)
-              .setMessage("Encoding failed: " + ex.toString()))
-          .build());
+      final String message = "Encoding failed: " + ex.toString();
+      logger.info(message, ex);
+      return Failure
+          .of(ClientProtocol.ErrorResponse.newBuilder().setError(BasicTypes.Error.newBuilder()
+              .setErrorCode(BasicTypes.ErrorCode.SERVER_ERROR).setMessage(message)).build());
     }
   }
 
@@ -139,7 +144,4 @@ public abstract class AbstractFunctionRequestOperationHandler<Req, Resp>
 
   protected abstract Result buildResultMessage(ProtobufSerializationService serializationService,
       List<Object> results) throws EncodingException;
-
-
-
 }
