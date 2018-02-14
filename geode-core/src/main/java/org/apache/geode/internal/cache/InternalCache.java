@@ -348,9 +348,9 @@ public interface InternalCache extends Cache, Extensible<Cache>, CacheTime {
   void closeDiskStores();
 
   /**
-   * If obj is a PdxInstance and pdxReadSerialized is not true then
+   * If obj is a PdxInstance and pdxReadSerialized is not true
    * then convert obj by calling PdxInstance.getObject.
-   * 
+   *
    * @return either the original obj if no conversion was needed;
    *         or the result of calling PdxInstance.getObject on obj.
    */
