@@ -26,6 +26,7 @@ import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.Region;
 import org.apache.geode.cache.query.IndexType;
 import org.apache.geode.distributed.DistributedSystem;
+import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.test.junit.categories.IntegrationTest;
 
 @Category(IntegrationTest.class)
@@ -38,12 +39,12 @@ public class PartitionedIndexJUnitTest {
     final int THREAD_POOL_SIZE = 20;
 
     Region region = mock(Region.class);
-    Cache cache = mock(Cache.class);
+    InternalCache cache = mock(InternalCache.class);
     when(region.getCache()).thenReturn(cache);
     DistributedSystem distributedSystem = mock(DistributedSystem.class);
     when(cache.getDistributedSystem()).thenReturn(distributedSystem);
-    PartitionedIndex partitionedIndex = new PartitionedIndex(IndexType.FUNCTIONAL, "dummyString",
-        region, "dummyString", "dummyString", "dummyString");
+    PartitionedIndex partitionedIndex = new PartitionedIndex(cache, IndexType.FUNCTIONAL,
+        "dummyString", region, "dummyString", "dummyString", "dummyString");
     Runnable populateSetTask = () -> {
       for (int i = 0; i < DATA_SIZE_TO_BE_POPULATED; i++) {
         partitionedIndex.mapIndexKeys.add("" + i);

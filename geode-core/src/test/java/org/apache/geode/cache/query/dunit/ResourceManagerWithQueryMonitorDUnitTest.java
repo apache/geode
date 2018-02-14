@@ -14,8 +14,13 @@
  */
 package org.apache.geode.cache.query.dunit;
 
-import static org.apache.geode.distributed.ConfigurationProperties.*;
-import static org.apache.geode.test.dunit.Assert.*;
+import static org.apache.geode.distributed.ConfigurationProperties.LOCATORS;
+import static org.apache.geode.distributed.ConfigurationProperties.MCAST_PORT;
+import static org.apache.geode.test.dunit.Assert.assertEquals;
+import static org.apache.geode.test.dunit.Assert.assertFalse;
+import static org.apache.geode.test.dunit.Assert.assertNotNull;
+import static org.apache.geode.test.dunit.Assert.assertTrue;
+import static org.apache.geode.test.dunit.Assert.fail;
 
 import java.util.Iterator;
 import java.util.Properties;
@@ -51,7 +56,6 @@ import org.apache.geode.cache.query.SelectResults;
 import org.apache.geode.cache.query.TypeMismatchException;
 import org.apache.geode.cache.query.data.Portfolio;
 import org.apache.geode.cache.query.internal.DefaultQuery;
-import org.apache.geode.cache.query.internal.QueryMonitor;
 import org.apache.geode.cache.server.CacheServer;
 import org.apache.geode.cache30.CacheSerializableRunnable;
 import org.apache.geode.cache30.ClientServerTestCase;
@@ -59,6 +63,7 @@ import org.apache.geode.distributed.internal.DistributionConfig;
 import org.apache.geode.internal.AvailablePortHelper;
 import org.apache.geode.internal.cache.DistributedRegion;
 import org.apache.geode.internal.cache.GemFireCacheImpl;
+import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.cache.PartitionedRegion;
 import org.apache.geode.internal.cache.control.HeapMemoryMonitor;
 import org.apache.geode.internal.cache.control.InternalResourceManager;
@@ -129,7 +134,10 @@ public class ResourceManagerWithQueryMonitorDUnitTest extends ClientServerTestCa
 
   private SerializableCallable resetQueryMonitor = new SerializableCallable() {
     public Object call() throws Exception {
-      QueryMonitor.setLowMemory(false, 0);
+      InternalCache cache = getCache();
+      if (cache.getQueryMonitor() != null) {
+        cache.getQueryMonitor().setLowMemory(false, 0);
+      }
       DefaultQuery.testHook = null;
       return null;
     }
@@ -946,7 +954,7 @@ public class ResourceManagerWithQueryMonitorDUnitTest extends ClientServerTestCa
     server.invoke(new SerializableCallable() {
       public Object call() throws Exception {
         GemFireCacheImpl cache = (GemFireCacheImpl) getCache();
-        cache.testMaxQueryExecutionTime = -1;
+        cache.MAX_QUERY_EXECUTION_TIME = -1;
         return null;
       }
     });
@@ -971,9 +979,9 @@ public class ResourceManagerWithQueryMonitorDUnitTest extends ClientServerTestCa
         GemFireCacheImpl cache = (GemFireCacheImpl) getCache();
 
         if (queryTimeout != -1) {
-          cache.testMaxQueryExecutionTime = queryTimeout;
+          cache.MAX_QUERY_EXECUTION_TIME = queryTimeout;
         } else {
-          cache.testMaxQueryExecutionTime = -1;
+          cache.MAX_QUERY_EXECUTION_TIME = -1;
         }
 
         if (criticalThreshold != 0) {
