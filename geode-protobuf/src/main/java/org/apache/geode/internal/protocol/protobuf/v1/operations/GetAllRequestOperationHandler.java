@@ -14,10 +14,6 @@
  */
 package org.apache.geode.internal.protocol.protobuf.v1.operations;
 
-
-import static org.apache.geode.internal.protocol.protobuf.v1.ProtobufErrorCode.INVALID_REQUEST;
-import static org.apache.geode.internal.protocol.protobuf.v1.ProtobufErrorCode.SERVER_ERROR;
-
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -34,7 +30,6 @@ import org.apache.geode.internal.protocol.protobuf.v1.BasicTypes;
 import org.apache.geode.internal.protocol.protobuf.v1.ClientProtocol;
 import org.apache.geode.internal.protocol.protobuf.v1.Failure;
 import org.apache.geode.internal.protocol.protobuf.v1.MessageExecutionContext;
-import org.apache.geode.internal.protocol.protobuf.v1.ProtobufErrorCode;
 import org.apache.geode.internal.protocol.protobuf.v1.ProtobufSerializationService;
 import org.apache.geode.internal.protocol.protobuf.v1.RegionAPI;
 import org.apache.geode.internal.protocol.protobuf.v1.Result;
@@ -56,8 +51,8 @@ public class GetAllRequestOperationHandler
     Region region = messageExecutionContext.getCache().getRegion(regionName);
     if (region == null) {
       logger.error("Received GetAll request for non-existing region {}", regionName);
-      return Failure
-          .of(ProtobufResponseUtilities.makeErrorResponse(SERVER_ERROR, "Region not found"));
+      return Failure.of(ProtobufResponseUtilities
+          .makeErrorResponse(BasicTypes.ErrorCode.SERVER_ERROR, "Region not found"));
     }
 
     long startTime = messageExecutionContext.getStatistics().startOperation();
@@ -93,17 +88,17 @@ public class GetAllRequestOperationHandler
       return ProtobufUtilities.createEntry(serializationService, decodedKey, value);
     } catch (EncodingException ex) {
       logger.error("Encoding not supported: {}", ex);
-      return createKeyedError(key, "Encoding not supported.", INVALID_REQUEST);
+      return createKeyedError(key, "Encoding not supported.", BasicTypes.ErrorCode.INVALID_REQUEST);
     } catch (Exception ex) {
       logger.error("Failure in protobuf getAll operation for key: " + key, ex);
-      return createKeyedError(key, ex.toString(), SERVER_ERROR);
+      return createKeyedError(key, ex.toString(), BasicTypes.ErrorCode.SERVER_ERROR);
     }
   }
 
   private Object createKeyedError(BasicTypes.EncodedValue key, String errorMessage,
-      ProtobufErrorCode errorCode) {
-    return BasicTypes.KeyedError.newBuilder().setKey(key).setError(BasicTypes.Error.newBuilder()
-        .setErrorCode(ProtobufUtilities.getProtobufErrorCode(errorCode)).setMessage(errorMessage))
+      BasicTypes.ErrorCode errorCode) {
+    return BasicTypes.KeyedError.newBuilder().setKey(key)
+        .setError(BasicTypes.Error.newBuilder().setErrorCode(errorCode).setMessage(errorMessage))
         .build();
   }
 }

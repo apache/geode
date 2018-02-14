@@ -14,9 +14,6 @@
  */
 package org.apache.geode.internal.protocol.protobuf.v1.operations;
 
-import static org.apache.geode.internal.protocol.protobuf.v1.ProtobufErrorCode.INVALID_REQUEST;
-import static org.apache.geode.internal.protocol.protobuf.v1.ProtobufErrorCode.SERVER_ERROR;
-
 import org.apache.logging.log4j.Logger;
 
 import org.apache.geode.annotations.Experimental;
@@ -49,8 +46,8 @@ public class GetRequestOperationHandler
     Region region = messageExecutionContext.getCache().getRegion(regionName);
     if (region == null) {
       logger.error("Received Get request for non-existing region {}", regionName);
-      return Failure
-          .of(ProtobufResponseUtilities.makeErrorResponse(SERVER_ERROR, "Region not found"));
+      return Failure.of(ProtobufResponseUtilities
+          .makeErrorResponse(BasicTypes.ErrorCode.SERVER_ERROR, "Region not found"));
     }
     long startOperationTime = messageExecutionContext.getStatistics().startOperation();
 
@@ -68,8 +65,8 @@ public class GetRequestOperationHandler
       return Success.of(RegionAPI.GetResponse.newBuilder().setResult(encodedValue).build());
     } catch (EncodingException ex) {
       logger.error("Received Get request with unsupported encoding: {}", ex);
-      return Failure.of(
-          ProtobufResponseUtilities.makeErrorResponse(INVALID_REQUEST, "Encoding not supported."));
+      return Failure.of(ProtobufResponseUtilities
+          .makeErrorResponse(BasicTypes.ErrorCode.INVALID_REQUEST, "Encoding not supported."));
     } finally {
       ((InternalCache) messageExecutionContext.getCache()).setReadSerializedForCurrentThread(false);
       messageExecutionContext.getStatistics().endOperation(startOperationTime);

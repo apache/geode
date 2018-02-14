@@ -15,17 +15,17 @@
 package org.apache.geode.internal.protocol.protobuf.v1.state.exception;
 
 
-import org.apache.geode.internal.protocol.protobuf.v1.ProtobufErrorCode;
+import org.apache.geode.internal.protocol.protobuf.v1.BasicTypes;
 
 public class ConnectionStateException extends Exception {
-  private final ProtobufErrorCode errorCode;
+  private final BasicTypes.ErrorCode errorCode;
 
-  public ConnectionStateException(ProtobufErrorCode errorCode, String errorMessage) {
+  public ConnectionStateException(BasicTypes.ErrorCode errorCode, String errorMessage) {
     super(errorMessage);
     this.errorCode = errorCode;
   }
 
-  public ProtobufErrorCode getErrorCode() {
+  public BasicTypes.ErrorCode getErrorCode() {
     return errorCode;
   }
 }

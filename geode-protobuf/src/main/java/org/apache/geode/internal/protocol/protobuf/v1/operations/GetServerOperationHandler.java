@@ -14,7 +14,8 @@
  */
 package org.apache.geode.internal.protocol.protobuf.v1.operations;
 
-import static org.apache.geode.internal.protocol.protobuf.v1.ProtobufErrorCode.NO_AVAILABLE_SERVER;
+
+import static org.apache.geode.internal.protocol.protobuf.v1.BasicTypes.ErrorCode.NO_AVAILABLE_SERVER;
 
 import java.util.HashSet;
 import java.util.List;

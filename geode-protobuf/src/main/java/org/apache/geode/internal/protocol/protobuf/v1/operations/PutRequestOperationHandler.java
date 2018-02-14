@@ -14,9 +14,6 @@
  */
 package org.apache.geode.internal.protocol.protobuf.v1.operations;
 
-import static org.apache.geode.internal.protocol.protobuf.v1.ProtobufErrorCode.INVALID_REQUEST;
-import static org.apache.geode.internal.protocol.protobuf.v1.ProtobufErrorCode.SERVER_ERROR;
-
 import org.apache.logging.log4j.Logger;
 
 import org.apache.geode.annotations.Experimental;
@@ -48,8 +45,9 @@ public class PutRequestOperationHandler
     Region region = messageExecutionContext.getCache().getRegion(regionName);
     if (region == null) {
       logger.warn("Received Put request for non-existing region: {}", regionName);
-      return Failure.of(ProtobufResponseUtilities.makeErrorResponse(SERVER_ERROR,
-          "Region passed by client did not exist: " + regionName));
+      return Failure
+          .of(ProtobufResponseUtilities.makeErrorResponse(BasicTypes.ErrorCode.SERVER_ERROR,
+              "Region passed by client did not exist: " + regionName));
     }
 
     long startTime = messageExecutionContext.getStatistics().startOperation();
@@ -63,12 +61,13 @@ public class PutRequestOperationHandler
         return Success.of(RegionAPI.PutResponse.newBuilder().build());
       } catch (ClassCastException ex) {
         logger.error("Received Put request with invalid key type: {}", ex);
-        return Failure.of(ProtobufResponseUtilities.makeErrorResponse(SERVER_ERROR, ex.toString()));
+        return Failure.of(ProtobufResponseUtilities
+            .makeErrorResponse(BasicTypes.ErrorCode.SERVER_ERROR, ex.toString()));
       }
     } catch (EncodingException ex) {
       logger.error("Got error when decoding Put request: {}", ex);
-      return Failure
-          .of(ProtobufResponseUtilities.makeErrorResponse(INVALID_REQUEST, ex.toString()));
+      return Failure.of(ProtobufResponseUtilities
+          .makeErrorResponse(BasicTypes.ErrorCode.INVALID_REQUEST, ex.toString()));
     } finally {
       messageExecutionContext.getStatistics().endOperation(startTime);
     }

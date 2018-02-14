@@ -14,9 +14,6 @@
  */
 package org.apache.geode.internal.protocol.protobuf.v1.operations;
 
-import static org.apache.geode.internal.protocol.protobuf.v1.ProtobufErrorCode.INVALID_REQUEST;
-import static org.apache.geode.internal.protocol.protobuf.v1.ProtobufErrorCode.SERVER_ERROR;
-
 import java.util.Objects;
 import java.util.stream.Collectors;
 
@@ -31,7 +28,6 @@ import org.apache.geode.internal.protocol.protobuf.v1.BasicTypes;
 import org.apache.geode.internal.protocol.protobuf.v1.ClientProtocol;
 import org.apache.geode.internal.protocol.protobuf.v1.Failure;
 import org.apache.geode.internal.protocol.protobuf.v1.MessageExecutionContext;
-import org.apache.geode.internal.protocol.protobuf.v1.ProtobufErrorCode;
 import org.apache.geode.internal.protocol.protobuf.v1.ProtobufSerializationService;
 import org.apache.geode.internal.protocol.protobuf.v1.RegionAPI;
 import org.apache.geode.internal.protocol.protobuf.v1.Result;
@@ -55,8 +51,8 @@ public class PutAllRequestOperationHandler
 
     if (region == null) {
       logger.error("Received PutAll request for non-existing region {}", regionName);
-      return Failure.of(ProtobufResponseUtilities.makeErrorResponse(SERVER_ERROR,
-          "Region passed does not exist: " + regionName));
+      return Failure.of(ProtobufResponseUtilities.makeErrorResponse(
+          BasicTypes.ErrorCode.SERVER_ERROR, "Region passed does not exist: " + regionName));
     }
 
     long startTime = messageExecutionContext.getStatistics().startOperation();
@@ -76,20 +72,20 @@ public class PutAllRequestOperationHandler
 
       region.put(decodedKey, decodedValue);
     } catch (EncodingException ex) {
-      return buildAndLogKeyedError(entry, INVALID_REQUEST, "Encoding not supported", ex);
+      return buildAndLogKeyedError(entry, BasicTypes.ErrorCode.INVALID_REQUEST,
+          "Encoding not supported", ex);
     } catch (ClassCastException ex) {
-      return buildAndLogKeyedError(entry, SERVER_ERROR, ex.toString(), ex);
+      return buildAndLogKeyedError(entry, BasicTypes.ErrorCode.SERVER_ERROR, ex.toString(), ex);
     }
     return null;
   }
 
   private BasicTypes.KeyedError buildAndLogKeyedError(BasicTypes.Entry entry,
-      ProtobufErrorCode errorCode, String message, Exception ex) {
+      BasicTypes.ErrorCode errorCode, String message, Exception ex) {
     logger.error(message, ex);
 
     return BasicTypes.KeyedError.newBuilder().setKey(entry.getKey())
-        .setError(BasicTypes.Error.newBuilder()
-            .setErrorCode(ProtobufUtilities.getProtobufErrorCode(errorCode)).setMessage(message))
+        .setError(BasicTypes.Error.newBuilder().setErrorCode(errorCode).setMessage(message))
         .build();
   }
 }
