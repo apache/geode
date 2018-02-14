@@ -245,8 +245,8 @@ public class ManagementAgent {
 
           boolean isRestWebAppAdded = false;
 
-          this.httpServer = JettyHelper.initJetty(bindAddress, port,
-              SSLConfigurationFactory.getSSLConfigForComponent(SecurableCommunicationChannel.WEB));
+          this.httpServer = JettyHelper.initJetty(bindAddress, port, SSLConfigurationFactory
+              .getSSLConfigForComponent(config, SecurableCommunicationChannel.WEB));
 
           if (agentUtil.isWebApplicationAvailable(gemfireWar)) {
             this.httpServer =

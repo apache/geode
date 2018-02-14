@@ -94,9 +94,7 @@ public class ConnectCommand implements GfshCommand {
       @CliOption(key = {CliStrings.CONNECT__USE_HTTP}, specifiedDefaultValue = "true",
           unspecifiedDefaultValue = "false",
           help = CliStrings.CONNECT__USE_HTTP__HELP) boolean useHttp,
-      @CliOption(key = {CliStrings.CONNECT__URL},
-          unspecifiedDefaultValue = CliStrings.CONNECT__DEFAULT_BASE_URL,
-          help = CliStrings.CONNECT__URL__HELP) String url,
+      @CliOption(key = {CliStrings.CONNECT__URL}, help = CliStrings.CONNECT__URL__HELP) String url,
       @CliOption(key = {CliStrings.CONNECT__USERNAME},
           help = CliStrings.CONNECT__USERNAME__HELP) String userName,
       @CliOption(key = {CliStrings.CONNECT__PASSWORD},
@@ -137,7 +135,8 @@ public class ConnectCommand implements GfshCommand {
         keystore, keystorePassword, null, truststore, truststorePassword, null, sslCiphers,
         sslProtocols, null);
 
-    if (containsSSLConfig(gfProperties) || containsLegacySSLConfig(gfProperties)) {
+    if (containsSSLConfig(gfProperties) || containsLegacySSLConfig(gfProperties)
+        || StringUtils.startsWith(url, "https")) {
       useSsl = true;
     }
 
@@ -152,7 +151,7 @@ public class ConnectCommand implements GfshCommand {
       gfProperties.setProperty(UserInputProperty.PASSWORD.getKey(), password);
     }
 
-    if (useHttp) {
+    if (StringUtils.isNotEmpty(url)) {
       result = httpConnect(gfProperties, url, skipSslValidation);
     } else {
       result = jmxConnect(gfProperties, useSsl, jmxManagerEndPoint, locatorEndPoint, false);
