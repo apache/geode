@@ -20,9 +20,12 @@ import static org.apache.geode.distributed.ConfigurationProperties.SECURITY_CLIE
 
 import java.io.ByteArrayInputStream;
 import java.io.DataInputStream;
+import java.io.EOFException;
 import java.io.IOException;
 import java.net.InetAddress;
 import java.net.Socket;
+import java.net.SocketException;
+import java.net.SocketTimeoutException;
 import java.nio.ByteBuffer;
 import java.nio.channels.SelectableChannel;
 import java.nio.channels.SelectionKey;
@@ -326,34 +329,81 @@ public abstract class ServerConnection implements Runnable {
   private boolean verifyClientConnection() {
     synchronized (this.handshakeMonitor) {
       if (this.handshake == null) {
-        // synchronized (getCleanupTable()) {
-        boolean readHandshake =
-            ServerSideHandshakeFactory.readHandshake(this, getSecurityService(), acceptor);
-        if (readHandshake) {
-          // readHandshake will establish a handshake object in this ServerConnection
-          if (this.handshake.isOK()) {
-            try {
-              return processHandShake();
-            } catch (CancelException e) {
-              if (!crHelper.isShutdown()) {
-                logger.warn(LocalizedMessage.create(
-                    LocalizedStrings.ServerConnection_0_UNEXPECTED_CANCELLATION, getName()), e);
-              }
-              cleanup();
-              return false;
+        ServerSideHandshake readHandshake;
+        try {
+
+          readHandshake =
+              ServerSideHandshakeFactory.readHandshake(getSocket(), getHandShakeTimeout(),
+                  getCommunicationMode(), getDistributedSystem(), getSecurityService());
+
+        } catch (SocketTimeoutException timeout) {
+          logger.warn(LocalizedMessage.create(
+              LocalizedStrings.ServerHandShakeProcessor_0_HANDSHAKE_REPLY_CODE_TIMEOUT_NOT_RECEIVED_WITH_IN_1_MS,
+              new Object[] {getName(), Integer.valueOf(handshakeTimeout)}));
+          failConnectionAttempt();
+          return false;
+        } catch (EOFException | SocketException e) {
+          // no need to warn client just gave up on this server before we could
+          // handshake
+          logger.info("{} {}", getName(), e);
+          failConnectionAttempt();
+          return false;
+        } catch (IOException e) {
+          logger.warn(LocalizedMessage.create(
+              LocalizedStrings.ServerHandShakeProcessor_0_RECEIVED_NO_HANDSHAKE_REPLY_CODE,
+              getName()), e);
+          failConnectionAttempt();
+          return false;
+        } catch (AuthenticationRequiredException | AuthenticationFailedException ex) {
+          handleHandshakeAuthenticationException(ex);
+          return false;
+        } catch (UnsupportedVersionException uve) {
+          // Server logging
+          logger.warn("{} {}", getName(), uve.getMessage(), uve);
+          handleHandshakeException(uve);
+          return false;
+        } catch (Exception ex) {
+          logger.warn("{} {}", getName(), ex.getLocalizedMessage());
+          handleHandshakeException(ex);
+          return false;
+        }
+
+        setHandshake(readHandshake);
+        setProxyId(readHandshake.getMembershipId());
+        if (readHandshake.getVersion().compareTo(Version.GFE_65) < 0
+            || getCommunicationMode().isWAN()) {
+          try {
+            setAuthAttributes();
+
+          } catch (AuthenticationRequiredException | AuthenticationFailedException ex) {
+            handleHandshakeAuthenticationException(ex);
+            return false;
+          } catch (Exception ex) {
+            logger.warn("{} {}", getName(), ex.getLocalizedMessage());
+            handleHandshakeException(ex);
+            return false;
+          }
+        }
+
+        // readHandshake will establish a handshake object in this ServerConnection
+        if (this.handshake.isOK()) {
+          try {
+            return processHandShake();
+          } catch (CancelException e) {
+            if (!crHelper.isShutdown()) {
+              logger.warn(LocalizedMessage.create(
+                  LocalizedStrings.ServerConnection_0_UNEXPECTED_CANCELLATION, getName()), e);
             }
-          } else {
-            // is this branch ever taken?
-            this.crHelper.checkCancelInProgress(null); // bug 37113?
-            logger.warn(LocalizedMessage
-                .create(LocalizedStrings.ServerConnection_RECEIVED_UNKNOWN_HANDSHAKE_REPLY_CODE));
-            refuseHandshake(LocalizedStrings.ServerConnection_RECEIVED_UNKNOWN_HANDSHAKE_REPLY_CODE
-                .toLocalizedString(), AcceptorImpl.REPLY_INVALID);
+            cleanup();
             return false;
           }
         } else {
-          this.stats.incFailedConnectionAttempts();
-          cleanup();
+          // is this branch ever taken?
+          this.crHelper.checkCancelInProgress(null); // bug 37113?
+          logger.warn(LocalizedMessage
+              .create(LocalizedStrings.ServerConnection_RECEIVED_UNKNOWN_HANDSHAKE_REPLY_CODE));
+          refuseHandshake(LocalizedStrings.ServerConnection_RECEIVED_UNKNOWN_HANDSHAKE_REPLY_CODE
+              .toLocalizedString(), AcceptorImpl.REPLY_INVALID);
           return false;
         }
       }
@@ -361,6 +411,47 @@ public abstract class ServerConnection implements Runnable {
     return true;
   }
 
+  private void failConnectionAttempt() {
+    stats.incFailedConnectionAttempts();
+    cleanup();
+  }
+
+  private void handleHandshakeException(Exception ex) {
+    refuseHandshake(ex.getMessage(), AcceptorImpl.REPLY_REFUSED);
+    failConnectionAttempt();
+  }
+
+  private void handleHandshakeAuthenticationException(Exception ex) {
+    if (ex instanceof AuthenticationRequiredException) {
+      AuthenticationRequiredException noauth = (AuthenticationRequiredException) ex;
+      String exStr = noauth.getLocalizedMessage();
+      if (noauth.getCause() != null) {
+        exStr += " : " + noauth.getCause().getLocalizedMessage();
+      }
+      if (securityLogWriter.warningEnabled()) {
+        securityLogWriter.warning(LocalizedStrings.ONE_ARG,
+            getName() + ": Security exception: " + exStr);
+      }
+      handleHandshakeException(noauth);
+    } else if (ex instanceof AuthenticationFailedException) {
+      AuthenticationFailedException failed = (AuthenticationFailedException) ex;
+      String exStr = failed.getLocalizedMessage();
+      if (failed.getCause() != null) {
+        exStr += " : " + failed.getCause().getLocalizedMessage();
+      }
+      if (securityLogWriter.warningEnabled()) {
+        securityLogWriter.warning(LocalizedStrings.ONE_ARG,
+            getName() + ": Security exception: " + exStr);
+      }
+      handleHandshakeException(failed);
+    } else {
+      logger.warn(
+          "Unexpected exception type in ServerConnection handleHandshakeAuthenticationException");
+      throw new RuntimeException(
+          "Invalid exception type, must be either AuthenticationRequiredException or AuthenticationFailedException",
+          ex);
+    }
+  }
 
   protected Map getCommands() {
     return this.commands;
