@@ -21,6 +21,8 @@ import org.apache.geode.cache.Region;
 import org.apache.geode.internal.protocol.protobuf.v1.BasicTypes;
 import org.apache.geode.internal.protocol.protobuf.v1.ClientProtocol;
 import org.apache.geode.internal.protocol.protobuf.v1.RegionAPI;
+import org.apache.geode.internal.protocol.protobuf.v1.serialization.exception.DecodingException;
+import org.apache.geode.internal.protocol.protobuf.v1.serialization.exception.EncodingException;
 import org.apache.geode.internal.protocol.protobuf.v1.state.exception.ConnectionStateException;
 
 
@@ -59,4 +61,15 @@ public abstract class ProtobufResponseUtilities {
   public static ClientProtocol.ErrorResponse makeErrorResponse(ConnectionStateException exception) {
     return makeErrorResponse(exception.getErrorCode(), exception.getMessage());
   }
+
+  public static ClientProtocol.ErrorResponse makeErrorResponse(Exception exception) {
+    if (exception instanceof ConnectionStateException) {
+      return makeErrorResponse((ConnectionStateException) exception);
+    }
+    return ClientProtocol.ErrorResponse
+        .newBuilder().setError(BasicTypes.Error.newBuilder()
+            .setErrorCode(BasicTypes.ErrorCode.SERVER_ERROR).setMessage(exception.toString()))
+        .build();
+  }
+
 }

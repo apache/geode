@@ -23,7 +23,6 @@ import org.apache.geode.cache.execute.Execution;
 import org.apache.geode.cache.execute.FunctionService;
 import org.apache.geode.distributed.DistributedSystem;
 import org.apache.geode.internal.exception.InvalidExecutionContextException;
-import org.apache.geode.internal.protocol.operations.ProtobufOperationHandler;
 import org.apache.geode.internal.protocol.protobuf.v1.BasicTypes;
 import org.apache.geode.internal.protocol.protobuf.v1.ClientProtocol;
 import org.apache.geode.internal.protocol.protobuf.v1.Failure;
@@ -33,6 +32,7 @@ import org.apache.geode.internal.protocol.protobuf.v1.MessageExecutionContext;
 import org.apache.geode.internal.protocol.protobuf.v1.ProtobufSerializationService;
 import org.apache.geode.internal.protocol.protobuf.v1.Result;
 import org.apache.geode.internal.protocol.protobuf.v1.Success;
+import org.apache.geode.internal.protocol.protobuf.v1.serialization.exception.DecodingException;
 import org.apache.geode.internal.protocol.protobuf.v1.serialization.exception.EncodingException;
 
 public class ExecuteFunctionOnGroupRequestOperationHandler extends
@@ -40,17 +40,8 @@ public class ExecuteFunctionOnGroupRequestOperationHandler extends
 
 
   @Override
-  public Result<ExecuteFunctionOnGroupResponse, ClientProtocol.ErrorResponse> process(
-      ProtobufSerializationService serializationService, ExecuteFunctionOnGroupRequest request,
-      MessageExecutionContext messageExecutionContext) throws InvalidExecutionContextException {
-
-    return (Result<ExecuteFunctionOnGroupResponse, ClientProtocol.ErrorResponse>) super.process(
-        serializationService, request, messageExecutionContext);
-  }
-
-  @Override
   protected Set<?> parseFilter(ProtobufSerializationService serializationService,
-      ExecuteFunctionOnGroupRequest request) throws EncodingException {
+      ExecuteFunctionOnGroupRequest request) {
     // filters are not allowed on functions not associated with regions
     return null;
   }
@@ -98,13 +89,12 @@ public class ExecuteFunctionOnGroupRequestOperationHandler extends
 
   @Override
   protected Object getFunctionArguments(ExecuteFunctionOnGroupRequest request,
-      ProtobufSerializationService serializationService) throws EncodingException {
+      ProtobufSerializationService serializationService) throws DecodingException {
     return serializationService.decode(request.getArguments());
   }
 
   @Override
-  protected Execution getFunctionExecutionObject(Object executionTarget)
-      throws InvalidExecutionContextException {
+  protected Execution getFunctionExecutionObject(Object executionTarget) {
     ProtocolStringList groupList = (ProtocolStringList) executionTarget;
     return FunctionService.onMember(groupList.toArray(new String[0]));
   }
@@ -121,8 +111,7 @@ public class ExecuteFunctionOnGroupRequestOperationHandler extends
   }
 
   @Override
-  protected Result buildResultMessage(ProtobufSerializationService serializationService)
-      throws EncodingException {
+  protected Result buildResultMessage(ProtobufSerializationService serializationService) {
     return Success.of(ExecuteFunctionOnGroupResponse.newBuilder().build());
   }
 

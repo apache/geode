@@ -14,8 +14,8 @@
  */
 package org.apache.geode.internal.protocol.protobuf.v1.operations;
 
-import java.util.Objects;
-import java.util.stream.Collectors;
+import static org.apache.geode.internal.protocol.protobuf.v1.BasicTypes.ErrorCode.INVALID_REQUEST;
+import static org.apache.geode.internal.protocol.protobuf.v1.BasicTypes.ErrorCode.SERVER_ERROR;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -33,9 +33,8 @@ import org.apache.geode.internal.protocol.protobuf.v1.RegionAPI;
 import org.apache.geode.internal.protocol.protobuf.v1.Result;
 import org.apache.geode.internal.protocol.protobuf.v1.Success;
 import org.apache.geode.internal.protocol.protobuf.v1.serialization.SerializationService;
-import org.apache.geode.internal.protocol.protobuf.v1.serialization.exception.EncodingException;
+import org.apache.geode.internal.protocol.protobuf.v1.serialization.exception.DecodingException;
 import org.apache.geode.internal.protocol.protobuf.v1.utilities.ProtobufResponseUtilities;
-import org.apache.geode.internal.protocol.protobuf.v1.utilities.ProtobufUtilities;
 
 @Experimental
 public class PutAllRequestOperationHandler
@@ -45,7 +44,8 @@ public class PutAllRequestOperationHandler
   @Override
   public Result<RegionAPI.PutAllResponse, ClientProtocol.ErrorResponse> process(
       ProtobufSerializationService serializationService, RegionAPI.PutAllRequest putAllRequest,
-      MessageExecutionContext messageExecutionContext) throws InvalidExecutionContextException {
+      MessageExecutionContext messageExecutionContext)
+      throws InvalidExecutionContextException, DecodingException {
     String regionName = putAllRequest.getRegionName();
     Region region = messageExecutionContext.getCache().getRegion(regionName);
 
@@ -56,34 +56,41 @@ public class PutAllRequestOperationHandler
     }
 
     long startTime = messageExecutionContext.getStatistics().startOperation();
-    RegionAPI.PutAllResponse.Builder builder = RegionAPI.PutAllResponse.newBuilder()
-        .addAllFailedKeys(putAllRequest.getEntryList().stream()
-            .map((entry) -> singlePut(serializationService, region, entry)).filter(Objects::nonNull)
-            .collect(Collectors.toList()));
-    messageExecutionContext.getStatistics().endOperation(startTime);
+    RegionAPI.PutAllResponse.Builder builder = RegionAPI.PutAllResponse.newBuilder();
+    try {
+      messageExecutionContext.getCache().setReadSerializedForCurrentThread(true);
+
+      putAllRequest.getEntryList().stream()
+          .forEach((entry) -> processSinglePut(builder, serializationService, region, entry));
+
+    } finally {
+      messageExecutionContext.getStatistics().endOperation(startTime);
+      messageExecutionContext.getCache().setReadSerializedForCurrentThread(false);
+    }
     return Success.of(builder.build());
   }
 
-  private BasicTypes.KeyedError singlePut(SerializationService serializationService, Region region,
-      BasicTypes.Entry entry) {
+  private void processSinglePut(RegionAPI.PutAllResponse.Builder builder,
+      SerializationService serializationService, Region region, BasicTypes.Entry entry) {
     try {
-      Object decodedValue = serializationService.decode(entry.getValue());
-      Object decodedKey = serializationService.decode(entry.getKey());
 
+      Object decodedKey = serializationService.decode(entry.getKey());
+      Object decodedValue = serializationService.decode(entry.getValue());
       region.put(decodedKey, decodedValue);
-    } catch (EncodingException ex) {
-      return buildAndLogKeyedError(entry, BasicTypes.ErrorCode.INVALID_REQUEST,
-          "Encoding not supported", ex);
+
+    } catch (DecodingException ex) {
+      logger.info("Encoding not supported: " + ex);
+      builder.addFailedKeys(this.buildKeyedError(entry, INVALID_REQUEST, "Encoding not supported"));
     } catch (ClassCastException ex) {
-      return buildAndLogKeyedError(entry, BasicTypes.ErrorCode.SERVER_ERROR, ex.toString(), ex);
+      builder.addFailedKeys(buildKeyedError(entry, SERVER_ERROR, ex.toString()));
+    } catch (Exception ex) {
+      logger.warn("Error processing putAll entry", ex);
+      builder.addFailedKeys(buildKeyedError(entry, SERVER_ERROR, ex.toString()));
     }
-    return null;
   }
 
-  private BasicTypes.KeyedError buildAndLogKeyedError(BasicTypes.Entry entry,
-      BasicTypes.ErrorCode errorCode, String message, Exception ex) {
-    logger.error(message, ex);
-
+  private BasicTypes.KeyedError buildKeyedError(BasicTypes.Entry entry,
+      BasicTypes.ErrorCode errorCode, String message) {
     return BasicTypes.KeyedError.newBuilder().setKey(entry.getKey())
         .setError(BasicTypes.Error.newBuilder().setErrorCode(errorCode).setMessage(message))
         .build();

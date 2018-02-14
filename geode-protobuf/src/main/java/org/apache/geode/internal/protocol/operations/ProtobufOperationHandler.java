@@ -19,6 +19,8 @@ import org.apache.geode.internal.protocol.protobuf.v1.ClientProtocol;
 import org.apache.geode.internal.protocol.protobuf.v1.MessageExecutionContext;
 import org.apache.geode.internal.protocol.protobuf.v1.ProtobufSerializationService;
 import org.apache.geode.internal.protocol.protobuf.v1.Result;
+import org.apache.geode.internal.protocol.protobuf.v1.serialization.exception.DecodingException;
+import org.apache.geode.internal.protocol.protobuf.v1.serialization.exception.EncodingException;
 import org.apache.geode.internal.protocol.protobuf.v1.state.exception.ConnectionStateException;
 
 /**
@@ -38,6 +40,6 @@ public interface ProtobufOperationHandler<Req, Resp> {
    */
   Result<Resp, ClientProtocol.ErrorResponse> process(
       ProtobufSerializationService serializationService, Req request,
-      MessageExecutionContext messageExecutionContext)
-      throws InvalidExecutionContextException, ConnectionStateException;
+      MessageExecutionContext messageExecutionContext) throws InvalidExecutionContextException,
+      ConnectionStateException, EncodingException, DecodingException;
 }

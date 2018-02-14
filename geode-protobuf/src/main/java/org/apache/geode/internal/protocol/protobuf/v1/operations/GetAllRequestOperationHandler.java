@@ -14,15 +14,13 @@
  */
 package org.apache.geode.internal.protocol.protobuf.v1.operations;
 
-import java.util.List;
-import java.util.Map;
-import java.util.stream.Collectors;
+import static org.apache.geode.internal.protocol.protobuf.v1.BasicTypes.ErrorCode.INVALID_REQUEST;
+import static org.apache.geode.internal.protocol.protobuf.v1.BasicTypes.ErrorCode.SERVER_ERROR;
 
 import org.apache.logging.log4j.Logger;
 
 import org.apache.geode.annotations.Experimental;
 import org.apache.geode.cache.Region;
-import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.exception.InvalidExecutionContextException;
 import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.internal.protocol.operations.ProtobufOperationHandler;
@@ -34,6 +32,7 @@ import org.apache.geode.internal.protocol.protobuf.v1.ProtobufSerializationServi
 import org.apache.geode.internal.protocol.protobuf.v1.RegionAPI;
 import org.apache.geode.internal.protocol.protobuf.v1.Result;
 import org.apache.geode.internal.protocol.protobuf.v1.Success;
+import org.apache.geode.internal.protocol.protobuf.v1.serialization.exception.DecodingException;
 import org.apache.geode.internal.protocol.protobuf.v1.serialization.exception.EncodingException;
 import org.apache.geode.internal.protocol.protobuf.v1.utilities.ProtobufResponseUtilities;
 import org.apache.geode.internal.protocol.protobuf.v1.utilities.ProtobufUtilities;
@@ -46,7 +45,8 @@ public class GetAllRequestOperationHandler
   @Override
   public Result<RegionAPI.GetAllResponse, ClientProtocol.ErrorResponse> process(
       ProtobufSerializationService serializationService, RegionAPI.GetAllRequest request,
-      MessageExecutionContext messageExecutionContext) throws InvalidExecutionContextException {
+      MessageExecutionContext messageExecutionContext)
+      throws InvalidExecutionContextException, DecodingException {
     String regionName = request.getRegionName();
     Region region = messageExecutionContext.getCache().getRegion(regionName);
     if (region == null) {
@@ -56,49 +56,49 @@ public class GetAllRequestOperationHandler
     }
 
     long startTime = messageExecutionContext.getStatistics().startOperation();
-    Map<Boolean, List<Object>> resultsCollection;
-    try {
-      ((InternalCache) messageExecutionContext.getCache()).setReadSerializedForCurrentThread(true);
-
-      resultsCollection = request.getKeyList().stream()
-          .map((key) -> processOneMessage(serializationService, region, key))
-          .collect(Collectors.partitioningBy(x -> x instanceof BasicTypes.Entry));
-    } finally {
-      ((InternalCache) messageExecutionContext.getCache()).setReadSerializedForCurrentThread(false);
-      messageExecutionContext.getStatistics().endOperation(startTime);
-    }
     RegionAPI.GetAllResponse.Builder responseBuilder = RegionAPI.GetAllResponse.newBuilder();
-
-    for (Object entry : resultsCollection.get(true)) {
-      responseBuilder.addEntries((BasicTypes.Entry) entry);
-    }
-
-    for (Object entry : resultsCollection.get(false)) {
-      responseBuilder.addFailures((BasicTypes.KeyedError) entry);
+    try {
+      messageExecutionContext.getCache().setReadSerializedForCurrentThread(true);
+      request.getKeyList().stream()
+          .forEach((key) -> processSingleKey(responseBuilder, serializationService, region, key));
+    } finally {
+      messageExecutionContext.getCache().setReadSerializedForCurrentThread(false);
+      messageExecutionContext.getStatistics().endOperation(startTime);
     }
 
     return Success.of(responseBuilder.build());
   }
 
-  private Object processOneMessage(ProtobufSerializationService serializationService, Region region,
+  private void processSingleKey(RegionAPI.GetAllResponse.Builder responseBuilder,
+      ProtobufSerializationService serializationService, Region region,
       BasicTypes.EncodedValue key) {
     try {
+
       Object decodedKey = serializationService.decode(key);
       Object value = region.get(decodedKey);
-      return ProtobufUtilities.createEntry(serializationService, decodedKey, value);
+      BasicTypes.Entry entry =
+          ProtobufUtilities.createEntry(serializationService, decodedKey, value);
+      responseBuilder.addEntries(entry);
+
+    } catch (DecodingException ex) {
+      logger.info("Key encoding not supported: {}", ex);
+      responseBuilder
+          .addFailures(buildKeyedError(key, "Key encoding not supported.", INVALID_REQUEST));
     } catch (EncodingException ex) {
-      logger.error("Encoding not supported: {}", ex);
-      return createKeyedError(key, "Encoding not supported.", BasicTypes.ErrorCode.INVALID_REQUEST);
+      logger.info("Value encoding not supported: {}", ex);
+      responseBuilder
+          .addFailures(buildKeyedError(key, "Value encoding not supported.", INVALID_REQUEST));
     } catch (Exception ex) {
-      logger.error("Failure in protobuf getAll operation for key: " + key, ex);
-      return createKeyedError(key, ex.toString(), BasicTypes.ErrorCode.SERVER_ERROR);
+      logger.warn("Failure in protobuf getAll operation for key: " + key, ex);
+      responseBuilder.addFailures(buildKeyedError(key, ex.toString(), SERVER_ERROR));
     }
   }
 
-  private Object createKeyedError(BasicTypes.EncodedValue key, String errorMessage,
+  private BasicTypes.KeyedError buildKeyedError(BasicTypes.EncodedValue key, String errorMessage,
       BasicTypes.ErrorCode errorCode) {
     return BasicTypes.KeyedError.newBuilder().setKey(key)
         .setError(BasicTypes.Error.newBuilder().setErrorCode(errorCode).setMessage(errorMessage))
         .build();
   }
+
 }

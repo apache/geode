@@ -14,6 +14,8 @@
  */
 package org.apache.geode.internal.protocol.protobuf.v1.operations;
 
+import static org.apache.geode.internal.protocol.protobuf.v1.BasicTypes.ErrorCode.SERVER_ERROR;
+
 import org.apache.logging.log4j.Logger;
 
 import org.apache.geode.annotations.Experimental;
@@ -29,7 +31,9 @@ import org.apache.geode.internal.protocol.protobuf.v1.ProtobufSerializationServi
 import org.apache.geode.internal.protocol.protobuf.v1.RegionAPI;
 import org.apache.geode.internal.protocol.protobuf.v1.Result;
 import org.apache.geode.internal.protocol.protobuf.v1.Success;
+import org.apache.geode.internal.protocol.protobuf.v1.serialization.exception.DecodingException;
 import org.apache.geode.internal.protocol.protobuf.v1.serialization.exception.EncodingException;
+import org.apache.geode.internal.protocol.protobuf.v1.state.exception.ConnectionStateException;
 import org.apache.geode.internal.protocol.protobuf.v1.utilities.ProtobufResponseUtilities;
 
 @Experimental
@@ -40,7 +44,8 @@ public class PutRequestOperationHandler
   @Override
   public Result<RegionAPI.PutResponse, ClientProtocol.ErrorResponse> process(
       ProtobufSerializationService serializationService, RegionAPI.PutRequest request,
-      MessageExecutionContext messageExecutionContext) throws InvalidExecutionContextException {
+      MessageExecutionContext messageExecutionContext)
+      throws InvalidExecutionContextException, DecodingException {
     String regionName = request.getRegionName();
     Region region = messageExecutionContext.getCache().getRegion(regionName);
     if (region == null) {
@@ -64,10 +69,6 @@ public class PutRequestOperationHandler
         return Failure.of(ProtobufResponseUtilities
             .makeErrorResponse(BasicTypes.ErrorCode.SERVER_ERROR, ex.toString()));
       }
-    } catch (EncodingException ex) {
-      logger.error("Got error when decoding Put request: {}", ex);
-      return Failure.of(ProtobufResponseUtilities
-          .makeErrorResponse(BasicTypes.ErrorCode.INVALID_REQUEST, ex.toString()));
     } finally {
       messageExecutionContext.getStatistics().endOperation(startTime);
     }

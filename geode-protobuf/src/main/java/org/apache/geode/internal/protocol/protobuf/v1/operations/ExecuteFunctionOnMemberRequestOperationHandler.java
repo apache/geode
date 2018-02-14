@@ -34,6 +34,7 @@ import org.apache.geode.internal.protocol.protobuf.v1.MessageExecutionContext;
 import org.apache.geode.internal.protocol.protobuf.v1.ProtobufSerializationService;
 import org.apache.geode.internal.protocol.protobuf.v1.Result;
 import org.apache.geode.internal.protocol.protobuf.v1.Success;
+import org.apache.geode.internal.protocol.protobuf.v1.serialization.exception.DecodingException;
 import org.apache.geode.internal.protocol.protobuf.v1.serialization.exception.EncodingException;
 
 public class ExecuteFunctionOnMemberRequestOperationHandler extends
@@ -90,7 +91,7 @@ public class ExecuteFunctionOnMemberRequestOperationHandler extends
 
   @Override
   protected Object getFunctionArguments(ExecuteFunctionOnMemberRequest request,
-      ProtobufSerializationService serializationService) throws EncodingException {
+      ProtobufSerializationService serializationService) throws DecodingException {
     return serializationService.decode(request.getArguments());
   }
 
@@ -116,8 +117,7 @@ public class ExecuteFunctionOnMemberRequestOperationHandler extends
   }
 
   @Override
-  protected Result buildResultMessage(ProtobufSerializationService serializationService)
-      throws EncodingException {
+  protected Result buildResultMessage(ProtobufSerializationService serializationService) {
     return Success.of(ExecuteFunctionOnMemberResponse.newBuilder().build());
   }
 

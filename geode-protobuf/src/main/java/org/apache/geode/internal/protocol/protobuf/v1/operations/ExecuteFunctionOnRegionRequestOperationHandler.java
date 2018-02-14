@@ -31,13 +31,14 @@ import org.apache.geode.internal.protocol.protobuf.v1.MessageExecutionContext;
 import org.apache.geode.internal.protocol.protobuf.v1.ProtobufSerializationService;
 import org.apache.geode.internal.protocol.protobuf.v1.Result;
 import org.apache.geode.internal.protocol.protobuf.v1.Success;
+import org.apache.geode.internal.protocol.protobuf.v1.serialization.exception.DecodingException;
 import org.apache.geode.internal.protocol.protobuf.v1.serialization.exception.EncodingException;
 
 public class ExecuteFunctionOnRegionRequestOperationHandler extends
     AbstractFunctionRequestOperationHandler<ExecuteFunctionOnRegionRequest, ExecuteFunctionOnRegionResponse> {
 
   protected Set<Object> parseFilter(ProtobufSerializationService serializationService,
-      ExecuteFunctionOnRegionRequest request) throws EncodingException {
+      ExecuteFunctionOnRegionRequest request) throws DecodingException {
     List<BasicTypes.EncodedValue> encodedFilter = request.getKeyFilterList();
     Set<Object> filter = new HashSet<>();
 
@@ -72,7 +73,7 @@ public class ExecuteFunctionOnRegionRequestOperationHandler extends
 
   @Override
   protected Object getFunctionArguments(ExecuteFunctionOnRegionRequest request,
-      ProtobufSerializationService serializationService) throws EncodingException {
+      ProtobufSerializationService serializationService) throws DecodingException {
     return serializationService.decode(request.getArguments());
   }
 
@@ -93,8 +94,7 @@ public class ExecuteFunctionOnRegionRequestOperationHandler extends
   }
 
   @Override
-  protected Result buildResultMessage(ProtobufSerializationService serializationService)
-      throws EncodingException {
+  protected Result buildResultMessage(ProtobufSerializationService serializationService) {
     return Success.of(ExecuteFunctionOnRegionResponse.newBuilder().build());
   }
 

@@ -18,7 +18,6 @@ import org.apache.logging.log4j.Logger;
 
 import org.apache.geode.annotations.Experimental;
 import org.apache.geode.cache.Region;
-import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.exception.InvalidExecutionContextException;
 import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.internal.protocol.operations.ProtobufOperationHandler;
@@ -30,6 +29,7 @@ import org.apache.geode.internal.protocol.protobuf.v1.ProtobufSerializationServi
 import org.apache.geode.internal.protocol.protobuf.v1.RegionAPI;
 import org.apache.geode.internal.protocol.protobuf.v1.Result;
 import org.apache.geode.internal.protocol.protobuf.v1.Success;
+import org.apache.geode.internal.protocol.protobuf.v1.serialization.exception.DecodingException;
 import org.apache.geode.internal.protocol.protobuf.v1.serialization.exception.EncodingException;
 import org.apache.geode.internal.protocol.protobuf.v1.utilities.ProtobufResponseUtilities;
 
@@ -41,7 +41,8 @@ public class GetRequestOperationHandler
   @Override
   public Result<RegionAPI.GetResponse, ClientProtocol.ErrorResponse> process(
       ProtobufSerializationService serializationService, RegionAPI.GetRequest request,
-      MessageExecutionContext messageExecutionContext) throws InvalidExecutionContextException {
+      MessageExecutionContext messageExecutionContext)
+      throws InvalidExecutionContextException, EncodingException, DecodingException {
     String regionName = request.getRegionName();
     Region region = messageExecutionContext.getCache().getRegion(regionName);
     if (region == null) {
@@ -52,7 +53,7 @@ public class GetRequestOperationHandler
     long startOperationTime = messageExecutionContext.getStatistics().startOperation();
 
     try {
-      ((InternalCache) messageExecutionContext.getCache()).setReadSerializedForCurrentThread(true);
+      messageExecutionContext.getCache().setReadSerializedForCurrentThread(true);
 
       Object decodedKey = serializationService.decode(request.getKey());
       Object resultValue = region.get(decodedKey);
@@ -63,12 +64,8 @@ public class GetRequestOperationHandler
 
       BasicTypes.EncodedValue encodedValue = serializationService.encode(resultValue);
       return Success.of(RegionAPI.GetResponse.newBuilder().setResult(encodedValue).build());
-    } catch (EncodingException ex) {
-      logger.error("Received Get request with unsupported encoding: {}", ex);
-      return Failure.of(ProtobufResponseUtilities
-          .makeErrorResponse(BasicTypes.ErrorCode.INVALID_REQUEST, "Encoding not supported."));
     } finally {
-      ((InternalCache) messageExecutionContext.getCache()).setReadSerializedForCurrentThread(false);
+      messageExecutionContext.getCache().setReadSerializedForCurrentThread(false);
       messageExecutionContext.getStatistics().endOperation(startOperationTime);
     }
   }
