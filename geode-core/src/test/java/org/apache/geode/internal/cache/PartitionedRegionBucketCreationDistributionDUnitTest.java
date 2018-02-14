@@ -594,7 +594,7 @@ public class PartitionedRegionBucketCreationDistributionDUnitTest extends CacheT
 
     // taking the buckets which are local to the node and not all the available buckets.
     PartitionedRegionDataStore dataStore = partitionedRegion.getDataStore();
-    for (Integer bucketId : dataStore.localBucket2RegionMap.keySet()) {
+    for (Integer bucketId : dataStore.getLocalBucket2RegionMap().keySet()) {
       Region bucketRegion = prRoot.getSubregion(partitionedRegion.getBucketName(bucketId));
       assertThat(bucketRegion.getAttributes().getScope()).isEqualTo(Scope.DISTRIBUTED_ACK);
     }

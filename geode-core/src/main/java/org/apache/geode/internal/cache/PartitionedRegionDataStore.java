@@ -140,7 +140,7 @@ public class PartitionedRegionDataStore implements HasCachePerfStats {
    * <p>
    * Keys are instances of {@link Integer}. Values are instances of (@link BucketRegion}.
    */
-  final ConcurrentMap<Integer, BucketRegion> localBucket2RegionMap;
+  private final ConcurrentMap<Integer, BucketRegion> localBucket2RegionMap;
 
   /**
    * A counter of the number of concurrent bucket creates in progress on this node

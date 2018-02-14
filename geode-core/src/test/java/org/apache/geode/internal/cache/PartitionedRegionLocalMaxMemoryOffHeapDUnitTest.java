@@ -61,10 +61,10 @@ public class PartitionedRegionLocalMaxMemoryOffHeapDUnitTest
   }
 
   @SuppressWarnings({"rawtypes", "unchecked"})
-  protected RegionAttributes<?, ?> createRegionAttrsForPR(int red, int localMaxMem,
-      long recoveryDelay, EvictionAttributes evictionAttrs) {
-    RegionAttributes<?, ?> attrs = PartitionedRegionTestHelper.createRegionAttrsForPR(red,
-        localMaxMem, recoveryDelay, evictionAttrs, null);
+  protected RegionAttributes<?, ?> createRegionAttrsForPR(int redundancy, int localMaxMemory,
+      long recoveryDelay, EvictionAttributes evictionAttributes) {
+    RegionAttributes<?, ?> attrs = PartitionedRegionTestHelper.createRegionAttrsForPR(redundancy,
+        localMaxMemory, recoveryDelay, evictionAttributes, null);
     AttributesFactory factory = new AttributesFactory(attrs);
     factory.setOffHeap(true);
     return factory.create();

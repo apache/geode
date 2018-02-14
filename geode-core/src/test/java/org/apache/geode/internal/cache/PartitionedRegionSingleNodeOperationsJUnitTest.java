@@ -1022,7 +1022,7 @@ public class PartitionedRegionSingleNodeOperationsJUnitTest {
     putSomeValues(pr);
 
     java.util.Iterator buckRegionIterator =
-        pr.getDataStore().localBucket2RegionMap.values().iterator();
+        pr.getDataStore().getLocalBucket2RegionMap().values().iterator();
     while (buckRegionIterator.hasNext()) {
       Region bucket = (Region) buckRegionIterator.next();
       // assertIndexDetailsEquals(Scope.LOCAL, bucket.getAttributes().getScope());
