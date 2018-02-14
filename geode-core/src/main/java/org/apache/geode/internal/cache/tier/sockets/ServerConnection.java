@@ -328,7 +328,7 @@ public abstract class ServerConnection implements Runnable {
       if (this.handshake == null) {
         // synchronized (getCleanupTable()) {
         boolean readHandshake =
-            ServerHandshakeProcessor.readHandshake(this, getSecurityService(), acceptor);
+            ServerSideHandshakeFactory.readHandshake(this, getSecurityService(), acceptor);
         if (readHandshake) {
           // readHandshake will establish a handshake object in this ServerConnection
           if (this.handshake.isOK()) {
