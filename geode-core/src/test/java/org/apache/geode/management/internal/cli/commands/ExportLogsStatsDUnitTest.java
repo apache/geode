@@ -15,6 +15,7 @@
 
 package org.apache.geode.management.internal.cli.commands;
 
+import static java.util.stream.Collectors.toSet;
 import static org.apache.geode.distributed.ConfigurationProperties.STATISTIC_ARCHIVE_FILE;
 import static org.apache.geode.management.internal.cli.commands.ExportLogsCommand.ONLY_DATE_FORMAT;
 import static org.assertj.core.api.Assertions.assertThat;
@@ -87,7 +88,10 @@ public class ExportLogsStatsDUnitTest {
     Set<String> expectedFiles = Sets.newHashSet("locator-0/locator-0.log", "server-1/server-1.log",
         "server-1/statistics.gfs");
     assertThat(actualZipEnries).containsAll(expectedFiles);
-    assertThat(actualZipEnries).hasSize(4);
+    // remove pulse.log if present
+    actualZipEnries =
+        actualZipEnries.stream().filter(x -> !x.endsWith("pulse.log")).collect(toSet());
+    assertThat(actualZipEnries).hasSize(3);
   }
 
   @Test
@@ -99,7 +103,10 @@ public class ExportLogsStatsDUnitTest {
 
     Set<String> expectedFiles = Sets.newHashSet("locator-0/locator-0.log", "server-1/server-1.log");
     assertThat(actualZipEnries).containsAll(expectedFiles);
-    assertThat(actualZipEnries).hasSize(3);
+    // remove pulse.log if present
+    actualZipEnries =
+        actualZipEnries.stream().filter(x -> !x.endsWith("pulse.log")).collect(toSet());
+    assertThat(actualZipEnries).hasSize(2);
   }
 
   @Test

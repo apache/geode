@@ -17,12 +17,14 @@
 package org.apache.geode.management.internal.cli.util;
 
 import static java.util.stream.Collectors.joining;
+import static java.util.stream.Collectors.toList;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import java.io.File;
 import java.io.IOException;
 import java.nio.charset.Charset;
 import java.util.Arrays;
+import java.util.List;
 import java.util.Properties;
 
 import org.apache.commons.io.FileUtils;
@@ -70,7 +72,11 @@ public class MergeLogsDUnitTest {
 
   @Test
   public void testExportInProcess() throws Exception {
-    assertThat(MergeLogs.findLogFilesToMerge(lsRule.getWorkingDirRoot())).hasSize(6);
+    List<File> actualFiles = MergeLogs.findLogFilesToMerge(lsRule.getWorkingDirRoot());
+    // remove pulse.log if present
+    actualFiles =
+        actualFiles.stream().filter(x -> !x.getName().endsWith("pulse.log")).collect(toList());
+    assertThat(actualFiles).hasSize(5);
 
     File result = MergeLogs.mergeLogFile(lsRule.getWorkingDirRoot().getCanonicalPath());
     assertOnLogContents(result);
@@ -78,7 +84,11 @@ public class MergeLogsDUnitTest {
 
   @Test
   public void testExportInNewProcess() throws Throwable {
-    assertThat(MergeLogs.findLogFilesToMerge(lsRule.getWorkingDirRoot())).hasSize(6);
+    List<File> actualFiles = MergeLogs.findLogFilesToMerge(lsRule.getWorkingDirRoot());
+    // remove pulse.log if present
+    actualFiles =
+        actualFiles.stream().filter(x -> !x.getName().endsWith("pulse.log")).collect(toList());
+    assertThat(actualFiles).hasSize(5);
 
     MergeLogs.mergeLogsInNewProcess(lsRule.getWorkingDirRoot().toPath());
     File result = Arrays.stream(lsRule.getWorkingDirRoot().listFiles())
