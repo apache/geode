@@ -17,8 +17,6 @@ package org.apache.geode.internal.protocol.protobuf.v1.operations;
 import java.util.List;
 import java.util.Set;
 
-import com.google.protobuf.AbstractMessage;
-
 import org.apache.geode.cache.execute.Execution;
 import org.apache.geode.cache.execute.Function;
 import org.apache.geode.cache.execute.FunctionException;
@@ -33,6 +31,7 @@ import org.apache.geode.internal.protocol.protobuf.v1.Failure;
 import org.apache.geode.internal.protocol.protobuf.v1.MessageExecutionContext;
 import org.apache.geode.internal.protocol.protobuf.v1.ProtobufSerializationService;
 import org.apache.geode.internal.protocol.protobuf.v1.Result;
+import org.apache.geode.internal.protocol.protobuf.v1.serialization.exception.DecodingException;
 import org.apache.geode.internal.protocol.protobuf.v1.serialization.exception.EncodingException;
 import org.apache.geode.internal.security.SecurityService;
 import org.apache.geode.security.NotAuthorizedException;
@@ -44,7 +43,8 @@ public abstract class AbstractFunctionRequestOperationHandler<Req, Resp>
   @Override
   public Result<Resp, ClientProtocol.ErrorResponse> process(
       ProtobufSerializationService serializationService, Req request,
-      MessageExecutionContext messageExecutionContext) throws InvalidExecutionContextException {
+      MessageExecutionContext messageExecutionContext)
+      throws InvalidExecutionContextException, DecodingException {
 
     final String functionID = getFunctionID(request);
 
@@ -115,7 +115,7 @@ public abstract class AbstractFunctionRequestOperationHandler<Req, Resp>
   }
 
   protected abstract Set<?> parseFilter(ProtobufSerializationService serializationService,
-      Req request) throws EncodingException;
+      Req request) throws EncodingException, DecodingException;
 
   protected abstract String getFunctionID(Req request);
 
@@ -128,7 +128,8 @@ public abstract class AbstractFunctionRequestOperationHandler<Req, Resp>
 
   /** arguments for the function */
   protected abstract Object getFunctionArguments(Req request,
-      ProtobufSerializationService serializationService) throws EncodingException;
+      ProtobufSerializationService serializationService)
+      throws EncodingException, DecodingException;
 
   protected abstract Execution getFunctionExecutionObject(Object executionTarget)
       throws InvalidExecutionContextException;

@@ -137,7 +137,7 @@ _build.gradle_
 
     repositories { mavenCentral() }
     dependencies {
-      compile 'org.apache.geode:geode-core:1.1.0'
+      compile 'org.apache.geode:geode-core:1.4.0'
       runtime 'org.slf4j:slf4j-log4j12:1.7.24'
     }
 

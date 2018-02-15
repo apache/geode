@@ -173,9 +173,10 @@ public class DiskRegionJUnitTest extends DiskRegionTestingBase {
    */
   @Test
   public void testDiskRegionOverflow() throws Exception {
+    int evictionOverflowCapacity = 5;
     DiskRegionProperties props = new DiskRegionProperties();
     props.setOverflow(true);
-    props.setOverFlowCapacity(100);
+    props.setOverFlowCapacity(evictionOverflowCapacity);
     props.setDiskDirs(dirs);
     Region region = DiskRegionHelperFactory.getAsyncOverFlowOnlyRegion(cache, props);
 

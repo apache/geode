@@ -95,11 +95,11 @@ public class CompactRangeIndex extends AbstractIndex {
 
   static boolean TEST_ALWAYS_UPDATE_IN_PROGRESS = false;
 
-  public CompactRangeIndex(String indexName, Region region, String fromClause,
+  public CompactRangeIndex(InternalCache cache, String indexName, Region region, String fromClause,
       String indexedExpression, String projectionAttributes, String origFromClause,
       String origIndexExpr, String[] definitions, IndexStatistics stats) {
-    super(indexName, region, fromClause, indexedExpression, projectionAttributes, origFromClause,
-        origIndexExpr, definitions, stats);
+    super(cache, indexName, region, fromClause, indexedExpression, projectionAttributes,
+        origFromClause, origIndexExpr, definitions, stats);
     if (IndexManager.IS_TEST_LDM) {
       indexStore = new MapIndexStore(
           ((LocalRegion) region).getIndexMap(indexName, indexedExpression, origFromClause), region);

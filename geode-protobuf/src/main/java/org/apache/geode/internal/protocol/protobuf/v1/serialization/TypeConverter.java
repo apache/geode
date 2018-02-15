@@ -15,6 +15,7 @@
 package org.apache.geode.internal.protocol.protobuf.v1.serialization;
 
 import org.apache.geode.annotations.Experimental;
+import org.apache.geode.internal.protocol.protobuf.v1.serialization.exception.DecodingException;
 import org.apache.geode.internal.protocol.protobuf.v1.serialization.exception.EncodingException;
 
 /**
@@ -26,7 +27,7 @@ import org.apache.geode.internal.protocol.protobuf.v1.serialization.exception.En
  */
 @Experimental
 public interface TypeConverter<F, T> {
-  T decode(F incoming) throws EncodingException;
+  T decode(F incoming) throws DecodingException;
 
   F encode(T incoming) throws EncodingException;
 

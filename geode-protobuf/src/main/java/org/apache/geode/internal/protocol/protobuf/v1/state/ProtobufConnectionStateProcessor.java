@@ -18,8 +18,8 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 
+import org.apache.geode.internal.protocol.protobuf.v1.BasicTypes;
 import org.apache.geode.internal.protocol.protobuf.v1.MessageExecutionContext;
-import org.apache.geode.internal.protocol.protobuf.v1.ProtobufErrorCode;
 import org.apache.geode.internal.protocol.protobuf.v1.ProtobufOperationContext;
 import org.apache.geode.internal.protocol.protobuf.v1.state.exception.ConnectionStateException;
 
@@ -47,7 +47,7 @@ public interface ProtobufConnectionStateProcessor {
    */
   default ProtobufConnectionAuthenticatingStateProcessor allowAuthentication()
       throws ConnectionStateException {
-    throw new ConnectionStateException(ProtobufErrorCode.AUTHENTICATION_REQUIRED,
+    throw new ConnectionStateException(BasicTypes.ErrorCode.AUTHENTICATION_REQUIRED,
         "Authentication is required before processing further requests");
   }
 

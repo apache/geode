@@ -1064,24 +1064,26 @@ public class ConnectionManagerImpl implements ConnectionManager {
       if (this.closing) {
         throw new CacheClosedException("This pool is closing");
       }
+      synchronized (this) {
 
-      getPoolStats().incPoolConnections(1);
+        getPoolStats().incPoolConnections(1);
 
-      // we want the smallest birthDate (e.g. oldest cnx) at the front of the list
-      this.allConnections.add(connection);
+        // we want the smallest birthDate (e.g. oldest cnx) at the front of the list
+        this.allConnections.add(connection);
 
-      addToEndpointMap(connection);
+        addToEndpointMap(connection);
 
-      if (isIdleExpirePossible()) {
-        startBackgroundExpiration();
-      }
-      if (lifetimeTimeout != -1 && !haveLifetimeExpireConnectionsTask) {
-        if (checkForReschedule(true)) {
-          // something has already expired so start processing with no delay
-          // logger.info("DEBUG: rescheduling lifetime expire to be now");
-          startBackgroundLifetimeExpiration(0);
-        } else {
-          // either no possible lifetime expires or we scheduled one
+        if (isIdleExpirePossible()) {
+          startBackgroundExpiration();
+        }
+        if (lifetimeTimeout != -1 && !haveLifetimeExpireConnectionsTask) {
+          if (checkForReschedule(true)) {
+            // something has already expired so start processing with no delay
+            // logger.info("DEBUG: rescheduling lifetime expire to be now");
+            startBackgroundLifetimeExpiration(0);
+          } else {
+            // either no possible lifetime expires or we scheduled one
+          }
         }
       }
     }

@@ -36,26 +36,40 @@ mkdir -p ${CALLSTACKS_DIR}
 sleep ${SLEEP_TIME}
 
 echo "Capturing call stacks"
+
 for (( h=0; h<${COUNT}; h++)); do
     today=`date +%Y-%m-%d-%H-%M-%S`
     logfile=${CALLSTACKS_DIR}/callstacks-${today}.txt
-    mapfile -t containers < <(docker ps --format '{{.Names}}')
+    if [ -n "${PARALLEL_DUNIT}" ]; then
+        mapfile -t containers < <(docker ps --format '{{.Names}}')
 
-    for (( i=0; i<${#containers[@]}; i++ )); do
-        echo "Container: ${containers[i]}" | tee -a ${logfile};
-        mapfile -t processes < <(docker exec ${containers[i]} jps | grep ChildVM | cut -d ' ' -f 1)
+        for (( i=0; i<${#containers[@]}; i++ )); do
+            echo "Container: ${containers[i]}" | tee -a ${logfile};
+            mapfile -t processes < <(docker exec ${containers[i]} jps | grep ChildVM | cut -d ' ' -f 1)
+            echo "Got past processes."
+            for ((j=0; j<${#processes[@]}; j++ )); do
+                  echo "********* Dumping stack for process ${processes[j]}:" | tee -a ${logfile}
+                      docker exec ${containers[i]} jstack -l ${processes[j]} >> ${logfile}
+            done
+        done
+    else
+        mapfile -t processes < <(jps | grep ChildVM | cut -d ' ' -f 1)
         echo "Got past processes."
         for ((j=0; j<${#processes[@]}; j++ )); do
               echo "********* Dumping stack for process ${processes[j]}:" | tee -a ${logfile}
-                  docker exec ${containers[i]} jstack -l ${processes[j]} >> ${logfile}
+                  jstack -l ${processes[j]} >> ${logfile}
         done
-    done
+
+    fi
     sleep ${STACK_INTERVAL}
 done
 
 echo "Checking progress files:"
-mapfile -t progressfiles < <(find ${GEODE_BUILD} -name "*-progress.txt")
-for (( i=0; i<${#progressfiles[@]}; i++)); do
-    echo "Checking progress file: ${progressfiles[i]}"
-    /usr/local/bin/dunit-progress hang ${progressfiles[i]} | tee -a ${CALLSTACKS_DIR}/dunit-hangs.txt
-done
+
+if [ -n "${PARALLEL_DUNIT}" ]; then
+    mapfile -t progressfiles < <(find ${GEODE_BUILD} -name "*-progress.txt")
+    for (( i=0; i<${#progressfiles[@]}; i++)); do
+        echo "Checking progress file: ${progressfiles[i]}"
+        /usr/local/bin/dunit-progress hang ${progressfiles[i]} | tee -a ${CALLSTACKS_DIR}/dunit-hangs.txt
+    done
+fi
