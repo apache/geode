@@ -5289,4 +5289,13 @@ public class GemFireCacheImpl implements InternalCache, InternalClientCache, Has
       }
     }
   }
+
+  @Override
+  public Object convertPdxInstanceIfNeeded(Object obj) {
+    Object result = obj;
+    if (!this.getPdxReadSerialized() && obj instanceof PdxInstance) {
+      result = ((PdxInstance) obj).getObject();
+    }
+    return result;
+  }
 }
