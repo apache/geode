@@ -1516,8 +1516,6 @@ public interface ConfigurationProperties {
   String SECURITY_LOG_LEVEL = SECURITY_PREFIX + "log-level";
   /**
    * The static String definition of the <i>"security-peer-auth-init"</i> property
-   *
-   * @deprecated since Geode 1.0. use security-username and security-password
    */
   String SECURITY_PEER_AUTH_INIT = SECURITY_PREFIX + "peer-auth-init";
   /**
