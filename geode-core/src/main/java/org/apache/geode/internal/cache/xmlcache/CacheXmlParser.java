@@ -1942,13 +1942,17 @@ public class CacheXmlParser extends CacheXml implements ContentHandler {
     String className = (String) top;
     logger.trace(LogMarker.CACHE_XML_PARSER, LocalizedMessage.create(
         LocalizedStrings.CacheXmlParser_XML_PARSER_CREATEDECLARABLE_CLASS_NAME_0, className));
+    Class c;
+    try {
+      c = InternalDataSerializer.getCachedClass(className);
+    } catch (Exception ex) {
+      throw new CacheXmlException("Could not find the class: " + className, ex);
+    }
     Object o;
     try {
-      Class c = InternalDataSerializer.getCachedClass(className);
       o = c.newInstance();
     } catch (Exception ex) {
-      throw new CacheXmlException(
-          LocalizedStrings.CacheXmlParser_WHILE_INSTANTIATING_A_0.toLocalizedString(className), ex);
+      throw new CacheXmlException("Could not create an instance of " + className, ex);
     }
     if (!(o instanceof Declarable)) {
       throw new CacheXmlException(

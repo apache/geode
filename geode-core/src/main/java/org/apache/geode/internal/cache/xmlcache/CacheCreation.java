@@ -45,6 +45,7 @@ import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.CacheClosedException;
 import org.apache.geode.cache.CacheTransactionManager;
 import org.apache.geode.cache.CacheWriterException;
+import org.apache.geode.cache.CacheXmlException;
 import org.apache.geode.cache.Declarable;
 import org.apache.geode.cache.DiskStore;
 import org.apache.geode.cache.DiskStoreFactory;
@@ -588,8 +589,13 @@ public class CacheCreation implements InternalCache {
     for (DeclarableAndProperties struct : this.declarablePropertiesList) {
       Declarable declarable = struct.getDeclarable();
       Properties properties = struct.getProperties();
-      declarable.setCache(cache);
-      declarable.init(properties);
+      try {
+        declarable.setCache(cache);
+        declarable.init(properties);
+      } catch (Exception ex) {
+        throw new CacheXmlException(
+            "Exception while initializing an instance of " + declarable.getClass().getName(), ex);
+      }
       this.declarablePropertiesMap.put(declarable, properties);
     }
     this.declarablePropertiesList.clear();
