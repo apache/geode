@@ -40,7 +40,7 @@ public interface AuthInitialize extends CacheCallback {
    * Initialize the callback for a client/peer. This is invoked when a new connection from a
    * client/peer is created with the host.
    *
-   * Do not use these loggers, use log4j logger directly
+   * For future implementations, do not use these loggers, use log4j logger directly.
    *
    * @param systemLogger {@link LogWriter} for system logs
    * @param securityLogger {@link LogWriter} for security logs
