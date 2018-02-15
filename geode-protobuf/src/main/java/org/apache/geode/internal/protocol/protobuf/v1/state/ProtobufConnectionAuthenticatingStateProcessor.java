@@ -16,10 +16,8 @@ package org.apache.geode.internal.protocol.protobuf.v1.state;
 
 import java.util.Properties;
 
-import org.apache.logging.log4j.Logger;
 import org.apache.shiro.subject.Subject;
 
-import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.internal.protocol.protobuf.v1.BasicTypes;
 import org.apache.geode.internal.protocol.protobuf.v1.MessageExecutionContext;
 import org.apache.geode.internal.protocol.protobuf.v1.ProtobufOperationContext;
@@ -30,7 +28,6 @@ import org.apache.geode.security.AuthenticationFailedException;
 
 public class ProtobufConnectionAuthenticatingStateProcessor
     implements ProtobufConnectionStateProcessor {
-  private static final Logger logger = LogService.getLogger();
   private final SecurityService securityService;
 
   public ProtobufConnectionAuthenticatingStateProcessor(SecurityService securityService) {
@@ -42,9 +39,8 @@ public class ProtobufConnectionAuthenticatingStateProcessor
       ProtobufOperationContext operationContext) throws ConnectionStateException {
     if (!(operationContext
         .getOperationHandler() instanceof AuthenticationRequestOperationHandler)) {
-      final String message = "User has not yet authenticated";
-      logger.warn(message);
-      throw new ConnectionStateException(BasicTypes.ErrorCode.AUTHENTICATION_FAILED, message);
+      throw new ConnectionStateException(BasicTypes.ErrorCode.AUTHENTICATION_FAILED,
+          "User has not yet authenticated");
     }
   }
 

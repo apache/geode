@@ -14,9 +14,6 @@
  */
 package org.apache.geode.internal.protocol.protobuf.v1.state;
 
-import org.apache.logging.log4j.Logger;
-
-import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.internal.protocol.protobuf.v1.BasicTypes;
 import org.apache.geode.internal.protocol.protobuf.v1.MessageExecutionContext;
 import org.apache.geode.internal.protocol.protobuf.v1.ProtobufOperationContext;
@@ -24,23 +21,17 @@ import org.apache.geode.internal.protocol.protobuf.v1.state.exception.Connection
 
 public class LegacySecurityProtobufConnectionStateProcessor
     implements ProtobufConnectionStateProcessor {
-  private static final Logger logger = LogService.getLogger();
-
   @Override
   public void validateOperation(MessageExecutionContext messageContext,
       ProtobufOperationContext operationContext) throws ConnectionStateException {
-    final String message =
-        "Attempting to authenticate incoming protobuf message using legacy security implementation. This is not supported. Failing authentication.";
-    logger.warn(message);
-    throw new ConnectionStateException(BasicTypes.ErrorCode.AUTHENTICATION_FAILED, message);
+    throw new ConnectionStateException(BasicTypes.ErrorCode.AUTHENTICATION_FAILED,
+        "Attempting to authenticate incoming protobuf message using legacy security implementation. This is not supported. Failing authentication.");
   }
 
   @Override
   public ProtobufConnectionAuthenticatingStateProcessor allowAuthentication()
       throws ConnectionStateException {
-    final String message =
-        "Attempting to authenticate incoming protobuf message using legacy security implementation. This is not supported. Failing authentication.";
-    logger.warn(message);
-    throw new ConnectionStateException(BasicTypes.ErrorCode.AUTHENTICATION_FAILED, message);
+    throw new ConnectionStateException(BasicTypes.ErrorCode.AUTHENTICATION_FAILED,
+        "Attempting to authenticate incoming protobuf message using legacy security implementation. This is not supported. Failing authentication.");
   }
 }

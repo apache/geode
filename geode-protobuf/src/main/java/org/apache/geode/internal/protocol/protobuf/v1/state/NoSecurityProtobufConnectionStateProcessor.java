@@ -14,9 +14,6 @@
  */
 package org.apache.geode.internal.protocol.protobuf.v1.state;
 
-import org.apache.logging.log4j.Logger;
-
-import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.internal.protocol.protobuf.v1.BasicTypes;
 import org.apache.geode.internal.protocol.protobuf.v1.MessageExecutionContext;
 import org.apache.geode.internal.protocol.protobuf.v1.ProtobufOperationContext;
@@ -24,16 +21,13 @@ import org.apache.geode.internal.protocol.protobuf.v1.state.exception.Connection
 
 public class NoSecurityProtobufConnectionStateProcessor
     implements ProtobufConnectionStateProcessor {
-  private static final Logger logger = LogService.getLogger();
-
   @Override
   public void validateOperation(MessageExecutionContext messageContext,
       ProtobufOperationContext operationContext) throws ConnectionStateException {}
 
   public ProtobufConnectionAuthenticatingStateProcessor allowAuthentication()
       throws ConnectionStateException {
-    final String message = "This machine is not set to require user authentication.";
-    logger.warn(message);
-    throw new ConnectionStateException(BasicTypes.ErrorCode.AUTHENTICATION_NOT_SUPPORTED, message);
+    throw new ConnectionStateException(BasicTypes.ErrorCode.AUTHENTICATION_NOT_SUPPORTED,
+        "This machine is not set to require user authentication.");
   }
 }

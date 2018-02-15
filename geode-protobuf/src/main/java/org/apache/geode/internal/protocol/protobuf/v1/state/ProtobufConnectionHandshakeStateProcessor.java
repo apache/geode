@@ -19,10 +19,7 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.PushbackInputStream;
 
-import org.apache.logging.log4j.Logger;
-
 import org.apache.geode.internal.cache.tier.CommunicationMode;
-import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.internal.protocol.protobuf.v1.BasicTypes;
 import org.apache.geode.internal.protocol.protobuf.v1.MessageExecutionContext;
 import org.apache.geode.internal.protocol.protobuf.v1.ProtobufOperationContext;
@@ -31,7 +28,6 @@ import org.apache.geode.internal.protocol.protobuf.v1.state.exception.Connection
 import org.apache.geode.internal.security.SecurityService;
 
 public class ProtobufConnectionHandshakeStateProcessor implements ProtobufConnectionStateProcessor {
-  private static final Logger logger = LogService.getLogger();
   private final SecurityService securityService;
 
   public ProtobufConnectionHandshakeStateProcessor(SecurityService securityService) {
@@ -41,9 +37,8 @@ public class ProtobufConnectionHandshakeStateProcessor implements ProtobufConnec
   @Override
   public void validateOperation(MessageExecutionContext messageContext,
       ProtobufOperationContext operationContext) throws ConnectionStateException {
-    final String message = "Connection processing should never be asked to validate an operation";
-    logger.warn(message);
-    throw new ConnectionStateException(BasicTypes.ErrorCode.INVALID_REQUEST, message);
+    throw new ConnectionStateException(BasicTypes.ErrorCode.INVALID_REQUEST,
+        "Connection processing should never be asked to validate an operation");
   }
 
   private ProtobufConnectionStateProcessor nextConnectionState() {

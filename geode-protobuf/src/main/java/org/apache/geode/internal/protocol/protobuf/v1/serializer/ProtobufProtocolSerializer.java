@@ -18,23 +18,17 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 
-import org.apache.logging.log4j.Logger;
-
 import org.apache.geode.annotations.Experimental;
-import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.internal.protocol.protobuf.v1.ClientProtocol;
 import org.apache.geode.internal.protocol.protobuf.v1.serializer.exception.InvalidProtocolMessageException;
 
 @Experimental
 public class ProtobufProtocolSerializer {
-  private static final Logger logger = LogService.getLogger();
-
   public ClientProtocol.Message deserialize(InputStream inputStream)
       throws InvalidProtocolMessageException {
     try {
       return ClientProtocol.Message.parseDelimitedFrom(inputStream);
     } catch (IOException e) {
-      logger.info(e);
       throw new InvalidProtocolMessageException("Failed to parse Protobuf Message", e);
     }
   }

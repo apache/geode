@@ -15,21 +15,16 @@
 
 package org.apache.geode.internal.protocol.protobuf.v1;
 
-
-import org.apache.logging.log4j.Logger;
-
 import org.apache.geode.annotations.Experimental;
 import org.apache.geode.distributed.Locator;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.exception.InvalidExecutionContextException;
-import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.internal.protocol.protobuf.statistics.ClientStatistics;
 import org.apache.geode.internal.protocol.protobuf.v1.state.ProtobufConnectionStateProcessor;
 import org.apache.geode.internal.protocol.protobuf.v1.state.ProtobufConnectionTerminatingStateProcessor;
 
 @Experimental
 public class LocatorMessageExecutionContext extends MessageExecutionContext {
-  private static final Logger logger = LogService.getLogger();
   private final Locator locator;
 
   public LocatorMessageExecutionContext(Locator locator, ClientStatistics statistics,
@@ -47,9 +42,8 @@ public class LocatorMessageExecutionContext extends MessageExecutionContext {
   @Override
   public InternalCache getCache() throws InvalidExecutionContextException {
     setConnectionStateProcessor(new ProtobufConnectionTerminatingStateProcessor());
-    final String message = "Operations on the locator should not to try to operate on a server";
-    logger.debug(message);
-    throw new InvalidExecutionContextException(message);
+    throw new InvalidExecutionContextException(
+        "Operations on the locator should not to try to operate on a server");
   }
 
   /**
@@ -62,5 +56,4 @@ public class LocatorMessageExecutionContext extends MessageExecutionContext {
   public Locator getLocator() throws InvalidExecutionContextException {
     return locator;
   }
-
 }
