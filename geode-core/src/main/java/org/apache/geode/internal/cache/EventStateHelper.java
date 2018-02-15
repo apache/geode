@@ -47,7 +47,7 @@ public class EventStateHelper {
    * Callers for this method are: <br>
    * {@link CreateRegionReplyMessage#toData(DataOutput)} <br>
    * {@link RegionStateMessage#toData(DataOutput)} <br>
-   * 
+   *
    * @param myId the memberId that is serializing
    */
   @SuppressWarnings("synthetic-access")
