@@ -430,7 +430,8 @@ public abstract class ServerConnection implements Runnable {
         securityLogWriter.warning(LocalizedStrings.ONE_ARG,
             getName() + ": Security exception: " + exStr);
       }
-      handleHandshakeException(noauth);
+      refuseHandshake(noauth.getMessage(), Handshake.REPLY_EXCEPTION_AUTHENTICATION_REQUIRED);
+      failConnectionAttempt();
     } else if (ex instanceof AuthenticationFailedException) {
       AuthenticationFailedException failed = (AuthenticationFailedException) ex;
       String exStr = failed.getLocalizedMessage();
@@ -441,7 +442,8 @@ public abstract class ServerConnection implements Runnable {
         securityLogWriter.warning(LocalizedStrings.ONE_ARG,
             getName() + ": Security exception: " + exStr);
       }
-      handleHandshakeException(failed);
+      refuseHandshake(failed.getMessage(), Handshake.REPLY_EXCEPTION_AUTHENTICATION_FAILED);
+      failConnectionAttempt();
     } else {
       logger.warn(
           "Unexpected exception type in ServerConnection handleHandshakeAuthenticationException");
