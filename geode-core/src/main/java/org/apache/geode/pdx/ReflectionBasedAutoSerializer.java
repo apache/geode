@@ -64,7 +64,6 @@ import org.apache.geode.pdx.internal.AutoSerializableManager;
 public class ReflectionBasedAutoSerializer implements PdxSerializer, Declarable {
 
   private final AutoSerializableManager manager;
-  private boolean initialized;
 
   /**
    * Default constructor primarily used during declarative configuration via the cache.xml file.
@@ -374,15 +373,6 @@ public class ReflectionBasedAutoSerializer implements PdxSerializer, Declarable 
    */
   @Override
   public void init(Properties props) {
-    if (this.initialized) {
-      // For backwards compatibility we need to keep the external
-      // init method. But the product will call both initialize and
-      // init. So if we are already initialized subsequent calls
-      // are a noop. Once the deprecated init method is removed, this
-      // boolean check can also be removed.
-      return;
-    }
-    this.initialized = true;
     this.manager.init(props);
   }
 
@@ -403,15 +393,7 @@ public class ReflectionBasedAutoSerializer implements PdxSerializer, Declarable 
    */
   @Override
   public void initialize(Cache cache, Properties props) {
-    if (this.initialized) {
-      // For backwards compatibility we need to keep the external
-      // init method. But the product will call both initialize and
-      // init. So if we are already initialized subsequent calls
-      // are a noop. Once the deprecated init method is removed, this
-      // boolean check can also be removed.
-      return;
-    }
-    this.initialized = true;
+    this.manager.setRegionService(cache);
     this.manager.init(props);
   }
 
