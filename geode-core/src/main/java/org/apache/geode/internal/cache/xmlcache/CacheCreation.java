@@ -598,7 +598,6 @@ public class CacheCreation implements InternalCache {
       }
       this.declarablePropertiesMap.put(declarable, properties);
     }
-    this.declarablePropertiesList.clear();
     cache.addDeclarableProperties(this.declarablePropertiesMap);
   }
 
@@ -1257,12 +1256,7 @@ public class CacheCreation implements InternalCache {
 
   @Override
   public Properties getDeclarableProperties(final Declarable declarable) {
-    for (DeclarableAndProperties struct : this.declarablePropertiesList) {
-      if (declarable.equals(struct.getDeclarable())) {
-        return struct.getProperties();
-      }
-    }
-    return null;
+    throw new UnsupportedOperationException(LocalizedStrings.SHOULDNT_INVOKE.toLocalizedString());
   }
 
   @Override
@@ -1770,8 +1764,10 @@ public class CacheCreation implements InternalCache {
   }
 
   void runInitializer(InternalCache cache) {
-    if (getInitializer() != null) {
-      getInitializer().init(getInitializerProps());
+    Declarable initializer = getInitializer();
+    if (initializer != null) {
+      initializer.setCache(cache);
+      initializer.init(getInitializerProps());
     }
   }
 
