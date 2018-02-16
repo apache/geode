@@ -25,6 +25,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicIntegerArray;
 
+import org.apache.commons.lang.mutable.MutableInt;
 import org.apache.logging.log4j.Logger;
 
 import org.apache.geode.CancelException;
@@ -109,11 +110,9 @@ public class ClientHealthMonitor {
    * note, these were moved from static fields in ServerConnection so that they will be cleaned up
    * when the client health monitor is shutdown.
    */
-  private final HashMap<ServerSideHandshake, ServerConnection.Counter> cleanupTable =
-      new HashMap<>();
+  private final HashMap<ServerSideHandshake, MutableInt> cleanupTable = new HashMap<>();
 
-  private final HashMap<ClientProxyMembershipID, ServerConnection.Counter> cleanupProxyIdTable =
-      new HashMap<>();
+  private final HashMap<ClientProxyMembershipID, MutableInt> cleanupProxyIdTable = new HashMap<>();
 
   /**
    * Used to track the connections for a particular client
@@ -692,11 +691,11 @@ public class ClientHealthMonitor {
     return proxyIdConnections.computeIfAbsent(proxyID, key -> new ServerConnectionCollection());
   }
 
-  public Map<ClientProxyMembershipID, ServerConnection.Counter> getCleanupProxyIdTable() {
+  public Map<ClientProxyMembershipID, MutableInt> getCleanupProxyIdTable() {
     return cleanupProxyIdTable;
   }
 
-  public Map<ServerSideHandshake, ServerConnection.Counter> getCleanupTable() {
+  public Map<ServerSideHandshake, MutableInt> getCleanupTable() {
     return cleanupTable;
   }
 
