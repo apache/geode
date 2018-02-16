@@ -52,8 +52,9 @@ public class PutCommand implements GfshCommand {
           help = CliStrings.PUT__KEYCLASS__HELP) String keyClass,
       @CliOption(key = {CliStrings.PUT__VALUEKLASS},
           help = CliStrings.PUT__VALUEKLASS__HELP) String valueClass,
-      @CliOption(key = {CliStrings.PUT__PUTIFABSENT}, help = CliStrings.PUT__PUTIFABSENT__HELP,
-          specifiedDefaultValue = "true", unspecifiedDefaultValue = "false") boolean putIfAbsent) {
+      @CliOption(key = {CliStrings.IFNOTEXISTS, CliStrings.PUT__PUTIFABSENT},
+          help = CliStrings.PUT__PUTIFNOTEXISTS__HELP, specifiedDefaultValue = "true",
+          unspecifiedDefaultValue = "false") boolean putIfNotExists) {
 
     InternalCache cache = getCache();
     cache.getSecurityService().authorize(Resource.DATA, Operation.WRITE, regionPath);
@@ -72,7 +73,7 @@ public class PutCommand implements GfshCommand {
         request.setKeyClass(keyClass);
         request.setRegionName(regionPath);
         request.setValueClass(valueClass);
-        request.setPutIfAbsent(putIfAbsent);
+        request.setPutIfAbsent(putIfNotExists);
         dataResult = callFunctionForRegion(request, putfn, memberList);
       } else {
         dataResult = DataCommandResult.createPutInfoResult(key, value, null,
@@ -80,7 +81,7 @@ public class PutCommand implements GfshCommand {
             false);
       }
     } else {
-      dataResult = putfn.put(key, value, putIfAbsent, keyClass, valueClass, regionPath, cache);
+      dataResult = putfn.put(key, value, putIfNotExists, keyClass, valueClass, regionPath, cache);
     }
     dataResult.setKeyClass(keyClass);
     if (valueClass != null) {

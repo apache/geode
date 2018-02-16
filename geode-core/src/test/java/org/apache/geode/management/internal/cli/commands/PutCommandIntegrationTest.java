@@ -70,6 +70,30 @@ public class PutCommandIntegrationTest {
   }
 
   @Test
+  public void putIfNotExists() throws Exception {
+    gfsh.executeAndAssertThat("put --region=/testRegion --key=key1 --value=value1")
+        .statusIsSuccess().containsKeyValuePair("Result", "true");
+    assertThat(server.getCache().getRegion("testRegion").get("key1")).isEqualTo("value1");
+
+    // if unspecified if-not-exits=false, so override
+    gfsh.executeAndAssertThat("put --region=/testRegion --key=key1 --value=value2")
+        .statusIsSuccess().containsKeyValuePair("Result", "true");
+    assertThat(server.getCache().getRegion("testRegion").get("key1")).isEqualTo("value2");
+
+    // if specified then true, so skip it
+    gfsh.executeAndAssertThat("put --region=/testRegion --key=key1 --value=value3 --if-not-exists")
+        .statusIsSuccess().containsKeyValuePair("Result", "true");
+    assertThat(server.getCache().getRegion("testRegion").get("key1")).isEqualTo("value2");
+
+    // skip-if-exists is deprecated and honored
+    gfsh.executeAndAssertThat("help put").statusIsSuccess()
+        .containsOutput("Synonym skip-if-exists is deprecated.");
+    gfsh.executeAndAssertThat("put --region=/testRegion --key=key1 --value=value3 --skip-if-exists")
+        .statusIsSuccess().containsKeyValuePair("Result", "true");
+    assertThat(server.getCache().getRegion("testRegion").get("key1")).isEqualTo("value2");
+  }
+
+  @Test
   // Bug : 51587 : GFSH command failing when ; is present in either key or value in put operation
   public void putWithSemicoln() throws Exception {
     gfsh.executeAndAssertThat("put --region=/testRegion --key=key1;key1 --value=value1;value1")
