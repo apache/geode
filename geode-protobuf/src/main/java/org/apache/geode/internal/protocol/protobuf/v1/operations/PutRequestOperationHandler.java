@@ -58,12 +58,14 @@ public class PutRequestOperationHandler
 
       Object decodedValue = serializationService.decode(entry.getValue());
       Object decodedKey = serializationService.decode(entry.getKey());
+      if (decodedKey == null || decodedValue == null) {
+        return Failure.of(ProtobufResponseUtilities.makeErrorResponse(INVALID_REQUEST,
+            "Key and value must both be non-NULL"));
+      }
+
       try {
         region.put(decodedKey, decodedValue);
         return Success.of(RegionAPI.PutResponse.newBuilder().build());
-      } catch (NullPointerException ex) {
-        return Failure.of(ProtobufResponseUtilities.makeErrorResponse(INVALID_REQUEST,
-            "Key and value must both be non-NULL"));
       } catch (ClassCastException ex) {
         logger.error("Received Put request with invalid key type: {}", ex);
         return Failure.of(ProtobufResponseUtilities.makeErrorResponse(SERVER_ERROR,

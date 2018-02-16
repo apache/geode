@@ -89,10 +89,11 @@ public class GetAllRequestOperationHandler
       BasicTypes.EncodedValue key) {
     try {
       Object decodedKey = serializationService.decode(key);
+      if (decodedKey == null) {
+        return createKeyedError(key, "NULL is not a valid key for get.", INVALID_REQUEST);
+      }
       Object value = region.get(decodedKey);
       return ProtobufUtilities.createEntry(serializationService, decodedKey, value);
-    } catch (NullPointerException ex) {
-      return createKeyedError(key, "NULL is not a valid key for get.", INVALID_REQUEST);
     } catch (EncodingException ex) {
       logger.error("Encoding not supported: {}", ex);
       return createKeyedError(key, "Encoding not supported.", INVALID_REQUEST);

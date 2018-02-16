@@ -73,11 +73,11 @@ public class PutAllRequestOperationHandler
     try {
       Object decodedValue = serializationService.decode(entry.getValue());
       Object decodedKey = serializationService.decode(entry.getKey());
+      if (decodedKey == null || decodedValue == null) {
+        return buildKeyedError(entry, INVALID_REQUEST, "Key and value must both be non-NULL");
+      }
 
       region.put(decodedKey, decodedValue);
-    } catch (NullPointerException ex) {
-      return buildAndLogKeyedError(entry, INVALID_REQUEST, "Key and value must both be non-NULL",
-          ex);
     } catch (EncodingException ex) {
       return buildAndLogKeyedError(entry, INVALID_REQUEST, "Encoding not supported", ex);
     } catch (ClassCastException ex) {
@@ -89,7 +89,11 @@ public class PutAllRequestOperationHandler
   private BasicTypes.KeyedError buildAndLogKeyedError(BasicTypes.Entry entry,
       ProtobufErrorCode errorCode, String message, Exception ex) {
     logger.error(message, ex);
+    return buildKeyedError(entry, errorCode, message);
+  }
 
+  private BasicTypes.KeyedError buildKeyedError(BasicTypes.Entry entry, ProtobufErrorCode errorCode,
+      String message) {
     return BasicTypes.KeyedError.newBuilder().setKey(entry.getKey())
         .setError(BasicTypes.Error.newBuilder()
             .setErrorCode(ProtobufUtilities.getProtobufErrorCode(errorCode)).setMessage(message))

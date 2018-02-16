@@ -55,12 +55,13 @@ public class RemoveRequestOperationHandler
     long startTime = messageExecutionContext.getStatistics().startOperation();
     try {
       Object decodedKey = serializationService.decode(request.getKey());
+      if (decodedKey == null) {
+        return Failure.of(ProtobufResponseUtilities.makeErrorResponse(INVALID_REQUEST,
+            "NULL is not a valid key for removal."));
+      }
       region.remove(decodedKey);
 
       return Success.of(RegionAPI.RemoveResponse.newBuilder().build());
-    } catch (NullPointerException ex) {
-      return Failure.of(ProtobufResponseUtilities.makeErrorResponse(INVALID_REQUEST,
-          "NULL is not a valid key for removal."));
     } catch (EncodingException ex) {
       // can be thrown by encoding or decoding.
       logger.error("Received Remove request with unsupported encoding: {}", ex);

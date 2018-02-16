@@ -37,60 +37,62 @@ public class ProtobufSerializationService implements SerializationService<BasicT
    */
   @Override
   public BasicTypes.EncodedValue encode(Object value) throws EncodingException {
-    BasicTypes.EncodedValue.Builder builder = BasicTypes.EncodedValue.newBuilder();
-
     if (value == null) {
-      builder.setNullResult(NullValue.NULL_VALUE);
-    } else {
-      try {
-        ProtobufEncodingTypes protobufEncodingTypes =
-            ProtobufEncodingTypes.valueOf(value.getClass());
-        switch (protobufEncodingTypes) {
-          case INT: {
-            builder.setIntResult((Integer) value);
-            break;
-          }
-          case LONG: {
-            builder.setLongResult((Long) value);
-            break;
-          }
-          case SHORT: {
-            builder.setShortResult((Short) value);
-            break;
-          }
-          case BYTE: {
-            builder.setByteResult((Byte) value);
-            break;
-          }
-          case DOUBLE: {
-            builder.setDoubleResult((Double) value);
-            break;
-          }
-          case FLOAT: {
-            builder.setFloatResult((Float) value);
-            break;
-          }
-          case BINARY: {
-            builder.setBinaryResult(ByteString.copyFrom((byte[]) value));
-            break;
-          }
-          case BOOLEAN: {
-            builder.setBooleanResult((Boolean) value);
-            break;
-          }
-          case STRING: {
-            builder.setStringResult((String) value);
-            break;
-          }
-          case PDX_OBJECT: {
-            builder.setJsonObjectResult(jsonPdxConverter.encode((PdxInstance) value));
-            break;
-          }
-        }
-      } catch (UnknownProtobufEncodingType unknownProtobufEncodingType) {
-        throw new EncodingException("No protobuf encoding for type " + value.getClass().getName());
-      }
+      return BasicTypes.EncodedValue.newBuilder().setNullResult(NullValue.NULL_VALUE).build();
     }
+
+    BasicTypes.EncodedValue.Builder builder = BasicTypes.EncodedValue.newBuilder();
+    try {
+      ProtobufEncodingTypes protobufEncodingTypes = ProtobufEncodingTypes.valueOf(value.getClass());
+      switch (protobufEncodingTypes) {
+        case INT: {
+          builder.setIntResult((Integer) value);
+          break;
+        }
+        case LONG: {
+          builder.setLongResult((Long) value);
+          break;
+        }
+        case SHORT: {
+          builder.setShortResult((Short) value);
+          break;
+        }
+        case BYTE: {
+          builder.setByteResult((Byte) value);
+          break;
+        }
+        case DOUBLE: {
+          builder.setDoubleResult((Double) value);
+          break;
+        }
+        case FLOAT: {
+          builder.setFloatResult((Float) value);
+          break;
+        }
+        case BINARY: {
+          builder.setBinaryResult(ByteString.copyFrom((byte[]) value));
+          break;
+        }
+        case BOOLEAN: {
+          builder.setBooleanResult((Boolean) value);
+          break;
+        }
+        case STRING: {
+          builder.setStringResult((String) value);
+          break;
+        }
+        case PDX_OBJECT: {
+          builder.setJsonObjectResult(jsonPdxConverter.encode((PdxInstance) value));
+          break;
+        }
+        default:
+          throw new EncodingException("No handler for protobuf type "
+              + ProtobufEncodingTypes.valueOf(value.getClass()).toString());
+      }
+    } catch (UnknownProtobufEncodingType unknownProtobufEncodingType) {
+      throw new EncodingException("No protobuf encoding for type " + value.getClass().getName());
+    }
+
     return builder.build();
   }
 

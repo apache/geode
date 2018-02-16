@@ -55,9 +55,13 @@ public class GetRequestOperationHandler
     long startOperationTime = messageExecutionContext.getStatistics().startOperation();
 
     try {
-      ((InternalCache) messageExecutionContext.getCache()).setReadSerializedForCurrentThread(true);
+      messageExecutionContext.getCache().setReadSerializedForCurrentThread(true);
 
       Object decodedKey = serializationService.decode(request.getKey());
+      if (decodedKey == null) {
+        return Failure.of(ProtobufResponseUtilities.makeErrorResponse(INVALID_REQUEST,
+            "Performing a get on a NULL key."));
+      }
       Object resultValue = region.get(decodedKey);
 
       if (resultValue == null) {
@@ -66,9 +70,6 @@ public class GetRequestOperationHandler
 
       BasicTypes.EncodedValue encodedValue = serializationService.encode(resultValue);
       return Success.of(RegionAPI.GetResponse.newBuilder().setResult(encodedValue).build());
-    } catch (NullPointerException ex) {
-      return Failure.of(ProtobufResponseUtilities.makeErrorResponse(INVALID_REQUEST,
-          "Performing a get on a NULL key."));
     } catch (EncodingException ex) {
       logger.error("Received Get request with unsupported encoding: {}", ex);
       return Failure.of(
