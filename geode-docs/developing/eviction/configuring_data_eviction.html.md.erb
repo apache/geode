@@ -19,10 +19,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 -->
 
-Use eviction controllers to configure the eviction-attributes region attribute settings to keep your region within a specified limit.
-
-<a id="configuring_data_eviction__section_8515EC9635C342C0916EE9E6120E2AC9"></a>
-Eviction controllers monitor region and memory use and, when the limit is reached, remove older entries to make way for new data. For heap percentage, the controller used is the <%=vars.product_name%> resource manager, configured in conjunction with the JVM's garbage collector for optimum performance.
+Configure a region's `eviction-attributes` settings to keep your region within a specified limit.
 
 Configure data eviction as follows. You do not need to perform these steps in the sequence shown.
 
@@ -35,19 +32,19 @@ Configure data eviction as follows. You do not need to perform these steps in th
     -   Locally destroy the entry.
     -   Overflow the entry data to disk. See [Persistence and Overflow](../storing_data_on_disk/chapter_overview.html).
 
-3.  Decide the maximum amount of data to allow in the member for the eviction measurement indicated. This is the maximum for all storage for the region in the member. For partitioned regions, this is the total for all buckets stored in the member for the region - including any secondary buckets used for redundancy.
+3.  Decide the maximum amount of data to allow in the member for the eviction measurement indicated. This is the maximum for all storage for the region in the member. For partitioned regions, this is the total for all buckets stored in the member for the region, including any secondary buckets used for redundancy.
 4.  Decide whether to program a custom sizer for your region. If you are able to provide such a class, it might be faster than the standard sizing done by <%=vars.product_name%>. Your custom class must follow the guidelines for defining custom classes and, additionally, must implement `org.apache.geode.cache.util.ObjectSizer`. See [Requirements for Using Custom Classes in Data Caching](../../basic_config/data_entries_custom_classes/using_custom_classes.html).
 
 **Examples:**
 
-Create an LRU memory eviction controller with a maximum limit of 1000 MB. Use a custom class for measuring the size of each object in the region:
+Set an LRU memory eviction threshold of 1000 MB. Use a custom class for measuring the size of each object in the region:
 
 ```
 gfsh>create region --name=myRegion --type=REPLICATE --eviction-max-memory=1000 \
 --eviction-action=overflow-to-disk --eviction-object-sizer=com.myLib.MySizer
 ```
 
-Create a memory eviction controller on a partitioned region with a maximum entry count of 512:
+Create an eviction threshold on a partitioned region with a maximum entry count of 512:
 
 ```
 gfsh>create region --name=myRegion --type=PARTITION --eviction-entry-count=512 \
@@ -59,6 +56,5 @@ To configure a partitioned region for heap LRU eviction, first configure the res
 ```
 gfsh>start server --name=Server1 --eviction-heap-percentage=80
 ...
-gfsh>create region --name=myRegion --type=PARTITION --eviction-enabled \
---eviction-action=overflow-to-disk
+gfsh>create region --name=myRegion --type=PARTITION --eviction-action=overflow-to-disk
 ```

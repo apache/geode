@@ -19,7 +19,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 -->
 
-For all regions, you have options to control memory use, back up your data to disk, and keep stale data out of your cache.
+For all regions, you have options to control memory use, back up your data to disk, and discard stale data from your cache.
 
 -   **[Persistence and Overflow](../developing/storing_data_on_disk/chapter_overview.html)**
 
@@ -27,11 +27,11 @@ For all regions, you have options to control memory use, back up your data to di
 
 -   **[Eviction](../developing/eviction/chapter_overview.html)**
 
-    Use eviction to control data region size.
+    Use eviction to control data region size. Eviction actions are triggered by space-based thresholds.
 
 -   **[Expiration](../developing/expiration/chapter_overview.html)**
 
-    Use expiration to keep data current by removing stale entries. You can also use it to remove entries you are not using so your region uses less space.
+    Use expiration to keep data current and to reduce region size by removing stale entries. Expiration actions are triggered by time-based thresholds.
 
 -   **[Keeping the Cache in Sync with Outside Data Sources](../developing/outside_data_sources/sync_outside_data.html)**
 
