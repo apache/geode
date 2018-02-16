@@ -137,9 +137,7 @@ public class DiskStoreCommandsDUnitTest {
 
   @Test
   public void testDescribeOfflineDiskStoreCommand() throws Exception {
-    Properties props = new Properties();
-    props.setProperty("groups", GROUP);
-    MemberVM server1 = rule.startServerAsJmxManager(0, props);
+    MemberVM server1 = rule.startServerVM(0, x -> x.withJMXManager().withProperty("groups", GROUP));
 
     gfsh.connectAndVerify(server1.getJmxPort(), GfshCommandRule.PortType.jmxManager);
 
@@ -165,9 +163,7 @@ public class DiskStoreCommandsDUnitTest {
 
   @Test
   public void testExportOfflineDiskStore() throws Exception {
-    Properties props = new Properties();
-    props.setProperty("groups", GROUP);
-    MemberVM server1 = rule.startServerAsJmxManager(0, props);
+    MemberVM server1 = rule.startServerVM(0, x -> x.withJMXManager().withProperty("groups", GROUP));
 
     gfsh.connectAndVerify(server1.getJmxPort(), GfshCommandRule.PortType.jmxManager);
 

@@ -16,7 +16,6 @@
 package org.apache.geode.management.internal.cli.commands;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.junit.Assert.assertEquals;
 
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -38,14 +37,14 @@ import org.apache.geode.test.junit.rules.GfshCommandRule;
 public class ExportLogsOnServerManagerDUnit {
 
   @Rule
-  public ClusterStartupRule lsRule = new ClusterStartupRule().withTempWorkingDir().withLogFile();
+  public ClusterStartupRule lsRule = new ClusterStartupRule().withLogFile();
 
   @Rule
   public GfshCommandRule gfshConnector = new GfshCommandRule();
 
   @Test
   public void testExportWithOneServer() throws Exception {
-    MemberVM server0 = lsRule.startServerAsJmxManager(0);
+    MemberVM server0 = lsRule.startServerVM(0, x -> x.withJMXManager());
     gfshConnector.connect(server0.getJmxPort(), GfshCommandRule.PortType.jmxManager);
     gfshConnector.executeAndAssertThat("export logs").statusIsSuccess();
 
@@ -62,7 +61,7 @@ public class ExportLogsOnServerManagerDUnit {
 
   @Test
   public void testExportWithPeerLocator() throws Exception {
-    MemberVM server0 = lsRule.startServerAsEmbeddedLocator(0);
+    MemberVM server0 = lsRule.startServerVM(0, x -> x.withEmbeddedLocator().withJMXManager());
     lsRule.startServerVM(1, server0.getEmbeddedLocatorPort());
     gfshConnector.connect(server0.getEmbeddedLocatorPort(), GfshCommandRule.PortType.locator);
     gfshConnector.executeAndAssertThat("export logs").statusIsSuccess();

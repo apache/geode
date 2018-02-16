@@ -42,8 +42,7 @@ import org.apache.geode.test.junit.rules.GfshCommandRule;
 @RunWith(JUnitParamsRunner.class)
 public class DescribeConfigCommandDUnitTest {
   @Rule
-  public ClusterStartupRule startupRule =
-      new ClusterStartupRule().withTempWorkingDir().withLogFile();
+  public ClusterStartupRule startupRule = new ClusterStartupRule().withLogFile();
 
   @Rule
   public GfshCommandRule gfsh = new GfshCommandRule();
@@ -58,7 +57,8 @@ public class DescribeConfigCommandDUnitTest {
     localProps.setProperty(STATISTIC_SAMPLING_ENABLED, "true");
     localProps.setProperty(ENABLE_TIME_STATISTICS, "true");
     localProps.setProperty(GROUPS, "G1");
-    MemberVM server0 = startupRule.startServerAsJmxManager(0, localProps);
+    MemberVM server0 =
+        startupRule.startServerVM(0, x -> x.withProperties(localProps).withJMXManager());
 
     if (connectOverHttp) {
       gfsh.connectAndVerify(server0.getHttpPort(), GfshCommandRule.PortType.http);
