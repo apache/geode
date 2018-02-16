@@ -78,6 +78,7 @@ import org.apache.geode.distributed.internal.membership.InternalDistributedMembe
 import org.apache.geode.internal.AvailablePort;
 import org.apache.geode.internal.cache.CacheServerImpl;
 import org.apache.geode.internal.cache.GemFireCacheImpl;
+import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.cache.LocalRegion;
 import org.apache.geode.internal.cache.ha.ThreadIdentifier;
 import org.apache.geode.test.dunit.Assert;
@@ -253,6 +254,27 @@ public class ClientServerMiscDUnitTest extends JUnit4CacheTestCase {
         .info("Testing concurrent map operations from a client with a partitioned region");
     concurrentMapTest(host.getVM(testVersion, 0), "/" + PR_REGION_NAME);
     // TODO add verification in vm1
+  }
+
+  @Test
+  public void testCloseAndOpenClientCache() {
+    int port1 = initServerCache(true); // vm0
+    String serverName = NetworkUtils.getServerHostName(Host.getHost(0));
+    for (int i = 0; i < 100; i++) {
+      VM clientVM = host.getVM(testVersion, 0);
+      clientVM.invoke(() -> {
+        ClientCache mycache = new ClientCacheFactory().addPoolServer(serverName, port1)
+            .setPoolSubscriptionEnabled(true).setPoolMinConnections(3).create();
+        PoolImpl pool = (PoolImpl) mycache.getDefaultPool();
+        Awaitility.await().atMost(10, TimeUnit.SECONDS)
+            .until(() -> pool.acquireConnection() != null);
+        Region region = mycache.createClientRegionFactory(ClientRegionShortcut.CACHING_PROXY)
+            .create(REGION_NAME1);
+        region.registerInterest("key");
+        region.put("key", "value");
+        mycache.close();
+      });
+    }
   }
 
   /**

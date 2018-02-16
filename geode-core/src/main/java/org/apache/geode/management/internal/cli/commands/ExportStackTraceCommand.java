@@ -46,6 +46,7 @@ import org.apache.geode.management.internal.security.ResourceOperation;
 import org.apache.geode.security.ResourcePermission;
 
 public class ExportStackTraceCommand implements GfshCommand {
+  public static final String STACK_TRACE_FOR_MEMBER = "*** Stack-trace for member ";
   private final GetStackTracesFunction getStackTracesFunction = new GetStackTracesFunction();
 
   /**
@@ -114,7 +115,7 @@ public class ExportStackTraceCommand implements GfshCommand {
    * @return Canonical path of the file which contains the stack-traces
    * @throws IOException
    */
-  private String writeStacksToFile(Map<String, byte[]> dumps, String fileName) throws IOException {
+  public String writeStacksToFile(Map<String, byte[]> dumps, String fileName) throws IOException {
     String filePath;
     PrintWriter ps;
     File outputFile;
@@ -124,7 +125,8 @@ public class ExportStackTraceCommand implements GfshCommand {
       ps = new PrintWriter(os);
 
       for (Map.Entry<String, byte[]> entry : dumps.entrySet()) {
-        ps.append("*** Stack-trace for member ").append(entry.getKey()).append(" ***");
+        ps.append(STACK_TRACE_FOR_MEMBER).append(entry.getKey()).append(" ***")
+            .append(System.lineSeparator());
         ps.flush();
         GZIPInputStream zipIn = new GZIPInputStream(new ByteArrayInputStream(entry.getValue()));
         BufferedInputStream bin = new BufferedInputStream(zipIn);
