@@ -17,6 +17,7 @@ package org.apache.geode.management.internal.cli.commands;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import java.io.File;
+import java.util.Properties;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
@@ -33,6 +34,7 @@ import org.apache.geode.cache.execute.Function;
 import org.apache.geode.cache.execute.FunctionContext;
 import org.apache.geode.cache.execute.FunctionService;
 import org.apache.geode.cache.execute.ResultCollector;
+import org.apache.geode.distributed.ConfigurationProperties;
 import org.apache.geode.distributed.internal.deadlock.GemFireDeadlockDetectorDUnitTest;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
 import org.apache.geode.management.internal.cli.i18n.CliStrings;
@@ -74,8 +76,12 @@ public class ShowDeadlockDUnitTest {
     outputFile.delete();
 
     MemberVM locator = lsRule.startLocatorVM(0);
-    server1 = lsRule.startServerVM(1, locator.getPort());
-    server2 = lsRule.startServerVM(2, locator.getPort());
+
+    Properties props = new Properties();
+    props.setProperty(ConfigurationProperties.SERIALIZABLE_OBJECT_FILTER,
+        "org.apache.geode.management.internal.cli.commands.ShowDeadlockDUnitTest*");
+    server1 = lsRule.startServerVM(1, props, locator.getPort());
+    server2 = lsRule.startServerVM(2, props, locator.getPort());
 
     gfsh.connect(locator);
   }
