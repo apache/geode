@@ -118,8 +118,8 @@ public class LocatorConnectionDUnitTest extends JUnit4CacheTestCase {
       throws IOException, InvalidProtocolMessageException {
     IgnoredException ignoredInvalidExecutionContext =
         IgnoredException.addIgnoredException("Invalid execution context");
-    IgnoredException ignoredOperationsOnTheLocator =
-        IgnoredException.addIgnoredException("Operations on the locator should not to try to operate on a server");
+    IgnoredException ignoredOperationsOnTheLocator = IgnoredException
+        .addIgnoredException("Operations on the locator should not to try to operate on a server");
     try (Socket socket = createSocket()) {
       ClientProtocol.Message getRegionNamesRequestMessage = ClientProtocol.Message.newBuilder()
           .setGetRegionNamesRequest(ProtobufRequestUtilities.createGetRegionNamesRequest()).build();
