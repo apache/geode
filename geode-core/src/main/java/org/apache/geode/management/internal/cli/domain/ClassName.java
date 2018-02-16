@@ -116,8 +116,8 @@ public class ClassName<T> implements Serializable {
       T object = loadedClass.newInstance();
       if (object instanceof Declarable) {
         Declarable declarable = (Declarable) object;
-        declarable.setCache(cache);
-        declarable.init(initProperties);
+        declarable.initialize(cache, initProperties);
+        declarable.init(initProperties); // for backwards compatibility
       }
       return object;
     } catch (Exception e) {

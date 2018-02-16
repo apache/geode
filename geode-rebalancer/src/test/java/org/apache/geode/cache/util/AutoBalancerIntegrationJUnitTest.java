@@ -86,7 +86,7 @@ public class AutoBalancerIntegrationJUnitTest {
   public void testAutoRebalaceStatsOnLockSuccess() throws InterruptedException {
     assertEquals(0, cache.getInternalResourceManager().getStats().getAutoRebalanceAttempts());
     AutoBalancer balancer = new AutoBalancer();
-    balancer.setCache(cache);
+    balancer.initialize(cache, null);
     balancer.getOOBAuditor().execute();
     assertEquals(1, cache.getInternalResourceManager().getStats().getAutoRebalanceAttempts());
   }
@@ -96,7 +96,7 @@ public class AutoBalancerIntegrationJUnitTest {
     acquireLockInDifferentThread(1);
     assertEquals(0, cache.getInternalResourceManager().getStats().getAutoRebalanceAttempts());
     AutoBalancer balancer = new AutoBalancer();
-    balancer.setCache(cache);
+    balancer.initialize(cache, null);
     balancer.getOOBAuditor().execute();
     assertEquals(0, cache.getInternalResourceManager().getStats().getAutoRebalanceAttempts());
   }

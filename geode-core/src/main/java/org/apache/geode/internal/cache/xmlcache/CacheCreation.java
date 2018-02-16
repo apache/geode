@@ -590,8 +590,8 @@ public class CacheCreation implements InternalCache {
       Declarable declarable = struct.getDeclarable();
       Properties properties = struct.getProperties();
       try {
-        declarable.setCache(cache);
-        declarable.init(properties);
+        declarable.initialize(cache, properties);
+        declarable.init(properties); // for backwards compatibility
       } catch (Exception ex) {
         throw new CacheXmlException(
             "Exception while initializing an instance of " + declarable.getClass().getName(), ex);
@@ -1766,8 +1766,8 @@ public class CacheCreation implements InternalCache {
   void runInitializer(InternalCache cache) {
     Declarable initializer = getInitializer();
     if (initializer != null) {
-      initializer.setCache(cache);
-      initializer.init(getInitializerProps());
+      initializer.initialize(cache, getInitializerProps());
+      initializer.init(getInitializerProps()); // for backwards compatibility
     }
   }
 

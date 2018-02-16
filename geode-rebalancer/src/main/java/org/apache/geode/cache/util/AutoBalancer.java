@@ -132,6 +132,8 @@ public class AutoBalancer implements Declarable {
   private final TimeProvider clock;
   private final CacheOperationFacade cacheFacade;
 
+  private boolean initialized;
+
   private static final Logger logger = LogService.getLogger();
 
   public AutoBalancer() {
@@ -147,12 +149,27 @@ public class AutoBalancer implements Declarable {
   }
 
   @Override
-  public void setCache(Cache cache) {
+  public void initialize(Cache cache, Properties props) {
     this.cacheFacade.setCache(cache);
+    internalInitialize(props);
   }
 
   @Override
   public void init(Properties props) {
+    internalInitialize(props);
+  }
+
+  private void internalInitialize(Properties props) {
+    if (this.initialized) {
+      // For backwards compatibility we need to keep the external
+      // init method. But the product will call both initialize and
+      // init. So if we are already initialized subsequent calls
+      // are a noop. Once the deprecated init method is removed, this
+      // boolean check can also be removed.
+      return;
+    }
+    this.initialized = true;
+
     if (logger.isDebugEnabled()) {
       logger.debug("Initializing " + this.getClass().getSimpleName() + " with " + props);
     }
