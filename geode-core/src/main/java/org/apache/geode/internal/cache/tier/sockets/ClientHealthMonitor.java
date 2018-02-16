@@ -109,9 +109,11 @@ public class ClientHealthMonitor {
    * note, these were moved from static fields in ServerConnection so that they will be cleaned up
    * when the client health monitor is shutdown.
    */
-  private final HashMap<ServerSideHandshake, Integer> cleanupTable = new HashMap<>();
+  private final HashMap<ServerSideHandshake, ServerConnection.Counter> cleanupTable =
+      new HashMap<>();
 
-  private final HashMap<ClientProxyMembershipID, Integer> cleanupProxyIdTable = new HashMap<>();
+  private final HashMap<ClientProxyMembershipID, ServerConnection.Counter> cleanupProxyIdTable =
+      new HashMap<>();
 
   /**
    * Used to track the connections for a particular client
@@ -690,16 +692,12 @@ public class ClientHealthMonitor {
     return proxyIdConnections.computeIfAbsent(proxyID, key -> new ServerConnectionCollection());
   }
 
-  public Map getCleanupProxyIdTable() {
+  public Map<ClientProxyMembershipID, ServerConnection.Counter> getCleanupProxyIdTable() {
     return cleanupProxyIdTable;
   }
 
-  public Map getCleanupTable() {
+  public Map<ServerSideHandshake, ServerConnection.Counter> getCleanupTable() {
     return cleanupTable;
-  }
-
-  public int getNumberOfClientsAtVersion(Version version) {
-    return numOfClientsPerVersion.get(version.ordinal());
   }
 
   public int getNumberOfClientsAtOrAboveVersion(Version version) {

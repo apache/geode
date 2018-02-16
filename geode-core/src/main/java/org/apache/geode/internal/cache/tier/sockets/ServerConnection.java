@@ -541,11 +541,11 @@ public abstract class ServerConnection implements Runnable {
   private final Object chmLock = new Object();
   private boolean chmRegistered = false;
 
-  private Map<ServerSideHandshake, Integer> getCleanupTable() {
+  private Map<ServerSideHandshake, Counter> getCleanupTable() {
     return acceptor.getClientHealthMonitor().getCleanupTable();
   }
 
-  private Map<ClientProxyMembershipID, Integer> getCleanupProxyIdTable() {
+  private Map<ClientProxyMembershipID, Counter> getCleanupProxyIdTable() {
     return acceptor.getClientHealthMonitor().getCleanupProxyIdTable();
   }
 
@@ -557,7 +557,7 @@ public abstract class ServerConnection implements Runnable {
     final boolean isDebugEnabled = logger.isDebugEnabled();
     try {
       synchronized (getCleanupTable()) {
-        Counter numRefs = (Counter) getCleanupTable().get(this.handshake);
+        Counter numRefs = getCleanupTable().get(this.handshake);
         byte endpointType = (byte) 0;
         int queueSize = 0;
 
@@ -627,7 +627,7 @@ public abstract class ServerConnection implements Runnable {
         return false;
       }
       synchronized (getCleanupProxyIdTable()) {
-        Counter numRefs = (Counter) getCleanupProxyIdTable().get(this.proxyId);
+        Counter numRefs = getCleanupProxyIdTable().get(this.proxyId);
         if (numRefs != null) {
           numRefs.incr();
         } else {
