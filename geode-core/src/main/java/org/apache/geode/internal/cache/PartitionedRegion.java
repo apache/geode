@@ -4137,65 +4137,6 @@ public class PartitionedRegion extends LocalRegion
   }
 
   /**
-   * Test Method: Get a random set of keys from a randomly selected bucket using the provided
-   * {@code Random} number generator.
-   *
-   * @return A set of keys from a randomly chosen bucket or {@link Collections#EMPTY_SET}
-   */
-  public Set getSomeKeys(Random rnd) throws IOException, ClassNotFoundException {
-    InternalDistributedMember nod = null;
-    Integer buck = null;
-    Set buks = getRegionAdvisor().getBucketSet();
-
-    if (buks != null && !buks.isEmpty()) {
-      Object[] buksA = buks.toArray();
-      Set ret = null;
-      // Randomly pick a node to get some data from
-      for (int i = 0; i < buksA.length; i++) {
-        try {
-          logger.debug("getSomeKeys: iteration: {}", i);
-          int ind = rnd.nextInt(buksA.length);
-          if (ind >= buksA.length) {
-            // The GSRandom.nextInt(int) may return a value that includes the
-            // maximum.
-            ind = buksA.length - 1;
-          }
-          buck = (Integer) buksA[ind];
-
-          nod = getNodeForBucketRead(buck);
-          if (nod != null) {
-            logger.debug("getSomeKeys: iteration: {} for node {}", i, nod);
-            if (nod.equals(getMyId())) {
-              ret =
-                  dataStore.handleRemoteGetKeys(buck, InterestType.REGULAR_EXPRESSION, ".*", false);
-            } else {
-              FetchKeysResponse r = FetchKeysMessage.send(nod, this, buck, false);
-              ret = r.waitForKeys();
-            }
-
-            if (ret != null && !ret.isEmpty()) {
-              return ret;
-            }
-          }
-        } catch (ForceReattemptException movinOn) {
-          checkReadiness();
-          logger.debug(
-              "Test hook getSomeKeys caught a ForceReattemptException for bucketId={}{}{}. Moving on to another bucket",
-              getPRId(), BUCKET_ID_SEPARATOR, buck, movinOn);
-          continue;
-        } catch (PRLocallyDestroyedException ignore) {
-          logger.debug("getSomeKeys: Encountered PRLocallyDestroyedException");
-          checkReadiness();
-          continue;
-        }
-
-      } // nod != null
-    } // for
-    logger.debug("getSomeKeys: no keys found returning empty set");
-    return Collections.emptySet();
-  }
-
-  /**
    * Test Method: Get all entries for all copies of a bucket
    *
    * This method will not work correctly if membership in the distributed system changes while the
