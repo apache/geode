@@ -690,12 +690,16 @@ public class ClientHealthMonitor {
     return proxyIdConnections.computeIfAbsent(proxyID, key -> new ServerConnectionCollection());
   }
 
-  public Map<ClientProxyMembershipID, Integer> getCleanupProxyIdTable() {
+  public Map getCleanupProxyIdTable() {
     return cleanupProxyIdTable;
   }
 
-  public Map<ServerSideHandshake, Integer> getCleanupTable() {
+  public Map getCleanupTable() {
     return cleanupTable;
+  }
+
+  public int getNumberOfClientsAtVersion(Version version) {
+    return numOfClientsPerVersion.get(version.ordinal());
   }
 
   public int getNumberOfClientsAtOrAboveVersion(Version version) {

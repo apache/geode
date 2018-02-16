@@ -557,7 +557,7 @@ public abstract class ServerConnection implements Runnable {
     final boolean isDebugEnabled = logger.isDebugEnabled();
     try {
       synchronized (getCleanupTable()) {
-        Integer numRefs = getCleanupTable().get(this.handshake);
+        Counter numRefs = (Counter) getCleanupTable().get(this.handshake);
         byte endpointType = (byte) 0;
         int queueSize = 0;
 
@@ -603,7 +603,7 @@ public abstract class ServerConnection implements Runnable {
         }
         if (numRefs != null) {
           if (acceptHandShake(endpointType, queueSize)) {
-            ++numRefs;
+            numRefs.incr();
             this.incedCleanupTableRef = true;
             result = true;
           }
@@ -611,7 +611,9 @@ public abstract class ServerConnection implements Runnable {
         } else {
           if (acceptHandShake(endpointType, queueSize)) {
             clientJoined = true;
-            getCleanupTable().put(this.handshake, 1);
+            numRefs = new Counter();
+            getCleanupTable().put(this.handshake, numRefs);
+            numRefs.incr();
             this.incedCleanupTableRef = true;
             this.stats.incCurrentClients();
             result = true;
@@ -625,12 +627,14 @@ public abstract class ServerConnection implements Runnable {
         return false;
       }
       synchronized (getCleanupProxyIdTable()) {
-        Integer numRefs = getCleanupProxyIdTable().get(this.proxyId);
+        Counter numRefs = (Counter) getCleanupProxyIdTable().get(this.proxyId);
         if (numRefs != null) {
-          ++numRefs;
+          numRefs.incr();
         } else {
           registerClient = true;
-          getCleanupProxyIdTable().put(this.proxyId, 1);
+          numRefs = new Counter();
+          numRefs.incr();
+          getCleanupProxyIdTable().put(this.proxyId, numRefs);
         }
         this.incedCleanupProxyIdTableRef = true;
       }
@@ -753,6 +757,22 @@ public abstract class ServerConnection implements Runnable {
    */
   public boolean isClientServerConnection() {
     return communicationMode.isClientToServerOrSubscriptionFeed();
+  }
+
+  static class Counter {
+    int cnt;
+
+    void incr() {
+      ++cnt;
+    }
+
+    int decr() {
+      return --cnt;
+    }
+
+    int getCnt() {
+      return cnt;
+    }
   }
 
   private boolean clientDisconnectedCleanly = false;
@@ -914,10 +934,10 @@ public abstract class ServerConnection implements Runnable {
       if (this.incedCleanupTableRef) {
         this.incedCleanupTableRef = false;
         cleanupStats = true;
-        Integer numRefs = getCleanupTable().get(this.handshake);
+        Counter numRefs = (Counter) getCleanupTable().get(this.handshake);
         if (numRefs != null) {
-          --numRefs;
-          if (numRefs <= 0) {
+          numRefs.decr();
+          if (numRefs.getCnt() <= 0) {
             clientDeparted = true;
             getCleanupTable().remove(this.handshake);
             this.stats.decCurrentClients();
@@ -934,10 +954,10 @@ public abstract class ServerConnection implements Runnable {
     synchronized (getCleanupProxyIdTable()) {
       if (this.incedCleanupProxyIdTableRef) {
         this.incedCleanupProxyIdTableRef = false;
-        Integer numRefs = getCleanupProxyIdTable().get(this.proxyId);
+        Counter numRefs = (Counter) getCleanupProxyIdTable().get(this.proxyId);
         if (numRefs != null) {
-          --numRefs;
-          if (numRefs <= 0) {
+          numRefs.decr();
+          if (numRefs.getCnt() <= 0) {
             unregisterClient = true;
             getCleanupProxyIdTable().remove(this.proxyId);
             // here we can remove entry multiuser map for client
