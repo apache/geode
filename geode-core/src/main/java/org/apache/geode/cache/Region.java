@@ -2014,20 +2014,38 @@ public interface Region<K, V> extends ConcurrentMap<K, V> {
    * cleared from the client and the current value for this key is inserted into the local cache
    * before this call returns.
    *
-   * @param key The key on which to register interest. If the key is a <code>List</code>, then all
-   *        the keys in the <code>List</code> will be registered. The key can also be the special
-   *        token 'ALL_KEYS', which will register interest in all keys in the region. In effect,
-   *        this will cause an update to any key in this region in the CacheServer to be pushed to
-   *        the client.
+   * @param key The key on which to register interest.
    *
    *        <p>
-   *        This method uses the default <code>InterestResultPolicy</code>.
+   *        ###Deprecated behavior###
+   *        </p>
+   *        <p>
+   *        The following <code>List</code> and
+   *        'ALL_KEYS' behavior is now deprecated. As an alternative, please use
+   *        </p>
+   *        <p>
+   *        {@link #registerInterestForKeys(Iterable, InterestResultPolicy)}
+   *        </p>
+   *        <p>
+   *        {@link #registerInterestForAllKeys(InterestResultPolicy)}
+   *        </p>
+   *
+   *        <p>
+   *        If the key is a <code>List</code>, then all the keys in the
+   *        <code>List</code> will be registered. The key can also be the special token 'ALL_KEYS',
+   *        which will register interest in all keys in the region. In effect, this will cause an
+   *        update to any key in this region in the CacheServer to be pushed to the client.
    *        </p>
    *
    *        <p>
    *        <i>Using 'ALL_KEYS' is the same as calling {@link #registerInterestRegex(String)} with
-   *        ".*" as the argument. This means that all keys any type are pushed to the client and
+   *        ".*" as the argument. This means that all keys of any type are pushed to the client and
    *        inserted into the local cache.</i>
+   *        </p>
+   *        ###End of deprecation###
+   *
+   *        <p>
+   *        This method uses the default <code>InterestResultPolicy</code>.
    *        </p>
    *
    *        <p>
@@ -2064,22 +2082,39 @@ public interface Region<K, V> extends ConcurrentMap<K, V> {
    * events to your client cache.
    * </p>
    *
-   * @param key The key on which to register interest. If the key is a <code>List</code>, then all
-   *        the keys in the <code>List</code> will be registered. The key can also be the special
-   *        token 'ALL_KEYS', which will register interest in all keys in the region. In effect,
-   *        this will cause an update to any key in this region in the CacheServer to be pushed to
-   *        the client.
+   * @param key The key on which to register interest.
    *
    *        <p>
-   *        This method uses the default <code>InterestResultPolicy</code>.
+   *        ###Deprecated behavior###
+   *        </p>
+   *        <p>
+   *        The following <code>List</code> and
+   *        'ALL_KEYS' behavior is now deprecated. As an alternative, please use
+   *        </p>
+   *        <p>
+   *        {@link #registerInterestForKeys(Iterable, InterestResultPolicy)}
+   *        </p>
+   *        <p>
+   *        {@link #registerInterestForAllKeys(InterestResultPolicy)}
+   *        </p>
+   *
+   *        <p>
+   *        If the key is a <code>List</code>, then all the keys in the
+   *        <code>List</code> will be registered. The key can also be the special token 'ALL_KEYS',
+   *        which will register interest in all keys in the region. In effect, this will cause an
+   *        update to any key in this region in the CacheServer to be pushed to the client.
    *        </p>
    *
    *        <p>
    *        <i>Using 'ALL_KEYS' is the same as calling {@link #registerInterestRegex(String)} with
-   *        ".*" as the argument. This means that all keys any type are pushed to the client and
+   *        ".*" as the argument. This means that all keys of any type are pushed to the client and
    *        inserted into the local cache.</i>
    *        </p>
+   *        ###End of deprecation###
    *
+   *        <p>
+   *        This method uses the default <code>InterestResultPolicy</code>.
+   *        </p>
    * @param isDurable true if the register interest is durable
    *
    * @param receiveValues defaults to true. set to false to receive create or update events as
