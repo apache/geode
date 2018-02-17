@@ -152,7 +152,8 @@ public class BackupFileCopierIntegrationTest {
 
     Path expectedJar = tempFilesLocation.resolve(USER_FILES).resolve("myJar.jar");
     assertThat(expectedJar).exists();
-    assertThat(fileCopier.getBackupDefinition().getDeployedJars()).containsExactly(expectedJar);
+    assertThat(fileCopier.getBackupDefinition().getDeployedJars().keySet())
+        .containsExactly(expectedJar);
   }
 
   @Test
@@ -179,7 +180,7 @@ public class BackupFileCopierIntegrationTest {
     Path expectedUserSubdir = tempFilesLocation.resolve(USER_FILES).resolve("userSubfolder");
     assertThat(expectedUserFile).exists();
     assertThat(expectedUserSubdir).exists();
-    assertThat(fileCopier.getBackupDefinition().getUserFiles())
+    assertThat(fileCopier.getBackupDefinition().getUserFiles().keySet())
         .containsExactlyInAnyOrder(expectedUserFile, expectedUserSubdir);
   }
 

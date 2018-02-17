@@ -17,7 +17,7 @@ package org.apache.geode.internal.cache.backup;
 import java.io.IOException;
 
 public interface BackupWriter {
-
+  String INCOMPLETE_BACKUP_FILE = "INCOMPLETE_BACKUP_FILE";
   String USER_FILES_DIRECTORY = "user";
   String DEPLOYED_JARS_DIRECTORY = "user";
   String CONFIG_DIRECTORY = "config";

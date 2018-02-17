@@ -15,6 +15,7 @@
 package org.apache.geode.internal.cache.backup;
 
 import static org.apache.geode.distributed.ConfigurationProperties.LOG_LEVEL;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
@@ -581,7 +582,7 @@ public class IncrementalBackupDistributedTest extends JUnit4CacheTestCase {
     File backupDir = getBackupDirForMember(getBaselineDir(), getMemberId(vm));
     assertTrue(backupDir.exists());
 
-    File incomplete = new File(backupDir, BackupTask.INCOMPLETE_BACKUP_FILE);
+    File incomplete = new File(backupDir, BackupWriter.INCOMPLETE_BACKUP_FILE);
     incomplete.createNewFile();
   }
 
@@ -980,7 +981,7 @@ public class IncrementalBackupDistributedTest extends JUnit4CacheTestCase {
     Collection<File> memberIncrementalOplogs =
         FileUtils.listFiles(getBackupDirForMember(getIncrementalDir(), memberId),
             new RegexFileFilter(OPLOG_REGEX), DirectoryFileFilter.DIRECTORY);
-    assertFalse(memberIncrementalOplogs.isEmpty());
+    assertThat(memberIncrementalOplogs).isNotEmpty();
 
     List<String> memberIncrementalOplogNames = new LinkedList<>();
     TransformUtils.transform(memberIncrementalOplogs, memberIncrementalOplogNames,

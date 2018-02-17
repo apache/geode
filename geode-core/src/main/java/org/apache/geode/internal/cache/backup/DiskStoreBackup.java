@@ -14,7 +14,6 @@
  */
 package org.apache.geode.internal.cache.backup;
 
-import java.io.File;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Set;
@@ -31,11 +30,9 @@ public class DiskStoreBackup {
   private final Set<Oplog> pendingBackup;
   private final Set<Oplog> deferredCrfDeletes = new HashSet<>();
   private final Set<Oplog> deferredDrfDeletes = new HashSet<>();
-  private final File targetDir;
 
-  public DiskStoreBackup(Oplog[] allOplogs, File targetDir) {
+  public DiskStoreBackup(Oplog[] allOplogs) {
     this.pendingBackup = new HashSet<>(Arrays.asList(allOplogs));
-    this.targetDir = targetDir;
   }
 
   /**
@@ -80,10 +77,6 @@ public class DiskStoreBackup {
     if (deferredDrfDeletes.remove(oplog)) {
       oplog.deleteDRFFileOnly();
     }
-  }
-
-  public File getTargetDir() {
-    return targetDir;
   }
 
   public synchronized void cleanup() {

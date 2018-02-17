@@ -18,6 +18,7 @@ import java.io.File;
 import java.io.IOException;
 import java.nio.file.Path;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.Map;
 
@@ -38,20 +39,26 @@ public class FileSystemBackupLocation implements BackupLocation {
 
   private final String memberId;
 
-  public FileSystemBackupLocation(File backupLocationDir, String memberId) {
+  FileSystemBackupLocation(File backupLocationDir, String memberId) {
     this.backupLocationDir = backupLocationDir;
     this.memberId = memberId;
     this.memberBackupLocationDir = (new File(backupLocationDir, memberId)).toPath();
   }
 
-  public Path getMemberBackupLocationDir() {
+  Path getMemberBackupLocationDir() {
     return memberBackupLocationDir;
   }
 
+  File getBackupLocationDir() {
+    return backupLocationDir;
+  }
 
   @Override
   public Map<String, File> getBackedUpOplogs(DiskStore diskStore) throws IOException {
     File checkedBaselineDir = checkBaseline(diskStore);
+    if (checkedBaselineDir == null) {
+      return Collections.EMPTY_MAP;
+    }
     Collection<File> baselineOplogFiles = getBackedOplogs(checkedBaselineDir, diskStore);
     baselineOplogFiles.addAll(getPreviouslyBackedOpLogs(checkedBaselineDir));
 
@@ -86,28 +93,22 @@ public class FileSystemBackupLocation implements BackupLocation {
    * directory exists for the member and there is no INCOMPLETE_BACKUP_FILE file then return the
    * data stores directory for this member.
    */
-  public File checkBaseline(DiskStore diskStore) {
-    File baselineDir = null;
+  private File checkBaseline(DiskStore diskStore) {
+    File baselineDir = memberBackupLocationDir.toFile();
 
-    if (null != backupLocationDir) {
-      // Start by looking for this memberId
-      baselineDir = new File(backupLocationDir, memberId);
-
-      if (!baselineDir.exists()) {
-        // hmmm, did this member have a restart?
-        // Determine which member dir might be a match for us
-        baselineDir = findBaselineForThisMember(backupLocationDir, diskStore);
-      }
-
-      if (null != baselineDir) {
-        // check for existence of INCOMPLETE_BACKUP_FILE file
-        File incompleteBackup = new File(baselineDir, INCOMPLETE_BACKUP_FILE);
-        if (incompleteBackup.exists()) {
-          baselineDir = null;
-        }
-      }
+    if (!baselineDir.exists()) {
+      // hmmm, did this member have a restart?
+      // Determine which member dir might be a match for us
+      baselineDir = findBaselineForThisMember(backupLocationDir, diskStore);
     }
 
+    if (null != baselineDir) {
+      // check for existence of INCOMPLETE_BACKUP_FILE file
+      File incompleteBackup = new File(baselineDir, INCOMPLETE_BACKUP_FILE);
+      if (incompleteBackup.exists()) {
+        baselineDir = null;
+      }
+    }
     return baselineDir;
   }
 

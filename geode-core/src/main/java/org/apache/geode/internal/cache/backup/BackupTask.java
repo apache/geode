@@ -19,39 +19,25 @@ import java.io.IOException;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.LinkedList;
-import java.util.List;
 import java.util.Map;
-import java.util.Set;
 import java.util.concurrent.CountDownLatch;
 
-import org.apache.commons.io.FileUtils;
 import org.apache.logging.log4j.Logger;
 
 import org.apache.geode.InternalGemFireError;
 import org.apache.geode.cache.DiskStore;
 import org.apache.geode.cache.persistence.PersistentID;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
-import org.apache.geode.internal.cache.DirectoryHolder;
 import org.apache.geode.internal.cache.DiskStoreImpl;
-import org.apache.geode.internal.cache.GemFireCacheImpl;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.cache.Oplog;
 import org.apache.geode.internal.logging.LogService;
-import org.apache.geode.internal.util.IOUtils;
-import org.apache.geode.internal.util.TransformUtils;
 
 /**
  * This class manages the state an logic to backup a single cache.
  */
 public class BackupTask {
   private static final Logger logger = LogService.getLogger();
-
-  static final String INCOMPLETE_BACKUP_FILE = "INCOMPLETE_BACKUP_FILE";
-
-  private static final String BACKUP_DIR_PREFIX = "dir";
-  private static final String DATA_STORES_DIRECTORY = "diskstores";
-  private static final String USER_FILES = "user";
 
   private final Map<DiskStoreImpl, DiskStoreBackup> backupByDiskStore = new HashMap<>();
   private final RestoreScript restoreScript = new RestoreScript();
@@ -63,6 +49,7 @@ public class BackupTask {
   private final HashSet<PersistentID> diskStoresWithData = new HashSet<>();
   private final File targetDir;
   private final File baselineDir;
+  private final BackupWriter backupWriter;
 
   private volatile boolean isCancelled = false;
 
@@ -74,6 +61,22 @@ public class BackupTask {
     this.targetDir = targetDir;
     this.baselineDir = baselineDir;
     memberId = getCleanedMemberId();
+    backupWriter = createBackupWriter();
+  }
+
+  private BackupWriter createBackupWriter() {
+    FileSystemBackupLocation targetBackupDestination =
+        new FileSystemBackupLocation(targetDir, memberId);
+
+    BackupWriter writer;
+    if (baselineDir == null) {
+      writer = new FileSystemBackupWriter(targetBackupDestination);
+    } else {
+      FileSystemBackupLocation incrementalBaselineLocation =
+          new FileSystemBackupLocation(baselineDir, memberId);
+      writer = new FileSystemBackupWriter(targetBackupDestination, incrementalBaselineLocation);
+    }
+    return writer;
   }
 
   HashSet<PersistentID> getPreparedDiskStores() throws InterruptedException {
@@ -121,27 +124,11 @@ public class BackupTask {
     }
 
     try {
-      File memberBackupDir = new File(targetDir, memberId);
-      FileSystemBackupWriter backupWriter;
-      FileSystemBackupLocation targetBackupDestination =
-          new FileSystemBackupLocation(targetDir, memberId);
-
-      if (baselineDir == null) {
-        backupWriter = new FileSystemBackupWriter(targetBackupDestination);
-      } else {
-        FileSystemBackupLocation incrementalBaselineLocation =
-            new FileSystemBackupLocation(baselineDir, memberId);
-        backupWriter =
-            new FileSystemBackupWriter(targetBackupDestination, incrementalBaselineLocation);
-      }
-
       Collection<DiskStore> diskStores = cache.listDiskStoresIncludingRegionOwned();
       temporaryFiles = TemporaryBackupFiles.create();
       fileCopier = new BackupFileCopier(cache, temporaryFiles);
 
-      File storesDir = new File(memberBackupDir, DATA_STORES_DIRECTORY);
-      Map<DiskStoreImpl, DiskStoreBackup> backupByDiskStores =
-          startDiskStoreBackups(storesDir, diskStores);
+      Map<DiskStoreImpl, DiskStoreBackup> backupByDiskStores = startDiskStoreBackups(diskStores);
 
       allowDestroys.countDown();
 
@@ -149,12 +136,11 @@ public class BackupTask {
 
       if (!backupByDiskStores.isEmpty()) {
         // TODO: allow different strategies...
+        backupAdditionalFiles();
         BackupDefinition backupDefinition = fileCopier.getBackupDefinition();
-        backupAdditionalFiles(memberBackupDir);
         backupDefinition.setRestoreScript(restoreScript);
         backupWriter.backupFiles(backupDefinition);
       }
-
       return persistentIds;
     } finally {
       cleanup();
@@ -173,7 +159,7 @@ public class BackupTask {
     return persistentIds;
   }
 
-  private Map<DiskStoreImpl, DiskStoreBackup> startDiskStoreBackups(File storesDir,
+  private Map<DiskStoreImpl, DiskStoreBackup> startDiskStoreBackups(
       Collection<DiskStore> diskStores) throws IOException {
     Map<DiskStoreImpl, DiskStoreBackup> backupByDiskStore = new HashMap<>();
 
@@ -181,8 +167,7 @@ public class BackupTask {
       DiskStoreImpl diskStore = (DiskStoreImpl) store;
       try {
         if (diskStore.hasPersistedData()) {
-          File diskStoreDir = new File(storesDir, getBackupDirName(diskStore));
-          DiskStoreBackup backup = startDiskStoreBackup(diskStore, diskStoreDir);
+          DiskStoreBackup backup = startDiskStoreBackup(diskStore);
           backupByDiskStore.put(diskStore, backup);
         }
       } finally {
@@ -224,21 +209,10 @@ public class BackupTask {
     }
   }
 
-  private void backupAdditionalFiles(File backupDir) throws IOException {
+  private void backupAdditionalFiles() throws IOException {
     fileCopier.copyConfigFiles();
-
-    Set<File> userFiles = fileCopier.copyUserFiles();
-    File userBackupDir = new File(backupDir, USER_FILES);
-    for (File file : userFiles) {
-      File restoreScriptDestination = new File(userBackupDir, file.getName());
-      restoreScript.addUserFile(file, restoreScriptDestination);
-    }
-
-    Set<File> jars = fileCopier.copyDeployedJars();
-    for (File file : jars) {
-      File restoreScriptDestination = new File(userBackupDir, file.getName());
-      restoreScript.addFile(file, restoreScriptDestination);
-    }
+    fileCopier.copyUserFiles();
+    fileCopier.copyDeployedJars();
   }
 
   /**
@@ -270,33 +244,18 @@ public class BackupTask {
   }
 
   /**
-   * Returns the dir name used to back up this DiskStore's directories under. The name is a
-   * concatenation of the disk store name and id.
-   */
-  private String getBackupDirName(DiskStoreImpl diskStore) {
-    String name = diskStore.getName();
-
-    if (name == null) {
-      name = GemFireCacheImpl.getDefaultDiskStoreName();
-    }
-
-    return (name + "_" + diskStore.getDiskStoreID().toString());
-  }
-
-  /**
    * Start the backup process. This is the second step of the backup process. In this method, we
    * define the data we're backing up by copying the init file and rolling to the next file. After
    * this method returns operations can proceed as normal, except that we don't remove oplogs.
    */
-  private DiskStoreBackup startDiskStoreBackup(DiskStoreImpl diskStore, File targetDir)
-      throws IOException {
+  private DiskStoreBackup startDiskStoreBackup(DiskStoreImpl diskStore) throws IOException {
     DiskStoreBackup backup = null;
     boolean done = false;
     try {
       for (;;) {
         Oplog childOplog = diskStore.getPersistentOplogSet().getChild();
         if (childOplog == null) {
-          backup = new DiskStoreBackup(new Oplog[0], targetDir);
+          backup = new DiskStoreBackup(new Oplog[0]);
           backupByDiskStore.put(diskStore, backup);
           break;
         }
@@ -319,13 +278,11 @@ public class BackupTask {
             logger.debug("snapshotting oplogs for disk store {}", diskStore.getName());
           }
 
-          addDiskStoreDirectoriesToRestoreScript(diskStore, targetDir);
-
           restoreScript.addExistenceTest(diskStore.getDiskInitFile().getIFFile());
 
           // Contains all oplogs that will backed up
           Oplog[] allOplogs = diskStore.getAllOplogsForBackup();
-          backup = new DiskStoreBackup(allOplogs, targetDir);
+          backup = new DiskStoreBackup(allOplogs);
           backupByDiskStore.put(diskStore, backup);
 
           fileCopier.copyDiskInitFile(diskStore);
@@ -347,77 +304,6 @@ public class BackupTask {
     return backup;
   }
 
-  private void addDiskStoreDirectoriesToRestoreScript(DiskStoreImpl diskStore, File targetDir) {
-    DirectoryHolder[] directories = diskStore.getDirectoryHolders();
-    for (int i = 0; i < directories.length; i++) {
-      File backupDir = getBackupDirForCurrentMember(targetDir, i);
-      restoreScript.addFile(directories[i].getDir(), backupDir);
-    }
-  }
-
-  /**
-   * Filters and returns the current set of oplogs that aren't already in the baseline for
-   * incremental backup
-   *
-   * @param baselineInspector the inspector for the previous backup.
-   * @return an array of Oplogs to be copied for an incremental backup.
-   */
-  private Oplog[] filterBaselineOplogs(DiskStoreImpl diskStore, BackupInspector baselineInspector) {
-    File baselineDir = new File(baselineInspector.getBackupDir(), DATA_STORES_DIRECTORY);
-    baselineDir = new File(baselineDir, getBackupDirName(diskStore));
-
-    // Find all of the member's diskstore oplogs in the member's baseline
-    // diskstore directory structure (*.crf,*.krf,*.drf)
-    Collection<File> baselineOplogFiles =
-        FileUtils.listFiles(baselineDir, new String[] {"krf", "drf", "crf"}, true);
-    // Our list of oplogs to copy (those not already in the baseline)
-    List<Oplog> oplogList = new LinkedList<>();
-
-    // Total list of member oplogs
-    Oplog[] allOplogs = diskStore.getAllOplogsForBackup();
-
-    // Loop through operation logs and see if they are already part of the baseline backup.
-    for (Oplog log : allOplogs) {
-      // See if they are backed up in the current baseline
-      Map<File, File> oplogMap = mapBaseline(log, baselineOplogFiles);
-
-      // No? Then see if they were backed up in previous baselines
-      if (oplogMap.isEmpty() && baselineInspector.isIncremental()) {
-        oplogMap = addBaselineOplogToRestoreScript(baselineInspector, log);
-      }
-
-      if (oplogMap.isEmpty()) {
-        // These are fresh operation log files so lets back them up.
-        oplogList.add(log);
-      } else {
-        /*
-         * These have been backed up before so lets just add their entries from the previous backup
-         * or restore script into the current one.
-         */
-        restoreScript.addBaselineFiles(oplogMap);
-      }
-    }
-
-    // Convert the filtered oplog list to an array
-    return oplogList.toArray(new Oplog[oplogList.size()]);
-  }
-
-  private Map<File, File> addBaselineOplogToRestoreScript(BackupInspector baselineInspector,
-      Oplog log) {
-    Map<File, File> oplogMap = new HashMap<>();
-    Set<String> matchingOplogs =
-        log.gatherMatchingOplogFiles(baselineInspector.getIncrementalOplogFileNames());
-    for (String matchingOplog : matchingOplogs) {
-      oplogMap.put(new File(baselineInspector.getCopyFromForOplogFile(matchingOplog)),
-          new File(baselineInspector.getCopyToForOplogFile(matchingOplog)));
-    }
-    return oplogMap;
-  }
-
-  private File getBackupDirForCurrentMember(File targetDir, int index) {
-    return new File(targetDir, BACKUP_DIR_PREFIX + index);
-  }
-
   private String getCleanedMemberId() {
     InternalDistributedMember memberId =
         cache.getInternalDistributedSystem().getDistributedMember();
@@ -431,31 +317,6 @@ public class BackupTask {
 
   DiskStoreBackup getBackupForDiskStore(DiskStoreImpl diskStore) {
     return backupByDiskStore.get(diskStore);
-  }
-
-  public Map<File, File> mapBaseline(Oplog oplog, Collection<File> baselineOplogFiles) {
-    // Map of baseline oplog file name to oplog file
-    Map<String, File> baselineOplogMap =
-        TransformUtils.transformAndMap(baselineOplogFiles, TransformUtils.fileNameTransformer);
-    // Returned Map of baseline file to current oplog file
-    Map<File, File> baselineToOplogMap = new HashMap<>();
-
-    addToBaseLineToOplogMap(oplog.getCrfFile(), baselineOplogMap, baselineToOplogMap);
-    addToBaseLineToOplogMap(oplog.getDrfFile(), baselineOplogMap, baselineToOplogMap);
-    if (oplog.hasKrf()) {
-      addToBaseLineToOplogMap(oplog.getKrfFile(), baselineOplogMap, baselineToOplogMap);
-    }
-
-    return baselineToOplogMap;
-  }
-
-  private void addToBaseLineToOplogMap(File oplogFile, Map baselineOplogMap,
-      Map baselineToOplogMap) {
-    if ((null != oplogFile) && oplogFile.exists()
-        && baselineOplogMap.containsKey(oplogFile.getName())) {
-      baselineToOplogMap.put(baselineOplogMap.get(oplogFile.getName()),
-          IOUtils.tryGetCanonicalFileElseGetAbsoluteFile(oplogFile));
-    }
   }
 
 }
