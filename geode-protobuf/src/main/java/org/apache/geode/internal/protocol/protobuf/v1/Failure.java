@@ -17,22 +17,36 @@ package org.apache.geode.internal.protocol.protobuf.v1;
 import java.util.function.Function;
 
 import org.apache.geode.annotations.Experimental;
+import org.apache.geode.internal.protocol.protobuf.v1.state.exception.ConnectionStateException;
 
 @Experimental
-public class Failure<SuccessType, FailureType> implements Result<SuccessType, FailureType> {
-  private final FailureType failureType;
+public class Failure<SuccessType> implements Result<SuccessType> {
+  private final ClientProtocol.ErrorResponse failureType;
 
-  private Failure(FailureType failureType) {
+  private Failure(ClientProtocol.ErrorResponse failureType) {
     this.failureType = failureType;
   }
 
-  public static <T, V> Failure<T, V> of(V errorResponse) {
-    return new Failure<>(errorResponse);
+  public static <T> Failure<T> of(BasicTypes.ErrorCode errorCode, String errorMessage) {
+    return new Failure<>(ClientProtocol.ErrorResponse.newBuilder()
+        .setError(BasicTypes.Error.newBuilder().setErrorCode(errorCode).setMessage(errorMessage))
+        .build());
+  }
+
+  public static <T> Failure<T> of(ConnectionStateException exception) {
+    return of(exception.getErrorCode(), exception.getMessage());
+  }
+
+  public static <T> Failure<T> of(Exception exception) {
+    if (exception instanceof ConnectionStateException) {
+      return of((ConnectionStateException) exception);
+    }
+    return of(BasicTypes.ErrorCode.SERVER_ERROR, exception.toString());
   }
 
   @Override
   public <T> T map(Function<SuccessType, T> successFunction,
-      Function<FailureType, T> errorFunction) {
+      Function<ClientProtocol.ErrorResponse, T> errorFunction) {
     return errorFunction.apply(failureType);
   }
 
@@ -42,7 +56,7 @@ public class Failure<SuccessType, FailureType> implements Result<SuccessType, Fa
   }
 
   @Override
-  public FailureType getErrorMessage() {
+  public ClientProtocol.ErrorResponse getErrorMessage() {
     return failureType;
   }
 }
