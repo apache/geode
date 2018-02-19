@@ -53,9 +53,9 @@ public class ClientMarkerMessageImpl implements ClientMessage {
    */
   public ClientMarkerMessageImpl() {}
 
-  public Message getMessage(CacheClientProxy proxy, boolean notify) throws IOException {
+  public MessageFromServer getMessage(CacheClientProxy proxy, boolean notify) throws IOException {
     Version clientVersion = proxy.getVersion();
-    Message message = null;
+    MessageFromServer message = null;
     if (clientVersion.compareTo(Version.GFE_57) >= 0) {
       message = getGFEMessage();
     } else {
@@ -66,8 +66,8 @@ public class ClientMarkerMessageImpl implements ClientMessage {
     return message;
   }
 
-  protected Message getGFEMessage() throws IOException {
-    Message message = new Message(1, Version.CURRENT);
+  protected MessageFromServer getGFEMessage() throws IOException {
+    MessageFromServer message = new MessageFromServer(1, Version.CURRENT);
     message.setMessageType(MessageType.CLIENT_MARKER);
     message.setTransactionId(0);
     message.addObjPart(this.eventId);

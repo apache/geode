@@ -31,11 +31,7 @@ import org.apache.geode.internal.cache.TXStateProxy;
 import org.apache.geode.internal.cache.TXSynchronizationRunnable;
 import org.apache.geode.internal.cache.tier.Command;
 import org.apache.geode.internal.cache.tier.MessageType;
-import org.apache.geode.internal.cache.tier.sockets.BaseCommand;
-import org.apache.geode.internal.cache.tier.sockets.Message;
-import org.apache.geode.internal.cache.tier.sockets.MessageTooLargeException;
-import org.apache.geode.internal.cache.tier.sockets.Part;
-import org.apache.geode.internal.cache.tier.sockets.ServerConnection;
+import org.apache.geode.internal.cache.tier.sockets.*;
 import org.apache.geode.internal.security.SecurityService;
 
 public class TXSynchronizationCommand extends BaseCommand {
@@ -70,8 +66,8 @@ public class TXSynchronizationCommand extends BaseCommand {
    * long)
    */
   @Override
-  public void cmdExecute(final Message clientMessage, final ServerConnection serverConnection,
-      final SecurityService securityService, long start)
+  public void cmdExecute(final MessageFromClient clientMessage,
+      final ServerConnection serverConnection, final SecurityService securityService, long start)
       throws IOException, ClassNotFoundException, InterruptedException {
     final boolean isDebugEnabled = logger.isDebugEnabled();
     serverConnection.setAsTrue(REQUIRES_RESPONSE);

@@ -26,10 +26,7 @@ import org.apache.geode.internal.cache.GemFireCacheImpl;
 import org.apache.geode.internal.cache.LocalRegion;
 import org.apache.geode.internal.cache.tier.InterestType;
 import org.apache.geode.internal.cache.tier.MessageType;
-import org.apache.geode.internal.cache.tier.sockets.ChunkedMessage;
-import org.apache.geode.internal.cache.tier.sockets.Message;
-import org.apache.geode.internal.cache.tier.sockets.Part;
-import org.apache.geode.internal.cache.tier.sockets.VersionedObjectList;
+import org.apache.geode.internal.cache.tier.sockets.*;
 
 /**
  * Does a region registerInterest on a server
@@ -148,17 +145,17 @@ public class RegisterInterestOp {
     }
 
     @Override
-    protected Message createResponseMessage() {
+    protected MessageFromServer createResponseMessage() {
       return new ChunkedMessage(1, Version.CURRENT);
     }
 
     @Override
-    protected Object processResponse(Message msg) throws Exception {
+    protected Object processResponse(MessageFromServer msg) throws Exception {
       throw new UnsupportedOperationException();
     }
 
     @Override
-    protected Object processResponse(Message m, Connection con) throws Exception {
+    protected Object processResponse(MessageFromServer m, Connection con) throws Exception {
       ChunkedMessage chunkedMessage = (ChunkedMessage) m;
       chunkedMessage.readHeader();
       switch (chunkedMessage.getMessageType()) {

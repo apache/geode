@@ -18,6 +18,7 @@ import java.io.EOFException;
 
 import org.apache.geode.internal.cache.tier.MessageType;
 import org.apache.geode.internal.cache.tier.sockets.Message;
+import org.apache.geode.internal.cache.tier.sockets.MessageFromServer;
 
 /**
  * Tell a server that a connection is being closed
@@ -65,7 +66,7 @@ public class CloseConnectionOp {
     }
 
     @Override
-    protected Object processResponse(Message msg) throws Exception {
+    protected Object processResponse(MessageFromServer msg) throws Exception {
       // CloseConnectionOp doesn't return anything - we wait for a response
       // so that we know that the server has processed the request before
       // we return from execute();

@@ -23,6 +23,7 @@ import org.apache.geode.internal.cache.tier.Command;
 import org.apache.geode.internal.cache.tier.MessageType;
 import org.apache.geode.internal.cache.tier.sockets.CacheServerStats;
 import org.apache.geode.internal.cache.tier.sockets.Message;
+import org.apache.geode.internal.cache.tier.sockets.MessageFromClient;
 import org.apache.geode.internal.cache.tier.sockets.ServerConnection;
 import org.apache.geode.internal.security.SecurityService;
 import org.apache.geode.security.ResourcePermission.Operation;
@@ -41,8 +42,9 @@ public class GetCQStats extends BaseCQCommand {
   }
 
   @Override
-  public void cmdExecute(final Message clientMessage, final ServerConnection serverConnection,
-      final SecurityService securityService, long start) throws IOException {
+  public void cmdExecute(final MessageFromClient clientMessage,
+      final ServerConnection serverConnection, final SecurityService securityService, long start)
+      throws IOException {
     CachedRegionHelper crHelper = serverConnection.getCachedRegionHelper();
 
     CacheServerStats stats = serverConnection.getCacheServerStats();

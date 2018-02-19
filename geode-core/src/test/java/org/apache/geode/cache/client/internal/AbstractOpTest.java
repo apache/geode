@@ -24,6 +24,7 @@ import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
 import org.apache.geode.internal.cache.tier.sockets.Message;
+import org.apache.geode.internal.cache.tier.sockets.MessageFromServer;
 import org.apache.geode.test.junit.categories.UnitTest;
 
 @Category(UnitTest.class)
@@ -34,7 +35,7 @@ public class AbstractOpTest {
     AbstractOp mockAbstractOp = mock(AbstractOp.class);
     Object mockObject = mock(Object.class);
     when(mockAbstractOp.processObjResponse(any(), anyString())).thenReturn(mockObject);
-    assertThat(mockAbstractOp.processObjResponse(mock(Message.class), "string"))
+    assertThat(mockAbstractOp.processObjResponse(mock(MessageFromServer.class), "string"))
         .isEqualTo(mockObject);
   }
 }

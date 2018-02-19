@@ -31,14 +31,7 @@ import org.apache.geode.distributed.internal.DistributionStats;
 import org.apache.geode.internal.cache.tier.CachedRegionHelper;
 import org.apache.geode.internal.cache.tier.Command;
 import org.apache.geode.internal.cache.tier.MessageType;
-import org.apache.geode.internal.cache.tier.sockets.AcceptorImpl;
-import org.apache.geode.internal.cache.tier.sockets.CacheClientNotifier;
-import org.apache.geode.internal.cache.tier.sockets.CacheClientProxy;
-import org.apache.geode.internal.cache.tier.sockets.CacheServerStats;
-import org.apache.geode.internal.cache.tier.sockets.ClientProxyMembershipID;
-import org.apache.geode.internal.cache.tier.sockets.Message;
-import org.apache.geode.internal.cache.tier.sockets.Part;
-import org.apache.geode.internal.cache.tier.sockets.ServerConnection;
+import org.apache.geode.internal.cache.tier.sockets.*;
 import org.apache.geode.internal.cache.vmotion.VMotionObserver;
 import org.apache.geode.internal.cache.vmotion.VMotionObserverHolder;
 import org.apache.geode.internal.i18n.LocalizedStrings;
@@ -66,8 +59,9 @@ public class ExecuteCQ61 extends BaseCQCommand {
   }
 
   @Override
-  public void cmdExecute(final Message clientMessage, final ServerConnection serverConnection,
-      final SecurityService securityService, long start) throws IOException, InterruptedException {
+  public void cmdExecute(final MessageFromClient clientMessage,
+      final ServerConnection serverConnection, final SecurityService securityService, long start)
+      throws IOException, InterruptedException {
     AcceptorImpl acceptor = serverConnection.getAcceptor();
     CachedRegionHelper crHelper = serverConnection.getCachedRegionHelper();
     ClientProxyMembershipID id = serverConnection.getProxyID();

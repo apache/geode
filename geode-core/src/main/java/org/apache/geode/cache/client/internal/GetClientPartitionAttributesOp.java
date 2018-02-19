@@ -23,6 +23,7 @@ import org.apache.geode.cache.FixedPartitionAttributes;
 import org.apache.geode.cache.client.ServerOperationException;
 import org.apache.geode.internal.cache.tier.MessageType;
 import org.apache.geode.internal.cache.tier.sockets.Message;
+import org.apache.geode.internal.cache.tier.sockets.MessageFromServer;
 import org.apache.geode.internal.cache.tier.sockets.Part;
 import org.apache.geode.internal.i18n.LocalizedStrings;
 import org.apache.geode.internal.logging.LogService;
@@ -85,7 +86,7 @@ public class GetClientPartitionAttributesOp {
 
     @SuppressWarnings("unchecked")
     @Override
-    protected Object processResponse(Message msg) throws Exception {
+    protected Object processResponse(MessageFromServer msg) throws Exception {
       switch (msg.getMessageType()) {
         case MessageType.GET_CLIENT_PARTITION_ATTRIBUTES_ERROR:
           String errorMsg = msg.getPart(0).getString();

@@ -323,7 +323,7 @@ public class ClientUpdateMessageImpl implements ClientUpdateMessage, Sizeable, N
     return false;
   }
 
-  public Message getMessage(CacheClientProxy proxy, boolean notify) throws IOException {
+  public MessageFromServer getMessage(CacheClientProxy proxy, boolean notify) throws IOException {
     // the MessageDispatcher uses getMessage(CacheClientProxy, byte[]) for this class
     throw new Error("ClientUpdateMessage.getMessage(proxy) should not be invoked");
   }
@@ -340,10 +340,11 @@ public class ClientUpdateMessageImpl implements ClientUpdateMessage, Sizeable, N
    * @see org.apache.geode.internal.cache.tier.sockets.Message
    */
 
-  protected Message getMessage(CacheClientProxy proxy, byte[] latestValue) throws IOException {
+  protected MessageFromServer getMessage(CacheClientProxy proxy, byte[] latestValue)
+      throws IOException {
     Version clientVersion = proxy.getVersion();
     byte[] serializedValue = null;
-    Message message = null;
+    MessageFromServer message = null;
     boolean conflation = false;
     conflation = (proxy.clientConflation == Handshake.CONFLATION_ON)
         || (proxy.clientConflation == Handshake.CONFLATION_DEFAULT && this.shouldBeConflated());
@@ -378,9 +379,9 @@ public class ClientUpdateMessageImpl implements ClientUpdateMessage, Sizeable, N
     return message;
   }
 
-  protected Message getGFEMessage(ClientProxyMembershipID proxyId, byte[] latestValue,
+  protected MessageFromServer getGFEMessage(ClientProxyMembershipID proxyId, byte[] latestValue,
       Version clientVersion) throws IOException {
-    Message message = null;
+    MessageFromServer message = null;
     // Add CQ info.
     int cqMsgParts = 0;
     boolean clientHasCq = this._hasCqs && (this.getCqs(proxyId) != null);
@@ -393,7 +394,7 @@ public class ClientUpdateMessageImpl implements ClientUpdateMessage, Sizeable, N
       // Create or update event
       if (this._clientInterestListInv != null && this._clientInterestListInv.contains(proxyId)) {
         // Notify all - do not send the value
-        message = new Message(6, clientVersion);
+        message = new MessageFromServer(6, clientVersion);
         message.setMessageType(MessageType.LOCAL_INVALIDATE);
         message.addStringPart(this._regionName, true);
         // Currently serializing the key here instead of when the message
@@ -405,7 +406,7 @@ public class ClientUpdateMessageImpl implements ClientUpdateMessage, Sizeable, N
 
       } else {
         // Notify by subscription - send the value
-        message = new Message(7 + cqMsgParts, clientVersion);
+        message = new MessageFromServer(7 + cqMsgParts, clientVersion);
 
         // Set message type
         if (isCreate()) {
@@ -427,7 +428,7 @@ public class ClientUpdateMessageImpl implements ClientUpdateMessage, Sizeable, N
         }
       }
     } else if (isDestroy() || isInvalidate()) {
-      message = new Message(6 + cqMsgParts, clientVersion);
+      message = new MessageFromServer(6 + cqMsgParts, clientVersion);
       if (isDestroy()) {
         message.setMessageType(MessageType.LOCAL_DESTROY);
       } else {
@@ -446,7 +447,7 @@ public class ClientUpdateMessageImpl implements ClientUpdateMessage, Sizeable, N
         this.addCqsToMessage(proxyId, message);
       }
     } else if (isDestroyRegion()) {
-      message = new Message(4 + cqMsgParts, clientVersion);
+      message = new MessageFromServer(4 + cqMsgParts, clientVersion);
       message.setMessageType(MessageType.LOCAL_DESTROY_REGION);
       message.addStringPart(this._regionName, true);
       message.addObjPart(this._callbackArgument);
@@ -456,7 +457,7 @@ public class ClientUpdateMessageImpl implements ClientUpdateMessage, Sizeable, N
         this.addCqsToMessage(proxyId, message);
       }
     } else if (isClearRegion()) {
-      message = new Message(4 + cqMsgParts, clientVersion);
+      message = new MessageFromServer(4 + cqMsgParts, clientVersion);
       message.setMessageType(MessageType.CLEAR_REGION);
       message.addStringPart(this._regionName, true);
       message.addObjPart(this._callbackArgument);
@@ -466,7 +467,7 @@ public class ClientUpdateMessageImpl implements ClientUpdateMessage, Sizeable, N
         this.addCqsToMessage(proxyId, message);
       }
     } else if (isInvalidateRegion()) {
-      message = new Message(4 + cqMsgParts, clientVersion);
+      message = new MessageFromServer(4 + cqMsgParts, clientVersion);
       message.setMessageType(MessageType.INVALIDATE_REGION);
       message.addStringPart(this._regionName, true);
       message.addObjPart(this._callbackArgument);
@@ -486,9 +487,9 @@ public class ClientUpdateMessageImpl implements ClientUpdateMessage, Sizeable, N
     return message;
   }
 
-  protected Message getGFE61Message(CacheClientProxy proxy, byte[] latestValue, boolean conflation,
-      Version clientVersion) throws IOException {
-    Message message = null;
+  protected MessageFromServer getGFE61Message(CacheClientProxy proxy, byte[] latestValue,
+      boolean conflation, Version clientVersion) throws IOException {
+    MessageFromServer message = null;
     ClientProxyMembershipID proxyId = proxy.getProxyID();
 
     // Add CQ info.
@@ -503,7 +504,7 @@ public class ClientUpdateMessageImpl implements ClientUpdateMessage, Sizeable, N
       // Create or update event
       if (this._clientInterestListInv != null && this._clientInterestListInv.contains(proxyId)) {
         // Notify all - do not send the value
-        message = new Message(6, clientVersion);
+        message = new MessageFromServer(6, clientVersion);
         message.setMessageType(MessageType.LOCAL_INVALIDATE);
 
         // Add the region name
@@ -526,7 +527,7 @@ public class ClientUpdateMessageImpl implements ClientUpdateMessage, Sizeable, N
       } else {
         boolean isClientInterested = isClientInterested(proxyId);
         // Notify by subscription - send the value
-        message = new Message(8 + cqMsgParts, clientVersion);
+        message = new MessageFromServer(8 + cqMsgParts, clientVersion);
 
         // Set message type
         if (isCreate()) {
@@ -588,7 +589,7 @@ public class ClientUpdateMessageImpl implements ClientUpdateMessage, Sizeable, N
       }
     } else if (isDestroy() || isInvalidate()) {
       // Destroy or invalidate event
-      message = new Message(6 + cqMsgParts, clientVersion);
+      message = new MessageFromServer(6 + cqMsgParts, clientVersion);
 
       if (isDestroy()) {
         message.setMessageType(MessageType.LOCAL_DESTROY);
@@ -610,7 +611,7 @@ public class ClientUpdateMessageImpl implements ClientUpdateMessage, Sizeable, N
         this.addCqsToMessage(proxyId, message);
       }
     } else if (isDestroyRegion()) {
-      message = new Message(4 + cqMsgParts, clientVersion);
+      message = new MessageFromServer(4 + cqMsgParts, clientVersion);
       message.setMessageType(MessageType.LOCAL_DESTROY_REGION);
       message.addStringPart(this._regionName, true);
       message.addObjPart(this._callbackArgument);
@@ -620,7 +621,7 @@ public class ClientUpdateMessageImpl implements ClientUpdateMessage, Sizeable, N
         this.addCqsToMessage(proxyId, message);
       }
     } else if (isClearRegion()) {
-      message = new Message(4 + cqMsgParts, clientVersion);
+      message = new MessageFromServer(4 + cqMsgParts, clientVersion);
       message.setMessageType(MessageType.CLEAR_REGION);
       message.addStringPart(this._regionName, true);
       message.addObjPart(this._callbackArgument);
@@ -630,7 +631,7 @@ public class ClientUpdateMessageImpl implements ClientUpdateMessage, Sizeable, N
         this.addCqsToMessage(proxyId, message);
       }
     } else if (isInvalidateRegion()) {
-      message = new Message(4 + cqMsgParts, clientVersion);
+      message = new MessageFromServer(4 + cqMsgParts, clientVersion);
       message.setMessageType(MessageType.INVALIDATE_REGION);
       message.addStringPart(this._regionName, true);
       message.addObjPart(this._callbackArgument);
@@ -650,10 +651,10 @@ public class ClientUpdateMessageImpl implements ClientUpdateMessage, Sizeable, N
     return message;
   }
 
-  protected Message getGFE65Message(CacheClientProxy proxy, byte[] p_latestValue,
+  protected MessageFromServer getGFE65Message(CacheClientProxy proxy, byte[] p_latestValue,
       boolean conflation, Version clientVersion) throws IOException {
     byte[] latestValue = p_latestValue;
-    Message message = null;
+    MessageFromServer message = null;
     ClientProxyMembershipID proxyId = proxy.getProxyID();
 
     // Add CQ info.
@@ -672,7 +673,7 @@ public class ClientUpdateMessageImpl implements ClientUpdateMessage, Sizeable, N
           cqMsgParts++; // To store base operation type for CQ.
         }
 
-        message = new Message(6 + cqMsgParts, clientVersion);
+        message = new MessageFromServer(6 + cqMsgParts, clientVersion);
         message.setMessageType(MessageType.LOCAL_INVALIDATE);
 
         // Add the region name
@@ -684,7 +685,7 @@ public class ClientUpdateMessageImpl implements ClientUpdateMessage, Sizeable, N
         message.addStringOrObjPart(this._keyOfInterest);
       } else {
         // Notify by subscription - send the value
-        message = new Message(8 + cqMsgParts, clientVersion);
+        message = new MessageFromServer(8 + cqMsgParts, clientVersion);
 
         // Set message type
         if (isCreate()) {
@@ -744,13 +745,13 @@ public class ClientUpdateMessageImpl implements ClientUpdateMessage, Sizeable, N
       }
     } else if (isDestroy() || isInvalidate()) {
       if (isDestroy()) {
-        message = new Message(6 + cqMsgParts, clientVersion);
+        message = new MessageFromServer(6 + cqMsgParts, clientVersion);
         message.setMessageType(MessageType.LOCAL_DESTROY);
       } else {
         if (clientHasCq) {
           cqMsgParts++;/* To store the region operation for CQ */
         }
-        message = new Message(6 + cqMsgParts, clientVersion);
+        message = new MessageFromServer(6 + cqMsgParts, clientVersion);
         message.setMessageType(MessageType.LOCAL_INVALIDATE);
       }
       message.addStringPart(this._regionName, true);
@@ -768,7 +769,7 @@ public class ClientUpdateMessageImpl implements ClientUpdateMessage, Sizeable, N
         this.addCqsToMessage(proxyId, message);
       }
     } else if (isDestroyRegion()) {
-      message = new Message(4 + cqMsgParts, clientVersion);
+      message = new MessageFromServer(4 + cqMsgParts, clientVersion);
       message.setMessageType(MessageType.LOCAL_DESTROY_REGION);
       message.addStringPart(this._regionName, true);
       message.addObjPart(this._callbackArgument);
@@ -778,7 +779,7 @@ public class ClientUpdateMessageImpl implements ClientUpdateMessage, Sizeable, N
         this.addCqsToMessage(proxyId, message);
       }
     } else if (isClearRegion()) {
-      message = new Message(4 + cqMsgParts, clientVersion);
+      message = new MessageFromServer(4 + cqMsgParts, clientVersion);
       message.setMessageType(MessageType.CLEAR_REGION);
       message.addStringPart(this._regionName, true);
       message.addObjPart(this._callbackArgument);
@@ -788,7 +789,7 @@ public class ClientUpdateMessageImpl implements ClientUpdateMessage, Sizeable, N
         this.addCqsToMessage(proxyId, message);
       }
     } else if (isInvalidateRegion()) {
-      message = new Message(4 + cqMsgParts, clientVersion);
+      message = new MessageFromServer(4 + cqMsgParts, clientVersion);
       message.setMessageType(MessageType.INVALIDATE_REGION);
       message.addStringPart(this._regionName, true);
       message.addObjPart(this._callbackArgument);
@@ -811,10 +812,10 @@ public class ClientUpdateMessageImpl implements ClientUpdateMessage, Sizeable, N
   }
 
 
-  protected Message getGFE70Message(CacheClientProxy proxy, byte[] p_latestValue,
+  protected MessageFromServer getGFE70Message(CacheClientProxy proxy, byte[] p_latestValue,
       boolean conflation, Version clientVersion) throws IOException {
     byte[] latestValue = p_latestValue;
-    Message message = null;
+    MessageFromServer message = null;
     ClientProxyMembershipID proxyId = proxy.getProxyID();
     // Add CQ info.
     int cqMsgParts = 0;
@@ -954,17 +955,17 @@ public class ClientUpdateMessageImpl implements ClientUpdateMessage, Sizeable, N
     return message;
   }
 
-  private static final ThreadLocal<Map<Integer, Message>> CACHED_MESSAGES =
-      new ThreadLocal<Map<Integer, Message>>() {
-        protected Map<Integer, Message> initialValue() {
-          return new HashMap<Integer, Message>();
+  private static final ThreadLocal<Map<Integer, MessageFromServer>> CACHED_MESSAGES =
+      new ThreadLocal<Map<Integer, MessageFromServer>>() {
+        protected Map<Integer, MessageFromServer> initialValue() {
+          return new HashMap<Integer, MessageFromServer>();
         };
       };
 
-  private Message getMessage(int numParts, Version clientVersion) {
-    Message m = CACHED_MESSAGES.get().get(numParts);
+  private MessageFromServer getMessage(int numParts, Version clientVersion) {
+    MessageFromServer m = CACHED_MESSAGES.get().get(numParts);
     if (m == null) {
-      m = new Message(numParts, Version.CURRENT);
+      m = new MessageFromServer(numParts, Version.CURRENT);
       CACHED_MESSAGES.get().put(numParts, m);
     }
     m.clearParts();

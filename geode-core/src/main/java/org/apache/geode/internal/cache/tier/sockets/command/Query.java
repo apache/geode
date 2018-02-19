@@ -29,6 +29,7 @@ import org.apache.geode.cache.query.types.CollectionType;
 import org.apache.geode.internal.cache.tier.Command;
 import org.apache.geode.internal.cache.tier.sockets.BaseCommandQuery;
 import org.apache.geode.internal.cache.tier.sockets.Message;
+import org.apache.geode.internal.cache.tier.sockets.MessageFromClient;
 import org.apache.geode.internal.cache.tier.sockets.ServerConnection;
 import org.apache.geode.internal.security.AuthorizeRequest;
 import org.apache.geode.internal.security.SecurityService;
@@ -44,8 +45,9 @@ public class Query extends BaseCommandQuery {
   protected Query() {}
 
   @Override
-  public void cmdExecute(final Message clientMessage, final ServerConnection serverConnection,
-      final SecurityService securityService, long start) throws IOException, InterruptedException {
+  public void cmdExecute(final MessageFromClient clientMessage,
+      final ServerConnection serverConnection, final SecurityService securityService, long start)
+      throws IOException, InterruptedException {
 
     // Based on MessageType.DESTROY
     // Added by gregp 10/18/05

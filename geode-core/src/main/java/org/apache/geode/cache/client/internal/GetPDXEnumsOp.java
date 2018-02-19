@@ -20,6 +20,7 @@ import org.apache.geode.InternalGemFireError;
 import org.apache.geode.cache.client.ServerOperationException;
 import org.apache.geode.internal.cache.tier.MessageType;
 import org.apache.geode.internal.cache.tier.sockets.Message;
+import org.apache.geode.internal.cache.tier.sockets.MessageFromServer;
 import org.apache.geode.internal.cache.tier.sockets.Part;
 import org.apache.geode.pdx.internal.EnumInfo;
 
@@ -46,7 +47,7 @@ public class GetPDXEnumsOp {
     }
 
     @Override
-    protected Object processResponse(Message msg) throws Exception {
+    protected Object processResponse(MessageFromServer msg) throws Exception {
       Part part = msg.getPart(0);
       int msgType = msg.getMessageType();
       if (msgType == MessageType.RESPONSE) {

@@ -29,11 +29,7 @@ import org.apache.geode.internal.cache.LocalRegion;
 import org.apache.geode.internal.cache.PartitionedRegion;
 import org.apache.geode.internal.cache.tier.Command;
 import org.apache.geode.internal.cache.tier.MessageType;
-import org.apache.geode.internal.cache.tier.sockets.BaseCommand;
-import org.apache.geode.internal.cache.tier.sockets.CacheServerStats;
-import org.apache.geode.internal.cache.tier.sockets.Message;
-import org.apache.geode.internal.cache.tier.sockets.Part;
-import org.apache.geode.internal.cache.tier.sockets.ServerConnection;
+import org.apache.geode.internal.cache.tier.sockets.*;
 import org.apache.geode.internal.i18n.LocalizedStrings;
 import org.apache.geode.internal.logging.log4j.LocalizedMessage;
 import org.apache.geode.internal.security.AuthorizeRequest;
@@ -51,9 +47,9 @@ public class Destroy extends BaseCommand {
   }
 
   @Override
-  public void cmdExecute(final Message clientMessage, final ServerConnection serverConnection,
-      final SecurityService securityService, long startparam)
-      throws IOException, InterruptedException {
+  public void cmdExecute(final MessageFromClient clientMessage,
+      final ServerConnection serverConnection, final SecurityService securityService,
+      long startparam) throws IOException, InterruptedException {
     long start = startparam;
 
     Part regionNamePart = null, keyPart = null, callbackArgPart = null;

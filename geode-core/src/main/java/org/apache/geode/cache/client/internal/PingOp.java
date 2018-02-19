@@ -17,6 +17,7 @@ package org.apache.geode.cache.client.internal;
 import org.apache.geode.distributed.internal.ServerLocation;
 import org.apache.geode.internal.cache.tier.MessageType;
 import org.apache.geode.internal.cache.tier.sockets.Message;
+import org.apache.geode.internal.cache.tier.sockets.MessageFromServer;
 
 /**
  * Ping a server to see if it is still alive.
@@ -52,7 +53,7 @@ public class PingOp {
     }
 
     @Override
-    protected void processSecureBytes(Connection cnx, Message message) throws Exception {
+    protected void processSecureBytes(Connection cnx, MessageFromServer message) throws Exception {
       super.processSecureBytes(cnx, message);
       Message.MESSAGE_TYPE.set(null);
     }
@@ -71,7 +72,7 @@ public class PingOp {
     }
 
     @Override
-    protected Object processResponse(Message msg) throws Exception {
+    protected Object processResponse(MessageFromServer msg) throws Exception {
       processAck(msg, "ping");
       return null;
     }

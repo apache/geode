@@ -35,8 +35,8 @@ public class PeriodicAck extends BaseCommand {
   private PeriodicAck() {}
 
   @Override
-  public void cmdExecute(final Message clientMessage, final ServerConnection serverConnection,
-      final SecurityService securityService, long start)
+  public void cmdExecute(final MessageFromClient clientMessage,
+      final ServerConnection serverConnection, final SecurityService securityService, long start)
       throws IOException, ClassNotFoundException {
     serverConnection.setAsTrue(REQUIRES_RESPONSE);
     if (logger.isDebugEnabled()) {

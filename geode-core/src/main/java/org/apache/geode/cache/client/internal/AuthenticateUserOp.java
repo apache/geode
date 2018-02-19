@@ -34,10 +34,7 @@ import org.apache.geode.distributed.internal.membership.InternalDistributedMembe
 import org.apache.geode.internal.HeapDataOutputStream;
 import org.apache.geode.internal.Version;
 import org.apache.geode.internal.cache.tier.MessageType;
-import org.apache.geode.internal.cache.tier.sockets.ChunkedMessage;
-import org.apache.geode.internal.cache.tier.sockets.Handshake;
-import org.apache.geode.internal.cache.tier.sockets.Message;
-import org.apache.geode.internal.cache.tier.sockets.Part;
+import org.apache.geode.internal.cache.tier.sockets.*;
 import org.apache.geode.internal.cache.tier.sockets.command.PutUserCredentials;
 import org.apache.geode.internal.logging.InternalLogWriter;
 import org.apache.geode.security.AuthenticationFailedException;
@@ -181,7 +178,7 @@ public class AuthenticateUserOp {
 
     @Override
     protected Object attemptReadResponse(Connection cnx) throws Exception {
-      Message msg = createResponseMessage();
+      MessageFromServer msg = createResponseMessage();
       if (msg != null) {
         msg.setComms(cnx.getSocket(), cnx.getInputStream(), cnx.getOutputStream(),
             cnx.getCommBuffer(), cnx.getStats());
@@ -274,7 +271,7 @@ public class AuthenticateUserOp {
     }
 
     @Override
-    protected Object processResponse(Message msg) throws Exception {
+    protected Object processResponse(MessageFromServer msg) throws Exception {
       return null;
     }
 

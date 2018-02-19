@@ -567,8 +567,8 @@ public class CacheClientUpdater extends Thread implements ClientUpdater, Disconn
    * Creates a cached {@link Message}object whose state is filled in with a message received from
    * the server.
    */
-  private Message initializeMessage() {
-    Message message = new Message(2, Version.CURRENT);
+  private MessageFromServer initializeMessage() {
+    MessageFromServer message = new MessageFromServer(2, Version.CURRENT);
     message.setComms(this.socket, this.in, this.out, this.commBuffer, this.stats);
     return message;
   }

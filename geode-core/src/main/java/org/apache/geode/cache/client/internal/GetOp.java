@@ -29,6 +29,7 @@ import org.apache.geode.internal.cache.LocalRegion;
 import org.apache.geode.internal.cache.Token;
 import org.apache.geode.internal.cache.tier.MessageType;
 import org.apache.geode.internal.cache.tier.sockets.Message;
+import org.apache.geode.internal.cache.tier.sockets.MessageFromServer;
 import org.apache.geode.internal.cache.tier.sockets.Part;
 import org.apache.geode.internal.cache.versions.VersionTag;
 import org.apache.geode.internal.logging.LogService;
@@ -134,12 +135,12 @@ public class GetOp {
     }
 
     @Override
-    protected Object processResponse(Message msg) throws Exception {
+    protected Object processResponse(MessageFromServer msg) throws Exception {
       throw new UnsupportedOperationException(); // version tag processing requires the connection
     }
 
     @Override
-    protected Object processResponse(Message msg, Connection con) throws Exception {
+    protected Object processResponse(MessageFromServer msg, Connection con) throws Exception {
       Object object = processObjResponse(msg, "get");
       if (msg.getNumberOfParts() > 1) {
         int partIdx = 1;

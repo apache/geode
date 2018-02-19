@@ -38,10 +38,7 @@ import org.apache.geode.internal.cache.LocalRegion;
 import org.apache.geode.internal.cache.PutAllPartialResultException;
 import org.apache.geode.internal.cache.PutAllPartialResultException.PutAllPartialResult;
 import org.apache.geode.internal.cache.tier.MessageType;
-import org.apache.geode.internal.cache.tier.sockets.ChunkedMessage;
-import org.apache.geode.internal.cache.tier.sockets.Message;
-import org.apache.geode.internal.cache.tier.sockets.Part;
-import org.apache.geode.internal.cache.tier.sockets.VersionedObjectList;
+import org.apache.geode.internal.cache.tier.sockets.*;
 import org.apache.geode.internal.logging.LogService;
 
 /**
@@ -317,17 +314,18 @@ public class PutAllOp {
     }
 
     @Override
-    protected Message createResponseMessage() {
+    protected MessageFromServer createResponseMessage() {
       return new ChunkedMessage(2, Version.CURRENT);
     }
 
     @Override
-    protected Object processResponse(Message msg) throws Exception {
+    protected Object processResponse(MessageFromServer msg) throws Exception {
       throw new UnsupportedOperationException();
     }
 
     @Override
-    protected Object processResponse(final Message msg, final Connection con) throws Exception {
+    protected Object processResponse(final MessageFromServer msg, final Connection con)
+        throws Exception {
       final VersionedObjectList result = new VersionedObjectList();
       final Exception[] exceptionRef = new Exception[1];
       try {

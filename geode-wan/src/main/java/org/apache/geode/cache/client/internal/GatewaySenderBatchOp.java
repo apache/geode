@@ -27,6 +27,7 @@ import org.apache.geode.internal.cache.EventID;
 import org.apache.geode.internal.cache.tier.MessageType;
 import org.apache.geode.internal.cache.tier.sockets.ChunkedMessage;
 import org.apache.geode.internal.cache.tier.sockets.Message;
+import org.apache.geode.internal.cache.tier.sockets.MessageFromServer;
 import org.apache.geode.internal.cache.tier.sockets.Part;
 import org.apache.geode.internal.cache.wan.BatchException70;
 import org.apache.geode.internal.cache.wan.GatewaySenderEventImpl;
@@ -183,7 +184,7 @@ public class GatewaySenderBatchOp {
      * @throws Exception if the execute failed
      */
     protected Object attemptReadResponse(Connection cnx) throws Exception {
-      Message msg = createResponseMessage();
+      MessageFromServer msg = createResponseMessage();
       if (msg != null) {
         msg.setComms(cnx.getSocket(), cnx.getInputStream(), cnx.getOutputStream(),
             ((ConnectionImpl) cnx).getCommBufferForAsyncRead(), cnx.getStats());
@@ -232,7 +233,7 @@ public class GatewaySenderBatchOp {
     }
 
     @Override
-    protected Object processResponse(Message msg) throws Exception {
+    protected Object processResponse(MessageFromServer msg) throws Exception {
       GatewayAck ack = null;
       try {
         // Read the header which describes the type of message following

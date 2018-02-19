@@ -16,6 +16,7 @@ package org.apache.geode.cache.client.internal;
 
 import org.apache.geode.internal.cache.tier.MessageType;
 import org.apache.geode.internal.cache.tier.sockets.Message;
+import org.apache.geode.internal.cache.tier.sockets.MessageFromServer;
 
 /**
  * Tell a server to become the primary host of a server-to-client queue
@@ -60,7 +61,7 @@ public class MakePrimaryOp {
     }
 
     @Override
-    protected Object processResponse(Message msg) throws Exception {
+    protected Object processResponse(MessageFromServer msg) throws Exception {
       processAck(msg, "makePrimary");
       return null;
     }

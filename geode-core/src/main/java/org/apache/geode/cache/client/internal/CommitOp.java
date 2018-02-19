@@ -17,6 +17,7 @@ package org.apache.geode.cache.client.internal;
 import org.apache.geode.internal.cache.TXCommitMessage;
 import org.apache.geode.internal.cache.tier.MessageType;
 import org.apache.geode.internal.cache.tier.sockets.Message;
+import org.apache.geode.internal.cache.tier.sockets.MessageFromServer;
 
 /**
  * Does a commit on a server
@@ -64,7 +65,7 @@ public class CommitOp {
     }
 
     @Override
-    protected Object processResponse(Message msg) throws Exception {
+    protected Object processResponse(MessageFromServer msg) throws Exception {
       TXCommitMessage rcs = (TXCommitMessage) processObjResponse(msg, "commit");
       assert rcs != null : "TxCommit response was null";
       this.tXCommitMessageResponse = rcs;

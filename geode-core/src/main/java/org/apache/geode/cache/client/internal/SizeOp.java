@@ -16,6 +16,7 @@ package org.apache.geode.cache.client.internal;
 
 import org.apache.geode.internal.cache.tier.MessageType;
 import org.apache.geode.internal.cache.tier.sockets.Message;
+import org.apache.geode.internal.cache.tier.sockets.MessageFromServer;
 
 /**
  * Does a region size on a server
@@ -49,7 +50,7 @@ public class SizeOp {
     }
 
     @Override
-    protected Object processResponse(Message msg) throws Exception {
+    protected Object processResponse(MessageFromServer msg) throws Exception {
 
       return processObjResponse(msg, "size");
     }

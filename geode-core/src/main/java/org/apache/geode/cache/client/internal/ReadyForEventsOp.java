@@ -16,6 +16,7 @@ package org.apache.geode.cache.client.internal;
 
 import org.apache.geode.internal.cache.tier.MessageType;
 import org.apache.geode.internal.cache.tier.sockets.Message;
+import org.apache.geode.internal.cache.tier.sockets.MessageFromServer;
 
 /**
  * Tells the server we are ready to receive server-to-client events from durable subscriptions.
@@ -59,7 +60,7 @@ public class ReadyForEventsOp {
     }
 
     @Override
-    protected Object processResponse(Message msg) throws Exception {
+    protected Object processResponse(MessageFromServer msg) throws Exception {
       processAck(msg, "readyForEvents");
       return null;
     }

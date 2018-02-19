@@ -27,6 +27,7 @@ import org.apache.geode.internal.cache.execute.MemberMappedArgument;
 import org.apache.geode.internal.cache.execute.ServerRegionFunctionExecutor;
 import org.apache.geode.internal.cache.tier.MessageType;
 import org.apache.geode.internal.cache.tier.sockets.Message;
+import org.apache.geode.internal.cache.tier.sockets.MessageFromServer;
 import org.apache.geode.internal.cache.tier.sockets.Part;
 import org.apache.geode.internal.i18n.LocalizedStrings;
 import org.apache.geode.internal.logging.LogService;
@@ -176,7 +177,7 @@ public class ExecuteRegionFunctionNoAckOp {
     }
 
     @Override
-    protected Object processResponse(Message msg) throws Exception {
+    protected Object processResponse(MessageFromServer msg) throws Exception {
       final int msgType = msg.getMessageType();
       if (msgType == MessageType.REPLY) {
         return null;
@@ -219,8 +220,8 @@ public class ExecuteRegionFunctionNoAckOp {
     }
 
     @Override
-    protected Message createResponseMessage() {
-      return new Message(1, Version.CURRENT);
+    protected MessageFromServer createResponseMessage() {
+      return new MessageFromServer(1, Version.CURRENT);
     }
   }
 }

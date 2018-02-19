@@ -37,8 +37,9 @@ public class Ping extends BaseCommand {
   private Ping() {}
 
   @Override
-  public void cmdExecute(final Message clientMessage, final ServerConnection serverConnection,
-      final SecurityService securityService, long start) throws IOException {
+  public void cmdExecute(final MessageFromClient clientMessage,
+      final ServerConnection serverConnection, final SecurityService securityService, long start)
+      throws IOException {
     final boolean isDebugEnabled = logger.isDebugEnabled();
     if (isDebugEnabled) {
       logger.debug("{}: rcv tx: {} from {} rcvTime: {}", serverConnection.getName(),

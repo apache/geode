@@ -20,11 +20,7 @@ import java.nio.ByteBuffer;
 import org.apache.geode.internal.InternalDataSerializer;
 import org.apache.geode.internal.cache.EventID;
 import org.apache.geode.internal.cache.tier.Command;
-import org.apache.geode.internal.cache.tier.sockets.BaseCommand;
-import org.apache.geode.internal.cache.tier.sockets.CacheServerHelper;
-import org.apache.geode.internal.cache.tier.sockets.Message;
-import org.apache.geode.internal.cache.tier.sockets.Part;
-import org.apache.geode.internal.cache.tier.sockets.ServerConnection;
+import org.apache.geode.internal.cache.tier.sockets.*;
 import org.apache.geode.internal.security.SecurityService;
 
 public class RegisterDataSerializers extends BaseCommand {
@@ -37,8 +33,8 @@ public class RegisterDataSerializers extends BaseCommand {
 
   private RegisterDataSerializers() {}
 
-  public void cmdExecute(final Message clientMessage, final ServerConnection serverConnection,
-      final SecurityService securityService, long start)
+  public void cmdExecute(final MessageFromClient clientMessage,
+      final ServerConnection serverConnection, final SecurityService securityService, long start)
       throws IOException, ClassNotFoundException {
     serverConnection.setAsTrue(REQUIRES_RESPONSE);
     if (logger.isDebugEnabled()) {

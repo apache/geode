@@ -37,8 +37,9 @@ public class Invalid extends BaseCommand {
   private Invalid() {}
 
   @Override
-  public void cmdExecute(final Message clientMessage, final ServerConnection serverConnection,
-      final SecurityService securityService, long start) throws IOException {
+  public void cmdExecute(final MessageFromClient clientMessage,
+      final ServerConnection serverConnection, final SecurityService securityService, long start)
+      throws IOException {
     logger.error(
         LocalizedMessage.create(LocalizedStrings.Invalid_0_INVALID_MESSAGE_TYPE_WITH_TX_1_FROM_2,
             new Object[] {serverConnection.getName(),

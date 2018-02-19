@@ -20,6 +20,7 @@ import org.apache.geode.distributed.internal.membership.InternalDistributedMembe
 import org.apache.geode.internal.cache.EntryEventImpl;
 import org.apache.geode.internal.cache.tier.MessageType;
 import org.apache.geode.internal.cache.tier.sockets.Message;
+import org.apache.geode.internal.cache.tier.sockets.MessageFromServer;
 import org.apache.geode.internal.cache.versions.VersionTag;
 import org.apache.geode.internal.logging.LogService;
 
@@ -69,13 +70,13 @@ public class InvalidateOp {
     }
 
     @Override
-    protected Object processResponse(Message msg) throws Exception {
+    protected Object processResponse(MessageFromServer msg) throws Exception {
       throw new UnsupportedOperationException();
     }
 
 
     @Override
-    protected Object processResponse(Message msg, Connection con) throws Exception {
+    protected Object processResponse(MessageFromServer msg, Connection con) throws Exception {
       processAck(msg, "invalidate");
       boolean isReply = (msg.getMessageType() == MessageType.REPLY);
       int partIdx = 0;

@@ -58,7 +58,7 @@ import org.apache.geode.internal.logging.LogService;
  *
  * @since GemFire 4.2
  */
-public class ChunkedMessage extends Message {
+public class ChunkedMessage extends MessageFromServer {
   private static final Logger logger = LogService.getLogger();
 
   /**

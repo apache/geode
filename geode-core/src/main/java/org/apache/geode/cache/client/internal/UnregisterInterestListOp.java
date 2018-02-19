@@ -19,6 +19,7 @@ import java.util.List;
 
 import org.apache.geode.internal.cache.tier.MessageType;
 import org.apache.geode.internal.cache.tier.sockets.Message;
+import org.apache.geode.internal.cache.tier.sockets.MessageFromServer;
 
 /**
  * Does a region unregisterInterestList on a server
@@ -69,7 +70,7 @@ public class UnregisterInterestListOp {
     }
 
     @Override
-    protected Object processResponse(Message msg) throws Exception {
+    protected Object processResponse(MessageFromServer msg) throws Exception {
       processAck(msg, "unregisterInterestList");
       return null;
     }
