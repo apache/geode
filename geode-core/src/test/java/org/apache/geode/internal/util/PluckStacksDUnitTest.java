@@ -29,12 +29,14 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Properties;
 import java.util.Set;
 
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
 import org.apache.geode.cache.execute.ResultCollector;
+import org.apache.geode.distributed.ConfigurationProperties;
 import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.distributed.DistributedSystem;
 import org.apache.geode.internal.ClassPathLoader;
@@ -50,6 +52,14 @@ import org.apache.geode.util.test.TestUtil;
 
 @Category(DistributedTest.class)
 public class PluckStacksDUnitTest extends JUnit4CacheTestCase {
+
+  @Override
+  public Properties getDistributedSystemProperties() {
+    Properties properties = super.getDistributedSystemProperties();
+    properties.put(ConfigurationProperties.NAME,
+        "vm " + Integer.getInteger("gemfire.DUnitLauncher.VM_NUM", -1));
+    return properties;
+  }
 
 
   /**
@@ -70,6 +80,7 @@ public class PluckStacksDUnitTest extends JUnit4CacheTestCase {
     DistributedSystem system = getSystem();
 
     Set<DistributedMember> targetMembers = system.getAllOtherMembers();
+    assertEquals("expected 3 members but found " + targetMembers, 3, targetMembers.size());
 
     String outputFileName = "PluckStacksdUnitTest.out";
     File outputFile = new File(outputFileName);
@@ -77,6 +88,7 @@ public class PluckStacksDUnitTest extends JUnit4CacheTestCase {
       outputFile.delete();
     }
 
+    System.out.println("dumping stacks for " + targetMembers);
     dumpStacksToFile(targetMembers, outputFileName);
     assertTrue(outputFile.exists());
     assertNotEquals(0, outputFile.length());
@@ -125,6 +137,7 @@ public class PluckStacksDUnitTest extends JUnit4CacheTestCase {
         fail("expected a stack trace but found " + resultObj);
       }
     }
+    assertEquals(targetMembers.size(), dumps.size());
 
     new ExportStackTraceCommand().writeStacksToFile(dumps, fileName);
   }
