@@ -52,7 +52,7 @@ public class LocalRegionDataView implements InternalDataView {
    */
   public void destroyExistingEntry(EntryEventImpl event, boolean cacheWrite,
       Object expectedOldValue) {
-    LocalRegion lr = event.getLocalRegion();
+    LocalRegion lr = event.getRegion();
     lr.mapDestroy(event, cacheWrite, false, // isEviction
         expectedOldValue);
   }
@@ -67,7 +67,7 @@ public class LocalRegionDataView implements InternalDataView {
   public void invalidateExistingEntry(EntryEventImpl event, boolean invokeCallbacks,
       boolean forceNewEntry) {
     try {
-      event.getLocalRegion().entries.invalidate(event, invokeCallbacks, forceNewEntry, false);
+      event.getRegion().entries.invalidate(event, invokeCallbacks, forceNewEntry, false);
     } catch (ConcurrentCacheModificationException e) {
       // a newer event has already been applied to the cache. this can happen
       // in a client cache if another thread is operating on the same key
@@ -77,7 +77,7 @@ public class LocalRegionDataView implements InternalDataView {
   @Override
   public void updateEntryVersion(EntryEventImpl event) throws EntryNotFoundException {
     try {
-      event.getLocalRegion().entries.updateEntryVersion(event);
+      event.getRegion().entries.updateEntryVersion(event);
     } catch (ConcurrentCacheModificationException e) {
       // a later in time event has already been applied to the cache. this can happen
       // in a cache if another thread is operating on the same key
@@ -149,7 +149,7 @@ public class LocalRegionDataView implements InternalDataView {
   public boolean putEntry(EntryEventImpl event, boolean ifNew, boolean ifOld,
       Object expectedOldValue, boolean requireOldValue, long lastModified,
       boolean overwriteDestroyed) {
-    return event.getLocalRegion().virtualPut(event, ifNew, ifOld, expectedOldValue, requireOldValue,
+    return event.getRegion().virtualPut(event, ifNew, ifOld, expectedOldValue, requireOldValue,
         lastModified, overwriteDestroyed);
   }
 

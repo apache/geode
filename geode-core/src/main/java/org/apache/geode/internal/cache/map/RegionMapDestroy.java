@@ -720,7 +720,7 @@ public class RegionMapDestroy {
       EntryNotFoundException, RegionClearedException {
     focusedRegionMap.processVersionTag(re, event);
     final int oldSize = internalRegion.calculateRegionEntryValueSize(re);
-    boolean retVal = re.destroy(event.getLocalRegion(), event, inTokenMode, cacheWrite,
+    boolean retVal = re.destroy(event.getRegion(), event, inTokenMode, cacheWrite,
         expectedOldValue, forceDestroy, removeRecoveredEntry);
     if (retVal) {
       EntryLogger.logDestroy(event);

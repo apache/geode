@@ -2480,7 +2480,7 @@ public class SearchLoadAndWriteProcessor implements MembershipListener {
           RegionEventImpl regionEvtImpl = null;
           if (this.event instanceof EntryEventImpl) {
             entryEvtImpl = (EntryEventImpl) this.event;
-            entryEvtImpl.region = region;
+            entryEvtImpl.setRegion(region);
             Operation op = entryEvtImpl.getOperation();
             if (op == Operation.REPLACE) {
               entryEvtImpl.setOperation(Operation.UPDATE);
