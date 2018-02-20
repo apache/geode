@@ -8259,7 +8259,7 @@ public class PartitionedRegion extends LocalRegion
 
     // Create indexManager.
     if (this.indexManager == null) {
-      this.indexManager = IndexUtils.getIndexManager(this, true);
+      this.indexManager = IndexUtils.getIndexManager(cache, this, true);
     }
 
     if (logger.isDebugEnabled()) {
@@ -8496,7 +8496,7 @@ public class PartitionedRegion extends LocalRegion
         if (bucket == null) {
           continue;
         }
-        IndexManager bucketIndexManager = IndexUtils.getIndexManager(bucket, true);
+        IndexManager bucketIndexManager = IndexUtils.getIndexManager(cache, bucket, true);
         Set<Index> bucketIndexes = getBucketIndexesForPRIndexes(bucket, indexes);
         try {
           bucketIndexManager.populateIndexes(bucketIndexes);
@@ -8653,7 +8653,7 @@ public class PartitionedRegion extends LocalRegion
         bucket = (LocalRegion) bucketEntry.getValue();
         if (bucket != null) {
           bucket.waitForData();
-          IndexManager indexMang = IndexUtils.getIndexManager(bucket, false);
+          IndexManager indexMang = IndexUtils.getIndexManager(cache, bucket, false);
           if (indexMang != null) {
             indexMang.removeIndexes();
             numBuckets++;
@@ -9568,7 +9568,7 @@ public class PartitionedRegion extends LocalRegion
         logger.info(LocalizedMessage.create(
             LocalizedStrings.PartitionedRegion_THIS_IS_AN_ACCESSOR_VM_AND_DOESNT_CONTAIN_DATA));
 
-        prIndex = new PartitionedIndex(indexType, indexName, PartitionedRegion.this,
+        prIndex = new PartitionedIndex(cache, indexType, indexName, PartitionedRegion.this,
             indexedExpression, fromClause, imports);
       }
 
@@ -9590,8 +9590,8 @@ public class PartitionedRegion extends LocalRegion
       }
 
       // imports can be null
-      PartitionedIndex parIndex = new PartitionedIndex(indexType, indexName, PartitionedRegion.this,
-          indexedExpression, fromClause, imports);
+      PartitionedIndex parIndex = new PartitionedIndex(cache, indexType, indexName,
+          PartitionedRegion.this, indexedExpression, fromClause, imports);
 
       // In cases where we have no data yet (creation from cache xml), it would leave the populated
       // flag to false Not really an issue as a put will trigger bucket index creation which should
@@ -9611,7 +9611,7 @@ public class PartitionedRegion extends LocalRegion
 
         ExecutionContext externalContext = new ExecutionContext(null, cache);
         externalContext.setBucketRegion(PartitionedRegion.this, (BucketRegion) bucket);
-        IndexManager indMng = IndexUtils.getIndexManager(bucket, true);
+        IndexManager indMng = IndexUtils.getIndexManager(cache, bucket, true);
         try {
           Index bucketIndex = indMng.createIndex(indexName, indexType, indexedExpression,
               fromClause, imports, externalContext, parIndex, loadEntries);

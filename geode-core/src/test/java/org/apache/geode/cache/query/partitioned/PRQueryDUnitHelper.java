@@ -14,7 +14,10 @@
  */
 package org.apache.geode.cache.query.partitioned;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 
 import java.io.File;
 import java.io.Serializable;
@@ -35,7 +38,6 @@ import org.apache.geode.cache.AttributesFactory;
 import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.CacheClosedException;
 import org.apache.geode.cache.CacheException;
-import org.apache.geode.cache.CacheFactory;
 import org.apache.geode.cache.DataPolicy;
 import org.apache.geode.cache.DiskStore;
 import org.apache.geode.cache.EntryExistsException;
@@ -2446,9 +2448,8 @@ public class PRQueryDUnitHelper implements Serializable {
 
     @Override
     public void execute(FunctionContext context) {
-      Cache cache = CacheFactory.getAnyInstance();
+      Cache cache = context.getCache();
       QueryService queryService = cache.getQueryService();
-      ArrayList allQueryResults = new ArrayList();
       String qstr = (String) context.getArguments();
       try {
         Query query = queryService.newQuery(qstr);

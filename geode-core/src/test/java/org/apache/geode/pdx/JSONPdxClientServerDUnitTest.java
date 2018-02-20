@@ -178,7 +178,7 @@ public class JSONPdxClientServerDUnitTest extends JUnit4CacheTestCase {
     });
   }
 
-  public void VerifyPdxInstanceAndJsonConversion() {
+  public void VerifyPdxInstanceAndJsonConversion() throws JsonProcessingException {
     Region region = getRootRegion("testSimplePdx");
 
     // Create Object and initialize its members.
@@ -189,65 +189,12 @@ public class JSONPdxClientServerDUnitTest extends JUnit4CacheTestCase {
     region.put("101", testObject);
 
     // Get the object as PdxInstance
-    Object result = (Object) region.get("101");
-    if (result instanceof PdxInstance) {
-      PdxInstance pi = (PdxInstance) result;
-      String json = JSONFormatter.toJSON(pi);
+    Object result = region.get("101");
+    assertTrue(result instanceof PdxInstance);
+    PdxInstance pi = (PdxInstance) result;
+    String json = JSONFormatter.toJSON(pi);
 
-      try {
-        JSONObject jsonObject = new JSONObject(json);
-
-        // Testcase-1: Validate json string against the pdxInstance.
-        // validation for primitive types
-        assertEquals("VerifyPdxInstanceToJson: Int type values are not matched",
-            testObject.getP_int(), jsonObject.getInt(testObject.getP_intFN()));
-        assertEquals("VerifyPdxInstanceToJson: long type values are not matched",
-            testObject.getP_long(), jsonObject.getLong(testObject.getP_longFN()));
-
-        // validation for wrapper types
-        assertEquals("VerifyPdxInstanceToJson: Boolean type values are not matched",
-            testObject.getW_bool().booleanValue(), jsonObject.getBoolean(testObject.getW_boolFN()));
-        assertEquals("VerifyPdxInstanceToJson: Float type values are not matched",
-            testObject.getW_double().doubleValue(),
-            jsonObject.getDouble(testObject.getW_doubleFN()), 0);
-        assertEquals("VerifyPdxInstanceToJson: bigDec type values are not matched",
-            testObject.getW_bigDec().longValue(), jsonObject.getLong(testObject.getW_bigDecFN()));
-
-        // vlidation for array types
-        assertEquals("VerifyPdxInstanceToJson: Byte[] type values are not matched",
-            (int) testObject.getW_byteArray()[1],
-            jsonObject.getJSONArray(testObject.getW_byteArrayFN()).getInt(1));
-        assertEquals("VerifyPdxInstanceToJson: Double[] type values are not matched",
-            testObject.getW_doubleArray()[0],
-            jsonObject.getJSONArray(testObject.getW_doubleArrayFN()).getDouble(0), 0);
-        assertEquals("VerifyPdxInstanceToJson: String[] type values are not matched",
-            testObject.getW_strArray()[2],
-            jsonObject.getJSONArray(testObject.getW_strArrayFN()).getString(2));
-
-        // validation for collection types
-        assertEquals("VerifyPdxInstanceToJson: list type values are not matched",
-            testObject.getC_list().get(0),
-            jsonObject.getJSONArray(testObject.getC_listFN()).getString(0));
-
-        assertEquals("VerifyPdxInstanceToJson: stack type values are not matched",
-            testObject.getC_stack().get(2),
-            jsonObject.getJSONArray(testObject.getC_stackFN()).getString(2));
-
-        // validation for Map
-        assertEquals("VerifyPdxInstanceToJson: Map type values are not matched",
-            testObject.getM_empByCity().get("Ahmedabad").get(0).getFname(),
-            jsonObject.getJSONObject(testObject.getM_empByCityFN()).getJSONArray("Ahmedabad")
-                .getJSONObject(0).getString("fname"));
-
-        // validation Enum
-        assertEquals("VerifyPdxInstanceToJson: Enum type values are not matched",
-            testObject.getDay().toString(), jsonObject.getString(testObject.getDayFN()));
-      } catch (JSONException e) {
-        fail("Error in VerifyPdxInstanceToJson, Malformed json, can not create JSONArray from it");
-      }
-    } else {
-      fail("Error in VerifyPdxInstanceToJson, result must be of type PdxInstance");
-    }
+    JSONFormatterJUnitTest.verifyJsonWithJavaObject(json, testObject);
 
     // TestCase-2 : Validate Java-->JSON-->PdxInstance --> Java Mapping
     TestObjectForJSONFormatter actualTestObject = new TestObjectForJSONFormatter();
@@ -255,44 +202,35 @@ public class JSONPdxClientServerDUnitTest extends JUnit4CacheTestCase {
     ObjectMapper objectMapper = new ObjectMapper();
     objectMapper.setDateFormat(new SimpleDateFormat("MM/dd/yyyy"));
     objectMapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
+    validateReceivedJSON(region, actualTestObject, objectMapper);
 
-    try {
-      // 1. get the json from the object using Jackosn Object Mapper
-      String json = objectMapper.writeValueAsString(actualTestObject);
-      String jsonWithClassType = actualTestObject.addClassTypeToJson(json);
 
-      // 2. convert json into the PdxInstance and put it into the region
-      PdxInstance pi = JSONFormatter.fromJSON(jsonWithClassType);
-      region.put("201", pi);
+  }
 
-      // 3. get the value on key "201" and validate PdxInstance.getObject() API.
-      Object receivedObject = region.get("201");
-      if (receivedObject instanceof PdxInstance) {
-        PdxInstance receivedPdxInstance = (PdxInstance) receivedObject;
+  private void validateReceivedJSON(Region region, TestObjectForJSONFormatter actualTestObject,
+      ObjectMapper objectMapper) throws JsonProcessingException {
+    // 1. get the json from the object using Jackson Object Mapper
+    String json = objectMapper.writeValueAsString(actualTestObject);
+    String jsonWithClassType = actualTestObject.addClassTypeToJson(json);
 
-        // 4. get the actualType testObject from the pdxInstance and compare it with
-        // actualTestObject
-        Object getObj = receivedPdxInstance.getObject();
-        if (getObj instanceof TestObjectForJSONFormatter) {
-          TestObjectForJSONFormatter receivedTestObject = (TestObjectForJSONFormatter) getObj;
+    // 2. convert json into the PdxInstance and put it into the region
+    PdxInstance pi = JSONFormatter.fromJSON(jsonWithClassType);
+    region.put("201", pi);
 
-          boolean isEqual = actualTestObject.equals(receivedTestObject);
-          Assert.assertTrue(isEqual, "actualTestObject and receivedTestObject should be equal");
-        } else {
-          fail("getObj is expected to be an instance of TestObjectForJSONFormatter");
-        }
-      } else {
-        fail("receivedObject is expected to be of type PdxInstance");
-      }
+    // 3. get the value on key "201" and validate PdxInstance.getObject() API.
+    Object receivedObject = region.get("201");
+    assertTrue(receivedObject instanceof PdxInstance);
+    PdxInstance receivedPdxInstance = (PdxInstance) receivedObject;
 
-    } catch (JsonProcessingException e) {
-      fail("JsonProcessingException:  error encountered while converting JSON from Java object: "
-          + e.getMessage());
+    // 4. get the actualType testObject from the pdxInstance and compare it with
+    // actualTestObject
+    Object getObj = receivedPdxInstance.getObject();
 
-    } catch (JSONException e) {
-      fail("JSONException:  error encountered while adding @type classType into Json: "
-          + e.getMessage());
-    }
+    assertTrue(getObj instanceof TestObjectForJSONFormatter);
+
+    TestObjectForJSONFormatter receivedTestObject = (TestObjectForJSONFormatter) getObj;
+
+    assertEquals(actualTestObject, receivedTestObject);
   }
 
   String getJSONDir(String file) {

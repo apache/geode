@@ -486,11 +486,12 @@ public class ExecutionContext {
         }
       }
       if (rgnPath != null) {
-        mgr = IndexUtils.getIndexManager(this.cache.getRegion(rgnPath), false);
+        mgr = IndexUtils.getIndexManager(this.cache, this.cache.getRegion(rgnPath), false);
         // put a check for null and see if we will be executing on a bucket region.
         if ((null == mgr) && (null != this.bukRgn)) {
           // for bucket region index use
-          mgr = IndexUtils.getIndexManager(this.cache.getRegion(this.bukRgn.getFullPath()), false);
+          mgr = IndexUtils.getIndexManager(this.cache,
+              this.cache.getRegion(this.bukRgn.getFullPath()), false);
         }
       }
     }

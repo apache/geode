@@ -49,7 +49,7 @@ public class CreateAsyncEventQueueCommandDUnitTest {
 
   @Test
   public void createQueueWithInvalidClass() throws Exception {
-    server = lsRule.startServerAsJmxManager(0);
+    server = lsRule.startServerVM(0, x -> x.withJMXManager());
     gfsh.connectAndVerify(server.getJmxPort(), GfshCommandRule.PortType.jmxManager);
     IgnoredException.addIgnoredException("java.lang.ClassNotFoundException: xyz");
     gfsh.executeAndAssertThat(COMMAND + " --id=queue --listener=xyz").statusIsError()
@@ -59,7 +59,7 @@ public class CreateAsyncEventQueueCommandDUnitTest {
 
   @Test
   public void createQueueWithoutCC() throws Exception {
-    server = lsRule.startServerAsJmxManager(0);
+    server = lsRule.startServerVM(0, x -> x.withJMXManager());
     gfsh.connectAndVerify(server.getJmxPort(), GfshCommandRule.PortType.jmxManager);
     gfsh.executeAndAssertThat(VALID_COMMAND + " --id=queue").statusIsSuccess()
         .containsOutput("This change is not persisted in the cluster configuration")

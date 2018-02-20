@@ -790,6 +790,7 @@ public class SearchLoadAndWriteProcessor implements MembershipListener {
       long statStart = stats.startLoad();
       try {
         obj = loader.load(loaderHelper);
+        obj = this.region.getCache().convertPdxInstanceIfNeeded(obj);
       } finally {
         stats.endLoad(statStart);
       }
@@ -2226,6 +2227,9 @@ public class SearchLoadAndWriteProcessor implements MembershipListener {
             long start = stats.startLoad();
             try {
               Object o = loader.load(loaderHelper);
+              // no need to call convertPdxInstanceIfNeeded since we are serializing
+              // this into the NetLoadRequestMessage. The loaded object will be deserialized
+              // on the other side and have the correct form in that member.
               Assert.assertTrue(o != Token.INVALID && o != Token.LOCAL_INVALID);
               NetLoadReplyMessage.sendMessage(NetLoadRequestMessage.this.getSender(), processorId,
                   o, dm, loaderHelper.getArgument(), null, false, false);

@@ -60,7 +60,10 @@ public class ProtobufOpsProcessor {
       // Don't move to a terminating state for authorization state failures
       logger.warn(e.getMessage());
       result = Failure.of(ProtobufResponseUtilities.makeErrorResponse(e));
-    } catch (EncodingException | DecodingException | ConnectionStateException e) {
+    } catch (EncodingException | DecodingException e) {
+      logger.warn(e.getMessage());
+      result = Failure.of(ProtobufResponseUtilities.makeErrorResponse(e));
+    } catch (ConnectionStateException e) {
       logger.warn(e.getMessage());
       messageExecutionContext
           .setConnectionStateProcessor(new ProtobufConnectionTerminatingStateProcessor());

@@ -2373,7 +2373,7 @@ public class LocalRegion extends AbstractRegion implements LoaderHelperFactory,
     List oqlIndexes = internalRegionArgs.getIndexes();
 
     if (this.indexManager == null) {
-      this.indexManager = IndexUtils.getIndexManager(this, true);
+      this.indexManager = IndexUtils.getIndexManager(cache, this, true);
     }
     DiskRegion dr = this.getDiskRegion();
     boolean isOverflowToDisk = false;
@@ -2770,14 +2770,11 @@ public class LocalRegion extends AbstractRegion implements LoaderHelperFactory,
       // copy into local var to prevent race condition
       CacheLoader loader = basicGetLoader();
       if (loader != null) {
-        final LoaderHelper loaderHelper =
-            this.loaderHelperFactory.createLoaderHelper(key, aCallbackArgument,
-                false /* netSearchAllowed */, true /* netloadAllowed */, null /* searcher */);
+        fromServer = false;
         CachePerfStats stats = getCachePerfStats();
         long statStart = stats.startLoad();
         try {
-          value = loader.load(loaderHelper);
-          fromServer = false;
+          value = callCacheLoader(loader, key, aCallbackArgument);
         } finally {
           stats.endLoad(statStart);
         }
@@ -2861,6 +2858,16 @@ public class LocalRegion extends AbstractRegion implements LoaderHelperFactory,
       recordMiss(re, key);
     }
     return value;
+  }
+
+  @SuppressWarnings({"rawtypes", "unchecked"})
+  protected Object callCacheLoader(CacheLoader loader, final Object key,
+      final Object aCallbackArgument) {
+    LoaderHelper loaderHelper = this.loaderHelperFactory.createLoaderHelper(key, aCallbackArgument,
+        false /* netSearchAllowed */, true /* netloadAllowed */, null /* searcher */);
+    Object result = loader.load(loaderHelper);
+    result = this.getCache().convertPdxInstanceIfNeeded(result);
+    return result;
   }
 
   protected boolean isMemoryThresholdReachedForLoad() {
