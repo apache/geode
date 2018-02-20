@@ -529,7 +529,8 @@ public class GemFireMemberStatus implements Serializable {
       }
 
       // Get client queue sizes
-      Map clientQueueSize = getClientIDMap(InternalClientMembership.getClientQueueSizes());
+      Map clientQueueSize =
+          getClientIDMap(InternalClientMembership.getClientQueueSizes((InternalCache) cache));
       setClientQueueSizes(clientQueueSize);
 
       // Set server acceptor port (set it based on the first CacheServer)
