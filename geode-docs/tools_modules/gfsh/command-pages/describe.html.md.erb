@@ -431,18 +431,34 @@ describe region --name=region1
 **Sample Output:**
 
 ``` pre
-gfsh>describe region --name=region1
+gfsh>describe region --name=Region1
 ..........................................................
-Name            : region1
-Data Policy     : normal
-Hosting Members : server1
-server2
+Name : Region1
+Data Policy : persistent replicate
+Hosting Members : server-5
+server-4
+server-3
+server-2
 
+Non-Default Attributes Shared By Hosting Members 
 
-Non-Default Attributes Shared By Hosting Members
+Type   | Name            | Value
+------ | --------------- | --------------------
+Region | data-policy     | PERSISTENT_REPLICATE
+       | disk-store-name | DiskStore1
+       | size            | 0
+       | scope           | distributed-ack
+
+...........................................................
+Name             : Region1
+Data Policy      : empty
+Accessor Members : server-1
+
+Non-Default Attributes Shared By Accessor Members  
 
  Type  |    Name     | Value
------- | ----------- | ------
-Region | data-policy | NORMAL
+------ | ----------- | ---------------
+Region | data-policy | EMPTY
        | size        | 0
+       | scope       | distributed-ack
 ```
