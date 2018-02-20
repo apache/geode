@@ -319,14 +319,13 @@ public class AutoConnectionSourceImpl implements ConnectionSource {
 
     LocatorList newLocatorList = new LocatorList(newLocatorAddresses);
 
-    locators.set(newLocatorList);
+    LocatorList oldLocators = locators.getAndSet(newLocatorList);
     onlineLocators.set(new LocatorList(newOnlineLocators));
     pool.getStats().setLocatorCount(newLocatorAddresses.size());
 
     if (logger.isInfoEnabled()
         || !locatorCallback.getClass().equals(LocatorDiscoveryCallbackAdapter.class)) {
       List<InetSocketAddress> newLocators = newLocatorList.getLocators();
-      LocatorList oldLocators = (LocatorList) locators.get();
       ArrayList<InetSocketAddress> removedLocators =
           new ArrayList<InetSocketAddress>(oldLocators.getLocators());
       removedLocators.removeAll(newLocators);
