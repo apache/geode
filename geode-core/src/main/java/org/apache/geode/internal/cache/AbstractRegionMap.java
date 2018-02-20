@@ -2469,8 +2469,8 @@ public abstract class AbstractRegionMap
         @Retained
         @Released
         Object oldValueInVM = re.getValueRetain(event.getRegion(), true); // OFFHEAP: re
-                                                                               // synced so can use
-                                                                               // its ref.
+                                                                          // synced so can use
+                                                                          // its ref.
         if (oldValueInVM == null) {
           oldValueInVM = Token.NOT_AVAILABLE;
         }

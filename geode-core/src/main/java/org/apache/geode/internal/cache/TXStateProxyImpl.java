@@ -286,8 +286,8 @@ public class TXStateProxyImpl implements TXStateProxy {
       Object expectedOldValue) throws EntryNotFoundException {
     try {
       this.operationCount++;
-      getRealDeal(event.getKeyInfo(), event.getRegion()).destroyExistingEntry(event,
-          cacheWrite, expectedOldValue);
+      getRealDeal(event.getKeyInfo(), event.getRegion()).destroyExistingEntry(event, cacheWrite,
+          expectedOldValue);
       trackBucketForTx(event.getKeyInfo());
     } catch (TransactionDataRebalancedException | PrimaryBucketException re) {
       throw getTransactionException(event.getKeyInfo(), re);
@@ -622,8 +622,8 @@ public class TXStateProxyImpl implements TXStateProxy {
       boolean overwriteDestroyed) {
     try {
       this.operationCount++;
-      boolean retVal = getRealDeal(event.getKeyInfo(), event.getRegion()).putEntry(event,
-          ifNew, ifOld, expectedOldValue, requireOldValue, lastModified, overwriteDestroyed);
+      boolean retVal = getRealDeal(event.getKeyInfo(), event.getRegion()).putEntry(event, ifNew,
+          ifOld, expectedOldValue, requireOldValue, lastModified, overwriteDestroyed);
       trackBucketForTx(event.getKeyInfo());
       return retVal;
     } catch (TransactionDataRebalancedException | PrimaryBucketException re) {

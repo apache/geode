@@ -827,7 +827,8 @@ public class EntryEventImpl implements InternalEntryEvent, InternalCacheEvent,
   }
 
   @Released(ENTRY_EVENT_NEW_VALUE)
-  protected void basicSetNewValue(@Retained(ENTRY_EVENT_NEW_VALUE) Object v, boolean clearCachedSerializedAndBytes) {
+  protected void basicSetNewValue(@Retained(ENTRY_EVENT_NEW_VALUE) Object v,
+      boolean clearCachedSerializedAndBytes) {
     if (v == this.newValue)
       return;
     if (mayHaveOffHeapReferences()) {
@@ -861,7 +862,7 @@ public class EntryEventImpl implements InternalEntryEvent, InternalCacheEvent,
       this.newValue = CachedDeserializableFactory.create(bytes, getRegion().getCache());
     }
   }
-  
+
   @Unretained
   protected Object basicGetNewValue() {
     generateNewValueFromBytesIfNeeded();
@@ -1559,8 +1560,7 @@ public class EntryEventImpl implements InternalEntryEvent, InternalCacheEvent,
     // only set oldValue if it hasn't already been set to something
     if (this.oldValue == null && this.oldValueBytes == null) {
       if (!reentry.isInvalidOrRemoved()) {
-        if (requireOldValue || areOldValuesEnabled() || getRegion() instanceof HARegion
-        ) {
+        if (requireOldValue || areOldValuesEnabled() || getRegion() instanceof HARegion) {
           @Retained
           Object ov;
           if (ReferenceCountHelper.trackReferenceCounts()) {
