@@ -947,7 +947,7 @@ public class GMSJoinLeave implements JoinLeave, MessageHandler {
     viewReplyProcessor.initialize(id, responders);
     viewReplyProcessor.processPendingRequests(pendingLeaves, pendingRemovals);
     addPublicKeysToView(view);
-    services.getMessenger().send(msg);
+    services.getMessenger().send(msg, view);
 
     // only wait for responses during preparation
     if (preparing) {
