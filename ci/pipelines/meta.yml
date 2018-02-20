@@ -49,8 +49,8 @@ resources:
 - name: geode-metrics-pipeline
   type: git
   source:
-    uri: https://github.com/smgoller/geode.git
-    branch: smgoller-ci
+    uri: https://github.com/apache/geode.git
+    branch: develop
     paths:
     - ci/pipelines/metrics.yml
 
@@ -88,6 +88,6 @@ jobs:
   - put: apachegeode-concourse
     params:
       pipelines:
-      - name: staging-metrics
-        team: staging
+      - name: develop-metrics
+        team: main
         config_file: geode-metrics-pipeline/ci/pipelines/metrics.yml
