@@ -21,6 +21,7 @@ import java.io.IOException;
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.net.UnknownHostException;
+import java.util.Collections;
 import java.util.Map;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
@@ -255,8 +256,9 @@ public class GemcachedDevelopmentJUnitTest {
   }
 
   protected MemcachedClient createMemcachedClient() throws IOException, UnknownHostException {
-    MemcachedClient client =
-        new MemcachedClient(new InetSocketAddress(InetAddress.getLocalHost(), PORT));
+    MemcachedClient client = new MemcachedClient(new ConnectionWithOneMinuteTimeoutFactory(),
+        Collections.singletonList(new InetSocketAddress(InetAddress.getLocalHost(), PORT)));
     return client;
   }
+
 }
