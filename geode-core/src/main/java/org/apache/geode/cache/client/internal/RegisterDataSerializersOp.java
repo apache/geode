@@ -24,6 +24,7 @@ import org.apache.geode.internal.cache.ClientServerObserverHolder;
 import org.apache.geode.internal.cache.EventID;
 import org.apache.geode.internal.cache.tier.MessageType;
 import org.apache.geode.internal.cache.tier.sockets.Message;
+import org.apache.geode.internal.cache.tier.sockets.MessageFromServer;
 import org.apache.geode.internal.util.BlobHelper;
 
 public class RegisterDataSerializersOp {
@@ -92,7 +93,7 @@ public class RegisterDataSerializersOp {
     }
 
     @Override
-    protected Object processResponse(Message msg) throws Exception {
+    protected Object processResponse(MessageFromServer msg) throws Exception {
       processAck(msg, "registerDataSerializers");
       return null;
     }

@@ -18,7 +18,6 @@ package org.apache.geode.internal.cache.tier.sockets;
 import java.io.*;
 
 import org.apache.geode.DataSerializer;
-import org.apache.geode.cache.CacheFactory;
 import org.apache.geode.distributed.DistributedSystem;
 import org.apache.geode.internal.DataSerializableFixedID;
 import org.apache.geode.internal.Version;
@@ -127,9 +126,9 @@ public class ClientInterestMessageImpl implements ClientMessage {
    */
   public ClientInterestMessageImpl() {}
 
-  public Message getMessage(CacheClientProxy proxy, boolean notify) throws IOException {
+  public MessageFromServer getMessage(CacheClientProxy proxy, boolean notify) throws IOException {
     Version clientVersion = proxy.getVersion();
-    Message message = null;
+    MessageFromServer message = null;
     if (clientVersion.compareTo(Version.GFE_57) >= 0) {
       message = getGFEMessage();
     } else {
@@ -140,8 +139,8 @@ public class ClientInterestMessageImpl implements ClientMessage {
     return message;
   }
 
-  protected Message getGFEMessage() throws IOException {
-    Message message = new Message(isRegister() ? 7 : 6, Version.CURRENT);
+  protected MessageFromServer getGFEMessage() throws IOException {
+    MessageFromServer message = new MessageFromServer(isRegister() ? 7 : 6, Version.CURRENT);
     message.setTransactionId(0);
 
     // Set the message type

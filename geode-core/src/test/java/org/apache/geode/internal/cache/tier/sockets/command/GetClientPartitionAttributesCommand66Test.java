@@ -28,6 +28,7 @@ import org.mockito.MockitoAnnotations;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.cache.LocalRegion;
 import org.apache.geode.internal.cache.tier.sockets.Message;
+import org.apache.geode.internal.cache.tier.sockets.MessageFromClient;
 import org.apache.geode.internal.cache.tier.sockets.Part;
 import org.apache.geode.internal.cache.tier.sockets.ServerConnection;
 import org.apache.geode.internal.security.SecurityService;
@@ -41,7 +42,7 @@ public class GetClientPartitionAttributesCommand66Test {
   @Mock
   private SecurityService securityService;
   @Mock
-  private Message message;
+  private MessageFromClient message;
   @Mock
   private ServerConnection serverConnection;
   @Mock

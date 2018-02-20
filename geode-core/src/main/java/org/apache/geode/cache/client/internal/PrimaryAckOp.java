@@ -19,6 +19,7 @@ import java.util.List;
 
 import org.apache.geode.internal.cache.tier.MessageType;
 import org.apache.geode.internal.cache.tier.sockets.Message;
+import org.apache.geode.internal.cache.tier.sockets.MessageFromServer;
 
 /**
  * Send the primary server acknowledgement on the events this client has received and processed from
@@ -67,7 +68,7 @@ public class PrimaryAckOp {
     }
 
     @Override
-    protected Object processResponse(Message msg) throws Exception {
+    protected Object processResponse(MessageFromServer msg) throws Exception {
       processAck(msg, "primaryAck");
       return null;
     }

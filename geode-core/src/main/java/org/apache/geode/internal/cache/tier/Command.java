@@ -15,11 +15,12 @@
 package org.apache.geode.internal.cache.tier;
 
 import org.apache.geode.internal.cache.tier.sockets.Message;
+import org.apache.geode.internal.cache.tier.sockets.MessageFromClient;
 import org.apache.geode.internal.cache.tier.sockets.ServerConnection;
 import org.apache.geode.internal.security.SecurityService;
 
 public interface Command {
-  void execute(Message clientMessage, ServerConnection serverConnection,
+  void execute(MessageFromClient clientMessage, ServerConnection serverConnection,
       SecurityService securityService);
 
   int RESPONDED = 1;

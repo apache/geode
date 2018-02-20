@@ -78,7 +78,8 @@ public class ClientTombstoneMessage extends ClientUpdateMessageImpl {
    * <code>ClientTombstoneMessage</code>.
    */
   @Override
-  protected Message getMessage(CacheClientProxy proxy, byte[] latestValue) throws IOException {
+  protected MessageFromServer getMessage(CacheClientProxy proxy, byte[] latestValue)
+      throws IOException {
     if (Version.GFE_70.compareTo(proxy.getVersion()) <= 0) {
       return getGFE70Message(proxy.getVersion());
     } else {
@@ -86,8 +87,8 @@ public class ClientTombstoneMessage extends ClientUpdateMessageImpl {
     }
   }
 
-  protected Message getGFE70Message(Version clientVersion) {
-    Message message = null;
+  protected MessageFromServer getGFE70Message(Version clientVersion) {
+    MessageFromServer message = null;
 
     // The format:
     // part 0: operation (gc=0)
@@ -96,7 +97,7 @@ public class ClientTombstoneMessage extends ClientUpdateMessageImpl {
     // part 3: regionGCVersions
     // Last part: event ID
     int numParts = 4;
-    message = new Message(numParts, clientVersion);
+    message = new MessageFromServer(numParts, clientVersion);
     // Set message type
     message.setMessageType(MessageType.TOMBSTONE_OPERATION);
     message.addStringPart(this.getRegionName());

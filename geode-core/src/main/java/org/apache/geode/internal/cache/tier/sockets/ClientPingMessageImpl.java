@@ -39,9 +39,9 @@ public class ClientPingMessageImpl implements ClientMessage {
    */
   public ClientPingMessageImpl() {}
 
-  public Message getMessage(CacheClientProxy proxy, boolean notify) throws IOException {
+  public MessageFromServer getMessage(CacheClientProxy proxy, boolean notify) throws IOException {
     Version clientVersion = proxy.getVersion();
-    Message message = null;
+    MessageFromServer message = null;
     if (clientVersion.compareTo(Version.GFE_6622) >= 0) {
       message = getGFEMessage();
     } else {
@@ -52,8 +52,8 @@ public class ClientPingMessageImpl implements ClientMessage {
     return message;
   }
 
-  protected Message getGFEMessage() throws IOException {
-    Message message = new Message(0, Version.CURRENT);
+  protected MessageFromServer getGFEMessage() throws IOException {
+    MessageFromServer message = new MessageFromServer(0, Version.CURRENT);
     message.setMessageType(MessageType.SERVER_TO_CLIENT_PING);
     message.setTransactionId(0);
     return message;

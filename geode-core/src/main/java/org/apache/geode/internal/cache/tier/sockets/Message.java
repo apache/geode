@@ -78,7 +78,7 @@ import org.apache.geode.internal.util.BlobHelper;
  *
  * @see MessageType
  */
-public class Message {
+public abstract class Message {
 
   // Tentative workaround to avoid OOM stated in #46754.
   public static final ThreadLocal<Integer> MESSAGE_TYPE = new ThreadLocal<>();
@@ -99,7 +99,7 @@ public class Message {
   // These two statics are fields shoved into the flags byte for transmission.
   // The MESSAGE_IS_RETRY bit is stripped out during deserialization but the other
   // is left in place
-  private static final byte MESSAGE_HAS_SECURE_PART = (byte) 0x02;
+  protected static final byte MESSAGE_HAS_SECURE_PART = (byte) 0x02;
   private static final byte MESSAGE_IS_RETRY = (byte) 0x04;
 
   private static final byte MESSAGE_IS_RETRY_MASK = (byte) 0xFB;
@@ -142,15 +142,15 @@ public class Message {
   private Part[] partsList = null;
   private ByteBuffer cachedCommBuffer;
   protected Socket socket = null;
-  private SocketChannel socketChannel = null;
+  SocketChannel socketChannel = null;
   private OutputStream outputStream = null;
   protected InputStream inputStream = null;
   private boolean messageModified = true;
 
   /** is this message a retry of a previously sent message? */
-  private boolean isRetry;
+  protected boolean isRetry;
 
-  private byte flags = 0x00;
+  protected byte flags = 0x00;
   MessageStats messageStats = null;
   protected ServerConnection serverConnection = null;
   private int maxIncomingMessageLength = -1;
@@ -162,7 +162,7 @@ public class Message {
   Part securePart = null;
   private boolean isMetaRegion = false;
 
-  private Version version;
+  protected Version version;
 
   /**
    * Creates a new message with the given number of parts
@@ -179,6 +179,8 @@ public class Message {
     }
   }
 
+
+  // This could perhaps be moved to MessageFromServer, but the toString() Method uses it,
   public boolean isSecureMode() {
     return this.securePart != null;
   }
@@ -196,20 +198,10 @@ public class Message {
     this.messageType = msgType;
   }
 
-  public void setVersion(Version clientVersion) {
-    this.version = clientVersion;
-  }
-
-  public void setMessageHasSecurePartFlag() {
-    this.flags |= MESSAGE_HAS_SECURE_PART;
-  }
-
-  public void clearMessageHasSecurePartFlag() {
-    this.flags &= MESSAGE_HAS_SECURE_PART;
-  }
-
   /**
    * Sets and builds the {@link Part}s that are sent in the payload of the Message
+   *
+   * @param numberOfParts
    */
   public void setNumberOfParts(int numberOfParts) {
     // hitesh: need to add security header here from server
@@ -243,17 +235,6 @@ public class Message {
     this.transactionId = transactionId;
   }
 
-  public void setIsRetry() {
-    this.isRetry = true;
-  }
-
-  /**
-   * This returns true if the message has been marked as having been previously transmitted to a
-   * different server.
-   */
-  public boolean isRetry() {
-    return this.isRetry;
-  }
 
   /* Sets size for HDOS chunk. */
   public void setChunkSize(int chunkSize) {
@@ -1049,22 +1030,6 @@ public class Message {
     return sb.toString();
   }
 
-  // Set up a message on the server side.
-  void setComms(ServerConnection sc, Socket socket, ByteBuffer bb, MessageStats msgStats)
-      throws IOException {
-    this.serverConnection = sc;
-    setComms(socket, bb, msgStats);
-  }
-
-  // Set up a message on the client side.
-  void setComms(Socket socket, ByteBuffer bb, MessageStats msgStats) throws IOException {
-    this.socketChannel = socket.getChannel();
-    if (this.socketChannel == null) {
-      setComms(socket, socket.getInputStream(), socket.getOutputStream(), bb, msgStats);
-    } else {
-      setComms(socket, null, null, bb, msgStats);
-    }
-  }
 
   // Set up a message on the client side.
   public void setComms(Socket socket, InputStream is, OutputStream os, ByteBuffer bb,

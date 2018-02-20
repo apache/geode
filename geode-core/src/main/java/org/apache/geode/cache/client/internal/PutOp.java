@@ -34,6 +34,7 @@ import org.apache.geode.internal.cache.LocalRegion;
 import org.apache.geode.internal.cache.tier.MessageType;
 import org.apache.geode.internal.cache.tier.sockets.ChunkedMessage;
 import org.apache.geode.internal.cache.tier.sockets.Message;
+import org.apache.geode.internal.cache.tier.sockets.MessageFromServer;
 import org.apache.geode.internal.cache.tier.sockets.Part;
 import org.apache.geode.internal.cache.versions.VersionTag;
 import org.apache.geode.internal.logging.LogService;
@@ -287,7 +288,7 @@ public class PutOp {
     }
 
     @Override
-    protected Object processResponse(Message msg) throws Exception {
+    protected Object processResponse(MessageFromServer msg) throws Exception {
       throw new UnsupportedOperationException(
           "processResponse should not be invoked in PutOp.  Use processResponse(Message, Connection)");
     }
@@ -305,7 +306,7 @@ public class PutOp {
      * @since GemFire 6.1
      */
     @Override
-    protected Object processResponse(Message msg, Connection con) throws Exception {
+    protected Object processResponse(MessageFromServer msg, Connection con) throws Exception {
       processAck(msg, "put", con);
 
       if (prSingleHopEnabled) {
@@ -408,7 +409,7 @@ public class PutOp {
     }
 
     @Override
-    protected void processSecureBytes(Connection cnx, Message message) throws Exception {
+    protected void processSecureBytes(Connection cnx, MessageFromServer message) throws Exception {
       super.processSecureBytes(cnx, message);
     }
 
@@ -453,7 +454,7 @@ public class PutOp {
      */
     @Override
     protected Object attemptReadResponse(Connection cnx) throws Exception {
-      Message msg = createResponseMessage();
+      MessageFromServer msg = createResponseMessage();
       if (msg != null) {
         msg.setComms(cnx.getSocket(), cnx.getInputStream(), cnx.getOutputStream(),
             cnx.getCommBuffer(), cnx.getStats());

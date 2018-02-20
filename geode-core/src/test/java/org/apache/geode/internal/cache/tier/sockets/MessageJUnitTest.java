@@ -40,12 +40,12 @@ import org.apache.geode.test.junit.categories.UnitTest;
 @Category({UnitTest.class, ClientServerTest.class})
 public class MessageJUnitTest {
 
-  private Message message;
+  private MessageFromServer message;
 
   @Before
   public void setUp() throws Exception {
     Socket mockSocket = mock(Socket.class);
-    this.message = new Message(2, Version.CURRENT);
+    this.message = new MessageFromServer(2, Version.CURRENT);
     assertEquals(2, this.message.getNumberOfParts());
     MessageStats mockStats = mock(MessageStats.class);
     ByteBuffer msgBuffer = ByteBuffer.allocate(1000);
@@ -160,7 +160,7 @@ public class MessageJUnitTest {
       Socket socket = new Socket(serverSocket.getInetAddress(), serverSocket.getLocalPort());
       MessageStats messageStats = mock(MessageStats.class);
 
-      message.setComms(socket, ByteBuffer.allocate(100), messageStats);
+      message.setComms(null, socket, ByteBuffer.allocate(100), messageStats);
       message.receiveWithHeaderReadTimeout(500);
 
     } finally {

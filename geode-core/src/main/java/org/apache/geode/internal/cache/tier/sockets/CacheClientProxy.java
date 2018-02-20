@@ -2709,7 +2709,7 @@ public class CacheClientProxy implements ClientSession {
       if (logger.isTraceEnabled(LogMarker.BRIDGE_SERVER)) {
         logger.trace(LogMarker.BRIDGE_SERVER, "Dispatching {}", clientMessage);
       }
-      Message message = null;
+      MessageFromServer message = null;
 
       // byte[] latestValue =
       // this._eventConflator.getLatestValue(clientMessage);
@@ -2784,13 +2784,13 @@ public class CacheClientProxy implements ClientSession {
       return isDispatched;
     }
 
-    private void sendMessage(Message message) throws IOException {
+    private void sendMessage(MessageFromServer message) throws IOException {
       if (message == null) {
         return;
       }
       this.socketWriteLock.lock();
       try {
-        message.setComms(getSocket(), getCommBuffer(), getStatistics());
+        message.setComms(null, getSocket(), getCommBuffer(), getStatistics());
         message.send();
         getProxy().resetPingCounter();
       } finally {
@@ -2857,7 +2857,7 @@ public class CacheClientProxy implements ClientSession {
     }
 
     private void sendMessageDirectly(ClientMessage clientMessage) {
-      Message message;
+      MessageFromServer message;
       try {
         if (logger.isDebugEnabled()) {
           logger.debug("{}: Dispatching directly: {}", this, clientMessage);

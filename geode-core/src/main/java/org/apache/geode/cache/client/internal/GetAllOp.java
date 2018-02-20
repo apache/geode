@@ -29,10 +29,7 @@ import org.apache.geode.distributed.internal.ServerLocation;
 import org.apache.geode.internal.Version;
 import org.apache.geode.internal.cache.LocalRegion;
 import org.apache.geode.internal.cache.tier.MessageType;
-import org.apache.geode.internal.cache.tier.sockets.ChunkedMessage;
-import org.apache.geode.internal.cache.tier.sockets.Message;
-import org.apache.geode.internal.cache.tier.sockets.Part;
-import org.apache.geode.internal.cache.tier.sockets.VersionedObjectList;
+import org.apache.geode.internal.cache.tier.sockets.*;
 import org.apache.geode.internal.logging.LogService;
 
 /**
@@ -169,17 +166,17 @@ public class GetAllOp {
 
 
     @Override
-    protected Message createResponseMessage() {
+    protected MessageFromServer createResponseMessage() {
       return new ChunkedMessage(1, Version.CURRENT);
     }
 
     @Override
-    protected Object processResponse(Message msg) throws Exception {
+    protected Object processResponse(MessageFromServer msg) throws Exception {
       throw new UnsupportedOperationException();
     }
 
     @Override
-    protected Object processResponse(Message msg, final Connection con) throws Exception {
+    protected Object processResponse(MessageFromServer msg, final Connection con) throws Exception {
       final VersionedObjectList result = new VersionedObjectList(false);
       final Exception[] exceptionRef = new Exception[1];
       processChunkedResponse((ChunkedMessage) msg, "getAll", new ChunkHandler() {

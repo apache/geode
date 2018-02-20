@@ -72,8 +72,10 @@ public class ServerConnectionTest {
   public final RestoreLocaleRule restoreLocale =
       new RestoreLocaleRule(Locale.ENGLISH, l -> StringId.setLocale(l));
 
+
   @Mock
-  private Message requestMsg;
+  private MessageFromServer requestMsgFromServer;
+
 
   @Mock
   private MessageIdExtractor messageIdExtractor;
@@ -119,7 +121,7 @@ public class ServerConnectionTest {
     serverConnection.setUserAuthId(userAuthId);
 
     when(handshake.getVersion()).thenReturn(Version.GFE_61);
-    when(requestMsg.isSecureMode()).thenReturn(true);
+    when(requestMsgFromServer.isSecureMode()).thenReturn(true);
 
     assertThat(serverConnection.getUniqueId()).isEqualTo(userAuthId);
   }
@@ -130,7 +132,7 @@ public class ServerConnectionTest {
     serverConnection.setUserAuthId(userAuthId);
 
     when(handshake.getVersion()).thenReturn(Version.GFE_61);
-    when(requestMsg.isSecureMode()).thenReturn(false);
+    when(requestMsgFromServer.isSecureMode()).thenReturn(false);
 
     assertThat(serverConnection.getUniqueId()).isEqualTo(userAuthId);
   }
@@ -140,10 +142,10 @@ public class ServerConnectionTest {
   public void post65SecureShouldUseUniqueIdFromMessage() {
     long uniqueIdFromMessage = 23456L;
     when(handshake.getVersion()).thenReturn(Version.GFE_82);
-    serverConnection.setRequestMsg(requestMsg);
+    serverConnection.setRequestMsg(requestMsgFromServer);
 
-    assertThat(serverConnection.getRequestMessage()).isSameAs(requestMsg);
-    when(requestMsg.isSecureMode()).thenReturn(true);
+    assertThat(serverConnection.getRequestMessage()).isSameAs(requestMsgFromServer);
+    when(requestMsgFromServer.isSecureMode()).thenReturn(true);
 
     when(messageIdExtractor.getUniqueIdFromMessage(any(Message.class), any(Encryptor.class),
         anyLong())).thenReturn(uniqueIdFromMessage);
@@ -155,7 +157,7 @@ public class ServerConnectionTest {
   @Test
   public void post65NonSecureShouldThrow() {
     when(handshake.getVersion()).thenReturn(Version.GFE_82);
-    when(requestMsg.isSecureMode()).thenReturn(false);
+    when(requestMsgFromServer.isSecureMode()).thenReturn(false);
 
     assertThatThrownBy(serverConnection::getUniqueId)
         .isExactlyInstanceOf(AuthenticationRequiredException.class)
@@ -246,7 +248,7 @@ public class ServerConnectionTest {
 
     private void setFakeRequest() {
       testMessage = new TestMessage();
-      setRequestMsg(testMessage);
+      setRequestMsg(requestMsgFromServer);
     }
   }
 

@@ -33,17 +33,12 @@ import org.apache.geode.cache.query.internal.cq.CqService;
 import org.apache.geode.cache.query.internal.cq.InternalCqQuery;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.cache.tier.CachedRegionHelper;
-import org.apache.geode.internal.cache.tier.sockets.AcceptorImpl;
-import org.apache.geode.internal.cache.tier.sockets.CacheServerStats;
-import org.apache.geode.internal.cache.tier.sockets.ChunkedMessage;
-import org.apache.geode.internal.cache.tier.sockets.Message;
-import org.apache.geode.internal.cache.tier.sockets.Part;
-import org.apache.geode.internal.cache.tier.sockets.ServerConnection;
+import org.apache.geode.internal.cache.tier.sockets.*;
 import org.apache.geode.internal.security.SecurityService;
 
 public class CQUnitTestRule extends ExternalResource {
   public SecurityService securityService;
-  public Message message;
+  public MessageFromClient message;
   public ServerConnection connection;
   public InternalCache cache;
   public CqService cqService;
@@ -51,7 +46,7 @@ public class CQUnitTestRule extends ExternalResource {
 
   protected void before() throws Throwable {
     securityService = mock(SecurityService.class);
-    message = mock(Message.class);
+    message = mock(MessageFromClient.class);
     connection = mock(ServerConnection.class);
     cache = mock(InternalCache.class);
     cqService = mock(CqService.class);

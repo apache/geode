@@ -38,6 +38,7 @@ import org.apache.geode.internal.cache.execute.ServerFunctionExecutor;
 import org.apache.geode.internal.cache.tier.MessageType;
 import org.apache.geode.internal.cache.tier.sockets.ChunkedMessage;
 import org.apache.geode.internal.cache.tier.sockets.Message;
+import org.apache.geode.internal.cache.tier.sockets.MessageFromServer;
 import org.apache.geode.internal.cache.tier.sockets.Part;
 import org.apache.geode.internal.i18n.LocalizedStrings;
 import org.apache.geode.internal.logging.LogService;
@@ -533,7 +534,7 @@ public class ExecuteFunctionOp {
     }
 
     @Override
-    protected Object processResponse(Message msg) throws Exception {
+    protected Object processResponse(MessageFromServer msg) throws Exception {
       ChunkedMessage executeFunctionResponseMsg = (ChunkedMessage) msg;
       try {
         // Read the header which describes the type of message following
@@ -651,7 +652,7 @@ public class ExecuteFunctionOp {
     }
 
     @Override
-    protected Message createResponseMessage() {
+    protected MessageFromServer createResponseMessage() {
       return new ChunkedMessage(1, Version.CURRENT);
     }
   }

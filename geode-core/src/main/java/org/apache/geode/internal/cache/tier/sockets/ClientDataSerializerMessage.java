@@ -66,7 +66,8 @@ public class ClientDataSerializerMessage extends ClientUpdateMessageImpl {
    * @see org.apache.geode.internal.cache.tier.sockets.Message
    */
   @Override
-  protected Message getMessage(CacheClientProxy proxy, byte[] latestValue) throws IOException {
+  protected MessageFromServer getMessage(CacheClientProxy proxy, byte[] latestValue)
+      throws IOException {
     if (proxy.getVersion().compareTo(Version.GFE_6516) >= 0) {
       return getGFE6516Message(proxy.getVersion());
     } else if (proxy.getVersion().compareTo(Version.GFE_57) >= 0) {
@@ -77,10 +78,10 @@ public class ClientDataSerializerMessage extends ClientUpdateMessageImpl {
     }
   }
 
-  protected Message getGFEMessage(Version clientVersion) {
-    Message message = null;
+  protected MessageFromServer getGFEMessage(Version clientVersion) {
+    MessageFromServer message = null;
     int dataSerializerLength = this.serializedDataSerializer.length;
-    message = new Message(dataSerializerLength + 1, clientVersion); // one for eventID
+    message = new MessageFromServer(dataSerializerLength + 1, clientVersion); // one for eventID
     // Set message type
     message.setMessageType(MessageType.REGISTER_DATASERIALIZERS);
     for (int i = 0; i < dataSerializerLength; i = i + 2) {
@@ -92,8 +93,8 @@ public class ClientDataSerializerMessage extends ClientUpdateMessageImpl {
     return message;
   }
 
-  protected Message getGFE6516Message(Version clientVersion) {
-    Message message = null;
+  protected MessageFromServer getGFE6516Message(Version clientVersion) {
+    MessageFromServer message = null;
 
     // The format:
     // part 0: serializer1 classname
@@ -126,7 +127,7 @@ public class ClientDataSerializerMessage extends ClientUpdateMessageImpl {
     // this._logger.fine("Number of parts for ClientDataSerializerMessage: "
     // + numOfParts + ", with eventID: " + this.getEventId());
 
-    message = new Message(numOfParts, clientVersion);
+    message = new MessageFromServer(numOfParts, clientVersion);
     // Set message type
     message.setMessageType(MessageType.REGISTER_DATASERIALIZERS);
     for (int i = 0; i < dsLength; i = i + 2) {

@@ -158,10 +158,10 @@ public abstract class ServerConnection implements Runnable {
 
   // IMPORTANT: if new messages are added change setHandshake to initialize them
   // to the correct Version for serializing to the client
-  private Message requestMsg = new Message(2, Version.CURRENT);
-  private Message replyMsg = new Message(1, Version.CURRENT);
-  private Message responseMsg = new Message(1, Version.CURRENT);
-  private Message errorMsg = new Message(1, Version.CURRENT);
+  private Message requestMsg;
+  private Message replyMsg;
+  private Message responseMsg;
+  private Message errorMsg;
 
   // IMPORTANT: if new messages are added change setHandshake to initialize them
   // to the correct Version for serializing to the client
@@ -274,6 +274,18 @@ public abstract class ServerConnection implements Runnable {
     this.securityLogWriter = (InternalLogWriter) internalCache.getSecurityLoggerI18n();
     this.communicationModeStr = communicationModeStr;
     this.communicationMode = CommunicationMode.fromModeNumber(communicationMode);
+    if (this.communicationMode.isCountedAsClientServerConnection()) {
+      requestMsg = new MessageFromClient(2, Version.CURRENT);
+      replyMsg = new MessageFromClient(1, Version.CURRENT);
+      responseMsg = new MessageFromClient(1, Version.CURRENT);
+      errorMsg = new MessageFromClient(1, Version.CURRENT);
+    } else {
+      requestMsg = new MessageFromServer(2, Version.CURRENT);
+      replyMsg = new MessageFromServer(1, Version.CURRENT);
+      responseMsg = new MessageFromServer(1, Version.CURRENT);
+      errorMsg = new MessageFromServer(1, Version.CURRENT);
+    }
+
     this.principal = null;
     this.authzRequest = null;
     this.postAuthzRequest = null;
@@ -386,10 +398,12 @@ public abstract class ServerConnection implements Runnable {
     this.handshake = handshake;
     Version v = handshake.getVersion();
 
-    this.replyMsg.setVersion(v);
-    this.requestMsg.setVersion(v);
-    this.responseMsg.setVersion(v);
-    this.errorMsg.setVersion(v);
+    if (!this.communicationMode.isCountedAsClientServerConnection()) {
+      ((MessageFromServer) this.replyMsg).setVersion(v);
+      ((MessageFromServer) this.requestMsg).setVersion(v);
+      ((MessageFromServer) this.responseMsg).setVersion(v);
+      ((MessageFromServer) this.errorMsg).setVersion(v);
+    }
 
     this.queryResponseMsg.setVersion(v);
     this.chunkedResponseMsg.setVersion(v);
@@ -398,7 +412,7 @@ public abstract class ServerConnection implements Runnable {
     this.keySetResponseMsg.setVersion(v);
   }
 
-  public void setRequestMsg(Message requestMsg) {
+  public void setRequestMsg(MessageFromServer requestMsg) {
     this.requestMsg = requestMsg;
   }
 
@@ -793,8 +807,8 @@ public abstract class ServerConnection implements Runnable {
             throw new AuthenticationRequiredException("Failed to find the authenticated user.");
           }
         }
-
-        command.execute(msg, this, this.securityService);
+        if (this.communicationMode.isCountedAsClientServerConnection())
+          command.execute((MessageFromClient) msg, this, this.securityService);
       }
     } finally {
       // Keep track of the fact that a message is no longer being
@@ -947,7 +961,7 @@ public abstract class ServerConnection implements Runnable {
     return cc;
   }
 
-  public boolean removeUserAuth(Message msg, boolean keepalive) {
+  public boolean removeUserAuth(MessageFromClient msg, boolean keepalive) {
     try {
       byte[] secureBytes = msg.getSecureBytes();
 
@@ -982,7 +996,7 @@ public abstract class ServerConnection implements Runnable {
     }
   }
 
-  public byte[] setCredentials(Message msg) throws Exception {
+  public byte[] setCredentials(MessageFromClient msg) throws Exception {
 
     try {
       // need to get connection id from secure part of message, before that need to insure
@@ -1080,7 +1094,7 @@ public abstract class ServerConnection implements Runnable {
    * security should be added in the following if block.
    *
    * @return Part
-   * @see AbstractOp#processSecureBytes(Connection, Message)
+   * @see AbstractOp#processSecureBytes(Connection, MessageFromServer)
    * @see AbstractOp#needsUserId()
    * @see AbstractOp#sendMessage(Connection)
    */
@@ -1425,10 +1439,13 @@ public abstract class ServerConnection implements Runnable {
       } else {
         commBuffer = allocateCommBuffer(socketBufferSize, s);
       }
-      requestMsg.setComms(this, theSocket, commBuffer, msgStats);
-      replyMsg.setComms(this, theSocket, commBuffer, msgStats);
-      responseMsg.setComms(this, theSocket, commBuffer, msgStats);
-      errorMsg.setComms(this, theSocket, commBuffer, msgStats);
+
+      if (!communicationMode.isCountedAsClientServerConnection()) {
+        ((MessageFromServer) this.requestMsg).setComms(this, theSocket, commBuffer, msgStats);
+        ((MessageFromServer) this.replyMsg).setComms(this, theSocket, commBuffer, msgStats);
+        ((MessageFromServer) this.responseMsg).setComms(this, theSocket, commBuffer, msgStats);
+        ((MessageFromServer) this.errorMsg).setComms(this, theSocket, commBuffer, msgStats);
+      }
 
       chunkedResponseMsg.setComms(this, theSocket, commBuffer, msgStats);
       queryResponseMsg.setComms(this, theSocket, commBuffer, msgStats);

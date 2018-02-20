@@ -36,8 +36,9 @@ public class ClientReady extends BaseCommand {
   private ClientReady() {}
 
   @Override
-  public void cmdExecute(final Message clientMessage, final ServerConnection serverConnection,
-      final SecurityService securityService, long start) throws IOException {
+  public void cmdExecute(final MessageFromClient clientMessage,
+      final ServerConnection serverConnection, final SecurityService securityService, long start)
+      throws IOException {
     CacheServerStats stats = serverConnection.getCacheServerStats();
     {
       long oldStart = start;

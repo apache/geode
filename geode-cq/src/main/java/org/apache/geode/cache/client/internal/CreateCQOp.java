@@ -24,6 +24,7 @@ import org.apache.geode.internal.Version;
 import org.apache.geode.internal.cache.tier.MessageType;
 import org.apache.geode.internal.cache.tier.sockets.ChunkedMessage;
 import org.apache.geode.internal.cache.tier.sockets.Message;
+import org.apache.geode.internal.cache.tier.sockets.MessageFromServer;
 import org.apache.geode.internal.cache.tier.sockets.Part;
 import org.apache.geode.security.NotAuthorizedException;
 
@@ -94,12 +95,12 @@ public class CreateCQOp {
     }
 
     @Override
-    protected Message createResponseMessage() {
+    protected MessageFromServer createResponseMessage() {
       return new ChunkedMessage(1, Version.CURRENT);
     }
 
     @Override
-    protected Object processResponse(Message m) throws Exception {
+    protected Object processResponse(MessageFromServer m) throws Exception {
       ChunkedMessage msg = (ChunkedMessage) m;
       msg.readHeader();
       int msgType = msg.getMessageType();

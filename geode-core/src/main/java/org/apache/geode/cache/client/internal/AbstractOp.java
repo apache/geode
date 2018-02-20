@@ -30,6 +30,8 @@ import org.apache.geode.internal.cache.TXManagerImpl;
 import org.apache.geode.internal.cache.tier.MessageType;
 import org.apache.geode.internal.cache.tier.sockets.ChunkedMessage;
 import org.apache.geode.internal.cache.tier.sockets.Message;
+import org.apache.geode.internal.cache.tier.sockets.MessageFromClient;
+import org.apache.geode.internal.cache.tier.sockets.MessageFromServer;
 import org.apache.geode.internal.cache.tier.sockets.Part;
 import org.apache.geode.internal.cache.tier.sockets.ServerConnection;
 import org.apache.geode.internal.logging.LogService;
@@ -44,19 +46,19 @@ public abstract class AbstractOp implements Op {
 
   private static final Logger logger = LogService.getLogger();
 
-  private final Message msg;
+  private final MessageFromClient msg;
 
   private boolean allowDuplicateMetadataRefresh;
 
   protected AbstractOp(int msgType, int msgParts) {
-    this.msg = new Message(msgParts, Version.CURRENT);
+    this.msg = new MessageFromClient(msgParts, Version.CURRENT);
     getMessage().setMessageType(msgType);
   }
 
   /**
    * Returns the message that this op will send to the server
    */
-  protected Message getMessage() {
+  protected MessageFromClient getMessage() {
     return this.msg;
   }
 
@@ -106,7 +108,7 @@ public abstract class AbstractOp implements Op {
    * excluded from client authentication. e.g. PingOp#sendMessage(Connection cnx)
    *
    * @see AbstractOp#needsUserId()
-   * @see AbstractOp#processSecureBytes(Connection, Message)
+   * @see AbstractOp#processSecureBytes(Connection, MessageFromServer)
    * @see ServerConnection#updateAndGetSecurityPart()
    */
   protected void sendMessage(Connection cnx) throws Exception {
@@ -144,7 +146,7 @@ public abstract class AbstractOp implements Op {
    *
    * @see ServerConnection#updateAndGetSecurityPart()
    */
-  protected void processSecureBytes(Connection cnx, Message message) throws Exception {
+  protected void processSecureBytes(Connection cnx, MessageFromServer message) throws Exception {
     if (cnx.getServer().getRequiresCredentials()) {
       if (!message.isSecureMode()) {
         // This can be seen during shutdown
@@ -191,7 +193,7 @@ public abstract class AbstractOp implements Op {
    * @throws Exception if the execute failed
    */
   protected Object attemptReadResponse(Connection cnx) throws Exception {
-    Message msg = createResponseMessage();
+    MessageFromServer msg = createResponseMessage();
     if (msg != null) {
       msg.setComms(cnx.getSocket(), cnx.getInputStream(), cnx.getOutputStream(),
           cnx.getCommBuffer(), cnx.getStats());
@@ -219,11 +221,11 @@ public abstract class AbstractOp implements Op {
   /**
    * By default just create a normal one part msg. Subclasses can override this.
    */
-  protected Message createResponseMessage() {
-    return new Message(1, Version.CURRENT);
+  protected MessageFromServer createResponseMessage() {
+    return new MessageFromServer(1, Version.CURRENT);
   }
 
-  protected Object processResponse(Message m, Connection con) throws Exception {
+  protected Object processResponse(MessageFromServer m, Connection con) throws Exception {
     return processResponse(m);
   }
 
@@ -234,7 +236,7 @@ public abstract class AbstractOp implements Op {
    * @throws Exception if response could not be processed or we received a response with a server
    *         exception.
    */
-  protected abstract Object processResponse(Message msg) throws Exception;
+  protected abstract Object processResponse(MessageFromServer msg) throws Exception;
 
   /**
    * Return true of <code>messageType</code> indicates the operation had an error on the server.
@@ -249,7 +251,7 @@ public abstract class AbstractOp implements Op {
    * @throws Exception if response could not be processed or we received a response with a server
    *         exception.
    */
-  protected void processAck(Message msg, String opName) throws Exception {
+  protected void processAck(MessageFromServer msg, String opName) throws Exception {
     final int msgType = msg.getMessageType();
     if (msgType == MessageType.REPLY) {
       return;
@@ -283,7 +285,7 @@ public abstract class AbstractOp implements Op {
    * @throws Exception if response could not be processed or we received a response with a server
    *         exception.
    */
-  protected Object processObjResponse(Message msg, String opName) throws Exception {
+  protected Object processObjResponse(MessageFromServer msg, String opName) throws Exception {
     Part part = msg.getPart(0);
     final int msgType = msg.getMessageType();
     if (msgType == MessageType.RESPONSE) {

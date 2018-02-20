@@ -34,6 +34,7 @@ import org.apache.geode.internal.cache.TXManagerImpl;
 import org.apache.geode.internal.cache.TXStateProxyImpl;
 import org.apache.geode.internal.cache.tier.sockets.ClientProxyMembershipID;
 import org.apache.geode.internal.cache.tier.sockets.Message;
+import org.apache.geode.internal.cache.tier.sockets.MessageFromClient;
 import org.apache.geode.internal.cache.tier.sockets.ServerConnection;
 import org.apache.geode.test.junit.categories.UnitTest;
 
@@ -48,7 +49,7 @@ public class TXFailoverCommandTest {
     InternalDistributedMember client = mock(InternalDistributedMember.class);
     InternalDistributedMember host = mock(InternalDistributedMember.class);
     InternalDistributedSystem system = mock(InternalDistributedSystem.class);
-    Message message = mock(Message.class);
+    MessageFromClient message = mock(MessageFromClient.class);
     ServerConnection serverConnection = mock(ServerConnection.class);
     TXManagerImpl txManager = mock(TXManagerImpl.class);
 

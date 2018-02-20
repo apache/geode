@@ -23,6 +23,7 @@ import org.apache.geode.internal.cache.TXCommitMessage;
 import org.apache.geode.internal.cache.TXManagerImpl;
 import org.apache.geode.internal.cache.tier.MessageType;
 import org.apache.geode.internal.cache.tier.sockets.Message;
+import org.apache.geode.internal.cache.tier.sockets.MessageFromServer;
 import org.apache.geode.internal.cache.tier.sockets.Part;
 
 /**
@@ -78,7 +79,7 @@ public class TXSynchronizationOp {
     }
 
     @Override
-    protected void processAck(Message msg, String opName) throws Exception {
+    protected void processAck(MessageFromServer msg, String opName) throws Exception {
       final int msgType = msg.getMessageType();
       if (msgType == MessageType.REPLY) {
         return;
@@ -104,7 +105,7 @@ public class TXSynchronizationOp {
      * cache.tier.sockets.Message)
      */
     @Override
-    protected Object processResponse(Message msg) throws Exception {
+    protected Object processResponse(MessageFromServer msg) throws Exception {
       if (this.type == CompletionType.BEFORE_COMPLETION) {
         try {
           processAck(msg, type.toString());

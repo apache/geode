@@ -38,5 +38,5 @@ public interface ClientMessage extends Conflatable, DataSerializableFixedID {
    * @throws IOException
    * @see org.apache.geode.internal.cache.tier.sockets.Message
    */
-  Message getMessage(CacheClientProxy proxy, boolean notify) throws IOException;
+  MessageFromServer getMessage(CacheClientProxy proxy, boolean notify) throws IOException;
 }
