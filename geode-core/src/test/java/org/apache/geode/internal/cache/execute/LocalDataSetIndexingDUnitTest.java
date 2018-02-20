@@ -150,9 +150,9 @@ public class LocalDataSetIndexingDUnitTest extends JUnit4CacheTestCase {
                   DefaultQuery query = (DefaultQuery) qs.newQuery(
                       "select distinct e1.value from /pr1 e1, /pr2  e2 where e1.value=e2.value");
 
-                  GemFireCacheImpl.getInstance().getLogger()
+                  context.getCache().getLogger()
                       .fine(" Num BUCKET SET: " + localCust.getBucketSet());
-                  GemFireCacheImpl.getInstance().getLogger().fine("VALUES FROM PR1 bucket:");
+                  context.getCache().getLogger().fine("VALUES FROM PR1 bucket:");
                   for (Integer bId : localCust.getBucketSet()) {
                     BucketRegion br =
                         ((PartitionedRegion) pr1).getDataStore().getLocalBucketById(bId);
@@ -160,10 +160,10 @@ public class LocalDataSetIndexingDUnitTest extends JUnit4CacheTestCase {
                     for (Object e : br.values()) {
                       val += (e + ",");
                     }
-                    GemFireCacheImpl.getInstance().getLogger().fine(": " + val);
+                    context.getCache().getLogger().fine(": " + val);
                   }
 
-                  GemFireCacheImpl.getInstance().getLogger().fine("VALUES FROM PR2 bucket:");
+                  context.getCache().getLogger().fine("VALUES FROM PR2 bucket:");
                   for (Integer bId : localCust.getBucketSet()) {
                     BucketRegion br =
                         ((PartitionedRegion) pr2).getDataStore().getLocalBucketById(bId);
@@ -171,13 +171,13 @@ public class LocalDataSetIndexingDUnitTest extends JUnit4CacheTestCase {
                     for (Object e : br.values()) {
                       val += (e + ",");
                     }
-                    GemFireCacheImpl.getInstance().getLogger().fine(": " + val);
+                    context.getCache().getLogger().fine(": " + val);
                   }
 
                   SelectResults r =
                       (SelectResults) localCust.executeQuery(query, null, localCust.getBucketSet());
 
-                  GemFireCacheImpl.getInstance().getLogger().fine("Result :" + r.asList());
+                  context.getCache().getLogger().fine("Result :" + r.asList());
 
                   Assert.assertTrue(observer.isIndexesUsed);
                   pr1.getCache().getLogger().fine("Index Used: " + observer.numIndexesUsed());
@@ -201,9 +201,8 @@ public class LocalDataSetIndexingDUnitTest extends JUnit4CacheTestCase {
             }).getResult();
         int numResults = 0;
         for (List oneNodeResult : result) {
-          GemFireCacheImpl.getInstance().getLogger()
-              .fine("Result :" + numResults + " oneNodeResult.size(): " + oneNodeResult.size()
-                  + " oneNodeResult :" + oneNodeResult);
+          getCache().getLogger().fine("Result :" + numResults + " oneNodeResult.size(): "
+              + oneNodeResult.size() + " oneNodeResult :" + oneNodeResult);
           numResults = +oneNodeResult.size();
         }
         Assert.assertTrue(10 == numResults);

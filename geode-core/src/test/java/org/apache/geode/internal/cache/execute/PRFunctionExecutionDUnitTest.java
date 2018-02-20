@@ -60,6 +60,7 @@ import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.distributed.internal.LonerDistributionManager;
 import org.apache.geode.internal.cache.EntrySnapshot;
 import org.apache.geode.internal.cache.GemFireCacheImpl;
+import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.cache.LocalDataSet;
 import org.apache.geode.internal.cache.PartitionAttributesImpl;
 import org.apache.geode.internal.cache.PartitionedRegion;
@@ -2893,7 +2894,7 @@ public class PRFunctionExecutionDUnitTest extends PartitionedRegionDUnitTestCase
       }
       // then throw an exception
       throw new NullPointerException(
-          "simulated exception with myId: " + GemFireCacheImpl.getInstance().getMyId());
+          "simulated exception with myId: " + ((InternalCache) context.getCache()).getMyId());
     }
 
     public String getId() {
