@@ -62,8 +62,8 @@ public class PutRequestOperationHandler
       Object decodedValue = serializationService.decode(entry.getValue());
       Object decodedKey = serializationService.decode(entry.getKey());
       if (decodedKey == null || decodedValue == null) {
-        return Failure.of(ProtobufResponseUtilities.makeErrorResponse(INVALID_REQUEST,
-            "Key and value must both be non-NULL"));
+        return Failure.of(ProtobufResponseUtilities.makeErrorResponse(
+            BasicTypes.ErrorCode.INVALID_REQUEST, "Key and value must both be non-NULL"));
       }
 
       try {

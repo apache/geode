@@ -76,7 +76,9 @@ public class GetAllRequestOperationHandler
 
       Object decodedKey = serializationService.decode(key);
       if (decodedKey == null) {
-        return createKeyedError(key, "NULL is not a valid key for get.", INVALID_REQUEST);
+        responseBuilder
+            .addFailures(buildKeyedError(key, "NULL is not a valid key for get.", INVALID_REQUEST));
+        return;
       }
       Object value = region.get(decodedKey);
       BasicTypes.Entry entry =
