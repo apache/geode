@@ -704,8 +704,8 @@ public class LuceneIndexCommandsDUnitTest implements Serializable {
       region.putAll(entries);
       luceneService.waitUntilFlushed(INDEX_NAME, REGION_NAME, 60000, TimeUnit.MILLISECONDS);
       LuceneIndexImpl index = (LuceneIndexImpl) luceneService.getIndex(INDEX_NAME, REGION_NAME);
-      Awaitility.await().atMost(65, TimeUnit.SECONDS)
-          .until(() -> assertEquals(countOfDocuments, index.getIndexStats().getDocuments()));
+      Awaitility.await().atMost(65, TimeUnit.SECONDS).until(
+          () -> assertEquals(true, countOfDocuments <= index.getIndexStats().getDocuments()));
 
     });
   }
