@@ -122,6 +122,7 @@ public class RegisterInterestIntegrationTest {
     Region region =
         clientCache.createClientRegionFactory(ClientRegionShortcut.CACHING_PROXY).create("region");
     region.registerInterestForAllKeys(InterestResultPolicy.NONE, true);
+    clientCache.readyForEvents();
 
     server.invoke(() -> {
       Region regionOnServer = ClusterStartupRule.getCache().getRegion("region");
@@ -143,6 +144,7 @@ public class RegisterInterestIntegrationTest {
     Region region =
         clientCache.createClientRegionFactory(ClientRegionShortcut.CACHING_PROXY).create("region");
     region.registerInterestForAllKeys(InterestResultPolicy.NONE, true, false);
+    clientCache.readyForEvents();
 
     server.invoke(() -> {
       Region regionOnServer = ClusterStartupRule.getCache().getRegion("region");
@@ -260,6 +262,7 @@ public class RegisterInterestIntegrationTest {
     Region region =
         clientCache.createClientRegionFactory(ClientRegionShortcut.CACHING_PROXY).create("region");
     region.registerInterestForKeys(keysList, InterestResultPolicy.KEYS, true);
+    clientCache.readyForEvents();
 
     server.invoke(() -> {
       Region regionOnServer = ClusterStartupRule.getCache().getRegion("region");
@@ -284,6 +287,7 @@ public class RegisterInterestIntegrationTest {
     Region region =
         clientCache.createClientRegionFactory(ClientRegionShortcut.CACHING_PROXY).create("region");
     region.registerInterestForKeys(keysList, InterestResultPolicy.KEYS, true, false);
+    clientCache.readyForEvents();
 
     server.invoke(() -> {
       Region regionOnServer = ClusterStartupRule.getCache().getRegion("region");
@@ -293,6 +297,16 @@ public class RegisterInterestIntegrationTest {
     });
 
     Awaitility.await().atMost(10, TimeUnit.SECONDS).until(() -> assertEquals(2, region.size()));
+  }
+
+  @Test
+  public void readyForEventsBeforeAnyPoolsAreCreatedShouldNotResultInIllegalStateException()
+      throws Exception {
+
+    ClientCache clientCache = createClientCache(locatorPort, true);
+
+    clientCache.readyForEvents();
+    // No exception should be thrown.
   }
 
   private ClientCache createClientCache(Integer locatorPort) {
@@ -314,9 +328,6 @@ public class RegisterInterestIntegrationTest {
     ccf.addPoolLocator("localhost", locatorPort);
     ccf.setPoolSubscriptionEnabled(true);
     ClientCache cache = ccf.create();
-    if (isDurable) {
-      cache.readyForEvents();
-    }
     return cache;
   }
 

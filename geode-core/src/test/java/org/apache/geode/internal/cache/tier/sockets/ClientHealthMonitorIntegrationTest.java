@@ -177,8 +177,7 @@ public class ClientHealthMonitorIntegrationTest {
    */
   @Test
   public void testDeadClientRemovalByServer() throws Exception {
-    System.setProperty(ClientHealthMonitor.CLIENT_HEALTH_MONITOR_INTERVAL_PROPERTY,
-        String.valueOf("100"));
+    System.setProperty(ClientHealthMonitor.CLIENT_HEALTH_MONITOR_INTERVAL_PROPERTY, "100");
     PORT = createServer();
     createProxyAndRegionForClient();
     StatisticsType statisticsType = this.system.findType("CacheServerStats");

@@ -85,7 +85,7 @@ public class CreateRegionCommand implements GfshCommand {
       @CliOption(key = CliStrings.CREATE_REGION__SKIPIFEXISTS, specifiedDefaultValue = "true",
           unspecifiedDefaultValue = "false",
           help = CliStrings.CREATE_REGION__SKIPIFEXISTS__HELP) boolean skipIfExists,
-      @CliOption(key = CliStrings.CREATE_REGION__IFNOTEXISTS, specifiedDefaultValue = "true",
+      @CliOption(key = CliStrings.IFNOTEXISTS, specifiedDefaultValue = "true",
           unspecifiedDefaultValue = "false",
           help = CliStrings.CREATE_REGION__IFNOTEXISTS__HELP) boolean ifNotExists,
 

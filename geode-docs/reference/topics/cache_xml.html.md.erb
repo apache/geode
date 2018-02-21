@@ -2477,11 +2477,16 @@ Using the maximum attribute, specifies maximum region capacity based on entry co
 <tbody>
 <tr class="odd">
 <td>local-destroy</td>
-<td>Entry is destroyed locally. Not available for replicated regions.</td>
+<td>Removes the entry from the local cache, but does not distribute the removal operation to remote
+members.  This action can be applied to an entry in a partitioned region, but is not recommended
+if redundancy is enabled (redundant-copies > 0), as it introduces inconsistencies between the
+redundant buckets.  When applied to an entry in a replicated region, <%=vars.product_name%> silently changes
+the region type to "preloaded" to accommodate the local modification.</td>
 </tr>
 <tr class="even">
 <td>overflow-to-disk</td>
-<td>Entry is overflowed to disk and the value set to null in memory. For partitioned regions, this provides the most reliable read behavior across the region.</td>
+<td>The entry's value is overflowed to disk and set to null in memory. The
+entry's key is retained in the cache.</td>
 </tr>
 </tbody>
 </table>
@@ -2529,11 +2534,16 @@ Specify the Java class and its initialization parameters with the `<class-name>`
 <tbody>
 <tr class="odd">
 <td>local-destroy</td>
-<td>Entry is destroyed locally. Not available for replicated regions.</td>
+<td>Removes the entry from the local cache, but does not distribute the removal operation to remote
+members.  This action can be applied to an entry in a partitioned region, but is not recommended
+if redundancy is enabled (redundant-copies > 0), as it introduces inconsistencies between the
+redundant buckets.  When applied to an entry in a replicated region, <%=vars.product_name%> silently changes
+the region type to "preloaded" to accommodate the local modification.</td>
 </tr>
 <tr class="even">
 <td>overflow-to-disk</td>
-<td>Entry is overflowed to disk and the value set to null in memory. For partitioned regions, this provides the most reliable read behavior across the region.</td>
+<td>The entry's value is overflowed to disk and set to null in memory. The
+entry's key is retained in the cache.</td>
 </tr>
 </tbody>
 </table>
@@ -2573,11 +2583,16 @@ Specify the Java class and its initialization parameters with the `<class-name>`
 <tbody>
 <tr class="odd">
 <td>local-destroy</td>
-<td>Entry is destroyed locally. Not available for replicated regions.</td>
+<td>Removes the entry from the local cache, but does not distribute the removal operation to remote
+members.  This action can be applied to an entry in a partitioned region, but is not recommended
+if redundancy is enabled (redundant-copies > 0), as it introduces inconsistencies between the
+redundant buckets.  When applied to an entry in a replicated region, <%=vars.product_name%> silently changes
+the region type to "preloaded" to accommodate the local modification.</td>
 </tr>
 <tr class="even">
 <td>overflow-to-disk</td>
-<td>Entry is overflowed to disk and the value set to null in memory. For partitioned regions, this provides the most reliable read behavior across the region.</td>
+<td>The entry's value is overflowed to disk and set to null in memory. The
+entry's key is retained in the cache.</td>
 </tr>
 </tbody>
 </table>
@@ -2667,7 +2682,7 @@ We recommend that you set the username and password with the `user-name` and `pa
 <td>URL for connecting to the datasource.
 <p>
 <b>Note:</b>
-<p>If you are connecting to a JCA data source driver that implements XA transactions (where the jndi-binding type is <strong>XAPooledDataSource</strong>), do not use this attribute. Instead, define configuration properties for your database. See [&lt;config-property&gt;](#config-property) for an example.</p></td>
+<p>If you are connecting to a JCA data source driver that implements XA transactions (where the jndi-binding type is <strong>XAPooledDataSource</strong>), do not use this attribute. Instead, define configuration properties for your database. See <a href="#config-property">&lt;config-property&gt</a> for an example.</p></td>
 <td> </td>
 </tr>
 <tr class="even">
@@ -2781,8 +2796,6 @@ Set one of the following types:
 A configuration property of the datasource. Use the sub-elements to identify the name, datatype, and value of the property.
 
 **Default:**
-
-**API:** ``
 
 **Example:**
 

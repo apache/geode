@@ -2373,7 +2373,7 @@ public class LocalRegion extends AbstractRegion implements LoaderHelperFactory,
     List oqlIndexes = internalRegionArgs.getIndexes();
 
     if (this.indexManager == null) {
-      this.indexManager = IndexUtils.getIndexManager(this, true);
+      this.indexManager = IndexUtils.getIndexManager(cache, this, true);
     }
     DiskRegion dr = this.getDiskRegion();
     boolean isOverflowToDisk = false;
@@ -2770,14 +2770,11 @@ public class LocalRegion extends AbstractRegion implements LoaderHelperFactory,
       // copy into local var to prevent race condition
       CacheLoader loader = basicGetLoader();
       if (loader != null) {
-        final LoaderHelper loaderHelper =
-            this.loaderHelperFactory.createLoaderHelper(key, aCallbackArgument,
-                false /* netSearchAllowed */, true /* netloadAllowed */, null /* searcher */);
+        fromServer = false;
         CachePerfStats stats = getCachePerfStats();
         long statStart = stats.startLoad();
         try {
-          value = loader.load(loaderHelper);
-          fromServer = false;
+          value = callCacheLoader(loader, key, aCallbackArgument);
         } finally {
           stats.endLoad(statStart);
         }
@@ -2861,6 +2858,16 @@ public class LocalRegion extends AbstractRegion implements LoaderHelperFactory,
       recordMiss(re, key);
     }
     return value;
+  }
+
+  @SuppressWarnings({"rawtypes", "unchecked"})
+  protected Object callCacheLoader(CacheLoader loader, final Object key,
+      final Object aCallbackArgument) {
+    LoaderHelper loaderHelper = this.loaderHelperFactory.createLoaderHelper(key, aCallbackArgument,
+        false /* netSearchAllowed */, true /* netloadAllowed */, null /* searcher */);
+    Object result = loader.load(loaderHelper);
+    result = this.getCache().convertPdxInstanceIfNeeded(result);
+    return result;
   }
 
   protected boolean isMemoryThresholdReachedForLoad() {
@@ -5631,6 +5638,8 @@ public class LocalRegion extends AbstractRegion implements LoaderHelperFactory,
         logger.debug("caught concurrent modification attempt when applying {}", event);
       }
       notifyBridgeClients(event);
+      notifyGatewaySender(event.getOperation().isUpdate() ? EnumListenerEvent.AFTER_UPDATE
+          : EnumListenerEvent.AFTER_CREATE, event);
       return false;
     }
 
@@ -6114,8 +6123,7 @@ public class LocalRegion extends AbstractRegion implements LoaderHelperFactory,
   }
 
   protected void notifyGatewaySender(EnumListenerEvent operation, EntryEventImpl event) {
-    if (isPdxTypesRegion() || event.isConcurrencyConflict()) {
-      // isConcurrencyConflict is usually a concurrent cache modification problem
+    if (isPdxTypesRegion()) {
       return;
     }
 
@@ -6505,6 +6513,7 @@ public class LocalRegion extends AbstractRegion implements LoaderHelperFactory,
       // Notify clients only if its NOT a gateway event.
       if (event.getVersionTag() != null && !event.getVersionTag().isGatewayTag()) {
         notifyBridgeClients(event);
+        notifyGatewaySender(EnumListenerEvent.AFTER_DESTROY, event);
       }
       return true; // event was elided
 
@@ -8045,12 +8054,7 @@ public class LocalRegion extends AbstractRegion implements LoaderHelperFactory,
     }
   }
 
-  /**
-   * Used by unit tests to get access to the EntryExpiryTask of the given key. Returns null if the
-   * entry exists but does not have an expiry task.
-   *
-   * @throws EntryNotFoundException if no entry exists key.
-   */
+  @Override
   public EntryExpiryTask getEntryExpiryTask(Object key) {
     RegionEntry re = this.getRegionEntry(key);
     if (re == null) {

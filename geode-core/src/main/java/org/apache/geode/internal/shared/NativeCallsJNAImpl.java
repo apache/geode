@@ -132,8 +132,6 @@ public class NativeCallsJNAImpl {
     static final int EPERM = 1;
     static final int ENOSPC = 28;
 
-    static final Map<String, String> javaEnv = getModifiableJavaEnv();
-
     /** Signal callback handler for <code>signal</code> native call. */
     interface SignalHandler extends Callback {
       void callback(int signum);
@@ -157,39 +155,6 @@ public class NativeCallsJNAImpl {
     @Override
     public OSType getOSType() {
       return OSType.GENERIC_POSIX;
-    }
-
-    /**
-     * @see NativeCalls#setEnvironment(String, String)
-     */
-    @Override
-    public synchronized void setEnvironment(final String name, final String value) {
-      if (name == null) {
-        throw new UnsupportedOperationException("setEnvironment() for name=NULL");
-      }
-      int res = -1;
-      Throwable cause = null;
-      try {
-        if (value != null) {
-          res = setenv(name, value, 1);
-        } else {
-          res = unsetenv(name);
-        }
-      } catch (LastErrorException le) {
-        cause = new NativeErrorException(le.getMessage(), le.getErrorCode(), le.getCause());
-      }
-      if (res != 0) {
-        throw new IllegalArgumentException(
-            "setEnvironment: given name=" + name + " (value=" + value + ')', cause);
-      }
-      // also change in java cached map
-      if (javaEnv != null) {
-        if (value != null) {
-          javaEnv.put(name, value);
-        } else {
-          javaEnv.remove(name);
-        }
-      }
     }
 
     /**
@@ -948,49 +913,12 @@ public class NativeCallsJNAImpl {
       public static native boolean CloseHandle(Pointer handle) throws LastErrorException;
     }
 
-    private static final Map<String, String> javaEnv = getModifiableJavaEnvWIN();
-
     /**
      * @see NativeCalls#getOSType()
      */
     @Override
     public OSType getOSType() {
       return OSType.WIN;
-    }
-
-    /**
-     * @see NativeCalls#setEnvironment(String, String)
-     */
-    @Override
-    public synchronized void setEnvironment(final String name, final String value) {
-      if (name == null) {
-        throw new UnsupportedOperationException("setEnvironment() for name=NULL");
-      }
-      boolean res = false;
-      Throwable cause = null;
-      try {
-        res = Kernel32.SetEnvironmentVariableA(name, value);
-      } catch (LastErrorException le) {
-        // error code ERROR_ENVVAR_NOT_FOUND (203) indicates variable was not
-        // found so ignore
-        if (value == null && le.getErrorCode() == 203) {
-          res = true;
-        } else {
-          cause = new NativeErrorException(le.getMessage(), le.getErrorCode(), le.getCause());
-        }
-      }
-      if (!res) {
-        throw new IllegalArgumentException(
-            "setEnvironment: given name=" + name + " (value=" + value + ')', cause);
-      }
-      // also change in java cached map
-      if (javaEnv != null) {
-        if (value != null) {
-          javaEnv.put(name, value);
-        } else {
-          javaEnv.remove(name);
-        }
-      }
     }
 
     /**

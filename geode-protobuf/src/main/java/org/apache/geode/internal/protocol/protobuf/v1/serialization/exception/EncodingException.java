@@ -17,7 +17,7 @@ package org.apache.geode.internal.protocol.protobuf.v1.serialization.exception;
 import org.apache.geode.annotations.Experimental;
 
 /**
- * This indicates an encoding type that we don't know how to handle.
+ * This indicates a Java object that we don't know how to handle.
  */
 @Experimental
 public class EncodingException extends Exception {

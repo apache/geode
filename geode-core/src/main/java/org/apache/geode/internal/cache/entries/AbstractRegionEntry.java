@@ -1468,9 +1468,11 @@ public abstract class AbstractRegionEntry implements HashRegionEntry<Object, Obj
     if (TXManagerImpl.decRefCount(this)) {
       if (isInUseByTransaction()) {
         setInUseByTransaction(false);
-        appendToEvictionList(evictionList);
-        if (region != null && region.isEntryExpiryPossible()) {
-          region.addExpiryTaskIfAbsent(this);
+        if (!isDestroyedOrRemoved()) {
+          appendToEvictionList(evictionList);
+          if (region != null && region.isEntryExpiryPossible()) {
+            region.addExpiryTaskIfAbsent(this);
+          }
         }
       }
     }

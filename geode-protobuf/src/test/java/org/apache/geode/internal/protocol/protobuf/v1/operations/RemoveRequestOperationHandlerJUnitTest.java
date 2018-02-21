@@ -34,6 +34,7 @@ import org.apache.geode.internal.protocol.protobuf.v1.ProtobufSerializationServi
 import org.apache.geode.internal.protocol.protobuf.v1.RegionAPI;
 import org.apache.geode.internal.protocol.protobuf.v1.Result;
 import org.apache.geode.internal.protocol.protobuf.v1.Success;
+import org.apache.geode.internal.protocol.protobuf.v1.serialization.exception.DecodingException;
 import org.apache.geode.internal.protocol.protobuf.v1.serialization.exception.EncodingException;
 import org.apache.geode.internal.protocol.protobuf.v1.utilities.ProtobufRequestUtilities;
 import org.apache.geode.test.junit.categories.UnitTest;
@@ -90,9 +91,9 @@ public class RemoveRequestOperationHandlerJUnitTest extends OperationHandlerJUni
     assertTrue(result instanceof Success);
   }
 
-  @Test
-  public void processReturnsErrorWhenUnableToDecodeRequest() throws Exception {
-    EncodingException exception = new EncodingException("error finding codec for type");
+  @Test(expected = DecodingException.class)
+  public void processThrowsExceptionWhenUnableToDecodeRequest() throws Exception {
+    Exception exception = new DecodingException("error finding codec for type");
     ProtobufSerializationService serializationServiceStub =
         mock(ProtobufSerializationService.class);
     when(serializationServiceStub.decode(any())).thenThrow(exception);
@@ -102,13 +103,8 @@ public class RemoveRequestOperationHandlerJUnitTest extends OperationHandlerJUni
 
     RegionAPI.RemoveRequest removeRequest =
         ProtobufRequestUtilities.createRemoveRequest(TEST_REGION, encodedKey).getRemoveRequest();;
-    Result result = operationHandler.process(serializationServiceStub, removeRequest,
+    operationHandler.process(serializationServiceStub, removeRequest,
         TestExecutionContext.getNoAuthCacheExecutionContext(cacheStub));
-
-    assertTrue(result instanceof Failure);
-    ClientProtocol.ErrorResponse errorMessage =
-        (ClientProtocol.ErrorResponse) result.getErrorMessage();
-    assertEquals(BasicTypes.ErrorCode.INVALID_REQUEST, errorMessage.getError().getErrorCode());
   }
 
   private ClientProtocol.Message generateTestRequest(boolean missingRegion, boolean missingKey)

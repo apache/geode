@@ -12,21 +12,20 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
-package org.apache.geode.internal.protocol.protobuf.v1;
+package org.apache.geode.internal.protocol.protobuf.v1.serialization.exception;
 
-public enum ProtobufErrorCode {
-  AUTHENTICATION_REQUIRED(10),
-  AUTHENTICATION_FAILED(11),
-  ALREADY_AUTHENTICATED(12),
-  AUTHENTICATION_NOT_SUPPORTED(13),
-  AUTHORIZATION_FAILED(20),
-  INVALID_REQUEST(50),
-  SERVER_ERROR(100),
-  NO_AVAILABLE_SERVER(101);
+import org.apache.geode.annotations.Experimental;
 
-  ProtobufErrorCode(int value) {
-    codeValue = value;
+/**
+ * This indicates an encoding type that we don't know how to handle.
+ */
+@Experimental
+public class DecodingException extends Exception {
+  public DecodingException(String message) {
+    super(message);
   }
 
-  public int codeValue;
+  public DecodingException(String message, Throwable cause) {
+    super(message, cause);
+  }
 }

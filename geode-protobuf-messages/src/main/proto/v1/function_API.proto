@@ -38,3 +38,13 @@ message ExecuteFunctionOnMemberResponse {
     repeated EncodedValue results = 1; // some functions don't return results.
 }
 
+message ExecuteFunctionOnGroupRequest {
+    string functionID = 1;
+    repeated string groupName = 2;
+    EncodedValue arguments = 3;
+}
+
+message ExecuteFunctionOnGroupResponse {
+    repeated EncodedValue results = 1; // some functions don't return results.
+}
+

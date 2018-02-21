@@ -19,29 +19,35 @@ See the License for the specific language governing permissions and
 limitations under the License.
 -->
 
-Expiration removes old entries and entries that you are not using. You can choose whether expired entries are invalidated or destroyed.
+Expiration keeps a region's data fresh by removing old entries and entries that you are not using. You can choose whether expired entries are invalidated or destroyed.
 
 Expiration activities in distributed regions can be distributed or local. Thus, one cache could control expiration for a number of caches in the system.
 
-This figure shows two basic expiration settings for a producer/consumer system. The producer member (on the right) populates the region from a database and the data is automatically distributed throughout the system. The data is valid only for one hour, so the producer performs a distributed destroy on entries that are an hour old. The other applications are consumers. The consumers free up space in their caches by removing their local copies of the entries for which there is no local interest (idle-time expiration). Requests for entries that have expired on the consumers will be forwarded to the producer.
+This figure shows two basic expiration settings for a client/server system. The server (on the
+right) populates the region from a database and the data is automatically distributed throughout the
+system. The data is valid for only one hour, so the server performs a distributed destroy on
+entries that are an hour old. The client applications are consumers. The clients free up space in
+their caches by removing their local copies of the entries for which there is no local interest
+(idle-time expiration). Requests for entries that have expired on the clients will be forwarded to
+the server.
 
-<img src="../../images_svg/expiration.svg" id="how_expiration_works__image_3D674825D1434830A8242D77CC89289F" class="image" />
+<img src="../../images/expiration.png" />
 
 ## <a id="how_expiration_works__section_B6C55A610F4243ED8F1986E8A98858CF" class="no-quick-link"></a>Expiration Types
 
-<%=vars.product_name_long%> uses the following expiration types:
+<%=vars.product_name_long%> provides two types of expiration, each triggered by a time-based threshold. These can co-exist; they are not mutually exclusive.
 
 -   **Time to live (TTL)**. The amount of time, in seconds, the object may remain in the cache after the last creation or update. For entries, the counter is set to zero for create and put operations. Region counters are reset when the region is created and when an entry has its counter reset. The TTL expiration attributes are `region-time-to-live` and `entry-time-to-live`.
 -   **Idle timeout**. The amount of time, in seconds, the object may remain in the cache after the last access. The idle timeout counter for an object is reset any time its TTL counter is reset. In addition, an entry’s idle timeout counter is reset any time the entry is accessed through a get operation or a netSearch . The idle timeout counter for a region is reset whenever the idle timeout is reset for one of its entries. Idle timeout expiration attributes are: `region-idle-time` and `entry-idle-time`.
 
 ## <a id="how_expiration_works__section_BA995343EF584104B9853CFE4CAD88AD" class="no-quick-link"></a>Expiration Actions
 
-<%=vars.product_name_long%> uses the following expiration actions:
+<%=vars.product_name_long%> provides the following expiration actions:
 
--   invalidate (default) - The data item's value is deleted, but the key remains in the cache. Applies to all distributed members in which the data item is replicated.
--   destroy - The data item's key and value are both deleted. Applies to all distributed members in which the data item is replicated.
--   local invalidate - Deletes the data item's value. Applies only to the local member.
--   local destroy - Deletes the data item's key and value. Applies only to the local member.
+-   **invalidate (default)** - The data item's value is deleted, but the key remains in the cache. Applies to all distributed members in which the data item is replicated.
+-   **destroy** - The data item's key and value are both deleted. Applies to all distributed members in which the data item is replicated.
+-   **local invalidate** - Deletes the data item's value. Applies only to the local member.
+-   **local destroy** - Deletes the data item's key and value. Applies only to the local member.
 
 You cannot use `local-destroy` or `local-invalidate` expiration actions in replicated or partitioned regions. You can use the local options only on distributed regions with a data-policy of empty, normal or preloaded.
 
@@ -61,9 +67,5 @@ In both cases, the expiration mechanism checks the last-accessed dates of all co
 Before `netSearch` retrieves an entry value from a remote cache, it validates the *remote* entry’s statistics against the *local* region’s expiration settings. Entries that would have already expired in the local cache are passed over. Once validated, the entry is brought into the local cache and the local access and update statistics are updated for the local copy. The last-accessed time is reset and the last-modified time is updated to the time in the remote cache, with corrections made for system clock differences. Thus the local entry is assigned the true last time the entry was modified in the distributed system. The `netSearch` operation has no effect on the expiration counters in remote caches.
 
 The `netSearch` method operates only on distributed regions with a data-policy of empty, normal and preloaded.
-
-## Configuring the Number of Threads for Expiration
-
-You can use the `gemfire.EXPIRY_THREADS` system property to increase the number of threads that handle expiration. By default, one thread handles expiration, and it is possible for the thread to become overloaded when entries expire faster than the thread can expire them. If a single thread is handling too many expirations, it can result in an OOME. Set the gemfire.EXPIRY\_THREADS system property to the desired number when starting the cache server.
 
 

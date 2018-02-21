@@ -41,7 +41,7 @@ public class FindRestEnabledServersFunction implements InternalFunction {
   public void execute(FunctionContext context) {
     try {
       InternalCache cache = (InternalCache) context.getCache();
-      DistributionConfig config = InternalDistributedSystem.getAnyInstance().getConfig();
+      DistributionConfig config = cache.getInternalDistributedSystem().getConfig();
 
       String bindAddress = RestAgent.getBindAddressForHttpService(config);
 

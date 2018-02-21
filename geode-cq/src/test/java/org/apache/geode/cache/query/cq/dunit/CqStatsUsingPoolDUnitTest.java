@@ -14,7 +14,8 @@
  */
 package org.apache.geode.cache.query.cq.dunit;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.fail;
 
 import java.util.Collection;
 import java.util.Properties;
@@ -37,7 +38,6 @@ import org.apache.geode.cache.query.internal.cq.CqServiceVsdStats;
 import org.apache.geode.cache.query.internal.cq.InternalCqQuery;
 import org.apache.geode.cache30.CacheSerializableRunnable;
 import org.apache.geode.distributed.ConfigurationProperties;
-import org.apache.geode.internal.cache.GemFireCacheImpl;
 import org.apache.geode.test.dunit.Host;
 import org.apache.geode.test.dunit.Invoke;
 import org.apache.geode.test.dunit.LogWriterUtils;
@@ -196,7 +196,7 @@ public class CqStatsUsingPoolDUnitTest extends JUnit4CacheTestCase {
                 + cqServiceStats.numCqsStopped() + " CQs closed: " + cqServiceStats.numCqsClosed()
                 + " CQs on Client: " + cqServiceStats.numCqsOnClient()
                 + " CQs on region /root/regionA : "
-                + cqServiceVsdStats.numCqsOnRegion(GemFireCacheImpl.getInstance(), "/root/regionA")
+                + cqServiceVsdStats.numCqsOnRegion(getCache(), "/root/regionA")
                 + " Clients with CQs: " + cqServiceVsdStats.getNumClientsWithCqs());
 
 
@@ -230,7 +230,7 @@ public class CqStatsUsingPoolDUnitTest extends JUnit4CacheTestCase {
         // Check for CQs on region.
         if (cqsOnRegion != CqQueryUsingPoolDUnitTest.noTest) {
           assertEquals("Number of CQs on region /root/regionA mismatch", cqsOnRegion,
-              cqServiceVsdStats.numCqsOnRegion(GemFireCacheImpl.getInstance(), "/root/regionA"));
+              cqServiceVsdStats.numCqsOnRegion(getCache(), "/root/regionA"));
         }
 
         // Check for clients with CQs count.

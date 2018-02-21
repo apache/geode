@@ -20,6 +20,7 @@ import com.google.protobuf.NullValue;
 import org.apache.geode.annotations.Experimental;
 import org.apache.geode.internal.protocol.protobuf.v1.serialization.JsonPdxConverter;
 import org.apache.geode.internal.protocol.protobuf.v1.serialization.SerializationService;
+import org.apache.geode.internal.protocol.protobuf.v1.serialization.exception.DecodingException;
 import org.apache.geode.internal.protocol.protobuf.v1.serialization.exception.EncodingException;
 import org.apache.geode.internal.protocol.protobuf.v1.utilities.exception.UnknownProtobufEncodingType;
 import org.apache.geode.pdx.PdxInstance;
@@ -102,7 +103,7 @@ public class ProtobufSerializationService implements SerializationService<BasicT
    * @throws EncodingException if the value cannot be decoded.
    */
   @Override
-  public Object decode(BasicTypes.EncodedValue encodedValue) throws EncodingException {
+  public Object decode(BasicTypes.EncodedValue encodedValue) throws DecodingException {
     switch (encodedValue.getValueCase()) {
       case BINARYRESULT:
         return encodedValue.getBinaryResult().toByteArray();
@@ -127,7 +128,7 @@ public class ProtobufSerializationService implements SerializationService<BasicT
       case NULLRESULT:
         return null;
       default:
-        throw new EncodingException(
+        throw new DecodingException(
             "Unknown Protobuf encoding type: " + encodedValue.getValueCase());
     }
   }

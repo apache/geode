@@ -1324,7 +1324,7 @@ public class ClientMembershipDUnitTest extends ClientServerTestCase {
       final int expectedClientCount = clientMemberIds.size();
       Awaitility.await().pollInterval(100, TimeUnit.MILLISECONDS)
           .pollDelay(100, TimeUnit.MILLISECONDS).timeout(300, TimeUnit.SECONDS).until(() -> {
-            Map connectedClients = InternalClientMembership.getConnectedClients(false);
+            Map connectedClients = InternalClientMembership.getConnectedClients(false, getCache());
             if (connectedClients == null) {
               return false;
             }
@@ -1335,7 +1335,7 @@ public class ClientMembershipDUnitTest extends ClientServerTestCase {
           });
     }
 
-    Map connectedClients = InternalClientMembership.getConnectedClients(false);
+    Map connectedClients = InternalClientMembership.getConnectedClients(false, getCache());
     assertNotNull(connectedClients);
     assertEquals(clientMemberIds.size(), connectedClients.size());
     System.out
@@ -1530,7 +1530,7 @@ public class ClientMembershipDUnitTest extends ClientServerTestCase {
       final int whichVM = i;
       final VM vm = Host.getHost(0).getVM(i);
       vm.invoke("Create bridge server", () -> {
-        Map clients = InternalClientMembership.getConnectedClients(true);
+        Map clients = InternalClientMembership.getConnectedClients(true, getCache());
         assertNotNull(clients);
         testGetNotifiedClients_clientCount = clients.size();
         // [bruce] this is not a valid assertion - the server may not use

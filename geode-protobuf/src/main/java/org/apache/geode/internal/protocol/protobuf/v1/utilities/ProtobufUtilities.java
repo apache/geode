@@ -19,7 +19,6 @@ import org.apache.geode.cache.Region;
 import org.apache.geode.cache.RegionAttributes;
 import org.apache.geode.internal.protocol.protobuf.v1.BasicTypes;
 import org.apache.geode.internal.protocol.protobuf.v1.ClientProtocol;
-import org.apache.geode.internal.protocol.protobuf.v1.ProtobufErrorCode;
 import org.apache.geode.internal.protocol.protobuf.v1.ProtobufSerializationService;
 import org.apache.geode.internal.protocol.protobuf.v1.RegionAPI;
 import org.apache.geode.internal.protocol.protobuf.v1.serialization.exception.EncodingException;
@@ -80,16 +79,6 @@ public abstract class ProtobufUtilities {
   public static ClientProtocol.Message createProtobufRequestWithGetAllRequest(
       RegionAPI.GetAllRequest getAllRequest) {
     return ClientProtocol.Message.newBuilder().setGetAllRequest(getAllRequest).build();
-  }
-
-  /**
-   * This will convert a ProtobufErrorCode to a BasicTypes.ErrorCode for protobuf
-   *
-   * @param errorCode - incoming ProtobufErrorCode
-   * @return matching protobuf error code
-   */
-  public static BasicTypes.ErrorCode getProtobufErrorCode(ProtobufErrorCode errorCode) {
-    return BasicTypes.ErrorCode.forNumber(errorCode.codeValue);
   }
 
   /**
