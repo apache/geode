@@ -753,7 +753,7 @@ public class ClientMembershipDUnitTest extends ClientServerTestCase {
     assertTrue(ports[0] != 0);
 
     DistributedMember serverMember = (DistributedMember) vm0.invoke("get distributed member",
-        () -> ClientMembershipDUnitTest.getDistributedMember());
+        () -> getSystem().getDistributedMember());
 
     String serverMemberId = serverMember.toString();
 
@@ -1347,7 +1347,8 @@ public class ClientMembershipDUnitTest extends ClientServerTestCase {
         assertTrue(testGetConnectedServers_port != 0);
 
         System.out.println("[testGetConnectedServers] port=" + ports[whichVM]);
-        System.out.println("[testGetConnectedServers] serverMemberId=" + getDistributedMember());
+        System.out.println(
+            "[testGetConnectedServers] serverMemberId=" + getSystem().getDistributedMember());
       });
       ports[whichVM] = vm.invoke("getTestGetConnectedServers_port",
           () -> ClientMembershipDUnitTest.getTestGetConnectedServers_port());
