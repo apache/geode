@@ -85,7 +85,11 @@ public class ExecuteFunctionOnGroupRequestOperationHandler extends
   @Override
   protected Object getFunctionArguments(ExecuteFunctionOnGroupRequest request,
       ProtobufSerializationService serializationService) throws DecodingException {
-    return serializationService.decode(request.getArguments());
+    if (request.hasArguments()) {
+      return serializationService.decode(request.getArguments());
+    } else {
+      return null;
+    }
   }
 
   @Override

@@ -84,7 +84,11 @@ public class ExecuteFunctionOnMemberRequestOperationHandler extends
   @Override
   protected Object getFunctionArguments(ExecuteFunctionOnMemberRequest request,
       ProtobufSerializationService serializationService) throws DecodingException {
-    return serializationService.decode(request.getArguments());
+    if (request.hasArguments()) {
+      return serializationService.decode(request.getArguments());
+    } else {
+      return null;
+    }
   }
 
   @Override

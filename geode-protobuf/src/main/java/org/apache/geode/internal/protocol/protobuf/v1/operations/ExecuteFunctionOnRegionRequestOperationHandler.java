@@ -71,7 +71,11 @@ public class ExecuteFunctionOnRegionRequestOperationHandler extends
   @Override
   protected Object getFunctionArguments(ExecuteFunctionOnRegionRequest request,
       ProtobufSerializationService serializationService) throws DecodingException {
-    return serializationService.decode(request.getArguments());
+    if (request.hasArguments()) {
+      return serializationService.decode(request.getArguments());
+    } else {
+      return null;
+    }
   }
 
   @Override
