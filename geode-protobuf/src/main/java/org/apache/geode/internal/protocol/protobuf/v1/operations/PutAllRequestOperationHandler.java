@@ -76,7 +76,8 @@ public class PutAllRequestOperationHandler
       Object decodedValue = serializationService.decode(entry.getValue());
       Object decodedKey = serializationService.decode(entry.getKey());
       if (decodedKey == null || decodedValue == null) {
-        builder.addFailedKeys(buildKeyedError(entry, INVALID_REQUEST, "Key and value must both be non-NULL"));
+        builder.addFailedKeys(
+            buildKeyedError(entry, INVALID_REQUEST, "Key and value must both be non-NULL"));
       }
       region.put(decodedKey, decodedValue);
 
