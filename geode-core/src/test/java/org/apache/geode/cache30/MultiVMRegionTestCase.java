@@ -9155,8 +9155,7 @@ public abstract class MultiVMRegionTestCase extends RegionTestCase {
       try {
         org.apache.geode.distributed.internal.SerialAckedMessage msg =
             new org.apache.geode.distributed.internal.SerialAckedMessage();
-        msg.send(InternalDistributedSystem.getConnectedInstance().getDM()
-            .getNormalDistributionManagerIds(), false);
+        msg.send(getCache().getDistributionManager().getNormalDistributionManagerIds(), false);
       } catch (Exception e) {
         throw new RuntimeException("Unable to send serial message due to exception", e);
       }
