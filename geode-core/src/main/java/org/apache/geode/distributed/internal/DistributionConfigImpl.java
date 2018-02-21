@@ -941,9 +941,8 @@ public class DistributionConfigImpl extends AbstractDistributionConfig implement
       attNameSet.add(GEMFIRE_PREFIX + attNames[index]);
     }
 
-    Enumeration<?> sysPropsIter = System.getProperties().propertyNames();
-    while (sysPropsIter.hasMoreElements()) {
-      String key = (String) sysPropsIter.nextElement();
+    // Ensure that we're also iterating over the default properties - see GEODE-4690.
+    for (String key : System.getProperties().stringPropertyNames()) {
       if (attNameSet.contains(key) || key.startsWith(GEMFIRE_PREFIX + SECURITY_PREFIX_NAME)
           || key.startsWith(GEMFIRE_PREFIX + SSL_SYSTEM_PROPS_NAME)) {
         String sysValue = System.getProperty(key);
