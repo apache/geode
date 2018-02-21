@@ -14,8 +14,6 @@
  */
 package org.apache.geode.management.internal.web.controllers.support;
 
-import static org.apache.geode.internal.security.SecurityServiceFactory.findSecurityService;
-
 import java.util.Collections;
 import java.util.Enumeration;
 import java.util.HashMap;
@@ -62,10 +60,6 @@ public class LoginHandlerInterceptor extends HandlerInterceptorAdapter {
 
   protected static final String SECURITY_VARIABLE_REQUEST_HEADER_PREFIX =
       DistributionConfig.SECURITY_PREFIX_NAME;
-
-  public LoginHandlerInterceptor() {
-    this(findSecurityService());
-  }
 
   LoginHandlerInterceptor(SecurityService securityService) {
     this.securityService = securityService;
