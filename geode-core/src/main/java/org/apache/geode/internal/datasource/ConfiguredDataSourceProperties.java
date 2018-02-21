@@ -14,8 +14,11 @@
  */
 package org.apache.geode.internal.datasource;
 
+import java.io.PrintWriter;
+import java.io.Serializable;
+
 /**
- * JavaBean for datasource and poold properties.
+ * JavaBean for datasource and pooled properties.
  *
  * This class now contains only those parameters which are needed by the Gemfire DataSource
  * configuration. This maps to those parameters which are specified as attributes of
@@ -23,8 +26,6 @@ package org.apache.geode.internal.datasource;
  * stored.
  *
  */
-import java.io.*;
-
 public class ConfiguredDataSourceProperties implements Serializable {
 
   private static final long serialVersionUID = 1241739895646314739L;

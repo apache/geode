@@ -21,7 +21,6 @@ import java.util.List;
 import java.util.Map;
 
 import org.apache.geode.internal.datasource.ConfigProperty;
-import org.apache.geode.security.ResourcePermission;
 
 public class JndiBindingConfiguration implements Serializable {
 
@@ -62,10 +61,10 @@ public class JndiBindingConfiguration implements Serializable {
   private String username;
   private String xaDatasource;
 
-  private List<ConfigProperty> dsConfigurations;
+  private List<ConfigProperty> datasourceConfigurations;
 
   public JndiBindingConfiguration() {
-    dsConfigurations = new ArrayList<>();
+    datasourceConfigurations = new ArrayList<>();
   }
 
   public Integer getBlockingTimeout() {
@@ -188,12 +187,12 @@ public class JndiBindingConfiguration implements Serializable {
     this.xaDatasource = xaDatasource;
   }
 
-  public List<ConfigProperty> getDsConfigurations() {
-    return dsConfigurations;
+  public List<ConfigProperty> getDatasourceConfigurations() {
+    return datasourceConfigurations;
   }
 
-  public void setDsConfigurations(List<ConfigProperty> dsConfigurations) {
-    this.dsConfigurations = dsConfigurations;
+  public void setDatasourceConfigurations(List<ConfigProperty> dsConfigurations) {
+    this.datasourceConfigurations = dsConfigurations;
   }
 
   public Map getParamsAsMap() {

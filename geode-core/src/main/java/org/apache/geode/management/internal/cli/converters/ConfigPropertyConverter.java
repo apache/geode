@@ -23,9 +23,7 @@ import org.springframework.shell.core.Completion;
 import org.springframework.shell.core.Converter;
 import org.springframework.shell.core.MethodTarget;
 
-import org.apache.geode.cache.query.IndexType;
 import org.apache.geode.internal.datasource.ConfigProperty;
-import org.apache.geode.management.cli.ConverterHint;
 
 /***
  * Added converter to enable auto-completion for index-type

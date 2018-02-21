@@ -140,7 +140,7 @@ public class CreateJndiBindingCommand implements GfshCommand {
     boolean alreadyExists = isBindingAlreadyExists(jndiName);
     if (alreadyExists && ifNotExists)
       return ResultBuilder.createInfoResult(CliStrings.format(
-          "Skipping creation of Jndi Binding with jndi-name \"{0}\" as its already exists.",
+          "Skipping creation of Jndi Binding with jndi-name \"{0}\" as it already exists.",
           jndiName));
     else if (alreadyExists)
       return ResultBuilder.createUserErrorResult(
@@ -163,7 +163,7 @@ public class CreateJndiBindingCommand implements GfshCommand {
     configuration.setUsername(username);
     configuration.setXaDatasource(xaDataSource);
     if (dsConfigProperties != null && dsConfigProperties.length > 0)
-      configuration.setDsConfigurations(Arrays.asList(dsConfigProperties));
+      configuration.setDatasourceConfigurations(Arrays.asList(dsConfigProperties));
 
     ClusterConfigurationService service = getSharedConfiguration();
 
@@ -234,7 +234,7 @@ public class CreateJndiBindingCommand implements GfshCommand {
             configuration.getParamsAsMap().get(key).toString());
     }
 
-    for (ConfigProperty configProperty : configuration.getDsConfigurations()) {
+    for (ConfigProperty configProperty : configuration.getDatasourceConfigurations()) {
       Element configPropertyElement = document.createElement("config-property");
       jndiBinding.appendChild(configPropertyElement);
 
