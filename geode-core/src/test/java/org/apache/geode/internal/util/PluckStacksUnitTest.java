@@ -56,7 +56,7 @@ public class PluckStacksUnitTest {
 
     Map<String, List<PluckStacks.ThreadStack>> dumps =
         new PluckStacks().getThreadDumps(reader, "PluckStacksSystemGeneratedDump.txt");
-    assertEquals(1, dumps.size());
+    assertEquals(3, dumps.size());
     // there should be thread stacks in the list
     assertNotEquals(0, dumps.values().iterator().next().size());
   }

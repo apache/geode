@@ -107,19 +107,6 @@ public class PluckStacksDUnitTest extends JUnit4CacheTestCase {
     }
   }
 
-  @Test
-  public void testPluckingStacksFromJVMGeneratedDump() throws Exception {
-    LineNumberReader reader = new LineNumberReader(
-        new FileReader(TestUtil.getResourcePath(getClass(), "PluckStacksJstackGeneratedDump.txt")));
-
-    Map<String, List<PluckStacks.ThreadStack>> dumps =
-        new PluckStacks().getThreadDumps(reader, "PluckStacksSystemGeneratedDump.txt");
-    assertEquals(1, dumps.size());
-    // there should be thread stacks in the list
-    assertNotEquals(0, dumps.values().iterator().next().size());
-  }
-
-
   private void dumpStacksToFile(Set<DistributedMember> targetMembers, String fileName)
       throws Exception {
     Map<String, byte[]> dumps = new HashMap<>();
