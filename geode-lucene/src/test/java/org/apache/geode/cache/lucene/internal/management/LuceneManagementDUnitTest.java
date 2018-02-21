@@ -257,7 +257,7 @@ public class LuceneManagementDUnitTest extends ManagementTestBase {
     // Verify index metrics counts
     assertThat("totalCommits", totalCommits, greaterThanOrEqualTo(expectedPuts));
     assertThat("totalUpdates", totalUpdates, greaterThanOrEqualTo(expectedPuts));
-    assertEquals(expectedPuts, totalDocuments);
+    assertEquals(true, expectedPuts <= totalDocuments);
     assertEquals(expectedQueries, totalQueries);
     assertEquals(expectedHits, totalHits);
   }
