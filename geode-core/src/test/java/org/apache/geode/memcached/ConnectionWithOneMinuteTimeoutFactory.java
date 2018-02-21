@@ -12,18 +12,14 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
-package org.apache.geode.internal.protocol.protobuf.v1;
+package org.apache.geode.memcached;
 
-import java.util.function.Function;
+import net.spy.memcached.DefaultConnectionFactory;
 
-import org.apache.geode.annotations.Experimental;
-
-@Experimental
-public interface Result<SuccessType> {
-  <T> T map(Function<SuccessType, T> successFunction,
-      Function<ClientProtocol.ErrorResponse, T> errorFunction);
-
-  SuccessType getMessage();
-
-  ClientProtocol.ErrorResponse getErrorMessage();
+public class ConnectionWithOneMinuteTimeoutFactory extends DefaultConnectionFactory {
+  @Override
+  public long getOperationTimeout() {
+    // timeout after a minute
+    return 60 * 1000;
+  }
 }
