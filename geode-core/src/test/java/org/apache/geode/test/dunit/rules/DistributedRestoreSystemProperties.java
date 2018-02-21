@@ -51,11 +51,7 @@ public class DistributedRestoreSystemProperties extends RestoreSystemProperties
       public void run() {
         if (originalProperties == null) {
           originalProperties = getProperties();
-          Properties newProps = new Properties();
-          for (String key : originalProperties.stringPropertyNames()) {
-            newProps.setProperty(key, originalProperties.getProperty(key));
-          }
-          setProperties(newProps);
+          setProperties(new Properties(originalProperties));
         }
       }
     });
