@@ -26,7 +26,6 @@ import org.apache.geode.internal.exception.InvalidExecutionContextException;
 import org.apache.geode.internal.i18n.LocalizedStrings;
 import org.apache.geode.internal.protocol.operations.ProtobufOperationHandler;
 import org.apache.geode.internal.protocol.protobuf.v1.BasicTypes;
-import org.apache.geode.internal.protocol.protobuf.v1.ClientProtocol;
 import org.apache.geode.internal.protocol.protobuf.v1.Failure;
 import org.apache.geode.internal.protocol.protobuf.v1.MessageExecutionContext;
 import org.apache.geode.internal.protocol.protobuf.v1.ProtobufSerializationService;
@@ -41,8 +40,7 @@ public abstract class AbstractFunctionRequestOperationHandler<Req, Resp>
 
 
   @Override
-  public Result<Resp, ClientProtocol.ErrorResponse> process(
-      ProtobufSerializationService serializationService, Req request,
+  public Result<Resp> process(ProtobufSerializationService serializationService, Req request,
       MessageExecutionContext messageExecutionContext)
       throws InvalidExecutionContextException, DecodingException {
 
@@ -50,12 +48,9 @@ public abstract class AbstractFunctionRequestOperationHandler<Req, Resp>
 
     final Function<?> function = FunctionService.getFunction(functionID);
     if (function == null) {
-      return Failure.of(ClientProtocol.ErrorResponse.newBuilder()
-          .setError(BasicTypes.Error.newBuilder().setErrorCode(BasicTypes.ErrorCode.INVALID_REQUEST)
-              .setMessage(LocalizedStrings.ExecuteFunction_FUNCTION_NAMED_0_IS_NOT_REGISTERED
-                  .toLocalizedString(functionID))
-              .build())
-          .build());
+      return Failure.of(BasicTypes.ErrorCode.INVALID_REQUEST,
+          LocalizedStrings.ExecuteFunction_FUNCTION_NAMED_0_IS_NOT_REGISTERED
+              .toLocalizedString(functionID));
     }
 
     final SecurityService securityService = messageExecutionContext.getCache().getSecurityService();
@@ -65,11 +60,8 @@ public abstract class AbstractFunctionRequestOperationHandler<Req, Resp>
       // check security for function.
       function.getRequiredPermissions(regionName).forEach(securityService::authorize);
     } catch (NotAuthorizedException ex) {
-      return Failure.of(ClientProtocol.ErrorResponse.newBuilder()
-          .setError(BasicTypes.Error.newBuilder()
-              .setMessage("Authorization failed for function \"" + functionID + "\"")
-              .setErrorCode(BasicTypes.ErrorCode.AUTHORIZATION_FAILED))
-          .build());
+      return Failure.of(BasicTypes.ErrorCode.AUTHORIZATION_FAILED,
+          "Authorization failed for function \"" + functionID + "\"");
     }
 
     Object executionTarget = getExecutionTarget(request, regionName, messageExecutionContext);
@@ -102,15 +94,10 @@ public abstract class AbstractFunctionRequestOperationHandler<Req, Resp>
         return buildResultMessage(serializationService);
       }
     } catch (FunctionException ex) {
-      return Failure.of(ClientProtocol.ErrorResponse.newBuilder()
-          .setError(BasicTypes.Error.newBuilder().setErrorCode(BasicTypes.ErrorCode.SERVER_ERROR)
-              .setMessage("Function execution failed: " + ex.toString()))
-          .build());
+      return Failure.of(BasicTypes.ErrorCode.SERVER_ERROR,
+          "Function execution failed: " + ex.toString());
     } catch (EncodingException ex) {
-      return Failure.of(ClientProtocol.ErrorResponse.newBuilder()
-          .setError(BasicTypes.Error.newBuilder().setErrorCode(BasicTypes.ErrorCode.SERVER_ERROR)
-              .setMessage("Encoding failed: " + ex.toString()))
-          .build());
+      return Failure.of(BasicTypes.ErrorCode.SERVER_ERROR, "Encoding failed: " + ex.toString());
     }
   }
 
