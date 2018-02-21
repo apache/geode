@@ -293,10 +293,11 @@ public class StartLocatorCommand implements GfshCommand {
     // If the connect succeeds add the connected message to the result,
     // Else, ask the user to use the "connect" command to connect to the Locator.
     if (shouldAutoConnect(connect)) {
-      doAutoConnect(locatorHostName, locatorPort, configProperties, infoResultData);
+      boolean connected =
+          doAutoConnect(locatorHostName, locatorPort, configProperties, infoResultData);
 
       // Report on the state of the Shared Configuration service if enabled...
-      if (enableSharedConfiguration) {
+      if (enableSharedConfiguration && connected) {
         infoResultData.addLine(ClusterConfigurationStatusRetriever.fromLocator(locatorHostName,
             locatorPort, configProperties));
       }
@@ -314,7 +315,7 @@ public class StartLocatorCommand implements GfshCommand {
     return (connect && !isConnectedAndReady());
   }
 
-  private void doAutoConnect(final String locatorHostname, final int locatorPort,
+  private boolean doAutoConnect(final String locatorHostname, final int locatorPort,
       final Properties configurationProperties, final InfoResultData infoResultData) {
     boolean connectSuccess = false;
     boolean jmxManagerAuthEnabled = false;
@@ -375,17 +376,19 @@ public class StartLocatorCommand implements GfshCommand {
       infoResultData.addLine("\n");
       infoResultData.addLine(responseFailureMessage);
     }
-
+    return connectSuccess;
   }
 
   private void doOnConnectionFailure(final String locatorHostName, final int locatorPort,
       final boolean jmxManagerAuthEnabled, final boolean jmxManagerSslEnabled,
       final InfoResultData infoResultData) {
     infoResultData.addLine("\n");
-    infoResultData.addLine(CliStrings.format(CliStrings.START_LOCATOR__USE__0__TO__CONNECT,
-        new CommandStringBuilder(CliStrings.CONNECT)
-            .addOption(CliStrings.CONNECT__LOCATOR, locatorHostName + "[" + locatorPort + "]")
-            .toString()));
+    infoResultData
+        .addLine(CliStrings.format(CliStrings.START_LOCATOR__USE__0__TO__CONNECT_WITH_SECURITY,
+            new CommandStringBuilder(CliStrings.CONNECT)
+                .addOption(CliStrings.CONNECT__LOCATOR, locatorHostName + "[" + locatorPort + "]")
+                .addOption(CliStrings.CONNECT__USERNAME).addOption(CliStrings.CONNECT__PASSWORD)
+                .toString()));
 
     StringBuilder message = new StringBuilder();
 
