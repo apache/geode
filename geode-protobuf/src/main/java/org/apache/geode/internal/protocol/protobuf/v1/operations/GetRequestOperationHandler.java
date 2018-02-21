@@ -53,8 +53,7 @@ public class GetRequestOperationHandler
 
       Object decodedKey = serializationService.decode(request.getKey());
       if (decodedKey == null) {
-        return Failure.of(ProtobufResponseUtilities.makeErrorResponse(
-            BasicTypes.ErrorCode.INVALID_REQUEST, "Performing a get on a NULL key."));
+        return Failure.of(BasicTypes.ErrorCode.INVALID_REQUEST, "Performing a get on a NULL key.");
       }
       Object resultValue = region.get(decodedKey);
 

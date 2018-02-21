@@ -51,8 +51,8 @@ public class RemoveRequestOperationHandler
     try {
       Object decodedKey = serializationService.decode(request.getKey());
       if (decodedKey == null) {
-        return Failure.of(ProtobufResponseUtilities.makeErrorResponse(
-            BasicTypes.ErrorCode.INVALID_REQUEST, "NULL is not a valid key for removal."));
+        return Failure.of(BasicTypes.ErrorCode.INVALID_REQUEST,
+            "NULL is not a valid key for removal.");
       }
       region.remove(decodedKey);
 
