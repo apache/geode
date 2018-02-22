@@ -21,6 +21,7 @@ import static org.hamcrest.Matchers.equalTo;
 import static org.junit.Assert.*;
 
 import java.io.ByteArrayInputStream;
+import java.util.Properties;
 import java.util.concurrent.Callable;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
@@ -86,7 +87,10 @@ public class AutoBalancerIntegrationJUnitTest {
   public void testAutoRebalaceStatsOnLockSuccess() throws InterruptedException {
     assertEquals(0, cache.getInternalResourceManager().getStats().getAutoRebalanceAttempts());
     AutoBalancer balancer = new AutoBalancer();
-    balancer.initialize(cache, null);
+    final String someSchedule = "1 * * * 1 *";
+    final Properties props = new Properties();
+    props.put(AutoBalancer.SCHEDULE, someSchedule);
+    balancer.initialize(cache, props);
     balancer.getOOBAuditor().execute();
     assertEquals(1, cache.getInternalResourceManager().getStats().getAutoRebalanceAttempts());
   }
@@ -96,7 +100,10 @@ public class AutoBalancerIntegrationJUnitTest {
     acquireLockInDifferentThread(1);
     assertEquals(0, cache.getInternalResourceManager().getStats().getAutoRebalanceAttempts());
     AutoBalancer balancer = new AutoBalancer();
-    balancer.initialize(cache, null);
+    final String someSchedule = "1 * * * 1 *";
+    final Properties props = new Properties();
+    props.put(AutoBalancer.SCHEDULE, someSchedule);
+    balancer.initialize(cache, props);
     balancer.getOOBAuditor().execute();
     assertEquals(0, cache.getInternalResourceManager().getStats().getAutoRebalanceAttempts());
   }
