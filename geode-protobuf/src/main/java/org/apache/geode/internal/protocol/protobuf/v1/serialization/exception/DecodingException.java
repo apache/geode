@@ -20,7 +20,7 @@ import org.apache.geode.annotations.Experimental;
  * This indicates an encoding type that we don't know how to handle.
  */
 @Experimental
-public class DecodingException extends Exception {
+public class DecodingException extends RuntimeException {
   public DecodingException(String message) {
     super(message);
   }
