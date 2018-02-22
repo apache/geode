@@ -54,7 +54,6 @@ import org.apache.geode.internal.admin.remote.MissingPersistentIDsRequest;
 import org.apache.geode.internal.admin.remote.PrepareRevokePersistentIDRequest;
 import org.apache.geode.internal.admin.remote.RevokePersistentIDRequest;
 import org.apache.geode.internal.admin.remote.ShutdownAllRequest;
-import org.apache.geode.internal.cache.GemFireCacheImpl;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.cache.backup.BackupDataStoreHelper;
 import org.apache.geode.internal.cache.backup.BackupDataStoreResult;
@@ -145,11 +144,6 @@ public class DistributedSystemBridge {
    * Gateway Receiver Proxy set size
    */
   private volatile int gatewayReceiverSetSize;
-
-  /**
-   * Member MBean for current member
-   */
-  private MemberMXBean thisMember;
 
   /**
    * Cache instance
@@ -264,6 +258,10 @@ public class DistributedSystemBridge {
     this.serverMBeanMonitor = new ServerClusterStatsMonitor();
     this.senderMonitor = new GatewaySenderClusterStatsMonitor();
     this.receiverMonitor = new GatewayReceiverClusterStatsMonitor();
+  }
+
+  public InternalCache getCache() {
+    return cache;
   }
 
   /**
