@@ -62,18 +62,10 @@ public class PRInvalidQueryDUnitTest extends CacheTestCase {
   }
 
   /**
-   * 1. Creates PR regions across with scope = DACK
-   *
-   * <p>
-   * 2. Creates a Local region on one of the VM's
-   *
-   * <p>
-   * 3. Puts in the data in PR region & the Local Region
-   *
-   * <p>
-   * 4. Queries the PR qith an Invalid Query Syntax
-   *
-   * <p>
+   * 1. Creates PR regions across with scope = DACK <br>
+   * 2. Creates a Local region on one of the VM's <br>
+   * 3. Puts in the data in PR region & the Local Region <br>
+   * 4. Queries the PR with an Invalid Query Syntax <br>
    * 5. Verifies that there is an QueryInvalidException
    */
   @Test
