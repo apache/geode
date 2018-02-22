@@ -100,9 +100,9 @@ public class CreateJndiBindingCommand implements GfshCommand {
       "The fully qualified name of the javax.sql.XADataSource implementation class.";
   static final String IFNOTEXISTS__HELP =
       "Skip the create operation when a Jndi binding with the same name already exists. The default is to overwrite the entry (false).";
-  static final String DS_CONFIG_PROPERTIES = "ds-config-properties";
-  static final String DS_CONFIG_PROPERTIES_HELP =
-      "Properties for the custom XSDataSource driver. Append json string containing (name, type, value) to set any property. Eg: --ds-config-properties={'name':'name1','type':'type1','value':'value1'},{'name':'name2','type':'type2','value':'value2'}";
+  static final String DATASOURCE_CONFIG_PROPERTIES = "datasource-config-properties";
+  static final String DATASOURCE_CONFIG_PROPERTIES_HELP =
+      "Properties for the custom XSDataSource driver. Append json string containing (name, type, value) to set any property. Eg: --datasource-config-properties={'name':'name1','type':'type1','value':'value1'},{'name':'name2','type':'type2','value':'value2'}";
 
   @CliCommand(value = CREATE_JNDIBINDING, help = CREATE_JNDIBINDING__HELP)
   @CliMetaData(relatedTopic = CliStrings.TOPIC_GEODE_REGION)
@@ -133,8 +133,8 @@ public class CreateJndiBindingCommand implements GfshCommand {
       @CliOption(key = XA_DATASOURCE_CLASS, help = XA_DATASOURCE_CLASS__HELP) String xaDataSource,
       @CliOption(key = CliStrings.IFNOTEXISTS, help = IFNOTEXISTS__HELP,
           specifiedDefaultValue = "true", unspecifiedDefaultValue = "false") boolean ifNotExists,
-      @CliOption(key = DS_CONFIG_PROPERTIES, optionContext = "splittingRegex=,(?![^{]*\\})",
-          help = DS_CONFIG_PROPERTIES_HELP) ConfigProperty[] dsConfigProperties)
+      @CliOption(key = DATASOURCE_CONFIG_PROPERTIES, optionContext = "splittingRegex=,(?![^{]*\\})",
+          help = DATASOURCE_CONFIG_PROPERTIES_HELP) ConfigProperty[] dsConfigProperties)
       throws IOException, SAXException, ParserConfigurationException, TransformerException {
 
     JndiBindingConfiguration configuration = new JndiBindingConfiguration();
@@ -176,21 +176,19 @@ public class CreateJndiBindingCommand implements GfshCommand {
 
     Set<DistributedMember> targetMembers = findMembers(null, null);
     if (targetMembers.size() > 0) {
-      List<CliFunctionResult> jndiCreationResult =
-          execute(new CreateJndiBindingFunction(), configuration, targetMembers);
+      List<CliFunctionResult> jndiCreationResult = executeAndGetFunctionResult(
+          new CreateJndiBindingFunction(), configuration, targetMembers);
       result = buildResult(jndiCreationResult);
     } else {
-      result = ResultBuilder.createInfoResult("No members found.");
+      if (persisted)
+        result = ResultBuilder.createInfoResult("No members found. Cluster configuration updated.");
+      else
+        result = ResultBuilder.createInfoResult("No members found.");
     }
 
     result.setCommandPersisted(persisted);
 
     return result;
-  }
-
-  List<CliFunctionResult> execute(CreateJndiBindingFunction function,
-      JndiBindingConfiguration configuration, Set<DistributedMember> targetMembers) {
-    return executeAndGetFunctionResult(function, configuration, targetMembers);
   }
 
   boolean isBindingAlreadyExists(String jndiName)

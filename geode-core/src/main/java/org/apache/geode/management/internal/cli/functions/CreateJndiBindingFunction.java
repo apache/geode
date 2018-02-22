@@ -22,7 +22,8 @@ import org.apache.geode.management.internal.cli.i18n.CliStrings;
 
 public class CreateJndiBindingFunction implements InternalFunction<JndiBindingConfiguration> {
 
-  static final String RESULT_MESSAGE = "Tried creating Jndi Binding \"{0}\" created on \"{1}\"";
+  static final String RESULT_MESSAGE =
+      "Initiated jndi binding \"{0}\" on \"{1}\". See server logs to verify.";
 
   @Override
   public void execute(FunctionContext<JndiBindingConfiguration> context) {

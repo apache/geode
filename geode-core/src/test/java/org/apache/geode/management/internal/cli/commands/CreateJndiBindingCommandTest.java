@@ -93,10 +93,10 @@ public class CreateJndiBindingCommandTest {
   public void configPropertyIsProperlyParsed() {
     GfshParseResult result = gfsh.parse(COMMAND
         + " --type=SIMPLE --name=name --jdbc-driver-class=driver --connection-url=url "
-        + "--ds-config-properties={'name':'name1','type':'type1','value':'value1'},{'name':'name2','type':'type2','value':'value2'}");
+        + "--datasource-config-properties={'name':'name1','type':'type1','value':'value1'},{'name':'name2','type':'type2','value':'value2'}");
 
     ConfigProperty[] configProperties =
-        (ConfigProperty[]) result.getParamValue("ds-config-properties");
+        (ConfigProperty[]) result.getParamValue("datasource-config-properties");
     assertThat(configProperties).hasSize(2);
     assertThat(configProperties[0].getValue()).isEqualTo("value1");
     assertThat(configProperties[1].getValue()).isEqualTo("value2");
@@ -340,7 +340,7 @@ public class CreateJndiBindingCommandTest {
 
     gfsh.executeAndAssertThat(command,
         COMMAND
-            + " --type=SIMPLE --name=name --jdbc-driver-class=driver --connection-url=url --ds-config-properties={'name':'name1','type':'type1','value':'value1'}")
+            + " --type=SIMPLE --name=name --jdbc-driver-class=driver --connection-url=url --datasource-config-properties={'name':'name1','type':'type1','value':'value1'}")
         .statusIsSuccess().tableHasColumnOnlyWithValues("Member", "server1")
         .tableHasColumnOnlyWithValues("Status",
             "Tried creating jndi binding \"name\" on \"server1\"");
@@ -383,7 +383,7 @@ public class CreateJndiBindingCommandTest {
 
     gfsh.executeAndAssertThat(command,
         COMMAND
-            + " --type=SIMPLE --name=name --jdbc-driver-class=driver --connection-url=url --ds-config-properties={'name':'name1','type':'type1','value':'value1'}")
+            + " --type=SIMPLE --name=name --jdbc-driver-class=driver --connection-url=url --datasource-config-properties={'name':'name1','type':'type1','value':'value1'}")
         .statusIsSuccess().tableHasColumnOnlyWithValues("Member", "server1")
         .tableHasColumnOnlyWithValues("Status",
             "Tried creating jndi binding \"name\" on \"server1\"");
