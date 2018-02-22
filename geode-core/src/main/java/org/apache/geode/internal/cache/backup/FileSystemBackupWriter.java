@@ -32,54 +32,61 @@ import org.apache.geode.internal.i18n.LocalizedStrings;
 
 public class FileSystemBackupWriter implements BackupWriter {
 
-  private final FileSystemBackupLocation targetBackupDestination;
-
+  private final Path backupDirectory;
   private final FileSystemBackupLocation incrementalBaselineLocation;
-
-  private RestoreScript restoreScript;
+  private final BackupFilter filter;
 
   FileSystemBackupWriter(FileSystemBackupLocation backupDestination) {
-    this.targetBackupDestination = backupDestination;
-    this.incrementalBaselineLocation = null;
+    this(backupDestination, null);
   }
 
   FileSystemBackupWriter(FileSystemBackupLocation backupDestination,
       FileSystemBackupLocation incrementalBaselineLocation) {
-    this.targetBackupDestination = backupDestination;
+    this.backupDirectory = backupDestination.getMemberBackupLocationDir();
     this.incrementalBaselineLocation = incrementalBaselineLocation;
+    filter = createBackupFilter(incrementalBaselineLocation);
+  }
+
+  private BackupFilter createBackupFilter(FileSystemBackupLocation incrementalBaselineLocation) {
+    BackupFilter filter;
+    if (incrementalBaselineLocation != null
+        && Files.exists(incrementalBaselineLocation.getMemberBackupLocationDir())) {
+      filter = new IncrementalBackupFilter(incrementalBaselineLocation);
+    } else {
+      filter = (store, path) -> true;
+    }
+    return filter;
   }
 
   @Override
   public void backupFiles(BackupDefinition backupDefinition) throws IOException {
-    restoreScript = backupDefinition.getRestoreScript();
-    Path backupDir = targetBackupDestination.getMemberBackupLocationDir();
-    Files.createDirectories(backupDir);
-    Files.createFile(backupDir.resolve(INCOMPLETE_BACKUP_FILE));
+    Files.createDirectories(backupDirectory);
+    Files.createFile(backupDirectory.resolve(INCOMPLETE_BACKUP_FILE));
     backupAllFilesets(backupDefinition);
-    Files.delete(backupDir.resolve(INCOMPLETE_BACKUP_FILE));
+    Files.delete(backupDirectory.resolve(INCOMPLETE_BACKUP_FILE));
   }
 
   private void backupAllFilesets(BackupDefinition backupDefinition) throws IOException {
+    RestoreScript restoreScript = backupDefinition.getRestoreScript();
     backupDiskInitFiles(backupDefinition.getDiskInitFiles());
-    backupOplogs(backupDefinition.getOplogFilesByDiskStore());
+    backupOplogs(backupDefinition.getOplogFilesByDiskStore(), restoreScript);
     backupConfigFiles(backupDefinition.getConfigFiles());
-    backupUserFiles(backupDefinition.getUserFiles());
-    backupDeployedJars(backupDefinition.getDeployedJars());
+    backupUserFiles(backupDefinition.getUserFiles(), restoreScript);
+    backupDeployedJars(backupDefinition.getDeployedJars(), restoreScript);
     File scriptFile =
-        restoreScript.generate(targetBackupDestination.getMemberBackupLocationDir().toFile());
+        restoreScript.generate(backupDirectory.toFile());
     backupRestoreScript(scriptFile.toPath());
     writeReadMe();
   }
 
   private void writeReadMe() throws IOException {
     String text = LocalizedStrings.BackupService_README.toLocalizedString();
-    Files.write(targetBackupDestination.getMemberBackupLocationDir().resolve(README_FILE),
+    Files.write(backupDirectory.resolve(README_FILE),
         text.getBytes());
   }
 
   private void backupRestoreScript(Path restoreScriptFile) throws IOException {
-    Files.copy(restoreScriptFile, targetBackupDestination.getMemberBackupLocationDir()
-        .resolve(restoreScriptFile.getFileName()));
+    Files.copy(restoreScriptFile, backupDirectory.resolve(restoreScriptFile.getFileName()));
   }
 
   private void backupDiskInitFiles(Map<DiskStore, Path> diskInitFiles) throws IOException {
@@ -92,9 +99,10 @@ public class FileSystemBackupWriter implements BackupWriter {
     }
   }
 
-  private void backupUserFiles(Map<Path, Path> userFiles) throws IOException {
+  private void backupUserFiles(Map<Path, Path> userFiles, RestoreScript restoreScript)
+      throws IOException {
     Path userDirectory =
-        targetBackupDestination.getMemberBackupLocationDir().resolve(USER_FILES_DIRECTORY);
+        backupDirectory.resolve(USER_FILES_DIRECTORY);
     Files.createDirectories(userDirectory);
 
     for (Map.Entry<Path, Path> userFileEntry : userFiles.entrySet()) {
@@ -102,18 +110,15 @@ public class FileSystemBackupWriter implements BackupWriter {
       Path originalFile = userFileEntry.getValue();
 
       Path destination = userDirectory.resolve(userFile.getFileName());
-      if (Files.isDirectory(userFile)) {
-        FileUtils.moveDirectory(userFile.toFile(), destination.toFile());
-      } else {
-        Files.move(userFile, destination);
-      }
+      moveFileOrDirectory(userFile, destination);
       restoreScript.addUserFile(originalFile.toFile(), destination.toFile());
     }
   }
 
-  private void backupDeployedJars(Map<Path, Path> jarFiles) throws IOException {
+  private void backupDeployedJars(Map<Path, Path> jarFiles, RestoreScript restoreScript)
+      throws IOException {
     Path jarsDirectory =
-        targetBackupDestination.getMemberBackupLocationDir().resolve(DEPLOYED_JARS_DIRECTORY);
+        backupDirectory.resolve(DEPLOYED_JARS_DIRECTORY);
     Files.createDirectories(jarsDirectory);
 
     for (Map.Entry<Path, Path> jarFileEntry : jarFiles.entrySet()) {
@@ -121,38 +126,22 @@ public class FileSystemBackupWriter implements BackupWriter {
       Path originalFile = jarFileEntry.getValue();
 
       Path destination = jarsDirectory.resolve(jarFile.getFileName());
-      if (Files.isDirectory(jarFile)) {
-        FileUtils.moveDirectory(jarFile.toFile(), destination.toFile());
-      } else {
-        Files.move(jarFile, destination);
-      }
+      moveFileOrDirectory(jarFile, destination);
       restoreScript.addFile(originalFile.toFile(), destination.toFile());
     }
   }
 
   private void backupConfigFiles(Collection<Path> configFiles) throws IOException {
     Path configDirectory =
-        targetBackupDestination.getMemberBackupLocationDir().resolve(CONFIG_DIRECTORY);
+        backupDirectory.resolve(CONFIG_DIRECTORY);
     Files.createDirectories(configDirectory);
     moveFilesOrDirectories(configFiles, configDirectory);
   }
 
-
-  private void backupOplogs(Map<DiskStore, Collection<Path>> oplogFiles) throws IOException {
-    if (isFullBackup()) {
-      fullBackup(oplogFiles);
-    } else {
-      incrementalBackup(oplogFiles);
-    }
-  }
-
-  private boolean isFullBackup() {
-    return incrementalBaselineLocation == null
-        || !incrementalBaselineLocation.getMemberBackupLocationDir().toFile().exists();
-  }
-
-  private void fullBackup(Map<DiskStore, Collection<Path>> oplogFiles) throws IOException {
-    File storesDir = new File(targetBackupDestination.getMemberBackupLocationDir().toFile(),
+  // TODO delete method
+  private void fullBackup(Map<DiskStore, Collection<Path>> oplogFiles, RestoreScript restoreScript)
+      throws IOException {
+    File storesDir = new File(backupDirectory.toFile(),
         DATA_STORES_DIRECTORY);
     for (Map.Entry<DiskStore, Collection<Path>> entry : oplogFiles.entrySet()) {
       for (Path path : entry.getValue()) {
@@ -160,8 +149,8 @@ public class FileSystemBackupWriter implements BackupWriter {
         Path backupDir = createOplogBackupDir(entry.getKey(), index);
         backupOplog(backupDir, path);
       }
-      addDiskStoreDirectoriesToRestoreScript((DiskStoreImpl) entry.getKey(),
-          targetBackupDestination.getBackupLocationDir(), restoreScript);
+      // TODO why is this line not in incremental?
+      addDiskStoreDirectoriesToRestoreScript((DiskStoreImpl) entry.getKey(), getBaseBackupDirectory().toFile(), restoreScript);
 
       File targetStoresDir = new File(storesDir, getBackupDirName((DiskStoreImpl) entry.getKey()));
       addDiskStoreDirectoriesToRestoreScript((DiskStoreImpl) entry.getKey(), targetStoresDir,
@@ -169,26 +158,33 @@ public class FileSystemBackupWriter implements BackupWriter {
     }
   }
 
-  private void incrementalBackup(Map<DiskStore, Collection<Path>> oplogFiles) throws IOException {
-    File storesDir = new File(targetBackupDestination.getMemberBackupLocationDir().toFile(),
+  private void backupOplogs(Map<DiskStore, Collection<Path>> oplogFiles,
+      RestoreScript restoreScript) throws IOException {
+    File storesDir = new File(backupDirectory.toFile(),
         DATA_STORES_DIRECTORY);
     for (Map.Entry<DiskStore, Collection<Path>> entry : oplogFiles.entrySet()) {
-      Map<String, File> baselineOplogMap =
-          incrementalBaselineLocation.getBackedUpOplogs(entry.getKey());
+      DiskStoreImpl diskStore = ((DiskStoreImpl) entry.getKey());
+      boolean diskstoreHasFilesInBackup = false;
       for (Path path : entry.getValue()) {
-        int index = ((DiskStoreImpl) entry.getKey()).getInforFileDirIndex();
-        Path backupDir = createOplogBackupDir(entry.getKey(), index);
-        if (!baselineOplogMap.containsKey(path.getFileName().toString())) {
+        if (filter.accept(diskStore, path)) {
+          diskstoreHasFilesInBackup = true;
+          int index = diskStore.getInforFileDirIndex();
+          Path backupDir = createOplogBackupDir(diskStore, index);
           backupOplog(backupDir, path);
         } else {
+          Map<String, File> baselineOplogMap =
+              incrementalBaselineLocation.getBackedUpOplogs(diskStore);
           restoreScript.addBaselineFile(baselineOplogMap.get(path.getFileName().toString()),
               new File(path.toAbsolutePath().getParent().getParent().toFile(),
                   path.getFileName().toString()));
         }
       }
-      File targetStoresDir = new File(storesDir, getBackupDirName((DiskStoreImpl) entry.getKey()));
-      addDiskStoreDirectoriesToRestoreScript((DiskStoreImpl) entry.getKey(), targetStoresDir,
-          restoreScript);
+      if (diskstoreHasFilesInBackup) {
+        addDiskStoreDirectoriesToRestoreScript((DiskStoreImpl) entry.getKey(),
+            getBaseBackupDirectory().toFile(), restoreScript);
+      }
+      File targetStoresDir = new File(storesDir, getBackupDirName(diskStore));
+      addDiskStoreDirectoriesToRestoreScript(diskStore, targetStoresDir, restoreScript);
 
     }
   }
@@ -199,7 +195,7 @@ public class FileSystemBackupWriter implements BackupWriter {
       name = GemFireCacheImpl.getDefaultDiskStoreName();
     }
     name = name + "_" + ((DiskStoreImpl) diskStore).getDiskStoreID().toString();
-    return this.targetBackupDestination.getMemberBackupLocationDir().resolve(DATA_STORES_DIRECTORY)
+    return this.backupDirectory.resolve(DATA_STORES_DIRECTORY)
         .resolve(name).resolve(BACKUP_DIR_PREFIX + index);
   }
 
@@ -235,11 +231,15 @@ public class FileSystemBackupWriter implements BackupWriter {
       throws IOException {
     for (Path userFile : paths) {
       Path destination = targetDirectory.resolve(userFile.getFileName());
-      if (Files.isDirectory(userFile)) {
-        FileUtils.moveDirectory(userFile.toFile(), destination.toFile());
-      } else {
-        Files.move(userFile, destination);
-      }
+      moveFileOrDirectory(userFile, destination);
+    }
+  }
+
+  private void moveFileOrDirectory(Path userFile, Path destination) throws IOException {
+    if (Files.isDirectory(userFile)) {
+      FileUtils.moveDirectory(userFile.toFile(), destination.toFile());
+    } else {
+      Files.move(userFile, destination);
     }
   }
 
@@ -254,5 +254,9 @@ public class FileSystemBackupWriter implements BackupWriter {
 
   private File getBackupDirForCurrentMember(File targetDir, int index) {
     return new File(targetDir, BACKUP_DIR_PREFIX + index);
+  }
+
+  private Path getBaseBackupDirectory() {
+    return backupDirectory.getParent();
   }
 }

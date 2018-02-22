@@ -16,13 +16,22 @@ package org.apache.geode.internal.cache.backup;
 
 import java.io.File;
 import java.io.IOException;
+import java.nio.file.Path;
 import java.util.Map;
 
 import org.apache.geode.cache.DiskStore;
 
-public interface BackupLocation {
+public class IncrementalBackupFilter implements BackupFilter {
 
-  //TODO this is not a valid signature for this interface
-  Map<String, File> getBackedUpOplogs(DiskStore diskStore) throws IOException;
+  private final BackupLocation incrementalBackupLocation;
 
+  IncrementalBackupFilter(BackupLocation incrementalBackupLocation) {
+    this.incrementalBackupLocation = incrementalBackupLocation;
+  }
+
+  @Override
+  public boolean accept(DiskStore diskStore, Path path) throws IOException {
+    Map<String, File> baselineOplogMap = incrementalBackupLocation.getBackedUpOplogs(diskStore);
+    return !baselineOplogMap.containsKey(path.getFileName().toString());
+  }
 }

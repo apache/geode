@@ -135,7 +135,6 @@ public class BackupTask {
       HashSet<PersistentID> persistentIds = finishDiskStoreBackups(backupByDiskStores);
 
       if (!backupByDiskStores.isEmpty()) {
-        // TODO: allow different strategies...
         backupAdditionalFiles();
         BackupDefinition backupDefinition = fileCopier.getBackupDefinition();
         backupDefinition.setRestoreScript(restoreScript);

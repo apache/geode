@@ -81,7 +81,7 @@ public class FileSystemBackupLocationTest {
         diskStoreMemberBackupLocation.resolve(fileBackupLocation.getBackupDirName(diskStore)));
 
     assertThat(fileBackupLocation
-        .getBackedOplogs(fileBackupLocation.getMemberBackupLocationDir().toFile(), diskStore))
+        .getBackedUpOplogs(fileBackupLocation.getMemberBackupLocationDir().toFile(), diskStore))
             .isEmpty();
   }
 
@@ -106,7 +106,7 @@ public class FileSystemBackupLocationTest {
     Path drf = Files.createFile(diskStorePath.resolve("oplog1.drf"));
 
     Collection<File> logFiles = fileBackupLocation
-        .getBackedOplogs(fileBackupLocation.getMemberBackupLocationDir().toFile(), diskStore);
+        .getBackedUpOplogs(fileBackupLocation.getMemberBackupLocationDir().toFile(), diskStore);
     assertThat(logFiles).isNotEmpty();
     assertThat(logFiles).contains(crf.toFile());
     assertThat(logFiles).contains(krf.toFile());
@@ -125,7 +125,7 @@ public class FileSystemBackupLocationTest {
     initializeBackupInspector(fileBackupLocation);
 
     Collection<File> logFiles = fileBackupLocation
-        .getPreviouslyBackedOpLogs(fileBackupLocation.getMemberBackupLocationDir().toFile());
+        .getPreviouslyBackedUpOpLogs(fileBackupLocation.getMemberBackupLocationDir().toFile());
     assertThat(logFiles).isNotEmpty();
   }
 

@@ -31,53 +31,40 @@ import org.apache.geode.internal.util.TransformUtils;
 
 public class FileSystemBackupLocation implements BackupLocation {
 
-  static final String INCOMPLETE_BACKUP_FILE = "INCOMPLETE_BACKUP_FILE";
-
-  private final File backupLocationDir;
+  private static final String INCOMPLETE_BACKUP_FILE = "INCOMPLETE_BACKUP_FILE";
 
   private final Path memberBackupLocationDir;
 
-  private final String memberId;
-
   FileSystemBackupLocation(File backupLocationDir, String memberId) {
-    this.backupLocationDir = backupLocationDir;
-    this.memberId = memberId;
-    this.memberBackupLocationDir = (new File(backupLocationDir, memberId)).toPath();
+    this.memberBackupLocationDir = new File(backupLocationDir, memberId).toPath();
   }
 
   Path getMemberBackupLocationDir() {
     return memberBackupLocationDir;
   }
 
-  File getBackupLocationDir() {
-    return backupLocationDir;
-  }
-
   @Override
   public Map<String, File> getBackedUpOplogs(DiskStore diskStore) throws IOException {
     File checkedBaselineDir = checkBaseline(diskStore);
     if (checkedBaselineDir == null) {
-      return Collections.EMPTY_MAP;
+      return Collections.emptyMap();
     }
-    Collection<File> baselineOplogFiles = getBackedOplogs(checkedBaselineDir, diskStore);
-    baselineOplogFiles.addAll(getPreviouslyBackedOpLogs(checkedBaselineDir));
+    Collection<File> baselineOplogFiles = getBackedUpOplogs(checkedBaselineDir, diskStore);
+    baselineOplogFiles.addAll(getPreviouslyBackedUpOpLogs(checkedBaselineDir));
 
     // Map of baseline oplog file name to oplog file
-    Map<String, File> baselineOplogMap =
-        TransformUtils.transformAndMap(baselineOplogFiles, TransformUtils.fileNameTransformer);
-
-    return baselineOplogMap;
+    return TransformUtils.transformAndMap(baselineOplogFiles, TransformUtils.fileNameTransformer);
   }
 
-  Collection<File> getBackedOplogs(File checkedBaselineDir, DiskStore diskStore) {
+  Collection<File> getBackedUpOplogs(File checkedBaselineDir, DiskStore diskStore) {
     File baselineDir = new File(checkedBaselineDir, BackupWriter.DATA_STORES_DIRECTORY);
     baselineDir = new File(baselineDir, getBackupDirName((DiskStoreImpl) diskStore));
     return FileUtils.listFiles(baselineDir, new String[] {"krf", "drf", "crf"}, true);
   }
 
-  Collection<File> getPreviouslyBackedOpLogs(File checkedBaselineDir) throws IOException {
-    BackupInspector inspector = createBackupInspector(checkedBaselineDir);
-    HashSet<File> oplogs = new HashSet<File>();
+  Collection<File> getPreviouslyBackedUpOpLogs(File checkedBaselineDir) throws IOException {
+    BackupInspector inspector = BackupInspector.createInspector(checkedBaselineDir);
+    HashSet<File> oplogs = new HashSet<>();
     if (inspector.isIncremental() && inspector.getIncrementalOplogFileNames() != null) {
       inspector.getIncrementalOplogFileNames().forEach((oplog) -> {
         oplog = inspector.getCopyFromForOplogFile(oplog);
@@ -102,7 +89,7 @@ public class FileSystemBackupLocation implements BackupLocation {
     if (!baselineDir.exists()) {
       // hmmm, did this member have a restart?
       // Determine which member dir might be a match for us
-      baselineDir = findBaselineForThisMember(backupLocationDir, diskStore);
+      baselineDir = findBaselineForThisMember(memberBackupLocationDir.getParent(), diskStore);
     }
 
     if (null != baselineDir) {
@@ -115,11 +102,11 @@ public class FileSystemBackupLocation implements BackupLocation {
     return baselineDir;
   }
 
-  private File findBaselineForThisMember(File baselineParentDir, DiskStore diskStore) {
+  File findBaselineForThisMember(Path baselineParentDir, DiskStore diskStore) {
     File baselineDir = null;
 
     // Find the first matching DiskStoreId directory for this member.
-    File[] matchingFiles = baselineParentDir
+    File[] matchingFiles = baselineParentDir.toFile()
         .listFiles((file, name) -> name.endsWith(getBackupDirName((DiskStoreImpl) diskStore)));
     // We found it? Good. Set this member's baseline to the backed up disk store's member dir (two
     // levels up).

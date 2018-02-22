@@ -14,15 +14,11 @@
  */
 package org.apache.geode.internal.cache.backup;
 
-import java.io.File;
 import java.io.IOException;
-import java.util.Map;
+import java.nio.file.Path;
 
 import org.apache.geode.cache.DiskStore;
 
-public interface BackupLocation {
-
-  //TODO this is not a valid signature for this interface
-  Map<String, File> getBackedUpOplogs(DiskStore diskStore) throws IOException;
-
+interface BackupFilter {
+  boolean accept(DiskStore diskStore, Path path) throws IOException;
 }
