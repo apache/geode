@@ -23,6 +23,7 @@ import org.apache.geode.DataSerializable;
 /**
  * Extracted from {@link PRCustomPartitioningDUnitTest}.
  */
+@SuppressWarnings("serial")
 class SerializableMonth implements DataSerializable {
 
   private int month;
@@ -43,11 +44,12 @@ class SerializableMonth implements DataSerializable {
 
   @Override
   public int hashCode() {
-    if (month < 4)
+    if (month < 4) {
       return 1;
-    else if (month >= 4 && month < 8)
+    } else if (month < 8) {
       return 2;
-    else
+    } else {
       return 3;
+    }
   }
 }
