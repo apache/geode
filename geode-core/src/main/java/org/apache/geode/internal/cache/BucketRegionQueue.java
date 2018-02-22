@@ -438,6 +438,8 @@ public class BucketRegionQueue extends AbstractBucketRegionQueue {
     }
     if (this.getBucketAdvisor().isPrimary()) {
       incQueueSize(1);
+    } else {
+      incSecondaryQueueSize(1);
     }
   }
 

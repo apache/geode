@@ -220,12 +220,20 @@ public abstract class AbstractBucketRegionQueue extends BucketRegion {
     this.gatewaySenderStats.decQueueSize(size);
   }
 
+  public void decSecondaryQueueSize(int size) {
+    this.gatewaySenderStats.decSecondaryQueueSize(size);
+  }
+
   public void decQueueSize() {
     this.gatewaySenderStats.decQueueSize();
   }
 
   public void incQueueSize(int size) {
     this.gatewaySenderStats.incQueueSize(size);
+  }
+
+  public void incSecondaryQueueSize(int size) {
+    this.gatewaySenderStats.incSecondaryQueueSize(size);
   }
 
   public void incQueueSize() {

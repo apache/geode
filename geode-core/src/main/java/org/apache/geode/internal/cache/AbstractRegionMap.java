@@ -635,6 +635,10 @@ public abstract class AbstractRegionMap
             tombstones.put(tag, newRe);
           } else {
             _getOwner().updateSizeOnCreate(key, _getOwner().calculateRegionEntryValueSize(newRe));
+            if (_getOwner() instanceof BucketRegionQueue) {
+              BucketRegionQueue brq = (BucketRegionQueue) _getOwner();
+              brq.incSecondaryQueueSize(1);
+            }
           }
           incEntryCount(1);
           lruEntryUpdate(newRe);
@@ -660,6 +664,10 @@ public abstract class AbstractRegionMap
         } else {
           _getOwner().updateSizeOnCreate(re.getKey(),
               _getOwner().calculateRegionEntryValueSize(re));
+          if (_getOwner() instanceof BucketRegionQueue) {
+            BucketRegionQueue brq = (BucketRegionQueue) _getOwner();
+            brq.incSecondaryQueueSize(1);
+          }
         }
       }
       incEntryCount(size());
@@ -1043,6 +1051,10 @@ public abstract class AbstractRegionMap
           } finally {
             if (done && result) {
               initialImagePutEntry(newRe);
+              if (owner instanceof BucketRegionQueue) {
+                BucketRegionQueue brq = (BucketRegionQueue) owner;
+                brq.addToEventQueue(key, done, event);
+              }
             }
             if (!done) {
               removeEntry(key, newRe, false);

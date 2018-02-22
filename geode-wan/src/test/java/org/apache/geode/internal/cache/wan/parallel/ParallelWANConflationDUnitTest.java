@@ -62,6 +62,11 @@ public class ParallelWANConflationDUnitTest extends WANTestBase {
 
     vm4.invoke(() -> checkQueueSize("ln", (keyValues.size() + updateKeyValues.size())));
 
+    vm4.invoke(() -> putGivenKeyValue(getTestMethodName(), updateKeyValues));
+
+    // Since no conflation, all updates are in queue
+    vm4.invoke(() -> checkQueueSize("ln", keyValues.size() + 2 * updateKeyValues.size()));
+
     vm2.invoke(() -> validateRegionSize(getTestMethodName(), 0));
 
     resumeSenders();
@@ -86,7 +91,7 @@ public class ParallelWANConflationDUnitTest extends WANTestBase {
     vm6.invoke(() -> createSender("ln", 2, true, 100, 50, false, false, null, true));
     vm7.invoke(() -> createSender("ln", 2, true, 100, 50, false, false, null, true));
 
-    createSenderPRs();
+    createSenderPRs(1);
 
     startSenderInVMs("ln", vm4, vm5, vm6, vm7);
 
@@ -103,24 +108,35 @@ public class ParallelWANConflationDUnitTest extends WANTestBase {
       vm4.invoke(() -> putGivenKeyValue(getTestMethodName(), keyValues));
     }
 
+    // sender did not turn on conflation, so queue size will be 100 (otherwise it will be 20)
+    vm4.invoke(() -> checkQueueSize("ln", 100));
     vm4.invoke(() -> enableConflation("ln"));
     vm5.invoke(() -> enableConflation("ln"));
     vm6.invoke(() -> enableConflation("ln"));
     vm7.invoke(() -> enableConflation("ln"));
 
+    ArrayList<Integer> v4List =
+        (ArrayList<Integer>) vm4.invoke(() -> WANTestBase.getSenderStats("ln", 100));
+    ArrayList<Integer> v5List =
+        (ArrayList<Integer>) vm5.invoke(() -> WANTestBase.getSenderStats("ln", 100));
+    ArrayList<Integer> v6List =
+        (ArrayList<Integer>) vm6.invoke(() -> WANTestBase.getSenderStats("ln", 100));
+    ArrayList<Integer> v7List =
+        (ArrayList<Integer>) vm7.invoke(() -> WANTestBase.getSenderStats("ln", 100));
+    assertTrue("Event in secondary queue should be 100",
+        (v4List.get(10) + v5List.get(10) + v6List.get(10) + v7List.get(10)) == 100);
+
     resumeSenders();
 
-    ArrayList<Integer> v4List =
-        (ArrayList<Integer>) vm4.invoke(() -> WANTestBase.getSenderStats("ln", 0));
-    ArrayList<Integer> v5List =
-        (ArrayList<Integer>) vm5.invoke(() -> WANTestBase.getSenderStats("ln", 0));
-    ArrayList<Integer> v6List =
-        (ArrayList<Integer>) vm6.invoke(() -> WANTestBase.getSenderStats("ln", 0));
-    ArrayList<Integer> v7List =
-        (ArrayList<Integer>) vm7.invoke(() -> WANTestBase.getSenderStats("ln", 0));
+    v4List = (ArrayList<Integer>) vm4.invoke(() -> WANTestBase.getSenderStats("ln", 0));
+    v5List = (ArrayList<Integer>) vm5.invoke(() -> WANTestBase.getSenderStats("ln", 0));
+    v6List = (ArrayList<Integer>) vm6.invoke(() -> WANTestBase.getSenderStats("ln", 0));
+    v7List = (ArrayList<Integer>) vm7.invoke(() -> WANTestBase.getSenderStats("ln", 0));
 
     assertTrue("No events conflated in batch",
         (v4List.get(8) + v5List.get(8) + v6List.get(8) + v7List.get(8)) > 0);
+    assertEquals("Event in secondary queue should be 0 after dispatched", 0,
+        (v4List.get(10) + v5List.get(10) + v6List.get(10) + v7List.get(10)));
 
     vm2.invoke(() -> validateRegionSize(getTestMethodName(), 10));
 
@@ -155,12 +171,14 @@ public class ParallelWANConflationDUnitTest extends WANTestBase {
     vm4.invoke(() -> checkQueueSize("ln", keyValues.size() + updateKeyValues.size())); // creates
                                                                                        // aren't
                                                                                        // conflated
+    validateEventSecondaryQueueSize(keyValues.size() + updateKeyValues.size(), redundancy);
 
     vm4.invoke(() -> putGivenKeyValue(getTestMethodName(), updateKeyValues));
 
-    vm4.invoke(() -> checkQueueSize("ln", keyValues.size() + updateKeyValues.size())); // creates
-                                                                                       // aren't
-                                                                                       // conflated
+    int expectedEventNumAfterConflation = keyValues.size() + updateKeyValues.size();
+    vm4.invoke(() -> checkQueueSize("ln", expectedEventNumAfterConflation));
+
+    validateEventSecondaryQueueSize(expectedEventNumAfterConflation, redundancy);
 
     vm2.invoke(() -> validateRegionSize(getTestMethodName(), 0));
 
@@ -168,6 +186,24 @@ public class ParallelWANConflationDUnitTest extends WANTestBase {
 
     keyValues.putAll(updateKeyValues);
     validateReceiverRegionSize(keyValues);
+
+    // after dispatch, both primary and secondary queues are empty
+    vm4.invoke(() -> checkQueueSize("ln", 0));
+    validateEventSecondaryQueueSize(0, redundancy);
+  }
+
+  private void validateEventSecondaryQueueSize(int expectedNum, int redundancy) {
+    ArrayList<Integer> v4List =
+        (ArrayList<Integer>) vm4.invoke(() -> WANTestBase.getSenderStats("ln", expectedNum));
+    ArrayList<Integer> v5List =
+        (ArrayList<Integer>) vm5.invoke(() -> WANTestBase.getSenderStats("ln", expectedNum));
+    ArrayList<Integer> v6List =
+        (ArrayList<Integer>) vm6.invoke(() -> WANTestBase.getSenderStats("ln", expectedNum));
+    ArrayList<Integer> v7List =
+        (ArrayList<Integer>) vm7.invoke(() -> WANTestBase.getSenderStats("ln", expectedNum));
+    assertTrue("Event in secondary queue should be 100",
+        (v4List.get(10) + v5List.get(10) + v6List.get(10) + v7List.get(10)) == expectedNum
+            * redundancy);
   }
 
   @Test

@@ -718,19 +718,33 @@ public class AsyncEventQueueTestBase extends JUnit4DistributedTestCase {
   }
 
   public static void checkAsyncEventQueueStats(String queueId, final int queueSize,
-      final int eventsReceived, final int eventsQueued, final int eventsDistributed) {
+      int secondaryQueueSize, final int eventsReceived, final int eventsQueued,
+      final int eventsDistributed) {
     Set<AsyncEventQueue> asyncQueues = cache.getAsyncEventQueues();
     AsyncEventQueue queue = null;
+    boolean isParallel = false;
     for (AsyncEventQueue q : asyncQueues) {
+      isParallel = q.isParallel();
       if (q.getId().equals(queueId)) {
         queue = q;
         break;
       }
     }
     final AsyncEventQueueStats statistics = ((AsyncEventQueueImpl) queue).getStatistics();
-    Awaitility.await().atMost(60, TimeUnit.SECONDS)
+    Awaitility.await().atMost(120, TimeUnit.SECONDS)
         .until(() -> assertEquals("Expected queue entries: " + queueSize + " but actual entries: "
             + statistics.getEventQueueSize(), queueSize, statistics.getEventQueueSize()));
+    if (isParallel) {
+      Awaitility.await().atMost(60, TimeUnit.SECONDS).until(() -> {
+        assertEquals(
+            "Expected events in the secondary queue is " + secondaryQueueSize + ", but actual is "
+                + statistics.getEventSecondaryQueueSize(),
+            secondaryQueueSize, statistics.getEventSecondaryQueueSize());
+      });
+    } else {
+      // for serial queue, evenvSecondaryQueueSize is not used
+      assertEquals(0, statistics.getEventSecondaryQueueSize());
+    }
     assertEquals(queueSize, statistics.getEventQueueSize());
     assertEquals(eventsReceived, statistics.getEventsReceived());
     assertEquals(eventsQueued, statistics.getEventsQueued());
