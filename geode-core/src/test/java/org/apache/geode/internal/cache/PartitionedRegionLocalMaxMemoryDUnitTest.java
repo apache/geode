@@ -42,13 +42,14 @@ import org.apache.geode.test.junit.categories.DistributedTest;
 @Category(DistributedTest.class)
 public class PartitionedRegionLocalMaxMemoryDUnitTest extends CacheTestCase {
 
+  private static final String RETRY_TIMEOUT_PROPERTY_VALUE = "20000";
   private static final int LOCAL_MAX_MEMORY = 1;
   private static final long EXPECTED_LOCAL_MAX_MEMORY = LOCAL_MAX_MEMORY * BYTES_PER_MB;
-  private static final String RETRY_TIMEOUT_PROPERTY_VALUE = "20000";
   private static final int REDUNDANCY = 1;
 
   private String regionName;
   private boolean evict;
+
   private VM vm0;
   private VM vm1;
 
@@ -72,15 +73,11 @@ public class PartitionedRegionLocalMaxMemoryDUnitTest extends CacheTestCase {
   }
 
   /**
-   * This test performs following operations<br>
-   *
-   * 1. Create Partition region with LOCAL_MAX_MEMORY = 1MB on all the VMs<br>
-   *
+   * This test performs following operations <br>
+   * 1. Create Partition region with LOCAL_MAX_MEMORY = 1MB on all the VMs <br>
    * 2. Put objects in partition region so that only one bucket gets created and size of that bucket
-   * exceeds LOCAL_MAX_MEMORY<br>
-   *
-   * 3. Put object such that new bucket gets formed<br>
-   *
+   * exceeds LOCAL_MAX_MEMORY <br>
+   * 3. Put object such that new bucket gets formed <br>
    * 4. Test should create a new bucket
    */
   @Test
