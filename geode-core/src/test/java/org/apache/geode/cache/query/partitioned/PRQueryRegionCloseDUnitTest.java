@@ -40,33 +40,37 @@ public class PRQueryRegionCloseDUnitTest extends CacheTestCase {
 
   private static final String PARTITIONED_REGION_NAME = "Portfolios";
   private static final String LOCAL_REGION_NAME = "LocalPortfolios";
-  private static final int CNT = 0;
-  private static final int CNT_DEST = 50;
+  private static final int START_PORTFOLIO_INDEX = 0;
+  private static final int END_PORTFOLIO_INDEX = 50;
   private static final int REDUNDANCY = 1;
   private static final int LOOP_SLEEP_TIME = 500;
   private static final int NUMBER_OF_TEST_LOOPS = 10;
+
+  private Random random;
+  private PortfolioData[] portfolio;
+  private PRQueryDUnitHelper prQueryDUnitHelper;
 
   private VM vm0;
   private VM vm1;
   private VM vm2;
   private List<VM> vmList;
-  private Random random;
-  private PortfolioData[] portfolio;
-  private PRQueryDUnitHelper prQueryDUnitHelper;
 
   @Before
   public void setUp() throws Exception {
     vm0 = getHost(0).getVM(0);
     vm1 = getHost(0).getVM(1);
     vm2 = getHost(0).getVM(2);
-    setCacheInVMs(vm0, vm1, vm2);
+
+    vm0.invoke(() -> PRQueryDUnitHelper.setCache(getCache()));
+    vm1.invoke(() -> PRQueryDUnitHelper.setCache(getCache()));
+    vm2.invoke(() -> PRQueryDUnitHelper.setCache(getCache()));
 
     vmList = new ArrayList<>();
     vmList.add(vm1);
     vmList.add(vm2);
 
     random = new Random();
-    portfolio = createPortfolioData(CNT, CNT_DEST);
+    portfolio = createPortfolioData(START_PORTFOLIO_INDEX, END_PORTFOLIO_INDEX);
     prQueryDUnitHelper = new PRQueryDUnitHelper();
   }
 
@@ -84,18 +88,12 @@ public class PRQueryRegionCloseDUnitTest extends CacheTestCase {
   }
 
   /**
-   * 1. Creates PR regions across with scope = DACK, one accessor node & 2 datastores
-   * <p>
-   * 2. Creates a Local region on one of the VM's
-   * <p>
-   * 3. Puts in the same data both in PR region & the Local Region
-   * <p>
-   * 4. Queries the data both in local & PR
-   * <p>
-   * 5. Also calls Region.close() randomly on one of the datastore VM's with delay
-   * <p>
-   * 6. then recreates the PR on the same VM
-   * <p>
+   * 1. Creates PR regions across with scope = DACK, one accessor node & 2 datastores <br>
+   * 2. Creates a Local region on one of the VM's <br>
+   * 3. Puts in the same data both in PR region & the Local Region <br>
+   * 4. Queries the data both in local & PR <br>
+   * 5. Also calls Region.close() randomly on one of the datastore VM's with delay <br>
+   * 6. then recreates the PR on the same VM <br>
    * 7. Verifies the size, type, and contents of both the resultSets obtained
    */
   @Test
@@ -114,11 +112,11 @@ public class PRQueryRegionCloseDUnitTest extends CacheTestCase {
 
     // Putting the data into the accessor node
     vm0.invoke(prQueryDUnitHelper.getCacheSerializableRunnableForPRPuts(PARTITIONED_REGION_NAME,
-        portfolio, CNT, CNT_DEST));
+        portfolio, START_PORTFOLIO_INDEX, END_PORTFOLIO_INDEX));
 
     // Putting the same data in the local region created
     vm0.invoke(prQueryDUnitHelper.getCacheSerializableRunnableForPRPuts(LOCAL_REGION_NAME,
-        portfolio, CNT, CNT_DEST));
+        portfolio, START_PORTFOLIO_INDEX, END_PORTFOLIO_INDEX));
 
     AsyncInvocation async0 =
         vm0.invokeAsync(prQueryDUnitHelper.getCacheSerializableRunnableForPRQueryAndCompareResults(
@@ -134,11 +132,5 @@ public class PRQueryRegionCloseDUnitTest extends CacheTestCase {
     }
 
     async0.await();
-  }
-
-  private void setCacheInVMs(VM... vms) {
-    for (VM vm : vms) {
-      vm.invoke(() -> PRQueryDUnitHelper.setCache(getCache()));
-    }
   }
 }
