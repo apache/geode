@@ -40,6 +40,7 @@ import org.apache.geode.test.junit.categories.DistributedTest;
  * This class is to test LOCAL_MAX_MEMORY property of partition region while creation of bucket.
  */
 @Category(DistributedTest.class)
+@SuppressWarnings("serial")
 public class PartitionedRegionLocalMaxMemoryDUnitTest extends CacheTestCase {
 
   private static final String RETRY_TIMEOUT_PROPERTY_VALUE = "20000";

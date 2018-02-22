@@ -36,6 +36,7 @@ import org.apache.geode.test.dunit.cache.CacheTestCase;
 import org.apache.geode.test.junit.categories.DistributedTest;
 
 @Category(DistributedTest.class)
+@SuppressWarnings("serial")
 public class PRQueryRegionCloseDUnitTest extends CacheTestCase {
 
   private static final String PARTITIONED_REGION_NAME = "Portfolios";

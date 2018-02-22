@@ -34,20 +34,22 @@ import org.apache.geode.test.dunit.cache.CacheTestCase;
 import org.apache.geode.test.junit.categories.DistributedTest;
 
 @Category(DistributedTest.class)
+@SuppressWarnings("serial")
 public class PRQueryRegionDestroyedDUnitTest extends CacheTestCase {
 
   private static final String PARTITIONED_REGION_NAME = "Portfolios";
   private static final String LOCAL_REGION_NAME = "LocalPortfolios";
-  private static final int CNT = 0;
-  private static final int CNT_DEST = 50;
+  private static final int START_PORTFOLIO_INDEX = 0;
+  private static final int END_PORTFOLIO_INDEX = 50;
   private static final int REDUNDANCY = 1;
+
+  private PortfolioData[] portfolio;
+  private PRQueryDUnitHelper prQueryDUnitHelper;
 
   private VM vm0;
   private VM vm1;
   private VM vm2;
   private VM vm3;
-  private PortfolioData[] portfolio;
-  private PRQueryDUnitHelper prQueryDUnitHelper;
 
   @Before
   public void setUp() throws Exception {
@@ -55,9 +57,13 @@ public class PRQueryRegionDestroyedDUnitTest extends CacheTestCase {
     vm1 = getHost(0).getVM(1);
     vm2 = getHost(0).getVM(2);
     vm3 = getHost(0).getVM(3);
-    setCacheInVMs(vm0, vm1, vm2, vm3);
 
-    portfolio = createPortfolioData(CNT, CNT_DEST);
+    vm0.invoke(() -> PRQueryDUnitHelper.setCache(getCache()));
+    vm1.invoke(() -> PRQueryDUnitHelper.setCache(getCache()));
+    vm2.invoke(() -> PRQueryDUnitHelper.setCache(getCache()));
+    vm3.invoke(() -> PRQueryDUnitHelper.setCache(getCache()));
+
+    portfolio = createPortfolioData(START_PORTFOLIO_INDEX, END_PORTFOLIO_INDEX);
     prQueryDUnitHelper = new PRQueryDUnitHelper();
   }
 
@@ -108,11 +114,11 @@ public class PRQueryRegionDestroyedDUnitTest extends CacheTestCase {
 
     // Putting the data into the accessor node
     vm0.invoke(prQueryDUnitHelper.getCacheSerializableRunnableForPRPuts(PARTITIONED_REGION_NAME,
-        portfolio, CNT, CNT_DEST));
+        portfolio, START_PORTFOLIO_INDEX, END_PORTFOLIO_INDEX));
 
     // Putting the same data in the local region created
     vm0.invoke(prQueryDUnitHelper.getCacheSerializableRunnableForPRPuts(LOCAL_REGION_NAME,
-        portfolio, CNT, CNT_DEST));
+        portfolio, START_PORTFOLIO_INDEX, END_PORTFOLIO_INDEX));
 
     // Execute query first time. This is to make sure all the buckets are created
     // (lazy bucket creation).
@@ -132,11 +138,5 @@ public class PRQueryRegionDestroyedDUnitTest extends CacheTestCase {
         PARTITIONED_REGION_NAME, REDUNDANCY, PortfolioData.class));
 
     async0.await();
-  }
-
-  private void setCacheInVMs(VM... vms) {
-    for (VM vm : vms) {
-      vm.invoke(() -> PRQueryDUnitHelper.setCache(getCache()));
-    }
   }
 }

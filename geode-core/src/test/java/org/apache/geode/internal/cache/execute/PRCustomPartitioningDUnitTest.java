@@ -44,6 +44,7 @@ import org.apache.geode.test.junit.categories.DistributedTest;
  * TODO: move to cache package
  */
 @Category(DistributedTest.class)
+@SuppressWarnings("serial")
 public class PRCustomPartitioningDUnitTest extends CacheTestCase {
 
   private static final int TOTAL_NUM_BUCKETS = 7;
