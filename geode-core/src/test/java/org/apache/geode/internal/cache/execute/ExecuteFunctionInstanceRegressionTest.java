@@ -46,11 +46,11 @@ import org.apache.geode.test.junit.categories.DistributedTest;
  * <pre>
  * FunctionService.registerFunction(new FunctionAdapter() {
  *   private final Integer state = 1;
- * 
+ *
  *   public String getId() {
  *     return "f1";
  *   }
- * 
+ *
  *   public void execute(FunctionContext fc) {}
  * });
  * </pre>
@@ -60,11 +60,11 @@ import org.apache.geode.test.junit.categories.DistributedTest;
  * <pre>
  * FunctionService.onRegion(r).execute(new FunctionAdapter() {
  *   private final Integer state = 2;
- * 
+ *
  *   public String getId() {
  *     return "f1";
  *   }
- * 
+ *
  *   public void execute(FunctionContext fc) {}
  * });
  * </pre>
