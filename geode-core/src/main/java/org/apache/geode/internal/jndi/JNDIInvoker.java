@@ -18,6 +18,7 @@ import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Hashtable;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
@@ -357,6 +358,18 @@ public class JNDIInvoker {
         writer.info(
             LocalizedStrings.JNDIInvoker_JNDIINVOKER_MAPDATASOURCE_0_WHILE_BINDING_1_TO_JNDI_CONTEXT,
             new Object[] {"DataSourceCreateException", jndiName});
+    }
+  }
+
+  public static void unMapDatasource(String jndiName) throws NamingException {
+    ctx.unbind("java:/" + jndiName);
+    for (Iterator it = dataSourceList.iterator(); it.hasNext();) {
+      Object obj = it.next();
+      if (obj instanceof AbstractDataSource)
+        ((AbstractDataSource) obj).clearUp();
+      else if (obj instanceof ClientConnectionFactoryWrapper)
+        ((ClientConnectionFactoryWrapper) obj).clearUp();
+      it.remove();
     }
   }
 

@@ -162,7 +162,9 @@ public class CreateJndiBindingCommand implements GfshCommand {
     ClusterConfigurationService service = getSharedConfiguration();
 
     if (service != null) {
-      if (isBindingAlreadyExists(jndiName))
+      Element existingBinding =
+          service.getXmlElement("cluster", "jndi-binding", "jndi-name", jndiName);
+      if (existingBinding != null)
         throw new EntityExistsException(
             CliStrings.format("Jndi binding with jndi-name \"{0}\" already exists.", jndiName),
             ifNotExists);
@@ -187,26 +189,6 @@ public class CreateJndiBindingCommand implements GfshCommand {
     result.setCommandPersisted(persisted);
 
     return result;
-  }
-
-  boolean isBindingAlreadyExists(String jndiName)
-      throws IOException, SAXException, ParserConfigurationException {
-
-    Configuration config = getSharedConfiguration().getConfiguration("cluster");
-
-    Document document = XmlUtils.createDocumentFromXml(config.getCacheXmlContent());
-    NodeList jndiBindings = document.getElementsByTagName("jndi-binding");
-
-    if (jndiBindings == null || jndiBindings.getLength() == 0) {
-      return false;
-    } else {
-      for (int i = 0; i < jndiBindings.getLength(); i++) {
-        Element eachBinding = (Element) jndiBindings.item(i);
-        if (eachBinding.getAttribute("jndi-name").equals(jndiName))
-          return true;
-      }
-    }
-    return false;
   }
 
   void updateXml(JndiBindingConfiguration configuration)
