@@ -516,6 +516,7 @@ org/apache/geode/management/internal/cli/functions/CreateAsyncEventQueueFunction
 org/apache/geode/management/internal/cli/functions/CreateDefinedIndexesFunction,true,1
 org/apache/geode/management/internal/cli/functions/CreateDiskStoreFunction,true,1
 org/apache/geode/management/internal/cli/functions/CreateIndexFunction,true,1
+org/apache/geode/management/internal/cli/functions/CreateJndiBindingFunction,false
 org/apache/geode/management/internal/cli/functions/DataCommandFunction,true,1,optimizeForWrite:boolean
 org/apache/geode/management/internal/cli/functions/DeployFunction,true,1
 org/apache/geode/management/internal/cli/functions/DescribeDiskStoreFunction,false
@@ -544,6 +545,8 @@ org/apache/geode/management/internal/cli/functions/GetRegionsFunction,true,1
 org/apache/geode/management/internal/cli/functions/GetStackTracesFunction,true,1
 org/apache/geode/management/internal/cli/functions/GetSubscriptionQueueSizeFunction,true,1
 org/apache/geode/management/internal/cli/functions/ImportDataFunction,true,1
+org/apache/geode/management/internal/cli/functions/JndiBindingConfiguration,false,blockingTimeout:java/lang/Integer,connectionPoolDatasource:java/lang/String,connectionUrl:java/lang/String,datasourceConfigurations:java/util/List,idleTimeout:java/lang/Integer,initPoolSize:java/lang/Integer,jdbcDriver:java/lang/String,jndiName:java/lang/String,loginTimeout:java/lang/Integer,managedConnFactory:java/lang/String,maxPoolSize:java/lang/Integer,password:java/lang/String,transactionType:java/lang/String,type:org/apache/geode/management/internal/cli/functions/JndiBindingConfiguration$DATASOURCE_TYPE,username:java/lang/String,xaDatasource:java/lang/String
+org/apache/geode/management/internal/cli/functions/JndiBindingConfiguration$DATASOURCE_TYPE,false,type:java/lang/String
 org/apache/geode/management/internal/cli/functions/ListAsyncEventQueuesFunction,true,1
 org/apache/geode/management/internal/cli/functions/ListDeployedFunction,true,1
 org/apache/geode/management/internal/cli/functions/ListDiskStoresFunction,false

@@ -137,15 +137,6 @@ public class CreateJndiBindingCommand implements GfshCommand {
           help = DS_CONFIG_PROPERTIES_HELP) ConfigProperty[] dsConfigProperties)
       throws IOException, SAXException, ParserConfigurationException, TransformerException {
 
-    boolean alreadyExists = isBindingAlreadyExists(jndiName);
-    if (alreadyExists && ifNotExists)
-      return ResultBuilder.createInfoResult(CliStrings.format(
-          "Skipping creation of Jndi Binding with jndi-name \"{0}\" as it already exists.",
-          jndiName));
-    else if (alreadyExists)
-      return ResultBuilder.createUserErrorResult(
-          CliStrings.format("JNDI Binding with jndi-name \"{0}\" already exists.", jndiName));
-
     JndiBindingConfiguration configuration = new JndiBindingConfiguration();
     configuration.setBlockingTimeout(blockingTimeout);
     configuration.setConnectionPoolDatasource(connectionPooledDatasource);
@@ -165,24 +156,36 @@ public class CreateJndiBindingCommand implements GfshCommand {
     if (dsConfigProperties != null && dsConfigProperties.length > 0)
       configuration.setDatasourceConfigurations(Arrays.asList(dsConfigProperties));
 
+    Result result;
+    boolean persisted = false;
     ClusterConfigurationService service = getSharedConfiguration();
 
-    if (service == null) {
-      return ResultBuilder.createUserErrorResult("Cluster Configuration Service is not available. "
-          + "Please connect to a locator with running Cluster Configuration Service.");
-    }
+    if (service != null) {
+      boolean alreadyExists = isBindingAlreadyExists(jndiName);
+      if (alreadyExists && ifNotExists)
+        return ResultBuilder.createInfoResult(CliStrings.format(
+            "Skipping creation of Jndi Binding with jndi-name \"{0}\" as it already exists.",
+            jndiName));
+      else if (alreadyExists)
+        return ResultBuilder.createUserErrorResult(
+            CliStrings.format("JNDI Binding with jndi-name \"{0}\" already exists.", jndiName));
 
-    updateXml(configuration);
+      updateXml(configuration);
+      persisted = true;
+    }
 
     Set<DistributedMember> targetMembers = findMembers(null, null);
     if (targetMembers.size() > 0) {
       List<CliFunctionResult> jndiCreationResult =
           execute(new CreateJndiBindingFunction(), configuration, targetMembers);
-      return buildResult(jndiCreationResult);
+      result = buildResult(jndiCreationResult);
+    } else {
+      result = ResultBuilder.createInfoResult("No members found.");
     }
 
-    return ResultBuilder
-        .createInfoResult(CliStrings.format("jndi-binding \"{0}\" created.", jndiName));
+    result.setCommandPersisted(persisted);
+
+    return result;
   }
 
   List<CliFunctionResult> execute(CreateJndiBindingFunction function,

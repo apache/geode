@@ -105,7 +105,11 @@ public class CreateJndiBindingCommandTest {
   @Test
   public void returnsErrorIfBindingAlreadyExistsAndIfUnspecified()
       throws ParserConfigurationException, SAXException, IOException {
+    ClusterConfigurationService clusterConfigService = mock(ClusterConfigurationService.class);
+
+    doReturn(clusterConfigService).when(command).getSharedConfiguration();
     doReturn(true).when(command).isBindingAlreadyExists(any());
+
     gfsh.executeAndAssertThat(command,
         COMMAND + " --type=SIMPLE --name=name --jdbc-driver-class=driver --connection-url=url")
         .statusIsError().containsOutput("already exists.");
@@ -114,7 +118,11 @@ public class CreateJndiBindingCommandTest {
   @Test
   public void skipsIfBindingAlreadyExistsAndIfSpecified()
       throws ParserConfigurationException, SAXException, IOException {
+    ClusterConfigurationService clusterConfigService = mock(ClusterConfigurationService.class);
+
+    doReturn(clusterConfigService).when(command).getSharedConfiguration();
     doReturn(true).when(command).isBindingAlreadyExists(any());
+
     gfsh.executeAndAssertThat(command,
         COMMAND
             + " --type=SIMPLE --name=name --jdbc-driver-class=driver --connection-url=url --if-not-exists")
@@ -124,7 +132,11 @@ public class CreateJndiBindingCommandTest {
   @Test
   public void skipsIfBindingAlreadyExistsAndIfSpecifiedTrue()
       throws ParserConfigurationException, SAXException, IOException {
+    ClusterConfigurationService clusterConfigService = mock(ClusterConfigurationService.class);
+
+    doReturn(clusterConfigService).when(command).getSharedConfiguration();
     doReturn(true).when(command).isBindingAlreadyExists(any());
+
     gfsh.executeAndAssertThat(command,
         COMMAND
             + " --type=SIMPLE --name=name --jdbc-driver-class=driver --connection-url=url --if-not-exists=true")
@@ -134,7 +146,11 @@ public class CreateJndiBindingCommandTest {
   @Test
   public void returnsErrorIfBindingAlreadyExistsAndIfSpecifiedFalse()
       throws ParserConfigurationException, SAXException, IOException {
+    ClusterConfigurationService clusterConfigService = mock(ClusterConfigurationService.class);
+
+    doReturn(clusterConfigService).when(command).getSharedConfiguration();
     doReturn(true).when(command).isBindingAlreadyExists(any());
+
     gfsh.executeAndAssertThat(command,
         COMMAND
             + " --type=SIMPLE --name=name --jdbc-driver-class=driver --connection-url=url --if-not-exists=false")
@@ -286,7 +302,8 @@ public class CreateJndiBindingCommandTest {
 
     gfsh.executeAndAssertThat(command,
         COMMAND + " --type=SIMPLE --name=name --jdbc-driver-class=driver --connection-url=url")
-        .statusIsError().containsOutput("Cluster Configuration Service is not available");
+        // .statusIsSuccess().containsOutput("Cluster Configuration Service is not available")
+        .statusIsSuccess().containsOutput("No members found").hasFailToPersistError();
   }
 
   @Test
@@ -305,13 +322,55 @@ public class CreateJndiBindingCommandTest {
   }
 
   @Test
+  public void whenMembersFoundAndNoClusterConfigRunningThenOnlyInvokeFunction()
+      throws IOException, ParserConfigurationException, SAXException, TransformerException {
+    Set<DistributedMember> members = new HashSet<>();
+    members.add(mock(DistributedMember.class));
+
+    CliFunctionResult result = new CliFunctionResult("server1", true,
+        "Tried creating jndi binding \"name\" on \"server1\"");
+    List<CliFunctionResult> results = new ArrayList<>();
+    results.add(result);
+    ClusterConfigurationService clusterConfigService = mock(ClusterConfigurationService.class);
+
+    doReturn(members).when(command).findMembers(any(), any());
+    doReturn(false).when(command).isBindingAlreadyExists(any());
+    doReturn(null).when(command).getSharedConfiguration();
+    doReturn(results).when(command).executeAndGetFunctionResult(any(), any(), any());
+
+    gfsh.executeAndAssertThat(command,
+        COMMAND
+            + " --type=SIMPLE --name=name --jdbc-driver-class=driver --connection-url=url --ds-config-properties={'name':'name1','type':'type1','value':'value1'}")
+        .statusIsSuccess().tableHasColumnOnlyWithValues("Member", "server1")
+        .tableHasColumnOnlyWithValues("Status",
+            "Tried creating jndi binding \"name\" on \"server1\"");
+
+    verify(command, times(0)).updateXml(any());
+
+    ArgumentCaptor<CreateJndiBindingFunction> function =
+        ArgumentCaptor.forClass(CreateJndiBindingFunction.class);
+    ArgumentCaptor<JndiBindingConfiguration> jndiConfig =
+        ArgumentCaptor.forClass(JndiBindingConfiguration.class);
+    ArgumentCaptor<Set<DistributedMember>> targetMembers = ArgumentCaptor.forClass(Set.class);
+    verify(command, times(1)).executeAndGetFunctionResult(function.capture(), jndiConfig.capture(),
+        targetMembers.capture());
+
+    assertThat(function.getValue()).isInstanceOf(CreateJndiBindingFunction.class);
+    assertThat(jndiConfig.getValue()).isNotNull();
+    assertThat(jndiConfig.getValue().getJndiName()).isEqualTo("name");
+    assertThat(jndiConfig.getValue().getDatasourceConfigurations().get(0).getName())
+        .isEqualTo("name1");
+    assertThat(targetMembers.getValue()).isEqualTo(members);
+  }
+
+  @Test
   public void whenMembersFoundAndClusterConfigRunningThenUpdateClusterConfigAndInvokeFunction()
       throws IOException, ParserConfigurationException, SAXException, TransformerException {
     Set<DistributedMember> members = new HashSet<>();
     members.add(mock(DistributedMember.class));
 
-    CliFunctionResult result =
-        new CliFunctionResult("server1", true, "Jndi Binding \"name\" created on \"server1\"");
+    CliFunctionResult result = new CliFunctionResult("server1", true,
+        "Tried creating jndi binding \"name\" on \"server1\"");
     List<CliFunctionResult> results = new ArrayList<>();
     results.add(result);
     ClusterConfigurationService clusterConfigService = mock(ClusterConfigurationService.class);
@@ -326,7 +385,8 @@ public class CreateJndiBindingCommandTest {
         COMMAND
             + " --type=SIMPLE --name=name --jdbc-driver-class=driver --connection-url=url --ds-config-properties={'name':'name1','type':'type1','value':'value1'}")
         .statusIsSuccess().tableHasColumnOnlyWithValues("Member", "server1")
-        .tableHasColumnOnlyWithValues("Status", "Jndi Binding \"name\" created on \"server1\"");
+        .tableHasColumnOnlyWithValues("Status",
+            "Tried creating jndi binding \"name\" on \"server1\"");
 
     verify(command, times(1)).updateXml(any());
 
