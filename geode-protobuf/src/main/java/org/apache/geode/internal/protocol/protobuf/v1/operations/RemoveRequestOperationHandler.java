@@ -43,8 +43,9 @@ public class RemoveRequestOperationHandler
     String regionName = request.getRegionName();
     Region region = messageExecutionContext.getCache().getRegion(regionName);
     if (region == null) {
-      logger.error("Received Remove request for non-existing region {}", regionName);
-      return Failure.of(BasicTypes.ErrorCode.SERVER_ERROR, "Region not found");
+      logger.error("Received remove request for nonexistent region: {}", regionName);
+      return Failure.of(BasicTypes.ErrorCode.SERVER_ERROR,
+          "Region \"" + regionName + "\" not found");
     }
 
     long startTime = messageExecutionContext.getStatistics().startOperation();
