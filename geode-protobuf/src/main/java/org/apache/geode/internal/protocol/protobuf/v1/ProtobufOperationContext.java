@@ -24,7 +24,21 @@ public class ProtobufOperationContext<OperationRequest, OperationResponse> {
   private final Function<ClientProtocol.Message, OperationRequest> fromRequest;
   private final Function<OperationResponse, ClientProtocol.Message.Builder> toResponse;
   private final Function<ClientProtocol.ErrorResponse, ClientProtocol.Message.Builder> toErrorResponse;
-  private final ResourcePermission accessPermissionRequired;
+  private final Function<OperationRequest, ResourcePermission> accessPermissionRequired;
+
+  private class StaticResourcePermissionProvider
+      implements Function<OperationRequest, ResourcePermission> {
+    private final ResourcePermission permission;
+
+    StaticResourcePermissionProvider(ResourcePermission requiredPermission) {
+      permission = requiredPermission;
+    }
+
+    @Override
+    public ResourcePermission apply(OperationRequest request) {
+      return permission;
+    }
+  }
 
   public ProtobufOperationContext(Function<ClientProtocol.Message, OperationRequest> fromRequest,
       ProtobufOperationHandler<OperationRequest, OperationResponse> operationHandler,
@@ -34,8 +48,20 @@ public class ProtobufOperationContext<OperationRequest, OperationResponse> {
     this.fromRequest = fromRequest;
     this.toResponse = toResponse;
     this.toErrorResponse = this::makeErrorBuilder;
+    accessPermissionRequired = new StaticResourcePermissionProvider(permissionRequired);
+  }
+
+  public ProtobufOperationContext(Function<ClientProtocol.Message, OperationRequest> fromRequest,
+      ProtobufOperationHandler<OperationRequest, OperationResponse> operationHandler,
+      Function<OperationResponse, ClientProtocol.Message.Builder> toResponse,
+      Function<OperationRequest, ResourcePermission> permissionRequired) {
+    this.operationHandler = operationHandler;
+    this.fromRequest = fromRequest;
+    this.toResponse = toResponse;
+    this.toErrorResponse = this::makeErrorBuilder;
     accessPermissionRequired = permissionRequired;
   }
+
 
   protected ClientProtocol.Message.Builder makeErrorBuilder(
       ClientProtocol.ErrorResponse errorResponse) {
@@ -58,7 +84,7 @@ public class ProtobufOperationContext<OperationRequest, OperationResponse> {
     return toErrorResponse;
   }
 
-  public ResourcePermission getAccessPermissionRequired() {
-    return accessPermissionRequired;
+  public ResourcePermission getAccessPermissionRequired(OperationRequest request) {
+    return accessPermissionRequired.apply(request);
   }
 }

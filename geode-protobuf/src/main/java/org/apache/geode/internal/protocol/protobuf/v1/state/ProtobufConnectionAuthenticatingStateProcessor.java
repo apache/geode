@@ -35,7 +35,7 @@ public class ProtobufConnectionAuthenticatingStateProcessor
   }
 
   @Override
-  public void validateOperation(MessageExecutionContext messageContext,
+  public void validateOperation(Object request, MessageExecutionContext messageContext,
       ProtobufOperationContext operationContext) throws ConnectionStateException {
     if (!(operationContext
         .getOperationHandler() instanceof AuthenticationRequestOperationHandler)) {

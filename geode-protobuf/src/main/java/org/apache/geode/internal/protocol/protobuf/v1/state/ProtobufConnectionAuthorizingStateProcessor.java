@@ -37,11 +37,11 @@ public class ProtobufConnectionAuthorizingStateProcessor
   }
 
   @Override
-  public void validateOperation(MessageExecutionContext messageContext,
+  public void validateOperation(Object request, MessageExecutionContext messageContext,
       ProtobufOperationContext operationContext) throws ConnectionStateException {
     ThreadState threadState = securityService.bindSubject(subject);
     try {
-      securityService.authorize(operationContext.getAccessPermissionRequired());
+      securityService.authorize(operationContext.getAccessPermissionRequired(request));
     } catch (NotAuthorizedException e) {
       messageContext.getStatistics().incAuthorizationViolations();
       throw new OperationNotAuthorizedException(BasicTypes.ErrorCode.AUTHORIZATION_FAILED,

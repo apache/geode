@@ -22,7 +22,7 @@ import org.apache.geode.internal.protocol.protobuf.v1.state.exception.Connection
 public class ProtobufConnectionTerminatingStateProcessor
     implements ProtobufConnectionStateProcessor {
   @Override
-  public void validateOperation(MessageExecutionContext messageContext,
+  public void validateOperation(Object request, MessageExecutionContext messageContext,
       ProtobufOperationContext operationContext) throws ConnectionStateException {
     throw new ConnectionStateException(BasicTypes.ErrorCode.SERVER_ERROR,
         "This connection has been marked as terminating.");

@@ -22,7 +22,7 @@ import org.apache.geode.internal.protocol.protobuf.v1.state.exception.Connection
 public class NoSecurityProtobufConnectionStateProcessor
     implements ProtobufConnectionStateProcessor {
   @Override
-  public void validateOperation(MessageExecutionContext messageContext,
+  public void validateOperation(Object request, MessageExecutionContext messageContext,
       ProtobufOperationContext operationContext) throws ConnectionStateException {}
 
   public ProtobufConnectionAuthenticatingStateProcessor allowAuthentication()

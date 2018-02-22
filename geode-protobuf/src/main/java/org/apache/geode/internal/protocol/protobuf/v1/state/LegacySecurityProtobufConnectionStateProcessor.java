@@ -22,7 +22,7 @@ import org.apache.geode.internal.protocol.protobuf.v1.state.exception.Connection
 public class LegacySecurityProtobufConnectionStateProcessor
     implements ProtobufConnectionStateProcessor {
   @Override
-  public void validateOperation(MessageExecutionContext messageContext,
+  public void validateOperation(Object request, MessageExecutionContext messageContext,
       ProtobufOperationContext operationContext) throws ConnectionStateException {
     throw new ConnectionStateException(BasicTypes.ErrorCode.AUTHENTICATION_FAILED,
         "Attempting to authenticate incoming protobuf message using legacy security implementation. This is not supported. Failing authentication.");

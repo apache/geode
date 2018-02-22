@@ -35,7 +35,7 @@ public interface ProtobufConnectionStateProcessor {
    *         connection is in the state contained in the provided messageContext. Otherwise, does
    *         nothing.
    */
-  void validateOperation(MessageExecutionContext messageContext,
+  void validateOperation(Object request, MessageExecutionContext messageContext,
       ProtobufOperationContext operationContext) throws ConnectionStateException;
 
   /**
