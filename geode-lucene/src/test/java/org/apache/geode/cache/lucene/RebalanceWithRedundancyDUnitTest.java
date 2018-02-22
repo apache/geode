@@ -14,9 +14,10 @@
  */
 package org.apache.geode.cache.lucene;
 
-import static org.apache.geode.cache.lucene.test.IndexRepositorySpy.*;
-import static org.apache.geode.cache.lucene.test.LuceneTestUtilities.*;
-import static org.junit.Assert.*;
+import static org.apache.geode.cache.lucene.test.IndexRepositorySpy.doAfterN;
+import static org.apache.geode.cache.lucene.test.LuceneTestUtilities.INDEX_NAME;
+import static org.apache.geode.cache.lucene.test.LuceneTestUtilities.REGION_NAME;
+import static org.junit.Assert.assertTrue;
 
 import java.io.Serializable;
 import java.util.concurrent.CountDownLatch;
