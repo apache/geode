@@ -33,7 +33,9 @@ import org.eclipse.jetty.webapp.WebAppContext;
 
 import org.apache.geode.GemFireConfigException;
 import org.apache.geode.internal.admin.SSLConfig;
+import org.apache.geode.internal.cache.GemFireCacheImpl;
 import org.apache.geode.internal.logging.LogService;
+import org.apache.geode.internal.security.SecurityService;
 
 /**
  * @since GemFire 8.1
@@ -53,6 +55,9 @@ public class JettyHelper {
   private static String bindAddress = "0.0.0.0";
 
   private static int port = 0;
+
+  public static final String SECURITY_SERVICE_SERVLET_CONTEXT_PARAM =
+      "org.apache.geode.securityService";
 
   public static Server initJetty(final String bindAddress, final int port, SSLConfig sslConfig) {
 
@@ -152,12 +157,13 @@ public class JettyHelper {
   }
 
   public static Server addWebApplication(final Server jetty, final String webAppContext,
-      final String warFilePath) {
+      final String warFilePath, SecurityService securityService) {
     WebAppContext webapp = new WebAppContext();
     webapp.setContextPath(webAppContext);
     webapp.setWar(warFilePath);
     webapp.setParentLoaderPriority(false);
     webapp.setInitParameter("org.eclipse.jetty.servlet.Default.dirAllowed", "false");
+    webapp.setAttribute(SECURITY_SERVICE_SERVLET_CONTEXT_PARAM, securityService);
 
     File tmpPath = new File(getWebAppBaseDirectory(webAppContext));
     tmpPath.mkdirs();
@@ -189,28 +195,6 @@ public class JettyHelper {
 
   private static String normalizeWebAppContext(final String webAppContext) {
     return (webAppContext.startsWith("/") ? webAppContext : "/" + webAppContext);
-  }
-
-  public static void main(final String... args) throws Exception {
-    if (args.length > 1) {
-      System.out.printf("Temporary Directory @ ($1%s)%n", USER_DIR);
-
-      final Server jetty = JettyHelper.initJetty(null, 8090, new SSLConfig());
-
-      for (int index = 0; index < args.length; index += 2) {
-        final String webAppContext = args[index];
-        final String webAppArchivePath = args[index + 1];
-
-        JettyHelper.addWebApplication(jetty, normalizeWebAppContext(webAppContext),
-            normalizeWebAppArchivePath(webAppArchivePath));
-      }
-
-      JettyHelper.startJetty(jetty);
-      latch.await();
-    } else {
-      System.out.printf(
-          "usage:%n>java org.apache.geode.management.internal.TomcatHelper <web-app-context> <war-file-path> [<web-app-context> <war-file-path>]*");
-    }
   }
 
 }
