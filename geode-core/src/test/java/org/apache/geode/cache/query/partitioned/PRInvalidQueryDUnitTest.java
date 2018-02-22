@@ -29,17 +29,18 @@ import org.apache.geode.test.dunit.cache.CacheTestCase;
 import org.apache.geode.test.junit.categories.DistributedTest;
 
 @Category(DistributedTest.class)
+@SuppressWarnings("serial")
 public class PRInvalidQueryDUnitTest extends CacheTestCase {
 
-  private static final String name = "Portfolios";
+  private static final String REGION_NAME = "Portfolios";
 
-  private static final int i = 0;
-  private static final int step = 20;
-  private static final int cnt = 0;
-  private static final int cntDest = 90;
-  private static final int redundancy = 0;
+  private static final int START_KEY = 0;
+  private static final int START_KEY_STEP = 20;
+  private static final int START_PORTFOLIO_INDEX = 0;
+  private static final int END_PORTFOLIO_INDEX = 90;
+  private static final int REDUNDANCY = 0;
 
-  private final PRQueryDUnitHelper prq = new PRQueryDUnitHelper();
+  private PRQueryDUnitHelper prQueryDUnitHelper;
 
   private VM vm0;
   private VM vm1;
@@ -52,7 +53,13 @@ public class PRInvalidQueryDUnitTest extends CacheTestCase {
     vm1 = getHost(0).getVM(1);
     vm2 = getHost(0).getVM(2);
     vm3 = getHost(0).getVM(3);
-    setCacheInVMs(vm0, vm1, vm2, vm3);
+
+    vm0.invoke(() -> PRQueryDUnitHelper.setCache(getCache()));
+    vm1.invoke(() -> PRQueryDUnitHelper.setCache(getCache()));
+    vm2.invoke(() -> PRQueryDUnitHelper.setCache(getCache()));
+    vm3.invoke(() -> PRQueryDUnitHelper.setCache(getCache()));
+
+    prQueryDUnitHelper = new PRQueryDUnitHelper();
   }
 
   @After
@@ -71,32 +78,31 @@ public class PRInvalidQueryDUnitTest extends CacheTestCase {
   @Test
   public void testPRDAckCreationAndQueryingWithInvalidQuery() throws Exception {
     // Creating Accessor node on the VM
-    vm0.invoke(
-        prq.getCacheSerializableRunnableForPRAccessorCreate(name, redundancy, PortfolioData.class));
+    vm0.invoke(prQueryDUnitHelper.getCacheSerializableRunnableForPRAccessorCreate(REGION_NAME,
+        REDUNDANCY, PortfolioData.class));
 
     // Creating the Datastores Nodes in the VM's
-    vm1.invoke(prq.getCacheSerializableRunnableForPRCreate(name, redundancy, PortfolioData.class));
-    vm2.invoke(prq.getCacheSerializableRunnableForPRCreate(name, redundancy, PortfolioData.class));
-    vm3.invoke(prq.getCacheSerializableRunnableForPRCreate(name, redundancy, PortfolioData.class));
+    vm1.invoke(prQueryDUnitHelper.getCacheSerializableRunnableForPRCreate(REGION_NAME, REDUNDANCY,
+        PortfolioData.class));
+    vm2.invoke(prQueryDUnitHelper.getCacheSerializableRunnableForPRCreate(REGION_NAME, REDUNDANCY,
+        PortfolioData.class));
+    vm3.invoke(prQueryDUnitHelper.getCacheSerializableRunnableForPRCreate(REGION_NAME, REDUNDANCY,
+        PortfolioData.class));
 
     // Generating portfolio object array to be populated across the PR's & Local Regions
-    PortfolioData[] portfolio = createPortfolioData(cnt, cntDest);
+    PortfolioData[] portfolio = createPortfolioData(START_PORTFOLIO_INDEX, END_PORTFOLIO_INDEX);
 
     // Putting the data into the PR's created
-    vm0.invoke(prq.getCacheSerializableRunnableForPRPuts(name, portfolio, i, i + step));
-    vm1.invoke(
-        prq.getCacheSerializableRunnableForPRPuts(name, portfolio, i + step, i + (2 * step)));
-    vm2.invoke(
-        prq.getCacheSerializableRunnableForPRPuts(name, portfolio, i + (2 * step), i + (3 * step)));
-    vm3.invoke(prq.getCacheSerializableRunnableForPRPuts(name, portfolio, i + (3 * step), cntDest));
+    vm0.invoke(prQueryDUnitHelper.getCacheSerializableRunnableForPRPuts(REGION_NAME, portfolio,
+        START_KEY, START_KEY + START_KEY_STEP));
+    vm1.invoke(prQueryDUnitHelper.getCacheSerializableRunnableForPRPuts(REGION_NAME, portfolio,
+        START_KEY + START_KEY_STEP, START_KEY + (2 * START_KEY_STEP)));
+    vm2.invoke(prQueryDUnitHelper.getCacheSerializableRunnableForPRPuts(REGION_NAME, portfolio,
+        START_KEY + (2 * START_KEY_STEP), START_KEY + (3 * START_KEY_STEP)));
+    vm3.invoke(prQueryDUnitHelper.getCacheSerializableRunnableForPRPuts(REGION_NAME, portfolio,
+        START_KEY + (3 * START_KEY_STEP), END_PORTFOLIO_INDEX));
 
     // querying the VM for data
-    vm0.invoke(prq.getCacheSerializableRunnableForPRInvalidQuery(name));
-  }
-
-  private void setCacheInVMs(VM... vms) {
-    for (VM vm : vms) {
-      vm.invoke(() -> PRQueryDUnitHelper.setCache(getCache()));
-    }
+    vm0.invoke(prQueryDUnitHelper.getCacheSerializableRunnableForPRInvalidQuery(REGION_NAME));
   }
 }
