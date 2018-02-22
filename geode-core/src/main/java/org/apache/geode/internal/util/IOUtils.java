@@ -27,8 +27,6 @@ import java.io.ObjectStreamClass;
 
 import org.apache.commons.lang.StringUtils;
 
-import org.apache.geode.internal.lang.ObjectUtils;
-
 /**
  * Reusable Input/Output operation utility methods.
  *
@@ -106,7 +104,7 @@ public abstract class IOUtils {
    * @see java.io.File#separator
    */
   public static String createPath(final String[] pathElements, String separator) {
-    separator = ObjectUtils.defaultIfNull(separator, File.separator);
+    separator = separator != null ? separator : File.separator;
 
     final StringBuilder buffer = new StringBuilder();
 

@@ -20,7 +20,6 @@ import static org.apache.commons.lang.StringUtils.isNotBlank;
 import static org.apache.commons.lang.StringUtils.lowerCase;
 import static org.apache.geode.distributed.ConfigurationProperties.LOG_FILE;
 import static org.apache.geode.distributed.ConfigurationProperties.NAME;
-import static org.apache.geode.internal.lang.ObjectUtils.defaultIfNull;
 import static org.apache.geode.internal.lang.StringUtils.wrap;
 import static org.apache.geode.internal.lang.SystemUtils.CURRENT_DIRECTORY;
 import static org.apache.geode.internal.util.IOUtils.tryGetCanonicalPathElseGetAbsolutePath;
@@ -452,7 +451,8 @@ public class LocatorLauncher extends AbstractLauncher<String> {
    * @see #getPort()
    */
   public String getPortAsString() {
-    return defaultIfNull(getPort(), getDefaultLocatorPort()).toString();
+    Integer port = getPort();
+    return (port != null ? port : getDefaultLocatorPort()).toString();
   }
 
   /**
@@ -1341,7 +1341,7 @@ public class LocatorLauncher extends AbstractLauncher<String> {
      * @see LocatorLauncher.Command
      */
     public Command getCommand() {
-      return defaultIfNull(this.command, DEFAULT_COMMAND);
+      return this.command != null ? this.command : DEFAULT_COMMAND;
     }
 
     /**
@@ -1426,7 +1426,7 @@ public class LocatorLauncher extends AbstractLauncher<String> {
      * @see #setForce(Boolean)
      */
     public Boolean getForce() {
-      return defaultIfNull(this.force, DEFAULT_FORCE);
+      return this.force != null ? this.force : DEFAULT_FORCE;
     }
 
     /**
@@ -1634,7 +1634,7 @@ public class LocatorLauncher extends AbstractLauncher<String> {
      * @see #setPort(Integer)
      */
     public Integer getPort() {
-      return defaultIfNull(port, getDefaultLocatorPort());
+      return port != null ? port : getDefaultLocatorPort();
     }
 
     /**

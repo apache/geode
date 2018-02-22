@@ -22,7 +22,6 @@ import static org.apache.commons.lang.StringUtils.lowerCase;
 import static org.apache.geode.distributed.ConfigurationProperties.LOG_FILE;
 import static org.apache.geode.distributed.ConfigurationProperties.NAME;
 import static org.apache.geode.distributed.ConfigurationProperties.SERVER_BIND_ADDRESS;
-import static org.apache.geode.internal.lang.ObjectUtils.defaultIfNull;
 import static org.apache.geode.internal.lang.StringUtils.wrap;
 import static org.apache.geode.internal.lang.SystemUtils.CURRENT_DIRECTORY;
 import static org.apache.geode.internal.util.IOUtils.tryGetCanonicalPathElseGetAbsolutePath;
@@ -550,7 +549,8 @@ public class ServerLauncher extends AbstractLauncher<String> {
    * @see #getServerPort()
    */
   public String getServerPortAsString() {
-    return defaultIfNull(getServerPort(), getDefaultServerPort()).toString();
+    Integer v1 = getServerPort();
+    return (v1 != null ? v1 : getDefaultServerPort()).toString();
   }
 
   /**
@@ -1660,7 +1660,7 @@ public class ServerLauncher extends AbstractLauncher<String> {
      * @see org.apache.geode.distributed.ServerLauncher.Command
      */
     public Command getCommand() {
-      return defaultIfNull(this.command, DEFAULT_COMMAND);
+      return this.command != null ? this.command : DEFAULT_COMMAND;
     }
 
     /**
@@ -1803,7 +1803,7 @@ public class ServerLauncher extends AbstractLauncher<String> {
      * @see #setForce(Boolean)
      */
     public Boolean getForce() {
-      return defaultIfNull(this.force, DEFAULT_FORCE);
+      return this.force != null ? this.force : DEFAULT_FORCE;
     }
 
     /**
@@ -2038,7 +2038,7 @@ public class ServerLauncher extends AbstractLauncher<String> {
      * @see #setServerPort(Integer)
      */
     public Integer getServerPort() {
-      return defaultIfNull(this.serverPort, getDefaultServerPort());
+      return this.serverPort != null ? this.serverPort : getDefaultServerPort();
     }
 
     boolean isServerPortSetByUser() {
