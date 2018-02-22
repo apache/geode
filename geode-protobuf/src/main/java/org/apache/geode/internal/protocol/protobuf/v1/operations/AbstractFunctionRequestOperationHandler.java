@@ -63,8 +63,9 @@ public abstract class AbstractFunctionRequestOperationHandler<Req, Resp>
       // check security for function.
       function.getRequiredPermissions(regionName).forEach(securityService::authorize);
     } catch (NotAuthorizedException ex) {
-      return Failure.of(BasicTypes.ErrorCode.AUTHORIZATION_FAILED,
-          "Authorization failed for function \"" + functionID + "\"");
+      final String message = "Authorization failed for function \"" + functionID + "\"";
+      logger.warn(message, ex);
+      return Failure.of(BasicTypes.ErrorCode.AUTHORIZATION_FAILED, message);
     }
 
     Object executionTarget = getExecutionTarget(request, regionName, messageExecutionContext);
@@ -97,10 +98,13 @@ public abstract class AbstractFunctionRequestOperationHandler<Req, Resp>
         return buildResultMessage(serializationService);
       }
     } catch (FunctionException ex) {
-      return Failure.of(BasicTypes.ErrorCode.SERVER_ERROR,
-          "Function execution failed: " + ex.toString());
+      final String message = "Function execution failed: " + ex.toString();
+      logger.info(message, ex);
+      return Failure.of(BasicTypes.ErrorCode.SERVER_ERROR, message);
     } catch (EncodingException ex) {
-      return Failure.of(BasicTypes.ErrorCode.SERVER_ERROR, "Encoding failed: " + ex.toString());
+      final String message = "Encoding failed: " + ex.toString();
+      logger.info(message, ex);
+      return Failure.of(BasicTypes.ErrorCode.SERVER_ERROR, message);
     }
   }
 
