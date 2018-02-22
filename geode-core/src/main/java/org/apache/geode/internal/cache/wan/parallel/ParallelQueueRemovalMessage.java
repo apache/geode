@@ -183,6 +183,9 @@ public class ParallelQueueRemovalMessage extends PooledDistributionMessage {
     final boolean isDebugEnabled = logger.isDebugEnabled();
     try {
       brq.destroyKey(key);
+      if (!brq.getBucketAdvisor().isPrimary()) {
+        prQ.getParallelGatewaySender().getStatistics().decSecondaryQueueSize();
+      }
       if (isDebugEnabled) {
         logger.debug("Destroyed the key {} for shadowPR {} for bucket {}", key, prQ.getName(),
             brq.getId());
