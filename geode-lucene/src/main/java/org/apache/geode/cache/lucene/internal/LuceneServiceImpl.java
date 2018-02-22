@@ -304,6 +304,12 @@ public class LuceneServiceImpl implements InternalLuceneService {
         try {
           BucketRegion userBucket = userRegion.getDataStore().getLocalBucketById(primaryBucketId);
           if (!userBucket.isEmpty()) {
+            /**
+             *
+             * Calling getRepository will in turn call computeRepository
+             * which is responsible for indexing the user region.
+             *
+             **/
             repositoryManager.getRepository(primaryBucketId);
           }
         } catch (BucketNotFoundException | PrimaryBucketException e) {
