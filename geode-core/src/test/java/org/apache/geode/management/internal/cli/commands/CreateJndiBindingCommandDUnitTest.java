@@ -38,7 +38,7 @@ import org.apache.geode.test.junit.rules.GfshCommandRule;
 import org.apache.geode.test.junit.rules.VMProvider;
 
 @Category(DistributedTest.class)
-public class CreateJndiCommandDUnitTest {
+public class CreateJndiBindingCommandDUnitTest {
 
   private static MemberVM locator, server1, server2;
 
@@ -61,8 +61,8 @@ public class CreateJndiCommandDUnitTest {
   @Test
   public void testCreateJndiBinding() throws Exception {
     // assert that is no datasource
-    Stream.of(server1, server2)
-        .forEach(server -> assertThat(JNDIInvoker.getNoOfAvailableDataSources()).isEqualTo(0));
+    VMProvider.invokeInEveryMember(
+        () -> assertThat(JNDIInvoker.getNoOfAvailableDataSources()).isEqualTo(0));
 
     // create the binding
     gfsh.executeAndAssertThat(
