@@ -15,7 +15,6 @@
 package org.apache.geode.cache.lucene.internal;
 
 import java.io.IOException;
-import java.io.Serializable;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Map;
@@ -35,9 +34,7 @@ import org.apache.geode.cache.lucene.internal.repository.IndexRepository;
 import org.apache.geode.cache.lucene.internal.repository.IndexRepositoryImpl;
 import org.apache.geode.cache.query.internal.DefaultQuery;
 import org.apache.geode.distributed.DistributedLockService;
-import org.apache.geode.distributed.LockServiceDestroyedException;
 import org.apache.geode.internal.cache.BucketRegion;
-import org.apache.geode.internal.cache.ColocationHelper;
 import org.apache.geode.internal.cache.EntrySnapshot;
 import org.apache.geode.internal.cache.PartitionRegionConfig;
 import org.apache.geode.internal.cache.PartitionedRegion;
@@ -114,26 +111,8 @@ public class IndexRepositoryFactory {
         success = true;
         return repo;
       } else {
-        Set<IndexRepository> affectedRepos = new HashSet<IndexRepository>();
-
-        Iterator keysIterator = dataBucket.keySet().iterator();
-        while (keysIterator.hasNext()) {
-          Object key = keysIterator.next();
-          Object value = getValue(userRegion.getEntry(key));
-          if (value != null) {
-            repo.update(key, value);
-          } else {
-            repo.delete(key);
-          }
-          affectedRepos.add(repo);
-        }
-
-        for (IndexRepository affectedRepo : affectedRepos) {
-          affectedRepo.commit();
-        }
-        // fileRegion ops (get/put) need bucketId as a callbackArg for PartitionResolver
-        fileRegion.put(APACHE_GEODE_INDEX_COMPLETE, APACHE_GEODE_INDEX_COMPLETE, bucketId);
-        success = true;
+        success =
+            reindexUserDataRegion(bucketId, userRegion, fileRegion, dataBucket, success, repo);
       }
       return repo;
     } catch (IOException e) {
@@ -150,6 +129,32 @@ public class IndexRepositoryFactory {
         DefaultQuery.setPdxReadSerialized(false);
       }
     }
+  }
+
+  private boolean reindexUserDataRegion(Integer bucketId, PartitionedRegion userRegion,
+      PartitionedRegion fileRegion, BucketRegion dataBucket, boolean success, IndexRepository repo)
+      throws IOException {
+    Set<IndexRepository> affectedRepos = new HashSet<IndexRepository>();
+
+    Iterator keysIterator = dataBucket.keySet().iterator();
+    while (keysIterator.hasNext()) {
+      Object key = keysIterator.next();
+      Object value = getValue(userRegion.getEntry(key));
+      if (value != null) {
+        repo.update(key, value);
+      } else {
+        repo.delete(key);
+      }
+      affectedRepos.add(repo);
+    }
+
+    for (IndexRepository affectedRepo : affectedRepos) {
+      affectedRepo.commit();
+    }
+    // fileRegion ops (get/put) need bucketId as a callbackArg for PartitionResolver
+    fileRegion.put(APACHE_GEODE_INDEX_COMPLETE, APACHE_GEODE_INDEX_COMPLETE, bucketId);
+    success = true;
+    return success;
   }
 
   private Object getValue(Region.Entry entry) {
