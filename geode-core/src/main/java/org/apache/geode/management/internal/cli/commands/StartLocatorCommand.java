@@ -383,22 +383,21 @@ public class StartLocatorCommand implements GfshCommand {
       final boolean jmxManagerAuthEnabled, final boolean jmxManagerSslEnabled,
       final InfoResultData infoResultData) {
     infoResultData.addLine("\n");
-    infoResultData
-        .addLine(CliStrings.format(CliStrings.START_LOCATOR__USE__0__TO__CONNECT_WITH_SECURITY,
-            new CommandStringBuilder(CliStrings.CONNECT)
-                .addOption(CliStrings.CONNECT__LOCATOR, locatorHostName + "[" + locatorPort + "]")
-                .addOption(CliStrings.CONNECT__USERNAME).addOption(CliStrings.CONNECT__PASSWORD)
-                .toString()));
+    CommandStringBuilder commandUsage = new CommandStringBuilder(CliStrings.CONNECT)
+        .addOption(CliStrings.CONNECT__LOCATOR, locatorHostName + "[" + locatorPort + "]");
 
     StringBuilder message = new StringBuilder();
 
     if (jmxManagerAuthEnabled) {
+      commandUsage.addOption(CliStrings.CONNECT__USERNAME).addOption(CliStrings.CONNECT__PASSWORD);
       message.append("Authentication");
     }
     if (jmxManagerSslEnabled) {
       message.append(jmxManagerAuthEnabled ? " and " : StringUtils.EMPTY)
           .append("SSL configuration");
     }
+    infoResultData.addLine(CliStrings.format(
+        CliStrings.START_LOCATOR__USE__0__TO__CONNECT_WITH_SECURITY, commandUsage.toString()));
     if (jmxManagerAuthEnabled || jmxManagerSslEnabled) {
       message.append(" required to connect to the Manager.");
       infoResultData.addLine("\n");
