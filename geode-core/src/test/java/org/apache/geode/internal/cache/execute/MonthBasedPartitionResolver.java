@@ -32,10 +32,6 @@ import org.apache.geode.internal.cache.xmlcache.Declarable2;
  */
 class MonthBasedPartitionResolver implements PartitionResolver, Declarable2 {
 
-  static final String id = "MonthBasedPartitionResolverid1";
-
-  private static MonthBasedPartitionResolver mbrResolver = null;
-
   private Properties properties;
 
   public MonthBasedPartitionResolver() {
