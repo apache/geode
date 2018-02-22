@@ -73,6 +73,7 @@ public class LuceneEventListener implements AsyncEventListener {
 
   protected boolean process(final List<AsyncEvent> events) {
     // Try to get a PDX instance if possible, rather than a deserialized object
+    boolean initialPdxReadSerializedFlag = DefaultQuery.getPdxReadSerialized();
     DefaultQuery.setPdxReadSerialized(true);
 
     Set<IndexRepository> affectedRepos = new HashSet<IndexRepository>();
@@ -111,7 +112,7 @@ public class LuceneEventListener implements AsyncEventListener {
     } catch (IOException e) {
       throw new InternalGemFireError("Unable to save to lucene index", e);
     } finally {
-      DefaultQuery.setPdxReadSerialized(false);
+      DefaultQuery.setPdxReadSerialized(initialPdxReadSerializedFlag);
     }
   }
 
