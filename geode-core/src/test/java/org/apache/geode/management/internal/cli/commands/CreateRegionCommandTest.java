@@ -57,6 +57,7 @@ public class CreateRegionCommandTest {
   private CreateRegionCommand command;
   private InternalCache cache;
   private DistributedRegionMXBean regionMXBean;
+  ManagementService service;
 
   private static String COMMAND = "create region --name=region --type=REPLICATE ";
 
@@ -66,11 +67,10 @@ public class CreateRegionCommandTest {
     cache = mock(InternalCache.class);
     doReturn(cache).when(command).getCache();
 
-    ManagementService service = mock(ManagementService.class);
+    service = mock(ManagementService.class);
     doReturn(service).when(command).getManagementService();
     regionMXBean = mock(DistributedRegionMXBean.class);
     when(service.getDistributedRegionMXBean(any())).thenReturn(regionMXBean);
-
   }
 
   @Test
@@ -161,6 +161,7 @@ public class CreateRegionCommandTest {
     doReturn(Collections.singleton(mock(DistributedMember.class))).when(command).findMembers(any(),
         any());
     doReturn(true).when(command).verifyDistributedRegionMbean(any(), any());
+    when(service.getDistributedRegionMXBean(any())).thenReturn(null);
 
     parser.executeCommandWithInstance(command, "create region --name=A --type=REPLICATE");
     ArgumentCaptor<RegionFunctionArgs> argsCaptor =
