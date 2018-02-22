@@ -54,7 +54,7 @@ import org.apache.geode.management.internal.cli.CliUtil;
 import org.apache.geode.management.internal.cli.GfshParseResult;
 import org.apache.geode.management.internal.cli.LogWrapper;
 import org.apache.geode.management.internal.cli.domain.ClassName;
-import org.apache.geode.management.internal.cli.exceptions.EntityExistException;
+import org.apache.geode.management.internal.cli.exceptions.EntityExistsException;
 import org.apache.geode.management.internal.cli.functions.CliFunctionResult;
 import org.apache.geode.management.internal.cli.functions.FetchRegionAttributesFunction;
 import org.apache.geode.management.internal.cli.functions.RegionAttributesWrapper;
@@ -203,9 +203,8 @@ public class CreateRegionCommand implements GfshCommand {
     if (regionBean != null && regionShortcut != null) {
       // when creating a non-proxy region and there is already a non empty node
       if (!regionShortcut.isProxy() && regionBean.getMemberCount() > regionBean.getEmptyNodes()) {
-        throw new EntityExistException(
+        throw new EntityExistsException(
             String.format("Region %s already exists on the cluster.", regionPath), ifNotExists);
-
       }
 
       // proxy regions can only be created on members not having this regionName already defined
@@ -215,7 +214,7 @@ public class CreateRegionCommand implements GfshCommand {
         Set<String> membersWithinGroup = findMembers(groups, null).stream()
             .map(DistributedMember::getName).collect(Collectors.toSet());
         if (!Collections.disjoint(membersWithinGroup, membersWithThisRegion)) {
-          throw new EntityExistException(String.format(
+          throw new EntityExistsException(String.format(
               "Region %s already exists on these members: %s. You can only create "
                   + "proxy regions with the same name on other members.",
               regionPath, StringUtils.join(membersWithThisRegion, ",")), ifNotExists);
@@ -224,12 +223,12 @@ public class CreateRegionCommand implements GfshCommand {
 
       // then check if the existing region's data policy is compatible
       if (regionShortcut.isPartition() && !regionBean.getRegionType().contains("PARTITION")) {
-        throw new EntityExistException("The existing region is not a partitioned region",
+        throw new EntityExistsException("The existing region is not a partitioned region",
             ifNotExists);
       }
       if (regionShortcut.isReplicate() && !(regionBean.getRegionType().equals("EMPTY")
           || regionBean.getRegionType().contains("REPLICATE"))) {
-        throw new EntityExistException("The existing region is not a replicate region",
+        throw new EntityExistsException("The existing region is not a replicate region",
             ifNotExists);
       }
     }

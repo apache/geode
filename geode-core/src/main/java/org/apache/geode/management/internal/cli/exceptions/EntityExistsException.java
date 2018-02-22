@@ -17,9 +17,9 @@
 
 package org.apache.geode.management.internal.cli.exceptions;
 
-public class EntityExistException extends EntityNotFoundException {
+public class EntityExistsException extends EntityNotFoundException {
 
-  public EntityExistException(String message, boolean statusOK) {
+  public EntityExistsException(String message, boolean statusOK) {
     super(message, statusOK);
   }
 }
