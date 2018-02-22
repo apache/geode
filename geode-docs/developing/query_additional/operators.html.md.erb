@@ -19,7 +19,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 -->
 
-<%=vars.product_name%> supports comparison, logical, unary, map, index, dot, and right arrow operators.
+<%=vars.product_name%> supports comparison, logical, unary, arithmetic, map, index, dot, and right arrow operators.
 
 ## <a id="operators__section_A3FB372F85D840D7A49CB95BD7FCA7C6" class="no-quick-link"></a>Comparison Operators
 
@@ -27,12 +27,15 @@ Comparison operators compare two values and return the results, either TRUE or F
 
 The following are supported comparison operators:
 
-|                       |                                |
-|-----------------------|--------------------------------|
-| = equal to            | &lt; less than                 |
-| &lt;&gt; not equal to | &lt;= less than or equal to    |
-| != not equal to       | &gt; greater than              |
-|                       | &gt;= greater than or equal to |
+|          |                          |
+|----------|--------------------------|
+| =        | equal to                 |
+| &lt;&gt; | not equal to             |
+| !=       | not equal to             |
+| &lt;     | less than                |
+| &lt;=    | less than or equal to    |
+| &gt;     | greater than             |
+| &gt;=    | greater than or equal to |
 
 The equal and not equal operators have lower precedence than the other comparison operators. They can be used with null. To perform equality or inequality comparisons with UNDEFINED, use the IS\_DEFINED and IS\_UNDEFINED preset query functions instead of these comparison operators.
 
@@ -43,6 +46,25 @@ The logical operators AND and OR allow you to create more complex expressions by
 ## <a id="operators__section_A970AE75B0D24E0B9E1B61BE2D9842D8" class="no-quick-link"></a>Unary Operators
 
 Unary operators operate on a single value or expression, and have lower precedence than comparison operators in expressions. <%=vars.product_name%> supports the unary operator NOT. NOT is the negation operator, which changes the value of the operand to its opposite. So if an expression evaluates to TRUE, NOT changes it to FALSE. The operand must be a boolean.
+
+## <a id="operators_arithmetic_OQL" class="no-quick-link"></a>Arithmetic Operators
+
+Arithmetic operators operate on two values or expressions. 
+Any of the expected arithmetic exceptions may result,
+such as overflow or a divide by zero.
+`QueryInvocationTargetException` will be thrown,
+and `getCause()` will state `ArithmeticException`.
+
+The following are supported arithmetic operators:
+
+|         |                          |
+|---------|--------------------------|
+| +       | addition                 |
+| -       | subtraction              |
+| *       | multiplication           |
+| /       | division                 |
+| %       | modulus                  |
+| MOD     | modulus                  |
 
 ## <a id="operators__section_E78FB4FB3703471C8186A0E26D25F01F" class="no-quick-link"></a>Map and Index Operators
 
