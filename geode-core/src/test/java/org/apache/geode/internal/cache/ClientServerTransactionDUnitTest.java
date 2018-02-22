@@ -372,16 +372,9 @@ public class ClientServerTransactionDUnitTest extends RemoteTransactionDUnitTest
       exceptionThrown = true;
     }
 
-    SerializableCallable disconnect = new SerializableCallable("disconnect") {
-      public Object call() throws Exception {
-        InternalDistributedSystem.getConnectedInstance().disconnect();
-        return null;
-      }
-    };
-
     cCache.close();
-    datastore1.invoke(disconnect);
-    datastore2.invoke(disconnect);
+    datastore1.invoke(() -> closeCache());
+    datastore2.invoke(() -> closeCache());
 
     if (!exceptionThrown) {
       fail("expected TransactionException to be thrown since two pools were used");
