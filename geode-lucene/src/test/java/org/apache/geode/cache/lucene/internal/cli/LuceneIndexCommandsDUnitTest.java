@@ -26,6 +26,7 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Properties;
 import java.util.concurrent.TimeUnit;
 
 import junitparams.JUnitParamsRunner;
@@ -51,6 +52,7 @@ import org.apache.geode.cache.lucene.internal.LuceneIndexCreationProfile;
 import org.apache.geode.cache.lucene.internal.LuceneIndexImpl;
 import org.apache.geode.cache.lucene.internal.LuceneServiceImpl;
 import org.apache.geode.cache.lucene.internal.repository.serializer.PrimitiveSerializer;
+import org.apache.geode.distributed.ConfigurationProperties;
 import org.apache.geode.internal.i18n.LocalizedStrings;
 import org.apache.geode.management.cli.Result.Status;
 import org.apache.geode.management.internal.cli.i18n.CliStrings;
@@ -81,7 +83,12 @@ public class LuceneIndexCommandsDUnitTest implements Serializable {
 
   @Before
   public void before() throws Exception {
-    serverVM = startupRule.startServerVM(0, x -> x.withJMXManager());
+    Properties props = new Properties();
+    props.setProperty(ConfigurationProperties.SERIALIZABLE_OBJECT_FILTER,
+        "org.apache.geode.cache.lucene.internal.cli.LuceneIndexCommandsWithReindexAllowedDUnitTest"
+            + ";org.apache.geode.cache.lucene.internal.cli.LuceneIndexCommandsDUnitTest*"
+            + ";org.apache.geode.test.**");
+    serverVM = startupRule.startServerVM(0, x -> x.withProperties(props).withJMXManager());
     connect(serverVM);
   }
 

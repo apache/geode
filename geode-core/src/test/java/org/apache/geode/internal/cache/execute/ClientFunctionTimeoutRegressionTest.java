@@ -47,6 +47,7 @@ import org.apache.geode.cache.execute.FunctionContext;
 import org.apache.geode.cache.execute.FunctionService;
 import org.apache.geode.cache.execute.ResultCollector;
 import org.apache.geode.cache.server.CacheServer;
+import org.apache.geode.distributed.ConfigurationProperties;
 import org.apache.geode.distributed.internal.DistributionConfig;
 import org.apache.geode.internal.AvailablePort;
 import org.apache.geode.internal.cache.CacheServerImpl;
@@ -144,6 +145,8 @@ public class ClientFunctionTimeoutRegressionTest extends JUnit4DistributedTestCa
   private Integer createServerCache(Boolean createPR) throws IOException {
     Properties props = new Properties();
     props.setProperty(LOCATORS, "localhost[" + DistributedTestUtils.getDUnitLocatorPort() + "]");
+    props.setProperty(ConfigurationProperties.SERIALIZABLE_OBJECT_FILTER,
+        "org.apache.geode.internal.cache.execute.ClientFunctionTimeoutRegressionTest*");
 
     serverCache = (InternalCache) new CacheFactory(props).create();
 

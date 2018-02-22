@@ -17,6 +17,8 @@ package org.apache.geode.management.internal.cli.commands;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+import java.util.Properties;
+
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -26,6 +28,7 @@ import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.Region;
 import org.apache.geode.cache.RegionFactory;
 import org.apache.geode.cache.RegionShortcut;
+import org.apache.geode.distributed.ConfigurationProperties;
 import org.apache.geode.management.internal.cli.domain.Stock;
 import org.apache.geode.test.dunit.rules.ClusterStartupRule;
 import org.apache.geode.test.dunit.rules.MemberVM;
@@ -51,9 +54,12 @@ public class DestroyIndexCommandsDUnitTest {
 
   @Before
   public void before() throws Exception {
+    Properties props = new Properties();
+    props.setProperty(ConfigurationProperties.SERIALIZABLE_OBJECT_FILTER,
+        "org.apache.geode.management.internal.cli.domain.Stock");
     locator = rule.startLocatorVM(0);
-    server1 = rule.startServerVM(1, locator.getPort());
-    server2 = rule.startServerVM(2, locator.getPort());
+    server1 = rule.startServerVM(1, props, locator.getPort());
+    server2 = rule.startServerVM(2, props, locator.getPort());
 
     server1.invoke(() -> {
       createRegionAndIndex();
