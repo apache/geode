@@ -54,7 +54,7 @@ public class CompactOfflineDiskStoreCommand implements GfshCommand {
       @CliOption(key = CliStrings.COMPACT_OFFLINE_DISK_STORE__J,
           help = CliStrings.COMPACT_OFFLINE_DISK_STORE__J__HELP) String[] jvmProps) {
     Result result;
-    LogWrapper logWrapper = LogWrapper.getInstance();
+    LogWrapper logWrapper = LogWrapper.getInstance(CliUtil.getCacheIfExists(this::getCache));
 
     StringBuilder output = new StringBuilder();
     StringBuilder error = new StringBuilder();

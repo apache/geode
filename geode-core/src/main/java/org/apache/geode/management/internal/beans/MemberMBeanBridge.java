@@ -335,7 +335,7 @@ public class MemberMBeanBridge {
     this.config = system.getConfig();
     try {
       this.commandProcessor =
-          new OnlineCommandProcessor(system.getProperties(), cache.getSecurityService());
+          new OnlineCommandProcessor(system.getProperties(), cache.getSecurityService(), cache);
     } catch (Exception e) {
       commandServiceInitError = e.getMessage();
       logger.info(LogMarker.CONFIG, "Command processor could not be initialized. {}",

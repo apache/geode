@@ -57,7 +57,6 @@ import org.apache.geode.management.CacheServerMXBean;
 import org.apache.geode.management.ManagementService;
 import org.apache.geode.management.cli.Result;
 import org.apache.geode.management.internal.SystemManagementService;
-import org.apache.geode.management.internal.cli.CliUtil;
 import org.apache.geode.management.internal.cli.LogWrapper;
 import org.apache.geode.management.internal.cli.i18n.CliStrings;
 import org.apache.geode.management.internal.cli.result.CommandResult;
@@ -298,7 +297,7 @@ public class ListClientCommandDUnitTest extends CliCommandTestBase {
               return false;
 
             } catch (Exception e) {
-              LogWrapper.getInstance()
+              LogWrapper.getInstance(cache)
                   .warning("waitForListClientMbean3 Exception in waitForListClientMbean ::: "
                       + ExceptionUtils.getStackTrace(e));
             }
@@ -383,7 +382,7 @@ public class ListClientCommandDUnitTest extends CliCommandTestBase {
               }
               return false;
             } catch (Exception e) {
-              LogWrapper.getInstance()
+              LogWrapper.getInstance(cache)
                   .warning("waitForListClientMbean Exception in waitForListClientMbean ::: "
                       + ExceptionUtils.getStackTrace(e));
             }

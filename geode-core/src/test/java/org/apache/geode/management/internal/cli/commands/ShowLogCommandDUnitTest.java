@@ -163,8 +163,10 @@ public class ShowLogCommandDUnitTest implements Serializable {
   private static boolean allMembersAreConnected() {
     return manager.getVM().invoke(() -> {
       InternalCache cache = (InternalCache) CacheFactory.getAnyInstance();
-      DistributedMember server1 = CliUtil.getDistributedMemberByNameOrId(SERVER1_NAME);
-      DistributedMember server2 = CliUtil.getDistributedMemberByNameOrId(SERVER2_NAME);
+      DistributedMember server1 =
+          CliUtil.getDistributedMemberByNameOrId(SERVER1_NAME, ClusterStartupRule.getCache());
+      DistributedMember server2 =
+          CliUtil.getDistributedMemberByNameOrId(SERVER2_NAME, ClusterStartupRule.getCache());
 
       ShowLogCommand showLogCommand = new ShowLogCommand();
 

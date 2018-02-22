@@ -20,7 +20,6 @@ import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
-import java.io.FilenameFilter;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.PrintWriter;
@@ -31,13 +30,12 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.apache.commons.io.FileUtils;
+import org.apache.logging.log4j.Logger;
 
+import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.internal.logging.MergeLogFiles;
-import org.apache.geode.management.cli.Result;
 import org.apache.geode.management.internal.cli.GfshParser;
-import org.apache.geode.management.internal.cli.LogWrapper;
 import org.apache.geode.management.internal.cli.i18n.CliStrings;
-import org.apache.geode.management.internal.cli.result.ResultBuilder;
 
 /**
  *
@@ -45,10 +43,23 @@ import org.apache.geode.management.internal.cli.result.ResultBuilder;
  */
 
 public class MergeLogs {
+  private static final Logger logger = LogService.getLogger();
+
+  public static void main(String[] args) {
+    if (args.length < 1 || args.length > 1) {
+      throw new IllegalArgumentException("Requires only 1  arguments : <targetDirName>");
+    }
+    try {
+      String result = mergeLogFile(args[0]).getCanonicalPath();
+      System.out.println("Merged logs to: " + result);
+    } catch (Exception e) {
+      System.out.println(e.getMessage());
+    }
+  }
 
   public static void mergeLogsInNewProcess(Path logDirectory) {
     // create a new process for merging
-    LogWrapper.getInstance().fine("Exporting logs merging logs" + logDirectory);
+    logger.info("Exporting logs merging logs" + logDirectory);
     List<String> commandList = new ArrayList<String>();
     commandList.add(
         System.getProperty("java.home") + File.separatorChar + "bin" + File.separatorChar + "java");
@@ -60,9 +71,8 @@ public class MergeLogs {
 
     ProcessBuilder procBuilder = new ProcessBuilder(commandList);
     StringBuilder output = new StringBuilder();
-    String errorString = new String();
     try {
-      LogWrapper.getInstance().fine("Exporting logs now merging logs");
+      logger.info("Exporting logs now merging logs");
       Process mergeProcess = procBuilder.redirectErrorStream(true).start();
 
       mergeProcess.waitFor();
@@ -76,27 +86,13 @@ public class MergeLogs {
       }
       mergeProcess.destroy();
     } catch (Exception e) {
-      LogWrapper.getInstance().severe(e.getMessage());
+      logger.error(e.getMessage());
     }
     if (output.toString().contains("Merged logs to: ")) {
-      LogWrapper.getInstance().fine("Exporting logs Sucessfully merged logs");
+      logger.info("Exporting logs successfully merged logs");
     } else {
-      LogWrapper.getInstance().severe("Could not merge");
+      logger.error("Could not merge");
     }
-  }
-
-  public static void main(String[] args) {
-    if (args.length < 1 || args.length > 1) {
-      throw new IllegalArgumentException("Requires only 1  arguments : <targetDirName>");
-    }
-    try {
-      String result = mergeLogFile(args[0]).getCanonicalPath();
-      System.out.println("Merged logs to: " + result);
-    } catch (Exception e) {
-      System.out.println(e.getMessage());
-    }
-
-
   }
 
   protected static List<File> findLogFilesToMerge(File dir) {
@@ -125,7 +121,7 @@ public class MergeLogs {
           + new SimpleDateFormat("yyyy-MM-dd_HH-mm-ss").format(new java.util.Date()) + ".log";
       mergedLogFile = new File(mergeLog);
       mergedLog = new PrintWriter(mergedLogFile);
-      boolean flag = MergeLogFiles.mergeLogFiles(logFiles, logFileNames, mergedLog);
+      MergeLogFiles.mergeLogFiles(logFiles, logFileNames, mergedLog);
     } catch (FileNotFoundException e) {
       throw new Exception(
           "FileNotFoundException in creating PrintWriter in MergeLogFiles" + e.getMessage());

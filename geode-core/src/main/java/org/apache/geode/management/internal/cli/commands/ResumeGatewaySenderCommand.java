@@ -67,7 +67,7 @@ public class ResumeGatewaySenderCommand implements GfshCommand {
 
     TabularResultData resultData = ResultBuilder.createTabularResultData();
 
-    Set<DistributedMember> dsMembers = CliUtil.findMembers(onGroup, onMember);
+    Set<DistributedMember> dsMembers = CliUtil.findMembers(onGroup, onMember, getCache());
 
     if (dsMembers.isEmpty()) {
       return ResultBuilder.createUserErrorResult(CliStrings.NO_MEMBERS_FOUND_MESSAGE);

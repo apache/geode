@@ -68,7 +68,7 @@ public class StatusGatewayReceiverCommand implements GfshCommand {
         crd.addSection(CliStrings.SECTION_GATEWAY_RECEIVER_NOT_AVAILABLE)
             .addTable(CliStrings.TABLE_GATEWAY_RECEIVER);
 
-    Set<DistributedMember> dsMembers = CliUtil.findMembers(onGroup, onMember);
+    Set<DistributedMember> dsMembers = CliUtil.findMembers(onGroup, onMember, getCache());
 
     if (dsMembers.isEmpty()) {
       return ResultBuilder.createUserErrorResult(CliStrings.NO_MEMBERS_FOUND_MESSAGE);

@@ -35,6 +35,7 @@ import org.springframework.shell.core.MethodTarget;
 import org.springframework.shell.core.annotation.CliAvailabilityIndicator;
 import org.springframework.shell.core.annotation.CliCommand;
 
+import org.apache.geode.cache.Cache;
 import org.apache.geode.distributed.ConfigurationProperties;
 import org.apache.geode.distributed.internal.DistributionConfig;
 import org.apache.geode.internal.ClassPathLoader;
@@ -53,7 +54,6 @@ public class CommandManager {
   public static final String USER_CMD_PACKAGES_PROPERTY =
       DistributionConfig.GEMFIRE_PREFIX + USER_COMMAND_PACKAGES;
   public static final String USER_CMD_PACKAGES_ENV_VARIABLE = "GEMFIRE_USER_COMMAND_PACKAGES";
-  private static final Object INSTANCE_LOCK = new Object();
 
   private final Helper helper = new Helper();
 
@@ -68,18 +68,18 @@ public class CommandManager {
    * environment. used by Gfsh.
    */
   public CommandManager() {
-    this(null);
+    this(null, null);
   }
 
   /**
    * this is used when getting the instance in a cache server. We are getting the
    * user-command-package from distribution properties. used by OnlineCommandProcessor.
    */
-  public CommandManager(final Properties cacheProperties) {
+  public CommandManager(final Properties cacheProperties, Cache cache) {
     if (cacheProperties != null) {
       this.cacheProperties = cacheProperties;
     }
-    logWrapper = LogWrapper.getInstance();
+    logWrapper = LogWrapper.getInstance(cache);
     loadCommands();
   }
 
@@ -260,8 +260,6 @@ public class CommandManager {
 
   /**
    * Method to add new Converter
-   *
-   * @param converter
    */
   void add(Converter<?> converter) {
     if (CommandManagerAware.class.isAssignableFrom(converter.getClass())) {
@@ -272,8 +270,6 @@ public class CommandManager {
 
   /**
    * Method to add new Commands to the parser
-   *
-   * @param commandMarker
    */
   void add(CommandMarker commandMarker) {
     if (CommandManagerAware.class.isAssignableFrom(commandMarker.getClass())) {

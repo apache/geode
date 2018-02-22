@@ -163,8 +163,6 @@ public class Gfsh extends JLineShell {
    * Create a GemFire shell with console using the specified arguments.
    *
    * @param args arguments to be used to create a GemFire shell instance
-   * @throws IOException
-   * @throws ClassNotFoundException
    */
   protected Gfsh(String[] args) {
     this(true, args, new GfshConfig());
@@ -176,8 +174,6 @@ public class Gfsh extends JLineShell {
    *
    * @param launchShell whether to make Console available
    * @param args arguments to be used to create a GemFire shell instance or execute command
-   * @throws IOException
-   * @throws ClassNotFoundException
    */
   protected Gfsh(boolean launchShell, String[] args, GfshConfig gfshConfig) {
     // 1. Disable suppressing of duplicate messages
@@ -185,7 +181,8 @@ public class Gfsh extends JLineShell {
 
     // 2. set & use gfshConfig
     this.gfshConfig = gfshConfig;
-    this.gfshFileLogger = LogWrapper.getInstance();
+    // The cache doesn't exist yet, since we are still setting up parsing.
+    this.gfshFileLogger = LogWrapper.getInstance(null);
     this.gfshFileLogger.configure(this.gfshConfig);
     this.ansiHandler = ANSIHandler.getInstance(this.gfshConfig.isANSISupported());
 
@@ -236,7 +233,7 @@ public class Gfsh extends JLineShell {
       System.setProperty("jline.terminal", GfshUnsupportedTerminal.class.getName());
       env.put(ENV_APP_QUIET_EXECUTION, String.valueOf(true));
       // Only in headless mode, we do not want Gfsh's logger logs on screen
-      LogWrapper.getInstance().setParentFor(logger);
+      this.gfshFileLogger.setParentFor(logger);
     }
     // we want to direct internal JDK logging to file in either mode
     redirectInternalJavaLoggers();
@@ -310,7 +307,7 @@ public class Gfsh extends JLineShell {
    * logWrapper disables any parents's log handler, and only logs to the file if specified. This
    * would prevent JDK's logging show up in the console
    */
-  public static void redirectInternalJavaLoggers() {
+  public void redirectInternalJavaLoggers() {
     // Do we need to this on re-connect?
     LogManager logManager = LogManager.getLogManager();
 
@@ -328,12 +325,12 @@ public class Gfsh extends JLineShell {
            * properly handle the case where the Logger has been garbage collected.
            */
           if (javaLogger != null) {
-            LogWrapper.getInstance().setParentFor(javaLogger);
+            this.gfshFileLogger.setParentFor(javaLogger);
           }
         }
       }
     } catch (SecurityException e) {
-      LogWrapper.getInstance().warning(e.getMessage(), e);
+      this.gfshFileLogger.warning(e.getMessage(), e);
     }
   }
 
@@ -560,8 +557,8 @@ public class Gfsh extends JLineShell {
     return parser;
   }
 
-  public GfshParser getGfshParser() {
-    return parser;
+  public LogWrapper getGfshFileLogger() {
+    return gfshFileLogger;
   }
 
   /**

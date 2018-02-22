@@ -57,7 +57,7 @@ public class CloseDurableCQsCommand implements GfshCommand {
           optionContext = ConverterHint.MEMBERGROUP) final String[] group) {
     Result result;
     try {
-      Set<DistributedMember> targetMembers = CliUtil.findMembers(group, memberNameOrId);
+      Set<DistributedMember> targetMembers = CliUtil.findMembers(group, memberNameOrId, getCache());
 
       if (targetMembers.isEmpty()) {
         return ResultBuilder.createUserErrorResult(CliStrings.NO_MEMBERS_FOUND_MESSAGE);

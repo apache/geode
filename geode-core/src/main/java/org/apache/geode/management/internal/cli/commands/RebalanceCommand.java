@@ -94,7 +94,8 @@ public class RebalanceCommand implements GfshCommand {
     } catch (TimeoutException timeoutException) {
       result = ResultBuilder.createInfoResult(CliStrings.REBALANCE__MSG__REBALANCE_WILL_CONTINUE);
     }
-    LogWrapper.getInstance().info("Rebalance returning result >>>" + result);
+    LogWrapper.getInstance(CliUtil.getCacheIfExists(this::getCache))
+        .info("Rebalance returning result >>>" + result);
     return result;
   }
 
@@ -108,8 +109,9 @@ public class RebalanceCommand implements GfshCommand {
               CliStrings.format(CliStrings.REBALANCE__MSG__NO_EXECUTION, member.getId()),
               ((Exception) object).getMessage());
 
-          LogWrapper.getInstance().info(CliStrings.REBALANCE__MSG__NO_EXECUTION + member.getId()
-              + " exception=" + ((Throwable) object).getMessage(), ((Throwable) object));
+          LogWrapper.getInstance(CliUtil.getCacheIfExists(this::getCache))
+              .info(CliStrings.REBALANCE__MSG__NO_EXECUTION + member.getId() + " exception="
+                  + ((Throwable) object).getMessage(), ((Throwable) object));
 
           toContinueForOtherMembers = true;
           break;
@@ -118,15 +120,16 @@ public class RebalanceCommand implements GfshCommand {
               CliStrings.format(CliStrings.REBALANCE__MSG__NO_EXECUTION, member.getId()),
               ((Throwable) object).getMessage());
 
-          LogWrapper.getInstance().info(CliStrings.REBALANCE__MSG__NO_EXECUTION + member.getId()
-              + " exception=" + ((Throwable) object).getMessage(), ((Throwable) object));
+          LogWrapper.getInstance(CliUtil.getCacheIfExists(this::getCache))
+              .info(CliStrings.REBALANCE__MSG__NO_EXECUTION + member.getId() + " exception="
+                  + ((Throwable) object).getMessage(), ((Throwable) object));
 
           toContinueForOtherMembers = true;
           break;
         }
       }
     } else {
-      LogWrapper.getInstance().info(
+      LogWrapper.getInstance(CliUtil.getCacheIfExists(this::getCache)).info(
           "Rebalancing for member=" + member.getId() + ", resultList is either null or empty");
       rebalanceResultData.addSection().addData("Rebalancing for member=" + member.getId(),
           ", resultList is either null or empty");
@@ -247,8 +250,9 @@ public class RebalanceCommand implements GfshCommand {
               DistributedMember member = getAssociatedMembers(regionName, cache);
 
               if (member == null) {
-                LogWrapper.getInstance().info(CliStrings.format(
-                    CliStrings.REBALANCE__MSG__NO_ASSOCIATED_DISTRIBUTED_MEMBER, regionName));
+                LogWrapper.getInstance(CliUtil.getCacheIfExists(RebalanceCommand.this::getCache))
+                    .info(CliStrings.format(
+                        CliStrings.REBALANCE__MSG__NO_ASSOCIATED_DISTRIBUTED_MEMBER, regionName));
                 continue;
               }
 
@@ -271,7 +275,7 @@ public class RebalanceCommand implements GfshCommand {
                   resultList = (ArrayList) executeFunction(rebalanceFunction, functionArgs, member)
                       .getResult();
                 } catch (Exception ex) {
-                  LogWrapper.getInstance()
+                  LogWrapper.getInstance(CliUtil.getCacheIfExists(RebalanceCommand.this::getCache))
                       .info(CliStrings.format(
                           CliStrings.REBALANCE__MSG__EXCEPTION_IN_REBALANCE_FOR_MEMBER_0_Exception_1,
                           member.getId(), ex.getMessage()), ex);
@@ -297,7 +301,7 @@ public class RebalanceCommand implements GfshCommand {
                   resultList = (ArrayList) executeFunction(rebalanceFunction, functionArgs, member)
                       .getResult();
                 } catch (Exception ex) {
-                  LogWrapper.getInstance()
+                  LogWrapper.getInstance(CliUtil.getCacheIfExists(RebalanceCommand.this::getCache))
                       .info(CliStrings.format(
                           CliStrings.REBALANCE__MSG__EXCEPTION_IN_REBALANCE_FOR_MEMBER_0_Exception_1,
                           member.getId(), ex.getMessage()), ex);
@@ -346,16 +350,19 @@ public class RebalanceCommand implements GfshCommand {
             }
             index++;
           }
-          LogWrapper.getInstance().info("Rebalance returning result " + result);
+          LogWrapper.getInstance(CliUtil.getCacheIfExists(RebalanceCommand.this::getCache))
+              .info("Rebalance returning result " + result);
           return result;
         } else {
           result = executeRebalanceOnDS(cache, String.valueOf(simulate), excludeRegions);
-          LogWrapper.getInstance().info("Starting Rebalance simulate false result >> " + result);
+          LogWrapper.getInstance(CliUtil.getCacheIfExists(RebalanceCommand.this::getCache))
+              .info("Starting Rebalance simulate false result >> " + result);
         }
       } catch (Exception e) {
         result = ResultBuilder.createGemFireErrorResult(e.getMessage());
       }
-      LogWrapper.getInstance().info("Rebalance returning result >>>" + result);
+      LogWrapper.getInstance(CliUtil.getCacheIfExists(RebalanceCommand.this::getCache))
+          .info("Rebalance returning result >>>" + result);
       return result;
     }
   }
