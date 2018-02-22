@@ -95,6 +95,7 @@ public class IndexRepositoryFactory {
     }
 
     final IndexRepository repo;
+    boolean initialPdxReadSerializedFlag = DefaultQuery.getPdxReadSerialized();
     DefaultQuery.setPdxReadSerialized(true);
     try {
       // bucketTargetingMap handles partition resolver (via bucketId as callbackArg)
@@ -126,7 +127,7 @@ public class IndexRepositoryFactory {
     } finally {
       if (!success) {
         lockService.unlock(lockName);
-        DefaultQuery.setPdxReadSerialized(false);
+        DefaultQuery.setPdxReadSerialized(initialPdxReadSerializedFlag);
       }
     }
   }
