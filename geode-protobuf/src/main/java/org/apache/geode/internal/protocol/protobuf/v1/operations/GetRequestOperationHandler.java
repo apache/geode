@@ -52,6 +52,9 @@ public class GetRequestOperationHandler
       messageExecutionContext.getCache().setReadSerializedForCurrentThread(true);
 
       Object decodedKey = serializationService.decode(request.getKey());
+      if (decodedKey == null) {
+        return Failure.of(BasicTypes.ErrorCode.INVALID_REQUEST, "Performing a get on a NULL key.");
+      }
       Object resultValue = region.get(decodedKey);
 
       if (resultValue == null) {
