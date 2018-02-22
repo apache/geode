@@ -77,7 +77,8 @@ public abstract class Handshake {
 
   protected SecurityService securityService;
 
-  protected byte replyCode;
+  /** This is used as part of our hash, so it must be a stable value */
+  protected abstract byte getReplyCode();
 
   protected int clientReadTimeout = PoolFactory.DEFAULT_READ_TIMEOUT;
 
@@ -143,7 +144,6 @@ public abstract class Handshake {
   protected Handshake(Handshake handshake) {
     this.clientConflation = handshake.clientConflation;
     this.clientReadTimeout = handshake.clientReadTimeout;
-    this.replyCode = handshake.replyCode;
     this.credentials = handshake.credentials;
     this.overrides = handshake.overrides;
     this.system = handshake.system;
@@ -331,7 +331,7 @@ public abstract class Handshake {
   }
 
   public boolean isOK() {
-    return this.replyCode == REPLY_OK;
+    return getReplyCode() == REPLY_OK;
   }
 
   public void setClientReadTimeout(int clientReadTimeout) {
@@ -352,12 +352,11 @@ public abstract class Handshake {
   public boolean equals(Object other) {
     if (other == this)
       return true;
-    // if (other == null) return false;
     if (!(other instanceof Handshake))
       return false;
     final Handshake that = (Handshake) other;
 
-    if (this.id.isSameDSMember(that.id) && this.replyCode == that.replyCode) {
+    if (this.id.isSameDSMember(that.id) && getReplyCode() == that.getReplyCode()) {
       return true;
     } else {
       return false;
@@ -366,11 +365,10 @@ public abstract class Handshake {
 
   @Override
   public int hashCode() {
-    int result = 17;
     final int mult = 37;
 
-    result = this.id.hashCode();
-    result = mult * result + this.replyCode;
+    int result = this.id.hashCode();
+    result = mult * result + getReplyCode();
 
     return result;
   }
@@ -378,7 +376,7 @@ public abstract class Handshake {
   @Override
   public String toString() {
     StringBuffer buf = new StringBuffer().append("HandShake@").append(System.identityHashCode(this))
-        .append(" code: ").append(this.replyCode);
+        .append(" code: ").append(getReplyCode());
     if (this.id != null) {
       buf.append(" identity: ");
       buf.append(this.id.toString());

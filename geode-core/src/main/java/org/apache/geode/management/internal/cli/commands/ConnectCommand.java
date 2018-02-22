@@ -129,14 +129,17 @@ public class ConnectCommand implements GfshCommand {
           .createInfoResult("Already connected to: " + getGfsh().getOperationInvoker().toString());
     }
 
+    if (StringUtils.startsWith(url, "https")) {
+      useSsl = true;
+    }
+
     // ssl options are passed in in the order defined in USER_INPUT_PROPERTIES, note the two types
     // are null, because we don't have connect command options for them yet
     Properties gfProperties = resolveSslProperties(gfsh, useSsl, null, gfSecurityPropertiesFile,
         keystore, keystorePassword, null, truststore, truststorePassword, null, sslCiphers,
         sslProtocols, null);
 
-    if (containsSSLConfig(gfProperties) || containsLegacySSLConfig(gfProperties)
-        || StringUtils.startsWith(url, "https")) {
+    if (containsSSLConfig(gfProperties) || containsLegacySSLConfig(gfProperties)) {
       useSsl = true;
     }
 

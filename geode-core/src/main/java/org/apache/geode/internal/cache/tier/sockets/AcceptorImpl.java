@@ -17,9 +17,11 @@ package org.apache.geode.internal.cache.tier.sockets;
 import static org.apache.geode.distributed.ConfigurationProperties.SECURITY_CLIENT_ACCESSOR_PP;
 import static org.apache.geode.internal.cache.tier.CommunicationMode.ClientToServerForQueue;
 
+import java.io.DataOutputStream;
 import java.io.EOFException;
 import java.io.IOException;
 import java.io.InterruptedIOException;
+import java.io.OutputStream;
 import java.net.BindException;
 import java.net.Inet6Address;
 import java.net.InetAddress;
@@ -58,6 +60,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 import org.apache.logging.log4j.Logger;
 
 import org.apache.geode.CancelException;
+import org.apache.geode.DataSerializer;
 import org.apache.geode.SystemFailure;
 import org.apache.geode.ToDataException;
 import org.apache.geode.cache.Cache;
@@ -65,12 +68,14 @@ import org.apache.geode.cache.RegionDestroyedException;
 import org.apache.geode.cache.client.internal.PoolImpl;
 import org.apache.geode.cache.server.CacheServer;
 import org.apache.geode.cache.wan.GatewayTransportFilter;
+import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.distributed.internal.DistributionConfig;
 import org.apache.geode.distributed.internal.DistributionManager;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.distributed.internal.LonerDistributionManager;
 import org.apache.geode.distributed.internal.PooledExecutorWithDMStats;
 import org.apache.geode.distributed.internal.ReplyProcessor21;
+import org.apache.geode.internal.HeapDataOutputStream;
 import org.apache.geode.internal.SystemTimer;
 import org.apache.geode.internal.Version;
 import org.apache.geode.internal.cache.BucketAdvisor;
@@ -1443,9 +1448,10 @@ public class AcceptorImpl implements Acceptor, Runnable, CommBufferPool {
                 Integer.valueOf(this.maxConnections)}));
         if (communicationMode.expectsConnectionRefusalMessage()) {
           try {
-            ServerHandshakeProcessor.refuse(socket.getOutputStream(),
+            refuseHandshake(socket.getOutputStream(),
                 LocalizedStrings.AcceptorImpl_EXCEEDED_MAX_CONNECTIONS_0
-                    .toLocalizedString(Integer.valueOf(this.maxConnections)));
+                    .toLocalizedString(Integer.valueOf(this.maxConnections)),
+                REPLY_REFUSED);
           } catch (Exception ex) {
             logger.debug("rejection message failed", ex);
           }
@@ -1481,9 +1487,10 @@ public class AcceptorImpl implements Acceptor, Runnable, CommBufferPool {
             LocalizedStrings.AcceptorImpl_REJECTED_CONNECTION_FROM_0_BECAUSE_REQUEST_REJECTED_BY_POOL,
             new Object[] {serverConn}));
         try {
-          ServerHandshakeProcessor.refuse(socket.getOutputStream(),
+          refuseHandshake(socket.getOutputStream(),
               LocalizedStrings.AcceptorImpl_EXCEEDED_MAX_CONNECTIONS_0
-                  .toLocalizedString(Integer.valueOf(this.maxConnections)));
+                  .toLocalizedString(Integer.valueOf(this.maxConnections)),
+              REPLY_REFUSED);
 
         } catch (Exception ex) {
           logger.debug("rejection message failed", ex);
@@ -1491,6 +1498,43 @@ public class AcceptorImpl implements Acceptor, Runnable, CommBufferPool {
         serverConn.cleanup();
       }
     }
+  }
+
+  static final byte REPLY_REFUSED = (byte) 60;
+  static final byte REPLY_INVALID = (byte) 61;
+
+  void refuseHandshake(OutputStream out, String message, byte exception) throws IOException {
+
+    HeapDataOutputStream hdos = new HeapDataOutputStream(32, Version.CURRENT);
+    DataOutputStream dos = new DataOutputStream(hdos);
+    // Write refused reply
+    dos.writeByte(exception);
+
+    // write dummy endpointType
+    dos.writeByte(0);
+    // write dummy queueSize
+    dos.writeInt(0);
+
+    // Write the server's member
+    DistributedMember member = InternalDistributedSystem.getAnyInstance().getDistributedMember();
+    HeapDataOutputStream memberDos = new HeapDataOutputStream(Version.CURRENT);
+    DataSerializer.writeObject(member, memberDos);
+    DataSerializer.writeByteArray(memberDos.toByteArray(), dos);
+    memberDos.close();
+
+    // Write the refusal message
+    if (message == null) {
+      message = "";
+    }
+    dos.writeUTF(message);
+
+    // Write dummy delta-propagation property value. This will never be read at
+    // receiver because the exception byte above will cause the receiver code
+    // throw an exception before the below byte could be read.
+    dos.writeBoolean(Boolean.TRUE);
+
+    out.write(hdos.toByteArray());
+    out.flush();
   }
 
   private boolean handOffQueueInitialization(Socket socket, CommunicationMode communicationMode) {

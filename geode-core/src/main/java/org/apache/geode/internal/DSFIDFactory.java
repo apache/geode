@@ -401,8 +401,6 @@ import org.apache.geode.internal.cache.wan.GatewaySenderAdvisor;
 import org.apache.geode.internal.cache.wan.GatewaySenderEventCallbackArgument;
 import org.apache.geode.internal.cache.wan.GatewaySenderEventImpl;
 import org.apache.geode.internal.cache.wan.GatewaySenderQueueEntrySynchronizationOperation;
-import org.apache.geode.internal.cache.wan.parallel.ParallelQueueBatchRemovalMessage;
-import org.apache.geode.internal.cache.wan.parallel.ParallelQueueBatchRemovalMessage.BatchRemovalReplyMessage;
 import org.apache.geode.internal.cache.wan.parallel.ParallelQueueRemovalMessage;
 import org.apache.geode.internal.cache.wan.serial.BatchDestroyOperation;
 import org.apache.geode.management.internal.JmxManagerAdvisor.JmxManagerProfile;
@@ -887,8 +885,6 @@ public class DSFIDFactory implements DataSerializableFixedID {
     registerDSFID(FLOW_CONTROL_PERMIT_MESSAGE, FlowControlPermitMessage.class);
     registerDSFID(REQUEST_FILTERINFO_MESSAGE, InitialImageOperation.RequestFilterInfoMessage.class);
     registerDSFID(PARALLEL_QUEUE_REMOVAL_MESSAGE, ParallelQueueRemovalMessage.class);
-    registerDSFID(PARALLEL_QUEUE_BATCH_REMOVAL_MESSAGE, ParallelQueueBatchRemovalMessage.class);
-    registerDSFID(PARALLEL_QUEUE_BATCH_REMOVAL_REPLY, BatchRemovalReplyMessage.class);
     registerDSFID(BATCH_DESTROY_MESSAGE, BatchDestroyOperation.DestroyMessage.class);
     registerDSFID(FIND_REMOTE_TX_MESSAGE, FindRemoteTXMessage.class);
     registerDSFID(FIND_REMOTE_TX_REPLY, FindRemoteTXMessageReply.class);

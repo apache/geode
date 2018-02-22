@@ -14,7 +14,7 @@
  */
 package org.apache.geode.cache.lucene;
 
-import static org.apache.geode.cache.lucene.test.LuceneTestUtilities.*;
+import static org.apache.geode.cache.lucene.test.LuceneTestUtilities.REGION_NAME;
 
 import java.util.Properties;
 
@@ -58,6 +58,14 @@ public abstract class LuceneDUnitTest extends JUnit4CacheTestCase {
   protected void initAccessor(SerializableRunnableIF createIndex, RegionTestableType regionTestType)
       throws Exception {
     createIndex.run();
+    regionTestType.createAccessor(getCache(), REGION_NAME);
+  }
+
+  protected void initDataStore(RegionTestableType regionTestType) throws Exception {
+    regionTestType.createDataStore(getCache(), REGION_NAME);
+  }
+
+  protected void initAccessor(RegionTestableType regionTestType) throws Exception {
     regionTestType.createAccessor(getCache(), REGION_NAME);
   }
 

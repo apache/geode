@@ -15,7 +15,6 @@
 package org.apache.geode.management.internal.cli.commands;
 
 import static org.apache.geode.distributed.ConfigurationProperties.ENABLE_CLUSTER_CONFIGURATION;
-import static org.apache.geode.distributed.ConfigurationProperties.GROUPS;
 import static org.apache.geode.distributed.ConfigurationProperties.HTTP_SERVICE_PORT;
 import static org.apache.geode.distributed.ConfigurationProperties.JMX_MANAGER;
 import static org.apache.geode.distributed.ConfigurationProperties.JMX_MANAGER_PORT;
@@ -84,13 +83,10 @@ public class IndexCommandsShareConfigurationDUnitTest {
     locatorProps.setProperty(JMX_MANAGER_PORT, String.valueOf(jmxPort));
     locatorProps.setProperty(HTTP_SERVICE_PORT, String.valueOf(httpPort));
 
-    locator = startupRule.startLocatorVM(0, locatorProps);
+    locator = startupRule.startLocatorVM(0, x -> x.withProperties(locatorProps));
 
     gfsh.connectAndVerify(locator.getJmxPort(), GfshCommandRule.PortType.jmxManager);
-
-    Properties props = new Properties();
-    props.setProperty(GROUPS, groupName);
-    serverVM = startupRule.startServerVM(1, props, locator.getPort());
+    serverVM = startupRule.startServerVM(1, groupName, locator.getPort());
     serverVM.invoke(() -> {
       InternalCache cache = ClusterStartupRule.getCache();
       Region parReg =
@@ -142,10 +138,7 @@ public class IndexCommandsShareConfigurationDUnitTest {
 
     // Restart the data member cache to make sure that the index is destroyed.
     startupRule.stopVM(1);
-
-    Properties props = new Properties();
-    props.setProperty(GROUPS, groupName);
-    serverVM = startupRule.startServerVM(1, props, locator.getPort());
+    serverVM = startupRule.startServerVM(1, groupName, locator.getPort());
 
     serverVM.invoke(() -> {
       InternalCache restartedCache = ClusterStartupRule.getCache();

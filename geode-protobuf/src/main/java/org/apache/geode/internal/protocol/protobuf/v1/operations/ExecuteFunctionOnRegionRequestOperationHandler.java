@@ -23,7 +23,6 @@ import org.apache.geode.cache.execute.Execution;
 import org.apache.geode.cache.execute.FunctionService;
 import org.apache.geode.internal.exception.InvalidExecutionContextException;
 import org.apache.geode.internal.protocol.protobuf.v1.BasicTypes;
-import org.apache.geode.internal.protocol.protobuf.v1.ClientProtocol;
 import org.apache.geode.internal.protocol.protobuf.v1.Failure;
 import org.apache.geode.internal.protocol.protobuf.v1.FunctionAPI.ExecuteFunctionOnRegionRequest;
 import org.apache.geode.internal.protocol.protobuf.v1.FunctionAPI.ExecuteFunctionOnRegionResponse;
@@ -63,10 +62,8 @@ public class ExecuteFunctionOnRegionRequestOperationHandler extends
       MessageExecutionContext executionContext) throws InvalidExecutionContextException {
     final Region<Object, Object> region = executionContext.getCache().getRegion(regionName);
     if (region == null) {
-      return Failure.of(ClientProtocol.ErrorResponse.newBuilder()
-          .setError(BasicTypes.Error.newBuilder().setErrorCode(BasicTypes.ErrorCode.INVALID_REQUEST)
-              .setMessage("Region \"" + regionName + "\" not found"))
-          .build());
+      return Failure.of(BasicTypes.ErrorCode.INVALID_REQUEST,
+          "Region \"" + regionName + "\" not found");
     }
     return region;
   }
@@ -74,7 +71,11 @@ public class ExecuteFunctionOnRegionRequestOperationHandler extends
   @Override
   protected Object getFunctionArguments(ExecuteFunctionOnRegionRequest request,
       ProtobufSerializationService serializationService) throws DecodingException {
-    return serializationService.decode(request.getArguments());
+    if (request.hasArguments()) {
+      return serializationService.decode(request.getArguments());
+    } else {
+      return null;
+    }
   }
 
   @Override

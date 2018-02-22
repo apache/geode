@@ -121,7 +121,7 @@ public class ExecuteFunctionOnGroupRequestOperationHandlerJUnitTest {
         FunctionAPI.ExecuteFunctionOnGroupRequest.newBuilder().setFunctionID(TEST_FUNCTION_ID)
             .addGroupName(NOT_A_GROUP).build();
 
-    final Result<FunctionAPI.ExecuteFunctionOnGroupResponse, ClientProtocol.ErrorResponse> result =
+    final Result<FunctionAPI.ExecuteFunctionOnGroupResponse> result =
         operationHandler.process(serializationService, request, mockedMessageExecutionContext());
 
     assertTrue(result instanceof Failure);
@@ -134,7 +134,7 @@ public class ExecuteFunctionOnGroupRequestOperationHandlerJUnitTest {
         FunctionAPI.ExecuteFunctionOnGroupRequest.newBuilder().setFunctionID(TEST_FUNCTION_ID)
             .build();
 
-    final Result<FunctionAPI.ExecuteFunctionOnGroupResponse, ClientProtocol.ErrorResponse> result =
+    final Result<FunctionAPI.ExecuteFunctionOnGroupResponse> result =
         operationHandler.process(serializationService, request, mockedMessageExecutionContext());
 
     assertTrue(result instanceof Failure);
@@ -151,7 +151,7 @@ public class ExecuteFunctionOnGroupRequestOperationHandlerJUnitTest {
         FunctionAPI.ExecuteFunctionOnGroupRequest.newBuilder().setFunctionID(TEST_FUNCTION_ID)
             .addGroupName(TEST_GROUP1).addGroupName(TEST_GROUP2).build();
 
-    final Result<FunctionAPI.ExecuteFunctionOnGroupResponse, ClientProtocol.ErrorResponse> result =
+    final Result<FunctionAPI.ExecuteFunctionOnGroupResponse> result =
         operationHandler.process(serializationService, request, mockedMessageExecutionContext());
 
     // unfortunately FunctionService fishes for a DistributedSystem and throws an exception
@@ -172,7 +172,7 @@ public class ExecuteFunctionOnGroupRequestOperationHandlerJUnitTest {
         FunctionAPI.ExecuteFunctionOnGroupRequest.newBuilder().setFunctionID(TEST_FUNCTION_ID)
             .addGroupName(TEST_GROUP1).build();
 
-    final Result<FunctionAPI.ExecuteFunctionOnGroupResponse, ClientProtocol.ErrorResponse> result =
+    final Result<FunctionAPI.ExecuteFunctionOnGroupResponse> result =
         operationHandler.process(serializationService, request, mockedMessageExecutionContext());
 
     assertTrue(result instanceof Failure);
@@ -187,7 +187,7 @@ public class ExecuteFunctionOnGroupRequestOperationHandlerJUnitTest {
         FunctionAPI.ExecuteFunctionOnGroupRequest.newBuilder()
             .setFunctionID("I am not a function, I am a human").addGroupName(TEST_GROUP1).build();
 
-    final Result<FunctionAPI.ExecuteFunctionOnGroupResponse, ClientProtocol.ErrorResponse> result =
+    final Result<FunctionAPI.ExecuteFunctionOnGroupResponse> result =
         operationHandler.process(serializationService, request, mockedMessageExecutionContext());
 
     final ClientProtocol.ErrorResponse errorMessage = result.getErrorMessage();

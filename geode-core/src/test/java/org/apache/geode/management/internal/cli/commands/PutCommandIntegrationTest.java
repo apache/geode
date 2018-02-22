@@ -70,6 +70,29 @@ public class PutCommandIntegrationTest {
   }
 
   @Test
+  public void putIfNotExists() throws Exception {
+    gfsh.executeAndAssertThat("put --region=/testRegion --key=key1 --value=value1")
+        .statusIsSuccess().containsKeyValuePair("Result", "true");
+    assertThat(server.getCache().getRegion("testRegion").get("key1")).isEqualTo("value1");
+
+    // if unspecified if-not-exits=false, so override
+    gfsh.executeAndAssertThat("put --region=/testRegion --key=key1 --value=value2")
+        .statusIsSuccess().containsKeyValuePair("Result", "true");
+    assertThat(server.getCache().getRegion("testRegion").get("key1")).isEqualTo("value2");
+
+    // if specified then true, so skip it
+    gfsh.executeAndAssertThat("put --region=/testRegion --key=key1 --value=value3 --if-not-exists")
+        .statusIsSuccess().containsKeyValuePair("Result", "true");
+    assertThat(server.getCache().getRegion("testRegion").get("key1")).isEqualTo("value2");
+
+    // if specified and set to false then honor it
+    gfsh.executeAndAssertThat(
+        "put --region=/testRegion --key=key1 --value=value3 --if-not-exists=false")
+        .statusIsSuccess().containsKeyValuePair("Result", "true");
+    assertThat(server.getCache().getRegion("testRegion").get("key1")).isEqualTo("value3");
+  }
+
+  @Test
   // Bug : 51587 : GFSH command failing when ; is present in either key or value in put operation
   public void putWithSemicoln() throws Exception {
     gfsh.executeAndAssertThat("put --region=/testRegion --key=key1;key1 --value=value1;value1")
@@ -80,11 +103,28 @@ public class PutCommandIntegrationTest {
 
   @Test
   public void putIfAbsent() throws Exception {
+    // skip-if-exists is deprecated.
+    gfsh.executeAndAssertThat("help put").statusIsSuccess()
+        .containsOutput("(Deprecated: Use --if-not-exists).");
+
     gfsh.executeAndAssertThat("put --region=/testRegion --key=key1 --value=value1")
         .statusIsSuccess().containsKeyValuePair("Result", "true");
-    gfsh.executeAndAssertThat("put --region=/testRegion --key=key1 --value=value2 --skip-if-exists")
+
+    // if unspecified then override
+    gfsh.executeAndAssertThat("put --region=/testRegion --key=key1 --value=value2")
         .statusIsSuccess();
-    assertThat(server.getCache().getRegion("testRegion").get("key1")).isEqualTo("value1");
+    assertThat(server.getCache().getRegion("testRegion").get("key1")).isEqualTo("value2");
+
+    // if specified then don't override
+    gfsh.executeAndAssertThat("put --region=/testRegion --key=key1 --value=value3 --skip-if-exists")
+        .statusIsSuccess().containsKeyValuePair("Result", "true");
+    assertThat(server.getCache().getRegion("testRegion").get("key1")).isEqualTo("value2");
+
+    // if specified and set to false then honor it
+    gfsh.executeAndAssertThat(
+        "put --region=/testRegion --key=key1 --value=value3 --skip-if-exists=false")
+        .statusIsSuccess().containsKeyValuePair("Result", "true");
+    assertThat(server.getCache().getRegion("testRegion").get("key1")).isEqualTo("value3");
   }
 
   @Test

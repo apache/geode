@@ -80,11 +80,14 @@ public class CliStrings {
   public static final String MEMBER = "member";
   public static final String MEMBERS = "members";
   public static final String IFEXISTS = "if-exists";
+  public static final String IFNOTEXISTS = "if-not-exists";
   public static final String JAR = "jar";
   public static final String JARS = "jars";
 
   public static final String IFEXISTS_HELP =
       "If true, the command will be a no-op if the entity does not exist.";
+  public static final String IFNOTEXISTS_HELP =
+      "If true, the command will be a no-op if the entity does exist.";
   public static final String ENTRY_IDLE_TIME_CUSTOM_EXPIRY = "entry-idle-time-custom-expiry";
   public static final String ENTRY_TTL_CUSTOM_EXPIRY = "entry-time-to-live-custom-expiry";
   public static final String ENTRY_IDLE_TIME_CUSTOM_EXPIRY_HELP =
@@ -740,11 +743,11 @@ public class CliStrings {
       "Name/Id of the member in which the index will be created.";
   public static final String CREATE_INDEX__TYPE = "type";
   public static final String CREATE_INDEX__TYPE__HELP =
-      "Type of the index. Valid values are: range and key. Deprecated : hash has been deprecated since Apache Geode 1.4.0";
+      "Type of the index. Valid values are: range and key. Deprecated: Since Geode 1.4, hash should not be used.";
   public static final String CREATE_INDEX__GROUP__HELP =
       "Group of members in which the index will be created.";
   public static final String CREATE_INDEX__INVALID__INDEX__TYPE__MESSAGE =
-      "Invalid index type,value must be one of the following: range, key and hash. Deprecated : hash has been deprecated since Apache Geode 1.4.0";
+      "Invalid index type. Value must be either range or key.";
   public static final String CREATE_INDEX__SUCCESS__MSG =
       "Index successfully created with following details";
   public static final String CREATE_INDEX__FAILURE__MSG =
@@ -824,10 +827,10 @@ public class CliStrings {
       "Group(s) of members on which the region will be created.";
   public static final String CREATE_REGION__USEATTRIBUTESFROM = "template-region";
   public static final String CREATE_REGION__USEATTRIBUTESFROM__HELP =
-      "Name/Path of the region whose attributes should be duplicated when creating this region.";
+      "Name/Path of the region whose attributes should be duplicated when creating this region. Deprecated: Since Geode 1.5, regions should be created explicitly so that undesirable attributes are not copied inadvertently.";
   public static final String CREATE_REGION__SKIPIFEXISTS = "skip-if-exists";
   public static final String CREATE_REGION__SKIPIFEXISTS__HELP =
-      "(Deprecated: Use --if-not-exists) Skip region creation if the region already exists.";
+      "Skip region creation if the region already exists. Deprecated: Since Geode 1.5. Use --if-not-exists instead.";
   public static final String CREATE_REGION__IFNOTEXISTS = "if-not-exists";
   public static final String CREATE_REGION__IFNOTEXISTS__HELP =
       "By default, an attempt to create a duplicate region is reported as an error. If this option is specified without a value or is specified with a value of true, then gfsh displays a \"Skipping...\" acknowledgement, but does not throw an error.";
@@ -1429,7 +1432,7 @@ public class CliStrings {
       "Log entries that occurred before this time will be exported. The default is no limit. Format: yyyy/MM/dd/HH/mm/ss/SSS/z OR yyyy/MM/dd";
   public static final String EXPORT_LOGS__MERGELOG = "merge-log";
   public static final String EXPORT_LOGS__MERGELOG__HELP =
-      "Whether to merge logs after exporting to the target directory. Deprecated: Since Geode1.2, no longer used.";
+      "Whether to merge logs after exporting to the target directory. Deprecated: Since Geode 1.2, no longer used.";
   public static final String EXPORT_LOGS__MSG__CANNOT_MERGE =
       "Could not merge the files in target directory";
   public static final String EXPORT_LOGS__MSG__SPECIFY_ONE_OF_OPTION =
@@ -1807,6 +1810,8 @@ public class CliStrings {
       "String or JSON text from which to create the value.  Examples include: \"manager\", \"100L\" and \"('value': 'widget')\".";
   public static final String PUT__PUTIFABSENT = "skip-if-exists";
   public static final String PUT__PUTIFABSENT__HELP =
+      "(Deprecated: Use --if-not-exists). Skip the put operation when an entry with the same key already exists. The default is to overwrite the entry (false).";
+  public static final String PUT__PUTIFNOTEXISTS__HELP =
       "Skip the put operation when an entry with the same key already exists. The default is to overwrite the entry (false).";
   public static final String PUT__KEYCLASS = "key-class";
   public static final String PUT__KEYCLASS__HELP =
@@ -1834,7 +1839,7 @@ public class CliStrings {
   public static final String QUERY__INTERACTIVE = "interactive";
   public static final String QUERY__QUERY__HELP = "The OQL string.";
   public static final String QUERY__INTERACTIVE__HELP =
-      "Deprecated. This option has no effect, but is kept around to maintain backwards compatibility with existing scripts.";
+      "Deprecated: Since Geode 1.4. This option has no effect, but is kept around to maintain backwards compatibility with existing scripts.";
   public static final String QUERY__MSG__QUERY_EMPTY = "Query is either empty or Null";
   public static final String QUERY__MSG__INVALID_QUERY = "Query is invalid due for error : <{0}>";
   public static final String QUERY__MSG__REGIONS_NOT_FOUND =
@@ -2195,7 +2200,7 @@ public class CliStrings {
   public static final String CREATE_GATEWAYSENDER__MANUALSTART = "manual-start";
   public static final String CREATE_GATEWAYSENDER__MANUALSTART__HELP =
       "Whether manual start is to be enabled or the sender will start automatically after creation.\n"
-          + "Deprecated: Manual start of senders is deprecated and will be removed in a later release.";
+          + "Deprecated: Since Geode 1.4. Manual start of senders is deprecated and will be removed in a later release.";
   public static final String CREATE_GATEWAYSENDER__SOCKETBUFFERSIZE = SOCKET_BUFFER_SIZE;
   public static final String CREATE_GATEWAYSENDER__SOCKETBUFFERSIZE__HELP =
       "The buffer size of the socket connection between this GatewaySender and its receiving GatewayReceiver.";
@@ -2694,7 +2699,7 @@ public class CliStrings {
       "Member name or ID of the Locator in the Geode cluster.";
   public static final String STATUS_LOCATOR__PID = "pid";
   public static final String STATUS_LOCATOR__PID__HELP =
-      "Process ID (PID) of the running Locator. Deprecated: Since Geode1.2. Requires the JDK tools.jar which is not included on the classpath by default. Use --dir instead.";
+      "Process ID (PID) of the running Locator. Deprecated: Since Geode 1.2. Requires the JDK tools.jar which is not included on the classpath by default. Use --dir instead.";
   public static final String STATUS_LOCATOR__PORT = "port";
   public static final String STATUS_LOCATOR__PORT__HELP =
       "Port on which the Locator is listening. The default is 10334.";
@@ -2718,7 +2723,7 @@ public class CliStrings {
       "No Geode Cache Server with member name or ID {0} could be found.";
   public static final String STATUS_SERVER__PID = "pid";
   public static final String STATUS_SERVER__PID__HELP =
-      "Process ID (PID) of the running Geode Cache Server. Deprecated: Since Geode1.2. Requires the JDK tools.jar which is not included on the classpath by default. Use --dir instead.";
+      "Process ID (PID) of the running Geode Cache Server. Deprecated: Since Geode 1.2. Requires the JDK tools.jar which is not included on the classpath by default. Use --dir instead.";
 
   /* stop gateway-receiver */
   public static final String STOP_GATEWAYRECEIVER = "stop gateway-receiver";
@@ -2751,7 +2756,7 @@ public class CliStrings {
       "Member name or ID of the Locator in the Geode cluster.";
   public static final String STOP_LOCATOR__PID = "pid";
   public static final String STOP_LOCATOR__PID__HELP =
-      "The process id (PID) of the running Locator. Deprecated: Since Geode1.2. Requires the JDK tools.jar which is not included on the classpath by default. Use --dir instead.";
+      "The process id (PID) of the running Locator. Deprecated: Since Geode 1.2. Requires the JDK tools.jar which is not included on the classpath by default. Use --dir instead.";
   public static final String STOP_LOCATOR__GENERAL_ERROR_MESSAGE =
       "An error occurred while attempting to stop a Locator: %1$s";
   public static final String STOP_LOCATOR__LOCATOR_IS_CACHE_SERVER_ERROR_MESSAGE =
@@ -2782,7 +2787,7 @@ public class CliStrings {
       "No Cache Server with member name or ID {0} could be found.";
   public static final String STOP_SERVER__PID = "pid";
   public static final String STOP_SERVER__PID__HELP =
-      "Process ID (PID) of the running Geode Cache Server. Deprecated: Since Geode1.2. Requires the JDK tools.jar which is not included on the classpath by default. Use --dir instead.";
+      "Process ID (PID) of the running Geode Cache Server. Deprecated: Since Geode 1.2. Requires the JDK tools.jar which is not included on the classpath by default. Use --dir instead.";
   public static final String STOP_SERVER__SHUTDOWN_MEMBER_MESSAGE =
       "Cache Server {0} has been requested to stop.";
   public static final String STOP_SERVER__STOPPING_SERVER_MESSAGE =

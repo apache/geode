@@ -17,11 +17,12 @@ package org.apache.geode.management.internal.cli.commands;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-import java.io.IOException;
 import java.util.Arrays;
 import java.util.stream.IntStream;
 
-import org.junit.*;
+import org.junit.BeforeClass;
+import org.junit.ClassRule;
+import org.junit.Test;
 import org.junit.experimental.categories.Category;
 import org.w3c.dom.Document;
 import org.w3c.dom.Node;
@@ -29,7 +30,11 @@ import org.w3c.dom.NodeList;
 
 import org.apache.geode.cache.Region;
 import org.apache.geode.distributed.internal.ClusterConfigurationService;
-import org.apache.geode.internal.cache.*;
+import org.apache.geode.internal.cache.CachedDeserializable;
+import org.apache.geode.internal.cache.CachedDeserializableFactory;
+import org.apache.geode.internal.cache.EntryEventImpl;
+import org.apache.geode.internal.cache.LocalRegion;
+import org.apache.geode.internal.cache.RegionEntry;
 import org.apache.geode.management.internal.configuration.domain.Configuration;
 import org.apache.geode.management.internal.configuration.utils.XmlUtils;
 import org.apache.geode.test.dunit.rules.ClusterStartupRule;
@@ -182,11 +187,7 @@ public class AlterCompressorDUnitTest {
   private void startServers() throws Exception {
     // start server1 and server2 in parallel because they each has a replicate data store on disk
     Arrays.asList(1, 2).parallelStream().forEach(id -> {
-      try {
-        cluster.startServerVM(id, "dataStore", locator.getPort());
-      } catch (IOException e) {
-        throw new RuntimeException(e.getMessage(), e);
-      }
+      cluster.startServerVM(id, "dataStore", locator.getPort());
     });
 
     cluster.startServerVM(3, "accessor", locator.getPort());

@@ -22,14 +22,11 @@ import org.apache.logging.log4j.Logger;
 import org.apache.geode.internal.exception.InvalidExecutionContextException;
 import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.internal.protocol.operations.ProtobufOperationHandler;
-import org.apache.geode.internal.protocol.protobuf.v1.ClientProtocol;
 import org.apache.geode.internal.protocol.protobuf.v1.ConnectionAPI;
 import org.apache.geode.internal.protocol.protobuf.v1.MessageExecutionContext;
 import org.apache.geode.internal.protocol.protobuf.v1.ProtobufSerializationService;
 import org.apache.geode.internal.protocol.protobuf.v1.Result;
 import org.apache.geode.internal.protocol.protobuf.v1.Success;
-import org.apache.geode.internal.protocol.protobuf.v1.serialization.exception.DecodingException;
-import org.apache.geode.internal.protocol.protobuf.v1.serialization.exception.EncodingException;
 import org.apache.geode.internal.protocol.protobuf.v1.state.ProtobufConnectionAuthenticatingStateProcessor;
 import org.apache.geode.internal.protocol.protobuf.v1.state.ProtobufConnectionStateProcessor;
 import org.apache.geode.internal.protocol.protobuf.v1.state.ProtobufConnectionTerminatingStateProcessor;
@@ -41,7 +38,7 @@ public class AuthenticationRequestOperationHandler implements
   private static final Logger logger = LogService.getLogger();
 
   @Override
-  public Result<ConnectionAPI.AuthenticationResponse, ClientProtocol.ErrorResponse> process(
+  public Result<ConnectionAPI.AuthenticationResponse> process(
       ProtobufSerializationService serializationService,
       ConnectionAPI.AuthenticationRequest request, MessageExecutionContext messageExecutionContext)
       throws ConnectionStateException {
