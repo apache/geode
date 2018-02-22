@@ -14,37 +14,19 @@
  */
 package org.apache.geode.cache.lucene;
 
-import static org.apache.geode.cache.lucene.test.LuceneTestUtilities.*;
-import static org.junit.Assert.*;
-
-import java.util.Properties;
+import static org.apache.geode.cache.lucene.test.LuceneTestUtilities.REGION_NAME;
 
 import junitparams.JUnitParamsRunner;
-import junitparams.Parameters;
-import org.apache.lucene.index.Term;
-import org.apache.lucene.search.TermQuery;
-import org.junit.Test;
 import org.junit.experimental.categories.Category;
 import org.junit.runner.RunWith;
 
 import org.apache.geode.cache.Cache;
-import org.apache.geode.cache.PartitionAttributes;
-import org.apache.geode.cache.PartitionAttributesFactory;
-import org.apache.geode.cache.Region;
-import org.apache.geode.cache.RegionShortcut;
 import org.apache.geode.cache.client.ClientCache;
 import org.apache.geode.cache.client.ClientCacheFactory;
 import org.apache.geode.cache.client.ClientRegionShortcut;
-import org.apache.geode.cache.lucene.internal.LuceneIndexFactoryImpl;
-import org.apache.geode.cache.lucene.internal.LuceneQueryImpl;
-import org.apache.geode.cache.lucene.internal.LuceneServiceImpl;
-import org.apache.geode.cache.lucene.test.LuceneTestUtilities;
 import org.apache.geode.cache.server.CacheServer;
-import org.apache.geode.distributed.ConfigurationProperties;
-import org.apache.geode.test.dunit.AsyncInvocation;
 import org.apache.geode.test.dunit.SerializableCallableIF;
 import org.apache.geode.test.dunit.SerializableRunnableIF;
-import org.apache.geode.test.dunit.VM;
 import org.apache.geode.test.junit.categories.DistributedTest;
 
 /**

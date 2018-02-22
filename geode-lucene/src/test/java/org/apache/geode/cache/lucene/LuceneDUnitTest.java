@@ -14,7 +14,7 @@
  */
 package org.apache.geode.cache.lucene;
 
-import static org.apache.geode.cache.lucene.test.LuceneTestUtilities.*;
+import static org.apache.geode.cache.lucene.test.LuceneTestUtilities.REGION_NAME;
 
 import java.util.Properties;
 
