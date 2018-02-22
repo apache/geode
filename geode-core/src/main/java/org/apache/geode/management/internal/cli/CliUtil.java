@@ -23,17 +23,16 @@ import java.io.FileOutputStream;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.PrintWriter;
 import java.io.Serializable;
-import java.io.StringWriter;
 import java.io.UnsupportedEncodingException;
 import java.net.URLDecoder;
 import java.nio.charset.Charset;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.zip.DataFormatException;
@@ -55,7 +54,6 @@ import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.internal.ClassPathLoader;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.cache.execute.AbstractExecution;
-import org.apache.geode.internal.cache.tier.sockets.CacheClientProxy;
 import org.apache.geode.internal.util.IOUtils;
 import org.apache.geode.management.DistributedRegionMXBean;
 import org.apache.geode.management.ManagementService;
@@ -89,43 +87,28 @@ public class CliUtil {
   }
 
   public static String cliDependenciesExist(boolean includeGfshDependencies) {
-    String jarProductName;
-
-    // Parser & CliCommand from Spring Shell
-    jarProductName =
-        checkLibraryByLoadingClass("org.springframework.shell.core.Parser", "Spring Shell");
-    jarProductName = checkLibraryByLoadingClass(
-        "org.springframework.shell.core.annotation.CliCommand", "Spring Shell");
-    if (jarProductName != null) {
-      return jarProductName;
-    }
-
-    // SpringVersion from Spring Core
-    jarProductName =
-        checkLibraryByLoadingClass("org.springframework.core.SpringVersion", "Spring Core");
-    if (jarProductName != null) {
-      return jarProductName;
-    }
-
+    // "Validate" each dependency by attempting to load an associated class
+    Map<String, String> classLibraryMap = new HashMap<>();
+    classLibraryMap.put("org.springframework.shell.core.Parser", "Spring Shell");
+    classLibraryMap.put("org.springframework.shell.core.annotation.CliCommand", "Spring Shell");
+    classLibraryMap.put("org.springframework.core.SpringVersion", "Spring Core");
     if (includeGfshDependencies) {
-      // ConsoleReader from jline
-      jarProductName = checkLibraryByLoadingClass("jline.console.ConsoleReader", "JLine");
-      if (jarProductName != null) {
-        return jarProductName;
-      }
+      classLibraryMap.put("jline.console.ConsoleReader", "JLine");
     }
 
-    return jarProductName;
+    List<String> unloadableJars =
+        classLibraryMap.entrySet().stream().filter(entry -> !canLoadClass(entry.getKey()))
+            .map(Map.Entry::getValue).collect(Collectors.toList());
+    return unloadableJars.isEmpty() ? null : String.join(",", unloadableJars);
   }
 
-  private static String checkLibraryByLoadingClass(String className, String jarProductName) {
+  private static boolean canLoadClass(String className) {
     try {
       ClassPathLoader.getLatest().forName(className);
     } catch (ClassNotFoundException e) {
-      return jarProductName;
+      return false;
     }
-
-    return null;
+    return true;
   }
 
   /**
@@ -157,8 +140,7 @@ public class CliUtil {
 
     String[] regionAssociatedMemberNames = regionMXBean.getMembers();
     Set<DistributedMember> matchedMembers = new HashSet<>();
-    Set<DistributedMember> allClusterMembers = new HashSet<>();
-    allClusterMembers.addAll(cache.getMembers());
+    Set<DistributedMember> allClusterMembers = new HashSet<>(cache.getMembers());
     allClusterMembers.add(cache.getDistributedSystem().getDistributedMember());
 
     for (DistributedMember member : allClusterMembers) {
@@ -369,15 +351,12 @@ public class CliUtil {
       }
     }
 
-    List<Byte[]> convertedList =
-        filesDataList.stream().map(ArrayUtils::toObject).collect(Collectors.toList());
-
-    return convertedList.toArray(new Byte[convertedList.size()][]);
+    return filesDataList.stream().map(ArrayUtils::toObject).toArray(Byte[][]::new);
   }
 
   public static byte[] toByteArray(InputStream input) throws IOException {
     ByteArrayOutputStream output = new ByteArrayOutputStream();
-    int n = 0;
+    int n;
     byte[] buffer = new byte[4096];
     while (-1 != (n = input.read(buffer))) {
       output.write(buffer, 0, n);
@@ -420,7 +399,7 @@ public class CliUtil {
     compresser.finish();
     byte[] buffer = new byte[100];
     byte[] result = new byte[0];
-    int compressedDataLength = 0;
+    int compressedDataLength;
     int totalCompressedDataLength = 0;
     do {
       byte[] newResult = new byte[result.length + buffer.length];
@@ -461,7 +440,6 @@ public class CliUtil {
     }
   }
 
-  @SuppressWarnings("unchecked")
   public static <K> Class<K> forName(String classToLoadName, String neededFor) {
     Class<K> loadedClass = null;
     try {
@@ -558,7 +536,8 @@ public class CliUtil {
     return execution.execute(function);
   }
 
-  public static void runLessCommandAsExternalViewer(Result commandResult, boolean isError) {
+
+  public static void runLessCommandAsExternalViewer(Result commandResult) {
     StringBuilder sb = new StringBuilder();
     String NEW_LINE = System.getProperty("line.separator");
 
@@ -629,7 +608,6 @@ public class CliUtil {
     public String toString() {
       return String.valueOf(dataLength);
     }
-
   }
 
   // Methods that will be removed by the next commit:
@@ -637,67 +615,4 @@ public class CliUtil {
   private static InternalCache getInternalCache() {
     return (InternalCache) CacheFactory.getAnyInstance();
   }
-
-  public static String convertStringSetToString(Set<String> stringSet, char delimiter) {
-    StringBuilder sb = new StringBuilder();
-    if (stringSet != null) {
-
-      for (String stringValue : stringSet) {
-        sb.append(stringValue);
-        sb.append(delimiter);
-      }
-    }
-    return sb.toString();
-  }
-
-  public static String convertStringListToString(List<String> stringList, char delimiter) {
-    StringBuilder sb = new StringBuilder();
-    if (stringList != null) {
-
-      for (String stringValue : stringList) {
-        sb.append(stringValue);
-        sb.append(delimiter);
-      }
-    }
-    return sb.toString();
-  }
-
-  public static String stackTraceAsString(Throwable e) {
-    String stackAsString = "";
-    if (e != null) {
-      StringWriter writer = new StringWriter();
-      PrintWriter pw = new PrintWriter(writer);
-      e.printStackTrace(pw);
-      stackAsString = writer.toString();
-    }
-    return stackAsString;
-  }
-
-  public static boolean contains(Object[] array, Object object) {
-    boolean contains = false;
-
-    if (array != null && object != null) {
-      contains = Arrays.asList(array).contains(object);
-    }
-
-    return contains;
-  }
-
-  public static <T> String arrayToString(T[] array) {
-    if (array == null) {
-      return "null";
-    }
-    return Arrays.stream(array).map(String::valueOf).collect(Collectors.joining(", "));
-  }
-
-  public static String getClientIdFromCacheClientProxy(CacheClientProxy p) {
-    if (p == null) {
-      return null;
-    }
-    StringBuffer buffer = new StringBuffer();
-    buffer.append("[").append(p.getProxyID()).append(":port=").append(p.getRemotePort())
-        .append(":primary=").append(p.isPrimary()).append("]");
-    return buffer.toString();
-  }
-
 }

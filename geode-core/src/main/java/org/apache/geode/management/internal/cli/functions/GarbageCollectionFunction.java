@@ -17,11 +17,12 @@ package org.apache.geode.management.internal.cli.functions;
 import java.util.HashMap;
 import java.util.Map;
 
+import org.apache.commons.lang.exception.ExceptionUtils;
+
 import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.execute.FunctionContext;
 import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.internal.cache.execute.InternalFunction;
-import org.apache.geode.management.internal.cli.CliUtil;
 import org.apache.geode.management.internal.cli.util.BytesToString;
 
 /**
@@ -59,7 +60,7 @@ public class GarbageCollectionFunction implements InternalFunction {
       resultMap.put("HeapSizeAfterGC", bytesToString.of(totalMemoryAfterGC - freeMemoryAfterGC));
       resultMap.put("TimeSpentInGC", String.valueOf(timeAfterGC - timeBeforeGC));
     } catch (Exception ex) {
-      String message = "Exception in GC:" + ex.getMessage() + CliUtil.stackTraceAsString(ex);
+      String message = "Exception in GC:" + ex.getMessage() + ExceptionUtils.getStackTrace(ex);
 
       context.getResultSender().lastResult(message);
     }

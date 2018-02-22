@@ -36,7 +36,6 @@ import org.apache.geode.cache.RegionAttributes;
 import org.apache.geode.cache.Scope;
 import org.apache.geode.compression.Compressor;
 import org.apache.geode.internal.cache.AbstractRegion;
-import org.apache.geode.management.internal.cli.CliUtil;
 import org.apache.geode.management.internal.cli.util.RegionAttributesDefault;
 import org.apache.geode.management.internal.cli.util.RegionAttributesNames;
 
@@ -468,7 +467,7 @@ public class RegionAttributesInfo implements Serializable {
 
     if (cacheListenerClassNames != null && !cacheListenerClassNames.isEmpty()) {
       nonDefaultAttributes.put(RegionAttributesNames.CACHE_LISTENERS,
-          CliUtil.convertStringListToString(cacheListenerClassNames, ','));
+          StringUtils.join(cacheListenerClassNames, ","));
     }
 
     if (cacheLoaderClassName != null && !cacheLoaderClassName.isEmpty()) {
