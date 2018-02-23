@@ -1879,11 +1879,11 @@ public abstract class CacheXml66DUnitTest extends CacheXmlTestCase {
   }
 
   /**
-   * Tests that a cache created with FunctionService and registered FabricFunction has correct
-   * registered Function
+   * Tests that a cache created with FunctionService and registered functions has correct registered
+   * functions.
    */
   @Test
-  public void testCacheCreationWithFuntionService() throws Exception {
+  public void testCacheCreationWithFunctionService() throws Exception {
     CacheCreation cache = new CacheCreation();
     FunctionServiceCreation fsc = new FunctionServiceCreation();
     TestFunction function1 = new TestFunction(true, TestFunction.TEST_FUNCTION2);

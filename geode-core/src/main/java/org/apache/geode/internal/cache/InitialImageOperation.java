@@ -3394,12 +3394,14 @@ public class InitialImageOperation {
         Map<? extends DataSerializable, ? extends DataSerializable> eventState,
         boolean isHARegion) {
       RegionStateMessage msg = new RegionStateMessage(dest, processorId, eventState, isHARegion);
+      msg.setSender(dm.getId()); // for EventStateHelper.dataSerialize
       dm.putOutgoing(msg);
     }
 
     public static void send(DistributionManager dm, InternalDistributedMember dest, int processorId,
         RegionVersionVector rvv, boolean isHARegion) {
       RegionStateMessage msg = new RegionStateMessage(dest, processorId, rvv, isHARegion);
+      msg.setSender(dm.getId()); // for EventStateHelper.dataSerialize
       dm.putOutgoing(msg);
     }
 
@@ -3409,7 +3411,7 @@ public class InitialImageOperation {
       dop.writeBoolean(isHARegion);
       if (eventState != null) {
         dop.writeBoolean(true);
-        EventStateHelper.dataSerialize(dop, eventState, isHARegion);
+        EventStateHelper.dataSerialize(dop, eventState, isHARegion, getSender());
       } else {
         dop.writeBoolean(false);
       }

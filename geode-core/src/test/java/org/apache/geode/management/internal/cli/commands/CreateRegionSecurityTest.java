@@ -22,14 +22,17 @@ import static org.apache.geode.test.junit.rules.GfshCommandRule.PortType.jmxMana
 import org.junit.ClassRule;
 import org.junit.Rule;
 import org.junit.Test;
+import org.junit.experimental.categories.Category;
 import org.junit.rules.TestName;
 
 import org.apache.geode.security.SimpleTestSecurityManager;
+import org.apache.geode.test.junit.categories.IntegrationTest;
 import org.apache.geode.test.junit.rules.ConnectionConfiguration;
 import org.apache.geode.test.junit.rules.GfshCommandRule;
 import org.apache.geode.test.junit.rules.ServerStarterRule;
 import org.apache.geode.test.junit.rules.serializable.SerializableTestName;
 
+@Category(IntegrationTest.class)
 public class CreateRegionSecurityTest {
   @ClassRule
   public static ServerStarterRule server = new ServerStarterRule()
@@ -53,13 +56,13 @@ public class CreateRegionSecurityTest {
   // further permission.
   @Test
   @ConnectionConfiguration(user = "dataManage", password = "dataManage")
-  public void dataManageAuthorzied() {
+  public void dataManageAuthorized() {
     String regionName = testName.getMethodName();
     gfsh.executeAndAssertThat("create region --type=REPLICATE --name=" + regionName)
         .statusIsSuccess();
 
     gfsh.executeAndAssertThat("create region --type=REPLICATE --name=" + regionName).statusIsError()
-        .containsOutput("Region /dataManageAuthorzied already exists on the cluster");
+        .containsOutput("Region /dataManageAuthorized already exists on the cluster");
 
     gfsh.executeAndAssertThat("create region --type=REPLICATE_PROXY --name=" + regionName)
         .statusIsError()

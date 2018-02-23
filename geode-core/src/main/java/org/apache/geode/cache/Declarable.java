@@ -63,6 +63,25 @@ public interface Declarable {
    *
    * @throws IllegalArgumentException If one of the configuration options in <code>props</code> is
    *         illegal or malformed.
+   * @deprecated as of Geode 1.5 implement initialize instead.
    */
   default void init(Properties props) {};
+
+  /**
+   * Initializes a user-defined object, owned by the given cache, using the given properties.
+   * Note that any uncaught exception
+   * thrown by this method will cause the <code>Cache</code> initialization to fail.
+   * Note that if this method is implemented then the deprecated init method should not be
+   * implemented.
+   * The product will call both methods assuming that only one will have a non-default
+   * implementation.
+   *
+   * @param cache the cache that owns this declarable
+   * @param properties Contains the parameters declared in the declarative xml file.
+   *
+   * @throws IllegalArgumentException should be thrown if properties contains something unexpected.
+   *
+   * @since Geode 1.5
+   */
+  default void initialize(Cache cache, Properties properties) {};
 }

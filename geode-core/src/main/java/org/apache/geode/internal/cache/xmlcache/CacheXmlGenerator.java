@@ -25,6 +25,7 @@ import java.io.PrintWriter;
 import java.net.InetSocketAddress;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -885,12 +886,19 @@ public class CacheXmlGenerator extends CacheXml implements XMLReader {
    * @throws SAXException
    */
   private void generateFunctionService() throws SAXException {
-    Map<String, Function> functions = FunctionService.getRegisteredFunctions();
+    Collection<Function> functions = Collections.emptyList();
+    if (this.cache instanceof CacheCreation) {
+      if (this.creation.hasFunctionService()) {
+        functions = this.creation.getFunctionServiceCreation().getFunctionList();
+      }
+    } else {
+      functions = FunctionService.getRegisteredFunctions().values();
+    }
     if (!generateDefaults() && functions.isEmpty()) {
       return;
     }
     handler.startElement("", FUNCTION_SERVICE, FUNCTION_SERVICE, EMPTY);
-    for (Function function : functions.values()) {
+    for (Function function : functions) {
       if (function instanceof Declarable) {
         handler.startElement("", FUNCTION, FUNCTION, EMPTY);
         generate((Declarable) function, false);

@@ -15,18 +15,13 @@
 package org.apache.geode.internal;
 
 import java.io.BufferedInputStream;
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
-import java.io.FileNotFoundException;
 import java.io.IOException;
-import java.io.InputStream;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Modifier;
 import java.net.MalformedURLException;
 import java.net.URL;
-import java.nio.file.Files;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
@@ -298,8 +293,8 @@ public class DeployedJar {
         boolean registerUninitializedFunction = true;
         if (Declarable.class.isAssignableFrom(clazz)) {
           try {
-            final List<Properties> propertiesList = ((InternalCache) CacheFactory.getAnyInstance())
-                .getDeclarableProperties(clazz.getName());
+            InternalCache cache = (InternalCache) CacheFactory.getAnyInstance();
+            final List<Properties> propertiesList = cache.getDeclarableProperties(clazz.getName());
 
             if (!propertiesList.isEmpty()) {
               registerUninitializedFunction = false;
@@ -310,7 +305,8 @@ public class DeployedJar {
                 @SuppressWarnings("unchecked")
                 Function function = newFunction((Class<Function>) clazz, true);
                 if (function != null) {
-                  ((Declarable) function).init(properties);
+                  ((Declarable) function).initialize(cache, properties);
+                  ((Declarable) function).init(properties); // for backwards compatibility
                   if (function.getId() != null) {
                     registerableFunctions.add(function);
                   }

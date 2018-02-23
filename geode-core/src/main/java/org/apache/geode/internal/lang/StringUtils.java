@@ -15,6 +15,9 @@
 
 package org.apache.geode.internal.lang;
 
+import java.util.Arrays;
+import java.util.stream.Collectors;
+
 import org.apache.geode.internal.cache.CachedDeserializable;
 import org.apache.geode.internal.cache.Token;
 
@@ -192,6 +195,16 @@ public class StringUtils extends org.apache.commons.lang.StringUtils {
     }
   }
 
+  /**
+   * Unlike the other arrayToString methods in this class, this method does not surround
+   * the array with "[" "]" delimiters.
+   */
+  public static <T> String arrayToString(T[] array) {
+    if (array == null) {
+      return "null";
+    }
+    return Arrays.stream(array).map(String::valueOf).collect(Collectors.joining(", "));
+  }
 
   private static <T> String arrayToString(T[] a, int maxArrayElements) {
     if (maxArrayElements < 0) {

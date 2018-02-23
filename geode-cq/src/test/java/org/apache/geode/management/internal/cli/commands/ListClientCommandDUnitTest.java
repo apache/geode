@@ -31,6 +31,7 @@ import java.util.concurrent.TimeUnit;
 
 import javax.management.ObjectName;
 
+import org.apache.commons.lang.exception.ExceptionUtils;
 import org.awaitility.Awaitility;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
@@ -299,7 +300,7 @@ public class ListClientCommandDUnitTest extends CliCommandTestBase {
             } catch (Exception e) {
               LogWrapper.getInstance()
                   .warning("waitForListClientMbean3 Exception in waitForListClientMbean ::: "
-                      + CliUtil.stackTraceAsString(e));
+                      + ExceptionUtils.getStackTrace(e));
             }
             return false;
           }
@@ -351,7 +352,7 @@ public class ListClientCommandDUnitTest extends CliCommandTestBase {
           assertNotNull(p);
         } catch (Exception eee) {
           System.err.println("Exception in creating pool " + poolName + "    Exception =="
-              + CliUtil.stackTraceAsString(eee));
+              + ExceptionUtils.getStackTrace(eee));
         }
       }
     });
@@ -384,7 +385,7 @@ public class ListClientCommandDUnitTest extends CliCommandTestBase {
             } catch (Exception e) {
               LogWrapper.getInstance()
                   .warning("waitForListClientMbean Exception in waitForListClientMbean ::: "
-                      + CliUtil.stackTraceAsString(e));
+                      + ExceptionUtils.getStackTrace(e));
             }
             return false;
           }

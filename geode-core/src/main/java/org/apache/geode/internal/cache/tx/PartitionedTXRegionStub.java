@@ -75,7 +75,7 @@ public class PartitionedTXRegionStub extends AbstractPeerTXRegionStub {
 
   public void destroyExistingEntry(EntryEventImpl event, boolean cacheWrite,
       Object expectedOldValue) {
-    PartitionedRegion pr = (PartitionedRegion) event.getLocalRegion();
+    PartitionedRegion pr = (PartitionedRegion) event.getRegion();
     try {
       pr.destroyRemotely(state.getTarget(), event.getKeyInfo().getBucketId(), event,
           expectedOldValue);
@@ -208,7 +208,7 @@ public class PartitionedTXRegionStub extends AbstractPeerTXRegionStub {
 
   public void invalidateExistingEntry(EntryEventImpl event, boolean invokeCallbacks,
       boolean forceNewEntry) {
-    PartitionedRegion pr = (PartitionedRegion) event.getLocalRegion();
+    PartitionedRegion pr = (PartitionedRegion) event.getRegion();
     try {
       pr.invalidateRemotely(state.getTarget(), event.getKeyInfo().getBucketId(), event);
     } catch (TransactionException e) {
@@ -359,7 +359,7 @@ public class PartitionedTXRegionStub extends AbstractPeerTXRegionStub {
       Object expectedOldValue, boolean requireOldValue, long lastModified,
       boolean overwriteDestroyed) {
     boolean retVal = false;
-    final LocalRegion r = event.getLocalRegion();
+    final LocalRegion r = event.getRegion();
     PartitionedRegion pr = (PartitionedRegion) r;
     try {
       retVal =
