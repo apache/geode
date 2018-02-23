@@ -241,7 +241,7 @@ public abstract class AbstractUpdateOperation extends DistributedCacheOperation 
     protected boolean operateOnRegion(CacheEvent event, ClusterDistributionManager dm)
         throws EntryNotFoundException {
       EntryEventImpl ev = (EntryEventImpl) event;
-      DistributedRegion rgn = (DistributedRegion) ev.region;
+      DistributedRegion rgn = (DistributedRegion) ev.getRegion();
       DistributionManager mgr = dm;
       boolean sendReply = true; // by default tell caller to send ack
 

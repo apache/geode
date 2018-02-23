@@ -80,7 +80,7 @@ public class DestroyOperation extends DistributedCacheOperation {
     protected boolean operateOnRegion(CacheEvent event, ClusterDistributionManager dm)
         throws EntryNotFoundException {
       EntryEventImpl ev = (EntryEventImpl) event;
-      DistributedRegion rgn = (DistributedRegion) ev.region;
+      DistributedRegion rgn = (DistributedRegion) ev.getRegion();
 
       try {
         if (!rgn.isCacheContentProxy()) {
