@@ -63,7 +63,7 @@ public class FileSystemBackupLocation implements BackupLocation {
   }
 
   Collection<File> getPreviouslyBackedUpOpLogs(File checkedBaselineDir) throws IOException {
-    BackupInspector inspector = BackupInspector.createInspector(checkedBaselineDir);
+    BackupInspector inspector = createBackupInspector(checkedBaselineDir);
     HashSet<File> oplogs = new HashSet<>();
     if (inspector.isIncremental() && inspector.getIncrementalOplogFileNames() != null) {
       inspector.getIncrementalOplogFileNames().forEach((oplog) -> {
