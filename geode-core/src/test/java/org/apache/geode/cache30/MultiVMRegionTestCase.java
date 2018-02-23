@@ -14,6 +14,7 @@
  */
 package org.apache.geode.cache30;
 
+import static org.apache.geode.distributed.ConfigurationProperties.ENFORCE_UNIQUE_HOST;
 import static org.apache.geode.internal.lang.ThrowableUtils.*;
 import static org.apache.geode.test.dunit.Assert.*;
 import static org.junit.Assume.*;
@@ -56,7 +57,6 @@ import org.apache.geode.cache.AttributesMutator;
 import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.CacheEvent;
 import org.apache.geode.cache.CacheException;
-import org.apache.geode.cache.CacheFactory;
 import org.apache.geode.cache.CacheListener;
 import org.apache.geode.cache.CacheLoader;
 import org.apache.geode.cache.CacheLoaderException;
@@ -5908,12 +5908,11 @@ public abstract class MultiVMRegionTestCase extends RegionTestCase {
     }
   }
 
-  public static void assertCacheCallbackEvents(String regionName, TransactionId txId, Object key,
+  private void assertCacheCallbackEvents(String regionName, TransactionId txId, Object key,
       Object oldValue, Object newValue) {
-    Cache johnnyCash = CacheFactory.getAnyInstance();
-    Region re = johnnyCash.getRegion("root").getSubregion(regionName);
+    Region re = getCache().getRegion("root").getSubregion(regionName);
     MyTransactionListener tl =
-        (MyTransactionListener) johnnyCash.getCacheTransactionManager().getListeners()[0];
+        (MyTransactionListener) getCache().getCacheTransactionManager().getListeners()[0];
     tl.expectedTxId = txId;
     assertNotNull("Cannot assert TX Callout Events with a null Region: " + regionName, re);
     final CountingDistCacheListener cdcl =
@@ -6039,197 +6038,218 @@ public abstract class MultiVMRegionTestCase extends RegionTestCase {
       long cmtMsgs = dmStats.getSentCommitMessages();
       long commitWaits = dmStats.getCommitWaits();
 
-      txMgr.begin();
-      rgn.put("key", "value");
-      TransactionId txId = txMgr.getTransactionId();
-      txMgr.commit();
-      assertEquals(cmtMsgs + 1, dmStats.getSentCommitMessages());
-      if (rgn.getAttributes().getScope().isAck()) {
-        assertEquals(commitWaits + 1, dmStats.getCommitWaits());
-      } else {
-        assertEquals(commitWaits, dmStats.getCommitWaits());
-      }
-      getSystem().getLogWriter().info("testTXSimpleOps: Create/Put Value");
-      Invoke.invokeInEveryVM(MultiVMRegionTestCase.class, "assertCacheCallbackEvents",
-          new Object[] {rgnName, txId, "key", null, "value"});
-      Invoke.invokeInEveryVMRepeatingIfNecessary(
-          new CacheSerializableRunnable("testTXSimpleOps: Verify Received Value") {
-            @Override
-            public void run2() {
-              Region rgn1 = getRootRegion().getSubregion(rgnName);
-              assertNotNull("Could not find entry for 'key'", rgn1.getEntry("key"));
-              assertEquals("value", rgn1.getEntry("key").getValue());
-              CacheTransactionManager txMgr2 = getCache().getCacheTransactionManager();
-              MyTransactionListener tl = (MyTransactionListener) txMgr2.getListeners()[0];
-              tl.checkAfterCommitCount(1);
-              assertEquals(0, tl.afterFailedCommitCount);
-              assertEquals(0, tl.afterRollbackCount);
-              assertEquals(0, tl.closeCount);
-              assertEquals(rgn1.getCache(), tl.lastEvent.getCache());
-              {
-                Collection events;
-                RegionAttributes attr = getRegionAttributes();
-                if (!attr.getDataPolicy().withReplication() || attr.getConcurrencyChecksEnabled()) {
-                  events = TxEventTestUtil.getPutEvents(tl.lastEvent.getEvents());
-                } else {
-                  events = TxEventTestUtil.getCreateEvents(tl.lastEvent.getEvents());
+      {
+        txMgr.begin();
+        rgn.put("key", "value");
+        final TransactionId txId = txMgr.getTransactionId();
+        txMgr.commit();
+        assertEquals(cmtMsgs + 1, dmStats.getSentCommitMessages());
+        if (rgn.getAttributes().getScope().isAck()) {
+          assertEquals(commitWaits + 1, dmStats.getCommitWaits());
+        } else {
+          assertEquals(commitWaits, dmStats.getCommitWaits());
+        }
+        getSystem().getLogWriter().info("testTXSimpleOps: Create/Put Value");
+        Invoke.invokeInEveryVM(new SerializableRunnable() {
+          public void run() {
+            assertCacheCallbackEvents(rgnName, txId, "key", null, "value");
+          }
+        });
+        Invoke.invokeInEveryVMRepeatingIfNecessary(
+            new CacheSerializableRunnable("testTXSimpleOps: Verify Received Value") {
+              @Override
+              public void run2() {
+                Region rgn1 = getRootRegion().getSubregion(rgnName);
+                assertNotNull("Could not find entry for 'key'", rgn1.getEntry("key"));
+                assertEquals("value", rgn1.getEntry("key").getValue());
+                CacheTransactionManager txMgr2 = getCache().getCacheTransactionManager();
+                MyTransactionListener tl = (MyTransactionListener) txMgr2.getListeners()[0];
+                tl.checkAfterCommitCount(1);
+                assertEquals(0, tl.afterFailedCommitCount);
+                assertEquals(0, tl.afterRollbackCount);
+                assertEquals(0, tl.closeCount);
+                assertEquals(rgn1.getCache(), tl.lastEvent.getCache());
+                {
+                  Collection events;
+                  RegionAttributes attr = getRegionAttributes();
+                  if (!attr.getDataPolicy().withReplication()
+                      || attr.getConcurrencyChecksEnabled()) {
+                    events = TxEventTestUtil.getPutEvents(tl.lastEvent.getEvents());
+                  } else {
+                    events = TxEventTestUtil.getCreateEvents(tl.lastEvent.getEvents());
+                  }
+                  assertEquals(1, events.size());
+                  EntryEvent ev = (EntryEvent) events.iterator().next();
+                  assertEquals(tl.expectedTxId, ev.getTransactionId());
+                  assertTrue(ev.getRegion() == rgn1);
+                  assertEquals("key", ev.getKey());
+                  assertEquals("value", ev.getNewValue());
+                  assertEquals(null, ev.getOldValue());
+                  assertTrue(!ev.getOperation().isLocalLoad());
+                  assertTrue(!ev.getOperation().isNetLoad());
+                  assertTrue(!ev.getOperation().isLoad());
+                  assertTrue(!ev.getOperation().isNetSearch());
+                  assertTrue(!ev.getOperation().isExpiration());
+                  assertEquals(null, ev.getCallbackArgument());
+                  assertEquals(true, ev.isCallbackArgumentAvailable());
+                  assertTrue(ev.isOriginRemote());
+                  assertTrue(ev.getOperation().isDistributed());
                 }
-                assertEquals(1, events.size());
-                EntryEvent ev = (EntryEvent) events.iterator().next();
-                assertEquals(tl.expectedTxId, ev.getTransactionId());
-                assertTrue(ev.getRegion() == rgn1);
-                assertEquals("key", ev.getKey());
-                assertEquals("value", ev.getNewValue());
-                assertEquals(null, ev.getOldValue());
-                assertTrue(!ev.getOperation().isLocalLoad());
-                assertTrue(!ev.getOperation().isNetLoad());
-                assertTrue(!ev.getOperation().isLoad());
-                assertTrue(!ev.getOperation().isNetSearch());
-                assertTrue(!ev.getOperation().isExpiration());
-                assertEquals(null, ev.getCallbackArgument());
-                assertEquals(true, ev.isCallbackArgumentAvailable());
-                assertTrue(ev.isOriginRemote());
-                assertTrue(ev.getOperation().isDistributed());
+                CountingDistCacheListener cdcL =
+                    (CountingDistCacheListener) rgn1.getAttributes().getCacheListeners()[0];
+                cdcL.assertCount(0, 1, 0, 0);
+
               }
-              CountingDistCacheListener cdcL =
-                  (CountingDistCacheListener) rgn1.getAttributes().getCacheListeners()[0];
-              cdcL.assertCount(0, 1, 0, 0);
+            }, getRepeatTimeoutMs());
+      }
 
-            }
-          }, getRepeatTimeoutMs());
+      {
+        txMgr.begin();
+        rgn.put("key", "value2");
+        final TransactionId txId = txMgr.getTransactionId();
+        txMgr.commit();
+        getSystem().getLogWriter().info("testTXSimpleOps: Put(update) Value2");
+        Invoke.invokeInEveryVM(new SerializableRunnable() {
+          public void run() {
+            assertCacheCallbackEvents(rgnName, txId, "key", "value", "value2");
+          }
+        });
+        Invoke.invokeInEveryVMRepeatingIfNecessary(
+            new CacheSerializableRunnable("testTXSimpleOps: Verify Received Value") {
+              @Override
+              public void run2() {
+                Region rgn1 = getRootRegion().getSubregion(rgnName);
+                assertNotNull("Could not find entry for 'key'", rgn1.getEntry("key"));
+                assertEquals("value2", rgn1.getEntry("key").getValue());
+                CacheTransactionManager txMgr2 = getCache().getCacheTransactionManager();
+                MyTransactionListener tl = (MyTransactionListener) txMgr2.getListeners()[0];
+                tl.checkAfterCommitCount(2);
+                assertEquals(rgn1.getCache(), tl.lastEvent.getCache());
+                {
+                  Collection events = TxEventTestUtil.getPutEvents(tl.lastEvent.getEvents());
+                  assertEquals(1, events.size());
+                  EntryEvent ev = (EntryEvent) events.iterator().next();
+                  assertEquals(tl.expectedTxId, ev.getTransactionId());
+                  assertTrue(ev.getRegion() == rgn1);
+                  assertEquals("key", ev.getKey());
+                  assertEquals("value2", ev.getNewValue());
+                  assertEquals("value", ev.getOldValue());
+                  assertTrue(!ev.getOperation().isLocalLoad());
+                  assertTrue(!ev.getOperation().isNetLoad());
+                  assertTrue(!ev.getOperation().isLoad());
+                  assertTrue(!ev.getOperation().isNetSearch());
+                  assertTrue(!ev.getOperation().isExpiration());
+                  assertEquals(null, ev.getCallbackArgument());
+                  assertEquals(true, ev.isCallbackArgumentAvailable());
+                  assertTrue(ev.isOriginRemote());
+                  assertTrue(ev.getOperation().isDistributed());
+                }
+                CountingDistCacheListener cdcL =
+                    (CountingDistCacheListener) rgn1.getAttributes().getCacheListeners()[0];
+                cdcL.assertCount(0, 2, 0, 0);
 
-      txMgr.begin();
-      rgn.put("key", "value2");
-      txId = txMgr.getTransactionId();
-      txMgr.commit();
-      getSystem().getLogWriter().info("testTXSimpleOps: Put(update) Value2");
-      Invoke.invokeInEveryVM(MultiVMRegionTestCase.class, "assertCacheCallbackEvents",
-          new Object[] {rgnName, txId, "key", "value", "value2"});
-      Invoke.invokeInEveryVMRepeatingIfNecessary(
-          new CacheSerializableRunnable("testTXSimpleOps: Verify Received Value") {
-            @Override
-            public void run2() {
-              Region rgn1 = getRootRegion().getSubregion(rgnName);
-              assertNotNull("Could not find entry for 'key'", rgn1.getEntry("key"));
-              assertEquals("value2", rgn1.getEntry("key").getValue());
-              CacheTransactionManager txMgr2 = getCache().getCacheTransactionManager();
-              MyTransactionListener tl = (MyTransactionListener) txMgr2.getListeners()[0];
-              tl.checkAfterCommitCount(2);
-              assertEquals(rgn1.getCache(), tl.lastEvent.getCache());
-              {
-                Collection events = TxEventTestUtil.getPutEvents(tl.lastEvent.getEvents());
-                assertEquals(1, events.size());
-                EntryEvent ev = (EntryEvent) events.iterator().next();
-                assertEquals(tl.expectedTxId, ev.getTransactionId());
-                assertTrue(ev.getRegion() == rgn1);
-                assertEquals("key", ev.getKey());
-                assertEquals("value2", ev.getNewValue());
-                assertEquals("value", ev.getOldValue());
-                assertTrue(!ev.getOperation().isLocalLoad());
-                assertTrue(!ev.getOperation().isNetLoad());
-                assertTrue(!ev.getOperation().isLoad());
-                assertTrue(!ev.getOperation().isNetSearch());
-                assertTrue(!ev.getOperation().isExpiration());
-                assertEquals(null, ev.getCallbackArgument());
-                assertEquals(true, ev.isCallbackArgumentAvailable());
-                assertTrue(ev.isOriginRemote());
-                assertTrue(ev.getOperation().isDistributed());
               }
-              CountingDistCacheListener cdcL =
-                  (CountingDistCacheListener) rgn1.getAttributes().getCacheListeners()[0];
-              cdcL.assertCount(0, 2, 0, 0);
+            }, getRepeatTimeoutMs());
+      }
 
-            }
-          }, getRepeatTimeoutMs());
+      {
+        txMgr.begin();
+        rgn.invalidate("key");
+        final TransactionId txId = txMgr.getTransactionId();
+        txMgr.commit();
+        getSystem().getLogWriter().info("testTXSimpleOps: invalidate key");
+        // validate each of the CacheListeners EntryEvents
+        Invoke.invokeInEveryVM(new SerializableRunnable() {
+          public void run() {
+            assertCacheCallbackEvents(rgnName, txId, "key", "value2", null);
+          }
+        });
+        Invoke.invokeInEveryVMRepeatingIfNecessary(
+            new CacheSerializableRunnable("testTXSimpleOps: Verify Received Value") {
+              @Override
+              public void run2() {
+                Region rgn1 = getRootRegion().getSubregion(rgnName);
+                assertNotNull("Could not find entry for 'key'", rgn1.getEntry("key"));
+                assertTrue(rgn1.containsKey("key"));
+                assertTrue(!rgn1.containsValueForKey("key"));
+                CacheTransactionManager txMgr2 = getCache().getCacheTransactionManager();
+                MyTransactionListener tl = (MyTransactionListener) txMgr2.getListeners()[0];
+                tl.checkAfterCommitCount(3);
+                assertEquals(rgn1.getCache(), tl.lastEvent.getCache());
+                {
+                  Collection events = TxEventTestUtil.getInvalidateEvents(tl.lastEvent.getEvents());
+                  assertEquals(1, events.size());
+                  EntryEvent ev = (EntryEvent) events.iterator().next();
+                  assertEquals(tl.expectedTxId, ev.getTransactionId());
+                  assertTrue(ev.getRegion() == rgn1);
+                  assertEquals("key", ev.getKey());
+                  assertEquals(null, ev.getNewValue());
+                  assertEquals("value2", ev.getOldValue());
+                  assertTrue(!ev.getOperation().isLocalLoad());
+                  assertTrue(!ev.getOperation().isNetLoad());
+                  assertTrue(!ev.getOperation().isLoad());
+                  assertTrue(!ev.getOperation().isNetSearch());
+                  assertTrue(!ev.getOperation().isExpiration());
+                  assertEquals(null, ev.getCallbackArgument());
+                  assertEquals(true, ev.isCallbackArgumentAvailable());
+                  assertTrue(ev.isOriginRemote());
+                  assertTrue(ev.getOperation().isDistributed());
+                }
+                CountingDistCacheListener cdcL =
+                    (CountingDistCacheListener) rgn1.getAttributes().getCacheListeners()[0];
+                cdcL.assertCount(0, 2, 1, 0);
 
-      txMgr.begin();
-      rgn.invalidate("key");
-      txId = txMgr.getTransactionId();
-      txMgr.commit();
-      getSystem().getLogWriter().info("testTXSimpleOps: invalidate key");
-      // validate each of the CacheListeners EntryEvents
-      Invoke.invokeInEveryVM(MultiVMRegionTestCase.class, "assertCacheCallbackEvents",
-          new Object[] {rgnName, txId, "key", "value2", null});
-      Invoke.invokeInEveryVMRepeatingIfNecessary(
-          new CacheSerializableRunnable("testTXSimpleOps: Verify Received Value") {
-            @Override
-            public void run2() {
-              Region rgn1 = getRootRegion().getSubregion(rgnName);
-              assertNotNull("Could not find entry for 'key'", rgn1.getEntry("key"));
-              assertTrue(rgn1.containsKey("key"));
-              assertTrue(!rgn1.containsValueForKey("key"));
-              CacheTransactionManager txMgr2 = getCache().getCacheTransactionManager();
-              MyTransactionListener tl = (MyTransactionListener) txMgr2.getListeners()[0];
-              tl.checkAfterCommitCount(3);
-              assertEquals(rgn1.getCache(), tl.lastEvent.getCache());
-              {
-                Collection events = TxEventTestUtil.getInvalidateEvents(tl.lastEvent.getEvents());
-                assertEquals(1, events.size());
-                EntryEvent ev = (EntryEvent) events.iterator().next();
-                assertEquals(tl.expectedTxId, ev.getTransactionId());
-                assertTrue(ev.getRegion() == rgn1);
-                assertEquals("key", ev.getKey());
-                assertEquals(null, ev.getNewValue());
-                assertEquals("value2", ev.getOldValue());
-                assertTrue(!ev.getOperation().isLocalLoad());
-                assertTrue(!ev.getOperation().isNetLoad());
-                assertTrue(!ev.getOperation().isLoad());
-                assertTrue(!ev.getOperation().isNetSearch());
-                assertTrue(!ev.getOperation().isExpiration());
-                assertEquals(null, ev.getCallbackArgument());
-                assertEquals(true, ev.isCallbackArgumentAvailable());
-                assertTrue(ev.isOriginRemote());
-                assertTrue(ev.getOperation().isDistributed());
               }
-              CountingDistCacheListener cdcL =
-                  (CountingDistCacheListener) rgn1.getAttributes().getCacheListeners()[0];
-              cdcL.assertCount(0, 2, 1, 0);
+            }, getRepeatTimeoutMs());
+      }
 
-            }
-          }, getRepeatTimeoutMs());
-
-      txMgr.begin();
-      rgn.destroy("key");
-      txId = txMgr.getTransactionId();
-      txMgr.commit();
-      getSystem().getLogWriter().info("testTXSimpleOps: destroy key");
-      // validate each of the CacheListeners EntryEvents
-      Invoke.invokeInEveryVM(MultiVMRegionTestCase.class, "assertCacheCallbackEvents",
-          new Object[] {rgnName, txId, "key", null, null});
-      Invoke.invokeInEveryVMRepeatingIfNecessary(
-          new CacheSerializableRunnable("testTXSimpleOps: Verify Received Value") {
-            @Override
-            public void run2() {
-              Region rgn1 = getRootRegion().getSubregion(rgnName);
-              assertTrue(!rgn1.containsKey("key"));
-              CacheTransactionManager txMgr2 = getCache().getCacheTransactionManager();
-              MyTransactionListener tl = (MyTransactionListener) txMgr2.getListeners()[0];
-              tl.checkAfterCommitCount(4);
-              assertEquals(rgn1.getCache(), tl.lastEvent.getCache());
-              {
-                Collection events = TxEventTestUtil.getDestroyEvents(tl.lastEvent.getEvents());
-                assertEquals(1, events.size());
-                EntryEvent ev = (EntryEvent) events.iterator().next();
-                assertEquals(tl.expectedTxId, ev.getTransactionId());
-                assertTrue(ev.getRegion() == rgn1);
-                assertEquals("key", ev.getKey());
-                assertEquals(null, ev.getNewValue());
-                assertEquals(null, ev.getOldValue());
-                assertTrue(!ev.getOperation().isLocalLoad());
-                assertTrue(!ev.getOperation().isNetLoad());
-                assertTrue(!ev.getOperation().isLoad());
-                assertTrue(!ev.getOperation().isNetSearch());
-                assertTrue(!ev.getOperation().isExpiration());
-                assertEquals(null, ev.getCallbackArgument());
-                assertEquals(true, ev.isCallbackArgumentAvailable());
-                assertTrue(ev.isOriginRemote());
-                assertTrue(ev.getOperation().isDistributed());
+      {
+        txMgr.begin();
+        rgn.destroy("key");
+        TransactionId txId = txMgr.getTransactionId();
+        txMgr.commit();
+        getSystem().getLogWriter().info("testTXSimpleOps: destroy key");
+        // validate each of the CacheListeners EntryEvents
+        Invoke.invokeInEveryVM(new SerializableRunnable() {
+          public void run() {
+            assertCacheCallbackEvents(rgnName, txId, "key", null, null);
+          }
+        });
+        Invoke.invokeInEveryVMRepeatingIfNecessary(
+            new CacheSerializableRunnable("testTXSimpleOps: Verify Received Value") {
+              @Override
+              public void run2() {
+                Region rgn1 = getRootRegion().getSubregion(rgnName);
+                assertTrue(!rgn1.containsKey("key"));
+                CacheTransactionManager txMgr2 = getCache().getCacheTransactionManager();
+                MyTransactionListener tl = (MyTransactionListener) txMgr2.getListeners()[0];
+                tl.checkAfterCommitCount(4);
+                assertEquals(rgn1.getCache(), tl.lastEvent.getCache());
+                {
+                  Collection events = TxEventTestUtil.getDestroyEvents(tl.lastEvent.getEvents());
+                  assertEquals(1, events.size());
+                  EntryEvent ev = (EntryEvent) events.iterator().next();
+                  assertEquals(tl.expectedTxId, ev.getTransactionId());
+                  assertTrue(ev.getRegion() == rgn1);
+                  assertEquals("key", ev.getKey());
+                  assertEquals(null, ev.getNewValue());
+                  assertEquals(null, ev.getOldValue());
+                  assertTrue(!ev.getOperation().isLocalLoad());
+                  assertTrue(!ev.getOperation().isNetLoad());
+                  assertTrue(!ev.getOperation().isLoad());
+                  assertTrue(!ev.getOperation().isNetSearch());
+                  assertTrue(!ev.getOperation().isExpiration());
+                  assertEquals(null, ev.getCallbackArgument());
+                  assertEquals(true, ev.isCallbackArgumentAvailable());
+                  assertTrue(ev.isOriginRemote());
+                  assertTrue(ev.getOperation().isDistributed());
+                }
+                CountingDistCacheListener cdcL =
+                    (CountingDistCacheListener) rgn1.getAttributes().getCacheListeners()[0];
+                cdcL.assertCount(0, 2, 1, 1);
               }
-              CountingDistCacheListener cdcL =
-                  (CountingDistCacheListener) rgn1.getAttributes().getCacheListeners()[0];
-              cdcL.assertCount(0, 2, 1, 1);
-            }
-          }, getRepeatTimeoutMs());
+            }, getRepeatTimeoutMs());
+      }
 
     } catch (Exception e) {
       getCache().close();
@@ -9155,8 +9175,7 @@ public abstract class MultiVMRegionTestCase extends RegionTestCase {
       try {
         org.apache.geode.distributed.internal.SerialAckedMessage msg =
             new org.apache.geode.distributed.internal.SerialAckedMessage();
-        msg.send(InternalDistributedSystem.getConnectedInstance().getDM()
-            .getNormalDistributionManagerIds(), false);
+        msg.send(getCache().getDistributionManager().getNormalDistributionManagerIds(), false);
       } catch (Exception e) {
         throw new RuntimeException("Unable to send serial message due to exception", e);
       }

@@ -18,6 +18,9 @@ import static org.apache.geode.management.internal.cli.i18n.CliStrings.DESCRIBE_
 import static org.apache.geode.management.internal.cli.i18n.CliStrings.DESCRIBE_REGION__NAME;
 import static org.assertj.core.api.Assertions.assertThat;
 
+import java.util.List;
+
+import org.json.JSONObject;
 import org.junit.BeforeClass;
 import org.junit.ClassRule;
 import org.junit.Test;
@@ -101,6 +104,8 @@ public class DescribeRegionDUnitTest {
           .addFixedPartitionAttributes(fpa).create();
       dataRegionFactory.setPartitionAttributes(pa);
 
+      dataRegionFactory.setCustomEntryIdleTimeout(new TestCustomIdleExpiry());
+
       dataRegionFactory.create(PR1);
       createLocalRegion(LOCAL_REGION);
     });
@@ -122,6 +127,9 @@ public class DescribeRegionDUnitTest {
           .setRecoveryDelay(4).setTotalMaxMemory(200).setRedundantCopies(1)
           .addFixedPartitionAttributes(fpa).create();
       dataRegionFactory.setPartitionAttributes(pa);
+
+      dataRegionFactory.setCustomEntryIdleTimeout(new TestCustomIdleExpiry());
+      dataRegionFactory.setCustomEntryTimeToLive(new TestCustomTTLExpiry());
 
       dataRegionFactory.create(PR1);
       createRegionsWithSubRegions();
@@ -156,6 +164,26 @@ public class DescribeRegionDUnitTest {
     csb.addOption(DESCRIBE_REGION__NAME, LOCAL_REGION);
     gfsh.executeAndAssertThat(csb.toString()).statusIsSuccess()
         .containsOutput(LOCAL_REGION, "server-1").doesNotContainOutput("server-2");
+  }
+
+  @Test
+  public void describeRegionWithCustomExpiry() {
+    CommandResult result = gfsh.executeAndAssertThat("describe region --name=" + PR1)
+        .statusIsSuccess().getCommandResult();
+
+    JSONObject table = result.getTableContent(0, 0, 0).getInternalJsonObject();
+    List<String> names = CommandResult.toList(table.getJSONArray("Name"));
+    assertThat(names).containsOnlyOnce(RegionAttributesNames.ENTRY_IDLE_TIME_CUSTOM_EXPIRY);
+
+    List<String> values = CommandResult.toList(table.getJSONArray("Value"));
+    assertThat(values).containsOnlyOnce(TestCustomIdleExpiry.class.getName());
+
+    table = result.getTableContent(0, 1, 0).getInternalJsonObject();
+    names = CommandResult.toList(table.getJSONArray("Name"));
+    assertThat(names).containsOnlyOnce(RegionAttributesNames.ENTRY_TIME_TO_LIVE_CUSTOM_EXPIRY);
+
+    values = CommandResult.toList(table.getJSONArray("Value"));
+    assertThat(values).containsOnlyOnce(TestCustomTTLExpiry.class.getName());
   }
 
   /**

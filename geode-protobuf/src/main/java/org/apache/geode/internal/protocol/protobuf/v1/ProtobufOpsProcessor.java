@@ -25,7 +25,6 @@ import org.apache.geode.internal.protocol.protobuf.v1.serialization.exception.En
 import org.apache.geode.internal.protocol.protobuf.v1.state.ProtobufConnectionTerminatingStateProcessor;
 import org.apache.geode.internal.protocol.protobuf.v1.state.exception.ConnectionStateException;
 import org.apache.geode.internal.protocol.protobuf.v1.state.exception.OperationNotAuthorizedException;
-import org.apache.geode.internal.protocol.protobuf.v1.utilities.ProtobufResponseUtilities;
 
 /**
  * This handles protobuf requests by determining the operation type of the request and dispatching
@@ -33,7 +32,6 @@ import org.apache.geode.internal.protocol.protobuf.v1.utilities.ProtobufResponse
  */
 @Experimental
 public class ProtobufOpsProcessor {
-
   private final ProtobufOperationContextRegistry protobufOperationContextRegistry;
   private final ProtobufSerializationService serializationService;
   private static final Logger logger = LogService.getLogger(ProtobufOpsProcessor.class);
@@ -59,15 +57,15 @@ public class ProtobufOpsProcessor {
     } catch (OperationNotAuthorizedException e) {
       // Don't move to a terminating state for authorization state failures
       logger.warn(e.getMessage());
-      result = Failure.of(ProtobufResponseUtilities.makeErrorResponse(e));
+      result = Failure.of(e);
     } catch (EncodingException | DecodingException e) {
       logger.warn(e.getMessage());
-      result = Failure.of(ProtobufResponseUtilities.makeErrorResponse(e));
+      result = Failure.of(e);
     } catch (ConnectionStateException e) {
       logger.warn(e.getMessage());
       messageExecutionContext
           .setConnectionStateProcessor(new ProtobufConnectionTerminatingStateProcessor());
-      result = Failure.of(ProtobufResponseUtilities.makeErrorResponse(e));
+      result = Failure.of(e);
     }
 
     return ((ClientProtocol.Message.Builder) result.map(operationContext.getToResponse(),
@@ -82,8 +80,9 @@ public class ProtobufOpsProcessor {
           operationContext.getFromRequest().apply(request), context);
     } catch (InvalidExecutionContextException exception) {
       logger.error("Invalid execution context found for operation {}", requestType);
-      return Failure.of(ProtobufResponseUtilities.makeErrorResponse(
-          BasicTypes.ErrorCode.INVALID_REQUEST, "Invalid execution context found for operation."));
+      logger.error(exception);
+      return Failure.of(BasicTypes.ErrorCode.INVALID_REQUEST,
+          "Invalid execution context found for operation.");
     }
   }
 }

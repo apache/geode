@@ -156,7 +156,7 @@ public class ClientServerCCEDUnitTest extends JUnit4CacheTestCase {
   }
 
   private void verifyServerState(String name, int numIterations) {
-    Cache cache = CacheFactory.getAnyInstance();
+    Cache cache = getCache();
     DistributedRegion region = (DistributedRegion) cache.getRegion(name);
     CachePerfStats stats = region.getCachePerfStats();
     assertEquals(0, stats.getConflatedEventsCount());
@@ -167,7 +167,7 @@ public class ClientServerCCEDUnitTest extends JUnit4CacheTestCase {
   }
 
   private void doOps(String name, int numIterations, String clientGateName) {
-    ClientCache cache = ClientCacheFactory.getAnyInstance();
+    ClientCache cache = (ClientCache) getCache();
     Region region = cache.getRegion(name);
     getBlackboard().signalGate(clientGateName);
     try {

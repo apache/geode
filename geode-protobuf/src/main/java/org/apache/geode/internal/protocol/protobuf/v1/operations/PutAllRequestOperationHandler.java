@@ -25,7 +25,6 @@ import org.apache.geode.cache.Region;
 import org.apache.geode.internal.exception.InvalidExecutionContextException;
 import org.apache.geode.internal.protocol.operations.ProtobufOperationHandler;
 import org.apache.geode.internal.protocol.protobuf.v1.BasicTypes;
-import org.apache.geode.internal.protocol.protobuf.v1.ClientProtocol;
 import org.apache.geode.internal.protocol.protobuf.v1.Failure;
 import org.apache.geode.internal.protocol.protobuf.v1.MessageExecutionContext;
 import org.apache.geode.internal.protocol.protobuf.v1.ProtobufSerializationService;
@@ -34,7 +33,6 @@ import org.apache.geode.internal.protocol.protobuf.v1.Result;
 import org.apache.geode.internal.protocol.protobuf.v1.Success;
 import org.apache.geode.internal.protocol.protobuf.v1.serialization.SerializationService;
 import org.apache.geode.internal.protocol.protobuf.v1.serialization.exception.DecodingException;
-import org.apache.geode.internal.protocol.protobuf.v1.utilities.ProtobufResponseUtilities;
 
 @Experimental
 public class PutAllRequestOperationHandler
@@ -42,17 +40,16 @@ public class PutAllRequestOperationHandler
   private static final Logger logger = LogManager.getLogger();
 
   @Override
-  public Result<RegionAPI.PutAllResponse, ClientProtocol.ErrorResponse> process(
-      ProtobufSerializationService serializationService, RegionAPI.PutAllRequest putAllRequest,
-      MessageExecutionContext messageExecutionContext)
+  public Result<RegionAPI.PutAllResponse> process(ProtobufSerializationService serializationService,
+      RegionAPI.PutAllRequest putAllRequest, MessageExecutionContext messageExecutionContext)
       throws InvalidExecutionContextException, DecodingException {
     String regionName = putAllRequest.getRegionName();
     Region region = messageExecutionContext.getCache().getRegion(regionName);
 
     if (region == null) {
       logger.error("Received PutAll request for non-existing region {}", regionName);
-      return Failure.of(ProtobufResponseUtilities.makeErrorResponse(
-          BasicTypes.ErrorCode.SERVER_ERROR, "Region passed does not exist: " + regionName));
+      return Failure.of(BasicTypes.ErrorCode.SERVER_ERROR,
+          "Region passed does not exist: " + regionName);
     }
 
     long startTime = messageExecutionContext.getStatistics().startOperation();
@@ -73,9 +70,12 @@ public class PutAllRequestOperationHandler
   private void processSinglePut(RegionAPI.PutAllResponse.Builder builder,
       SerializationService serializationService, Region region, BasicTypes.Entry entry) {
     try {
-
-      Object decodedKey = serializationService.decode(entry.getKey());
       Object decodedValue = serializationService.decode(entry.getValue());
+      Object decodedKey = serializationService.decode(entry.getKey());
+      if (decodedKey == null || decodedValue == null) {
+        builder.addFailedKeys(
+            buildKeyedError(entry, INVALID_REQUEST, "Key and value must both be non-NULL"));
+      }
       region.put(decodedKey, decodedValue);
 
     } catch (DecodingException ex) {

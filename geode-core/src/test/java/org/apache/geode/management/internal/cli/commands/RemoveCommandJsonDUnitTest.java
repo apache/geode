@@ -17,6 +17,7 @@ package org.apache.geode.management.internal.cli.commands;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import java.io.Serializable;
+import java.util.Properties;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
 
@@ -31,6 +32,7 @@ import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.CacheFactory;
 import org.apache.geode.cache.Region;
 import org.apache.geode.cache.RegionShortcut;
+import org.apache.geode.distributed.ConfigurationProperties;
 import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.management.internal.cli.CliUtil;
@@ -58,10 +60,14 @@ public class RemoveCommandJsonDUnitTest implements Serializable {
 
   @Before
   public void setup() throws Exception {
+    Properties props = new Properties();
+    props.setProperty(ConfigurationProperties.SERIALIZABLE_OBJECT_FILTER,
+        "org.apache.geode.management.internal.cli.dto.*");
+
     locator = clusterStartupRule.startLocatorVM(0);
 
-    server1 = clusterStartupRule.startServerVM(1, locator.getPort());
-    server2 = clusterStartupRule.startServerVM(2, locator.getPort());
+    server1 = clusterStartupRule.startServerVM(1, props, locator.getPort());
+    server2 = clusterStartupRule.startServerVM(2, props, locator.getPort());
 
     server1.invoke(this::populateTestRegions);
     server2.invoke(this::populateTestRegions);

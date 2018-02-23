@@ -73,6 +73,7 @@ import java.net.InetAddress;
 import java.net.URL;
 import java.net.UnknownHostException;
 import java.util.Collections;
+import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -940,23 +941,18 @@ public class DistributionConfigImpl extends AbstractDistributionConfig implement
       attNameSet.add(GEMFIRE_PREFIX + attNames[index]);
     }
 
-    /* clone() is a synchronized method for Properties (actually in Hashtable) */
-    Properties sysProps = (Properties) System.getProperties().clone();
-    Iterator<?> sysPropsIter = sysProps.entrySet().iterator();
-    while (sysPropsIter.hasNext()) {
-      Map.Entry sysEntry = (Map.Entry) sysPropsIter.next();
-      String sysName = (String) sysEntry.getKey();
-      if (attNameSet.contains(sysName) || sysName.startsWith(GEMFIRE_PREFIX + SECURITY_PREFIX_NAME)
-          || sysName.startsWith(GEMFIRE_PREFIX + SSL_SYSTEM_PROPS_NAME)) {
-        String sysValue = (String) sysEntry.getValue();
+    // Ensure that we're also iterating over the default properties - see GEODE-4690.
+    for (String key : System.getProperties().stringPropertyNames()) {
+      if (attNameSet.contains(key) || key.startsWith(GEMFIRE_PREFIX + SECURITY_PREFIX_NAME)
+          || key.startsWith(GEMFIRE_PREFIX + SSL_SYSTEM_PROPS_NAME)) {
+        String sysValue = System.getProperty(key);
         if (sysValue != null) {
-          String attName = sysName.substring(GEMFIRE_PREFIX.length());
+          String attName = key.substring(GEMFIRE_PREFIX.length());
           props.put(attName, sysValue);
           this.sourceMap.put(attName, ConfigSource.sysprop());
         }
       }
     }
-    sysProps.clear(); // clearing cloned SysProps
 
     final Properties overriddenDefaults = ProcessLauncherContext.getOverriddenDefaults();
     if (!overriddenDefaults.isEmpty()) {

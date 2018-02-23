@@ -26,7 +26,6 @@ import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.distributed.internal.DistributionManager;
 import org.apache.geode.internal.exception.InvalidExecutionContextException;
 import org.apache.geode.internal.protocol.protobuf.v1.BasicTypes;
-import org.apache.geode.internal.protocol.protobuf.v1.ClientProtocol;
 import org.apache.geode.internal.protocol.protobuf.v1.Failure;
 import org.apache.geode.internal.protocol.protobuf.v1.FunctionAPI.ExecuteFunctionOnMemberRequest;
 import org.apache.geode.internal.protocol.protobuf.v1.FunctionAPI.ExecuteFunctionOnMemberResponse;
@@ -70,21 +69,14 @@ public class ExecuteFunctionOnMemberRequestOperationHandler extends
     for (String name : memberNameList) {
       DistributedMember member = distributionManager.getMemberWithName(name);
       if (member == null) {
-        return Failure.of(ClientProtocol.ErrorResponse.newBuilder()
-            .setError(BasicTypes.Error.newBuilder()
-                .setMessage(
-                    "Member " + name + " not found to execute \"" + request.getFunctionID() + "\"")
-                .setErrorCode(BasicTypes.ErrorCode.NO_AVAILABLE_SERVER))
-            .build());
+        return Failure.of(BasicTypes.ErrorCode.NO_AVAILABLE_SERVER,
+            "Member " + name + " not found to execute \"" + request.getFunctionID() + "\"");
       }
       memberIds.add(member);
     }
     if (memberIds.isEmpty()) {
-      return Failure.of(ClientProtocol.ErrorResponse.newBuilder()
-          .setError(BasicTypes.Error.newBuilder()
-              .setMessage("No members found to execute \"" + request.getFunctionID() + "\"")
-              .setErrorCode(BasicTypes.ErrorCode.NO_AVAILABLE_SERVER))
-          .build());
+      return Failure.of(BasicTypes.ErrorCode.NO_AVAILABLE_SERVER,
+          "No members found to execute \"" + request.getFunctionID() + "\"");
     }
     return memberIds;
   }
@@ -92,7 +84,11 @@ public class ExecuteFunctionOnMemberRequestOperationHandler extends
   @Override
   protected Object getFunctionArguments(ExecuteFunctionOnMemberRequest request,
       ProtobufSerializationService serializationService) throws DecodingException {
-    return serializationService.decode(request.getArguments());
+    if (request.hasArguments()) {
+      return serializationService.decode(request.getArguments());
+    } else {
+      return null;
+    }
   }
 
   @Override

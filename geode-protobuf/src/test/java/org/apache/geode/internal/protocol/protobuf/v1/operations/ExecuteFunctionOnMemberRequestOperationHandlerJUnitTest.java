@@ -109,7 +109,7 @@ public class ExecuteFunctionOnMemberRequestOperationHandlerJUnitTest {
         FunctionAPI.ExecuteFunctionOnMemberRequest.newBuilder().setFunctionID(TEST_FUNCTION_ID)
             .addMemberName(NOT_A_MEMBER).build();
 
-    final Result<FunctionAPI.ExecuteFunctionOnMemberResponse, ClientProtocol.ErrorResponse> result =
+    final Result<FunctionAPI.ExecuteFunctionOnMemberResponse> result =
         operationHandler.process(serializationService, request, mockedMessageExecutionContext());
 
     assertTrue(result instanceof Failure);
@@ -122,7 +122,7 @@ public class ExecuteFunctionOnMemberRequestOperationHandlerJUnitTest {
         FunctionAPI.ExecuteFunctionOnMemberRequest.newBuilder().setFunctionID(TEST_FUNCTION_ID)
             .build();
 
-    final Result<FunctionAPI.ExecuteFunctionOnMemberResponse, ClientProtocol.ErrorResponse> result =
+    final Result<FunctionAPI.ExecuteFunctionOnMemberResponse> result =
         operationHandler.process(serializationService, request, mockedMessageExecutionContext());
 
     assertTrue(result instanceof Failure);
@@ -139,7 +139,7 @@ public class ExecuteFunctionOnMemberRequestOperationHandlerJUnitTest {
         FunctionAPI.ExecuteFunctionOnMemberRequest.newBuilder().setFunctionID(TEST_FUNCTION_ID)
             .addMemberName(TEST_MEMBER1).addMemberName(TEST_MEMBER2).build();
 
-    final Result<FunctionAPI.ExecuteFunctionOnMemberResponse, ClientProtocol.ErrorResponse> result =
+    final Result<FunctionAPI.ExecuteFunctionOnMemberResponse> result =
         operationHandler.process(serializationService, request, mockedMessageExecutionContext());
 
     // unfortunately FunctionService fishes for a DistributedSystem and throws an exception
@@ -160,7 +160,7 @@ public class ExecuteFunctionOnMemberRequestOperationHandlerJUnitTest {
         FunctionAPI.ExecuteFunctionOnMemberRequest.newBuilder().setFunctionID(TEST_FUNCTION_ID)
             .addMemberName(TEST_MEMBER1).build();
 
-    final Result<FunctionAPI.ExecuteFunctionOnMemberResponse, ClientProtocol.ErrorResponse> result =
+    final Result<FunctionAPI.ExecuteFunctionOnMemberResponse> result =
         operationHandler.process(serializationService, request, mockedMessageExecutionContext());
 
     assertTrue(result instanceof Failure);
@@ -175,7 +175,7 @@ public class ExecuteFunctionOnMemberRequestOperationHandlerJUnitTest {
         FunctionAPI.ExecuteFunctionOnMemberRequest.newBuilder()
             .setFunctionID("I am not a function, I am a human").addMemberName(TEST_MEMBER1).build();
 
-    final Result<FunctionAPI.ExecuteFunctionOnMemberResponse, ClientProtocol.ErrorResponse> result =
+    final Result<FunctionAPI.ExecuteFunctionOnMemberResponse> result =
         operationHandler.process(serializationService, request, mockedMessageExecutionContext());
 
     final ClientProtocol.ErrorResponse errorMessage = result.getErrorMessage();

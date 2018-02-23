@@ -22,7 +22,6 @@ import org.apache.geode.cache.Region;
 import org.apache.geode.internal.exception.InvalidExecutionContextException;
 import org.apache.geode.internal.protocol.operations.ProtobufOperationHandler;
 import org.apache.geode.internal.protocol.protobuf.v1.BasicTypes;
-import org.apache.geode.internal.protocol.protobuf.v1.ClientProtocol;
 import org.apache.geode.internal.protocol.protobuf.v1.Failure;
 import org.apache.geode.internal.protocol.protobuf.v1.MessageExecutionContext;
 import org.apache.geode.internal.protocol.protobuf.v1.ProtobufSerializationService;
@@ -30,7 +29,6 @@ import org.apache.geode.internal.protocol.protobuf.v1.RegionAPI;
 import org.apache.geode.internal.protocol.protobuf.v1.Result;
 import org.apache.geode.internal.protocol.protobuf.v1.Success;
 import org.apache.geode.internal.protocol.protobuf.v1.serialization.exception.DecodingException;
-import org.apache.geode.internal.protocol.protobuf.v1.utilities.ProtobufResponseUtilities;
 
 @Experimental
 public class RemoveRequestOperationHandler
@@ -38,22 +36,24 @@ public class RemoveRequestOperationHandler
   private static final Logger logger = LogManager.getLogger();
 
   @Override
-  public Result<RegionAPI.RemoveResponse, ClientProtocol.ErrorResponse> process(
-      ProtobufSerializationService serializationService, RegionAPI.RemoveRequest request,
-      MessageExecutionContext messageExecutionContext)
+  public Result<RegionAPI.RemoveResponse> process(ProtobufSerializationService serializationService,
+      RegionAPI.RemoveRequest request, MessageExecutionContext messageExecutionContext)
       throws InvalidExecutionContextException, DecodingException {
 
     String regionName = request.getRegionName();
     Region region = messageExecutionContext.getCache().getRegion(regionName);
     if (region == null) {
       logger.error("Received Remove request for non-existing region {}", regionName);
-      return Failure.of(ProtobufResponseUtilities
-          .makeErrorResponse(BasicTypes.ErrorCode.SERVER_ERROR, "Region not found"));
+      return Failure.of(BasicTypes.ErrorCode.SERVER_ERROR, "Region not found");
     }
 
     long startTime = messageExecutionContext.getStatistics().startOperation();
     try {
       Object decodedKey = serializationService.decode(request.getKey());
+      if (decodedKey == null) {
+        return Failure.of(BasicTypes.ErrorCode.INVALID_REQUEST,
+            "NULL is not a valid key for removal.");
+      }
       region.remove(decodedKey);
 
       return Success.of(RegionAPI.RemoveResponse.newBuilder().build());

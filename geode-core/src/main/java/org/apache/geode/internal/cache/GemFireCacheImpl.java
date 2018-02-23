@@ -175,6 +175,7 @@ import org.apache.geode.i18n.LogWriterI18n;
 import org.apache.geode.internal.Assert;
 import org.apache.geode.internal.ClassPathLoader;
 import org.apache.geode.internal.SystemTimer;
+import org.apache.geode.internal.Version;
 import org.apache.geode.internal.cache.backup.BackupService;
 import org.apache.geode.internal.cache.control.InternalResourceManager;
 import org.apache.geode.internal.cache.control.InternalResourceManager.ResourceType;
@@ -1262,7 +1263,7 @@ public class GemFireCacheImpl implements InternalCache, InternalClientCache, Has
 
   private void startRestAgentServer(GemFireCacheImpl cache) {
     if (this.system.getConfig().getStartDevRestApi() && isNotJmxManager() && isServerNode()) {
-      this.restAgent = new RestAgent(this.system.getConfig());
+      this.restAgent = new RestAgent(this.system.getConfig(), this.securityService);
       this.restAgent.start(cache);
     } else {
       this.restAgent = null;
@@ -4575,6 +4576,18 @@ public class GemFireCacheImpl implements InternalCache, InternalClientCache, Has
     Set otherMembers = this.dm.getOtherDistributionManagerIds();
     RemoveCacheServerProfileMessage message = new RemoveCacheServerProfileMessage();
     message.operateOnLocalCache(this);
+
+    // Remove this while loop when we release GEODE 2.0
+    // This block prevents sending a message to old members that do not know about
+    // the RemoveCacheServerProfileMessage
+    Iterator memberIterator = otherMembers.iterator();
+    while (memberIterator.hasNext()) {
+      InternalDistributedMember member = (InternalDistributedMember) memberIterator.next();
+      if (Version.GEODE_150.compareTo(member.getVersionObject()) > 0) {
+        memberIterator.remove();
+      }
+    }
+
     if (!otherMembers.isEmpty()) {
       if (logger.isDebugEnabled()) {
         logger.debug("Sending add cache server profile message to other members.");
