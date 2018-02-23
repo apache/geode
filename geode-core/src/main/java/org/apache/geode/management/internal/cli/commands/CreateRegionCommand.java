@@ -23,7 +23,9 @@ import java.util.stream.Collectors;
 
 import javax.management.ObjectName;
 
+import org.apache.commons.lang.ArrayUtils;
 import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang.exception.ExceptionUtils;
 import org.springframework.shell.core.annotation.CliCommand;
 import org.springframework.shell.core.annotation.CliOption;
 
@@ -494,7 +496,7 @@ public class CreateRegionCommand implements GfshCommand {
               throw (IllegalArgumentException) object;
             } else if (object instanceof Throwable) {
               Throwable th = (Throwable) object;
-              LogWrapper.getInstance().info(CliUtil.stackTraceAsString((th)));
+              LogWrapper.getInstance().info(ExceptionUtils.getStackTrace((th)));
               throw new IllegalArgumentException(CliStrings.format(
                   CliStrings.CREATE_REGION__MSG__COULD_NOT_RETRIEVE_REGION_ATTRS_FOR_PATH_0_REASON_1,
                   regionPath, th.getMessage()));
@@ -568,7 +570,7 @@ public class CreateRegionCommand implements GfshCommand {
 
     for (Map.Entry<String, String[]> entry : entrySet) {
       String[] value = entry.getValue();
-      if (CliUtil.contains(value, diskStoreName)) {
+      if (diskStoreName != null && ArrayUtils.contains(value, diskStoreName)) {
         return true;
       }
     }

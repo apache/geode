@@ -16,6 +16,7 @@ package org.apache.geode.connectors.jdbc.internal.cli;
 
 import java.io.Serializable;
 
+import org.apache.commons.lang.exception.ExceptionUtils;
 import org.apache.logging.log4j.Logger;
 
 import org.apache.geode.cache.Cache;
@@ -51,7 +52,7 @@ class ExceptionHandler implements Serializable {
   private String getExceptionMessage(final Exception exception) {
     String message = exception.getMessage();
     if (message == null) {
-      message = CliUtil.stackTraceAsString(exception);
+      message = ExceptionUtils.getStackTrace(exception);
     }
     return message;
   }

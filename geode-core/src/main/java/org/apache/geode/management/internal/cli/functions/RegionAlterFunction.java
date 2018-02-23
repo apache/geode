@@ -16,6 +16,7 @@ package org.apache.geode.management.internal.cli.functions;
 
 import java.util.Set;
 
+import org.apache.commons.lang.exception.ExceptionUtils;
 import org.apache.logging.log4j.Logger;
 
 import org.apache.geode.SystemFailure;
@@ -88,7 +89,7 @@ public class RegionAlterFunction implements InternalFunction {
 
       String exceptionMsg = th.getMessage();
       if (exceptionMsg == null) {
-        exceptionMsg = CliUtil.stackTraceAsString(th);
+        exceptionMsg = ExceptionUtils.getStackTrace(th);
       }
       resultSender.lastResult(new CliFunctionResult(memberNameOrId, false, exceptionMsg));
     }

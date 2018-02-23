@@ -35,6 +35,7 @@ import java.util.concurrent.TimeUnit;
 
 import javax.management.ObjectName;
 
+import org.apache.commons.lang.exception.ExceptionUtils;
 import org.awaitility.Awaitility;
 import org.junit.Ignore;
 import org.junit.Test;
@@ -62,7 +63,6 @@ import org.apache.geode.management.ClientHealthStatus;
 import org.apache.geode.management.ManagementService;
 import org.apache.geode.management.cli.Result;
 import org.apache.geode.management.internal.SystemManagementService;
-import org.apache.geode.management.internal.cli.CliUtil;
 import org.apache.geode.management.internal.cli.LogWrapper;
 import org.apache.geode.management.internal.cli.i18n.CliStrings;
 import org.apache.geode.management.internal.cli.result.CommandResult;
@@ -462,7 +462,7 @@ public class DescribeClientCommandDUnitTest extends CliCommandTestBase {
             }
           } catch (Exception e) {
             LogWrapper.getInstance().warning("waitForMixedClients Exception in waitForMBean ::: "
-                + CliUtil.stackTraceAsString(e));
+                + ExceptionUtils.getStackTrace(e));
           }
           return false;
         }));
@@ -573,7 +573,7 @@ public class DescribeClientCommandDUnitTest extends CliCommandTestBase {
           assertNotNull(p);
         } catch (Exception eee) {
           System.err.println("Exception in creating pool " + poolName + "    Exception =="
-              + CliUtil.stackTraceAsString(eee));
+              + ExceptionUtils.getStackTrace(eee));
         }
       }
     });
@@ -613,7 +613,7 @@ public class DescribeClientCommandDUnitTest extends CliCommandTestBase {
             } catch (Exception e) {
               LogWrapper.getInstance()
                   .warning("waitForListClientMBean3 Exception in waitForListClientMbean ::: "
-                      + CliUtil.stackTraceAsString(e));
+                      + ExceptionUtils.getStackTrace(e));
             }
             return false;
           }
@@ -653,7 +653,7 @@ public class DescribeClientCommandDUnitTest extends CliCommandTestBase {
               return false;
             } catch (Exception e) {
               LogWrapper.getInstance().warning(
-                  "waitForMBean Exception in waitForMBean ::: " + CliUtil.stackTraceAsString(e));
+                  "waitForMBean Exception in waitForMBean ::: " + ExceptionUtils.getStackTrace(e));
             }
             return false;
           }
@@ -701,7 +701,7 @@ public class DescribeClientCommandDUnitTest extends CliCommandTestBase {
           assertNotNull(p);
         } catch (Exception eee) {
           cache.getLogger().info("Exception in creating pool " + poolName + "    Exception =="
-              + CliUtil.stackTraceAsString(eee));
+              + ExceptionUtils.getStackTrace(eee));
         }
       }
     });
@@ -756,7 +756,7 @@ public class DescribeClientCommandDUnitTest extends CliCommandTestBase {
           } catch (Exception e) {
             LogWrapper.getInstance()
                 .warning("waitForNonSubScribedClientMBean Exception in waitForMBean ::: "
-                    + CliUtil.stackTraceAsString(e));
+                    + ExceptionUtils.getStackTrace(e));
           }
           return false;
         }));
