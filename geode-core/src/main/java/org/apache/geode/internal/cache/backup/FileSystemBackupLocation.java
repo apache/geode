@@ -69,15 +69,14 @@ public class FileSystemBackupLocation implements BackupLocation {
     return baselineOplogMap;
   }
 
-  private Collection<File> getBackedOplogs(File checkedBaselineDir, DiskStore diskStore) {
+  Collection<File> getBackedOplogs(File checkedBaselineDir, DiskStore diskStore) {
     File baselineDir = new File(checkedBaselineDir, BackupWriter.DATA_STORES_DIRECTORY);
     baselineDir = new File(baselineDir, getBackupDirName((DiskStoreImpl) diskStore));
-
     return FileUtils.listFiles(baselineDir, new String[] {"krf", "drf", "crf"}, true);
   }
 
-  private Collection<File> getPreviouslyBackedOpLogs(File checkedBaselineDir) throws IOException {
-    BackupInspector inspector = BackupInspector.createInspector(checkedBaselineDir);
+  Collection<File> getPreviouslyBackedOpLogs(File checkedBaselineDir) throws IOException {
+    BackupInspector inspector = createBackupInspector(checkedBaselineDir);
     HashSet<File> oplogs = new HashSet<File>();
     if (inspector.isIncremental() && inspector.getIncrementalOplogFileNames() != null) {
       inspector.getIncrementalOplogFileNames().forEach((oplog) -> {
@@ -86,6 +85,10 @@ public class FileSystemBackupLocation implements BackupLocation {
       });
     }
     return oplogs;
+  }
+
+  BackupInspector createBackupInspector(File checkedBaselineDir) throws IOException {
+    return BackupInspector.createInspector(checkedBaselineDir);
   }
 
   /**
@@ -112,13 +115,6 @@ public class FileSystemBackupLocation implements BackupLocation {
     return baselineDir;
   }
 
-  /**
-   * Returns the memberId directory for this member in the baseline. The memberId may have changed
-   * if this member has been restarted since the last backup.
-   *
-   * @param baselineParentDir parent directory of last backup.
-   * @return null if the baseline for this member could not be located.
-   */
   private File findBaselineForThisMember(File baselineParentDir, DiskStore diskStore) {
     File baselineDir = null;
 
@@ -138,13 +134,11 @@ public class FileSystemBackupLocation implements BackupLocation {
    * Returns the dir name used to back up this DiskStore's directories under. The name is a
    * concatenation of the disk store name and id.
    */
-  private String getBackupDirName(DiskStoreImpl diskStore) {
+  String getBackupDirName(DiskStoreImpl diskStore) {
     String name = diskStore.getName();
-
     if (name == null) {
       name = GemFireCacheImpl.getDefaultDiskStoreName();
     }
-
     return (name + "_" + diskStore.getDiskStoreID().toString());
   }
 
