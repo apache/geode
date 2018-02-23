@@ -51,7 +51,6 @@ public class GetAllRequestOperationHandler
       return Failure.of(BasicTypes.ErrorCode.SERVER_ERROR, "Region not found");
     }
 
-    long startTime = messageExecutionContext.getStatistics().startOperation();
     RegionAPI.GetAllResponse.Builder responseBuilder = RegionAPI.GetAllResponse.newBuilder();
     try {
       messageExecutionContext.getCache().setReadSerializedForCurrentThread(true);
@@ -59,7 +58,6 @@ public class GetAllRequestOperationHandler
           .forEach((key) -> processSingleKey(responseBuilder, serializationService, region, key));
     } finally {
       messageExecutionContext.getCache().setReadSerializedForCurrentThread(false);
-      messageExecutionContext.getStatistics().endOperation(startTime);
     }
 
     return Success.of(responseBuilder.build());

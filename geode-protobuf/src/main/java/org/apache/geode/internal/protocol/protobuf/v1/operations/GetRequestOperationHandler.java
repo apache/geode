@@ -46,7 +46,6 @@ public class GetRequestOperationHandler
       logger.error("Received Get request for non-existing region {}", regionName);
       return Failure.of(BasicTypes.ErrorCode.SERVER_ERROR, "Region not found");
     }
-    long startOperationTime = messageExecutionContext.getStatistics().startOperation();
 
     try {
       messageExecutionContext.getCache().setReadSerializedForCurrentThread(true);
@@ -65,7 +64,6 @@ public class GetRequestOperationHandler
       return Success.of(RegionAPI.GetResponse.newBuilder().setResult(encodedValue).build());
     } finally {
       messageExecutionContext.getCache().setReadSerializedForCurrentThread(false);
-      messageExecutionContext.getStatistics().endOperation(startOperationTime);
     }
   }
 }
