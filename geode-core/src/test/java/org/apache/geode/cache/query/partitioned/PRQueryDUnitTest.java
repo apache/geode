@@ -55,7 +55,7 @@ public class PRQueryDUnitTest extends CacheTestCase {
   private static final int NUMBER_OF_PUTS = 100;
   private static final Object[] EMPTY_PARAMETERS = new Object[0];
   private static final int[] LIMIT = new int[] {10, 15, 30, 0, 1, 9};
-  private static final int redundancy = 0;
+  private static final int REDUNDANCY = 0;
 
   private String regionName;
   private int numberOfBuckets;
@@ -63,12 +63,14 @@ public class PRQueryDUnitTest extends CacheTestCase {
   private VM accessor;
   private VM datastore1;
   private VM datastore2;
+  private VM datastore3;
 
   @Before
   public void setUp() throws Exception {
-    accessor = getHost(0).getVM(1);
-    datastore1 = getHost(0).getVM(2);
-    datastore2 = getHost(0).getVM(3);
+    accessor = getHost(0).getVM(0);
+    datastore1 = getHost(0).getVM(1);
+    datastore2 = getHost(0).getVM(2);
+    datastore3 = getHost(0).getVM(3);
 
     regionName = getUniqueName();
 
@@ -144,43 +146,45 @@ public class PRQueryDUnitTest extends CacheTestCase {
       createPartitionedRegion();
     });
 
-    Region<Integer, Portfolio> region = createPartitionedRegion();
+    datastore3.invoke(() -> {
+      Region<Integer, Portfolio> region = createPartitionedRegion();
 
-    for (int i = 1; i <= NUMBER_OF_PUTS; i++) {
-      region.put(i, new Portfolio(i));
-    }
-
-    Set<Integer> bucketsToQuery = new HashSet<>();
-    for (int i = 0; i < numberOfBuckets; i++) {
-      bucketsToQuery.add(i);
-    }
-
-    String[] queries = new String[] {"select * from /" + regionName + " LIMIT " + LIMIT[0],
-        "select * from /" + regionName + " LIMIT " + LIMIT[1],
-        "select * from /" + regionName + " LIMIT " + LIMIT[2],
-        "select * from /" + regionName + " LIMIT " + LIMIT[3],
-        "select * from /" + regionName + " LIMIT " + LIMIT[4],
-        "select * from /" + regionName + " where ID > 10 LIMIT " + LIMIT[5],};
-
-    for (int i = 0; i < queries.length; i++) {
-      DefaultQuery query = (DefaultQuery) getCache().getQueryService().newQuery(queries[i]);
-      SelectResults results =
-          query.getSimpleSelect().getEmptyResultSet(EMPTY_PARAMETERS, getCache(), query);
-
-      PartitionedRegion partitionedRegion = (PartitionedRegion) region;
-      PartitionedRegionQueryEvaluator queryEvaluator =
-          new PartitionedRegionQueryEvaluator(partitionedRegion.getSystem(), partitionedRegion,
-              query, EMPTY_PARAMETERS, results, bucketsToQuery);
-
-      CollatingTestHook testHook = new CollatingTestHook(queryEvaluator);
-      queryEvaluator.queryBuckets(testHook);
-
-      for (Map.Entry<Object, Integer> mapEntry : testHook.getResultsPerMember().entrySet()) {
-        Integer resultsCount = mapEntry.getValue();
-        // this assertion fails in the IDE but passes in gradle due to -Xmx config differences
-        assertThat(resultsCount.intValue()).isEqualTo(LIMIT[i]);
+      for (int i = 1; i <= NUMBER_OF_PUTS; i++) {
+        region.put(i, new Portfolio(i));
       }
-    }
+
+      Set<Integer> bucketsToQuery = new HashSet<>();
+      for (int i = 0; i < numberOfBuckets; i++) {
+        bucketsToQuery.add(i);
+      }
+
+      String[] queries = new String[] {"select * from /" + regionName + " LIMIT " + LIMIT[0],
+          "select * from /" + regionName + " LIMIT " + LIMIT[1],
+          "select * from /" + regionName + " LIMIT " + LIMIT[2],
+          "select * from /" + regionName + " LIMIT " + LIMIT[3],
+          "select * from /" + regionName + " LIMIT " + LIMIT[4],
+          "select * from /" + regionName + " where ID > 10 LIMIT " + LIMIT[5],};
+
+      for (int i = 0; i < queries.length; i++) {
+        DefaultQuery query = (DefaultQuery) getCache().getQueryService().newQuery(queries[i]);
+        SelectResults results =
+            query.getSimpleSelect().getEmptyResultSet(EMPTY_PARAMETERS, getCache(), query);
+
+        PartitionedRegion partitionedRegion = (PartitionedRegion) region;
+        PartitionedRegionQueryEvaluator queryEvaluator =
+            new PartitionedRegionQueryEvaluator(partitionedRegion.getSystem(), partitionedRegion,
+                query, EMPTY_PARAMETERS, results, bucketsToQuery);
+
+        CollatingTestHook testHook = new CollatingTestHook(queryEvaluator);
+        queryEvaluator.queryBuckets(testHook);
+
+        for (Map.Entry<Object, Integer> mapEntry : testHook.getResultsPerMember().entrySet()) {
+          Integer resultsCount = mapEntry.getValue();
+          // this assertion fails in the IDE but passes in gradle due to -Xmx config differences
+          assertThat(resultsCount.intValue()).isEqualTo(LIMIT[i]);
+        }
+      }
+    });
   }
 
   @Test
@@ -281,7 +285,7 @@ public class PRQueryDUnitTest extends CacheTestCase {
     Cache cache = getCache();
 
     PartitionAttributesFactory partitionAttributesFactory = new PartitionAttributesFactory();
-    partitionAttributesFactory.setRedundantCopies(redundancy);
+    partitionAttributesFactory.setRedundantCopies(REDUNDANCY);
     partitionAttributesFactory.setTotalNumBuckets(numberOfBuckets);
 
     RegionFactory regionFactory = cache.createRegionFactory(RegionShortcut.PARTITION);
@@ -294,7 +298,7 @@ public class PRQueryDUnitTest extends CacheTestCase {
     Cache cache = getCache();
 
     PartitionAttributesFactory partitionAttributesFactory = new PartitionAttributesFactory();
-    partitionAttributesFactory.setRedundantCopies(redundancy);
+    partitionAttributesFactory.setRedundantCopies(REDUNDANCY);
     partitionAttributesFactory.setTotalNumBuckets(numberOfBuckets);
     partitionAttributesFactory.setLocalMaxMemory(0);
 
