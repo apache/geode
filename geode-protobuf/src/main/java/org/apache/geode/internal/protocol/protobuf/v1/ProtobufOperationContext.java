@@ -17,12 +17,14 @@ package org.apache.geode.internal.protocol.protobuf.v1;
 import java.util.function.Function;
 
 import org.apache.geode.internal.protocol.operations.ProtobufOperationHandler;
+import org.apache.geode.internal.protocol.protobuf.v1.serialization.exception.DecodingException;
 import org.apache.geode.security.ResourcePermission;
 
 public class ProtobufOperationContext<OperationRequest, OperationResponse> {
   @FunctionalInterface
   public interface PermissionFunction<OperationRequest> {
-    ResourcePermission apply(OperationRequest request, ProtobufSerializationService service);
+    ResourcePermission apply(OperationRequest request, ProtobufSerializationService service)
+        throws DecodingException;
   }
 
   private final ProtobufOperationHandler<OperationRequest, OperationResponse> operationHandler;
@@ -59,7 +61,7 @@ public class ProtobufOperationContext<OperationRequest, OperationResponse> {
   public ProtobufOperationContext(Function<ClientProtocol.Message, OperationRequest> fromRequest,
       ProtobufOperationHandler<OperationRequest, OperationResponse> operationHandler,
       Function<OperationResponse, ClientProtocol.Message.Builder> toResponse,
-      PermissionFunction permissionRequired) {
+      PermissionFunction<OperationRequest> permissionRequired) {
     this.operationHandler = operationHandler;
     this.fromRequest = fromRequest;
     this.toResponse = toResponse;
@@ -90,7 +92,7 @@ public class ProtobufOperationContext<OperationRequest, OperationResponse> {
   }
 
   public ResourcePermission getAccessPermissionRequired(OperationRequest request,
-      ProtobufSerializationService serializer) {
+      ProtobufSerializationService serializer) throws DecodingException {
     return accessPermissionRequired.apply(request, serializer);
   }
 }

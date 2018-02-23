@@ -22,6 +22,7 @@ import org.apache.geode.internal.protocol.protobuf.v1.BasicTypes;
 import org.apache.geode.internal.protocol.protobuf.v1.MessageExecutionContext;
 import org.apache.geode.internal.protocol.protobuf.v1.ProtobufOperationContext;
 import org.apache.geode.internal.protocol.protobuf.v1.ProtobufSerializationService;
+import org.apache.geode.internal.protocol.protobuf.v1.serialization.exception.DecodingException;
 import org.apache.geode.internal.protocol.protobuf.v1.state.exception.ConnectionStateException;
 
 /**
@@ -36,9 +37,9 @@ public interface ProtobufConnectionStateProcessor {
    *         connection is in the state contained in the provided messageContext. Otherwise, does
    *         nothing.
    */
-  void validateOperation(Object request, ProtobufSerializationService serializer,
+  void validateOperation(Object message, ProtobufSerializationService serializer,
       MessageExecutionContext messageContext, ProtobufOperationContext operationContext)
-      throws ConnectionStateException;
+      throws ConnectionStateException, DecodingException;
 
   /**
    * This indicates whether this specific state processor is able to handle authentication requests.

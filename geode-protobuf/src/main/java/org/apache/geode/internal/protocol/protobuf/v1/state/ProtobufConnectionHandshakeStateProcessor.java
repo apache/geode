@@ -36,7 +36,7 @@ public class ProtobufConnectionHandshakeStateProcessor implements ProtobufConnec
   }
 
   @Override
-  public void validateOperation(Object request, ProtobufSerializationService serializer,
+  public void validateOperation(Object message, ProtobufSerializationService serializer,
       MessageExecutionContext messageContext, ProtobufOperationContext operationContext)
       throws ConnectionStateException {
     throw new ConnectionStateException(BasicTypes.ErrorCode.INVALID_REQUEST,

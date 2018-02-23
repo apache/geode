@@ -21,6 +21,7 @@ import org.apache.geode.internal.protocol.protobuf.v1.BasicTypes;
 import org.apache.geode.internal.protocol.protobuf.v1.MessageExecutionContext;
 import org.apache.geode.internal.protocol.protobuf.v1.ProtobufOperationContext;
 import org.apache.geode.internal.protocol.protobuf.v1.ProtobufSerializationService;
+import org.apache.geode.internal.protocol.protobuf.v1.serialization.exception.DecodingException;
 import org.apache.geode.internal.protocol.protobuf.v1.state.exception.ConnectionStateException;
 import org.apache.geode.internal.protocol.protobuf.v1.state.exception.OperationNotAuthorizedException;
 import org.apache.geode.internal.security.SecurityService;
@@ -38,12 +39,13 @@ public class ProtobufConnectionAuthorizingStateProcessor
   }
 
   @Override
-  public void validateOperation(Object request, ProtobufSerializationService serializer,
+  public void validateOperation(Object message, ProtobufSerializationService serializer,
       MessageExecutionContext messageContext, ProtobufOperationContext operationContext)
-      throws ConnectionStateException {
+      throws ConnectionStateException, DecodingException {
     ThreadState threadState = securityService.bindSubject(subject);
     try {
-      securityService.authorize(operationContext.getAccessPermissionRequired(request, serializer));
+      securityService.authorize(operationContext.getAccessPermissionRequired(
+          operationContext.getFromRequest().apply(message), serializer));
     } catch (NotAuthorizedException e) {
       messageContext.getStatistics().incAuthorizationViolations();
       throw new OperationNotAuthorizedException(BasicTypes.ErrorCode.AUTHORIZATION_FAILED,

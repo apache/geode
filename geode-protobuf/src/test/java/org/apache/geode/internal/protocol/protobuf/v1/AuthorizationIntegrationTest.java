@@ -136,6 +136,7 @@ public class AuthorizationIntegrationTest {
     cacheServer.start();
 
     cache.createRegionFactory().create(TEST_REGION1);
+    cache.createRegionFactory().create(TEST_REGION2);
 
     System.setProperty("geode.feature-protobuf-protocol", "true");
     System.setProperty("geode.protocol-authentication-mode", "SIMPLE");

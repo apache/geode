@@ -22,6 +22,7 @@ import org.apache.geode.annotations.Experimental;
 import org.apache.geode.internal.protocol.protobuf.v1.ClientProtocol;
 import org.apache.geode.internal.protocol.protobuf.v1.ProtobufOperationContext;
 import org.apache.geode.internal.protocol.protobuf.v1.ProtobufSerializationService;
+import org.apache.geode.internal.protocol.protobuf.v1.RegionAPI;
 import org.apache.geode.internal.protocol.protobuf.v1.operations.ExecuteFunctionOnGroupRequestOperationHandler;
 import org.apache.geode.internal.protocol.protobuf.v1.operations.ExecuteFunctionOnMemberRequestOperationHandler;
 import org.apache.geode.internal.protocol.protobuf.v1.operations.ExecuteFunctionOnRegionRequestOperationHandler;
@@ -70,7 +71,7 @@ public class ProtobufOperationContextRegistry {
         new ProtobufOperationContext<>(ClientProtocol.Message::getGetRequest,
             new GetRequestOperationHandler(),
             opsResp -> ClientProtocol.Message.newBuilder().setGetResponse(opsResp),
-            ResourcePermissions.DATA_READ));
+            GetRequestOperationHandler::determineRequiredPermission));
 
     operationContexts.put(ClientProtocol.Message.MessageTypeCase.GETALLREQUEST,
         new ProtobufOperationContext<>(ClientProtocol.Message::getGetAllRequest,
@@ -82,7 +83,7 @@ public class ProtobufOperationContextRegistry {
         new ProtobufOperationContext<>(ClientProtocol.Message::getPutRequest,
             new PutRequestOperationHandler(),
             opsResp -> ClientProtocol.Message.newBuilder().setPutResponse(opsResp),
-            ResourcePermissions.DATA_WRITE));
+            PutRequestOperationHandler::determineRequiredPermission));
 
     operationContexts.put(ClientProtocol.Message.MessageTypeCase.PUTALLREQUEST,
         new ProtobufOperationContext<>(ClientProtocol.Message::getPutAllRequest,
@@ -94,7 +95,7 @@ public class ProtobufOperationContextRegistry {
         new ProtobufOperationContext<>(ClientProtocol.Message::getRemoveRequest,
             new RemoveRequestOperationHandler(),
             opsResp -> ClientProtocol.Message.newBuilder().setRemoveResponse(opsResp),
-            ResourcePermissions.DATA_WRITE));
+            RemoveRequestOperationHandler::determineRequiredPermission));
 
     operationContexts.put(ClientProtocol.Message.MessageTypeCase.GETREGIONNAMESREQUEST,
         new ProtobufOperationContext<>(ClientProtocol.Message::getGetRegionNamesRequest,

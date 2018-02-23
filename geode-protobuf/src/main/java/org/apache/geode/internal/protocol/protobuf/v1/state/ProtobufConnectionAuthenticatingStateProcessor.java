@@ -36,7 +36,7 @@ public class ProtobufConnectionAuthenticatingStateProcessor
   }
 
   @Override
-  public void validateOperation(Object request, ProtobufSerializationService serializer,
+  public void validateOperation(Object message, ProtobufSerializationService serializer,
       MessageExecutionContext messageContext, ProtobufOperationContext operationContext)
       throws ConnectionStateException {
     if (!(operationContext
