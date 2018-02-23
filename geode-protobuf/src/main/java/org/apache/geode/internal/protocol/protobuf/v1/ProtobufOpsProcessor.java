@@ -75,6 +75,8 @@ public class ProtobufOpsProcessor {
   private Result processOperation(ClientProtocol.Message request, MessageExecutionContext context,
       ClientProtocol.Message.MessageTypeCase requestType, ProtobufOperationContext operationContext)
       throws ConnectionStateException, EncodingException, DecodingException {
+
+    long startTime = context.getStatistics().startOperation();
     try {
       return operationContext.getOperationHandler().process(serializationService,
           operationContext.getFromRequest().apply(request), context);
@@ -83,6 +85,8 @@ public class ProtobufOpsProcessor {
       logger.error(exception);
       return Failure.of(BasicTypes.ErrorCode.INVALID_REQUEST,
           "Invalid execution context found for operation.");
+    } finally {
+      context.getStatistics().endOperation(startTime);
     }
   }
 }
