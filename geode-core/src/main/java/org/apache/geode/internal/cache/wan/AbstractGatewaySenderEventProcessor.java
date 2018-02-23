@@ -731,7 +731,7 @@ public abstract class AbstractGatewaySenderEventProcessor extends Thread {
     return false;
   }
 
-  private List conflate(List<GatewaySenderEventImpl> events) {
+  public List conflate(List<GatewaySenderEventImpl> events) {
     List<GatewaySenderEventImpl> conflatedEvents = null;
     // Conflate the batch if necessary
     if (this.sender.isBatchConflationEnabled() && events.size() > 1) {
@@ -756,7 +756,7 @@ public abstract class AbstractGatewaySenderEventProcessor extends Thread {
           // The event should not be conflated (create or destroy). Add it to
           // the map.
           ConflationKey key = new ConflationKey(gsEvent.getRegion().getFullPath(),
-              gsEvent.getKeyToConflate(), gsEvent.getOperation());
+              gsEvent.getKeyToConflate(), gsEvent.getOperation(), gsEvent.getShadowKey());
           conflatedEventsMap.put(key, gsEvent);
         }
       }
@@ -1321,10 +1321,17 @@ public abstract class AbstractGatewaySenderEventProcessor extends Thread {
 
     private String regionName;
 
+    private long shadowKey;
+
     private ConflationKey(String region, Object key, Operation operation) {
+      this(region, key, operation, -1);
+    }
+
+    private ConflationKey(String region, Object key, Operation operation, long shadowKey) {
       this.key = key;
       this.operation = operation;
       this.regionName = region;
+      this.shadowKey = shadowKey;
     }
 
     @Override
@@ -1334,6 +1341,7 @@ public abstract class AbstractGatewaySenderEventProcessor extends Thread {
       result = prime * result + key.hashCode();
       result = prime * result + operation.hashCode();
       result = prime * result + regionName.hashCode();
+      result = prime * result + Long.hashCode(this.shadowKey);
       return result;
     }
 
@@ -1356,6 +1364,9 @@ public abstract class AbstractGatewaySenderEventProcessor extends Thread {
         return false;
       }
       if (!this.operation.equals(that.operation)) {
+        return false;
+      }
+      if (this.shadowKey != that.shadowKey) {
         return false;
       }
       return true;
