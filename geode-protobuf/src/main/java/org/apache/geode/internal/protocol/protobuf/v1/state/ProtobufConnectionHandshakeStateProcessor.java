@@ -20,8 +20,8 @@ import java.io.OutputStream;
 import java.io.PushbackInputStream;
 
 import org.apache.geode.internal.cache.tier.CommunicationMode;
+import org.apache.geode.internal.protocol.protobuf.v1.BasicTypes;
 import org.apache.geode.internal.protocol.protobuf.v1.MessageExecutionContext;
-import org.apache.geode.internal.protocol.protobuf.v1.ProtobufErrorCode;
 import org.apache.geode.internal.protocol.protobuf.v1.ProtobufOperationContext;
 import org.apache.geode.internal.protocol.protobuf.v1.operations.ProtocolVersionHandler;
 import org.apache.geode.internal.protocol.protobuf.v1.state.exception.ConnectionStateException;
@@ -37,7 +37,7 @@ public class ProtobufConnectionHandshakeStateProcessor implements ProtobufConnec
   @Override
   public void validateOperation(MessageExecutionContext messageContext,
       ProtobufOperationContext operationContext) throws ConnectionStateException {
-    throw new ConnectionStateException(ProtobufErrorCode.INVALID_REQUEST,
+    throw new ConnectionStateException(BasicTypes.ErrorCode.INVALID_REQUEST,
         "Connection processing should never be asked to validate an operation");
   }
 

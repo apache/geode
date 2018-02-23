@@ -16,23 +16,18 @@
 package org.apache.geode.management.internal.cli.functions;
 
 import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
 import java.util.List;
 
 import org.apache.geode.cache.Cache;
-import org.apache.geode.cache.execute.Function;
 import org.apache.geode.cache.execute.FunctionContext;
 import org.apache.geode.cache.query.internal.cq.CqService;
 import org.apache.geode.distributed.DistributedMember;
-import org.apache.geode.internal.InternalEntity;
+import org.apache.geode.internal.cache.execute.InternalFunction;
 import org.apache.geode.internal.cache.tier.sockets.CacheClientNotifier;
 import org.apache.geode.internal.cache.tier.sockets.CacheClientProxy;
 import org.apache.geode.management.internal.cli.CliUtil;
 import org.apache.geode.management.internal.cli.domain.DurableCqNamesResult;
 import org.apache.geode.management.internal.cli.i18n.CliStrings;
-import org.apache.geode.management.internal.security.ResourcePermissions;
-import org.apache.geode.security.ResourcePermission;
 
 /**
  * The ListDurableCqs class is a GemFire function used to collect all the durable client names on
@@ -48,7 +43,7 @@ import org.apache.geode.security.ResourcePermission;
  * @since GemFire 7.0.1
  */
 @SuppressWarnings("unused")
-public class ListDurableCqNamesFunction implements Function, InternalEntity {
+public class ListDurableCqNamesFunction implements InternalFunction {
   private static final long serialVersionUID = 1L;
 
   public String getId() {
@@ -92,10 +87,5 @@ public class ListDurableCqNamesFunction implements Function, InternalEntity {
     } finally {
       context.getResultSender().lastResult(result);
     }
-  }
-
-  @Override
-  public Collection<ResourcePermission> getRequiredPermissions(String regionName) {
-    return Collections.singleton(ResourcePermissions.CLUSTER_READ);
   }
 }

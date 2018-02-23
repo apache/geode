@@ -788,11 +788,7 @@ public class RemoveAllPRMessage extends PartitionMessageWithDirectReply {
      * @throws CacheException if the peer generates an error
      */
     public RemoveAllResult waitForResult() throws CacheException, ForceReattemptException {
-      try {
-        waitForCacheException();
-      } catch (ForceReattemptException e) {
-        throw e;
-      }
+      waitForCacheException();
       return new RemoveAllResult(this.returnValue, this.versions);
     }
   }

@@ -100,6 +100,7 @@ public class SizeMessage extends PartitionMessage {
     Assert.assertTrue(recipients != null, "SizeMessage NULL recipients set");
     SizeResponse p = new SizeResponse(r.getSystem(), recipients);
     SizeMessage m = new SizeMessage(recipients, r.getPRId(), p, bucketIds, estimate);
+    m.setTransactionDistributed(r.getCache().getTxManager().isDistributed());
     r.getDistributionManager().putOutgoing(m);
     return p;
   }

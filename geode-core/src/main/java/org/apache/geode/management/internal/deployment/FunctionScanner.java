@@ -33,7 +33,7 @@ public class FunctionScanner {
   public Collection<String> findFunctionsInJar(File jarFile) throws IOException {
     URLClassLoader urlClassLoader =
         new URLClassLoader(new URL[] {jarFile.getCanonicalFile().toURL()});
-    FastClasspathScanner fastClasspathScanner = new FastClasspathScanner()
+    FastClasspathScanner fastClasspathScanner = new FastClasspathScanner("-dir:")
         .removeTemporaryFilesAfterScan(true).overrideClassLoaders(urlClassLoader);
     ScanResult scanResult = fastClasspathScanner.scan();
 

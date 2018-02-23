@@ -19,6 +19,7 @@ import java.io.DataOutput;
 import java.io.IOException;
 import java.util.concurrent.ConcurrentHashMap;
 
+import org.apache.geode.distributed.internal.DistributionManager;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
 import org.apache.geode.internal.cache.LocalRegion;
 
@@ -75,16 +76,10 @@ public class VMRegionVersionVector extends RegionVersionVector<InternalDistribut
     return REGION_VERSION_VECTOR;
   }
 
-  /*
-   * (non-Javadoc)
-   *
-   * @see
-   * org.apache.geode.internal.cache.versions.RegionVersionVector#memberDeparted(org.apache.geode.
-   * distributed.internal.membership.InternalDistributedMember, boolean)
-   */
   @Override
-  public void memberDeparted(final InternalDistributedMember id, boolean crashed) {
-    super.memberDeparted(id, crashed);
+  public void memberDeparted(DistributionManager distributionManager,
+      final InternalDistributedMember id, boolean crashed) {
+    super.memberDeparted(distributionManager, id, crashed);
     removeOldMember(id);
   }
 

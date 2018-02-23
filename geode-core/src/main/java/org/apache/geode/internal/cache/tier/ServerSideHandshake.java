@@ -42,9 +42,8 @@ public interface ServerSideHandshake {
 
   void setClientReadTimeout(int clientReadTimeout);
 
-  void accept(OutputStream out, InputStream in, byte endpointType, int queueSize,
-      CommunicationMode communicationMode, Principal principal) throws IOException;
-
   Encryptor getEncryptor();
 
+  void handshakeWithClient(OutputStream out, InputStream in, byte endpointType, int queueSize,
+      CommunicationMode communicationMode, Principal principal) throws IOException;
 }

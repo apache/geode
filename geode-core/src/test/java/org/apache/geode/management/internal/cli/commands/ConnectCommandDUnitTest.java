@@ -17,8 +17,6 @@ package org.apache.geode.management.internal.cli.commands;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-import java.util.Properties;
-
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
@@ -41,7 +39,7 @@ public class ConnectCommandDUnitTest {
 
   @Test
   public void useCurrentGfshToConnectToOlderLocator() throws Exception {
-    MemberVM locator = cluster.startLocatorVM(0, new Properties(), VersionManager.GEODE_130);
+    MemberVM locator = cluster.startLocatorVM(0, VersionManager.GEODE_130);
 
     gfsh.executeAndAssertThat("connect --jmx-manager=localhost[" + locator.getJmxPort() + "]")
         .statusIsError().containsOutput("Cannot use a")

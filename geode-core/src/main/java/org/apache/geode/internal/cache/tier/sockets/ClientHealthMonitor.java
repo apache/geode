@@ -25,6 +25,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicIntegerArray;
 
+import org.apache.commons.lang.mutable.MutableInt;
 import org.apache.logging.log4j.Logger;
 
 import org.apache.geode.CancelException;
@@ -38,6 +39,7 @@ import org.apache.geode.internal.cache.IncomingGatewayStatus;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.cache.TXId;
 import org.apache.geode.internal.cache.TXManagerImpl;
+import org.apache.geode.internal.cache.tier.ServerSideHandshake;
 import org.apache.geode.internal.concurrent.ConcurrentHashSet;
 import org.apache.geode.internal.i18n.LocalizedStrings;
 import org.apache.geode.internal.logging.LogService;
@@ -108,9 +110,9 @@ public class ClientHealthMonitor {
    * note, these were moved from static fields in ServerConnection so that they will be cleaned up
    * when the client health monitor is shutdown.
    */
-  private final HashMap cleanupTable = new HashMap();
+  private final HashMap<ServerSideHandshake, MutableInt> cleanupTable = new HashMap<>();
 
-  private final HashMap cleanupProxyIdTable = new HashMap();
+  private final HashMap<ClientProxyMembershipID, MutableInt> cleanupProxyIdTable = new HashMap<>();
 
   /**
    * Used to track the connections for a particular client
@@ -689,16 +691,12 @@ public class ClientHealthMonitor {
     return proxyIdConnections.computeIfAbsent(proxyID, key -> new ServerConnectionCollection());
   }
 
-  public Map getCleanupProxyIdTable() {
+  public Map<ClientProxyMembershipID, MutableInt> getCleanupProxyIdTable() {
     return cleanupProxyIdTable;
   }
 
-  public Map getCleanupTable() {
+  public Map<ServerSideHandshake, MutableInt> getCleanupTable() {
     return cleanupTable;
-  }
-
-  public int getNumberOfClientsAtVersion(Version version) {
-    return numOfClientsPerVersion.get(version.ordinal());
   }
 
   public int getNumberOfClientsAtOrAboveVersion(Version version) {
@@ -714,10 +712,28 @@ public class ClientHealthMonitor {
   }
 
   /**
+   * Interface for changing the heartbeat timeout behavior in the ClientHealthMonitorThread, should
+   * only be used for testing
+   */
+  interface HeartbeatTimeoutCheck {
+    boolean timedOut(long current, long lastHeartbeat, long interval);
+  }
+
+  void testUseCustomHeartbeatCheck(HeartbeatTimeoutCheck check) {
+    _clientMonitor.overrideHeartbeatTimeoutCheck(check);
+  }
+
+  /**
    * Class <code>ClientHealthMonitorThread</code> is a <code>Thread</code> that verifies all clients
    * are still alive.
    */
   class ClientHealthMonitorThread extends Thread {
+    private HeartbeatTimeoutCheck checkHeartbeat = (long currentTime, long lastHeartbeat,
+        long allowedInterval) -> currentTime - lastHeartbeat > allowedInterval;
+
+    protected void overrideHeartbeatTimeoutCheck(HeartbeatTimeoutCheck newCheck) {
+      checkHeartbeat = newCheck;
+    }
 
     /**
      * The maximum time allowed between pings before determining the client has died and
@@ -824,7 +840,8 @@ public class ClientHealthMonitor {
                     (currentTime - latestHeartbeat), proxyID);
               }
 
-              if ((currentTime - latestHeartbeat) > this._maximumTimeBetweenPings) {
+              if (checkHeartbeat.timedOut(currentTime, latestHeartbeat,
+                  this._maximumTimeBetweenPings)) {
                 // This client has been idle for too long. Determine whether
                 // any of its ServerConnection threads are currently processing
                 // a message. If so, let it go. If not, disconnect it.

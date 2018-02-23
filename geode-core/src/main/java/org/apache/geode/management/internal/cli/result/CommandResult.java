@@ -23,6 +23,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Vector;
+import java.util.stream.Collectors;
 import java.util.zip.DataFormatException;
 
 import org.json.JSONArray;
@@ -690,19 +691,17 @@ public class CommandResult implements Result {
     this.fileToDownload = fileToDownload;
   }
 
-  public List<Object> getColumnValues(String columnName) {
-    Object[] actualValues =
-        toArray(getTableContent().getInternalJsonObject().getJSONArray(columnName));
-    return Arrays.asList(actualValues);
+  public List<String> getColumnValues(String columnName) {
+    return toList(getTableContent().getInternalJsonObject().getJSONArray(columnName));
   }
 
-  private Object[] toArray(JSONArray array) {
+  public static List<String> toList(JSONArray array) {
     Object[] values = new Object[array.length()];
 
     for (int i = 0; i < array.length(); i++) {
       values[i] = array.get(i);
     }
 
-    return values;
+    return Arrays.stream(values).map(Object::toString).collect(Collectors.toList());
   }
 }

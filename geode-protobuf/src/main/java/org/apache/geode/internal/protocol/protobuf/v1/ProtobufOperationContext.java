@@ -21,14 +21,14 @@ import org.apache.geode.security.ResourcePermission;
 
 public class ProtobufOperationContext<OperationRequest, OperationResponse> {
   private final ProtobufOperationHandler<OperationRequest, OperationResponse> operationHandler;
-  private final Function<ClientProtocol.Request, OperationRequest> fromRequest;
-  private final Function<OperationResponse, ClientProtocol.Response.Builder> toResponse;
-  private final Function<ClientProtocol.ErrorResponse, ClientProtocol.Response.Builder> toErrorResponse;
+  private final Function<ClientProtocol.Message, OperationRequest> fromRequest;
+  private final Function<OperationResponse, ClientProtocol.Message.Builder> toResponse;
+  private final Function<ClientProtocol.ErrorResponse, ClientProtocol.Message.Builder> toErrorResponse;
   private final ResourcePermission accessPermissionRequired;
 
-  public ProtobufOperationContext(Function<ClientProtocol.Request, OperationRequest> fromRequest,
+  public ProtobufOperationContext(Function<ClientProtocol.Message, OperationRequest> fromRequest,
       ProtobufOperationHandler<OperationRequest, OperationResponse> operationHandler,
-      Function<OperationResponse, ClientProtocol.Response.Builder> toResponse,
+      Function<OperationResponse, ClientProtocol.Message.Builder> toResponse,
       ResourcePermission permissionRequired) {
     this.operationHandler = operationHandler;
     this.fromRequest = fromRequest;
@@ -37,24 +37,24 @@ public class ProtobufOperationContext<OperationRequest, OperationResponse> {
     accessPermissionRequired = permissionRequired;
   }
 
-  protected ClientProtocol.Response.Builder makeErrorBuilder(
+  protected ClientProtocol.Message.Builder makeErrorBuilder(
       ClientProtocol.ErrorResponse errorResponse) {
-    return ClientProtocol.Response.newBuilder().setErrorResponse(errorResponse);
+    return ClientProtocol.Message.newBuilder().setErrorResponse(errorResponse);
   }
 
   public ProtobufOperationHandler<OperationRequest, OperationResponse> getOperationHandler() {
     return operationHandler;
   }
 
-  public Function<ClientProtocol.Request, OperationRequest> getFromRequest() {
+  public Function<ClientProtocol.Message, OperationRequest> getFromRequest() {
     return fromRequest;
   }
 
-  public Function<OperationResponse, ClientProtocol.Response.Builder> getToResponse() {
+  public Function<OperationResponse, ClientProtocol.Message.Builder> getToResponse() {
     return toResponse;
   }
 
-  public Function<ClientProtocol.ErrorResponse, ClientProtocol.Response.Builder> getToErrorResponse() {
+  public Function<ClientProtocol.ErrorResponse, ClientProtocol.Message.Builder> getToErrorResponse() {
     return toErrorResponse;
   }
 

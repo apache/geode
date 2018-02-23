@@ -93,6 +93,7 @@ public class FetchEntryMessage extends PartitionMessage {
     FetchEntryResponse p =
         new FetchEntryResponse(r.getSystem(), Collections.singleton(recipient), r, key);
     FetchEntryMessage m = new FetchEntryMessage(recipient, r.getPRId(), p, key, access);
+    m.setTransactionDistributed(r.getCache().getTxManager().isDistributed());
 
     Set failures = r.getDistributionManager().putOutgoing(m);
     if (failures != null && failures.size() > 0) {

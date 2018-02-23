@@ -91,6 +91,7 @@ public class FetchEntriesMessage extends PartitionMessage {
     Assert.assertTrue(recipient != null, "FetchEntriesMessage NULL reply message");
     FetchEntriesResponse p = new FetchEntriesResponse(r.getSystem(), r, recipient, bucketId);
     FetchEntriesMessage m = new FetchEntriesMessage(recipient, r.getPRId(), p, bucketId);
+    m.setTransactionDistributed(r.getCache().getTxManager().isDistributed());
 
     Set failures = r.getDistributionManager().putOutgoing(m);
     if (failures != null && failures.size() > 0) {
@@ -603,7 +604,7 @@ public class FetchEntriesMessage extends PartitionMessage {
           throw new ForceReattemptException(
               LocalizedStrings.FetchEntriesMessage_PEER_REQUESTS_REATTEMPT.toLocalizedString(), t);
         }
-        e.handleAsUnexpected();
+        e.handleCause();
       }
       if (!this.lastChunkReceived) {
         throw new ForceReattemptException(

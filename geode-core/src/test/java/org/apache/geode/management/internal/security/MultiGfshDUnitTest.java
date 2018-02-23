@@ -14,12 +14,10 @@
  */
 package org.apache.geode.management.internal.security;
 
-import static org.apache.geode.distributed.ConfigurationProperties.SECURITY_MANAGER;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotEquals;
 
 import java.util.List;
-import java.util.Properties;
 import java.util.concurrent.TimeUnit;
 
 import org.awaitility.Awaitility;
@@ -56,9 +54,8 @@ public class MultiGfshDUnitTest {
 
   @Before
   public void setup() throws Exception {
-    Properties properties = new Properties();
-    properties.put(SECURITY_MANAGER, SimpleTestSecurityManager.class.getName());
-    server = lsRule.startServerAsJmxManager(0, properties);
+    server = lsRule.startServerVM(0,
+        x -> x.withJMXManager().withSecurityManager(SimpleTestSecurityManager.class));
   }
 
   @Category(FlakyTest.class) // GEODE-1579

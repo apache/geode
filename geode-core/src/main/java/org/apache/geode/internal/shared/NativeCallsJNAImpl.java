@@ -40,10 +40,11 @@ import com.sun.jna.Pointer;
 import com.sun.jna.Structure;
 import com.sun.jna.ptr.IntByReference;
 import com.sun.jna.win32.StdCallLibrary;
+import org.apache.logging.log4j.Logger;
 
 import org.apache.geode.SystemFailure;
-import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.internal.cache.DiskStoreImpl;
+import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.internal.process.signal.Signal;
 
 
@@ -58,6 +59,8 @@ import org.apache.geode.internal.process.signal.Signal;
  * @since GemFire 8.0
  */
 public class NativeCallsJNAImpl {
+
+  private static final Logger logger = LogService.getLogger();
 
   // no instance allowed
   private NativeCallsJNAImpl() {}
@@ -129,8 +132,6 @@ public class NativeCallsJNAImpl {
     static final int EPERM = 1;
     static final int ENOSPC = 28;
 
-    static final Map<String, String> javaEnv = getModifiableJavaEnv();
-
     /** Signal callback handler for <code>signal</code> native call. */
     interface SignalHandler extends Callback {
       void callback(int signum);
@@ -154,39 +155,6 @@ public class NativeCallsJNAImpl {
     @Override
     public OSType getOSType() {
       return OSType.GENERIC_POSIX;
-    }
-
-    /**
-     * @see NativeCalls#setEnvironment(String, String)
-     */
-    @Override
-    public synchronized void setEnvironment(final String name, final String value) {
-      if (name == null) {
-        throw new UnsupportedOperationException("setEnvironment() for name=NULL");
-      }
-      int res = -1;
-      Throwable cause = null;
-      try {
-        if (value != null) {
-          res = setenv(name, value, 1);
-        } else {
-          res = unsetenv(name);
-        }
-      } catch (LastErrorException le) {
-        cause = new NativeErrorException(le.getMessage(), le.getErrorCode(), le.getCause());
-      }
-      if (res != 0) {
-        throw new IllegalArgumentException(
-            "setEnvironment: given name=" + name + " (value=" + value + ')', cause);
-      }
-      // also change in java cached map
-      if (javaEnv != null) {
-        if (value != null) {
-          javaEnv.put(name, value);
-        } else {
-          javaEnv.remove(name);
-        }
-      }
     }
 
     /**
@@ -281,20 +249,13 @@ public class NativeCallsJNAImpl {
 
     @Override
     public void preBlow(String path, long maxSize, boolean preAllocate) throws IOException {
-      final org.apache.geode.LogWriter logger;
-      if (InternalDistributedSystem.getAnyInstance() != null) {
-        logger = InternalDistributedSystem.getAnyInstance().getLogWriter();
-      } else {
-        logger = null;
-      }
-
-      if (logger != null && logger.fineEnabled()) {
-        logger.fine("DEBUG preBlow called for path = " + path);
+      if (logger.isDebugEnabled()) {
+        logger.debug("DEBUG preBlow called for path = " + path);
       }
       if (!preAllocate || !hasFallocate(path)) {
         super.preBlow(path, maxSize, preAllocate);
-        if (logger != null && logger.fineEnabled()) {
-          logger.fine("DEBUG preBlow super.preBlow 1 called for path = " + path);
+        if (logger.isDebugEnabled()) {
+          logger.debug("DEBUG preBlow super.preBlow 1 called for path = " + path);
         }
         return;
       }
@@ -304,8 +265,8 @@ public class NativeCallsJNAImpl {
         fd = createFD(path, 00644);
         if (!isOnLocalFileSystem(path)) {
           super.preBlow(path, maxSize, preAllocate);
-          if (logger != null && logger.fineEnabled()) {
-            logger.fine("DEBUG preBlow super.preBlow 2 called as path = " + path
+          if (logger.isDebugEnabled()) {
+            logger.debug("DEBUG preBlow super.preBlow 2 called as path = " + path
                 + " not on local file system");
           }
           if (DiskStoreImpl.TEST_NO_FALLOC_DIRS != null) {
@@ -317,13 +278,13 @@ public class NativeCallsJNAImpl {
         if (DiskStoreImpl.TEST_CHK_FALLOC_DIRS != null) {
           DiskStoreImpl.TEST_CHK_FALLOC_DIRS.add(path);
         }
-        if (logger != null && logger.fineEnabled()) {
-          logger.fine("DEBUG preBlow posix_fallocate called for path = " + path
+        if (logger.isDebugEnabled()) {
+          logger.debug("DEBUG preBlow posix_fallocate called for path = " + path
               + " and ret = 0 maxsize = " + maxSize);
         }
       } catch (LastErrorException le) {
-        if (logger != null && logger.fineEnabled()) {
-          logger.fine("DEBUG preBlow posix_fallocate called for path = " + path + " and ret = "
+        if (logger.isDebugEnabled()) {
+          logger.debug("DEBUG preBlow posix_fallocate called for path = " + path + " and ret = "
               + le.getErrorCode() + " maxsize = " + maxSize);
         }
         // check for no space left on device
@@ -343,8 +304,8 @@ public class NativeCallsJNAImpl {
         }
         if (unknownError) {
           super.preBlow(path, maxSize, preAllocate);
-          if (logger != null && logger.infoEnabled()) {
-            logger.fine("DEBUG preBlow super.preBlow 3 called for path = " + path);
+          if (logger.isDebugEnabled()) {
+            logger.debug("DEBUG preBlow super.preBlow 3 called for path = " + path);
           }
         }
       }
@@ -675,12 +636,6 @@ public class NativeCallsJNAImpl {
      * even if it on local file system for now.
      */
     public boolean isOnLocalFileSystem(final String path) {
-      final org.apache.geode.LogWriter logger;
-      if (InternalDistributedSystem.getAnyInstance() != null) {
-        logger = InternalDistributedSystem.getAnyInstance().getLogWriter();
-      } else {
-        logger = null;
-      }
       if (!isStatFSEnabled) {
         // if (logger != null && logger.fineEnabled()) {
         // logger.info("DEBUG isOnLocalFileSystem returning false 1 for path = " + path);
@@ -710,8 +665,8 @@ public class NativeCallsJNAImpl {
         } catch (LastErrorException le) {
           // ignoring it as NFS mounted can give this exception
           // and we just want to retry to remove transient problem.
-          if (logger != null && logger.fineEnabled()) {
-            logger.fine("DEBUG isOnLocalFileSystem got ex = " + le + " msg = " + le.getMessage());
+          if (logger.isDebugEnabled()) {
+            logger.debug("DEBUG isOnLocalFileSystem got ex = " + le + " msg = " + le.getMessage());
           }
         }
       }
@@ -907,7 +862,7 @@ public class NativeCallsJNAImpl {
       public int keepaliveinterval;
 
       @Override
-      protected List<?> getFieldOrder() {
+      protected List<String> getFieldOrder() {
         return Arrays.asList(new String[] {"onoff", "keepalivetime", "keepaliveinterval"});
       }
     }
@@ -958,49 +913,12 @@ public class NativeCallsJNAImpl {
       public static native boolean CloseHandle(Pointer handle) throws LastErrorException;
     }
 
-    private static final Map<String, String> javaEnv = getModifiableJavaEnvWIN();
-
     /**
      * @see NativeCalls#getOSType()
      */
     @Override
     public OSType getOSType() {
       return OSType.WIN;
-    }
-
-    /**
-     * @see NativeCalls#setEnvironment(String, String)
-     */
-    @Override
-    public synchronized void setEnvironment(final String name, final String value) {
-      if (name == null) {
-        throw new UnsupportedOperationException("setEnvironment() for name=NULL");
-      }
-      boolean res = false;
-      Throwable cause = null;
-      try {
-        res = Kernel32.SetEnvironmentVariableA(name, value);
-      } catch (LastErrorException le) {
-        // error code ERROR_ENVVAR_NOT_FOUND (203) indicates variable was not
-        // found so ignore
-        if (value == null && le.getErrorCode() == 203) {
-          res = true;
-        } else {
-          cause = new NativeErrorException(le.getMessage(), le.getErrorCode(), le.getCause());
-        }
-      }
-      if (!res) {
-        throw new IllegalArgumentException(
-            "setEnvironment: given name=" + name + " (value=" + value + ')', cause);
-      }
-      // also change in java cached map
-      if (javaEnv != null) {
-        if (value != null) {
-          javaEnv.put(name, value);
-        } else {
-          javaEnv.remove(name);
-        }
-      }
     }
 
     /**

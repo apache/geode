@@ -356,12 +356,7 @@ public class GMSEncrypt implements Cloneable {
   }
 
   public static byte[] decryptBytes(byte[] data, Cipher decrypt) throws Exception {
-    try {
-      byte[] decryptBytes = decrypt.doFinal(data);
-      return decryptBytes;
-    } catch (Exception ex) {
-      throw ex;
-    }
+    return decrypt.doFinal(data);
   }
 
 
@@ -390,12 +385,8 @@ public class GMSEncrypt implements Cloneable {
     }
 
     private Cipher getEncryptCipher(String dhSKAlgo) throws Exception {
-      try {
-        if (encrypt == null) {
-          encrypt = GMSEncrypt.getEncryptCipher(dhSKAlgo, dhPrivateKey, this.peerPublicKey);
-        }
-      } catch (Exception ex) {
-        throw ex;
+      if (encrypt == null) {
+        encrypt = GMSEncrypt.getEncryptCipher(dhSKAlgo, dhPrivateKey, this.peerPublicKey);
       }
       return encrypt;
     }

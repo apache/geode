@@ -15,8 +15,6 @@
 package org.apache.geode.management.internal.cli.functions;
 
 import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
 import java.util.List;
 import java.util.Set;
 
@@ -38,13 +36,12 @@ import org.apache.geode.cache.RegionAttributes;
 import org.apache.geode.cache.RegionExistsException;
 import org.apache.geode.cache.RegionFactory;
 import org.apache.geode.cache.RegionShortcut;
-import org.apache.geode.cache.execute.Function;
 import org.apache.geode.cache.execute.FunctionContext;
 import org.apache.geode.cache.execute.ResultSender;
 import org.apache.geode.cache.util.ObjectSizer;
 import org.apache.geode.compression.Compressor;
 import org.apache.geode.internal.ClassPathLoader;
-import org.apache.geode.internal.InternalEntity;
+import org.apache.geode.internal.cache.execute.InternalFunction;
 import org.apache.geode.internal.cache.xmlcache.CacheXml;
 import org.apache.geode.internal.i18n.LocalizedStrings;
 import org.apache.geode.internal.logging.LogService;
@@ -54,14 +51,12 @@ import org.apache.geode.management.internal.cli.domain.ClassName;
 import org.apache.geode.management.internal.cli.i18n.CliStrings;
 import org.apache.geode.management.internal.cli.util.RegionPath;
 import org.apache.geode.management.internal.configuration.domain.XmlEntity;
-import org.apache.geode.management.internal.security.ResourcePermissions;
-import org.apache.geode.security.ResourcePermission;
 
 /**
  *
  * @since GemFire 7.0
  */
-public class RegionCreateFunction implements Function, InternalEntity {
+public class RegionCreateFunction implements InternalFunction {
 
   private static final Logger logger = LogService.getLogger();
 
@@ -128,11 +123,6 @@ public class RegionCreateFunction implements Function, InternalEntity {
     }
   }
 
-  @Override
-  public Collection<ResourcePermission> getRequiredPermissions(String regionName) {
-    return Collections.singletonList(ResourcePermissions.DATA_MANAGE);
-  }
-
   private CliFunctionResult handleException(final String memberNameOrId, final String exceptionMsg,
       final Exception e) {
     if (e != null && logger.isDebugEnabled()) {
@@ -194,23 +184,33 @@ public class RegionCreateFunction implements Function, InternalEntity {
     // Expiration attributes
     final RegionFunctionArgs.ExpirationAttrs entryExpirationIdleTime =
         regionCreateArgs.getEntryExpirationIdleTime();
-    if (entryExpirationIdleTime != null) {
-      factory.setEntryIdleTimeout(entryExpirationIdleTime.convertToExpirationAttributes());
+    if (entryExpirationIdleTime.isTimeOrActionSet()) {
+      factory.setEntryIdleTimeout(entryExpirationIdleTime.getExpirationAttributes());
     }
+
+    if (regionCreateArgs.getEntryIdleTimeCustomExpiry() != null) {
+      factory
+          .setCustomEntryIdleTimeout(regionCreateArgs.getEntryIdleTimeCustomExpiry().newInstance());
+    }
+
+    if (regionCreateArgs.getEntryTTLCustomExpiry() != null) {
+      factory.setCustomEntryTimeToLive(regionCreateArgs.getEntryTTLCustomExpiry().newInstance());
+    }
+
     final RegionFunctionArgs.ExpirationAttrs entryExpirationTTL =
         regionCreateArgs.getEntryExpirationTTL();
-    if (entryExpirationTTL != null) {
-      factory.setEntryTimeToLive(entryExpirationTTL.convertToExpirationAttributes());
+    if (entryExpirationTTL.isTimeOrActionSet()) {
+      factory.setEntryTimeToLive(entryExpirationTTL.getExpirationAttributes());
     }
     final RegionFunctionArgs.ExpirationAttrs regionExpirationIdleTime =
         regionCreateArgs.getRegionExpirationIdleTime();
-    if (regionExpirationIdleTime != null) {
-      factory.setRegionIdleTimeout(regionExpirationIdleTime.convertToExpirationAttributes());
+    if (regionExpirationIdleTime.isTimeOrActionSet()) {
+      factory.setRegionIdleTimeout(regionExpirationIdleTime.getExpirationAttributes());
     }
     final RegionFunctionArgs.ExpirationAttrs regionExpirationTTL =
         regionCreateArgs.getRegionExpirationTTL();
-    if (regionExpirationTTL != null) {
-      factory.setRegionTimeToLive(regionExpirationTTL.convertToExpirationAttributes());
+    if (regionExpirationTTL.isTimeOrActionSet()) {
+      factory.setRegionTimeToLive(regionExpirationTTL.getExpirationAttributes());
     }
 
     EvictionAttributes evictionAttributes = regionCreateArgs.getEvictionAttributes();

@@ -18,9 +18,6 @@ package org.apache.geode.cache.lucene.internal.cli.functions;
 import static org.apache.geode.cache.lucene.internal.LuceneServiceImpl.validateCommandParameters.INDEX_NAME;
 import static org.apache.geode.cache.lucene.internal.LuceneServiceImpl.validateCommandParameters.REGION_PATH;
 
-import java.util.Collection;
-import java.util.Collections;
-
 import org.apache.commons.lang.StringUtils;
 import org.apache.lucene.analysis.Analyzer;
 import org.apache.lucene.analysis.standard.StandardAnalyzer;
@@ -36,17 +33,13 @@ import org.apache.geode.cache.lucene.internal.LuceneServiceImpl;
 import org.apache.geode.cache.lucene.internal.cli.LuceneCliStrings;
 import org.apache.geode.cache.lucene.internal.cli.LuceneIndexDetails;
 import org.apache.geode.cache.lucene.internal.cli.LuceneIndexInfo;
-import org.apache.geode.cache.lucene.internal.security.LucenePermission;
-import org.apache.geode.cache.lucene.internal.xml.LuceneXmlConstants;
 import org.apache.geode.internal.InternalEntity;
+import org.apache.geode.internal.cache.execute.InternalFunction;
 import org.apache.geode.internal.cache.xmlcache.CacheXml;
 import org.apache.geode.management.internal.cli.CliUtil;
 import org.apache.geode.management.internal.cli.functions.CliFunctionResult;
 import org.apache.geode.management.internal.cli.i18n.CliStrings;
 import org.apache.geode.management.internal.configuration.domain.XmlEntity;
-import org.apache.geode.security.ResourcePermission;
-import org.apache.geode.security.ResourcePermission.Operation;
-import org.apache.geode.security.ResourcePermission.Resource;
 
 
 /**
@@ -61,7 +54,7 @@ import org.apache.geode.security.ResourcePermission.Resource;
  * @see LuceneIndexDetails
  */
 @SuppressWarnings("unused")
-public class LuceneCreateIndexFunction implements InternalEntity, Function {
+public class LuceneCreateIndexFunction implements InternalFunction {
 
   private static final long serialVersionUID = 3061443846664615818L;
 
@@ -127,12 +120,6 @@ public class LuceneCreateIndexFunction implements InternalEntity, Function {
   protected XmlEntity getXmlEntity(String indexName, String regionPath) {
     String regionName = StringUtils.stripStart(regionPath, "/");
     return new XmlEntity(CacheXml.REGION, "name", regionName);
-  }
-
-  @Override
-  public Collection<ResourcePermission> getRequiredPermissions(String regionName) {
-    return Collections.singleton(
-        new ResourcePermission(Resource.CLUSTER, Operation.MANAGE, LucenePermission.TARGET));
   }
 
   private LuceneSerializer toSerializer(String serializerName)

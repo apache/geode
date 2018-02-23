@@ -16,11 +16,7 @@ package org.apache.geode.internal.protocol.protobuf.v1.operations.security;
 
 import java.util.Properties;
 
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
-
 import org.apache.geode.internal.protocol.operations.ProtobufOperationHandler;
-import org.apache.geode.internal.protocol.protobuf.v1.ClientProtocol;
 import org.apache.geode.internal.protocol.protobuf.v1.ConnectionAPI;
 import org.apache.geode.internal.protocol.protobuf.v1.MessageExecutionContext;
 import org.apache.geode.internal.protocol.protobuf.v1.ProtobufSerializationService;
@@ -34,10 +30,8 @@ import org.apache.geode.security.AuthenticationFailedException;
 
 public class AuthenticationRequestOperationHandler implements
     ProtobufOperationHandler<ConnectionAPI.AuthenticationRequest, ConnectionAPI.AuthenticationResponse> {
-  private static final Logger logger = LogManager.getLogger();
-
   @Override
-  public Result<ConnectionAPI.AuthenticationResponse, ClientProtocol.ErrorResponse> process(
+  public Result<ConnectionAPI.AuthenticationResponse> process(
       ProtobufSerializationService serializationService,
       ConnectionAPI.AuthenticationRequest request, MessageExecutionContext messageExecutionContext)
       throws ConnectionStateException {

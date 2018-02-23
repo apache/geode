@@ -26,6 +26,7 @@ import org.apache.geode.cache.execute.FunctionException;
 import org.apache.geode.cache.execute.FunctionInvocationTargetException;
 import org.apache.geode.cache.execute.ResultCollector;
 import org.apache.geode.distributed.DistributedMember;
+import org.apache.geode.distributed.internal.DistributionManager;
 import org.apache.geode.distributed.internal.DistributionMessage;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.distributed.internal.ReplyException;
@@ -344,7 +345,8 @@ public class PRFunctionStreamingResultCollector extends FunctionStreamingResultC
   }
 
   @Override
-  public void memberDeparted(final InternalDistributedMember id, final boolean crashed) {
+  public void memberDeparted(DistributionManager distributionManager,
+      final InternalDistributedMember id, final boolean crashed) {
     FunctionInvocationTargetException fite;
     if (id != null) {
       synchronized (this.members) {

@@ -321,7 +321,7 @@ public class DiskStoreImpl implements DiskStore {
   private final AtomicReference<DiskAccessException> diskException =
       new AtomicReference<DiskAccessException>();
 
-  PersistentOplogSet persistentOplogs = new PersistentOplogSet(this);
+  private PersistentOplogSet persistentOplogs = new PersistentOplogSet(this);
 
   OverflowOplogSet overflowOplogs = new OverflowOplogSet(this);
 
@@ -668,19 +668,19 @@ public class DiskStoreImpl implements DiskStore {
 
   private OplogSet getOplogSet(DiskRegionView drv) {
     if (drv.isBackup()) {
-      return persistentOplogs;
+      return getPersistentOplogs();
     } else {
       return overflowOplogs;
     }
   }
 
   public PersistentOplogSet getPersistentOplogSet() {
-    return persistentOplogs;
+    return getPersistentOplogs();
   }
 
   PersistentOplogSet getPersistentOplogSet(DiskRegionView drv) {
     assert drv.isBackup();
-    return persistentOplogs;
+    return getPersistentOplogs();
   }
 
   /**
@@ -696,7 +696,7 @@ public class DiskStoreImpl implements DiskStore {
       throws RegionClearedException {
     DiskRegion dr = region.getDiskRegion();
     DiskId id = entry.getDiskId();
-    long start = async ? this.stats.startFlush() : this.stats.startWrite();
+    long start = async ? getStats().startFlush() : getStats().startWrite();
     if (!async) {
       dr.getStats().startWrite();
     }
@@ -752,9 +752,9 @@ public class DiskStoreImpl implements DiskStore {
       }
     } finally {
       if (async) {
-        this.stats.endFlush(start);
+        getStats().endFlush(start);
       } else {
-        dr.getStats().endWrite(start, this.stats.endWrite(start));
+        dr.getStats().endWrite(start, getStats().endWrite(start));
         dr.getStats().incWrittenBytes(id.getValueLength());
       }
     }
@@ -1080,10 +1080,10 @@ public class DiskStoreImpl implements DiskStore {
       // Entry will not be found in diskRegion.
       // So if reference has changed, do nothing.
       if (!dr.didClearCountChange()) {
-        long start = this.stats.startRemove();
+        long start = getStats().startRemove();
         OplogSet oplogSet = getOplogSet(dr);
         oplogSet.remove(region, entry, async, isClear);
-        dr.getStats().endRemove(start, this.stats.endRemove(start));
+        dr.getStats().endRemove(start, getStats().endRemove(start));
       } else {
         throw new RegionClearedException(
             LocalizedStrings.DiskRegion_CLEAR_OPERATION_ABORTING_THE_ONGOING_ENTRY_DESTRUCTION_OPERATION_FOR_ENTRY_WITH_DISKID_0
@@ -1189,7 +1189,7 @@ public class DiskStoreImpl implements DiskStore {
   }
 
   public void forceRoll() {
-    persistentOplogs.forceRoll(null);
+    getPersistentOplogs().forceRoll(null);
   }
 
   /**
@@ -1291,29 +1291,29 @@ public class DiskStoreImpl implements DiskStore {
       }
       checkForFlusherThreadTermination();
       if (forceAsync) {
-        this.asyncQueue.forcePut(item);
+        getAsyncQueue().forcePut(item);
       } else {
-        if (!this.asyncQueue.offer(item)) {
+        if (!getAsyncQueue().offer(item)) {
           // queue is full so do a sync write to prevent deadlock
           handleFullAsyncQueue(item);
           // return early since we didn't add it to the queue
           return;
         }
       }
-      this.stats.incQueueSize(1);
+      getStats().incQueueSize(1);
     }
     if (this.maxAsyncItems > 0) {
       if (checkAsyncItemLimit()) {
-        synchronized (this.asyncMonitor) {
-          this.asyncMonitor.notifyAll();
+        synchronized (getAsyncMonitor()) {
+          getAsyncMonitor().notifyAll();
         }
       }
     }
   }
 
   private void rmAsyncItem(Object item) {
-    if (this.asyncQueue.remove(item)) {
-      this.stats.incQueueSize(-1);
+    if (getAsyncQueue().remove(item)) {
+      getStats().incQueueSize(-1);
     }
   }
 
@@ -1331,12 +1331,12 @@ public class DiskStoreImpl implements DiskStore {
       this.pendingAsyncEnqueue.incrementAndGet();
     }
     dr.getStats().startWrite();
-    return this.stats.startWrite();
+    return getStats().startWrite();
   }
 
   private void endAsyncWrite(AsyncDiskEntry ade, DiskRegion dr, long start) {
     this.pendingAsyncEnqueue.decrementAndGet();
-    dr.getStats().endWrite(start, this.stats.endWrite(start));
+    dr.getStats().endWrite(start, getStats().endWrite(start));
 
     if (!ade.versionOnly) { // for versionOnly = true ade.de will be null
       long bytesWritten = ade.de.getDiskId().getValueLength();
@@ -1384,14 +1384,15 @@ public class DiskStoreImpl implements DiskStore {
   private final Object drainSync = new Object();
   private ArrayList drainList = null;
 
-  private int fillDrainList() {
-    synchronized (this.drainSync) {
-      this.drainList = new ArrayList(asyncQueue.size());
-      return asyncQueue.drainTo(this.drainList);
+  int fillDrainList() {
+    synchronized (getDrainSync()) {
+      ForceableLinkedBlockingQueue<Object> queue = getAsyncQueue();
+      this.drainList = new ArrayList(queue.size());
+      return queue.drainTo(this.drainList);
     }
   }
 
-  private ArrayList getDrainList() {
+  ArrayList getDrainList() {
     return this.drainList;
   }
 
@@ -1401,7 +1402,7 @@ public class DiskStoreImpl implements DiskStore {
    * clearing the isPendingAsync bit on each entry in this list.
    */
   void clearDrainList(LocalRegion r, RegionVersionVector rvv) {
-    synchronized (this.drainSync) {
+    synchronized (getDrainSync()) {
       if (this.drainList == null)
         return;
       Iterator it = this.drainList.iterator();
@@ -1471,7 +1472,7 @@ public class DiskStoreImpl implements DiskStore {
     this.flusherThread = new Thread(
         LoggingThreadGroup.createThreadGroup(
             LocalizedStrings.DiskRegion_DISK_WRITERS.toLocalizedString(), logger),
-        new FlusherThread(), thName);
+        new FlusherThread(this), thName);
     this.flusherThread.setDaemon(true);
     this.flusherThread.start();
   }
@@ -1485,9 +1486,9 @@ public class DiskStoreImpl implements DiskStore {
       // See bug 41141.
       forceFlush();
     } while (this.pendingAsyncEnqueue.get() > 0);
-    synchronized (asyncMonitor) {
+    synchronized (getAsyncMonitor()) {
       this.stopFlusher = true;
-      this.asyncMonitor.notifyAll();
+      getAsyncMonitor().notifyAll();
     }
     while (!this.flusherThreadTerminated) {
       try {
@@ -1537,7 +1538,7 @@ public class DiskStoreImpl implements DiskStore {
   }
 
   private boolean isFlusherTerminated() {
-    return this.stopFlusher || this.flusherThreadTerminated || this.flusherThread == null
+    return isStopFlusher() || this.flusherThreadTerminated || this.flusherThread == null
         || !this.flusherThread.isAlive();
   }
 
@@ -1557,30 +1558,55 @@ public class DiskStoreImpl implements DiskStore {
   }
 
   private void incForceFlush() {
-    synchronized (this.asyncMonitor) {
-      this.forceFlushCount.incrementAndGet(); // moved inside sync to fix bug
-                                              // 41654
-      this.asyncMonitor.notifyAll();
+    Object monitor = getAsyncMonitor();
+    synchronized (monitor) {
+      getForceFlushCount().incrementAndGet(); // moved inside sync to fix bug
+      // 41654
+      monitor.notifyAll();
     }
   }
 
   /**
    * Return true if a non-zero value is found and the decrement was done.
    */
-  private boolean checkAndClearForceFlush() {
-    if (stopFlusher) {
+  boolean checkAndClearForceFlush() {
+    if (isStopFlusher()) {
       return true;
     }
     boolean done = false;
     boolean result;
     do {
-      int v = this.forceFlushCount.get();
+      int v = getForceFlushCount().get();
       result = v > 0;
       if (result) {
-        done = this.forceFlushCount.compareAndSet(v, 0);
+        done = getForceFlushCount().compareAndSet(v, 0);
       }
     } while (result && !done);
     return result;
+  }
+
+  Object getAsyncMonitor() {
+    return asyncMonitor;
+  }
+
+  AtomicInteger getForceFlushCount() {
+    return forceFlushCount;
+  }
+
+  Object getDrainSync() {
+    return drainSync;
+  }
+
+  ForceableLinkedBlockingQueue<Object> getAsyncQueue() {
+    return asyncQueue;
+  }
+
+  PersistentOplogSet getPersistentOplogs() {
+    return persistentOplogs;
+  }
+
+  boolean isStopFlusher() {
+    return stopFlusher;
   }
 
   private class FlushPauser extends FlushNotifier {
@@ -1627,43 +1653,49 @@ public class DiskStoreImpl implements DiskStore {
    * Return true if we have enough async items to do a flush
    */
   private boolean checkAsyncItemLimit() {
-    return this.asyncQueue.size() >= this.maxAsyncItems;
+    return getAsyncQueue().size() >= this.maxAsyncItems;
   }
 
-  private class FlusherThread implements Runnable {
+  protected static class FlusherThread implements Runnable {
+    private DiskStoreImpl diskStore;
+
+    public FlusherThread(DiskStoreImpl diskStore) {
+      this.diskStore = diskStore;
+    }
+
     private boolean waitUntilFlushIsReady() throws InterruptedException {
-      if (maxAsyncItems > 0) {
-        final long time = getTimeInterval();
-        synchronized (asyncMonitor) {
+      if (diskStore.maxAsyncItems > 0) {
+        final long time = diskStore.getTimeInterval();
+        synchronized (diskStore.getAsyncMonitor()) {
           if (time > 0) {
             long nanosRemaining = TimeUnit.MILLISECONDS.toNanos(time);
             final long endTime = System.nanoTime() + nanosRemaining;
-            boolean done = checkAndClearForceFlush() || checkAsyncItemLimit();
+            boolean done = diskStore.checkAndClearForceFlush() || diskStore.checkAsyncItemLimit();
             while (!done && nanosRemaining > 0) {
-              TimeUnit.NANOSECONDS.timedWait(asyncMonitor, nanosRemaining);
-              done = checkAndClearForceFlush() || checkAsyncItemLimit();
+              TimeUnit.NANOSECONDS.timedWait(diskStore.getAsyncMonitor(), nanosRemaining);
+              done = diskStore.checkAndClearForceFlush() || diskStore.checkAsyncItemLimit();
               if (!done) {
                 nanosRemaining = endTime - System.nanoTime();
               }
             }
           } else {
-            boolean done = checkAndClearForceFlush() || checkAsyncItemLimit();
+            boolean done = diskStore.checkAndClearForceFlush() || diskStore.checkAsyncItemLimit();
             while (!done) {
-              asyncMonitor.wait();
-              done = checkAndClearForceFlush() || checkAsyncItemLimit();
+              diskStore.getAsyncMonitor().wait();
+              done = diskStore.checkAndClearForceFlush() || diskStore.checkAsyncItemLimit();
             }
           }
         }
       } else {
-        long time = getTimeInterval();
+        long time = diskStore.getTimeInterval();
         if (time > 0) {
           long nanosRemaining = TimeUnit.MILLISECONDS.toNanos(time);
           final long endTime = System.nanoTime() + nanosRemaining;
-          synchronized (asyncMonitor) {
-            boolean done = checkAndClearForceFlush();
+          synchronized (diskStore.getAsyncMonitor()) {
+            boolean done = diskStore.checkAndClearForceFlush();
             while (!done && nanosRemaining > 0) {
-              TimeUnit.NANOSECONDS.timedWait(asyncMonitor, nanosRemaining);
-              done = checkAndClearForceFlush();
+              TimeUnit.NANOSECONDS.timedWait(diskStore.getAsyncMonitor(), nanosRemaining);
+              done = diskStore.checkAndClearForceFlush();
               if (!done) {
                 nanosRemaining = endTime - System.nanoTime();
               }
@@ -1671,23 +1703,27 @@ public class DiskStoreImpl implements DiskStore {
           }
         } else {
           // wait for a forceFlush
-          synchronized (asyncMonitor) {
-            boolean done = checkAndClearForceFlush();
+          synchronized (diskStore.getAsyncMonitor()) {
+            boolean done = diskStore.checkAndClearForceFlush();
             while (!done) {
-              asyncMonitor.wait();
-              done = checkAndClearForceFlush();
+              diskStore.getAsyncMonitor().wait();
+              done = diskStore.checkAndClearForceFlush();
             }
           }
         }
       }
-      return !stopFlusher;
+      return !diskStore.isStopFlusher();
     }
 
     private void flushChild() {
-      persistentOplogs.flushChild();
+      diskStore.getPersistentOplogs().flushChild();
     }
 
     public void run() {
+      doAsyncFlush();
+    }
+
+    void doAsyncFlush() {
       DiskAccessException fatalDae = null;
       if (logger.isDebugEnabled()) {
         logger.debug("Async writer thread started");
@@ -1695,10 +1731,9 @@ public class DiskStoreImpl implements DiskStore {
       boolean doingFlush = false;
       try {
         while (waitUntilFlushIsReady()) {
-          int drainCount = fillDrainList();
+          int drainCount = diskStore.fillDrainList();
           if (drainCount > 0) {
-            stats.incQueueSize(-drainCount);
-            Iterator it = getDrainList().iterator();
+            Iterator it = diskStore.getDrainList().iterator();
             while (it.hasNext()) {
               Object o = it.next();
               if (o instanceof FlushNotifier) {
@@ -1760,16 +1795,17 @@ public class DiskStoreImpl implements DiskStore {
                 CacheObserverHolder.getInstance().afterWritingBytes();
               }
             }
+            diskStore.getStats().incQueueSize(-drainCount);
           }
         }
       } catch (InterruptedException ie) {
         flushChild();
         Thread.currentThread().interrupt();
-        getCache().getCancelCriterion().checkCancelInProgress(ie);
+        diskStore.getCache().getCancelCriterion().checkCancelInProgress(ie);
         throw new IllegalStateException("Async writer thread stopping due to unexpected interrupt");
       } catch (DiskAccessException dae) {
         boolean okToIgnore = dae.getCause() instanceof ClosedByInterruptException;
-        if (!okToIgnore || !stopFlusher) {
+        if (!okToIgnore || !diskStore.isStopFlusher()) {
           fatalDae = dae;
         }
       } catch (CancelException ignore) {
@@ -1777,17 +1813,17 @@ public class DiskStoreImpl implements DiskStore {
         logger.fatal(LocalizedMessage.create(LocalizedStrings.DiskStoreImpl_FATAL_ERROR_ON_FLUSH),
             t);
         fatalDae = new DiskAccessException(
-            LocalizedStrings.DiskStoreImpl_FATAL_ERROR_ON_FLUSH.toLocalizedString(), t,
-            DiskStoreImpl.this);
+            LocalizedStrings.DiskStoreImpl_FATAL_ERROR_ON_FLUSH.toLocalizedString(), t, diskStore);
       } finally {
         if (logger.isDebugEnabled()) {
-          logger.debug("Async writer thread stopped. Pending opcount={}", asyncQueue.size());
+          logger.debug("Async writer thread stopped. Pending opcount={}",
+              diskStore.getAsyncQueue().size());
         }
-        flusherThreadTerminated = true;
-        stopFlusher = true; // set this before calling handleDiskAccessException
+        diskStore.flusherThreadTerminated = true;
+        diskStore.stopFlusher = true; // set this before calling handleDiskAccessException
         // or it will hang
         if (fatalDae != null) {
-          handleDiskAccessException(fatalDae);
+          diskStore.handleDiskAccessException(fatalDae);
         }
       }
     }
@@ -1926,7 +1962,7 @@ public class DiskStoreImpl implements DiskStore {
     boolean finished = false;
     try {
       Map<File, DirectoryHolder> persistentBackupFiles =
-          persistentOplogs.findFiles(partialFileName);
+          getPersistentOplogs().findFiles(partialFileName);
       {
 
         boolean backupFilesExist = !persistentBackupFiles.isEmpty();
@@ -1965,7 +2001,7 @@ public class DiskStoreImpl implements DiskStore {
 
       cleanupOrphanedBackupDirectories();
 
-      persistentOplogs.createOplogs(needsOplogs, persistentBackupFiles);
+      getPersistentOplogs().createOplogs(needsOplogs, persistentBackupFiles);
       finished = true;
 
       // Log a message with the disk store id, indicating whether we recovered
@@ -2018,7 +2054,7 @@ public class DiskStoreImpl implements DiskStore {
    * removed from the stats .
    */
   private void statsClose() {
-    this.stats.close();
+    getStats().close();
     if (this.directories != null) {
       for (final DirectoryHolder directory : this.directories) {
         directory.close();
@@ -2027,7 +2063,7 @@ public class DiskStoreImpl implements DiskStore {
   }
 
   void initializeIfNeeded() {
-    if (!persistentOplogs.alreadyRecoveredOnce.get()) {
+    if (!getPersistentOplogs().alreadyRecoveredOnce.get()) {
       recoverRegionsThatAreReady();
     }
   }
@@ -2040,7 +2076,7 @@ public class DiskStoreImpl implements DiskStore {
    * Reads the oplogs files and loads them into regions that are ready to be recovered.
    */
   public void recoverRegionsThatAreReady() {
-    persistentOplogs.recoverRegionsThatAreReady();
+    getPersistentOplogs().recoverRegionsThatAreReady();
   }
 
   void scheduleValueRecovery(Set<Oplog> oplogsNeedingValueRecovery,
@@ -2158,7 +2194,7 @@ public class DiskStoreImpl implements DiskStore {
     try {
       // Now while holding the write lock remove any elements from the queue
       // for this region.
-      for (final Object o : this.asyncQueue) {
+      for (final Object o : getAsyncQueue()) {
         if (o instanceof AsyncDiskEntry) {
           AsyncDiskEntry ade = (AsyncDiskEntry) o;
           if (shouldClear(region, rvv, ade)) {
@@ -2312,7 +2348,7 @@ public class DiskStoreImpl implements DiskStore {
       }
 
       if ((!destroy && getDiskInitFile().hasLiveRegions()) || isValidating()) {
-        RuntimeException exception = persistentOplogs.close();
+        RuntimeException exception = getPersistentOplogs().close();
         if (exception != null && rte != null) {
           rte = exception;
         }
@@ -2431,7 +2467,7 @@ public class DiskStoreImpl implements DiskStore {
 
   public void prepareForClose() {
     forceFlush();
-    persistentOplogs.prepareForClose();
+    getPersistentOplogs().prepareForClose();
     closeCompactor(true);
   }
 
@@ -2587,7 +2623,7 @@ public class DiskStoreImpl implements DiskStore {
   }
 
   boolean basicForceCompaction(DiskRegion dr) {
-    PersistentOplogSet oplogSet = persistentOplogs;
+    PersistentOplogSet oplogSet = getPersistentOplogs();
     // see if the current active oplog is compactable; if so
     {
       Oplog active = oplogSet.getChild();
@@ -2638,7 +2674,7 @@ public class DiskStoreImpl implements DiskStore {
    *
    */
   private void destroyAllOplogs() {
-    persistentOplogs.destroyAllOplogs();
+    getPersistentOplogs().destroyAllOplogs();
 
     // Need to also remove all oplogs that logically belong to this DiskStore
     // even if we were not using them.
@@ -2712,7 +2748,7 @@ public class DiskStoreImpl implements DiskStore {
     if (!all && max > MAX_OPLOGS_PER_COMPACTION && MAX_OPLOGS_PER_COMPACTION > 0) {
       max = MAX_OPLOGS_PER_COMPACTION;
     }
-    persistentOplogs.getCompactableOplogs(l, max);
+    getPersistentOplogs().getCompactableOplogs(l, max);
 
     // Note this always puts overflow oplogs on the end of the list.
     // They may get starved.
@@ -2729,7 +2765,7 @@ public class DiskStoreImpl implements DiskStore {
    * Get all of the oplogs
    */
   public Oplog[] getAllOplogsForBackup() {
-    return persistentOplogs.getAllOplogs();
+    return getPersistentOplogs().getAllOplogs();
   }
 
   // @todo perhaps a better thing for the tests would be to give them a listener
@@ -3924,8 +3960,8 @@ public class DiskStoreImpl implements DiskStore {
       scheduleForRecovery(OfflineCompactionDiskRegion.create(this, drv));
     }
 
-    persistentOplogs.recoverRegionsThatAreReady();
-    persistentOplogs.offlineCompact();
+    getPersistentOplogs().recoverRegionsThatAreReady();
+    getPersistentOplogs().offlineCompact();
 
     // TODO soplogs - we need to do offline compaction for
     // the soplog regions, but that is not currently implemented
@@ -4239,7 +4275,7 @@ public class DiskStoreImpl implements DiskStore {
   }
 
   public boolean hasPersistedData() {
-    return persistentOplogs.getChild() != null;
+    return getPersistentOplogs().getChild() != null;
   }
 
   public UUID getDiskStoreUUID() {

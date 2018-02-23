@@ -104,7 +104,7 @@ public class DestroyRegionCommandDUnitTest {
 
   @Test
   public void testDestroyLocalAndDistributedRegions() {
-    gfsh.executeAndAssertThat("create region --name=region1 --type=LOCAL --group=group1")
+    gfsh.executeAndAssertThat("create region --name=region1 --type=REPLICATE_PROXY --group=group1")
         .statusIsSuccess();
     gfsh.executeAndAssertThat("create region --name=region1 --type=REPLICATE").statusIsSuccess();
 
@@ -114,8 +114,8 @@ public class DestroyRegionCommandDUnitTest {
       ClusterConfigurationService service =
           ClusterStartupRule.getLocator().getSharedConfiguration();
       Configuration group1Config = service.getConfiguration("group1");
-      assertThat(group1Config.getCacheXmlContent())
-          .contains("<region name=\"region1\">\n" + "    <region-attributes scope=\"local\"/>");
+      assertThat(group1Config.getCacheXmlContent()).contains("<region name=\"region1\">\n"
+          + "    <region-attributes data-policy=\"empty\" scope=\"distributed-ack\"/>");
 
       Configuration clusterConfig = service.getConfiguration("cluster");
       assertThat(clusterConfig.getCacheXmlContent()).contains("<region name=\"region1\">\n"

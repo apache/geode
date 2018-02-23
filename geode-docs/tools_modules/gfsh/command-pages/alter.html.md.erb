@@ -188,16 +188,17 @@ Alters the configuration of a region.
 
 ``` pre
 alter region --name=value [--groups=value(,value)*]
-    [--entry-idle-time-expiration(=value)?]
+    [--entry-idle-time-expiration=value]
     [--entry-idle-time-expiration-action(=value)?]
-    [--entry-time-to-live-expiration(=value)?]
+    [--entry-time-to-live-expiration=value]
     [--entry-time-to-live-expiration-action(=value)?]
-    [--region-idle-time-expiration(=value)?]
+    [--entry-idle-time-custom-expiry=value] [--entry-time-to-live-custom-expiry=value]
+    [--region-idle-time-expiration=value]
     [--region-idle-time-expiration-action(=value)?]
-    [--region-time-to-live-expiration(=value)?]
+    [--region-time-to-live-expiration=value]
     [--region-time-to-live-expiration-action(=value)?]
-    [--cache-listener=value(,value)*] [--cache-loader(=value)?]
-    [--cache-writer(=value)?] [--async-event-queue-id=value(,value)*]
+    [--cache-listener=value(,value)*] [--cache-loader=value]
+    [--cache-writer=value] [--async-event-queue-id=value(,value)*]
     [--gateway-sender-id=value(,value)*] [--enable-cloning(=value)?]
     [--eviction-max(=value)?]
 ```
@@ -308,6 +309,16 @@ Select one of the following expiration actions:
 </table>
 </div></td>
 <td><code class="ph codeph">invalidate</code></td>
+</tr>
+<tr class="odd">
+<td><span class="keyword parmname">\-\-entry-idle-time-custom-expiry</span></td>
+<td>The name of a class implementing CustomExpiry for entry idle time. Append a JSON string for initialization properties.</td>
+<td></td>
+</tr>
+<tr class="odd">
+<td><span class="keyword parmname">\-\-entry-time-to-live-custom-expiry</span></td>
+<td>The name of a class implementing CustomExpiry for entry time to live. Append a JSON string for initialization properties.</td>
+<td></td>
 </tr>
 <tr class="even">
 <td><span class="keyword parmname">\-\-eviction-max</span></td>

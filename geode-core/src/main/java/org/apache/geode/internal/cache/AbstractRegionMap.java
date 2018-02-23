@@ -21,6 +21,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.Executor;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import org.apache.logging.log4j.Logger;
@@ -42,6 +43,7 @@ import org.apache.geode.cache.query.internal.index.IndexManager;
 import org.apache.geode.cache.query.internal.index.IndexProtocol;
 import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.distributed.internal.DistributionConfig;
+import org.apache.geode.distributed.internal.DistributionManager;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
 import org.apache.geode.internal.Assert;
 import org.apache.geode.internal.cache.DiskInitFile.DiskRegionFlag;
@@ -360,7 +362,15 @@ public abstract class AbstractRegionMap
   }
 
   private void _mapClear() {
-    getEntryMap().clear();
+    Executor executor = null;
+    InternalCache cache = this.owner.getCache();
+    if (cache != null) {
+      DistributionManager manager = cache.getDistributionManager();
+      if (manager != null) {
+        executor = manager.getWaitingThreadPool();
+      }
+    }
+    getCustomEntryConcurrentHashMap().clearWithExecutor(executor);
   }
 
   @Override

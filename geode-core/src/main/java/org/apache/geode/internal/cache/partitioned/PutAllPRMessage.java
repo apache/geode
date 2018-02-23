@@ -829,11 +829,7 @@ public class PutAllPRMessage extends PartitionMessageWithDirectReply {
      * @throws CacheException if the peer generates an error
      */
     public PutAllResult waitForResult() throws CacheException, ForceReattemptException {
-      try {
-        waitForCacheException();
-      } catch (ForceReattemptException e) {
-        throw e;
-      }
+      waitForCacheException();
       return new PutAllResult(this.returnValue, this.versions);
     }
   }

@@ -194,7 +194,7 @@ public class AuthenticateUserOp {
           }
         } else {
           try {
-            msg.recv();
+            msg.receive();
           } finally {
             msg.unsetComms();
             processSecureBytes(cnx, msg);

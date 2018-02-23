@@ -24,7 +24,6 @@ import org.apache.logging.log4j.Logger;
 
 import org.apache.geode.DataSerializer;
 import org.apache.geode.cache.Cache;
-import org.apache.geode.cache.TransactionDataNotColocatedException;
 import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.distributed.internal.ClusterDistributionManager;
 import org.apache.geode.distributed.internal.DistributionManager;
@@ -36,7 +35,7 @@ import org.apache.geode.distributed.internal.ReplyProcessor21;
 import org.apache.geode.distributed.internal.ReplySender;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
 import org.apache.geode.internal.Assert;
-import org.apache.geode.internal.cache.RemoteOperationMessage.RemoteOperationResponse;
+import org.apache.geode.internal.cache.tx.RemoteOperationMessage.RemoteOperationResponse;
 import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.internal.logging.log4j.LogMarker;
 
@@ -271,19 +270,9 @@ public class TXRemoteCommitMessage extends TXMessage {
      * @return Object associated with the key that was sent in the get message
      */
     public TXCommitMessage waitForResponse() throws RemoteOperationException {
-      try {
-        // waitForRepliesUninterruptibly();
-        waitForCacheException();
-        if (DistributionStats.enableClockStats) {
-          getDistributionManager().getStats().incReplyHandOffTime(this.start);
-        }
-      } catch (RemoteOperationException e) {
-        final String msg = "RemoteCommitResponse got RemoteOperationException; rethrowing";
-        logger.debug(msg, e);
-        throw e;
-      } catch (TransactionDataNotColocatedException e) {
-        // Throw this up to user!
-        throw e;
+      waitForRemoteResponse();
+      if (DistributionStats.enableClockStats) {
+        getDistributionManager().getStats().incReplyHandOffTime(this.start);
       }
       return commitMessage;
     }

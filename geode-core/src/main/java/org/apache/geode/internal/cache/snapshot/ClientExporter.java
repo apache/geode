@@ -30,7 +30,8 @@ import org.apache.geode.cache.execute.ResultCollector;
 import org.apache.geode.cache.execute.ResultSender;
 import org.apache.geode.cache.snapshot.SnapshotOptions;
 import org.apache.geode.distributed.DistributedMember;
-import org.apache.geode.internal.InternalEntity;
+import org.apache.geode.internal.cache.InternalCache;
+import org.apache.geode.internal.cache.execute.InternalFunction;
 import org.apache.geode.internal.cache.snapshot.RegionSnapshotServiceImpl.ExportSink;
 import org.apache.geode.internal.cache.snapshot.RegionSnapshotServiceImpl.Exporter;
 import org.apache.geode.internal.cache.snapshot.RegionSnapshotServiceImpl.ResultSenderSink;
@@ -118,7 +119,7 @@ public class ClientExporter<K, V> implements Exporter<K, V> {
    * @param <K> the key type
    * @param <V> the value type
    */
-  static class ProxyExportFunction<K, V> implements Function, InternalEntity {
+  static class ProxyExportFunction<K, V> implements InternalFunction {
     private static final long serialVersionUID = 1L;
 
     @Override
@@ -133,8 +134,9 @@ public class ClientExporter<K, V> implements Exporter<K, V> {
       ExportSink sink = new ResultSenderSink(rs);
 
       Region<K, V> region = context.getCache().getRegion(args.getRegion());
+      InternalCache cache = (InternalCache) context.getCache();
       Exporter<K, V> exp = args.isPRSingleHop() ? new LocalExporter<K, V>()
-          : RegionSnapshotServiceImpl.<K, V>createExporter(region, args.options);
+          : RegionSnapshotServiceImpl.<K, V>createExporter(cache, region, args.options);
 
       try {
         long count = exp.export(region, sink, args.getOptions());

@@ -26,20 +26,21 @@ import org.apache.geode.cache.Region;
 import org.apache.geode.cache.RegionAttributes;
 import org.apache.geode.cache.query.IndexStatistics;
 import org.apache.geode.cache.query.QueryService;
-import org.apache.geode.cache.query.internal.index.AbstractIndex.InternalIndexStatistics;
 import org.apache.geode.internal.cache.BucketRegion;
+import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.cache.RegionEntry;
 
 public class CompactMapRangeIndex extends AbstractMapIndex {
   private final Map<Object, Map> entryToMapKeyIndexKeyMap;
   private IndexCreationHelper ich;
 
-  CompactMapRangeIndex(String indexName, Region region, String fromClause, String indexedExpression,
-      String projectionAttributes, String origFromClause, String origIndxExpr, String[] defintions,
-      boolean isAllKeys, String[] multiIndexingKeysPattern, Object[] mapKeys,
-      IndexStatistics stats) {
-    super(indexName, region, fromClause, indexedExpression, projectionAttributes, origFromClause,
-        origIndxExpr, defintions, isAllKeys, multiIndexingKeysPattern, mapKeys, stats);
+  CompactMapRangeIndex(InternalCache cache, String indexName, Region region, String fromClause,
+      String indexedExpression, String projectionAttributes, String origFromClause,
+      String origIndxExpr, String[] defintions, boolean isAllKeys,
+      String[] multiIndexingKeysPattern, Object[] mapKeys, IndexStatistics stats) {
+    super(cache, indexName, region, fromClause, indexedExpression, projectionAttributes,
+        origFromClause, origIndxExpr, defintions, isAllKeys, multiIndexingKeysPattern, mapKeys,
+        stats);
     RegionAttributes ra = region.getAttributes();
     this.entryToMapKeyIndexKeyMap = new java.util.concurrent.ConcurrentHashMap(
         ra.getInitialCapacity(), ra.getLoadFactor(), ra.getConcurrencyLevel());
@@ -159,9 +160,9 @@ public class CompactMapRangeIndex extends AbstractMapIndex {
         prIndex = (PartitionedIndex) this.getPRIndex();
         prIndex.incNumMapKeysStats(mapKey);
       }
-      rg = new CompactRangeIndex(indexName + "-" + mapKey, region, fromClause, indexedExpression,
-          projectionAttributes, this.originalFromClause, this.originalIndexedExpression,
-          this.canonicalizedDefinitions, stats);
+      rg = new CompactRangeIndex(cache, indexName + "-" + mapKey, region, fromClause,
+          indexedExpression, projectionAttributes, this.originalFromClause,
+          this.originalIndexedExpression, this.canonicalizedDefinitions, stats);
       rg.instantiateEvaluator(this.ich,
           ((AbstractIndex.IMQEvaluator) this.evaluator).getIndexResultSetType());
       this.mapKeyToValueIndex.put(mapKey, rg);
@@ -206,9 +207,9 @@ public class CompactMapRangeIndex extends AbstractMapIndex {
         prIndex = (PartitionedIndex) this.getPRIndex();
         prIndex.incNumMapKeysStats(mapKey);
       }
-      rg = new CompactRangeIndex(indexName + "-" + mapKey, region, fromClause, indexedExpression,
-          projectionAttributes, this.originalFromClause, this.originalIndexedExpression,
-          this.canonicalizedDefinitions, stats);
+      rg = new CompactRangeIndex(cache, indexName + "-" + mapKey, region, fromClause,
+          indexedExpression, projectionAttributes, this.originalFromClause,
+          this.originalIndexedExpression, this.canonicalizedDefinitions, stats);
       rg.instantiateEvaluator(this.ich,
           ((AbstractIndex.IMQEvaluator) this.evaluator).getIndexResultSetType());
       this.mapKeyToValueIndex.put(mapKey, rg);

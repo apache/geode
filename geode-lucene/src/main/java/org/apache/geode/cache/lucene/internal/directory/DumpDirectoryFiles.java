@@ -17,14 +17,11 @@ package org.apache.geode.cache.lucene.internal.directory;
 
 import java.io.File;
 import java.util.Collection;
-import java.util.HashSet;
-import java.util.Set;
 
 import org.apache.logging.log4j.Logger;
 import org.apache.lucene.index.IndexWriter;
 
 import org.apache.geode.cache.Region;
-import org.apache.geode.cache.execute.Function;
 import org.apache.geode.cache.execute.FunctionContext;
 import org.apache.geode.cache.execute.FunctionException;
 import org.apache.geode.cache.execute.RegionFunctionContext;
@@ -34,14 +31,11 @@ import org.apache.geode.cache.lucene.internal.InternalLuceneIndex;
 import org.apache.geode.cache.lucene.internal.filesystem.FileSystem;
 import org.apache.geode.cache.lucene.internal.repository.IndexRepository;
 import org.apache.geode.cache.lucene.internal.repository.RepositoryManager;
-import org.apache.geode.internal.InternalEntity;
 import org.apache.geode.internal.cache.BucketNotFoundException;
+import org.apache.geode.internal.cache.execute.InternalFunction;
 import org.apache.geode.internal.logging.LogService;
-import org.apache.geode.security.ResourcePermission;
-import org.apache.geode.security.ResourcePermission.Operation;
-import org.apache.geode.security.ResourcePermission.Resource;
 
-public class DumpDirectoryFiles implements Function, InternalEntity {
+public class DumpDirectoryFiles implements InternalFunction {
   private static final long serialVersionUID = 1L;
 
   private static final Logger logger = LogService.getLogger();
@@ -100,13 +94,5 @@ public class DumpDirectoryFiles implements Function, InternalEntity {
   @Override
   public boolean optimizeForWrite() {
     return true;
-  }
-
-  @Override
-  public Collection<ResourcePermission> getRequiredPermissions(String regionName) {
-    Set<ResourcePermission> required = new HashSet<>();
-    required.add(new ResourcePermission(Resource.DATA, Operation.READ, regionName));
-    required.add(new ResourcePermission(Resource.CLUSTER, Operation.MANAGE));
-    return required;
   }
 }

@@ -114,6 +114,7 @@ MBeans that are available on all managed nodes include:
 -   [DiskStoreMXBean](list_of_mbeans_full.html#topic_48194A5BDF3F40F68E95A114DD702413__section_1F475F68E73B4EAE875BA40825E736C9)
 -   [AsyncEventQueueMXBean](list_of_mbeans_full.html#topic_48194A5BDF3F40F68E95A114DD702413__section_6A77030A15704BFEAEBBD7DB88266BF6)
 -   [LocatorMXBean](list_of_mbeans_full.html#topic_48194A5BDF3F40F68E95A114DD702413__section_BB83107990D346F39271ACCC14CB84A0)
+-   [LuceneServiceMXBean](list_of_mbeans_full.html#LuceneServiceMXBean_desc)
 
 JMX Manager nodes will have managed node MBeans for themselves since they are also manageable entities in the distributed system.
 
@@ -225,3 +226,18 @@ A LocatorMXBean represents a locator .
 | Instances Per Node | 0..1                                                                                        |
 
 See the `org.apache.geode.management.LocatorMXBean` JavaDocs for information on available MBean methods and attributes.
+
+## <a id="LuceneServiceMXBean_desc" class="no-quick-link"></a>LuceneServiceMXBean
+
+The member's local view of existing Lucene indexes.
+
+**MBean Details**
+
+|                    |                                                                                             |
+|--------------------|---------------------------------------------------------------------------------------------|
+| Scope              | Local                                                                                       |
+| Proxied            | Yes                                                                                         |
+| Object Name        | GemFire:service=CacheService,name=LuceneService,type=Member,member=&lt;name-or-dist-member-id&gt; |
+| Instances Per Node | 0..1                                                                                        |
+
+See the `org.apache.geode.cache.lucene.management.LuceneServiceMXBean` JavaDocs for information on available MBean methods and attributes.

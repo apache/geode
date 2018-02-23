@@ -33,7 +33,6 @@ import org.apache.geode.GemFireIOException;
 import org.apache.geode.InvalidDeltaException;
 import org.apache.geode.SerializationException;
 import org.apache.geode.SystemFailure;
-import org.apache.geode.cache.EntryEvent;
 import org.apache.geode.cache.EntryNotFoundException;
 import org.apache.geode.cache.EntryOperation;
 import org.apache.geode.cache.Operation;
@@ -66,6 +65,8 @@ import org.apache.geode.internal.cache.partitioned.PutMessage;
 import org.apache.geode.internal.cache.tier.sockets.CacheServerHelper;
 import org.apache.geode.internal.cache.tier.sockets.ClientProxyMembershipID;
 import org.apache.geode.internal.cache.tx.DistTxKeyInfo;
+import org.apache.geode.internal.cache.tx.RemoteOperationMessage;
+import org.apache.geode.internal.cache.tx.RemotePutMessage;
 import org.apache.geode.internal.cache.versions.VersionTag;
 import org.apache.geode.internal.cache.wan.GatewaySenderEventCallbackArgument;
 import org.apache.geode.internal.i18n.LocalizedStrings;
@@ -1674,7 +1675,8 @@ public class EntryEventImpl implements InternalEntryEvent, InternalCacheEvent,
       // indexed.
 
       if ((this.op.isUpdate() && !reentry.isInvalid()) || this.op.isInvalidate()) {
-        IndexManager idxManager = IndexUtils.getIndexManager(this.region, false);
+        IndexManager idxManager =
+            IndexUtils.getIndexManager(this.region.getCache(), this.region, false);
         if (idxManager != null) {
           try {
             idxManager.updateIndexes(reentry, IndexManager.REMOVE_ENTRY,

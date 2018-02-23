@@ -14,8 +14,13 @@
  */
 package org.apache.geode.cache;
 
-import static org.apache.geode.test.dunit.Assert.*;
-import static org.junit.runners.MethodSorters.*;
+import static org.apache.geode.test.dunit.Assert.assertEquals;
+import static org.apache.geode.test.dunit.Assert.assertFalse;
+import static org.apache.geode.test.dunit.Assert.assertNotNull;
+import static org.apache.geode.test.dunit.Assert.assertNull;
+import static org.apache.geode.test.dunit.Assert.assertTrue;
+import static org.apache.geode.test.dunit.Assert.fail;
+import static org.junit.runners.MethodSorters.NAME_ASCENDING;
 
 import java.io.DataInput;
 import java.io.DataOutput;
@@ -1433,12 +1438,7 @@ public class ConnectionPoolDUnitTest extends JUnit4CacheTestCase {
               return excuse;
             }
           };
-          try {
-            Wait.waitForCriterion(wc, 60 * 1000, 1000, true);
-          } catch (AssertionError e) {
-            // dumpStack();
-            throw e;
-          }
+          Wait.waitForCriterion(wc, 60 * 1000, 1000, true);
 
           assertTrue(stats.getLoadConditioningConnect() > baselineLifetimeConnect);
           assertTrue(stats.getLoadConditioningDisconnect() > baselineLifetimeDisconnect);

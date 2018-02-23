@@ -16,26 +16,21 @@ package org.apache.geode.management.internal.cli.functions;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.Collection;
-import java.util.Collections;
 
 import org.apache.logging.log4j.Logger;
 
-import org.apache.geode.cache.execute.Function;
 import org.apache.geode.cache.execute.FunctionContext;
 import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.distributed.internal.DistributionConfig;
-import org.apache.geode.internal.InternalEntity;
 import org.apache.geode.internal.cache.InternalCache;
+import org.apache.geode.internal.cache.execute.InternalFunction;
 import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.management.ManagementException;
 import org.apache.geode.management.internal.cli.util.BytesToString;
 import org.apache.geode.management.internal.cli.util.LogExporter;
 import org.apache.geode.management.internal.cli.util.LogFilter;
-import org.apache.geode.management.internal.security.ResourcePermissions;
-import org.apache.geode.security.ResourcePermission;
 
-public class SizeExportLogsFunction extends ExportLogsFunction implements Function, InternalEntity {
+public class SizeExportLogsFunction extends ExportLogsFunction implements InternalFunction {
   private static final Logger LOGGER = LogService.getLogger();
   private static final long serialVersionUID = 1L;
 
@@ -96,10 +91,5 @@ public class SizeExportLogsFunction extends ExportLogsFunction implements Functi
     LOGGER.info("Estimated log file size: " + estimatedSize);
 
     return estimatedSize;
-  }
-
-  @Override
-  public Collection<ResourcePermission> getRequiredPermissions(String regionName) {
-    return Collections.singleton(ResourcePermissions.CLUSTER_READ);
   }
 }
