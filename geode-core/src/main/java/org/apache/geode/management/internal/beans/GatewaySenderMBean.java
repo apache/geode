@@ -74,6 +74,21 @@ public class GatewaySenderMBean extends NotificationBroadcasterSupport
   }
 
   @Override
+  public float getLRUEvictionsRate() {
+    return bridge.getLRUEvictionsRate();
+  }
+
+  @Override
+  public long getEntriesOverflowedToDisk() {
+    return bridge.getEntriesOverflowedToDisk();
+  }
+
+  @Override
+  public long getBytesOverflowedToDisk() {
+    return bridge.getBytesOverflowedToDisk();
+  }
+
+  @Override
   public String[] getGatewayEventFilters() {
     return bridge.getGatewayEventFilters();
   }

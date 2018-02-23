@@ -33,6 +33,7 @@ import org.apache.geode.CancelException;
 import org.apache.geode.SystemFailure;
 import org.apache.geode.cache.AttributesFactory;
 import org.apache.geode.cache.AttributesMutator;
+import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.CacheException;
 import org.apache.geode.cache.CacheListener;
 import org.apache.geode.cache.CacheWriterException;
@@ -70,6 +71,9 @@ import org.apache.geode.internal.i18n.LocalizedStrings;
 import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.internal.logging.log4j.LocalizedMessage;
 import org.apache.geode.internal.offheap.OffHeapRegionEntryHelper;
+import org.apache.geode.management.ManagementService;
+import org.apache.geode.management.internal.beans.AsyncEventQueueMBean;
+import org.apache.geode.management.internal.beans.GatewaySenderMBean;
 import org.apache.geode.pdx.internal.PeerTypeRegistration;
 
 /**
@@ -962,6 +966,8 @@ public class SerialGatewaySenderQueue implements RegionQueue {
                   .setIsUsedForSerialGatewaySenderQueue(true).setInternalRegion(true)
                   .setSerialGatewaySender(sender));
 
+          // Add overflow statistics to the mbean
+          addOverflowStatisticsToMBean(gemCache, sender);
         } catch (IOException veryUnLikely) {
           logger.fatal(LocalizedMessage.create(
               LocalizedStrings.SingleWriteSingleReadRegionQueue_UNEXPECTED_EXCEPTION_DURING_INIT_OF_0,
@@ -982,6 +988,35 @@ public class SerialGatewaySenderQueue implements RegionQueue {
     } else {
       throw new IllegalStateException(
           "Queue region " + this.region.getFullPath() + " already exists.");
+    }
+  }
+
+  private void addOverflowStatisticsToMBean(Cache cache, AbstractGatewaySender sender) {
+    // Get the appropriate mbean and add the overflow stats to it
+    LocalRegion lr = (LocalRegion) this.region;
+    ManagementService service = ManagementService.getManagementService(cache);
+    if (sender.getId().contains(AsyncEventQueueImpl.ASYNC_EVENT_QUEUE_PREFIX)) {
+      AsyncEventQueueMBean bean = (AsyncEventQueueMBean) service.getLocalAsyncEventQueueMXBean(
+          AsyncEventQueueImpl.getAsyncEventQueueIdFromSenderId(sender.getId()));
+
+      if (bean != null) {
+        // Add the eviction stats
+        bean.getBridge().addOverflowStatistics(lr.getEvictionStatistics());
+
+        // Add the disk region stats
+        bean.getBridge().addOverflowStatistics(lr.getDiskRegion().getStats().getStats());
+      }
+    } else {
+      GatewaySenderMBean bean =
+          (GatewaySenderMBean) service.getLocalGatewaySenderMXBean(sender.getId());
+
+      if (bean != null) {
+        // Add the eviction stats
+        bean.getBridge().addOverflowStatistics(lr.getEvictionStatistics());
+
+        // Add the disk region stats
+        bean.getBridge().addOverflowStatistics(lr.getDiskRegion().getStats().getStats());
+      }
     }
   }
 

@@ -86,6 +86,9 @@ import org.apache.geode.internal.logging.log4j.LocalizedMessage;
 import org.apache.geode.internal.size.SingleObjectSizer;
 import org.apache.geode.internal.util.concurrent.StoppableCondition;
 import org.apache.geode.internal.util.concurrent.StoppableReentrantLock;
+import org.apache.geode.management.ManagementService;
+import org.apache.geode.management.internal.beans.AsyncEventQueueMBean;
+import org.apache.geode.management.internal.beans.GatewaySenderMBean;
 
 public class ParallelGatewaySenderQueue implements RegionQueue {
 
@@ -516,6 +519,9 @@ public class ParallelGatewaySenderQueue implements RegionQueue {
           if (isAccessor)
             return; // return from here if accessor node
 
+          // Add the overflow statistics to the mbean
+          addOverflowStatisticsToMBean(cache, prQ);
+
           // Wait for buckets to be recovered.
           prQ.shadowPRWaitForBucketRecovery();
 
@@ -551,6 +557,34 @@ public class ParallelGatewaySenderQueue implements RegionQueue {
       }
       afterRegionAdd(userPR);
       this.sender.getLifeCycleLock().writeLock().unlock();
+    }
+  }
+
+  private void addOverflowStatisticsToMBean(Cache cache, PartitionedRegion prQ) {
+    // Get the appropriate mbean and add the eviction and disk region stats to it
+    ManagementService service = ManagementService.getManagementService(cache);
+    if (this.sender.getId().contains(AsyncEventQueueImpl.ASYNC_EVENT_QUEUE_PREFIX)) {
+      AsyncEventQueueMBean bean = (AsyncEventQueueMBean) service.getLocalAsyncEventQueueMXBean(
+          AsyncEventQueueImpl.getAsyncEventQueueIdFromSenderId(this.sender.getId()));
+
+      if (bean != null) {
+        // Add the eviction stats
+        bean.getBridge().addOverflowStatistics(prQ.getEvictionStatistics());
+
+        // Add the disk region stats
+        bean.getBridge().addOverflowStatistics(prQ.getDiskRegionStats().getStats());
+      }
+    } else {
+      GatewaySenderMBean bean =
+          (GatewaySenderMBean) service.getLocalGatewaySenderMXBean(this.sender.getId());
+
+      if (bean != null) {
+        // Add the eviction stats
+        bean.getBridge().addOverflowStatistics(prQ.getEvictionStatistics());
+
+        // Add the disk region stats
+        bean.getBridge().addOverflowStatistics(prQ.getDiskRegionStats().getStats());
+      }
     }
   }
 

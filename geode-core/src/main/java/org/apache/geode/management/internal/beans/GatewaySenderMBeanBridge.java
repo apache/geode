@@ -16,6 +16,7 @@ package org.apache.geode.management.internal.beans;
 
 import java.util.List;
 
+import org.apache.geode.Statistics;
 import org.apache.geode.cache.wan.GatewayEventFilter;
 import org.apache.geode.cache.wan.GatewaySender;
 import org.apache.geode.cache.wan.GatewayTransportFilter;
@@ -24,27 +25,28 @@ import org.apache.geode.internal.cache.wan.AbstractGatewaySenderEventProcessor;
 import org.apache.geode.internal.cache.wan.GatewaySenderEventDispatcher;
 import org.apache.geode.internal.cache.wan.GatewaySenderStats;
 import org.apache.geode.management.internal.ManagementStrings;
+import org.apache.geode.management.internal.beans.stats.GatewaySenderOverflowMonitor;
 import org.apache.geode.management.internal.beans.stats.MBeanStatsMonitor;
 import org.apache.geode.management.internal.beans.stats.StatType;
 import org.apache.geode.management.internal.beans.stats.StatsAverageLatency;
 import org.apache.geode.management.internal.beans.stats.StatsKey;
 import org.apache.geode.management.internal.beans.stats.StatsRate;
 
-/**
- *
- *
- */
 public class GatewaySenderMBeanBridge {
 
   private GatewaySender sender;
 
   private MBeanStatsMonitor monitor;
 
+  private GatewaySenderOverflowMonitor overflowMonitor;
+
   private StatsRate eventsQueuedRate;
 
   private StatsRate eventsReceivedRate;
 
   private StatsRate batchesDispatchedRate;
+
+  private StatsRate lruEvictionsRate;
 
   private StatsAverageLatency batchDistributionAvgLatency;
 
@@ -57,10 +59,14 @@ public class GatewaySenderMBeanBridge {
     this.monitor =
         new MBeanStatsMonitor(ManagementStrings.GATEWAY_SENDER_MONITOR.toLocalizedString());
 
+    this.overflowMonitor = new GatewaySenderOverflowMonitor(
+        ManagementStrings.GATEWAY_SENDER_OVERFLOW_MONITOR.toLocalizedString());
+
     this.abstractSender = ((AbstractGatewaySender) this.sender);
     GatewaySenderStats stats = abstractSender.getStatistics();
 
     addGatewaySenderStats(stats);
+
     initializeStats();
   }
 
@@ -69,13 +75,17 @@ public class GatewaySenderMBeanBridge {
     if (eventProcessor != null) {
       this.dispatcher = abstractSender.getEventProcessor().getDispatcher();
     }
-
   }
 
   public void addGatewaySenderStats(GatewaySenderStats gatewaySenderStats) {
     monitor.addStatisticsToMonitor(gatewaySenderStats.getStats());
   }
 
+  public void addOverflowStatistics(Statistics statistics) {
+    if (statistics != null) {
+      overflowMonitor.addStatisticsToMonitor(statistics);
+    }
+  }
 
   public void stopMonitor() {
     monitor.stopListener();
@@ -91,6 +101,8 @@ public class GatewaySenderMBeanBridge {
     batchDistributionAvgLatency =
         new StatsAverageLatency(StatsKey.GATEWAYSENDER_BATCHES_DISTRIBUTED, StatType.INT_TYPE,
             StatsKey.GATEWAYSENDER_BATCHES_DISTRIBUTE_TIME, monitor);
+    lruEvictionsRate =
+        new StatsRate(StatsKey.GATEWAYSENDER_LRU_EVICTIONS, StatType.LONG_TYPE, overflowMonitor);
   }
 
   public int getAlertThreshold() {
@@ -108,7 +120,6 @@ public class GatewaySenderMBeanBridge {
   public String getOverflowDiskStoreName() {
     return sender.getDiskStoreName();
   }
-
 
   public String[] getGatewayEventFilters() {
     List<GatewayEventFilter> filters = sender.getGatewayEventFilters();
@@ -186,22 +197,18 @@ public class GatewaySenderMBeanBridge {
 
   public void pause() {
     sender.pause();
-
   }
 
   public void resume() {
     sender.resume();
-
   }
 
   public void start() {
     sender.start();
-
   }
 
   public void stop() {
     sender.stop();
-
   }
 
   public void rebalance() {
@@ -259,6 +266,19 @@ public class GatewaySenderMBeanBridge {
     return batchDistributionAvgLatency.getAverageLatency();
   }
 
+  public float getLRUEvictionsRate() {
+    return lruEvictionsRate.getRate();
+  }
+
+  public long getEntriesOverflowedToDisk() {
+    return overflowMonitor.getStatistic(StatsKey.GATEWAYSENDER_ENTRIES_OVERFLOWED_TO_DISK)
+        .longValue();
+  }
+
+  public long getBytesOverflowedToDisk() {
+    return overflowMonitor.getStatistic(StatsKey.GATEWAYSENDER_BYTES_OVERFLOWED_TO_DISK)
+        .longValue();
+  }
 
   private Number getStatistic(String statName) {
     if (monitor != null) {
@@ -271,7 +291,6 @@ public class GatewaySenderMBeanBridge {
   public String getGatewayReceiver() {
     return ((AbstractGatewaySender) this.sender).getServerLocation().toString();
   }
-
 
   public boolean isConnected() {
     if (this.dispatcher != null && this.dispatcher.isConnectedToRemote()) {

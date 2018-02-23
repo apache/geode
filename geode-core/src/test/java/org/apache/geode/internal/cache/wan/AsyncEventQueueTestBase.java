@@ -44,8 +44,10 @@ import java.util.Set;
 import java.util.StringTokenizer;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 
+import org.awaitility.Awaitility;
 import org.junit.experimental.categories.Category;
 
 import org.apache.geode.DataSerializable;
@@ -276,6 +278,15 @@ public class AsyncEventQueueTestBase extends JUnit4DistributedTestCase {
       Integer maxMemory, Integer batchSize, boolean isConflation, boolean isPersistent,
       String diskStoreName, boolean isDiskSynchronous,
       final AsyncEventListener asyncEventListener) {
+    createAsyncEventQueue(asyncChannelId, isParallel, maxMemory, batchSize, isConflation,
+        isPersistent, diskStoreName, isDiskSynchronous, numDispatcherThreadsForTheRun,
+        asyncEventListener);
+  }
+
+  public static void createAsyncEventQueue(String asyncChannelId, boolean isParallel,
+      Integer maxMemory, Integer batchSize, boolean isConflation, boolean isPersistent,
+      String diskStoreName, boolean isDiskSynchronous, int numDispatcherThreads,
+      final AsyncEventListener asyncEventListener) {
     createDiskStore(asyncChannelId, diskStoreName);
 
     AsyncEventQueueFactory factory = getInitialAsyncEventQueueFactory(isParallel, maxMemory,
@@ -283,7 +294,7 @@ public class AsyncEventQueueTestBase extends JUnit4DistributedTestCase {
     factory.setDiskSynchronous(isDiskSynchronous);
     factory.setBatchConflationEnabled(isConflation);
     // set dispatcher threads
-    factory.setDispatcherThreads(numDispatcherThreadsForTheRun);
+    factory.setDispatcherThreads(numDispatcherThreads);
     // Set GatewayEventSubstitutionFilter
     AsyncEventQueue asyncChannel = factory.create(asyncChannelId, asyncEventListener);
   }
@@ -480,6 +491,12 @@ public class AsyncEventQueueTestBase extends JUnit4DistributedTestCase {
     ((AsyncEventQueueImpl) theQueue).getSender().resume();
   }
 
+  public static void waitForAsyncEventQueueSize(String senderId, int numQueueEntries,
+      boolean localSize) {
+    Awaitility.await().atMost(60, TimeUnit.SECONDS)
+        .until(() -> checkAsyncEventQueueSize(senderId, numQueueEntries, localSize));
+  }
+
   public static void checkAsyncEventQueueSize(String asyncQueueId, int numQueueEntries) {
     checkAsyncEventQueueSize(asyncQueueId, numQueueEntries, false);
   }
@@ -503,53 +520,6 @@ public class AsyncEventQueueTestBase extends JUnit4DistributedTestCase {
         size += q.size();
       }
       assertEquals(numQueueEntries, size);
-    }
-  }
-
-  /**
-   * This method verifies the queue size of a ParallelGatewaySender. For ParallelGatewaySender
-   * conflation happens in a separate thread, hence test code needs to wait for some time for
-   * expected result
-   *
-   * @param asyncQueueId Async Queue ID
-   * @param numQueueEntries expected number of Queue entries
-   * @throws Exception
-   */
-  public static void waitForAsyncEventQueueSize(String asyncQueueId, final int numQueueEntries)
-      throws Exception {
-    waitForAsyncEventQueueSize(asyncQueueId, numQueueEntries, false);
-  }
-
-  public static void waitForAsyncEventQueueSize(String asyncQueueId, final int numQueueEntries,
-      boolean localSize) throws Exception {
-    AsyncEventQueueImpl aeq = (AsyncEventQueueImpl) cache.getAsyncEventQueue(asyncQueueId);
-    GatewaySender sender = aeq.getSender();
-
-    if (sender.isParallel()) {
-      final Set<RegionQueue> queues = ((AbstractGatewaySender) sender).getQueues();
-      Region queueRegion = queues.toArray(new RegionQueue[queues.size()])[0].getRegion();
-      if (localSize) {
-        queueRegion = PartitionRegionHelper.getLocalData(queueRegion);
-      }
-      final Region fQueueRegion = queueRegion;
-
-      Wait.waitForCriterion(new WaitCriterion() {
-
-        public String description() {
-          return "Waiting for EventQueue size to be " + numQueueEntries;
-        }
-
-        public boolean done() {
-          boolean done = numQueueEntries == fQueueRegion.size();
-          return done;
-        }
-
-      }, MAX_WAIT, 500, true);
-
-    } else {
-      throw new Exception(
-          "This method should be used for only ParallelGatewaySender,SerialGatewaySender should use checkAsyncEventQueueSize() method instead");
-
     }
   }
 
@@ -1022,6 +992,14 @@ public class AsyncEventQueueTestBase extends JUnit4DistributedTestCase {
     // }
   }
 
+  public static void doHeavyPuts(String regionName, int numPuts) {
+    Region r = cache.getRegion(Region.SEPARATOR + regionName);
+    assertNotNull(r);
+    for (long i = 0; i < numPuts; i++) {
+      r.put(i, new byte[1024 * 1024]);
+    }
+  }
+
   /**
    * To be used for CacheLoader related tests
    */
@@ -1263,15 +1241,7 @@ public class AsyncEventQueueTestBase extends JUnit4DistributedTestCase {
   }
 
   public static void waitForAsyncQueueToGetEmpty(String asyncQueueId) {
-    AsyncEventQueue theAsyncEventQueue = null;
-
-    Set<AsyncEventQueue> asyncEventChannels = cache.getAsyncEventQueues();
-    for (AsyncEventQueue asyncChannel : asyncEventChannels) {
-      if (asyncQueueId.equals(asyncChannel.getId())) {
-        theAsyncEventQueue = asyncChannel;
-      }
-    }
-
+    AsyncEventQueue theAsyncEventQueue = cache.getAsyncEventQueue(asyncQueueId);
     final GatewaySender sender = ((AsyncEventQueueImpl) theAsyncEventQueue).getSender();
 
     if (sender.isParallel()) {

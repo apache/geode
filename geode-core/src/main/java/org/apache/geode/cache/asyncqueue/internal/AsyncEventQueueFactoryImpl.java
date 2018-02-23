@@ -158,6 +158,9 @@ public class AsyncEventQueueFactoryImpl implements AsyncEventQueueFactory {
       AsyncEventQueueImpl queue = new AsyncEventQueueImpl(sender, listener);
       asyncEventQueue = queue;
       this.cache.addAsyncEventQueue(queue);
+      if (!this.attrs.isManualStart()) {
+        sender.start();
+      }
     } else if (this.cache instanceof CacheCreation) {
       asyncEventQueue = new AsyncEventQueueCreation(asyncQueueId, attrs, listener);
       ((CacheCreation) cache).addAsyncEventQueue(asyncEventQueue);
@@ -189,9 +192,6 @@ public class AsyncEventQueueFactoryImpl implements AsyncEventQueueFactory {
       if (this.cache instanceof GemFireCacheImpl) {
         sender = new ParallelAsyncEventQueueImpl(this.cache, this.attrs);
         this.cache.addGatewaySender(sender);
-        if (!this.attrs.isManualStart()) {
-          sender.start();
-        }
       } else if (this.cache instanceof CacheCreation) {
         sender = new ParallelAsyncEventQueueCreation(this.cache, this.attrs);
         ((CacheCreation) this.cache).addGatewaySender(sender);
@@ -203,9 +203,6 @@ public class AsyncEventQueueFactoryImpl implements AsyncEventQueueFactory {
       if (this.cache instanceof GemFireCacheImpl) {
         sender = new SerialAsyncEventQueueImpl(this.cache, this.attrs);
         this.cache.addGatewaySender(sender);
-        if (!this.attrs.isManualStart()) {
-          sender.start();
-        }
       } else if (this.cache instanceof CacheCreation) {
         sender = new SerialAsyncEventQueueCreation(this.cache, this.attrs);
         ((CacheCreation) this.cache).addGatewaySender(sender);

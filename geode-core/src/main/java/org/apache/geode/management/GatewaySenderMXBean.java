@@ -125,7 +125,7 @@ public interface GatewaySenderMXBean {
   boolean isPaused();
 
   /**
-   * Returns the rate of events received per second by this Sender if it's a serial-wan.
+   * Returns the rate of events received per second by this Sender.
    */
   float getEventsReceivedRate();
 
@@ -133,6 +133,21 @@ public interface GatewaySenderMXBean {
    * Returns the rate of events being queued.
    */
   float getEventsQueuedRate();
+
+  /**
+   * Returns the rate of LRU evictions per second by this Sender.
+   */
+  float getLRUEvictionsRate();
+
+  /**
+   * Returns the number of entries overflowed to disk for this Sender.
+   */
+  long getEntriesOverflowedToDisk();
+
+  /**
+   * Returns the number of bytes overflowed to disk for this Sender.
+   */
+  long getBytesOverflowedToDisk();
 
   /**
    * Returns the current size of the event queue.

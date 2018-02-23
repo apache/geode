@@ -114,4 +114,18 @@ public interface AsyncEventQueueMXBean {
    */
   int getEventQueueSize();
 
+  /**
+   * Returns the rate of LRU evictions per second by this Sender.
+   */
+  float getLRUEvictionsRate();
+
+  /**
+   * Returns the number of entries overflowed to disk for this Sender.
+   */
+  long getEntriesOverflowedToDisk();
+
+  /**
+   * Returns the number of bytes overflowed to disk for this Sender.
+   */
+  long getBytesOverflowedToDisk();
 }
