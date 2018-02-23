@@ -16,6 +16,7 @@ package org.apache.geode.internal.cache.backup;
 
 import java.io.File;
 import java.io.IOException;
+import java.nio.file.Path;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -65,16 +66,14 @@ public class BackupTask {
   }
 
   private BackupWriter createBackupWriter() {
-    FileSystemBackupLocation targetBackupDestination =
-        new FileSystemBackupLocation(targetDir, memberId);
-
     BackupWriter writer;
+    Path backupDirectory = targetDir.toPath().resolve(memberId);
     if (baselineDir == null) {
-      writer = new FileSystemBackupWriter(targetBackupDestination);
+      writer = new FileSystemBackupWriter(backupDirectory);
     } else {
-      FileSystemBackupLocation incrementalBaselineLocation =
-          new FileSystemBackupLocation(baselineDir, memberId);
-      writer = new FileSystemBackupWriter(targetBackupDestination, incrementalBaselineLocation);
+      FileSystemIncrementalBackupLocation incrementalBaselineLocation =
+          new FileSystemIncrementalBackupLocation(baselineDir, memberId);
+      writer = new FileSystemBackupWriter(backupDirectory, incrementalBaselineLocation);
     }
     return writer;
   }

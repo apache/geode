@@ -33,21 +33,21 @@ import org.apache.geode.internal.i18n.LocalizedStrings;
 public class FileSystemBackupWriter implements BackupWriter {
 
   private final Path backupDirectory;
-  private final FileSystemBackupLocation incrementalBaselineLocation;
+  private final FileSystemIncrementalBackupLocation incrementalBaselineLocation;
   private final BackupFilter filter;
 
-  FileSystemBackupWriter(FileSystemBackupLocation backupDestination) {
-    this(backupDestination, null);
+  FileSystemBackupWriter(Path backupDirectory) {
+    this(backupDirectory, null);
   }
 
-  FileSystemBackupWriter(FileSystemBackupLocation backupDestination,
-      FileSystemBackupLocation incrementalBaselineLocation) {
-    this.backupDirectory = backupDestination.getMemberBackupLocationDir();
+  FileSystemBackupWriter(Path backupDirectory,
+      FileSystemIncrementalBackupLocation incrementalBaselineLocation) {
+    this.backupDirectory = backupDirectory;
     this.incrementalBaselineLocation = incrementalBaselineLocation;
     filter = createBackupFilter(incrementalBaselineLocation);
   }
 
-  private BackupFilter createBackupFilter(FileSystemBackupLocation incrementalBaselineLocation) {
+  private BackupFilter createBackupFilter(FileSystemIncrementalBackupLocation incrementalBaselineLocation) {
     BackupFilter filter;
     if (incrementalBaselineLocation != null
         && Files.exists(incrementalBaselineLocation.getMemberBackupLocationDir())) {

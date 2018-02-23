@@ -41,7 +41,7 @@ import org.apache.geode.internal.cache.persistence.DiskStoreID;
 import org.apache.geode.test.junit.categories.UnitTest;
 
 @Category(UnitTest.class)
-public class FileSystemBackupLocationTest {
+public class FileSystemIncrementalBackupLocationTest {
 
   @Rule
   public TemporaryFolder tempDir = new TemporaryFolder();
@@ -50,8 +50,8 @@ public class FileSystemBackupLocationTest {
   public void testNonExistentBackupLocation() throws IOException {
     DiskStore diskstore = mock(DiskStore.class);
     File nonExistingDir = Paths.get("nonexistent").toFile();
-    FileSystemBackupLocation backupLocation =
-        new FileSystemBackupLocation(nonExistingDir, "member1");
+    FileSystemIncrementalBackupLocation backupLocation =
+        new FileSystemIncrementalBackupLocation(nonExistingDir, "member1");
     assertThat(backupLocation.getBackedUpOplogs(diskstore)).isEmpty();
   }
 
@@ -59,8 +59,8 @@ public class FileSystemBackupLocationTest {
   public void testNonExistentMemberBackupLocation() throws IOException {
     File backupLocation = tempDir.newFolder("backup");
     DiskStore diskstore = mock(DiskStore.class);
-    FileSystemBackupLocation fileBackupLocation =
-        new FileSystemBackupLocation(backupLocation, "member1");
+    FileSystemIncrementalBackupLocation fileBackupLocation =
+        new FileSystemIncrementalBackupLocation(backupLocation, "member1");
     assertThat(fileBackupLocation.getBackedUpOplogs(diskstore)).isEmpty();
   }
 
@@ -74,8 +74,8 @@ public class FileSystemBackupLocationTest {
 
     DiskStoreImpl diskStore = mock(DiskStoreImpl.class);
     when(diskStore.getDiskStoreID()).thenReturn(new DiskStoreID(1, 2));
-    FileSystemBackupLocation fileBackupLocation =
-        new FileSystemBackupLocation(backupLocation, "member1");
+    FileSystemIncrementalBackupLocation fileBackupLocation =
+        new FileSystemIncrementalBackupLocation(backupLocation, "member1");
 
     Files.createDirectories(
         diskStoreMemberBackupLocation.resolve(fileBackupLocation.getBackupDirName(diskStore)));
@@ -95,8 +95,8 @@ public class FileSystemBackupLocationTest {
 
     DiskStoreImpl diskStore = mock(DiskStoreImpl.class);
     when(diskStore.getDiskStoreID()).thenReturn(new DiskStoreID(1, 2));
-    FileSystemBackupLocation fileBackupLocation =
-        new FileSystemBackupLocation(backupLocation, "member1");
+    FileSystemIncrementalBackupLocation fileBackupLocation =
+        new FileSystemIncrementalBackupLocation(backupLocation, "member1");
 
     Path diskStorePath = Files.createDirectories(
         diskStoreMemberBackupLocation.resolve(fileBackupLocation.getBackupDirName(diskStore)));
@@ -119,8 +119,8 @@ public class FileSystemBackupLocationTest {
     File backupLocation = tempDir.newFolder("backup");
     Files.createDirectories(backupLocation.toPath().resolve(memberId));
 
-    TestableFileSystemBackupLocation fileBackupLocation =
-        new TestableFileSystemBackupLocation(backupLocation, "member1");
+    TestableFileSystemIncrementalBackupLocation fileBackupLocation =
+        new TestableFileSystemIncrementalBackupLocation(backupLocation, "member1");
 
     initializeBackupInspector(fileBackupLocation);
 
@@ -139,8 +139,8 @@ public class FileSystemBackupLocationTest {
 
     DiskStoreImpl diskStore = mock(DiskStoreImpl.class);
     when(diskStore.getDiskStoreID()).thenReturn(new DiskStoreID(1, 2));
-    TestableFileSystemBackupLocation fileBackupLocation =
-        new TestableFileSystemBackupLocation(backupLocation, "member1");
+    TestableFileSystemIncrementalBackupLocation fileBackupLocation =
+        new TestableFileSystemIncrementalBackupLocation(backupLocation, "member1");
 
     Path diskStorePath = Files.createDirectories(
         diskStoreMemberBackupLocation.resolve(fileBackupLocation.getBackupDirName(diskStore)));
@@ -158,7 +158,7 @@ public class FileSystemBackupLocationTest {
   }
 
   private void initializeBackupInspector(
-      TestableFileSystemBackupLocation fileSystemBackupLocation) {
+      TestableFileSystemIncrementalBackupLocation fileSystemBackupLocation) {
     BackupInspector backupInspector = mock(BackupInspector.class);
     when(backupInspector.isIncremental()).thenReturn(true);
     Set<String> previousBackupFiles =
@@ -168,11 +168,11 @@ public class FileSystemBackupLocationTest {
     fileSystemBackupLocation.setBackupInspector(backupInspector);
   }
 
-  public class TestableFileSystemBackupLocation extends FileSystemBackupLocation {
+  public class TestableFileSystemIncrementalBackupLocation extends FileSystemIncrementalBackupLocation {
 
     BackupInspector backupInspector;
 
-    TestableFileSystemBackupLocation(File backupLocationDir, String memberId) {
+    TestableFileSystemIncrementalBackupLocation(File backupLocationDir, String memberId) {
       super(backupLocationDir, memberId);
     }
 

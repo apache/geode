@@ -29,13 +29,13 @@ import org.apache.geode.internal.cache.DiskStoreImpl;
 import org.apache.geode.internal.cache.GemFireCacheImpl;
 import org.apache.geode.internal.util.TransformUtils;
 
-public class FileSystemBackupLocation implements BackupLocation {
+public class FileSystemIncrementalBackupLocation implements IncrementalBackupLocation {
 
   private static final String INCOMPLETE_BACKUP_FILE = "INCOMPLETE_BACKUP_FILE";
 
   private final Path memberBackupLocationDir;
 
-  FileSystemBackupLocation(File backupLocationDir, String memberId) {
+  FileSystemIncrementalBackupLocation(File backupLocationDir, String memberId) {
     this.memberBackupLocationDir = new File(backupLocationDir, memberId).toPath();
   }
 

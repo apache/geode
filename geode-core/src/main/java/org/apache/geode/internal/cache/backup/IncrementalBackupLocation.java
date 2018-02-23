@@ -20,9 +20,6 @@ import java.util.Map;
 
 import org.apache.geode.cache.DiskStore;
 
-public interface BackupLocation {
-
-  //TODO this is not a valid signature for this interface
+public interface IncrementalBackupLocation {
   Map<String, File> getBackedUpOplogs(DiskStore diskStore) throws IOException;
-
 }

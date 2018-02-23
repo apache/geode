@@ -23,9 +23,9 @@ import org.apache.geode.cache.DiskStore;
 
 public class IncrementalBackupFilter implements BackupFilter {
 
-  private final BackupLocation incrementalBackupLocation;
+  private final IncrementalBackupLocation incrementalBackupLocation;
 
-  IncrementalBackupFilter(BackupLocation incrementalBackupLocation) {
+  IncrementalBackupFilter(IncrementalBackupLocation incrementalBackupLocation) {
     this.incrementalBackupLocation = incrementalBackupLocation;
   }
 
