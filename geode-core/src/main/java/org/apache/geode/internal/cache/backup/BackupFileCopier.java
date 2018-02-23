@@ -108,7 +108,7 @@ public class BackupFileCopier {
         } else {
           Files.copy(original.toPath(), destination, StandardCopyOption.COPY_ATTRIBUTES);
         }
-        backupDefinition.addUserFilesToBackup(destination);
+        backupDefinition.addUserFilesToBackup(destination, original.toPath());
         userFilesBackedUp.add(original);
       }
     }
@@ -131,7 +131,7 @@ public class BackupFileCopier {
         String sourceFileName = source.getName();
         Path destination = userDirectory.resolve(sourceFileName);
         Files.copy(source.toPath(), destination, StandardCopyOption.COPY_ATTRIBUTES);
-        backupDefinition.addDeployedJarToBackup(destination);
+        backupDefinition.addDeployedJarToBackup(destination, source.toPath());
         userJars.add(source);
       }
     } finally {

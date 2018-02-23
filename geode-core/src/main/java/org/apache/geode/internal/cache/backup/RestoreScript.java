@@ -69,6 +69,10 @@ public class RestoreScript {
     this.baselineFiles.putAll(baselineFiles);
   }
 
+  public void addBaselineFile(File baseline, File absoluteFile) {
+    this.baselineFiles.put(baseline, absoluteFile);
+  }
+
   public void addFile(final File originalFile, final File backupFile) {
     backedUpFiles.put(backupFile, originalFile.getAbsoluteFile());
   }

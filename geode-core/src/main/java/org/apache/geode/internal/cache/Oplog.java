@@ -1215,46 +1215,8 @@ public class Oplog implements CompactableOplog, Flushable {
     return matchingFiles;
   }
 
-  /**
-   * Returns a map of baseline oplog files to copy that match this oplog's files for a currently
-   * running backup.
-   *
-   * @param baselineOplogFiles a List of files to match this oplog's filenames against.
-   * @return a map of baslineline oplog files to copy. May be empty if total current set for this
-   *         oplog does not match the baseline.
-   */
-  public Map<File, File> mapBaseline(Collection<File> baselineOplogFiles) {
-    // Map of baseline oplog file name to oplog file
-    Map<String, File> baselineOplogMap =
-        TransformUtils.transformAndMap(baselineOplogFiles, TransformUtils.fileNameTransformer);
-
-    // Returned Map of baseline file to current oplog file
-    Map<File, File> baselineToOplogMap = new HashMap<>();
-
-    // Check for crf existence
-    if ((null != this.crf.f) && this.crf.f.exists()
-        && baselineOplogMap.containsKey(this.crf.f.getName())) {
-      baselineToOplogMap.put(baselineOplogMap.get(this.crf.f.getName()),
-          IOUtils.tryGetCanonicalFileElseGetAbsoluteFile(this.crf.f));
-    }
-
-    // Check for drf existence
-    if ((null != this.drf.f) && this.drf.f.exists()
-        && baselineOplogMap.containsKey(this.drf.f.getName())) {
-      baselineToOplogMap.put(baselineOplogMap.get(this.drf.f.getName()),
-          IOUtils.tryGetCanonicalFileElseGetAbsoluteFile(this.drf.f));
-    }
-
-    // Check for krf existence
-    if (getParent().getDiskInitFile().hasKrf(this.oplogId)) {
-      File krfFile = getKrfFile();
-      if (krfFile.exists() && baselineOplogMap.containsKey(krfFile.getName())) {
-        baselineToOplogMap.put(baselineOplogMap.get(krfFile.getName()),
-            IOUtils.tryGetCanonicalFileElseGetAbsoluteFile(krfFile));
-      }
-    }
-
-    return baselineToOplogMap;
+  public boolean hasKrf() {
+    return getParent().getDiskInitFile().hasKrf(this.oplogId);
   }
 
   /** the oplog identifier * */
@@ -5719,9 +5681,7 @@ public class Oplog implements CompactableOplog, Flushable {
 
   public void deleteCRF() {
     oplogSet.crfDelete(this.oplogId);
-    BackupService backupService = getInternalCache().getBackupService();
-    DiskStoreBackup inProgressBackup = getParent().getInProgressBackup();
-    if (inProgressBackup == null || !inProgressBackup.deferCrfDelete(this)) {
+    if (!getInternalCache().getBackupService().deferCrfDelete(getParent(), this)) {
       deleteCRFFileOnly();
     }
   }
@@ -5754,8 +5714,7 @@ public class Oplog implements CompactableOplog, Flushable {
 
   public void deleteDRF() {
     getOplogSet().drfDelete(this.oplogId);
-    DiskStoreBackup inProgressBackup = getParent().getInProgressBackup();
-    if (inProgressBackup == null || !inProgressBackup.deferDrfDelete(this)) {
+    if (!getInternalCache().getBackupService().deferDrfDelete(getParent(), this)) {
       deleteDRFFileOnly();
     }
   }

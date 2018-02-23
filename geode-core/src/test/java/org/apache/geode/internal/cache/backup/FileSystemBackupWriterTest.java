@@ -14,14 +14,15 @@
  */
 package org.apache.geode.internal.cache.backup;
 
-import static org.apache.geode.internal.cache.backup.BackupDestination.CONFIG_DIRECTORY;
-import static org.apache.geode.internal.cache.backup.BackupDestination.DATA_STORES_DIRECTORY;
-import static org.apache.geode.internal.cache.backup.BackupDestination.DEPLOYED_JARS_DIRECTORY;
-import static org.apache.geode.internal.cache.backup.BackupDestination.README_FILE;
-import static org.apache.geode.internal.cache.backup.BackupDestination.USER_FILES_DIRECTORY;
-import static org.apache.geode.internal.cache.backup.FileSystemBackupDestination.INCOMPLETE_BACKUP_FILE;
+import static org.apache.geode.internal.cache.backup.FileSystemBackupWriter.CONFIG_DIRECTORY;
+import static org.apache.geode.internal.cache.backup.FileSystemBackupWriter.DATA_STORES_DIRECTORY;
+import static org.apache.geode.internal.cache.backup.FileSystemBackupWriter.DEPLOYED_JARS_DIRECTORY;
+import static org.apache.geode.internal.cache.backup.FileSystemBackupWriter.INCOMPLETE_BACKUP_FILE;
+import static org.apache.geode.internal.cache.backup.FileSystemBackupWriter.README_FILE;
+import static org.apache.geode.internal.cache.backup.FileSystemBackupWriter.USER_FILES_DIRECTORY;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
@@ -41,6 +42,7 @@ import org.junit.experimental.categories.Category;
 import org.junit.rules.TemporaryFolder;
 import org.junit.runner.RunWith;
 
+import org.apache.geode.internal.cache.DirectoryHolder;
 import org.apache.geode.internal.cache.DiskStoreImpl;
 import org.apache.geode.internal.cache.GemFireCacheImpl;
 import org.apache.geode.internal.cache.Oplog;
@@ -49,7 +51,7 @@ import org.apache.geode.test.junit.categories.IntegrationTest;
 
 @Category(IntegrationTest.class)
 @RunWith(JUnitParamsRunner.class)
-public class FileSystemBackupDestinationTest {
+public class FileSystemBackupWriterTest {
   private static final Path RELATIVE_TARGET_DIR = Paths.get("backupTest");
 
   @Rule
@@ -57,14 +59,19 @@ public class FileSystemBackupDestinationTest {
 
   private BackupDefinition backupDefinition;
   private Path targetDir;
+  private Path sourceDir;
   private RestoreScript restoreScript;
+  String memberId = "member1";
 
   @Before
   public void setup() throws IOException {
     backupDefinition = new BackupDefinition();
     Path backupDirectory = tempDir.newFolder("backups").toPath();
     targetDir = backupDirectory.resolve("backupTarget");
+    sourceDir = backupDirectory.resolve("backupSource");
     restoreScript = mock(RestoreScript.class);
+    doNothing().when(restoreScript).addUserFile(any(), any());
+    doNothing().when(restoreScript).addFile(any(), any());
     when(restoreScript.generate(any())).thenReturn(tempDir.newFile());
   }
 
@@ -82,12 +89,13 @@ public class FileSystemBackupDestinationTest {
     Path userFile = tempDir.newFile("userFile").toPath();
     Path userSubdir = tempDir.newFolder("userSubDir").toPath();
     Path userFileInDir = Files.write(userSubdir.resolve("fileInDir"), new byte[] {});
-    backupDefinition.addUserFilesToBackup(userFile);
-    backupDefinition.addUserFilesToBackup(userSubdir);
+    backupDefinition.addUserFilesToBackup(userFile, sourceDir);
+    backupDefinition.addUserFilesToBackup(userSubdir, sourceDir);
+    backupDefinition.setRestoreScript(restoreScript);
 
     executeBackup(useRelativePath);
 
-    Path userDir = getTargetDir(useRelativePath).resolve(USER_FILES_DIRECTORY);
+    Path userDir = getTargetMemberDir(useRelativePath).resolve(USER_FILES_DIRECTORY);
     assertThat(userDir.resolve(userFile.getFileName())).exists();
     assertThat(userDir.resolve(userSubdir.getFileName())).exists();
     assertThat(userDir.resolve(userSubdir.getFileName()).resolve(userFileInDir.getFileName()))
@@ -100,12 +108,13 @@ public class FileSystemBackupDestinationTest {
     Path jarFile = tempDir.newFile("jarFile").toPath();
     Path jarSubdir = tempDir.newFolder("jarSubdir").toPath();
     Path jarInSubdir = Files.write(jarSubdir.resolve("jarInSubdir"), new byte[] {});
-    backupDefinition.addDeployedJarToBackup(jarFile);
-    backupDefinition.addDeployedJarToBackup(jarSubdir);
+    backupDefinition.addDeployedJarToBackup(jarFile, sourceDir);
+    backupDefinition.addDeployedJarToBackup(jarSubdir, sourceDir);
+    backupDefinition.setRestoreScript(restoreScript);
 
     executeBackup(useRelativePath);
 
-    Path userDir = getTargetDir(useRelativePath).resolve(DEPLOYED_JARS_DIRECTORY);
+    Path userDir = getTargetMemberDir(useRelativePath).resolve(DEPLOYED_JARS_DIRECTORY);
     assertThat(userDir.resolve(jarFile.getFileName())).exists();
     assertThat(userDir.resolve(jarSubdir.getFileName())).exists();
     assertThat(userDir.resolve(jarSubdir.getFileName()).resolve(jarInSubdir.getFileName()))
@@ -119,10 +128,11 @@ public class FileSystemBackupDestinationTest {
     Path propertyFile = tempDir.newFile("properties").toPath();
     backupDefinition.addConfigFileToBackup(cacheXml);
     backupDefinition.addConfigFileToBackup(propertyFile);
+    backupDefinition.setRestoreScript(restoreScript);
 
     executeBackup(useRelativePath);
 
-    Path configDir = getTargetDir(useRelativePath).resolve(CONFIG_DIRECTORY);
+    Path configDir = getTargetMemberDir(useRelativePath).resolve(CONFIG_DIRECTORY);
     assertThat(configDir.resolve(cacheXml.getFileName())).exists();
     assertThat(configDir.resolve(propertyFile.getFileName())).exists();
   }
@@ -137,14 +147,17 @@ public class FileSystemBackupDestinationTest {
     when(oplog.getDrfFile()).thenReturn(tempDir.newFile("drf"));
     when(oplog.getKrfFile()).thenReturn(tempDir.newFile("krf"));
     when(diskStore.getInforFileDirIndex()).thenReturn(1);
+    DirectoryHolder[] directoryHolders = new DirectoryHolder[0];
+    when(diskStore.getDirectoryHolders()).thenReturn(directoryHolders);
 
     backupDefinition.addOplogFileToBackup(diskStore, oplog.getCrfFile().toPath());
     backupDefinition.addOplogFileToBackup(diskStore, oplog.getDrfFile().toPath());
     backupDefinition.addOplogFileToBackup(diskStore, oplog.getKrfFile().toPath());
+    backupDefinition.setRestoreScript(restoreScript);
 
     executeBackup(useRelativePath);
 
-    Path diskStoreDir = getTargetDir(useRelativePath).resolve(DATA_STORES_DIRECTORY)
+    Path diskStoreDir = getTargetMemberDir(useRelativePath).resolve(DATA_STORES_DIRECTORY)
         .resolve(GemFireCacheImpl.getDefaultDiskStoreName() + "_1-2");
     assertThat(diskStoreDir.resolve("dir1").resolve("crf")).exists();
     assertThat(diskStoreDir.resolve("dir1").resolve("drf")).exists();
@@ -166,10 +179,11 @@ public class FileSystemBackupDestinationTest {
     Files.createFile(initFile2);
     backupDefinition.addDiskInitFile(diskStore1, initFile1);
     backupDefinition.addDiskInitFile(diskStore2, initFile2);
+    backupDefinition.setRestoreScript(restoreScript);
 
     executeBackup(useRelativePath);
 
-    Path diskStoreDir = getTargetDir(useRelativePath).resolve(DATA_STORES_DIRECTORY)
+    Path diskStoreDir = getTargetMemberDir(useRelativePath).resolve(DATA_STORES_DIRECTORY)
         .resolve(GemFireCacheImpl.getDefaultDiskStoreName() + "_1-2");
     assertThat(diskStoreDir.resolve("dir1").resolve("initFile1")).exists();
     assertThat(diskStoreDir.resolve("dir2").resolve("initFile2")).exists();
@@ -184,7 +198,7 @@ public class FileSystemBackupDestinationTest {
 
     executeBackup(useRelativePath);
 
-    assertThat(getTargetDir(useRelativePath).resolve("restoreScript")).exists();
+    assertThat(getTargetMemberDir(useRelativePath).resolve("restoreScript")).exists();
   }
 
   @Test
@@ -192,14 +206,14 @@ public class FileSystemBackupDestinationTest {
   public void backupContainsReadMe(boolean useRelativePath) throws IOException {
     executeBackup(useRelativePath);
 
-    assertThat(getTargetDir(useRelativePath).resolve(README_FILE)).exists();
+    assertThat(getTargetMemberDir(useRelativePath).resolve(README_FILE)).exists();
   }
 
   @Test
   @Parameters({"true", "false"})
   public void leavesBehindIncompleteFileOnFailure(boolean useRelativePath) throws Exception {
     Path notCreatedFile = tempDir.newFolder("dir1").toPath().resolve("notCreated");
-    backupDefinition.addDeployedJarToBackup(notCreatedFile);
+    backupDefinition.addDeployedJarToBackup(notCreatedFile, sourceDir);
 
     try {
       executeBackup(useRelativePath);
@@ -207,23 +221,30 @@ public class FileSystemBackupDestinationTest {
       // expected to occur on missing file
     }
 
-    assertThat(getTargetDir(useRelativePath).resolve(INCOMPLETE_BACKUP_FILE)).exists();
+    assertThat(getTargetMemberDir(useRelativePath).resolve(INCOMPLETE_BACKUP_FILE)).exists();
   }
 
   @Test
   @Parameters({"true", "false"})
   public void doesNotLeaveBehindIncompleteFileOnSuccess(boolean useRelativePath) throws Exception {
     executeBackup(useRelativePath);
-    assertThat(getTargetDir(useRelativePath).resolve(INCOMPLETE_BACKUP_FILE)).doesNotExist();
+    assertThat(getTargetMemberDir(useRelativePath).resolve(INCOMPLETE_BACKUP_FILE)).doesNotExist();
   }
 
   private void executeBackup(boolean useRelativePath) throws IOException {
-    BackupDestination backupDestination =
-        new FileSystemBackupDestination(getTargetDir(useRelativePath));
-    backupDestination.backupFiles(backupDefinition);
+    backupDefinition.setRestoreScript(restoreScript);
+
+    BackupWriter backupWriter =
+        new FileSystemBackupWriter(getTargetDir(useRelativePath).resolve(memberId));
+    backupWriter.backupFiles(backupDefinition);
   }
 
   private Path getTargetDir(boolean useRelativePath) {
     return useRelativePath ? RELATIVE_TARGET_DIR : targetDir;
+  }
+
+  private Path getTargetMemberDir(boolean useRelativePath) {
+    Path target = useRelativePath ? RELATIVE_TARGET_DIR : targetDir;
+    return target.resolve(memberId);
   }
 }
