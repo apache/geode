@@ -81,20 +81,13 @@ public class PRQueryRegionDestroyedDUnitTest extends CacheTestCase {
   }
 
   /**
-   * 1. Creates PR regions across with scope = DACK, one accessor node & 2 datastores
-   * <p>
-   * 2. Creates a Local region on one of the VM's
-   * <p>
-   * 3. Puts in the same data both in PR region & the Local Region
-   * <p>
-   * 4. Queries the data both in local & PR
-   * <p>
-   * 5. Also calls Region.close() randomly on one of the datastore VM's with delay
-   * <p>
-   * 6. then recreates the PR on the same VM
-   * <p>
+   * 1. Creates PR regions across with scope = DACK, one accessor node & 2 datastores <br>
+   * 2. Creates a Local region on one of the VM's <br>
+   * 3. Puts in the same data both in PR region & the Local Region <br>
+   * 4. Queries the data both in local & PR <br>
+   * 5. Also calls Region.close() randomly on one of the datastore VM's with delay <br>
+   * 6. then recreates the PR on the same VM <br>
    * 7. Verifies the size, type and contents of both the resultSets obtained
-   * <p>
    */
   @Test
   public void testPRWithRegionDestroyInOneDatastoreWithDelay() throws Exception {
