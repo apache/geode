@@ -14,6 +14,8 @@
  */
 package org.apache.geode.distributed.internal.membership.gms.membership;
 
+import static org.junit.Assert.assertNotNull;
+
 import org.apache.geode.distributed.Locator;
 import org.apache.geode.distributed.internal.DistributionManager;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
@@ -33,17 +35,8 @@ public class GMSJoinLeaveTestHelper {
 
   public static boolean isViewCreator() {
     GMSJoinLeave gmsJoinLeave = getGmsJoinLeave();
-    if (gmsJoinLeave != null) {
-      return gmsJoinLeave.getView().getCreator().equals(gmsJoinLeave.getMemberID());
-      // GMSJoinLeave.ViewCreator viewCreator = gmsJoinLeave.getViewCreator();
-      // if (viewCreator != null && !viewCreator.isShutdown()) {
-      // return true;
-      // } else {
-      // return false;
-      // }
-    }
-    throw new RuntimeException(
-        "This should not have happened. There should be a JoinLeave for every DS");
+    assertNotNull("There should be a JoinLeave for every DS", gmsJoinLeave);
+    return gmsJoinLeave.getView().getCreator().equals(gmsJoinLeave.getMemberID());
   }
 
   private static void waitCriterion() {

@@ -19,6 +19,7 @@ import static java.util.concurrent.TimeUnit.SECONDS;
 import static org.hamcrest.core.IsEqual.equalTo;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.Matchers.isA;
 import static org.mockito.Mockito.mock;
@@ -111,7 +112,6 @@ public class GMSJoinLeaveJUnitTest {
   public void initMocks(boolean enableNetworkPartition, boolean useTestGMSJoinLeave) {
     mockDistConfig = mock(DistributionConfig.class);
     when(mockDistConfig.getEnableNetworkPartitionDetection()).thenReturn(enableNetworkPartition);
-    when(mockDistConfig.getLocators()).thenReturn("localhost[8888]");
     when(mockDistConfig.getSecurityUDPDHAlgo()).thenReturn("");
     mockConfig = mock(ServiceConfig.class);
     when(mockDistConfig.getStartLocator()).thenReturn("localhost[12345]");
