@@ -49,27 +49,30 @@ import org.apache.geode.test.dunit.cache.CacheTestCase;
 import org.apache.geode.test.junit.categories.DistributedTest;
 
 @Category(DistributedTest.class)
+@SuppressWarnings("serial")
 public class PRQueryDUnitTest extends CacheTestCase {
 
   private static final int NUMBER_OF_PUTS = 100;
   private static final Object[] EMPTY_PARAMETERS = new Object[0];
+  private static final int[] LIMIT = new int[] {10, 15, 30, 0, 1, 9};
+  private static final int redundancy = 0;
 
   private String regionName;
+  private int numberOfBuckets;
+
   private VM accessor;
   private VM datastore1;
   private VM datastore2;
-  private int numberOfBuckets;
-  private int redundancy;
-  public static final int[] LIMIT = new int[] {10, 15, 30, 0, 1, 9};
 
   @Before
   public void setUp() throws Exception {
-    regionName = getUniqueName();
     accessor = getHost(0).getVM(1);
     datastore1 = getHost(0).getVM(2);
     datastore2 = getHost(0).getVM(3);
+
+    regionName = getUniqueName();
+
     numberOfBuckets = 11;
-    redundancy = 0;
   }
 
   @After
@@ -127,6 +130,9 @@ public class PRQueryDUnitTest extends CacheTestCase {
     assertThat(testHook.isDone()).isTrue();
   }
 
+  /**
+   * NOTE: fails in IDE because the -Xmx is set differently in gradle build where it passes
+   */
   @Test
   public void testQueryResultsFromMembers() throws Exception {
     numberOfBuckets = 10;
@@ -171,6 +177,7 @@ public class PRQueryDUnitTest extends CacheTestCase {
 
       for (Map.Entry<Object, Integer> mapEntry : testHook.getResultsPerMember().entrySet()) {
         Integer resultsCount = mapEntry.getValue();
+        // this assertion fails in the IDE but passes in gradle due to -Xmx config differences
         assertThat(resultsCount.intValue()).isEqualTo(LIMIT[i]);
       }
     }
@@ -297,6 +304,9 @@ public class PRQueryDUnitTest extends CacheTestCase {
     return (PartitionedRegion) regionFactory.create(regionName);
   }
 
+  /**
+   * Test hook that disconnects when invoked.
+   */
   class DisconnectingTestHook implements PartitionedRegionQueryEvaluator.TestHook {
     private boolean done = false;
 
@@ -321,6 +331,9 @@ public class PRQueryDUnitTest extends CacheTestCase {
     }
   }
 
+  /**
+   * Test hook that collates all results per member.
+   */
   class CollatingTestHook implements PartitionedRegionQueryEvaluator.TestHook {
 
     private final Map<Object, Integer> resultsPerMember;
@@ -354,34 +367,4 @@ public class PRQueryDUnitTest extends CacheTestCase {
       return resultsPerMember;
     }
   }
-
-  class MyTestHook implements PartitionedRegionQueryEvaluator.TestHook {
-
-    private final Map<Object, Integer> resultsPerMember;
-    private final PartitionedRegionQueryEvaluator queryEvaluator;
-
-    MyTestHook(PartitionedRegionQueryEvaluator queryEvaluator) {
-      resultsPerMember = new HashMap<>();
-      this.queryEvaluator = queryEvaluator;
-    }
-
-    @Override
-    public void hook(int spot) throws RuntimeException {
-      if (spot != 3) {
-        return;
-      }
-      for (Object mr : queryEvaluator.getResultsPerMember().entrySet()) {
-        Map.Entry e = (Map.Entry) mr;
-        Collection<Collection> results = (Collection<Collection>) e.getValue();
-        for (Collection<Object> r : results) {
-          if (resultsPerMember.containsKey(e.getKey())) {
-            resultsPerMember.put(e.getKey(), r.size() + (Integer) resultsPerMember.get(e.getKey()));
-          } else {
-            resultsPerMember.put(e.getKey(), r.size());
-          }
-        }
-      }
-    }
-  }
-
 }

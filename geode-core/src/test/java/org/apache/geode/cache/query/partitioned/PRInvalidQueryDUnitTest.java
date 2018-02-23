@@ -34,10 +34,10 @@ public class PRInvalidQueryDUnitTest extends CacheTestCase {
 
   private static final String REGION_NAME = "Portfolios";
 
+  private static final int START_PORTFOLIO_DATA_INDEX = 0;
+  private static final int TOTAL_DATA_SIZE = 90;
   private static final int START_KEY = 0;
   private static final int START_KEY_STEP = 20;
-  private static final int START_PORTFOLIO_INDEX = 0;
-  private static final int END_PORTFOLIO_INDEX = 90;
   private static final int REDUNDANCY = 0;
 
   private PRQueryDUnitHelper prQueryDUnitHelper;
@@ -90,17 +90,18 @@ public class PRInvalidQueryDUnitTest extends CacheTestCase {
         PortfolioData.class));
 
     // Generating portfolio object array to be populated across the PR's & Local Regions
-    PortfolioData[] portfolio = createPortfolioData(START_PORTFOLIO_INDEX, END_PORTFOLIO_INDEX);
+    PortfolioData[] portfolioData =
+        createPortfolioData(START_PORTFOLIO_DATA_INDEX, TOTAL_DATA_SIZE);
 
     // Putting the data into the PR's created
-    vm0.invoke(prQueryDUnitHelper.getCacheSerializableRunnableForPRPuts(REGION_NAME, portfolio,
+    vm0.invoke(prQueryDUnitHelper.getCacheSerializableRunnableForPRPuts(REGION_NAME, portfolioData,
         START_KEY, START_KEY + START_KEY_STEP));
-    vm1.invoke(prQueryDUnitHelper.getCacheSerializableRunnableForPRPuts(REGION_NAME, portfolio,
+    vm1.invoke(prQueryDUnitHelper.getCacheSerializableRunnableForPRPuts(REGION_NAME, portfolioData,
         START_KEY + START_KEY_STEP, START_KEY + (2 * START_KEY_STEP)));
-    vm2.invoke(prQueryDUnitHelper.getCacheSerializableRunnableForPRPuts(REGION_NAME, portfolio,
+    vm2.invoke(prQueryDUnitHelper.getCacheSerializableRunnableForPRPuts(REGION_NAME, portfolioData,
         START_KEY + (2 * START_KEY_STEP), START_KEY + (3 * START_KEY_STEP)));
-    vm3.invoke(prQueryDUnitHelper.getCacheSerializableRunnableForPRPuts(REGION_NAME, portfolio,
-        START_KEY + (3 * START_KEY_STEP), END_PORTFOLIO_INDEX));
+    vm3.invoke(prQueryDUnitHelper.getCacheSerializableRunnableForPRPuts(REGION_NAME, portfolioData,
+        START_KEY + (3 * START_KEY_STEP), TOTAL_DATA_SIZE));
 
     // querying the VM for data
     vm0.invoke(prQueryDUnitHelper.getCacheSerializableRunnableForPRInvalidQuery(REGION_NAME));
