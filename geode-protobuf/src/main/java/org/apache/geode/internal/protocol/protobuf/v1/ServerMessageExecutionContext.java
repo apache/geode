@@ -15,7 +15,6 @@
 
 package org.apache.geode.internal.protocol.protobuf.v1;
 
-
 import org.apache.geode.annotations.Experimental;
 import org.apache.geode.distributed.Locator;
 import org.apache.geode.internal.cache.InternalCache;
@@ -55,5 +54,4 @@ public class ServerMessageExecutionContext extends MessageExecutionContext {
     throw new InvalidExecutionContextException(
         "Operations on the server should not to try to operate on a locator");
   }
-
 }

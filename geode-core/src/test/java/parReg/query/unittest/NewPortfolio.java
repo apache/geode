@@ -121,7 +121,7 @@ public class NewPortfolio implements Serializable {
       props.setProperty("secId", Integer.toString(secId));
 
       Position pos = new Position();
-      pos.init(props);
+      pos.initialize(null, props);
       this.positions.put(pos.getSecId(), pos);
     }
   }

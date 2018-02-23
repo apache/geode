@@ -23,6 +23,7 @@ import java.util.stream.Collectors;
 
 import org.apache.logging.log4j.Logger;
 
+import org.apache.geode.cache.lucene.internal.IndexRepositoryFactory;
 import org.apache.geode.internal.logging.LogService;
 
 /**
@@ -60,7 +61,9 @@ public class FileSystem {
 
   public Collection<String> listFileNames() {
     return (Collection<String>) fileAndChunkRegion.keySet().stream()
-        .filter(entry -> (entry instanceof String)).collect(Collectors.toList());
+        .filter(entry -> ((entry instanceof String) && !((String) entry)
+            .equalsIgnoreCase(IndexRepositoryFactory.APACHE_GEODE_INDEX_COMPLETE)))
+        .collect(Collectors.toList());
   }
 
   public File createFile(final String name) throws IOException {

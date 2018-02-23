@@ -12,12 +12,13 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
-package org.apache.geode.internal.cache;
+package org.apache.geode.internal.cache.backup;
 
-import java.io.File;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Set;
+
+import org.apache.geode.internal.cache.Oplog;
 
 /**
  * This class manages the state of the backup of an individual disk store. It holds the list of
@@ -29,11 +30,9 @@ public class DiskStoreBackup {
   private final Set<Oplog> pendingBackup;
   private final Set<Oplog> deferredCrfDeletes = new HashSet<>();
   private final Set<Oplog> deferredDrfDeletes = new HashSet<>();
-  private final File targetDir;
 
-  public DiskStoreBackup(Oplog[] allOplogs, File targetDir) {
+  public DiskStoreBackup(Oplog[] allOplogs) {
     this.pendingBackup = new HashSet<>(Arrays.asList(allOplogs));
-    this.targetDir = targetDir;
   }
 
   /**
@@ -78,10 +77,6 @@ public class DiskStoreBackup {
     if (deferredDrfDeletes.remove(oplog)) {
       oplog.deleteDRFFileOnly();
     }
-  }
-
-  public File getTargetDir() {
-    return targetDir;
   }
 
   public synchronized void cleanup() {

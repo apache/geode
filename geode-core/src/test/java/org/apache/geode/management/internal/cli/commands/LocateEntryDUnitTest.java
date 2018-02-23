@@ -15,11 +15,14 @@
 
 package org.apache.geode.management.internal.cli.commands;
 
+import java.util.Properties;
+
 import org.junit.BeforeClass;
 import org.junit.ClassRule;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
+import org.apache.geode.distributed.ConfigurationProperties;
 import org.apache.geode.management.internal.cli.dto.Key;
 import org.apache.geode.management.internal.cli.dto.Value;
 import org.apache.geode.test.dunit.rules.ClusterStartupRule;
@@ -41,8 +44,13 @@ public class LocateEntryDUnitTest {
   @BeforeClass
   public static void beforeClass() throws Exception {
     locator = lsRule.startLocatorVM(0);
-    server1 = lsRule.startServerVM(1, locator.getPort());
-    server2 = lsRule.startServerVM(2, locator.getPort());
+
+    Properties props = new Properties();
+    props.setProperty(ConfigurationProperties.SERIALIZABLE_OBJECT_FILTER,
+        "org.apache.geode.management.internal.cli.dto.*");
+
+    server1 = lsRule.startServerVM(1, props, locator.getPort());
+    server2 = lsRule.startServerVM(2, props, locator.getPort());
 
     gfsh.connectAndVerify(locator);
 

@@ -28,6 +28,7 @@ import org.apache.commons.lang.StringUtils;
 import org.apache.geode.cache.CacheListener;
 import org.apache.geode.cache.CacheLoader;
 import org.apache.geode.cache.CacheWriter;
+import org.apache.geode.cache.CustomExpiry;
 import org.apache.geode.cache.DataPolicy;
 import org.apache.geode.cache.EvictionAttributes;
 import org.apache.geode.cache.ExpirationAction;
@@ -36,7 +37,6 @@ import org.apache.geode.cache.RegionAttributes;
 import org.apache.geode.cache.Scope;
 import org.apache.geode.compression.Compressor;
 import org.apache.geode.internal.cache.AbstractRegion;
-import org.apache.geode.management.internal.cli.CliUtil;
 import org.apache.geode.management.internal.cli.util.RegionAttributesDefault;
 import org.apache.geode.management.internal.cli.util.RegionAttributesNames;
 
@@ -84,6 +84,8 @@ public class RegionAttributesInfo implements Serializable {
   private String regionIdleTimeoutAction = ExpirationAction.INVALIDATE.toString();
 
   private boolean offHeap;
+  private String customExpiryIdleTimeoutClass = null;
+  private String customExpiryTTLClass = null;
 
   /***
    * Non-default-attribute map in the constructor
@@ -181,6 +183,16 @@ public class RegionAttributesInfo implements Serializable {
 
     }
     offHeap = ra.getOffHeap();
+
+    CustomExpiry<?, ?> customIdleTimeout = ra.getCustomEntryIdleTimeout();
+    if (customIdleTimeout != null) {
+      customExpiryIdleTimeoutClass = customIdleTimeout.getClass().getName();
+    }
+
+    CustomExpiry<?, ?> customTTL = ra.getCustomEntryTimeToLive();
+    if (customTTL != null) {
+      customExpiryTTLClass = customTTL.getClass().getName();
+    }
   }
 
 
@@ -316,6 +328,14 @@ public class RegionAttributesInfo implements Serializable {
 
   public boolean getOffHeap() {
     return offHeap;
+  }
+
+  public String getCustomExpiryIdleTimeoutClass() {
+    return customExpiryIdleTimeoutClass;
+  }
+
+  public String getCustomExpiryTTLClass() {
+    return customExpiryTTLClass;
   }
 
   @Override
@@ -468,7 +488,7 @@ public class RegionAttributesInfo implements Serializable {
 
     if (cacheListenerClassNames != null && !cacheListenerClassNames.isEmpty()) {
       nonDefaultAttributes.put(RegionAttributesNames.CACHE_LISTENERS,
-          CliUtil.convertStringListToString(cacheListenerClassNames, ','));
+          StringUtils.join(cacheListenerClassNames, ","));
     }
 
     if (cacheLoaderClassName != null && !cacheLoaderClassName.isEmpty()) {
@@ -491,6 +511,16 @@ public class RegionAttributesInfo implements Serializable {
     if (!gatewaySenderIDs.isEmpty()) {
       nonDefaultAttributes.put(RegionAttributesNames.GATEWAY_SENDER_ID,
           String.join(",", gatewaySenderIDs));
+    }
+
+    if (StringUtils.isNotEmpty(customExpiryIdleTimeoutClass)) {
+      nonDefaultAttributes.put(RegionAttributesNames.ENTRY_IDLE_TIME_CUSTOM_EXPIRY,
+          customExpiryIdleTimeoutClass);
+    }
+
+    if (StringUtils.isNotEmpty(customExpiryTTLClass)) {
+      nonDefaultAttributes.put(RegionAttributesNames.ENTRY_TIME_TO_LIVE_CUSTOM_EXPIRY,
+          customExpiryTTLClass);
     }
 
     return nonDefaultAttributes;

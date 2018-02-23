@@ -19,7 +19,6 @@ import java.util.Map;
 import javax.management.NotificationBroadcasterSupport;
 import javax.management.ObjectName;
 
-import org.apache.geode.internal.security.SecurityServiceFactory;
 import org.apache.geode.management.DiskBackupStatus;
 import org.apache.geode.management.DiskMetrics;
 import org.apache.geode.management.DistributedSystemMXBean;
@@ -53,7 +52,7 @@ public class DistributedSystemMBean extends NotificationBroadcasterSupport
   @Override
   public DiskBackupStatus backupAllMembers(String targetDirPath, String baselineDirPath)
       throws Exception {
-    SecurityServiceFactory.findSecurityService().authorize(Resource.CLUSTER, Operation.WRITE,
+    bridge.getCache().getSecurityService().authorize(Resource.CLUSTER, Operation.WRITE,
         Target.DISK);
     return bridge.backupAllMembers(targetDirPath, baselineDirPath);
   }

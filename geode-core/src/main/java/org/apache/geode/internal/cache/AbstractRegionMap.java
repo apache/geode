@@ -2438,7 +2438,7 @@ public abstract class AbstractRegionMap
       // Note that v will be null instead of INVALID because setOldValue
       // converts INVALID to null.
       // But checkExpectedOldValue handle this and says INVALID equals null.
-      if (!AbstractRegionEntry.checkExpectedOldValue(expectedOldValue, v, event.getLocalRegion())) {
+      if (!AbstractRegionEntry.checkExpectedOldValue(expectedOldValue, v, event.getRegion())) {
         return false;
       }
     }
@@ -2455,7 +2455,7 @@ public abstract class AbstractRegionMap
         // In these cases we want to even get the old value from disk if it is not in memory
         ReferenceCountHelper.skipRefCountTracking();
         @Released
-        Object oldValueInVMOrDisk = re.getValueOffHeapOrDiskWithoutFaultIn(event.getLocalRegion());
+        Object oldValueInVMOrDisk = re.getValueOffHeapOrDiskWithoutFaultIn(event.getRegion());
         ReferenceCountHelper.unskipRefCountTracking();
         try {
           event.setOldValue(oldValueInVMOrDisk, true);
@@ -2468,9 +2468,9 @@ public abstract class AbstractRegionMap
 
         @Retained
         @Released
-        Object oldValueInVM = re.getValueRetain(event.getLocalRegion(), true); // OFFHEAP: re
-                                                                               // synced so can use
-                                                                               // its ref.
+        Object oldValueInVM = re.getValueRetain(event.getRegion(), true); // OFFHEAP: re
+                                                                          // synced so can use
+                                                                          // its ref.
         if (oldValueInVM == null) {
           oldValueInVM = Token.NOT_AVAILABLE;
         }
@@ -2501,17 +2501,17 @@ public abstract class AbstractRegionMap
     processVersionTag(re, event);
     event.putNewEntry(owner, re);
     updateSize(event, 0, false, wasTombstone);
-    if (!event.getLocalRegion().isInitialized()) {
+    if (!event.getRegion().isInitialized()) {
       owner.getImageState().removeDestroyedEntry(event.getKey());
     }
   }
 
   protected void updateEntry(EntryEventImpl event, boolean requireOldValue, Object oldValueForDelta,
       RegionEntry re) throws RegionClearedException {
-    final int oldSize = event.getLocalRegion().calculateRegionEntryValueSize(re);
+    final int oldSize = event.getRegion().calculateRegionEntryValueSize(re);
     final boolean wasTombstone = re.isTombstone();
     processVersionTag(re, event);
-    event.putExistingEntry(event.getLocalRegion(), re, requireOldValue, oldValueForDelta);
+    event.putExistingEntry(event.getRegion(), re, requireOldValue, oldValueForDelta);
     EntryLogger.logPut(event);
     updateSize(event, oldSize, true/* isUpdate */, wasTombstone);
   }

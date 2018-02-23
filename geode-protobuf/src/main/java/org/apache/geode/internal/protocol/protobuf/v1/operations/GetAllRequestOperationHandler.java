@@ -71,6 +71,11 @@ public class GetAllRequestOperationHandler
     try {
 
       Object decodedKey = serializationService.decode(key);
+      if (decodedKey == null) {
+        responseBuilder
+            .addFailures(buildKeyedError(key, "NULL is not a valid key for get.", INVALID_REQUEST));
+        return;
+      }
       Object value = region.get(decodedKey);
       BasicTypes.Entry entry =
           ProtobufUtilities.createEntry(serializationService, decodedKey, value);

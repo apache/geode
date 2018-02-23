@@ -20,10 +20,13 @@ import java.io.StringReader;
 import java.util.Properties;
 import java.util.regex.Pattern;
 
+import org.apache.commons.lang.exception.ExceptionUtils;
+
 import org.apache.geode.GemFireIOException;
 import org.apache.geode.cache.DiskAccessException;
 import org.apache.geode.internal.cache.DiskStoreImpl;
 import org.apache.geode.internal.i18n.LocalizedStrings;
+import org.apache.geode.internal.lang.StringUtils;
 import org.apache.geode.management.internal.cli.CliUtil;
 import org.apache.geode.management.internal.cli.GfshParser;
 import org.apache.geode.management.internal.cli.i18n.CliStrings;
@@ -73,7 +76,7 @@ public class DiskStoreUpgrader {
             message)) {
           errorString = CliStrings.format(
               CliStrings.UPGRADE_OFFLINE_DISK_STORE__MSG__CANNOT_LOCATE_0_DISKSTORE_IN_1,
-              diskStoreName, CliUtil.arrayToString(diskDirs));
+              diskStoreName, StringUtils.arrayToString(diskDirs));
         } else {
           errorString = message;
         }
@@ -92,15 +95,15 @@ public class DiskStoreUpgrader {
         if (!isKnownCause) {
           errorString = CliStrings.format(
               CliStrings.UPGRADE_OFFLINE_DISK_STORE__MSG__CANNOT_ACCESS_DISKSTORE_0_FROM_1_CHECK_GFSH_LOGS,
-              new Object[] {diskStoreName, CliUtil.arrayToString(diskDirs)});
+              new Object[] {diskStoreName, StringUtils.arrayToString(diskDirs)});
         }
       } else {
         errorString = e.getMessage(); // which are other known exceptions?
       }
-      stackTraceString = CliUtil.stackTraceAsString(e);
+      stackTraceString = ExceptionUtils.getStackTrace(e);
     } catch (IllegalArgumentException e) {
       errorString = e.getMessage();
-      stackTraceString = CliUtil.stackTraceAsString(e);
+      stackTraceString = ExceptionUtils.getStackTrace(e);
     } finally {
       if (errorString != null) {
         System.err.println(errorString);
@@ -125,7 +128,7 @@ public class DiskStoreUpgrader {
     } catch (Exception ex) {
       String fieldsMessage = (maxOplogSize != -1
           ? CliStrings.UPGRADE_OFFLINE_DISK_STORE__MAXOPLOGSIZE + "=" + maxOplogSize + "," : "");
-      fieldsMessage += CliUtil.arrayToString(dirs);
+      fieldsMessage += StringUtils.arrayToString(dirs);
       throw new GemFireIOException(CliStrings.format(
           CliStrings.UPGRADE_OFFLINE_DISK_STORE__MSG__ERROR_WHILE_COMPACTING_DISKSTORE_0_WITH_1_REASON_2,
           new Object[] {diskStoreName, fieldsMessage, ex.getMessage()}), ex);

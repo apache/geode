@@ -48,9 +48,9 @@ public class BackupDefinitionTest {
     Path cannotBeAdded = Paths.get("");
     assertThatThrownBy(() -> backupDefinition.getConfigFiles().add(cannotBeAdded))
         .isInstanceOf(UnsupportedOperationException.class);
-    assertThatThrownBy(() -> backupDefinition.getDeployedJars().add(cannotBeAdded))
+    assertThatThrownBy(() -> backupDefinition.getDeployedJars().put(cannotBeAdded, cannotBeAdded))
         .isInstanceOf(UnsupportedOperationException.class);
-    assertThatThrownBy(() -> backupDefinition.getUserFiles().add(cannotBeAdded))
+    assertThatThrownBy(() -> backupDefinition.getUserFiles().put(cannotBeAdded, cannotBeAdded))
         .isInstanceOf(UnsupportedOperationException.class);
     assertThatThrownBy(() -> backupDefinition.getOplogFilesByDiskStore().put(mock(DiskStore.class),
         Collections.emptySet())).isInstanceOf(UnsupportedOperationException.class);
@@ -68,22 +68,27 @@ public class BackupDefinitionTest {
     assertThat(backupDefinition.getConfigFiles()).containsOnly(config1, config2);
   }
 
+
   @Test
   public void containsDeployedJarFilesAdded() {
     Path jar1 = Paths.get("jar1");
     Path jar2 = Paths.get("jar2");
-    backupDefinition.addDeployedJarToBackup(jar1);
-    backupDefinition.addDeployedJarToBackup(jar2);
-    assertThat(backupDefinition.getDeployedJars()).containsOnly(jar1, jar2);
+    Path source = Paths.get("source");
+    backupDefinition.addDeployedJarToBackup(jar1, source);
+    backupDefinition.addDeployedJarToBackup(jar2, source);
+    assertThat(backupDefinition.getDeployedJars().keySet()).containsOnly(jar1, jar2);
+    assertThat(backupDefinition.getDeployedJars().values()).containsOnly(source, source);
   }
 
   @Test
   public void containsUserFilesAdded() {
     Path userFile1 = Paths.get("userFile1");
     Path userFile2 = Paths.get("userFile2");
-    backupDefinition.addUserFilesToBackup(userFile1);
-    backupDefinition.addUserFilesToBackup(userFile2);
-    assertThat(backupDefinition.getUserFiles()).containsOnly(userFile1, userFile2);
+    Path source = Paths.get("source");
+    backupDefinition.addUserFilesToBackup(userFile1, source);
+    backupDefinition.addUserFilesToBackup(userFile2, source);
+    assertThat(backupDefinition.getUserFiles().keySet()).containsOnly(userFile1, userFile2);
+    assertThat(backupDefinition.getUserFiles().values()).containsOnly(source, source);
   }
 
   @Test

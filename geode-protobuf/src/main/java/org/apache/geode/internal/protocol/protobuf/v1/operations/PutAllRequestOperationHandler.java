@@ -70,9 +70,12 @@ public class PutAllRequestOperationHandler
   private void processSinglePut(RegionAPI.PutAllResponse.Builder builder,
       SerializationService serializationService, Region region, BasicTypes.Entry entry) {
     try {
-
-      Object decodedKey = serializationService.decode(entry.getKey());
       Object decodedValue = serializationService.decode(entry.getValue());
+      Object decodedKey = serializationService.decode(entry.getKey());
+      if (decodedKey == null || decodedValue == null) {
+        builder.addFailedKeys(
+            buildKeyedError(entry, INVALID_REQUEST, "Key and value must both be non-NULL"));
+      }
       region.put(decodedKey, decodedValue);
 
     } catch (DecodingException ex) {
