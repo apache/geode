@@ -205,7 +205,10 @@ public class CreateDefinedIndexesCommandDUnitTest {
           ((InternalLocator) Locator.getLocator()).getSharedConfiguration();
       assertThat(sharedConfig.getConfiguration("group1").getCacheXmlContent()).contains(index2Name,
           index1Name);
-      assertThat(sharedConfig.getConfiguration("cluster").getCacheXmlContent()).isNullOrEmpty();
+      assertThat(sharedConfig.getConfiguration("cluster").getCacheXmlContent())
+          .doesNotContain(index2Name);
+      assertThat(sharedConfig.getConfiguration("cluster").getCacheXmlContent())
+          .doesNotContain(index1Name);
     });
   }
 }
