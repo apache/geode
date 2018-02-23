@@ -18,6 +18,7 @@ import static org.apache.geode.distributed.ConfigurationProperties.LOCATORS;
 import static org.apache.geode.distributed.ConfigurationProperties.MCAST_PORT;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
@@ -26,6 +27,7 @@ import static org.junit.Assert.fail;
 import java.io.ByteArrayInputStream;
 import java.io.DataInputStream;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.Properties;
@@ -51,14 +53,18 @@ import org.apache.geode.cache.RegionAttributes;
 import org.apache.geode.cache.RegionEvent;
 import org.apache.geode.cache.RegionShortcut;
 import org.apache.geode.cache.Scope;
+import org.apache.geode.cache.client.ClientCache;
 import org.apache.geode.cache.client.ClientCacheFactory;
+import org.apache.geode.cache.client.ClientRegionShortcut;
 import org.apache.geode.cache.client.NoAvailableServersException;
 import org.apache.geode.cache.client.Pool;
 import org.apache.geode.cache.client.PoolFactory;
 import org.apache.geode.cache.client.PoolManager;
 import org.apache.geode.cache.client.internal.Connection;
+import org.apache.geode.cache.client.internal.ConnectionFactory;
 import org.apache.geode.cache.client.internal.Op;
 import org.apache.geode.cache.client.internal.PoolImpl;
+import org.apache.geode.cache.client.internal.QueueConnectionImpl;
 import org.apache.geode.cache.client.internal.RegisterInterestTracker;
 import org.apache.geode.cache.server.CacheServer;
 import org.apache.geode.cache.util.CacheListenerAdapter;
@@ -67,6 +73,7 @@ import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.distributed.DistributedSystem;
 import org.apache.geode.distributed.DistributedSystemDisconnectedException;
 import org.apache.geode.distributed.internal.DistributionConfig;
+import org.apache.geode.distributed.internal.ServerLocation;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
 import org.apache.geode.internal.AvailablePort;
 import org.apache.geode.internal.cache.CacheServerImpl;
@@ -180,6 +187,55 @@ public class ClientServerMiscDUnitTest extends JUnit4CacheTestCase {
         .info("Testing concurrent map operations from a client with a partitioned region");
     concurrentMapTest(host.getVM(testVersion, 0), "/" + PR_REGION_NAME);
     // TODO add verification in vm1
+  }
+
+  /**
+   * When a client's subscription thread connects to a server it should receive the server's
+   * pingInterval setting. This is used by the client to set a read-timeout in order to avoid
+   * hanging should the server's machine crash.
+   *
+   * @see MessageJUnitTest#messageWillTimeoutDuringRecvOnInactiveSocket
+   */
+  @Test
+  public void testClientReceivesPingIntervalSetting() {
+    VM clientVM = Host.getHost(0).getVM(testVersion, 0);
+
+    final int port = initServerCache(true);
+    final String host = NetworkUtils.getServerHostName(server1.getHost());
+
+    clientVM.invoke("create client cache and verify", () -> {
+      createClientCacheAndVerifyPingIntervalIsSet(host, port);
+    });
+  }
+
+  void createClientCacheAndVerifyPingIntervalIsSet(String host, int port) throws Exception {
+    PoolImpl pool = null;
+    try {
+      Properties props = new Properties();
+      props.setProperty(MCAST_PORT, "0");
+      props.setProperty(LOCATORS, "");
+
+      createCache(props);
+
+      pool = (PoolImpl) PoolManager.createFactory().addServer(host, port)
+          .setSubscriptionEnabled(true).setThreadLocalConnections(false).setReadTimeout(1000)
+          .setSocketBufferSize(32768).setMinConnections(1).setSubscriptionRedundancy(-1)
+          .setPingInterval(2000).create("test pool");
+
+      Region<Object, Object> region = cache.createRegionFactory(RegionShortcut.LOCAL)
+          .setPoolName("test pool").create(REGION_NAME1);
+      region.registerInterest(".*");
+
+      /** get the subscription connection and verify that it has the correct timeout setting */
+      QueueConnectionImpl primaryConnection = (QueueConnectionImpl) pool.getPrimaryConnection();
+      int pingInterval = ((CacheClientUpdater) primaryConnection.getUpdater())
+          .getServerQueueStatus().getPingInterval();
+      assertNotEquals(0, pingInterval);
+      assertEquals(CacheClientNotifier.getClientPingInterval(), pingInterval);
+    } finally {
+      cache.close();
+    }
+
   }
 
   @Test
@@ -745,6 +801,9 @@ public class ClientServerMiscDUnitTest extends JUnit4CacheTestCase {
     clientCacheFactory.addPoolServer("localhost", DistributedTestUtils.getDUnitLocatorPort());
     clientCacheFactory.setPoolSubscriptionEnabled(true);
     getClientCache(clientCacheFactory);
+    Region region = ((ClientCache) cache).createClientRegionFactory(ClientRegionShortcut.PROXY)
+        .create(REGION_NAME1);
+    region.registerInterest(k1);
   }
 
 

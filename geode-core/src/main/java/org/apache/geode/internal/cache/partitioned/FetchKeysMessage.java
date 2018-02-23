@@ -98,6 +98,7 @@ public class FetchKeysMessage extends PartitionMessage {
         (FetchKeysResponse) tmp.createReplyProcessor(r, Collections.singleton(recipient));
     FetchKeysMessage m = new FetchKeysMessage(recipient, r.getPRId(), p, bucketId,
         InterestType.REGULAR_EXPRESSION, ".*", allowTombstones);
+    m.setTransactionDistributed(r.getCache().getTxManager().isDistributed());
 
     Set failures = r.getDistributionManager().putOutgoing(m);
     if (failures != null && failures.size() > 0) {
@@ -127,6 +128,7 @@ public class FetchKeysMessage extends PartitionMessage {
         (FetchKeysResponse) tmp.createReplyProcessor(r, Collections.singleton(recipient));
     FetchKeysMessage m =
         new FetchKeysMessage(recipient, r.getPRId(), p, bucketId, itype, arg, allowTombstones);
+    m.setTransactionDistributed(r.getCache().getTxManager().isDistributed());
     Set failures = r.getDistributionManager().putOutgoing(m);
     if (failures != null && failures.size() > 0) {
       throw new ForceReattemptException(
@@ -550,7 +552,7 @@ public class FetchKeysMessage extends PartitionMessage {
           throw new ForceReattemptException(
               LocalizedStrings.FetchKeysMessage_PEER_REQUESTS_REATTEMPT.toLocalizedString(), t);
         }
-        e.handleAsUnexpected();
+        e.handleCause();
       }
       if (!this.lastChunkReceived) {
         throw new ForceReattemptException(

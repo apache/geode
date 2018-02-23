@@ -19,6 +19,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -31,12 +32,15 @@ import org.apache.logging.log4j.Logger;
 import org.apache.lucene.analysis.Analyzer;
 import org.apache.lucene.analysis.miscellaneous.PerFieldAnalyzerWrapper;
 import org.apache.lucene.analysis.standard.StandardAnalyzer;
+import org.apache.lucene.store.AlreadyClosedException;
 
 import org.apache.geode.cache.Cache;
+import org.apache.geode.cache.CacheClosedException;
 import org.apache.geode.cache.EvictionAlgorithm;
 import org.apache.geode.cache.EvictionAttributes;
 import org.apache.geode.cache.Region;
 import org.apache.geode.cache.RegionAttributes;
+import org.apache.geode.cache.RegionDestroyedException;
 import org.apache.geode.cache.asyncqueue.internal.AsyncEventQueueImpl;
 import org.apache.geode.cache.execute.Execution;
 import org.apache.geode.cache.execute.FunctionService;
@@ -64,9 +68,12 @@ import org.apache.geode.cache.lucene.internal.xml.LuceneServiceXmlGenerator;
 import org.apache.geode.distributed.internal.DistributionConfig;
 import org.apache.geode.internal.DSFIDFactory;
 import org.apache.geode.internal.DataSerializableFixedID;
+import org.apache.geode.internal.cache.BucketNotFoundException;
+import org.apache.geode.internal.cache.BucketRegion;
 import org.apache.geode.internal.cache.CacheService;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.cache.PartitionedRegion;
+import org.apache.geode.internal.cache.PrimaryBucketException;
 import org.apache.geode.internal.cache.RegionListener;
 import org.apache.geode.internal.cache.extension.Extensible;
 import org.apache.geode.internal.cache.xmlcache.XmlGenerator;
@@ -228,14 +235,15 @@ public class LuceneServiceImpl implements InternalLuceneService {
       regionPath = "/" + regionPath;
     }
 
+    // We must always register the index (this is where IndexAlreadyExistsException is detected)
     registerDefinedIndex(indexName, regionPath, new LuceneIndexCreationProfile(indexName,
         regionPath, fields, analyzer, fieldAnalyzers, serializer));
 
+    // If the region does not yet exist, install LuceneRegionListener and return
     PartitionedRegion region = (PartitionedRegion) cache.getRegion(regionPath);
-
-    LuceneRegionListener regionListener = new LuceneRegionListener(this, cache, indexName,
-        regionPath, fields, analyzer, fieldAnalyzers, serializer);
     if (region == null) {
+      LuceneRegionListener regionListener = new LuceneRegionListener(this, cache, indexName,
+          regionPath, fields, analyzer, fieldAnalyzers, serializer);
       cache.addRegionListener(regionListener);
       return;
     }
@@ -245,10 +253,9 @@ public class LuceneServiceImpl implements InternalLuceneService {
       throw new IllegalStateException("The lucene index must be created before region");
     }
 
-
+    // do work normally handled by LuceneRegionListener (if region already exists)
     createIndexOnExistingRegion(region, indexName, regionPath, fields, analyzer, fieldAnalyzers,
         serializer);
-
   }
 
   private void createIndexOnExistingRegion(PartitionedRegion region, String indexName,
@@ -266,6 +273,49 @@ public class LuceneServiceImpl implements InternalLuceneService {
         region.getAttributes(), analyzer, fieldAnalyzers, aeqId, serializer, fields);
 
     afterDataRegionCreated(luceneIndex);
+
+    createLuceneIndexOnDataRegion(region, luceneIndex);
+  }
+
+  protected boolean createLuceneIndexOnDataRegion(final PartitionedRegion userRegion,
+      final LuceneIndexImpl luceneIndex) {
+    try {
+      AbstractPartitionedRepositoryManager repositoryManager =
+          (AbstractPartitionedRepositoryManager) luceneIndex.getRepositoryManager();
+      if (userRegion.getDataStore() == null) {
+        return true;
+      }
+      Set<Integer> primaryBucketIds = userRegion.getDataStore().getAllLocalPrimaryBucketIds();
+      Iterator primaryBucketIterator = primaryBucketIds.iterator();
+      while (primaryBucketIterator.hasNext()) {
+        int primaryBucketId = (Integer) primaryBucketIterator.next();
+        try {
+          BucketRegion userBucket = userRegion.getDataStore().getLocalBucketById(primaryBucketId);
+          if (!userBucket.isEmpty()) {
+            /**
+             *
+             * Calling getRepository will in turn call computeRepository
+             * which is responsible for indexing the user region.
+             *
+             **/
+            repositoryManager.getRepository(primaryBucketId);
+          }
+        } catch (BucketNotFoundException | PrimaryBucketException e) {
+          logger.debug("Bucket ID : " + primaryBucketId
+              + " not found while saving to lucene index: " + e.getMessage(), e);
+        }
+      }
+      return true;
+    } catch (RegionDestroyedException e) {
+      logger.debug("Bucket not found while saving to lucene index: " + e.getMessage(), e);
+      return false;
+    } catch (CacheClosedException e) {
+      logger.debug("Unable to save to lucene index, cache has been closed", e);
+      return false;
+    } catch (AlreadyClosedException e) {
+      logger.debug("Unable to commit, the lucene index is already closed", e);
+      return false;
+    }
   }
 
   static void validateRegionAttributes(RegionAttributes attrs) {

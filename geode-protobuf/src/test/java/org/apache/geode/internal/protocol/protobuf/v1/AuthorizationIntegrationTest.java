@@ -114,20 +114,17 @@ public class AuthorizationIntegrationTest {
     MessageUtil.performAndVerifyHandshake(socket);
 
     ClientProtocol.Message authenticationRequest = ClientProtocol.Message.newBuilder()
-        .setRequest(ClientProtocol.Request.newBuilder()
-            .setAuthenticationRequest(ConnectionAPI.AuthenticationRequest.newBuilder()
-                .putCredentials(ResourceConstants.USER_NAME, TEST_USERNAME)
-                .putCredentials(ResourceConstants.PASSWORD, TEST_PASSWORD)))
+        .setAuthenticationRequest(ConnectionAPI.AuthenticationRequest.newBuilder()
+            .putCredentials(ResourceConstants.USER_NAME, TEST_USERNAME)
+            .putCredentials(ResourceConstants.PASSWORD, TEST_PASSWORD))
         .build();
     authenticationRequest.writeDelimitedTo(outputStream);
 
     ClientProtocol.Message responseMessage = ClientProtocol.Message.parseDelimitedFrom(inputStream);
-    assertEquals(ClientProtocol.Message.RESPONSE_FIELD_NUMBER,
+    assertEquals(ClientProtocol.Message.AUTHENTICATIONRESPONSE_FIELD_NUMBER,
         responseMessage.getMessageTypeCase().getNumber());
-    assertEquals(ClientProtocol.Response.AUTHENTICATIONRESPONSE_FIELD_NUMBER,
-        responseMessage.getResponse().getResponseAPICase().getNumber());
     ConnectionAPI.AuthenticationResponse authenticationResponse =
-        responseMessage.getResponse().getAuthenticationResponse();
+        responseMessage.getAuthenticationResponse();
     assertTrue(authenticationResponse.getAuthenticated());
   }
 
@@ -171,41 +168,40 @@ public class AuthorizationIntegrationTest {
   }
 
   private void verifyOperations(boolean readAllowed, boolean writeAllowed) throws Exception {
-    ClientProtocol.Message getRegionsMessage =
-        ClientProtocol.Message.newBuilder().setRequest(ClientProtocol.Request.newBuilder()
-            .setGetRegionNamesRequest(RegionAPI.GetRegionNamesRequest.newBuilder())).build();
+    ClientProtocol.Message getRegionsMessage = ClientProtocol.Message.newBuilder()
+        .setGetRegionNamesRequest(RegionAPI.GetRegionNamesRequest.newBuilder()).build();
     validateOperationAuthorized(getRegionsMessage, inputStream, outputStream,
-        readAllowed ? ClientProtocol.Response.ResponseAPICase.GETREGIONNAMESRESPONSE
-            : ClientProtocol.Response.ResponseAPICase.ERRORRESPONSE);
+        readAllowed ? ClientProtocol.Message.MessageTypeCase.GETREGIONNAMESRESPONSE
+            : ClientProtocol.Message.MessageTypeCase.ERRORRESPONSE);
 
-    ClientProtocol.Message putMessage = ClientProtocol.Message.newBuilder()
-        .setRequest(ClientProtocol.Request.newBuilder()
+    ClientProtocol.Message putMessage =
+        ClientProtocol.Message.newBuilder()
             .setPutRequest(RegionAPI.PutRequest.newBuilder().setRegionName(TEST_REGION).setEntry(
-                ProtobufUtilities.createEntry(serializationService, "TEST_KEY", "TEST_VALUE"))))
-        .build();
+                ProtobufUtilities.createEntry(serializationService, "TEST_KEY", "TEST_VALUE")))
+            .build();
     validateOperationAuthorized(putMessage, inputStream, outputStream,
-        writeAllowed ? ClientProtocol.Response.ResponseAPICase.PUTRESPONSE
-            : ClientProtocol.Response.ResponseAPICase.ERRORRESPONSE);
+        writeAllowed ? ClientProtocol.Message.MessageTypeCase.PUTRESPONSE
+            : ClientProtocol.Message.MessageTypeCase.ERRORRESPONSE);
 
-    ClientProtocol.Message removeMessage = ClientProtocol.Message.newBuilder()
-        .setRequest(ClientProtocol.Request.newBuilder()
-            .setRemoveRequest(RegionAPI.RemoveRequest.newBuilder().setRegionName(TEST_REGION)
-                .setKey(serializationService.encode("TEST_KEY"))))
-        .build();
+    ClientProtocol.Message removeMessage =
+        ClientProtocol.Message
+            .newBuilder().setRemoveRequest(RegionAPI.RemoveRequest.newBuilder()
+                .setRegionName(TEST_REGION).setKey(serializationService.encode("TEST_KEY")))
+            .build();
     validateOperationAuthorized(removeMessage, inputStream, outputStream,
-        writeAllowed ? ClientProtocol.Response.ResponseAPICase.REMOVERESPONSE
-            : ClientProtocol.Response.ResponseAPICase.ERRORRESPONSE);
+        writeAllowed ? ClientProtocol.Message.MessageTypeCase.REMOVERESPONSE
+            : ClientProtocol.Message.MessageTypeCase.ERRORRESPONSE);
   }
 
   private void validateOperationAuthorized(ClientProtocol.Message message, InputStream inputStream,
-      OutputStream outputStream, ClientProtocol.Response.ResponseAPICase expectedResponseType)
+      OutputStream outputStream, ClientProtocol.Message.MessageTypeCase expectedResponseType)
       throws Exception {
     protobufProtocolSerializer.serialize(message, outputStream);
     ClientProtocol.Message response = protobufProtocolSerializer.deserialize(inputStream);
-    assertEquals(expectedResponseType, response.getResponse().getResponseAPICase());
-    if (expectedResponseType == ClientProtocol.Response.ResponseAPICase.ERRORRESPONSE) {
+    assertEquals(expectedResponseType, response.getMessageTypeCase());
+    if (expectedResponseType == ClientProtocol.Message.MessageTypeCase.ERRORRESPONSE) {
       Assert.assertEquals(BasicTypes.ErrorCode.AUTHORIZATION_FAILED,
-          response.getResponse().getErrorResponse().getError().getErrorCode());
+          response.getErrorResponse().getError().getErrorCode());
     }
   }
 }

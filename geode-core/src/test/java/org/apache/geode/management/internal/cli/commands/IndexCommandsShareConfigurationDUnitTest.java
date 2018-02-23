@@ -39,6 +39,7 @@ import org.apache.geode.cache.DataPolicy;
 import org.apache.geode.cache.Region;
 import org.apache.geode.cache.RegionFactory;
 import org.apache.geode.cache.query.Index;
+import org.apache.geode.distributed.ConfigurationProperties;
 import org.apache.geode.distributed.Locator;
 import org.apache.geode.distributed.internal.ClusterConfigurationService;
 import org.apache.geode.distributed.internal.InternalLocator;
@@ -84,12 +85,14 @@ public class IndexCommandsShareConfigurationDUnitTest {
     locatorProps.setProperty(JMX_MANAGER_PORT, String.valueOf(jmxPort));
     locatorProps.setProperty(HTTP_SERVICE_PORT, String.valueOf(httpPort));
 
-    locator = startupRule.startLocatorVM(0, locatorProps);
+    locator = startupRule.startLocatorVM(0, x -> x.withProperties(locatorProps));
 
     gfsh.connectAndVerify(locator.getJmxPort(), GfshCommandRule.PortType.jmxManager);
 
     Properties props = new Properties();
     props.setProperty(GROUPS, groupName);
+    props.setProperty(ConfigurationProperties.SERIALIZABLE_OBJECT_FILTER,
+        "org.apache.geode.management.internal.cli.domain.Stock");
     serverVM = startupRule.startServerVM(1, props, locator.getPort());
     serverVM.invoke(() -> {
       InternalCache cache = ClusterStartupRule.getCache();
@@ -142,10 +145,7 @@ public class IndexCommandsShareConfigurationDUnitTest {
 
     // Restart the data member cache to make sure that the index is destroyed.
     startupRule.stopVM(1);
-
-    Properties props = new Properties();
-    props.setProperty(GROUPS, groupName);
-    serverVM = startupRule.startServerVM(1, props, locator.getPort());
+    serverVM = startupRule.startServerVM(1, groupName, locator.getPort());
 
     serverVM.invoke(() -> {
       InternalCache restartedCache = ClusterStartupRule.getCache();

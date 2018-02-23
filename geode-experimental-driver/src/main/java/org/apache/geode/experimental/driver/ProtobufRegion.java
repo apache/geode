@@ -61,10 +61,9 @@ public class ProtobufRegion<K, V> implements Region<K, V> {
     this.socket = socket;
   }
 
-  private ClientProtocol.Response readResponse() throws IOException {
+  private ClientProtocol.Message readResponse() throws IOException {
     final InputStream inputStream = socket.getInputStream();
-    ClientProtocol.Response response =
-        ClientProtocol.Message.parseDelimitedFrom(inputStream).getResponse();
+    ClientProtocol.Message response = ClientProtocol.Message.parseDelimitedFrom(inputStream);
     final ClientProtocol.ErrorResponse errorResponse = response.getErrorResponse();
     if (errorResponse != null && errorResponse.hasError()) {
       throw new IOException(errorResponse.getError().getMessage());
@@ -77,9 +76,8 @@ public class ProtobufRegion<K, V> implements Region<K, V> {
   public RegionAttributes getRegionAttributes() throws IOException {
     final OutputStream outputStream = socket.getOutputStream();
     ClientProtocol.Message.newBuilder()
-        .setRequest(ClientProtocol.Request.newBuilder()
-            .setGetRegionRequest(RegionAPI.GetRegionRequest.newBuilder().setRegionName(name)))
-        .build().writeDelimitedTo(outputStream);
+        .setGetRegionRequest(RegionAPI.GetRegionRequest.newBuilder().setRegionName(name)).build()
+        .writeDelimitedTo(outputStream);
 
     return new RegionAttributes(readResponse().getGetRegionResponse().getRegion());
   }
@@ -88,12 +86,11 @@ public class ProtobufRegion<K, V> implements Region<K, V> {
   @Override
   public V get(K key) throws IOException {
     final OutputStream outputStream = socket.getOutputStream();
-    ClientProtocol.Message.newBuilder()
-        .setRequest(ClientProtocol.Request.newBuilder().setGetRequest(RegionAPI.GetRequest
-            .newBuilder().setRegionName(name).setKey(ValueEncoder.encodeValue(key))))
+    ClientProtocol.Message.newBuilder().setGetRequest(
+        RegionAPI.GetRequest.newBuilder().setRegionName(name).setKey(ValueEncoder.encodeValue(key)))
         .build().writeDelimitedTo(outputStream);
 
-    final ClientProtocol.Response response = readResponse();
+    final ClientProtocol.Message response = readResponse();
     return (V) ValueEncoder.decodeValue(response.getGetResponse().getResult());
   }
 
@@ -107,8 +104,7 @@ public class ProtobufRegion<K, V> implements Region<K, V> {
     for (K key : keys) {
       getAllRequest.addKey(ValueEncoder.encodeValue(key));
     }
-    ClientProtocol.Message.newBuilder()
-        .setRequest(ClientProtocol.Request.newBuilder().setGetAllRequest(getAllRequest)).build()
+    ClientProtocol.Message.newBuilder().setGetAllRequest(getAllRequest).build()
         .writeDelimitedTo(outputStream);
 
     final RegionAPI.GetAllResponse getAllResponse = readResponse().getGetAllResponse();
@@ -131,11 +127,9 @@ public class ProtobufRegion<K, V> implements Region<K, V> {
   @Override
   public void put(K key, V value) throws IOException {
     final OutputStream outputStream = socket.getOutputStream();
-    ClientProtocol.Message.newBuilder()
-        .setRequest(ClientProtocol.Request.newBuilder()
-            .setPutRequest(RegionAPI.PutRequest.newBuilder().setRegionName(name)
-                .setEntry(ValueEncoder.encodeEntry(key, value))))
-        .build().writeDelimitedTo(outputStream);
+    ClientProtocol.Message.newBuilder().setPutRequest(RegionAPI.PutRequest.newBuilder()
+        .setRegionName(name).setEntry(ValueEncoder.encodeEntry(key, value))).build()
+        .writeDelimitedTo(outputStream);
 
     readResponse();
   }
@@ -148,8 +142,7 @@ public class ProtobufRegion<K, V> implements Region<K, V> {
     for (K key : values.keySet()) {
       putAllRequest.addEntry(ValueEncoder.encodeEntry(key, values.get(key)));
     }
-    ClientProtocol.Message.newBuilder()
-        .setRequest(ClientProtocol.Request.newBuilder().setPutAllRequest(putAllRequest)).build()
+    ClientProtocol.Message.newBuilder().setPutAllRequest(putAllRequest).build()
         .writeDelimitedTo(outputStream);
 
     final RegionAPI.PutAllResponse putAllResponse = readResponse().getPutAllResponse();
@@ -167,10 +160,9 @@ public class ProtobufRegion<K, V> implements Region<K, V> {
   @Override
   public void remove(K key) throws IOException {
     final OutputStream outputStream = socket.getOutputStream();
-    ClientProtocol.Message.newBuilder()
-        .setRequest(ClientProtocol.Request.newBuilder().setRemoveRequest(RegionAPI.RemoveRequest
-            .newBuilder().setRegionName(name).setKey(ValueEncoder.encodeValue(key))))
-        .build().writeDelimitedTo(outputStream);
+    ClientProtocol.Message.newBuilder().setRemoveRequest(RegionAPI.RemoveRequest.newBuilder()
+        .setRegionName(name).setKey(ValueEncoder.encodeValue(key))).build()
+        .writeDelimitedTo(outputStream);
 
     readResponse();
   }

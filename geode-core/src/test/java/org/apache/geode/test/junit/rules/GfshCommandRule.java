@@ -67,7 +67,8 @@ import org.apache.geode.test.junit.assertions.CommandResultAssert;
  * </pre>
  *
  * When using as a ClassRule, if you call connect in a test, you will need to call disconnect after
- * the test as well. See NetstatDUnitTest for example.
+ * the test as well. See {@link org.apache.geode.management.internal.cli.NetstatDUnitTest} for
+ * example.
  */
 public class GfshCommandRule extends DescribedExternalResource {
 
@@ -165,9 +166,9 @@ public class GfshCommandRule extends DescribedExternalResource {
       // port is the locator port
       endpoint = "localhost[" + port + "]";
       connectCommand.addOption(CliStrings.CONNECT__LOCATOR, endpoint);
-    } else if (type == PortType.http) {
-      endpoint = "http://localhost:" + port + "/geode-mgmt/v1";
-      connectCommand.addOption(CliStrings.CONNECT__USE_HTTP, Boolean.TRUE.toString());
+    } else if (type == PortType.http || type == PortType.https) {
+      endpoint = type.name() + "://localhost:" + port + "/geode-mgmt/v1";
+      // connectCommand.addOption(CliStrings.CONNECT__USE_HTTP, Boolean.TRUE.toString());
       connectCommand.addOption(CliStrings.CONNECT__URL, endpoint);
     } else {
       endpoint = "localhost[" + port + "]";
@@ -274,7 +275,7 @@ public class GfshCommandRule extends DescribedExternalResource {
   }
 
   public enum PortType {
-    locator, jmxManager, http
+    locator, jmxManager, http, https
   }
 
   public CommandResult getCommandResult() {

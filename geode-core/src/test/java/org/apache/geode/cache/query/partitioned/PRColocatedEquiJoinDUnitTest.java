@@ -17,8 +17,11 @@
  */
 package org.apache.geode.cache.query.partitioned;
 
-import static org.apache.geode.cache.query.Utils.*;
-import static org.junit.Assert.*;
+import static org.apache.geode.cache.query.Utils.createNewPortfoliosAndPositions;
+import static org.apache.geode.cache.query.Utils.createPortfoliosAndPositions;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 
 import java.io.DataInput;
 import java.io.DataOutput;
@@ -36,7 +39,6 @@ import org.apache.geode.cache.AttributesFactory;
 import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.CacheClosedException;
 import org.apache.geode.cache.CacheException;
-import org.apache.geode.cache.CacheFactory;
 import org.apache.geode.cache.PartitionAttributes;
 import org.apache.geode.cache.PartitionAttributesFactory;
 import org.apache.geode.cache.Region;
@@ -54,7 +56,6 @@ import org.apache.geode.cache.query.QueryService;
 import org.apache.geode.cache.query.RegionNotFoundException;
 import org.apache.geode.cache.query.SelectResults;
 import org.apache.geode.cache.query.data.Portfolio;
-import org.apache.geode.cache.query.partitioned.PRQueryDUnitHelper.TestQueryFunction;
 import org.apache.geode.cache30.CacheSerializableRunnable;
 import org.apache.geode.distributed.ConfigurationProperties;
 import org.apache.geode.distributed.internal.ReplyException;
@@ -67,8 +68,6 @@ import org.apache.geode.test.dunit.IgnoredException;
 import org.apache.geode.test.dunit.LogWriterUtils;
 import org.apache.geode.test.dunit.VM;
 import org.apache.geode.test.dunit.Wait;
-import org.apache.geode.test.dunit.cache.internal.JUnit4CacheTestCase;
-import org.apache.geode.test.dunit.internal.JUnit4DistributedTestCase;
 import org.apache.geode.test.junit.categories.DistributedTest;
 import org.apache.geode.test.junit.categories.FlakyTest;
 
@@ -1575,7 +1574,7 @@ public class PRColocatedEquiJoinDUnitTest extends PartitionedRegionDUnitTestCase
 
     @Override
     public void execute(FunctionContext context) {
-      Cache cache = CacheFactory.getAnyInstance();
+      Cache cache = context.getCache();
       QueryService queryService = cache.getQueryService();
       ArrayList allQueryResults = new ArrayList();
       String qstr = (String) context.getArguments();

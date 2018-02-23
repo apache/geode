@@ -15,6 +15,7 @@
 package org.apache.geode.internal.protocol.protobuf.v1.serialization;
 
 import org.apache.geode.annotations.Experimental;
+import org.apache.geode.internal.protocol.protobuf.v1.serialization.exception.DecodingException;
 import org.apache.geode.internal.protocol.protobuf.v1.serialization.exception.EncodingException;
 
 /**
@@ -25,7 +26,7 @@ import org.apache.geode.internal.protocol.protobuf.v1.serialization.exception.En
  */
 @Experimental
 public interface SerializationService<T> {
-  Object decode(T encodedValue) throws EncodingException;
+  Object decode(T encodedValue) throws DecodingException;
 
   T encode(Object value) throws EncodingException;
 }

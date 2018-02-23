@@ -72,10 +72,8 @@ public class ProtobufStreamProcessor {
     ClientStatistics statistics = executionContext.getStatistics();
     statistics.messageReceived(message.getSerializedSize());
 
-    ClientProtocol.Request request = message.getRequest();
-    ClientProtocol.Response response = protobufOpsProcessor.process(request, executionContext);
-    ClientProtocol.Message responseMessage = ProtobufUtilities.createProtobufResponse(response);
-    statistics.messageSent(responseMessage.getSerializedSize());
-    protobufProtocolSerializer.serialize(responseMessage, outputStream);
+    ClientProtocol.Message response = protobufOpsProcessor.process(message, executionContext);
+    statistics.messageSent(response.getSerializedSize());
+    protobufProtocolSerializer.serialize(response, outputStream);
   }
 }

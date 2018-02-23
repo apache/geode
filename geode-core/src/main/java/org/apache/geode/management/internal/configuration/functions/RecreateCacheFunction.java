@@ -14,21 +14,15 @@
  */
 package org.apache.geode.management.internal.configuration.functions;
 
-import java.util.Collection;
-import java.util.Collections;
-
-import org.apache.geode.cache.execute.Function;
 import org.apache.geode.cache.execute.FunctionContext;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
-import org.apache.geode.internal.InternalEntity;
 import org.apache.geode.internal.cache.CacheConfig;
 import org.apache.geode.internal.cache.GemFireCacheImpl;
 import org.apache.geode.internal.cache.InternalCache;
+import org.apache.geode.internal.cache.execute.InternalFunction;
 import org.apache.geode.management.internal.cli.functions.CliFunctionResult;
-import org.apache.geode.management.internal.security.ResourcePermissions;
-import org.apache.geode.security.ResourcePermission;
 
-public class RecreateCacheFunction implements Function, InternalEntity {
+public class RecreateCacheFunction implements InternalFunction {
   @Override
   public void execute(FunctionContext context) {
     CliFunctionResult result = null;
@@ -45,11 +39,6 @@ public class RecreateCacheFunction implements Function, InternalEntity {
     }
     result = new CliFunctionResult(ds.getName(), true, "Cache successfully re-created.");
     context.getResultSender().lastResult(result);
-  }
-
-  @Override
-  public Collection<ResourcePermission> getRequiredPermissions(String regionName) {
-    return Collections.singleton(ResourcePermissions.CLUSTER_MANAGE);
   }
 
   @Override

@@ -22,6 +22,8 @@
 syntax = "proto3";
 package org.apache.geode.internal.protocol.protobuf.v1;
 
+import "google/protobuf/struct.proto";
+
 message Entry {
     EncodedValue key = 1;
     EncodedValue value = 2;
@@ -40,6 +42,8 @@ message EncodedValue {
         string stringResult = 9;
 
         string jsonObjectResult = 10;
+
+        google.protobuf.NullValue nullResult = 11;
     }
 }
 

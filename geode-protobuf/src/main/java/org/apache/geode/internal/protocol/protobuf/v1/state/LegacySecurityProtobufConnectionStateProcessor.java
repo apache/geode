@@ -14,8 +14,8 @@
  */
 package org.apache.geode.internal.protocol.protobuf.v1.state;
 
+import org.apache.geode.internal.protocol.protobuf.v1.BasicTypes;
 import org.apache.geode.internal.protocol.protobuf.v1.MessageExecutionContext;
-import org.apache.geode.internal.protocol.protobuf.v1.ProtobufErrorCode;
 import org.apache.geode.internal.protocol.protobuf.v1.ProtobufOperationContext;
 import org.apache.geode.internal.protocol.protobuf.v1.state.exception.ConnectionStateException;
 
@@ -24,14 +24,14 @@ public class LegacySecurityProtobufConnectionStateProcessor
   @Override
   public void validateOperation(MessageExecutionContext messageContext,
       ProtobufOperationContext operationContext) throws ConnectionStateException {
-    throw new ConnectionStateException(ProtobufErrorCode.AUTHENTICATION_FAILED,
+    throw new ConnectionStateException(BasicTypes.ErrorCode.AUTHENTICATION_FAILED,
         "Attempting to authenticate incoming protobuf message using legacy security implementation. This is not supported. Failing authentication.");
   }
 
   @Override
   public ProtobufConnectionAuthenticatingStateProcessor allowAuthentication()
       throws ConnectionStateException {
-    throw new ConnectionStateException(ProtobufErrorCode.AUTHENTICATION_FAILED,
+    throw new ConnectionStateException(BasicTypes.ErrorCode.AUTHENTICATION_FAILED,
         "Attempting to authenticate incoming protobuf message using legacy security implementation. This is not supported. Failing authentication.");
   }
 }

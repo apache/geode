@@ -643,6 +643,12 @@ public class CacheCreation implements InternalCache {
     }
   }
 
+  void removeCacheServers(List<CacheServer> declarativeCacheServers, Cache cache,
+      Integer serverPort, String serverBindAdd, Boolean disableDefaultServer) {
+
+    throw new UnsupportedOperationException(LocalizedStrings.SHOULDNT_INVOKE.toLocalizedString());
+  }
+
   /**
    * Returns a description of the disk store used by the pdx registry.
    */
@@ -1030,6 +1036,11 @@ public class CacheCreation implements InternalCache {
   }
 
   @Override
+  public boolean removeCacheServer(final CacheServer cacheServer) {
+    throw new UnsupportedOperationException(LocalizedStrings.SHOULDNT_INVOKE.toLocalizedString());
+  }
+
+  @Override
   public void setReadSerializedForCurrentThread(final boolean value) {
     throw new UnsupportedOperationException(LocalizedStrings.SHOULDNT_INVOKE.toLocalizedString());
   }
@@ -1217,6 +1228,10 @@ public class CacheCreation implements InternalCache {
 
   public void addGatewayReceiver(GatewayReceiver receiver) {
     this.gatewayReceivers.add(receiver);
+  }
+
+  public void removeGatewayReceiver(GatewayReceiver receiver) {
+    throw new UnsupportedOperationException(LocalizedStrings.SHOULDNT_INVOKE.toLocalizedString());
   }
 
   public void addAsyncEventQueue(AsyncEventQueue asyncEventQueue) {
@@ -1473,7 +1488,7 @@ public class CacheCreation implements InternalCache {
 
   @Override
   public InternalDistributedSystem getInternalDistributedSystem() {
-    return InternalDistributedSystem.getAnyInstance();
+    throw new UnsupportedOperationException(LocalizedStrings.SHOULDNT_INVOKE.toLocalizedString());
   }
 
   @Override
@@ -2248,6 +2263,11 @@ public class CacheCreation implements InternalCache {
   public void invokeRegionEntrySynchronizationListenersAfterSynchronization(
       InternalDistributedMember sender, InternalRegion region,
       List<InitialImageOperation.Entry> entriesToSynchronize) {
+    throw new UnsupportedOperationException(LocalizedStrings.SHOULDNT_INVOKE.toLocalizedString());
+  }
+
+  @Override
+  public Object convertPdxInstanceIfNeeded(Object obj) {
     throw new UnsupportedOperationException(LocalizedStrings.SHOULDNT_INVOKE.toLocalizedString());
   }
 }

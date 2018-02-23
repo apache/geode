@@ -1586,8 +1586,6 @@ public class Oplog implements CompactableOplog, Flushable {
         if (logger.isDebugEnabled()) {
           logger.debug("Oplog::readOplog:Error in recovery as Region was destroyed", e);
         }
-      } catch (IllegalStateException e) {
-        throw e;
       }
       // Add the Oplog size to the Directory Holder which owns this oplog,
       // so that available space is correctly calculated & stats updated.
@@ -1989,8 +1987,6 @@ public class Oplog implements CompactableOplog, Flushable {
       if (logger.isDebugEnabled()) {
         logger.debug("Oplog::readOplog:Error in recovery as Region was destroyed", e);
       }
-    } catch (IllegalStateException e) {
-      throw e;
     }
 
     // Add the Oplog size to the Directory Holder which owns this oplog,

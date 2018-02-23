@@ -14,8 +14,6 @@
  */
 package org.apache.geode.management.internal.cli.functions;
 
-import java.util.Collection;
-import java.util.Collections;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -23,14 +21,11 @@ import java.util.concurrent.Future;
 
 import org.apache.logging.log4j.Logger;
 
-import org.apache.geode.cache.execute.Function;
 import org.apache.geode.cache.execute.FunctionContext;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
-import org.apache.geode.internal.InternalEntity;
+import org.apache.geode.internal.cache.execute.InternalFunction;
 import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.internal.tcp.ConnectionTable;
-import org.apache.geode.management.internal.security.ResourcePermissions;
-import org.apache.geode.security.ResourcePermission;
 
 /**
  *
@@ -39,7 +34,7 @@ import org.apache.geode.security.ResourcePermission;
  *
  *
  */
-public class ShutDownFunction implements Function, InternalEntity {
+public class ShutDownFunction implements InternalFunction {
   private static final Logger logger = LogService.getLogger();
 
   public static final String ID = ShutDownFunction.class.getName();
@@ -94,11 +89,6 @@ public class ShutDownFunction implements Function, InternalEntity {
   public String getId() {
     return ShutDownFunction.ID;
 
-  }
-
-  @Override
-  public Collection<ResourcePermission> getRequiredPermissions(String regionName) {
-    return Collections.singleton(ResourcePermissions.CLUSTER_MANAGE);
   }
 
   @Override

@@ -36,6 +36,7 @@ import org.apache.geode.internal.protocol.protobuf.v1.ProtobufSerializationServi
 import org.apache.geode.internal.protocol.protobuf.v1.RegionAPI;
 import org.apache.geode.internal.protocol.protobuf.v1.Result;
 import org.apache.geode.internal.protocol.protobuf.v1.Success;
+import org.apache.geode.internal.protocol.protobuf.v1.serialization.exception.DecodingException;
 import org.apache.geode.internal.protocol.protobuf.v1.serialization.exception.EncodingException;
 import org.apache.geode.internal.protocol.protobuf.v1.utilities.ProtobufRequestUtilities;
 import org.apache.geode.internal.protocol.protobuf.v1.utilities.ProtobufUtilities;
@@ -68,10 +69,10 @@ public class PutRequestOperationHandlerJUnitTest extends OperationHandlerJUnitTe
     verify(regionMock, times(1)).put(anyString(), anyString());
   }
 
-  @Test
-  public void test_invalidEncodingType() throws Exception {
+  @Test(expected = DecodingException.class)
+  public void processThrowsExceptionWhenUnableToDecode() throws Exception {
     String exceptionText = "unsupported type!";
-    EncodingException exception = new EncodingException(exceptionText);
+    Exception exception = new DecodingException(exceptionText);
     ProtobufSerializationService serializationServiceStub =
         mock(ProtobufSerializationService.class);
     when(serializationServiceStub.decode(any())).thenThrow(exception);
@@ -85,13 +86,8 @@ public class PutRequestOperationHandlerJUnitTest extends OperationHandlerJUnitTe
     BasicTypes.Entry testEntry = ProtobufUtilities.createEntry(encodedKey, testValue);
     RegionAPI.PutRequest putRequest =
         ProtobufRequestUtilities.createPutRequest(TEST_REGION, testEntry).getPutRequest();
-    Result result = operationHandler.process(serializationServiceStub, putRequest,
+    operationHandler.process(serializationServiceStub, putRequest,
         TestExecutionContext.getNoAuthCacheExecutionContext(cacheStub));
-
-    assertTrue(result instanceof Failure);
-    ClientProtocol.ErrorResponse errorMessage =
-        (ClientProtocol.ErrorResponse) result.getErrorMessage();
-    assertEquals(BasicTypes.ErrorCode.INVALID_REQUEST, errorMessage.getError().getErrorCode());
   }
 
   @Test

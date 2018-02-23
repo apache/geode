@@ -536,7 +536,7 @@ public class TXCommitMessage extends PooledDistributionMessage
     }
 
     if (this.processorId != 0) {
-      TXLockService.createDTLS(); // fix bug 38843; no-op if already created
+      TXLockService.createDTLS(this.dm.getSystem()); // fix bug 38843; no-op if already created
       synchronized (this) {
         // Handle potential origin departure
         this.dm.addMembershipListener(this);
@@ -549,7 +549,7 @@ public class TXCommitMessage extends PooledDistributionMessage
         txTracker.add(this);
       }
       if (!this.dm.getDistributionManagerIds().contains(getSender())) {
-        memberDeparted(getSender(), false /* don't care */);
+        memberDeparted(this.dm, getSender(), false /* don't care */);
       }
 
     } else {
@@ -1928,17 +1928,22 @@ public class TXCommitMessage extends PooledDistributionMessage
   }
 
   /********************* MembershipListener Implementation ***************************************/
-  public void memberJoined(InternalDistributedMember id) {
+  @Override
+  public void memberJoined(DistributionManager distributionManager, InternalDistributedMember id) {
     // do nothing
   }
 
-  public void memberSuspect(InternalDistributedMember id, InternalDistributedMember whoSuspected,
-      String reason) {}
+  @Override
+  public void memberSuspect(DistributionManager distributionManager, InternalDistributedMember id,
+      InternalDistributedMember whoSuspected, String reason) {}
 
-  public void quorumLost(Set<InternalDistributedMember> failures,
-      List<InternalDistributedMember> remaining) {}
+  @Override
+  public void quorumLost(DistributionManager distributionManager,
+      Set<InternalDistributedMember> failures, List<InternalDistributedMember> remaining) {}
 
-  public void memberDeparted(final InternalDistributedMember id, boolean crashed) {
+  @Override
+  public void memberDeparted(DistributionManager distributionManager,
+      final InternalDistributedMember id, boolean crashed) {
     if (!getSender().equals(id)) {
       return;
     }
@@ -1995,7 +2000,7 @@ public class TXCommitMessage extends PooledDistributionMessage
           try {
             replProc.waitForRepliesUninterruptibly();
           } catch (ReplyException e) {
-            e.handleAsUnexpected();
+            e.handleCause();
           }
           if (replProc.receivedACommitProcessMessage()) {
             if (logger.isDebugEnabled()) {
@@ -2078,7 +2083,8 @@ public class TXCommitMessage extends PooledDistributionMessage
    */
   private void updateLockMembers() {
     if (this.lockNeedsUpdate && this.lockId != null) {
-      TXLockService.createDTLS().updateParticipants(this.lockId, this.msgMap.keySet());
+      TXLockService.createDTLS(this.dm.getSystem()).updateParticipants(this.lockId,
+          this.msgMap.keySet());
     }
   }
 

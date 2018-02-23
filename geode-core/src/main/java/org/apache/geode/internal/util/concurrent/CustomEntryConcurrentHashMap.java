@@ -53,12 +53,11 @@ import java.util.Iterator;
 import java.util.Map;
 import java.util.NoSuchElementException;
 import java.util.Set;
-import java.util.concurrent.ConcurrentMap;
+import java.util.concurrent.Executor;
 import java.util.concurrent.RejectedExecutionException;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 
 import org.apache.geode.CancelException;
-import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.internal.cache.RegionEntry;
 import org.apache.geode.internal.cache.entries.OffHeapRegionEntry;
 import org.apache.geode.internal.cache.wan.GatewaySenderEventImpl;
@@ -1784,11 +1783,9 @@ public class CustomEntryConcurrentHashMap<K, V> extends AbstractMap<K, V>
     return segmentFor(hash).replace(key, hash, value);
   }
 
-  /**
-   * Removes all of the mappings from this map.
-   */
+  // GemStone addition
   @Override
-  public void clear() {
+  public void clearWithExecutor(Executor executor) {
     ArrayList<HashEntry<?, ?>> entries = null;
     try {
       for (int i = 0; i < this.segments.length; ++i) {
@@ -1809,10 +1806,9 @@ public class CustomEntryConcurrentHashMap<K, V> extends AbstractMap<K, V>
           }
         };
         boolean submitted = false;
-        InternalDistributedSystem ids = InternalDistributedSystem.getConnectedInstance();
-        if (ids != null) {
+        if (executor != null) {
           try {
-            ids.getDistributionManager().getWaitingThreadPool().execute(runnable);
+            executor.execute(runnable);
             submitted = true;
           } catch (RejectedExecutionException e) {
             // fall through with submitted false
@@ -1831,6 +1827,15 @@ public class CustomEntryConcurrentHashMap<K, V> extends AbstractMap<K, V>
       }
     }
   }
+
+  /**
+   * Removes all of the mappings from this map.
+   */
+  @Override
+  public void clear() {
+    clearWithExecutor(null);
+  }
+  // End GemStone addition
 
   /**
    * Returns a {@link Set} view of the keys contained in this map. The set is backed by the map, so

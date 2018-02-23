@@ -20,10 +20,11 @@ import org.apache.geode.annotations.Experimental;
 import org.apache.geode.internal.exception.InvalidExecutionContextException;
 import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.internal.protocol.protobuf.v1.registry.ProtobufOperationContextRegistry;
+import org.apache.geode.internal.protocol.protobuf.v1.serialization.exception.DecodingException;
+import org.apache.geode.internal.protocol.protobuf.v1.serialization.exception.EncodingException;
 import org.apache.geode.internal.protocol.protobuf.v1.state.ProtobufConnectionTerminatingStateProcessor;
 import org.apache.geode.internal.protocol.protobuf.v1.state.exception.ConnectionStateException;
 import org.apache.geode.internal.protocol.protobuf.v1.state.exception.OperationNotAuthorizedException;
-import org.apache.geode.internal.protocol.protobuf.v1.utilities.ProtobufResponseUtilities;
 
 /**
  * This handles protobuf requests by determining the operation type of the request and dispatching
@@ -42,9 +43,9 @@ public class ProtobufOpsProcessor {
     this.protobufOperationContextRegistry = protobufOperationContextRegistry;
   }
 
-  public ClientProtocol.Response process(ClientProtocol.Request request,
+  public ClientProtocol.Message process(ClientProtocol.Message request,
       MessageExecutionContext messageExecutionContext) {
-    ClientProtocol.Request.RequestAPICase requestType = request.getRequestAPICase();
+    ClientProtocol.Message.MessageTypeCase requestType = request.getMessageTypeCase();
     logger.debug("Processing request of type {}", requestType);
     ProtobufOperationContext operationContext =
         protobufOperationContextRegistry.getOperationContext(requestType);
@@ -57,28 +58,31 @@ public class ProtobufOpsProcessor {
     } catch (OperationNotAuthorizedException e) {
       // Don't move to a terminating state for authorization state failures
       logger.warn(e.getMessage());
-      result = Failure.of(ProtobufResponseUtilities.makeErrorResponse(e));
+      result = Failure.of(e);
+    } catch (EncodingException | DecodingException e) {
+      logger.warn(e.getMessage());
+      result = Failure.of(e);
     } catch (ConnectionStateException e) {
       logger.warn(e.getMessage());
       messageExecutionContext
           .setConnectionStateProcessor(new ProtobufConnectionTerminatingStateProcessor());
-      result = Failure.of(ProtobufResponseUtilities.makeErrorResponse(e));
+      result = Failure.of(e);
     }
 
-    return ((ClientProtocol.Response.Builder) result.map(operationContext.getToResponse(),
+    return ((ClientProtocol.Message.Builder) result.map(operationContext.getToResponse(),
         operationContext.getToErrorResponse())).build();
   }
 
-  private Result processOperation(ClientProtocol.Request request, MessageExecutionContext context,
-      ClientProtocol.Request.RequestAPICase requestType, ProtobufOperationContext operationContext)
-      throws ConnectionStateException {
+  private Result processOperation(ClientProtocol.Message request, MessageExecutionContext context,
+      ClientProtocol.Message.MessageTypeCase requestType, ProtobufOperationContext operationContext)
+      throws ConnectionStateException, EncodingException, DecodingException {
     try {
       return operationContext.getOperationHandler().process(serializationService,
           operationContext.getFromRequest().apply(request), context);
     } catch (InvalidExecutionContextException exception) {
       logger.error("Invalid execution context found for operation {}", requestType);
-      return Failure.of(ProtobufResponseUtilities.makeErrorResponse(
-          ProtobufErrorCode.INVALID_REQUEST, "Invalid execution context found for operation."));
+      return Failure.of(BasicTypes.ErrorCode.INVALID_REQUEST,
+          "Invalid execution context found for operation.");
     }
   }
 }

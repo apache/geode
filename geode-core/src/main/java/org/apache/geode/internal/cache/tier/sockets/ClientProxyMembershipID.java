@@ -59,7 +59,7 @@ public class ClientProxyMembershipID
   public static volatile DistributedSystem system = null;
 
   /**
-   * the membershpi id of the distributed system in this client (if running in a client)
+   * the membership id of the distributed system in this client (if running in a client)
    */
   public static DistributedMember systemMemberId;
 
@@ -70,7 +70,6 @@ public class ClientProxyMembershipID
   private static final int durable_synch_counter = 1;
   private static int synch_counter = 0;
 
-  // private byte[] proxyID ;
   protected byte[] identity;
 
   /** cached membership identifier */
@@ -80,9 +79,6 @@ public class ClientProxyMembershipID
   private transient String memberIdString;
 
   protected int uniqueId;
-
-  // private final String proxyIDStr;
-  // private final String clientIdStr ;
 
   @Override
   public int hashCode() {

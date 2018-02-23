@@ -80,6 +80,7 @@ public class RemoveBucketMessage extends PartitionMessage {
     RemoveBucketResponse response = new RemoveBucketResponse(region.getSystem(), recipient, region);
     RemoveBucketMessage msg = new RemoveBucketMessage(recipient, region.getPRId(), response,
         bucketId, forceRemovePrimary);
+    msg.setTransactionDistributed(region.getCache().getTxManager().isDistributed());
 
     Set<InternalDistributedMember> failures = region.getDistributionManager().putOutgoing(msg);
     if (failures != null && failures.size() > 0) {
@@ -278,7 +279,7 @@ public class RemoveBucketMessage extends PartitionMessage {
           logger.debug(msg, t);
           return true;
         }
-        e.handleAsUnexpected();
+        e.handleCause();
       }
       return this.removed;
     }

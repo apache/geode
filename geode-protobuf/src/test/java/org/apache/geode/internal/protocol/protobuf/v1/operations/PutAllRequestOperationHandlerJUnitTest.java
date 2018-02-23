@@ -31,10 +31,13 @@ import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
 import org.apache.geode.cache.Region;
+import org.apache.geode.internal.protocol.TestExecutionContext;
 import org.apache.geode.internal.protocol.protobuf.v1.BasicTypes;
+import org.apache.geode.internal.protocol.protobuf.v1.ProtobufSerializationService;
 import org.apache.geode.internal.protocol.protobuf.v1.RegionAPI;
 import org.apache.geode.internal.protocol.protobuf.v1.Result;
 import org.apache.geode.internal.protocol.protobuf.v1.Success;
+import org.apache.geode.internal.protocol.protobuf.v1.serialization.exception.DecodingException;
 import org.apache.geode.internal.protocol.protobuf.v1.serialization.exception.EncodingException;
 import org.apache.geode.internal.protocol.protobuf.v1.utilities.ProtobufRequestUtilities;
 import org.apache.geode.internal.protocol.protobuf.v1.utilities.ProtobufUtilities;
@@ -62,12 +65,49 @@ public class PutAllRequestOperationHandlerJUnitTest extends OperationHandlerJUni
         .thenThrow(new ClassCastException(EXCEPTION_TEXT));
 
     when(cacheStub.getRegion(TEST_REGION)).thenReturn(regionMock);
+
+    operationHandler = new PutAllRequestOperationHandler();
   }
 
   @Test
-  public void processInsertsMultipleValidEntriesInCache() throws Exception {
-    PutAllRequestOperationHandler operationHandler = new PutAllRequestOperationHandler();
+  public void processReturnsErrorUnableToDecodeRequest() throws Exception {
+    Exception exception = new DecodingException("error finding codec for type");
+    ProtobufSerializationService serializationServiceStub =
+        mock(ProtobufSerializationService.class);
+    when(serializationServiceStub.decode(any())).thenReturn(TEST_KEY1, TEST_VALUE1)
+        .thenThrow(exception);
+    when(serializationServiceStub.encode(any()))
+        .thenReturn(BasicTypes.EncodedValue.newBuilder().setStringResult("some string").build());
 
+    BasicTypes.EncodedValue encodedObject1 =
+        BasicTypes.EncodedValue.newBuilder().setStringResult(TEST_KEY1).build();
+    BasicTypes.EncodedValue encodedObject2 =
+        BasicTypes.EncodedValue.newBuilder().setStringResult(TEST_KEY2).build();
+
+    Set<BasicTypes.Entry> entries = new HashSet<>();
+    entries.add(ProtobufUtilities.createEntry(encodedObject1, encodedObject1));
+    entries.add(ProtobufUtilities.createEntry(encodedObject2, encodedObject2));
+
+    RegionAPI.PutAllRequest putAllRequest =
+        ProtobufRequestUtilities.createPutAllRequest(TEST_REGION, entries).getPutAllRequest();
+
+    Result response = operationHandler.process(serializationServiceStub, putAllRequest,
+        TestExecutionContext.getNoAuthCacheExecutionContext(cacheStub));
+
+    assertTrue("response was " + response, response instanceof Success);
+
+    RegionAPI.PutAllResponse message = (RegionAPI.PutAllResponse) response.getMessage();
+    assertEquals(1, message.getFailedKeysCount());
+
+    BasicTypes.KeyedError error = message.getFailedKeys(0);
+    assertEquals(BasicTypes.ErrorCode.INVALID_REQUEST, error.getError().getErrorCode());
+    assertTrue(error.getError().getMessage().contains("Encoding not supported"));
+  }
+
+
+
+  @Test
+  public void processInsertsMultipleValidEntriesInCache() throws Exception {
     Result result = operationHandler.process(serializationService, generateTestRequest(false, true),
         getNoAuthCacheExecutionContext(cacheStub));
 
@@ -80,8 +120,6 @@ public class PutAllRequestOperationHandlerJUnitTest extends OperationHandlerJUni
 
   @Test
   public void processWithInvalidEntrySucceedsAndReturnsFailedKey() throws Exception {
-    PutAllRequestOperationHandler operationHandler = new PutAllRequestOperationHandler();
-
     Result result = operationHandler.process(serializationService, generateTestRequest(true, true),
         getNoAuthCacheExecutionContext(cacheStub));
 
@@ -98,8 +136,6 @@ public class PutAllRequestOperationHandlerJUnitTest extends OperationHandlerJUni
 
   @Test
   public void processWithNoEntriesPasses() throws Exception {
-    PutAllRequestOperationHandler operationHandler = new PutAllRequestOperationHandler();
-
     Result result = operationHandler.process(serializationService,
         generateTestRequest(false, false), getNoAuthCacheExecutionContext(cacheStub));
 

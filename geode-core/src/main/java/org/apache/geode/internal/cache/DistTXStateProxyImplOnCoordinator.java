@@ -97,7 +97,6 @@ public class DistTXStateProxyImplOnCoordinator extends DistTXStateProxyImpl {
           logger.debug("DistTXStateProxyImplOnCoordinator.commit Commit "
               + (phase2commitDone ? "Done" : "Failed"));
         }
-        // [DISTTX] TODO Handle this exception well
         if (!phase2commitDone) {
           throw new TransactionInDoubtException(
               LocalizedStrings.ClientTXStateStub_COMMIT_FAILED_ON_SERVER.toLocalizedString());
@@ -108,14 +107,11 @@ public class DistTXStateProxyImplOnCoordinator extends DistTXStateProxyImpl {
               "DistTXStateProxyImplOnCoordinator.commit precommitResult = " + precommitResult);
         }
       }
-    } catch (CommitConflictException e) {
-      throw e;
     } catch (UnsupportedOperationInTransactionException e) {
       // fix for #42490
       preserveTx = true;
       throw e;
     } finally {
-      // [DISTTX] TODO What about rollback exceptions?
       if (!precommitResult) {
         rollback();
       }

@@ -64,7 +64,7 @@ public class NonGrantorDestroyedProcessor extends ReplyProcessor21 {
     try {
       processor.waitForRepliesUninterruptibly();
     } catch (ReplyException e) {
-      e.handleAsUnexpected();
+      e.handleCause();
     }
     return processor.informedGrantor();
   }

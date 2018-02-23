@@ -47,6 +47,7 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Objects;
 import java.util.Properties;
 import java.util.ServiceLoader;
 import java.util.Set;
@@ -280,6 +281,11 @@ public class GemFireCacheImpl implements InternalCache, InternalClientCache, Has
       Boolean.getBoolean(DistributionConfig.GEMFIRE_PREFIX + "Cache.ASYNC_EVENT_LISTENERS");
 
   /**
+   * Name of the default pool.
+   */
+  public static final String DEFAULT_POOL_NAME = "DEFAULT";
+
+  /**
    * If true then when a delta is applied the size of the entry value will be recalculated. If false
    * (the default) then the size of the entry value is unchanged by a delta application. Not a final
    * so that tests can change this value.
@@ -301,7 +307,7 @@ public class GemFireCacheImpl implements InternalCache, InternalClientCache, Has
    * System property to limit the max query-execution time. By default its turned off (-1), the time
    * is set in milliseconds.
    */
-  public static final int MAX_QUERY_EXECUTION_TIME =
+  public static int MAX_QUERY_EXECUTION_TIME =
       Integer.getInteger(DistributionConfig.GEMFIRE_PREFIX + "Cache.MAX_QUERY_EXECUTION_TIME", -1);
 
   /**
@@ -321,9 +327,6 @@ public class GemFireCacheImpl implements InternalCache, InternalClientCache, Has
   private static final Pattern DOUBLE_BACKSLASH = Pattern.compile("\\\\");
 
   private volatile ConfigurationResponse configurationResponse;
-
-  /** To test MAX_QUERY_EXECUTION_TIME option. */
-  public int testMaxQueryExecutionTime = -1;
 
   private final InternalDistributedSystem system;
 
@@ -1146,12 +1149,11 @@ public class GemFireCacheImpl implements InternalCache, InternalClientCache, Has
    * May return null (even on a client).
    */
   @Override
-  public Pool getDefaultPool() {
+  public synchronized Pool getDefaultPool() {
+    if (this.defaultPool == null) {
+      determineDefaultPool();
+    }
     return this.defaultPool;
-  }
-
-  private void setDefaultPool(Pool value) {
-    this.defaultPool = value;
   }
 
   /**
@@ -1221,8 +1223,6 @@ public class GemFireCacheImpl implements InternalCache, InternalClientCache, Has
       }
     }
 
-    this.poolFactory = null;
-
     startColocatedJmxManagerLocator();
 
     startMemcachedServer();
@@ -1262,7 +1262,7 @@ public class GemFireCacheImpl implements InternalCache, InternalClientCache, Has
 
   private void startRestAgentServer(GemFireCacheImpl cache) {
     if (this.system.getConfig().getStartDevRestApi() && isNotJmxManager() && isServerNode()) {
-      this.restAgent = new RestAgent(this.system.getConfig());
+      this.restAgent = new RestAgent(this.system.getConfig(), this.securityService);
       this.restAgent.start(cache);
     } else {
       this.restAgent = null;
@@ -1384,7 +1384,6 @@ public class GemFireCacheImpl implements InternalCache, InternalClientCache, Has
     String cacheXmlDescription = this.cacheConfig.getCacheXMLDescription();
     if (url == null && cacheXmlDescription == null) {
       if (isClient()) {
-        determineDefaultPool();
         initializeClientRegionShortcuts(this);
       } else {
         initializeRegionShortcuts(this);
@@ -2843,32 +2842,51 @@ public class GemFireCacheImpl implements InternalCache, InternalClientCache, Has
     return defaultPoolFactory;
   }
 
+  private Pool findFirstCompatiblePool(Map<String, Pool> pools) {
+    // act as if the default pool was configured
+    // and see if we can find an existing one that is compatible
+    PoolFactoryImpl pfi = (PoolFactoryImpl) createDefaultPF();
+    for (Pool p : pools.values()) {
+      if (((PoolImpl) p).isCompatible(pfi.getPoolAttributes())) {
+        return p;
+      }
+    }
+    return null;
+  }
+
+  private void addLocalHostAsServer(PoolFactory poolFactory) {
+    PoolFactoryImpl poolFactoryImpl = (PoolFactoryImpl) poolFactory;
+    if (poolFactoryImpl.getPoolAttributes().locators.isEmpty()
+        && poolFactoryImpl.getPoolAttributes().servers.isEmpty()) {
+      try {
+        String localHostName = SocketCreator.getHostName(SocketCreator.getLocalHost());
+        poolFactoryImpl.addServer(localHostName, CacheServer.DEFAULT_PORT);
+      } catch (UnknownHostException ex) {
+        throw new IllegalStateException("Could not determine local host name", ex);
+      }
+    }
+  }
+
   /**
    * Used to set the default pool on a new GemFireCache.
    */
-  public void determineDefaultPool() {
+  public synchronized void determineDefaultPool() {
     if (!isClient()) {
       throw new UnsupportedOperationException();
     }
+    PoolFactory defaultPoolFactory = this.poolFactory;
+
     Pool pool = null;
     // create the pool if it does not already exist
-    if (this.poolFactory == null) {
+    if (defaultPoolFactory == null) {
       Map<String, Pool> pools = PoolManager.getAll();
       if (pools.isEmpty()) {
-        this.poolFactory = createDefaultPF();
+        defaultPoolFactory = createDefaultPF();
       } else if (pools.size() == 1) {
         // otherwise use a singleton.
         pool = pools.values().iterator().next();
       } else {
-        // act as if the default pool was configured
-        // and see if we can find an existing one that is compatible
-        PoolFactoryImpl pfi = (PoolFactoryImpl) createDefaultPF();
-        for (Pool p : pools.values()) {
-          if (((PoolImpl) p).isCompatible(pfi.getPoolAttributes())) {
-            pool = p;
-            break;
-          }
-        }
+        pool = findFirstCompatiblePool(pools);
         if (pool == null) {
           // if pool is still null then we will not have a default pool for this ClientCache
           this.defaultPool = null;
@@ -2876,21 +2894,15 @@ public class GemFireCacheImpl implements InternalCache, InternalClientCache, Has
         }
       }
     } else {
-      PoolFactoryImpl pfi = (PoolFactoryImpl) this.poolFactory;
-      if (pfi.getPoolAttributes().locators.isEmpty() && pfi.getPoolAttributes().servers.isEmpty()) {
-        try {
-          String localHostName = SocketCreator.getHostName(SocketCreator.getLocalHost());
-          pfi.addServer(localHostName, CacheServer.DEFAULT_PORT);
-        } catch (UnknownHostException ex) {
-          throw new IllegalStateException("Could not determine local host name", ex);
-        }
-      }
+      addLocalHostAsServer(defaultPoolFactory);
+
       // look for a pool that already exists that is compatible with
       // our PoolFactory.
       // If we don't find one we will create a new one that meets our needs.
       Map<String, Pool> pools = PoolManager.getAll();
       for (Pool p : pools.values()) {
-        if (((PoolImpl) p).isCompatible(pfi.getPoolAttributes())) {
+        if (((PoolImpl) p)
+            .isCompatible(((PoolFactoryImpl) defaultPoolFactory).getPoolAttributes())) {
           pool = p;
           break;
         }
@@ -2898,75 +2910,29 @@ public class GemFireCacheImpl implements InternalCache, InternalClientCache, Has
     }
     if (pool == null) {
       // create our pool with a unique name
-      String poolName = "DEFAULT";
+      String poolName = DEFAULT_POOL_NAME;
       int count = 1;
       Map<String, Pool> pools = PoolManager.getAll();
       while (pools.containsKey(poolName)) {
-        poolName = "DEFAULT" + count;
+        poolName = DEFAULT_POOL_NAME + count;
         count++;
       }
-      pool = this.poolFactory.create(poolName);
+      pool = defaultPoolFactory.create(poolName);
     }
     this.defaultPool = pool;
   }
 
   /**
-   * Used to see if a existing cache's pool is compatible with us.
+   * Determine whether the specified pool factory matches the pool factory used by this cache.
    *
-   * @return the default pool that is right for us
+   * @param poolFactory Prospective pool factory.
+   * @throws IllegalStateException When the specified pool factory does not match.
    */
-  public Pool determineDefaultPool(PoolFactory poolFactory) {
-    Pool pool;
-    // create the pool if it does not already exist
-    if (poolFactory == null) {
-      Map<String, Pool> pools = PoolManager.getAll();
-      if (pools.isEmpty()) {
-        throw new IllegalStateException("Since a cache already existed a pool should also exist.");
-      } else if (pools.size() == 1) {
-        // otherwise use a singleton.
-        pool = pools.values().iterator().next();
-        if (getDefaultPool() != pool) {
-          throw new IllegalStateException(
-              "Existing cache's default pool was not the same as the only existing pool");
-        }
-      } else {
-        // just use the current default pool if one exists
-        pool = getDefaultPool();
-        if (pool == null) {
-          // act as if the default pool was configured
-          // and see if we can find an existing one that is compatible
-          PoolFactoryImpl pfi = (PoolFactoryImpl) createDefaultPF();
-          for (Pool p : pools.values()) {
-            if (((PoolImpl) p).isCompatible(pfi.getPoolAttributes())) {
-              pool = p;
-              break;
-            }
-          }
-          if (pool == null) {
-            // if pool is still null then we will not have a default pool for this ClientCache
-            return null;
-          }
-        }
-      }
-    } else {
-      PoolFactoryImpl poolFactoryImpl = (PoolFactoryImpl) poolFactory;
-      if (poolFactoryImpl.getPoolAttributes().locators.isEmpty()
-          && poolFactoryImpl.getPoolAttributes().servers.isEmpty()) {
-        try {
-          String localHostName = SocketCreator.getHostName(SocketCreator.getLocalHost());
-          poolFactoryImpl.addServer(localHostName, CacheServer.DEFAULT_PORT);
-        } catch (UnknownHostException ex) {
-          throw new IllegalStateException("Could not determine local host name", ex);
-        }
-      }
-      PoolImpl defaultPool = (PoolImpl) getDefaultPool();
-      if (defaultPool != null && defaultPool.isCompatible(poolFactoryImpl.getPoolAttributes())) {
-        pool = defaultPool;
-      } else {
-        throw new IllegalStateException("Existing cache's default pool was not compatible");
-      }
+  public void validatePoolFactory(PoolFactory poolFactory) {
+    // If the specified pool factory is null, by definition there is no pool factory to validate.
+    if (poolFactory != null && !Objects.equals(this.poolFactory, poolFactory)) {
+      throw new IllegalStateException("Existing cache's default pool was not compatible");
     }
-    return pool;
   }
 
   @Override
@@ -3048,6 +3014,11 @@ public class GemFireCacheImpl implements InternalCache, InternalClientCache, Has
             } else if (isPartitionedRegion) {
               region = new PartitionedRegion(name, attrs, null, this, internalRegionArgs);
             } else {
+              // Abstract region depends on the default pool existing so lazily initialize it
+              // if necessary.
+              if (Objects.equals(attrs.getPoolName(), DEFAULT_POOL_NAME)) {
+                determineDefaultPool();
+              }
               if (attrs.getScope().isLocal()) {
                 region = new LocalRegion(name, attrs, null, this, internalRegionArgs);
               } else {
@@ -3812,6 +3783,12 @@ public class GemFireCacheImpl implements InternalCache, InternalClientCache, Has
     return cacheServer;
   }
 
+  public boolean removeCacheServer(CacheServer cacheServer) {
+    boolean removed = this.allCacheServers.remove(cacheServer);
+    sendRemoveCacheServerProfileMessage();
+    return removed;
+  }
+
   @Override
   public void addGatewaySender(GatewaySender sender) {
     if (isClient()) {
@@ -3880,6 +3857,9 @@ public class GemFireCacheImpl implements InternalCache, InternalClientCache, Has
         this.allGatewaySenders = Collections.unmodifiableSet(newSenders);
       }
     }
+    if (!(sender.getRemoteDSId() < 0)) {
+      this.system.handleResourceEvent(ResourceEvent.GATEWAYSENDER_REMOVE, sender);
+    }
   }
 
   @Override
@@ -3894,6 +3874,21 @@ public class GemFireCacheImpl implements InternalCache, InternalClientCache, Has
         newReceivers.addAll(this.allGatewayReceivers);
       }
       newReceivers.add(receiver);
+      this.allGatewayReceivers = Collections.unmodifiableSet(newReceivers);
+    }
+  }
+
+  public void removeGatewayReceiver(GatewayReceiver receiver) {
+    if (isClient()) {
+      throw new UnsupportedOperationException("operation is not supported on a client cache");
+    }
+    this.stopper.checkCancelInProgress(null);
+    synchronized (this.allGatewayReceiversLock) {
+      Set<GatewayReceiver> newReceivers = new HashSet<>(this.allGatewayReceivers.size() + 1);
+      if (!this.allGatewayReceivers.isEmpty()) {
+        newReceivers.addAll(this.allGatewayReceivers);
+      }
+      newReceivers.remove(receiver);
       this.allGatewayReceivers = Collections.unmodifiableSet(newReceivers);
     }
   }
@@ -4331,6 +4326,18 @@ public class GemFireCacheImpl implements InternalCache, InternalClientCache, Has
 
   @Override
   public void readyForEvents() {
+    if (isClient()) {
+      // If a durable client has been configured...
+      if (Objects.nonNull(system) && Objects.nonNull(system.getConfig())
+          && !Objects.equals(DistributionConfig.DEFAULT_DURABLE_CLIENT_ID,
+              Objects.toString(system.getConfig().getDurableClientId(),
+                  DistributionConfig.DEFAULT_DURABLE_CLIENT_ID))) {
+        // Ensure that there is a pool to use for readyForEvents().
+        if (Objects.isNull(defaultPool)) {
+          determineDefaultPool();
+        }
+      }
+    }
     PoolManagerImpl.readyForEvents(this.system, false);
   }
 
@@ -4468,7 +4475,7 @@ public class GemFireCacheImpl implements InternalCache, InternalClientCache, Has
     boolean monitorRequired =
         !this.queryMonitorDisabledForLowMem && queryMonitorRequiredForResourceManager;
     // Added for DUnit test purpose, which turns-on and off the this.testMaxQueryExecutionTime.
-    if (!(MAX_QUERY_EXECUTION_TIME > 0 || this.testMaxQueryExecutionTime > 0 || monitorRequired)) {
+    if (!(MAX_QUERY_EXECUTION_TIME > 0 || monitorRequired)) {
       // if this.testMaxQueryExecutionTime is set, send the QueryMonitor.
       // Else send null, so that the QueryMonitor is turned-off.
       return null;
@@ -4476,13 +4483,11 @@ public class GemFireCacheImpl implements InternalCache, InternalClientCache, Has
 
     // Return the QueryMonitor service if MAX_QUERY_EXECUTION_TIME is set or it is required by the
     // ResourceManager and not overridden by system property.
-    boolean needQueryMonitor =
-        MAX_QUERY_EXECUTION_TIME > 0 || this.testMaxQueryExecutionTime > 0 || monitorRequired;
+    boolean needQueryMonitor = MAX_QUERY_EXECUTION_TIME > 0 || monitorRequired;
     if (needQueryMonitor && this.queryMonitor == null) {
       synchronized (this.queryMonitorLock) {
         if (this.queryMonitor == null) {
-          int maxTime = MAX_QUERY_EXECUTION_TIME > this.testMaxQueryExecutionTime
-              ? MAX_QUERY_EXECUTION_TIME : this.testMaxQueryExecutionTime;
+          int maxTime = MAX_QUERY_EXECUTION_TIME;
 
           if (monitorRequired && maxTime < 0) {
             // this means that the resource manager is being used and we need to monitor query
@@ -4491,7 +4496,7 @@ public class GemFireCacheImpl implements InternalCache, InternalClientCache, Has
             maxTime = FIVE_HOURS;
           }
 
-          this.queryMonitor = new QueryMonitor(maxTime);
+          this.queryMonitor = new QueryMonitor(this, maxTime);
           final LoggingThreadGroup group =
               LoggingThreadGroup.createThreadGroup("QueryMonitor Thread Group", logger);
           Thread qmThread = new Thread(group, this.queryMonitor, "QueryMonitor Thread");
@@ -4546,6 +4551,29 @@ public class GemFireCacheImpl implements InternalCache, InternalClientCache, Has
   private void sendAddCacheServerProfileMessage() {
     Set otherMembers = this.dm.getOtherDistributionManagerIds();
     AddCacheServerProfileMessage message = new AddCacheServerProfileMessage();
+    message.operateOnLocalCache(this);
+    if (!otherMembers.isEmpty()) {
+      if (logger.isDebugEnabled()) {
+        logger.debug("Sending add cache server profile message to other members.");
+      }
+      ReplyProcessor21 replyProcessor = new ReplyProcessor21(this.dm, otherMembers);
+      message.setRecipients(otherMembers);
+      message.processorId = replyProcessor.getProcessorId();
+      this.dm.putOutgoing(message);
+
+      // Wait for replies.
+      try {
+        replyProcessor.waitForReplies();
+      } catch (InterruptedException ignore) {
+        Thread.currentThread().interrupt();
+      }
+    }
+  }
+
+
+  private void sendRemoveCacheServerProfileMessage() {
+    Set otherMembers = this.dm.getOtherDistributionManagerIds();
+    RemoveCacheServerProfileMessage message = new RemoveCacheServerProfileMessage();
     message.operateOnLocalCache(this);
     if (!otherMembers.isEmpty()) {
       if (logger.isDebugEnabled()) {
@@ -5260,5 +5288,14 @@ public class GemFireCacheImpl implements InternalCache, InternalClientCache, Has
             new Object[] {sender, region.getFullPath(), entriesToSynchronize}), t);
       }
     }
+  }
+
+  @Override
+  public Object convertPdxInstanceIfNeeded(Object obj) {
+    Object result = obj;
+    if (!this.getPdxReadSerialized() && obj instanceof PdxInstance) {
+      result = ((PdxInstance) obj).getObject();
+    }
+    return result;
   }
 }

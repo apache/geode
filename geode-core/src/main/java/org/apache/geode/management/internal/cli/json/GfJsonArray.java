@@ -184,8 +184,6 @@ public class GfJsonArray {
       for (int i = 0; i < length; i++) {
         try {
           byteArray[i] = Byte.valueOf(String.valueOf(jsonArray.get(i)));
-        } catch (NumberFormatException e) {
-          throw e;
         } catch (GfJsonException e) {
           throw new GfJsonException(e.getMessage());
         }

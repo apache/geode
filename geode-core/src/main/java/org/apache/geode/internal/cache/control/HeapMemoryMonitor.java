@@ -36,7 +36,6 @@ import org.apache.logging.log4j.Logger;
 import org.apache.geode.CancelException;
 import org.apache.geode.SystemFailure;
 import org.apache.geode.cache.CacheClosedException;
-import org.apache.geode.cache.query.internal.QueryMonitor;
 import org.apache.geode.distributed.internal.DistributionConfig;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
 import org.apache.geode.internal.SetUtils;
@@ -661,7 +660,7 @@ public class HeapMemoryMonitor implements NotificationListener, MemoryMonitor {
           LocalizedStrings.MemoryMonitor_MEMBER_ABOVE_CRITICAL_THRESHOLD,
           new Object[] {event.getMember(), "heap"});
       if (!this.cache.isQueryMonitorDisabledForLowMemory()) {
-        QueryMonitor.setLowMemory(true, event.getBytesUsed());
+        this.cache.getQueryMonitor().setLowMemory(true, event.getBytesUsed());
         this.cache.getQueryMonitor().cancelAllQueriesDueToMemory();
       }
 
@@ -670,7 +669,7 @@ public class HeapMemoryMonitor implements NotificationListener, MemoryMonitor {
           LocalizedStrings.MemoryMonitor_MEMBER_BELOW_CRITICAL_THRESHOLD,
           new Object[] {event.getMember(), "heap"});
       if (!this.cache.isQueryMonitorDisabledForLowMemory()) {
-        QueryMonitor.setLowMemory(false, event.getBytesUsed());
+        this.cache.getQueryMonitor().setLowMemory(false, event.getBytesUsed());
       }
     }
 

@@ -27,6 +27,7 @@ export BASE_FILENAME=${2}
 export TMPDIR=${DEST_DIR}/tmp
 export GEODE_BUILD=${DEST_DIR}/test
 export GEODE_BUILD_VERSION_NUMBER=$(grep "versionNumber *=" geode/gradle.properties | awk -F "=" '{print $2}' | tr -d ' ')
+export BUILD_TIMESTAMP=$(date +%s)
 
 GEODE_BUILD_VERSION_FILE=${BUILDROOT}/geode-build-version/number
 
@@ -85,6 +86,7 @@ pushd ${GEODE_BUILD}
   find . -type d -name "test-results" >> ${directories_file}
   (find . -type d -name "*Test" | grep "build/[^/]*Test$") >> ${directories_file}
   find . -name "*-progress*txt" >> ${directories_file}
+  find . -type d -name "callstacks" >> ${directories_file}
   echo "Collecting the following artifacts..."
   cat ${directories_file}
   echo ""
@@ -92,11 +94,8 @@ pushd ${GEODE_BUILD}
 popd
 
 ARTIFACTS_DESTINATION="${PUBLIC_BUCKET}/builds/${FULL_PRODUCT_VERSION}"
-TEST_RESULTS_DESTINATION="${ARTIFACTS_DESTINATION}/test-results/${SANITIZED_GRADLE_TASK}/"
-TEST_ARTIFACTS_DESTINATION="${ARTIFACTS_DESTINATION}/test-artifacts/"
-FULL_BUILD_ARCHIVE_DESTINATION="${ARTIFACTS_DESTINATION}/geodefiles-${FULL_PRODUCT_VERSION}.tgz"
-BUILD_ARTIFACTS_FILENAME=geode-build-artifacts-${FULL_PRODUCT_VERSION}.tgz
-BUILD_ARTIFACTS_DESTINATION="${ARTIFACTS_DESTINATION}/${BUILD_ARTIFACTS_FILENAME}"
+TEST_RESULTS_DESTINATION="${ARTIFACTS_DESTINATION}/test-results/${SANITIZED_GRADLE_TASK}/${BUILD_TIMESTAMP}/"
+TEST_ARTIFACTS_DESTINATION="${ARTIFACTS_DESTINATION}/test-artifacts/${BUILD_TIMESTAMP}/"
 
 
 if [ ! -d "${GEODE_BUILD}/build/reports/combined" ]; then

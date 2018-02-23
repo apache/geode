@@ -63,7 +63,6 @@ import javax.crypto.spec.SecretKeySpec;
 
 import org.apache.geode.DataSerializer;
 import org.apache.geode.LogWriter;
-import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.distributed.DistributedSystem;
 import org.apache.geode.distributed.internal.DistributionConfig;
 import org.apache.geode.internal.HeapDataOutputStream;
@@ -298,14 +297,7 @@ public class EncryptorImpl implements Encryptor {
   }
 
   public static byte[] encryptBytes(byte[] data, Cipher encrypt) throws Exception {
-
-
-    try {
-      byte[] encBytes = encrypt.doFinal(data);
-      return encBytes;
-    } catch (Exception ex) {
-      throw ex;
-    }
+    return encrypt.doFinal(data);
   }
 
   protected Cipher getEncryptCipher(String dhSKAlgo, PublicKey publicKey) throws Exception {

@@ -47,8 +47,7 @@ import org.apache.geode.test.junit.rules.GfshCommandRule;
 @RunWith(JUnitParamsRunner.class)
 public class AlterRuntimeCommandDUnitTest {
   @Rule
-  public ClusterStartupRule startupRule =
-      new ClusterStartupRule().withTempWorkingDir().withLogFile();
+  public ClusterStartupRule startupRule = new ClusterStartupRule().withLogFile();
 
   @Rule
   public GfshCommandRule gfsh = new GfshCommandRule();
@@ -78,9 +77,8 @@ public class AlterRuntimeCommandDUnitTest {
     IgnoredException.addIgnoredException(
         "java.lang.IllegalArgumentException: Could not set \"log-disk-space-limit\"");
 
-    Properties props = new Properties();
-    props.setProperty(LOG_LEVEL, "error");
-    MemberVM server0 = startupRule.startServerAsJmxManager(0, props);
+    MemberVM server0 =
+        startupRule.startServerVM(0, x -> x.withJMXManager().withProperty(LOG_LEVEL, "error"));
 
     if (connectOverHttp) {
       gfsh.connectAndVerify(server0.getHttpPort(), GfshCommandRule.PortType.http);

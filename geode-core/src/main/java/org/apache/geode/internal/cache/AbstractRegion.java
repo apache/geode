@@ -1706,7 +1706,7 @@ public abstract class AbstractRegion implements InternalRegion, AttributesMutato
    * @throws RegionAccessException if required roles are missing and the LossAction is either
    *         NO_ACCESS or LIMITED_ACCESS
    */
-  protected void checkForLimitedOrNoAccess() {
+  public void checkForLimitedOrNoAccess() {
     // nothing
   }
 
@@ -1757,6 +1757,7 @@ public abstract class AbstractRegion implements InternalRegion, AttributesMutato
     return getSystem().getDistributionManager();
   }
 
+  @Override
   public InternalDistributedSystem getSystem() {
     return getCache().getInternalDistributedSystem();
   }
@@ -1796,7 +1797,7 @@ public abstract class AbstractRegion implements InternalRegion, AttributesMutato
     this.cloningEnable = cloningEnable;
   }
 
-  static Object handleNotAvailable(Object object) {
+  public static Object handleNotAvailable(Object object) {
     if (object == Token.NOT_AVAILABLE) {
       object = null;
     }

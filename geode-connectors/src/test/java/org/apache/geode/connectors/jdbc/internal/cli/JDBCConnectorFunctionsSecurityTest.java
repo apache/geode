@@ -63,17 +63,17 @@ public class JDBCConnectorFunctionsSecurityTest {
 
   @BeforeClass
   public static void setupClass() {
-    functionStringMap.put(new AlterConnectionFunction(), "CLUSTER:MANAGE");
-    functionStringMap.put(new AlterMappingFunction(), "CLUSTER:MANAGE");
-    functionStringMap.put(new CreateConnectionFunction(), "CLUSTER:MANAGE");
-    functionStringMap.put(new CreateMappingFunction(), "CLUSTER:MANAGE");
-    functionStringMap.put(new DescribeConnectionFunction(), "CLUSTER:READ");
-    functionStringMap.put(new DescribeMappingFunction(), "CLUSTER:READ");
-    functionStringMap.put(new DestroyConnectionFunction(), "CLUSTER:MANAGE");
-    functionStringMap.put(new DestroyMappingFunction(), "CLUSTER:MANAGE");
-    functionStringMap.put(new ListConnectionFunction(), "CLUSTER:READ");
-    functionStringMap.put(new ListMappingFunction(), "CLUSTER:READ");
-    functionStringMap.put(new InheritsDefaultPermissionsJDBCFunction(), "CLUSTER:READ");
+    functionStringMap.put(new AlterConnectionFunction(), "*");
+    functionStringMap.put(new AlterMappingFunction(), "*");
+    functionStringMap.put(new CreateConnectionFunction(), "*");
+    functionStringMap.put(new CreateMappingFunction(), "*");
+    functionStringMap.put(new DescribeConnectionFunction(), "*");
+    functionStringMap.put(new DescribeMappingFunction(), "*");
+    functionStringMap.put(new DestroyConnectionFunction(), "*");
+    functionStringMap.put(new DestroyMappingFunction(), "*");
+    functionStringMap.put(new ListConnectionFunction(), "*");
+    functionStringMap.put(new ListMappingFunction(), "*");
+    functionStringMap.put(new InheritsDefaultPermissionsJDBCFunction(), "*");
     functionStringMap.keySet().forEach(FunctionService::registerFunction);
   }
 

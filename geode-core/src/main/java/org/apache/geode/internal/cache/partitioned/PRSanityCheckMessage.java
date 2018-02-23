@@ -110,8 +110,10 @@ public class PRSanityCheckMessage extends PartitionMessage {
       }
       final PRSanityCheckMessage delayedInstance =
           new PRSanityCheckMessage(recipients, pr.getPRId(), null, pr.getRegionIdentifier());
+      delayedInstance.setTransactionDistributed(pr.getCache().getTxManager().isDistributed());
       PRSanityCheckMessage instance =
           new PRSanityCheckMessage(recipients, pr.getPRId(), null, pr.getRegionIdentifier());
+      instance.setTransactionDistributed(pr.getCache().getTxManager().isDistributed());
       dm.putOutgoing(instance);
       int sanityCheckInterval = Integer
           .getInteger(DistributionConfig.GEMFIRE_PREFIX + "PRSanityCheckInterval", 5000).intValue();

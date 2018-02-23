@@ -92,8 +92,6 @@ public class DistTXStateProxyImplOnDatanode extends DistTXStateProxyImpl {
         txState.precommit();
       }
       this.preCommitResponse = retVal; // assign at last, if no exception
-    } catch (UnsupportedOperationInTransactionException e) {
-      throw e;
     } finally {
       inProgress = true;
     }

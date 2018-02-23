@@ -1227,7 +1227,8 @@ public class PersistenceAdvisorImpl implements PersistenceAdvisor {
       }
     }
 
-    public void memberJoined(InternalDistributedMember id) {
+    public void memberJoined(DistributionManager distributionManager,
+        InternalDistributedMember id) {
       afterMembershipChange();
     }
 
@@ -1238,16 +1239,17 @@ public class PersistenceAdvisorImpl implements PersistenceAdvisor {
       }
     }
 
-    public void memberDeparted(InternalDistributedMember id, boolean crashed) {
+    public void memberDeparted(DistributionManager distributionManager,
+        InternalDistributedMember id, boolean crashed) {
       afterMembershipChange();
     }
 
-    public void memberSuspect(InternalDistributedMember id, InternalDistributedMember whoSuspected,
-        String reason) {}
+    public void memberSuspect(DistributionManager distributionManager, InternalDistributedMember id,
+        InternalDistributedMember whoSuspected, String reason) {}
 
     @Override
-    public void quorumLost(Set<InternalDistributedMember> failures,
-        List<InternalDistributedMember> remaining) {}
+    public void quorumLost(DistributionManager distributionManager,
+        Set<InternalDistributedMember> failures, List<InternalDistributedMember> remaining) {}
 
     public void memberOffline(InternalDistributedMember member, PersistentMemberID persistentID) {
       afterMembershipChange();

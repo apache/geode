@@ -14,9 +14,6 @@
  */
 package org.apache.geode.connectors.jdbc.internal.cli;
 
-import java.util.Collection;
-import java.util.Collections;
-
 import org.apache.geode.annotations.Experimental;
 import org.apache.geode.cache.execute.FunctionContext;
 import org.apache.geode.connectors.jdbc.internal.JdbcConnectorService;
@@ -24,8 +21,6 @@ import org.apache.geode.connectors.jdbc.internal.RegionMapping;
 import org.apache.geode.connectors.jdbc.internal.RegionMappingExistsException;
 import org.apache.geode.management.internal.cli.functions.CliFunctionResult;
 import org.apache.geode.management.internal.configuration.domain.XmlEntity;
-import org.apache.geode.management.internal.security.ResourcePermissions;
-import org.apache.geode.security.ResourcePermission;
 
 @Experimental
 public class CreateMappingFunction extends JdbcCliFunction<RegionMapping, CliFunctionResult> {
@@ -61,10 +56,5 @@ public class CreateMappingFunction extends JdbcCliFunction<RegionMapping, CliFun
       XmlEntity xmlEntity) {
     String message = "Created JDBC mapping for region " + regionName + " on " + member;
     return new CliFunctionResult(member, xmlEntity, message);
-  }
-
-  @Override
-  public Collection<ResourcePermission> getRequiredPermissions(String regionName) {
-    return Collections.singletonList(ResourcePermissions.CLUSTER_MANAGE);
   }
 }

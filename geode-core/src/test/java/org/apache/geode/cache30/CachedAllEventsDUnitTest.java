@@ -26,8 +26,6 @@ import org.apache.geode.cache.InterestPolicy;
 import org.apache.geode.cache.Region;
 import org.apache.geode.cache.Scope;
 import org.apache.geode.cache.SubscriptionAttributes;
-import org.apache.geode.distributed.DistributedMember;
-import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.test.dunit.Host;
 import org.apache.geode.test.dunit.VM;
 import org.apache.geode.test.dunit.cache.internal.JUnit4CacheTestCase;
@@ -46,16 +44,6 @@ public class CachedAllEventsDUnitTest extends JUnit4CacheTestCase {
     return host.getVM(0);
   }
 
-  private void initOtherId() {
-    VM vm = getOtherVm();
-    vm.invoke(new CacheSerializableRunnable("Connect") {
-      public void run2() throws CacheException {
-        getCache();
-      }
-    });
-    vm.invoke(() -> CachedAllEventsDUnitTest.getVMDistributedMember());
-  }
-
   private void doCreateOtherVm() {
     VM vm = getOtherVm();
     vm.invoke(new CacheSerializableRunnable("create root") {
@@ -68,10 +56,6 @@ public class CachedAllEventsDUnitTest extends JUnit4CacheTestCase {
     });
   }
 
-  public static DistributedMember getVMDistributedMember() {
-    return InternalDistributedSystem.getAnyInstance().getDistributedMember();
-  }
-
   /**
    * make sure a remote create will be done in a NORMAL+ALL region
    *
@@ -79,7 +63,6 @@ public class CachedAllEventsDUnitTest extends JUnit4CacheTestCase {
    */
   private void remoteCreate(DataPolicy dp, InterestPolicy ip, boolean rmtCreate)
       throws CacheException {
-    initOtherId();
     AttributesFactory af = new AttributesFactory();
     af.setDataPolicy(dp);
     af.setSubscriptionAttributes(new SubscriptionAttributes(ip));

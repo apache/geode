@@ -46,8 +46,7 @@ import org.apache.geode.test.junit.rules.GfshCommandRule;
 @Category(DistributedTest.class)
 public class ExportLogsWithMemberGroupDUnitTest {
   @ClassRule
-  public static ClusterStartupRule lsRule =
-      new ClusterStartupRule().withTempWorkingDir().withLogFile();
+  public static ClusterStartupRule lsRule = new ClusterStartupRule().withLogFile();
 
   @ClassRule
   public static GfshCommandRule connector = new GfshCommandRule();
@@ -132,6 +131,7 @@ public class ExportLogsWithMemberGroupDUnitTest {
   }
 
   private static Set<String> getZipEntries(String zipFilePath) throws IOException {
-    return new ZipFile(zipFilePath).stream().map(ZipEntry::getName).collect(Collectors.toSet());
+    return new ZipFile(zipFilePath).stream().map(ZipEntry::getName)
+        .filter(x -> !x.endsWith("views.log")).collect(Collectors.toSet());
   }
 }

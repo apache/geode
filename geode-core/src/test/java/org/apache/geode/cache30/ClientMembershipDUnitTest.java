@@ -47,9 +47,7 @@ import org.apache.geode.cache.client.ClientCache;
 import org.apache.geode.cache.client.Pool;
 import org.apache.geode.cache.client.PoolManager;
 import org.apache.geode.distributed.*;
-import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.distributed.internal.ServerLocation;
-import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
 import org.apache.geode.internal.cache.tier.InternalClientMembership;
 import org.apache.geode.internal.cache.tier.sockets.AcceptorImpl;
 import org.apache.geode.internal.cache.tier.sockets.ServerConnection;
@@ -109,8 +107,9 @@ public class ClientMembershipDUnitTest extends ClientServerTestCase {
   }
 
   protected int getAcceptsInProgress() {
-    StatisticsType st = InternalDistributedSystem.getAnyInstance().findType("CacheServerStats");
-    Statistics[] s = InternalDistributedSystem.getAnyInstance().findStatisticsByType(st);
+    DistributedSystem distributedSystem = getCache().getDistributedSystem();
+    StatisticsType st = distributedSystem.findType("CacheServerStats");
+    Statistics[] s = distributedSystem.findStatisticsByType(st);
     return s[0].getInt("acceptsInProgress");
   }
 
@@ -180,42 +179,6 @@ public class ClientMembershipDUnitTest extends ClientServerTestCase {
           System.out.println("closing mean socket 2");
           vm0.invoke("close mean socket", () -> closeMeanSocket);
         }
-
-        // SerializableRunnable denialOfService = new CacheSerializableRunnable("Do lots of
-        // connects") {
-        // public void run2() throws CacheException {
-        // int connectionCount = 0;
-        // ArrayList al = new ArrayList(60000);
-        // try {
-        // InetAddress addr = InetAddress.getLocalHost();
-        // for (;;) {
-        // Socket s = new Socket(addr, port);
-        // al.add(s);
-        // connectionCount++;
-        // getLogWriter().info("connected # " + connectionCount + " s=" + s);
-        // // try {
-        // // s.close();
-        // // } catch (IOException ignore) {}
-        // }
-        // }
-        // catch (Exception e) {
-        // getLogWriter().info("connected # " + connectionCount
-        // + " stopped because of exception " + e);
-        // Iterator it = al.iterator();
-        // while (it.hasNext()) {
-        // Socket s = (Socket)it.next();
-        // try {
-        // s.close();
-        // } catch (IOException ignore) {}
-        // }
-        // }
-        // }
-        // };
-        // // now pretend to do a denial of service attack by doing a bunch of connects
-        // // really fast and see what that does to the server's fds.
-        // getLogWriter().info("doing denial of service attach");
-        // vm0.invoke(denialOfService);
-        // // @todo darrel: check fd limit?
       } finally {
         stopBridgeServers(getCache());
       }
@@ -790,7 +753,7 @@ public class ClientMembershipDUnitTest extends ClientServerTestCase {
     assertTrue(ports[0] != 0);
 
     DistributedMember serverMember = (DistributedMember) vm0.invoke("get distributed member",
-        () -> ClientMembershipDUnitTest.getDistributedMember());
+        () -> getSystem().getDistributedMember());
 
     String serverMemberId = serverMember.toString();
 
@@ -1250,8 +1213,7 @@ public class ClientMembershipDUnitTest extends ClientServerTestCase {
 
     // assert that event is fired again after reconnecting
     properties = config;
-    InternalDistributedSystem sys = getSystem(config);
-    assertTrue(sys.isConnected());
+    assertTrue(getSystem(config).isConnected());
 
     InternalClientMembership.notifyServerJoined(serverLocation);
     Awaitility.await().pollInterval(100, TimeUnit.MILLISECONDS)
@@ -1324,7 +1286,7 @@ public class ClientMembershipDUnitTest extends ClientServerTestCase {
       final int expectedClientCount = clientMemberIds.size();
       Awaitility.await().pollInterval(100, TimeUnit.MILLISECONDS)
           .pollDelay(100, TimeUnit.MILLISECONDS).timeout(300, TimeUnit.SECONDS).until(() -> {
-            Map connectedClients = InternalClientMembership.getConnectedClients(false);
+            Map connectedClients = InternalClientMembership.getConnectedClients(false, getCache());
             if (connectedClients == null) {
               return false;
             }
@@ -1335,7 +1297,7 @@ public class ClientMembershipDUnitTest extends ClientServerTestCase {
           });
     }
 
-    Map connectedClients = InternalClientMembership.getConnectedClients(false);
+    Map connectedClients = InternalClientMembership.getConnectedClients(false, getCache());
     assertNotNull(connectedClients);
     assertEquals(clientMemberIds.size(), connectedClients.size());
     System.out
@@ -1385,7 +1347,8 @@ public class ClientMembershipDUnitTest extends ClientServerTestCase {
         assertTrue(testGetConnectedServers_port != 0);
 
         System.out.println("[testGetConnectedServers] port=" + ports[whichVM]);
-        System.out.println("[testGetConnectedServers] serverMemberId=" + getDistributedMember());
+        System.out.println(
+            "[testGetConnectedServers] serverMemberId=" + getSystem().getDistributedMember());
       });
       ports[whichVM] = vm.invoke("getTestGetConnectedServers_port",
           () -> ClientMembershipDUnitTest.getTestGetConnectedServers_port());
@@ -1530,7 +1493,7 @@ public class ClientMembershipDUnitTest extends ClientServerTestCase {
       final int whichVM = i;
       final VM vm = Host.getHost(0).getVM(i);
       vm.invoke("Create bridge server", () -> {
-        Map clients = InternalClientMembership.getConnectedClients(true);
+        Map clients = InternalClientMembership.getConnectedClients(true, getCache());
         assertNotNull(clients);
         testGetNotifiedClients_clientCount = clients.size();
         // [bruce] this is not a valid assertion - the server may not use

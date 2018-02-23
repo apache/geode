@@ -17,8 +17,8 @@ package org.apache.geode.internal.protocol.protobuf.v1.state;
 import org.apache.shiro.subject.Subject;
 import org.apache.shiro.util.ThreadState;
 
+import org.apache.geode.internal.protocol.protobuf.v1.BasicTypes;
 import org.apache.geode.internal.protocol.protobuf.v1.MessageExecutionContext;
-import org.apache.geode.internal.protocol.protobuf.v1.ProtobufErrorCode;
 import org.apache.geode.internal.protocol.protobuf.v1.ProtobufOperationContext;
 import org.apache.geode.internal.protocol.protobuf.v1.state.exception.ConnectionStateException;
 import org.apache.geode.internal.protocol.protobuf.v1.state.exception.OperationNotAuthorizedException;
@@ -44,7 +44,7 @@ public class ProtobufConnectionAuthorizingStateProcessor
       securityService.authorize(operationContext.getAccessPermissionRequired());
     } catch (NotAuthorizedException e) {
       messageContext.getStatistics().incAuthorizationViolations();
-      throw new OperationNotAuthorizedException(ProtobufErrorCode.AUTHORIZATION_FAILED,
+      throw new OperationNotAuthorizedException(BasicTypes.ErrorCode.AUTHORIZATION_FAILED,
           "The user is not authorized to complete this operation");
     } finally {
       threadState.restore();
@@ -54,7 +54,7 @@ public class ProtobufConnectionAuthorizingStateProcessor
   @Override
   public ProtobufConnectionAuthenticatingStateProcessor allowAuthentication()
       throws ConnectionStateException {
-    throw new ConnectionStateException(ProtobufErrorCode.ALREADY_AUTHENTICATED,
+    throw new ConnectionStateException(BasicTypes.ErrorCode.ALREADY_AUTHENTICATED,
         "The user has already been authenticated for this connection. Re-authentication is not supported at this time.");
   }
 }

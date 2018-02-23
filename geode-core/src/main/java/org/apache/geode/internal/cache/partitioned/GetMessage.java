@@ -25,15 +25,23 @@ import org.apache.logging.log4j.Logger;
 
 import org.apache.geode.DataSerializer;
 import org.apache.geode.InternalGemFireError;
-import org.apache.geode.cache.EntryNotFoundException;
-import org.apache.geode.cache.TransactionDataNotColocatedException;
 import org.apache.geode.distributed.DistributedSystemDisconnectedException;
-import org.apache.geode.distributed.internal.*;
+import org.apache.geode.distributed.internal.ClusterDistributionManager;
+import org.apache.geode.distributed.internal.DirectReplyProcessor;
+import org.apache.geode.distributed.internal.DistributionConfig;
+import org.apache.geode.distributed.internal.DistributionManager;
+import org.apache.geode.distributed.internal.DistributionMessage;
+import org.apache.geode.distributed.internal.DistributionStats;
+import org.apache.geode.distributed.internal.InternalDistributedSystem;
+import org.apache.geode.distributed.internal.ReplyException;
+import org.apache.geode.distributed.internal.ReplyMessage;
+import org.apache.geode.distributed.internal.ReplyProcessor21;
+import org.apache.geode.distributed.internal.ReplySender;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
 import org.apache.geode.internal.Assert;
 import org.apache.geode.internal.InternalDataSerializer;
 import org.apache.geode.internal.Version;
-import org.apache.geode.internal.cache.*;
+import org.apache.geode.internal.cache.BucketRegion;
 import org.apache.geode.internal.cache.BucketRegion.RawValue;
 import org.apache.geode.internal.cache.CachedDeserializableFactory;
 import org.apache.geode.internal.cache.DataLocationException;
@@ -280,6 +288,7 @@ public class GetMessage extends PartitionMessageWithDirectReply {
     GetResponse p = new GetResponse(r.getSystem(), Collections.singleton(recipient), key);
     GetMessage m = new GetMessage(recipient, r.getPRId(), p, key, aCallbackArgument,
         requestingClient, returnTombstones);
+    m.setTransactionDistributed(r.getCache().getTxManager().isDistributed());
     Set failures = r.getDistributionManager().putOutgoing(m);
     if (failures != null && failures.size() > 0) {
       throw new ForceReattemptException(
@@ -576,26 +585,14 @@ public class GetMessage extends PartitionMessageWithDirectReply {
      */
     public Object waitForResponse(boolean preferCD) throws ForceReattemptException {
       try {
-        // waitForRepliesUninterruptibly();
         waitForCacheException();
         if (DistributionStats.enableClockStats) {
           getDistributionManager().getStats().incReplyHandOffTime(this.start);
         }
-      }
-      // Neeraj: Adding separate catch block for ENFE because there should not be a reattempt due
-      // to this exception from the sender node. ENFE is a type of CacheException(caught below)
-      // which wraps all CacheException in ForcedReattemptException(which is not correct). Filing
-      // a separate bug for this.(#41717)
-      catch (EntryNotFoundException enfe) {
-        // rethrow this
-        throw enfe;
       } catch (ForceReattemptException e) {
         e.checkKey(key);
         final String msg = "GetResponse got ForceReattemptException; rethrowing";
         logger.debug(msg, e);
-        throw e;
-      } catch (TransactionDataNotColocatedException e) {
-        // Throw this up to user!
         throw e;
       }
       if (!this.returnValueReceived) {

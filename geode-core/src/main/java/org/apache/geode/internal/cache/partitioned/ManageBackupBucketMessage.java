@@ -110,6 +110,7 @@ public class ManageBackupBucketMessage extends PartitionMessage {
     NodeResponse p = new NodeResponse(r.getSystem(), recipient);
     ManageBackupBucketMessage m = new ManageBackupBucketMessage(recipient, r.getPRId(), p, bucketId,
         isRebalance, replaceOfflineData, moveSource, forceCreation);
+    m.setTransactionDistributed(r.getCache().getTxManager().isDistributed());
 
     p.enableSevereAlertProcessing();
 
@@ -413,7 +414,7 @@ public class ManageBackupBucketMessage extends PartitionMessage {
           logger.debug(m, t);
           throw (ForceReattemptException) t;
         }
-        e.handleAsUnexpected();
+        e.handleCause();
       }
       return (this.msg != null) && this.msg.acceptedBucket;
     }

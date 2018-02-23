@@ -37,7 +37,6 @@ import org.apache.geode.distributed.internal.InternalLocator;
 import org.apache.geode.distributed.internal.ReplyException;
 import org.apache.geode.distributed.internal.ReplyMessage;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
-import org.apache.geode.internal.cache.GemFireCacheImpl;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.internal.tcp.ConnectionTable;
@@ -61,7 +60,7 @@ public class ShutdownAllRequest extends AdminRequest {
    * the waitingThreadPool.
    */
   public static Set send(final DistributionManager dm, long timeout) {
-    boolean hadCache = hasCache();
+    boolean hadCache = hasCache(dm);
     ClusterDistributionManager dism =
         dm instanceof ClusterDistributionManager ? (ClusterDistributionManager) dm : null;
     InternalDistributedMember myId = dm.getDistributionManagerId();
@@ -102,7 +101,7 @@ public class ShutdownAllRequest extends AdminRequest {
       }
     } catch (ReplyException e) {
       if (!(e.getCause() instanceof CancelException)) {
-        e.handleAsUnexpected();
+        e.handleCause();
       }
     } catch (CancelException ignore) {
       // expected
@@ -140,7 +139,7 @@ public class ShutdownAllRequest extends AdminRequest {
 
   @Override
   protected void process(ClusterDistributionManager dm) {
-    boolean isToShutdown = hasCache();
+    boolean isToShutdown = hasCache(dm);
     super.process(dm);
 
     if (isToShutdown) {
@@ -168,14 +167,14 @@ public class ShutdownAllRequest extends AdminRequest {
     }
   }
 
-  private static boolean hasCache() {
-    InternalCache cache = GemFireCacheImpl.getInstance();
+  private static boolean hasCache(DistributionManager manager) {
+    InternalCache cache = manager.getCache();
     return cache != null && !cache.isClosed();
   }
 
   @Override
   protected AdminResponse createResponse(DistributionManager dm) {
-    boolean isToShutdown = hasCache();
+    boolean isToShutdown = hasCache(dm);
     if (isToShutdown) {
       boolean isSuccess = false;
       try {

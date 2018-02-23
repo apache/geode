@@ -85,6 +85,7 @@ public class BecomePrimaryBucketMessage extends PartitionMessage {
         new BecomePrimaryBucketResponse(pr.getSystem(), recipient, pr);
     BecomePrimaryBucketMessage msg =
         new BecomePrimaryBucketMessage(recipient, pr.getPRId(), response, bid, isRebalance);
+    msg.setTransactionDistributed(pr.getCache().getTxManager().isDistributed());
 
     Set<InternalDistributedMember> failures = pr.getDistributionManager().putOutgoing(msg);
     if (failures != null && failures.size() > 0) {

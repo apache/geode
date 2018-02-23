@@ -476,7 +476,9 @@ public class DistributedAckRegionCCEDUnitTest extends DistributedAckRegionDUnitT
       CCRegion.basicBridgePut("cckey0", "newvalue", null, true, null, id, true, holder);
       vm0.invoke(new SerializableRunnable("check conflation count") {
         public void run() {
-          assertEquals("expected one conflated event", 1,
+          // after changed the 3rd try of AUO.doPutOrCreate to be ifOld=false ifNew=false
+          // ARM.updateEntry will be called one more time, so there will be 2 conflacted events
+          assertEquals("expected two conflated event", 2,
               CCRegion.getCachePerfStats().getConflatedEventsCount());
         }
       });

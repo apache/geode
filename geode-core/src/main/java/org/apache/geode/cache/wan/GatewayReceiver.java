@@ -19,6 +19,7 @@ import java.util.List;
 
 import org.apache.geode.cache.server.CacheServer;
 import org.apache.geode.distributed.internal.DistributionConfig;
+import org.apache.geode.internal.cache.wan.GatewayReceiverException;
 
 /**
  * A GatewayReceiver that receives the events from a <code>GatewaySender</code>. GatewayReceiver is
@@ -89,6 +90,16 @@ public interface GatewayReceiver {
    * restarted if desired.
    */
   void stop();
+
+  /**
+   * Destroys this <code>GatewayReceiver</code>
+   * Removes the <code>GatewayReceiverMBean</code> associated with this <code>GatewayReceiver</code>
+   * {@link #stop() stop} should be called before calling destroy
+   * Does not remove receiver from cluster configuration
+   *
+   * @throws GatewayReceiverException if receiver has not been stopped before calling destroy
+   */
+  void destroy();
 
   /**
    * Returns whether or not this receiver is running

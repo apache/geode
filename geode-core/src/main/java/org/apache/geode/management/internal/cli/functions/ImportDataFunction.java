@@ -15,27 +15,22 @@
 package org.apache.geode.management.internal.cli.functions;
 
 import java.io.File;
-import java.util.Collection;
-import java.util.Collections;
 
 import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.Region;
-import org.apache.geode.cache.execute.Function;
 import org.apache.geode.cache.execute.FunctionContext;
 import org.apache.geode.cache.snapshot.RegionSnapshotService;
 import org.apache.geode.cache.snapshot.SnapshotOptions;
 import org.apache.geode.cache.snapshot.SnapshotOptions.SnapshotFormat;
-import org.apache.geode.internal.InternalEntity;
+import org.apache.geode.internal.cache.execute.InternalFunction;
 import org.apache.geode.management.internal.cli.i18n.CliStrings;
-import org.apache.geode.management.internal.security.ResourcePermissions;
-import org.apache.geode.security.ResourcePermission;
 
 /****
  * Function which carries out the import of a region to a file on a member. Uses the
  * RegionSnapshotService to import the data
  *
  */
-public class ImportDataFunction implements Function, InternalEntity {
+public class ImportDataFunction implements InternalFunction {
 
   private static final long serialVersionUID = 1L;
 
@@ -72,11 +67,6 @@ public class ImportDataFunction implements Function, InternalEntity {
     } catch (Exception e) {
       context.getResultSender().sendException(e);
     }
-  }
-
-  @Override
-  public Collection<ResourcePermission> getRequiredPermissions(String regionName) {
-    return Collections.singleton(ResourcePermissions.DATA_WRITE);
   }
 
   public String getId() {
