@@ -2195,7 +2195,6 @@ public abstract class RegionTestCase extends JUnit4CacheTestCase {
 
     // This value SHOULD expire
 
-    // DebuggerSupport.waitForJavaDebugger(getLogWriter(), "Set breakpoint in invalidate");
     ExpiryTask.suspendExpiration();
     Region.Entry entry = null;
     long tilt;
@@ -2278,8 +2277,6 @@ public abstract class RegionTestCase extends JUnit4CacheTestCase {
     try {
       region = createRegion(name, attrs);
 
-      // DebuggerSupport.waitForJavaDebugger(getLogWriter(), "Set breakpoint in
-      // invalidate");
       ExpiryTask.suspendExpiration();
       Region.Entry entry = null;
       eventCount = 0;
@@ -2443,104 +2440,6 @@ public abstract class RegionTestCase extends JUnit4CacheTestCase {
     eventCount = 0;
   }
 
-  // /**
-  // * Expire an entry with a ttl time. Set a new ttl time, create the
-  // * same entry again, make sure it observes the <em>new</em> ttl time.
-  // * Do this many times.
-  // */
-  // public void testEntryTtl4() {
-  // if (!supportsExpiration()) {
-  // return;
-  // }
-  // final String name = this.getUniqueName();
-  // final int timeout1 = 200; // ms
-  // final int timeout2 = 2000;
-  // final String key1 = "KEY1";
-  // final String value1 = "VALUE1";
-  // final String value2 = "VALUE2";
-  //
-  // AttributesFactory factory = new AttributesFactory(getRegionAttributes());
-  // ExpirationAttributes expire1 =
-  // new ExpirationAttributes(timeout1, ExpirationAction.INVALIDATE);
-  // factory.setEntryTimeToLive(expire1);
-  // factory.setStatisticsEnabled(true);
-  // TestCacheListener list = new TestCacheListener() {
-  // public void afterCreate2(EntryEvent e) { }
-  // public void afterUpdate2(EntryEvent e) { }
-  // public void afterDestroy2(EntryEvent e) { }
-  // public void afterInvalidate2(EntryEvent e) { eventCount ++; }
-  // };
-  // eventCount = 0;
-  // factory.addCacheListener(list);
-  // RegionAttributes attrs = factory.create();
-  //
-  // Region region = null;
-  // System.setProperty(LocalRegion.EXPIRY_MS_PROPERTY", "true");
-  // try {
-  // region = createRegion(name, attrs);
-  // } finally {
-  // System.getProperties().remove(LocalRegion.EXPIRY_MS_PROPERTY);
-  // }
-  //
-  // for (int i = 0; i < 10; i ++) {
-  // // DebuggerSupport.waitForJavaDebugger(getLogWriter(), "Set breakpoint in invalidate");
-  // ExpiryTask.suspendExpiration();
-  // Region.Entry entry = null;
-  // long tilt;
-  // try {
-  // region.create(key1, value1);
-  // tilt = System.currentTimeMillis() + timeout1;
-  // assertTrue(list.waitForInvocation(1000));
-  // entry = region.getEntry(key1);
-  // Assert.assertTrue(value1.equals(entry.getValue()));
-  // } finally {
-  // ExpiryTask.permitExpiration();
-  // }
-  // waitForInvalidate(entry, tilt);
-  // assertTrue(list.waitForInvocation(1000));
-  // assertTrue(eventCount == 1);
-  // eventCount = 0;
-  //
-  // // Do it again with a put (I guess)
-  // ExpiryTask.suspendExpiration();
-  // try {
-  // region.put(key1, value1);
-  // tilt = System.currentTimeMillis() + timeout1;
-  // entry = region.getEntry(key1);
-  // Assert.assertTrue(value1.equals(entry.getValue()));
-  // } finally {
-  // ExpiryTask.permitExpiration();
-  // }
-  // waitForInvalidate(entry, tilt);
-  // assertTrue(list.waitForInvocation(1000));
-  // assertTrue(eventCount == 1);
-  // eventCount = 0;
-  //
-  // // Change custom expiry for this region now...
-  // AttributesMutator mutt = region.getAttributesMutator();
-  // ExpirationAttributes expire2 =
-  // new ExpirationAttributes(timeout2, ExpirationAction.INVALIDATE);
-  // mutt.setEntryTimeToLive(expire2);
-  //
-  // ExpiryTask.suspendExpiration();
-  // try {
-  // region.put(key1, value2);
-  // tilt = System.currentTimeMillis() + timeout2;
-  // entry = region.getEntry(key1);
-  // Assert.assertTrue(value2.equals(entry.getValue()));
-  // } finally {
-  // ExpiryTask.permitExpiration();
-  // }
-  // waitForInvalidate(entry, tilt);
-  // assertTrue(list.waitForInvocation(1000));
-  // assertTrue(eventCount == 1);
-  // eventCount = 0;
-  //
-  // region.destroy(key1);
-  // }
-  // }
-
-
   /**
    * Tests that an entry whose value is loaded into a region expires with an invalidation after a
    * given time to live.
@@ -2569,7 +2468,6 @@ public abstract class RegionTestCase extends JUnit4CacheTestCase {
     try {
       region = createRegion(name, attrs);
 
-      // DebuggerSupport.waitForJavaDebugger(getLogWriter(), "About to get");
       ExpiryTask.suspendExpiration();
       Region.Entry entry = null;
       long tilt;
@@ -2749,8 +2647,6 @@ public abstract class RegionTestCase extends JUnit4CacheTestCase {
     try {
       region = createRegion(name, attrs);
 
-      // DebuggerSupport.waitForJavaDebugger(getLogWriter(), "Set breakpoint in
-      // invalidate");
       ExpiryTask.suspendExpiration();
       Region.Entry entry = null;
       long tilt;
@@ -2863,7 +2759,6 @@ public abstract class RegionTestCase extends JUnit4CacheTestCase {
 
     // This value SHOULD expire
 
-    // DebuggerSupport.waitForJavaDebugger(getLogWriter(), "Set breakpoint in invalidate");
     ExpiryTask.suspendExpiration();
     Region.Entry entry = null;
     long tilt;
@@ -2941,7 +2836,6 @@ public abstract class RegionTestCase extends JUnit4CacheTestCase {
 
     // This value SHOULD expire
 
-    // DebuggerSupport.waitForJavaDebugger(getLogWriter(), "Set breakpoint in invalidate");
     ExpiryTask.suspendExpiration();
     Region.Entry entry = null;
     long tilt;
@@ -3163,103 +3057,6 @@ public abstract class RegionTestCase extends JUnit4CacheTestCase {
     eventCount = 0;
   }
 
-  // /**
-  // * Expire an entry with a given idle time. Set a new idle time, create the
-  // * same entry again, make sure it observes the <em>new</em> idle time. Do this
-  // * many times.
-  // */
-  // public void testEntryIdleTimeout4() {
-  // if (!supportsExpiration()) {
-  // return;
-  // }
-  // final String name = this.getUniqueName();
-  // final int timeout1 = 200; // ms
-  // final int timeout2 = 2000;
-  // final String key1 = "KEY1";
-  // final String value1 = "VALUE1";
-  // final String value2 = "VALUE2";
-  //
-  // AttributesFactory factory = new AttributesFactory(getRegionAttributes());
-  // ExpirationAttributes expire1 =
-  // new ExpirationAttributes(timeout1, ExpirationAction.INVALIDATE);
-  // factory.setEntryIdleTimeout(expire1);
-  // factory.setStatisticsEnabled(true);
-  // TestCacheListener list = new TestCacheListener() {
-  // public void afterCreate2(EntryEvent e) { }
-  // public void afterUpdate2(EntryEvent e) { }
-  // public void afterDestroy2(EntryEvent e) { }
-  // public void afterInvalidate2(EntryEvent e) { eventCount ++; }
-  // };
-  // eventCount = 0;
-  // factory.addCacheListener(list);
-  // RegionAttributes attrs = factory.create();
-  //
-  // Region region = null;
-  // System.setProperty(LocalRegion.EXPIRY_MS_PROPERTY, "true");
-  // try {
-  // region = createRegion(name, attrs);
-  // } finally {
-  // System.getProperties().remove(LocalRegion.EXPIRY_MS_PROPERTY);
-  // }
-  //
-  // for (int i = 0; i < 10; i ++) {
-  // // DebuggerSupport.waitForJavaDebugger(getLogWriter(), "Set breakpoint in invalidate");
-  // ExpiryTask.suspendExpiration();
-  // Region.Entry entry = null;
-  // long tilt;
-  // try {
-  // region.create(key1, value1);
-  // tilt = System.currentTimeMillis() + timeout1;
-  // assertTrue(list.waitForInvocation(1000));
-  // entry = region.getEntry(key1);
-  // Assert.assertTrue(value1.equals(entry.getValue()));
-  // } finally {
-  // ExpiryTask.permitExpiration();
-  // }
-  // waitForInvalidate(entry, tilt);
-  // assertTrue(list.waitForInvocation(1000));
-  // assertTrue(eventCount == 1);
-  // eventCount = 0;
-  //
-  // // Do it again with a put (I guess)
-  // ExpiryTask.suspendExpiration();
-  // try {
-  // region.put(key1, value1);
-  // tilt = System.currentTimeMillis() + timeout1;
-  // entry = region.getEntry(key1);
-  // Assert.assertTrue(value1.equals(entry.getValue()));
-  // } finally {
-  // ExpiryTask.permitExpiration();
-  // }
-  // waitForInvalidate(entry, tilt);
-  // assertTrue(list.waitForInvocation(1000));
-  // assertTrue(eventCount == 1);
-  // eventCount = 0;
-  //
-  // // Change expiry for this region now...
-  // AttributesMutator mutt = region.getAttributesMutator();
-  // ExpirationAttributes expire2 =
-  // new ExpirationAttributes(timeout2, ExpirationAction.INVALIDATE);
-  // mutt.setEntryIdleTimeout(expire2);
-  //
-  // ExpiryTask.suspendExpiration();
-  // try {
-  // region.put(key1, value2);
-  // tilt = System.currentTimeMillis() + timeout2;
-  // entry = region.getEntry(key1);
-  // Assert.assertTrue(value2.equals(entry.getValue()));
-  // } finally {
-  // ExpiryTask.permitExpiration();
-  // }
-  // waitForInvalidate(entry, tilt);
-  // assertTrue(list.waitForInvocation(1000));
-  // assertTrue(eventCount == 1);
-  // eventCount = 0;
-  //
-  // region.destroy(key1);
-  // }
-  // }
-
   static class CountExpiry implements CustomExpiry, Declarable {
 
     /**
@@ -3415,7 +3212,6 @@ public abstract class RegionTestCase extends JUnit4CacheTestCase {
     try {
       LocalRegion region = (LocalRegion) createRegion(name, attrs);
 
-      // DebuggerSupport.waitForJavaDebugger(getLogWriter(), "Set breakpoint in invalidate");
       ExpiryTask.suspendExpiration();
       try {
         region.create(key1, value);
@@ -4002,7 +3798,6 @@ public abstract class RegionTestCase extends JUnit4CacheTestCase {
 
       assertTrue(preSnapshotRegion.keySet().size() == 0);
 
-      // DebuggerSupport.waitForJavaDebugger(getLogWriter());
       InputStream in = new FileInputStream(file);
       preSnapshotRegion.loadSnapshot(in);
 
@@ -4068,7 +3863,6 @@ public abstract class RegionTestCase extends JUnit4CacheTestCase {
 
       LogWriter log = getCache().getLogger();
       log.info("before loadSnapshot");
-      // DebuggerSupport.waitForJavaDebugger(getLogWriter());
       InputStream in = new FileInputStream(file);
       preSnapshotRegion.loadSnapshot(in);
       log.info("after loadSnapshot");

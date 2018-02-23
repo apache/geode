@@ -73,7 +73,6 @@ public class MiscJUnitTest {
     region.put("3", new Portfolio(3));
     Query query = CacheUtils.getQueryService().newQuery(
         "SELECT DISTINCT * FROM (SELECT DISTINCT * FROM /Portfolios where status = 'active') p  where p.ID = 0");
-    // DebuggerSupport.waitForJavaDebugger(CacheUtils.getLogger());
     Collection result = (Collection) query.execute();
     Portfolio p = (Portfolio) (result.iterator().next());
     if (!p.status.equals("active") || p.getID() != 0)
@@ -94,19 +93,6 @@ public class MiscJUnitTest {
     Portfolio p = (Portfolio) (result.iterator().next());
     if (!p.positions.containsKey("IBM"))
       fail(query.getQueryString());
-    // query = CacheUtils.getQueryService().newQuery("SELECT DISTINCT * FROM
-    // /Portfolios where status = ELEMENT(SELECT DISTINCT * FROM /Portfolios p
-    // where p.ID = 0).status");
-    // result = (Collection)query.execute();
-    // CacheUtils.log(result);
-    // query = CacheUtils.getQueryService().newQuery("SELECT DISTINCT * FROM
-    // /Portfolios x where status = ELEMENT(SELECT DISTINCT * FROM /Portfolios
-    // p where p.ID = x.ID).status");
-    // result = (Collection)query.execute();
-    // SELECT DISTINCT * FROM /Portfolios where status = ELEMENT(SELECT
-    // DISTINCT * FROM /Portfolios where ID = 0).status
-    // SELECT DISTINCT * FROM /Portfolios x where status = ELEMENT(SELECT
-    // DISTINCT * FROM /Portfolios p where p.ID = x.ID).status
   }
 
   @Ignore("TODO: test is disabled")

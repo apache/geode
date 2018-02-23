@@ -345,7 +345,6 @@ public abstract class CacheListenerTestCase extends CacheLoaderTestCase {
 
     region = createRegion(name, attrs);
     assertTrue(region.getAttributes().getCacheListener() != null);
-    // org.apache.geode.internal.util.DebuggerSupport.waitForJavaDebugger(getLogWriter());
     region.destroyRegion();
     Wait.pause(100); // extra pause
     assertTrue(region.isDestroyed());
@@ -367,8 +366,6 @@ public abstract class CacheListenerTestCase extends CacheLoaderTestCase {
   public void testCacheListenerAfterRegionInvalidate() throws CacheException, InterruptedException {
 
     final String name = this.getUniqueName();
-    // Object arg = "ARG";
-    // final String exception = "EXCEPTION";
 
     TestCacheListener listener = new TestCacheListener() {
       private boolean closed = false;
