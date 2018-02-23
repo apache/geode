@@ -190,12 +190,13 @@ public class RegionCreateFunction implements InternalFunction {
     }
 
     if (regionCreateArgs.getEntryIdleTimeCustomExpiry() != null) {
-      factory
-          .setCustomEntryIdleTimeout(regionCreateArgs.getEntryIdleTimeCustomExpiry().newInstance());
+      factory.setCustomEntryIdleTimeout(
+          regionCreateArgs.getEntryIdleTimeCustomExpiry().newInstance(cache));
     }
 
     if (regionCreateArgs.getEntryTTLCustomExpiry() != null) {
-      factory.setCustomEntryTimeToLive(regionCreateArgs.getEntryTTLCustomExpiry().newInstance());
+      factory
+          .setCustomEntryTimeToLive(regionCreateArgs.getEntryTTLCustomExpiry().newInstance(cache));
     }
 
     final RegionFunctionArgs.ExpirationAttrs entryExpirationTTL =
@@ -287,7 +288,7 @@ public class RegionCreateFunction implements InternalFunction {
     if (cacheListeners != null && !cacheListeners.isEmpty()) {
       List<CacheListener<K, V>> newListeners = new ArrayList<>();
       for (ClassName<CacheListener> cacheListener : cacheListeners) {
-        newListeners.add(cacheListener.newInstance());
+        newListeners.add(cacheListener.newInstance(cache));
       }
       factory.initCacheListeners(newListeners.toArray(new CacheListener[0]));
     }
@@ -302,12 +303,12 @@ public class RegionCreateFunction implements InternalFunction {
 
     final ClassName<CacheLoader> cacheLoader = regionCreateArgs.getCacheLoader();
     if (cacheLoader != null) {
-      factory.setCacheLoader(cacheLoader.newInstance());
+      factory.setCacheLoader(cacheLoader.newInstance(cache));
     }
 
     final ClassName<CacheWriter> cacheWriter = regionCreateArgs.getCacheWriter();
     if (cacheWriter != null) {
-      factory.setCacheWriter(cacheWriter.newInstance());
+      factory.setCacheWriter(cacheWriter.newInstance(cache));
     }
 
     // If a region path indicates a sub-region,

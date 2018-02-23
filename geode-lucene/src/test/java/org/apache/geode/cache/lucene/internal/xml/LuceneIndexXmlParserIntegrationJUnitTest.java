@@ -19,6 +19,7 @@ import static org.apache.geode.distributed.ConfigurationProperties.*;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertEquals;
+import static org.mockito.Mockito.mock;
 
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
@@ -44,6 +45,7 @@ import org.apache.geode.cache.lucene.LuceneSerializer;
 import org.apache.geode.cache.lucene.LuceneService;
 import org.apache.geode.cache.lucene.LuceneServiceProvider;
 import org.apache.geode.cache.lucene.test.LuceneTestSerializer;
+import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.cache.extension.Extension;
 import org.apache.geode.internal.cache.xmlcache.CacheCreation;
 import org.apache.geode.internal.cache.xmlcache.CacheXmlParser;
@@ -166,8 +168,13 @@ public class LuceneIndexXmlParserIntegrationJUnitTest {
 
   private RegionCreation createRegionCreation(String regionName) throws FileNotFoundException {
     CacheXmlParser parser = CacheXmlParser.parse(new FileInputStream(getXmlFileForTest()));
-    CacheCreation cache = parser.getCacheCreation();
-    return (RegionCreation) cache.getRegion(regionName);
+    CacheCreation cacheCreation = parser.getCacheCreation();
+    // Some of the tests in this class needs to have the declarables initialized.
+    // cacheCreation.create(InternalCache) would do this but it was too much work
+    // to mock the InternalCache for all the ways create used it.
+    // So instead we just call initializeDeclarablesMap which is also what create does.
+    cacheCreation.initializeDeclarablesMap(mock(InternalCache.class));
+    return (RegionCreation) cacheCreation.getRegion(regionName);
   }
 
   private void validateExpectedIndexes(RegionCreation region,
