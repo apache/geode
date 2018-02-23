@@ -43,56 +43,13 @@ import org.apache.geode.pdx.PdxInstance;
 import org.apache.geode.test.junit.categories.IntegrationTest;
 
 @Category(IntegrationTest.class)
-public class RegionIntegrationTest {
-  @Rule
-  public RestoreSystemProperties restoreSystemProperties = new RestoreSystemProperties();
+public class RegionIntegrationTest extends IntegrationTestBase {
 
   /** a JSON document */
   private static final String jsonDocument =
       "{" + System.lineSeparator() + "  \"name\" : \"Charlemagne\"," + System.lineSeparator()
           + "  \"age\" : 1276," + System.lineSeparator() + "  \"nationality\" : \"french\","
           + System.lineSeparator() + "  \"emailAddress\" : \"none\"" + System.lineSeparator() + "}";
-
-
-  private static final String REGION = "region";
-  private Locator locator;
-  private Cache cache;
-  private Driver driver;
-
-  private org.apache.geode.cache.Region<Object, Object> serverRegion;
-
-  @Before
-  public void createServerAndDriver() throws Exception {
-    System.setProperty("geode.feature-protobuf-protocol", "true");
-
-    // Create a cache
-    CacheFactory cf = new CacheFactory();
-    cf.set(ConfigurationProperties.MCAST_PORT, "0");
-    cache = cf.create();
-
-    // Start a locator
-    locator = Locator.startLocatorAndDS(0, null, new Properties());
-    int locatorPort = locator.getPort();
-
-    // Start a server
-    CacheServer server = cache.addCacheServer();
-    server.setPort(0);
-    server.start();
-
-    // Create a region
-    serverRegion = cache.createRegionFactory(RegionShortcut.REPLICATE).create(REGION);
-
-    // Create a driver connected to the server
-    driver = new DriverFactory().addLocator("localhost", locatorPort).create();
-
-  }
-
-  @After
-  public void cleanup() {
-    locator.stop();
-    cache.close();
-  }
-
 
 
   @Test
