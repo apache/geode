@@ -132,9 +132,6 @@ public class PRQueryDUnitTest extends CacheTestCase {
     assertThat(testHook.isDone()).isTrue();
   }
 
-  /**
-   * NOTE: fails in IDE because the -Xmx is set differently in gradle build where it passes
-   */
   @Test
   public void testQueryResultsFromMembers() throws Exception {
     numberOfBuckets = 10;
@@ -180,7 +177,6 @@ public class PRQueryDUnitTest extends CacheTestCase {
 
         for (Map.Entry<Object, Integer> mapEntry : testHook.getResultsPerMember().entrySet()) {
           Integer resultsCount = mapEntry.getValue();
-          // this assertion fails in the IDE but passes in gradle due to -Xmx config differences
           assertThat(resultsCount.intValue()).isEqualTo(LIMIT[i]);
         }
       }
