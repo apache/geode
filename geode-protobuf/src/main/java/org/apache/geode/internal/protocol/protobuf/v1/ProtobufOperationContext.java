@@ -20,14 +20,18 @@ import org.apache.geode.internal.protocol.operations.ProtobufOperationHandler;
 import org.apache.geode.security.ResourcePermission;
 
 public class ProtobufOperationContext<OperationRequest, OperationResponse> {
+  @FunctionalInterface
+  public interface PermissionFunction<OperationRequest> {
+    ResourcePermission apply(OperationRequest request, ProtobufSerializationService service);
+  }
+
   private final ProtobufOperationHandler<OperationRequest, OperationResponse> operationHandler;
   private final Function<ClientProtocol.Message, OperationRequest> fromRequest;
   private final Function<OperationResponse, ClientProtocol.Message.Builder> toResponse;
   private final Function<ClientProtocol.ErrorResponse, ClientProtocol.Message.Builder> toErrorResponse;
-  private final Function<OperationRequest, ResourcePermission> accessPermissionRequired;
+  private final PermissionFunction<OperationRequest> accessPermissionRequired;
 
-  private class StaticResourcePermissionProvider
-      implements Function<OperationRequest, ResourcePermission> {
+  private class StaticResourcePermissionProvider implements PermissionFunction<OperationRequest> {
     private final ResourcePermission permission;
 
     StaticResourcePermissionProvider(ResourcePermission requiredPermission) {
@@ -35,7 +39,8 @@ public class ProtobufOperationContext<OperationRequest, OperationResponse> {
     }
 
     @Override
-    public ResourcePermission apply(OperationRequest request) {
+    public ResourcePermission apply(OperationRequest request,
+        ProtobufSerializationService serializer) {
       return permission;
     }
   }
@@ -54,7 +59,7 @@ public class ProtobufOperationContext<OperationRequest, OperationResponse> {
   public ProtobufOperationContext(Function<ClientProtocol.Message, OperationRequest> fromRequest,
       ProtobufOperationHandler<OperationRequest, OperationResponse> operationHandler,
       Function<OperationResponse, ClientProtocol.Message.Builder> toResponse,
-      Function<OperationRequest, ResourcePermission> permissionRequired) {
+      PermissionFunction permissionRequired) {
     this.operationHandler = operationHandler;
     this.fromRequest = fromRequest;
     this.toResponse = toResponse;
@@ -84,7 +89,8 @@ public class ProtobufOperationContext<OperationRequest, OperationResponse> {
     return toErrorResponse;
   }
 
-  public ResourcePermission getAccessPermissionRequired(OperationRequest request) {
-    return accessPermissionRequired.apply(request);
+  public ResourcePermission getAccessPermissionRequired(OperationRequest request,
+      ProtobufSerializationService serializer) {
+    return accessPermissionRequired.apply(request, serializer);
   }
 }

@@ -53,7 +53,7 @@ public class ProtobufOpsProcessor {
 
     try {
       messageExecutionContext.getConnectionStateProcessor().validateOperation(request,
-          messageExecutionContext, operationContext);
+          serializationService, messageExecutionContext, operationContext);
       result = processOperation(request, messageExecutionContext, requestType, operationContext);
     } catch (OperationNotAuthorizedException e) {
       // Don't move to a terminating state for authorization state failures
