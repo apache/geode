@@ -21,6 +21,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import org.apache.geode.annotations.Experimental;
 import org.apache.geode.internal.protocol.protobuf.v1.ClientProtocol;
 import org.apache.geode.internal.protocol.protobuf.v1.ProtobufOperationContext;
+import org.apache.geode.internal.protocol.protobuf.v1.ProtobufSerializationService;
 import org.apache.geode.internal.protocol.protobuf.v1.operations.ExecuteFunctionOnGroupRequestOperationHandler;
 import org.apache.geode.internal.protocol.protobuf.v1.operations.ExecuteFunctionOnMemberRequestOperationHandler;
 import org.apache.geode.internal.protocol.protobuf.v1.operations.ExecuteFunctionOnRegionRequestOperationHandler;
@@ -50,68 +51,68 @@ public class ProtobufOperationContextRegistry {
     return operationContexts.get(apiCase);
   }
 
+  private final ResourcePermission noneRequired =
+      new ResourcePermission(ResourcePermission.NULL, ResourcePermission.NULL);
+
+  private ResourcePermission skipAuthorizationCheck(Object unused,
+      ProtobufSerializationService unused2) {
+    return noneRequired;
+  }
+
   private void addContexts() {
     operationContexts.put(ClientProtocol.Message.MessageTypeCase.AUTHENTICATIONREQUEST,
         new ProtobufOperationContext<>(ClientProtocol.Message::getAuthenticationRequest,
             new AuthenticationRequestOperationHandler(),
             opsResp -> ClientProtocol.Message.newBuilder().setAuthenticationResponse(opsResp),
-            new ResourcePermission(ResourcePermission.NULL, ResourcePermission.NULL)));
+            this::skipAuthorizationCheck));
 
     operationContexts.put(ClientProtocol.Message.MessageTypeCase.GETREQUEST,
         new ProtobufOperationContext<>(ClientProtocol.Message::getGetRequest,
             new GetRequestOperationHandler(),
             opsResp -> ClientProtocol.Message.newBuilder().setGetResponse(opsResp),
-            new ResourcePermission(ResourcePermission.Resource.DATA,
-                ResourcePermission.Operation.READ)));
+            ResourcePermissions.DATA_READ));
 
     operationContexts.put(ClientProtocol.Message.MessageTypeCase.GETALLREQUEST,
         new ProtobufOperationContext<>(ClientProtocol.Message::getGetAllRequest,
             new GetAllRequestOperationHandler(),
             opsResp -> ClientProtocol.Message.newBuilder().setGetAllResponse(opsResp),
-            new ResourcePermission(ResourcePermission.Resource.DATA,
-                ResourcePermission.Operation.READ)));
+            ResourcePermissions.DATA_READ));
 
     operationContexts.put(ClientProtocol.Message.MessageTypeCase.PUTREQUEST,
         new ProtobufOperationContext<>(ClientProtocol.Message::getPutRequest,
             new PutRequestOperationHandler(),
             opsResp -> ClientProtocol.Message.newBuilder().setPutResponse(opsResp),
-            new ResourcePermission(ResourcePermission.Resource.DATA,
-                ResourcePermission.Operation.WRITE)));
+            ResourcePermissions.DATA_WRITE));
 
     operationContexts.put(ClientProtocol.Message.MessageTypeCase.PUTALLREQUEST,
         new ProtobufOperationContext<>(ClientProtocol.Message::getPutAllRequest,
             new PutAllRequestOperationHandler(),
             opsResp -> ClientProtocol.Message.newBuilder().setPutAllResponse(opsResp),
-            new ResourcePermission(ResourcePermission.Resource.DATA,
-                ResourcePermission.Operation.WRITE)));
+            ResourcePermissions.DATA_WRITE));
 
     operationContexts.put(ClientProtocol.Message.MessageTypeCase.REMOVEREQUEST,
         new ProtobufOperationContext<>(ClientProtocol.Message::getRemoveRequest,
             new RemoveRequestOperationHandler(),
             opsResp -> ClientProtocol.Message.newBuilder().setRemoveResponse(opsResp),
-            new ResourcePermission(ResourcePermission.Resource.DATA,
-                ResourcePermission.Operation.WRITE)));
+            ResourcePermissions.DATA_WRITE));
 
     operationContexts.put(ClientProtocol.Message.MessageTypeCase.GETREGIONNAMESREQUEST,
         new ProtobufOperationContext<>(ClientProtocol.Message::getGetRegionNamesRequest,
             new GetRegionNamesRequestOperationHandler(),
             opsResp -> ClientProtocol.Message.newBuilder().setGetRegionNamesResponse(opsResp),
-            new ResourcePermission(ResourcePermission.Resource.DATA,
-                ResourcePermission.Operation.READ)));
+            ResourcePermissions.DATA_READ));
 
     operationContexts.put(ClientProtocol.Message.MessageTypeCase.GETREGIONREQUEST,
         new ProtobufOperationContext<>(ClientProtocol.Message::getGetRegionRequest,
             new GetRegionRequestOperationHandler(),
             opsResp -> ClientProtocol.Message.newBuilder().setGetRegionResponse(opsResp),
-            new ResourcePermission(ResourcePermission.Resource.DATA,
-                ResourcePermission.Operation.READ)));
+            ResourcePermissions.DATA_READ));
 
     operationContexts.put(ClientProtocol.Message.MessageTypeCase.GETSERVERREQUEST,
         new ProtobufOperationContext<>(ClientProtocol.Message::getGetServerRequest,
             new GetServerOperationHandler(),
             opsResp -> ClientProtocol.Message.newBuilder().setGetServerResponse(opsResp),
-            new ResourcePermission(ResourcePermission.Resource.CLUSTER,
-                ResourcePermission.Operation.READ)));
+            ResourcePermissions.DATA_READ));
 
     operationContexts.put(ClientProtocol.Message.MessageTypeCase.EXECUTEFUNCTIONONREGIONREQUEST,
         new ProtobufOperationContext<>(ClientProtocol.Message::getExecuteFunctionOnRegionRequest,
@@ -120,7 +121,7 @@ public class ProtobufOperationContextRegistry {
                 .setExecuteFunctionOnRegionResponse(opsResp),
             // Resource permissions get handled per-function, since they have varying permission
             // requirements.
-            new ResourcePermission(ResourcePermission.NULL, ResourcePermission.NULL)));
+            this::skipAuthorizationCheck));
 
     operationContexts.put(ClientProtocol.Message.MessageTypeCase.EXECUTEFUNCTIONONMEMBERREQUEST,
         new ProtobufOperationContext<>(ClientProtocol.Message::getExecuteFunctionOnMemberRequest,
@@ -129,7 +130,7 @@ public class ProtobufOperationContextRegistry {
                 .setExecuteFunctionOnMemberResponse(opsResp),
             // Resource permissions get handled per-function, since they have varying permission
             // requirements.
-            new ResourcePermission(ResourcePermission.NULL, ResourcePermission.NULL)));
+            this::skipAuthorizationCheck));
 
     operationContexts.put(ClientProtocol.Message.MessageTypeCase.EXECUTEFUNCTIONONGROUPREQUEST,
         new ProtobufOperationContext<>(ClientProtocol.Message::getExecuteFunctionOnGroupRequest,
@@ -138,6 +139,6 @@ public class ProtobufOperationContextRegistry {
                 .setExecuteFunctionOnGroupResponse(opsResp),
             // Resource permissions get handled per-function, since they have varying permission
             // requirements.
-            new ResourcePermission(ResourcePermission.NULL, ResourcePermission.NULL)));
+            this::skipAuthorizationCheck));
   }
 }
