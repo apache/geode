@@ -234,7 +234,8 @@ public class FileSystemBackupWriterTest {
   private void executeBackup(boolean useRelativePath) throws IOException {
     backupDefinition.setRestoreScript(restoreScript);
 
-    BackupWriter backupWriter = new FileSystemBackupWriter(getTargetDir(useRelativePath).resolve(memberId));
+    BackupWriter backupWriter =
+        new FileSystemBackupWriter(getTargetDir(useRelativePath).resolve(memberId));
     backupWriter.backupFiles(backupDefinition);
   }
 

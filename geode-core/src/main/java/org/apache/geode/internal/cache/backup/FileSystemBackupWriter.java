@@ -47,7 +47,8 @@ public class FileSystemBackupWriter implements BackupWriter {
     filter = createBackupFilter(incrementalBaselineLocation);
   }
 
-  private BackupFilter createBackupFilter(FileSystemIncrementalBackupLocation incrementalBaselineLocation) {
+  private BackupFilter createBackupFilter(
+      FileSystemIncrementalBackupLocation incrementalBaselineLocation) {
     BackupFilter filter;
     if (incrementalBaselineLocation != null
         && Files.exists(incrementalBaselineLocation.getMemberBackupLocationDir())) {
@@ -73,16 +74,14 @@ public class FileSystemBackupWriter implements BackupWriter {
     backupConfigFiles(backupDefinition.getConfigFiles());
     backupUserFiles(backupDefinition.getUserFiles(), restoreScript);
     backupDeployedJars(backupDefinition.getDeployedJars(), restoreScript);
-    File scriptFile =
-        restoreScript.generate(backupDirectory.toFile());
+    File scriptFile = restoreScript.generate(backupDirectory.toFile());
     backupRestoreScript(scriptFile.toPath());
     writeReadMe();
   }
 
   private void writeReadMe() throws IOException {
     String text = LocalizedStrings.BackupService_README.toLocalizedString();
-    Files.write(backupDirectory.resolve(README_FILE),
-        text.getBytes());
+    Files.write(backupDirectory.resolve(README_FILE), text.getBytes());
   }
 
   private void backupRestoreScript(Path restoreScriptFile) throws IOException {
@@ -101,8 +100,7 @@ public class FileSystemBackupWriter implements BackupWriter {
 
   private void backupUserFiles(Map<Path, Path> userFiles, RestoreScript restoreScript)
       throws IOException {
-    Path userDirectory =
-        backupDirectory.resolve(USER_FILES_DIRECTORY);
+    Path userDirectory = backupDirectory.resolve(USER_FILES_DIRECTORY);
     Files.createDirectories(userDirectory);
 
     for (Map.Entry<Path, Path> userFileEntry : userFiles.entrySet()) {
@@ -117,8 +115,7 @@ public class FileSystemBackupWriter implements BackupWriter {
 
   private void backupDeployedJars(Map<Path, Path> jarFiles, RestoreScript restoreScript)
       throws IOException {
-    Path jarsDirectory =
-        backupDirectory.resolve(DEPLOYED_JARS_DIRECTORY);
+    Path jarsDirectory = backupDirectory.resolve(DEPLOYED_JARS_DIRECTORY);
     Files.createDirectories(jarsDirectory);
 
     for (Map.Entry<Path, Path> jarFileEntry : jarFiles.entrySet()) {
@@ -132,36 +129,14 @@ public class FileSystemBackupWriter implements BackupWriter {
   }
 
   private void backupConfigFiles(Collection<Path> configFiles) throws IOException {
-    Path configDirectory =
-        backupDirectory.resolve(CONFIG_DIRECTORY);
+    Path configDirectory = backupDirectory.resolve(CONFIG_DIRECTORY);
     Files.createDirectories(configDirectory);
     moveFilesOrDirectories(configFiles, configDirectory);
   }
 
-  // TODO delete method
-  private void fullBackup(Map<DiskStore, Collection<Path>> oplogFiles, RestoreScript restoreScript)
-      throws IOException {
-    File storesDir = new File(backupDirectory.toFile(),
-        DATA_STORES_DIRECTORY);
-    for (Map.Entry<DiskStore, Collection<Path>> entry : oplogFiles.entrySet()) {
-      for (Path path : entry.getValue()) {
-        int index = ((DiskStoreImpl) entry.getKey()).getInforFileDirIndex();
-        Path backupDir = createOplogBackupDir(entry.getKey(), index);
-        backupOplog(backupDir, path);
-      }
-      // TODO why is this line not in incremental?
-      addDiskStoreDirectoriesToRestoreScript((DiskStoreImpl) entry.getKey(), getBaseBackupDirectory().toFile(), restoreScript);
-
-      File targetStoresDir = new File(storesDir, getBackupDirName((DiskStoreImpl) entry.getKey()));
-      addDiskStoreDirectoriesToRestoreScript((DiskStoreImpl) entry.getKey(), targetStoresDir,
-          restoreScript);
-    }
-  }
-
   private void backupOplogs(Map<DiskStore, Collection<Path>> oplogFiles,
       RestoreScript restoreScript) throws IOException {
-    File storesDir = new File(backupDirectory.toFile(),
-        DATA_STORES_DIRECTORY);
+    File storesDir = new File(backupDirectory.toFile(), DATA_STORES_DIRECTORY);
     for (Map.Entry<DiskStore, Collection<Path>> entry : oplogFiles.entrySet()) {
       DiskStoreImpl diskStore = ((DiskStoreImpl) entry.getKey());
       boolean diskstoreHasFilesInBackup = false;
@@ -195,8 +170,8 @@ public class FileSystemBackupWriter implements BackupWriter {
       name = GemFireCacheImpl.getDefaultDiskStoreName();
     }
     name = name + "_" + ((DiskStoreImpl) diskStore).getDiskStoreID().toString();
-    return this.backupDirectory.resolve(DATA_STORES_DIRECTORY)
-        .resolve(name).resolve(BACKUP_DIR_PREFIX + index);
+    return this.backupDirectory.resolve(DATA_STORES_DIRECTORY).resolve(name)
+        .resolve(BACKUP_DIR_PREFIX + index);
   }
 
   private Path createOplogBackupDir(DiskStore diskStore, int index) throws IOException {

@@ -168,7 +168,8 @@ public class FileSystemIncrementalBackupLocationTest {
     fileSystemBackupLocation.setBackupInspector(backupInspector);
   }
 
-  public class TestableFileSystemIncrementalBackupLocation extends FileSystemIncrementalBackupLocation {
+  public class TestableFileSystemIncrementalBackupLocation
+      extends FileSystemIncrementalBackupLocation {
 
     BackupInspector backupInspector;
 
