@@ -380,6 +380,14 @@ public class DistributionAdvisor {
     return getAdvisee().getDistributionManager();
   }
 
+  /**
+   * Like getDistributionManager but does not check
+   * that the DistributedSystem is still connected
+   */
+  private DistributionManager getDistributionManagerWithNoCheck() {
+    return getAdvisee().getSystem().getDM();
+  }
+
   public DistributionAdvisee getAdvisee() {
     return this.advisee;
   }
@@ -1210,10 +1218,9 @@ public class DistributionAdvisor {
     Iterator it = membershipListeners.keySet().iterator();
     while (it.hasNext()) {
       try {
-        ((MembershipListener) it.next()).memberJoined(getDistributionManager(), member);
+        ((MembershipListener) it.next()).memberJoined(getDistributionManagerWithNoCheck(), member);
       } catch (Exception e) {
-        logger.fatal(
-            LocalizedMessage.create(LocalizedStrings.DistributionAdvisor_UNEXPECTED_EXCEPTION), e);
+        logger.warn("Ignoring exception during member joined listener notification", e);
       }
     }
   }
@@ -1222,10 +1229,10 @@ public class DistributionAdvisor {
     Iterator it = membershipListeners.keySet().iterator();
     while (it.hasNext()) {
       try {
-        ((MembershipListener) it.next()).memberDeparted(getDistributionManager(), member, crashed);
+        ((MembershipListener) it.next()).memberDeparted(getDistributionManagerWithNoCheck(), member,
+            crashed);
       } catch (Exception e) {
-        logger.fatal(
-            LocalizedMessage.create(LocalizedStrings.DistributionAdvisor_UNEXPECTED_EXCEPTION), e);
+        logger.warn("Ignoring exception during member departed listener notification", e);
       }
     }
   }
