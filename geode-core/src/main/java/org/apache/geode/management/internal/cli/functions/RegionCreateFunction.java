@@ -19,6 +19,7 @@ import java.util.List;
 import java.util.Set;
 
 import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang.exception.ExceptionUtils;
 import org.apache.logging.log4j.Logger;
 
 import org.apache.geode.cache.Cache;
@@ -117,7 +118,7 @@ public class RegionCreateFunction implements InternalFunction {
     } catch (Exception e) {
       String exceptionMsg = e.getMessage();
       if (exceptionMsg == null) {
-        exceptionMsg = CliUtil.stackTraceAsString(e);
+        exceptionMsg = ExceptionUtils.getStackTrace(e);
       }
       resultSender.lastResult(handleException(memberNameOrId, exceptionMsg, e));
     }

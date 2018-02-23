@@ -48,4 +48,13 @@ public class StartLocatorAcceptanceTest {
     assertThat(execution.getOutputText())
         .doesNotContain("Cluster configuration service is up and running.");
   }
+
+  @Test
+  public void startLocatorWithSecurityManagerShouldNotBeConnected() throws Exception {
+    GfshExecution execution = GfshScript
+        .of("start locator --name=locator1 --J=-Dgemfire.security-manager=org.apache.geode.examples.SimpleSecurityManager")
+        .execute(gfshRule);
+    assertThat(execution.getOutputText())
+        .contains("Security Manager is enabled - unable to auto-connect.");
+  }
 }

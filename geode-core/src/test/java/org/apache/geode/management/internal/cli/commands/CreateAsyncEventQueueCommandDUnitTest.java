@@ -112,7 +112,8 @@ public class CreateAsyncEventQueueCommandDUnitTest {
     locator.invoke(() -> {
       ClusterConfigurationService service =
           ClusterStartupRule.getLocator().getSharedConfiguration();
-      assertThat(service.getConfiguration("cluster").getCacheXmlContent()).isNull();
+      assertThat(service.getConfiguration("cluster").getCacheXmlContent())
+          .doesNotContain("async-event-queue");
     });
 
     gfsh.executeAndAssertThat(VALID_COMMAND + " --id=queue").statusIsSuccess()

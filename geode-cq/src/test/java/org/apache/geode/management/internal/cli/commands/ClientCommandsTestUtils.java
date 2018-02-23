@@ -25,6 +25,8 @@ import static org.junit.Assert.assertTrue;
 import java.util.List;
 import java.util.Properties;
 
+import org.apache.commons.lang.exception.ExceptionUtils;
+
 import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.CacheFactory;
 import org.apache.geode.cache.client.ClientCacheFactory;
@@ -33,7 +35,6 @@ import org.apache.geode.cache.query.QueryService;
 import org.apache.geode.cache.server.CacheServer;
 import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.internal.cache.GemFireCacheImpl;
-import org.apache.geode.management.internal.cli.CliUtil;
 import org.apache.geode.management.internal.cli.i18n.CliStrings;
 import org.apache.geode.management.internal.cli.result.CommandResult;
 import org.apache.geode.management.internal.cli.result.CompositeResultData;
@@ -90,7 +91,7 @@ class ClientCommandsTestUtils extends CliCommandTestBase {
         cache.getLogger()
             .info("setupCqs on vm created cqs = " + cache.getQueryService().getCqs().length);
       } catch (Exception e) {
-        cache.getLogger().info("setupCqs on vm Exception " + CliUtil.stackTraceAsString(e));
+        cache.getLogger().info("setupCqs on vm Exception " + ExceptionUtils.getStackTrace(e));
       }
       return true;
     });

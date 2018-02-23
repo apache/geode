@@ -215,5 +215,29 @@ public enum RegionShortcut {
    * {@link DataPolicy} to {@link DataPolicy#EMPTY} and {@link Scope} to
    * {@link Scope#DISTRIBUTED_ACK}.
    */
-  REPLICATE_PROXY,
+  REPLICATE_PROXY;
+
+  public boolean isProxy() {
+    return name().contains("PROXY");
+  }
+
+  public boolean isLocal() {
+    return name().contains("LOCAL");
+  }
+
+  public boolean isPartition() {
+    return name().contains("PARTITION");
+  }
+
+  public boolean isReplicate() {
+    return name().contains("REPLICATE");
+  }
+
+  public boolean isPersistent() {
+    return name().contains("PERSISTENT");
+  }
+
+  public boolean isOverflow() {
+    return name().contains("OVERFLOW");
+  }
 }

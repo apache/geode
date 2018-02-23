@@ -18,6 +18,7 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
 
+import org.apache.commons.lang.exception.ExceptionUtils;
 import org.apache.logging.log4j.Logger;
 
 import org.apache.geode.cache.CacheClosedException;
@@ -27,7 +28,6 @@ import org.apache.geode.internal.ConfigSource;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.cache.execute.InternalFunction;
 import org.apache.geode.internal.logging.LogService;
-import org.apache.geode.management.internal.cli.CliUtil;
 import org.apache.geode.management.internal.cli.i18n.CliStrings;
 
 public class AlterRuntimeConfigFunction implements InternalFunction {
@@ -79,7 +79,7 @@ public class AlterRuntimeConfigFunction implements InternalFunction {
     } catch (Exception e) {
       logger.error("Exception happened on : " + memberId, e);
       CliFunctionResult cliFuncResult =
-          new CliFunctionResult(memberId, e, CliUtil.stackTraceAsString(e));
+          new CliFunctionResult(memberId, e, ExceptionUtils.getStackTrace(e));
       context.getResultSender().lastResult(cliFuncResult);
     }
   }
