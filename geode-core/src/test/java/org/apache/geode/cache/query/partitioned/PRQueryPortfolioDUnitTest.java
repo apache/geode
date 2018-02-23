@@ -34,6 +34,7 @@ import org.apache.geode.test.dunit.cache.CacheTestCase;
 import org.apache.geode.test.junit.categories.DistributedTest;
 
 @Category(DistributedTest.class)
+@SuppressWarnings("serial")
 public class PRQueryPortfolioDUnitTest extends CacheTestCase {
 
   private static final Class PORTFOLIO_CLASS = Portfolio.class;
@@ -41,15 +42,16 @@ public class PRQueryPortfolioDUnitTest extends CacheTestCase {
 
   private static final String PARTITIONED_REGION_NAME = "Portfolios";
   private static final String LOCAL_REGION_NAME = "LocalPortfolios";
+
+  private static final int START_PORTFOLIO_DATA_INDEX = 0;
   private static final int TOTAL_DATA_SIZE = 90;
+  private static final int DATA_SIZE = 10;
+  private static final int START_KEY = 0;
+  private static final int START_KEY_STEP = 2;
   private static final int STEP_SIZE = 20;
-  private static final int CNT = 0;
-  private static final int I = 0;
   private static final int REDUNDANCY = 0;
 
-  private int dataSize;
-  private int step;
-  private PortfolioData[] portfolio;
+  private PortfolioData[] portfolioData;
   private Portfolio[] portfoliosAndPositions;
   private PRQueryDUnitHelper prQueryDUnitHelper;
 
@@ -64,11 +66,13 @@ public class PRQueryPortfolioDUnitTest extends CacheTestCase {
     vm1 = getHost(0).getVM(1);
     vm2 = getHost(0).getVM(2);
     vm3 = getHost(0).getVM(3);
-    setCacheInVMs(vm0, vm1, vm2, vm3);
 
-    dataSize = 10;
-    step = 2;
-    portfolio = createPortfolioData(CNT, TOTAL_DATA_SIZE);
+    vm0.invoke(() -> PRQueryDUnitHelper.setCache(getCache()));
+    vm1.invoke(() -> PRQueryDUnitHelper.setCache(getCache()));
+    vm2.invoke(() -> PRQueryDUnitHelper.setCache(getCache()));
+    vm3.invoke(() -> PRQueryDUnitHelper.setCache(getCache()));
+
+    portfolioData = createPortfolioData(START_PORTFOLIO_DATA_INDEX, TOTAL_DATA_SIZE);
     portfoliosAndPositions = createPortfoliosAndPositions(TOTAL_DATA_SIZE);
     prQueryDUnitHelper = new PRQueryDUnitHelper();
   }
@@ -87,14 +91,10 @@ public class PRQueryPortfolioDUnitTest extends CacheTestCase {
   }
 
   /**
-   * 1. Creates PR regions on 4 VMs (all datastores) with scope = D_ACK
-   * <p>
-   * 2. Creates a Local region on one of the VM's
-   * <p>
-   * 3. Puts in the same data both in PR region & the Local Region
-   * <p>
-   * 4. Queries the data both in local & PR
-   * <p>
+   * 1. Creates PR regions on 4 VMs (all datastores) with scope = D_ACK <br>
+   * 2. Creates a Local region on one of the VM's <br>
+   * 3. Puts in the same data both in PR region & the Local Region <br>
+   * 4. Queries the data both in local & PR <br>
    * 5. Verifies the size ,type , contents of both the resultSets Obtained
    */
   @Test
@@ -115,17 +115,17 @@ public class PRQueryPortfolioDUnitTest extends CacheTestCase {
 
     // Putting the data into the PR's created
     vm0.invoke(prQueryDUnitHelper.getCacheSerializableRunnableForPRPuts(PARTITIONED_REGION_NAME,
-        portfolio, I, STEP_SIZE));
+        portfoliosAndPositions, START_KEY, STEP_SIZE));
     vm1.invoke(prQueryDUnitHelper.getCacheSerializableRunnableForPRPuts(PARTITIONED_REGION_NAME,
-        portfolio, STEP_SIZE, (2 * STEP_SIZE)));
+        portfoliosAndPositions, STEP_SIZE, (2 * STEP_SIZE)));
     vm2.invoke(prQueryDUnitHelper.getCacheSerializableRunnableForPRPuts(PARTITIONED_REGION_NAME,
-        portfolio, (2 * STEP_SIZE), (3 * STEP_SIZE)));
+        portfoliosAndPositions, (2 * STEP_SIZE), (3 * STEP_SIZE)));
     vm3.invoke(prQueryDUnitHelper.getCacheSerializableRunnableForPRPuts(PARTITIONED_REGION_NAME,
-        portfolio, (3 * (STEP_SIZE)), TOTAL_DATA_SIZE));
+        portfoliosAndPositions, (3 * (STEP_SIZE)), TOTAL_DATA_SIZE));
 
     // Putting the same data in the local region created
     vm0.invoke(prQueryDUnitHelper.getCacheSerializableRunnableForPRPuts(LOCAL_REGION_NAME,
-        portfolio, I, TOTAL_DATA_SIZE));
+        portfoliosAndPositions, START_KEY, TOTAL_DATA_SIZE));
 
     // querying the VM for data
     vm0.invoke(prQueryDUnitHelper.getCacheSerializableRunnableForPRQueryAndCompareResults(
@@ -133,16 +133,11 @@ public class PRQueryPortfolioDUnitTest extends CacheTestCase {
   }
 
   /**
-   * This test does the following using full queries with projections and drill-down
-   * <p>
-   * 1. Creates PR regions on 4 VMs (all datastores) with scope = D_ACK
-   * <p>
-   * 2. Creates a Local region on one of the VM's
-   * <p>
-   * 3. Puts in the same data both in PR region & the Local Region
-   * <p>
-   * 4. Queries the data both in local & PR
-   * <p>
+   * This test does the following using full queries with projections and drill-down <br>
+   * 1. Creates PR regions on 4 VMs (all datastores) with scope = D_ACK <br>
+   * 2. Creates a Local region on one of the VM's <br>
+   * 3. Puts in the same data both in PR region & the Local Region <br>
+   * 4. Queries the data both in local & PR <br>
    * 5. Verifies the size ,type , contents of both the resultSets Obtained
    */
   @Test
@@ -173,7 +168,7 @@ public class PRQueryPortfolioDUnitTest extends CacheTestCase {
 
     // Putting the same data in the local region created
     vm0.invoke(prQueryDUnitHelper.getCacheSerializableRunnableForPRPuts(LOCAL_REGION_NAME,
-        portfoliosAndPositions, I, TOTAL_DATA_SIZE));
+        portfoliosAndPositions, START_KEY, TOTAL_DATA_SIZE));
 
     // querying the VM for data
     vm0.invoke(prQueryDUnitHelper.getCacheSerializableRunnableForPRQueryAndCompareResults(
@@ -181,14 +176,11 @@ public class PRQueryPortfolioDUnitTest extends CacheTestCase {
   }
 
   /**
-   * 1. Creates PR regions across with scope = DACK
-   * <p>
-   * 2. Creates a Local region on one of the VM's
-   * <p>
-   * 3. Puts in the same data both in PR region & the Local Region
-   * <p>
+   * 1. Creates PR regions across with scope = DACK <br>
+   * 2. Creates a Local region on one of the VM's <br>
+   * 3. Puts in the same data both in PR region & the Local Region <br>
    * 4. Queries the data both in local & PR using Query Constants like NULL, UNDEFINED, TRUE, FALSE
-   * <p>
+   * <br>
    * 5. Verifies the size, type, contents of both the resultSets Obtained
    */
   @Test
@@ -209,17 +201,17 @@ public class PRQueryPortfolioDUnitTest extends CacheTestCase {
 
     // Putting the data into the PR's created
     vm0.invoke(prQueryDUnitHelper.getCacheSerializableRunnableForPRPuts(PARTITIONED_REGION_NAME,
-        portfolio, I, STEP_SIZE));
+        portfolioData, START_KEY, STEP_SIZE));
     vm1.invoke(prQueryDUnitHelper.getCacheSerializableRunnableForPRPuts(PARTITIONED_REGION_NAME,
-        portfolio, STEP_SIZE, (2 * STEP_SIZE)));
+        portfolioData, STEP_SIZE, (2 * STEP_SIZE)));
     vm2.invoke(prQueryDUnitHelper.getCacheSerializableRunnableForPRPuts(PARTITIONED_REGION_NAME,
-        portfolio, (2 * STEP_SIZE), (3 * STEP_SIZE)));
+        portfolioData, (2 * STEP_SIZE), (3 * STEP_SIZE)));
     vm3.invoke(prQueryDUnitHelper.getCacheSerializableRunnableForPRPuts(PARTITIONED_REGION_NAME,
-        portfolio, (3 * (STEP_SIZE)), TOTAL_DATA_SIZE));
+        portfolioData, (3 * (STEP_SIZE)), TOTAL_DATA_SIZE));
 
     // Putting the same data in the local region created
     vm0.invoke(prQueryDUnitHelper.getCacheSerializableRunnableForPRPuts(LOCAL_REGION_NAME,
-        portfolio, I, TOTAL_DATA_SIZE));
+        portfolioData, START_KEY, TOTAL_DATA_SIZE));
 
     // querying the VM for data
     vm0.invoke(
@@ -229,14 +221,10 @@ public class PRQueryPortfolioDUnitTest extends CacheTestCase {
 
   /**
    * 1. Creates PR regions across with scope = DACK, with one VM as the accessor Node & others as
-   * Datastores
-   * <p>
-   * 2. Creates a Local region on one of the VM's
-   * <p>
-   * 3. Puts in the same data both in PR region & the Local Region
-   * <p>
-   * 4. Queries the data both in local & PR
-   * <p>
+   * Datastores <br>
+   * 2. Creates a Local region on one of the VM's <br>
+   * 3. Puts in the same data both in PR region & the Local Region <br>
+   * 4. Queries the data both in local & PR <br>
    * 5. Verifies the size, type, contents of both the resultSets Obtained
    */
   @Test
@@ -259,17 +247,17 @@ public class PRQueryPortfolioDUnitTest extends CacheTestCase {
 
     // Putting the data into the PR's created
     vm0.invoke(prQueryDUnitHelper.getCacheSerializableRunnableForPRPuts(PARTITIONED_REGION_NAME,
-        portfolio, I, STEP_SIZE));
+        portfolioData, START_KEY, STEP_SIZE));
     vm1.invoke(prQueryDUnitHelper.getCacheSerializableRunnableForPRPuts(PARTITIONED_REGION_NAME,
-        portfolio, STEP_SIZE, (2 * STEP_SIZE)));
+        portfolioData, STEP_SIZE, (2 * STEP_SIZE)));
     vm2.invoke(prQueryDUnitHelper.getCacheSerializableRunnableForPRPuts(PARTITIONED_REGION_NAME,
-        portfolio, (2 * STEP_SIZE), (3 * STEP_SIZE)));
+        portfolioData, (2 * STEP_SIZE), (3 * STEP_SIZE)));
     vm3.invoke(prQueryDUnitHelper.getCacheSerializableRunnableForPRPuts(PARTITIONED_REGION_NAME,
-        portfolio, (3 * (STEP_SIZE)), TOTAL_DATA_SIZE));
+        portfolioData, (3 * (STEP_SIZE)), TOTAL_DATA_SIZE));
 
     // Putting the same data in the local region created
     vm0.invoke(prQueryDUnitHelper.getCacheSerializableRunnableForPRPuts(LOCAL_REGION_NAME,
-        portfolio, I, TOTAL_DATA_SIZE));
+        portfolioData, START_KEY, TOTAL_DATA_SIZE));
 
     // querying the VM for data
     vm0.invoke(prQueryDUnitHelper.getCacheSerializableRunnableForPRQueryAndCompareResults(
@@ -277,16 +265,11 @@ public class PRQueryPortfolioDUnitTest extends CacheTestCase {
   }
 
   /**
-   * This test does the following using full queries with projections and drill-down
-   * <p>
-   * 1. Creates PR regions on 4 VMs (all datastores) with scope = D_ACK
-   * <p>
-   * 2. Creates a Local region on one of the VM's
-   * <p>
-   * 3. Puts in the same data both in PR region & the Local Region
-   * <p>
-   * 4. Queries the data both in local & PR
-   * <p>
+   * This test does the following using full queries with projections and drill-down <br>
+   * 1. Creates PR regions on 4 VMs (all datastores) with scope = D_ACK <br>
+   * 2. Creates a Local region on one of the VM's <br>
+   * 3. Puts in the same data both in PR region & the Local Region <br>
+   * 4. Queries the data both in local & PR <br>
    * 5. Verifies the size ,type , contents of both the resultSets Obtained
    */
   @Test
@@ -307,17 +290,18 @@ public class PRQueryPortfolioDUnitTest extends CacheTestCase {
 
     // Putting the data into the PR's created
     vm0.invoke(prQueryDUnitHelper.getCacheSerializableRunnableForPRPutsKeyValue(
-        PARTITIONED_REGION_NAME, portfoliosAndPositions, 0, step));
+        PARTITIONED_REGION_NAME, portfoliosAndPositions, 0, START_KEY_STEP));
     vm1.invoke(prQueryDUnitHelper.getCacheSerializableRunnableForPRPutsKeyValue(
-        PARTITIONED_REGION_NAME, portfoliosAndPositions, step, (2 * step)));
-    vm2.invoke(prQueryDUnitHelper.getCacheSerializableRunnableForPRPutsKeyValue(
-        PARTITIONED_REGION_NAME, portfoliosAndPositions, (2 * step), (3 * step)));
+        PARTITIONED_REGION_NAME, portfoliosAndPositions, START_KEY_STEP, (2 * START_KEY_STEP)));
+    vm2.invoke(
+        prQueryDUnitHelper.getCacheSerializableRunnableForPRPutsKeyValue(PARTITIONED_REGION_NAME,
+            portfoliosAndPositions, (2 * START_KEY_STEP), (3 * START_KEY_STEP)));
     vm3.invoke(prQueryDUnitHelper.getCacheSerializableRunnableForPRPutsKeyValue(
-        PARTITIONED_REGION_NAME, portfoliosAndPositions, (3 * (step)), dataSize));
+        PARTITIONED_REGION_NAME, portfoliosAndPositions, (3 * (START_KEY_STEP)), DATA_SIZE));
 
     // Putting the same data in the local region created
     vm0.invoke(prQueryDUnitHelper.getCacheSerializableRunnableForPRPutsKeyValue(LOCAL_REGION_NAME,
-        portfoliosAndPositions, I, dataSize));
+        portfoliosAndPositions, START_KEY, DATA_SIZE));
 
     // querying the VM for data
     vm0.invoke(prQueryDUnitHelper.getCacheSerializableRunnableForPROrderByQueryAndCompareResults(
@@ -325,16 +309,11 @@ public class PRQueryPortfolioDUnitTest extends CacheTestCase {
   }
 
   /**
-   * This test does the following using full queries with projections and drill-down
-   * <p>
-   * 1. Creates PR regions on 4 VMs (all datastores) with scope = D_ACK
-   * <p>
-   * 2. Creates a Local region on one of the VM's
-   * <p>
-   * 3. Puts in the same data both in PR region & the Local Region
-   * <p>
-   * 4. Queries the data both in local & PR
-   * <p>
+   * This test does the following using full queries with projections and drill-down <br>
+   * 1. Creates PR regions on 4 VMs (all datastores) with scope = D_ACK <br>
+   * 2. Creates a Local region on one of the VM's <br>
+   * 3. Puts in the same data both in PR region & the Local Region <br>
+   * 4. Queries the data both in local & PR <br>
    * 5. Verifies the size ,type , contents of both the resultSets Obtained
    */
   @Test
@@ -355,17 +334,18 @@ public class PRQueryPortfolioDUnitTest extends CacheTestCase {
 
     // Putting the data into the PR's created
     vm0.invoke(prQueryDUnitHelper.getCacheSerializableRunnableForPRPutsKeyValue(
-        PARTITIONED_REGION_NAME, portfoliosAndPositions, 0, step));
+        PARTITIONED_REGION_NAME, portfoliosAndPositions, 0, START_KEY_STEP));
     vm1.invoke(prQueryDUnitHelper.getCacheSerializableRunnableForPRPutsKeyValue(
-        PARTITIONED_REGION_NAME, portfoliosAndPositions, step, (2 * step)));
-    vm2.invoke(prQueryDUnitHelper.getCacheSerializableRunnableForPRPutsKeyValue(
-        PARTITIONED_REGION_NAME, portfoliosAndPositions, (2 * step), (3 * step)));
+        PARTITIONED_REGION_NAME, portfoliosAndPositions, START_KEY_STEP, (2 * START_KEY_STEP)));
+    vm2.invoke(
+        prQueryDUnitHelper.getCacheSerializableRunnableForPRPutsKeyValue(PARTITIONED_REGION_NAME,
+            portfoliosAndPositions, (2 * START_KEY_STEP), (3 * START_KEY_STEP)));
     vm3.invoke(prQueryDUnitHelper.getCacheSerializableRunnableForPRPutsKeyValue(
-        PARTITIONED_REGION_NAME, portfoliosAndPositions, (3 * (step)), dataSize));
+        PARTITIONED_REGION_NAME, portfoliosAndPositions, (3 * (START_KEY_STEP)), DATA_SIZE));
 
     // Putting the same data in the local region created
     vm0.invoke(prQueryDUnitHelper.getCacheSerializableRunnableForPRPutsKeyValue(LOCAL_REGION_NAME,
-        portfoliosAndPositions, I, dataSize));
+        portfoliosAndPositions, START_KEY, DATA_SIZE));
 
     // querying the VM for data
     vm0.invoke(prQueryDUnitHelper.getCacheSerializableRunnableForPROrderByQueryAndVerifyOrder(
@@ -374,14 +354,10 @@ public class PRQueryPortfolioDUnitTest extends CacheTestCase {
 
   /**
    * 1. Creates PR regions across with scope = DACK, with one VM as the accessor Node & others as
-   * Datastores
-   * <p>
-   * 2. Creates a Local region on one of the VM's
-   * <p>
-   * 3. Puts in the same data both in PR region & the Local Region
-   * <p>
-   * 4. Queries the data both in local & PR
-   * <p>
+   * Datastores <br>
+   * 2. Creates a Local region on one of the VM's <br>
+   * 3. Puts in the same data both in PR region & the Local Region <br>
+   * 4. Queries the data both in local & PR <br>
    * 5. Verifies the size , type , contents of both the resultSets Obtained
    */
   @Test
@@ -404,17 +380,18 @@ public class PRQueryPortfolioDUnitTest extends CacheTestCase {
 
     // Putting the data into the PR's created
     vm0.invoke(prQueryDUnitHelper.getCacheSerializableRunnableForPRPutsKeyValue(
-        PARTITIONED_REGION_NAME, portfolio, I, step));
+        PARTITIONED_REGION_NAME, portfoliosAndPositions, START_KEY, START_KEY_STEP));
     vm1.invoke(prQueryDUnitHelper.getCacheSerializableRunnableForPRPutsKeyValue(
-        PARTITIONED_REGION_NAME, portfolio, step, (2 * step)));
-    vm2.invoke(prQueryDUnitHelper.getCacheSerializableRunnableForPRPutsKeyValue(
-        PARTITIONED_REGION_NAME, portfolio, (2 * step), (3 * step)));
+        PARTITIONED_REGION_NAME, portfoliosAndPositions, START_KEY_STEP, (2 * START_KEY_STEP)));
+    vm2.invoke(
+        prQueryDUnitHelper.getCacheSerializableRunnableForPRPutsKeyValue(PARTITIONED_REGION_NAME,
+            portfoliosAndPositions, (2 * START_KEY_STEP), (3 * START_KEY_STEP)));
     vm3.invoke(prQueryDUnitHelper.getCacheSerializableRunnableForPRPutsKeyValue(
-        PARTITIONED_REGION_NAME, portfolio, (3 * (step)), dataSize));
+        PARTITIONED_REGION_NAME, portfoliosAndPositions, (3 * (START_KEY_STEP)), DATA_SIZE));
 
     // Putting the same data in the local region created
     vm0.invoke(prQueryDUnitHelper.getCacheSerializableRunnableForPRPutsKeyValue(LOCAL_REGION_NAME,
-        portfolio, I, dataSize));
+        portfoliosAndPositions, START_KEY, DATA_SIZE));
 
     // querying the VM for data
     vm0.invoke(prQueryDUnitHelper.getCacheSerializableRunnableForPROrderByQueryAndCompareResults(
@@ -439,17 +416,18 @@ public class PRQueryPortfolioDUnitTest extends CacheTestCase {
 
     // Putting the data into the PR's created
     vm0.invoke(prQueryDUnitHelper.getCacheSerializableRunnableForPRPutsKeyValue(
-        PARTITIONED_REGION_NAME, portfoliosAndPositions, 0, step));
+        PARTITIONED_REGION_NAME, portfoliosAndPositions, 0, START_KEY_STEP));
     vm1.invoke(prQueryDUnitHelper.getCacheSerializableRunnableForPRPutsKeyValue(
-        PARTITIONED_REGION_NAME, portfoliosAndPositions, step, (2 * step)));
-    vm2.invoke(prQueryDUnitHelper.getCacheSerializableRunnableForPRPutsKeyValue(
-        PARTITIONED_REGION_NAME, portfoliosAndPositions, (2 * step), (3 * step)));
+        PARTITIONED_REGION_NAME, portfoliosAndPositions, START_KEY_STEP, (2 * START_KEY_STEP)));
+    vm2.invoke(
+        prQueryDUnitHelper.getCacheSerializableRunnableForPRPutsKeyValue(PARTITIONED_REGION_NAME,
+            portfoliosAndPositions, (2 * START_KEY_STEP), (3 * START_KEY_STEP)));
     vm3.invoke(prQueryDUnitHelper.getCacheSerializableRunnableForPRPutsKeyValue(
-        PARTITIONED_REGION_NAME, portfoliosAndPositions, (3 * (step)), dataSize));
+        PARTITIONED_REGION_NAME, portfoliosAndPositions, (3 * (START_KEY_STEP)), DATA_SIZE));
 
     // Putting the same data in the local region created
     vm0.invoke(prQueryDUnitHelper.getCacheSerializableRunnableForPRPutsKeyValue(LOCAL_REGION_NAME,
-        portfoliosAndPositions, I, dataSize));
+        portfoliosAndPositions, START_KEY, DATA_SIZE));
 
     // querying the VM for data
     vm0.invoke(prQueryDUnitHelper.getCacheSerializableRunnableForPROrderByQueryWithLimit(
@@ -458,14 +436,10 @@ public class PRQueryPortfolioDUnitTest extends CacheTestCase {
 
   /**
    * 1. Creates PR regions across with scope = DACK, with one VM as the accessor Node & others as
-   * Datastores
-   * <p>
-   * 2. Creates a Local region on one of the VM's
-   * <p>
-   * 3. Puts in no data in PR region & the Local Region
-   * <p>
-   * 4. Queries the data both in local & PR
-   * <p>
+   * Datastores <br>
+   * 2. Creates a Local region on one of the VM's <br>
+   * 3. Puts in no data in PR region & the Local Region <br>
+   * 4. Queries the data both in local & PR <br>
    * 5. Verifies the size , type , contents of both the resultSets Obtained
    */
   @Test
@@ -489,11 +463,5 @@ public class PRQueryPortfolioDUnitTest extends CacheTestCase {
     // querying the VM for data
     vm0.invoke(prQueryDUnitHelper.getCacheSerializableRunnableForPRQueryAndCompareResults(
         PARTITIONED_REGION_NAME, LOCAL_REGION_NAME));
-  }
-
-  private void setCacheInVMs(VM... vms) {
-    for (VM vm : vms) {
-      vm.invoke(() -> PRQueryDUnitHelper.setCache(getCache()));
-    }
   }
 }
