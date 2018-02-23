@@ -171,5 +171,4 @@ public class ProtobufSerializationService implements SerializationService<BasicT
           "There is no primitive protobuf type mapping for class:" + unencodedValueClass);
     }
   }
-
 }
