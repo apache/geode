@@ -39,6 +39,7 @@ import org.apache.geode.internal.datasource.ConfigProperty;
 import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.management.cli.CliMetaData;
 import org.apache.geode.management.cli.Result;
+import org.apache.geode.management.internal.cli.exceptions.EntityExistsException;
 import org.apache.geode.management.internal.cli.functions.CliFunctionResult;
 import org.apache.geode.management.internal.cli.functions.CreateJndiBindingFunction;
 import org.apache.geode.management.internal.cli.functions.JndiBindingConfiguration;
@@ -161,15 +162,10 @@ public class CreateJndiBindingCommand implements GfshCommand {
     ClusterConfigurationService service = getSharedConfiguration();
 
     if (service != null) {
-      boolean alreadyExists = isBindingAlreadyExists(jndiName);
-      if (alreadyExists && ifNotExists)
-        return ResultBuilder.createInfoResult(CliStrings.format(
-            "Skipping creation of Jndi Binding with jndi-name \"{0}\" as it already exists.",
-            jndiName));
-      else if (alreadyExists)
-        return ResultBuilder.createUserErrorResult(
-            CliStrings.format("JNDI Binding with jndi-name \"{0}\" already exists.", jndiName));
-
+      if (isBindingAlreadyExists(jndiName))
+        throw new EntityExistsException(
+            CliStrings.format("Jndi binding with jndi-name \"{0}\" already exists.", jndiName),
+            ifNotExists);
       updateXml(configuration);
       persisted = true;
     }
@@ -181,7 +177,8 @@ public class CreateJndiBindingCommand implements GfshCommand {
       result = buildResult(jndiCreationResult);
     } else {
       if (persisted)
-        result = ResultBuilder.createInfoResult("No members found. Cluster configuration updated.");
+        result =
+            ResultBuilder.createInfoResult("No members found. Cluster configuration is updated.");
       else
         result = ResultBuilder.createInfoResult("No members found.");
     }
