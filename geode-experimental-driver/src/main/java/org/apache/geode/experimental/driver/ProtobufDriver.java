@@ -41,11 +41,6 @@ import org.apache.geode.internal.protocol.protobuf.v1.RegionAPI.GetRegionNamesRe
  */
 @Experimental
 public class ProtobufDriver implements Driver {
-  /**
-   * Set of Internet-address-or-host-name/port pairs of the locators to use to find GemFire servers
-   * that have Protobuf enabled.
-   */
-  private final Set<InetSocketAddress> locators;
 
   private final ProtobufChannel channel;
 
@@ -57,9 +52,6 @@ public class ProtobufDriver implements Driver {
    * @throws IOException
    */
   ProtobufDriver(Set<InetSocketAddress> locators) throws IOException {
-    this.locators = locators;
-
-
     this.channel = new ProtobufChannel(locators);
   }
 
@@ -82,6 +74,11 @@ public class ProtobufDriver implements Driver {
   @Override
   public <K, V> Region<K, V> getRegion(String regionName) {
     return new ProtobufRegion(regionName, channel);
+  }
+
+  @Override
+  public QueryService getQueryService() {
+    return new ProtobufQueryService(channel);
   }
 
   @Override

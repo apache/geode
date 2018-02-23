@@ -85,7 +85,7 @@ class ProtobufChannel {
 
   /**
    * Queries locators for a Geode server that has Protobuf enabled.
-   * 
+   *
    * @return The server chosen by the Locator service for this client
    */
   private InetSocketAddress findAServer() throws IOException {
@@ -140,6 +140,9 @@ class ProtobufChannel {
   private Message readResponse() throws IOException {
     final InputStream inputStream = socket.getInputStream();
     Message response = ClientProtocol.Message.parseDelimitedFrom(inputStream);
+    if (response == null) {
+      throw new IOException("Unable to parse a response message due to EOF");
+    }
     final ErrorResponse errorResponse = response.getErrorResponse();
     if (errorResponse != null && errorResponse.hasError()) {
       throw new IOException(errorResponse.getError().getMessage());
