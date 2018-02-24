@@ -19,27 +19,42 @@ package org.apache.geode.management.internal.cli.commands;
 
 import static org.apache.geode.test.junit.rules.GfshCommandRule.PortType.jmxManager;
 
+import org.junit.BeforeClass;
 import org.junit.ClassRule;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 import org.junit.rules.TestName;
 
+import org.apache.geode.security.AuthInitialize;
 import org.apache.geode.security.SimpleTestSecurityManager;
-import org.apache.geode.test.junit.categories.IntegrationTest;
+import org.apache.geode.test.dunit.rules.ClusterStartupRule;
+import org.apache.geode.test.dunit.rules.MemberVM;
+import org.apache.geode.test.junit.categories.DistributedTest;
 import org.apache.geode.test.junit.rules.ConnectionConfiguration;
 import org.apache.geode.test.junit.rules.GfshCommandRule;
-import org.apache.geode.test.junit.rules.ServerStarterRule;
 import org.apache.geode.test.junit.rules.serializable.SerializableTestName;
 
-@Category(IntegrationTest.class)
-public class CreateRegionSecurityTest {
+@Category(DistributedTest.class)
+public class CreateRegionSecurityDUnitTest {
   @ClassRule
-  public static ServerStarterRule server = new ServerStarterRule()
-      .withSecurityManager(SimpleTestSecurityManager.class).withJMXManager().withAutoStart();
+  public static ClusterStartupRule cluster = new ClusterStartupRule();
+
+  private static MemberVM locator;
+
+  @BeforeClass
+  public static void beforeClass() {
+    locator =
+        cluster.startLocatorVM(0, x -> x.withSecurityManager(SimpleTestSecurityManager.class));
+    int locatorPort = locator.getPort();
+    cluster.startServerVM(1,
+        x -> x.withProperty(AuthInitialize.SECURITY_USERNAME, "cluster")
+            .withProperty(AuthInitialize.SECURITY_PASSWORD, "cluster")
+            .withConnectionToLocator(locatorPort));
+  }
 
   @Rule
-  public GfshCommandRule gfsh = new GfshCommandRule(server::getJmxPort, jmxManager);
+  public GfshCommandRule gfsh = new GfshCommandRule(locator::getJmxPort, jmxManager);
 
   @Rule
   public TestName testName = new SerializableTestName();

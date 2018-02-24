@@ -198,39 +198,47 @@ public class CreateRegionCommand implements GfshCommand {
 
     InternalCache cache = getCache();
 
-    // adding name collision check for regions created with regionShortcut only
+    /*
+     * Adding name collision check for regions created with regionShortcut only.
+     * Regions can be categories as Proxy(replicate/partition), replicate/partition, and local
+     * For concise purpose: we call existing region (E) and region to be created (C)
+     */
     DistributedRegionMXBean regionBean =
         getManagementService().getDistributedRegionMXBean(regionPath);
 
     if (regionBean != null && regionShortcut != null) {
-      // when creating a non-proxy region and there is already a non empty node
-      if (!regionShortcut.isProxy() && regionBean.getMemberCount() > regionBean.getEmptyNodes()) {
+      String existingDataPolicy = regionBean.getRegionType();
+      // either C is local, or E is local or E and C are both non-proxy regions. this is to make
+      // sure local, replicate or partition regions have unique names across the entire cluster
+      if (regionShortcut.isLocal() || existingDataPolicy.equals("NORMAL")
+          || !regionShortcut.isProxy()
+              && (regionBean.getMemberCount() > regionBean.getEmptyNodes())) {
         throw new EntityExistsException(
             String.format("Region %s already exists on the cluster.", regionPath), ifNotExists);
       }
 
-      // proxy regions can only be created on members not having this regionName already defined
-      if (regionShortcut.isProxy()) {
-        Set<String> membersWithThisRegion =
-            Arrays.stream(regionBean.getMembers()).collect(Collectors.toSet());
-        Set<String> membersWithinGroup = findMembers(groups, null).stream()
-            .map(DistributedMember::getName).collect(Collectors.toSet());
-        if (!Collections.disjoint(membersWithinGroup, membersWithThisRegion)) {
-          throw new EntityExistsException(String.format(
-              "Region %s already exists on these members: %s. You can only create "
-                  + "proxy regions with the same name on other members.",
-              regionPath, StringUtils.join(membersWithThisRegion, ",")), ifNotExists);
-        }
-      }
+      // after this, one of E and C is proxy region or both are proxy regions.
 
-      // then check if the existing region's data policy is compatible
-      if (regionShortcut.isPartition() && !regionBean.getRegionType().contains("PARTITION")) {
+      // we first make sure E and C have the compatible data policy
+      if (regionShortcut.isPartition() && !existingDataPolicy.contains("PARTITION")) {
         throw new EntityExistsException("The existing region is not a partitioned region",
             ifNotExists);
       }
-      if (regionShortcut.isReplicate() && !(regionBean.getRegionType().equals("EMPTY")
-          || regionBean.getRegionType().contains("REPLICATE"))) {
+      if (regionShortcut.isReplicate()
+          && !(existingDataPolicy.equals("EMPTY") || existingDataPolicy.contains("REPLICATE")
+              || existingDataPolicy.contains("PRELOADED"))) {
         throw new EntityExistsException("The existing region is not a replicate region",
+            ifNotExists);
+      }
+      // then we make sure E and C are on different members
+      Set<String> membersWithThisRegion =
+          Arrays.stream(regionBean.getMembers()).collect(Collectors.toSet());
+      Set<String> membersWithinGroup = findMembers(groups, null).stream()
+          .map(DistributedMember::getName).collect(Collectors.toSet());
+      if (!Collections.disjoint(membersWithinGroup, membersWithThisRegion)) {
+        throw new EntityExistsException(
+            String.format("Region %s already exists on these members: %s.", regionPath,
+                StringUtils.join(membersWithThisRegion, ",")),
             ifNotExists);
       }
     }

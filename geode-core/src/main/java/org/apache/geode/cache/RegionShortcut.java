@@ -31,21 +31,21 @@ public enum RegionShortcut {
    * region. The actual RegionAttributes for a PARTITION region set the {@link DataPolicy} to
    * {@link DataPolicy#PARTITION}.
    */
-  PARTITION,
+  PARTITION("PARTITION"),
   /**
    * A PARTITION_REDUNDANT has local state that is partitioned across each peer member that created
    * the region. In addition an extra copy of the data is kept in memory. The actual
    * RegionAttributes for a PARTITION_REDUNDANT region set the {@link DataPolicy} to
    * {@link DataPolicy#PARTITION} and the redundant-copies to 1.
    */
-  PARTITION_REDUNDANT,
+  PARTITION_REDUNDANT("PARTITION"),
   /**
    * A PARTITION_PERSISTENT has local state that is partitioned across each peer member that created
    * the region. In addition its state is written to disk and recovered from disk when the region is
    * created. The actual RegionAttributes for a PARTITION_PERSISTENT region set the
    * {@link DataPolicy} to {@link DataPolicy#PERSISTENT_PARTITION}.
    */
-  PARTITION_PERSISTENT,
+  PARTITION_PERSISTENT("PERSISTENT_PARTITION"),
   /**
    * A PARTITION_REDUNDANT_PERSISTENT has local state that is partitioned across each peer member
    * that created the region. In addition its state is written to disk and recovered from disk when
@@ -53,7 +53,7 @@ public enum RegionShortcut {
    * RegionAttributes for a PARTITION_REDUNDANT_PERSISTENT region set the {@link DataPolicy} to
    * {@link DataPolicy#PERSISTENT_PARTITION} and the redundant-copies to 1.
    */
-  PARTITION_REDUNDANT_PERSISTENT,
+  PARTITION_REDUNDANT_PERSISTENT("PERSISTENT_PARTITION"),
   /**
    * A PARTITION_OVERFLOW has local state that is partitioned across each peer member that created
    * the region. It will also move the values of entries to disk once it detects that the java vm is
@@ -61,7 +61,7 @@ public enum RegionShortcut {
    * {@link DataPolicy} to {@link DataPolicy#PARTITION}. and {@link EvictionAttributes} are set to
    * {@link EvictionAlgorithm#LRU_HEAP} with {@link EvictionAction#OVERFLOW_TO_DISK}.
    */
-  PARTITION_OVERFLOW,
+  PARTITION_OVERFLOW("PARTITION"),
   /**
    * A PARTITION_REDUNDANT_OVERFLOW has local state that is partitioned across each peer member that
    * created the region. In addition an extra copy of the data is kept in memory. It will also move
@@ -70,7 +70,7 @@ public enum RegionShortcut {
    * {@link DataPolicy#PARTITION}, the redundant-copies to 1, and {@link EvictionAttributes} are set
    * to {@link EvictionAlgorithm#LRU_HEAP} with {@link EvictionAction#OVERFLOW_TO_DISK}.
    */
-  PARTITION_REDUNDANT_OVERFLOW,
+  PARTITION_REDUNDANT_OVERFLOW("PARTITION"),
   /**
    * A PARTITION_PERSISTENT_OVERFLOW has local state that is partitioned across each peer member
    * that created the region. In addition its state is written to disk and recovered from disk when
@@ -80,7 +80,7 @@ public enum RegionShortcut {
    * {@link DataPolicy#PERSISTENT_PARTITION} and {@link EvictionAttributes} are set to
    * {@link EvictionAlgorithm#LRU_HEAP} with {@link EvictionAction#OVERFLOW_TO_DISK}.
    */
-  PARTITION_PERSISTENT_OVERFLOW,
+  PARTITION_PERSISTENT_OVERFLOW("PERSISTENT_PARTITION"),
   /**
    * A PARTITION_REDUNDANT_PERSISTENT_OVERFLOW has local state that is partitioned across each peer
    * member that created the region. In addition its state is written to disk and recovered from
@@ -91,7 +91,7 @@ public enum RegionShortcut {
    * 1, and {@link EvictionAttributes} are set to {@link EvictionAlgorithm#LRU_HEAP} with
    * {@link EvictionAction#OVERFLOW_TO_DISK}.
    */
-  PARTITION_REDUNDANT_PERSISTENT_OVERFLOW,
+  PARTITION_REDUNDANT_PERSISTENT_OVERFLOW("PERSISTENT_PARTITION"),
   /**
    * A PARTITION_HEAP_LRU has local state that is partitioned across each peer member that created
    * the region. It will also destroy entries once it detects that the java vm is running low of
@@ -99,7 +99,7 @@ public enum RegionShortcut {
    * to {@link DataPolicy#PARTITION} and {@link EvictionAttributes} are set to
    * {@link EvictionAlgorithm#LRU_HEAP} with {@link EvictionAction#LOCAL_DESTROY}.
    */
-  PARTITION_HEAP_LRU,
+  PARTITION_HEAP_LRU("PARTITION"),
   /**
    * A PARTITION_REDUNDANT_HEAP_LRU has local state that is partitioned across each peer member that
    * created the region. In addition an extra copy of the data is kept in memory. It will also
@@ -108,14 +108,14 @@ public enum RegionShortcut {
    * {@link DataPolicy#PARTITION}, the redundant-copies to 1, and {@link EvictionAttributes} are set
    * to {@link EvictionAlgorithm#LRU_HEAP} with {@link EvictionAction#LOCAL_DESTROY}.
    */
-  PARTITION_REDUNDANT_HEAP_LRU,
+  PARTITION_REDUNDANT_HEAP_LRU("PARTITION"),
 
   /**
    * A REPLICATE has local state that is kept in sync with all other replicate regions that exist in
    * its peers. The actual RegionAttributes for a REPLICATE region set the {@link DataPolicy} to
    * {@link DataPolicy#REPLICATE} and {@link Scope} to {@link Scope#DISTRIBUTED_ACK}.
    */
-  REPLICATE,
+  REPLICATE("REPLICATE"),
   /**
    * A REPLICATE_PERSISTENT has local state that is kept in sync with all other replicate regions
    * that exist in its peers. In addition its state is written to disk and recovered from disk when
@@ -123,7 +123,7 @@ public enum RegionShortcut {
    * {@link DataPolicy} to {@link DataPolicy#PERSISTENT_REPLICATE} and {@link Scope} to
    * {@link Scope#DISTRIBUTED_ACK}.
    */
-  REPLICATE_PERSISTENT,
+  REPLICATE_PERSISTENT("PERSISTENT_REPLICATE"),
 
   /**
    * A REPLICATE_OVERFLOW has local state that is kept in sync with all other replicate regions that
@@ -132,7 +132,7 @@ public enum RegionShortcut {
    * {@link Scope#DISTRIBUTED_ACK} and {@link EvictionAttributes} are set to
    * {@link EvictionAlgorithm#LRU_HEAP} with {@link EvictionAction#OVERFLOW_TO_DISK}.
    */
-  REPLICATE_OVERFLOW,
+  REPLICATE_OVERFLOW("REPLICATE"),
   /**
    * A REPLICATE_PERSISTENT_OVERFLOW has local state that is kept in sync with all other replicate
    * regions that exist in its peers. In addition its state is written to disk and recovered from
@@ -143,7 +143,7 @@ public enum RegionShortcut {
    * and {@link EvictionAttributes} are set to {@link EvictionAlgorithm#LRU_HEAP} with
    * {@link EvictionAction#OVERFLOW_TO_DISK}.
    */
-  REPLICATE_PERSISTENT_OVERFLOW,
+  REPLICATE_PERSISTENT_OVERFLOW("PERSISTENT_REPLICATE"),
   /**
    * A REPLICATE_HEAP_LRU has local state that is kept in sync with all other replicate regions that
    * exist in its peers. It will also destroy entries once it detects that the java vm is running
@@ -153,20 +153,20 @@ public enum RegionShortcut {
    * and {@link EvictionAttributes} are set to {@link EvictionAlgorithm#LRU_HEAP} with
    * {@link EvictionAction#LOCAL_DESTROY}.
    */
-  REPLICATE_HEAP_LRU,
+  REPLICATE_HEAP_LRU("PRELOADED"),
 
   /**
    * A LOCAL region only has local state and never sends operations to others. The actual
    * RegionAttributes for a LOCAL region set the {@link DataPolicy} to {@link DataPolicy#NORMAL}.
    */
-  LOCAL,
+  LOCAL("NORMAL"),
   /**
    * A LOCAL_PERSISTENT region only has local state and never sends operations to others but it does
    * write its state to disk and can recover that state when the region is created. The actual
    * RegionAttributes for a LOCAL_PERSISTENT region set the {@link DataPolicy} to
    * {@link DataPolicy#PERSISTENT_REPLICATE}.
    */
-  LOCAL_PERSISTENT,
+  LOCAL_PERSISTENT("PERSISTENT_REPLICATE"),
 
   /**
    * A LOCAL_HEAP_LRU region only has local state and never sends operations to others. It will also
@@ -175,7 +175,7 @@ public enum RegionShortcut {
    * {@link DataPolicy#NORMAL} and {@link EvictionAttributes} are set to
    * {@link EvictionAlgorithm#LRU_HEAP} with {@link EvictionAction#LOCAL_DESTROY}.
    */
-  LOCAL_HEAP_LRU,
+  LOCAL_HEAP_LRU("NORMAL"),
   /**
    * A LOCAL_OVERFLOW region only has local state and never sends operations to others. It will also
    * move the values of entries to disk once it detects that the java vm is running low of memory.
@@ -183,7 +183,7 @@ public enum RegionShortcut {
    * {@link DataPolicy#NORMAL} and {@link EvictionAttributes} are set to
    * {@link EvictionAlgorithm#LRU_HEAP} with {@link EvictionAction#OVERFLOW_TO_DISK}.
    */
-  LOCAL_OVERFLOW,
+  LOCAL_OVERFLOW("NORMAL"),
   /**
    * A LOCAL_PERSISTENT_OVERFLOW region only has local state and never sends operations to others
    * but it does write its state to disk and can recover that state when the region is created. It
@@ -192,7 +192,7 @@ public enum RegionShortcut {
    * {@link DataPolicy} to {@link DataPolicy#PERSISTENT_REPLICATE} and {@link EvictionAttributes}
    * are set to {@link EvictionAlgorithm#LRU_HEAP} with {@link EvictionAction#OVERFLOW_TO_DISK}.
    */
-  LOCAL_PERSISTENT_OVERFLOW,
+  LOCAL_PERSISTENT_OVERFLOW("PERSISTENT_REPLICATE"),
 
   /**
    * A PARTITION_PROXY has no local state and forwards all operations to a PARTITION or a
@@ -200,14 +200,14 @@ public enum RegionShortcut {
    * PARTITION_PROXY region set the {@link DataPolicy} to {@link DataPolicy#PARTITION} and the
    * local-max-memory to 0.
    */
-  PARTITION_PROXY,
+  PARTITION_PROXY("PARTITION"),
   /**
    * A PARTITION_PROXY_REDUNDANT has no local state and forwards all operations to a
    * PARTITION_REDUNDANT or a PARTITION_REDUNDANT_PERSISTENT that exists in its peers. The actual
    * RegionAttributes for a PARTITION_PROXY_REDUNDANT region set the {@link DataPolicy} to
    * {@link DataPolicy#PARTITION}, the local-max-memory to 0, and the redundant-copies to 1.
    */
-  PARTITION_PROXY_REDUNDANT,
+  PARTITION_PROXY_REDUNDANT("PARTITION"),
   /**
    * A REPLICATE_PROXY has no local state and forwards all operations (except queries) to a
    * REPLICATE or a REPLICATE_PERSISTENT that exists in its peers. Queries will be executed on this
@@ -215,7 +215,13 @@ public enum RegionShortcut {
    * {@link DataPolicy} to {@link DataPolicy#EMPTY} and {@link Scope} to
    * {@link Scope#DISTRIBUTED_ACK}.
    */
-  REPLICATE_PROXY;
+  REPLICATE_PROXY("EMPTY");
+
+  private String dataPolicy;
+
+  RegionShortcut(String dataPolicy) {
+    this.dataPolicy = dataPolicy;
+  }
 
   public boolean isProxy() {
     return name().contains("PROXY");
@@ -239,5 +245,9 @@ public enum RegionShortcut {
 
   public boolean isOverflow() {
     return name().contains("OVERFLOW");
+  }
+
+  public String getDataPolicy() {
+    return dataPolicy;
   }
 }
