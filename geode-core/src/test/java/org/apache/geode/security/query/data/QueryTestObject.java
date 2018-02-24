@@ -18,6 +18,7 @@ import java.io.Serializable;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
+import java.util.Map;
 
 public class QueryTestObject implements Serializable {
   public int id = -1;
@@ -25,6 +26,8 @@ public class QueryTestObject implements Serializable {
   private String name;
 
   public Date dateField;
+
+  public Map<Object, Object> mapField;
 
   public QueryTestObject(int id, String name) {
     this.id = id;
