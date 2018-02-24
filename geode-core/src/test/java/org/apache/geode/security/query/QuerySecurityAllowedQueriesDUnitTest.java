@@ -15,7 +15,9 @@
 package org.apache.geode.security.query;
 
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import org.junit.Before;
 import org.junit.Test;
@@ -252,4 +254,34 @@ public class QuerySecurityAllowedQueriesDUnitTest extends QuerySecurityBase {
         Arrays.asList(values));
   }
 
+  @Test
+  public void checkUserAuthorizationsForSelectByMapFieldQuery() {
+    QueryTestObject valueObject1 = new QueryTestObject(1, "John");
+    Map<Object, Object> map1 = new HashMap<>();
+    map1.put("intData", 1);
+    map1.put(1, 98);
+    map1.put("strData1", "ABC");
+    map1.put("strData2", "ZZZ");
+    valueObject1.mapField = map1;
+    QueryTestObject valueObject2 = new QueryTestObject(3, "Beth");
+    Map<Object, Object> map2 = new HashMap<>();
+    map2.put("intData", 99);
+    map2.put(1, 99);
+    map2.put("strData1", "XYZ");
+    map2.put("strData2", "ZZZ");
+    valueObject2.mapField = map2;
+    values = new Object[] {valueObject1, valueObject2};
+    putIntoRegion(superUserClient, keys, values, regionName);
+
+    String query1 = String.format(
+        "SELECT * FROM /%s WHERE mapField.get('intData') = 1 AND mapField.get(1) = 98 AND mapField.get('strData1') = 'ABC' AND mapField.get('strData2') = 'ZZZ'",
+        regionName);
+    executeQueryWithCheckForAccessPermissions(specificUserClient, query1, regionName,
+        Arrays.asList(new Object[] {valueObject1}));
+
+    String query2 =
+        String.format("SELECT * FROM /%s WHERE mapField.get('strData2') = 'ZZZ'", regionName);
+    executeQueryWithCheckForAccessPermissions(specificUserClient, query2, regionName,
+        Arrays.asList(values));
+  }
 }
