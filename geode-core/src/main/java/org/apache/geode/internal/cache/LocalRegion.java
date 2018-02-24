@@ -337,7 +337,7 @@ public class LocalRegion extends AbstractRegion implements LoaderHelperFactory,
   /**
    * tracks region-level version information for members
    */
-  private RegionVersionVector versionVector;
+  private final RegionVersionVector versionVector;
 
   private static final Pattern[] QUERY_PATTERNS = new Pattern[] {
       Pattern.compile("^\\(*select .*",
@@ -661,6 +661,8 @@ public class LocalRegion extends AbstractRegion implements LoaderHelperFactory,
 
     this.testCallable = internalRegionArgs.getTestCallable();
     eventTracker = createEventTracker();
+
+    versionVector = createRegionVersionVector();
   }
 
   protected EventTracker createEventTracker() {
@@ -711,24 +713,32 @@ public class LocalRegion extends AbstractRegion implements LoaderHelperFactory,
     }
   }
 
+  protected RegionVersionVector createRegionVersionVector() {
+    if (getConcurrencyChecksEnabled()) {
+      return createVersionVector();
+    }
+    return null;
+  }
+
   /** initializes a new version vector for this region */
-  void createVersionVector() {
-    this.versionVector = RegionVersionVector.create(getVersionMember(), this);
+  private RegionVersionVector createVersionVector() {
+    RegionVersionVector regionVersionVector = RegionVersionVector.create(getVersionMember(), this);
 
     if (this.getDataPolicy().withPersistence()) {
       // copy the versions that we have recovered from disk into
       // the version vector.
-      RegionVersionVector diskVector = this.diskRegion.getRegionVersionVector();
-      this.versionVector.recordVersions(diskVector.getCloneForTransmission());
+      RegionVersionVector diskVector = diskRegion.getRegionVersionVector();
+      regionVersionVector.recordVersions(diskVector.getCloneForTransmission());
     } else if (!this.getDataPolicy().withStorage()) {
       // version vectors are currently only necessary in empty regions for
       // tracking canonical member IDs
-      this.versionVector.turnOffRecordingForEmptyRegion();
+      regionVersionVector.turnOffRecordingForEmptyRegion();
     }
-    if (this.serverRegionProxy != null) {
-      this.versionVector.setIsClientVector();
+    if (serverRegionProxy != null) {
+      regionVersionVector.setIsClientVector();
     }
-    this.cache.getDistributionManager().addMembershipListener(this.versionVector);
+    cache.getDistributionManager().addMembershipListener(regionVersionVector);
+    return regionVersionVector;
   }
 
   @Override
@@ -2288,10 +2298,6 @@ public class LocalRegion extends AbstractRegion implements LoaderHelperFactory,
       }
     }
 
-    // if we're versioning entries we need a region-level version vector
-    if (this.getConcurrencyChecksEnabled() && this.versionVector == null) {
-      createVersionVector();
-    }
     // if not local, then recovery happens in InitialImageOperation
     if (this.scope.isLocal()) {
       createOQLIndexes(internalRegionArgs);
@@ -3357,7 +3363,6 @@ public class LocalRegion extends AbstractRegion implements LoaderHelperFactory,
       Assert.assertTrue(this.entries.isEmpty(),
           "RegionMap should be empty but was of size:" + this.entries.size());
       this.entries.setEntryFactory(versionedEntryFactory);
-      createVersionVector();
     }
   }
 
