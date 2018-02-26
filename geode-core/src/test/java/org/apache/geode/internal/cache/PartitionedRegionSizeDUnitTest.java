@@ -14,555 +14,258 @@
  */
 package org.apache.geode.internal.cache;
 
-import static org.junit.Assert.*;
+import static org.apache.geode.cache.EvictionAction.OVERFLOW_TO_DISK;
+import static org.apache.geode.cache.EvictionAttributes.createLRUEntryAttributes;
+import static org.apache.geode.test.dunit.Host.getHost;
+import static org.assertj.core.api.Assertions.assertThat;
 
 import java.io.File;
 
+import org.junit.Before;
+import org.junit.Rule;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
-import org.apache.geode.cache.AttributesFactory;
 import org.apache.geode.cache.Cache;
-import org.apache.geode.cache.CacheException;
-import org.apache.geode.cache.EvictionAction;
-import org.apache.geode.cache.EvictionAttributes;
-import org.apache.geode.cache.PartitionAttributes;
+import org.apache.geode.cache.DiskStore;
+import org.apache.geode.cache.DiskStoreFactory;
 import org.apache.geode.cache.PartitionAttributesFactory;
 import org.apache.geode.cache.Region;
-import org.apache.geode.cache.RegionAttributes;
-import org.apache.geode.cache30.CacheSerializableRunnable;
-import org.apache.geode.distributed.DistributedSystem;
-import org.apache.geode.internal.OSProcess;
-import org.apache.geode.internal.logging.InternalLogWriter;
-import org.apache.geode.test.dunit.Assert;
-import org.apache.geode.test.dunit.AsyncInvocation;
-import org.apache.geode.test.dunit.Host;
-import org.apache.geode.test.dunit.LogWriterUtils;
-import org.apache.geode.test.dunit.SerializableCallable;
-import org.apache.geode.test.dunit.SerializableRunnable;
-import org.apache.geode.test.dunit.ThreadUtils;
+import org.apache.geode.cache.RegionFactory;
+import org.apache.geode.cache.RegionShortcut;
 import org.apache.geode.test.dunit.VM;
-import org.apache.geode.test.dunit.cache.internal.JUnit4CacheTestCase;
-import org.apache.geode.test.dunit.internal.JUnit4DistributedTestCase;
+import org.apache.geode.test.dunit.cache.CacheTestCase;
 import org.apache.geode.test.junit.categories.DistributedTest;
+import org.apache.geode.test.junit.rules.serializable.SerializableTemporaryFolder;
 
 /**
  * This test verifies the size API for 100 thousand put operations (done synch/asynch) on
  * PartitionedRegions with different combinations of Scope and Redundancy (Scope DIST_ACK,
  * Redundancy 1 AND Scope DIST_NO_ACK, Redundancy 0).
- *
- *
  */
 @Category(DistributedTest.class)
-public class PartitionedRegionSizeDUnitTest extends PartitionedRegionDUnitTestCase {
+public class PartitionedRegionSizeDUnitTest extends CacheTestCase {
 
-  public PartitionedRegionSizeDUnitTest() {
-    super();
-  }
+  private static final String DISK_STORE_NAME = "DISKSTORE";
+  private static final String REGION_NAME = "PR";
+  private static final int CNT = 100;
+  private static final int TOTAL_NUMBER_OF_BUCKETS = 5;
 
-  public static final String PR_PREFIX = "PR";
+  private File overflowDirectory;
 
-  static final Boolean value = new Boolean(true);
+  private VM vm0;
+  private VM vm1;
+  private VM vm2;
+  private VM vm3;
 
-  static final int MAX_REGIONS = 1;
+  @Rule
+  public SerializableTemporaryFolder temporaryFolder = new SerializableTemporaryFolder();
 
-  static final int cnt = 100;
+  @Before
+  public void setUp() throws Exception {
+    vm0 = getHost(0).getVM(0);
+    vm1 = getHost(0).getVM(1);
+    vm2 = getHost(0).getVM(2);
+    vm3 = getHost(0).getVM(3);
 
-  final int totalNumBuckets = 5;
-
-  /**
-   * This method creates Partitioned Region (Scope DIST_ACK, Redundancy = 1) with DataStores on 3
-   * VMs and only accessor on 4th VM. Then it does put operations synchronosly and checks that size
-   * is matched.
-   *
-   * @throws Exception
-   */
-  public void sizeOpsForDistAckSync() throws Exception {
-
-    Host host = Host.getHost(0);
-
-    VM vm0 = host.getVM(0);
-    VM vm1 = host.getVM(1);
-    VM vm2 = host.getVM(2);
-    VM vm3 = host.getVM(3);
-
-    CacheSerializableRunnable createPRs = new CacheSerializableRunnable("createPrRegions") {
-      public void run2() throws CacheException {
-        Cache cache = getCache();
-        for (int i = 0; i < MAX_REGIONS; i++) {
-          cache.createRegion(PR_PREFIX + "DistAckSync" + i, createRegionAttributesForPR(1, 200));
-        }
-      }
-    };
-
-    CacheSerializableRunnable createAccessor = new CacheSerializableRunnable("createAccessor") {
-      public void run2() throws CacheException {
-        Cache cache = getCache();
-        for (int i = 0; i < MAX_REGIONS; i++) {
-          cache.createRegion(PR_PREFIX + "DistAckSync" + i, createRegionAttributesForPR(1, 0));
-        }
-      }
-    };
-
-    // Create PRs with dataStore on 3 VMs
-    vm0.invoke(createPRs);
-    vm1.invoke(createPRs);
-    vm2.invoke(createPRs);
-
-    // Create only accessor on 4th VM
-    vm3.invoke(createAccessor);
-
-    // Do put operations on PR synchronosly.
-    vm3.invoke(new CacheSerializableRunnable("doPutOperations") {
-      public void run2() {
-        Cache cache = getCache();
-        final int oldLevel =
-            setLogLevel(LogWriterUtils.getLogWriter(), InternalLogWriter.WARNING_LEVEL);
-        for (int j = 0; j < MAX_REGIONS; j++) {
-          Region pr = cache.getRegion(Region.SEPARATOR + PR_PREFIX + "DistAckSync" + j);
-          assertNotNull(pr);
-          for (int k = 0; k < cnt; k++) {
-            Object key = new Integer(k);
-            pr.put(key, value);
-          }
-        }
-        setLogLevel(LogWriterUtils.getLogWriter(), oldLevel);
-
-      }
-    });
-
-    // Validate the size against the total put operations
-    vm3.invoke(new CacheSerializableRunnable("validateSize") {
-      public void run2() {
-        Cache cache = getCache();
-        for (int j = 0; j < MAX_REGIONS; j++) {
-          Region pr = cache.getRegion(Region.SEPARATOR + PR_PREFIX + "DistAckSync" + j);
-          assertNotNull(pr);
-          assertEquals("size not matching=", cnt, pr.size());
-        }
-      }
-    });
-
-    // destroying Regions created
-    vm3.invoke(new CacheSerializableRunnable("destroyRegion") {
-      public void run2() {
-        Cache cache = getCache();
-        for (int j = 0; j < MAX_REGIONS; j++) {
-          Region pr = cache.getRegion(Region.SEPARATOR + PR_PREFIX + "DistAckSync" + j);
-          assertNotNull(pr);
-          pr.destroyRegion();
-
-        }
-      }
-    });
-
-  }
-
-  /**
-   * This method creates Partitioned Region (Scope DIST_ACK, Redundancy = 1) with DataStores on 3
-   * VMs and only accessor on 4th VM. Then it does put operations Asynchronosly and checks that size
-   * is matched.
-   *
-   * @throws Exception
-   */
-  public void sizeOpsForDistAckASync() throws Throwable {
-
-    Host host = Host.getHost(0);
-
-    VM vm0 = host.getVM(0);
-    VM vm1 = host.getVM(1);
-    VM vm2 = host.getVM(2);
-    VM vm3 = host.getVM(3);
-
-    CacheSerializableRunnable createPRs = new CacheSerializableRunnable("createPrRegions") {
-      public void run2() throws CacheException {
-        Cache cache = getCache();
-        for (int i = 0; i < MAX_REGIONS; i++) {
-          cache.createRegion(PR_PREFIX + "DistAckASync" + i, createRegionAttributesForPR(1, 200));
-        }
-      }
-    };
-
-    CacheSerializableRunnable createAccessor = new CacheSerializableRunnable("createAccessor") {
-      public void run2() throws CacheException {
-        Cache cache = getCache();
-        for (int i = 0; i < MAX_REGIONS; i++) {
-          cache.createRegion(PR_PREFIX + "DistAckASync" + i, createRegionAttributesForPR(1, 0));
-        }
-      }
-    };
-
-    // Create PRs with dataStore on 3 VMs
-    vm0.invoke(createPRs);
-    vm1.invoke(createPRs);
-    vm2.invoke(createPRs);
-
-    // Create only accessor on 4th VM
-    vm3.invoke(createAccessor);
-
-    // Do put operations on these PR asynchronosly.
-    AsyncInvocation async0;
-
-    async0 = vm3.invokeAsync(new CacheSerializableRunnable("doPutOperations") {
-      public void run2() {
-        Cache cache = getCache();
-        final int oldLevel =
-            setLogLevel(LogWriterUtils.getLogWriter(), InternalLogWriter.WARNING_LEVEL);
-        for (int j = 0; j < MAX_REGIONS; j++) {
-          Region pr = cache.getRegion(Region.SEPARATOR + PR_PREFIX + "DistAckASync" + j);
-          assertNotNull(pr);
-          for (int k = 0; k < cnt; k++) {
-            Object key = new Integer(k);
-            pr.put(key, value);
-          }
-        }
-        setLogLevel(LogWriterUtils.getLogWriter(), oldLevel);
-      }
-    });
-
-    ThreadUtils.join(async0, 30 * 1000);
-
-    if (async0.exceptionOccurred()) {
-      Assert.fail("Exception during async0", async0.getException());
-    }
-
-
-
-    // Validate the size against the total put operations
-    vm3.invoke(new CacheSerializableRunnable("validateSize") {
-      public void run2() {
-        Cache cache = getCache();
-        for (int j = 0; j < MAX_REGIONS; j++) {
-          Region pr = cache.getRegion(Region.SEPARATOR + PR_PREFIX + "DistAckASync" + j);
-          assertNotNull(pr);
-          assertEquals("size not matching=", cnt, pr.size());
-        }
-      }
-    });
-
-    // destroying regions at end
-    vm3.invoke(new CacheSerializableRunnable("destroyRegion") {
-      public void run2() {
-        Cache cache = getCache();
-        for (int j = 0; j < MAX_REGIONS; j++) {
-          Region pr = cache.getRegion(Region.SEPARATOR + PR_PREFIX + "DistAckASync" + j);
-          assertNotNull(pr);
-          pr.destroyRegion();
-
-        }
-      }
-    });
-  }
-
-
-  /**
-   * This method creates Partitioned Region (Scope DIST_ACK, Redundancy = 1) with DataStores on 2
-   * VMs and then it does put operations synchronosly. After that it brings up two VMs with
-   * datastore again and does size validation. After that it disconnects first and last VM and
-   * validates size again.
-   *
-   * @throws Exception
-   */
-  public void sizeOpsForDistAckSyncChangingVMCount() throws Exception {
-
-    Host host = Host.getHost(0);
-
-    VM vm0 = host.getVM(0);
-    VM vm1 = host.getVM(1);
-    VM vm2 = host.getVM(2);
-    VM vm3 = host.getVM(3);
-
-    CacheSerializableRunnable createPRs = new CacheSerializableRunnable("createPrRegions") {
-      public void run2() throws CacheException {
-        Cache cache = getCache();
-        for (int i = 0; i < MAX_REGIONS; i++) {
-          cache.createRegion(PR_PREFIX + "DistAckSyncChangingVMCount" + i,
-              createRegionAttributesForPR(2, 200));
-        }
-      }
-    };
-
-    CacheSerializableRunnable disconnectVM = new CacheSerializableRunnable("disconnectVM") {
-      public void run2() {
-        Cache cache = getCache();
-        DistributedSystem ds = cache.getDistributedSystem();
-        ds.disconnect();
-      }
-    };
-
-    // Create PRs with dataStore on 4 VMs
-    vm0.invoke(createPRs);
-    vm1.invoke(createPRs);
-
-    // Do put operations on these PR synchronosly.
-    vm0.invoke(new CacheSerializableRunnable("doPutOperations") {
-      public void run2() {
-        Cache cache = getCache();
-        final int oldLevel =
-            setLogLevel(LogWriterUtils.getLogWriter(), InternalLogWriter.WARNING_LEVEL);
-        for (int j = 0; j < MAX_REGIONS; j++) {
-          Region pr =
-              cache.getRegion(Region.SEPARATOR + PR_PREFIX + "DistAckSyncChangingVMCount" + j);
-          assertNotNull(pr);
-          for (int k = 0; k < cnt; k++) {
-            Object key = new Integer(k);
-            pr.put(key, value);
-          }
-        }
-        setLogLevel(LogWriterUtils.getLogWriter(), oldLevel);
-      }
-    });
-
-    vm2.invoke(createPRs);
-    vm3.invoke(createPRs);
-
-    // Validate the size against the total put operations
-    vm3.invoke(new CacheSerializableRunnable("validateSize") {
-      public void run2() {
-        Cache cache = getCache();
-        for (int j = 0; j < MAX_REGIONS; j++) {
-          Region pr =
-              cache.getRegion(Region.SEPARATOR + PR_PREFIX + "DistAckSyncChangingVMCount" + j);
-          assertNotNull(pr);
-          assertEquals("size not matching=", cnt, pr.size());
-        }
-      }
-    });
-
-    vm0.invoke(disconnectVM);
-    vm3.invoke(disconnectVM);
-
-    // Validate the size against the total put operations
-    vm1.invoke(new CacheSerializableRunnable("validateSize") {
-      public void run2() {
-        Cache cache = getCache();
-        for (int j = 0; j < MAX_REGIONS; j++) {
-          Region pr =
-              cache.getRegion(Region.SEPARATOR + PR_PREFIX + "DistAckSyncChangingVMCount" + j);
-          assertNotNull(pr);
-          assertEquals("size not matching=", cnt, pr.size());
-        }
-      }
-    });
-
+    overflowDirectory = temporaryFolder.newFolder("overflowDir");
   }
 
   /**
    * This test method invokes methods doing size validation on PRs.
-   *
-   * @throws Exception
    */
   @Test
-  public void testSize() throws Throwable {
-    sizeOpsForDistAckSync();
-    sizeOpsForDistAckASync();
+  public void testSize() throws Exception {
+    // Create PRs with dataStore on 3 VMs
+    vm0.invoke(() -> createPartitionedRegion(200, 1));
+    vm1.invoke(() -> createPartitionedRegion(200, 1));
+    vm2.invoke(() -> createPartitionedRegion(200, 1));
+
+    // Create only accessor on 4th VM
+    vm3.invoke(() -> createPartitionedRegion(0, 1));
+
+    // Do put operations on PR synchronously.
+    vm3.invoke(() -> {
+      Region<Integer, Integer> region = getRegion(REGION_NAME);
+      for (int k = 0; k < CNT; k++) {
+        region.put(k, k);
+      }
+    });
+
+    // Validate the size against the total put operations
+    vm3.invoke(() -> {
+      Region region = getRegion(REGION_NAME);
+      assertThat(region.size()).isEqualTo(CNT);
+    });
   }
 
+  /**
+   * Regression test for TRAC #39868
+   *
+   * <p>
+   * TRAC #39868: PartitionMemberDetails.getSize() reports negative PR sizes when redundancy is 0
+   */
   @Test
   public void testBug39868() throws Exception {
-    Host host = Host.getHost(0);
+    vm0.invoke(() -> createPartitionedRegion(200, 1));
 
-    VM vm0 = host.getVM(0);
-    VM vm1 = host.getVM(1);
-    VM vm2 = host.getVM(2);
-    VM vm3 = host.getVM(3);
-
-    SerializableRunnable createPRs = new SerializableRunnable("createPrRegion") {
-      public void run() throws CacheException {
-        Cache cache = getCache();
-        Region partitionedregion =
-            cache.createRegion(PR_PREFIX, createRegionAttributesForPR(1, 200));
-      }
-    };
-    vm0.invoke(createPRs);
-
-    vm0.invoke(new SerializableRunnable("create data") {
-      public void run() {
-        Cache cache = getCache();
-        Region partitionedregion = cache.getRegion(PR_PREFIX);
-        for (int i = 0; i < 100; i++) {
-          // just to be tricky, put everything in the same bucket
-          partitionedregion.put(Integer.valueOf(i) * totalNumBuckets, new byte[100]);
-        }
+    vm0.invoke(() -> {
+      Region<Integer, byte[]> region = getRegion(REGION_NAME);
+      for (int i = 0; i < 100; i++) {
+        region.put(i * TOTAL_NUMBER_OF_BUCKETS, new byte[100]);
       }
     });
 
-    vm1.invoke(createPRs);
+    vm1.invoke(() -> createPartitionedRegion(200, 1));
 
-    vm0.invoke(new SerializableRunnable("delete data") {
-      public void run() {
-        Cache cache = getCache();
-        Region partitionedregion = cache.getRegion(PR_PREFIX);
-        for (int i = 0; i < 100; i++) {
-          partitionedregion.destroy(Integer.valueOf(i) * totalNumBuckets);
-        }
+    vm0.invoke(() -> {
+      Region<Integer, byte[]> region = getRegion(REGION_NAME);
+      for (int i = 0; i < 100; i++) {
+        region.destroy(i * TOTAL_NUMBER_OF_BUCKETS);
       }
     });
 
-    vm1.invoke(new SerializableRunnable("check size") {
-
-      public void run() {
-        Cache cache = getCache();
-        PartitionedRegion partitionedregion = (PartitionedRegion) cache.getRegion(PR_PREFIX);
-        long bytes = partitionedregion.getDataStore().currentAllocatedMemory();
-        assertEquals(0, bytes);
-      }
+    vm1.invoke(() -> {
+      PartitionedRegion partitionedRegion = getPartitionedRegion(REGION_NAME);
+      long bytes = partitionedRegion.getDataStore().currentAllocatedMemory();
+      assertThat(bytes).isEqualTo(0);
     });
   }
 
   @Test
   public void testByteSize() throws Exception {
-    Host host = Host.getHost(0);
-    VM vm0 = host.getVM(0);
-    VM vm1 = host.getVM(1);
+    vm0.invoke(() -> createPartitionedRegion(200, 1));
+    vm1.invoke(() -> createPartitionedRegion(200, 1));
 
-    SerializableRunnable createPRs = new SerializableRunnable("createPrRegion") {
-      public void run() throws CacheException {
-        Cache cache = getCache();
-        Region partitionedregion =
-            cache.createRegion(PR_PREFIX, createRegionAttributesForPR(1, 200));
-      }
-    };
-    final long oneItemSize = runProportionalSize(createPRs);
+    long bucketSizeWithOneEntry = vm0.invoke(() -> {
+      Region<Integer, byte[]> region = getRegion(REGION_NAME);
+      region.put(0, new byte[100]);
 
-    SerializableRunnable checkMemSize = new SerializableRunnable("checkMemSize") {
-      public void run() throws CacheException {
-        Cache cache = getCache();
-        PartitionedRegion partitionedregion = (PartitionedRegion) cache.getRegion(PR_PREFIX);
-        PartitionedRegionDataStore dataStore = partitionedregion.getDataStore();
-        assertEquals(50 * oneItemSize, dataStore.currentAllocatedMemory());
+      PartitionedRegion partitionedRegion = (PartitionedRegion) region;
+      PartitionedRegionDataStore dataStore = partitionedRegion.getDataStore();
+      long size = dataStore.getBucketSize(0);
+
+      for (int i = 1; i < 100; i++) {
+        region.put(i * TOTAL_NUMBER_OF_BUCKETS, new byte[100]);
       }
-    };
+      assertThat(dataStore.getBucketsManaged()).isEqualTo((short) 1);
+
+      // make sure the size is proportional to the amount of data
+      assertThat(dataStore.getBucketSize(0)).isEqualTo(100 * size);
+
+      // destroy and invalidate entries and make sure the size goes down
+      for (int i = 0; i < 25; i++) {
+        region.destroy(i * TOTAL_NUMBER_OF_BUCKETS);
+      }
+
+      for (int i = 25; i < 50; i++) {
+        region.invalidate(i * TOTAL_NUMBER_OF_BUCKETS);
+      }
+
+      assertThat(dataStore.getBucketSize(0)).isEqualTo(50 * size);
+
+      // put some larger values in and make sure the size goes up
+      for (int i = 50; i < 75; i++) {
+        region.put(i * TOTAL_NUMBER_OF_BUCKETS, new byte[150]);
+      }
+
+      // Now put in some smaller values and see if the size balances out
+      for (int i = 75; i < 100; i++) {
+        region.put(i * TOTAL_NUMBER_OF_BUCKETS, new byte[50]);
+      }
+
+      assertThat(dataStore.getBucketSize(0)).isEqualTo(50 * size);
+
+      return size;
+    });
+
+    vm1.invoke(() -> {
+      PartitionedRegion partitionedRegion = getPartitionedRegion(REGION_NAME);
+      long bucketSize = partitionedRegion.getDataStore().getBucketSize(0);
+      assertThat(bucketSize).isEqualTo(50 * bucketSizeWithOneEntry);
+    });
+
+    vm1.invoke(() -> {
+      PartitionedRegion partitionedRegion = getPartitionedRegion(REGION_NAME);
+      PartitionedRegionDataStore dataStore = partitionedRegion.getDataStore();
+      assertThat(dataStore.currentAllocatedMemory()).isEqualTo(50 * bucketSizeWithOneEntry);
+    });
   }
 
   @Test
   public void testByteSizeWithEviction() throws Exception {
-    Host host = Host.getHost(0);
+    vm0.invoke(() -> createPartitionedRegionWithOverflow(200, 1));
 
-    final String uniqueName = getUniqueName();
-    SerializableRunnable createPRs = new SerializableRunnable("createPrRegion") {
-      public void run() throws CacheException {
-        Cache cache = getCache();
-        AttributesFactory attr = new AttributesFactory();
-        PartitionAttributesFactory paf = new PartitionAttributesFactory();
-        PartitionAttributes prAttr = paf.setRedundantCopies(1).setLocalMaxMemory(200)
-            .setTotalNumBuckets(totalNumBuckets).create();
-        attr.setPartitionAttributes(prAttr);
-        attr.setEvictionAttributes(
-            EvictionAttributes.createLRUEntryAttributes(2, EvictionAction.OVERFLOW_TO_DISK));
-        final File[] diskDirs = new File[1];
-        diskDirs[0] = new File("overflowDir/" + uniqueName + "_" + OSProcess.getId());
-        diskDirs[0].mkdirs();
-        attr.setDiskSynchronous(true);
-        attr.setDiskStoreName(cache.createDiskStoreFactory().setDiskDirs(diskDirs)
-            .create("PartitionedRegionSizeDUnitTest").getName());
-        // why isn't attr used after this?
-        Region partitionedregion =
-            cache.createRegion(PR_PREFIX, createRegionAttributesForPR(1, 200));
+    long bucketSizeWithOneEntry = vm0.invoke(() -> {
+      Region<Integer, byte[]> region = getRegion(REGION_NAME);
+      region.put(0, new byte[100]);
+
+      PartitionedRegion partitionedRegion = (PartitionedRegion) region;
+      PartitionedRegionDataStore dataStore = partitionedRegion.getDataStore();
+      long size = dataStore.getBucketSize(0);
+
+      for (int i = 1; i < 100; i++) {
+        region.put(i * TOTAL_NUMBER_OF_BUCKETS, new byte[100]);
       }
-    };
-    final long oneItemSize = runProportionalSize(createPRs);
+      assertThat(dataStore.getBucketsManaged()).isEqualTo((short) 1);
 
-    SerializableRunnable checkMemSize = new SerializableRunnable("checkMemSize") {
-      public void run() throws CacheException {
-        Cache cache = getCache();
-        PartitionedRegion partitionedregion = (PartitionedRegion) cache.getRegion(PR_PREFIX);
-        PartitionedRegionDataStore dataStore = partitionedregion.getDataStore();
-
-        // there should only be 2 items in memory
-        assertEquals(2 * oneItemSize, dataStore.currentAllocatedMemory());
-
-        // fault something else into memory and check again.
-        partitionedregion.get(Long.valueOf(82 * totalNumBuckets));
-        assertEquals(2 * oneItemSize, dataStore.currentAllocatedMemory());
-        assertEquals(50 * oneItemSize, dataStore.getBucketSize(0));
-      }
-    };
-  }
-
-  public long runProportionalSize(SerializableRunnable createPRs) throws Exception {
-    Host host = Host.getHost(0);
-    VM vm0 = host.getVM(0);
-    VM vm1 = host.getVM(1);
-    VM vm2 = host.getVM(2);
-    VM vm3 = host.getVM(3);
-
-
-    vm0.invoke(createPRs);
-    vm1.invoke(createPRs);
-
-    final Long oneItemSize = (Long) vm0.invoke(new SerializableCallable("create data") {
-      public Object call() {
-        Cache cache = getCache();
-        PartitionedRegion partitionedregion = (PartitionedRegion) cache.getRegion(PR_PREFIX);
-        PartitionedRegionDataStore dataStore = partitionedregion.getDataStore();
-        partitionedregion.put(Integer.valueOf(0), new byte[100]);
-        long oneItemSize = dataStore.getBucketSize(0);
-        for (int i = 1; i < 100; i++) {
-          partitionedregion.put(Integer.valueOf(i * totalNumBuckets), new byte[100]);
-        }
-        assertEquals(1, dataStore.getBucketsManaged());
-        // make sure the size is proportional to the amount of data
-        assertEquals(100 * oneItemSize, dataStore.getBucketSize(0));
-
-        // destroy and invalidate entries and make sure the size goes down
-        for (int i = 0; i < 25; i++) {
-          partitionedregion.destroy(Integer.valueOf(i * totalNumBuckets));
-        }
-
-        for (int i = 25; i < 50; i++) {
-          partitionedregion.invalidate(Integer.valueOf(i * totalNumBuckets));
-        }
-
-        assertEquals(50 * oneItemSize, dataStore.getBucketSize(0));
-
-        // put some larger values in and make sure the size goes up
-        for (int i = 50; i < 75; i++) {
-          partitionedregion.put(Integer.valueOf(i * totalNumBuckets), new byte[150]);
-        }
-
-        // Now put in some smaller values and see if the size balances
-        // out
-        for (int i = 75; i < 100; i++) {
-          partitionedregion.put(Integer.valueOf(i * totalNumBuckets), new byte[50]);
-        }
-
-        assertEquals(50 * oneItemSize, dataStore.getBucketSize(0));
-
-        return Long.valueOf(oneItemSize);
-      }
+      return size;
     });
 
+    vm0.invoke(() -> {
+      Region<Integer, byte[]> region = getRegion(REGION_NAME);
+      PartitionedRegion partitionedRegion = (PartitionedRegion) region;
+      PartitionedRegionDataStore dataStore = partitionedRegion.getDataStore();
 
-    vm1.invoke(new SerializableRunnable("check size") {
+      // there should only be 2 items in memory
+      assertThat(dataStore.currentAllocatedMemory()).isEqualTo(2 * bucketSizeWithOneEntry);
 
-      public void run() {
-        Cache cache = getCache();
-        PartitionedRegion partitionedregion = (PartitionedRegion) cache.getRegion(PR_PREFIX);
-        long bytes = partitionedregion.getDataStore().getBucketSize(0);
-        assertEquals(50 * oneItemSize.longValue(), bytes);
-      }
+      // fault something else into memory and check again.
+      region.get(82 * TOTAL_NUMBER_OF_BUCKETS);
+      assertThat(dataStore.currentAllocatedMemory()).isEqualTo(2 * bucketSizeWithOneEntry);
     });
-
-    return oneItemSize.longValue();
   }
 
+  private void createPartitionedRegionWithOverflow(final int localMaxMemory, final int redundancy) {
+    Cache cache = getCache();
 
-  /**
-   * This private methods sets the passed attributes and returns RegionAttribute object, which is
-   * used in create region
-   *
-   * @param redundancy
-   * @param localMaxMem
-   *
-   * @return
-   */
-  protected RegionAttributes createRegionAttributesForPR(int redundancy, int localMaxMem) {
-    AttributesFactory attr = new AttributesFactory();
+    File[] diskDirs = new File[] {overflowDirectory};
+
+    DiskStoreFactory diskStoreFactory = cache.createDiskStoreFactory();
+    diskStoreFactory.setDiskDirs(diskDirs);
+    DiskStore diskStore = diskStoreFactory.create(DISK_STORE_NAME);
+
     PartitionAttributesFactory paf = new PartitionAttributesFactory();
-    PartitionAttributes prAttr = paf.setRedundantCopies(redundancy).setLocalMaxMemory(localMaxMem)
-        .setTotalNumBuckets(totalNumBuckets).create();
-    attr.setPartitionAttributes(prAttr);
-    return attr.create();
+    paf.setRedundantCopies(redundancy);
+    paf.setLocalMaxMemory(localMaxMemory);
+    paf.setTotalNumBuckets(TOTAL_NUMBER_OF_BUCKETS);
+
+    RegionFactory regionFactory = getCache().createRegionFactory(RegionShortcut.PARTITION);
+    regionFactory.setDiskStoreName(diskStore.getName());
+    regionFactory.setDiskSynchronous(true);
+    regionFactory.setEvictionAttributes(createLRUEntryAttributes(2, OVERFLOW_TO_DISK));
+    regionFactory.setPartitionAttributes(paf.create());
+
+    regionFactory.create(REGION_NAME);
+  }
+
+  private void createPartitionedRegion(final int localMaxMemory, final int redundancy) {
+    PartitionAttributesFactory paf = new PartitionAttributesFactory();
+    paf.setRedundantCopies(redundancy);
+    paf.setLocalMaxMemory(localMaxMemory);
+    paf.setTotalNumBuckets(TOTAL_NUMBER_OF_BUCKETS);
+
+    RegionFactory regionFactory = getCache().createRegionFactory(RegionShortcut.PARTITION);
+    regionFactory.setPartitionAttributes(paf.create());
+
+    regionFactory.create(REGION_NAME);
+  }
+
+  private Region getRegion(String regionName) {
+    return getCache().getRegion(regionName);
+  }
+
+  private PartitionedRegion getPartitionedRegion(String regionName) {
+    return (PartitionedRegion) getCache().getRegion(regionName);
   }
 }

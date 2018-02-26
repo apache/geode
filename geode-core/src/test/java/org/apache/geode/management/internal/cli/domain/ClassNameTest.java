@@ -45,7 +45,7 @@ public class ClassNameTest {
 
   @Test
   public void emptyCanNotInstantiate() {
-    assertThatThrownBy(() -> ClassName.EMPTY.newInstance()).isInstanceOf(RuntimeException.class)
+    assertThatThrownBy(() -> ClassName.EMPTY.newInstance(null)).isInstanceOf(RuntimeException.class)
         .hasMessageContaining("Error instantiating class");
   }
 
@@ -101,7 +101,7 @@ public class ClassNameTest {
   @Test
   public void getInstance() {
     ClassName<String> klass = new ClassName("java.lang.String");
-    String s = klass.newInstance();
+    String s = klass.newInstance(null);
     assertThat(s.toString()).isEqualTo("");
   }
 
@@ -109,7 +109,7 @@ public class ClassNameTest {
   public void getInstanceWithProps() {
     String json = "{\"k\":\"v\"}";
     ClassName<MyCacheWriter> cacheWriter = new ClassName<>(MyCacheWriter.class.getName(), json);
-    MyCacheWriter obj = cacheWriter.newInstance();
+    MyCacheWriter obj = cacheWriter.newInstance(null);
     assertThat(obj.getProperties()).containsEntry("k", "v").containsOnlyKeys("k");
   }
 }

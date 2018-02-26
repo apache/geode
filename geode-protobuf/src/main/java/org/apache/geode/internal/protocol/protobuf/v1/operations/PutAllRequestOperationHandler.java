@@ -47,9 +47,9 @@ public class PutAllRequestOperationHandler
     Region region = messageExecutionContext.getCache().getRegion(regionName);
 
     if (region == null) {
-      logger.error("Received PutAll request for non-existing region {}", regionName);
+      logger.error("Received put-all request for nonexistent region: {}", regionName);
       return Failure.of(BasicTypes.ErrorCode.SERVER_ERROR,
-          "Region passed does not exist: " + regionName);
+          "Region \"" + regionName + "\" not found");
     }
 
     long startTime = messageExecutionContext.getStatistics().startOperation();

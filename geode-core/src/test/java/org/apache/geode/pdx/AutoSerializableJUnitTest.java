@@ -1058,7 +1058,7 @@ public class AutoSerializableJUnitTest {
     setupSerializer();
     Properties props = new Properties();
     props.put("classes", "org.apache.geode.pdx.DomainObject");
-    serializer.init(props);
+    serializer.initialize(null, props);
 
     assertEquals(4, manager.getFields(DomainObject.class).size());
   }
@@ -1071,7 +1071,7 @@ public class AutoSerializableJUnitTest {
     setupSerializer();
     Properties props = new Properties();
     props.put("classes", "org.apache.geode.pdx.DomainObject#exclude=long.*");
-    serializer.init(props);
+    serializer.initialize(this.c, props);
 
     assertEquals(3, manager.getFields(DomainObject.class).size());
   }
@@ -1081,7 +1081,7 @@ public class AutoSerializableJUnitTest {
     setupSerializer();
     Properties props = new Properties();
     props.put("classes", "org.apache.geode.pdx.DomainObject#exclude=string.* ,");
-    serializer.init(props);
+    serializer.initialize(this.c, props);
 
     assertEquals(1, manager.getFields(DomainObject.class).size());
   }
@@ -1094,7 +1094,7 @@ public class AutoSerializableJUnitTest {
     setupSerializer();
     Properties props = new Properties();
     props.put("classes", "org.apache.geode.pdx.DomainObjectPdxAuto#identity=long.*");
-    serializer.init(props);
+    serializer.initialize(this.c, props);
 
     DomainObject objOut = new DomainObjectPdxAuto(4);
     objOut.set("string_0", "test string value");
@@ -1119,7 +1119,7 @@ public class AutoSerializableJUnitTest {
     Properties props = new Properties();
     props.put("classes",
         "org.apache.geode.pdx.DomainObjectPdxAuto#identity=long.*#exclude=string.*");
-    serializer.init(props);
+    serializer.initialize(this.c, props);
 
     assertEquals(27, manager.getFields(DomainObjectPdxAuto.class).size());
 
@@ -1147,7 +1147,7 @@ public class AutoSerializableJUnitTest {
     Properties props = new Properties();
     props.put("classes",
         "org.apache.geode.pdx.DomainObjectPdxAuto#identity=long.*#exclude=string.*#, com.another.class.Foo");
-    serializer.init(props);
+    serializer.initialize(this.c, props);
 
     assertEquals(27, manager.getFields(DomainObjectPdxAuto.class).size());
 
@@ -1175,7 +1175,7 @@ public class AutoSerializableJUnitTest {
     Properties props = new Properties();
     props.put("classes",
         "org.apache.geode.pdx.DomainObjectPdxAuto#identity=long.*#exclude=string.*, com.another.class.Foo");
-    serializer.init(props);
+    serializer.initialize(this.c, props);
 
     assertEquals(27, manager.getFields(DomainObjectPdxAuto.class).size());
 
@@ -1203,7 +1203,7 @@ public class AutoSerializableJUnitTest {
     Properties props = new Properties();
     props.put("classes", "org.apache.geode.pdx.DomainObjectPdxAuto#exclude=string.*, "
         + "org.apache.geode.pdx.DomainObjectPdxAuto#exclude=long.*");
-    serializer.init(props);
+    serializer.initialize(this.c, props);
 
     assertEquals(26, manager.getFields(DomainObjectPdxAuto.class).size());
   }
@@ -1217,7 +1217,7 @@ public class AutoSerializableJUnitTest {
     Properties props = new Properties();
     props.put("classes",
         "Pdx#exclude=string.*#exclude=badField, Pdx#identity=id.*, PdxAuto#exclude=long.*#identity=id.*");
-    serializer.init(props);
+    serializer.initialize(this.c, props);
 
     Properties result = serializer.getConfig();
     assertEquals(
@@ -1225,7 +1225,7 @@ public class AutoSerializableJUnitTest {
         result.getProperty("classes"));
 
     manager.resetCaches();
-    serializer.init(result);
+    serializer.initialize(this.c, result);
 
     result = serializer.getConfig();
     assertEquals(

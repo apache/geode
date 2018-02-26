@@ -64,7 +64,6 @@ import org.apache.geode.distributed.DistributedSystem;
 import org.apache.geode.distributed.internal.DistributionConfig;
 import org.apache.geode.internal.Assert;
 import org.apache.geode.internal.AvailablePort;
-import org.apache.geode.internal.cache.PartitionedRegionLocalMaxMemoryDUnitTest.TestObject1;
 import org.apache.geode.internal.cache.eviction.EvictionController;
 import org.apache.geode.internal.cache.ha.HARegionQueue;
 import org.apache.geode.internal.cache.tier.sockets.CacheServerTestUtil;
@@ -819,7 +818,8 @@ public class DeltaPropagationDUnitTest extends JUnit4DistributedTestCase {
 
   private void prepareDeltas() {
     for (int i = 0; i < EVENTS_SIZE; i++) {
-      deltaPut[i] = new DeltaTestImpl(0, "0", 0d, new byte[0], new TestObject1("0", 0));
+      deltaPut[i] =
+          new DeltaTestImpl(0, "0", 0d, new byte[0], new TestObjectWithIdentifier("0", 0));
     }
     deltaPut[1].setIntVar(5);
     deltaPut[2].setIntVar(5);
@@ -844,12 +844,13 @@ public class DeltaPropagationDUnitTest extends JUnit4DistributedTestCase {
 
     deltaPut[5].resetDeltaStatus();
     deltaPut[5].setIntVar(100);
-    deltaPut[5].setTestObj(new TestObject1("CHANGED", 100));
+    deltaPut[5].setTestObj(new TestObjectWithIdentifier("CHANGED", 100));
   }
 
   private void prepareErroneousDeltasForToDelta() {
     for (int i = 0; i < EVENTS_SIZE; i++) {
-      deltaPut[i] = new DeltaTestImpl(0, "0", 0d, new byte[0], new TestObject1("0", 0));
+      deltaPut[i] =
+          new DeltaTestImpl(0, "0", 0d, new byte[0], new TestObjectWithIdentifier("0", 0));
     }
     deltaPut[1].setIntVar(5);
     deltaPut[2].setIntVar(5);
@@ -870,12 +871,13 @@ public class DeltaPropagationDUnitTest extends JUnit4DistributedTestCase {
     deltaPut[5].setStr("str changed");
 
     deltaPut[5].setIntVar(100);
-    deltaPut[5].setTestObj(new TestObject1("CHANGED", 100));
+    deltaPut[5].setTestObj(new TestObjectWithIdentifier("CHANGED", 100));
   }
 
   private void prepareErroneousDeltasForFromDelta() {
     for (int i = 0; i < EVENTS_SIZE; i++) {
-      deltaPut[i] = new DeltaTestImpl(0, "0", 0d, new byte[0], new TestObject1("0", 0));
+      deltaPut[i] =
+          new DeltaTestImpl(0, "0", 0d, new byte[0], new TestObjectWithIdentifier("0", 0));
     }
     deltaPut[1].setIntVar(5);
     deltaPut[2].setIntVar(5);
@@ -896,7 +898,7 @@ public class DeltaPropagationDUnitTest extends JUnit4DistributedTestCase {
     deltaPut[5].setStr(DeltaTestImpl.ERRONEOUS_STRING_FOR_FROM_DELTA);
 
     deltaPut[5].setIntVar(100);
-    deltaPut[5].setTestObj(new TestObject1("CHANGED", 100));
+    deltaPut[5].setTestObj(new TestObjectWithIdentifier("CHANGED", 100));
   }
 
   private void doPuts() {

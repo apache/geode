@@ -14,614 +14,359 @@
  */
 package org.apache.geode.internal.cache;
 
-import static org.junit.Assert.*;
+import static java.util.concurrent.TimeUnit.MINUTES;
+import static java.util.concurrent.TimeUnit.SECONDS;
+import static org.apache.geode.test.dunit.Host.getHost;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.awaitility.Awaitility.await;
 
-import java.util.concurrent.CancellationException;
+import java.util.concurrent.TimeoutException;
 
+import org.junit.Before;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
 import org.apache.geode.Statistics;
-import org.apache.geode.cache.AttributesFactory;
 import org.apache.geode.cache.Cache;
-import org.apache.geode.cache.CacheException;
-import org.apache.geode.cache.PartitionAttributes;
 import org.apache.geode.cache.PartitionAttributesFactory;
 import org.apache.geode.cache.Region;
-import org.apache.geode.cache.RegionAttributes;
+import org.apache.geode.cache.RegionFactory;
+import org.apache.geode.cache.RegionShortcut;
 import org.apache.geode.cache.control.RebalanceOperation;
-import org.apache.geode.cache.control.RebalanceResults;
-import org.apache.geode.cache30.CacheSerializableRunnable;
-import org.apache.geode.distributed.DistributedSystem;
-import org.apache.geode.test.dunit.Assert;
-import org.apache.geode.test.dunit.Host;
-import org.apache.geode.test.dunit.SerializableRunnable;
 import org.apache.geode.test.dunit.VM;
-import org.apache.geode.test.dunit.Wait;
-import org.apache.geode.test.dunit.WaitCriterion;
-import org.apache.geode.test.dunit.cache.internal.JUnit4CacheTestCase;
-import org.apache.geode.test.dunit.internal.JUnit4DistributedTestCase;
+import org.apache.geode.test.dunit.cache.CacheTestCase;
 import org.apache.geode.test.junit.categories.DistributedTest;
 
-/**
- *
- */
 @Category(DistributedTest.class)
-public class PartitionedRegionStatsDUnitTest extends PartitionedRegionDUnitTestCase {
+public class PartitionedRegionStatsDUnitTest extends CacheTestCase {
 
-  ////// constructor //////////
-  public PartitionedRegionStatsDUnitTest() {
-    super();
-  }// end of constructor
+  private static final int CNT = 10;
+  private static final int PUT = 1;
+  private static final int GET = 2;
+  private static final int CONTAINS_KEY = 3;
+  private static final int CONTAINS_VALUE_FOR_KEY = 4;
+  private static final int INVALIDATE = 5;
+  private static final int DESTROY = 6;
+  private static final int CREATE = 7;
+  private static final int GET_ENTRY = 8;
 
-  public static final String PR_PREFIX = "PR";
+  private static final int DEFAULT_NUM_BUCKETS = 113;
+  public static final String STAT_CONFIGURED_REDUNDANT_COPIES = "configuredRedundantCopies";
+  public static final String STAT_ACTUAL_REDUNDANT_COPIES = "actualRedundantCopies";
 
-  static final int cnt = 10;
+  private VM vm0;
+  private VM vm1;
+  private VM vm2;
+  private VM vm3;
 
-  final int PUT = 1;
+  private String regionName;
 
-  final int GET = 2;
+  @Before
+  public void setUp() throws Exception {
+    vm0 = getHost(0).getVM(0);
+    vm1 = getHost(0).getVM(1);
+    vm2 = getHost(0).getVM(2);
+    vm3 = getHost(0).getVM(3);
 
-  final int CONTAINS_KEY = 3;
+    regionName = "region";
+  }
 
-  final int CONTAINS_VALUE_FOR_KEY = 4;
-
-  final int INVALIDATE = 5;
-
-  final int DESTROY = 6;
-
-  final int CREATE = 7;
-
-  final int GET_ENTRY = 8;
-
-  final int totalNumBuckets = 5;
-  static final int REDUNDANT_COPIES = 1;
-
-  ////////// test methods ////////////////
   @Test
   public void testClose() throws Exception {
-
-    final Host host = Host.getHost(0);
-
-    final VM vm0 = host.getVM(0);
-    final VM vm1 = host.getVM(1);
-    final VM vm2 = host.getVM(2);
-    final VM vm3 = host.getVM(3);
-
-    CacheSerializableRunnable createPR = new CacheSerializableRunnable("createPrRegions") {
-      public void run2() throws CacheException {
-        Cache cache = getCache();
-        cache.createRegion(PR_PREFIX, createRegionAttributesForPR(REDUNDANT_COPIES, 200));
-
-        cache.createRegion(PR_PREFIX + "1", createRegionAttributesForPR(REDUNDANT_COPIES, 200));
-      }
-    };
-
-    /**
-     * This class creates accessors.
-     */
-    CacheSerializableRunnable createAccessor = new CacheSerializableRunnable("createAccessor") {
-      public void run2() throws CacheException {
-        Cache cache = getCache();
-        cache.createRegion(PR_PREFIX, createRegionAttributesForPR(REDUNDANT_COPIES, 0));
-        cache.createRegion(PR_PREFIX + "1", createRegionAttributesForPR(REDUNDANT_COPIES, 0));
-      }
-    };
-
-    /**
-     * This class does put, get, create, destroy, invalidate, containsKey and containsValueForKey
-     * operations on PartitionedRegion.
-     */
-    CacheSerializableRunnable doRegionOps = new CacheSerializableRunnable("doRegionOps") {
-      public void run2() {}
-
-      public void doOps(Integer opTypeInteger) throws CacheException {
-        Cache cache = getCache();
-        int opType = opTypeInteger.intValue();
-        Region pr = cache.getRegion(Region.SEPARATOR + PR_PREFIX);
-        assertNotNull(pr);
-        doRegionOpsOnPR(pr, opType);
-        pr = cache.getRegion(Region.SEPARATOR + PR_PREFIX + "1");
-        assertNotNull(pr);
-        doRegionOpsOnPR(pr, opType);
-      }
-
-      private void doRegionOpsOnPR(Region pr, int opType) throws CacheException {
-        switch (opType) {
-          case PUT:
-            for (int k = 0; k < cnt; k++) {
-              pr.put("" + k, "" + k);
-            }
-            break;
-          case GET:
-            for (int k = 0; k < cnt; k++) {
-              pr.get("" + k);
-            }
-            break;
-          case CONTAINS_KEY:
-            for (int k = 0; k < cnt; k++) {
-              pr.containsKey("" + k);
-            }
-            break;
-          case CONTAINS_VALUE_FOR_KEY:
-            for (int k = 0; k < cnt; k++) {
-              pr.containsValueForKey("" + k);
-            }
-            break;
-          case INVALIDATE:
-            for (int k = 0; k < cnt; k++) {
-              pr.invalidate("" + k);
-            }
-            break;
-          case DESTROY:
-            for (int k = 0; k < cnt; k++) {
-              pr.destroy("" + k);
-            }
-            break;
-          case CREATE:
-            for (int k = 0; k < cnt; k++) {
-              pr.create("1" + k, "1" + k);
-            }
-            break;
-          case GET_ENTRY:
-            for (int k = 0; k < cnt; k++) {
-              pr.getEntry(Integer.toString(k));
-            }
-
-        }
-
-      }
-    };
-    /**
-     * This class disconnects the VM from DistributedSystem.
-     */
-    CacheSerializableRunnable disconnectVM = new CacheSerializableRunnable( // TODO bug36296
-        "disconnectVM") {
-      public void run2() {
-        Cache cache = getCache();
-        DistributedSystem ds = cache.getDistributedSystem();
-        ds.disconnect();
-      }
-    };
-    /**
-     * This class validates the min, max and avg Redundant Copies PR Statistics before disconnecting
-     * VM.
-     */
-    CacheSerializableRunnable validateRedundantCopiesStats =
-        new CacheSerializableRunnable("validateStats") {
-          public void run2() throws CacheException {
-            Cache cache = getCache();
-            PartitionedRegion pr =
-                (PartitionedRegion) cache.getRegion(Region.SEPARATOR + PR_PREFIX);
-            assertNotNull(pr);
-            Statistics stats = pr.getPrStats().getStats();
-            int minRedundantCopies = stats.get("minRedundantCopies").intValue();
-            int maxRedundantCopies = stats.get("maxRedundantCopies").intValue();
-            int avgRedundantCopies = stats.get("avgRedundantCopies").intValue();
-
-            assertEquals(minRedundantCopies, 1);
-            assertEquals(maxRedundantCopies, 1);
-            assertEquals(avgRedundantCopies, 1);
-          }
-        };
-    /**
-     * This class validates the min, max and avg redundant copies PR Statistics after disconnecting
-     * VM.
-     */
-    CacheSerializableRunnable validateRedundantCopiesStatsAfterDisconnect =
-        new CacheSerializableRunnable("validateRedundantCopiesStatsAfterDisconnect") {
-          public void run2() throws CacheException {
-            Cache cache = getCache();
-            PartitionedRegion pr =
-                (PartitionedRegion) cache.getRegion(Region.SEPARATOR + PR_PREFIX);
-            assertNotNull(pr);
-            Statistics stats = pr.getPrStats().getStats();
-            int minRedundantCopies = stats.get("minRedundantCopies").intValue();
-            int maxRedundantCopies = stats.get("maxRedundantCopies").intValue();
-            int avgRedundantCopies = stats.get("avgRedundantCopies").intValue();
-            assertEquals(minRedundantCopies, 1);
-            assertEquals(maxRedundantCopies, 1);
-            assertEquals(avgRedundantCopies, 1);
-          }
-        };
-
-    /**
-     * This class validates PartitionedRegion operations related statistics. PRStatistics for put,
-     * get, create, invalidate, containsKey, containsValueForKey and destroys are validated.
-     */
-    CacheSerializableRunnable validatePartitionedRegionOpsStats =
-        new CacheSerializableRunnable("validatePartitionedRegionOpsStats") {
-          public void run2() throws CacheException {
-            Cache cache = getCache();
-            PartitionedRegion pr =
-                (PartitionedRegion) cache.getRegion(Region.SEPARATOR + PR_PREFIX);
-            assertNotNull(pr);
-            pr = (PartitionedRegion) cache.getRegion(Region.SEPARATOR + PR_PREFIX);
-            assertNotNull(pr);
-            Statistics stats = pr.getPrStats().getStats();
-
-            int putsCompleted = stats.get("putsCompleted").intValue();
-            int getsCompleted = stats.get("getsCompleted").intValue();
-            int getEntrysCompleted = stats.get("getEntryCompleted").intValue();
-            int createsCompleted = stats.get("createsCompleted").intValue();
-            int containsKeyCompleted = stats.get("containsKeyCompleted").intValue();
-            int containsValueForKeyCompleted = stats.get("containsValueForKeyCompleted").intValue();
-            int invalidatesCompleted = stats.get("invalidatesCompleted").intValue();
-            int destroysCompleted = stats.get("destroysCompleted").intValue();
-
-            assertEquals(cnt, putsCompleted);
-            assertEquals(cnt, getsCompleted);
-            assertEquals(cnt, getEntrysCompleted);
-            assertEquals(0, createsCompleted);
-            assertEquals(cnt, containsKeyCompleted);
-            assertEquals(cnt, containsValueForKeyCompleted);
-            assertEquals(cnt, invalidatesCompleted);
-            assertEquals(cnt, destroysCompleted);
-
-            // TODO: Need to validate that bucket stats add up....
-            // pr.getDataStore().getCachePerfStats().getGets(); // etc...
-          }
-        };
-
     // Create PRs on 3 VMs and accessors on 1 VM
-    vm0.invoke(createPR);
-    vm1.invoke(createPR);
-    vm2.invoke(createPR);
-    vm3.invoke(createAccessor);
+    vm0.invoke(() -> createPartitionedRegion(regionName, 200, 1, 5));
+    vm1.invoke(() -> createPartitionedRegion(regionName, 200, 1, 5));
+    vm2.invoke(() -> createPartitionedRegion(regionName, 200, 1, 5));
+    vm3.invoke(() -> createPartitionedRegion(regionName, 0, 1, 5));
 
     // Do Region operations.
-    Object[] put = {new Integer(PUT)};
-    vm0.invoke(doRegionOps, "doOps", put);
+    vm0.invoke(() -> doOpsOnRegion(regionName, PUT));
+    vm0.invoke(() -> doOpsOnRegion(regionName, GET));
+    vm0.invoke(() -> doOpsOnRegion(regionName, GET_ENTRY));
+    vm0.invoke(() -> doOpsOnRegion(regionName, CONTAINS_KEY));
+    vm0.invoke(() -> doOpsOnRegion(regionName, CONTAINS_VALUE_FOR_KEY));
+    vm0.invoke(() -> doOpsOnRegion(regionName, INVALIDATE));
+    vm0.invoke(() -> doOpsOnRegion(regionName, DESTROY));
 
-    Object[] get = {new Integer(GET)};
-    vm0.invoke(doRegionOps, "doOps", get);
+    vm0.invoke(() -> validatePartitionedRegionOpsStats(regionName));
 
-    Object[] getEntry = {new Integer(GET_ENTRY)};
-    vm0.invoke(doRegionOps, "doOps", getEntry);
+    vm0.invoke(() -> validateRedundantCopiesStats(regionName));
+  }
 
-    Object[] containsKey = {new Integer(CONTAINS_KEY)};
-    vm0.invoke(doRegionOps, "doOps", containsKey);
+  /**
+   * Ok, first problem, GC'd tombstone is counted as an entry To test - modifying a tombstone -
+   * modifying and doing tombstone GC?
+   */
+  @Test
+  public void testDataStoreEntryCountWithRebalance() throws Exception {
+    vm0.invoke(() -> createPartitionedRegionWithRebalance(regionName, 0));
 
-    Object[] containsValueForKey = {new Integer(CONTAINS_VALUE_FOR_KEY)};
-    vm0.invoke(doRegionOps, "doOps", containsValueForKey);
+    vm0.invoke(() -> {
+      Cache cache = getCache();
+      Region<Integer, Integer> region = cache.getRegion(regionName);
+      region.put(0, 0);
+      region.put(1, 1);
+      region.put(113, 113);
+      region.put(114, 114);
+      region.destroy(0);
+      region.destroy(1);
+    });
 
-    Object[] invalidate = {new Integer(INVALIDATE)};
-    vm0.invoke(doRegionOps, "doOps", invalidate);
+    vm1.invoke(() -> createPartitionedRegionWithRebalance(regionName, 0));
 
-    Object[] destroy = {new Integer(DESTROY)};
-    vm0.invoke(doRegionOps, "doOps", destroy);
-
-    vm0.invoke(validatePartitionedRegionOpsStats);
-
-    CacheSerializableRunnable destroyRegion = new CacheSerializableRunnable("destroyRegion") {
-      public void run2() throws CacheException {
-        Cache cache = getCache();
-        PartitionedRegion pr =
-            (PartitionedRegion) cache.getRegion(Region.SEPARATOR + PR_PREFIX + "1");
-        assertNotNull("Null region is " + pr.getName(), pr);
-        pr.destroyRegion();
-        pr = (PartitionedRegion) cache.getRegion(Region.SEPARATOR + PR_PREFIX);
-        assertNotNull("Null region is " + pr.getName(), pr);
-        pr.destroyRegion();
-
-      }
-    };
-
-    vm0.invoke(destroyRegion);
-
-    /*
-     * Redundant Copies related statistics validation vm0.invoke(validateRedundantCopiesStats);
-     *
-     * vm1.invoke(disconnectVM);
-     *
-     * Thread.sleep(20000);
-     *
-     * vm0.invoke(validateRedundantCopiesStatsAfterDisconnect);
-     */
+    vm0.invoke(() -> validateEntryCount(regionName, 1));
+    vm1.invoke(() -> validateEntryCount(regionName, 1));
   }
 
   @Test
-  public void testDataStoreEntryCountWithRebalance() throws InterruptedException {
-    // Ok, first problem, GC'd tombstone is counted as an entry
-    // To test
-    // - modifying a tombstone
-    // - modifying and doing tombstone GC?
+  public void testDataStoreEntryCount2WithRebalance() throws Exception {
+    vm0.invoke(() -> createPartitionedRegionWithRebalance(regionName, 0));
 
-    final Host host = Host.getHost(0);
-
-    final VM vm0 = host.getVM(0);
-    final VM vm1 = host.getVM(1);
-
-    SerializableRunnable createPrRegion = new SerializableRunnable("createRegion") {
-      public void run() {
-        Cache cache = getCache();
-        AttributesFactory attr = new AttributesFactory();
-        PartitionAttributesFactory paf = new PartitionAttributesFactory();
-        paf.setRedundantCopies(0);
-        PartitionAttributes prAttr = paf.create();
-        attr.setPartitionAttributes(prAttr);
-        cache.createRegion("region1", attr.create());
-        RebalanceOperation op = cache.getResourceManager().createRebalanceFactory().start();
-        try {
-          RebalanceResults results = op.getResults();
-        } catch (Exception e) {
-          Assert.fail("ex", e);
-        }
-      }
-    };
-    vm0.invoke(createPrRegion);
-
-
-    vm0.invoke(new SerializableRunnable("Put some data") {
-      public void run() {
-        Cache cache = getCache();
-        Region region = cache.getRegion("region1");
-        region.put(Long.valueOf(0), "A");
-        region.put(Long.valueOf(1), "A");
-        region.put(Long.valueOf(113), "A");
-        region.put(Long.valueOf(114), "A");
-        region.destroy(Long.valueOf(0));
-        region.destroy(Long.valueOf(1));
+    vm0.invoke(() -> {
+      Cache cache = getCache();
+      Region<Integer, Integer> region = cache.getRegion(regionName);
+      for (int i = 0; i <= 5; i++) {
+        region.put(i, i);
       }
     });
 
-    vm1.invoke(createPrRegion);
+    vm1.invoke(() -> createPartitionedRegionWithRebalance(regionName, 0));
 
-    validateEntryCount(vm0, 1);
-    validateEntryCount(vm1, 1);
-  }
-
-  @Test
-  public void testDataStoreEntryCount2WithRebalance() throws InterruptedException {
-    final Host host = Host.getHost(0);
-
-    final VM vm0 = host.getVM(0);
-    final VM vm1 = host.getVM(1);
-
-    SerializableRunnable createPrRegion = new SerializableRunnable("createRegion") {
-      public void run() {
-        Cache cache = getCache();
-        AttributesFactory attr = new AttributesFactory();
-        PartitionAttributesFactory paf = new PartitionAttributesFactory();
-        paf.setRedundantCopies(0);
-        PartitionAttributes prAttr = paf.create();
-        attr.setPartitionAttributes(prAttr);
-        cache.createRegion("region1", attr.create());
-        RebalanceOperation op = cache.getResourceManager().createRebalanceFactory().start();
-        try {
-          RebalanceResults results = op.getResults();
-        } catch (Exception e) {
-          Assert.fail("ex", e);
-        }
-      }
-    };
-    vm0.invoke(createPrRegion);
-
-    vm0.invoke(new SerializableRunnable("Put some data") {
-      public void run() {
-        Cache cache = getCache();
-        Region region = cache.getRegion("region1");
-        region.put(Long.valueOf(0), "A");
-        region.put(Long.valueOf(1), "A");
-        region.put(Long.valueOf(2), "A");
-        region.put(Long.valueOf(3), "A");
-        region.put(Long.valueOf(4), "A");
-        region.put(Long.valueOf(5), "A");
-      }
-    });
-
-    vm1.invoke(createPrRegion);
-
-    validateEntryCount(vm0, 3);
-    validateEntryCount(vm1, 3);
+    vm0.invoke(() -> validateEntryCount(regionName, 3));
+    vm1.invoke(() -> validateEntryCount(regionName, 3));
   }
 
   /**
    * Test to make sure the datastore entry count is accurate.
    *
-   * @throws InterruptedException
+   * Ok, first problem, GC'd tombstone is counted as an entry To test - modifying a tombstone -
+   * modifying and doing tombstone GC?
    */
   @Test
-  public void testDataStoreEntryCount() throws InterruptedException {
-    // Ok, first problem, GC'd tombstone is counted as an entry
-    // To test
-    // - modifying a tombstone
-    // - modifying and doing tombstone GC?
+  public void testDataStoreEntryCount() throws Exception {
+    vm0.invoke(() -> createPartitionedRegionWithRedundantCopies(regionName));
+    vm1.invoke(() -> createPartitionedRegionWithRedundantCopies(regionName));
 
-    final Host host = Host.getHost(0);
+    vm0.invoke(() -> putDataInRegion(regionName));
 
-    final VM vm0 = host.getVM(0);
-    final VM vm1 = host.getVM(1);
-    final VM vm2 = host.getVM(2);
-
-    SerializableRunnable createPrRegion = new SerializableRunnable("createRegion") {
-      public void run() {
-        Cache cache = getCache();
-        AttributesFactory attr = new AttributesFactory();
-        PartitionAttributesFactory paf = new PartitionAttributesFactory();
-        paf.setRedundantCopies(2);
-        PartitionAttributes prAttr = paf.create();
-        attr.setPartitionAttributes(prAttr);
-        cache.createRegion("region1", attr.create());
-      }
-    };
-
-    vm0.invoke(createPrRegion);
-    vm1.invoke(createPrRegion);
-
-    vm0.invoke(new SerializableRunnable("Put some data") {
-      public void run() {
-        Cache cache = getCache();
-        Region region = cache.getRegion("region1");
-        region.put(Long.valueOf(0), "A");
-        region.put(Long.valueOf(1), "A");
-        region.put(Long.valueOf(113), "A");
-        region.put(Long.valueOf(226), "A");
-      }
-    });
-
-    validateEntryCount(vm0, 4);
-    validateEntryCount(vm1, 4);
+    vm0.invoke(() -> validateEntryCount(regionName, 4));
+    vm1.invoke(() -> validateEntryCount(regionName, 4));
 
     // Do a destroy
-    vm0.invoke(new SerializableRunnable("Put some data") {
-      public void run() {
-        Cache cache = getCache();
-        Region region = cache.getRegion("region1");
-        region.destroy(Long.valueOf(0));
-      }
+    vm0.invoke(() -> {
+      Cache cache = getCache();
+      Region<Integer, Integer> region = cache.getRegion(regionName);
+      region.destroy(0);
     });
 
-    // We expect the tombstone won't be recorded as part of
-    // the entry count
-    validateEntryCount(vm0, 3);
-    validateEntryCount(vm1, 3);
+    // We expect the tombstone won't be recorded as part of the entry count
+    vm0.invoke(() -> validateEntryCount(regionName, 3));
+    vm1.invoke(() -> validateEntryCount(regionName, 3));
 
     // Destroy and modify a tombstone
-    vm0.invoke(new SerializableRunnable("Put some data") {
-      public void run() {
-        Cache cache = getCache();
-        Region region = cache.getRegion("region1");
-        region.destroy(Long.valueOf(113));
-        region.put(Long.valueOf(113), "B");
-      }
+    vm0.invoke(() -> {
+      Cache cache = getCache();
+      Region<Integer, Integer> region = cache.getRegion(regionName);
+      region.destroy(113);
+      region.put(113, 113);
     });
 
-    validateEntryCount(vm0, 3);
-    validateEntryCount(vm1, 3);
+    vm0.invoke(() -> validateEntryCount(regionName, 3));
+    vm1.invoke(() -> validateEntryCount(regionName, 3));
 
-    // After GII (which might include the tombstone), a new members
-    // should still see only 2 live entries.
-    vm2.invoke(createPrRegion);
+    // After GII (which might include the tombstone), a new members should still see only 2 live
+    // entries.
+    vm2.invoke(() -> createPartitionedRegionWithRedundantCopies(regionName));
 
-
-    // Wait for redundancy to be restored. Once it is the entry count should be
-    // 2
-    vm2.invoke(new SerializableRunnable("validate stats") {
-      public void run() {
-        Cache cache = getCache();
-        PartitionedRegion region = (PartitionedRegion) cache.getRegion("region1");
-        final PartitionedRegionStats stats = region.getPrStats();
-        Wait.waitForCriterion(new WaitCriterion() {
-
-          @Override
-          public boolean done() {
-            return stats.getLowRedundancyBucketCount() == 0;
-          }
-
-          @Override
-          public String description() {
-            return "Redundancy was not satisfied " + stats.getLowRedundancyBucketCount();
-          }
-        }, 20000, 100, true);
-      }
+    // Wait for redundancy to be restored. Once it is the entry count should be 2
+    vm2.invoke(() -> {
+      Cache cache = getCache();
+      PartitionedRegion region = (PartitionedRegion) cache.getRegion(regionName);
+      PartitionedRegionStats prStats = region.getPrStats();
+      await().atMost(30, SECONDS)
+          .until(() -> assertThat(prStats.getLowRedundancyBucketCount()).isEqualTo(0));
     });
-    validateEntryCount(vm2, 3);
+
+    vm2.invoke(() -> validateEntryCount(regionName, 3));
 
     // A tombstone GC shouldn't affect the count.
-    vm0.invoke(new SerializableRunnable("Put some data") {
-      public void run() {
-        GemFireCacheImpl cache = (GemFireCacheImpl) getCache();
-        TombstoneService tombstoneService = cache.getTombstoneService();
-        try {
-          tombstoneService.forceBatchExpirationForTests(1);
-        } catch (InterruptedException e) {
-          Assert.fail("interrupted", e);
-        }
-      }
+    vm0.invoke(() -> {
+      InternalCache cache = getCache();
+      TombstoneService tombstoneService = cache.getTombstoneService();
+      tombstoneService.forceBatchExpirationForTests(1);
     });
 
-    validateEntryCount(vm0, 3);
-    validateEntryCount(vm1, 3);
-    validateEntryCount(vm2, 3);
+    vm0.invoke(() -> validateEntryCount(regionName, 3));
+    vm1.invoke(() -> validateEntryCount(regionName, 3));
+    vm2.invoke(() -> validateEntryCount(regionName, 3));
   }
-
 
   @Test
   public void testTotalNumBuckets() {
-    final Host host = Host.getHost(0);
+    vm0.invoke(() -> createPartitionedRegionWithRedundantCopies(regionName));
+    vm1.invoke(() -> createPartitionedRegionWithRedundantCopies(regionName));
 
-    final VM vm0 = host.getVM(0);
-    final VM vm1 = host.getVM(1);
+    vm0.invoke(() -> putDataInRegion(regionName));
+    vm1.invoke(() -> putDataInRegion(regionName));
 
-    SerializableRunnable createPrRegion = new SerializableRunnable("createRegion") {
-      public void run() {
-        Cache cache = getCache();
-        AttributesFactory attr = new AttributesFactory();
-        PartitionAttributesFactory paf = new PartitionAttributesFactory();
-        paf.setRedundantCopies(2);
-        PartitionAttributes prAttr = paf.create();
-        attr.setPartitionAttributes(prAttr);
-        cache.createRegion("region1", attr.create());
-      }
-    };
-
-    vm0.invoke(createPrRegion);
-    vm1.invoke(createPrRegion);
-
-    SerializableRunnable putDataInRegion = new SerializableRunnable("Put some data") {
-      public void run() {
-        Cache cache = getCache();
-        Region region = cache.getRegion("region1");
-        region.put(Long.valueOf(0), "A");
-        region.put(Long.valueOf(1), "A");
-        region.put(Long.valueOf(113), "A");
-        region.put(Long.valueOf(226), "A");
-      }
-    };
-
-    vm0.invoke(putDataInRegion);
-    vm1.invoke(putDataInRegion);
-
-    int expectedBucketCount = 113;
-    validateTotalNumBucketsCount(vm0, expectedBucketCount);
-    validateTotalNumBucketsCount(vm1, expectedBucketCount);
+    vm0.invoke(() -> validateTotalNumBucketsCount(regionName, DEFAULT_NUM_BUCKETS));
+    vm1.invoke(() -> validateTotalNumBucketsCount(regionName, DEFAULT_NUM_BUCKETS));
   }
 
-  private void validateEntryCount(final VM vm0, final long expectedCount) {
-    SerializableRunnable validateStats = new SerializableRunnable("validate stats") {
-      public void run() {
-        Cache cache = getCache();
-        PartitionedRegion region = (PartitionedRegion) cache.getRegion("region1");
-        PartitionedRegionStats stats = region.getPrStats();
-        CachePerfStats cachePerfStats = region.getCachePerfStats();
-        assertEquals(expectedCount, stats.getDataStoreEntryCount());
-        assertEquals(expectedCount, cachePerfStats.getEntries());
-      }
-    };
-    vm0.invoke(validateStats);
+  private void putDataInRegion(final String regionName) {
+    Cache cache = getCache();
+    Region<Integer, Integer> region = cache.getRegion(regionName);
+    region.put(0, 0);
+    region.put(1, 1);
+    region.put(113, 113);
+    region.put(226, 114);
   }
 
-  private void validateTotalNumBucketsCount(final VM vm0, final long expectedCount) {
-    SerializableRunnable validateStats = new SerializableRunnable("validate stats") {
-      public void run() {
-        Cache cache = getCache();
-        PartitionedRegion region = (PartitionedRegion) cache.getRegion("region1");
-        PartitionedRegionStats stats = region.getPrStats();
-        CachePerfStats cachePerfStats = region.getCachePerfStats();
-        assertEquals(expectedCount, stats.getTotalNumBuckets());
-      }
-    };
-    vm0.invoke(validateStats);
-  }
-
-
-  /**
-   * This private methods sets the passed attributes and returns RegionAttribute object, which is
-   * used in create region
-   *
-   * @param redundancy
-   * @param localMaxMem
-   *
-   * @return
-   */
-  protected RegionAttributes createRegionAttributesForPR(int redundancy, int localMaxMem) {
-    AttributesFactory attr = new AttributesFactory();
+  private void createPartitionedRegionWithRedundantCopies(final String regionName) {
     PartitionAttributesFactory paf = new PartitionAttributesFactory();
-    // Properties globalProps = new Properties();
-    PartitionAttributes prAttr = paf.setRedundantCopies(redundancy).setLocalMaxMemory(localMaxMem)
-        .setTotalNumBuckets(totalNumBuckets).create();
-    attr.setPartitionAttributes(prAttr);
-    return attr.create();
+    paf.setRedundantCopies(2);
+
+    RegionFactory regionFactory = getCache().createRegionFactory(RegionShortcut.PARTITION);
+    regionFactory.setPartitionAttributes(paf.create());
+
+    regionFactory.create(regionName);
+  }
+
+  private void createPartitionedRegion(final String regionName, final int localMaxMemory,
+      final int redundancy, int totalNumBuckets) {
+    PartitionAttributesFactory paf = new PartitionAttributesFactory();
+    paf.setLocalMaxMemory(localMaxMemory);
+    paf.setRedundantCopies(redundancy);
+    paf.setTotalNumBuckets(totalNumBuckets);
+
+    RegionFactory regionFactory = getCache().createRegionFactory(RegionShortcut.PARTITION);
+    regionFactory.setPartitionAttributes(paf.create());
+
+    regionFactory.create(regionName);
+  }
+
+  private void createPartitionedRegionWithRebalance(final String regionName, int redundancy)
+      throws InterruptedException, TimeoutException {
+    PartitionAttributesFactory paf = new PartitionAttributesFactory();
+    paf.setRedundantCopies(redundancy);
+
+    RegionFactory regionFactory = getCache().createRegionFactory(RegionShortcut.PARTITION);
+    regionFactory.setPartitionAttributes(paf.create());
+
+    regionFactory.create(regionName);
+
+    RebalanceOperation op = getCache().getResourceManager().createRebalanceFactory().start();
+
+    op.getResults(2, MINUTES);
+  }
+
+  private void validateEntryCount(final String regionName, final int expectedCount) {
+    Cache cache = getCache();
+    PartitionedRegion region = (PartitionedRegion) cache.getRegion(regionName);
+    PartitionedRegionStats stats = region.getPrStats();
+    CachePerfStats cachePerfStats = region.getCachePerfStats();
+
+    assertThat(stats.getDataStoreEntryCount()).isEqualTo(expectedCount);
+    assertThat(cachePerfStats.getEntries()).isEqualTo(expectedCount);
+  }
+
+  private void validateTotalNumBucketsCount(final String regionName, final int expectedCount) {
+    Cache cache = getCache();
+    PartitionedRegion region = (PartitionedRegion) cache.getRegion(regionName);
+    PartitionedRegionStats stats = region.getPrStats();
+
+    assertThat(stats.getTotalNumBuckets()).isEqualTo(expectedCount);
+  }
+
+  private void doOpsOnRegion(final String regionName, final int opType) {
+    doOpsOnRegion(getCache().getRegion(regionName), opType);
+  }
+
+  private void doOpsOnRegion(final Region<Integer, Integer> region, final int opType) {
+    switch (opType) {
+      case PUT:
+        for (int k = 0; k < CNT; k++) {
+          region.put(k, k);
+        }
+        break;
+      case GET:
+        for (int k = 0; k < CNT; k++) {
+          region.get(k);
+        }
+        break;
+      case CONTAINS_KEY:
+        for (int k = 0; k < CNT; k++) {
+          region.containsKey(k);
+        }
+        break;
+      case CONTAINS_VALUE_FOR_KEY:
+        for (int k = 0; k < CNT; k++) {
+          region.containsValueForKey(k);
+        }
+        break;
+      case INVALIDATE:
+        for (int k = 0; k < CNT; k++) {
+          region.invalidate(k);
+        }
+        break;
+      case DESTROY:
+        for (int k = 0; k < CNT; k++) {
+          region.destroy(k);
+        }
+        break;
+      case CREATE:
+        for (int k = 0; k < CNT; k++) {
+          region.create(k, k);
+        }
+        break;
+      case GET_ENTRY:
+        for (int k = 0; k < CNT; k++) {
+          region.getEntry(k);
+        }
+    }
+  }
+
+  private void validatePartitionedRegionOpsStats(final String regionName) {
+    Cache cache = getCache();
+    PartitionedRegion partitionedRegion = (PartitionedRegion) cache.getRegion(regionName);
+
+    assertThat(partitionedRegion).isNotNull();
+
+    Statistics stats = partitionedRegion.getPrStats().getStats();
+
+    int putsCompleted = stats.get("putsCompleted").intValue();
+    int getsCompleted = stats.get("getsCompleted").intValue();
+    int getEntryCompleted = stats.get("getEntryCompleted").intValue();
+    int createsCompleted = stats.get("createsCompleted").intValue();
+    int containsKeyCompleted = stats.get("containsKeyCompleted").intValue();
+    int containsValueForKeyCompleted = stats.get("containsValueForKeyCompleted").intValue();
+    int invalidatesCompleted = stats.get("invalidatesCompleted").intValue();
+    int destroysCompleted = stats.get("destroysCompleted").intValue();
+
+    assertThat(putsCompleted).isEqualTo(CNT);
+    assertThat(getsCompleted).isEqualTo(CNT);
+    assertThat(getEntryCompleted).isEqualTo(CNT);
+    assertThat(createsCompleted).isEqualTo(0);
+    assertThat(containsKeyCompleted).isEqualTo(CNT);
+    assertThat(containsValueForKeyCompleted).isEqualTo(CNT);
+    assertThat(invalidatesCompleted).isEqualTo(CNT);
+    assertThat(destroysCompleted).isEqualTo(CNT);
+
+    // TODO: Need to validate that bucket stats add up....
+    // partitionedRegion.getDataStore().getCachePerfStats().getGets(); // etc...
+  }
+
+  private void validateRedundantCopiesStats(final String regionName) {
+    Cache cache = getCache();
+    PartitionedRegion partitionedRegion = (PartitionedRegion) cache.getRegion(regionName);
+
+    assertThat(partitionedRegion).isNotNull();
+
+    Statistics stats = partitionedRegion.getPrStats().getStats();
+    int configuredRedundantCopies = stats.get(STAT_CONFIGURED_REDUNDANT_COPIES).intValue();
+    int actualRedundantCopies = stats.get(STAT_ACTUAL_REDUNDANT_COPIES).intValue();
+
+    assertThat(configuredRedundantCopies).isEqualTo(1);
+    assertThat(actualRedundantCopies).isEqualTo(1);
   }
 }

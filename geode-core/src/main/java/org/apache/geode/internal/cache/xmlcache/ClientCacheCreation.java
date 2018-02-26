@@ -186,6 +186,13 @@ public class ClientCacheCreation extends CacheCreation implements ClientCache {
       throw new IllegalStateException(
           "You must use ClientCacheFactory when the cache.xml uses client-cache.");
     }
+
+    initializeDeclarablesMap(cache);
+
+    if (hasFunctionService()) {
+      getFunctionServiceCreation().create();
+    }
+
     // create connection pools
     Map<String, Pool> pools = getPools();
     if (!pools.isEmpty()) {
@@ -256,7 +263,7 @@ public class ClientCacheCreation extends CacheCreation implements ClientCache {
     }
 
     cache.readyDynamicRegionFactory();
-    runInitializer();
+    runInitializer(cache);
   }
 
   public String getDefaultPoolName() {

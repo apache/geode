@@ -45,6 +45,7 @@ import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.CacheClosedException;
 import org.apache.geode.cache.CacheTransactionManager;
 import org.apache.geode.cache.CacheWriterException;
+import org.apache.geode.cache.CacheXmlException;
 import org.apache.geode.cache.Declarable;
 import org.apache.geode.cache.DiskStore;
 import org.apache.geode.cache.DiskStoreFactory;
@@ -196,6 +197,25 @@ public class CacheCreation implements InternalCache {
 
   // Stores the properties used to initialize declarables.
   private final Map<Declarable, Properties> declarablePropertiesMap = new HashMap<>();
+  private final List<DeclarableAndProperties> declarablePropertiesList = new ArrayList<>();
+
+  private static class DeclarableAndProperties {
+    private final Declarable declarable;
+    private final Properties properties;
+
+    public DeclarableAndProperties(Declarable d, Properties p) {
+      declarable = d;
+      properties = p;
+    }
+
+    public Declarable getDeclarable() {
+      return declarable;
+    }
+
+    public Properties getProperties() {
+      return properties;
+    }
+  }
 
   private final Set<GatewaySender> gatewaySenders = new HashSet<>();
 
@@ -417,6 +437,13 @@ public class CacheCreation implements InternalCache {
       throw new IllegalStateException(
           "You must use client-cache in the cache.xml when ClientCacheFactory is used.");
     }
+
+    initializeDeclarablesMap(cache);
+
+    if (hasFunctionService()) {
+      getFunctionServiceCreation().create();
+    }
+
     if (this.hasLockLease()) {
       cache.setLockLease(this.lockLease);
     }
@@ -550,12 +577,28 @@ public class CacheCreation implements InternalCache {
     }
 
     cache.setBackupFiles(this.backups);
-    cache.addDeclarableProperties(this.declarablePropertiesMap);
-    runInitializer();
+
+    runInitializer(cache);
     cache.setInitializer(getInitializer(), getInitializerProps());
 
     // Create all extensions
     this.extensionPoint.fireCreate(cache);
+  }
+
+  public void initializeDeclarablesMap(InternalCache cache) {
+    for (DeclarableAndProperties struct : this.declarablePropertiesList) {
+      Declarable declarable = struct.getDeclarable();
+      Properties properties = struct.getProperties();
+      try {
+        declarable.initialize(cache, properties);
+        declarable.init(properties); // for backwards compatibility
+      } catch (Exception ex) {
+        throw new CacheXmlException(
+            "Exception while initializing an instance of " + declarable.getClass().getName(), ex);
+      }
+      this.declarablePropertiesMap.put(declarable, properties);
+    }
+    cache.addDeclarableProperties(this.declarablePropertiesMap);
   }
 
   void initializeRegions(Map<String, Region<?, ?>> declarativeRegions, Cache cache) {
@@ -1067,7 +1110,7 @@ public class CacheCreation implements InternalCache {
   }
 
   void addDeclarableProperties(final Declarable declarable, final Properties properties) {
-    this.declarablePropertiesMap.put(declarable, properties);
+    this.declarablePropertiesList.add(new DeclarableAndProperties(declarable, properties));
   }
 
   @Override
@@ -1435,8 +1478,19 @@ public class CacheCreation implements InternalCache {
     return new PoolFactoryImpl(this.poolManager).setStartDisabled(true);
   }
 
+  private volatile boolean hasFunctionService = false;
+
+  boolean hasFunctionService() {
+    return this.hasFunctionService;
+  }
+
   public void setFunctionServiceCreation(FunctionServiceCreation functionServiceCreation) {
+    this.hasFunctionService = true;
     this.functionServiceCreation = functionServiceCreation;
+  }
+
+  public FunctionServiceCreation getFunctionServiceCreation() {
+    return this.functionServiceCreation;
   }
 
   private volatile boolean hasResourceManager = false;
@@ -1709,9 +1763,11 @@ public class CacheCreation implements InternalCache {
     throw new UnsupportedOperationException(LocalizedStrings.SHOULDNT_INVOKE.toLocalizedString());
   }
 
-  void runInitializer() {
-    if (getInitializer() != null) {
-      getInitializer().init(getInitializerProps());
+  void runInitializer(InternalCache cache) {
+    Declarable initializer = getInitializer();
+    if (initializer != null) {
+      initializer.initialize(cache, getInitializerProps());
+      initializer.init(getInitializerProps()); // for backwards compatibility
     }
   }
 

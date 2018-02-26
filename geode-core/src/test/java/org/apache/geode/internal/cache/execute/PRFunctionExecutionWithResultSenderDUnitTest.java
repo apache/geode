@@ -14,615 +14,521 @@
  */
 package org.apache.geode.internal.cache.execute;
 
-import static org.junit.Assert.*;
+import static org.apache.geode.distributed.ConfigurationProperties.LOCATORS;
+import static org.apache.geode.distributed.ConfigurationProperties.MCAST_PORT;
+import static org.apache.geode.internal.cache.functions.TestFunction.TEST_FUNCTION2;
+import static org.apache.geode.internal.cache.functions.TestFunction.TEST_FUNCTION9;
+import static org.apache.geode.internal.cache.functions.TestFunction.TEST_FUNCTION_NO_LASTRESULT;
+import static org.apache.geode.test.dunit.Host.getHost;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
-import java.io.Serializable;
-import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
 
+import org.junit.Before;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
 import org.apache.geode.cache.AttributesFactory;
-import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.DataPolicy;
-import org.apache.geode.cache.EntryOperation;
+import org.apache.geode.cache.PartitionAttributes;
 import org.apache.geode.cache.PartitionAttributesFactory;
 import org.apache.geode.cache.PartitionResolver;
 import org.apache.geode.cache.Region;
-import org.apache.geode.cache.RegionAttributes;
-import org.apache.geode.cache.Scope;
+import org.apache.geode.cache.RegionFactory;
+import org.apache.geode.cache.RegionShortcut;
 import org.apache.geode.cache.execute.Execution;
 import org.apache.geode.cache.execute.Function;
 import org.apache.geode.cache.execute.FunctionException;
 import org.apache.geode.cache.execute.FunctionService;
 import org.apache.geode.cache.execute.ResultCollector;
-import org.apache.geode.distributed.DistributedMember;
-import org.apache.geode.distributed.DistributedSystem;
-import org.apache.geode.internal.cache.PartitionAttributesImpl;
 import org.apache.geode.internal.cache.PartitionedRegion;
-import org.apache.geode.internal.cache.PartitionedRegionDUnitTestCase;
-import org.apache.geode.internal.cache.PartitionedRegionTestHelper;
 import org.apache.geode.internal.cache.functions.TestFunction;
-import org.apache.geode.test.dunit.Host;
-import org.apache.geode.test.dunit.LogWriterUtils;
-import org.apache.geode.test.dunit.SerializableCallable;
 import org.apache.geode.test.dunit.VM;
-import org.apache.geode.test.dunit.cache.internal.JUnit4CacheTestCase;
-import org.apache.geode.test.dunit.internal.JUnit4DistributedTestCase;
+import org.apache.geode.test.dunit.cache.CacheTestCase;
 import org.apache.geode.test.junit.categories.DistributedTest;
 
 @Category(DistributedTest.class)
-public class PRFunctionExecutionWithResultSenderDUnitTest extends PartitionedRegionDUnitTestCase {
-  private static final String TEST_FUNCTION7 = TestFunction.TEST_FUNCTION7;
+@SuppressWarnings("serial")
+public class PRFunctionExecutionWithResultSenderDUnitTest extends CacheTestCase {
 
-  private static final String TEST_FUNCTION2 = TestFunction.TEST_FUNCTION2;
+  private static final String STRING_KEY = "execKey";
 
-  private static final long serialVersionUID = 1L;
+  private String regionName;
 
-  public PRFunctionExecutionWithResultSenderDUnitTest() {
-    super();
+  @Before
+  public void setUp() {
+    regionName = getUniqueName();
   }
 
   /**
    * Test remote execution by a pure accessor which doesn't have the function factory present.
-   *
-   * @throws Exception
    */
   @Test
   public void testRemoteSingleKeyExecution_byName() throws Exception {
-    final String rName = getUniqueName();
-    Host host = Host.getHost(0);
-    final VM accessor = host.getVM(2);
-    final VM datastore = host.getVM(3);
-    final Cache c = getCache();
-    accessor.invoke(new SerializableCallable("Create PR") {
-      public Object call() throws Exception {
-        RegionAttributes ra = PartitionedRegionTestHelper.createRegionAttrsForPR(0, 0);
+    VM accessor = getHost(0).getVM(2);
+    VM datastore = getHost(0).getVM(3);
 
-        PartitionedRegion pr = (PartitionedRegion) getCache().createRegion(rName, ra);
-        return Boolean.TRUE;
-      }
+    accessor.invoke(() -> {
+      createPartitionedRegion(regionName, 0, 0);
     });
 
-    datastore.invoke(new SerializableCallable("Create PR with Function Factory") {
-      public Object call() throws Exception {
-        RegionAttributes ra = PartitionedRegionTestHelper.createRegionAttrsForPR(0, 10);
-        AttributesFactory raf = new AttributesFactory(ra);
-
-        PartitionAttributesImpl pa = new PartitionAttributesImpl();
-        pa.setAll(ra.getPartitionAttributes());
-        raf.setPartitionAttributes(pa);
-
-        PartitionedRegion pr = (PartitionedRegion) getCache().createRegion(rName, raf.create());
-        Function function = new TestFunction(true, TEST_FUNCTION2);
-        FunctionService.registerFunction(function);
-        return Boolean.TRUE;
-      }
+    datastore.invoke(() -> {
+      createPartitionedRegion(regionName, 10, 0);
+      FunctionService.registerFunction(new TestFunction(true, TEST_FUNCTION2));
     });
 
-    Object o = accessor.invoke(new SerializableCallable("Create data, invoke exectuable") {
-      public Object call() throws Exception {
-        PartitionedRegion pr = (PartitionedRegion) getCache().getRegion(rName);
+    accessor.invoke(() -> {
+      Region<String, Integer> region = getPartitionedRegion(regionName);
 
-        final String testKey = "execKey";
-        final Set testKeysSet = new HashSet();
-        testKeysSet.add(testKey);
-        DistributedSystem.setThreadsSocketPolicy(false);
-        Function function = new TestFunction(true, TEST_FUNCTION2);
-        FunctionService.registerFunction(function);
-        Execution dataSet = FunctionService.onRegion(pr);
-        try {
-          dataSet.withFilter(testKeysSet).setArguments(Boolean.TRUE).execute(function.getId());
-        } catch (Exception expected) {
-          // No data should cause exec to throw
-          assertTrue(expected.getMessage().contains("No target node found for KEY = " + testKey));
-        }
-        pr.put(testKey, new Integer(1));
-        pr.put(testKey + "3", new Integer(3));
-        pr.put(testKey + "4", new Integer(4));
-        testKeysSet.add(testKey + "3");
-        testKeysSet.add(testKey + "4");
+      Set<String> stringKeys = new HashSet<>();
+      stringKeys.add(STRING_KEY);
 
-        ResultCollector rs1 =
-            dataSet.withFilter(testKeysSet).setArguments(Boolean.TRUE).execute(function.getId());
-        assertEquals(Boolean.TRUE, ((List) rs1.getResult()).get(0));
-        ResultCollector rs2 = dataSet.withFilter(testKeysSet)
-            .setArguments((Serializable) testKeysSet).execute(function.getId());
+      Function function = new TestFunction(true, TEST_FUNCTION2);
+      FunctionService.registerFunction(function);
+      Execution execution = FunctionService.onRegion(region);
 
-        HashMap putData = new HashMap();
-        putData.put(testKey + "1", new Integer(2));
-        putData.put(testKey + "2", new Integer(3));
-        ResultCollector rs3 =
-            dataSet.withFilter(testKeysSet).setArguments(putData).execute(function.getId());
-        assertEquals(Boolean.TRUE, ((List) rs3.getResult()).get(0));
+      region.put(STRING_KEY, 1);
+      region.put(STRING_KEY + "3", 3);
+      region.put(STRING_KEY + "4", 4);
 
-        assertEquals(new Integer(2), pr.get(testKey + "1"));
-        assertEquals(new Integer(3), pr.get(testKey + "2"));
-        return Boolean.TRUE;
-      }
+      stringKeys.add(STRING_KEY + "3");
+      stringKeys.add(STRING_KEY + "4");
+
+      ResultCollector<Boolean, List<Boolean>> resultCollector1 =
+          execution.withFilter(stringKeys).setArguments(true).execute(function.getId());
+      assertThat(resultCollector1.getResult()).hasSize(1).containsExactly(true);
+
+      ResultCollector<List<Integer>, List<List<Integer>>> resultCollector2 =
+          execution.withFilter(stringKeys).setArguments(stringKeys).execute(function.getId());
+      List<List<Integer>> values = resultCollector2.getResult();
+      assertThat(values).hasSize(1);
+      assertThat(values.get(0)).hasSize(3).containsOnly(1, 3, 4);
+
+      Map<String, Integer> putData = new HashMap<>();
+      putData.put(STRING_KEY + "1", 2);
+      putData.put(STRING_KEY + "2", 3);
+
+      ResultCollector<Boolean, List<Boolean>> resultCollector3 =
+          execution.withFilter(stringKeys).setArguments(putData).execute(function.getId());
+      assertThat(resultCollector3.getResult()).hasSize(1).containsExactly(true);
+
+      assertThat(region.get(STRING_KEY + "1")).isEqualTo(2);
+      assertThat(region.get(STRING_KEY + "2")).isEqualTo(3);
     });
-    assertEquals(Boolean.TRUE, o);
   }
 
   /**
    * Test remote execution by a pure accessor which doesn't have the function factory present And
    * the function doesn't send last result. FunctionException is expected in this case
-   *
-   * @throws Exception
    */
   @Test
   public void testRemoteExecution_NoLastResult() throws Exception {
-    final String rName = getUniqueName();
-    Host host = Host.getHost(0);
-    final VM accessor = host.getVM(0);
-    final VM datastore = host.getVM(1);
-    final Cache c = getCache();
-    accessor.invoke(new SerializableCallable("Create PR") {
-      public Object call() throws Exception {
-        RegionAttributes ra = PartitionedRegionTestHelper.createRegionAttrsForPR(0, 0);
+    VM accessor = getHost(0).getVM(0);
+    VM datastore = getHost(0).getVM(1);
 
-        PartitionedRegion pr = (PartitionedRegion) getCache().createRegion(rName, ra);
-        return Boolean.TRUE;
-      }
+    accessor.invoke(() -> {
+      createPartitionedRegion(regionName, 0, 0);
     });
 
-    datastore.invoke(new SerializableCallable("Create PR with Function Factory") {
-      public Object call() throws Exception {
-        RegionAttributes ra = PartitionedRegionTestHelper.createRegionAttrsForPR(0, 10);
-        AttributesFactory raf = new AttributesFactory(ra);
-
-        PartitionAttributesImpl pa = new PartitionAttributesImpl();
-        pa.setAll(ra.getPartitionAttributes());
-        raf.setPartitionAttributes(pa);
-
-        PartitionedRegion pr = (PartitionedRegion) getCache().createRegion(rName, raf.create());
-        Function function = new TestFunction(true, TestFunction.TEST_FUNCTION_NO_LASTRESULT);
-        FunctionService.registerFunction(function);
-        return Boolean.TRUE;
-      }
+    datastore.invoke(() -> {
+      createPartitionedRegion(regionName, 10, 0);
+      FunctionService.registerFunction(new TestFunction(true, TEST_FUNCTION_NO_LASTRESULT));
     });
 
-    Object o = accessor.invoke(new SerializableCallable("Create data, invoke exectuable") {
-      public Object call() throws Exception {
-        PartitionedRegion pr = (PartitionedRegion) getCache().getRegion(rName);
+    accessor.invoke(() -> {
+      Region<String, Integer> region = getPartitionedRegion(regionName);
 
-        final String testKey = "execKey";
-        final Set testKeysSet = new HashSet();
-        testKeysSet.add(testKey);
-        DistributedSystem.setThreadsSocketPolicy(false);
-        Function function = new TestFunction(true, TestFunction.TEST_FUNCTION_NO_LASTRESULT);
-        FunctionService.registerFunction(function);
-        Execution dataSet = FunctionService.onRegion(pr);
+      Set<String> stringKeys = new HashSet<>();
+      stringKeys.add(STRING_KEY);
 
-        pr.put(testKey, new Integer(1));
-        pr.put(testKey + "3", new Integer(3));
-        pr.put(testKey + "4", new Integer(4));
-        testKeysSet.add(testKey + "3");
-        testKeysSet.add(testKey + "4");
+      Function<Boolean> function = new TestFunction<>(true, TEST_FUNCTION_NO_LASTRESULT);
+      FunctionService.registerFunction(function);
+      Execution<Boolean, Boolean, List<Boolean>> execution = FunctionService.onRegion(region);
 
-        ResultCollector rs1 =
-            dataSet.withFilter(testKeysSet).setArguments(Boolean.TRUE).execute(function.getId());
-        try {
-          assertEquals(Boolean.TRUE, ((List) rs1.getResult()).get(0));
-          fail("Expected FunctionException : Function did not send last result");
-        } catch (FunctionException fe) {
-          assertTrue(fe.getMessage().contains("did not send last result"));
-          return Boolean.TRUE;
-        }
-        return Boolean.FALSE;
-      }
+      region.put(STRING_KEY, 1);
+      region.put(STRING_KEY + "3", 3);
+      region.put(STRING_KEY + "4", 4);
+
+      stringKeys.add(STRING_KEY + "3");
+      stringKeys.add(STRING_KEY + "4");
+
+      ResultCollector<Boolean, List<Boolean>> resultCollector =
+          execution.withFilter(stringKeys).setArguments(true).execute(function.getId());
+
+      assertThatThrownBy(() -> resultCollector.getResult()).isInstanceOf(FunctionException.class)
+          .hasMessageContaining("did not send last result");
     });
-    assertEquals(Boolean.TRUE, o);
   }
 
   /**
    * Test multi-key remote execution by a pure accessor which doesn't have the function factory
-   * present. ResultCollector = DefaultResultCollector haveResults = true;
-   *
-   * @throws Exception
+   * present.
    */
   @Test
   public void testRemoteMultiKeyExecution_byName() throws Exception {
-    final String rName = getUniqueName();
-    Host host = Host.getHost(0);
-    final VM accessor = host.getVM(3);
-    final VM datastore0 = host.getVM(0);
-    final VM datastore1 = host.getVM(1);
-    final VM datastore2 = host.getVM(2);
+    VM accessor = getHost(0).getVM(3);
+    VM datastore0 = getHost(0).getVM(0);
+    VM datastore1 = getHost(0).getVM(1);
+    VM datastore2 = getHost(0).getVM(2);
 
-    final Cache c = getCache();
-    accessor.invoke(new SerializableCallable("Create PR") {
-      public Object call() throws Exception {
-        RegionAttributes ra = PartitionedRegionTestHelper.createRegionAttrsForPR(0, 0);
-        PartitionedRegion pr = (PartitionedRegion) getCache().createRegion(rName, ra);
-        return Boolean.TRUE;
-      }
+    accessor.invoke(() -> {
+      createPartitionedRegion(regionName, 0, 0);
     });
 
-    SerializableCallable dataStoreCreate =
-        new SerializableCallable("Create PR with Function Factory") {
-          public Object call() throws Exception {
-            RegionAttributes ra = PartitionedRegionTestHelper.createRegionAttrsForPR(0, 10);
-            AttributesFactory raf = new AttributesFactory(ra);
-            PartitionAttributesImpl pa = new PartitionAttributesImpl();
-            pa.setAll(ra.getPartitionAttributes());
-            raf.setPartitionAttributes(pa);
-            PartitionedRegion pr = (PartitionedRegion) getCache().createRegion(rName, raf.create());
-            Function function = new TestFunction(true, TestFunction.TEST_FUNCTION9);
-            FunctionService.registerFunction(function);
-            return Boolean.TRUE;
-          }
-        };
-    datastore0.invoke(dataStoreCreate);
-    datastore1.invoke(dataStoreCreate);
-    datastore2.invoke(dataStoreCreate);
-
-    Object o = accessor.invoke(new SerializableCallable("Create data, invoke exectuable") {
-      public Object call() throws Exception {
-        PartitionedRegion pr = (PartitionedRegion) getCache().getRegion(rName);
-
-        final HashSet testKeysSet = new HashSet();
-        for (int i = (pr.getTotalNumberOfBuckets() * 2); i > 0; i--) {
-          testKeysSet.add("execKey-" + i);
-        }
-        DistributedSystem.setThreadsSocketPolicy(false);
-        Function function = new TestFunction(true, TestFunction.TEST_FUNCTION9);
-        FunctionService.registerFunction(function);
-        Execution dataSet = FunctionService.onRegion(pr);
-
-        try {
-          dataSet.withFilter(testKeysSet).setArguments(Boolean.TRUE).execute(function.getId());
-        } catch (Exception expected) {
-          assertTrue(expected.getMessage().contains("No target node found for KEY = "));
-        }
-
-        int j = 0;
-        HashSet origVals = new HashSet();
-        for (Iterator i = testKeysSet.iterator(); i.hasNext();) {
-          Integer val = new Integer(j++);
-          origVals.add(val);
-          pr.put(i.next(), val);
-        }
-        ResultCollector rs =
-            dataSet.withFilter(testKeysSet).setArguments(Boolean.TRUE).execute(function.getId());
-        List l = ((List) rs.getResult());
-
-        assertEquals(3, l.size());
-
-        for (Iterator i = l.iterator(); i.hasNext();) {
-          assertEquals(Boolean.TRUE, i.next());
-        }
-
-        ResultCollector rc2 =
-            dataSet.withFilter(testKeysSet).setArguments(testKeysSet).execute(function.getId());
-        List l2 = ((List) rc2.getResult());
-        assertEquals(pr.getTotalNumberOfBuckets() * 2 * 3, l2.size());
-
-        return Boolean.TRUE;
-      }
+    datastore0.invoke(() -> {
+      createPartitionedRegion(regionName, 10, 0);
+      FunctionService.registerFunction(new TestFunction(true, TEST_FUNCTION9));
     });
-    assertEquals(Boolean.TRUE, o);
 
+    datastore1.invoke(() -> {
+      createPartitionedRegion(regionName, 10, 0);
+      FunctionService.registerFunction(new TestFunction(true, TEST_FUNCTION9));
+    });
+
+    datastore2.invoke(() -> {
+      createPartitionedRegion(regionName, 10, 0);
+      FunctionService.registerFunction(new TestFunction(true, TEST_FUNCTION9));
+    });
+
+    accessor.invoke(() -> {
+      PartitionedRegion pr = getPartitionedRegion(regionName);
+
+      Set<String> stringKeys = new HashSet<>();
+      for (int i = pr.getTotalNumberOfBuckets() * 2; i > 0; i--) {
+        stringKeys.add(STRING_KEY + i);
+      }
+
+      int valueIndex = 0;
+      for (String key : stringKeys) {
+        int value = valueIndex++;
+        pr.put(key, value);
+      }
+
+      Function function = new TestFunction(true, TEST_FUNCTION9);
+      FunctionService.registerFunction(function);
+
+      Execution<Boolean, Boolean, List<Boolean>> booleanExecution = FunctionService.onRegion(pr);
+      ResultCollector<Boolean, List<Boolean>> resultCollector1 =
+          booleanExecution.withFilter(stringKeys).setArguments(true).execute(function.getId());
+      List<Boolean> booleanResults = resultCollector1.getResult();
+      assertThat(booleanResults).hasSize(3).containsExactly(true, true, true);
+
+      Execution<Set<String>, List<Integer>, List<List<Integer>>> execution =
+          FunctionService.onRegion(pr);
+      ResultCollector<List<Integer>, List<List<Integer>>> resultCollector2 =
+          execution.withFilter(stringKeys).setArguments(stringKeys).execute(function.getId());
+      List<List<Integer>> valuesResults = resultCollector2.getResult();
+      assertThat(valuesResults).hasSize(pr.getTotalNumberOfBuckets() * 2 * 3);
+    });
   }
 
   /**
-   * Test ability to execute a multi-key function by a local data store ResultCollector =
-   * DefaultResultCollector haveResult = true
-   *
-   * @throws Exception
+   * Test ability to execute a multi-key function by a local data store
+   * <p>
+   * TODO: extract to IntegrationTest
    */
   @Test
   public void testLocalMultiKeyExecution_byName() throws Exception {
-    final String rName = getUniqueName();
-    Host host = Host.getHost(0);
-    VM localOnly = host.getVM(3);
-    final Cache c = getCache();
-    Object o = localOnly.invoke(new SerializableCallable("Create PR, validate local execution)") {
-      public Object call() throws Exception {
-        RegionAttributes ra = PartitionedRegionTestHelper.createRegionAttrsForPR(0, 10);
-        AttributesFactory raf = new AttributesFactory(ra);
-        PartitionAttributesImpl pa = new PartitionAttributesImpl();
-        pa.setAll(ra.getPartitionAttributes());
-        raf.setPartitionAttributes(pa);
-        PartitionedRegion pr = (PartitionedRegion) getCache().createRegion(rName, raf.create());
-        final String testKey = "execKey";
-        DistributedSystem.setThreadsSocketPolicy(false);
-        Function function = new TestFunction(true, TestFunction.TEST_FUNCTION9);
-        FunctionService.registerFunction(function);
-        Execution dataSet = FunctionService.onRegion(pr);
-        final HashSet testKeysSet = new HashSet();
-        testKeysSet.add(testKey);
-        try {
-          dataSet.withFilter(testKeysSet).setArguments(Boolean.TRUE).execute(function.getId());
-        } catch (Exception expected) {
-          // No data should cause exec to throw
-          assertTrue(expected.getMessage().contains("No target node found for KEY = " + testKey));
-        }
+    PartitionedRegion pr = createPartitionedRegion(regionName, 10, 0);
 
-        final HashSet testKeys = new HashSet();
-        for (int i = (pr.getTotalNumberOfBuckets() * 2); i > 0; i--) {
-          testKeys.add("execKey-" + i);
-        }
+    Set<String> stringKeys = new HashSet<>();
+    for (int i = pr.getTotalNumberOfBuckets() * 2; i > 0; i--) {
+      stringKeys.add(STRING_KEY + i);
+    }
 
-        int j = 0;
-        HashSet origVals = new HashSet();
-        for (Iterator i = testKeys.iterator(); i.hasNext();) {
-          Integer val = new Integer(j++);
-          origVals.add(val);
-          pr.put(i.next(), val);
-        }
+    int valueIndex = 0;
+    for (String key : stringKeys) {
+      int value = valueIndex++;
+      pr.put(key, value);
+    }
 
-        ResultCollector rc1 =
-            dataSet.withFilter(testKeys).setArguments(Boolean.TRUE).execute(function.getId());
-        List l = ((List) rc1.getResult());
-        assertEquals(1, l.size());
-        for (Iterator i = l.iterator(); i.hasNext();) {
-          assertEquals(Boolean.TRUE, i.next());
-        }
+    Function function = new TestFunction(true, TEST_FUNCTION9);
+    FunctionService.registerFunction(function);
+    Execution execution = FunctionService.onRegion(pr);
 
-        ResultCollector rc2 =
-            dataSet.withFilter(testKeys).setArguments(testKeys).execute(function.getId());
-        List l2 = ((List) rc2.getResult());
-        assertEquals(226, l2.size());
+    ResultCollector<Boolean, List<Boolean>> resultCollector1 =
+        execution.withFilter(stringKeys).setArguments(true).execute(function.getId());
+    List<Boolean> results = resultCollector1.getResult();
+    assertThat(results).hasSize(1).containsExactly(true);
 
-        return Boolean.TRUE;
-      }
-    });
-    assertEquals(Boolean.TRUE, o);
+    ResultCollector<List<Integer>, List<List<Integer>>> resultCollector2 =
+        execution.withFilter(stringKeys).setArguments(stringKeys).execute(function.getId());
+    List<List<Integer>> valuesResults = resultCollector2.getResult();
+    assertThat(valuesResults).hasSize(pr.getTotalNumberOfBuckets() * 2);
   }
 
   /**
    * Test local execution on datastore with function that doesn't send last result.
    * FunctionException is expected in this case
    *
-   * @throws Exception
+   * <p>
+   * TODO: extract to IntegrationTest
    */
   @Test
   public void testLocalExecution_NoLastResult() throws Exception {
-    final String rName = getUniqueName();
-    Host host = Host.getHost(0);
-    VM localOnly = host.getVM(0);
-    final Cache c = getCache();
-    Object o = localOnly.invoke(new SerializableCallable("Create PR, validate local execution)") {
-      public Object call() throws Exception {
-        RegionAttributes ra = PartitionedRegionTestHelper.createRegionAttrsForPR(0, 10);
-        AttributesFactory raf = new AttributesFactory(ra);
-        PartitionAttributesImpl pa = new PartitionAttributesImpl();
-        pa.setAll(ra.getPartitionAttributes());
-        raf.setPartitionAttributes(pa);
-        PartitionedRegion pr = (PartitionedRegion) getCache().createRegion(rName, raf.create());
-        final String testKey = "execKey";
-        DistributedSystem.setThreadsSocketPolicy(false);
-        Function function = new TestFunction(true, TestFunction.TEST_FUNCTION_NO_LASTRESULT);
-        FunctionService.registerFunction(function);
-        Execution dataSet = FunctionService.onRegion(pr);
+    PartitionedRegion pr = createPartitionedRegion(regionName, 10, 0);
 
-        final HashSet testKeys = new HashSet();
-        for (int i = (pr.getTotalNumberOfBuckets() * 2); i > 0; i--) {
-          testKeys.add("execKey-" + i);
-        }
+    Set<String> stringKeys = new HashSet<>();
+    for (int i = pr.getTotalNumberOfBuckets() * 2; i > 0; i--) {
+      stringKeys.add(STRING_KEY + i);
+    }
 
-        int j = 0;
-        HashSet origVals = new HashSet();
-        for (Iterator i = testKeys.iterator(); i.hasNext();) {
-          Integer val = new Integer(j++);
-          origVals.add(val);
-          pr.put(i.next(), val);
-        }
+    int valueIndex = 0;
+    for (String key : stringKeys) {
+      int value = valueIndex++;
+      pr.put(key, value);
+    }
 
-        ResultCollector rc1 =
-            dataSet.withFilter(testKeys).setArguments(Boolean.TRUE).execute(function.getId());
-        try {
-          assertEquals(Boolean.TRUE, ((List) rc1.getResult()).get(0));
-          fail("Expected FunctionException : Function did not send last result");
-        } catch (Exception fe) {
-          assertTrue(fe.getMessage().contains("did not send last result"));
-          return Boolean.TRUE;
-        }
-        return Boolean.FALSE;
-      }
-    });
-    assertEquals(Boolean.TRUE, o);
+    Function<Boolean> function = new TestFunction<>(true, TEST_FUNCTION_NO_LASTRESULT);
+    FunctionService.registerFunction(function);
+    Execution<Boolean, Boolean, List<Boolean>> execution = FunctionService.onRegion(pr);
+
+    ResultCollector<Boolean, List<Boolean>> resultCollector =
+        execution.withFilter(stringKeys).setArguments(true).execute(function.getId());
+
+    assertThatThrownBy(() -> resultCollector.getResult()).isInstanceOf(FunctionException.class)
+        .hasMessageContaining("did not send last result");
   }
 
   /**
-   *
    * Test execution on all datastores with function that doesn't send last result. FunctionException
    * is expected in this case
-   *
-   * @throws Exception
    */
   @Test
   public void testExecutionOnAllNodes_NoLastResult() throws Exception {
-    final String rName = getUniqueName();
-    Host host = Host.getHost(0);
-    final VM datastore0 = host.getVM(0);
-    final VM datastore1 = host.getVM(1);
-    final VM datastore2 = host.getVM(2);
-    final VM datastore3 = host.getVM(3);
-    getCache();
-    SerializableCallable dataStoreCreate =
-        new SerializableCallable("Create PR with Function Factory") {
-          public Object call() throws Exception {
-            RegionAttributes ra = PartitionedRegionTestHelper.createRegionAttrsForPR(0, 10);
-            AttributesFactory raf = new AttributesFactory(ra);
-            PartitionAttributesImpl pa = new PartitionAttributesImpl();
-            pa.setAll(ra.getPartitionAttributes());
-            pa.setTotalNumBuckets(17);
-            raf.setPartitionAttributes(pa);
-            getCache().createRegion(rName, raf.create());
-            Function function = new TestFunction(true, TestFunction.TEST_FUNCTION_NO_LASTRESULT);
-            FunctionService.registerFunction(function);
-            return Boolean.TRUE;
-          }
-        };
-    datastore0.invoke(dataStoreCreate);
-    datastore1.invoke(dataStoreCreate);
-    datastore2.invoke(dataStoreCreate);
-    datastore3.invoke(dataStoreCreate);
+    VM datastore0 = getHost(0).getVM(0);
+    VM datastore1 = getHost(0).getVM(1);
+    VM datastore2 = getHost(0).getVM(2);
+    VM datastore3 = getHost(0).getVM(3);
 
-    Object o = datastore3.invoke(new SerializableCallable("Create data, invoke exectuable") {
-      public Object call() throws Exception {
-        PartitionedRegion pr = (PartitionedRegion) getCache().getRegion(rName);
-        DistributedSystem.setThreadsSocketPolicy(false);
-        final HashSet testKeys = new HashSet();
-        for (int i = (pr.getTotalNumberOfBuckets() * 3); i > 0; i--) {
-          testKeys.add("execKey-" + i);
-        }
-        int j = 0;
-        for (Iterator i = testKeys.iterator(); i.hasNext();) {
-          Integer val = new Integer(j++);
-          pr.put(i.next(), val);
-        }
-        // Assert there is data in each bucket
-        for (int bid = 0; bid < pr.getTotalNumberOfBuckets(); bid++) {
-          assertTrue(pr.getBucketKeys(bid).size() > 0);
-        }
-        Function function = new TestFunction(true, TestFunction.TEST_FUNCTION_NO_LASTRESULT);
-        FunctionService.registerFunction(function);
-        Execution dataSet = FunctionService.onRegion(pr);
-        ResultCollector rc1 = dataSet.setArguments(Boolean.TRUE).execute(function.getId());
-        try {
-          assertEquals(Boolean.TRUE, ((List) rc1.getResult()).get(0));
-          fail("Expected FunctionException : Function did not send last result");
-        } catch (Exception fe) {
-          assertTrue(fe.getMessage().contains("did not send last result"));
-          return Boolean.TRUE;
-        }
-        return Boolean.FALSE;
-      }
+    datastore0.invoke(() -> {
+      createPartitionedRegion(regionName, 10, 0, 17);
+      FunctionService.registerFunction(new TestFunction(true, TEST_FUNCTION_NO_LASTRESULT));
     });
-    assertEquals(Boolean.TRUE, o);
+
+    datastore1.invoke(() -> {
+      createPartitionedRegion(regionName, 10, 0, 17);
+      FunctionService.registerFunction(new TestFunction(true, TEST_FUNCTION_NO_LASTRESULT));
+    });
+
+    datastore2.invoke(() -> {
+      createPartitionedRegion(regionName, 10, 0, 17);
+      FunctionService.registerFunction(new TestFunction(true, TEST_FUNCTION_NO_LASTRESULT));
+    });
+
+    datastore3.invoke(() -> {
+      createPartitionedRegion(regionName, 10, 0, 17);
+      FunctionService.registerFunction(new TestFunction(true, TEST_FUNCTION_NO_LASTRESULT));
+    });
+
+    datastore3.invoke(() -> {
+      PartitionedRegion pr = getPartitionedRegion(regionName);
+
+      Collection<String> stringKeys = new HashSet<>();
+      for (int i = pr.getTotalNumberOfBuckets() * 3; i > 0; i--) {
+        stringKeys.add(STRING_KEY + i);
+      }
+
+      int valueIndex = 0;
+      for (String key : stringKeys) {
+        int value = valueIndex++;
+        pr.put(key, value);
+      }
+
+      // Assert there is data in each bucket
+      for (int bucketId = 0; bucketId < pr.getTotalNumberOfBuckets(); bucketId++) {
+        assertThat(pr.getBucketKeys(bucketId).size()).isGreaterThan(0);
+      }
+
+      Function<Boolean> function = new TestFunction<>(true, TEST_FUNCTION_NO_LASTRESULT);
+      FunctionService.registerFunction(function);
+      Execution<Boolean, Boolean, List<Boolean>> execution = FunctionService.onRegion(pr);
+
+      ResultCollector resultCollector = execution.setArguments(true).execute(function.getId());
+
+      assertThatThrownBy(() -> resultCollector.getResult()).isInstanceOf(FunctionException.class)
+          .hasMessageContaining("did not send last result");
+    });
   }
 
   @Test
   public void testExecutionOnAllNodes_byName() throws Exception {
-    final String rName = getUniqueName();
-    Host host = Host.getHost(0);
-    final VM datastore0 = host.getVM(0);
-    final VM datastore1 = host.getVM(1);
-    final VM datastore2 = host.getVM(2);
-    final VM datastore3 = host.getVM(3);
-    getCache();
-    SerializableCallable dataStoreCreate =
-        new SerializableCallable("Create PR with Function Factory") {
-          public Object call() throws Exception {
-            RegionAttributes ra = PartitionedRegionTestHelper.createRegionAttrsForPR(0, 10);
-            AttributesFactory raf = new AttributesFactory(ra);
-            PartitionAttributesImpl pa = new PartitionAttributesImpl();
-            pa.setAll(ra.getPartitionAttributes());
-            pa.setTotalNumBuckets(17);
-            raf.setPartitionAttributes(pa);
-            getCache().createRegion(rName, raf.create());
-            Function function = new TestFunction(true, TestFunction.TEST_FUNCTION9);
-            FunctionService.registerFunction(function);
-            return Boolean.TRUE;
-          }
-        };
-    datastore0.invoke(dataStoreCreate);
-    datastore1.invoke(dataStoreCreate);
-    datastore2.invoke(dataStoreCreate);
-    datastore3.invoke(dataStoreCreate);
+    VM datastore0 = getHost(0).getVM(0);
+    VM datastore1 = getHost(0).getVM(1);
+    VM datastore2 = getHost(0).getVM(2);
+    VM datastore3 = getHost(0).getVM(3);
 
-    Object o = datastore3.invoke(new SerializableCallable("Create data, invoke exectuable") {
-      public Object call() throws Exception {
-        PartitionedRegion pr = (PartitionedRegion) getCache().getRegion(rName);
-        DistributedSystem.setThreadsSocketPolicy(false);
-        final HashSet testKeys = new HashSet();
-        for (int i = (pr.getTotalNumberOfBuckets() * 3); i > 0; i--) {
-          testKeys.add("execKey-" + i);
-        }
-        int j = 0;
-        for (Iterator i = testKeys.iterator(); i.hasNext();) {
-          Integer val = new Integer(j++);
-          pr.put(i.next(), val);
-        }
-        // Assert there is data in each bucket
-        for (int bid = 0; bid < pr.getTotalNumberOfBuckets(); bid++) {
-          assertTrue(pr.getBucketKeys(bid).size() > 0);
-        }
-        Function function = new TestFunction(true, TestFunction.TEST_FUNCTION9);
-        FunctionService.registerFunction(function);
-        Execution dataSet = FunctionService.onRegion(pr);
-        ResultCollector rc1 = dataSet.setArguments(Boolean.TRUE).execute(function.getId());
-        List l = ((List) rc1.getResult());
-        LogWriterUtils.getLogWriter()
-            .info("PRFunctionExecutionDUnitTest#testExecutionOnAllNodes_byName : Result size :"
-                + l.size() + " Result : " + l);
-        assertEquals(4, l.size());
-
-        for (int i = 0; i < 4; i++) {
-          assertEquals(Boolean.TRUE, l.iterator().next());
-        }
-        return Boolean.TRUE;
-
-      }
+    datastore0.invoke(() -> {
+      createPartitionedRegion(regionName, 10, 0, 17);
+      FunctionService.registerFunction(new TestFunction(true, TEST_FUNCTION9));
     });
-    assertEquals(Boolean.TRUE, o);
+
+    datastore1.invoke(() -> {
+      createPartitionedRegion(regionName, 10, 0, 17);
+      FunctionService.registerFunction(new TestFunction(true, TEST_FUNCTION9));
+    });
+
+    datastore2.invoke(() -> {
+      createPartitionedRegion(regionName, 10, 0, 17);
+      FunctionService.registerFunction(new TestFunction(true, TEST_FUNCTION9));
+    });
+
+    datastore3.invoke(() -> {
+      createPartitionedRegion(regionName, 10, 0, 17);
+      FunctionService.registerFunction(new TestFunction(true, TEST_FUNCTION9));
+    });
+
+    datastore3.invoke(() -> {
+      PartitionedRegion pr = getPartitionedRegion(regionName);
+
+      Collection<String> stringKeys = new HashSet<>();
+      for (int i = pr.getTotalNumberOfBuckets() * 3; i > 0; i--) {
+        stringKeys.add(STRING_KEY + i);
+      }
+
+      int valueIndex = 0;
+      for (String key : stringKeys) {
+        int value = valueIndex++;
+        pr.put(key, value);
+      }
+
+      // Assert there is data in each bucket
+      for (int bucketId = 0; bucketId < pr.getTotalNumberOfBuckets(); bucketId++) {
+        assertThat(pr.getBucketKeys(bucketId).size()).isGreaterThan(0);
+      }
+
+      Function<Boolean> function = new TestFunction<>(true, TEST_FUNCTION9);
+      FunctionService.registerFunction(function);
+      Execution<Boolean, Boolean, List<Boolean>> execution = FunctionService.onRegion(pr);
+
+      ResultCollector<Boolean, List<Boolean>> resultCollector =
+          execution.setArguments(true).execute(function.getId());
+
+      List<Boolean> results = resultCollector.getResult();
+      assertThat(results).hasSize(4).containsExactly(true, true, true, true);
+    });
   }
 
   /**
-   * Ensure that the execution is happening all the PR as a whole
+   * TODO: extract to IntegrationTest with RegressionTest suffix
+   * <p>
+   * TODO: this test has nothing to do with PartitionedRegions. Move it to a FunctionService test
+   * <p>
+   * TRAC #41832: Function execution should throw Exceptions when any configuration is not valid
    */
-
-  public static class TestResolver implements PartitionResolver, Serializable {
-    public String getName() {
-      return "ResolverName_" + getClass().getName();
-    }
-
-    public Serializable getRoutingObject(EntryOperation opDetails) {
-      return (Serializable) opDetails.getKey();
-    }
-
-    public void close() {}
-
-    public Properties getProperties() {
-      return new Properties();
-    }
-  }
-
-  private RegionAttributes createColoRegionAttrs(int red, int mem, String coloRegion) {
-    final TestResolver resolver = new TestResolver();
-    AttributesFactory attr = new AttributesFactory();
-    attr.setPartitionAttributes(new PartitionAttributesFactory().setPartitionResolver(resolver)
-        .setRedundantCopies(red).setLocalMaxMemory(mem).setColocatedWith(coloRegion).create());
-    return attr.create();
-  }
-
   @Test
-  public void testlonerSystem_Bug41832() throws Exception {
-    final String rName = getUniqueName();
-    Host host = Host.getHost(0);
-    final VM datastore = host.getVM(3);
-    Object o = datastore.invoke(new SerializableCallable("Create region") {
-      public Object call() throws Exception {
-        createLonerCache(); // creates loner cache
-        AttributesFactory factory = new AttributesFactory();
-        factory.setDataPolicy(DataPolicy.EMPTY);
-        Region region = getCache().createRegion(rName, factory.create());
-        Function function = new TestFunction(true, TEST_FUNCTION2);
-        FunctionService.registerFunction(function);
+  public void executeThrowsIfRegionIsNotReplicated() throws Exception {
+    Properties config = new Properties();
+    config.put(MCAST_PORT, "0");
+    config.put(LOCATORS, "");
+    getCache(config);
 
-        Execution dataSet = FunctionService.onRegion(region);
-        try {
-          ResultCollector rc = dataSet.setArguments(Boolean.TRUE).execute(function.getId());
-          Object o = rc.getResult();
-          fail("Expected Function Exception");
-        } catch (Exception expected) {
-          assertTrue(expected.getMessage()
-              .startsWith("No Replicated Region found for executing function"));
-          return Boolean.TRUE;
-        }
-        return Boolean.FALSE;
-      }
-    });
-    assertEquals(Boolean.TRUE, o);
+    AttributesFactory factory = new AttributesFactory();
+    factory.setDataPolicy(DataPolicy.EMPTY); // ie, a NON-REPLICATED region
+
+    Region region = getCache().createRegion(regionName, factory.create());
+
+    Function function = new TestFunction(true, TEST_FUNCTION2);
+    FunctionService.registerFunction(function);
+
+    Execution execution = FunctionService.onRegion(region).setArguments(true);
+
+    assertThatThrownBy(() -> execution.execute(function.getId()))
+        .isInstanceOf(FunctionException.class)
+        .hasMessageStartingWith("No Replicated Region found for executing function");
+  }
+
+  private PartitionedRegion createPartitionedRegion(final String regionName,
+      final int localMaxMemory, final int redundancy) {
+    PartitionAttributes pa = createPartitionAttributes(localMaxMemory, redundancy);
+    return createPartitionedRegion(regionName, pa);
+  }
+
+  private PartitionedRegion createPartitionedRegion(final String regionName,
+      final int localMaxMemory, final int redundancy, final PartitionResolver resolver) {
+    PartitionAttributes pa = createPartitionAttributes(localMaxMemory, redundancy, resolver);
+    return createPartitionedRegion(regionName, pa);
+  }
+
+  private PartitionedRegion createPartitionedRegion(final String regionName,
+      final int localMaxMemory, final int redundancy, final int totalNumBuckets) {
+    PartitionAttributes pa = createPartitionAttributes(localMaxMemory, redundancy, totalNumBuckets);
+    return createPartitionedRegion(regionName, pa);
+  }
+
+  private PartitionedRegion createPartitionedRegion(final String regionName,
+      final PartitionAttributes partitionAttributes) {
+    RegionFactory regionFactory = getCache().createRegionFactory(RegionShortcut.PARTITION);
+    regionFactory.setPartitionAttributes(partitionAttributes);
+    return (PartitionedRegion) regionFactory.create(regionName);
+  }
+
+  private PartitionAttributes createPartitionAttributes(final int localMaxMemory,
+      final int redundancy) {
+    PartitionAttributesFactory paf = new PartitionAttributesFactory();
+    paf.setLocalMaxMemory(localMaxMemory);
+    paf.setRedundantCopies(redundancy);
+    return paf.create();
+  }
+
+  private PartitionAttributes createPartitionAttributes(final int localMaxMemory,
+      final int redundancy, final PartitionResolver resolver) {
+    PartitionAttributesFactory paf = new PartitionAttributesFactory();
+    paf.setLocalMaxMemory(localMaxMemory);
+    paf.setPartitionResolver(resolver);
+    paf.setRedundantCopies(redundancy);
+    return paf.create();
+  }
+
+  private PartitionAttributes createPartitionAttributes(final int localMaxMemory,
+      final int redundancy, final PartitionResolver resolver, final int totalNumBuckets) {
+    PartitionAttributesFactory paf = new PartitionAttributesFactory();
+    paf.setLocalMaxMemory(localMaxMemory);
+    paf.setPartitionResolver(resolver);
+    paf.setRedundantCopies(redundancy);
+    paf.setTotalNumBuckets(totalNumBuckets);
+    return paf.create();
+  }
+
+  private PartitionAttributes createPartitionAttributes(final int localMaxMemory,
+      final int redundancy, final long startupRecoveryDelay, final int totalNumBuckets) {
+    PartitionAttributesFactory paf = new PartitionAttributesFactory();
+    paf.setLocalMaxMemory(localMaxMemory);
+    paf.setRedundantCopies(redundancy);
+    paf.setStartupRecoveryDelay(startupRecoveryDelay);
+    paf.setTotalNumBuckets(totalNumBuckets);
+    return paf.create();
+  }
+
+  private PartitionAttributes createPartitionAttributes(final int localMaxMemory,
+      final int redundancy, final int totalNumBuckets) {
+    PartitionAttributesFactory paf = new PartitionAttributesFactory();
+    paf.setLocalMaxMemory(localMaxMemory);
+    paf.setRedundantCopies(redundancy);
+    paf.setTotalNumBuckets(totalNumBuckets);
+    return paf.create();
+  }
+
+  private PartitionAttributes createPartitionAttributes(final String colocatedWith,
+      final int localMaxMemory, final PartitionResolver resolver, final int redundancy,
+      final int totalNumBuckets) {
+    PartitionAttributesFactory paf = new PartitionAttributesFactory();
+    paf.setColocatedWith(colocatedWith);
+    paf.setLocalMaxMemory(localMaxMemory);
+    paf.setPartitionResolver(resolver);
+    paf.setRedundantCopies(redundancy);
+    paf.setTotalNumBuckets(totalNumBuckets);
+    return paf.create();
+  }
+
+  private PartitionedRegion getPartitionedRegion(final String regionName) {
+    return (PartitionedRegion) getCache().getRegion(regionName);
   }
 }

@@ -1014,8 +1014,6 @@ public class ReconnectDUnitTest extends JUnit4CacheTestCase {
 
     final int locPort = locatorPort;
 
-    final String xmlFileLoc = (new File(".")).getAbsolutePath();
-
     SerializableRunnable createCache = new SerializableRunnable("Create Cache and Regions") {
       public void run() {
         locatorPort = locPort;
@@ -1061,7 +1059,8 @@ public class ReconnectDUnitTest extends JUnit4CacheTestCase {
   }
 
   /**
-   * GEODE-2155 Auto-reconnect fails with NPE due to a cache listener not implementing Declarable
+   * GEODE-2155 Auto-reconnect fails with NPE due to a cache listener Declarable.init method
+   * throwing an exception.
    */
   @Test
   public void testReconnectFailsDueToBadCacheXML() throws Exception {
@@ -1071,8 +1070,6 @@ public class ReconnectDUnitTest extends JUnit4CacheTestCase {
     VM vm1 = host.getVM(1);
 
     final int locPort = locatorPort;
-
-    final String xmlFileLoc = (new File(".")).getAbsolutePath();
 
     SerializableRunnable createCache = new SerializableRunnable("Create Cache and Regions") {
       public void run() {
@@ -1084,7 +1081,7 @@ public class ReconnectDUnitTest extends JUnit4CacheTestCase {
         ReconnectDUnitTest.savedCache = (GemFireCacheImpl) getCache();
         Region myRegion = createRegion("myRegion", createAtts());
         myRegion.put("MyKey", "MyValue");
-        myRegion.getAttributesMutator().addCacheListener(new NonDeclarableListener());
+        myRegion.getAttributesMutator().addCacheListener(new ListenerWhoseInitMethodAlwaysThrows());
       }
     };
 
@@ -1263,13 +1260,14 @@ public class ReconnectDUnitTest extends JUnit4CacheTestCase {
   }
 
   /**
-   * A non-Declarable listener will be rejected by the XML parser when rebuilding the cache, causing
-   * auto-reconnect to fail.
+   * A listener whose init always throws an exception.
+   * Since init is always called during cache.xml parsing
+   * this listener is not able to be used from cache.xml.
    */
-  public static class NonDeclarableListener extends CacheListenerAdapter {
+  public static class ListenerWhoseInitMethodAlwaysThrows extends CacheListenerAdapter {
     @Override
     public void init(Properties props) {
-      throw new RuntimeException("Simulate non-declarable listener");
+      throw new RuntimeException("Cause parsing to fail");
     };
   }
 

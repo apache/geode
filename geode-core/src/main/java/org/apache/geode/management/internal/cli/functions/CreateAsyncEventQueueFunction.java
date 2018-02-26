@@ -105,7 +105,8 @@ public class CreateAsyncEventQueueFunction implements InternalFunction {
               "Listener properties were provided, but the listener specified does not implement Declarable.");
         }
 
-        ((Declarable) listenerInstance).init(listenerProperties);
+        ((Declarable) listenerInstance).initialize(cache, listenerProperties);
+        ((Declarable) listenerInstance).init(listenerProperties); // for backwards compatibility
 
         Map<Declarable, Properties> declarablesMap = new HashMap<Declarable, Properties>();
         declarablesMap.put((Declarable) listenerInstance, listenerProperties);

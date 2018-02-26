@@ -148,7 +148,7 @@ public class RegionAlterFunction implements InternalFunction {
       if (entryIdleCustomExpiry.equals(ClassName.EMPTY)) {
         mutator.setCustomEntryIdleTimeout(null);
       } else {
-        mutator.setCustomEntryIdleTimeout(entryIdleCustomExpiry.newInstance());
+        mutator.setCustomEntryIdleTimeout(entryIdleCustomExpiry.newInstance(cache));
       }
     }
 
@@ -157,7 +157,7 @@ public class RegionAlterFunction implements InternalFunction {
       if (entryTTLCustomExpiry.equals(ClassName.EMPTY)) {
         mutator.setCustomEntryTimeToLive(null);
       } else {
-        mutator.setCustomEntryTimeToLive(entryTTLCustomExpiry.newInstance());
+        mutator.setCustomEntryTimeToLive(entryTTLCustomExpiry.newInstance(cache));
       }
     }
 
@@ -248,7 +248,7 @@ public class RegionAlterFunction implements InternalFunction {
       // Add new cache listeners
       for (ClassName<CacheListener> newCacheListener : newCacheListeners) {
         if (!newCacheListener.equals(ClassName.EMPTY)) {
-          mutator.addCacheListener(newCacheListener.newInstance());
+          mutator.addCacheListener(newCacheListener.newInstance(cache));
         }
       }
       if (logger.isDebugEnabled()) {
@@ -261,7 +261,7 @@ public class RegionAlterFunction implements InternalFunction {
       if (cacheLoader.equals(ClassName.EMPTY)) {
         mutator.setCacheLoader(null);
       } else {
-        mutator.setCacheLoader(cacheLoader.newInstance());
+        mutator.setCacheLoader(cacheLoader.newInstance(cache));
       }
 
       if (logger.isDebugEnabled()) {
@@ -274,7 +274,7 @@ public class RegionAlterFunction implements InternalFunction {
       if (cacheWriter.equals(ClassName.EMPTY)) {
         mutator.setCacheWriter(null);
       } else {
-        mutator.setCacheWriter(cacheWriter.newInstance());
+        mutator.setCacheWriter(cacheWriter.newInstance(cache));
       }
 
       if (logger.isDebugEnabled()) {

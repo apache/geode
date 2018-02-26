@@ -106,7 +106,7 @@ public class EntryEventImplTest {
 
     e.exportNewValue(nvImporter);
 
-    verify(nvImporter).importNewObject(newValue, true);
+    verify(nvImporter).importNewBytes(newValueBytes, true);
   }
 
   @Test

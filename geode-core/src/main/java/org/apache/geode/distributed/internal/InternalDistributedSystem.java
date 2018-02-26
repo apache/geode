@@ -986,12 +986,6 @@ public class InternalDistributedSystem extends DistributedSystem
     return this.securityLogWriter;
   }
 
-  /*
-   * public Cache myCache;
-   *
-   * public void setCache(Cache cache){ myCache=cache; } public Cache getCache(){ return myCache; }
-   */
-
   /**
    * Returns the stat sampler
    */
