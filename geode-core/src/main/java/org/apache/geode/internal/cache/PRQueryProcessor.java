@@ -214,7 +214,7 @@ public class PRQueryProcessor {
   private void doBucketQuery(final Integer bId, final PartitionedRegionDataStore prds,
       final DefaultQuery query, final Object[] params, final PRQueryResultCollector rq)
       throws QueryException, ForceReattemptException, InterruptedException {
-    final BucketRegion bukRegion = (BucketRegion) prds.localBucket2RegionMap.get(bId);
+    final BucketRegion bukRegion = (BucketRegion) prds.getLocalBucket2RegionMap().get(bId);
     final PartitionedRegion pr = prds.getPartitionedRegion();
     try {
       pr.checkReadiness();

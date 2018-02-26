@@ -12,29 +12,35 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
-package org.apache.geode.internal.cache;
 
-import static org.apache.geode.distributed.ConfigurationProperties.CONSERVE_SOCKETS;
+package org.apache.geode.internal.cache.execute;
 
-import java.util.Properties;
-
-import org.junit.experimental.categories.Category;
-
-import org.apache.geode.test.junit.categories.DistributedTest;
+import org.apache.geode.cache.execute.Function;
+import org.apache.geode.cache.execute.FunctionContext;
 
 /**
- * Test all the PartitionedRegion api calls when ConserveSockets is set to false
- *
- * @since GemFire 5.0
+ * Extracted from {@link PRFunctionExecutionDUnitTest}.
  */
-@Category(DistributedTest.class)
-public class PartitionedRegionAPIConserveSocketsFalseDUnitTest
-    extends PartitionedRegionAPIDUnitTest {
+class BooleanFunction<Boolean> implements Function<Boolean> {
+
+  private final boolean value;
+
+  BooleanFunction(final boolean value) {
+    this.value = value;
+  }
 
   @Override
-  public Properties getDistributedSystemProperties() {
-    Properties config = new Properties();
-    config.setProperty(CONSERVE_SOCKETS, "false");
-    return config;
+  public void execute(final FunctionContext context) {
+    context.getResultSender().lastResult(value);
+  }
+
+  @Override
+  public String getId() {
+    return getClass().getName();
+  }
+
+  @Override
+  public boolean hasResult() {
+    return true;
   }
 }
