@@ -136,7 +136,7 @@ public class MemberFunctionExecutor extends AbstractExecution {
         isTx = cache.getTxManager().getTXState() == null ? false : true;
       }
       final FunctionContext context = new FunctionContextImpl(cache, function.getId(),
-          getArgumentsForMember(localVM.getId()), resultSender);
+          getArgumentsForMember(localVM.getId()), resultSender, this.ds);
       executeFunctionOnLocalNode(function, context, resultSender, dm, isTx);
     }
 

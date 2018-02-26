@@ -21,6 +21,7 @@ import org.apache.geode.cache.execute.Function;
 import org.apache.geode.cache.execute.FunctionContext;
 import org.apache.geode.cache.execute.RegionFunctionContext;
 import org.apache.geode.cache.execute.ResultSender;
+import org.apache.geode.distributed.DistributedSystem;
 
 /**
  * Context available to application functions which is passed from GemFire to {@link Function}. <br>
@@ -44,19 +45,22 @@ public class FunctionContextImpl implements FunctionContext {
   private ResultSender resultSender = null;
 
   private final boolean isPossDup;
+  private DistributedSystem distributedSystem;
 
   public FunctionContextImpl(final Cache cache, final String functionId, final Object args,
-      ResultSender resultSender) {
-    this(cache, functionId, args, resultSender, false);
+      ResultSender resultSender, final DistributedSystem distributedSystem) {
+    this(cache, functionId, args, resultSender, false, distributedSystem);
   }
 
   public FunctionContextImpl(final Cache cache, final String functionId, final Object args,
-      ResultSender resultSender, boolean isPossibleDuplicate) {
+      ResultSender resultSender, boolean isPossibleDuplicate,
+      final DistributedSystem distributedSystem) {
     this.cache = cache;
     this.functionId = functionId;
     this.args = args;
     this.resultSender = resultSender;
     this.isPossDup = isPossibleDuplicate;
+    this.distributedSystem = distributedSystem;
   }
 
   /**
@@ -105,6 +109,11 @@ public class FunctionContextImpl implements FunctionContext {
       throw new CacheClosedException("FunctionContext does not have a valid Cache");
     }
     return cache;
+  }
+
+  @Override
+  public DistributedSystem getDistributedSystem() {
+    return this.distributedSystem;
   }
 
 }

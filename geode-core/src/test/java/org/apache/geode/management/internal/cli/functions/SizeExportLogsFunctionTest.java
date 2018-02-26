@@ -85,8 +85,8 @@ public class SizeExportLogsFunctionTest {
     config.setProperty(STATISTIC_ARCHIVE_FILE, statFile.getAbsolutePath());
 
     server.withProperties(config).startServer();
-    FunctionContext context =
-        new FunctionContextImpl(server.getCache(), "functionId", nonFilteringArgs, resultSender);
+    FunctionContext context = new FunctionContextImpl(server.getCache(), "functionId",
+        nonFilteringArgs, resultSender, server.getCache().getDistributedSystem());
 
     // log and stat files sizes are not constant with a real cache running, so check for the sizer
     // estimate within a range
@@ -103,8 +103,8 @@ public class SizeExportLogsFunctionTest {
 
     server.withProperties(config).startServer();
 
-    FunctionContext context =
-        new FunctionContextImpl(server.getCache(), "functionId", nonFilteringArgs, resultSender);
+    FunctionContext context = new FunctionContextImpl(server.getCache(), "functionId",
+        nonFilteringArgs, resultSender, server.getCache().getDistributedSystem());
     new SizeExportLogsFunction().execute(context);
     getAndVerifySizeEstimate(resultSender, 0L);
   }
@@ -113,8 +113,8 @@ public class SizeExportLogsFunctionTest {
   public void withFunctionError_shouldThrow() throws Throwable {
     server.withProperties(config).startServer();
 
-    FunctionContext context =
-        new FunctionContextImpl(server.getCache(), "functionId", null, resultSender);
+    FunctionContext context = new FunctionContextImpl(server.getCache(), "functionId", null,
+        resultSender, server.getCache().getDistributedSystem());
     new SizeExportLogsFunction().execute(context);
     assertThatThrownBy(resultSender::getResults).isInstanceOf(NullPointerException.class);
   }
@@ -125,8 +125,8 @@ public class SizeExportLogsFunctionTest {
     config.setProperty(STATISTIC_ARCHIVE_FILE, statFile.getAbsolutePath());
     server.withProperties(config).startServer();
 
-    FunctionContext context =
-        new FunctionContextImpl(server.getCache(), "functionId", nonFilteringArgs, resultSender);
+    FunctionContext context = new FunctionContextImpl(server.getCache(), "functionId",
+        nonFilteringArgs, resultSender, server.getCache().getDistributedSystem());
     SizeExportLogsFunction testFunction = new SizeExportLogsFunction();
     SizeExportLogsFunction spyFunction = spy(testFunction);
     long fakeDiskAvailable = 1024;

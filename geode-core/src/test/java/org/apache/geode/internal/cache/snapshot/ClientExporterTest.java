@@ -43,7 +43,8 @@ public class ClientExporterTest {
     ClientExporter.ClientArgs<String, String> args = mock(ClientExporter.ClientArgs.class);
     when(args.isPRSingleHop()).thenReturn(true);
     when(args.getRegion()).thenReturn("testRegion");
-    FunctionContext context = new FunctionContextImpl(cache, "id", args, resultSender);
+    FunctionContext context =
+        new FunctionContextImpl(cache, "id", args, resultSender, cache.getDistributedSystem());
 
     new ClientExporter.ProxyExportFunction<String, String>().execute(context);
     verify(cache).getRegion(any());

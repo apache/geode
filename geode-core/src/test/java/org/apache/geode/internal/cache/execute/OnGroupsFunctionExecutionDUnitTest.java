@@ -71,8 +71,8 @@ public class OnGroupsFunctionExecutionDUnitTest extends JUnit4CacheTestCase {
     @Override
     public void execute(FunctionContext context) {
       LogWriterUtils.getLogWriter().fine("SWAP:1:executing OnGroupsFunction:" + invocationCount);
-      InternalDistributedSystem ds =
-          (InternalDistributedSystem) context.getCache().getDistributedSystem();
+      InternalDistributedSystem ds = (InternalDistributedSystem) context.getDistributedSystem();
+
       synchronized (OnGroupsFunction.class) {
         invocationCount++;
       }
@@ -475,8 +475,8 @@ public class OnGroupsFunctionExecutionDUnitTest extends JUnit4CacheTestCase {
       if (args.get(0).equals("runtime")) {
         if (args.size() > 1) {
           String group = args.get(1);
-          InternalDistributedSystem ds = (InternalDistributedSystem) context.getCache()
-              .getDistributedSystem().getDistributedMember();
+          InternalDistributedSystem ds =
+              (InternalDistributedSystem) context.getCache().getDistributedSystem();
           if (ds.getDistributedMember().getGroups().contains(group)) {
             throw new NullPointerException();
           }

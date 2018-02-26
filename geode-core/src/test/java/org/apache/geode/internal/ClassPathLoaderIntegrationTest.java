@@ -496,7 +496,7 @@ public class ClassPathLoaderIntegrationTest {
     Function function = FunctionService.getFunction("JarClassLoaderJUnitFunctionNoXml");
     assertThat(function).isNotNull();
     TestResultSender resultSender = new TestResultSender();
-    function.execute(new FunctionContextImpl(null, function.getId(), null, resultSender));
+    function.execute(new FunctionContextImpl(null, function.getId(), null, resultSender, null));
     assertThat((String) resultSender.getResults()).isEqualTo("NOPARMSv1");
   }
 
@@ -560,7 +560,7 @@ public class ClassPathLoaderIntegrationTest {
     assertThat(function).isNotNull();
     TestResultSender resultSender = new TestResultSender();
     FunctionContext functionContext =
-        new FunctionContextImpl(null, function.getId(), null, resultSender);
+        new FunctionContextImpl(null, function.getId(), null, resultSender, null);
     function.execute(functionContext);
     assertThat((String) resultSender.getResults()).isEqualTo("PARENT:USES");
   }

@@ -90,7 +90,8 @@ public class ShowMissingDiskStoresFunctionJUnitTest {
     prc = mock(PartitionRegionConfig.class);
     cache = Fakes.cache();
     resultSender = new TestResultSender();
-    context = new FunctionContextImpl(cache, "testFunction", null, resultSender);
+    context = new FunctionContextImpl(cache, "testFunction", null, resultSender,
+        cache.getDistributedSystem());
     memberManager = mock(PersistentMemberManager.class);
     smdsFunc = new ShowMissingDiskStoresFunction();
   }
@@ -120,7 +121,7 @@ public class ShowMissingDiskStoresFunctionJUnitTest {
   @Test
   public void testExecuteWithNullCacheInstanceThrowsCacheClosedException() throws Throwable {
     expectedException.expect(CacheClosedException.class);
-    context = new FunctionContextImpl(null, "testFunction", null, resultSender);
+    context = new FunctionContextImpl(null, "testFunction", null, resultSender, null);
     List<?> results = null;
 
     smdsFunc.execute(context);
