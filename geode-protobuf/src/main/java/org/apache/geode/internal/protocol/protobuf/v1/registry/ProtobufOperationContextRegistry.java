@@ -21,6 +21,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import org.apache.geode.annotations.Experimental;
 import org.apache.geode.internal.protocol.protobuf.v1.ClientProtocol;
 import org.apache.geode.internal.protocol.protobuf.v1.ProtobufOperationContext;
+import org.apache.geode.internal.protocol.protobuf.v1.operations.DisconnectClientRequestOperationHandler;
 import org.apache.geode.internal.protocol.protobuf.v1.operations.ExecuteFunctionOnGroupRequestOperationHandler;
 import org.apache.geode.internal.protocol.protobuf.v1.operations.ExecuteFunctionOnMemberRequestOperationHandler;
 import org.apache.geode.internal.protocol.protobuf.v1.operations.ExecuteFunctionOnRegionRequestOperationHandler;
@@ -54,6 +55,12 @@ public class ProtobufOperationContextRegistry {
         new ProtobufOperationContext<>(ClientProtocol.Message::getAuthenticationRequest,
             new AuthenticationRequestOperationHandler(),
             opsResp -> ClientProtocol.Message.newBuilder().setAuthenticationResponse(opsResp),
+            new ResourcePermission(ResourcePermission.NULL, ResourcePermission.NULL)));
+
+    operationContexts.put(ClientProtocol.Message.MessageTypeCase.DISCONNECTCLIENTREQUEST,
+        new ProtobufOperationContext<>(ClientProtocol.Message::getDisconnectClientRequest,
+            new DisconnectClientRequestOperationHandler(),
+            opsResp -> ClientProtocol.Message.newBuilder().setDisconnectClientResponse(opsResp),
             new ResourcePermission(ResourcePermission.NULL, ResourcePermission.NULL)));
 
     operationContexts.put(ClientProtocol.Message.MessageTypeCase.GETREQUEST,
