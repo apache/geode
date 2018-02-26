@@ -48,7 +48,7 @@ public class ProtobufConnectionAuthorizingStateProcessor
           operationContext.getFromRequest().apply(message), serializer));
     } catch (NotAuthorizedException e) {
       messageContext.getStatistics().incAuthorizationViolations();
-      throw new OperationNotAuthorizedException(BasicTypes.ErrorCode.AUTHORIZATION_FAILED,
+      throw new OperationNotAuthorizedException(
           "The user is not authorized to complete this operation");
     } finally {
       threadState.restore();

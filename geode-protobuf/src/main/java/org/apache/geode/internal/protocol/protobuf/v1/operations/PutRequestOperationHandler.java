@@ -57,13 +57,8 @@ public class PutRequestOperationHandler
           "Key and value must both be non-NULL");
     }
 
-    try {
-      region.put(decodedKey, decodedValue);
-      return Success.of(RegionAPI.PutResponse.newBuilder().build());
-    } catch (ClassCastException ex) {
-      logger.error("Received Put request with invalid key type: {}", ex);
-      return Failure.of(BasicTypes.ErrorCode.SERVER_ERROR, ex.toString());
-    }
+    region.put(decodedKey, decodedValue);
+    return Success.of(RegionAPI.PutResponse.newBuilder().build());
   }
 
   public static ResourcePermission determineRequiredPermission(RegionAPI.PutRequest request,

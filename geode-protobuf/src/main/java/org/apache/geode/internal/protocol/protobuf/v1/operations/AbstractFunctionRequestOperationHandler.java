@@ -47,7 +47,7 @@ public abstract class AbstractFunctionRequestOperationHandler<Req, Resp>
   @Override
   public Result<Resp> process(ProtobufSerializationService serializationService, Req request,
       MessageExecutionContext messageExecutionContext)
-      throws InvalidExecutionContextException, DecodingException {
+      throws InvalidExecutionContextException, DecodingException, EncodingException {
 
     final String functionID = getFunctionID(request);
 
@@ -112,10 +112,6 @@ public abstract class AbstractFunctionRequestOperationHandler<Req, Resp>
       }
     } catch (FunctionException ex) {
       final String message = "Function execution failed: " + ex.toString();
-      logger.info(message, ex);
-      return Failure.of(BasicTypes.ErrorCode.SERVER_ERROR, message);
-    } catch (EncodingException ex) {
-      final String message = "Encoding failed: " + ex.toString();
       logger.info(message, ex);
       return Failure.of(BasicTypes.ErrorCode.SERVER_ERROR, message);
     }
