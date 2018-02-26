@@ -329,6 +329,9 @@ public class GMSJoinLeaveJUnitTest {
 
     // prepare the view
     NetView netView = new NetView(coordinator, viewId, members);
+    for (InternalDistributedMember member : netView.getMembers()) {
+      netView.setPublicKey(member, member.toString());
+    }
     InstallViewMessage installViewMessage = getInstallViewMessage(netView, credentials, true);
     gmsJoinLeave.processMessage(installViewMessage);
     verify(messenger).send(isA(ViewAckMessage.class));
@@ -1199,6 +1202,53 @@ public class GMSJoinLeaveJUnitTest {
     System.out.println("new view is " + newView);
     assertTrue(newView.contains(mockMembers[1]));
     assertTrue(newView.getViewId() > preparedView.getViewId());
+  }
+
+  @Test
+  public void testPublicKeyForNewMemberFromPreparedViewIsInstalledInNewView() throws Exception {
+    initMocks(false);
+    InternalDistributedMember newMember = mockMembers[1];
+
+    prepareAndInstallView(gmsJoinLeaveMemberId,
+        createMemberList(gmsJoinLeaveMemberId, mockMembers[0]));
+    // a new member is joining
+    NetView preparedView =
+        new NetView(gmsJoinLeave.getView(), gmsJoinLeave.getView().getViewId() + 5);
+    for (InternalDistributedMember member : preparedView.getMembers()) {
+      preparedView.setPublicKey(member, member.toString());
+    }
+    newMember.setVmViewId(preparedView.getViewId());
+    preparedView.add(newMember);
+    preparedView.setPublicKey(newMember, newMember.toString());
+
+    InstallViewMessage msg = getInstallViewMessage(preparedView, null, true);
+    gmsJoinLeave.processMessage(msg);
+
+    GMSJoinLeaveTestHelper.becomeCoordinatorForTest(gmsJoinLeave);
+
+    Thread.sleep(2000);
+    ViewCreator vc = gmsJoinLeave.getViewCreator();
+    int viewId = 0;
+    if (gmsJoinLeave.getPreparedView() == null) {
+      viewId = gmsJoinLeave.getView().getViewId();
+    } else {
+      viewId = gmsJoinLeave.getPreparedView().getViewId();
+    }
+    ViewAckMessage vack = new ViewAckMessage(gmsJoinLeaveMemberId, viewId, true);
+    vack.setSender(mockMembers[0]);
+    gmsJoinLeave.processMessage(vack);
+    vack = new ViewAckMessage(gmsJoinLeaveMemberId, viewId, true);
+    vack.setSender(newMember);
+    gmsJoinLeave.processMessage(vack);
+    vack = new ViewAckMessage(gmsJoinLeaveMemberId, viewId, true);
+    vack.setSender(gmsJoinLeaveMemberId);
+    gmsJoinLeave.processMessage(vack);
+
+    Awaitility.await("view creator finishes").atMost(30, SECONDS).until(() -> vc.waiting);
+    NetView newView = gmsJoinLeave.getView();
+    System.out.println("new view is " + newView);
+    assertTrue(newView.contains(newMember));
+    assertNotNull(newView.getPublicKey(newMember));
   }
 
   private NetView createView() {
