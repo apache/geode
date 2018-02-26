@@ -18,6 +18,8 @@ import java.util.function.Function;
 
 import org.apache.geode.annotations.Experimental;
 import org.apache.geode.internal.protocol.protobuf.v1.state.exception.ConnectionStateException;
+import org.apache.geode.internal.protocol.protobuf.v1.state.exception.ExceptionWithErrorCode;
+import org.apache.geode.internal.protocol.protobuf.v1.state.exception.OperationNotAuthorizedException;
 
 @Experimental
 public class Failure<SuccessType> implements Result<SuccessType> {
@@ -33,15 +35,29 @@ public class Failure<SuccessType> implements Result<SuccessType> {
         .build());
   }
 
-  public static <T> Failure<T> of(ConnectionStateException exception) {
-    return of(exception.getErrorCode(), exception.getMessage());
+  public static <T> Failure<T> of(Throwable exception) {
+    BasicTypes.ErrorCode errorCode = getErrorCode(exception);
+
+    return of(errorCode, getErrorMessage(exception));
   }
 
-  public static <T> Failure<T> of(Exception exception) {
-    if (exception instanceof ConnectionStateException) {
-      return of((ConnectionStateException) exception);
+  private static BasicTypes.ErrorCode getErrorCode(Throwable exception) {
+    BasicTypes.ErrorCode errorCode = BasicTypes.ErrorCode.SERVER_ERROR;
+    if (exception instanceof ExceptionWithErrorCode) {
+      errorCode = ((ExceptionWithErrorCode) exception).getErrorCode();
     }
-    return of(BasicTypes.ErrorCode.SERVER_ERROR, exception.toString());
+    return errorCode;
+  }
+
+  private static String getErrorMessage(Throwable exception) {
+
+    StringBuilder message = new StringBuilder(exception.toString());
+    while (exception.getCause() != null) {
+      message.append(" Caused by: " + exception.getCause());
+      exception = exception.getCause();
+    }
+
+    return message.toString();
   }
 
   @Override
