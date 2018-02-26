@@ -24,6 +24,7 @@ import org.apache.geode.cache.CacheException;
 import org.apache.geode.cache.ExpirationAttributes;
 import org.apache.geode.cache.Operation;
 import org.apache.geode.cache.TimeoutException;
+import org.apache.geode.internal.cache.expiration.ExpiryTask;
 
 abstract class RegionExpiryTask extends ExpiryTask {
   private boolean isCanceled;
