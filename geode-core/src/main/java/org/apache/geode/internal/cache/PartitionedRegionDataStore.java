@@ -140,7 +140,7 @@ public class PartitionedRegionDataStore implements HasCachePerfStats {
    * <p>
    * Keys are instances of {@link Integer}. Values are instances of (@link BucketRegion}.
    */
-  final ConcurrentMap<Integer, BucketRegion> localBucket2RegionMap;
+  private final ConcurrentMap<Integer, BucketRegion> localBucket2RegionMap;
 
   /**
    * A counter of the number of concurrent bucket creates in progress on this node
@@ -225,30 +225,9 @@ public class PartitionedRegionDataStore implements HasCachePerfStats {
     return prd;
   }
 
-  // /**
-  // * Checks whether there is room in this Map to accommodate more data without
-  // * pushing the Map over its rebalance threshold.
-  // *
-  // * @param bytes
-  // * the size to check in bytes
-  // */
-  // boolean canAccommodateMoreBytesSafely(long bytes)
-  // {
-  //
-  // if (this.partitionedRegion.getLocalMaxMemory() == 0) {
-  // return false;
-  // }
-  // long allocatedMemory = currentAllocatedMemory();
-  // // precision coercion from int to long on bytes
-  // long newAllocatedSize = allocatedMemory + bytes;
-  // if (newAllocatedSize < (this.partitionedRegion.getLocalMaxMemory()
-  // * PartitionedRegionHelper.BYTES_PER_MB * this.partitionedRegion.rebalanceThreshold)) {
-  // return true;
-  // }
-  // else {
-  // return false;
-  // }
-  // }
+  ConcurrentMap<Integer, BucketRegion> getLocalBucket2RegionMap() {
+    return this.localBucket2RegionMap;
+  }
 
   /**
    * Test to determine if this data store is managing a bucket

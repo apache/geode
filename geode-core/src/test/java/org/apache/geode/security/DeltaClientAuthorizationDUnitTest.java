@@ -27,7 +27,7 @@ import org.junit.experimental.categories.Category;
 import org.apache.geode.DeltaTestImpl;
 import org.apache.geode.cache.Region;
 import org.apache.geode.cache.operations.OperationContext.OperationCode;
-import org.apache.geode.internal.cache.PartitionedRegionLocalMaxMemoryDUnitTest.TestObject1;
+import org.apache.geode.internal.cache.TestObjectWithIdentifier;
 import org.apache.geode.security.generator.AuthzCredentialGenerator;
 import org.apache.geode.security.generator.CredentialGenerator;
 import org.apache.geode.test.junit.categories.DistributedTest;
@@ -157,7 +157,8 @@ public class DeltaClientAuthorizationDUnitTest extends ClientAuthorizationTestCa
 
   private void setUpDeltas() {
     for (int i = 0; i < 8; i++) {
-      deltas[i] = new DeltaTestImpl(0, "0", new Double(0), new byte[0], new TestObject1("0", 0));
+      deltas[i] = new DeltaTestImpl(0, "0", new Double(0), new byte[0],
+          new TestObjectWithIdentifier("0", 0));
     }
     deltas[1].setIntVar(5);
     deltas[2].setIntVar(5);
@@ -190,9 +191,9 @@ public class DeltaClientAuthorizationDUnitTest extends ClientAuthorizationTestCa
 
     deltas[5].resetDeltaStatus();
     deltas[5].setIntVar(100);
-    deltas[5].setTestObj(new TestObject1("CHANGED", 100));
-    deltas[6].setTestObj(new TestObject1("CHANGED", 100));
-    deltas[7].setTestObj(new TestObject1("CHANGED", 100));
+    deltas[5].setTestObj(new TestObjectWithIdentifier("CHANGED", 100));
+    deltas[6].setTestObj(new TestObjectWithIdentifier("CHANGED", 100));
+    deltas[7].setTestObj(new TestObjectWithIdentifier("CHANGED", 100));
 
     deltas[6].resetDeltaStatus();
     deltas[6].setByteArr(new byte[] {1, 2, 3});

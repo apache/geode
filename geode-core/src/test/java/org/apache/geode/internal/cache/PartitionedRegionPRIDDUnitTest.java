@@ -14,243 +14,132 @@
  */
 package org.apache.geode.internal.cache;
 
-import static org.junit.Assert.*;
+import static org.apache.geode.internal.cache.PartitionedRegion.RETRY_TIMEOUT_PROPERTY;
+import static org.apache.geode.test.dunit.Host.getHost;
+import static org.assertj.core.api.Assertions.assertThat;
 
-import java.util.*;
 import java.util.ArrayList;
-import java.util.Iterator;
 import java.util.List;
+import java.util.SortedSet;
+import java.util.TreeSet;
 
+import org.junit.Before;
+import org.junit.Rule;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
 import org.apache.geode.cache.Cache;
+import org.apache.geode.cache.PartitionAttributesFactory;
 import org.apache.geode.cache.Region;
-import org.apache.geode.cache30.*;
-import org.apache.geode.test.dunit.Assert;
-import org.apache.geode.test.dunit.AsyncInvocation;
-import org.apache.geode.test.dunit.Host;
-import org.apache.geode.test.dunit.LogWriterUtils;
-import org.apache.geode.test.dunit.ThreadUtils;
+import org.apache.geode.cache.RegionFactory;
+import org.apache.geode.cache.RegionShortcut;
 import org.apache.geode.test.dunit.VM;
-import org.apache.geode.test.dunit.cache.internal.JUnit4CacheTestCase;
-import org.apache.geode.test.dunit.internal.JUnit4DistributedTestCase;
+import org.apache.geode.test.dunit.cache.CacheTestCase;
+import org.apache.geode.test.dunit.rules.DistributedRestoreSystemProperties;
 import org.apache.geode.test.junit.categories.DistributedTest;
 
 /**
- *
- * This class tests PRID generation in multiple partiton regions on 4 VMs
+ * Tests PRID (PartitionedRegion Id) metadata.
  */
 @Category(DistributedTest.class)
-public class PartitionedRegionPRIDDUnitTest extends PartitionedRegionDUnitTestCase {
+public class PartitionedRegionPRIDDUnitTest extends CacheTestCase {
 
-  /** Maximum number of regions * */
-  public static final int MAX_REGIONS = 1;
+  private static final String RETRY_TIMEOUT_PROPERTY_VALUE = "20000";
 
-  /** redundancy used for the creation of the partition region */
-  // int redundancy = 0;
+  private String regionName1;
+  private String regionName2;
+  private int localMaxMemory;
 
-  /** local maxmemory used for the creation of the partition region */
-  int localMaxMemory = 200;
+  private VM vm0;
+  private VM vm1;
+  private VM vm2;
+  private VM vm3;
 
-  /** to store references of 4 vms */
-  VM vm[] = new VM[4];
+  @Rule
+  public DistributedRestoreSystemProperties restoreSystemProperties =
+      new DistributedRestoreSystemProperties();
 
-  public PartitionedRegionPRIDDUnitTest() {
-    super();
+  @Before
+  public void setUp() {
+    vm0 = getHost(0).getVM(0);
+    vm1 = getHost(0).getVM(1);
+    vm2 = getHost(0).getVM(2);
+    vm3 = getHost(0).getVM(3);
+
+    regionName1 = "PR-1";
+    regionName2 = "PR-2";
+    localMaxMemory = 200;
+
+    System.setProperty(RETRY_TIMEOUT_PROPERTY, RETRY_TIMEOUT_PROPERTY_VALUE);
   }
 
-  /**
-   * This test performs following operations 1. creates 25 partition regions on 3 nodes. 2. creates
-   * more 25 partition regions on 4 nodes 3. tests PRID generation
-   *
-   */
   @Test
   public void testPRIDGenerationInMultiplePartitionRegion() throws Exception {
-    Host host = Host.getHost(0);
-    /** creating 4 VMs */
-    createVMs(host);
+    // create PR-1
+    vm0.invoke(() -> createPartitionedRegion(regionName1, localMaxMemory, 0));
+    vm1.invoke(() -> createPartitionedRegion(regionName1, localMaxMemory, 0));
+    vm2.invoke(() -> createPartitionedRegion(regionName1, localMaxMemory, 0));
 
-    /** Prefix will be used for naming the partititon Region */
-    String prPrefix = "testBucketCreationInMultiPlePartitionRegion";
+    // create PR-2
+    vm0.invoke(() -> createPartitionedRegion(regionName2, localMaxMemory, 1));
+    vm1.invoke(() -> createPartitionedRegion(regionName2, localMaxMemory, 1));
+    vm2.invoke(() -> createPartitionedRegion(regionName2, localMaxMemory, 1));
+    vm3.invoke(() -> createPartitionedRegion(regionName2, localMaxMemory, 1));
 
-    /** these indices represents range of partition regions present in each VM */
-    int startIndexForRegion = 0;
-    int endIndexForRegion = MAX_REGIONS;
-
-    int startIndexForNode;
-    int endIndexForNode;
-    List vmList = new ArrayList();
-    startIndexForNode = 0;
-    endIndexForNode = 3;
-    addNodeToList(vmList, startIndexForNode, endIndexForNode);
-    localMaxMemory = 200;
-    final int redundancy = 0;
-    // Create 1/2 * MAX_REGIONS regions in VM 0,1,2 with scope D_ACK.
-    createPartitionRegion(vmList, startIndexForRegion, endIndexForRegion, localMaxMemory,
-        redundancy, prPrefix);
-    LogWriterUtils.getLogWriter().info(
-        "testPRIDGenerationInMultiplePartitionRegion() - Partition regions on 3 nodes successfully created");
-
-    startIndexForRegion = MAX_REGIONS;
-    endIndexForRegion = 2 * MAX_REGIONS;
-    // creating partition regions on 4 with scope DISTRIBUTED_ACK
-    startIndexForNode = 0;
-    endIndexForNode = 4;
-    addNodeToList(vmList, startIndexForNode, endIndexForNode);
-    localMaxMemory = 200;
-    final int pr2_redundancy = 1;
-    // Create MAX_REGION regions on VM 0,1,2,3.
-    // VM 3 contains regions from id MAX_REGIONS to 2*MAX_REGIONS only.
-    createPartitionRegion(vmList, startIndexForRegion, endIndexForRegion, localMaxMemory,
-        pr2_redundancy, prPrefix);
-    LogWriterUtils.getLogWriter().info(
-        "testPRIDGenerationInMultiplePartitionRegion() - Partition regions on 4 nodes successfully created");
-    // validating PRID generation for multiple partition regions
-    int AsyncInvocationArrSize = 4;
-    AsyncInvocation[] async = new AsyncInvocation[AsyncInvocationArrSize];
-    async[0] = vm[0].invokeAsync(validatePRIDCreation(0, endIndexForRegion, prPrefix));
-    async[1] = vm[1].invokeAsync(validatePRIDCreation(0, endIndexForRegion, prPrefix));
-    async[2] = vm[2].invokeAsync(validatePRIDCreation(0, endIndexForRegion, prPrefix));
-    async[3] = vm[3].invokeAsync(validatePRIDCreation(MAX_REGIONS, endIndexForRegion, prPrefix));
-
-    /** main thread is waiting for the other threads to complete */
-    for (int count = 0; count < AsyncInvocationArrSize; count++) {
-      ThreadUtils.join(async[count], 30 * 1000);
-    }
-
-    for (int count = 0; count < AsyncInvocationArrSize; count++) {
-      if (async[count].exceptionOccurred()) {
-        Assert.fail("VM " + count + " encountered this exception during async invocation",
-            async[count].getException());
-      }
-    }
+    // validation of PRID metadata
+    vm0.invoke(() -> validatePRIDCreation(regionName1, regionName2));
+    vm1.invoke(() -> validatePRIDCreation(regionName1, regionName2));
+    vm2.invoke(() -> validatePRIDCreation(regionName1, regionName2));
+    vm3.invoke(() -> validatePRIDCreation(regionName2));
   }
 
+  private void createPartitionedRegion(String regionName, int localMaxMemory, int redundancy) {
+    PartitionAttributesFactory paf = new PartitionAttributesFactory();
+    paf.setLocalMaxMemory(localMaxMemory);
+    paf.setRedundantCopies(redundancy);
 
-  /**
-   * This function perfoms following checks on PRID creation 1. PRID generated should be between 0
-   * to number of partition regions in distributed system 2. PRID should be unique for the partition
-   * regions
-   *
-   * @param startIndexForRegion
-   * @param endIndexForRegion
-   * @return
-   */
-  private CacheSerializableRunnable validatePRIDCreation(final int startIndexForRegion,
-      final int endIndexForRegion, final String prPrefix) {
-    CacheSerializableRunnable validatePRID = new CacheSerializableRunnable("validatePRIDCreation") {
-      String innerPrPrefix = prPrefix;
+    RegionFactory regionFactory = getCache().createRegionFactory(RegionShortcut.PARTITION);
+    regionFactory.setPartitionAttributes(paf.create());
 
-      public void run2() {
-        int noPartitionRegions = endIndexForRegion - startIndexForRegion;
-        Cache cache = getCache();
-        // getting root region
-        Region root =
-            cache.getRegion(Region.SEPARATOR + PartitionedRegionHelper.PR_ROOT_REGION_NAME);
-        // root region should niot be null
-        assertNotNull("Root region can not be null", root);
-        // getting allParititionedRegions
-        // Region allPartitionedRegions = root
-        // .getSubregion(PartitionedRegionHelper.PARTITIONED_REGION_CONFIG_NAME);
-        // allPartitionedRegion should not be null
-        // assertNotNull("allPartitionedRegion can not be null",
-        // allPartitionedRegions);
-        // scope of all partition region should be DISTRIBUTED_ACK
-        List prIdList = new ArrayList();
-        for (int i = startIndexForRegion; i < endIndexForRegion; i++) {
-          final String rName = Region.SEPARATOR + innerPrPrefix + i;
-          PartitionedRegion pr = (PartitionedRegion) cache.getRegion(rName);
-          assertNotNull("This Partitioned Region " + rName + " cannot be null", pr);
-          PartitionRegionConfig prConfig =
-              (PartitionRegionConfig) root.get(pr.getRegionIdentifier());
-          assertNotNull("PRConfig for Partitioned Region " + rName + " can not be null", prConfig);
-          prIdList.add(Integer.toString(prConfig.getPRId()));
-
-          // this partition region should present in prIdToPr
-          /*
-           * if (PartitionedRegion.prIdToPR.containsKey(Integer.toString(prConfig .getPRId())) ==
-           * false) fail("this partition region is not present in the prIdToPR map " +
-           * pr.getName());
-           */
-        }
-
-        // checking uniqueness of prId in allPartitionRegion
-        SortedSet prIdSet = new TreeSet(prIdList);
-        if (prIdSet.size() != prIdList.size())
-          fail("Duplicate PRID are generated");
-
-        // prId generated should be between 0 to number of partition regions-1
-        Iterator prIdSetItr = prIdSet.iterator();
-        while (prIdSetItr.hasNext()) {
-          int val = Integer.parseInt((String) prIdSetItr.next());
-          if (val > noPartitionRegions - 1 & val < 0) {
-            fail("PRID limit is out of range");
-          }
-        }
-        // no of PRID generated in allPartitionRegion should be equal to number of partition region
-        if (prIdSet.size() != noPartitionRegions)
-          fail("Different PRID generated equal to " + prIdSet.size());
-
-        // no of PRID generated in prIdToPR should be equal to number of partition region
-        if (PartitionedRegion.prIdToPR.size() != noPartitionRegions)
-          fail("number of entries in the prIdToPR is " + PartitionedRegion.prIdToPR.size());
-
-        // checking uniqueness of prId in prIdToPR
-        SortedSet prIdPRSet = new TreeSet(PartitionedRegion.prIdToPR.keySet());
-        if (prIdPRSet.size() != PartitionedRegion.prIdToPR.size())
-          fail("Duplicate PRID are generated in prIdToPR");
-
-        LogWriterUtils.getLogWriter().info("Size of allPartition region : " + prIdSet.size());
-        LogWriterUtils.getLogWriter().info("Size of prIdToPR region     : " + prIdPRSet.size());
-        LogWriterUtils.getLogWriter().info("PRID generated successfully");
-      }
-    };
-    return validatePRID;
+    regionFactory.create(regionName);
   }
 
-  /**
-   * This function createas multiple partition regions on nodes specified in the vmList
-   */
-  private void createPartitionRegion(List vmList, int startIndexForRegion, int endIndexForRegion,
-      int localMaxMemory, int redundancy, String prPrefix) throws Exception {
-    int AsyncInvocationArrSize = 4;
-    AsyncInvocation[] async = new AsyncInvocation[AsyncInvocationArrSize];
-    int numNodes = 0;
-    Iterator nodeIterator = vmList.iterator();
-    while (nodeIterator.hasNext()) {
-      VM vm = (VM) nodeIterator.next();
-      async[numNodes] = vm.invokeAsync(createMultiplePartitionRegion(prPrefix, startIndexForRegion,
-          endIndexForRegion, redundancy, localMaxMemory));
-      numNodes++;
-    }
-    for (int i = 0; i < numNodes; i++) {
-      ThreadUtils.join(async[i], 30 * 1000);
+  private void validatePRIDCreation(final String... regionNames) {
+    Cache cache = getCache();
+    Region prRootRegion = cache.getRegion(PartitionedRegionHelper.PR_ROOT_REGION_NAME);
+    assertThat(prRootRegion).isNotNull();
+
+    List<Integer> prIdList = new ArrayList<>();
+    for (String regionName : regionNames) {
+      PartitionedRegion partitionedRegion = (PartitionedRegion) cache.getRegion(regionName);
+      assertThat(partitionedRegion).isNotNull();
+
+      PartitionRegionConfig prConfig =
+          (PartitionRegionConfig) prRootRegion.get(partitionedRegion.getRegionIdentifier());
+      assertThat(prConfig).isNotNull();
+
+      prIdList.add(prConfig.getPRId());
     }
 
-    for (int i = 0; i < numNodes; i++) {
-      if (async[i].exceptionOccurred()) {
-        Assert.fail("VM " + i + " encountered this exception during async invocation",
-            async[i].getException());
-      }
-    }
-  }
+    // checking uniqueness of prId in allPartitionRegion
+    SortedSet<Integer> prIdSet = new TreeSet<>(prIdList);
+    assertThat(prIdSet).hasSameSizeAs(prIdList);
 
-  /**
-   * This function adds nodes to node list in the range specified by startIndexForNode and
-   * endIndexForNode
-   */
-  private void addNodeToList(List vmList, int startIndexForNode, int endIndexForNode) {
-    vmList.clear();
-    for (int i = startIndexForNode; i < endIndexForNode; i++) {
-      vmList.add(vm[i]);
-    }
-  }
+    int numberOfPartitionedRegions = regionNames.length;
 
-  /** creates 4 VMS on the given host */
-  private void createVMs(Host host) {
-    for (int i = 0; i < 4; i++) {
-      vm[i] = host.getVM(i);
+    // prId generated should be between 0 to number of partition regions-1
+    for (int prId : prIdSet) {
+      assertThat(prId).isGreaterThanOrEqualTo(numberOfPartitionedRegions - 1);
     }
+
+    // # of prId generated in allPartitionRegion should be equal to number of partition region
+    assertThat(prIdSet).hasSize(numberOfPartitionedRegions);
+
+    // # of prId generated in prIdToPR should be equal to number of partition region
+    assertThat(PartitionedRegion.getPrIdToPR()).hasSize(numberOfPartitionedRegions);
+
+    // checking uniqueness of prId in prIdToPR
+    SortedSet<Integer> prIdPRSet = new TreeSet<>(PartitionedRegion.getPrIdToPR().keySet());
+    assertThat(prIdPRSet).hasSameSizeAs(PartitionedRegion.getPrIdToPR().keySet());
   }
 }

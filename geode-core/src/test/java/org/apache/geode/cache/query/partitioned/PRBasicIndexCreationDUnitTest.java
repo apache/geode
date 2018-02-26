@@ -14,12 +14,17 @@
  */
 package org.apache.geode.cache.query.partitioned;
 
-import static org.apache.geode.cache.query.Utils.*;
-import static org.junit.Assert.*;
+import static org.apache.geode.cache.query.Utils.createPortfolioData;
+import static org.apache.geode.cache.query.Utils.createPortfoliosAndPositions;
+import static org.apache.geode.distributed.ConfigurationProperties.SERIALIZABLE_OBJECT_FILTER;
+import static org.apache.geode.test.dunit.Invoke.invokeInEveryVM;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
 
 import java.util.Collection;
 import java.util.Properties;
 
+import org.junit.After;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
@@ -30,67 +35,49 @@ import org.apache.geode.cache.query.IndexNameConflictException;
 import org.apache.geode.cache.query.data.Portfolio;
 import org.apache.geode.cache.query.data.PortfolioData;
 import org.apache.geode.cache30.CacheSerializableRunnable;
-import org.apache.geode.distributed.ConfigurationProperties;
 import org.apache.geode.internal.cache.GemFireCacheImpl;
-import org.apache.geode.internal.cache.PartitionedRegionDUnitTestCase;
-import org.apache.geode.test.dunit.Assert;
 import org.apache.geode.test.dunit.AsyncInvocation;
 import org.apache.geode.test.dunit.Host;
 import org.apache.geode.test.dunit.IgnoredException;
-import org.apache.geode.test.dunit.LogWriterUtils;
 import org.apache.geode.test.dunit.SerializableRunnable;
-import org.apache.geode.test.dunit.ThreadUtils;
 import org.apache.geode.test.dunit.VM;
-import org.apache.geode.test.dunit.cache.internal.JUnit4CacheTestCase;
-import org.apache.geode.test.dunit.internal.JUnit4DistributedTestCase;
+import org.apache.geode.test.dunit.cache.CacheTestCase;
 import org.apache.geode.test.junit.categories.DistributedTest;
 
+/**
+ * TODO: most of these tests log statements instead of using assertions
+ */
 @Category(DistributedTest.class)
-public class PRBasicIndexCreationDUnitTest extends PartitionedRegionDUnitTestCase {
+public class PRBasicIndexCreationDUnitTest extends CacheTestCase {
 
-  public PRBasicIndexCreationDUnitTest() {
-    super();
+  private static final String PARTITIONED_REGION_NAME = "PartionedPortfolios";
+  private static final String LOCAL_REGION_NAME = "LocalPortfolios";
+
+  private static final int cnt = 0;
+  private static final int cntDest = 1003;
+  private static final int redundancy = 0;
+
+  // TODO: delete this helper class
+  private PRQueryDUnitHelper prQueryDUnitHelper = new PRQueryDUnitHelper();
+
+  @After
+  public void tearDown() {
+    disconnectAllFromDS();
+    invokeInEveryVM(() -> {
+      GemFireCacheImpl.testCacheXml = null;
+      PRQueryDUnitHelper.setCache(null);
+    });
   }
-
-  public void setCacheInVMsUsingXML(String xmlFile, VM... vms) {
-    for (VM vm : vms) {
-      vm.invoke(() -> GemFireCacheImpl.testCacheXml = PRQHelp.findFile(xmlFile));
-      vm.invoke(() -> PRQueryDUnitHelper.setCache(getCache()));
-    }
-  }
-
-  public void setCacheInVMs(VM... vms) {
-    for (VM vm : vms) {
-      vm.invoke(() -> PRQueryDUnitHelper.setCache(getCache()));
-    }
-  }
-  // int totalNumBuckets = 131;
-
-  int queryTestCycle = 10;
-
-  PRQueryDUnitHelper PRQHelp = new PRQueryDUnitHelper();
-
-  final String name = "PartionedPortfolios";
-
-  final String localName = "LocalPortfolios";
-
-  final int cnt = 0, cntDest = 1003;
-
-  final int redundancy = 0;
-
 
   @Override
   public Properties getDistributedSystemProperties() {
-    Properties properties = super.getDistributedSystemProperties();
-    properties.put(ConfigurationProperties.SERIALIZABLE_OBJECT_FILTER,
-        "org.apache.geode.cache.query.data.*");
-    return properties;
+    Properties config = new Properties();
+    config.put(SERIALIZABLE_OBJECT_FILTER, "org.apache.geode.cache.query.data.*");
+    return config;
   }
 
   /**
    * Tests basic index creation on a partitioned system.
-   *
-   * @throws Exception if an exception is generated
    */
   @Test
   public void testPRBasicIndexCreate() throws Exception {
@@ -100,42 +87,38 @@ public class PRBasicIndexCreationDUnitTest extends PartitionedRegionDUnitTestCas
     VM vm2 = host.getVM(2);
     VM vm3 = host.getVM(3);
     setCacheInVMs(vm0, vm1, vm2, vm3);
-    LogWriterUtils.getLogWriter()
-        .info("PRBasicIndexCreationDUnitTest.testPRBasicIndexCreate started ....");
-    vm0.invoke(PRQHelp.getCacheSerializableRunnableForPRAccessorCreate(name, redundancy,
-        PortfolioData.class));
+
+    vm0.invoke(prQueryDUnitHelper.getCacheSerializableRunnableForPRAccessorCreate(
+        PARTITIONED_REGION_NAME, redundancy, PortfolioData.class));
 
     // Creating the Datastores Nodes in the VM1.
-    LogWriterUtils.getLogWriter().info("PRBasicIndexCreationDUnitTest : creating all the prs ");
-    vm1.invoke(
-        PRQHelp.getCacheSerializableRunnableForPRCreate(name, redundancy, PortfolioData.class));
-    vm2.invoke(
-        PRQHelp.getCacheSerializableRunnableForPRCreate(name, redundancy, PortfolioData.class));
-    vm3.invoke(
-        PRQHelp.getCacheSerializableRunnableForPRCreate(name, redundancy, PortfolioData.class));
+    vm1.invoke(prQueryDUnitHelper.getCacheSerializableRunnableForPRCreate(PARTITIONED_REGION_NAME,
+        redundancy, PortfolioData.class));
+    vm2.invoke(prQueryDUnitHelper.getCacheSerializableRunnableForPRCreate(PARTITIONED_REGION_NAME,
+        redundancy, PortfolioData.class));
+    vm3.invoke(prQueryDUnitHelper.getCacheSerializableRunnableForPRCreate(PARTITIONED_REGION_NAME,
+        redundancy, PortfolioData.class));
 
-    final PortfolioData[] portfolio = createPortfolioData(cnt, cntDest);
+    PortfolioData[] portfolio = createPortfolioData(cnt, cntDest);
+
     // Putting the data into the PR's created
-    vm0.invoke(PRQHelp.getCacheSerializableRunnableForPRPuts(name, portfolio, cnt, cntDest));
+    vm0.invoke(prQueryDUnitHelper.getCacheSerializableRunnableForPRPuts(PARTITIONED_REGION_NAME,
+        portfolio, cnt, cntDest));
 
-    vm1.invoke(PRQHelp.getCacheSerializableRunnableForPRIndexCreate(name, "PrIndexOnStatus",
-        "p.status", null, "p"));
-    // creating a duplicate index, should throw a IndexExistsException and if not
-    // will throw a RuntimeException.
-    vm1.invoke(PRQHelp.getCacheSerializableRunnableForDuplicatePRIndexCreate(name,
-        "PrIndexOnStatus", "p.status", null, "p"));
-    vm2.invoke(PRQHelp.getCacheSerializableRunnableForDuplicatePRIndexCreate(name,
-        "PrIndexOnStatus", "p.status", null, "p"));
-    vm3.invoke(PRQHelp.getCacheSerializableRunnableForDuplicatePRIndexCreate(name,
-        "PrIndexOnStatus", "p.status", null, "p"));
-    LogWriterUtils.getLogWriter()
-        .info("PRBasicIndexCreationDUnitTest.testPRBasicIndexCreate is done ");
+    vm1.invoke(prQueryDUnitHelper.getCacheSerializableRunnableForPRIndexCreate(
+        PARTITIONED_REGION_NAME, "PrIndexOnStatus", "p.status", null, "p"));
+
+    // creating a duplicate index, should throw a IndexExistsException
+    vm1.invoke(prQueryDUnitHelper.getCacheSerializableRunnableForDuplicatePRIndexCreate(
+        PARTITIONED_REGION_NAME, "PrIndexOnStatus", "p.status", null, "p"));
+    vm2.invoke(prQueryDUnitHelper.getCacheSerializableRunnableForDuplicatePRIndexCreate(
+        PARTITIONED_REGION_NAME, "PrIndexOnStatus", "p.status", null, "p"));
+    vm3.invoke(prQueryDUnitHelper.getCacheSerializableRunnableForDuplicatePRIndexCreate(
+        PARTITIONED_REGION_NAME, "PrIndexOnStatus", "p.status", null, "p"));
   }
 
   /**
    * Tests creation of multiple index creation on a partitioned region system.
-   *
-   * @throws Exception if any excpetion are generated
    */
   @Test
   public void testPRMultiIndexCreation() throws Exception {
@@ -146,36 +129,33 @@ public class PRBasicIndexCreationDUnitTest extends PartitionedRegionDUnitTestCas
     VM vm3 = host.getVM(3);
     setCacheInVMs(vm0, vm1, vm2, vm3);
 
-    LogWriterUtils.getLogWriter()
-        .info("PRBasicIndexCreation.testPRMultiIndexCreation Test Started");
-    vm0.invoke(PRQHelp.getCacheSerializableRunnableForPRAccessorCreate(name, redundancy,
-        PortfolioData.class));
-    vm1.invoke(
-        PRQHelp.getCacheSerializableRunnableForPRCreate(name, redundancy, PortfolioData.class));
-    vm2.invoke(
-        PRQHelp.getCacheSerializableRunnableForPRCreate(name, redundancy, PortfolioData.class));
-    vm3.invoke(
-        PRQHelp.getCacheSerializableRunnableForPRCreate(name, redundancy, PortfolioData.class));
+    vm0.invoke(prQueryDUnitHelper.getCacheSerializableRunnableForPRAccessorCreate(
+        PARTITIONED_REGION_NAME, redundancy, PortfolioData.class));
+    vm1.invoke(prQueryDUnitHelper.getCacheSerializableRunnableForPRCreate(PARTITIONED_REGION_NAME,
+        redundancy, PortfolioData.class));
+    vm2.invoke(prQueryDUnitHelper.getCacheSerializableRunnableForPRCreate(PARTITIONED_REGION_NAME,
+        redundancy, PortfolioData.class));
+    vm3.invoke(prQueryDUnitHelper.getCacheSerializableRunnableForPRCreate(PARTITIONED_REGION_NAME,
+        redundancy, PortfolioData.class));
 
-    final PortfolioData[] portfolio = createPortfolioData(cnt, cntDest);
+    PortfolioData[] portfolio = createPortfolioData(cnt, cntDest);
+
     // Putting the data into the PR's created
-    vm0.invoke(PRQHelp.getCacheSerializableRunnableForPRPuts(name, portfolio, cnt, cntDest));
-    // should create a sucessful index.
-    vm1.invoke(PRQHelp.getCacheSerializableRunnableForPRIndexCreate(name, "PrIndexOnStatus",
-        "p.status", null, "p"));
-    // creating a duplicate index should throw a IndexExistsException and if not
-    // will throw a RuntimeException.
-    vm1.invoke(PRQHelp.getCacheSerializableRunnableForPRIndexCreate(name, "PrIndexOnID", "p.ID",
-        null, "p"));
-    LogWriterUtils.getLogWriter().info("PRQBasicIndexCreationTest.testPRMultiIndexCreation ENDED");
+    vm0.invoke(prQueryDUnitHelper.getCacheSerializableRunnableForPRPuts(PARTITIONED_REGION_NAME,
+        portfolio, cnt, cntDest));
 
+    // should create a successful index.
+    vm1.invoke(prQueryDUnitHelper.getCacheSerializableRunnableForPRIndexCreate(
+        PARTITIONED_REGION_NAME, "PrIndexOnStatus", "p.status", null, "p"));
+
+    // creating a duplicate index should throw a IndexExistsException
+    vm1.invoke(prQueryDUnitHelper.getCacheSerializableRunnableForPRIndexCreate(
+        PARTITIONED_REGION_NAME, "PrIndexOnID", "p.ID", null, "p"));
   }
 
-  /*
+  /**
    * Tests creation of multiple index creation on a partitioned region system and test
    * QueryService.getIndex(Region, indexName) API.
-   *
-   * @throws Exception if any exception are generated
    */
   @Test
   public void testPRMultiIndexCreationAndGetIndex() throws Exception {
@@ -185,29 +165,30 @@ public class PRBasicIndexCreationDUnitTest extends PartitionedRegionDUnitTestCas
     VM vm2 = host.getVM(2);
     VM vm3 = host.getVM(3);
     setCacheInVMs(vm0, vm1, vm2, vm3);
-    LogWriterUtils.getLogWriter()
-        .info("PRBasicIndexCreation.testPRMultiIndexCreation Test Started");
 
-    vm0.invoke(PRQHelp.getCacheSerializableRunnableForPRAccessorCreate(name, redundancy,
-        PortfolioData.class));
+    vm0.invoke(prQueryDUnitHelper.getCacheSerializableRunnableForPRAccessorCreate(
+        PARTITIONED_REGION_NAME, redundancy, PortfolioData.class));
 
-    vm1.invoke(
-        PRQHelp.getCacheSerializableRunnableForPRCreate(name, redundancy, PortfolioData.class));
-    vm2.invoke(
-        PRQHelp.getCacheSerializableRunnableForPRCreate(name, redundancy, PortfolioData.class));
-    vm3.invoke(
-        PRQHelp.getCacheSerializableRunnableForPRCreate(name, redundancy, PortfolioData.class));
+    vm1.invoke(prQueryDUnitHelper.getCacheSerializableRunnableForPRCreate(PARTITIONED_REGION_NAME,
+        redundancy, PortfolioData.class));
+    vm2.invoke(prQueryDUnitHelper.getCacheSerializableRunnableForPRCreate(PARTITIONED_REGION_NAME,
+        redundancy, PortfolioData.class));
+    vm3.invoke(prQueryDUnitHelper.getCacheSerializableRunnableForPRCreate(PARTITIONED_REGION_NAME,
+        redundancy, PortfolioData.class));
 
-    final PortfolioData[] portfolio = createPortfolioData(cnt, cntDest);
+    PortfolioData[] portfolio = createPortfolioData(cnt, cntDest);
+
     // Putting the data into the PR's created
-    vm0.invoke(PRQHelp.getCacheSerializableRunnableForPRPuts(name, portfolio, cnt, cntDest));
-    // should create a sucessful index.
-    vm0.invoke(PRQHelp.getCacheSerializableRunnableForPRIndexCreate(name, "PrIndexOnStatus",
-        "p.status", null, "p"));
-    // creating a duplicate index should throw a IndexExistsException and if not
-    // will throw a RuntimeException.
-    vm0.invoke(PRQHelp.getCacheSerializableRunnableForPRIndexCreate(name, "PrIndexOnID", "p.ID",
-        null, "p"));
+    vm0.invoke(prQueryDUnitHelper.getCacheSerializableRunnableForPRPuts(PARTITIONED_REGION_NAME,
+        portfolio, cnt, cntDest));
+
+    // should create a successful index.
+    vm0.invoke(prQueryDUnitHelper.getCacheSerializableRunnableForPRIndexCreate(
+        PARTITIONED_REGION_NAME, "PrIndexOnStatus", "p.status", null, "p"));
+
+    // creating a duplicate index should throw a IndexExistsException
+    vm0.invoke(prQueryDUnitHelper.getCacheSerializableRunnableForPRIndexCreate(
+        PARTITIONED_REGION_NAME, "PrIndexOnID", "p.ID", null, "p"));
 
     // Check all QueryService.getIndex APIS for a region.
     SerializableRunnable getIndexCheck = new CacheSerializableRunnable("Get Index Check") {
@@ -216,24 +197,26 @@ public class PRBasicIndexCreationDUnitTest extends PartitionedRegionDUnitTestCas
       public void run2() throws CacheException {
         Cache cache = getCache();
         // Check for ID index
-        Index idIndex = cache.getQueryService().getIndex(cache.getRegion(name), "PrIndexOnID");
+        Index idIndex = cache.getQueryService().getIndex(cache.getRegion(PARTITIONED_REGION_NAME),
+            "PrIndexOnID");
         assertNotNull(idIndex);
         assertEquals("PrIndexOnID", idIndex.getName());
         assertEquals("p.ID", idIndex.getIndexedExpression());
-        assertEquals("/" + name + " p", idIndex.getFromClause());
+        assertEquals("/" + PARTITIONED_REGION_NAME + " p", idIndex.getFromClause());
         assertNotNull(idIndex.getStatistics());
 
         // Check for status index
-        Index statusIndex =
-            cache.getQueryService().getIndex(cache.getRegion(name), "PrIndexOnStatus");
+        Index statusIndex = cache.getQueryService()
+            .getIndex(cache.getRegion(PARTITIONED_REGION_NAME), "PrIndexOnStatus");
         assertNotNull(statusIndex);
         assertEquals("PrIndexOnStatus", statusIndex.getName());
         assertEquals("p.status", statusIndex.getIndexedExpression());
-        assertEquals("/" + name + " p", statusIndex.getFromClause());
+        assertEquals("/" + PARTITIONED_REGION_NAME + " p", statusIndex.getFromClause());
         assertNotNull(statusIndex.getStatistics());
 
         // Check for all Indexes on the region.
-        Collection<Index> indexes = cache.getQueryService().getIndexes(cache.getRegion(name));
+        Collection<Index> indexes =
+            cache.getQueryService().getIndexes(cache.getRegion(PARTITIONED_REGION_NAME));
         for (Index ind : indexes) {
           assertNotNull(ind);
           assertNotNull(ind.getName());
@@ -248,56 +231,45 @@ public class PRBasicIndexCreationDUnitTest extends PartitionedRegionDUnitTestCas
     vm0.invoke(getIndexCheck);
     // Check getIndex() on datastore
     vm1.invoke(getIndexCheck);
-
-    LogWriterUtils.getLogWriter().info("PRQBasicIndexCreationTest.testPRMultiIndexCreation ENDED");
   }
 
   /**
-   * Creats partitioned index from an xml discription.
+   * Creates partitioned index from an xml description.
    */
   @Test
   public void testCreatePartitionedIndexThroughXML() throws Exception {
-    IgnoredException ie =
+    IgnoredException ignoredException =
         IgnoredException.addIgnoredException(IndexNameConflictException.class.getName());
+
     Host host = Host.getHost(0);
     VM vm0 = host.getVM(0);
     VM vm1 = host.getVM(1);
+
     closeCache();
-    final String fileName = "PRIndexCreation.xml";
+
+    String fileName = "PRIndexCreation.xml";
     setCacheInVMsUsingXML(fileName, vm0, vm1);
-    LogWriterUtils.getLogWriter()
-        .info("PRBasicIndexCreation.testCreatePartitionedIndexThroughXML started");
-    LogWriterUtils.getLogWriter()
-        .info("Starting and initializing partitioned regions and indexes using xml");
-    LogWriterUtils.getLogWriter()
-        .info("Starting a pr asynchronously using an xml file name : " + fileName);
-    AsyncInvocation asyInvk0 =
-        vm0.invokeAsync(PRQHelp.getCacheSerializableRunnableForPRCreate(name));
-    AsyncInvocation asyInvk1 =
-        vm1.invokeAsync(PRQHelp.getCacheSerializableRunnableForPRCreate(name));
 
-    ThreadUtils.join(asyInvk1, 30 * 1000);
-    if (asyInvk1.exceptionOccurred()) {
-      Assert.fail("asyInvk1 failed", asyInvk1.getException());
-    }
-    ThreadUtils.join(asyInvk0, 30 * 1000);
-    if (asyInvk0.exceptionOccurred()) {
-      Assert.fail("asyInvk0 failed", asyInvk0.getException());
-    }
+    AsyncInvocation async0 = vm0.invokeAsync(
+        prQueryDUnitHelper.getCacheSerializableRunnableForPRCreate(PARTITIONED_REGION_NAME));
+    AsyncInvocation async1 = vm1.invokeAsync(
+        prQueryDUnitHelper.getCacheSerializableRunnableForPRCreate(PARTITIONED_REGION_NAME));
 
-    ie.remove();
-    // // printing all the indexes are created.
-    vm0.invoke(PRQHelp.getCacheSerializableRunnableForIndexCreationCheck(name));
-    vm1.invoke(PRQHelp.getCacheSerializableRunnableForIndexCreationCheck(name));
-    LogWriterUtils.getLogWriter()
-        .info("PRBasicIndexCreation.testCreatePartitionedIndexThroughXML is done  ");
+    async0.await();
+    async1.await();
 
+    ignoredException.remove();
+
+    // printing all the indexes are created.
+    vm0.invoke(prQueryDUnitHelper
+        .getCacheSerializableRunnableForIndexCreationCheck(PARTITIONED_REGION_NAME));
+    vm1.invoke(prQueryDUnitHelper
+        .getCacheSerializableRunnableForIndexCreationCheck(PARTITIONED_REGION_NAME));
   }
 
   /**
    * Test creation of mutilple index on partitioned regions and then adding a new node to the system
    * and checking it has created all the indexes already in the sytem.
-   *
    */
   @Test
   public void testCreatePartitionedRegionThroughXMLAndAPI() {
@@ -308,36 +280,40 @@ public class PRBasicIndexCreationDUnitTest extends PartitionedRegionDUnitTestCas
     VM vm3 = host.getVM(3);
     setCacheInVMs(vm0, vm1, vm2, vm3);
 
-    LogWriterUtils.getLogWriter()
-        .info("PRBasicIndexCreationDUnitTest.testCreatePartitionedRegionThroughXMLAndAPI started ");
     // creating all the prs
-    vm1.invoke(
-        PRQHelp.getCacheSerializableRunnableForPRCreate(name, redundancy, PortfolioData.class));
-    vm3.invoke(
-        PRQHelp.getCacheSerializableRunnableForPRCreate(name, redundancy, PortfolioData.class));
-    vm0.invoke(
-        PRQHelp.getCacheSerializableRunnableForPRCreate(name, redundancy, PortfolioData.class));
-    vm1.invoke(PRQHelp.getCacheSerializableRunnableForPRIndexCreate(name, "PrIndexOnStatus",
-        "p.status", null, "p"));
-    vm3.invoke(PRQHelp.getCacheSerializableRunnableForPRIndexCreate(name, "PrIndexOnId", "p.ID",
-        null, "p"));
+    vm1.invoke(prQueryDUnitHelper.getCacheSerializableRunnableForPRCreate(PARTITIONED_REGION_NAME,
+        redundancy, PortfolioData.class));
+    vm3.invoke(prQueryDUnitHelper.getCacheSerializableRunnableForPRCreate(PARTITIONED_REGION_NAME,
+        redundancy, PortfolioData.class));
+    vm0.invoke(prQueryDUnitHelper.getCacheSerializableRunnableForPRCreate(PARTITIONED_REGION_NAME,
+        redundancy, PortfolioData.class));
+    vm1.invoke(prQueryDUnitHelper.getCacheSerializableRunnableForPRIndexCreate(
+        PARTITIONED_REGION_NAME, "PrIndexOnStatus", "p.status", null, "p"));
+    vm3.invoke(prQueryDUnitHelper.getCacheSerializableRunnableForPRIndexCreate(
+        PARTITIONED_REGION_NAME, "PrIndexOnId", "p.ID", null, "p"));
 
-    vm0.invoke(PRQHelp.getCacheSerializableRunnableForPRIndexCreate(name, "PrIndexOnPKID", "p.pkid",
-        null, "p"));
+    vm0.invoke(prQueryDUnitHelper.getCacheSerializableRunnableForPRIndexCreate(
+        PARTITIONED_REGION_NAME, "PrIndexOnPKID", "p.pkid", null, "p"));
+
     // adding a new node to an already existing system.
-    vm2.invoke(
-        PRQHelp.getCacheSerializableRunnableForPRCreate(name, redundancy, PortfolioData.class));
+    vm2.invoke(prQueryDUnitHelper.getCacheSerializableRunnableForPRCreate(PARTITIONED_REGION_NAME,
+        redundancy, PortfolioData.class));
+
     // putting some data in.
-    final PortfolioData[] portfolio = createPortfolioData(cnt, cntDest);
+    PortfolioData[] portfolio = createPortfolioData(cnt, cntDest);
+
     // Putting the data into the PR's created
-    vm1.invoke(PRQHelp.getCacheSerializableRunnableForPRPuts(name, portfolio, cnt, cntDest));
-    vm0.invoke(PRQHelp.getCacheSerializableRunnableForIndexCreationCheck(name));
-    vm1.invoke(PRQHelp.getCacheSerializableRunnableForIndexCreationCheck(name));
-    vm2.invoke(PRQHelp.getCacheSerializableRunnableForIndexCreationCheck(name));
-    vm3.invoke(PRQHelp.getCacheSerializableRunnableForIndexCreationCheck(name));
-
+    vm1.invoke(prQueryDUnitHelper.getCacheSerializableRunnableForPRPuts(PARTITIONED_REGION_NAME,
+        portfolio, cnt, cntDest));
+    vm0.invoke(prQueryDUnitHelper
+        .getCacheSerializableRunnableForIndexCreationCheck(PARTITIONED_REGION_NAME));
+    vm1.invoke(prQueryDUnitHelper
+        .getCacheSerializableRunnableForIndexCreationCheck(PARTITIONED_REGION_NAME));
+    vm2.invoke(prQueryDUnitHelper
+        .getCacheSerializableRunnableForIndexCreationCheck(PARTITIONED_REGION_NAME));
+    vm3.invoke(prQueryDUnitHelper
+        .getCacheSerializableRunnableForIndexCreationCheck(PARTITIONED_REGION_NAME));
   }
-
 
   /**
    * Test to see if index creation works with index creation like in serialQueryEntry.conf hydra
@@ -350,24 +326,29 @@ public class PRBasicIndexCreationDUnitTest extends PartitionedRegionDUnitTestCas
     VM vm1 = host.getVM(1);
     VM vm3 = host.getVM(3);
     setCacheInVMs(vm0, vm1, vm3);
-    LogWriterUtils.getLogWriter().info(
-        "PRBasicIndexCreationDUnitTest.testCreatePartitionedIndexWithNoAliasAfterPuts started ");
+
     // creating all the prs
-    vm1.invoke(
-        PRQHelp.getCacheSerializableRunnableForPRCreate(name, redundancy, PortfolioData.class));
-    vm3.invoke(
-        PRQHelp.getCacheSerializableRunnableForPRCreate(name, redundancy, PortfolioData.class));
-    vm0.invoke(
-        PRQHelp.getCacheSerializableRunnableForPRCreate(name, redundancy, PortfolioData.class));
-    vm1.invoke(PRQHelp.getCacheSerializableRunnableForPRIndexCreate(name, "PrIndexOnStatus",
-        "status", null, ""));
+    vm1.invoke(prQueryDUnitHelper.getCacheSerializableRunnableForPRCreate(PARTITIONED_REGION_NAME,
+        redundancy, PortfolioData.class));
+    vm3.invoke(prQueryDUnitHelper.getCacheSerializableRunnableForPRCreate(PARTITIONED_REGION_NAME,
+        redundancy, PortfolioData.class));
+    vm0.invoke(prQueryDUnitHelper.getCacheSerializableRunnableForPRCreate(PARTITIONED_REGION_NAME,
+        redundancy, PortfolioData.class));
+    vm1.invoke(prQueryDUnitHelper.getCacheSerializableRunnableForPRIndexCreate(
+        PARTITIONED_REGION_NAME, "PrIndexOnStatus", "status", null, ""));
+
     // putting some data in.
-    final PortfolioData[] portfolio = createPortfolioData(cnt, cntDest);
+    PortfolioData[] portfolio = createPortfolioData(cnt, cntDest);
+
     // Putting the data into the PR's created
-    vm1.invoke(PRQHelp.getCacheSerializableRunnableForPRPuts(name, portfolio, cnt, cntDest));
-    vm0.invoke(PRQHelp.getCacheSerializableRunnableForIndexCreationCheck(name));
-    vm1.invoke(PRQHelp.getCacheSerializableRunnableForIndexCreationCheck(name));
-    vm3.invoke(PRQHelp.getCacheSerializableRunnableForIndexCreationCheck(name));
+    vm1.invoke(prQueryDUnitHelper.getCacheSerializableRunnableForPRPuts(PARTITIONED_REGION_NAME,
+        portfolio, cnt, cntDest));
+    vm0.invoke(prQueryDUnitHelper
+        .getCacheSerializableRunnableForIndexCreationCheck(PARTITIONED_REGION_NAME));
+    vm1.invoke(prQueryDUnitHelper
+        .getCacheSerializableRunnableForIndexCreationCheck(PARTITIONED_REGION_NAME));
+    vm3.invoke(prQueryDUnitHelper
+        .getCacheSerializableRunnableForIndexCreationCheck(PARTITIONED_REGION_NAME));
   }
 
   /**
@@ -376,32 +357,35 @@ public class PRBasicIndexCreationDUnitTest extends PartitionedRegionDUnitTestCas
    */
   @Test
   public void testCreatePartitionedIndexWithNoAliasAfterPuts() throws Exception {
-
     Host host = Host.getHost(0);
     VM vm0 = host.getVM(0);
     VM vm1 = host.getVM(1);
     VM vm3 = host.getVM(3);
     setCacheInVMs(vm0, vm1, vm3);
-    LogWriterUtils.getLogWriter().info(
-        "PRBasicIndexCreationDUnitTest.testCreatePartitionedIndexWithNoAliasBeforePuts started ");
+
     // creating all the prs
-    vm1.invoke(
-        PRQHelp.getCacheSerializableRunnableForPRCreate(name, redundancy, PortfolioData.class));
-    vm3.invoke(
-        PRQHelp.getCacheSerializableRunnableForPRCreate(name, redundancy, PortfolioData.class));
-    vm0.invoke(
-        PRQHelp.getCacheSerializableRunnableForPRCreate(name, redundancy, PortfolioData.class));
+    vm1.invoke(prQueryDUnitHelper.getCacheSerializableRunnableForPRCreate(PARTITIONED_REGION_NAME,
+        redundancy, PortfolioData.class));
+    vm3.invoke(prQueryDUnitHelper.getCacheSerializableRunnableForPRCreate(PARTITIONED_REGION_NAME,
+        redundancy, PortfolioData.class));
+    vm0.invoke(prQueryDUnitHelper.getCacheSerializableRunnableForPRCreate(PARTITIONED_REGION_NAME,
+        redundancy, PortfolioData.class));
 
     // putting some data in.
-    final PortfolioData[] portfolio = createPortfolioData(cnt, cntDest);
-    // Putting the data into the PR's created
-    vm1.invoke(PRQHelp.getCacheSerializableRunnableForPRPuts(name, portfolio, cnt, cntDest));
-    vm1.invoke(PRQHelp.getCacheSerializableRunnableForPRIndexCreate(name, "PrIndexOnStatus",
-        "status", null, ""));
+    PortfolioData[] portfolio = createPortfolioData(cnt, cntDest);
 
-    vm0.invoke(PRQHelp.getCacheSerializableRunnableForIndexCreationCheck(name));
-    vm1.invoke(PRQHelp.getCacheSerializableRunnableForIndexCreationCheck(name));
-    vm3.invoke(PRQHelp.getCacheSerializableRunnableForIndexCreationCheck(name));
+    // Putting the data into the PR's created
+    vm1.invoke(prQueryDUnitHelper.getCacheSerializableRunnableForPRPuts(PARTITIONED_REGION_NAME,
+        portfolio, cnt, cntDest));
+    vm1.invoke(prQueryDUnitHelper.getCacheSerializableRunnableForPRIndexCreate(
+        PARTITIONED_REGION_NAME, "PrIndexOnStatus", "status", null, ""));
+
+    vm0.invoke(prQueryDUnitHelper
+        .getCacheSerializableRunnableForIndexCreationCheck(PARTITIONED_REGION_NAME));
+    vm1.invoke(prQueryDUnitHelper
+        .getCacheSerializableRunnableForIndexCreationCheck(PARTITIONED_REGION_NAME));
+    vm3.invoke(prQueryDUnitHelper
+        .getCacheSerializableRunnableForIndexCreationCheck(PARTITIONED_REGION_NAME));
   }
 
   /**
@@ -409,89 +393,87 @@ public class PRBasicIndexCreationDUnitTest extends PartitionedRegionDUnitTestCas
    */
   @Test
   public void testPartitionedIndexUsageWithPRQuery() throws Exception {
-
     Host host = Host.getHost(0);
     VM vm0 = host.getVM(0);
     VM vm1 = host.getVM(1);
     VM vm2 = host.getVM(2);
     VM vm3 = host.getVM(3);
     setCacheInVMs(vm0, vm1, vm2, vm3);
-    LogWriterUtils.getLogWriter()
-        .info("PRBasicIndexCreationDUnitTest.testPartitionedIndexUsageWithPRQuery started ");
-    vm0.invoke(
-        PRQHelp.getCacheSerializableRunnableForPRCreate(name, redundancy, PortfolioData.class));
-    vm1.invoke(
-        PRQHelp.getCacheSerializableRunnableForPRCreate(name, redundancy, PortfolioData.class));
-    vm2.invoke(
-        PRQHelp.getCacheSerializableRunnableForPRCreate(name, redundancy, PortfolioData.class));
-    vm3.invoke(
-        PRQHelp.getCacheSerializableRunnableForPRCreate(name, redundancy, PortfolioData.class));
 
-    vm0.invoke(PRQHelp.getCacheSerializableRunnableForPRIndexCreate(name, "PrIndexOnId", "p.ID",
-        null, "p"));
-    final PortfolioData[] portfolio = createPortfolioData(cnt, cntDest);
-    vm0.invoke(PRQHelp.getCacheSerializableRunnableForPRPuts(name, portfolio, cnt, cntDest));
-    vm0.invoke(
-        PRQHelp.getCacheSerializableRunnableForLocalRegionCreation(localName, PortfolioData.class));
-    vm0.invoke(PRQHelp.getCacheSerializableRunnableForPRPuts(localName, portfolio, cnt, cntDest));
-    vm0.invoke(PRQHelp.getCacheSerializableRunnableForPRQueryAndCompareResults(name, localName));
+    vm0.invoke(prQueryDUnitHelper.getCacheSerializableRunnableForPRCreate(PARTITIONED_REGION_NAME,
+        redundancy, PortfolioData.class));
+    vm1.invoke(prQueryDUnitHelper.getCacheSerializableRunnableForPRCreate(PARTITIONED_REGION_NAME,
+        redundancy, PortfolioData.class));
+    vm2.invoke(prQueryDUnitHelper.getCacheSerializableRunnableForPRCreate(PARTITIONED_REGION_NAME,
+        redundancy, PortfolioData.class));
+    vm3.invoke(prQueryDUnitHelper.getCacheSerializableRunnableForPRCreate(PARTITIONED_REGION_NAME,
+        redundancy, PortfolioData.class));
+
+    vm0.invoke(prQueryDUnitHelper.getCacheSerializableRunnableForPRIndexCreate(
+        PARTITIONED_REGION_NAME, "PrIndexOnId", "p.ID", null, "p"));
+
+    PortfolioData[] portfolio = createPortfolioData(cnt, cntDest);
+
+    vm0.invoke(prQueryDUnitHelper.getCacheSerializableRunnableForPRPuts(PARTITIONED_REGION_NAME,
+        portfolio, cnt, cntDest));
+    vm0.invoke(prQueryDUnitHelper.getCacheSerializableRunnableForLocalRegionCreation(
+        LOCAL_REGION_NAME, PortfolioData.class));
+    vm0.invoke(prQueryDUnitHelper.getCacheSerializableRunnableForPRPuts(LOCAL_REGION_NAME,
+        portfolio, cnt, cntDest));
+    vm0.invoke(prQueryDUnitHelper.getCacheSerializableRunnableForPRQueryAndCompareResults(
+        PARTITIONED_REGION_NAME, LOCAL_REGION_NAME));
+
     // validation on index usage with queries over a pr
-    vm0.invoke(PRQHelp.getCacheSerializableRunnableForIndexUsageCheck());
-    vm1.invoke(PRQHelp.getCacheSerializableRunnableForIndexUsageCheck());
-    vm2.invoke(PRQHelp.getCacheSerializableRunnableForIndexUsageCheck());
-    vm3.invoke(PRQHelp.getCacheSerializableRunnableForIndexUsageCheck());
-    LogWriterUtils.getLogWriter()
-        .info("PRBasicIndexCreationDUnitTest.testPartitionedIndexUsageWithPRQuery done ");
+    vm0.invoke(prQueryDUnitHelper.getCacheSerializableRunnableForIndexUsageCheck());
+    vm1.invoke(prQueryDUnitHelper.getCacheSerializableRunnableForIndexUsageCheck());
+    vm2.invoke(prQueryDUnitHelper.getCacheSerializableRunnableForIndexUsageCheck());
+    vm3.invoke(prQueryDUnitHelper.getCacheSerializableRunnableForIndexUsageCheck());
   }
 
   /**
    * Test index usage with query on a partitioned region with bucket indexes.
-   *
-   * @throws Throwable
    */
   @Test
-  public void testPartitionedIndexCreationDuringPersistentRecovery() throws Throwable {
-
+  public void testPartitionedIndexCreationDuringPersistentRecovery() throws Exception {
     Host host = Host.getHost(0);
     VM vm0 = host.getVM(0);
     VM vm1 = host.getVM(1);
     setCacheInVMs(vm0, vm1);
 
     int redundancy = 1;
-    LogWriterUtils.getLogWriter().info(
-        "PRBasicIndexCreationDUnitTest.testPartitionedIndexCreationDuringPersistentRecovery started ");
-    vm0.invoke(PRQHelp.getCacheSerializableRunnableForPersistentPRCreate(name, redundancy,
-        PortfolioData.class));
-    vm1.invoke(PRQHelp.getCacheSerializableRunnableForPersistentPRCreate(name, redundancy,
-        PortfolioData.class));
+
+    vm0.invoke(prQueryDUnitHelper.getCacheSerializableRunnableForPersistentPRCreate(
+        PARTITIONED_REGION_NAME, redundancy, PortfolioData.class));
+    vm1.invoke(prQueryDUnitHelper.getCacheSerializableRunnableForPersistentPRCreate(
+        PARTITIONED_REGION_NAME, redundancy, PortfolioData.class));
 
 
-    final PortfolioData[] portfolio = createPortfolioData(cnt, cntDest);
-    vm0.invoke(PRQHelp.getCacheSerializableRunnableForPRPuts(name, portfolio, cnt, cntDest));
+    PortfolioData[] portfolio = createPortfolioData(cnt, cntDest);
 
+    vm0.invoke(prQueryDUnitHelper.getCacheSerializableRunnableForPRPuts(PARTITIONED_REGION_NAME,
+        portfolio, cnt, cntDest));
 
     // Restart a single member
-    vm0.invoke(PRQHelp.getCacheSerializableRunnableForCloseCache());
+    vm0.invoke(prQueryDUnitHelper.getCacheSerializableRunnableForCloseCache());
     setCacheInVMs(vm0);
-    AsyncInvocation regionCreateFuture = vm0.invokeAsync(PRQHelp
-        .getCacheSerializableRunnableForPersistentPRCreate(name, redundancy, PortfolioData.class));
 
-    // Ok, I want to do this in parallel
-    AsyncInvocation indexCreateFuture = vm1.invokeAsync(PRQHelp
-        .getCacheSerializableRunnableForPRIndexCreate(name, "PrIndexOnId", "p.ID", null, "p"));
+    AsyncInvocation regionCreateFuture =
+        vm0.invokeAsync(prQueryDUnitHelper.getCacheSerializableRunnableForPersistentPRCreate(
+            PARTITIONED_REGION_NAME, redundancy, PortfolioData.class));
+    AsyncInvocation indexCreateFuture =
+        vm1.invokeAsync(prQueryDUnitHelper.getCacheSerializableRunnableForPRIndexCreate(
+            PARTITIONED_REGION_NAME, "PrIndexOnId", "p.ID", null, "p"));
 
-    regionCreateFuture.getResult(20 * 1000);
+    regionCreateFuture.await();
+    indexCreateFuture.await();
 
-    indexCreateFuture.getResult(20 * 1000);
-
-    vm0.invoke(
-        PRQHelp.getCacheSerializableRunnableForLocalRegionCreation(localName, PortfolioData.class));
-    vm0.invoke(PRQHelp.getCacheSerializableRunnableForPRPuts(localName, portfolio, cnt, cntDest));
-    vm0.invoke(PRQHelp.getCacheSerializableRunnableForPRQueryAndCompareResults(name, localName));
-    LogWriterUtils.getLogWriter().info(
-        "PRBasicIndexCreationDUnitTest.testPartitionedIndexCreationDuringPersistentRecovery done ");
+    vm0.invoke(prQueryDUnitHelper.getCacheSerializableRunnableForLocalRegionCreation(
+        LOCAL_REGION_NAME, PortfolioData.class));
+    vm0.invoke(prQueryDUnitHelper.getCacheSerializableRunnableForPRPuts(LOCAL_REGION_NAME,
+        portfolio, cnt, cntDest));
+    vm0.invoke(prQueryDUnitHelper.getCacheSerializableRunnableForPRQueryAndCompareResults(
+        PARTITIONED_REGION_NAME, LOCAL_REGION_NAME));
   }
-
 
   /**
    * Test for bug 37089 where if there is an index on one attribute (CompiledComparision) of the
@@ -499,75 +481,67 @@ public class PRBasicIndexCreationDUnitTest extends PartitionedRegionDUnitTestCas
    */
   @Test
   public void testPartitionedQueryWithIndexOnIdBug37089() throws Exception {
-
     Host host = Host.getHost(0);
     VM vm0 = host.getVM(0);
     VM vm1 = host.getVM(1);
     VM vm2 = host.getVM(2);
     VM vm3 = host.getVM(3);
     setCacheInVMs(vm0, vm1, vm2, vm3);
-    LogWriterUtils.getLogWriter()
-        .info("PRBasicIndexCreationDUnitTest.testPartitionedQueryWithIndexOnIdBug37089 started ");
-    vm0.invoke(
-        PRQHelp.getCacheSerializableRunnableForPRCreate(name, redundancy, PortfolioData.class));
-    vm1.invoke(
-        PRQHelp.getCacheSerializableRunnableForPRCreate(name, redundancy, PortfolioData.class));
-    vm2.invoke(
-        PRQHelp.getCacheSerializableRunnableForPRCreate(name, redundancy, PortfolioData.class));
-    vm3.invoke(
-        PRQHelp.getCacheSerializableRunnableForPRCreate(name, redundancy, PortfolioData.class));
 
-    vm0.invoke(PRQHelp.getCacheSerializableRunnableForPRIndexCreate(name, "PrIndexOnId", "p.ID",
-        null, "p"));
-    final PortfolioData[] portfolio = createPortfolioData(cnt, cntDest);
-    vm0.invoke(PRQHelp.getCacheSerializableRunnableForPRPuts(name, portfolio, cnt, cntDest));
-    vm0.invoke(
-        PRQHelp.getCacheSerializableRunnableForLocalRegionCreation(localName, PortfolioData.class));
-    vm0.invoke(PRQHelp.getCacheSerializableRunnableForPRPuts(localName, portfolio, cnt, cntDest));
-    vm0.invoke(PRQHelp.getCacheSerializableRunnableForPRQueryAndCompareResults(name, localName));
+    vm0.invoke(prQueryDUnitHelper.getCacheSerializableRunnableForPRCreate(PARTITIONED_REGION_NAME,
+        redundancy, PortfolioData.class));
+    vm1.invoke(prQueryDUnitHelper.getCacheSerializableRunnableForPRCreate(PARTITIONED_REGION_NAME,
+        redundancy, PortfolioData.class));
+    vm2.invoke(prQueryDUnitHelper.getCacheSerializableRunnableForPRCreate(PARTITIONED_REGION_NAME,
+        redundancy, PortfolioData.class));
+    vm3.invoke(prQueryDUnitHelper.getCacheSerializableRunnableForPRCreate(PARTITIONED_REGION_NAME,
+        redundancy, PortfolioData.class));
+
+    vm0.invoke(prQueryDUnitHelper.getCacheSerializableRunnableForPRIndexCreate(
+        PARTITIONED_REGION_NAME, "PrIndexOnId", "p.ID", null, "p"));
+
+    PortfolioData[] portfolio = createPortfolioData(cnt, cntDest);
+
+    vm0.invoke(prQueryDUnitHelper.getCacheSerializableRunnableForPRPuts(PARTITIONED_REGION_NAME,
+        portfolio, cnt, cntDest));
+    vm0.invoke(prQueryDUnitHelper.getCacheSerializableRunnableForLocalRegionCreation(
+        LOCAL_REGION_NAME, PortfolioData.class));
+    vm0.invoke(prQueryDUnitHelper.getCacheSerializableRunnableForPRPuts(LOCAL_REGION_NAME,
+        portfolio, cnt, cntDest));
+    vm0.invoke(prQueryDUnitHelper.getCacheSerializableRunnableForPRQueryAndCompareResults(
+        PARTITIONED_REGION_NAME, LOCAL_REGION_NAME));
     // validation on index usage with queries over a pr
-    LogWriterUtils.getLogWriter()
-        .info("PRBasicIndexCreationDUnitTest.testPartitionedQueryWithIndexOnIdBug37089 done ");
   }
 
   /**
-   * Creats partitioned index on keys and values of a bucket regions.
+   * Creates partitioned index on keys and values of a bucket regions.
    */
   @Test
   public void testCreatePartitionedIndexWithKeysValuesAndFunction() throws Exception {
-
     Host host = Host.getHost(0);
     VM vm0 = host.getVM(0);
     VM vm1 = host.getVM(1);
     setCacheInVMs(vm0, vm1);
-    final String fileName = "PRIndexCreation.xml";
-    LogWriterUtils.getLogWriter()
-        .info("PRBasicIndexCreation.testCreatePartitionedIndexThroughXML started");
-    LogWriterUtils.getLogWriter()
-        .info("Starting and initializing partitioned regions and indexes using xml");
-    LogWriterUtils.getLogWriter()
-        .info("Starting a pr asynchronously using an xml file name : " + fileName);
-    vm0.invoke(
-        PRQHelp.getCacheSerializableRunnableForPRCreate(name, redundancy, PortfolioData.class));
-    final PortfolioData[] portfolio = createPortfolioData(cnt, cntDest);
 
-    vm1.invoke(
-        PRQHelp.getCacheSerializableRunnableForPRCreate(name, redundancy, PortfolioData.class));
+    vm0.invoke(prQueryDUnitHelper.getCacheSerializableRunnableForPRCreate(PARTITIONED_REGION_NAME,
+        redundancy, PortfolioData.class));
 
-    vm0.invoke(PRQHelp.getCacheSerializableRunnableForPRPuts(name, portfolio, cnt, cntDest));
+    PortfolioData[] portfolio = createPortfolioData(cnt, cntDest);
 
-    vm0.invoke(PRQHelp.getCacheSerializableRunnableForPRIndexCreate(name, "index8", "k",
-        "/PartionedPortfolios.keys k", ""));
-    vm1.invoke(PRQHelp.getCacheSerializableRunnableForPRIndexCreate(name, "index7",
-        "nvl(k.status.toString(),'nopes')", "/PartionedPortfolios.values k", ""));
+    vm1.invoke(prQueryDUnitHelper.getCacheSerializableRunnableForPRCreate(PARTITIONED_REGION_NAME,
+        redundancy, PortfolioData.class));
 
-    vm0.invoke(PRQHelp.getCacheSerializableRunnableForPRPuts(name, portfolio, cnt, cntDest));
+    vm0.invoke(prQueryDUnitHelper.getCacheSerializableRunnableForPRPuts(PARTITIONED_REGION_NAME,
+        portfolio, cnt, cntDest));
 
+    vm0.invoke(prQueryDUnitHelper.getCacheSerializableRunnableForPRIndexCreate(
+        PARTITIONED_REGION_NAME, "index8", "k", "/" + PARTITIONED_REGION_NAME + ".keys k", ""));
+    vm1.invoke(prQueryDUnitHelper.getCacheSerializableRunnableForPRIndexCreate(
+        PARTITIONED_REGION_NAME, "index7", "nvl(k.status.toString(),'nopes')",
+        "/" + PARTITIONED_REGION_NAME + ".values k", ""));
 
-    LogWriterUtils.getLogWriter()
-        .info("PRBasicIndexCreation.testCreatePartitionedIndexThroughXML is done  ");
-
-
+    vm0.invoke(prQueryDUnitHelper.getCacheSerializableRunnableForPRPuts(PARTITIONED_REGION_NAME,
+        portfolio, cnt, cntDest));
   }
 
   /**
@@ -581,37 +555,34 @@ public class PRBasicIndexCreationDUnitTest extends PartitionedRegionDUnitTestCas
     VM vm2 = host.getVM(2);
     VM vm3 = host.getVM(3);
     setCacheInVMs(vm0, vm1, vm2, vm3);
-    vm0.invoke(PRQHelp.getCacheSerializableRunnableForPRAccessorCreate(name, redundancy,
-        PortfolioData.class));
+
+    vm0.invoke(prQueryDUnitHelper.getCacheSerializableRunnableForPRAccessorCreate(
+        PARTITIONED_REGION_NAME, redundancy, PortfolioData.class));
 
     // create more vms to host data.
-    vm1.invoke(
-        PRQHelp.getCacheSerializableRunnableForPRCreate(name, redundancy, PortfolioData.class));
-    vm2.invoke(
-        PRQHelp.getCacheSerializableRunnableForPRCreate(name, redundancy, PortfolioData.class));
-    vm3.invoke(
-        PRQHelp.getCacheSerializableRunnableForPRCreate(name, redundancy, PortfolioData.class));
+    vm1.invoke(prQueryDUnitHelper.getCacheSerializableRunnableForPRCreate(PARTITIONED_REGION_NAME,
+        redundancy, PortfolioData.class));
+    vm2.invoke(prQueryDUnitHelper.getCacheSerializableRunnableForPRCreate(PARTITIONED_REGION_NAME,
+        redundancy, PortfolioData.class));
+    vm3.invoke(prQueryDUnitHelper.getCacheSerializableRunnableForPRCreate(PARTITIONED_REGION_NAME,
+        redundancy, PortfolioData.class));
 
-    final PortfolioData[] portfolio = createPortfolioData(cnt, cntDest);
+    PortfolioData[] portfolio = createPortfolioData(cnt, cntDest);
+
     // Putting the data into the PR's created
-    vm2.invoke(PRQHelp.getCacheSerializableRunnableForPRPuts(name, portfolio, cnt, cntDest));
-
+    vm2.invoke(prQueryDUnitHelper.getCacheSerializableRunnableForPRPuts(PARTITIONED_REGION_NAME,
+        portfolio, cnt, cntDest));
 
     // create the index form asscessor.
-    vm0.invoke(PRQHelp.getCacheSerializableRunnableForPRIndexCreate(name, "PrIndexOnStatus",
-        "p.status", null, "p"));
-
-
-
+    vm0.invoke(prQueryDUnitHelper.getCacheSerializableRunnableForPRIndexCreate(
+        PARTITIONED_REGION_NAME, "PrIndexOnStatus", "p.status", null, "p"));
   }
-
 
   /**
    * Test for bug fix 37985, NullPointerException in IndexCreationMsg operateOnPartitionedRegion.
    * This bug show up when an accessor (PR with max memory = 0) vm joins the PR system when there
    * are index on the PR and an index creation message is sent to this accessor VM.
    */
-
   @Test
   public void testCreateIndexAndAddAnAccessor() throws Exception {
     Host host = Host.getHost(0);
@@ -620,25 +591,27 @@ public class PRBasicIndexCreationDUnitTest extends PartitionedRegionDUnitTestCas
     VM vm2 = host.getVM(2);
     VM vm3 = host.getVM(3);
     setCacheInVMs(vm0, vm1, vm2, vm3);
-    vm1.invoke(
-        PRQHelp.getCacheSerializableRunnableForPRCreate(name, redundancy, PortfolioData.class));
-    vm2.invoke(
-        PRQHelp.getCacheSerializableRunnableForPRCreate(name, redundancy, PortfolioData.class));
-    vm3.invoke(
-        PRQHelp.getCacheSerializableRunnableForPRCreate(name, redundancy, PortfolioData.class));
 
-    final PortfolioData[] portfolio = createPortfolioData(cnt, cntDest);
+    vm1.invoke(prQueryDUnitHelper.getCacheSerializableRunnableForPRCreate(PARTITIONED_REGION_NAME,
+        redundancy, PortfolioData.class));
+    vm2.invoke(prQueryDUnitHelper.getCacheSerializableRunnableForPRCreate(PARTITIONED_REGION_NAME,
+        redundancy, PortfolioData.class));
+    vm3.invoke(prQueryDUnitHelper.getCacheSerializableRunnableForPRCreate(PARTITIONED_REGION_NAME,
+        redundancy, PortfolioData.class));
+
+    PortfolioData[] portfolio = createPortfolioData(cnt, cntDest);
+
     // Putting the data into the PR's created
-    vm2.invoke(PRQHelp.getCacheSerializableRunnableForPRPuts(name, portfolio, cnt, cntDest));
+    vm2.invoke(prQueryDUnitHelper.getCacheSerializableRunnableForPRPuts(PARTITIONED_REGION_NAME,
+        portfolio, cnt, cntDest));
+
     // create index from a data store.
-    vm1.invoke(PRQHelp.getCacheSerializableRunnableForPRIndexCreate(name, "PrIndexOnStatus",
-        "p.status", null, "p"));
+    vm1.invoke(prQueryDUnitHelper.getCacheSerializableRunnableForPRIndexCreate(
+        PARTITIONED_REGION_NAME, "PrIndexOnStatus", "p.status", null, "p"));
 
     // create an accessor vm.
-    vm0.invoke(PRQHelp.getCacheSerializableRunnableForPRAccessorCreate(name, redundancy,
-        PortfolioData.class));
-
-
+    vm0.invoke(prQueryDUnitHelper.getCacheSerializableRunnableForPRAccessorCreate(
+        PARTITIONED_REGION_NAME, redundancy, PortfolioData.class));
   }
 
   /**
@@ -647,84 +620,69 @@ public class PRBasicIndexCreationDUnitTest extends PartitionedRegionDUnitTestCas
    * 2. Creates a Local region on one of the VM's <br>
    * 3. Puts in the same data both in PR region & the Local Region <br>
    * 4. Queries the data both in local & PR <br>
-   * 5. Verfies the size ,type , contents of both the resultSets Obtained
-   *
-   * @throws Exception
+   * 5. Verifies the size ,type , contents of both the resultSets Obtained
    */
   @Test
   public void testIndexQueryingWithOrderBy() throws Exception {
     int dataSize = 10;
     int step = 2;
     int totalDataSize = 90;
-    final int i = 0;
-
-    LogWriterUtils.getLogWriter().info(
-        "PRQueryDUnitTest#testPRDAckCreationAndQuerying : Querying PR Test with DACK Started*****");
 
     Class valueConstraint = Portfolio.class;
+
     Host host = Host.getHost(0);
     VM vm0 = host.getVM(0);
     VM vm1 = host.getVM(1);
     VM vm2 = host.getVM(2);
     VM vm3 = host.getVM(3);
     setCacheInVMs(vm0, vm1, vm2, vm3);
+
     // Creating PR's on the participating VM's
-    LogWriterUtils.getLogWriter().info(
-        "PRQueryDUnitTest#testPRDAckCreationAndQuerying : Creating PR's on VM0, VM1 , VM2 , VM3");
-    vm0.invoke(PRQHelp.getCacheSerializableRunnableForPRCreate(name, redundancy, valueConstraint));
-    vm1.invoke(PRQHelp.getCacheSerializableRunnableForPRCreate(name, redundancy, valueConstraint));
-    vm2.invoke(PRQHelp.getCacheSerializableRunnableForPRCreate(name, redundancy, valueConstraint));
-    vm3.invoke(PRQHelp.getCacheSerializableRunnableForPRCreate(name, redundancy, valueConstraint));
-    LogWriterUtils.getLogWriter().info(
-        "PRQueryDUnitTest#testPRDAckCreationAndQuerying : Successfully Created PR's on VM0, VM1 , VM2 , VM3");
+    vm0.invoke(prQueryDUnitHelper.getCacheSerializableRunnableForPRCreate(PARTITIONED_REGION_NAME,
+        redundancy, valueConstraint));
+    vm1.invoke(prQueryDUnitHelper.getCacheSerializableRunnableForPRCreate(PARTITIONED_REGION_NAME,
+        redundancy, valueConstraint));
+    vm2.invoke(prQueryDUnitHelper.getCacheSerializableRunnableForPRCreate(PARTITIONED_REGION_NAME,
+        redundancy, valueConstraint));
+    vm3.invoke(prQueryDUnitHelper.getCacheSerializableRunnableForPRCreate(PARTITIONED_REGION_NAME,
+        redundancy, valueConstraint));
 
-    LogWriterUtils.getLogWriter().info(
-        "PRQueryDUnitTest#testPRDAckCreationAndQuerying : Creating Local region on VM0 to compare result Sets");
     // creating a local region on one of the JVM's
-    vm0.invoke(
-        PRQHelp.getCacheSerializableRunnableForLocalRegionCreation(localName, valueConstraint));
-    LogWriterUtils.getLogWriter().info(
-        "PRQueryDUnitTest#testPRDAckCreationAndQuerying : Successfully Created Local Region on VM0");
+    vm0.invoke(prQueryDUnitHelper
+        .getCacheSerializableRunnableForLocalRegionCreation(LOCAL_REGION_NAME, valueConstraint));
 
-    // Generating portfolio object array to be populated across the PR's & Local
-    // Regions
+    // Generating portfolio object array to be populated across the PR's & Local Regions
 
-    final Portfolio[] portfoliosAndPositions = createPortfoliosAndPositions(totalDataSize);
+    Portfolio[] portfoliosAndPositions = createPortfoliosAndPositions(totalDataSize);
 
     // Putting the data into the PR's created
-    vm0.invoke(PRQHelp.getCacheSerializableRunnableForPRPutsKeyValue(name, portfoliosAndPositions,
-        0, step));
-    vm1.invoke(PRQHelp.getCacheSerializableRunnableForPRPutsKeyValue(name, portfoliosAndPositions,
-        step, (2 * step)));
-    vm2.invoke(PRQHelp.getCacheSerializableRunnableForPRPutsKeyValue(name, portfoliosAndPositions,
-        (2 * step), (3 * step)));
-    vm3.invoke(PRQHelp.getCacheSerializableRunnableForPRPutsKeyValue(name, portfoliosAndPositions,
-        (3 * (step)), dataSize));
-    LogWriterUtils.getLogWriter().info(
-        "PRQueryDUnitTest#testPRDAckCreationAndQuerying : Inserted Portfolio data across PR's");
+    vm0.invoke(prQueryDUnitHelper.getCacheSerializableRunnableForPRPutsKeyValue(
+        PARTITIONED_REGION_NAME, portfoliosAndPositions, 0, step));
+    vm1.invoke(prQueryDUnitHelper.getCacheSerializableRunnableForPRPutsKeyValue(
+        PARTITIONED_REGION_NAME, portfoliosAndPositions, step, (2 * step)));
+    vm2.invoke(prQueryDUnitHelper.getCacheSerializableRunnableForPRPutsKeyValue(
+        PARTITIONED_REGION_NAME, portfoliosAndPositions, (2 * step), (3 * step)));
+    vm3.invoke(prQueryDUnitHelper.getCacheSerializableRunnableForPRPutsKeyValue(
+        PARTITIONED_REGION_NAME, portfoliosAndPositions, (3 * (step)), dataSize));
 
     // Putting the same data in the local region created
-    vm0.invoke(PRQHelp.getCacheSerializableRunnableForPRPutsKeyValue(localName,
-        portfoliosAndPositions, i, dataSize));
+    vm0.invoke(prQueryDUnitHelper.getCacheSerializableRunnableForPRPutsKeyValue(LOCAL_REGION_NAME,
+        portfoliosAndPositions, 0, dataSize));
 
     // create index from a data store.
-    vm1.invoke(PRQHelp.getCacheSerializableRunnableForPRIndexCreate(name, "PrIndexOnStatus",
-        "p.status", null, "p"));
+    vm1.invoke(prQueryDUnitHelper.getCacheSerializableRunnableForPRIndexCreate(
+        PARTITIONED_REGION_NAME, "PrIndexOnStatus", "p.status", null, "p"));
 
-    vm1.invoke(PRQHelp.getCacheSerializableRunnableForPRIndexCreate(name, "PrIndexOnID", "p.ID",
-        null, "p"));
+    vm1.invoke(prQueryDUnitHelper.getCacheSerializableRunnableForPRIndexCreate(
+        PARTITIONED_REGION_NAME, "PrIndexOnID", "p.ID", null, "p"));
 
-    vm1.invoke(PRQHelp.getCacheSerializableRunnableForPRIndexCreate(name, "PrIndexOnKeyID",
-        "key.ID", "/" + name + ".keys key", null));
-
-    LogWriterUtils.getLogWriter().info(
-        "PRQueryDUnitTest#testPRDAckCreationAndQuerying : Inserted Portfolio data over Local Region on VM0");
+    vm1.invoke(
+        prQueryDUnitHelper.getCacheSerializableRunnableForPRIndexCreate(PARTITIONED_REGION_NAME,
+            "PrIndexOnKeyID", "key.ID", "/" + PARTITIONED_REGION_NAME + ".keys key", null));
 
     // querying the VM for data
-    vm0.invoke(
-        PRQHelp.getCacheSerializableRunnableForPROrderByQueryAndCompareResults(name, localName));
-    LogWriterUtils.getLogWriter().info(
-        "PRQueryDUnitTest#testPRDAckCreationAndQuerying : *Querying PR's with DACK Test ENDED*****");
+    vm0.invoke(prQueryDUnitHelper.getCacheSerializableRunnableForPROrderByQueryAndCompareResults(
+        PARTITIONED_REGION_NAME, LOCAL_REGION_NAME));
   }
 
   /**
@@ -733,84 +691,69 @@ public class PRBasicIndexCreationDUnitTest extends PartitionedRegionDUnitTestCas
    * 2. Creates a Local region on one of the VM's <br>
    * 3. Puts in the same data both in PR region & the Local Region <br>
    * 4. Queries the data both in local & PR <br>
-   * 5. Verfies the size ,type , contents of both the resultSets Obtained
-   *
-   * @throws Exception
+   * 5. Verifies the size ,type , contents of both the resultSets Obtained
    */
   @Test
   public void testIndexQueryingWithOrderAndVerify() throws Exception {
     int dataSize = 10;
     int step = 2;
     int totalDataSize = 90;
-    final int i = 0;
-
-    LogWriterUtils.getLogWriter().info(
-        "PRQueryDUnitTest#testPRDAckCreationAndQuerying : Querying PR Test with DACK Started*****");
 
     Class valueConstraint = Portfolio.class;
+
     Host host = Host.getHost(0);
     VM vm0 = host.getVM(0);
     VM vm1 = host.getVM(1);
     VM vm2 = host.getVM(2);
     VM vm3 = host.getVM(3);
     setCacheInVMs(vm0, vm1, vm2, vm3);
+
     // Creating PR's on the participating VM's
-    LogWriterUtils.getLogWriter().info(
-        "PRQueryDUnitTest#testPRDAckCreationAndQuerying : Creating PR's on VM0, VM1 , VM2 , VM3");
-    vm0.invoke(PRQHelp.getCacheSerializableRunnableForPRCreate(name, redundancy, valueConstraint));
-    vm1.invoke(PRQHelp.getCacheSerializableRunnableForPRCreate(name, redundancy, valueConstraint));
-    vm2.invoke(PRQHelp.getCacheSerializableRunnableForPRCreate(name, redundancy, valueConstraint));
-    vm3.invoke(PRQHelp.getCacheSerializableRunnableForPRCreate(name, redundancy, valueConstraint));
-    LogWriterUtils.getLogWriter().info(
-        "PRQueryDUnitTest#testPRDAckCreationAndQuerying : Successfully Created PR's on VM0, VM1 , VM2 , VM3");
+    vm0.invoke(prQueryDUnitHelper.getCacheSerializableRunnableForPRCreate(PARTITIONED_REGION_NAME,
+        redundancy, valueConstraint));
+    vm1.invoke(prQueryDUnitHelper.getCacheSerializableRunnableForPRCreate(PARTITIONED_REGION_NAME,
+        redundancy, valueConstraint));
+    vm2.invoke(prQueryDUnitHelper.getCacheSerializableRunnableForPRCreate(PARTITIONED_REGION_NAME,
+        redundancy, valueConstraint));
+    vm3.invoke(prQueryDUnitHelper.getCacheSerializableRunnableForPRCreate(PARTITIONED_REGION_NAME,
+        redundancy, valueConstraint));
 
-    LogWriterUtils.getLogWriter().info(
-        "PRQueryDUnitTest#testPRDAckCreationAndQuerying : Creating Local region on VM0 to compare result Sets");
     // creating a local region on one of the JVM's
-    vm0.invoke(
-        PRQHelp.getCacheSerializableRunnableForLocalRegionCreation(localName, valueConstraint));
-    LogWriterUtils.getLogWriter().info(
-        "PRQueryDUnitTest#testPRDAckCreationAndQuerying : Successfully Created Local Region on VM0");
+    vm0.invoke(prQueryDUnitHelper
+        .getCacheSerializableRunnableForLocalRegionCreation(LOCAL_REGION_NAME, valueConstraint));
 
-    // Generating portfolio object array to be populated across the PR's & Local
-    // Regions
+    // Generating portfolio object array to be populated across the PR's & Local Regions
 
-    final Portfolio[] portfoliosAndPositions = createPortfoliosAndPositions(totalDataSize);
+    Portfolio[] portfoliosAndPositions = createPortfoliosAndPositions(totalDataSize);
 
     // Putting the data into the PR's created
-    vm0.invoke(PRQHelp.getCacheSerializableRunnableForPRPutsKeyValue(name, portfoliosAndPositions,
-        0, step));
-    vm1.invoke(PRQHelp.getCacheSerializableRunnableForPRPutsKeyValue(name, portfoliosAndPositions,
-        step, (2 * step)));
-    vm2.invoke(PRQHelp.getCacheSerializableRunnableForPRPutsKeyValue(name, portfoliosAndPositions,
-        (2 * step), (3 * step)));
-    vm3.invoke(PRQHelp.getCacheSerializableRunnableForPRPutsKeyValue(name, portfoliosAndPositions,
-        (3 * (step)), dataSize));
-    LogWriterUtils.getLogWriter().info(
-        "PRQueryDUnitTest#testPRDAckCreationAndQuerying : Inserted Portfolio data across PR's");
+    vm0.invoke(prQueryDUnitHelper.getCacheSerializableRunnableForPRPutsKeyValue(
+        PARTITIONED_REGION_NAME, portfoliosAndPositions, 0, step));
+    vm1.invoke(prQueryDUnitHelper.getCacheSerializableRunnableForPRPutsKeyValue(
+        PARTITIONED_REGION_NAME, portfoliosAndPositions, step, (2 * step)));
+    vm2.invoke(prQueryDUnitHelper.getCacheSerializableRunnableForPRPutsKeyValue(
+        PARTITIONED_REGION_NAME, portfoliosAndPositions, (2 * step), (3 * step)));
+    vm3.invoke(prQueryDUnitHelper.getCacheSerializableRunnableForPRPutsKeyValue(
+        PARTITIONED_REGION_NAME, portfoliosAndPositions, (3 * (step)), dataSize));
 
     // Putting the same data in the local region created
-    vm0.invoke(PRQHelp.getCacheSerializableRunnableForPRPutsKeyValue(localName,
-        portfoliosAndPositions, i, dataSize));
+    vm0.invoke(prQueryDUnitHelper.getCacheSerializableRunnableForPRPutsKeyValue(LOCAL_REGION_NAME,
+        portfoliosAndPositions, 0, dataSize));
 
     // create index from a data store.
-    vm1.invoke(PRQHelp.getCacheSerializableRunnableForPRIndexCreate(name, "PrIndexOnStatus",
-        "p.status", null, "p"));
+    vm1.invoke(prQueryDUnitHelper.getCacheSerializableRunnableForPRIndexCreate(
+        PARTITIONED_REGION_NAME, "PrIndexOnStatus", "p.status", null, "p"));
 
-    vm1.invoke(PRQHelp.getCacheSerializableRunnableForPRIndexCreate(name, "PrIndexOnID", "p.ID",
-        null, "p"));
+    vm1.invoke(prQueryDUnitHelper.getCacheSerializableRunnableForPRIndexCreate(
+        PARTITIONED_REGION_NAME, "PrIndexOnID", "p.ID", null, "p"));
 
-    vm1.invoke(PRQHelp.getCacheSerializableRunnableForPRIndexCreate(name, "PrIndexOnKeyID",
-        "key.ID", "/" + name + ".keys key", null));
-
-    LogWriterUtils.getLogWriter().info(
-        "PRQueryDUnitTest#testPRDAckCreationAndQuerying : Inserted Portfolio data over Local Region on VM0");
+    vm1.invoke(
+        prQueryDUnitHelper.getCacheSerializableRunnableForPRIndexCreate(PARTITIONED_REGION_NAME,
+            "PrIndexOnKeyID", "key.ID", "/" + PARTITIONED_REGION_NAME + ".keys key", null));
 
     // querying the VM for data
-    vm0.invoke(
-        PRQHelp.getCacheSerializableRunnableForPROrderByQueryAndVerifyOrder(name, localName));
-    LogWriterUtils.getLogWriter().info(
-        "PRQueryDUnitTest#testPRDAckCreationAndQuerying : *Querying PR's with DACK Test ENDED*****");
+    vm0.invoke(prQueryDUnitHelper.getCacheSerializableRunnableForPROrderByQueryAndVerifyOrder(
+        PARTITIONED_REGION_NAME, LOCAL_REGION_NAME));
   }
 
   @Test
@@ -818,97 +761,97 @@ public class PRBasicIndexCreationDUnitTest extends PartitionedRegionDUnitTestCas
     int dataSize = 10;
     int step = 2;
     int totalDataSize = 90;
-    final int i = 0;
-
-    LogWriterUtils.getLogWriter().info(
-        "PRQueryDUnitTest#testPRDAckCreationAndQuerying : Querying PR Test with DACK Started*****");
 
     Class valueConstraint = Portfolio.class;
+
     Host host = Host.getHost(0);
     VM vm0 = host.getVM(0);
     VM vm1 = host.getVM(1);
     VM vm2 = host.getVM(2);
     VM vm3 = host.getVM(3);
     setCacheInVMs(vm0, vm1, vm2, vm3);
+
     // Creating PR's on the participating VM's
-    LogWriterUtils.getLogWriter().info(
-        "PRQueryDUnitTest#testPRDAckCreationAndQuerying : Creating PR's on VM0, VM1 , VM2 , VM3");
-    vm0.invoke(PRQHelp.getCacheSerializableRunnableForPRCreate(name, redundancy, valueConstraint));
-    vm1.invoke(PRQHelp.getCacheSerializableRunnableForPRCreate(name, redundancy, valueConstraint));
-    vm2.invoke(PRQHelp.getCacheSerializableRunnableForPRCreate(name, redundancy, valueConstraint));
-    vm3.invoke(PRQHelp.getCacheSerializableRunnableForPRCreate(name, redundancy, valueConstraint));
-    LogWriterUtils.getLogWriter().info(
-        "PRQueryDUnitTest#testPRDAckCreationAndQuerying : Successfully Created PR's on VM0, VM1 , VM2 , VM3");
+    vm0.invoke(prQueryDUnitHelper.getCacheSerializableRunnableForPRCreate(PARTITIONED_REGION_NAME,
+        redundancy, valueConstraint));
+    vm1.invoke(prQueryDUnitHelper.getCacheSerializableRunnableForPRCreate(PARTITIONED_REGION_NAME,
+        redundancy, valueConstraint));
+    vm2.invoke(prQueryDUnitHelper.getCacheSerializableRunnableForPRCreate(PARTITIONED_REGION_NAME,
+        redundancy, valueConstraint));
+    vm3.invoke(prQueryDUnitHelper.getCacheSerializableRunnableForPRCreate(PARTITIONED_REGION_NAME,
+        redundancy, valueConstraint));
 
-    LogWriterUtils.getLogWriter().info(
-        "PRQueryDUnitTest#testPRDAckCreationAndQuerying : Creating Local region on VM0 to compare result Sets");
     // creating a local region on one of the JVM's
-    vm0.invoke(
-        PRQHelp.getCacheSerializableRunnableForLocalRegionCreation(localName, valueConstraint));
-    LogWriterUtils.getLogWriter().info(
-        "PRQueryDUnitTest#testPRDAckCreationAndQuerying : Successfully Created Local Region on VM0");
+    vm0.invoke(prQueryDUnitHelper
+        .getCacheSerializableRunnableForLocalRegionCreation(LOCAL_REGION_NAME, valueConstraint));
 
-    // Generating portfolio object array to be populated across the PR's & Local
-    // Regions
+    // Generating portfolio object array to be populated across the PR's & Local Regions
 
-    final Portfolio[] portfoliosAndPositions = createPortfoliosAndPositions(totalDataSize);
+    Portfolio[] portfoliosAndPositions = createPortfoliosAndPositions(totalDataSize);
 
     // Putting the data into the PR's created
-    vm0.invoke(PRQHelp.getCacheSerializableRunnableForPRPutsKeyValue(name, portfoliosAndPositions,
-        0, step));
-    vm1.invoke(PRQHelp.getCacheSerializableRunnableForPRPutsKeyValue(name, portfoliosAndPositions,
-        step, (2 * step)));
-    vm2.invoke(PRQHelp.getCacheSerializableRunnableForPRPutsKeyValue(name, portfoliosAndPositions,
-        (2 * step), (3 * step)));
-    vm3.invoke(PRQHelp.getCacheSerializableRunnableForPRPutsKeyValue(name, portfoliosAndPositions,
-        (3 * (step)), dataSize));
-    LogWriterUtils.getLogWriter().info(
-        "PRQueryDUnitTest#testPRDAckCreationAndQuerying : Inserted Portfolio data across PR's");
+    vm0.invoke(prQueryDUnitHelper.getCacheSerializableRunnableForPRPutsKeyValue(
+        PARTITIONED_REGION_NAME, portfoliosAndPositions, 0, step));
+    vm1.invoke(prQueryDUnitHelper.getCacheSerializableRunnableForPRPutsKeyValue(
+        PARTITIONED_REGION_NAME, portfoliosAndPositions, step, (2 * step)));
+    vm2.invoke(prQueryDUnitHelper.getCacheSerializableRunnableForPRPutsKeyValue(
+        PARTITIONED_REGION_NAME, portfoliosAndPositions, (2 * step), (3 * step)));
+    vm3.invoke(prQueryDUnitHelper.getCacheSerializableRunnableForPRPutsKeyValue(
+        PARTITIONED_REGION_NAME, portfoliosAndPositions, (3 * (step)), dataSize));
 
     // Putting the same data in the local region created
-    vm0.invoke(PRQHelp.getCacheSerializableRunnableForPRPutsKeyValue(localName,
-        portfoliosAndPositions, i, dataSize));
+    vm0.invoke(prQueryDUnitHelper.getCacheSerializableRunnableForPRPutsKeyValue(LOCAL_REGION_NAME,
+        portfoliosAndPositions, 0, dataSize));
 
     // create index from a data store.
-    vm1.invoke(PRQHelp.getCacheSerializableRunnableForPRIndexCreate(name, "PrIndexOnStatus",
-        "p.status", null, "p"));
+    vm1.invoke(prQueryDUnitHelper.getCacheSerializableRunnableForPRIndexCreate(
+        PARTITIONED_REGION_NAME, "PrIndexOnStatus", "p.status", null, "p"));
 
-    vm1.invoke(PRQHelp.getCacheSerializableRunnableForPRIndexCreate(name, "PrIndexOnID", "p.ID",
-        null, "p"));
+    vm1.invoke(prQueryDUnitHelper.getCacheSerializableRunnableForPRIndexCreate(
+        PARTITIONED_REGION_NAME, "PrIndexOnID", "p.ID", null, "p"));
 
-    vm1.invoke(PRQHelp.getCacheSerializableRunnableForPRIndexCreate(name, "PrIndexOnKeyID",
-        "key.ID", "/" + name + ".keys key", null));
+    vm1.invoke(
+        prQueryDUnitHelper.getCacheSerializableRunnableForPRIndexCreate(PARTITIONED_REGION_NAME,
+            "PrIndexOnKeyID", "key.ID", "/" + PARTITIONED_REGION_NAME + ".keys key", null));
 
-    vm1.invoke(PRQHelp.getCacheSerializableRunnableForPRIndexCreate(name, "PrIndexOnKeyStatus",
-        "key.status", "/" + name + ".keys key", null));
+    vm1.invoke(
+        prQueryDUnitHelper.getCacheSerializableRunnableForPRIndexCreate(PARTITIONED_REGION_NAME,
+            "PrIndexOnKeyStatus", "key.status", "/" + PARTITIONED_REGION_NAME + ".keys key", null));
 
-    vm1.invoke(PRQHelp.getCacheSerializableRunnableForPRIndexCreate(name, "PrIndexOnsecID",
-        "p.position1.secId", "/" + name + " p", null));
+    vm1.invoke(
+        prQueryDUnitHelper.getCacheSerializableRunnableForPRIndexCreate(PARTITIONED_REGION_NAME,
+            "PrIndexOnsecID", "p.position1.secId", "/" + PARTITIONED_REGION_NAME + " p", null));
 
-    vm0.invoke(PRQHelp.getCacheSerializableRunnableForRRIndexCreate(localName, "rrIndexOnStatus",
-        "p.status", null, "p"));
+    vm0.invoke(prQueryDUnitHelper.getCacheSerializableRunnableForRRIndexCreate(LOCAL_REGION_NAME,
+        "rrIndexOnStatus", "p.status", null, "p"));
 
-    vm0.invoke(PRQHelp.getCacheSerializableRunnableForRRIndexCreate(localName, "rrIndexOnID",
-        "p.ID", null, "p"));
+    vm0.invoke(prQueryDUnitHelper.getCacheSerializableRunnableForRRIndexCreate(LOCAL_REGION_NAME,
+        "rrIndexOnID", "p.ID", null, "p"));
 
-    vm0.invoke(PRQHelp.getCacheSerializableRunnableForRRIndexCreate(localName, "rrIndexOnKeyID",
-        "key.ID", "/" + localName + ".keys key", null));
+    vm0.invoke(prQueryDUnitHelper.getCacheSerializableRunnableForRRIndexCreate(LOCAL_REGION_NAME,
+        "rrIndexOnKeyID", "key.ID", "/" + LOCAL_REGION_NAME + ".keys key", null));
 
-    vm0.invoke(PRQHelp.getCacheSerializableRunnableForRRIndexCreate(localName, "rrIndexOnsecID",
-        "p.position1.secId", "/" + localName + " p", null));
+    vm0.invoke(prQueryDUnitHelper.getCacheSerializableRunnableForRRIndexCreate(LOCAL_REGION_NAME,
+        "rrIndexOnsecID", "p.position1.secId", "/" + LOCAL_REGION_NAME + " p", null));
 
-    vm0.invoke(PRQHelp.getCacheSerializableRunnableForRRIndexCreate(localName, "rrIndexOnKeyStatus",
-        "key.status", "/" + localName + ".keys key", null));
-
-
-    LogWriterUtils.getLogWriter().info(
-        "PRQueryDUnitTest#testPRDAckCreationAndQuerying : Inserted Portfolio data over Local Region on VM0");
+    vm0.invoke(prQueryDUnitHelper.getCacheSerializableRunnableForRRIndexCreate(LOCAL_REGION_NAME,
+        "rrIndexOnKeyStatus", "key.status", "/" + LOCAL_REGION_NAME + ".keys key", null));
 
     // querying the VM for data
-    vm0.invoke(PRQHelp.getCacheSerializableRunnableForPROrderByQueryWithLimit(name, localName));
-    LogWriterUtils.getLogWriter().info(
-        "PRQueryDUnitTest#testPRDAckCreationAndQuerying : *Querying PR's with DACK Test ENDED*****");
+    vm0.invoke(prQueryDUnitHelper.getCacheSerializableRunnableForPROrderByQueryWithLimit(
+        PARTITIONED_REGION_NAME, LOCAL_REGION_NAME));
   }
 
+  private void setCacheInVMsUsingXML(String xmlFile, VM... vms) {
+    for (VM vm : vms) {
+      vm.invoke(() -> GemFireCacheImpl.testCacheXml = prQueryDUnitHelper.findFile(xmlFile));
+      vm.invoke(() -> PRQueryDUnitHelper.setCache(getCache()));
+    }
+  }
 
+  private void setCacheInVMs(VM... vms) {
+    for (VM vm : vms) {
+      vm.invoke(() -> PRQueryDUnitHelper.setCache(getCache()));
+    }
+  }
 }

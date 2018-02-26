@@ -12,29 +12,44 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
-package org.apache.geode.internal.cache;
+package org.apache.geode.internal.cache.execute;
 
-import static org.apache.geode.distributed.ConfigurationProperties.CONSERVE_SOCKETS;
+import java.io.DataInput;
+import java.io.DataOutput;
+import java.io.IOException;
 
-import java.util.Properties;
-
-import org.junit.experimental.categories.Category;
-
-import org.apache.geode.test.junit.categories.DistributedTest;
+import org.apache.geode.DataSerializable;
 
 /**
- * Test all the PartitionedRegion api calls when ConserveSockets is set to false
- *
- * @since GemFire 5.0
+ * Extracted from {@link PRCustomPartitioningDUnitTest}.
  */
-@Category(DistributedTest.class)
-public class PartitionedRegionAPIConserveSocketsFalseDUnitTest
-    extends PartitionedRegionAPIDUnitTest {
+@SuppressWarnings("serial")
+class SerializableMonth implements DataSerializable {
+
+  private int month;
+
+  public SerializableMonth(int month) {
+    this.month = month;
+  }
 
   @Override
-  public Properties getDistributedSystemProperties() {
-    Properties config = new Properties();
-    config.setProperty(CONSERVE_SOCKETS, "false");
-    return config;
+  public void fromData(DataInput in) throws IOException, ClassNotFoundException {
+    month = in.readInt();
+  }
+
+  @Override
+  public void toData(DataOutput out) throws IOException {
+    out.writeInt(month);
+  }
+
+  @Override
+  public int hashCode() {
+    if (month < 4) {
+      return 1;
+    } else if (month < 8) {
+      return 2;
+    } else {
+      return 3;
+    }
   }
 }
