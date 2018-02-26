@@ -33,6 +33,7 @@ import org.apache.geode.cache.Region;
 import org.apache.geode.cache.RegionShortcut;
 import org.apache.geode.internal.cache.BucketRegion;
 import org.apache.geode.internal.cache.GemFireCacheImpl;
+import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.cache.LocalRegion;
 import org.apache.geode.internal.cache.PartitionedRegion;
 import org.apache.geode.test.junit.categories.IntegrationTest;
@@ -41,7 +42,7 @@ import org.apache.geode.test.junit.categories.IntegrationTest;
 public class RegionVersionVectorIntegrationTest {
 
   private Properties props = new Properties();
-  private GemFireCacheImpl cache = null;
+  private InternalCache cache = null;
   private final String REGION_NAME = "region";
   private Region region = null;
 
@@ -58,7 +59,7 @@ public class RegionVersionVectorIntegrationTest {
   }
 
   private void createCache() {
-    cache = (GemFireCacheImpl) new CacheFactory(props).create();
+    cache = (InternalCache) new CacheFactory(props).create();
   }
 
   private void createData() {
