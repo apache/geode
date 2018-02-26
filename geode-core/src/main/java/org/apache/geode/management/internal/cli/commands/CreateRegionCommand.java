@@ -15,6 +15,7 @@
 package org.apache.geode.management.internal.cli.commands;
 
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -22,6 +23,9 @@ import java.util.stream.Collectors;
 
 import javax.management.ObjectName;
 
+import org.apache.commons.lang.ArrayUtils;
+import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang.exception.ExceptionUtils;
 import org.springframework.shell.core.annotation.CliCommand;
 import org.springframework.shell.core.annotation.CliOption;
 
@@ -52,6 +56,7 @@ import org.apache.geode.management.internal.cli.CliUtil;
 import org.apache.geode.management.internal.cli.GfshParseResult;
 import org.apache.geode.management.internal.cli.LogWrapper;
 import org.apache.geode.management.internal.cli.domain.ClassName;
+import org.apache.geode.management.internal.cli.exceptions.EntityExistsException;
 import org.apache.geode.management.internal.cli.functions.CliFunctionResult;
 import org.apache.geode.management.internal.cli.functions.FetchRegionAttributesFunction;
 import org.apache.geode.management.internal.cli.functions.RegionAttributesWrapper;
@@ -193,7 +198,44 @@ public class CreateRegionCommand implements GfshCommand {
 
     InternalCache cache = getCache();
 
-    // validating the region path
+    // adding name collision check for regions created with regionShortcut only
+    DistributedRegionMXBean regionBean =
+        getManagementService().getDistributedRegionMXBean(regionPath);
+
+    if (regionBean != null && regionShortcut != null) {
+      // when creating a non-proxy region and there is already a non empty node
+      if (!regionShortcut.isProxy() && regionBean.getMemberCount() > regionBean.getEmptyNodes()) {
+        throw new EntityExistsException(
+            String.format("Region %s already exists on the cluster.", regionPath), ifNotExists);
+      }
+
+      // proxy regions can only be created on members not having this regionName already defined
+      if (regionShortcut.isProxy()) {
+        Set<String> membersWithThisRegion =
+            Arrays.stream(regionBean.getMembers()).collect(Collectors.toSet());
+        Set<String> membersWithinGroup = findMembers(groups, null).stream()
+            .map(DistributedMember::getName).collect(Collectors.toSet());
+        if (!Collections.disjoint(membersWithinGroup, membersWithThisRegion)) {
+          throw new EntityExistsException(String.format(
+              "Region %s already exists on these members: %s. You can only create "
+                  + "proxy regions with the same name on other members.",
+              regionPath, StringUtils.join(membersWithThisRegion, ",")), ifNotExists);
+        }
+      }
+
+      // then check if the existing region's data policy is compatible
+      if (regionShortcut.isPartition() && !regionBean.getRegionType().contains("PARTITION")) {
+        throw new EntityExistsException("The existing region is not a partitioned region",
+            ifNotExists);
+      }
+      if (regionShortcut.isReplicate() && !(regionBean.getRegionType().equals("EMPTY")
+          || regionBean.getRegionType().contains("REPLICATE"))) {
+        throw new EntityExistsException("The existing region is not a replicate region",
+            ifNotExists);
+      }
+    }
+
+    // validating the parent region
     RegionPath regionPathData = new RegionPath(regionPath);
     String parentRegionPath = regionPathData.getParent();
     if (parentRegionPath != null && !Region.SEPARATOR.equals(parentRegionPath)) {
@@ -367,7 +409,8 @@ public class CreateRegionCommand implements GfshCommand {
     }
 
     // additional authorization
-    if (isPersistentShortcut(functionArgs.getRegionShortcut())
+    if ((functionArgs.getRegionShortcut() != null
+        && functionArgs.getRegionShortcut().isPersistent())
         || isAttributePersistent(functionArgs.getRegionAttributes())) {
       getSecurityService().authorize(ResourcePermission.Resource.CLUSTER,
           ResourcePermission.Operation.WRITE, ResourcePermission.Target.DISK);
@@ -453,7 +496,7 @@ public class CreateRegionCommand implements GfshCommand {
               throw (IllegalArgumentException) object;
             } else if (object instanceof Throwable) {
               Throwable th = (Throwable) object;
-              LogWrapper.getInstance().info(CliUtil.stackTraceAsString((th)));
+              LogWrapper.getInstance().info(ExceptionUtils.getStackTrace((th)));
               throw new IllegalArgumentException(CliStrings.format(
                   CliStrings.CREATE_REGION__MSG__COULD_NOT_RETRIEVE_REGION_ATTRS_FOR_PATH_0_REASON_1,
                   regionPath, th.getMessage()));
@@ -527,23 +570,12 @@ public class CreateRegionCommand implements GfshCommand {
 
     for (Map.Entry<String, String[]> entry : entrySet) {
       String[] value = entry.getValue();
-      if (CliUtil.contains(value, diskStoreName)) {
+      if (diskStoreName != null && ArrayUtils.contains(value, diskStoreName)) {
         return true;
       }
     }
 
     return false;
-  }
-
-  private boolean isPersistentShortcut(RegionShortcut shortcut) {
-    return shortcut == RegionShortcut.LOCAL_PERSISTENT
-        || shortcut == RegionShortcut.LOCAL_PERSISTENT_OVERFLOW
-        || shortcut == RegionShortcut.PARTITION_PERSISTENT
-        || shortcut == RegionShortcut.PARTITION_PERSISTENT_OVERFLOW
-        || shortcut == RegionShortcut.PARTITION_REDUNDANT_PERSISTENT
-        || shortcut == RegionShortcut.PARTITION_REDUNDANT_PERSISTENT_OVERFLOW
-        || shortcut == RegionShortcut.REPLICATE_PERSISTENT
-        || shortcut == RegionShortcut.REPLICATE_PERSISTENT_OVERFLOW;
   }
 
   private boolean isAttributePersistent(RegionAttributes attributes) {

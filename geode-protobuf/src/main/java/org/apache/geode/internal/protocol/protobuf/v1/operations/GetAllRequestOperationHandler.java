@@ -25,7 +25,6 @@ import org.apache.geode.internal.exception.InvalidExecutionContextException;
 import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.internal.protocol.operations.ProtobufOperationHandler;
 import org.apache.geode.internal.protocol.protobuf.v1.BasicTypes;
-import org.apache.geode.internal.protocol.protobuf.v1.ClientProtocol;
 import org.apache.geode.internal.protocol.protobuf.v1.Failure;
 import org.apache.geode.internal.protocol.protobuf.v1.MessageExecutionContext;
 import org.apache.geode.internal.protocol.protobuf.v1.ProtobufSerializationService;
@@ -34,7 +33,6 @@ import org.apache.geode.internal.protocol.protobuf.v1.Result;
 import org.apache.geode.internal.protocol.protobuf.v1.Success;
 import org.apache.geode.internal.protocol.protobuf.v1.serialization.exception.DecodingException;
 import org.apache.geode.internal.protocol.protobuf.v1.serialization.exception.EncodingException;
-import org.apache.geode.internal.protocol.protobuf.v1.utilities.ProtobufResponseUtilities;
 import org.apache.geode.internal.protocol.protobuf.v1.utilities.ProtobufUtilities;
 
 @Experimental
@@ -43,16 +41,15 @@ public class GetAllRequestOperationHandler
   private static final Logger logger = LogService.getLogger();
 
   @Override
-  public Result<RegionAPI.GetAllResponse, ClientProtocol.ErrorResponse> process(
-      ProtobufSerializationService serializationService, RegionAPI.GetAllRequest request,
-      MessageExecutionContext messageExecutionContext)
+  public Result<RegionAPI.GetAllResponse> process(ProtobufSerializationService serializationService,
+      RegionAPI.GetAllRequest request, MessageExecutionContext messageExecutionContext)
       throws InvalidExecutionContextException, DecodingException {
     String regionName = request.getRegionName();
     Region region = messageExecutionContext.getCache().getRegion(regionName);
     if (region == null) {
-      logger.error("Received GetAll request for non-existing region {}", regionName);
-      return Failure.of(ProtobufResponseUtilities
-          .makeErrorResponse(BasicTypes.ErrorCode.SERVER_ERROR, "Region not found"));
+      logger.error("Received get-all request for nonexistent region: {}", regionName);
+      return Failure.of(BasicTypes.ErrorCode.SERVER_ERROR,
+          "Region \"" + regionName + "\" not found");
     }
 
     long startTime = messageExecutionContext.getStatistics().startOperation();
@@ -75,6 +72,11 @@ public class GetAllRequestOperationHandler
     try {
 
       Object decodedKey = serializationService.decode(key);
+      if (decodedKey == null) {
+        responseBuilder
+            .addFailures(buildKeyedError(key, "NULL is not a valid key for get.", INVALID_REQUEST));
+        return;
+      }
       Object value = region.get(decodedKey);
       BasicTypes.Entry entry =
           ProtobufUtilities.createEntry(serializationService, decodedKey, value);

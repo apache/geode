@@ -31,9 +31,6 @@ import org.apache.geode.internal.cache.DistributedRemoveAllOperation;
 import org.apache.geode.internal.cache.DistributedRemoveAllOperation.RemoveAllEntryData;
 import org.apache.geode.internal.cache.EntryEventImpl;
 import org.apache.geode.internal.cache.EventID;
-import org.apache.geode.internal.cache.GemFireCacheImpl;
-import org.apache.geode.internal.cache.InternalCache;
-import org.apache.geode.internal.cache.LocalRegion;
 import org.apache.geode.internal.cache.versions.VersionTag;
 import org.apache.geode.internal.offheap.annotations.Retained;
 
@@ -74,7 +71,7 @@ public class DistTxEntryEvent extends EntryEventImpl {
   @Override
   public void toData(DataOutput out) throws IOException {
     DataSerializer.writeObject(this.eventID, out);
-    DataSerializer.writeObject(this.region.getFullPath(), out);
+    DataSerializer.writeObject(this.getRegion().getFullPath(), out);
     out.writeByte(this.op.ordinal);
     DataSerializer.writeObject(this.getKey(), out);
     DataSerializer.writeInteger(this.keyInfo.getBucketId(), out);
@@ -111,7 +108,7 @@ public class DistTxEntryEvent extends EntryEventImpl {
                                                */, null/*
                                                        * callbackarg [DISTTX] TODO
                                                        */, bucketId);
-    basicSetNewValue(DataSerializer.readObject(in));
+    basicSetNewValue(DataSerializer.readObject(in), true);
 
     byte flags = DataSerializer.readByte(in);
 
@@ -248,8 +245,8 @@ public class DistTxEntryEvent extends EntryEventImpl {
     buf.append("[");
     buf.append("eventID=");
     buf.append(this.eventID);
-    if (this.region != null) {
-      buf.append(";r=").append(this.region.getName());
+    if (this.getRegion() != null) {
+      buf.append(";r=").append(this.getRegion().getName());
     }
     buf.append(";op=");
     buf.append(getOperation());

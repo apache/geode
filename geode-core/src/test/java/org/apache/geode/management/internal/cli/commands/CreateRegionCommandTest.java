@@ -37,7 +37,9 @@ import org.apache.geode.cache.RegionShortcut;
 import org.apache.geode.cache.execute.ResultCollector;
 import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.internal.cache.InternalCache;
+import org.apache.geode.management.DistributedRegionMXBean;
 import org.apache.geode.management.DistributedSystemMXBean;
+import org.apache.geode.management.ManagementService;
 import org.apache.geode.management.cli.Result;
 import org.apache.geode.management.internal.cli.GfshParseResult;
 import org.apache.geode.management.internal.cli.domain.ClassName;
@@ -54,6 +56,8 @@ public class CreateRegionCommandTest {
 
   private CreateRegionCommand command;
   private InternalCache cache;
+  private DistributedRegionMXBean regionMXBean;
+  ManagementService service;
 
   private static String COMMAND = "create region --name=region --type=REPLICATE ";
 
@@ -62,6 +66,11 @@ public class CreateRegionCommandTest {
     command = spy(CreateRegionCommand.class);
     cache = mock(InternalCache.class);
     doReturn(cache).when(command).getCache();
+
+    service = mock(ManagementService.class);
+    doReturn(service).when(command).getManagementService();
+    regionMXBean = mock(DistributedRegionMXBean.class);
+    when(service.getDistributedRegionMXBean(any())).thenReturn(regionMXBean);
   }
 
   @Test
@@ -152,6 +161,7 @@ public class CreateRegionCommandTest {
     doReturn(Collections.singleton(mock(DistributedMember.class))).when(command).findMembers(any(),
         any());
     doReturn(true).when(command).verifyDistributedRegionMbean(any(), any());
+    when(service.getDistributedRegionMXBean(any())).thenReturn(null);
 
     parser.executeCommandWithInstance(command, "create region --name=A --type=REPLICATE");
     ArgumentCaptor<RegionFunctionArgs> argsCaptor =
@@ -371,5 +381,15 @@ public class CreateRegionCommandTest {
 
     parser.executeAndAssertThat(command, COMMAND + "--entry-idle-time-custom-expiry=abc")
         .statusIsError().containsOutput("Statistics must be enabled for expiration");
+  }
+
+  @Test
+  public void nameCollisionCheck() {
+    when(regionMXBean.getMemberCount()).thenReturn(2);
+    when(regionMXBean.getEmptyNodes()).thenReturn(1);
+    parser.executeAndAssertThat(command, COMMAND).statusIsError()
+        .containsOutput("Region /region already exists on the cluster");
+    parser.executeAndAssertThat(command, COMMAND + " --if-not-exists").statusIsSuccess()
+        .containsOutput("Skipping: Region /region already exists on the cluster");
   }
 }

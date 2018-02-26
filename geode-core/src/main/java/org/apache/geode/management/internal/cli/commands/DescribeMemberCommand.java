@@ -19,6 +19,7 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 
+import org.apache.commons.lang.StringUtils;
 import org.springframework.shell.core.annotation.CliCommand;
 import org.springframework.shell.core.annotation.CliOption;
 
@@ -28,7 +29,6 @@ import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.management.cli.CliMetaData;
 import org.apache.geode.management.cli.ConverterHint;
 import org.apache.geode.management.cli.Result;
-import org.apache.geode.management.internal.cli.CliUtil;
 import org.apache.geode.management.internal.cli.domain.CacheServerInfo;
 import org.apache.geode.management.internal.cli.domain.MemberInformation;
 import org.apache.geode.management.internal.cli.functions.GetMemberInformationFunction;
@@ -72,8 +72,7 @@ public class DescribeMemberCommand implements GfshCommand {
         section.addData("Name", memberInformation.getName());
         section.addData("Id", memberInformation.getId());
         section.addData("Host", memberInformation.getHost());
-        section.addData("Regions",
-            CliUtil.convertStringSetToString(memberInformation.getHostedRegions(), '\n'));
+        section.addData("Regions", StringUtils.join(memberInformation.getHostedRegions(), '\n'));
         section.addData("PID", memberInformation.getProcessId());
         section.addData("Groups", memberInformation.getGroups());
         section.addData("Used Heap", memberInformation.getHeapUsage() + "M");

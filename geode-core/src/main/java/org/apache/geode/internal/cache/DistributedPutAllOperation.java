@@ -236,11 +236,12 @@ public class DistributedPutAllOperation extends AbstractUpdateOperation {
 
       entry.event = ev;
       returnedEv = true;
-      if (entry.getValue() == null
+      Object entryValue = entry.getValue(region.getCache());
+      if (entryValue == null
           && ev.getRegion().getAttributes().getDataPolicy() == DataPolicy.NORMAL) {
         ev.setLocalInvalid(true);
       }
-      ev.setNewValue(entry.getValue());
+      ev.setNewValue(entryValue);
       ev.setOldValue(entry.getOldValue());
       CqService cqService = region.getCache().getCqService();
       if (cqService.isRunning() && !entry.getOp().isCreate() && !ev.hasOldValue()) {
@@ -271,7 +272,7 @@ public class DistributedPutAllOperation extends AbstractUpdateOperation {
 
     final Object key;
 
-    final Object value;
+    private Object value;
 
     private final Object oldValue;
 
@@ -336,7 +337,7 @@ public class DistributedPutAllOperation extends AbstractUpdateOperation {
       } else {
         byte[] bb = DataSerializer.readByteArray(in);
         if ((flgs & IS_CACHED_DESER) != 0) {
-          this.value = CachedDeserializableFactory.create(bb, GemFireCacheImpl.getInstance());
+          this.value = new FutureCachedDeserializable(bb);
         } else {
           this.value = bb;
         }
@@ -365,7 +366,7 @@ public class DistributedPutAllOperation extends AbstractUpdateOperation {
     @Override
     public String toString() {
       StringBuilder sb = new StringBuilder(50);
-      sb.append("(").append(getKey()).append(",").append(getValue()).append(",")
+      sb.append("(").append(getKey()).append(",").append(this.value).append(",")
           .append(getOldValue());
       if (this.bucketId > 0) {
         sb.append(", b").append(this.bucketId);
@@ -455,8 +456,14 @@ public class DistributedPutAllOperation extends AbstractUpdateOperation {
     /**
      * Returns the value
      */
-    public Object getValue() {
-      return this.value;
+    public Object getValue(InternalCache cache) {
+      Object result = this.value;
+      if (result instanceof FutureCachedDeserializable) {
+        FutureCachedDeserializable future = (FutureCachedDeserializable) result;
+        result = future.create(cache);
+        this.value = result;
+      }
+      return result;
     }
 
     /**
@@ -1134,10 +1141,11 @@ public class DistributedPutAllOperation extends AbstractUpdateOperation {
         if (context != null) {
           ev.context = context;
         }
-        if (entry.getValue() == null && rgn.getDataPolicy() == DataPolicy.NORMAL) {
+        Object entryValue = entry.getValue(rgn.getCache());
+        if (entryValue == null && rgn.getDataPolicy() == DataPolicy.NORMAL) {
           ev.setLocalInvalid(true);
         }
-        ev.setNewValue(entry.getValue());
+        ev.setNewValue(entryValue);
         ev.setPossibleDuplicate(possibleDuplicate);
         ev.setVersionTag(entry.versionTag);
         // if (needsRouting) {

@@ -330,7 +330,7 @@ public class DistributedRegionBridge {
 
   /**
    *
-   * @return type of the region
+   * @return data policy of the region
    */
   public String getRegionType() {
     return monitor.getRegionType();

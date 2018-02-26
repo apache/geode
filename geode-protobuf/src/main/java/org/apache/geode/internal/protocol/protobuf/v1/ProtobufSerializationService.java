@@ -15,6 +15,7 @@
 package org.apache.geode.internal.protocol.protobuf.v1;
 
 import com.google.protobuf.ByteString;
+import com.google.protobuf.NullValue;
 
 import org.apache.geode.annotations.Experimental;
 import org.apache.geode.internal.protocol.protobuf.v1.serialization.JsonPdxConverter;
@@ -38,11 +39,10 @@ public class ProtobufSerializationService implements SerializationService<BasicT
   @Override
   public BasicTypes.EncodedValue encode(Object value) throws EncodingException {
     if (value == null) {
-      return BasicTypes.EncodedValue.getDefaultInstance();
+      return BasicTypes.EncodedValue.newBuilder().setNullResult(NullValue.NULL_VALUE).build();
     }
 
     BasicTypes.EncodedValue.Builder builder = BasicTypes.EncodedValue.newBuilder();
-
     try {
       ProtobufEncodingTypes protobufEncodingTypes = ProtobufEncodingTypes.valueOf(value.getClass());
       switch (protobufEncodingTypes) {
@@ -86,10 +86,14 @@ public class ProtobufSerializationService implements SerializationService<BasicT
           builder.setJsonObjectResult(jsonPdxConverter.encode((PdxInstance) value));
           break;
         }
+        default:
+          throw new EncodingException("No handler for protobuf type "
+              + ProtobufEncodingTypes.valueOf(value.getClass()).toString());
       }
     } catch (UnknownProtobufEncodingType unknownProtobufEncodingType) {
       throw new EncodingException("No protobuf encoding for type " + value.getClass().getName());
     }
+
     return builder.build();
   }
 
@@ -121,7 +125,7 @@ public class ProtobufSerializationService implements SerializationService<BasicT
         return encodedValue.getStringResult();
       case JSONOBJECTRESULT:
         return jsonPdxConverter.decode(encodedValue.getJsonObjectResult());
-      case VALUE_NOT_SET:
+      case NULLRESULT:
         return null;
       default:
         throw new DecodingException(
@@ -167,5 +171,4 @@ public class ProtobufSerializationService implements SerializationService<BasicT
           "There is no primitive protobuf type mapping for class:" + unencodedValueClass);
     }
   }
-
 }

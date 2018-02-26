@@ -14,8 +14,6 @@
  */
 package org.apache.geode.internal.protocol.protobuf.v1.operations;
 
-import static org.apache.geode.internal.protocol.protobuf.v1.BasicTypes.ErrorCode.SERVER_ERROR;
-
 import org.apache.logging.log4j.Logger;
 
 import org.apache.geode.annotations.Experimental;
@@ -24,7 +22,6 @@ import org.apache.geode.internal.exception.InvalidExecutionContextException;
 import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.internal.protocol.operations.ProtobufOperationHandler;
 import org.apache.geode.internal.protocol.protobuf.v1.BasicTypes;
-import org.apache.geode.internal.protocol.protobuf.v1.ClientProtocol;
 import org.apache.geode.internal.protocol.protobuf.v1.Failure;
 import org.apache.geode.internal.protocol.protobuf.v1.MessageExecutionContext;
 import org.apache.geode.internal.protocol.protobuf.v1.ProtobufSerializationService;
@@ -32,9 +29,6 @@ import org.apache.geode.internal.protocol.protobuf.v1.RegionAPI;
 import org.apache.geode.internal.protocol.protobuf.v1.Result;
 import org.apache.geode.internal.protocol.protobuf.v1.Success;
 import org.apache.geode.internal.protocol.protobuf.v1.serialization.exception.DecodingException;
-import org.apache.geode.internal.protocol.protobuf.v1.serialization.exception.EncodingException;
-import org.apache.geode.internal.protocol.protobuf.v1.state.exception.ConnectionStateException;
-import org.apache.geode.internal.protocol.protobuf.v1.utilities.ProtobufResponseUtilities;
 
 @Experimental
 public class PutRequestOperationHandler
@@ -42,17 +36,15 @@ public class PutRequestOperationHandler
   private static final Logger logger = LogService.getLogger();
 
   @Override
-  public Result<RegionAPI.PutResponse, ClientProtocol.ErrorResponse> process(
-      ProtobufSerializationService serializationService, RegionAPI.PutRequest request,
-      MessageExecutionContext messageExecutionContext)
+  public Result<RegionAPI.PutResponse> process(ProtobufSerializationService serializationService,
+      RegionAPI.PutRequest request, MessageExecutionContext messageExecutionContext)
       throws InvalidExecutionContextException, DecodingException {
     String regionName = request.getRegionName();
     Region region = messageExecutionContext.getCache().getRegion(regionName);
     if (region == null) {
-      logger.warn("Received Put request for non-existing region: {}", regionName);
-      return Failure
-          .of(ProtobufResponseUtilities.makeErrorResponse(BasicTypes.ErrorCode.SERVER_ERROR,
-              "Region passed by client did not exist: " + regionName));
+      logger.error("Received put request for nonexistent region: {}", regionName);
+      return Failure.of(BasicTypes.ErrorCode.SERVER_ERROR,
+          "Region \"" + regionName + "\" not found");
     }
 
     long startTime = messageExecutionContext.getStatistics().startOperation();
@@ -61,13 +53,17 @@ public class PutRequestOperationHandler
 
       Object decodedValue = serializationService.decode(entry.getValue());
       Object decodedKey = serializationService.decode(entry.getKey());
+      if (decodedKey == null || decodedValue == null) {
+        return Failure.of(BasicTypes.ErrorCode.INVALID_REQUEST,
+            "Key and value must both be non-NULL");
+      }
+
       try {
         region.put(decodedKey, decodedValue);
         return Success.of(RegionAPI.PutResponse.newBuilder().build());
       } catch (ClassCastException ex) {
         logger.error("Received Put request with invalid key type: {}", ex);
-        return Failure.of(ProtobufResponseUtilities
-            .makeErrorResponse(BasicTypes.ErrorCode.SERVER_ERROR, ex.toString()));
+        return Failure.of(BasicTypes.ErrorCode.SERVER_ERROR, ex.toString());
       }
     } finally {
       messageExecutionContext.getStatistics().endOperation(startTime);

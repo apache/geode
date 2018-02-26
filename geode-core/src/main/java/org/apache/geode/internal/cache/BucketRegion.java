@@ -1315,7 +1315,7 @@ public class BucketRegion extends DistributedRegion implements Bucket {
     Assert.assertTrue(!isTX());
     Assert.assertTrue(event.getOperation().isDistributed());
 
-    LocalRegion lr = event.getLocalRegion();
+    LocalRegion lr = event.getRegion();
     AbstractRegionMap arm = ((AbstractRegionMap) lr.getRegionMap());
     try {
       arm.lockForCacheModification(lr, event);
@@ -1341,7 +1341,7 @@ public class BucketRegion extends DistributedRegion implements Bucket {
         endLocalWrite(event);
       }
     } finally {
-      arm.releaseCacheModificationLock(event.getLocalRegion(), event);
+      arm.releaseCacheModificationLock(event.getRegion(), event);
     }
   }
 

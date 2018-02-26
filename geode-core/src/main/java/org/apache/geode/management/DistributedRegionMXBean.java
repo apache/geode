@@ -40,16 +40,20 @@ public interface DistributedRegionMXBean {
   /**
    * Returns the number of members hosting/using the Region.
    */
+  @ResourceOperation()
   int getMemberCount();
 
   /**
    * Returns a list of names/IDs of the members hosting the Region.
    */
+  @ResourceOperation()
   String[] getMembers();
 
   /**
    * Returns the type (data policy) of the Region.
+   * CreateRegionCommand will use this attribute
    */
+  @ResourceOperation()
   String getRegionType();
 
   /**
@@ -297,5 +301,6 @@ public interface DistributedRegionMXBean {
   /**
    * Returns the number of members whose entry count is 0.
    */
+  @ResourceOperation()
   int getEmptyNodes();
 }

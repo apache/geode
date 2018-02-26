@@ -14,8 +14,10 @@
  */
 package org.apache.geode.internal.cache.xmlcache;
 
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
 
 import org.apache.geode.cache.execute.Function;
 import org.apache.geode.cache.execute.FunctionService;
@@ -26,24 +28,29 @@ import org.apache.geode.cache.execute.FunctionService;
  */
 public class FunctionServiceCreation {
 
-  private final Map<String, Function> functions = new ConcurrentHashMap<String, Function>();
+  private final List<Function> functions = new ArrayList<>();
 
   public FunctionServiceCreation() {}
 
   public void registerFunction(Function f) {
-    this.functions.put(f.getId(), f);
-    // Register to FunctionService also so that if somebody does not call
-    // FunctionService.create()
-    FunctionService.registerFunction(f);
+    this.functions.add(f);
   }
 
   public void create() {
-    for (Function function : this.functions.values()) {
+    for (Function function : this.functions) {
       FunctionService.registerFunction(function);
     }
   }
 
-  public Map<String, Function> getFunctions() {
+  List<Function> getFunctionList() {
     return this.functions;
+  }
+
+  public Map<String, Function> getFunctions() {
+    Map<String, Function> result = new HashMap<>();
+    for (Function function : this.functions) {
+      result.put(function.getId(), function);
+    }
+    return result;
   }
 }

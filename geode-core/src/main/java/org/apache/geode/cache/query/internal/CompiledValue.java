@@ -46,6 +46,11 @@ public interface CompiledValue {
   int LIKE = -15;
   int FIELD = -16;
   int GROUP_BY_SELECT = -17;
+  int MOD = -18;
+  int ADDITION = -19;
+  int SUBTRACTION = -20;
+  int DIVISION = -21;
+  int MULTIPLICATION = -22;
   int INDEX_RESULT_THRESHOLD_DEFAULT = 100;
   String INDX_THRESHOLD_PROP_STR = DistributionConfig.GEMFIRE_PREFIX + "Query.INDEX_THRESHOLD_SIZE";
   String INDEX_INFO = "index_info";
