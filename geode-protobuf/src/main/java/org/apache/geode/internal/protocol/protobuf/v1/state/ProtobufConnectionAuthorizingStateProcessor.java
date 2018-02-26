@@ -61,4 +61,12 @@ public class ProtobufConnectionAuthorizingStateProcessor
     throw new ConnectionStateException(BasicTypes.ErrorCode.ALREADY_AUTHENTICATED,
         "The user has already been authenticated for this connection. Re-authentication is not supported at this time.");
   }
+
+  public ThreadState prepareThreadForAuthorization() {
+    return securityService.bindSubject(subject);
+  }
+
+  public void restoreThreadState(ThreadState state) {
+    state.restore();
+  }
 }
