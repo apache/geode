@@ -15,13 +15,16 @@
 package org.apache.geode.internal.protocol.protobuf.v1;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.Socket;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Properties;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
@@ -228,6 +231,84 @@ public class AuthorizationIntegrationTest {
     verifyOperations(false, false, TEST_REGION1, TEST_KEY2);
     verifyOperations(false, false, TEST_REGION2, TEST_KEY1);
     verifyOperations(true, false, TEST_REGION2, TEST_KEY2);
+  }
+
+  @Test
+  public void validateRegionLevelPermissionsOnBatchOperations() throws Exception {
+    securityManager.addAllowedPermission(new ResourcePermission(ResourcePermission.Resource.DATA,
+        ResourcePermission.Operation.WRITE, TEST_REGION1));
+    securityManager.addAllowedPermission(new ResourcePermission(ResourcePermission.Resource.DATA,
+        ResourcePermission.Operation.READ, TEST_REGION2));
+
+    verifyBatchOperation(true, TEST_REGION1, false, false);
+    verifyBatchOperation(false, TEST_REGION1, true, true);
+    verifyBatchOperation(true, TEST_REGION2, true, true);
+    verifyBatchOperation(false, TEST_REGION2, false, false);
+  }
+
+  @Test
+  public void validateKeyLevelPermissionsOnBatchOperations() throws Exception {
+    securityManager.addAllowedPermission(new ResourcePermission(ResourcePermission.Resource.DATA,
+        ResourcePermission.Operation.WRITE, TEST_REGION1, TEST_KEY1));
+    securityManager.addAllowedPermission(new ResourcePermission(ResourcePermission.Resource.DATA,
+        ResourcePermission.Operation.READ, TEST_REGION2, TEST_KEY2));
+
+    verifyBatchOperation(true, TEST_REGION1, false, false);
+    verifyBatchOperation(false, TEST_REGION1, true, false);
+    verifyBatchOperation(true, TEST_REGION2, false, true);
+    verifyBatchOperation(false, TEST_REGION2, false, false);
+  }
+
+  private void verifyBatchOperation(boolean testRead, String region, boolean expectedKey1Success,
+      boolean expectedKey2Success) throws Exception {
+    ClientProtocol.Message request;
+    if (testRead) {
+      request = ClientProtocol.Message.newBuilder()
+          .setGetAllRequest(RegionAPI.GetAllRequest.newBuilder().setRegionName(region)
+              .addKey(serializationService.encode(TEST_KEY1))
+              .addKey(serializationService.encode(TEST_KEY2)))
+          .build();
+    } else {
+      request = ClientProtocol.Message.newBuilder().setPutAllRequest(RegionAPI.PutAllRequest
+          .newBuilder().setRegionName(region)
+          .addEntry(ProtobufUtilities.createEntry(serializationService, TEST_KEY1, "TEST_VALUE"))
+          .addEntry(ProtobufUtilities.createEntry(serializationService, TEST_KEY2, "TEST_VALUE")))
+          .build();
+    }
+
+    protobufProtocolSerializer.serialize(request, outputStream);
+    ClientProtocol.Message response = protobufProtocolSerializer.deserialize(inputStream);
+    assertNotEquals(ClientProtocol.Message.MessageTypeCase.ERRORRESPONSE,
+        response.getMessageTypeCase());
+
+    List<BasicTypes.KeyedError> keyedErrors =
+        testRead ? response.getGetAllResponse().getFailuresList()
+            : response.getPutAllResponse().getFailedKeysList();
+    String operation = testRead ? "getAll" : "putAll";
+    if (errorListContainsKey(keyedErrors, serializationService.encode(TEST_KEY1))) {
+      if (expectedKey1Success) {
+        fail("Unexpectedly failed " + operation + " operation for key " + TEST_KEY1);
+      }
+    } else if (!expectedKey1Success) {
+      fail("Unexpected success in " + operation + " operation for key " + TEST_KEY1);
+    }
+    if (errorListContainsKey(keyedErrors, serializationService.encode(TEST_KEY2))) {
+      if (expectedKey2Success) {
+        fail("Unexpectedly failed " + operation + " operation for key " + TEST_KEY2);
+      }
+    } else if (!expectedKey2Success) {
+      fail("Unexpected success in " + operation + " operation for key " + TEST_KEY2);
+    }
+  }
+
+  private boolean errorListContainsKey(List<BasicTypes.KeyedError> errors,
+      BasicTypes.EncodedValue key) {
+    for (BasicTypes.KeyedError error : errors) {
+      if (error.getKey().equals(key)) {
+        return true;
+      }
+    }
+    return false;
   }
 
   private void verifyLocatorOperation(boolean readAllowed) throws Exception {
