@@ -37,6 +37,7 @@ import org.apache.geode.internal.cache.GemFireCacheImpl;
 import org.apache.geode.internal.cache.TXManagerImpl;
 import org.apache.geode.internal.security.SecurityService;
 import org.apache.geode.pdx.PdxInstanceFactory;
+import org.apache.geode.pdx.internal.TypeRegistry;
 
 /**
  * Factory methods for fake objects for use in test.
@@ -65,6 +66,7 @@ public class Fakes {
     DistributionConfig config = mock(DistributionConfig.class);
     ClusterDistributionManager distributionManager = mock(ClusterDistributionManager.class);
     PdxInstanceFactory pdxInstanceFactory = mock(PdxInstanceFactory.class);
+    TypeRegistry pdxRegistryMock = mock(TypeRegistry.class);
     CancelCriterion systemCancelCriterion = mock(CancelCriterion.class);
     DSClock clock = mock(DSClock.class);
     LogWriter logger = mock(LogWriter.class);
@@ -86,6 +88,7 @@ public class Fakes {
     when(cache.getCachePerfStats()).thenReturn(mock(CachePerfStats.class));
     when(cache.getSecurityService()).thenReturn(mock(SecurityService.class));
     when(cache.createPdxInstanceFactory(any())).thenReturn(pdxInstanceFactory);
+    when(cache.getPdxRegistry()).thenReturn(pdxRegistryMock);
     when(cache.getTxManager()).thenReturn(txManager);
 
     when(system.getDistributedMember()).thenReturn(member);

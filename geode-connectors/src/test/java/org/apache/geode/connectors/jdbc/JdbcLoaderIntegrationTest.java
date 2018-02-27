@@ -26,7 +26,6 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
-import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.CacheFactory;
 import org.apache.geode.cache.Region;
 import org.apache.geode.cache.RegionFactory;
@@ -35,6 +34,7 @@ import org.apache.geode.connectors.jdbc.internal.RegionMappingExistsException;
 import org.apache.geode.connectors.jdbc.internal.SqlHandler;
 import org.apache.geode.connectors.jdbc.internal.TestConfigService;
 import org.apache.geode.connectors.jdbc.internal.TestableConnectionManager;
+import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.pdx.PdxInstance;
 import org.apache.geode.test.junit.categories.IntegrationTest;
 
@@ -45,13 +45,13 @@ public class JdbcLoaderIntegrationTest {
   private static final String REGION_TABLE_NAME = "employees";
   private static final String CONNECTION_URL = "jdbc:derby:memory:" + DB_NAME + ";create=true";
 
-  private Cache cache;
+  private InternalCache cache;
   private Connection connection;
   private Statement statement;
 
   @Before
   public void setUp() throws Exception {
-    cache = new CacheFactory().set("locators", "").set("mcast-port", "0")
+    cache = (InternalCache) new CacheFactory().set("locators", "").set("mcast-port", "0")
         .setPdxReadSerialized(false).create();
     connection = DriverManager.getConnection(CONNECTION_URL);
     statement = connection.createStatement();
@@ -102,7 +102,7 @@ public class JdbcLoaderIntegrationTest {
 
   private Region<String, PdxInstance> createRegionWithJDBCLoader(String regionName)
       throws ConnectionConfigExistsException, RegionMappingExistsException {
-    JdbcLoader<String, PdxInstance> jdbcLoader = new JdbcLoader<>(createSqlHandler());
+    JdbcLoader<String, PdxInstance> jdbcLoader = new JdbcLoader<>(createSqlHandler(), cache);
     RegionFactory<String, PdxInstance> regionFactory = cache.createRegionFactory(REPLICATE);
     regionFactory.setCacheLoader(jdbcLoader);
     return regionFactory.create(regionName);

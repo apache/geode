@@ -52,7 +52,6 @@ import org.apache.geode.cache.query.QueryException;
 import org.apache.geode.cache.query.TypeMismatchException;
 import org.apache.geode.cache.query.internal.CompiledPath;
 import org.apache.geode.cache.query.internal.CompiledValue;
-import org.apache.geode.cache.query.internal.DefaultQuery;
 import org.apache.geode.cache.query.internal.ExecutionContext;
 import org.apache.geode.cache.query.internal.MapIndexable;
 import org.apache.geode.cache.query.internal.NullToken;
@@ -274,12 +273,12 @@ public class IndexManager {
           LocalizedStrings.IndexCreationMsg_CANCELED_DUE_TO_LOW_MEMORY.toLocalizedString());
     }
 
-    boolean oldReadSerialized = DefaultQuery.getPdxReadSerialized();
-    DefaultQuery.setPdxReadSerialized(this.region.getCache(), true);
+    boolean oldReadSerialized = this.cache.getPdxReadSerializedOverride();
+    this.cache.setPdxReadSerializedOverride(true);
 
     TXStateProxy tx = null;
-    if (!((InternalCache) this.region.getCache()).isClient()) {
-      tx = ((TXManagerImpl) this.region.getCache().getCacheTransactionManager()).pauseTransaction();
+    if (!((InternalCache) this.cache).isClient()) {
+      tx = ((TXManagerImpl) this.cache.getCacheTransactionManager()).pauseTransaction();
     }
 
     try {
@@ -430,8 +429,8 @@ public class IndexManager {
       return index;
 
     } finally {
-      DefaultQuery.setPdxReadSerialized(this.region.getCache(), oldReadSerialized);
-      ((TXManagerImpl) this.region.getCache().getCacheTransactionManager()).unpauseTransaction(tx);
+      this.cache.setPdxReadSerializedOverride(oldReadSerialized);
+      ((TXManagerImpl) this.cache.getCacheTransactionManager()).unpauseTransaction(tx);
 
     }
   }
@@ -905,8 +904,8 @@ public class IndexManager {
     }
     boolean throwException = false;
     HashMap<String, Exception> exceptionsMap = new HashMap<String, Exception>();
-    boolean oldReadSerialized = DefaultQuery.getPdxReadSerialized();
-    DefaultQuery.setPdxReadSerialized(true);
+    boolean oldReadSerialized = this.cache.getPdxReadSerializedOverride();
+    this.cache.setPdxReadSerializedOverride(true);
     try {
       Iterator entryIter = ((LocalRegion) region).getBestIterator(true);
       while (entryIter.hasNext()) {
@@ -947,7 +946,7 @@ public class IndexManager {
         throw new MultiIndexCreationException(exceptionsMap);
       }
     } finally {
-      DefaultQuery.setPdxReadSerialized(oldReadSerialized);
+      this.cache.setPdxReadSerializedOverride(oldReadSerialized);
       notifyAfterUpdate();
     }
   }
@@ -1002,10 +1001,11 @@ public class IndexManager {
    */
   private void processAction(RegionEntry entry, int action, int opCode) throws QueryException {
     final long startPA = getCachePerfStats().startIndexUpdate();
-    DefaultQuery.setPdxReadSerialized(this.region.getCache(), true);
+    Boolean initialPdxReadSerialized = this.cache.getPdxReadSerializedOverride();
+    this.cache.setPdxReadSerializedOverride(true);
     TXStateProxy tx = null;
-    if (!((InternalCache) this.region.getCache()).isClient()) {
-      tx = ((TXManagerImpl) this.region.getCache().getCacheTransactionManager()).pauseTransaction();
+    if (!this.cache.isClient()) {
+      tx = ((TXManagerImpl) this.cache.getCacheTransactionManager()).pauseTransaction();
     }
 
     try {
@@ -1147,8 +1147,8 @@ public class IndexManager {
         }
       }
     } finally {
-      DefaultQuery.setPdxReadSerialized(this.region.getCache(), false);
-      ((TXManagerImpl) this.region.getCache().getCacheTransactionManager()).unpauseTransaction(tx);
+      this.cache.setPdxReadSerializedOverride(initialPdxReadSerialized);
+      ((TXManagerImpl) this.cache.getCacheTransactionManager()).unpauseTransaction(tx);
 
       getCachePerfStats().endIndexUpdate(startPA);
     }

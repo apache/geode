@@ -39,6 +39,7 @@ import org.apache.geode.connectors.jdbc.internal.RegionMappingExistsException;
 import org.apache.geode.connectors.jdbc.internal.SqlHandler;
 import org.apache.geode.connectors.jdbc.internal.TestConfigService;
 import org.apache.geode.connectors.jdbc.internal.TestableConnectionManager;
+import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.pdx.PdxInstance;
 import org.apache.geode.test.junit.categories.IntegrationTest;
 
@@ -49,7 +50,7 @@ public class JdbcAsyncWriterIntegrationTest {
   private static final String REGION_TABLE_NAME = "employees";
   private static final String CONNECTION_URL = "jdbc:derby:memory:" + DB_NAME + ";create=true";
 
-  private Cache cache;
+  private InternalCache cache;
   private Region<String, PdxInstance> employees;
   private Connection connection;
   private Statement statement;
@@ -61,7 +62,7 @@ public class JdbcAsyncWriterIntegrationTest {
 
   @Before
   public void setup() throws Exception {
-    cache = new CacheFactory().set("locators", "").set("mcast-port", "0")
+    cache = (InternalCache) new CacheFactory().set("locators", "").set("mcast-port", "0")
         .setPdxReadSerialized(false).create();
     employees = createRegionWithJDBCAsyncWriter(REGION_TABLE_NAME);
     connection = DriverManager.getConnection(CONNECTION_URL);
@@ -235,7 +236,7 @@ public class JdbcAsyncWriterIntegrationTest {
 
   private Region<String, PdxInstance> createRegionWithJDBCAsyncWriter(String regionName)
       throws ConnectionConfigExistsException, RegionMappingExistsException {
-    jdbcWriter = new JdbcAsyncWriter(createSqlHandler());
+    jdbcWriter = new JdbcAsyncWriter(createSqlHandler(), cache);
     cache.createAsyncEventQueueFactory().setBatchSize(1).setBatchTimeInterval(1)
         .create("jdbcAsyncQueue", jdbcWriter);
 

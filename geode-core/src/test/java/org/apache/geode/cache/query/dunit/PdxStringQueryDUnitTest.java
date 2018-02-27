@@ -47,7 +47,6 @@ import org.apache.geode.cache.query.Struct;
 import org.apache.geode.cache.query.data.Portfolio;
 import org.apache.geode.cache.query.data.PortfolioPdx;
 import org.apache.geode.cache.query.data.PositionPdx;
-import org.apache.geode.cache.query.internal.DefaultQuery;
 import org.apache.geode.cache.query.internal.index.CompactRangeIndex;
 import org.apache.geode.cache.query.internal.index.IndexManager;
 import org.apache.geode.cache.query.internal.index.IndexStore.IndexStoreEntry;
@@ -85,8 +84,10 @@ public class PdxStringQueryDUnitTest extends JUnit4CacheTestCase {
   private static final int[] groupByQueryIndex = new int[] {7, 8, 9, 10};
 
   private final String[] queryString = new String[] {
-      "SELECT pos.secId FROM " + regName + " p, p.positions.values pos WHERE pos.secId LIKE '%L'", // 0
-      "SELECT pos.secId FROM " + regName + " p, p.positions.values pos where pos.secId = 'IBM'", // 1
+      "SELECT pos.secId FROM " + regName + " p, p.positions.values pos WHERE pos.secId LIKE '%L'",
+      // 0
+      "SELECT pos.secId FROM " + regName + " p, p.positions.values pos where pos.secId = 'IBM'",
+      // 1
       "SELECT pos.secId, p.status FROM " + regName
           + " p, p.positions.values pos where pos.secId > 'APPL'", // 2
       "SELECT pos.secId FROM " + regName
@@ -105,7 +106,8 @@ public class PdxStringQueryDUnitTest extends JUnit4CacheTestCase {
           + " p, p.positions.values pos where  pos.secId > 'APPL' group by pos.secId ", // 9
       "select  count(distinct pos.secId) from " + regName
           + " p, p.positions.values pos where  pos.secId > 'APPL' ", // 10
-      "SELECT distinct pos.secId FROM " + regName + " p, p.positions.values pos order by pos.secId", // 11
+      "SELECT distinct pos.secId FROM " + regName + " p, p.positions.values pos order by pos.secId",
+      // 11
       "SELECT distinct pos.secId FROM " + regName
           + " p, p.positions.values pos WHERE p.ID > 1 order by pos.secId limit 5",// 12
   };
@@ -118,7 +120,8 @@ public class PdxStringQueryDUnitTest extends JUnit4CacheTestCase {
       "SELECT pos.secIdIndexed, p.status FROM " + regName
           + " p, p.positions.values pos where pos.secIdIndexed > 'APPL'", // 2
       "SELECT pos.secIdIndexed FROM " + regName
-          + " p, p.positions.values pos WHERE pos.secIdIndexed > 'APPL' and pos.secIdIndexed < 'SUN'", // 3
+          + " p, p.positions.values pos WHERE pos.secIdIndexed > 'APPL' and pos.secIdIndexed < 'SUN'",
+      // 3
       "select pos.secIdIndexed from " + regName
           + " p, p.positions.values pos where pos.secIdIndexed  IN SET ('YHOO', 'VMW')", // 4
       "select pos.secIdIndexed from " + regName
@@ -126,11 +129,14 @@ public class PdxStringQueryDUnitTest extends JUnit4CacheTestCase {
       "select pos.secIdIndexed from " + regName
           + " p, p.positions.values pos where NOT (pos.secIdIndexed IN SET('SUN', 'ORCL')) ", // 6
       "select pos.secIdIndexed , count(pos.id) from " + regName
-          + " p, p.positions.values pos where  pos.secIdIndexed > 'APPL' group by pos.secIdIndexed ", // 7
+          + " p, p.positions.values pos where  pos.secIdIndexed > 'APPL' group by pos.secIdIndexed ",
+      // 7
       "select pos.secIdIndexed , sum(pos.id) from " + regName
-          + " p, p.positions.values pos where  pos.secIdIndexed > 'APPL' group by pos.secIdIndexed ", // 8
+          + " p, p.positions.values pos where  pos.secIdIndexed > 'APPL' group by pos.secIdIndexed ",
+      // 8
       "select pos.secIdIndexed , count(distinct pos.secIdIndexed) from " + regName
-          + " p, p.positions.values pos where  pos.secIdIndexed > 'APPL' group by pos.secIdIndexed ", // 9
+          + " p, p.positions.values pos where  pos.secIdIndexed > 'APPL' group by pos.secIdIndexed ",
+      // 9
       "select  count(distinct pos.secIdIndexed) from " + regName
           + " p, p.positions.values pos where  pos.secIdIndexed > 'APPL'  ", // 10
       "SELECT distinct pos.secIdIndexed FROM " + regName
@@ -1927,8 +1933,6 @@ public class PdxStringQueryDUnitTest extends JUnit4CacheTestCase {
   /**
    * Test to verify if duplicate results are not being accumulated when PdxString is used in PR
    * query
-   *
-   * @throws CacheException
    */
   @Test
   public void testPRQueryForDuplicates() throws CacheException {
@@ -1996,21 +2000,19 @@ public class PdxStringQueryDUnitTest extends JUnit4CacheTestCase {
 
     // execute query on server by setting DefaultQuery.setPdxReadSerialized
     // to simulate remote query
-    vm0.invoke(new SerializableCallable("Create server") {
-      @Override
-      public Object call() throws Exception {
-        DefaultQuery.setPdxReadSerialized(true);
-        try {
-          for (int i = 0; i < qs.length; i++) {
-            SelectResults sr =
-                (SelectResults) getCache().getQueryService().newQuery(qs[i]).execute();
-            assertEquals("Did not get expected result from query: " + qs[i] + " ", 2, sr.size());
-          }
-        } finally {
-          DefaultQuery.setPdxReadSerialized(false);
+    vm0.invoke("Create server", () -> {
+
+      Boolean previousPdxReadSerializedFlag = cache.getPdxReadSerializedOverride();
+      cache.setPdxReadSerializedOverride(true);
+      try {
+        for (int i = 0; i < qs.length; i++) {
+          SelectResults sr = (SelectResults) getCache().getQueryService().newQuery(qs[i]).execute();
+          assertEquals("Did not get expected result from query: " + qs[i] + " ", 2, sr.size());
         }
-        return null;
+      } finally {
+        cache.setPdxReadSerializedOverride(previousPdxReadSerializedFlag);
       }
+      return null;
     });
 
     disconnectAllFromDS();

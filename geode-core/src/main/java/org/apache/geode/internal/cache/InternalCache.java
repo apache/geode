@@ -355,4 +355,8 @@ public interface InternalCache extends Cache, Extensible<Cache>, CacheTime {
    *         or the result of calling PdxInstance.getObject on obj.
    */
   Object convertPdxInstanceIfNeeded(Object obj);
+
+  Boolean getPdxReadSerializedOverride();
+
+  void setPdxReadSerializedOverride(boolean pdxReadSerialized);
 }

@@ -33,7 +33,9 @@ import org.junit.experimental.categories.Category;
 
 import org.apache.geode.cache.asyncqueue.AsyncEvent;
 import org.apache.geode.connectors.jdbc.internal.SqlHandler;
+import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.cache.InternalRegion;
+import org.apache.geode.test.fake.Fakes;
 import org.apache.geode.test.junit.categories.UnitTest;
 
 @Category(UnitTest.class)
@@ -43,13 +45,17 @@ public class JdbcAsyncWriterTest {
   private InternalRegion region;
 
   private JdbcAsyncWriter writer;
+  private InternalCache cache;
 
   @Before
   public void setup() {
     sqlHandler = mock(SqlHandler.class);
     region = mock(InternalRegion.class);
+    cache = Fakes.cache();
 
-    writer = new JdbcAsyncWriter(sqlHandler);
+    writer = new JdbcAsyncWriter(sqlHandler, cache);
+
+    when(region.getRegionService()).thenReturn(cache);
   }
 
   @Test

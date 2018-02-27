@@ -362,7 +362,8 @@ public class BaseLineAndCompareQueryPerfJUnitTest {
      * Indices share the following percentages: a. countryName: 20% objects b. stateName: 33.33%
      * objects c. districtName: 20% objects d. cityName: 50% objects e. villageName: No index
      */
-    // qs.createIndex("villageName", IndexType.FUNCTIONAL, "v.name", "/Countries c, c.states s,
+    // queryService.createIndex("villageName", IndexType.FUNCTIONAL, "v.name", "/Countries c,
+    // c.states s,
     // s.districts d, d.cities ct, d.villages v");
     qs.createIndex("cityName", IndexType.FUNCTIONAL, "ct.name",
         "/Countries c, c.states s, s.districts d, d.cities ct, d.villages v");//

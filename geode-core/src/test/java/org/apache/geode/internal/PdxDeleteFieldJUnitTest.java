@@ -33,9 +33,9 @@ import org.apache.geode.cache.DiskStoreFactory;
 import org.apache.geode.cache.Region;
 import org.apache.geode.cache.RegionFactory;
 import org.apache.geode.cache.RegionShortcut;
-import org.apache.geode.cache.query.internal.DefaultQuery;
 import org.apache.geode.internal.cache.DiskStoreImpl;
 import org.apache.geode.internal.cache.GemFireCacheImpl;
+import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.util.BlobHelper;
 import org.apache.geode.pdx.PdxInstance;
 import org.apache.geode.pdx.PdxInstanceFactory;
@@ -121,7 +121,7 @@ public class PdxDeleteFieldJUnitTest {
     props.setProperty(MCAST_PORT, "0");
     props.setProperty(LOCATORS, "");
     try {
-      Cache cache = (new CacheFactory(props)).create();
+      InternalCache cache = (InternalCache) new CacheFactory(props).create();
       try {
         PdxValue pdxValue = new PdxValue(1, 2L);
         byte[] pdxValueBytes = BlobHelper.serializeToBlob(pdxValue);
@@ -131,14 +131,14 @@ public class PdxDeleteFieldJUnitTest {
           assertEquals(2L, deserializedPdxValue.fieldToDelete);
         }
         PdxType pt;
-        DefaultQuery.setPdxReadSerialized(true); // force PdxInstance on deserialization
+        cache.setPdxReadSerializedOverride(true);
         try {
           PdxInstanceImpl pi = (PdxInstanceImpl) BlobHelper.deserializeBlob(pdxValueBytes);
           pt = pi.getPdxType();
           assertEquals(1, pi.getField("value"));
           assertEquals(2L, pi.getField("fieldToDelete"));
         } finally {
-          DefaultQuery.setPdxReadSerialized(false);
+          cache.setPdxReadSerializedOverride(false);
         }
         assertEquals(PdxValue.class.getName(), pt.getClassName());
         PdxField field = pt.getPdxField("fieldToDelete");
@@ -153,7 +153,7 @@ public class PdxDeleteFieldJUnitTest {
           // fieldToDelete should now be 0 (the default) instead of 2.
           assertEquals(0L, deserializedPdxValue.fieldToDelete);
         }
-        DefaultQuery.setPdxReadSerialized(true); // force PdxInstance on deserialization
+        cache.setPdxReadSerializedOverride(true);
         try {
           PdxInstance pi = (PdxInstance) BlobHelper.deserializeBlob(pdxValueBytes);
           assertEquals(1, pi.getField("value"));
@@ -164,7 +164,7 @@ public class PdxDeleteFieldJUnitTest {
           assertEquals(1, deserializedPdxValue.value);
           assertEquals(0L, deserializedPdxValue.fieldToDelete);
         } finally {
-          DefaultQuery.setPdxReadSerialized(false);
+          cache.setPdxReadSerializedOverride(false);
         }
         TypeRegistry tr = ((GemFireCacheImpl) cache).getPdxRegistry();
         // Clear the local registry so we will regenerate a type for the same class

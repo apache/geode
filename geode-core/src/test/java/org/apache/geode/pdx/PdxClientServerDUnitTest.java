@@ -44,7 +44,6 @@ import org.apache.geode.cache.client.ClientRegionShortcut;
 import org.apache.geode.cache.client.PoolFactory;
 import org.apache.geode.cache.client.PoolManager;
 import org.apache.geode.cache.client.internal.PoolImpl;
-import org.apache.geode.cache.query.internal.DefaultQuery;
 import org.apache.geode.cache.server.CacheServer;
 import org.apache.geode.distributed.internal.DistributionConfig;
 import org.apache.geode.internal.AvailablePortHelper;
@@ -350,7 +349,8 @@ public class PdxClientServerDUnitTest extends JUnit4CacheTestCase {
     final SerializableCallable checkValue = new SerializableCallable() {
       public Object call() throws Exception {
         Region r = getRootRegion("testSimplePdx");
-        DefaultQuery.setPdxReadSerialized(true);
+        Boolean previousPdxReadSerializedFlag = cache.getPdxReadSerializedOverride();
+        cache.setPdxReadSerializedOverride(true);
         try {
           Object v = r.get(1);
           if (!(v instanceof PdxInstance)) {
@@ -364,7 +364,7 @@ public class PdxClientServerDUnitTest extends JUnit4CacheTestCase {
           }
           assertEquals(v, v2);
         } finally {
-          DefaultQuery.setPdxReadSerialized(false);
+          cache.setPdxReadSerializedOverride(previousPdxReadSerializedFlag);
         }
         return null;
       }
