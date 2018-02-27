@@ -221,6 +221,36 @@ public class SqlHandlerTest {
   }
 
   @Test
+  public void readWritesObjectFieldGivenPdxTypeWithFieldMissing() throws Exception {
+    ResultSet result = mock(ResultSet.class);
+    setupResultSet(result);
+    when(result.next()).thenReturn(true).thenReturn(false);
+    when(statement.executeQuery()).thenReturn(result);
+
+    PdxInstanceFactory factory = mock(PdxInstanceFactory.class);
+    String pdxClassName = "myPdxClassName";
+    when(cache.createPdxInstanceFactory(pdxClassName)).thenReturn(factory);
+
+    TypeRegistry pdxTypeRegistry = mock(TypeRegistry.class);
+    when(cache.getPdxRegistry()).thenReturn(pdxTypeRegistry);
+    PdxType pdxType = mock(PdxType.class);
+
+    String fieldName1 = COLUMN_NAME_1.toLowerCase();
+    String fieldName2 = COLUMN_NAME_2.toLowerCase();
+
+    when(regionMapping.getPdxClassName()).thenReturn(pdxClassName);
+    when(pdxTypeRegistry.getPdxTypeForField(fieldName1, pdxClassName)).thenReturn(pdxType);
+    when(pdxType.getPdxField(fieldName1)).thenReturn(null);
+
+    when(regionMapping.getFieldNameForColumn(COLUMN_NAME_1)).thenReturn(fieldName1);
+    when(regionMapping.getFieldNameForColumn(COLUMN_NAME_2)).thenReturn(fieldName2);
+    handler.read(region, new Object());
+    verify(factory).writeObject(fieldName1, COLUMN_VALUE_1);
+    verify(factory).writeObject(fieldName2, COLUMN_VALUE_2);
+    verify(factory).create();
+  }
+
+  @Test
   public void readResultOmitsKeyColumnIfNotInValue() throws Exception {
     ResultSet result = mock(ResultSet.class);
     setupResultSet(result);
