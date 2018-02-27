@@ -191,7 +191,7 @@ public class SqlHandlerTest {
   @Test
   public void readWritesStringFieldGivenPdxStringFieldType() throws Exception {
     ResultSet result = mock(ResultSet.class);
-    setupStringResultSet(result);
+    setupResultSet(result, FieldType.STRING);
     when(result.next()).thenReturn(true).thenReturn(false);
     when(statement.executeQuery()).thenReturn(result);
 
@@ -454,10 +454,6 @@ public class SqlHandlerTest {
 
   private void setupResultSet(ResultSet result) throws SQLException {
     setupResultSet(result, FieldType.OBJECT);
-  }
-
-  private void setupStringResultSet(ResultSet result) throws SQLException {
-    setupResultSet(result, FieldType.STRING);
   }
 
   private void setupEmptyResultSet() throws SQLException {

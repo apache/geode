@@ -17,6 +17,7 @@ package org.apache.geode.connectors.jdbc;
 import static org.apache.geode.cache.RegionShortcut.REPLICATE;
 import static org.assertj.core.api.Assertions.assertThat;
 
+import java.io.IOException;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.Statement;
@@ -35,7 +36,12 @@ import org.apache.geode.connectors.jdbc.internal.RegionMappingExistsException;
 import org.apache.geode.connectors.jdbc.internal.SqlHandler;
 import org.apache.geode.connectors.jdbc.internal.TestConfigService;
 import org.apache.geode.connectors.jdbc.internal.TestableConnectionManager;
+import org.apache.geode.internal.cache.InternalCache;
+import org.apache.geode.internal.util.BlobHelper;
 import org.apache.geode.pdx.PdxInstance;
+import org.apache.geode.pdx.PdxReader;
+import org.apache.geode.pdx.PdxSerializable;
+import org.apache.geode.pdx.PdxWriter;
 import org.apache.geode.test.junit.categories.IntegrationTest;
 
 @Category(IntegrationTest.class)
@@ -77,33 +83,86 @@ public class JdbcLoaderIntegrationTest {
     }
   }
 
+  public static class PdxEmployee implements PdxSerializable {
+    private String name;
+    private int age;
+
+    public PdxEmployee() {
+      // for serialization
+    }
+
+    public PdxEmployee(String name, int age) {
+      this.name = name;
+      this.age = age;
+    }
+
+    public String getName() {
+      return name;
+    }
+
+    public int getAge() {
+      return age;
+    }
+
+    @Override
+    public void toData(PdxWriter writer) {
+      writer.writeString("name", this.name);
+      writer.writeObject("age", this.age);
+    }
+
+    @Override
+    public void fromData(PdxReader reader) {
+      this.name = reader.readString("name");
+      this.age = (int) reader.readObject("age");
+    }
+  }
+
   @Test
   public void verifySimpleGet() throws Exception {
     statement.execute("Insert into " + REGION_TABLE_NAME + " values('1', 'Emp1', 21)");
-    Region<String, PdxInstance> region = createRegionWithJDBCLoader(REGION_TABLE_NAME);
+    Region<String, PdxInstance> region = createRegionWithJDBCLoader(REGION_TABLE_NAME, null);
     PdxInstance pdx = region.get("1");
 
+    assertThat(pdx.getFieldNames().size()).isEqualTo(2);
     assertThat(pdx.getField("name")).isEqualTo("Emp1");
     assertThat(pdx.getField("age")).isEqualTo(21);
   }
 
   @Test
+  public void verifyGetWithPdxClassName() throws Exception {
+    statement.execute("Insert into " + REGION_TABLE_NAME + " values('1', 'Emp1', 21)");
+    Region<String, PdxEmployee> region =
+        createRegionWithJDBCLoader(REGION_TABLE_NAME, PdxEmployee.class.getName());
+    createPdxType();
+    PdxEmployee value = region.get("1");
+
+    assertThat(value.getName()).isEqualTo("Emp1");
+    assertThat(value.getAge()).isEqualTo(21);
+  }
+
+  private void createPdxType() throws IOException {
+    PdxEmployee value = new PdxEmployee("name", 45);
+    // the following serialization will add a pdxType
+    BlobHelper.serializeToBlob(value);
+  }
+
+  @Test
   public void verifySimpleMiss() throws Exception {
-    Region<String, PdxInstance> region = createRegionWithJDBCLoader(REGION_TABLE_NAME);
+    Region<String, PdxInstance> region = createRegionWithJDBCLoader(REGION_TABLE_NAME, null);
     PdxInstance pdx = region.get("1");
     assertThat(pdx).isNull();
   }
 
-  private SqlHandler createSqlHandler()
+  private SqlHandler createSqlHandler(String pdxClassName)
       throws ConnectionConfigExistsException, RegionMappingExistsException {
     return new SqlHandler(new TestableConnectionManager(),
-        TestConfigService.getTestConfigService());
+        TestConfigService.getTestConfigService((InternalCache) cache, pdxClassName));
   }
 
-  private Region<String, PdxInstance> createRegionWithJDBCLoader(String regionName)
+  private <K, V> Region<K, V> createRegionWithJDBCLoader(String regionName, String pdxClassName)
       throws ConnectionConfigExistsException, RegionMappingExistsException {
-    JdbcLoader<String, PdxInstance> jdbcLoader = new JdbcLoader<>(createSqlHandler());
-    RegionFactory<String, PdxInstance> regionFactory = cache.createRegionFactory(REPLICATE);
+    JdbcLoader<K, V> jdbcLoader = new JdbcLoader<>(createSqlHandler(pdxClassName));
+    RegionFactory<K, V> regionFactory = cache.createRegionFactory(REPLICATE);
     regionFactory.setCacheLoader(jdbcLoader);
     return regionFactory.create(regionName);
   }
