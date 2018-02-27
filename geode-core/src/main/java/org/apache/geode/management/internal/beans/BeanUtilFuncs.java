@@ -31,7 +31,7 @@ import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.distributed.internal.DistributionConfig;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.management.GemFireProperties;
-import org.apache.geode.management.internal.cli.CliUtil;
+import org.apache.geode.management.internal.cli.CacheMembers;
 
 /**
  * Various Utility Functions to be used by MBeans
@@ -123,8 +123,8 @@ public class BeanUtilFuncs {
     DistributedMember memberFound = null;
 
     if (memberNameOrId != null) {
-      InternalCache cache = (InternalCache) CacheFactory.getAnyInstance();
-      Set<DistributedMember> memberSet = CliUtil.getAllMembers(cache);
+      CacheMembers cacheMembers = () -> (InternalCache) CacheFactory.getAnyInstance();
+      Set<DistributedMember> memberSet = cacheMembers.getAllMembers();
       for (DistributedMember member : memberSet) {
         if (memberNameOrId.equals(member.getId()) || memberNameOrId.equals(member.getName())) {
           memberFound = member;

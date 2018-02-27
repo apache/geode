@@ -47,6 +47,7 @@ import org.apache.logging.log4j.Logger;
 
 import org.apache.geode.UnmodifiableException;
 import org.apache.geode.cache.Cache;
+import org.apache.geode.cache.execute.Execution;
 import org.apache.geode.cache.execute.FunctionService;
 import org.apache.geode.cache.execute.ResultCollector;
 import org.apache.geode.distributed.DistributedMember;
@@ -57,9 +58,9 @@ import org.apache.geode.internal.ClassPathLoader;
 import org.apache.geode.internal.ConfigSource;
 import org.apache.geode.internal.DeployedJar;
 import org.apache.geode.internal.JarDeployer;
+import org.apache.geode.internal.cache.execute.AbstractExecution;
 import org.apache.geode.internal.config.ClusterConfigurationNotAvailableException;
 import org.apache.geode.internal.logging.LogService;
-import org.apache.geode.management.internal.cli.CliUtil;
 import org.apache.geode.management.internal.configuration.domain.Configuration;
 import org.apache.geode.management.internal.configuration.functions.DownloadJarFunction;
 import org.apache.geode.management.internal.configuration.functions.GetClusterConfigurationFunction;
@@ -127,10 +128,13 @@ public class ClusterConfigurationLoader {
 
   public File downloadJar(DistributedMember locator, String groupName, String jarName)
       throws IOException {
+    Execution execution = FunctionService.onMembers(Collections.singleton(locator))
+        .setArguments(new Object[] {groupName, jarName});
+    ((AbstractExecution) execution).setIgnoreDepartedMembers(true);
+
     ResultCollector<RemoteInputStream, List<RemoteInputStream>> rc =
-        (ResultCollector<RemoteInputStream, List<RemoteInputStream>>) CliUtil.executeFunction(
-            new DownloadJarFunction(), new Object[] {groupName, jarName},
-            Collections.singleton(locator));
+        (ResultCollector<RemoteInputStream, List<RemoteInputStream>>) (ResultCollector<?, ?>) execution
+            .execute(new DownloadJarFunction());
 
     List<RemoteInputStream> result = rc.getResult();
     RemoteInputStream jarStream = result.get(0);

@@ -31,7 +31,6 @@ import org.apache.geode.management.cli.ConverterHint;
 import org.apache.geode.management.cli.Result;
 import org.apache.geode.management.internal.MBeanJMXAdapter;
 import org.apache.geode.management.internal.SystemManagementService;
-import org.apache.geode.management.internal.cli.CliUtil;
 import org.apache.geode.management.internal.cli.i18n.CliStrings;
 import org.apache.geode.management.internal.cli.result.CompositeResultData;
 import org.apache.geode.management.internal.cli.result.ResultBuilder;
@@ -68,7 +67,7 @@ public class StatusGatewayReceiverCommand implements GfshCommand {
         crd.addSection(CliStrings.SECTION_GATEWAY_RECEIVER_NOT_AVAILABLE)
             .addTable(CliStrings.TABLE_GATEWAY_RECEIVER);
 
-    Set<DistributedMember> dsMembers = CliUtil.findMembers(onGroup, onMember, getCache());
+    Set<DistributedMember> dsMembers = findMembers(onGroup, onMember, getCache());
 
     if (dsMembers.isEmpty()) {
       return ResultBuilder.createUserErrorResult(CliStrings.NO_MEMBERS_FOUND_MESSAGE);

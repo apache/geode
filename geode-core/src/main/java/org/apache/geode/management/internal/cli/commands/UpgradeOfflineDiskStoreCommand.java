@@ -31,7 +31,6 @@ import org.apache.geode.GemFireIOException;
 import org.apache.geode.internal.lang.StringUtils;
 import org.apache.geode.management.cli.CliMetaData;
 import org.apache.geode.management.cli.Result;
-import org.apache.geode.management.internal.cli.CliUtil;
 import org.apache.geode.management.internal.cli.GfshParser;
 import org.apache.geode.management.internal.cli.LogWrapper;
 import org.apache.geode.management.internal.cli.i18n.CliStrings;
@@ -55,7 +54,7 @@ public class UpgradeOfflineDiskStoreCommand implements GfshCommand {
           help = CliStrings.UPGRADE_OFFLINE_DISK_STORE__J__HELP) String[] jvmProps) {
 
     Result result;
-    LogWrapper logWrapper = LogWrapper.getInstance(CliUtil.getCacheIfExists(this::getCache));
+    LogWrapper logWrapper = LogWrapper.getInstance(getCacheIfExists());
 
     StringBuilder output = new StringBuilder();
     StringBuilder error = new StringBuilder();

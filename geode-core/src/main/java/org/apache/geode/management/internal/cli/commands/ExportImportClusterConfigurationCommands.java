@@ -44,7 +44,6 @@ import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.management.cli.CliMetaData;
 import org.apache.geode.management.cli.Result;
 import org.apache.geode.management.internal.cli.AbstractCliAroundInterceptor;
-import org.apache.geode.management.internal.cli.CliUtil;
 import org.apache.geode.management.internal.cli.GfshParseResult;
 import org.apache.geode.management.internal.cli.functions.CliFunctionResult;
 import org.apache.geode.management.internal.cli.i18n.CliStrings;
@@ -145,7 +144,7 @@ public class ExportImportClusterConfigurationCommands implements GfshCommand {
 
     InternalCache cache = getCache();
 
-    Set<DistributedMember> servers = CliUtil.getAllNormalMembers(cache);
+    Set<DistributedMember> servers = getAllNormalMembers(cache);
 
     Set<String> regionsWithData = servers.stream().map(this::getRegionNamesOnServer)
         .flatMap(Collection::stream).collect(toSet());

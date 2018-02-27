@@ -96,7 +96,7 @@ public class AlterRegionCommand implements GfshCommand {
     InternalCache cache = getCache();
 
     if (groups != null) {
-      RegionCommandsUtils.validateGroups(cache, groups);
+      RegionCommandsUtils.validateGroups(getAllNormalMembers(cache), groups);
     }
 
     RegionFunctionArgs regionFunctionArgs = new RegionFunctionArgs();

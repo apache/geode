@@ -39,7 +39,7 @@ import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.management.cli.Result;
-import org.apache.geode.management.internal.cli.CliUtil;
+import org.apache.geode.management.internal.cli.CacheMembers;
 import org.apache.geode.management.internal.cli.result.CommandResult;
 import org.apache.geode.test.dunit.rules.ClusterStartupRule;
 import org.apache.geode.test.dunit.rules.MemberVM;
@@ -163,10 +163,11 @@ public class ShowLogCommandDUnitTest implements Serializable {
   private static boolean allMembersAreConnected() {
     return manager.getVM().invoke(() -> {
       InternalCache cache = (InternalCache) CacheFactory.getAnyInstance();
+      CacheMembers cacheMembers = () -> cache;
       DistributedMember server1 =
-          CliUtil.getDistributedMemberByNameOrId(SERVER1_NAME, ClusterStartupRule.getCache());
+          cacheMembers.findMember(SERVER1_NAME, ClusterStartupRule.getCache());
       DistributedMember server2 =
-          CliUtil.getDistributedMemberByNameOrId(SERVER2_NAME, ClusterStartupRule.getCache());
+          cacheMembers.findMember(SERVER2_NAME, ClusterStartupRule.getCache());
 
       ShowLogCommand showLogCommand = new ShowLogCommand();
 

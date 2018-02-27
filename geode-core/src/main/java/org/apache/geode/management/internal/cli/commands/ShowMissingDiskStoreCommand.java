@@ -49,7 +49,7 @@ public class ShowMissingDiskStoreCommand implements GfshCommand {
   public Result showMissingDiskStore() {
 
     try {
-      Set<DistributedMember> dataMembers = DiskStoreCommandsUtils.getNormalMembers(getCache());
+      Set<DistributedMember> dataMembers = getAllMembers(getCache());
 
       if (dataMembers.isEmpty()) {
         return ResultBuilder.createInfoResult(CliStrings.NO_CACHING_MEMBERS_FOUND_MESSAGE);

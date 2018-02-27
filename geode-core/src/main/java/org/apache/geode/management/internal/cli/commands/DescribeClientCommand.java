@@ -34,7 +34,6 @@ import org.apache.geode.management.ClientHealthStatus;
 import org.apache.geode.management.ManagementService;
 import org.apache.geode.management.cli.CliMetaData;
 import org.apache.geode.management.cli.Result;
-import org.apache.geode.management.internal.cli.CliUtil;
 import org.apache.geode.management.internal.cli.LogWrapper;
 import org.apache.geode.management.internal.cli.functions.ContinuousQueryFunction;
 import org.apache.geode.management.internal.cli.i18n.CliStrings;
@@ -105,7 +104,7 @@ public class DescribeClientCommand implements GfshCommand {
           CliStrings.format(CliStrings.DESCRIBE_CLIENT__CLIENT__ID__NOT__FOUND__0, clientId));
     }
 
-    Set<DistributedMember> dsMembers = CliUtil.getAllMembers(cache);
+    Set<DistributedMember> dsMembers = getAllMembers(cache);
     String isDurable = null;
     List<String> primaryServers = new ArrayList<>();
     List<String> secondaryServers = new ArrayList<>();
@@ -113,12 +112,12 @@ public class DescribeClientCommand implements GfshCommand {
     if (dsMembers.size() > 0) {
       ContinuousQueryFunction continuousQueryFunction = new ContinuousQueryFunction();
       FunctionService.registerFunction(continuousQueryFunction);
-      List<?> resultList = (List<?>) CliUtil
-          .executeFunction(continuousQueryFunction, clientId, dsMembers).getResult();
+      List<?> resultList =
+          (List<?>) executeFunction(continuousQueryFunction, clientId, dsMembers).getResult();
       for (Object aResultList : resultList) {
         Object object = aResultList;
         if (object instanceof Throwable) {
-          LogWrapper.getInstance(CliUtil.getCacheIfExists(this::getCache)).warning(
+          LogWrapper.getInstance(getCacheIfExists()).warning(
               "Exception in Describe Client " + ((Throwable) object).getMessage(),
               ((Throwable) object));
           continue;
@@ -156,8 +155,7 @@ public class DescribeClientCommand implements GfshCommand {
       return ResultBuilder.createGemFireErrorResult(CliStrings.DESCRIBE_CLIENT_NO_MEMBERS);
     }
 
-    LogWrapper.getInstance(CliUtil.getCacheIfExists(this::getCache))
-        .info("describe client result " + result);
+    LogWrapper.getInstance(getCacheIfExists()).info("describe client result " + result);
     return result;
   }
 
@@ -208,7 +206,7 @@ public class DescribeClientCommand implements GfshCommand {
           String poolStatsStr = entry.getValue();
           String str[] = poolStatsStr.split(";");
 
-          LogWrapper logWrapper = LogWrapper.getInstance(CliUtil.getCacheIfExists(this::getCache));
+          LogWrapper logWrapper = LogWrapper.getInstance(getCacheIfExists());
           logWrapper.info("describe client clientHealthStatus min conn="
               + str[0].substring(str[0].indexOf("=") + 1));
           logWrapper.info("describe client clientHealthStatus max conn ="

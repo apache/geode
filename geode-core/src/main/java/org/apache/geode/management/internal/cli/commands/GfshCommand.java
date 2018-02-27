@@ -21,6 +21,7 @@ import java.util.Set;
 
 import org.springframework.shell.core.CommandMarker;
 
+import org.apache.geode.cache.CacheClosedException;
 import org.apache.geode.cache.CacheFactory;
 import org.apache.geode.cache.execute.Execution;
 import org.apache.geode.cache.execute.Function;
@@ -30,27 +31,44 @@ import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.distributed.internal.ClusterConfigurationService;
 import org.apache.geode.distributed.internal.InternalLocator;
 import org.apache.geode.internal.cache.InternalCache;
+import org.apache.geode.internal.cache.execute.AbstractExecution;
 import org.apache.geode.internal.security.SecurityService;
 import org.apache.geode.management.ManagementService;
 import org.apache.geode.management.cli.Result;
-import org.apache.geode.management.internal.cli.CliUtil;
-import org.apache.geode.management.internal.cli.exceptions.EntityNotFoundException;
+import org.apache.geode.management.internal.cli.CacheMembers;
 import org.apache.geode.management.internal.cli.functions.CliFunctionResult;
-import org.apache.geode.management.internal.cli.i18n.CliStrings;
 import org.apache.geode.management.internal.cli.shell.Gfsh;
 import org.apache.geode.management.internal.configuration.domain.XmlEntity;
 
 /**
  * Encapsulates common functionality for implementing command classes for the Geode shell (gfsh).
- * this provides wrapper around the static methods in CliUtils for easy mock of the commands
  *
- * this class should not have much implementation of its own other then those tested in
- * GfshCommandJUnitTest
+ * This class should not have much implementation of its own other then those tested in
+ * GfshCommandJUnitTest.
  */
 @SuppressWarnings("unused")
-public interface GfshCommand extends CommandMarker {
+public interface GfshCommand extends CacheMembers, CommandMarker {
 
   String EXPERIMENTAL = "(Experimental) ";
+
+  @Override
+  default InternalCache getCache() {
+    return (InternalCache) CacheFactory.getAnyInstance();
+  }
+
+  /**
+   * @return The cache, if it exists,
+   *         or else null if a {@link org.apache.geode.cache.CacheClosedException} arises.
+   */
+  default InternalCache getCacheIfExists() {
+    InternalCache cache = null;
+    try {
+      cache = getCache();
+    } catch (CacheClosedException ignored) {
+    }
+    return cache;
+  }
+
 
   default boolean isConnectedAndReady() {
     return getGfsh() != null && getGfsh().isConnectedAndReady();
@@ -87,10 +105,6 @@ public interface GfshCommand extends CommandMarker {
     return getGfsh() != null;
   }
 
-  default InternalCache getCache() {
-    return (InternalCache) CacheFactory.getAnyInstance();
-  }
-
   default SecurityService getSecurityService() {
     return getCache().getSecurityService();
   }
@@ -99,91 +113,26 @@ public interface GfshCommand extends CommandMarker {
     return Gfsh.getCurrentInstance();
   }
 
-  /**
-   * this either returns a non-null member or throw an exception if member is not found.
-   */
-  default DistributedMember getMember(final String memberName) {
-    DistributedMember member = findMember(memberName);
-
-    if (member == null) {
-      throw new EntityNotFoundException(
-          CliStrings.format(CliStrings.MEMBER_NOT_FOUND_ERROR_MESSAGE, memberName));
-    }
-    return member;
-  }
-
-  /**
-   * this will return the member found or null if no member with that name
-   */
-  default DistributedMember findMember(final String memberName) {
-    return CliUtil.getDistributedMemberByNameOrId(memberName, getCache());
-  }
-
-  /**
-   * Gets all members in the GemFire distributed system/cache, including locators
-   */
-  default Set<DistributedMember> getAllMembers(final InternalCache cache) {
-    return CliUtil.getAllMembers(cache);
-  }
-
-  /**
-   * Get All members, excluding locators
-   */
-  default Set<DistributedMember> getAllNormalMembers(InternalCache cache) {
-    return CliUtil.getAllNormalMembers(cache);
-  }
-
   default Execution getMembersFunctionExecutor(final Set<DistributedMember> members) {
     return FunctionService.onMembers(members);
-  }
-
-  /**
-   * if no members matches these names, an empty set would return, this does not include locators
-   */
-  default Set<DistributedMember> findMembers(String[] groups, String[] members) {
-    return CliUtil.findMembers(groups, members, getCache());
-  }
-
-  /**
-   * if no members matches these names, a UserErrorException will be thrown
-   */
-  default Set<DistributedMember> getMembers(String[] groups, String[] members) {
-    Set<DistributedMember> matchingMembers = findMembers(groups, members);
-    if (matchingMembers.size() == 0) {
-      throw new EntityNotFoundException(CliStrings.NO_MEMBERS_FOUND_MESSAGE);
-    }
-    return matchingMembers;
-  }
-
-  /**
-   * if no members matches these names, an empty set would return
-   */
-  default Set<DistributedMember> findMembersIncludingLocators(String[] groups, String[] members) {
-    return CliUtil.findMembersIncludingLocators(groups, members, getCache());
-  }
-
-  /**
-   * if no members matches these names, a UserErrorException will be thrown
-   */
-  default Set<DistributedMember> getMembersIncludingLocators(String[] groups, String[] members) {
-    Set<DistributedMember> matchingMembers = findMembersIncludingLocators(groups, members);
-    if (matchingMembers.size() == 0) {
-      throw new EntityNotFoundException(CliStrings.NO_MEMBERS_FOUND_MESSAGE);
-    }
-    return matchingMembers;
   }
 
   default ManagementService getManagementService() {
     return ManagementService.getExistingManagementService(getCache());
   }
 
-  default Set<DistributedMember> findMembersForRegion(InternalCache cache, String regionPath) {
-    return CliUtil.getRegionAssociatedMembers(regionPath, cache, true);
-  }
-
   default ResultCollector<?, ?> executeFunction(Function function, Object args,
       final Set<DistributedMember> targetMembers) {
-    return CliUtil.executeFunction(function, args, targetMembers);
+    Execution execution;
+
+    if (args != null) {
+      execution = FunctionService.onMembers(targetMembers).setArguments(args);
+    } else {
+      execution = FunctionService.onMembers(targetMembers);
+    }
+
+    ((AbstractExecution) execution).setIgnoreDepartedMembers(true);
+    return execution.execute(function);
   }
 
   default ResultCollector<?, ?> executeFunction(Function function, Object args,
@@ -195,13 +144,5 @@ public interface GfshCommand extends CommandMarker {
       Set<DistributedMember> targetMembers) {
     ResultCollector rc = executeFunction(function, args, targetMembers);
     return CliFunctionResult.cleanResults((List<?>) rc.getResult());
-  }
-
-  default Set<DistributedMember> findAnyMembersForRegion(InternalCache cache, String regionPath) {
-    return CliUtil.getRegionAssociatedMembers(regionPath, cache, false);
-  }
-
-  default Set<DistributedMember> findMembersWithAsyncEventQueue(String queueId) {
-    return CliUtil.getMembersWithAsyncEventQueue(getCache(), queueId);
   }
 }

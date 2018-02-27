@@ -37,7 +37,6 @@ import org.apache.geode.management.cli.CliMetaData;
 import org.apache.geode.management.cli.ConverterHint;
 import org.apache.geode.management.cli.Result;
 import org.apache.geode.management.internal.cli.AbstractCliAroundInterceptor;
-import org.apache.geode.management.internal.cli.CliUtil;
 import org.apache.geode.management.internal.cli.GfshParseResult;
 import org.apache.geode.management.internal.cli.functions.AlterRuntimeConfigFunction;
 import org.apache.geode.management.internal.cli.functions.CliFunctionResult;
@@ -96,7 +95,7 @@ public class AlterRuntimeConfigCommand implements GfshCommand {
 
     Map<String, String> runTimeDistributionConfigAttributes = new HashMap<>();
     Map<String, String> rumTimeCacheAttributes = new HashMap<>();
-    Set<DistributedMember> targetMembers = CliUtil.findMembers(group, memberNameOrId, getCache());
+    Set<DistributedMember> targetMembers = findMembers(group, memberNameOrId, getCache());
 
     if (targetMembers.isEmpty()) {
       return ResultBuilder.createUserErrorResult(CliStrings.NO_MEMBERS_FOUND_MESSAGE);
@@ -182,7 +181,7 @@ public class AlterRuntimeConfigCommand implements GfshCommand {
     allRunTimeAttributes.putAll(rumTimeCacheAttributes);
 
     ResultCollector<?, ?> rc =
-        CliUtil.executeFunction(alterRunTimeConfigFunction, allRunTimeAttributes, targetMembers);
+        executeFunction(alterRunTimeConfigFunction, allRunTimeAttributes, targetMembers);
     List<CliFunctionResult> results = CliFunctionResult.cleanResults((List<?>) rc.getResult());
     Set<String> successfulMembers = new TreeSet<>();
     Set<String> errorMessages = new TreeSet<>();

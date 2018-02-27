@@ -36,7 +36,6 @@ import org.apache.geode.management.cli.CliMetaData;
 import org.apache.geode.management.cli.ConverterHint;
 import org.apache.geode.management.cli.Result;
 import org.apache.geode.management.internal.cli.AbstractCliAroundInterceptor;
-import org.apache.geode.management.internal.cli.CliUtil;
 import org.apache.geode.management.internal.cli.GfshParseResult;
 import org.apache.geode.management.internal.cli.LogWrapper;
 import org.apache.geode.management.internal.cli.functions.ChangeLogLevelFunction;
@@ -71,7 +70,7 @@ public class ChangeLogLevelCommand implements GfshCommand {
       LogWriter logger = cache.getLogger();
 
       Set<DistributedMember> dsMembers = new HashSet<>();
-      Set<DistributedMember> ds = CliUtil.getAllMembers(cache);
+      Set<DistributedMember> ds = getAllMembers(cache);
 
       if (grps != null && grps.length > 0) {
         for (String grp : grps) {
@@ -135,7 +134,7 @@ public class ChangeLogLevelCommand implements GfshCommand {
 
           }
         } catch (Exception ex) {
-          LogWrapper.getInstance(CliUtil.getCacheIfExists(this::getCache))
+          LogWrapper.getInstance(getCacheIfExists())
               .warning("change log level command exception " + ex);
         }
       }

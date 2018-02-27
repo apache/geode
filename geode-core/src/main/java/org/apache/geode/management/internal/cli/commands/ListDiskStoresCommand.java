@@ -43,7 +43,7 @@ public class ListDiskStoresCommand implements GfshCommand {
   @ResourceOperation(resource = ResourcePermission.Resource.CLUSTER,
       operation = ResourcePermission.Operation.READ)
   public Result listDiskStores() {
-    Set<DistributedMember> dataMembers = DiskStoreCommandsUtils.getNormalMembers(getCache());
+    Set<DistributedMember> dataMembers = getAllNormalMembers(getCache());
 
     if (dataMembers.isEmpty()) {
       return ResultBuilder.createInfoResult(CliStrings.NO_CACHING_MEMBERS_FOUND_MESSAGE);

@@ -34,7 +34,6 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.function.Supplier;
 import java.util.stream.Collectors;
 import java.util.zip.DataFormatException;
 import java.util.zip.Deflater;
@@ -43,14 +42,12 @@ import java.util.zip.Inflater;
 import org.apache.commons.lang.ArrayUtils;
 
 import org.apache.geode.cache.Cache;
-import org.apache.geode.cache.CacheClosedException;
 import org.apache.geode.cache.Region;
 import org.apache.geode.cache.execute.Execution;
 import org.apache.geode.cache.execute.Function;
 import org.apache.geode.cache.execute.FunctionService;
 import org.apache.geode.cache.execute.ResultCollector;
 import org.apache.geode.distributed.DistributedMember;
-import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.internal.ClassPathLoader;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.cache.execute.AbstractExecution;
@@ -61,7 +58,7 @@ import org.apache.geode.management.ManagementService;
 import org.apache.geode.management.cli.Result;
 import org.apache.geode.management.internal.MBeanJMXAdapter;
 import org.apache.geode.management.internal.SystemManagementService;
-import org.apache.geode.management.internal.cli.exceptions.UserErrorException;
+import org.apache.geode.management.internal.cli.commands.GfshCommand;
 import org.apache.geode.management.internal.cli.i18n.CliStrings;
 import org.apache.geode.management.internal.cli.result.ResultBuilder;
 import org.apache.geode.management.internal.cli.shell.Gfsh;
@@ -74,20 +71,6 @@ import org.apache.geode.management.internal.cli.shell.Gfsh;
  */
 public class CliUtil {
   public static final FileFilter JAR_FILE_FILTER = new CustomFileFilter(".jar");
-
-  /**
-   * Returns the InternalCache returned by the provided method.
-   * If the provided method would raise a CacheClosedException, returns null instead.
-   */
-  public static InternalCache getCacheIfExists(Supplier<InternalCache> getCacheMethod) {
-    InternalCache cache = null;
-    try {
-      cache = getCacheMethod.get();
-    } catch (CacheClosedException ignored) {
-    }
-    return cache;
-
-  }
 
   public static String cliDependenciesExist(boolean includeGfshDependencies) {
     // "Validate" each dependency by attempting to load an associated class
@@ -190,36 +173,6 @@ public class CliUtil {
     return nameOrId;
   }
 
-  /**
-   * Returns a set of all the members of the distributed system excluding locators.
-   */
-  @SuppressWarnings("unchecked")
-  public static Set<DistributedMember> getAllNormalMembers(InternalCache cache) {
-    return new HashSet<DistributedMember>(cache.getInternalDistributedSystem()
-        .getDistributionManager().getNormalDistributionManagerIds());
-  }
-
-  /**
-   * Returns a set of all the members of the distributed system including locators.
-   */
-  @SuppressWarnings("unchecked")
-  public static Set<DistributedMember> getAllMembers(InternalCache cache) {
-    return getAllMembers(cache.getInternalDistributedSystem());
-  }
-
-  @SuppressWarnings("unchecked")
-  public static Set<DistributedMember> getAllMembers(InternalDistributedSystem internalDS) {
-    return new HashSet<DistributedMember>(
-        internalDS.getDistributionManager().getDistributionManagerIds());
-  }
-
-  public static Set<DistributedMember> getMembersWithAsyncEventQueue(InternalCache cache,
-      String queueId) {
-    Set<DistributedMember> members = findMembers(null, null, cache);
-    return members.stream().filter(m -> getAsyncEventQueueIds(cache, m).contains(queueId))
-        .collect(Collectors.toSet());
-  }
-
   public static Set<String> getAsyncEventQueueIds(InternalCache cache, DistributedMember member) {
     SystemManagementService managementService =
         (SystemManagementService) ManagementService.getExistingManagementService(cache);
@@ -241,77 +194,6 @@ public class CliUtil {
       }
     }
     return regionNames;
-  }
-
-  /**
-   * Finds all Members (including both servers and locators) which belong to the given arrays of
-   * groups or members.
-   */
-  public static Set<DistributedMember> findMembersIncludingLocators(String[] groups,
-      String[] members, InternalCache cache) {
-    Set<DistributedMember> allMembers = getAllMembers(cache);
-    return findMembers(allMembers, groups, members);
-  }
-
-  /**
-   * Finds all Servers which belong to the given arrays of groups or members. Does not include
-   * locators.
-   */
-  public static Set<DistributedMember> findMembers(String[] groups, String[] members,
-      InternalCache cache) {
-    Set<DistributedMember> allNormalMembers = getAllNormalMembers(cache);
-
-    return findMembers(allNormalMembers, groups, members);
-  }
-
-  private static Set<DistributedMember> findMembers(Set<DistributedMember> membersToConsider,
-      String[] groups, String[] members) {
-    if (groups == null) {
-      groups = new String[] {};
-    }
-
-    if (members == null) {
-      members = new String[] {};
-    }
-
-    if ((members.length > 0) && (groups.length > 0)) {
-      throw new UserErrorException(CliStrings.PROVIDE_EITHER_MEMBER_OR_GROUP_MESSAGE);
-    }
-
-    if (members.length == 0 && groups.length == 0) {
-      return membersToConsider;
-    }
-
-    Set<DistributedMember> matchingMembers = new HashSet<>();
-    // it will either go into this loop or the following loop, not both.
-    for (String memberNameOrId : members) {
-      for (DistributedMember member : membersToConsider) {
-        if (memberNameOrId.equalsIgnoreCase(member.getId())
-            || memberNameOrId.equalsIgnoreCase(member.getName())) {
-          matchingMembers.add(member);
-        }
-      }
-    }
-
-    for (String group : groups) {
-      for (DistributedMember member : membersToConsider) {
-        if (member.getGroups().contains(group)) {
-          matchingMembers.add(member);
-        }
-      }
-    }
-    return matchingMembers;
-  }
-
-  public static DistributedMember getDistributedMemberByNameOrId(String memberNameOrId,
-      InternalCache cache) {
-    if (memberNameOrId == null) {
-      return null;
-    }
-
-    Set<DistributedMember> memberSet = CliUtil.getAllMembers(cache);
-    return memberSet.stream().filter(member -> memberNameOrId.equalsIgnoreCase(member.getId())
-        || memberNameOrId.equalsIgnoreCase(member.getName())).findFirst().orElse(null);
   }
 
 
@@ -505,30 +387,6 @@ public class CliUtil {
           CliStrings.format(CliStrings.COMMAND_FAILURE_MESSAGE, commandName));
     }
     return result;
-  }
-
-  /***
-   * Executes a function with arguments on a set of members, ignoring the departed members.
-   *
-   * @param function Function to be executed.
-   * @param args Arguments passed to the function, pass null if you wish to pass no arguments to the
-   *        function.
-   * @param targetMembers Set of members on which the function is to be executed.
-   *
-   * @return ResultCollector
-   */
-  public static ResultCollector<?, ?> executeFunction(final Function function, Object args,
-      final Set<DistributedMember> targetMembers) {
-    Execution execution;
-
-    if (args != null) {
-      execution = FunctionService.onMembers(targetMembers).setArguments(args);
-    } else {
-      execution = FunctionService.onMembers(targetMembers);
-    }
-
-    ((AbstractExecution) execution).setIgnoreDepartedMembers(true);
-    return execution.execute(function);
   }
 
 

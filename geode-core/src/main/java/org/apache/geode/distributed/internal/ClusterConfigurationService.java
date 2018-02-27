@@ -71,6 +71,8 @@ import org.apache.geode.cache.DiskStore;
 import org.apache.geode.cache.Region;
 import org.apache.geode.cache.Scope;
 import org.apache.geode.cache.TimeoutException;
+import org.apache.geode.cache.execute.Execution;
+import org.apache.geode.cache.execute.FunctionService;
 import org.apache.geode.cache.execute.ResultCollector;
 import org.apache.geode.distributed.DistributedLockService;
 import org.apache.geode.distributed.DistributedMember;
@@ -78,12 +80,12 @@ import org.apache.geode.distributed.DistributedSystem;
 import org.apache.geode.distributed.internal.locks.DLockService;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.cache.InternalRegionArguments;
+import org.apache.geode.internal.cache.execute.AbstractExecution;
 import org.apache.geode.internal.cache.persistence.PersistentMemberID;
 import org.apache.geode.internal.cache.persistence.PersistentMemberManager;
 import org.apache.geode.internal.cache.persistence.PersistentMemberPattern;
 import org.apache.geode.internal.cache.xmlcache.CacheXmlGenerator;
 import org.apache.geode.internal.logging.LogService;
-import org.apache.geode.management.internal.cli.CliUtil;
 import org.apache.geode.management.internal.configuration.callbacks.ConfigurationChangeListener;
 import org.apache.geode.management.internal.configuration.domain.Configuration;
 import org.apache.geode.management.internal.configuration.domain.SharedConfigurationStatus;
@@ -426,10 +428,12 @@ public class ClusterConfigurationService {
    */
   public File downloadJar(DistributedMember locator, String groupName, String jarName)
       throws IOException {
+    Execution execution = FunctionService.onMembers(Collections.singleton(locator))
+        .setArguments(new Object[] {groupName, jarName});
+    ((AbstractExecution) execution).setIgnoreDepartedMembers(true);
     ResultCollector<RemoteInputStream, List<RemoteInputStream>> rc =
-        (ResultCollector<RemoteInputStream, List<RemoteInputStream>>) CliUtil.executeFunction(
-            new DownloadJarFunction(), new Object[] {groupName, jarName},
-            Collections.singleton(locator));
+        (ResultCollector<RemoteInputStream, List<RemoteInputStream>>) (ResultCollector<?, ?>) execution
+            .execute(new DownloadJarFunction());
 
     List<RemoteInputStream> result = rc.getResult();
     RemoteInputStream jarStream = result.get(0);

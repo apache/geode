@@ -26,7 +26,6 @@ import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.management.cli.CliMetaData;
 import org.apache.geode.management.cli.ConverterHint;
 import org.apache.geode.management.cli.Result;
-import org.apache.geode.management.internal.cli.CliUtil;
 import org.apache.geode.management.internal.cli.domain.MemberResult;
 import org.apache.geode.management.internal.cli.functions.CloseDurableClientFunction;
 import org.apache.geode.management.internal.cli.i18n.CliStrings;
@@ -55,14 +54,14 @@ public class CloseDurableClientCommand implements GfshCommand {
     Result result;
     try {
 
-      Set<DistributedMember> targetMembers = CliUtil.findMembers(group, memberNameOrId, getCache());
+      Set<DistributedMember> targetMembers = findMembers(group, memberNameOrId, getCache());
 
       if (targetMembers.isEmpty()) {
         return ResultBuilder.createUserErrorResult(CliStrings.NO_MEMBERS_FOUND_MESSAGE);
       }
 
       final ResultCollector<?, ?> rc =
-          CliUtil.executeFunction(new CloseDurableClientFunction(), durableClientId, targetMembers);
+          executeFunction(new CloseDurableClientFunction(), durableClientId, targetMembers);
       final List<MemberResult> results = (List<MemberResult>) rc.getResult();
       String failureHeader =
           CliStrings.format(CliStrings.CLOSE_DURABLE_CLIENTS__FAILURE__HEADER, durableClientId);

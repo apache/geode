@@ -29,7 +29,6 @@ import org.apache.geode.management.CacheServerMXBean;
 import org.apache.geode.management.ManagementService;
 import org.apache.geode.management.cli.CliMetaData;
 import org.apache.geode.management.cli.Result;
-import org.apache.geode.management.internal.cli.CliUtil;
 import org.apache.geode.management.internal.cli.LogWrapper;
 import org.apache.geode.management.internal.cli.i18n.CliStrings;
 import org.apache.geode.management.internal.cli.result.CompositeResultData;
@@ -111,8 +110,7 @@ public class ListClientCommand implements GfshCommand {
     }
     result = ResultBuilder.buildResult(compositeResultData);
 
-    LogWrapper.getInstance(CliUtil.getCacheIfExists(this::getCache))
-        .info("list client result " + result);
+    LogWrapper.getInstance(getCacheIfExists()).info("list client result " + result);
 
     return result;
   }

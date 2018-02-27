@@ -30,7 +30,6 @@ import org.apache.geode.management.cli.CliMetaData;
 import org.apache.geode.management.cli.ConverterHint;
 import org.apache.geode.management.cli.Result;
 import org.apache.geode.management.internal.cli.AbstractCliAroundInterceptor;
-import org.apache.geode.management.internal.cli.CliUtil;
 import org.apache.geode.management.internal.cli.GfshParseResult;
 import org.apache.geode.management.internal.cli.functions.CliFunctionResult;
 import org.apache.geode.management.internal.cli.functions.ExportConfigFunction;
@@ -68,13 +67,12 @@ public class ExportConfigCommand implements GfshCommand {
           help = CliStrings.EXPORT_CONFIG__DIR__HELP) String dir) {
     InfoResultData infoData = ResultBuilder.createInfoResultData();
 
-    Set<DistributedMember> targetMembers = CliUtil.findMembers(group, member, getCache());
+    Set<DistributedMember> targetMembers = findMembers(group, member, getCache());
     if (targetMembers.isEmpty()) {
       return ResultBuilder.createUserErrorResult(CliStrings.NO_MEMBERS_FOUND_MESSAGE);
     }
 
-    ResultCollector<?, ?> rc =
-        CliUtil.executeFunction(this.exportConfigFunction, null, targetMembers);
+    ResultCollector<?, ?> rc = executeFunction(this.exportConfigFunction, null, targetMembers);
     List<CliFunctionResult> results = CliFunctionResult.cleanResults((List<?>) rc.getResult());
 
     for (CliFunctionResult result : results) {
