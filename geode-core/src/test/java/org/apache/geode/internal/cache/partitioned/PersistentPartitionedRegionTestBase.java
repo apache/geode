@@ -615,8 +615,8 @@ public abstract class PersistentPartitionedRegionTestBase extends JUnit4CacheTes
   protected BackupStatus backup(final VM vm) {
     return vm.invoke("backup", () -> {
       try {
-        return BackupUtil.backupAllMembers(getSystem().getDistributionManager(), getBackupDir(),
-            null);
+        return BackupUtil.backupAllMembers(getSystem().getDistributionManager(),
+            getBackupDir().toString(), null);
       } catch (ManagementException e) {
         throw new RuntimeException(e);
       }

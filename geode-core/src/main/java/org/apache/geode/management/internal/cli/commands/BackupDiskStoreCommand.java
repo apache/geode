@@ -15,7 +15,6 @@
 
 package org.apache.geode.management.internal.cli.commands;
 
-import java.io.File;
 import java.util.Map;
 import java.util.Set;
 
@@ -61,9 +60,9 @@ public class BackupDiskStoreCommand implements GfshCommand {
       BackupStatus backupStatus;
 
       if (baselineDir != null && !baselineDir.isEmpty()) {
-        backupStatus = BackupUtil.backupAllMembers(dm, new File(targetDir), new File(baselineDir));
+        backupStatus = BackupUtil.backupAllMembers(dm, targetDir, baselineDir);
       } else {
-        backupStatus = BackupUtil.backupAllMembers(dm, new File(targetDir), null);
+        backupStatus = BackupUtil.backupAllMembers(dm, targetDir, null);
       }
 
       Map<DistributedMember, Set<PersistentID>> backedupMemberDiskstoreMap =

@@ -14,9 +14,7 @@
  */
 package org.apache.geode.internal.cache.backup;
 
-import java.io.File;
 import java.io.IOException;
-import java.nio.file.Path;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -28,7 +26,6 @@ import org.apache.logging.log4j.Logger;
 import org.apache.geode.InternalGemFireError;
 import org.apache.geode.cache.DiskStore;
 import org.apache.geode.cache.persistence.PersistentID;
-import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
 import org.apache.geode.internal.cache.DiskStoreImpl;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.cache.Oplog;
@@ -44,12 +41,9 @@ public class BackupTask {
   private final RestoreScript restoreScript = new RestoreScript();
   private final InternalCache cache;
   private final CountDownLatch allowDestroys = new CountDownLatch(1);
-  private final String memberId;
   private final CountDownLatch locksAcquired = new CountDownLatch(1);
   private final CountDownLatch otherMembersReady = new CountDownLatch(1);
   private final HashSet<PersistentID> diskStoresWithData = new HashSet<>();
-  private final File targetDir;
-  private final File baselineDir;
   private final BackupWriter backupWriter;
 
   private volatile boolean isCancelled = false;
@@ -57,25 +51,9 @@ public class BackupTask {
   private TemporaryBackupFiles temporaryFiles;
   private BackupFileCopier fileCopier;
 
-  BackupTask(InternalCache gemFireCache, File targetDir, File baselineDir) {
+  BackupTask(InternalCache gemFireCache, BackupWriter backupWriter) {
     this.cache = gemFireCache;
-    this.targetDir = targetDir;
-    this.baselineDir = baselineDir;
-    memberId = getCleanedMemberId();
-    backupWriter = createBackupWriter();
-  }
-
-  private BackupWriter createBackupWriter() {
-    BackupWriter writer;
-    Path backupDirectory = targetDir.toPath().resolve(memberId);
-    if (baselineDir == null) {
-      writer = new FileSystemBackupWriter(backupDirectory);
-    } else {
-      FileSystemIncrementalBackupLocation incrementalBaselineLocation =
-          new FileSystemIncrementalBackupLocation(baselineDir, memberId);
-      writer = new FileSystemBackupWriter(backupDirectory, incrementalBaselineLocation);
-    }
-    return writer;
+    this.backupWriter = backupWriter;
   }
 
   HashSet<PersistentID> getPreparedDiskStores() throws InterruptedException {
@@ -300,17 +278,6 @@ public class BackupTask {
       }
     }
     return backup;
-  }
-
-  private String getCleanedMemberId() {
-    InternalDistributedMember memberId =
-        cache.getInternalDistributedSystem().getDistributedMember();
-    String vmId = memberId.toString();
-    return cleanSpecialCharacters(vmId);
-  }
-
-  private String cleanSpecialCharacters(String string) {
-    return string.replaceAll("[^\\w]+", "_");
   }
 
   DiskStoreBackup getBackupForDiskStore(DiskStoreImpl diskStore) {

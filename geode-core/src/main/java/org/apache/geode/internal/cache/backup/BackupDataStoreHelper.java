@@ -14,9 +14,9 @@
  */
 package org.apache.geode.internal.cache.backup;
 
-import java.io.File;
 import java.util.Collections;
 import java.util.Map;
+import java.util.Properties;
 import java.util.Set;
 
 import org.apache.geode.cache.persistence.PersistentID;
@@ -37,7 +37,7 @@ public class BackupDataStoreHelper {
 
   @SuppressWarnings("rawtypes")
   public static BackupDataStoreResult backupAllMembers(DistributionManager dm, Set recipients,
-      File targetDir, File baselineDir) {
+      Properties properties) {
     new FlushToDiskOperation(dm, dm.getId(), dm.getCache(), recipients, flushToDiskFactory).send();
 
     boolean abort = true;
@@ -45,7 +45,7 @@ public class BackupDataStoreHelper {
     Map<DistributedMember, Set<PersistentID>> existingDataStores;
     try {
       existingDataStores = new PrepareBackupOperation(dm, dm.getId(), dm.getCache(), recipients,
-          prepareBackupFactory, targetDir, baselineDir).send();
+          prepareBackupFactory, properties).send();
       abort = false;
     } finally {
       if (abort) {

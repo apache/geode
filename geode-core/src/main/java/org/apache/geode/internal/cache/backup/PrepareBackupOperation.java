@@ -14,8 +14,8 @@
  */
 package org.apache.geode.internal.cache.backup;
 
-import java.io.File;
 import java.io.IOException;
+import java.util.Properties;
 import java.util.Set;
 
 import org.apache.logging.log4j.Logger;
@@ -34,19 +34,17 @@ class PrepareBackupOperation extends BackupOperation {
   private final InternalCache cache;
   private final Set<InternalDistributedMember> recipients;
   private final PrepareBackupFactory prepareBackupFactory;
-  private final File targetDir;
-  private final File baselineDir;
+  private final Properties properties;
 
   PrepareBackupOperation(DistributionManager dm, InternalDistributedMember member,
       InternalCache cache, Set<InternalDistributedMember> recipients,
-      PrepareBackupFactory prepareBackupFactory, File targetDir, File baselineDir) {
+      PrepareBackupFactory prepareBackupFactory, Properties properties) {
     super(dm);
     this.member = member;
     this.cache = cache;
     this.recipients = recipients;
     this.prepareBackupFactory = prepareBackupFactory;
-    this.targetDir = targetDir;
-    this.baselineDir = baselineDir;
+    this.properties = properties;
   }
 
   @Override
@@ -57,14 +55,14 @@ class PrepareBackupOperation extends BackupOperation {
   @Override
   DistributionMessage createDistributionMessage(ReplyProcessor21 replyProcessor) {
     return prepareBackupFactory.createRequest(member, recipients, replyProcessor.getProcessorId(),
-        targetDir, baselineDir);
+        properties);
   }
 
   @Override
   void processLocally() {
     try {
       addToResults(member,
-          prepareBackupFactory.createPrepareBackup(member, cache, targetDir, baselineDir).run());
+          prepareBackupFactory.createPrepareBackup(member, cache, properties).run());
     } catch (IOException | InterruptedException e) {
       logger.fatal("Failed to PrepareBackup in " + member, e);
     }

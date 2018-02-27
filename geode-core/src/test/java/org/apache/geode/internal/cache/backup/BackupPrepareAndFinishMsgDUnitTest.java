@@ -26,6 +26,7 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Properties;
 import java.util.Set;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
@@ -143,9 +144,10 @@ public abstract class BackupPrepareAndFinishMsgDUnitTest extends CacheTestCase {
       throws InterruptedException, TimeoutException, ExecutionException {
     DistributionManager dm = GemFireCacheImpl.getInstance().getDistributionManager();
     Set recipients = dm.getOtherDistributionManagerIds();
+    Properties backupProperties = BackupUtil.createBackupProperties(diskDirs[0].toString(), null);
     Future<Void> future = null;
     new PrepareBackupOperation(dm, dm.getId(), dm.getCache(), recipients,
-        new PrepareBackupFactory(), diskDirs[0], null).send();
+        new PrepareBackupFactory(), backupProperties).send();
     ReentrantLock backupLock = ((LocalRegion) region).getDiskStore().getBackupLock();
     future = CompletableFuture.runAsync(function);
     Awaitility.await().atMost(5, TimeUnit.SECONDS)
@@ -158,8 +160,9 @@ public abstract class BackupPrepareAndFinishMsgDUnitTest extends CacheTestCase {
   private void doReadActionsAndVerifyCompletion() {
     DistributionManager dm = GemFireCacheImpl.getInstance().getDistributionManager();
     Set recipients = dm.getOtherDistributionManagerIds();
+    Properties backupProperties = BackupUtil.createBackupProperties(diskDirs[0].toString(), null);
     new PrepareBackupOperation(dm, dm.getId(), dm.getCache(), recipients,
-        new PrepareBackupFactory(), diskDirs[0], null).send();
+        new PrepareBackupFactory(), backupProperties).send();
     ReentrantLock backupLock = ((LocalRegion) region).getDiskStore().getBackupLock();
     List<CompletableFuture<?>> futureList = doReadActions();
     CompletableFuture.allOf(futureList.toArray(new CompletableFuture<?>[futureList.size()]));

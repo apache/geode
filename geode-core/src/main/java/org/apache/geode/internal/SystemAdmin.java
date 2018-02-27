@@ -619,9 +619,8 @@ public class SystemAdmin {
     InternalDistributedSystem ads = getAdminCnx();
 
     // Baseline directory should be null if it was not provided on the command line
-    BackupStatus status =
-        BackupUtil.backupAllMembers(ads.getDistributionManager(), new File(targetDir),
-            (SystemAdmin.baselineDir == null ? null : new File(SystemAdmin.baselineDir)));
+    BackupStatus status = BackupUtil.backupAllMembers(ads.getDistributionManager(), targetDir,
+        SystemAdmin.baselineDir);
 
     boolean incomplete = !status.getOfflineDiskStores().isEmpty();
 

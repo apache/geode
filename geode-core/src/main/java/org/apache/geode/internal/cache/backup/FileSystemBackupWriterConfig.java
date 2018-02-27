@@ -12,12 +12,29 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
-package org.apache.geode.management;
+package org.apache.geode.internal.cache.backup;
 
-/**
- * The status of a backup operation.
- *
- * @since Geode 1.4
- */
-public interface BackupStatus extends org.apache.geode.admin.BackupStatus {
+import java.util.Properties;
+
+import org.apache.commons.lang.StringUtils;
+
+class FileSystemBackupWriterConfig extends AbstractBackupWriterConfig {
+  static final String TARGET_DIR = "TARGET_DIRECTORY";
+  static final String BASELINE_DIR = "BASELINE_DIRECTORY";
+
+  FileSystemBackupWriterConfig(Properties properties) {
+    super(properties);
+  }
+
+  public String getTargetDirectory() {
+    String value = getProperties().getProperty(TARGET_DIR);
+    if (StringUtils.isBlank(value)) {
+      throw new IllegalStateException("Target directory is missing");
+    }
+    return value;
+  }
+
+  public String getBaselineDirectory() {
+    return getProperties().getProperty(BASELINE_DIR);
+  }
 }
