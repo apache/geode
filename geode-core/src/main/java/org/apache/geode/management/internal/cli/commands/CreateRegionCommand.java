@@ -87,11 +87,8 @@ public class CreateRegionCommand implements GfshCommand {
       @CliOption(key = {CliStrings.GROUP, CliStrings.GROUPS},
           optionContext = ConverterHint.MEMBERGROUP,
           help = CliStrings.CREATE_REGION__GROUP__HELP) String[] groups,
-      @CliOption(key = CliStrings.CREATE_REGION__SKIPIFEXISTS, specifiedDefaultValue = "true",
-          unspecifiedDefaultValue = "false",
-          help = CliStrings.CREATE_REGION__SKIPIFEXISTS__HELP) boolean skipIfExists,
-      @CliOption(key = CliStrings.IFNOTEXISTS, specifiedDefaultValue = "true",
-          unspecifiedDefaultValue = "false",
+      @CliOption(key = {CliStrings.IFNOTEXISTS, CliStrings.CREATE_REGION__SKIPIFEXISTS},
+          specifiedDefaultValue = "true", unspecifiedDefaultValue = "false",
           help = CliStrings.CREATE_REGION__IFNOTEXISTS__HELP) boolean ifNotExists,
 
       // the following should all be in alphabetical order according to
@@ -257,7 +254,7 @@ public class CreateRegionCommand implements GfshCommand {
     // creating the RegionFunctionArgs
     RegionFunctionArgs functionArgs = new RegionFunctionArgs();
     functionArgs.setRegionPath(regionPath);
-    functionArgs.setIfNotExists(ifNotExists || skipIfExists);
+    functionArgs.setIfNotExists(ifNotExists);
     functionArgs.setStatisticsEnabled(statisticsEnabled);
     functionArgs.setEntryExpirationIdleTime(entryExpirationIdleTime, entryExpirationIdleTimeAction);
     functionArgs.setEntryExpirationTTL(entryExpirationTTL, entryExpirationTTLAction);
