@@ -1167,6 +1167,11 @@ public class PartitionedRegion extends LocalRegion
 
   }
 
+  @Override
+  protected RegionVersionVector createRegionVersionVector() {
+    return null;
+  }
+
   /**
    * Initializes the Node for this Map.
    */

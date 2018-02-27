@@ -52,7 +52,6 @@ public class PutAllRequestOperationHandler
           "Region \"" + regionName + "\" not found");
     }
 
-    long startTime = messageExecutionContext.getStatistics().startOperation();
     RegionAPI.PutAllResponse.Builder builder = RegionAPI.PutAllResponse.newBuilder();
     try {
       messageExecutionContext.getCache().setReadSerializedForCurrentThread(true);
@@ -61,7 +60,6 @@ public class PutAllRequestOperationHandler
           .forEach((entry) -> processSinglePut(builder, serializationService, region, entry));
 
     } finally {
-      messageExecutionContext.getStatistics().endOperation(startTime);
       messageExecutionContext.getCache().setReadSerializedForCurrentThread(false);
     }
     return Success.of(builder.build());
