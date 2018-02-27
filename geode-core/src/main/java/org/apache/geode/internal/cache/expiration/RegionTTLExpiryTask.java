@@ -13,17 +13,19 @@
  * the License.
  */
 
-package org.apache.geode.internal.cache;
+package org.apache.geode.internal.cache.expiration;
 
-import org.apache.geode.cache.*;
+import org.apache.geode.cache.EntryNotFoundException;
+import org.apache.geode.cache.ExpirationAction;
+import org.apache.geode.internal.cache.LocalRegion;
 
 /**
  *
  */
-class RegionIdleExpiryTask extends RegionExpiryTask {
+public class RegionTTLExpiryTask extends RegionExpiryTask {
 
-  /** Creates a new instance of RegionIdleExpiryTask */
-  RegionIdleExpiryTask(LocalRegion reg) {
+  /** Creates a new instance of RegionTTLExpiryTask */
+  public RegionTTLExpiryTask(LocalRegion reg) {
     super(reg);
   }
 
@@ -37,29 +39,31 @@ class RegionIdleExpiryTask extends RegionExpiryTask {
     // then don't expire again until the full timeout from now.
     ExpirationAction action = getAction();
     if (action == ExpirationAction.INVALIDATE || action == ExpirationAction.LOCAL_INVALIDATE) {
-      if (getLocalRegion().regionInvalid) {
-        int timeout = getIdleAttributes().getTimeout();
+      if (getLocalRegion().isRegionInvalid()) {
+        int timeout = getTTLAttributes().getTimeout();
         if (timeout == 0)
           return 0L;
         if (!getLocalRegion().EXPIRY_UNITS_MS) {
           timeout *= 1000;
         }
-        // Expiration should always use the DSClock instead of the System clock.
+        // Sometimes region expiration depends on lastModifiedTime which in turn
+        // depends on entry modification time. To make it consistent always use
+        // cache time here.
         return timeout + getLocalRegion().cacheTimeMillis();
       }
     }
-    // otherwise, expire at timeout plus last accessed time
-    return getIdleExpirationTime();
+    // otherwise, expire at timeout plus last modified time
+    return getTTLExpirationTime();
   }
 
   @Override
   protected ExpirationAction getAction() {
-    return getIdleAttributes().getAction();
+    return getTTLAttributes().getAction();
   }
 
   @Override
   protected void addExpiryTask() {
-    getLocalRegion().addIdleExpiryTask(this);
+    getLocalRegion().addTTLExpiryTask(this);
   }
 
   @Override

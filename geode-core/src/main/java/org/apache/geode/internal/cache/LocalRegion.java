@@ -182,6 +182,14 @@ import org.apache.geode.internal.cache.execute.DistributedRegionFunctionResultSe
 import org.apache.geode.internal.cache.execute.LocalResultCollector;
 import org.apache.geode.internal.cache.execute.RegionFunctionContextImpl;
 import org.apache.geode.internal.cache.execute.ServerToClientFunctionResultSender;
+import org.apache.geode.internal.cache.expiration.CustomEntryExpiryTask;
+import org.apache.geode.internal.cache.expiration.EntryExpiryTask;
+import org.apache.geode.internal.cache.expiration.ExpirationScheduler;
+import org.apache.geode.internal.cache.expiration.ExpiryTask;
+import org.apache.geode.internal.cache.expiration.NetSearchExpirationCalculator;
+import org.apache.geode.internal.cache.expiration.RegionExpiryTask;
+import org.apache.geode.internal.cache.expiration.RegionIdleExpiryTask;
+import org.apache.geode.internal.cache.expiration.RegionTTLExpiryTask;
 import org.apache.geode.internal.cache.ha.ThreadIdentifier;
 import org.apache.geode.internal.cache.partitioned.Bucket;
 import org.apache.geode.internal.cache.partitioned.RedundancyAlreadyMetException;
@@ -354,7 +362,7 @@ public class LocalRegion extends AbstractRegion implements LoaderHelperFactory,
    *
    * @since GemFire 5.0
    */
-  final boolean EXPIRY_UNITS_MS;
+  public final boolean EXPIRY_UNITS_MS;
 
   // Indicates that the entries are in fact initialized. It turns out
   // you can't trust the assignment of a volatile (as indicated above)
@@ -807,11 +815,11 @@ public class LocalRegion extends AbstractRegion implements LoaderHelperFactory,
   }
 
   /** Returns true if the ExpiryTask is currently allowed to expire. */
-  protected boolean isExpirationAllowed(ExpiryTask expiry) {
+  public boolean isExpirationAllowed(ExpiryTask expiry) {
     return true;
   }
 
-  void performExpiryTimeout(ExpiryTask expiryTask) throws CacheException {
+  public void performExpiryTimeout(ExpiryTask expiryTask) throws CacheException {
     if (expiryTask != null) {
       expiryTask.basicPerformTimeout(false);
     }
@@ -853,7 +861,7 @@ public class LocalRegion extends AbstractRegion implements LoaderHelperFactory,
    * @since GemFire 5.0
    */
   @Override
-  protected InternalDistributedMember getMyId() {
+  public InternalDistributedMember getMyId() {
     return this.cache.getInternalDistributedSystem().getDistributedMember();
   }
 
@@ -1809,7 +1817,7 @@ public class LocalRegion extends AbstractRegion implements LoaderHelperFactory,
   /**
    * @return boolean
    */
-  protected boolean isClosed() {
+  public boolean isClosed() {
     return this.cache.isClosed();
   }
 
@@ -6585,11 +6593,11 @@ public class LocalRegion extends AbstractRegion implements LoaderHelperFactory,
     getDiskStore().handleDiskAccessException(dae);
   }
 
-  void expireDestroy(final EntryEventImpl event, final boolean cacheWrite) {
+  public void expireDestroy(final EntryEventImpl event, final boolean cacheWrite) {
     basicDestroy(event, cacheWrite, null);
   }
 
-  void expireInvalidate(final EntryEventImpl event) {
+  public void expireInvalidate(final EntryEventImpl event) {
     basicInvalidate(event);
   }
 
@@ -7676,7 +7684,7 @@ public class LocalRegion extends AbstractRegion implements LoaderHelperFactory,
     }
   }
 
-  void addTTLExpiryTask(RegionTTLExpiryTask callingTask) {
+  public void addTTLExpiryTask(RegionTTLExpiryTask callingTask) {
     synchronized (this.regionExpiryLock) {
       if (this.regionTTLExpiryTask != null && this.regionTTLExpiryTask != callingTask) {
         return;
@@ -7721,7 +7729,7 @@ public class LocalRegion extends AbstractRegion implements LoaderHelperFactory,
     }
   }
 
-  void addIdleExpiryTask(RegionIdleExpiryTask callingTask) {
+  public void addIdleExpiryTask(RegionIdleExpiryTask callingTask) {
     synchronized (this.regionExpiryLock) {
       if (this.regionIdleExpiryTask != null && this.regionIdleExpiryTask != callingTask) {
         return;
@@ -7836,7 +7844,7 @@ public class LocalRegion extends AbstractRegion implements LoaderHelperFactory,
     addExpiryTask(entry, true);
   }
 
-  void addExpiryTask(RegionEntry re) {
+  public void addExpiryTask(RegionEntry re) {
     addExpiryTask(re, false);
   }
 
@@ -8158,7 +8166,7 @@ public class LocalRegion extends AbstractRegion implements LoaderHelperFactory,
     cancelExpiryTask(regionEntry, null);
   }
 
-  void cancelExpiryTask(RegionEntry regionEntry, ExpiryTask expiryTask) {
+  public void cancelExpiryTask(RegionEntry regionEntry, ExpiryTask expiryTask) {
     if (expiryTask != null) {
       this.entryExpiryTasks.remove(regionEntry, expiryTask);
       if (expiryTask.cancel()) {
@@ -12045,7 +12053,8 @@ public class LocalRegion extends AbstractRegion implements LoaderHelperFactory,
   /**
    * Return true if the region expiry task should be rescheduled
    */
-  boolean expireRegion(RegionExpiryTask regionExpiryTask, boolean distributed, boolean destroy) {
+  public boolean expireRegion(RegionExpiryTask regionExpiryTask, boolean distributed,
+      boolean destroy) {
     synchronized (this.regionExpiryLock) {
       if (regionExpiryTask instanceof RegionTTLExpiryTask) {
         if (regionExpiryTask != this.regionTTLExpiryTask) {
@@ -12198,5 +12207,13 @@ public class LocalRegion extends AbstractRegion implements LoaderHelperFactory,
   @Override
   public Lock getClientMetaDataLock() {
     return clientMetaDataLock;
+  }
+
+  public boolean isRegionInvalid() {
+    return regionInvalid;
+  }
+
+  public void setRegionInvalid(boolean v) {
+    regionInvalid = v;
   }
 }

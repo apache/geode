@@ -13,7 +13,7 @@
  * the License.
  */
 
-package org.apache.geode.internal.cache;
+package org.apache.geode.internal.cache.expiration;
 
 /**
  * RegionExpiryTask represents a timeout event for region expiration
@@ -24,11 +24,12 @@ import org.apache.geode.cache.CacheException;
 import org.apache.geode.cache.ExpirationAttributes;
 import org.apache.geode.cache.Operation;
 import org.apache.geode.cache.TimeoutException;
+import org.apache.geode.internal.cache.LocalRegion;
 
-abstract class RegionExpiryTask extends ExpiryTask {
+public abstract class RegionExpiryTask extends ExpiryTask {
   private boolean isCanceled;
 
-  protected RegionExpiryTask(LocalRegion reg) {
+  public RegionExpiryTask(LocalRegion reg) {
     super(reg);
     this.isCanceled = false;
   }
@@ -93,7 +94,7 @@ abstract class RegionExpiryTask extends ExpiryTask {
   }
 
   @Override
-  protected void basicPerformTimeout(boolean isPending) throws CacheException {
+  public void basicPerformTimeout(boolean isPending) throws CacheException {
     if (isCanceled) {
       return;
     }

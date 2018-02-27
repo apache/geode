@@ -13,17 +13,18 @@
  * the License.
  */
 
-package org.apache.geode.internal.cache;
+package org.apache.geode.internal.cache.expiration;
 
 import org.apache.geode.cache.*;
+import org.apache.geode.internal.cache.LocalRegion;
 
 /**
  *
  */
-class RegionTTLExpiryTask extends RegionExpiryTask {
+public class RegionIdleExpiryTask extends RegionExpiryTask {
 
-  /** Creates a new instance of RegionTTLExpiryTask */
-  RegionTTLExpiryTask(LocalRegion reg) {
+  /** Creates a new instance of RegionIdleExpiryTask */
+  public RegionIdleExpiryTask(LocalRegion reg) {
     super(reg);
   }
 
@@ -37,31 +38,29 @@ class RegionTTLExpiryTask extends RegionExpiryTask {
     // then don't expire again until the full timeout from now.
     ExpirationAction action = getAction();
     if (action == ExpirationAction.INVALIDATE || action == ExpirationAction.LOCAL_INVALIDATE) {
-      if (getLocalRegion().regionInvalid) {
-        int timeout = getTTLAttributes().getTimeout();
+      if (getLocalRegion().isRegionInvalid()) {
+        int timeout = getIdleAttributes().getTimeout();
         if (timeout == 0)
           return 0L;
         if (!getLocalRegion().EXPIRY_UNITS_MS) {
           timeout *= 1000;
         }
-        // Sometimes region expiration depends on lastModifiedTime which in turn
-        // depends on entry modification time. To make it consistent always use
-        // cache time here.
+        // Expiration should always use the DSClock instead of the System clock.
         return timeout + getLocalRegion().cacheTimeMillis();
       }
     }
-    // otherwise, expire at timeout plus last modified time
-    return getTTLExpirationTime();
+    // otherwise, expire at timeout plus last accessed time
+    return getIdleExpirationTime();
   }
 
   @Override
   protected ExpirationAction getAction() {
-    return getTTLAttributes().getAction();
+    return getIdleAttributes().getAction();
   }
 
   @Override
   protected void addExpiryTask() {
-    getLocalRegion().addTTLExpiryTask(this);
+    getLocalRegion().addIdleExpiryTask(this);
   }
 
   @Override

@@ -12,7 +12,7 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
-package org.apache.geode.internal.cache;
+package org.apache.geode.internal.cache.expiration;
 
 import java.util.concurrent.RejectedExecutionException;
 import java.util.concurrent.SynchronousQueue;
@@ -33,6 +33,8 @@ import org.apache.geode.distributed.internal.DistributionConfig;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.distributed.internal.PooledExecutorWithDMStats;
 import org.apache.geode.internal.SystemTimer;
+import org.apache.geode.internal.cache.InternalCache;
+import org.apache.geode.internal.cache.LocalRegion;
 import org.apache.geode.internal.i18n.LocalizedStrings;
 import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.internal.logging.LoggingThreadGroup;
@@ -198,7 +200,7 @@ public abstract class ExpiryTask extends SystemTimer.SystemTimerTask {
     getLocalRegion().performExpiryTimeout(this);
   }
 
-  protected abstract void basicPerformTimeout(boolean isPending) throws CacheException;
+  public abstract void basicPerformTimeout(boolean isPending) throws CacheException;
 
   /**
    * @guarded.By suspendLock
@@ -289,7 +291,7 @@ public abstract class ExpiryTask extends SystemTimer.SystemTimerTask {
   }
 
   /** Returns true if the ExpirationAction is a distributed action. */
-  protected boolean isDistributedAction() {
+  public boolean isDistributedAction() {
     ExpirationAction action = getAction();
     return action != null && (action.isInvalidate() || action.isDestroy());
   }
@@ -486,7 +488,7 @@ public abstract class ExpiryTask extends SystemTimer.SystemTimerTask {
    * To reduce the number of times we need to call calculateNow, you can call this method to set now
    * in a thread local. When the run returns the thread local is cleared.
    */
-  static void doWithNowSet(LocalRegion lr, Runnable runnable) {
+  public static void doWithNowSet(LocalRegion lr, Runnable runnable) {
     now.set(calculateNow(lr.getCache()));
     try {
       runnable.run();

@@ -56,6 +56,7 @@ import org.apache.geode.internal.cache.backup.BackupService;
 import org.apache.geode.internal.cache.control.InternalResourceManager;
 import org.apache.geode.internal.cache.control.ResourceAdvisor;
 import org.apache.geode.internal.cache.event.EventTrackerExpiryTask;
+import org.apache.geode.internal.cache.expiration.ExpirationScheduler;
 import org.apache.geode.internal.cache.extension.Extensible;
 import org.apache.geode.internal.cache.persistence.PersistentMemberManager;
 import org.apache.geode.internal.cache.tier.sockets.CacheClientNotifier;

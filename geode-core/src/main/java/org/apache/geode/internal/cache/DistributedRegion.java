@@ -99,6 +99,7 @@ import org.apache.geode.internal.cache.execute.FunctionStats;
 import org.apache.geode.internal.cache.execute.LocalResultCollector;
 import org.apache.geode.internal.cache.execute.RegionFunctionContextImpl;
 import org.apache.geode.internal.cache.execute.ServerToClientFunctionResultSender;
+import org.apache.geode.internal.cache.expiration.ExpiryTask;
 import org.apache.geode.internal.cache.persistence.CreatePersistentRegionProcessor;
 import org.apache.geode.internal.cache.persistence.PersistenceAdvisor;
 import org.apache.geode.internal.cache.persistence.PersistenceAdvisorImpl;
@@ -727,7 +728,7 @@ public class DistributedRegion extends LocalRegion implements InternalDistribute
    * expiration actions are allowed.
    */
   @Override
-  protected boolean isExpirationAllowed(ExpiryTask expiry) {
+  public boolean isExpirationAllowed(ExpiryTask expiry) {
     if (this.requiresReliabilityCheck && this.isMissingRequiredRoles) {
       if (getMembershipAttributes().getLossAction().isNoAccess()) {
         return false;
@@ -1801,7 +1802,7 @@ public class DistributedRegion extends LocalRegion implements InternalDistribute
   }
 
   void distributeInvalidate(EntryEventImpl event) {
-    if (!this.regionInvalid && event.isDistributed() && !event.isOriginRemote()
+    if (!isRegionInvalid() && event.isDistributed() && !event.isOriginRemote()
         && !isTX() /* only distribute if non-tx */) {
       if (event.isDistributed() && !event.isOriginRemote()) {
         boolean distribute = !event.getInhibitDistribution();
@@ -1835,7 +1836,7 @@ public class DistributedRegion extends LocalRegion implements InternalDistribute
   }
 
   void distributeUpdateEntryVersion(EntryEventImpl event) {
-    if (!this.regionInvalid && event.isDistributed() && !event.isOriginRemote()
+    if (!isRegionInvalid() && event.isDistributed() && !event.isOriginRemote()
         && !isTX() /* only distribute if non-tx */) {
       if (event.isDistributed() && !event.isOriginRemote()) {
         // before distribute: DR has sent callback earlier

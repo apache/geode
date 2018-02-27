@@ -13,7 +13,7 @@
  * the License.
  */
 
-package org.apache.geode.internal.cache;
+package org.apache.geode.internal.cache.expiration;
 
 /**
  * EntryExpiryTask represents a timeout event for a region entry.
@@ -26,6 +26,9 @@ import org.apache.logging.log4j.Logger;
 import org.apache.geode.cache.*;
 import org.apache.geode.distributed.internal.DistributionConfig;
 import org.apache.geode.internal.InternalStatisticsDisabledException;
+import org.apache.geode.internal.cache.EntryEventImpl;
+import org.apache.geode.internal.cache.LocalRegion;
+import org.apache.geode.internal.cache.RegionEntry;
 import org.apache.geode.internal.lang.SystemPropertyHelper;
 import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.internal.offheap.annotations.Released;
@@ -47,7 +50,7 @@ public class EntryExpiryTask extends ExpiryTask {
   public static boolean expireSendsEntryAsCallback =
       Boolean.getBoolean(DistributionConfig.GEMFIRE_PREFIX + "EXPIRE_SENDS_ENTRY_AS_CALLBACK");
 
-  protected EntryExpiryTask(LocalRegion region, RegionEntry re) {
+  public EntryExpiryTask(LocalRegion region, RegionEntry re) {
     super(region);
     this.re = re;
   }
@@ -290,7 +293,7 @@ public class EntryExpiryTask extends ExpiryTask {
    * Called by LocalRegion#performExpiryTimeout
    */
   @Override
-  protected void basicPerformTimeout(boolean isPending) throws CacheException {
+  public void basicPerformTimeout(boolean isPending) throws CacheException {
     if (!isExpirationAllowed()) {
       return;
     }

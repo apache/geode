@@ -95,7 +95,6 @@ import org.apache.geode.distributed.internal.membership.InternalDistributedMembe
 import org.apache.geode.internal.AvailablePort;
 import org.apache.geode.internal.cache.BucketRegion;
 import org.apache.geode.internal.cache.DistributedRegion;
-import org.apache.geode.internal.cache.ExpiryTask;
 import org.apache.geode.internal.cache.GemFireCacheImpl;
 import org.apache.geode.internal.cache.LocalRegion;
 import org.apache.geode.internal.cache.PartitionedRegion;
@@ -112,6 +111,7 @@ import org.apache.geode.internal.cache.execute.data.CustId;
 import org.apache.geode.internal.cache.execute.data.Customer;
 import org.apache.geode.internal.cache.execute.data.Order;
 import org.apache.geode.internal.cache.execute.data.OrderId;
+import org.apache.geode.internal.cache.expiration.ExpiryTask;
 import org.apache.geode.internal.cache.versions.VersionTag;
 import org.apache.geode.test.dunit.Host;
 import org.apache.geode.test.dunit.IgnoredException;
