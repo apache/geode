@@ -105,8 +105,10 @@ public class PartitionedRepositoryManagerJUnitTest {
     serializer = new HeterogeneousLuceneSerializer();
     DLockService lockService = mock(DLockService.class);
     when(lockService.lock(any(), anyLong(), anyLong())).thenReturn(true);
+    when(userRegion.getRegionService()).thenReturn(cache);
     DLockService.addLockServiceForTests(PartitionedRegionHelper.PARTITION_LOCK_SERVICE_NAME,
         lockService);
+
     createIndexAndRepoManager();
   }
 

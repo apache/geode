@@ -32,10 +32,10 @@ import org.apache.geode.cache.lucene.internal.directory.RegionDirectory;
 import org.apache.geode.cache.lucene.internal.partition.BucketTargetingMap;
 import org.apache.geode.cache.lucene.internal.repository.IndexRepository;
 import org.apache.geode.cache.lucene.internal.repository.IndexRepositoryImpl;
-import org.apache.geode.cache.query.internal.DefaultQuery;
 import org.apache.geode.distributed.DistributedLockService;
 import org.apache.geode.internal.cache.BucketRegion;
 import org.apache.geode.internal.cache.EntrySnapshot;
+import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.cache.PartitionRegionConfig;
 import org.apache.geode.internal.cache.PartitionedRegion;
 import org.apache.geode.internal.cache.PartitionedRegionHelper;
@@ -95,8 +95,9 @@ public class IndexRepositoryFactory {
     }
 
     final IndexRepository repo;
-    boolean initialPdxReadSerializedFlag = DefaultQuery.getPdxReadSerialized();
-    DefaultQuery.setPdxReadSerialized(true);
+    InternalCache cache = (InternalCache) userRegion.getRegionService();
+    boolean initialPdxReadSerializedFlag = cache.getPdxReadSerializedOverride();
+    cache.setPdxReadSerializedOverride(true);
     try {
       // bucketTargetingMap handles partition resolver (via bucketId as callbackArg)
       Map bucketTargetingMap = getBucketTargetingMap(fileAndChunkBucket, bucketId);
@@ -126,7 +127,7 @@ public class IndexRepositoryFactory {
     } finally {
       if (!success) {
         lockService.unlock(lockName);
-        DefaultQuery.setPdxReadSerialized(initialPdxReadSerializedFlag);
+        cache.setPdxReadSerializedOverride(initialPdxReadSerializedFlag);
       }
     }
   }
@@ -136,9 +137,7 @@ public class IndexRepositoryFactory {
       throws IOException {
     Set<IndexRepository> affectedRepos = new HashSet<IndexRepository>();
 
-    Iterator keysIterator = dataBucket.keySet().iterator();
-    while (keysIterator.hasNext()) {
-      Object key = keysIterator.next();
+    for (Object key : dataBucket.keySet()) {
       Object value = getValue(userRegion.getEntry(key));
       if (value != null) {
         repo.update(key, value);

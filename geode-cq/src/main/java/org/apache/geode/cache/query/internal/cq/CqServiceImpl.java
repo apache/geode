@@ -1187,11 +1187,12 @@ public class CqServiceImpl implements CqService {
       processRegionEvent(event, localProfile, profiles, frInfo);
     } else {
       // Use the PDX types in serialized form.
-      DefaultQuery.setPdxReadSerialized(this.cache, true);
+      Boolean initialPdxReadSerialized = this.cache.getPdxReadSerializedOverride();
+      this.cache.setPdxReadSerializedOverride(true);
       try {
         processEntryEvent(event, localProfile, profiles, frInfo);
       } finally {
-        DefaultQuery.setPdxReadSerialized(this.cache, false);
+        this.cache.setPdxReadSerializedOverride(initialPdxReadSerialized);
       }
     }
   }

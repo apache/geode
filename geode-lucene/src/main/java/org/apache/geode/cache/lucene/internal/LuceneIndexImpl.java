@@ -172,7 +172,7 @@ public abstract class LuceneIndexImpl implements InternalLuceneIndex {
   }
 
   private AsyncEventQueue createAEQ(AsyncEventQueueFactoryImpl factory, String aeqId) {
-    LuceneEventListener listener = new LuceneEventListener(repositoryManager);
+    LuceneEventListener listener = new LuceneEventListener(cache, repositoryManager);
     factory.setGatewayEventSubstitutionListener(new LuceneEventSubstitutionFilter());
     AsyncEventQueue indexQueue = factory.create(aeqId, listener);
     return indexQueue;

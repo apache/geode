@@ -79,7 +79,7 @@ public class PRQueryRemoteNodeExceptionDUnitTest extends CacheTestCase {
   public void tearDown() throws Exception {
     disconnectAllFromDS();
     invokeInEveryVM(() -> PRQueryDUnitHelper.setCache(null));
-    invokeInEveryVM(() -> QueryObserverHolder.reset());
+    invokeInEveryVM(QueryObserverHolder::reset);
   }
 
   @Override

@@ -24,13 +24,15 @@ import org.apache.geode.internal.cache.InternalCache;
 public abstract class AbstractJdbcCallback implements CacheCallback {
 
   private volatile SqlHandler sqlHandler;
+  protected volatile InternalCache cache;
 
   protected AbstractJdbcCallback() {
     // nothing
   }
 
-  protected AbstractJdbcCallback(SqlHandler sqlHandler) {
+  protected AbstractJdbcCallback(SqlHandler sqlHandler, InternalCache cache) {
     this.sqlHandler = sqlHandler;
+    this.cache = cache;
   }
 
   @Override
@@ -57,6 +59,7 @@ public abstract class AbstractJdbcCallback implements CacheCallback {
 
   private synchronized void initialize(InternalCache cache) {
     if (sqlHandler == null) {
+      this.cache = cache;
       JdbcConnectorService service = cache.getService(JdbcConnectorService.class);
       DataSourceManager manager = new DataSourceManager(new HikariJdbcDataSourceFactory());
       sqlHandler = new SqlHandler(manager, service);

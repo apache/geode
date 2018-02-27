@@ -167,32 +167,46 @@ import org.apache.geode.pdx.internal.TypeRegistry;
  */
 public class CacheCreation implements InternalCache {
 
-  /** The amount of time to wait for a distributed lock */
+  /**
+   * The amount of time to wait for a distributed lock
+   */
   private int lockTimeout = GemFireCacheImpl.DEFAULT_LOCK_TIMEOUT;
   private boolean hasLockTimeout = false;
 
-  /** The duration of a lease on a distributed lock */
+  /**
+   * The duration of a lease on a distributed lock
+   */
   private int lockLease = GemFireCacheImpl.DEFAULT_LOCK_LEASE;
   private boolean hasLockLease = false;
 
-  /** The amount of time to wait for a {@code netSearch} */
+  /**
+   * The amount of time to wait for a {@code netSearch}
+   */
   private int searchTimeout = GemFireCacheImpl.DEFAULT_SEARCH_TIMEOUT;
   private boolean hasSearchTimeout = false;
 
   private boolean hasMessageSyncInterval = false;
 
-  /** This cache's roots keyed on name */
+  /**
+   * This cache's roots keyed on name
+   */
   protected final Map<String, Region<?, ?>> roots = new LinkedHashMap<>();
 
-  /** Are dynamic regions enabled in this cache? */
+  /**
+   * Are dynamic regions enabled in this cache?
+   */
   private DynamicRegionFactory.Config dynamicRegionFactoryConfig = null;
   private boolean hasDynamicRegionFactory = false;
 
-  /** Is this a cache server? */
+  /**
+   * Is this a cache server?
+   */
   private boolean isServer = false;
   private boolean hasServer = false;
 
-  /** The bridge servers configured for this cache */
+  /**
+   * The bridge servers configured for this cache
+   */
   private final List<CacheServer> bridgeServers = new ArrayList<>();
 
   // Stores the properties used to initialize declarables.
@@ -225,14 +239,20 @@ public class CacheCreation implements InternalCache {
 
   private GatewayConflictResolver gatewayConflictResolver;
 
-  /** The copyOnRead attribute */
+  /**
+   * The copyOnRead attribute
+   */
   private boolean copyOnRead = GemFireCacheImpl.DEFAULT_COPY_ON_READ;
   private boolean hasCopyOnRead = false;
 
-  /** The CacheTransactionManager representative for this Cache */
+  /**
+   * The CacheTransactionManager representative for this Cache
+   */
   CacheTransactionManagerCreation txMgrCreation = null;
 
-  /** The named region attributes associated with this cache */
+  /**
+   * The named region attributes associated with this cache
+   */
   private final Map<String, RegionAttributes<?, ?>> namedRegionAttributes = new HashMap<>();
 
   /**
@@ -252,7 +272,9 @@ public class CacheCreation implements InternalCache {
 
   private final CacheConfig cacheConfig = new CacheConfig();
 
-  /** A logger that is used in debugging */
+  /**
+   * A logger that is used in debugging
+   */
   private final InternalLogWriter logWriter =
       new LocalLogWriter(InternalLogWriter.ALL_LEVEL, System.out);
 
@@ -273,7 +295,9 @@ public class CacheCreation implements InternalCache {
     this(false);
   }
 
-  /** clear thread locals that may have been set by previous uses of CacheCreation */
+  /**
+   * clear thread locals that may have been set by previous uses of CacheCreation
+   */
   public static void clearThreadLocals() {
     createInProgress.remove();
   }
@@ -1394,8 +1418,8 @@ public class CacheCreation implements InternalCache {
    * Adds a CacheTransactionManagerCreation for this Cache (really just a placeholder since a
    * CacheTransactionManager is really a Cache singleton)
    *
-   * @since GemFire 4.0
    * @see GemFireCacheImpl
+   * @since GemFire 4.0
    */
   public void addCacheTransactionManagerCreation(CacheTransactionManagerCreation txm) {
     this.txMgrCreation = txm;
@@ -1604,7 +1628,6 @@ public class CacheCreation implements InternalCache {
    * Returns whether PdxInstance is preferred for PDX types instead of Java object.
    *
    * @see org.apache.geode.cache.CacheFactory#setPdxReadSerialized(boolean)
-   *
    * @since GemFire 6.6
    */
   @Override
@@ -2324,6 +2347,16 @@ public class CacheCreation implements InternalCache {
 
   @Override
   public Object convertPdxInstanceIfNeeded(Object obj) {
+    throw new UnsupportedOperationException(LocalizedStrings.SHOULDNT_INVOKE.toLocalizedString());
+  }
+
+  @Override
+  public Boolean getPdxReadSerializedOverride() {
+    throw new UnsupportedOperationException(LocalizedStrings.SHOULDNT_INVOKE.toLocalizedString());
+  }
+
+  @Override
+  public void setPdxReadSerializedOverride(boolean pdxReadSerialized) {
     throw new UnsupportedOperationException(LocalizedStrings.SHOULDNT_INVOKE.toLocalizedString());
   }
 }
