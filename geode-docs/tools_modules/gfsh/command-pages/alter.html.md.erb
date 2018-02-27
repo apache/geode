@@ -229,17 +229,17 @@ alter region --name=value [--groups=value(,value)*]
 </tr>
 <tr class="even">
 <td><span class="keyword parmname">\-\-cache-listener</span></td>
-<td>Fully qualified class name of a plug-in to be instantiated for receiving after-event notification of changes to the region and its entries. Any number of cache listeners can be configured.</td>
+<td>Fully qualified class name of a plug-in to be instantiated for receiving after-event notification of changes to the region and its entries. Any number of cache listeners can be configured. A fully qualified class name may be appended with a JSON specification that will be parsed to become the fields of the parameter to the <code>init()</code> method for a class that implements the <code>Declarable</code> interface.</td>
 <td> </td>
 </tr>
 <tr class="odd">
 <td><span class="keyword parmname">\-\-cache-loader</span></td>
-<td>Fully qualified class name of a plug-in to be instantiated for receiving notification of cache misses in the region. At most, one cache loader can be defined in each member for the region. For distributed regions, a cache loader may be invoked remotely from other members that have the region defined.</td>
+<td>Fully qualified class name of a plug-in to be instantiated for receiving notification of cache misses in the region. At most, one cache loader can be defined in each member for the region. For distributed regions, a cache loader may be invoked remotely from other members that have the region defined. A fully qualified class name may be appended with a JSON specification that will be parsed to become the fields of the parameter to the <code>init()</code> method for a class that implements the <code>Declarable</code> interface.</td>
 <td></td>
 </tr>
 <tr class="even">
 <td><span class="keyword parmname">\-\-cache-writer</span></td>
-<td>Fully qualified class name of a plug-in to be instantiated for receiving before-event notification of changes to the region and its entries. The plug-in may cancel the event. At most, one cache writer can be defined in each member for the region</td>
+<td>Fully qualified class name of a plug-in to be instantiated for receiving before-event notification of changes to the region and its entries. The plug-in may cancel the event. At most, one cache writer can be defined in each member for the region. A fully qualified class name may be appended with a JSON specification that will be parsed to become the fields of the parameter to the <code>init()</code> method for a class that implements the <code>Declarable</code> interface.</td>
 <td></td>
 </tr>
 <tr class="odd">
