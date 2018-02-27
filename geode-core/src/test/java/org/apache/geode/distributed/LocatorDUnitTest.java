@@ -120,11 +120,6 @@ public class LocatorDUnitTest extends JUnit4DistributedTestCase {
     super();
   }
 
-  private static final String WAIT2_MS_NAME = "LocatorDUnitTest.WAIT2_MS";
-  private static final int WAIT2_MS_DEFAULT = 5000; // 2000 -- see bug 36470
-  private static final int WAIT2_MS =
-      Integer.getInteger(WAIT2_MS_NAME, WAIT2_MS_DEFAULT).intValue();
-
   protected int port1;
   private int port2;
 
