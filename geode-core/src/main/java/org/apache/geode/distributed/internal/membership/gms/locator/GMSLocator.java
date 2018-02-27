@@ -76,7 +76,7 @@ public class GMSLocator implements Locator, NetLocator {
   private InternalDistributedMember localAddress;
 
   private final Set<InternalDistributedMember> registrants = new HashSet<>();
-  public Map<InternalDistributedMemberWrapper, byte[]> registerMbrVsPK = new ConcurrentHashMap<>();
+  private Map<InternalDistributedMemberWrapper, byte[]> registerMbrVsPK = new ConcurrentHashMap<>();
 
   /**
    * The current membership view, or one recovered from disk. This is a copy-on-write variable.

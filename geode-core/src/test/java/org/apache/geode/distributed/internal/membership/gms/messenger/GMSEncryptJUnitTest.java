@@ -343,7 +343,6 @@ public class GMSEncryptJUnitTest {
           try {
             int count = 0;
             for (int i = 0; i < runs; i++) {
-              // System.out.println("run " + i + " threadid " + Thread.currentThread().getId());
               String ch = "Hello world";
               byte[] challenge = ch.getBytes();
               byte[] encryptedChallenge = sender.encryptData(challenge);
