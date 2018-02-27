@@ -235,9 +235,28 @@ public class JdbcDUnitTest implements Serializable {
       region.invalidate(key);
 
       PdxInstance result = (PdxInstance) region.get(key);
-      assertThat(result.getField("id")).isEqualTo(pdxEmployee1.getField("id"));
-      assertThat(result.getField("name")).isEqualTo(pdxEmployee1.getField("name"));
-      assertThat(result.getField("age")).isEqualTo(pdxEmployee1.getField("age"));
+      assertThat(result.getFieldNames().size()).isEqualTo(3);
+      assertThat(result.getField("id")).isEqualTo(key);
+      assertThat(result.getField("name")).isEqualTo("Emp1");
+      assertThat(result.getField("age")).isEqualTo(55);
+    });
+  }
+
+  @Test
+  public void getReadsFromDBWithPdxClassName() throws Exception {
+    createRegion(true, false, true);
+    createJdbcConnection();
+    createMapping(REGION_NAME, CONNECTION_NAME, Employee.class.getName());
+    server.invoke(() -> {
+      String key = "id1";
+      Employee value = new Employee("Emp1", 55);
+      Region region = ClusterStartupRule.getCache().getRegion(REGION_NAME);
+      region.put(key, value);
+      region.invalidate(key);
+
+      Employee result = (Employee) region.get(key);
+      assertThat(result.getName()).isEqualTo("Emp1");
+      assertThat(result.getAge()).isEqualTo(55);
     });
   }
 
@@ -272,8 +291,13 @@ public class JdbcDUnitTest implements Serializable {
   }
 
   private void createMapping(String regionName, String connectionName) {
+    createMapping(regionName, connectionName, null);
+  }
+
+  private void createMapping(String regionName, String connectionName, String pdxClassName) {
     final String commandStr = "create jdbc-mapping --region=" + regionName + " --connection="
-        + connectionName + " --value-contains-primary-key";
+        + connectionName + " --value-contains-primary-key"
+        + (pdxClassName != null ? " --pdx-class-name=" + pdxClassName : "");
     gfsh.executeAndAssertThat(commandStr).statusIsSuccess();
   }
 
