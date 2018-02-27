@@ -27,9 +27,12 @@ import org.apache.geode.annotations.Experimental;
 import org.apache.geode.cache.Operation;
 import org.apache.geode.cache.Region;
 import org.apache.geode.internal.cache.InternalCache;
+import org.apache.geode.pdx.FieldType;
 import org.apache.geode.pdx.PdxInstance;
 import org.apache.geode.pdx.PdxInstanceFactory;
+import org.apache.geode.pdx.internal.PdxField;
 import org.apache.geode.pdx.internal.PdxInstanceImpl;
+import org.apache.geode.pdx.internal.PdxType;
 
 @Experimental
 public class SqlHandler {
@@ -75,9 +78,8 @@ public class SqlHandler {
           getColumnToValueList(connection, regionMapping, key, null, Operation.GET);
       try (PreparedStatement statement =
           getPreparedStatement(connection, columnList, tableName, Operation.GET, 0)) {
-        PdxInstanceFactory factory = getPdxInstanceFactory(region, regionMapping);
         String keyColumnName = getKeyColumnName(connection, tableName);
-        result = executeReadStatement(statement, columnList, factory, regionMapping, keyColumnName);
+        result = executeReadStatement(region, statement, columnList, regionMapping, keyColumnName);
       }
     } catch (SQLException e) {
       handleSQLException(e);
@@ -121,8 +123,9 @@ public class SqlHandler {
     return factory;
   }
 
-  PdxInstance executeReadStatement(PreparedStatement statement, List<ColumnValue> columnList,
-      PdxInstanceFactory factory, RegionMapping regionMapping, String keyColumnName) {
+  PdxInstance executeReadStatement(Region region, PreparedStatement statement,
+      List<ColumnValue> columnList, RegionMapping regionMapping, String keyColumnName) {
+    PdxInstanceFactory factory = getPdxInstanceFactory(region, regionMapping);
     PdxInstance pdxInstance = null;
     try {
       setValuesInStatement(statement, columnList);
@@ -136,7 +139,9 @@ public class SqlHandler {
             String fieldName = mapColumnNameToFieldName(columnName, regionMapping);
             if (regionMapping.isPrimaryKeyInValue()
                 || !keyColumnName.equalsIgnoreCase(columnName)) {
-              factory.writeField(fieldName, columnValue, Object.class);
+              FieldType fieldType =
+                  getFieldType(region, regionMapping.getPdxClassName(), fieldName, metaData, i);
+              writeField(factory, columnValue, fieldName, fieldType);
             }
           }
           if (resultSet.next()) {
@@ -150,6 +155,37 @@ public class SqlHandler {
       handleSQLException(e);
     }
     return pdxInstance;
+  }
+
+  private void writeField(PdxInstanceFactory factory, Object columnValue, String fieldName,
+      FieldType fieldType) {
+    switch (fieldType) {
+      case STRING:
+        factory.writeString(fieldName, (String) columnValue);
+        break;
+      default:
+        factory.writeObject(fieldName, columnValue);
+    }
+  }
+
+  private FieldType getFieldType(Region region, String pdxClassName, String fieldName,
+      ResultSetMetaData metaData, int columnIndex) {
+    FieldType result = null;
+    if (pdxClassName != null) {
+      InternalCache cache = (InternalCache) region.getRegionService();
+      PdxType pdxType = cache.getPdxRegistry().getPdxTypeForField(fieldName, pdxClassName);
+      if (pdxType != null) {
+        PdxField pdxField = pdxType.getPdxField(fieldName);
+        if (pdxField != null) {
+          result = pdxField.getFieldType();
+        }
+      }
+    }
+    if (result == null) {
+      // TODO check metadata, for now make it object
+      result = FieldType.OBJECT;
+    }
+    return result;
   }
 
   private void setValuesInStatement(PreparedStatement statement, List<ColumnValue> columnList)

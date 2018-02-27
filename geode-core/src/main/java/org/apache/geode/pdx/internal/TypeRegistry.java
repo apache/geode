@@ -491,7 +491,7 @@ public class TypeRegistry {
    * @return PdxType having the field or null if not found
    *
    */
-  PdxType getPdxTypeForField(String fieldName, String className) {
+  public PdxType getPdxTypeForField(String fieldName, String className) {
     return this.distributedTypeRegistry.getPdxTypeForField(fieldName, className);
   }
 

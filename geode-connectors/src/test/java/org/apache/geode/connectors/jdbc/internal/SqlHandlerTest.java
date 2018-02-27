@@ -20,8 +20,10 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyBoolean;
 import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.mockingDetails;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoMoreInteractions;
@@ -46,9 +48,12 @@ import org.junit.rules.ExpectedException;
 import org.apache.geode.cache.Operation;
 import org.apache.geode.cache.Region;
 import org.apache.geode.internal.cache.InternalCache;
+import org.apache.geode.pdx.FieldType;
 import org.apache.geode.pdx.PdxInstanceFactory;
+import org.apache.geode.pdx.internal.PdxField;
 import org.apache.geode.pdx.internal.PdxInstanceImpl;
 import org.apache.geode.pdx.internal.PdxType;
+import org.apache.geode.pdx.internal.TypeRegistry;
 import org.apache.geode.test.junit.categories.UnitTest;
 
 @Category(UnitTest.class)
@@ -60,6 +65,7 @@ public class SqlHandlerTest {
   private static final Object COLUMN_VALUE_2 = "columnValue2";
   private static final String COLUMN_NAME_2 = "columnName2";
   private static final String KEY_COLUMN = "keyColumn";
+  private static final String COLUMN_STRING_VALUE_1 = "columnStringValue1";
 
   @Rule
   public ExpectedException thrown = ExpectedException.none();
@@ -140,7 +146,7 @@ public class SqlHandlerTest {
   }
 
   @Test
-  public void usesPbxFactoryForNoPbxClassWhenClassNonExistent() throws Exception {
+  public void usesPdxFactoryForNoPdxClassWhenClassNonExistent() throws Exception {
     setupEmptyResultSet();
     handler.read(region, new Object());
 
@@ -179,6 +185,38 @@ public class SqlHandlerTest {
     handler.read(region, new Object());
     verify(factory).writeField(fieldName1, COLUMN_VALUE_1, Object.class);
     verify(factory).writeField(fieldName2, COLUMN_VALUE_2, Object.class);
+    verify(factory).create();
+  }
+
+  @Test
+  public void readWritesStringFieldGivenPdxStringFieldType() throws Exception {
+    ResultSet result = mock(ResultSet.class);
+    setupStringResultSet(result);
+    when(result.next()).thenReturn(true).thenReturn(false);
+    when(statement.executeQuery()).thenReturn(result);
+
+    PdxInstanceFactory factory = mock(PdxInstanceFactory.class);
+    String pdxClassName = "myPdxClassName";
+    when(cache.createPdxInstanceFactory(pdxClassName)).thenReturn(factory);
+
+    TypeRegistry pdxTypeRegistry = mock(TypeRegistry.class);
+    when(cache.getPdxRegistry()).thenReturn(pdxTypeRegistry);
+    PdxType pdxType = mock(PdxType.class);
+
+    String fieldName1 = COLUMN_NAME_1.toLowerCase();
+    String fieldName2 = COLUMN_NAME_2.toLowerCase();
+
+    when(regionMapping.getPdxClassName()).thenReturn(pdxClassName);
+    when(pdxTypeRegistry.getPdxTypeForField(fieldName1, pdxClassName)).thenReturn(pdxType);
+    PdxField pdxField = mock(PdxField.class);
+    when(pdxType.getPdxField(fieldName1)).thenReturn(pdxField);
+    when(pdxField.getFieldType()).thenReturn(FieldType.STRING);
+
+    when(regionMapping.getFieldNameForColumn(COLUMN_NAME_1)).thenReturn(fieldName1);
+    when(regionMapping.getFieldNameForColumn(COLUMN_NAME_2)).thenReturn(fieldName2);
+    handler.read(region, new Object());
+    verify(factory).writeString(fieldName1, COLUMN_STRING_VALUE_1);
+    verify(factory).writeObject(fieldName2, COLUMN_VALUE_2);
     verify(factory).create();
   }
 
@@ -377,6 +415,18 @@ public class SqlHandlerTest {
     when(metaData.getColumnName(2)).thenReturn(COLUMN_NAME_2);
   }
 
+  private void setupStringResultSet(ResultSet result) throws SQLException {
+    ResultSetMetaData metaData = mock(ResultSetMetaData.class);
+    when(result.getMetaData()).thenReturn(metaData);
+    when(metaData.getColumnCount()).thenReturn(2);
+
+    when(result.getObject(1)).thenReturn(COLUMN_STRING_VALUE_1);
+    when(metaData.getColumnName(1)).thenReturn(COLUMN_NAME_1);
+
+    when(result.getObject(2)).thenReturn(COLUMN_VALUE_2);
+    when(metaData.getColumnName(2)).thenReturn(COLUMN_NAME_2);
+  }
+
   private void setupEmptyResultSet() throws SQLException {
     ResultSet result = mock(ResultSet.class);
     when(result.next()).thenReturn(false);
@@ -440,9 +490,9 @@ public class SqlHandlerTest {
     String fieldName2 = "pdxFieldName2";
     when(regionMapping.getFieldNameForColumn(COLUMN_NAME_1)).thenReturn(fieldName1);
     when(regionMapping.getFieldNameForColumn(COLUMN_NAME_2)).thenReturn(fieldName2);
-    handler.executeReadStatement(statement, columnList, factory, regionMapping, "keyColumn");
-    verify(factory).writeField(fieldName1, COLUMN_VALUE_1, Object.class);
-    verify(factory).writeField(fieldName2, COLUMN_VALUE_2, Object.class);
+    handler.executeReadStatement(region, statement, columnList, regionMapping, "keyColumn");
+    verify(factory).writeObject(fieldName1, COLUMN_VALUE_1);
+    verify(factory).writeObject(fieldName2, COLUMN_VALUE_2);
     verify(factory).create();
   }
 
