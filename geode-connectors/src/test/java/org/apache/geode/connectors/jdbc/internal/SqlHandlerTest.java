@@ -195,6 +195,17 @@ public class SqlHandlerTest {
     when(result.next()).thenReturn(true).thenReturn(false);
     when(statement.executeQuery()).thenReturn(result);
 
+    PdxInstanceFactory factory = setupPdxInstanceFactory(FieldType.STRING);
+
+    when(regionMapping.getFieldNameForColumn(COLUMN_NAME_1)).thenReturn(PDX_FIELD_NAME_1);
+    when(regionMapping.getFieldNameForColumn(COLUMN_NAME_2)).thenReturn(PDX_FIELD_NAME_2);
+    handler.read(region, new Object());
+    verify(factory).writeString(PDX_FIELD_NAME_1, COLUMN_STRING_VALUE_1);
+    verify(factory).writeObject(PDX_FIELD_NAME_2, COLUMN_VALUE_2);
+    verify(factory).create();
+  }
+
+  private PdxInstanceFactory setupPdxInstanceFactory(FieldType fieldType) {
     PdxInstanceFactory factory = mock(PdxInstanceFactory.class);
     String pdxClassName = "myPdxClassName";
     when(cache.createPdxInstanceFactory(pdxClassName)).thenReturn(factory);
@@ -207,14 +218,9 @@ public class SqlHandlerTest {
     when(pdxTypeRegistry.getPdxTypeForField(PDX_FIELD_NAME_1, pdxClassName)).thenReturn(pdxType);
     PdxField pdxField = mock(PdxField.class);
     when(pdxType.getPdxField(PDX_FIELD_NAME_1)).thenReturn(pdxField);
-    when(pdxField.getFieldType()).thenReturn(FieldType.STRING);
+    when(pdxField.getFieldType()).thenReturn(fieldType);
 
-    when(regionMapping.getFieldNameForColumn(COLUMN_NAME_1)).thenReturn(PDX_FIELD_NAME_1);
-    when(regionMapping.getFieldNameForColumn(COLUMN_NAME_2)).thenReturn(PDX_FIELD_NAME_2);
-    handler.read(region, new Object());
-    verify(factory).writeString(PDX_FIELD_NAME_1, COLUMN_STRING_VALUE_1);
-    verify(factory).writeObject(PDX_FIELD_NAME_2, COLUMN_VALUE_2);
-    verify(factory).create();
+    return factory;
   }
 
   @Test
