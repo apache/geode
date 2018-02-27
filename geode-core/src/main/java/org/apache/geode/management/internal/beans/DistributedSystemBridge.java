@@ -484,7 +484,9 @@ public class DistributedSystemBridge {
     properties.setProperty("TIMESTAMP", format.format(new Date()));
     properties.setProperty("TYPE", "FileSystem");
     properties.setProperty("TARGET_DIRECTORY", targetDirPath);
-    properties.setProperty("BASELINE_DIRECTORY", baselineDirPath);
+    if (baselineDirPath != null) {
+      properties.setProperty("BASELINE_DIRECTORY", baselineDirPath);
+    }
     BackupStatus result = BackupUtil.backupAllMembers(dm, properties);
     DiskBackupStatusImpl diskBackupStatus = new DiskBackupStatusImpl();
     diskBackupStatus.generateBackedUpDiskStores(result.getBackedUpDiskStores());
