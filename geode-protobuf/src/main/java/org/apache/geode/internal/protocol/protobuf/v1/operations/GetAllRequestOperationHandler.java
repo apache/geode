@@ -18,6 +18,8 @@ import static org.apache.geode.internal.protocol.protobuf.v1.BasicTypes.ErrorCod
 import static org.apache.geode.internal.protocol.protobuf.v1.BasicTypes.ErrorCode.SERVER_ERROR;
 
 import org.apache.logging.log4j.Logger;
+import org.apache.shiro.authz.AuthorizationException;
+import org.apache.shiro.util.ThreadState;
 
 import org.apache.geode.annotations.Experimental;
 import org.apache.geode.cache.Region;
@@ -33,7 +35,11 @@ import org.apache.geode.internal.protocol.protobuf.v1.Result;
 import org.apache.geode.internal.protocol.protobuf.v1.Success;
 import org.apache.geode.internal.protocol.protobuf.v1.serialization.exception.DecodingException;
 import org.apache.geode.internal.protocol.protobuf.v1.serialization.exception.EncodingException;
+import org.apache.geode.internal.protocol.protobuf.v1.state.ProtobufConnectionAuthorizingStateProcessor;
 import org.apache.geode.internal.protocol.protobuf.v1.utilities.ProtobufUtilities;
+import org.apache.geode.internal.security.SecurityService;
+import org.apache.geode.security.NotAuthorizedException;
+import org.apache.geode.security.ResourcePermission;
 
 @Experimental
 public class GetAllRequestOperationHandler
@@ -51,31 +57,63 @@ public class GetAllRequestOperationHandler
       return Failure.of(BasicTypes.ErrorCode.SERVER_ERROR, "Region not found");
     }
 
+    ThreadState threadState = null;
+    SecurityService securityService = messageExecutionContext.getCache().getSecurityService();
+    boolean perKeyAuthorization = false;
+    if (messageExecutionContext
+        .getConnectionStateProcessor() instanceof ProtobufConnectionAuthorizingStateProcessor) {
+      threadState = ((ProtobufConnectionAuthorizingStateProcessor) messageExecutionContext
+          .getConnectionStateProcessor()).prepareThreadForAuthorization();
+      // Check if authorized for entire region
+      try {
+        securityService.authorize(new ResourcePermission(ResourcePermission.Resource.DATA,
+            ResourcePermission.Operation.READ, regionName));
+        ((ProtobufConnectionAuthorizingStateProcessor) messageExecutionContext
+            .getConnectionStateProcessor()).restoreThreadState(threadState);
+        threadState = null;
+      } catch (NotAuthorizedException ex) {
+        // Not authorized for the region, have to check keys individually
+        perKeyAuthorization = true;
+      }
+    }
+    final boolean authorizeKeys = perKeyAuthorization; // Required for use in lambda
+
     long startTime = messageExecutionContext.getStatistics().startOperation();
     RegionAPI.GetAllResponse.Builder responseBuilder = RegionAPI.GetAllResponse.newBuilder();
     try {
       messageExecutionContext.getCache().setReadSerializedForCurrentThread(true);
-      request.getKeyList().stream()
-          .forEach((key) -> processSingleKey(responseBuilder, serializationService, region, key));
+      request.getKeyList().stream().forEach((key) -> processSingleKey(responseBuilder,
+          serializationService, region, key, securityService, authorizeKeys));
     } finally {
       messageExecutionContext.getCache().setReadSerializedForCurrentThread(false);
       messageExecutionContext.getStatistics().endOperation(startTime);
+      if (threadState != null) {
+        ((ProtobufConnectionAuthorizingStateProcessor) messageExecutionContext
+            .getConnectionStateProcessor()).restoreThreadState(threadState);
+      }
     }
 
     return Success.of(responseBuilder.build());
   }
 
   private void processSingleKey(RegionAPI.GetAllResponse.Builder responseBuilder,
-      ProtobufSerializationService serializationService, Region region,
-      BasicTypes.EncodedValue key) {
+      ProtobufSerializationService serializationService, Region region, BasicTypes.EncodedValue key,
+      SecurityService securityService, boolean authorizeKeys) {
     try {
 
       Object decodedKey = serializationService.decode(key);
+      if (authorizeKeys) {
+        securityService.authorize(new ResourcePermission(ResourcePermission.Resource.DATA,
+            ResourcePermission.Operation.READ, region.getName(), decodedKey.toString()));
+      }
       Object value = region.get(decodedKey);
       BasicTypes.Entry entry =
           ProtobufUtilities.createEntry(serializationService, decodedKey, value);
       responseBuilder.addEntries(entry);
 
+    } catch (NotAuthorizedException ex) {
+      responseBuilder.addFailures(
+          buildKeyedError(key, "Unauthorized access", BasicTypes.ErrorCode.AUTHORIZATION_FAILED));
     } catch (DecodingException ex) {
       logger.info("Key encoding not supported: {}", ex);
       responseBuilder

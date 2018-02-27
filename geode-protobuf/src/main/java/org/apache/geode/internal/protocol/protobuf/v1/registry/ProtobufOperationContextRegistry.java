@@ -77,7 +77,8 @@ public class ProtobufOperationContextRegistry {
         new ProtobufOperationContext<>(ClientProtocol.Message::getGetAllRequest,
             new GetAllRequestOperationHandler(),
             opsResp -> ClientProtocol.Message.newBuilder().setGetAllResponse(opsResp),
-            ResourcePermissions.DATA_READ));
+            // May require per-key checks, will be handled by OperationHandler
+            this::skipAuthorizationCheck));
 
     operationContexts.put(ClientProtocol.Message.MessageTypeCase.PUTREQUEST,
         new ProtobufOperationContext<>(ClientProtocol.Message::getPutRequest,
@@ -89,7 +90,8 @@ public class ProtobufOperationContextRegistry {
         new ProtobufOperationContext<>(ClientProtocol.Message::getPutAllRequest,
             new PutAllRequestOperationHandler(),
             opsResp -> ClientProtocol.Message.newBuilder().setPutAllResponse(opsResp),
-            ResourcePermissions.DATA_WRITE));
+            // May require per-key checks, will be handled by OperationHandler
+            this::skipAuthorizationCheck));
 
     operationContexts.put(ClientProtocol.Message.MessageTypeCase.REMOVEREQUEST,
         new ProtobufOperationContext<>(ClientProtocol.Message::getRemoveRequest,
