@@ -17,8 +17,8 @@ package org.apache.geode.internal.protocol.protobuf.v1.operations;
 import java.util.List;
 import java.util.Set;
 
-import org.apache.shiro.util.ThreadState;
 import org.apache.logging.log4j.Logger;
+import org.apache.shiro.util.ThreadState;
 
 import org.apache.geode.cache.execute.Execution;
 import org.apache.geode.cache.execute.Function;
@@ -71,16 +71,14 @@ public abstract class AbstractFunctionRequestOperationHandler<Req, Resp>
       // check security for function.
       function.getRequiredPermissions(regionName).forEach(securityService::authorize);
     } catch (NotAuthorizedException ex) {
-      return Failure.of(BasicTypes.ErrorCode.AUTHORIZATION_FAILED,
-          "Authorization failed for function \"" + functionID + "\"");
+      final String message = "Authorization failed for function \"" + functionID + "\"";
+      logger.warn(message, ex);
+      return Failure.of(BasicTypes.ErrorCode.AUTHORIZATION_FAILED, message);
     } finally {
       if (threadState != null) {
         ((ProtobufConnectionAuthorizingStateProcessor) messageExecutionContext
             .getConnectionStateProcessor()).restoreThreadState(threadState);
       }
-      final String message = "Authorization failed for function \"" + functionID + "\"";
-      logger.warn(message, ex);
-      return Failure.of(BasicTypes.ErrorCode.AUTHORIZATION_FAILED, message);
     }
 
     Object executionTarget = getExecutionTarget(request, regionName, messageExecutionContext);
