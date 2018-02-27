@@ -183,8 +183,8 @@ public class SqlHandlerTest {
     when(regionMapping.getFieldNameForColumn(COLUMN_NAME_1)).thenReturn(fieldName1);
     when(regionMapping.getFieldNameForColumn(COLUMN_NAME_2)).thenReturn(fieldName2);
     handler.read(region, new Object());
-    verify(factory).writeField(fieldName1, COLUMN_VALUE_1, Object.class);
-    verify(factory).writeField(fieldName2, COLUMN_VALUE_2, Object.class);
+    verify(factory).writeObject(fieldName1, COLUMN_VALUE_1);
+    verify(factory).writeObject(fieldName2, COLUMN_VALUE_2);
     verify(factory).create();
   }
 
@@ -234,8 +234,8 @@ public class SqlHandlerTest {
     String fieldName2 = COLUMN_NAME_2.toLowerCase();
     when(regionMapping.getFieldNameForColumn(COLUMN_NAME_2)).thenReturn(fieldName2);
     handler.read(region, new Object());
-    verify(factory).writeField(fieldName2, COLUMN_VALUE_2, Object.class);
-    verify(factory, times(1)).writeField(any(), any(), any());
+    verify(factory).writeObject(fieldName2, COLUMN_VALUE_2);
+    verify(factory, times(1)).writeObject(any(), any());
     verify(factory).create();
   }
 
