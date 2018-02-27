@@ -25,21 +25,17 @@ import static org.mockito.Mockito.when;
 
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingQueue;
 
-import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 import org.mockito.invocation.InvocationOnMock;
 import org.mockito.stubbing.Answer;
 
-import org.apache.geode.CancelCriterion;
 import org.apache.geode.cache.AttributesFactory;
 import org.apache.geode.cache.DataPolicy;
 import org.apache.geode.cache.EvictionAction;
@@ -64,7 +60,6 @@ import org.apache.geode.internal.cache.PartitionedRegionDataStore;
 import org.apache.geode.internal.cache.PartitionedRegionHelper;
 import org.apache.geode.internal.cache.PartitionedRegionStats;
 import org.apache.geode.internal.cache.ProxyBucketRegion;
-import org.apache.geode.internal.cache.RegionQueue;
 import org.apache.geode.internal.cache.eviction.AbstractEvictionController;
 import org.apache.geode.internal.cache.eviction.EvictionController;
 import org.apache.geode.internal.cache.partitioned.RegionAdvisor;
@@ -117,13 +112,10 @@ public class ParallelQueueRemovalMessageJUnitTest {
 
   private void createGatewaySender() {
     // Mock gateway sender
-    this.sender = mock(AbstractGatewaySender.class);
+    this.sender = ParallelGatewaySenderHelper.createGatewaySender(this.cache);
     when(this.queueRegion.getParallelGatewaySender()).thenReturn(this.sender);
     when(this.sender.getQueues()).thenReturn(null);
     when(this.sender.getDispatcherThreads()).thenReturn(1);
-    when(this.sender.getCache()).thenReturn(this.cache);
-    CancelCriterion cancelCriterion = mock(CancelCriterion.class);
-    when(sender.getCancelCriterion()).thenReturn(cancelCriterion);
   }
 
   private void createRootRegion() {
@@ -226,7 +218,8 @@ public class ParallelQueueRemovalMessageJUnitTest {
     assertFalse(this.bucketRegionQueue.isInitialized());
 
     // Create a real ConcurrentParallelGatewaySenderQueue
-    ParallelGatewaySenderEventProcessor processor = createConcurrentParallelGatewaySenderQueue();
+    ParallelGatewaySenderEventProcessor processor =
+        ParallelGatewaySenderHelper.createParallelGatewaySenderEventProcessor(this.sender);
 
     // Add a mock GatewaySenderEventImpl to the temp queue
     BlockingQueue<GatewaySenderEventImpl> tempQueue =
@@ -248,7 +241,8 @@ public class ParallelQueueRemovalMessageJUnitTest {
     assertEquals(0, this.bucketRegionQueue.size());
 
     // Create a real ConcurrentParallelGatewaySenderQueue
-    ParallelGatewaySenderEventProcessor processor = createConcurrentParallelGatewaySenderQueue();
+    ParallelGatewaySenderEventProcessor processor =
+        ParallelGatewaySenderHelper.createParallelGatewaySenderEventProcessor(this.sender);
 
     // Add an event to the BucketRegionQueue and verify BucketRegionQueue state
     GatewaySenderEventImpl event = this.bucketRegionQueueHelper.addEvent(KEY);
@@ -287,16 +281,6 @@ public class ParallelQueueRemovalMessageJUnitTest {
     bucketIdToDispatchedKeys.put(BUCKET_ID, dispatchedKeys);
     regionToDispatchedKeys.put(getRegionQueueName(), bucketIdToDispatchedKeys);
     return regionToDispatchedKeys;
-  }
-
-  private ParallelGatewaySenderEventProcessor createConcurrentParallelGatewaySenderQueue() {
-    ParallelGatewaySenderEventProcessor processor = new ParallelGatewaySenderEventProcessor(sender);
-    ConcurrentParallelGatewaySenderQueue queue = new ConcurrentParallelGatewaySenderQueue(sender,
-        new ParallelGatewaySenderEventProcessor[] {processor});
-    Set<RegionQueue> queues = new HashSet<>();
-    queues.add(queue);
-    when(this.sender.getQueues()).thenReturn(queues);
-    return processor;
   }
 
   private BlockingQueue<GatewaySenderEventImpl> createTempQueueAndAddEvent(

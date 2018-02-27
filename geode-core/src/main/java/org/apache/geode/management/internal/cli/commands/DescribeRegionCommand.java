@@ -20,9 +20,9 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.function.Function;
 import java.util.stream.Collectors;
 
+import org.apache.commons.lang.StringUtils;
 import org.apache.logging.log4j.Logger;
 import org.springframework.shell.core.annotation.CliCommand;
 import org.springframework.shell.core.annotation.CliOption;
@@ -33,7 +33,6 @@ import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.management.cli.CliMetaData;
 import org.apache.geode.management.cli.ConverterHint;
 import org.apache.geode.management.cli.Result;
-import org.apache.geode.management.internal.cli.CliUtil;
 import org.apache.geode.management.internal.cli.domain.FixedPartitionAttributesInfo;
 import org.apache.geode.management.internal.cli.domain.RegionDescription;
 import org.apache.geode.management.internal.cli.domain.RegionDescriptionPerMember;
@@ -134,7 +133,7 @@ public class DescribeRegionCommand implements GfshCommand {
         memberType = CliStrings.DESCRIBE_REGION__HOSTING__MEMBER;
       }
       regionSection.addData(memberType,
-          CliUtil.convertStringSetToString(regionDescription.getHostingMembers(), '\n'));
+          StringUtils.join(regionDescription.getHostingMembers(), '\n'));
       regionSection.addSeparator('.');
 
       TabularResultData commonNonDefaultAttrTable = regionSection.addSection().addTable();

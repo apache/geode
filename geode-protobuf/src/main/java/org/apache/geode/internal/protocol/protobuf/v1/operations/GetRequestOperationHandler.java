@@ -44,15 +44,18 @@ public class GetRequestOperationHandler
     String regionName = request.getRegionName();
     Region region = messageExecutionContext.getCache().getRegion(regionName);
     if (region == null) {
-      logger.error("Received Get request for non-existing region {}", regionName);
-      return Failure.of(BasicTypes.ErrorCode.SERVER_ERROR, "Region not found");
+      logger.error("Received get request for nonexistent region: {}", regionName);
+      return Failure.of(BasicTypes.ErrorCode.SERVER_ERROR,
+          "Region \"" + regionName + "\" not found");
     }
-    long startOperationTime = messageExecutionContext.getStatistics().startOperation();
 
     try {
       messageExecutionContext.getCache().setReadSerializedForCurrentThread(true);
 
       Object decodedKey = serializationService.decode(request.getKey());
+      if (decodedKey == null) {
+        return Failure.of(BasicTypes.ErrorCode.INVALID_REQUEST, "Performing a get on a NULL key.");
+      }
       Object resultValue = region.get(decodedKey);
 
       if (resultValue == null) {
@@ -63,7 +66,6 @@ public class GetRequestOperationHandler
       return Success.of(RegionAPI.GetResponse.newBuilder().setResult(encodedValue).build());
     } finally {
       messageExecutionContext.getCache().setReadSerializedForCurrentThread(false);
-      messageExecutionContext.getStatistics().endOperation(startOperationTime);
     }
   }
 

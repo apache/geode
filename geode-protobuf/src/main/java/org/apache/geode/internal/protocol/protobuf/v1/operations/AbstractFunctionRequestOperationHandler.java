@@ -18,6 +18,7 @@ import java.util.List;
 import java.util.Set;
 
 import org.apache.shiro.util.ThreadState;
+import org.apache.logging.log4j.Logger;
 
 import org.apache.geode.cache.execute.Execution;
 import org.apache.geode.cache.execute.Function;
@@ -26,6 +27,7 @@ import org.apache.geode.cache.execute.FunctionService;
 import org.apache.geode.cache.execute.ResultCollector;
 import org.apache.geode.internal.exception.InvalidExecutionContextException;
 import org.apache.geode.internal.i18n.LocalizedStrings;
+import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.internal.protocol.operations.ProtobufOperationHandler;
 import org.apache.geode.internal.protocol.protobuf.v1.BasicTypes;
 import org.apache.geode.internal.protocol.protobuf.v1.Failure;
@@ -40,7 +42,7 @@ import org.apache.geode.security.NotAuthorizedException;
 
 public abstract class AbstractFunctionRequestOperationHandler<Req, Resp>
     implements ProtobufOperationHandler<Req, Resp> {
-
+  private static final Logger logger = LogService.getLogger();
 
   @Override
   public Result<Resp> process(ProtobufSerializationService serializationService, Req request,
@@ -76,6 +78,9 @@ public abstract class AbstractFunctionRequestOperationHandler<Req, Resp>
         ((ProtobufConnectionAuthorizingStateProcessor) messageExecutionContext
             .getConnectionStateProcessor()).restoreThreadState(threadState);
       }
+      final String message = "Authorization failed for function \"" + functionID + "\"";
+      logger.warn(message, ex);
+      return Failure.of(BasicTypes.ErrorCode.AUTHORIZATION_FAILED, message);
     }
 
     Object executionTarget = getExecutionTarget(request, regionName, messageExecutionContext);
@@ -108,10 +113,13 @@ public abstract class AbstractFunctionRequestOperationHandler<Req, Resp>
         return buildResultMessage(serializationService);
       }
     } catch (FunctionException ex) {
-      return Failure.of(BasicTypes.ErrorCode.SERVER_ERROR,
-          "Function execution failed: " + ex.toString());
+      final String message = "Function execution failed: " + ex.toString();
+      logger.info(message, ex);
+      return Failure.of(BasicTypes.ErrorCode.SERVER_ERROR, message);
     } catch (EncodingException ex) {
-      return Failure.of(BasicTypes.ErrorCode.SERVER_ERROR, "Encoding failed: " + ex.toString());
+      final String message = "Encoding failed: " + ex.toString();
+      logger.info(message, ex);
+      return Failure.of(BasicTypes.ErrorCode.SERVER_ERROR, message);
     }
   }
 
@@ -140,7 +148,4 @@ public abstract class AbstractFunctionRequestOperationHandler<Req, Resp>
 
   protected abstract Result buildResultMessage(ProtobufSerializationService serializationService,
       List<Object> results) throws EncodingException;
-
-
-
 }

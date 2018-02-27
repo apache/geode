@@ -43,6 +43,7 @@ import org.apache.geode.cache.client.ClientCache;
 import org.apache.geode.cache.client.ClientCacheFactory;
 import org.apache.geode.cache.client.ClientRegionFactory;
 import org.apache.geode.cache.client.ClientRegionShortcut;
+import org.apache.geode.distributed.ConfigurationProperties;
 import org.apache.geode.security.templates.SimpleAccessController;
 import org.apache.geode.security.templates.SimpleAuthenticator;
 import org.apache.geode.security.templates.UserPasswordAuthInit;
@@ -101,6 +102,12 @@ public class ClientDataAuthorizationUsingLegacySecurityDUnitTest {
     // We want the cluster VMs to be super-users for ease of testing / remote invocation.
     Properties clusterMemberProperties = getVMPropertiesWithPermission("cluster,data");
 
+    int version = Integer.parseInt(clientVersion);
+    if (version == 0 || version >= 140) {
+      clusterMemberProperties.setProperty(ConfigurationProperties.SERIALIZABLE_OBJECT_FILTER,
+          "org.apache.geode.security.templates.UsernamePrincipal");
+    }
+
     locator = csRule.startLocatorVM(0, clusterMemberProperties);
     server = csRule.startServerVM(1, clusterMemberProperties, locator.getPort());
     server.invoke(() -> {
@@ -143,6 +150,11 @@ public class ClientDataAuthorizationUsingLegacySecurityDUnitTest {
   @Test
   public void dataWriteCannotGet() throws Exception {
     Properties props = getVMPropertiesWithPermission("dataWrite");
+    int version = Integer.parseInt(clientVersion);
+    if (version == 0 || version >= 140) {
+      props.setProperty(ConfigurationProperties.SERIALIZABLE_OBJECT_FILTER,
+          "org.apache.geode.security.templates.UsernamePrincipal");
+    }
     int locatorPort = locator.getPort();
 
     Consumer<ClientCacheFactory> cacheSetup = (Serializable & Consumer<ClientCacheFactory>) cf -> cf
@@ -201,9 +213,16 @@ public class ClientDataAuthorizationUsingLegacySecurityDUnitTest {
   @Test
   public void dataReadCannotPut() throws Exception {
     Properties props = getVMPropertiesWithPermission("dataRead");
+    int version = Integer.parseInt(clientVersion);
+    if (version == 0 || version >= 140) {
+      props.setProperty(ConfigurationProperties.SERIALIZABLE_OBJECT_FILTER,
+          "org.apache.geode.security.templates.UsernamePrincipal");
+    }
+
     int locatorPort = locator.getPort();
     Consumer<ClientCacheFactory> cacheSetup = (Serializable & Consumer<ClientCacheFactory>) cf -> cf
         .addPoolLocator("localhost", locatorPort);
+
     ClientVM clientVM = csRule.startClientVM(2, props, cacheSetup, clientVersion);
 
     clientVM.invoke(() -> {

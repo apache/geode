@@ -19,6 +19,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Properties;
 
+import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.Declarable;
 import org.apache.geode.cache.RegionService;
 import org.apache.geode.pdx.internal.AutoSerializableManager;
@@ -356,7 +357,6 @@ public class ReflectionBasedAutoSerializer implements PdxSerializer, Declarable 
     return manager.readData(reader, clazz);
   }
 
-
   /**
    * Used for declarative class initialization from cache.xml. The following property may be
    * specified:
@@ -369,8 +369,31 @@ public class ReflectionBasedAutoSerializer implements PdxSerializer, Declarable 
    * serialize data that is not portable to .NET is made.
    *
    * @param props properties used to configure the auto serializer
+   * @deprecated as of Geode 1.5 use initialize instead
    */
+  @Override
   public void init(Properties props) {
+    this.manager.init(props);
+  }
+
+  /**
+   * Used for declarative class initialization from cache.xml. The following property may be
+   * specified:
+   * <ul>
+   * <li><b>classes</b> - a comma-delimited list of strings which represent the patterns used to
+   * select classes for serialization, patterns to select identity fields and patterns to exclude
+   * fields. See {@link ReflectionBasedAutoSerializer#reconfigure(String...) reconfigure} for
+   * specifics.</li>
+   * <li><b>check-portability</b> - if true then an exception will be thrown if an attempt to
+   * serialize data that is not portable to .NET is made.
+   *
+   * @param cache the cache that owns this serializer
+   * @param props properties used to configure the auto serializer
+   * @since Geode 1.5
+   */
+  @Override
+  public void initialize(Cache cache, Properties props) {
+    this.manager.setRegionService(cache);
     this.manager.init(props);
   }
 

@@ -2400,9 +2400,9 @@ public class CliStrings {
   public static final String START_LOCATOR__RUN_MESSAGE = "Starting a Geode Locator in %1$s...";
   public static final String START_LOCATOR__CONNECT = "connect";
   public static final String START_LOCATOR__CONNECT__HELP =
-      "When connect is set to false , Gfsh does not automatically connect to the locator which is started using this command.";
-  public static final String START_LOCATOR__USE__0__TO__CONNECT =
-      "Please use \"{0}\" to connect Gfsh to the locator.";
+      "When connect is set to false or when locator is started with a security manager using --J=-Dgemfire.security-manager option, Gfsh does not automatically connect to the locator which is started using this command.";
+  public static final String START_LOCATOR__USE__0__TO__CONNECT_WITH_SECURITY =
+      "Security Manager is enabled - unable to auto-connect. Please use \"{0}\" to connect Gfsh to the locator.";
   public static final String START_LOCATOR__ENABLE__SHARED__CONFIGURATION =
       ENABLE_CLUSTER_CONFIGURATION;
   public static final String START_LOCATOR__ENABLE__SHARED__CONFIGURATION__HELP =

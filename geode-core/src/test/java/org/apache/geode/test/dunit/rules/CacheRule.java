@@ -18,6 +18,7 @@ import static org.apache.geode.distributed.ConfigurationProperties.LOCATORS;
 import static org.apache.geode.test.dunit.DistributedTestUtils.getLocators;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Properties;
 
@@ -69,6 +70,16 @@ public class CacheRule extends DistributedExternalResource {
     return new Builder();
   }
 
+  public CacheRule() {
+    this.createCacheInAll = false;
+    this.createCache = false;
+    this.disconnectAfter = false;
+    this.createCacheInVMs = Collections.emptyList();
+    this.config = new Properties();
+    this.config.setProperty(LOCATORS, getLocators());
+    this.systemProperties = new Properties();
+  }
+
   CacheRule(final Builder builder) {
     this.createCacheInAll = builder.createCacheInAll;
     this.createCache = builder.createCache;
@@ -108,6 +119,11 @@ public class CacheRule extends DistributedExternalResource {
 
   public InternalDistributedSystem getSystem() {
     return cache.getInternalDistributedSystem();
+  }
+
+  public InternalCache createCache() {
+    createCache(config, systemProperties);
+    return cache;
   }
 
   private static void createCache(final Properties config, final Properties systemProperties) {
@@ -151,7 +167,7 @@ public class CacheRule extends DistributedExternalResource {
     }
 
     /**
-     * Create Cache in every VM including controller and all DUnit VMs
+     * Create Cache in every VM including controller and all DUnit VMs. Default is false.
      */
     public Builder createCacheInAll() {
       createCacheInAll = true;
@@ -159,7 +175,7 @@ public class CacheRule extends DistributedExternalResource {
     }
 
     /**
-     * Create Cache in specified VM
+     * Create Cache in specified VM. Default is none.
      */
     public Builder createCacheIn(final VM vm) {
       if (!createCacheInVMs.contains(vm)) {
@@ -169,7 +185,7 @@ public class CacheRule extends DistributedExternalResource {
     }
 
     /**
-     * Create Cache in local JVM (controller)
+     * Create Cache in local JVM (controller). Default is false.
      */
     public Builder createCacheInLocal() {
       createCache = true;
@@ -178,6 +194,7 @@ public class CacheRule extends DistributedExternalResource {
 
     /**
      * Disconnect all VMs from DistributedSystem after each test. Cache is always closed regardless.
+     * Default is false.
      */
     public Builder disconnectAfter() {
       disconnectAfter = true;

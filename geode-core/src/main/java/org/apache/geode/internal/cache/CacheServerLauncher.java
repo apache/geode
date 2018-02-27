@@ -762,7 +762,7 @@ public class CacheServerLauncher {
           reconnected = system.waitUntilReconnected(-1, TimeUnit.SECONDS);
           if (reconnected) {
             system = (InternalDistributedSystem) system.getReconnectedSystem();
-            cache = GemFireCacheImpl.getInstance();
+            cache = system.getCache();
           }
         }
         if (!reconnected) {

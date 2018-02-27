@@ -33,18 +33,15 @@ import org.apache.geode.cache.RegionMembershipListener;
 import org.apache.geode.cache.util.RegionMembershipListenerAdapter;
 import org.apache.geode.distributed.*;
 import org.apache.geode.distributed.internal.DistributionAdvisor.Profile;
-import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.distributed.internal.membership.gms.MembershipManagerHelper;
 import org.apache.geode.internal.cache.CacheDistributionAdvisor.CacheProfile;
 import org.apache.geode.internal.cache.DistributedRegion;
-import org.apache.geode.internal.cache.GemFireCacheImpl;
 import org.apache.geode.test.dunit.Host;
 import org.apache.geode.test.dunit.LogWriterUtils;
 import org.apache.geode.test.dunit.VM;
 import org.apache.geode.test.dunit.Wait;
 import org.apache.geode.test.dunit.WaitCriterion;
 import org.apache.geode.test.dunit.cache.internal.JUnit4CacheTestCase;
-import org.apache.geode.test.dunit.internal.JUnit4DistributedTestCase;
 import org.apache.geode.test.junit.categories.DistributedTest;
 
 /**
@@ -94,8 +91,7 @@ public class RegionMembershipListenerDUnitTest extends JUnit4CacheTestCase {
         getCache();
       }
     });
-    this.otherId = (DistributedMember) vm
-        .invoke(() -> RegionMembershipListenerDUnitTest.getVMDistributedMember());
+    this.otherId = vm.invoke(() -> getSystem().getDistributedMember());
   }
 
   protected void createRootOtherVm(final String rName) {
@@ -153,15 +149,9 @@ public class RegionMembershipListenerDUnitTest extends JUnit4CacheTestCase {
       public void run2() throws CacheException {
         // shut down the gms before the distributed system to simulate
         // a crash. In post-5.1.x, this could use SystemFailure.initFailure()
-        GemFireCacheImpl cache = (GemFireCacheImpl) getCache();
-        InternalDistributedSystem sys = (InternalDistributedSystem) cache.getDistributedSystem();
-        MembershipManagerHelper.crashDistributedSystem(sys);
+        MembershipManagerHelper.crashDistributedSystem(getCache().getDistributedSystem());
       }
     });
-  }
-
-  public static DistributedMember getVMDistributedMember() {
-    return InternalDistributedSystem.getAnyInstance().getDistributedMember();
   }
 
   protected void createRootRegionWithListener(String rName) throws CacheException {

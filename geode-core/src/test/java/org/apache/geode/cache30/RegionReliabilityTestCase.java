@@ -58,9 +58,7 @@ import org.apache.geode.cache.query.Query;
 import org.apache.geode.cache.query.QueryService;
 import org.apache.geode.cache.util.RegionMembershipListenerAdapter;
 import org.apache.geode.distributed.Role;
-import org.apache.geode.distributed.internal.DistributionManager;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
-import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
 import org.apache.geode.distributed.internal.membership.InternalRole;
 import org.apache.geode.internal.cache.AbstractRegion;
 import org.apache.geode.internal.cache.DistributedCacheOperation;
@@ -515,11 +513,6 @@ public abstract class RegionReliabilityTestCase extends ReliabilityTestCase {
 
     // retest ops on Region to assert no longer throw
     assertNoAccessDoesNotThrow(region);
-  }
-
-  private static InternalDistributedMember findDistributedMember() {
-    DistributionManager dm = (InternalDistributedSystem.getAnyInstance()).getDistributionManager();
-    return dm.getDistributionManagerId();
   }
 
   /**

@@ -330,6 +330,7 @@ public class JNDIInvoker {
       } else if (value.equals("SimpleDataSource")) {
         ds = DataSourceFactory.getSimpleDataSource(map, props);
         ctx.rebind("java:/" + jndiName, ds);
+        dataSourceList.add(ds);
         if (writer.fineEnabled())
           writer.fine("Bound java:/" + jndiName + " to Context");
       } else if (value.equals("ManagedDataSource")) {
@@ -374,8 +375,8 @@ public class JNDIInvoker {
   public static TransactionManager getTransactionManager() {
     return transactionManager;
   }
-  // try to find websphere lookups since we came here
-  /*
-   * private static void print(String str) { if (DEBUG) { System.err.println(str); } }
-   */
+
+  public static int getNoOfAvailableDataSources() {
+    return dataSourceList.size();
+  }
 }

@@ -664,6 +664,48 @@ public class WANRollingUpgradeDUnitTest extends JUnit4CacheTestCase {
     assertEquals(0, remoteServer1EventsReceived + remoteServer2EventsReceived);
   }
 
+  @Test
+  public void testVerifyGatewayReceiverDoesNotSendRemoveCacheServerProfileToMembersOlderThan1dot5()
+      throws Exception {
+    final Host host = Host.getHost(0);
+    VM oldLocator = host.getVM(oldVersion, 0);
+    VM oldServer = host.getVM(oldVersion, 1);
+    VM currentServer = host.getVM(VersionManager.CURRENT_VERSION, 2);
+
+    // Start locator
+    final int port = AvailablePort.getRandomAvailablePort(AvailablePort.SOCKET);
+    DistributedTestUtils.deleteLocatorStateFile(port);
+    final String locators = NetworkUtils.getServerHostName(host) + "[" + port + "]";
+    oldLocator.invoke(() -> startLocator(port, 0, locators, ""));
+
+    IgnoredException ie =
+        IgnoredException.addIgnoredException("could not get remote locator information");
+    try {
+      // Start old server
+      oldServer.invoke(() -> createCache(locators));
+
+      // Locators before 1.4 handled configuration asynchronously.
+      // We must wait for configuration configuration to be ready, or confirm that it is disabled.
+      oldLocator.invoke(
+          () -> Awaitility.await().atMost(65, TimeUnit.SECONDS).pollInterval(1, TimeUnit.SECONDS)
+              .until(() -> assertTrue(
+                  !InternalLocator.getLocator().getConfig().getEnableClusterConfiguration()
+                      || InternalLocator.getLocator().isSharedConfigurationRunning())));
+
+      oldServer.invoke(() -> createGatewayReceiver());
+
+      currentServer.invoke(() -> createCache(locators));
+
+      currentServer.invoke(() -> createGatewayReceiver());
+      currentServer.invoke(() -> getCache().getGatewayReceivers().forEach(r -> {
+        r.stop();
+        r.destroy();
+      }));
+    } finally {
+      ie.remove();
+    }
+  }
+
   private void createCache(String locators) {
     Properties props = new Properties();
     props.setProperty(DistributionConfig.MCAST_PORT_NAME, "0");

@@ -32,7 +32,6 @@ import org.apache.geode.internal.protocol.protobuf.v1.state.exception.OperationN
  */
 @Experimental
 public class ProtobufOpsProcessor {
-
   private final ProtobufOperationContextRegistry protobufOperationContextRegistry;
   private final ProtobufSerializationService serializationService;
   private static final Logger logger = LogService.getLogger(ProtobufOpsProcessor.class);
@@ -76,13 +75,18 @@ public class ProtobufOpsProcessor {
   private Result processOperation(ClientProtocol.Message request, MessageExecutionContext context,
       ClientProtocol.Message.MessageTypeCase requestType, ProtobufOperationContext operationContext)
       throws ConnectionStateException, EncodingException, DecodingException {
+
+    long startTime = context.getStatistics().startOperation();
     try {
       return operationContext.getOperationHandler().process(serializationService,
           operationContext.getFromRequest().apply(request), context);
     } catch (InvalidExecutionContextException exception) {
       logger.error("Invalid execution context found for operation {}", requestType);
+      logger.error(exception);
       return Failure.of(BasicTypes.ErrorCode.INVALID_REQUEST,
           "Invalid execution context found for operation.");
+    } finally {
+      context.getStatistics().endOperation(startTime);
     }
   }
 }

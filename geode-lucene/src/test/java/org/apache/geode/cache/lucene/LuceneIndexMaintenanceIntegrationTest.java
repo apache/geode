@@ -14,8 +14,14 @@
  */
 package org.apache.geode.cache.lucene;
 
-import static org.apache.geode.cache.lucene.test.LuceneTestUtilities.*;
-import static org.junit.Assert.*;
+import static org.apache.geode.cache.lucene.test.LuceneTestUtilities.DEFAULT_FIELD;
+import static org.apache.geode.cache.lucene.test.LuceneTestUtilities.INDEX_NAME;
+import static org.apache.geode.cache.lucene.test.LuceneTestUtilities.REGION_NAME;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.greaterThanOrEqualTo;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
 
 import java.io.Serializable;
 import java.util.Collection;
@@ -46,7 +52,6 @@ import org.apache.geode.cache.query.data.PortfolioPdx;
 import org.apache.geode.internal.cache.CachedDeserializable;
 import org.apache.geode.internal.cache.EntrySnapshot;
 import org.apache.geode.internal.cache.RegionEntry;
-import org.apache.geode.pdx.JSONFormatter;
 import org.apache.geode.pdx.PdxInstance;
 import org.apache.geode.test.junit.categories.IntegrationTest;
 
@@ -153,8 +158,8 @@ public class LuceneIndexMaintenanceIntegrationTest extends LuceneIntegrationTest
     assertEquals(2, results.size());
     LuceneIndexForPartitionedRegion indexForPR = (LuceneIndexForPartitionedRegion) index;
     LuceneIndexStats indexStats = indexForPR.getIndexStats();
-    assertEquals(1, indexStats.getFailedEntries());
-    assertEquals(4, indexStats.getUpdates());
+    assertEquals(2, indexStats.getFailedEntries());
+    assertEquals(8, indexStats.getUpdates());
   }
 
   @Test
@@ -177,7 +182,7 @@ public class LuceneIndexMaintenanceIntegrationTest extends LuceneIntegrationTest
     assertEquals(5, results.size());
     LuceneIndexForPartitionedRegion indexForPR = (LuceneIndexForPartitionedRegion) index;
     LuceneIndexStats indexStats = indexForPR.getIndexStats();
-    assertEquals(10, indexStats.getUpdates());
+    assertThat("indexStats.getUpdates()", indexStats.getUpdates(), greaterThanOrEqualTo(10));
   }
 
   @Test
@@ -269,7 +274,7 @@ public class LuceneIndexMaintenanceIntegrationTest extends LuceneIntegrationTest
     LuceneTestUtilities.resumeSender(cache);
     assertTrue(luceneService.waitUntilFlushed(INDEX_NAME, REGION_NAME, WAIT_FOR_FLUSH_TIME,
         TimeUnit.MILLISECONDS));
-    assertEquals(4, index.getIndexStats().getCommits());
+    assertEquals(8, index.getIndexStats().getCommits());
   }
 
   @Test

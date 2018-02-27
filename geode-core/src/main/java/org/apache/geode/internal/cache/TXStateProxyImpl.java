@@ -286,8 +286,8 @@ public class TXStateProxyImpl implements TXStateProxy {
       Object expectedOldValue) throws EntryNotFoundException {
     try {
       this.operationCount++;
-      getRealDeal(event.getKeyInfo(), event.getLocalRegion()).destroyExistingEntry(event,
-          cacheWrite, expectedOldValue);
+      getRealDeal(event.getKeyInfo(), event.getRegion()).destroyExistingEntry(event, cacheWrite,
+          expectedOldValue);
       trackBucketForTx(event.getKeyInfo());
     } catch (TransactionDataRebalancedException | PrimaryBucketException re) {
       throw getTransactionException(event.getKeyInfo(), re);
@@ -364,7 +364,7 @@ public class TXStateProxyImpl implements TXStateProxy {
       boolean forceNewEntry) {
     try {
       this.operationCount++;
-      getRealDeal(event.getKeyInfo(), event.getLocalRegion()).invalidateExistingEntry(event,
+      getRealDeal(event.getKeyInfo(), event.getRegion()).invalidateExistingEntry(event,
           invokeCallbacks, forceNewEntry);
       trackBucketForTx(event.getKeyInfo());
     } catch (TransactionDataRebalancedException | PrimaryBucketException re) {
@@ -622,8 +622,8 @@ public class TXStateProxyImpl implements TXStateProxy {
       boolean overwriteDestroyed) {
     try {
       this.operationCount++;
-      boolean retVal = getRealDeal(event.getKeyInfo(), event.getLocalRegion()).putEntry(event,
-          ifNew, ifOld, expectedOldValue, requireOldValue, lastModified, overwriteDestroyed);
+      boolean retVal = getRealDeal(event.getKeyInfo(), event.getRegion()).putEntry(event, ifNew,
+          ifOld, expectedOldValue, requireOldValue, lastModified, overwriteDestroyed);
       trackBucketForTx(event.getKeyInfo());
       return retVal;
     } catch (TransactionDataRebalancedException | PrimaryBucketException re) {
@@ -655,7 +655,7 @@ public class TXStateProxyImpl implements TXStateProxy {
       Object expectedOldValue, boolean requireOldValue, long lastModified,
       boolean overwriteDestroyed) throws DataLocationException {
     this.operationCount++;
-    TXStateInterface tx = getRealDeal(event.getKeyInfo(), event.getLocalRegion());
+    TXStateInterface tx = getRealDeal(event.getKeyInfo(), event.getRegion());
     assert (tx instanceof TXState) : tx.getClass().getSimpleName();
     return tx.putEntryOnRemote(event, ifNew, ifOld, expectedOldValue, requireOldValue, lastModified,
         overwriteDestroyed);
@@ -670,7 +670,7 @@ public class TXStateProxyImpl implements TXStateProxy {
   public void destroyOnRemote(EntryEventImpl event, boolean cacheWrite, Object expectedOldValue)
       throws DataLocationException {
     this.operationCount++;
-    TXStateInterface tx = getRealDeal(event.getKeyInfo(), event.getLocalRegion());
+    TXStateInterface tx = getRealDeal(event.getKeyInfo(), event.getRegion());
     assert (tx instanceof TXState);
     tx.destroyOnRemote(event, cacheWrite, expectedOldValue);
   }
@@ -679,7 +679,7 @@ public class TXStateProxyImpl implements TXStateProxy {
   public void invalidateOnRemote(EntryEventImpl event, boolean invokeCallbacks,
       boolean forceNewEntry) throws DataLocationException {
     this.operationCount++;
-    TXStateInterface tx = getRealDeal(event.getKeyInfo(), event.getLocalRegion());
+    TXStateInterface tx = getRealDeal(event.getKeyInfo(), event.getRegion());
     assert (tx instanceof TXState);
     tx.invalidateOnRemote(event, invokeCallbacks, forceNewEntry);
   }

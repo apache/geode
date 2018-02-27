@@ -18,10 +18,13 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
+import org.apache.logging.log4j.Logger;
+
 import org.apache.geode.cache.Region;
 import org.apache.geode.cache.execute.Execution;
 import org.apache.geode.cache.execute.FunctionService;
 import org.apache.geode.internal.exception.InvalidExecutionContextException;
+import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.internal.protocol.protobuf.v1.BasicTypes;
 import org.apache.geode.internal.protocol.protobuf.v1.Failure;
 import org.apache.geode.internal.protocol.protobuf.v1.FunctionAPI.ExecuteFunctionOnRegionRequest;
@@ -35,6 +38,7 @@ import org.apache.geode.internal.protocol.protobuf.v1.serialization.exception.En
 
 public class ExecuteFunctionOnRegionRequestOperationHandler extends
     AbstractFunctionRequestOperationHandler<ExecuteFunctionOnRegionRequest, ExecuteFunctionOnRegionResponse> {
+  private static final Logger logger = LogService.getLogger();
 
   protected Set<Object> parseFilter(ProtobufSerializationService serializationService,
       ExecuteFunctionOnRegionRequest request) throws DecodingException {
@@ -62,7 +66,9 @@ public class ExecuteFunctionOnRegionRequestOperationHandler extends
       MessageExecutionContext executionContext) throws InvalidExecutionContextException {
     final Region<Object, Object> region = executionContext.getCache().getRegion(regionName);
     if (region == null) {
-      return Failure.of(BasicTypes.ErrorCode.INVALID_REQUEST,
+      logger.error("Received execute-function-on-region request for nonexistent region: {}",
+          regionName);
+      return Failure.of(BasicTypes.ErrorCode.SERVER_ERROR,
           "Region \"" + regionName + "\" not found");
     }
     return region;
@@ -71,7 +77,11 @@ public class ExecuteFunctionOnRegionRequestOperationHandler extends
   @Override
   protected Object getFunctionArguments(ExecuteFunctionOnRegionRequest request,
       ProtobufSerializationService serializationService) throws DecodingException {
-    return serializationService.decode(request.getArguments());
+    if (request.hasArguments()) {
+      return serializationService.decode(request.getArguments());
+    } else {
+      return null;
+    }
   }
 
   @Override

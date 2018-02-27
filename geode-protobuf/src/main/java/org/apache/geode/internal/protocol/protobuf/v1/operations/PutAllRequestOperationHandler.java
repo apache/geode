@@ -52,9 +52,9 @@ public class PutAllRequestOperationHandler
     Region region = messageExecutionContext.getCache().getRegion(regionName);
 
     if (region == null) {
-      logger.error("Received PutAll request for non-existing region {}", regionName);
+      logger.error("Received put-all request for nonexistent region: {}", regionName);
       return Failure.of(BasicTypes.ErrorCode.SERVER_ERROR,
-          "Region passed does not exist: " + regionName);
+          "Region \"" + regionName + "\" not found");
     }
 
     ThreadState threadState = null;
@@ -87,7 +87,6 @@ public class PutAllRequestOperationHandler
           serializationService, region, entry, securityService, authorizeKeys));
 
     } finally {
-      messageExecutionContext.getStatistics().endOperation(startTime);
       messageExecutionContext.getCache().setReadSerializedForCurrentThread(false);
       if (threadState != null) {
         ((ProtobufConnectionAuthorizingStateProcessor) messageExecutionContext
@@ -103,13 +102,15 @@ public class PutAllRequestOperationHandler
     try {
 
       Object decodedKey = serializationService.decode(entry.getKey());
-
+      Object decodedValue = serializationService.decode(entry.getValue());
+      if (decodedKey == null || decodedValue == null) {
+        builder.addFailedKeys(
+            buildKeyedError(entry, INVALID_REQUEST, "Key and value must both be non-NULL"));
+      }
       if (authorizeKeys) {
         securityService.authorize(new ResourcePermission(ResourcePermission.Resource.DATA,
             ResourcePermission.Operation.WRITE, region.getName(), decodedKey.toString()));
       }
-
-      Object decodedValue = serializationService.decode(entry.getValue());
       region.put(decodedKey, decodedValue);
 
     } catch (NotAuthorizedException ex) {

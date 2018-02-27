@@ -210,7 +210,6 @@ public class JdbcWriterIntegrationTest {
   private Region<String, PdxInstance> createRegionWithJDBCSynchronousWriter(String regionName)
       throws ConnectionConfigExistsException, RegionMappingExistsException {
     jdbcWriter = new JdbcWriter(createSqlHandler());
-    jdbcWriter.init(new Properties());
 
     RegionFactory<String, PdxInstance> regionFactory =
         cache.createRegionFactory(RegionShortcut.REPLICATE);

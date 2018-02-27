@@ -18,6 +18,8 @@ import java.util.Date;
 import java.util.Map;
 import java.util.Map.Entry;
 
+import org.apache.commons.lang.exception.ExceptionUtils;
+
 import org.apache.geode.Statistics;
 import org.apache.geode.StatisticsType;
 import org.apache.geode.cache.CacheWriterException;
@@ -34,7 +36,6 @@ import org.apache.geode.internal.cache.GemFireCacheImpl;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.i18n.LocalizedStrings;
 import org.apache.geode.internal.offheap.annotations.Released;
-import org.apache.geode.management.internal.cli.CliUtil;
 
 /**
  * This class publishes the client statistics using the admin region.
@@ -255,7 +256,7 @@ public class ClientStatsManager {
 
     } catch (Exception e) {
       logger.fine("Exception in getting pool stats in  getClientHealthStats "
-          + CliUtil.stackTraceAsString(e));
+          + ExceptionUtils.getStackTrace(e));
     }
 
     stats.setUpdateTime(new Date());

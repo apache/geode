@@ -76,9 +76,12 @@ public class RegionAttributesNames {
   public static final String ENTRY_IDLE_TIMEOUT = "entry-idle-time.timeout";
   public static final String ENTRY_IDLE_TIMEOUT_ACTION = "entry-idle-time.action";
 
-
   // EVICTION ATTRIBUTES
   public static final String EVICTION_ACTION = "eviction-action";
   public static final String EVICTION_ALGORITHM = "eviction-algorithm";
   public static final String EVICTION_MAX_VALUE = "eviction-maximum-value";
+
+  // Expiration attributes
+  public static final String ENTRY_IDLE_TIME_CUSTOM_EXPIRY = "entry-idle-time-custom-expiry";
+  public static final String ENTRY_TIME_TO_LIVE_CUSTOM_EXPIRY = "entry-time-to-live-custom-expiry";
 }

@@ -53,8 +53,9 @@ public class GetAllRequestOperationHandler
     String regionName = request.getRegionName();
     Region region = messageExecutionContext.getCache().getRegion(regionName);
     if (region == null) {
-      logger.error("Received GetAll request for non-existing region {}", regionName);
-      return Failure.of(BasicTypes.ErrorCode.SERVER_ERROR, "Region not found");
+      logger.error("Received get-all request for nonexistent region: {}", regionName);
+      return Failure.of(BasicTypes.ErrorCode.SERVER_ERROR,
+          "Region \"" + regionName + "\" not found");
     }
 
     ThreadState threadState = null;
@@ -102,6 +103,11 @@ public class GetAllRequestOperationHandler
     try {
 
       Object decodedKey = serializationService.decode(key);
+      if (decodedKey == null) {
+        responseBuilder
+            .addFailures(buildKeyedError(key, "NULL is not a valid key for get.", INVALID_REQUEST));
+        return;
+      }
       if (authorizeKeys) {
         securityService.authorize(new ResourcePermission(ResourcePermission.Resource.DATA,
             ResourcePermission.Operation.READ, region.getName(), decodedKey.toString()));

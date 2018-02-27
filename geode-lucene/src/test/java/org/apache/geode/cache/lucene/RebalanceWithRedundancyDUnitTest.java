@@ -14,9 +14,10 @@
  */
 package org.apache.geode.cache.lucene;
 
-import static org.apache.geode.cache.lucene.test.IndexRepositorySpy.*;
-import static org.apache.geode.cache.lucene.test.LuceneTestUtilities.*;
-import static org.junit.Assert.*;
+import static org.apache.geode.cache.lucene.test.IndexRepositorySpy.doAfterN;
+import static org.apache.geode.cache.lucene.test.LuceneTestUtilities.INDEX_NAME;
+import static org.apache.geode.cache.lucene.test.LuceneTestUtilities.REGION_NAME;
+import static org.junit.Assert.assertTrue;
 
 import java.io.Serializable;
 import java.util.concurrent.CountDownLatch;
@@ -177,15 +178,16 @@ public class RebalanceWithRedundancyDUnitTest extends LuceneQueriesAccessorBase 
     dataStore1.invoke(() -> initDataStore(createIndex, regionTestType));
     dataStore2.invoke(() -> initDataStore(createIndex, regionTestType));
     accessor.invoke(() -> initAccessor(createIndex, regionTestType));
+
     dataStore1.invoke(() -> LuceneTestUtilities.pauseSender(getCache()));
     dataStore2.invoke(() -> LuceneTestUtilities.pauseSender(getCache()));
     accessor.invoke(() -> LuceneTestUtilities.pauseSender(getCache()));
 
     putEntryInEachBucket();
 
-    dataStore1.invoke(() -> LuceneTestUtilities.resumeSender(getCache()));
-    dataStore2.invoke(() -> LuceneTestUtilities.resumeSender(getCache()));
-    accessor.invoke(() -> LuceneTestUtilities.resumeSender(getCache()));
+    dataStore1.invoke(() -> LuceneTestUtilities.resumeSender(basicGetCache()));
+    dataStore2.invoke(() -> LuceneTestUtilities.resumeSender(basicGetCache()));
+    accessor.invoke(() -> LuceneTestUtilities.resumeSender(basicGetCache()));
 
     assertTrue(waitForFlushBeforeExecuteTextSearch(dataStore2, 60000));
 

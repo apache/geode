@@ -15,7 +15,6 @@
 package org.apache.geode.cache30;
 
 import org.apache.geode.cache.CacheException;
-import org.apache.geode.cache.CacheFactory;
 import org.apache.geode.cache.CacheRuntimeException;
 import org.apache.geode.test.dunit.RepeatableRunnable;
 import org.apache.geode.test.dunit.SerializableRunnable;
@@ -75,9 +74,7 @@ public abstract class CacheSerializableRunnable extends SerializableRunnable
       try {
         lastErr = null;
         this.run();
-        CacheFactory.getAnyInstance().getLogger().fine("Completed " + this);
       } catch (AssertionError err) {
-        CacheFactory.getAnyInstance().getLogger().fine("Repeating " + this);
         lastErr = err;
         try {
           Thread.sleep(50);

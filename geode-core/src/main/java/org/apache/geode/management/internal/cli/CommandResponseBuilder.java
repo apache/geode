@@ -14,6 +14,8 @@
  */
 package org.apache.geode.management.internal.cli;
 
+import org.apache.commons.lang.exception.ExceptionUtils;
+
 import org.apache.geode.management.cli.CliMetaData;
 import org.apache.geode.management.internal.cli.json.GfJsonException;
 import org.apache.geode.management.internal.cli.json.GfJsonObject;
@@ -40,7 +42,7 @@ public class CommandResponseBuilder {
     try {
       jsonObject = new GfJsonObject(jsonString);
     } catch (GfJsonException e) {
-      jsonObject = GfJsonObject.getGfJsonErrorObject(CliUtil.stackTraceAsString(e));
+      jsonObject = GfJsonObject.getGfJsonErrorObject(ExceptionUtils.getStackTrace(e));
     }
     return new CommandResponse(jsonObject);
   }

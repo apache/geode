@@ -43,11 +43,9 @@ import org.apache.geode.cache.SubscriptionAttributes;
 import org.apache.geode.cache.util.CacheWriterAdapter;
 import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.distributed.internal.DMStats;
-import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.test.dunit.Host;
 import org.apache.geode.test.dunit.VM;
 import org.apache.geode.test.dunit.cache.internal.JUnit4CacheTestCase;
-import org.apache.geode.test.dunit.internal.JUnit4DistributedTestCase;
 import org.apache.geode.test.junit.categories.DistributedTest;
 
 /**
@@ -79,7 +77,7 @@ public class ProxyDUnitTest extends JUnit4CacheTestCase {
         getCache();
       }
     });
-    this.otherId = (DistributedMember) vm.invoke(() -> ProxyDUnitTest.getVMDistributedMember());
+    this.otherId = (DistributedMember) vm.invoke(() -> getSystem().getDistributedMember());
   }
 
   private void doCreateOtherVm() {
@@ -92,10 +90,6 @@ public class ProxyDUnitTest extends JUnit4CacheTestCase {
         createRootRegion("ProxyDUnitTest", af.create());
       }
     });
-  }
-
-  public static DistributedMember getVMDistributedMember() {
-    return InternalDistributedSystem.getAnyInstance().getDistributedMember();
   }
 
   ////////////////////// Test Methods //////////////////////
@@ -246,8 +240,7 @@ public class ProxyDUnitTest extends JUnit4CacheTestCase {
    * Gets the DMStats for the vm's DM
    */
   private DMStats getDMStats() {
-    return ((InternalDistributedSystem) getCache().getDistributedSystem()).getDistributionManager()
-        .getStats();
+    return getCache().getDistributionManager().getStats();
   }
 
   /**
