@@ -281,9 +281,9 @@ public class AnalyzeSerializablesJUnitTest {
       Class sanctionedClass = null;
       try {
         sanctionedClass = Class.forName(className);
-      } catch (ClassNotFoundException cnf){
+      } catch (ClassNotFoundException cnf) {
         fail(className + " cannot be found.  It may need to be removed from "
-        + expectedSerializablesFileName);
+            + expectedSerializablesFileName);
       }
 
       assertTrue(
