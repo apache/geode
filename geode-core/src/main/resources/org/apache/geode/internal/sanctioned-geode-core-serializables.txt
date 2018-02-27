@@ -441,7 +441,6 @@ org/apache/geode/internal/tcp/ImmutableByteBufferInputStream,false
 org/apache/geode/internal/tcp/MemberShunnedException,true,-8453126202477831557,member:org/apache/geode/distributed/DistributedMember
 org/apache/geode/internal/tcp/ReenteredConnectException,true,2878977454669428469
 org/apache/geode/internal/util/Breadcrumbs$CrumbType,false
-org/apache/geode/internal/util/SingletonValue$ValueState,false
 org/apache/geode/internal/util/SunAPINotFoundException,true,75895915344106684
 org/apache/geode/internal/util/concurrent/CopyOnWriteHashMap,false,map:java/util/Map
 org/apache/geode/internal/util/concurrent/CustomEntryConcurrentHashMap,true,-7056732555635108300,compareValues:boolean,entryCreator:org/apache/geode/internal/util/concurrent/CustomEntryConcurrentHashMap$HashEntryCreator,segmentMask:int,segmentShift:int,segments:org/apache/geode/internal/util/concurrent/CustomEntryConcurrentHashMap$Segment[]
