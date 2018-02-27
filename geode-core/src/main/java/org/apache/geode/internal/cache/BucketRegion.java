@@ -1006,7 +1006,7 @@ public class BucketRegion extends DistributedRegion implements Bucket {
   }
 
   @Override
-  void expireDestroy(EntryEventImpl event, boolean cacheWrite) {
+  public void expireDestroy(EntryEventImpl event, boolean cacheWrite) {
 
     /* Early out before we throw a PrimaryBucketException because we're not primary */
     if (needWriteLock(event) && !getBucketAdvisor().isPrimary()) {
@@ -1022,7 +1022,7 @@ public class BucketRegion extends DistributedRegion implements Bucket {
   }
 
   @Override
-  void expireInvalidate(EntryEventImpl event) {
+  public void expireInvalidate(EntryEventImpl event) {
     if (!getBucketAdvisor().isPrimary()) {
       return;
     }
@@ -1034,7 +1034,7 @@ public class BucketRegion extends DistributedRegion implements Bucket {
   }
 
   @Override
-  void performExpiryTimeout(ExpiryTask expiryTask) throws CacheException {
+  public void performExpiryTimeout(ExpiryTask expiryTask) throws CacheException {
     ExpiryTask task = expiryTask;
     boolean isEvictDestroy = isEntryEvictDestroyEnabled();
     // Fix for bug 43805 - get the primary lock before

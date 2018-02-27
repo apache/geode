@@ -12,9 +12,11 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
-package org.apache.geode.internal.cache;
+package org.apache.geode.internal.cache.expiration;
 
 import org.apache.geode.cache.ExpirationAttributes;
+import org.apache.geode.internal.cache.LocalRegion;
+import org.apache.geode.internal.cache.RegionEntry;
 
 /**
  * Remembers the expiration attributes returned from the customer's CustomExpiry callback, if any.

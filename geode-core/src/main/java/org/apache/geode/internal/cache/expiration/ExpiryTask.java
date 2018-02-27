@@ -200,7 +200,7 @@ public abstract class ExpiryTask extends SystemTimer.SystemTimerTask {
     getLocalRegion().performExpiryTimeout(this);
   }
 
-  protected abstract void basicPerformTimeout(boolean isPending) throws CacheException;
+  public abstract void basicPerformTimeout(boolean isPending) throws CacheException;
 
   /**
    * @guarded.By suspendLock
@@ -291,7 +291,7 @@ public abstract class ExpiryTask extends SystemTimer.SystemTimerTask {
   }
 
   /** Returns true if the ExpirationAction is a distributed action. */
-  protected boolean isDistributedAction() {
+  public boolean isDistributedAction() {
     ExpirationAction action = getAction();
     return action != null && (action.isInvalidate() || action.isDestroy());
   }
@@ -488,7 +488,7 @@ public abstract class ExpiryTask extends SystemTimer.SystemTimerTask {
    * To reduce the number of times we need to call calculateNow, you can call this method to set now
    * in a thread local. When the run returns the thread local is cleared.
    */
-  static void doWithNowSet(LocalRegion lr, Runnable runnable) {
+  public static void doWithNowSet(LocalRegion lr, Runnable runnable) {
     now.set(calculateNow(lr.getCache()));
     try {
       runnable.run();

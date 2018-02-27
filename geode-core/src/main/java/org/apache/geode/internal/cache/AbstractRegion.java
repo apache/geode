@@ -382,7 +382,7 @@ public abstract class AbstractRegion implements InternalRegion, AttributesMutato
    */
   abstract boolean generateEventID();
 
-  protected abstract InternalDistributedMember getMyId();
+  public abstract InternalDistributedMember getMyId();
 
   @Override
   public void clear() {

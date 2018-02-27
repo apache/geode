@@ -1654,7 +1654,7 @@ public class EntryEventImpl implements InternalEntryEvent, InternalCacheEvent,
     if (v == null) {
       v = isLocalInvalid() ? Token.LOCAL_INVALID : Token.INVALID;
     } else {
-      getRegion().regionInvalid = false;
+      getRegion().setRegionInvalid(false);
     }
 
     reentry.setValueResultOfSearch(this.op.isNetSearch());
