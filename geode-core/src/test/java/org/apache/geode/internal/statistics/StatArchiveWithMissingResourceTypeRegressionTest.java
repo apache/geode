@@ -30,6 +30,18 @@ import org.junit.rules.TemporaryFolder;
 
 import org.apache.geode.test.junit.categories.IntegrationTest;
 
+/**
+ * StatArchiveReader should throw IllegalStateException with detailed information instead of
+ * throwing NullPointerException when encountering a Geode Stats file (.gfs) with a missing
+ * ResourceType.
+ *
+ * <p>
+ * {@code StatArchiveWithMissingResourceTypeRegressionTest.gfs} was hacked to have a missing
+ * ResourceType. There is no way to generate an equivalent .gfs file.
+ *
+ * <p>
+ * GEODE-2013: StatArchiveReader throws NullPointerException due to missing ResourceType
+ */
 @Category(IntegrationTest.class)
 public class StatArchiveWithMissingResourceTypeRegressionTest {
 
@@ -46,9 +58,9 @@ public class StatArchiveWithMissingResourceTypeRegressionTest {
     URL url = getClass().getResource(ARCHIVE_FILE_NAME);
     assertThat(url).isNotNull(); // precondition
 
-    this.archiveFile = this.temporaryFolder.newFile(ARCHIVE_FILE_NAME);
-    FileUtils.copyURLToFile(url, this.archiveFile);
-    assertThat(this.archiveFile).exists(); // precondition
+    archiveFile = temporaryFolder.newFile(ARCHIVE_FILE_NAME);
+    FileUtils.copyURLToFile(url, archiveFile);
+    assertThat(archiveFile).exists(); // precondition
   }
 
   @After
@@ -56,9 +68,9 @@ public class StatArchiveWithMissingResourceTypeRegressionTest {
     StatisticsTypeFactoryImpl.clear();
   }
 
-  @Test // fixed GEODE-2013
+  @Test
   public void throwsIllegalStateExceptionWithMessage() throws Exception {
-    assertThatThrownBy(() -> new StatArchiveReader(new File[] {this.archiveFile}, null, true))
+    assertThatThrownBy(() -> new StatArchiveReader(new File[] {archiveFile}, null, true))
         .isExactlyInstanceOf(IllegalStateException.class) // was NullPointerException
         .hasMessageStartingWith("ResourceType is missing for resourceTypeId 0")
         .hasMessageContaining("resourceName statistics1");

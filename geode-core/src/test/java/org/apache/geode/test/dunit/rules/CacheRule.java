@@ -16,9 +16,9 @@ package org.apache.geode.test.dunit.rules;
 
 import static org.apache.geode.distributed.ConfigurationProperties.LOCATORS;
 import static org.apache.geode.test.dunit.DistributedTestUtils.getLocators;
+import static org.assertj.core.api.Assertions.assertThat;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 import java.util.Properties;
 
@@ -57,7 +57,7 @@ import org.apache.geode.test.dunit.VM;
 @SuppressWarnings({"serial", "unused"})
 public class CacheRule extends DistributedExternalResource {
 
-  private static InternalCache cache;
+  private static volatile InternalCache cache;
 
   private final boolean createCacheInAll;
   private final boolean createCache;
@@ -71,22 +71,16 @@ public class CacheRule extends DistributedExternalResource {
   }
 
   public CacheRule() {
-    this.createCacheInAll = false;
-    this.createCache = false;
-    this.disconnectAfter = false;
-    this.createCacheInVMs = Collections.emptyList();
-    this.config = new Properties();
-    this.config.setProperty(LOCATORS, getLocators());
-    this.systemProperties = new Properties();
+    this(new Builder());
   }
 
   CacheRule(final Builder builder) {
-    this.createCacheInAll = builder.createCacheInAll;
-    this.createCache = builder.createCache;
-    this.disconnectAfter = builder.disconnectAfter;
-    this.createCacheInVMs = builder.createCacheInVMs;
-    this.config = builder.config;
-    this.systemProperties = builder.systemProperties;
+    createCacheInAll = builder.createCacheInAll;
+    createCache = builder.createCache;
+    disconnectAfter = builder.disconnectAfter;
+    createCacheInVMs = builder.createCacheInVMs;
+    config = builder.config;
+    systemProperties = builder.systemProperties;
   }
 
   @Override
@@ -121,14 +115,25 @@ public class CacheRule extends DistributedExternalResource {
     return cache.getInternalDistributedSystem();
   }
 
-  public InternalCache createCache() {
-    createCache(config, systemProperties);
-    return cache;
+  public void createCache() {
+    cache = (InternalCache) new CacheFactory(config).create();
   }
 
-  private static void createCache(final Properties config, final Properties systemProperties) {
+  public void createCache(final Properties config) {
+    cache = (InternalCache) new CacheFactory(config).create();
+  }
+
+  public void createCache(final Properties config, final Properties systemProperties) {
     System.getProperties().putAll(systemProperties);
     cache = (InternalCache) new CacheFactory(config).create();
+  }
+
+  public InternalCache getOrCreateCache() {
+    if (cache == null) {
+      createCache();
+      assertThat(cache).isNotNull();
+    }
+    return cache;
   }
 
   private static void closeAndNullCache() {
@@ -207,7 +212,7 @@ public class CacheRule extends DistributedExternalResource {
     }
 
     public Builder addConfig(final String key, final String value) {
-      this.config.put(key, value);
+      config.put(key, value);
       return this;
     }
 
@@ -217,12 +222,12 @@ public class CacheRule extends DistributedExternalResource {
     }
 
     public Builder addSystemProperty(final String key, final String value) {
-      this.systemProperties.put(key, value);
+      systemProperties.put(key, value);
       return this;
     }
 
     public Builder addSystemProperties(final Properties config) {
-      this.systemProperties.putAll(config);
+      systemProperties.putAll(config);
       return this;
     }
 

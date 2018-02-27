@@ -16,16 +16,23 @@ package org.apache.geode.internal.cache.execute;
 
 import static org.apache.geode.distributed.ConfigurationProperties.LOCATORS;
 import static org.apache.geode.distributed.ConfigurationProperties.MCAST_PORT;
+import static org.apache.geode.distributed.ConfigurationProperties.SERIALIZABLE_OBJECT_FILTER;
+import static org.apache.geode.distributed.internal.DistributionConfig.GEMFIRE_PREFIX;
+import static org.apache.geode.test.dunit.DistributedTestUtils.getLocatorPort;
+import static org.apache.geode.test.dunit.Host.getHost;
+import static org.apache.geode.test.dunit.Invoke.invokeInEveryVM;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import java.io.IOException;
-import java.util.ArrayList;
+import java.io.Serializable;
+import java.util.List;
 import java.util.Properties;
 
 import junitparams.JUnitParamsRunner;
 import junitparams.Parameters;
 import org.junit.After;
 import org.junit.Before;
+import org.junit.ClassRule;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
@@ -33,7 +40,6 @@ import org.junit.runner.RunWith;
 
 import org.apache.geode.cache.CacheFactory;
 import org.apache.geode.cache.PartitionAttributesFactory;
-import org.apache.geode.cache.Region;
 import org.apache.geode.cache.RegionFactory;
 import org.apache.geode.cache.RegionShortcut;
 import org.apache.geode.cache.client.ClientCacheFactory;
@@ -42,42 +48,45 @@ import org.apache.geode.cache.client.ClientRegionShortcut;
 import org.apache.geode.cache.client.internal.InternalClientCache;
 import org.apache.geode.cache.execute.Execution;
 import org.apache.geode.cache.execute.Function;
-import org.apache.geode.cache.execute.FunctionAdapter;
 import org.apache.geode.cache.execute.FunctionContext;
 import org.apache.geode.cache.execute.FunctionService;
 import org.apache.geode.cache.execute.ResultCollector;
 import org.apache.geode.cache.server.CacheServer;
-import org.apache.geode.distributed.ConfigurationProperties;
-import org.apache.geode.distributed.internal.DistributionConfig;
-import org.apache.geode.internal.AvailablePort;
-import org.apache.geode.internal.cache.CacheServerImpl;
 import org.apache.geode.internal.cache.InternalCache;
+import org.apache.geode.internal.cache.InternalCacheServer;
 import org.apache.geode.internal.cache.tier.ServerSideHandshake;
 import org.apache.geode.internal.cache.tier.sockets.AcceptorImpl;
 import org.apache.geode.internal.cache.tier.sockets.ServerConnection;
-import org.apache.geode.test.dunit.DistributedTestUtils;
-import org.apache.geode.test.dunit.Host;
-import org.apache.geode.test.dunit.Invoke;
 import org.apache.geode.test.dunit.VM;
-import org.apache.geode.test.dunit.internal.JUnit4DistributedTestCase;
 import org.apache.geode.test.dunit.rules.DistributedRestoreSystemProperties;
+import org.apache.geode.test.dunit.rules.DistributedTestRule;
 import org.apache.geode.test.junit.categories.DistributedTest;
 
+/**
+ * Server should terminate client function execution when it times out. Client sends
+ * CLIENT_FUNCTION_TIMEOUT to server when default is overridden by client.
+ *
+ * <p>
+ * TRAC #51193: The function execution connection on the server is never terminated even if the
+ * gemfire.CLIENT_FUNCTION_TIMEOUT property is set
+ */
 @Category(DistributedTest.class)
 @RunWith(JUnitParamsRunner.class)
 @SuppressWarnings("serial")
-public class ClientFunctionTimeoutRegressionTest extends JUnit4DistributedTestCase {
+public class ClientFunctionTimeoutRegressionTest implements Serializable {
 
-  private static final String REGION_NAME =
-      ClientFunctionTimeoutRegressionTest.class.getSimpleName() + "_region";
+  private static final String REGION_NAME = "TheRegion";
+  private static final int TOTAL_NUM_BUCKETS = 4;
+  private static final int REDUNDANT_COPIES = 1;
 
   private static InternalCache serverCache;
-
   private static InternalClientCache clientCache;
 
   private VM server;
-
   private VM client;
+
+  @ClassRule
+  public static DistributedTestRule distributedTestRule = new DistributedTestRule();
 
   @Rule
   public DistributedRestoreSystemProperties restoreSystemProperties =
@@ -85,127 +94,136 @@ public class ClientFunctionTimeoutRegressionTest extends JUnit4DistributedTestCa
 
   @Before
   public void before() throws Exception {
-    server = Host.getHost(0).getVM(0);
-    client = Host.getHost(0).getVM(1);
-
-    disconnectAllFromDS();
+    server = getHost(0).getVM(0);
+    client = getHost(0).getVM(1);
   }
 
   @After
   public void after() throws Exception {
-    Invoke.invokeInEveryVM(() -> closeCache());
+    invokeInEveryVM(() -> {
+      if (clientCache != null) {
+        clientCache.close();
+      }
+      if (serverCache != null) {
+        serverCache.close();
+      }
+      clientCache = null;
+      serverCache = null;
+    });
   }
 
   @Test
-  @Parameters({"false,0,server", "false,6000,server", "false,0,region", "false,6000,region",
-      "true,0,region", "true,6000,region"})
-  public void testExecuteFunctionReadsDefaultTimeout(boolean createPR, int timeout, String mode)
-      throws Exception {
-    // start server
-    int port = server.invoke(() -> createServerCache(createPR));
-    // start client
+  @Parameters({"SERVER,REPLICATE,0", "SERVER,REPLICATE,6000", "REGION,REPLICATE,0",
+      "REGION,REPLICATE,6000", "REGION,PARTITION,0", "REGION,PARTITION,6000"})
+  public void executeFunctionUsesClientTimeoutOnServer(final ExecutionTarget executionTarget,
+      final RegionType regionType, final int timeout) throws Exception {
+    int port = server.invoke(() -> createServerCache(regionType));
     client.invoke(() -> createClientCache(client.getHost().getHostName(), port, timeout));
-    // do puts and get
-    server.invoke(() -> doPutsAndGet(10));
-    // execute function & verify timeout has been received at server.
-    client.invoke(() -> executeFunction(mode, timeout));
+
+    client.invoke(() -> executeFunctionToVerifyClientTimeoutOnServer(executionTarget, timeout));
   }
 
-  private void closeCache() {
-    if (clientCache != null) {
-      clientCache.close();
-      clientCache = null;
-    }
-    if (serverCache != null) {
-      serverCache.close();
-      serverCache = null;
-    }
-  }
-
-  private void createClientCache(String hostName, Integer port, Integer timeout) {
+  private void createClientCache(final String hostName, final int port, final int timeout) {
     if (timeout > 0) {
-      System.setProperty(DistributionConfig.GEMFIRE_PREFIX + "CLIENT_FUNCTION_TIMEOUT",
-          String.valueOf(timeout));
+      System.setProperty(GEMFIRE_PREFIX + "CLIENT_FUNCTION_TIMEOUT", String.valueOf(timeout));
     }
 
-    Properties props = new Properties();
-    props.setProperty(LOCATORS, "");
-    props.setProperty(MCAST_PORT, "0");
+    Properties config = new Properties();
+    config.setProperty(LOCATORS, "");
+    config.setProperty(MCAST_PORT, "0");
 
-    ClientCacheFactory ccf = new ClientCacheFactory(props);
-    ccf.addPoolServer(hostName, port);
-    clientCache = (InternalClientCache) ccf.create();
+    ClientCacheFactory clientCacheFactory = new ClientCacheFactory(config);
+    clientCacheFactory.addPoolServer(hostName, port);
 
-    ClientRegionFactory<String, String> crf =
+    clientCache = (InternalClientCache) clientCacheFactory.create();
+
+    ClientRegionFactory<String, String> clientRegionFactory =
         clientCache.createClientRegionFactory(ClientRegionShortcut.CACHING_PROXY);
 
-    crf.create(REGION_NAME);
+    clientRegionFactory.create(REGION_NAME);
   }
 
-  private Integer createServerCache(Boolean createPR) throws IOException {
-    Properties props = new Properties();
-    props.setProperty(LOCATORS, "localhost[" + DistributedTestUtils.getDUnitLocatorPort() + "]");
-    props.setProperty(ConfigurationProperties.SERIALIZABLE_OBJECT_FILTER,
+  private int createServerCache(final RegionType regionType) throws IOException {
+    assertThat(regionType).isNotNull();
+
+    Properties config = new Properties();
+    config.setProperty(LOCATORS, "localhost[" + getLocatorPort() + "]");
+    config.setProperty(SERIALIZABLE_OBJECT_FILTER,
         "org.apache.geode.internal.cache.execute.ClientFunctionTimeoutRegressionTest*");
 
-    serverCache = (InternalCache) new CacheFactory(props).create();
+    serverCache = (InternalCache) new CacheFactory(config).create();
 
-    RegionFactory<String, String> rf;
-    if (createPR) {
-      rf = serverCache.createRegionFactory(RegionShortcut.PARTITION);
-      rf.setPartitionAttributes(new PartitionAttributesFactory<String, String>()
-          .setRedundantCopies(1).setTotalNumBuckets(4).create());
+    RegionFactory<String, String> regionFactory;
+
+    if (regionType == RegionType.PARTITION) {
+      PartitionAttributesFactory<String, String> paf = new PartitionAttributesFactory<>();
+      paf.setRedundantCopies(REDUNDANT_COPIES);
+      paf.setTotalNumBuckets(TOTAL_NUM_BUCKETS);
+
+      regionFactory = serverCache.createRegionFactory(RegionShortcut.PARTITION);
+      regionFactory.setPartitionAttributes(paf.create());
+
     } else {
-      rf = serverCache.createRegionFactory(RegionShortcut.REPLICATE);
+      regionFactory = serverCache.createRegionFactory(RegionShortcut.REPLICATE);
     }
 
-    rf.create(REGION_NAME);
+    regionFactory.create(REGION_NAME);
 
     CacheServer server = serverCache.addCacheServer();
-    server.setPort(AvailablePort.getRandomAvailablePort(AvailablePort.SOCKET));
+    server.setPort(0);
     server.start();
     return server.getPort();
   }
 
-  private void executeFunction(String mode, Integer timeout) {
-    Function function = new TestFunction(mode + timeout);
+  private void executeFunctionToVerifyClientTimeoutOnServer(
+      final ExecutionTarget functionServiceTarget, final int timeout) {
+    assertThat(functionServiceTarget).isNotNull();
+
+    Function<Integer> function = new CheckClientReadTimeout();
     FunctionService.registerFunction(function);
-    Execution dataSet;
-    if ("region".equalsIgnoreCase(mode)) {
-      dataSet = FunctionService.onRegion(clientCache.getRegion(REGION_NAME)).setArguments(timeout);
-    } else if ("server".equalsIgnoreCase(mode)) {
-      dataSet = FunctionService.onServer(clientCache.getDefaultPool()).setArguments(timeout);
+    Execution<Integer, Boolean, List<Boolean>> execution = null;
+
+    if (functionServiceTarget == ExecutionTarget.REGION) {
+      execution =
+          FunctionService.onRegion(clientCache.getRegion(REGION_NAME)).setArguments(timeout);
     } else {
-      dataSet = FunctionService.onServers(clientCache).setArguments(timeout);
+      execution = FunctionService.onServer(clientCache.getDefaultPool()).setArguments(timeout);
     }
-    ResultCollector rs = dataSet.execute(function);
-    assertThat((Boolean) ((ArrayList) rs.getResult()).get(0))
-        .as("Server did not read client_function_timeout from client.").isTrue();
+
+    ResultCollector<Boolean, List<Boolean>> resultCollector = execution.execute(function);
+
+    String description = "Server did not read client_function_timeout from client.";
+    assertThat(resultCollector.getResult().get(0)).as(description).isTrue();
   }
 
-  private void doPutsAndGet(Integer num) {
-    Region r = serverCache.getRegion(REGION_NAME);
-    for (int i = 0; i < num; ++i) {
-      r.put("KEY_" + i, "VALUE_" + i);
-    }
-    r.get("KEY_0");
+  private enum RegionType {
+    PARTITION, REPLICATE
   }
 
-  private static class TestFunction extends FunctionAdapter {
+  private enum ExecutionTarget {
+    REGION, SERVER
+  }
 
-    private final String id;
+  /**
+   * Input: client function timeout <br>
+   * Output: true if server has client timeout equal to the input
+   */
+  private static class CheckClientReadTimeout implements Function<Integer> {
 
-    public TestFunction(String id) {
-      this.id = id;
+    public CheckClientReadTimeout() {
+      // nothing
     }
 
     @Override
-    public void execute(FunctionContext context) {
+    public void execute(FunctionContext<Integer> context) {
       boolean timeoutMatches = false;
-      int expected = (Integer) context.getArguments();
-      AcceptorImpl acceptor =
-          ((CacheServerImpl) serverCache.getCacheServers().get(0)).getAcceptor();
+      int expected = context.getArguments();
+
+      InternalCacheServer cacheServer =
+          (InternalCacheServer) context.getCache().getCacheServers().get(0);
+      AcceptorImpl acceptor = (AcceptorImpl) cacheServer.getAcceptor();
       ServerConnection[] scs = acceptor.getAllServerConnectionList();
+
       for (ServerConnection sc : scs) {
         ServerSideHandshake hs = sc.getHandshake();
         if (hs != null && expected == hs.getClientReadTimeout()) {
@@ -218,7 +236,7 @@ public class ClientFunctionTimeoutRegressionTest extends JUnit4DistributedTestCa
 
     @Override
     public String getId() {
-      return this.id;
+      return CheckClientReadTimeout.class.getName();
     }
 
     @Override
