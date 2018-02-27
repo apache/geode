@@ -83,40 +83,6 @@ public class JdbcLoaderIntegrationTest {
     }
   }
 
-  public static class PdxEmployee implements PdxSerializable {
-    private String name;
-    private int age;
-
-    public PdxEmployee() {
-      // for serialization
-    }
-
-    public PdxEmployee(String name, int age) {
-      this.name = name;
-      this.age = age;
-    }
-
-    public String getName() {
-      return name;
-    }
-
-    public int getAge() {
-      return age;
-    }
-
-    @Override
-    public void toData(PdxWriter writer) {
-      writer.writeString("name", this.name);
-      writer.writeObject("age", this.age);
-    }
-
-    @Override
-    public void fromData(PdxReader reader) {
-      this.name = reader.readString("name");
-      this.age = (int) reader.readObject("age");
-    }
-  }
-
   @Test
   public void verifySimpleGet() throws Exception {
     statement.execute("Insert into " + REGION_TABLE_NAME + " values('1', 'Emp1', 21)");
@@ -143,17 +109,17 @@ public class JdbcLoaderIntegrationTest {
   @Test
   public void verifyGetWithPdxClassName() throws Exception {
     statement.execute("Insert into " + REGION_TABLE_NAME + " values('1', 'Emp1', 21)");
-    Region<String, PdxEmployee> region =
-        createRegionWithJDBCLoader(REGION_TABLE_NAME, PdxEmployee.class.getName(), false);
+    Region<String, Employee> region =
+        createRegionWithJDBCLoader(REGION_TABLE_NAME, Employee.class.getName(), false);
     createPdxType();
-    PdxEmployee value = region.get("1");
+    Employee value = region.get("1");
 
     assertThat(value.getName()).isEqualTo("Emp1");
     assertThat(value.getAge()).isEqualTo(21);
   }
 
   private void createPdxType() throws IOException {
-    PdxEmployee value = new PdxEmployee("name", 45);
+    Employee value = new Employee("name", 45);
     // the following serialization will add a pdxType
     BlobHelper.serializeToBlob(value);
   }

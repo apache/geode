@@ -69,9 +69,9 @@ public class JdbcAsyncWriterIntegrationTest {
     statement.execute("Create Table " + REGION_TABLE_NAME
         + " (id varchar(10) primary key not null, name varchar(10), age int)");
     pdxEmployee1 = cache.createPdxInstanceFactory(Employee.class.getName())
-        .writeString("name", "Emp1").writeInt("age", 55).create();
+        .writeString("name", "Emp1").writeObject("age", 55).create();
     pdxEmployee2 = cache.createPdxInstanceFactory(Employee.class.getName())
-        .writeString("name", "Emp2").writeInt("age", 21).create();
+        .writeString("name", "Emp2").writeObject("age", 21).create();
     employee1 = (Employee) pdxEmployee1.getObject();
     employee2 = (Employee) pdxEmployee2.getObject();
   }
@@ -119,7 +119,7 @@ public class JdbcAsyncWriterIntegrationTest {
   @Test
   public void verifyThatPdxFieldNamedSameAsPrimaryKeyIsIgnored() throws Exception {
     PdxInstance pdx1 = cache.createPdxInstanceFactory("Employee").writeString("name", "Emp1")
-        .writeInt("age", 55).writeInt("id", 3).create();
+        .writeObject("age", 55).writeInt("id", 3).create();
     employees.put("1", pdx1);
 
     awaitUntil(() -> assertThat(jdbcWriter.getSuccessfulEvents()).isEqualTo(1));

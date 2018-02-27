@@ -73,9 +73,9 @@ public class JdbcWriterIntegrationTest {
     statement.execute("Create Table " + REGION_TABLE_NAME
         + " (id varchar(10) primary key not null, name varchar(10), age int)");
     pdx1 = cache.createPdxInstanceFactory(Employee.class.getName()).writeString("name", "Emp1")
-        .writeInt("age", 55).create();
+        .writeObject("age", 55).create();
     pdx2 = cache.createPdxInstanceFactory(Employee.class.getName()).writeString("name", "Emp2")
-        .writeInt("age", 21).create();
+        .writeObject("age", 21).create();
     employee1 = (Employee) pdx1.getObject();
     employee2 = (Employee) pdx2.getObject();
   }
@@ -127,7 +127,7 @@ public class JdbcWriterIntegrationTest {
   @Test
   public void verifyThatPdxFieldNamedSameAsPrimaryKeyIsIgnored() throws Exception {
     PdxInstance pdxInstanceWithId = cache.createPdxInstanceFactory(Employee.class.getName())
-        .writeString("name", "Emp1").writeInt("age", 55).writeInt("id", 3).create();
+        .writeString("name", "Emp1").writeObject("age", 55).writeInt("id", 3).create();
     employees.put("1", pdxInstanceWithId);
 
     ResultSet resultSet =
