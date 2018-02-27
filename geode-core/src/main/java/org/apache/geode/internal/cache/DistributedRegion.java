@@ -1030,11 +1030,6 @@ public class DistributedRegion extends LocalRegion implements InternalDistribute
       logger.debug("DistributedRegion.initialize BEGIN: {}", getFullPath());
     }
 
-    // if we're versioning entries we need a region-level version vector
-    if (this.scope.isDistributed() && this.getConcurrencyChecksEnabled()) {
-      createVersionVector();
-    }
-
     if (this.scope.isGlobal()) {
       getLockService(); // create lock service eagerly now
     }

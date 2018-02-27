@@ -42,31 +42,26 @@ public class PutRequestOperationHandler
     String regionName = request.getRegionName();
     Region region = messageExecutionContext.getCache().getRegion(regionName);
     if (region == null) {
-      logger.warn("Received Put request for non-existing region: {}", regionName);
+      logger.error("Received put request for nonexistent region: {}", regionName);
       return Failure.of(BasicTypes.ErrorCode.SERVER_ERROR,
-          "Region passed by client did not exist: " + regionName);
+          "Region \"" + regionName + "\" not found");
     }
 
-    long startTime = messageExecutionContext.getStatistics().startOperation();
+    BasicTypes.Entry entry = request.getEntry();
+
+    Object decodedValue = serializationService.decode(entry.getValue());
+    Object decodedKey = serializationService.decode(entry.getKey());
+    if (decodedKey == null || decodedValue == null) {
+      return Failure.of(BasicTypes.ErrorCode.INVALID_REQUEST,
+          "Key and value must both be non-NULL");
+    }
+
     try {
-      BasicTypes.Entry entry = request.getEntry();
-
-      Object decodedValue = serializationService.decode(entry.getValue());
-      Object decodedKey = serializationService.decode(entry.getKey());
-      if (decodedKey == null || decodedValue == null) {
-        return Failure.of(BasicTypes.ErrorCode.INVALID_REQUEST,
-            "Key and value must both be non-NULL");
-      }
-
-      try {
-        region.put(decodedKey, decodedValue);
-        return Success.of(RegionAPI.PutResponse.newBuilder().build());
-      } catch (ClassCastException ex) {
-        logger.error("Received Put request with invalid key type: {}", ex);
-        return Failure.of(BasicTypes.ErrorCode.SERVER_ERROR, ex.toString());
-      }
-    } finally {
-      messageExecutionContext.getStatistics().endOperation(startTime);
+      region.put(decodedKey, decodedValue);
+      return Success.of(RegionAPI.PutResponse.newBuilder().build());
+    } catch (ClassCastException ex) {
+      logger.error("Received Put request with invalid key type: {}", ex);
+      return Failure.of(BasicTypes.ErrorCode.SERVER_ERROR, ex.toString());
     }
   }
 }

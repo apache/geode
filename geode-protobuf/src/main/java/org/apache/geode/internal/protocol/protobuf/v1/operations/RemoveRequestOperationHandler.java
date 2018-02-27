@@ -43,22 +43,18 @@ public class RemoveRequestOperationHandler
     String regionName = request.getRegionName();
     Region region = messageExecutionContext.getCache().getRegion(regionName);
     if (region == null) {
-      logger.error("Received Remove request for non-existing region {}", regionName);
-      return Failure.of(BasicTypes.ErrorCode.SERVER_ERROR, "Region not found");
+      logger.error("Received remove request for nonexistent region: {}", regionName);
+      return Failure.of(BasicTypes.ErrorCode.SERVER_ERROR,
+          "Region \"" + regionName + "\" not found");
     }
 
-    long startTime = messageExecutionContext.getStatistics().startOperation();
-    try {
-      Object decodedKey = serializationService.decode(request.getKey());
-      if (decodedKey == null) {
-        return Failure.of(BasicTypes.ErrorCode.INVALID_REQUEST,
-            "NULL is not a valid key for removal.");
-      }
-      region.remove(decodedKey);
-
-      return Success.of(RegionAPI.RemoveResponse.newBuilder().build());
-    } finally {
-      messageExecutionContext.getStatistics().endOperation(startTime);
+    Object decodedKey = serializationService.decode(request.getKey());
+    if (decodedKey == null) {
+      return Failure.of(BasicTypes.ErrorCode.INVALID_REQUEST,
+          "NULL is not a valid key for removal.");
     }
+    region.remove(decodedKey);
+
+    return Success.of(RegionAPI.RemoveResponse.newBuilder().build());
   }
 }

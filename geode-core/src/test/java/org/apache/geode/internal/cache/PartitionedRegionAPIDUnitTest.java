@@ -14,1145 +14,104 @@
  */
 package org.apache.geode.internal.cache;
 
-import static org.junit.Assert.*;
+import static org.apache.geode.cache.RegionShortcut.PARTITION;
+import static org.apache.geode.test.dunit.Host.getHost;
+import static org.apache.geode.test.dunit.IgnoredException.addIgnoredException;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import java.util.Iterator;
 import java.util.NoSuchElementException;
-import java.util.Properties;
 import java.util.Set;
 
+import org.junit.After;
+import org.junit.Before;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
-import org.apache.geode.cache.AttributesFactory;
 import org.apache.geode.cache.Cache;
-import org.apache.geode.cache.CacheException;
 import org.apache.geode.cache.CacheLoader;
 import org.apache.geode.cache.CacheLoaderException;
-import org.apache.geode.cache.DataPolicy;
 import org.apache.geode.cache.EntryExistsException;
 import org.apache.geode.cache.EntryNotFoundException;
 import org.apache.geode.cache.LoaderHelper;
-import org.apache.geode.cache.PartitionAttributes;
 import org.apache.geode.cache.PartitionAttributesFactory;
 import org.apache.geode.cache.Region;
-import org.apache.geode.cache.RegionAttributes;
 import org.apache.geode.cache.RegionFactory;
-import org.apache.geode.cache30.CacheSerializableRunnable;
+import org.apache.geode.cache.RegionShortcut;
 import org.apache.geode.cache30.TestCacheLoader;
 import org.apache.geode.distributed.internal.ReplyException;
-import org.apache.geode.internal.cache.PartitionedRegion;
-import org.apache.geode.test.dunit.Host;
-import org.apache.geode.test.dunit.LogWriterUtils;
-import org.apache.geode.test.dunit.SerializableRunnable;
+import org.apache.geode.test.dunit.IgnoredException;
 import org.apache.geode.test.dunit.VM;
-import org.apache.geode.test.dunit.cache.internal.JUnit4CacheTestCase;
-import org.apache.geode.test.dunit.internal.JUnit4DistributedTestCase;
+import org.apache.geode.test.dunit.cache.CacheTestCase;
 import org.apache.geode.test.junit.categories.DistributedTest;
 
 /**
- * This is a dunit test for PartitionedRegion creation and Region API's functionality. This test is
- * performed for different region scopes - D_ACK and D_NO_ACK for PartitionedRegion.
+ * This is a dunit test for PartitionedRegion creation and Region API's functionality.
  */
 @Category(DistributedTest.class)
-public class PartitionedRegionAPIDUnitTest extends PartitionedRegionDUnitTestCase {
+@SuppressWarnings("serial")
+public class PartitionedRegionAPIDUnitTest extends CacheTestCase {
 
-  public PartitionedRegionAPIDUnitTest() {
-    super();
-  }
+  private static final int totalNumBuckets = 5;
 
-  Properties props = new Properties();
-
-  VM vm0 = null;
-
-  VM vm1 = null;
-
-  VM vm2 = null;
-
-  VM vm3 = null;
-
-  final int putRange_1Start = 1;
-
-  final int putRange_1End = 5;
-
-  final int putRange_2Start = 6;
-
-  final int putRange_2End = 10;
-
-  final int putRange_3Start = 11;
-
-  final int putRange_3End = 15;
-
-  final int putRange_4Start = 16;
-
-  final int putRange_4End = 20;
-
-  final int removeRange_1Start = 2;
-
-  final int removeRange_1End = 4;
-
-  final int removeRange_2Start = 7;
-
-  final int removeRange_2End = 9;
+  private static final int putRange_1Start = 1;
+  private static final int putRange_1End = 5;
+  private static final int putRange_2Start = 6;
+  private static final int putRange_2End = 10;
+  private static final int putRange_3Start = 11;
+  private static final int putRange_3End = 15;
+  private static final int putRange_4Start = 16;
+  private static final int putRange_4End = 20;
+  private static final int removeRange_1Start = 2;
+  private static final int removeRange_1End = 4;
+  private static final int removeRange_2Start = 7;
+  private static final int removeRange_2End = 9;
 
   // Create counters
-  final int createRange_1Start = 21;
-
-  final int createRange_1End = 25;
-
-  final int createRange_2Start = 26;
-
-  final int createRange_2End = 30;
-
-  final int createRange_3Start = 31;
-
-  final int createRange_3End = 35;
-
-  final int createRange_4Start = 36;
-
-  final int createRange_4End = 40;
+  private static final int createRange_1Start = 21;
+  private static final int createRange_1End = 25;
+  private static final int createRange_2Start = 26;
+  private static final int createRange_2End = 30;
+  private static final int createRange_3Start = 31;
+  private static final int createRange_3End = 35;
+  private static final int createRange_4Start = 36;
+  private static final int createRange_4End = 40;
 
   // Invalidate Counters
-  final int invalidateRange_1Start = 41;
+  private static final int invalidateRange_1Start = 41;
+  private static final int invalidateRange_1End = 45;
+  private static final int invalidateRange_2Start = 46;
+  private static final int invalidateRange_2End = 50;
 
-  final int invalidateRange_1End = 45;
+  private VM vm0;
+  private VM vm1;
+  private VM vm2;
+  private VM vm3;
 
-  final int invalidateRange_2Start = 46;
+  private String regionName;
+  private int localMaxMemory;
+  private String key1;
+  private String cacheLoaderArg;
 
-  final int invalidateRange_2End = 50;
+  @Before
+  public void setUp() throws Exception {
+    regionName = getUniqueName();
 
-  final int invalidateRange_3Start = 51;
+    vm0 = getHost(0).getVM(0);
+    vm1 = getHost(0).getVM(1);
+    vm2 = getHost(0).getVM(2);
+    vm3 = getHost(0).getVM(3);
 
-  final int invalidateRange_3End = 55;
-
-  final int invalidateRange_4Start = 56;
-
-  final int invalidateRange_4End = 60;
-
-  // Used for size and isEmpty API Validation
-  final int sizeRange_1Start = 61;
-
-  final int sizeRange_1End = 65;
-
-  final int sizeRange_2Start = 66;
-
-  final int sizeRange_2End = 70;
-
-  static final int totalNumBuckets = 5;
-
-  /* SerializableRunnable object to create PR with scope = D_ACK */
-  SerializableRunnable createPrRegionWithDS_DACK =
-      new CacheSerializableRunnable("createPrRegionWithDS") {
-
-        public void run2() throws CacheException {
-          Cache cache = getCache();
-          AttributesFactory attr = new AttributesFactory();
-          PartitionAttributesFactory paf = new PartitionAttributesFactory();
-          paf.setTotalNumBuckets(totalNumBuckets);
-          PartitionAttributes prAttr = paf.create();
-          attr.setPartitionAttributes(prAttr);
-          RegionAttributes regionAttribs = attr.create();
-          cache.createRegion("PR1", regionAttribs);
-        }
-      };
-
-  /*
-   * SerializableRunnable object to create PR with scope = D_ACK with only Accessor(no data store)
-   */
-
-  SerializableRunnable createPrRegionOnlyAccessor_DACK =
-      new CacheSerializableRunnable("createPrRegionOnlyAccessor") {
-
-        public void run2() throws CacheException {
-          Cache cache = getCache();
-          AttributesFactory attr = new AttributesFactory();
-          PartitionAttributesFactory paf = new PartitionAttributesFactory();
-          PartitionAttributes prAttr =
-              paf.setLocalMaxMemory(0).setTotalNumBuckets(totalNumBuckets).create();
-          attr.setPartitionAttributes(prAttr);
-          RegionAttributes regionAttribs = attr.create();
-          cache.createRegion("PR1", regionAttribs);
-          LogWriterUtils.getLogWriter().info("Region created in VM1.");
-        }
-      };
-
-  /**
-   * Search the entires PartitionedRegion for the key, to validate that indeed it doesn't exist
-   *
-   * @returns true if it does exist
-   * @param par
-   * @param key
-   */
-  public static boolean searchForKey(PartitionedRegion par, Object key) {
-    // Check to make super sure that the key doesn't exist ANYWHERE
-    // TODO use keys() when it is properly implemented
-    boolean foundIt = false;
-    final int numBucks = par.getTotalNumberOfBuckets();
-    for (int b = 0; b < numBucks; b++) {
-      if (par.getBucketKeys(b).contains(key)) {
-        foundIt = true;
-        LogWriterUtils.getLogWriter().severe("Key " + key + " found in bucket " + b);
-        break;
-      }
-    }
-    if (!foundIt) {
-      LogWriterUtils.getLogWriter().severe("Key " + key + " not found in any bucket");
-    }
-    return foundIt;
+    localMaxMemory = 10;
+    key1 = "key1";
+    cacheLoaderArg = "loaderArg";
   }
 
-  /**
-   * Test the Region operations after the PartitionedRegion has been destroyed
-   *
-   * @param prName
-   */
-  public void partitionedRegionTestAfterDestroyRegion(final String prName) {
-    /*
-     * do some put(), create(), invalidate() operations for PR with accessor + Datastore and
-     * validate.
-     */
-    vm0.invoke(new CacheSerializableRunnable("doPutCreateInvalidateOperations1") {
-
-      public void run2() throws CacheException {
-        Cache cache = getCache();
-        String exceptionStr = "";
-        Region pr = cache.getRegion(prName);
-        if (pr == null) {
-          fail("PR not created");
-        }
-        for (int i = putRange_1Start; i <= putRange_1End; i++) {
-          // System.out.println("Putting entry for key = " + i);
-          pr.put("" + i, "" + i);
-        }
-
-        // Create Operation
-        for (int i = createRange_1Start; i <= createRange_1End; i++) {
-          Object val = null;
-          Object key = "" + i;
-          if (i % 2 == 0) {
-            val = "" + i;
-          }
-          pr.create(key, val);
-        }
-
-        for (int i = createRange_1Start; i <= createRange_1End; i++) {
-          Object val = null;
-          Object key = "" + i;
-          if (i % 2 == 0) {
-            val = "" + i;
-          }
-          final String expectedExceptions = EntryExistsException.class.getName();
-          getCache().getLogger()
-              .info("<ExpectedException action=add>" + expectedExceptions + "</ExpectedException>");
-          exceptionStr = ReplyException.class.getName() + ":" + expectedExceptions;
-          vm1.invoke(addExceptionTag1(exceptionStr));
-          vm2.invoke(addExceptionTag1(exceptionStr));
-          vm3.invoke(addExceptionTag1(exceptionStr));
-          addExceptionTag1(exceptionStr);
-          try {
-            pr.create(key, val);
-            fail("EntryExistsException is not thrown");
-          } catch (EntryExistsException expected) {
-            // getLogWriter().fine("EntryExistsException is properly thrown");
-          }
-
-          vm1.invoke(removeExceptionTag1(exceptionStr));
-          vm2.invoke(removeExceptionTag1(exceptionStr));
-          vm3.invoke(removeExceptionTag1(exceptionStr));
-          removeExceptionTag1(exceptionStr);
-          getCache().getLogger().info(
-              "<ExpectedException action=remove>" + expectedExceptions + "</ExpectedException>");
-
-        }
-
-        // Invalidate Operations
-
-        for (int i = invalidateRange_1Start; i <= invalidateRange_1End; i++) {
-          // Check that before creating an entry it throws
-          // EntryNotFoundException
-          final Object val = Integer.toString(i);
-          final Object key = Integer.toString(i);
-          final String entryNotFoundException = EntryNotFoundException.class.getName();
-          getCache().getLogger().info(
-              "<ExpectedException action=add>" + entryNotFoundException + "</ExpectedException>");
-          exceptionStr = ReplyException.class.getName() + "||" + entryNotFoundException;
-          vm1.invoke(addExceptionTag1(exceptionStr));
-          vm2.invoke(addExceptionTag1(exceptionStr));
-          vm3.invoke(addExceptionTag1(exceptionStr));
-          addExceptionTag1(exceptionStr);
-          try {
-            pr.invalidate(key);
-            fail(
-                "EntryNotFoundException is not thrown for key which does not exists in the system = "
-                    + key);
-          } catch (EntryNotFoundException expected) {
-          }
-          vm1.invoke(removeExceptionTag1(exceptionStr));
-          vm2.invoke(removeExceptionTag1(exceptionStr));
-          vm3.invoke(removeExceptionTag1(exceptionStr));
-          removeExceptionTag1(exceptionStr);
-          getCache().getLogger().info("<ExpectedException action=remove>" + entryNotFoundException
-              + "</ExpectedException>");
-          pr.create(key, val);
-          assertTrue("containsValueForKey key=" + key, pr.containsValueForKey(key));
-          assertEquals(val, pr.get(key));
-          pr.invalidate(key);
-          assertFalse(pr.containsValueForKey(key));
-          assertNull(pr.get(key));
-        }
-        for (int i = invalidateRange_1Start; i <= invalidateRange_1End; i++) {
-          final Object key = Integer.toString(i);
-          pr.destroy(key);
-        }
-
-        final String entryNotFoundException = EntryNotFoundException.class.getName();
-        getCache().getLogger().info(
-            "<ExpectedException action=add>" + entryNotFoundException + "</ExpectedException>");
-        exceptionStr = ReplyException.class.getName() + "||" + entryNotFoundException;
-        vm1.invoke(addExceptionTag1(exceptionStr));
-        vm2.invoke(addExceptionTag1(exceptionStr));
-        vm3.invoke(addExceptionTag1(exceptionStr));
-        addExceptionTag1(exceptionStr);
-        for (int i = invalidateRange_1Start; i <= invalidateRange_1End; i++) {
-          // Check that after deleting an entry, invalidate for that entry
-          // throws
-          // EntryNotFoundException
-          Object key = "" + i;
-          try {
-            pr.invalidate(key);
-            fail(
-                "EntryNotFoundException is not thrown for key which does not exists in the system = "
-                    + key);
-          } catch (EntryNotFoundException expected) {
-          }
-        }
-        vm1.invoke(removeExceptionTag1(exceptionStr));
-        vm2.invoke(removeExceptionTag1(exceptionStr));
-        vm3.invoke(removeExceptionTag1(exceptionStr));
-        removeExceptionTag1(exceptionStr);
-        getCache().getLogger().info(
-            "<ExpectedException action=remove>" + entryNotFoundException + "</ExpectedException>");
-        LogWriterUtils.getLogWriter().fine("Out of doPutOperations1");
-        LogWriterUtils.getLogWriter().fine("All the puts done successfully for vm0.");
-      }
-    });
-
-    /*
-     * do some put(), create(), invalidate() operations for PR with only accessor and validate.
-     */
-    vm1.invoke(new CacheSerializableRunnable("doPutCreateInvalidateOperations2") {
-
-      public void run2() throws CacheException {
-        Cache cache = getCache();
-        String exceptionStr = "";
-        Region pr = cache.getRegion(prName);
-        if (pr == null) {
-          fail("PR not created");
-        }
-        for (int i = putRange_2Start; i <= putRange_2End; i++) {
-          // System.out.println("Putting entry for key = " + i);
-          pr.put("" + i, "" + i);
-        }
-
-        // Create Operation
-        for (int i = createRange_2Start; i <= createRange_2End; i++) {
-          Object val = null;
-          Object key = "" + i;
-          if (i % 2 == 0) {
-            val = "" + i;
-          }
-          pr.create(key, val);
-        }
-
-        final String entryExistsException = EntryExistsException.class.getName();
-        getCache().getLogger()
-            .info("<ExpectedException action=add>" + entryExistsException + "</ExpectedException>");
-        exceptionStr = ReplyException.class.getName() + "||" + entryExistsException;
-        vm0.invoke(addExceptionTag1(exceptionStr));
-        vm2.invoke(addExceptionTag1(exceptionStr));
-        vm3.invoke(addExceptionTag1(exceptionStr));
-        addExceptionTag1(exceptionStr);
-        for (int i = createRange_2Start; i <= createRange_2End; i++) {
-          Object val = null;
-          Object key = "" + i;
-          if (i % 2 == 0) {
-            val = "" + i;
-          }
-          try {
-            pr.create(key, val);
-            fail("EntryExistsException is not thrown");
-          } catch (EntryExistsException expected) {
-            // getLogWriter().fine("EntryExistsException is properly thrown");
-          }
-        }
-        vm0.invoke(removeExceptionTag1(exceptionStr));
-        vm2.invoke(removeExceptionTag1(exceptionStr));
-        vm3.invoke(removeExceptionTag1(exceptionStr));
-        removeExceptionTag1(exceptionStr);
-        getCache().getLogger().info(
-            "<ExpectedException action=remove>" + entryExistsException + "</ExpectedException>");
-
-        // Invalidate Operations
-        final String entryNotFoundException = EntryNotFoundException.class.getName();
-        getCache().getLogger().info(
-            "<ExpectedException action=add>" + entryNotFoundException + "</ExpectedException>");
-        exceptionStr = ReplyException.class.getName() + "||" + entryNotFoundException;
-        vm0.invoke(addExceptionTag1(exceptionStr));
-        vm2.invoke(addExceptionTag1(exceptionStr));
-        vm3.invoke(addExceptionTag1(exceptionStr));
-        addExceptionTag1(exceptionStr);
-        for (int i = invalidateRange_2Start; i <= invalidateRange_2End; i++) {
-          // Check that before creating an entry it throws
-          // EntryNotFoundException
-          final Object val = Integer.toString(i);
-          final Object key = Integer.toString(i);
-
-          try {
-            pr.invalidate(key);
-            fail(
-                "EntryNotFoundException is not thrown for key which does not exists in the system = "
-                    + key);
-          } catch (EntryNotFoundException expected) {
-          }
-          pr.create(key, val);
-        }
-        vm0.invoke(removeExceptionTag1(exceptionStr));
-        vm2.invoke(removeExceptionTag1(exceptionStr));
-        vm3.invoke(removeExceptionTag1(exceptionStr));
-        removeExceptionTag1(exceptionStr);
-        getCache().getLogger().info(
-            "<ExpectedException action=remove>" + entryNotFoundException + "</ExpectedException>");
-
-        for (int i = invalidateRange_2Start; i <= invalidateRange_2End; i++) {
-          // Check that before creating an entry it throws
-          // EntryNotFoundException
-          final Object val = Integer.toString(i);
-          final Object key = Integer.toString(i);
-          assertEquals(val, pr.get(key));
-          assertTrue(pr.containsValueForKey(key));
-          pr.invalidate(key);
-        }
-
-        for (int i = invalidateRange_2Start; i <= invalidateRange_2End; i++) {
-          final Object key = Integer.toString(i);
-          Object shouldBeNull = pr.get(key);
-          assertNull("Key " + key + " should report val null, however it has " + shouldBeNull,
-              shouldBeNull);
-          assertFalse("Key " + key + " should report False for containsValueForKey",
-              pr.containsValueForKey(key));
-        }
-
-        for (int i = invalidateRange_2Start; i <= invalidateRange_2End; i++) {
-          final Object key = Integer.toString(i);
-          pr.destroy(key);
-        }
-
-        getCache().getLogger().info(
-            "<ExpectedException action=add>" + entryNotFoundException + "</ExpectedException>");
-        exceptionStr = ReplyException.class.getName() + "||" + entryNotFoundException;
-        vm0.invoke(addExceptionTag1(exceptionStr));
-        vm2.invoke(addExceptionTag1(exceptionStr));
-        vm3.invoke(addExceptionTag1(exceptionStr));
-        addExceptionTag1(exceptionStr);
-        for (int i = invalidateRange_2Start; i <= invalidateRange_2End; i++) {
-          // Check that after deleting an entry, invalidate for that entry
-          // throws
-          // EntryNotFoundException
-          final Object key = Integer.toString(i);
-          try {
-            pr.invalidate(key);
-            fail(
-                "EntryNotFoundException is not thrown for key which does not exists in the system = "
-                    + key);
-          } catch (EntryNotFoundException expected) {
-          }
-        }
-        vm0.invoke(removeExceptionTag1(exceptionStr));
-        vm2.invoke(removeExceptionTag1(exceptionStr));
-        vm3.invoke(removeExceptionTag1(exceptionStr));
-        removeExceptionTag1(exceptionStr);
-        getCache().getLogger().info(
-            "<ExpectedException action=remove>" + entryNotFoundException + "</ExpectedException>");
-
-        LogWriterUtils.getLogWriter().fine("Out of doPutOperations2");
-        LogWriterUtils.getLogWriter().fine("All the puts done successfully for vm1.");
-      }
-    });
+  @After
+  public void tearDown() throws Exception {
+    disconnectAllFromDS();
   }
-
-  public void partitionedRegionTest(final String prName) {
-    /*
-     * Do put(), create(), invalidate() operations through VM with PR having both Accessor and
-     * Datastore
-     */
-    // String exceptionStr = "";
-    vm0.invoke(new CacheSerializableRunnable("doPutCreateInvalidateOperations1") {
-      public void run2() throws CacheException {
-        Cache cache = getCache();
-        final Region pr = cache.getRegion(prName);
-        if (pr == null) {
-          fail(prName + " not created");
-        }
-        int size = 0;
-        // if (pr.getAttributes().getScope() == Scope.DISTRIBUTED_ACK) {
-        size = pr.size();
-        assertEquals("Size doesnt return expected value", 0, size);
-        assertEquals("isEmpty doesnt return proper state of the PartitionedRegion", true,
-            pr.isEmpty());
-        assertEquals(0, pr.keySet().size());
-        // }
-        for (int i = putRange_1Start; i <= putRange_1End; i++) {
-          // System.out.println("Putting entry for key = " + i);
-          pr.put(Integer.toString(i), Integer.toString(i));
-        }
-        // if (pr.getAttributes().getScope() == Scope.DISTRIBUTED_ACK) {
-        size = pr.size();
-        assertEquals("Size doesn't return expected value", putRange_1End, size);
-        assertEquals("isEmpty doesnt return proper state of the PartitionedRegion", false,
-            pr.isEmpty());
-
-        // Positive assertion of functionality in a distributed env.
-        // For basic functional support (or lack of), please see
-        // PartitionedRegionSingleNodeOperationsJUnitTest
-        assertEquals(putRange_1End, pr.keySet().size());
-        Set ks = pr.keySet();
-        Iterator ksI = ks.iterator();
-        while (ksI.hasNext()) {
-          try {
-            ksI.remove();
-            fail("Expected key set iterator to be read only");
-          } catch (Exception expected) {
-          }
-          Object key = ksI.next();
-          assertEquals(String.class, key.getClass());
-          Integer.parseInt((String) key);
-        }
-        try {
-          ksI.remove();
-          fail("Expected key set iterator to be read only");
-        } catch (Exception expected) {
-        }
-        assertFalse(ksI.hasNext());
-        try {
-          ksI.next();
-          fail("Expected no such element exception");
-        } catch (NoSuchElementException expected) {
-          assertFalse(ksI.hasNext());
-        }
-        // }
-
-
-        String exceptionStr =
-            ReplyException.class.getName() + "||" + EntryNotFoundException.class.getName();
-        vm1.invoke(addExceptionTag1(exceptionStr));
-        vm2.invoke(addExceptionTag1(exceptionStr));
-        vm3.invoke(addExceptionTag1(exceptionStr));
-        addExceptionTag1(exceptionStr);
-        for (int i = putRange_1Start; i <= putRange_1End; i++) {
-          // System.out.println("Putting entry for key = " + i);
-          try {
-            pr.destroy(Integer.toString(i));
-          } catch (EntryNotFoundException enfe) {
-            searchForKey((PartitionedRegion) pr, Integer.toString(i));
-            throw enfe;
-          }
-        }
-        vm1.invoke(removeExceptionTag1(exceptionStr));
-        vm2.invoke(removeExceptionTag1(exceptionStr));
-        vm3.invoke(removeExceptionTag1(exceptionStr));
-        removeExceptionTag1(exceptionStr);
-
-        // if (pr.getAttributes().getScope() == Scope.DISTRIBUTED_ACK) {
-        size = pr.size();
-        assertEquals("Size doesnt return expected value = 0 instead it returns" + size, size, 0);
-        assertEquals("isEmpty doesnt return proper state of the PartitionedRegion", pr.isEmpty(),
-            true);
-        // }
-        for (int i = putRange_1Start; i <= putRange_1End; i++) {
-          // System.out.println("Putting entry for key = " + i);
-          pr.put(Integer.toString(i), Integer.toString(i));
-        }
-
-        // createInvalidateChange
-        for (int i = createRange_1Start; i <= createRange_1End; i++) {
-          Object val = null;
-          Object key = Integer.toString(i);
-          if (i % 2 == 0) {
-            val = Integer.toString(i);
-          }
-          pr.create(key, val);
-        }
-
-        final String expectedExceptions = EntryExistsException.class.getName();
-        getCache().getLogger()
-            .info("<ExpectedException action=add>" + expectedExceptions + "</ExpectedException>");
-        exceptionStr = ReplyException.class.getName() + "||" + expectedExceptions;
-        vm1.invoke(addExceptionTag1(exceptionStr));
-        vm2.invoke(addExceptionTag1(exceptionStr));
-        vm3.invoke(addExceptionTag1(exceptionStr));
-        addExceptionTag1(exceptionStr);
-        for (int i = createRange_1Start; i <= createRange_1End; i++) {
-          Object val = null;
-          Object key = Integer.toString(i);
-          if (i % 2 == 0) {
-            val = Integer.toString(i);
-          }
-          try {
-            pr.create(key, val);
-            fail("EntryExistsException is not thrown");
-          } catch (EntryExistsException expected) {
-            // cache.getLogger().fine("EntryExistsException is properly thrown");
-          }
-        }
-        vm1.invoke(removeExceptionTag1(exceptionStr));
-        vm2.invoke(removeExceptionTag1(exceptionStr));
-        vm3.invoke(removeExceptionTag1(exceptionStr));
-        removeExceptionTag1(exceptionStr);
-        getCache().getLogger().info(
-            "<ExpectedException action=remove>" + expectedExceptions + "</ExpectedException>");
-        // if (pr.getAttributes().getScope() == Scope.DISTRIBUTED_ACK) {
-        size = pr.size();
-        assertEquals("Size doesnt return expected value", size, 10);
-        // }
-        LogWriterUtils.getLogWriter().fine("All the puts done successfully for vm0.");
-
-
-        {
-          PartitionedRegion ppr = (PartitionedRegion) pr;
-          try {
-            ppr.dumpAllBuckets(true);
-          } catch (ReplyException re) {
-            fail();
-          }
-        }
-
-      }
-    });
-
-    /*
-     * Do put(), create(), invalidate() operations through VM with PR having only Accessor(no data
-     * store)
-     */
-
-    vm1.invoke(new CacheSerializableRunnable("doPutCreateInvalidateOperations2") {
-
-      public void run2() throws CacheException {
-        Cache cache = getCache();
-        Region pr = cache.getRegion(prName);
-        if (pr == null) {
-          fail("PR not created");
-        }
-
-        for (int i = putRange_2Start; i <= putRange_2End; i++) {
-          // System.out.println("Putting entry for key = " + i);
-          pr.put(Integer.toString(i), Integer.toString(i));
-        }
-
-        // createInvalidateChange
-        for (int i = createRange_2Start; i <= createRange_2End; i++) {
-          Object val = null;
-          Object key = Integer.toString(i);
-          if (i % 2 == 0) {
-            val = Integer.toString(i);
-          }
-          pr.create(key, val);
-        }
-
-        final String entryExistsException = EntryExistsException.class.getName();
-        getCache().getLogger()
-            .info("<ExpectedException action=add>" + entryExistsException + "</ExpectedException>");
-        String exceptionStr = ReplyException.class.getName() + ":" + entryExistsException;
-        vm0.invoke(addExceptionTag1(exceptionStr));
-        vm2.invoke(addExceptionTag1(exceptionStr));
-        vm3.invoke(addExceptionTag1(exceptionStr));
-        addExceptionTag1(exceptionStr);
-
-        for (int i = createRange_2Start; i <= createRange_2End; i++) {
-          Object val = null;
-          Object key = Integer.toString(i);
-          if (i % 2 == 0) {
-            val = Integer.toString(i);
-          }
-          try {
-            pr.create(key, val);
-            fail("EntryExistsException is not thrown");
-          } catch (EntryExistsException expected) {
-            // cache.getLogger().fine("EntryExistsException is properly thrown");
-          }
-        }
-
-        vm0.invoke(removeExceptionTag1(exceptionStr));
-        vm2.invoke(removeExceptionTag1(exceptionStr));
-        vm3.invoke(removeExceptionTag1(exceptionStr));
-        removeExceptionTag1(exceptionStr);
-        getCache().getLogger().info(
-            "<ExpectedException action=remove>" + entryExistsException + "</ExpectedException>");
-        cache.getLogger().fine("All the puts done successfully for vm1.");
-
-      }
-    });
-
-    /*
-     * Do destroy() operations through VM with PR having only Accessor(no data store). It also
-     * verifies that EntryNotFoundException is thrown if the entry is already destroyed.
-     */
-
-    vm1.invoke(new CacheSerializableRunnable("doRemoveOperations1") {
-
-      public void run2() throws CacheException {
-        Cache cache = getCache();
-        Region pr = cache.getRegion(prName);
-        if (pr == null) {
-          fail("PR not created");
-        }
-        for (int i = removeRange_1Start; i <= removeRange_1End; i++) {
-          // System.out.println("destroying entry for key = " + i);
-          final String key = Integer.toString(i);
-          try {
-            pr.destroy(key);
-          } catch (EntryNotFoundException enfe) {
-            searchForKey((PartitionedRegion) pr, key);
-            throw enfe;
-          }
-
-        }
-
-        final String entryNotFoundException = EntryNotFoundException.class.getName();
-        getCache().getLogger().info(
-            "<ExpectedException action=add>" + entryNotFoundException + "</ExpectedException>");
-        String exceptionStr = ReplyException.class.getName() + "||" + entryNotFoundException;
-        vm0.invoke(addExceptionTag1(exceptionStr));
-        vm2.invoke(addExceptionTag1(exceptionStr));
-        vm3.invoke(addExceptionTag1(exceptionStr));
-        addExceptionTag1(exceptionStr);
-        for (int i = removeRange_1Start; i <= removeRange_1End; i++) {
-          final String key = Integer.toString(i);
-          try {
-            pr.destroy(key);
-            fail("EntryNotFoundException is not thrown in destroy operation for key = " + i);
-          } catch (EntryNotFoundException expected) {
-          }
-        }
-
-        vm0.invoke(removeExceptionTag1(exceptionStr));
-        vm2.invoke(removeExceptionTag1(exceptionStr));
-        vm3.invoke(removeExceptionTag1(exceptionStr));
-        removeExceptionTag1(exceptionStr);
-        getCache().getLogger().info(
-            "<ExpectedException action=remove>" + entryNotFoundException + "</ExpectedException>");
-        LogWriterUtils.getLogWriter().fine("All the remove done successfully for vm0.");
-      }
-    });
-
-    /*
-     * Do more put(), create(), invalidate() operations through VM with PR having Accessor + data
-     * store
-     */
-    vm2.invoke(new CacheSerializableRunnable("doPutCreateInvalidateOperations3") {
-
-      public void run2() throws CacheException {
-        Cache cache = getCache();
-        Region pr = cache.getRegion(prName);
-        assertNotNull("PR not created", pr);
-
-        for (int i = putRange_3Start; i <= putRange_3End; i++) {
-          // System.out.println("Putting entry for key = " + i);
-          pr.put(Integer.toString(i), Integer.toString(i));
-        }
-
-        for (int i = createRange_3Start; i <= createRange_3End; i++) {
-          Object val = null;
-          Object key = Integer.toString(i);
-          if (i % 2 == 0) {
-            val = Integer.toString(i);
-          }
-          pr.create(key, val);
-        }
-        final String entryExistsException = EntryExistsException.class.getName();
-        getCache().getLogger()
-            .info("<ExpectedException action=add>" + entryExistsException + "</ExpectedException>");
-        String exceptionStr = ReplyException.class.getName() + "||" + entryExistsException;
-        vm0.invoke(addExceptionTag1(exceptionStr));
-        vm1.invoke(addExceptionTag1(exceptionStr));
-        vm3.invoke(addExceptionTag1(exceptionStr));
-        addExceptionTag1(exceptionStr);
-
-        for (int i = createRange_3Start; i <= createRange_3End; i++) {
-          Object val = null;
-          Object key = Integer.toString(i);
-          if (i % 2 == 0) {
-            val = Integer.toString(i);
-          }
-          try {
-            pr.create(key, val);
-            fail("EntryExistsException is not thrown");
-          } catch (EntryExistsException expected) {
-            // getLogWriter().fine("EntryExistsException is properly thrown");
-          }
-        }
-
-        vm0.invoke(removeExceptionTag1(exceptionStr));
-        vm1.invoke(removeExceptionTag1(exceptionStr));
-        vm3.invoke(removeExceptionTag1(exceptionStr));
-        removeExceptionTag1(exceptionStr);
-        getCache().getLogger().info(
-            "<ExpectedException action=remove>" + entryExistsException + "</ExpectedException>");
-
-      }
-    });
-
-    /*
-     * Do more remove() operations through VM with PR having Accessor + data store
-     */
-
-    vm2.invoke(new CacheSerializableRunnable("doRemoveOperations2") {
-
-      public void run2() throws CacheException {
-        int i = 0;
-        Cache cache = getCache();
-        Region pr = cache.getRegion(prName);
-        assertNotNull("PR not created", pr);
-
-        if (pr == null) {
-          fail("PR not created");
-        }
-        String key;
-        for (i = removeRange_2Start; i <= removeRange_2End; i++) {
-          // System.out.println("destroying entry for key = " + i);
-          key = Integer.toString(i);
-          try {
-            pr.destroy(key);
-          } catch (EntryNotFoundException enfe) {
-            searchForKey((PartitionedRegion) pr, key);
-            throw enfe;
-          }
-        }
-
-        final String entryNotFound = EntryNotFoundException.class.getName();
-        getCache().getLogger()
-            .info("<ExpectedException action=add>" + entryNotFound + "</ExpectedException>");
-        String exceptionStr = ReplyException.class.getName() + "||" + entryNotFound;
-        vm0.invoke(addExceptionTag1(exceptionStr));
-        vm1.invoke(addExceptionTag1(exceptionStr));
-        vm3.invoke(addExceptionTag1(exceptionStr));
-        addExceptionTag1(exceptionStr);
-        for (i = removeRange_2Start; i <= removeRange_2End; i++) {
-          // System.out.println("destroying entry for key = " + i);
-          try {
-            pr.destroy(Integer.toString(i));
-            fail("EntryNotFoundException is not thrown in destroy operation for key = "
-                + (Integer.toString(i)));
-          } catch (EntryNotFoundException expected) {
-          }
-        }
-        vm0.invoke(removeExceptionTag1(exceptionStr));
-        vm1.invoke(removeExceptionTag1(exceptionStr));
-        vm3.invoke(removeExceptionTag1(exceptionStr));
-        removeExceptionTag1(exceptionStr);
-        getCache().getLogger()
-            .info("<ExpectedException action=remove>" + entryNotFound + "</ExpectedException>");
-      }
-    });
-
-    /*
-     * Do more put() operations through VM with PR having only Accessor
-     */
-
-    vm3.invoke(new CacheSerializableRunnable("doPutCreateInvalidateOperations4") {
-
-      public void run2() throws CacheException {
-        Cache cache = getCache();
-        Region pr = cache.getRegion(prName);
-        assertNotNull("PR not created", pr);
-
-        for (int i = putRange_4Start; i <= putRange_4End; i++) {
-          // System.out.println("Putting entry for key = " + i);
-          pr.put(Integer.toString(i), Integer.toString(i));
-        }
-        for (int i = createRange_4Start; i <= createRange_4End; i++) {
-          Object val = null;
-          final Object key = Integer.toString(i);
-          if (i % 2 == 0) {
-            val = Integer.toString(i);
-          }
-          pr.create(key, val);
-        }
-
-        final String entryExistsException = EntryExistsException.class.getName();
-        getCache().getLogger()
-            .info("<ExpectedException action=add>" + entryExistsException + "</ExpectedException>");
-        String exceptionStr = ReplyException.class.getName() + "||" + entryExistsException;
-        vm0.invoke(addExceptionTag1(exceptionStr));
-        vm1.invoke(addExceptionTag1(exceptionStr));
-        vm2.invoke(addExceptionTag1(exceptionStr));
-        addExceptionTag1(exceptionStr);
-
-        for (int i = createRange_4Start; i <= createRange_4End; i++) {
-          Object val = null;
-          final Object key = Integer.toString(i);
-          if (i % 2 == 0) {
-            val = Integer.toString(i);
-          }
-          try {
-            pr.create(key, val);
-            fail("EntryExistsException is not thrown");
-          } catch (EntryExistsException expected) {
-            // getLogWriter().fine("EntryExistsException is properly thrown");
-          }
-        }
-
-        vm0.invoke(removeExceptionTag1(exceptionStr));
-        vm1.invoke(removeExceptionTag1(exceptionStr));
-        vm2.invoke(removeExceptionTag1(exceptionStr));
-        removeExceptionTag1(exceptionStr);
-
-        getCache().getLogger().info(
-            "<ExpectedException action=remove>" + entryExistsException + "</ExpectedException>");
-
-      }
-    });
-
-    /*
-     * validate the data in PartionedRegion at different VM's
-     *
-     */
-    CacheSerializableRunnable validateRegionAPIs =
-        new CacheSerializableRunnable("validateInserts") {
-
-          public void run2() {
-            Cache cache = getCache();
-            Region pr = cache.getRegion(prName);
-            assertNotNull("PR not created", pr);
-
-            // Validation with get() operation.
-            for (int i = putRange_1Start; i <= putRange_4End; i++) {
-              Object val = pr.get(Integer.toString(i));
-              if ((i >= removeRange_1Start && i <= removeRange_1End)
-                  || (i >= removeRange_2Start && i <= removeRange_2End)) {
-                assertNull("Remove validation failed for key " + i, val);
-              } else {
-                assertNotNull("put() not done for key " + i, val);
-              }
-            }
-            // validation with containsKey() operation.
-            for (int i = putRange_1Start; i <= putRange_4End; i++) {
-              boolean conKey = pr.containsKey(Integer.toString(i));
-              if ((i >= removeRange_1Start && i <= removeRange_1End)
-                  || (i >= removeRange_2Start && i <= removeRange_2End)) {
-                assertFalse("containsKey() remove validation failed for key = " + i, conKey);
-              } else {
-                assertTrue("containsKey() Validation failed for key = " + i, conKey);
-              }
-              LogWriterUtils.getLogWriter().fine("containsKey() Validated entry for key = " + i);
-            }
-
-            // validation with containsValueForKey() operation
-            for (int i = putRange_1Start; i <= putRange_4End; i++) {
-              boolean conKey = pr.containsValueForKey(Integer.toString(i));
-              if ((i >= removeRange_1Start && i <= removeRange_1End)
-                  || (i >= removeRange_2Start && i <= removeRange_2End)) {
-                assertFalse("containsValueForKey() remove validation failed for key = " + i,
-                    conKey);
-              } else {
-                assertTrue("containsValueForKey() Validation failed for key = " + i, conKey);
-              }
-              LogWriterUtils.getLogWriter()
-                  .fine("containsValueForKey() Validated entry for key = " + i);
-            }
-          }
-        };
-
-    // validate the data from all the VM's
-    vm0.invoke(validateRegionAPIs);
-    vm1.invoke(validateRegionAPIs);
-    vm2.invoke(validateRegionAPIs);
-    vm3.invoke(validateRegionAPIs);
-
-    /*
-     * destroy the Region.
-     */
-    vm0.invoke(new CacheSerializableRunnable("destroyRegionOp") {
-
-      public void run2() {
-        Cache cache = getCache();
-        Region pr = cache.getRegion(prName);
-        assertNotNull("Region already destroyed.", pr);
-        pr.destroyRegion();
-        assertTrue("Region isDestroyed false", pr.isDestroyed());
-        assertNull("Region not destroyed.", cache.getRegion(prName));
-      }
-    });
-
-    /*
-     * validate the data after the region.destroy() operation.
-     */
-    CacheSerializableRunnable validateAfterRegionDestroy =
-        new CacheSerializableRunnable("validateInsertsAfterRegionDestroy") {
-
-          public void run2() throws CacheException {
-            Cache cache = getCache();
-            Region pr = null;
-            pr = cache.getRegion(prName);
-            assertNull("Region not destroyed.", pr);
-            Region rootRegion =
-                cache.getRegion(Region.SEPARATOR + PartitionedRegionHelper.PR_ROOT_REGION_NAME);
-            // Verify allPartitionedRegion.
-            // Region allPrs = rootRegion
-            // .getSubregion(PartitionedRegionHelper.PARTITIONED_REGION_CONFIG_NAME);
-            Object configObj = rootRegion.get(prName.substring(1));
-            if (configObj != null) {
-              fail("PRConfig found in allPartitionedRegion Metadata for this PR.");
-            }
-            // Verify b2n region.
-            // Region b2nReg = rootRegion
-            // .getSubregion(PartitionedRegionHelper.BUCKET_2_NODE_TABLE_PREFIX);
-            // if (b2nReg != null) {
-            // fail("PRConfig found in allPartitionedRegion Metadata for this PR.");
-            // }
-            // Verify bucket Regions.
-            Set subreg = rootRegion.subregions(false);
-            for (java.util.Iterator itr = subreg.iterator(); itr.hasNext();) {
-              Region reg = (Region) itr.next();
-              String name = reg.getName();
-              if ((name.indexOf(PartitionedRegionHelper.BUCKET_REGION_PREFIX)) != -1) {
-                fail("Bucket exists. Bucket = " + name);
-              }
-            }
-            // verify prIdToPr Map.
-            boolean con = PartitionedRegion.prIdToPR.containsKey("PR1");
-            if (con == true) {
-              fail("prIdToPR contains pr reference ");
-            }
-          }
-        };
-
-    // validateAfterRegionDestory from all VM's
-
-    vm0.invoke(validateAfterRegionDestroy);
-    vm1.invoke(validateAfterRegionDestroy);
-    vm2.invoke(validateAfterRegionDestroy);
-    vm3.invoke(validateAfterRegionDestroy);
-  }
-
-
-  /**
-   * Do putIfAbsent(), replace(Object, Object), replace(Object, Object, Object), remove(Object,
-   * Object) operations through VM with PR having both Accessor and Datastore
-   */
-  public void partitionedRegionConcurrentMapTest(final String prName) {
-    // String exceptionStr = "";
-    vm0.invoke(new CacheSerializableRunnable("doConcurrentMapOperations") {
-      public void run2() throws CacheException {
-        Cache cache = getCache();
-        final PartitionedRegion pr = (PartitionedRegion) cache.getRegion(prName);
-        assertNotNull(prName + " not created", pr);
-
-        // test successful putIfAbsent
-        for (int i = putRange_1Start; i <= putRange_1End; i++) {
-          Object putResult = pr.putIfAbsent(Integer.toString(i), Integer.toString(i));
-          assertNull("Expected null, but got " + putResult + "for key " + i, putResult);
-        }
-        int size = pr.size();
-        assertEquals("Size doesn't return expected value", putRange_1End, size);
-        assertFalse("isEmpty doesnt return proper state of the PartitionedRegion", pr.isEmpty());
-
-        // test unsuccessful putIfAbsent
-        for (int i = putRange_1Start; i <= putRange_1End; i++) {
-          Object putResult = pr.putIfAbsent(Integer.toString(i), Integer.toString(i + 1));
-          assertEquals("for i=" + i, Integer.toString(i), putResult);
-          assertEquals("for i=" + i, Integer.toString(i), pr.get(Integer.toString(i)));
-        }
-        size = pr.size();
-        assertEquals("Size doesn't return expected value", putRange_1End, size);
-        assertFalse("isEmpty doesnt return proper state of the PartitionedRegion", pr.isEmpty());
-
-        // test successful replace(key, oldValue, newValue)
-        for (int i = putRange_1Start; i <= putRange_1End; i++) {
-          boolean replaceSucceeded =
-              pr.replace(Integer.toString(i), Integer.toString(i), "replaced" + i);
-          assertTrue("for i=" + i, replaceSucceeded);
-          assertEquals("for i=" + i, "replaced" + i, pr.get(Integer.toString(i)));
-        }
-        size = pr.size();
-        assertEquals("Size doesn't return expected value", putRange_1End, size);
-        assertFalse("isEmpty doesnt return proper state of the PartitionedRegion", pr.isEmpty());
-
-        // test unsuccessful replace(key, oldValue, newValue)
-        for (int i = putRange_1Start; i <= putRange_2End; i++) {
-          boolean replaceSucceeded = pr.replace(Integer.toString(i), Integer.toString(i), // wrong
-                                                                                          // expected
-                                                                                          // old
-                                                                                          // value
-              "not" + i);
-          assertFalse("for i=" + i, replaceSucceeded);
-          assertEquals("for i=" + i, i <= putRange_1End ? "replaced" + i : null,
-              pr.get(Integer.toString(i)));
-        }
-        size = pr.size();
-        assertEquals("Size doesn't return expected value", putRange_1End, size);
-        assertFalse("isEmpty doesnt return proper state of the PartitionedRegion", pr.isEmpty());
-
-        // test successful replace(key, value)
-        for (int i = putRange_1Start; i <= putRange_1End; i++) {
-          Object replaceResult = pr.replace(Integer.toString(i), "twice replaced" + i);
-          assertEquals("for i=" + i, "replaced" + i, replaceResult);
-          assertEquals("for i=" + i, "twice replaced" + i, pr.get(Integer.toString(i)));
-        }
-        size = pr.size();
-        assertEquals("Size doesn't return expected value", putRange_1End, size);
-        assertFalse("isEmpty doesnt return proper state of the PartitionedRegion", pr.isEmpty());
-
-        // test unsuccessful replace(key, value)
-        for (int i = putRange_2Start; i <= putRange_2End; i++) {
-          Object replaceResult = pr.replace(Integer.toString(i), "thrice replaced" + i);
-          assertNull("for i=" + i, replaceResult);
-          assertNull("for i=" + i, pr.get(Integer.toString(i)));
-        }
-        size = pr.size();
-        assertEquals("Size doesn't return expected value", putRange_1End, size);
-        assertFalse("isEmpty doesnt return proper state of the PartitionedRegion", pr.isEmpty());
-
-        // test unsuccessful remove(key, value)
-        for (int i = putRange_1Start; i <= putRange_2End; i++) {
-          boolean removeResult = pr.remove(Integer.toString(i), Integer.toString(-i));
-          assertFalse("for i=" + i, removeResult);
-          assertEquals("for i=" + i, i <= putRange_1End ? "twice replaced" + i : null,
-              pr.get(Integer.toString(i)));
-        }
-        size = pr.size();
-        assertEquals("Size doesn't return expected value", putRange_1End, size);
-        assertFalse("isEmpty doesnt return proper state of the PartitionedRegion", pr.isEmpty());
-
-        // test successful remove(key, value)
-        for (int i = putRange_1Start; i <= putRange_1End; i++) {
-          boolean removeResult = pr.remove(Integer.toString(i), "twice replaced" + i);
-          assertTrue("for i=" + i, removeResult);
-          assertEquals("for i=" + i, null, pr.get(Integer.toString(i)));
-        }
-        size = pr.size();
-        assertEquals("Size doesn't return expected value", 0, size);
-        assertTrue("isEmpty doesnt return proper state of the PartitionedRegion", pr.isEmpty());
-      }
-    });
-
-
-    /*
-     * destroy the Region.
-     */
-    vm0.invoke(new CacheSerializableRunnable("destroyRegionOp") {
-
-      public void run2() {
-        Cache cache = getCache();
-        Region pr = cache.getRegion(prName);
-        assertNotNull("Region already destroyed.", pr);
-        pr.destroyRegion();
-        assertTrue("Region isDestroyed false", pr.isDestroyed());
-        assertNull("Region not destroyed.", cache.getRegion(prName));
-      }
-    });
-  }
-
-
 
   /**
    * This is a PartitionedRegion test for scope = D_ACK. 4 VMs are used to create the PR with and
@@ -1160,213 +119,743 @@ public class PartitionedRegionAPIDUnitTest extends PartitionedRegionDUnitTestCas
    */
   @Test
   public void testPartitionedRegionOperationsScopeDistAck() throws Exception {
-    Host host = Host.getHost(0);
-    // create the VM(0 - 4)
-    vm0 = host.getVM(0);
-    vm1 = host.getVM(1);
-    vm2 = host.getVM(2);
-    vm3 = host.getVM(3);
-    final VM accessor = vm3;
-    // Create PR;s in different VM's
-    vm0.invoke(createPrRegionWithDS_DACK);
-    vm1.invoke(createPrRegionOnlyAccessor_DACK);
-    vm2.invoke(createPrRegionWithDS_DACK);
-    accessor.invoke(createPrRegionOnlyAccessor_DACK);
-    // final String expectedExceptions = ReplyException.class.getName();
-    // addExceptionTag(expectedExceptions);
-    partitionedRegionTest("/PR1");
-    // removeExceptionTag(expectedExceptions);
-    // Again create the Region with same name
-    vm0.invoke(createPrRegionWithDS_DACK);
-    vm1.invoke(createPrRegionOnlyAccessor_DACK);
-    vm2.invoke(createPrRegionWithDS_DACK);
-    accessor.invoke(createPrRegionOnlyAccessor_DACK);
+    vm0.invoke(() -> createPartitionedRegion());
+    vm1.invoke(() -> createAccessor());
+    vm2.invoke(() -> createPartitionedRegion());
+    vm3.invoke(() -> createAccessor());
 
-    // addExceptionTag(expectedExceptions);
-    partitionedRegionTestAfterDestroyRegion("/PR1");
-    // addExceptionTag(expectedExceptions);
-    /*
-     * destroy the Region.
-     */
-    destroyTheRegion("/PR1");
+    validatePutAndCreateAndKeySetIteratorInDatastore(vm0);
+    validatePutAndCreateInAccessor(vm1);
+    validateDestroyInAccessor(vm1);
+    validatePutAndCreateInDatastore(vm2);
+    validateDestroyInDatastore(vm2);
+    validatePutAndCreateInAccessorAgain(vm3);
+    validateGetAndContainsInAll();
+
+    destroyPartitionedRegion(vm0);
+    validateMetaDataAfterRegionDestroyInAll();
+
+    vm0.invoke(() -> createPartitionedRegion());
+    vm1.invoke(() -> createAccessor());
+    vm2.invoke(() -> createPartitionedRegion());
+    vm3.invoke(() -> createAccessor());
+
+    validateBasicOpsOnDatastore(vm0);
+    validateBasicOpsOnAccessor(vm1);
+
+    destroyPartitionedRegion(vm0);
   }
 
-  /**
-   * This is a PartitionedRegion test for the ConcurrentMap operations for scope = D_ACK. 4 VMs are
-   * used to create the PR with and without(Only Accessor) the DataStore.
-   */
   @Test
   public void testPartitionedRegionConcurrentOperations() throws Exception {
-    Host host = Host.getHost(0);
-    // create the VM(0 - 4)
-    vm0 = host.getVM(0);
-    vm1 = host.getVM(1);
-    vm2 = host.getVM(2);
-    vm3 = host.getVM(3);
-    final VM accessor = vm3;
-    // Create PR;s in different VM's
-    vm0.invoke(createPrRegionWithDS_DACK);
-    vm1.invoke(createPrRegionOnlyAccessor_DACK);
-    vm2.invoke(createPrRegionWithDS_DACK);
-    accessor.invoke(createPrRegionOnlyAccessor_DACK);
-    // final String expectedExceptions = ReplyException.class.getName();
-    partitionedRegionConcurrentMapTest("/PR1");
+    vm0.invoke(() -> createPartitionedRegion());
+    vm1.invoke(() -> createAccessor());
+    vm2.invoke(() -> createPartitionedRegion());
+    vm3.invoke(() -> createAccessor());
+
+    validateConcurrentMapOps(vm0);
+
+    destroyPartitionedRegion(vm0);
   }
 
-
-  /**
-   * Test the PartitionedRegion operations when the Scope is set to
-   * {@link AttributesFactory#setEarlyAck(boolean)}
-   *
-   * @throws Exception
-   */
   @Test
-  public void testPartitionedRegionsOperationsScopeDistEarlyAck() throws Exception {
-    final String rName = getUniqueName();
-    Host host = Host.getHost(0);
-    vm0 = host.getVM(0);
-    vm1 = host.getVM(1);
-    vm2 = host.getVM(2);
-    vm3 = host.getVM(3);
-    CacheSerializableRunnable create = new CacheSerializableRunnable("createPRWithEarlyAck") {
-      public void run2() throws CacheException {
-        Cache cache = getCache();
-        AttributesFactory attr = new AttributesFactory();
-        attr.setEarlyAck(true);
-        attr.setPartitionAttributes(new PartitionAttributesFactory().create());
-        RegionAttributes regionAttribs = attr.create();
-        Region partitionedregion = cache.createRegion(rName, regionAttribs);
-        assertNotNull(partitionedregion);
-        assertNotNull(cache.getRegion(rName));
-      }
-    };
-    CacheSerializableRunnable createAccessor =
-        new CacheSerializableRunnable("createPRAccessorWithEarlyAck") {
-          public void run2() throws CacheException {
-            Cache cache = getCache();
-            AttributesFactory attr = new AttributesFactory();
-            attr.setEarlyAck(true);
-            PartitionAttributes prAttr =
-                new PartitionAttributesFactory().setLocalMaxMemory(0).create();
-            attr.setPartitionAttributes(prAttr);
-            RegionAttributes regionAttribs = attr.create();
-            Region partitionedregion = cache.createRegion(rName, regionAttribs);
-            assertNotNull(partitionedregion);
-            assertNotNull(cache.getRegion(rName));
-          }
-        };
+  public void localMaxMemoryShouldDefaultToNonZero() throws Exception {
+    vm0.invoke(() -> {
+      Cache cache = getCache();
+      RegionFactory<String, String> regionFactory =
+          cache.createRegionFactory(RegionShortcut.PARTITION);
+      Region<String, String> region = regionFactory.create(regionName);
 
-    vm0.invoke(create);
-    vm1.invoke(createAccessor);
-    vm2.invoke(create);
-    vm3.invoke(createAccessor);
-    // final String expectedExceptions = ReplyException.class.getName();
-    // addExceptionTag(expectedExceptions);
-    partitionedRegionTest(rName); // Assumed to destroy the region
-    // removeExceptionTag(expectedExceptions);
-    // Again create the Region with same name
-    vm0.invoke(create);
-    vm1.invoke(createAccessor);
-    vm2.invoke(create);
-    vm3.invoke(createAccessor);
-    // addExceptionTag(expectedExceptions);
-    partitionedRegionTestAfterDestroyRegion(rName);
-    // removeExceptionTag(expectedExceptions);
-    destroyTheRegion(rName);
+      assertThat(region.getAttributes().getPartitionAttributes().getLocalMaxMemory())
+          .isNotEqualTo(0);
+    });
+
+    destroyPartitionedRegion(vm0);
   }
 
-  /**
-   * Verify that localMaxMemory is set correctly when using attributes
-   *
-   * @throws Exception
-   */
   @Test
-  public void testBug36685() throws Exception {
-    final String rName = getUniqueName();
-    Host host = Host.getHost(0);
-    vm0 = host.getVM(0);
-    vm1 = host.getVM(1);
-    vm2 = host.getVM(2);
-    vm3 = host.getVM(3);
-    CacheSerializableRunnable create = new CacheSerializableRunnable("createPR") {
-      public void run2() throws CacheException {
-        Cache cache = getCache();
-        AttributesFactory attr = new AttributesFactory();
-        attr.setDataPolicy(DataPolicy.PARTITION);
-        RegionAttributes regionAttribs = attr.create();
-        Region partitionedregion = cache.createRegion(rName, regionAttribs);
-        assertNotNull(partitionedregion);
-        assertNotNull(cache.getRegion(rName));
-        PartitionAttributes p = regionAttribs.getPartitionAttributes();
-        int maxMem = p.getLocalMaxMemory();
-        assertTrue("LocalMaxMemory is zero", maxMem != 0);
+  public void accessorTriggersCacheLoader() throws Exception {
+    vm2.invoke(() -> createPartitionedRegionWithCacheLoader());
+    vm3.invoke(() -> createPartitionedRegionWithCacheLoader());
+
+    // create a "pure" accessor, no data storage
+    Cache cache = getCache();
+
+    PartitionAttributesFactory<String, String> partitionAttributesFactory =
+        new PartitionAttributesFactory<>();
+    partitionAttributesFactory.setRedundantCopies(1);
+    partitionAttributesFactory.setLocalMaxMemory(0);
+
+    RegionFactory<String, String> regionFactory =
+        cache.createRegionFactory(RegionShortcut.PARTITION);
+    regionFactory.setPartitionAttributes(partitionAttributesFactory.create());
+
+    Region<String, String> region = regionFactory.create(regionName);
+
+    assertThat(region.get(key1, cacheLoaderArg)).isEqualTo(cacheLoaderArg);
+  }
+
+  private void createPartitionedRegion() {
+    Cache cache = getCache();
+
+    PartitionAttributesFactory<String, String> partitionAttributesFactory =
+        new PartitionAttributesFactory<>();
+    partitionAttributesFactory.setTotalNumBuckets(totalNumBuckets);
+
+    RegionFactory<String, String> regionFactory = cache.createRegionFactory(PARTITION);
+    regionFactory.setPartitionAttributes(partitionAttributesFactory.create());
+
+    regionFactory.create(regionName);
+  }
+
+  private void createAccessor() {
+    Cache cache = getCache();
+
+    PartitionAttributesFactory<String, String> partitionAttributesFactory =
+        new PartitionAttributesFactory<>();
+    partitionAttributesFactory.setTotalNumBuckets(totalNumBuckets);
+    partitionAttributesFactory.setLocalMaxMemory(0);
+
+    RegionFactory<String, String> regionFactory = cache.createRegionFactory(PARTITION);
+    regionFactory.setPartitionAttributes(partitionAttributesFactory.create());
+
+    regionFactory.create(regionName);
+  }
+
+  private void createPartitionedRegionWithCacheLoader() {
+    Cache cache = getCache();
+
+    CacheLoader<String, String> cacheLoader = new TestCacheLoader() {
+      @Override
+      public Object load2(final LoaderHelper helper) throws CacheLoaderException {
+        assertThat(helper).isNotNull();
+        assertThat(helper.getKey()).isEqualTo(key1);
+        assertThat(helper.getRegion().getName()).isEqualTo(regionName);
+        assertThat(helper.getArgument()).isEqualTo(cacheLoaderArg);
+        return helper.getArgument();
       }
     };
 
-    vm0.invoke(create);
-    destroyTheRegion(rName);
+    PartitionAttributesFactory<String, String> partitionAttributesFactory =
+        new PartitionAttributesFactory<>();
+    partitionAttributesFactory.setLocalMaxMemory(localMaxMemory);
+    partitionAttributesFactory.setRedundantCopies(1);
+
+    RegionFactory<String, String> regionFactory = cache.createRegionFactory(PARTITION);
+    regionFactory.setCacheLoader(cacheLoader);
+    regionFactory.setPartitionAttributes(partitionAttributesFactory.create());
+
+    PartitionedRegion partitionedRegion = (PartitionedRegion) regionFactory.create(regionName);
+
+    assertThat(partitionedRegion.getDataStore().getCacheLoader()).isSameAs(cacheLoader);
   }
 
+  private void destroyPartitionedRegion(final VM vm) {
+    vm.invoke(() -> {
+      Cache cache = getCache();
+      Region<String, String> region = cache.getRegion(regionName);
+      region.destroyRegion();
 
-  public void destroyTheRegion(final String name) {
-    /*
-     * destroy the Region.
-     */
-    vm0.invoke(new CacheSerializableRunnable("destroyRegionOp") {
+      assertThat(region.isDestroyed()).isTrue();
+      assertThat(cache.getRegion(regionName)).isNull();
+    });
+  }
 
-      public void run2() throws CacheException {
-        Cache cache = getCache();
-        Region pr = cache.getRegion(name);
-        if (pr == null) {
-          fail(name + " not created");
+  private void validateConcurrentMapOps(final VM vm) {
+    vm.invoke(() -> {
+      Cache cache = getCache();
+      Region<String, String> region = cache.getRegion(regionName);
+
+      // putIfAbsent returns null if success
+      for (int i = putRange_1Start; i <= putRange_1End; i++) {
+        String key = Integer.toString(i);
+        String value = Integer.toString(i);
+
+        String result = region.putIfAbsent(key, value);
+
+        assertThat(result).isNull();
+      }
+
+      assertThat(region.size()).isEqualTo(putRange_1End);
+      assertThat(region.isEmpty()).isFalse();
+
+      // putIfAbsent returns existing value if failure
+      for (int i = putRange_1Start; i <= putRange_1End; i++) {
+        String key = Integer.toString(i);
+        String oldValue = Integer.toString(i);
+        String newValue = Integer.toString(i + 1);
+
+        String result = region.putIfAbsent(key, newValue);
+
+        assertThat(result).isEqualTo(oldValue);
+        assertThat(region.get(key)).isEqualTo(oldValue);
+      }
+
+      assertThat(region.size()).isEqualTo(putRange_1End);
+      assertThat(region.isEmpty()).isFalse();
+
+      // replace(key, oldValue, newValue) returns true if success
+      for (int i = putRange_1Start; i <= putRange_1End; i++) {
+        String key = Integer.toString(i);
+        String oldValue = Integer.toString(i);
+        String newValue = "replaced" + i;
+
+        boolean result = region.replace(key, oldValue, newValue);
+
+        assertThat(result).isTrue();
+        assertThat(region.get(key)).isEqualTo(newValue);
+      }
+
+      assertThat(region.size()).isEqualTo(putRange_1End);
+      assertThat(region.isEmpty()).isFalse();
+
+      // replace(key, oldValue, newValue) returns false if failure
+      for (int i = putRange_1Start; i <= putRange_2End; i++) {
+        // wrong expected old value
+        String key = Integer.toString(i);
+        String actualValue = i <= putRange_1End ? "replaced" + i : null;
+        String wrongValue = Integer.toString(i);
+        String newValue = "not" + i;
+
+        boolean result = region.replace(key, wrongValue, newValue);
+
+        assertThat(result).isFalse();
+        assertThat(region.get(key)).isEqualTo(actualValue);
+      }
+
+      assertThat(region.size()).isEqualTo(putRange_1End);
+      assertThat(region.isEmpty()).isFalse();
+
+      // replace(key, value) returns old value if success
+      for (int i = putRange_1Start; i <= putRange_1End; i++) {
+        String key = Integer.toString(i);
+        String oldValue = "replaced" + i;
+        String newValue = "twice replaced" + i;
+
+        String result = region.replace(key, newValue);
+
+        assertThat(result).isEqualTo(oldValue);
+        assertThat(region.get(Integer.toString(i))).isEqualTo(newValue);
+      }
+
+      assertThat(region.size()).isEqualTo(putRange_1End);
+      assertThat(region.isEmpty()).isFalse();
+
+      // replace(key, value) returns null if failure
+      for (int i = putRange_2Start; i <= putRange_2End; i++) {
+        String key = Integer.toString(i);
+        String newValue = "thrice replaced" + i;
+
+        String result = region.replace(key, newValue);
+
+        assertThat(result).isNull();
+        assertThat(region.get(key)).isNull();
+      }
+
+      assertThat(region.size()).isEqualTo(putRange_1End);
+      assertThat(region.isEmpty()).isFalse();
+
+      // remove(key, value) returns false if failure
+      for (int i = putRange_1Start; i <= putRange_2End; i++) {
+        String key = Integer.toString(i);
+        String actualValue = i <= putRange_1End ? "twice replaced" + i : null;
+        String wrongValue = Integer.toString(-i);
+
+        boolean result = region.remove(key, wrongValue);
+
+        assertThat(result).isFalse();
+        assertThat(region.get(key)).isEqualTo(actualValue);
+      }
+
+      assertThat(region.size()).isEqualTo(putRange_1End);
+      assertThat(region.isEmpty()).isFalse();
+
+      // remove(key, value) returns true if success
+      for (int i = putRange_1Start; i <= putRange_1End; i++) {
+        String key = Integer.toString(i);
+        String value = "twice replaced" + i;
+
+        boolean result = region.remove(key, value);
+
+        assertThat(result).isTrue();
+        assertThat(region.get(key)).isNull();
+      }
+
+      assertThat(region.size()).isEqualTo(0);
+      assertThat(region.isEmpty()).isTrue();
+    });
+  }
+
+  private void validateBasicOpsOnDatastore(final VM vm) {
+    vm.invoke(() -> {
+      Cache cache = getCache();
+      Region<String, String> region = cache.getRegion(regionName);
+
+      // put
+      for (int i = putRange_1Start; i <= putRange_1End; i++) {
+        String key = "" + i;
+        String value = "" + i;
+
+        String result = region.put(key, value);
+
+        assertThat(result).isNull();
+      }
+
+      // create
+      for (int i = createRange_1Start; i <= createRange_1End; i++) {
+        String key = "" + i;
+        String value = i % 2 == 0 ? "" + i : null;
+
+        region.create(key, value);
+      }
+
+      // create throws EntryExistsException
+      for (int i = createRange_1Start; i <= createRange_1End; i++) {
+        String key = "" + i;
+        String value = i % 2 == 0 ? "" + i : null;
+
+        try (IgnoredException ignored = addIgnoredException(EntryExistsException.class.getName())) {
+          assertThatThrownBy(() -> region.create(key, value))
+              .isInstanceOf(EntryExistsException.class);
         }
-        pr.destroyRegion();
+      }
+
+      // invalidate throws EntryNotFoundException
+      for (int i = invalidateRange_1Start; i <= invalidateRange_1End; i++) {
+        String key = Integer.toString(i);
+        String value = Integer.toString(i);
+
+        // invalidate op throws EntryNotFoundException
+        try (IgnoredException ignored =
+            addIgnoredException(EntryNotFoundException.class.getName())) {
+          assertThatThrownBy(() -> region.invalidate(key))
+              .isInstanceOf(EntryNotFoundException.class);
+        }
+
+        // repopulate
+        region.create(key, value);
+
+        assertThat(region.containsValueForKey(key)).isTrue();
+        assertThat(region.get(key)).isEqualTo(value);
+
+        // invalidate op
+        region.invalidate(key);
+
+        assertThat(region.containsValueForKey(key)).isFalse();
+        assertThat(region.get(key)).isNull();
+      }
+
+      // destroy op
+      for (int i = invalidateRange_1Start; i <= invalidateRange_1End; i++) {
+        String key = Integer.toString(i);
+
+        region.destroy(key);
+
+        assertThat(region.containsKey(key)).isFalse();
+        assertThat(region.get(key)).isNull();
+      }
+
+      // invalidate op throws EntryNotFoundException
+      try (IgnoredException ignored = addIgnoredException(EntryNotFoundException.class.getName())) {
+        for (int i = invalidateRange_1Start; i <= invalidateRange_1End; i++) {
+          String key = "" + i;
+
+          assertThatThrownBy(() -> region.invalidate(key))
+              .isInstanceOf(EntryNotFoundException.class);
+        }
       }
     });
   }
 
-  @Test
-  public void testCacherLoaderHelper() throws Exception {
-    final String rName = getUniqueName();
-    Host host = Host.getHost(0);
-    VM vm2 = host.getVM(2);
-    VM vm3 = host.getVM(3);
+  private void validateBasicOpsOnAccessor(final VM vm) {
+    vm.invoke(() -> {
+      Cache cache = getCache();
+      Region<String, String> region = cache.getRegion(regionName);
 
-    final int localMaxMemory = 10;
-    final String key1 = "key1";
-    final String arg = "loaderArg";
-    CacheSerializableRunnable createLoaderPR = new CacheSerializableRunnable("createLoaderPR") {
-      public void run2() throws CacheException {
-        getCache();
+      // populate region
+      for (int i = putRange_2Start; i <= putRange_2End; i++) {
+        String key = "" + i;
+        String value = "" + i;
 
-        CacheLoader cl = new TestCacheLoader() {
-          public Object load2(LoaderHelper helper) throws CacheLoaderException {
-            assertNotNull(helper);
-            assertEquals(key1, helper.getKey());
-            assertEquals(rName, helper.getRegion().getName());
-            assertEquals(arg, helper.getArgument());
-            return helper.getArgument();
-          }
-        };
+        String result = region.put(key, value);
 
-        PartitionedRegion pr =
-            (PartitionedRegion) new RegionFactory()
-                .setCacheLoader(cl).setPartitionAttributes(new PartitionAttributesFactory()
-                    .setRedundantCopies(1).setLocalMaxMemory(localMaxMemory).create())
-                .create(rName);
-        assertSame(cl, pr.getDataStore().getCacheLoader());
+        assertThat(result).isNull();
       }
-    };
-    vm2.invoke(createLoaderPR);
-    vm3.invoke(createLoaderPR);
 
-    // create a "pure" accessor, no data storage
-    getCache();
-    Region pr = new RegionFactory()
-        .setPartitionAttributes(
-            new PartitionAttributesFactory().setRedundantCopies(1).setLocalMaxMemory(0).create())
-        .create(rName);
+      // create
+      for (int i = createRange_2Start; i <= createRange_2End; i++) {
+        String key = "" + i;
+        String value = i % 2 == 0 ? "" + i : null;
 
-    assertEquals(arg, pr.get(key1, arg));
+        region.create(key, value);
+      }
+
+      // create throws EntryExistsException
+      try (IgnoredException ignored1 = addIgnoredException(EntryExistsException.class.getName());
+          IgnoredException ignored2 = addIgnoredException(ReplyException.class.getName())) {
+        for (int i = createRange_2Start; i <= createRange_2End; i++) {
+          String key = "" + i;
+          String value = i % 2 == 0 ? "" + i : null;
+
+          assertThatThrownBy(() -> region.create(key, value))
+              .isInstanceOf(EntryExistsException.class);
+        }
+      }
+
+      // invalidate throws EntryNotFoundException THEN repopulate region
+      try (IgnoredException ignored1 = addIgnoredException(EntryNotFoundException.class.getName());
+          IgnoredException ignored2 = addIgnoredException(ReplyException.class.getName())) {
+        for (int i = invalidateRange_2Start; i <= invalidateRange_2End; i++) {
+          String key = Integer.toString(i);
+          String value = Integer.toString(i);
+
+          assertThatThrownBy(() -> region.invalidate(key))
+              .isInstanceOf(EntryNotFoundException.class);
+
+          region.create(key, value);
+        }
+      }
+
+      // invalidate
+      for (int i = invalidateRange_2Start; i <= invalidateRange_2End; i++) {
+        String key = Integer.toString(i);
+        String value = Integer.toString(i);
+
+        assertThat(region.containsKey(key)).isTrue();
+        assertThat(region.containsValueForKey(key)).isTrue();
+        assertThat(region.get(key)).isEqualTo(value);
+
+        region.invalidate(key);
+
+        assertThat(region.containsKey(key)).isTrue();
+        assertThat(region.containsValueForKey(key)).isFalse();
+        assertThat(region.get(key)).isNull();
+      }
+
+      // destroy
+      for (int i = invalidateRange_2Start; i <= invalidateRange_2End; i++) {
+        String key = Integer.toString(i);
+
+        region.destroy(key);
+
+        assertThat(region.containsKey(key)).isFalse();
+        assertThat(region.containsValueForKey(key)).isFalse();
+        assertThat(region.get(key)).isNull();
+      }
+
+      // invalidate throws EntryNotFoundException
+      try (IgnoredException ignored1 = addIgnoredException(EntryNotFoundException.class.getName());
+          IgnoredException ignored2 = addIgnoredException(ReplyException.class.getName())) {
+        for (int i = invalidateRange_2Start; i <= invalidateRange_2End; i++) {
+          String key = Integer.toString(i);
+
+          assertThatThrownBy(() -> region.invalidate(key))
+              .isInstanceOf(EntryNotFoundException.class);
+        }
+      }
+    });
+  }
+
+  private void validatePutAndCreateAndKeySetIteratorInDatastore(final VM vm0) {
+    vm0.invoke(() -> {
+      Cache cache = getCache();
+      Region<String, String> region = cache.getRegion(regionName);
+
+      // size and isEmpty and keySet
+      assertThat(region.size()).isEqualTo(0);
+      assertThat(region.isEmpty()).isTrue();
+      assertThat(region.keySet().size()).isEqualTo(0);
+
+      // put
+      for (int i = putRange_1Start; i <= putRange_1End; i++) {
+        region.put(Integer.toString(i), Integer.toString(i));
+      }
+
+      // size and isEmpty
+      assertThat(region.size()).isEqualTo(putRange_1End);
+      assertThat(region.isEmpty()).isFalse();
+
+      // Positive assertion of functionality in a distributed env.
+      // For basic functional support (or lack of), please see
+      // PartitionedRegionSingleNodeOperationsJUnitTest
+
+      // keys
+      Set<String> keySet = region.keySet();
+      assertThat(keySet.size()).isEqualTo(putRange_1End);
+
+      // keySet iterator
+      Iterator<String> iterator = keySet.iterator();
+      while (iterator.hasNext()) {
+        assertThatThrownBy(() -> iterator.remove()).isInstanceOf(Exception.class);
+        String key = iterator.next();
+        assertThat(key.getClass()).isEqualTo(String.class);
+      }
+
+      assertThatThrownBy(() -> iterator.remove()).isInstanceOf(Exception.class);
+      assertThat(iterator.hasNext()).isFalse();
+
+      assertThatThrownBy(() -> iterator.next()).isInstanceOf(NoSuchElementException.class);
+      assertThat(iterator.hasNext()).isFalse();
+
+      // destroy
+      try (IgnoredException ignored1 = addIgnoredException(EntryNotFoundException.class.getName());
+          IgnoredException ignored2 = addIgnoredException(ReplyException.class.getName())) {
+        for (int i = putRange_1Start; i <= putRange_1End; i++) {
+          region.destroy(Integer.toString(i));
+        }
+      }
+
+      // size and isEmpty
+      assertThat(region.size()).isEqualTo(0);
+      assertThat(region.isEmpty()).isTrue();
+
+      // put
+      for (int i = putRange_1Start; i <= putRange_1End; i++) {
+        String key = Integer.toString(i);
+        String value = Integer.toString(i);
+
+        region.put(key, value);
+      }
+
+      // create
+      for (int i = createRange_1Start; i <= createRange_1End; i++) {
+        String key = Integer.toString(i);
+        String value = i % 2 == 0 ? Integer.toString(i) : null;
+
+        region.create(key, value);
+      }
+
+      // create throws EntryExistsException
+      try (IgnoredException ignored1 = addIgnoredException(EntryExistsException.class.getName());
+          IgnoredException ignored2 = addIgnoredException(ReplyException.class.getName())) {
+        for (int i = createRange_1Start; i <= createRange_1End; i++) {
+          String key = Integer.toString(i);
+          String value = i % 2 == 0 ? Integer.toString(i) : null;
+
+          assertThatThrownBy(() -> region.create(key, value))
+              .isInstanceOf(EntryExistsException.class);
+        }
+      }
+    });
+  }
+
+  private void validatePutAndCreateInAccessor(final VM vm1) {
+    vm1.invoke(() -> {
+      Cache cache = getCache();
+      Region<String, String> region = cache.getRegion(regionName);
+
+      // put
+      for (int i = putRange_2Start; i <= putRange_2End; i++) {
+        String key = Integer.toString(i);
+        String value = Integer.toString(i);
+
+        region.put(key, value);
+      }
+
+      // create
+      for (int i = createRange_2Start; i <= createRange_2End; i++) {
+        String key = Integer.toString(i);
+        String value = i % 2 == 0 ? Integer.toString(i) : null;
+
+        region.create(key, value);
+      }
+
+      // create throws EntryExistsException
+      try (IgnoredException ignored1 = addIgnoredException(EntryExistsException.class.getName());
+          IgnoredException ignored2 = addIgnoredException(ReplyException.class.getName())) {
+        for (int i = createRange_2Start; i <= createRange_2End; i++) {
+          String key = Integer.toString(i);
+          String value = i % 2 == 0 ? Integer.toString(i) : null;
+
+          assertThatThrownBy(() -> region.create(key, value))
+              .isInstanceOf(EntryExistsException.class);
+        }
+      }
+    });
+  }
+
+  private void validateDestroyInAccessor(final VM vm1) {
+    vm1.invoke(() -> {
+      Cache cache = getCache();
+      Region<String, String> region = cache.getRegion(regionName);
+
+      // destroy
+      for (int i = removeRange_1Start; i <= removeRange_1End; i++) {
+        String key = Integer.toString(i);
+
+        region.destroy(key);
+      }
+
+      // destroy throws EntryNotFoundException
+      try (IgnoredException ignored1 = addIgnoredException(EntryNotFoundException.class.getName());
+          IgnoredException ignored2 = addIgnoredException(ReplyException.class.getName())) {
+        for (int i = removeRange_1Start; i <= removeRange_1End; i++) {
+          String key = Integer.toString(i);
+
+          assertThatThrownBy(() -> region.destroy(key)).isInstanceOf(EntryNotFoundException.class);
+        }
+      }
+    });
+  }
+
+  private void validatePutAndCreateInDatastore(final VM vm2) {
+    vm2.invoke(() -> {
+      Cache cache = getCache();
+      Region<String, String> region = cache.getRegion(regionName);
+
+      // put
+      for (int i = putRange_3Start; i <= putRange_3End; i++) {
+        String key = Integer.toString(i);
+        String value = Integer.toString(i);
+
+        region.put(key, value);
+      }
+
+      // create
+      for (int i = createRange_3Start; i <= createRange_3End; i++) {
+        String key = Integer.toString(i);
+        String value = i % 2 == 0 ? Integer.toString(i) : null;
+
+        region.create(key, value);
+      }
+
+      // create throws EntryExistsException
+      try (IgnoredException ignored1 = addIgnoredException(EntryExistsException.class.getName());
+          IgnoredException ignored2 = addIgnoredException(ReplyException.class.getName())) {
+        for (int i = createRange_3Start; i <= createRange_3End; i++) {
+          String key = Integer.toString(i);
+          String value = i % 2 == 0 ? Integer.toString(i) : null;
+
+          assertThatThrownBy(() -> region.create(key, value))
+              .isInstanceOf(EntryExistsException.class);
+        }
+      }
+    });
+  }
+
+  private void validateDestroyInDatastore(final VM vm2) {
+    vm2.invoke(() -> {
+      Cache cache = getCache();
+      Region<String, String> region = cache.getRegion(regionName);
+
+      // destroy
+      for (int i = removeRange_2Start; i <= removeRange_2End; i++) {
+        String key = Integer.toString(i);
+
+        region.destroy(key);
+      }
+
+      // destroy throws EntryNotFoundException
+      try (IgnoredException ignored1 = addIgnoredException(EntryNotFoundException.class.getName());
+          IgnoredException ignored2 = addIgnoredException(ReplyException.class.getName())) {
+        for (int i = removeRange_2Start; i <= removeRange_2End; i++) {
+          String key = Integer.toString(i);
+
+          assertThatThrownBy(() -> region.destroy(key)).isInstanceOf(EntryNotFoundException.class);
+        }
+      }
+    });
+  }
+
+  private void validatePutAndCreateInAccessorAgain(final VM vm3) {
+    vm3.invoke(() -> {
+      Cache cache = getCache();
+      Region<String, String> region = cache.getRegion(regionName);
+
+      // populate
+      for (int i = putRange_4Start; i <= putRange_4End; i++) {
+        String key = Integer.toString(i);
+        String value = Integer.toString(i);
+
+        region.put(key, value);
+      }
+
+      // create
+      for (int i = createRange_4Start; i <= createRange_4End; i++) {
+        String key = Integer.toString(i);
+        String value = i % 2 == 0 ? Integer.toString(i) : null;
+
+        region.create(key, value);
+      }
+
+      // create throws EntryExistsException
+      try (IgnoredException ignored1 = addIgnoredException(EntryExistsException.class.getName());
+          IgnoredException ignored2 = addIgnoredException(ReplyException.class.getName())) {
+        for (int i = createRange_4Start; i <= createRange_4End; i++) {
+          String key = Integer.toString(i);
+          String value = i % 2 == 0 ? Integer.toString(i) : null;
+
+          assertThatThrownBy(() -> region.create(key, value))
+              .isInstanceOf(EntryExistsException.class);
+        }
+      }
+    });
+  }
+
+  private void validateGetAndContainsInAll() {
+    for (int vm = 0; vm < 4; vm++) {
+      getHost(0).getVM(vm).invoke(() -> {
+        Cache cache = getCache();
+        Region<String, String> region = cache.getRegion(regionName);
+
+        // get
+        for (int i = putRange_1Start; i <= putRange_4End; i++) {
+          String value = region.get(Integer.toString(i));
+          if ((i >= removeRange_1Start && i <= removeRange_1End)
+              || (i >= removeRange_2Start && i <= removeRange_2End)) {
+            assertThat(value).isNull();
+          } else {
+            assertThat(value).isNotNull();
+          }
+        }
+
+        // containsKey
+        for (int i = putRange_1Start; i <= putRange_4End; i++) {
+          boolean containsKey = region.containsKey(Integer.toString(i));
+          if ((i >= removeRange_1Start && i <= removeRange_1End)
+              || (i >= removeRange_2Start && i <= removeRange_2End)) {
+            assertThat(containsKey).isFalse();
+          } else {
+            assertThat(containsKey).isTrue();
+          }
+        }
+
+        // containsValueForKey
+        for (int i = putRange_1Start; i <= putRange_4End; i++) {
+          boolean containsValueForKey = region.containsValueForKey(Integer.toString(i));
+          if ((i >= removeRange_1Start && i <= removeRange_1End)
+              || (i >= removeRange_2Start && i <= removeRange_2End)) {
+            assertThat(containsValueForKey).isFalse();
+          } else {
+            assertThat(containsValueForKey).isTrue();
+          }
+        }
+      });
+    }
+  }
+
+  private void validateMetaDataAfterRegionDestroyInAll() {
+    for (int vm = 0; vm < 4; vm++) {
+      getHost(0).getVM(vm).invoke(() -> {
+        Cache cache = getCache();
+        Region<String, String> region = cache.getRegion(regionName);
+        assertThat(region).isNull();
+
+        Region rootRegion =
+            cache.getRegion(Region.SEPARATOR + PartitionedRegionHelper.PR_ROOT_REGION_NAME);
+
+        Object configObject = rootRegion.get(regionName.substring(1));
+        assertThat(configObject).isNull();
+
+        Set<Region> subregions = rootRegion.subregions(false);
+        for (Region subregion : subregions) {
+          String name = subregion.getName();
+          assertThat(name).doesNotContain(PartitionedRegionHelper.BUCKET_REGION_PREFIX);
+        }
+
+        boolean containsKey = PartitionedRegion.getPrIdToPR().containsKey(regionName);
+        assertThat(containsKey).isFalse();
+      });
+    }
   }
 }

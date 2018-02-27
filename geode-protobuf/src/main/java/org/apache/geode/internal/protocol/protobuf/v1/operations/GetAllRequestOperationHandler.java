@@ -47,11 +47,11 @@ public class GetAllRequestOperationHandler
     String regionName = request.getRegionName();
     Region region = messageExecutionContext.getCache().getRegion(regionName);
     if (region == null) {
-      logger.error("Received GetAll request for non-existing region {}", regionName);
-      return Failure.of(BasicTypes.ErrorCode.SERVER_ERROR, "Region not found");
+      logger.error("Received get-all request for nonexistent region: {}", regionName);
+      return Failure.of(BasicTypes.ErrorCode.SERVER_ERROR,
+          "Region \"" + regionName + "\" not found");
     }
 
-    long startTime = messageExecutionContext.getStatistics().startOperation();
     RegionAPI.GetAllResponse.Builder responseBuilder = RegionAPI.GetAllResponse.newBuilder();
     try {
       messageExecutionContext.getCache().setReadSerializedForCurrentThread(true);
@@ -59,7 +59,6 @@ public class GetAllRequestOperationHandler
           .forEach((key) -> processSingleKey(responseBuilder, serializationService, region, key));
     } finally {
       messageExecutionContext.getCache().setReadSerializedForCurrentThread(false);
-      messageExecutionContext.getStatistics().endOperation(startTime);
     }
 
     return Success.of(responseBuilder.build());

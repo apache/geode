@@ -177,8 +177,9 @@ public class CreateJndiBindingCommand implements GfshCommand {
       result = buildResult(jndiCreationResult);
     } else {
       if (persisted)
-        result =
-            ResultBuilder.createInfoResult("No members found. Cluster configuration is updated.");
+        result = ResultBuilder.createInfoResult(CliStrings.format(
+            "No members found. Cluster configuration is updated with jndi-binding \"{0}\".",
+            jndiName));
       else
         result = ResultBuilder.createInfoResult("No members found.");
     }
