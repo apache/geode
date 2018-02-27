@@ -134,14 +134,13 @@ public class SqlHandler {
           ResultSetMetaData metaData = resultSet.getMetaData();
           int ColumnsNumber = metaData.getColumnCount();
           for (int i = 1; i <= ColumnsNumber; i++) {
-            Object columnValue = resultSet.getObject(i);
             String columnName = metaData.getColumnName(i);
-            String fieldName = mapColumnNameToFieldName(columnName, regionMapping);
             if (regionMapping.isPrimaryKeyInValue()
                 || !keyColumnName.equalsIgnoreCase(columnName)) {
+              String fieldName = mapColumnNameToFieldName(columnName, regionMapping);
               FieldType fieldType =
                   getFieldType(region, regionMapping.getPdxClassName(), fieldName, metaData, i);
-              writeField(factory, columnValue, fieldName, fieldType);
+              writeField(factory, resultSet, i, fieldName, fieldType);
             }
           }
           if (resultSet.next()) {
@@ -157,14 +156,17 @@ public class SqlHandler {
     return pdxInstance;
   }
 
-  private void writeField(PdxInstanceFactory factory, Object columnValue, String fieldName,
-      FieldType fieldType) {
+  /**
+   * @throws SQLException if the column value get fails
+   */
+  private void writeField(PdxInstanceFactory factory, ResultSet resultSet, int columnIndex,
+      String fieldName, FieldType fieldType) throws SQLException {
     switch (fieldType) {
       case STRING:
-        factory.writeString(fieldName, (String) columnValue);
+        factory.writeString(fieldName, resultSet.getString(columnIndex));
         break;
       default:
-        factory.writeObject(fieldName, columnValue);
+        factory.writeObject(fieldName, resultSet.getObject(columnIndex));
     }
   }
 

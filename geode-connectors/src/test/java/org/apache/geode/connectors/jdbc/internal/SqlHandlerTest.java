@@ -450,7 +450,7 @@ public class SqlHandlerTest {
     when(result.getMetaData()).thenReturn(metaData);
     when(metaData.getColumnCount()).thenReturn(2);
 
-    when(result.getObject(1)).thenReturn(COLUMN_STRING_VALUE_1);
+    when(result.getString(1)).thenReturn(COLUMN_STRING_VALUE_1);
     when(metaData.getColumnName(1)).thenReturn(COLUMN_NAME_1);
 
     when(result.getObject(2)).thenReturn(COLUMN_VALUE_2);
