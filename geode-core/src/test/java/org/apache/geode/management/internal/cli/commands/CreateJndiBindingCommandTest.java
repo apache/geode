@@ -302,7 +302,6 @@ public class CreateJndiBindingCommandTest {
 
     gfsh.executeAndAssertThat(command,
         COMMAND + " --type=SIMPLE --name=name --jdbc-driver-class=driver --connection-url=url")
-        // .statusIsSuccess().containsOutput("Cluster Configuration Service is not available")
         .statusIsSuccess().containsOutput("No members found").hasFailToPersistError();
   }
 
@@ -318,7 +317,12 @@ public class CreateJndiBindingCommandTest {
 
     gfsh.executeAndAssertThat(command,
         COMMAND + " --type=SIMPLE --name=name --jdbc-driver-class=driver --connection-url=url")
-        .statusIsSuccess();
+        .statusIsSuccess()
+        .containsOutput(
+            "No members found. Cluster configuration is updated with jndi-binding \\\"name\\\".")
+        .hasNoFailToPersistError();
+
+    verify(command, times(1)).updateXml(any());
   }
 
   @Test
