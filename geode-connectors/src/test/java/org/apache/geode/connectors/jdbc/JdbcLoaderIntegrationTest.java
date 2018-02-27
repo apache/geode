@@ -120,7 +120,7 @@ public class JdbcLoaderIntegrationTest {
   @Test
   public void verifySimpleGet() throws Exception {
     statement.execute("Insert into " + REGION_TABLE_NAME + " values('1', 'Emp1', 21)");
-    Region<String, PdxInstance> region = createRegionWithJDBCLoader(REGION_TABLE_NAME, null);
+    Region<String, PdxInstance> region = createRegionWithJDBCLoader(REGION_TABLE_NAME, null, false);
     PdxInstance pdx = region.get("1");
 
     assertThat(pdx.getFieldNames().size()).isEqualTo(2);
@@ -129,10 +129,22 @@ public class JdbcLoaderIntegrationTest {
   }
 
   @Test
+  public void verifySimpleGetWithPrimaryKeyInValue() throws Exception {
+    statement.execute("Insert into " + REGION_TABLE_NAME + " values('1', 'Emp1', 21)");
+    Region<String, PdxInstance> region = createRegionWithJDBCLoader(REGION_TABLE_NAME, null, true);
+    PdxInstance pdx = region.get("1");
+
+    assertThat(pdx.getFieldNames().size()).isEqualTo(3);
+    assertThat(pdx.getField("id")).isEqualTo("1");
+    assertThat(pdx.getField("name")).isEqualTo("Emp1");
+    assertThat(pdx.getField("age")).isEqualTo(21);
+  }
+
+  @Test
   public void verifyGetWithPdxClassName() throws Exception {
     statement.execute("Insert into " + REGION_TABLE_NAME + " values('1', 'Emp1', 21)");
     Region<String, PdxEmployee> region =
-        createRegionWithJDBCLoader(REGION_TABLE_NAME, PdxEmployee.class.getName());
+        createRegionWithJDBCLoader(REGION_TABLE_NAME, PdxEmployee.class.getName(), false);
     createPdxType();
     PdxEmployee value = region.get("1");
 
@@ -148,20 +160,22 @@ public class JdbcLoaderIntegrationTest {
 
   @Test
   public void verifySimpleMiss() throws Exception {
-    Region<String, PdxInstance> region = createRegionWithJDBCLoader(REGION_TABLE_NAME, null);
+    Region<String, PdxInstance> region = createRegionWithJDBCLoader(REGION_TABLE_NAME, null, false);
     PdxInstance pdx = region.get("1");
     assertThat(pdx).isNull();
   }
 
-  private SqlHandler createSqlHandler(String pdxClassName)
+  private SqlHandler createSqlHandler(String pdxClassName, boolean primaryKeyInValue)
       throws ConnectionConfigExistsException, RegionMappingExistsException {
-    return new SqlHandler(new TestableConnectionManager(),
-        TestConfigService.getTestConfigService((InternalCache) cache, pdxClassName));
+    return new SqlHandler(new TestableConnectionManager(), TestConfigService
+        .getTestConfigService((InternalCache) cache, pdxClassName, primaryKeyInValue));
   }
 
-  private <K, V> Region<K, V> createRegionWithJDBCLoader(String regionName, String pdxClassName)
+  private <K, V> Region<K, V> createRegionWithJDBCLoader(String regionName, String pdxClassName,
+      boolean primaryKeyInValue)
       throws ConnectionConfigExistsException, RegionMappingExistsException {
-    JdbcLoader<K, V> jdbcLoader = new JdbcLoader<>(createSqlHandler(pdxClassName));
+    JdbcLoader<K, V> jdbcLoader =
+        new JdbcLoader<>(createSqlHandler(pdxClassName, primaryKeyInValue));
     RegionFactory<K, V> regionFactory = cache.createRegionFactory(REPLICATE);
     regionFactory.setCacheLoader(jdbcLoader);
     return regionFactory.create(regionName);
