@@ -20,6 +20,7 @@ import org.junit.experimental.categories.Category;
 import org.apache.geode.DataSerializer;
 import org.apache.geode.distributed.internal.DistributionConfig;
 import org.apache.geode.distributed.internal.DistributionConfigImpl;
+import org.apache.geode.internal.lang.ClassUtils;
 import org.apache.geode.test.junit.categories.UnitTest;
 
 /*
@@ -52,12 +53,8 @@ public class InternalDataSerializerSerializationWhitelistTest {
   }
 
   private boolean hasObjectInputFilter() {
-    try {
-      Class.forName("sun.misc.ObjectInputFilter");
-      return true;
-    } catch (ClassNotFoundException e) {
-      return false;
-    }
+    return (ClassUtils.isClassAvailable("sun.misc.ObjectInputFilter")
+        || ClassUtils.isClassAvailable("java.io.ObjectInputFilter"));
   }
 
   @AfterClass
