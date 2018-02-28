@@ -14,7 +14,6 @@
  */
 package org.apache.geode.internal.cache.backup;
 
-import java.io.File;
 import java.io.IOException;
 import java.util.HashSet;
 
@@ -26,15 +25,12 @@ class PrepareBackup {
 
   private final InternalDistributedMember member;
   private final InternalCache cache;
-  private final File targetDir;
-  private final File baselineDir;
+  private final BackupWriter backupWriter;
 
-  PrepareBackup(InternalDistributedMember member, InternalCache cache, File targetDir,
-      File baselineDir) {
+  PrepareBackup(InternalDistributedMember member, InternalCache cache, BackupWriter backupWriter) {
     this.member = member;
     this.cache = cache;
-    this.targetDir = targetDir;
-    this.baselineDir = baselineDir;
+    this.backupWriter = backupWriter;
   }
 
   HashSet<PersistentID> run() throws IOException, InterruptedException {
@@ -42,7 +38,7 @@ class PrepareBackup {
     if (cache == null) {
       persistentIds = new HashSet<>();
     } else {
-      persistentIds = cache.getBackupService().prepareBackup(member, targetDir, baselineDir);
+      persistentIds = cache.getBackupService().prepareBackup(member, backupWriter);
     }
     return persistentIds;
   }

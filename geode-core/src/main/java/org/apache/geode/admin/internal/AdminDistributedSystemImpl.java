@@ -14,30 +14,80 @@
  */
 package org.apache.geode.admin.internal;
 
-import static org.apache.geode.distributed.ConfigurationProperties.*;
+import static org.apache.geode.distributed.ConfigurationProperties.DISABLE_TCP;
+import static org.apache.geode.distributed.ConfigurationProperties.LOCATORS;
+import static org.apache.geode.distributed.ConfigurationProperties.MCAST_ADDRESS;
+import static org.apache.geode.distributed.ConfigurationProperties.MCAST_PORT;
 
 import java.io.File;
 import java.io.IOException;
 import java.net.InetAddress;
-import java.util.*;
-import java.util.concurrent.*;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+import java.util.Properties;
+import java.util.Set;
+import java.util.StringTokenizer;
+import java.util.UUID;
+import java.util.concurrent.Callable;
+import java.util.concurrent.CancellationException;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.Future;
+import java.util.concurrent.FutureTask;
 
 import org.apache.logging.log4j.Logger;
 
 import org.apache.geode.CancelException;
 import org.apache.geode.SystemFailure;
-import org.apache.geode.admin.*;
+import org.apache.geode.admin.AdminException;
 import org.apache.geode.admin.Alert;
+import org.apache.geode.admin.AlertLevel;
 import org.apache.geode.admin.AlertListener;
+import org.apache.geode.admin.BackupStatus;
+import org.apache.geode.admin.CacheServer;
+import org.apache.geode.admin.CacheServerConfig;
+import org.apache.geode.admin.CacheVm;
+import org.apache.geode.admin.ConfigurationParameter;
+import org.apache.geode.admin.DistributedSystemConfig;
+import org.apache.geode.admin.DistributionLocator;
+import org.apache.geode.admin.DistributionLocatorConfig;
+import org.apache.geode.admin.GemFireHealth;
+import org.apache.geode.admin.ManagedEntity;
+import org.apache.geode.admin.ManagedEntityConfig;
+import org.apache.geode.admin.OperationCancelledException;
+import org.apache.geode.admin.RuntimeAdminException;
+import org.apache.geode.admin.SystemMember;
+import org.apache.geode.admin.SystemMemberCacheListener;
+import org.apache.geode.admin.SystemMembershipEvent;
+import org.apache.geode.admin.SystemMembershipListener;
 import org.apache.geode.cache.persistence.PersistentID;
 import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.distributed.FutureCancelledException;
-import org.apache.geode.distributed.internal.*;
+import org.apache.geode.distributed.internal.ClusterDistributionManager;
+import org.apache.geode.distributed.internal.DistributionManager;
+import org.apache.geode.distributed.internal.InternalDistributedSystem;
+import org.apache.geode.distributed.internal.InternalLocator;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
 import org.apache.geode.internal.Assert;
 import org.apache.geode.internal.Banner;
-import org.apache.geode.internal.admin.*;
-import org.apache.geode.internal.admin.remote.*;
+import org.apache.geode.internal.admin.ApplicationVM;
+import org.apache.geode.internal.admin.GemFireVM;
+import org.apache.geode.internal.admin.GfManagerAgent;
+import org.apache.geode.internal.admin.GfManagerAgentConfig;
+import org.apache.geode.internal.admin.GfManagerAgentFactory;
+import org.apache.geode.internal.admin.SSLConfig;
+import org.apache.geode.internal.admin.remote.CompactRequest;
+import org.apache.geode.internal.admin.remote.DistributionLocatorId;
+import org.apache.geode.internal.admin.remote.MissingPersistentIDsRequest;
+import org.apache.geode.internal.admin.remote.PrepareRevokePersistentIDRequest;
+import org.apache.geode.internal.admin.remote.RemoteApplicationVM;
+import org.apache.geode.internal.admin.remote.RemoteTransportConfig;
+import org.apache.geode.internal.admin.remote.RevokePersistentIDRequest;
+import org.apache.geode.internal.admin.remote.ShutdownAllRequest;
 import org.apache.geode.internal.cache.backup.BackupUtil;
 import org.apache.geode.internal.cache.persistence.PersistentMemberPattern;
 import org.apache.geode.internal.i18n.LocalizedStrings;
@@ -2313,7 +2363,7 @@ public class AdminDistributedSystemImpl implements org.apache.geode.admin.AdminD
 
   public static BackupStatus backupAllMembers(DistributionManager dm, File targetDir,
       File baselineDir) throws AdminException {
-    return new BackupStatusImpl(BackupUtil.backupAllMembers(dm, targetDir, baselineDir));
+    return BackupUtil.backupAllMembers(dm, targetDir.toString(), baselineDir.toString());
   }
 
   public Map<DistributedMember, Set<PersistentID>> compactAllDiskStores() throws AdminException {

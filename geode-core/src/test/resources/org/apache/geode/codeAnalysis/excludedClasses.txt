@@ -20,9 +20,10 @@ org/apache/geode/internal/cache/DiskStoreMonitor$DiskState
 org/apache/geode/internal/cache/InitialImageOperation$GIITestHook
 org/apache/geode/internal/cache/Oplog$OPLOG_TYPE
 org/apache/geode/internal/cache/UserSpecifiedDiskStoreAttributes
+org/apache/geode/internal/cache/backup/BackupWriterFactory
+org/apache/geode/internal/cache/backup/BackupWriterFactory$1
 org/apache/geode/internal/cache/client/protocol/exception/ServiceLoadingFailureException
 org/apache/geode/internal/cache/client/protocol/exception/ServiceVersionNotFoundException
-org/apache/geode/internal/cache/UserSpecifiedDiskStoreAttributes
 org/apache/geode/internal/cache/client/protocol/exception/ServiceLoadingFailureException
 org/apache/geode/internal/cache/client/protocol/exception/ServiceVersionNotFoundException
 org/apache/geode/internal/cache/tier/CommunicationMode

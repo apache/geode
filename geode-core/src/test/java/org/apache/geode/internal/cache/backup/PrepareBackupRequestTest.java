@@ -24,6 +24,7 @@ import static org.mockito.Mockito.when;
 import java.io.File;
 import java.io.IOException;
 import java.util.HashSet;
+import java.util.Properties;
 import java.util.Set;
 
 import org.junit.Before;
@@ -52,6 +53,7 @@ public class PrepareBackupRequestTest {
   private PrepareBackup prepareBackup;
   private File targetDir;
   private File baselineDir;
+  private Properties backupProperties;
 
   @Before
   public void setUp() throws Exception {
@@ -67,24 +69,27 @@ public class PrepareBackupRequestTest {
     recipients = new HashSet<>();
     persistentIds = new HashSet<>();
 
+    backupProperties =
+        BackupUtil.createBackupProperties(targetDir.toString(), baselineDir.toString());
+
     when(dm.getCache()).thenReturn(cache);
     when(dm.getDistributionManagerId()).thenReturn(sender);
-    when(prepareBackupFactory.createPrepareBackup(eq(sender), eq(cache), eq(targetDir),
-        eq(baselineDir))).thenReturn(prepareBackup);
+    when(prepareBackupFactory.createPrepareBackup(eq(sender), eq(cache), eq(backupProperties)))
+        .thenReturn(prepareBackup);
     when(prepareBackupFactory.createBackupResponse(eq(sender), eq(persistentIds)))
         .thenReturn(mock(BackupResponse.class));
     when(prepareBackup.run()).thenReturn(persistentIds);
 
-    prepareBackupRequest = new PrepareBackupRequest(sender, recipients, msgId, prepareBackupFactory,
-        targetDir, baselineDir);
+    prepareBackupRequest =
+        new PrepareBackupRequest(sender, recipients, msgId, prepareBackupFactory, backupProperties);
   }
 
   @Test
   public void usesFactoryToCreatePrepareBackup() throws Exception {
     prepareBackupRequest.createResponse(dm);
 
-    verify(prepareBackupFactory, times(1)).createPrepareBackup(eq(sender), eq(cache), eq(targetDir),
-        eq(baselineDir));
+    verify(prepareBackupFactory, times(1)).createPrepareBackup(eq(sender), eq(cache),
+        eq(backupProperties));
   }
 
   @Test

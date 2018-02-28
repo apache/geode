@@ -1426,8 +1426,8 @@ fromData,14,2a2bb700042a2bb80005b50003b1
 toData,14,2a2bb700062ab400032bb80007b1
 
 org/apache/geode/internal/cache/backup/PrepareBackupRequest,2
-fromData,22,2a2bb700192a2bb8001ab500082a2bb8001ab50009b1
-toData,22,2a2bb7001b2ab400082bb8001c2ab400092bb8001cb1
+fromData,14,2a2bb700182a2bb80019b50008b1
+toData,14,2a2bb7001a2ab400082bb8001bb1
 
 org/apache/geode/internal/cache/compression/CompressedCachedDeserializable,2
 fromData,18,2a2ab600082bb8000fb900090200b50003b1

@@ -192,8 +192,8 @@ public class BackupIntegrationTest {
     }
 
     BackupService backup = cache.getBackupService();
-    backup.prepareBackup(cache.getInternalDistributedSystem().getDistributedMember(), backupDir,
-        null);
+    BackupWriter writer = getBackupWriter();
+    backup.prepareBackup(cache.getMyId(), writer);
     backup.doBackup();
 
     // Put another key to make sure we restore
@@ -241,11 +241,17 @@ public class BackupIntegrationTest {
     createDiskStore();
 
     BackupService backup = cache.getBackupService();
-    backup.prepareBackup(cache.getInternalDistributedSystem().getDistributedMember(), backupDir,
-        null);
+    BackupWriter writer = getBackupWriter();
+    backup.prepareBackup(cache.getMyId(), writer);
     backup.doBackup();
     assertEquals("No backup files should have been created", Collections.emptyList(),
         Arrays.asList(backupDir.list()));
+  }
+
+  private BackupWriter getBackupWriter() {
+    Properties backupProperties = BackupUtil.createBackupProperties(backupDir.toString(), null);
+    return BackupWriterFactory.FILE_SYSTEM.createWriter(backupProperties,
+        cache.getMyId().toString());
   }
 
   @Test
@@ -257,8 +263,7 @@ public class BackupIntegrationTest {
     region.put("A", "A");
 
     BackupService backup = cache.getBackupService();
-    backup.prepareBackup(cache.getInternalDistributedSystem().getDistributedMember(), backupDir,
-        null);
+    backup.prepareBackup(cache.getMyId(), getBackupWriter());
     backup.doBackup();
 
 
@@ -285,8 +290,7 @@ public class BackupIntegrationTest {
     }
 
     BackupService backupService = cache.getBackupService();
-    backupService.prepareBackup(cache.getInternalDistributedSystem().getDistributedMember(),
-        backupDir, null);
+    backupService.prepareBackup(cache.getMyId(), getBackupWriter());
     final Region theRegion = region;
     final DiskStore theDiskStore = ds;
     CompletableFuture.runAsync(() -> destroyAndCompact(theRegion, theDiskStore));
@@ -319,8 +323,7 @@ public class BackupIntegrationTest {
     createRegion();
 
     BackupService backupService = cache.getBackupService();
-    backupService.prepareBackup(cache.getInternalDistributedSystem().getDistributedMember(),
-        backupDir, null);
+    backupService.prepareBackup(cache.getMyId(), getBackupWriter());
     backupService.doBackup();
     Collection<File> fileCollection = FileUtils.listFiles(backupDir,
         new RegexFileFilter("BackupIntegrationTest.cache.xml"), DirectoryFileFilter.DIRECTORY);
