@@ -29,6 +29,7 @@ import org.apache.geode.internal.protocol.protobuf.v1.RegionAPI;
 import org.apache.geode.internal.protocol.protobuf.v1.Result;
 import org.apache.geode.internal.protocol.protobuf.v1.Success;
 import org.apache.geode.internal.protocol.protobuf.v1.serialization.exception.DecodingException;
+import org.apache.geode.security.ResourcePermission;
 
 @Experimental
 public class PutRequestOperationHandler
@@ -63,5 +64,12 @@ public class PutRequestOperationHandler
       logger.error("Received Put request with invalid key type: {}", ex);
       return Failure.of(BasicTypes.ErrorCode.SERVER_ERROR, ex.toString());
     }
+  }
+
+  public static ResourcePermission determineRequiredPermission(RegionAPI.PutRequest request,
+      ProtobufSerializationService serializer) throws DecodingException {
+    return new ResourcePermission(ResourcePermission.Resource.DATA,
+        ResourcePermission.Operation.WRITE, request.getRegionName(),
+        serializer.decode(request.getEntry().getKey()).toString());
   }
 }
