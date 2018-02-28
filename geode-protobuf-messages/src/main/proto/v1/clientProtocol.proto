@@ -69,6 +69,9 @@ message Message {
 
         OQLQueryRequest oqlQueryRequest = 26;
         OQLQueryResponse oqlQueryResponse = 27;
+
+        DisconnectClientRequest disconnectClientRequest = 28;
+        DisconnectClientResponse disconnectClientResponse = 29;
     }
 }
 

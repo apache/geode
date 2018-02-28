@@ -23,7 +23,7 @@ import org.apache.geode.internal.protocol.protobuf.v1.ClientProtocol;
 import org.apache.geode.internal.protocol.protobuf.v1.ClientProtocol.Message.MessageTypeCase;
 import org.apache.geode.internal.protocol.protobuf.v1.ProtobufOperationContext;
 import org.apache.geode.internal.protocol.protobuf.v1.ProtobufSerializationService;
-import org.apache.geode.internal.protocol.protobuf.v1.RegionAPI;
+import org.apache.geode.internal.protocol.protobuf.v1.operations.DisconnectClientRequestOperationHandler;
 import org.apache.geode.internal.protocol.protobuf.v1.operations.ExecuteFunctionOnGroupRequestOperationHandler;
 import org.apache.geode.internal.protocol.protobuf.v1.operations.ExecuteFunctionOnMemberRequestOperationHandler;
 import org.apache.geode.internal.protocol.protobuf.v1.operations.ExecuteFunctionOnRegionRequestOperationHandler;
@@ -69,6 +69,12 @@ public class ProtobufOperationContextRegistry {
         new ProtobufOperationContext<>(ClientProtocol.Message::getAuthenticationRequest,
             new AuthenticationRequestOperationHandler(),
             opsResp -> ClientProtocol.Message.newBuilder().setAuthenticationResponse(opsResp),
+            this::skipAuthorizationCheck));
+
+    operationContexts.put(ClientProtocol.Message.MessageTypeCase.DISCONNECTCLIENTREQUEST,
+        new ProtobufOperationContext<>(ClientProtocol.Message::getDisconnectClientRequest,
+            new DisconnectClientRequestOperationHandler(),
+            opsResp -> ClientProtocol.Message.newBuilder().setDisconnectClientResponse(opsResp),
             this::skipAuthorizationCheck));
 
     operationContexts.put(ClientProtocol.Message.MessageTypeCase.GETREQUEST,
