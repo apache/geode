@@ -4590,7 +4590,7 @@ public class GemFireCacheImpl implements InternalCache, InternalClientCache, Has
 
     if (!otherMembers.isEmpty()) {
       if (logger.isDebugEnabled()) {
-        logger.debug("Sending add cache server profile message to other members.");
+        logger.debug("Sending remove cache server profile message to other members.");
       }
       ReplyProcessor21 replyProcessor = new ReplyProcessor21(this.dm, otherMembers);
       message.setRecipients(otherMembers);
