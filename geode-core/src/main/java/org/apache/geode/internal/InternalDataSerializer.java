@@ -148,7 +148,7 @@ public abstract class InternalDataSerializer extends DataSerializer implements D
    * partial putAll exception object.
    * <p>
    * Do not java-serialize objects that Geode does not have complete control over. This
-   * leaves us open to security attacks such as Gadge Chains and compromises the ability
+   * leaves us open to security attacks such as Gadget Chains and compromises the ability
    * to do a rolling upgrade from one version of Geode to the next.
    * <p>
    * In general you shouldn't use java serialization and you should implement
