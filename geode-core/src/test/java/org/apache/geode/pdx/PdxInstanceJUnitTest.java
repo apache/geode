@@ -25,6 +25,8 @@ import java.lang.reflect.InvocationTargetException;
 import java.math.BigInteger;
 import java.util.*;
 
+import org.apache.geode.cache.CacheClosedException;
+import org.apache.geode.test.dunit.cache.internal.JUnit4CacheTestCase;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -44,7 +46,7 @@ import org.apache.geode.test.junit.categories.SerializationTest;
  *
  */
 @Category({IntegrationTest.class, SerializationTest.class})
-public class PdxInstanceJUnitTest {
+public class PdxInstanceJUnitTest extends JUnit4CacheTestCase {
 
   private GemFireCacheImpl c;
   private int allFieldCount;
@@ -223,8 +225,10 @@ public class PdxInstanceJUnitTest {
     if (f instanceof PdxInstanceEnumInfo) {
       PdxInstanceEnumInfo e = (PdxInstanceEnumInfo) f;
       assertEquals("ONE", e.getName());
-      GemFireCacheImpl theCache = GemFireCacheImpl
-          .getForPdx("PDX registry is unavailable because the Cache has been closed.");
+      GemFireCacheImpl theCache = (GemFireCacheImpl) getCache();
+      if ( theCache == null) {
+        throw new CacheClosedException("PDX registry is unavailable because the Cache has been closed.");
+      }
       theCache.getPdxRegistry().flushCache();
       assertEquals(MyComplexEnum.ONE, e.getObject());
     } else {
@@ -240,8 +244,10 @@ public class PdxInstanceJUnitTest {
     if (f instanceof PdxInstanceEnumInfo) {
       PdxInstanceEnumInfo e = (PdxInstanceEnumInfo) f;
       assertEquals("ONE", e.getName());
-      GemFireCacheImpl theCache = GemFireCacheImpl
-          .getForPdx("PDX registry is unavailable because the Cache has been closed.");
+      GemFireCacheImpl theCache = (GemFireCacheImpl) getCache();
+      if ( theCache == null) {
+        throw new CacheClosedException("PDX registry is unavailable because the Cache has been closed.");
+      }
       theCache.getPdxRegistry().flushCache();
       assertEquals(MyEnum.ONE, e.getObject());
     } else {

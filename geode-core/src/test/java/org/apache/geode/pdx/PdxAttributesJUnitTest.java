@@ -28,6 +28,7 @@ import java.util.List;
 import java.util.Map;
 
 import org.apache.commons.io.FileUtils;
+import org.apache.geode.test.dunit.cache.internal.JUnit4CacheTestCase;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -62,7 +63,7 @@ import org.apache.geode.test.junit.categories.SerializationTest;
  *
  */
 @Category({IntegrationTest.class, SerializationTest.class})
-public class PdxAttributesJUnitTest {
+public class PdxAttributesJUnitTest extends JUnit4CacheTestCase {
 
   private File diskDir;
 
@@ -77,7 +78,7 @@ public class PdxAttributesJUnitTest {
 
   @After
   public void tearDown() throws Exception {
-    GemFireCacheImpl instance = GemFireCacheImpl.getInstance();
+    GemFireCacheImpl instance = (GemFireCacheImpl) basicGetCache();
     if (instance != null) {
       instance.close();
     }
