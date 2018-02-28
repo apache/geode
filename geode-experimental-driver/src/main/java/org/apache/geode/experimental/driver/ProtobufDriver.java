@@ -20,12 +20,14 @@ import java.io.OutputStream;
 import java.net.InetSocketAddress;
 import java.net.Socket;
 import java.util.HashSet;
+import java.util.Objects;
 import java.util.Set;
 
 import org.apache.geode.annotations.Experimental;
 import org.apache.geode.internal.protocol.protobuf.ProtocolVersion;
 import org.apache.geode.internal.protocol.protobuf.v1.BasicTypes;
 import org.apache.geode.internal.protocol.protobuf.v1.ClientProtocol;
+import org.apache.geode.internal.protocol.protobuf.v1.ConnectionAPI;
 import org.apache.geode.internal.protocol.protobuf.v1.LocatorAPI;
 import org.apache.geode.internal.protocol.protobuf.v1.RegionAPI;
 
@@ -104,9 +106,26 @@ public class ProtobufDriver implements Driver {
   @Override
   public void close() {
     try {
-      this.socket.close();
-    } catch (IOException e) {
-      // ignore
+      final OutputStream outputStream = socket.getOutputStream();
+      ClientProtocol.Message.newBuilder()
+          .setDisconnectClientRequest(
+              ConnectionAPI.DisconnectClientRequest.newBuilder().setReason("Driver closed"))
+          .build().writeDelimitedTo(outputStream);
+
+      final InputStream inputStream = socket.getInputStream();
+      final ConnectionAPI.DisconnectClientResponse disconnectClientResponse =
+          ClientProtocol.Message.parseDelimitedFrom(inputStream).getDisconnectClientResponse();
+      if (Objects.isNull(disconnectClientResponse) || !disconnectClientResponse.getAcknowledged()) {
+        // The server did not acknowledge the disconnect request; ignore for now.
+      }
+    } catch (IOException ioe) {
+      // NOP
+    } finally {
+      try {
+        this.socket.close();
+      } catch (IOException e) {
+        // ignore
+      }
     }
   }
 
