@@ -19,14 +19,12 @@ import static org.apache.commons.lang.StringUtils.join;
 import static org.apache.commons.lang.StringUtils.lowerCase;
 import static org.apache.geode.distributed.ConfigurationProperties.NAME;
 import static org.apache.geode.internal.lang.ClassUtils.forName;
-import static org.apache.geode.internal.lang.ObjectUtils.defaultIfNull;
 import static org.apache.geode.internal.lang.StringUtils.defaultString;
 import static org.apache.geode.internal.lang.SystemUtils.CURRENT_DIRECTORY;
 
 import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
-import java.io.UncheckedIOException;
 import java.net.BindException;
 import java.net.InetAddress;
 import java.net.URISyntaxException;
@@ -551,8 +549,7 @@ public abstract class AbstractLauncher<T extends Comparable<T>> implements Runna
       this.pid = pid;
       this.uptime = uptime;
       this.workingDirectory = workingDirectory;
-      this.jvmArguments = defaultIfNull(Collections.unmodifiableList(jvmArguments),
-          Collections.<String>emptyList());
+      this.jvmArguments = Collections.unmodifiableList(jvmArguments);
       this.classpath = classpath;
       this.gemfireVersion = gemfireVersion;
       this.javaVersion = javaVersion;
@@ -724,7 +721,7 @@ public abstract class AbstractLauncher<T extends Comparable<T>> implements Runna
      * @return a String value indicating the GemFire service's working (running) directory.
      */
     public String getWorkingDirectory() {
-      return defaultIfNull(workingDirectory, DEFAULT_WORKING_DIRECTORY);
+      return workingDirectory != null ? workingDirectory : DEFAULT_WORKING_DIRECTORY;
     }
 
     /**
@@ -800,7 +797,7 @@ public abstract class AbstractLauncher<T extends Comparable<T>> implements Runna
 
     // the value of the String, or "" if value is null
     protected String toString(final String value) {
-      return defaultIfNull(value, "");
+      return value != null ? value : "";
     }
   }
 
