@@ -166,17 +166,16 @@ public class PartitionedRegionCloseDistributedTest implements Serializable {
   }
 
   private void createRegion(final boolean accessor) {
-    PartitionAttributesFactory<String, Integer> partitionFactory =
-        new PartitionAttributesFactory<>();
-    partitionFactory.setRedundantCopies(REDUNDANT_COPIES);
+    PartitionAttributesFactory<String, Integer> paf = new PartitionAttributesFactory<>();
+    paf.setRedundantCopies(REDUNDANT_COPIES);
     if (accessor) {
-      partitionFactory.setLocalMaxMemory(0);
+      paf.setLocalMaxMemory(0);
     }
-    partitionFactory.setTotalNumBuckets(TOTAL_NUM_BUCKETS);
+    paf.setTotalNumBuckets(TOTAL_NUM_BUCKETS);
 
     RegionFactory<String, Integer> regionFactory = cacheRule.getCache().createRegionFactory();
     regionFactory.setDataPolicy(DataPolicy.PARTITION);
-    regionFactory.setPartitionAttributes(partitionFactory.create());
+    regionFactory.setPartitionAttributes(paf.create());
 
     regionFactory.create(regionName);
   }
